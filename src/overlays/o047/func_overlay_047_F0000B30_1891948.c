@@ -168,8 +168,8 @@ extern f32 camGetFOV(void);
 extern void func_80021504(f32 fov, s32 force);
 extern void func_800221E8(Overlay47Command **commands, Mtx **matrices);
 extern void camStandardOrtho(Overlay47Command **commands, Mtx **matrices);
-extern void func_800349A4(Overlay47Command **commands, void *texture, s32 flags, s32 offset);
-extern void func_80034920(Overlay47Command **commands);
+extern void texDPTextureX(Overlay47Command **commands, void *texture, s32 flags, s32 offset);
+extern void texDPInit(Overlay47Command **commands);
 extern void func_8002FB34(Overlay47Command **commands, Overlay47TextureNode *textures,
                         f32 x, f32 y, f32 scaleX, f32 scaleY, s32 mode, s32 flags);
 extern void func_8002A82C(MtxF matrix);
@@ -184,7 +184,7 @@ extern void func_80023F84(Overlay47Command **commands, Mtx **matrices, void **ve
 extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha, s32 blend);
 extern void func_8004B0A4(s32 font);
 extern void func_8004B0F8(Overlay47Command **commands, s32 x, s32 y, char *text, s32 flags);
-extern void func_800367A4(void *texture, s32 *state, s32 speed, f32 *frame, s32 updateRate);
+extern void texAnimateTexSprite(void *texture, s32 *state, s32 speed, f32 *frame, s32 updateRate);
 extern void mainChangeLevel(s32 level, s32 character, s32 animGroup, s32 mode, s32 arg4, s32 arg5);
 extern void func_overlay_047_F0002D10_1893B28(Overlay47Player *player);
 
@@ -543,7 +543,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     func_80021504(52.0f, 1);
     func_800221E8(&D_800D3140, NULL);
     camStandardOrtho(&D_800D3140, &D_800D3144);
-    func_800349A4(&D_800D3140, NULL, 16, 0);
+    texDPTextureX(&D_800D3140, NULL, 16, 0);
     O47_COMMAND(0xFA000000, -1);
     O47_VERTICES(ov47Data_228, 6);
     O47_COMMAND(0x05300040, O47_PHYSICAL(ov47Data_268));
@@ -604,7 +604,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         O47_VERTICES(ov47Data_198, 4);
         O47_COMMAND(0x05100020, O47_PHYSICAL(ov47Data_1C0));
         camStandardOrtho(&D_800D3140, &D_800D3144);
-        func_80034920(&D_800D3140);
+        texDPInit(&D_800D3140);
         O47_COMMAND(0xFA000000, -1);
         func_80023F84(&D_800D3140, &D_800D3144, &D_800D3148, icon, D_800D31C8[11], 0, 255);
         if (selected != -1 && !unready) {
@@ -713,7 +713,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     }
     overlay45ReadPair((Overlay45PairOwner *)ov47Bss_314, &x, &y, 0);
     func_8002FB34(&D_800D3140, &ov47Data_4F0, (f32)(x - 32), (f32)(y - 6), 1.0f, 1.0f, -2, 3);
-    func_800367A4(ov47Data_4F0.texture, &ov47Data_548, 2, &ov47Data_54C, updateRate);
+    texAnimateTexSprite(ov47Data_4F0.texture, &ov47Data_548, 2, &ov47Data_54C, updateRate);
     ov47Data_4F0.packedOffset = (s32)(ov47Data_54C * 65536.0f);
     if (start) {
         mainChangeLevel(12, 0, 0, 10, 1, 0);

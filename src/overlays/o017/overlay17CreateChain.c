@@ -59,7 +59,7 @@ typedef struct Overlay17Chain {
 extern Overlay17Template gOverlay17TemplateReloc[16];
 extern void *mmAlloc(s32 size, u32 colourTag);
 struct TextureHeader;
-extern struct TextureHeader *func_80034448(s32 textureId);
+extern struct TextureHeader *texLoadTexture(s32 textureId);
 struct Overlay17ChainHead;
 extern void overlay17CalculateEndpoints(struct Overlay17ChainHead *chain, f32 *x0, f32 *y0, f32 *z0,
                                         f32 *x1, f32 *y1, f32 *z1);
@@ -102,7 +102,7 @@ Overlay17Chain *overlay17CreateChain(
     if (chain != 0) {
 
     if (materialToken != (Overlay17Material *)-1) {
-        chain->material = (Overlay17Material *)func_80034448((s32)materialToken);
+        chain->material = (Overlay17Material *)texLoadTexture((s32)materialToken);
         chain->buffers[0] = (Overlay17Pair *)((u8 *)chain + 0x140);
         chain->buffers[1] = (Overlay17Pair *)((u8 *)chain->buffers[0] + count * 20);
     } else {

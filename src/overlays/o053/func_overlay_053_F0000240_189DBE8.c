@@ -60,7 +60,7 @@ extern Overlay53Level *levelGetLevel(void);
 extern void camSetNo(s32);
 extern void camSetScissor(MenuCommand **);
 extern void func_8002F618(MenuCommand **, Overlay53Entry *, s32, s32, u8, u8, u8, u8);
-extern void func_80034920(MenuCommand **);
+extern void texDPInit(MenuCommand **);
 extern void func_80039E34(s32);
 extern void overlay53CopyOffsetEntries(Overlay53Entry *, Overlay53Entry *, s32, s32);
 extern s32 func_800290A0(void);
@@ -215,7 +215,7 @@ void func_overlay_053_F0000240_189DBE8(s32 updateRate) {
                 }
             }
             func_8002F618(&D_800D3140, gOverlay53TimeDigits[player], 0, hudOffset, 255, 255, 255, 255);
-            func_80034920(&D_800D3140);
+            texDPInit(&D_800D3140);
             if (frontGetScreenMode() == 1) {
                 D_800D3550[4].unkC = gOverlay53ClockSplitX[player];
                 D_800D3550[4].unk10 = 80 - hudOffset;

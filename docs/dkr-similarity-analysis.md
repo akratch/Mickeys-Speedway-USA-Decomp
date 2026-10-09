@@ -150,7 +150,7 @@ at least 0.30:
 
 | Mickey target(s) | Bytes | Best DKR evidence | Score |
 |---|---:|---|---:|
-| `func_80036C60` | 76 | `init_pulsating_light_data`, identical skeleton and size | 1.000 |
+| `resetMixCycle` | 76 | `init_pulsating_light_data`, identical skeleton and size | 1.000 |
 | `getXZCompareMask` | 284 | `compute_grid_overlap_mask` | 0.760 |
 | `func_8004D5E0` | 368 | `osCreatePiManager`, same size | 0.667 |
 | `func_800056F0`, `func_80005820`, `func_800056A4` | 208 | object/asset accessors | 0.667 / 0.524 / 0.320 |
@@ -159,8 +159,8 @@ at least 0.30:
 | `func_8002B040` | 144 | `mtxf_transform_point` | 0.471 |
 | `func_8004D750` | 40 | `menu_dialogue_end` | 0.455 |
 | `func_80006868` | 344 | `obj_init_emitter` | 0.398 |
-| `func_80036CAC` | 292 | `update_pulsating_light_data` | 0.362 |
-| `func_80034260` | 400 | `tex_init_textures` | 0.310 |
+| `updateMixCycle` | 292 | `update_pulsating_light_data` | 0.362 |
+| `texInitTextures` | 400 | `tex_init_textures` | 0.310 |
 | `func_80073490` | 604 | `osEepromRead` | 0.309 |
 | `func_8000AA38` | 1,204 | `run_object_init_func` | 0.300 |
 
@@ -170,8 +170,8 @@ false semantic names. None of these 16 is byte-exact.
 
 ## Recommended order
 
-1. Try the adjacent pulse-light pair first. `func_80036C60` has a perfect
-   19-word skeleton and exact size against DKR, `func_80036CAC` selects DKR's
+1. Try the adjacent pulse-light pair first. `resetMixCycle` has a perfect
+   19-word skeleton and exact size against DKR, `updateMixCycle` selects DKR's
    adjacent update routine, and Mickey's level loader has the same
    asset-then-init call flow. This is the strongest evidence of revised Rare
    source still sitting in raw assembly.

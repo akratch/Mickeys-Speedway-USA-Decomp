@@ -551,7 +551,7 @@ order of how often they decided a match:
     1/2 vertex masks that had stood in for it go (lane h-4, e-res2).
 44. **An assigned dead read into an existing local breaks a save tie; a
     bare dead read is inert.** `lowerWord = settings->lower[tableFlags]
-    .words.w0;` took func_800349A4 from 5 to 0 at all five positions
+    .words.w0;` took texDPTextureX from 5 to 0 at all five positions
     tried, while the bare expression statement was dropped before uopt
     numbered anything, and `lowerWord = tableFlags << 3` stayed 5: the
     load's address expression entering the table first is what reorders
@@ -564,7 +564,7 @@ order of how often they decided a match:
     func_overlay_001_F0001D78_184E158 from 62 to 0, where the word
     spelling in the switched block floored at 77 (lane e-ovl2).
 46. **as1 moves the `lui` of a hoisted global address into an earlier
-    block when a register is free; uopt does not.** In func_800349A4 the
+    block when a register is free; uopt does not.** In texDPTextureX the
     high half lands at +0x60 as shipped when the table's register is free
     through the frame block, and one block later when it took a register
     the frame block uses (lane e-res1). Look at which register the

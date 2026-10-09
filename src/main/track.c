@@ -416,7 +416,7 @@ void mtxf_transform_point(MtxF matrix, f32 x, f32 y, f32 z,
                           f32 *outX, f32 *outY, f32 *outZ);
 ControlSpawned *func_8000590C(ControlSpawnPacket *packet, s32 mode);
 TrackFogPlayer **func_80005750(s32 *count);
-void func_800367E8(TrackTextureHeader *texture, u32 *flags, s32 *frame,
+void texAnimateTexture(TrackTextureHeader *texture, u32 *flags, s32 *frame,
                    s32 updateRate);
 void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags);
 s32 runlinkIsModuleLoaded(s32 module);
@@ -426,15 +426,15 @@ void func_8000E5EC(s32 arg0, s32 arg1);
 void func_8000E920(s32 arg0, s32 arg1);
 void func_80014DE4(void);
 void camStandardOrtho(Gfx **displayList, Mtx **matrix);
-void func_80034920(Gfx **displayList);
-void func_800349A4(Gfx **displayList, void *texture, s32 mode, s32 flags);
+void texDPInit(Gfx **displayList);
+void texDPTextureX(Gfx **displayList, void *texture, s32 mode, s32 flags);
 void func_800221E8(Gfx **displayList, Mtx **matrix);
 s32 camGetMode(void);
 s32 camGetNo(void);
 void func_80021FB0(s32 mode, s32 camera, s32 *left, s32 *bottom,
                    u32 *right, u32 *top);
 void viGetCurrentSize(s32 *width, s32 *height);
-void *func_800348D4(TrackTextureHeader *texture, s32 frame);
+void *texFrame(TrackTextureHeader *texture, s32 frame);
 TrackCamera *camGetPtr(void);
 TrackLight *trackLightAsm(TrackData *track, TrackLight *light, void *state);
 s32 mainGetNumberOfCameras(void);
@@ -454,7 +454,7 @@ s32 func_8000DDE4(s32 key, s32 recordCount, TrackKeyRecord *records, TrackKeyRec
 void func_8000F57C(s32 *resultCount, u8 *resultSegments);
 void func_8000FA2C(s32 *result, s32 arg1);
 void shadowGetBuffers(s32 mode, void **a, void **b, void **c);
-void func_800343F0();
+void texDisableModes();
 void texEnableModes(s32 mode);
 s32 getXZCompareMask(TrackBoundingBox *bounds, s32 x0, s32 z0, s32 x1,
                      s32 z1);
@@ -471,7 +471,7 @@ void func_8000439C(void);
 void func_80006EA0(void *handle);
 void func_80006FA0(void);
 void func_8001F364(void);
-void func_800347A0(void *texture);
+void texFreeTexture(void *texture);
 void mmFree(void *data);
 void shadowFreeBuffers(void);
 void animseqFreeLevelData(void);
@@ -549,7 +549,7 @@ extern void camSetNo();
 extern void doWeather();
 extern void func_800219D0(void);
 extern void func_80022D20();
-extern void func_80036CAC();
+extern void updateMixCycle();
 extern void diRcpTrace();
 extern void func_800534EC();
 extern void levelUpdateColourCycling();
@@ -602,7 +602,7 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
     levelUpdateColourCycling(targetUpdateRate);
     temp_a0 = *(s32 *) ((u8 *) D_800792EC + 0xC0);
     if (temp_a0 != -1) {
-        func_80036CAC(temp_a0, targetUpdateRate);
+        updateMixCycle(temp_a0, targetUpdateRate);
     }
     if (((TrackFrameLevel *) D_800792EC)->unk83 == 2) {
         D_80079260 = 0;
@@ -623,11 +623,11 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
         ((TrackFrameLevel *) D_800792EC)->unkBE =
             (((TrackFrameLevel *) D_800792EC)->unkBE +
              (((TrackFrameLevel *) D_800792EC)->unkB5 * targetUpdateRate)) & var_v0;
-        func_800367E8(((TrackFrameLevel *) D_800792EC)->unkB8,
+        texAnimateTexture(((TrackFrameLevel *) D_800792EC)->unkB8,
                       (u32 *) &D_800C9568,
                       &D_800C9560, targetUpdateRate);
     }
-    func_80034920(&D_800C9520);
+    texDPInit(&D_800C9520);
     gMoveWd(D_800C9520++, 2, 0, 0);
     if (levelInitRegionFlags() != 0) {
         gSPClearGeometryMode(D_800C9520++, G_CULL_BACK);
@@ -729,7 +729,7 @@ void func_8000C400(s32 updateRate) {
                     texture = D_800792E8->textures[batch[batchNumber].textureIndex].texture;
                     if ((texture->numOfTextures != 0x100) && (texture->frameAdvanceDelay != 0)) {
                         frame = batch[batchNumber].frame;
-                        func_800367E8(texture, &batch[batchNumber].flags, &frame, updateRate);
+                        texAnimateTexture(texture, &batch[batchNumber].flags, &frame, updateRate);
                         batch[batchNumber].frame = frame;
                     }
                 }
@@ -876,7 +876,7 @@ void func_8000C5F4(void) {
     textureS[8] = (s16)((2.0f * xCos) - pos.f[2]) + var_v0;
     textureT[8] = (s16)((2.0f * pos.f[0]) + var_f16) + var_v1;
 
-    func_800349A4(&D_800C9520, texture, 0x10, D_800C9560 << 8);
+    texDPTextureX(&D_800C9520, texture, 0x10, D_800C9560 << 8);
     gDPSetPrimColor(D_800C9520++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
     gDPSetEnvColor(D_800C9520++, 0xFF, 0xFF, 0xFF, 0xFF);
     TRACK_SP_VERTEX(D_800C9520++, (u32)D_800C9528 + 0x80000000, 9, 0);
@@ -940,8 +940,8 @@ void func_8000CC78(void) {
     vertices = D_800C9528;
     D_800C9570 = -1;
     camStandardOrtho(&D_800C9520, &D_800C9524);
-    func_80034920(&D_800C9520);
-    func_800349A4(&D_800C9520, NULL, 8, 0);
+    texDPInit(&D_800C9520);
+    texDPTextureX(&D_800C9520, NULL, 8, 0);
 
     TRACK_SP_VERTEX(D_800C9520++, (u32) vertices + 0x80000000, 4, 0);
     TRACK_SP_POLYGON(D_800C9520++, D_79330, 2, 0);
@@ -1708,9 +1708,9 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                         }
                         objectMode = mode & 0x4000;
                         if (objectMode) {
-                            func_800343F0(2);
+                            texDisableModes(2);
                         }
-                        func_800349A4(&D_800C9520, texture, mode | 2, textureS);
+                        texDPTextureX(&D_800C9520, texture, mode | 2, textureS);
                         if (objectMode) {
                             texEnableModes(2);
                         }
@@ -1840,11 +1840,11 @@ void func_8000E5EC(s32 updateRate, s32 arg1) {
                                     (TrackRouteResult *) records);
     }
     func_8000D978(0, arg1);
-    func_80034920(&D_800C9520);
+    texDPInit(&D_800C9520);
     if (D_8007A124 == 0 && camGetMode() == 0) {
         partDraw(&D_800C9520, (s32) &D_800C9524, 1);
     }
-    func_80034920(&D_800C9520);
+    texDPInit(&D_800C9520);
     i = visibleCount;
     matches = (TrackKeyRecord **) &records[resultCount];
     while (i--) {
@@ -1909,7 +1909,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
         segmentIds[0] = 0;
     }
     func_8000A39C(segmentCount, segmentEnd - 1);
-    func_80034920(&D_800C9520);
+    texDPInit(&D_800C9520);
     diRcpTrace(D_800C9520, "track/track.c", 0x58D);
     D_800C95B0[0] = -1;
     for (index = 1; index <= D_800792E8->segmentCount; index++) {
@@ -2099,7 +2099,7 @@ const char D_80081668[] = "trackGetHeights: Height list overflow\n";
  * over the segment's batches, the texture default as an else arm, the env
  * value masked once into a local, D_800C9520++ packet macros, the 0x4000
  * case first in the switch (case bodies are laid out in source order), a
- * one-argument func_800343F0 call, and s32 flags and masks (a u32 flags word
+ * one-argument texDisableModes call, and s32 flags and masks (a u32 flags word
  * swaps the AND operands). */
 void func_8000F198(s32 arg0, s32 arg1, s32 arg2) {
     TrackBatch *batch;
@@ -2123,7 +2123,7 @@ void func_8000F198(s32 arg0, s32 arg1, s32 arg2) {
     segment = &D_800792E8->segments[arg0];
     switch (arg2) {
     case 0x4000:
-        func_800343F0(2);
+        texDisableModes(2);
         renderMask = 0x4800;
         skipMask = 0x800;
         break;
@@ -2170,7 +2170,7 @@ void func_8000F198(s32 arg0, s32 arg1, s32 arg2) {
                 if (special && texture != NULL) {
                     func_80014ECC(texture, textureS, flags);
                 } else {
-                    func_800349A4(&D_800C9520, texture, flags | 2,
+                    texDPTextureX(&D_800C9520, texture, flags | 2,
                                   textureS);
                 }
                 TRACK_VTX(D_800C9520++, vertex + 0x80000000,
@@ -2178,7 +2178,7 @@ void func_8000F198(s32 arg0, s32 arg1, s32 arg2) {
                 TRACK_TRI(D_800C9520++, triangle + 0x80000000,
                           batch[1].v0 - batch->v0, alpha);
                 if (special) {
-                    func_80034920(&D_800C9520);
+                    texDPInit(&D_800C9520);
                 }
             }
         }
@@ -4631,7 +4631,7 @@ void func_80013EC0(void) {
     }
     func_8001F364();
     if (D_800792F0 != NULL) {
-        func_800347A0(D_800792F0);
+        texFreeTexture(D_800792F0);
         D_800792F0 = NULL;
     }
 
@@ -4660,7 +4660,7 @@ void func_80013EC0(void) {
     if (track->textureCount > 0) {
         offset = 0;
         do {
-            func_800347A0(((TrackTextureEntry *)
+            texFreeTexture(((TrackTextureEntry *)
                 ((u8 *) track->textures + offset))->texture);
             track = *trackSlot;
             index++;
@@ -4786,7 +4786,7 @@ void func_800140CC(TrackShadowObject *object, TrackShadowInstance *shadow) {
                         }
                     }
                     while (i < shadow->meshEnd[k]) {
-                        func_800349A4(&D_800C9520, heap->texture, flags,
+                        texDPTextureX(&D_800C9520, heap->texture, flags,
                                       shadow->textureScale << 8);
                         numTris = heap->firstIndex;
                         numVerts = heap->firstVertex;
@@ -5190,7 +5190,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
     s32 shiftS;
     s32 shiftT;
 
-    locals.textureAddress = func_800348D4(texture, frame);
+    locals.textureAddress = texFrame(texture, frame);
     if (texture->unk1B >= 2) {
         D_800C9520->words.w0 = texture->displayList->words.w0;
         D_800C9520->words.w1 = (u32) locals.textureAddress;
@@ -5216,7 +5216,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
         locals.useOriginalTexture = TRUE;
     }
 
-    locals.activeTextureAddress = func_800348D4(activeTexture, activeFrame);
+    locals.activeTextureAddress = texFrame(activeTexture, activeFrame);
     locals.activeMaskS = func_80014EAC(activeTexture->width);
     activeMaskT = func_80014EAC(activeTexture->height);
     shiftS = (locals.maskS - locals.activeMaskS) & 0xF;

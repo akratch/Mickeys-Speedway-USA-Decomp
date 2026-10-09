@@ -211,22 +211,22 @@ extern Matrix *camGetRotationMtx(void);
 extern s32 *piRomLoad(s32 assetId);
 extern s32 coss_s16(s16 angle);
 extern s32 func_8002A1A4(s16 angle);
-extern WeatherTexture *func_80034448(s32 textureId);
+extern WeatherTexture *texLoadTexture(s32 textureId);
 extern s32 func_80049864(s32 mode);
 extern void func_800498FC(s32 mode, f32 arg1, f32 arg2, s32 red, s32 green, s32 blue, s32 alpha);
 extern f32 func_8002A8BC(s32 angle);
 extern f32 func_8002A8C0(s32 angle);
 extern void amSndSetXYZ(void *sound, f32 x, f32 y, f32 z);
-extern void *func_800355A0(s32 assetId, s32 arg1);
+extern void *texLoadSprite(s32 assetId, s32 arg1);
 extern s32 camGetMode(void);
 extern void TrapDanglingJump(f32, f32, f32, s32);
 extern WeatherLevel *levelGetLevel(void);
 extern void trackSetFog(s32 fogIndex, s16 near, s16 far, s16 targetNear,
                         u8 red, u8 green, u8 blue, s8 state);
 extern void mmFree(void *ptr);
-extern void func_800347A0(WeatherTexture *texture);
+extern void texFreeTexture(WeatherTexture *texture);
 extern Mtx *camGetProjOrgMtx(void);
-extern void func_800349A4(Gfx **dList, void *texture, s32 flags, s32 arg3);
+extern void texDPTextureX(Gfx **dList, void *texture, s32 flags, s32 arg3);
 
 void freeWeather(void);
 void snow_init(void);
@@ -313,7 +313,7 @@ void freeWeather(void) {
         D_8007C398.positions = NULL;
     }
     if (D_8007C398.source.texture != NULL) {
-        func_800347A0(D_8007C398.source.texture);
+        texFreeTexture(D_8007C398.source.texture);
         D_8007C398.source.texture = NULL;
     }
     if (D_8007C3D0 != NULL) {
@@ -459,7 +459,7 @@ void snow_init(void) {
         ((WeatherPosition *) D_8007C398.positions)[i].z = func_8002A1A4(offset & 0xFFFF);
         offset += step;
     }
-    D_8007C398.source.texture = func_80034448(*D_8007C3DC);
+    D_8007C398.source.texture = texLoadTexture(*D_8007C3DC);
 }
 /*
  * PROVENANCE -- body adapted from Jet Force Gemini's public retail-derived
@@ -576,7 +576,7 @@ void snow_render(void) {
         command->w1 = 0;
         command->w0 = 0xBC00000A;
     }
-    func_800349A4(&dList, D_8007C398.source.texture, 2, 0);
+    texDPTextureX(&dList, D_8007C398.source.texture, 2, 0);
     while (D_800D40C0 < count) {
         {
             Gfx *command = dList++;
@@ -630,8 +630,8 @@ void rain_init(s32 count, s32 intensity, s32 opacity) {
     D_8007C71C = 0;
 
     rainInitTrap(count, 700, 700, 700, 0x2080E002, 0xA0E0FF04, 550);
-    D_8007C714 = func_800355A0(0x26, 0);
-    D_8007C718 = func_80034448(0x6A);
+    D_8007C714 = texLoadSprite(0x26, 0);
+    D_8007C718 = texLoadTexture(0x6A);
     D_8007C6E8 = 1;
     D_800D40E4 = NULL;
 }
@@ -640,16 +640,16 @@ void rain_init(s32 count, s32 intensity, s32 opacity) {
  * src/weather.c::func_8005BD30_5C930 (DKR's free_rain_memory). Mickey's
  * globals and trap binding are authoritative here.
  */
-extern void func_800359D4(void *sprite);
+extern void texFreeSprite(void *sprite);
 extern void amSndStopXYZ(void *sound);
 extern void rainFreeTrap(void);
 void free_rain_memory(void) {
     if (D_8007C714 != NULL) {
-        func_800359D4(D_8007C714);
+        texFreeSprite(D_8007C714);
         D_8007C714 = NULL;
     }
     if (D_8007C718 != NULL) {
-        func_800347A0(D_8007C718);
+        texFreeTexture(D_8007C718);
         D_8007C718 = NULL;
     }
     if (D_8007C720 != NULL) {
@@ -836,7 +836,7 @@ void rain_render_splashes(s32 updateRate) {
                     func_80023A08(&D_800D40CC, &D_800D40D0, &D_800D40D4,
                                   splash, D_8007C714, 0xE, 0);
                 } else {
-                    func_800349A4(&D_800D40CC, D_8007C718, 0xE, 0);
+                    texDPTextureX(&D_800D40CC, D_8007C718, 0xE, 0);
                     RAIN_PACKET(D_800D40CC++, 0xFA000000, 0xC0E0FFFF);
                     RAIN_PACKET(D_800D40CC++, ((((((s32) D_800D40D4 + 0x80000000) & 6) | 0x20) & 0xFF) << 16) | 0x04000000 | 0x30, (u32) ((s32) D_800D40D4 + 0x80000000));
                     RAIN_PACKET(D_800D40CC++, 0x05110020, (u32) &D_7C6A8);

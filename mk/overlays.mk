@@ -41,7 +41,7 @@ check-tooling: test-overlay-aliases
 # `gmake overlay-syms` mints, as in every other promoted overlay.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/func_overlay_066_F00004E0_18C6948.c.o: OPT_FLAGS := -O2
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/func_overlay_066_F00004E0_18C6948.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_80034920=func_80034920_o066Reloc $@ && \
+	$(OBJCOPY) --redefine-sym texDPInit=texDPInit_o066Reloc $@ && \
 	$(OBJCOPY) --redefine-sym rsp_segment=rsp_segment_o066Reloc $@ && \
 	$(OBJCOPY) --redefine-sym viGetCurrentSize=viGetCurrentSize_o066Reloc $@ && \
 	$(OBJCOPY) --redefine-sym viGetVideoMode=viGetVideoMode_o066Reloc $@
@@ -714,7 +714,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00003A8_186D628.c.o: POS
 		--redefine-sym func_8001291C=func_8001291C_o012Reloc \
 		--redefine-sym func_8002A8BC=func_8002A8BC_o012Reloc \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o012Reloc \
-		--redefine-sym func_80036544=func_80036544_o012Reloc \
+		--redefine-sym texAnimateSprite=texAnimateSprite_o012Reloc \
 		--redefine-sym mathRnd=mathRnd_o012Reloc \
 		--redefine-sym sqrtf=sqrtf_o012Reloc \
 		--redefine-sym trackGetTrack=trackGetTrack_o012Reloc $@ && \
@@ -733,9 +733,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: POS
 		--redefine-sym func_800084C4=func_800084C4_o012Reloc \
 		--redefine-sym func_80023CCC=func_80023CCC_o012Reloc \
 		--redefine-sym func_80024938=func_80024938_o012Reloc \
-		--redefine-sym func_800349A4=func_800349A4_o012Reloc \
-		--redefine-sym func_80034DF0=func_80034DF0_o012Reloc \
-		--redefine-sym func_80034E48=func_80034E48_o012Reloc \
+		--redefine-sym texDPTextureX=texDPTextureX_o012Reloc \
+		--redefine-sym sprSetIA2ColOverride=sprSetIA2ColOverride_o012Reloc \
+		--redefine-sym sprClearIA2ColOverride=sprClearIA2ColOverride_o012Reloc \
 		--redefine-sym sqrtf=sqrtf_o012Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x98C && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
@@ -761,11 +761,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: POSTPROCESS = \
 		--redefine-sym func_800299E8=func_800299E8_o027Reloc \
 		--redefine-sym func_8002A878=func_8002A878_o027Reloc \
 		--redefine-sym func_8002BD58=func_8002BD58_o027Reloc \
-		--redefine-sym func_80036544=func_80036544_o027Reloc \
+		--redefine-sym texAnimateSprite=texAnimateSprite_o027Reloc \
 		--redefine-sym camGetPtr=camGetPtr_o027Reloc \
 		--redefine-sym func_80009F08=func_80009F08_o027Reloc \
 		--redefine-sym camPushModelMtx=camPushModelMtx_o027Reloc \
-		--redefine-sym func_800349A4=func_800349A4_o027Reloc \
+		--redefine-sym texDPTextureX=texDPTextureX_o027Reloc \
 		--redefine-sym camPopModelMtx=camPopModelMtx_o027Reloc \
 		--redefine-sym func_80009E78=func_80009E78_o027Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xBC0 && \
@@ -1139,7 +1139,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay94SetValue.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101AllocateEntry.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x54
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0002510_18DDD30.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_80034920=func_80034920_o101Reloc $@ && \
+	$(OBJCOPY) --redefine-sym texDPInit=texDPInit_o101Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x494
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F000512C_18E094C.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x5F0
@@ -1153,14 +1153,14 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F00063F8_18E1C18.c.o: POS
 # overlay's own relocation table; rebind each resident call to the module-local
 # alias `gmake overlay-syms` mints for it, exactly as the other overlays do.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F00069E8_18E2208.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_800355A0=func_800355A0_o101Reloc $@ && \
+	$(OBJCOPY) --redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_80036DD0=func_80036DD0_o101Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xF0C
 # Tier A: the R4300 multiply scheduler resolves this TU's text junction.
 # This flag applies only to this single-function translation unit.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0003A58_18DF278.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0003A58_18DF278.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_800355A0=func_800355A0_o101Reloc $@ && \
+	$(OBJCOPY) --redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_80036DD0=func_80036DD0_o101Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x16D4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F00078F4_18E3114.c.o: POSTPROCESS = \
@@ -1319,7 +1319,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: POSTPROCESS = \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o056Reloc \
 		--redefine-sym func_8002F618=func_8002F618_o056Reloc \
 		--redefine-sym func_8002FB34=func_8002FB34_o056Reloc \
-		--redefine-sym func_800349A4=func_800349A4_o056Reloc \
+		--redefine-sym texDPTextureX=texDPTextureX_o056Reloc \
 		--redefine-sym levelGetLevel=levelGetLevel_o056Reloc \
 		--redefine-sym matrixTranslate=matrixTranslate_o056Reloc \
 		--redefine-sym mtxf_mul=mtxf_mul_o056Reloc \
@@ -1358,7 +1358,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Render.c.o: POSTPROCESS = \
 		--redefine-sym func_80021964=func_80021964_o037Reloc \
 		--redefine-sym func_8002A250=func_8002A250_o037Reloc \
 		--redefine-sym func_800244EC=func_800244EC_o037Reloc \
-		--redefine-sym func_800349A4=func_800349A4_o037Reloc \
+		--redefine-sym texDPTextureX=texDPTextureX_o037Reloc \
 		--redefine-sym func_8002460C=func_8002460C_o037Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x358
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37RecordMinimum.c.o: POSTPROCESS = \
@@ -1804,7 +1804,7 @@ $(O45_RENDER_OBJ): CFLAGS += -Wab,-r4300_mul
 # not instructions; the runtime relocation table remains the identity oracle.
 $(O45_RENDER_OBJ): POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym func_80034920=overlay45DisplayCallReloc \
+		--redefine-sym texDPInit=overlay45DisplayCallReloc \
 		--redefine-sym func_8004B0A4=overlay45FontCallReloc \
 		--redefine-sym func_800221E8=overlay45MatrixPushReloc \
 		--redefine-sym func_80022A50=overlay45MatrixLoadReloc \
@@ -1886,9 +1886,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000B30_1891948.c.o: POS
 		--redefine-sym func_8002A604=func_8002A604_o047Reloc \
 		--redefine-sym func_8002A82C=func_8002A82C_o047Reloc \
 		--redefine-sym func_8002FB34=func_8002FB34_o047Reloc \
-		--redefine-sym func_80034920=func_80034920_o047Reloc \
-		--redefine-sym func_800349A4=func_800349A4_o047Reloc \
-		--redefine-sym func_800367A4=func_800367A4_o047Reloc \
+		--redefine-sym texDPInit=texDPInit_o047Reloc \
+		--redefine-sym texDPTextureX=texDPTextureX_o047Reloc \
+		--redefine-sym texAnimateTexSprite=texAnimateTexSprite_o047Reloc \
 		--redefine-sym func_8004B0A4=func_8004B0A4_o047Reloc \
 		--redefine-sym func_8004B0F8=func_8004B0F8_o047Reloc \
 		--redefine-sym func_8005ABA8=func_8005ABA8_o047Reloc \
@@ -2361,7 +2361,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CalculateEndpoints.c.o: POSTPROCE
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x318
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CreateChain.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym mmAlloc=mmAlloc_o017Reloc \
-		--redefine-sym func_80034448=func_80034448_o017Reloc $@ && \
+		--redefine-sym texLoadTexture=texLoadTexture_o017Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x310
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17ReleaseChain.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x40
@@ -2403,7 +2403,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/func_overlay_055_F000031C_18A1E34.c.o: POS
 		--redefine-sym func_800290A0=func_800290A0_o055Reloc \
 		--redefine-sym func_8002F618=func_8002F618_o055Reloc \
 		--redefine-sym func_8002FB34=func_8002FB34_o055Reloc \
-		--redefine-sym func_80034920=func_80034920_o055Reloc \
+		--redefine-sym texDPInit=texDPInit_o055Reloc \
 		--redefine-sym func_80037414=func_80037414_o055Reloc \
 		--redefine-sym func_80039E34=func_80039E34_o055Reloc \
 		--redefine-sym func_8003A590=func_8003A590_o055Reloc \
@@ -2513,7 +2513,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/func_overlay_053_F0000240_189DBE8.c.o: POS
 		--redefine-sym func_80028F54=func_80028F54_o053Reloc \
 		--redefine-sym func_800290A0=func_800290A0_o053Reloc \
 		--redefine-sym func_8002F618=func_8002F618_o053Reloc \
-		--redefine-sym func_80034920=func_80034920_o053Reloc \
+		--redefine-sym texDPInit=texDPInit_o053Reloc \
 		--redefine-sym func_80037414=func_80037414_o053Reloc \
 		--redefine-sym func_80039E34=func_80039E34_o053Reloc \
 		--redefine-sym func_8003A590=func_8003A590_o053Reloc \
@@ -2847,7 +2847,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59PrepareEntry.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
 		overlay59PrepareReleaseReloc=func_overlay_059_F0000000_18B8750 $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_80034448=func_80034448_o059Reloc $@ && \
+		texLoadTexture=texLoadTexture_o059Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xF8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59ResetEntries.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6C

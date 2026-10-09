@@ -37,7 +37,7 @@ extern Gfx D_230[];
 /* Tier B: this function's four runtime R_MIPS_26 records are all SYMBOL
  * operations. Two name overlay 101 +0x1F80 (overlay101SetScissor), one names
  * overlay 101 +0x2118 (overlay101GetBounds) and one names the resident
- * func_80034920 at +0x344D0 past the resident base. The extracted assembly
+ * texDPInit at +0x344D0 past the resident base. The extracted assembly
  * shows all four as a jump to overlay offset 0 because a SYMBOL record ships
  * the 0xF0000000 addend rather than offset >> 2, so they must be routed
  * through the generated surface. The two overlay callees are ROM-exact, so
@@ -46,7 +46,7 @@ s32 overlay101GetBoundsReloc(Overlay101ClipNode *node, s32 *leftOut,
                               s32 *topOut, s32 *rightOut, s32 *bottomOut);
 void overlay101SetScissorReloc(Gfx **displayList, s32 left, s32 top,
                                s32 right, s32 bottom);
-void func_80034920(Gfx **displayList);
+void texDPInit(Gfx **displayList);
 
 /*
  * Lanes p11-o101, x-o101, a-ovl3, k-2 and m-4 decoded the callees and wrote
@@ -160,6 +160,6 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
         source += stride;
     }
     *dList = gfx;
-    func_80034920(dList);
+    texDPInit(dList);
     overlay101SetScissorReloc(dList, 0, 0, 1000, 1000);
 }

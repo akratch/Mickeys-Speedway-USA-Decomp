@@ -137,17 +137,17 @@ extern void *mmAlloc2(s32 size, u32 colourTag);
 extern u8 *align16(u8 *address);
 extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset,
                             s32 size);
-extern TextureFrameHeader *func_80034448(s32 textureId);
-extern void func_800347A0(TextureFrameHeader *texture);
+extern TextureFrameHeader *texLoadTexture(s32 textureId);
+extern void texFreeTexture(TextureFrameHeader *texture);
 
 void func_80035F48(u8 **dlist, TextureFrameHeader *tex, s32 rtile, s32 tmem);
 void func_80035ADC(SpriteAsset *spriteAsset, Sprite *sprite, s32 frameId);
 
-void func_800348C8(s32 tagId) {
+void setTexMemColour(s32 tagId) {
     D_8007BD84 = tagId;
 }
 
-TextureFrameHeader *func_800348D4(TextureFrameHeader *texture, s32 packedOffset) {
+TextureFrameHeader *texFrame(TextureFrameHeader *texture, s32 packedOffset) {
     TextureFrameHeader *ret = texture + 1;
     if ((packedOffset > 0) && (packedOffset < texture->numOfTextures << 8)) {
         ret = (TextureFrameHeader *)(((u8 *)texture) +
@@ -160,7 +160,7 @@ void func_80034910(void) {
     D_8007BD8C = 1;
 }
 
-void func_80034920(Gfx **dlist) {
+void texDPInit(Gfx **dlist) {
     D_8007BD90 = 0;
     D_800D3024 = 0;
     D_800D3028 = 0;
@@ -190,7 +190,7 @@ void func_80034920(Gfx **dlist) {
  * display-list commands were reconstructed from Mickey's own function.
  * 2026-10-07, lane c-res: 162 -> 62 masked at delta 0. The saved
  * D_8007BD90 rides in numTextures (dead at that point), which gives the
- * target its v1 web spilled to a temp across func_80034920 instead of a
+ * target its v1 web spilled to a temp across texDPInit instead of a
  * memory-resident local; `table = D_8007B680` is assigned at the merge
  * after the frame block (the target materialises its low half there);
  * and the state key is compared as `stateKey != D_800D302C`.
@@ -206,7 +206,7 @@ void func_80034920(Gfx **dlist) {
  * save-3.0 tie for v0 against `tableFlags >> 3` (checklist item 21); uopt
  * deletes the read.
  */
-void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
+void texDPTextureX(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
                    s32 frame) {
     TextureRenderSettings *settings;
     TextureRenderSettings *table;
@@ -224,7 +224,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
 
     if (D_8007BD8C != 0) {
         numTextures = D_8007BD90;
-        func_80034920(dlist);
+        texDPInit(dlist);
         D_8007BD90 = numTextures;
     }
 
@@ -349,11 +349,11 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     *dlist = dl;
 }
 
-void func_80034DE4(s32 value) {
+void sprSetTextureFilter(s32 value) {
     D_8007BD88 = value;
 }
 
-void func_80034DF0(u8 red, u8 green, u8 blue, u8 alternateRed,
+void sprSetIA2ColOverride(u8 red, u8 green, u8 blue, u8 alternateRed,
                    u8 alternateGreen, u8 alternateBlue) {
     D_800D3038 = red;
     D_800D3039 = green;
@@ -364,7 +364,7 @@ void func_80034DF0(u8 red, u8 green, u8 blue, u8 alternateRed,
     D_8007BD9C = 1;
 }
 
-void func_80034E48(void) {
+void sprClearIA2ColOverride(void) {
     D_8007BD9C = 0;
 }
 /* PROVENANCE: control-flow shape adapted from Jet Force Gemini's public
@@ -382,7 +382,7 @@ void func_80034E48(void) {
  * and its compare, so uopt cannot propagate the expression into the compare
  * and nextFrame stays one a1 web; frameIndex declared at the former
  * currentTexture home and one unused pad keep the 0x90/0x84 and temp slots. */
-void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) {
+void sprDPset(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) {
     TextureRenderSettings *settings;
     TextureFrameHeader *texture;
     TextureFrameHeader *nextTex;
@@ -545,7 +545,7 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
  * first loop's preheader needs both of its remaining instructions to cover
  * the count load's latency, so as1 can only lift the clear into the bounds
  * test's delay slot when it comes from the second scan's block. */
-Sprite *func_800355A0(s32 spriteId, s32 flags) {
+Sprite *texLoadSprite(s32 spriteId, s32 flags) {
     Sprite *refSprite;
     Sprite *newSprite;
     s32 cacheNum;
@@ -626,7 +626,7 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
     allocFailed = 0;
     for (i = 0; i < numTextures; i++) {
         D_8007BD84 = 0x8E;
-        texture = func_80034448(spriteAsset->baseTextureId + i);
+        texture = texLoadTexture(spriteAsset->baseTextureId + i);
         newSprite->textures[i] = texture;
         if (newSprite->textures[i] == NULL) {
             allocFailed = 1;
@@ -640,7 +640,7 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
         for (i = 0; i < numTextures; i++) {
             texture = newSprite->textures[i];
             if (texture != NULL) {
-                func_800347A0(texture);
+                texFreeTexture(texture);
             }
         }
         if (cacheFull) {
@@ -676,7 +676,7 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
     return newSprite;
 }
 
-void func_800359D4(Sprite *sprite) {
+void texFreeSprite(Sprite *sprite) {
     s32 i;
     s32 frame;
 
@@ -686,7 +686,7 @@ void func_800359D4(Sprite *sprite) {
             for (i = 0; i < D_800D3008; i++) {
                 if (sprite == (Sprite *)D_800D2FFC[(i << 1) + 1]) {
                     for (frame = 0; frame < sprite->numberOfTextures; frame++) {
-                        func_800347A0(sprite->textures[frame]);
+                        texFreeTexture(sprite->textures[frame]);
                     }
                     mmFree(sprite);
                     D_800D2FFC[i << 1] = -1;
@@ -1028,7 +1028,7 @@ extern f32 D_80082670;
  * non-ping-pong minimum is written after its maximum; and the end-of-range
  * flag is set at the end of each ping-pong arm but once after the
  * loop/clamp choice otherwise. D_80082670 is 0.01f. */
-s32 func_80036544(Sprite *sprite, s32 *flags, s32 speed, f32 *frame, s32 updateRate) {
+s32 texAnimateSprite(Sprite *sprite, s32 *flags, s32 speed, f32 *frame, s32 updateRate) {
     TextureFrameHeader *tex;
     s32 reverse;
     s32 pingPong;
@@ -1107,19 +1107,19 @@ s32 func_80036544(Sprite *sprite, s32 *flags, s32 speed, f32 *frame, s32 updateR
 }
 
 
-void func_800367A4(u8 *textureData, s32 *state, s32 mode, f32 *timer, s32 updateRate) {
+void texAnimateTexSprite(u8 *textureData, s32 *state, s32 mode, f32 *timer, s32 updateRate) {
     Sprite sprite;
     TextureFrameHeader *texture;
 
     texture = (TextureFrameHeader *)textureData;
     sprite.textures = &texture;
     sprite.numberOfFrames = (u8)(texture->numOfTextures >> 8);
-    func_80036544(&sprite, state, mode, timer, updateRate);
+    texAnimateSprite(&sprite, state, mode, timer, updateRate);
 }
 
 /* JFG's texAnimateTexture body, with Mickey's four-bit flag relocation and
  * random-number entry point retained as local target-specific evidence. */
-void func_800367E8(TextureFrameHeader *texture, u32 *triangleBatchInfoFlags,
+void texAnimateTexture(TextureFrameHeader *texture, u32 *triangleBatchInfoFlags,
                    s32 *framePtr, s32 updateRate) {
     s32 breakVar;
     u16 *frameAdvanceDelay;

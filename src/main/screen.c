@@ -21,7 +21,7 @@ s32 frontGet2PlayerSplit(void);
 s32 mainGetNumberOfCameras(void);
 void viGetCurrentSize(s32 *width, s32 *height);
 s32 viGetVideoMode(void);
-void func_80034920(ScreenCommand **dlist);
+void texDPInit(ScreenCommand **dlist);
 
 #define SCREEN_PRIMITIVE(command, color) \
     { \
@@ -101,6 +101,6 @@ void screenDraw(ScreenCommand **dlist) {
         if (cameraCount == 3) {
             screenLoad(dlist, halfWidth, halfHeight, width, height, 0);
         }
-        func_80034920(dlist);
+        texDPInit(dlist);
     }
 }

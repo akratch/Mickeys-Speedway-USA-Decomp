@@ -54,7 +54,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o061/func_overlay_061_F0000B84_18BFF4C.c.o: POS
 	$(OBJCOPY) \
 		--redefine-sym amSndPlay=amSndPlay_o061Reloc \
 		--redefine-sym func_8002F618=func_8002F618_o061Reloc \
-		--redefine-sym func_800367A4=func_800367A4_o061Reloc \
+		--redefine-sym texAnimateTexSprite=texAnimateTexSprite_o061Reloc \
 		--redefine-sym mainTitlePageInit=mainTitlePageInit_o061Reloc \
 		--redefine-sym packDeleteFile=packDeleteFile_o061Reloc \
 		--redefine-sym packDirectory=packDirectory_o061Reloc \

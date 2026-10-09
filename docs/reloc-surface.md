@@ -217,7 +217,7 @@ matched rows, and its runtime tuple at a site is by definition the target's
 tuple at that site: a one-site copy of the kind the repeated-proxy route
 refuses as circular. The witness pass now skips any row overlapping the
 target's module extent. `overlay96DrawObject` exposed it. Its C calls the
-resident `func_800349A4` (the shipped record at `+0x640` is a `SYMBOL` to
+resident `texDPTextureX` (the shipped record at `+0x640` is a `SYMBOL` to
 `resident:+0x34554`) under the generated name `func_overlay_096_F0000000_*`,
 because a resident call stores a zero jump field and so does a call to the
 overlay's own offset-0 function; splat names both after the latter. The
@@ -827,7 +827,7 @@ So a resident call wants the same value every other cross-module call wants,
 resident auto-name, `func_80029FE4`. That name is global and shared with the
 resident segment. A value line for it does not give the overlay an addend, it
 *moves the resident function for every resident caller*: assigning
-`func_80034448 = 0xf0000000` turns `models.c`, `level.c`, `menu.c`,
+`texLoadTexture = 0xf0000000` turns `models.c`, `level.c`, `menu.c`,
 `texLoadTextureAddr.c` and four asm objects into `relocation truncated to fit:
 R_MIPS_26`. That is the whole of the `relocation-truncated` class, and it is
 also why the earlier attempt to rename these placeholders to the *real*
@@ -894,12 +894,12 @@ Three properties make it safe to run inside `generate --write`:
 
 Overlay 59's entry preparer demonstrates both roles in one body. Its calls at
 module `+0xB8/+0x140` are local `JUMP` records to `overlay59Release`, while
-`+0xD4/+0x104` are resident `SYMBOL` records to `func_80034448`. All four store
+`+0xD4/+0x104` are resident `SYMBOL` records to `texLoadTexture`. All four store
 zero and collapse to one symbol in the synthetic target object. The candidate
 therefore uses separate per-module aliases valued at `0xF0000000`, with
 postprocessing preserving the target object's collapsed surface; assigning
 the resident global itself would corrupt every resident caller of
-`func_80034448`.
+`texLoadTexture`.
 The function's other two records are LOCAL HI16/LO16 at function
 `+0x08/+0x10`, resolving through base `+0xA20` plus stored addend `+0x5A4` to
 module `+0xFC4` (`gOverlay59DescriptorTables`). Runtime therefore requires six
@@ -1097,7 +1097,7 @@ the export row alone does not authenticate its five-argument ABI or callees.
 `-O2 -mips2 -32 -Wab,-r4300_mul` C is exact across Overlay 99
 `+0xBA4..+0xDDC`: 142 words, frame `0xA8`, and no padding. Its 15 records
 agree with the runtime table by offset, type, effective identity, and addend.
-The calls resolve to `viGetCurrentSize`, `rcpClearZBuffer`, `func_80034920`,
+The calls resolve to `viGetCurrentSize`, `rcpClearZBuffer`, `texDPInit`,
 `Arctanf`, `sqrtf`, `func_80009E78`, and local
 `overlay99RenderSortedEntries`; three local data pairs resolve to the
 segment array and count, and the remaining pair resolves to the texture
@@ -1312,7 +1312,7 @@ SYMBOL records and seven local JUMPs. Data pairs resolve to
 `gOverlay31MaxLine`, `gOverlay31MaxPoint`, both vertex buffers, triangle and
 rectangle sources, configs, point pool, line records, dummy assets/count, and
 effect records/count. Resident calls resolve to `reset_particles`,
-`mmAlloc`, `piRomLoad`, `func_800355A0`, `func_80034448`, `func_8001F520`,
+`mmAlloc`, `piRomLoad`, `texLoadSprite`, `texLoadTexture`, `func_8001F520`,
 and `mmFree`; seven local calls cover the four config builders, pool, records,
 and reset helper. Moving `assetBuffer` after the three integer locals gives the
 exact 245 words and 0x48-byte frame while preserving every distinct role. ORT
@@ -1420,7 +1420,7 @@ Overlay 34 `+0x2C8` (`overlay34RemoveRecord`) owns seven runtime records:
 LOCAL HI16/LO16 pairs for `gOverlay34ActiveCount` at `+0x0/+0x4` and
 `+0x74/+0x78`, a LOCAL pair for `gOverlay34Pointers` at `+0x10/+0x20`, and a
 SYMBOL call at `+0x6C` through the stored zero carrier to ORT 140
-(`func_800347A0`). The fallback object retains only five static records because
+(`texFreeTexture`). The fallback object retains only five static records because
 the pointer pair is baked; runtime metadata is authoritative. The prior 32/44
 raw C used a false second argument and allocation aids, so it is diagnostic.
 Clean pointer-typed, one-argument source is staged but uncompiled. The owned
@@ -1684,7 +1684,7 @@ zero, and `func_80026FB4+0x5F8` is the sole direct caller. The owned range and
 the full ROM are byte-identical.
 
 Resident `fxDrawCone` owns four exact R_MIPS_26 records to
-`func_800349A4` at `+0x19C,+0x1F0,+0x244,+0x278`. It has no resident runtime
+`texDPTextureX` at `+0x19C,+0x1F0,+0x244,+0x278`. It has no resident runtime
 record or ORT export. Authenticated inbounds are resident
 `func_80009414+0x520`, Overlay 69 table-1 record 9 at
 `overlay69DrawSortedGeometry+0x530`, and Overlay 88 table-1 record 12 at
@@ -1707,7 +1707,7 @@ linked equality proves fallback only.
 Resident `func_80041CE4` owns nine exact static records in retained genuine C:
 HI16/LO16 pairs to `D_8007C894` at `+0x04/+0x08`, `D_8007C88C` at
 `+0x48/+0x4C` and `+0x1E4/+0x1F0`, and `D_7C900` at `+0x9C/+0xA4`, plus an
-R_MIPS_26 call to `func_800349A4` at `+0x158`. Resident runtime records, an
+R_MIPS_26 call to `texDPTextureX` at `+0x158`. Resident runtime records, an
 ORT export at offset `0x41894`, overlay SYMBOL inbounds, and stored-pointer
 inbounds are all zero. `partDraw+0xEC` is the sole direct caller. Current
 bounded C remains 126/153 words with candidate SHA prefix `90eeefb220a1`;
@@ -1730,7 +1730,7 @@ Resident `func_8003E8D8` owns ten exact static tuples in bounded 139/140
 configured full-TU C:
 HI16/LO16 pairs to `D_8007C898` at `+0x00/+0x04`, `D_8007C890` at
 `+0x28/+0x2C`, `D_8007CA90` at `+0xC4/+0xF4`, and `D_80082A48` at
-`+0x1F8/+0x1FC`, plus R_MIPS_26 calls to `func_80034448` at `+0x174` and
+`+0x1F8/+0x1FC`, plus R_MIPS_26 calls to `texLoadTexture` at `+0x174` and
 `mathRnd` at `+0x1C0`. Resident runtime records inside the function, an ORT
 export, overlay `SYMBOL` inbounds, and aligned stored-pointer inbounds are all
 zero. `func_8003E7B8+0xE4` is the sole direct caller. The exact tuple set and
@@ -1751,7 +1751,7 @@ HI16/LO16 pairs to `D_8007A278` at `+0x04/+0x08`, `D_8007A270` at
 `+0x90/+0x94`; R_MIPS_26 `runlinkGetAddressInfo` at `+0x74`; and
 `mempool_slot_assign` at `+0x134,+0x160,+0x180`. ORT 547 exports offset `0x2B0D4`.
 Resident direct callers are `runlinkSuspendCode+0xB4`,
-`runlinkResumeCode+0xD8`, and `func_80034448+0x12C/+0x1D0`; five overlay
+`runlinkResumeCode+0xD8`, and `texLoadTexture+0x12C/+0x1D0`; five overlay
 SYMBOL calls occur at Overlay 2 `+0x11A8`, Overlay 18 `+0x320/+0x334`,
 Overlay 19 `+0x1B4`, and Overlay 35 `+0x5C4`. ROM `0x7AE40` carries one
 R_MIPS_32 function pointer consumed by `RevealReturnAddresses`; no resident

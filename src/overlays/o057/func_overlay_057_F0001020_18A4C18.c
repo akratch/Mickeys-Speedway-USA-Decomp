@@ -49,10 +49,10 @@ extern f32 D_4E4;
 extern u8 gO57GridTriangles[];
 
 extern void func_800221E8(Gfx **displayList, s32 *context);
-extern void func_800367A4(void *resource, void *arg1, s32 arg2, f32 *arg3, s32 updateRate);
+extern void texAnimateTexSprite(void *resource, void *arg1, s32 arg2, f32 *arg3, s32 updateRate);
 extern O57GridObject *func_800508B4(u8 id);
 extern void func_8002109C(O57GridOwner *owner);
-extern void func_800349A4(Gfx **displayList, void *resource, s32 mode, s32 flags);
+extern void texDPTextureX(Gfx **displayList, void *resource, s32 mode, s32 flags);
 
 #define O57_SP_VERTEX(packet, vertex, count, first)                       \
     gDma1p(packet, G_VTX, vertex,                                         \
@@ -116,7 +116,7 @@ void func_overlay_057_F0001020_18A4C18(s32 updateRate) {
 
     model = NULL;
     func_800221E8(&D_800D3140, &D_800D3144);
-    func_800367A4(D_800D31C8[62], D_4D4, 2, &D_4E4, updateRate);
+    texAnimateTexSprite(D_800D31C8[62], D_4D4, 2, &D_4E4, updateRate);
 
     if (gO57GridMode184 == 0x2F || gO57GridMode184 == 0x4B) {
         object = func_800508B4(gO57GridMode184);
@@ -148,13 +148,13 @@ void func_overlay_057_F0001020_18A4C18(s32 updateRate) {
     if (model != NULL) {
         gDPSetPrimColor(D_800D3140++, 0, 0, 0xFF, 0xFF, 0xFF, gO57GridAlpha13C);
         O57_SP_VERTEX(D_800D3140++, (u32)D_800D3148 + 0x80000000, 9, 0);
-        func_800349A4(&D_800D3140, D_800D31C8[62], renderMode, D_4E4 * 65536.0f);
+        texDPTextureX(&D_800D3140, D_800D31C8[62], renderMode, D_4E4 * 65536.0f);
         O57_SP_POLYGON(D_800D3140++, O57_PHYSICAL(&gO57GridTriangles[0x00]), 2, 1);
-        func_800349A4(&D_800D3140, D_800D31C8[63], renderMode, D_4E4 * 65536.0f);
+        texDPTextureX(&D_800D3140, D_800D31C8[63], renderMode, D_4E4 * 65536.0f);
         O57_SP_POLYGON(D_800D3140++, O57_PHYSICAL(&gO57GridTriangles[0x20]), 2, 1);
-        func_800349A4(&D_800D3140, D_800D31C8[64], renderMode, D_4E4 * 65536.0f);
+        texDPTextureX(&D_800D3140, D_800D31C8[64], renderMode, D_4E4 * 65536.0f);
         O57_SP_POLYGON(D_800D3140++, O57_PHYSICAL(&gO57GridTriangles[0x40]), 2, 1);
-        func_800349A4(&D_800D3140, D_800D31C8[65], renderMode, D_4E4 * 65536.0f);
+        texDPTextureX(&D_800D3140, D_800D31C8[65], renderMode, D_4E4 * 65536.0f);
         O57_SP_POLYGON(D_800D3140++, O57_PHYSICAL(&gO57GridTriangles[0x60]), 2, 1);
 
         dx = model->points[index].x - model->points[index + 3].x;

@@ -47,7 +47,7 @@ extern void func_8002F618(Gfx **commands, RcpTextureNode *texture,
                         s32 x, s32 y, s32 red, s32 green, s32 blue, s32 alpha);
 extern void func_8002FB34(Gfx **commands, RcpTextureNode *texture,
                         f32 x, f32 y, f32 scaleX, f32 scaleY, s32 alpha, s32 flags);
-extern void func_800367A4(void *texture, s32 *state, s32 speed, f32 *frame, s32 ticks);
+extern void texAnimateTexSprite(void *texture, s32 *state, s32 speed, f32 *frame, s32 ticks);
 extern void func_8003A520(s32 split);
 extern s32 func_8003A700(u8 initial);
 extern void func_800336A8(s32 screenMode);
@@ -57,8 +57,8 @@ extern MtxF *func_8002468C(void);
 extern void func_80029198(void);
 extern SavesSlot *func_800291C4(void);
 extern s32 levelGetBlurEffect(s32 level);
-extern void func_80034920(Gfx **commands);
-extern void func_800349A4(Gfx **commands, s32 arg1, s32 arg2, s32 arg3);
+extern void texDPInit(Gfx **commands);
+extern void texDPTextureX(Gfx **commands, s32 arg1, s32 arg2, s32 arg3);
 extern void camStandardPersp(Gfx **commands, Mtx **matrices);
 extern void camStandardOrtho(Gfx **commands, Mtx **matrices);
 extern void rcpClearZBuffer(Gfx **commands, s32 width, s32 height,
@@ -68,8 +68,8 @@ extern s32 func_8005ABA8(ControlActor *object, f32 scale, f32 ticks);
 extern void func_80020D8C(MenuSpawnInner *model, s32 index, s32 frame);
 extern void func_80009E78(Gfx **commands, Mtx **matrices,
                         void **vertices, ControlActor *object);
-extern void *func_800355A0(s32 asset, s32 flags);
-extern void func_800359D4(void *sprite);
+extern void *texLoadSprite(s32 asset, s32 flags);
+extern void texFreeSprite(void *sprite);
 extern void func_80023F84(Gfx **commands, Mtx **matrices,
                         void **vertices, void *transform, void *sprite,
                         s32 flags, s32 alpha);
@@ -726,7 +726,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         showArrows = 1;
                         break;
                     case 1:
-                        func_80034920(&D_800D3140_o060Reloc);
+                        texDPInit(&D_800D3140_o060Reloc);
                         camStandardPersp(&D_800D3140_o060Reloc, &D_800D3144_o060Reloc);
                         previewMode = gOverlay60Data150;
                         gOverlay60Data260[7] = D_8007C0B8_o060Reloc[0x220 / 4 + previewMode];
@@ -767,7 +767,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         func_8004B0F8(&D_800D3140_o060Reloc, 0x3C, 0xAA, O60_TEXT(0x23C), 8);
                         fontColour(0, 0xFF, 0xFF, 0xFF, gOverlay60Data2A4);
                         func_8004B0F8(&D_800D3140_o060Reloc, 0x3C, 0xB9, O60_TEXT(0x240), 8);
-                        func_800349A4(&D_800D3140_o060Reloc, 0, 0, 0);
+                        texDPTextureX(&D_800D3140_o060Reloc, 0, 0, 0);
                         gDma1p(D_800D3140_o060Reloc++, 7, (u8 *)gOverlay60Data0B0 + 0x80000000, 0x10, 2);
                         gDPSetPrimColor(D_800D3140_o060Reloc++, 0, 0, 0, 255, 0,
                                         gOverlay60Data2A4);
@@ -792,7 +792,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         overlay60DrawLine(0xC5, 0xD0, 0xC5, 0xD3);
                         overlay60DrawLine(0x80, 0xD3, 0xC6, 0xD3);
                         overlay60DrawLine(0x80, 0xC0, 0x80, 0xD3);
-                        func_80034920(&D_800D3140_o060Reloc);
+                        texDPInit(&D_800D3140_o060Reloc);
                         rcpClearZBuffer(&D_800D3140_o060Reloc, 0x140, 0xF0, 0x8C, 0x64, 0xD7, 0xC8);
                         for (i = 0; i < 4; i++) {
                             previewMode = gOverlay60Data150;
@@ -832,7 +832,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             if (i != previewMode) {
                                 gOverlay60Data150 = i;
                                 if (gOverlay60Data174 != NULL) {
-                                    func_800359D4(gOverlay60Data174);
+                                    texFreeSprite(gOverlay60Data174);
                                     gOverlay60Data174 = NULL;
                                 }
                                 amSndPlay(0xF, NULL);
@@ -849,14 +849,14 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             if (i != previewMode) {
                                 gOverlay60Data150 = i;
                                 if (gOverlay60Data174 != NULL) {
-                                    func_800359D4(gOverlay60Data174);
+                                    texFreeSprite(gOverlay60Data174);
                                     gOverlay60Data174 = NULL;
                                 }
                                 amSndPlay(0xF, NULL);
                             }
                         }
                         if (gOverlay60Data14C != 0 && gOverlay60Data174 == NULL) {
-                            gOverlay60Data174 = func_800355A0(
+                            gOverlay60Data174 = texLoadSprite(
                                 gOverlay60Data168[gOverlay60Data150], 0);
                         }
                         if (gOverlay60Data174 != NULL) {
@@ -867,7 +867,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             func_80023F84(&D_800D3140_o060Reloc, &D_800D3144_o060Reloc, &D_800D3148_o060Reloc,
                                 gOverlay60Data178, gOverlay60Data174, 0, 0xFF);
                             if (gOverlay60Data14C == 0) {
-                                func_800359D4(gOverlay60Data174);
+                                texFreeSprite(gOverlay60Data174);
                                 gOverlay60Data174 = NULL;
                             }
                         }
@@ -932,7 +932,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         155.0f, 1.0f, 1.0f, -2, 3);
                     func_8002FB34(&D_800D3140_o060Reloc, &gOverlay60Data040, right,
                         155.0f, 1.0f, 1.0f, -2, 0x1003);
-                    func_800367A4(gOverlay60Data040.texture, &gOverlay60Data0A0,
+                    texAnimateTexSprite(gOverlay60Data040.texture, &gOverlay60Data0A0,
                         0xC, &gOverlay60Data0A4, ticks);
                     gOverlay60Data040.packedOffset = (s32)(gOverlay60Data0A4 * 65536.0f);
                 }

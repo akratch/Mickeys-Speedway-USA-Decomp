@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_80034448:start -->
-### `func_80034448` plateau handoff
+<!-- plateau-handoff:texLoadTexture:start -->
+### `texLoadTexture` plateau handoff
 
 - source: `src/main/textures_35024.c`
 - score: 214/214 words
@@ -143,7 +143,7 @@ lines. No ABI, global layout, flags, symbol entry or matching status changes.
 
 The retained C remains guarded by its original assembly fallback. Sources, stock
 and traced objects, frame and scalar measurements, draw profiles and aligned
-maps remain ignored under build/k1/func_80034448.
+maps remain ignored under build/k1/texLoadTexture.
 Commands: lane_status.py, configured stock compilation, draw_census.py,
 residual_map.py --object/--against where compared, finalize_plateau.py and
 tools/gates.sh. No executable bytes are newly credited.
@@ -270,4 +270,4 @@ Evidence under Git's common dir, lane-evidence/s2-c/t1: every cell's source
 and object, the base and q4 ladders (procedure 2), the freelist traces, and
 the side-by-side listings.
 
-<!-- plateau-handoff:func_80034448:end -->
+<!-- plateau-handoff:texLoadTexture:end -->

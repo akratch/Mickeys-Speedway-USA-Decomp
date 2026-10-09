@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_800349A4:start -->
-### `func_800349A4` plateau handoff
+<!-- plateau-handoff:texDPTextureX:start -->
+### `texDPTextureX` plateau handoff
 
 - source: `src/main/textures_354C8.c`
 - score: 0/272 words, promoted
@@ -262,4 +262,4 @@ and an assigned address stay 5, so it is the load's address expression
 entering the table first that reorders webs 226/233. Adopted directly
 before the upper copy. gmake verify passes with the C in place.
 
-<!-- plateau-handoff:func_800349A4:end -->
+<!-- plateau-handoff:texDPTextureX:end -->

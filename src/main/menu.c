@@ -66,9 +66,9 @@ extern void func_80006EA0(void *object);
 extern void func_80006FA0(void);
 extern s32 func_80005820(s32 arg0);
 extern u8 *func_80028F54(void);
-extern void func_800347A0(void *texture);
-extern void func_800359D4(void *sprite);
-extern void func_80034920(MenuCommand **displayList);
+extern void texFreeTexture(void *texture);
+extern void texFreeSprite(void *sprite);
+extern void texDPInit(MenuCommand **displayList);
 extern void freeFrontEndItem(s32 assetId);
 extern void loadFrontEndItem(s32 assetId);
 extern void func_80039720(s32 updateRate);
@@ -216,8 +216,8 @@ typedef struct MenuSpawnedObject {
     /* 0x68 */ MenuSpawnInner **inner;
 } MenuSpawnedObject;
 
-extern void *func_80034448(s32 assetId);
-extern void *func_800355A0(s32 assetId, s32 arg1);
+extern void *texLoadTexture(s32 assetId);
+extern void *texLoadSprite(s32 assetId, s32 arg1);
 extern MenuSpawnedObject *func_8000590C(MenuSpawnPacket *packet, s32 mode);
 extern void *func_8001F520(s32 assetId, s32 arg1);
 
@@ -778,7 +778,7 @@ void frontDrawRectangles(MenuCommand **displayList, s32 count, MenuRectangle *re
         }
         rectangles++;
     }
-    func_80034920(displayList);
+    texDPInit(displayList);
     MENU_COMMAND((*displayList)++, primitiveCommand, -1);
 }
 /* PROVENANCE: name and order compared with JFG's public decomp,
@@ -928,9 +928,9 @@ void freeFrontEndItem(s32 assetId) {
         if (((s32 *) D_800D31C8)[assetId] != 0) {
             if (((D_8007C1B8[assetId] & 0xC000) == 0xC000) &&
                 (((s32 *) D_800D31C8)[assetId] != 0)) {
-                func_800347A0((void *) ((s32 *) D_800D31C8)[assetId]);
+                texFreeTexture((void *) ((s32 *) D_800D31C8)[assetId]);
             } else if (D_8007C1B8[assetId] & 0x8000) {
-                func_800359D4((void *) ((s32 *) D_800D31C8)[assetId]);
+                texFreeSprite((void *) ((s32 *) D_800D31C8)[assetId]);
             } else if (D_8007C1B8[assetId] & 0x4000) {
                 func_80006EA0((void *) ((s32 *) D_800D31C8)[assetId]);
             } else {
@@ -964,9 +964,9 @@ void loadFrontEndItem(s32 assetId) {
     if (D_800D3498[assetId] == 0) {
         resourceId = D_8007C1B8[assetId];
         if ((resourceId & 0xC000) == 0xC000) {
-            D_800D31C8[assetId] = func_80034448(resourceId & 0x3FFF);
+            D_800D31C8[assetId] = texLoadTexture(resourceId & 0x3FFF);
         } else if (resourceId & 0x8000) {
-            D_800D31C8[assetId] = func_800355A0(resourceId & 0x3FFF, 0);
+            D_800D31C8[assetId] = texLoadSprite(resourceId & 0x3FFF, 0);
         } else if (resourceId & 0x4000) {
             packet.kind = resourceId & 0x3FFF;
             packet.mode = 0xA;

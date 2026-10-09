@@ -795,7 +795,7 @@ bytes and disassembly never belong here.
   only when the word and pointer widths and all-ones representation are proved,
   the original pointer has no later use, and the ordinary object, complete
   relocation surface, linked owned range, and full ROM are exact. Evidence:
-  the exact `func_800347A0` closure, 2026-09-08.
+  the exact `texFreeTexture` closure, 2026-09-08.
 - ugen's integer temp ring is consumed one pop per compiler temporary, and
   the `DKWB_UGEN_TRACE` pop sequence shows the count directly: reading a
   struct field through a local costs a pop that a direct read does not, an
@@ -1043,7 +1043,7 @@ bytes and disassembly never belong here.
   the exact schedule. Statement order and line grouping must therefore be
   reviewed together; this does not identify the responsible compiler pass or
   justify arbitrary line reflow elsewhere. Evidence: the exact resident
-  `func_80034920` display-list reset and the
+  `texDPInit` display-list reset and the
   [snow renderer donor re-derivation](matching-triage-handoffs/snow_render.md).
 - An inlined mask expression can preserve instruction count, frame and opcode
   order while changing register operands throughout later display-list code.
@@ -1079,7 +1079,7 @@ bytes and disassembly never belong here.
   and can share one sentinel carrier. Apply this only when allocation, element
   width, and both slot meanings are independently authenticated; require exact
   frame, relocations, linked bytes, and full ROM. Evidence: the exact resident
-  `func_800359D4` sprite release.
+  `texFreeSprite` sprite release.
 - A canceling pointer increment/decrement between two groups of stores can be
   a zero-instruction allocation lever. IDO eliminates the net-zero arithmetic
   but retains enough of the pointer lifetime split to change a two-web

@@ -129,7 +129,7 @@ extern u8 D_8007A540[];
 extern u8 D_8007A588[];
 extern u8 D_8007A5C0[];
 extern u8 D_8007A600[];
-extern s32 func_800348D4(void *texture, s32 frame, ...);
+extern s32 texFrame(void *texture, s32 frame, ...);
 extern void func_80034910();
 
 OSMesgQueue *osScGetInterruptQ(OSSched *scheduler);
@@ -553,7 +553,7 @@ void func_8002F618(RcpCommand **dlistPtr, RcpTextureNode *nodes, s32 xPos,
                                    (alternate->height - 1) << 2);
                 } else {
                     dlist->w0 = *tex->data;
-                    dlist->w1 = (u32)(func_800348D4(
+                    dlist->w1 = (u32)(texFrame(
                         tex, nodes[i].packedOffset) + 0x80000000U);
                     dlist++;
                     blockCmd = dlist++; loadCount = tex->count - 1; blockCmd->w0 = (((loadCount & 0xFF) << 16) | 0x07000000U | ((loadCount * 8) & 0xFFFF)); blockCmd->w1 = (u32)tex->data + 0x80000008U;
@@ -689,7 +689,7 @@ void func_8002FB34(RcpCommand **dlistPtr, RcpTextureNode *nodes, f32 xPos, f32 y
                     }
                     dmaDlist = (u8 *) tex->data;
                     dlist->w0 = *(u32 *) dmaDlist;
-                    dlist->w1 = func_800348D4(tex, nodes[i].packedOffset, halfCmd) + 0x80000000U;
+                    dlist->w1 = texFrame(tex, nodes[i].packedOffset, halfCmd) + 0x80000000U;
                     dlist++;
                     dmaDlist += 8;
                     blockCmd = dlist++; count = tex->count - 1; blockCmd->w0 = ((count & 0xFF) << 16) | 0x07000000 | ((count * 8) & 0xFFFF); blockCmd->w1 = (u32) dmaDlist + 0x80000000U;

@@ -169,7 +169,7 @@ typedef struct Overlay58LanguageText {
 } Overlay58LanguageText;
 
 extern Overlay58RaceState *func_80028F54(void);
-extern void func_80036AB0(void *cycle, s32 updateRate);
+extern void updateColourCycle(void *cycle, s32 updateRate);
 extern void func_8004B0A4(s32 font);
 extern void func_8004B0F8(MenuCommand **displayList, s32 x, s32 y, char *text, s32 flags);
 extern void func_8002F618(MenuCommand **displayList, RcpTextureNode *node, s32 x, s32 y, u8 red, u8 green, u8 blue, u8 alpha);
@@ -329,7 +329,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
     SavesSlot *slot;
 
     state = func_80028F54();
-    func_80036AB0(&D_o058_5F38, ticks);
+    updateColourCycle(&D_o058_5F38, ticks);
     func_8004B0A4(0);
     switch (D_o058_5E94) {
     case 1:

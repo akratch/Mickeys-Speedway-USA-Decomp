@@ -83,7 +83,7 @@ extern FontGlyphData *D_800D663C;
 void *mmAlloc(s32 size, s32 tag);
 void viGetCurrentSize(u32 *width, u32 *height);
 void camSetScissor(Gfx **displayList);
-void func_80034920(Gfx **displayList);
+void texDPInit(Gfx **displayList);
 FontGlyphData *func_8004C690(u8 character);
 void func_8004D39C(char *input, char *output);
 u8 *func_8004D40C(s32 font, char *text, s32 maxWidth, u8 **lineStart,
@@ -385,7 +385,7 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
     window->ypos = y - window->textOffsetY;
     D_800D60E0 = savedFont;
     *displayList = dList;
-    func_80034920(displayList);
+    texDPInit(displayList);
     if (window != D_800D64E8) {
         camSetScissor(displayList);
     }

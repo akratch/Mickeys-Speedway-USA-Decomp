@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_80034E54:start -->
-### `func_80034E54` plateau handoff
+<!-- plateau-handoff:sprDPset:start -->
+### `sprDPset` plateau handoff
 
 - source: `src/main/textures_354C8.c`
 - score: 0/467 words, promoted
@@ -201,4 +201,4 @@ frameIndex between the increment and the compare removes the propagation:
   goes to 0xC0).
 
 gmake verify passed on the promoted tree.
-<!-- plateau-handoff:func_80034E54:end -->
+<!-- plateau-handoff:sprDPset:end -->

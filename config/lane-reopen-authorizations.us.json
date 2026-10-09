@@ -490,32 +490,32 @@
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
       "source_commit": "bfd6d07a61c4ce33e4b8069ccf92d49054398980"
     },
-    "func_80034448": {
+    "texLoadTexture": {
       "ledger_commit": "0d16f1acb5e1595715358e46e9c57a062057b355",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "eec826c59c84ac58719615248a5de4872d1e5fcd"
     },
-    "func_800347A0": {
+    "texFreeTexture": {
       "ledger_commit": "b67909e24fe248481ee63a92e951154885945e99",
       "reason": "ADR 0018 stall-rule reopen: plateau filed under the superseded ten-attempt cap, not on measured stall. Resume under the stall rule; stop after three attempts buying nothing. Do not repeat mechanisms the handoff records as flat.",
       "source_commit": "b67909e24fe248481ee63a92e951154885945e99"
     },
-    "func_8003484C": {
+    "texGetTextureNum": {
       "ledger_commit": "6f9e72e6fb41e2b3e351dfbc3546b6dae585a8fd",
       "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
       "source_commit": "6f9e72e6fb41e2b3e351dfbc3546b6dae585a8fd"
     },
-    "func_800349A4": {
+    "texDPTextureX": {
       "ledger_commit": "081ea0540f1c72789a51e6ab82eecd8057f99ba4",
       "reason": "Despite the declaration-order stall, one pass masks oldBlockedFlags with all-ones before the blocked-flags call so that value can take v1. The declaration order stays closed.",
       "source_commit": "228bacea58829478693ceef56403c08182798445"
     },
-    "func_80034E54": {
+    "sprDPset": {
       "ledger_commit": "8744e6484324325c1b899182492ff1962767c33d",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "8744e6484324325c1b899182492ff1962767c33d"
     },
-    "func_800355A0": {
+    "texLoadSprite": {
       "ledger_commit": "dab722cc302bcee6031af6c263c80ff56ebc2a32",
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
       "source_commit": "498813bbefefcf2493219117e350b6db9980b886"
@@ -525,7 +525,7 @@
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "a863dd80ec6202a424fd71431d686bc728be4fbf"
     },
-    "func_80036AB0": {
+    "updateColourCycle": {
       "ledger_commit": "5c4bda08946c5a1a271aba9cbb27740c4000d1ad",
       "reason": "New donor evidence: Jet Force Gemini PR 37 (head d45123d1) takes src/menu.c from 19 bodies and 29 pragmas to 48 bodies and 0 pragmas, fully matched. Re-derive with a PROVENANCE note citing the PR and SHA.",
       "source_commit": "5c4bda08946c5a1a271aba9cbb27740c4000d1ad"

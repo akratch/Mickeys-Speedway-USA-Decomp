@@ -61,7 +61,7 @@ extern void amSndStopXYZ(void *handle);
 extern void amSndPlayXYZ(u16 soundId, f32 x, f32 y, f32 z, u8 priority,
                           void **handle);
 extern void amSndSetVolXYZ(void *handle, u8 volume);
-extern void func_80036544(void *entry, s32 *mode, s32 animationId,
+extern void texAnimateSprite(void *entry, s32 *mode, s32 animationId,
                           void *state, s32 updateRate);
 
 /* Matched 2026-10-02 (lane w2-ovlc), rewritten from the listing (402 at -12
@@ -247,6 +247,6 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
         animationSpeed = 10.0f;
     }
     animationMode = 9;
-    func_80036544(*object->animationEntries, &animationMode,
+    texAnimateSprite(*object->animationEntries, &animationMode,
                   (s32)animationSpeed, object->animationState28, updateRate);
 }

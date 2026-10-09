@@ -153,7 +153,7 @@ before reusing them. See `docs/epoch14-plan.md` for the plan these feed.
   overlay-to-resident call with the resident's own global name
   (`func_80029FE4`, or an ordinary libultra global like `alHeapDBAlloc`), and a
   value line for that name does not give the overlay an addend -- it moves the
-  resident function for every resident caller. `func_80034448 = 0xf0000000`
+  resident function for every resident caller. `texLoadTexture = 0xf0000000`
   turns `models.c`, `level.c`, `menu.c` and four asm objects into truncated
   relocations. The addend itself was never in doubt: measured at the sites,
   overlay 49's resident calls are `SYMBOL` `R_MIPS_26` records storing

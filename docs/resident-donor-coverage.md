@@ -329,11 +329,11 @@ Bounded nearest-shape/source inspection found only assembly-backed or noncredibl
 
 | Target | Bytes | Coverage |
 | --- | ---: | --- |
-| [func_800355A0](matching-triage-handoffs/func_800355A0.md) | 1076 | U |
-| [func_800349A4](matching-triage-handoffs/func_800349A4.md) | 1088 | U |
-| [func_80036544](../src/main/textures_354C8.c) | 608 | U |
+| [texLoadSprite](matching-triage-handoffs/texLoadSprite.md) | 1076 | U |
+| [texDPTextureX](matching-triage-handoffs/texDPTextureX.md) | 1088 | U |
+| [texAnimateSprite](../src/main/textures_354C8.c) | 608 | U |
 | [func_80035F48](matching-triage-handoffs/func_80035F48.md) | 1532 | U |
-| [func_80034E54](matching-triage-handoffs/func_80034E54.md) | 1868 | U |
+| [sprDPset](matching-triage-handoffs/sprDPset.md) | 1868 | U |
 
 ### `src/main/track.c`
 

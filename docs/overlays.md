@@ -1411,7 +1411,7 @@ evidence is 53/62 relocation-normalized words with the exact boundary, frame,
 CFG and memory effects, but no linked candidate-C proof survives. The six
 runtime records are a local table HI/LO pair, local `JUMP` calls to
 `overlay59Release` at `+0x48/+0xD0`, and resident `SYMBOL` calls to
-`func_80034448` at `+0x64/+0x94`; the synthetic target object collapses those
+`texLoadTexture` at `+0x64/+0x94`; the synthetic target object collapses those
 four zero-field calls and is not identity authority.
 
 Overlay 48's `+0x144..+0x40C` state updater — 712 bytes / 178 words.

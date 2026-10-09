@@ -47,7 +47,7 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
 
     gO27Active = 1;
     initialPhase = 9;
-    func_80036544(*object->updateResource, &initialPhase, 10, &object->reserved30[-8],
+    texAnimateSprite(*object->updateResource, &initialPhase, 10, &object->reserved30[-8],
                   updateRate);
 
     if (updateRate != 0) {
@@ -239,7 +239,7 @@ extern s16 *camGetPtr(void);
 extern f32 func_80009F08(void *arg);
 extern void camPushModelMtx(O27Command **commands, void *mtx,
                             O27Transform *transform, f32 scale, f32 scaleY);
-extern void func_800349A4(O27Command **commands, void *texture, s32 flags,
+extern void texDPTextureX(O27Command **commands, void *texture, s32 flags,
                           s32 frame);
 extern void camPopModelMtx(O27Command **commands);
 extern void func_80009E78(O27Command **commands, void *mtx, s16 *vertices,
@@ -291,7 +291,7 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *mtx,
 
         displayList = *object->renderResource->displayList;
         camPushModelMtx(commands, mtx, &transform, 1.0f, 0.0f);
-        func_800349A4(commands, displayList, 0x214, 0);
+        texDPTextureX(commands, displayList, 0x214, 0);
 
         O27_WRITE_COMMAND(0xFA000000, ((((intensity * 0x60) >> 8) & 0xFF) << 24) | ((((intensity * 0xE0) >> 8) & 0xFF) << 16) | ((((intensity * 0xFF) >> 8) & 0xFF) << 8) | (state->fade & 0xFF));
 
@@ -305,7 +305,7 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *mtx,
         O27_WRITE_COMMAND(0xE7000000, 0);
 
         if (state->pulseTimer != 0) {
-            func_800349A4(commands, NULL, 5, 0);
+            texDPTextureX(commands, NULL, 5, 0);
 
             O27_WRITE_COMMAND(0xFA000000, (state->pulseTimer & 0xFF) | 0xFFFF0000);
             verts = D_80000118;

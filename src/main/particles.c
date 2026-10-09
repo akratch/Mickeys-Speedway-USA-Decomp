@@ -14,15 +14,15 @@
 #include "game/particles.h"
 
 void mmFree(void *ptr);
-void func_800347A0(void *resource);
-void func_800359D4(void *resource);
+void texFreeTexture(void *resource);
+void texFreeSprite(void *resource);
 void modFreeModel(void *resource);
-void func_80036544(void *texture, void *state, s32 speed, f32 *frame, s32 updateRate);
+void texAnimateSprite(void *texture, void *state, s32 speed, f32 *frame, s32 updateRate);
 void mathOneFloatPY(void *rotation, void *vector);
 void pointListRPY(s32 count, s16 *rotation, f32 *input, f32 *output);
 void *piRomLoad(s32 assetId);
-ParticleTexture *func_80034448(s32 resourceId);
-ParticleSprite *func_800355A0(s32 resourceId, s32 arg1);
+ParticleTexture *texLoadTexture(s32 resourceId);
+ParticleSprite *texLoadSprite(s32 resourceId, s32 arg1);
 void *func_8001F520(s32 resourceId, s32 arg1);
 s32 mathRnd(s32 minimum, s32 maximum);
 f32 sqrtf(f32 value);
@@ -33,9 +33,9 @@ void camPushModelMtx(Gfx **dList, s32 renderContext, ParticleRenderTransform *tr
 void camRestoreModelMtx(Gfx **dList);
 void func_80023A08(Gfx **dList, s32 renderContext, void **vertices, CircularParticle *particle,
                    ParticleSpriteResource *resource, s32 flags, s32 intensity);
-void func_80034DF0(u8 red, u8 green, u8 blue, u8 alternateRed, u8 alternateGreen, u8 alternateBlue);
-void func_80034E48(void);
-void func_800349A4(Gfx **dList, void *texture, s32 mode, s32 flags);
+void sprSetIA2ColOverride(u8 red, u8 green, u8 blue, u8 alternateRed, u8 alternateGreen, u8 alternateBlue);
+void sprClearIA2ColOverride(void);
+void texDPTextureX(Gfx **dList, void *texture, s32 mode, s32 flags);
 struct ParticleRenderGroup;
 void func_8003D4FC(void **dList, void **vertices, struct ParticleRenderGroup *group);
 f32 func_8002A8BC(s16 angle);
@@ -53,7 +53,7 @@ CircularParticle *func_8004054C(s32 type, s32 direction);
 void func_80040B88(ParticleEmitterObject *object, ParticleTriggerSlot *trigger);
 void func_80041040(ParticleLineEntry *particle, s32 updateRate);
 void func_80041388(ParticleModelEntry *particle, s32 updateRate);
-void func_800367A4(void *texture, void *state, s16 speed, f32 *frame, s32 updateRate);
+void texAnimateTexSprite(void *texture, void *state, s16 speed, f32 *frame, s32 updateRate);
 void func_8003EC8C(ParticleObject *object, s32 index);
 void func_8003E7B8(ParticleObject *object, s32 index);
 void func_8003EF80(ParticleObject *object, ParticleTriggerSlot *trigger);
@@ -96,10 +96,10 @@ void func_8003CA20(void) {
             do {
                 switch (*typePtr & 0xC000) {
                     case 0x8000:
-                        func_800359D4(D_8007C884[i]);
+                        texFreeSprite(D_8007C884[i]);
                         break;
                     case 0xC000:
-                        func_800347A0(D_8007C884[i]);
+                        texFreeTexture(D_8007C884[i]);
                         break;
                     case 0:
                         modFreeModel(D_8007C884[i]);
@@ -136,7 +136,7 @@ void func_8003CB3C(void) {
         if (D_8007C88C > 0) {
             do {
                 if (line->active && line->texture != NULL) {
-                    func_800347A0(line->texture);
+                    texFreeTexture(line->texture);
                 }
                 i++;
                 line++;
@@ -152,7 +152,7 @@ void func_8003CB3C(void) {
         if (D_8007C890 > 0) {
             do {
                 if (model->active && model->resource != NULL) {
-                    func_800347A0(model->resource);
+                    texFreeTexture(model->resource);
                 }
                 i++;
                 model++;
@@ -197,11 +197,11 @@ void func_8003CD28(ParticleResourceList **listPtr) {
             do {
                 switch (entry->type) {
                     case 2:
-                        func_800359D4(entry->resource);
+                        texFreeSprite(entry->resource);
                         break;
                     case 0:
                     case 1:
-                        func_800347A0(entry->resource);
+                        texFreeTexture(entry->resource);
                         break;
                     case 3:
                         modFreeModel(entry->resource);
@@ -306,9 +306,9 @@ s32 func_8003CE10(Gfx **dList, s32 renderContext, void **vertices, CircularParti
                             blue = (resource->blue * blue) >> 8;
                         }
                         if (colorMode != 2) {
-                            func_80034DF0(red, green, blue, alternateRed, alternateGreen, alternateBlue);
+                            sprSetIA2ColOverride(red, green, blue, alternateRed, alternateGreen, alternateBlue);
                         } else {
-                            func_80034DF0(alternateRed, alternateGreen, alternateBlue, red, green, blue);
+                            sprSetIA2ColOverride(alternateRed, alternateGreen, alternateBlue, red, green, blue);
                         }
                     } else if ((red << 24 | green << 16 | blue << 8 | intensity) != 0) {
                         gDPPipeSync((*dList)++);
@@ -322,7 +322,7 @@ s32 func_8003CE10(Gfx **dList, s32 renderContext, void **vertices, CircularParti
                     }
                     func_80023A08(dList, renderContext, vertices, particle, resource, renderFlags, intensity);
                     if (resource->flags & 0x200) {
-                        func_80034E48();
+                        sprClearIA2ColOverride();
                     }
                 }
             }
@@ -500,7 +500,7 @@ void func_8003D4FC(void **dListArg, void **verticesArg, ParticleRenderGroup *gro
 
         updateRate = group->updateRate;
         pointCount = group->pointCount;
-        func_800349A4(&displayList, NULL, 0x12, 0);
+        texDPTextureX(&displayList, NULL, 0x12, 0);
         material = group->materialDefault;
         gDPSetPrimColor(displayList++, 0, 0, 255, 255, 255, 255);
 
@@ -524,7 +524,7 @@ void func_8003D4FC(void **dListArg, void **verticesArg, ParticleRenderGroup *gro
                         currentAlpha = colorAlpha;
                     }
                     if ((texture != previousTexture) || (scale != previousScale)) {
-                        func_800349A4(&displayList, texture, 0x12, (s32)(scale * 65536.0f));
+                        texDPTextureX(&displayList, texture, 0x12, (s32)(scale * 65536.0f));
                         previousTexture = texture;
                         previousScale = scale;
                     }
@@ -671,7 +671,7 @@ void func_8003D4FC(void **dListArg, void **verticesArg, ParticleRenderGroup *gro
                     gDPSetPrimColor(displayList++, 0, 0, 255, 255, 255, colorAlpha);
                 }
                 if ((texture != previousTexture) || (scale != previousScale)) {
-                    func_800349A4(&displayList, texture, 0x12,
+                    texDPTextureX(&displayList, texture, 0x12,
                                   (s32)(scale * 65536.0f));
                 }
                 if (texture != NULL) {
@@ -880,7 +880,7 @@ s32 func_8003E8D8(ParticleTypeDescriptor *descriptor, ParticleConfig *config, Pa
             entry->animationSpeed = 0;
             entry->textureFrame = 0.0f;
         } else {
-            entry->resource = func_80034448(descriptor->resourceId);
+            entry->resource = texLoadTexture(descriptor->resourceId);
             entry->animationSpeed = descriptor->animationSpeed;
             frameCount = ((ParticleTexture *)entry->resource)->frameCount >> 8;
             if (config->flags & 0x800) {
@@ -931,7 +931,7 @@ s32 func_8003EB08(ParticleTypeDescriptor *descriptor, ParticleConfig *config) {
             line->value144 = 0;
             line->textureFrame = 0.0f;
         } else {
-            texture = func_80034448(*(s16 *)((u8 *)descriptor + 6));
+            texture = texLoadTexture(*(s16 *)((u8 *)descriptor + 6));
             line->texture = texture;
             line->value144 = *(s16 *)((u8 *)descriptor + 8);
             frameCount = texture->frameCount >> 8;
@@ -1469,7 +1469,7 @@ CircularParticle *func_8003FB98(ParticleEmitterObject *object, ParticleTrigger *
     particle->updateTexture = descriptor->animationSpeed;
 
     if (particle->type == 2) {
-        particle->resource = func_800355A0(resourceId, 0);
+        particle->resource = texLoadSprite(resourceId, 0);
         if (particle->resource != NULL) {
             if ((*((ParticleSprite *)particle->resource)->textures)->flags & 4) {
                 if (particle->flags & 0x1000) {
@@ -1492,7 +1492,7 @@ CircularParticle *func_8003FB98(ParticleEmitterObject *object, ParticleTrigger *
         if (resourceId < 0) {
             particle->resource = NULL;
         } else {
-            resource = func_80034448(resourceId);
+            resource = texLoadTexture(resourceId);
             if (((ParticleTexture *)resource)->flags & 4) {
                 if (particle->flags & 0x1000) {
                     particle->transformFlags |= 8;
@@ -1686,7 +1686,7 @@ void func_80040740(CircularParticle *particle) {
         switch (particle->type) {
             case 2:
                 if (particle->resource != NULL) {
-                    func_800359D4(particle->resource);
+                    texFreeSprite(particle->resource);
                     particle->resource = NULL;
                 }
                 break;
@@ -1709,7 +1709,7 @@ void func_80040740(CircularParticle *particle) {
         pool = D_800D4120[particle->type];
         if (pool->activeCount > 0) {
             if (particle->resource != NULL) {
-                func_800347A0(particle->resource);
+                texFreeTexture(particle->resource);
             }
             pool->activeCount--;
             index = (particle - pool->particles);
@@ -1756,11 +1756,11 @@ s32 func_80040878(CircularParticle *particle, s32 updateRate) {
     }
 
     if (particle->type == 2 && (particle->flags & 1)) {
-        func_80036544(particle->resource, &particle->flags, particle->updateTexture,
+        texAnimateSprite(particle->resource, &particle->flags, particle->updateTexture,
                       &particle->textureFrame, D_800D4140);
     } else if (particle->type == 1 || particle->type == 0) {
         if (particle->resource != NULL) {
-            func_800367A4(particle->resource, &particle->flags, particle->updateTexture,
+            texAnimateTexSprite(particle->resource, &particle->flags, particle->updateTexture,
                           &particle->textureFrame, D_800D4140);
         }
     }
@@ -1980,7 +1980,7 @@ void func_80041040(ParticleLineEntry *entry, s32 updateRate) {
     if (entry->active == 1 && entry->pointCount == 0) {
         entry->active = 0;
         if (entry->texture != NULL) {
-            func_800347A0(entry->texture);
+            texFreeTexture(entry->texture);
         }
     } else {
         for (i = 0; i < entry->pointCount; i++) {
@@ -2018,7 +2018,7 @@ void func_80041040(ParticleLineEntry *entry, s32 updateRate) {
                 if (entry->configFlags & 0x800) {
                     entry->textureFrame = mathRnd(0, (entry->texture->frameCount >> 8) - 1);
                 } else {
-                    func_800367A4(entry->texture, &entry->descriptorWord, entry->value144,
+                    texAnimateTexSprite(entry->texture, &entry->descriptorWord, entry->value144,
                                   &entry->textureFrame, updateRate);
                 }
             }
@@ -2080,7 +2080,7 @@ void func_80041388(ParticleModelEntry *entry, s32 updateRate) {
         texture = entry->resource;
         entry->active = 0;
         if (texture != NULL) {
-            func_800347A0(texture);
+            texFreeTexture(texture);
             entry->resource = NULL;
         }
     }
@@ -2089,7 +2089,7 @@ void func_80041388(ParticleModelEntry *entry, s32 updateRate) {
         if (entry->configFlags & 0x800) {
             entry->textureFrame = mathRnd(0, (texture->frameCount >> 8) - 1);
         } else {
-            func_800367A4(texture, &entry->animationState, entry->animationSpeed, &entry->textureFrame, updateRate);
+            texAnimateTexSprite(texture, &entry->animationState, entry->animationSpeed, &entry->textureFrame, updateRate);
         }
     }
 }
@@ -2148,7 +2148,7 @@ void func_80041530(s32 displayListPtr, s32 vertexListPtr, ParticleModelEntry *en
         }
         vertexIndex = 0;
         triangleListIndex = 0;
-        func_800349A4(&displayList, entry->resource, 0x12,
+        texDPTextureX(&displayList, entry->resource, 0x12,
                       (s32)(entry->textureFrame * 65536.0f));
 
         particleIndex = 0;
@@ -2271,7 +2271,7 @@ void func_80041CE4(Gfx **dList, ParticleLineVertex **vertices) {
                             vertex->alpha1 = ((u8 *)&point->intensity)[0];
                             vertex++;
                         }
-                        func_800349A4(&displayList, line->texture, 0x12,
+                        texDPTextureX(&displayList, line->texture, 0x12,
                                       (s32)(line->textureFrame * 65536.0f));
                         pointCount = line->pointCount;
                         pointCount *= 2;

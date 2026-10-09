@@ -27,7 +27,7 @@ extern void overlay99Func80009E78Reloc(Gfx **displayList, Mtx **matrices,
 
 /* Overlay 99 +0xBA4..+0xDDC, 142 words with no target padding. The shipped
  * relocation tables authenticate viGetCurrentSize, rcpClearZBuffer,
- * func_80034920, Arctanf, sqrtf, func_80009E78, and the local sorted-entry
+ * texDPInit, Arctanf, sqrtf, func_80009E78, and the local sorted-entry
  * renderer. */
 void overlay99RenderSegments(Gfx **displayList, Mtx **matrices, void *vertices,
                              f32 scale) {

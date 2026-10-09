@@ -128,7 +128,7 @@ extern s16 gOverlay27YCoordinates[];
 extern s32 gOverlay27XOffset;
 extern s32 gOverlay27YOffset;
 
-void func_80036544(void *, s32 *, s32, void *, s32);
+void texAnimateSprite(void *, s32 *, s32, void *, s32);
 f32 func_8002A878(f32, s32);
 s32 func_800299E8(s32, s32);
 void amSndStopXYZ(void *);

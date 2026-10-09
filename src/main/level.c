@@ -123,7 +123,7 @@ extern void amTuneSetChlMask(u16);
 extern void amTuneResetChls(void);
 extern void amTuneStop(void);
 extern u8 amTuneGetSeqNo(void);
-extern void func_80036AB0(void *, s32);
+extern void updateColourCycle(void *, s32);
 extern s32 *piRomLoad(s32);
 extern s32 piRomLoadSection(s32, void *, s32, s32);
 extern void mmFree(void *);
@@ -138,8 +138,8 @@ extern void amSetMuteMode(s32);
 extern void setupLights(s32, s32, s32);
 extern void func_8000A6DC(s32);
 extern void func_80051004(s32);
-extern void *func_80034448(s32);
-extern void *func_800355A0(s32, s32);
+extern void *texLoadTexture(s32);
+extern void *texLoadSprite(s32, s32);
 extern void *func_8000486C(s32);
 extern void *func_8001F520(s32, s32);
 extern s32 runlinkDownloadCode(s32);
@@ -149,7 +149,7 @@ extern void setupWeather(s32, s32, s32, s32, s32, s32, s32);
 extern void weather_clip_planes(s16, s16);
 extern void func_8002EBD4(void *);
 extern void *func_800056A4(s32);
-extern void func_80036C60(void *);
+extern void resetMixCycle(void *);
 extern void rcpSetScreenColour(u8, u8, u8);
 extern void viFrameRateReset(void);
 extern void levelTunePlay(void);
@@ -180,8 +180,8 @@ extern void camlightFlush(void);
 extern void amResetAudioMap(void);
 extern void func_800582A8(void);
 extern void freeWeather(void);
-extern void func_800347A0(void *);
-extern void func_800359D4(void *);
+extern void texFreeTexture(void *);
+extern void texFreeSprite(void *);
 extern void func_80004B04(s16);
 extern void modFreeModel(void *);
 extern void runlinkFlushModules(void);
@@ -403,10 +403,10 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
             resourceId = D_8007A0F4[off];
             if ((resourceId & 0xC000) == 0xC000) {
                 resourceId &= 0x3FFF;
-                D_800CF490[off] = func_80034448(resourceId);
+                D_800CF490[off] = texLoadTexture(resourceId);
             } else if (resourceId & 0x8000) {
                 resourceId &= 0x3FFF;
-                D_800CF490[off] = func_800355A0(resourceId, 0);
+                D_800CF490[off] = texLoadSprite(resourceId, 0);
             } else if (resourceId & 0x4000) {
                 resourceId &= 0x3FFF;
                 D_800CF490[off] = func_8000486C(D_800C94E0[resourceId]);
@@ -457,7 +457,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
         weather_clip_planes(-1, -0x200);
     }
     if (D_800CF3C8->resourceMode == 3) {
-        D_800CF3C8->resourceB8 = (s32) func_80034448(D_800CF3C8->resourceB8);
+        D_800CF3C8->resourceB8 = (s32) texLoadTexture(D_800CF3C8->resourceB8);
         D_800CF3C8->valueBC = 0;
         D_800CF3C8->valueBE = 0;
     } else if ((D_800CF3C8->resourceMode == 4) || (D_800CF3C8->resourceMode == 5)) {
@@ -465,7 +465,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
     }
     if (D_800CF3C8->resourceC0 != -1) {
         D_800CF3C8->resourceC0 = (s32) func_800056A4(D_800CF3C8->resourceC0);
-        func_80036C60((void *) D_800CF3C8->resourceC0);
+        resetMixCycle((void *) D_800CF3C8->resourceC0);
     }
     rcpSetScreenColour(D_800CF3C8->screenR, D_800CF3C8->screenG,
                        D_800CF3C8->screenB);
@@ -556,7 +556,7 @@ void levelUpdateColourCycling(s32 updateRate) {
 
     for (i = 0; i < 7; i++) {
         if (((LevelHeaderColour *) D_800CF3C8)->weatherType[i] != -1) {
-            func_80036AB0(&D_800CF420[i * 16], updateRate);
+            updateColourCycle(&D_800CF420[i * 16], updateRate);
         }
     }
 }
@@ -629,7 +629,7 @@ void levelFreeAll(void) {
     }
     levelType = *(s8 *) ((u8 *) D_800CF3C8 + 0x52);
     if (levelType == 3) {
-        func_800347A0(*(void **) ((u8 *) D_800CF3C8 + 0xB8));
+        texFreeTexture(*(void **) ((u8 *) D_800CF3C8 + 0xB8));
     } else if ((levelType == 4) || (levelType == 5)) {
         func_8002EBD4(0);
     }
@@ -637,9 +637,9 @@ void levelFreeAll(void) {
         for (i = 0; i < D_800CF508; i++) {
             assetId = D_8007A0F4[i];
             if ((assetId & 0xC000) == 0xC000) {
-                func_800347A0(D_800CF490[i]);
+                texFreeTexture(D_800CF490[i]);
             } else if (assetId & 0x8000) {
-                func_800359D4(D_800CF490[i]);
+                texFreeSprite(D_800CF490[i]);
             } else if (assetId & 0x4000) {
                 assetId &= 0x3FFF;
                 func_80004B04(*(s16 *) ((u32) D_800C94E0 + (assetId << 1)));

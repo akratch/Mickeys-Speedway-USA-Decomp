@@ -43,7 +43,7 @@ extern u8 gO38ParticleVertices[];
 extern u8 gO38ParticleTriangles[];
 
 /* Resident callees, reached through SYMBOL records: camPushModelMtx,
- * func_800349A4, camPopModelMtx, camGetPtr, Arctanf and sqrtf. */
+ * texDPTextureX, camPopModelMtx, camGetPtr, Arctanf and sqrtf. */
 extern void o38PushMatrixReloc(Gfx **dList, s32 context,
                                O38Transform *transform, f32 scale, f32 offset);
 extern void o38DrawTextureReloc(Gfx **dList, void *texture, s32 flags,

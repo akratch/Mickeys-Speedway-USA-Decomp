@@ -19,7 +19,7 @@ extern void *gOverlay12Resources[];
 extern s32 gOverlay12EffectColors[];
 extern s32 gOverlay12ParticleColors[];
 extern u8 gOverlay12QuadTriangles[];
-extern void func_800349A4(Overlay12Gfx **displayList, void *resource,
+extern void texDPTextureX(Overlay12Gfx **displayList, void *resource,
                           s32 mode, s32 flags);
 extern f32 func_80024938(f32 x, f32 y, f32 z);
 extern f32 sqrtf(f32 value);
@@ -28,14 +28,14 @@ extern void func_800084C4(Overlay12Gfx **displayList,
                           void *base, Overlay12Effect *effect,
                           f32 *previous, f32 scale, u32 primary,
                           u32 secondary, s32 flags);
-extern void func_80034DF0(u8 firstR, u8 firstG, u8 firstB,
+extern void sprSetIA2ColOverride(u8 firstR, u8 firstG, u8 firstB,
                           u8 secondR, u8 secondG, u8 secondB);
 extern void func_80023CCC(Overlay12Gfx **displayList, s32 *matrix,
                           Overlay12Vertex **vertices, void *resource,
                           s32 x, s32 y, s32 z, s32 arg7, f32 scale,
                           f32 arg9, f32 frame, s32 mode,
                           u8 alpha);
-extern void func_80034E48(void);
+extern void sprClearIA2ColOverride(void);
 extern u8 gOverlay12TrianglesA[];
 extern u8 gOverlay12TrianglesB[];
 
@@ -137,7 +137,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             maskedPrimary = primary & ~0xFF;
             if (resource != NULL) {
                 maskedSecondary = secondary & ~0xFF;
-                func_800349A4(&displayList, resource, 0x203, 0);
+                texDPTextureX(&displayList, resource, 0x203, 0);
                 OVERLAY12_EMIT(displayList, 0xE7000000, 0);
                 OVERLAY12_EMIT(displayList, 0xFA000000, maskedPrimary | alpha);
                 OVERLAY12_EMIT(displayList, 0xFB000000, maskedSecondary | alpha);
@@ -222,13 +222,13 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             green = ((color[1] * intensity) >> 13) & 0xFF;
             blue = ((color[2] * intensity) >> 13) & 0xFF;
             alpha = ((intensity * 255) >> 13) & 0xFF;
-            func_80034DF0(alpha, alpha, alpha, red, green, blue);
+            sprSetIA2ColOverride(alpha, alpha, alpha, red, green, blue);
             func_80023CCC(&displayList, &matrix, &vertices,
                           gOverlay12Resource5,
                           (s32)effect->x0, (s32)effect->y0, (s32)effect->z0,
                           0, effect->value * 1.8f,
                           1.0f, effect->zero, 14, 255);
-            func_80034E48();
+            sprClearIA2ColOverride();
             break;
         }
     }
@@ -241,14 +241,14 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             green = ((color[1] * intensity) >> 8) & 0xFF;
             blue = ((color[2] * intensity) >> 8) & 0xFF;
             alpha = ((intensity * 255) >> 8) & 0xFF;
-            func_80034DF0(alpha, alpha, alpha, red, green, blue);
+            sprSetIA2ColOverride(alpha, alpha, alpha, red, green, blue);
             func_80023CCC(&displayList, &matrix, &vertices,
                           gOverlay12Resource5,
                           (s32)particle->x, (s32)particle->y, (s32)particle->z,
                           0, 4.0f, 1.0f, particle->velocity, 14, 255);
         }
     }
-    func_80034E48();
+    sprClearIA2ColOverride();
     OVERLAY12_EMIT(displayList, 0xFA000000, 0xFFFFFFFF);
     *displayListPtr = displayList;
     *matrixPtr = matrix;

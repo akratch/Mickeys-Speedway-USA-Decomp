@@ -83,7 +83,7 @@ extern s32 packFreeSpace(s32 device, u32 *bytes, s32 *files);
 extern s32 packDeleteFile(s32 device, s32 slot);
 extern void amSndPlay(u16 soundId, void **handle);
 extern void mainTitlePageInit(s32 mode);
-extern void func_800367A4(void *texture, s32 *animation, s32 mode, f32 *time,
+extern void texAnimateTexSprite(void *texture, s32 *animation, s32 mode, f32 *time,
                           s32 updateRate);
 extern void func_8002F618(void **commands, void *texture, s32 x, s32 y,
                           u8 red, u8 green, u8 blue, u8 alpha);
@@ -308,10 +308,10 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
     if (gOverlay61EntryCount > 0) {
         overlay61DrawList(&gDisplayListHead);
     }
-    func_800367A4(gOverlay61Sprite0.texture, &gOverlay61Animation0, 2,
+    texAnimateTexSprite(gOverlay61Sprite0.texture, &gOverlay61Animation0, 2,
                   &gOverlay61Time0, updateRate);
     gOverlay61Sprite0.frame = gOverlay61Time0 * 65536.0f;
-    func_800367A4(gOverlay61Sprite1.texture, &gOverlay61Animation1, 2,
+    texAnimateTexSprite(gOverlay61Sprite1.texture, &gOverlay61Animation1, 2,
                   &gOverlay61Time1, updateRate);
     gOverlay61Sprite1.frame = gOverlay61Time1 * 65536.0f;
     if (alpha0) {

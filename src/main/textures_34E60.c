@@ -29,7 +29,7 @@ extern s32 D_800D3004;
 extern s32 D_800D3008;
 extern s32 *D_800D301C;
 
-void func_80034260(void) {
+void texInitTextures(void) {
     s32 i;
 
     D_800D2FD8 = mmAlloc(0x15E0, 0x90);
@@ -58,6 +58,6 @@ void func_80034260(void) {
     D_800D2FF4 = 0;
 }
 
-void func_800343F0(s32 flags) {
+void texDisableModes(s32 flags) {
     D_8007BD90 |= flags;
 }

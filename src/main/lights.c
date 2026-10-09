@@ -352,7 +352,7 @@ extern void camlightDelete(void);
 extern ObjectLightState D_800CB298;
 extern void func_8000D768(s32 light, s32 red, s32 green, s32 blue, s32 intensity);
 extern void func_8000D7F8(s32 light, f32 x, f32 y, f32 z);
-extern void func_80036AB0(void *cycle, s32 updateRate);
+extern void updateColourCycle(void *cycle, s32 updateRate);
 extern void mathOneFloatPY(s16 *rotation, f32 *vector);
 extern void pointListRPY(s32 count, void *rotation, f32 *input, f32 *output);
 extern void *camGetPtr(void);
@@ -607,7 +607,7 @@ void func_80018F08(UnkLight *light, s32 updateRate) {
         }
     }
     if (LIGHT->colourCycle54 != 0) {
-        func_80036AB0((u8 *) LIGHT + 0x48, updateRate);
+        updateColourCycle((u8 *) LIGHT + 0x48, updateRate);
         LIGHT->red40 = *(u8 *) ((u8 *) LIGHT + 0x50);
         LIGHT->green41 = *(u8 *) ((u8 *) LIGHT + 0x51);
         LIGHT->blue42 = *(u8 *) ((u8 *) LIGHT + 0x52);

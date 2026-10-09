@@ -19,7 +19,7 @@ extern u8 *levelGetLevel_o054Reloc(void);
 extern s32 func_800290A0_o054Reloc(void);
 extern s32 func_8003A7D0_o054Reloc(ControlActor *actor);
 extern void viGetCurrentSize_o054Reloc(s32 *width, s32 *height);
-extern s32 func_80036544_o054Reloc(u8 *resource, s32 *state,
+extern s32 texAnimateSprite_o054Reloc(u8 *resource, s32 *state,
     s32 animation, f32 *frame, s32 updateRate);
 extern void func_8002F618_o054Reloc(MenuCommand **dlist,
     OverlayOffsetRecord *records, s32 x, s32 y, u8 red, u8 green,
@@ -32,8 +32,8 @@ extern void func_8002FB34_o054Reloc(MenuCommand **dlist,
     OverlayOffsetRecord *records, f32 x, f32 y, f32 scaleX, f32 scaleY,
     s32 colour, u8 mode);
 extern u16 joyGetPressed_o054Reloc(s32 player);
-extern void func_80034920_o054Reloc(MenuCommand **dlist);
-extern void func_80034DE4_o054Reloc(s32 mode);
+extern void texDPInit_o054Reloc(MenuCommand **dlist);
+extern void sprSetTextureFilter_o054Reloc(s32 mode);
 extern void func_80039E34_o054Reloc(s32 index);
 extern s32 frontGetScreenMode_o054Reloc(void);
 extern s32 mainGetMode_o054Reloc(void);
@@ -222,9 +222,9 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
             sOverlay54Height += (-11.0f - sOverlay54Height) * 0.125f;
         }
     }
-    func_80036544_o054Reloc(D_800D31C8_o054Reloc[2], &sOverlay54Tail2A8,
+    texAnimateSprite_o054Reloc(D_800D31C8_o054Reloc[2], &sOverlay54Tail2A8,
         20, &D_800D3550_o054Reloc[2].frame, updateRate);
-    func_80036544_o054Reloc(D_800D31C8_o054Reloc[40], &sOverlay54Tail2A8,
+    texAnimateSprite_o054Reloc(D_800D31C8_o054Reloc[40], &sOverlay54Tail2A8,
         20, &D_800D3550_o054Reloc[1].frame, updateRate);
     hudY = (s32) sOverlay54Height;
     viGetCurrentSize_o054Reloc((s32 *) &width, (s32 *) &height);
@@ -314,7 +314,7 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
                 *displayMode = 0;
             }
         }
-        func_80034920_o054Reloc(&D_800D3140_o054Reloc);
+        texDPInit_o054Reloc(&D_800D3140_o054Reloc);
         switch (*displayMode) {
         case 0:
             func_8002F618_o054Reloc(&D_800D3140_o054Reloc, lapCount, 0, hudY, 255, 255, 255, 255);
@@ -322,13 +322,13 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
             overlay54GetOffsets(playerIndex, 1, &xOffset, &yOffset);
             D_800D3550_o054Reloc[1].x = xOffset - 152;
             D_800D3550_o054Reloc[1].y = -yOffset - hudY + 108;
-            func_80034DE4_o054Reloc(0);
+            sprSetTextureFilter_o054Reloc(0);
             func_80039E34_o054Reloc(1);
-            func_80034DE4_o054Reloc(1);
+            sprSetTextureFilter_o054Reloc(1);
             break;
         case 1:
             func_8002F618_o054Reloc(&D_800D3140_o054Reloc, timer, 0, hudY, 255, 255, 255, 255);
-            func_80034920_o054Reloc(&D_800D3140_o054Reloc);
+            texDPInit_o054Reloc(&D_800D3140_o054Reloc);
             overlay54GetOffsets(playerIndex, 3, &xOffset, &yOffset);
             D_800D3550_o054Reloc[4].x = xOffset - 173;
             D_800D3550_o054Reloc[4].y = -yOffset - hudY + 116;

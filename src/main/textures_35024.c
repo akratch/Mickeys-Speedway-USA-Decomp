@@ -53,7 +53,7 @@ extern void func_80035E88(TextureHeader *texture, void *displayList);
 
 #define TEXTURE_CACHE_ID(index) (((index) << 1) + 0)
 #define TEXTURE_CACHE_PTR(index) (((index) << 1) + 1)
-void func_80034424(u8 enabled) {
+void texModelTextureLoad(u8 enabled) {
     D_8007BD94 = enabled;
 }
 void func_80034434(u8 value) {
@@ -82,7 +82,7 @@ void func_80034434(u8 value) {
  * temp region. A comma expression, a region opener, `register`, a pointer
  * type, block scope and a second def after the call all leave the temp in
  * place; the kill applied to `assetSize` instead is byte-identical. */
-TextureHeader *func_80034448(s32 textureId) {
+TextureHeader *texLoadTexture(s32 textureId) {
     s32 i;
     TextureHeader *texture;
     s32 assetIndex;
@@ -185,7 +185,7 @@ TextureHeader *func_80034448(s32 textureId) {
 /* PROVENANCE: control flow is adapted from Jet Force Gemini's public
  * src/textures.c::texFreeTexture. Mickey's raw two-word cache layout, callers,
  * and exact compiled bytes remain authoritative. */
-void func_800347A0(TextureHeader *tex) {
+void texFreeTexture(TextureHeader *tex) {
     s32 i;
 
     if (tex != NULL) {
@@ -214,8 +214,8 @@ void func_800347A0(TextureHeader *tex) {
  * needs, with no instruction. The hand-scaled `(s32)cache + (i << 3)` forms
  * that preceded this could not: every spelling that kept both shifts cost two
  * instructions and every spelling that folded them lost the pop.
- * func_800347A0 above indexes the same table the same way. */
-s32 func_8003484C(void *texture) {
+ * texFreeTexture above indexes the same table the same way. */
+s32 texGetTextureNum(void *texture) {
     s32 i;
 
     for (i = 0; i < D_800D2FE0; i++) {

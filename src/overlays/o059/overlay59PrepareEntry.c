@@ -20,7 +20,7 @@
  * owned. The LOCAL table pair resolves through
  * base +0xA20 plus +0x5A4 to module +0xFC4. The other four records are local
  * JUMPs to overlay59Release at +0x48/+0xD0 and resident ORT 135 calls to
- * func_80034448 at +0x64/+0x94. The synthetic target
+ * texLoadTexture at +0x64/+0x94. The synthetic target
  * object collapses all four zero-field calls to one placeholder and cannot
  * prove their identities. No linked candidate-C proof survives.
  * The s32 three-argument ABI is called only from four sites in
@@ -51,7 +51,7 @@ typedef struct Overlay59DescriptorGroup {
 
 extern Overlay59DescriptorGroup gOverlay59DescriptorTables[];
 extern void overlay59PrepareReleaseReloc(Overlay59Entry *entry);
-extern void *func_80034448(s32 textureId);
+extern void *texLoadTexture(s32 textureId);
 
 s32 overlay59PrepareEntry(Overlay59Entry *entry, s32 tableIndex, s32 itemIndex)
 {
@@ -73,7 +73,7 @@ s32 overlay59PrepareEntry(Overlay59Entry *entry, s32 tableIndex, s32 itemIndex)
       do
       {
         handle = ((u32) value) & 0xFFFFFFFF;
-        handle = (u32) func_80034448((s32) handle);
+        handle = (u32) texLoadTexture((s32) handle);
         if (handle == 0)
         {
           result = 0;
@@ -87,7 +87,7 @@ s32 overlay59PrepareEntry(Overlay59Entry *entry, s32 tableIndex, s32 itemIndex)
         if (value != 0)
         {
           handle = ((u32) value) & 0xFFFFFFFFu;
-          handle = (u32) func_80034448((s32) handle);
+          handle = (u32) texLoadTexture((s32) handle);
           if (handle == 0)
           {
             result = 0;

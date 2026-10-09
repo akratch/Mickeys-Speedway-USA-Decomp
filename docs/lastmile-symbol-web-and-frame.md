@@ -1,12 +1,12 @@
 # Last-mile lane s2-c (2026-09-16): a symbol web is kept by a self-referencing use, and a leaf join is a two-armed assignment
 
 Four targets, 4,496 bytes, all at delta zero on arrival: `overlay2QueryNode`
-(39 masked, 27 real), `func_80034448` (54), `func_80040B88` (72) and
+(39 masked, 27 real), `texLoadTexture` (54), `func_80040B88` (72) and
 `func_overlay_002_F0000C90_1857A88` (98). Twenty measured cycles were spent
 (a cycle is one hypothesis taken to a batched measurement on a private
 direct-`cc` harness that reproduced `score_symbol.py` on all four TUs before
 use; every adopted number was re-taken with `tools/score_symbol.py` on the
-tree). One target matched and is promoted (`func_80034448`, 856 bytes,
+tree). One target matched and is promoted (`texLoadTexture`, 856 bytes,
 commit `5febf751`); the other three are unmoved, two with their mechanism
 read off the allocator records. Evidence (every cell's source and object,
 the decoded ladders, the freelist traces, side-by-side listings and the
@@ -16,13 +16,13 @@ scorer's own target words) is outside the tree under Git's common dir,
 | symbol | bytes | before | after | cycles | state |
 |---|---|---|---|---|---|
 | `overlay2QueryNode` | 1012 | 39 | 39 | 6 | leaf join read; 41-shape priced to 32 by one accepted force |
-| `func_80034448` | 856 | 54 | **0**, promoted `5febf751` | 10 | four edits, each priced alone |
+| `texLoadTexture` | 856 | 54 | **0**, promoted `5febf751` | 10 | four edits, each priced alone |
 | `func_80040B88` | 1208 | 72 | 72 | 2 | promotion draw at the result test not reached by spelling |
 | `func_overlay_002_F0000C90_1857A88` | 1420 | 98 | 98 | 2 | frame claim confirmed; dead locals cost nothing on this TU |
 
 ## Mechanism 1: a single-def local becomes an expression temp unless a use sits inside a self-referencing assignment
 
-`func_80034448`'s open question (s1-b) was why nine spellings of a declared
+`texLoadTexture`'s open question (s1-b) was why nine spellings of a declared
 aligned-address local never produced a symbol web: the records showed the
 same type-4 expression web each time, carried past `piRomLoadSection` in a
 temp, with the local's home idle. Thirty-eight cells here draw the boundary:
@@ -92,7 +92,7 @@ offered `v0`. Not adopted: 41 is worse positionally than 39.
 - `overlay2QueryNode`'s shard: an explicit `count = 0` after the loop is
   not +5, it is 152 at minus four (every reset spelling); `return 0` and the
   reset are the same collapse.
-- `func_80034448`'s shard (s1-b): "eleven declared homes plus one 4-byte
+- `texLoadTexture`'s shard (s1-b): "eleven declared homes plus one 4-byte
   temp" was the right count of slots and the wrong split; the temp region
   is never 4 bytes on this compiler, so the target's 0x50 with the aligned
   value at 0x20 is twelve declared homes and no temp, and "dropping the
@@ -108,7 +108,7 @@ offered `v0`. Not adopted: 41 is worse positionally than 39.
   register substitution (`s1->a0, t4->t3, t7->t6, v0->a0` against `v1->a1,
   a1->a0, t0->s1` and a `t2..t9` rotation) and predicted nothing, as the
   brief's o013 finding said it would not.
-- The dispatch's per-target cap of six was exceeded on `func_80034448`
+- The dispatch's per-target cap of six was exceeded on `texLoadTexture`
   (ten) because every batch closed a bucket (57 structural at 0x50, 70 with
   0 immediate and 0 structural, 26 with 0 naming, 0); the brief's "spend
   where it closes" wins and it matched. The other three targets paid for it
@@ -126,8 +126,8 @@ offered `v0`. Not adopted: 41 is worse positionally than 39.
 ## Ledger
 
 Twenty measured cycles: `overlay2QueryNode` 6 (five spelling batches, one
-force pricing), `func_80034448` 10, `func_80040B88` 2, o002 C90 2.
-Matched and promoted: `func_80034448` (856 bytes, `5febf751`), verified
+force pricing), `texLoadTexture` 10, `func_80040B88` 2, o002 C90 2.
+Matched and promoted: `texLoadTexture` (856 bytes, `5febf751`), verified
 with `tools/score_symbol.py` at 0 masked and delta 0 before promotion, with
 `gmake verify` printing the expected SHA1 from the C after it, and with
 `tools/gates.sh --staged` and `--promotion` green; the ranking was

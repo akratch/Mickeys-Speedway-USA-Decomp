@@ -112,7 +112,7 @@ extern O101Node24_3A58 D_540[];
 
 /* Tier B: runtime relocation records distinguish the sprite and screen loaders
  * from the overlay-local reset call. Their retail callees establish arity. */
-extern void *func_800355A0(s32 assetId, s32 flags);
+extern void *texLoadSprite(s32 assetId, s32 flags);
 extern s32 *func_80036DD0(s32 screenIndex);
 extern s32 overlay101ByteLength(u8 *text);
 /* The tail call is a SYMBOL relocation record, not a JUMP one, so it goes
@@ -155,7 +155,7 @@ void func_overlay_101_F0003A58_18DF278(void) {
     gOverlay101Resources32[gOverlay101Resource32Count].color13 = 0; \
     gOverlay101Resources32[gOverlay101Resource32Count].value14 = 0.0f; \
     gOverlay101Resources32[gOverlay101Resource32Count].value18 = 0; \
-    handle = func_800355A0((imageId), 0); \
+    handle = texLoadSprite((imageId), 0); \
     gOverlay101Resources32[gOverlay101Resource32Count].previousType = gOverlay101OrderEntries[1 + group].childType; \
     gOverlay101Resources32[gOverlay101Resource32Count].previous = gOverlay101OrderEntries[1 + group].child; \
     gOverlay101Resources32[gOverlay101Resource32Count].handle = handle; \

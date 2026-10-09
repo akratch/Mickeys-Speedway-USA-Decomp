@@ -141,7 +141,7 @@ extern void func_8002FB34(O56Gfx **displayList, O56Marker *marker, f32 x, f32 y,
                          f32 scaleX, f32 scaleY, s32 colour, s32 flags);
 extern void func_8002F618(O56Gfx **displayList, O56Marker *marker, s32 x, s32 y,
                          u8 red, u8 green, u8 blue, s32 alpha);
-extern void func_800349A4(O56Gfx **displayList, void *texture, s32 mode,
+extern void texDPTextureX(O56Gfx **displayList, void *texture, s32 mode,
                          s32 flags);
 extern void func_8002A82C(O56Mtx *matrix);
 extern void matrixTranslate(f32 x, f32 y, f32 z, O56Mtx *matrix);
@@ -286,7 +286,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
             mapX = -mapX;
         }
         if (i < D_800D3194) {
-            func_800349A4(&dl, NULL, 5, 0);
+            texDPTextureX(&dl, NULL, 5, 0);
             func_8002A82C(&mtxA);
             if (D_800D31A8 != 0) {
                 mapX += (f32)(D_78[slot] - level->offsetX + 520);

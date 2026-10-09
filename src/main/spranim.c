@@ -161,7 +161,7 @@ extern void func_80006EA0(void *object);
  * the guarded callee's three-argument definition preserves its frame. */
 extern void func_80020D8C(void *arg0, s32 arg1, s32 arg2, void *arg3);
 extern void func_8000D16C(s16 textureIndex, s32 x, s32 y, s32 updateRate);
-extern void func_80036544(void *entry, s32 *mode, s32 animationId, void *state, s32 updateRate);
+extern void texAnimateSprite(void *entry, s32 *mode, s32 animationId, void *state, s32 updateRate);
 extern s32 func_8005776C(f32 x, f32 y, f32 z, f32 radius, s32 useXZ, void *hits);
 extern void partUpdateTriggers(void *state, s32 updateRate);
 extern void **func_80005750(s32 *count);
@@ -187,7 +187,7 @@ void spranimControl(SpranimControlState *state, s32 updateRate) {
     s32 mode;
 
     mode = 9;
-    func_80036544(*state->entries, &mode, state->animationId, state->animationState, updateRate);
+    texAnimateSprite(*state->entries, &mode, state->animationId, state->animationState, updateRate);
 }
 void sprasjiInit(SprasjiInitState *state, SprasjiInitEntry *entry) {
     f32 scale;
@@ -208,7 +208,7 @@ void spranimOnceControl(SpranimOnceState *state, s32 updateRate) {
     mode[1] = 9;
     entry = *state->entries;
     initialValue = state->value;
-    func_80036544(entry, &mode[1], state->animationId, &state->value, updateRate);
+    texAnimateSprite(entry, &mode[1], state->animationId, &state->value, updateRate);
     if (state->value < initialValue) {
         func_80006EA0(state);
     }

@@ -75,11 +75,12 @@ extern void wakeUpdate(Wake *wake, f32 x, f32 height, f32 z, s16 angle,
                        s32 delta);
 extern void mathOneFloatPY(void *source, f32 *result, s16 angle);
 extern void camSetScissor(Gfx **dlist);
-extern void func_80034920();
+extern void texDPInit();
 extern void *mmAlloc2(s32 size, s32 tag);
 /* wakeAllocate's NON_MATCHING body below is owned by another lane and still
- * spells mmAlloc2 by its old placeholder; drop this once that body is renamed. */
+ * spells these callees by their old placeholders; drop once that body is renamed. */
 #define func_8002B314 mmAlloc2
+#define func_80034448 texLoadTexture
 extern u8 D_7D310[];
 
 void fxFreeCone(FxCone *cone) {
@@ -88,11 +89,11 @@ void fxFreeCone(FxCone *cone) {
 
     texture = cone->texture.pointer;
     if (texture != 0) {
-        func_800347A0(texture);
+        texFreeTexture(texture);
     }
     alternateTexture = cone->alternateTexture.pointer;
     if (alternateTexture != 0) {
-        func_800347A0(alternateTexture);
+        texFreeTexture(alternateTexture);
     }
     mmFree(cone);
 }
@@ -102,7 +103,7 @@ void fxFreeCone(FxCone *cone) {
  * instead of carrying it in a local. The inherited `cone + 0x38` carrier,
  * the `if (1) { }` region and the mode local were the whole residual. */
 extern void *mmAlloc(s32 size, s32 tag);
-extern void *func_80034448(s32 resourceId);
+extern void *texLoadTexture(s32 resourceId);
 extern void func_800470B0(FxCone *, s16, s16, s16, s16, s16,
                           f32, f32, f32);
 extern void func_80047304(FxCone *, s16, s16, s16, s16, s16,
@@ -131,12 +132,12 @@ void *fxAllocateCone(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
         sizeof(FxCone) + vertexBytes + bufferBytes * 2, 0x87);
     if (cone != NULL) {
         if (arg9 >= 0) {
-            cone->texture.value = (s32) func_80034448(arg9);
+            cone->texture.value = (s32) texLoadTexture(arg9);
         } else {
             cone->texture.value = 0;
         }
         if (argA >= 0) {
-            cone->alternateTexture.value = (s32) func_80034448(argA);
+            cone->alternateTexture.value = (s32) texLoadTexture(argA);
         } else {
             cone->alternateTexture.value = 0;
         }
@@ -548,17 +549,17 @@ void fxDrawCone(FxGfx **dList, FxCone *cone, s32 flags, u8 alpha) {
             FX_VERTEX_JFG((*dList)++,
                           cone->addresses[cone->addressIndex] + 0x80000000,
                           17, 0);
-            func_800349A4(dList, cone->alternateTexture.value, flags, 0);
+            texDPTextureX(dList, cone->alternateTexture.value, flags, 0);
             FX_POLYGON((*dList)++, cone->vertices + 0x80000000, 16,
                        hasTexture);
-            func_800349A4(dList, cone->texture.value, flags, 0);
+            texDPTextureX(dList, cone->texture.value, flags, 0);
             FX_POLYGON((*dList)++, cone->vertices + 0x80000200, 8,
                        hasTexture);
-            func_800349A4(dList, cone->alternateTexture.value, flags, 0);
+            texDPTextureX(dList, cone->alternateTexture.value, flags, 0);
             FX_POLYGON((*dList)++, cone->vertices + 0x80000100, 16,
                        hasTexture);
         } else {
-            func_800349A4(dList, cone->texture.value, flags, 0);
+            texDPTextureX(dList, cone->texture.value, flags, 0);
             FX_VERTEX_JFG((*dList)++,
                           cone->addresses[cone->addressIndex] + 0x80000000,
                           cone->mode, 0);
@@ -908,7 +909,7 @@ s32 wakeSetupRipple(void *arg0, s32 arg1) {
     size += (s32) align4((u8 *) 0x88);
     source = ((FxRippleSetup *) arg0)->source;
     ((FxRippleSetup *) arg0)->output = (u8 *) output;
-    output->texture = func_80034448(source->textureId);
+    output->texture = texLoadTexture(source->textureId);
     if (output->texture == 0) {
         return 0;
     }
@@ -980,7 +981,7 @@ void wakeFree(Wake *wake) {
     void *linked = wake->linked;
 
     if (linked != 0) {
-        func_800347A0(linked);
+        texFreeTexture(linked);
     }
     mmFree(wake);
 }
@@ -988,7 +989,7 @@ void wakeFreeRipple(WakeRipple *ripple) {
     void *linked = ripple->linked;
 
     if (linked != 0) {
-        func_800347A0(linked);
+        texFreeTexture(linked);
     }
     if (ripple->wake != 0) {
         wakeFree(ripple->wake);
@@ -1337,7 +1338,7 @@ void wakeDraw(Wake *wake, FxGfx **dlist) {
     s32 outerOffset;
 
     if ((s32) wake->value38 > 0) {
-        func_800349A4(dlist, (s32) wake->linked, 0x1F,
+        texDPTextureX(dlist, (s32) wake->linked, 0x1F,
                       (s32) wake->value34 << 8);
         if ((((FxWakeLinked *) wake->linked)->flags & 0x40) != 0) {
             alpha = wake->value34 & 0xFF;
@@ -1403,7 +1404,7 @@ void wakeDrawRipple(WakeRipple *ripple, FxGfx **dlist)
   FxGfx *cmd;
   if (ripple != ((void *) 0))
   {
- do { if ((linked = ripple->linked) != ((void *) 0)) { if (ripple->value76 != 0) { func_800349A4(dlist, (s32) linked, 0xF, ((s32) ripple->value78) << 8); { FxGfx *textureCmd = (*dlist)++; textureCmd->w0 = 0x07020010; textureCmd->w1 = (u32) D_7D310; } if (ripple->wake != ((void *) 0)) { alpha = 0xFF - (((s32) ripple->wake->value3C) >> 1); } else { alpha = 0xFF; } cmd = *dlist; *dlist = cmd + 1; cmd->w0 = 0xFA000000; cmd->w1 = (((alpha * ((s32) ripple->value76)) >> 8) & 0xFF) | (~0xFF); if ((((FxWakeLinked *) ripple->linked)->flags & 0x40) != 0) { alpha = ripple->value78 & 0xFF; } else { alpha = 0xFF; } { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xFB) & ((1U << 8) - 1U)) << 24); _g->w1 = ((((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 8))) | ((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 0)); } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (((u32) ((((u32) 4) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) (((4 << 3) | (((u32) ((((u8 *) ripple) + (ripple->value74 * 0x28)) + 0x80000020)) & 6)) | 0)) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) (((4 << 3) + (4 << 1)) + 8)) & ((1U << 16) - 1U)) << 0)); _g->w1 = (u32) ((((u8 *) ripple) + (ripple->value74 * 0x28)) + 0x80000020); } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (((u32) ((((u32) (((2 - 1) << 4) | 1)) & ((1U << 8) - 1U)) << 16)) | ((u32) ((((u32) 5) & ((1U << 8) - 1U)) << 24))) | ((u32) ((((u32) (2 * 16)) & ((1U << 16) - 1U)) << 0)); _g->w1 = (u32) (((u8 *) ripple) + 0x80000000); } ; func_80034920(dlist); } if (ripple->wake != ((void *) 0)) { wakeDraw(ripple->wake, dlist); } { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xE7) & ((1U << 8) - 1U)) << 24); _g->w1 = 0; } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xFA) & ((1U << 8) - 1U)) << 24); _g->w1 = ((((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 8))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 0)); } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xFB) & ((1U << 8) - 1U)) << 24); _g->w1 = ((((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 8))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 0)); } ; } } while (0);
+ do { if ((linked = ripple->linked) != ((void *) 0)) { if (ripple->value76 != 0) { texDPTextureX(dlist, (s32) linked, 0xF, ((s32) ripple->value78) << 8); { FxGfx *textureCmd = (*dlist)++; textureCmd->w0 = 0x07020010; textureCmd->w1 = (u32) D_7D310; } if (ripple->wake != ((void *) 0)) { alpha = 0xFF - (((s32) ripple->wake->value3C) >> 1); } else { alpha = 0xFF; } cmd = *dlist; *dlist = cmd + 1; cmd->w0 = 0xFA000000; cmd->w1 = (((alpha * ((s32) ripple->value76)) >> 8) & 0xFF) | (~0xFF); if ((((FxWakeLinked *) ripple->linked)->flags & 0x40) != 0) { alpha = ripple->value78 & 0xFF; } else { alpha = 0xFF; } { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xFB) & ((1U << 8) - 1U)) << 24); _g->w1 = ((((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 8))) | ((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 0)); } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (((u32) ((((u32) 4) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) (((4 << 3) | (((u32) ((((u8 *) ripple) + (ripple->value74 * 0x28)) + 0x80000020)) & 6)) | 0)) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) (((4 << 3) + (4 << 1)) + 8)) & ((1U << 16) - 1U)) << 0)); _g->w1 = (u32) ((((u8 *) ripple) + (ripple->value74 * 0x28)) + 0x80000020); } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (((u32) ((((u32) (((2 - 1) << 4) | 1)) & ((1U << 8) - 1U)) << 16)) | ((u32) ((((u32) 5) & ((1U << 8) - 1U)) << 24))) | ((u32) ((((u32) (2 * 16)) & ((1U << 16) - 1U)) << 0)); _g->w1 = (u32) (((u8 *) ripple) + 0x80000000); } ; texDPInit(dlist); } if (ripple->wake != ((void *) 0)) { wakeDraw(ripple->wake, dlist); } { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xE7) & ((1U << 8) - 1U)) << 24); _g->w1 = 0; } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xFA) & ((1U << 8) - 1U)) << 24); _g->w1 = ((((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 8))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 0)); } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xFB) & ((1U << 8) - 1U)) << 24); _g->w1 = ((((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 8))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 0)); } ; } } while (0);
   }
 }
 void fxInit(void) {
@@ -1712,7 +1713,7 @@ void func_80049E4C(Gfx **dlist, s32 arg1) {
             }
             record++;
         }
-        func_80034920(dlist);
+        texDPInit(dlist);
         camSetScissor(dlist);
         gDPSetPrimColor((*dlist)++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
     }
@@ -1902,7 +1903,7 @@ void fxSPDPRipple(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
 
     level = levelGetLevel();
     if ((level != NULL) && (level->rippleEnabled != 0)) {
-        func_800349A4(dList, 0, 4, 0);
+        texDPTextureX(dList, 0, 4, 0);
         gDPSetCombineMode((*dList)++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
         sPhaseA += (arg5 << 0xD) >> 4;
         sPhaseB += (arg5 * -0x3C00) >> 4;
@@ -1943,7 +1944,7 @@ void fxSPDPRipple(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
             gDPFillRectangle((*dList)++, arg1, top, arg3, next);
             gDPPipeSync((*dList)++);
         }
-        func_80034920(dList);
+        texDPInit(dList);
     }
 }
 void fxQueueScreenEffect(s32 type, s32 value4, s32 value6, s32 value8,
@@ -2033,7 +2034,7 @@ void fxScreenEffect(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
         gSPTextureRectangle((*dList)++, arg4, top, arg6, arg5, 0, s, 0,
                             1 << 10, 1 << 10);
     }
-    func_80034920(dList);
+    texDPInit(dList);
     gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, 255);
     gDPSetEnvColor((*dList)++, 255, 255, 255, 255);
 }

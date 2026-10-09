@@ -451,7 +451,7 @@ All 12 target tuples were exact in diagnostic C: pairs to `D_8007A278` at
 `runlinkGetAddressInfo` call at `+0x74`; and `mempool_slot_assign` calls at
 `+0x134,+0x160,+0x180`. ORT 547 exports offset `0x2B0D4`. Resident calls are
 `runlinkSuspendCode+0xB4`, `runlinkResumeCode+0xD8`, and
-`func_80034448+0x12C/+0x1D0`; Overlay 2/18/19/35 provide five more calls, and
+`texLoadTexture+0x12C/+0x1D0`; Overlay 2/18/19/35 provide five more calls, and
 ROM `0x7AE40` stores one function pointer used by `RevealReturnAddresses`.
 No resident runtime-table record targets the export.
 
@@ -856,9 +856,9 @@ tier-A threshold, so the address label remains canonical.
 
 | Function | Exact result |
 |---|---|
-| `func_80036A80` | 48 bytes under `-O2 -mips2 -32`; JFG `src/textures.c::resetColourCycle` body, all 12 instruction words and zero relocations exact. |
-| `func_80036C60` | 76 bytes under `-O2 -mips2 -32`; JFG `src/textures.c::resetMixCycle` body, all 19 instruction words and zero relocations exact. |
-| `func_80036CAC` | 292 bytes under `-O2 -mips2 -32`; JFG `src/textures.c::updateMixCycle` body, all 73 instruction words and zero relocations exact. |
+| `resetColourCycle` | 48 bytes under `-O2 -mips2 -32`; JFG `src/textures.c::resetColourCycle` body, all 12 instruction words and zero relocations exact. |
+| `resetMixCycle` | 76 bytes under `-O2 -mips2 -32`; JFG `src/textures.c::resetMixCycle` body, all 19 instruction words and zero relocations exact. |
+| `updateMixCycle` | 292 bytes under `-O2 -mips2 -32`; JFG `src/textures.c::updateMixCycle` body, all 73 instruction words and zero relocations exact. |
 | `func_80036DD0` | 312 bytes under `-O2 -mips2 -32`; JFG `src/screen.c::screenLoad` body, all 78 instruction words and ten relocation identities exact. |
 | `func_80036F08` | 576 executable bytes plus 8-byte target padding under `-O2 -mips2 -32`; JFG `src/screen.c::screenDraw` body with Mickey command data, all 144 instruction words exact. |
 | `func_80037150` | 108 bytes under `-O2 -mips2 -32`; buffer-release body, all 27 instruction words and its relocation surface exact. |
@@ -872,7 +872,7 @@ tier-A threshold, so the address label remains canonical.
 
 | Candidate | Verdict |
 |---|---|
-| `func_80036AB0` | 432 bytes under `-O2 -mips2 -32`; colour-cycle interpolation in JFG `updateMixCycle` form with DKR `update_colour_cycle` channel locals, all 108 instruction words exact (frame 0x28, no relocations). The typed `frames[]` index forwards the frame index in a register while re-reading the time at the loop bottom; declaring `table` after the channel locals keeps its web out of the first spill slot. |
+| `updateColourCycle` | 432 bytes under `-O2 -mips2 -32`; colour-cycle interpolation in JFG `updateMixCycle` form with DKR `update_colour_cycle` channel locals, all 108 instruction words exact (frame 0x28, no relocations). The typed `frames[]` index forwards the frame index in a register while re-reading the time at the loop bottom; declaring `table` after the channel locals keeps its web out of the first spill slot. |
 | `func_8003A5A0` | Structure-mismatch, 19 differing words, first `+0x0`; target/candidate 56 words, with the lookup/end pointer carrier and relocation web unresolved. |
 | `func_8003A754` | 124 bytes under `-O2 -mips2 -32`; record-clearing double loop, all 31 instruction words and its one relocation exact (matched 2026-09-11: copy-initialised inner counter, call result kept live to the exit, offset defined before the pointer copies). |
 | `func_8003A7D0` | Structure-mismatch, 36 differing words, first `+0x10`; target 43/candidate 41 words, with count-carrier and first-loop address formation unresolved. |
@@ -2218,7 +2218,7 @@ bytes are alignment outside the function.
 
 All nine target records are exact in genuine C: pairs to `D_8007C894` at
 `+0x04/+0x08`, `D_8007C88C` at `+0x48/+0x4C` and `+0x1E4/+0x1F0`, and
-`D_7C900` at `+0x9C/+0xA4`, plus the `func_800349A4` call at `+0x158`.
+`D_7C900` at `+0x9C/+0xA4`, plus the `texDPTextureX` call at `+0x158`.
 Runtime/export evidence is empty: zero resident records, no ORT row at offset
 `0x41894`, no overlay SYMBOL inbound, and no stored pointer. `partDraw+0xEC`
 is the sole direct caller and passes typed `Gfx **`/`ParticleLineVertex **`.
@@ -2242,7 +2242,7 @@ artefacts, not one allocator phase, and each is worth carrying forward:
   at both uses frees the tenth declaration slot the second carrier needs, and
   the frame stays `0x80`: eleven locals move it to `0x88`.
 - `displayList` is the *fifth* declared local. Its home is the function's only
-  addressed stack slot (`&displayList` reaches `func_800349A4`), so the
+  addressed stack slot (`&displayList` reaches `texDPTextureX`), so the
   declaration order alone moves it between `sp+104` and the target's `sp+108`;
   only one of the ten positions is right. 12 -> 3.
 - The last three words were a redundant read: a pre-guard
@@ -2719,13 +2719,13 @@ FX type-pass inventory (target widths/offsets; no source-body promotion):
 | `func_80047304` | `FxCone` `+8,+C,+10`; generated vertex records; fx's own 0.33f literal (ROM `0x849E4`); trig helpers. | **A**; exact C, 185 words, frame `-0x180`, 5 relocations. Rewritten in the shape of `func_800470B0`: a 17-point array walked by one cursor (`point[8]` is the second ring), plain counted loops (the third is IDO's own four-way unroll), and 0.33f as a literal, which is what lets uopt hoist the scale with the other two invariants. ROM `0x849E0..0x849E8` ("%d" and 0.33f) is carved to `main/fx`. |
 | `fxMakeConeTextureCoords` | `FxCone.texture +0`, `segmentCount +15`, `vertices +10`; `FxConeTextureInfo` `+6/+8`; `FxConeVertex` byte `+0/+1..3`, halfwords `+4..E`; fx's own 102.4f literal (ROM `0x849E8`). | **A**; exact C, 251 words, frame `-0xF8`, 6 relocations. Plain loops IDO unrolls itself; the edge scales assigned before the eight-point loop, which numbers them ahead of the `t[]` base and fixes the common loop's preheader ring order; `segmentCount` also carries the eight-point angle and the 32-vertex countdown. ROM `0x849E0..0x849F0` (all of fx's pool) is carved to `main/fx`. |
 | `fxMakeConeLength` | `FxCone` `+8,+15..17,+18,+1C,+20..2A`; generated vertex records; trig helpers. | Matched 2026-09-23: all 193 instruction words and its relocation surface exact, frame 0x150 (six declared slots above the point array, five between it and the spilled vertices pointer; no addressIndex carrier; `while (i--)` first loop). |
-| `fxDrawCone` | `FxGfx **`; `FxCone` words `+0..10`, bytes `+14..17,+2C..32`; `func_800349A4`. | Tier A: ordinary full-TU C is ROM-exact at `0x80047CD8..0x80048080` / ROM `0x488D8..0x48C80`: 936 executable bytes, 234 words, frame `0x68`, no padding, and four exact call relocation identities. Preserved display-list block grouping, a white RGB XOR-zero identity and a logical-negation test close the prior eight-word allocation residual. No compiler flags or post-compile instructions changed. Tier B: JFG `fxDrawCone` role correspondence remains separate from byte proof. |
+| `fxDrawCone` | `FxGfx **`; `FxCone` words `+0..10`, bytes `+14..17,+2C..32`; `texDPTextureX`. | Tier A: ordinary full-TU C is ROM-exact at `0x80047CD8..0x80048080` / ROM `0x488D8..0x48C80`: 936 executable bytes, 234 words, frame `0x68`, no padding, and four exact call relocation identities. Preserved display-list block grouping, a white RGB XOR-zero identity and a logical-negation test close the prior eight-word allocation residual. No compiler flags or post-compile instructions changed. Tier B: JFG `fxDrawCone` role correspondence remains separate from byte proof. |
 | `func_80048080` | Output vertex records: bytes `+6..9`, halfwords `-A,-8,-6`; trig helpers. | **A**; exact C, 89 words, frame `-0x48`, 4 relocations; ROM `0x48C80`-`0x48DE4` byte-identical. Both cursors are the parameters, promoted into registers for the loop and written back at its exit; the rotated *y* component is a named local like the rotated z, and that fifth (coalesced, instruction-free) FP web is what puts x in f2 and z in f14. |
 | `wakeAllocate` | `Wake`: bytes `+0..3,+38..3B`; float `+4,+C`; halfwords `+8`; pointers `+10,+14,+18..2C,+30`; halfwords `+34,+36`; word `+3C`. | GLOBAL_ASM → GLOBAL_ASM; `Wake` layout; allocation/initialization CFG remains. |
 | `wakeSetupRipple` | `WakeRipple` 0x88-byte setup; texture/link `+70`; bytes `+74,+75`; halfwords `+76,+78,+7A`; floats `+7C,+80`; nested `Wake *+84`; source fields `+40,+54`. | **A**; exact C, 121 words, frame `-0x48`, 4 relocations; ROM `0x49360`-`0x49544` byte-identical. The two texture extents are `s32` locals, which is what orders the ugen temp ring; the white-fill loop indexes the record from `i` rather than carrying a cursor, which is what orders the loop preheader. |
 | `wakeUpdate` | `Wake` `+0..14,+30,+34..3C`; `WakeRipple` texture/config `+70..84`; generated display records. | GLOBAL_ASM → GLOBAL_ASM; wake aggregate; update/draw scheduling remains. |
 | `wakeUpdateRipple` | `WakeRipple` `+54` link, `+70,+74..84`; `Wake` `+80,+84`; `Arctanf`, `wakeUpdate`. | Evidence D candidate: structure-mismatch, 150/149 instructions, 125 differing words, first `+0x0`, frame `-0x30` versus `-0x38`; ripple update/call surface remains but is not shape-exact. |
-| `wakeDraw` | `Wake` `+30,+34,+38`; `FxGfx **`; `func_800349A4`. | Matched 2026-09-23: all 177 instruction words and its relocation surface exact, frame 0x88 (fourteen declared slots between alpha and the spilled outer offset; carriers deleted for the shifted x/z addresses, outer bound read directly). |
+| `wakeDraw` | `Wake` `+30,+34,+38`; `FxGfx **`; `texDPTextureX`. | Matched 2026-09-23: all 177 instruction words and its relocation surface exact, frame 0x88 (fourteen declared slots between alpha and the spilled outer offset; carriers deleted for the shifted x/z addresses, outer bound read directly). |
 | `wakeDrawRipple` | `WakeRipple` `+70,+74,+76,+78,+84`; nested `Wake +3C`; `FxGfx **`; draw helpers. | GLOBAL_ASM → GLOBAL_ASM; ripple aggregate; display-list schedule remains. |
 | `func_800498FC` | `FxRecord` `+0,+1,+2,+14,+16,+18,+1A..1F`; `D_800D5F58[5]`; camera helpers. | **A**; exact C, 100 words, 5 relocations, frame `-0x30`; ROM `0x4A4FC`-`0x4A68C` byte-identical. The two packed flag tests read the `u8` fields back (`record->value1E`), not the argument (`(u8)(flags & 0x80)`): the argument form CSEs a second long-lived web into the pool and rotates four registers. |
 | `func_80049B14` | `D_800D5F50`; `FxRecord` `+0,+1,+2,+14,+16,+18,+1E,+1F`; five-record stride `0x20`. | Evidence D candidate: structure-mismatch, 219/206 instructions, 216 differing words, first `+0x8`, exact `-0x18` frame; switch-state schedule remains unresolved. |
@@ -2755,7 +2755,7 @@ and `sprintf` relocations. The 44-byte `diRcpTraceReset` (`diRcpTraceReset`) is
 exact too, including both data-symbol relocation pairs.
 The 60-byte `diRcpTraceInit` is likewise exact, preserving both allocator
 calls and their call/data relocations. The 60-byte JFG-identified `wakeFree`
-is exact after resolving `func_800347A0` as a one-argument call; its two call
+is exact after resolving `texFreeTexture` as a one-argument call; its two call
 relocations and the wake-linked field access match without normalization. The
 same ABI resolves the adjacent 72-byte `wakeFreeRipple` (`wakeFreeRipple`),
 which is exact with both its linked-release and nested-wake call relocations.
@@ -3357,7 +3357,7 @@ constant/type audit and removal of duplicated source loops that fight IDO's
 own loop transforms. No flag or permutation search is part of this reopening.
 
 **Tier B, Mickey call and relocation evidence:** the target has fourteen
-`R_MIPS_26` calls and no global-data relocations. They name `func_800349A4`
+`R_MIPS_26` calls and no global-data relocations. They name `texDPTextureX`
 three times (initial material setup, batch flush, final flush),
 `func_8002A8BC` and `func_8002A8C0` five times each (two angle pairs for each
 of the first two geometry modes, one pair for the third), and `pointListRPY`

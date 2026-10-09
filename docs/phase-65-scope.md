@@ -64,7 +64,7 @@ or an ADR 0018 plateau.
 | 1268 | 54 | `func_overlay_046_F0000120_188E518` | `src/overlays/o046/overlay46UpdateSequence.c` | Zero-size web partition |
 | 1216 | 75 | `overlay58FinalizePackedStatus` | `src/overlays/o058/overlay58FinalizePackedStatus.c` | Fifth home for the mode-0 index |
 | 1208 | 72 | `func_80040B88` | `src/main/particles.c` | One source-safe draw before `MOVE_END` |
-| 1088 | 202 | `func_800349A4` | `src/main/textures_354C8.c` | Keep `D_800D302C` address in a register |
+| 1088 | 202 | `texDPTextureX` | `src/main/textures_354C8.c` | Keep `D_800D302C` address in a register |
 | 1012 | 39 | `overlay2QueryNode` | `src/overlays/o002/overlay2QueryNode.c` | Forbid `v1` on the save below 1.6 |
 | 768 | 56 | `func_80030610` | `src/main/sched.c` | Symbol compare whose `lui` fills the branch delay |
 | 740 | 158 | `func_80047304` | `src/main/fx.c` | Hoisted bound, no prior source attempt |

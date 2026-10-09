@@ -51,13 +51,13 @@ extern ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source,
 void *mmAlloc(s32 size, s32 tag);
 void *mmAlloc2(s32 size, s32 tag);
 s32 *piRomLoad(s32 assetId);
-void *func_80034448(s16 textureId);
-void func_800347A0(void *texture);
-s32 func_8003484C(void *texture);
+void *texLoadTexture(s16 textureId);
+void texFreeTexture(void *texture);
+s32 texGetTextureNum(void *texture);
 void texLoadTextureAddr(s32 id, s32 value);
-void func_80034424(s32 enabled);
-void func_80034920(Gfx **displayList);
-void func_800349A4(Gfx **displayList, void *texture, s32 flags, s32 parameter);
+void texModelTextureLoad(s32 enabled);
+void texDPInit(Gfx **displayList);
+void texDPTextureX(Gfx **displayList, void *texture, s32 flags, s32 parameter);
 void func_80020AD4(void);
 void func_8005AAC0(void *animation);
 extern s32 func_8004D7A8(s32 assetId, s32 assetOffset);
@@ -226,10 +226,10 @@ void *func_8001F520(s32 modelID, s32 flags) {
     objMdl->unk68 = NULL;
     objMdl->unk6C = NULL;
     for (i = 0; i < objMdl->numberOfTextures; i++) {
-        objMdl->textures[i].texture = func_80034448(objMdl->textures[i].textureId);
+        objMdl->textures[i].texture = texLoadTexture(objMdl->textures[i].textureId);
         if (objMdl->textures[i].texture == NULL) {
             for (j = 0; j < i; j++) {
-                func_800347A0(objMdl->textures[j].texture);
+                texFreeTexture(objMdl->textures[j].texture);
                 objMdl->textures[j].texture = NULL;
             }
             for (; j < objMdl->numberOfTextures; j++) {
@@ -616,7 +616,7 @@ void func_80020278(ObjectModel *model) {
     if (model->numberOfTextures > 0) {
         do {
             if (model->textures[index].texture != NULL) {
-                func_800347A0(model->textures[index].texture);
+                texFreeTexture(model->textures[index].texture);
             }
             freed++;
             index++;
@@ -667,7 +667,7 @@ void func_800203E0(ObjectModel *model) {
         do {
             if (((ModelTexture *)((u8 *)model->textures + offset))->texture == NULL) {
                 ((ModelTexture *)((u8 *)model->textures + offset))->texture =
-                    func_80034448(((ModelTexture *)((u8 *)model->textures + offset))->textureId);
+                    texLoadTexture(((ModelTexture *)((u8 *)model->textures + offset))->textureId);
             }
             loaded++;
             offset += sizeof(ModelTexture);
@@ -691,7 +691,7 @@ void func_800204B8(ObjectModel *model) {
     if (model->numberOfTextures > 0) {
         do {
             if (((ModelTexture *)((u8 *)model->textures + offset))->texture != NULL) {
-                func_800347A0(((ModelTexture *)((u8 *)model->textures + offset))->texture);
+                texFreeTexture(((ModelTexture *)((u8 *)model->textures + offset))->texture);
                 ((ModelTexture *)((u8 *)model->textures + offset))->texture = NULL;
             }
             i++;
@@ -807,7 +807,7 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
     Gfx *displayList;
 
     part = model->parts;
-    func_80034424(1);
+    texModelTextureLoad(1);
     if (flags & 4) {
         D_8007BD98 = 1;
     }
@@ -817,10 +817,10 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
     lastParameter = -1;
     if (lowerGroup == 0 && forceSimple == 0) {
         func_80020AD4();
-        func_80034920(&displayList);
+        texDPInit(&displayList);
     } else if (forceSimple != 0) {
         func_80020AD4();
-        func_80034920(NULL);
+        texDPInit(NULL);
         gDPPipeSync(displayList++);
         gSPSetGeometryMode(displayList++, G_ZBUFFER | G_FOG);
     }
@@ -872,7 +872,7 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
                 lastTexture = texture;
                 lastParameter = parameter;
 
-                func_800349A4(&displayList, texture, partFlags, parameter);
+                texDPTextureX(&displayList, texture, partFlags, parameter);
                 if (model->mode == 0) {
                     gSPModelVertex(displayList++, MODEL_PHYS(vertexStart * 10U), vertexCount, 0);
                 } else {
@@ -911,7 +911,7 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
         }
     }
 
-    func_80034424(0);
+    texModelTextureLoad(0);
     D_8007BD98 = 0;
     return cacheCount;
 }
@@ -1147,8 +1147,8 @@ void func_80020E4C(s16 *exceptions) {
                             if (D_80079C08 < 0x7D) {
                                 do {
                                     saved->value = (s32)model->textures[i].texture;
-                                    saved->id = func_8003484C(model->textures[i].texture);
-                                    func_800347A0(model->textures[i].texture);
+                                    saved->id = texGetTextureNum(model->textures[i].texture);
+                                    texFreeTexture(model->textures[i].texture);
                                     i++;
                                     D_80079C08++;
                                     saved++;

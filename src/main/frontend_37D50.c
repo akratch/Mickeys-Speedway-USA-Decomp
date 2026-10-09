@@ -385,7 +385,7 @@ void func_80037BF4(void) {
 extern u8 D_7BE40[];
 extern s32 D_800D2FAC;
 extern void camStandardPersp(Gfx **, Mtx **);
-extern void func_80034920(Gfx **);
+extern void texDPInit(Gfx **);
 extern u8 D_8007BEC0[];
 extern void viGetCurrentSize(s32 *, s32 *);
 extern void func_80037A78(void);
@@ -507,7 +507,7 @@ void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
             }
             y += 15;
         }
-        func_80034920(gfx);
+        texDPInit(gfx);
     }
 }
 

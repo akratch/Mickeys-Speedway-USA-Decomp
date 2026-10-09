@@ -286,7 +286,7 @@ void func_8002AA50(CameraScaledTransform *transform, MtxF matrix);
 void func_8002AB78(CameraTransform *transform, MtxF matrix);
 void func_8002AE10(CameraTransform *transform, MtxF matrix);
 void func_80024978(MtxF matrix);
-void func_80034E54(Gfx **dlist, u8 *spriteData, s32 flags,
+void sprDPset(Gfx **dlist, u8 *spriteData, s32 flags,
                    f32 frame, s32 alpha);
 void func_80034434(s32 enabled);
 void func_80023CCC(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
@@ -1192,7 +1192,7 @@ void func_80022FD4(Gfx **dlist, Mtx **mtx, void *vertices,
     gSPMatrix((*dlist)++, (u32)*mtx + 0x80000000, 2);
     (*mtx)++;
     gDma1p((*dlist)++, G_VTX, D_79FCC, 0x12, ((u32)D_79FCC & 6) | 8);
-    func_80034E54(dlist, sprite->spriteData, flags & 0xF,
+    sprDPset(dlist, sprite->spriteData, flags & 0xF,
                   (f32)angle, alpha);
     gMoveWd((*dlist)++, 10, 0, 0);
     gDPSetPrimColor((*dlist)++, 0, 0, 255, 255, 255, 255);
@@ -1383,7 +1383,7 @@ void func_80023A08(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
     if (flags & 4) {
         flags |= 1;
     }
-    func_80034E54(dlist, spriteData, flags & 0xF, segment->frame, alpha);
+    sprDPset(dlist, spriteData, flags & 0xF, segment->frame, alpha);
     {
         Gfx *cmd = (Gfx *)((*dlist)++);
 
@@ -1466,7 +1466,7 @@ void func_80023CCC(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
     if (flags & 4) {
         flags |= 1;
     }
-    func_80034E54(dlist, spriteData, flags & 0xF, frame, alpha);
+    sprDPset(dlist, spriteData, flags & 0xF, frame, alpha);
     {
         Gfx *cmd = (Gfx *)((*dlist)++);
 
@@ -1554,7 +1554,7 @@ void func_80023F84(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
         cmd->words.w0 = 0xBC000002;
     }
 
-    func_80034E54(dlist, spriteData, flags, segment->frame, alpha);
+    sprDPset(dlist, spriteData, flags, segment->frame, alpha);
 
     {
         Gfx *cmd = (Gfx *)((*dlist)++);

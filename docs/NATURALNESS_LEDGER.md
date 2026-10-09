@@ -81,7 +81,7 @@ locals or role reuse, which only the read-through found.
    matched that day carry an A construct: `func_80038190` (five OR-zero probes),
    o066 `F00004E0` (two `width * 0`), `overlay68UpdateAnimation` (`index =
    (s16)index`), `func_80010654` (inert mask), `func_80049B14` (redundant store),
-   `func_80011CDC` (single-statement region), `func_800349A4` (dead read) and
+   `func_80011CDC` (single-statement region), `texDPTextureX` (dead read) and
    `func_8004B1DC`. The comments above them are candid, but only `func_8004B1DC`
    is in the queue.
 4. **"Where are the structs?"** Whole functions read fields as
@@ -249,7 +249,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Resolved (lane c-4, 2026-10-09):** deleted together with the two `register` keywords; byte-inert (so is placing `x += 4` before or after the entry). The packed call line is split. Reading `entry->owner` in the test without the `owner` local differs (15 lines). Byte-identical.
 - `src/overlays/o059/overlay59PrepareEntry.c:77` `overlay59PrepareEntry` **A**: `& 0xFFFFFFFF` on a u32 value.
-  Natural: the bare value. Keep bytes: no - measured (lane c-3, 2026-10-08): `handle = (u32) func_80034448((s32) value);` without the masked copy differs in 9 words. Not explored further.
+  Natural: the bare value. Keep bytes: no - measured (lane c-3, 2026-10-08): `handle = (u32) texLoadTexture((s32) value);` without the masked copy differs in 9 words. Not explored further.
   **Left (lane c-5, 2026-10-09):** the masked copy defines `handle` from the loaded `value`, which joins the load, the argument and the call result into one web coloured v0 (load into v0, `move a0,v0` per call). Every unmasked spelling propagates the load into the argument register a0 and gives the same 9-word object: `(u32) value`, `(s32) value`, a `(s32) (u32)` round trip, a separate `handle = (u32) value;`, and a `while ((value = descriptor[0]) != 0)` loop. The permuter's `new_var` zero on the second failure path was inert and is deleted.
 - `src/overlays/o063/overlay63Initialize.c:89` `overlay63Initialize` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: no - measured (lane c-3, 2026-10-08): `while (index != -1)` and `while (-1 != index)` both differ in one word, the loop's `bnel` with its operands swapped (target compares the held `-1` register first). The XOR keeps `index` as the second operand.
@@ -320,7 +320,7 @@ Defensible, alias and pad issues only.
 - `src/overlays/o001/func_overlay_001_F0001D78_184E158.c:163` **B**: the same flag test in two consecutive ifs.
   Natural: one block. Keep bytes: unknown - a store sits between them.
 
-#### `func_800349A4`: A 1, B 3, C 1
+#### `texDPTextureX`: A 1, B 3, C 1
 
 One A-grade dead read, otherwise defensible.
 
@@ -636,7 +636,7 @@ Natural JFG-derived flow, no fakes.
 - `src/main/main.c:1278` **B**: magic byte offset `levelGetLevel()[0x83]`.
   Natural: level header struct field. Keep bytes: likely - same load.
 
-#### `func_80034E54`: A 2, B 3, C 2
+#### `sprDPset`: A 2, B 3, C 2
 
 Two inert empty-if steering blocks, would be called fake.
 
@@ -806,7 +806,7 @@ all) came from a second pass and are in part 1.
 - **volatile for codegen**: `func_80039E34` (nine `volatile` reads into a `volatile` stack struct), `func_80055F64`, `volatile s16 reservation` pads in eight o101 functions, `volatile` parameters in o008/o009/o014/o041/o097.
 - **unused pad local**: `overlay99RenderSortedEntries` (9), `func_80010178` (7), `overlay15InitStars` (5), `overlay100DrawMotion` (6, found by the read-through).
 - **permuter `new_var` temporaries**: `func_8003968C`, `func_80012574`, `overlay40AddEntry`, `overlay80UpdateContact`, `overlay101DrawTransformed`, `func_8004D40C`, `func_80050BF4`, `func_80034434`.
-  **Lane c-5 (2026-10-09), byte-identical throughout:** removed in `overlay40AddEntry` (a counted `while (remaining--)` from 8; see its A row), `func_8004D40C` (the 0x80 register copy was inert; literal tests), `func_80034434` (the `&value` alias and mask are a `u8` parameter, as its sibling `func_80034424` takes; IDO homes a narrowed argument and masks it), `overlay101DrawClock` (inert copy of the seconds angle; the 1,553-character expanded-macro line is split with the O101_* macros) and `overlay59PrepareEntry` (inert zero). In `overlay80UpdateContact` the `contactState` alias was inert; the two never-read aliases only reserved frame words and are one `s32 pad[2]`. Renamed where load-bearing: `overlay101DrawTransformed` (`primColorCommand`/`syncCommand`, the nested-assignment carriers), `overlay21ApplyPriorities` (`selected`; the direct test differs in 10 words, a `continue` grows the function), `overlay68PromoteSecondary` (`primaryCopy`; dropping the chained assignment moves the stack homes, 10 words, and passing `primary` differs in 14).
+  **Lane c-5 (2026-10-09), byte-identical throughout:** removed in `overlay40AddEntry` (a counted `while (remaining--)` from 8; see its A row), `func_8004D40C` (the 0x80 register copy was inert; literal tests), `func_80034434` (the `&value` alias and mask are a `u8` parameter, as its sibling `texModelTextureLoad` takes; IDO homes a narrowed argument and masks it), `overlay101DrawClock` (inert copy of the seconds angle; the 1,553-character expanded-macro line is split with the O101_* macros) and `overlay59PrepareEntry` (inert zero). In `overlay80UpdateContact` the `contactState` alias was inert; the two never-read aliases only reserved frame words and are one `s32 pad[2]`. Renamed where load-bearing: `overlay101DrawTransformed` (`primColorCommand`/`syncCommand`, the nested-assignment carriers), `overlay21ApplyPriorities` (`selected`; the direct test differs in 10 words, a `continue` grows the function), `overlay68PromoteSecondary` (`primaryCopy`; dropping the chained assignment moves the stack homes, 10 words, and passing `primary` differs in 14).
 - **`if (1)` region openers in lane c-5's files (2026-10-09):** `func_8002C94C` (saves.c) is resolved: the block around the entry-cursor assignment is the inner loop's initialiser, `for (inner = 0, entry = (SavesPackedEntry *) slot; ...)`, byte-identical (the same `for` on the outer loop changes the size). Left, each with its measured reason at the point of use: `overlay33InitializeBuffers` (blocks uopt propagating `original == allocation` into the else arm; a bare block is 52 masked), `func_overlay_038_F0000000_1885D10` (blocks the `particle + 16` reassociation; shares the line with `offset = 0` for an as1 tie), `overlay89InitializeEffect` (the ordinary nested `if` changes the register bank), `overlay13DrawActive` (rematerializes the record base), `overlay101BuildBorder`, `func_800320F0` and `func_8000BB84` (rows above), and the `font.c` and `diprint.c` regions [L97], which their comments price.
 - **register keyword**: `func_8004D840` (gzip `huft_build`, natural in its donor), elsewhere m2c or permuter residue.
 - **KSEG0 address arithmetic in C**: `+ 0x80000000` on display-list addresses. It is the JFG/DKR idiom, but it should be one macro, not 121 spelled sums.

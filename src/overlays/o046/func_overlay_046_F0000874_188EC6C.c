@@ -42,7 +42,7 @@ extern void *gOverlay46MatrixHead;
 extern void *gOverlay46VertexHead;
 
 extern void func_80037658(void);
-extern void func_80034920(void *commands);
+extern void texDPInit(void *commands);
 extern void camStandardOrtho(void *commands, void *matrices);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern f32 func_8002A8C0(u16 angle);
@@ -90,7 +90,7 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
 
     func_80037658();
     result = 1;
-    func_80034920(&gDisplayListHead);
+    texDPInit(&gDisplayListHead);
     camStandardOrtho(&gDisplayListHead, &gOverlay46MatrixHead);
 
     count = 0x12;
@@ -262,7 +262,7 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
                                   0xFF, 0xFF, 0xFF, D_18);
     }
 
-    func_80034920(&gDisplayListHead);
+    texDPInit(&gDisplayListHead);
     O46_PRIM(gDisplayListHead++, 255, 255, 255, 255);
 
     count = 0;

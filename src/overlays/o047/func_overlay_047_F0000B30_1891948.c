@@ -275,8 +275,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         ov47Bss_338 = 1;
     }
     player = D_800D3058;
-    icon = ov47Bss_8;
     for (controller = 0; controller < 4; controller++, player++) {
+        /* The icon cursor is reset per controller (lane v-4, 59 -> 54: it
+         * moves the player cursor below unready in the colour order). */
+        icon = ov47Bss_8;
         switch (player->active) {
             case 0:
                 if ((joyGetPressed(controller) & 0x9000) && !player->leaving &&
@@ -742,10 +744,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 59/2168 words
+ * score: 54/2168 words
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 59 aligned at size 0 (masked 59): every frame home exact; five unused cells flagged. Cursor fp priced (47 under force). Open: head, +0x400, s7 to s8.
+ * summary: 54 aligned at size 0 (masked 54): icon cursor reset per controller; five unused frame cells flagged. Open: head, +0x400, s-register windows.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

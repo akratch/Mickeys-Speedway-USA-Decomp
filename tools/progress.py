@@ -76,7 +76,7 @@ def get_elf_functions(elf_path, objdump, adopted_addrs, identity_records=None):
     referenced from one not-yet-organized asm file but not themselves a
     distinct function boundary (verified case: func_80059278 and its
     neighbours are `alabel`s for shared branch targets *inside*
-    func_800591B0 in asm/59DB0.s, a hand-written, heavily-unrolled function --
+    func_800591B0 in asm/main/gen_anim_data.s, a hand-written, heavily-unrolled function --
     not separate functions). They are excluded from the denominator for that
     reason, and reported separately so the exclusion is visible rather than
     silent.

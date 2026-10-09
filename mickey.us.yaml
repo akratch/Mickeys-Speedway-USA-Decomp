@@ -401,12 +401,44 @@ segments:
       - [0x58570, c, main/flash_58570]
       - [0x58810, c, libultra/osFlashClearStatus]
       - [0x5885C, c, main/flash_5885C]
+      # One zero word: the trailing 16-byte alignment of the original libultra
+      # flash object, which runs 0x58570-0x58C10 (0x6A0 bytes) while its last
+      # routine, osFlashReadArray, ends with its delay slot at 0x58C0C. The
+      # split TUs above cannot emit it (flash_5885C compiles to exactly 0x3B0),
+      # so it stays a four-byte asm identity, excluded from the executable
+      # metric in config/nonexecutable-ranges.us.json.
       - [0x58C0C, asm]
       - [0x58C10, c, main/flash_58C10]
       - [0x58E50, c, main/vehicle_sounds]
       - [0x59B90, c, main/osBootRamTest]
-      - [0x59BF0, asm]
-      - [0x59DB0, asm]
+      # Hand-written assembly (docs/modules.md 6.2): func_80058FF0 converts the
+      # ConvListEntry float-matrix list built by camConvertMatrixList (tier A
+      # JFG camera.c) to fixed point, using odd single-precision registers and
+      # the trapping add/sub forms IDO never emits. Tier B: it is the
+      # list-convert consumer JFG calls conv_mult_matrix (camTick), and Mickey's
+      # func_8005A770 calls it the same way, then clears the count. Mickey's
+      # revision takes a count instead of a -1 sentinel and does not multiply,
+      # so JFG's built asm/hasm/conv_mult_matrix.s.o does not match byte for
+      # byte (find_known_objects, 0 hits): not in verified_asm.us.txt.
+      # 0x1C0 bytes, the last word alignment.
+      # PROVENANCE: subsegment name from JFG's asm/hasm/conv_mult_matrix.s.
+      - [0x59BF0, asm, main/conv_mult_matrix]
+      # Hand-written assembly: the animation-frame decoder and its private
+      # helpers. func_800591B0 saves $f20-$f31 (odd halves included), and the
+      # four helpers take arguments in t-registers, clobber s-registers
+      # unsaved and jump between each other's interiors. Tier B: the matrix
+      # generator func_8005AF14 calls it where JFG's modGenAnimMatrices calls
+      # gen_anim_data (src/hasm/gen_anim_data.s). Mickey decodes a byte-wise
+      # bitstream where JFG's revision reads 64-bit words, so no reference
+      # object matches (find_known_objects, 0 hits). 0x1550 bytes, the last
+      # two words alignment.
+      # func_8005A6F0 (a bare return) is not a separate C function: its only
+      # reference is the closing `j` of func_8005A630, which has no return of
+      # its own, so it is that helper's exit. `void f(void) {}` reproduces its
+      # bytes, but a C TU at 0x5B2F0 would claim a file boundary inside this
+      # object with no evidence beyond the byte coincidence.
+      # PROVENANCE: subsegment name from JFG's src/hasm/gen_anim_data.s.
+      - [0x59DB0, asm, main/gen_anim_data]
       - [0x5B300, c, main/models_5B300]
       - [0x5C310, c, main/gsSnd]
       - [0x5E6B0, c, libultra/n_cspsetvol]

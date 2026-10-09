@@ -1018,6 +1018,24 @@
       }
     },
     {
+      "name": "asm/main/conv_mult_matrix.s",
+      "target_path": "expected/build/asm/main/conv_mult_matrix.s.o",
+      "metadata": {
+        "progress_categories": [
+          "resident"
+        ]
+      }
+    },
+    {
+      "name": "asm/main/gen_anim_data.s",
+      "target_path": "expected/build/asm/main/gen_anim_data.s.o",
+      "metadata": {
+        "progress_categories": [
+          "resident"
+        ]
+      }
+    },
+    {
       "name": "asm/main/gzip_asm.s",
       "target_path": "expected/build/asm/main/gzip_asm.s.o",
       "metadata": {

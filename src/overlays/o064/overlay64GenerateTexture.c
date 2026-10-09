@@ -207,6 +207,6 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
  * frame: 0x78
  * relocations: 22
  * first-mismatch: +0x0
- * summary: 371 at 0: pixel-loop value/shift colours already the target's on the tree; type product flat; left: hi copy, even-loop address order, head ring phase
+ * summary: 371 at 0: the clamp compare reads the copied value + 52; value reused for the product fixes hi at -4 (copy lost); next is the split of value's web
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

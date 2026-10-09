@@ -473,6 +473,6 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
  * frame: 0xE0
  * relocations: 9
  * first-mismatch: +0x8C
- * summary: 3 at 0: the residual is one priority order (firstDistance, x above 15); declared x reaches it but emits x's load first
+ * summary: 3 at 0 with three stand-ins; the plain body without them is 137 at -4; position pointers do not move the x/firstDistance priority
  * PLATEAU-HANDOFF:func_8001B798:end
  */

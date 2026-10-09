@@ -5262,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, all naming. Loop face store kept prices the face rows (KEEP plus fp force 6); the face must still be p2
+ * summary: 10 at 0, all naming. Loop face through node->planes is 103 (node reloaded); only the entry re-read keeps the face store at no frame cost
  * PLATEAU-HANDOFF:func_80011980:end
  */

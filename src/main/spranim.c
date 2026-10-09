@@ -473,6 +473,6 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
  * frame: 0xE0
  * relocations: 9
  * first-mismatch: +0x8C
- * summary: 6 to 3: declared x, dead numbering sum and radius read put every home at the target's offset; left is x's load emitted before the normal's
+ * summary: 3 at 0: the residual is one priority order (firstDistance, x above 15); declared x reaches it but emits x's load first
  * PLATEAU-HANDOFF:func_8001B798:end
  */

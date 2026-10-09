@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: 14 at 0: float frames local behind if(1) numbers conversion/segment after the loop temps; doubled still created before the sample and 0x14 terms
+- summary: 14 at 0: copy propagation walks blocks in reverse; the second fill loop's guard creates the doubled entry before the sample and 0x14 terms
+
+Summary before this remeasure: 14 at 0: float frames local behind if(1) numbers conversion/segment after the loop temps; doubled still created before the sample and 0x14 terms
 
 Summary before this remeasure: Unchanged at 16; spill slots go to the first non-overlapping slot, so the top three cells have owners numbered below the conversion
 
@@ -837,4 +839,17 @@ Slot trace (ido-slottrace, proc 9, identity gate .text identical to stock) on th
 - Flat at 14: a second boundary between segmentCount and groupCount; `j = segmentCount; j ^= 0;` moved ahead of groupCount. Off size (-12, residual 265): `j = (s32)frames ...` defined before groupCount with groupCount and triCount from j.
 - Left: 12 immediate rows and the v0/v1 dead copies swapped (2 naming). The doubled entry (282) is still created while copy propagation walks groupCount's block-0 definition, before the sample (326) and 0x14 (333) terms, and the two byte counts follow $v0[(i * 4)] (300). The target order is conversion, segment, sample, 0x14, doubled, segment bytes, texture bytes, then the owner of 0x20.
 - Stand-ins: the empty `if (1) {}` (new) and the two XOR keep-alives (inherited).
+
+#### 2026-10-09, lane y-2: copy propagation walks blocks in reverse; the doubled entry is created at the second fill loop's guard (no change, 14)
+
+Measured by tools/bank.py: masked 14 (raw 14), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 337, register naming 2, immediate only 12, really different 0.
+
+Base: lane x-1's float frame-count body (commit d86722d04, carried onto this lane), 14 masked at size 0, aligned 337/2/12/0.
+
+- How the late entries are numbered, read from the raw DKWB_SUBST_TRACE log (record order, not subst_report's grouping) and web_report --proc 9: global copy propagation visits blocks in reverse layout order (the second fill loop first, then the first fill loop, the post-link stores, the alpha loop, the cursor block, the buffer loop, block 0c, block 0b), forward within a block, and each copied chain is created in full at the first site that needs it. On the tree body the first frames-dependent site is the second fill loop's guard and remainder (triCount copied from L718, then frames from L713), which creates cvt 279, segment 281 and doubled 282 together; the alpha loop then creates the segment-bytes chain (301, 302), the cursor block the texture bytes (321) and only then the sample and 0x14 terms (325, 326, 333).
+- Diagnostics (not adoptable): fill-loop bounds made constants moves the first chain site to the alpha loop (cvt 253, segment 255, doubled-copy 262, sample 287); the post-link segment store from j instead of segmentCount creates the segment copy (seg ^ 0) at 296, ahead of the alpha loop, 22 masked.
+- Consequence: the target's order (cvt, segment, sample, 0x14, doubled, segment bytes, texture bytes) cannot come from this walk while any site after the allocation reads the doubled count or the segment-bytes and texture-bytes values, and the target's fill-loop guards and remainders do read the doubled value (restored from 0x2C after both calls). So the target's entries are not created by this copy-propagation walk in this block layout.
+- Measured flat (shape_product): the j and i copy order, the segment-bytes and texture-bytes definition order, and three allocation-argument orders (12 cells, 14 or 25); groupCount and triCount as two products, as a chained assignment, as `triCount = groupCount`, as shifts, or defined after the alpha branch, crossed with the post-link segment store through the symbol or the expression (10 cells): 14, 16, or 349 at -20 when defined after the branch.
+
+Cycle-21 line: decision variable is the creation order of the cvt, segment, sample, 0x14 and doubled entries; record: raw DKWB_SUBST_TRACE record order plus web_report --proc 9. Next is a source whose sample and 0x14 terms are reached by the reverse walk before any doubled reader, or a mechanism other than this walk (the unroller appends its copies' entries at 176-202; an expression first built inside an unrolled copy is numbered there).
 <!-- plateau-handoff:wakeAllocate:end -->

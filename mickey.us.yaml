@@ -191,7 +191,9 @@ segments:
       # main/shadows_fp (0x18FF0): JFG's routines one and two, in order,
       # shadowBoxPolyOverlap 0/49 masked, 49/49 words [romocc=1] and
       # shadowBoundingBox 0/36, 36/36 [romocc=1]; 85/85 over the run
-      # [romocc=1]. Verified assembly (verified_asm.us.txt).
+      # [romocc=1]. Verified assembly (verified_asm.us.txt, evidence class
+      # 2). 6.2 evidence: shadowBoxPolyOverlap uses odd $f1, $f3, $f5, $f13
+      # and $f15 (11 operands); shadowBoundingBox odd $f1, $f3 and $f5 (11).
       #
       # main/shadows_fp_19144: func_80018544, JFG's routine three
       # shadowYHeight in a shorter revision, 68 against 69 words. Its first
@@ -202,7 +204,8 @@ segments:
       # main/shadows_fp_19254: func_80018654, JFG's routine four
       # shadowMakeYs, 47/47 words with 0 masked [romocc=1]; JFG's three
       # further words are its zero section-alignment padding. Verified
-      # assembly.
+      # assembly (evidence class 2). 6.2 evidence: odd $f1, $f3 and $f5
+      # (8 operands).
       - [0x18FF0, asm, main/shadows_fp]
       - [0x19144, asm, main/shadows_fp_19144]
       - [0x19254, asm, main/shadows_fp_19254]

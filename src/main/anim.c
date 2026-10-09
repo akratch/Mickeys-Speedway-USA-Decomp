@@ -3994,7 +3994,7 @@ void fmvInit(void) {
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: 354 at size 0: displacement loop reads the moving list; left firstObject s6/cursor s7, axis s2, pairIndex a1; -varref block cuts inert.
+ * summary: 354 at size 0: model-local cell's movingCount latch piece passes growth with margin (30 vs 23); CDX_BIAS cannot order constant 3 ahead of it.
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

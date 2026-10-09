@@ -3393,6 +3393,10 @@ typedef struct TrackRayNodeExtended {
  * (the form func_8001291C's edge loop takes) supplies the blocks the
  * `do { inside = 1; } while (0)` region stood in for; the object is
  * byte-identical with the region gone. Still 10.
+ * Lane v-1, 2026-10-09: the edge loop written as Diddy Kong Racing's
+ * public `src/objects.c` facet test writes its bisector loop,
+ * `for (k = 0; k < 3 && flag; k++)` with the flag set before it (and no
+ * separate clear of the node word): byte-identical to the do-while.
  */
 s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                   TrackRayPoint *offset, f32 scale, f32 planeOffset,
@@ -3429,7 +3433,6 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
             entry = (u16 *) encoded;
             planes = node->planes;
             face = &planes[*entry];
-            encoded = 0;
             planeX = face->x;
             planeY = face->y;
             planeZ = face->z;
@@ -3445,7 +3448,7 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                         pointY = ((offset->y * ratio) + start->y) - (planeOffset * planeY);
                         pointZ = ((offset->z * ratio) + start->z) - (planeOffset * planeZ);
                         inside = 1;
-                        do {
+                        for (encoded = 0; encoded < 3 && inside != 0; encoded++) {
                             edge = entry[encoded + 1];
                             sign = edge & 0x8000;
                             face = (TrackRayFace *) ((u8 *) planes + ((edge ^ sign) << 4));
@@ -3455,8 +3458,7 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                             if (threshold < edgeValue) {
                                 inside = 0;
                             }
-                            encoded++;
-                        } while (encoded < 3 && inside != 0);
+                        }
                         if (inside != 0) {
                             hit->normalX = planeX;
                             hit->normalY = planeY;
@@ -5260,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, all naming. Conditional sign replaces the inside region at identical bytes; sibling-form products and lever sweep flat
+ * summary: 10 at 0, all naming. Edge loop in the DKR for form at identical bytes; arm-head clear dropped
  * PLATEAU-HANDOFF:func_80011980:end
  */

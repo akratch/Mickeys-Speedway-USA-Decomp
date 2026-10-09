@@ -455,6 +455,6 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
  * frame: 0xE0
  * relocations: 9
  * first-mismatch: +0xF4
- * summary: Unchanged at 6; radius as a temporary found (load in the block above the cut); target numbers d and the normals after the radius (four bottom cells).
+ * summary: Unchanged at 6; y and z as declared locals land the 0x8C/0x88 homes and a declared radius fits 0x78; left is the x/y split
  * PLATEAU-HANDOFF:func_8001B798:end
  */

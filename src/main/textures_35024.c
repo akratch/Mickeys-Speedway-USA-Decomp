@@ -56,10 +56,8 @@ extern void func_80035E88(TextureHeader *texture, void *displayList);
 void func_80034424(u8 enabled) {
     D_8007BD94 = enabled;
 }
-void func_80034434(s32 value)
-{
-  s32 *new_var;
-  D_8007BD80 = (*(new_var = &value)) & 0xFF;
+void func_80034434(u8 value) {
+    D_8007BD80 = value;
 }
 /* PROVENANCE: control flow is adapted from the public Diddy Kong Racing
  * src/textures_sprites.c::load_texture and compared with Jet Force Gemini's

@@ -1088,7 +1088,9 @@ void func_8004D39C(char *input, char *output) {
 }
 
 /* Exact C: all 109 instruction words, the 0x18 frame, relocations, and linked
- * ROM range match after bounded permutation resolved the final temp web. */
+ * ROM range match after bounded permutation resolved the final temp web.
+ * The permuter's `new_var` register copy of the 0x80 control byte was inert;
+ * the tests compare against the literal (lane c-5, 2026-10-09). */
 /*
  * PROVENANCE -- source organization was cross-checked against JFG's
  * permitted published fontGetLine assembly. Mickey's own m2c draft,

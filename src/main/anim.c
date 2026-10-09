@@ -782,19 +782,21 @@ extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
  * tested load is its own web, offered v0, and the copy fills the branch
  * delay slot.
  *
- * The command, clock and command-word registers (a0, a1, a2) come from
- * block counts: the join is cursor increment, subtraction, state store,
- * the first two each in a one-line region, so the command web ends first
- * and the command word is stretched; the leading tests are nested instead
- * of returning early and the camera clear is a do-while, which removes the
- * four blocks the regions add and keeps timeScale in f20 (9 to 7).
- *
- * Remaining 7, all in the join. The target's ring order (the conversion in
- * t8/t9 before the cursor add in t1, and t8, t9, t1 again in that order on
- * the next lap) says its source stores the state BEFORE it increments the
- * cursor, yet as1 leaves the cursor store before the branch and the state
- * store in the delay slot. Written state first, as1 swaps those two stores
- * (2 words) and the command and clock colours are lost (7 more). See the
+ * 2026-10-09 (lane aa-1): 7 -> 6, and the join is now the target's
+ * instruction for instruction. The state value is the command word
+ * narrowed IN PLACE, `cmdWord = (s8) cmdWord;` (s32 cmdWord), before the
+ * cursor statement. Because the variable is its own operand, ugen
+ * evaluates the narrowing into ring registers and copies the result into
+ * the variable; uopt keeps the definition (its operand is redefined by
+ * itself), and as1 deletes the copy and forwards the ring register to the
+ * store and the test. That is the ring value held across statements every
+ * earlier join spelling lacked. The fields are read through D_8007D69C
+ * (no command local). Left (6): one colour, cmdWord a1 where the target
+ * has a2 (forcing it to c5 scores 0); cmdWord carries five references
+ * against the clock's three, so it outranks the clock.
+ * STAND-IN: the two one-line do-while regions (narrowing, subtraction) and
+ * the nested leading tests and do-while camera clear are block-count
+ * levers inherited from the earlier shape, not natural code. See the
  * shard for the as1 scheduling rule measured. Retain NON_MATCHING. */
 #ifdef NON_MATCHING
 void func_80051364(s32 updateRate) {
@@ -803,10 +805,9 @@ void func_80051364(s32 updateRate) {
     s32 originalRate;
     AnimPath *path;
     AnimPathObject *object;
-    AnimStreamEntry *command;
     s32 i;
     s32 adjustedRate;
-    u16 cmdWord;
+    s32 cmdWord;
     f32 timeScale;
     f32 speed;
 
@@ -820,19 +821,19 @@ void func_80051364(s32 updateRate) {
         if (D_8007D6B0 > 0) {
             TrapDanglingJump(updateRate);
         }
-        command = D_8007D69C;
-        if (command != NULL && D_8007D6A4 == 1 && ((cmdWord = command->command) >> 8) == 0x7B) {
-            if ((f32) command->duration / 100.0f <
+        if (D_8007D69C != NULL && D_8007D6A4 == 1 && ((cmdWord = D_8007D69C->command) >> 8) == 0x7B) {
+            if ((f32) D_8007D69C->duration / 100.0f <
                 (f32) (D_8007D6A8 + updateRate) * timeScale) {
-                adjustedRate = command->duration;
+                adjustedRate = D_8007D69C->duration;
                 if (osTvType == 0) {
                     adjustedRate >>= 1;
                 } else {
                     adjustedRate = adjustedRate * 3 * 2 / 10;
                 }
-                do { D_8007D69C++; } while (0);
+                do { cmdWord = (s8) cmdWord; } while (0);
                 do { updateRate = adjustedRate - D_8007D6A8; } while (0);
-                D_8007D6A4 = (s8) cmdWord;
+                D_8007D69C++;
+                D_8007D6A4 = cmdWord;
                 if (D_8007D6A4 == 0) {
                     originalRate = updateRate;
                 }
@@ -3979,11 +3980,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80051364:start
  * symbol: func_80051364
- * score: 7/287 words
+ * score: 6/287 words
  * frame: 0x40
  * relocations: 47
- * first-mismatch: +0x114
- * summary: 7 at 0. Stream oracle: conversion emitted before the cursor statement without a store, stored after it, is exact at monotone lines
+ * first-mismatch: +0xA4
+ * summary: 6 at 0, join and ring exact: the state is cmdWord narrowed in place; one colour left (command word a1 against a2)
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

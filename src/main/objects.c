@@ -452,7 +452,7 @@ typedef struct {
 extern void *func_8000486C(s32 arg0);
 extern void *func_80006C4C(s32 arg0);
 extern void *func_8001F520(s32 assetId, s32 flags);
-extern void *func_8002B314(s32 size, s32 tag);
+extern void *mmAlloc2(s32 size, s32 tag);
 extern void *func_800355A0(s32 assetId, s32 flags);
 
 typedef struct {
@@ -791,8 +791,8 @@ extern void modFreeModel(void *resource);
 extern void func_800347A0(void *texture);
 extern void func_800359D4(void *sprite);
 extern s32 func_8000A6E8(s32 arg0);
-extern void *func_8002B280(s32 size, s32 tag);
-extern void *func_8002B4C0(void *slots, s32 size);
+extern void *mmAlloc(s32 size, s32 tag);
+extern void *mmAllocR(void *slots, s32 size);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern void func_80009F74(Objects09F74Object *object);
 extern u8 *levelGetLevel(void);
@@ -1009,9 +1009,9 @@ void *func_8000486C(s32 assetIndex) {
 
     assetStart = ((s32 *)((u8 *)D_800C9458 + assetIndex * 4))[0];
     assetSize = ((s32 *)((u8 *)D_800C9458 + assetIndex * 4))[1] - assetStart;
-    asset = (Objects0486CAsset *)func_8002B4C0(D_800C94A0, assetSize);
+    asset = (Objects0486CAsset *)mmAllocR(D_800C94A0, assetSize);
     if ((asset == NULL) && (D_80078F88 != 0)) {
-        asset = (Objects0486CAsset *)func_8002B280(assetSize, 0x8B);
+        asset = (Objects0486CAsset *)mmAlloc(assetSize, 0x8B);
     }
     if (asset != NULL) {
         piRomLoadSection(0x2D, (u32)asset, assetStart, assetSize);
@@ -1139,7 +1139,7 @@ void func_80004C28(s32 tableIndex, s32 slot) {
     s32 *romTable;
     s32 start;
 
-    D_800C94D8[slot] = func_8002B280(0x3000, 0x8B);
+    D_800C94D8[slot] = mmAlloc(0x3000, 0x8B);
     D_800C94C0[slot] = (s32)((u8 *)D_800C94D8[slot] + 0x10);
     heap = D_800C94D8[slot];
     D_800C94C8[slot] = 0;
@@ -1909,9 +1909,9 @@ void *func_8000590C(void *packet, s32 spawnFlags) {
         size = (size & ~0xF) + 0x10;
     }
     newObject = object;
-    object = (Objects0590CObject *)func_8002B4C0(D_800C94A0, size);
+    object = (Objects0590CObject *)mmAllocR(D_800C94A0, size);
     if ((object == NULL) && (D_80078F88 != 0)) {
-        object = (Objects0590CObject *)func_8002B280(size, 0x8B);
+        object = (Objects0590CObject *)mmAlloc(size, 0x8B);
     }
     if (object == NULL) {
         if (D_800C9490 != 0) {
@@ -2384,7 +2384,7 @@ void *func_80006C4C(s32 assetIndex) {
         if (size & 0xF) {
             size = (size + 0xF) & ~0xF;
         }
-        result = func_8002B314(size, 0x8B);
+        result = mmAlloc2(size, 0x8B);
         if (result != NULL) {
             count = size >> 2;
             source = (s32 *)D_800C9450;

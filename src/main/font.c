@@ -80,7 +80,7 @@ extern u8 D_800D664C;
 extern s8 D_8007D570[];
 extern FontGlyphData *D_800D663C;
 
-void *func_8002B280(s32 size, s32 tag);
+void *mmAlloc(s32 size, s32 tag);
 void viGetCurrentSize(u32 *width, u32 *height);
 void camSetScissor(Gfx **displayList);
 void func_80034920(Gfx **displayList);
@@ -959,7 +959,7 @@ void func_8004C8D8(FontTextureHeader *texture, s32 unused) {
     Gfx *state;
     s32 i;
 
-    texture->displayList[0] = func_8002B280(0x100, 0x86);
+    texture->displayList[0] = mmAlloc(0x100, 0x86);
     texture->displayList[1] = texture->displayList[0] + 16;
 
     for (i = 0; i < 2; i++) {

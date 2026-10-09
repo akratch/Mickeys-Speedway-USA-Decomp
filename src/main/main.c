@@ -249,7 +249,7 @@ extern void mainFrontInit(s32, s32, s32);
 extern void RevealReturnAddresses(void);
 extern void mmInit(void);
 extern void func_8004D750(void);
-extern void *func_8002B280(s32, s32);
+extern void *mmAlloc(s32, s32);
 extern void osCreateScheduler(OSSched *, void *, s32, u8, u8);
 extern void osScAddClient(OSSched *, OSScClient *, OSMesgQueue *, u8);
 extern void piInit(void);
@@ -350,7 +350,7 @@ extern void func_80028564(s32);
 extern void func_800293D0(void);
 extern void mainUpdateZBCheck(void);
 extern void mainCPUeffects(u16 *, s32);
-extern void func_8002B700(void);
+extern void mmFlushFreeStack(void);
 extern void mmSetDelay(s32);
 extern void func_800389CC(void);
 extern void func_80037150(void);
@@ -488,7 +488,7 @@ void mainInitGame(void) {
     RevealReturnAddresses();
     mmInit();
     func_8004D750();
-    D_8007A204 = func_8002B280(0x40, 0x7F7F7FFF);
+    D_8007A204 = mmAlloc(0x40, 0x7F7F7FFF);
     D_8007A1AC = 0;
     osCreateMesgQueue(&D_800D18F8, &D_800D18F4, 1);
     osScAddClient(&D_800CF5B8, &D_800D18E8, &D_800D18F8, 3);
@@ -640,7 +640,7 @@ void func_80026FB4(void) {
     }
     runlinkTick();
 
-    func_8002B7AC();
+    mmFreeTick();
 
     func_80027628(D_8007A248);
 
@@ -1161,7 +1161,7 @@ void func_80028564(s32 updateRate) {
                 TrapDanglingJump();
             }
             D_8007A320 = 1;
-            func_8002B700();
+            mmFlushFreeStack();
             mmSetDelay(0);
             mainPreNMI();
             func_800389CC();
@@ -1255,13 +1255,13 @@ void func_80028564(s32 updateRate) {
             }
             D_8007A6A8 = 0;
             mainPreNMI();
-            func_8002B700();
+            mmFlushFreeStack();
             mmSetDelay(0);
             mainPreNMI();
             TrapDanglingJump(levelGetGfxIndex(D_8007A148));
             runlinkFreeCode(0x12);
             mainPreNMI();
-            func_8002B700();
+            mmFlushFreeStack();
             mmSetDelay(0);
             camInit();
             func_8005A764();

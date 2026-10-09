@@ -13,7 +13,7 @@ typedef struct Overlay43Resources {
     void *tertiary;
 } Overlay43Resources;
 
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern void func_8002B768(void *pointer);
 
 s32 func_overlay_043_F0001184_188B154(Overlay43Input *input,
@@ -22,7 +22,7 @@ s32 func_overlay_043_F0001184_188B154(Overlay43Input *input,
     s32 secondaryCount;
     s32 primaryCount;
 
-    resources->primary = func_8002B280(0x10B4, 0x87);
+    resources->primary = mmAlloc(0x10B4, 0x87);
     if (resources->primary == NULL) {
         return 0;
     }
@@ -37,13 +37,13 @@ s32 func_overlay_043_F0001184_188B154(Overlay43Input *input,
         secondaryCount = 0xA;
     }
 
-    resources->secondary = func_8002B280(primaryCount * 8, 0x87);
+    resources->secondary = mmAlloc(primaryCount * 8, 0x87);
     if (resources->secondary == NULL) {
         func_8002B768(resources->primary);
         return 0;
     }
 
-    resources->tertiary = func_8002B280(secondaryCount << 6, 0x87);
+    resources->tertiary = mmAlloc(secondaryCount << 6, 0x87);
     if (resources->tertiary == NULL) {
         func_8002B768(resources->primary);
         func_8002B768(resources->secondary);

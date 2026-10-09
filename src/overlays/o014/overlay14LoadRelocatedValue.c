@@ -1,7 +1,7 @@
 #include "PR/ultratypes.h"
 
 extern u32 *gOverlay14OffsetsF4;
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern void piRomLoadSection(s32 source, void *destination, s32 start, s32 size);
 
 /* Tier A: linked ROM identity with untouched IDO instruction output.
@@ -17,7 +17,7 @@ void *overlay14LoadRelocatedValue(s32 index, s32 source) {
 
     start = gOverlay14OffsetsF4[index];
     size = gOverlay14OffsetsF4[index + 1] - start;
-    buffer = func_8002B280(size, 0x85);
+    buffer = mmAlloc(size, 0x85);
     if (buffer != NULL) {
         piRomLoadSection(source, buffer, start, size);
         cursor = buffer;

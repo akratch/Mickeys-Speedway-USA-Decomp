@@ -51,7 +51,7 @@ extern f32 D_800CB270;
 extern f32 D_800CB274;
 extern s32 D_800CB284;
 extern s32 D_800CB288;
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern void mmFree(void *ptr);
 extern s32 getXZCompareMask(void *grid, s32 xMin, s32 zMin, s32 xMax, s32 zMax);
 extern s32 mathXZInTri(s32 x, s32 z, void *a, void *b, void *c);
@@ -140,11 +140,11 @@ void shadowInitBuffers(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     D_800CB27C = arg3;
     stride0 = arg2 * 10;
     D_800CB280 = arg4;
-    D_80079410[0] = func_8002B280(stride0 * 4, 0x8D);
+    D_80079410[0] = mmAlloc(stride0 * 4, 0x8D);
     stride1 = arg3 * 16;
-    D_80079420[0] = func_8002B280(stride1 * 4, 0x8D);
+    D_80079420[0] = mmAlloc(stride1 * 4, 0x8D);
     stride2 = arg4 * 8;
-    D_80079430[0] = func_8002B280(stride2 * 4, 0x8D);
+    D_80079430[0] = mmAlloc(stride2 * 4, 0x8D);
 
     for (i = 0; i < 3; i++) {
         D_80079414[i] = D_80079414[i - 1] + stride0;

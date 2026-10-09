@@ -80,7 +80,7 @@ extern s8 joyGetStickX(s32 controller);
 extern s8 joyGetStickY(s32 controller);
 extern void mainTitlePageInit(s32 mode);
 extern void modFreeModel(void *model);
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern u32 *piRomLoad(u32 assetIndex);
 
 extern u32 D_800D3170[4];
@@ -349,11 +349,11 @@ void func_80038750(s32 language) {
 void func_80038878(void) {
     s32 i;
 
-    D_800D3150[0] = (s32) func_8002B280(0x5B8, 0x8F);
+    D_800D3150[0] = (s32) mmAlloc(0x5B8, 0x8F);
     for (i = 0; i < 6; i++) {
         D_800D3150[i] = D_800D3150[i - 1] + 0xF4;
     }
-    D_8007C0B8 = func_8002B280(0x1000, 0x8F);
+    D_8007C0B8 = mmAlloc(0x1000, 0x8F);
     func_80038750(0);
     i = 0;
     while (i < 180) {

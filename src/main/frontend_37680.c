@@ -51,7 +51,7 @@ typedef struct PulsatingLightData {
     PulsatingLightDataFrame frames[1];
 } PulsatingLightData;
 
-extern MemoryPoolSlot *func_8002B280(s32 size, u32 tag);
+extern MemoryPoolSlot *mmAlloc(s32 size, u32 tag);
 extern u32 *piRomLoad(u32 assetIndex);
 extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset,
                              s32 size);
@@ -215,12 +215,12 @@ s32 *func_80036DD0(s32 screenIndex) {
     size = screenTable[screenIndex + 1] - screenTable[screenIndex];
     start = screenTable[screenIndex];
     decompressedAddr = NULL;
-    header = (u8 *) func_8002B280(0x10, 0x90);
+    header = (u8 *) mmAlloc(0x10, 0x90);
     if (header != NULL) {
         piRomLoadSection(0x13, (u32) header, start, 0x10);
         uncompressedSize = byteswap32(header) + 0x80;
         mmFree(header);
-        decompressedAddr = (u8 *) func_8002B280(uncompressedSize, 0x90);
+        decompressedAddr = (u8 *) mmAlloc(uncompressedSize, 0x90);
         if (decompressedAddr != NULL) {
             compressedAddr = (u32) ((decompressedAddr + uncompressedSize) - size);
             compressedAddr -= compressedAddr & 0xF;

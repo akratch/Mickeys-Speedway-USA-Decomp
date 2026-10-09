@@ -116,7 +116,7 @@ void mtxf_transform_point(MtxF matrix, f32 x, f32 y, f32 z, f32 *outX, f32 *outY
 s32 Arctanf(f32 x, f32 z);
 s32 mainGetNumberOfCameras(void);
 void amGetSfxSettings(AudioSoundData **table, s32 *size, s32 *count);
-void *func_8002B280(s32 size, s32 tag);
+void *mmAlloc(s32 size, s32 tag);
 void amResetAudioMap(void);
 s32 func_8001398C(f32 x, f32 z, s32 range,
                   AudioEchoSurface ***surfaces);
@@ -138,9 +138,9 @@ void func_80002500(void) {
     s32 i;
 
     amGetSfxSettings(&D_800C91E0, NULL, NULL);
-    D_800C91E8 = func_8002B280(sizeof(AudioPoint) * 40, 0x82);
-    D_800C91F0 = func_8002B280(sizeof(AudioPoint *) * 40, 0x82);
-    D_800C91E4 = func_8002B280(sizeof(AudioPoint *) * 40, 0x82);
+    D_800C91E8 = mmAlloc(sizeof(AudioPoint) * 40, 0x82);
+    D_800C91F0 = mmAlloc(sizeof(AudioPoint *) * 40, 0x82);
+    D_800C91E4 = mmAlloc(sizeof(AudioPoint *) * 40, 0x82);
     D_80078F00 = 0;
     for (i = 0; i < 40; i++) {
         D_800C91E8[i].soundHandle = NULL;

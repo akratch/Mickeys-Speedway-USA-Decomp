@@ -1261,7 +1261,7 @@ record 57 at `overlay99RenderSegments+0x1D4` is its sole inbound. Retained
 218/233 C used false frame gaps; clean `CameraSprite + MtxF` source is uncompiled
 and linked equality proves fallback only.
 
-Resident `levelGetCounts` owns 37 records: calls to `func_8002B280` at
+Resident `levelGetCounts` owns 37 records: calls to `mmAlloc` at
 `+0x24/+0xC8/+0x280/+0x2E0`, `piRomLoad` at `+0x30/+0x290`,
 `piRomLoadSection` at `+0x124/+0x310`, `mmFree` at
 `+0x26C/+0x274/+0x3E0`, and `align4` at `+0x2D4/+0x2EC`, plus twelve
@@ -1297,7 +1297,7 @@ fallback-only.
 
 Overlay 61 `+0x1648` has eleven authoritative records: resident calls at
 `+0x14/+0x34/+0x4C/+0x6C/+0x8C/+0x140/+0x154` to `packOpen`,
-`packOpenFile`, `packFileSize`, `func_8002B280`, `packReadFile`, `mmFree`, and
+`packOpenFile`, `packFileSize`, `mmAlloc`, `packReadFile`, `mmFree`, and
 `packClose`; two calls at `+0xC0/+0xDC` to Overlay 68 `+0`; and a LOCAL
 HI16/LO16 pair at `+0x24/+0x28` with stored addend `+0x164`. Exact C emits all
 11 records and names the local pair `gOverlay61SavePathReloc`; the generated
@@ -1312,7 +1312,7 @@ SYMBOL records and seven local JUMPs. Data pairs resolve to
 `gOverlay31MaxLine`, `gOverlay31MaxPoint`, both vertex buffers, triangle and
 rectangle sources, configs, point pool, line records, dummy assets/count, and
 effect records/count. Resident calls resolve to `reset_particles`,
-`func_8002B280`, `piRomLoad`, `func_800355A0`, `func_80034448`, `func_8001F520`,
+`mmAlloc`, `piRomLoad`, `func_800355A0`, `func_80034448`, `func_8001F520`,
 and `mmFree`; seven local calls cover the four config builders, pool, records,
 and reset helper. Moving `assetBuffer` after the three integer locals gives the
 exact 245 words and 0x48-byte frame while preserving every distinct role. ORT
@@ -1324,7 +1324,7 @@ Overlay 68 `+0x1250` (`overlay68RebuildSecondaryEntry`) owns 19 runtime
 records. Table 1 pairs 52/53, 60/61, and 63/64 at function
 `+0x08/+0x1C`, `+0x1A4/+0x1B0`, and `+0x1BC/+0x1C0` resolve through reserved
 DATA1 `+0x1498`/ORT 1850 to resident `D_8007A1F8`; 54/55 at `+0x74/+0x90`
-resolve to `func_8002B280`; 56/59 at `+0xB8/+0x198` to `piRomLoadSection`;
+resolve to `mmAlloc`; 56/59 at `+0xB8/+0x198` to `piRomLoadSection`;
 57 at `+0xC0` to `func_800291C4`; 58 at `+0xCC` to `levelGetBlurEffect`; and
 62/65 at `+0x1B4/+0x1CC` to `mmFree`. Table 2 LOCAL pairs 14/15 and 16/17 at
 `+0x04/+0x0C` and `+0x34/+0x38` share data base `+0x15B0`, addend `+0x14`,
@@ -1402,7 +1402,7 @@ Fresh C must preserve all 24 semantic identities and emit those addends
 naturally from the already-owned initialized data.
 
 Overlay 34 `+0x0` (`overlay34InitStorage`) owns eight runtime records: SYMBOL
-JUMPs at `+0x28/+0x74` to resident ORT 82 (`func_8002B280`), then LOCAL
+JUMPs at `+0x28/+0x74` to resident ORT 82 (`mmAlloc`), then LOCAL
 HI16/LO16 pairs at `+0x34/+0x38`, `+0x80/+0x84`, and `+0xB8/+0xC4` for module
 data `+0`, `+4`, and `+8` (`gOverlay34Records`, `gOverlay34Pointers`, and
 `gOverlay34Count`). Its standalone target object retains only four static
@@ -1483,7 +1483,7 @@ exact. The separate `+0x3EC..+0x3F0` padding word is excluded from C credit.
 Resident `func_8005A948` owns 13 static records: HI16/LO16 pairs to
 `D_800D7D04` at `+0x00/+0x04`, `D_800D7CF4` at `+0x34/+0x38` and
 `+0x134/+0x13C`, and `D_800D7CF8` at `+0xB4/+0xB8` and `+0xD0/+0xD4`, plus
-calls to `piRomLoadSection` at `+0xC8/+0x124` and `func_8002B314` at `+0xF8`.
+calls to `piRomLoadSection` at `+0xC8/+0x124` and `mmAlloc2` at `+0xF8`.
 It has no export-table entry or overlay runtime record; `func_8005A7A0+0x104`
 is its sole caller, with no stored-pointer inbound and no target padding.
 Fresh configured V0 and the retained natural candidate both reproduce all 13
@@ -1623,7 +1623,7 @@ argument in `a3` that the callee overwrites without reading. No other shipped
 overlay record targets ORT 374; linked equality currently proves fallback only.
 
 Resident `func_8002CF6C` owns 11 exact records: R_MIPS_26 calls at `+0x0C` to
-`joyMessageQ`, `+0x18` to `func_80070170`, `+0x28` to `func_8002B280`,
+`joyMessageQ`, `+0x18` to `func_80070170`, `+0x28` to `mmAlloc`,
 `+0x54` to `func_8002CCE4`, `+0x60` to `packCalculateGameChecksum`, `+0xC4`
 to `packCalculateGlobalFlagsChecksum`, `+0x120` to `mainResetPressed`, `+0x13C`
 to `func_8002C8B4`, and `+0x144` to `mmFree`, plus a HI16/LO16 pair at
@@ -1673,11 +1673,11 @@ Current clean C is uncompiled, so its tuple surface awaits V0 and linked equalit
 proves fallback only. Overlay 41's existing rename and Overlay 45's proxy already
 preserve the runtime carriers; no new resident rebinding is required.
 
-Resident `func_8002B7AC` targets 12 static records: HI16/LO16 pairs to
+Resident `mmFreeTick` targets 12 static records: HI16/LO16 pairs to
 `D_800D21B0` at `+0x08/+0x0C`, `D_800D21A8` at `+0x44/+0x48`,
 `D_800D20A8` at `+0x50/+0x5C` and `+0x60/+0x6C`, and `D_800D1CA8` at
 `+0x64/+0x68`, plus R_MIPS_26 calls to `ReleaseUnusedLinkSlots` at `+0x3C`
-and `func_8002B8A8` at `+0x8C`. The matched C reproduces all twelve at those
+and `mempool_free_addr` at `+0x8C`. The matched C reproduces all twelve at those
 offsets. ORT 593 exports
 resident offset `0x2B35C`; resident runtime and overlay SYMBOL inbounds are
 zero, and `func_80026FB4+0x5F8` is the sole direct caller. The owned range and
@@ -1745,11 +1745,11 @@ runtime records inside the function are zero. ORT 358 exports offset
 inbounds; direct callers are `lightDefaultObjectLight+0x38` and
 `func_8001A008+0x74/+0xC4`, with no stored pointer.
 
-Resident `func_8002B524` owns 12 exact tuples in retained diagnostic C:
+Resident `mmAllocAtAddr` owns 12 exact tuples in retained diagnostic C:
 HI16/LO16 pairs to `D_8007A278` at `+0x04/+0x08`, `D_8007A270` at
 `+0x1C/+0x3C`, `D_8007A27C` at `+0x4C/+0x50`, and `D_800D1C60` at
 `+0x90/+0x94`; R_MIPS_26 `runlinkGetAddressInfo` at `+0x74`; and
-`func_8002BB40` at `+0x134,+0x160,+0x180`. ORT 547 exports offset `0x2B0D4`.
+`mempool_slot_assign` at `+0x134,+0x160,+0x180`. ORT 547 exports offset `0x2B0D4`.
 Resident direct callers are `runlinkSuspendCode+0xB4`,
 `runlinkResumeCode+0xD8`, and `func_80034448+0x12C/+0x1D0`; five overlay
 SYMBOL calls occur at Overlay 2 `+0x11A8`, Overlay 18 `+0x320/+0x334`,
@@ -1758,7 +1758,7 @@ R_MIPS_32 function pointer consumed by `RevealReturnAddresses`; no resident
 runtime-table record targets ORT 547. Current linked equality proves fallback
 only, and overlay proxy names await identity-explicit metadata regeneration.
 
-Resident `func_8002BB40` owns eight exact tuples in canonical C:
+Resident `mempool_slot_assign` owns eight exact tuples in canonical C:
 HI16/LO16 pairs to `D_8007A270` at `+0x08/+0x64`, `D_800D21B0` at
 `+0x14/+0x18`, and `D_800D1C60` at `+0x28/+0x2C` and `+0x40/+0x44`.
 The C and assembled-target count, offset, type, and identity agree. Their
@@ -1766,7 +1766,7 @@ serialized row order differs for the second `D_800D1C60` pair; the linker does
 not assign identity by row order, and the linked owned bytes are exact.
 Resident runtime records, an ORT export at offset `0x2B6F0`, overlay SYMBOL
 inbounds, and stored pointers are zero. Direct callers are
-`func_8002B3A8+0xE0` and `func_8002B524+0x134/+0x160/+0x180`. The linked owned
+`mempool_slot_find+0xE0` and `mmAllocAtAddr+0x134/+0x160/+0x180`. The linked owned
 range is exact C.
 
 Overlay 40 `+0xE8` (`overlay40UpdateEntries`) owns four runtime records: one

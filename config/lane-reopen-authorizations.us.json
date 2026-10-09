@@ -445,12 +445,12 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "8b6507d4ca7fc3983a6598956289c06ceb0a0099"
     },
-    "func_8002B524": {
+    "mmAllocAtAddr": {
       "ledger_commit": "8740f3fb1d724dd4cc8e782f7635d0a189ac09f8",
       "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
       "source_commit": "8740f3fb1d724dd4cc8e782f7635d0a189ac09f8"
     },
-    "func_8002B7AC": {
+    "mmFreeTick": {
       "ledger_commit": "928ad5b12ce139eb3029050a9f9bf7b6ca170d29",
       "reason": "One-instruction reconstruction: at a 4-byte delta the candidate is one instruction out, and today's laws name the usual causes -- a missing register copy, a block-fallthrough order, or an address rematerialized once too often.",
       "source_commit": "541906f449fafbbdad4487edfde49748d0df7a0d"

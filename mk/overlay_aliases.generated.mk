@@ -63,8 +63,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o080/overlay80UpdateContact.c.o: POSTPROCESS = 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83BuildBatch.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym addObjectLight=overlay83CreateLinkedReloc \
-		--redefine-sym func_8002B280=overlay83AllocateBatchReloc \
 		--redefine-sym func_overlay_083_F000053C_18CFCFC=overlay83BuildBatch \
+		--redefine-sym mmAlloc=overlay83AllocateBatchReloc \
 		--redefine-sym pointListRPY=overlay83TransformWorldReloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84LoadCurrent.c.o: POSTPROCESS = \

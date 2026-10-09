@@ -97,7 +97,7 @@ extern u64 D_80076110[];
 extern u64 D_80077950[];
 extern u64 D_80077AD0[];
 extern u64 D_80084B00[];
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern void mmFree(void *address);
 extern s32 osAiSetFrequency(s32 frequency);
 extern s32 osAiSetNextBuffer(void *bufPtr, u32 size);
@@ -298,9 +298,9 @@ void func_80001BF4(void) {
     if (D_80078DDC != D_80078DE0) {
         D_80078DE8 = 0;
         if (large == 0 && D_80078DC0 == NULL) {
-            AMF.acmdListLarge[0] = func_8002B280(0x2C100, 0x82);
+            AMF.acmdListLarge[0] = mmAlloc(0x2C100, 0x82);
             AMF.acmdListLarge[1] = AMF.acmdListLarge[0] + 0x16080;
-            buffer = func_8002B280(D_800C8644 * 0x48, 0x82);
+            buffer = mmAlloc(D_800C8644 * 0x48, 0x82);
             for (i = 0; i < 3; i++) {
                 AMF.outBufLarge[i] = buffer;
                 AMF.outBuf[i] = buffer;
@@ -308,7 +308,7 @@ void func_80001BF4(void) {
             }
             AMF.acmdList[0] = AMF.acmdListLarge[0];
             AMF.acmdList[1] = AMF.acmdListLarge[1];
-            D_80078DC0 = func_8002B280(0xDA34, 0x82);
+            D_80078DC0 = mmAlloc(0xDA34, 0x82);
             if (D_800C7DF8.firstFree != NULL) {
                 alLink(&D_80078DC0->node, &D_800C7DF8.firstFree->node);
             } else {

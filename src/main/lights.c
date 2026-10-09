@@ -22,7 +22,7 @@ extern void initColourCycle();
 extern f32 sqrtf(f32 value);
 extern f32 func_8002A8BC(s32 angle);
 extern void mmFree(void *ptr);
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern void lightCreateLightTable(s32 red, s32 green, s32 blue, void *table);
 extern void func_8000D728(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 extern s32 func_8000D62C(f32 x, f32 y, f32 z, f32 radius, f32 radius2, s32 red, s32 green, s32 blue);
@@ -392,9 +392,9 @@ void setupLights(s32 count, s32 unusedA, s32 unusedB) {
 
     freeLights();
     D_80079490 = count;
-    buffer = func_8002B280(D_80079490 * 0x78, 0x89);
-    D_800CB290 = func_8002B280((D_80079490 << 9) + 0x200, 0x89);
-    D_800794A0 = func_8002B280(0x240, 0x89);
+    buffer = mmAlloc(D_80079490 * 0x78, 0x89);
+    D_800CB290 = mmAlloc((D_80079490 << 9) + 0x200, 0x89);
+    D_800794A0 = mmAlloc(0x240, 0x89);
     D_8007949C = (void **)((u8 *) buffer + (D_80079490 * sizeof(void *)));
     D_80079498 = buffer;
     for (i = 0; i < D_80079490; i++) {

@@ -104,7 +104,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/overlay_005.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_80001740=func_80001740_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_80001BA0=func_80001BA0_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_800039F0=func_800039F0_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym func_8002B280=func_8002B280_o005Reloc $@ && \
+	$(OBJCOPY) --redefine-sym mmAlloc=mmAlloc_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_8002B768=func_8002B768_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_8002E148=func_8002E148_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_8002E2E0=func_8002E2E0_o005Reloc $@ && \
@@ -981,7 +981,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34SetValue10.c.o: POSTPROCESS = \
 # placeholder for the R_MIPS_26 site and the rebind is declared here.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34InitStorage.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_034_F0000000_18811A8=overlay34InitStorage \
-		--redefine-sym func_8002B280=func_8002B280_o034Reloc $@ && \
+		--redefine-sym mmAlloc=mmAlloc_o034Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34InterpolateColor.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC8
@@ -1468,7 +1468,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43AllocateResources.c.o: POSTPROCES
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay43AllocateResources.calls.spec && \
 	$(OBJCOPY) --redefine-sym \
-		func_8002B280=func_overlay_043_F0000000_1889FD0 $@ && \
+		mmAlloc=func_overlay_043_F0000000_1889FD0 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xE0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43SubmitChildren.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x114
@@ -2260,7 +2260,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68ReleaseTertiary.c.o: POSTPROCESS 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68CheckKind.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
 		func_overlay_068_F000146C_18C85CC=overlay68CheckKind \
-		--redefine-sym func_8002B280=overlay68AllocProbeReloc \
+		--redefine-sym mmAlloc=overlay68AllocProbeReloc \
 		--redefine-sym piRomLoadSection=overlay68FillProbeReloc \
 		--redefine-sym func_800291C4=overlay68GetResidentEntriesReloc \
 		--redefine-sym levelGetBlurEffect=overlay68MapResidentIndexReloc \
@@ -2360,7 +2360,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CalculateEndpoints.c.o: POSTPROCE
 	$(OBJCOPY) --redefine-sym func_overlay_017_F0000000_18739B8=overlay17CalculateEndpoints $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x318
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CreateChain.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_8002B280=func_8002B280_o017Reloc \
+	$(OBJCOPY) --redefine-sym mmAlloc=mmAlloc_o017Reloc \
 		--redefine-sym func_80034448=func_80034448_o017Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x310
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17ReleaseChain.c.o: POSTPROCESS = \

@@ -2429,23 +2429,23 @@ mathDiffAngle = 0x8002AA0C; // type:func size:0x38   ROM 0x2b60c  src/hasm/ido/m
 mmInit = 0x8002B0D0; // type:func size:0x78   ROM 0x2bcd0  tier-A matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmInit masked=14/30
 mmExtended = 0x8002B148; // type:func size:0xC   ROM 0x2bd48  tier-B donor-jfg role-callgraph matched C main/memory -O2 -mips2 -32
 mmSetDelay = 0x8002B6F4; // type:func size:0xC   ROM 0x2c2f4  tier-B donor-jfg role-callgraph matched C main/memory -O2 -mips2 -32
-func_8002B1A0 = 0x8002B1A0; // type:func size:0xE0   ROM 0x2bda0  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_init
-func_8002B154 = 0x8002B154; // type:func size:0x4C   ROM 0x2bd54  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAllocRegion
-func_8002B280 = 0x8002B280; // type:func size:0x94   ROM 0x2be80  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAlloc
-func_8002B314 = 0x8002B314; // type:func size:0x94   ROM 0x2bf14  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAlloc2
-func_8002B3A8 = 0x8002B3A8; // type:func size:0x118  ROM 0x2bfa8  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_slot_find
-func_8002B4C0 = 0x8002B4C0; // type:func size:0x64   ROM 0x2c0c0  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAllocR
-func_8002B524 = 0x8002B524; // type:func size:0x1D0 ROM 0x2c124 tier-B JFG mmAllocAtAddr role, NON_MATCHING diagnostic 102/116 pre-cleanup C, frame 0x58, 12 exact tuples, ORT 547, 9 calls plus 1 stored pointer
-func_8002B700 = 0x8002B700; // type:func size:0x68   ROM 0x2c300  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmFlushFreeStack
+mempool_init = 0x8002B1A0; // type:func size:0xE0   ROM 0x2bda0  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_init, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
+mmAllocRegion = 0x8002B154; // type:func size:0x4C   ROM 0x2bd54  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAllocRegion, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
+mmAlloc = 0x8002B280; // type:func size:0x94   ROM 0x2be80  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAlloc, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
+mmAlloc2 = 0x8002B314; // type:func size:0x94   ROM 0x2bf14  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAlloc2, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
+mempool_slot_find = 0x8002B3A8; // type:func size:0x118  ROM 0x2bfa8  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_slot_find, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
+mmAllocR = 0x8002B4C0; // type:func size:0x64   ROM 0x2c0c0  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAllocR, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
+mmAllocAtAddr = 0x8002B524; // type:func size:0x1D0 ROM 0x2c124 tier-B JFG mmAllocAtAddr role, NON_MATCHING diagnostic 102/116 pre-cleanup C, frame 0x58, 12 exact tuples, ORT 547, 9 calls plus 1 stored pointer, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched, the NON_MATCHING note above is stale, memory.c has no GLOBAL_ASM or NON_MATCHING block
+mmFlushFreeStack = 0x8002B700; // type:func size:0x68   ROM 0x2c300  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmFlushFreeStack, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
 mmFree = 0x8002B768; // type:func size:0x44   ROM 0x2c368  tier-A matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmFree masked=4/17
-func_8002B7AC = 0x8002B7AC; // type:func size:0xFC ROM 0x2c3ac tier-B JFG mmFreeTick structural role, matched C exact, ORT 593, sole inbound func_80026FB4+0x5F8
-func_8002B8A8 = 0x8002B8A8; // type:func size:0x94   ROM 0x2c4a8  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_free_addr
-func_8002B93C = 0x8002B93C; // type:func size:0x3C   ROM 0x2c53c  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_free_queue
-func_8002B978 = 0x8002B978; // type:func size:0x58   ROM 0x2c578  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_get_pool
-func_8002B9D0 = 0x8002B9D0; // type:func size:0x150  ROM 0x2c5d0  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_slot_clear
+mmFreeTick = 0x8002B7AC; // type:func size:0xFC ROM 0x2c3ac tier-B JFG mmFreeTick structural role, matched C exact, ORT 593, sole inbound func_80026FB4+0x5F8, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
+mempool_free_addr = 0x8002B8A8; // type:func size:0x94   ROM 0x2c4a8  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_free_addr, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
+mempool_free_queue = 0x8002B93C; // type:func size:0x3C   ROM 0x2c53c  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_free_queue, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
+mempool_get_pool = 0x8002B978; // type:func size:0x58   ROM 0x2c578  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_get_pool, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
+mempool_slot_clear = 0x8002B9D0; // type:func size:0x150  ROM 0x2c5d0  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_slot_clear, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
 mmGetSlotPtr = 0x8002BB20; // type:func size:0x14   ROM 0x2c720  tier-B donor-jfg role-callgraph matched C main/memory -O2 -mips2 -32
 mmGetDelay = 0x8002BB34; // type:func size:0xC   ROM 0x2c734  tier-B donor-jfg role-callgraph matched C main/memory -O2 -mips2 -32
-func_8002BB40 = 0x8002BB40; // type:func size:0x120 ROM 0x2c740 tier-B JFG mempool_slot_assign role, matched C main/memory -O2 -mips2 -32, 72/72 words, 8 exact tuples
+mempool_slot_assign = 0x8002BB40; // type:func size:0x120 ROM 0x2c740 tier-B JFG mempool_slot_assign role, matched C main/memory -O2 -mips2 -32, 72/72 words, 8 exact tuples, name tier-B 2026-10-09 from JFG src/memory.c TU order (mmInit..mempool_slot_assign, one-to-one) plus the adapted JFG body matched
 // jfg:src/saves.c.o
 rumbleKill = 0x8002BF00; // type:func size:0x44   ROM 0x2cb00  src/saves.c.o  masked=1/17  tier-A
 // jfg:src/rcpFast3d.c.o

@@ -125,7 +125,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14LoadRelocatedValue.c.o: \
 	config/normalizations/overlay14LoadRelocatedValue.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14LoadRelocatedValue.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym func_8002B280=overlay14AllocateReloc \
+		--redefine-sym mmAlloc=overlay14AllocateReloc \
 		--redefine-sym piRomLoadSection=overlay14LoadReloc \
 		--add-symbol gOverlay14LoadJumpTableReloc=0x38,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \

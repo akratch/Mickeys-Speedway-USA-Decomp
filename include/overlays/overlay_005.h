@@ -194,7 +194,7 @@ extern u8 gOverlay5MessageBuffer[];
 
 extern void alHeapInit(void *heap, void *base, s32 length);
 extern Overlay5Resource *func_8002E148(s32 resourceId);
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 /*
  * PROVENANCE: the return type follows Diddy Kong Racing's public
  * decompilation, where this call is `s32 asset_load(u32, u32, s32, s32)`

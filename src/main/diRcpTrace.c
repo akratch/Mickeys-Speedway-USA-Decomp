@@ -29,13 +29,13 @@ extern s32 D_8007CFC8;
 extern s32 D_800D4A90[];
 extern s32 D_8007CFC0;
 extern s32 D_8007CFC4;
-extern s32 func_8002B280(s32 size, s32 tag);
+extern s32 mmAlloc(s32 size, s32 tag);
 
 #define DI_RCP_TRACE_BUFFERS ((DiRcpTraceEntry **)&D_8007CFC0)
 
 void diRcpTraceInit(void) {
-    D_8007CFC0 = func_8002B280(0x4B0, 0x8F);
-    D_8007CFC4 = func_8002B280(0x4B0, 0x8F);
+    D_8007CFC0 = mmAlloc(0x4B0, 0x8F);
+    D_8007CFC4 = mmAlloc(0x4B0, 0x8F);
 }
 void func_80044B9C(void) {
     D_8007CFC8 = 1 - D_8007CFC8;

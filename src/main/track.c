@@ -464,7 +464,7 @@ s32 mathXZInTri(s32 x, s32 z, TrackVertex *v0, TrackVertex *v1,
                 TrackVertex *v2);
 void func_8000D768(TrackLight *light, s32 red, s32 green, s32 blue,
                    s32 intensity);
-void *func_8002B280(s32 size, s32 tag);
+void *mmAlloc(s32 size, s32 tag);
 void func_8000D570(void);
 void func_8000D820(void);
 void func_8000439C(void);
@@ -1189,7 +1189,7 @@ void func_8000D3B8(s32 lightCount, s32 copyData) {
     D_800792FC = 0;
     D_800792F8 = lightCount;
     copyFailed = 1;
-    D_80079300 = func_8002B280(D_800792F8 * sizeof(TrackLight), 0x91);
+    D_80079300 = mmAlloc(D_800792F8 * sizeof(TrackLight), 0x91);
     if (D_80079300 != NULL) {
         index = D_800792F8;
         while (index--) {
@@ -1197,7 +1197,7 @@ void func_8000D3B8(s32 lightCount, s32 copyData) {
         }
         copyFailed = copyData;
         if (copyData != 0) {
-            allocation = func_8002B280(
+            allocation = mmAlloc(
                 D_800792E8->segmentCount * sizeof(TrackLightAllocation), 0x91);
             if (allocation != NULL) {
                 segment = D_800792E8->segments;
@@ -1210,7 +1210,7 @@ void func_8000D3B8(s32 lightCount, s32 copyData) {
                         source = segment->lightData;
                         byteCount = segment->lightBatchCount * 10;
                         allocation->source = source;
-                        allocation->data = func_8002B280(byteCount, 0x91);
+                        allocation->data = mmAlloc(byteCount, 0x91);
                         destination = allocation->data;
                         if (destination != NULL) {
                             while (byteCount--) {

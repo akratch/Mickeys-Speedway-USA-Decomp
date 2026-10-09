@@ -48,8 +48,8 @@ extern void *func_8001FBCC(ModelCopySource *source);
 extern ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source,
                                                 s32 pointCopies);
 
-void *func_8002B280(s32 size, s32 tag);
-void *func_8002B314(s32 size, s32 tag);
+void *mmAlloc(s32 size, s32 tag);
+void *mmAlloc2(s32 size, s32 tag);
 s32 *piRomLoad(s32 assetId);
 void *func_80034448(s16 textureId);
 void func_800347A0(void *texture);
@@ -86,11 +86,11 @@ void func_8001F420(u16 *src, u16 *dest, s32 len) {
  * JFG's later allocations; Mickey's globals, calls, and bytes are authoritative.
  */
 void modInitModels(void) {
-    D_800CB484 = func_8002B280(0x2A8, 0x8A);
-    D_800CB488 = func_8002B280(0x190, 0x8A);
+    D_800CB484 = mmAlloc(0x2A8, 0x8A);
+    D_800CB488 = mmAlloc(0x190, 0x8A);
     D_800CB48C = 0;
     D_800CB494 = 0;
-    D_800CB4A4 = func_8002B280(0x2000, 0x8A);
+    D_800CB4A4 = mmAlloc(0x2000, 0x8A);
     D_800CB480 = piRomLoad(0x26);
     D_800CB490 = 0;
     while (D_800CB480[D_800CB490] != -1) {
@@ -175,7 +175,7 @@ void *func_8001F520(s32 modelID, s32 flags) {
     romOffset = D_800CB480[modelID];
     compressedSize = D_800CB480[modelID + 1] - romOffset;
     modelSize = func_8004D7A8(0x27, romOffset) + sizeof(ObjectModel);
-    objMdl = (ObjectModel *) func_8002B314(modelSize, 0x8A);
+    objMdl = (ObjectModel *) mmAlloc2(modelSize, 0x8A);
     if (objMdl == NULL) {
         if (fromFree) {
             D_800CB494++;
@@ -189,7 +189,7 @@ void *func_8001F520(s32 modelID, s32 flags) {
     piRomLoadSection(0x27, compressedData, romOffset, compressedSize);
     func_8004D7E0((u8 *) compressedData, (u8 *) objMdl);
     if (objMdl->nestedCount != 0) {
-        objMdl->nestedAllocations = (void **) func_8002B314((objMdl->nestedCount * 4) + 4, 0x8A);
+        objMdl->nestedAllocations = (void **) mmAlloc2((objMdl->nestedCount * 4) + 4, 0x8A);
         if (objMdl->nestedAllocations == NULL) {
             if (fromFree) {
                 D_800CB494++;
@@ -248,7 +248,7 @@ void *func_8001F520(s32 modelID, s32 flags) {
         goto block_30;
     }
     if (objMdl->unk11 != 0) {
-        objMdl->unk28 = func_8002B314(objMdl->numberOfTextures * 8, 0x8A);
+        objMdl->unk28 = mmAlloc2(objMdl->numberOfTextures * 8, 0x8A);
         if (objMdl->unk28 == NULL) {
             goto block_30;
         }
@@ -346,7 +346,7 @@ void *func_8001FBCC(ModelCopySource *source) {
     u16 *data;
     ModelCopyAllocation *allocation;
 
-    allocation = func_8002B314(source->count * 0xA + 0xC, 0x8A);
+    allocation = mmAlloc2(source->count * 0xA + 0xC, 0x8A);
     if (allocation != NULL) {
         data = (u16 *)((u8 *)allocation + 0xC);
         allocation->source = source;
@@ -472,7 +472,7 @@ ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCo
         extraBytes = source->copyCount * 8 + 0xA8;
     }
 
-    instance = func_8002B314((matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes + dataBytes44 + dataBytes48 +
+    instance = mmAlloc2((matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes + dataBytes44 + dataBytes48 +
                      coordinateBytes + extraBytes + 0x58, 0x8A);
     if (instance != NULL) {
         clear = (u32 *)instance;
@@ -900,7 +900,7 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
     gSPEndDisplayList(displayList++);
 
     commandCount = displayList - D_800CB4A4;
-    displayList = *out = func_8002B314(commandCount * sizeof(Gfx), 0x8A);
+    displayList = *out = mmAlloc2(commandCount * sizeof(Gfx), 0x8A);
     if (displayList != NULL) {
         sourceDisplayList = D_800CB4A4;
         for (partIndex = 0; partIndex < commandCount; partIndex++) {
@@ -1125,7 +1125,7 @@ void func_80020E4C(s16 *exceptions) {
     s32 i;
 
     D_80079C08 = 0;
-    saved = D_80079C04 = func_8002B280(0x3E8, 0x8A);
+    saved = D_80079C04 = mmAlloc(0x3E8, 0x8A);
     modelIndex = 0;
     if (D_800CB48C > 0) {
         if (D_80079C08 < 0x7D) {

@@ -82,7 +82,7 @@ extern u32 D_800D2F60;
 extern OSViFieldRegs D_800D2F68;
 extern s32 D_800D3128;
 
-extern MemoryPoolSlot *func_8002B280(s32 size, u32 colourTag);
+extern MemoryPoolSlot *mmAlloc(s32 size, u32 colourTag);
 extern void osScAddClient(void *scheduler, void *client, OSMesgQueue *queue, s32 id);
 extern void func_800336A8(s32 videoMode);
 extern void viAllocateZBuffer(s32 width, s32 height);
@@ -111,7 +111,7 @@ void viInit(void *scheduler) {
     }
     osCreateMesgQueue(&D_800D2E70, D_800D2E50, 8);
     osScAddClient(scheduler, D_800D2F30, &D_800D2E70, 2);
-    D_8007A680[0] = (s32 *) func_8002B280(0x4B030, 0x92);
+    D_8007A680[0] = (s32 *) mmAlloc(0x4B030, 0x92);
     D_800D2F9A = 0;
     D_800D2F95 = 0;
     D_800D2F96 = 0;
@@ -162,7 +162,7 @@ void func_800336A8(s32 videoMode) {
     switch (D_800D2F98 & 3) {
         case 2:
         case 3:
-            D_8007A680[1] = (s32 *) func_8002B280(bufferSize + 0x30, 0x92);
+            D_8007A680[1] = (s32 *) mmAlloc(bufferSize + 0x30, 0x92);
             D_8007A690[1] = (s32 *) (((s32) D_8007A680[1] + 0x3F) & ~0x3F);
             break;
         default:
@@ -170,7 +170,7 @@ void func_800336A8(s32 videoMode) {
             break;
     }
     if (D_800D2F96) {
-        D_8007A680[2] = (s32 *) func_8002B280(bufferSize + 0x30, 0x92);
+        D_8007A680[2] = (s32 *) mmAlloc(bufferSize + 0x30, 0x92);
         D_8007A690[2] = (s32 *) (((s32) D_8007A680[2] + 0x3F) & ~0x3F);
     }
     D_800D2F95 = D_800D2F96;
@@ -221,7 +221,7 @@ void func_800339B4(void) {
 /* PROVENANCE: adapted from JFG's public decomp, src/gameVi.c:viAllocateZBuffer. */
 void viAllocateZBuffer(s32 width, s32 height) {
     D_800D2F90 = (width * height * 2) + 0x30;
-    D_8007A680[3] = (s32 *) func_8002B280(D_800D2F90, 0x92);
+    D_8007A680[3] = (s32 *) mmAlloc(D_800D2F90, 0x92);
     D_800D2FAC = (s32 *) (((s32) D_8007A680[3] + 0x3F) & ~0x3F);
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/gameVi.c:viFreeZBuffer. */

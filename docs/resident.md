@@ -414,29 +414,29 @@ Mickey lacks. No distinctive string is referenced, so there is no tier C row.
 |---|---|---|---|
 | `0x2BCD0` | `mmInit` | `mmInit` | A: unique 30-word skeleton with 14 relocated words; linked C exact |
 | `0x2BD48` | `mmExtended` | `mmExtended` | B: returns the expansion-memory flag consumed by `mmInit`; matched C exact |
-| `0x2BD54` | `func_8002B154` | `mmAllocRegion` | B: allocates slot storage, then calls the pool initializer with it; linked C exact |
-| `0x2BDA0` | `func_8002B1A0` | `mempool_init` | B: shared callee of `mmInit` and the region allocator; initializes the 0x10-byte pool and 0x14-byte slot records; linked C exact |
-| `0x2BE80` | `func_8002B280` | `mmAlloc` | B: main-pool wrapper that derives a caller colour tag and calls the slot finder; linked C exact |
-| `0x2BF14` | `func_8002B314` | `mmAlloc2` | B: second wrapper with the same calls and result role; linked C exact |
-| `0x2BFA8` | `func_8002B3A8` | `mempool_slot_find` | B: common worker used by all three allocation wrappers and the fixed-address allocator; linked C exact |
-| `0x2C0C0` | `func_8002B4C0` | `mmAllocR` | B: selects a pool by its slot-array pointer, then calls the common worker; linked C exact |
-| `0x2C124` | `func_8002B524` | `mmAllocAtAddr` | B: fixed-address allocator; retained pre-cleanup C is diagnostic 102/116 raw/normalized words, frame `0x58`, first `+0xE0`, with all 12 tuples exact. Artificial volatile pad is removed; clean V0 is uncompiled and linked equality is fallback-only. ORT 547 has nine calls plus one stored pointer. |
+| `0x2BD54` | `mmAllocRegion` | `mmAllocRegion` | B: allocates slot storage, then calls the pool initializer with it; linked C exact |
+| `0x2BDA0` | `mempool_init` | `mempool_init` | B: shared callee of `mmInit` and the region allocator; initializes the 0x10-byte pool and 0x14-byte slot records; linked C exact |
+| `0x2BE80` | `mmAlloc` | `mmAlloc` | B: main-pool wrapper that derives a caller colour tag and calls the slot finder; linked C exact |
+| `0x2BF14` | `mmAlloc2` | `mmAlloc2` | B: second wrapper with the same calls and result role; linked C exact |
+| `0x2BFA8` | `mempool_slot_find` | `mempool_slot_find` | B: common worker used by all three allocation wrappers and the fixed-address allocator; linked C exact |
+| `0x2C0C0` | `mmAllocR` | `mmAllocR` | B: selects a pool by its slot-array pointer, then calls the common worker; linked C exact |
+| `0x2C124` | `mmAllocAtAddr` | `mmAllocAtAddr` | B: fixed-address allocator; retained pre-cleanup C is diagnostic 102/116 raw/normalized words, frame `0x58`, first `+0xE0`, with all 12 tuples exact. Artificial volatile pad is removed; clean V0 is uncompiled and linked equality is fallback-only. ORT 547 has nine calls plus one stored pointer. |
 | `0x2C2F4` | `mmSetDelay` | `mmSetDelay` | B: writes the deferred-free delay used by `mmFree`; matched C exact |
-| `0x2C300` | `func_8002B700` | `mmFlushFreeStack` | B: drains queued addresses through the address-free worker; linked C exact |
+| `0x2C300` | `mmFlushFreeStack` | `mmFlushFreeStack` | B: drains queued addresses through the address-free worker; linked C exact |
 | `0x2C368` | `mmFree` | `mmFree` | A: unique 17-word skeleton with four relocated words masked; linked C exact |
-| `0x2C3AC` | `func_8002B7AC` | `mmFreeTick` | B: services the delayed-free queue; linked C exact |
-| `0x2C4A8` | `func_8002B8A8` | `mempool_free_addr` | B: finds an address's pool and clears its matching live slot; linked C exact |
-| `0x2C53C` | `func_8002B93C` | `mempool_free_queue` | B: appends an address and delay to the deferred-free arrays; linked C exact |
-| `0x2C578` | `func_8002B978` | `mempool_get_pool` | B: reverse-searches the pool table for the containing address range; linked C exact |
-| `0x2C5D0` | `func_8002B9D0` | `mempool_slot_clear` | B: frees a slot and coalesces adjacent free records; linked C exact |
+| `0x2C3AC` | `mmFreeTick` | `mmFreeTick` | B: services the delayed-free queue; linked C exact |
+| `0x2C4A8` | `mempool_free_addr` | `mempool_free_addr` | B: finds an address's pool and clears its matching live slot; linked C exact |
+| `0x2C53C` | `mempool_free_queue` | `mempool_free_queue` | B: appends an address and delay to the deferred-free arrays; linked C exact |
+| `0x2C578` | `mempool_get_pool` | `mempool_get_pool` | B: reverse-searches the pool table for the containing address range; linked C exact |
+| `0x2C5D0` | `mempool_slot_clear` | `mempool_slot_clear` | B: frees a slot and coalesces adjacent free records; linked C exact |
 | `0x2C720` | `mmGetSlotPtr` | `mmGetSlotPtr` | B: returns one pool's slot-array pointer; matched C exact |
 | `0x2C734` | `mmGetDelay` | `mmGetDelay` | B: returns the deferred-free delay; matched C exact |
-| `0x2C740` | `func_8002BB40` | `mempool_slot_assign` | B: JFG role/call-graph donor; canonical C is exact for all 72 frameless words, all eight relocation tuples, and the linked resident range. Four direct callers; no export/runtime/pointer inbound. |
+| `0x2C740` | `mempool_slot_assign` | `mempool_slot_assign` | B: JFG role/call-graph donor; canonical C is exact for all 72 frameless words, all eight relocation tuples, and the linked resident range. Four direct callers; no export/runtime/pointer inbound. |
 | `0x2C860` | `align16` | `mmAlign16` | A: existing exact 7-word `memory.c.o` match; JFG corroborates the role |
 | `0x2C87C` | `align8` | — | A: existing exact 7-word `memory.c.o` match; no JFG counterpart |
 | `0x2C898` | `align4` | `mmAlign4` | A: existing exact 7-word `memory.c.o` match; JFG corroborates the role |
 
-`func_8002B524` owns VRAM `0x8002B524..0x8002B6F4`, ROM
+`mmAllocAtAddr` owns VRAM `0x8002B524..0x8002B6F4`, ROM
 `0x2C124..0x2C2F4`: 464 bytes/116 words, frame `0x58`, saves `s0` through
 `s3` and `ra`, and has no target padding. Retained pre-cleanup full-TU and
 isolated C agree at diagnostic 102/116 raw/normalized words, first `+0xE0`;
@@ -448,7 +448,7 @@ leaving clean V0 uncompiled. The return-address sentinel remains authentic:
 All 12 target tuples were exact in diagnostic C: pairs to `D_8007A278` at
 `+0x04/+0x08`, `D_8007A270` at `+0x1C/+0x3C`, `D_8007A27C` at
 `+0x4C/+0x50`, and `D_800D1C60` at `+0x90/+0x94`; a
-`runlinkGetAddressInfo` call at `+0x74`; and `func_8002BB40` calls at
+`runlinkGetAddressInfo` call at `+0x74`; and `mempool_slot_assign` calls at
 `+0x134,+0x160,+0x180`. ORT 547 exports offset `0x2B0D4`. Resident calls are
 `runlinkSuspendCode+0xB4`, `runlinkResumeCode+0xD8`, and
 `func_80034448+0x12C/+0x1D0`; Overlay 2/18/19/35 provide five more calls, and
@@ -461,7 +461,7 @@ Retain clean V0 and 119 flags, try scoped direct slot-data and split-guard forms
 plus an independently improving combination, then one trace-selected natural
 lifetime form. Hard cap 123 stock builds plus one trace; no generic batch.
 
-`func_8002B7AC` owns VRAM `0x8002B7AC..0x8002B8A8`, ROM
+`mmFreeTick` owns VRAM `0x8002B7AC..0x8002B8A8`, ROM
 `0x2C3AC..0x2C4A8`: 252 bytes/63 words, frame `0x30`, saves `s0` through
 `s5` and `ra`, and has no target padding. It is exact canonical C, all 63
 words and all 12 HI16/LO16 and R_MIPS_26 identities at the target offsets,
@@ -470,7 +470,7 @@ with the linked owned range and the full ROM byte-identical.
 The target owns 12 records. Pairs are `D_800D21B0` at `+0x08/+0x0C`,
 `D_800D21A8` at `+0x44/+0x48`, first `D_800D20A8` at `+0x50/+0x5C`, second
 `D_800D20A8` at `+0x60/+0x6C`, and `D_800D1CA8` at `+0x64/+0x68`; calls are
-`ReleaseUnusedLinkSlots` at `+0x3C` and `func_8002B8A8` at `+0x8C`. Historical
+`ReleaseUnusedLinkSlots` at `+0x3C` and `mempool_free_addr` at `+0x8C`. Historical
 prose reports the same identities, with eleven records four bytes early and the
 first `D_800D20A8` LO16 twelve bytes early; conflicting old-source claims count
 ten or eleven aligned residual rows, and neither has an attributable report.
@@ -486,7 +486,7 @@ early-base/later-delay-cursor lifetimes, combining only independent gains.
 Hard cap 122 deterministic builds plus one trace; no generic batch absent a
 policy-clean natural gain.
 
-`func_8002BB40` owns VRAM `0x8002BB40..0x8002BC60`, ROM
+`mempool_slot_assign` owns VRAM `0x8002BB40..0x8002BC60`, ROM
 `0x2C740..0x2C860`: 288 bytes/72 words, frameless, with no padding before
 `align16`. Canonical `-O2 -mips2 -32` C reproduces all 72 instruction words
 and the linked owned range; there is no target padding to inflate the credit.
@@ -498,7 +498,7 @@ with the assembled target. The serialized ELF row order differs for the second
 `D_800D1C60` pair, but relocation order is not part of link identity and the
 linked bytes are exact. There is no resident runtime record, ORT export,
 overlay inbound, or stored pointer. Direct callers are
-`func_8002B3A8+0xE0` and `func_8002B524+0x134/+0x160/+0x180`.
+`mempool_slot_find+0xE0` and `mmAllocAtAddr+0x134/+0x160/+0x180`.
 
 The former 42/72 body first becomes exact through three source-authentic
 mechanisms: dead `slotIsTaken` carries the slot count, array-equivalent 20-byte
@@ -531,45 +531,45 @@ starting declaration and are reflected in `include/game/memory.h`.
 `mmFree` is exact for all `0x44` bytes with canonical flags. Its branch and
 two call relocations reproduce the target's immediate-free/deferred-free
 selection, using the body adapted from JFG `src/memory.c`.
-`func_8002B93C` is exact for all `0x3C` bytes with canonical flags; its queue
+`mempool_free_queue` is exact for all `0x3C` bytes with canonical flags; its queue
 address, delay, and count accesses reproduce the JFG `mempool_free_queue`
 role without the donor's diagnostic overflow branch.
-`func_8002B978` is exact for all `0x58` bytes with canonical flags. Its reverse
+`mempool_get_pool` is exact for all `0x58` bytes with canonical flags. Its reverse
 pool-table scan is adapted from JFG `mempool_get_pool` and preserves Mickey's
 pool count and 16-byte record layout.
-`func_8002B700` is exact for all `0x68` bytes with canonical flags. The JFG
+`mmFlushFreeStack` is exact for all `0x68` bytes with canonical flags. The JFG
 `mmFlushFreeStack` loop reproduces Mickey's LIFO queue drain and its call
 relocation to the immediate-free worker.
-`func_8002B8A8` is exact for all `0x94` bytes with canonical flags. The JFG
+`mempool_free_addr` is exact for all `0x94` bytes with canonical flags. The JFG
 `mempool_free_addr` search matches after expressing Mickey's 20-byte slot
 stride explicitly and retaining the linked list index at its 16-bit width.
-`func_8002B9D0` is exact for all `0x150` bytes with canonical flags. Its JFG
+`mempool_slot_clear` is exact for all `0x150` bytes with canonical flags. Its JFG
 coalescing body matches Mickey after preserving direct pool-table expressions
 and natural 20-byte indexing for the allocator's recycled-slot tail.
-`func_8002B4C0` is exact for all `0x64` bytes with canonical flags. The JFG
+`mmAllocR` is exact for all `0x64` bytes with canonical flags. The JFG
 `mmAllocR` reverse pool search and zero colour tag reproduce Mickey's target
 and its call relocation to the shared slot finder.
-`func_8002B3A8` is exact for all `0x118` bytes with canonical flags. Its JFG
+`mempool_slot_find` is exact for all `0x118` bytes with canonical flags. Its JFG
 best-fit search matches with Mickey's 16-bit traversal index, retained stack
 pad, and natural 20-byte slot indexing at the selected-address return.
-`func_8002B1A0` is exact for all `0xE0` bytes with canonical flags. JFG's
+`mempool_init` is exact for all `0xE0` bytes with canonical flags. JFG's
 pool initializer reproduces the pool/slot setup after applying Mickey's
 byte-sized slot flags and colour index and retaining the repeated pool-table
 expressions that determine IDO's schedule.
-`func_8002B280` is exact for all `0x94` bytes with canonical flags. Its JFG
+`mmAlloc` is exact for all `0x94` bytes with canonical flags. Its JFG
 allocation wrapper matches after retaining Mickey's caller-colour global and
 expressing the address/module scratch area as a padded stack record.
-`func_8002B314` is exact for all `0x94` bytes with canonical flags. It is the
+`mmAlloc2` is exact for all `0x94` bytes with canonical flags. It is the
 instruction-identical duplicate of the preceding JFG allocation wrapper and
 uses the same padded stack-record spelling.
-`func_8002B154` is exact for all `0x4C` bytes with canonical flags. JFG's
+`mmAllocRegion` is exact for all `0x4C` bytes with canonical flags. JFG's
 region-allocation size calculation and allocator/initializer call sequence
 reproduce Mickey's target and both call relocations.
 `mmInit` is exact for all `0x78` bytes with canonical flags. The JFG donor's
 extended-RAM choice, main-pool construction, deferred-free delay, and queue
 reset reproduce all 30 words and the linked global/call relocations.
 
-`func_8002B524`: the retained configured `NON_MATCHING` full-TU object and
+`mmAllocAtAddr`: the retained configured `NON_MATCHING` full-TU object and
 isolated candidate are byte-identical and represent the current function body.
 They own 116 words with the exact `0x58` frame, all 12 target relocation
 tuples, and 102 exact raw and relocation-normalized words. The fourteen
@@ -582,12 +582,12 @@ memory TU, and exact ROM contain `GLOBAL_ASM`; no linked C candidate survives.
 Use the bounded five-build cache/guard/combination/spill ladder and park if
 flat.
 
-`func_8002BB40` is exact canonical C for all 72 frameless words. Its eight
+`mempool_slot_assign` is exact canonical C for all 72 frameless words. Its eight
 HI16/LO16 tuples bind `D_8007A270`, `D_800D21B0`, and two references to
 `D_800D1C60` at the target offsets. The linked owned resident range and full
 ROM are byte-identical; this is no longer assembly-fallback evidence.
 
-`func_8002B7AC` closed on the size question, not on allocation. The candidate
+`mmFreeTick` closed on the size question, not on allocation. The candidate
 was one instruction short because a single source reference to `D_800D21B0`
 lets IDO fold the `%lo` into the load, where the target materializes the
 address into a callee-saved register and loads through it -- the two-reference

@@ -205,7 +205,7 @@ extern s32 func_8001398C(f32 x, f32 z, s32 arg2, RainHeight ***arg3);
 extern void func_80023A08(Gfx **dList, Mtx **matrix, WeatherVertex **vertices,
                            RainSplash *splash, void *texture, s32 arg5, s32 arg6);
 extern s32 mathRnd(s32 min, s32 max);
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern Camera *camGetPtr(void);
 extern Matrix *camGetRotationMtx(void);
 extern s32 *piRomLoad(s32 assetId);
@@ -377,14 +377,14 @@ void setupWeather(s32 type, s32 numParticles, s32 velX, s32 velY, s32 velZ, s32 
     if (!particle) {
         ;
     }
-    D_8007C398.positions = func_8002B280(D_8007C310[type].size * 0xC, 0x93);
+    D_8007C398.positions = mmAlloc(D_8007C310[type].size * 0xC, 0x93);
     if (D_8007C310[type].source.type == 0) {
         snow_init();
     }
     numOfElements = numParticles;
     D_800D4070 = numParticles;
-    D_8007C3D0 = func_8002B280(numParticles * sizeof(s16), 0x93);
-    D_8007C394 = func_8002B280(numParticles * sizeof(WeatherParticle), 0x93);
+    D_8007C3D0 = mmAlloc(numParticles * sizeof(s16), 0x93);
+    D_8007C394 = mmAlloc(numParticles * sizeof(WeatherParticle), 0x93);
     particle = D_8007C394;
     for (i = 0; i < D_800D4070; i++) {
         particle->x = func_800299E8(0, D_8007C398.radiusX);
@@ -399,8 +399,8 @@ void setupWeather(s32 type, s32 numParticles, s32 velX, s32 velY, s32 velZ, s32 
     numOfElements *= 4;
     bufferSize = sizeof(WeatherVertex);
     bufferSize *= numOfElements;
-    D_8007C3D4[0] = func_8002B280(bufferSize, 0x93);
-    D_8007C3D4[1] = func_8002B280(bufferSize, 0x93);
+    D_8007C3D4[0] = mmAlloc(bufferSize, 0x93);
+    D_8007C3D4[1] = mmAlloc(bufferSize, 0x93);
     j = 0;
     do {
         vertex = D_8007C3D4[j];
@@ -414,7 +414,7 @@ void setupWeather(s32 type, s32 numParticles, s32 velX, s32 velY, s32 velZ, s32 
     } while (&D_8007C3D4[j] < (WeatherVertex **) &D_8007C3DC);
     maxU = (D_8007C398.source.texture->width << 5) - 1;
     maxV = (D_8007C398.source.texture->height << 5) - 1;
-    D_8007C3CC = func_8002B280(D_800D40C4 * sizeof(WeatherTriangle), 0x93);
+    D_8007C3CC = mmAlloc(D_800D40C4 * sizeof(WeatherTriangle), 0x93);
     triangle = D_8007C3CC;
     for (i = 0; i < D_800D40C4; i += 2) {
         triangle[0].flags = 0;

@@ -16,7 +16,7 @@ extern s16 D_800D6AC8;
 extern s32 D_800D6AD8[];
 extern s32 D_800D6AE4;
 extern s32 piRomGetFileSize(s32 fileId);
-extern s32 func_8002B280(s32 size, s32 tag);
+extern s32 mmAlloc(s32 size, s32 tag);
 
 extern char *D_800D6AD0[];
 extern u8 *D_800D6AE0;
@@ -36,7 +36,7 @@ extern void func_8004BFB0(s32 windowId);
  * init_dialogue_text; Mickey's globals, constants, calls, and bytes remain authoritative. */
 void func_8004E8E0(void) {
     D_800D6AB4 = (piRomGetFileSize(5) >> 2) - 2;
-    D_800D6AD8[0] = func_8002B280(0x790, 0x8F);
+    D_800D6AD8[0] = mmAlloc(0x790, 0x8F);
     D_800D6AD8[1] = D_800D6AD8[0] + 0x3C0;
     D_800D6AB0 = D_800D6AD8[1] + 0x3C0;
     D_800D6AE4 = 0;

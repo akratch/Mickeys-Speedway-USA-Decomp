@@ -319,12 +319,12 @@ D_24 = 0x00000024;
 
 /* overlay 2: func_overlay_002_F0000C90_1857A88.c.o */
 _bzero_o002Reloc = 0xf0000000;
-func_8002B280_o002Reloc = 0xf0000000;
-func_8002B524_o002Reloc = 0xf0000000;
 gOverlay2BuiltLineCount = 0x00000078;
 gOverlay2BuiltNodeCount = 0x00000074;
 gOverlay2RegionCount = 0x00000024;
 gOverlay2Regions = 0x00000004;
+mmAllocAtAddr_o002Reloc = 0xf0000000;
+mmAlloc_o002Reloc = 0xf0000000;
 mmFree_o002Reloc = 0xf0000000;
 mmGetDelay_o002Reloc = 0xf0000000;
 mmSetDelay_o002Reloc = 0xf0000000;
@@ -436,7 +436,6 @@ func_80000450_o005Reloc = 0xf0000000;
 func_80001740_o005Reloc = 0xf0000000;
 func_80001BA0_o005Reloc = 0xf0000000;
 func_800039F0_o005Reloc = 0xf0000000;
-func_8002B280_o005Reloc = 0xf0000000;
 func_8002B768_o005Reloc = 0xf0000000;
 func_8002E148_o005Reloc = 0xf0000000;
 func_8002E2E0_o005Reloc = 0xf0000000;
@@ -464,6 +463,7 @@ gOverlay5Span1ScaleValue = 0x00000000;
 gOverlay5Span1Size = 0x00000000;
 gOverlay5Span2 = 0x00000000;
 gsSndpNew_o005Reloc = 0xf0000000;
+mmAlloc_o005Reloc = 0xf0000000;
 n_alCSPSetMessageQ_o005Reloc = 0xf0000000;
 osCreateMesgQueue_o005Reloc = 0xf0000000;
 overlay5AllocPlayerReloc = 0xf0000000;
@@ -1120,9 +1120,9 @@ overlay17SqrtReloc = 0xf0000000;
 overlay17TransformReloc = 0xf0000000;
 
 /* overlay 17: overlay17CreateChain.c.o */
-func_8002B280_o017Reloc = 0xf0000000;
 func_80034448_o017Reloc = 0xf0000000;
 gOverlay17TemplateReloc = 0x00000000;
+mmAlloc_o017Reloc = 0xf0000000;
 
 /* overlay 17: overlay17ReleaseChain.c.o */
 overlay17ReleaseReloc = 0xf0000000;
@@ -1591,10 +1591,10 @@ overlay33BuildDisplayListReloc = 0xf0000000;
 rcpFast3d_o033Reloc = 0xf0000000;
 
 /* overlay 34: overlay34InitStorage.c.o */
-func_8002B280_o034Reloc = 0xf0000000;
 gOverlay34Count = 0x00000008;
 gOverlay34Pointers = 0x00000004;
 gOverlay34Records = 0x00000000;
+mmAlloc_o034Reloc = 0xf0000000;
 
 /* overlay 34: overlay34SetValue10.c.o */
 gOverlay34Value10 = 0x00000010;

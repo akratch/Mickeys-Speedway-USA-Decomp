@@ -127,7 +127,7 @@ extern void func_80036AB0(void *, s32);
 extern s32 *piRomLoad(s32);
 extern s32 piRomLoadSection(s32, void *, s32, s32);
 extern void mmFree(void *);
-extern void *func_8002B280(s32, s32);
+extern void *mmAlloc(s32, s32);
 extern u8 *align4(u8 *);
 extern void rumbleKill(s32);
 extern s8 func_800291FC(void);
@@ -198,7 +198,7 @@ void levelGetCounts(void) {
     LevelHeaderSummarySource *header;
     u8 *nameData;
 
-    header = func_8002B280(sizeof(LevelHeaderSummarySource), 0x8F);
+    header = mmAlloc(sizeof(LevelHeaderSummarySource), 0x8F);
     D_800CF3C0 = piRomLoad(0x1E);
 
     for (i = 0; i != 16; i++) { D_800CF3E0[i] = 0;
@@ -210,7 +210,7 @@ void levelGetCounts(void) {
     }
     D_800CF3D4--;
 
-    D_800CF3DC = func_8002B280(D_800CF3D4 * sizeof(LevelSummary), 0x8F);
+    D_800CF3DC = mmAlloc(D_800CF3D4 * sizeof(LevelSummary), 0x8F);
     D_800CF3D8 = -1;
     D_800CF3C8 = header;
     for (i = 0; i < D_800CF3D4; i++) {
@@ -232,7 +232,7 @@ void levelGetCounts(void) {
     mmFree(D_800CF3C0);
     mmFree(header);
 
-    D_8007A0D0 = func_8002B280(0x20, 0x8F);
+    D_8007A0D0 = mmAlloc(0x20, 0x8F);
     D_800CF3C0 = piRomLoad(0x22);
     i = 0;
     while (D_800CF3C0[i] != -1) {
@@ -240,7 +240,7 @@ void levelGetCounts(void) {
     }
     i--;
     count = D_800CF3C0[i] - D_800CF3C0[0];
-    nameData = func_8002B280((s32) align4((u8 *) count) + (i * 4), 0x8F);
+    nameData = mmAlloc((s32) align4((u8 *) count) + (i * 4), 0x8F);
     D_800CF3D0 = (u8 **) ((u32) nameData + (s32) align4((u8 *) count));
     piRomLoadSection(0x23, nameData, 0, count);
     for (count = 0; count < i; count++) {
@@ -356,7 +356,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
 
     lvlStart = D_800CF3C0[lvlIdx];
     lvlSize = D_800CF3C0[lvlIdx + 1] - lvlStart;
-    D_800CF3C8 = func_8002B280(lvlSize, 0x85);
+    D_800CF3C8 = mmAlloc(lvlSize, 0x85);
     piRomLoadSection(0x1F, D_800CF3C8, lvlStart, lvlSize);
     mainPreNMI();
     mmFree(D_800CF3C0);

@@ -41,8 +41,8 @@ extern TempTextureHeader *D_800D301C;
 extern s32 D_8007A278;
 extern u8 *D_8007BDA4;
 extern s32 D_8007BD84;
-extern void *func_8002B314(s32 size, u32 colourTag);
-extern void *func_8002B524(s32 size, u8 *address, u32 colourTag);
+extern void *mmAlloc2(s32 size, u32 colourTag);
+extern void *mmAllocAtAddr(s32 size, u8 *address, u32 colourTag);
 extern void mmFree(void *ptr);
 extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset,
                             s32 size);
@@ -124,10 +124,10 @@ TextureHeader *func_80034448(s32 textureId) {
 
     if (!(D_800D301C->header.flags & 1)) {
         if (D_8007BDA4 != NULL) {
-            texture = func_8002B524(assetSize + 0x90, D_8007BDA4,
+            texture = mmAllocAtAddr(assetSize + 0x90, D_8007BDA4,
                                     D_8007BD84);
         } else {
-            texture = func_8002B314(assetSize + 0x90, D_8007BD84);
+            texture = mmAlloc2(assetSize + 0x90, D_8007BD84);
         }
         D_8007A278 = -1;
         if (texture == NULL) {
@@ -144,10 +144,10 @@ TextureHeader *func_80034448(s32 textureId) {
         }
         loadSize += 0x20;
         if (D_8007BDA4 != NULL) {
-            texture = func_8002B524(loadSize + 0x90, D_8007BDA4,
+            texture = mmAllocAtAddr(loadSize + 0x90, D_8007BDA4,
                                     D_8007BD84);
         } else {
-            texture = func_8002B314(loadSize + 0x90, D_8007BD84);
+            texture = mmAlloc2(loadSize + 0x90, D_8007BD84);
         }
         D_8007A278 = -1;
         if (texture == NULL) {

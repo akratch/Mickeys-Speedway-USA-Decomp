@@ -57,7 +57,7 @@ extern s32 gOverlay2BuiltLineCount;
 
 /* Cross-overlay callee, reached through a runtime relocation record. */
 extern u16 overlay2GetBuildValueReloc(Overlay2BuildObject *object);
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern void _bzero(void *memory, s32 size);
 extern void overlay2AppendLine(f32 x1, f32 y1, f32 x2, f32 y2, u16 value1,
                                u16 value2);
@@ -66,7 +66,7 @@ extern void overlay2SplitRegion(Overlay2BuildRegion *previous,
 extern s32 mmGetDelay(void);
 extern void mmSetDelay(s32 state);
 extern void mmFree(void *memory);
-extern void func_8002B524(s32 size, void *memory, s32 tag);
+extern void mmAllocAtAddr(s32 size, void *memory, s32 tag);
 
 /*
  * PROVENANCE: Jet Force Gemini src/overlays/o142/overlay_142.c identifies the
@@ -114,9 +114,9 @@ void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
     linked = object;
     rootValue = overlay2GetBuildValueReloc(object);
 
-    gOverlay2Lines = func_8002B280(0xF000, 0x85);
-    gOverlay2Regions = func_8002B280(0x2800, 0x85);
-    gOverlay2BoundaryCandidates = func_8002B280(0x2000, 0x85);
+    gOverlay2Lines = mmAlloc(0xF000, 0x85);
+    gOverlay2Regions = mmAlloc(0x2800, 0x85);
+    gOverlay2BoundaryCandidates = mmAlloc(0x2000, 0x85);
     _bzero(gOverlay2Lines, 0xF000);
     _bzero(gOverlay2Regions, 0x2800);
     _bzero(gOverlay2BoundaryCandidates, 0x2000);
@@ -168,7 +168,7 @@ void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
     stride = 0x14;
     size = (gOverlay2RegionCount * 0x10) +
            (gOverlay2LineCount * stride);
-    object->nodes = func_8002B280(size, 0x85);
+    object->nodes = mmAlloc(size, 0x85);
     object->lines = (Overlay2BuildLine *)((u8 *)object->nodes +
                                           (gOverlay2RegionCount *
                                            0x10));
@@ -235,7 +235,7 @@ void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
     mmSetDelay(savedState);
     size = (gOverlay2RegionCount * 0x10) +
            (count * 0x14);
-    func_8002B524(size, object->nodes, 0x85);
+    mmAllocAtAddr(size, object->nodes, 0x85);
 
     savedState = mmGetDelay();
     mmSetDelay(0);

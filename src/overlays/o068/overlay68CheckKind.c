@@ -23,7 +23,7 @@ extern const Overlay68KindPair gOverlay68KindMapInitial[];
 extern volatile const s8 gOverlay68KindMapLoop;
 
 /* The runtime relocation stream preserves these five distinct call roles. */
-extern void *func_8002B280(s32 size, u32 colourTag);
+extern void *mmAlloc(s32 size, u32 colourTag);
 extern s32 piRomLoadSection(u32 assetIndex, u32 address,
                                     s32 assetOffset, s32 size);
 extern u8 *func_800291C4(void);
@@ -70,7 +70,7 @@ s32 overlay68CheckKind(s32 kind) {
     }
 
     if (amount != -1) {
-        probe = func_8002B280(sizeof(*probe), 0x85);
+        probe = mmAlloc(sizeof(*probe), 0x85);
         if (probe != NULL) {
             piRomLoadSection(0x3F, (u32)probe,
                                     amount * (s32)sizeof(*probe),

@@ -809,8 +809,8 @@ Two toolchain facts govern the per-TU split:
 - **The object system.** The `"null"` / `"setting up"` / `"freeing"` /
   `"processing"` / `"exploding"` phase names occupy five pointers beginning at
   `0x8007A220`. They are followed by a separate five-function patch table at
-  `0x8007A234`–`0x8007A244`, including `func_8002B280`, `func_8002B314`,
-  `mmFree`, and `func_8002B524`. `RevealReturnAddresses` consumes the function
+  `0x8007A234`–`0x8007A244`, including `mmAlloc`, `mmAlloc2`,
+  `mmFree`, and `mmAllocAtAddr`. `RevealReturnAddresses` consumes the function
   table to patch return-address sentinels, while the crash reporter consumes the
   phase names. Something at `0x8007A214` relates the two surfaces, but the
   evidence does not justify a combined struct or stronger intent claim.

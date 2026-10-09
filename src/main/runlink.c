@@ -68,7 +68,7 @@ extern char D_80082410[];
 extern void runlinkResumeCode(s32 overlayIndex);
 extern void runlinkFreeCode(s32 overlayIndex);
 extern void runlinkUnloadOverlay(s32 overlayIndex);
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern void mmFree(void *address);
 extern s32 mmGetDelay(void);
 extern void mmSetDelay(s32 delay);
@@ -351,7 +351,7 @@ s32 runlinkDownloadCode(s32 overlayIndex) {
     }
 
     D_8007A27C = overlayIndex;
-    overlay->vramBase = (s32) func_8002B280(
+    overlay->vramBase = (s32) mmAlloc(
         overlay->textSize + overlay->dataSize + overlay->bssSize +
             (u16) overlay->relocTableSize,
         0x83);
@@ -362,7 +362,7 @@ s32 runlinkDownloadCode(s32 overlayIndex) {
     }
 
     if (overlay->relocTableSize2) {
-        relocTable = func_8002B280(overlay->relocTableSize2, 0x83);
+        relocTable = mmAlloc(overlay->relocTableSize2, 0x83);
         if (relocTable == NULL) {
             mmFree((void *) overlay->vramBase);
             return 0;
@@ -820,13 +820,13 @@ void runlinkInit(void) {
     OverlayHeader *overlay;
     s32 i;
 
-    overlayTable = func_8002B280((u32) (D_184C3E0 - D_184B680) + sizeof(OverlayHeader), 0x83);
+    overlayTable = mmAlloc((u32) (D_184C3E0 - D_184B680) + sizeof(OverlayHeader), 0x83);
     romCopy((u32) D_184B680, (u32) (overlayTable + 1), (u32) (D_184C3E0 - D_184B680));
 
-    overlayRomTable = func_8002B280((u32) (D_184B680 - D_1849730), 0x83);
+    overlayRomTable = mmAlloc((u32) (D_184B680 - D_1849730), 0x83);
     romCopy((u32) D_1849730, (u32) overlayRomTable, (u32) (D_184B680 - D_1849730));
 
-    mainRelocTable = func_8002B280((u32) (D_1849730 - D_1848B70), 0x83);
+    mainRelocTable = mmAlloc((u32) (D_1849730 - D_1848B70), 0x83);
     romCopy((u32) D_1848B70, (u32) mainRelocTable, (u32) (D_1849730 - D_1848B70));
     mainRelocTableCount = *(u32 *) mainRelocTable;
     mainRelocTable = (RelocationEntry *) ((u8 *) mainRelocTable + 4);
@@ -837,7 +837,7 @@ void runlinkInit(void) {
         D_800D2DC8[i].overlayIndex = 0xFFB;
     }
 
-    linkSlotTable = func_8002B280(overlayCount * sizeof(LinkSlot), 0x83);
+    linkSlotTable = mmAlloc(overlayCount * sizeof(LinkSlot), 0x83);
     _bzero(linkSlotTable, overlayCount * sizeof(LinkSlot));
 
     overlayTable->vramBase = (s32) func_80000450;
@@ -883,7 +883,7 @@ void runlinkSuspendCode(s32 overlayIndex) {
                 runlinkFreeCode(overlayIndex);
                 D_8007A670 = 0;
                 mmSetDelay(savedDelay);
-                func_8002B524(overlay->dataSize + overlay->bssSize +
+                mmAllocAtAddr(overlay->dataSize + overlay->bssSize +
                                   (u16) overlay->relocTableSize,
                               (void *) (pendingLoad->unk0 + overlay->textSize),
                               0x83);
@@ -936,7 +936,7 @@ void runlinkResumeCode(s32 overlayIndex) {
         mmFree((void *) (pendingLoad.value->unk0 + overlay->textSize));
         mmSetDelay(savedDelay);
 
-        overlay->vramBase = (s32) func_8002B524(
+        overlay->vramBase = (s32) mmAllocAtAddr(
             overlay->textSize + overlay->dataSize + overlay->bssSize +
                 (u16) overlay->relocTableSize,
             (void *) pendingLoad.value->unk0, 0x83);
@@ -945,7 +945,7 @@ void runlinkResumeCode(s32 overlayIndex) {
         }
 
         if (overlay->relocTableSize2) {
-            relocTable = func_8002B280(overlay->relocTableSize2, 0x83);
+            relocTable = mmAlloc(overlay->relocTableSize2, 0x83);
             if (relocTable == NULL) {
                 mmFree((void *) overlay->vramBase);
                 return;

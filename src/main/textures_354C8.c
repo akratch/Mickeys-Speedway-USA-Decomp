@@ -133,7 +133,7 @@ extern u8 D_8007BD94;
 extern u8 D_8007BD98;
 extern s32 func_800299E8(s32 minimum, s32 maximum);
 extern void mmFree(void *ptr);
-extern void *func_8002B314(s32 size, u32 colourTag);
+extern void *mmAlloc2(s32 size, u32 colourTag);
 extern u8 *align16(u8 *address);
 extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset,
                             s32 size);
@@ -608,7 +608,7 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
     vertexOffset = textureOffset + (i * sizeof(TextureFrameHeader *));
     commandOffset = vertexOffset + ((i * 4) * sizeof(SpriteVertex));
     size = (s32)align16((u8 *)(commandOffset + (i * 2)));
-    newSprite = func_8002B314(size, 0x8E);
+    newSprite = mmAlloc2(size, 0x8E);
     if (newSprite == NULL) {
         if (cacheFull) {
             D_800D3008--;

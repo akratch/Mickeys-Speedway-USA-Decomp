@@ -18,7 +18,7 @@ extern u8 *D_8007D638;
 extern u8 D_800D6A90[];
 extern s32 D_800D6AA0;
 extern s32 D_800D6AA4;
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern s32 gzip_inflate_block(void);
 extern OSThread D_800D6740;
 extern OSMesgQueue D_800D6A70;
@@ -84,7 +84,7 @@ void func_8004D5E0(OSPri priority, OSMesgQueue *queue, OSMesg *messages,
 }
 
 void func_8004D750(void) {
-    D_8007D630 = (s32) func_8002B280(0x2800, 0x8F);
+    D_8007D630 = (s32) mmAlloc(0x2800, 0x8F);
 }
 
 /*

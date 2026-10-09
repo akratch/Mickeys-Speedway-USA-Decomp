@@ -182,7 +182,7 @@
           "to": "overlay83BuildBatch"
         },
         {
-          "from": "func_8002B280",
+          "from": "mmAlloc",
           "to": "overlay83AllocateBatchReloc"
         },
         {

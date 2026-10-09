@@ -76,7 +76,10 @@ extern void wakeUpdate(Wake *wake, f32 x, f32 height, f32 z, s16 angle,
 extern void mathOneFloatPY(void *source, f32 *result, s16 angle);
 extern void camSetScissor(Gfx **dlist);
 extern void func_80034920();
-extern void *func_8002B314(s32 size, s32 tag);
+extern void *mmAlloc2(s32 size, s32 tag);
+/* wakeAllocate's NON_MATCHING body below is owned by another lane and still
+ * spells mmAlloc2 by its old placeholder; drop this once that body is renamed. */
+#define func_8002B314 mmAlloc2
 extern u8 D_7D310[];
 
 void func_80046E70(FxCone *cone) {
@@ -98,7 +101,7 @@ void func_80046E70(FxCone *cone) {
  * the previous field plus a size, and the mode test repeats `arg8 + 1`
  * instead of carrying it in a local. The inherited `cone + 0x38` carrier,
  * the `if (1) { }` region and the mode local were the whole residual. */
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern void *func_80034448(s32 resourceId);
 extern void func_800470B0(FxCone *, s16, s16, s16, s16, s16,
                           f32, f32, f32);
@@ -124,7 +127,7 @@ void *func_80046EC4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
         vertexBytes = arg8 * 0x10;
         bufferBytes = (arg8 * 0xA) + 0xA;
     }
-    cone = (FxCone *) func_8002B280(
+    cone = (FxCone *) mmAlloc(
         sizeof(FxCone) + vertexBytes + bufferBytes * 2, 0x87);
     if (cone != NULL) {
         if (arg9 >= 0) {
@@ -2077,7 +2080,7 @@ s32 func_8004AD34(void) {
     }
     D_800D60A8 = 0;
 }
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 
 /*
  * PROVENANCE: the source topology is informed by Jet Force Gemini's public
@@ -2093,9 +2096,9 @@ void func_8004ADE8(s32 index, FxConeTextureInfo *texture) {
     D_800D60A8 |= 1 << index;
     D_800D6098[index] = (s32)texture;
     if (D_800D60B0[index] == 0) {
-        first = func_8002B280(texture->width * texture->height, 0x87);
+        first = mmAlloc(texture->width * texture->height, 0x87);
         D_800D60B0[index] = first;
-        D_800D60C0[index] = second = func_8002B280(
+        D_800D60C0[index] = second = mmAlloc(
             texture->width * texture->height, 0x87);
         if (D_800D60B0[index] == 0 || D_800D60C0[index] == 0) {
             D_800D60B0[index] = 0;

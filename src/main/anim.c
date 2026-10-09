@@ -16,7 +16,7 @@
 #include "game/anim.h"
 #include "game/charControl.h"
 
-void *func_8002B280();
+void *mmAlloc();
 AnimPathObject *func_8000590C(ControlSpawnPacket *packet, s32 mode);
 void func_80005768(AnimPathObject *object);
 void piRomLoadSection();
@@ -480,7 +480,7 @@ void func_80050BF4(void)
   int new_var;
   u8 *cursor;
   D_800D6B04 = piRomLoad(0x3D);
-  D_800D6B00 = func_8002B280(0x400, 0x81);
+  D_800D6B00 = mmAlloc(0x400, 0x81);
   offset = 0;
   new_var = 4;
   do
@@ -537,7 +537,7 @@ void func_80050DF0(s32 levelId) {
         D_8007D684 = bounds[1] - locals.source;
         if (D_8007D684 > 0) {
             D_8007D680 =
-                func_8002B280(D_8007D684, 0x81, locals.source);
+                mmAlloc(D_8007D684, 0x81, locals.source);
             if (D_8007D680 != NULL) {
                 piRomLoadSection(0x3E, D_8007D680, locals.source,
                                  D_8007D684);
@@ -722,7 +722,7 @@ void func_800511C4(void) {
             entryWord = *entryCursor++;
             source = (AnimGroupPathHeader *)
                 ((u8 *) D_8007D68C + (entryWord & 0xFFFFFF));
-            path = func_8002B280((source->nodeCount * sizeof(AnimPathNode)) +
+            path = mmAlloc((source->nodeCount * sizeof(AnimPathNode)) +
                                  sizeof(AnimPath),
                                  0x81);
             pathIndex = (entryWord >> 24) & 0xFF;

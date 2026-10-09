@@ -57,7 +57,7 @@ typedef struct Overlay17Chain {
 
 /* YAML-owned initialized data and stock sizeof prove sixteen 16-byte records. */
 extern Overlay17Template gOverlay17TemplateReloc[16];
-extern void *func_8002B280(s32 size, u32 colourTag);
+extern void *mmAlloc(s32 size, u32 colourTag);
 struct TextureHeader;
 extern struct TextureHeader *func_80034448(s32 textureId);
 struct Overlay17ChainHead;
@@ -96,7 +96,7 @@ Overlay17Chain *overlay17CreateChain(
         chain = (Overlay17Chain *)0x140;
     }
     halfBufferBytes = count * 20;
-    chain = func_8002B280(
+    chain = mmAlloc(
         (s32)chain + (halfBufferBytes * 2), 0x87);
     halfBufferBytes |= 0;
     if (chain != 0) {

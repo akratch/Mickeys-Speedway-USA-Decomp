@@ -3984,7 +3984,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: 344 at size 0: the cut after quadA is the -varref limit (quadA's own loads take the counter 4 to 22); doubles' evaluation point still open.
+ * summary: 344 at size 0: the target stores every local definition (doubles, 2a, -b, b*b) at its home; this body forwards them into temps.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 
@@ -3994,7 +3994,7 @@ void fmvInit(void) {
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: 354 at size 0: model-local cell's movingCount latch piece passes growth with margin (30 vs 23); CDX_BIAS cannot order constant 3 ahead of it.
+ * summary: 354 at size 0: forcing the count's latch piece away with 3 in v1 is 1083 at -8; the forced pair is not the target state.
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

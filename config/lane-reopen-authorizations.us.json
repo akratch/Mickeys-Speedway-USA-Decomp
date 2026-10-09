@@ -626,9 +626,9 @@
       "source_commit": "556d46adad11f97e64191f3a01753aa8c1b25aa8"
     },
     "func_80053868": {
-      "ledger_commit": "171a68c474d894eaa7541a0a86d07a61df09a408",
-      "reason": "Reopened 2026-09-11 on new instruments: L108 (a calling procedure is p1-only, so L106 has no axis), L110, L112, and align_symbol.py's cause split. Two lanes measured missing-run maps on these and were stopped before any source attempt.",
-      "source_commit": "d727307ce9d582b3b893809aef234799ad179989"
+      "ledger_commit": "7eee82f46d96fd7930784785c246ea05b6818fd4",
+      "reason": "2026-10-09: explicit otherCursor induction from i + 1 versus j on faithful displacement shape; measure i + 1 piece cost, pairIndex growth and constant-3 preservation. Prior counter swaps/forced spills did not test this origin.",
+      "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
       "ledger_commit": "097a16d07881592bdc831144612d4469d201f106",

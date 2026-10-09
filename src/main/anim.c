@@ -3997,7 +3997,7 @@ void fmvInit(void) {
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: 354 at size 0: one s2 counter for the axis loops gives the target's displacement loop (989 at -4); pairIndex head piece still refused at block 234 (26 vs 27).
+ * summary: 354 at size 0: target leaves the i + 1 temp uncoloured; forcing it fixes the pair loops on the j cell but drops first-loop constant pieces.
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

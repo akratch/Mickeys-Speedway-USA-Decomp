@@ -123,9 +123,14 @@ reference-research lane.
 
 This closes a specific compressed-retail search gap, not the authentication
 question. It does not prove absence from every revision, every compression
-format, or every possible reference routine boundary. In particular,
-`gen_anim_data` was searched as its established full run, not as independently
-creditable helpers. No function, boundary, provenance tier, or verified-assembly
-credit changed. Another search needs a new permitted revision, a demonstrated
+format, or every possible reference routine boundary. A supplemental diagnostic
+also searched `gen_anim_data` using its current
+object-symbol extents: the decoder and three helper ranges, with the final
+bare return retained in its owning helper. These searches found no target in
+the same raw retail images, decoded streams, reconstructed game code or
+Perfect Dark libraries. This does not establish new independently creditable
+function or translation-unit boundaries. No function, boundary, provenance
+tier, or verified-assembly credit changed. Another search needs a new permitted
+revision, a demonstrated
 coverage gap, or a separately justified routine extent; repeating the same
 covered images is not a new lead.

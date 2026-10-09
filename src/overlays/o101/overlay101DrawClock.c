@@ -81,7 +81,15 @@ f32 overlay101ClockTrigBReloc(s32 angle);
     }
 
 /* Exact C: all 238 instruction words, the -152 frame, relocations, and linked
- * overlay range match after bounded permutation. DKR/JFG are donor-negative. */
+ * overlay range match after bounded permutation. DKR/JFG are donor-negative.
+ *
+ * Lane c-5 (2026-10-09): the permuter left the middle of the body as one
+ * 1,553-character line of expanded packet macros, and a `new_var` copy of the
+ * seconds angle. The copy was inert and is gone; the line is split with the
+ * O101_* macros. One physical-line fact survives the split: `item = 2` must
+ * share the line of the `do`. as1 breaks the tie between the hoisted alpha
+ * 255 and the item 2 by source line, and on its own earlier line the 2 is
+ * loaded first (2 words). */
 void overlay101DrawClock(Overlay101Gfx **displayList, Overlay101Panel *panel, Overlay101Vertex **vertexCursor, s32 originX, s32 originY)
 {
   Overlay101ClockPoint *source;
@@ -90,7 +98,6 @@ void overlay101DrawClock(Overlay101Gfx **displayList, Overlay101Panel *panel, Ov
   f32 middle;
   Overlay101PhaseSpill phaseSpill;
   f32 scaledA;
-  s32 new_var;
   f32 scaledB;
   s32 majorWhole;
   s32 middleWhole;
@@ -114,8 +121,38 @@ void overlay101DrawClock(Overlay101Gfx **displayList, Overlay101Panel *panel, Ov
   majorWhole = (s32) major;
   remainder = timeValue - (majorWhole * 216000);
   middle = ((f32) remainder) / 3600.0f;
- middleWhole = (s32) middle; spent = ((u32) (majorWhole * 216000)) + ((u32) (3600 * middleWhole)); phaseSpill.minor.write = ((f32) (timeValue - ((s32) spent))) / 60.0f; vertex = *vertexCursor; overlay101PrepareClockMaterialReloc(displayList, D_33C, 4, 0); { Overlay101Gfx *macroCommand = (Overlay101Gfx *) ((*displayList)++); macroCommand->w0 = 0xFA000000; macroCommand->w1 = 0xFFFFFFA0; } ; { Overlay101Gfx *macroCommand = (Overlay101Gfx *) ((*displayList)++); void *macroAddress = (void *) ((void *) (((u32) vertex) + 0x80000000U)); macroCommand->w0 = (((((((u32) macroAddress) & 6U) | 0x60U) & 0xFFU) << 16) | 0x04000000U) | 0x80U; macroCommand->w1 = (u32) macroAddress; } ; { Overlay101Gfx *macroCommand = (Overlay101Gfx *) ((*displayList)++); macroCommand->w0 = 0x05510060; macroCommand->w1 = (u32) D_800002D8; } ; { Overlay101Gfx *macroCommand = (Overlay101Gfx *) ((*displayList)++); macroCommand->w0 = 0xE7000000; macroCommand->w1 = 0; } ; { Overlay101Gfx *macroCommand = (Overlay101Gfx *) ((*displayList)++); macroCommand->w0 = 0xFA000000; macroCommand->w1 = 0xFFFFFFFF; } ; source = D_278; item = 2; do { if (item == 2) { angle = (s32) ((major * 65536.0f) / 24.0f); scaledA = overlay101ClockTrigAReloc(angle) * 10.0f; scaledB = overlay101ClockTrigBReloc(angle) * 10.0f; point = 4; } else if (item == 1) { angle = (s32) ((middle * 65536.0f) / 60.0f); scaledA = overlay101ClockTrigAReloc(angle) * 10.0f; scaledB = 10.0f; scaledB = overlay101ClockTrigBReloc(angle) * scaledB; point = 4; } else { angle = (((s32) phaseSpill.minor.read) << 16) / 60; new_var = angle;
-      scaledA = overlay101ClockTrigAReloc(new_var) * 10.0f;
+  middleWhole = (s32) middle;
+  spent = ((u32) (majorWhole * 216000)) + ((u32) (3600 * middleWhole));
+  phaseSpill.minor.write = ((f32) (timeValue - ((s32) spent))) / 60.0f;
+  vertex = *vertexCursor;
+  overlay101PrepareClockMaterialReloc(displayList, D_33C, 4, 0);
+  O101_PRIM((*displayList)++, 0xFFFFFFA0);
+  O101_VERTICES((*displayList)++, (void *) (((u32) vertex) + 0x80000000U));
+  O101_DRAW((*displayList)++, D_800002D8);
+  O101_SYNC((*displayList)++);
+  O101_PRIM((*displayList)++, 0xFFFFFFFF);
+  source = D_278;
+  item = 2; do /* same line: see above */
+  {
+    if (item == 2)
+    {
+      angle = (s32) ((major * 65536.0f) / 24.0f);
+      scaledA = overlay101ClockTrigAReloc(angle) * 10.0f;
+      scaledB = overlay101ClockTrigBReloc(angle) * 10.0f;
+      point = 4;
+    }
+    else if (item == 1)
+    {
+      angle = (s32) ((middle * 65536.0f) / 60.0f);
+      scaledA = overlay101ClockTrigAReloc(angle) * 10.0f;
+      scaledB = 10.0f;
+      scaledB = overlay101ClockTrigBReloc(angle) * scaledB;
+      point = 4;
+    }
+    else
+    {
+      angle = (((s32) phaseSpill.minor.read) << 16) / 60;
+      scaledA = overlay101ClockTrigAReloc(angle) * 10.0f;
       scaledB = overlay101ClockTrigBReloc(angle) * 10.0f;
       point = 4;
     }

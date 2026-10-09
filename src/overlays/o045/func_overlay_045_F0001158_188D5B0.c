@@ -358,6 +358,6 @@ void func_overlay_045_F0001158_188D5B0(
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x718
- * summary: 96 at size 0: explicit corner offsets and rightFloat before vertex 2 put the second -varref cut before v2's colours (forced-cut oracle floor 94).
+ * summary: 96 at size 0: target writes each vertex's colours before x and y (spill/reload barriers); with the CDX_BIAS target order that prices residual 58 at -4.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

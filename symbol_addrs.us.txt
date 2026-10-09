@@ -900,6 +900,7 @@ ReleaseUnusedLinkSlots = 0x8003314C; // type:func size:0x98  tier-D invented
 GetSymbolName = 0x800317E0;         // type:func size:0x10 tier-B call-graph
 runlinkInit = 0x800328CC;           // type:func size:0x248 tier-D C-object+linked-ROM-exact
 runlinkDownloadCode = 0x80031C78;   // type:func size:0x478 tier-B call-graph C-object+linked-ROM-exact
+runlinkEnsureJumpIsValid = 0x800320F0; // type:func size:0x194 ROM 0x32cf0 matched C, name tier-B JFG src/runLink.c order+named anchors runlinkDownloadCode/runlinkIsModuleLoaded
 runlinkGetAddressInfo = 0x800331E4; // type:func size:0x1B0
 // TIER A, no longer resting on the call-graph argument above. The whole 0x1E0
 // .text of JFG's built `src/hasm/ido/trapDanglingJump.s.o` is byte-identical

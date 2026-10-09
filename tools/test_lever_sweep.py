@@ -327,5 +327,12 @@ class BiasTests(unittest.TestCase):
         self.assertEqual(d[0]["rows"][0]["match"], ["p1:w52"])
 
 
+class NoOracleTests(unittest.TestCase):
+    def test_label_without_targets_is_not_yes(self):
+        self.assertEqual(ls.oracle_label(0, 0), "-")
+        self.assertEqual(ls.oracle_label(2, 2), "yes")
+        self.assertEqual(ls.oracle_label(0, 2), "no")
+
+
 if __name__ == "__main__":
     unittest.main()

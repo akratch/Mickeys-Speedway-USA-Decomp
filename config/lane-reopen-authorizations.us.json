@@ -1161,9 +1161,9 @@
       "source_commit": "900b48893e83a53be6d2932d2f1d6a47d94fdffd"
     },
     "func_overlay_064_F0000000_18C3B28": {
-      "ledger_commit": "6425ca917c05b5589e9cdefbb31d0628568bc69e",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "133737d81be79e8f7d6ece9484040ccdca85e62d"
+      "ledger_commit": "48413c3d631724bf341263ff67613fdce85f6418",
+      "reason": "Price the odd-only value-reuse web split after authenticating its isolated identity; prior split failure covered init and every even-loop copy. Require target read/product partition before any natural source search.",
+      "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {
       "ledger_commit": "554ca5b60eec5c9eeafc8fefcccaa639bd4db9bd",

@@ -99,6 +99,16 @@ class FriendlyOverlayCallBoundaryTests(unittest.TestCase):
             with self.assertRaisesRegex(rs.SurfaceComparisonError, 'alias conflicts'):
                 self.resolve(root, *args)
 
+    def test_typeless_zero_size_object_alias_raises(self):
+        # Overlay 28 once added the generated name in its POSTPROCESS rule as a
+        # typeless size-0 symbol at the friendly function's address. The alias
+        # file already supplies that name, so the duplicate is a conflict.
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); args = self.friendly_fixture(root)
+            args[1]._symbols.append((self.NAME, 20, 0, 0, 1))
+            with self.assertRaisesRegex(rs.SurfaceComparisonError, 'alias conflicts'):
+                self.resolve(root, *args)
+
     def test_alias_map_change_during_read_raises(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

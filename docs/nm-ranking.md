@@ -271,7 +271,8 @@ Relocation-masked mismatch evidence covers **13 / 13** resolved rows. The raw co
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `other` | 10 | 76.9% |
+| `other` | 9 | 69.2% |
+| `reloc-mismatch` | 1 | 7.7% |
 | `size-mismatch` | 3 | 23.1% |
 
 ### Differing-word thresholds
@@ -279,11 +280,11 @@ Relocation-masked mismatch evidence covers **13 / 13** resolved rows. The raw co
 | Threshold | Count |
 |---|---:|
 | raw `differing_words <= 5` | 0 |
-| relocation-masked `differing_words <= 5` | 0 |
+| relocation-masked `differing_words <= 5` | 1 |
 | raw `differing_words <= 10` | 2 |
-| relocation-masked `differing_words <= 10` | 3 |
+| relocation-masked `differing_words <= 10` | 4 |
 | raw `differing_words <= 20` | 4 |
-| relocation-masked `differing_words <= 20` | 4 |
+| relocation-masked `differing_words <= 20` | 5 |
 
 ### Complete ranked queue
 
@@ -297,12 +298,12 @@ units remain distinct.
 | 2 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
 | 3 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
 | 4 | `src/main/fx.c` | `wakeAllocate` | `main` | `other` | 1,404 | 14 | 14 | 148 | 148 | 0 | — |
-| 5 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `other` | 8,672 | 100 | 47 | 12 | 12 | 0 | — |
-| 6 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 96 | 96 | 1,816 | 1,816 | 0 | — |
-| 7 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
-| 8 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 354 | 354 | 112 | 112 | 0 | — |
-| 9 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 371 | 371 | 0 | 0 | 0 | — |
-| 10 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,107 | 1,106 | 200 | 208 | 0 | — |
+| 5 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 96 | 96 | 1,816 | 1,816 | 0 | — |
+| 6 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
+| 7 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 354 | 354 | 112 | 112 | 0 | — |
+| 8 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 371 | 371 | 0 | 0 | 0 | — |
+| 9 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,107 | 1,106 | 200 | 208 | 0 | — |
+| 10 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `reloc-mismatch` | 8,672 | 54 | 0 | 124 | — | 0 | — |
 | 11 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
 | 12 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
 | 13 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 292 | 292 | 76 | 76 | 12 | — |

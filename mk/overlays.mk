@@ -2711,19 +2711,18 @@ $(O28_MERGED_OBJ): POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		0x1D8:5:gOverlay28DataBase 0x1F4:6:gOverlay28DataBase && \
 	$(OBJCOPY) \
-		--add-symbol func_overlay_028_F0000000_187C8D0=.text:0,global \
 		--add-symbol D_80000028=0x80000028,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		0x41C:overlay28UpdateVertices:ext_o0_29e00 \
-		0x4F0:ext_o0_241dc:func_overlay_028_F0000000_187C8D0 \
-		0x51C:ext_o0_29e00:func_overlay_028_F0000000_187C8D0 \
-		0x5AC:ext_o0_6ec00:func_overlay_028_F0000000_187C8D0 \
-		0x5F8:ext_o0_9ab8:func_overlay_028_F0000000_187C8D0 \
-		0x674:ext_o0_2409c:func_overlay_028_F0000000_187C8D0 \
-		0x688:ext_o0_34554:func_overlay_028_F0000000_187C8D0 \
+		0x4F0:ext_o0_241dc:overlay28ResetBuffer \
+		0x51C:ext_o0_29e00:overlay28ResetBuffer \
+		0x5AC:ext_o0_6ec00:overlay28ResetBuffer \
+		0x5F8:ext_o0_9ab8:overlay28ResetBuffer \
+		0x674:ext_o0_2409c:overlay28ResetBuffer \
+		0x688:ext_o0_34554:overlay28ResetBuffer \
 		0x744:gOverlay28DisplayList28:D_80000028 \
 		0x754:gOverlay28DisplayList28:D_80000028 \
-		0x7D0:ext_o0_241bc:func_overlay_028_F0000000_187C8D0 && \
+		0x7D0:ext_o0_241bc:overlay28ResetBuffer && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x7EC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/overlay35SelectHeight.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x68

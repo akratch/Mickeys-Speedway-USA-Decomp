@@ -38,8 +38,8 @@ identity above. The remaining executable inventory is:
 | main/trackasm | 2384 | Tier B call graph and tier D four-function ordering against JFG's extracted assembly; shorter revisions prevent whole-object identity. |
 | main/shadows_fp | 800 | Four-function boundary and odd-FP evidence; individual exact correspondences do not establish the entire assembly owner. |
 | main/weather_snow_asm | 832 | Snow update/vertex pair, tier B/D lineage and odd-FP vertex operations; no accepted whole-object provenance proof. |
-| Raw owner at ROM 0x59BF0 | 444 | Handwritten instruction shapes and odd-FP operations; original-source correspondence remains unproved. |
-| Raw owner at ROM 0x59DB0 | 5448 | Large unrolled routine and four subsidiary entries, with odd-FP and handwritten instruction shapes; internal branch labels are not separate callable functions. |
+| main/conv_mult_matrix (ROM 0x59BF0) | 444 | Handwritten instruction shapes and odd-FP operations; tier B as the consumer of camConvertMatrixList's list, JFG's conv_mult_matrix role, but a shorter revision (count argument, no multiply) with no byte-identical reference object. |
+| main/gen_anim_data (ROM 0x59DB0) | 5448 | Large unrolled routine and four subsidiary entries, with odd-FP and handwritten instruction shapes; internal branch labels are not separate callable functions. Tier B: called where JFG's modGenAnimMatrices calls gen_anim_data, but a byte-wise bitstream revision with no byte-identical reference object. |
 
 The final two owners have four and eight trailing padding bytes respectively.
 Those twelve bytes are outside their ELF function extents and do not add to

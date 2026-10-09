@@ -3976,7 +3976,7 @@ void fmvInit(void) {
  * frame: 0x40
  * relocations: 47
  * first-mismatch: +0x114
- * summary: 7 at 0. Re-read state and a 244-cell lever sweep measured; none below 7
+ * summary: 7 at 0. Bitfield command words are -8; the join reading stands
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

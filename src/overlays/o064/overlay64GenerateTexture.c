@@ -207,6 +207,6 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
  * frame: 0x78
  * relocations: 22
  * first-mismatch: +0x0
- * summary: 371 at 0: pointer subtraction gives the target's three stepped second-loop pointers at +16; the tree hides four surplus pixel-loop words.
+ * summary: 371 at 0: pointer-subtraction cell's pixel-loop surplus is a strength-reduced j<<1 and the hi-clamp copy; flags flat
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

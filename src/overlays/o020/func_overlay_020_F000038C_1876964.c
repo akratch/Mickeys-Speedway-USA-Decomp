@@ -199,6 +199,6 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
  * frame: 0x40
  * relocations: 3
  * first-mismatch: +0x224
- * summary: 10 at 0. Natural walking form i += 9 emits the target's copy (47 at 0; 34 held in size); the copy and i's dead first def must precede the v1 division
+ * summary: 10 at 0. Fresh walking local priced: save into (100,145] (bias -40) 22, plus group before v1 division 16; cut oracle cannot move the copy
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

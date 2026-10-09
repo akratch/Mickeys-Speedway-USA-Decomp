@@ -745,31 +745,12 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
  * at 0x20 and reads the shadow globals from the query struct; its offsets,
  * flag mask and globals are authoritative.
  */
-#ifdef NON_MATCHING
-/* 2026-10-02 (lane x-shad): the DKR shape replaces the m2c draft (285 masked
- * at delta 0, aligned 88 exact / 133 naming / 9 immediate / 116 really
- * different). This body is 296 masked at size +16 with frame 0x140 and every
- * target home exact (fifteen scalars; the strength-reduction temporaries land
- * at +0x80, +0x7C and +0x78 in the target's order); its aligned residual
- * after insertion shadow is 159 against the draft's 258.
- * The +16 is two allocator split decisions (instrumented records, proc 6):
- *   - arg2's piece rejects the outer loop head (L161 margin -4), so the head
- *     reloads arg2 from its home every iteration where the target copies a2
- *     into t5 once in the preheader;
- *   - the face*8 and face*4 temporaries (save 23.85, nocs 13) reject the
- *     latch at margins -1 and -2, so they stay in memory where the target
- *     keeps them in v1/a0 across preheader, head and latch.
- * Byte-inert here: nested against merged Y tests, continue against nested
- * face test, the cap spelled > 0x1F, literal-type and cast round-trip forms
- * of the -1 and argument webs. One store after the found/not-found arms is
- * size +12 but aligned 173.
- * 2026-10-08 (lane j-5): computing `vertices` before the batch flag test puts
- * one more coloured web (s1) in the outer head bb2, so arg2's entry piece
- * refuses bb2 (new 17, left 11: 22 < 23) and the remainder takes t5 from the
- * preheader, as shipped: 296 at +16 to 292 at +12, aligned residual 159 to 60.
- * The target computes vertices after the test, so this is a stand-in for the
- * web the target holds there (it also keeps v1 from the flag word: target
- * flags a0, next a1). Left: the face*8/face*4 latch pieces (left 10, need 11). */
+/* Matched 2026-10-09 (lane y-4) from the DKR shape by two edits: the
+ * second face-mask test is `& 0xFFFF0000` (the constant is one more
+ * interference in that block, so the face*8/face*4 pieces keep only
+ * preheader, head and latch), and the batch flags word is read into a
+ * local for the test while the shade re-reads the field (the local is the
+ * web that keeps flags in a0 and arg2 in t5 from the preheader). */
 typedef struct ShadowClipPoint {
     f32 x;
     f32 y;
@@ -827,8 +808,6 @@ typedef struct ShadowGenQuery {
     f32 bounds40[4];
 } ShadowGenQuery;
 
-extern s32 D_800CB268_alias; /* STAND-IN: one object, two names; see the store */
-
 void func_80017140(ShadowGenQuery *arg0, f32 *arg1, ShadowCollSector *arg2, s32 arg3) {
     ShadowClipPoint sp100[8];
     s32 spAC;
@@ -845,10 +824,11 @@ void func_80017140(ShadowGenQuery *arg0, f32 *arg1, ShadowCollSector *arg2, s32 
     s32 someCount;
     s32 i2;
     s32 i;
-    s32 k;
+    s32 flags;
 
     for (spAC = 0; spAC < arg2->numberOfBatches; spAC++) {
-        if (!(arg2->batches[spAC].flags & 0x08013880)) {
+        flags = arg2->batches[spAC].flags;
+        if (!(flags & 0x08013880)) {
             vertices = &arg2->vertices[arg2->batches[spAC].verticesOffset];
             curFacesOffset = arg2->batches[spAC].facesOffset;
             nextFacesOffset = arg2->batches[spAC + 1].facesOffset;
@@ -918,13 +898,7 @@ void func_80017140(ShadowGenQuery *arg0, f32 *arg1, ShadowCollSector *arg2, s32 
                                     if ((D_800CB268 >= 0) && (sp88 != D_800CB268)) {
                                         D_800CB26C = 0;
                                     }
-                                    /* STAND-IN (checklist item 3, not adoptable): a second
-                                     * extern name for D_800CB268 supplies the one extra
-                                     * web live at the outer loop head that makes arg2's
-                                     * entry piece refuse it (arg2 then takes t5 from the
-                                     * preheader as shipped). The natural source of that
-                                     * web is still unknown; see the shard. */
-                                    D_800CB268_alias = sp88;
+                                    D_800CB268 = sp88;
                                 }
                             }
                         }
@@ -934,9 +908,6 @@ void func_80017140(ShadowGenQuery *arg0, f32 *arg1, ShadowCollSector *arg2, s32 
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/func_80017140.s")
-#endif
 /*
  * PROVENANCE: adapted from Diddy Kong Racing's public matched
  * src/tracks.c:func_8002FF6C. JFG's public assembly-only func_8001F288 is the
@@ -1379,13 +1350,3 @@ void func_800180B4(ShadowQuery *query) {
         }
     }
 }
-
-/* PLATEAU-HANDOFF:func_80017140:start
- * symbol: func_80017140
- * score: 3/328 words
- * frame: 0x140
- * relocations: 21
- * first-mismatch: +0x98
- * summary: 3 at size 0: forcing flags a0, next a1, count t0, spAC t1 gives 0; needs one code-free v1 web in the batch head (would also replace the alias).
- * PLATEAU-HANDOFF:func_80017140:end
- */

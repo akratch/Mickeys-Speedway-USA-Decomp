@@ -328,7 +328,23 @@ void texscrollControl(TexscrollState *state, s32 updateRate) {
  * distance: a byte-offset cast is a heavier operand (L92), which had put the
  * position left of the normal and the sum left of the distance. The z, y, x
  * spelling that compensated goes, and so does the dead `i = 0;` (inert).
- * Left: the y/z/radius homes (0x7C/0x74/0x98 against 0x8C/0x88/0x78). */
+ * 2026-10-09 (lane y-1): 6 -> 3, every frame offset now the target's. The
+ * spill slots go to cross-block temporaries in web-number order, and a
+ * later temporary reuses the first slot whose owner it does not meet. So:
+ *  - x is a declared local (the cell pad1 held), assigned before the rest,
+ *    so it wins the coordinate colour tie (f30, whole) without making a
+ *    slot request;
+ *  - STAND-IN: the dead `fraction = y + z + previous position` numbers
+ *    those five ahead of the plane values, so y and z take slots 0x8C and
+ *    0x88 and the plane distance takes 0x78;
+ *  - STAND-IN: the dead `fraction = plane->radius;` puts the radius load in
+ *    the block before the varref cut, so the compare's radius is a
+ *    temporary, and it reuses the distance's slot at 0x78;
+ *  - STAND-IN: `secondDistance = 0.0f;` numbers secondDistance ahead of the
+ *    previous position (their colour tie).
+ * Left (3): x's load is emitted before the plane normal's (its own
+ * statement), so as1 puts it in the beql slot. Stream surgery moving that
+ * one load after the normal's gives 0. */
 /* PROVENANCE: JFG's public character-plane control role supplies the idiom; Mickey's fields, globals, and action calls are authoritative below. */
 void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
     SpranimPlane *plane;
@@ -347,8 +363,8 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
     f32 deltaY;
     f32 deltaZ;
     s32 count;
+    f32 x;
     s32 pad1;
-    f32 radius;
     s32 pad2;
 
     plane = arg0->state64;
@@ -357,12 +373,14 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
         object = *objects;
         targetState = object->state64;
         firstDistance = 0.0f;
+        secondDistance = 0.0f;
         if ((targetState->flags & 1) && (targetState->flag0 != 0)) {
             continue;
         }
-        fraction = object->x;
+        x = object->x;
+        fraction = object->y + object->z + targetState->previousX + targetState->previousY + targetState->previousZ;
         firstDistance = plane->distance +
-            ((plane->normalX * object->x) + (plane->normalY * object->y) +
+            ((plane->normalX * x) + (plane->normalY * object->y) +
              (plane->normalZ * object->z));
         if (firstDistance < 0.0f) {
             do {
@@ -372,17 +390,17 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
                      (plane->normalZ * targetState->previousZ));
             } while (0);
             if (secondDistance >= 0.0f) {
-                deltaX = object->x - targetState->previousX;
+                deltaX = x - targetState->previousX;
                 deltaY = object->y - targetState->previousY;
                 deltaZ = object->z - targetState->previousZ;
                 fraction = secondDistance / (secondDistance - firstDistance);
                 hitX = targetState->previousX + fraction * deltaX;
                 hitY = targetState->previousY + fraction * deltaY;
                 hitZ = targetState->previousZ + fraction * deltaZ;
+                fraction = plane->radius;
                 deltaX = hitX - arg0->x;
                 deltaZ = hitZ - arg0->z;
-                radius = plane->radius;
-                if (((deltaX * deltaX) + (deltaZ * deltaZ) <= radius) &&
+                if (((deltaX * deltaX) + (deltaZ * deltaZ) <= plane->radius) &&
                     (arg0->y <= hitY) && (hitY <= plane->maxY)) {
                     switch (plane->mode) {
                     case 0:
@@ -451,10 +469,10 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
 
 /* PLATEAU-HANDOFF:func_8001B798:start
  * symbol: func_8001B798
- * score: 6/175 words
+ * score: 3/175 words
  * frame: 0xE0
  * relocations: 9
- * first-mismatch: +0xF4
- * summary: Unchanged at 6; declared y/z ladder lands every home but the second distance's operand order refutes it; y, z, radius are temporaries
+ * first-mismatch: +0x8C
+ * summary: 6 to 3: declared x, dead numbering sum and radius read put every home at the target's offset; left is x's load emitted before the normal's
  * PLATEAU-HANDOFF:func_8001B798:end
  */

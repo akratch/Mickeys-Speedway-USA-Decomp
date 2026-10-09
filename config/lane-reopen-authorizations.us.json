@@ -621,8 +621,8 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "efbdcfb8a9ab76ae84fdfdad9d8b2280a1f6b8da",
-      "reason": "Isolate case 0x6E in the existing value2 local, then compare inline scaling with genuine self-updates; test whether an independent FP web removes the shared carrier interference with the f0 owner.",
+      "ledger_commit": "d5adc8044794c2ed8efa2df6f9e27f2c07cd2190",
+      "reason": "Isolate case 0x6D in existing motionZ, retaining 0x6E control A. Its product and two stores use f16 versus target f0; test predicted distant start-web interference at block106 with direct adjacency and independent var:-204 evidence.",
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {

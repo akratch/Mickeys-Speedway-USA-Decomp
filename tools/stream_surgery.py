@@ -42,6 +42,11 @@ function in the object rides along unchanged; the function's bytes are not
 spliced into a second object because the score reads the symbol's own span and
 relocation records.
 
+`--instrumented` (implied by any `CDX_*` or `DKWB_CUT_*` variable in the
+environment) produces the listing and the configured object with the
+instrumented compiler, so a biased or cut-forced listing round-trips and the
+control compares against the same instrumented object, not stock.
+
 `--keep DIR` retains the `.s` and `.o` of the baseline and (single-edit mode)
 the edited cell. Scratch lives in a temp directory otherwise.
 """
@@ -66,6 +71,22 @@ import fast_score  # noqa: E402
 
 ROOT = fast_score.ROOT
 IDO = ROOT / "tools/ido"
+INSTRUMENTED_CC = Path.home() / "Desktop" / "dev" / "ido-instrumented" / "cc"
+INSTRUMENTED_PREFIXES = ("CDX_", "DKWB_CUT_")
+
+
+def instrumented_wanted(env: dict, flag: bool = False) -> bool:
+    """True when `--instrumented` is given or any CDX_*/DKWB_CUT_* variable is set.
+
+    A stock compiler ignores those variables, so a biased or cut-forced run
+    through it would silently produce the unbiased listing.
+    """
+    return flag or any(k.startswith(INSTRUMENTED_PREFIXES) and v for k, v in env.items())
+
+
+def use_compiler(args: list[str], compiler: Path | None) -> list[str]:
+    """Swap the compiler word (args[0]) when an instrumented one is asked for."""
+    return [str(compiler)] + list(args[1:]) if compiler else list(args)
 
 
 # ------------------------------------------------------------ pure helpers
@@ -178,7 +199,9 @@ def swap_to_S(args: list[str]) -> list[str]:
     compile runs in scratch; the recipe's relative include paths must therefore
     stop being relative to the repository root.
     """
-    out, i = [str((ROOT / args[0]).resolve())], 1
+    # abspath, not resolve(): the instrumented cc is a symlink to the stock driver,
+    # which finds its pass binaries by the path it was invoked as.
+    out, i = [os.path.abspath(ROOT / args[0])], 1
     while i < len(args):
         if args[i] == "-o":
             i += 2
@@ -195,11 +218,18 @@ def swap_to_S(args: list[str]) -> list[str]:
 class Recipe:
     """The configured compile for one symbol's TU, ugen listing and as flags."""
 
-    def __init__(self, symbol: str, candidate: Path | None, workdir: Path):
+    def __init__(self, symbol: str, candidate: Path | None, workdir: Path,
+                 instrumented: bool = False):
         self.symbol = symbol
+        self.instrumented = instrumented_wanted(os.environ, instrumented)
+        compiler = None
+        if self.instrumented:
+            compiler = INSTRUMENTED_CC
+            if not compiler.is_file():
+                raise SystemExit(f"instrumented compiler not found: {compiler}")
         self.workdir = workdir
         self.source = fast_score.tracked_source_for(symbol)
-        self.args = fast_score.configured_cc_args(self.source)
+        self.args = use_compiler(fast_score.configured_cc_args(self.source), compiler)
         self.cand = workdir / "tu.c"
         self.cand.write_text((candidate or ROOT / self.source).read_text())
         self.base_obj = workdir / "base.o"
@@ -291,6 +321,9 @@ def main(argv: list[str] | None = None) -> int:
     g.add_argument("--script", help="python file defining edit(lines) -> lines")
     ap.add_argument("--enumerate", metavar="RANGES",
                     help="1-based inclusive function-line ranges to permute, e.g. 40-43,60-62")
+    ap.add_argument("--instrumented", action="store_true",
+                    help="use the instrumented compiler for the listing and the control object "
+                         "(implied when any CDX_* or DKWB_CUT_* variable is set)")
     ap.add_argument("--dump", action="store_true", help="print the numbered function listing and exit")
     ap.add_argument("--jobs", type=int, default=2)
     ap.add_argument("--max-cells", type=int, default=5040)
@@ -301,7 +334,7 @@ def main(argv: list[str] | None = None) -> int:
 
     with tempfile.TemporaryDirectory(prefix="stream-surgery-") as tmp:
         work = Path(tmp)
-        rec = Recipe(ns.symbol, Path(ns.source) if ns.source else None, work)
+        rec = Recipe(ns.symbol, Path(ns.source) if ns.source else None, work, ns.instrumented)
         head, func, tail = build_function(ns, rec)
         if ns.dump:
             for i, line in enumerate(func, 1):
@@ -309,6 +342,8 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         scorer = make_scorer(ns.symbol, work)
         control = rec.assemble(rec.listing, "control", keep)
+        if rec.instrumented:
+            print("compiler   : instrumented (control compares against the instrumented object)")
         print("control (untouched listing, C flags): "
               + ("identical to the configured object" if same_function(control, rec.base_obj, ns.symbol)
                  else "DIFFERS from the configured object -- results below are not evidence"))

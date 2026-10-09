@@ -29,8 +29,8 @@ Whole program is resident C plus verified assembly plus overlay C. Totals exclud
 | Area | Functions | Matched to C | Named, still asm | Unnamed | Identified |
 | :--- | ---: | ---: | ---: | ---: | :--- |
 | libultra corridor | 300 | 271 | 29 | 0 | `██████████████████▓▓` 100.0% |
-| game code, TU identified | 1154 | 1075 | 53 | 26 | `███████████████████▓` 97.7% |
-| game code, not yet split | 6 | 0 | 0 | 6 | `░░░░░░░░░░░░░░░░░░░░` 0.0% |
+| game code, TU identified | 1160 | 1075 | 53 | 32 | `███████████████████░` 97.2% |
+| game code, not yet split | 0 | 0 | 0 | 0 | `░░░░░░░░░░░░░░░░░░░░` 0.0% |
 | **total** | 1460 | 1346 | 82 | 32 | `██████████████████▓▓` 97.8% |
 
 `█` matched to C · `▓` named but still assembly · `░` neither. Naming runs ahead of matching: a function is decompiled against an already-identified translation unit.

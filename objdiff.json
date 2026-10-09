@@ -836,22 +836,22 @@
       }
     },
     {
-      "name": "asm/59BF0.s",
-      "target_path": "expected/build/asm/59BF0.s.o",
-      "base_path": "build/asm/59BF0.s.o",
+      "name": "asm/main/conv_mult_matrix.s",
+      "target_path": "expected/build/asm/main/conv_mult_matrix.s.o",
+      "base_path": "build/asm/main/conv_mult_matrix.s.o",
       "metadata": {
         "progress_categories": [
-          "asm"
+          "asm-main"
         ]
       }
     },
     {
-      "name": "asm/59DB0.s",
-      "target_path": "expected/build/asm/59DB0.s.o",
-      "base_path": "build/asm/59DB0.s.o",
+      "name": "asm/main/gen_anim_data.s",
+      "target_path": "expected/build/asm/main/gen_anim_data.s.o",
+      "base_path": "build/asm/main/gen_anim_data.s.o",
       "metadata": {
         "progress_categories": [
-          "asm"
+          "asm-main"
         ]
       }
     },

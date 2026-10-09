@@ -100,7 +100,7 @@ elsewhere that are stretching the web.
 of `firstAnimation & 3` (ours v1, the ROM s0) and a spill placed around
 the wrong call. Read off the ROM: the value is held in s0 through the
 second `piRomLoadSection` call, stored to the frame's one home right
-before `func_8002B314`, and read back only by the doubling in the loop
+before `mmAlloc2`, and read back only by the doubling in the loop
 setup, into a temporary. Three lanes had read that as one web split by
 uopt and asked what makes `split()` store at the boundary.
 

@@ -69,7 +69,7 @@ typedef struct O83Parent {
     O83Batch *batch;
 } O83Parent;
 
-extern void *func_8002B280(s32 size, u32 colourTag);
+extern void *mmAlloc(s32 size, u32 colourTag);
 extern void pointListRPY();
 extern f32 gOverlay83ScaleReloc;
 
@@ -84,7 +84,7 @@ void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
     f32 scaleFactor;
 
     batch = parent->batch;
-    batch->records = func_8002B280(source->count * 0x258, 0x87);
+    batch->records = mmAlloc(source->count * 0x258, 0x87);
     if (batch->records != 0) {
         batch->count = source->count;
         output = batch->records;

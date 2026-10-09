@@ -59,27 +59,27 @@ O50Level *levelGetLevel_o050Reloc(void); /* 0:+0x2634C */
 s32 func_800290A0_o050Reloc(void); /* 0:+0x28C50 */
 s32 func_8003A7D0_o050Reloc(void *); /* 0:+0x3A380 */
 void func_8002F618_o050Reloc(void **, void *, s32, s32, s32, s32, s32, s32); /* 0:+0x2F1C8 */
-void func_80034920_o050Reloc(void **); /* 0:+0x344D0 */
-void func_80039E34_o050Reloc(s32); /* 0:+0x399E4 */
+void texDPInit_o050Reloc(void **); /* 0:+0x344D0 */
+void frontDrawObj_o050Reloc(s32); /* 0:+0x399E4 */
 void freeFrontEndItem_o050Reloc(s32); /* 0:+0x3964C */
 void loadFrontEndItem_o050Reloc(s32); /* 0:+0x39794 */
 s32 overlay59Interpolate_o050Reloc(s32, s32, s32, s32, s32, s32 *, s32 *, s32); /* 59:+0x784 */
 void overlay59BuildList_o050Reloc(s32, void *); /* 59:+0x84C */
 void overlay59DrawFrame_o050Reloc(void **, s32, s32, s32); /* 59:+0x8EC */
-s32 func_80036544_o050Reloc(void *, s32 *, s32, f32 *, s32); /* 0:+0x360F4 */
+s32 texAnimateSprite_o050Reloc(void *, s32 *, s32, f32 *, s32); /* 0:+0x360F4 */
 void amSndPlay_o050Reloc(u16, void **); /* 0:+0xB44 */
 u32 joyGetPressed_o050Reloc(s32); /* 0:+0x250FC */
 void func_8004A4B0_o050Reloc(s32, s32, s32, s32, s32); /* 0:+0x4A060 */
-void func_8004B0A4_o050Reloc(s32); /* 0:+0x4AC54 */
-void func_8004B0DC_o050Reloc(s32, s32, s32, s32); /* 0:+0x4AC8C */
+void fontUseFont_o050Reloc(s32); /* 0:+0x4AC54 */
+void fontBackground_o050Reloc(s32, s32, s32, s32); /* 0:+0x4AC8C */
 void fontColour_o050Reloc(s32, s32, s32, s32, s32); /* 0:+0x4AC68 */
-void func_8004B0F8_o050Reloc(void **, s32, s32, char *, s32); /* 0:+0x4ACA8 */
+void fontPrintXY_o050Reloc(void **, s32, s32, char *, s32); /* 0:+0x4ACA8 */
 s32 mainGetMode_o050Reloc(void); /* 0:+0x288C8 */
 void func_800016EC_o050Reloc(s32); /* 0:+0x129C */
 void func_8003A590_o050Reloc(void); /* 0:+0x3A140 */
 void func_80037414_o050Reloc(s32, f32, f32, s32, s32, s32, s32); /* 0:+0x36FC4 */
 void mainChangeLevel_o050Reloc(s32, s32, s32, s32, s32, s32); /* 0:+0x27F24 */
-void func_800005CC_o050Reloc(f32, u8); /* 0:+0x17C */
+void amTuneSetFade_o050Reloc(f32, u8); /* 0:+0x17C */
 
 void overlay50SubmitTimeGlyphs(s32, s32, s32, s32);
 /* Overlay 50 was one translation unit: its runtime records address this
@@ -252,14 +252,14 @@ racer->laps != level->laps
                 func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_AC, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
             }
         }
-        func_80034920_o050Reloc(&D_800D3140_o050Reloc);
+        texDPInit_o050Reloc(&D_800D3140_o050Reloc);
         D_800D3550_o050Reloc[4].y = (f32) (0x54 - hudY);
         D_800D3550_o050Reloc[4].angle = (s16) ((s32) (racer->raceTime * -0x10000) / 300);
-        func_80039E34_o050Reloc(4);
+        frontDrawObj_o050Reloc(4);
         D_800D3550_o050Reloc[1].y = (f32) (0x43 - hudY);
-        func_80039E34_o050Reloc(1);
+        frontDrawObj_o050Reloc(1);
         func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_2C0, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
-        func_80034920_o050Reloc(&D_800D3140_o050Reloc);
+        texDPInit_o050Reloc(&D_800D3140_o050Reloc);
         if (racer->item != 0xFF) {
             D_334 += updateRate * 16;
             if (D_334 >= 256) {
@@ -348,7 +348,7 @@ racer->laps != level->laps
             }
             overlay59DrawFrame_o050Reloc(&D_800D3140_o050Reloc, 0, messageX, messageY);
         }
-        func_80036544_o050Reloc(D_800D31C8_o050Reloc[0], &D_328, 0x14, &D_800D3550_o050Reloc[1].frame, updateRate);
+        texAnimateSprite_o050Reloc(D_800D31C8_o050Reloc[0], &D_328, 0x14, &D_800D3550_o050Reloc[1].frame, updateRate);
         if (racer->laps < level->laps) {
             if (racer->differenceTimer >= updateRate) {
                 if ((racer->differenceTimer == 0xB4) && (racer->timeDifference >= 0)) {
@@ -419,10 +419,10 @@ racer->laps != level->laps
                     speed = -speed;
                 }
                 func_8004A4B0_o050Reloc(0xE6, 0xB4, speed, 3, 0);
-                func_8004B0A4_o050Reloc(2);
-                func_8004B0DC_o050Reloc(0, 0, 0, 0);
+                fontUseFont_o050Reloc(2);
+                fontBackground_o050Reloc(0, 0, 0, 0);
                 fontColour_o050Reloc(0x40, 0xFF, 0x40, 0xFF, 0xE0);
-                func_8004B0F8_o050Reloc(&D_800D3140_o050Reloc, 0x106, 0xBC, o50SpeedText, 0);
+                fontPrintXY_o050Reloc(&D_800D3140_o050Reloc, 0x106, 0xBC, o50SpeedText, 0);
             } else {
                 func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_6C, hudX, 0, 0xFF, 0xFF, 0xFF, 0xFF);
                 if (racer->speed < 0.0f) {
@@ -436,9 +436,9 @@ racer->laps != level->laps
 
                 D_800D3550_o050Reloc[0].x = hudX + 0x77;
                 D_800D3550_o050Reloc[0].y = -85.0f;
-                func_80034920_o050Reloc(&D_800D3140_o050Reloc);
+                texDPInit_o050Reloc(&D_800D3140_o050Reloc);
                 D_8007C0BC_o050Reloc = 0xFF;
-                func_80039E34_o050Reloc(0);
+                frontDrawObj_o050Reloc(0);
                 D_8007C0BC_o050Reloc = 0xFF;
             }
         }
@@ -463,7 +463,7 @@ racer->laps != level->laps
                     func_8003A590_o050Reloc();
                     func_80037414_o050Reloc(2, 4.0f, -1.0f, 0, 0, 0, 0);
                     mainChangeLevel_o050Reloc(0x12, 0, 0, 7, 1, 1);
-                    func_800005CC_o050Reloc(3.0f, 0);
+                    amTuneSetFade_o050Reloc(3.0f, 0);
                     D_33C = 1;
                 }
                 break;
@@ -473,7 +473,7 @@ racer->laps != level->laps
                     func_8003A590_o050Reloc();
                     func_80037414_o050Reloc(2, 4.0f, -1.0f, 0, 0, 0, 0);
                     mainChangeLevel_o050Reloc(0x12, 0, 0, 7, 1, 0);
-                    func_800005CC_o050Reloc(3.0f, 0);
+                    amTuneSetFade_o050Reloc(3.0f, 0);
                     D_33C = 1;
                 }
                 break;

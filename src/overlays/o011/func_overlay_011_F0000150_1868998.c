@@ -49,7 +49,7 @@ extern s32 func_800290A0_o011Reloc(void);
 extern s32 mathRnd_o011Reloc(s32 minimum, s32 maximum);
 extern void viGetCurrentSize_o011Reloc(u32 *width, u32 *height);
 extern void camStandardOrtho_o011Reloc(O11Gfx **displayList, void **matrix);
-extern void func_800349A4_o011Reloc(O11Gfx **displayList, void *texture,
+extern void texDPTextureX_o011Reloc(O11Gfx **displayList, void *texture,
                                     s32 flags, s16 parameter);
 extern f32 func_8002A8C0_o011Reloc(s32 angle);
 extern u32 joyGetPressed_o011Reloc(s32 controller);
@@ -150,7 +150,7 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
         ((((s32)((width - 1) * 4.0f)) & 0xFFF) << 12) |
         (((s32)((height - 1) * 4.0f)) & 0xFFF);
     camStandardOrtho_o011Reloc(&gO11DisplayListReloc, &gO11MatrixReloc);
-    func_800349A4_o011Reloc(&gO11DisplayListReloc, 0, 4, 0);
+    texDPTextureX_o011Reloc(&gO11DisplayListReloc, 0, 4, 0);
     combine = gO11DisplayListReloc++;
     combine->w0 = 0xFCFFFFFF; combine->w1 = 0xFFFE793C;
 

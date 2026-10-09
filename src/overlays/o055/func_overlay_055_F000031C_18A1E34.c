@@ -84,9 +84,9 @@ extern void overlay56SplitTime(s32, s32 *, s32 *, s32 *);
 extern Overlay55Level *levelGetLevel(void);
 extern s32 func_800290A0(void);
 extern void overlay55GetOffsets(s32, s32, s32 *, s32 *);
-extern void func_80034920(Overlay55DisplayCommand **);
+extern void texDPInit(Overlay55DisplayCommand **);
 extern void func_8002F618(Overlay55DisplayCommand **, Overlay55Digit *, s32, s32, u8, u8, u8, u8);
-extern void func_80039E34(s32);
+extern void frontDrawObj(s32);
 extern s32 frontGetScreenMode(void);
 extern void func_8002FB34(Overlay55DisplayCommand **, Overlay55Transform *, f32, f32, f32, f32, s32, u8);
 extern s32 mainGetMode(void);
@@ -95,7 +95,7 @@ extern void func_800016EC(u8);
 extern void func_8003A590(void);
 extern void func_80037414(s32, f32, f32, s32, s32, s32, s32);
 extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
-extern void func_800005CC(f32, u8);
+extern void amTuneSetFade(f32, u8);
 
 /* Overlay 55's HUD update: the four-player sibling of overlay 53's
  * func_overlay_053_F0000240_189DBE8 and of overlay52TailB, written the same
@@ -182,14 +182,14 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
                     digits[i].x = gOverlay55TimeTemplate[i].x + digitX;
                 }
             }
-            func_80034920(&D_800D3140);
+            texDPInit(&D_800D3140);
             func_8002F618(&D_800D3140, digits, 0, hudOffset, 255, 255, 255, 255);
-            func_80034920(&D_800D3140);
+            texDPInit(&D_800D3140);
             overlay55GetOffsets(player, 0, &digitX, &digitY);
             D_800D3550[4].unkC = digitX - 0xAD;
             D_800D3550[4].unk10 = (-digitY - hudOffset) + 0x74;
             D_800D3550[4].unk4 = state->time * -65536 / 300;
-            func_80039E34(4);
+            frontDrawObj(4);
             func_8002F618(&D_800D3140, clock, 0, hudOffset, 255, 255, 255, 255);
         }
         if (state->character != 255) {
@@ -242,7 +242,7 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
             func_8003A590();
             func_80037414(2, 4.0f, -1.0f, 0, 0, 0, 0);
             mainChangeLevel(18, 0, 0, 7, 1, 1);
-            func_800005CC(3.0f, 0);
+            amTuneSetFade(3.0f, 0);
             gOverlay55TransitionDone = 1;
         }
     }

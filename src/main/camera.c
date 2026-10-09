@@ -285,11 +285,11 @@ s16 Arctanf(f32 x, f32 y);
 void func_8002AA50(CameraScaledTransform *transform, MtxF matrix);
 void func_8002AB78(CameraTransform *transform, MtxF matrix);
 void func_8002AE10(CameraTransform *transform, MtxF matrix);
-void func_80024978(MtxF matrix);
-void func_80034E54(Gfx **dlist, u8 *spriteData, s32 flags,
+void camCopyOrthoMatrix(MtxF matrix);
+void sprDPset(Gfx **dlist, u8 *spriteData, s32 flags,
                    f32 frame, s32 alpha);
 void func_80034434(s32 enabled);
-void func_80023CCC(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
+void camDoSpriteDirect(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
                    u8 *spriteData, s16 x, s16 y, s16 z, s16 angle, f32 scale,
                    f32 matrixScale, f32 frame, s32 flags, u8 alpha);
 f32 sqrtf(f32 value);
@@ -298,14 +298,14 @@ s32 levelGetNumber(void);
 u8 levelGetType(void);
 s32 frontGet2PlayerSplit(void);
 extern s32 levelInitRegionFlags(void);
-extern void func_80021504(f32 fov, s32 force);
+extern void camSetFOV(f32 fov, s32 force);
 void func_80021838(s32 x, s32 y, s32 z, s32 zRotation, s32 xRotation,
                    s32 yRotation);
-extern void func_80021FB0(s32 mode, s32 camNo, s32 *x1, s32 *y1,
+extern void camGetWindowLimits(s32 mode, s32 camNo, s32 *x1, s32 *y1,
                           u32 *x2, u32 *y2);
 extern void camSetViewport(Gfx **dlist, s32 halfWidth, s32 halfHeight,
                            s32 centerX, s32 centerY, s32 regionFlags);
-extern void func_80022794(Gfx **dlist, Mtx **mtx);
+extern void camSetProjMtx(Gfx **dlist, Mtx **mtx);
 void camStopShakes(void);
 
 /* PROVENANCE: adapted from JFG's public decomp, src/camera.c:camInit. */
@@ -377,7 +377,7 @@ void camOverrideProjScales(f32 scaleX, f32 scaleY) {
  * retained full .bin predates it, and no independent target relocation
  * object survives, so one fresh target/object/link/full-bin reproof remains.
  */
-void func_80021504(f32 fov, s32 force) {
+void camSetFOV(f32 fov, s32 force) {
     Camera *camera;
     s32 videoMode;
     s32 type;
@@ -546,7 +546,7 @@ void camSetWaterLine(s32 camNo, s32 waterLine) {
  * D_80079E98 immediately afterward; port 20 therefore resolves to
  * D_80079E98[0]. The physical alias is proven, but original intent is not.
  */
-void func_800219D0(void) {
+void camUserViewTick(void) {
     s32 width;
     s32 height;
     s32 port;
@@ -636,7 +636,7 @@ s32 camIsUserView(s32 camNo) {
  * src/camera.c:viewport_menu_set; JFG's public src/camera.c supplies the
  * camSetUserView role while Mickey supplies the video-size call and layout.
  */
-void func_80021C88(s32 camNo, s32 x1, s32 y1, s32 x2, s32 y2) {
+void camSetUserView(s32 camNo, s32 x1, s32 y1, s32 x2, s32 y2) {
     s32 swap;
     struct {
         u32 height;
@@ -753,7 +753,7 @@ void camGetUserView(s32 camNo, s32 *x1, s32 *y1, s32 *x2, s32 *y2) {
  * src/camera.c:camGetWindowLimits; Mickey's draft supplies the inset margins
  * and split-orientation behavior.
  */
-void func_80021FB0(s32 mode, s32 camNo, s32 *x1, s32 *y1, u32 *x2,
+void camGetWindowLimits(s32 mode, s32 camNo, s32 *x1, s32 *y1, u32 *x2,
                    u32 *y2) {
     s32 videoMode;
     u32 halfWidth;
@@ -824,7 +824,7 @@ void func_80021FB0(s32 mode, s32 camNo, s32 *x1, s32 *y1, u32 *x2,
     }
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/camera.c:camSetView. */
-void func_800221E8(Gfx **dlist, Mtx **mtx) {
+void camSetView(Gfx **dlist, Mtx **mtx) {
     u32 halfWidth;
     struct {
         u32 pad;
@@ -836,7 +836,7 @@ void func_800221E8(Gfx **dlist, Mtx **mtx) {
     u32 halfHeight;
     s32 videoMode;
 
-    func_80021FB0(D_800CEC60, D_800CEC64, (s32 *)&win.ulx,
+    camGetWindowLimits(D_800CEC60, D_800CEC64, (s32 *)&win.ulx,
                   (s32 *)&win.uly, &win.lrx, &win.lry);
 
     videoMode = viGetVideoMode();
@@ -872,7 +872,7 @@ void func_800221E8(Gfx **dlist, Mtx **mtx) {
                    (win.lry + win.uly) >> 1, levelInitRegionFlags());
 
     if (mtx != NULL) {
-        func_80022794(dlist, mtx);
+        camSetProjMtx(dlist, mtx);
     }
 }
 void func_80022604(s32 value) {
@@ -885,7 +885,7 @@ void camSetScissor(Gfx **dlist) {
     u32 x2;
     u32 y2;
 
-    func_80021FB0(D_800CEC60, D_800CEC64, (s32 *) &x1, (s32 *) &y1,
+    camGetWindowLimits(D_800CEC60, D_800CEC64, (s32 *) &x1, (s32 *) &y1,
                   &x2, &y2);
     gDPSetScissor((*dlist)++, G_SC_NON_INTERLACE, x1, y1, x2, y2);
 }
@@ -897,14 +897,14 @@ void camGetPlayerProjMtx(s32 player, MtxF dest) {
     mtxf_mul(D_800CF1A0, D_800CEC98, dest);
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/camera.c:camSetProjMtx. */
-void func_80022794(Gfx **dlist, Mtx **mtx) {
+void camSetProjMtx(Gfx **dlist, Mtx **mtx) {
     Camera *camera;
 
     camera = &D_800CEA20[D_800CEC64];
     if ((D_800CF2A0 != camera->fov) ||
         (camera->stateA != camera->stateB) ||
         (D_80079FA0[D_800CEC64] != 0)) {
-        func_80021504(camera->fov, 0);
+        camSetFOV(camera->fov, 0);
     }
 
     if (dlist != NULL) {
@@ -973,7 +973,7 @@ void camStandardOrtho(Gfx **dlist, Mtx **mtx) {
     viewport->vp.vtrans[0] = width * 2;
     viewport->vp.vtrans[1] = height * 2;
     gSPViewport((*dlist)++, (u32) viewport + 0x80000000);
-    func_80024978(D_800CED18);
+    camCopyOrthoMatrix(D_800CED18);
     mtxf_to_mtx(D_800CED18, *mtx);
     gSPMatrix((*dlist)++, (u32) *mtx + 0x80000000, 0);
     (*mtx)++;
@@ -1012,7 +1012,7 @@ void camSetViewport(Gfx **dlist, s32 halfWidth, s32 halfHeight, s32 centerX,
     gSPViewport((*dlist)++, (u32) viewport + 0x80000000);
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/camera.c:camResetView. */
-void func_80022D20(Gfx **dlist) {
+void camResetView(Gfx **dlist) {
     u32 height;
     u32 width;
 
@@ -1192,7 +1192,7 @@ void func_80022FD4(Gfx **dlist, Mtx **mtx, void *vertices,
     gSPMatrix((*dlist)++, (u32)*mtx + 0x80000000, 2);
     (*mtx)++;
     gDma1p((*dlist)++, G_VTX, D_79FCC, 0x12, ((u32)D_79FCC & 6) | 8);
-    func_80034E54(dlist, sprite->spriteData, flags & 0xF,
+    sprDPset(dlist, sprite->spriteData, flags & 0xF,
                   (f32)angle, alpha);
     gMoveWd((*dlist)++, 10, 0, 0);
     gDPSetPrimColor((*dlist)++, 0, 0, 255, 255, 255, 255);
@@ -1313,7 +1313,7 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
     gDPSetEnvColor((*dlist)++, 0, 0, 0, 0);
 
     func_80034434(1);
-    func_80023CCC(dlist, mtx, vertices, spriteData, x, y, z,
+    camDoSpriteDirect(dlist, mtx, vertices, spriteData, x, y, z,
                   func_8002A8BC(angle) * zRotation, scale, matrixScale,
                   mirroredFrame, 0x10E, alpha);
     func_80034434(0);
@@ -1325,7 +1325,7 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
  * PROVENANCE: adapted from JFG's public decomp, src/camera.c:camDoSprite;
  * Mickey supplies the resident projection flip and display-list encoding.
  */
-void func_80023A08(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
+void camDoSprite(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
                    CameraObjectSegment *segment, u8 *spriteData, s32 flags,
                    u8 alpha) {
     s32 rotation;
@@ -1383,7 +1383,7 @@ void func_80023A08(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
     if (flags & 4) {
         flags |= 1;
     }
-    func_80034E54(dlist, spriteData, flags & 0xF, segment->frame, alpha);
+    sprDPset(dlist, spriteData, flags & 0xF, segment->frame, alpha);
     {
         Gfx *cmd = (Gfx *)((*dlist)++);
 
@@ -1402,7 +1402,7 @@ void func_80023A08(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
  * src/camera.c:camDoSpriteDirect; Mickey supplies the secondary matrix scale,
  * resident projection state and display-list encoding.
  */
-void func_80023CCC(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
+void camDoSpriteDirect(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
                    u8 *spriteData, s16 x, s16 y, s16 z, s16 angle, f32 scale,
                    f32 matrixScale, f32 frame, s32 flags, u8 alpha) {
     s32 rotation;
@@ -1466,7 +1466,7 @@ void func_80023CCC(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
     if (flags & 4) {
         flags |= 1;
     }
-    func_80034E54(dlist, spriteData, flags & 0xF, frame, alpha);
+    sprDPset(dlist, spriteData, flags & 0xF, frame, alpha);
     {
         Gfx *cmd = (Gfx *)((*dlist)++);
 
@@ -1485,7 +1485,7 @@ void func_80023CCC(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
  * src/camera.c:camDo2DSprite; Mickey supplies the display-list encoding and
  * its resident camera globals.
  */
-void func_80023F84(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
+void camDo2DSprite(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
                    CameraObjectSegment *segment, u8 *spriteData, s32 flags,
                    u8 alpha) {
     CameraVertex *vertex;
@@ -1554,7 +1554,7 @@ void func_80023F84(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
         cmd->words.w0 = 0xBC000002;
     }
 
-    func_80034E54(dlist, spriteData, flags, segment->frame, alpha);
+    sprDPset(dlist, spriteData, flags, segment->frame, alpha);
 
     {
         Gfx *cmd = (Gfx *)((*dlist)++);
@@ -1702,7 +1702,7 @@ MtxF *camGetProjectionMtx(void) {
  * PROVENANCE: JFG's public src/camera.c identifies the camProjectPoint role;
  * this body is reconstructed from Mickey's matrix and viewport dataflow.
  */
-s32 func_800246B0(f32 x, f32 y, f32 z, f32 *outX, f32 *outY,
+s32 camProjectPoint(f32 x, f32 y, f32 z, f32 *outX, f32 *outY,
                   u8 transform) {
     s32 visible;
     f32 viewportScaleX;
@@ -1741,7 +1741,7 @@ s32 func_800246B0(f32 x, f32 y, f32 z, f32 *outX, f32 *outY,
  * transX load is material to IDO's allocation. With Mickey's symbols and ABI,
  * all 65 instructions and nine relocations are exact.
  */
-void func_80024834(f32 screenX, f32 screenY, f32 *x, f32 *y, f32 *z,
+void camReversePoint(f32 screenX, f32 screenY, f32 *x, f32 *y, f32 *z,
                    u8 transform) {
     f32 transX;
     f32 scaleY;
@@ -1793,7 +1793,7 @@ f32 camGetProjZ(f32 x, f32 y, f32 z) {
  * TU's .data starts at 0x80079F40, not 0x80079F48. See the two leading
  * words below.
  */
-void func_80024978(MtxF matrix) {
+void camCopyOrthoMatrix(MtxF matrix) {
     s32 i;
     s32 width;
     s32 height;
@@ -1842,7 +1842,7 @@ void camStopShakes(void) {
  * PROVENANCE: role from JFG's public decomp, src/camera.c:camScreenShake;
  * body reconstructed from Mickey-only evidence.
  */
-void func_80024BA0(f32 x, f32 y, f32 z, f32 radius, f32 magnitude) {
+void camScreenShake(f32 x, f32 y, f32 z, f32 radius, f32 magnitude) {
     Camera *cam;
     f32 distance;
     f32 dz;
@@ -1883,7 +1883,7 @@ void camSetZoom(s32 camNo, f32 zoom) {
  * PROVENANCE: JFG's public src/camera.c identifies the camTick role/order;
  * the body is reconstructed from Mickey-only camera and shake-envelope data.
  */
-void func_80024D00(s32 updateRate) {
+void camTick(s32 updateRate) {
     Camera *camera;
     CameraShake *shake;
     s32 magnitude;
@@ -1951,7 +1951,7 @@ void func_80024ED8(CameraTransform *source, s32 unused, Camera *dest) {
 
 /* The projection scale and matrix constants are owned by this TU.
  * The section starts 16-byte aligned at 0x80079F40, eight bytes before the
- * scale: func_80024978's shared `lui $at` pattern places D_80079F4C at
+ * scale: camCopyOrthoMatrix's shared `lui $at` pattern places D_80079F4C at
  * section offset 0xC (see the comment there). The two leading words are
  * zero in the ROM and nothing references them. IDO rounds the section to
  * 16 bytes, so it also owns the next two matrix floats at 0x80079F58. */

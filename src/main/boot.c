@@ -43,7 +43,7 @@ void thread1_main(void *unused) {
     while (1) {}
 }
 
-void func_80021290(void) {
+void bootCheckStack(void) {
     D_800CB5B8[0x400]++;
     D_800CB5B8[0]++;
 }

@@ -16,13 +16,13 @@ extern s16 D_800D6AC8;
 extern s32 D_800D6AD8[];
 extern s32 D_800D6AE4;
 extern s32 piRomGetFileSize(s32 fileId);
-extern s32 func_8002B280(s32 size, s32 tag);
+extern s32 mmAlloc(s32 size, s32 tag);
 
 extern char *D_800D6AD0[];
 extern u8 *D_800D6AE0;
-extern void func_8004BB44(s32 windowId, s32 x1, s32 y1, s32 x2, s32 y2);
-extern void func_8004BBE0(s32 windowId, s32 font);
-extern void *func_8004BCC4(s32 windowId, s32 posX, s32 posY, char *text,
+extern void fontWindowSize(s32 windowId, s32 x1, s32 y1, s32 x2, s32 y2);
+extern void fontWindowUseFont(s32 windowId, s32 font);
+extern void *fontWindowAddStringXY(s32 windowId, s32 posX, s32 posY, char *text,
                            s32 number, s32 flags);
 extern void fontWindowColour(s32 windowId, s32 red, s32 green, s32 blue,
                              s32 alpha);
@@ -30,13 +30,13 @@ extern void fontWindowFontBackground(s32 windowId, s32 red, s32 green,
                                      s32 blue, s32 alpha);
 extern void fontWindowFontColour(s32 windowId, s32 red, s32 green, s32 blue,
                                  s32 alpha, s32 opacity);
-extern void func_8004BFB0(s32 windowId);
+extern void fontWindowEnable(s32 windowId);
 
 /* PROVENANCE: adapted from Diddy Kong Racing's public decomp, src/game_text.c:
  * init_dialogue_text; Mickey's globals, constants, calls, and bytes remain authoritative. */
 void func_8004E8E0(void) {
     D_800D6AB4 = (piRomGetFileSize(5) >> 2) - 2;
-    D_800D6AD8[0] = func_8002B280(0x790, 0x8F);
+    D_800D6AD8[0] = mmAlloc(0x790, 0x8F);
     D_800D6AD8[1] = D_800D6AD8[0] + 0x3C0;
     D_800D6AB0 = D_800D6AD8[1] + 0x3C0;
     D_800D6AE4 = 0;
@@ -52,14 +52,14 @@ void func_8004E8E0(void) {
 }
 
 extern void mmFree(void *ptr);
-extern void func_8004BFD8(s32 windowId);
-extern void func_8004BF64(s32 windowId);
+extern void fontWindowDisable(s32 windowId);
+extern void fontWindowFlushStrings(s32 windowId);
 
 void func_8004E99C(void) {
     if (D_8007D640 != 0) {
         mmFree((void *)D_800D6AD8[0]);
-        func_8004BFD8(6);
-        func_8004BF64(6);
+        fontWindowDisable(6);
+        fontWindowFlushStrings(6);
         D_8007D640 = 0;
         D_800D6AC4 = 0;
     }
@@ -81,8 +81,8 @@ void func_8004E9F8(void) {
     s32 textFlags;
     char **textData;
 
-    func_8004BF64(6);
-    func_8004BB44(6, D_800D6ABC, D_800D6ABE, D_800D6AC0,
+    fontWindowFlushStrings(6);
+    fontWindowSize(6, D_800D6ABC, D_800D6ABE, D_800D6AC0,
                   (s32)D_800D6AC2);
     fontWindowColour(6, 0, 0x60, 0,
                      (s32)(D_800D6AB6 * 0x64) >> 8);
@@ -91,7 +91,7 @@ void func_8004E9F8(void) {
                     (D_800D6AC6 * 0xC)) - (D_800D6AC6 * 2)) + 2) >> 1;
     for (i = 0; i < D_800D6AC6; i++) {
         textData = &D_800D6AD0[0];
-        func_8004BBE0(6, (s32)textData[i][5]);
+        fontWindowUseFont(6, (s32)textData[i][5]);
         textFlags = textData[i][6];
         if (textFlags == 4) {
             textX = (D_800D6AC0 - D_800D6ABC) >> 1;
@@ -105,14 +105,14 @@ void func_8004E9F8(void) {
         fontWindowFontColour(6, textData[i][1], textData[i][2],
                              textData[i][3], 0xFF,
                              (textData[i][4] * D_800D6AB6) >> 8);
-        func_8004BCC4(6, textX, textY, textData[i] + 8, 1, textFlags);
+        fontWindowAddStringXY(6, textX, textY, textData[i] + 8, 1, textFlags);
         fontWindowFontColour(6, 0, 0, 0, 0xFF,
                              (D_800D6AB6 * 0xFF) >> 8);
-        func_8004BCC4(6, textX + 1, textY + 1, textData[i] + 8, 1,
+        fontWindowAddStringXY(6, textX + 1, textY + 1, textData[i] + 8, 1,
                       textFlags);
         textY += 0xE;
     }
-    func_8004BFB0(6);
+    fontWindowEnable(6);
 }
 /* PROVENANCE: adapted from Jet Force Gemini src/subtitles.c
  * find_next_subtitle and Diddy Kong Racing src/game_text.c find_next_subtitle.
@@ -174,8 +174,8 @@ void func_8004EDA8(s32 updateRate)
         {
           D_800D6AB6 = 0;
           D_800D6AC4 = 0;
-          func_8004BFD8(6);
-          func_8004BF64(6);
+          fontWindowDisable(6);
+          fontWindowFlushStrings(6);
           fadeState = D_800D6AC4;
         }
       }

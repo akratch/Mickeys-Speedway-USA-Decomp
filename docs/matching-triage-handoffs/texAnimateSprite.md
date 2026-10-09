@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_80036544:start -->
-### `func_80036544` plateau handoff
+<!-- plateau-handoff:texAnimateSprite:start -->
+### `texAnimateSprite` plateau handoff
 
 - source: `src/main/textures_354C8.c`
 - score: 0/152 words, promoted
@@ -40,4 +40,4 @@ old shape and are not used.
 
 Gates: gmake verify OK on the promoted tree, scoreboard and ranking
 regenerated.
-<!-- plateau-handoff:func_80036544:end -->
+<!-- plateau-handoff:texAnimateSprite:end -->

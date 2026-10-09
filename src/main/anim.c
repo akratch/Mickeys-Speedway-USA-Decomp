@@ -16,16 +16,29 @@
 #include "game/anim.h"
 #include "game/charControl.h"
 
-void *func_8002B280();
+void *mmAlloc();
 AnimPathObject *func_8000590C(ControlSpawnPacket *packet, s32 mode);
 void func_80005768(AnimPathObject *object);
 void piRomLoadSection();
 u8 *levelGetLevel(void);
 void func_800511C4();
-void func_80021504(f32 value, s32 arg1);
+void camSetFOV(f32 value, s32 arg1);
 f32 sqrtf(f32 value);
-extern void func_800031E8(void *handle);
+extern void amSndStopXYZ(void *handle);
 HitCopyState **func_80005750(s32 *count);
+
+#ifdef NON_MATCHING
+/* The NON_MATCHING bodies of func_80051364, func_800517E0, func_80053868 and
+ * func_80054B3C are owned by other lanes and still spell these callees by
+ * their old placeholders; drop each line once those bodies are renamed. */
+#define func_80000510 amTunePlay
+#define func_800005CC amTuneSetFade
+#define func_80002FE0 amSndPlayXYZ
+#define func_800030B4 amSndSetPitchXYZ
+#define func_800031C0 amSndSetXYZ
+#define func_800031E8 amSndStopXYZ
+#define func_80014BAC trackFadeFog
+#endif
 
 /*
  * PROVENANCE: adapted from JFG's func_80076020_76C20. Mickey's globals and
@@ -274,7 +287,7 @@ u8 pathIndex;
                 }
                 animResetTrap(path, 0.0f, 0, 0);
                 if (*(s32 *) &object->soundHandle != 0) {
-                    func_800031E8(*(s32 *) &object->soundHandle);
+                    amSndStopXYZ(*(s32 *) &object->soundHandle);
                     *(s32 *) &object->soundHandle = 0;
                 }
             }
@@ -430,7 +443,7 @@ void func_800508D4(s32 count, AnimPathNode *node, s32 stream,
     }
 }
 /* JFG's animseqLinkNodes assembly corroborates this Mickey-led body. */
-void func_80050AD4(u8 pathIndex) {
+void animseqLinkNodes(u8 pathIndex) {
     AnimPath *path;
     s32 nodeIndex;
 
@@ -472,7 +485,7 @@ void func_80050AD4(u8 pathIndex) {
  * Physical source grouping is code-generation-sensitive; keep it intact.
  * Configured untouched output is checked against the owned linked ROM range.
  */
-void func_80050BF4(void)
+void animseqInit(void)
 {
   s32 emptyIndex;
   s32 i;
@@ -480,7 +493,7 @@ void func_80050BF4(void)
   int new_var;
   u8 *cursor;
   D_800D6B04 = piRomLoad(0x3D);
-  D_800D6B00 = func_8002B280(0x400, 0x81);
+  D_800D6B00 = mmAlloc(0x400, 0x81);
   offset = 0;
   new_var = 4;
   do
@@ -514,7 +527,7 @@ void animseqFreeLevelData(void) {
         mmFree(D_8007D680);
         D_8007D680 = NULL;
         D_8007D688 = -1;
-        func_80050E9C();
+        animseqFreeGroup();
     }
 }
 
@@ -523,7 +536,7 @@ void animseqFreeLevelData(void) {
  * Mickey's third allocator argument and two-word local layout establish the
  * source-offset home independently against Mickey's ROM.
  */
-void func_80050DF0(s32 levelId) {
+void animseqLoadLevelData(s32 levelId) {
     struct {
         s32 unused;
         s32 source;
@@ -537,7 +550,7 @@ void func_80050DF0(s32 levelId) {
         D_8007D684 = bounds[1] - locals.source;
         if (D_8007D684 > 0) {
             D_8007D680 =
-                func_8002B280(D_8007D684, 0x81, locals.source);
+                mmAlloc(D_8007D684, 0x81, locals.source);
             if (D_8007D680 != NULL) {
                 piRomLoadSection(0x3E, D_8007D680, locals.source,
                                  D_8007D684);
@@ -552,7 +565,7 @@ void func_80050DF0(s32 levelId) {
  * Preserve the same-line cursor setup and the integer identity expressions:
  * together they retain the stock compiler's exact temporary allocation.
  */
-void func_80050E9C(void) {
+void animseqFreeGroup(void) {
     s32 emptyIndex;
     s32 i;
     u8 *cursor;
@@ -611,7 +624,7 @@ void func_80050E9C(void) {
  * PROVENANCE: adapted from JFG's public animseqSetupGroup assembly. Mickey's
  * directory layout, level-header field, globals, and calls are authoritative.
  */
-void func_80051004(s32 groupId) {
+void animseqSetupGroup(s32 groupId) {
     AnimGroupDirectoryEntry *entry;
     AnimLevelHeader *level;
     u8 *base;
@@ -622,7 +635,7 @@ void func_80051004(s32 groupId) {
 
     if ((groupId >= 0) && (groupId < 0x100) &&
         (groupId != D_8007D690)) {
-        func_80050E9C();
+        animseqFreeGroup();
         base = D_8007D680;
         entry = (AnimGroupDirectoryEntry *) base;
         do {
@@ -722,7 +735,7 @@ void func_800511C4(void) {
             entryWord = *entryCursor++;
             source = (AnimGroupPathHeader *)
                 ((u8 *) D_8007D68C + (entryWord & 0xFFFFFF));
-            path = func_8002B280((source->nodeCount * sizeof(AnimPathNode)) +
+            path = mmAlloc((source->nodeCount * sizeof(AnimPathNode)) +
                                  sizeof(AnimPath),
                                  0x81);
             pathIndex = (entryWord >> 24) & 0xFF;
@@ -750,7 +763,7 @@ void func_800511C4(void) {
                 func_8005055C(pathIndex);
                 func_800508D4(path->nodeCount, path->nodes, source->nodeData,
                               0, 0);
-                func_80050AD4(pathIndex);
+                animseqLinkNodes(pathIndex);
             }
             remaining--;
         } while (remaining > 0);
@@ -758,8 +771,8 @@ void func_800511C4(void) {
 }
 
 extern s32 osTvType;
-void func_800030B4(void *soundHandle, u8 pitch);
-void func_800031C0(void *soundHandle, f32 x, f32 y, f32 z);
+void amSndSetPitchXYZ(void *soundHandle, u8 pitch);
+void amSndSetXYZ(void *soundHandle, f32 x, f32 y, f32 z);
 void func_800517E0(void);
 #pragma weak animUpdateTrap = TrapDanglingJump
 extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
@@ -1975,7 +1988,7 @@ AnimCameraSource *func_80053420(s32 index, AnimCameraTarget *target) {
         target->unk0 = 0x8000 - source->unk0;
         target->unk2 = -source->unk2;
         target->unk4 = source->unk4;
-        func_80021504(D_8007D6B4, 0);
+        camSetFOV(D_8007D6B4, 0);
     }
     return source;
 }
@@ -2011,7 +2024,7 @@ void func_800534EC(s32 arg0) {
     } while (i--);
 }
 
-void func_80002FE0(s32 id, f32 x, f32 y, f32 z, s32 priority,
+void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority,
                    void **handle);
 u8 *func_80028F54(void);
 void rumbleStart(s32 playerIndex, s32 strength, f32 duration);
@@ -2783,7 +2796,7 @@ typedef struct HitResolveVehicle {
 
 extern f32 D_800841F0;
 extern u32 func_80001620(s32 soundId);
-extern void func_8000309C(void *handle, u8 volume);
+extern void amSndSetVolXYZ(void *handle, u8 volume);
 
 typedef struct HitResolveRotation {
     s16 x;
@@ -2927,10 +2940,10 @@ void func_80055104(HitCopyState *first, HitCopyState *second, f32 scale) {
             volume = maxVolume;
         }
         if (firstVehicle->soundHandle != NULL) {
-            func_800031E8(firstVehicle->soundHandle);
+            amSndStopXYZ(firstVehicle->soundHandle);
         }
-        func_80002FE0(7, x, y, z, 4, &firstVehicle->soundHandle);
-        func_8000309C(firstVehicle->soundHandle, volume);
+        amSndPlayXYZ(7, x, y, z, 4, &firstVehicle->soundHandle);
+        amSndSetVolXYZ(firstVehicle->soundHandle, volume);
         if (!(firstVehicle->flags & 1)) {
             rumbleStart(firstVehicle->playerIndex, 50, 0.4f);
         }
@@ -2978,13 +2991,13 @@ void func_800557F8(HitCopyState *first, HitCopyState *second, f32 unused) {
         firstVehicle->unk185 = 0;
         firstVehicle->unk188 = 0.0f;
         if (soundHandle != 0) {
-            func_800031E8(soundHandle);
+            amSndStopXYZ(soundHandle);
         }
         if (!(firstVehicle->flags1A8 & 1)) {
             rumbleStart(firstVehicle->playerIndex, 0x46, 0.75f);
         }
     } else {
-        func_80002FE0(0x26E, source->current.x, source->current.y,
+        amSndPlayXYZ(0x26E, source->current.x, source->current.y,
                       source->current.z, priority, NULL);
     }
     second->position.x = source->current.x;
@@ -3027,7 +3040,7 @@ void func_80055970(HitCopyState *first, HitCopyState *second, f32 unused) {
             TrapDanglingJump(first);
         }
     } else {
-        func_80002FE0(0x26E, secondSource->current.x,
+        amSndPlayXYZ(0x26E, secondSource->current.x,
                       secondSource->current.y, secondSource->current.z,
                       4, NULL);
     }
@@ -3097,13 +3110,13 @@ void func_80055B24(HitCopyState *first, HitCopyState *second, f32 unused) {
         firstVehicle->unk185 = 0;
         firstVehicle->unk188 = 0.0f;
         if (soundHandle != 0) {
-            func_800031E8(soundHandle);
+            amSndStopXYZ(soundHandle);
         }
         if (!(firstVehicle->flags1A8 & 1)) {
             rumbleStart(firstVehicle->playerIndex, 0x46, 0.75f);
         }
     } else {
-        func_80002FE0(0x26E, secondSource->current.x,
+        amSndPlayXYZ(0x26E, secondSource->current.x,
                       secondSource->current.y, secondSource->current.z,
                       4, NULL);
     }

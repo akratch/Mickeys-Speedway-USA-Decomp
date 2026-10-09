@@ -13,7 +13,7 @@ extern f32 sqrtf(f32 value);
 extern s16 Arctanf(f32 x, f32 y);
 extern f32 func_8002A8BC(s32 angle);
 extern f32 func_8002A8C0(s32 angle);
-extern s32 func_80036544(void *entry, s32 *mode, s32 animationId,
+extern s32 texAnimateSprite(void *entry, s32 *mode, s32 animationId,
                          void *state, s32 updateRate);
 
 /*
@@ -144,7 +144,7 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
             break;
         case 2:
             effect->scaleX += (effect->scaleY - effect->scaleX) >> 1;
-            if (func_80036544(gOverlay12Resource5, &mode, 12,
+            if (texAnimateSprite(gOverlay12Resource5, &mode, 12,
                               &effect->zero, updateRate) != 0) {
                 effect->active = 3;
             }
@@ -164,7 +164,7 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
     for (i = 0, particle = gOverlay12Particles; i < 5; i++, particle++) {
         active = particle->active;
         if ((active == 0) == FALSE) {
-            if (func_80036544(gOverlay12Resource5, &mode, 15,
+            if (texAnimateSprite(gOverlay12Resource5, &mode, 15,
                               &particle->velocity, updateRate) != 0) {
                 particle->active = 0;
                 gOverlay12ParticleCount--;

@@ -41,7 +41,7 @@ check-tooling: test-overlay-aliases
 # `gmake overlay-syms` mints, as in every other promoted overlay.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/func_overlay_066_F00004E0_18C6948.c.o: OPT_FLAGS := -O2
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/func_overlay_066_F00004E0_18C6948.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_80034920=func_80034920_o066Reloc $@ && \
+	$(OBJCOPY) --redefine-sym texDPInit=texDPInit_o066Reloc $@ && \
 	$(OBJCOPY) --redefine-sym rsp_segment=rsp_segment_o066Reloc $@ && \
 	$(OBJCOPY) --redefine-sym viGetCurrentSize=viGetCurrentSize_o066Reloc $@ && \
 	$(OBJCOPY) --redefine-sym viGetVideoMode=viGetVideoMode_o066Reloc $@
@@ -100,11 +100,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/overlay_005.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym alHeapInit=alHeapInit_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym alSurround_OutputType=alSurround_OutputType_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym alSurround_ReverbSetup=alSurround_ReverbSetup_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym func_80000450=func_80000450_o005Reloc $@ && \
+	$(OBJCOPY) --redefine-sym amSetMuteMode=amSetMuteMode_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_80001740=func_80001740_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_80001BA0=func_80001BA0_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_800039F0=func_800039F0_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym func_8002B280=func_8002B280_o005Reloc $@ && \
+	$(OBJCOPY) --redefine-sym mmAlloc=mmAlloc_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_8002B768=func_8002B768_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_8002E148=func_8002E148_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_8002E2E0=func_8002E2E0_o005Reloc $@ && \
@@ -147,7 +147,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007_tail.c.o: POSTPROCESS = \
 		--redefine-sym func_overlay_007_F0000CCC_185CB54=overlay7DispatchSelection \
 		--redefine-sym func_overlay_007_F0000DBC_185CC44=overlay7CommitSelection \
 		--redefine-sym amSndPlay=amSndPlay_o007Reloc \
-		--redefine-sym func_800031E8=func_800031E8_o007Reloc \
+		--redefine-sym amSndStopXYZ=amSndStopXYZ_o007Reloc \
 		--redefine-sym mathRnd=mathRnd_o007Reloc \
 		--add-symbol gOverlay7ModeSwitchTableReloc=0x4,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
@@ -330,9 +330,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 		--redefine-sym func_overlay_001_F0006A14_1852DF4=overlay1ConsumeNearbyPending \
 		--redefine-sym func_overlay_001_F0006D4C_185312C=overlay1UpdateAimedTransient \
 		--redefine-sym func_8002A910=func_8002A910_o001Reloc \
-		--redefine-sym func_80002FE0=func_80002FE0_o001Reloc \
-		--redefine-sym func_800031C0=func_800031C0_o001Reloc \
-		--redefine-sym func_800031E8=func_800031E8_o001Reloc \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o001Reloc \
+		--redefine-sym amSndSetXYZ=amSndSetXYZ_o001Reloc \
+		--redefine-sym amSndStopXYZ=amSndStopXYZ_o001Reloc \
 		--redefine-sym func_80008128=func_80008128_o001Reloc \
 		--redefine-sym func_8001357C=func_8001357C_o001Reloc \
 		--redefine-sym func_8001D41C=func_8001D41C_o001Reloc \
@@ -587,11 +587,11 @@ $(O8_OBJ): POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
 		func_800299E8=func_800299E8_o008Reloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_800031E8=func_800031E8_o008Reloc $@ && \
+		amSndStopXYZ=amSndStopXYZ_o008Reloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_80002FE0=func_80002FE0_o008Reloc $@ && \
+		amSndPlayXYZ=amSndPlayXYZ_o008Reloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_800031C0=func_800031C0_o008Reloc $@ && \
+		amSndSetXYZ=amSndSetXYZ_o008Reloc $@ && \
 	$(OBJCOPY) --redefine-sym \
 		func_8002A204=func_8002A204_o008Reloc $@ && \
 	$(OBJCOPY) --redefine-sym \
@@ -649,13 +649,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
 		ext_o0_7cd8=overlay9TransformReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_80002FE0=overlay9PlaySpatialReloc $@ && \
+		amSndPlayXYZ=overlay9PlaySpatialReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
 		mathRnd=overlay9RandomReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_800031C0=overlay9SetSpatialReloc $@ && \
+		amSndSetXYZ=overlay9SetSpatialReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_800030B4=overlay9SetPitchReloc $@ && \
+		amSndSetPitchXYZ=overlay9SetPitchReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
 		o9P540MathDiffAngleReloc=overlay9AngleDifferenceReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
@@ -714,7 +714,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00003A8_186D628.c.o: POS
 		--redefine-sym func_8001291C=func_8001291C_o012Reloc \
 		--redefine-sym func_8002A8BC=func_8002A8BC_o012Reloc \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o012Reloc \
-		--redefine-sym func_80036544=func_80036544_o012Reloc \
+		--redefine-sym texAnimateSprite=texAnimateSprite_o012Reloc \
 		--redefine-sym mathRnd=mathRnd_o012Reloc \
 		--redefine-sym sqrtf=sqrtf_o012Reloc \
 		--redefine-sym trackGetTrack=trackGetTrack_o012Reloc $@ && \
@@ -731,11 +731,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_800084C4=func_800084C4_o012Reloc \
-		--redefine-sym func_80023CCC=func_80023CCC_o012Reloc \
+		--redefine-sym camDoSpriteDirect=camDoSpriteDirect_o012Reloc \
 		--redefine-sym func_80024938=func_80024938_o012Reloc \
-		--redefine-sym func_800349A4=func_800349A4_o012Reloc \
-		--redefine-sym func_80034DF0=func_80034DF0_o012Reloc \
-		--redefine-sym func_80034E48=func_80034E48_o012Reloc \
+		--redefine-sym texDPTextureX=texDPTextureX_o012Reloc \
+		--redefine-sym sprSetIA2ColOverride=sprSetIA2ColOverride_o012Reloc \
+		--redefine-sym sprClearIA2ColOverride=sprClearIA2ColOverride_o012Reloc \
 		--redefine-sym sqrtf=sqrtf_o012Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x98C && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
@@ -753,19 +753,19 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_027_F0000A1C_187C3F4=overlay27UpdateCoordinates $@ && \
 	$(OBJCOPY) \
-		--redefine-sym func_80002FE0=func_80002FE0_o027Reloc \
-		--redefine-sym func_8000309C=func_8000309C_o027Reloc \
-		--redefine-sym func_800031C0=func_800031C0_o027Reloc \
-		--redefine-sym func_800031E8=func_800031E8_o027Reloc \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o027Reloc \
+		--redefine-sym amSndSetVolXYZ=amSndSetVolXYZ_o027Reloc \
+		--redefine-sym amSndSetXYZ=amSndSetXYZ_o027Reloc \
+		--redefine-sym amSndStopXYZ=amSndStopXYZ_o027Reloc \
 		--redefine-sym func_80006EA0=func_80006EA0_o027Reloc \
 		--redefine-sym func_800299E8=func_800299E8_o027Reloc \
 		--redefine-sym func_8002A878=func_8002A878_o027Reloc \
 		--redefine-sym func_8002BD58=func_8002BD58_o027Reloc \
-		--redefine-sym func_80036544=func_80036544_o027Reloc \
+		--redefine-sym texAnimateSprite=texAnimateSprite_o027Reloc \
 		--redefine-sym camGetPtr=camGetPtr_o027Reloc \
 		--redefine-sym func_80009F08=func_80009F08_o027Reloc \
 		--redefine-sym camPushModelMtx=camPushModelMtx_o027Reloc \
-		--redefine-sym func_800349A4=func_800349A4_o027Reloc \
+		--redefine-sym texDPTextureX=texDPTextureX_o027Reloc \
 		--redefine-sym camPopModelMtx=camPopModelMtx_o027Reloc \
 		--redefine-sym func_80009E78=func_80009E78_o027Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xBC0 && \
@@ -842,11 +842,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41DrawItem.c.o: \
 	$(TOOLS_DIR)/trim_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41DrawItem.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym func_8004B0A4=overlay41SetModeReloc \
-		--redefine-sym func_8004B0DC=overlay41SetColorReloc \
-		--redefine-sym func_8004BA8C=overlay41MeasureReloc \
+		--redefine-sym fontUseFont=overlay41SetModeReloc \
+		--redefine-sym fontBackground=overlay41SetColorReloc \
+		--redefine-sym fontStringWidth=overlay41MeasureReloc \
 		--redefine-sym func_8004B0B8=overlay41SetColorIntensityReloc \
-		--redefine-sym func_8004B0F8=overlay41DrawResourceReloc \
+		--redefine-sym fontPrintXY=overlay41DrawResourceReloc \
 		--redefine-sym gOverlay41Resources=gOverlay41ResourcesReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x15C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53ReleaseResources.c.o: POSTPROCESS = \
@@ -981,7 +981,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34SetValue10.c.o: POSTPROCESS = \
 # placeholder for the R_MIPS_26 site and the rebind is declared here.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34InitStorage.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_034_F0000000_18811A8=overlay34InitStorage \
-		--redefine-sym func_8002B280=func_8002B280_o034Reloc $@ && \
+		--redefine-sym mmAlloc=mmAlloc_o034Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34InterpolateColor.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC8
@@ -1046,9 +1046,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000134_18CD0D4.c.o: POS
 		--redefine-sym Arctanf=Arctanf_o079Reloc \
 		--redefine-sym Powerf=Powerf_o079Reloc \
 		--redefine-sym dAngle=dAngle_o079Reloc \
-		--redefine-sym func_80002FE0=func_80002FE0_o079Reloc \
-		--redefine-sym func_800031C0=func_800031C0_o079Reloc \
-		--redefine-sym func_800031E8=func_800031E8_o079Reloc \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o079Reloc \
+		--redefine-sym amSndSetXYZ=amSndSetXYZ_o079Reloc \
+		--redefine-sym amSndStopXYZ=amSndStopXYZ_o079Reloc \
 		--redefine-sym func_8000590C=func_8000590C_o079Reloc \
 		--redefine-sym func_80008128=func_80008128_o079Reloc \
 		--redefine-sym func_80010900=func_80010900_o079Reloc \
@@ -1125,7 +1125,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86BuildTransform.c.o: POSTPROCESS =
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay94UpdateController.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_overlay_094_F0000110_18D6CB0=overlay94UpdateController \
-		--redefine-sym func_80019AB8=func_80019AB8_o094Reloc \
+		--redefine-sym lightObject=lightObject_o094Reloc \
 		--redefine-sym func_800254FC=func_800254FC_o094Reloc \
 		--redefine-sym func_8002565C=func_8002565C_o094Reloc \
 		--redefine-sym func_8002A878=func_8002A878_o094Reloc \
@@ -1139,7 +1139,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay94SetValue.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101AllocateEntry.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x54
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0002510_18DDD30.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_80034920=func_80034920_o101Reloc $@ && \
+	$(OBJCOPY) --redefine-sym texDPInit=texDPInit_o101Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x494
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F000512C_18E094C.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x5F0
@@ -1153,14 +1153,14 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F00063F8_18E1C18.c.o: POS
 # overlay's own relocation table; rebind each resident call to the module-local
 # alias `gmake overlay-syms` mints for it, exactly as the other overlays do.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F00069E8_18E2208.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_800355A0=func_800355A0_o101Reloc $@ && \
+	$(OBJCOPY) --redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_80036DD0=func_80036DD0_o101Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xF0C
 # Tier A: the R4300 multiply scheduler resolves this TU's text junction.
 # This flag applies only to this single-function translation unit.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0003A58_18DF278.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0003A58_18DF278.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_800355A0=func_800355A0_o101Reloc $@ && \
+	$(OBJCOPY) --redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_80036DD0=func_80036DD0_o101Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x16D4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F00078F4_18E3114.c.o: POSTPROCESS = \
@@ -1311,7 +1311,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: POSTPROCESS = \
 		--redefine-sym camStandardOrtho=camStandardOrtho_o056Reloc \
 		--redefine-sym frontGet2PlayerSplit=frontGet2PlayerSplit_o056Reloc \
 		--redefine-sym func_80005750=func_80005750_o056Reloc \
-		--redefine-sym func_80024978=func_80024978_o056Reloc \
+		--redefine-sym camCopyOrthoMatrix=camCopyOrthoMatrix_o056Reloc \
 		--redefine-sym func_80028F54=func_80028F54_o056Reloc \
 		--redefine-sym func_8002A604=func_8002A604_o056Reloc \
 		--redefine-sym func_8002A82C=func_8002A82C_o056Reloc \
@@ -1319,7 +1319,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: POSTPROCESS = \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o056Reloc \
 		--redefine-sym func_8002F618=func_8002F618_o056Reloc \
 		--redefine-sym func_8002FB34=func_8002FB34_o056Reloc \
-		--redefine-sym func_800349A4=func_800349A4_o056Reloc \
+		--redefine-sym texDPTextureX=texDPTextureX_o056Reloc \
 		--redefine-sym levelGetLevel=levelGetLevel_o056Reloc \
 		--redefine-sym matrixTranslate=matrixTranslate_o056Reloc \
 		--redefine-sym mtxf_mul=mtxf_mul_o056Reloc \
@@ -1358,7 +1358,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Render.c.o: POSTPROCESS = \
 		--redefine-sym func_80021964=func_80021964_o037Reloc \
 		--redefine-sym func_8002A250=func_8002A250_o037Reloc \
 		--redefine-sym func_800244EC=func_800244EC_o037Reloc \
-		--redefine-sym func_800349A4=func_800349A4_o037Reloc \
+		--redefine-sym texDPTextureX=texDPTextureX_o037Reloc \
 		--redefine-sym func_8002460C=func_8002460C_o037Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x358
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37RecordMinimum.c.o: POSTPROCESS = \
@@ -1468,7 +1468,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43AllocateResources.c.o: POSTPROCES
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay43AllocateResources.calls.spec && \
 	$(OBJCOPY) --redefine-sym \
-		func_8002B280=func_overlay_043_F0000000_1889FD0 $@ && \
+		mmAlloc=func_overlay_043_F0000000_1889FD0 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xE0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43SubmitChildren.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x114
@@ -1515,7 +1515,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.c.o: POSTPROCE
 		--redefine-sym camGetProjZ=overlay69MetricReloc \
 		--redefine-sym func_80022E80=overlay69PrepareTransformReloc \
 		--redefine-sym func_80022FD4=overlay69SubmitDynamicReloc \
-		--redefine-sym func_80047CD8=overlay69DrawConeReloc \
+		--redefine-sym fxDrawCone=overlay69DrawConeReloc \
 		$@ && \
 	$(OBJCOPY) \
 		--redefine-sym func_overlay_069_F0000170_18C8BD8=overlay69DrawSortedGeometry $@ && \
@@ -1642,7 +1642,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: POSTPROCE
 		--redefine-sym camGetProjZ=overlay88MetricReloc \
 		--redefine-sym func_80022E80=overlay88PrepareTransformReloc \
 		--redefine-sym func_80022FD4=overlay88SubmitDynamicReloc \
-		--redefine-sym func_80047CD8=overlay88DrawConeReloc \
+		--redefine-sym fxDrawCone=overlay88DrawConeReloc \
 		$@ && \
 	$(OBJCOPY) --redefine-sym \
 		func_overlay_088_F00001A4_18D3C2C=overlay88DrawSortedGeometry $@ && \
@@ -1777,7 +1777,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/func_overlay_087_F0000128_18D3090.c.o: POS
 		--redefine-sym Arctanf=Arctanf_o087Reloc \
 		--redefine-sym Powerf=Powerf_o087Reloc \
 		--redefine-sym dAngle=dAngle_o087Reloc \
-		--redefine-sym func_80002FE0=func_80002FE0_o087Reloc \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o087Reloc \
 		--redefine-sym func_80008128=func_80008128_o087Reloc \
 		--redefine-sym func_8002A8BC=func_8002A8BC_o087Reloc \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o087Reloc \
@@ -1804,9 +1804,9 @@ $(O45_RENDER_OBJ): CFLAGS += -Wab,-r4300_mul
 # not instructions; the runtime relocation table remains the identity oracle.
 $(O45_RENDER_OBJ): POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym func_80034920=overlay45DisplayCallReloc \
-		--redefine-sym func_8004B0A4=overlay45FontCallReloc \
-		--redefine-sym func_800221E8=overlay45MatrixPushReloc \
+		--redefine-sym texDPInit=overlay45DisplayCallReloc \
+		--redefine-sym fontUseFont=overlay45FontCallReloc \
+		--redefine-sym camSetView=overlay45MatrixPushReloc \
 		--redefine-sym func_80022A50=overlay45MatrixLoadReloc \
 		--redefine-sym func_8004B0B8=overlay45ColorCallReloc \
 		--redefine-sym func_8002997C=overlay45RandomRangeReloc \
@@ -1878,19 +1878,19 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000B30_1891948.c.o: POS
 		--redefine-sym fontColour=fontColour_o047Reloc \
 		--redefine-sym func_80006EA0=func_80006EA0_o047Reloc \
 		--redefine-sym func_8001398C=func_8001398C_o047Reloc \
-		--redefine-sym func_80021504=func_80021504_o047Reloc \
-		--redefine-sym func_800221E8=func_800221E8_o047Reloc \
-		--redefine-sym func_80023F84=func_80023F84_o047Reloc \
-		--redefine-sym func_800246B0=func_800246B0_o047Reloc \
-		--redefine-sym func_80024978=func_80024978_o047Reloc \
+		--redefine-sym camSetFOV=camSetFOV_o047Reloc \
+		--redefine-sym camSetView=camSetView_o047Reloc \
+		--redefine-sym camDo2DSprite=camDo2DSprite_o047Reloc \
+		--redefine-sym camProjectPoint=camProjectPoint_o047Reloc \
+		--redefine-sym camCopyOrthoMatrix=camCopyOrthoMatrix_o047Reloc \
 		--redefine-sym func_8002A604=func_8002A604_o047Reloc \
 		--redefine-sym func_8002A82C=func_8002A82C_o047Reloc \
 		--redefine-sym func_8002FB34=func_8002FB34_o047Reloc \
-		--redefine-sym func_80034920=func_80034920_o047Reloc \
-		--redefine-sym func_800349A4=func_800349A4_o047Reloc \
-		--redefine-sym func_800367A4=func_800367A4_o047Reloc \
-		--redefine-sym func_8004B0A4=func_8004B0A4_o047Reloc \
-		--redefine-sym func_8004B0F8=func_8004B0F8_o047Reloc \
+		--redefine-sym texDPInit=texDPInit_o047Reloc \
+		--redefine-sym texDPTextureX=texDPTextureX_o047Reloc \
+		--redefine-sym texAnimateTexSprite=texAnimateTexSprite_o047Reloc \
+		--redefine-sym fontUseFont=fontUseFont_o047Reloc \
+		--redefine-sym fontPrintXY=fontPrintXY_o047Reloc \
 		--redefine-sym func_8005ABA8=func_8005ABA8_o047Reloc \
 		--redefine-sym func_8005AD64=func_8005AD64_o047Reloc \
 		--redefine-sym joyGetPressed=joyGetPressed_o047Reloc \
@@ -2260,7 +2260,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68ReleaseTertiary.c.o: POSTPROCESS 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68CheckKind.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
 		func_overlay_068_F000146C_18C85CC=overlay68CheckKind \
-		--redefine-sym func_8002B280=overlay68AllocProbeReloc \
+		--redefine-sym mmAlloc=overlay68AllocProbeReloc \
 		--redefine-sym piRomLoadSection=overlay68FillProbeReloc \
 		--redefine-sym func_800291C4=overlay68GetResidentEntriesReloc \
 		--redefine-sym levelGetBlurEffect=overlay68MapResidentIndexReloc \
@@ -2360,8 +2360,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CalculateEndpoints.c.o: POSTPROCE
 	$(OBJCOPY) --redefine-sym func_overlay_017_F0000000_18739B8=overlay17CalculateEndpoints $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x318
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CreateChain.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_8002B280=func_8002B280_o017Reloc \
-		--redefine-sym func_80034448=func_80034448_o017Reloc $@ && \
+	$(OBJCOPY) --redefine-sym mmAlloc=mmAlloc_o017Reloc \
+		--redefine-sym texLoadTexture=texLoadTexture_o017Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x310
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17ReleaseChain.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x40
@@ -2396,16 +2396,16 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/func_overlay_055_F000031C_18A1E34.c.o: POS
 		--redefine-sym camSetScissor=camSetScissor_o055Reloc \
 		--redefine-sym camStandardOrtho=camStandardOrtho_o055Reloc \
 		--redefine-sym frontGetScreenMode=frontGetScreenMode_o055Reloc \
-		--redefine-sym func_800005CC=func_800005CC_o055Reloc \
+		--redefine-sym amTuneSetFade=amTuneSetFade_o055Reloc \
 		--redefine-sym func_800016EC=func_800016EC_o055Reloc \
 		--redefine-sym func_80005750=func_80005750_o055Reloc \
 		--redefine-sym func_80028F54=func_80028F54_o055Reloc \
 		--redefine-sym func_800290A0=func_800290A0_o055Reloc \
 		--redefine-sym func_8002F618=func_8002F618_o055Reloc \
 		--redefine-sym func_8002FB34=func_8002FB34_o055Reloc \
-		--redefine-sym func_80034920=func_80034920_o055Reloc \
+		--redefine-sym texDPInit=texDPInit_o055Reloc \
 		--redefine-sym func_80037414=func_80037414_o055Reloc \
-		--redefine-sym func_80039E34=func_80039E34_o055Reloc \
+		--redefine-sym frontDrawObj=frontDrawObj_o055Reloc \
 		--redefine-sym func_8003A590=func_8003A590_o055Reloc \
 		--redefine-sym levelGetLevel=levelGetLevel_o055Reloc \
 		--redefine-sym mainChangeCameras=mainChangeCameras_o055Reloc \
@@ -2507,15 +2507,15 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/func_overlay_053_F0000240_189DBE8.c.o: POS
 		--redefine-sym freeFrontEndItem=freeFrontEndItem_o053Reloc \
 		--redefine-sym frontGet2PlayerSplit=frontGet2PlayerSplit_o053Reloc \
 		--redefine-sym frontGetScreenMode=frontGetScreenMode_o053Reloc \
-		--redefine-sym func_800005CC=func_800005CC_o053Reloc \
+		--redefine-sym amTuneSetFade=amTuneSetFade_o053Reloc \
 		--redefine-sym func_800016EC=func_800016EC_o053Reloc \
 		--redefine-sym func_80005750=func_80005750_o053Reloc \
 		--redefine-sym func_80028F54=func_80028F54_o053Reloc \
 		--redefine-sym func_800290A0=func_800290A0_o053Reloc \
 		--redefine-sym func_8002F618=func_8002F618_o053Reloc \
-		--redefine-sym func_80034920=func_80034920_o053Reloc \
+		--redefine-sym texDPInit=texDPInit_o053Reloc \
 		--redefine-sym func_80037414=func_80037414_o053Reloc \
-		--redefine-sym func_80039E34=func_80039E34_o053Reloc \
+		--redefine-sym frontDrawObj=frontDrawObj_o053Reloc \
 		--redefine-sym func_8003A590=func_8003A590_o053Reloc \
 		--redefine-sym levelGetLevel=levelGetLevel_o053Reloc \
 		--redefine-sym loadFrontEndItem=loadFrontEndItem_o053Reloc \
@@ -2673,12 +2673,12 @@ $(O90_OBJ): POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym amSndPlay=amSndPlay_o090Reloc \
 		--redefine-sym camGetMode=camGetMode_o090Reloc \
-		--redefine-sym func_80000510=func_80000510_o090Reloc \
-		--redefine-sym func_80002FE0=func_80002FE0_o090Reloc \
-		--redefine-sym func_8000309C=func_8000309C_o090Reloc \
-		--redefine-sym func_800030B4=func_800030B4_o090Reloc \
-		--redefine-sym func_800031C0=func_800031C0_o090Reloc \
-		--redefine-sym func_800031E8=func_800031E8_o090Reloc \
+		--redefine-sym amTunePlay=amTunePlay_o090Reloc \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o090Reloc \
+		--redefine-sym amSndSetVolXYZ=amSndSetVolXYZ_o090Reloc \
+		--redefine-sym amSndSetPitchXYZ=amSndSetPitchXYZ_o090Reloc \
+		--redefine-sym amSndSetXYZ=amSndSetXYZ_o090Reloc \
+		--redefine-sym amSndStopXYZ=amSndStopXYZ_o090Reloc \
 		--redefine-sym func_80006EA0=func_80006EA0_o090Reloc \
 		--redefine-sym func_8000FAE0=func_8000FAE0_o090Reloc \
 		--redefine-sym func_8002A8BC=func_8002A8BC_o090Reloc \
@@ -2788,7 +2788,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay26HandleEffects.c.o: POSTPROCESS = 
 		--redefine-sym func_80029FE4=func_80029FE4_o026Reloc \
 		--redefine-sym func_8002997C=func_8002997C_o026Reloc \
 		--redefine-sym func_8003EDEC=func_8003EDEC_o026Reloc \
-		--redefine-sym func_80002FE0=func_80002FE0_o026Reloc $@ && \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o026Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x434
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F00001A0_187A598.c.o: CFLAGS += -Wab,-r4300_mul
@@ -2847,7 +2847,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59PrepareEntry.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
 		overlay59PrepareReleaseReloc=func_overlay_059_F0000000_18B8750 $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_80034448=func_80034448_o059Reloc $@ && \
+		texLoadTexture=texLoadTexture_o059Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xF8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59ResetEntries.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6C

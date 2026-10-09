@@ -102,13 +102,13 @@ typedef struct O57MiddleRecord {
 extern O57MiddleRecord *func_800291C4(void);
 extern void func_8002F618(void **displayList, O57MiddleTextureNode *nodes, s32 x, s32 y, u8 r, u8 g, u8 b, u8 a);
 extern void func_8002FB34(void **displayList, O57MiddleTextureNode *nodes, f32 x, f32 y, f32 sx, f32 sy, s32 mode, s32 flags);
-extern void func_80039E34(s32 spacing);
+extern void frontDrawObj(s32 spacing);
 extern void func_8003A680(u8 character);
 extern s32 func_8003A700(u8 character);
 extern s32 func_800429A4(char *buffer, const char *format, ...);
-extern void func_8004B0A4(s32 font);
+extern void fontUseFont(s32 font);
 extern void func_8004B0B8(s32 r, s32 g, s32 b, s32 a, s32 opacity);
-extern void func_8004B0F8(void **displayList, s32 x, s32 y, char *text, s32 align);
+extern void fontPrintXY(void **displayList, s32 x, s32 y, char *text, s32 align);
 extern void func_80050688(u8 path);
 extern void func_80050704(u8 path);
 extern void o57MiddleO45F0000314Reloc(void *descriptor, s32 x, s32 y, s32 flags);
@@ -357,21 +357,21 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
         if ((gO57MiddlePanelPosition >> 4) >= -0x135) {
             records = func_800291C4();
             renderItems = records[func_80025D60(gO57MiddleCourseIds[gO57MiddleSelection])].items;
-            func_8004B0A4(0);
+            fontUseFont(0);
             row = 0x51;
             panelX = gO57MiddlePanelPosition >> 4;
             gO57MiddleRenderParameters.position = (f32) panelX;
             gO57MiddleRenderParameters.scale = 7.0f;
             func_80022A50(&gO57MiddleDisplayList, &gO57MiddleVertexList);
-            func_80039E34(8);
+            frontDrawObj(8);
             func_8004B0B8(
                 gO57MiddleInfo.value08, gO57MiddleInfo.value09, gO57MiddleInfo.value0A,
                 0xFF, 0xFF);
-            func_8004B0F8(
+            fontPrintXY(
                 &gO57MiddleDisplayList, panelX + 0xA0, 0x23,
                 gO57MiddleText[gO57MiddleCourseNames[gO57MiddleSelection]], 4);
             func_8004B0B8(0xFF, 0x80, 0, 0xFF, 0xFF);
-            func_8004B0F8(
+            fontPrintXY(
                 &gO57MiddleDisplayList, panelX + 0xA0, 0x37,
                 gO57MiddleText[0xD0 / 4], 4);
             func_8004B0B8(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -401,7 +401,7 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     valueA = renderItems[i].value07 + 0x51;
                 }
                 if (i < 3) {
-                    func_8004B0F8(
+                    fontPrintXY(
                         &gO57MiddleDisplayList, panelX + 0x2E, row,
                         gO57MiddleLabels[i], 0);
                 }
@@ -417,14 +417,14 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                 for (index = 0; index < 11; index++) {
                     stackB0[0] = renderState[index];
                     stackB0[1] = 0;
-                    func_8004B0F8(
+                    fontPrintXY(
                         &gO57MiddleDisplayList, gO57MiddleColumns[index] + panelX, row, stackB0, 0);
                 }
                 if (i == 2) {
                     row += 0x1B;
                     func_8004B0B8(
                         0xFF, 0x80, 0, 0xFF, 0xFF);
-                    func_8004B0F8(
+                    fontPrintXY(
                         &gO57MiddleDisplayList, panelX + 0xA0, row,
                         gO57MiddleText[0xD4 / 4], 4);
                     func_8004B0B8(

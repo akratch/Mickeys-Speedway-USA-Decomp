@@ -151,7 +151,7 @@ extern u8 D_8007BF68_o047Reloc;
 
 void loadFrontEndList_o047Reloc(s16 *list); /* 0:+0x39738 */
 void setupFrontEndList_o047Reloc(s16 *list); /* 0:+0x39900 */
-void func_8004B0A4_o047Reloc(s32); /* 0:+0x4AC54 */
+void fontUseFont_o047Reloc(s32); /* 0:+0x4AC54 */
 void fontColour_o047Reloc(s32, s32, s32, s32, s32); /* 0:+0x4AC68 */
 void joyResetMap_o047Reloc(void); /* 0:+0x24FA4 */
 void *func_8000590C_o047Reloc(O47SpawnPacket *packet, s32 mode); /* 0:+0x54BC */
@@ -184,7 +184,7 @@ void func_overlay_047_F0000000_1890E18(void) {
 
     loadFrontEndList_o047Reloc(D_358);
     setupFrontEndList_o047Reloc(D_370);
-    func_8004B0A4_o047Reloc(3);
+    fontUseFont_o047Reloc(3);
     fontColour_o047Reloc(0xFF, 0xFF, 0xFF, 0, 0xFF);
     D_30C = overlay45CreateDescriptor_o047Reloc(D_8007C0B8_o047Reloc->text188, 0xA0, 0x18, 4);
     D_314 = overlay45CreateDescriptor_o047Reloc("OK", 0xA0, 0x110, 4);

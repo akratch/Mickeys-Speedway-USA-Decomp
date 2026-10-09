@@ -27,7 +27,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0000000_18A3BF8.c.o: POS
 		--redefine-sym func_8000590C=func_8000590C_o057Reloc \
 		--redefine-sym func_80028F54=func_80028F54_o057Reloc \
 		--redefine-sym func_8003A754=func_8003A754_o057Reloc \
-		--redefine-sym func_8004B0A4=func_8004B0A4_o057Reloc \
+		--redefine-sym fontUseFont=fontUseFont_o057Reloc \
 		--redefine-sym func_800508B4=func_800508B4_o057Reloc \
 		--redefine-sym func_8005AD64=func_8005AD64_o057Reloc \
 		--redefine-sym initColourCycle=initColourCycle_o057Reloc \
@@ -48,9 +48,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001020_18A4C18.c.o: POS
 		--redefine-sym D_800D3148=D_800D3148_o057Reloc \
 		--redefine-sym D_800D31C8=D_800D31C8_o057Reloc \
 		--redefine-sym func_8002109C=func_8002109C_o057Reloc \
-		--redefine-sym func_800221E8=func_800221E8_o057Reloc \
-		--redefine-sym func_800349A4=func_800349A4_o057Reloc \
-		--redefine-sym func_800367A4=func_800367A4_o057Reloc \
+		--redefine-sym camSetView=camSetView_o057Reloc \
+		--redefine-sym texDPTextureX=texDPTextureX_o057Reloc \
+		--redefine-sym texAnimateTexSprite=texAnimateTexSprite_o057Reloc \
 		--redefine-sym func_800508B4=func_800508B4_o057Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x958
 # The mode dispatch is instruction-exact. Its switch table is the retained
@@ -114,13 +114,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0004E18_18A8A10.c.o: POS
 		--redefine-sym func_800291C4=func_800291C4_o057Reloc \
 		--redefine-sym func_8002F618=func_8002F618_o057Reloc \
 		--redefine-sym func_8002FB34=func_8002FB34_o057Reloc \
-		--redefine-sym func_80039E34=func_80039E34_o057Reloc \
+		--redefine-sym frontDrawObj=frontDrawObj_o057Reloc \
 		--redefine-sym func_8003A680=func_8003A680_o057Reloc \
 		--redefine-sym func_8003A700=func_8003A700_o057Reloc \
 		--redefine-sym func_800429A4=func_800429A4_o057Reloc \
-		--redefine-sym func_8004B0A4=func_8004B0A4_o057Reloc \
+		--redefine-sym fontUseFont=fontUseFont_o057Reloc \
 		--redefine-sym func_8004B0B8=func_8004B0B8_o057Reloc \
-		--redefine-sym func_8004B0F8=func_8004B0F8_o057Reloc \
+		--redefine-sym fontPrintXY=fontPrintXY_o057Reloc \
 		--redefine-sym func_80050688=func_80050688_o057Reloc \
 		--redefine-sym func_80050704=func_80050704_o057Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x12E0

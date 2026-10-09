@@ -114,7 +114,7 @@ exact, and the linked ROM range is byte-identical.
 The plateau was one mechanism, and it was a relocation-*identity* question
 rather than a code-generation one. The target materializes `0x80078D60` twice
 and `0x80085A40` twice, while uopt shares one address materialization per
-*symbol* -- it shares `func_80000450` between the `vramBase` store and the
+*symbol* -- it shares `amSetMuteMode` between the `vramBase` store and the
 `textSize` difference inside this same target. Two names each, not two uses of
 one name: the original link placed the code-segment end and the data-segment
 start at `0x80078D60`, and the data-segment end and the bss-segment start at
@@ -148,7 +148,7 @@ not equivalent and the four-name mechanism above is Mickey's own.
 |---|---:|---:|---|---|
 | `runlinkDownloadCode` | `0x32878` | `0x478` | `-O2 -mips2 -32` | JFG `src/runLink.c`; 286/286 instruction words and all relocations exact, linked ROM byte-identical |
 
-`func_800320F0` (`runlinkEnsureJumpIsValid`, `0x800320F0`, `0x194` bytes) is
+`runlinkEnsureJumpIsValid` (`runlinkEnsureJumpIsValid`, `0x800320F0`, `0x194` bytes) is
 Evidence A exact C after a bounded permuter pass resolved the prior register
 allocation mismatch. Under `-O2 -mips2 -32`, all 101 instruction words, the
 `-0x20` frame, all 21 relocations, and the linked ROM bytes match. JFG's
@@ -679,7 +679,7 @@ Overlay 41's `+0x000..+0x124` owner
 (`func_overlay_041_F0000000_1887338`) is exact C: 292 bytes / 73 words with the
 retail `0x30` frame. Its object carries stored-zero proxies at `+0x14/+0x28`
 and `+0xD0`; the runtime table resolves them to `D_800D6B58` and resident
-`func_8000D16C`. The owned range, linked module, and full ROM are byte-identical
+`trackAddTextureScroll`. The owned range, linked module, and full ROM are byte-identical
 with only trailing section-alignment trimming. Pinned DKR v77/v80 and JFG scans
 remain negative; JFG's `animseqUpdateTextureScrollers` is a role-only
 comparison, not a donor.
@@ -1377,7 +1377,7 @@ temporary-register lane is exact. One allocator trace isolated that pool swap,
 and all 119 flag combinations were nonexact with canonical `-O2 -mips2` tied
 for best. Its ten runtime BSS records resolve to `D_800D6C4C`, `D_800D6C52`,
 `D_800D6C50`, `D_800D6C4E`, and `D_800D6C54`; the target/fallback object
-retains none statically. Resident `func_8000D978 +0x130` is the sole proved
+retains none statically. Resident `trackUpdateLighting +0x130` is the sole proved
 direct caller. Exact linked range/module/full-ROM evidence proves assembly
 fallback only; no linked C artifact survives. Pinned DKR v77/v80 and JFG scans
 are negative.
@@ -1411,7 +1411,7 @@ evidence is 53/62 relocation-normalized words with the exact boundary, frame,
 CFG and memory effects, but no linked candidate-C proof survives. The six
 runtime records are a local table HI/LO pair, local `JUMP` calls to
 `overlay59Release` at `+0x48/+0xD0`, and resident `SYMBOL` calls to
-`func_80034448` at `+0x64/+0x94`; the synthetic target object collapses those
+`texLoadTexture` at `+0x64/+0x94`; the synthetic target object collapses those
 four zero-field calls and is not identity authority.
 
 Overlay 48's `+0x144..+0x40C` state updater — 712 bytes / 178 words.
@@ -1443,7 +1443,7 @@ constant, copy-carrier, scope, declaration, and physical-line forms were flat
 or worse. The target and C each carry 15 relocations; 13 offsets/types and 12
 identities align, with the factor pair displaced by the prologue schedule. The
 retained switch table at `+0x76C` is already owned and rebound. ORT 1435 and
-resident calls from `func_80038E1C+0x2C4/+0x320` authenticate the one-word
+resident calls from `frontUpdate+0x2C4/+0x320` authenticate the one-word
 `steps` ABI and exact owner; `+0x784` starts the next function with no padding.
 The owner is ROM `0x18B8ABC..0x18B8ED4`. No credible permitted donor was found
 (best skeleton similarity 0.0433). Exact linked function, overlay, and ROM
@@ -1587,7 +1587,7 @@ The target's 25 runtime records are fully decoded: local state/seed/script
 roles plus two resident calls. The candidate emits 24 records; its shifted
 schedule aligns only 12 offset/type sites, resolves eight candidate identities,
 and aligns one identity. ORT 1423 exports the function, and resident
-`func_80038BC4+0x188` is its sole authenticated caller.
+`frontInitMode+0x188` is its sole authenticated caller.
 
 A bounded 14-build pass tested twelve natural source families spanning direct
 arrays, pointer-controlled loops, `for`/`do` forms, hand unrolling, aggregate
@@ -1608,7 +1608,7 @@ words. Its policy-clean configured C remains NON_MATCHING but has the exact
 `+0x3C`, and all six LOCAL relocation tuples exact by offset, type, identity,
 and addend. Those pairs address the gradient buffer at addend zero, phase at
 `+8`, and mode at `+4`. ORT 1313 exports the function; resident relocation
-155 at exact-C `func_8000D978+0xFC` is its sole authenticated inbound. The
+155 at exact-C `trackUpdateLighting+0xFC` is its sole authenticated inbound. The
 2026-08-29 bounded pass exhausted V0, all 119 canonical flags, one
 fidelity-clean allocator trace, and three natural forms. Reordering the six
 channel definitions was the sole strict gain, reducing 64 register-only
@@ -1934,7 +1934,7 @@ A loop-local node carrier plus an empty `if (i)` after the compact restore
 the search-load dest and the index colour unforced. The configured instruction
 stream is exact. All 12 runtime records agree by offset, type, identity, and
 addend: a LOCAL pair to count `+0xED0`, three LOCAL node-array pairs to
-`+0xEA0`, and SYMBOL calls to resident `partUpdateTriggers`, `func_80002FE0`
+`+0xEA0`, and SYMBOL calls to resident `partUpdateTriggers`, `amSndPlayXYZ`
 twice, and `func_80006EA0`. The following `+0xE9C..+0xEA0` word remains
 separately owned padding. The linked owned range, complete overlay, and full
 US ROM are byte-identical.

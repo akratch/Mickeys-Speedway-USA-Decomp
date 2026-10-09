@@ -7,7 +7,7 @@ typedef struct Overlay34Record {
 extern Overlay34Record *gOverlay34Records;
 extern Overlay34Record **gOverlay34Pointers;
 extern s32 gOverlay34Count;
-extern void *func_8002B280(s32 size, u32 colourTag);
+extern void *mmAlloc(s32 size, u32 colourTag);
 
 /* The byte count is a call-crossing common subexpression rather than a named
  * local: that puts its caller-save home one word above a declared local's,
@@ -17,7 +17,7 @@ void overlay34InitStorage(s32 count) {
     s32 countdown;
     s32 remaining;
 
-    gOverlay34Records = func_8002B280(count * (s32)sizeof(Overlay34Record), 0x87);
+    gOverlay34Records = mmAlloc(count * (s32)sizeof(Overlay34Record), 0x87);
     word = (s32 *)gOverlay34Records;
     remaining = (count * (s32)sizeof(Overlay34Record)) >> 2;
     countdown = remaining - 1;
@@ -27,7 +27,7 @@ void overlay34InitStorage(s32 count) {
         } while (countdown--);
     }
 
-    gOverlay34Pointers = func_8002B280(count * (s32)sizeof(*gOverlay34Pointers), 0x87);
+    gOverlay34Pointers = mmAlloc(count * (s32)sizeof(*gOverlay34Pointers), 0x87);
     word = (s32 *)gOverlay34Pointers;
     remaining = (count * (s32)sizeof(*gOverlay34Pointers)) >> 2;
     countdown = remaining - 1;

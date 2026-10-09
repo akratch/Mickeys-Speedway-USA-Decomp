@@ -1,7 +1,7 @@
 # Last-mile lane nx-b (2026-09-16): folded draws and uopt's block budget
 
 Lane `nx-b` was dispatched four near-miss functions, two resident and fresh
-(`packInit`, `func_80020E4C`), one resident with a named hypothesis
+(`packInit`, `modSuspendModelTextures`), one resident with a named hypothesis
 (`func_80006534`) and one overlay (`overlay34CreateRecord`), 2,232 bytes,
 all at size delta zero, with a budget of 20 measured cycles capped at six
 per target. Nineteen cycles were spent. Two targets matched and are
@@ -25,7 +25,7 @@ it is one of:
   a memory `u8`; `(pakPattern & 0xFF) & controllerBit` draws a temp for an
   `andi` that as1 folds into the `lbu`. That one cell is the whole 29-word
   residual (matched).
-- **a doubly-scaled address.** `func_80020E4C` indexes its model cache with
+- **a doubly-scaled address.** `modSuspendModelTextures` indexes its model cache with
   `(modelIndex << 1) << 2`; ugen draws a temp per shift and as1 folds the
   pair into one `sll`. Neither an or-with-zero, a `u32` cast, an offset
   local, `* 8`, `sizeof` nor typed-pointer arithmetic reproduces it, and a
@@ -81,7 +81,7 @@ Controls in the same batch: a `u8` or `u32` cast of the pattern is inert
 `osPfsIsPlug` result is inert (29), DKR's nested `ret = osMotorInit` form
 with its empty `if` is 32.
 
-## Target 2: `func_80020E4C` -- matched and promoted (commit `0ad3c978`)
+## Target 2: `modSuspendModelTextures` -- matched and promoted (commit `0ad3c978`)
 
 452 bytes, 113 of 113 words, frame `0x40`, unforced. `gmake verify` prints
 the expected SHA1 from the C; gates green. Aligner before: 90 / 14 / 1 / 7
@@ -191,16 +191,16 @@ name, so only `flags`'s side can be raised.
 - The dispatch's reading of `func_80006534` (v1 held by "a copy temp that
   the `if (1) { }` boundary creates") is corrected above: the temp is the
   CSE of the packed read and exists without the region.
-- The p7-res closure on `func_80020E4C` ("the cursor is not reachable by
+- The p7-res closure on `modSuspendModelTextures` ("the cursor is not reachable by
   respelling this loop; all seven forms compile to the same object") was
   right about the object and wrong about its meaning: that object is the
   base the match was built on, and its 77 was insertion shadow.
 
 ## Ledger
 
-Nineteen measured cycles of 20: `func_80020E4C` 6, `packInit` 1,
+Nineteen measured cycles of 20: `modSuspendModelTextures` 6, `packInit` 1,
 `func_80006534` 6, `overlay34CreateRecord` 6. Matched and promoted:
-`func_80020E4C` (452 bytes), `packInit` (460) -- 912 of the lane's 2,232,
+`modSuspendModelTextures` (452 bytes), `packInit` (460) -- 912 of the lane's 2,232,
 59.66% to 59.75%. Improved: o034 6 to 2. Unmoved: 6534 at 17. Every claimed
 match was verified with `tools/score_symbol.py` at 0 masked and delta 0
 before promotion and with `gmake verify` printing the expected SHA1 from

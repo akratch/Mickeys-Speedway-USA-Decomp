@@ -42,19 +42,19 @@ extern void *gOverlay46MatrixHead;
 extern void *gOverlay46VertexHead;
 
 extern void func_80037658(void);
-extern void func_80034920(void *commands);
+extern void texDPInit(void *commands);
 extern void camStandardOrtho(void *commands, void *matrices);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern f32 func_8002A8C0(u16 angle);
-extern void func_8004B0A4(s32 mode);
-extern void func_8004B0DC(s32 red, s32 green, s32 blue, s32 alpha);
+extern void fontUseFont(s32 mode);
+extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);
 extern void func_8004B0B8(s32 red, s32 green, s32 blue, s32 alpha,
                           s32 intensity);
-extern void func_8004B0F8(void *commands, s32 x, s32 y, void *text,
+extern void fontPrintXY(void *commands, s32 x, s32 y, void *text,
                           s32 size);
 extern void func_8002F618(void *commands, void *data, s32 x, s32 y,
                           s32 red, s32 green, s32 blue, s32 alpha);
-extern void func_80023F84(void *commands, void *matrices, void *vertices,
+extern void camDo2DSprite(void *commands, void *matrices, void *vertices,
                           Overlay46Particle *particle, void *resource,
                           s32 flags, s32 alpha);
 
@@ -90,7 +90,7 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
 
     func_80037658();
     result = 1;
-    func_80034920(&gDisplayListHead);
+    texDPInit(&gDisplayListHead);
     camStandardOrtho(&gDisplayListHead, &gOverlay46MatrixHead);
 
     count = 0x12;
@@ -245,16 +245,16 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
     }
     }
 
-    func_8004B0A4(2);
-    func_8004B0DC(0, 0, 0, 0);
+    fontUseFont(2);
+    fontBackground(0, 0, 0, 0);
     if (D_10 != 0) {
         func_8004B0B8(0xFF, 0xFF, 0xFF, 0xFF, D_10);
-        func_8004B0F8(&gDisplayListHead, 0xA0, 0xAC, "< 2000 Disney",
+        fontPrintXY(&gDisplayListHead, 0xA0, 0xAC, "< 2000 Disney",
                                 0xC);
     }
     if (D_14 != 0) {
         func_8004B0B8(0xFF, 0xFF, 0xFF, 0xFF, D_14);
-        func_8004B0F8(&gDisplayListHead, 0xA0, 0xB6, "Licensed to Nintendo",
+        fontPrintXY(&gDisplayListHead, 0xA0, 0xB6, "Licensed to Nintendo",
                                 0xC);
     }
     if (D_18 != 0) {
@@ -262,14 +262,14 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
                                   0xFF, 0xFF, 0xFF, D_18);
     }
 
-    func_80034920(&gDisplayListHead);
+    texDPInit(&gDisplayListHead);
     O46_PRIM(gDisplayListHead++, 255, 255, 255, 255);
 
     count = 0;
     do {
         particle = particlesByVariant[count++];
         if (particle != NULL) {
-            func_80023F84(
+            camDo2DSprite(
                 &gDisplayListHead, &gOverlay46MatrixHead,
                 &gOverlay46VertexHead, particle, particle->resource38,
                 0x8001, 0xFF);

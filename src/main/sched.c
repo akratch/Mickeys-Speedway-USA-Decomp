@@ -101,7 +101,7 @@ void func_80030608(OSScTask *task);
 SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
                         SchedGfx *displayList, OSMesgQueue *queue,
                         u64 *dataStart);
-void func_80044C94(SchedGfx *displayList, s32 *file, s32 *unkC,
+void diRcpTraceGetInfo(SchedGfx *displayList, s32 *file, s32 *unkC,
                    s32 *unk10, s32 *file2, s32 *unkC2, s32 *unk102);
 void diRcpPrintDL(SchedGfx *start, SchedGfx *end, s32 count);
 SchedGfx *func_80030910(OSSched *sc, s32 *outFile, s32 *outUnkC, s32 *outUnk10,
@@ -444,7 +444,7 @@ SchedGfx *func_80030910(OSSched *sc, s32 *outFile, s32 *outUnkC, s32 *outUnk10,
 
     *outFile2 = 0;
     *outFile = 0;
-    func_80044C94(displayList, &file, &unkC, &unk10, &file2, &unkC2,
+    diRcpTraceGetInfo(displayList, &file, &unkC, &unk10, &file2, &unkC2,
                   &unk102);
     if (file2 != 0 || file != 0) {
         if (file != 0) {

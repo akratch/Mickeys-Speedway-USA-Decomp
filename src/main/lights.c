@@ -22,10 +22,10 @@ extern void initColourCycle();
 extern f32 sqrtf(f32 value);
 extern f32 func_8002A8BC(s32 angle);
 extern void mmFree(void *ptr);
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern void lightCreateLightTable(s32 red, s32 green, s32 blue, void *table);
-extern void func_8000D728(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
-extern s32 func_8000D62C(f32 x, f32 y, f32 z, f32 radius, f32 radius2, s32 red, s32 green, s32 blue);
+extern void trackLightDelete(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+extern s32 trackLightAdd(f32 x, f32 y, f32 z, f32 radius, f32 radius2, s32 red, s32 green, s32 blue);
 extern void func_800188CC(UnkLight *light);
 extern void func_80018F08(UnkLight *light, s32 updateRate);
 extern f32 func_80019934(f32 arg0, f32 arg1, f32 arg2, s32 arg3);
@@ -345,14 +345,14 @@ typedef struct ShadeLevel {
 } ShadeLevel;
 
 extern void func_8001953C(LightingObject *object, ShadeState *state);
-extern void func_80019DE8(ObjectLightState *state, s32 arg1, s32 arg2, s16 arg3, s16 arg4, s32 arg5);
+extern void lightSetObjectLight(ObjectLightState *state, s32 arg1, s32 arg2, s16 arg3, s16 arg4, s32 arg5);
 extern void mathOneFloatRPY(s16 *rotation, f32 *output);
 extern void *camlightAdd(void *object, FlareEntry *entry);
 extern void camlightDelete(void);
 extern ObjectLightState D_800CB298;
-extern void func_8000D768(s32 light, s32 red, s32 green, s32 blue, s32 intensity);
-extern void func_8000D7F8(s32 light, f32 x, f32 y, f32 z);
-extern void func_80036AB0(void *cycle, s32 updateRate);
+extern void trackLightColour(s32 light, s32 red, s32 green, s32 blue, s32 intensity);
+extern void trackLightMove(s32 light, f32 x, f32 y, f32 z);
+extern void updateColourCycle(void *cycle, s32 updateRate);
 extern void mathOneFloatPY(s16 *rotation, f32 *vector);
 extern void pointListRPY(s32 count, void *rotation, f32 *input, f32 *output);
 extern void *camGetPtr(void);
@@ -392,9 +392,9 @@ void setupLights(s32 count, s32 unusedA, s32 unusedB) {
 
     freeLights();
     D_80079490 = count;
-    buffer = func_8002B280(D_80079490 * 0x78, 0x89);
-    D_800CB290 = func_8002B280((D_80079490 << 9) + 0x200, 0x89);
-    D_800794A0 = func_8002B280(0x240, 0x89);
+    buffer = mmAlloc(D_80079490 * 0x78, 0x89);
+    D_800CB290 = mmAlloc((D_80079490 << 9) + 0x200, 0x89);
+    D_800794A0 = mmAlloc(0x240, 0x89);
     D_8007949C = (void **)((u8 *) buffer + (D_80079490 * sizeof(void *)));
     D_80079498 = buffer;
     for (i = 0; i < D_80079490; i++) {
@@ -410,7 +410,7 @@ void func_800188CC(UnkLight *light) {
 
     if (!(light->unk3 & 0x40)) {
         radius = light->radius;
-        light->unk6C = func_8000D62C(
+        light->unk6C = trackLightAdd(
             light->x, light->y, light->z,
             radius * 1.25f, radius * D_800817B0,
             (light->red * light->unk43) >> 8,
@@ -603,11 +603,11 @@ void func_80018F08(UnkLight *light, s32 updateRate) {
         }
         LIGHT->flags2 |= 4;
         if (LIGHT->trackLight6C != 0) {
-            func_8000D7F8(LIGHT->trackLight6C, LIGHT->x18, LIGHT->y1C, LIGHT->z20);
+            trackLightMove(LIGHT->trackLight6C, LIGHT->x18, LIGHT->y1C, LIGHT->z20);
         }
     }
     if (LIGHT->colourCycle54 != 0) {
-        func_80036AB0((u8 *) LIGHT + 0x48, updateRate);
+        updateColourCycle((u8 *) LIGHT + 0x48, updateRate);
         LIGHT->red40 = *(u8 *) ((u8 *) LIGHT + 0x50);
         LIGHT->green41 = *(u8 *) ((u8 *) LIGHT + 0x51);
         LIGHT->blue42 = *(u8 *) ((u8 *) LIGHT + 0x52);
@@ -632,7 +632,7 @@ void func_80018F08(UnkLight *light, s32 updateRate) {
     if (LIGHT->flags2 & 2) {
         lightCreateLightTable(LIGHT->red40, LIGHT->green41, LIGHT->blue42, LIGHT->table70);
         if (LIGHT->trackLight6C != 0) {
-            func_8000D768(LIGHT->trackLight6C, LIGHT->red40, LIGHT->green41,
+            trackLightColour(LIGHT->trackLight6C, LIGHT->red40, LIGHT->green41,
                           LIGHT->blue42, LIGHT->intensity43);
         }
     }
@@ -667,7 +667,7 @@ void killLight(UnkLight *light) {
     }
     if (entry != NULL) {
         if (light->unk6C != 0) {
-            func_8000D728(light->unk6C, i, D_80079494, (s32) entry);
+            trackLightDelete(light->unk6C, i, D_80079494, (s32) entry);
         }
         D_80079494--;
         for (i--; i < D_80079494; i++) {
@@ -927,7 +927,7 @@ f32 lightDirectionCalc(f32 x, f32 y, f32 z, f32 directionX, f32 directionY, f32 
  * so the products and their difference stay ring temporaries instead of three
  * globally coloured webs. Three unused declarations keep the 0x70 local block
  * and the 0x50 cameraDelta home. */
-void func_80019AB8(LightPosition *position, LightObjectContext *object,
+void lightObject(LightPosition *position, LightObjectContext *object,
                    LightDescription *description, f32 *matrix) {
     s32 count;
     s32 savedRed;
@@ -1012,11 +1012,11 @@ void func_80019AB8(LightPosition *position, LightObjectContext *object,
 }
 /* PROVENANCE: adapted from JFG's public decomp comparison and Mickey's own assembly. */
 void lightDefaultObjectLight(s32 startValue, s32 endValue, s16 pitch, s16 yaw, s32 shift) {
-    func_80019DE8(&D_800CB298, startValue, endValue, pitch, yaw, shift);
+    lightSetObjectLight(&D_800CB298, startValue, endValue, pitch, yaw, shift);
 }
 /* PROVENANCE: JFG's public assembly-backed lightSetObjectLight authenticates
  * the structural role only; Mickey's body and globals remain authoritative. */
-void func_80019DE8(ObjectLightState *state, s32 startValue, s32 endValue, s16 pitch, s16 yaw, s32 shift) {
+void lightSetObjectLight(ObjectLightState *state, s32 startValue, s32 endValue, s16 pitch, s16 yaw, s32 shift) {
     s16 rotation[3];
     f32 direction[3];
 
@@ -1063,7 +1063,7 @@ void lightSetupFlareSources(FlareObject *object) {
     }
 }
 /* PROVENANCE: adapted from JFG's public asm/nonmatchings/lights/lightInitObjectLighting.s, with Mickey's layout. */
-s32 func_8001A008(LightingObject *object, LightInitState *state) {
+s32 lightInitObjectLighting(LightingObject *object, LightInitState *state) {
     s32 result;
     LightLevelData *level;
     s32 mode;
@@ -1078,10 +1078,10 @@ s32 func_8001A008(LightingObject *object, LightInitState *state) {
         state->enabled = 1;
         result = 0x90;
         if (level->useLevelLight != 0) {
-            func_80019DE8(&state->light, level->red, level->green, level->yaw,
+            lightSetObjectLight(&state->light, level->red, level->green, level->yaw,
                           level->pitch + 0x8000, 0);
         } else {
-            func_80019DE8(&state->light, (s32) (header->red * 255.0f),
+            lightSetObjectLight(&state->light, (s32) (header->red * 255.0f),
                           (s32) (header->green * 255.0f), header->yaw,
                           header->pitch, header->shift);
         }
@@ -1104,7 +1104,7 @@ s32 func_8001A008(LightingObject *object, LightInitState *state) {
     return (result & ~3) + 4;
 }
 /* PROVENANCE: adapted from JFG's public asm/nonmatchings/lights/lightAdjustGlowingLight.s, with Mickey's constants and offsets. */
-void func_8001A154(GlowObject *object) {
+void lightAdjustGlowingLight(GlowObject *object) {
     FlareEntry flare;
     GlowEntry *entry;
     s32 scaledSize;

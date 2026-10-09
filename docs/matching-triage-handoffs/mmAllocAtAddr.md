@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_8002B524:start -->
-### `func_8002B524` plateau handoff
+<!-- plateau-handoff:mmAllocAtAddr:start -->
+### `mmAllocAtAddr` plateau handoff
 
 - source: `src/main/memory.c`
 - score: 116/116 words
@@ -87,4 +87,4 @@ the control: the split needs an INTEGER intermediate, not merely a different
 cast. Retiring this closes the `nonmatching-ranking` row and makes
 `src/main/memory.c` a fully-C translation unit.
 
-<!-- plateau-handoff:func_8002B524:end -->
+<!-- plateau-handoff:mmAllocAtAddr:end -->

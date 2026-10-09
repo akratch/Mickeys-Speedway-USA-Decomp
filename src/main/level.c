@@ -117,31 +117,31 @@ struct LevelHeaderSummarySource {
 
 extern LevelSummary *D_800CF3DC;
 extern s32 mainGetNumberOfCameras(void);
-extern void func_80000510(u8);
+extern void amTunePlay(u8);
 extern void amTuneResetFade(void);
-extern void func_80000B48(u16);
+extern void amTuneSetChlMask(u16);
 extern void amTuneResetChls(void);
 extern void amTuneStop(void);
 extern u8 amTuneGetSeqNo(void);
-extern void func_80036AB0(void *, s32);
+extern void updateColourCycle(void *, s32);
 extern s32 *piRomLoad(s32);
 extern s32 piRomLoadSection(s32, void *, s32, s32);
 extern void mmFree(void *);
-extern void *func_8002B280(s32, s32);
+extern void *mmAlloc(s32, s32);
 extern u8 *align4(u8 *);
 extern void rumbleKill(s32);
 extern s8 func_800291FC(void);
 extern void gsSndpLimitVoices(s32);
 extern void initColourCycle(void *, s16);
 extern void amTuneVoiceLimit(u8);
-extern void func_80000450(s32);
+extern void amSetMuteMode(s32);
 extern void setupLights(s32, s32, s32);
 extern void func_8000A6DC(s32);
-extern void func_80051004(s32);
-extern void *func_80034448(s32);
-extern void *func_800355A0(s32, s32);
+extern void animseqSetupGroup(s32);
+extern void *texLoadTexture(s32);
+extern void *texLoadSprite(s32, s32);
 extern void *func_8000486C(s32);
-extern void *func_8001F520(s32, s32);
+extern void *modLoadModel(s32, s32);
 extern s32 runlinkDownloadCode(s32);
 extern void trackSetFogOff(s32);
 extern void trackSetFog(s32, s16, s16, s16, s32, s32, s32, s32);
@@ -149,7 +149,7 @@ extern void setupWeather(s32, s32, s32, s32, s32, s32, s32);
 extern void weather_clip_planes(s16, s16);
 extern void func_8002EBD4(void *);
 extern void *func_800056A4(s32);
-extern void func_80036C60(void *);
+extern void resetMixCycle(void *);
 extern void rcpSetScreenColour(u8, u8, u8);
 extern void viFrameRateReset(void);
 extern void levelTunePlay(void);
@@ -169,7 +169,7 @@ extern void levelOverlay16InitializeBufferTrap(u8 *);
 #pragma weak levelOverlay103CheckSignatureTrap = TrapDanglingJump
 extern s32 levelOverlay103CheckSignatureTrap(void);
 extern void camSetNo(s32);
-extern void func_80021504(f32, s32);
+extern void camSetFOV(f32, s32);
 extern void func_8003C770(s32, s32);
 extern void runlinkFreeCode(s32);
 extern void amSndStop(void *);
@@ -180,8 +180,8 @@ extern void camlightFlush(void);
 extern void amResetAudioMap(void);
 extern void func_800582A8(void);
 extern void freeWeather(void);
-extern void func_800347A0(void *);
-extern void func_800359D4(void *);
+extern void texFreeTexture(void *);
+extern void texFreeSprite(void *);
 extern void func_80004B04(s16);
 extern void modFreeModel(void *);
 extern void runlinkFlushModules(void);
@@ -198,7 +198,7 @@ void levelGetCounts(void) {
     LevelHeaderSummarySource *header;
     u8 *nameData;
 
-    header = func_8002B280(sizeof(LevelHeaderSummarySource), 0x8F);
+    header = mmAlloc(sizeof(LevelHeaderSummarySource), 0x8F);
     D_800CF3C0 = piRomLoad(0x1E);
 
     for (i = 0; i != 16; i++) { D_800CF3E0[i] = 0;
@@ -210,7 +210,7 @@ void levelGetCounts(void) {
     }
     D_800CF3D4--;
 
-    D_800CF3DC = func_8002B280(D_800CF3D4 * sizeof(LevelSummary), 0x8F);
+    D_800CF3DC = mmAlloc(D_800CF3D4 * sizeof(LevelSummary), 0x8F);
     D_800CF3D8 = -1;
     D_800CF3C8 = header;
     for (i = 0; i < D_800CF3D4; i++) {
@@ -232,7 +232,7 @@ void levelGetCounts(void) {
     mmFree(D_800CF3C0);
     mmFree(header);
 
-    D_8007A0D0 = func_8002B280(0x20, 0x8F);
+    D_8007A0D0 = mmAlloc(0x20, 0x8F);
     D_800CF3C0 = piRomLoad(0x22);
     i = 0;
     while (D_800CF3C0[i] != -1) {
@@ -240,7 +240,7 @@ void levelGetCounts(void) {
     }
     i--;
     count = D_800CF3C0[i] - D_800CF3C0[0];
-    nameData = func_8002B280((s32) align4((u8 *) count) + (i * 4), 0x8F);
+    nameData = mmAlloc((s32) align4((u8 *) count) + (i * 4), 0x8F);
     D_800CF3D0 = (u8 **) ((u32) nameData + (s32) align4((u8 *) count));
     piRomLoadSection(0x23, nameData, 0, count);
     for (count = 0; count < i; count++) {
@@ -356,7 +356,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
 
     lvlStart = D_800CF3C0[lvlIdx];
     lvlSize = D_800CF3C0[lvlIdx + 1] - lvlStart;
-    D_800CF3C8 = func_8002B280(lvlSize, 0x85);
+    D_800CF3C8 = mmAlloc(lvlSize, 0x85);
     piRomLoadSection(0x1F, D_800CF3C8, lvlStart, lvlSize);
     mainPreNMI();
     mmFree(D_800CF3C0);
@@ -369,7 +369,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
     }
     amTuneVoiceLimit(D_800CF3C8->voiceLimit);
     amTuneResetFade();
-    func_80000450(0);
+    amSetMuteMode(0);
     mainPreNMI();
     setupLights(D_800CF3C8->lightCount, 8, 0x10);
     mainPreNMI();
@@ -383,7 +383,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
 
     mainPreNMI();
 
-    func_80051004(mode);
+    animseqSetupGroup(mode);
 
     if ((D_800CF3C8->type == 0) || (D_800CF3C8->type == 3)) {
         if (D_8007BF0C != 0) {
@@ -403,16 +403,16 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
             resourceId = D_8007A0F4[off];
             if ((resourceId & 0xC000) == 0xC000) {
                 resourceId &= 0x3FFF;
-                D_800CF490[off] = func_80034448(resourceId);
+                D_800CF490[off] = texLoadTexture(resourceId);
             } else if (resourceId & 0x8000) {
                 resourceId &= 0x3FFF;
-                D_800CF490[off] = func_800355A0(resourceId, 0);
+                D_800CF490[off] = texLoadSprite(resourceId, 0);
             } else if (resourceId & 0x4000) {
                 resourceId &= 0x3FFF;
                 D_800CF490[off] = func_8000486C(D_800C94E0[resourceId]);
             } else {
                 resourceId &= 0x3FFF;
-                D_800CF490[off] = func_8001F520(resourceId, 0);
+                D_800CF490[off] = modLoadModel(resourceId, 0);
             }
         }
         runlinkDownloadCode(0x17);
@@ -457,7 +457,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
         weather_clip_planes(-1, -0x200);
     }
     if (D_800CF3C8->resourceMode == 3) {
-        D_800CF3C8->resourceB8 = (s32) func_80034448(D_800CF3C8->resourceB8);
+        D_800CF3C8->resourceB8 = (s32) texLoadTexture(D_800CF3C8->resourceB8);
         D_800CF3C8->valueBC = 0;
         D_800CF3C8->valueBE = 0;
     } else if ((D_800CF3C8->resourceMode == 4) || (D_800CF3C8->resourceMode == 5)) {
@@ -465,7 +465,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
     }
     if (D_800CF3C8->resourceC0 != -1) {
         D_800CF3C8->resourceC0 = (s32) func_800056A4(D_800CF3C8->resourceC0);
-        func_80036C60((void *) D_800CF3C8->resourceC0);
+        resetMixCycle((void *) D_800CF3C8->resourceC0);
     }
     rcpSetScreenColour(D_800CF3C8->screenR, D_800CF3C8->screenG,
                        D_800CF3C8->screenB);
@@ -474,7 +474,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
 
     for (i = 0; i < 4; i++) {
         camSetNo(i);
-        func_80021504((f32) D_800CF3C8->cameraFov, 1);
+        camSetFOV((f32) D_800CF3C8->cameraFov, 1);
     }
     camSetNo(0);
 
@@ -541,9 +541,9 @@ void levelTunePlay(void) {
     if (((u8 *) D_800CF3C8)[0x8E] != 0) {
         if (((u8 *) D_800CF3C8)[0x8E] != amTuneGetSeqNo()) {
             amTuneResetChls();
-            func_80000510(((u8 *) D_800CF3C8)[0x8E]);
+            amTunePlay(((u8 *) D_800CF3C8)[0x8E]);
             amTuneResetFade();
-            func_80000B48(*(u16 *) &((u8 *) D_800CF3C8)[0x90]);
+            amTuneSetChlMask(*(u16 *) &((u8 *) D_800CF3C8)[0x90]);
         }
     } else {
         amTuneStop();
@@ -556,7 +556,7 @@ void levelUpdateColourCycling(s32 updateRate) {
 
     for (i = 0; i < 7; i++) {
         if (((LevelHeaderColour *) D_800CF3C8)->weatherType[i] != -1) {
-            func_80036AB0(&D_800CF420[i * 16], updateRate);
+            updateColourCycle(&D_800CF420[i * 16], updateRate);
         }
     }
 }
@@ -629,7 +629,7 @@ void levelFreeAll(void) {
     }
     levelType = *(s8 *) ((u8 *) D_800CF3C8 + 0x52);
     if (levelType == 3) {
-        func_800347A0(*(void **) ((u8 *) D_800CF3C8 + 0xB8));
+        texFreeTexture(*(void **) ((u8 *) D_800CF3C8 + 0xB8));
     } else if ((levelType == 4) || (levelType == 5)) {
         func_8002EBD4(0);
     }
@@ -637,9 +637,9 @@ void levelFreeAll(void) {
         for (i = 0; i < D_800CF508; i++) {
             assetId = D_8007A0F4[i];
             if ((assetId & 0xC000) == 0xC000) {
-                func_800347A0(D_800CF490[i]);
+                texFreeTexture(D_800CF490[i]);
             } else if (assetId & 0x8000) {
-                func_800359D4(D_800CF490[i]);
+                texFreeSprite(D_800CF490[i]);
             } else if (assetId & 0x4000) {
                 assetId &= 0x3FFF;
                 func_80004B04(*(s16 *) ((u32) D_800C94E0 + (assetId << 1)));
@@ -652,7 +652,7 @@ void levelFreeAll(void) {
         D_8007A0F4 = NULL;
     }
     runlinkFlushModules();
-    func_8004AF68();
+    fxCpuTextureFlush();
     D_800C947C = 0;
     D_80078DF0 = 0;
 }

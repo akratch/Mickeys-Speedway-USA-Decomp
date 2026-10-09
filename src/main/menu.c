@@ -8,7 +8,7 @@
  *
  * Flags: -O2 -mips2 -32 (the game-code preset, selected by Makefile). The
  * -Wo,-loopunroll,0 override this TU once carried was measured byte-inert for
- * every function except func_80038878, whose target is unrolled; it is gone.
+ * every function except initFront, whose target is unrolled; it is gone.
  */
 
 #include "PR/ultratypes.h"
@@ -49,9 +49,9 @@ extern u16 D_800D312E;
 extern void amTuneStop(void);
 extern void amTuneSetGlobalVolume(s32 volume);
 extern void alSurround_OutputType(u8 mode);
-extern void func_80038750();
-extern void func_800389CC(void);
-extern void func_80038BC4(void);
+extern void setLanguage();
+extern void frontFreeMode(void);
+extern void frontInitMode(void);
 extern void func_8003968C(void);
 extern s32 levelGetRegionNo(void);
 extern s8 viGetWideAdjust(void);
@@ -61,26 +61,26 @@ extern s32 TrapDanglingJump();
 extern void amSndPlay(s32 soundId, s32 *handle);
 extern void amSndSetVol(s32 soundId, s32 handle, s32 volume, s32 *handleOut);
 extern void amSndStop(s32 handle);
-extern void func_80000510(u8 sequence);
+extern void amTunePlay(u8 sequence);
 extern void func_80006EA0(void *object);
 extern void func_80006FA0(void);
 extern s32 func_80005820(s32 arg0);
 extern u8 *func_80028F54(void);
-extern void func_800347A0(void *texture);
-extern void func_800359D4(void *sprite);
-extern void func_80034920(MenuCommand **displayList);
+extern void texFreeTexture(void *texture);
+extern void texFreeSprite(void *sprite);
+extern void texDPInit(MenuCommand **displayList);
 extern void freeFrontEndItem(s32 assetId);
 extern void loadFrontEndItem(s32 assetId);
 extern void func_80039720(s32 updateRate);
-extern void func_8004BF64(s32 windowId);
-extern void func_80044BC8(s32 arg0, u8 *source, s32 line);
+extern void fontWindowFlushStrings(s32 windowId);
+extern void diRcpTrace(s32 arg0, u8 *source, s32 line);
 extern u32 joyGetButtons(s32 controller);
 extern u32 joyGetPressed(s32 controller);
 extern s8 joyGetStickX(s32 controller);
 extern s8 joyGetStickY(s32 controller);
 extern void mainTitlePageInit(s32 mode);
 extern void modFreeModel(void *model);
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern u32 *piRomLoad(u32 assetIndex);
 
 extern u32 D_800D3170[4];
@@ -216,10 +216,10 @@ typedef struct MenuSpawnedObject {
     /* 0x68 */ MenuSpawnInner **inner;
 } MenuSpawnedObject;
 
-extern void *func_80034448(s32 assetId);
-extern void *func_800355A0(s32 assetId, s32 arg1);
+extern void *texLoadTexture(s32 assetId);
+extern void *texLoadSprite(s32 assetId, s32 arg1);
 extern MenuSpawnedObject *func_8000590C(MenuSpawnPacket *packet, s32 mode);
-extern void *func_8001F520(s32 assetId, s32 arg1);
+extern void *modLoadModel(s32 assetId, s32 arg1);
 
 typedef struct MenuDrawStack {
     s16 rotationY;
@@ -257,13 +257,13 @@ typedef struct MenuLanguageText {
     char *demoMessage;
 } MenuLanguageText;
 extern s32 *D_8007C0B8;
-extern void func_8004B0A4(s32 font);
-extern void func_8004B0DC(s32 red, s32 green, s32 blue, s32 alpha);
-extern void func_8004B0F8(MenuCommand **displayList, s32 x, s32 y,
+extern void fontUseFont(s32 font);
+extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);
+extern void fontPrintXY(MenuCommand **displayList, s32 x, s32 y,
                           char *text, s32 alignmentFlags);
 extern void func_80009E78(MenuCommand **commands, void **matrices,
                           void **vertices, void *object);
-extern void func_80023F84(MenuCommand **commands, void **matrices,
+extern void camDo2DSprite(MenuCommand **commands, void **matrices,
                           void **vertices, void *transform, void *object,
                           s32 arg5, s32 arg6);
 extern void camPushModelMtx(MenuCommand **commands, void **matrices,
@@ -277,7 +277,7 @@ extern void camPopModelMtx(MenuCommand **commands);
  * junior expression temp on a0, and the `-1 ==` spelling keeps the hoisted
  * constant first in the compare (allocator-trace-guided). The jump table is
  * the TU's own first rodata entry, carved at ROM 0x83334. */
-void func_80038750(s32 language) {
+void setLanguage(s32 language) {
     s32 *header;
     s32 *offsets;
     s32 assetIndex;
@@ -346,15 +346,15 @@ void func_80038750(s32 language) {
  * unrolled in the target (4 stores per iteration; fully), so this TU compiles
  * WITHOUT -Wo,-loopunroll,0: measured byte-inert for every other function in
  * menu.c and required by this one. */
-void func_80038878(void) {
+void initFront(void) {
     s32 i;
 
-    D_800D3150[0] = (s32) func_8002B280(0x5B8, 0x8F);
+    D_800D3150[0] = (s32) mmAlloc(0x5B8, 0x8F);
     for (i = 0; i < 6; i++) {
         D_800D3150[i] = D_800D3150[i - 1] + 0xF4;
     }
-    D_8007C0B8 = func_8002B280(0x1000, 0x8F);
-    func_80038750(0);
+    D_8007C0B8 = mmAlloc(0x1000, 0x8F);
+    setLanguage(0);
     i = 0;
     while (i < 180) {
         D_800D31C8[i] = NULL;
@@ -378,7 +378,7 @@ void func_80038878(void) {
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/menu.c::frontFreeMode;
  * Mickey supplies the smaller 19-mode switch and exact resident state. */
-void func_800389CC(void) {
+void frontFreeMode(void) {
     u8 *selection;
     u8 value;
 
@@ -386,7 +386,7 @@ void func_800389CC(void) {
         selection = func_80028F54();
         switch (D_8007C0A0) {
         case 0:
-            func_8004BF64(1);
+            fontWindowFlushStrings(1);
             break;
         case 1:
             break;
@@ -460,7 +460,7 @@ void func_800389CC(void) {
 /* PROVENANCE: role and switch ordering compared with JFG's public
  * src/menu.c::frontInitMode; JFG retains assembly, and this body is derived
  * from Mickey's state and call surface. */
-void func_80038BC4(void) {
+void frontInitMode(void) {
     u8 *selection;
     u8 value;
 
@@ -546,9 +546,9 @@ void func_80038BC4(void) {
 /* PROVENANCE: name, role, call order, and state resets compared with JFG's
  * public src/menu.c::frontSetMode; Mickey supplies the exact state surface. */
 void frontSetMode(s32 mode) {
-    func_800389CC();
+    frontFreeMode();
     D_8007C0A0 = mode;
-    func_80038BC4();
+    frontInitMode();
     func_8003968C();
     D_8007BF30 = 0;
     D_8007BF34 = 1;
@@ -572,11 +572,11 @@ u8 frontGetMode(void) {
  * back and clear `disable`. Mickey's additions are its own: the title-music
  * fade, the demo/attract timer with its any-pad-START check, the early
  * `return 0` when the overlay trap reports the frame consumed, and the fade
- * countdown that plays a tune through func_80000510 (JFG's amTunePlay, one
+ * countdown that plays a tune through amTunePlay (JFG's amTunePlay, one
  * argument -- the other Mickey callers agree). The locals keep their target
  * homes in declaration order: the four joyGetPressed halves and the two
  * call results are the whole 0x28 frame. */
-s32 func_80038E1C(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList, s32 updateRate) {
+s32 frontUpdate(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList, s32 updateRate) {
     s32 timerState;
     u8 *selection;
     u16 pressed0;
@@ -624,7 +624,7 @@ s32 func_80038E1C(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList
         D_800D3148 = *vertexList;
         timerState = playerObject;
         D_800D314C = *triangleList;
-        func_80044BC8(D_800D3140, D_800826C0, 0x297);
+        diRcpTrace(D_800D3140, D_800826C0, 0x297);
         switch (D_8007C0A0) {
         case 0:
             break;
@@ -687,7 +687,7 @@ s32 func_80038E1C(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList
             TrapDanglingJump(updateRate);
             break;
         }
-        func_80044BC8(D_800D3140, D_800826D0, 0x2C5);
+        diRcpTrace(D_800D3140, D_800826D0, 0x2C5);
         *gfxList = D_800D3140;
         *mtxList = D_800D3144;
         *vertexList = D_800D3148;
@@ -697,7 +697,7 @@ s32 func_80038E1C(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList
             D_8007BF70 -= updateRate;
             if (D_8007BF70 <= 0) {
                 D_8007BF70 = -1;
-                func_80000510(D_800D3050);
+                amTunePlay(D_800D3050);
             }
         }
     return 0;
@@ -713,14 +713,14 @@ void frontDemoMessage(MenuCommand **displayList, s32 updateRate) {
         x = 0xA0;
         y = 0xD0;
         viConvertXY(&x, &y);
-        func_80038750(frontGetLanguage());
-        func_8004B0A4(2);
-        func_8004B0DC(0, 0, 0, 0);
+        setLanguage(frontGetLanguage());
+        fontUseFont(2);
+        fontBackground(0, 0, 0, 0);
         fontColour(0, 0, 0, 0xFF, 0xFF);
-        func_8004B0F8(displayList, x + 1, y + 1,
+        fontPrintXY(displayList, x + 1, y + 1,
                       ((MenuLanguageText *) D_8007C0B8)->demoMessage, 0xC);
         fontColour(0xFF, 0xFF, 0xFF, 0, 0xFF);
-        func_8004B0F8(displayList, x, y,
+        fontPrintXY(displayList, x, y,
                       ((MenuLanguageText *) D_8007C0B8)->demoMessage, 0xC);
     }
 }
@@ -778,7 +778,7 @@ void frontDrawRectangles(MenuCommand **displayList, s32 count, MenuRectangle *re
         }
         rectangles++;
     }
-    func_80034920(displayList);
+    texDPInit(displayList);
     MENU_COMMAND((*displayList)++, primitiveCommand, -1);
 }
 /* PROVENANCE: name and order compared with JFG's public decomp,
@@ -928,9 +928,9 @@ void freeFrontEndItem(s32 assetId) {
         if (((s32 *) D_800D31C8)[assetId] != 0) {
             if (((D_8007C1B8[assetId] & 0xC000) == 0xC000) &&
                 (((s32 *) D_800D31C8)[assetId] != 0)) {
-                func_800347A0((void *) ((s32 *) D_800D31C8)[assetId]);
+                texFreeTexture((void *) ((s32 *) D_800D31C8)[assetId]);
             } else if (D_8007C1B8[assetId] & 0x8000) {
-                func_800359D4((void *) ((s32 *) D_800D31C8)[assetId]);
+                texFreeSprite((void *) ((s32 *) D_800D31C8)[assetId]);
             } else if (D_8007C1B8[assetId] & 0x4000) {
                 func_80006EA0((void *) ((s32 *) D_800D31C8)[assetId]);
             } else {
@@ -964,9 +964,9 @@ void loadFrontEndItem(s32 assetId) {
     if (D_800D3498[assetId] == 0) {
         resourceId = D_8007C1B8[assetId];
         if ((resourceId & 0xC000) == 0xC000) {
-            D_800D31C8[assetId] = func_80034448(resourceId & 0x3FFF);
+            D_800D31C8[assetId] = texLoadTexture(resourceId & 0x3FFF);
         } else if (resourceId & 0x8000) {
-            D_800D31C8[assetId] = func_800355A0(resourceId & 0x3FFF, 0);
+            D_800D31C8[assetId] = texLoadSprite(resourceId & 0x3FFF, 0);
         } else if (resourceId & 0x4000) {
             packet.kind = resourceId & 0x3FFF;
             packet.mode = 0xA;
@@ -985,7 +985,7 @@ void loadFrontEndItem(s32 assetId) {
             }
             D_800D31C8[assetId] = (MenuFrontObject *) object;
         } else {
-            D_800D31C8[assetId] = func_8001F520(resourceId & 0x3FFF, 0);
+            D_800D31C8[assetId] = modLoadModel(resourceId & 0x3FFF, 0);
         }
         D_800D3498[assetId] = 1;
         D_8007C1C0++;
@@ -1037,7 +1037,7 @@ void setupFrontEndObject(s32 objectId) {
  * the head of the plain path, and each colour as `(g & 0xFF) << n` terms (the
  * _SHIFTL form). The block-scope packet pointers are what fill the frame the
  * volatile stack struct's old pad stood in for. */
-void func_80039E34(s32 index) {
+void frontDrawObj(s32 index) {
     volatile MenuDrawStack stack;
     s16 flags;
     MenuFrontObject *renderObject;
@@ -1082,7 +1082,7 @@ void func_80039E34(s32 index) {
                              ((D_8007C0AC & 0xFF) << 8) |
                              (D_8007C0BC & 0xFF));
             MENU_COMMAND(D_800D3140++, 0xFB000000, -0x100);
-            func_80023F84(&D_800D3140, &D_800D3144, &D_800D3148,
+            camDo2DSprite(&D_800D3140, &D_800D3144, &D_800D3148,
                           &stack.rotationY,
                           tex, D_8007C0B4,
                           D_8007C0BC);
@@ -1129,7 +1129,7 @@ s32 frontGetLanguage(void) {
  * src/menu.c::frontSetLanguage; body and bitfield derived from Mickey. */
 void frontSetLanguage(s32 language) {
     D_800D3128.bits.language = language;
-    func_80038750(language);
+    setLanguage(language);
 }
 s32 frontGetScreenMode(void) {
     s32 mode;
@@ -1155,7 +1155,7 @@ s32 frontGetScreenMode(void) {
 /* PROVENANCE: ordered accessor-family role rechecked against JFG efd5abb's
  * assembly-backed src/menu.c::frontSetScreenMode; mask, guard, and packed fields
  * are Mickey-derived. */
-void func_8003A2C8(s32 screenMode) {
+void frontSetScreenMode(s32 screenMode) {
     u8 *modeBitPtr;
     u8 *modeState;
     u8 modeBits;
@@ -1279,7 +1279,7 @@ s32 frontGet2PlayerSplit(void) {
  * The `& 1` is load-bearing: it is folded into the 1-bit field insert but still
  * consumes one ugen temp-ring slot, which rotates the FIFO into the ROM's
  * t0/t8/t9/t1/t2 assignment (allocator-trace-guided, field-guide lever 16). */
-void func_8003A520(s32 split) {
+void frontSet2PlayerSplit(s32 split) {
     D_800D3128.bits.twoPlayerSplit = split & 1;
 }
 void func_8003A544(s32 value) {

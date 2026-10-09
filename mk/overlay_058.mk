@@ -36,7 +36,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c.o: POS
 		--redefine-sym amSndStop=amSndStop_o058Reloc \
 		--redefine-sym animseqStartPath=animseqStartPath_o058Reloc \
 		--redefine-sym animseqStopPath=animseqStopPath_o058Reloc \
-		--redefine-sym func_800221E8=func_800221E8_o058Reloc \
+		--redefine-sym camSetView=camSetView_o058Reloc \
 		--redefine-sym func_80028F54=func_80028F54_o058Reloc \
 		--redefine-sym func_800291B4=func_800291B4_o058Reloc \
 		--redefine-sym func_8003A680=func_8003A680_o058Reloc \

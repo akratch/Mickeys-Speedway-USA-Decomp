@@ -510,7 +510,7 @@ bytes and disassembly never belong here.
   distinct from the aliasing question -- there is no store between the two
   spellings that could invalidate anything -- and from the "reference a global
   twice" address rule, which is about the address web rather than the value's.
-  Evidence: `func_8000D3B8` in `src/main/track.c`, where the pool size spelled
+  Evidence: `trackLightAllocate` in `src/main/track.c`, where the pool size spelled
   from the global took the function from one instruction short and 105
   differing words to exact, and where four rewrites of the *arithmetic* and all
   four statement positions were flat.
@@ -528,7 +528,7 @@ bytes and disassembly never belong here.
   not something the programmer wrote. Limits: the field and the local must be
   provably the same value at that point, and this trades a load for a mask, so
   it only shortens the function when the field is read more than once.
-  Evidence: `func_80019DE8` in `src/main/lights.c`, where three reloads of a
+  Evidence: `lightSetObjectLight` in `src/main/lights.c`, where three reloads of a
   stack-homed parameter became two, closing a +4 size mismatch and taking the
   residual from 45 words with nine structural differences to 16 register names
   -- a pure temporary-ring rotation, closed by the ring entry below.
@@ -632,7 +632,7 @@ bytes and disassembly never belong here.
   absent surviving instructions. A later source carrier can change early output
   while early expression records remain unchanged, so demand order is not the
   only explanation to test. Evidence and the withdrawn overclaim are recorded
-  in the `func_80020D8C` two-source handoff. Workbench commits `028a8eaf` and
+  in the `modSetTextureFrame` two-source handoff. Workbench commits `028a8eaf` and
   `1da7f333` now separate possible colors, conditional per-input reservations,
   and trace-directed ownership; independent review and real-input acceptance
   preserve the scalar comparisons while withholding unsupported causal advice.
@@ -646,7 +646,7 @@ bytes and disassembly never belong here.
   on ADD would lose real frees; treating every request as an append invents
   others. Keep initialization proof separate from complete replay, and require
   successful-transition evidence for the latter. The compiler-source binding
-  and limits are recorded in the `func_80020D8C` reservation audit.
+  and limits are recorded in the `modSetTextureFrame` reservation audit.
 - Reusing a masked index in an existing predicate can change its allocation
   class, not merely its temporary demand order. In a controlled full-TU pair,
   an equivalent predicate shared the low mask with a table access. Faithful
@@ -692,7 +692,7 @@ bytes and disassembly never belong here.
   `overlay57HandleModeInput`, and the exact resident texture-table initializer.
   The first two were found with the workbench's ugen emit-provenance trace on
   2026-09-02. It does not apply to register renames, to delay-slot fills chosen
-  by latency (`func_8001A154`'s `li -1`), or to relocation-surface differences.
+  by latency (`lightAdjustGlowingLight`'s `li -1`), or to relocation-surface differences.
 - The lexical start of a conditional block can be an allocation boundary for
   a loop-invariant expression. If IDO hoists an invariant value into a saved
   register, adding save/restore and move instructions, initialize the existing
@@ -731,7 +731,7 @@ bytes and disassembly never belong here.
   changing any other instruction. Recheck the ordinary object, complete
   relocation identities, linked owned range, and full ROM; this lever does not
   apply to locals whose initialization or lifetime is observable. Evidence:
-  the exact `func_8004ADE8` closure, 2026-09-08.
+  the exact `fxCpuTextureRequired` closure, 2026-09-08.
 - Removing one redundant input alias can disturb exact stack homes while
   removing two together recovers both the frame and the surviving homes.
   Declaration placement can expose the intermediate state: a correct frame
@@ -795,7 +795,7 @@ bytes and disassembly never belong here.
   only when the word and pointer widths and all-ones representation are proved,
   the original pointer has no later use, and the ordinary object, complete
   relocation surface, linked owned range, and full ROM are exact. Evidence:
-  the exact `func_800347A0` closure, 2026-09-08.
+  the exact `texFreeTexture` closure, 2026-09-08.
 - ugen's integer temp ring is consumed one pop per compiler temporary, and
   the `DKWB_UGEN_TRACE` pop sequence shows the count directly: reading a
   struct field through a local costs a pop that a direct read does not, an
@@ -1043,7 +1043,7 @@ bytes and disassembly never belong here.
   the exact schedule. Statement order and line grouping must therefore be
   reviewed together; this does not identify the responsible compiler pass or
   justify arbitrary line reflow elsewhere. Evidence: the exact resident
-  `func_80034920` display-list reset and the
+  `texDPInit` display-list reset and the
   [snow renderer donor re-derivation](matching-triage-handoffs/snow_render.md).
 - An inlined mask expression can preserve instruction count, frame and opcode
   order while changing register operands throughout later display-list code.
@@ -1079,7 +1079,7 @@ bytes and disassembly never belong here.
   and can share one sentinel carrier. Apply this only when allocation, element
   width, and both slot meanings are independently authenticated; require exact
   frame, relocations, linked bytes, and full ROM. Evidence: the exact resident
-  `func_800359D4` sprite release.
+  `texFreeSprite` sprite release.
 - A canceling pointer increment/decrement between two groups of stores can be
   a zero-instruction allocation lever. IDO eliminates the net-zero arithmetic
   but retains enough of the pointer lifetime split to change a two-web
@@ -1501,7 +1501,7 @@ bytes and disassembly never belong here.
   index of any expression is directly readable and a candidate can be scored
   by *ring position* before it is ever assembled -- much sharper than a
   positional word diff, which reports a pure rotation as dozens of differences.
-  Evidence: `func_80019DE8` in `src/main/lights.c`, whose last residual was
+  Evidence: `lightSetObjectLight` in `src/main/lights.c`, whose last residual was
   16 words that were exactly a +2 rotation. Spelling the delta as
   `state->valueDelta = state->endValue - state->startValue` instead of
   `arg2 - arg1` -- the two bytes were stored on the two preceding lines, so
@@ -1709,7 +1709,7 @@ bytes and disassembly never belong here.
   closes it in one edit. The cheapest way to end a local's range early is to
   read the field back where the local was about to be used again -- uopt
   forwards the store on the line above to that load, so the read costs no
-  instruction. Evidence: `func_80049000` in `src/main/fx.c`, five words for
+  instruction. Evidence: `wakeUpdateRipple` in `src/main/fx.c`, five words for
   four passes, where `mode`'s last use was the vertex multiply's
   `(mode & 0xFF)` and ugen schedules the height `l.s`/`trunc.w.s`/`mfc1` ahead
   of that multiply; spelling the multiply's base `ripple->mode` -- the field

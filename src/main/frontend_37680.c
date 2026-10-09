@@ -51,7 +51,7 @@ typedef struct PulsatingLightData {
     PulsatingLightDataFrame frames[1];
 } PulsatingLightData;
 
-extern MemoryPoolSlot *func_8002B280(s32 size, u32 tag);
+extern MemoryPoolSlot *mmAlloc(s32 size, u32 tag);
 extern u32 *piRomLoad(u32 assetIndex);
 extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset,
                              s32 size);
@@ -63,7 +63,7 @@ extern Gfx D_8007BDD8[];
 extern Gfx D_8007BE00[];
 extern Gfx D_7BE08[];
 extern void viGetCurrentSize(s32 *width, s32 *height);
-extern void func_80034920(Gfx **dList);
+extern void texDPInit(Gfx **dList);
 
 #define FRONTEND_DMA_DISPLAY_LIST(pkt, address, numberOfCommands) \
     { \
@@ -73,7 +73,7 @@ extern void func_80034920(Gfx **dList);
         _g->words.w1 = (u32) (address); \
     }
 
-void func_80036A80(ColourCycle *cycle) {
+void resetColourCycle(ColourCycle *cycle) {
     ColourCycle *target;
 
     target = cycle->unkC;
@@ -86,7 +86,7 @@ void func_80036A80(ColourCycle *cycle) {
 }
 
 /* PROVENANCE: body adapted from Jet Force Gemini's public decompilation,
- * src/textures.c:updateMixCycle (this TU's func_80036CAC is that body
+ * src/textures.c:updateMixCycle (this TU's updateMixCycle is that body
  * verbatim), spelled onto the colour-cycle table, with the hoisted channel
  * locals of Diddy Kong Racing's src/textures_sprites.c:update_colour_cycle.
  * JFG's own updateColourCycle is still a GLOBAL_ASM pragma at efd5abb and at
@@ -100,7 +100,7 @@ void func_80036A80(ColourCycle *cycle) {
  * AFTER the eight channel locals: declared first, its web takes the first
  * spill slot and the frame comes out 0x30 against the target's 0x28 with
  * every instruction already identical. */
-void func_80036AB0(ColourCycle *cycle, s32 timeDelta) {
+void updateColourCycle(ColourCycle *cycle, s32 timeDelta) {
     s32 thisFrameIndex;
     s32 nextFrameIndex;
     s32 temp;
@@ -148,7 +148,7 @@ void func_80036AB0(ColourCycle *cycle, s32 timeDelta) {
     }
 }
 
-void func_80036C60(PulsatingLightData *data) {
+void resetMixCycle(PulsatingLightData *data) {
     s32 i;
 
     data->currentFrame = 0;
@@ -163,7 +163,7 @@ void func_80036C60(PulsatingLightData *data) {
 /* PROVENANCE: body adapted from Jet Force Gemini's public decompilation,
  * src/textures.c:updateMixCycle. Mickey's layout and compiler output remain
  * authoritative. */
-void func_80036CAC(PulsatingLightData *data, s32 timeDelta) {
+void updateMixCycle(PulsatingLightData *data, s32 timeDelta) {
     s32 thisFrameIndex;
     s32 nextFrameIndex;
 
@@ -215,12 +215,12 @@ s32 *func_80036DD0(s32 screenIndex) {
     size = screenTable[screenIndex + 1] - screenTable[screenIndex];
     start = screenTable[screenIndex];
     decompressedAddr = NULL;
-    header = (u8 *) func_8002B280(0x10, 0x90);
+    header = (u8 *) mmAlloc(0x10, 0x90);
     if (header != NULL) {
         piRomLoadSection(0x13, (u32) header, start, 0x10);
         uncompressedSize = byteswap32(header) + 0x80;
         mmFree(header);
-        decompressedAddr = (u8 *) func_8002B280(uncompressedSize, 0x90);
+        decompressedAddr = (u8 *) mmAlloc(uncompressedSize, 0x90);
         if (decompressedAddr != NULL) {
             compressedAddr = (u32) ((decompressedAddr + uncompressedSize) - size);
             compressedAddr -= compressedAddr & 0xF;
@@ -275,5 +275,5 @@ void func_80036F08(Gfx **dList, u8 *screenAddress, s32 scaled) {
         screenAddress += 0x140 * 6 * 2;
         yl += dy;
     }
-    func_80034920(dList);
+    texDPInit(dList);
 }

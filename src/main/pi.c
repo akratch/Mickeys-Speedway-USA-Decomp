@@ -30,7 +30,7 @@ extern u8 D_86760[];
 extern s32 D_8007A320;
 
 void romCopy(u32 romOffset, u32 ramAddress, s32 numBytes);
-void *func_8002B280();
+void *mmAlloc();
 void func_8004D5E0(OSPri priority, OSMesgQueue *queue, OSMesg *messages,
                    s32 count);
 void mainPreNMI(void);
@@ -46,7 +46,7 @@ void piInit(void) {
     osCreateMesgQueue(&D_800D23C0, &D_800D23B8, 1);
     func_8004D5E0(0x96, &D_800D2458, D_800D23D8, 0x20);
     assetTableSize = D_86760 - D_86640;
-    D_800D2470 = func_8002B280(assetTableSize, 0x84);
+    D_800D2470 = mmAlloc(assetTableSize, 0x84);
     romCopy((u32) D_86640, (u32) D_800D2470, assetTableSize);
 }
 /* PROVENANCE: adapted from Jet Force Gemini's public decomp, src/pi.c:piRomLoad. */
@@ -66,7 +66,7 @@ u32 *piRomLoad(u32 assetIndex) {
     if (size == 0) {
         return NULL;
     }
-    out = func_8002B280(size, 0x84);
+    out = mmAlloc(size, 0x84);
     if (out == NULL) {
         return NULL;
     }
@@ -89,11 +89,11 @@ u8 *piRomLoadCompressed(u32 assetIndex, s32 extraMemory) {
     out = (u8 *) (assetIndex + D_800D2470->offsets - 1);
     start = ((s32 *) out)[0];
     size = ((s32 *) out)[1] - start;
-    gzipHeaderRamPos = func_8002B280(8, 0x84);
+    gzipHeaderRamPos = mmAlloc(8, 0x84);
     romCopy((u32) (start + D_86760), (u32) gzipHeaderRamPos, 8);
     totalSpace = byteswap32(gzipHeaderRamPos) + extraMemory;
     mmFree(gzipHeaderRamPos);
-    out = func_8002B280(totalSpace + extraMemory, 0x84);
+    out = mmAlloc(totalSpace + extraMemory, 0x84);
     if (out == NULL) {
         return NULL;
     } else {

@@ -82,15 +82,15 @@ extern u32 D_800D2F60;
 extern OSViFieldRegs D_800D2F68;
 extern s32 D_800D3128;
 
-extern MemoryPoolSlot *func_8002B280(s32 size, u32 colourTag);
+extern MemoryPoolSlot *mmAlloc(s32 size, u32 colourTag);
 extern void osScAddClient(void *scheduler, void *client, OSMesgQueue *queue, s32 id);
-extern void func_800336A8(s32 videoMode);
+extern void viChangeMode(s32 videoMode);
 extern void viAllocateZBuffer(s32 width, s32 height);
 extern void viFreeZBuffer(s32 width, s32 height);
 extern void viGetCurrentSize(s32 *width, s32 *height);
 extern void viSetTiming(void);
 extern void func_80034018(u8 *src, s32 length);
-extern OSViMode *func_80034094(s32 videoMode);
+extern OSViMode *viGetOsViMode(s32 videoMode);
 extern void fb_swap(void);
 extern void osWritebackDCacheAll(void);
 extern void osViSetMode(OSViMode *mode);
@@ -111,20 +111,20 @@ void viInit(void *scheduler) {
     }
     osCreateMesgQueue(&D_800D2E70, D_800D2E50, 8);
     osScAddClient(scheduler, D_800D2F30, &D_800D2E70, 2);
-    D_8007A680[0] = (s32 *) func_8002B280(0x4B030, 0x92);
+    D_8007A680[0] = (s32 *) mmAlloc(0x4B030, 0x92);
     D_800D2F9A = 0;
     D_800D2F95 = 0;
     D_800D2F96 = 0;
     D_800D2F97 = 1;
     D_800D2FC0 = 0;
-    func_800336A8(0);
+    viChangeMode(0);
     osViBlack(0);
     osViSwapBuffer(D_800D2FA8);
     D_8007A6A8 = 1;
     D_800D2F99 = 1;
 }
 /* PROVENANCE: adapted from Jet Force Gemini's public decomp, src/gameVi.c:viChangeMode (efd5abb). */
-void func_800336A8(s32 videoMode) {
+void viChangeMode(s32 videoMode) {
     s32 bufferSize;
     ResolutionSettings *resolution;
 
@@ -162,7 +162,7 @@ void func_800336A8(s32 videoMode) {
     switch (D_800D2F98 & 3) {
         case 2:
         case 3:
-            D_8007A680[1] = (s32 *) func_8002B280(bufferSize + 0x30, 0x92);
+            D_8007A680[1] = (s32 *) mmAlloc(bufferSize + 0x30, 0x92);
             D_8007A690[1] = (s32 *) (((s32) D_8007A680[1] + 0x3F) & ~0x3F);
             break;
         default:
@@ -170,7 +170,7 @@ void func_800336A8(s32 videoMode) {
             break;
     }
     if (D_800D2F96) {
-        D_8007A680[2] = (s32 *) func_8002B280(bufferSize + 0x30, 0x92);
+        D_8007A680[2] = (s32 *) mmAlloc(bufferSize + 0x30, 0x92);
         D_8007A690[2] = (s32 *) (((s32) D_8007A680[2] + 0x3F) & ~0x3F);
     }
     D_800D2F95 = D_800D2F96;
@@ -192,7 +192,7 @@ void func_800336A8(s32 videoMode) {
     D_800D2FC0 = 0;
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/gameVi.c:viReset. */
-void func_800339B4(void) {
+void viReset(void) {
     s32 *screen;
     u32 screenSize;
     s32 width;
@@ -221,7 +221,7 @@ void func_800339B4(void) {
 /* PROVENANCE: adapted from JFG's public decomp, src/gameVi.c:viAllocateZBuffer. */
 void viAllocateZBuffer(s32 width, s32 height) {
     D_800D2F90 = (width * height * 2) + 0x30;
-    D_8007A680[3] = (s32 *) func_8002B280(D_800D2F90, 0x92);
+    D_8007A680[3] = (s32 *) mmAlloc(D_800D2F90, 0x92);
     D_800D2FAC = (s32 *) (((s32) D_8007A680[3] + 0x3F) & ~0x3F);
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/gameVi.c:viFreeZBuffer. */
@@ -243,7 +243,7 @@ void viSetTiming(void) {
     s32 verticalAdjust;
 
     resolution = &D_8007A6AC[D_800D2F98];
-    viMode = func_80034094(resolution->videoMode);
+    viMode = viGetOsViMode(resolution->videoMode);
     fb_memcpy((u8 *) viMode, (u8 *) &D_800D2F40, sizeof(OSViMode));
     D_800D2F48 = resolution->width;
     D_800D2F60 = (resolution->width << 9) / resolution->displayWidth;
@@ -282,7 +282,7 @@ void viConvertXY(s32 *x, s32 *y) {
  * skeleton is below the tier-A uniqueness threshold, so the name is not
  * adopted.
  */
-void func_80033D58(f32 *hScale, f32 *vScale) {
+void viGetScaleXY(f32 *hScale, f32 *vScale) {
     *hScale = D_8007A69C;
     *vScale = D_8007A6A0;
 }
@@ -367,7 +367,7 @@ void viSetTrippleBuffer(s32 resolutionIndex) {
  * viGetTrippleBuffer. No same-address Mickey caller pins that public name, so
  * the canonical function retains its address label.
  */
-s8 func_80033FB8(void) {
+s8 viGetTrippleBuffer(void) {
     return D_800D2F95;
 }
 
@@ -381,7 +381,7 @@ s32 viChangeBuffers(void) {
  * viNoClear. No same-address Mickey caller pins that public name, so the
  * canonical function retains its address label.
  */
-void func_80033FE0(void) {
+void viNoClear(void) {
     D_800D2F97 = 0;
 }
 
@@ -413,7 +413,7 @@ void func_80034018(u8 *src, s32 length) {
 }
 
 /* PROVENANCE: adapted from JFG's public decomp, src/gameVi.c:viGetOsViMode. */
-OSViMode *func_80034094(s32 videoMode) {
+OSViMode *viGetOsViMode(s32 videoMode) {
     switch (videoMode) {
         case 0:
             return &D_80080530;

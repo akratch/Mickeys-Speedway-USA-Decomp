@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_80019AB8:start -->
-### `func_80019AB8` plateau handoff
+<!-- plateau-handoff:lightObject:start -->
+### `lightObject` plateau handoff
 
 - source: `src/main/lights.c`
 - score: 0/184 words, promoted
@@ -132,4 +132,4 @@ statement order" holds only on the redValue/greenValue carrier shape.
 
 Gates: gmake verify OK on the promoted tree, scoreboard regenerated.
 
-<!-- plateau-handoff:func_80019AB8:end -->
+<!-- plateau-handoff:lightObject:end -->

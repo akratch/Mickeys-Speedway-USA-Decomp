@@ -29,10 +29,10 @@ $(O22_UPDATE_OBJECT_OBJ): POSTPROCESS = \
 		--redefine-sym func_80008128=func_80008128_o022Reloc \
 		--redefine-sym partUpdateTriggers=partUpdateTriggers_o022Reloc \
 		--redefine-sym func_80001620=func_80001620_o022Reloc \
-		--redefine-sym func_800031E8=func_800031E8_o022Reloc \
-		--redefine-sym func_80002FE0=func_80002FE0_o022Reloc \
-		--redefine-sym func_8000309C=func_8000309C_o022Reloc \
-		--redefine-sym func_80036544=func_80036544_o022Reloc \
+		--redefine-sym amSndStopXYZ=amSndStopXYZ_o022Reloc \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o022Reloc \
+		--redefine-sym amSndSetVolXYZ=amSndSetVolXYZ_o022Reloc \
+		--redefine-sym texAnimateSprite=texAnimateSprite_o022Reloc \
 		--add-symbol gOverlay22UpdatePoolReloc=0x4,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/func_overlay_022_F00002B0_18783B8.rebind.spec && \

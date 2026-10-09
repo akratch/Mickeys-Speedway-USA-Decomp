@@ -169,9 +169,9 @@ typedef struct Overlay58LanguageText {
 } Overlay58LanguageText;
 
 extern Overlay58RaceState *func_80028F54(void);
-extern void func_80036AB0(void *cycle, s32 updateRate);
-extern void func_8004B0A4(s32 font);
-extern void func_8004B0F8(MenuCommand **displayList, s32 x, s32 y, char *text, s32 flags);
+extern void updateColourCycle(void *cycle, s32 updateRate);
+extern void fontUseFont(s32 font);
+extern void fontPrintXY(MenuCommand **displayList, s32 x, s32 y, char *text, s32 flags);
 extern void func_8002F618(MenuCommand **displayList, RcpTextureNode *node, s32 x, s32 y, u8 red, u8 green, u8 blue, u8 alpha);
 extern void func_8005055C(s32 pathIndex);
 extern s32 sprintf(char *buffer, const char *format, ...);
@@ -329,8 +329,8 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
     SavesSlot *slot;
 
     state = func_80028F54();
-    func_80036AB0(&D_o058_5F38, ticks);
-    func_8004B0A4(0);
+    updateColourCycle(&D_o058_5F38, ticks);
+    fontUseFont(0);
     switch (D_o058_5E94) {
     case 1:
     case 2:
@@ -369,7 +369,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
     case 1:
         fontColour(0xFF, 0x80, 0, 0xFF, (0xFF - (i = 0))); /* Keep reset in the last argument value. */
 
-        func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5EA4 + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x27], 4);
+        fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5EA4 + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x27], 4);
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
         x = D_o058_5E98 + D_o058_5EA8;
         letter1 = 0; rowY = rowBase;
@@ -384,13 +384,13 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
                 nodes[1].texture = 0;
                 func_8002F618(&D_800D3140_o058Reloc, &nodes[0], 0, 0, (u8) 0xFF, (u8) 0xFF, (u8) 0xFF, (u8) 0xFF);
                 fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-                func_8004B0F8(&D_800D3140_o058Reloc, x + 0x28, rowY, D_o058_5C98[D_o058_5EF8[letter1]], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, x + 0x28, rowY, D_o058_5C98[D_o058_5EF8[letter1]], 0);
                 if ((D_8007C1A0_o058Reloc == 1) && (state->entries == D_o058_5EC8[letter1])) {
                     fontColour((s32) D_o058_5F38.red, (s32) D_o058_5F38.green, (s32) D_o058_5F38.blue, 0xFF, 0xFF);
                 } else {
                     fontColour(0, 0xFF, 0xFF, 0xFF, 0xFF);
                 }
-                func_8004B0F8(&D_800D3140_o058Reloc, x + 0x71, rowY, D_8007C0B8_o058Reloc->text[D_o058_5EC8[letter1]->character + 0x1A], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, x + 0x71, rowY, D_8007C0B8_o058Reloc->text[D_o058_5EC8[letter1]->character + 0x1A], 0);
                 if (state->mode == 5) {
                     if (i == 0) {
                         overlay56SplitTime(D_o058_5EC8[letter1]->value, &minutes, &seconds, &centiseconds);
@@ -406,21 +406,21 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
                 textY = rowY + D_o058_5EAC;
                 if ((i == 0) || (minutes != 0)) {
                     sprintf(&text[0], D_o058_5D2C, minutes);
-                    func_8004B0F8(&D_800D3140_o058Reloc, x + 0xDC, textY, &text[0], 1);
-                    func_8004B0F8(&D_800D3140_o058Reloc, x + 0xDF, textY, D_o058_5D30, 0);
+                    fontPrintXY(&D_800D3140_o058Reloc, x + 0xDC, textY, &text[0], 1);
+                    fontPrintXY(&D_800D3140_o058Reloc, x + 0xDF, textY, D_o058_5D30, 0);
                 }
                 if (i != 0) {
                     if (state->mode == 5) {
-                        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xBA, textY, D_o058_5D34, 0);
+                        fontPrintXY(&D_800D3140_o058Reloc, x + 0xBA, textY, D_o058_5D34, 0);
                     } else {
-                        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xBA, textY, D_o058_5D38, 0);
+                        fontPrintXY(&D_800D3140_o058Reloc, x + 0xBA, textY, D_o058_5D38, 0);
                     }
                 }
                 sprintf(&text[0], D_o058_5D3C, seconds);
-                func_8004B0F8(&D_800D3140_o058Reloc, x + 0xE6, textY, &text[0], 0);
-                func_8004B0F8(&D_800D3140_o058Reloc, x + 0xFD, textY, D_o058_5D44, 0);
+                fontPrintXY(&D_800D3140_o058Reloc, x + 0xE6, textY, &text[0], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, x + 0xFD, textY, D_o058_5D44, 0);
                 sprintf(&text[0], D_o058_5D48, centiseconds);
-                func_8004B0F8(&D_800D3140_o058Reloc, x + 0x104, textY, &text[0], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, x + 0x104, textY, &text[0], 0);
                 letter1 += 1; i += 1;
                 rowY += rowHeight;
             } while (i < (s32) D_8007BEF8_o058Reloc);
@@ -497,7 +497,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
             }
         }
         fontColour(0xFF, 0x80, 0, 0xFF, 0xFF);
-        func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5EA0 + D_o058_5EA4 + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x28], 4);
+        fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5EA0 + D_o058_5EA4 + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x28], 4);
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
         savedX = D_o058_5E98;
         savedOffset = D_o058_5EA0;
@@ -516,13 +516,13 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
                 nodes[1].texture = 0;
                 func_8002F618(&D_800D3140_o058Reloc, (RcpTextureNode *) &nodes[0], 0, 0, (u8) 0xFF, (u8) 0xFF, (u8) 0xFF, (u8) 0xFF);
                 fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-                func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5EA0 + 0x28, rowY, D_o058_5C98[D_o058_5EF8[letter1]], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5EA0 + 0x28, rowY, D_o058_5C98[D_o058_5EF8[letter1]], 0);
                 if ((D_8007C1A0_o058Reloc == 1) && (state->entries == D_o058_5EC8[letter1])) {
                     fontColour((s32) D_o058_5F38.red, (s32) D_o058_5F38.green, (s32) D_o058_5F38.blue, 0xFF, 0xFF);
                 } else {
                     fontColour(0, 0xFF, 0xFF, 0xFF, 0xFF);
                 }
-                func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5EA0 + 0x71, rowY, D_8007C0B8_o058Reloc->text[D_o058_5EC8[letter1]->character + 0x1A], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5EA0 + 0x71, rowY, D_8007C0B8_o058Reloc->text[D_o058_5EC8[letter1]->character + 0x1A], 0);
                 /* `columnX`, not `textY`: uopt colours a symbol as ONE web across
                  * every case (textY is 29 blocks over cases 1/2/8/9/10 and takes
                  * s4 early), and the target's rank difference here sits in s1 with
@@ -532,10 +532,10 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
                 columnX = D_o058_5EC8[letter1]->rank - D_o058_5E50[letter1];
                 fontColour(0xFF, 0xFF, 0, 0xFF, 0xFF);
                 sprintf(&text[0], D_o058_5D50, columnX);
-                func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + D_o058_5EA0 + 0xBE, rowY, &text[0], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + D_o058_5EA0 + 0xBE, rowY, &text[0], 0);
                 sprintf(&text[0], D_o058_5D54, D_o058_5E50[letter1]);
-                func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + D_o058_5EA0 + 0xEB, rowY, &text[0], 0);
-                func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + D_o058_5EA0 + 0x113, rowY, D_o058_5D5C, 0);
+                fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + D_o058_5EA0 + 0xEB, rowY, &text[0], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + D_o058_5EA0 + 0x113, rowY, D_o058_5D5C, 0);
                 letter1 += 1; i += 1;
                 rowY += rowHeight;
             } while (i < (s32) D_8007BEF8_o058Reloc);
@@ -579,7 +579,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
         break;
     case 3:
         fontColour(0xFF, 0x80, 0, 0xFF, (0xFF - (i = 0)));
-        func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x29], 4);
+        fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x29], 4);
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
         savedX = D_o058_5E98;
 
@@ -599,20 +599,20 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
                 nodes[1].texture = 0;
                 func_8002F618(&D_800D3140_o058Reloc, (RcpTextureNode *) &nodes[0], 0, 0, (u8) 0xFF, (u8) 0xFF, (u8) 0xFF, (u8) 0xFF);
                 fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-                func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + 0x28, rowY, D_o058_5C98[D_o058_5F10[textY]], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + 0x28, rowY, D_o058_5C98[D_o058_5F10[textY]], 0);
                 if ((D_8007C1A0_o058Reloc == 1) && (state->entries == D_o058_5EE0[textY])) {
                     fontColour((s32) D_o058_5F38.red, (s32) D_o058_5F38.green, (s32) D_o058_5F38.blue, 0xFF, 0xFF);
                 } else {
                     fontColour(0, 0xFF, 0xFF, 0xFF, 0xFF);
                 }
-                func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + 0x71, rowY, D_8007C0B8_o058Reloc->text[D_o058_5EE0[textY]->character + 0x1A], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + 0x71, rowY, D_8007C0B8_o058Reloc->text[D_o058_5EE0[textY]->character + 0x1A], 0);
                 sprintf(&text[0], D_o058_5D60, D_o058_5EE0[textY]->rank);
                 fontColour(0xFF, 0xFF, 0, 0xFF, 0xFF);
-                func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + 0xD2, rowY, &text[0], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + 0xD2, rowY, &text[0], 0);
                 if (D_o058_5EE0[textY]->rank == 1) {
-                    func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + 0x104, rowY, D_o058_5D64, 0);
+                    fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + 0x104, rowY, D_o058_5D64, 0);
                 } else {
-                    func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + 0x104, rowY, D_o058_5D68, 0);
+                    fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E98 + D_o058_5E9C + 0x104, rowY, D_o058_5D68, 0);
                 }
                 textY += 1; i += 1;
                 rowY += rowHeight;
@@ -689,7 +689,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
          * Measured on a two-loop mini TU first; docs/whale-self-read.md. */
         fontColour(0xFF, 0x80, 0, 0xFF, (0xFF - (i = 0)));
         i &= 0;
-        func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E9C + D_o058_5EA0 + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x6E], 4);
+        fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E9C + D_o058_5EA0 + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x6E], 4);
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
 
 
@@ -712,7 +712,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
              * Any dead carrier here is one web too many for both tests. */
             i = 0;
             do {
-                func_8004B0F8(&D_800D3140_o058Reloc, opponent, 0x37, D_o058_5C98[i], 4);
+                fontPrintXY(&D_800D3140_o058Reloc, opponent, 0x37, D_o058_5C98[i], 4);
                 i += 1;
                 opponent += columnStep;
                 if (columnStep != 0); /* +10 to the stride web: decided before the count (see case 13). */
@@ -741,7 +741,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
                 if ((s32) D_8007BEF8_o058Reloc > 0) {
                     do {
                         sprintf(&text[0], D_o058_5D6C, D_o058_5EE0[(u32)i]->counters[columnX]);
-                        func_8004B0F8(&D_800D3140_o058Reloc, opponent, rowY + 0x16, &text[0], 4);
+                        fontPrintXY(&D_800D3140_o058Reloc, opponent, rowY + 0x16, &text[0], 4);
                         columnX += 1;
                         opponent += columnStep;
                     } while (columnX < (s32) D_8007BEF8_o058Reloc);
@@ -806,7 +806,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
     case 13:
         /* Initialize the visible index through the last title-colour argument. */
         fontColour(0xFF, 0x80, 0, 0xFF, (0xFF - (i = 0)));
-        func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5E9C + D_o058_5EA0 + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x6F], 4);
+        fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E9C + D_o058_5EA0 + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x6F], 4);
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
 
         if (D_8007BEF8_o058Reloc == 4) {
@@ -879,7 +879,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
                 if (columnCount > 0) {
                     do {
                         sprintf(&text[0], D_o058_5D70, D_o058_5EE0[textY]->flags[columnX]);
-                        func_8004B0F8(&D_800D3140_o058Reloc, opponent + 8, rowY + 0x16, &text[0], 4);
+                        fontPrintXY(&D_800D3140_o058Reloc, opponent + 8, rowY + 0x16, &text[0], 4);
                         columnX += 1;
                         opponent += columnStep;
                     } while (columnX != columnCount);
@@ -952,12 +952,12 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
         fontColour(0xFF, 0x80, 0, 0xFF, 0xFF);
         if (D_o058_5E94 == 7) {
             if (D_8007C1A0_o058Reloc == 1) {
-                func_8004B0F8(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0xB5], 4);
+                fontPrintXY(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0xB5], 4);
             } else {
-                func_8004B0F8(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x2A], 4);
+                fontPrintXY(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x2A], 4);
             }
         } else {
-            func_8004B0F8(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x2B], 4);
+            fontPrintXY(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x2B], 4);
         }
         /* Indexed Y and text let strength reduction supply both carriers.
          * Preserve the early visible index across the menu input calls. */
@@ -969,7 +969,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
             } else {
                 fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
             }
-            func_8004B0F8(&D_800D3140_o058Reloc, 0xA0 - x, 0x50 + rowBase * 0x1E, D_o058_5E68[rowBase], 4);
+            fontPrintXY(&D_800D3140_o058Reloc, 0xA0 - x, 0x50 + rowBase * 0x1E, D_o058_5E68[rowBase], 4);
             i += 1;
             rowBase++;
 
@@ -1066,10 +1066,10 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
         break;
     case 5:
         fontColour(0xFF, 0xFF, 0, 0xFF, 0xFF);
-        func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5EA8 + 0xA0, 0x50, D_8007C0B8_o058Reloc->text[0x2C], 4);
+        fontPrintXY(&D_800D3140_o058Reloc, D_o058_5EA8 + 0xA0, 0x50, D_8007C0B8_o058Reloc->text[0x2C], 4);
         D_o058_5EA8 = -D_o058_5EA8;
         fontColour(0xFF, 0, 0, 0xFF, 0xFF);
-        func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5EA8 + 0xA0, 0x8C, D_8007C0B8_o058Reloc->text[0x2D], 4);
+        fontPrintXY(&D_800D3140_o058Reloc, D_o058_5EA8 + 0xA0, 0x8C, D_8007C0B8_o058Reloc->text[0x2D], 4);
         D_o058_5EA8 = -D_o058_5EA8;
 
         D_o058_5EA8 = D_o058_5EA8 - (ticks * 0xF);
@@ -1094,11 +1094,11 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
         break;
     case 6:
         fontColour(0xFF, 0xFF, 0, 0xFF, 0xFF);
-        func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5EA8 + 0xA0, 0x50, D_8007C0B8_o058Reloc->text[0x2C], 4);
+        fontPrintXY(&D_800D3140_o058Reloc, D_o058_5EA8 + 0xA0, 0x50, D_8007C0B8_o058Reloc->text[0x2C], 4);
         D_o058_5EA8 = -D_o058_5EA8;
         if (state->active == 0) {
             fontColour(0, 0xFF, 0, 0xFF, 0xFF);
-            func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5EA8 + 0xA0, 0x8C, D_8007C0B8_o058Reloc->text[0x6C], 4);
+            fontPrintXY(&D_800D3140_o058Reloc, D_o058_5EA8 + 0xA0, 0x8C, D_8007C0B8_o058Reloc->text[0x6C], 4);
             D_o058_5EA8 = -D_o058_5EA8;
         } else {
             i = 0;
@@ -1116,7 +1116,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
                 }
             }
             fontColour(0, 0xFF, 0, 0xFF, 0xFF);
-            func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5EA8 + 0xA0, 0x8C, &text[0], 4);
+            fontPrintXY(&D_800D3140_o058Reloc, D_o058_5EA8 + 0xA0, 0x8C, &text[0], 4);
             D_o058_5EA8 = -D_o058_5EA8;
 
             if ((s32) state->countdown > 0) {
@@ -1161,10 +1161,10 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
         x = D_o058_5E98 + D_o058_5EA8;
 
         fontColour(0xFF, 0x80, 0, 0xFF, (0xFF - (i = 0)));
-        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, func_8003A5A0((s32) D_800D304E_o058Reloc), 4);
+        fontPrintXY(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, func_8003A5A0((s32) D_800D304E_o058Reloc), 4);
         x = -x;
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xA0, 0x39, D_8007C0B8_o058Reloc->text[0x27], 4);
+        fontPrintXY(&D_800D3140_o058Reloc, x + 0xA0, 0x39, D_8007C0B8_o058Reloc->text[0x27], 4);
 
         if (D_o058_5CD8 != 0) {
             if ((D_o058_5CD8 >= 2) && (x == 0)) {
@@ -1193,19 +1193,19 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
                 fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
             }
             sprintf(&text[0], D_8007C0B8_o058Reloc->text[0x30], i + 1);
-            func_8004B0F8(&D_800D3140_o058Reloc, x + 0x82, textY, &text[0], 1);
+            fontPrintXY(&D_800D3140_o058Reloc, x + 0x82, textY, &text[0], 1);
             overlay56SplitTime(state->entries[0].lapTimes[opponent], &minutes, &seconds, &centiseconds);
             if (i != D_o058_5E8C) {
                 fontColour(0xFF, 0xFF, 0, 0xFF, 0xFF);
             }
             sprintf(&text[0], D_o058_5D74, minutes);
-            func_8004B0F8(&D_800D3140_o058Reloc, x + 0xB4, textY, &text[0], 1);
-            func_8004B0F8(&D_800D3140_o058Reloc, x + 0xB7, textY, D_o058_5D78, 0);
+            fontPrintXY(&D_800D3140_o058Reloc, x + 0xB4, textY, &text[0], 1);
+            fontPrintXY(&D_800D3140_o058Reloc, x + 0xB7, textY, D_o058_5D78, 0);
             sprintf(&text[0], D_o058_5D7C, seconds);
-            func_8004B0F8(&D_800D3140_o058Reloc, x + 0xBE, textY, &text[0], 0);
-            func_8004B0F8(&D_800D3140_o058Reloc, x + 0xD5, textY, D_o058_5D84, 0);
+            fontPrintXY(&D_800D3140_o058Reloc, x + 0xBE, textY, &text[0], 0);
+            fontPrintXY(&D_800D3140_o058Reloc, x + 0xD5, textY, D_o058_5D84, 0);
             sprintf(&text[0], D_o058_5D88, centiseconds);
-            func_8004B0F8(&D_800D3140_o058Reloc, x + 0xDC, textY, &text[0], 0);
+            fontPrintXY(&D_800D3140_o058Reloc, x + 0xDC, textY, &text[0], 0);
             i += 1;
             opponent += 1;
         } while (i != 3);
@@ -1216,19 +1216,19 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
         } else {
             fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
         }
-        func_8004B0F8(&D_800D3140_o058Reloc, x + 0x82, textY, D_8007C0B8_o058Reloc->text[0x31], 1);
+        fontPrintXY(&D_800D3140_o058Reloc, x + 0x82, textY, D_8007C0B8_o058Reloc->text[0x31], 1);
         overlay56SplitTime(state->entries[0].value, &minutes, &seconds, &centiseconds);
         if (D_o058_5E90 == -1) {
             fontColour(0xFF, 0xFF, 0, 0xFF, 0xFF);
         }
         sprintf(&text[0], D_o058_5D90, minutes);
-        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xB4, textY, &text[0], 1);
-        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xB7, textY, D_o058_5D94, 0);
+        fontPrintXY(&D_800D3140_o058Reloc, x + 0xB4, textY, &text[0], 1);
+        fontPrintXY(&D_800D3140_o058Reloc, x + 0xB7, textY, D_o058_5D94, 0);
         sprintf(&text[0], D_o058_5D98, seconds);
-        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xBE, textY, &text[0], 0);
-        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xD5, textY, D_o058_5DA0, 0);
+        fontPrintXY(&D_800D3140_o058Reloc, x + 0xBE, textY, &text[0], 0);
+        fontPrintXY(&D_800D3140_o058Reloc, x + 0xD5, textY, D_o058_5DA0, 0);
         sprintf(&text[0], D_o058_5DA4, centiseconds);
-        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xDC, textY, &text[0], 0);
+        fontPrintXY(&D_800D3140_o058Reloc, x + 0xDC, textY, &text[0], 0);
         D_o058_5E98 -= ticks * 0xF;
         if (D_o058_5E98 < 0) {
             D_o058_5E98 = 0;
@@ -1256,7 +1256,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
     case 9:
         fontColour(0xFF, 0x80, 0, 0xFF, 0xFF);
         x = D_o058_5E98 + D_o058_5EA8;
-        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x32], 4);
+        fontPrintXY(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x32], 4);
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
         D_o058_5E98 -= ticks * 0xF;
         if (D_o058_5E98 < 0) {
@@ -1414,7 +1414,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
                 } else {
                     fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
                 }
-                func_8004B0F8(&D_800D3140_o058Reloc, opponent, textY, &text[0], 4);
+                fontPrintXY(&D_800D3140_o058Reloc, opponent, textY, &text[0], 4);
                 i++;
                 opponent += 0x18;
             } while (i < 0xA);
@@ -1427,7 +1427,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
         } else {
             fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
         }
-        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xA0, textY, D_8007C0B8_o058Reloc->text[0x33], 4);
+        fontPrintXY(&D_800D3140_o058Reloc, x + 0xA0, textY, D_8007C0B8_o058Reloc->text[0x33], 4);
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
 
         i = 0;
@@ -1435,7 +1435,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
         if (D_8007C1B4_o058Reloc > 0) {
             do {
                 sprintf(&text[0], D_o058_5DB0, D_800D31C4_o058Reloc[i]);
-                func_8004B0F8(&D_800D3140_o058Reloc, columnX, 0x50, &text[0], 4);
+                fontPrintXY(&D_800D3140_o058Reloc, columnX, 0x50, &text[0], 4);
                 i += 1;
                 columnX += 0x1E;
             } while (i < D_8007C1B4_o058Reloc);
@@ -1443,7 +1443,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
         if ((D_8007C1B4_o058Reloc != 3) && (D_o058_5E78 != 3)) {
             sprintf(&text[0], D_o058_5DB4, (u8) D_o058_5C5C[D_o058_5E78][D_o058_5E7C]);
             fontColour((s32) D_o058_5F38.red, (s32) D_o058_5F38.green, (s32) D_o058_5F38.blue, 0xFF, 0xFF);
-            func_8004B0F8(&D_800D3140_o058Reloc, columnX, 0x50, &text[0], 4);
+            fontPrintXY(&D_800D3140_o058Reloc, columnX, 0x50, &text[0], 4);
             return;
         }
         break;
@@ -1451,10 +1451,10 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
         x = D_o058_5E98 + D_o058_5EA8;
         fontColour(0xFF, 0x80, 0, 0xFF, (0xFF - (i = 0)));
 
-        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, func_8003A5A0((s32) D_800D304E_o058Reloc), 4);
+        fontPrintXY(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, func_8003A5A0((s32) D_800D304E_o058Reloc), 4);
         x = -x;
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-        func_8004B0F8(&D_800D3140_o058Reloc, x + 0xA0, 0x39, D_8007C0B8_o058Reloc->text[0x34], 4);
+        fontPrintXY(&D_800D3140_o058Reloc, x + 0xA0, 0x39, D_8007C0B8_o058Reloc->text[0x34], 4);
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
         saves = func_800291C4();
 
@@ -1492,7 +1492,7 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
                 fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
             }
             if (i < 3) {
-                func_8004B0F8(&D_800D3140_o058Reloc, x + 0x28, textY, D_o058_5C98[i], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, x + 0x28, textY, D_o058_5C98[i], 0);
             }
             nodes[0].texture = D_800D31C8_o058Reloc[portraitIndex];
             nodes[0].alternate = NULL;
@@ -1515,13 +1515,13 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
                 }
                 character[0] = text[rowY];
                 character[1] = 0;
-                func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5CB0[rowY] + x, textY, &character[0], 0);
+                fontPrintXY(&D_800D3140_o058Reloc, D_o058_5CB0[rowY] + x, textY, &character[0], 0);
                 rowY += 1;
             } while (rowY != 11);
             if (i == 2) {
                 textY += 0x1B;
                 fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-                func_8004B0F8(&D_800D3140_o058Reloc, x + 0xA0, textY, D_8007C0B8_o058Reloc->text[0x35], 4);
+                fontPrintXY(&D_800D3140_o058Reloc, x + 0xA0, textY, D_8007C0B8_o058Reloc->text[0x35], 4);
             }
             opponent += 1;
             i += 1;

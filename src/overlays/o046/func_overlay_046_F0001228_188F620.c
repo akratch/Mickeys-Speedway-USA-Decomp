@@ -85,10 +85,10 @@ extern f32 func_8002A8BC(s32 angle);
 extern f32 func_8002A8C0(s32 angle);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern void camStandardOrtho(void *commands, void *matrices);
-extern void func_80023A08(void *commands, void *matrices, void *vertices,
+extern void camDoSprite(void *commands, void *matrices, void *vertices,
                           Overlay46DrawPoint *particle, void *resource,
                           s32 flags, s32 alpha);
-extern void func_800349A4(void *commands, void *texture, s32 flags, s32 parameter);
+extern void texDPTextureX(void *commands, void *texture, s32 flags, s32 parameter);
 
 #define O46_SP_VERTEX(packet, vertex, count, first)                       \
     gDma1p(packet, G_VTX, vertex,                                         \
@@ -188,11 +188,11 @@ void func_overlay_046_F0001228_188F620(s32 updateRate) {
             point.baseY10 = D_1458[i].y;
             point.value14 = D_1458[i].z;
             gDPSetPrimColor(gDisplayListHead++, 0, 0, 0xA0, 0xA0, 0xA0, D_1458[i].alpha);
-            func_80023A08(&gDisplayListHead, &gOverlay46MatrixHead, &gOverlay46VertexHead,
+            camDoSprite(&gDisplayListHead, &gOverlay46MatrixHead, &gOverlay46VertexHead,
                           &point, D_800D31C8[9], 7, D_1458[i].alpha);
         }
     }
-    func_800349A4(&gDisplayListHead, NULL, 3, 0);
+    texDPTextureX(&gDisplayListHead, NULL, 3, 0);
     gDPSetPrimColor(gDisplayListHead++, 0, 0, 0xC0, 0xC0, 0xC0, 0xFF);
 
     vertex = D_498;
@@ -223,7 +223,7 @@ void func_overlay_046_F0001228_188F620(s32 updateRate) {
         point.value14 = D_1450->z;
         point.scale08 = 6.0f;
         gDPSetPrimColor(gDisplayListHead++, 0, 0, 0xA0, 0xA0, 0xA0, D_2718);
-        func_80023A08(&gDisplayListHead, &gOverlay46MatrixHead, &gOverlay46VertexHead,
+        camDoSprite(&gDisplayListHead, &gOverlay46MatrixHead, &gOverlay46VertexHead,
                       &point, D_800D31C8[10], 7, D_2718);
     }
 

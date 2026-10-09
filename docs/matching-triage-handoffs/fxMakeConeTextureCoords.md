@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_800475E8:start -->
-### `func_800475E8` plateau handoff
+<!-- plateau-handoff:fxMakeConeTextureCoords:start -->
+### `fxMakeConeTextureCoords` plateau handoff
 
 - source: `src/main/fx.c`
 - score: 0/251 words, promoted
@@ -66,4 +66,4 @@ cursors for either array (LFTR moves to the other array, +4), a dead alias
 of t, operand order, store casts, loop-test spellings. The carve now covers
 fx's whole 0x10-byte pool (ROM 0x849E0..0x849F0, no trim).
 
-<!-- plateau-handoff:func_800475E8:end -->
+<!-- plateau-handoff:fxMakeConeTextureCoords:end -->

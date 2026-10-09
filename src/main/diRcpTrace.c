@@ -29,20 +29,20 @@ extern s32 D_8007CFC8;
 extern s32 D_800D4A90[];
 extern s32 D_8007CFC0;
 extern s32 D_8007CFC4;
-extern s32 func_8002B280(s32 size, s32 tag);
+extern s32 mmAlloc(s32 size, s32 tag);
 
 #define DI_RCP_TRACE_BUFFERS ((DiRcpTraceEntry **)&D_8007CFC0)
 
 void diRcpTraceInit(void) {
-    D_8007CFC0 = func_8002B280(0x4B0, 0x8F);
-    D_8007CFC4 = func_8002B280(0x4B0, 0x8F);
+    D_8007CFC0 = mmAlloc(0x4B0, 0x8F);
+    D_8007CFC4 = mmAlloc(0x4B0, 0x8F);
 }
-void func_80044B9C(void) {
+void diRcpTraceReset(void) {
     D_8007CFC8 = 1 - D_8007CFC8;
     D_800D4A90[D_8007CFC8] = 0;
 }
 /* Mickey-derived body; JFG's diRcpTrace implementation is assembly-only. */
-void func_80044BC8(Gfx *value0, char *value4, s32 value8) {
+void diRcpTrace(Gfx *value0, char *value4, s32 value8) {
     if (DI_RCP_TRACE_BUFFERS[D_8007CFC8] != 0) {
         if (D_800D4A90[D_8007CFC8] < 100) {
             DI_RCP_TRACE_BUFFERS[D_8007CFC8][D_800D4A90[D_8007CFC8]].value0 =
@@ -62,7 +62,7 @@ void func_80044BC8(Gfx *value0, char *value4, s32 value8) {
  * remain authoritative. The resulting 0x12C-byte function and its six
  * relocation pairs are byte-identical to Mickey's ROM.
  */
-void func_80044C94(Gfx *value, char **lowerValue4, s32 *lowerValue8,
+void diRcpTraceGetInfo(Gfx *value, char **lowerValue4, s32 *lowerValue8,
                    Gfx **lowerValue0, char **upperValue4, s32 *upperValue8,
                    Gfx **upperValue0) {
     s32 i;

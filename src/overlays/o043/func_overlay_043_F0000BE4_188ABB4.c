@@ -181,7 +181,7 @@ typedef struct Overlay43RenderEntry {
     s32 alpha;
 } Overlay43RenderEntry;
 
-/* Resident callees: diRcpTrace (func_80044BC8), rsp_segment,
+/* Resident callees: diRcpTrace (diRcpTrace), rsp_segment,
  * rcpInitDpNoSize, mtxf_mul and mtxf_to_mtx. */
 extern void overlay43RcpTraceReloc(Gfx *dl, char *file, s32 line);
 extern void overlay43RspSegmentReloc(Gfx **dl, s32 segment, void *base);

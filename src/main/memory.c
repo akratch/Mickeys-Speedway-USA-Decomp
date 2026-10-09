@@ -26,7 +26,7 @@ s32 D_800D21B4;
 #define D_800D1C64 (D_800D1C60[0].slots)
 extern u8 D_800D8750[];
 
-MemoryPoolSlot *func_8002B1A0(MemoryPoolSlot *slots, s32 poolSize, s32 numSlots);
+MemoryPoolSlot *mempool_init(MemoryPoolSlot *slots, s32 poolSize, s32 numSlots);
 
 /* PROVENANCE: adapted from JFG src/memory.c:mmInit. */
 void mmInit(void) {
@@ -36,7 +36,7 @@ void mmInit(void) {
     } else {
         D_800D21B4 = 0x80400000;
     }
-    func_8002B1A0((MemoryPoolSlot *)D_800D8750,
+    mempool_init((MemoryPoolSlot *)D_800D8750,
                   D_800D21B4 - (s32)D_800D8750, 0x640);
     mmSetDelay(2);
     D_800D21A8 = 0;
@@ -48,22 +48,22 @@ u8 mmExtended(void) {
 }
 
 /* PROVENANCE: adapted from JFG src/memory.c:mmAllocRegion. */
-void *func_8002B280(s32 size, u32 colourTag);
+void *mmAlloc(s32 size, u32 colourTag);
 
-MemoryPoolSlot *func_8002B154(s32 poolDataSize, s32 numSlots) {
+MemoryPoolSlot *mmAllocRegion(s32 poolDataSize, s32 numSlots) {
     s32 size;
     MemoryPoolSlot *slots;
     s32 pad;
     MemoryPoolSlot *newPool;
 
     size = poolDataSize + (numSlots * sizeof(MemoryPoolSlot));
-    slots = (MemoryPoolSlot *)func_8002B280(size, 0x95);
-    newPool = func_8002B1A0(slots, size, numSlots);
+    slots = (MemoryPoolSlot *)mmAlloc(size, 0x95);
+    newPool = mempool_init(slots, size, numSlots);
     return newPool;
 }
 
 /* PROVENANCE: adapted from JFG src/memory.c:mempool_init. */
-MemoryPoolSlot *func_8002B1A0(MemoryPoolSlot *slots, s32 poolSize, s32 numSlots) {
+MemoryPoolSlot *mempool_init(MemoryPoolSlot *slots, s32 poolSize, s32 numSlots) {
     MemoryPoolSlot *firstSlot;
     s32 poolCount;
     s32 i;
@@ -105,10 +105,10 @@ extern s32 D_8007A278;
 extern s32 D_8007A27C;
 
 s32 runlinkGetAddressInfo(u32 address, s32 *moduleId, s32 *moduleAddress, u32 **symbolName);
-void *func_8002B3A8(MemoryPoolIndex poolIndex, s32 size, u32 colourTag);
+void *mempool_slot_find(MemoryPoolIndex poolIndex, s32 size, u32 colourTag);
 
 /* PROVENANCE: adapted from JFG src/memory.c:mmAlloc. */
-void *func_8002B280(s32 size, u32 colourTag) {
+void *mmAlloc(s32 size, u32 colourTag) {
     struct {
         volatile s32 address;
         s32 moduleAddress;
@@ -126,11 +126,11 @@ void *func_8002B280(s32 size, u32 colourTag) {
         runlinkGetAddressInfo(stack.address - 8, &stack.moduleId, &stack.moduleAddress, NULL);
         colourTag = (stack.moduleId << 24) | stack.moduleAddress;
     }
-    return func_8002B3A8(MEMORY_POOL_MAIN, size, colourTag);
+    return mempool_slot_find(MEMORY_POOL_MAIN, size, colourTag);
 }
 
 /* PROVENANCE: adapted from JFG src/memory.c:mmAlloc2. */
-void *func_8002B314(s32 size, u32 colourTag) {
+void *mmAlloc2(s32 size, u32 colourTag) {
     struct {
         volatile s32 address;
         s32 moduleAddress;
@@ -148,11 +148,11 @@ void *func_8002B314(s32 size, u32 colourTag) {
         runlinkGetAddressInfo(stack.address - 8, &stack.moduleId, &stack.moduleAddress, NULL);
         colourTag = (stack.moduleId << 24) | stack.moduleAddress;
     }
-    return func_8002B3A8(MEMORY_POOL_MAIN, size, colourTag);
+    return mempool_slot_find(MEMORY_POOL_MAIN, size, colourTag);
 }
 
 /* PROVENANCE: adapted from JFG src/memory.c:mempool_slot_find. */
-void *func_8002B3A8(MemoryPoolIndex poolIndex, s32 size, u32 colourTag) {
+void *mempool_slot_find(MemoryPoolIndex poolIndex, s32 size, u32 colourTag) {
     s32 slotSize;
     MemoryPoolSlot *slot;
     volatile s32 pad;
@@ -184,19 +184,19 @@ void *func_8002B3A8(MemoryPoolIndex poolIndex, s32 size, u32 colourTag) {
     } while (nextIndex != -1);
 
     if (currIndex != -1) {
-        func_8002BB40(poolIndex, currIndex, size, TRUE, FALSE, colourTag);
+        mempool_slot_assign(poolIndex, currIndex, size, TRUE, FALSE, colourTag);
         return (currIndex + slots)->data;
     }
     return NULL;
 }
 
 /* PROVENANCE: adapted from JFG src/memory.c:mmAllocR. */
-void *func_8002B4C0(MemoryPoolSlot *slots, s32 size) {
+void *mmAllocR(MemoryPoolSlot *slots, s32 size) {
     s32 i;
 
     for (i = D_800D1CA0; i != 0; i--) {
         if (slots == D_800D1C60[i].slots) {
-            return func_8002B3A8(i, size, 0);
+            return mempool_slot_find(i, size, 0);
         }
     }
     return NULL;
@@ -217,7 +217,7 @@ void *func_8002B4C0(MemoryPoolSlot *slots, s32 size) {
  * The equality test and the direct return keep reading the field as a pointer,
  * which is what keeps those two webs apart.
  */
-void *func_8002B524(s32 size, u8 *address, u32 colourTag) {
+void *mmAllocAtAddr(s32 size, u8 *address, u32 colourTag) {
     s32 slotIndex;
     MemoryPoolSlot *slot;
     MemoryPoolSlot *slots;
@@ -250,13 +250,13 @@ void *func_8002B524(s32 size, u8 *address, u32 colourTag) {
             if ((u32)address >= (u32)slot->data &&
                 (u32)address + size <= (u32)slot->data + slot->size) {
                 if (address == slot->data) {
-                    func_8002BB40(MEMORY_POOL_MAIN, slotIndex, size, TRUE, FALSE, colourTag);
+                    mempool_slot_assign(MEMORY_POOL_MAIN, slotIndex, size, TRUE, FALSE, colourTag);
                     return slot->data;
                 }
-                slotIndex = func_8002BB40(MEMORY_POOL_MAIN, slotIndex,
+                slotIndex = mempool_slot_assign(MEMORY_POOL_MAIN, slotIndex,
                                           (u32)address - (u32)slot->data,
                                           FALSE, TRUE, colourTag);
-                func_8002BB40(MEMORY_POOL_MAIN, slotIndex, size, TRUE, FALSE, colourTag);
+                mempool_slot_assign(MEMORY_POOL_MAIN, slotIndex, size, TRUE, FALSE, colourTag);
                 return *(u8 **)((u8 *)slots + (slotIndex << 4) + (slotIndex << 2));
             }
         }
@@ -271,24 +271,24 @@ void mmSetDelay(s32 state) {
 }
 
 /* PROVENANCE: adapted from JFG src/memory.c:mmFlushFreeStack. */
-void func_8002B8A8(u8 *address);
+void mempool_free_addr(u8 *address);
 
-void func_8002B700(void) {
+void mmFlushFreeStack(void) {
     while (D_800D21A8 > 0) {
-        func_8002B8A8(D_800D1CA8[--D_800D21A8]);
+        mempool_free_addr(D_800D1CA8[--D_800D21A8]);
     }
 }
 
 /* PROVENANCE: adapted from JFG src/memory.c:mmFree. */
-void func_8002B93C(void *dataAddress);
+void mempool_free_queue(void *dataAddress);
 
 void mmFree(void *data) {
     volatile s32 callerAddress = 0x666;
 
     if (D_800D21AC == 0) {
-        func_8002B8A8(data);
+        mempool_free_addr(data);
     } else {
-        func_8002B93C(data);
+        mempool_free_queue(data);
     }
 }
 
@@ -312,7 +312,7 @@ void ReleaseUnusedLinkSlots(void);
  * instead of into the guard's delay slot (docs/ido-learnings.md, the source
  * line stamped on each emitted record).
  */
-void func_8002B7AC(void) {
+void mmFreeTick(void) {
     s32 i;
 
     if (D_800D21B0 < 0x14000) {
@@ -324,7 +324,7 @@ void func_8002B7AC(void) {
     while (i < D_800D21A8) {
         D_800D20A8[i]--;
         if (D_800D20A8[i] == 0) {
-            func_8002B8A8(D_800D1CA8[i]);
+            mempool_free_addr(D_800D1CA8[i]);
             D_800D1CA8[i] = D_800D1CA8[D_800D21A8 - 1];
             D_800D20A8[i] = D_800D20A8[D_800D21A8 - 1];
             D_800D21A8--;
@@ -335,22 +335,22 @@ void func_8002B7AC(void) {
 }
 
 /* PROVENANCE: adapted from JFG src/memory.c:mempool_free_addr. */
-s32 func_8002B978(u8 *address);
-void func_8002B9D0(MemoryPoolIndex poolIndex, s32 slotIndex);
+s32 mempool_get_pool(u8 *address);
+void mempool_slot_clear(MemoryPoolIndex poolIndex, s32 slotIndex);
 
-void func_8002B8A8(u8 *address) {
+void mempool_free_addr(u8 *address) {
     s16 slotIndex;
     s32 poolIndex;
     MemoryPoolSlot *slots;
     MemoryPoolSlot *slot;
 
-    poolIndex = func_8002B978(address);
+    poolIndex = mempool_get_pool(address);
     slots = *(MemoryPoolSlot **)((u8 *)&D_800D1C64 + (poolIndex << 4));
     for (slotIndex = 0; slotIndex != -1; slotIndex = slot->nextIndex) {
         slot = (MemoryPoolSlot *)((u8 *)slots + (slotIndex << 4) + (slotIndex << 2));
         if (address == slot->data) {
             if (slot->flags == MEMORY_SLOT_USED || slot->flags == MEMORY_SLOT_SAFEGUARD) {
-                func_8002B9D0(poolIndex, slotIndex);
+                mempool_slot_clear(poolIndex, slotIndex);
             }
             break;
         }
@@ -358,14 +358,14 @@ void func_8002B8A8(u8 *address) {
 }
 
 /* PROVENANCE: adapted from JFG src/memory.c:mempool_free_queue. */
-void func_8002B93C(void *dataAddress) {
+void mempool_free_queue(void *dataAddress) {
     D_800D1CA8[D_800D21A8] = dataAddress;
     D_800D20A8[D_800D21A8] = D_800D21AC;
     D_800D21A8++;
 }
 
 /* PROVENANCE: adapted from JFG src/memory.c:mempool_get_pool. */
-s32 func_8002B978(u8 *address) {
+s32 mempool_get_pool(u8 *address) {
     s32 i;
     MemoryPool *pool;
 
@@ -382,7 +382,7 @@ s32 func_8002B978(u8 *address) {
 }
 
 /* PROVENANCE: adapted from JFG src/memory.c:mempool_slot_clear. */
-void func_8002B9D0(MemoryPoolIndex poolIndex, s32 slotIndex) {
+void mempool_slot_clear(MemoryPoolIndex poolIndex, s32 slotIndex) {
     s16 nextIndex;
     s16 prevIndex;
     s16 tempNextIndex;
@@ -443,7 +443,7 @@ s32 mmGetDelay(void) {
  * relocation tuples. Reusing dead incoming/local carriers preserves the
  * allocator's slot-count and remainder-link webs without artificial code.
  */
-s32 func_8002BB40(MemoryPoolIndex poolIndex, s32 slotIndex, s32 size,
+s32 mempool_slot_assign(MemoryPoolIndex poolIndex, s32 slotIndex, s32 size,
                    s32 slotIsTaken, s32 newSlotIsTaken, u32 colourTag) {
     MemoryPool *pool;
     MemoryPoolSlot *slots;

@@ -48,7 +48,7 @@ extern f32 gOverlay87NegativeAcceleration;
 extern f32 gOverlay87Gravity;
 
 extern s32 overlay87HasNearby(void *unused, void *query);
-extern void func_80002FE0(s32 id, f32 x, f32 y, f32 z, s32 priority,
+extern void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority,
                           void **handle);
 extern f32 Powerf(f32 value, s32 exponent);
 extern s16 dAngle(s16 current, s16 target, f32 fraction);
@@ -90,7 +90,7 @@ void func_overlay_087_F0000128_18D3090(Overlay87MotionObject *object,
         state->targetHeight = state->y + state->liftOffset;
         func_8005AD64(object, 0, -1, 0);
         if (gOverlay87Current == NULL) {
-            func_80002FE0(0x1BD, state->x, state->y, state->z, 4,
+            amSndPlayXYZ(0x1BD, state->x, state->y, state->z, 4,
                           &gOverlay87Current);
         }
     }

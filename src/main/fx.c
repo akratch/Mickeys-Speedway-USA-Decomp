@@ -75,21 +75,25 @@ extern void wakeUpdate(Wake *wake, f32 x, f32 height, f32 z, s16 angle,
                        s32 delta);
 extern void mathOneFloatPY(void *source, f32 *result, s16 angle);
 extern void camSetScissor(Gfx **dlist);
-extern void func_80034920();
-extern void *func_8002B314(s32 size, s32 tag);
+extern void texDPInit();
+extern void *mmAlloc2(s32 size, s32 tag);
+/* wakeAllocate's NON_MATCHING body below is owned by another lane and still
+ * spells these callees by their old placeholders; drop once that body is renamed. */
+#define func_8002B314 mmAlloc2
+#define func_80034448 texLoadTexture
 extern u8 D_7D310[];
 
-void func_80046E70(FxCone *cone) {
+void fxFreeCone(FxCone *cone) {
     FxConeTextureInfo *texture;
     FxConeTextureInfo *alternateTexture;
 
     texture = cone->texture.pointer;
     if (texture != 0) {
-        func_800347A0(texture);
+        texFreeTexture(texture);
     }
     alternateTexture = cone->alternateTexture.pointer;
     if (alternateTexture != 0) {
-        func_800347A0(alternateTexture);
+        texFreeTexture(alternateTexture);
     }
     mmFree(cone);
 }
@@ -98,15 +102,15 @@ void func_80046E70(FxCone *cone) {
  * the previous field plus a size, and the mode test repeats `arg8 + 1`
  * instead of carrying it in a local. The inherited `cone + 0x38` carrier,
  * the `if (1) { }` region and the mode local were the whole residual. */
-extern void *func_8002B280(s32 size, s32 tag);
-extern void *func_80034448(s32 resourceId);
+extern void *mmAlloc(s32 size, s32 tag);
+extern void *texLoadTexture(s32 resourceId);
 extern void func_800470B0(FxCone *, s16, s16, s16, s16, s16,
                           f32, f32, f32);
 extern void func_80047304(FxCone *, s16, s16, s16, s16, s16,
                           f32, f32, f32);
-extern void func_800475E8(FxCone *, s16);
+extern void fxMakeConeTextureCoords(FxCone *, s16);
 
-void *func_80046EC4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
+void *fxAllocateCone(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
                     f32 arg5, f32 arg6, f32 arg7, s32 arg8, s32 arg9,
                     s32 argA) {
     s32 vertexBytes;
@@ -124,16 +128,16 @@ void *func_80046EC4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
         vertexBytes = arg8 * 0x10;
         bufferBytes = (arg8 * 0xA) + 0xA;
     }
-    cone = (FxCone *) func_8002B280(
+    cone = (FxCone *) mmAlloc(
         sizeof(FxCone) + vertexBytes + bufferBytes * 2, 0x87);
     if (cone != NULL) {
         if (arg9 >= 0) {
-            cone->texture.value = (s32) func_80034448(arg9);
+            cone->texture.value = (s32) texLoadTexture(arg9);
         } else {
             cone->texture.value = 0;
         }
         if (argA >= 0) {
-            cone->alternateTexture.value = (s32) func_80034448(argA);
+            cone->alternateTexture.value = (s32) texLoadTexture(argA);
         } else {
             cone->alternateTexture.value = 0;
         }
@@ -159,7 +163,7 @@ void *func_80046EC4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
             func_800470B0(cone, arg0, arg1, arg2, arg3, arg4, arg5, arg6,
                           arg7);
         }
-        func_800475E8(cone, 0);
+        fxMakeConeTextureCoords(cone, 0);
     }
     return cone;
 }
@@ -319,7 +323,7 @@ void func_80047304(FxCone *cone, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
  * (height - 1) first. segmentCount carries the eight-point angle and the
  * 32-vertex countdown as well as the count, which with the texture local
  * keeps the frame at 0xF8 and the arrays at sp+0xB8/sp+0x90. */
-void func_800475E8(FxCone *cone, s16 angle) {
+void fxMakeConeTextureCoords(FxCone *cone, s16 angle) {
     FxConeTextureInfo *texture;
     FxConeVertex *vertex;
     s32 width;
@@ -402,7 +406,7 @@ void func_800475E8(FxCone *cone, s16 angle) {
  *    copy and tests the counter).
  *  - FP colours: the cast height in its own web (originZ), the scale
  *    written inline, and originZ *= before the negation. */
-void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
+void fxMakeConeLength(FxCone *cone, s16 height, f32 radius, f32 depth,
                    s32 alpha) {
     s32 unused;
     FxConePoint *point;
@@ -482,7 +486,7 @@ void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
 /*
  * PROVENANCE: the block-local display-list macro spelling below is adapted
  * from Jet Force Gemini include/f3ddkr.h. Mickey's own bytes establish every
- * invocation, argument, constant and operation order in func_80047CD8.
+ * invocation, argument, constant and operation order in fxDrawCone.
  */
 #define FX_SHIFTL(value, shift, width) \
     ((u32)(((u32)(value) & ((1U << (width)) - 1U)) << (shift)))
@@ -520,7 +524,7 @@ void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
 
 /* Mickey-derived body; JFG's corresponding fxDrawCone body is assembly-only.
  * The white-color block retains an unsigned XOR-zero allocation lever. */
-void func_80047CD8(FxGfx **dList, FxCone *cone, s32 flags, u8 alpha) {
+void fxDrawCone(FxGfx **dList, FxCone *cone, s32 flags, u8 alpha) {
     s32 hasTexture;
 
     if (cone != 0) {
@@ -545,17 +549,17 @@ void func_80047CD8(FxGfx **dList, FxCone *cone, s32 flags, u8 alpha) {
             FX_VERTEX_JFG((*dList)++,
                           cone->addresses[cone->addressIndex] + 0x80000000,
                           17, 0);
-            func_800349A4(dList, cone->alternateTexture.value, flags, 0);
+            texDPTextureX(dList, cone->alternateTexture.value, flags, 0);
             FX_POLYGON((*dList)++, cone->vertices + 0x80000000, 16,
                        hasTexture);
-            func_800349A4(dList, cone->texture.value, flags, 0);
+            texDPTextureX(dList, cone->texture.value, flags, 0);
             FX_POLYGON((*dList)++, cone->vertices + 0x80000200, 8,
                        hasTexture);
-            func_800349A4(dList, cone->alternateTexture.value, flags, 0);
+            texDPTextureX(dList, cone->alternateTexture.value, flags, 0);
             FX_POLYGON((*dList)++, cone->vertices + 0x80000100, 16,
                        hasTexture);
         } else {
-            func_800349A4(dList, cone->texture.value, flags, 0);
+            texDPTextureX(dList, cone->texture.value, flags, 0);
             FX_VERTEX_JFG((*dList)++,
                           cone->addresses[cone->addressIndex] + 0x80000000,
                           cone->mode, 0);
@@ -883,7 +887,7 @@ extern Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
                           f32 wakeValue84, s32 wakeValue8C,
                           f32 wakeValue8E);
 
-s32 func_80048760(void *arg0, s32 arg1) {
+s32 wakeSetupRipple(void *arg0, s32 arg1) {
     u8 pad[16];
     s32 size;
     s32 i;
@@ -905,7 +909,7 @@ s32 func_80048760(void *arg0, s32 arg1) {
     size += (s32) align4((u8 *) 0x88);
     source = ((FxRippleSetup *) arg0)->source;
     ((FxRippleSetup *) arg0)->output = (u8 *) output;
-    output->texture = func_80034448(source->textureId);
+    output->texture = texLoadTexture(source->textureId);
     if (output->texture == 0) {
         return 0;
     }
@@ -977,15 +981,15 @@ void wakeFree(Wake *wake) {
     void *linked = wake->linked;
 
     if (linked != 0) {
-        func_800347A0(linked);
+        texFreeTexture(linked);
     }
     mmFree(wake);
 }
-void func_80048980(WakeRipple *ripple) {
+void wakeFreeRipple(WakeRipple *ripple) {
     void *linked = ripple->linked;
 
     if (linked != 0) {
-        func_800347A0(linked);
+        texFreeTexture(linked);
     }
     if (ripple->wake != 0) {
         wakeFree(ripple->wake);
@@ -1241,7 +1245,7 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
  * still leaves wakeUpdateRipple assembly-only; src/fx.h adds no ripple source
  * context. JFG supplies only the role/name; this retained body uses Mickey's
  * target offsets and calls. No new donor body was available or adopted. */
-void func_80049000(FxWakeUpdateOwner *owner, s32 delta) {
+void wakeUpdateRipple(FxWakeUpdateOwner *owner, s32 delta) {
     FxWakeTexture *texture;
     u8 mode;
     FxWakeRippleData *ripple;
@@ -1334,7 +1338,7 @@ void wakeDraw(Wake *wake, FxGfx **dlist) {
     s32 outerOffset;
 
     if ((s32) wake->value38 > 0) {
-        func_800349A4(dlist, (s32) wake->linked, 0x1F,
+        texDPTextureX(dlist, (s32) wake->linked, 0x1F,
                       (s32) wake->value34 << 8);
         if ((((FxWakeLinked *) wake->linked)->flags & 0x40) != 0) {
             alpha = wake->value34 & 0xFF;
@@ -1393,14 +1397,14 @@ void wakeDraw(Wake *wake, FxGfx **dlist) {
 /* Workbench: schedule-mismatch, 2/138 differing words, first mismatch +0x60. */
 /* Exact 138-word geometry/frame -0x20; one D_7D310 LO16 schedule slot remains. */
 /* All five relocation identities agree; the LO16 offset is nonexact. */
-void func_80049518(WakeRipple *ripple, FxGfx **dlist)
+void wakeDrawRipple(WakeRipple *ripple, FxGfx **dlist)
 {
   s32 alpha;
   void *linked;
   FxGfx *cmd;
   if (ripple != ((void *) 0))
   {
- do { if ((linked = ripple->linked) != ((void *) 0)) { if (ripple->value76 != 0) { func_800349A4(dlist, (s32) linked, 0xF, ((s32) ripple->value78) << 8); { FxGfx *textureCmd = (*dlist)++; textureCmd->w0 = 0x07020010; textureCmd->w1 = (u32) D_7D310; } if (ripple->wake != ((void *) 0)) { alpha = 0xFF - (((s32) ripple->wake->value3C) >> 1); } else { alpha = 0xFF; } cmd = *dlist; *dlist = cmd + 1; cmd->w0 = 0xFA000000; cmd->w1 = (((alpha * ((s32) ripple->value76)) >> 8) & 0xFF) | (~0xFF); if ((((FxWakeLinked *) ripple->linked)->flags & 0x40) != 0) { alpha = ripple->value78 & 0xFF; } else { alpha = 0xFF; } { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xFB) & ((1U << 8) - 1U)) << 24); _g->w1 = ((((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 8))) | ((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 0)); } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (((u32) ((((u32) 4) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) (((4 << 3) | (((u32) ((((u8 *) ripple) + (ripple->value74 * 0x28)) + 0x80000020)) & 6)) | 0)) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) (((4 << 3) + (4 << 1)) + 8)) & ((1U << 16) - 1U)) << 0)); _g->w1 = (u32) ((((u8 *) ripple) + (ripple->value74 * 0x28)) + 0x80000020); } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (((u32) ((((u32) (((2 - 1) << 4) | 1)) & ((1U << 8) - 1U)) << 16)) | ((u32) ((((u32) 5) & ((1U << 8) - 1U)) << 24))) | ((u32) ((((u32) (2 * 16)) & ((1U << 16) - 1U)) << 0)); _g->w1 = (u32) (((u8 *) ripple) + 0x80000000); } ; func_80034920(dlist); } if (ripple->wake != ((void *) 0)) { wakeDraw(ripple->wake, dlist); } { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xE7) & ((1U << 8) - 1U)) << 24); _g->w1 = 0; } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xFA) & ((1U << 8) - 1U)) << 24); _g->w1 = ((((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 8))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 0)); } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xFB) & ((1U << 8) - 1U)) << 24); _g->w1 = ((((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 8))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 0)); } ; } } while (0);
+ do { if ((linked = ripple->linked) != ((void *) 0)) { if (ripple->value76 != 0) { texDPTextureX(dlist, (s32) linked, 0xF, ((s32) ripple->value78) << 8); { FxGfx *textureCmd = (*dlist)++; textureCmd->w0 = 0x07020010; textureCmd->w1 = (u32) D_7D310; } if (ripple->wake != ((void *) 0)) { alpha = 0xFF - (((s32) ripple->wake->value3C) >> 1); } else { alpha = 0xFF; } cmd = *dlist; *dlist = cmd + 1; cmd->w0 = 0xFA000000; cmd->w1 = (((alpha * ((s32) ripple->value76)) >> 8) & 0xFF) | (~0xFF); if ((((FxWakeLinked *) ripple->linked)->flags & 0x40) != 0) { alpha = ripple->value78 & 0xFF; } else { alpha = 0xFF; } { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xFB) & ((1U << 8) - 1U)) << 24); _g->w1 = ((((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 8))) | ((u32) ((((u32) alpha) & ((1U << 8) - 1U)) << 0)); } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (((u32) ((((u32) 4) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) (((4 << 3) | (((u32) ((((u8 *) ripple) + (ripple->value74 * 0x28)) + 0x80000020)) & 6)) | 0)) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) (((4 << 3) + (4 << 1)) + 8)) & ((1U << 16) - 1U)) << 0)); _g->w1 = (u32) ((((u8 *) ripple) + (ripple->value74 * 0x28)) + 0x80000020); } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (((u32) ((((u32) (((2 - 1) << 4) | 1)) & ((1U << 8) - 1U)) << 16)) | ((u32) ((((u32) 5) & ((1U << 8) - 1U)) << 24))) | ((u32) ((((u32) (2 * 16)) & ((1U << 16) - 1U)) << 0)); _g->w1 = (u32) (((u8 *) ripple) + 0x80000000); } ; texDPInit(dlist); } if (ripple->wake != ((void *) 0)) { wakeDraw(ripple->wake, dlist); } { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xE7) & ((1U << 8) - 1U)) << 24); _g->w1 = 0; } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xFA) & ((1U << 8) - 1U)) << 24); _g->w1 = ((((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 8))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 0)); } ; { FxGfx *_g = (FxGfx *) ((*dlist)++); _g->w0 = (u32) ((((u32) 0xFB) & ((1U << 8) - 1U)) << 24); _g->w1 = ((((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 24)) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 16))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 8))) | ((u32) ((((u32) 0xFF) & ((1U << 8) - 1U)) << 0)); } ; } } while (0);
   }
 }
 void fxInit(void) {
@@ -1474,7 +1478,7 @@ s32 func_8004989C(s32 index) {
     return color;
 }
 extern s32 camGetMode(void);
-extern void func_80021FB0(s32 mode, s32 camNo, s32 *x1, s32 *y1,
+extern void camGetWindowLimits(s32 mode, s32 camNo, s32 *x1, s32 *y1,
                           u32 *x2, u32 *y2);
 
 void func_800498FC(s32 index, f32 value16, f32 value18, s32 red, s32 green,
@@ -1490,10 +1494,10 @@ void func_800498FC(s32 index, f32 value16, f32 value18, s32 red, s32 green,
         return;
     }
     if (index == 4) {
-        func_80021FB0(0, 0, &record->value4, &record->value8,
+        camGetWindowLimits(0, 0, &record->value4, &record->value8,
                       (u32 *)&record->valueC, (u32 *)&record->value10);
     } else {
-        func_80021FB0(camGetMode(), index, &record->value4, &record->value8,
+        camGetWindowLimits(camGetMode(), index, &record->value4, &record->value8,
                       (u32 *)&record->valueC, (u32 *)&record->value10);
     }
     record->flags = 0;
@@ -1709,7 +1713,7 @@ void func_80049E4C(Gfx **dlist, s32 arg1) {
             }
             record++;
         }
-        func_80034920(dlist);
+        texDPInit(dlist);
         camSetScissor(dlist);
         gDPSetPrimColor((*dlist)++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
     }
@@ -1899,7 +1903,7 @@ void fxSPDPRipple(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
 
     level = levelGetLevel();
     if ((level != NULL) && (level->rippleEnabled != 0)) {
-        func_800349A4(dList, 0, 4, 0);
+        texDPTextureX(dList, 0, 4, 0);
         gDPSetCombineMode((*dList)++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
         sPhaseA += (arg5 << 0xD) >> 4;
         sPhaseB += (arg5 * -0x3C00) >> 4;
@@ -1940,7 +1944,7 @@ void fxSPDPRipple(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
             gDPFillRectangle((*dList)++, arg1, top, arg3, next);
             gDPPipeSync((*dList)++);
         }
-        func_80034920(dList);
+        texDPInit(dList);
     }
 }
 void fxQueueScreenEffect(s32 type, s32 value4, s32 value6, s32 value8,
@@ -1959,7 +1963,7 @@ void fxQueueScreenEffect(s32 type, s32 value4, s32 value6, s32 value8,
         effect->value10 = value10;
     }
 }
-void func_8004A9CC(FxGfx **dList) {
+void fxUnQueueScreenEffect(FxGfx **dList) {
     FxScreenEffect *effect;
     s32 index;
 
@@ -2030,7 +2034,7 @@ void fxScreenEffect(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
         gSPTextureRectangle((*dList)++, arg4, top, arg6, arg5, 0, s, 0,
                             1 << 10, 1 << 10);
     }
-    func_80034920(dList);
+    texDPInit(dList);
     gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, 255);
     gDPSetEnvColor((*dList)++, 255, 255, 255, 255);
 }
@@ -2061,14 +2065,14 @@ void func_8004ACC4(void) {
         D_800D60D0[i] = (s32) TrapDanglingJump == (s32) D_8007D47C[i];
     }
 }
-s32 func_8004AD34(void) {
+s32 fxGenerateTextures(void) {
     FxTextureCallback callback;
     s32 index;
 
     index = 4;
     while (index--) {
         if ((1 << index) & D_800D60A8) {
-            func_800320F0((s32)D_8007D47C + (index << 2));
+            runlinkEnsureJumpIsValid((s32)D_8007D47C + (index << 2));
             callback = (FxTextureCallback)D_8007D47C[index];
             if (callback != 0) {
                 callback(index, D_800D6098[index], 0);
@@ -2077,14 +2081,14 @@ s32 func_8004AD34(void) {
     }
     D_800D60A8 = 0;
 }
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 
 /*
  * PROVENANCE: the source topology is informed by Jet Force Gemini's public
  * src/fx.c::fxCpuTextureRequired placeholder and its retail-derived assembly;
  * Mickey's target establishes all types, expressions, and final codegen.
  */
-void func_8004ADE8(s32 index, FxConeTextureInfo *texture) {
+void fxCpuTextureRequired(s32 index, FxConeTextureInfo *texture) {
     s8 *first;
     s32 i;
     s8 *second;
@@ -2093,9 +2097,9 @@ void func_8004ADE8(s32 index, FxConeTextureInfo *texture) {
     D_800D60A8 |= 1 << index;
     D_800D6098[index] = (s32)texture;
     if (D_800D60B0[index] == 0) {
-        first = func_8002B280(texture->width * texture->height, 0x87);
+        first = mmAlloc(texture->width * texture->height, 0x87);
         D_800D60B0[index] = first;
-        D_800D60C0[index] = second = func_8002B280(
+        D_800D60C0[index] = second = mmAlloc(
             texture->width * texture->height, 0x87);
         if (D_800D60B0[index] == 0 || D_800D60C0[index] == 0) {
             D_800D60B0[index] = 0;
@@ -2109,7 +2113,7 @@ void func_8004ADE8(s32 index, FxConeTextureInfo *texture) {
             *second = 0;
             second++;
         }
-        func_800320F0((s32)&D_8007D47C[index]);
+        runlinkEnsureJumpIsValid((s32)&D_8007D47C[index]);
         second = (s8 *)D_8007D47C[index];
         if (second != 0) {
             ((FxTextureCallback)second)(index, D_800D6098[index], 1);
@@ -2134,7 +2138,7 @@ void func_8004ADE8(s32 index, FxConeTextureInfo *texture) {
  * JFG's fxCpuTextureFlush counterpart is still assembly-only; no donor body
  * was available or used.
  */
-void func_8004AF68(void) {
+void fxCpuTextureFlush(void) {
     s32 i;
     void *allocation;
 

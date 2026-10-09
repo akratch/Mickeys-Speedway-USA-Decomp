@@ -568,12 +568,12 @@ void diCpuReportWatchpoint(u32 address) {
     }
 }
 /* PROVENANCE: body adapted from JFG src/diCpu.c::diCpuTraceGetFault. */
-s32 func_80046504(void) {
+s32 diCpuTraceGetFault(void) {
     return 0;
 }
 
 /* PROVENANCE: body adapted from JFG src/diCpu.c::diCpuTraceTick. */
-void func_8004650C(s32 ticks) {
+void diCpuTraceTick(s32 ticks) {
     D_8007CFDC += ticks;
     if (D_8007CFDC > 60) {
         D_8007CFDC = 0;

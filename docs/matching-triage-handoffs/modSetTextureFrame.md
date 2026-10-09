@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_80020D8C:start -->
-### `func_80020D8C` plateau handoff
+<!-- plateau-handoff:modSetTextureFrame:start -->
+### `modSetTextureFrame` plateau handoff
 
 - source: `src/main/models.c`
 - score: 0/48 words, promoted
@@ -175,4 +175,4 @@ hypothesis is eliminated. A single-block pre-test of remaining either
 unrolls or shrinks. The retained body stays 15 masked words at delta 0,
 first mismatch +0x38. The two-block `while (remaining--)` result of 23
 was not repeated.
-<!-- plateau-handoff:func_80020D8C:end -->
+<!-- plateau-handoff:modSetTextureFrame:end -->

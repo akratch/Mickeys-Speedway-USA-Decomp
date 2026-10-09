@@ -236,9 +236,9 @@ extern s32 joyRead(s32, s32);
 extern void mainInitGame(void);
 extern void mainPreNMI(void);
 extern void func_80026FB4(void);
-extern void func_80021290(void);
+extern void bootCheckStack(void);
 extern void func_80001BC4(void);
-extern void func_800339B4(void);
+extern void viReset(void);
 extern void rumbleKill(s32);
 extern void rumbleTick(s32);
 extern void osSetTime(OSTime);
@@ -249,7 +249,7 @@ extern void mainFrontInit(s32, s32, s32);
 extern void RevealReturnAddresses(void);
 extern void mmInit(void);
 extern void func_8004D750(void);
-extern void *func_8002B280(s32, s32);
+extern void *mmAlloc(s32, s32);
 extern void osCreateScheduler(OSSched *, void *, s32, u8, u8);
 extern void osScAddClient(OSSched *, OSScClient *, OSMesgQueue *, u8);
 extern void piInit(void);
@@ -262,11 +262,11 @@ extern f32 rainDensity(void);
 extern s32 runlinkIsModuleLoaded(s32);
 extern void func_8004A0F0(void);
 extern void func_8004A51C(void);
-extern void func_8004AD34(void);
+extern void fxGenerateTextures(void);
 extern s32 D_800D40E4;
 extern f32 D_80081BCC;
 extern u8 amTuneGetSeqNo(void);
-extern void func_800005CC(f32, s32);
+extern void amTuneSetFade(f32, s32);
 extern s32 func_80001614(void);
 extern s32 func_800290A0(void);
 /* Unsigned here on evidence: func_80028564 compares this result and a byte
@@ -281,13 +281,13 @@ extern void levelFreeAll(void);
 extern void rumbleRumbles(s32);
 extern void rumbleUpdate(void);
 extern void reset_particles(void);
-extern void func_8004B0A4(s32);
-extern void func_8004B0DC(s32, s32, s32, s32);
-extern void func_8004B0F8(Gfx **, s32, s32, char *, s32);
+extern void fontUseFont(s32);
+extern void fontBackground(s32, s32, s32, s32);
+extern void fontPrintXY(Gfx **, s32, s32, char *, s32);
 extern MainDebugMemory *func_80005820(s32);
 extern s32 sprintf(char *, const char *, ...);
 extern u8 *levelGetLevel(void);
-extern void func_80044BC8(Gfx *, char *, s32);
+extern void diRcpTrace(Gfx *, char *, s32);
 /* The checkpoint hook always receives a string and a number that read as a
  * file name and a source line, which is what a macro built on __FILE__ and
  * __LINE__ leaves behind. The do-while wrapper is the usual form for such a
@@ -295,7 +295,7 @@ extern void func_80044BC8(Gfx *, char *, s32);
  * register allocation depends on. */
 #define MAIN_DL_CHECKPOINT(dl, file, line) \
     do { \
-        func_80044BC8((dl), (file), (line)); \
+        diRcpTrace((dl), (file), (line)); \
     } while (0)
 extern void func_80008028(s32);
 extern void func_80051364(s32);
@@ -316,32 +316,32 @@ extern void rcpInitDp(Gfx **);
 extern void rcpClearScreen(Gfx **, Mtx **, s32);
 extern s32 rcpWaitDP(void);
 extern void bgdraw_fillcolour(s32, s32, s32);
-extern void func_80021C88(s32, s32, s32, s32, s32);
+extern void camSetUserView(s32, s32, s32, s32, s32);
 extern void camEnableUserView(s32, s32);
 extern void camDisableUserView(s32, s32);
-extern void func_80044B9C(void);
-extern void func_80046504(void);
-extern void func_8004650C(s32);
-extern void func_8004A9CC(Gfx **);
+extern void diRcpTraceReset(void);
+extern void diCpuTraceGetFault(void);
+extern void diCpuTraceTick(s32);
+extern void fxUnQueueScreenEffect(Gfx **);
 extern s32 func_80049B14(s32);
-extern void func_80038E1C(Gfx **, Mtx **, MainVertex **, MainTriangle **, s32);
+extern void frontUpdate(Gfx **, Mtx **, MainVertex **, MainTriangle **, s32);
 extern void func_80049E4C(Gfx **, s32);
 extern void amAudioTick(u8);
 extern void diPrintfAll(Gfx **);
-extern void func_8004C0C4(Gfx **, Mtx **, MainVertex **);
-extern void func_8004BFD8(s32);
-extern void func_8004BF64(s32);
+extern void fontWindowsDraw(Gfx **, Mtx **, MainVertex **);
+extern void fontWindowDisable(s32);
+extern void fontWindowFlushStrings(s32);
 extern s32 func_800291E4(void);
 extern void func_800376CC(s32);
 extern void func_80038190(Gfx **, Mtx **, MainVertex **);
 extern void func_8005A770(void);
-extern void func_80024D00(s32);
-extern void func_800219D0(void);
+extern void camTick(s32);
+extern void camUserViewTick(void);
 extern void func_80027D14(s32);
 extern void func_8003C80C(s32);
 extern void func_8004D32C(void);
-extern void func_8000D1B8(void);
-extern void func_8000D978(s32, s32);
+extern void trackUpdateTextureScroll(void);
+extern void trackUpdateLighting(s32, s32);
 extern void runlinkTick(void);
 extern void func_80027628(s32);
 extern void func_80027EC0(s32);
@@ -350,13 +350,13 @@ extern void func_80028564(s32);
 extern void func_800293D0(void);
 extern void mainUpdateZBCheck(void);
 extern void mainCPUeffects(u16 *, s32);
-extern void func_8002B700(void);
+extern void mmFlushFreeStack(void);
 extern void mmSetDelay(s32);
-extern void func_800389CC(void);
+extern void frontFreeMode(void);
 extern void func_80037150(void);
 extern void func_8004E99C(void);
 extern void amTuneStop(void);
-extern void func_800336A8(s32);
+extern void viChangeMode(s32);
 extern void camInit(void);
 extern void func_8005A764(void);
 extern void func_8004E8E0(void);
@@ -433,7 +433,7 @@ void mainThread(void *unused) {
     while (1) {
         mainPreNMI();
         func_80026FB4();
-        func_80021290();
+        bootCheckStack();
     }
 }
 
@@ -459,7 +459,7 @@ void mainPreNMI(void) {
             }
             __osSpSetStatus(0xAAAA82);
             osDpSetStatus(0x1D6);
-            func_800339B4();
+            viReset();
             rumbleKill(1);
             rumbleTick(2);
             rumbleTick(2);
@@ -488,7 +488,7 @@ void mainInitGame(void) {
     RevealReturnAddresses();
     mmInit();
     func_8004D750();
-    D_8007A204 = func_8002B280(0x40, 0x7F7F7FFF);
+    D_8007A204 = mmAlloc(0x40, 0x7F7F7FFF);
     D_8007A1AC = 0;
     osCreateMesgQueue(&D_800D18F8, &D_800D18F4, 1);
     osScAddClient(&D_800CF5B8, &D_800D18E8, &D_800D18F8, 3);
@@ -543,7 +543,7 @@ void func_80026FB4(void) {
     }
 
     D_8007A1B8 ^= 1;
-    func_80044B9C();
+    diRcpTraceReset();
     D_800CF518 = D_800CF510[D_8007A1B8];
     D_800CF530 = D_800CF528[D_8007A1B8];
     D_800CF588 = D_800CF580[D_8007A1B8];
@@ -557,7 +557,7 @@ void func_80026FB4(void) {
 
     rcpInitDp(&D_800CF518);
     if (D_8007A128 != 0) {
-        func_80021C88(0, D_8007A12C, D_8007A130, D_8007A134, D_8007A138);
+        camSetUserView(0, D_8007A12C, D_8007A130, D_8007A134, D_8007A138);
         camEnableUserView(0, 1);
         bgdraw_fillcolour(0, 0, 0);
     }
@@ -565,9 +565,9 @@ void func_80026FB4(void) {
     camDisableUserView(0, 1);
 
     D_8007A1CC = joyRead(D_8007A1CC, D_8007A248);
-    func_80046504();
+    diCpuTraceGetFault();
     if (D_8007A1BC == 5) {
-        func_8004650C(D_8007A248);
+        diCpuTraceTick(D_8007A248);
     } else {
         func_80027FB8(D_8007A248);
         if (D_8007A1BC == 6) {
@@ -575,9 +575,9 @@ void func_80026FB4(void) {
         }
     }
 
-    func_8004A9CC(&D_800CF518);
+    fxUnQueueScreenEffect(&D_800CF518);
     drawTransition = func_80049B14(D_8007A248);
-    func_80038E1C(&D_800CF518, &D_800CF530, &D_800CF588, &D_800CF5A0,
+    frontUpdate(&D_800CF518, &D_800CF530, &D_800CF588, &D_800CF5A0,
                   D_8007A248);
     if (drawTransition != 0) {
         func_80049E4C(&D_800CF518, 0);
@@ -596,10 +596,10 @@ void func_80026FB4(void) {
     if (D_8007A1E0 != 0) {
         func_800293D0();
     }
-    func_8004C0C4(&D_800CF518, &D_800CF530, &D_800CF588);
-    func_8004BFD8(4);
+    fontWindowsDraw(&D_800CF518, &D_800CF530, &D_800CF588);
+    fontWindowDisable(4);
 
-    func_8004BF64(4);
+    fontWindowFlushStrings(4);
     if (drawTransition != 0) {
         func_80049E4C(&D_800CF518, 1);
     }
@@ -617,9 +617,9 @@ void func_80026FB4(void) {
     }
     func_8005A770();
 
-    func_80024D00(D_8007A248);
+    camTick(D_8007A248);
 
-    func_800219D0();
+    camUserViewTick();
 
     func_80027D14(D_8007A248);
     if (D_800D6C44 != 0) {
@@ -632,15 +632,15 @@ void func_80026FB4(void) {
     D_8007A1D0 = rcpWaitDP();
     mainUpdateZBCheck();
     mainCPUeffects((u16 *) D_800D2FA0, D_8007A248);
-    func_8000D1B8();
-    func_8000D978(1, D_8007A248);
+    trackUpdateTextureScroll();
+    trackUpdateLighting(1, D_8007A248);
     if (D_8007A1E4 != 0) {
         TrapDanglingJump(D_8007A248);
         D_8007A1E4 = 0;
     }
     runlinkTick();
 
-    func_8002B7AC();
+    mmFreeTick();
 
     func_80027628(D_8007A248);
 
@@ -850,7 +850,7 @@ void mainCPUeffects(u16 *framebuffer, s32 unused) {
         }
         D_800D40E4 = screenHeight;
     }
-    func_8004AD34();
+    fxGenerateTextures();
     if ((runlinkIsModuleLoaded(0x21) != 0) &&
         (func_80049864(4) == 0)) {
         TrapDanglingJump();
@@ -948,7 +948,7 @@ void func_80027EC0(s32 updateRate) {
     D_8007A1D8++;
     if (D_8007A1D8 >= 10) {
         frontSetLanguage(frontGetLanguage());
-        func_8003A2C8(frontGetScreenMode());
+        frontSetScreenMode(frontGetScreenMode());
         frontSetWideAdjust(frontGetWideAdjust());
         frontSetStereoMode(frontGetStereoMode());
         frontSetSfxVolume(frontGetSfxVolume());
@@ -1021,12 +1021,12 @@ void func_80027FB8(s32 updateRate) {
         }
     }
     func_80006FA0();
-    func_80044BC8(D_800CF518, D_80081B30, 0x563);
+    diRcpTrace(D_800CF518, D_80081B30, 0x563);
     if (D_8007A198 != 0) {
         func_8000BDB4(&D_800CF518, &D_800CF530, &D_800CF588,
                       &D_800CF5A0, updateRate);
     }
-    func_80044BC8(D_800CF518, D_80081B3C, 0x589);
+    diRcpTrace(D_800CF518, D_80081B3C, 0x589);
     func_8004EDA8(updateRate);
     if (runlinkIsModuleLoaded(0xE) != 0) {
         TrapDanglingJump(&D_800CF518, updateRate);
@@ -1042,7 +1042,7 @@ void func_80027FB8(s32 updateRate) {
         TrapDanglingJump(&D_800CF518, &D_800CF530, &D_800CF588,
                          D_80078F7C);
     }
-    func_80044BC8(D_800CF518, D_80081B48, 0x5A0);
+    diRcpTrace(D_800CF518, D_80081B48, 0x5A0);
 }
 
 void func_800282C8(void) {
@@ -1087,7 +1087,7 @@ void mainChangeLevel(s32 nextLevel, s32 nextCharacter, s32 nextAnimGroup,
             }
             if ((amTuneGetSeqNo() != levelGetTune(D_8007A14C)) &&
                 (func_800290A0() == 0) && (func_80001614() == 0)) {
-                func_800005CC(D_80081BCC, 0);
+                amTuneSetFade(D_80081BCC, 0);
             }
             rumbleKill(1);
             rumbleRumbles(0);
@@ -1161,10 +1161,10 @@ void func_80028564(s32 updateRate) {
                 TrapDanglingJump();
             }
             D_8007A320 = 1;
-            func_8002B700();
+            mmFlushFreeStack();
             mmSetDelay(0);
             mainPreNMI();
-            func_800389CC();
+            frontFreeMode();
             mainPreNMI();
             if (runlinkIsModuleLoaded(0x22)) {
                 TrapDanglingJump();
@@ -1237,7 +1237,7 @@ void func_80028564(s32 updateRate) {
             screenMode = frontGetLevelScreenMode(D_8007A148);
             viSetTrippleBuffer(levelGetScreenMode(D_8007A148));
             if ((viGetVideoMode() != screenMode) || viChangeBuffers()) {
-                func_800336A8(screenMode);
+                viChangeMode(screenMode);
             } else {
                 u32 pixelCount;
                 s32 fill;
@@ -1255,13 +1255,13 @@ void func_80028564(s32 updateRate) {
             }
             D_8007A6A8 = 0;
             mainPreNMI();
-            func_8002B700();
+            mmFlushFreeStack();
             mmSetDelay(0);
             mainPreNMI();
             TrapDanglingJump(levelGetGfxIndex(D_8007A148));
             runlinkFreeCode(0x12);
             mainPreNMI();
-            func_8002B700();
+            mmFlushFreeStack();
             mmSetDelay(0);
             camInit();
             func_8005A764();
@@ -1469,10 +1469,10 @@ void func_800290AC(s32 newValue) {
 
     *value = newValue;
     if (*value == 0) {
-        func_80000450(0);
+        amSetMuteMode(0);
         return;
     }
-    func_80000450(1);
+    amSetMuteMode(1);
 }
 
 s32 func_800290EC(void) {
@@ -1625,35 +1625,35 @@ void func_800293D0(void) {
     MainDebugMemory *memory;
 
     if (D_8007A168 != 13) {
-        func_8004B0A4(2);
+        fontUseFont(2);
         fontColour(255, 255, 255, 255, 255);
-        func_8004B0DC(0, 0, 0, 0);
+        fontBackground(0, 0, 0, 0);
         memory = func_80005820(0);
         if ((memory != NULL) || (D_80078DF0 != 0)) {
             frontDrawRectangle(&D_800CF518, 0x18, 0xAC, 0x6C, 0xD8, 0xC0);
         }
         if (memory != NULL) {
             sprintf(text, D_80081B98, (s32) memory->valueC);
-            func_8004B0F8(&D_800CF518, 0x1C, 0xAF, text, 0);
+            fontPrintXY(&D_800CF518, 0x1C, 0xAF, text, 0);
             sprintf(text, D_80081BA0, (s32) memory->value10);
-            func_8004B0F8(&D_800CF518, 0x1C, 0xB9, text, 0);
+            fontPrintXY(&D_800CF518, 0x1C, 0xB9, text, 0);
             sprintf(text, D_80081BA8, (s32) memory->value14);
-            func_8004B0F8(&D_800CF518, 0x1C, 0xC3, text, 0);
+            fontPrintXY(&D_800CF518, 0x1C, 0xC3, text, 0);
             ratio = (f32) memory->count / D_80081BD0;
             sprintf(text, D_80081BB0, &ratio);
-            func_8004B0F8(&D_800CF518, 0x1C, 0xCD, text, 0);
+            fontPrintXY(&D_800CF518, 0x1C, 0xCD, text, 0);
         }
         if (D_80078DF0 & 1) {
-            func_8004B0F8(&D_800CF518, 0x62, 0xAF, D_80081BBC, 0);
+            fontPrintXY(&D_800CF518, 0x62, 0xAF, D_80081BBC, 0);
         }
         if (D_80078DF0 & 2) {
-            func_8004B0F8(&D_800CF518, 0x62, 0xB9, D_80081BC0, 0);
+            fontPrintXY(&D_800CF518, 0x62, 0xB9, D_80081BC0, 0);
         }
         if (D_80078DF0 & 4) {
-            func_8004B0F8(&D_800CF518, 0x62, 0xC3, D_80081BC4, 0);
+            fontPrintXY(&D_800CF518, 0x62, 0xC3, D_80081BC4, 0);
         }
         if (D_80078DF0 & 8) {
-            func_8004B0F8(&D_800CF518, 0x62, 0xCD, D_80081BC8, 0);
+            fontPrintXY(&D_800CF518, 0x62, 0xCD, D_80081BC8, 0);
         }
     }
 }

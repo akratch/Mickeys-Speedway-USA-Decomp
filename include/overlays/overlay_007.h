@@ -117,7 +117,7 @@ extern void overlay7SetOwnerModeReloc(Overlay7CheckOwner *owner, s32 mode);
 extern s32 camGetModeReloc(void);
 extern void overlay59AppendValueReloc(s32 arg0, s32 index, s32 value,
                                       s32 field);
-extern void func_800031E8(void *object);
+extern void amSndStopXYZ(void *object);
 extern void amSndPlay(u16 value, void **argument);
 
 void overlay7ReleaseEntry(Overlay7Entry *entry);

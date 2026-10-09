@@ -689,7 +689,7 @@ segments:
       # scale and five matrix floats, 0x20 bytes (IDO rounds the section to
       # 16), so the raw tail starts at F60. It starts 16-byte aligned at F40,
       # not at the scale: as1 shares a `lui $at` only inside one aligned
-      # 16-byte block, and func_80024978's target re-materialises it between
+      # 16-byte block, and camCopyOrthoMatrix's target re-materialises it between
       # D_80079F4C and D_80079F50.
       - [0x7AB40, .data, main/camera]
       - [0x7AB60, data]
@@ -815,7 +815,7 @@ segments:
       # seven-entry switch table share this sched-owned rodata input section.
       - [0x82FD8, .rodata, main/sched]
       - [0x83010, rodata]
-      # func_80034094's twelve-entry video-mode switch table. The following
+      # viGetOsViMode's twelve-entry video-mode switch table. The following
       # zero word is output-section padding, not owned object bytes.
       - [0x8309C, .rodata, main/gameVi]
       - [0x830CC, rodata]
@@ -826,7 +826,7 @@ segments:
       # object's own section padding; the "front/front.c" string follows.
       - [0x832A4, .rodata, main/frontend_37D50]
       - [0x832C0, rodata]
-      # func_800389CC, func_80038BC4 and func_80038E1C's consecutive nineteen-entry
+      # frontFreeMode, frontInitMode and frontUpdate's consecutive nineteen-entry
       # tables, plus the ROM's one zero pad word before the next float table.
       - [0x83334, .rodata, main/menu]
       # weather's literal pool: rain_render_splashes' 0.175f age step, then
@@ -858,12 +858,12 @@ segments:
       - [0x849C0, .rodata, main/diCpu]
       # fx's literal pool: func_8004A380's "%d", func_80047304's 0.33f scale
       # (a literal: as an extern global its load could not be hoisted past
-      # that loop's trig calls, which reorders the prologue), func_800475E8's
+      # that loop's trig calls, which reorders the prologue), fxMakeConeTextureCoords's
       # 102.4f, and the object's own alignment word -- IDO's whole 0x10-byte
       # input section, so no trim.
       - [0x849E0, .rodata, main/fx]
       - [0x849F0, rodata]
-      # func_8004C8D8's eight-entry texture-format switch table. The following
+      # fontCreateDisplayList's eight-entry texture-format switch table. The following
       # two zero words are output-section alignment, not owned object bytes.
       - [0x849F8, .rodata, main/font]
       - [0x84A18, rodata]

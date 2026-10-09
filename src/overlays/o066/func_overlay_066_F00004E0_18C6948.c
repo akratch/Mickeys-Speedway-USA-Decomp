@@ -6,7 +6,7 @@ extern Gfx D_50[];
 extern Gfx D_88[];
 
 extern s32 viGetVideoMode(void);
-extern void func_80034920(Gfx **displayList);
+extern void texDPInit(Gfx **displayList);
 extern void rsp_segment(Gfx **displayList, s32 segment, void *base);
 extern void viGetCurrentSize(u32 *width, u32 *height);
 
@@ -57,7 +57,7 @@ void func_overlay_066_F00004E0_18C6948(Gfx **displayList, u16 *framebuffer,
     }
 
     gDPPipeSync((*displayList)++);
-    func_80034920(displayList);
+    texDPInit(displayList);
     rsp_segment(displayList, 0, 0);
     rsp_segment(displayList, 1, segmentBase);
     rsp_segment(displayList, 2, 0);
@@ -99,7 +99,7 @@ void func_overlay_066_F00004E0_18C6948(Gfx **displayList, u16 *framebuffer,
     }
 
     gDPPipeSync((*displayList)++);
-    func_80034920(displayList);
+    texDPInit(displayList);
     rsp_segment(displayList, 1, (void *)D_0->words.w0);
     gDPSetPrimColor((*displayList)++, 0, 0, 255, 255, 255, 255);
     gDPSetEnvColor((*displayList)++, 255, 255, 255, 255);

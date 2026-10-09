@@ -209,7 +209,7 @@ Pinned JFG font body unchanged after renames; source differences already compare
 
 | Target | Bytes | Coverage |
 | --- | ---: | --- |
-| [func_80046EC4](matching-triage-handoffs/func_80046EC4.md) | 440 | B |
+| [fxAllocateCone](matching-triage-handoffs/fxAllocateCone.md) | 440 | B |
 | [func_800470B0](matching-triage-handoffs/func_800470B0.md) | 596 | B |
 | [func_8004A10C](matching-triage-handoffs/func_8004A10C.md) | 628 | B |
 | [func_80047304](matching-triage-handoffs/func_80047304.md) | 740 | B |
@@ -218,7 +218,7 @@ Pinned JFG font body unchanged after renames; source differences already compare
 | [wakeUpdate](matching-triage-handoffs/wakeUpdate.md) | 1592 | B |
 | [fxScreenEffect](matching-triage-handoffs/fxScreenEffect.md) | 588 | B |
 | [wakeAllocate](matching-triage-handoffs/wakeAllocate.md) | 1404 | B |
-| [func_800475E8](matching-triage-handoffs/func_800475E8.md) | 1004 | B |
+| [fxMakeConeTextureCoords](matching-triage-handoffs/fxMakeConeTextureCoords.md) | 1004 | B |
 
 Pinned JFG fx audit: assembly-only TU; reused deleted anchor through committed Git history.
 
@@ -239,7 +239,7 @@ Pinned JFG fx audit: assembly-only TU; reused deleted anchor through committed G
 | Target | Bytes | Coverage |
 | --- | ---: | --- |
 | [func_80018F08](matching-triage-handoffs/func_80018F08.md) | 820 | U |
-| [func_80019AB8](matching-triage-handoffs/func_80019AB8.md) | 736 | B |
+| [lightObject](matching-triage-handoffs/lightObject.md) | 736 | B |
 | [func_8001953C](matching-triage-handoffs/func_8001953C.md) | 1016 | U |
 
 JFG lightObject remains GLOBAL_ASM at efd5abb.
@@ -279,17 +279,17 @@ they left the queue and their shards were retired. func_8002B040 moved to
 
 | Target | Bytes | Coverage |
 | --- | ---: | --- |
-| [func_80039E34](matching-triage-handoffs/func_80039E34.md) | 1048 | U |
+| [frontDrawObj](matching-triage-handoffs/frontDrawObj.md) | 1048 | U |
 
 ### `src/main/models.c`
 
 | Target | Bytes | Coverage |
 | --- | ---: | --- |
-| [func_80020D8C](matching-triage-handoffs/func_80020D8C.md) | 192 | B |
+| [modSetTextureFrame](matching-triage-handoffs/modSetTextureFrame.md) | 192 | B |
 | [func_80020B10](matching-triage-handoffs/func_80020B10.md) | 636 | B |
-| [func_8002057C](matching-triage-handoffs/func_8002057C.md) | 1368 | B |
+| [makeModelGfx](matching-triage-handoffs/makeModelGfx.md) | 1368 | B |
 | [func_8001FC50](matching-triage-handoffs/func_8001FC50.md) | 1332 | U |
-| [func_8001F520](matching-triage-handoffs/func_8001F520.md) | 1604 | U |
+| [modLoadModel](matching-triage-handoffs/modLoadModel.md) | 1604 | U |
 
 Pinned JFG models counterparts remain assembly-only; point-of-use provenance records the audit.
 
@@ -374,11 +374,11 @@ Bounded nearest-shape/source inspection found only assembly-backed or noncredibl
 
 | Target | Bytes | Coverage |
 | --- | ---: | --- |
-| [func_800355A0](matching-triage-handoffs/func_800355A0.md) | 1076 | U |
-| [func_800349A4](matching-triage-handoffs/func_800349A4.md) | 1088 | U |
-| [func_80036544](../src/main/textures_354C8.c) | 608 | U |
+| [texLoadSprite](matching-triage-handoffs/texLoadSprite.md) | 1076 | U |
+| [texDPTextureX](matching-triage-handoffs/texDPTextureX.md) | 1088 | U |
+| [texAnimateSprite](../src/main/textures_354C8.c) | 608 | U |
 | [func_80035F48](matching-triage-handoffs/func_80035F48.md) | 1532 | U |
-| [func_80034E54](matching-triage-handoffs/func_80034E54.md) | 1868 | U |
+| [sprDPset](matching-triage-handoffs/sprDPset.md) | 1868 | U |
 
 ### `src/main/track.c`
 

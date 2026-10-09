@@ -17,9 +17,9 @@ typedef struct ColourCycle {
 } ColourCycle;
 
 extern void *func_800056A4(s32 tableIndex);
-extern void func_80036A80(ColourCycle *cycle);
+extern void resetColourCycle(ColourCycle *cycle);
 
 void initColourCycle(ColourCycle *cycle, s32 tableIndex) {
     cycle->unkC = (ColourCycle *)func_800056A4(tableIndex);
-    func_80036A80(cycle);
+    resetColourCycle(cycle);
 }

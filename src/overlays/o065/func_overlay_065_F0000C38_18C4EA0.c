@@ -53,11 +53,11 @@ extern u8 D_800000C0[];
  */
 extern Overlay65TrailCamera *func_80021970(s32 index);
 extern void camSetNo(s32 index);
-extern void func_800221E8(Gfx **commands, Mtx **matrices);
+extern void camSetView(Gfx **commands, Mtx **matrices);
 extern s32 mathRnd(s32 lower, s32 upper);
 extern f32 func_8002A8BC(s32 angle);
 extern f32 func_8002A8C0(s32 angle);
-extern void func_800349A4(Gfx **commands, s32 texture,
+extern void texDPTextureX(Gfx **commands, s32 texture,
                           s32 flags, s32 parameter);
 extern void func_overlay_065_F0001A14_18C5C7C(f32 x, f32 y, f32 z);
 
@@ -87,7 +87,7 @@ void func_overlay_065_F0000C38_18C4EA0(Gfx **commandPtr,
     matrices = *matrixPtr;
     camera = func_80021970(0);
     camSetNo(0);
-    func_800221E8(&commands, &matrices);
+    camSetView(&commands, &matrices);
 
     if (D_1900 > 0) {
         D_1900 -= updateRate;
@@ -106,7 +106,7 @@ void func_overlay_065_F0000C38_18C4EA0(Gfx **commandPtr,
         D_1900 = 1;
     }
 
-    func_800349A4(&commands, 0, 1, 0);
+    texDPTextureX(&commands, 0, 1, 0);
     record = O65_RECORD(D_0);
     for (recordIndex = 0; recordIndex != 50; recordIndex++) {
         if (O65_RECORD(record)->active != 0) {

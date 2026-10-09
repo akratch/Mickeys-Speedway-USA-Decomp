@@ -152,8 +152,8 @@ typedef struct FxGfx {
 
 typedef void (*FxTextureCallback)(s32 index, s32 value, s32 arg2);
 
-extern void func_800347A0(void *texture);
-extern void func_800320F0(s32 callback);
+extern void texFreeTexture(void *texture);
+extern void runlinkEnsureJumpIsValid(s32 callback);
 extern void func_8004ACC4(void);
 extern void mmFree(void *ptr);
 extern FxFlags D_800D5F5A[];
@@ -181,8 +181,8 @@ extern void fxScreenEffect(FxGfx **dList, s32 type, s32 value4, s32 value6,
                            s32 value10);
 extern f32 func_8002A8BC(s32 angle);
 extern f32 func_8002A8C0(s32 angle);
-extern void func_800349A4(FxGfx **dList, s32 texture, s32 flags, s32 arg3);
-extern void func_80047CD8(FxGfx **dList, FxCone *cone, s32 flags, u8 alpha);
+extern void texDPTextureX(FxGfx **dList, s32 texture, s32 flags, s32 arg3);
+extern void fxDrawCone(FxGfx **dList, FxCone *cone, s32 flags, u8 alpha);
 extern void func_8004A10C(s32 *screen, u8 glyph, s32 x, s32 y, s32 arg4);
 extern s32 sprintf(char *buffer, const char *format, ...);
 extern u32 D_8007D320[16];

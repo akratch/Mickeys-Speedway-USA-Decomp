@@ -33,18 +33,18 @@ void overlay5InitializeAudio(void *context) {
 
     resource = func_8002E148(0x31);
     gOverlay5Span0Size = resource->end - resource->span1End;
-    gOverlay5Span0 = func_8002B280(gOverlay5Span0Size, 0x82);
+    gOverlay5Span0 = mmAlloc(gOverlay5Span0Size, 0x82);
     func_8002E2E0(0x32, gOverlay5Span0,
                   (void *)resource->span1End, gOverlay5Span0Size);
     gOverlay5Span0ScaleValue = gOverlay5Span0Size / 10U;
 
     gOverlay5Span1Size = resource->span1End - resource->span1Start;
-    gOverlay5Span1 = func_8002B280(gOverlay5Span1Size, 0x82);
+    gOverlay5Span1 = mmAlloc(gOverlay5Span1Size, 0x82);
     func_8002E2E0(0x32, gOverlay5Span1,
                   (void *)resource->span1Start, gOverlay5Span1Size);
     gOverlay5Span1ScaleValue = gOverlay5Span1Size / 3U;
 
-    gOverlay5Span2 = func_8002B280(resource->span0Start, 0x82);
+    gOverlay5Span2 = mmAlloc(resource->span0Start, 0x82);
     func_8002E2E0(0x32, gOverlay5Span2, 0, resource->span0Start);
     alBnkfNew(gOverlay5Span2,
               func_8002E35C(0x32, (void *)resource->span0Start));
@@ -54,13 +54,13 @@ void overlay5InitializeAudio(void *context) {
                   (void *)resource->span0End, 4);
 
     bankSize = (u32)gOverlay5Bank->count * sizeof(Overlay5BankEntry) + 4;
-    gOverlay5Bank = func_8002B280(bankSize, 0x82);
+    gOverlay5Bank = mmAlloc(bankSize, 0x82);
     func_8002E2E0(0x32, gOverlay5Bank,
                   (void *)resource->span0End, bankSize);
     alSeqFileNew(gOverlay5Bank,
                  func_8002E35C(0x32, (void *)resource->span0End));
 
-    gOverlay5EntryValues = func_8002B280(
+    gOverlay5EntryValues = mmAlloc(
         (u32)gOverlay5Bank->count * sizeof(*gOverlay5EntryValues), 0x82);
     {
         Overlay5Bank *bank = gOverlay5Bank;
@@ -119,7 +119,7 @@ void overlay5InitializeAudio(void *context) {
     gsSndpNew(&sequenceConfig);
 
     func_80001BA0();
-    func_80000450(0);
+    amSetMuteMode(0);
     func_8002B768(resource);
     func_800039F0();
     alSurround_OutputType(4);

@@ -51,7 +51,7 @@ extern f32 func_8002A878(f32 amount, s32 updateRate);
 extern s32 func_8005ABA8(Overlay94Object *object, f32 current, f32 rate);
 extern void func_8005AF14(Overlay94Entity *entity, s32 savedValue,
                           Overlay94Object *object);
-extern void func_80019AB8(Overlay94Object *object, Overlay94Entity *entity,
+extern void lightObject(Overlay94Object *object, Overlay94Entity *entity,
                           void *resource, Overlay94Record *record);
 extern void func_8002B040(void *queryState, f32 x, f32 y, f32 z,
                           f32 *out0, f32 *out1, f32 *out2);
@@ -131,7 +131,7 @@ void overlay94UpdateController(Overlay94Object *object, s32 updateRate) {
 
     func_8005ABA8(object, state->current, rate);
     func_8005AF14(entity, savedValue, object);
-    func_80019AB8(object, entity, object->renderResource,
+    lightObject(object, entity, object->renderResource,
                   entity->records[entity->recordIndex]);
     entity->status = 0;
 

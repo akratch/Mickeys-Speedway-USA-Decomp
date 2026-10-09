@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_80046EC4:start -->
-### `func_80046EC4` plateau handoff
+<!-- plateau-handoff:fxAllocateCone:start -->
+### `fxAllocateCone` plateau handoff
 
 - source: `src/main/fx.c`
 - score: 0/110 words, promoted
@@ -168,4 +168,4 @@ mode test -- has four exact cells at delta 0.
 
 The unreferenced `pad` local places the stack homes: without it the frame is
 still 0x48 and two words of home displacement differ. `gmake verify` passes.
-<!-- plateau-handoff:func_80046EC4:end -->
+<!-- plateau-handoff:fxAllocateCone:end -->

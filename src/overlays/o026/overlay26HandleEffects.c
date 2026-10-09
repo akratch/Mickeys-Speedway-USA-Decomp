@@ -60,7 +60,7 @@ extern f32 sqrtf(f32 value);
 extern void func_80029FE4(O26Angles2 *angles, O26Vec3f *direction);
 extern s32 func_8002997C(s32 minimum, s32 maximum);
 extern void func_8003EDEC(O26ObjectD24 *object, s32 mode);
-extern void func_80002FE0(s32 id, f32 x, f32 y, f32 z,
+extern void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z,
                           s32 priority, s32 unused);
 
 /* Removing both redundant input aliases recovers the local and temporary
@@ -170,11 +170,11 @@ void func_overlay_026_F0000D24_187B11C(O26ObjectD24 *object, s32 mode) {
         func_8003EDEC(object, 1);
     }
     if (mode & 8) {
-        func_80002FE0(0x278, object->position.x, object->position.y,
+        amSndPlayXYZ(0x278, object->position.x, object->position.y,
                       object->position.z, 4, 0);
     }
     if (mode & 0x10) {
-        func_80002FE0(0x27A, object->position.x, object->position.y,
+        amSndPlayXYZ(0x27A, object->position.x, object->position.y,
                       object->position.z, 4, 0);
     }
     object->entity->flags &= ~1;

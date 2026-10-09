@@ -112,7 +112,7 @@ typedef struct RumbleState {
 } RumbleState;
 
 void mmFree(void *address);
-void *func_8002B280();
+void *mmAlloc();
 SavesSlot *func_800291C4(void);
 u8 joyGetController(s32 controllerIndex);
 extern RumbleState D_800D2368[];
@@ -412,7 +412,7 @@ SavesBitWriter *func_8002C60C(s32 size, s32 clear) {
     SavesBitWriter *writer;
     u8 *data;
 
-    writer = func_8002B280(size + 0x14, 0x85, size);
+    writer = mmAlloc(size + 0x14, 0x85, size);
     if (writer == NULL) {
         return NULL;
     }
@@ -803,7 +803,7 @@ void func_8002CF6C(u8 *globalFlags) {
 
     messageQueue = joyMessageQ();
     if (func_80070170(messageQueue) != 0) {
-        buffer = func_8002B280(0x200, 0x85);
+        buffer = mmAlloc(0x200, 0x85);
         if (buffer != NULL) {
             dst = buffer;
             n = 0x200;
@@ -1030,7 +1030,7 @@ s32 packDirectory(s32 controllerIndex, s32 maxNumOfFilesToGet,
     }
 
     filesUsed = maxNumOfFilesOnCpak * 24;
-    D_8007A280 = func_8002B280(filesUsed, 0xFF);
+    D_8007A280 = mmAlloc(filesUsed, 0xFF);
     _bzero(D_8007A280, filesUsed);
     directory = D_8007A280;
 
@@ -1404,7 +1404,7 @@ s32 func_8002E020(s32 controllerIndex, s32 fileNum) {
     s32 pad;
     s32 result = 1;
 
-    data = func_8002B280(0x100, 0xFF);
+    data = mmAlloc(0x100, 0xFF);
     if (packReadFile(controllerIndex, fileNum, (u8 *) data, 0x100) == 0) {
         if (*data == 0x43484152) {
             result = 0;

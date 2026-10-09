@@ -201,9 +201,9 @@ typedef struct {
     s32 unk80;
 } Objects0B3CCObject;
 
-extern void func_80002FE0(s32 id, f32 x, f32 y, f32 z, s32 priority,
+extern void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority,
                           void **handle);
-extern void func_8000309C(void *handle, u8 volume);
+extern void amSndSetVolXYZ(void *handle, u8 volume);
 extern void trackMakePolylist(s32 count, Objects0BB84Vec3 *start,
                               Objects0BB84Vec3 *end, f32 *radius, s32 arg4,
                               s32 arg5);
@@ -451,9 +451,9 @@ typedef struct {
 
 extern void *func_8000486C(s32 arg0);
 extern void *func_80006C4C(s32 arg0);
-extern void *func_8001F520(s32 assetId, s32 flags);
-extern void *func_8002B314(s32 size, s32 tag);
-extern void *func_800355A0(s32 assetId, s32 flags);
+extern void *modLoadModel(s32 assetId, s32 flags);
+extern void *mmAlloc2(s32 size, s32 tag);
+extern void *texLoadSprite(s32 assetId, s32 flags);
 
 typedef struct {
     u8 pad00[6];
@@ -681,11 +681,11 @@ extern void *camGetRotationMtx(void);
 extern void *camGetProjOrgMtx(void);
 extern void mathOneFloatPY(void *, f32 *);
 extern void mtxf_transform_point(void *, f32, f32, f32, f32 *, f32 *, f32 *);
-extern s32 func_800246B0(f32, f32, f32, f32 *, f32 *, u8);
-extern void func_80034DF0(u8, u8, u8, u8, u8, u8);
-extern void func_80034E48(void);
+extern s32 camProjectPoint(f32, f32, f32, f32 *, f32 *, u8);
+extern void sprSetIA2ColOverride(u8, u8, u8, u8, u8, u8);
+extern void sprClearIA2ColOverride(void);
 extern void func_80023598(void **, void *, void *, void *, void *, s32);
-extern void func_80023A08(void **, s32, s32, s16 *, s32, s32, s32);
+extern void camDoSprite(void **, s32, s32, s16 *, s32, s32, s32);
 extern f32 sqrtf(f32);
 
 typedef struct {
@@ -788,11 +788,11 @@ extern s32 TrapDanglingJump();
 extern void objectsVoidTrap();
 extern void mmFree(void *data);
 extern void modFreeModel(void *resource);
-extern void func_800347A0(void *texture);
-extern void func_800359D4(void *sprite);
+extern void texFreeTexture(void *texture);
+extern void texFreeSprite(void *sprite);
 extern s32 func_8000A6E8(s32 arg0);
-extern void *func_8002B280(s32 size, s32 tag);
-extern void *func_8002B4C0(void *slots, s32 size);
+extern void *mmAlloc(s32 size, s32 tag);
+extern void *mmAllocR(void *slots, s32 size);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern void func_80009F74(Objects09F74Object *object);
 extern u8 *levelGetLevel(void);
@@ -807,7 +807,7 @@ extern void func_80008B94(void *object);
 typedef struct Objects09AA8Object Objects09AA8Object;
 extern void func_80009AA8(Objects09AA8Object *object);
 extern s32 func_800290A0(void);
-extern void func_800367E8(Objects07C68Texture *texture, void *flags, s32 *frame,
+extern void texAnimateTexture(Objects07C68Texture *texture, void *flags, s32 *frame,
                            s32 updateRate);
 extern s32 D_80079008[];
 extern s32 D_800790D0[];
@@ -822,12 +822,12 @@ extern void camPushModelMtx(Gfx **dlist, Mtx **mtx, CameraScaledTransform *trans
                             f32 scale, f32 scaleY);
 extern void camPopModelMtx(Gfx **dlist);
 extern void camRestoreModelMtx(Gfx **dlist);
-extern void func_80034920(Gfx **dlist);
-extern void func_800349A4(FxGfx **dlist, s32 texture, s32 flags, s32 arg3);
+extern void texDPInit(Gfx **dlist);
+extern void texDPTextureX(FxGfx **dlist, s32 texture, s32 flags, s32 arg3);
 extern s32 func_800291FC(void);
-extern s32 func_80034448();
+extern s32 texLoadTexture();
 extern void func_8005AF14(void *arg0, void *arg1, void *arg2);
-extern void func_80019AB8(void *arg0, void *arg1, s32 arg2, s32 arg3);
+extern void lightObject(void *arg0, void *arg1, s32 arg2, s32 arg3);
 extern void func_80007C68(Objects07C68Object *arg0, Objects07C68Source *arg1,
                           Objects07C68Object *arg2, s32 arg3);
 extern void **func_8000572C(s32 *start, s32 *end);
@@ -1009,9 +1009,9 @@ void *func_8000486C(s32 assetIndex) {
 
     assetStart = ((s32 *)((u8 *)D_800C9458 + assetIndex * 4))[0];
     assetSize = ((s32 *)((u8 *)D_800C9458 + assetIndex * 4))[1] - assetStart;
-    asset = (Objects0486CAsset *)func_8002B4C0(D_800C94A0, assetSize);
+    asset = (Objects0486CAsset *)mmAllocR(D_800C94A0, assetSize);
     if ((asset == NULL) && (D_80078F88 != 0)) {
-        asset = (Objects0486CAsset *)func_8002B280(assetSize, 0x8B);
+        asset = (Objects0486CAsset *)mmAlloc(assetSize, 0x8B);
     }
     if (asset != NULL) {
         piRomLoadSection(0x2D, (u32)asset, assetStart, assetSize);
@@ -1034,13 +1034,13 @@ void *func_8000486C(s32 assetIndex) {
             do {
                 if ((((u16 *)asset->unkA8)[index] & 0xC000) == 0xC000) {
                     ((void **)asset->unkAC)[index] =
-                        (void *)func_80034448(((u16 *)asset->unkA8)[index] & 0x3FFF);
+                        (void *)texLoadTexture(((u16 *)asset->unkA8)[index] & 0x3FFF);
                 } else if (((u16 *)asset->unkA8)[index] & 0x8000) {
                     ((void **)asset->unkAC)[index] =
-                        func_800355A0(((u16 *)asset->unkA8)[index] & 0x3FFF, 1);
+                        texLoadSprite(((u16 *)asset->unkA8)[index] & 0x3FFF, 1);
                 } else {
                     ((void **)asset->unkAC)[index] =
-                        func_8001F520(((u16 *)asset->unkA8)[index], 0);
+                        modLoadModel(((u16 *)asset->unkA8)[index], 0);
                 }
                 index += 1;
             } while (index < asset->unkA6);
@@ -1089,12 +1089,12 @@ void func_80004B04(s32 assetIndex)
           ;
           if (((*((u16 *) (asset->unkA8 + flagOffset))) & 0xC000) == 0xC000)
           {
-            func_800347A0(*((void **) (((u8 *) asset->unkAC) + modelOffset)));
+            texFreeTexture(*((void **) (((u8 *) asset->unkAC) + modelOffset)));
           }
           else
             if ((*((u16 *) (asset->unkA8 + flagOffset))) & 0x8000)
           {
-            func_800359D4(*((void **) (((u8 *) asset->unkAC) + modelOffset)));
+            texFreeSprite(*((void **) (((u8 *) asset->unkAC) + modelOffset)));
           }
           else
           {
@@ -1139,7 +1139,7 @@ void func_80004C28(s32 tableIndex, s32 slot) {
     s32 *romTable;
     s32 start;
 
-    D_800C94D8[slot] = func_8002B280(0x3000, 0x8B);
+    D_800C94D8[slot] = mmAlloc(0x3000, 0x8B);
     D_800C94C0[slot] = (s32)((u8 *)D_800C94D8[slot] + 0x10);
     heap = D_800C94D8[slot];
     D_800C94C8[slot] = 0;
@@ -1665,9 +1665,9 @@ typedef struct {
 extern u8 *align4(u8 *address);
 extern void lightSetupLightSources(void *object);
 extern void lightSetupFlareSources(void *object);
-extern s32 func_8001A008(void *object, void *state);
+extern s32 lightInitObjectLighting(void *object, void *state);
 extern void modelSetModelFlags(s32 flags);
-extern s32 func_80048760(void *object, s32 state);
+extern s32 wakeSetupRipple(void *object, s32 state);
 extern void func_80053550(void *source, s32 kind, s32 mode, s16 rotationX,
                            s16 rotationY, s16 rotationZ, f32 radius, f32 height,
                            f32 arg8, f32 arg9, s32 collisionType, u16 flags);
@@ -1795,7 +1795,7 @@ void *func_8000590C(void *packet, s32 spawnFlags) {
     for (index = 0; index < object->unk40->unk22; index++) {
         switch (func_800058C0((Objects58C0Arg *)object, index)) {
         case 2:
-            object->unk68[index] = (s32)func_80034448(object->unk40->unk34[index]);
+            object->unk68[index] = (s32)texLoadTexture(object->unk40->unk34[index]);
             if (object->unk68[index] == 0) {
                 failed = 1;
             }
@@ -1804,14 +1804,14 @@ void *func_8000590C(void *packet, s32 spawnFlags) {
             if (object->unk40->unk30 != 0) {
                 modelSetModelFlags(0);
             }
-            object->unk68[index] = (s32)func_8001F520(object->unk40->unk34[index], loadType);
+            object->unk68[index] = (s32)modLoadModel(object->unk40->unk34[index], loadType);
             if (object->unk68[index] == 0) {
                 failed = 1;
             }
             modelSetModelFlags(8);
             break;
         case 1:
-            object->unk68[index] = (s32)func_800355A0(object->unk40->unk34[index], 0xA);
+            object->unk68[index] = (s32)texLoadSprite(object->unk40->unk34[index], 0xA);
             if (object->unk68[index] == 0) {
                 failed = 1;
             }
@@ -1832,7 +1832,7 @@ void *func_8000590C(void *packet, s32 spawnFlags) {
     cursor += func_8000A830((Objects0A830Object *)object, cursor);
     D_800C9490 = 0;
     if (loadFlags & 0x100) {
-        cursor += func_8001A008(object, cursor);
+        cursor += lightInitObjectLighting(object, cursor);
         *(u8 *)((u8 *)object->unk50 + 0xC) = *(u8 *)((u8 *)object->unk50 + 0x25);
         *(u8 *)((u8 *)object->unk50 + 0xD) = *(u8 *)((u8 *)object->unk50 + 0x27);
     }
@@ -1849,11 +1849,11 @@ void *func_8000590C(void *packet, s32 spawnFlags) {
         }
     }
     if ((loadFlags & 0x400) && (object->unk40->unk72 != -1)) {
-        resultSize = func_80048760(object, (s32)cursor);
+        resultSize = wakeSetupRipple(object, (s32)cursor);
         cursor += resultSize;
         if (resultSize == 0) {
             if (D_800C9490 != 0) {
-                func_800347A0(D_800C9490);
+                texFreeTexture(D_800C9490);
             }
             func_80006448(object);
             func_80004B04(selected);
@@ -1909,13 +1909,13 @@ void *func_8000590C(void *packet, s32 spawnFlags) {
         size = (size & ~0xF) + 0x10;
     }
     newObject = object;
-    object = (Objects0590CObject *)func_8002B4C0(D_800C94A0, size);
+    object = (Objects0590CObject *)mmAllocR(D_800C94A0, size);
     if ((object == NULL) && (D_80078F88 != 0)) {
-        object = (Objects0590CObject *)func_8002B280(size, 0x8B);
+        object = (Objects0590CObject *)mmAlloc(size, 0x8B);
     }
     if (object == NULL) {
         if (D_800C9490 != 0) {
-            func_800347A0(D_800C9490);
+            texFreeTexture(D_800C9490);
         }
         func_80006448(newObject);
         func_80004B04(selected);
@@ -2011,7 +2011,7 @@ void *func_8000590C(void *packet, s32 spawnFlags) {
     }
     if (func_80006534((Objects06534Object *)object) != 0) {
         if (D_800C9490 != 0) {
-            func_800347A0(D_800C9490);
+            texFreeTexture(D_800C9490);
         }
         func_80006448(object);
         func_80004B04(selected);
@@ -2048,11 +2048,11 @@ void func_80006448(void *object) {
                 }
             } else if (type == 2) {
                 if (((Objects06448Arg *)object)->unk68[index] != 0) {
-                    func_800347A0(((Objects06448Arg *)object)->unk68[index]);
+                    texFreeTexture(((Objects06448Arg *)object)->unk68[index]);
                 }
             } else {
                 if (((Objects06448Arg *)object)->unk68[index] != 0) {
-                    func_800359D4(((Objects06448Arg *)object)->unk68[index]);
+                    texFreeSprite(((Objects06448Arg *)object)->unk68[index]);
                 }
             }
             index += 1;
@@ -2097,7 +2097,7 @@ s32 func_80006534(Objects06534Object *object) {
         sprite = (Objects06534Sprite *)object->unk60;
         record = object->unk40->unk40;
         for (index = 0; index < object->unk8C; index++, sprite++, record++) {
-            sprite->unk0 = func_800355A0(record->unk0, 1);
+            sprite->unk0 = texLoadSprite(record->unk0, 1);
             sprite->unk4 = record->unk2;
             sprite->unkC = record->unk8;
             sprite->unk8 = ((f32)record->unk4 / 500.0f) * object->unk8;
@@ -2139,7 +2139,7 @@ s32 func_80006534(Objects06534Object *object) {
             sprite = (Objects06534Sprite *)object->unk60;
             for (index = 0; index < object->unk8C; index++) {
                 if (sprite->unk0 != NULL) {
-                    func_800359D4(sprite->unk0);
+                    texFreeSprite(sprite->unk0);
                     sprite->unk0 = NULL;
                 }
             }
@@ -2243,7 +2243,7 @@ s32 func_800069E8(Objects069E8Object *object, Objects069E8Target *target) {
     if (object->unk40->unk1E == 0) {
         target->unk10 |= 0x20;
     }
-    handle = func_80034448(source->unk64, target);
+    handle = texLoadTexture(source->unk64, target);
     target->unk8 = handle;
     if (handle == 0) {
         return 0;
@@ -2365,11 +2365,11 @@ void *func_80006C4C(s32 assetIndex) {
             object->unk68 = object->unk94;
             if (spriteModel == 0) {
                 object->unk68[index] =
-                    (s32)func_8001F520(
+                    (s32)modLoadModel(
                         object->unk40->unk34[index], loadType);
             } else {
                 object->unk68[index] =
-                    (s32)func_800355A0(
+                    (s32)texLoadSprite(
                         object->unk40->unk34[index], 0xA);
             }
             if (object->unk68[index] == 0) {
@@ -2384,7 +2384,7 @@ void *func_80006C4C(s32 assetIndex) {
         if (size & 0xF) {
             size = (size + 0xF) & ~0xF;
         }
-        result = func_8002B314(size, 0x8B);
+        result = mmAlloc2(size, 0x8B);
         if (result != NULL) {
             count = size >> 2;
             source = (s32 *)D_800C9450;
@@ -2475,18 +2475,18 @@ void func_80006FA0(void) {
     }
     D_800C94F0 = 0;
 }
-extern void func_800031E8(void *object);
+extern void amSndStopXYZ(void *object);
 extern void func_80005798(void *object);
-extern void func_8000D728(void *object);
+extern void trackLightDelete(void *object);
 extern void camlightDelete(void *object);
 extern void partObjFreeTriggers(void *object);
 extern void partNullifyCircularParticleParents(void *object);
 extern s32 lightKillGlowingLight();
-extern void func_80048980(void *object);
+extern void wakeFreeRipple(void *object);
 extern void func_8001C088(void *object);
 extern void killLight(void *light);
 extern void amSndStop(void *sound);
-extern void func_80046E70(void *object);
+extern void fxFreeCone(void *object);
 
 /* Matched (was 168 masked words) by giving each value its own spelling:
  * one `payload` local holds the behaviour payload in every case that reads
@@ -2531,7 +2531,7 @@ void func_80007118(u8 *object, s32 unused) {
     }
     if (*(void **)(object + 0x60) != NULL) {
         for (i = 0; i < *(u8 *)(object + 0x8C); i++) {
-            func_800359D4(*(void **)(*(u8 **)(object + 0x60) + i * 0x14));
+            texFreeSprite(*(void **)(*(u8 **)(object + 0x60) + i * 0x14));
         }
     }
     partObjFreeTriggers(object);
@@ -2552,14 +2552,14 @@ void func_80007118(u8 *object, s32 unused) {
             break;
         case 65: {
             payload = *(u8 **)(object + 0x64);
-            func_800359D4(*(void **)(payload + 0x20));
+            texFreeSprite(*(void **)(payload + 0x20));
             break;
         }
         case 67: {
             payload = *(u8 **)(object + 0x64);
             value = *(void **)(payload + 0x3C);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             break;
         }
@@ -2573,7 +2573,7 @@ void func_80007118(u8 *object, s32 unused) {
             payload = *(u8 **)(object + 0x64);
             value = *(void **)(payload + 0x3C);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             break;
         }
@@ -2581,11 +2581,11 @@ void func_80007118(u8 *object, s32 unused) {
             linkedPayload = *(u8 **)(object + 0x64);
             value = *(void **)(linkedPayload + 0x18);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(linkedPayload + 0x1C);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             if (*(void **)(linkedPayload + 0x20) != NULL) {
                 owner = *(u8 **)(*(u8 **)(linkedPayload + 0x20) + 0x64);
@@ -2607,7 +2607,7 @@ void func_80007118(u8 *object, s32 unused) {
             }
             value = *(void **)(once + 0x14);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             break;
         }
@@ -2633,7 +2633,7 @@ void func_80007118(u8 *object, s32 unused) {
             payload = *(u8 **)(object + 0x64);
             value = *(void **)(payload + 0x3C);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             break;
         }
@@ -2641,16 +2641,16 @@ void func_80007118(u8 *object, s32 unused) {
             linkedPayload = *(u8 **)(object + 0x64);
             value = *(void **)(linkedPayload + 0x18);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(linkedPayload + 0x40);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             break;
         case 54:
             if (*(void **)(*(u8 **)(object + 0x64) + 0x38) != NULL) {
-                func_800031E8(*(void **)(*(u8 **)(object + 0x64) + 0x38));
+                amSndStopXYZ(*(void **)(*(u8 **)(object + 0x64) + 0x38));
             }
             break;
         case 71:
@@ -2682,7 +2682,7 @@ void func_80007118(u8 *object, s32 unused) {
             }
             value = *(void **)(linkedPayload + 0x2C);
             if (value != NULL) {
-                func_8000D728(value);
+                trackLightDelete(value);
             }
             break;
         case 9:
@@ -2704,7 +2704,7 @@ void func_80007118(u8 *object, s32 unused) {
         case 29:
             func_80005798(object);
             if (*(s32 *)(object + 0x84) != 0) {
-                func_800031E8((void *)*(s32 *)(object + 0x84));
+                amSndStopXYZ((void *)*(s32 *)(object + 0x84));
             }
             break;
         case 73:
@@ -2718,46 +2718,46 @@ void func_80007118(u8 *object, s32 unused) {
         case 27:
         case 79:
             if (*(s32 *)(object + 0x84) != 0) {
-                func_800031E8((void *)*(s32 *)(object + 0x84));
+                amSndStopXYZ((void *)*(s32 *)(object + 0x84));
             }
             break;
         case 1:
             payload = *(u8 **)(object + 0x64);
             value = *(void **)(payload + 0xA4);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xA8);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xAC);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xB0);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xB4);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xB8);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xBC);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xC0);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xC4);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             for (j = 0; j < 0x10; j += 4) {
                 value = *(void **)(payload + 0x134 + j);
@@ -2768,7 +2768,7 @@ void func_80007118(u8 *object, s32 unused) {
             for (j = 0; j != 0x30; j += 0xC) {
                 value = *(void **)(payload + 0x354 + j);
                 if (value != NULL) {
-                    func_80046E70(value);
+                    fxFreeCone(value);
                 }
             }
             break;
@@ -2784,14 +2784,14 @@ void func_80007118(u8 *object, s32 unused) {
         }
         value = *(void **)(payload + 8);
         if (value != NULL) {
-            func_800347A0(value);
+            texFreeTexture(value);
         }
     }
     if (*(void **)(object + 0x54) != NULL) {
-        func_80048980(*(void **)(object + 0x54));
+        wakeFreeRipple(*(void **)(object + 0x54));
     }
     if (*(u8 **)(object + 0x78) != NULL && *(void **)(*(u8 **)(object + 0x78) + 0x24) != NULL) {
-        func_800031E8(*(void **)(*(u8 **)(object + 0x78) + 0x24));
+        amSndStopXYZ(*(void **)(*(u8 **)(object + 0x78) + 0x24));
     }
     if (*(u8 *)(object + 0x92) != 0) {
         partNullifyCircularParticleParents(object);
@@ -2867,14 +2867,14 @@ extern void spranimOnceControl(void *object, s32 updateRate);
 extern void spranimControl(void *object, s32 updateRate);
 extern void texscrollControl(void *object, s32 updateRate);
 extern void effectboxControl(void *object, s32 updateRate);
-extern void func_800148E0(void *object);
+extern void trackChangeFog(void *object);
 extern void func_8001B798(void *object, s32 updateRate);
 extern void func_8001BB04(void *object, s32 updateRate);
 extern void func_8001BB10(void *object, s32 updateRate);
 extern void rangetriggerControl(void *object, s32 updateRate);
 extern void func_80007E40(Objects07E40Object *object, s32 updateRate);
-extern void func_80049000(void *object, s32 updateRate);
-extern void func_80036544(void *entry, s32 *mode, s32 animationId, void *state,
+extern void wakeUpdateRipple(void *object, s32 updateRate);
+extern void texAnimateSprite(void *entry, s32 *mode, s32 animationId, void *state,
                           s32 updateRate);
 extern void func_8001CB84(void *object, s32 updateRate);
 extern void func_8001D2A0(void *object, s32 updateRate);
@@ -2958,7 +2958,7 @@ void func_8000784C(s32 updateRate) {
                     func_80007E40((Objects07E40Object *)object, updateRate);
                 }
                 if ((object->unk44 != 1) && (object->unk54 != NULL)) {
-                    func_80049000(object, updateRate);
+                    wakeUpdateRipple(object, updateRate);
                 }
                 animation = (Objects0784CAnimation *)object->unk4C;
                 if (animation != NULL) {
@@ -2976,7 +2976,7 @@ void func_8000784C(s32 updateRate) {
                     effect = object->unk60;
                     i = 0;
                     while (i < object->unk8C) {
-                        func_80036544(effect->unk0, &effect->unkC,
+                        texAnimateSprite(effect->unk0, &effect->unkC,
                                       effect->unk5, &effect->pad10,
                                       updateRate);
                         i += 1;
@@ -3059,7 +3059,7 @@ void func_80007C68(Objects07C68Object *object, Objects07C68Source *asset,
                 if (rec->unk4 & 0x200000) {
                     D_8007BDA0 = object->unk90;
                 }
-                func_800367E8(tex, &rec->unk4, &offset, updateRate);
+                texAnimateTexture(tex, &rec->unk4, &offset, updateRate);
                 rec->unk0 = offset;
                 if (rec->unk2 >= 0) {
                     offset += 0x100;
@@ -3287,7 +3287,7 @@ void func_8000831C(void *object, void *vertices, s32 vertexCount, void *triangle
     if (alpha < 0xFF) {
         flags |= 4;
     }
-    func_800349A4((FxGfx **)&D_800C94B4, texture, flags, textureOffset);
+    texDPTextureX((FxGfx **)&D_800C94B4, texture, flags, textureOffset);
     OBJ_VERTEX(OBJ_DL++, OBJ_K0_TO_PHYSICAL(vertices), vertexCount, 0);
     OBJ_POLYGON(OBJ_DL++, OBJ_K0_TO_PHYSICAL(triangles), triangleCount, hasTexture);
     camPopModelMtx((Gfx **)&D_800C94B4);
@@ -3393,9 +3393,9 @@ void func_800084C4(Objects084C4Gfx **displayListPtr, Objects084C4Vertex **vertex
     }
     displayList = *displayListPtr;
     vertices = *vertexPtr;
-    if (func_800246B0(clippedBX, clippedBY, clippedBZ,
+    if (camProjectPoint(clippedBX, clippedBY, clippedBZ,
                       &projectedBX, &projectedBY, 0) != 0) {
-        if (func_800246B0(clippedAX, clippedAY, clippedAZ,
+        if (camProjectPoint(clippedAX, clippedAY, clippedAZ,
                           &projectedAX, &projectedAY, 0) != 0) {
             deltaX = projectedAX - projectedBX;
             deltaY = projectedAY - projectedBY;
@@ -3406,7 +3406,7 @@ void func_800084C4(Objects084C4Gfx **displayListPtr, Objects084C4Vertex **vertex
                 deltaY *= deltaLengthSquared;
             }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0x01010040; command->words.w1 = (unsigned int)camGetProjOrgMtx() - 0x80000000U; }
-            func_800349A4((FxGfx **)&displayList, texture, flags | 2 | 4, 0);
+            texDPTextureX((FxGfx **)&displayList, texture, flags | 2 | 4, 0);
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFA000000; command->words.w1 = primColor; }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFB000000; command->words.w1 = envColor; }
             OBJECTS_GFX_VERTEX(displayList++, (u32)vertices + 0x80000000, 4, 0);
@@ -3645,13 +3645,13 @@ void func_80008B94(void *rawObject) {
     resource = object->unk68[object->unk3A];
     if (object->unk44 == 0x44) {
         info = object->unk64;
-        func_80034DF0(info->unk4, info->unk5,
+        sprSetIA2ColOverride(info->unk4, info->unk5,
                       info->unk6, info->unk7,
                       info->unk8, info->unk9);
         specialColour = 1;
     } else if (object->unk44 == 0x3C) {
         info = object->unk64;
-        func_80034DF0(0xFF, 0xFF, 0xFF, info->unk18,
+        sprSetIA2ColOverride(0xFF, 0xFF, 0xFF, info->unk18,
                       info->unk19, info->unk1A);
         specialColour = 1;
     } else if (object->unk44 == 0x20 && (palette = object->unk3C) != NULL &&
@@ -3669,7 +3669,7 @@ void func_80008B94(void *rawObject) {
         } else {
             colourB = colours;
         }
-        func_80034DF0(colourA->r, colourA->g, colourA->b,
+        sprSetIA2ColOverride(colourA->r, colourA->g, colourA->b,
                       colourB->r, colourB->g, colourB->b);
         specialColour = 1;
     } else if (object->unk50 != NULL &&
@@ -3680,7 +3680,7 @@ void func_80008B94(void *rawObject) {
         computedAlpha = (((s32)resource->unkB * multiplier->unk5) * colourState) >> 16;
         extraGreen = (((s32)resource->unkC * multiplier->unk6) * colourState) >> 16;
         extraBlue = (((s32)resource->unkD * multiplier->unk7) * colourState) >> 16;
-        func_80034DF0((u8)red, (u8)green, (u8)blue,
+        sprSetIA2ColOverride((u8)red, (u8)green, (u8)blue,
                       (u8)computedAlpha, extraGreen, extraBlue);
         specialColour = 1;
     } else if (object->unk44 == 0x50) {
@@ -3689,7 +3689,7 @@ void func_80008B94(void *rawObject) {
         TrapDanglingJump((s32)cameraData2[1], &computedAlpha,
                          &extraGreen, &extraBlue);
         white = 0xFF;
-        func_80034DF0(white, white, white, (u8)computedAlpha,
+        sprSetIA2ColOverride(white, white, white, (u8)computedAlpha,
                       extraGreen, extraBlue);
         specialColour = 1;
     } else {
@@ -3726,12 +3726,12 @@ void func_80008B94(void *rawObject) {
         func_80023598((void **)&D_800C94B4, &D_800C94B8, &D_800C94BC,
                       object, resource, alpha);
     } else {
-        func_80023A08((void **)&D_800C94B4, (s32)&D_800C94B8,
+        camDoSprite((void **)&D_800C94B4, (s32)&D_800C94B8,
                       (s32)&D_800C94BC,
                       (s16 *)object, resource, flags, alpha);
     }
     if (specialColour) {
-        func_80034E48();
+        sprClearIA2ColOverride();
     }
     if (useColourState) {
         Objects0831CCommand *command = (Objects0831CCommand *)D_800C94B4;
@@ -3786,10 +3786,10 @@ void func_80009220(void **displayListPtr, s32 vertexList, s32 triangleList, Obje
             if (alpha >= 0x100) {
                 alpha = 0xFF;
             }
-            func_80034DF0(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0);
-            func_80023A08(displayListPtr, vertexList, triangleList, (s16 *)&segment,
+            sprSetIA2ColOverride(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0);
+            camDoSprite(displayListPtr, vertexList, triangleList, (s16 *)&segment,
                           *object->unk40->unkAC, 4, alpha);
-            func_80034E48();
+            sprClearIA2ColOverride();
             command = (*(Objects09220Gfx **)displayListPtr)++;
             command->w0 = 0xFB000000; command->w1 = -0x100;
         }
@@ -3876,7 +3876,7 @@ extern void func_80022E80(void *transform);
 extern void func_80022FD4(void **displayList, s32 matrices, s32 vertices,
                           void *transform, f32 *opacity,
                           Objects09414Sprite *sprite, s32 flags, s32 alpha);
-extern void func_80047CD8(void **displayList, void *cone, s32 flags, u8 alpha);
+extern void fxDrawCone(void **displayList, void *cone, s32 flags, u8 alpha);
 extern f32 func_80009F08(Objects09F08Arg *object);
 
 void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void *rawObject) {
@@ -4020,7 +4020,7 @@ void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void
                     *displayListPtr = (void *)(command + 1);
                     command->w0 = 0x01810040;
                     command->w1 = (u32)textures[slot] + 0x80000000;
-                    func_80047CD8(displayListPtr, cones[slot], mode,
+                    fxDrawCone(displayListPtr, cones[slot], mode,
                                   (u8)alphas[slot]);
                     command = (Objects09414Gfx *)*displayListPtr;
                     *displayListPtr = (void *)(command + 1);
@@ -4156,7 +4156,7 @@ void func_80009AA8(Objects09AA8Object *object) {
             baseEntry->unkA = (s16)(baseEntry->unkA ^ 1);
         }
 
-        func_80019AB8(object, baseEntry, object->unk50,
+        lightObject(object, baseEntry, object->unk50,
                       ((Objects09AA8Entry *)((u8 *)baseEntry +
                                              (baseEntry->unkA * 4)))->unkC);
         if (material->unk11 != 0) {
@@ -4172,7 +4172,7 @@ void func_80009AA8(Objects09AA8Object *object) {
     }
     if ((blendIndex != 0) && (selectedEntry->unk8 != 0)) {
 
-        func_80019AB8(object, selectedEntry, object->unk50,
+        lightObject(object, selectedEntry, object->unk50,
                       ((Objects09AA8Entry *)((u8 *)baseEntry +
                                              (baseEntry->unkA * 4)))->unkC);
         selectedEntry->unk8 = 0;
@@ -4214,7 +4214,7 @@ void func_80009AA8(Objects09AA8Object *object) {
     }
     command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = 0xBF000000; command->words.w1 = 0;
     camRestoreModelMtx((Gfx **)&D_800C94B4);
-    func_80034920((Gfx **)&D_800C94B4);
+    texDPInit((Gfx **)&D_800C94B4);
     command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = 0xFA000000; command->words.w1 = (u32)-1;
     command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = 0xFB000000; command->words.w1 = (u32)-0x100;
     D_80079250 = 0;
@@ -4653,7 +4653,7 @@ struct Objects0AA38Object {
 extern void func_8001C4C0(void *object, void *packet, s32 mode);
 extern void spranimInit(void *object, void *packet);
 extern void sprasjiInit(void *object, void *packet);
-extern void func_8001A154(void *object);
+extern void lightAdjustGlowingLight(void *object);
 extern void func_8001BAE4(void *object, void *packet);
 extern void func_8001BAF8(void *object, void *packet);
 
@@ -4712,7 +4712,7 @@ void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState) 
             TrapDanglingJump(object, packet, preserveState); /* Overlay 89 +0x270. */
             break;
         case 34:
-            func_8001A154(object);
+            lightAdjustGlowingLight(object);
             break;
         case 35:
             TrapDanglingJump(object, packet, preserveState); /* Overlay 71 +0x0. */
@@ -4962,7 +4962,7 @@ void func_8000AEEC(void *rawObject, s32 updateRate) {
             TrapDanglingJump(object, updateRate); /* Overlay 93 +0x1C. */
             break;
         case 4:
-            func_800148E0(object);
+            trackChangeFog(object);
             break;
         case 26:
             TrapDanglingJump(object, updateRate); /* Overlay 69 +0x4C. */
@@ -5221,14 +5221,14 @@ void func_8000B3CC(Objects0B3CCObject *object, s32 updateRate) {
         if ((state->flags & 1) == 0) {
             state->flags |= 1;
             if ((config->unk1C != 0) && (state->unk24 == NULL)) {
-                func_80002FE0(config->unk1C, object->unkC, object->unk10,
+                amSndPlayXYZ(config->unk1C, object->unkC, object->unk10,
                               object->unk14, 4, &state->unk24);
                 if (state->unk24 != NULL) {
                     volume = state->unk18 * 0.1f;
                     if (volume > 1.0f) {
                         volume = 1.0f;
                     }
-                    func_8000309C(state->unk24,
+                    amSndSetVolXYZ(state->unk24,
                                   (u8)(127.0f * volume));
                 }
             }
@@ -5298,14 +5298,14 @@ void func_8000B3CC(Objects0B3CCObject *object, s32 updateRate) {
         }
         if ((bounced != 0) && (config->unk1E != 0) &&
             ((state->flags & 1) == 0) && (state->unk24 == NULL)) {
-            func_80002FE0(config->unk1E, object->unkC, object->unk10,
+            amSndPlayXYZ(config->unk1E, object->unkC, object->unk10,
                           object->unk14, 4, &state->unk24);
             if (state->unk24 != NULL) {
                 volume = state->unk18 * 0.100000001f;
                 if (volume > 1.0f) {
                     volume = 1.0f;
                 }
-                func_8000309C(state->unk24,
+                amSndSetVolXYZ(state->unk24,
                               (u8)(127.0f * volume));
             }
         }

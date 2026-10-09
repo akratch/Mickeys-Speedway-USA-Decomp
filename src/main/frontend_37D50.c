@@ -72,7 +72,7 @@ void func_80037150(void) {
     D_8007BE80 = 0;
 }
 extern s32 viGetVideoMode(void);
-extern void *func_8002B280(s32, s32);
+extern void *mmAlloc(s32, s32);
 /* Allocates and fills both backdrop vertex buffers with a 17x17 grid -- the
  * same grid func_800378A4 later shades. The m2c draft transcribed the
  * compiler's 4x unrolled inner loop literally; this TU has the default
@@ -111,7 +111,7 @@ void func_800371BC(void) {
             spacing = 0x1AA;
         }
         for (i = 0; i < 2; i++) {
-            ((FrontendGridVertex **) &D_8007BE88)[i] = func_8002B280(0xB4A, 0x87);
+            ((FrontendGridVertex **) &D_8007BE88)[i] = mmAlloc(0xB4A, 0x87);
             vertex = ((FrontendGridVertex **) &D_8007BE88)[i];
             if (vertex != NULL) {
                 half = spacing >> 1;
@@ -385,7 +385,7 @@ void func_80037BF4(void) {
 extern u8 D_7BE40[];
 extern s32 D_800D2FAC;
 extern void camStandardPersp(Gfx **, Mtx **);
-extern void func_80034920(Gfx **);
+extern void texDPInit(Gfx **);
 extern u8 D_8007BEC0[];
 extern void viGetCurrentSize(s32 *, s32 *);
 extern void func_80037A78(void);
@@ -507,7 +507,7 @@ void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
             }
             y += 15;
         }
-        func_80034920(gfx);
+        texDPInit(gfx);
     }
 }
 

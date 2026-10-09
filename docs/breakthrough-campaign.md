@@ -76,8 +76,8 @@ field guide name the specific source edit that reproduces it.
 
 ### Phase 1 — Tier 1 on Population A (immediate, low machine cost)
 Per target function (the ~6 allocator/schedule near-exact ones — start with
-`func_800508D4` schedule-only, then `func_80055970` `func_8004D40C` `func_80038750`
-`func_8003A520`):
+`func_800508D4` schedule-only, then `func_80055970` `func_8004D40C` `setLanguage`
+`frontSet2PlayerSplit`):
 1. `tools/wb_compare.sh <fn>` + `decomp-workbench diagnose …` → confirm the class.
 2. `schedule-mismatch` → `decomp-workbench probe-lines` (one variant, free): does
    physical line assignment drive the schedule? If yes the fix is a preprocessing
@@ -215,8 +215,8 @@ from C, and a hard limit on Tier 1.**
 | `func_800508D4` | schedule (4w) | moving the one global-scale Binasm record after the two immediate-scale records makes stock `as1` exact → **ugen record scheduling**. probe-lines negative (thr 400, 60), acpp negative. |
 | `func_80055970` | operand/stack (4w) | changing the four stack operands `sp+0x40`→`sp+0x48` in Binasm makes `as1` exact → **ugen stack-home selection**. All type/qual/lifetime/order/pad probes inert. |
 | `func_8004D40C` | register web (5w) | target as0 has an explicit `or t2,a3,zero` after the row-24 branch that the candidate ugen never emits → **ugen copy/register-web + branch scheduling**. |
-| `func_80038750` | uopt pool (5w) | base/value `a1`/`a0` crossing; pool diverges at slot 18 → **uopt pool-position** (plus a separate `jtbl_80082734` rodata-ownership blocker). |
-| `func_8003A520` | ugen FIFO (3w) | temp lane diverges at slot 0; target regs are ring-only → **ugen web-existence/FIFO** decision. |
+| `setLanguage` | uopt pool (5w) | base/value `a1`/`a0` crossing; pool diverges at slot 18 → **uopt pool-position** (plus a separate `jtbl_80082734` rodata-ownership blocker). |
+| `frontSet2PlayerSplit` | ugen FIFO (3w) | temp lane diverges at slot 0; target regs are ring-only → **ugen web-existence/FIFO** decision. |
 
 **The Tier-1 limit, confirmed empirically:** `capture make` retains *raw binary*
 Ucode/Binasm streams. `trace-summary`/`trace-fifo`/`trace-webs` reject them

@@ -96,7 +96,7 @@ not kept.
 Subtracting that bias from `left` and `right` in place after the calls, then
 casting those integers into the existing float locals, scores 569 masked
 words at size delta 0 against the same 561. The body is not kept.
-`func_800349A4` with the clamp arm written as `nextFrame--` scores 243 masked
+`texDPTextureX` with the clamp arm written as `nextFrame--` scores 243 masked
 words at size delta -4, against a proved baseline of 172 at delta 0. The body
 is not kept.
 `func_80017140` with the plane index formed after the overlap call scores 310
@@ -183,7 +183,7 @@ proved baseline is 202 differing words at 764 candidate bytes against
 on the repeated y sum and closed without keeping it: the proved baseline
 is 257 differing words at 1164 candidate bytes against 1172, and that
 form scored 259 words at 1168 bytes.
-`func_overlay_045_F0001158_188D5B0` was reopened for float screen coordinates after the 0xA0 bias and the body was kept: the proved baseline is 566 differing words at 2692 candidate bytes against 2696, and the float locals score 561 words at 2696 bytes, size delta 0, frame 0x190, first mismatch still +0x4. That is a diagnostic improvement, not a match. The call-spanning left/right spill remains open. `func_overlay_001_F0001D78_184E158` was reopened for a per-region state local and closed without keeping it: the proved baseline is 268 masked words at 2508 bytes and frame 0x70, and assigning `D_1DA0` again after `overlay1FindClosestSample`, `amSndPlay`, and each `overlay7UpdateOwnerMode` scored 609 masked words at 2364 bytes. The frame stayed 0x70. That single local did not become the target a1 web. `func_800349A4` was reopened for the matched sibling's in-place `frameIndex` scale and closed without keeping it: the proved baseline is 172 differing words at 1088 bytes and frame 0x40, and scaling `frameIndex` after `nextFrame` is captured scored 263 words at 1120 bytes. Raw resident assembly (9,908 bytes) and the shared
+`func_overlay_045_F0001158_188D5B0` was reopened for float screen coordinates after the 0xA0 bias and the body was kept: the proved baseline is 566 differing words at 2692 candidate bytes against 2696, and the float locals score 561 words at 2696 bytes, size delta 0, frame 0x190, first mismatch still +0x4. That is a diagnostic improvement, not a match. The call-spanning left/right spill remains open. `func_overlay_001_F0001D78_184E158` was reopened for a per-region state local and closed without keeping it: the proved baseline is 268 masked words at 2508 bytes and frame 0x70, and assigning `D_1DA0` again after `overlay1FindClosestSample`, `amSndPlay`, and each `overlay7UpdateOwnerMode` scored 609 masked words at 2364 bytes. The frame stayed 0x70. That single local did not become the target a1 web. `texDPTextureX` was reopened for the matched sibling's in-place `frameIndex` scale and closed without keeping it: the proved baseline is 172 differing words at 1088 bytes and frame 0x40, and scaling `frameIndex` after `nextFrame` is captured scored 263 words at 1120 bytes. Raw resident assembly (9,908 bytes) and the shared
 overlay 88 body remain in the gap; their latest committed notes do not
 name an untried source form that is currently assignable.
 `func_overlay_012_F0000910_186DB90` with each center written as collision times 2.0f plus the scaled term scores 612 masked words at size delta +8, against a proved baseline of 606 at delta -4. The body is not kept.
@@ -193,7 +193,7 @@ name an untried source form that is currently assignable.
 `func_8003C80C` does not take its counter init in the entry delay. That delay is an unread store of the second argument, and the target keeps the counter literal later. No body was scored. The body is not kept.
 `func_8003C80C` with only the first parameter, and the advanced time kept in a local, scores 103 masked words at size delta -4, against a proved baseline of 74 at delta 0. The body is not kept.
 `func_8003C80C` with the counter init after the time loop, inside `do { } while (0)`, scores 115 masked words at size delta +4, against a proved baseline of 74 at delta 0. The body is not kept.
-`func_800349A4` carrying the next-frame index in `hasTexture` scores 162 masked words at size delta 0, against a proved baseline of 172. The body is kept. It is not a match.
+`texDPTextureX` carrying the next-frame index in `hasTexture` scores 162 masked words at size delta 0, against a proved baseline of 172. The body is kept. It is not a match.
 `overlay83DrawStrip` with the vertex length written as the two shifts of vertexCount plus 8 scores 71 masked words at size delta -4, against a proved baseline of 68 at delta 0. The body is not kept.
 `func_8003C80C` with the time wrap spelled `(time < D_8007C868) == 0` scores 69 masked words at size delta 0, against a proved baseline of 74. The body is kept. 69 words remain.
 `func_overlay_066_F0000040_18C64A8` with the pixel cursor formed as a u32 byte advance of 6 scores the same 249 masked words at size delta 0. The owned text is byte-identical to the proved baseline. The body is not kept.

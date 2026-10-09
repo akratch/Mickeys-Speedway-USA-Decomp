@@ -390,7 +390,7 @@ entrypoint = 0x80000400; // type:func size:0x50   ROM 0x01000  hasm/entrypoint.s
 // (`lui t2,0x8002 / addiu t2,t2,0x11a0 / jr t2`), so position and bytes agree.
 mainproc = 0x800211A0; // type:func size:0x58 ROM 0x21da0 tier-A IDO C exact, DKR src/main.c donor, masked=11/22
 thread1_main = 0x800211F8; // type:func size:0x98 ROM 0x21df8 tier-A IDO C exact, DKR src/main.c donor, masked=14/38
-func_80021290 = 0x80021290; // type:func size:0x44 ROM 0x21e90 tier-A IDO C exact, Mickey-only u64 counter reconstruction
+bootCheckStack = 0x80021290; // type:func size:0x44 ROM 0x21e90 tier-A IDO C exact, Mickey-only u64 counter reconstruction, name tier-B JFG src/boot.c order+named anchors thread1_main/camInit, JFG size 0x44 equal
 
 // math_util.s -- 13 routines matched, 11 named in this block; most have ZERO
 // masked words, and this is the strongest evidence in the block. (Of the other
@@ -903,6 +903,7 @@ ReleaseUnusedLinkSlots = 0x8003314C; // type:func size:0x98  tier-D invented
 GetSymbolName = 0x800317E0;         // type:func size:0x10 tier-B call-graph
 runlinkInit = 0x800328CC;           // type:func size:0x248 tier-D C-object+linked-ROM-exact
 runlinkDownloadCode = 0x80031C78;   // type:func size:0x478 tier-B call-graph C-object+linked-ROM-exact
+runlinkEnsureJumpIsValid = 0x800320F0; // type:func size:0x194 ROM 0x32cf0 matched C, name tier-B JFG src/runLink.c order+named anchors runlinkDownloadCode/runlinkIsModuleLoaded
 runlinkGetAddressInfo = 0x800331E4; // type:func size:0x1B0
 // TIER A, no longer resting on the call-graph argument above. The whole 0x1E0
 // .text of JFG's built `src/hasm/ido/trapDanglingJump.s.o` is byte-identical
@@ -1052,9 +1053,9 @@ D_800D4A82 = 0x800D4A82; // type:u16 size:0x2 tier-A compiler-owned diprint BSS 
 // consumed by the display-list crash reporter. The whole run immediately
 // precedes diRcp.c in both games.
 diRcpTraceInit = 0x80044B60;    // type:func size:0x3C tier A (exact C, JFG diRcpTraceInit)
-func_80044B9C = 0x80044B9C;     // type:func size:0x2C tier A (exact C, JFG diRcpTraceReset)
-func_80044BC8 = 0x80044BC8;     // type:func size:0xCC tier-A (exact C, JFG diRcpTrace)
-func_80044C94 = 0x80044C94;     // type:func size:0x12C tier A exact C (JFG diRcpTraceGetInfo), ROM 0x45894
+diRcpTraceReset = 0x80044B9C;     // type:func size:0x2C tier A (exact C, JFG diRcpTraceReset), name tier-B JFG src/diRcpTrace.c order+named anchors, JFG size 0x2C equal
+diRcpTrace = 0x80044BC8;     // type:func size:0xCC tier-A (exact C, JFG diRcpTrace), name tier-B JFG src/diRcpTrace.c order+named anchors
+diRcpTraceGetInfo = 0x80044C94;     // type:func size:0x12C tier A exact C (JFG diRcpTraceGetInfo), ROM 0x45894, name tier-B JFG src/diRcpTrace.c order+named anchors
 
 // diRcp.c -- the display-list disassembler. `diRcpPrintDL` is the only
 // function referencing the whole G_* opcode name table and "UNKNOWN COMMAND";
@@ -1142,8 +1143,8 @@ func_80045BBC = 0x80045BBC;                // type:func size:0xF0 tier-A ROM 0x4
 func_80045CAC = 0x80045CAC;                // type:func size:0x88 tier-A (exact C, JFG active-thread scan)
 func_80045D34 = 0x80045D34;                // type:func size:0x72C tier-D ROM 0x46934 NON_MATCHING plateau, first +0x0
 diCpuReportWatchpoint = 0x80046460;         // type:func size:0xA4 tier-A (exact C, JFG body)
-func_80046504 = 0x80046504;                 // type:func size:0x8 tier A (exact C, JFG diCpuTraceGetFault)
-func_8004650C = 0x8004650C;                 // type:func size:0x3C tier A (exact C, JFG diCpuTraceTick)
+diCpuTraceGetFault = 0x80046504;                 // type:func size:0x8 tier A (exact C, JFG diCpuTraceGetFault), name tier-B JFG src/diCpu.c order+named anchors, JFG size 0x8 equal
+diCpuTraceTick = 0x8004650C;                 // type:func size:0x3C tier A (exact C, JFG diCpuTraceTick), name tier-B JFG src/diCpu.c order+named anchors, JFG size 0x3C equal
 render_epc_lock_up_display = 0x80046548;    // type:func size:0x560 tier B/C (crash display)
 func_80046AA8 = 0x80046AA8;                // type:func size:0x124 tier-A ROM 0x476A8 IDO C exact, Mickey reconstruction with JFG structural oracle
 func_80046BCC = 0x80046BCC;                // type:func size:0x1A8 tier D (Mickey boundary)
@@ -1155,23 +1156,23 @@ func_80046E00 = 0x80046E00;                // type:func size:0x58 tier-A (exact 
 // trigonometry, draw and free calls agree function-for-function. Mickey begins
 // at fxFreeCone; unresolved JFG address placeholders and the later Mickey-
 // specific effects retain their local func_ names with Tier-D boundaries.
-func_80046E70 = 0x80046E70;           // type:func size:0x54 tier A (exact C, JFG fxFreeCone)
-func_80046EC4 = 0x80046EC4;           // type:func size:0x1B8 tier B (JFG fxAllocateCone)
+fxFreeCone = 0x80046E70;           // type:func size:0x54 tier A (exact C, JFG fxFreeCone), name tier-B JFG src/fx.c order+named anchors
+fxAllocateCone = 0x80046EC4;           // type:func size:0x1B8 tier B (JFG fxAllocateCone), name tier-B JFG src/fx.c order+named anchors
 func_8004707C = 0x8004707C;           // type:func size:0x34 tier A (exact C)
 func_800470B0 = 0x800470B0;           // type:func size:0x254 tier D (JFG placeholder)
 func_80047304 = 0x80047304;           // type:func size:0x2E4 tier D (JFG placeholder)
-func_800475E8 = 0x800475E8;           // type:func size:0x3EC tier-B ROM 0x481E8 NON_MATCHING plateau, first +0x0
-func_800479D4 = 0x800479D4;           // type:func size:0x304 tier B (JFG fxMakeConeLength), matched C src/main/fx.c -O2 -mips2 -32 -Wab,-r4300_mul, linked exact=193/193
-func_80047CD8 = 0x80047CD8;           // type:func size:0x3A8 tier-A ROM 0x488D8 matched C and linked ROM, frame 0x68, four exact func_800349A4 calls, tier-B JFG fxDrawCone role
+fxMakeConeTextureCoords = 0x800475E8;           // type:func size:0x3EC tier-B ROM 0x481E8 NON_MATCHING plateau, first +0x0, name tier-B JFG src/fx.c order+named anchors
+fxMakeConeLength = 0x800479D4;           // type:func size:0x304 tier B (JFG fxMakeConeLength), matched C src/main/fx.c -O2 -mips2 -32 -Wab,-r4300_mul, linked exact=193/193, name tier-B JFG src/fx.c order+named anchors
+fxDrawCone = 0x80047CD8;           // type:func size:0x3A8 tier-A ROM 0x488D8 matched C and linked ROM, frame 0x68, four exact texDPTextureX calls, tier-B JFG fxDrawCone role, name tier-B JFG src/fx.c order+named anchors
 func_80048080 = 0x80048080;           // type:func size:0x164 tier-A ROM 0x48C80 matched C, 89/89 words and 4 relocations, frame -0x48, linked ROM 0x48C80-0x48DE4 byte-identical
 wakeAllocate = 0x800481E4;            // type:func size:0x57C tier B (JFG call graph/order)
-func_80048760 = 0x80048760;           // type:func size:0x1E4 tier-A ROM 0x49360 matched C, 121/121 words and 4 relocations, frame -0x48, linked ROM 0x49360-0x49544 byte-identical, tier-B JFG wakeSetupRipple role
+wakeSetupRipple = 0x80048760;           // type:func size:0x1E4 tier-A ROM 0x49360 matched C, 121/121 words and 4 relocations, frame -0x48, linked ROM 0x49360-0x49544 byte-identical, tier-B JFG wakeSetupRipple role, name tier-B JFG src/fx.c order+named anchors, JFG size 0x1E4 equal
 wakeFree = 0x80048944;                // type:func size:0x3C tier A (exact C, JFG wakeFree)
-func_80048980 = 0x80048980;           // type:func size:0x48 tier A (exact C, JFG wakeFreeRipple)
+wakeFreeRipple = 0x80048980;           // type:func size:0x48 tier A (exact C, JFG wakeFreeRipple), name tier-B JFG src/fx.c order+named anchors
 wakeUpdate = 0x800489C8;              // type:func size:0x638 tier B (JFG call graph/order)
-func_80049000 = 0x80049000;           // type:func size:0x254 tier B (JFG wakeUpdateRipple)
+wakeUpdateRipple = 0x80049000;           // type:func size:0x254 tier B (JFG wakeUpdateRipple), name tier-B JFG src/fx.c order+named anchors
 wakeDraw = 0x80049254;                // type:func size:0x2C4 tier B (JFG call graph/order), matched C src/main/fx.c -O2 -mips2 -32 -Wab,-r4300_mul, linked exact=177/177
-func_80049518 = 0x80049518;           // type:func size:0x228 tier B (JFG wakeDrawRipple)
+wakeDrawRipple = 0x80049518;           // type:func size:0x228 tier B (JFG wakeDrawRipple), name tier-B JFG src/fx.c order+named anchors, JFG size 0x228 equal
 fxInit = 0x80049740;                  // type:func size:0x4C tier A (exact C, JFG name)
 func_8004978C = 0x8004978C;           // type:func size:0x9C tier-D ROM 0x4A38C matched C src/main/fx.c.o -O2 -mips2 -32, linked exact=39/39
 func_80049828 = 0x80049828;           // type:func size:0x3C tier A (exact C)
@@ -1188,12 +1189,12 @@ func_8004A4B0 = 0x8004A4B0;           // type:func size:0x6C tier-A (exact C)
 func_8004A51C = 0x8004A51C;           // type:func size:0xA4 tier-A (exact C)
 fxSPDPRipple = 0x8004A5C0;             // type:func size:0x3A0 tier B (JFG skeleton/calls)
 fxQueueScreenEffect = 0x8004A960;      // type:func size:0x6C tier A (exact C, JFG name)
-func_8004A9CC = 0x8004A9CC;           // type:func size:0xAC tier A (exact C, JFG fxUnQueueScreenEffect)
+fxUnQueueScreenEffect = 0x8004A9CC;           // type:func size:0xAC tier A (exact C, JFG fxUnQueueScreenEffect), name tier-B JFG src/fx.c order+named anchors
 fxScreenEffect = 0x8004AA78;           // type:func size:0x24C tier B (JFG order/calls)
 func_8004ACC4 = 0x8004ACC4;           // type:func size:0x70 tier-A ROM 0x4B8C4 matched C, 28/28 words and 12 relocations, frameless, linked ROM 0x4B8C4-0x4B934 byte-identical
-func_8004AD34 = 0x8004AD34;            // type:func size:0xB4 tier A (exact C, JFG fxGenerateTextures)
-func_8004ADE8 = 0x8004ADE8;            // type:func size:0x180 tier-A ROM 0x4B9E8 matched C and linked ROM, frame 0x40, 15 exact relocations, tier-B JFG fxCpuTextureRequired role
-func_8004AF68 = 0x8004AF68;            // type:func size:0xD0 tier-A ROM 0x4BB68 matched C, 52/52 words and 12 relocations, frame -0x38, linked ROM 0x4BB68-0x4BC38 byte-identical
+fxGenerateTextures = 0x8004AD34;            // type:func size:0xB4 tier A (exact C, JFG fxGenerateTextures), name tier-B JFG src/fx.c order+named anchors, JFG size 0xB4 equal
+fxCpuTextureRequired = 0x8004ADE8;            // type:func size:0x180 tier-A ROM 0x4B9E8 matched C and linked ROM, frame 0x40, 15 exact relocations, tier-B JFG fxCpuTextureRequired role, name tier-B JFG src/fx.c order+named anchors, JFG size 0x180 equal
+fxCpuTextureFlush = 0x8004AF68;            // type:func size:0xD0 tier-A ROM 0x4BB68 matched C, 52/52 words and 12 relocations, frame -0x38, linked ROM 0x4BB68-0x4BC38 byte-identical, name tier-B JFG src/fx.c order+named anchors, JFG size 0xD8 equal
 
 // gsSnd.c. One distinctive literal each, and the literal states the contract:
 // 0x8005D6E4 owns "WARNING: Attempt to stop NULL sound aborted", 0x8005D898
@@ -1880,7 +1881,7 @@ asins = 0x8006A508; // type:func size:0x8C tier-A exact C, JFG source body
 
 // No public name adopted: JFG's `trackFadeFog` supplies the exact body shape
 // at this established TU position, but Mickey has no independent named caller.
-func_80014BAC = 0x80014BAC; // type:func size:0x238 ROM 0x157ac tier-D (JFG src/track.c trackFadeFog, TU order, placeholder retained)
+trackFadeFog = 0x80014BAC; // type:func size:0x238 ROM 0x157ac tier-D (JFG src/track.c trackFadeFog, TU order, placeholder retained), name tier-B JFG src/track.c order+named anchors trackSetFogOff/trackMakePolylist, JFG signature equal
 
 // No public name adopted: JFG's `initSky` supplies the body structure at this
 // established TU position, while Mickey proves its revision-specific guard.
@@ -1920,7 +1921,7 @@ func_8000C5F4 = 0x8000C5F4; // type:func size:0x684 ROM 0xd1f4 tier-D (JFG src/t
 
 // No name adopted: JFG's corresponding `trackGetSky` is only a tier-D TU
 // position argument. Mickey's address placeholder is retained for the exact C.
-func_8000D00C = 0x8000D00C; // type:func size:0xC ROM 0xdc0c
+trackGetSky = 0x8000D00C; // type:func size:0xC ROM 0xdc0c, name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
 
 // No public name adopted: JFG's assembly-only `func_800135E0` supplies the
 // camera/update role and TU position. Now matched in C (tier A byte-identity):
@@ -1932,35 +1933,36 @@ func_8000D018 = 0x8000D018; // type:func size:0x154 ROM 0xdc18 tier-A byte-ident
 // No public name adopted: JFG's corresponding `trackAddTextureScroll` is a
 // tier-D TU-position identification only. Mickey's placeholder is retained;
 // all 19 words and the two HI16/LO16 relocation pairs are exact.
-func_8000D16C = 0x8000D16C; // type:func size:0x4C ROM 0xdd6c
-func_8000D1B8 = 0x8000D1B8; // type:func size:0x200 ROM 0xddb8 tier-A, matched C src/main/track.c -O2 -mips2 -32 -Wab,-r4300_mul, packed texture-scroll apply, linked exact=128/128
+trackAddTextureScroll = 0x8000D16C; // type:func size:0x4C ROM 0xdd6c, name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG, JFG size 0x4C equal
+trackUpdateTextureScroll = 0x8000D1B8; // type:func size:0x200 ROM 0xddb8 tier-A, matched C src/main/track.c -O2 -mips2 -32 -Wab,-r4300_mul, packed texture-scroll apply, linked exact=128/128, name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
+trackLightAllocate = 0x8000D3B8; // type:func size:0x1B8 ROM 0xdfb8 matched C, name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
 
 // No public name adopted: JFG's assembly-only `trackLightFreeMem` supplies
 // tier-D role/TU and control-flow context; Mickey proves the exact C body.
-func_8000D570 = 0x8000D570; // type:func size:0xBC ROM 0xe170 tier-D (JFG src/track.c trackLightFreeMem role, placeholder retained)
+trackLightFreeMem = 0x8000D570; // type:func size:0xBC ROM 0xe170 tier-D (JFG src/track.c trackLightFreeMem role, placeholder retained), name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
 
 // No public name adopted: JFG's assembly-only `trackLightAdd` supplies the
 // tier-D role/TU and 0x80-byte stride; Mickey proves the typed body.
-func_8000D62C = 0x8000D62C; // type:func size:0xFC ROM 0xe22c tier-D (JFG src/track.c trackLightAdd role, placeholder retained)
+trackLightAdd = 0x8000D62C; // type:func size:0xFC ROM 0xe22c tier-D (JFG src/track.c trackLightAdd role, placeholder retained), name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG, JFG size 0xFC equal
 
 // No public name adopted: JFG's corresponding `trackLightDelete` is a tier-D
 // TU-position identification only. Mickey's placeholder is retained; all 16
 // words and the D_800792FC HI16/LO16 relocation pair are exact.
-func_8000D728 = 0x8000D728; // type:func size:0x40 ROM 0xe328
+trackLightDelete = 0x8000D728; // type:func size:0x40 ROM 0xe328, name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG, JFG size 0x40 equal
 
 // No public name adopted: JFG's corresponding `trackLightColour` is an
 // assembly-only tier-D role/TU-position comparison. Mickey proves this body.
-func_8000D768 = 0x8000D768; // type:func size:0x90 ROM 0xe368 tier-D (JFG src/track.c trackLightColour role, placeholder retained)
+trackLightColour = 0x8000D768; // type:func size:0x90 ROM 0xe368 tier-D (JFG src/track.c trackLightColour role, placeholder retained), name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
 
 // No public name adopted: JFG's corresponding `trackLightMove` is a tier-D
 // TU-position identification only. Mickey's placeholder is retained; all 10
 // words are exact and the function has no relocation records.
-func_8000D7F8 = 0x8000D7F8; // type:func size:0x28 ROM 0xe3f8
+trackLightMove = 0x8000D7F8; // type:func size:0x28 ROM 0xe3f8, name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
 func_8000D820 = 0x8000D820; // type:func size:0x158 ROM 0xe420 tier-A, matched C src/main/track.c -O2 -mips2 -32 -Wab,-r4300_mul, lighting dirty-mask copy, linked exact=86/86
 
 // No public name adopted: JFG's assembly-only `trackUpdateLighting` supplies
 // tier-D role/TU context; Mickey proves the revised module path and exact C.
-func_8000D978 = 0x8000D978; // type:func size:0x1BC ROM 0xe578 tier-D (JFG src/track.c trackUpdateLighting role, placeholder retained)
+trackUpdateLighting = 0x8000D978; // type:func size:0x1BC ROM 0xe578 tier-D (JFG src/track.c trackUpdateLighting role, placeholder retained), name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
 
 // No public name adopted: Mickey's extracted boundary and sole track caller
 // establish this priority-sort helper; the placeholder is retained.
@@ -2051,7 +2053,7 @@ func_800147A4 = 0x800147A4; // type:func size:0x13C ROM 0x153a4
 
 // DKR's public `obj_loop_fogchanger` supplies the adapted body; JFG's
 // assembly-only `trackChangeFog` supplies independent tier-D TU context.
-func_800148E0 = 0x800148E0; // type:func size:0x2CC ROM 0x154e0 tier-D (DKR src/tracks.c body adapted, placeholder retained)
+trackChangeFog = 0x800148E0; // type:func size:0x2CC ROM 0x154e0 tier-D (DKR src/tracks.c body adapted, placeholder retained), name tier-B JFG src/track.c order+named anchors trackSetFogOff/trackMakePolylist
 
 // No public name adopted: this Mickey-only helper builds a transform from the
 // current track rotation and caches one transformed point.
@@ -2192,17 +2194,17 @@ func_800293D0 = 0x800293D0; // type:func size:0x27C ROM 0x29FD0 tier-A (compiler
 // JFG function order documented in docs/modules.md. Each line records its own
 // tier so it cannot be mistaken for a byte-identity name claim.
 // ---------------------------------------------------------------------------
-func_80000450 = 0x80000450; // type:func size:0xC0 ROM 0x1050 tier-B (JFG amSetMuteMode body/order, segment-start placeholder retained)
-func_80000510 = 0x80000510; // type:func size:0x84 ROM 0x1110 tier-B (JFG amTunePlay body/order, external Mickey placeholder retained)
+amSetMuteMode = 0x80000450; // type:func size:0xC0 ROM 0x1050 tier-B (JFG amSetMuteMode body/order, segment-start placeholder retained), name tier-B JFG src/audio_manager_1050.c order+named anchors, JFG size 0xC0 equal
+amTunePlay = 0x80000510; // type:func size:0x84 ROM 0x1110 tier-B (JFG amTunePlay body/order, external Mickey placeholder retained), name tier-B JFG src/audio_manager_1050.c order+named anchors
 amTuneVoiceLimit = 0x80000594; // type:func size:0x38 ROM 0x1194 tier-B (JFG body/order role)
-func_800005CC = 0x800005CC; // type:func size:0xF0 ROM 0x11cc tier-B (JFG amTuneSetFade body/order, external Mickey placeholder retained)
+amTuneSetFade = 0x800005CC; // type:func size:0xF0 ROM 0x11cc tier-B (JFG amTuneSetFade body/order, external Mickey placeholder retained), name tier-B JFG src/audio_manager_1050.c order+named anchors
 amTuneResetFade = 0x80000730; // type:func size:0xC ROM 0x1330 tier B (JFG role/order)
 amAmbientSetFade = 0x8000073C; // type:func size:0xF0 ROM 0x133c tier-B (JFG body/order role)
 amAmbientResetFade = 0x8000082C; // type:func size:0xC ROM 0x142c tier B (JFG role/order)
 amAudioTick = 0x80000838; // type:func size:0x284 ROM 0x1438 tier-B (JFG name/body, Mickey sequence/master-volume tail)
 amWaitForMidiSync = 0x80000ABC; // type:func size:0x80 ROM 0x16bc tier-B (JFG name/order, Mickey-only body)
 amResetMidiSync = 0x80000B3C; // type:func size:0xC ROM 0x173c tier-B (JFG name/order, Mickey-only body)
-func_80000B48 = 0x80000B48; // type:func size:0xA0 ROM 0x1748 tier-B (JFG amTuneSetChlMask name/order, external Mickey placeholder retained)
+amTuneSetChlMask = 0x80000B48; // type:func size:0xA0 ROM 0x1748 tier-B (JFG amTuneSetChlMask name/order, external Mickey placeholder retained), name tier-B JFG src/audio_manager_1050.c order+named anchors, JFG size 0xA0 equal
 amTuneMuteChl = 0x80000BE8; // type:func size:0x8 ROM 0x17e8 tier B (JFG role/order)
 amTuneUnmuteChl = 0x80000BF0; // type:func size:0x8 ROM 0x17f0 tier B (JFG role/order)
 amTuneSetChlVolume = 0x80000BF8; // type:func size:0x40 ROM 0x17f8 tier B (JFG role/order, ambiguous skeleton)
@@ -2247,17 +2249,18 @@ amAmbientRestart = 0x800025EC; // type:func size:0xC ROM 0x31ec tier-B (JFG body
 amResetAudioMap = 0x800025F8; // type:func size:0x170 ROM 0x31f8 tier-B matched C (JFG name/reset role/order, Mickey pool body)
 amPlayAudioMap = 0x80002768; // type:func size:0x720 ROM 0x3368 tier-B (JFG name/order, DKR point-update body)
 amCalcSfxStereo = 0x80002E88; // type:func size:0x158 ROM 0x3a88 tier-B (JFG complete body and audio-manager order)
-func_80002FE0 = 0x80002FE0; // type:func size:0xBC ROM 0x3be0 tier-B (JFG amSndPlayXYZ body/order, name unproved)
-func_8000309C = 0x8000309C; // type:func size:0x18 ROM 0x3c9c tier-B (JFG amSndSetVolXYZ body/order, name unproved)
-func_800030B4 = 0x800030B4; // type:func size:0x18 ROM 0x3cb4 tier-B (JFG amSndSetPitchXYZ body/order, name unproved)
-func_800030CC = 0x800030CC; // type:func size:0xF4 ROM 0x3ccc tier-B (JFG amSndPlayDirectXYZ body/order, name unproved)
-func_800031C0 = 0x800031C0; // type:func size:0x28 ROM 0x3dc0 tier-B (JFG amSndSetXYZ body/order, external Mickey placeholder retained)
-func_800031E8 = 0x800031E8; // type:func size:0x68 ROM 0x3de8 tier-B (JFG amSndStopXYZ body/order, external Mickey placeholder retained)
+amSndPlayXYZ = 0x80002FE0; // type:func size:0xBC ROM 0x3be0 tier-B (JFG amSndPlayXYZ body/order, name unproved), name tier-B JFG src/audio_manager_36D0.c order+named anchors
+amSndSetVolXYZ = 0x8000309C; // type:func size:0x18 ROM 0x3c9c tier-B (JFG amSndSetVolXYZ body/order, name unproved), name tier-A JFG audio_manager_36D0.c.o 6 unmasked words romocc 1 one candidate
+amSndSetPitchXYZ = 0x800030B4; // type:func size:0x18 ROM 0x3cb4 tier-B (JFG amSndSetPitchXYZ body/order, name unproved), name tier-A JFG audio_manager_36D0.c.o 6 unmasked words romocc 1 one candidate
+amSndPlayDirectXYZ = 0x800030CC; // type:func size:0xF4 ROM 0x3ccc tier-B (JFG amSndPlayDirectXYZ body/order, name unproved), name tier-B JFG src/audio_manager_36D0.c order+named anchors, JFG size 0xF4 equal
+amSndSetXYZ = 0x800031C0; // type:func size:0x28 ROM 0x3dc0 tier-B (JFG amSndSetXYZ body/order, external Mickey placeholder retained), name tier-B JFG src/audio_manager_36D0.c order+named anchors
+amSndStopXYZ = 0x800031E8; // type:func size:0x68 ROM 0x3de8 tier-B (JFG amSndStopXYZ body/order, external Mickey placeholder retained), name tier-B JFG src/audio_manager_36D0.c order+named anchors
 amSndUnlinkHandleXYZ = 0x80003250; // type:func size:0x4C ROM 0x3e50 tier-B (JFG name/order, Mickey-only body)
-func_8000329C = 0x8000329C; // type:func size:0x114 ROM 0x3e9c tier-B matched C (JFG audio-point constructor role/order, Mickey-only body)
+amCreateAudioPoint = 0x8000329C; // type:func size:0x114 ROM 0x3e9c tier-B matched C (JFG audio-point constructor role/order, Mickey-only body), name tier-B JFG src/audio_manager_36D0.c order+named anchors
+amSndSetEcho = 0x800033B0; // type:func size:0xD0 ROM 0x3fb0 tier-B matched C (JFG amSndSetEcho role/order, Mickey-only body), name tier-B JFG src/audio_manager_36D0.c order+named anchors
 func_800035F8 = 0x800035F8; // type:func size:0x168 ROM 0x41f8 tier-B matched C (JFG positional-update role/order, Mickey-only body)
 func_800037C4 = 0x800037C4; // type:func size:0x128 ROM 0x43c4 tier-B matched C (Mickey pool-removal call graph, JFG TU order)
-func_800038EC = 0x800038EC; // type:func size:0xF8 ROM 0x44ec tier-B matched C (JFG volume-query role/order, Mickey-only body)
+amSndGetXYZVolume = 0x800038EC; // type:func size:0xF8 ROM 0x44ec tier-B matched C (JFG volume-query role/order, Mickey-only body), name tier-B JFG src/audio_manager_36D0.c order+named anchors
 
 // ---------------------------------------------------------------------------
 // Resident-segment skeleton donors: JFG/BK, per-function byte matches below
@@ -2358,12 +2361,13 @@ addObjectLight = 0x80018BB4; // type:func size:0x200   ROM 0x197b4  src/lights.c
 func_80019934 = 0x80019934; // type:func size:0xF0 tier-B ROM 0x1a534 exact C, JFG body and compiler-owned switch table
 jtbl_800817B4 = 0x800817B4; // type:jtbl size:0x14 tier-A compiler-owned lights switch table
 lightDirectionCalc = 0x80019A24; // type:func size:0x94   ROM 0x1a624  src/lights.c.o  body adapted and compiler-exact
+lightObject = 0x80019AB8; // type:func size:0x2E0 ROM 0x1a6b8 matched C, name tier-B JFG src/lights.c order+named anchors lightDirectionCalc/lightDefaultObjectLight, JFG size 0x2E0 equal
 lightDefaultObjectLight = 0x80019D98; // type:func size:0x50   ROM 0x1a998  src/lights.c.o  Mickey/JFG-adapted body compiler-exact
-func_80019DE8 = 0x80019DE8; // type:func size:0xFC tier-D ROM 0x1a9e8 NON_MATCHING bounded-plateau C 64/63 words, 19/63 raw/normalized, first +0x44, 119 flags + proc-22 trace + 2 valueDelta forms nonexact, ORT 358, 3 direct callers, no runtime inbound/padding, JFG structural-only
+lightSetObjectLight = 0x80019DE8; // type:func size:0xFC tier-D ROM 0x1a9e8 NON_MATCHING bounded-plateau C 64/63 words, 19/63 raw/normalized, first +0x44, 119 flags + proc-22 trace + 2 valueDelta forms nonexact, ORT 358, 3 direct callers, no runtime inbound/padding, JFG structural-only, name tier-B JFG src/lights.c order+named anchors lightDefaultObjectLight/lightSetupLightSources, now matched C
 lightSetupLightSources = 0x80019EE4; // type:func size:0x98   ROM 0x1aae4  src/lights.c.o  Mickey/JFG-adapted body compiler-exact
 lightSetupFlareSources = 0x80019F7C; // type:func size:0x8C   ROM 0x1ab7c  src/lights.c.o  Mickey/JFG-adapted body compiler-exact
-func_8001A008 = 0x8001A008; // type:func size:0x14C tier-B ROM 0x1ac08 src/lights.c.o JFG-adapted body compiler-exact
-func_8001A154 = 0x8001A154; // type:func size:0xE8 tier-A ROM 0x1ad54 IDO C exact, Mickey reconstruction with JFG structural oracle
+lightInitObjectLighting = 0x8001A008; // type:func size:0x14C tier-B ROM 0x1ac08 src/lights.c.o JFG-adapted body compiler-exact, name tier-B JFG src/lights.c order+named anchors lightSetupFlareSources/lightKillGlowingLight
+lightAdjustGlowingLight = 0x8001A154; // type:func size:0xE8 tier-A ROM 0x1ad54 IDO C exact, Mickey reconstruction with JFG structural oracle, name tier-B JFG src/lights.c order+named anchors lightSetupFlareSources/lightKillGlowingLight
 lightKillGlowingLight = 0x8001A23C; // type:func size:0x24   ROM 0x1ae3c  src/lights.c.o  Mickey/JFG-adapted body compiler-exact
 // jfg:src/charControl.c.o
 // exact-C (ADR 0001), no external name adopted: func_8001BB90, ROM 0x1c790, size 0x24
@@ -2406,7 +2410,7 @@ controlClearPlayerSetup = 0x8001F408; // type:func size:0xC   ROM 0x20008
 func_8001F420 = 0x8001F420; // type:func size:0x3C   ROM 0x20020  src/models.c.o  masked=0/15  C-match -O2 -mips2
 func_8001FBCC = 0x8001FBCC; // type:func size:0x84   ROM 0x207CC  src/models.c.o  tier-D JFG allocation/copy structure only  C-match -O2 -mips2
 modInitModels = 0x8001F45C; // type:func size:0xC4   ROM 0x2005C  src/models.c.o  tier-B JFG body prefix and model-table call graph  C-match -O2 -mips2
-func_8001F520 = 0x8001F520; // type:func size:0x644 tier-B ROM 0x20120 src/main/models.c.o NON_MATCHING bounded plateau, JFG cache/asset-loader call-graph correspondence
+modLoadModel = 0x8001F520; // type:func size:0x644 tier-B ROM 0x20120 src/main/models.c.o NON_MATCHING bounded plateau, JFG cache/asset-loader call-graph correspondence, name tier-B JFG src/models.c order+named anchors modInitModels, now matched C
 func_8001FB64 = 0x8001FB64; // type:func size:0x68   ROM 0x20764  src/models.c.o  masked=0/26  C-match -O2 -mips2
 modFreeModel = 0x80020184; // type:func size:0xF4   ROM 0x20D84  src/models.c.o  tier-B JFG cache-release body and TU position  C-match -O2 -mips2
 func_80020278 = 0x80020278; // type:func size:0x168   ROM 0x20E78  src/models.c.o  tier-B JFG model-resource destructor  C-match -O2 -mips2
@@ -2415,7 +2419,7 @@ func_800204B8 = 0x800204B8; // type:func size:0xAC   ROM 0x210B8  tier-D matched
 modelSetModelFlags = 0x80020564; // type:func size:0xC   ROM 0x21164  src/models.c.o  tier-B same JFG TU position and model-flag access  C-match -O2 -mips2
 modelGetModelFlags = 0x80020570; // type:func size:0xC   ROM 0x21170  src/models.c.o  tier-B paired JFG model-flag accessor  C-match -O2 -mips2
 func_80020AD4 = 0x80020AD4; // type:func size:0x3C   ROM 0x216d4  src/models.c.o  masked=6/15  C-match -O2 -mips2
-func_80020E4C = 0x80020E4C; // type:func size:0x1C4 tier-D ROM 0x21A4C src/main/models.c.o -O2 -mips2 -32 NON_MATCHING resident fallback and adjacent modResumeModelTextures boundary owner, no match credit
+modSuspendModelTextures = 0x80020E4C; // type:func size:0x1C4 tier-D ROM 0x21A4C src/main/models.c.o -O2 -mips2 -32 NON_MATCHING resident fallback and adjacent modResumeModelTextures boundary owner, no match credit, name tier-B JFG src/models.c order+named anchors modResumeModelTextures
 modResumeModelTextures = 0x80021010; // type:func size:0x8C   ROM 0x21C10  src/models.c.o  tier-B JFG name and suspended-texture traversal  C-match -O2 -mips2
 func_8002109C = 0x8002109C; // type:func size:0xF8   ROM 0x21C9C  tier-D matched C main/models -O2 -mips2 -32 Mickey-only point transform
 // jfg:src/camera.c.o
@@ -2441,23 +2445,23 @@ mathDiffAngle = 0x8002AA0C; // type:func size:0x38   ROM 0x2b60c  src/hasm/ido/m
 mmInit = 0x8002B0D0; // type:func size:0x78   ROM 0x2bcd0  tier-A matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmInit masked=14/30
 mmExtended = 0x8002B148; // type:func size:0xC   ROM 0x2bd48  tier-B donor-jfg role-callgraph matched C main/memory -O2 -mips2 -32
 mmSetDelay = 0x8002B6F4; // type:func size:0xC   ROM 0x2c2f4  tier-B donor-jfg role-callgraph matched C main/memory -O2 -mips2 -32
-func_8002B1A0 = 0x8002B1A0; // type:func size:0xE0   ROM 0x2bda0  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_init
-func_8002B154 = 0x8002B154; // type:func size:0x4C   ROM 0x2bd54  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAllocRegion
-func_8002B280 = 0x8002B280; // type:func size:0x94   ROM 0x2be80  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAlloc
-func_8002B314 = 0x8002B314; // type:func size:0x94   ROM 0x2bf14  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAlloc2
-func_8002B3A8 = 0x8002B3A8; // type:func size:0x118  ROM 0x2bfa8  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_slot_find
-func_8002B4C0 = 0x8002B4C0; // type:func size:0x64   ROM 0x2c0c0  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAllocR
-func_8002B524 = 0x8002B524; // type:func size:0x1D0 ROM 0x2c124 tier-B JFG mmAllocAtAddr role, NON_MATCHING diagnostic 102/116 pre-cleanup C, frame 0x58, 12 exact tuples, ORT 547, 9 calls plus 1 stored pointer
-func_8002B700 = 0x8002B700; // type:func size:0x68   ROM 0x2c300  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmFlushFreeStack
+mempool_init = 0x8002B1A0; // type:func size:0xE0   ROM 0x2bda0  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_init, name tier-B JFG src/memory.c order+named anchors
+mmAllocRegion = 0x8002B154; // type:func size:0x4C   ROM 0x2bd54  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAllocRegion, name tier-B JFG src/memory.c order+named anchors
+mmAlloc = 0x8002B280; // type:func size:0x94   ROM 0x2be80  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAlloc, name tier-B JFG src/memory.c order+named anchors
+mmAlloc2 = 0x8002B314; // type:func size:0x94   ROM 0x2bf14  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAlloc2, name tier-B JFG src/memory.c order+named anchors
+mempool_slot_find = 0x8002B3A8; // type:func size:0x118  ROM 0x2bfa8  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_slot_find, name tier-B JFG src/memory.c order+named anchors
+mmAllocR = 0x8002B4C0; // type:func size:0x64   ROM 0x2c0c0  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmAllocR, name tier-B JFG src/memory.c order+named anchors
+mmAllocAtAddr = 0x8002B524; // type:func size:0x1D0 ROM 0x2c124 tier-B JFG mmAllocAtAddr role, NON_MATCHING diagnostic 102/116 pre-cleanup C, frame 0x58, 12 exact tuples, ORT 547, 9 calls plus 1 stored pointer, name tier-B JFG src/memory.c order+named anchors, now matched C
+mmFlushFreeStack = 0x8002B700; // type:func size:0x68   ROM 0x2c300  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmFlushFreeStack, name tier-B JFG src/memory.c order+named anchors
 mmFree = 0x8002B768; // type:func size:0x44   ROM 0x2c368  tier-A matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mmFree masked=4/17
-func_8002B7AC = 0x8002B7AC; // type:func size:0xFC ROM 0x2c3ac tier-B JFG mmFreeTick structural role, matched C exact, ORT 593, sole inbound func_80026FB4+0x5F8
-func_8002B8A8 = 0x8002B8A8; // type:func size:0x94   ROM 0x2c4a8  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_free_addr
-func_8002B93C = 0x8002B93C; // type:func size:0x3C   ROM 0x2c53c  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_free_queue
-func_8002B978 = 0x8002B978; // type:func size:0x58   ROM 0x2c578  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_get_pool
-func_8002B9D0 = 0x8002B9D0; // type:func size:0x150  ROM 0x2c5d0  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_slot_clear
+mmFreeTick = 0x8002B7AC; // type:func size:0xFC ROM 0x2c3ac tier-B JFG mmFreeTick structural role, matched C exact, ORT 593, sole inbound func_80026FB4+0x5F8, name tier-B JFG src/memory.c order+named anchors
+mempool_free_addr = 0x8002B8A8; // type:func size:0x94   ROM 0x2c4a8  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_free_addr, name tier-B JFG src/memory.c order+named anchors
+mempool_free_queue = 0x8002B93C; // type:func size:0x3C   ROM 0x2c53c  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_free_queue, name tier-B JFG src/memory.c order+named anchors
+mempool_get_pool = 0x8002B978; // type:func size:0x58   ROM 0x2c578  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_get_pool, name tier-B JFG src/memory.c order+named anchors
+mempool_slot_clear = 0x8002B9D0; // type:func size:0x150  ROM 0x2c5d0  tier-B matched C main/memory -O2 -mips2 -32 donor JFG-memory.c-mempool_slot_clear, name tier-B JFG src/memory.c order+named anchors
 mmGetSlotPtr = 0x8002BB20; // type:func size:0x14   ROM 0x2c720  tier-B donor-jfg role-callgraph matched C main/memory -O2 -mips2 -32
 mmGetDelay = 0x8002BB34; // type:func size:0xC   ROM 0x2c734  tier-B donor-jfg role-callgraph matched C main/memory -O2 -mips2 -32
-func_8002BB40 = 0x8002BB40; // type:func size:0x120 ROM 0x2c740 tier-B JFG mempool_slot_assign role, matched C main/memory -O2 -mips2 -32, 72/72 words, 8 exact tuples
+mempool_slot_assign = 0x8002BB40; // type:func size:0x120 ROM 0x2c740 tier-B JFG mempool_slot_assign role, matched C main/memory -O2 -mips2 -32, 72/72 words, 8 exact tuples, name tier-B JFG src/memory.c order+named anchors
 // jfg:src/saves.c.o
 rumbleKill = 0x8002BF00; // type:func size:0x44   ROM 0x2cb00  src/saves.c.o  masked=1/17  tier-A
 // jfg:src/rcpFast3d.c.o
@@ -2465,10 +2469,10 @@ rcpInit = 0x8002F560; // type:func size:0xB8 ROM 0x30160 tier-A donor-jfg-src/rc
 // tier B (JFG): resident startup passes the scheduler here immediately before
 // continuing through the PI/RCP initialization sequence.
 viInit = 0x80033580; // type:func size:0x128 ROM 0x34180 canonical C, linked byte-identical
-func_800336A8 = 0x800336A8; // type:func size:0x30C ROM 0x342A8 tier-A matched C, 195 exact words and 77 exact static relocation identities, JFG viChangeMode body with Mickey PAL and epilogue paths
+viChangeMode = 0x800336A8; // type:func size:0x30C ROM 0x342A8 tier-A matched C, 195 exact words and 77 exact static relocation identities, JFG viChangeMode body with Mickey PAL and epilogue paths, name tier-B JFG src/gameVi.c order+named anchors
 // JFG's viReset candidate is NON_MATCHING, so section 1.5 keeps this address
 // label; the original asm remains canonical.
-func_800339B4 = 0x800339B4; // type:func size:0xC8 ROM 0x345B4 NON_MATCHING candidate
+viReset = 0x800339B4; // type:func size:0xC8 ROM 0x345B4 NON_MATCHING candidate, name tier-B JFG src/gameVi.c order+named anchors
 // tier B (JFG): the mode changer passes the active resolution dimensions to
 // this allocator and the paired free routine around a mode transition.
 viAllocateZBuffer = 0x80033A7C; // type:func size:0x58 ROM 0x3467C canonical C, linked byte-identical
@@ -2485,7 +2489,7 @@ viGetCurrentSize = 0x80033CBC; // type:func size:0x48 ROM 0x348BC canonical C, l
 viConvertXY = 0x80033D04; // type:func size:0x54 ROM 0x34904 canonical C, linked byte-identical
 // Canonical C, but the JFG viGetScaleXY counterpart has only 3 unmasked words
 // and no same-address Mickey caller evidence, so its public name is not adopted.
-func_80033D58 = 0x80033D58; // type:func size:0x1C ROM 0x34958 canonical C, linked byte-identical
+viGetScaleXY = 0x80033D58; // type:func size:0x1C ROM 0x34958 canonical C, linked byte-identical, name tier-B JFG src/gameVi.c order+named anchors, JFG size 0x1C equal
 // tier B (JFG): viChangeMode and two runtime state-reset paths call this before
 // resuming frame pacing, and its body resets all four video-delta controls.
 viFrameRateReset = 0x80033D74; // type:func size:0x2C ROM 0x34974 canonical C, linked byte-identical
@@ -2505,50 +2509,50 @@ viSetWideAdjust = 0x80033F68; // type:func size:0x40   ROM 0x34b68  src/gameVi.c
 viSetTrippleBuffer = 0x80033FA8; // type:func size:0x10 ROM 0x34ba8 canonical C, linked byte-identical
 // Canonical C, but JFG's viGetTrippleBuffer name has no same-address Mickey
 // caller evidence and the three-word body is below the tier-A threshold.
-func_80033FB8 = 0x80033FB8; // type:func size:0xC ROM 0x34bb8 canonical C, linked byte-identical
+viGetTrippleBuffer = 0x80033FB8; // type:func size:0xC ROM 0x34bb8 canonical C, linked byte-identical, name tier-B JFG src/gameVi.c order+named anchors
 // tier B (JFG): after setting a requested buffer mode, the front-end branches
 // to viChangeMode exactly when this current/requested comparison returns true.
 viChangeBuffers = 0x80033FC4; // type:func size:0x1C ROM 0x34bc4 canonical C, linked byte-identical
 // Canonical C, but JFG's viNoClear name has no same-address Mickey caller
 // evidence and the three-word body is below the tier-A threshold.
-func_80033FE0 = 0x80033FE0; // type:func size:0xC ROM 0x34be0 canonical C, linked byte-identical
+viNoClear = 0x80033FE0; // type:func size:0xC ROM 0x34be0 canonical C, linked byte-identical, name tier-B JFG src/gameVi.c order+named anchors, JFG size 0xC equal
 viDisplayingScreen0 = 0x80033FEC; // type:func size:0x2C   ROM 0x34bec  src/gameVi.c.o  masked=4/11, canonical C is linked byte-identical
 func_80034018 = 0x80034018; // type:func size:0x7C   ROM 0x34c18  src/gameVi.c.o  masked=3/31
-func_80034094 = 0x80034094; // type:func size:0xBC ROM 0x34c94 tier-D exact C, JFG body and compiler-owned switch table
+viGetOsViMode = 0x80034094; // type:func size:0xBC ROM 0x34c94 tier-D exact C, JFG body and compiler-owned switch table, name tier-B JFG src/gameVi.c order+named anchors
 jtbl_8008249C = 0x8008249C; // type:jtbl size:0x30 tier-A compiler-owned gameVi switch table
 // tier B (JFG): viFrameSync advances buffers for each non-skip frame, while
 // the mode changer calls the same routine to establish new buffer state.
 fb_swap = 0x80034150; // type:func size:0xE0 ROM 0x34D50 canonical C, linked byte-identical
 fb_memcpy = 0x80034230; // type:func size:0x30   ROM 0x34e30  src/gameVi.c.o  masked=0/12, canonical C is linked byte-identical
-func_80034260 = 0x80034260; // type:func size:0x190 ROM 0x34E60 tier-D matched C src/main/textures_34E60.c.o -O2 -mips2 -32, DKR/JFG texInitTextures body adapted to Mickey globals and sizes, linked exact=100/100
-func_800343F0 = 0x800343F0; // type:func size:0x18 ROM 0x34FF0 canonical C, linked byte-identical, JFG-src/textures.c-texDisableModes body, Mickey address label retained
-func_80034424 = 0x80034424; // type:func size:0x10 ROM 0x35024 canonical C, linked byte-identical, JFG-src/textures.c-texModelTextureLoad body, Mickey address label retained
+texInitTextures = 0x80034260; // type:func size:0x190 ROM 0x34E60 tier-D matched C src/main/textures_34E60.c.o -O2 -mips2 -32, DKR/JFG texInitTextures body adapted to Mickey globals and sizes, linked exact=100/100, name tier-B JFG src/textures.c order+named anchors
+texDisableModes = 0x800343F0; // type:func size:0x18 ROM 0x34FF0 canonical C, linked byte-identical, JFG-src/textures.c-texDisableModes body, Mickey address label retained, name tier-B JFG src/textures.c order+named anchors
+texModelTextureLoad = 0x80034424; // type:func size:0x10 ROM 0x35024 canonical C, linked byte-identical, JFG-src/textures.c-texModelTextureLoad body, Mickey address label retained, name tier-B JFG src/textures.c order+named anchors, JFG size 0x10 equal
 func_80034434 = 0x80034434; // type:func size:0x14 ROM 0x35034 tier-D frame-exact NON_MATCHING candidate, Mickey texture-state setter
-func_80034448 = 0x80034448; // type:func size:0x358 ROM 0x35048 tier-D frame-exact NON_MATCHING DKR/JFG texLoadTexture candidate, 215/214 words, normalized distance 58, relocs 53/53 with 37 exact sites
-func_800347A0 = 0x800347A0; // type:func size:0xAC ROM 0x353A0 tier-A matched C src/main/textures_35024.c.o -O2 -mips2 -32, JFG texFreeTexture control flow adapted to Mickey's raw cache-word layout, linked exact=43/43
-func_8003484C = 0x8003484C; // type:func size:0x54 ROM 0x3544C tier-A matched C src/main/textures_35024.c.o -O2 -mips2 -32, JFG texGetTextureNum role, body indexes Mickey's raw cache-word pair table like func_800347A0, linked exact=21/21
-func_800348C8 = 0x800348C8; // type:func size:0xC ROM 0x354C8 canonical C, linked byte-identical, JFG-src/textures.c-setTexMemColour body, Mickey address label retained
-func_800348D4 = 0x800348D4; // type:func size:0x3C ROM 0x354D4 canonical C, linked byte-identical, JFG-src/textures.c-texFrame body adapted to Mickey fields, address label retained
+texLoadTexture = 0x80034448; // type:func size:0x358 ROM 0x35048 tier-D frame-exact NON_MATCHING DKR/JFG texLoadTexture candidate, 215/214 words, normalized distance 58, relocs 53/53 with 37 exact sites, name tier-B JFG src/textures.c order+named anchors, now matched C
+texFreeTexture = 0x800347A0; // type:func size:0xAC ROM 0x353A0 tier-A matched C src/main/textures_35024.c.o -O2 -mips2 -32, JFG texFreeTexture control flow adapted to Mickey's raw cache-word layout, linked exact=43/43, name tier-B JFG src/textures.c order+named anchors
+texGetTextureNum = 0x8003484C; // type:func size:0x54 ROM 0x3544C tier-A matched C src/main/textures_35024.c.o -O2 -mips2 -32, JFG texGetTextureNum role, body indexes Mickey's raw cache-word pair table like texFreeTexture, linked exact=21/21, name tier-B JFG src/textures.c order+named anchors, JFG size 0x54 equal
+setTexMemColour = 0x800348C8; // type:func size:0xC ROM 0x354C8 canonical C, linked byte-identical, JFG-src/textures.c-setTexMemColour body, Mickey address label retained, name tier-B JFG src/textures.c order+named anchors, JFG size 0xC equal
+texFrame = 0x800348D4; // type:func size:0x3C ROM 0x354D4 canonical C, linked byte-identical, JFG-src/textures.c-texFrame body adapted to Mickey fields, address label retained, name tier-B JFG src/textures.c order+named anchors
 func_80034910 = 0x80034910; // type:func size:0x10 ROM 0x35510 canonical C, linked byte-identical, Mickey texture-state setter, address label retained
-func_80034920 = 0x80034920; // type:func size:0x84 ROM 0x35520 tier-D matched C src/main/textures_354C8.c.o -O2 -mips2 -32, JFG-src/textures.c-texDPInit body plus Mickey-authenticated G_FOG and null guard, linked exact=33/33
-func_800349A4 = 0x800349A4; // type:func size:0x440 ROM 0x355A4 tier-D NON_MATCHING plateau, complete semantic C 274/272 words frame0x30/0x40 relocs37/39
-func_80034DE4 = 0x80034DE4; // type:func size:0xC ROM 0x359E4 canonical C, linked byte-identical, JFG-src/textures.c-sprSetTextureFilter body, Mickey address label retained
-func_80034DF0 = 0x80034DF0; // type:func size:0x58 ROM 0x359F0 canonical C, linked byte-identical, JFG-src/textures.c-sprSetIA2ColOverride body, Mickey address label retained
-func_80034E48 = 0x80034E48; // type:func size:0xC ROM 0x35A48 canonical C, linked byte-identical, JFG-src/textures.c-sprClearIA2ColOverride body, Mickey address label retained
-func_80034E54 = 0x80034E54; // type:func size:0x74C ROM 0x35A54 tier-D semantic NON_MATCHING plateau, JFG sprDPset assembly donor
-func_800355A0 = 0x800355A0; // type:func size:0x434 ROM 0x361A0 tier-D NON_MATCHING bounded DKR/JFG sprite-loader plateau, 177/268 differing words, normalized distance 27, frame 0x70 vs target 0x68, relocs 44/44 with 20 exact sites
-func_800359D4 = 0x800359D4; // type:func size:0x108 ROM 0x365D4 tier-D matched C src/main/textures_354C8.c.o -O2 -mips2 -32, JFG-src/textures.c-texFreeSprite body adapted to Mickey's flat cache, linked exact=66/66
+texDPInit = 0x80034920; // type:func size:0x84 ROM 0x35520 tier-D matched C src/main/textures_354C8.c.o -O2 -mips2 -32, JFG-src/textures.c-texDPInit body plus Mickey-authenticated G_FOG and null guard, linked exact=33/33, name tier-B JFG src/textures.c order+named anchors
+texDPTextureX = 0x800349A4; // type:func size:0x440 ROM 0x355A4 tier-D NON_MATCHING plateau, complete semantic C 274/272 words frame0x30/0x40 relocs37/39, name tier-B JFG src/textures.c order+named anchors
+sprSetTextureFilter = 0x80034DE4; // type:func size:0xC ROM 0x359E4 canonical C, linked byte-identical, JFG-src/textures.c-sprSetTextureFilter body, Mickey address label retained, name tier-B JFG src/textures.c order+named anchors, JFG size 0xC equal
+sprSetIA2ColOverride = 0x80034DF0; // type:func size:0x58 ROM 0x359F0 canonical C, linked byte-identical, JFG-src/textures.c-sprSetIA2ColOverride body, Mickey address label retained, name tier-B JFG src/textures.c order+named anchors, JFG size 0x58 equal
+sprClearIA2ColOverride = 0x80034E48; // type:func size:0xC ROM 0x35A48 canonical C, linked byte-identical, JFG-src/textures.c-sprClearIA2ColOverride body, Mickey address label retained, name tier-B JFG src/textures.c order+named anchors, JFG size 0xC equal
+sprDPset = 0x80034E54; // type:func size:0x74C ROM 0x35A54 tier-D semantic NON_MATCHING plateau, JFG sprDPset assembly donor, name tier-B JFG src/textures.c order+named anchors, now matched C
+texLoadSprite = 0x800355A0; // type:func size:0x434 ROM 0x361A0 tier-D NON_MATCHING bounded DKR/JFG sprite-loader plateau, 177/268 differing words, normalized distance 27, frame 0x70 vs target 0x68, relocs 44/44 with 20 exact sites, name tier-B JFG src/textures.c order+named anchors
+texFreeSprite = 0x800359D4; // type:func size:0x108 ROM 0x365D4 tier-D matched C src/main/textures_354C8.c.o -O2 -mips2 -32, JFG-src/textures.c-texFreeSprite body adapted to Mickey's flat cache, linked exact=66/66, name tier-B JFG src/textures.c order+named anchors
 func_80035ADC = 0x80035ADC; // type:func size:0x3AC ROM 0x366DC tier-D matched C src/main/textures_354C8.c.o -O2 -mips2 -32, DKR/JFG sprite frame builder adapted to Mickey fields, linked exact=235/235
 func_80035F48 = 0x80035F48; // type:func size:0x5FC ROM 0x36B48 tier-D semantic NON_MATCHING plateau, JFG-src/textures.c-func_80057C50 source shape plus Mickey target layout
-func_80036544 = 0x80036544; // type:func size:0x260 ROM 0x37144 tier-D frame-exact NON_MATCHING candidate, JFG src/textures.c-texAnimateSprite assembly donor
-func_800367A4 = 0x800367A4; // type:func size:0x44 ROM 0x373A4 tier-A byte-identical C, Mickey-only Sprite descriptor reconstruction, linked exact=17/17 words, relocations=1/1
-func_800367E8 = 0x800367E8; // type:func size:0x268 ROM 0x373E8 canonical C, linked byte-identical, JFG-src/textures.c-texAnimateTexture body adapted to Mickey flags
+texAnimateSprite = 0x80036544; // type:func size:0x260 ROM 0x37144 tier-D frame-exact NON_MATCHING candidate, JFG src/textures.c-texAnimateSprite assembly donor, name tier-B JFG src/textures.c order+named anchors, now matched C
+texAnimateTexSprite = 0x800367A4; // type:func size:0x44 ROM 0x373A4 tier-A byte-identical C, Mickey-only Sprite descriptor reconstruction, linked exact=17/17 words, relocations=1/1, name tier-B JFG src/textures.c order+named anchors, JFG size 0x44 equal
+texAnimateTexture = 0x800367E8; // type:func size:0x268 ROM 0x373E8 canonical C, linked byte-identical, JFG-src/textures.c-texAnimateTexture body adapted to Mickey flags, name tier-B JFG src/textures.c order+named anchors
 // jfg:src/textures.c.o
 initColourCycle = 0x80036A50; // type:func size:0x30 tier-A exact C, JFG src/textures.c body
-func_80036A80 = 0x80036A80; // type:func size:0x30 ROM 0x37680 tier-A, matched C src/main/frontend_37680.c -O2 -mips2 -32, JFG src/textures.c resetColourCycle body, linked exact=12/12
-func_80036AB0 = 0x80036AB0; // type:func size:0x1B0 ROM 0x376B0 tier-A, matched C src/main/frontend_37680.c -O2 -mips2 -32, JFG src/textures.c updateMixCycle form on the colour-cycle table with DKR update_colour_cycle channel locals, linked exact=108/108
-func_80036C60 = 0x80036C60; // type:func size:0x4C ROM 0x37860 tier-A, matched C src/main/frontend_37680.c -O2 -mips2 -32, JFG src/textures.c resetMixCycle body, linked exact=19/19
-func_80036CAC = 0x80036CAC; // type:func size:0x124 ROM 0x378AC tier-A, matched C src/main/frontend_37680.c -O2 -mips2 -32, JFG src/textures.c updateMixCycle body, linked exact=73/73
+resetColourCycle = 0x80036A80; // type:func size:0x30 ROM 0x37680 tier-A, matched C src/main/frontend_37680.c -O2 -mips2 -32, JFG src/textures.c resetColourCycle body, linked exact=12/12, name tier-B JFG src/textures.c order+named anchors
+updateColourCycle = 0x80036AB0; // type:func size:0x1B0 ROM 0x376B0 tier-A, matched C src/main/frontend_37680.c -O2 -mips2 -32, JFG src/textures.c updateMixCycle form on the colour-cycle table with DKR update_colour_cycle channel locals, linked exact=108/108, name tier-B JFG src/textures.c order+named anchors
+resetMixCycle = 0x80036C60; // type:func size:0x4C ROM 0x37860 tier-A, matched C src/main/frontend_37680.c -O2 -mips2 -32, JFG src/textures.c resetMixCycle body, linked exact=19/19, name tier-B JFG src/textures.c order+named anchors, JFG size 0x4C equal
+updateMixCycle = 0x80036CAC; // type:func size:0x124 ROM 0x378AC tier-A, matched C src/main/frontend_37680.c -O2 -mips2 -32, JFG src/textures.c updateMixCycle body, linked exact=73/73, name tier-B JFG src/textures.c order+named anchors
 func_80036DD0 = 0x80036DD0; // type:func size:0x138 ROM 0x379D0 tier-A, matched C src/main/frontend_37680.c -O2 -mips2 -32, JFG src/screen.c screenLoad body, linked exact=78/78
 func_80036F08 = 0x80036F08; // type:func size:0x240 ROM 0x37B08 tier-A, matched C src/main/frontend_37680.c -O2 -mips2 -32, JFG src/screen.c screenDraw body, linked exact=144/144, target boundary includes 0x8 bytes padding
 func_80037150 = 0x80037150; // type:func size:0x6C ROM 0x37D50 tier-A, matched C src/main/frontend_37D50.c -O2 -mips2 -32, buffer release body, linked exact=27/27
@@ -2570,10 +2574,10 @@ func_8003A700 = 0x8003A700; // type:func size:0x54 ROM 0x3B300 tier-A, matched C
 func_8003A754 = 0x8003A754; // type:func size:0x7C ROM 0x3B354 tier-D structure-mismatch candidate, 12 differing words, scalar reset loop
 func_8003A7D0 = 0x8003A7D0; // type:func size:0xAC ROM 0x3B3D0 tier-D structure-mismatch candidate, 36 differing words, count accumulation loop
 // donor-jfg-src/menu.c.o
-func_80038750 = 0x80038750; // type:func size:0x128 tier-A ROM 0x39350 IDO C exact, JFG src/menu.c structural oracle, allocator-trace-guided, owns jtbl at 0x83334
-func_80038878 = 0x80038878; // type:func size:0x154 tier-D ROM 0x39478 NON_MATCHING diagnostic p6 target 85/candidate 86 instructions, 66/85 positional differences, first +0x14, artificial empty address condition removed
-func_800389CC = 0x800389CC; // type:func size:0x1F8 tier-D ROM 0x395CC exact C, JFG-adapted body and compiler-owned switch table
-func_80038BC4 = 0x80038BC4; // type:func size:0x1E8 tier-D ROM 0x397C4 exact C, JFG-comparison body and compiler-owned switch table
+setLanguage = 0x80038750; // type:func size:0x128 tier-A ROM 0x39350 IDO C exact, JFG src/menu.c structural oracle, allocator-trace-guided, owns jtbl at 0x83334, name tier-B JFG src/menu.c order+named anchors
+initFront = 0x80038878; // type:func size:0x154 tier-D ROM 0x39478 NON_MATCHING diagnostic p6 target 85/candidate 86 instructions, 66/85 positional differences, first +0x14, artificial empty address condition removed, name tier-B JFG src/menu.c order+named anchors
+frontFreeMode = 0x800389CC; // type:func size:0x1F8 tier-D ROM 0x395CC exact C, JFG-adapted body and compiler-owned switch table, name tier-B JFG src/menu.c order+named anchors
+frontInitMode = 0x80038BC4; // type:func size:0x1E8 tier-D ROM 0x397C4 exact C, JFG-comparison body and compiler-owned switch table, name tier-B JFG src/menu.c order+named anchors
 jtbl_80082748 = 0x80082748; // type:jtbl size:0x4C tier-A compiler-owned menu switch table
 jtbl_80082794 = 0x80082794; // type:jtbl size:0x4C tier-A compiler-owned menu switch table
 // Compiler-owned menu repeat-state labels occupy one measured 0x30-byte BSS input section.
@@ -2603,7 +2607,7 @@ frontSetMode = 0x80038DAC; // type:func size:0x64 tier-B ROM 0x399ac canonical C
 // frontUpdate, and the following update's dispatch on the same state identify
 // the front-end mode accessor.
 frontGetMode = 0x80038E10; // type:func size:0xC tier-B ROM 0x39a10 canonical C, linked byte-identical
-func_80038E1C = 0x80038E1C; // type:func size:0x45C tier-D ROM 0x39a1c NON_MATCHING plateau 219/279 words differ, first +0xD8
+frontUpdate = 0x80038E1C; // type:func size:0x45C tier-D ROM 0x39a1c NON_MATCHING plateau 219/279 words differ, first +0xD8, name tier-B JFG src/menu.c order+named anchors frontGetMode/frontDemoMessage
 // Tier B (JFG): the blinking localized message renderer has the same exact
 // size, call sequence, and position immediately after frontUpdate.
 frontDemoMessage = 0x80039278; // type:func size:0x108 tier-B ROM 0x39e78 canonical C, linked byte-identical
@@ -2636,7 +2640,7 @@ setupFrontEndList = 0x80039D50; // type:func size:0x5C tier-B ROM 0x3a950 canoni
 // Tier A (JFG): the complete 34-word masked skeleton is identical, and the
 // function occupies the same ordered setupFrontEndObject position.
 setupFrontEndObject = 0x80039DAC; // type:func size:0x88 tier-A ROM 0x3a9ac canonical C, linked byte-identical
-func_80039E34 = 0x80039E34; // type:func size:0x418 tier-D ROM 0x3aa34 NON_MATCHING plateau +1 word, 242/262 differ, first +0x14
+frontDrawObj = 0x80039E34; // type:func size:0x418 tier-D ROM 0x3aa34 NON_MATCHING plateau +1 word, 242/262 differ, first +0x14, name tier-B JFG src/menu.c order+named anchors setupFrontEndObject
 // Tier B (JFG): exact packed-field getter, ordered position immediately before
 // the paired setter and screen-mode accessor family, and the resident caller's
 // use as a returned setting identify the language accessor.
@@ -2646,7 +2650,7 @@ frontGetLanguage = 0x8003A24C; // type:func size:0x14 tier-B ROM 0x3ae4c canonic
 // identify the language setter.
 frontSetLanguage = 0x8003A260; // type:func size:0x38 tier-B ROM 0x3ae60 canonical C, linked byte-identical
 frontGetScreenMode = 0x8003A298; // type:func size:0x30   ROM 0x3ae98  src/menu.c.o  masked=2/12
-func_8003A2C8 = 0x8003A2C8; // type:func size:0x80 tier-B ROM 0x3aec8 NON_MATCHING plateau, 24/32 raw/normalized, first +0x0, frameless/no padding, 6 exact relocations, 119 flags exhausted, ORT606 with 3 callers, linked exactness is fallback-only
+frontSetScreenMode = 0x8003A2C8; // type:func size:0x80 tier-B ROM 0x3aec8 NON_MATCHING plateau, 24/32 raw/normalized, first +0x0, frameless/no padding, 6 exact relocations, 119 flags exhausted, ORT606 with 3 callers, linked exactness is fallback-only, name tier-B JFG src/menu.c order+named anchors frontGetScreenMode/frontStoreScreenMode
 // Tier B (JFG): exact copied-byte store, adjacent ordered accessor family,
 // and correspondence with JFG's frontStoreScreenMode establish the role.
 frontStoreScreenMode = 0x8003A348; // type:func size:0x14  ROM 0x3af48
@@ -2679,7 +2683,7 @@ frontSetBgmVolume = 0x8003A4D0; // type:func size:0x3C  ROM 0x3b0d0
 // Tier B (JFG): exact split-bit getter, paired setter, and ordered menu
 // position establish the two-player split-screen role.
 frontGet2PlayerSplit = 0x8003A50C; // type:func size:0x14 tier-B ROM 0x3b10c canonical C, linked byte-identical
-func_8003A520 = 0x8003A520; // type:func size:0x24 tier-A ROM 0x3b120 IDO C exact, Mickey-only reconstruction, allocator-trace-guided bitfield setter
+frontSet2PlayerSplit = 0x8003A520; // type:func size:0x24 tier-A ROM 0x3b120 IDO C exact, Mickey-only reconstruction, allocator-trace-guided bitfield setter, name tier-B JFG src/menu.c order+named anchors frontGet2PlayerSplit, JFG size 0x24 equal
 func_8003A544 = 0x8003A544; // type:func size:0xC tier-D ROM 0x3b144 canonical C, linked byte-identical
 func_8003A550 = 0x8003A550; // type:func size:0xC tier-D ROM 0x3b150 canonical C, linked byte-identical
 func_8003A55C = 0x8003A55C; // type:func size:0x34 tier-D ROM 0x3b15c canonical C, linked byte-identical
@@ -2688,17 +2692,29 @@ func_8003A590 = 0x8003A590; // type:func size:0x10 tier-D ROM 0x3b190 canonical 
 diCpuTraceInit = 0x800459B0; // type:func size:0x54 ROM 0x465b0 tier-A exact C, JFG diCpuTraceInit
 // jfg:src/font.c.o
 fontSetWindow0 = 0x8004B040; // type:func size:0x24   ROM 0x4bc40  src/font.c.o  masked=2/9
+fontSetButtonMode = 0x8004B064; // type:func size:0xC ROM 0x4bc64 matched C, name tier-B JFG src/font.c order+named anchors fontSetWindow0/fontSetWindowNoise, JFG size equal
 fontSetWindowNoise = 0x8004B070; // type:func size:0x34   ROM 0x4bc70  src/font.c.o  masked=6/13
+fontUseFont = 0x8004B0A4; // type:func size:0x14 ROM 0x4bca4 matched C, name tier-B JFG src/font.c order+named anchors fontSetWindowNoise/fontColour, JFG size equal
 fontColour = 0x8004B0B8; // type:func size:0x24   ROM 0x4bcb8  src/font.c.o  masked=2/9
+fontBackground = 0x8004B0DC; // type:func size:0x1C ROM 0x4bcdc matched C, name tier-B JFG src/font.c order+named anchors fontColour/fontStringWidth, JFG size equal, 5-word byte match romocc 1
+fontPrintXY = 0x8004B0F8; // type:func size:0x44 ROM 0x4bcf8 matched C, name tier-B JFG src/font.c order+named anchors fontColour/fontStringWidth, JFG size equal
+fontPrintWindowXY = 0x8004B13C; // type:func size:0xA0 ROM 0x4bd3c matched C, name tier-B JFG src/font.c order+named anchors fontColour/fontStringWidth
 func_8004B1DC = 0x8004B1DC; // type:func size:0x8B0 tier-A stock C byte identity, font text renderer, frame 0x80
-func_8004BA8C = 0x8004BA8C; // type:func size:0xB8 ROM 0x4c68c tier-B JFG fontStringWidth role/order NON_MATCHING reproof, historical policy-defective C 38/46, current metrics unknown
+fontStringWidth = 0x8004BA8C; // type:func size:0xB8 ROM 0x4c68c tier-B JFG fontStringWidth role/order NON_MATCHING reproof, historical policy-defective C 38/46, current metrics unknown, name tier-B JFG src/font.c order+named anchors fontColour/fontWindowColour, JFG size 0xB8 equal, now matched C
+fontWindowSize = 0x8004BB44; // type:func size:0x9C ROM 0x4c744 matched C, name tier-B JFG src/font.c order+named anchors fontStringWidth/fontWindowColour
+fontWindowUseFont = 0x8004BBE0; // type:func size:0x1C ROM 0x4c7e0 matched C, name tier-B JFG src/font.c order+named anchors fontStringWidth/fontWindowColour, JFG size equal, 5-word byte match romocc 1
 fontWindowColour = 0x8004BBFC; // type:func size:0x40   ROM 0x4c7fc  src/font.c.o  masked=2/16
 fontWindowFontColour = 0x8004BC3C; // type:func size:0x48   ROM 0x4c83c  src/font.c.o  masked=2/18
 fontWindowFontBackground = 0x8004BC84; // type:func size:0x40   ROM 0x4c884  src/font.c.o  masked=2/16
-func_8004C0C4 = 0x8004C0C4; // type:func size:0x7C ROM 0x4ccc4 evidence-tier-B/D JFG fontWindowsDraw organization and Mickey window-flag flow C-match -O2 -mips2
+fontWindowAddStringXY = 0x8004BCC4; // type:func size:0x2A0 ROM 0x4c8c4 matched C, name tier-B JFG src/font.c order+named anchors fontWindowFontBackground/fontWindowsDraw
+fontWindowFlushStrings = 0x8004BF64; // type:func size:0x4C ROM 0x4cb64 matched C, name tier-B JFG src/font.c order+named anchors fontWindowFontBackground/fontWindowsDraw
+fontWindowEnable = 0x8004BFB0; // type:func size:0x28 ROM 0x4cbb0 matched C, name tier-B JFG src/font.c order+named anchors fontWindowFontBackground/fontWindowsDraw
+fontWindowDisable = 0x8004BFD8; // type:func size:0x28 ROM 0x4cbd8 matched C, name tier-B JFG src/font.c order+named anchors fontWindowFontBackground/fontWindowsDraw
+fontStringAddNumber = 0x8004C000; // type:func size:0xC4 ROM 0x4cc00 matched C, name tier-B JFG src/font.c order+named anchors fontWindowFontBackground/fontWindowsDraw, JFG size equal
+fontWindowsDraw = 0x8004C0C4; // type:func size:0x7C ROM 0x4ccc4 evidence-tier-B/D JFG fontWindowsDraw organization and Mickey window-flag flow C-match -O2 -mips2, name tier-B JFG src/font.c order+named anchors fontWindowFontBackground, JFG size 0x7C equal
 func_8004C140 = 0x8004C140; // type:func size:0xC0 ROM 0x4cd40 evidence-tier-B/D DKR render_fill_rectangle body and Mickey framebuffer-size call C-match -O2 -mips2
-func_8004C200 = 0x8004C200; // type:func size:0x3A4 ROM 0x4ce00 evidence-tier-B/D DKR render_dialogue_box organization and Mickey display-list/text flow C-match -O2 -mips2
-func_8004C8D8 = 0x8004C8D8; // type:func size:0xA54 ROM 0x4d4d8 evidence-tier-B/D JFG fontCreateDisplayList structure and Mickey texture-command flow C-match -O2 -mips2
+fontWindowDraw = 0x8004C200; // type:func size:0x3A4 ROM 0x4ce00 evidence-tier-B/D DKR render_dialogue_box organization and Mickey display-list/text flow C-match -O2 -mips2, name tier-B JFG src/font.c order+named anchors fontWindowsDraw
+fontCreateDisplayList = 0x8004C8D8; // type:func size:0xA54 ROM 0x4d4d8 evidence-tier-B/D JFG fontCreateDisplayList structure and Mickey texture-command flow C-match -O2 -mips2, name tier-B JFG src/font.c order+named anchors fontWindowsDraw
 func_8004D32C = 0x8004D32C; // type:func size:0x70 ROM 0x4df2c evidence-tier-D Mickey boundary and ext-caller flow C-match -O2 -mips2
 func_8004D39C = 0x8004D39C; // type:func size:0x70 ROM 0x4df9c evidence-tier-B/D JFG fontConvertString organization and Mickey character-table flow C-match -O2 -mips2
 // jfg:src/anim.c.o
@@ -2719,13 +2735,13 @@ animseqHoldPath = 0x800507BC; // type:func size:0x88   ROM 0x513bc  tier-B JFG p
 animseqLockPath = 0x80050844; // type:func size:0x38   ROM 0x51444  tier-B JFG paired process-command calls, matched C
 animseqUnLockPath = 0x8005087C; // type:func size:0x38   ROM 0x5147c  tier-B JFG paired process-command calls, matched C
 func_800508B4 = 0x800508B4; // type:func size:0x20   ROM 0x514b4  tier-D path-table getter structure, matched C
-func_80050AD4 = 0x80050AD4; // type:func size:0x120  ROM 0x516d4  tier-D JFG ordered node-linking candidate, matched C
-func_80050BF4 = 0x80050BF4; // type:func size:0x15C ROM 0x517F4 tier-A matched C and linked ROM, frame 0x18, 41 exact relocation identities
+animseqLinkNodes = 0x80050AD4; // type:func size:0x120  ROM 0x516d4  tier-D JFG ordered node-linking candidate, matched C, name tier-B JFG src/anim.c order+named anchors, right-aligned before animseqFreeLevelData
+animseqInit = 0x80050BF4; // type:func size:0x15C ROM 0x517F4 tier-A matched C and linked ROM, frame 0x18, 41 exact relocation identities, name tier-B JFG src/anim.c order+named anchors, right-aligned before animseqFreeLevelData
 func_80050D50 = 0x80050D50; // type:func size:0x58   ROM 0x51950  tier-D JFG nearest anim skeleton, matched C
 animseqFreeLevelData = 0x80050DA8; // type:func size:0x48   ROM 0x519a8  tier-B JFG storage and group cleanup calls, matched C
-func_80050DF0 = 0x80050DF0; // type:func size:0xAC ROM 0x519f0 tier-D JFG ordered animseqLoadLevelData comparison, matched C
-func_80050E9C = 0x80050E9C; // type:func size:0x168 ROM 0x51A9C tier-A matched C and linked ROM, frame 0x20, 41 exact relocation identities, tier-B JFG animseqFreeGroup role
-func_80051004 = 0x80051004; // type:func size:0xE4   ROM 0x51c04  tier-B JFG group-setup calls and CFG, matched C
+animseqLoadLevelData = 0x80050DF0; // type:func size:0xAC ROM 0x519f0 tier-D JFG ordered animseqLoadLevelData comparison, matched C, name tier-B JFG src/anim.c order+named anchors animseqFreeLevelData/animseqInitGroup
+animseqFreeGroup = 0x80050E9C; // type:func size:0x168 ROM 0x51A9C tier-A matched C and linked ROM, frame 0x20, 41 exact relocation identities, tier-B JFG animseqFreeGroup role, name tier-B JFG src/anim.c order+named anchors animseqFreeLevelData/animseqInitGroup
+animseqSetupGroup = 0x80051004; // type:func size:0xE4   ROM 0x51c04  tier-B JFG group-setup calls and CFG, matched C, name tier-B JFG src/anim.c order+named anchors animseqFreeLevelData/animseqInitGroup
 animseqInitGroup = 0x800510E8; // type:func size:0x40   ROM 0x51ce8  src/anim.c.o  masked=1/16 tier-A matched-C
 animseqResetGroup = 0x80051128; // type:func size:0x9C   ROM 0x51d28  tier-B JFG reset-path call family, matched C
 func_800511C4 = 0x800511C4; // type:func size:0x1A0  ROM 0x51dc4  src/anim.c.o  masked=11/104 tier-A matched-C
@@ -2823,7 +2839,7 @@ camIgnoreShake = 0x80021494; // type:func size:0x0C ROM 0x22094 tier-B matched-C
 camGetFOV = 0x800214A0; // type:func size:0x0C ROM 0x220a0 tier-B matched-C JFG role/order and FOV state read
 func_800214AC = 0x800214AC; // type:func size:0x38 ROM 0x220AC tier-D matched-C Mickey auto-name retained, active-camera state toggle
 camOverrideProjScales = 0x800214E4; // type:func size:0x20 ROM 0x220e4 tier-B matched-C, donor comparison has only 2 unmasked words
-func_80021504 = 0x80021504; // type:func size:0x214 ROM 0x22104 tier-D matched-C Mickey projection update body, JFG camSetFOV role/order
+camSetFOV = 0x80021504; // type:func size:0x214 ROM 0x22104 tier-D matched-C Mickey projection update body, JFG camSetFOV role/order, name tier-B JFG src/camera.c order+named anchors
 func_80021718 = 0x80021718; // type:func size:0x94 ROM 0x22318 tier-D matched-C DKR camera-reset-FOV body, Mickey auto-name retained
 func_800217AC = 0x800217AC; // type:func size:0x0C ROM 0x223ac tier-D matched-C Mickey auto-name retained, camera TU position
 camDistance = 0x800217B8; // type:func size:0x80 ROM 0x223B8 tier-D matched-C JFG TU role/order and camera-position dataflow
@@ -2839,29 +2855,29 @@ camGetNo = 0x80021964; // type:func size:0x0C ROM 0x22564 tier-D matched-C JFG T
 func_80021970 = 0x80021970; // type:func size:0x24 ROM 0x22570 tier-D matched-C Mickey auto-name retained, indexed camera-array getter
 camSetNo = 0x80021994; // type:func size:0x0C ROM 0x22594 tier-D matched-C JFG TU order, Mickey raw active-camera update
 camGetWaterLine = 0x800219A0; // type:func size:0x10 ROM 0x225a0 tier-D matched-C JFG TU order, water-line state read
-func_800219D0 = 0x800219D0; // type:func size:0x1A0 ROM 0x225D0 tier-D matched-C DKR viewport-stack body, JFG camUserViewTick role/order
+camUserViewTick = 0x800219D0; // type:func size:0x1A0 ROM 0x225D0 tier-D matched-C DKR viewport-stack body, JFG camUserViewTick role/order, name tier-B JFG src/camera.c order+named anchors
 camEnableUserView = 0x80021B70; // type:func size:0x74 ROM 0x22770 tier-D matched-C JFG TU role/order and viewport-flag dataflow
 camDisableUserView = 0x80021BE4; // type:func size:0x78 ROM 0x227E4 tier-D matched-C JFG TU role/order and viewport-flag dataflow
 camIsUserView = 0x80021C5C; // type:func size:0x2C ROM 0x2285C tier-D matched-C JFG TU role/order
-func_80021C88 = 0x80021C88; // type:func size:0x16C ROM 0x22888 tier-D matched-C JFG camSetUserView role/order, Mickey auto-name retained
+camSetUserView = 0x80021C88; // type:func size:0x16C ROM 0x22888 tier-D matched-C JFG camSetUserView role/order, Mickey auto-name retained, name tier-B JFG src/camera.c order+named anchors
 camSetUserViewSpecial = 0x80021DF4; // type:func size:0xFC ROM 0x229F4 tier-D matched-C JFG TU role/order and viewport-field dataflow
 camGetVisibleUserView = 0x80021EF0; // type:func size:0x78 ROM 0x22AF0 tier-D matched-C JFG TU role/order and viewport-scissor dataflow
 camGetUserView = 0x80021F68; // type:func size:0x48 ROM 0x22B68 tier-D matched-C JFG TU role/order and viewport-field dataflow
-func_80021FB0 = 0x80021FB0; // type:func size:0x238 ROM 0x22BB0 tier-D matched-C JFG camGetWindowLimits role/order, Mickey auto-name retained
-func_800221E8 = 0x800221E8; // type:func size:0x41C ROM 0x22de8 tier-D matched-C, JFG camSetView body, Mickey auto-name retained
+camGetWindowLimits = 0x80021FB0; // type:func size:0x238 ROM 0x22BB0 tier-D matched-C JFG camGetWindowLimits role/order, Mickey auto-name retained, name tier-B JFG src/camera.c order+named anchors
+camSetView = 0x800221E8; // type:func size:0x41C ROM 0x22de8 tier-D matched-C, JFG camSetView body, Mickey auto-name retained, name tier-B JFG src/camera.c order+named anchors
 func_80022604 = 0x80022604; // type:func size:0x0C ROM 0x23204 tier-D matched-C Mickey auto-name retained, camera TU position
 camSetScissor = 0x80022610; // type:func size:0x150 ROM 0x23210 tier-D matched-C JFG TU role/order and scissor-command dataflow
-func_80022794 = 0x80022794; // type:func size:0x2A4 ROM 0x23394 tier-D matched-C, JFG camSetProjMtx body, Mickey auto-name retained
+camSetProjMtx = 0x80022794; // type:func size:0x2A4 ROM 0x23394 tier-D matched-C, JFG camSetProjMtx body, Mickey auto-name retained, name tier-B JFG src/camera.c order+named anchors
 camOrthoYAspect = 0x80022A38; // type:func size:0x0C ROM 0x23638 tier-D matched-C JFG TU role/order
 func_80022A44 = 0x80022A44; // type:func size:0x0C ROM 0x23644 tier-D matched-C Mickey auto-name retained, camera TU position
 camStandardOrtho = 0x80022A50; // type:func size:0x144 ROM 0x23650 tier-D matched-C JFG TU role/order and orthographic viewport dataflow
 camStandardPersp = 0x80022B94; // type:func size:0xC4 ROM 0x23794 tier-D matched-C JFG TU role/order and perspective-matrix dataflow
 camSetViewport = 0x80022C58; // type:func size:0xC8 ROM 0x23858 tier-D matched-C JFG TU role/order and viewport dataflow
-func_80022D20 = 0x80022D20; // type:func size:0x160 ROM 0x23920 tier-D matched-C JFG camResetView role/order, Mickey auto-name retained
+camResetView = 0x80022D20; // type:func size:0x160 ROM 0x23920 tier-D matched-C JFG camResetView role/order, Mickey auto-name retained, name tier-B JFG src/camera.c order+named anchors
 func_80022E80 = 0x80022E80; // type:func size:0x154 ROM 0x23A80 tier-D matched-C Mickey camera-relative billboard offset dataflow
-func_80023A08 = 0x80023A08; // type:func size:0x2C4 ROM 0x24608 tier-D matched-C JFG camDoSprite role/order, Mickey auto-name retained
-func_80023CCC = 0x80023CCC; // type:func size:0x2B8 ROM 0x248CC tier-D matched-C JFG camDoSpriteDirect role/order, Mickey auto-name retained
-func_80023F84 = 0x80023F84; // type:func size:0x280 ROM 0x24B84 tier-D matched-C JFG camDo2DSprite role/order, Mickey auto-name retained
+camDoSprite = 0x80023A08; // type:func size:0x2C4 ROM 0x24608 tier-D matched-C JFG camDoSprite role/order, Mickey auto-name retained, name tier-B JFG src/camera.c order+named anchors
+camDoSpriteDirect = 0x80023CCC; // type:func size:0x2B8 ROM 0x248CC tier-D matched-C JFG camDoSpriteDirect role/order, Mickey auto-name retained, name tier-B JFG src/camera.c order+named anchors
+camDo2DSprite = 0x80023F84; // type:func size:0x280 ROM 0x24B84 tier-D matched-C JFG camDo2DSprite role/order, Mickey auto-name retained, name tier-B JFG src/camera.c order+named anchors
 camPushFloatModelMtx = 0x80024204; // type:func size:0xDC ROM 0x24E04 tier-D matched-C JFG TU role/order and float-model matrix dataflow
 camPushMuzzleMtx = 0x800242E0; // type:func size:0x14C ROM 0x24EE0 tier-D matched-C JFG TU role/order and muzzle-matrix dataflow
 camScaleModelMtx = 0x8002442C; // type:func size:0xC0 ROM 0x2502C tier-D matched-C JFG TU role/order and model-scale matrix dataflow
@@ -2875,19 +2891,19 @@ camGetProjOrgMtx = 0x80024670; // type:func size:0x1C ROM 0x25270 tier-B matched
 func_8002468C = 0x8002468C; // type:func size:0x0C ROM 0x2528C tier-D matched-C Mickey auto-name retained, camera matrix dataflow
 camGetRotationMtx = 0x80024698; // type:func size:0x0C ROM 0x25298 tier-B matched-C Mickey/JFG weather call graph and matrix dataflow
 camGetProjectionMtx = 0x800246A4; // type:func size:0x0C ROM 0x252A4 tier-D matched-C JFG role and Mickey final projection-matrix dataflow
-func_800246B0 = 0x800246B0; // type:func size:0x184 ROM 0x252B0 tier-D matched-C JFG camProjectPoint role/order, Mickey auto-name retained
-func_80024834 = 0x80024834; // type:func size:0x104 ROM 0x25434 tier-A matched-C JFG camReversePoint source, 65/65 instructions and nine relocations exact
+camProjectPoint = 0x800246B0; // type:func size:0x184 ROM 0x252B0 tier-D matched-C JFG camProjectPoint role/order, Mickey auto-name retained, name tier-B JFG src/camera.c order+named anchors
+camReversePoint = 0x80024834; // type:func size:0x104 ROM 0x25434 tier-A matched-C JFG camReversePoint source, 65/65 instructions and nine relocations exact, name tier-B JFG src/camera.c order+named anchors
 camGetProjZ = 0x80024938; // type:func size:0x40 ROM 0x25538 tier-D matched-C JFG TU role/order and projection-depth dataflow
-func_80024978 = 0x80024978; // type:func size:0x14C ROM 0x25578 tier-A matched C src/main/camera.c.o -O2 -mips2 -32 -Wab,-r4300_mul, JFG camCopyOrthoMatrix loop scaled by D_80079F48, 83/83 instructions exact, camera .data starts at 0x80079F40
+camCopyOrthoMatrix = 0x80024978; // type:func size:0x14C ROM 0x25578 tier-A matched C src/main/camera.c.o -O2 -mips2 -32 -Wab,-r4300_mul, JFG camCopyOrthoMatrix loop scaled by D_80079F48, 83/83 instructions exact, camera .data starts at 0x80079F40, name tier-B JFG src/camera.c order+named anchors
 D_80079F48 = 0x80079F48; // type:f32 size:0x4 tier-A compiler-owned camera .data projection scale
 D_80079F4C = 0x80079F4C; // type:f32 size:0x4 tier-A compiler-owned camera .data matrix coefficient
 D_80079F50 = 0x80079F50; // type:f32 size:0x4 tier-A compiler-owned camera .data leading-matrix coefficient
 D_80079F54 = 0x80079F54; // type:f32 size:0x4 tier-A compiler-owned camera .data leading-matrix coefficient
 camStartShake = 0x80024AC4; // type:func size:0x90 ROM 0x256C4 tier-D matched-C JFG TU role/order and shake-record dataflow
 camStopShakes = 0x80024B54; // type:func size:0x4C ROM 0x25754 tier-B matched-C similar-jfg-camStopShakes=1.000
-func_80024BA0 = 0x80024BA0; // type:func size:0x128 ROM 0x257A0 tier-D matched-C Mickey distance-based shake body, JFG camScreenShake role/order
+camScreenShake = 0x80024BA0; // type:func size:0x128 ROM 0x257A0 tier-D matched-C Mickey distance-based shake body, JFG camScreenShake role/order, name tier-B JFG src/camera.c order+named anchors, JFG size 0x128 equal
 camSetZoom = 0x80024CC8; // type:func size:0x38 ROM 0x258c8 tier-B matched-C similar-jfg-camSetZoom=1.000
-func_80024D00 = 0x80024D00; // type:func size:0x1D8 ROM 0x25900 tier-D matched-C JFG camTick role/order, Mickey auto-name retained
+camTick = 0x80024D00; // type:func size:0x1D8 ROM 0x25900 tier-D matched-C JFG camTick role/order, Mickey auto-name retained, name tier-B JFG src/camera.c order+named anchors
 func_80024ED8 = 0x80024ED8; // type:func size:0x144 ROM 0x25AD8 tier-D matched-C Mickey auto-name retained, fixed-distance camera-transform dataflow
 
 // Tier A: Mickey-only full-TU C, 301 linked words and 74 relocation identities.

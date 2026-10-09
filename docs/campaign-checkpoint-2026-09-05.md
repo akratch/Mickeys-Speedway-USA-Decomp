@@ -18,8 +18,8 @@ integrated locally and not pushed. Public `master` remains unchanged at
 `2e5b6d932`; the newer private exact matches have not been released.
 
 Exact private commits since the earlier `a8b4c3f0` checkpoint are
-`21d0325a` (`func_80035E88`), `a6376bae` (`func_80034920`),
-`d5247b25` (`func_800359D4`), `2eb99669` (`func_80034260`),
+`21d0325a` (`func_80035E88`), `a6376bae` (`texDPInit`),
+`d5247b25` (`texFreeSprite`), `2eb99669` (`texInitTextures`),
 `92e29ad5` (`func_80035ADC`), and `4ab997cc` (`func_80002188`).
 Recompute progress with `.venv/bin/python tools/progress.py --version us
 --csv` against the current linked ELF; do not carry a historical percentage

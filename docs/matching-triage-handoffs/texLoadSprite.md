@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_800355A0:start -->
-### `func_800355A0` plateau handoff
+<!-- plateau-handoff:texLoadSprite:start -->
+### `texLoadSprite` plateau handoff
 
 - source: `src/main/textures_354C8.c`
 - score: 0/269 words, promoted
@@ -227,4 +227,4 @@ the first loop.
 Gates: gmake verify OK on the promoted tree, scoreboard and ranking
 regenerated.
 
-<!-- plateau-handoff:func_800355A0:end -->
+<!-- plateau-handoff:texLoadSprite:end -->

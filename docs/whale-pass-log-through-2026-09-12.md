@@ -1905,7 +1905,7 @@ through three moves that change what the function does:
   - two put `nodes[1].texture = 0;` AFTER the `func_8002F618` call, and that
     callee walks the node list until it reads a NULL `texture` -- so the
     terminator has to be stored first
-  - one moves `x = -x;` in front of a `func_8004B0F8` call that takes
+  - one moves `x = -x;` in front of a `fontPrintXY` call that takes
     `x + 0xA0` as an argument
 
 This is the brief's trap 8 in a different instrument: an order sweep ranked by
@@ -3168,7 +3168,7 @@ narrow, and the sharper statement matters because it closes the lever for good:
 
 Twelve new cells, all on top of the natural bound: `if (D_o058_5E7C);` and
 `if (D_o058_5E78);`, one to four copies, placed **after the loop body's last
-call** (`func_8004B0F8`), where no CSE with the pre-call read is possible, and
+call** (`fontPrintXY`), where no CSE with the pre-call read is possible, and
 also mid-body.  **Every one is byte-identical** to the natural bound alone
 (845 masked / 3,125 exact / 544 of 851).
 

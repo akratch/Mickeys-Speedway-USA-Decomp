@@ -72,7 +72,7 @@ extern void func_8002A250(s32 mode, void *source, Overlay37State *state,
 extern void func_800244EC(Overlay37Command **commands, void *renderContext,
                           Overlay37Transform *transform, f32 scale,
                           f32 extra);
-extern void func_800349A4(Overlay37Command **commands, void *resource,
+extern void texDPTextureX(Overlay37Command **commands, void *resource,
                           s32 mode, s32 flags);
 extern void func_8002460C(Overlay37Command **commands);
 
@@ -174,7 +174,7 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
     transform.position.z += deltaZ * 0.5f;
 
     func_800244EC(commands, renderContext, &transform, 1.0f, 0.0f);
-    func_800349A4(commands, *object->resource, 0x10, 0);
+    texDPTextureX(commands, *object->resource, 0x10, 0);
 
     O37_SET_PRIM_COLOR((*commands)++, 0, 0, red, green, blue, 255);
     O37_VERTEX((*commands)++, gOverlay37DisplayData, 12, 0);

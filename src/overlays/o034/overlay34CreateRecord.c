@@ -72,7 +72,7 @@ extern Overlay34Record *gOverlay34Records;
 extern Overlay34Record **gOverlay34Pointers;
 extern s32 gOverlay34ActiveCount;
 extern s32 gOverlay34Count;
-extern Overlay34Resource *func_80034448(s16 resourceId);
+extern Overlay34Resource *texLoadTexture(s16 resourceId);
 extern void func_80029FE4(Overlay34Input *input, f32 direction[3]);
 
 /* Matched 2026-09-17, lane w3-o034. 125/125 words, frame 0x30, 12 relocs.
@@ -107,7 +107,7 @@ Overlay34Record *overlay34CreateRecord(Overlay34Input *input) {
             } while (index < gOverlay34Count);
         }
         if (candidate != NULL) {
-            candidate->resource = func_80034448(input->resourceId);
+            candidate->resource = texLoadTexture(input->resourceId);
             if (candidate->resource != NULL) {
                 record = candidate;
                 width = (record->resource->width - 1) << 5;

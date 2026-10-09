@@ -5,13 +5,13 @@ extern s32 gOverlay14ValueC0;
  * returning int, as an undeclared call would. As u8 the zero-extension
  * becomes a second web copied out of v0 (one extra move, frame +8). */
 extern s32 func_8004D5C0(s32 font);
-extern void func_8004B0DC(s32 red, s32 green, s32 blue, s32 alpha);
+extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);
 extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha,
                        s32 opacity);
-extern void func_8004B0A4(s32 font);
+extern void fontUseFont(s32 font);
 extern u8 *func_8004D40C(s32 font, char *text, s32 maxWidth,
                          u8 **lineStart, s32 *outWidth);
-extern void func_8004B0F8(void *displayList, s32 x, s32 y, char *text,
+extern void fontPrintXY(void *displayList, s32 x, s32 y, char *text,
                           s32 alignmentFlags);
 
 /* PROVENANCE: structure cross-checked against JFG
@@ -47,10 +47,10 @@ s32 func_overlay_014_F0001830_1871108(s32 context, u8 *stream, s32 skip) {
     done = 0;
     cellWidth = func_8004D5C0(2);
     remaining = (0x58 / cellWidth) - 1;
-    func_8004B0DC(0, 0, 0, 0);
+    fontBackground(0, 0, 0, 0);
     fontColour(0xFF, 0xFF, 0xFF, 0xFF,
                (gOverlay14ValueC0 * 0xFF) >> 8);
-    func_8004B0A4(2);
+    fontUseFont(2);
     y = ((0x58 - (remaining * cellWidth)) >> 1) + 0x14;
     do {
         x = 0x60; width = 0xC8; cursor = 0; adjust = 0; extra = 0;
@@ -85,7 +85,7 @@ s32 func_overlay_014_F0001830_1871108(s32 context, u8 *stream, s32 skip) {
                        (saved * gOverlay14ValueC0) >> 8);
             break;
         case7Draw:
-            func_8004B0DC(stream[-7], stream[-6], stream[-5], stream[-3]);
+            fontBackground(stream[-7], stream[-6], stream[-5], stream[-3]);
             break;
         case 7:
             stream += 8;
@@ -104,7 +104,7 @@ s32 func_overlay_014_F0001830_1871108(s32 context, u8 *stream, s32 skip) {
                         remaining--;
                         if (remaining >= 0) {
                             saved = *cursor; *cursor = 0;
-                            func_8004B0F8((void *)context, x, y,
+                            fontPrintXY((void *)context, x, y,
                                           (char *)drawArgs[0], extra);
                             *cursor = saved; y += cellWidth;
                         }

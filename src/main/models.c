@@ -48,16 +48,16 @@ extern void *func_8001FBCC(ModelCopySource *source);
 extern ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source,
                                                 s32 pointCopies);
 
-void *func_8002B280(s32 size, s32 tag);
-void *func_8002B314(s32 size, s32 tag);
+void *mmAlloc(s32 size, s32 tag);
+void *mmAlloc2(s32 size, s32 tag);
 s32 *piRomLoad(s32 assetId);
-void *func_80034448(s16 textureId);
-void func_800347A0(void *texture);
-s32 func_8003484C(void *texture);
+void *texLoadTexture(s16 textureId);
+void texFreeTexture(void *texture);
+s32 texGetTextureNum(void *texture);
 void texLoadTextureAddr(s32 id, s32 value);
-void func_80034424(s32 enabled);
-void func_80034920(Gfx **displayList);
-void func_800349A4(Gfx **displayList, void *texture, s32 flags, s32 parameter);
+void texModelTextureLoad(s32 enabled);
+void texDPInit(Gfx **displayList);
+void texDPTextureX(Gfx **displayList, void *texture, s32 flags, s32 parameter);
 void func_80020AD4(void);
 void func_8005AAC0(void *animation);
 extern s32 func_8004D7A8(s32 assetId, s32 assetOffset);
@@ -65,7 +65,7 @@ extern u8 *func_8004D7E0(u8 *compressed, u8 *output);
 extern s32 func_8005A7A0(void *model, s32 modelId);
 extern s32 piRomLoadSection(u32 assetId, u32 address, s32 offset, s32 size);
 struct ModelGfxSource;
-s32 func_8002057C(Gfx **out, struct ModelGfxSource *model, s32 arg2, s32 arg3,
+s32 makeModelGfx(Gfx **out, struct ModelGfxSource *model, s32 arg2, s32 arg3,
                   s32 arg4, s32 arg5, s32 arg6);
 void mmFree(void *ptr);
 
@@ -86,11 +86,11 @@ void func_8001F420(u16 *src, u16 *dest, s32 len) {
  * JFG's later allocations; Mickey's globals, calls, and bytes are authoritative.
  */
 void modInitModels(void) {
-    D_800CB484 = func_8002B280(0x2A8, 0x8A);
-    D_800CB488 = func_8002B280(0x190, 0x8A);
+    D_800CB484 = mmAlloc(0x2A8, 0x8A);
+    D_800CB488 = mmAlloc(0x190, 0x8A);
     D_800CB48C = 0;
     D_800CB494 = 0;
-    D_800CB4A4 = func_8002B280(0x2000, 0x8A);
+    D_800CB4A4 = mmAlloc(0x2000, 0x8A);
     D_800CB480 = piRomLoad(0x26);
     D_800CB490 = 0;
     while (D_800CB480[D_800CB490] != -1) {
@@ -124,7 +124,7 @@ typedef struct ModelGfxPart {
 #define MODEL_CACHE_ID(x) ((x << 1) + 0)
 #define MODEL_CACHE_PTR(x) ((x << 1) + 1)
 
-void *func_8001F520(s32 modelID, s32 flags) {
+void *modLoadModel(s32 modelID, s32 flags) {
     s32 i;
     s32 j;
     s32 cacheIndex;
@@ -175,7 +175,7 @@ void *func_8001F520(s32 modelID, s32 flags) {
     romOffset = D_800CB480[modelID];
     compressedSize = D_800CB480[modelID + 1] - romOffset;
     modelSize = func_8004D7A8(0x27, romOffset) + sizeof(ObjectModel);
-    objMdl = (ObjectModel *) func_8002B314(modelSize, 0x8A);
+    objMdl = (ObjectModel *) mmAlloc2(modelSize, 0x8A);
     if (objMdl == NULL) {
         if (fromFree) {
             D_800CB494++;
@@ -189,7 +189,7 @@ void *func_8001F520(s32 modelID, s32 flags) {
     piRomLoadSection(0x27, compressedData, romOffset, compressedSize);
     func_8004D7E0((u8 *) compressedData, (u8 *) objMdl);
     if (objMdl->nestedCount != 0) {
-        objMdl->nestedAllocations = (void **) func_8002B314((objMdl->nestedCount * 4) + 4, 0x8A);
+        objMdl->nestedAllocations = (void **) mmAlloc2((objMdl->nestedCount * 4) + 4, 0x8A);
         if (objMdl->nestedAllocations == NULL) {
             if (fromFree) {
                 D_800CB494++;
@@ -226,10 +226,10 @@ void *func_8001F520(s32 modelID, s32 flags) {
     objMdl->unk68 = NULL;
     objMdl->unk6C = NULL;
     for (i = 0; i < objMdl->numberOfTextures; i++) {
-        objMdl->textures[i].texture = func_80034448(objMdl->textures[i].textureId);
+        objMdl->textures[i].texture = texLoadTexture(objMdl->textures[i].textureId);
         if (objMdl->textures[i].texture == NULL) {
             for (j = 0; j < i; j++) {
-                func_800347A0(objMdl->textures[j].texture);
+                texFreeTexture(objMdl->textures[j].texture);
                 objMdl->textures[j].texture = NULL;
             }
             for (; j < objMdl->numberOfTextures; j++) {
@@ -248,7 +248,7 @@ void *func_8001F520(s32 modelID, s32 flags) {
         goto block_30;
     }
     if (objMdl->unk11 != 0) {
-        objMdl->unk28 = func_8002B314(objMdl->numberOfTextures * 8, 0x8A);
+        objMdl->unk28 = mmAlloc2(objMdl->numberOfTextures * 8, 0x8A);
         if (objMdl->unk28 == NULL) {
             goto block_30;
         }
@@ -257,19 +257,19 @@ void *func_8001F520(s32 modelID, s32 flags) {
         start = 0;
         for (group = 0; group < objMdl->nestedCount; group++) {
             last = objMdl->nestedGroups[group] - 1;
-            func_8002057C((Gfx **) &objMdl->nestedAllocations[group], (struct ModelGfxSource *) objMdl, 0, 0,
+            makeModelGfx((Gfx **) &objMdl->nestedAllocations[group], (struct ModelGfxSource *) objMdl, 0, 0,
                           start, last, 0);
             start = last + 1;
         }
-        func_8002057C((Gfx **) &objMdl->nestedAllocations[group], (struct ModelGfxSource *) objMdl, 0, 0,
+        makeModelGfx((Gfx **) &objMdl->nestedAllocations[group], (struct ModelGfxSource *) objMdl, 0, 0,
                       start, 0xFF, 0);
     } else {
-        objMdl->textureAnimationCount = func_8002057C((Gfx **) &objMdl->unk68,
+        objMdl->textureAnimationCount = makeModelGfx((Gfx **) &objMdl->unk68,
                                                       (struct ModelGfxSource *) objMdl, 0, 0, 0, 0xFF, 0);
         if (objMdl->unk68 == NULL) {
             goto block_30;
         }
-        func_8002057C((Gfx **) &objMdl->unk6C, (struct ModelGfxSource *) objMdl, 4, 0, 0, 0xFF, 0);
+        makeModelGfx((Gfx **) &objMdl->unk6C, (struct ModelGfxSource *) objMdl, 4, 0, 0, 0xFF, 0);
         if (objMdl->unk6C == NULL) {
             goto block_30;
         }
@@ -346,7 +346,7 @@ void *func_8001FBCC(ModelCopySource *source) {
     u16 *data;
     ModelCopyAllocation *allocation;
 
-    allocation = func_8002B314(source->count * 0xA + 0xC, 0x8A);
+    allocation = mmAlloc2(source->count * 0xA + 0xC, 0x8A);
     if (allocation != NULL) {
         data = (u16 *)((u8 *)allocation + 0xC);
         allocation->source = source;
@@ -472,7 +472,7 @@ ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCo
         extraBytes = source->copyCount * 8 + 0xA8;
     }
 
-    instance = func_8002B314((matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes + dataBytes44 + dataBytes48 +
+    instance = mmAlloc2((matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes + dataBytes44 + dataBytes48 +
                      coordinateBytes + extraBytes + 0x58, 0x8A);
     if (instance != NULL) {
         clear = (u32 *)instance;
@@ -616,7 +616,7 @@ void func_80020278(ObjectModel *model) {
     if (model->numberOfTextures > 0) {
         do {
             if (model->textures[index].texture != NULL) {
-                func_800347A0(model->textures[index].texture);
+                texFreeTexture(model->textures[index].texture);
             }
             freed++;
             index++;
@@ -667,18 +667,18 @@ void func_800203E0(ObjectModel *model) {
         do {
             if (((ModelTexture *)((u8 *)model->textures + offset))->texture == NULL) {
                 ((ModelTexture *)((u8 *)model->textures + offset))->texture =
-                    func_80034448(((ModelTexture *)((u8 *)model->textures + offset))->textureId);
+                    texLoadTexture(((ModelTexture *)((u8 *)model->textures + offset))->textureId);
             }
             loaded++;
             offset += sizeof(ModelTexture);
         } while (loaded < model->numberOfTextures);
     }
     if (model->unk68 == NULL) {
-        model->textureAnimationCount = func_8002057C((Gfx **)&model->unk68,
+        model->textureAnimationCount = makeModelGfx((Gfx **)&model->unk68,
                                                      (struct ModelGfxSource *)model, 0, 0, 0, 0xFF, 0);
     }
     if (model->unk6C == NULL) {
-        func_8002057C((Gfx **)&model->unk6C, (struct ModelGfxSource *)model, 4, 0, 0, 0xFF, 0);
+        makeModelGfx((Gfx **)&model->unk6C, (struct ModelGfxSource *)model, 4, 0, 0, 0xFF, 0);
     }
 }
 /* Mickey-only reconstruction; JFG supplied no adoptable helper name or body. */
@@ -691,7 +691,7 @@ void func_800204B8(ObjectModel *model) {
     if (model->numberOfTextures > 0) {
         do {
             if (((ModelTexture *)((u8 *)model->textures + offset))->texture != NULL) {
-                func_800347A0(((ModelTexture *)((u8 *)model->textures + offset))->texture);
+                texFreeTexture(((ModelTexture *)((u8 *)model->textures + offset))->texture);
                 ((ModelTexture *)((u8 *)model->textures + offset))->texture = NULL;
             }
             i++;
@@ -780,7 +780,7 @@ void func_80020B10(Gfx **displayList, s8 *textureIds, s8 *slots,
 #define gSPModelSelectMatrix(pkt, num) gMoveWd(pkt, 0x0A, 0, (num) << 6)
 #define MODEL_PHYS(x) ((u32)(x) & 0x0FFFFFFF)
 
-s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
+s32 makeModelGfx(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
                   s32 lowerGroup, s32 upperGroup, s32 forceSimple) {
     s32 partIndex;
     Gfx *sourceDisplayList;
@@ -807,7 +807,7 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
     Gfx *displayList;
 
     part = model->parts;
-    func_80034424(1);
+    texModelTextureLoad(1);
     if (flags & 4) {
         D_8007BD98 = 1;
     }
@@ -817,10 +817,10 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
     lastParameter = -1;
     if (lowerGroup == 0 && forceSimple == 0) {
         func_80020AD4();
-        func_80034920(&displayList);
+        texDPInit(&displayList);
     } else if (forceSimple != 0) {
         func_80020AD4();
-        func_80034920(NULL);
+        texDPInit(NULL);
         gDPPipeSync(displayList++);
         gSPSetGeometryMode(displayList++, G_ZBUFFER | G_FOG);
     }
@@ -872,7 +872,7 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
                 lastTexture = texture;
                 lastParameter = parameter;
 
-                func_800349A4(&displayList, texture, partFlags, parameter);
+                texDPTextureX(&displayList, texture, partFlags, parameter);
                 if (model->mode == 0) {
                     gSPModelVertex(displayList++, MODEL_PHYS(vertexStart * 10U), vertexCount, 0);
                 } else {
@@ -900,7 +900,7 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
     gSPEndDisplayList(displayList++);
 
     commandCount = displayList - D_800CB4A4;
-    displayList = *out = func_8002B314(commandCount * sizeof(Gfx), 0x8A);
+    displayList = *out = mmAlloc2(commandCount * sizeof(Gfx), 0x8A);
     if (displayList != NULL) {
         sourceDisplayList = D_800CB4A4;
         for (partIndex = 0; partIndex < commandCount; partIndex++) {
@@ -911,7 +911,7 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
         }
     }
 
-    func_80034424(0);
+    texModelTextureLoad(0);
     D_8007BD98 = 0;
     return cacheCount;
 }
@@ -1063,7 +1063,7 @@ typedef struct ModelFrameInstance {
  * ORT 374 authenticates eight overlay calls across overlays 57, 60, and 82;
  * resident func_8001BB10 passes an unused fourth owner/context argument that
  * this callee overwrites. */
-void func_80020D8C(ModelFrameInstance *instance, s32 textureIndex, s32 frame) {
+void modSetTextureFrame(ModelFrameInstance *instance, s32 textureIndex, s32 frame) {
     ObjectModel *model;
     ModelFrameEntry *entry;
     u16 *output;
@@ -1119,13 +1119,13 @@ void func_80020D8C(ModelFrameInstance *instance, s32 textureIndex, s32 frame) {
  *   - no cache pointer: the id read through the global expression is
  *     numbered after the scanned value, which is what puts the value
  *     first in the `bnel` (6 -> 0 together with the shared index). */
-void func_80020E4C(s16 *exceptions) {
+void modSuspendModelTextures(s16 *exceptions) {
     SuspendedModelTexture *saved;
     s32 modelIndex;
     s32 i;
 
     D_80079C08 = 0;
-    saved = D_80079C04 = func_8002B280(0x3E8, 0x8A);
+    saved = D_80079C04 = mmAlloc(0x3E8, 0x8A);
     modelIndex = 0;
     if (D_800CB48C > 0) {
         if (D_80079C08 < 0x7D) {
@@ -1147,8 +1147,8 @@ void func_80020E4C(s16 *exceptions) {
                             if (D_80079C08 < 0x7D) {
                                 do {
                                     saved->value = (s32)model->textures[i].texture;
-                                    saved->id = func_8003484C(model->textures[i].texture);
-                                    func_800347A0(model->textures[i].texture);
+                                    saved->id = texGetTextureNum(model->textures[i].texture);
+                                    texFreeTexture(model->textures[i].texture);
                                     i++;
                                     D_80079C08++;
                                     saved++;

@@ -864,9 +864,9 @@ f32 func_overlay_008_F0001000_185ED58Reloc(void *object, void *state, f32 limit)
 s32 func_8002675C(void);
 s32 func_800299E8(s32 minimum, s32 maximum);
 f32 func_8002A8BC(s32 angle);
-void func_800031E8(void *handle);
-void func_80002FE0(s32 id, f32 x, f32 y, f32 z, s32 priority, void **handle);
-void func_800031C0(void *handle, f32 x, f32 y, f32 z);
+void amSndStopXYZ(void *handle);
+void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority, void **handle);
+void amSndSetXYZ(void *handle, f32 x, f32 y, f32 z);
 f32 func_8002A878(f32 base, s32 exponent);
 f32 func_8002A8C0(s32 angle);
 s32 func_8001E5C4(void *object, void *state, f32 update);
@@ -1313,19 +1313,19 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
         }
         if (state->controlDkeys & 0x2000) {
             if (state->soundA8 != NULL) {
-                func_800031E8(state->soundA8);
+                amSndStopXYZ(state->soundA8);
             }
-            func_80002FE0(4, object->x, object->y, object->z, 4, &state->soundA8);
+            amSndPlayXYZ(4, object->x, object->y, object->z, 4, &state->soundA8);
         }
         if ((state->controlKeys & 0x4000) && (state->forwardVelocity < 0.0f)) {
             if (state->soundAC == NULL) {
-                func_80002FE0(3, object->x, object->y, object->z, 1, &state->soundAC);
+                amSndPlayXYZ(3, object->x, object->y, object->z, 1, &state->soundAC);
             } else {
-                func_800031C0(state->soundAC, object->x, object->y, object->z);
+                amSndSetXYZ(state->soundAC, object->x, object->y, object->z);
             }
         }
         if (state->soundAC != NULL) {
-            func_800031E8(state->soundAC);
+            amSndStopXYZ(state->soundAC);
         }
         object->rotationX = (s16) (state->heading + state->spinAngle);
         heading = state->heading;

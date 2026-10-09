@@ -89,18 +89,18 @@ extern void amSndPlay(s32 soundId, void **handle);
 extern void overlay90SequenceReloc(s32 sequenceId);
 extern s32 camGetMode(void);
 extern Overlay90Level *levelGetLevel(void);
-extern void func_80000510(u8 sequenceId);
-extern void func_800031E8(void *handle);
+extern void amTunePlay(u8 sequenceId);
+extern void amSndStopXYZ(void *handle);
 extern void func_80006EA0(void *object);
 extern f32 func_8002A8BC(s32 angle);
 extern f32 func_8002A8C0(s32 angle);
 extern s32 func_8000FAE0(f32 x, f32 y, f32 z);
-extern void func_80002FE0(s32 id, f32 x, f32 y, f32 z, s32 priority,
+extern void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority,
                           void **handle);
 extern s32 mathRnd(s32 lower, s32 upper);
-extern void func_800031C0(void *handle, f32 x, f32 y, f32 z);
-extern void func_8000309C(void *handle, u8 volume);
-extern void func_800030B4(void *handle, u8 pitch);
+extern void amSndSetXYZ(void *handle, f32 x, f32 y, f32 z);
+extern void amSndSetVolXYZ(void *handle, u8 volume);
+extern void amSndSetPitchXYZ(void *handle, u8 pitch);
 
 /* Matched 2026-10-02 (lane w2-ovlc) from 327 masked at -8. On top of lane
  * q-ovl10's edits (literal floats, func_8005ABA8 returning a value, field
@@ -259,9 +259,9 @@ void func_overlay_090_F00000FC_18D4BF4(Overlay90Owner *owner,
 
                     level = levelGetLevel();
                     if (level->sequence == 0) {
-                        func_80000510(2);
+                        amTunePlay(2);
                     } else {
-                        func_80000510(level->sequence);
+                        amTunePlay(level->sequence);
                     }
                 }
                 transitioned = 1;
@@ -316,7 +316,7 @@ void func_overlay_090_F00000FC_18D4BF4(Overlay90Owner *owner,
             state->flag += updateRate;
             if (state->flag >= 0xB5) {
                 if (state->value38 != 0) {
-                    func_800031E8(state->value38);
+                    amSndStopXYZ(state->value38);
                 }
                 func_80006EA0(owner);
                 return;
@@ -373,7 +373,7 @@ void func_overlay_090_F00000FC_18D4BF4(Overlay90Owner *owner,
     owner->positionTag = func_8000FAE0(owner->x, owner->y, owner->z);
 
     if (state->value38 == 0) {
-        func_80002FE0(0x16, owner->x, owner->y, owner->z, 1,
+        amSndPlayXYZ(0x16, owner->x, owner->y, owner->z, 1,
                       &state->value38);
     }
     if (state->value38 != 0) {
@@ -382,8 +382,8 @@ void func_overlay_090_F00000FC_18D4BF4(Overlay90Owner *owner,
             animationValue = 150.0f;
         }
         animationValue += (f32)mathRnd(-5, 5);
-        func_800031C0(state->value38, owner->x, owner->y, owner->z);
-        func_8000309C(state->value38, ((u8 *)&state->value3C)[1]);
-        func_800030B4(state->value38, (u8)animationValue);
+        amSndSetXYZ(state->value38, owner->x, owner->y, owner->z);
+        amSndSetVolXYZ(state->value38, ((u8 *)&state->value3C)[1]);
+        amSndSetPitchXYZ(state->value38, (u8)animationValue);
     }
 }

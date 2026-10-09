@@ -62,8 +62,8 @@ extern void func_80036F08(Overlay46DisplayCommand **commands, void *resource,
                           s32 arg2);
 extern void overlay46DrawFrameCacheReloc(void *state, void *target,
                                               f32 scale);
-extern void func_8004B0A4(s32 mode);
-extern void func_8004B0DC(s32 red, s32 green, s32 blue, s32 alpha);
+extern void fontUseFont(s32 mode);
+extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);
 extern void func_8004B0B8(s32 red, s32 green, s32 blue, s32 alpha,
                           s32 intensity);
 extern s32 func_overlay_046_F000069C_188EA94(void);
@@ -207,8 +207,8 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
         gOverlay46Group54Render->alpha = value;
         overlay46DrawFrameCacheReloc(gOverlay46Group54Render,
                                           gOverlay46MotionTarget, 1.0f);
-        func_8004B0A4(2);
-        func_8004B0DC(0, 0, 0, 0);
+        fontUseFont(2);
+        fontBackground(0, 0, 0, 0);
         func_8004B0B8(255, 255, 255, 255, gOverlay46Value8);
     }
 }

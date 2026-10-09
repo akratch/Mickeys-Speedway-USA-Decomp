@@ -194,7 +194,7 @@ extern u8 gOverlay5MessageBuffer[];
 
 extern void alHeapInit(void *heap, void *base, s32 length);
 extern Overlay5Resource *func_8002E148(s32 resourceId);
-extern void *func_8002B280(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 /*
  * PROVENANCE: the return type follows Diddy Kong Racing's public
  * decompilation, where this call is `s32 asset_load(u32, u32, s32, s32)`
@@ -211,7 +211,7 @@ extern void func_80001740(Overlay5SoundConfig *config, s32 count,
                           void *context);
 extern void gsSndpNew(Overlay5SequenceConfig *config);
 extern void func_80001BA0(void);
-extern void func_80000450(void *value);
+extern void amSetMuteMode(void *value);
 extern void func_8002B768(Overlay5Resource *resource);
 extern void func_800039F0(void);
 extern void alSurround_OutputType(s32 outputType);

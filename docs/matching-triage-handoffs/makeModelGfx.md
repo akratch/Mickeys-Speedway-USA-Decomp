@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_8002057C:start -->
-### `func_8002057C` plateau handoff
+<!-- plateau-handoff:makeModelGfx:start -->
+### `makeModelGfx` plateau handoff
 
 - source: `src/main/models.c`
 - score: 0/342 words, promoted
@@ -107,4 +107,4 @@ tools/shape_product.py-style cells scored at size delta 0:
 
 gmake verify printed the expected SHA1 with the GLOBAL_ASM branch removed.
 
-<!-- plateau-handoff:func_8002057C:end -->
+<!-- plateau-handoff:makeModelGfx:end -->

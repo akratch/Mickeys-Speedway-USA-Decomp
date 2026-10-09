@@ -21,7 +21,7 @@ typedef struct DebugFontCoords {
 } DebugFontCoords;
 
 s32 vsprintf(char *s, const char *format, va_list arg);
-void *func_80034448(s16 resourceId);
+void *texLoadTexture(s16 resourceId);
 void debug_text_background(Gfx **dList, u32 ulx, u32 uly, u32 lrx, u32 lry);
 s32 debug_text_character(Gfx **dList, s32 asciiVal);
 void debug_text_newline(void);
@@ -804,9 +804,9 @@ s32 vsprintf(char *s, const char *fmt, va_list args) {
 
 /* PROVENANCE: body adapted from JFG src/diprint.c:diPrintfInit. */
 void diPrintfInit(void) {
-    D_800D4A50 = func_80034448(0);
-    D_800D4A54 = func_80034448(1);
-    D_800D4A58 = func_80034448(2);
+    D_800D4A50 = texLoadTexture(0);
+    D_800D4A54 = texLoadTexture(1);
+    D_800D4A58 = texLoadTexture(2);
     D_8007CE94 = D_800D4150;
 }
 /* PROVENANCE: body adapted from JFG src/diprint.c:diPrintf. */

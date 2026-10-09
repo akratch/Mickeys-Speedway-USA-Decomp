@@ -38,8 +38,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/func_overlay_002_F0001364_185815C.c.o: CFL
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/func_overlay_002_F0000C90_1857A88.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym _bzero=_bzero_o002Reloc \
-		--redefine-sym func_8002B280=func_8002B280_o002Reloc \
-		--redefine-sym func_8002B524=func_8002B524_o002Reloc \
+		--redefine-sym mmAlloc=mmAlloc_o002Reloc \
+		--redefine-sym mmAllocAtAddr=mmAllocAtAddr_o002Reloc \
 		--redefine-sym mmFree=mmFree_o002Reloc \
 		--redefine-sym mmGetDelay=mmGetDelay_o002Reloc \
 		--redefine-sym mmSetDelay=mmSetDelay_o002Reloc $@ && \

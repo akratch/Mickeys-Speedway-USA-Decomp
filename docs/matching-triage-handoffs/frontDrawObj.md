@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_80039E34:start -->
-### `func_80039E34` plateau handoff
+<!-- plateau-handoff:frontDrawObj:start -->
+### `frontDrawObj` plateau handoff
 
 - source: `src/main/menu.c`
 - score: 0/262 words, promoted
@@ -27,4 +27,4 @@
 - The carrier macro must stay a macro: the same statements on separate source
   lines emit the two stores in the other order (16 bytes off in the ROM, which
   `fast_score` did not show because its candidate had them on one line).
-<!-- plateau-handoff:func_80039E34:end -->
+<!-- plateau-handoff:frontDrawObj:end -->

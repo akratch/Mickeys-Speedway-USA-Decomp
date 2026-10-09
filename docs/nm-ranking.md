@@ -346,13 +346,13 @@ prohibited post-compile field edits and remains inadmissible.
 
 Nine rows from that historical run were subsequently promoted and ceased to
 be search candidates: `overlay3FindClosestObject`, `overlay40AddEntry`,
-`overlay43SubmitChildren`, `func_80038750`, `partUpdateTriggers`,
-`func_8001A154`, `overlay1UpdateValueCache`,
+`overlay43SubmitChildren`, `setLanguage`, `partUpdateTriggers`,
+`lightAdjustGlowingLight`, `overlay1UpdateValueCache`,
 `func_overlay_041_F0000000_1887338`, and `overlay80UpdateContact`. Their
 canonical source and function-specific ledgers carry the exact proofs; stale
 generated ranking entries must not put them back into the ready queue.
 
-`func_80021504` is unguarded matched C and no longer a ranking candidate.
+`camSetFOV` is unguarded matched C and no longer a ranking candidate.
 Retained configured C owns 133 words with frame `0x28` and 43 candidate
 relocation tuples. Its linked range, complete camera TU, and resident `.main`
 section are byte-identical to ROM. The retained full `.bin` predates the
@@ -367,7 +367,7 @@ ROM-table row 453 is an unreferenced export, not inbound evidence. The
 full `.bin` predates the object and independent target relocation metadata
 is absent, so this remains a reproof-only target rather than living search.
 
-`func_800219D0` is a reproof-only matched function, not a ranking candidate.
+`camUserViewTick` is a reproof-only matched function, not a ranking candidate.
 The retained pre-comment configured object owns 104 words with frame `0x8`
 and eight HI16/LO16 records. Its raw function agrees with the retained
 `NON_MATCHING=1` object, and its linked range, complete camera TU, and resident
@@ -376,7 +376,7 @@ comments only, so no source/codegen search is warranted. The exact retained
 whole `.bin` predates the object and is historical rather than causal proof;
 fresh current-source object, link, and full-bin comparisons remain due.
 
-`func_800320F0` (the function formerly routed under the JFG donor alias
+`runlinkEnsureJumpIsValid` (the function formerly routed under the JFG donor alias
 `runlinkEnsureJumpIsValid`) has since been promoted: retained canonical C is
 101 words with 21 relocations, and its linked ROM range
 `0x32CF0..0x32E84` is byte-identical. It is no longer an unmatched ranking

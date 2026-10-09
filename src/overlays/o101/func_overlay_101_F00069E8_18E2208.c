@@ -95,10 +95,10 @@ extern O101Node32_69E8 gOverlay101Resources32[];
 extern O101Node24_69E8 D_540[];
 
 /* Tier B: this function's runtime relocation records resolve ten sprite
- * loads to resident func_800355A0, four screen loads to func_80036DD0,
+ * loads to resident texLoadSprite, four screen loads to func_80036DD0,
  * seven local calls to overlay101ByteLength, and the final call to
  * overlay101Reset. The matched local callees establish their prototypes. */
-extern void *func_800355A0(s32 assetId, s32 flags);
+extern void *texLoadSprite(s32 assetId, s32 flags);
 extern s32 *func_80036DD0(s32 screenIndex);
 extern s32 overlay101ByteLength(u8 *text);
 /* The tail call is a SYMBOL relocation record, not a JUMP one: the shipped
@@ -144,7 +144,7 @@ extern void overlay101ResetReloc(void *value);
  *   position. 9 -> 0.
  *
  * Tier B identities are unchanged from the reconstruction: the runtime table
- * resolves ten sprite loads to func_800355A0, four screen loads to
+ * resolves ten sprite loads to texLoadSprite, four screen loads to
  * func_80036DD0, seven local calls to overlay101ByteLength and the tail call
  * to overlay101Reset; ROM-exact overlay101Cleanup and overlay101DrawSlots
  * witness the order records, the order list and count, and the two resource
@@ -181,7 +181,7 @@ void func_overlay_101_F00069E8_18E2208(void) {
     gOverlay101Resources32[gOverlay101Resource32Count].color13 = 0; \
     gOverlay101Resources32[gOverlay101Resource32Count].value14 = 0.0f; \
     gOverlay101Resources32[gOverlay101Resource32Count].value18 = 0; \
-    handle = func_800355A0((imageId), 0); \
+    handle = texLoadSprite((imageId), 0); \
     gOverlay101Resources32[gOverlay101Resource32Count].previousType = gOverlay101OrderEntries[1 + group].childType; \
     gOverlay101Resources32[gOverlay101Resource32Count].previous = gOverlay101OrderEntries[1 + group].child; \
     gOverlay101Resources32[gOverlay101Resource32Count].handle = handle; \

@@ -79,14 +79,14 @@ extern s32 ext_o1_83e0;
 extern void camStandardOrtho(MenuCommand **, void **);
 extern Overlay52Object **func_80005750(s32 *);
 extern Overlay52Level *levelGetLevel(void);
-extern s32 func_80036544(u8 *, s32 *, s32, f32 *, s32);
+extern s32 texAnimateSprite(u8 *, s32 *, s32, f32 *, s32);
 extern u16 joyGetPressed(s32);
 extern void camSetNo(s32);
 extern void camSetScissor(MenuCommand **);
 extern void func_8002F618(MenuCommand **, Overlay52Entry *, s32, s32, u8, u8, u8, u8);
-extern void func_80034920(MenuCommand **);
-extern void func_80034DE4(s32);
-extern void func_80039E34(s32);
+extern void texDPInit(MenuCommand **);
+extern void sprSetTextureFilter(s32);
+extern void frontDrawObj(s32);
 extern void func_overlay_052_F0000540_189ABB0(Overlay52Entry *, Overlay52Entry *, s32, s32);
 extern s32 func_800290A0(void);
 extern s32 func_8003A7D0(Overlay52Object *);
@@ -97,7 +97,7 @@ extern void mainChangeCameras(s32);
 extern void func_800016EC(u8);
 extern void func_80037414(s32, f32, f32, s32, s32, s32, s32);
 extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
-extern void func_800005CC(f32, u8);
+extern void amTuneSetFade(f32, u8);
 
 /* Overlay 52 was one translation unit: the shipped code shares high halves
  * between data/bss sites the way as1 does only for objects defined in the
@@ -278,8 +278,8 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
         }
     }
-    func_80036544(D_800D31C8[2], &o52_data_314, 20, &D_800D3550[2].unk18, updateRate);
-    func_80036544(D_800D31C8[40], &o52_data_314, 20, &D_800D3550[1].unk18, updateRate);
+    texAnimateSprite(D_800D31C8[2], &o52_data_314, 20, &D_800D3550[2].unk18, updateRate);
+    texAnimateSprite(D_800D31C8[40], &o52_data_314, 20, &D_800D3550[1].unk18, updateRate);
     hudOffset = (s32)o52_bss_4B0;
     level = levelGetLevel();
     o52_data_31C++;
@@ -385,7 +385,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             }
             o52_bss_100[player][1].value8 = lap << 16;
             func_8002F618(&D_800D3140, o52_bss_100[player], 0, hudOffset, 255, 255, 255, 255);
-            func_80034920(&D_800D3140);
+            texDPInit(&D_800D3140);
             if (split != 0) {
                 D_800D3550[1].unkC = o52_data_254[racer->playerIndex];
                 D_800D3550[1].unk10 = 71 - hudOffset;
@@ -393,10 +393,10 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 D_800D3550[1].unkC = -55.0f;
                 D_800D3550[1].unk10 = o52_data_24C[player] - hudOffset + 83;
             }
-            func_80034DE4(0);
-            func_80039E34(1);
-            func_80034DE4(1);
-            func_80034920(&D_800D3140);
+            sprSetTextureFilter(0);
+            frontDrawObj(1);
+            sprSetTextureFilter(1);
+            texDPInit(&D_800D3140);
         } else {
             digits = o52_bss_200[player];
             overlay56SplitTime(racer->time, &minutes, &seconds, &hundredths);
@@ -422,7 +422,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 }
             }
             func_8002F618(&D_800D3140, digits, 0, hudOffset, 255, 255, 255, 255);
-            func_80034920(&D_800D3140);
+            texDPInit(&D_800D3140);
             if (split != 0) {
                 D_800D3550[4].unkC = o52_data_260[player];
                 D_800D3550[4].unk10 = 80 - hudOffset;
@@ -431,7 +431,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 D_800D3550[4].unk10 = o52_data_24C[player] - hudOffset + 92;
             }
             D_800D3550[4].unk4 = racer->time * -65536 / 300;
-            func_80039E34(4);
+            frontDrawObj(4);
             func_8002F618(&D_800D3140, o52_bss_340[player], 0,
  hudOffset, 255, 255, 255, 255);
         }
@@ -580,7 +580,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                             func_8003A590();
                             func_80037414(2, 4.0f, -1.0f, 0, 0, 0, 0);
                             mainChangeLevel(18, 0, 0, 7, 1, 1);
-                            func_800005CC(3.0f, 0);
+                            amTuneSetFade(3.0f, 0);
                             o52_data_318 = 1;
                         }
                     }
@@ -594,7 +594,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                             func_8003A590();
                             func_80037414(2, 4.0f, -1.0f, 0, 0, 0, 0);
                             mainChangeLevel(18, 0, 0, 7, 1, 1);
-                            func_800005CC(3.0f, 0);
+                            amTuneSetFade(3.0f, 0);
                             o52_data_318 = 1;
                         }
                     }

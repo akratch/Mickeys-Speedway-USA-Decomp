@@ -217,8 +217,8 @@ extern s32 D_800D7D00;
 extern s32 D_800D7D04;
 extern ConvListEntry D_800D78F0[];
 
-s32 func_8002B280(s32 size, s32 tag);
-void *func_8002B314(s32 size, u32 colourTag);
+s32 mmAlloc(s32 size, s32 tag);
+void *mmAlloc2(s32 size, u32 colourTag);
 void func_80058FF0(ConvListEntry *entries, s32 count);
 void func_8002A82C(void *mtx);
 void mtxf_mul(void *lhs, void *rhs, void *dest);
@@ -247,11 +247,11 @@ void func_8005AAC0(u8 *animation);
 void func_8005A700(void) {
     s32 allocation;
 
-    allocation = func_8002B280(0xA0, 0x80);
+    allocation = mmAlloc(0xA0, 0x80);
     D_800D7CFC = allocation;
     D_800D7D00 = allocation + 0x80;
     D_800D7CF8 = allocation + 0x90;
-    D_800D7CF4 = func_8002B280(0x800, 0x80);
+    D_800D7CF4 = mmAlloc(0x800, 0x80);
     D_800D7D04 = 0;
     D_800D7CF0 = 0;
 }
@@ -271,7 +271,7 @@ void func_8005A770(void) {
  * against 0x38), the colour of `firstAnimation & 3` (ours v1, the ROM s0)
  * and the spill placed around the wrong call. Read off the ROM: the value
  * lives in s0 through the second piRomLoadSection call, is stored to the
- * frame's one home right before func_8002B314, and only the doubling in the
+ * frame's one home right before mmAlloc2, and only the doubling in the
  * loop setup reads it back, into a temporary. That is two webs, not one:
  * `alignment` stops at that store, so it no longer shares the loop-setup
  * block with the loop's byte offset and takes s0 at cost 0; a second symbol
@@ -312,7 +312,7 @@ s32 func_8005A7A0(ModelAnimationTable *model, s32 modelId) {
     }
     piRomLoadSection(0x29, (void *)D_800D7CFC, (firstAnimation & ~3) * 2, loadSize);
     firstAnimation = firstAnimation & 3;
-    model->animations = (u8 **)func_8002B314(model->animationCount * 4, 0x80);
+    model->animations = (u8 **)mmAlloc2(model->animationCount * 4, 0x80);
     if (model->animations == NULL) {
         return FALSE;
     }
@@ -399,7 +399,7 @@ u8 *func_8005A948(s16 animationId) {
     piRomLoadSection(0x2A, (u8 *)D_800D7CF8, (animationId & ~1) * 4, 0x10);
     offset = *(s32 *)(D_800D7CF8 + tableOffset);
     size = *(s32 *)(D_800D7CF8 + tableOffset + 4) - offset;
-    animation = (LoadedAnimation *)func_8002B314(size, 0x80);
+    animation = (LoadedAnimation *)mmAlloc2(size, 0x80);
     if (animation == NULL) {
         return NULL;
     }

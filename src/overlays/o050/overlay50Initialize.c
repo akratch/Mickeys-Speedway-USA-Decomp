@@ -72,11 +72,11 @@ extern s16 D_800D304E_o050Reloc;
 u8 *func_80028F54_o050Reloc(void); /* 0:+0x28B04 */
 void loadFrontEndList_o050Reloc(void *list); /* 0:+0x39738 */
 void setupFrontEndList_o050Reloc(void *list); /* 0:+0x39900 */
-void func_80000510_o050Reloc(s32); /* 0:+0xC0 */
+void amTunePlay_o050Reloc(s32); /* 0:+0xC0 */
 void runlinkDownloadCode_o050Reloc(s32); /* 0:+0x31828 */
 void overlay56LoadResource_o050Reloc(void); /* 56:+0x118 */
 s32 levelGetNumber_o050Reloc(void); /* 0:+0x2630C */
-void func_8004B0A4_o050Reloc(s32); /* 0:+0x4AC54 */
+void fontUseFont_o050Reloc(s32); /* 0:+0x4AC54 */
 void *func_8003A5A0_o050Reloc(s32); /* 0:+0x3A150 */
 void *overlay45CreateDescriptor_o050Reloc(void *, s32, s32, s32); /* 45:+0xC */
 void overlay45SetMode_o050Reloc(void *, s32); /* 45:+0x1BE0 */
@@ -102,7 +102,7 @@ void func_overlay_050_F0000000_1896970(void) {
     saved = func_80028F54_o050Reloc();
     loadFrontEndList_o050Reloc(sOverlay50Data000);
     setupFrontEndList_o050Reloc(&sOverlay50Data000[18]);
-    func_80000510_o050Reloc(4);
+    amTunePlay_o050Reloc(4);
     sOverlay50BssA0 = 0x104;
     runlinkDownloadCode_o050Reloc(0xB);
 
@@ -144,7 +144,7 @@ void func_overlay_050_F0000000_1896970(void) {
     }
 
     if (*saved == 0) {
-        func_8004B0A4_o050Reloc(3);
+        fontUseFont_o050Reloc(3);
         o50BssC4 = overlay45CreateDescriptor_o050Reloc(
             func_8003A5A0_o050Reloc(levelGetNumber_o050Reloc()), 0xA0, 0x78, 0xC);
         overlay45SetMode_o050Reloc(o50BssC4, 0);

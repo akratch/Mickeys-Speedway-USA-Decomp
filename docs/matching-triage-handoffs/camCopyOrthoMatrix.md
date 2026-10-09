@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_80024978:start -->
-### `func_80024978` plateau handoff
+<!-- plateau-handoff:camCopyOrthoMatrix:start -->
+### `camCopyOrthoMatrix` plateau handoff
 
 - source: `src/main/camera.c`
 - score: 0 differing words
@@ -104,7 +104,7 @@ impossibility or general layout closure.
 
 The original guarded body and assembly fallback are retained. Sources, stock
 and traced objects, frame and scalar measurements, draw profiles and aligned
-maps remain ignored under build/k1/func_80024978.
+maps remain ignored under build/k1/camCopyOrthoMatrix.
 Commands: lane_status.py, configured stock compilation, draw_census.py,
 residual_map.py --object/--against where compared, finalize_plateau.py and
 tools/gates.sh. No executable bytes are newly credited.
@@ -199,4 +199,4 @@ copy), and the parameter itself as the carrier (+4). None of them was the
 shape; the earlier force pair and the peel-pressure analysis were reading
 an ilda that the right source never builds.
 
-<!-- plateau-handoff:func_80024978:end -->
+<!-- plateau-handoff:camCopyOrthoMatrix:end -->

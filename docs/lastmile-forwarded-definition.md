@@ -1,7 +1,7 @@
 # Last-mile lane s1-b (2026-09-16): a forwarded definition, and a counter's web number
 
 Four targets in four translation units, 3,960 bytes, all at delta zero on
-arrival: `func_80034448` (54), `overlay19BuildSpatialMasks` (63),
+arrival: `texLoadTexture` (54), `overlay19BuildSpatialMasks` (63),
 `overlay15InitStarsAndPalette` (70), `func_80040B88` (72). Seventeen of the
 twenty budgeted cycles were spent (a cycle is one batched hypothesis
 measured with a private direct-`cc` harness that reproduced
@@ -18,7 +18,7 @@ tracked.
 Where the dispatch, a shard, or the brief was wrong, first.
 
 - The dispatch listed three of the four targets with no shard. All three
-  have one: `func_80034448` 9.3 KB (three lanes), o19 5.2 KB (three), o15
+  have one: `texLoadTexture` 9.3 KB (three lanes), o19 5.2 KB (three), o15
   6.8 KB (one, 54 attempts). Reading them first is what kept this lane off
   the o19 point-carrier and o15 adjacent-move families.
 - The dispatch names `docs/lastmile-block-budget-globals.md`; the file is
@@ -37,7 +37,7 @@ Where the dispatch, a shard, or the brief was wrong, first.
   were checked against the listing before any cell; the check cost no
   cycle. Within-file mechanisms carried across neither pair.
 - L99's "an unused `s32` is eliminated before the frame is sized" did not
-  hold on `func_80034448`: an unused `s32` reserved a home like the
+  hold on `texLoadTexture`: an unused `s32` reserved a home like the
   pointer and float did (six cells, all frame 0x58). L121's wording (every
   declared local reserves a home) is the one that held.
 - The brief's statement that a leaf emits p2 records only is too strong as
@@ -55,7 +55,7 @@ web that lives in the declared local's own home (or, on o15, shares a
 register with the local's later definitions in the same block, which only
 one web can do).
 
-On `func_80034448` the frame arithmetic (L53, L121: `raw10` plus frame
+On `texLoadTexture` the frame arithmetic (L53, L121: `raw10` plus frame
 size against the ladder) says the target has eleven declared homes and one
 4-byte temp; ours has ten and, on every CSE form, an 8-byte temp region
 with one idle slot. Nine spellings of a declared aligned-address local
@@ -80,7 +80,7 @@ statements costs an instruction.
 The decision variable, on both, is a definition whose right-hand side
 reads a killed operand or a memory operand at zero instruction cost. Not
 found in seventeen cells across the two functions; a lane that finds it
-closes the frame on `func_80034448` outright (the eleventh scalar is then a
+closes the frame on `texLoadTexture` outright (the eleventh scalar is then a
 free declaration) and the head of o15.
 
 Two smaller facts from the same cells: the `? :` max is expanded by cfe at
@@ -124,7 +124,7 @@ init order is neither statement order nor a physical-line tie.
 
 ## The two unmoved targets
 
-`func_80034448`, 54, six cycles: mechanism 1 above; the frame is solved to
+`texLoadTexture`, 54, six cycles: mechanism 1 above; the frame is solved to
 the slot, and the shard section names the decision variable.
 
 `func_80040B88`, 72, one cycle: its one structural row is the `trigger`
@@ -138,7 +138,7 @@ grow the frame. The procedure-29 ladder is saved for the next pass.
 
 ## Ledger
 
-Seventeen measured cycles of twenty: `func_80034448` 6, o19 6, o15 4,
+Seventeen measured cycles of twenty: `texLoadTexture` 6, o19 6, o15 4,
 `func_80040B88` 1. Adopted: o19 63 to 17 (aligner 164/61/0/2 to
 212/12/0/4, one candidate-only word at +0x204, one target-only at +0x1FC,
 commit `fce16690`); o15 70 to 60 (198/13/1/38 to 205/15/1/27, one

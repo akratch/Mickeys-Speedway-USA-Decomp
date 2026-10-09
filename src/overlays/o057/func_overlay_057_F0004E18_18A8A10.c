@@ -102,7 +102,7 @@ typedef struct O57MiddleRecord {
 extern O57MiddleRecord *func_800291C4(void);
 extern void func_8002F618(void **displayList, O57MiddleTextureNode *nodes, s32 x, s32 y, u8 r, u8 g, u8 b, u8 a);
 extern void func_8002FB34(void **displayList, O57MiddleTextureNode *nodes, f32 x, f32 y, f32 sx, f32 sy, s32 mode, s32 flags);
-extern void func_80039E34(s32 spacing);
+extern void frontDrawObj(s32 spacing);
 extern void func_8003A680(u8 character);
 extern s32 func_8003A700(u8 character);
 extern s32 func_800429A4(char *buffer, const char *format, ...);
@@ -363,7 +363,7 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
             gO57MiddleRenderParameters.position = (f32) panelX;
             gO57MiddleRenderParameters.scale = 7.0f;
             func_80022A50(&gO57MiddleDisplayList, &gO57MiddleVertexList);
-            func_80039E34(8);
+            frontDrawObj(8);
             func_8004B0B8(
                 gO57MiddleInfo.value08, gO57MiddleInfo.value09, gO57MiddleInfo.value0A,
                 0xFF, 0xFF);

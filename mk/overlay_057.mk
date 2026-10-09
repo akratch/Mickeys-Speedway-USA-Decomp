@@ -114,7 +114,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0004E18_18A8A10.c.o: POS
 		--redefine-sym func_800291C4=func_800291C4_o057Reloc \
 		--redefine-sym func_8002F618=func_8002F618_o057Reloc \
 		--redefine-sym func_8002FB34=func_8002FB34_o057Reloc \
-		--redefine-sym func_80039E34=func_80039E34_o057Reloc \
+		--redefine-sym frontDrawObj=frontDrawObj_o057Reloc \
 		--redefine-sym func_8003A680=func_8003A680_o057Reloc \
 		--redefine-sym func_8003A700=func_8003A700_o057Reloc \
 		--redefine-sym func_800429A4=func_800429A4_o057Reloc \

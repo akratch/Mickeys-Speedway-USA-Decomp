@@ -86,7 +86,7 @@ extern void camSetScissor(MenuCommand **);
 extern void func_8002F618(MenuCommand **, Overlay52Entry *, s32, s32, u8, u8, u8, u8);
 extern void texDPInit(MenuCommand **);
 extern void sprSetTextureFilter(s32);
-extern void func_80039E34(s32);
+extern void frontDrawObj(s32);
 extern void func_overlay_052_F0000540_189ABB0(Overlay52Entry *, Overlay52Entry *, s32, s32);
 extern s32 func_800290A0(void);
 extern s32 func_8003A7D0(Overlay52Object *);
@@ -394,7 +394,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 D_800D3550[1].unk10 = o52_data_24C[player] - hudOffset + 83;
             }
             sprSetTextureFilter(0);
-            func_80039E34(1);
+            frontDrawObj(1);
             sprSetTextureFilter(1);
             texDPInit(&D_800D3140);
         } else {
@@ -431,7 +431,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 D_800D3550[4].unk10 = o52_data_24C[player] - hudOffset + 92;
             }
             D_800D3550[4].unk4 = racer->time * -65536 / 300;
-            func_80039E34(4);
+            frontDrawObj(4);
             func_8002F618(&D_800D3140, o52_bss_340[player], 0,
  hudOffset, 255, 255, 255, 255);
         }

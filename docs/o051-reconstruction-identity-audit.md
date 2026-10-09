@@ -42,7 +42,7 @@ callee has guarded candidate C; its identity does not prove that candidate ABI.
 | `func_800290A0` | 1 | `src/main/main.c` |
 | `func_8002F618` | 4 | `src/main/rcpFast3d.c` |
 | `texDPInit` | 2 | `src/main/textures_354C8.c` |
-| `func_80039E34` (guarded) | 1 | `src/main/menu.c` |
+| `frontDrawObj` (guarded) | 1 | `src/main/menu.c` |
 | `freeFrontEndItem` | 2 | `src/main/menu.c` |
 | `loadFrontEndItem` | 1 | `src/main/menu.c` |
 | `overlay59Interpolate` | 1 | `src/overlays/o059/overlay59Interpolate.c` |

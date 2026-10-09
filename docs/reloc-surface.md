@@ -1500,7 +1500,7 @@ aliases and leaves 53 proxy names unmapped, so those roles are not yet proved
 for promotion; the fallback target's 29 generic records remain incomplete. The
 function owns `+0xD4..+0x56C` with no target padding; the next owner begins at
 `+0x56C`. ORT 1444 exports `+0xD4`; resident relocation 302 at
-`func_80038E1C+0x3A4` is the sole runtime inbound. Runtime tables, not friendly
+`frontUpdate+0x3A4` is the sole runtime inbound. Runtime tables, not friendly
 proxy names or fallback ELF records, are the identity authority. Linked
 equality proves fallback only.
 
@@ -1543,7 +1543,7 @@ inbounds are Overlay 69 module `+0xC0`, Overlay 88 module `+0x110`, and Overlay
 Configured C remains one instruction long; linked equality proves fallback
 only.
 
-Resident `func_8003A2C8` owns exact HI16/LO16 pairs at `+0x00/+0x04` to
+Resident `frontSetScreenMode` owns exact HI16/LO16 pairs at `+0x00/+0x04` to
 `D_8007C090` and at `+0x24/+0x28` plus `+0x3C/+0x40` to `D_800D3128`. ORT
 606 exports it. Its direct callers are resident `func_80027EC0+0x80`, Overlay
 46 table-1 record 60 at module `+0x684` (`overlay46ReleaseState+0x70`), and

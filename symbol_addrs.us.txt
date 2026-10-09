@@ -2561,10 +2561,10 @@ func_8003A700 = 0x8003A700; // type:func size:0x54 ROM 0x3B300 tier-A, matched C
 func_8003A754 = 0x8003A754; // type:func size:0x7C ROM 0x3B354 tier-D structure-mismatch candidate, 12 differing words, scalar reset loop
 func_8003A7D0 = 0x8003A7D0; // type:func size:0xAC ROM 0x3B3D0 tier-D structure-mismatch candidate, 36 differing words, count accumulation loop
 // donor-jfg-src/menu.c.o
-func_80038750 = 0x80038750; // type:func size:0x128 tier-A ROM 0x39350 IDO C exact, JFG src/menu.c structural oracle, allocator-trace-guided, owns jtbl at 0x83334
-func_80038878 = 0x80038878; // type:func size:0x154 tier-D ROM 0x39478 NON_MATCHING diagnostic p6 target 85/candidate 86 instructions, 66/85 positional differences, first +0x14, artificial empty address condition removed
-func_800389CC = 0x800389CC; // type:func size:0x1F8 tier-D ROM 0x395CC exact C, JFG-adapted body and compiler-owned switch table
-func_80038BC4 = 0x80038BC4; // type:func size:0x1E8 tier-D ROM 0x397C4 exact C, JFG-comparison body and compiler-owned switch table
+setLanguage = 0x80038750; // type:func size:0x128 tier-A ROM 0x39350 IDO C exact, JFG src/menu.c structural oracle, allocator-trace-guided, owns jtbl at 0x83334, name tier-B JFG src/menu.c order+named anchors
+initFront = 0x80038878; // type:func size:0x154 tier-D ROM 0x39478 NON_MATCHING diagnostic p6 target 85/candidate 86 instructions, 66/85 positional differences, first +0x14, artificial empty address condition removed, name tier-B JFG src/menu.c order+named anchors
+frontFreeMode = 0x800389CC; // type:func size:0x1F8 tier-D ROM 0x395CC exact C, JFG-adapted body and compiler-owned switch table, name tier-B JFG src/menu.c order+named anchors
+frontInitMode = 0x80038BC4; // type:func size:0x1E8 tier-D ROM 0x397C4 exact C, JFG-comparison body and compiler-owned switch table, name tier-B JFG src/menu.c order+named anchors
 jtbl_80082748 = 0x80082748; // type:jtbl size:0x4C tier-A compiler-owned menu switch table
 jtbl_80082794 = 0x80082794; // type:jtbl size:0x4C tier-A compiler-owned menu switch table
 // Compiler-owned menu repeat-state labels occupy one measured 0x30-byte BSS input section.
@@ -2594,7 +2594,7 @@ frontSetMode = 0x80038DAC; // type:func size:0x64 tier-B ROM 0x399ac canonical C
 // frontUpdate, and the following update's dispatch on the same state identify
 // the front-end mode accessor.
 frontGetMode = 0x80038E10; // type:func size:0xC tier-B ROM 0x39a10 canonical C, linked byte-identical
-func_80038E1C = 0x80038E1C; // type:func size:0x45C tier-D ROM 0x39a1c NON_MATCHING plateau 219/279 words differ, first +0xD8
+frontUpdate = 0x80038E1C; // type:func size:0x45C tier-D ROM 0x39a1c NON_MATCHING plateau 219/279 words differ, first +0xD8, name tier-B JFG src/menu.c order+named anchors frontGetMode/frontDemoMessage
 // Tier B (JFG): the blinking localized message renderer has the same exact
 // size, call sequence, and position immediately after frontUpdate.
 frontDemoMessage = 0x80039278; // type:func size:0x108 tier-B ROM 0x39e78 canonical C, linked byte-identical
@@ -2627,7 +2627,7 @@ setupFrontEndList = 0x80039D50; // type:func size:0x5C tier-B ROM 0x3a950 canoni
 // Tier A (JFG): the complete 34-word masked skeleton is identical, and the
 // function occupies the same ordered setupFrontEndObject position.
 setupFrontEndObject = 0x80039DAC; // type:func size:0x88 tier-A ROM 0x3a9ac canonical C, linked byte-identical
-func_80039E34 = 0x80039E34; // type:func size:0x418 tier-D ROM 0x3aa34 NON_MATCHING plateau +1 word, 242/262 differ, first +0x14
+frontDrawObj = 0x80039E34; // type:func size:0x418 tier-D ROM 0x3aa34 NON_MATCHING plateau +1 word, 242/262 differ, first +0x14, name tier-B JFG src/menu.c order+named anchors setupFrontEndObject
 // Tier B (JFG): exact packed-field getter, ordered position immediately before
 // the paired setter and screen-mode accessor family, and the resident caller's
 // use as a returned setting identify the language accessor.
@@ -2637,7 +2637,7 @@ frontGetLanguage = 0x8003A24C; // type:func size:0x14 tier-B ROM 0x3ae4c canonic
 // identify the language setter.
 frontSetLanguage = 0x8003A260; // type:func size:0x38 tier-B ROM 0x3ae60 canonical C, linked byte-identical
 frontGetScreenMode = 0x8003A298; // type:func size:0x30   ROM 0x3ae98  src/menu.c.o  masked=2/12
-func_8003A2C8 = 0x8003A2C8; // type:func size:0x80 tier-B ROM 0x3aec8 NON_MATCHING plateau, 24/32 raw/normalized, first +0x0, frameless/no padding, 6 exact relocations, 119 flags exhausted, ORT606 with 3 callers, linked exactness is fallback-only
+frontSetScreenMode = 0x8003A2C8; // type:func size:0x80 tier-B ROM 0x3aec8 NON_MATCHING plateau, 24/32 raw/normalized, first +0x0, frameless/no padding, 6 exact relocations, 119 flags exhausted, ORT606 with 3 callers, linked exactness is fallback-only, name tier-B JFG src/menu.c order+named anchors frontGetScreenMode/frontStoreScreenMode
 // Tier B (JFG): exact copied-byte store, adjacent ordered accessor family,
 // and correspondence with JFG's frontStoreScreenMode establish the role.
 frontStoreScreenMode = 0x8003A348; // type:func size:0x14  ROM 0x3af48
@@ -2670,7 +2670,7 @@ frontSetBgmVolume = 0x8003A4D0; // type:func size:0x3C  ROM 0x3b0d0
 // Tier B (JFG): exact split-bit getter, paired setter, and ordered menu
 // position establish the two-player split-screen role.
 frontGet2PlayerSplit = 0x8003A50C; // type:func size:0x14 tier-B ROM 0x3b10c canonical C, linked byte-identical
-func_8003A520 = 0x8003A520; // type:func size:0x24 tier-A ROM 0x3b120 IDO C exact, Mickey-only reconstruction, allocator-trace-guided bitfield setter
+frontSet2PlayerSplit = 0x8003A520; // type:func size:0x24 tier-A ROM 0x3b120 IDO C exact, Mickey-only reconstruction, allocator-trace-guided bitfield setter, name tier-B JFG src/menu.c order+named anchors frontGet2PlayerSplit, JFG size 0x24 equal
 func_8003A544 = 0x8003A544; // type:func size:0xC tier-D ROM 0x3b144 canonical C, linked byte-identical
 func_8003A550 = 0x8003A550; // type:func size:0xC tier-D ROM 0x3b150 canonical C, linked byte-identical
 func_8003A55C = 0x8003A55C; // type:func size:0x34 tier-D ROM 0x3b15c canonical C, linked byte-identical

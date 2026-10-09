@@ -34,7 +34,7 @@ extern void func_8002FB34_o054Reloc(MenuCommand **dlist,
 extern u16 joyGetPressed_o054Reloc(s32 player);
 extern void texDPInit_o054Reloc(MenuCommand **dlist);
 extern void sprSetTextureFilter_o054Reloc(s32 mode);
-extern void func_80039E34_o054Reloc(s32 index);
+extern void frontDrawObj_o054Reloc(s32 index);
 extern s32 frontGetScreenMode_o054Reloc(void);
 extern s32 mainGetMode_o054Reloc(void);
 extern void *func_80028F54_o054Reloc(void);
@@ -323,7 +323,7 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
             D_800D3550_o054Reloc[1].x = xOffset - 152;
             D_800D3550_o054Reloc[1].y = -yOffset - hudY + 108;
             sprSetTextureFilter_o054Reloc(0);
-            func_80039E34_o054Reloc(1);
+            frontDrawObj_o054Reloc(1);
             sprSetTextureFilter_o054Reloc(1);
             break;
         case 1:
@@ -333,7 +333,7 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
             D_800D3550_o054Reloc[4].x = xOffset - 173;
             D_800D3550_o054Reloc[4].y = -yOffset - hudY + 116;
             D_800D3550_o054Reloc[4].rotationZ = (s32) ((u32) O54_TIME(player) * (u32) -65536) / 300;
-            func_80039E34_o054Reloc(4);
+            frontDrawObj_o054Reloc(4);
             func_8002F618_o054Reloc(&D_800D3140_o054Reloc,
                 sOverlay54ListCopyF[playerIndex], 0, hudY, 255, 255, 255, 255);
             break;

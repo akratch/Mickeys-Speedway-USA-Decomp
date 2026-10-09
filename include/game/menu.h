@@ -46,7 +46,7 @@ void setupFrontEndObject(s32 objectId);
 s32 frontGetLanguage(void);
 void frontSetLanguage(s32 language);
 s32 frontGetScreenMode(void);
-void func_8003A2C8(s32 screenMode);
+void frontSetScreenMode(s32 screenMode);
 void frontStoreScreenMode(void);
 u8 frontRecallScreenMode(void);
 s32 frontGetLevelScreenMode();

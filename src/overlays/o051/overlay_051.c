@@ -77,7 +77,7 @@ Overlay51Level *levelGetLevel_o051Reloc(void);
 s32 func_800290A0_o051Reloc(void);
 void func_8002F618_o051Reloc(void **, void *, s32, s32, u8, u8, u8, u8);
 void texDPInit_o051Reloc(void **);
-void func_80039E34_o051Reloc(s32);
+void frontDrawObj_o051Reloc(s32);
 void freeFrontEndItem_o051Reloc(s32);
 void loadFrontEndItem_o051Reloc(s32);
 s32 overlay59Interpolate_o051Reloc(s32, s32, s32, s32, s32, s32 *, s32 *, s32);
@@ -151,7 +151,7 @@ void func_overlay_051_F00000D0_18999D0(Overlay51Object *object, s32 updateRate) 
             D_800D3550_o051Reloc[4].x = 42.0f;
             D_800D3550_o051Reloc[4].y = (f32) (0x54 - hudY);
             D_800D3550_o051Reloc[4].angle = (s16) ((s32) (racer->raceTime * -0x10000) / 300);
-            func_80039E34_o051Reloc(4);
+            frontDrawObj_o051Reloc(4);
             func_8002F618_o051Reloc(&D_800D3140_o051Reloc, gOverlay51ClockGlyphs, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
             texDPInit_o051Reloc(&D_800D3140_o051Reloc);
         }

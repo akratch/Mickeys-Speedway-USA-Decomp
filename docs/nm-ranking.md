@@ -346,7 +346,7 @@ prohibited post-compile field edits and remains inadmissible.
 
 Nine rows from that historical run were subsequently promoted and ceased to
 be search candidates: `overlay3FindClosestObject`, `overlay40AddEntry`,
-`overlay43SubmitChildren`, `func_80038750`, `partUpdateTriggers`,
+`overlay43SubmitChildren`, `setLanguage`, `partUpdateTriggers`,
 `lightAdjustGlowingLight`, `overlay1UpdateValueCache`,
 `func_overlay_041_F0000000_1887338`, and `overlay80UpdateContact`. Their
 canonical source and function-specific ledgers carry the exact proofs; stale

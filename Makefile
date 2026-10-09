@@ -1212,7 +1212,7 @@ $(BUILD_DIR)/$(SRC_DIR)/main/frontend_37D50.c.o: POSTPROCESS = \
 # four zero bytes are output-section padding.
 $(BUILD_DIR)/$(SRC_DIR)/main/diRcp.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0xC3C
-# func_80038BC4 owns nineteen table words; the next menu table starts immediately.
+# frontInitMode owns nineteen table words; the next menu table starts immediately.
 $(BUILD_DIR)/$(SRC_DIR)/main/menu.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x4C
 # Both measured FP helpers in this TU require the R4300 multiply schedule.
@@ -1316,7 +1316,7 @@ $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: POSTPROCESS = \
 	    sha256:e9739b2f444aa9553825f049d40986c3d21ab1fa194bf048ab7f97b66a9c57a0
 
 # menu.c compiles at the plain game-code preset. It once carried
-# -Wo,-loopunroll,0 "for func_80038878"; that flag was measured byte-inert for
+# -Wo,-loopunroll,0 "for initFront"; that flag was measured byte-inert for
 # every other function in the TU and wrong for that one, whose target unrolls
 # both the pointer-table clear (4 stores per iteration) and the play-choice
 # reset (fully). Its matched body needs the default unroller.
@@ -1328,16 +1328,16 @@ $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: POSTPROCESS = \
 # where it is byte-inert. func_8003A7D0's target, by contrast, unrolls its
 # accumulation loop four ways, which the flag made unreachable from any C at
 # all. Removing it matched that function exactly and moved nothing else.
-# func_80038750's five-entry language jump table (0x14) precedes three
-# consecutive 0x4C-byte switch tables (func_800389CC, func_80038BC4,
-# func_80038E1C's mode dispatch at 0x800827E0); the ROM pads that 0xF8 by one
+# setLanguage's five-entry language jump table (0x14) precedes three
+# consecutive 0x4C-byte switch tables (frontFreeMode, frontInitMode,
+# frontUpdate's mode dispatch at 0x800827E0); the ROM pads that 0xF8 by one
 # zero word before the next 16-aligned float table, and IDO rounds the input
 # section up to 0x100, so keep 0xFC and discard only the rest of the
 # input-section padding.  The array-shaped aliases stay external to
 # IDO so func_80039720 retains its target induction-pointer allocation; bind
 # their metadata back to the individually owned BSS labels before linking.
 # D_800D3044 (the four play-choice bytes) is DEFINED in menu.c because
-# func_80038878 stores all four through one `lui $at`, which IDO emits only
+# initFront stores all four through one `lui $at`, which IDO emits only
 # for an object the TU owns. IDO lays it at .bss+0x2C inside the 0x30-byte
 # carve, so the section keeps its size, but the retail link placed the object
 # at 0x800D3044, which asm/data's bss gap still labels. Weakening menu.c's

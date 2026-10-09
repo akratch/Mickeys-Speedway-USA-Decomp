@@ -2405,7 +2405,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/func_overlay_055_F000031C_18A1E34.c.o: POS
 		--redefine-sym func_8002FB34=func_8002FB34_o055Reloc \
 		--redefine-sym texDPInit=texDPInit_o055Reloc \
 		--redefine-sym func_80037414=func_80037414_o055Reloc \
-		--redefine-sym func_80039E34=func_80039E34_o055Reloc \
+		--redefine-sym frontDrawObj=frontDrawObj_o055Reloc \
 		--redefine-sym func_8003A590=func_8003A590_o055Reloc \
 		--redefine-sym levelGetLevel=levelGetLevel_o055Reloc \
 		--redefine-sym mainChangeCameras=mainChangeCameras_o055Reloc \
@@ -2515,7 +2515,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/func_overlay_053_F0000240_189DBE8.c.o: POS
 		--redefine-sym func_8002F618=func_8002F618_o053Reloc \
 		--redefine-sym texDPInit=texDPInit_o053Reloc \
 		--redefine-sym func_80037414=func_80037414_o053Reloc \
-		--redefine-sym func_80039E34=func_80039E34_o053Reloc \
+		--redefine-sym frontDrawObj=frontDrawObj_o053Reloc \
 		--redefine-sym func_8003A590=func_8003A590_o053Reloc \
 		--redefine-sym levelGetLevel=levelGetLevel_o053Reloc \
 		--redefine-sym loadFrontEndItem=loadFrontEndItem_o053Reloc \

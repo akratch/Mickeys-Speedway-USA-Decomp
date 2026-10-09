@@ -565,22 +565,22 @@
       "reason": "Exact font sibling proves byte-pointer arena arithmetic changes temporary phase. Test byte-offset-first segment mapping against folded integer constants, preserving packet order and typed calls; prior local/scope controls stay closed.",
       "source_commit": "9ee97a593bff6b829ab7e28a6404a92bcf7c880c"
     },
-    "func_80038878": {
+    "initFront": {
       "ledger_commit": "f6250d56ba0062f3f018697cad839e1c05b425b3",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
       "source_commit": "f6250d56ba0062f3f018697cad839e1c05b425b3"
     },
-    "func_80038E1C": {
+    "frontUpdate": {
       "ledger_commit": "801b66f4676838484e9cc1d43ef398d5e0c5fb9e",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
       "source_commit": "801b66f4676838484e9cc1d43ef398d5e0c5fb9e"
     },
-    "func_80039E34": {
+    "frontDrawObj": {
       "ledger_commit": "a0f04ffc31f59bdb7afb45e92e0b35190693a98e",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "a0f04ffc31f59bdb7afb45e92e0b35190693a98e"
     },
-    "func_8003A2C8": {
+    "frontSetScreenMode": {
       "ledger_commit": "a299b965b3215a99fa6cd693f65b1cda7ce02ffc",
       "reason": "Final push. func_8005ABA8 is at 2 differing words after today's reconstruction closed all four of its source causes; the others are one colour each with the spilltemps law untried.",
       "source_commit": "a299b965b3215a99fa6cd693f65b1cda7ce02ffc"

@@ -11,7 +11,7 @@ extern void camSetView(void *state, s32 mode);
 extern void func_80022B94(void *state, void *output);
 extern s32 overlay41IsUnitScale(s32 index);
 extern void func_80028D30(s32 index);
-extern void func_80039E34(s32 index);
+extern void frontDrawObj(s32 index);
 extern void func_overlay_046_F0001228_188F620(s32 updateRate);
 
 /* Pinned DKR v77/v80 and JFG scans found no donor inside this owner. */
@@ -51,7 +51,7 @@ void overlay46UpdateTransition(s32 updateRate) {
             gOverlay46Selection = 255;
         }
         gOverlay46FadeOutput = gOverlay46Selection;
-        func_80039E34(5);
+        frontDrawObj(5);
         gOverlay46FadeOutput = 255;
     }
 

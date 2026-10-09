@@ -1151,10 +1151,10 @@ in `symbol_addrs.us.txt`; other JFG names remain a navigation crosswalk until
 an exact body is promoted, so the unresolved symbols keep their `func_` names
 per §1.5. Flags are the resident game-code defaults, `-O2 -mips2 -32`. The
 `-Wo,-loopunroll,0` override the TU carried until 2026-09-09 was measured
-byte-inert for every function in it except `func_80038878`, whose target
+byte-inert for every function in it except `initFront`, whose target
 unrolls both its clearing loops; it was dropped when that function matched.
 
-`func_80038750` adds **0x128 bytes / 74 words** at ROM `0x39350`. Matched C:
+`setLanguage` adds **0x128 bytes / 74 words** at ROM `0x39350`. Matched C:
 exact object words, jump table, and linked ROM range at `-O2 -mips2 -32
 -Wo,-loopunroll,0`. The CDX allocator trace showed `destination` carries the
 `piRomLoadSection` `a1`-argument affinity, so the relocation loop re-caches the
@@ -1165,7 +1165,7 @@ TU now owns its five-entry language jump table (`.rodata` carve moved to
 `assetIndex = language + 1` in descending case order, which the old
 JFG-adapted reversal got wrong while matching `.text` by coincidence.
 
-`func_80038878` remains tier-D `NON_MATCHING`. Its retained p6 result is
+`initFront` remains tier-D `NON_MATCHING`. Its retained p6 result is
 diagnostic: target 85 versus candidate 86 instructions, frame `0x18`, 66/85
 positional target-word differences, first `+0x14`. The empty address condition
 was introduced only as an allocation lever and is removed; clean V0 is
@@ -1176,10 +1176,10 @@ relocation identities.
 
 | Function | Exact result |
 |---|---|
-| `func_80038878` | 340 bytes under `-O2 -mips2 -32` (default unroller); JFG PR #37 `src/menu.c::initFront` body adapted, all 85 instruction words exact. Needs `D_800D3044[4]` (the play choices) defined in the TU: the four stores share one `lui $at`, which IDO emits only for an owned object; the Makefile weakens the definition so the bss gap's retail label wins. |
-| `func_80038E1C` | 1116 bytes under `-O2 -mips2 -32`; JFG PR #37 `src/menu.c::frontUpdate` body adapted, all 279 instruction words exact, with its 76-byte compiler-owned switch table at 0x800827E0 (the TU's `.rodata` carve grew from 0xAC to 0xFC, taking the table and the ROM's one zero pad word from the following data segment). Three facts closed the 219-word plateau: the overlay trap's nonzero result is an early `return 0` statement, not a shared exit; the donor's `case 0: break;` widens the jump table to 19 entries; and `amTunePlay` takes one argument, so the `-1` web is free to colour `a1`. |
-| `func_800389CC` | 504 bytes under `-O2 -mips2 -32` (unroll flag measured inert); JFG `src/menu.c::frontFreeMode` body, all 126 instruction words exact, with its 76-byte compiler-owned switch table. |
-| `func_80038BC4` | 488 bytes under `-O2 -mips2 -32` (unroll flag measured inert); JFG `frontInitMode` role/order comparison and Mickey-derived body, all 122 instruction words exact, with its 76-byte compiler-owned switch table. |
+| `initFront` | 340 bytes under `-O2 -mips2 -32` (default unroller); JFG PR #37 `src/menu.c::initFront` body adapted, all 85 instruction words exact. Needs `D_800D3044[4]` (the play choices) defined in the TU: the four stores share one `lui $at`, which IDO emits only for an owned object; the Makefile weakens the definition so the bss gap's retail label wins. |
+| `frontUpdate` | 1116 bytes under `-O2 -mips2 -32`; JFG PR #37 `src/menu.c::frontUpdate` body adapted, all 279 instruction words exact, with its 76-byte compiler-owned switch table at 0x800827E0 (the TU's `.rodata` carve grew from 0xAC to 0xFC, taking the table and the ROM's one zero pad word from the following data segment). Three facts closed the 219-word plateau: the overlay trap's nonzero result is an early `return 0` statement, not a shared exit; the donor's `case 0: break;` widens the jump table to 19 entries; and `amTunePlay` takes one argument, so the `-1` web is free to colour `a1`. |
+| `frontFreeMode` | 504 bytes under `-O2 -mips2 -32` (unroll flag measured inert); JFG `src/menu.c::frontFreeMode` body, all 126 instruction words exact, with its 76-byte compiler-owned switch table. |
+| `frontInitMode` | 488 bytes under `-O2 -mips2 -32` (unroll flag measured inert); JFG `frontInitMode` role/order comparison and Mickey-derived body, all 122 instruction words exact, with its 76-byte compiler-owned switch table. |
 
 The tier-B `frontSetMode` adds **0x64 bytes / 25 words** at ROM `0x399AC`.
 Its exact free/init/reset call sequence, mode-state store, and ordered pairing
@@ -1195,7 +1195,7 @@ name. The adapted body carries point-of-use `PROVENANCE`; the default flags,
 HI16/LO16 data relocations, object words, and linked ROM range are exact
 without post-processing.
 
-`func_80038E1C` retains a Mickey-derived `NON_MATCHING` candidate with the
+`frontUpdate` retains a Mickey-derived `NON_MATCHING` candidate with the
 exact **0x45C-byte / 279-word** size, `0x28`-byte frame, case count, and
 high-level control flow. It plateaus at **248/279 differing words**, first
 `+0x24`: IDO assigns the persistent fade-state address to `a0` rather than the
@@ -1314,7 +1314,7 @@ the target's `v1`/`a1` allocation. The default `-O2 -mips2 -32` flags, both
 data-relocation pairs, object words, and linked ROM range are exact without
 post-processing.
 
-`func_80039E34` retains a Mickey-derived `NON_MATCHING` draw candidate with
+`frontDrawObj` retains a Mickey-derived `NON_MATCHING` draw candidate with
 the target's exact **0xB8-byte frame** and local homes from `0x7C` through
 `0xAC`. Its best object is one word longer than the target's **0x418 bytes /
 262 words** and plateaus at **242/262 differing words**, first `+0x14`: IDO
@@ -1379,7 +1379,7 @@ confirmed by the paired writes in the following setter. The adapted type has a
 point-of-use `PROVENANCE` note, and the default flags, object words, and linked
 ROM range are exact without post-processing.
 
-`func_8003A2C8` remains guarded and exact-sized. The configured full-TU
+`frontSetScreenMode` remains guarded and exact-sized. The configured full-TU
 alias-backed mode-byte candidate matches 31/32 raw and relocation-normalized
 words, first `+0x14`, with no frame or padding. It carries
 the target's six HI16/LO16 records at `+0x00/+0x04`, `+0x24/+0x28`, and
@@ -1460,7 +1460,7 @@ carries point-of-use `PROVENANCE`. A local result recovers IDO's target `v1`
 live range; the default flags, both data relocations, object words, and linked
 ROM range are exact without post-processing.
 
-`func_8003A520` adds **0x24 bytes / 9 words** at ROM `0x3B120`. Mickey's code
+`frontSet2PlayerSplit` adds **0x24 bytes / 9 words** at ROM `0x3B120`. Mickey's code
 is the byte-preserving `twoPlayerSplit` setter paired with the preceding
 getter. The instrumented-ugen free-list trace showed the target's temp ring
 rotated one pop past the plain bitfield assignment; a `& 1` redundant with the
@@ -1479,7 +1479,7 @@ no donor body or descriptive-name evidence is used. The default flags, both
 data-relocation words, object words, and linked ROM range are exact without
 post-processing.
 
-`func_8003A2C8` remains guarded `NON_MATCHING` over ROM `0x3AEC8..0x3AF48`.
+`frontSetScreenMode` remains guarded `NON_MATCHING` over ROM `0x3AEC8..0x3AF48`.
 The configured alias-backed candidate matches 31/32 raw and relocation-
 normalized words, first `+0x14`, with no frame or padding and all six
 relocations exact. Its complete pool and temp lanes match; the lone difference

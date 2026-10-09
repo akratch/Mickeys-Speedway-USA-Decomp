@@ -8,7 +8,7 @@
  *
  * Flags: -O2 -mips2 -32 (the game-code preset, selected by Makefile). The
  * -Wo,-loopunroll,0 override this TU once carried was measured byte-inert for
- * every function except func_80038878, whose target is unrolled; it is gone.
+ * every function except initFront, whose target is unrolled; it is gone.
  */
 
 #include "PR/ultratypes.h"
@@ -49,9 +49,9 @@ extern u16 D_800D312E;
 extern void amTuneStop(void);
 extern void amTuneSetGlobalVolume(s32 volume);
 extern void alSurround_OutputType(u8 mode);
-extern void func_80038750();
-extern void func_800389CC(void);
-extern void func_80038BC4(void);
+extern void setLanguage();
+extern void frontFreeMode(void);
+extern void frontInitMode(void);
 extern void func_8003968C(void);
 extern s32 levelGetRegionNo(void);
 extern s8 viGetWideAdjust(void);
@@ -277,7 +277,7 @@ extern void camPopModelMtx(MenuCommand **commands);
  * junior expression temp on a0, and the `-1 ==` spelling keeps the hoisted
  * constant first in the compare (allocator-trace-guided). The jump table is
  * the TU's own first rodata entry, carved at ROM 0x83334. */
-void func_80038750(s32 language) {
+void setLanguage(s32 language) {
     s32 *header;
     s32 *offsets;
     s32 assetIndex;
@@ -346,7 +346,7 @@ void func_80038750(s32 language) {
  * unrolled in the target (4 stores per iteration; fully), so this TU compiles
  * WITHOUT -Wo,-loopunroll,0: measured byte-inert for every other function in
  * menu.c and required by this one. */
-void func_80038878(void) {
+void initFront(void) {
     s32 i;
 
     D_800D3150[0] = (s32) mmAlloc(0x5B8, 0x8F);
@@ -354,7 +354,7 @@ void func_80038878(void) {
         D_800D3150[i] = D_800D3150[i - 1] + 0xF4;
     }
     D_8007C0B8 = mmAlloc(0x1000, 0x8F);
-    func_80038750(0);
+    setLanguage(0);
     i = 0;
     while (i < 180) {
         D_800D31C8[i] = NULL;
@@ -378,7 +378,7 @@ void func_80038878(void) {
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/menu.c::frontFreeMode;
  * Mickey supplies the smaller 19-mode switch and exact resident state. */
-void func_800389CC(void) {
+void frontFreeMode(void) {
     u8 *selection;
     u8 value;
 
@@ -460,7 +460,7 @@ void func_800389CC(void) {
 /* PROVENANCE: role and switch ordering compared with JFG's public
  * src/menu.c::frontInitMode; JFG retains assembly, and this body is derived
  * from Mickey's state and call surface. */
-void func_80038BC4(void) {
+void frontInitMode(void) {
     u8 *selection;
     u8 value;
 
@@ -546,9 +546,9 @@ void func_80038BC4(void) {
 /* PROVENANCE: name, role, call order, and state resets compared with JFG's
  * public src/menu.c::frontSetMode; Mickey supplies the exact state surface. */
 void frontSetMode(s32 mode) {
-    func_800389CC();
+    frontFreeMode();
     D_8007C0A0 = mode;
-    func_80038BC4();
+    frontInitMode();
     func_8003968C();
     D_8007BF30 = 0;
     D_8007BF34 = 1;
@@ -576,7 +576,7 @@ u8 frontGetMode(void) {
  * argument -- the other Mickey callers agree). The locals keep their target
  * homes in declaration order: the four joyGetPressed halves and the two
  * call results are the whole 0x28 frame. */
-s32 func_80038E1C(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList, s32 updateRate) {
+s32 frontUpdate(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList, s32 updateRate) {
     s32 timerState;
     u8 *selection;
     u16 pressed0;
@@ -713,7 +713,7 @@ void frontDemoMessage(MenuCommand **displayList, s32 updateRate) {
         x = 0xA0;
         y = 0xD0;
         viConvertXY(&x, &y);
-        func_80038750(frontGetLanguage());
+        setLanguage(frontGetLanguage());
         func_8004B0A4(2);
         func_8004B0DC(0, 0, 0, 0);
         fontColour(0, 0, 0, 0xFF, 0xFF);
@@ -1037,7 +1037,7 @@ void setupFrontEndObject(s32 objectId) {
  * the head of the plain path, and each colour as `(g & 0xFF) << n` terms (the
  * _SHIFTL form). The block-scope packet pointers are what fill the frame the
  * volatile stack struct's old pad stood in for. */
-void func_80039E34(s32 index) {
+void frontDrawObj(s32 index) {
     volatile MenuDrawStack stack;
     s16 flags;
     MenuFrontObject *renderObject;
@@ -1129,7 +1129,7 @@ s32 frontGetLanguage(void) {
  * src/menu.c::frontSetLanguage; body and bitfield derived from Mickey. */
 void frontSetLanguage(s32 language) {
     D_800D3128.bits.language = language;
-    func_80038750(language);
+    setLanguage(language);
 }
 s32 frontGetScreenMode(void) {
     s32 mode;
@@ -1155,7 +1155,7 @@ s32 frontGetScreenMode(void) {
 /* PROVENANCE: ordered accessor-family role rechecked against JFG efd5abb's
  * assembly-backed src/menu.c::frontSetScreenMode; mask, guard, and packed fields
  * are Mickey-derived. */
-void func_8003A2C8(s32 screenMode) {
+void frontSetScreenMode(s32 screenMode) {
     u8 *modeBitPtr;
     u8 *modeState;
     u8 modeBits;
@@ -1279,7 +1279,7 @@ s32 frontGet2PlayerSplit(void) {
  * The `& 1` is load-bearing: it is folded into the 1-bit field insert but still
  * consumes one ugen temp-ring slot, which rotates the FIFO into the ROM's
  * t0/t8/t9/t1/t2 assignment (allocator-trace-guided, field-guide lever 16). */
-void func_8003A520(s32 split) {
+void frontSet2PlayerSplit(s32 split) {
     D_800D3128.bits.twoPlayerSplit = split & 1;
 }
 void func_8003A544(s32 value) {

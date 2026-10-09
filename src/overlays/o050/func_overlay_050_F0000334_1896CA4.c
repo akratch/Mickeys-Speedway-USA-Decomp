@@ -60,7 +60,7 @@ s32 func_800290A0_o050Reloc(void); /* 0:+0x28C50 */
 s32 func_8003A7D0_o050Reloc(void *); /* 0:+0x3A380 */
 void func_8002F618_o050Reloc(void **, void *, s32, s32, s32, s32, s32, s32); /* 0:+0x2F1C8 */
 void texDPInit_o050Reloc(void **); /* 0:+0x344D0 */
-void func_80039E34_o050Reloc(s32); /* 0:+0x399E4 */
+void frontDrawObj_o050Reloc(s32); /* 0:+0x399E4 */
 void freeFrontEndItem_o050Reloc(s32); /* 0:+0x3964C */
 void loadFrontEndItem_o050Reloc(s32); /* 0:+0x39794 */
 s32 overlay59Interpolate_o050Reloc(s32, s32, s32, s32, s32, s32 *, s32 *, s32); /* 59:+0x784 */
@@ -255,9 +255,9 @@ racer->laps != level->laps
         texDPInit_o050Reloc(&D_800D3140_o050Reloc);
         D_800D3550_o050Reloc[4].y = (f32) (0x54 - hudY);
         D_800D3550_o050Reloc[4].angle = (s16) ((s32) (racer->raceTime * -0x10000) / 300);
-        func_80039E34_o050Reloc(4);
+        frontDrawObj_o050Reloc(4);
         D_800D3550_o050Reloc[1].y = (f32) (0x43 - hudY);
-        func_80039E34_o050Reloc(1);
+        frontDrawObj_o050Reloc(1);
         func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_2C0, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
         texDPInit_o050Reloc(&D_800D3140_o050Reloc);
         if (racer->item != 0xFF) {
@@ -438,7 +438,7 @@ racer->laps != level->laps
                 D_800D3550_o050Reloc[0].y = -85.0f;
                 texDPInit_o050Reloc(&D_800D3140_o050Reloc);
                 D_8007C0BC_o050Reloc = 0xFF;
-                func_80039E34_o050Reloc(0);
+                frontDrawObj_o050Reloc(0);
                 D_8007C0BC_o050Reloc = 0xFF;
             }
         }

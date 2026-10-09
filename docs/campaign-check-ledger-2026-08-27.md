@@ -208,7 +208,7 @@ descendant `7dbdf31f` explicitly withdrew exactness and restored
 Both arms began at `bcae0207`, checked the same committed-lane state, and
 worked the same target order:
 
-1. `func_8003A2C8`: compact P! allocation plateau; and
+1. `frontSetScreenMode`: compact P! allocation plateau; and
 2. `func_80012574`: P! FP-web/stack-home plateau whose earlier permuter zero
    was proved false when honest stack differences were enabled.
 
@@ -219,14 +219,14 @@ measures model-guided compiler feedback rather than search throughput.
 
 | Route | Target | Attempts | Baseline | Best | Active wall time | Verdict |
 |---|---|---:|---:|---:|---:|---|
-| inherited | `func_8003A2C8` (pre-cleanup) | 10 | 5 / 32 | 5 / 32 | about 5 min | historical diagnostic |
+| inherited | `frontSetScreenMode` (pre-cleanup) | 10 | 5 / 32 | 5 / 32 | about 5 min | historical diagnostic |
 | inherited | `func_80012574` | 10 | 7 / 57 | 7 / 57 | about 5 min | plateau |
-| Sol/xhigh | `func_8003A2C8` (pre-cleanup) | 8 | 5 / 32 | 5 / 32 | about 3 min | historical diagnostic |
+| Sol/xhigh | `frontSetScreenMode` (pre-cleanup) | 8 | 5 / 32 | 5 / 32 | about 3 min | historical diagnostic |
 | Sol/xhigh | `func_80012574` | 10 | 7 / 57 | 2 / 57 | about 5.5 min | diagnostic, rejected source |
 
 Both routes reported 0 / 2 exact. Their attempt counts, matrices, objects, and
 traces do not survive, so the table is historical prose rather than proof of
-route exhaustion. The retained prior-layout `func_8003A2C8` C object is
+route exhaustion. The retained prior-layout `frontSetScreenMode` C object is
 size-exact and frameless with all six relocations exact; its five sites form the
 same mode-web `v0`/`v1` inversion. Reopen with current-layout V0, a retained
 119-flag lattice, one allocator trace, and only trace-selected natural forms.
@@ -262,7 +262,7 @@ close live rankings, and the new same-ROM leads:
 2. `func_80055B24` — strongest single Mickey sibling;
 3. `overlay40FadeRecords` — three-word register-only live ranking;
 4. `overlay3FindClosestObject` — four-word register-only live ranking;
-5. `func_8003A2C8` — compact P! plateau and bakeoff target;
+5. `frontSetScreenMode` — compact P! plateau and bakeoff target;
 6. `overlay40AddEntry` — four-word register-only live ranking;
 7. `overlay20UpdateObjectResource` — historical two-pass claim; canonical Git retains only the isolated scalar, while one stale local V0 object lacks source/build provenance and no route-exhaustion artifacts survive;
 8. `overlay74Update` — historical six-word pre-cleanup diagnostic; current

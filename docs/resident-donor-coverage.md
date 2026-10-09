@@ -234,7 +234,7 @@ they left the queue and their shards were retired. func_8002B040 moved to
 
 | Target | Bytes | Coverage |
 | --- | ---: | --- |
-| [func_80039E34](matching-triage-handoffs/func_80039E34.md) | 1048 | U |
+| [frontDrawObj](matching-triage-handoffs/frontDrawObj.md) | 1048 | U |
 
 ### `src/main/models.c`
 

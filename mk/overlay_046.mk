@@ -107,7 +107,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46UpdateTransition.c.o: POSTPROCESS
 		0x84:4:overlay41IsUnitScale \
 		0xD0:4:func_80028D30 \
 		0x12C:5:gOverlay46FadeOutput \
-		0x130:4:func_80039E34 \
+		0x130:4:frontDrawObj \
 		0x134:6:gOverlay46FadeOutput \
 		0x13C:5:gOverlay46FadeOutput \
 		0x140:6:gOverlay46FadeOutput && \

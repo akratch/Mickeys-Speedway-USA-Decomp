@@ -745,7 +745,7 @@ segments:
       # object's own section padding; the "front/front.c" string follows.
       - [0x832A4, .rodata, main/frontend_37D50]
       - [0x832C0, rodata]
-      # func_800389CC, func_80038BC4 and func_80038E1C's consecutive nineteen-entry
+      # frontFreeMode, frontInitMode and frontUpdate's consecutive nineteen-entry
       # tables, plus the ROM's one zero pad word before the next float table.
       - [0x83334, .rodata, main/menu]
       # weather's literal pool: rain_render_splashes' 0.175f age step, then

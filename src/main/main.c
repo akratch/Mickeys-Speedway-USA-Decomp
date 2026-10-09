@@ -324,7 +324,7 @@ extern void diCpuTraceGetFault(void);
 extern void diCpuTraceTick(s32);
 extern void fxUnQueueScreenEffect(Gfx **);
 extern s32 func_80049B14(s32);
-extern void func_80038E1C(Gfx **, Mtx **, MainVertex **, MainTriangle **, s32);
+extern void frontUpdate(Gfx **, Mtx **, MainVertex **, MainTriangle **, s32);
 extern void func_80049E4C(Gfx **, s32);
 extern void amAudioTick(u8);
 extern void diPrintfAll(Gfx **);
@@ -352,7 +352,7 @@ extern void mainUpdateZBCheck(void);
 extern void mainCPUeffects(u16 *, s32);
 extern void mmFlushFreeStack(void);
 extern void mmSetDelay(s32);
-extern void func_800389CC(void);
+extern void frontFreeMode(void);
 extern void func_80037150(void);
 extern void func_8004E99C(void);
 extern void amTuneStop(void);
@@ -577,7 +577,7 @@ void func_80026FB4(void) {
 
     fxUnQueueScreenEffect(&D_800CF518);
     drawTransition = func_80049B14(D_8007A248);
-    func_80038E1C(&D_800CF518, &D_800CF530, &D_800CF588, &D_800CF5A0,
+    frontUpdate(&D_800CF518, &D_800CF530, &D_800CF588, &D_800CF5A0,
                   D_8007A248);
     if (drawTransition != 0) {
         func_80049E4C(&D_800CF518, 0);
@@ -948,7 +948,7 @@ void func_80027EC0(s32 updateRate) {
     D_8007A1D8++;
     if (D_8007A1D8 >= 10) {
         frontSetLanguage(frontGetLanguage());
-        func_8003A2C8(frontGetScreenMode());
+        frontSetScreenMode(frontGetScreenMode());
         frontSetWideAdjust(frontGetWideAdjust());
         frontSetStereoMode(frontGetStereoMode());
         frontSetSfxVolume(frontGetSfxVolume());
@@ -1164,7 +1164,7 @@ void func_80028564(s32 updateRate) {
             mmFlushFreeStack();
             mmSetDelay(0);
             mainPreNMI();
-            func_800389CC();
+            frontFreeMode();
             mainPreNMI();
             if (runlinkIsModuleLoaded(0x22)) {
                 TrapDanglingJump();

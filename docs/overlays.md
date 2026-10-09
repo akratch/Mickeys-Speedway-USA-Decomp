@@ -1443,7 +1443,7 @@ constant, copy-carrier, scope, declaration, and physical-line forms were flat
 or worse. The target and C each carry 15 relocations; 13 offsets/types and 12
 identities align, with the factor pair displaced by the prologue schedule. The
 retained switch table at `+0x76C` is already owned and rebound. ORT 1435 and
-resident calls from `func_80038E1C+0x2C4/+0x320` authenticate the one-word
+resident calls from `frontUpdate+0x2C4/+0x320` authenticate the one-word
 `steps` ABI and exact owner; `+0x784` starts the next function with no padding.
 The owner is ROM `0x18B8ABC..0x18B8ED4`. No credible permitted donor was found
 (best skeleton similarity 0.0433). Exact linked function, overlay, and ROM
@@ -1587,7 +1587,7 @@ The target's 25 runtime records are fully decoded: local state/seed/script
 roles plus two resident calls. The candidate emits 24 records; its shifted
 schedule aligns only 12 offset/type sites, resolves eight candidate identities,
 and aligns one identity. ORT 1423 exports the function, and resident
-`func_80038BC4+0x188` is its sole authenticated caller.
+`frontInitMode+0x188` is its sole authenticated caller.
 
 A bounded 14-build pass tested twelve natural source families spanning direct
 arrays, pointer-controlled loops, `for`/`do` forms, hand unrolling, aggregate

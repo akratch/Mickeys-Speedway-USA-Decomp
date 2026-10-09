@@ -86,7 +86,7 @@ extern s32 func_800290A0(void);
 extern void overlay55GetOffsets(s32, s32, s32 *, s32 *);
 extern void texDPInit(Overlay55DisplayCommand **);
 extern void func_8002F618(Overlay55DisplayCommand **, Overlay55Digit *, s32, s32, u8, u8, u8, u8);
-extern void func_80039E34(s32);
+extern void frontDrawObj(s32);
 extern s32 frontGetScreenMode(void);
 extern void func_8002FB34(Overlay55DisplayCommand **, Overlay55Transform *, f32, f32, f32, f32, s32, u8);
 extern s32 mainGetMode(void);
@@ -189,7 +189,7 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
             D_800D3550[4].unkC = digitX - 0xAD;
             D_800D3550[4].unk10 = (-digitY - hudOffset) + 0x74;
             D_800D3550[4].unk4 = state->time * -65536 / 300;
-            func_80039E34(4);
+            frontDrawObj(4);
             func_8002F618(&D_800D3140, clock, 0, hudOffset, 255, 255, 255, 255);
         }
         if (state->character != 255) {

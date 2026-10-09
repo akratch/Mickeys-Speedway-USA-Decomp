@@ -48,7 +48,7 @@ extern void func_8002F618(Gfx **commands, RcpTextureNode *texture,
 extern void func_8002FB34(Gfx **commands, RcpTextureNode *texture,
                         f32 x, f32 y, f32 scaleX, f32 scaleY, s32 alpha, s32 flags);
 extern void texAnimateTexSprite(void *texture, s32 *state, s32 speed, f32 *frame, s32 ticks);
-extern void func_8003A520(s32 split);
+extern void frontSet2PlayerSplit(s32 split);
 extern s32 func_8003A700(u8 initial);
 extern void viChangeMode(s32 screenMode);
 extern void viNoClear(void);
@@ -397,7 +397,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0) {
                     if (D_800D31BC_o060Reloc != 0) {
                         i ^= 1;
-                        func_8003A520(i);
+                        frontSet2PlayerSplit(i);
                         amSndPlay(0xF, NULL);
                     }
                 }
@@ -590,7 +590,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     fontColour(0x64, 0xFF, 0x64, 0xFF, gOverlay60Data2A4);
                     func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x9B, O60_TEXT(0x1E0), 0xC);
                 }
-                func_8003A2C8(screenMode);
+                frontSetScreenMode(screenMode);
                 break;
             case 7:
                 showArrows = 0;

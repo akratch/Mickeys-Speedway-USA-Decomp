@@ -218,9 +218,11 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
     s32 barX;
     s32 stat;
-    /* Three unused cells above x and y put every home from x down where the
-     * target's are (lane s-4, 302 -> 291). Flagged: no used local found. */
-    s32 padA, padB, padC;
+    /* The label bars' count and the scroll loop's index have locals of
+     * their own (byte-identical to sharing count and i); with padC these
+     * three cells put every home from x down where the target's are (lane
+     * s-4 found them as unused pads, 302 -> 291; lane v-4). padC flagged. */
+    s32 bars, field, padC;
 
     s32 x, y;
     s32 red, green, blue;
@@ -258,13 +260,14 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     activeCount = 0;
     back = 0;
     /* Both player-array loops outside the main loop are indexed by
-     * controller: the target's first-loop and label-loop cursors are one
-     * strength-reduced s8 cursor with their own address pairs (measured
-     * 2026-10-07). */
+     * controller and spelled `(D_800D3058 + controller)->`: the two loops'
+     * cursors are one strength-reduced fp web, and the subscript spelling in
+     * both loops ranks it below unready (lane v-4, 54 -> 47; either loop
+     * alone is 388 to 395 at +4). */
     for (controller = 0; controller < 4; controller++) {
-        if (D_800D3058[controller].active != 0) {
+        if ((D_800D3058 + controller)->active != 0) {
             activeCount++;
-            if (D_800D3058[controller].ready == 0) {
+            if ((D_800D3058 + controller)->ready == 0) {
                 allReady = 0;
                 ov47Bss_338 = 0;
             }
@@ -275,8 +278,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         ov47Bss_338 = 1;
     }
     player = D_800D3058;
-    icon = ov47Bss_8;
     for (controller = 0; controller < 4; controller++, player++) {
+        /* The icon cursor is reset per controller (lane v-4, 59 -> 54: it
+         * moves the player cursor below unready in the colour order). */
+        icon = ov47Bss_8;
         switch (player->active) {
             case 0:
                 if ((joyGetPressed(controller) & 0x9000) && !player->leaving &&
@@ -423,8 +428,8 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             oldFrame = player->actor->frameValue;
             func_8005ABA8(player->actor, ov47Data_3F0[(s8)player->actor->frame], rate);
             scroll = player->actor->scroll;
-            for (i = 0; i < 4; i++) {
-                (&scroll->a)[i] += speed;
+            for (field = 0; field < 4; field++) {
+                (&scroll->a)[field] += speed;
             }
             if (!player->ready && !player->leaving && player->active && !start) {
                 if (D_800D3190[controller] < -16 && !ov47Bss_324) {
@@ -664,14 +669,14 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     func_8004B0A4(2);
     labelCount = 0;
     for (controller = 0; controller != 4; controller++) {
-        if (D_800D3058[controller].active && D_800D3058[controller].actor != NULL) {
+        if ((D_800D3058 + controller)->active && (D_800D3058 + controller)->actor != NULL) {
             /* The label x is `unready` again: one symbol for the ready flag
              * and the label column, so it keeps unready's s8 (lever_sweep
              * merge_locals, lane p-4: 615 at -4 to 455 at size 0). */
             if (ov47Bss_30A == 4) {
-                unready = ov47Data_530[controller] + D_800D3058[controller].screenX;
+                unready = ov47Data_530[controller] + (D_800D3058 + controller)->screenX;
             } else {
-                unready = D_800D3058[controller].screenX - 20.0f;
+                unready = (D_800D3058 + controller)->screenX - 20.0f;
             }
             /* The row counter is j, as is the marker easing loop's, and the
              * bar row is `stat` (lane k-8 had the rows on `selected`; j in
@@ -691,16 +696,16 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                 O47_COMMAND(0xEF002C0F, 0x00504340);
                 O47_COMMAND(0xB6000000, 0x00010001);
                 O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
-                count = ov47Data_4C8[ov47Data_524[D_800D3058[controller].selector]][j];
+                bars = ov47Data_4C8[ov47Data_524[(D_800D3058 + controller)->selector]][j];
                 O47_COMMAND(0xFA000000, ov47Data_3DC[controller]);
-                while (count--) {
+                while (bars--) {
                     O47_RECTANGLE(barX, stat);
                     barX += 8;
                 }
                 O47_COMMAND(0xE7000000, 0);
                 O47_COMMAND(0xFA000000, (ov47Data_3DC[controller] & ~0xFF) | 0x40);
-                count = 5 - ov47Data_4C8[ov47Data_524[D_800D3058[controller].selector]][j];
-                while (count--) {
+                bars = 5 - ov47Data_4C8[ov47Data_524[(D_800D3058 + controller)->selector]][j];
+                while (bars--) {
                     O47_RECTANGLE(barX, stat);
                     barX += 8;
                 }
@@ -742,10 +747,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 59/2168 words
+ * score: 47/2168 words
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 59 aligned at size 0 (masked 59): every frame home exact; five unused cells flagged. Cursor fp priced (47 under force). Open: head, +0x400, s7 to s8.
+ * summary: 47 aligned at size 0 (masked 47): player array as pointer add in both outer loops; padC, padD, padE, frame unused. Open: cursor order (34 priced).
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

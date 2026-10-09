@@ -547,9 +547,11 @@ void func_8002C8B4(s32 controller, s32 address, void *buffer, s32 length) {
     func_80070030(controller, (u8) address, buffer, length);
 }
 /* Mickey-derived serialization of one 0x94-byte save window. */
-/* The `if (1)` block around the entry init is a register-scheduling nudge
- * needed to match the callee-saved slot/counter tie-break (permuter); tracked
- * in docs/cleanup-queue.md. */
+/* The inner walk is a `for` whose initialiser sets the entry cursor from the
+ * slot (lane c-5, 2026-10-09). That replaced a permuter `if (1)` block around
+ * the cursor assignment; like the block, the loop initialiser
+ * settles the callee-saved slot/counter tie-break as shipped. The same `for`
+ * applied to the outer loop as well changes the function's size. */
 void func_8002C94C(s32 saveIndex) {
     SavesBitWriter *writer;
     s32 inner;
@@ -570,19 +572,15 @@ void func_8002C94C(s32 saveIndex) {
         outer = 0;
         slotCount = 0x18;
         do {
-            inner = 0;
-            if (1) {
-                entry = (SavesPackedEntry *) slot;
-            }
-            do {
+            for (inner = 0, entry = (SavesPackedEntry *) slot;
+                 inner != sizeof(SavesSlot);
+                 inner += sizeof(SavesPackedEntry), entry++) {
                 func_8002C69C(writer, entry->unk04, 5);
                 func_8002C69C(writer, entry->unk05, 5);
                 func_8002C69C(writer, entry->unk06, 5);
                 func_8002C69C(writer, entry->unk00 / 3, 0x12);
                 func_8002C69C(writer, entry->unk07, 4);
-                inner += sizeof(SavesPackedEntry);
-                entry++;
-            } while (inner != sizeof(SavesSlot));
+            }
             outer++;
             slot++;
         } while (outer != slotCount);

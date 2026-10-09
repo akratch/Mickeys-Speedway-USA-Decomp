@@ -948,6 +948,7 @@ function, and the one to run **before** any colour or draw work on it. Every
 other instrument here works at size delta 0; they move a register, never an
 instruction. This one answers the question a nonzero delta actually asks:
 which word is extra or missing, and which construct of our source emitted it.
+`--object` of a scratch candidate needs `--source <its C file>`: the traced compile then runs on the candidate, so the identity gate compares like with like (without it the gate fails and the trace is discarded; the message says so).
 
 What it measures, all from one alignment (the same edit script
 `residual_map.py` reads, so its offsets agree with that tool's by construction):

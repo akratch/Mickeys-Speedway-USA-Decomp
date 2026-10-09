@@ -2,7 +2,14 @@
 """Read a size-mismatch function's insertion pairs, and name what owns each word.
 
     tools/insertion_pairs.py <symbol> [--json] [--object PATH] [--trace LOG]
-                             [--no-trace]
+                             [--no-trace] [--source FILE]
+
+`--source FILE` is the C file that produced `--object` (a scratch candidate).
+The traced compile then runs on FILE, not the tracked TU, so the identity gate
+compares the object with ITS OWN source's trace; the object's line table is
+read under FILE's name. Without it, `--object` from a candidate fails the gate
+(the tracked TU's trace is for another program) and the trace is discarded.
+A relative FILE is taken from the caller's cwd.
 
 WHY THIS EXISTS
 
@@ -621,14 +628,17 @@ def line_table(obj: pathlib.Path, start: int, size: int, source: str) -> dict:
     return parse_line_table(text, start, size, pathlib.Path(source).name)
 
 
-def compile_traced(item, work: pathlib.Path
+def compile_traced(item, work: pathlib.Path, source: pathlib.Path | None = None
                    ) -> tuple[pathlib.Path | None, str | None, str]:
-    """Compile the TU once with the traced ugen: (object, trace text, note)."""
+    """Compile the TU (or `source`, a candidate) once with the traced ugen:
+    (object, trace text, note)."""
     import force_lattice as fl
     compiler = fl.INSTRUMENTED / "cc"
     if not compiler.exists():
         return None, None, "no instrumented compiler installed"
     command = fl.replace_compiler(fl.compile_command(item.func), compiler)
+    if source is not None:
+        command[-1] = str(source)
     out = work / (item.rel_c_file.replace("/", "_") + ".traced.o")
     command[command.index("-o") + 1] = str(out)
     env = {k: v for k, v in os.environ.items()
@@ -651,7 +661,8 @@ def identity_gate(item, traced_obj: pathlib.Path, words: list[int]) -> bool:
 
 
 def analyse(item, obj: pathlib.Path, procs: dict | None, trace_note: str,
-            traced_obj: pathlib.Path | None = None) -> dict:
+            traced_obj: pathlib.Path | None = None,
+            source: pathlib.Path | None = None) -> dict:
     """Pairs, shadow, classes, owners and labels for one symbol in `obj`.
 
     `procs` is `parse_trace` output (or None). With `traced_obj`, the trace is
@@ -675,8 +686,11 @@ def analyse(item, obj: pathlib.Path, procs: dict | None, trace_note: str,
         if identity_gate(item, traced_obj, base):
             trace_note = "identity gate passed"
         else:
-            procs, trace_note = None, ("identity gate FAILED: the traced "
-                                       "object differs here; trace discarded")
+            procs, trace_note = None, (
+                "identity gate FAILED: the traced object differs here; trace discarded"
+                + ("" if source is not None else
+                   " (if --object is a scratch candidate, pass --source <its C file> "
+                   "so the trace is of the candidate)"))
 
     b_reloc, t_reloc = streams.base_reloc, streams.target_reloc
     masked = als.reloc_masked
@@ -714,7 +728,7 @@ def analyse(item, obj: pathlib.Path, procs: dict | None, trace_note: str,
                      naming)
 
     span = nr.func_symbol_span(obj, item.func)
-    lines = line_table(obj, span[0], span[1], item.rel_c_file) if span else {}
+    lines = line_table(obj, span[0], span[1], str(source or item.rel_c_file)) if span else {}
     procs = procs or {}
     int_lines = {v for v in lines.values() if isinstance(v, int)}
     bounds = (min(int_lines), max(int_lines)) if int_lines else None
@@ -816,7 +830,7 @@ def analyse(item, obj: pathlib.Path, procs: dict | None, trace_note: str,
 
 def measure(symbol: str, object_path: pathlib.Path | None = None,
             trace_path: pathlib.Path | None = None,
-            use_trace: bool = True) -> dict:
+            use_trace: bool = True, source: pathlib.Path | None = None) -> dict:
     import nm_ranking as nr
     import permute_batch as pb
     queue = {entry.func: entry for entry in pb.discover_queue()}
@@ -842,9 +856,9 @@ def measure(symbol: str, object_path: pathlib.Path | None = None,
                 errors="replace"))
             note = "supplied trace (not identity-gated)"
         elif use_trace:
-            traced_obj, text, note = compile_traced(item, work)
+            traced_obj, text, note = compile_traced(item, work, source)
             procs = parse_trace(text) if text else None
-        return analyse(item, obj, procs, note, traced_obj)
+        return analyse(item, obj, procs, note, traced_obj, source)
 
 
 def refuse_delta_zero(item, obj: pathlib.Path) -> None:
@@ -914,6 +928,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--trace", type=pathlib.Path, default=None,
                         help="use this ugen trace (DKWB_UGEN_TRACE output) "
                              "instead of compiling one")
+    parser.add_argument("--source", type=pathlib.Path, default=None,
+                        help="the C file that produced --object; the trace is compiled "
+                             "from it so the identity gate compares like with like")
     parser.add_argument("--no-trace", action="store_true",
                         help="skip the traced compile; every non-nop word "
                              "is then unowned")
@@ -926,7 +943,15 @@ def main(argv: list[str] | None = None) -> int:
               "--trace <its log>) to read that object directly.",
               file=sys.stderr)
         return 2
-    data = measure(args.symbol, args.object, args.trace, not args.no_trace)
+    source = args.source.resolve() if args.source else None
+    if source is not None:
+        if args.object is None:
+            print("error: --source names the candidate behind --object; pass --object too",
+                  file=sys.stderr)
+            return 2
+        if not source.is_file():
+            raise SystemExit(f"insertion_pairs: no such --source: {source}")
+    data = measure(args.symbol, args.object, args.trace, not args.no_trace, source)
     print(json.dumps(data, indent=2) if args.json else render(data))
     return 0
 

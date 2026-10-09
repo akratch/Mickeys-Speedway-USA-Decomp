@@ -99,8 +99,13 @@ extern f32 func_8002A8C0(s32 angle);
  * it numbers the right conversion ahead of the half-height webs (removing it
  * is 117). 115 -> 109 (lane q-3): triangle 1 writes vertex0, vertex2,
  * flags, vertex1 and triangle 2 writes its fields in order with flags last,
- * which makes as1 hoist the 2, 1, 3 constants as shipped. Earlier passes:
- * see the shard. */
+ * which makes as1 hoist the 2, 1, 3 constants as shipped. 109 -> 96
+ * (lane t-4): vertices 0-2 name their corner offsets directly instead of
+ * through x/y carriers, and screenRight is converted into rightFloat just
+ * before vertex 2 for vertex 3's x (replacing the dead rightFloat store).
+ * That puts uopt's second -varref block cut (20 out-of-block variable
+ * loads) before vertex 2's colours, where the forced-cut oracle priced it.
+ * Earlier passes: see the shard. */
 #define PKT(pkt, a, b) { Gfx *_g = (Gfx *)(pkt)++; _g->words.w0 = (a); _g->words.w1 = (b); }
 #ifdef NON_MATCHING
 void func_overlay_045_F0001158_188D5B0(
@@ -268,39 +273,34 @@ void func_overlay_045_F0001158_188D5B0(
                     screenLeft = left - 0xA0U;
                     screenRight = right - 0xA0U;
                     halfWidth = (f32)(s32)(screenRight - screenLeft) * 0.5f;
-                    rightFloat = screenRight;
                     negativeHalfWidth = -halfWidth;
                     halfHeight = (f32)(upper - lower) * 0.5f;
                     negativeHalfHeight = -halfHeight;
-                    x = negativeHalfWidth;
-                    y = halfHeight;
-                    vertices[0].x = (f32)screenLeft + ((x * sine - y * cosine) - x);
-                    vertices[0].y = (f32)upper + ((y * sine + x * cosine) - y);
+                    vertices[0].x = (f32)screenLeft + ((negativeHalfWidth * sine - halfHeight * cosine) - negativeHalfWidth);
+                    vertices[0].y = (f32)upper + ((halfHeight * sine + negativeHalfWidth * cosine) - halfHeight);
                     vertices[0].red = 0xFF;
                     vertices[0].green = 0xFF;
                     vertices[0].blue = 0xFF;
                     vertices[0].alpha = 0xFF;
                     vertices[0].z = 0;
-                    x = halfWidth;
-                    vertices[1].x = (f32)screenRight + ((x * sine - y * cosine) - x);
-                    vertices[1].y = (f32)upper + ((y * sine + x * cosine) - y);
+                    vertices[1].x = (f32)screenRight + ((halfWidth * sine - halfHeight * cosine) - halfWidth);
+                    vertices[1].y = (f32)upper + ((halfHeight * sine + halfWidth * cosine) - halfHeight);
                     vertices[1].red = 0xFF;
                     vertices[1].green = 0xFF;
                     vertices[1].blue = 0xFF;
                     vertices[1].alpha = 0xFF;
                     vertices[1].z = 0;
-                    x = negativeHalfWidth;
-                    y = negativeHalfHeight;
-                    vertices[2].x = (f32)screenLeft + ((x * sine - y * cosine) - x);
-                    vertices[2].y = (f32)lower + ((y * sine + x * cosine) - y);
+                    rightFloat = screenRight;
+                    vertices[2].x = (f32)screenLeft + ((negativeHalfWidth * sine - negativeHalfHeight * cosine) - negativeHalfWidth);
+                    vertices[2].y = (f32)lower + ((negativeHalfHeight * sine + negativeHalfWidth * cosine) - negativeHalfHeight);
                     vertices[2].red = 0xFF;
                     vertices[2].green = 0xFF;
                     vertices[2].blue = 0xFF;
                     vertices[2].alpha = 0xFF;
                     vertices[2].z = 0;
                     x = -negativeHalfWidth;
-                    vertices[3].x = (f32)screenRight + ((x * sine - y * cosine) - x);
-                    vertices[3].y = (f32)lower + ((y * sine + x * cosine) - y);
+                    vertices[3].x = rightFloat + ((x * sine - negativeHalfHeight * cosine) - x);
+                    vertices[3].y = (f32)lower + ((negativeHalfHeight * sine + x * cosine) - negativeHalfHeight);
                     vertices[3].red = 0xFF;
                     vertices[3].green = 0xFF;
                     vertices[3].blue = 0xFF;
@@ -354,10 +354,10 @@ void func_overlay_045_F0001158_188D5B0(
 
 /* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
  * symbol: func_overlay_045_F0001158_188D5B0
- * score: 109/674 words
+ * score: 96/674 words
  * frame: 0x190
  * relocations: 25
- * first-mismatch: +0x748
- * summary: 109 at size 0: block cuts are uopt -varref (20 out-of-block variable loads); forced-cut oracle 94 at 0; target order (CDX_BIAS) still 47 at -4.
+ * first-mismatch: +0x718
+ * summary: 96 at size 0: explicit corner offsets and rightFloat before vertex 2 put the second -varref cut before v2's colours (forced-cut oracle floor 94).
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

@@ -1386,6 +1386,6 @@ void func_800180B4(ShadowQuery *query) {
  * frame: 0x140
  * relocations: 21
  * first-mismatch: +0x98
- * summary: 3 at size 0 (was 292 at +12): second mask test & 0xFFFF0000 gives the face pieces {4,5,51}; flagged alias stand-in for the store; flags in v1 not a0.
+ * summary: 3 at size 0: forcing flags a0, next a1, count t0, spAC t1 gives 0; needs one code-free v1 web in the batch head (would also replace the alias).
  * PLATEAU-HANDOFF:func_80017140:end
  */

@@ -236,7 +236,7 @@ extern s32 joyRead(s32, s32);
 extern void mainInitGame(void);
 extern void mainPreNMI(void);
 extern void func_80026FB4(void);
-extern void func_80021290(void);
+extern void bootCheckStack(void);
 extern void func_80001BC4(void);
 extern void viReset(void);
 extern void rumbleKill(s32);
@@ -433,7 +433,7 @@ void mainThread(void *unused) {
     while (1) {
         mainPreNMI();
         func_80026FB4();
-        func_80021290();
+        bootCheckStack();
     }
 }
 

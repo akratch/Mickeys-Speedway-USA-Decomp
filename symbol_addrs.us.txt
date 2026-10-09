@@ -390,7 +390,7 @@ entrypoint = 0x80000400; // type:func size:0x50   ROM 0x01000  hasm/entrypoint.s
 // (`lui t2,0x8002 / addiu t2,t2,0x11a0 / jr t2`), so position and bytes agree.
 mainproc = 0x800211A0; // type:func size:0x58 ROM 0x21da0 tier-A IDO C exact, DKR src/main.c donor, masked=11/22
 thread1_main = 0x800211F8; // type:func size:0x98 ROM 0x21df8 tier-A IDO C exact, DKR src/main.c donor, masked=14/38
-func_80021290 = 0x80021290; // type:func size:0x44 ROM 0x21e90 tier-A IDO C exact, Mickey-only u64 counter reconstruction
+bootCheckStack = 0x80021290; // type:func size:0x44 ROM 0x21e90 tier-A IDO C exact, Mickey-only u64 counter reconstruction, name tier-B JFG src/boot.c order+named anchors thread1_main/camInit, JFG size 0x44 equal
 
 // math_util.s -- 13 routines matched, 11 named in this block; most have ZERO
 // masked words, and this is the strongest evidence in the block. (Of the other

@@ -827,6 +827,8 @@ typedef struct ShadowGenQuery {
     f32 bounds40[4];
 } ShadowGenQuery;
 
+extern s32 D_800CB268_alias; /* STAND-IN: one object, two names; see the store */
+
 void func_80017140(ShadowGenQuery *arg0, f32 *arg1, ShadowCollSector *arg2, s32 arg3) {
     ShadowClipPoint sp100[8];
     s32 spAC;
@@ -846,15 +848,15 @@ void func_80017140(ShadowGenQuery *arg0, f32 *arg1, ShadowCollSector *arg2, s32 
     s32 k;
 
     for (spAC = 0; spAC < arg2->numberOfBatches; spAC++) {
-        vertices = &arg2->vertices[arg2->batches[spAC].verticesOffset];
         if (!(arg2->batches[spAC].flags & 0x08013880)) {
+            vertices = &arg2->vertices[arg2->batches[spAC].verticesOffset];
             curFacesOffset = arg2->batches[spAC].facesOffset;
             nextFacesOffset = arg2->batches[spAC + 1].facesOffset;
             sp88 = (arg2->batches[spAC].flags >> 24) & 7;
             for (; curFacesOffset < nextFacesOffset; curFacesOffset++) {
                 temp_t6 = arg2->collisionFacets[curFacesOffset].basePlaneIndex * 4;
                 if (((arg2->faceMasks[curFacesOffset] & arg3) & 0xFFFF) &&
-                    ((arg2->faceMasks[curFacesOffset] & arg3) >> 16) &&
+                    ((arg2->faceMasks[curFacesOffset] & arg3) & 0xFFFF0000) &&
                     (arg2->collisionPlanes[temp_t6 + 1] > 0.5f)) {
                     triangles = &arg2->triangles[curFacesOffset];
                     maxY = minY = vertices[triangles->verticesArray[1]].y;
@@ -916,7 +918,13 @@ void func_80017140(ShadowGenQuery *arg0, f32 *arg1, ShadowCollSector *arg2, s32 
                                     if ((D_800CB268 >= 0) && (sp88 != D_800CB268)) {
                                         D_800CB26C = 0;
                                     }
-                                    D_800CB268 = sp88;
+                                    /* STAND-IN (checklist item 3, not adoptable): a second
+                                     * extern name for D_800CB268 supplies the one extra
+                                     * web live at the outer loop head that makes arg2's
+                                     * entry piece refuse it (arg2 then takes t5 from the
+                                     * preheader as shipped). The natural source of that
+                                     * web is still unknown; see the shard. */
+                                    D_800CB268_alias = sp88;
                                 }
                             }
                         }
@@ -1374,10 +1382,10 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_80017140:start
  * symbol: func_80017140
- * score: 292/328 words
+ * score: 3/328 words
  * frame: 0x140
  * relocations: 21
- * first-mismatch: +0x4C
- * summary: 292 at +12, residual 60. Needs the D_800CB268 store piece out of block 51 and one more face-piece neighbour in blocks 6/7 (records).
+ * first-mismatch: +0x98
+ * summary: 3 at size 0: forcing flags a0, next a1, count t0, spAC t1 gives 0; needs one code-free v1 web in the batch head (would also replace the alias).
  * PLATEAU-HANDOFF:func_80017140:end
  */

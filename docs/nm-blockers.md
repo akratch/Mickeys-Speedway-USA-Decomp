@@ -12,9 +12,9 @@ This is a names-only audit of every function body guarded by `NON_MATCHING` in `
 |---|---|---|---|---|
 | `func_8005055C` | `src/main/anim.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_800508D4` | `src/main/anim.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_80050BF4` | `src/main/anim.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_80050DF0` | `src/main/anim.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_80050E9C` | `src/main/anim.c` | none | — | Exact-sized 84/90 plateau; all 41 relocation identities are exact. One path-loop comparison temporary shifts the later reset-temp ring; resume with a single-instruction increment form that blocks induction rewriting. |
+| `animseqInit` | `src/main/anim.c` | none | — | No ownership change; continue source/codegen work. |
+| `animseqLoadLevelData` | `src/main/anim.c` | none | — | No ownership change; continue source/codegen work. |
+| `animseqFreeGroup` | `src/main/anim.c` | none | — | Exact-sized 84/90 plateau; all 41 relocation identities are exact. One path-loop comparison temporary shifts the later reset-temp ring; resume with a single-instruction increment form that blocks induction rewriting. |
 | `func_800511C4` | `src/main/anim.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_80051364` | `src/main/anim.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_80053550` | `src/main/anim.c` | matched | — | Promoted to exact C; no ownership work remains. |

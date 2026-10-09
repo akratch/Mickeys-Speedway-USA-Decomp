@@ -2710,13 +2710,13 @@ animseqHoldPath = 0x800507BC; // type:func size:0x88   ROM 0x513bc  tier-B JFG p
 animseqLockPath = 0x80050844; // type:func size:0x38   ROM 0x51444  tier-B JFG paired process-command calls, matched C
 animseqUnLockPath = 0x8005087C; // type:func size:0x38   ROM 0x5147c  tier-B JFG paired process-command calls, matched C
 func_800508B4 = 0x800508B4; // type:func size:0x20   ROM 0x514b4  tier-D path-table getter structure, matched C
-func_80050AD4 = 0x80050AD4; // type:func size:0x120  ROM 0x516d4  tier-D JFG ordered node-linking candidate, matched C
-func_80050BF4 = 0x80050BF4; // type:func size:0x15C ROM 0x517F4 tier-A matched C and linked ROM, frame 0x18, 41 exact relocation identities
+animseqLinkNodes = 0x80050AD4; // type:func size:0x120  ROM 0x516d4  tier-D JFG ordered node-linking candidate, matched C, name tier-B JFG src/anim.c order+named anchors, right-aligned before animseqFreeLevelData
+animseqInit = 0x80050BF4; // type:func size:0x15C ROM 0x517F4 tier-A matched C and linked ROM, frame 0x18, 41 exact relocation identities, name tier-B JFG src/anim.c order+named anchors, right-aligned before animseqFreeLevelData
 func_80050D50 = 0x80050D50; // type:func size:0x58   ROM 0x51950  tier-D JFG nearest anim skeleton, matched C
 animseqFreeLevelData = 0x80050DA8; // type:func size:0x48   ROM 0x519a8  tier-B JFG storage and group cleanup calls, matched C
-func_80050DF0 = 0x80050DF0; // type:func size:0xAC ROM 0x519f0 tier-D JFG ordered animseqLoadLevelData comparison, matched C
-func_80050E9C = 0x80050E9C; // type:func size:0x168 ROM 0x51A9C tier-A matched C and linked ROM, frame 0x20, 41 exact relocation identities, tier-B JFG animseqFreeGroup role
-func_80051004 = 0x80051004; // type:func size:0xE4   ROM 0x51c04  tier-B JFG group-setup calls and CFG, matched C
+animseqLoadLevelData = 0x80050DF0; // type:func size:0xAC ROM 0x519f0 tier-D JFG ordered animseqLoadLevelData comparison, matched C, name tier-B JFG src/anim.c order+named anchors animseqFreeLevelData/animseqInitGroup
+animseqFreeGroup = 0x80050E9C; // type:func size:0x168 ROM 0x51A9C tier-A matched C and linked ROM, frame 0x20, 41 exact relocation identities, tier-B JFG animseqFreeGroup role, name tier-B JFG src/anim.c order+named anchors animseqFreeLevelData/animseqInitGroup
+animseqSetupGroup = 0x80051004; // type:func size:0xE4   ROM 0x51c04  tier-B JFG group-setup calls and CFG, matched C, name tier-B JFG src/anim.c order+named anchors animseqFreeLevelData/animseqInitGroup
 animseqInitGroup = 0x800510E8; // type:func size:0x40   ROM 0x51ce8  src/anim.c.o  masked=1/16 tier-A matched-C
 animseqResetGroup = 0x80051128; // type:func size:0x9C   ROM 0x51d28  tier-B JFG reset-path call family, matched C
 func_800511C4 = 0x800511C4; // type:func size:0x1A0  ROM 0x51dc4  src/anim.c.o  masked=11/104 tier-A matched-C

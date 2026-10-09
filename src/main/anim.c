@@ -443,7 +443,7 @@ void func_800508D4(s32 count, AnimPathNode *node, s32 stream,
     }
 }
 /* JFG's animseqLinkNodes assembly corroborates this Mickey-led body. */
-void func_80050AD4(u8 pathIndex) {
+void animseqLinkNodes(u8 pathIndex) {
     AnimPath *path;
     s32 nodeIndex;
 
@@ -485,7 +485,7 @@ void func_80050AD4(u8 pathIndex) {
  * Physical source grouping is code-generation-sensitive; keep it intact.
  * Configured untouched output is checked against the owned linked ROM range.
  */
-void func_80050BF4(void)
+void animseqInit(void)
 {
   s32 emptyIndex;
   s32 i;
@@ -527,7 +527,7 @@ void animseqFreeLevelData(void) {
         mmFree(D_8007D680);
         D_8007D680 = NULL;
         D_8007D688 = -1;
-        func_80050E9C();
+        animseqFreeGroup();
     }
 }
 
@@ -536,7 +536,7 @@ void animseqFreeLevelData(void) {
  * Mickey's third allocator argument and two-word local layout establish the
  * source-offset home independently against Mickey's ROM.
  */
-void func_80050DF0(s32 levelId) {
+void animseqLoadLevelData(s32 levelId) {
     struct {
         s32 unused;
         s32 source;
@@ -565,7 +565,7 @@ void func_80050DF0(s32 levelId) {
  * Preserve the same-line cursor setup and the integer identity expressions:
  * together they retain the stock compiler's exact temporary allocation.
  */
-void func_80050E9C(void) {
+void animseqFreeGroup(void) {
     s32 emptyIndex;
     s32 i;
     u8 *cursor;
@@ -624,7 +624,7 @@ void func_80050E9C(void) {
  * PROVENANCE: adapted from JFG's public animseqSetupGroup assembly. Mickey's
  * directory layout, level-header field, globals, and calls are authoritative.
  */
-void func_80051004(s32 groupId) {
+void animseqSetupGroup(s32 groupId) {
     AnimGroupDirectoryEntry *entry;
     AnimLevelHeader *level;
     u8 *base;
@@ -635,7 +635,7 @@ void func_80051004(s32 groupId) {
 
     if ((groupId >= 0) && (groupId < 0x100) &&
         (groupId != D_8007D690)) {
-        func_80050E9C();
+        animseqFreeGroup();
         base = D_8007D680;
         entry = (AnimGroupDirectoryEntry *) base;
         do {
@@ -763,7 +763,7 @@ void func_800511C4(void) {
                 func_8005055C(pathIndex);
                 func_800508D4(path->nodeCount, path->nodes, source->nodeData,
                               0, 0);
-                func_80050AD4(pathIndex);
+                animseqLinkNodes(pathIndex);
             }
             remaining--;
         } while (remaining > 0);

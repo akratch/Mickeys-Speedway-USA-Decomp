@@ -137,7 +137,7 @@ extern void amTuneVoiceLimit(u8);
 extern void amSetMuteMode(s32);
 extern void setupLights(s32, s32, s32);
 extern void func_8000A6DC(s32);
-extern void func_80051004(s32);
+extern void animseqSetupGroup(s32);
 extern void *texLoadTexture(s32);
 extern void *texLoadSprite(s32, s32);
 extern void *func_8000486C(s32);
@@ -383,7 +383,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
 
     mainPreNMI();
 
-    func_80051004(mode);
+    animseqSetupGroup(mode);
 
     if ((D_800CF3C8->type == 0) || (D_800CF3C8->type == 3)) {
         if (D_8007BF0C != 0) {

@@ -169,7 +169,7 @@ missing temp birth/death, and event order/source attribution. It reports
 `no-divergence` only when all three lanes are available and equal. Equal known
 fields plus one unavailable field remain `unavailable`, not a guessed match.
 
-For a `func_80050E9C`-style trace, one additional integer pop/birth on the
+For a `animseqFreeGroup`-style trace, one additional integer pop/birth on the
 path-loop line is reported as `extra-temp-birth`; the next lever is to inspect
 that attributed expression for a redundant conversion, comparison carrier, or
 grouping. The tool does not prescribe a source edit and the receipt remains
@@ -209,7 +209,7 @@ run-local and the producer emits no cross-stage identity joining them to UGEN
 temporaries. The receipt therefore must not join either record by line,
 symbol-table number, raw word, register, or relative position.
 
-Calibration on `func_800498FC` and the independent `func_80050E9C` control
+Calibration on `func_800498FC` and the independent `animseqFreeGroup` control
 reached the same boundary: procedure mapping and trace-off object fidelity
 passed, and procedure-scoped temp births were available, while direct source
 semantics, virtual/final homes, and temp dependency edges remained unavailable.
@@ -252,7 +252,7 @@ The pinned generated UOPT source exposes these structures only through
 revision-specific emulated-memory offsets. It has no typed field or propagated
 identity at which this repository can add an authentic composite record without
 first guessing from raw words. Consequently no new producer or receipt field
-was admitted. Re-running the `func_800498FC` and `func_80050E9C` calibrations
+was admitted. Re-running the `func_800498FC` and `animseqFreeGroup` calibrations
 would reproduce the same unavailable capability because the producer grammar,
 not either input function, is the limiting surface.
 

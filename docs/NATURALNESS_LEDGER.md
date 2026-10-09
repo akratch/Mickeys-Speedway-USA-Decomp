@@ -109,9 +109,9 @@ may be an original typo. Check it against the target before calling it a probe.
 One entry per site, from the census (part 3), each confirmed by reading the line.
 Sites in the 44 reviewed functions are listed in part 2 instead.
 
-- `src/main/anim.c:578` `func_80050E9C` **A**: OR/XOR with zero, or an all-ones mask.
+- `src/main/anim.c:578` `animseqFreeGroup` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: unknown - not measured; not in the cleanup queue.
-- `src/main/anim.c:600` `func_80050E9C` **A**: multiply-by-zero stand-in for a constant.
+- `src/main/anim.c:600` `animseqFreeGroup` **A**: multiply-by-zero stand-in for a constant.
   Natural: the literal `0`. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/main/anim.c:2938` `func_800557F8` **A**: empty `if (1) { }` regions (two, 2938 and 2948).
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
@@ -805,7 +805,7 @@ all) came from a second pass and are in part 1.
 - **goto control flow**: `overlay19ClassifyEdge` (22), `func_8001F520` (6), `func_8000FAE0` (5), `vsprintf` (5, glibc-derived, natural).
 - **volatile for codegen**: `frontDrawObj` (nine `volatile` reads into a `volatile` stack struct), `func_80055F64`, `volatile s16 reservation` pads in eight o101 functions, `volatile` parameters in o008/o009/o014/o041/o097.
 - **unused pad local**: `overlay99RenderSortedEntries` (9), `func_80010178` (7), `overlay15InitStars` (5), `overlay100DrawMotion` (6, found by the read-through).
-- **permuter `new_var` temporaries**: `func_8003968C`, `func_80012574`, `overlay40AddEntry`, `overlay80UpdateContact`, `overlay101DrawTransformed`, `func_8004D40C`, `func_80050BF4`, `func_80034434`.
+- **permuter `new_var` temporaries**: `func_8003968C`, `func_80012574`, `overlay40AddEntry`, `overlay80UpdateContact`, `overlay101DrawTransformed`, `func_8004D40C`, `animseqInit`, `func_80034434`.
   **Lane c-5 (2026-10-09), byte-identical throughout:** removed in `overlay40AddEntry` (a counted `while (remaining--)` from 8; see its A row), `func_8004D40C` (the 0x80 register copy was inert; literal tests), `func_80034434` (the `&value` alias and mask are a `u8` parameter, as its sibling `texModelTextureLoad` takes; IDO homes a narrowed argument and masks it), `overlay101DrawClock` (inert copy of the seconds angle; the 1,553-character expanded-macro line is split with the O101_* macros) and `overlay59PrepareEntry` (inert zero). In `overlay80UpdateContact` the `contactState` alias was inert; the two never-read aliases only reserved frame words and are one `s32 pad[2]`. Renamed where load-bearing: `overlay101DrawTransformed` (`primColorCommand`/`syncCommand`, the nested-assignment carriers), `overlay21ApplyPriorities` (`selected`; the direct test differs in 10 words, a `continue` grows the function), `overlay68PromoteSecondary` (`primaryCopy`; dropping the chained assignment moves the stack homes, 10 words, and passing `primary` differs in 14).
 - **`if (1)` region openers in lane c-5's files (2026-10-09):** `func_8002C94C` (saves.c) is resolved: the block around the entry-cursor assignment is the inner loop's initialiser, `for (inner = 0, entry = (SavesPackedEntry *) slot; ...)`, byte-identical (the same `for` on the outer loop changes the size). Left, each with its measured reason at the point of use: `overlay33InitializeBuffers` (blocks uopt propagating `original == allocation` into the else arm; a bare block is 52 masked), `func_overlay_038_F0000000_1885D10` (blocks the `particle + 16` reassociation; shares the line with `offset = 0` for an as1 tie), `overlay89InitializeEffect` (the ordinary nested `if` changes the register bank), `overlay13DrawActive` (rematerializes the record base), `overlay101BuildBorder`, `func_800320F0` and `func_8000BB84` (rows above), and the `font.c` and `diprint.c` regions [L97], which their comments price.
 - **register keyword**: `func_8004D840` (gzip `huft_build`, natural in its donor), elsewhere m2c or permuter residue.

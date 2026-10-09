@@ -6,13 +6,16 @@
 # with relocated fields masked, to hand-written assembly in a permitted
 # reference build: a whole object, or a contiguous run of one object's
 # routines in that object's own order (main/math_matrix: JFG's routines two
-# to five, file boundary not claimed).
+# to five; main/shadows_fp: JFG shadows_214A0's routines one and two;
+# main/shadows_fp_19254: its routine four; file boundary not claimed).
 # The per-entry evidence lives beside its boundary in mickey.us.yaml and
 # symbol_addrs.us.txt.
 
 entrypoint
 main/math_util
 main/math_matrix
+main/shadows_fp
+main/shadows_fp_19254
 main/lights2
 main/trapDanglingJump
 main/gzip_asm

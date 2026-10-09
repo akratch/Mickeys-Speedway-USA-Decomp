@@ -27,17 +27,17 @@ requires an independent boundary/reference review and regression coverage
 before changing the metric. Any denominator reduction must be reported
 separately from newly ROM-exact executable bytes.
 
-## Unresolved original-assembly evidence: 9,908 executable bytes
+## Unresolved original-assembly evidence: 9,380 executable bytes
 
-The raw resident census reports 9,924 bytes outside the accepted original-asm
+The raw resident census reports 9,396 bytes outside the accepted original-asm
 ledger. Twelve bytes are trailing section padding, and four are the nop
 identity above. The remaining executable inventory is:
 
 | Owner | Executable bytes | Present evidence and acceptance gap |
 | --- | ---: | --- |
 | main/trackasm | 2384 | Tier B call graph and tier D four-function ordering against JFG's extracted assembly; shorter revisions prevent whole-object identity. |
-| main/shadows_fp | 800 | Four-function boundary and odd-FP evidence; individual exact correspondences do not establish the entire assembly owner. |
-| main/weather_snow_asm | 832 | Snow update/vertex pair, tier B/D lineage and odd-FP vertex operations; no accepted whole-object provenance proof. |
+| main/shadows_fp_19144 | 272 | func_80018544, JFG's shadowYHeight in a shorter revision (68 against 69 words, first divergence +0x0); odd-FP evidence only. Its neighbours main/shadows_fp (routines one and two) and main/shadows_fp_19254 (routine four) are verified since 2026-10-09 by masked identity with JFG's built `src/shadows_214A0.c.o`. |
+| main/weather_snow_asm | 832 | Snow update/vertex pair, tier B/D lineage and odd-FP vertex operations; no permitted reference build holds either routine (DKR/JFG have compiled C with a different calling convention). |
 | Raw owner at ROM 0x59BF0 | 444 | Handwritten instruction shapes and odd-FP operations; original-source correspondence remains unproved. |
 | Raw owner at ROM 0x59DB0 | 5448 | Large unrolled routine and four subsidiary entries, with odd-FP and handwritten instruction shapes; internal branch labels are not separate callable functions. |
 

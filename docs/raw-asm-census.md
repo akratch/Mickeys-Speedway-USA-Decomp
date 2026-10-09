@@ -40,7 +40,8 @@ the carve-before-decomp workflow in ADR 0016.
 The census's resident-unclassified rows are not a hidden matching queue.
 `main/trackasm` is a Jet Force Gemini handwritten run whose Mickey routines
 are shorter revisions, so it is a file-boundary attribution and not a
-whole-object match (`mickey.us.yaml`). `main/shadows_fp`,
+whole-object match (`mickey.us.yaml`). `main/shadows_fp_19144` (the one
+shadows routine that is a shorter JFG revision; its neighbours are verified),
 `main/weather_snow_asm`, and the two unnamed odd-register blocks are the
 files `docs/modules.md` already closes: IDO cannot emit them, and they do
 not become verified assembly without a byte-identical permitted reference

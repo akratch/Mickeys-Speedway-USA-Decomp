@@ -684,7 +684,15 @@ typedef struct FxWakeAllocation {
  * The sample-byte term inline (operand order, 59) and the frame and segment
  * counts written as expressions rather than through frameCount and
  * segmentCount (the segment copy is then numbered ahead of the doubled one
- * and takes v0, 57). Left: the pre-call spill-cell order; see shard. */
+ * and takes v0, 57). Left: the pre-call spill-cell order; see shard.
+ * Lane x-1: the frame count is a float local (`frames`, in the unused
+ * sampleBytes cell) read through `(s32) frames` everywhere, with the segment
+ * count a symbol. Behind a region boundary uopt copy-propagates frames into
+ * block 0, so the conversion and segment entries are created after the
+ * vertex loop's unrolled temporaries, which then own the three top spill
+ * cells as shipped (16 -> 14). Stand-in (flagged): the empty `if (1) {}`
+ * after the frames definition is that boundary. Left: the doubled count is
+ * still created before the sample and 0x14 terms. */
 /* PROVENANCE: Mickey's own target accesses and caller ABI supply this reconstruction; JFG supplies only the published role/name. */
 Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
                    f32 wakeValue84, s32 wakeValue8C, f32 wakeValue8E) {
@@ -694,7 +702,7 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
     s32 frameCount;
     s32 segmentCount;
     s32 segmentBytes;
-    s32 sampleBytes;
+    f32 frames;
     s32 textureBytes;
     s32 groupCount;
     s32 alpha;
@@ -702,14 +710,18 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
     s32 triCount;
     s32 bufferCount;
 
-    groupCount = ((((s32) (wakeValue88 * 60.0f)) + 5) >> 1) * 2;
-    triCount = ((((s32) (wakeValue88 * 60.0f)) + 5) >> 1) * 2;
+    frames = wakeValue88 * 60.0f;
+    if (1) {
+    }
+    segmentCount = (((s32) frames) + 5) >> 1;
+    groupCount = segmentCount * 2;
+    triCount = segmentCount * 2;
     alpha = 2;
     bufferCount = 2;
     if (wakeType == 0) {
         alpha = 4;
     }
-    j = (((s32) (wakeValue88 * 60.0f)) + 5) >> 1;
+    j = segmentCount;
     j ^= 0;
     i = groupCount;
     i ^= 0;
@@ -739,9 +751,9 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
             } else {
                 wake->flags = 0;
             }
-            wake->segmentCount = (((s32) (wakeValue88 * 60.0f)) + 5) >> 1;
+            wake->segmentCount = segmentCount;
             wake->state = 0;
-            wake->textureIndex = (s8) (s32) (wakeValue88 * 60.0f);
+            wake->textureIndex = (s8) (s32) frames;
             wake->value8 = 0;
             wake->value3C = 0;
             wake->value4 = wakeValue80;
@@ -2146,10 +2158,10 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeAllocate:start
  * symbol: wakeAllocate
- * score: 16/351 words
+ * score: 14/351 words
  * frame: 0x90
  * relocations: 3
  * first-mismatch: +0x94
- * summary: Unchanged at 16; spill slots go to the first non-overlapping slot, so the top three cells have owners numbered below the conversion
+ * summary: 14 at 0: float frames local behind if(1) numbers conversion/segment after the loop temps; doubled still created before the sample and 0x14 terms
  * PLATEAU-HANDOFF:wakeAllocate:end
  */

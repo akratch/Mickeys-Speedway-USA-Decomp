@@ -4007,6 +4007,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 596 at size 0: 0x79 converts the command byte from the stream; webs the target lacks (0x4B trunc, 0x7A copy, opcode) hold the break pieces.
+ * summary: Aligned 596 at size 0. The 0x4B mask moves one ugen draw, not a web; 0x6F mixed-type mask literals are faithful but drop the break pieces.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

@@ -3984,7 +3984,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: Unchanged at 344; FP census: the six step webs fill c24-c29 in the coordinate block. Left: first-position doubles stored at their definitions.
+ * summary: Unchanged at 344; per-axis accumulation and forced coordinate-block cuts flat. Left: what keeps the first-position doubles stored at their definitions.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

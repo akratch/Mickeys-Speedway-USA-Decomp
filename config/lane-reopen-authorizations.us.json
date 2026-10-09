@@ -150,16 +150,6 @@
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb newly matches this shared-engine TU. Re-derive from that donor with a PROVENANCE note; Mickey ROM decides every disagreement. Do not repeat mechanisms the handoff records as flat.",
       "source_commit": "1ac4ce096402051df01ff721968235046df1e373"
     },
-    "trackUpdateTextureScroll": {
-      "ledger_commit": "789dada09760be082b2167a9364af1e7a8d5d2a9",
-      "reason": "Reconstruction sweep at 8 to 16 bytes: the candidate is a few instructions out, and today's cause list names the usual reasons -- a missing copy, a block fallthrough, an address rematerialized once too often.",
-      "source_commit": "789dada09760be082b2167a9364af1e7a8d5d2a9"
-    },
-    "trackLightAllocate": {
-      "ledger_commit": "d81bf4c93bce5a7947ec30abca8ef78a8b250f16",
-      "reason": "One-instruction reconstruction: at a 4-byte delta the candidate is one instruction out, and today's laws name the usual causes -- a missing register copy, a block-fallthrough order, or an address rematerialized once too often.",
-      "source_commit": "d81bf4c93bce5a7947ec30abca8ef78a8b250f16"
-    },
     "func_8000D820": {
       "ledger_commit": "9e63b31895ccafc8512f242e4a5e8eecb536743d",
       "reason": "Reconstruction sweep at 8 to 16 bytes: the candidate is a few instructions out, and today's cause list names the usual reasons -- a missing copy, a block fallthrough, an address rematerialized once too often.",
@@ -300,16 +290,6 @@
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
       "source_commit": "d09352cdaa9a476ab208fd6965e169db3d64bdce"
     },
-    "lightObject": {
-      "ledger_commit": "48d20b5a7f43f073e7afa3d09f3852ee75d75ebc",
-      "reason": "New stock compiler evidence for defined u8-to-u64 widening at one store; ADR 0017 tests minimal widening/narrowing spellings with unchanged evaluation, ABI and memory effects. Closed declaration and colour grids remain closed.",
-      "source_commit": "48d20b5a7f43f073e7afa3d09f3852ee75d75ebc"
-    },
-    "lightSetObjectLight": {
-      "ledger_commit": "3871c92be170f512c85f90d6fd3682e1e1a0adb0",
-      "reason": "One-instruction reconstruction: at a 4-byte delta the candidate is one instruction out, and today's laws name the usual causes -- a missing register copy, a block-fallthrough order, or an address rematerialized once too often.",
-      "source_commit": "3871c92be170f512c85f90d6fd3682e1e1a0adb0"
-    },
     "func_8001B798": {
       "ledger_commit": "4ffcf3f0dc0604b7f4cb029ac1ae4c93480e58ba",
       "reason": "O073 proves integer-vs-float zero changes FP constant sharing. Test either/both distance comparisons against integer zero to split the hoisted zero; no coordinate, coefficient, loop, home or ABI edits.",
@@ -355,35 +335,15 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "0e7343460dbc2d7a3acf1dd55bf9b0433fedf79a"
     },
-    "modLoadModel": {
-      "ledger_commit": "cbcfcadc14e0cda0060b6faea6b44c231ed6ad92",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "cbcfcadc14e0cda0060b6faea6b44c231ed6ad92"
-    },
     "func_8001FC50": {
       "ledger_commit": "ca8aec929957ba0daf1242e357babfa976833284",
       "reason": "Despite the inverted-test stall, one pass marks modeBytes volatile so its zero is a home store. The else-arm zero and the count-order stalls stay closed.",
       "source_commit": "b1021a3eee2baf95bfdd659819d4e9034cb633d6"
     },
-    "makeModelGfx": {
-      "ledger_commit": "92fb6d1093596e7220265a46202bf31b4fef5aa7",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "92fb6d1093596e7220265a46202bf31b4fef5aa7"
-    },
     "func_80020B10": {
       "ledger_commit": "1f5cccaae60d690fbfcad4e941709e4a294ae6bc",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "1f5cccaae60d690fbfcad4e941709e4a294ae6bc"
-    },
-    "modSetTextureFrame": {
-      "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
-      "reason": "New stock full-TU control reaches one branch-alias word with exact frame/extent/zero relocs. ADR0017 tests one proved u8-count postdecrement spelling; closed declaration/colour/flag grids and completed vendor context stay closed.",
-      "source_commit": "f6e5535ad7cb6b2d80a2e5e31e5529a5af33c312"
-    },
-    "modSuspendModelTextures": {
-      "ledger_commit": "f6c3e67c3d71800e746b7c3a87f52c8b9c42e646",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "f6c3e67c3d71800e746b7c3a87f52c8b9c42e646"
     },
     "func_80022FD4": {
       "ledger_commit": "c2aa60611a12412a25371ca2971c96b0de8807c5",
@@ -394,11 +354,6 @@
       "ledger_commit": "c84e9d844b11f1fdaf5dbec258fceefe267eb1e9",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "c84e9d844b11f1fdaf5dbec258fceefe267eb1e9"
-    },
-    "camCopyOrthoMatrix": {
-      "ledger_commit": "a79d1dee7826e3b690dd0a7c203ce1159ed546ae",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "a79d1dee7826e3b690dd0a7c203ce1159ed546ae"
     },
     "func_80026FB4": {
       "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",
@@ -445,16 +400,6 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "8b6507d4ca7fc3983a6598956289c06ceb0a0099"
     },
-    "mmAllocAtAddr": {
-      "ledger_commit": "8740f3fb1d724dd4cc8e782f7635d0a189ac09f8",
-      "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
-      "source_commit": "8740f3fb1d724dd4cc8e782f7635d0a189ac09f8"
-    },
-    "mmFreeTick": {
-      "ledger_commit": "928ad5b12ce139eb3029050a9f9bf7b6ca170d29",
-      "reason": "One-instruction reconstruction: at a 4-byte delta the candidate is one instruction out, and today's laws name the usual causes -- a missing register copy, a block-fallthrough order, or an address rematerialized once too often.",
-      "source_commit": "541906f449fafbbdad4487edfde49748d0df7a0d"
-    },
     "func_8002C69C": {
       "ledger_commit": "0af40ba10fb3711caa178fe4de27170b84a23854",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
@@ -485,50 +430,10 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "441284c2a269735f13dfca0030a667df766df131"
     },
-    "viChangeMode": {
-      "ledger_commit": "bfd6d07a61c4ce33e4b8069ccf92d49054398980",
-      "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "bfd6d07a61c4ce33e4b8069ccf92d49054398980"
-    },
-    "texLoadTexture": {
-      "ledger_commit": "0d16f1acb5e1595715358e46e9c57a062057b355",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "eec826c59c84ac58719615248a5de4872d1e5fcd"
-    },
-    "texFreeTexture": {
-      "ledger_commit": "b67909e24fe248481ee63a92e951154885945e99",
-      "reason": "ADR 0018 stall-rule reopen: plateau filed under the superseded ten-attempt cap, not on measured stall. Resume under the stall rule; stop after three attempts buying nothing. Do not repeat mechanisms the handoff records as flat.",
-      "source_commit": "b67909e24fe248481ee63a92e951154885945e99"
-    },
-    "texGetTextureNum": {
-      "ledger_commit": "6f9e72e6fb41e2b3e351dfbc3546b6dae585a8fd",
-      "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
-      "source_commit": "6f9e72e6fb41e2b3e351dfbc3546b6dae585a8fd"
-    },
-    "texDPTextureX": {
-      "ledger_commit": "081ea0540f1c72789a51e6ab82eecd8057f99ba4",
-      "reason": "Despite the declaration-order stall, one pass masks oldBlockedFlags with all-ones before the blocked-flags call so that value can take v1. The declaration order stays closed.",
-      "source_commit": "228bacea58829478693ceef56403c08182798445"
-    },
-    "sprDPset": {
-      "ledger_commit": "8744e6484324325c1b899182492ff1962767c33d",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "8744e6484324325c1b899182492ff1962767c33d"
-    },
-    "texLoadSprite": {
-      "ledger_commit": "dab722cc302bcee6031af6c263c80ff56ebc2a32",
-      "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
-      "source_commit": "498813bbefefcf2493219117e350b6db9980b886"
-    },
     "func_80035F48": {
       "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "a863dd80ec6202a424fd71431d686bc728be4fbf"
-    },
-    "updateColourCycle": {
-      "ledger_commit": "5c4bda08946c5a1a271aba9cbb27740c4000d1ad",
-      "reason": "New donor evidence: Jet Force Gemini PR 37 (head d45123d1) takes src/menu.c from 19 bodies and 29 pragmas to 48 bodies and 0 pragmas, fully matched. Re-derive with a PROVENANCE note citing the PR and SHA.",
-      "source_commit": "5c4bda08946c5a1a271aba9cbb27740c4000d1ad"
     },
     "func_800371BC": {
       "ledger_commit": "59527cf3c719da5b445fc6f11b313ffbb0a45d92",
@@ -564,26 +469,6 @@
       "ledger_commit": "9ee97a593bff6b829ab7e28a6404a92bcf7c880c",
       "reason": "Exact font sibling proves byte-pointer arena arithmetic changes temporary phase. Test byte-offset-first segment mapping against folded integer constants, preserving packet order and typed calls; prior local/scope controls stay closed.",
       "source_commit": "9ee97a593bff6b829ab7e28a6404a92bcf7c880c"
-    },
-    "initFront": {
-      "ledger_commit": "f6250d56ba0062f3f018697cad839e1c05b425b3",
-      "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "f6250d56ba0062f3f018697cad839e1c05b425b3"
-    },
-    "frontUpdate": {
-      "ledger_commit": "801b66f4676838484e9cc1d43ef398d5e0c5fb9e",
-      "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "801b66f4676838484e9cc1d43ef398d5e0c5fb9e"
-    },
-    "frontDrawObj": {
-      "ledger_commit": "a0f04ffc31f59bdb7afb45e92e0b35190693a98e",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "a0f04ffc31f59bdb7afb45e92e0b35190693a98e"
-    },
-    "frontSetScreenMode": {
-      "ledger_commit": "a299b965b3215a99fa6cd693f65b1cda7ce02ffc",
-      "reason": "Final push. func_8005ABA8 is at 2 differing words after today's reconstruction closed all four of its source causes; the others are one colour each with the spilltemps law untried.",
-      "source_commit": "a299b965b3215a99fa6cd693f65b1cda7ce02ffc"
     },
     "func_8003A5A0": {
       "ledger_commit": "c4bc15cd4c4fbce8df1d961346f8a9347d89dc36",
@@ -660,11 +545,6 @@
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "28f910a06935fdbb2628045f47a5ae2882f1e779"
     },
-    "fxAllocateCone": {
-      "ledger_commit": "855fbd6a7c7867cce685e9df7bdb0a80955b16e8",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "855fbd6a7c7867cce685e9df7bdb0a80955b16e8"
-    },
     "func_800470B0": {
       "ledger_commit": "23281b639e40eb3e5c0b5598ef252f5053ac3a2b",
       "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 90 masked words is a schedule or structure defect the permuter can still move.",
@@ -675,30 +555,10 @@
       "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 158 masked words is a schedule or structure defect the permuter can still move.",
       "source_commit": "31e8f0f1fdb974e16d09b9ca6973ca919b96e8fe"
     },
-    "fxMakeConeTextureCoords": {
-      "ledger_commit": "15ce5ff7572d8704c5c7424bdf34bad08bdae74b",
-      "reason": "ADR 0018 stall rule, and at delta 780 bytes the candidate is not the same function: decompiler-assisted reconstruction applies where no permutation can.",
-      "source_commit": "15ce5ff7572d8704c5c7424bdf34bad08bdae74b"
-    },
-    "fxMakeConeLength": {
-      "ledger_commit": "6c8d484aa4f1ad9159eed59ed927103b01eb63ef",
-      "reason": "ADR 0018 stall rule, and at delta -4 bytes the candidate is not the same function: decompiler-assisted reconstruction applies where no permutation can.",
-      "source_commit": "6c8d484aa4f1ad9159eed59ed927103b01eb63ef"
-    },
     "func_80048080": {
       "ledger_commit": "540726421ebc51feec66a5577cb0e6b341e9768c",
       "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
       "source_commit": "4d2a9fb197d944061884962757290f49b5abab87"
-    },
-    "wakeSetupRipple": {
-      "ledger_commit": "11427fe2107670fd6f20f4799b3af0346c0a1dc9",
-      "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
-      "source_commit": "9269edbf5e7e0973fbbc6f31939f15ec67462922"
-    },
-    "wakeUpdateRipple": {
-      "ledger_commit": "d9af86d27aab35b40b5017f5f5337e38a33b6fbd",
-      "reason": "New mechanisms found today: lever 51, a hand-written cursor blocks the register names and indexing the parallel arrays closed three functions in one pass; and lever 50, an unrelocated literal address pair scores as a false residual.",
-      "source_commit": "d9af86d27aab35b40b5017f5f5337e38a33b6fbd"
     },
     "func_800498FC": {
       "ledger_commit": "e71d0977dfce6dbb522aed9af75dc3c6589bee0b",
@@ -725,25 +585,10 @@
       "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
       "source_commit": "cb7d0ac38b50149be503d9418fc1f130f57155b6"
     },
-    "fxCpuTextureRequired": {
-      "ledger_commit": "93fad07b9050b3ca3c6579894ddfa3de12b2f9ed",
-      "reason": "No donor here: JFG src/fx.c is all GLOBAL_ASM. True mechanism: ADR 0018 stall rule. Delta 0 at ? masked words is a schedule or structure defect; the prior closure used the retired attempt cap.",
-      "source_commit": "b3d6581927dbe28c24c967ab1fb2e1adedaeba2a"
-    },
-    "fxCpuTextureFlush": {
-      "ledger_commit": "cb7d0ac38b50149be503d9418fc1f130f57155b6",
-      "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
-      "source_commit": "cb7d0ac38b50149be503d9418fc1f130f57155b6"
-    },
     "func_8004B1DC": {
       "ledger_commit": "bb9235c27df188c203b4c4575ed6ed30f9e10474",
       "reason": "The geometry-exact 51-word baseline exposes colour priority below y. Test moving the normal-colour reset outside its already-zero guard, preserving all graphics writes, to change colour lifetime without merging newline tails.",
       "source_commit": "bb9235c27df188c203b4c4575ed6ed30f9e10474"
-    },
-    "fontStringWidth": {
-      "ledger_commit": "9fa2314ec43c033254eb19b67d3494a2c67df7c9",
-      "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
-      "source_commit": "9fa2314ec43c033254eb19b67d3494a2c67df7c9"
     },
     "func_8004C690": {
       "ledger_commit": "dab722cc302bcee6031af6c263c80ff56ebc2a32",

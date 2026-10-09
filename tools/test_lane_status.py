@@ -331,6 +331,73 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         self.commit("Seed two owned functions in one guard")
         return text
 
+    def test_history_check_rejects_renamed_historical_key_without_rearming(self):
+        plateau = self.current_plateau()
+        self.authorize_reopen(plateau, plateau)
+        renamed = "renamedFilterImage"
+        source = self.repo / SOURCE_PATH
+        source.write_text(f"void {renamed}(void) {{}}\n", encoding="utf-8")
+        self.commit("Rename already matched function")
+        path = self.repo / ls.REOPEN_AUTHORIZATIONS_PATH
+        document = json.loads(path.read_text())
+        document["authorizations"][renamed] = document["authorizations"].pop(SYMBOL)
+        path.write_text(json.dumps(document), encoding="utf-8")
+
+        # Shape alone passes, but the new name never existed at the old pin.
+        schema = self.command(sys.executable, str(TOOL), "--check-reopen-schema")
+        self.assertEqual(schema.returncode, 0)
+        history = self.command(
+            sys.executable, str(TOOL), "--check-reopen-history", "--base", "HEAD",
+            check=False,
+        )
+        self.assertEqual(history.returncode, 2)
+        self.assertIn(renamed, history.stderr)
+        self.assertIn("does not identify exactly one source definition", history.stderr)
+
+        # Preserve a valid historical identity or retire its consumed entry;
+        # neither operation copies an old reason onto a fresh source pin.
+        document["authorizations"][SYMBOL] = document["authorizations"].pop(renamed)
+        path.write_text(json.dumps(document), encoding="utf-8")
+        valid = self.command(
+            sys.executable, str(TOOL), "--check-reopen-history", "--base", "HEAD",
+        )
+        self.assertIn("not assignment authorization", valid.stdout)
+        document["authorizations"].clear()
+        path.write_text(json.dumps(document), encoding="utf-8")
+        retired = self.command(
+            sys.executable, str(TOOL), "--check-reopen-history", "--base", "HEAD",
+        )
+        self.assertIn("0 entries", retired.stdout)
+
+    def test_history_check_does_not_authorize_uncommitted_reopen(self):
+        plateau = self.current_plateau()
+        path = self.repo / ls.REOPEN_AUTHORIZATIONS_PATH
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({
+            "schema_version": 1,
+            "authorizations": {SYMBOL: {
+                "source_commit": plateau, "ledger_commit": plateau,
+                "reason": "new mechanism",
+            }},
+        }), encoding="utf-8")
+        history = self.command(
+            sys.executable, str(TOOL), "--check-reopen-history", "--base", "HEAD",
+        )
+        self.assertEqual(history.returncode, 0)
+        result, report = self.status()
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(report["assignment"]["state"], "already-integrated/exhausted")
+
+    def test_history_check_rejects_unknown_ancestry(self):
+        plateau = self.current_plateau()
+        self.authorize_reopen(plateau, plateau)
+        result = self.command(
+            sys.executable, str(TOOL), "--check-reopen-history", "--base", "missing-ref",
+            check=False,
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("missing-ref", result.stderr)
+
     def test_shared_guard_retains_same_function_lane_ownership(self) -> None:
         text = self.shared_guard()
         self.command("git", "switch", "-q", "-c", "lane/shared-target")

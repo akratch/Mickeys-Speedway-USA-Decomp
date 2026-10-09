@@ -78,6 +78,14 @@ the latest target guard or evidence commit and descends from the source plateau.
 For a source file with exactly one guarded target, the latest whole-file commit
 is the unambiguous pin; shared translation units remain symbol-history scoped.
 malformed, source-mismatched, or superseded evidence still fails closed.
+Before integration, run `tools/lane_status.py --check-reopen-history --base HEAD`
+to validate the worktree authorization file against committed source and handoff
+history. Unlike the schema check, this catches a renamed key whose symbol does
+not exist at its historical pin. Retire consumed authorizations when renaming
+already-matched functions; do not repin old reasons to reopen exhausted work.
+This check does not authorize assignment: the ordinary committed `--symbol`
+gate must still return `base-only`. `tools/land.sh` checks authorization history
+before publication and again against the merged tree.
 `lane_status.py` validates identity and ancestry after checking active lanes,
 and reports `base-only` only for that exact pair. The first subsequent source
 or handoff commit makes the authorization stale and the target exhausted again.

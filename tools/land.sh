@@ -40,6 +40,10 @@ fi
 restore() { git checkout -q "$start" 2>/dev/null || true; }
 trap restore EXIT
 
+# Schema checks cannot detect renames that invalidate historical source pins.
+# Check before any publication, and again against the final merged tree below.
+python3 tools/lane_status.py --check-reopen-history --base HEAD
+
 merge_ref=campaign/unchain
 if [ -n "$release_ref" ]; then
     # Resolve once: neither a moving branch nor a tag can replace reviewed input.
@@ -68,6 +72,7 @@ git checkout -q master
 if [ -z "$release_ref" ]; then git fetch -q origin master; fi
 git merge -q --ff-only origin/master
 git merge --no-edit "$merge_ref"
+python3 tools/lane_status.py --check-reopen-history --base HEAD
 if [ -n "$release_ref" ]; then
     landed_oid=$(git rev-parse --verify HEAD)
     git diff --quiet "$merge_ref" "$landed_oid" || {

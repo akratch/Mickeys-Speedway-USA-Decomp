@@ -294,7 +294,7 @@ units remain distinct.
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 3 | 3 | 140 | 140 | 0 | — |
-| 2 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
+| 2 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 9 | 6 | 96 | 164 | 0 | — |
 | 3 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
 | 4 | `src/main/fx.c` | `wakeAllocate` | `main` | `other` | 1,404 | 14 | 14 | 148 | 148 | 0 | — |
 | 5 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 96 | 96 | 1,816 | 1,816 | 0 | — |

@@ -2162,6 +2162,6 @@ void func_8004AF68(void) {
  * frame: 0x90
  * relocations: 3
  * first-mismatch: +0x94
- * summary: 14 at 0: copy propagation walks blocks in reverse; the second fill loop's guard creates the doubled entry before the sample and 0x14 terms
+ * summary: 14 at 0: copy propagation walks reverse depth-first, so the fill-loop guard creates doubled before the sample terms; identity-op copies all equal ^= 0
  * PLATEAU-HANDOFF:wakeAllocate:end
  */

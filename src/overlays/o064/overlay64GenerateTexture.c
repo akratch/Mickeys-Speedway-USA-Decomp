@@ -207,6 +207,6 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
  * frame: 0x78
  * relocations: 22
  * first-mismatch: +0x0
- * summary: 371 at 0: shift store plus hi kill rebuilt (397 at +8); the late in++ is an as1 placement; next is the pixel-loop load web's colour order
+ * summary: 371 at 0: pixel-loop value/shift colours already the target's on the tree; type product flat; left: hi copy, even-loop address order, head ring phase
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

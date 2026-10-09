@@ -2162,29 +2162,42 @@ D_status3 = 0x00000000;
 D_status4 = 0x00000000;
 
 /* overlay 47: func_overlay_047_F0000B30_1891948.c.o */
-D_1C0 = 0x000001c0;
-D_280 = 0x00000280;
-D_2A8 = 0x000002a8;
-D_2F0 = 0x000002f0;
-D_30A = 0x0000030a;
-D_328 = 0x00000328;
-D_338 = 0x00000338;
-D_3CC = 0x000003cc;
-D_3DC = 0x000003dc;
-D_474 = 0x00000474;
-D_480 = 0x00000480;
-D_4F0 = 0x000004f0;
-D_540 = 0x00000540;
-D_544 = 0x00000544;
-D_548 = 0x00000548;
-D_54C = 0x0000054c;
-D_550 = 0x00000550;
-D_554 = 0x00000554;
-D_8000008C = 0x8000008c;
-D_80000198 = 0x80000198;
-D_800001C0 = 0x800001c0;
-D_80000228 = 0x80000228;
-D_80000268 = 0x80000268;
+D_8007BF74_o047Reloc = 0x00000000;
+D_800D3140_o047Reloc = 0x00000000;
+D_800D3144_o047Reloc = 0x00000000;
+D_800D3148_o047Reloc = 0x00000000;
+D_800D3190_o047Reloc = 0x00000000;
+amSndStop_o047Reloc = 0xf0000000;
+camGetFOV_o047Reloc = 0xf0000000;
+camStandardOrtho_o047Reloc = 0xf0000000;
+func_80006EA0_o047Reloc = 0xf0000000;
+func_8001398C_o047Reloc = 0xf0000000;
+func_80021504_o047Reloc = 0xf0000000;
+func_800221E8_o047Reloc = 0xf0000000;
+func_80023F84_o047Reloc = 0xf0000000;
+func_800246B0_o047Reloc = 0xf0000000;
+func_80024978_o047Reloc = 0xf0000000;
+func_8002A604_o047Reloc = 0xf0000000;
+func_8002A82C_o047Reloc = 0xf0000000;
+func_8002FB34_o047Reloc = 0xf0000000;
+func_80034920_o047Reloc = 0xf0000000;
+func_800349A4_o047Reloc = 0xf0000000;
+func_800367A4_o047Reloc = 0xf0000000;
+func_8004B0F8_o047Reloc = 0xf0000000;
+func_8005ABA8_o047Reloc = 0xf0000000;
+func_8005AD64_o047Reloc = 0xf0000000;
+gOverlay47B30RodataBaseReloc = 0x00000004;
+joyGetPressed_o047Reloc = 0xf0000000;
+mainChangeLevel_o047Reloc = 0xf0000000;
+mathRnd_o047Reloc = 0xf0000000;
+matrixScale_o047Reloc = 0xf0000000;
+matrixTranslate_o047Reloc = 0xf0000000;
+mtxf_mul_o047Reloc = 0xf0000000;
+mtxf_to_mtx_o047Reloc = 0xf0000000;
+overlay45ConfigureLayout_o047Reloc = 0xf0000000;
+overlay45ReadPair_o047Reloc = 0xf0000000;
+overlay45SetField22_o047Reloc = 0xf0000000;
+partUpdateTriggers_o047Reloc = 0xf0000000;
 
 /* overlay 48: overlay48Initialize.c.o */
 gOverlay48State = 0x00000000;
@@ -2429,6 +2442,7 @@ overlay52ReleaseStorageReloc = 0xf0000000;
 overlay52ResetReloc = 0xf0000000;
 
 /* overlay 53: overlay53Initialize.c.o */
+D_280 = 0x00000280;
 gOverlay53ConfigA = 0x00000000;
 gOverlay53ConfigB = 0x00000140;
 gOverlay53GlobalHandleReloc = 0x00000000;
@@ -3307,6 +3321,7 @@ overlay58ReleaseReloc = 0xf0000000;
 
 /* overlay 58: func_overlay_058_F00005FC_18AF7E4.c.o */
 D_1A0 = 0x000001a0;
+D_2A8 = 0x000002a8;
 D_2B0 = 0x000002b0;
 D_2B4 = 0x000002b4;
 D_2BC = 0x000002bc;
@@ -4003,6 +4018,7 @@ overlay65AllocateReloc = 0xf0000000;
 
 /* overlay 65: overlay65UpdateParticles.c.o */
 D_1908 = 0x00001908;
+D_1C0 = 0x000001c0;
 D_1D8 = 0x000001d8;
 D_2970 = 0x00002970;
 D_2974 = 0x00002974;
@@ -4861,6 +4877,7 @@ overlay101DrawRectReloc = 0xf0000000;
 
 /* overlay 101: overlay101DrawClock.c.o */
 D_278 = 0x00000278;
+D_338 = 0x00000338;
 D_33C = 0x0000033c;
 D_800002D8 = 0x800002d8;
 D_E98 = 0x00000e98;
@@ -4890,6 +4907,7 @@ overlay101DrawSlotReloc = 0xf0000000;
 /* overlay 101: func_overlay_101_F0003A58_18DF278.c.o */
 D_118 = 0x00000118;
 D_1D0 = 0x000001d0;
+D_540 = 0x00000540;
 D_8C = 0x0000008c;
 D_A8 = 0x000000a8;
 D_C4 = 0x000000c4;

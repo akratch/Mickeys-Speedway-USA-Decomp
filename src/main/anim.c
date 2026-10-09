@@ -1819,8 +1819,9 @@ void func_800517E0(void) {
                     value = (f32) *((u16 *) ((u8 *) cursor + 0xC));
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        TrapDanglingJump(path->unk8, (word10 >> 8) & 0xFF,
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
+                        TrapDanglingJump(object, word10 >> 8,
                                          word10 & 0xFF, packed2, timer,
                                          word8, (s32) (value * factor *
                                                        scale));
@@ -4016,10 +4017,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1241/1808 words
+ * score: 1127/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 471 at size 0: 0x63 and 0x66 put the ring on the shipped phase; 0x78 reads its arguments before the advance. 0x6D-0x7B remain.
+ * summary: Aligned 423 at size 0: 0x63/0x66 ring phase, 0x78 arguments before the advance, 0x6E through the object local. 0x6D, 0x6F, 0x79-0x7B remain.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

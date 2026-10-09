@@ -193,14 +193,6 @@ extern void func_overlay_047_F0002D10_1893B28(Overlay47Player *player);
     command->w0 = (u32)(a); \
     command->w1 = (u32)(b); \
 }
-/* The same command with its second word written first: per command site,
- * the order fixes which word's operand ugen materialises first (measured
- * 2026-10-07, six sites). */
-#define O47_COMMAND_W1(a, b) { \
-    Overlay47Command *command = D_800D3140++; \
-    command->w1 = (u32)(b); \
-    command->w0 = (u32)(a); \
-}
 #define O47_PHYSICAL(p) ((u32)((u8 *)(p) + 0x80000000))
 #define O47_VERTICES(p, n) \
     O47_COMMAND(0x04000000 | (((((n) << 3) | (O47_PHYSICAL(p) & 6)) & 0xFF) << 16) | ((n) * 10 + 8), O47_PHYSICAL(p))
@@ -598,12 +590,12 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         blue = (ov47Data_3DC[colourIndex] >> 8) & 255;
         O47_COMMAND(0x06000000, ov47Data_300);
         O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
-        O47_COMMAND_W1(0xFCFFFFFF, 0xFFFDF6FB);
+        O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
         O47_VERTICES(ov47Data_198, 4);
-        O47_COMMAND_W1(0x05100020, O47_PHYSICAL(ov47Data_1C0));
+        O47_COMMAND(0x05100020, O47_PHYSICAL(ov47Data_1C0));
         camStandardOrtho(&D_800D3140, &D_800D3144);
         func_80034920(&D_800D3140);
-        O47_COMMAND_W1(0xFA000000, -1);
+        O47_COMMAND(0xFA000000, -1);
         func_80023F84(&D_800D3140, &D_800D3144, &D_800D3148, icon, D_800D31C8[11], 0, 255);
         if (selected != -1 && !unready) {
             oldSelector = icon->selector;
@@ -746,10 +738,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 91/2168 words
+ * score: 74/2168 words
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 90 aligned at size 0 (masked 91): icon packet and blend share masked channels; four unused frame cells flagged. Open: head, +0x1600 packets, s7 to s8.
+ * summary: 74 aligned at size 0 (masked 74): shared masked channels, every command word 0 first; four unused frame cells flagged. Open: head, s7 to s8, frame shift.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

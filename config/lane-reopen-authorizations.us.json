@@ -355,7 +355,7 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "0e7343460dbc2d7a3acf1dd55bf9b0433fedf79a"
     },
-    "func_8001F520": {
+    "modLoadModel": {
       "ledger_commit": "cbcfcadc14e0cda0060b6faea6b44c231ed6ad92",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "cbcfcadc14e0cda0060b6faea6b44c231ed6ad92"
@@ -365,7 +365,7 @@
       "reason": "Despite the inverted-test stall, one pass marks modeBytes volatile so its zero is a home store. The else-arm zero and the count-order stalls stay closed.",
       "source_commit": "b1021a3eee2baf95bfdd659819d4e9034cb633d6"
     },
-    "func_8002057C": {
+    "makeModelGfx": {
       "ledger_commit": "92fb6d1093596e7220265a46202bf31b4fef5aa7",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "92fb6d1093596e7220265a46202bf31b4fef5aa7"
@@ -375,12 +375,12 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "1f5cccaae60d690fbfcad4e941709e4a294ae6bc"
     },
-    "func_80020D8C": {
+    "modSetTextureFrame": {
       "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
       "reason": "New stock full-TU control reaches one branch-alias word with exact frame/extent/zero relocs. ADR0017 tests one proved u8-count postdecrement spelling; closed declaration/colour/flag grids and completed vendor context stay closed.",
       "source_commit": "f6e5535ad7cb6b2d80a2e5e31e5529a5af33c312"
     },
-    "func_80020E4C": {
+    "modSuspendModelTextures": {
       "ledger_commit": "f6c3e67c3d71800e746b7c3a87f52c8b9c42e646",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "f6c3e67c3d71800e746b7c3a87f52c8b9c42e646"

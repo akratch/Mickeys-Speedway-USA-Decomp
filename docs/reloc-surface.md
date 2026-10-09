@@ -1312,7 +1312,7 @@ SYMBOL records and seven local JUMPs. Data pairs resolve to
 `gOverlay31MaxLine`, `gOverlay31MaxPoint`, both vertex buffers, triangle and
 rectangle sources, configs, point pool, line records, dummy assets/count, and
 effect records/count. Resident calls resolve to `reset_particles`,
-`mmAlloc`, `piRomLoad`, `texLoadSprite`, `texLoadTexture`, `func_8001F520`,
+`mmAlloc`, `piRomLoad`, `texLoadSprite`, `texLoadTexture`, `modLoadModel`,
 and `mmFree`; seven local calls cover the four config builders, pool, records,
 and reset helper. Moving `assetBuffer` after the three integer locals gives the
 exact 245 words and 0x48-byte frame while preserving every distinct role. ORT
@@ -1612,7 +1612,7 @@ inside the function, zero resident or overlay records targeting ORT 308, and
 zero aligned absolute function pointers. Current linked equality proves
 fallback only.
 
-Resident `func_80020D8C` has no static relocations and is exported as ORT 374.
+Resident `modSetTextureFrame` has no static relocations and is exported as ORT 374.
 Eight shipped SYMBOL calls target it: Overlay 57 table-1 record 258 at module
 `+0x3288` (`overlay57ApplyValue+0x50`), Overlay 60 record 337 at `+0x2268`
 (`func_overlay_060_F0000334_18BA10C+0x1F34`), and Overlay 82 records 12..17

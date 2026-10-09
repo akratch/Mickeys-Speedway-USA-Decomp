@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_80020E4C:start -->
-### `func_80020E4C` plateau handoff
+<!-- plateau-handoff:modSuspendModelTextures:start -->
+### `modSuspendModelTextures` plateau handoff
 
 - source: `src/main/models.c`
 - score: 113/113 words
@@ -79,7 +79,7 @@ four bytes short. Thus these literal/type/symbol-lifetime variations do not
 retain the required preheader instruction while obtaining strength reduction.
 The final three tested cells fail to improve the retained residual or prove
 a new identity. Their sources, objects and results are retained privately
-under `build/p23/func_80020E4C/`, with the force lattice in private temporary
+under `build/p23/modSuspendModelTextures/`, with the force lattice in private temporary
 storage. This pass stops on the exhausted induction-identity family.
 
 The next source question is still the exception cursor's preheader: obtain
@@ -126,7 +126,7 @@ ADR 0018, retaining the 24-word candidate.
 The named source question remains a generated exception cursor that retains
 the initial scaled-zero operation, together with a model-index/exception-base
 priority reversal. Source, object and aligned comparisons are retained under
-build/p24/func_80020E4C; the authenticated new landscape and receipt are under
+build/p24/modSuspendModelTextures; the authenticated new landscape and receipt are under
 build/p24/models-best-trace. All forces remain outside the source and build.
 
 #### 2026-09-16, lane nx-b: matched and promoted, 24 -> 0 in six batches
@@ -183,4 +183,4 @@ removed. Evidence (every source/object pair, the aligned maps, the ugen
 listings and the procedure-16 census) is outside the tree under the lane's
 private evidence directory; nothing ROM-derived is tracked.
 
-<!-- plateau-handoff:func_80020E4C:end -->
+<!-- plateau-handoff:modSuspendModelTextures:end -->

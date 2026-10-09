@@ -802,7 +802,7 @@ all) came from a second pass and are in part 1.
 ### B and C hot spots
 
 - **magic field offset through cast**: main/shadows.c (`func_80017BCC` 16), main/objects.c (`func_8000590C`, `func_80007118`), main/charControl.c.
-- **goto control flow**: `overlay19ClassifyEdge` (22), `func_8001F520` (6), `func_8000FAE0` (5), `vsprintf` (5, glibc-derived, natural).
+- **goto control flow**: `overlay19ClassifyEdge` (22), `modLoadModel` (6), `func_8000FAE0` (5), `vsprintf` (5, glibc-derived, natural).
 - **volatile for codegen**: `frontDrawObj` (nine `volatile` reads into a `volatile` stack struct), `func_80055F64`, `volatile s16 reservation` pads in eight o101 functions, `volatile` parameters in o008/o009/o014/o041/o097.
 - **unused pad local**: `overlay99RenderSortedEntries` (9), `func_80010178` (7), `overlay15InitStars` (5), `overlay100DrawMotion` (6, found by the read-through).
 - **permuter `new_var` temporaries**: `func_8003968C`, `func_80012574`, `overlay40AddEntry`, `overlay80UpdateContact`, `overlay101DrawTransformed`, `func_8004D40C`, `animseqInit`, `func_80034434`.

@@ -65,7 +65,7 @@ extern void rcpClearZBuffer(Gfx **commands, s32 width, s32 height,
                            s32 left, s32 top, s32 right, s32 bottom);
 extern void func_8005AD64(ControlActor *object, s32 frame, s32 arg2, f32 value);
 extern s32 func_8005ABA8(ControlActor *object, f32 scale, f32 ticks);
-extern void func_80020D8C(MenuSpawnInner *model, s32 index, s32 frame);
+extern void modSetTextureFrame(MenuSpawnInner *model, s32 index, s32 frame);
 extern void func_80009E78(Gfx **commands, Mtx **matrices,
                         void **vertices, ControlActor *object);
 extern void *texLoadSprite(s32 asset, s32 flags);
@@ -805,7 +805,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             model = (MenuSpawnInner *)(gOverlay60Data0C8[i])->unk68[gOverlay60Data150];
                             model->mode = ticks;
                             spare = ((u32)(D_800D3128_o060Reloc.progress[gOverlay60Data150] & gOverlay60Data10C[i]) >> gOverlay60Data11C[i]);
-                            func_80020D8C(model, 0, gOverlay60Data12C[spare - 1] * 256);
+                            modSetTextureFrame(model, 0, gOverlay60Data12C[spare - 1] * 256);
                             func_8005ABA8(gOverlay60Data0C8[i], 0.003f, ticks);
                             if (spare != 0) {
                                 (gOverlay60Data0C8[i])->alpha = gOverlay60Data2A4;

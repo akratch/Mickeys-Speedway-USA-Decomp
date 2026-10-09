@@ -219,7 +219,7 @@ typedef struct MenuSpawnedObject {
 extern void *texLoadTexture(s32 assetId);
 extern void *texLoadSprite(s32 assetId, s32 arg1);
 extern MenuSpawnedObject *func_8000590C(MenuSpawnPacket *packet, s32 mode);
-extern void *func_8001F520(s32 assetId, s32 arg1);
+extern void *modLoadModel(s32 assetId, s32 arg1);
 
 typedef struct MenuDrawStack {
     s16 rotationY;
@@ -985,7 +985,7 @@ void loadFrontEndItem(s32 assetId) {
             }
             D_800D31C8[assetId] = (MenuFrontObject *) object;
         } else {
-            D_800D31C8[assetId] = func_8001F520(resourceId & 0x3FFF, 0);
+            D_800D31C8[assetId] = modLoadModel(resourceId & 0x3FFF, 0);
         }
         D_800D3498[assetId] = 1;
         D_8007C1C0++;

@@ -23,7 +23,7 @@ void pointListRPY(s32 count, s16 *rotation, f32 *input, f32 *output);
 void *piRomLoad(s32 assetId);
 ParticleTexture *texLoadTexture(s32 resourceId);
 ParticleSprite *texLoadSprite(s32 resourceId, s32 arg1);
-void *func_8001F520(s32 resourceId, s32 arg1);
+void *modLoadModel(s32 resourceId, s32 arg1);
 s32 mathRnd(s32 minimum, s32 maximum);
 f32 sqrtf(f32 value);
 void mtxf_transform_dir(void *matrix, f32 *input, f32 *output, ParticleEmitterHeader *header);
@@ -1504,7 +1504,7 @@ CircularParticle *func_8003FB98(ParticleEmitterObject *object, ParticleTrigger *
             particle->resource = resource;
         }
     } else if (particle->type == 3) {
-        resource = func_8001F520(resourceId, 0);
+        resource = modLoadModel(resourceId, 0);
         particle->resource = resource;
     }
 

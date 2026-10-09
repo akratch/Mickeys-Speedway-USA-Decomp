@@ -240,11 +240,11 @@ they left the queue and their shards were retired. func_8002B040 moved to
 
 | Target | Bytes | Coverage |
 | --- | ---: | --- |
-| [func_80020D8C](matching-triage-handoffs/func_80020D8C.md) | 192 | B |
+| [modSetTextureFrame](matching-triage-handoffs/modSetTextureFrame.md) | 192 | B |
 | [func_80020B10](matching-triage-handoffs/func_80020B10.md) | 636 | B |
-| [func_8002057C](matching-triage-handoffs/func_8002057C.md) | 1368 | B |
+| [makeModelGfx](matching-triage-handoffs/makeModelGfx.md) | 1368 | B |
 | [func_8001FC50](matching-triage-handoffs/func_8001FC50.md) | 1332 | U |
-| [func_8001F520](matching-triage-handoffs/func_8001F520.md) | 1604 | U |
+| [modLoadModel](matching-triage-handoffs/modLoadModel.md) | 1604 | U |
 
 Pinned JFG models counterparts remain assembly-only; point-of-use provenance records the audit.
 

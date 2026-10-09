@@ -141,7 +141,7 @@ extern void animseqSetupGroup(s32);
 extern void *texLoadTexture(s32);
 extern void *texLoadSprite(s32, s32);
 extern void *func_8000486C(s32);
-extern void *func_8001F520(s32, s32);
+extern void *modLoadModel(s32, s32);
 extern s32 runlinkDownloadCode(s32);
 extern void trackSetFogOff(s32);
 extern void trackSetFog(s32, s16, s16, s16, s32, s32, s32, s32);
@@ -412,7 +412,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
                 D_800CF490[off] = func_8000486C(D_800C94E0[resourceId]);
             } else {
                 resourceId &= 0x3FFF;
-                D_800CF490[off] = func_8001F520(resourceId, 0);
+                D_800CF490[off] = modLoadModel(resourceId, 0);
             }
         }
         runlinkDownloadCode(0x17);

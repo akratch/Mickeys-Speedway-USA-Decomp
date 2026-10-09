@@ -159,7 +159,7 @@ extern void func_80006EA0(void *object);
 /* The exact caller passes owner/context in a3, which the target callee
  * overwrites without consuming. Keep this four-argument declaration local;
  * the guarded callee's three-argument definition preserves its frame. */
-extern void func_80020D8C(void *arg0, s32 arg1, s32 arg2, void *arg3);
+extern void modSetTextureFrame(void *arg0, s32 arg1, s32 arg2, void *arg3);
 extern void trackAddTextureScroll(s16 textureIndex, s32 x, s32 y, s32 updateRate);
 extern void texAnimateSprite(void *entry, s32 *mode, s32 animationId, void *state, s32 updateRate);
 extern s32 func_8005776C(f32 x, f32 y, f32 z, f32 radius, s32 useXZ, void *hits);
@@ -464,7 +464,7 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
         index = arg0->index3A;
     }
     frame = (arg0->flags88 & 3) << 8;
-    func_80020D8C(arg0->entries68[index], 0, frame, arg0);
+    modSetTextureFrame(arg0->entries68[index], 0, frame, arg0);
 }
 
 /* PLATEAU-HANDOFF:func_8001B798:start

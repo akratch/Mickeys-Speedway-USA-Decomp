@@ -2397,7 +2397,7 @@ controlClearPlayerSetup = 0x8001F408; // type:func size:0xC   ROM 0x20008
 func_8001F420 = 0x8001F420; // type:func size:0x3C   ROM 0x20020  src/models.c.o  masked=0/15  C-match -O2 -mips2
 func_8001FBCC = 0x8001FBCC; // type:func size:0x84   ROM 0x207CC  src/models.c.o  tier-D JFG allocation/copy structure only  C-match -O2 -mips2
 modInitModels = 0x8001F45C; // type:func size:0xC4   ROM 0x2005C  src/models.c.o  tier-B JFG body prefix and model-table call graph  C-match -O2 -mips2
-func_8001F520 = 0x8001F520; // type:func size:0x644 tier-B ROM 0x20120 src/main/models.c.o NON_MATCHING bounded plateau, JFG cache/asset-loader call-graph correspondence
+modLoadModel = 0x8001F520; // type:func size:0x644 tier-B ROM 0x20120 src/main/models.c.o NON_MATCHING bounded plateau, JFG cache/asset-loader call-graph correspondence, name tier-B JFG src/models.c order+named anchors modInitModels, now matched C
 func_8001FB64 = 0x8001FB64; // type:func size:0x68   ROM 0x20764  src/models.c.o  masked=0/26  C-match -O2 -mips2
 modFreeModel = 0x80020184; // type:func size:0xF4   ROM 0x20D84  src/models.c.o  tier-B JFG cache-release body and TU position  C-match -O2 -mips2
 func_80020278 = 0x80020278; // type:func size:0x168   ROM 0x20E78  src/models.c.o  tier-B JFG model-resource destructor  C-match -O2 -mips2
@@ -2406,7 +2406,7 @@ func_800204B8 = 0x800204B8; // type:func size:0xAC   ROM 0x210B8  tier-D matched
 modelSetModelFlags = 0x80020564; // type:func size:0xC   ROM 0x21164  src/models.c.o  tier-B same JFG TU position and model-flag access  C-match -O2 -mips2
 modelGetModelFlags = 0x80020570; // type:func size:0xC   ROM 0x21170  src/models.c.o  tier-B paired JFG model-flag accessor  C-match -O2 -mips2
 func_80020AD4 = 0x80020AD4; // type:func size:0x3C   ROM 0x216d4  src/models.c.o  masked=6/15  C-match -O2 -mips2
-func_80020E4C = 0x80020E4C; // type:func size:0x1C4 tier-D ROM 0x21A4C src/main/models.c.o -O2 -mips2 -32 NON_MATCHING resident fallback and adjacent modResumeModelTextures boundary owner, no match credit
+modSuspendModelTextures = 0x80020E4C; // type:func size:0x1C4 tier-D ROM 0x21A4C src/main/models.c.o -O2 -mips2 -32 NON_MATCHING resident fallback and adjacent modResumeModelTextures boundary owner, no match credit, name tier-B JFG src/models.c order+named anchors modResumeModelTextures
 modResumeModelTextures = 0x80021010; // type:func size:0x8C   ROM 0x21C10  src/models.c.o  tier-B JFG name and suspended-texture traversal  C-match -O2 -mips2
 func_8002109C = 0x8002109C; // type:func size:0xF8   ROM 0x21C9C  tier-D matched C main/models -O2 -mips2 -32 Mickey-only point transform
 // jfg:src/camera.c.o

@@ -632,7 +632,7 @@ bytes and disassembly never belong here.
   absent surviving instructions. A later source carrier can change early output
   while early expression records remain unchanged, so demand order is not the
   only explanation to test. Evidence and the withdrawn overclaim are recorded
-  in the `func_80020D8C` two-source handoff. Workbench commits `028a8eaf` and
+  in the `modSetTextureFrame` two-source handoff. Workbench commits `028a8eaf` and
   `1da7f333` now separate possible colors, conditional per-input reservations,
   and trace-directed ownership; independent review and real-input acceptance
   preserve the scalar comparisons while withholding unsupported causal advice.
@@ -646,7 +646,7 @@ bytes and disassembly never belong here.
   on ADD would lose real frees; treating every request as an append invents
   others. Keep initialization proof separate from complete replay, and require
   successful-transition evidence for the latter. The compiler-source binding
-  and limits are recorded in the `func_80020D8C` reservation audit.
+  and limits are recorded in the `modSetTextureFrame` reservation audit.
 - Reusing a masked index in an existing predicate can change its allocation
   class, not merely its temporary demand order. In a controlled full-TU pair,
   an equivalent predicate shared the low mask with a table access. Faithful

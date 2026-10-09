@@ -65,7 +65,7 @@ extern u8 *func_8004D7E0(u8 *compressed, u8 *output);
 extern s32 func_8005A7A0(void *model, s32 modelId);
 extern s32 piRomLoadSection(u32 assetId, u32 address, s32 offset, s32 size);
 struct ModelGfxSource;
-s32 func_8002057C(Gfx **out, struct ModelGfxSource *model, s32 arg2, s32 arg3,
+s32 makeModelGfx(Gfx **out, struct ModelGfxSource *model, s32 arg2, s32 arg3,
                   s32 arg4, s32 arg5, s32 arg6);
 void mmFree(void *ptr);
 
@@ -124,7 +124,7 @@ typedef struct ModelGfxPart {
 #define MODEL_CACHE_ID(x) ((x << 1) + 0)
 #define MODEL_CACHE_PTR(x) ((x << 1) + 1)
 
-void *func_8001F520(s32 modelID, s32 flags) {
+void *modLoadModel(s32 modelID, s32 flags) {
     s32 i;
     s32 j;
     s32 cacheIndex;
@@ -257,19 +257,19 @@ void *func_8001F520(s32 modelID, s32 flags) {
         start = 0;
         for (group = 0; group < objMdl->nestedCount; group++) {
             last = objMdl->nestedGroups[group] - 1;
-            func_8002057C((Gfx **) &objMdl->nestedAllocations[group], (struct ModelGfxSource *) objMdl, 0, 0,
+            makeModelGfx((Gfx **) &objMdl->nestedAllocations[group], (struct ModelGfxSource *) objMdl, 0, 0,
                           start, last, 0);
             start = last + 1;
         }
-        func_8002057C((Gfx **) &objMdl->nestedAllocations[group], (struct ModelGfxSource *) objMdl, 0, 0,
+        makeModelGfx((Gfx **) &objMdl->nestedAllocations[group], (struct ModelGfxSource *) objMdl, 0, 0,
                       start, 0xFF, 0);
     } else {
-        objMdl->textureAnimationCount = func_8002057C((Gfx **) &objMdl->unk68,
+        objMdl->textureAnimationCount = makeModelGfx((Gfx **) &objMdl->unk68,
                                                       (struct ModelGfxSource *) objMdl, 0, 0, 0, 0xFF, 0);
         if (objMdl->unk68 == NULL) {
             goto block_30;
         }
-        func_8002057C((Gfx **) &objMdl->unk6C, (struct ModelGfxSource *) objMdl, 4, 0, 0, 0xFF, 0);
+        makeModelGfx((Gfx **) &objMdl->unk6C, (struct ModelGfxSource *) objMdl, 4, 0, 0, 0xFF, 0);
         if (objMdl->unk6C == NULL) {
             goto block_30;
         }
@@ -674,11 +674,11 @@ void func_800203E0(ObjectModel *model) {
         } while (loaded < model->numberOfTextures);
     }
     if (model->unk68 == NULL) {
-        model->textureAnimationCount = func_8002057C((Gfx **)&model->unk68,
+        model->textureAnimationCount = makeModelGfx((Gfx **)&model->unk68,
                                                      (struct ModelGfxSource *)model, 0, 0, 0, 0xFF, 0);
     }
     if (model->unk6C == NULL) {
-        func_8002057C((Gfx **)&model->unk6C, (struct ModelGfxSource *)model, 4, 0, 0, 0xFF, 0);
+        makeModelGfx((Gfx **)&model->unk6C, (struct ModelGfxSource *)model, 4, 0, 0, 0xFF, 0);
     }
 }
 /* Mickey-only reconstruction; JFG supplied no adoptable helper name or body. */
@@ -780,7 +780,7 @@ void func_80020B10(Gfx **displayList, s8 *textureIds, s8 *slots,
 #define gSPModelSelectMatrix(pkt, num) gMoveWd(pkt, 0x0A, 0, (num) << 6)
 #define MODEL_PHYS(x) ((u32)(x) & 0x0FFFFFFF)
 
-s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
+s32 makeModelGfx(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
                   s32 lowerGroup, s32 upperGroup, s32 forceSimple) {
     s32 partIndex;
     Gfx *sourceDisplayList;
@@ -1063,7 +1063,7 @@ typedef struct ModelFrameInstance {
  * ORT 374 authenticates eight overlay calls across overlays 57, 60, and 82;
  * resident func_8001BB10 passes an unused fourth owner/context argument that
  * this callee overwrites. */
-void func_80020D8C(ModelFrameInstance *instance, s32 textureIndex, s32 frame) {
+void modSetTextureFrame(ModelFrameInstance *instance, s32 textureIndex, s32 frame) {
     ObjectModel *model;
     ModelFrameEntry *entry;
     u16 *output;
@@ -1119,7 +1119,7 @@ void func_80020D8C(ModelFrameInstance *instance, s32 textureIndex, s32 frame) {
  *   - no cache pointer: the id read through the global expression is
  *     numbered after the scanned value, which is what puts the value
  *     first in the `bnel` (6 -> 0 together with the shared index). */
-void func_80020E4C(s16 *exceptions) {
+void modSuspendModelTextures(s16 *exceptions) {
     SuspendedModelTexture *saved;
     s32 modelIndex;
     s32 i;

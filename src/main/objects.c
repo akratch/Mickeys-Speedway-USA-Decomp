@@ -451,7 +451,7 @@ typedef struct {
 
 extern void *func_8000486C(s32 arg0);
 extern void *func_80006C4C(s32 arg0);
-extern void *func_8001F520(s32 assetId, s32 flags);
+extern void *modLoadModel(s32 assetId, s32 flags);
 extern void *mmAlloc2(s32 size, s32 tag);
 extern void *texLoadSprite(s32 assetId, s32 flags);
 
@@ -1040,7 +1040,7 @@ void *func_8000486C(s32 assetIndex) {
                         texLoadSprite(((u16 *)asset->unkA8)[index] & 0x3FFF, 1);
                 } else {
                     ((void **)asset->unkAC)[index] =
-                        func_8001F520(((u16 *)asset->unkA8)[index], 0);
+                        modLoadModel(((u16 *)asset->unkA8)[index], 0);
                 }
                 index += 1;
             } while (index < asset->unkA6);
@@ -1804,7 +1804,7 @@ void *func_8000590C(void *packet, s32 spawnFlags) {
             if (object->unk40->unk30 != 0) {
                 modelSetModelFlags(0);
             }
-            object->unk68[index] = (s32)func_8001F520(object->unk40->unk34[index], loadType);
+            object->unk68[index] = (s32)modLoadModel(object->unk40->unk34[index], loadType);
             if (object->unk68[index] == 0) {
                 failed = 1;
             }
@@ -2365,7 +2365,7 @@ void *func_80006C4C(s32 assetIndex) {
             object->unk68 = object->unk94;
             if (spriteModel == 0) {
                 object->unk68[index] =
-                    (s32)func_8001F520(
+                    (s32)modLoadModel(
                         object->unk40->unk34[index], loadType);
             } else {
                 object->unk68[index] =

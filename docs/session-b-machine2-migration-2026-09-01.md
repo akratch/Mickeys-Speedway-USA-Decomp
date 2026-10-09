@@ -29,7 +29,7 @@ The filtered Session B queue is empty at the base above:
   resident/main stale-ledger rows.
 
 The three stale rows are `func_800573C8`, `func_8001FC50`, and
-`func_8001F520`; they are Session A work. A temporary empty Session B queue is
+`modLoadModel`; they are Session A work. A temporary empty Session B queue is
 a monitoring state. Regenerate all three queues after every canonical fetch.
 
 The following previously active Session B fronts are closed at this base:

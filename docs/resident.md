@@ -626,7 +626,7 @@ never imported as names, and uncertain rows retain Mickey's `func_` spelling.
 |---|---|---|---|
 | `0x20020` | `func_8001F420`, `0x3C` | JFG placeholder in `models.c.o` | A: exact 15-word skeleton and linked C match; placeholder retained |
 | `0x2005C` | `modInitModels`, `0xC4` | `modInitModels` | B: same allocation/table-initialisation calls and TU position; linked C match |
-| `0x20120` | `func_8001F520`, `0x644` | `modLoadModel` | B: same cache, decompression, texture and instance-helper call graph |
+| `0x20120` | `modLoadModel`, `0x644` | `modLoadModel` | B: same cache, decompression, texture and instance-helper call graph |
 | `0x20764` | `func_8001FB64`, `0x68` | JFG placeholder in `models.c.o` | A: exact 26-word skeleton and linked C match; placeholder retained |
 | `0x207CC` | `func_8001FBCC`, `0x84` | JFG placeholder helper | D: function order and allocation/copy structure; linked C match |
 | `0x20850` | `func_8001FC50`, `0x534` | JFG placeholder helper | D: function order and model-instance construction; non-matching C plateau |
@@ -636,11 +636,11 @@ never imported as names, and uncertain rows retain Mickey's `func_` spelling.
 | `0x210B8` | `func_800204B8`, `0xAC` | no adoptable name | D: texture/allocation release structure only; linked C exact |
 | `0x21164` | `modelSetModelFlags`, `0xC` | `modelSetModelFlags` | B: paired global setter and observed callers; linked C match |
 | `0x21170` | `modelGetModelFlags`, `0xC` | `modelGetModelFlags` | B: paired global getter; linked C match |
-| `0x2117C` | `func_8002057C`, `0x558` | `makeModelGfx` | B: texture/display-list construction call graph and TU order; non-matching C plateau |
+| `0x2117C` | `makeModelGfx`, `0x558` | `makeModelGfx` | B: texture/display-list construction call graph and TU order; non-matching C plateau |
 | `0x216D4` | `func_80020AD4`, `0x3C` | JFG placeholder in `models.c.o` | A: exact 15-word skeleton and linked C match; placeholder retained |
 | `0x21710` | `func_80020B10`, `0x27C` | JFG placeholder helper | D: adjacent table-builder structure; non-matching C plateau |
-| `0x2198C` | `func_80020D8C`, `0xC0` | `modSetTextureFrame` | B: model texture-frame traversal and matching TU position |
-| `0x21A4C` | `func_80020E4C`, `0x1C4` | `modSuspendModelTextures` | B: allocate/save/free texture ownership sequence |
+| `0x2198C` | `modSetTextureFrame`, `0xC0` | `modSetTextureFrame` | B: model texture-frame traversal and matching TU position |
+| `0x21A4C` | `modSuspendModelTextures`, `0x1C4` | `modSuspendModelTextures` | B: allocate/save/free texture ownership sequence |
 | `0x21C10` | `modResumeModelTextures`, `0x8C` | `modResumeModelTextures` | B: reload/free saved texture ownership sequence; linked C match |
 | `0x21C9C` | `func_8002109C`, `0xF8` + `0xC` alignment | no adoptable name | D: model point/matrix traversal; linked C exact, JFG candidates diverge |
 
@@ -668,7 +668,7 @@ differing positional words, and first differs at `+0x0`: its frame is `0x88`
 instead of `0x78`. A function-local `-Wo,-loopunroll,2` diagnostic was also
 non-exact and cannot establish a TU-wide override for the already-proven
 canonical consumers.
-`func_8002057C` plateaus after the complete 119-combination flag lattice,
+`makeModelGfx` plateaus after the complete 119-combination flag lattice,
 ten coherent command-emission, measured-type, copy-loop, and lifetime
 spellings, and a bounded permutation. Its best canonical candidate has the
 target's exact 342-instruction size but 257 positional words differ from
@@ -676,8 +676,8 @@ target's exact 342-instruction size but 257 positional words differ from
 and stack-home allocation. The permuter's lower-scoring candidate reused the
 last texture parameter as a command-word temporary and would corrupt the next
 part's cache comparison, so it was rejected.
-`func_80020D8C` owns ROM `0x2198C..0x21A4C`, 48 words with no padding before
-`func_80020E4C`. Policy-clean configured full-TU C has its exact 48-word body,
+`modSetTextureFrame` owns ROM `0x2198C..0x21A4C`, 48 words with no padding before
+`modSuspendModelTextures`. Policy-clean configured full-TU C has its exact 48-word body,
 frame `0x8`, and zero relocations, with 33/48 raw and normalized words matching
 and first mismatch `+0x38`. All fifteen residuals are register fields.
 `remainingCopy` now carries the frame load so `lh` uses t1; the `outputValue`
@@ -696,7 +696,7 @@ baseline initial membership and coloring but changes downstream allocation;
 constant-only is byte-identical to baseline. Meaningful-section, symbol and
 relocation fidelity passes for every stock/trace-off/trace-on control; no target
 compiler trace or complete dynamic FIFO proof exists. The per-symbol
-`docs/matching-triage-handoffs/func_80020D8C.md` records the source-bound
+`docs/matching-triage-handoffs/modSetTextureFrame.md` records the source-bound
 evidence and stop condition. The canonical body remains unchanged.
 **Why most rows have no new `mickey.us.yaml` split.** §1's "measured file
 boundary" tier requires a whole-`.text` match; this pass only matched
@@ -1003,7 +1003,7 @@ Current matching plateau:
 | `func_8001398C` | 0x528 / 330 words | The guarded definition/fallback, its 330 contiguous generated fallback rows, the linked ELF and `src/main/track.c.o` FUNC sizes, the linker-map owner, and adjacent `trackGetTrack` boundary independently authenticate VRAM `0x8001398C..0x80013EB4` / ROM `0x1458C..0x14AB4` under `-O2 -mips2 -32 -Wab,-r4300_mul`. Configured C has exact geometry and frame `0x140`, with 168/330 positional words and 21/21 relocation count; 19 identities align. The tier-D metadata adds no match credit. | `+0x60`: the remaining mismatch is allocator scheduling. The now-bounded skeleton scan ranks JFG's assembly-only `trackGetHeights` first at 0.194 Jaccard, which corroborates the structural family but supplies no adoptable source; four-project coddog returns no candidate line and only its known overlay-end warnings. Preserve the fallback pending procedure-scoped lifetime evidence. |
 | `func_8000DFBC` | 0x630 / 396 words | The `NON_MATCHING` body and adjacent `func_8000E5EC` boundary authenticate a unique `src/main/track.c.o` owner under `-O2 -mips2 -32 -Wab,-r4300_mul`; the configured candidate is 398 words with the exact 0x70 frame, 304 differing words, and the same 51-record relocation count. | `+0x48`: batch/display-list initialization and register scheduling remain structurally different; 36 relocation offset/type sites and 35 stable identities align. The ownership row unlocks the flag lattice but adds no match credit. |
 | `trackLightAllocate` | 0x1B8 / 110 words | **Exact.** 110 words, frame `0x38`, all 16 relocations, ROM `0xDFB8..0xE170` byte-identical; `wb_compare --rom` reports `instruction-words-identical` and `gmake verify` still prints the expected hash. | Closed by one expression: the pool size is `D_800792F8 * sizeof(TrackLight)`, read back from the global the line above rather than computed from the `lightCount` parameter. The parameter form lets IDO write the product straight into `a0`; re-reading the global keeps the stored value's carrier live, so the product takes a temporary and is copied into `a0` -- the missing 111th word. That one change took the candidate from 109/110 words and 105 differing to exact, so the `byteCount` local was never the pool size's carrier. |
-| `func_80020E4C` | 0x1C4 / 113 words | The `NON_MATCHING` body and adjacent `modResumeModelTextures` boundary authenticate the unique resident range `0x80020E4C..0x80021010` / ROM `0x21A4C..0x21C10` in `src/main/models.c.o` under `-O2 -mips2 -32`; the configured candidate has exact 113-word geometry and a 0x40 frame. | `+0xC`: 25 words differ. Explicit byte-scaled indexing remains best; pointer-cursor and declaration-order probes did not improve it, while exception-loop/pool-slot 1 and temp-slot 3 allocation remain. The ownership row unlocks flag and skeleton queries but adds no match credit. |
+| `modSuspendModelTextures` | 0x1C4 / 113 words | The `NON_MATCHING` body and adjacent `modResumeModelTextures` boundary authenticate the unique resident range `0x80020E4C..0x80021010` / ROM `0x21A4C..0x21C10` in `src/main/models.c.o` under `-O2 -mips2 -32`; the configured candidate has exact 113-word geometry and a 0x40 frame. | `+0xC`: 25 words differ. Explicit byte-scaled indexing remains best; pointer-cursor and declaration-order probes did not improve it, while exception-loop/pool-slot 1 and temp-slot 3 allocation remain. The ownership row unlocks flag and skeleton queries but adds no match credit. |
 | `func_80010900` | 0x24C / 147 words | Mickey's reconstructed repeated segment-intersection wrapper under `-O2 -mips2 -32 -Wab,-r4300_mul` identifies the 0x20-byte callback record and reaches the exact 147-word opcode schedule, 0xB8 frame, every stack offset, FP allocation, and all five call relocations. The 119-mode flag sweep found no better mode; a bounded ten-minute permuter and ten type, declaration, lifetime, and call-schedule hypotheses leave 17 register-only words. | `+0x14`: one clean saved-register bijection assigns the direction pointer, intersection pointer, and secondary result to `s4`, `s5`, and `s6` instead of the target's `s5`, `s6`, and `s4`. The reference scan found no credible donor, and explicit pointer/return-category variants reproduced the same allocator basin; another attempt needs original declaration or forced-color evidence rather than more register-order guessing. |
 | `func_800103D4` | 0x280 / 160 words | Evidence D: JFG's assembly-only object-alpha role, DKR's visibility helper, and Mickey's m2c draft establish the switch, fade, and plane loop. | Candidate: structure-mismatch, 177/160 instructions, 175 differing words, first `+0x0`, frame `-0x58` versus `-0x38`; switch/FP saved-register shape remains unresolved. |
 | `func_80010654` | 0x2AC / 171 words | Evidence D: DKR's collision resolver and Mickey's m2c draft establish the candidate-stream, base-plane, signed-edge, and nearest-intersection algorithm. | Candidate: structure-mismatch, 174/171 instructions, 172 differing words, first `+0x0`, frame `-0x80` versus `-0x98`; three instruction/FP-home residuals remain. |
@@ -3187,7 +3187,7 @@ placeholder name or counting padding as function text.
 | `0x5B300` / `0x8005A700` | `0x64` | `func_8005A700` | D: allocates animation table/cache storage |
 | `0x5B364` / `0x8005A764` | `0x0C` | `func_8005A764` | D: resets the pending-animation counter |
 | `0x5B370` / `0x8005A770` | `0x30` | `func_8005A770` | D: flushes the pending animation table, then resets its count; no per-symbol caller argument recorded |
-| `0x5B3A0` / `0x8005A7A0` | `0x1A8` | `func_8005A7A0` | B: loads a model's animation-ID table and allocates its animation pointer array; sole proven caller is `func_8001F520+0x42C`, passing the loaded model and model ID |
+| `0x5B3A0` / `0x8005A7A0` | `0x1A8` | `func_8005A7A0` | B: loads a model's animation-ID table and allocates its animation pointer array; sole proven caller is `modLoadModel+0x42C`, passing the loaded model and model ID |
 | `0x5B548` / `0x8005A948` | `0x178` | `func_8005A948` | B: reference-counted single-animation loader; sole proven caller is `func_8005A7A0+0x104`, passing an `lh` animation ID and consuming the returned pointer |
 | `0x5B6C0` / `0x8005AAC0` | `0xB8` | `func_8005AAC0` | B: releases one reference-counted animation; direct callers are `func_80020278+0xD0` and `func_8005A7A0+0x140`, each passing an animation pointer |
 | `0x5B778` / `0x8005AB78` | `0x30` | `camConvertMatrixList` | A: exact JFG `camera.c` helper, used by the matrix builder below |

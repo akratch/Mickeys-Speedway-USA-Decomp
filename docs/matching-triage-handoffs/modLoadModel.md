@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_8001F520:start -->
-### `func_8001F520` plateau handoff
+<!-- plateau-handoff:modLoadModel:start -->
+### `modLoadModel` plateau handoff
 
 - source: `src/main/models.c`
 - score: 0/401 words, promoted
@@ -31,4 +31,4 @@ builder by the 0x8000 bit) and the shared failure tail. Measured steps:
 
 gmake verify printed the expected SHA1 with the GLOBAL_ASM branch removed.
 
-<!-- plateau-handoff:func_8001F520:end -->
+<!-- plateau-handoff:modLoadModel:end -->

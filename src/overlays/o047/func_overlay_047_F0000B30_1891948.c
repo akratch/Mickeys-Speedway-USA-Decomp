@@ -748,6 +748,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 289 aligned at size 0 (masked 311): icon channels in own locals fill the cells above x; colour index in i a stand-in. Open: i vs actor, ring phase.
+ * summary: 289 aligned at size 0 (masked 311): icon channels in own locals; ring phase priced at 66 rows (channels via ring temps); colour index in i a stand-in.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

@@ -3839,7 +3839,6 @@ void func_80012658(s32 flags) {
         }
     }
 }
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c collision trace and the resident vector/track
  * declarations reconstruct this query; no external function body is adapted.
@@ -3913,7 +3912,12 @@ void func_80012658(s32 flags) {
  * role straight after the lookup (edgeIndex becomes the edge counter, x1
  * the edge word); without that later definition uopt substitutes the
  * address into the plane's field loads and the plane leaves a0. The sign
- * mask is written first in the xor for the shipped operand order. */
+ * mask is written first in the xor for the shipped operand order.
+ * Matched 2026-10-09 (lane u-1): the hit block stores the texture flag with
+ * no mask (the `& 0xFF` that stood in for the target's draw is gone) and the
+ * hit plane takes the same f32-subscript form as the other plane lookups,
+ * `[polygon[0] << 2]`: the two scales spend one more ring draw, which as1
+ * folds into a single shift, and that is the draw the target spends. 4 to 0. */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -4129,8 +4133,8 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, u32 arg4) {
                                 best.f[2] = pointZ;
                                 bestFlags = segment->batches[batchIndex].flags;
                                 bestTexture = ((TrackTextureFlags *) D_800792E8->textures)[
-                                    segment->batches[batchIndex].textureIndex].flag & 0xFF;
-                                bestPlane = &surfaceBase[polygon[0]];
+                                    segment->batches[batchIndex].textureIndex].flag;
+                                bestPlane = (TrackPlane *) &((f32 *) surfaceBase)[polygon[0] << 2];
                                 hit = 1;
                             }
                         }
@@ -4171,9 +4175,6 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, u32 arg4) {
 #undef E129_S32
 #undef E129_F32
 #undef E129_PTR
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8001291C.s")
-#endif
 /*
  * PROVENANCE: Jet Force Gemini's public assembly-only `trackClip3D` in
  * `src/track.c` supplies the six-plane clipping structure and paired helper
@@ -5261,16 +5262,4 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * first-mismatch: +0xC0
  * summary: Unchanged at 10, all naming; double-read lever sweep and the sibling 10654 shape product flat.
  * PLATEAU-HANDOFF:func_80011980:end
- */
-
-
-
-/* PLATEAU-HANDOFF:func_8001291C:start
- * symbol: func_8001291C
- * score: 4/548 words
- * frame: 0x288
- * relocations: 13
- * first-mismatch: +0x6D8
- * summary: Both plane lookups in the DKR f32-subscript form with the index local reused straight after: 6 to 4 at 0; left: the hit block flag-load draw
- * PLATEAU-HANDOFF:func_8001291C:end
  */

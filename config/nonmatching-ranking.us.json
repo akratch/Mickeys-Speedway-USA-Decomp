@@ -1,29 +1,14 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 15,
-  "resolved": 15,
+  "queue_size": 14,
+  "resolved": 14,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 15,
-  "relocation_masked_coverage": 15,
+  "source_context_coverage": 14,
+  "relocation_masked_coverage": 14,
   "functions": [
-    {
-      "name": "func_8001291C",
-      "file": "src/main/track.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 2192,
-      "objdiff_match_pct": null,
-      "differing_words": 4,
-      "first_mismatch_offset": 1752,
-      "relocation_masked_differing_words": 4,
-      "relocation_masked_first_mismatch_offset": 1752,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "R2dC.YdaK.amCS.t_Em.0IDZ.P3gG.A48s.8zFC.BmXG.j23D.ms0"
-    },
     {
       "name": "func_8001B798",
       "file": "src/main/spranim.c",
@@ -82,7 +67,7 @@
       "relocation_masked_first_mismatch_offset": 192,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "l91X.cD8b.pxvr.x6Lu.B3B-.qfmF.lngK.oqOi.fYa0.VoU3.xlA"
+      "source_context_sha256": "MqvJ.uDUT.R-5H.82bd.An-4.QZ3K.G050.yOAr.xCRZ.jCZL.CT8"
     },
     {
       "name": "wakeAllocate",

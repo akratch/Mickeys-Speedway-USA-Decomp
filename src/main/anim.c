@@ -3973,7 +3973,7 @@ void fmvInit(void) {
  * frame: 0x40
  * relocations: 47
  * first-mismatch: +0x114
- * summary: 7 at 0. Conditional-expression and reused-i joins measured; none below 7
+ * summary: 7 at 0. Block-cut, do-while-condition, early-definition and flag cells measured; none below 7
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

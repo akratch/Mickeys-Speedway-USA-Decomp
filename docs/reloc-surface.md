@@ -1188,7 +1188,7 @@ The HI16/LO16 pairs at function `+0x4/+0x8`, `+0x30/+0x34`, and
 zero, `gOverlay16Phase` at `+8`, and `gOverlay16Mode` at `+4`. The retained
 configured candidate agrees with all six runtime records by offset, type,
 stable identity, and addend. ORT 1313 exports module `+0x1E0`; resident
-relocation 155 at exact-C `func_8000D978+0xFC` is the sole authenticated
+relocation 155 at exact-C `trackUpdateLighting+0xFC` is the sole authenticated
 inbound. The function owns `+0x1E0..+0x424`; module `+0x424..+0x430` is
 separate twelve-byte assembly padding. Its retained 145-word/frame-`0x20` C
 still has 60 register-only differences from first `+0x3C`, so current linked
@@ -1337,7 +1337,7 @@ callers. Current linked equality proves fallback only.
 
 Overlay 41 `+0x000` owns exactly three runtime records: a SYMBOL HI16/LO16
 pair at function `+0x14/+0x28` resolving to `D_800D6B58`, and a SYMBOL call at
-`+0xD0` resolving to resident `func_8000D16C`. Exact C emits all three at those
+`+0xD0` resolving to resident `trackAddTextureScroll`. Exact C emits all three at those
 offsets and uses distinct stored-zero proxies so the linked image retains the
 retail operands without collapsing their runtime identities. The 73-word body,
 `0x30` frame, owned `+0x0..+0x124` range, linked module, and full ROM are exact;
@@ -1789,7 +1789,7 @@ single `v0`/`v1` globalcolor outcome and the 119-flag lattice found no exact
 object. The fallback target retains none statically, making the runtime table
 the identity authority. ORT
 1314 exports the function, and resident runtime record 156 at
-`func_8000D978+0x130` is its sole authenticated inbound/trap site; it is not an
+`trackUpdateLighting+0x130` is its sole authenticated inbound/trap site; it is not an
 ordinary direct static call. Current linked equality proves fallback only.
 
 Overlay 74 `+0xB8` (`overlay74Update`) owns eight runtime-authenticated records:

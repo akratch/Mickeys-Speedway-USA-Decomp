@@ -160,7 +160,7 @@ extern void func_80006EA0(void *object);
  * overwrites without consuming. Keep this four-argument declaration local;
  * the guarded callee's three-argument definition preserves its frame. */
 extern void func_80020D8C(void *arg0, s32 arg1, s32 arg2, void *arg3);
-extern void func_8000D16C(s16 textureIndex, s32 x, s32 y, s32 updateRate);
+extern void trackAddTextureScroll(s16 textureIndex, s32 x, s32 y, s32 updateRate);
 extern void texAnimateSprite(void *entry, s32 *mode, s32 animationId, void *state, s32 updateRate);
 extern s32 func_8005776C(f32 x, f32 y, f32 z, f32 radius, s32 useXZ, void *hits);
 extern void partUpdateTriggers(void *state, s32 updateRate);
@@ -299,7 +299,7 @@ void texscrollControl(TexscrollState *state, s32 updateRate) {
     y += entry->offsetY;
     entry->offsetY = y & 3;
     y >>= 2;
-    func_8000D16C(entry->textureIndex, x, y, updateRate);
+    trackAddTextureScroll(entry->textureIndex, x, y, updateRate);
 }
 #ifdef NON_MATCHING
 /* 2026-10-07 (lane d-fx): 128 -> 48 at delta 0, frame 0xE0 exact: the

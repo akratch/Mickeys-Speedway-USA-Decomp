@@ -510,7 +510,7 @@ bytes and disassembly never belong here.
   distinct from the aliasing question -- there is no store between the two
   spellings that could invalidate anything -- and from the "reference a global
   twice" address rule, which is about the address web rather than the value's.
-  Evidence: `func_8000D3B8` in `src/main/track.c`, where the pool size spelled
+  Evidence: `trackLightAllocate` in `src/main/track.c`, where the pool size spelled
   from the global took the function from one instruction short and 105
   differing words to exact, and where four rewrites of the *arithmetic* and all
   four statement positions were flat.

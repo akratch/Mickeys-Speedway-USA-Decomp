@@ -57,7 +57,7 @@ extern s16 gOverlay40BlendOutput;
  * D_800D6C54(output).
  * Owned Overlay 40 +0x690..+0x824 / ROM 0x1886F40..0x18870D4 excludes separate
  * +0x824..+0x830 padding. ORT 1314 and resident runtime record 156 at
- * func_8000D978+0x130 authenticate the sole inbound trap site. Mickey-only;
+ * trackUpdateLighting+0x130 authenticate the sole inbound trap site. Mickey-only;
  * exact pinned DKR v77/v80/JFG scans are negative. */
 void overlay40FadeRecords(register s32 *enabled, Overlay40FadeContext *context,
                           s32 amount) {

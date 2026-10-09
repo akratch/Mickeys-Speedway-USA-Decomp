@@ -340,8 +340,8 @@ extern void camUserViewTick(void);
 extern void func_80027D14(s32);
 extern void func_8003C80C(s32);
 extern void func_8004D32C(void);
-extern void func_8000D1B8(void);
-extern void func_8000D978(s32, s32);
+extern void trackUpdateTextureScroll(void);
+extern void trackUpdateLighting(s32, s32);
 extern void runlinkTick(void);
 extern void func_80027628(s32);
 extern void func_80027EC0(s32);
@@ -632,8 +632,8 @@ void func_80026FB4(void) {
     D_8007A1D0 = rcpWaitDP();
     mainUpdateZBCheck();
     mainCPUeffects((u16 *) D_800D2FA0, D_8007A248);
-    func_8000D1B8();
-    func_8000D978(1, D_8007A248);
+    trackUpdateTextureScroll();
+    trackUpdateLighting(1, D_8007A248);
     if (D_8007A1E4 != 0) {
         TrapDanglingJump(D_8007A248);
         D_8007A1E4 = 0;

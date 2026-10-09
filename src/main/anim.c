@@ -37,6 +37,7 @@ HitCopyState **func_80005750(s32 *count);
 #define func_800030B4 amSndSetPitchXYZ
 #define func_800031C0 amSndSetXYZ
 #define func_800031E8 amSndStopXYZ
+#define func_80014BAC trackFadeFog
 #endif
 
 /*

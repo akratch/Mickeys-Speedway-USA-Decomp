@@ -679,7 +679,7 @@ Overlay 41's `+0x000..+0x124` owner
 (`func_overlay_041_F0000000_1887338`) is exact C: 292 bytes / 73 words with the
 retail `0x30` frame. Its object carries stored-zero proxies at `+0x14/+0x28`
 and `+0xD0`; the runtime table resolves them to `D_800D6B58` and resident
-`func_8000D16C`. The owned range, linked module, and full ROM are byte-identical
+`trackAddTextureScroll`. The owned range, linked module, and full ROM are byte-identical
 with only trailing section-alignment trimming. Pinned DKR v77/v80 and JFG scans
 remain negative; JFG's `animseqUpdateTextureScrollers` is a role-only
 comparison, not a donor.
@@ -1377,7 +1377,7 @@ temporary-register lane is exact. One allocator trace isolated that pool swap,
 and all 119 flag combinations were nonexact with canonical `-O2 -mips2` tied
 for best. Its ten runtime BSS records resolve to `D_800D6C4C`, `D_800D6C52`,
 `D_800D6C50`, `D_800D6C4E`, and `D_800D6C54`; the target/fallback object
-retains none statically. Resident `func_8000D978 +0x130` is the sole proved
+retains none statically. Resident `trackUpdateLighting +0x130` is the sole proved
 direct caller. Exact linked range/module/full-ROM evidence proves assembly
 fallback only; no linked C artifact survives. Pinned DKR v77/v80 and JFG scans
 are negative.
@@ -1608,7 +1608,7 @@ words. Its policy-clean configured C remains NON_MATCHING but has the exact
 `+0x3C`, and all six LOCAL relocation tuples exact by offset, type, identity,
 and addend. Those pairs address the gradient buffer at addend zero, phase at
 `+8`, and mode at `+4`. ORT 1313 exports the function; resident relocation
-155 at exact-C `func_8000D978+0xFC` is its sole authenticated inbound. The
+155 at exact-C `trackUpdateLighting+0xFC` is its sole authenticated inbound. The
 2026-08-29 bounded pass exhausted V0, all 119 canonical flags, one
 fidelity-clean allocator trace, and three natural forms. Reordering the six
 channel definitions was the sole strict gain, reducing 64 register-only

@@ -41,7 +41,7 @@ not identity-clean for this TU, so the reading is the *relative* effect):
   load into the target's slot.
 
 The tree holds nine functions with this prologue shape (o014, o034, o046,
-o063, `func_800517E0`, `func_8000D1B8`, `func_8000E5EC`, `gzip_inflate_dynamic`
+o063, `func_800517E0`, `trackUpdateTextureScroll`, `func_8000E5EC`, `gzip_inflate_dynamic`
 and this one); any lane on one of them should start from the rule below.
 
 **When uopt builds the web.** Mini-TU probes (twenty-odd cells, direct `cc -S`):

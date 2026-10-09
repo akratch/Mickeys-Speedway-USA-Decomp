@@ -150,12 +150,12 @@
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb newly matches this shared-engine TU. Re-derive from that donor with a PROVENANCE note; Mickey ROM decides every disagreement. Do not repeat mechanisms the handoff records as flat.",
       "source_commit": "1ac4ce096402051df01ff721968235046df1e373"
     },
-    "func_8000D1B8": {
+    "trackUpdateTextureScroll": {
       "ledger_commit": "789dada09760be082b2167a9364af1e7a8d5d2a9",
       "reason": "Reconstruction sweep at 8 to 16 bytes: the candidate is a few instructions out, and today's cause list names the usual reasons -- a missing copy, a block fallthrough, an address rematerialized once too often.",
       "source_commit": "789dada09760be082b2167a9364af1e7a8d5d2a9"
     },
-    "func_8000D3B8": {
+    "trackLightAllocate": {
       "ledger_commit": "d81bf4c93bce5a7947ec30abca8ef78a8b250f16",
       "reason": "One-instruction reconstruction: at a 4-byte delta the candidate is one instruction out, and today's laws name the usual causes -- a missing register copy, a block-fallthrough order, or an address rematerialized once too often.",
       "source_commit": "d81bf4c93bce5a7947ec30abca8ef78a8b250f16"

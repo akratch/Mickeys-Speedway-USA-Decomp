@@ -24,8 +24,8 @@ extern f32 func_8002A8BC(s32 angle);
 extern void mmFree(void *ptr);
 extern void *mmAlloc(s32 size, s32 tag);
 extern void lightCreateLightTable(s32 red, s32 green, s32 blue, void *table);
-extern void func_8000D728(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
-extern s32 func_8000D62C(f32 x, f32 y, f32 z, f32 radius, f32 radius2, s32 red, s32 green, s32 blue);
+extern void trackLightDelete(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+extern s32 trackLightAdd(f32 x, f32 y, f32 z, f32 radius, f32 radius2, s32 red, s32 green, s32 blue);
 extern void func_800188CC(UnkLight *light);
 extern void func_80018F08(UnkLight *light, s32 updateRate);
 extern f32 func_80019934(f32 arg0, f32 arg1, f32 arg2, s32 arg3);
@@ -350,8 +350,8 @@ extern void mathOneFloatRPY(s16 *rotation, f32 *output);
 extern void *camlightAdd(void *object, FlareEntry *entry);
 extern void camlightDelete(void);
 extern ObjectLightState D_800CB298;
-extern void func_8000D768(s32 light, s32 red, s32 green, s32 blue, s32 intensity);
-extern void func_8000D7F8(s32 light, f32 x, f32 y, f32 z);
+extern void trackLightColour(s32 light, s32 red, s32 green, s32 blue, s32 intensity);
+extern void trackLightMove(s32 light, f32 x, f32 y, f32 z);
 extern void updateColourCycle(void *cycle, s32 updateRate);
 extern void mathOneFloatPY(s16 *rotation, f32 *vector);
 extern void pointListRPY(s32 count, void *rotation, f32 *input, f32 *output);
@@ -410,7 +410,7 @@ void func_800188CC(UnkLight *light) {
 
     if (!(light->unk3 & 0x40)) {
         radius = light->radius;
-        light->unk6C = func_8000D62C(
+        light->unk6C = trackLightAdd(
             light->x, light->y, light->z,
             radius * 1.25f, radius * D_800817B0,
             (light->red * light->unk43) >> 8,
@@ -603,7 +603,7 @@ void func_80018F08(UnkLight *light, s32 updateRate) {
         }
         LIGHT->flags2 |= 4;
         if (LIGHT->trackLight6C != 0) {
-            func_8000D7F8(LIGHT->trackLight6C, LIGHT->x18, LIGHT->y1C, LIGHT->z20);
+            trackLightMove(LIGHT->trackLight6C, LIGHT->x18, LIGHT->y1C, LIGHT->z20);
         }
     }
     if (LIGHT->colourCycle54 != 0) {
@@ -632,7 +632,7 @@ void func_80018F08(UnkLight *light, s32 updateRate) {
     if (LIGHT->flags2 & 2) {
         lightCreateLightTable(LIGHT->red40, LIGHT->green41, LIGHT->blue42, LIGHT->table70);
         if (LIGHT->trackLight6C != 0) {
-            func_8000D768(LIGHT->trackLight6C, LIGHT->red40, LIGHT->green41,
+            trackLightColour(LIGHT->trackLight6C, LIGHT->red40, LIGHT->green41,
                           LIGHT->blue42, LIGHT->intensity43);
         }
     }
@@ -667,7 +667,7 @@ void killLight(UnkLight *light) {
     }
     if (entry != NULL) {
         if (light->unk6C != 0) {
-            func_8000D728(light->unk6C, i, D_80079494, (s32) entry);
+            trackLightDelete(light->unk6C, i, D_80079494, (s32) entry);
         }
         D_80079494--;
         for (i--; i < D_80079494; i++) {

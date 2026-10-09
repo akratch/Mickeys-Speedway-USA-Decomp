@@ -193,7 +193,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/textures_354C8.c:877` `func_80035E88` **A**: empty if body.
   Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
   **Left (lane c-2, 2026-10-08):** the empty `if (tex) {}` is in JFG's published donor (src/textures.c func_800570D8_57CD8), so it is inherited, not added here.
-- `src/main/track.c:4983` `func_800148E0` **A**: empty `if (1)`/`if (0)` region.
+- `src/main/track.c:4983` `trackChangeFog` **A**: empty `if (1)`/`if (0)` region.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/vehicle_sounds.c:395` `func_8005830C` **A**: empty if body.
   Natural: delete. Keep bytes: no - measured (lane c-3, 2026-10-08): deleting the empty `if (cameras) {}` differs in 6 words. Not explored further.

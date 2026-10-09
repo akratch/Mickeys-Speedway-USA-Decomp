@@ -462,10 +462,10 @@ void func_800133FC(TrackVertex *v0, TrackVertex *v1, TrackVertex *v2,
                    f32 *a, f32 *b, f32 *c, f32 *d);
 s32 mathXZInTri(s32 x, s32 z, TrackVertex *v0, TrackVertex *v1,
                 TrackVertex *v2);
-void func_8000D768(TrackLight *light, s32 red, s32 green, s32 blue,
+void trackLightColour(TrackLight *light, s32 red, s32 green, s32 blue,
                    s32 intensity);
 void *mmAlloc(s32 size, s32 tag);
-void func_8000D570(void);
+void trackLightFreeMem(void);
 void func_8000D820(void);
 void func_8000439C(void);
 void func_80006EA0(void *handle);
@@ -1032,7 +1032,7 @@ void func_8000CED0(s32 updateRate) {
  * JFG's corresponding TU position is `trackGetSky`, but this three-word
  * Mickey function is kept unnamed because it has no adoptable naming tier.
  */
-void *func_8000D00C(void) {
+void *trackGetSky(void) {
     return D_800C9550;
 }
 /* Dangling overlay call taking the camera world position (three f32 args in
@@ -1077,7 +1077,7 @@ void func_8000D018(s32 arg0, s32 arg1) {
     }
     func_8000E920(arg0, arg1);
 }
-void func_8000D16C(s32 arg0, s32 arg1, s32 arg2) {
+void trackAddTextureScroll(s32 arg0, s32 arg1, s32 arg2) {
     if (D_80079314 < 16) {
         D_800C9B50[D_80079314] =
             (arg0 << 24) | ((arg1 & 0xFFF) << 12) | (arg2 & 0xFFF);
@@ -1094,7 +1094,7 @@ void func_8000D16C(s32 arg0, s32 arg1, s32 arg2) {
  * delta left and then right in place, reading the segment count after the
  * mask selection, and forming the triangle cursor before its count.
  */
-void func_8000D1B8(void) {
+void trackUpdateTextureScroll(void) {
     u32 *command;
     s32 count;
     u32 packed;
@@ -1177,7 +1177,7 @@ void func_8000D1B8(void) {
  * count and two-pointer allocation record are reconstructed from the target
  * accesses; the donor placeholder name is not adopted.
  */
-void func_8000D3B8(s32 lightCount, s32 copyData) {
+void trackLightAllocate(s32 lightCount, s32 copyData) {
     s32 index;
     s32 copyFailed;
     s32 byteCount;
@@ -1228,7 +1228,7 @@ void func_8000D3B8(s32 lightCount, s32 copyData) {
         }
     }
     if (copyFailed != 0) {
-        func_8000D570();
+        trackLightFreeMem();
     }
 }
 /*
@@ -1236,7 +1236,7 @@ void func_8000D3B8(s32 lightCount, s32 copyData) {
  * `trackLightFreeMem` establish this function's role and control-flow
  * skeleton. Mickey's own globals, types, and bytes determine this body.
  */
-void func_8000D570(void) {
+void trackLightFreeMem(void) {
     s32 lightIndex;
 
     if (D_80079308 != NULL) {
@@ -1261,7 +1261,7 @@ void func_8000D570(void) {
  * `trackLightAdd`, supplies the role and 0x80-byte pool stride. Mickey's own
  * stores establish the record fields and body; the public name is not adopted.
  */
-TrackLight *func_8000D62C(f32 x, f32 y, f32 z, f32 radius,
+TrackLight *trackLightAdd(f32 x, f32 y, f32 z, f32 radius,
                           f32 secondaryRadius, s32 red, s32 green, s32 blue) {
     s32 lightIndex;
     TrackLight *light;
@@ -1284,7 +1284,7 @@ TrackLight *func_8000D62C(f32 x, f32 y, f32 z, f32 radius,
                     secondaryRadius * secondaryRadius;
                 light->falloff =
                     31.99f / (radius - secondaryRadius);
-                func_8000D768(light, red, green, blue, 0xFF);
+                trackLightColour(light, red, green, blue, 0xFF);
                 D_800792FC++;
                 return light;
             }
@@ -1293,7 +1293,7 @@ TrackLight *func_8000D62C(f32 x, f32 y, f32 z, f32 radius,
     }
     return NULL;
 }
-void func_8000D728(TrackFloatRecord *arg0) {
+void trackLightDelete(TrackFloatRecord *arg0) {
     if ((arg0 != NULL) && (arg0->unkC != 0.0f)) {
         arg0->unkC = 0.0f;
         D_800792FC--;
@@ -1304,7 +1304,7 @@ void func_8000D728(TrackFloatRecord *arg0) {
  * `trackLightColour` role at this established TU position. Its body remains
  * assembly-only; this reconstruction comes from Mickey's own accesses.
  */
-void func_8000D768(TrackLight *light, s32 red, s32 green, s32 blue,
+void trackLightColour(TrackLight *light, s32 red, s32 green, s32 blue,
                    s32 intensity) {
     TrackLightColourEntry *colour;
     s32 redStep;
@@ -1334,7 +1334,7 @@ void func_8000D768(TrackLight *light, s32 red, s32 green, s32 blue,
         } while (colourIndex--);
     }
 }
-void func_8000D7F8(TrackFloatRecord *arg0, f32 arg1, f32 arg2, f32 arg3) {
+void trackLightMove(TrackFloatRecord *arg0, f32 arg1, f32 arg2, f32 arg3) {
     if (arg0 != NULL) {
         arg0->x = arg1;
         arg0->y = arg2;
@@ -1423,7 +1423,7 @@ void func_8000D820(void) {
  * assembly-only `trackUpdateLighting`. Mickey's module path, segment layout,
  * globals, and bytes are authoritative; the public name is not adopted.
  */
-void func_8000D978(s32 copySegmentData, s32 updateRate) {
+void trackUpdateLighting(s32 copySegmentData, s32 updateRate) {
     s32 segmentCount;
     s8 mode;
     TrackSegment *segment;
@@ -1839,7 +1839,7 @@ void func_8000E5EC(s32 updateRate, s32 arg1) {
         resultCount = func_8000DB34(visibleCount, segmentList,
                                     (TrackRouteResult *) records);
     }
-    func_8000D978(0, arg1);
+    trackUpdateLighting(0, arg1);
     texDPInit(&D_800C9520);
     if (D_8007A124 == 0 && camGetMode() == 0) {
         partDraw(&D_800C9520, (s32) &D_800C9524, 1);
@@ -1924,7 +1924,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
     if (D_800792E8->segmentCount < 2) {
         E920_RECORD(0) = -1;
     }
-    func_8000D978(0, arg1);
+    trackUpdateLighting(0, arg1);
     diRcpTrace(D_800C9520, "track/track.c", 0x5A1);
     if (D_80079260 != 0) {
         for (index = 0; index < visibleCount; index++) {
@@ -4623,7 +4623,7 @@ void func_80013EC0(void) {
         TrapDanglingJump();
         D_80079278 = 0;
     }
-    func_8000D570();
+    trackLightFreeMem();
     if (D_80079310 != NULL) {
         mmFree(D_80079310);
         D_80079310 = NULL;
@@ -4985,7 +4985,7 @@ void func_800147A4(s32 playerID) {
  * supplies the TU position. Mickey's object fields, direct player-list call,
  * fallback stride, radius offset, and fog layout are authoritative.
  */
-void func_800148E0(TrackFogChanger *changer) {
+void trackChangeFog(TrackFogChanger *changer) {
     s32 nearTemp;
     s32 fogNear;
     s32 views;
@@ -5088,7 +5088,7 @@ void func_800148E0(TrackFogChanger *changer) {
  * `trackFadeFog`. Mickey's argument width and direct fog-data path are
  * authoritative where the revisions differ; JFG's name is not adopted.
  */
-void func_80014BAC(s32 fogIndex, s32 red, s32 green, s32 blue, s32 near,
+void trackFadeFog(s32 fogIndex, s32 red, s32 green, s32 blue, s32 near,
                    s32 far, f32 timer) {
     s32 temp;
     s32 switchTimer;

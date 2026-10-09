@@ -1877,7 +1877,7 @@ asins = 0x8006A508; // type:func size:0x8C tier-A exact C, JFG source body
 
 // No public name adopted: JFG's `trackFadeFog` supplies the exact body shape
 // at this established TU position, but Mickey has no independent named caller.
-func_80014BAC = 0x80014BAC; // type:func size:0x238 ROM 0x157ac tier-D (JFG src/track.c trackFadeFog, TU order, placeholder retained)
+trackFadeFog = 0x80014BAC; // type:func size:0x238 ROM 0x157ac tier-D (JFG src/track.c trackFadeFog, TU order, placeholder retained), name tier-B JFG src/track.c order+named anchors trackSetFogOff/trackMakePolylist, JFG signature equal
 
 // No public name adopted: JFG's `initSky` supplies the body structure at this
 // established TU position, while Mickey proves its revision-specific guard.
@@ -1917,7 +1917,7 @@ func_8000C5F4 = 0x8000C5F4; // type:func size:0x684 ROM 0xd1f4 tier-D (JFG src/t
 
 // No name adopted: JFG's corresponding `trackGetSky` is only a tier-D TU
 // position argument. Mickey's address placeholder is retained for the exact C.
-func_8000D00C = 0x8000D00C; // type:func size:0xC ROM 0xdc0c
+trackGetSky = 0x8000D00C; // type:func size:0xC ROM 0xdc0c, name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
 
 // No public name adopted: JFG's assembly-only `func_800135E0` supplies the
 // camera/update role and TU position. Now matched in C (tier A byte-identity):
@@ -1929,35 +1929,36 @@ func_8000D018 = 0x8000D018; // type:func size:0x154 ROM 0xdc18 tier-A byte-ident
 // No public name adopted: JFG's corresponding `trackAddTextureScroll` is a
 // tier-D TU-position identification only. Mickey's placeholder is retained;
 // all 19 words and the two HI16/LO16 relocation pairs are exact.
-func_8000D16C = 0x8000D16C; // type:func size:0x4C ROM 0xdd6c
-func_8000D1B8 = 0x8000D1B8; // type:func size:0x200 ROM 0xddb8 tier-A, matched C src/main/track.c -O2 -mips2 -32 -Wab,-r4300_mul, packed texture-scroll apply, linked exact=128/128
+trackAddTextureScroll = 0x8000D16C; // type:func size:0x4C ROM 0xdd6c, name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG, JFG size 0x4C equal
+trackUpdateTextureScroll = 0x8000D1B8; // type:func size:0x200 ROM 0xddb8 tier-A, matched C src/main/track.c -O2 -mips2 -32 -Wab,-r4300_mul, packed texture-scroll apply, linked exact=128/128, name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
+trackLightAllocate = 0x8000D3B8; // type:func size:0x1B8 ROM 0xdfb8 matched C, name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
 
 // No public name adopted: JFG's assembly-only `trackLightFreeMem` supplies
 // tier-D role/TU and control-flow context; Mickey proves the exact C body.
-func_8000D570 = 0x8000D570; // type:func size:0xBC ROM 0xe170 tier-D (JFG src/track.c trackLightFreeMem role, placeholder retained)
+trackLightFreeMem = 0x8000D570; // type:func size:0xBC ROM 0xe170 tier-D (JFG src/track.c trackLightFreeMem role, placeholder retained), name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
 
 // No public name adopted: JFG's assembly-only `trackLightAdd` supplies the
 // tier-D role/TU and 0x80-byte stride; Mickey proves the typed body.
-func_8000D62C = 0x8000D62C; // type:func size:0xFC ROM 0xe22c tier-D (JFG src/track.c trackLightAdd role, placeholder retained)
+trackLightAdd = 0x8000D62C; // type:func size:0xFC ROM 0xe22c tier-D (JFG src/track.c trackLightAdd role, placeholder retained), name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG, JFG size 0xFC equal
 
 // No public name adopted: JFG's corresponding `trackLightDelete` is a tier-D
 // TU-position identification only. Mickey's placeholder is retained; all 16
 // words and the D_800792FC HI16/LO16 relocation pair are exact.
-func_8000D728 = 0x8000D728; // type:func size:0x40 ROM 0xe328
+trackLightDelete = 0x8000D728; // type:func size:0x40 ROM 0xe328, name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG, JFG size 0x40 equal
 
 // No public name adopted: JFG's corresponding `trackLightColour` is an
 // assembly-only tier-D role/TU-position comparison. Mickey proves this body.
-func_8000D768 = 0x8000D768; // type:func size:0x90 ROM 0xe368 tier-D (JFG src/track.c trackLightColour role, placeholder retained)
+trackLightColour = 0x8000D768; // type:func size:0x90 ROM 0xe368 tier-D (JFG src/track.c trackLightColour role, placeholder retained), name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
 
 // No public name adopted: JFG's corresponding `trackLightMove` is a tier-D
 // TU-position identification only. Mickey's placeholder is retained; all 10
 // words are exact and the function has no relocation records.
-func_8000D7F8 = 0x8000D7F8; // type:func size:0x28 ROM 0xe3f8
+trackLightMove = 0x8000D7F8; // type:func size:0x28 ROM 0xe3f8, name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
 func_8000D820 = 0x8000D820; // type:func size:0x158 ROM 0xe420 tier-A, matched C src/main/track.c -O2 -mips2 -32 -Wab,-r4300_mul, lighting dirty-mask copy, linked exact=86/86
 
 // No public name adopted: JFG's assembly-only `trackUpdateLighting` supplies
 // tier-D role/TU context; Mickey proves the revised module path and exact C.
-func_8000D978 = 0x8000D978; // type:func size:0x1BC ROM 0xe578 tier-D (JFG src/track.c trackUpdateLighting role, placeholder retained)
+trackUpdateLighting = 0x8000D978; // type:func size:0x1BC ROM 0xe578 tier-D (JFG src/track.c trackUpdateLighting role, placeholder retained), name tier-B JFG src/track.c order after named trackSkySet, sizes track JFG
 
 // No public name adopted: Mickey's extracted boundary and sole track caller
 // establish this priority-sort helper; the placeholder is retained.
@@ -2048,7 +2049,7 @@ func_800147A4 = 0x800147A4; // type:func size:0x13C ROM 0x153a4
 
 // DKR's public `obj_loop_fogchanger` supplies the adapted body; JFG's
 // assembly-only `trackChangeFog` supplies independent tier-D TU context.
-func_800148E0 = 0x800148E0; // type:func size:0x2CC ROM 0x154e0 tier-D (DKR src/tracks.c body adapted, placeholder retained)
+trackChangeFog = 0x800148E0; // type:func size:0x2CC ROM 0x154e0 tier-D (DKR src/tracks.c body adapted, placeholder retained), name tier-B JFG src/track.c order+named anchors trackSetFogOff/trackMakePolylist
 
 // No public name adopted: this Mickey-only helper builds a transform from the
 // current track rotation and caches one transformed point.

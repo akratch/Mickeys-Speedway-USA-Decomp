@@ -2477,7 +2477,7 @@ void func_80006FA0(void) {
 }
 extern void amSndStopXYZ(void *object);
 extern void func_80005798(void *object);
-extern void func_8000D728(void *object);
+extern void trackLightDelete(void *object);
 extern void camlightDelete(void *object);
 extern void partObjFreeTriggers(void *object);
 extern void partNullifyCircularParticleParents(void *object);
@@ -2682,7 +2682,7 @@ void func_80007118(u8 *object, s32 unused) {
             }
             value = *(void **)(linkedPayload + 0x2C);
             if (value != NULL) {
-                func_8000D728(value);
+                trackLightDelete(value);
             }
             break;
         case 9:
@@ -2867,7 +2867,7 @@ extern void spranimOnceControl(void *object, s32 updateRate);
 extern void spranimControl(void *object, s32 updateRate);
 extern void texscrollControl(void *object, s32 updateRate);
 extern void effectboxControl(void *object, s32 updateRate);
-extern void func_800148E0(void *object);
+extern void trackChangeFog(void *object);
 extern void func_8001B798(void *object, s32 updateRate);
 extern void func_8001BB04(void *object, s32 updateRate);
 extern void func_8001BB10(void *object, s32 updateRate);
@@ -4962,7 +4962,7 @@ void func_8000AEEC(void *rawObject, s32 updateRate) {
             TrapDanglingJump(object, updateRate); /* Overlay 93 +0x1C. */
             break;
         case 4:
-            func_800148E0(object);
+            trackChangeFog(object);
             break;
         case 26:
             TrapDanglingJump(object, updateRate); /* Overlay 69 +0x4C. */

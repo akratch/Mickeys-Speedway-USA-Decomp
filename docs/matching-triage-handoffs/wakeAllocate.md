@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: Unchanged at 16; natural counts lose the dead copies (-8), declaration order does not move spill cells. Left: the pre-call spill ladder.
+- summary: Unchanged at 16; uoptlist: no carrier or region boundary moves the conversion's creation out of its own block-0 statement. Left: the pre-call spill ladder.
+
+Summary before this remeasure: Unchanged at 16; natural counts lose the dead copies (-8), declaration order does not move spill cells. Left: the pre-call spill ladder.
 
 Summary before this remeasure: Unchanged at 16; slot trace, natural count product and lever sweep flat. Left: the pre-call spill ladder (web creation order).
 
@@ -749,4 +751,63 @@ Base re-measured: 16 masked at size 0, aligned 335/0/16/0.
   assertion); the instrumented cc writes uoptlist.
 
 Cycle-21 line unchanged from lane s-2.
+
+#### 2026-10-09, lane v-2: where the conversion is first created, read from uoptlist (no change, 16)
+
+Measured by tools/bank.py: masked 16 (raw 16), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 335, register naming 0, immediate only 16, really different 0.
+
+No source change; the 16 body is kept (16 masked at size 0, aligned 335/0/16/0).
+
+Method: whole fx.c compiled with the instrumented cc and `-Wo,-zdbug:2`
+(the TU's own flags, `-Wab,-r4300_mul` included), the expression table
+printed after REMOVAL OF REDUNDANT STORES read for the bit of
+`ucvt(umpy(wakeValue88, 60.0))`; every cell also scored with fast_score.
+uoptlist and the objects stay in private scratch.
+
+- Base: the conversion is bit 5 (block 0), as s-2 recorded.
+- A float local `frames = wakeValue88 * 60.0f;` in block 0 with every
+  integer count after the alpha branch (frames read as `(s32) frames`), or
+  with frames itself assigned after the branch: the conversion is created
+  in the call block at bit 19, still ahead of the vertex loop. Size moves
+  (target-only words at +0x50).
+- frameCount, segmentCount, groupCount and triCount as symbols defined in
+  block 0 from each other, with nothing, `if (1) {}`, `do {} while (0);` or
+  a label between the frameCount definition and the rest (4 cells): the
+  conversion stays bit 5 (it is in frameCount's own statement); 18 masked at
+  0 for all four (aligned 333/2/16/0).
+- `frames` (f32) assigned in block 0, then `frameCount = frames;` behind the
+  same four separators (4 cells): `if (1) {}` and `do {} while (0);` do stop
+  block-local forward substitution (the table then holds `ucvt(frames)` at
+  bit 8 and the full conversion is first created at bit 112, at the later
+  explicit `(s32) (wakeValue88 * 60.0f)`), but the float symbol is not copy
+  propagated afterwards; 40 masked at 0 (immediate 38). A label and nothing
+  leave it at bit 8 as a substitution. So a region boundary is a working
+  way to keep an expression out of block 0's table, but not with a float
+  carrier.
+- The doubled count spelled `* 2`, `<< 1` or `x + x` in block 0, crossed
+  with the doubled copy taken from groupCount or rebuilt from j as
+  `j * 2`, `j << 1`, `j + j` (12 cells, shape_product): `* 2` and `<< 1`
+  identical (16); `x + x` 17; every rebuilt copy 55 to 56 at 0.
+- An integer carrier behind the same separators (`frameCount = wakeValue88
+  * 60.0f;`, then `do {} while (0);` or `if (1) {}`, then the counts from
+  `(frameCount + 5) >> 1`; 3 cells with the no-separator control): the
+  separator keeps block 0b's table entries over the frameCount symbol
+  (`frameCount + 5` at bit 9) and the full segment expression is first
+  created at bit 106 by the later explicit spelling, but frameCount is not
+  copy propagated into them either, and the conversion stays bit 5 in its
+  own statement. 18 masked at 0 for all three (aligned 333/2/16/0); the
+  ladder (immediate 16) does not move.
+
+Cycle-21 line: decision variable unchanged (first-creation index of the
+conversion, segment and doubled expressions against the vertex loop's
+unrolled (i + 2)/(i + 3) at 191/195). What is now ruled out: any carrier
+(float or integer symbol, with or without a region boundary) leaves the
+conversion in its own block-0 statement, and copy propagation substitutes
+neither carrier. So the conversion's bit is fixed by the first statement
+that converts, and the target's late bit needs that statement to come after
+the vertex loop in IR order. Next: read which pass reorders or re-enters
+expressions between the unroller and REMOVAL OF REDUNDANT STORES (the
+table is printed after it) on the target-shaped question "can a block-0
+statement be entered after the loops", e.g. with the slot-trace uopt on a
+mini TU that defines a value before a call and a counted loop after it.
 <!-- plateau-handoff:wakeAllocate:end -->

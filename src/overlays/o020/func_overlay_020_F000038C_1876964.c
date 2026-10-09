@@ -199,6 +199,6 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
  * frame: 0x40
  * relocations: 3
  * first-mismatch: +0x224
- * summary: 10 at 0. Fresh walking local priced: save into (100,145] (bias -40) 22, plus group before v1 division 16; cut oracle cannot move the copy
+ * summary: 10 at 0. Forced cuts on the idx body never reach save (100,145] (nocs counts referencing blocks); bias-oracle lever sweep and four natural products flat
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

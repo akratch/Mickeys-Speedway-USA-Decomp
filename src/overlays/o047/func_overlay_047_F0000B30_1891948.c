@@ -226,14 +226,15 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
     s32 barX;
     s32 stat;
-    /* The icon packet's own colour channels, declared above x and y: these
-     * three cells put every home from x down where the target's are (lane
-     * s-4 found them as unused pads, 302 -> 291; giving the icon packet its
-     * own channels instead of the blend's, 291 -> 289, lane t-5). */
-    s32 iconRed, iconGreen, iconBlue;
+    /* Three unused cells above x and y put every home from x down where the
+     * target's are (lane s-4, 302 -> 291). Flagged: no used local found. */
+    s32 padA, padB, padC;
 
     s32 x, y;
     s32 red, green, blue;
+    /* u8: each narrowing spends the ring draw the target spends, and as1
+     * folds the mask into the packet's (lane v-4, 237 -> 174 aligned). */
+    u8 iconRed, iconGreen, iconBlue;
     s32 showMode;
     f32 movement;
     s32 back;
@@ -610,15 +611,11 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         O47_COMMAND(0x01000040, O47_PHYSICAL(savedMatrix));
         if (selected != -1 && !D_800D3058[selected].ready) {
             O47_COMMAND(0x06000000, ov47Data_2A8);
-            red = ov47Data_3DC[selected] >> 24;
+            red = (ov47Data_3DC[selected] >> 24) & 255;
             green = (ov47Data_3DC[selected] >> 16) & 255;
-            blue = ov47Data_3DC[selected] >> 8;
-            /* Red and blue masked in place, green masked at the load: the
-             * masks are ring temporaries and green keeps the shipped copy. */
-            red &= 255;
+            blue = (ov47Data_3DC[selected] >> 8) & 255;
             red = red + (255 - red) * ov47Data_540;
             green = green + (255 - green) * ov47Data_540;
-            blue &= 255;
             blue = blue + (255 - blue) * ov47Data_540;
             O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
             O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
@@ -746,10 +743,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 249/2168 words
+ * score: 118/2168 words
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 237 aligned at size 0 (masked 249): one index per loop family (i, j), colour index its own local; ring phase (~150 rows) and head window left.
+ * summary: 117 aligned at size 0 (masked 118): icon channels u8, blend channels masked at the load; pads above x flagged. Open: head, channel colours, blend.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

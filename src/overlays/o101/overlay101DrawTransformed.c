@@ -76,7 +76,9 @@ void overlay101SubmitTransformReloc(Overlay101Gfx **displayList, void *matrix,
  * nested-assignment carriers at the second and fourth commands restore the
  * temporary ring that move rotates.  `right` and `bottom` are declared and
  * unused on purpose -- they reserve the two stack homes the shipped frame has
- * between `new_var2` and `command` [L121].
+ * between `syncCommand` and `command` [L121]. `primColorCommand` and
+ * `syncCommand` are those two carriers, named for their packets (the
+ * permuter's `new_var` and `new_var2`; lane c-5, 2026-10-09).
  */void overlay101DrawTransformed(Overlay101Gfx **displayList, void *matrix,
                                void *vertices, Overlay101DrawNode *node,
                                Overlay101TransformElement *element) {
@@ -88,8 +90,8 @@ void overlay101SubmitTransformReloc(Overlay101Gfx **displayList, void *matrix,
     s32 screenHeight;
     s32 rotated;
     Overlay101Transform transform;
-    Overlay101Gfx *new_var;
-    Overlay101Gfx *new_var2;
+    Overlay101Gfx *primColorCommand;
+    Overlay101Gfx *syncCommand;
     s32 right;
     s32 bottom;
     Overlay101Gfx *command;
@@ -110,7 +112,7 @@ void overlay101SubmitTransformReloc(Overlay101Gfx **displayList, void *matrix,
         command = (*displayList)++;
         command->w1 = 0;
         command->w0 = 0xE7000000;
-        command = (new_var = (*displayList)++);
+        command = (primColorCommand = (*displayList)++);
         command->w0 = 0xFA000000;
         command->w1 = (element->color & 0xFF) | 0xFFFFFF00;
         command = (*displayList)++;
@@ -130,7 +132,7 @@ void overlay101SubmitTransformReloc(Overlay101Gfx **displayList, void *matrix,
                                        element->color);
         if (element->scale == 1.0f)
             overlay101SetTransformModeReloc(1);
-        command = (new_var2 = (*displayList)++);
+        command = (syncCommand = (*displayList)++);
         command->w1 = 0;
         command->w0 = 0xE7000000;
         command = (*displayList)++;

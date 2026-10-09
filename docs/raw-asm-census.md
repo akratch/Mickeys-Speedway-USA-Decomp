@@ -78,3 +78,54 @@ The range stays unlisted. Listing it would still not prove: the eight
 (`ambiguous metadata symbol rename identities`, covered by
 `tools/test_reloc_identity.py`). No new proof step was added. The
 scoreboard is not hand-edited.
+
+## Retail revision reference search (2026-10-09)
+
+A diagnostic search extended the existing five-project object census to owned
+retail revisions. It compared nine established contiguous ranges from
+`trackasm`, `shadows_fp_19144`, `weather_snow_asm`, `conv_mult_matrix`, and
+`gen_anim_data`: 9,380 executable bytes in total, excluding their reviewed
+alignment. The four track routines and two snow routines were compared
+separately. Mickey's configured objects supplied only the R_MIPS_26, HI16 and
+LO16 masks; resolved PC-relative branch fields stayed fixed. Each target first
+passed comparison against its own linked ROM range.
+
+The initial search of uncompressed bytes covered sixteen retail archives:
+three Banjo-Kazooie revisions, two Conker revisions, five Diddy Kong Racing
+revisions, Jet Force Gemini Europe and Star Twins Japan, and four Perfect Dark
+revisions. It found no exact masked target. That result alone says nothing
+about compressed code, so a second search decoded the relevant retail streams:
+
+| Reference | Compressed-code coverage | Result |
+|---|---|---|
+| Banjo-Kazooie US and Europe | All 32 code/data streams listed for each revision by the reference ROM decompressor; also all successfully decoded, declared-size-checked 1172 streams | No target hit |
+| Banjo-Kazooie US Rev 1 | Successfully decoded, declared-size-checked 1172 streams; no independent complete code-layout claim | No target hit |
+| Conker US and Europe | All 507 code chunks in each retail offset table, joined in table order; terminal offsets agree with each reference configuration | No target hit |
+| Perfect Dark US, US Rev 1, Europe and Japan | Complete game offset tables (442, 442, 444 and 443 pages respectively), every page checksum checked, plus reconstructed libraries | No target hit |
+
+The Conker and Perfect Dark comparisons included functions crossing compressed
+page boundaries. The same scanner found the already-verified 160-byte
+`mtxf_transform_point` in both reconstructed Conker code images as a positive
+control. Decompression required a complete deflate stream and agreement with
+its declared output size; searching for a compression marker alone was not
+accepted as coverage.
+
+Format authority was the permitted public projects' tooling:
+Banjo-Kazooie `tools/bk_rom_compressor/src/decomp/main.rs` and
+`tools/rareunzip.py` at `6eaae281481c9e4b367dc161faabfc3c79fe8733`;
+Conker `tools/splat_ext/rzip.py`, `tools/rareunzip.py`, and the US/EU game
+configurations at `3adf229175c037c771f251f169f9dd80ca306924`;
+Perfect Dark `tools/extract-segment` and `tools/mkrom/game.c` at
+`169ed48bdcbfb3b568b028bd5bebb27680073514`. These supplied format facts,
+not replacement Mickey source. Diagnostic scripts, archive identities,
+decoded images and reports remain ignored under `build/research/` in the
+reference-research lane.
+
+This closes a specific compressed-retail search gap, not the authentication
+question. It does not prove absence from every revision, every compression
+format, or every possible reference routine boundary. In particular,
+`gen_anim_data` was searched as its established full run, not as independently
+creditable helpers. No function, boundary, provenance tier, or verified-assembly
+credit changed. Another search needs a new permitted revision, a demonstrated
+coverage gap, or a separately justified routine extent; repeating the same
+covered images is not a new lead.

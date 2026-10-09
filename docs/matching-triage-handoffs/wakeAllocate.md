@@ -6,7 +6,7 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: 14 at 0: float frames local behind if(1) numbers conversion/segment after the loop temps; doubled still created before the sample and 0x14 terms
+- summary: 14 at 0: copy propagation walks blocks in reverse; the second fill loop's guard creates the doubled entry before the sample and 0x14 terms
 
 Summary before this remeasure: Unchanged at 16; spill slots go to the first non-overlapping slot, so the top three cells have owners numbered below the conversion
 

@@ -626,9 +626,9 @@
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {
-      "ledger_commit": "7eee82f46d96fd7930784785c246ea05b6818fd4",
-      "reason": "2026-10-09: explicit otherCursor induction from i + 1 versus j on faithful displacement shape; measure i + 1 piece cost, pairIndex growth and constant-3 preservation. Prior counter swaps/forced spills did not test this origin.",
-      "source_commit": "9a446be6f8c30d003018630f3c1db7018cbad018"
+      "ledger_commit": "c315f198053773ad5f341c2af476777283d9965f",
+      "reason": "Move the outer pair-loop i increment into j = ++i after fixed pairs, removing its separate latch expression; test whether the i+1 piece loses its colored lifetime while preserving target constant-3 and pairIndex growth.",
+      "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
       "ledger_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f",

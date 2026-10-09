@@ -224,12 +224,12 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
     s32 x, y;
     s32 red, green, blue;
-    /* Unused: with the three above x, the frame's fourth unexplained cell
-     * (lane v-4). Flagged. */
-    s32 padD;
     s32 showMode;
     f32 movement;
     s32 back;
+    /* Unused: with the three above x, the frame's fourth unexplained cell
+     * (lane v-4: here 67, after blue 74). Flagged. */
+    s32 padD;
     f32 oldFrame;
     f32 frame;
     Overlay47Player *p2;
@@ -245,6 +245,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     Overlay47Player *player;
     Overlay47TextureScroll *scroll;
     Overlay47Icon *icon;
+    /* Unused: the cell between the declared homes and the spill temps
+     * (lane v-4, 67 -> 59, every home and temp now at the target's offset).
+     * Flagged, like the other four pads. */
+    s32 padE;
 
     rate = updateRate;
     ov47Bss_30B = 0;
@@ -738,10 +742,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 74/2168 words
+ * score: 59/2168 words
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 74 aligned at size 0 (masked 74): shared masked channels, every command word 0 first; four unused frame cells flagged. Open: head, s7 to s8, frame shift.
+ * summary: 59 aligned at size 0 (masked 59): every frame home exact; five unused s32 cells flagged. Open: head cursor fp, +0x400, s7 to s8 at +0x1C00.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

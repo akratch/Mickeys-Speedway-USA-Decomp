@@ -129,11 +129,23 @@ objdiff needs linked, sectioned object files, not a ROM binary blob.
 expected/build`; re-run it whenever `build/` changes, or the report compares
 against a stale target.
 
-`objdiff.json` (committed) lists one `unit` per built object:
-`tools/gen_objdiff_config.py` regenerates it from whatever's currently under
-`build/` (`*.o`, excluding `build/permuter/` and `build/wb/` scratch), and
-`tools/objdiff_report.sh` calls it automatically when `build/` looks newer
-than the existing config.
+`objdiff.json` (committed) is derived, not hand-edited, by
+`tools/objdiff_config.py` (`gmake objdiff-config`) from `mickey.us.yaml`
+(every `c` subsegment), the overlay atlas `config/overlays.us.json`
+(each module's C sources), and the split tree (`asm/**/*.s`,
+`assets/**/*.bin`, found the way the Makefile finds them). It does not read
+`build/`, so it works before anything is compiled. C units carry a
+`base_path`, `source_path`, `complete` (false while a `#pragma GLOBAL_ASM`
+remains) and `scratch.c_flags` taken from a `gmake -nB` dry run, so per-TU
+overrides are included. Assembly-only units carry no `base_path`, so objdiff
+scores them 0 and does not count them as decompiled. Progress categories are
+`resident`, `overlay`, `libultra`, plus `overlay-oNNN` per module. A `.c`
+under `src/` that neither the yaml nor the atlas names is an orphan and gets
+no unit. `gmake check-objdiff-config` fails on drift and is part of
+`tools/gates.sh --promotion`. `tools/gen_objdiff_config.py` remains as a
+wrapper that prints the config with the local exclusion list applied, for
+`tools/objdiff_report.sh` and `tools/nm_ranking.py`; the report script
+restores the canonical file when it exits.
 
 ### The trimmed-object exclusion list
 

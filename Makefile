@@ -470,6 +470,18 @@ check-overlay-syms:
 	@$(MAKE) --no-print-directory $(OVERLAY_SYM_OBJECTS)
 	$(HOST_PYTHON) $(TOOLS_DIR)/reloc_surface.py generate --check
 
+# objdiff.json is derived from mickey.us.yaml, the overlay atlas and the split
+# tree (tools/objdiff_config.py), never hand-edited and never from build/.
+# `check-objdiff-config` fails on drift; it needs `gmake extract` but no
+# compiled objects, and is a promotion gate (tools/gates.sh --promotion).
+objdiff-config:
+	@$(MAKE) --no-print-directory $(SPLAT_STAMP)
+	$(PYTHON) $(TOOLS_DIR)/objdiff_config.py
+
+check-objdiff-config:
+	@$(MAKE) --no-print-directory $(SPLAT_STAMP)
+	$(PYTHON) $(TOOLS_DIR)/objdiff_config.py --check
+
 # Every overlay decomp pass starts with the DKR v77/v80 and JFG object scans in
 # this ledger. The ordinary target validates the committed 107-row-per-donor
 # report without needing the out-of-tree builds. Refresh and reproducibility
@@ -1463,7 +1475,7 @@ $(TARGET).z64: $(TARGET).bin $(CRC)
 	fi
 	@ls -l $@
 
-.PHONY: default all setup hooks extract prune-asm verify cleanroom system-health check-tooling forced-floor-census promotion-proof check-promotion-proofs release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
+.PHONY: default all setup hooks extract prune-asm verify cleanroom system-health check-tooling forced-floor-census promotion-proof check-promotion-proofs release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms objdiff-config check-objdiff-config overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
 .SECONDARY:
 SHELL = /bin/bash -e -o pipefail
 

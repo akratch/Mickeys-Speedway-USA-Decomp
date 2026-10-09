@@ -4004,6 +4004,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 630 at size 0: six case-local values share locals (merge scan); 0x4B byte in a3. 0x4B sext: target truncation is a ring temp; no store form found.
+ * summary: Aligned 630 at size 0. 0x4B: the chained store is the target's case; it loses the 6000/D_8007D6A4 break pieces (-736), one interference short.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

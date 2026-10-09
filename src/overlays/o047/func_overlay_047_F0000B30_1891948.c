@@ -226,10 +226,11 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
     s32 barX;
     s32 stat;
-    /* Three unused cells above x and y: the target's homes from x down sit
-     * 0xC lower than ours (lane s-4, frame_census); with p3 and the trailing
-     * pad dropped the frame stays 0x280 (302 -> 291 aligned). */
-    s32 padA, padB, padC;
+    /* The icon packet's own colour channels, declared above x and y: these
+     * three cells put every home from x down where the target's are (lane
+     * s-4 found them as unused pads, 302 -> 291; giving the icon packet its
+     * own channels instead of the blend's, 291 -> 289, lane t-5). */
+    s32 iconRed, iconGreen, iconBlue;
 
     s32 x, y;
     s32 red, green, blue;
@@ -586,11 +587,11 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
          * operand's reload, so unready keeps its register (lane k-8). */
         O47_COMMAND(0x01000040, O47_PHYSICAL(D_800D3144));
         D_800D3144++;
-        red = ov47Data_3DC[i] >> 24;
-        green = ov47Data_3DC[i] >> 16;
-        blue = ov47Data_3DC[i] >> 8;
+        iconRed = ov47Data_3DC[i] >> 24;
+        iconGreen = ov47Data_3DC[i] >> 16;
+        iconBlue = ov47Data_3DC[i] >> 8;
         O47_COMMAND(0x06000000, ov47Data_300);
-        O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
+        O47_COMMAND(0xFA000000, ((iconRed & 255) << 24) | ((iconGreen & 255) << 16) | ((iconBlue & 255) << 8) | 255);
         O47_COMMAND_W1(0xFCFFFFFF, 0xFFFDF6FB);
         O47_VERTICES(ov47Data_198, 4);
         O47_COMMAND_W1(0x05100020, O47_PHYSICAL(ov47Data_1C0));
@@ -743,10 +744,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 313/2168 words
+ * score: 311/2168 words
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 291 aligned at size 0 (masked 313): 0xC home shift fixed by unused cells above x; colour index in i a stand-in. Open: i vs actor, ring phase (68 rows).
+ * summary: 289 aligned at size 0 (masked 311): icon channels in own locals; ring phase priced at 66 rows (channels via ring temps); colour index in i a stand-in.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

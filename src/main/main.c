@@ -316,7 +316,7 @@ extern void rcpInitDp(Gfx **);
 extern void rcpClearScreen(Gfx **, Mtx **, s32);
 extern s32 rcpWaitDP(void);
 extern void bgdraw_fillcolour(s32, s32, s32);
-extern void func_80021C88(s32, s32, s32, s32, s32);
+extern void camSetUserView(s32, s32, s32, s32, s32);
 extern void camEnableUserView(s32, s32);
 extern void camDisableUserView(s32, s32);
 extern void diRcpTraceReset(void);
@@ -335,8 +335,8 @@ extern s32 func_800291E4(void);
 extern void func_800376CC(s32);
 extern void func_80038190(Gfx **, Mtx **, MainVertex **);
 extern void func_8005A770(void);
-extern void func_80024D00(s32);
-extern void func_800219D0(void);
+extern void camTick(s32);
+extern void camUserViewTick(void);
 extern void func_80027D14(s32);
 extern void func_8003C80C(s32);
 extern void func_8004D32C(void);
@@ -557,7 +557,7 @@ void func_80026FB4(void) {
 
     rcpInitDp(&D_800CF518);
     if (D_8007A128 != 0) {
-        func_80021C88(0, D_8007A12C, D_8007A130, D_8007A134, D_8007A138);
+        camSetUserView(0, D_8007A12C, D_8007A130, D_8007A134, D_8007A138);
         camEnableUserView(0, 1);
         bgdraw_fillcolour(0, 0, 0);
     }
@@ -617,9 +617,9 @@ void func_80026FB4(void) {
     }
     func_8005A770();
 
-    func_80024D00(D_8007A248);
+    camTick(D_8007A248);
 
-    func_800219D0();
+    camUserViewTick();
 
     func_80027D14(D_8007A248);
     if (D_800D6C44 != 0) {

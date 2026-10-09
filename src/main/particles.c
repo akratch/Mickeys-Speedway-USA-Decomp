@@ -28,10 +28,10 @@ s32 mathRnd(s32 minimum, s32 maximum);
 f32 sqrtf(f32 value);
 void mtxf_transform_dir(void *matrix, f32 *input, f32 *output, ParticleEmitterHeader *header);
 void camSetNo(s32 camera);
-void func_800221E8(void **dList, s32 arg1);
+void camSetView(void **dList, s32 arg1);
 void camPushModelMtx(Gfx **dList, s32 renderContext, ParticleRenderTransform *transform, f32 scale, f32 extra);
 void camRestoreModelMtx(Gfx **dList);
-void func_80023A08(Gfx **dList, s32 renderContext, void **vertices, CircularParticle *particle,
+void camDoSprite(Gfx **dList, s32 renderContext, void **vertices, CircularParticle *particle,
                    ParticleSpriteResource *resource, s32 flags, s32 intensity);
 void sprSetIA2ColOverride(u8 red, u8 green, u8 blue, u8 alternateRed, u8 alternateGreen, u8 alternateBlue);
 void sprClearIA2ColOverride(void);
@@ -320,7 +320,7 @@ s32 func_8003CE10(Gfx **dList, s32 renderContext, void **vertices, CircularParti
                     if (intensity != 0xFF) {
                         renderFlags = 6;
                     }
-                    func_80023A08(dList, renderContext, vertices, particle, resource, renderFlags, intensity);
+                    camDoSprite(dList, renderContext, vertices, particle, resource, renderFlags, intensity);
                     if (resource->flags & 0x200) {
                         sprClearIA2ColOverride();
                     }
@@ -2497,7 +2497,7 @@ void partDraw(Gfx **dList, s32 mtxList, s32 mode) {
         return;
     }
     camSetNo(0);
-    func_800221E8((void **)dList, mtxList);
+    camSetView((void **)dList, mtxList);
     func_8003D4FC((void **)dList, (void **)&vertices, D_800D4120[0]);
     func_8003D4FC((void **)dList, (void **)&vertices, D_800D4124);
     func_80041CE4(dList, &vertices);

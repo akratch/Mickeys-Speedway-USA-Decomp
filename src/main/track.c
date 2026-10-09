@@ -428,10 +428,10 @@ void func_80014DE4(void);
 void camStandardOrtho(Gfx **displayList, Mtx **matrix);
 void texDPInit(Gfx **displayList);
 void texDPTextureX(Gfx **displayList, void *texture, s32 mode, s32 flags);
-void func_800221E8(Gfx **displayList, Mtx **matrix);
+void camSetView(Gfx **displayList, Mtx **matrix);
 s32 camGetMode(void);
 s32 camGetNo(void);
-void func_80021FB0(s32 mode, s32 camera, s32 *left, s32 *bottom,
+void camGetWindowLimits(s32 mode, s32 camera, s32 *left, s32 *bottom,
                    u32 *right, u32 *top);
 void viGetCurrentSize(s32 *width, s32 *height);
 void *texFrame(TrackTextureHeader *texture, s32 frame);
@@ -547,8 +547,8 @@ extern void camDisableUserView();
 extern void camEnableUserView();
 extern void camSetNo();
 extern void doWeather();
-extern void func_800219D0(void);
-extern void func_80022D20();
+extern void camUserViewTick(void);
+extern void camResetView();
 extern void updateMixCycle();
 extern void diRcpTrace();
 extern void func_800534EC();
@@ -649,13 +649,13 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
     }
     if ((D_8007A128 != 0) && (temp_s2 == 1)) {
         camEnableUserView(0, 1);
-        func_800219D0();
+        camUserViewTick();
     }
     for (D_800C9534 = 0; D_800C9534 < temp_s2; D_800C9534++) {
         func_800147A4(D_800C9534);
         gDPPipeSync(D_800C9520++);
         camSetNo(D_800C9534);
-        func_800221E8(&D_800C9520, &D_800C9524);
+        camSetView(&D_800C9520, &D_800C9524);
         func_8000FF2C();
         if (temp_s2 < 3) {
             if (((TrackFrameLevel *) D_800792EC)->unk52 == 3) {
@@ -697,7 +697,7 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
         gSPClearGeometryMode(D_800C9520++, G_CULL_FRONT);
         gSPSetGeometryMode(D_800C9520++, G_CULL_BACK);
     }
-    func_80022D20(&D_800C9520);
+    camResetView(&D_800C9520);
     camDisableUserView(0, 1);
     gDPPipeSync(D_800C9520++);
     gMoveWd(D_800C9520++, 2, 0, 0);
@@ -946,7 +946,7 @@ void func_8000CC78(void) {
     TRACK_SP_VERTEX(D_800C9520++, (u32) vertices + 0x80000000, 4, 0);
     TRACK_SP_POLYGON(D_800C9520++, D_79330, 2, 0);
 
-    func_800221E8(&D_800C9520, &D_800C9524);
+    camSetView(&D_800C9520, &D_800C9524);
     topR = D_800792EC->topR;
     topG = D_800792EC->topG;
     topB = D_800792EC->topB;
@@ -954,7 +954,7 @@ void func_8000CC78(void) {
     bottomG = D_800792EC->bottomG;
     bottomB = D_800792EC->bottomB;
     viGetCurrentSize(&width, &height);
-    func_80021FB0(camGetMode(), camGetNo(), &left, &bottom, &right, &top);
+    camGetWindowLimits(camGetMode(), camGetNo(), &left, &bottom, &right, &top);
     width = (u32) width >> 1;
     height = (u32) height >> 1;
 

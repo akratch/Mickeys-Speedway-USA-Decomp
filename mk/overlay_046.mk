@@ -27,7 +27,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0000874_188EC6C.c.o: \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0000874_188EC6C.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym camStandardOrtho=camStandardOrtho_o046Reloc \
-		--redefine-sym func_80023F84=func_80023F84_o046Reloc \
+		--redefine-sym camDo2DSprite=camDo2DSprite_o046Reloc \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o046Reloc \
 		--redefine-sym func_8002F618=func_8002F618_o046Reloc \
 		--redefine-sym texDPInit=texDPInit_o046Reloc \
@@ -52,7 +52,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0001228_188F620.c.o: POS
 		--redefine-sym D_800D31C8=D_800D31C8_o046Reloc \
 		--redefine-sym amSndPlay=amSndPlay_o046Reloc \
 		--redefine-sym camStandardOrtho=camStandardOrtho_o046Reloc \
-		--redefine-sym func_80023A08=func_80023A08_o046Reloc \
+		--redefine-sym camDoSprite=camDoSprite_o046Reloc \
 		--redefine-sym func_8002A8BC=func_8002A8BC_o046Reloc \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o046Reloc \
 		--redefine-sym texDPTextureX=texDPTextureX_o046Reloc \
@@ -98,7 +98,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46UpdateTransition.c.o: POSTPROCESS
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		0xC:5:gOverlay46DisplayState \
 		0x14:6:gOverlay46DisplayState \
-		0x18:4:func_800221E8 \
+		0x18:4:camSetView \
 		0x20:5:gOverlay46DisplayState \
 		0x24:5:gOverlay46DisplayOutput \
 		0x28:6:gOverlay46DisplayOutput \

@@ -263,7 +263,7 @@ extern void func_8004B0F8(MenuCommand **displayList, s32 x, s32 y,
                           char *text, s32 alignmentFlags);
 extern void func_80009E78(MenuCommand **commands, void **matrices,
                           void **vertices, void *object);
-extern void func_80023F84(MenuCommand **commands, void **matrices,
+extern void camDo2DSprite(MenuCommand **commands, void **matrices,
                           void **vertices, void *transform, void *object,
                           s32 arg5, s32 arg6);
 extern void camPushModelMtx(MenuCommand **commands, void **matrices,
@@ -1082,7 +1082,7 @@ void func_80039E34(s32 index) {
                              ((D_8007C0AC & 0xFF) << 8) |
                              (D_8007C0BC & 0xFF));
             MENU_COMMAND(D_800D3140++, 0xFB000000, -0x100);
-            func_80023F84(&D_800D3140, &D_800D3144, &D_800D3148,
+            camDo2DSprite(&D_800D3140, &D_800D3144, &D_800D3148,
                           &stack.rotationY,
                           tex, D_8007C0B4,
                           D_8007C0BC);

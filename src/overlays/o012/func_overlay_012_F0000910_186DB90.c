@@ -30,7 +30,7 @@ extern void func_800084C4(Overlay12Gfx **displayList,
                           u32 secondary, s32 flags);
 extern void sprSetIA2ColOverride(u8 firstR, u8 firstG, u8 firstB,
                           u8 secondR, u8 secondG, u8 secondB);
-extern void func_80023CCC(Overlay12Gfx **displayList, s32 *matrix,
+extern void camDoSpriteDirect(Overlay12Gfx **displayList, s32 *matrix,
                           Overlay12Vertex **vertices, void *resource,
                           s32 x, s32 y, s32 z, s32 arg7, f32 scale,
                           f32 arg9, f32 frame, s32 mode,
@@ -223,7 +223,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             blue = ((color[2] * intensity) >> 13) & 0xFF;
             alpha = ((intensity * 255) >> 13) & 0xFF;
             sprSetIA2ColOverride(alpha, alpha, alpha, red, green, blue);
-            func_80023CCC(&displayList, &matrix, &vertices,
+            camDoSpriteDirect(&displayList, &matrix, &vertices,
                           gOverlay12Resource5,
                           (s32)effect->x0, (s32)effect->y0, (s32)effect->z0,
                           0, effect->value * 1.8f,
@@ -242,7 +242,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             blue = ((color[2] * intensity) >> 8) & 0xFF;
             alpha = ((intensity * 255) >> 8) & 0xFF;
             sprSetIA2ColOverride(alpha, alpha, alpha, red, green, blue);
-            func_80023CCC(&displayList, &matrix, &vertices,
+            camDoSpriteDirect(&displayList, &matrix, &vertices,
                           gOverlay12Resource5,
                           (s32)particle->x, (s32)particle->y, (s32)particle->z,
                           0, 4.0f, 1.0f, particle->velocity, 14, 255);

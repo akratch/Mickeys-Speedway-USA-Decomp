@@ -681,11 +681,11 @@ extern void *camGetRotationMtx(void);
 extern void *camGetProjOrgMtx(void);
 extern void mathOneFloatPY(void *, f32 *);
 extern void mtxf_transform_point(void *, f32, f32, f32, f32 *, f32 *, f32 *);
-extern s32 func_800246B0(f32, f32, f32, f32 *, f32 *, u8);
+extern s32 camProjectPoint(f32, f32, f32, f32 *, f32 *, u8);
 extern void sprSetIA2ColOverride(u8, u8, u8, u8, u8, u8);
 extern void sprClearIA2ColOverride(void);
 extern void func_80023598(void **, void *, void *, void *, void *, s32);
-extern void func_80023A08(void **, s32, s32, s16 *, s32, s32, s32);
+extern void camDoSprite(void **, s32, s32, s16 *, s32, s32, s32);
 extern f32 sqrtf(f32);
 
 typedef struct {
@@ -3393,9 +3393,9 @@ void func_800084C4(Objects084C4Gfx **displayListPtr, Objects084C4Vertex **vertex
     }
     displayList = *displayListPtr;
     vertices = *vertexPtr;
-    if (func_800246B0(clippedBX, clippedBY, clippedBZ,
+    if (camProjectPoint(clippedBX, clippedBY, clippedBZ,
                       &projectedBX, &projectedBY, 0) != 0) {
-        if (func_800246B0(clippedAX, clippedAY, clippedAZ,
+        if (camProjectPoint(clippedAX, clippedAY, clippedAZ,
                           &projectedAX, &projectedAY, 0) != 0) {
             deltaX = projectedAX - projectedBX;
             deltaY = projectedAY - projectedBY;
@@ -3726,7 +3726,7 @@ void func_80008B94(void *rawObject) {
         func_80023598((void **)&D_800C94B4, &D_800C94B8, &D_800C94BC,
                       object, resource, alpha);
     } else {
-        func_80023A08((void **)&D_800C94B4, (s32)&D_800C94B8,
+        camDoSprite((void **)&D_800C94B4, (s32)&D_800C94B8,
                       (s32)&D_800C94BC,
                       (s16 *)object, resource, flags, alpha);
     }
@@ -3787,7 +3787,7 @@ void func_80009220(void **displayListPtr, s32 vertexList, s32 triangleList, Obje
                 alpha = 0xFF;
             }
             sprSetIA2ColOverride(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0);
-            func_80023A08(displayListPtr, vertexList, triangleList, (s16 *)&segment,
+            camDoSprite(displayListPtr, vertexList, triangleList, (s16 *)&segment,
                           *object->unk40->unkAC, 4, alpha);
             sprClearIA2ColOverride();
             command = (*(Objects09220Gfx **)displayListPtr)++;

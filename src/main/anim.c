@@ -22,7 +22,7 @@ void func_80005768(AnimPathObject *object);
 void piRomLoadSection();
 u8 *levelGetLevel(void);
 void func_800511C4();
-void func_80021504(f32 value, s32 arg1);
+void camSetFOV(f32 value, s32 arg1);
 f32 sqrtf(f32 value);
 extern void amSndStopXYZ(void *handle);
 HitCopyState **func_80005750(s32 *count);
@@ -1972,7 +1972,7 @@ AnimCameraSource *func_80053420(s32 index, AnimCameraTarget *target) {
         target->unk0 = 0x8000 - source->unk0;
         target->unk2 = -source->unk2;
         target->unk4 = source->unk4;
-        func_80021504(D_8007D6B4, 0);
+        camSetFOV(D_8007D6B4, 0);
     }
     return source;
 }

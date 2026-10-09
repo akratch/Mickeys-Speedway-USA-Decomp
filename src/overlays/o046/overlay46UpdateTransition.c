@@ -7,7 +7,7 @@ extern s32 gOverlay46Timer5C;
 extern s16 gOverlay46Selection;
 extern s32 gOverlay46FadeOutput;
 
-extern void func_800221E8(void *state, s32 mode);
+extern void camSetView(void *state, s32 mode);
 extern void func_80022B94(void *state, void *output);
 extern s32 overlay41IsUnitScale(s32 index);
 extern void func_80028D30(s32 index);
@@ -19,7 +19,7 @@ void overlay46UpdateTransition(s32 updateRate) {
     s32 finished;
 
     finished = 0;
-    func_800221E8(gOverlay46DisplayState, 0);
+    camSetView(gOverlay46DisplayState, 0);
     func_80022B94(gOverlay46DisplayState, gOverlay46DisplayOutput);
 
     switch (gOverlay46Mode58) {

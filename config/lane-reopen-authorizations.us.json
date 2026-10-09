@@ -395,7 +395,7 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "c84e9d844b11f1fdaf5dbec258fceefe267eb1e9"
     },
-    "func_80024978": {
+    "camCopyOrthoMatrix": {
       "ledger_commit": "a79d1dee7826e3b690dd0a7c203ce1159ed546ae",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "a79d1dee7826e3b690dd0a7c203ce1159ed546ae"

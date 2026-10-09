@@ -46,7 +46,7 @@ Executable bytes exclude compiler alignment padding.
 | Commit | Mickey target(s) | JFG source role | Bytes |
 |---|---|---|---:|
 | `73cc0aa3` | `diRcpTraceGetInfo` | `diRcpTraceGetInfo` | 300 |
-| `16a48fa4` | `func_80024834` | `camReversePoint` | 260 |
+| `16a48fa4` | `camReversePoint` | `camReversePoint` | 260 |
 | `054ff552` | `atan2f` | maths source | 500 |
 | `05be7496` | `acosf` | maths source | 220 |
 | `2160316a` | `tableval`, `acoss`, `asins` | fixed-point arc helpers | 516 |
@@ -100,7 +100,7 @@ masked four-instruction-gram comparison topped out at 0.0683 Jaccard in the
 resident segment and 0.0498 in overlays. The completed camera source yielded
 the exact 260-byte reverse-point helper above, but did not solve the residual
 Mickey camera ranges at `func_80022FD4`, `func_80023598`, or
-`func_80024978`. The new `diRcpTrace` source yielded the exact 300-byte helper;
+`camCopyOrthoMatrix`. The new `diRcpTrace` source yielded the exact 300-byte helper;
 its large crash-controller peer remains assembly-only in JFG. These are
 negative closure results, not partial matches.
 

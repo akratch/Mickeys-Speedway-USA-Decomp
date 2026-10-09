@@ -1695,7 +1695,7 @@ identities and no other record in its owned range. Current linked equality
 still proves fallback only.
 
 Resident `func_800498FC` owns five exact static records: a HI16/LO16 pair to
-`D_800D5F58` at `+0x2C/+0x30`, calls to `func_80021FB0` at `+0x88/+0xC4`,
+`D_800D5F58` at `+0x2C/+0x30`, calls to `camGetWindowLimits` at `+0x88/+0xC4`,
 and a call to `camGetMode` at `+0x9C`. The retained exact-sized candidate
 reproduces every offset, type, and symbol identity. The resident comparison now
 authenticates `0x800498FC..0x80049A8C` against the canonical fallback object and

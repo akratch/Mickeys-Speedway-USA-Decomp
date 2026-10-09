@@ -731,7 +731,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_800084C4=func_800084C4_o012Reloc \
-		--redefine-sym func_80023CCC=func_80023CCC_o012Reloc \
+		--redefine-sym camDoSpriteDirect=camDoSpriteDirect_o012Reloc \
 		--redefine-sym func_80024938=func_80024938_o012Reloc \
 		--redefine-sym texDPTextureX=texDPTextureX_o012Reloc \
 		--redefine-sym sprSetIA2ColOverride=sprSetIA2ColOverride_o012Reloc \
@@ -1311,7 +1311,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: POSTPROCESS = \
 		--redefine-sym camStandardOrtho=camStandardOrtho_o056Reloc \
 		--redefine-sym frontGet2PlayerSplit=frontGet2PlayerSplit_o056Reloc \
 		--redefine-sym func_80005750=func_80005750_o056Reloc \
-		--redefine-sym func_80024978=func_80024978_o056Reloc \
+		--redefine-sym camCopyOrthoMatrix=camCopyOrthoMatrix_o056Reloc \
 		--redefine-sym func_80028F54=func_80028F54_o056Reloc \
 		--redefine-sym func_8002A604=func_8002A604_o056Reloc \
 		--redefine-sym func_8002A82C=func_8002A82C_o056Reloc \
@@ -1806,7 +1806,7 @@ $(O45_RENDER_OBJ): POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym texDPInit=overlay45DisplayCallReloc \
 		--redefine-sym func_8004B0A4=overlay45FontCallReloc \
-		--redefine-sym func_800221E8=overlay45MatrixPushReloc \
+		--redefine-sym camSetView=overlay45MatrixPushReloc \
 		--redefine-sym func_80022A50=overlay45MatrixLoadReloc \
 		--redefine-sym func_8004B0B8=overlay45ColorCallReloc \
 		--redefine-sym func_8002997C=overlay45RandomRangeReloc \
@@ -1878,11 +1878,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000B30_1891948.c.o: POS
 		--redefine-sym fontColour=fontColour_o047Reloc \
 		--redefine-sym func_80006EA0=func_80006EA0_o047Reloc \
 		--redefine-sym func_8001398C=func_8001398C_o047Reloc \
-		--redefine-sym func_80021504=func_80021504_o047Reloc \
-		--redefine-sym func_800221E8=func_800221E8_o047Reloc \
-		--redefine-sym func_80023F84=func_80023F84_o047Reloc \
-		--redefine-sym func_800246B0=func_800246B0_o047Reloc \
-		--redefine-sym func_80024978=func_80024978_o047Reloc \
+		--redefine-sym camSetFOV=camSetFOV_o047Reloc \
+		--redefine-sym camSetView=camSetView_o047Reloc \
+		--redefine-sym camDo2DSprite=camDo2DSprite_o047Reloc \
+		--redefine-sym camProjectPoint=camProjectPoint_o047Reloc \
+		--redefine-sym camCopyOrthoMatrix=camCopyOrthoMatrix_o047Reloc \
 		--redefine-sym func_8002A604=func_8002A604_o047Reloc \
 		--redefine-sym func_8002A82C=func_8002A82C_o047Reloc \
 		--redefine-sym func_8002FB34=func_8002FB34_o047Reloc \

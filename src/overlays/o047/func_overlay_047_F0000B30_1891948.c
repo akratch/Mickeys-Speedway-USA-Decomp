@@ -160,13 +160,13 @@ extern void amSndStop(void *handle);
 extern void func_80006EA0(void *object);
 extern void func_8005AD64(void *object, s32 frame, s32 index, f32 value);
 extern s32 func_8005ABA8(void *object, f32 speed, f32 updateRate);
-extern s32 func_800246B0(f32 x, f32 y, f32 z, f32 *screenX, f32 *screenY, u8 mode);
+extern s32 camProjectPoint(f32 x, f32 y, f32 z, f32 *screenX, f32 *screenY, u8 mode);
 extern s32 func_8001398C(f32 x, f32 z, s32 flags, f32 ***height);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern void partUpdateTriggers(void *object, s32 updateRate);
 extern f32 camGetFOV(void);
-extern void func_80021504(f32 fov, s32 force);
-extern void func_800221E8(Overlay47Command **commands, Mtx **matrices);
+extern void camSetFOV(f32 fov, s32 force);
+extern void camSetView(Overlay47Command **commands, Mtx **matrices);
 extern void camStandardOrtho(Overlay47Command **commands, Mtx **matrices);
 extern void texDPTextureX(Overlay47Command **commands, void *texture, s32 flags, s32 offset);
 extern void texDPInit(Overlay47Command **commands);
@@ -176,10 +176,10 @@ extern void func_8002A82C(MtxF matrix);
 extern void matrixTranslate(f32 x, f32 y, f32 z, MtxF matrix);
 extern void matrixScale(f32 x, f32 y, f32 z, MtxF matrix);
 extern void func_8002A604(s16 rotation, MtxF matrix);
-extern void func_80024978(MtxF matrix);
+extern void camCopyOrthoMatrix(MtxF matrix);
 extern void mtxf_mul(MtxF lhs, MtxF rhs, MtxF dest);
 extern void mtxf_to_mtx(MtxF source, Mtx *dest);
-extern void func_80023F84(Overlay47Command **commands, Mtx **matrices, void **vertices,
+extern void camDo2DSprite(Overlay47Command **commands, Mtx **matrices, void **vertices,
                         void *transform, void *sprite, s32 flags, u8 alpha);
 extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha, s32 blend);
 extern void func_8004B0A4(s32 font);
@@ -384,7 +384,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         }
         if (player->actor != NULL) {
             speed = updateRate * 10000;
-            func_800246B0(player->actor->x, player->actor->y, player->actor->z,
+            camProjectPoint(player->actor->x, player->actor->y, player->actor->z,
                          &player->screenX, &player->screenY, 1);
             if (!player->leaving && !player->active) {
                 movement = 0.015f;
@@ -540,8 +540,8 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         overlay45ConfigureLayout(ov47Bss_320, 200, 260, 0x104);
     }
     oldFov = camGetFOV();
-    func_80021504(52.0f, 1);
-    func_800221E8(&D_800D3140, NULL);
+    camSetFOV(52.0f, 1);
+    camSetView(&D_800D3140, NULL);
     camStandardOrtho(&D_800D3140, &D_800D3144);
     texDPTextureX(&D_800D3140, NULL, 16, 0);
     O47_COMMAND(0xFA000000, -1);
@@ -584,7 +584,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         scale = icon->scale / 1.16f;
         matrixScale(scale, scale, scale, localMatrix);
         func_8002A604(icon->rotationZ, localMatrix);
-        func_80024978(cameraMatrix);
+        camCopyOrthoMatrix(cameraMatrix);
         mtxf_mul(localMatrix, cameraMatrix, resultMatrix);
         mtxf_to_mtx(resultMatrix, D_800D3144);
         savedMatrix = D_800D3144;
@@ -606,11 +606,11 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         camStandardOrtho(&D_800D3140, &D_800D3144);
         texDPInit(&D_800D3140);
         O47_COMMAND(0xFA000000, -1);
-        func_80023F84(&D_800D3140, &D_800D3144, &D_800D3148, icon, D_800D31C8[11], 0, 255);
+        camDo2DSprite(&D_800D3140, &D_800D3144, &D_800D3148, icon, D_800D31C8[11], 0, 255);
         if (selected != -1 && !unready) {
             oldSelector = icon->selector;
             icon->selector = selected;
-            func_80023F84(&D_800D3140, &D_800D3144, &D_800D3148, icon, D_800D31C8[124], 0, 255);
+            camDo2DSprite(&D_800D3140, &D_800D3144, &D_800D3148, icon, D_800D31C8[124], 0, 255);
             icon->selector = oldSelector;
         }
         O47_COMMAND(0x01000040, O47_PHYSICAL(savedMatrix));
@@ -723,8 +723,8 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         mainChangeLevel(12, 0, 0, 4, 1, 0);
         ov47Bss_324 = 1;
     }
-    func_80021504(oldFov, 1);
-    func_800221E8(&D_800D3140, NULL);
+    camSetFOV(oldFov, 1);
+    camSetView(&D_800D3140, NULL);
     ov47Data_540 += ov47Data_544 * rate;
     /* Both arms update the factor before its step (lane x-047, 11 -> 6:
      * the step negated first put the 2.0f literal on f16). */

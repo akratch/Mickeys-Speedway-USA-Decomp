@@ -202,7 +202,7 @@ extern s32 osTvType;
 extern s32 func_800299E8(s32 min, s32 max);
 extern RainPlayer *func_80005820(s32 arg0);
 extern s32 func_8001398C(f32 x, f32 z, s32 arg2, RainHeight ***arg3);
-extern void func_80023A08(Gfx **dList, Mtx **matrix, WeatherVertex **vertices,
+extern void camDoSprite(Gfx **dList, Mtx **matrix, WeatherVertex **vertices,
                            RainSplash *splash, void *texture, s32 arg5, s32 arg6);
 extern s32 mathRnd(s32 min, s32 max);
 extern void *mmAlloc(s32 size, s32 tag);
@@ -833,7 +833,7 @@ void rain_render_splashes(s32 updateRate) {
             if (splash->age < 4.0f) {
                 if (splash->state == 1) {
                     RAIN_PACKET(D_800D40CC++, 0xFA000000, (u32) ((splash->alpha & 0xFF) | ~0xFF));
-                    func_80023A08(&D_800D40CC, &D_800D40D0, &D_800D40D4,
+                    camDoSprite(&D_800D40CC, &D_800D40D0, &D_800D40D4,
                                   splash, D_8007C714, 0xE, 0);
                 } else {
                     texDPTextureX(&D_800D40CC, D_8007C718, 0xE, 0);

@@ -54,7 +54,7 @@ extern void func_8004B0F8(void *commands, s32 x, s32 y, void *text,
                           s32 size);
 extern void func_8002F618(void *commands, void *data, s32 x, s32 y,
                           s32 red, s32 green, s32 blue, s32 alpha);
-extern void func_80023F84(void *commands, void *matrices, void *vertices,
+extern void camDo2DSprite(void *commands, void *matrices, void *vertices,
                           Overlay46Particle *particle, void *resource,
                           s32 flags, s32 alpha);
 
@@ -269,7 +269,7 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
     do {
         particle = particlesByVariant[count++];
         if (particle != NULL) {
-            func_80023F84(
+            camDo2DSprite(
                 &gDisplayListHead, &gOverlay46MatrixHead,
                 &gOverlay46VertexHead, particle, particle->resource38,
                 0x8001, 0xFF);

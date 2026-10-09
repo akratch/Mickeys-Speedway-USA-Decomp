@@ -48,7 +48,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001020_18A4C18.c.o: POS
 		--redefine-sym D_800D3148=D_800D3148_o057Reloc \
 		--redefine-sym D_800D31C8=D_800D31C8_o057Reloc \
 		--redefine-sym func_8002109C=func_8002109C_o057Reloc \
-		--redefine-sym func_800221E8=func_800221E8_o057Reloc \
+		--redefine-sym camSetView=camSetView_o057Reloc \
 		--redefine-sym texDPTextureX=texDPTextureX_o057Reloc \
 		--redefine-sym texAnimateTexSprite=texAnimateTexSprite_o057Reloc \
 		--redefine-sym func_800508B4=func_800508B4_o057Reloc $@ && \

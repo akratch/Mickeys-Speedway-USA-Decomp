@@ -169,7 +169,7 @@ extern void levelOverlay16InitializeBufferTrap(u8 *);
 #pragma weak levelOverlay103CheckSignatureTrap = TrapDanglingJump
 extern s32 levelOverlay103CheckSignatureTrap(void);
 extern void camSetNo(s32);
-extern void func_80021504(f32, s32);
+extern void camSetFOV(f32, s32);
 extern void func_8003C770(s32, s32);
 extern void runlinkFreeCode(s32);
 extern void amSndStop(void *);
@@ -474,7 +474,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
 
     for (i = 0; i < 4; i++) {
         camSetNo(i);
-        func_80021504((f32) D_800CF3C8->cameraFov, 1);
+        camSetFOV((f32) D_800CF3C8->cameraFov, 1);
     }
     camSetNo(0);
 

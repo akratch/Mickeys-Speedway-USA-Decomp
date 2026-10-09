@@ -52,7 +52,7 @@ extern void func_8003A520(s32 split);
 extern s32 func_8003A700(u8 initial);
 extern void func_800336A8(s32 screenMode);
 extern void func_80033FE0(void);
-extern void func_80021504(f32 fov, s32 force);
+extern void camSetFOV(f32 fov, s32 force);
 extern MtxF *func_8002468C(void);
 extern void func_80029198(void);
 extern SavesSlot *func_800291C4(void);
@@ -70,7 +70,7 @@ extern void func_80009E78(Gfx **commands, Mtx **matrices,
                         void **vertices, ControlActor *object);
 extern void *texLoadSprite(s32 asset, s32 flags);
 extern void texFreeSprite(void *sprite);
-extern void func_80023F84(Gfx **commands, Mtx **matrices,
+extern void camDo2DSprite(Gfx **commands, Mtx **matrices,
                         void **vertices, void *transform, void *sprite,
                         s32 flags, s32 alpha);
 extern void mainChangeLevel(s32 level, s32 entrance, s32 cutscene,
@@ -562,7 +562,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         func_80033FE0();
                         D_800D2FC0_o060Reloc = 1;
                         func_800336A8(screenMode);
-                        func_80021504(60.0f, 1);
+                        camSetFOV(60.0f, 1);
                         gOverlay60Data158 = 0;
                         func_overlay_082_F00004C0_18CF640(gOverlay60Data0A8);
                     }
@@ -864,7 +864,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             gDPPipeSync(D_800D3140_o060Reloc++);
                             gDPSetPrimColor(D_800D3140_o060Reloc++, 0, 0, 255, 255, 255, 255);
                             gDPSetEnvColor(D_800D3140_o060Reloc++, 255, 255, 255, 0);
-                            func_80023F84(&D_800D3140_o060Reloc, &D_800D3144_o060Reloc, &D_800D3148_o060Reloc,
+                            camDo2DSprite(&D_800D3140_o060Reloc, &D_800D3144_o060Reloc, &D_800D3148_o060Reloc,
                                 gOverlay60Data178, gOverlay60Data174, 0, 0xFF);
                             if (gOverlay60Data14C == 0) {
                                 texFreeSprite(gOverlay60Data174);

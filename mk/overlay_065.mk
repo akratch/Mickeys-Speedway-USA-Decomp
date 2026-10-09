@@ -64,7 +64,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/func_overlay_065_F0000C38_18C4EA0.c.o: POS
 	$(OBJCOPY) \
 		--redefine-sym camSetNo=camSetNo_o065Reloc \
 		--redefine-sym func_80021970=func_80021970_o065Reloc \
-		--redefine-sym func_800221E8=func_800221E8_o065Reloc \
+		--redefine-sym camSetView=camSetView_o065Reloc \
 		--redefine-sym func_8002A8BC=func_8002A8BC_o065Reloc \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o065Reloc \
 		--redefine-sym texDPTextureX=texDPTextureX_o065Reloc \

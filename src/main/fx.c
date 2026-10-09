@@ -1478,7 +1478,7 @@ s32 func_8004989C(s32 index) {
     return color;
 }
 extern s32 camGetMode(void);
-extern void func_80021FB0(s32 mode, s32 camNo, s32 *x1, s32 *y1,
+extern void camGetWindowLimits(s32 mode, s32 camNo, s32 *x1, s32 *y1,
                           u32 *x2, u32 *y2);
 
 void func_800498FC(s32 index, f32 value16, f32 value18, s32 red, s32 green,
@@ -1494,10 +1494,10 @@ void func_800498FC(s32 index, f32 value16, f32 value18, s32 red, s32 green,
         return;
     }
     if (index == 4) {
-        func_80021FB0(0, 0, &record->value4, &record->value8,
+        camGetWindowLimits(0, 0, &record->value4, &record->value8,
                       (u32 *)&record->valueC, (u32 *)&record->value10);
     } else {
-        func_80021FB0(camGetMode(), index, &record->value4, &record->value8,
+        camGetWindowLimits(camGetMode(), index, &record->value4, &record->value8,
                       (u32 *)&record->valueC, (u32 *)&record->value10);
     }
     record->flags = 0;

@@ -352,7 +352,7 @@ be search candidates: `overlay3FindClosestObject`, `overlay40AddEntry`,
 canonical source and function-specific ledgers carry the exact proofs; stale
 generated ranking entries must not put them back into the ready queue.
 
-`func_80021504` is unguarded matched C and no longer a ranking candidate.
+`camSetFOV` is unguarded matched C and no longer a ranking candidate.
 Retained configured C owns 133 words with frame `0x28` and 43 candidate
 relocation tuples. Its linked range, complete camera TU, and resident `.main`
 section are byte-identical to ROM. The retained full `.bin` predates the
@@ -367,7 +367,7 @@ ROM-table row 453 is an unreferenced export, not inbound evidence. The
 full `.bin` predates the object and independent target relocation metadata
 is absent, so this remains a reproof-only target rather than living search.
 
-`func_800219D0` is a reproof-only matched function, not a ranking candidate.
+`camUserViewTick` is a reproof-only matched function, not a ranking candidate.
 The retained pre-comment configured object owns 104 words with frame `0x8`
 and eight HI16/LO16 records. Its raw function agrees with the retained
 `NON_MATCHING=1` object, and its linked range, complete camera TU, and resident

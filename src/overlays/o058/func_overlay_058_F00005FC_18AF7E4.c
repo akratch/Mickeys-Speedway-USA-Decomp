@@ -116,7 +116,7 @@ extern void joyCreateMap(s8 *activePlayers);
 extern void mainChangeLevel(s32 level, s32 track, s32 vehicle, s32 mode,
                             s32 arg4, s32 arg5);
 extern void mainChangeCameras(s32 mode);
-extern void func_800221E8(Overlay58Gfx **displayList, void **matrix);
+extern void camSetView(Overlay58Gfx **displayList, void **matrix);
 extern void overlay58SetNodeValue(s32 index, s32 component, f32 value);
 extern void func_overlay_058_F000138C_18B0574(s32 updateRate);
 extern void overlay58EnsureResource(void);
@@ -401,7 +401,7 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
     path = func_800508B4(3);
     if ((path != 0) && (D_68 > 0)) {
         geometry = *path->object->geometry;
-        func_800221E8(&gOverlay58DisplayListReloc,
+        camSetView(&gOverlay58DisplayListReloc,
                       &gOverlay58MatrixReloc);
         command = gOverlay58DisplayListReloc++;
         command->w0 = 0xFA000000;

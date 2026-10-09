@@ -48,7 +48,7 @@ extern u8 D_4D4[];
 extern f32 D_4E4;
 extern u8 gO57GridTriangles[];
 
-extern void func_800221E8(Gfx **displayList, s32 *context);
+extern void camSetView(Gfx **displayList, s32 *context);
 extern void texAnimateTexSprite(void *resource, void *arg1, s32 arg2, f32 *arg3, s32 updateRate);
 extern O57GridObject *func_800508B4(u8 id);
 extern void func_8002109C(O57GridOwner *owner);
@@ -115,7 +115,7 @@ void func_overlay_057_F0001020_18A4C18(s32 updateRate) {
     O57GridModel *model;
 
     model = NULL;
-    func_800221E8(&D_800D3140, &D_800D3144);
+    camSetView(&D_800D3140, &D_800D3144);
     texAnimateTexSprite(D_800D31C8[62], D_4D4, 2, &D_4E4, updateRate);
 
     if (gO57GridMode184 == 0x2F || gO57GridMode184 == 0x4B) {

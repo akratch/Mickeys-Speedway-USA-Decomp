@@ -30,19 +30,25 @@ extern void overlay68FinishEntryPromoteReloc(void);
 /* Matched 2026-08-29 by a bounded decomp-permuter pass after the prior hand,
  * flag, and allocator-trace probes plateaued on the frame and stack homes.
  * Untouched IDO output preserves the 77-word body, 0x30 frame, and nine
- * relocation sites; the complete linked US ROM is byte-identical. */
+ * relocation sites; the complete linked US ROM is byte-identical.
+ *
+ * `primaryCopy` (the permuter's `new_var`) is never read, but the chained
+ * assignment is load-bearing (lane c-5, 2026-10-09): a plain
+ * `primary = gOverlay68PrimaryEntry;` moves the stack homes (10 words), with
+ * or without a pad in its place, and testing and passing `primary` instead of
+ * re-reading the global differs in 14. */
 void overlay68PromoteSecondary(void)
 {
   Overlay68Entry *primary;
   Overlay68Record *source;
   Overlay68Record *destination;
   Overlay68Entry *secondary;
-  Overlay68Entry *new_var;
+  Overlay68Entry *primaryCopy;
   s32 remaining;
   secondary = gOverlay68SecondaryEntry;
   if (secondary != ((void *) 0))
   {
-    primary = (new_var = gOverlay68PrimaryEntry);
+    primary = (primaryCopy = gOverlay68PrimaryEntry);
     if (gOverlay68PrimaryEntry != ((void *) 0))
     {
       overlay68ClearNestedFlagPromoteReloc(gOverlay68PrimaryEntry);

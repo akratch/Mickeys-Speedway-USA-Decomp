@@ -40,9 +40,10 @@ Overlay21Position *overlay21GetReferenceReloc(void);
 
 /*
  * Exact 114-word match under the measured -Wab,-r4300_mul override. The
- * redundant comparison temporary is semantically inert but preserves IDO's
- * shipped caller-saved allocation; track a cleaner spelling in the cleanup
- * queue.
+ * `selected` flag (the permuter's `new_var`) holds the plane test in its own
+ * variable, which preserves IDO's shipped caller-saved allocation. Measured
+ * (lane c-5, 2026-10-09): testing `plane->id == planeId` directly differs in
+ * 10 words, and `if (plane->id != planeId) continue;` grows the function.
  */
 void overlay21ApplyPriorities(s32 planeId, s32 entryCount, Overlay21PriorityEntry **entries)
 {
@@ -50,7 +51,7 @@ void overlay21ApplyPriorities(s32 planeId, s32 entryCount, Overlay21PriorityEntr
   Overlay21Plane *plane;
   Overlay21PriorityEntry *entry;
   Overlay21PriorityEntry **cursor;
-  int new_var;
+  int selected;
   Overlay21Position *position;
   f32 distance;
   f32 normalX;
@@ -64,8 +65,8 @@ void overlay21ApplyPriorities(s32 planeId, s32 entryCount, Overlay21PriorityEntr
   for (planeIndex = 0; planeIndex < gOverlay21ObjectCount; planeIndex++)
   {
     plane = gOverlay21Objects[planeIndex]->plane;
-    new_var = plane->id == planeId;
-    if (new_var)
+    selected = plane->id == planeId;
+    if (selected)
     {
       normalX = plane->normalX;
       normalY = plane->normalY;

@@ -55,7 +55,6 @@ extern void *func_80034448(s32 textureId);
 
 s32 overlay59PrepareEntry(Overlay59Entry *entry, s32 tableIndex, s32 itemIndex)
 {
-  int new_var;
   void **descriptor;
   void *value;
   u32 handle;
@@ -73,7 +72,6 @@ s32 overlay59PrepareEntry(Overlay59Entry *entry, s32 tableIndex, s32 itemIndex)
     {
       do
       {
-        new_var = 0;
         handle = ((u32) value) & 0xFFFFFFFF;
         handle = (u32) func_80034448((s32) handle);
         if (handle == 0)
@@ -92,7 +90,7 @@ s32 overlay59PrepareEntry(Overlay59Entry *entry, s32 tableIndex, s32 itemIndex)
           handle = (u32) func_80034448((s32) handle);
           if (handle == 0)
           {
-            result = new_var;
+            result = 0;
           }
           else
           {
@@ -125,6 +123,13 @@ s32 overlay59PrepareEntry(Overlay59Entry *entry, s32 tableIndex, s32 itemIndex)
 /* Matching reproof (2026-09-06): the body above supersedes that plateau.
  * Untouched configured compiler output owns all 248 bytes, with frame 40
  * and all six relocation identities exact. The linked owned range and full
- * ROM are byte-identical. The zero-valued local is used by the second
- * acquisition-failure path; both masks preserve the N64 32-bit handle bits.
+ * ROM are byte-identical. The permuter's zero-valued local on the second
+ * failure path was inert and is gone (lane c-5, 2026-10-09). The two
+ * `& 0xFFFFFFFF` masks are not: the masked copy is a definition of `handle`
+ * from `value`, so the loaded word, the argument and the call result are one
+ * web and the load lands in v0 with a `move a0,v0` before each call, as
+ * shipped. Without them `value` is propagated into the argument and loads
+ * straight into a0 (9 words). `(u32) value`, `(s32) value`, a
+ * `(s32) (u32)` round trip, and a `while ((value = descriptor[0]) != 0)` loop
+ * reading the call result into `handle` all give that same object.
  */

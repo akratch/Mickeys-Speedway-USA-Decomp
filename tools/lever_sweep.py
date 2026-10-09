@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """Search the source-lever catalogue for the edit that reproduces a forced allocator state.
 
-    tools/lever_sweep.py <symbol> --proc N --oracle 'p1:w387=s[,p2:w131=c21...]'
+    tools/lever_sweep.py <symbol> --proc N [--oracle 'p1:w387=s[,p2:w131=c21...]']
                          [--bias 'w387=-4.5,...'] [--root WORKTREE] [--candidate FILE] [--web W ...] [--block B ...]
                          [--lines LO-HI] [--levers a,b] [--jobs J]
                          [--max-size-delta 16] [--max-cells 600] [--json PATH]
+
+NO ORACLE. With neither --oracle nor --bias the sweep still runs: cells are
+ranked by exactness, aligned residual, size delta and masked words, the
+`dbase` column gives each cell's size move against the base, and the oracle
+column reads `-`. Use it to rank the catalogue's effect on a function whose
+target state is not priced yet.
 
 WHY. In nearly every late close of the 2026-10-07/08 waves the lane had
 already PRICED the target with a force (`CDX_FORCE=p1:wN=cK` or `=s`, scored
@@ -1494,6 +1500,8 @@ def oracle_status(cands: list[dict], targets: list[dict]) -> tuple[int, list[dic
 
 
 def oracle_label(hits: int, n: int, ambiguous: int = 0) -> str:
+    if n == 0:
+        return "-"  # no oracle: nothing was asked, so "yes" would be a lie
     if ambiguous:
         return "ambiguous"
     return "yes" if hits == n else ("no" if hits == 0 else f"{hits}/{n}")
@@ -1568,6 +1576,7 @@ def measure_cell(run: Runner, index: int, cell: Cell, base: dict, targets, max_d
             row["error"] = "symbol not in object"
             return row
         row["delta"] = size - run.scorer.target_size
+        row["dbase"] = size - base["size"]
         if abs(size - base["size"]) > max_delta:
             row["skipped"] = f"size moved {size - base['size']:+d}"
             return row
@@ -1582,6 +1591,9 @@ def measure_cell(run: Runner, index: int, cell: Cell, base: dict, targets, max_d
         row["buckets"] = [score["aligned_exact"], score["aligned_register_naming"],
                           score["aligned_immediate_only"], score["aligned_really_different"]]
         row["equals_forced"] = fb == base["forced_bytes"]
+        if not targets:
+            row["oracle"] = "-"
+            return row
         log = d / "allocator.log"
         iobj = d / "instrumented.o"
         err = run.compile(src, iobj, instrumented=True, log=log)
@@ -1665,8 +1677,8 @@ def main(argv: list[str] | None = None) -> int:
     use_root(resolve_root(ns.root))
     oracle = parse_oracle(ns.oracle)
     bias = parse_bias(ns.bias)
-    if not oracle and not bias:
-        raise SystemExit("give --oracle and/or --bias")
+    # With neither, the sweep has no state to reproduce: cells are ranked by
+    # masked words, aligned residual and size delta alone (oracle column "-").
     levers = [x.strip() for x in ns.levers.split(",") if x.strip()]
     unknown = [x for x in levers if x not in LEVERS]
     if unknown:
@@ -1721,7 +1733,7 @@ def main(argv: list[str] | None = None) -> int:
             "oracle": oracle_label(bhits, len(targets), sum(d["ambiguous"] for d in bdetail)),
             "oracle_detail": bdetail}
     print(f"{ns.symbol} proc {ns.proc}: base {base['masked']} masked, residual {base['residual']} "
-          f"at {base['size'] - run.scorer.target_size:+d}; oracle {','.join(specs)} accepted, "
+          f"at {base['size'] - run.scorer.target_size:+d}; oracle {','.join(specs) or 'none'} accepted, "
           f"forced {forced_score['masked']} masked, residual {forced_score['residual']} at "
           f"{forced_score['delta']:+d}; base oracle state: {base['oracle']}")
     for t in targets:
@@ -1769,12 +1781,12 @@ def main(argv: list[str] | None = None) -> int:
           f"size-skipped {len(skipped)}, compile errors {len(errors)}; oracle reproduced "
           f"{len(yes)}; exact {len(exact)}")
     print(f"{'cell':>5} {'lever':<14} {'line':>5} {'masked':>6} {'delta':>6} {'resid':>5} "
-          f"{'naming':>6} {'imm':>4} {'diff':>4} {'oracle':>6} {'sem':>5}  edit")
+          f"{'naming':>6} {'imm':>4} {'diff':>4} {'dbase':>5} {'oracle':>6} {'sem':>5}  edit")
     for r in [r for r in scored if not r.get("inert")][: ns.top]:
         b = r["buckets"]
-        tag = r.get("oracle", "-") + ("=F" if r.get("equals_forced") else "")
+        tag = r.get("oracle", "-") + ("=F" if r.get("equals_forced") and targets else "")
         print(f"{r['index']:>5} {r['lever']:<14} {r['line']:>5} {r['masked']:>6} {r['delta']:>+6} "
-              f"{r['residual']:>5} {b[1]:>6} {b[2]:>4} {b[3]:>4} {tag:>6} {r['semantics']:>5}  "
+              f"{r['residual']:>5} {b[1]:>6} {b[2]:>4} {b[3]:>4} {r.get('dbase', 0):>+5} {tag:>6} {r['semantics']:>5}  "
               f"{r['edit'][:70]}")
     keepdir = scratch / "best"
     keepdir.mkdir(exist_ok=True)

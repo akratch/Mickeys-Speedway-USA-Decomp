@@ -45,6 +45,11 @@ offsets before optimisation, so they are the offsets uopt's records carry).
 Without `--proc` the procedure is found by itself: every procedure is logged
 and the one whose blocks carry the symbol's definition line is taken.
 
+`--source FILE` reports a candidate C file in place of the tracked TU (as the
+other tools' `--candidate` do); `DKWB_CUT_*` in the environment reach the
+instrumented compile, and the identity gate then compares it with an
+instrumented compile that has the same cuts and no `CDX_*` logging.
+
 `--trace` reads a saved log instead of compiling (no gate, names or source
 lines unless the symbol resolves in the queue); this is how the tests run.
 """
@@ -465,17 +470,46 @@ def render(model: dict, namer: Namer, source: list[str], webs: set[int] | None,
 
 # ---------------------------------------------------------------- compiling
 
-def compile_tu(symbol: str, work: pathlib.Path, proc: str):
+def clean_env(environ) -> dict:
+    """The environment with every CDX_*/DKWB_* variable removed."""
+    return {k: v for k, v in environ.items() if not k.startswith(("CDX_", "DKWB_"))}
+
+
+def cut_env(environ) -> dict:
+    """The `DKWB_CUT_*` variables, which pick a cut-forced compile and must reach it."""
+    return {k: v for k, v in environ.items() if k.startswith("DKWB_CUT_") and v}
+
+
+def with_source(command: list[str], candidate: pathlib.Path | None) -> list[str]:
+    """Replace the command's source argument (its last word) with `candidate`."""
+    actual = list(command)
+    if candidate is not None:
+        actual[-1] = str(candidate)
+    return actual
+
+
+def compile_tu(symbol: str, work: pathlib.Path, proc: str,
+               candidate: pathlib.Path | None = None):
+    """Instrumented, stock and `-g3` names compiles of the TU (or of `candidate`).
+
+    `DKWB_CUT_*` reach the instrumented compile. A stock compiler ignores them,
+    so with a cut set the identity gate compares the instrumented object with a
+    second instrumented compile (same cuts, no CDX_* logging) in the `stock`
+    slot: the gate then proves the logging is inert, not that the cut is.
+    """
     import force_lattice as fl
-    command = fl.compile_command(symbol)
-    env = {k: v for k, v in os.environ.items() if not k.startswith(("CDX_", "DKWB_"))}
+    command = with_source(fl.compile_command(symbol), candidate)
+    env = clean_env(os.environ)
+    cuts = cut_env(os.environ)
     runs = {}
     for label in ("instrumented", "stock", "names"):
         actual = (fl.replace_compiler(command, fl.INSTRUMENTED / "cc")
-                  if label == "instrumented" else list(command))
+                  if label == "instrumented" or (label == "stock" and cuts) else list(command))
         out = work / f"{label}.o"
         actual[actual.index("-o") + 1] = str(out)
         run_env = dict(env)
+        if label == "instrumented" or (label == "stock" and cuts):
+            run_env.update(cuts)
         if label == "instrumented":
             run_env.update(CDX_LOG="1", CDX_PROC=proc, CDX_DETAIL_WEB="all",
                            CDX_WEBREPORT="1", CDX_OUT=str(work / "allocator.log"))
@@ -490,15 +524,16 @@ def compile_tu(symbol: str, work: pathlib.Path, proc: str):
     return runs
 
 
-def source_for(symbol: str) -> tuple[list[str], tuple[int, int] | None]:
-    """The TU's lines and the symbol's definition span (signature to closing brace)."""
+def source_for(symbol: str, candidate: pathlib.Path | None = None
+               ) -> tuple[list[str], tuple[int, int] | None]:
+    """The TU's lines (or `candidate`'s) and the symbol's definition span (signature to closing brace)."""
     try:
         import permute_batch as pb
         import force_lattice as fl
         items = [i for i in pb.discover_queue() if i.func == symbol]
         if not items:
             return [], None
-        lines = (fl.ROOT / items[0].rel_c_file).read_text().splitlines()
+        lines = (candidate or fl.ROOT / items[0].rel_c_file).read_text().splitlines()
     except Exception:  # noqa: BLE001
         return [], None
     pattern = re.compile(r"^\S.*\b" + re.escape(symbol) + r"\s*\(")
@@ -529,12 +564,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--proc", type=int, help="procedure ordinal (found if omitted)")
     parser.add_argument("--web", type=int, action="append", help="only this web (repeatable)")
     parser.add_argument("--block", type=int, help="only this block's rows")
+    parser.add_argument("--source", type=pathlib.Path,
+                        help="report this candidate C file in place of the tracked TU")
     parser.add_argument("--trace", help="read a saved CDX_WEBREPORT log instead of compiling")
     parser.add_argument("--keep", help="keep the compiles and the log in this directory")
     parser.add_argument("--json", action="store_true", help="print the joined model as JSON")
     args = parser.parse_args(argv)
 
-    source, span = source_for(args.symbol)
+    candidate = args.source.resolve() if args.source else None
+    if candidate is not None and not candidate.is_file():
+        raise SystemExit(f"web_report: no such --source: {candidate}")
+    source, span = source_for(args.symbol, candidate)
     namer = Namer()
     gate = "not run (--trace)"
     if args.trace:
@@ -542,7 +582,8 @@ def main(argv: list[str] | None = None) -> int:
     else:
         work = pathlib.Path(args.keep) if args.keep else pathlib.Path(tempfile.mkdtemp())
         work.mkdir(parents=True, exist_ok=True)
-        runs = compile_tu(args.symbol, work, str(args.proc) if args.proc is not None else "all")
+        runs = compile_tu(args.symbol, work, str(args.proc) if args.proc is not None else "all",
+                           candidate)
         text = (work / "allocator.log").read_text()
         if read_text_section(runs["instrumented"]) != read_text_section(runs["stock"]):
             print("web_report: IDENTITY GATE FAILED -- the instrumented .text differs from "

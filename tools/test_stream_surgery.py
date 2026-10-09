@@ -99,7 +99,7 @@ class Flags(unittest.TestCase):
 
     def test_swap_to_S(self):
         got = ss.swap_to_S(["tools/ido/cc", "-c", "-O2", "-I", "include", "-o", "x.o", "a.c"])
-        self.assertEqual(got[0], str((ss.ROOT / "tools/ido/cc").resolve()))
+        self.assertEqual(got[0], str(ss.ROOT / "tools/ido/cc"))
         self.assertEqual(got[1:4], ["-S", "-O2", "-I"])
         self.assertEqual(got[4], str((ss.ROOT / "include").resolve()))
         self.assertNotIn("-o", got)
@@ -144,6 +144,29 @@ class Edits(unittest.TestCase):
             p.write_text("--- a\n+++ b\n@@ -1,1 +1,1 @@\n-nothing like it\n+x\n")
             with self.assertRaises(SystemExit):
                 ss.apply_diff(p, LISTING, Path(d))
+
+
+class Instrumented(unittest.TestCase):
+    def test_wanted_by_env_or_flag(self):
+        self.assertFalse(ss.instrumented_wanted({"PATH": "x", "CDX_FORCE": ""}))
+        self.assertTrue(ss.instrumented_wanted({"CDX_BIAS": "w1=2"}))
+        self.assertTrue(ss.instrumented_wanted({"DKWB_CUT_X": "1"}))
+        self.assertFalse(ss.instrumented_wanted({"DKWB_UGEN_TRACE": "1"}))
+        self.assertTrue(ss.instrumented_wanted({}, flag=True))
+
+    def test_use_compiler_swaps_only_the_driver(self):
+        self.assertEqual(ss.use_compiler(["cc", "-O2"], Path("/i/cc")), ["/i/cc", "-O2"])
+        self.assertEqual(ss.use_compiler(["cc", "-O2"], None), ["cc", "-O2"])
+
+    def test_swap_to_S_keeps_a_symlinked_driver_unresolved(self):
+        with tempfile.TemporaryDirectory() as d:
+            real = Path(d) / "real"
+            real.write_text("")
+            link = Path(d) / "link"
+            link.symlink_to(real)
+            got = ss.swap_to_S([str(link), "-c", "-o", "x.o", "a.c"])
+            self.assertEqual(got[0], str(link))
+            self.assertEqual(got[1:], ["-S", "a.c"])
 
 
 if __name__ == "__main__":

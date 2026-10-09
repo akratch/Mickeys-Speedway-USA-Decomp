@@ -66,5 +66,32 @@ class RecipeTests(unittest.TestCase):
             fast_score.split_recipe("tools/asm-processor/build.py tools/ido/cc -c a.c")
 
 
+LISTING = """\
+.section .late_rodata
+dlabel D_80081790
+/* 82390 80081790 3C23D70A */ .float 0.0099
+/* 82394 80081794 00000000 */ .float 0
+enddlabel D_80081790
+
+.section .text
+glabel fn
+/* 12580 80011980 27BDFF38 */ addiu      $sp, $sp, -0xC8
+/* 12584 80011984 3C0A8009 */  lui        $t2, %hi(D_800C9D3C)
+endlabel fn
+"""
+
+
+class ListingTests(unittest.TestCase):
+    def test_text_rows_skip_a_literal_pool_before_the_function(self):
+        rows = fast_score.text_rows(LISTING.splitlines())
+        self.assertEqual([w for w, _ in rows], [0x27BDFF38, 0x3C0A8009])
+        self.assertEqual(rows[0][1], "addiu $sp, $sp, -0xC8")
+
+    def test_text_rows_without_a_pool_are_unchanged(self):
+        src = "\n".join(l for l in LISTING.splitlines() if "late_rodata" not in l and "D_80081790" not in l
+                        and ".float" not in l)
+        self.assertEqual(len(fast_score.text_rows(src.splitlines())), 2)
+
+
 if __name__ == "__main__":
     unittest.main()

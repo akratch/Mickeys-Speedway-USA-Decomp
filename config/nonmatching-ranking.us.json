@@ -1,29 +1,14 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 12,
-  "resolved": 12,
+  "queue_size": 11,
+  "resolved": 11,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 12,
-  "relocation_masked_coverage": 12,
+  "source_context_coverage": 11,
+  "relocation_masked_coverage": 11,
   "functions": [
-    {
-      "name": "func_80017140",
-      "file": "src/main/shadows.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1312,
-      "objdiff_match_pct": null,
-      "differing_words": 3,
-      "first_mismatch_offset": 152,
-      "relocation_masked_differing_words": 3,
-      "relocation_masked_first_mismatch_offset": 152,
-      "size_delta": 0,
-      "category": "register-only",
-      "source_context_sha256": "rR8P.D4sW.VyaO.LtVE.x6cY.15R5.IeOV.hQnh.Ndfd.k1rW.RlY"
-    },
     {
       "name": "func_8001B798",
       "file": "src/main/spranim.c",

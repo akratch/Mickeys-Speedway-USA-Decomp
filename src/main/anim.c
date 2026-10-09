@@ -3987,7 +3987,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: 344 at size 0: the target keeps two pointer copies and all three doubles at their definitions; the z1/y2 array stand-in keeps only twoZ1.
+ * summary: 344 at size 0: KEEP on the pointer and double definitions prices worse; region and z1/y2 array levers do not combine (best stand-in 201 aligned at +4).
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

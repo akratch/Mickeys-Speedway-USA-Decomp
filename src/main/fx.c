@@ -2150,6 +2150,6 @@ void func_8004AF68(void) {
  * frame: 0x90
  * relocations: 3
  * first-mismatch: +0x94
- * summary: Unchanged at 16; natural counts lose the dead copies (-8), declaration order does not move spill cells. Left: the pre-call spill ladder.
+ * summary: Unchanged at 16; uoptlist: no carrier or region boundary moves the conversion's creation out of its own block-0 statement. Left: the pre-call spill ladder.
  * PLATEAU-HANDOFF:wakeAllocate:end
  */

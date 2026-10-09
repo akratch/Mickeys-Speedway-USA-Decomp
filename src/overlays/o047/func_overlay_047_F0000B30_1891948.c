@@ -232,9 +232,9 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
     s32 x, y;
     s32 red, green, blue;
-    /* u8: each narrowing spends the ring draw the target spends, and as1
-     * folds the mask into the packet's (lane v-4, 237 -> 174 aligned). */
-    u8 iconRed, iconGreen, iconBlue;
+    /* Unused: with the three above x, the frame's fourth unexplained cell
+     * (lane v-4). Flagged. */
+    s32 padD;
     s32 showMode;
     f32 movement;
     s32 back;
@@ -590,11 +590,14 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
          * operand's reload, so unready keeps its register (lane k-8). */
         O47_COMMAND(0x01000040, O47_PHYSICAL(D_800D3144));
         D_800D3144++;
-        iconRed = ov47Data_3DC[colourIndex] >> 24;
-        iconGreen = ov47Data_3DC[colourIndex] >> 16;
-        iconBlue = ov47Data_3DC[colourIndex] >> 8;
+        /* The icon packet and the blend share one set of channels, each
+         * masked at the load: the masks spend the ring draws the target
+         * spends and as1 folds them into the packet's (lane v-4). */
+        red = (ov47Data_3DC[colourIndex] >> 24) & 255;
+        green = (ov47Data_3DC[colourIndex] >> 16) & 255;
+        blue = (ov47Data_3DC[colourIndex] >> 8) & 255;
         O47_COMMAND(0x06000000, ov47Data_300);
-        O47_COMMAND(0xFA000000, ((iconRed & 255) << 24) | ((iconGreen & 255) << 16) | ((iconBlue & 255) << 8) | 255);
+        O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
         O47_COMMAND_W1(0xFCFFFFFF, 0xFFFDF6FB);
         O47_VERTICES(ov47Data_198, 4);
         O47_COMMAND_W1(0x05100020, O47_PHYSICAL(ov47Data_1C0));
@@ -743,10 +746,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 118/2168 words
+ * score: 91/2168 words
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 117 aligned at size 0 (masked 118): icon channels u8, blend channels masked at the load; pads above x flagged. Open: head, channel colours, blend.
+ * summary: 90 aligned at size 0 (masked 91): icon packet and blend share masked channels; four unused frame cells flagged. Open: head, +0x1600 packets, s7 to s8.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

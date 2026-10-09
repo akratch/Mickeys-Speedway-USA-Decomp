@@ -85,6 +85,21 @@
       "source_context_sha256": "xjEj.sH2T.dGwr.Yrxg.DrW-.sE5g._xZN.QmKt.yMre.igzL.vWg"
     },
     {
+      "name": "func_overlay_047_F0000B30_1891948",
+      "file": "src/overlays/o047/func_overlay_047_F0000B30_1891948.c",
+      "overlay": 47,
+      "tu": "overlays/o047",
+      "size_bytes": 8672,
+      "objdiff_match_pct": null,
+      "differing_words": 141,
+      "first_mismatch_offset": 12,
+      "relocation_masked_differing_words": 91,
+      "relocation_masked_first_mismatch_offset": 12,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "OFhC.CheA.lEw2.AAjc.Bl9J.JzMk.nzWk.kjUK.RRJZ.MZCT.re0"
+    },
+    {
       "name": "func_overlay_045_F0001158_188D5B0",
       "file": "src/overlays/o045/func_overlay_045_F0001158_188D5B0.c",
       "overlay": 45,
@@ -98,21 +113,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "7AgT.R4IL.Bb58.W0CM.Hvbx.arIA.LyYR.WpZK._hpP.B0Tz.Kaw"
-    },
-    {
-      "name": "func_overlay_047_F0000B30_1891948",
-      "file": "src/overlays/o047/func_overlay_047_F0000B30_1891948.c",
-      "overlay": 47,
-      "tu": "overlays/o047",
-      "size_bytes": 8672,
-      "objdiff_match_pct": null,
-      "differing_words": 166,
-      "first_mismatch_offset": 12,
-      "relocation_masked_differing_words": 118,
-      "relocation_masked_first_mismatch_offset": 12,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "xtwJ.GrRM.L9Ci.m6U8.mxYg.aJ8q.hj8Y.KL39.7q0n.pZsU.rPU"
     },
     {
       "name": "func_80054B3C",

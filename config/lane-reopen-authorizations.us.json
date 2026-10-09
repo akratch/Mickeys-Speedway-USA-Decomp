@@ -1971,9 +1971,9 @@
       "source_commit": "4a19eaf4143fd79a7053188c64f8656016aae2cf"
     },
     "wakeAllocate": {
-      "ledger_commit": "54847ecde702b80a7afd1eaf09c7f93b32bec2c8",
-      "reason": "Target has distinct 10/16-byte induction-bound clones; baseline shares one. Test unsigned addressing in only the second signed-count loop (proved typed-range partition lever), then distinct index identity if needed.",
-      "source_commit": "a48bdabf507785088849b78bcc499bfca96d7633"
+      "ledger_commit": "43219d40c6ee8ad647863e7739c3b464919066ad",
+      "reason": "2026-10-09: measure actual spilltemps node memberships and blocker identities, absent from slot_trace/webblocks, to authenticate texture/sample containment and two earlier owners. No source mutation before fidelity and ownership census.",
+      "source_commit": "2ae0a62ae8a8631ee8144d1e6696c3dd88953f17"
     },
     "wakeDraw": {
       "ledger_commit": "2d923387fa81afb05ef9fdd245dc8c67522adc73",

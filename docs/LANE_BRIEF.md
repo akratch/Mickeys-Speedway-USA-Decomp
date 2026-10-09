@@ -62,6 +62,7 @@ and is a lane's job, not a sweep you run inside another sweep.
 census: draws, frees and emissions for every line of the function, plus the draw
 order as a sequence. `--save a.json`, change one thing, `--save b.json`,
 `--compare a.json b.json` names the lines whose draw or emission count moved.
+`--source FILE` censuses a candidate C file in place of the tracked TU (relative to your cwd), so no lane swaps anim.c in the tree.
 **A line whose draws did not move was not moved by your edit**, however much the
 score moved -- and a score moves for causes the edit did not create. This is the
 instrument for the blockers the colour axis leaves behind: "pre-colour web

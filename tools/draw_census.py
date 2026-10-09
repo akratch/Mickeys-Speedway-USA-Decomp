@@ -2,6 +2,8 @@
 """Census a function's ugen draws and emissions, per SOURCE LINE.
 
     tools/draw_census.py <symbol> [--proc N]   (default: resolved from the symbol) [--save out.json]
+                         [--source FILE]   (census a candidate C file in place of the tracked TU;
+                                            a relative path is taken from the caller's cwd)
     tools/draw_census.py --compare before.json after.json
 
 WHY THIS EXISTS
@@ -129,10 +131,19 @@ def resolve_proc(symbol: str, obj: pathlib.Path, text: str) -> int:
     return ordinal_from_symbols(symbol, [(x.name, x.value) for x in syms], nprocs)
 
 
-def profile(symbol: str, proc: int | None, keep: pathlib.Path | None = None) -> dict:
+def with_source(command: list[str], candidate: pathlib.Path | None) -> list[str]:
+    """Replace the command's source argument (its last word) with `candidate`."""
+    actual = list(command)
+    if candidate is not None:
+        actual[-1] = str(candidate)
+    return actual
+
+
+def profile(symbol: str, proc: int | None, keep: pathlib.Path | None = None,
+            candidate: pathlib.Path | None = None) -> dict:
     """Compile once with the ugen trace on and reduce it to a per-line census."""
-    command = fl.replace_compiler(fl.compile_command(symbol),
-                                  fl.INSTRUMENTED / "cc")
+    command = with_source(fl.replace_compiler(fl.compile_command(symbol),
+                                              fl.INSTRUMENTED / "cc"), candidate)
     work = keep or pathlib.Path(tempfile.mkdtemp())
     work.mkdir(parents=True, exist_ok=True)
     command[command.index("-o") + 1] = str(work / "candidate.o")
@@ -228,6 +239,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="retain the object and the raw trace here")
     parser.add_argument("--compare", nargs=2, type=pathlib.Path, default=None,
                         metavar=("BEFORE", "AFTER"))
+    parser.add_argument("--source", type=pathlib.Path, default=None,
+                        help="census this candidate C file in place of the tracked TU")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
@@ -241,7 +254,10 @@ def main(argv: list[str] | None = None) -> int:
     if not args.symbol:
         parser.error("a symbol is required unless --compare is used")
 
-    data = profile(args.symbol, args.proc, args.keep)
+    candidate = args.source.resolve() if args.source else None
+    if candidate is not None and not candidate.is_file():
+        raise SystemExit(f"draw_census: no such --source: {candidate}")
+    data = profile(args.symbol, args.proc, args.keep, candidate)
     if args.save:
         args.save.write_text(json.dumps(data, indent=2) + "\n")
     print(json.dumps(data, indent=2) if args.json else render(data))

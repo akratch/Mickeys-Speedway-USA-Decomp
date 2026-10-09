@@ -3976,7 +3976,7 @@ void fmvInit(void) {
  * frame: 0x40
  * relocations: 47
  * first-mismatch: +0x114
- * summary: 7 at 0. Bitfield command words are -8; the join reading stands
+ * summary: 7 at 0. Stream oracle: conversion emitted before the cursor statement without a store, stored after it, is exact at monotone lines
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

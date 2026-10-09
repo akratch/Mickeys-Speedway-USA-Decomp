@@ -328,7 +328,7 @@ extern void frontUpdate(Gfx **, Mtx **, MainVertex **, MainTriangle **, s32);
 extern void func_80049E4C(Gfx **, s32);
 extern void amAudioTick(u8);
 extern void diPrintfAll(Gfx **);
-extern void func_8004C0C4(Gfx **, Mtx **, MainVertex **);
+extern void fontWindowsDraw(Gfx **, Mtx **, MainVertex **);
 extern void func_8004BFD8(s32);
 extern void func_8004BF64(s32);
 extern s32 func_800291E4(void);
@@ -596,7 +596,7 @@ void func_80026FB4(void) {
     if (D_8007A1E0 != 0) {
         func_800293D0();
     }
-    func_8004C0C4(&D_800CF518, &D_800CF530, &D_800CF588);
+    fontWindowsDraw(&D_800CF518, &D_800CF530, &D_800CF588);
     func_8004BFD8(4);
 
     func_8004BF64(4);

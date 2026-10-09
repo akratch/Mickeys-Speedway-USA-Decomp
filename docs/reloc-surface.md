@@ -1659,7 +1659,7 @@ Resident runtime records, ORT exports, overlay SYMBOL inbounds and stored
 pointer inbounds remain absent. `func_80045CAC+0x64` is the sole direct caller.
 Canonical linked owned bytes and the complete rebuilt ROM are byte-identical.
 
-Resident `func_8004BA8C` owns nine target static records. Historical
+Resident `fontStringWidth` owns nine target static records. Historical
 policy-defective C emitted all nine exactly:
 HI16/LO16 pairs to `D_800D60E4` at `+0x04/+0x08`, `D_800D6628` at
 `+0x14/+0x28`, and `D_800D6644` at `+0x34/+0x38` and `+0x48/+0x54`, plus

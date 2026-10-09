@@ -782,7 +782,7 @@ segments:
       # input section, so no trim.
       - [0x849E0, .rodata, main/fx]
       - [0x849F0, rodata]
-      # func_8004C8D8's eight-entry texture-format switch table. The following
+      # fontCreateDisplayList's eight-entry texture-format switch table. The following
       # two zero words are output-section alignment, not owned object bytes.
       - [0x849F8, .rodata, main/font]
       - [0x84A18, rodata]

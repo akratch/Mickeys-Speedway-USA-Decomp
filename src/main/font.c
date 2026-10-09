@@ -89,7 +89,7 @@ void func_8004D39C(char *input, char *output);
 u8 *func_8004D40C(s32 font, char *text, s32 maxWidth, u8 **lineStart,
                   s32 *outWidth);
 void func_8004C140(Gfx **displayList, s32 x1, s32 y1, s32 x2, s32 y2);
-void func_8004C200(Gfx **displayList, void *matrix, void *vertices,
+void fontWindowDraw(Gfx **displayList, void *matrix, void *vertices,
                    s32 windowId);
 void piRomLoadSection(s32 resourceId, void *destination, u32 offset, s32 size);
 
@@ -97,7 +97,7 @@ void func_8004B13C(Gfx **displayList, s32 windowId, s32 xpos, s32 ypos,
                    char *text, s32 alignmentFlags);
 void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
                    char *text, s32 alignmentFlags);
-s32 func_8004BA8C(char *text, s32 font, s32 convertString);
+s32 fontStringWidth(char *text, s32 font, s32 convertString);
 void func_8004C5A4(char *input, char *output, s32 number);
 
 void fontSetWindow0(s32 width, s32 height) {
@@ -237,7 +237,7 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
     y = window->ypos;
     width = -1;
     if (alignmentFlags & 5) {
-        width = func_8004BA8C(current, window->font, 0);
+        width = fontStringWidth(current, window->font, 0);
         if (alignmentFlags & 1) {
             x = (x - width) + 1;
         } else {
@@ -256,7 +256,7 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
                        window->textBGColourG, window->textBGColourB,
                        window->textBGColourA);
         if (width == -1) {
-            width = func_8004BA8C(current, window->font, 0);
+            width = fontStringWidth(current, window->font, 0);
         }
         right = x + width;
         bottom = font->verticalExtent + y;
@@ -428,7 +428,7 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
  * the 0xF test; all 64 placements of a region boundary at five nesting sites;
  * and the loop-body statement orders. frameSlot0..3 remain the measured
  * reconstruction of the target's six-word local block described below. */
-s32 func_8004BA8C(char *text, s32 font, s32 convertString) {
+s32 fontStringWidth(char *text, s32 font, s32 convertString) {
     /* frameSlot0..3 are a measured reconstruction of the target's local
      * block, not recovered source. The target's frame is 0x30 with six
      * four-byte home slots; only two are addressed (fontData and spacing).
@@ -579,7 +579,7 @@ void *func_8004BCC4(s32 windowId, s32 posX, s32 posY, char *text, s32 number,
             fontData = &D_800D60E4[D_800D64E8[windowId].font];
             if (flags & 5) {
                 func_8004C5A4(text, D_800D6640, number);
-                width = func_8004BA8C(D_800D6640,
+                width = fontStringWidth(D_800D6640,
                                       D_800D64E8[windowId].font, 1);
                 if (flags & 1) {
                     posX = (posX - width) + 1;
@@ -693,7 +693,7 @@ void func_8004C000(char **outString, s32 number) {
  * permitted published fontWindowsDraw assembly. Mickey's own flags, window
  * alias, and callee interface determine this body.
  */
-void func_8004C0C4(Gfx **displayList, void *matrix, void *vertices) {
+void fontWindowsDraw(Gfx **displayList, void *matrix, void *vertices) {
     DialogueBoxBackground *window;
     s32 i;
 
@@ -701,7 +701,7 @@ void func_8004C0C4(Gfx **displayList, void *matrix, void *vertices) {
     i = 1;
     do {
         if (window->flags & 0x8000) {
-            func_8004C200(displayList, NULL, NULL, i);
+            fontWindowDraw(displayList, NULL, NULL, i);
         }
         i++;
         window++;
@@ -732,7 +732,7 @@ void func_8004C140(Gfx **displayList, s32 x1, s32 y1, s32 x2, s32 y2) {
  * render_dialogue_box body. Mickey's own instructions and data layout
  * determine the commands, dimensions, and omission of DKR's 3D setup.
  */
-void func_8004C200(Gfx **displayList, void *matrix, void *vertices,
+void fontWindowDraw(Gfx **displayList, void *matrix, void *vertices,
                    s32 windowId) {
     DialogueBoxBackground *window;
     DialogueTextElement *element;
@@ -954,7 +954,7 @@ FontGlyphData *func_8004C690(u8 character) {
     }
     return result;
 }
-void func_8004C8D8(FontTextureHeader *texture, s32 unused) {
+void fontCreateDisplayList(FontTextureHeader *texture, s32 unused) {
     Gfx *displayList;
     Gfx *state;
     s32 i;

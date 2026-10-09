@@ -241,7 +241,7 @@ overlay callers/callees outside the range were observed.
 | `0x4BCF8` | `0x44` | `func_8004B0F8` | `fontPrintXY` | B/D, matched C | calls `0x4BD3C` |
 | `0x4BD3C` | `0xA0` | `func_8004B13C` | `fontPrintWindowXY` | B/D, matched C | calls `0x4BDDC` |
 | `0x4BDDC` | `0x8B0` | `func_8004B1DC` | JFG `func_80070518` | A, matched C | calls `0x4DF9C`, `0x4C68C`, `0x4D290`, ext |
-| `0x4C68C` | `0xB8` | `func_8004BA8C` | `fontStringWidth` | B/D, reproof | calls `0x4DF9C`; called twice by `0x4BDDC`, once by `0x4C8C4`, and by overlays 41 and 45 |
+| `0x4C68C` | `0xB8` | `fontStringWidth` | `fontStringWidth` | B/D, reproof | calls `0x4DF9C`; called twice by `0x4BDDC`, once by `0x4C8C4`, and by overlays 41 and 45 |
 | `0x4C744` | `0x9C` | `func_8004BB44` | `fontWindowSize` | D, matched C | leaf; ext callers |
 | `0x4C7E0` | `0x1C` | `func_8004BBE0` | `fontWindowUseFont` | D, matched C | leaf; ext callers |
 | `0x4C7FC` | `0x40` | `fontWindowColour` | same | A, matched C | leaf; ext callers |
@@ -252,21 +252,21 @@ overlay callers/callees outside the range were observed.
 | `0x4CBB0` | `0x28` | `func_8004BFB0` | `fontWindowEnable` | D, matched C | leaf; ext callers |
 | `0x4CBD8` | `0x28` | `func_8004BFD8` | `fontWindowDisable` | D, matched C | leaf; ext callers |
 | `0x4CC00` | `0xC4` | `func_8004C000` | `fontStringAddNumber` | D, matched C | leaf; called by `0x4D1A4` |
-| `0x4CCC4` | `0x7C` | `func_8004C0C4` | `fontWindowsDraw` | B | calls `0x4CE00`; ext caller |
+| `0x4CCC4` | `0x7C` | `fontWindowsDraw` | `fontWindowsDraw` | B | calls `0x4CE00`; ext caller |
 | `0x4CD40` | `0xC0` | `func_8004C140` | JFG `func_80071564` | D | ext callee; called by `0x4CE00` |
-| `0x4CE00` | `0x3A4` | `func_8004C200` | `fontWindowDraw` | B | calls `0x4CD40`, `0x4D1A4`, `0x4BDDC` |
+| `0x4CE00` | `0x3A4` | `fontWindowDraw` | `fontWindowDraw` | B | calls `0x4CD40`, `0x4D1A4`, `0x4BDDC` |
 | `0x4D1A4` | `0xEC` | `func_8004C5A4` | JFG `func_80071A0C` | D, matched C | calls `0x4CC00`; in-range callers |
 | `0x4D290` | `0x248` | `func_8004C690` | JFG `func_80071B08` | D | ext callee; called by `0x4BDDC` |
-| `0x4D4D8` | `0xA54` | `func_8004C8D8` | `fontCreateDisplayList` | D | ext callee |
+| `0x4D4D8` | `0xA54` | `fontCreateDisplayList` | `fontCreateDisplayList` | D | ext callee |
 | `0x4DF2C` | `0x70` | `func_8004D32C` | no JFG counterpart | D | leaf; ext caller |
 | `0x4DF9C` | `0x70` | `func_8004D39C` | `fontConvertString` | D, plateau | leaf; in-range callers |
 | `0x4E00C` | `0x1B4` | `func_8004D40C` | `fontGetLine` | D | leaf |
-| `0x4CCC4` | `0x7C` | `func_8004C0C4` | `fontWindowsDraw` | B/D, matched C | calls `0x4CE00`; ext caller |
+| `0x4CCC4` | `0x7C` | `fontWindowsDraw` | `fontWindowsDraw` | B/D, matched C | calls `0x4CE00`; ext caller |
 | `0x4CD40` | `0xC0` | `func_8004C140` | DKR `render_fill_rectangle` | B/D, matched C | ext callee; called by `0x4CE00` |
-| `0x4CE00` | `0x3A4` | `func_8004C200` | `fontWindowDraw` | B/D, matched C | calls `0x4CD40`, `0x4D1A4`, `0x4BDDC` |
+| `0x4CE00` | `0x3A4` | `fontWindowDraw` | `fontWindowDraw` | B/D, matched C | calls `0x4CD40`, `0x4D1A4`, `0x4BDDC` |
 | `0x4D1A4` | `0xEC` | `func_8004C5A4` | JFG `func_80071A0C` | D, matched C | calls `0x4CC00`; in-range callers |
 | `0x4D290` | `0x248` | `func_8004C690` | JFG `func_80071B08` | D, plateau | ext callee; called by `0x4BDDC` |
-| `0x4D4D8` | `0xA54` | `func_8004C8D8` | `fontCreateDisplayList` | B/D, matched C | ext callee |
+| `0x4D4D8` | `0xA54` | `fontCreateDisplayList` | `fontCreateDisplayList` | B/D, matched C | ext callee |
 | `0x4DF2C` | `0x70` | `func_8004D32C` | no JFG counterpart | D, matched C | leaf; ext caller |
 | `0x4DF9C` | `0x70` | `func_8004D39C` | `fontConvertString` | B/D, matched C | leaf; in-range callers |
 | `0x4E00C` | `0x1B4` | `func_8004D40C` | `fontGetLine` | A, matched C | exact words, frame, relocations, and linked bytes |
@@ -292,7 +292,7 @@ Remaining: initial pool setup and saved-header copy schedule.
 frame, relocation identities, and linked ROM bytes match after bounded
 permutation resolved the final temp web.
 
-`func_8004BA8C` owns VRAM `0x8004BA8C..0x8004BB44`, ROM
+`fontStringWidth` owns VRAM `0x8004BA8C..0x8004BB44`, ROM
 `0x4C68C..0x4C744`: 184 bytes/46 words, frame `0x30`, and no target padding.
 The isolated object's trailing eight alignment bytes are outside the function.
 Historical policy-defective configured isolated and full-TU C are byte-identical

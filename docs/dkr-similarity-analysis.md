@@ -138,7 +138,7 @@ source provenance but remain assembly or `NON_MATCHING`:
 | overlays 31, 35, and 97 | 4 | 5,092 |
 | **Total** | **11** | **12,320** |
 
-Those targets are `func_8004BA8C`, `func_80026FB4`, `func_80040B88`,
+Those targets are `fontStringWidth`, `func_80026FB4`, `func_80040B88`,
 `rcpClearZBuffer`, `packInit`, `func_8000FAE0`, `func_8005830C`,
 `overlay31InitializeBuffers`, both DKR-adapted overlay 35 functions, and
 `overlay97InitScale`. Their prior non-exact outcomes are evidence that DKR

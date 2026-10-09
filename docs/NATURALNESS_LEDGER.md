@@ -578,7 +578,7 @@ Readable body;  one inert OR-zero plus triple-add indexing.
 - `src/main/track.c:3144` **B**: pointer passed as `(s32) rel` to an s32 parameter.
   Natural: fix the func_800115E4 prototype. Keep bytes: likely - same argument register.
 
-#### `func_8004C8D8`: A 0, B 0, C 2
+#### `fontCreateDisplayList`: A 0, B 0, C 2
 
 Natural display-list builder with only cosmetic issues.
 

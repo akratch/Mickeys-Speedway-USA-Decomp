@@ -14,7 +14,7 @@
       "reason": "Canonical review rejected the invented empty post-callback pointer condition; it is diagnostic codegen evidence, not promotable C."
     },
     "84329c328ddf355dd853932b691166c776d00b6f": {
-      "symbol": "func_8004BA8C",
+      "symbol": "fontStringWidth",
       "state": "superseded",
       "decision_commit": "3499cf4fdb7f21b75d4dfbad801cbd0cf8a596a0",
       "reason": "Canonical removed the artificial stackPad and empty-condition allocation aids, invalidated the retained 38/46 metrics for clean C, and replaced this historical plateau with a fresh fail-closed reproof plan."

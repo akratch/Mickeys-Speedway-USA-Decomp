@@ -740,7 +740,7 @@
       "reason": "The geometry-exact 51-word baseline exposes colour priority below y. Test moving the normal-colour reset outside its already-zero guard, preserving all graphics writes, to change colour lifetime without merging newline tails.",
       "source_commit": "bb9235c27df188c203b4c4575ed6ed30f9e10474"
     },
-    "func_8004BA8C": {
+    "fontStringWidth": {
       "ledger_commit": "9fa2314ec43c033254eb19b67d3494a2c67df7c9",
       "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
       "source_commit": "9fa2314ec43c033254eb19b67d3494a2c67df7c9"

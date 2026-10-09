@@ -844,7 +844,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41DrawItem.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_8004B0A4=overlay41SetModeReloc \
 		--redefine-sym func_8004B0DC=overlay41SetColorReloc \
-		--redefine-sym func_8004BA8C=overlay41MeasureReloc \
+		--redefine-sym fontStringWidth=overlay41MeasureReloc \
 		--redefine-sym func_8004B0B8=overlay41SetColorIntensityReloc \
 		--redefine-sym func_8004B0F8=overlay41DrawResourceReloc \
 		--redefine-sym gOverlay41Resources=gOverlay41ResourcesReloc $@ && \

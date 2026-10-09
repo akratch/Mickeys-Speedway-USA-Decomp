@@ -396,8 +396,8 @@
       "source_commit": "6091b1a01df312435a7fd6ecae778481fb795ce4"
     },
     "func_8002B040": {
-      "ledger_commit": "325e151a6ea4025f9121f27d1a3093da532da1d9",
-      "reason": "2026-10-09: exact-reference search of the 136-byte matrix routine in decoded permitted retail revisions. Prior object scans and the later 9380-byte/296-byte retail searches did not cover this routine. No C or compiler-flag sweep.",
+      "ledger_commit": "4170defc8fcfcf1b37df388466fd3166b765b10e",
+      "reason": "Search the previously omitted DK64 US retail image and its ten enumerated code gzip streams for the authenticated 136-byte matrix routine. This is binary coverage only; any hit still needs independent permitted-reference build proof.",
       "source_commit": "325e151a6ea4025f9121f27d1a3093da532da1d9"
     },
     "func_8002C69C": {

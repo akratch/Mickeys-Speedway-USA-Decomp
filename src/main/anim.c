@@ -1446,8 +1446,8 @@ void func_800517E0(void) {
                                   (s32) value);
                     break;
                 case 0x45:
-                    high = cursor->command & 0xFF;
                     value = (f32) *((u16 *) ((u8 *) cursor + 6));
+                    high = cursor->command & 0xFF;
                     packed2 = *((u16 *) ((u8 *) cursor + 8));
                     index = *((u16 *) ((u8 *) cursor + 0xA));
                     high2 = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
@@ -1692,9 +1692,9 @@ void func_800517E0(void) {
                         path->unk24 = path->unk25;
                         path->unk25 = frame68;
                         path->unk27 = 0;
+                        object->state39 = path->unk24;
                         path->unk26 = (u8) (s32) (value /
                                             hundred * scale);
-                        object->state39 = path->unk24;
                     }
                     break;
                 case 0x6A: {
@@ -1918,8 +1918,8 @@ void func_800517E0(void) {
                     D_8007D6A8 = ((s32) commandDuration * 0x3C) / 100;
                     duration = cursor->duration;
                     value = (f32) duration;
-                    cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     D_8007D6AC = value * factor;
+                    cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     currentCommand = (s8) (*((u16 *) ((u8 *) cursor - 2)) & 0xFF);
                     D_8007D6A4 = currentCommand;
                     break;
@@ -4007,10 +4007,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1100/1808 words
+ * score: 1106/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 590 at size 0: 0x29/0x2A sound handle via cast round-trip. Break pieces hang on the D_8007D6A4 a0 piece; faithful 0x6F/0x4B crowd its seed.
+ * summary: Aligned 583 at size 0: sound handle via cast round-trip; 0x7B/0x45/0x68 statement orders. Break pieces hang on the D_8007D6A4 a0 piece.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

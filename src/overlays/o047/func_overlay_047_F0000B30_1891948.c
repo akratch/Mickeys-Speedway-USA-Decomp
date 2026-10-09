@@ -746,6 +746,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 59 aligned at size 0 (masked 59): every frame home exact; five unused s32 cells flagged. Open: head cursor fp, +0x400, s7 to s8 at +0x1C00.
+ * summary: 59 aligned at size 0 (masked 59): every frame home exact; five unused cells flagged. Cursor fp priced (47 under force). Open: head, +0x400, s7 to s8.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

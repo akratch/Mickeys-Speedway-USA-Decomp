@@ -203,7 +203,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11Initialize.c.o: POSTPROCESS = \
 		--redefine-sym amTuneSetFade=overlay11ResidentFloatReloc \
 		--redefine-sym overlay66Select=overlay11Overlay66SelectReloc \
 		--redefine-sym func_80028F54=overlay11GetStatusReloc \
-		--redefine-sym func_8004B0A4=overlay11DrawModeReloc \
+		--redefine-sym fontUseFont=overlay11DrawModeReloc \
 		--redefine-sym func_8004B0B8=overlay11DrawColorReloc $@ && \
 	$(OBJCOPY) --add-symbol gOverlay11SwitchTableReloc=0x8,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \

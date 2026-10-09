@@ -233,25 +233,25 @@ overlay callers/callees outside the range were observed.
 | ROM | Size | Mickey symbol | JFG correspondence | Evidence | Calls |
 |---|---:|---|---|---|---|
 | `0x4BC40` | `0x24` | `fontSetWindow0` | same | A, matched C | leaf; ext callers |
-| `0x4BC64` | `0x0C` | `func_8004B064` | `fontSetButtonMode` | D, matched C | leaf; overlay caller |
+| `0x4BC64` | `0x0C` | `fontSetButtonMode` | `fontSetButtonMode` | D, matched C | leaf; overlay caller |
 | `0x4BC70` | `0x34` | `fontSetWindowNoise` | same | A, matched C | leaf |
-| `0x4BCA4` | `0x14` | `func_8004B0A4` | `fontUseFont` | D, matched C | leaf; text-setup callers |
+| `0x4BCA4` | `0x14` | `fontUseFont` | `fontUseFont` | D, matched C | leaf; text-setup callers |
 | `0x4BCB8` | `0x24` | `fontColour` | same | A, matched C | leaf; text-setup callers |
-| `0x4BCDC` | `0x1C` | `func_8004B0DC` | `fontBackground` | B/D, matched C | leaf; text-setup callers |
-| `0x4BCF8` | `0x44` | `func_8004B0F8` | `fontPrintXY` | B/D, matched C | calls `0x4BD3C` |
-| `0x4BD3C` | `0xA0` | `func_8004B13C` | `fontPrintWindowXY` | B/D, matched C | calls `0x4BDDC` |
+| `0x4BCDC` | `0x1C` | `fontBackground` | `fontBackground` | B/D, matched C | leaf; text-setup callers |
+| `0x4BCF8` | `0x44` | `fontPrintXY` | `fontPrintXY` | B/D, matched C | calls `0x4BD3C` |
+| `0x4BD3C` | `0xA0` | `fontPrintWindowXY` | `fontPrintWindowXY` | B/D, matched C | calls `0x4BDDC` |
 | `0x4BDDC` | `0x8B0` | `func_8004B1DC` | JFG `func_80070518` | A, matched C | calls `0x4DF9C`, `0x4C68C`, `0x4D290`, ext |
 | `0x4C68C` | `0xB8` | `fontStringWidth` | `fontStringWidth` | B/D, reproof | calls `0x4DF9C`; called twice by `0x4BDDC`, once by `0x4C8C4`, and by overlays 41 and 45 |
-| `0x4C744` | `0x9C` | `func_8004BB44` | `fontWindowSize` | D, matched C | leaf; ext callers |
-| `0x4C7E0` | `0x1C` | `func_8004BBE0` | `fontWindowUseFont` | D, matched C | leaf; ext callers |
+| `0x4C744` | `0x9C` | `fontWindowSize` | `fontWindowSize` | D, matched C | leaf; ext callers |
+| `0x4C7E0` | `0x1C` | `fontWindowUseFont` | `fontWindowUseFont` | D, matched C | leaf; ext callers |
 | `0x4C7FC` | `0x40` | `fontWindowColour` | same | A, matched C | leaf; ext callers |
 | `0x4C83C` | `0x48` | `fontWindowFontColour` | same | A, matched C | leaf; ext callers |
 | `0x4C884` | `0x40` | `fontWindowFontBackground` | same | A, matched C | leaf; ext callers |
-| `0x4C8C4` | `0x2A0` | `func_8004BCC4` | `fontWindowAddStringXY` | B, plateau | calls `0x4D1A4`, `0x4C68C`; ext callers |
-| `0x4CB64` | `0x4C` | `func_8004BF64` | `fontWindowFlushStrings` | D, matched C | leaf; ext callers |
-| `0x4CBB0` | `0x28` | `func_8004BFB0` | `fontWindowEnable` | D, matched C | leaf; ext callers |
-| `0x4CBD8` | `0x28` | `func_8004BFD8` | `fontWindowDisable` | D, matched C | leaf; ext callers |
-| `0x4CC00` | `0xC4` | `func_8004C000` | `fontStringAddNumber` | D, matched C | leaf; called by `0x4D1A4` |
+| `0x4C8C4` | `0x2A0` | `fontWindowAddStringXY` | `fontWindowAddStringXY` | B, plateau | calls `0x4D1A4`, `0x4C68C`; ext callers |
+| `0x4CB64` | `0x4C` | `fontWindowFlushStrings` | `fontWindowFlushStrings` | D, matched C | leaf; ext callers |
+| `0x4CBB0` | `0x28` | `fontWindowEnable` | `fontWindowEnable` | D, matched C | leaf; ext callers |
+| `0x4CBD8` | `0x28` | `fontWindowDisable` | `fontWindowDisable` | D, matched C | leaf; ext callers |
+| `0x4CC00` | `0xC4` | `fontStringAddNumber` | `fontStringAddNumber` | D, matched C | leaf; called by `0x4D1A4` |
 | `0x4CCC4` | `0x7C` | `fontWindowsDraw` | `fontWindowsDraw` | B | calls `0x4CE00`; ext caller |
 | `0x4CD40` | `0xC0` | `func_8004C140` | JFG `func_80071564` | D | ext callee; called by `0x4CE00` |
 | `0x4CE00` | `0x3A4` | `fontWindowDraw` | `fontWindowDraw` | B | calls `0x4CD40`, `0x4D1A4`, `0x4BDDC` |
@@ -307,7 +307,7 @@ All nine target tuples were exact in the historical C: pairs to `D_800D60E4` at
 `+0x04/+0x08`, `D_800D6628` at `+0x14/+0x28`, and `D_800D6644` at
 `+0x34/+0x38` and `+0x48/+0x54`, plus the `func_8004D39C` call at `+0x40`.
 ORT 880 exports resident offset `0x4B63C`. Its five callers are
-`func_8004B1DC+0x1E4/+0x294`, `func_8004BCC4+0x12C`,
+`func_8004B1DC+0x1E4/+0x294`, `fontWindowAddStringXY+0x12C`,
 `overlay41DrawItem+0x4C`, and `overlay45ConfigureLayout+0x9C`; there are no
 other direct, runtime-table, overlay-SYMBOL, or stored-pointer inbounds. The
 existing Overlay 41 rename and Overlay 45 proxy preserve the runtime carriers;

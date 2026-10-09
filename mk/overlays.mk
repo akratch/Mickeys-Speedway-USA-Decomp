@@ -842,11 +842,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41DrawItem.c.o: \
 	$(TOOLS_DIR)/trim_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41DrawItem.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym func_8004B0A4=overlay41SetModeReloc \
-		--redefine-sym func_8004B0DC=overlay41SetColorReloc \
+		--redefine-sym fontUseFont=overlay41SetModeReloc \
+		--redefine-sym fontBackground=overlay41SetColorReloc \
 		--redefine-sym fontStringWidth=overlay41MeasureReloc \
 		--redefine-sym func_8004B0B8=overlay41SetColorIntensityReloc \
-		--redefine-sym func_8004B0F8=overlay41DrawResourceReloc \
+		--redefine-sym fontPrintXY=overlay41DrawResourceReloc \
 		--redefine-sym gOverlay41Resources=gOverlay41ResourcesReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x15C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53ReleaseResources.c.o: POSTPROCESS = \
@@ -1805,7 +1805,7 @@ $(O45_RENDER_OBJ): CFLAGS += -Wab,-r4300_mul
 $(O45_RENDER_OBJ): POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym texDPInit=overlay45DisplayCallReloc \
-		--redefine-sym func_8004B0A4=overlay45FontCallReloc \
+		--redefine-sym fontUseFont=overlay45FontCallReloc \
 		--redefine-sym camSetView=overlay45MatrixPushReloc \
 		--redefine-sym func_80022A50=overlay45MatrixLoadReloc \
 		--redefine-sym func_8004B0B8=overlay45ColorCallReloc \
@@ -1889,8 +1889,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000B30_1891948.c.o: POS
 		--redefine-sym texDPInit=texDPInit_o047Reloc \
 		--redefine-sym texDPTextureX=texDPTextureX_o047Reloc \
 		--redefine-sym texAnimateTexSprite=texAnimateTexSprite_o047Reloc \
-		--redefine-sym func_8004B0A4=func_8004B0A4_o047Reloc \
-		--redefine-sym func_8004B0F8=func_8004B0F8_o047Reloc \
+		--redefine-sym fontUseFont=fontUseFont_o047Reloc \
+		--redefine-sym fontPrintXY=fontPrintXY_o047Reloc \
 		--redefine-sym func_8005ABA8=func_8005ABA8_o047Reloc \
 		--redefine-sym func_8005AD64=func_8005AD64_o047Reloc \
 		--redefine-sym joyGetPressed=joyGetPressed_o047Reloc \

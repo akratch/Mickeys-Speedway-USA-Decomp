@@ -2679,13 +2679,25 @@ func_8003A590 = 0x8003A590; // type:func size:0x10 tier-D ROM 0x3b190 canonical 
 diCpuTraceInit = 0x800459B0; // type:func size:0x54 ROM 0x465b0 tier-A exact C, JFG diCpuTraceInit
 // jfg:src/font.c.o
 fontSetWindow0 = 0x8004B040; // type:func size:0x24   ROM 0x4bc40  src/font.c.o  masked=2/9
+fontSetButtonMode = 0x8004B064; // type:func size:0xC ROM 0x4bc64 matched C, name tier-B JFG src/font.c order+named anchors fontSetWindow0/fontSetWindowNoise, JFG size equal
 fontSetWindowNoise = 0x8004B070; // type:func size:0x34   ROM 0x4bc70  src/font.c.o  masked=6/13
+fontUseFont = 0x8004B0A4; // type:func size:0x14 ROM 0x4bca4 matched C, name tier-B JFG src/font.c order+named anchors fontSetWindowNoise/fontColour, JFG size equal
 fontColour = 0x8004B0B8; // type:func size:0x24   ROM 0x4bcb8  src/font.c.o  masked=2/9
+fontBackground = 0x8004B0DC; // type:func size:0x1C ROM 0x4bcdc matched C, name tier-B JFG src/font.c order+named anchors fontColour/fontStringWidth, JFG size equal, 5-word byte match romocc 1
+fontPrintXY = 0x8004B0F8; // type:func size:0x44 ROM 0x4bcf8 matched C, name tier-B JFG src/font.c order+named anchors fontColour/fontStringWidth, JFG size equal
+fontPrintWindowXY = 0x8004B13C; // type:func size:0xA0 ROM 0x4bd3c matched C, name tier-B JFG src/font.c order+named anchors fontColour/fontStringWidth
 func_8004B1DC = 0x8004B1DC; // type:func size:0x8B0 tier-A stock C byte identity, font text renderer, frame 0x80
 fontStringWidth = 0x8004BA8C; // type:func size:0xB8 ROM 0x4c68c tier-B JFG fontStringWidth role/order NON_MATCHING reproof, historical policy-defective C 38/46, current metrics unknown, name tier-B JFG src/font.c order+named anchors fontColour/fontWindowColour, JFG size 0xB8 equal, now matched C
+fontWindowSize = 0x8004BB44; // type:func size:0x9C ROM 0x4c744 matched C, name tier-B JFG src/font.c order+named anchors fontStringWidth/fontWindowColour
+fontWindowUseFont = 0x8004BBE0; // type:func size:0x1C ROM 0x4c7e0 matched C, name tier-B JFG src/font.c order+named anchors fontStringWidth/fontWindowColour, JFG size equal, 5-word byte match romocc 1
 fontWindowColour = 0x8004BBFC; // type:func size:0x40   ROM 0x4c7fc  src/font.c.o  masked=2/16
 fontWindowFontColour = 0x8004BC3C; // type:func size:0x48   ROM 0x4c83c  src/font.c.o  masked=2/18
 fontWindowFontBackground = 0x8004BC84; // type:func size:0x40   ROM 0x4c884  src/font.c.o  masked=2/16
+fontWindowAddStringXY = 0x8004BCC4; // type:func size:0x2A0 ROM 0x4c8c4 matched C, name tier-B JFG src/font.c order+named anchors fontWindowFontBackground/fontWindowsDraw
+fontWindowFlushStrings = 0x8004BF64; // type:func size:0x4C ROM 0x4cb64 matched C, name tier-B JFG src/font.c order+named anchors fontWindowFontBackground/fontWindowsDraw
+fontWindowEnable = 0x8004BFB0; // type:func size:0x28 ROM 0x4cbb0 matched C, name tier-B JFG src/font.c order+named anchors fontWindowFontBackground/fontWindowsDraw
+fontWindowDisable = 0x8004BFD8; // type:func size:0x28 ROM 0x4cbd8 matched C, name tier-B JFG src/font.c order+named anchors fontWindowFontBackground/fontWindowsDraw
+fontStringAddNumber = 0x8004C000; // type:func size:0xC4 ROM 0x4cc00 matched C, name tier-B JFG src/font.c order+named anchors fontWindowFontBackground/fontWindowsDraw, JFG size equal
 fontWindowsDraw = 0x8004C0C4; // type:func size:0x7C ROM 0x4ccc4 evidence-tier-B/D JFG fontWindowsDraw organization and Mickey window-flag flow C-match -O2 -mips2, name tier-B JFG src/font.c order+named anchors fontWindowFontBackground, JFG size 0x7C equal
 func_8004C140 = 0x8004C140; // type:func size:0xC0 ROM 0x4cd40 evidence-tier-B/D DKR render_fill_rectangle body and Mickey framebuffer-size call C-match -O2 -mips2
 fontWindowDraw = 0x8004C200; // type:func size:0x3A4 ROM 0x4ce00 evidence-tier-B/D DKR render_dialogue_box organization and Mickey display-list/text flow C-match -O2 -mips2, name tier-B JFG src/font.c order+named anchors fontWindowsDraw

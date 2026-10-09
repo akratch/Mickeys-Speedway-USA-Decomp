@@ -14,7 +14,7 @@ extern void func_800290AC(s32 mode);
 extern void amTuneSetFade(f32 value, s32 arg1);
 extern void overlay66Select(s32 selection);
 extern Overlay11Status *func_80028F54(void);
-extern void func_8004B0A4(s32 mode);
+extern void fontUseFont(s32 mode);
 extern void func_8004B0B8(s32 red, s32 green, s32 blue, s32 alpha,
                           s32 intensity);
 extern void func_overlay_011_F0000AF4_186933C(void);
@@ -38,7 +38,7 @@ void overlay11Initialize(s32 argument) {
     overlay66Select(1);
     status = func_80028F54();
     if (gOverlay11Initialized == 0) {
-        func_8004B0A4(3);
+        fontUseFont(3);
         func_8004B0B8(255, 255, 255, 0, 255);
         switch (status->mode) {
         case 0:

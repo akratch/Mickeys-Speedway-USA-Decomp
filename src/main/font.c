@@ -93,7 +93,7 @@ void fontWindowDraw(Gfx **displayList, void *matrix, void *vertices,
                    s32 windowId);
 void piRomLoadSection(s32 resourceId, void *destination, u32 offset, s32 size);
 
-void func_8004B13C(Gfx **displayList, s32 windowId, s32 xpos, s32 ypos,
+void fontPrintWindowXY(Gfx **displayList, s32 windowId, s32 xpos, s32 ypos,
                    char *text, s32 alignmentFlags);
 void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
                    char *text, s32 alignmentFlags);
@@ -107,7 +107,7 @@ void fontSetWindow0(s32 width, s32 height) {
     D_800D64E8[0].height = height;
 }
 
-void func_8004B064(s32 mode) {
+void fontSetButtonMode(s32 mode) {
     D_800D664D = mode;
 }
 
@@ -117,7 +117,7 @@ void fontSetWindowNoise(u8 red, u8 green, u8 blue) {
     D_8007D540 = blue;
 }
 
-void func_8004B0A4(s32 font) {
+void fontUseFont(s32 font) {
     D_800D60E0 = font;
     D_800D64E8[0].font = font;
 }
@@ -130,19 +130,19 @@ void fontColour(s32 red, s32 green, s32 blue, s32 alpha, s32 opacity) {
     D_800D64E8[0].opacity = opacity;
 }
 
-void func_8004B0DC(s32 red, s32 green, s32 blue, s32 alpha) {
+void fontBackground(s32 red, s32 green, s32 blue, s32 alpha) {
     D_800D64E8[0].textBGColourR = red;
     D_800D64E8[0].textBGColourG = green;
     D_800D64E8[0].textBGColourB = blue;
     D_800D64E8[0].textBGColourA = alpha;
 }
 
-void func_8004B0F8(Gfx **displayList, s32 xpos, s32 ypos, char *text,
+void fontPrintXY(Gfx **displayList, s32 xpos, s32 ypos, char *text,
                    s32 alignmentFlags) {
-    func_8004B13C(displayList, 0, xpos, ypos, text, alignmentFlags);
+    fontPrintWindowXY(displayList, 0, xpos, ypos, text, alignmentFlags);
 }
 
-void func_8004B13C(Gfx **displayList, s32 windowId, s32 xpos, s32 ypos,
+void fontPrintWindowXY(Gfx **displayList, s32 windowId, s32 xpos, s32 ypos,
                    char *text, s32 alignmentFlags) {
     if (windowId >= 0 && windowId < 8) {
         DialogueBoxBackground *window = &D_800D64E8[windowId];
@@ -482,7 +482,7 @@ s32 fontStringWidth(char *text, s32 font, s32 convertString) {
     return width;
 }
 
-void func_8004BB44(s32 windowId, s32 x1, s32 y1, s32 x2, s32 y2) {
+void fontWindowSize(s32 windowId, s32 x1, s32 y1, s32 x2, s32 y2) {
     if (windowId > 0 && windowId < 8) {
         DialogueBoxBackground *window = &D_800D64E8[windowId];
 
@@ -507,7 +507,7 @@ void func_8004BB44(s32 windowId, s32 x1, s32 y1, s32 x2, s32 y2) {
     }
 }
 
-void func_8004BBE0(s32 windowId, s32 font) {
+void fontWindowUseFont(s32 windowId, s32 font) {
     D_800D64E8[windowId].font = font;
 }
 
@@ -548,7 +548,7 @@ void fontWindowFontBackground(s32 windowId, s32 red, s32 green, s32 blue,
     }
 }
 
-void *func_8004BCC4(s32 windowId, s32 posX, s32 posY, char *text, s32 number,
+void *fontWindowAddStringXY(s32 windowId, s32 posX, s32 posY, char *text, s32 number,
                     s32 flags) {
     s32 i;
     s32 width;
@@ -629,7 +629,7 @@ void *func_8004BCC4(s32 windowId, s32 posX, s32 posY, char *text, s32 number,
     return result;
 }
 
-void func_8004BF64(s32 windowId) {
+void fontWindowFlushStrings(s32 windowId) {
     DialogueBoxBackground *window;
     DialogueBox *textBox;
     DialogueBox *current;
@@ -646,15 +646,15 @@ void func_8004BF64(s32 windowId) {
     }
 }
 
-void func_8004BFB0(s32 windowId) {
+void fontWindowEnable(s32 windowId) {
     D_800D64E8[windowId].flags |= 0x8000;
 }
 
-void func_8004BFD8(s32 windowId) {
+void fontWindowDisable(s32 windowId) {
     D_800D64E8[windowId].flags &= 0x7FFF;
 }
 
-void func_8004C000(char **outString, s32 number) {
+void fontStringAddNumber(char **outString, s32 number) {
     u8 digit;
     s32 i;
     s32 hasDigit;
@@ -815,13 +815,13 @@ void func_8004C5A4(char *input, char *output, s32 number) {
             char nextChar = *input++;
 
             if (nextChar == 0xE) {
-                func_8004C000(&output, number);
+                fontStringAddNumber(&output, number);
             } else {
                 *output++ = currentChar;
                 *output++ = nextChar;
             }
         } else if (currentChar == '~') {
-            func_8004C000(&output, number);
+            fontStringAddNumber(&output, number);
         } else {
             *output++ = currentChar;
         }

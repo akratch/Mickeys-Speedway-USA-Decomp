@@ -32,10 +32,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0000874_188EC6C.c.o: POS
 		--redefine-sym func_8002F618=func_8002F618_o046Reloc \
 		--redefine-sym texDPInit=texDPInit_o046Reloc \
 		--redefine-sym func_80037658=func_80037658_o046Reloc \
-		--redefine-sym func_8004B0A4=func_8004B0A4_o046Reloc \
+		--redefine-sym fontUseFont=fontUseFont_o046Reloc \
 		--redefine-sym func_8004B0B8=func_8004B0B8_o046Reloc \
-		--redefine-sym func_8004B0DC=func_8004B0DC_o046Reloc \
-		--redefine-sym func_8004B0F8=func_8004B0F8_o046Reloc \
+		--redefine-sym fontBackground=fontBackground_o046Reloc \
+		--redefine-sym fontPrintXY=fontPrintXY_o046Reloc \
 		--redefine-sym mathRnd=mathRnd_o046Reloc \
 		--add-symbol gOverlay46ParticleStepPoolReloc=0x24,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
@@ -79,9 +79,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46UpdateSequence.c.o: POSTPROCESS =
 		--redefine-sym func_80037658=func_80037658_o046Reloc \
 		--redefine-sym func_80037664=func_80037664_o046Reloc \
 		--redefine-sym func_8003A680=func_8003A680_o046Reloc \
-		--redefine-sym func_8004B0A4=func_8004B0A4_o046Reloc \
+		--redefine-sym fontUseFont=fontUseFont_o046Reloc \
 		--redefine-sym func_8004B0B8=func_8004B0B8_o046Reloc \
-		--redefine-sym func_8004B0DC=func_8004B0DC_o046Reloc \
+		--redefine-sym fontBackground=fontBackground_o046Reloc \
 		--redefine-sym func_80058240=func_80058240_o046Reloc \
 		--redefine-sym mathRnd=mathRnd_o046Reloc \
 		--add-symbol gOverlay46SequenceJumpTableReloc=0x34,global $@ && \

@@ -167,7 +167,7 @@ extern O57Pair gO57SpawnPairs3E8Reloc[4];
 extern O57Thing *gO57Spawned150Reloc[4];
 
 extern void *func_80028F54(void);
-extern void func_8004B0A4(s32 font);
+extern void fontUseFont(s32 font);
 extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha, s32 opacity);
 extern void o57PrepareDescriptorReloc(Overlay45ResourceDescriptor *descriptor,
                                       s32 value);
@@ -214,7 +214,7 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     choiceMask = 0;
     gO57Previous108Reloc = gO57ResidentCurrentReloc;
     gO57Runtime1B8Reloc = func_80028F54();
-    func_8004B0A4(3);
+    fontUseFont(3);
     fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
 
     gO57Descriptor00Reloc = overlay45CreateDescriptor_o057Reloc(

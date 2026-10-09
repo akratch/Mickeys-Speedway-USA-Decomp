@@ -44,7 +44,7 @@ This is a names-only audit of every function body guarded by `NON_MATCHING` in `
 | `debug_text_parse` | `src/main/diprint.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `func_8004B1DC` | `src/main/font.c` | none | — | No ownership change; continue source/codegen work. |
 | `fontStringWidth` | `src/main/font.c` | none | — | Historical policy-defective configured isolated/full-TU C is diagnostic 38/46 raw/normalized words, frame `0x30`, first `+0x30`, with all nine tuples exact; it used artificial `stackPad`/empty-condition aids. Clean C removes them but is uncompiled, so every current metric is unknown. ORT 880 has three resident and two overlay callers; linked equality is fallback-only. Reprove configured V0, using one historical control only on material drift; then retain 119 configurations, trace once, try a block-scoped glyph index and one trace-selected lifetime form, and combine only independent strict gains. Cap 122 deterministic builds plus trace, 123 only for control, no generic batch. |
-| `func_8004BCC4` | `src/main/font.c` | matched | — | Promoted to exact C; no ownership work remains. |
+| `fontWindowAddStringXY` | `src/main/font.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `func_8004C690` | `src/main/font.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_8004D40C` | `src/main/font.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `fxMakeConeTextureCoords` | `src/main/fx.c` | none | — | No ownership change; continue source/codegen work. |

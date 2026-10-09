@@ -281,9 +281,9 @@ extern void levelFreeAll(void);
 extern void rumbleRumbles(s32);
 extern void rumbleUpdate(void);
 extern void reset_particles(void);
-extern void func_8004B0A4(s32);
-extern void func_8004B0DC(s32, s32, s32, s32);
-extern void func_8004B0F8(Gfx **, s32, s32, char *, s32);
+extern void fontUseFont(s32);
+extern void fontBackground(s32, s32, s32, s32);
+extern void fontPrintXY(Gfx **, s32, s32, char *, s32);
 extern MainDebugMemory *func_80005820(s32);
 extern s32 sprintf(char *, const char *, ...);
 extern u8 *levelGetLevel(void);
@@ -329,8 +329,8 @@ extern void func_80049E4C(Gfx **, s32);
 extern void amAudioTick(u8);
 extern void diPrintfAll(Gfx **);
 extern void fontWindowsDraw(Gfx **, Mtx **, MainVertex **);
-extern void func_8004BFD8(s32);
-extern void func_8004BF64(s32);
+extern void fontWindowDisable(s32);
+extern void fontWindowFlushStrings(s32);
 extern s32 func_800291E4(void);
 extern void func_800376CC(s32);
 extern void func_80038190(Gfx **, Mtx **, MainVertex **);
@@ -597,9 +597,9 @@ void func_80026FB4(void) {
         func_800293D0();
     }
     fontWindowsDraw(&D_800CF518, &D_800CF530, &D_800CF588);
-    func_8004BFD8(4);
+    fontWindowDisable(4);
 
-    func_8004BF64(4);
+    fontWindowFlushStrings(4);
     if (drawTransition != 0) {
         func_80049E4C(&D_800CF518, 1);
     }
@@ -1625,35 +1625,35 @@ void func_800293D0(void) {
     MainDebugMemory *memory;
 
     if (D_8007A168 != 13) {
-        func_8004B0A4(2);
+        fontUseFont(2);
         fontColour(255, 255, 255, 255, 255);
-        func_8004B0DC(0, 0, 0, 0);
+        fontBackground(0, 0, 0, 0);
         memory = func_80005820(0);
         if ((memory != NULL) || (D_80078DF0 != 0)) {
             frontDrawRectangle(&D_800CF518, 0x18, 0xAC, 0x6C, 0xD8, 0xC0);
         }
         if (memory != NULL) {
             sprintf(text, D_80081B98, (s32) memory->valueC);
-            func_8004B0F8(&D_800CF518, 0x1C, 0xAF, text, 0);
+            fontPrintXY(&D_800CF518, 0x1C, 0xAF, text, 0);
             sprintf(text, D_80081BA0, (s32) memory->value10);
-            func_8004B0F8(&D_800CF518, 0x1C, 0xB9, text, 0);
+            fontPrintXY(&D_800CF518, 0x1C, 0xB9, text, 0);
             sprintf(text, D_80081BA8, (s32) memory->value14);
-            func_8004B0F8(&D_800CF518, 0x1C, 0xC3, text, 0);
+            fontPrintXY(&D_800CF518, 0x1C, 0xC3, text, 0);
             ratio = (f32) memory->count / D_80081BD0;
             sprintf(text, D_80081BB0, &ratio);
-            func_8004B0F8(&D_800CF518, 0x1C, 0xCD, text, 0);
+            fontPrintXY(&D_800CF518, 0x1C, 0xCD, text, 0);
         }
         if (D_80078DF0 & 1) {
-            func_8004B0F8(&D_800CF518, 0x62, 0xAF, D_80081BBC, 0);
+            fontPrintXY(&D_800CF518, 0x62, 0xAF, D_80081BBC, 0);
         }
         if (D_80078DF0 & 2) {
-            func_8004B0F8(&D_800CF518, 0x62, 0xB9, D_80081BC0, 0);
+            fontPrintXY(&D_800CF518, 0x62, 0xB9, D_80081BC0, 0);
         }
         if (D_80078DF0 & 4) {
-            func_8004B0F8(&D_800CF518, 0x62, 0xC3, D_80081BC4, 0);
+            fontPrintXY(&D_800CF518, 0x62, 0xC3, D_80081BC4, 0);
         }
         if (D_80078DF0 & 8) {
-            func_8004B0F8(&D_800CF518, 0x62, 0xCD, D_80081BC8, 0);
+            fontPrintXY(&D_800CF518, 0x62, 0xCD, D_80081BC8, 0);
         }
     }
 }

@@ -1665,7 +1665,7 @@ HI16/LO16 pairs to `D_800D60E4` at `+0x04/+0x08`, `D_800D6628` at
 `+0x14/+0x28`, and `D_800D6644` at `+0x34/+0x38` and `+0x48/+0x54`, plus
 an R_MIPS_26 call to `func_8004D39C` at `+0x40`. ORT 880 exports resident
 offset `0x4B63C`; resident callers are `func_8004B1DC+0x1E4/+0x294` and
-`func_8004BCC4+0x12C`, while Overlay 41 table-1 record 88 at module `+0x1CD0`
+`fontWindowAddStringXY+0x12C`, while Overlay 41 table-1 record 88 at module `+0x1CD0`
 and Overlay 45 record 22 at `+0x3B0` call it from `overlay41DrawItem+0x4C`
 and `overlay45ConfigureLayout+0x9C`. No additional direct JAL, resident
 runtime-table, overlay SYMBOL, or stored-pointer inbound is authenticated.

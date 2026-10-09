@@ -72,7 +72,7 @@ extern void texDPInit(MenuCommand **displayList);
 extern void freeFrontEndItem(s32 assetId);
 extern void loadFrontEndItem(s32 assetId);
 extern void func_80039720(s32 updateRate);
-extern void func_8004BF64(s32 windowId);
+extern void fontWindowFlushStrings(s32 windowId);
 extern void diRcpTrace(s32 arg0, u8 *source, s32 line);
 extern u32 joyGetButtons(s32 controller);
 extern u32 joyGetPressed(s32 controller);
@@ -257,9 +257,9 @@ typedef struct MenuLanguageText {
     char *demoMessage;
 } MenuLanguageText;
 extern s32 *D_8007C0B8;
-extern void func_8004B0A4(s32 font);
-extern void func_8004B0DC(s32 red, s32 green, s32 blue, s32 alpha);
-extern void func_8004B0F8(MenuCommand **displayList, s32 x, s32 y,
+extern void fontUseFont(s32 font);
+extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);
+extern void fontPrintXY(MenuCommand **displayList, s32 x, s32 y,
                           char *text, s32 alignmentFlags);
 extern void func_80009E78(MenuCommand **commands, void **matrices,
                           void **vertices, void *object);
@@ -386,7 +386,7 @@ void frontFreeMode(void) {
         selection = func_80028F54();
         switch (D_8007C0A0) {
         case 0:
-            func_8004BF64(1);
+            fontWindowFlushStrings(1);
             break;
         case 1:
             break;
@@ -714,13 +714,13 @@ void frontDemoMessage(MenuCommand **displayList, s32 updateRate) {
         y = 0xD0;
         viConvertXY(&x, &y);
         setLanguage(frontGetLanguage());
-        func_8004B0A4(2);
-        func_8004B0DC(0, 0, 0, 0);
+        fontUseFont(2);
+        fontBackground(0, 0, 0, 0);
         fontColour(0, 0, 0, 0xFF, 0xFF);
-        func_8004B0F8(displayList, x + 1, y + 1,
+        fontPrintXY(displayList, x + 1, y + 1,
                       ((MenuLanguageText *) D_8007C0B8)->demoMessage, 0xC);
         fontColour(0xFF, 0xFF, 0xFF, 0, 0xFF);
-        func_8004B0F8(displayList, x, y,
+        fontPrintXY(displayList, x, y,
                       ((MenuLanguageText *) D_8007C0B8)->demoMessage, 0xC);
     }
 }

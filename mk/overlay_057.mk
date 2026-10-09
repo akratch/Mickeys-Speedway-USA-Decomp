@@ -27,7 +27,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0000000_18A3BF8.c.o: POS
 		--redefine-sym func_8000590C=func_8000590C_o057Reloc \
 		--redefine-sym func_80028F54=func_80028F54_o057Reloc \
 		--redefine-sym func_8003A754=func_8003A754_o057Reloc \
-		--redefine-sym func_8004B0A4=func_8004B0A4_o057Reloc \
+		--redefine-sym fontUseFont=fontUseFont_o057Reloc \
 		--redefine-sym func_800508B4=func_800508B4_o057Reloc \
 		--redefine-sym func_8005AD64=func_8005AD64_o057Reloc \
 		--redefine-sym initColourCycle=initColourCycle_o057Reloc \
@@ -118,9 +118,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0004E18_18A8A10.c.o: POS
 		--redefine-sym func_8003A680=func_8003A680_o057Reloc \
 		--redefine-sym func_8003A700=func_8003A700_o057Reloc \
 		--redefine-sym func_800429A4=func_800429A4_o057Reloc \
-		--redefine-sym func_8004B0A4=func_8004B0A4_o057Reloc \
+		--redefine-sym fontUseFont=fontUseFont_o057Reloc \
 		--redefine-sym func_8004B0B8=func_8004B0B8_o057Reloc \
-		--redefine-sym func_8004B0F8=func_8004B0F8_o057Reloc \
+		--redefine-sym fontPrintXY=fontPrintXY_o057Reloc \
 		--redefine-sym func_80050688=func_80050688_o057Reloc \
 		--redefine-sym func_80050704=func_80050704_o057Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x12E0

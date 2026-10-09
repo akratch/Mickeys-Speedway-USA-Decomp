@@ -40,9 +40,9 @@ extern void amSndPlay(u16 sound, void **handle);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern void amTunePlay(u8 sequence);
 extern void amTuneSetFade(f32 fade, u8 volume);
-extern void func_8004B0A4(s32 font);
-extern void func_8004B0DC(s32 red, s32 green, s32 blue, s32 alpha);
-extern void func_8004B0F8(Gfx **commands, s32 x, s32 y, char *text, s32 flags);
+extern void fontUseFont(s32 font);
+extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);
+extern void fontPrintXY(Gfx **commands, s32 x, s32 y, char *text, s32 flags);
 extern void func_8002F618(Gfx **commands, RcpTextureNode *texture,
                         s32 x, s32 y, s32 red, s32 green, s32 blue, s32 alpha);
 extern void func_8002FB34(Gfx **commands, RcpTextureNode *texture,
@@ -295,7 +295,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
     }
     if (gOverlay60Data0A8 != NULL &&
         func_overlay_041_F000124C_1888584(gOverlay60Data2B8) != 0) {
-        func_8004B0A4(2);
+        fontUseFont(2);
         gOverlay60Data2A0 += ticks * 2;
         if (gOverlay60Data2A0 >= 0x100) {
             gOverlay60Data2A0 = 0xFF;
@@ -377,7 +377,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 }
                 sprintf(text, gOverlay60Data1F0, O60_TEXT(0x254),
                         gOverlay60Data298[D_800D3128_o060Reloc.bits.field9]);
-                func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x96, text, 0xC);
+                fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x96, text, 0xC);
                 if (gOverlay60Data2B0 == 1) {
                     fontColour(0x64, 0xFF, 0x64, 0xFF, gOverlay60Data2A4);
                     if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0 &&
@@ -390,7 +390,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 }
                 sprintf(text, gOverlay60Data1F8, O60_TEXT(0x258),
                         gOverlay60Data298[D_800D3128_o060Reloc.bits.field8]);
-                func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0xAA, text, 0xC);
+                fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xAA, text, 0xC);
                 break;
             case 2:
                 i = frontGet2PlayerSplit();
@@ -402,7 +402,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     }
                 }
                 fontColour(0x64, 0xFF, 0x64, 0xFF, gOverlay60Data2A4);
-                func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x9B,
+                fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x9B,
                               D_8007C0B8_o060Reloc[0x1E8 / 4 + i], 0xC);
                 break;
             case 3:
@@ -438,9 +438,9 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     } else {
                         fontColour(0, 0xBE, 0, 0xFF, gOverlay60Data2A4);
                     }
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x4D, y,
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x4D, y,
                                   D_8007C0B8_o060Reloc[0x2A4 / 4 + enabled[i]], 8);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0xC1, y,
+                    fontPrintXY(&D_800D3140_o060Reloc, 0xC1, y,
                         gOverlay60Data298[(D_8007BF1C_o060Reloc >> enabled[i]) & 1], 8);
                     y += 0xC;
                 }
@@ -476,10 +476,10 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     }
                     sprintf(text, O60_TEXT(0x2C8), gOverlay60Data2B0 + 1);
                     fontColour(0, 0xFF, 0, 0xFF, gOverlay60Data2A4);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x7F, text, 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x7F, text, 0xC);
                     fontColour(0xFF, 0xFF, 0, 0xFF, gOverlay60Data2A4);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x75, gOverlay60Data0C0, 0xC);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x89, gOverlay60Data0C4, 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x75, gOverlay60Data0C0, 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x89, gOverlay60Data0C4, 0xC);
                 }
                 break;
             case 5:
@@ -504,12 +504,12 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     func_8002F618(&D_800D3140_o060Reloc, &gOverlay60Data020,
                                   0x68, 0x8C, 0, 0xFF, 0, gOverlay60Data2A4);
                     fontColour(0, 0xFF, 0, 0xFF, gOverlay60Data2A4);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0xB9, O60_TEXT(0x298), 0xC);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0xC3, O60_TEXT(0x29C), 0xC);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0xCD, O60_TEXT(0x2A0), 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xB9, O60_TEXT(0x298), 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xC3, O60_TEXT(0x29C), 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xCD, O60_TEXT(0x2A0), 0xC);
                 } else {
                     fontColour(0, 0xFF, 0, 0xFF, gOverlay60Data2A4);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x9B, gOverlay60Data288[stereoMode], 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x9B, gOverlay60Data288[stereoMode], 0xC);
                 }
                 break;
             case 6:
@@ -569,7 +569,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 }
                 if (screenMode == 1) {
                     fontColour(0x64, 0xFF, 0x64, 0xFF, gOverlay60Data2A4);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x91, O60_TEXT(0x1DC), 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x91, O60_TEXT(0x1DC), 0xC);
                     row = frontGetWideAdjust();
                     if (D_800D31B4_o060Reloc & 8) {
                         row--;
@@ -579,16 +579,16 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     }
                     frontSetWideAdjust(row);
                     fontColour(0xFF, 0xFF, 0, 0xFF, gOverlay60Data2A4);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x6A, 0xB4, gOverlay60Data0C0, 4);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x6A, 0xB4, gOverlay60Data0C0, 4);
                     fontColour(0, 0xFF, 0, 0xFF, gOverlay60Data2A4);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x97, 0xB4, O60_TEXT(0x34), 4);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x97, 0xB4, O60_TEXT(0x34), 4);
                     fontColour(0xFF, 0xFF, 0, 0xFF, gOverlay60Data2A4);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x6A, 0xC3, gOverlay60Data0C4, 4);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x6A, 0xC3, gOverlay60Data0C4, 4);
                     fontColour(0, 0xFF, 0, 0xFF, gOverlay60Data2A4);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x97, 0xC3, O60_TEXT(0x38), 4);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x97, 0xC3, O60_TEXT(0x38), 4);
                 } else {
                     fontColour(0x64, 0xFF, 0x64, 0xFF, gOverlay60Data2A4);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x9B, O60_TEXT(0x1E0), 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x9B, O60_TEXT(0x1E0), 0xC);
                 }
                 frontSetScreenMode(screenMode);
                 break;
@@ -626,13 +626,13 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     } else {
                         fontColour(0, 0xD0, 0, 0xFF, gOverlay60Data2A4);
                     }
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x8F, O60_TEXT(0x280), 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x8F, O60_TEXT(0x280), 0xC);
                     if (gOverlay60Data2B0 == 1) {
                         fontColour(0x80, 0xFF, 0x80, 0xFF, gOverlay60Data2A4);
                     } else {
                         fontColour(0, 0xD0, 0, 0xFF, gOverlay60Data2A4);
                     }
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x9B, O60_TEXT(0x288), 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x9B, O60_TEXT(0x288), 0xC);
                     if (gOverlay60Data2B0 == 2) {
                         fontColour(0x80, 0xFF, 0x80, 0xFF, gOverlay60Data2A4);
                     } else if (D_800D3128_o060Reloc.unlocked != 0) {
@@ -640,13 +640,13 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     } else {
                         fontColour(0, 0x90, 0, 0xFF, gOverlay60Data2A4);
                     }
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0xA7, O60_TEXT(0x27C), 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xA7, O60_TEXT(0x27C), 0xC);
                     if (gOverlay60Data2B0 == 3) {
                         fontColour(0x80, 0xFF, 0x80, 0xFF, gOverlay60Data2A4);
                     } else {
                         fontColour(0, 0xD0, 0, 0xFF, gOverlay60Data2A4);
                     }
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0xB3, O60_TEXT(0x28C), 0xC);
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xB3, O60_TEXT(0x28C), 0xC);
                 } else {
                     switch (gOverlay60Data2B0) {
                     case 0:
@@ -686,11 +686,11 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         slots = func_800291C4();
                         i = levelGetBlurEffect(D_8007C0E8_o060Reloc[gOverlay60Data150]);
                         slot = (SavesSlot *)((u8 *)slots + i * 32);
-                        func_8004B0A4(2);
-                        func_8004B0DC(0, 0, 0, 0);
+                        fontUseFont(2);
+                        fontBackground(0, 0, 0, 0);
                         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-                        func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x7A, O60_TEXT(0xD0), 4);
-                        func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0xBA, O60_TEXT(0xD4), 4);
+                        fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x7A, O60_TEXT(0xD0), 4);
+                        fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xBA, O60_TEXT(0xD4), 4);
                         if (func_overlay_068_F000146C_18C85CC(
                                 D_8007C0E8_o060Reloc[gOverlay60Data150]) != 0) {
                             func_8002FB34(&D_800D3140_o060Reloc, &gOverlay60Data080,
@@ -712,14 +712,14 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                                 icon = record->character + 0x51;
                             }
                             gOverlay60Data060.texture = D_800D31C8_o060Reloc[icon];
-                            func_8004B0F8(&D_800D3140_o060Reloc, gOverlay60Data1B4[0],
+                            fontPrintXY(&D_800D3140_o060Reloc, gOverlay60Data1B4[0],
                                 gOverlay60Data1D0[row], gOverlay60Data1A4[row], 0xC);
                             func_8002FB34(&D_800D3140_o060Reloc, &gOverlay60Data060,
                                 gOverlay60Data1B4[1], gOverlay60Data1D0[row], 0.5f, 0.5f, -1, 0);
                             for (count = 0; count < 11; count++) {
                                 glyph[0] = text[count];
                                 glyph[1] = '\0';
-                                func_8004B0F8(&D_800D3140_o060Reloc, gOverlay60Data1B4[count + 2],
+                                fontPrintXY(&D_800D3140_o060Reloc, gOverlay60Data1B4[count + 2],
                                     gOverlay60Data1D0[row], glyph, 0xC);
                             }
                         }
@@ -760,13 +760,13 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         previewMode = gOverlay60Data150;
                         gOverlay60Data130 = previewMode;
                         fontColour(0, 0xFF, 0, 0xFF, gOverlay60Data2A4);
-                        func_8004B0F8(&D_800D3140_o060Reloc, 0x3C, 0x8C, O60_TEXT(0x234), 8);
+                        fontPrintXY(&D_800D3140_o060Reloc, 0x3C, 0x8C, O60_TEXT(0x234), 8);
                         fontColour(0xFF, 0, 0, 0xFF, gOverlay60Data2A4);
-                        func_8004B0F8(&D_800D3140_o060Reloc, 0x3C, 0x9B, O60_TEXT(0x238), 8);
+                        fontPrintXY(&D_800D3140_o060Reloc, 0x3C, 0x9B, O60_TEXT(0x238), 8);
                         fontColour(0xFF, 0xFF, 0, 0xFF, gOverlay60Data2A4);
-                        func_8004B0F8(&D_800D3140_o060Reloc, 0x3C, 0xAA, O60_TEXT(0x23C), 8);
+                        fontPrintXY(&D_800D3140_o060Reloc, 0x3C, 0xAA, O60_TEXT(0x23C), 8);
                         fontColour(0, 0xFF, 0xFF, 0xFF, gOverlay60Data2A4);
-                        func_8004B0F8(&D_800D3140_o060Reloc, 0x3C, 0xB9, O60_TEXT(0x240), 8);
+                        fontPrintXY(&D_800D3140_o060Reloc, 0x3C, 0xB9, O60_TEXT(0x240), 8);
                         texDPTextureX(&D_800D3140_o060Reloc, 0, 0, 0);
                         gDma1p(D_800D3140_o060Reloc++, 7, (u8 *)gOverlay60Data0B0 + 0x80000000, 0x10, 2);
                         gDPSetPrimColor(D_800D3140_o060Reloc++, 0, 0, 0, 255, 0,
@@ -902,21 +902,21 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             gOverlay60Data150 = 0;
                             amSndPlay(0xF, NULL);
                         }
-                        func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x8F, O60_TEXT(0x290), 0xC);
-                        func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x99, O60_TEXT(0x294), 0xC);
-                        func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0xAD, O60_TEXT(0x54), 0xC);
+                        fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x8F, O60_TEXT(0x290), 0xC);
+                        fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x99, O60_TEXT(0x294), 0xC);
+                        fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xAD, O60_TEXT(0x54), 0xC);
                         if (gOverlay60Data150 != 0) {
                             fontColour(0x80, 0xFF, 0x80, 0xFF, gOverlay60Data2A4);
                         } else {
                             fontColour(0, 0xD0, 0, 0xFF, gOverlay60Data2A4);
                         }
-                        func_8004B0F8(&D_800D3140_o060Reloc, 0x71, 0xBC, O60_TEXT(0x58), 0xC);
+                        fontPrintXY(&D_800D3140_o060Reloc, 0x71, 0xBC, O60_TEXT(0x58), 0xC);
                         if (gOverlay60Data150 == 0) {
                             fontColour(0x80, 0xFF, 0x80, 0xFF, gOverlay60Data2A4);
                         } else {
                             fontColour(0, 0xD0, 0, 0xFF, gOverlay60Data2A4);
                         }
-                        func_8004B0F8(&D_800D3140_o060Reloc, 0xB1, 0xBC, O60_TEXT(0x5C), 0xC);
+                        fontPrintXY(&D_800D3140_o060Reloc, 0xB1, 0xBC, O60_TEXT(0x5C), 0xC);
                         break;
                     }
                 }
@@ -967,7 +967,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 }
                 sprintf(text, gOverlay60Data220, O60_TEXT(0x1D4),
                     gOverlay60Data298[D_800D3128_o060Reloc.bits.field20]);
-                func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0x96, text, 0xC);
+                fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x96, text, 0xC);
                 if (gOverlay60Data2B0 == 1) {
                     fontColour(0x64, 0xFF, 0x64, 0xFF, gOverlay60Data2A4);
                     if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0 &&
@@ -980,7 +980,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 }
                 sprintf(text, gOverlay60Data228, O60_TEXT(0x1D8),
                     gOverlay60Data298[D_800D3128_o060Reloc.bits.field19]);
-                func_8004B0F8(&D_800D3140_o060Reloc, 0x91, 0xAA, text, 0xC);
+                fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xAA, text, 0xC);
                 break;
             case 9:
                 if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0) {
@@ -1019,9 +1019,9 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     } else {
                         fontColour(0, 0xBE, 0, 0xFF, gOverlay60Data2A4);
                     }
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0x4D, y,
+                    fontPrintXY(&D_800D3140_o060Reloc, 0x4D, y,
                         D_8007C0B8_o060Reloc[0x1F0 / 4 + i], 8);
-                    func_8004B0F8(&D_800D3140_o060Reloc, 0xC1, y,
+                    fontPrintXY(&D_800D3140_o060Reloc, 0xC1, y,
                         gOverlay60Data298[(D_8007BF14_o060Reloc >> (i + 2)) & 1], 8);
                     y += 0xC;
                 }
@@ -1040,7 +1040,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
             amSndPlay(0xD, NULL);
         }
         fontColour(0, 0xFF, 0, 0xFF, gOverlay60Data2A0);
-        func_8004B0F8(&D_800D3140_o060Reloc, 0x91, gOverlay60Data2A8,
+        fontPrintXY(&D_800D3140_o060Reloc, 0x91, gOverlay60Data2A8,
             gOverlay60Data260[panel], 0xC);
     }
 }

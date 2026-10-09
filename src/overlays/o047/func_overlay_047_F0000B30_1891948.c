@@ -182,8 +182,8 @@ extern void mtxf_to_mtx(MtxF source, Mtx *dest);
 extern void camDo2DSprite(Overlay47Command **commands, Mtx **matrices, void **vertices,
                         void *transform, void *sprite, s32 flags, u8 alpha);
 extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha, s32 blend);
-extern void func_8004B0A4(s32 font);
-extern void func_8004B0F8(Overlay47Command **commands, s32 x, s32 y, char *text, s32 flags);
+extern void fontUseFont(s32 font);
+extern void fontPrintXY(Overlay47Command **commands, s32 x, s32 y, char *text, s32 flags);
 extern void texAnimateTexSprite(void *texture, s32 *state, s32 speed, f32 *frame, s32 updateRate);
 extern void mainChangeLevel(s32 level, s32 character, s32 animGroup, s32 mode, s32 arg4, s32 arg5);
 extern void func_overlay_047_F0002D10_1893B28(Overlay47Player *player);
@@ -667,7 +667,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         }
     }
     fontColour(255, 255, 255, 255, 255);
-    func_8004B0A4(2);
+    fontUseFont(2);
     labelCount = 0;
     for (controller = 0; controller != 4; controller++) {
         if ((D_800D3058 + controller)->active && (D_800D3058 + controller)->actor != NULL) {
@@ -684,9 +684,9 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                 barX = labelX;
                 if (labelCount < 4) {
                     if (ov47Bss_30A != 4) {
-                        func_8004B0F8(&D_800D3140, labelX - 6, stat + 2, D_8007C0B8[145 + j], 9);
+                        fontPrintXY(&D_800D3140, labelX - 6, stat + 2, D_8007C0B8[145 + j], 9);
                     } else {
-                        func_8004B0F8(&D_800D3140, 160, stat + 2, D_8007C0B8[145 + j], 12);
+                        fontPrintXY(&D_800D3140, 160, stat + 2, D_8007C0B8[145 + j], 12);
                     }
                     labelCount++;
                 }

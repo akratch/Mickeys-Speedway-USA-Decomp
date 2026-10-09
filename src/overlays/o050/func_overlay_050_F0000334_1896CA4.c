@@ -70,10 +70,10 @@ s32 texAnimateSprite_o050Reloc(void *, s32 *, s32, f32 *, s32); /* 0:+0x360F4 */
 void amSndPlay_o050Reloc(u16, void **); /* 0:+0xB44 */
 u32 joyGetPressed_o050Reloc(s32); /* 0:+0x250FC */
 void func_8004A4B0_o050Reloc(s32, s32, s32, s32, s32); /* 0:+0x4A060 */
-void func_8004B0A4_o050Reloc(s32); /* 0:+0x4AC54 */
-void func_8004B0DC_o050Reloc(s32, s32, s32, s32); /* 0:+0x4AC8C */
+void fontUseFont_o050Reloc(s32); /* 0:+0x4AC54 */
+void fontBackground_o050Reloc(s32, s32, s32, s32); /* 0:+0x4AC8C */
 void fontColour_o050Reloc(s32, s32, s32, s32, s32); /* 0:+0x4AC68 */
-void func_8004B0F8_o050Reloc(void **, s32, s32, char *, s32); /* 0:+0x4ACA8 */
+void fontPrintXY_o050Reloc(void **, s32, s32, char *, s32); /* 0:+0x4ACA8 */
 s32 mainGetMode_o050Reloc(void); /* 0:+0x288C8 */
 void func_800016EC_o050Reloc(s32); /* 0:+0x129C */
 void func_8003A590_o050Reloc(void); /* 0:+0x3A140 */
@@ -419,10 +419,10 @@ racer->laps != level->laps
                     speed = -speed;
                 }
                 func_8004A4B0_o050Reloc(0xE6, 0xB4, speed, 3, 0);
-                func_8004B0A4_o050Reloc(2);
-                func_8004B0DC_o050Reloc(0, 0, 0, 0);
+                fontUseFont_o050Reloc(2);
+                fontBackground_o050Reloc(0, 0, 0, 0);
                 fontColour_o050Reloc(0x40, 0xFF, 0x40, 0xFF, 0xE0);
-                func_8004B0F8_o050Reloc(&D_800D3140_o050Reloc, 0x106, 0xBC, o50SpeedText, 0);
+                fontPrintXY_o050Reloc(&D_800D3140_o050Reloc, 0x106, 0xBC, o50SpeedText, 0);
             } else {
                 func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_6C, hudX, 0, 0xFF, 0xFF, 0xFF, 0xFF);
                 if (racer->speed < 0.0f) {

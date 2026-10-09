@@ -376,8 +376,8 @@
       "source_commit": "51cb0987182f14d492adfb269b5ea63a5f0201c1"
     },
     "func_8002AA50": {
-      "ledger_commit": "15473abc9e04fead9c896bf9d173cbf2f96f378f",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
+      "ledger_commit": "76b6be7cd78674d920698cf5408f2c3dd4174cf8",
+      "reason": "2026-10-09: search the shorter matrix routine in newly decoded permitted retail revision code. Prior five-project object scans excluded these revision streams; the recent 9380-byte retail scan omitted this 296-byte function. No C sweep.",
       "source_commit": "15473abc9e04fead9c896bf9d173cbf2f96f378f"
     },
     "func_8002AB78": {

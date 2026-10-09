@@ -63,6 +63,12 @@ frozen tip also stops reserving its symbol, while an unrelated change to a
 different guard in the same translation unit never reserves the target. See
 [ADR 0011](adr/0011-cross-lane-knowledge-and-task-budgets.md).
 
+A source checkpoint with an exact inline handoff and its matching per-symbol
+shard does not depend on the word "Plateau" in its commit subject. The commit
+must change the target's inline handoff as well as that shard;
+a sibling source edit beside a new shard is insufficient. Such checkpoints
+remain exhausted until a fresh, correctly pinned authorization is committed.
+
 A genuinely new mechanism may reopen one current plateau through
 `config/lane-reopen-authorizations.us.json`. Each schema-v1 entry pins the
 symbol's full current source and handoff commit IDs plus a concise reason. The

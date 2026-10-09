@@ -62,13 +62,13 @@
       "reason": "Current canonical independently reproduced the same 129/221-word plateau and committed a fresh exact-symbol handoff, so this older terminal tip has no remaining integration delta."
     },
     "528aa27f52ed6937fd31afdd4b17747ff8428388": {
-      "symbol": "func_800336A8",
+      "symbol": "viChangeMode",
       "state": "superseded",
       "decision_commit": "3031a2c876667f0e82065e4c2784b1efb92a9eea",
       "reason": "Current canonical independently reproduced the same 124/195-word plateau and committed a fresh exact-symbol handoff, so this older authorization tip has no remaining scheduling claim."
     },
     "bfd6d07a61c4ce33e4b8069ccf92d49054398980": {
-      "symbol": "func_800336A8",
+      "symbol": "viChangeMode",
       "state": "superseded",
       "decision_commit": "3031a2c876667f0e82065e4c2784b1efb92a9eea",
       "reason": "Current canonical independently reproduced the same 124/195-word plateau and committed a fresh exact-symbol handoff, so this older terminal tip has no remaining integration delta."

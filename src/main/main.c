@@ -238,7 +238,7 @@ extern void mainPreNMI(void);
 extern void func_80026FB4(void);
 extern void func_80021290(void);
 extern void func_80001BC4(void);
-extern void func_800339B4(void);
+extern void viReset(void);
 extern void rumbleKill(s32);
 extern void rumbleTick(s32);
 extern void osSetTime(OSTime);
@@ -356,7 +356,7 @@ extern void func_800389CC(void);
 extern void func_80037150(void);
 extern void func_8004E99C(void);
 extern void amTuneStop(void);
-extern void func_800336A8(s32);
+extern void viChangeMode(s32);
 extern void camInit(void);
 extern void func_8005A764(void);
 extern void func_8004E8E0(void);
@@ -459,7 +459,7 @@ void mainPreNMI(void) {
             }
             __osSpSetStatus(0xAAAA82);
             osDpSetStatus(0x1D6);
-            func_800339B4();
+            viReset();
             rumbleKill(1);
             rumbleTick(2);
             rumbleTick(2);
@@ -1237,7 +1237,7 @@ void func_80028564(s32 updateRate) {
             screenMode = frontGetLevelScreenMode(D_8007A148);
             viSetTrippleBuffer(levelGetScreenMode(D_8007A148));
             if ((viGetVideoMode() != screenMode) || viChangeBuffers()) {
-                func_800336A8(screenMode);
+                viChangeMode(screenMode);
             } else {
                 u32 pixelCount;
                 s32 fill;

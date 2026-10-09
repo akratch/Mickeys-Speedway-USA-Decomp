@@ -3604,8 +3604,6 @@ func_80029198_o060Reloc = 0xf0000000;
 func_800291C4_o060Reloc = 0xf0000000;
 func_8002F618_o060Reloc = 0xf0000000;
 func_8002FB34_o060Reloc = 0xf0000000;
-func_800336A8_o060Reloc = 0xf0000000;
-func_80033FE0_o060Reloc = 0xf0000000;
 func_8003A2C8_o060Reloc = 0xf0000000;
 func_8003A520_o060Reloc = 0xf0000000;
 func_8003A700_o060Reloc = 0xf0000000;
@@ -3684,7 +3682,9 @@ texDPInit_o060Reloc = 0xf0000000;
 texDPTextureX_o060Reloc = 0xf0000000;
 texFreeSprite_o060Reloc = 0xf0000000;
 texLoadSprite_o060Reloc = 0xf0000000;
+viChangeMode_o060Reloc = 0xf0000000;
 viDisplayingScreen0_o060Reloc = 0xf0000000;
+viNoClear_o060Reloc = 0xf0000000;
 
 /* overlay 60: overlay60ReleaseResources.c.o */
 gOverlay60OptionalResource = 0x00000174;

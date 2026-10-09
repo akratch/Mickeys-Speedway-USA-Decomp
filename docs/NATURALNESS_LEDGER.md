@@ -147,7 +147,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/frontend_37D50.c:371` `func_80037AEC` **A**: all-ones 64-bit mask chain.
   Natural: the bare value. Keep bytes: unknown - not measured; not in the cleanup queue.
   **Resolved (lane c-2, 2026-10-08):** rewritten in func_800378A4's style: nested `do`/`while` loops with named `height`/`value`/`angle` locals, no `if (1)`, no mask, no `vertex[-1]`. A redundant `s32 row = 0;` initialiser (a dead store uopt deletes) numbers `row` before `phase`, the same first-reference rule as `dst` in func_8004C690. Byte-identical.
-- `src/main/gameVi.c:161` `func_800336A8` **A**: empty if body or `if (c);` probe.
+- `src/main/gameVi.c:161` `viChangeMode` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Resolved (lane c-4, 2026-10-09):** the two `!=` mode tests and the empty `if (1) {}` (inherited from JFG viChangeMode) are a `switch (D_800D2F98 & 3)` with `case 2: case 3:` allocating and `default:` placing the second buffer after the first. Deleting the `if (1)` alone moves every global-address register (93 lines); the inverted `==`/`||` test differs in 11. Byte-identical.
 - `src/main/menu.c:818` `func_8003968C` **A**: one-line body: `new_var` carriers, 64-bit mask chains, duplicated empty test.

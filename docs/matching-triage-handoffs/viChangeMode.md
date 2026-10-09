@@ -1,5 +1,5 @@
-<!-- plateau-handoff:func_800336A8:start -->
-### `func_800336A8` plateau handoff
+<!-- plateau-handoff:viChangeMode:start -->
+### `viChangeMode` plateau handoff
 
 - source: `src/main/gameVi.c`
 - score: 195/195 words
@@ -15,4 +15,4 @@
 - next action: Preserve the fallback pending a genuinely new authorized mechanism. Pointer-carrier forms, fake source boundaries, flags, permutation, and C-body mutation remain closed.
 
 - disposition: Historical plateau superseded by exact canonical C on 2026-09-08. The authorized JFG efd5abb direct-read form plus its empty if statement closes all 195 words and 77 relocation identities; see docs/resident.md section 3.8 for linked ROM proof and docs/cleanup-queue.md for the inert spelling.
-<!-- plateau-handoff:func_800336A8:end -->
+<!-- plateau-handoff:viChangeMode:end -->

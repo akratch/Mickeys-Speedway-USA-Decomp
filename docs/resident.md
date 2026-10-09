@@ -753,10 +753,10 @@ byte-identical.
 body emits all 16 instruction words and its HI16, LO16 and call relocations
 exactly under the resident flags.
 
-`func_800336A8` is canonical C at tier A (Mickey byte identity), retaining its
+`viChangeMode` is canonical C at tier A (Mickey byte identity), retaining its
 address label. The owned range is ROM `0x342A8`–`0x345B4`, VRAM
 `0x800336A8`–`0x800339B4`: 780 executable bytes, no padding before
-`func_800339B4`, and a `0x28` frame. The configured full TU emits all 195 words
+`viReset`, and a `0x28` frame. The configured full TU emits all 195 words
 and all 77 static relocation records exactly, including offset, type and
 identity; the linked owned range and full ROM are byte-identical.
 
@@ -809,7 +809,7 @@ All 11 instruction words and four HI16/LO16 relocation pairs are exact.
 same point where JFG initializes video, immediately before the PI/RCP sequence.
 The canonical body is exact at 74 words and all 52 relocation sites.
 
-`func_800339B4` retains JFG's `viReset`-shaped, linked-exact 50-word candidate;
+`viReset` retains JFG's `viReset`-shaped, linked-exact 50-word candidate;
 its literal omits framebuffer relocations from `+0x1C`, while extern/array forms
 add address formation and disrupt the schedule, so the asm remains canonical.
 
@@ -838,18 +838,18 @@ identities, linked bytes and full-ROM hash under the resident flags.
 and the mode changer calls the same routine after rebuilding its buffers. The
 canonical body is exact at 56 words and all 18 relocation sites.
 
-`func_80033D58` is canonical C: all seven words and the two scale globals'
+`viGetScaleXY` is canonical C: all seven words and the two scale globals'
 HI16/LO16 relocation pairs are exact. JFG calls the equivalent body
 `viGetScaleXY`, but only three words are unmasked and no same-address Mickey
 caller pins the role, so the public name is recorded only in the source comment
 and not adopted.
 
-`func_80033FB8` is canonical C at three words with an exact HI16/LO16 pair.
+`viGetTrippleBuffer` is canonical C at three words with an exact HI16/LO16 pair.
 JFG calls the equivalent accessor `viGetTrippleBuffer`, but no same-address
 Mickey caller pins that public name and the body is below the tier-A threshold,
 so it remains an address label.
 
-`func_80033FE0` is likewise canonical C at three words with an exact
+`viNoClear` is likewise canonical C at three words with an exact
 HI16/LO16 pair. JFG calls the store-only helper `viNoClear`, but no
 same-address Mickey caller pins that public name and the body is below the
 tier-A threshold, so the address label remains canonical.
@@ -2283,12 +2283,12 @@ remains under `NON_MATCHING` and asm remains canonical.
 No function in either range uses an odd single-precision floating-point
 register. None is therefore classified as handwritten assembly by §6.2's
 criterion.
-`func_800336A8` is now exact canonical C; see the tier-A proof in §3.8.
+`viChangeMode` is now exact canonical C; see the tier-A proof in §3.8.
 
 | Function | Exact result |
 |---|---|
-| `func_800336A8` | Tier A: 780 executable bytes, 195 exact words, `0x28` frame, all 77 static relocation identities exact, no padding before `func_800339B4`; linked ROM `0x342A8`–`0x345B4` and full ROM exact. JFG `src/gameVi.c:viChangeMode` donor pair, with Mickey-specific paths retained (§3.8). |
-| `func_80034094` | 188 bytes under `-O2 -mips2 -32`; JFG `src/gameVi.c::viGetOsViMode` body, all 47 instruction words exact, with its 48-byte compiler-owned switch table in `main/gameVi` `.rodata`. |
+| `viChangeMode` | Tier A: 780 executable bytes, 195 exact words, `0x28` frame, all 77 static relocation identities exact, no padding before `viReset`; linked ROM `0x342A8`–`0x345B4` and full ROM exact. JFG `src/gameVi.c:viChangeMode` donor pair, with Mickey-specific paths retained (§3.8). |
+| `viGetOsViMode` | 188 bytes under `-O2 -mips2 -32`; JFG `src/gameVi.c::viGetOsViMode` body, all 47 instruction words exact, with its 48-byte compiler-owned switch table in `main/gameVi` `.rodata`. |
 | `src/saves.c.o`, `src/rcpFast3d.c.o`, `src/track.c.o`, `src/textures.c.o`, `src/diCpu.c.o`, `src/objects.c.o`, `libultra/src/flash/flashreadid.c.o`, `us.v10/src/core1/code_1D00.c.o` (BK) | 1 each | single points | Isolated identifications, no span to claim |
 
 **Why the rows do not establish new internal boundaries.** §1's "measured file

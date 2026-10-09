@@ -50,8 +50,8 @@ extern void func_8002FB34(Gfx **commands, RcpTextureNode *texture,
 extern void texAnimateTexSprite(void *texture, s32 *state, s32 speed, f32 *frame, s32 ticks);
 extern void func_8003A520(s32 split);
 extern s32 func_8003A700(u8 initial);
-extern void func_800336A8(s32 screenMode);
-extern void func_80033FE0(void);
+extern void viChangeMode(s32 screenMode);
+extern void viNoClear(void);
 extern void camSetFOV(f32 fov, s32 force);
 extern MtxF *func_8002468C(void);
 extern void func_80029198(void);
@@ -559,9 +559,9 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         } else {
                             screenMode = 0;
                         }
-                        func_80033FE0();
+                        viNoClear();
                         D_800D2FC0_o060Reloc = 1;
-                        func_800336A8(screenMode);
+                        viChangeMode(screenMode);
                         camSetFOV(60.0f, 1);
                         gOverlay60Data158 = 0;
                         func_overlay_082_F00004C0_18CF640(gOverlay60Data0A8);

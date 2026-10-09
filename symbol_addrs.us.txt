@@ -2454,10 +2454,10 @@ rcpInit = 0x8002F560; // type:func size:0xB8 ROM 0x30160 tier-A donor-jfg-src/rc
 // tier B (JFG): resident startup passes the scheduler here immediately before
 // continuing through the PI/RCP initialization sequence.
 viInit = 0x80033580; // type:func size:0x128 ROM 0x34180 canonical C, linked byte-identical
-func_800336A8 = 0x800336A8; // type:func size:0x30C ROM 0x342A8 tier-A matched C, 195 exact words and 77 exact static relocation identities, JFG viChangeMode body with Mickey PAL and epilogue paths
+viChangeMode = 0x800336A8; // type:func size:0x30C ROM 0x342A8 tier-A matched C, 195 exact words and 77 exact static relocation identities, JFG viChangeMode body with Mickey PAL and epilogue paths, name tier-B JFG src/gameVi.c order+named anchors
 // JFG's viReset candidate is NON_MATCHING, so section 1.5 keeps this address
 // label; the original asm remains canonical.
-func_800339B4 = 0x800339B4; // type:func size:0xC8 ROM 0x345B4 NON_MATCHING candidate
+viReset = 0x800339B4; // type:func size:0xC8 ROM 0x345B4 NON_MATCHING candidate, name tier-B JFG src/gameVi.c order+named anchors
 // tier B (JFG): the mode changer passes the active resolution dimensions to
 // this allocator and the paired free routine around a mode transition.
 viAllocateZBuffer = 0x80033A7C; // type:func size:0x58 ROM 0x3467C canonical C, linked byte-identical
@@ -2474,7 +2474,7 @@ viGetCurrentSize = 0x80033CBC; // type:func size:0x48 ROM 0x348BC canonical C, l
 viConvertXY = 0x80033D04; // type:func size:0x54 ROM 0x34904 canonical C, linked byte-identical
 // Canonical C, but the JFG viGetScaleXY counterpart has only 3 unmasked words
 // and no same-address Mickey caller evidence, so its public name is not adopted.
-func_80033D58 = 0x80033D58; // type:func size:0x1C ROM 0x34958 canonical C, linked byte-identical
+viGetScaleXY = 0x80033D58; // type:func size:0x1C ROM 0x34958 canonical C, linked byte-identical, name tier-B JFG src/gameVi.c order+named anchors, JFG size 0x1C equal
 // tier B (JFG): viChangeMode and two runtime state-reset paths call this before
 // resuming frame pacing, and its body resets all four video-delta controls.
 viFrameRateReset = 0x80033D74; // type:func size:0x2C ROM 0x34974 canonical C, linked byte-identical
@@ -2494,16 +2494,16 @@ viSetWideAdjust = 0x80033F68; // type:func size:0x40   ROM 0x34b68  src/gameVi.c
 viSetTrippleBuffer = 0x80033FA8; // type:func size:0x10 ROM 0x34ba8 canonical C, linked byte-identical
 // Canonical C, but JFG's viGetTrippleBuffer name has no same-address Mickey
 // caller evidence and the three-word body is below the tier-A threshold.
-func_80033FB8 = 0x80033FB8; // type:func size:0xC ROM 0x34bb8 canonical C, linked byte-identical
+viGetTrippleBuffer = 0x80033FB8; // type:func size:0xC ROM 0x34bb8 canonical C, linked byte-identical, name tier-B JFG src/gameVi.c order+named anchors
 // tier B (JFG): after setting a requested buffer mode, the front-end branches
 // to viChangeMode exactly when this current/requested comparison returns true.
 viChangeBuffers = 0x80033FC4; // type:func size:0x1C ROM 0x34bc4 canonical C, linked byte-identical
 // Canonical C, but JFG's viNoClear name has no same-address Mickey caller
 // evidence and the three-word body is below the tier-A threshold.
-func_80033FE0 = 0x80033FE0; // type:func size:0xC ROM 0x34be0 canonical C, linked byte-identical
+viNoClear = 0x80033FE0; // type:func size:0xC ROM 0x34be0 canonical C, linked byte-identical, name tier-B JFG src/gameVi.c order+named anchors, JFG size 0xC equal
 viDisplayingScreen0 = 0x80033FEC; // type:func size:0x2C   ROM 0x34bec  src/gameVi.c.o  masked=4/11, canonical C is linked byte-identical
 func_80034018 = 0x80034018; // type:func size:0x7C   ROM 0x34c18  src/gameVi.c.o  masked=3/31
-func_80034094 = 0x80034094; // type:func size:0xBC ROM 0x34c94 tier-D exact C, JFG body and compiler-owned switch table
+viGetOsViMode = 0x80034094; // type:func size:0xBC ROM 0x34c94 tier-D exact C, JFG body and compiler-owned switch table, name tier-B JFG src/gameVi.c order+named anchors
 jtbl_8008249C = 0x8008249C; // type:jtbl size:0x30 tier-A compiler-owned gameVi switch table
 // tier B (JFG): viFrameSync advances buffers for each non-skip frame, while
 // the mode changer calls the same routine to establish new buffer state.

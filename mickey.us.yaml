@@ -734,7 +734,7 @@ segments:
       # seven-entry switch table share this sched-owned rodata input section.
       - [0x82FD8, .rodata, main/sched]
       - [0x83010, rodata]
-      # func_80034094's twelve-entry video-mode switch table. The following
+      # viGetOsViMode's twelve-entry video-mode switch table. The following
       # zero word is output-section padding, not owned object bytes.
       - [0x8309C, .rodata, main/gameVi]
       - [0x830CC, rodata]

@@ -485,7 +485,7 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "441284c2a269735f13dfca0030a667df766df131"
     },
-    "func_800336A8": {
+    "viChangeMode": {
       "ledger_commit": "bfd6d07a61c4ce33e4b8069ccf92d49054398980",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
       "source_commit": "bfd6d07a61c4ce33e4b8069ccf92d49054398980"

@@ -2150,6 +2150,6 @@ void func_8004AF68(void) {
  * frame: 0x90
  * relocations: 3
  * first-mismatch: +0x94
- * summary: Unchanged at 16; uoptlist: no carrier or region boundary moves the conversion's creation out of its own block-0 statement. Left: the pre-call spill ladder.
+ * summary: Unchanged at 16; spill slots go to the first non-overlapping slot, so the top three cells have owners numbered below the conversion
  * PLATEAU-HANDOFF:wakeAllocate:end
  */

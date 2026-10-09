@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: Unchanged at 16; uoptlist: no carrier or region boundary moves the conversion's creation out of its own block-0 statement. Left: the pre-call spill ladder.
+- summary: Unchanged at 16; spill slots go to the first non-overlapping slot, so the top three cells have owners numbered below the conversion
+
+Summary before this remeasure: Unchanged at 16; uoptlist: no carrier or region boundary moves the conversion's creation out of its own block-0 statement. Left: the pre-call spill ladder.
 
 Summary before this remeasure: Unchanged at 16; natural counts lose the dead copies (-8), declaration order does not move spill cells. Left: the pre-call spill ladder.
 
@@ -810,4 +812,16 @@ expressions between the unroller and REMOVAL OF REDUNDANT STORES (the
 table is printed after it) on the target-shaped question "can a block-0
 statement be entered after the loops", e.g. with the slot-trace uopt on a
 mini TU that defines a value before a call and a counted loop after it.
+
+#### 2026-10-09, lane w-3: spill-slot assignment reuses slots; the subst trace on natural counts (no change, 16)
+
+Measured by tools/bank.py: masked 16 (raw 16), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 335, register naming 0, immediate only 16, really different 0.
+
+No source change; the 16 body is kept.
+
+- How the ladder is built (uopt spilltemps, IDO 7.1 decompilation uoptreg2.c, structure matching 5.3): every coloured item below firstconstbit is visited in ascending bit (web) number; it takes the FIRST existing temp slot not owned by a lower-numbered item whose region shares a block with it, and only otherwise allocates a new slot below the last. So the target's three unused cells at 0x48 to 0x40 are three coloured items numbered below the conversion that overlap it, or the conversion shares a later slot; the earlier reading (fresh slots in web order) holds only where every item overlaps every other. Any source search for the ladder has to name which items own 0x48 to 0x40.
+- Subst trace on the tree body (203 records): the counts in block 0 (groupCount, triCount, alpha, bufferCount) are kept live_after_block; every block-0 expression is LOCAL substituted at its own statement, so the conversion, segment and doubled entries are created in block 0 whatever carries them.
+- Natural symbols cell (`frameCount = wakeValue88 * 60.0f; segmentCount = (frameCount + 5) >> 1; groupCount = segmentCount * 2; triCount = segmentCount * 2;` alpha default after, `j = segmentCount; i = groupCount;` without the XOR, tail stores through the symbols): 325 masked at -8 (aligned 315/9/10/18, the two dead pre-call copies missing). Trace: frameCount and segmentCount LOCAL substituted single_use_no_ilod into the block-0 lines and GLOBAL copied into the tail (742, 744); STOREs deleted dead. The spill ladder reads cvt 0x48, segment 0x44, doubled 0x40, texture bytes 0x28, segment bytes 0x2C, sample 0x24, 0x14 term 0x20.
+
+Cycle-21 line: decision variable unchanged (which coloured items own the three top temp slots and in what bit order); record: the slot trace (ido-slottrace, DKWB_UOPT_SLOT_TRACE) on the tree body read for slot owners and region overlaps, not only first requests; then ask which natural source adds or removes an owner.
 <!-- plateau-handoff:wakeAllocate:end -->

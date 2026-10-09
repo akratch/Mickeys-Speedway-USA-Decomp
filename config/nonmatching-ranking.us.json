@@ -76,13 +76,13 @@
       "tu": "main",
       "size_bytes": 1404,
       "objdiff_match_pct": null,
-      "differing_words": 16,
+      "differing_words": 14,
       "first_mismatch_offset": 148,
-      "relocation_masked_differing_words": 16,
+      "relocation_masked_differing_words": 14,
       "relocation_masked_first_mismatch_offset": 148,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "wUE9.0YAP.I6gc._fZR.TIMW.pZKs.CszS.UzFX.t8MY.y98q.HVI"
+      "source_context_sha256": "JALw.1O8Q.N6Dp.cCVY.6y6V.2XXH.fmgS.Htxb.c3TZ.JyI0.kaU"
     },
     {
       "name": "func_overlay_045_F0001158_188D5B0",

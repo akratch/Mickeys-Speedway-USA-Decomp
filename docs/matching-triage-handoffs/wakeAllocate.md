@@ -2,11 +2,13 @@
 ### `wakeAllocate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 16/351 words
+- score: 14/351 words
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: Unchanged at 16; spill slots go to the first non-overlapping slot, so the top three cells have owners numbered below the conversion
+- summary: 14 at 0: float frames local behind if(1) numbers conversion/segment after the loop temps; doubled still created before the sample and 0x14 terms
+
+Summary before this remeasure: Unchanged at 16; spill slots go to the first non-overlapping slot, so the top three cells have owners numbered below the conversion
 
 Summary before this remeasure: Unchanged at 16; uoptlist: no carrier or region boundary moves the conversion's creation out of its own block-0 statement. Left: the pre-call spill ladder.
 
@@ -824,4 +826,15 @@ No source change; the 16 body is kept.
 - Natural symbols cell (`frameCount = wakeValue88 * 60.0f; segmentCount = (frameCount + 5) >> 1; groupCount = segmentCount * 2; triCount = segmentCount * 2;` alpha default after, `j = segmentCount; i = groupCount;` without the XOR, tail stores through the symbols): 325 masked at -8 (aligned 315/9/10/18, the two dead pre-call copies missing). Trace: frameCount and segmentCount LOCAL substituted single_use_no_ilod into the block-0 lines and GLOBAL copied into the tail (742, 744); STOREs deleted dead. The spill ladder reads cvt 0x48, segment 0x44, doubled 0x40, texture bytes 0x28, segment bytes 0x2C, sample 0x24, 0x14 term 0x20.
 
 Cycle-21 line: decision variable unchanged (which coloured items own the three top temp slots and in what bit order); record: the slot trace (ido-slottrace, DKWB_UOPT_SLOT_TRACE) on the tree body read for slot owners and region overlaps, not only first requests; then ask which natural source adds or removes an owner.
+
+#### 2026-10-09, lane x-1: a float frame-count local behind a region boundary numbers the conversion after the loops, 16 to 14
+
+Measured by tools/bank.py: masked 14 (raw 14), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 337, register naming 2, immediate only 12, really different 0.
+
+Slot trace (ido-slottrace, proc 9, identity gate .text identical to stock) on the 16 body: every expression temporary requests a temp slot whether or not it is ever spilled, symbols and constants do not, and a request takes the first slot no lower-numbered overlapping requester owns. So the target's three unused top cells are the vertex loop's (i + 1), (i + 2) and (i + 3) numbered before the conversion, as q-1 inferred, and the conversion, segment and doubled entries have to be created by global copy propagation, after the unrolled loop is in the table.
+
+- `frames = wakeValue88 * 60.0f;` (f32, declared in the unused sampleBytes cell) followed by an empty `if (1) {}` (or `do { } while (0);`), then every later use through `(s32) frames`, including the post-call segment-count and texture-index stores: subst trace reads frames GLOBAL copied into block 0b (cands ok) and its store deleted, and web_report numbers (i + 1) 73, (i + 2) 196, (i + 3) 200, the conversion 279, segment 281, doubled 282. The conversion and segment take 0x3C and 0x38 as shipped. 14 masked at size 0 (aligned exact 337, naming 2, immediate 12). With the post-call stores still spelt from wakeValue88: 16 to 18. Without the boundary: 18 (frames is LOCAL substituted in block 0). segmentCount as a symbol (`groupCount = segmentCount * 2`, `j = segmentCount`, post-call store from it) is byte-identical to the inline spelling and kept as the more natural one.
+- Flat at 14: a second boundary between segmentCount and groupCount; `j = segmentCount; j ^= 0;` moved ahead of groupCount. Off size (-12, residual 265): `j = (s32)frames ...` defined before groupCount with groupCount and triCount from j.
+- Left: 12 immediate rows and the v0/v1 dead copies swapped (2 naming). The doubled entry (282) is still created while copy propagation walks groupCount's block-0 definition, before the sample (326) and 0x14 (333) terms, and the two byte counts follow $v0[(i * 4)] (300). The target order is conversion, segment, sample, 0x14, doubled, segment bytes, texture bytes, then the owner of 0x20.
+- Stand-ins: the empty `if (1) {}` (new) and the two XOR keep-alives (inherited).
 <!-- plateau-handoff:wakeAllocate:end -->

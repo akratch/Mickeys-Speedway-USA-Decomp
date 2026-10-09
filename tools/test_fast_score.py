@@ -93,5 +93,27 @@ class ListingTests(unittest.TestCase):
         self.assertEqual(len(fast_score.text_rows(src.splitlines())), 2)
 
 
+class InstrumentedTests(unittest.TestCase):
+    def test_wanted_by_each_family_or_flag(self):
+        w = fast_score.instrumented_wanted
+        self.assertFalse(w({"PATH": "x", "DKWB_SUBST_KEEP": ""}))
+        self.assertFalse(w({"DKWB_UGEN_TRACE": "1"}))
+        self.assertTrue(w({"DKWB_SUBST_KEEP": "2658"}))
+        self.assertTrue(w({"DKWB_SUBST_TRACE": "/x"}))
+        self.assertTrue(w({"DKWB_CUT_LINES": "5"}))
+        self.assertTrue(w({"CDX_FORCE": "p1:w1=s"}))
+        self.assertTrue(w({}, flag=True))
+
+    def test_use_compiler_swaps_only_the_driver_and_keeps_the_symlink(self):
+        cc = Path("/home/u/ido-instrumented/cc")
+        out = fast_score.use_compiler(["tools/ido/cc", "-O2", "x.c"], cc)
+        self.assertEqual(out, [str(cc), "-O2", "x.c"])
+        self.assertEqual(fast_score.use_compiler(["tools/ido/cc", "-O2"], None), ["tools/ido/cc", "-O2"])
+
+    def test_instrumented_cc_path_is_not_resolved(self):
+        self.assertEqual(fast_score.INSTRUMENTED_CC.name, "cc")
+        self.assertEqual(fast_score.INSTRUMENTED_CC.parent.name, "ido-instrumented")
+
+
 if __name__ == "__main__":
     unittest.main()

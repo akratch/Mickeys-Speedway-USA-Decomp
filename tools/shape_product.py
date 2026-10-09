@@ -210,6 +210,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--jobs", type=int, default=max(2, min(6, (os.cpu_count() or 4) // 2)))
     ap.add_argument("--top", type=int, default=20)
     ap.add_argument("--fix", action="append", default=[], metavar="NAME=VALUE")
+    ap.add_argument("--instrumented", action="store_true",
+                    help="compile with the instrumented compiler (implied by any CDX_*, DKWB_CUT_* "
+                         "or DKWB_SUBST_* variable)")
     ap.add_argument("--json", metavar="PATH")
     ap.add_argument("--rank", choices=("auto", "aligned", "positional"), default="auto",
                     help="aligned: rank by residual after align_symbol's alignment "
@@ -232,7 +235,9 @@ def main(argv: list[str] | None = None) -> int:
     names = list(axes)
     cells = [dict(zip(names, combo)) for combo in itertools.product(*(axes[n] for n in names))]
     source = fast_score.tracked_source_for(ns.symbol)
-    base_args = fast_score.configured_cc_args(source)
+    base_args = fast_score.use_compiler(
+        fast_score.configured_cc_args(source),
+        fast_score.compiler_for(fast_score.instrumented_wanted(os.environ, ns.instrumented)))
     print(f"{ns.symbol}: {len(cells)} cells over {len(names)} axes "
           + ", ".join(f"{n}={axes[n]}" for n in names), flush=True)
 

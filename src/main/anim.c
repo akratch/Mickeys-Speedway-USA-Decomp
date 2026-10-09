@@ -1627,7 +1627,7 @@ void func_800517E0(void) {
                     break;
                 case 0x63:
                     pathIndex = cursor->command & 0xFF;
-                    objectFlags = *((u16 *) ((u8 *) cursor + 6)) | (*((u16 *) ((u8 *) cursor + 4)) << 16);
+                    objectFlags = (*((u16 *) ((u8 *) cursor + 4)) << 16) | *((u16 *) ((u8 *) cursor + 6));
                     slot = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
                     if ((slot != NULL) &&
@@ -1655,8 +1655,12 @@ void func_800517E0(void) {
                     break;
                 case 0x66:
                     pathIndex = cursor->command & 0xFF;
+                    /* The mask is redundant on a halfword, but the target
+                     * spends its scratch draw: the load lands in a ring
+                     * register and is copied, which puts every later case
+                     * on the shipped ring phase (lane aa-5, 544 -> 479). */
+                    frame66 = *((u16 *) ((u8 *) cursor + 4)) & 0xFFFF;
                     slot = paths[pathIndex];
-                    frame66 = *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     if (slot != NULL) {
                         object = (AnimCommandObject *) slot->unk8;
@@ -1881,8 +1885,10 @@ void func_800517E0(void) {
                     mainSyncNextLevel();
                     break;
                 case 0x78:
-                    func_80029084(*((u16 *) ((u8 *) cursor + 4)), cursor->command & 0xFF);
+                    pathIndex = cursor->command & 0xFF;
+                    word1 = *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
+                    func_80029084(word1, pathIndex);
                     break;
                 case 0x79:
                     /* The byte is converted straight from the stream: a
@@ -4010,10 +4016,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1197/1808 words
+ * score: 1241/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 554 at size 0. The 0x7B v0 copy is forbidden by currentCommand's 0x7A range; faithful 0x6F literals keep the pieces at +4 (577).
+ * summary: Aligned 471 at size 0: 0x63 and 0x66 put the ring on the shipped phase; 0x78 reads its arguments before the advance. 0x6D-0x7B remain.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

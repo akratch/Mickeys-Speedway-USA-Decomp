@@ -1026,9 +1026,9 @@
       "source_commit": "34a144842e349bc166b1f75ba9230dd2f1d416da"
     },
     "func_overlay_045_F0001158_188D5B0": {
-      "ledger_commit": "599c30a03fce16f3f83260acf998ce64fcf78037",
-      "reason": "Fresh exact font sibling closes structural rows by byte-pointer arithmetic for the same arena and glyph offsets; o045 only closed integer reversal. Test the two typed byte-pointer sums, preserving all commands and offset widths.",
-      "source_commit": "a926f3759c4f4963195fd32b9ac3ec5f68febd99"
+      "ledger_commit": "dec60b369310d3a9569d10f6c8aef4817cfab783",
+      "reason": "Test local aggregate trig storage with an in-block field view: distinguish scalar LOD counting from field/address counting while preserving values and call order. Prior scalar copies and address-taken scalar probes remain closed.",
+      "source_commit": "c6f9dd441dff0b60e51ff8e2ee4322c96e347a57"
     },
     "func_overlay_046_F0000120_188E518": {
       "ledger_commit": "13d845651227cec3dd99c346ca39e63341b48ecc",

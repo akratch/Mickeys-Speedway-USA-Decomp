@@ -1115,7 +1115,7 @@ void func_800517E0(void) {
     s32 targetValue;
     s32 index;
     s32 frame;
-    s32 timer;
+    u16 timer;
     s32 state;
     s32 flagsValue;
     u32 objectFlags;
@@ -1155,7 +1155,7 @@ void func_800517E0(void) {
     s32 word7;
     s32 word8;
     s32 word9;
-    s32 word10;
+    u16 word10;
     s32 word11;
     s32 word12;
     s32 frame6A;
@@ -1692,9 +1692,9 @@ void func_800517E0(void) {
                         path->unk24 = path->unk25;
                         path->unk25 = frame68;
                         path->unk27 = 0;
-                        object->state39 = path->unk24;
                         path->unk26 = (u8) (s32) (value /
                                             hundred * scale);
+                        object->state39 = path->unk24;
                     }
                     break;
                 case 0x6A: {
@@ -4010,10 +4010,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1342/1808 words
+ * score: 1197/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 579 at size 0: chained 0x4B store with 0x79/0x7B sharing currentCommand keeps the break pieces; 0x6F mask still t0.
+ * summary: Aligned 554 at size 0: chained 0x4B, shared 0x79/0x7B local, u16 timer and word10. Faithful 0x6F mask needs a v0 0x7B copy (562 at -4 without).
  * PLATEAU-HANDOFF:func_800517E0:end
  */

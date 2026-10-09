@@ -3994,7 +3994,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: 344 at size 0: array members, no coordinate locals, coordinate cuts and all five definitions kept are worse; target doubles read back from homes.
+ * summary: 344 at size 0: KEEP on six declared doubles plus four pointer defs reproduces the target skeleton; entry vector pointers are natural (339 at +8).
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: 14 at 0: copy propagation walks blocks in reverse; the second fill loop's guard creates the doubled entry before the sample and 0x14 terms
+- summary: 14 at 0: copy propagation walks reverse depth-first, so the fill-loop guard creates doubled before the sample terms; identity-op copies all equal ^= 0
+
+Summary before this remeasure: 14 at 0: copy propagation walks blocks in reverse; the second fill loop's guard creates the doubled entry before the sample and 0x14 terms
 
 Summary before this remeasure: Unchanged at 16; spill slots go to the first non-overlapping slot, so the top three cells have owners numbered below the conversion
 
@@ -837,4 +839,19 @@ Slot trace (ido-slottrace, proc 9, identity gate .text identical to stock) on th
 - Flat at 14: a second boundary between segmentCount and groupCount; `j = segmentCount; j ^= 0;` moved ahead of groupCount. Off size (-12, residual 265): `j = (s32)frames ...` defined before groupCount with groupCount and triCount from j.
 - Left: 12 immediate rows and the v0/v1 dead copies swapped (2 naming). The doubled entry (282) is still created while copy propagation walks groupCount's block-0 definition, before the sample (326) and 0x14 (333) terms, and the two byte counts follow $v0[(i * 4)] (300). The target order is conversion, segment, sample, 0x14, doubled, segment bytes, texture bytes, then the owner of 0x20.
 - Stand-ins: the empty `if (1) {}` (new) and the two XOR keep-alives (inherited).
+
+#### 2026-10-09, lane z-2: copy propagation's walk is reverse depth-first, so post-call references always create first (no change, 14)
+
+Measured by tools/bank.py: masked 14 (raw 14), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 337, register naming 2, immediate only 12, really different 0.
+
+Base re-measured: 14 masked at size 0, aligned exact 337, naming 2, immediate 12, really different 0.
+
+- Identity operators for the two dead copies (64 cells, shape_product, both copies crossed): `x << 0`, `x >> 0`, `x * 1` and `x / 1` are byte-identical to the `^= 0` keep-alive (14 at 0); `x - 0`, `(u32) x` and the plain copy are folded or propagated and lose the dead moves. So the copies need an operator uopt keeps and as1 deletes; no natural spelling of that was found, and every member of the family is a stand-in.
+- Count definitions crossed with the fill-loop bounds (12 cells): flat at 14 (`segmentCount + segmentCount` 15, the two bounds swapped 24, `segmentCount * 2` inline worse).
+- Where creation order comes from (IDO 7.1 uopt decompilation, uoptcopy.c and uoptcontrolflow.c, matching the subst trace): copypropagate walks the graph list from its tail backwards, statements forward within a block, and the list is controlflow's depth-first order, fall-through successor first. Else arms therefore go to the end of the list and are walked first (the trace starts at line 785, then 752). Every block after the allocation call is a depth-first descendant of the call block, so all post-call references are walked before the call's argument, whatever the layout.
+- Diagnostic, not adoptable (fill-loop bounds replaced by constants, -168 bytes): the conversion and segment are then created at the segment-count store (webs 253, 255), the doubled copy and segment bytes in the alpha loop (262, 263), texture bytes, the segment copy, sample and 0x14 terms in the cursor block (282, 286, 287, 294). With the real bounds the fill-loop guard creates conversion, segment and doubled first (279, 281, 282). Reverse layout order exactly.
+- Consequence for the ladder: the target's slots (sample 0x34, 0x14 0x30 above doubled 0x2C, segment bytes 0x28, texture bytes 0x24) cannot come from creation order alone, because the doubled count is read by the fill-loop guards and is created before anything the cursor block references. Spill slots are taken in bit order, first cell with no lower-numbered owner sharing a block. Texture bytes' region lies inside the sample term's region (both from the call block to the cursor block), so no owner can separate them: the sample term must be numbered before texture bytes, while the cursor block's statement order (vertices store, then samples) creates texture bytes first. Either something walked before the alpha loop references the j * 0x10 and j * 0x14 terms, or the target has two cells owned below doubled that cover the fill loops but not the cursor block.
+- Cursor and alpha-loop spellings (5 cells): the alpha loop's base written from `wake->samples + j * 0x14` or recomputed in full does create the 0x14 term ahead of segment bytes (298/299 before 301/302) but costs +4 to +28 bytes; the struct-field form with no cursor local (`wake->vertices = wake->vertexBuffers[1] + textureBytes; wake->samples = wake->vertices + j * 0x10; cursor = wake->samples + j * 0x14;`) is 19 at 0.
+
+Cycle-21 line: decision variable is the creation index of the sample and 0x14 terms against the doubled family (segment bytes, texture bytes) in copypropagate's reverse depth-first walk. Record: the raw DKWB_SUBST_TRACE GLOBAL order plus web_report numbers per candidate (`fast_score` with DKWB_SUBST_TRACE set, then `web_report --source`). Next: a source in which a block walked before the alpha loop (the alpha loop itself, the linked-call block or the stores after it) references the j-based sample and 0x14 terms at size 0, or a slot-trace reading of which two items could own 0x34 and 0x30 below doubled.
 <!-- plateau-handoff:wakeAllocate:end -->

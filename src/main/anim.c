@@ -4014,6 +4014,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 554 at size 0: chained 0x4B, shared 0x79/0x7B local, u16 timer and word10. Faithful 0x6F mask needs a v0 0x7B copy (562 at -4 without).
+ * summary: Aligned 554 at size 0. The 0x7B v0 copy is forbidden by currentCommand's 0x7A range; faithful 0x6F literals keep the pieces at +4 (577).
  * PLATEAU-HANDOFF:func_800517E0:end
  */

@@ -3984,7 +3984,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: Unchanged at 344; per-axis accumulation and forced coordinate-block cuts flat. Left: what keeps the first-position doubles stored at their definitions.
+ * summary: 344 at size 0: the cut after quadA is the -varref limit (quadA's own loads take the counter 4 to 22); doubles' evaluation point still open.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

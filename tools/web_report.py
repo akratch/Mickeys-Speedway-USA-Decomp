@@ -2,7 +2,7 @@
 """Per-web allocator report: why each web of one function got its colour.
 
     tools/web_report.py <symbol> [--proc N] [--web W ...] [--block B]
-                        [--trace allocator.log] [--keep DIR] [--json]
+                        [--neighbours WEB] [--trace allocator.log] [--keep DIR] [--json]
 
 WHAT IT PRINTS, PER WEB
 
@@ -49,6 +49,22 @@ and the one whose blocks carry the symbol's definition line is taken.
 other tools' `--candidate` do); `DKWB_CUT_*` in the environment reach the
 instrumented compile, and the identity gate then compares it with an
 instrumented compile that has the same cuts and no `CDX_*` logging.
+
+`CDX_FORCE`, `CDX_BIAS` and `DKWB_SUBST_KEEP`, when set, reach the instrumented
+compile, so the report describes the forced allocation (records print
+`forced=-1` where a force was accepted). A stock compiler ignores them, so the
+identity gate then compares against a second instrumented compile with the same
+settings and no logging, and the header says so. `CDX_FORCE`/`CDX_BIAS` need an
+ordinal: pass `--proc N` (or set a numeric `CDX_PROC`); a force with no ordinal
+is refused, since the compiler would silently ignore it. Names still come from
+the stock `-g3` compile (frame offsets precede the allocator).
+
+`--neighbours WEB` replaces the report with WEB's interferer list per block:
+the compile runs with `CDX_DETAIL_WEB=WEB` (the `intf` and neighbour
+`webblocks` rows), and each decision of that web prints, for every block the
+web occupies, the webs that interfere there with their assigned colour.
+Consecutive blocks with the same set are folded (`bb5-31`). `--block B` keeps
+one block. This wraps `decomp-workbench trace growth --neighbours`.
 
 `--trace` reads a saved log instead of compiling (no gate, names or source
 lines unless the symbol resolves in the queue); this is how the tests run.
@@ -196,6 +212,84 @@ def build(rows, proc: int) -> dict:
     pieces = {d["lr"]: d for d in decisions}
     return {"proc": proc, "blocks": blocks, "pins": pins, "rangepins": rangepins,
             "decisions": decisions, "pieces": pieces}
+
+
+def parse_blocks(text: str | None) -> list[int]:
+    if not text or text == "-":
+        return []
+    return [int(x) for x in text.split(",") if x.strip().isdigit()]
+
+
+def neighbour_model(rows, proc: int, web: int, phase: str = "p1") -> list[dict]:
+    """Per decision of `web`: its blocks and its interferers (`intf` + neighbour `webblocks`)."""
+    p, decisions, current = str(proc), [], None
+    for event, f in rows:
+        if f.get("proc") != p:
+            continue
+        if event in ("p1dec", "p2dec"):
+            if current is not None:
+                decisions.append(current)
+                current = None
+            if event[:2] == phase and f.get("web") == str(web):
+                current = {"decision": f.get("decision"), "numintf": f.get("numintf"),
+                           "regsleft": f.get("regsleft"), "blocks": [], "neighbours": {}}
+        elif current is None:
+            continue
+        elif event == "intf" and f.get("web") == str(web):
+            n = current["neighbours"].setdefault(int(f["other"]), {"blocks": []})
+            n["assigned"] = int(f.get("assigned", 0))
+        elif event == "webblocks" and f.get("role") == "target" and f.get("web") == str(web):
+            current["blocks"] = parse_blocks(f.get("bbs"))
+        elif event == "webblocks" and f.get("role") == "neighbor":
+            n = current["neighbours"].setdefault(int(f["web"]), {"blocks": []})
+            n["blocks"] = parse_blocks(f.get("bbs"))
+    if current is not None:
+        decisions.append(current)
+    return decisions
+
+
+def fold_runs(blocks: list[int]) -> list[tuple[int, int]]:
+    runs: list[tuple[int, int]] = []
+    for b in sorted(blocks):
+        if runs and b == runs[-1][1] + 1:
+            runs[-1] = (runs[-1][0], b)
+        else:
+            runs.append((b, b))
+    return runs
+
+
+def render_neighbours(decisions: list[dict], web: int, block_filter: int | None,
+                      header: str) -> str:
+    out = [header, f"interferers of p1 web {web}, per block it occupies"]
+    for number, d in enumerate(decisions, 1):
+        out.append("")
+        out.append(f"decision {number} of {len(decisions)}: {d['decision']}  numintf "
+                   f"{d['numintf']}  regsleft {d['regsleft']}  {len(d['neighbours'])} "
+                   f"interferer(s)")
+        sets: dict[int, tuple] = {}
+        for b in d["blocks"]:
+            if block_filter is not None and b != block_filter:
+                continue
+            sets[b] = tuple(sorted(w for w, n in d["neighbours"].items() if b in n["blocks"]))
+        groups: list[list] = []
+        for b in sorted(sets):
+            if groups and groups[-1][2] == sets[b] and groups[-1][1] == b - 1:
+                groups[-1][1] = b
+            else:
+                groups.append([b, b, sets[b]])
+        if not groups:
+            out.append("  (no block of the web matches)")
+        for lo, hi, ws in groups:
+            label = f"bb{lo}" if lo == hi else f"bb{lo}-{hi}"
+            shown = " ".join(
+                f"w{w}" + (f"({colour_name(d['neighbours'][w]['assigned'])})"
+                           if d["neighbours"][w].get("assigned", 0) > 0 else "")
+                for w in ws) or "none"
+            out.append(f"  {label}: {len(ws)}  {shown}")
+        unplaced = [w for w, n in d["neighbours"].items() if not n["blocks"]]
+        if unplaced:
+            out.append("  no block record: " + " ".join(f"w{w}" for w in sorted(unplaced)))
+    return "\n".join(out) + "\n"
 
 
 # ---------------------------------------------------------------- naming
@@ -480,6 +574,23 @@ def cut_env(environ) -> dict:
     return {k: v for k, v in environ.items() if k.startswith("DKWB_CUT_") and v}
 
 
+SETTING_VARS = ("CDX_FORCE", "CDX_BIAS", "DKWB_SUBST_KEEP")
+
+
+def setting_env(environ) -> dict:
+    """Force, bias and kept-substitution settings, which change the object and must reach the compile."""
+    return {k: environ[k] for k in SETTING_VARS if environ.get(k)}
+
+
+def pinned_env(environ) -> dict:
+    """Everything the stock compiler would ignore but the report must honour."""
+    return {**cut_env(environ), **setting_env(environ)}
+
+
+def describe_pinned(environ) -> str:
+    return " ".join(f"{k}={v}" for k, v in sorted(pinned_env(environ).items()))
+
+
 def with_source(command: list[str], candidate: pathlib.Path | None) -> list[str]:
     """Replace the command's source argument (its last word) with `candidate`."""
     actual = list(command)
@@ -489,18 +600,19 @@ def with_source(command: list[str], candidate: pathlib.Path | None) -> list[str]
 
 
 def compile_tu(symbol: str, work: pathlib.Path, proc: str,
-               candidate: pathlib.Path | None = None):
+               candidate: pathlib.Path | None = None, detail_web: str = "all"):
     """Instrumented, stock and `-g3` names compiles of the TU (or of `candidate`).
 
-    `DKWB_CUT_*` reach the instrumented compile. A stock compiler ignores them,
-    so with a cut set the identity gate compares the instrumented object with a
-    second instrumented compile (same cuts, no CDX_* logging) in the `stock`
-    slot: the gate then proves the logging is inert, not that the cut is.
+    `DKWB_CUT_*`, `CDX_FORCE`, `CDX_BIAS` and `DKWB_SUBST_KEEP` reach the
+    instrumented compile. A stock compiler ignores them, so with any set the
+    identity gate compares the instrumented object with a second instrumented
+    compile (same settings, no logging) in the `stock` slot: the gate then
+    proves the logging is inert, not that the setting is.
     """
     import force_lattice as fl
     command = with_source(fl.compile_command(symbol), candidate)
     env = clean_env(os.environ)
-    cuts = cut_env(os.environ)
+    cuts = pinned_env(os.environ)
     runs = {}
     for label in ("instrumented", "stock", "names"):
         actual = (fl.replace_compiler(command, fl.INSTRUMENTED / "cc")
@@ -510,8 +622,10 @@ def compile_tu(symbol: str, work: pathlib.Path, proc: str,
         run_env = dict(env)
         if label == "instrumented" or (label == "stock" and cuts):
             run_env.update(cuts)
+            if cuts and proc != "all":
+                run_env["CDX_PROC"] = proc
         if label == "instrumented":
-            run_env.update(CDX_LOG="1", CDX_PROC=proc, CDX_DETAIL_WEB="all",
+            run_env.update(CDX_LOG="1", CDX_PROC=proc, CDX_DETAIL_WEB=detail_web,
                            CDX_WEBREPORT="1", CDX_OUT=str(work / "allocator.log"))
         if label == "names" and "-g3" not in actual:
             actual.insert(actual.index("-o"), "-g3")
@@ -585,6 +699,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--block", type=int, help="only this block's rows")
     parser.add_argument("--source", type=pathlib.Path,
                         help="report this candidate C file in place of the tracked TU")
+    parser.add_argument("--neighbours", type=int, metavar="WEB",
+                        help="print WEB's interferer list per block instead of the report")
     parser.add_argument("--trace", help="read a saved CDX_WEBREPORT log instead of compiling")
     parser.add_argument("--keep", help="keep the compiles and the log in this directory")
     parser.add_argument("--json", action="store_true", help="print the joined model as JSON")
@@ -601,14 +717,25 @@ def main(argv: list[str] | None = None) -> int:
     else:
         work = pathlib.Path(args.keep) if args.keep else pathlib.Path(tempfile.mkdtemp())
         work.mkdir(parents=True, exist_ok=True)
-        runs = compile_tu(args.symbol, work, str(args.proc) if args.proc is not None else "all",
-                           candidate)
+        proc_arg = str(args.proc) if args.proc is not None else "all"
+        env_proc = os.environ.get("CDX_PROC", "")
+        if args.proc is None and env_proc.isdigit():
+            proc_arg = env_proc
+        if proc_arg == "all" and any(os.environ.get(k) for k in ("CDX_FORCE", "CDX_BIAS")):
+            print("web_report: CDX_FORCE/CDX_BIAS are ignored by the compiler without a "
+                  "procedure ordinal; pass --proc N (or a numeric CDX_PROC).", file=sys.stderr)
+            return 2
+        runs = compile_tu(args.symbol, work, proc_arg, candidate,
+                          str(args.neighbours) if args.neighbours is not None else "all")
         text = (work / "allocator.log").read_text()
         if read_text_section(runs["instrumented"]) != read_text_section(runs["stock"]):
             print("web_report: IDENTITY GATE FAILED -- the instrumented .text differs from "
                   "the stock compile; no reading is trustworthy.", file=sys.stderr)
             return 2
         gate = ".text identical to stock"
+        if pinned_env(os.environ):
+            gate = ("logging inert: .text identical to an instrumented compile with the same "
+                    f"settings ({describe_pinned(os.environ)})")
         if runs["names"]:
             namer = Namer(*mdebug_frame_names(runs["names"], args.symbol))
     rows = parse_records(text)
@@ -621,6 +748,17 @@ def main(argv: list[str] | None = None) -> int:
         print("web_report: cannot tell which procedure is the symbol; pass --proc. "
               f"Procedures with lines: {sorted(procs_with_lines(rows))}", file=sys.stderr)
         return 2
+    if args.neighbours is not None:
+        decisions = neighbour_model(rows, proc, args.neighbours)
+        if not decisions:
+            print(f"web_report: no p1 decision for web {args.neighbours} in proc {proc}; "
+                  "a neighbour reading needs a capture made with "
+                  f"CDX_DETAIL_WEB={args.neighbours}", file=sys.stderr)
+            return 2
+        sys.stdout.write(render_neighbours(
+            decisions, args.neighbours, args.block,
+            f"{args.symbol}  proc {proc}  identity gate: {gate}"))
+        return 0
     model = build(rows, proc)
     if not model["decisions"]:
         print(f"web_report: no decisions for proc {proc}", file=sys.stderr)

@@ -115,5 +115,22 @@ class InstrumentedTests(unittest.TestCase):
         self.assertEqual(fast_score.INSTRUMENTED_CC.parent.name, "ido-instrumented")
 
 
+class RelativeCandidateTests(unittest.TestCase):
+    """A relative candidate path is the caller's cwd's, not the repository root's."""
+
+    def test_missing_relative_candidate_is_reported_under_the_callers_cwd(self):
+        import os
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            old = os.getcwd()
+            os.chdir(directory)
+            try:
+                with self.assertRaises(SystemExit) as caught:
+                    fast_score.main(["func_x", "nope.c"])
+            finally:
+                os.chdir(old)
+        self.assertIn(str(Path(directory).resolve() / "nope.c"), str(caught.exception))
+
+
 if __name__ == "__main__":
     unittest.main()

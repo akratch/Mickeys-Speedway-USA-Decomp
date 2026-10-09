@@ -1378,6 +1378,6 @@ void func_800180B4(ShadowQuery *query) {
  * frame: 0x140
  * relocations: 21
  * first-mismatch: +0x4C
- * summary: 292 at +12, residual 60. A dead k = arg3 moves arg3's split after the face pieces; only the tail-flag address piece still blocks the latch
+ * summary: 292 at +12, residual 60. No uopt block cut (forced or natural) in the face loop or tail moves the face pieces' latch test.
  * PLATEAU-HANDOFF:func_80017140:end
  */

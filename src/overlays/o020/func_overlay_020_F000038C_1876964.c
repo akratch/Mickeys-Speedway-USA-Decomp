@@ -199,6 +199,6 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
  * frame: 0x40
  * relocations: 3
  * first-mismatch: +0x224
- * summary: 10 at 0. Forced cuts on the idx body never reach save (100,145] (nocs counts referencing blocks); bias-oracle lever sweep and four natural products flat
+ * summary: 10 at 0. Subst trace: size's tree is (col & 7) + 9 in any one-block form; a kept size before v1 needs a cut the loop cannot reach (counter 13 at v1)
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

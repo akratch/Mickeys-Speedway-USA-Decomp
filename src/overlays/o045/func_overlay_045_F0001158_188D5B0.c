@@ -358,6 +358,6 @@ void func_overlay_045_F0001158_188D5B0(
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x718
- * summary: 96 at size 0: target writes each vertex's colours before x and y (spill/reload barriers); with the CDX_BIAS target order that prices residual 58 at -4.
+ * summary: 96 at size 0: a forwarded sine copy puts the first cut after v1.y; with triangle 1 v2,flags,v0,v1 and the bias that is residual 58 at -4.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

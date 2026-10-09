@@ -3984,7 +3984,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: 344 at size 0: the cut after quadA is the -varref limit (quadA's own loads take the counter 4 to 22); doubles' evaluation point still open.
+ * summary: 344 at size 0: the target stores every local definition (doubles, 2a, -b, b*b) at its home; this body forwards them into temps.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

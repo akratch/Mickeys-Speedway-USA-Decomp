@@ -943,4 +943,104 @@ permutation, or the already exhausted expression/early-return sweeps is not
 such a mechanism. The two dead-copy stand-ins and the empty region boundary
 remain unresolved independently of the spill order.
 
+#### 2026-10-10, lane tonight-wake: request-order witness and authenticated expression births
+
+No canonical source or matching-credit change. The configured baseline remains
+1,404 bytes / 351 words, 14 raw/masked differences, aligned 337 exact /
+2 naming / 12 immediate / 0 structural, first mismatch +0x94, frame 0x90,
+and three relocations. Configured and direct objects agree on the owned
+bytes and exact relocation records. Actual prepared-input context is unchanged.
+Fresh named Ucode authenticates procedure 9 of 39; stock versus observer
+passes full-TU text, data, rodata, symbol and relocation fidelity. The current
+19 spill requests, 63-node membership sets, 667 blocker witnesses and three
+ordinary temporary requests reproduce the previous region census.
+
+Assignment gates passed against committed authorizations `7dfb7cbab`
+(request-order diagnostic), `081816ce9` (observation-only creation trace),
+`caa053e2c` (one quotient factor) and `ee6d01af4` (one shift follow-up),
+with source `2ae0a62ae` and ledger `3d874b637` throughout. Private sources,
+objects, scores, first mismatches, producer sources/binaries, captures and
+proof scripts remain ignored under `build/tonight-wake/`.
+
+**Order feasibility, not a source match.** A constructive first-fit replay
+satisfies every authenticated emitted target-slot constraint with the same
+request widths and membership sets. The un-emitted buffer-array address and
+base-plus-header requests remain unconstrained by the target; their slots
+were not invented from unused stack cells. A measured twelve-request clique
+requires twelve distinct pool cells. The witness preserves the initial ten
+requests, then requests sample bytes, the segment-times-0x14 term, doubled
+count, the intervening reusable temporary, segment bytes, another reusable
+temporary, texture bytes, base-plus-header and buffer-array address.
+
+A private compiler diagnostic implements that request order and changes
+conflict iteration to test already assigned owners rather than assuming
+lower numeric identities. Invalid/incomplete selectors fail closed. Disabled
+and original-order controls pass full-TU stock fidelity. The witness-order
+object changes exactly the twelve stack-immediate words, leaving two naming
+differences at +0xB4/+0xB8, unchanged 1,404-byte size and frame 0x90. All
+nineteen choices match replay; the ordinary temporary tail and every other
+function and relocation record remain unchanged. This proves order alone
+can repair the measured stack residual, not that source can realize the
+permutation. The altered compiler is diagnostic only and supplies no credit.
+
+**Actual creation provenance.** A separate observer, with ordering override
+absent, records allocation at the new-IChain path after its bit assignment,
+not first use. Actual GLOBAL graph/statement context, recursive expression
+parents and selected reaching-definition events are joined explicitly.
+Observer-off/on objects pass full fidelity; all GLOBAL births have context.
+The second fill-loop guard first creates conversion, segment and doubled
+expressions by copying the triCount definition. The sample-buffer store
+first creates the buffer-array address and segment-byte expression. The
+vertex-buffer read creates texture bytes; later cursor updates create sample
+bytes and the segment-times-0x14 expression. This confirms the causal order
+without guessing a source recipe from request numbers.
+
+**Two fixed source diagnostics.** At the existing triCount definition,
+`((segmentCount ^ 0) * 16) / 8` first creates the exact kept-operand sample
+child in the fill guard, and the later cursor update reuses that same chain.
+The original code already requires the signed times-16 and times-20 products
+to be representable; on that defined domain the quotient equals doubled
+count, including negative inputs. However, division retains signed correction
+code: 1,428 bytes (+24), 351 masked differences, aligned residual 73 and
+frame 0xA0. Replacing only division by configured arithmetic `>> 3` preserves
+the early child and removes that correction, but retains the shift and its
+extra allocation: 1,412 bytes (+8), 348 masked differences, aligned residual
+68 and frame 0xA0. The representable numerator is a multiple of sixteen, so
+configured arithmetic shift gives the same value for negative inputs too.
+Both actual prepared contexts are unchanged and both full-TU observer
+fidelity checks pass. Neither is a candidate for promotion.
+
+A proposed integer neutral seed was rejected before compilation: the cited
+GLOBAL multiply-zero special case applies to floating types, not integer
+multiplication. The suggested exact-double adaptation also lacks its required
+conversion-fold evidence: the observed GLOBAL conversion fold excludes the
+integer-to-double and double-to-integer conversions. These were read-only
+hypotheses, not tested source cells or proven mechanisms.
+
+**One post-copy source barrier.** Authorization `c5e824d4a` separately
+permitted replacing only the destination `j ^= 0` with
+`segmentCount ^= 0`, immediately after `j = segmentCount`; the i-copy pair
+stayed unchanged. Earlier count-kill records used OR-zero, while the later
+XOR matrix varied the destination copy, so this tested a distinct operand
+redefinition. Values remain unchanged for the initialized signed operands.
+Named full-TU LOCAL/GLOBAL captures for both control and probe pass all five
+fidelity gates; the private birth observer agrees and prepared context is
+unchanged. LOCAL now keeps j's allocation-argument uses because its tree is
+killed; GLOBAL rejects its definition at the cursor use as unavailable, and
+the j definition survives. However, the source segmentCount barrier is live
+after the block and also survives, affecting the later segment-count store.
+This is not the previously proved dead-source-barrier mechanism. The result
+is 1,392 bytes (-12), 344 masked differences, aligned residual 267, frame
+0x98 and first mismatch +0x0C. It supplies no promotion or further spelling
+variant. The live-source constraint, rather than a missing retention effect,
+closes this transfer.
+
+The new result is a feasible complete order witness and a source-induced
+birth change with a measured cost. The remaining requirement is a defined
+source mechanism that creates both needed child owners in the required
+order while leaving no extra operation, spill owner or enlarged frame; the
+two naming rows remain separately unresolved. More quotient/shift spellings,
+arbitrary permutations or generic identity sweeps are not justified by this
+packet. Best stock body stays the canonical fourteen-difference baseline.
+
 <!-- plateau-handoff:wakeAllocate:end -->

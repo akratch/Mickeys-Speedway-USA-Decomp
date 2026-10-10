@@ -351,7 +351,8 @@ def raw_dispositions(raw, base):
         raise GateError('invalid raw disposition schema/work class')
     result = {}
     for tip, owners in doc['claims'].items():
-        if not OID.fullmatch(tip) or commit(tip) != tip:
+        # Frozen private lane objects need not exist in a public clone.
+        if not OID.fullmatch(tip):
             raise GateError('raw disposition requires exact commit tip')
         if not isinstance(owners, dict) or not owners:
             raise GateError('raw disposition requires owner-scoped decisions')

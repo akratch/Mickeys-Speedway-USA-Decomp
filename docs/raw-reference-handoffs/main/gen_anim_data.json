@@ -31,7 +31,7 @@
       "bss_size": 339216
     }
   },
-  "summary": "Exhausted reference evidence reconciled for scheduling only. Existing five-project and sixteen-retail-image searches found no exact counterpart; no matching or assembly-verification credit. A new title or independently uncovered layout requires a pinned reference-only authorization.",
+  "summary": "Exhausted reference evidence reconciled for scheduling only. Existing five-project and sixteen-retail-image searches found no exact counterpart; no matching or assembly-verification credit. A new title or independently uncovered layout requires a pinned reference-only authorization. Coordinator review of frozen lane/t-hasm tip a0616374dfa6811795eb8e542376bb91bdc2bcf1 against merge base 32ccc18a31a64b16d773b5874ec95be94f93751e found no gen_anim_data raw identity, C-path or raw-handoff delta. Its shared census change concerns refractOutputAssembler tracked hasm under unaccepted proposed ADR 0019. Only that conservative scheduling claim is superseded; the branch contents and proposed policy are not adopted, merged or credited.",
   "evidence": [
     {
       "commit": "05b39e6fcacd9001d3157c77c91c8333a84293db",

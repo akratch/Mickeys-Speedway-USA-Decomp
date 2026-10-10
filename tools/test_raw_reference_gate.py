@@ -311,6 +311,82 @@ class RawGate(unittest.TestCase):
             self.auth(reason=reason); self.save('Invalid reason')
             self.assertEqual(self.state(),'stale-ledger')
 
+    def disposition(self, head, *, owner=OWNER, decision=None, state='superseded'):
+        doc = {'schema_version':1,'claims':{head:{
+            'symbol':owner,'state':state,'decision_commit':decision or self.base,
+            'reason':'Reviewed frozen tip changes only shared legacy documentation.'}}}
+        self.write('config/lane-claim-dispositions.us.json',json.dumps(doc))
+        self.save('Record exact-tip review')
+
+    def legacy_lane(self):
+        self.lane()
+        self.write('docs/prior.md','gen_anim_data: shared legacy lane note.\n')
+        head = self.save('Legacy-only lane finding')
+        self.cmd('checkout','-q','main')
+        return head
+
+    def test_reviewed_legacy_only_tip_clears(self):
+        head = self.legacy_lane()
+        self.assertEqual(self.state(),'active')
+        self.disposition(head)
+        self.assertEqual(self.state(),'base-only')
+        self.write(g.AUTH_PATH,json.dumps({'schema_version':1,'work_class':g.WORK_CLASS,'authorizations':{}}))
+        self.save('No research authorization')
+        self.assertEqual(self.state(),'already-integrated/exhausted')
+
+    def test_disposition_does_not_cover_descendant_or_foreign_owner(self):
+        head = self.legacy_lane()
+        self.disposition(head,owner='main/other')
+        self.assertEqual(self.state(),'active')
+        self.disposition(head)
+        self.assertEqual(self.state(),'base-only')
+        self.cmd('checkout','-q','lane/test');self.write('unrelated','new descendant')
+        self.save('Descendant after reviewed tip');self.cmd('checkout','-q','main')
+        self.assertEqual(self.state(),'active')
+
+    def test_disposition_cannot_hide_raw_source_c_or_shard_changes(self):
+        for kind in ('source','c','shard'):
+            with self.subTest(kind=kind):
+                self.cmd('checkout','-qB','lane/test',self.base)
+                self.write('docs/prior.md','gen_anim_data: legacy lane note.\n')
+                if kind=='source':
+                    self.change_yaml(lambda d:d['segments'][0]['subsegments'][1].__setitem__(0,4116))
+                elif kind=='c':self.write('src/main/gen_anim_data.c','void gen_anim_data(void) {}\n')
+                else:
+                    row=json.loads(Path(g.shard_path(OWNER)).read_text());row['summary']='Lane handoff change.'
+                    self.write(g.shard_path(OWNER),json.dumps(row))
+                head=self.save('Lane owner change beside legacy note')
+                self.cmd('checkout','-q','main');self.disposition(head)
+                self.assertEqual(self.state(),'active')
+
+    def test_source_change_already_in_base_does_not_expand_disposition(self):
+        self.lane()
+        self.change_yaml(lambda d:d['segments'][0]['subsegments'][1].__setitem__(0,4116))
+        changed = Path(g.YAML_PATH).read_text()
+        self.write('docs/prior.md','gen_anim_data: legacy lane note.\n')
+        head = self.save('Source change and legacy note')
+        self.cmd('checkout','-q','main')
+        self.write(g.YAML_PATH,changed);self.save('Canonical adopts source ownership only')
+        self.seed();self.save('Reconcile canonical ownership boundary')
+        self.disposition(head)
+        # Source now equals base, but it changed on the reviewed lane; the
+        # legacy-only exception must not apply to that broader frozen tip.
+        self.assertEqual(self.state(),'active')
+
+    def test_bad_disposition_fails_closed(self):
+        head=self.legacy_lane()
+        self.disposition(head,state='unknown')
+        self.assertEqual(self.state(),'stale-ledger')
+        with self.assertRaises(g.GateError):g.check_worktree('HEAD')
+        self.disposition(head,decision='f'*40)
+        self.assertEqual(self.state(),'stale-ledger')
+        with self.assertRaises(g.GateError):g.check_worktree('HEAD')
+        self.cmd('checkout','--orphan','foreign-decision')
+        self.write('foreign','x');foreign=self.save('Unrelated review')
+        self.cmd('checkout','-q','main');self.disposition(head,decision=foreign)
+        self.assertEqual(self.state(),'stale-ledger')
+        with self.assertRaises(g.GateError):g.check_worktree('HEAD')
+
     def test_check_worktree_is_not_assignment(self):
         self.assertEqual(g.check_worktree('HEAD'),(1,1))
         self.write(g.shard_path(OWNER),'{}')

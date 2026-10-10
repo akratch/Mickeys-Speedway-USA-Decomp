@@ -332,7 +332,18 @@ def validate_history(rows, base):
         ledger(b, owner)
 
 
+def validated_dispositions(base):
+    """Use the same committed ADR 0011 decisions in assignment and landing."""
+    from lane_status import claim_dispositions
+    try:
+        return claim_dispositions(base)
+    except RuntimeError as error:
+        raise GateError(str(error)) from error
+
+
 def active_lanes(base, owner, ident, base_shard):
+    # Lazy shared validation keeps ordinary C resolution unchanged.
+    dispositions = validated_dispositions(base)
     active = []
     legacy_paths = set()
     if base_shard is not None:
@@ -360,6 +371,18 @@ def active_lanes(base, owner, ident, base_shard):
             show(head, path) != show(common, path) and show(head, path) != show(base, path)
             for path in legacy_paths
         )
+        disposition = dispositions.get(head)
+        legacy_only_reviewed = (
+            disposition is not None and disposition['symbol'] == owner
+            and isinstance(lane_id, dict) and lane_id == common_id
+            and show(head, c_path) == show(common, c_path)
+            and lane_shard == common_shard
+        )
+        # A decision belongs to exactly this frozen tip and raw owner. It
+        # dismisses only the conservative shared-document claim, never raw
+        # ownership/C/shard changes (even if those now resemble the base).
+        if legacy_only_reviewed:
+            legacy_changed = False
         if (c_changed or legacy_changed or (lane_id != common_id and lane_id != ident)
                 or (lane_shard != common_shard and lane_shard != base_shard)):
             active.append(branch)
@@ -402,6 +425,7 @@ def classify(base, owner):
 def check_worktree(base):
     """Source-only validation; never makes worktree metadata assignable."""
     base = commit(base)
+    validated_dispositions(base)
     rows = authorizations(Path(AUTH_PATH).read_text())
     validate_history(rows, base)
     yaml_text = Path(YAML_PATH).read_text()

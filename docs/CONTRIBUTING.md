@@ -124,7 +124,14 @@ still equal its newest cited historical version. Even an unrelated edit to that
 shared legacy document closes the gate until a new handoff reconciles the change.
 New research findings should use the dedicated raw handoff. A changed legacy
 document on an unintegrated lane likewise reserves the target. YAML sibling edits
-remain target-scoped. All lane checks compare committed refs with their merge
+remain target-scoped. A reviewed frozen tip may use the existing
+`config/lane-claim-dispositions.us.json` mechanism with its exact commit ID and
+`symbol` equal to the full raw owner (for example, `main/gen_anim_data`). A valid
+ancestor decision dismisses only the shared legacy-document delta, and only when
+the lane's raw identity, C path and raw handoff are unchanged from its merge base.
+It cannot hide source or handoff work, cover another owner or follow a descendant
+tip. This is scheduling adjudication, never adoption of the lane's contents.
+All lane checks compare committed refs with their merge
 bases and current base, including older divergent lanes; no sibling working tree
 or ROM is read. Raw results use no persistent assignment cache.
 

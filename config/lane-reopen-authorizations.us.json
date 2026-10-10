@@ -1161,8 +1161,8 @@
       "source_commit": "900b48893e83a53be6d2932d2f1d6a47d94fdffd"
     },
     "func_overlay_064_F0000000_18C3B28": {
-      "ledger_commit": "48413c3d631724bf341263ff67613fdce85f6418",
-      "reason": "Price the odd-only value-reuse web split after authenticating its isolated identity; prior split failure covered init and every even-loop copy. Require target read/product partition before any natural source search.",
+      "ledger_commit": "6aafff83cc6ed4844d38f9270a73ab4d981e320d",
+      "reason": "2026-10-10: transfer 51364 post-use operand kill to odd-loop value after conditional product. Preserve hi/lo roles; test hi GLOBAL retention, original lo copy, and dead identity deletion.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {
@@ -1971,8 +1971,8 @@
       "source_commit": "4a19eaf4143fd79a7053188c64f8656016aae2cf"
     },
     "wakeAllocate": {
-      "ledger_commit": "43219d40c6ee8ad647863e7739c3b464919066ad",
-      "reason": "2026-10-09: measure actual spilltemps node memberships and blocker identities, absent from slot_trace/webblocks, to authenticate texture/sample containment and two earlier owners. No source mutation before fidelity and ownership census.",
+      "ledger_commit": "3d874b6379ce250392feb98fe171882537b43cbb",
+      "reason": "2026-10-10: solve authenticated spill-region conflicts against target slot constraints, then price feasible request order in a private compiler oracle. Seek a source cause only if order-only suffices.",
       "source_commit": "2ae0a62ae8a8631ee8144d1e6696c3dd88953f17"
     },
     "wakeDraw": {

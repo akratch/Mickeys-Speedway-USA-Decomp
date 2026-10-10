@@ -2850,6 +2850,22 @@ bytes and disassembly never belong here.
   promotion proof. See the controls and limits in [the coordinate-lifetime
   packet](matching-triage-handoffs/func_80054B3C.md).
 
+- **A distinct address root can still share an inner address expression.**
+  In a controlled IDO/o32 comparison, wrapping a complete member address in
+  an unsigned zero-XOR preserved a distinct memory-base expression and avoided
+  the plain control's repeated-load traffic. Its inner member-address addition
+  nevertheless retained the old shared allocation range, and the wrapper added
+  a separate interfering range. Moving the same identity onto the input pointer
+  before deriving the member address removed that shared addition, but also
+  separated lifetimes needed for register pressure and lost the desired saved
+  register and frame. Neither placement improved the candidate. Follow the
+  entire expression tree through substitution and actual per-block interference;
+  a distinct root does not prove distinct children, and distinct lifetimes do
+  not imply better allocation. The defined pointer round trip relies on the
+  authenticated target widths and is an ADR 0017 diagnostic, not portable C
+  guidance. See the controlled address-identity comparisons in [the coordinate
+  handoff](matching-triage-handoffs/func_80054B3C.md).
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

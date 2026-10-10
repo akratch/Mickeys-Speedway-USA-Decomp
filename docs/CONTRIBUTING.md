@@ -131,6 +131,20 @@ ancestor decision dismisses only the shared legacy-document delta, and only when
 the lane's raw identity, C path and raw handoff are unchanged from its merge base.
 It cannot hide source or handoff work, cover another owner or follow a descendant
 tip. This is scheduling adjudication, never adoption of the lane's contents.
+When one frozen tip affects several raw owners, the separate optional
+`config/raw-reference-dispositions.us.json` preserves those independent decisions.
+Its strict schema has `schema_version: 1`, `work_class: "raw-reference-only"`, and
+`claims` keyed first by full tip commit ID and then by exact `main/` owner.
+Each owner row contains only `state` (`rejected` or `superseded`), the full
+ancestor `decision_commit`, and a nonempty `reason`. Every tip and decision must
+name a real commit. Unknown fields, duplicate keys, invalid owner names and
+nonancestor decisions fail closed. These rows use the same legacy-only check
+above; they never dismiss raw identity, C-path or handoff changes. The existing
+single-owner dispositions remain supported and unchanged. Ordinary C assignment
+does not read this raw-only file. Commit the reviewed handoff first, then record
+its real decision commit in the disposition; neither step authorizes research.
+The raw publication check validates both committed and worktree dispositions,
+while assignment reads only committed metadata.
 All lane checks compare committed refs with their merge
 bases and current base, including older divergent lanes; no sibling working tree
 or ROM is read. Raw results use no persistent assignment cache.

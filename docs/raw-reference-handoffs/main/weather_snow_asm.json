@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "work_class": "raw-reference-only",
+  "owner": "main/weather_snow_asm",
+  "identity": {
+    "source": "mickey.us.yaml",
+    "owner": "main/weather_snow_asm",
+    "rom_sha1": "507341c0a40ca3e9a7cee969b396ee53facfb548",
+    "rom_start": 249904,
+    "rom_end": 250736,
+    "section": ".text",
+    "parent_end": 550464,
+    "mapping_dependencies": [
+      {
+        "mapping": {
+          "name": "entry",
+          "type": "code",
+          "start": 4096,
+          "vram": 2147484672
+        },
+        "rom_end": 4176
+      }
+    ],
+    "parent": {
+      "name": "main",
+      "type": "code",
+      "start": 4176,
+      "vram": 2147484752,
+      "follows_vram": "entry",
+      "subalign": 4,
+      "bss_size": 339216
+    }
+  },
+  "summary": "Exhausted reference evidence reconciled for scheduling only; no new search or matching credit. The existing five-project and sixteen-retail-image census found no exact counterpart. Coordinator review of frozen lane/t-hasm tip a0616374dfa6811795eb8e542376bb91bdc2bcf1 against merge base 32ccc18a31a64b16d773b5874ec95be94f93751e found no main/weather_snow_asm raw identity, C-path or dedicated raw-handoff delta. Its shared census change concerns refractOutputAssembler under unaccepted proposed ADR 0019. Only this exact owner and frozen tip shared-document scheduling claim is superseded; no branch contents or proposed policy are adopted.",
+  "evidence": [
+    {
+      "commit": "0f7f886c315f6b8d50d6f5745ead62de94a214c8",
+      "path": "docs/raw-asm-census.md",
+      "summary": "Prior five-project and sixteen-retail-image reference exclusions, with bounded decoded-code coverage and remaining revision/layout limitations; no exact permitted counterpart."
+    }
+  ]
+}

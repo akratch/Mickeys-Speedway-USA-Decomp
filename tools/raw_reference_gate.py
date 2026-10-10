@@ -17,6 +17,7 @@ import yaml
 
 YAML_PATH = 'mickey.us.yaml'
 AUTH_PATH = 'config/raw-reference-authorizations.us.json'
+DISPOSITIONS_PATH = 'config/raw-reference-dispositions.us.json'
 SHARD_DIR = 'docs/raw-reference-handoffs'
 WORK_CLASS = 'raw-reference-only'
 ROM_SIZE = 0x2000000
@@ -341,9 +342,42 @@ def validated_dispositions(base):
         raise GateError(str(error)) from error
 
 
+def raw_dispositions(raw, base):
+    """Validate exact-tip/owner decisions; these are never authorizations."""
+    doc = strict_json(raw)
+    fields(doc, ['schema_version', 'work_class', 'claims'], 'raw dispositions')
+    if (type(doc['schema_version']) is not int or doc['schema_version'] != 1
+            or doc['work_class'] != WORK_CLASS or not isinstance(doc['claims'], dict)):
+        raise GateError('invalid raw disposition schema/work class')
+    result = {}
+    for tip, owners in doc['claims'].items():
+        if not OID.fullmatch(tip) or commit(tip) != tip:
+            raise GateError('raw disposition requires exact commit tip')
+        if not isinstance(owners, dict) or not owners:
+            raise GateError('raw disposition requires owner-scoped decisions')
+        for owner, row in owners.items():
+            owner_name(owner)
+            fields(row, ['state', 'decision_commit', 'reason'], 'raw disposition decision')
+            if row['state'] not in ('rejected', 'superseded'):
+                raise GateError('invalid raw disposition state')
+            decision = row['decision_commit']
+            if (not isinstance(decision, str) or not OID.fullmatch(decision)
+                    or commit(decision) != decision or not ancestor(decision, base)):
+                raise GateError('raw disposition decision must be an ancestor commit')
+            prose(row['reason'], 'raw disposition reason')
+            result[tip, owner] = row
+    return result
+
+
+def committed_raw_dispositions(base):
+    raw = show(base, DISPOSITIONS_PATH)
+    return {} if raw is None else raw_dispositions(raw, base)
+
+
 def active_lanes(base, owner, ident, base_shard):
     # Lazy shared validation keeps ordinary C resolution unchanged.
     dispositions = validated_dispositions(base)
+    raw_decisions = committed_raw_dispositions(base)
     active = []
     legacy_paths = set()
     if base_shard is not None:
@@ -373,7 +407,8 @@ def active_lanes(base, owner, ident, base_shard):
         )
         disposition = dispositions.get(head)
         legacy_only_reviewed = (
-            disposition is not None and disposition['symbol'] == owner
+            ((disposition is not None and disposition['symbol'] == owner)
+             or (head, owner) in raw_decisions)
             and isinstance(lane_id, dict) and lane_id == common_id
             and show(head, c_path) == show(common, c_path)
             and lane_shard == common_shard
@@ -426,6 +461,9 @@ def check_worktree(base):
     """Source-only validation; never makes worktree metadata assignable."""
     base = commit(base)
     validated_dispositions(base)
+    committed_raw_dispositions(base)
+    if Path(DISPOSITIONS_PATH).exists():
+        raw_dispositions(Path(DISPOSITIONS_PATH).read_text(), base)
     rows = authorizations(Path(AUTH_PATH).read_text())
     validate_history(rows, base)
     yaml_text = Path(YAML_PATH).read_text()

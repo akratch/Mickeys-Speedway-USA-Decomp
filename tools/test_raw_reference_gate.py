@@ -393,5 +393,123 @@ class RawGate(unittest.TestCase):
         with self.assertRaises(g.GateError):g.check_worktree('HEAD')
         self.assertEqual(self.state(),'base-only')
 
+    def raw_disposition(self, head, *, owner=OWNER, decision=None, state='superseded'):
+        row = {'state': state, 'decision_commit': decision or self.base,
+               'reason': 'Reviewed exact frozen owner; only legacy documentation changed.'}
+        doc = {'schema_version':1, 'work_class':g.WORK_CLASS,
+               'claims':{head:{owner:row}}}
+        self.write(g.DISPOSITIONS_PATH, json.dumps(doc))
+        return doc
+
+    def test_raw_disposition_committed_only_and_unarmed(self):
+        head = self.legacy_lane()
+        self.raw_disposition(head)
+        self.assertEqual(self.state(), 'active')
+        self.assertEqual(g.check_worktree('HEAD'), (1,1))
+        self.save('Commit owner-specific review')
+        self.assertEqual(self.state(), 'base-only')
+        self.write(g.AUTH_PATH, json.dumps({'schema_version':1, 'work_class':g.WORK_CLASS,
+                                           'authorizations':{}}))
+        self.save('Unarmed owner')
+        self.assertEqual(self.state(), 'already-integrated/exhausted')
+        from lane_status import claim_dispositions
+        self.assertEqual(claim_dispositions('HEAD'), {})
+
+    def test_raw_disposition_foreign_owner_and_descendant(self):
+        head = self.legacy_lane()
+        self.raw_disposition(head, owner='main/other'); self.save('Other owner only')
+        self.assertEqual(self.state(), 'active')
+        self.raw_disposition(head); self.save('Exact owner')
+        self.assertEqual(self.state(), 'base-only')
+        self.cmd('checkout','-q','lane/test'); self.write('unrelated','new')
+        self.save('New descendant'); self.cmd('checkout','-q','main')
+        self.assertEqual(self.state(), 'active')
+
+    def test_raw_multiple_owners_and_legacy_decision_coexist(self):
+        other = 'main/other'
+        self.write('docs/prior.md', 'gen_anim_data and other: prior negatives.\n')
+        evidence = self.save('Both legacy owners')
+        for owner in (OWNER, other):
+            row = {'schema_version':1, 'work_class':g.WORK_CLASS, 'owner':owner,
+                   'identity':g.identity('HEAD', owner), 'summary':'Prior search exhausted.',
+                   'evidence':[{'commit':evidence, 'path':'docs/prior.md', 'summary':'Prior negatives.'}]}
+            self.write(g.shard_path(owner), json.dumps(row))
+        self.ledger = self.save('Both handoffs'); self.auth()
+        doc = json.loads(Path(g.AUTH_PATH).read_text())
+        doc['authorizations'][other] = copy.deepcopy(doc['authorizations'][OWNER])
+        self.write(g.AUTH_PATH, json.dumps(doc)); self.base = self.save('Both authorizations')
+        head = self.legacy_lane()
+        self.assertEqual(g.classify('HEAD',other)['state'], 'active')
+        self.disposition(head)  # Existing gen-style single-owner metadata is preserved.
+        doc = self.raw_disposition(head,owner=other)
+        self.save('Separate additional owner review')
+        self.assertEqual(self.state(), 'base-only')
+        self.assertEqual(g.classify('HEAD',other)['state'], 'base-only')
+        doc['claims'][head][OWNER] = copy.deepcopy(doc['claims'][head][other])
+        self.write(g.DISPOSITIONS_PATH,json.dumps(doc))
+        Path('config/lane-claim-dispositions.us.json').unlink()
+        self.save('Two exact owner decisions coexist')
+        self.assertEqual(self.state(), 'base-only')
+        self.assertEqual(g.classify('HEAD',other)['state'], 'base-only')
+
+    def test_raw_disposition_cannot_hide_source_c_or_shard(self):
+        for kind in ('source','c','shard'):
+            with self.subTest(kind=kind):
+                self.cmd('checkout','-qB','lane/test',self.base)
+                self.write('docs/prior.md','gen_anim_data: shared change.\n')
+                if kind=='source':
+                    self.change_yaml(lambda d:d['segments'][0]['subsegments'][1].__setitem__(0,4116))
+                elif kind=='c':self.write('src/main/gen_anim_data.c','void gen_anim_data(void) {}\n')
+                else:
+                    row=json.loads(Path(g.shard_path(OWNER)).read_text());row['summary']='Changed handoff.'
+                    self.write(g.shard_path(OWNER),json.dumps(row))
+                head=self.save('Owner change');self.cmd('checkout','-q','main')
+                self.raw_disposition(head);self.save('Review cannot hide owner work')
+                self.assertEqual(self.state(),'active')
+
+    def test_raw_disposition_source_already_in_base(self):
+        self.lane()
+        self.change_yaml(lambda d:d['segments'][0]['subsegments'][1].__setitem__(0,4116))
+        changed=Path(g.YAML_PATH).read_text()
+        self.write('docs/prior.md','gen_anim_data: changed legacy note.\n')
+        head=self.save('Source and legacy change');self.cmd('checkout','-q','main')
+        self.write(g.YAML_PATH,changed);self.save('Canonical source adoption')
+        self.seed();self.save('Reconciled boundary')
+        self.raw_disposition(head);self.save('Review broader tip')
+        self.assertEqual(self.state(),'active')
+
+    def test_raw_disposition_invalid_metadata_fails_assignment_and_publication(self):
+        head=self.legacy_lane()
+        valid=self.raw_disposition(head)
+        cases=[]
+        for key,value in [('state','unknown'),('decision_commit','f'*40),('reason','')]:
+            doc=copy.deepcopy(valid);doc['claims'][head][OWNER][key]=value;cases.append(doc)
+        for key,value in [('work_class','matching'),('schema_version',True),('claims',[])]:
+            doc=copy.deepcopy(valid);doc[key]=value;cases.append(doc)
+        doc=copy.deepcopy(valid);doc['claims']['f'*40]=doc['claims'].pop(head);cases.append(doc)
+        doc=copy.deepcopy(valid);doc['claims'][head]['main/foreign/path']=doc['claims'][head].pop(OWNER);cases.append(doc)
+        doc=copy.deepcopy(valid);doc['claims'][head][OWNER]['extra']='x';cases.append(doc)
+        for doc in cases:
+            with self.subTest(doc=doc):
+                self.write(g.DISPOSITIONS_PATH,json.dumps(doc))
+                with self.assertRaises(g.GateError):g.check_worktree('HEAD')
+                self.save('Invalid raw metadata')
+                self.assertEqual(self.state(),'stale-ledger')
+        self.cmd('checkout','--orphan','foreign-raw-decision')
+        self.write('foreign','x');foreign=self.save('Foreign review')
+        self.cmd('checkout','-q','main');self.raw_disposition(head,decision=foreign)
+        self.save('Nonancestor review')
+        self.assertEqual(self.state(),'stale-ledger')
+        with self.assertRaises(g.GateError):g.check_worktree('HEAD')
+
+    def test_raw_disposition_duplicate_keys_rejected(self):
+        head=self.legacy_lane()
+        doc=self.raw_disposition(head)
+        raw=json.dumps(doc).replace('"claims":', '"claims": {}, "claims":', 1)
+        self.write(g.DISPOSITIONS_PATH,raw)
+        with self.assertRaises(g.GateError):g.check_worktree('HEAD')
+        self.save('Duplicate field')
+        self.assertEqual(self.state(),'stale-ledger')
+
 
 if __name__ == '__main__':unittest.main()

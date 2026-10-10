@@ -2745,7 +2745,7 @@ animseqSetupGroup = 0x80051004; // type:func size:0xE4   ROM 0x51c04  tier-B JFG
 animseqInitGroup = 0x800510E8; // type:func size:0x40   ROM 0x51ce8  src/anim.c.o  masked=1/16 tier-A matched-C
 animseqResetGroup = 0x80051128; // type:func size:0x9C   ROM 0x51d28  tier-B JFG reset-path call family, matched C
 func_800511C4 = 0x800511C4; // type:func size:0x1A0  ROM 0x51dc4  src/anim.c.o  masked=11/104 tier-A matched-C
-func_80051364 = 0x80051364; // type:func size:0x47C ROM 0x51f64 tier-D src/main/anim.c.o -O2 -mips2 -32 -Wo,-loopunroll,0 NON_MATCHING resident fallback, boundary from adjacent resident glabel with padding=0, no match credit
+func_80051364 = 0x80051364; // type:func size:0x47C ROM 0x51f64 tier-A src/main/anim.c.o -O2 -mips2 -32 matched C, 287 stock words, 47 exact relocations, linked ROM identity, reviewed inert allocation aids in cleanup queue
 func_80053420 = 0x80053420; // type:func size:0x90 ROM 0x54020 tier-D JFG ordered animseqCamera candidate, matched C
 animseqPlay = 0x800534B0; // type:func size:0x10   ROM 0x540b0  tier-D JFG ordered Play store, matched C
 func_800534C0 = 0x800534C0; // type:func size:0x2C   ROM 0x540c0  tier-D JFG ordered animseqPause candidate, matched C

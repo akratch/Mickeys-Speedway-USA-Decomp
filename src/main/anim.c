@@ -784,36 +784,16 @@ extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
  * globals, sound-object offset, and final compiler output are independently
  * established from Mickey's ROM.
  *
- * 7 masked words at size delta 0 and the target's 0x40 frame (2026-10-02,
- * lanes n-anim through z-anim), plain C: literal time scales, indexed path
- * loops, no state-address carrier. The NTSC scale is one expression,
- * `* 3 * 2 / 10`: IDO expands the folded *6 in one register, as the target
- * does. The clock advances in place, `D_8007D6A8 += updateRate`, with no
- * new-clock local: uopt hoists the load and add above the camera clear and
- * the float re-read of the stored global supplies the ring draw the path
- * loops need. The sound-handle argument round-trips through s32 so the
- * tested load is its own web, offered v0, and the copy fills the branch
- * delay slot.
- *
- * 2026-10-09 (lane aa-1): 7 -> 6, and the join is now the target's
- * instruction for instruction. The state value is the command word
- * narrowed IN PLACE, `cmdWord = (s8) cmdWord;` (s32 cmdWord), before the
- * cursor statement. Because the variable is its own operand, ugen
- * evaluates the narrowing into ring registers and copies the result into
- * the variable; uopt keeps the definition (its operand is redefined by
- * itself), and as1 deletes the copy and forwards the ring register to the
- * store and the test. That is the ring value held across statements every
- * earlier join spelling lacked. The fields are read through D_8007D69C
- * (no command local). Left (6): one colour, cmdWord a1 where the target
- * has a2 (forcing it to c5 scores 0); cmdWord carries five references
- * against the clock's three, so it outranks the clock.
- * STAND-IN: the two one-line do-while regions (narrowing, subtraction) and
- * the nested leading tests and do-while camera clear are block-count
- * levers inherited from the earlier shape, not natural code. See the
- * shard for the as1 scheduling rule measured. Retain NON_MATCHING. */
-#ifdef NON_MATCHING
+ * The separate decoder/state lifetimes preserve the signed-byte narrowing.
+ * Three initialized zero-XOR assignments are inert IDO allocation aids,
+ * independently reviewed by the coordinator under ADR 0017, not claims about
+ * original source spelling. The final duration self-assignment blocks rate
+ * copy propagation before dead-store deletion; the earlier XOR retains the
+ * duration's priority. The time scales name their retained literal-pool
+ * entries. See docs/cleanup-queue.md for natural-source cleanup.
+ */
 void func_80051364(s32 updateRate) {
-    s32 pad;
+    u32 duration;
     s32 pad2;
     s32 originalRate;
     AnimPath *path;
@@ -826,27 +806,31 @@ void func_80051364(s32 updateRate) {
 
     if (D_8007D68C != NULL && D_8007D6A4 != 0) {
         if (osTvType == 0) {
-            timeScale = 0.02f;
+            timeScale = D_80083FAC;
         } else {
-            timeScale = 1.0f / 60.0f;
+            timeScale = D_80083FB0;
         }
         originalRate = updateRate;
         if (D_8007D6B0 > 0) {
             TrapDanglingJump(updateRate);
         }
-        if (D_8007D69C != NULL && D_8007D6A4 == 1 && ((cmdWord = D_8007D69C->command) >> 8) == 0x7B) {
-            if ((f32) D_8007D69C->duration / 100.0f <
+        if (D_8007D69C != NULL && D_8007D6A4 == 1 && (pad2 = cmdWord = D_8007D69C->command, cmdWord >>= 8) == 0x7B) {
+            duration = D_8007D69C->duration;
+            duration ^= 0U;
+            if ((f32) duration / 100.0f <
                 (f32) (D_8007D6A8 + updateRate) * timeScale) {
-                adjustedRate = D_8007D69C->duration;
+                adjustedRate = duration;
+                adjustedRate ^= 0;
+                duration ^= 0U;
                 if (osTvType == 0) {
                     adjustedRate >>= 1;
                 } else {
                     adjustedRate = adjustedRate * 3 * 2 / 10;
                 }
-                do { cmdWord = (s8) cmdWord; } while (0);
-                do { updateRate = adjustedRate - D_8007D6A8; } while (0);
+                pad2 = (s8) pad2;
+                updateRate = adjustedRate - D_8007D6A8;
                 D_8007D69C++;
-                D_8007D6A4 = cmdWord;
+                D_8007D6A4 = pad2;
                 if (D_8007D6A4 == 0) {
                     originalRate = updateRate;
                 }
@@ -887,13 +871,13 @@ void func_80051364(s32 updateRate) {
                 if (path != NULL) {
                     object = path->unk8;
                     if (object != NULL && object->soundHandle != NULL) {
-                        func_800031C0((void *) (s32) object->soundHandle,
+                        amSndSetXYZ((void *) (s32) object->soundHandle,
                                       object->x, object->y, object->z);
                         if (path->unk28 != 100 || path->unk29 != 0) {
                             speed = sqrtf(object->velocityX * object->velocityX +
                                           object->velocityY * object->velocityY +
                                           object->velocityZ * object->velocityZ);
-                            func_800030B4(object->soundHandle,
+                            amSndSetPitchXYZ(object->soundHandle,
                                           path->unk28 + path->unk29 * speed);
                         }
                     }
@@ -902,10 +886,6 @@ void func_80051364(s32 updateRate) {
         }
     }
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_80051364.s")
-#endif
 
 /*
  * PROVENANCE: the command-interpreter role and switch organization are
@@ -3997,16 +3977,6 @@ void fmvInit(void) {
         player++;
     }
 }
-
-/* PLATEAU-HANDOFF:func_80051364:start
- * symbol: func_80051364
- * score: 6/287 words
- * frame: 0x40
- * relocations: 47
- * first-mismatch: +0xA4
- * summary: 6 at 0, join and ring exact: the state is cmdWord narrowed in place; one colour left (command word a1 against a2)
- * PLATEAU-HANDOFF:func_80051364:end
- */
 
 
 /* PLATEAU-HANDOFF:func_80054B3C:start

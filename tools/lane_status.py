@@ -2482,7 +2482,28 @@ def main() -> int:
         "--check-reopen-history", action="store_true",
         help="check worktree reopen JSON against committed history; does not authorize assignment",
     )
+    parser.add_argument(
+        "--raw-reference", metavar="RAW_TU",
+        help="reference-only scheduling for one named resident YAML asm TU; never C matching",
+    )
     args = parser.parse_args()
+
+    if args.raw_reference is not None:
+        if (args.symbol or args.symbols is not None or args.pending_only
+                or args.check_reopen_schema or args.check_reopen_history or args.no_cache):
+            parser.error("--raw-reference cannot be combined with C assignment, cache or reopen-check options")
+        import raw_reference_gate
+        try:
+            base = args.base or integration_base.resolve(Path.cwd())
+            result = raw_reference_gate.classify(base, args.raw_reference)
+        except RuntimeError as error:
+            print(f"lane_status: {error}", file=sys.stderr)
+            return 2
+        if args.json:
+            print(json.dumps(result, indent=2, sort_keys=True))
+        else:
+            print(f"{result['state']}: {result['owner']} [raw-reference-only]: {result['reason']}")
+        return 0 if result["state"] == "base-only" else 1
 
     if args.check_reopen_history:
         if (args.check_reopen_schema or args.symbol or args.symbols is not None

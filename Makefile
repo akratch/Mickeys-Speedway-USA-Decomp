@@ -535,6 +535,7 @@ check-reference-builds:
 # the next review. The jump-table count needs asm/, so it is skipped (not
 # failed) before `gmake extract`.
 check-docs:
+	$(HOST_PYTHON) $(TOOLS_DIR)/raw_reference_gate.py --check --base HEAD
 	$(HOST_PYTHON) $(TOOLS_DIR)/lane_status.py --check-reopen-schema
 	$(HOST_PYTHON) $(TOOLS_DIR)/check_donor_claims.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/check_isa_overrides.py

@@ -168,6 +168,12 @@
       "state": "superseded",
       "decision_commit": "d1232e0efd67b0708d8725671f34dcfb447a245d",
       "reason": "The completed flags-CFG report was integrated in full with identical source. This frozen report tip predates the newer conversion closure and has no remaining integration delta."
+    },
+    "a0616374dfa6811795eb8e542376bb91bdc2bcf1": {
+      "symbol": "main/gen_anim_data",
+      "state": "superseded",
+      "decision_commit": "e2337942412951b29bb798922fc6a1fe31d031b4",
+      "reason": "Reviewed against merge base 32ccc18a31a64b16d773b5874ec95be94f93751e: no gen_anim_data raw identity, C-path or raw-handoff delta. The shared legacy census edit concerns refractOutputAssembler under unaccepted proposed ADR 0019; only this exact raw scheduling claim is superseded, without adopting branch contents or policy."
     }
   }
 }

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "work_class": "raw-reference-only",
+  "owner": "main/gen_anim_data",
+  "identity": {
+    "source": "mickey.us.yaml",
+    "owner": "main/gen_anim_data",
+    "rom_sha1": "507341c0a40ca3e9a7cee969b396ee53facfb548",
+    "rom_start": 368048,
+    "rom_end": 373504,
+    "section": ".text",
+    "parent_end": 550464,
+    "mapping_dependencies": [
+      {
+        "mapping": {
+          "name": "entry",
+          "type": "code",
+          "start": 4096,
+          "vram": 2147484672
+        },
+        "rom_end": 4176
+      }
+    ],
+    "parent": {
+      "name": "main",
+      "type": "code",
+      "start": 4176,
+      "vram": 2147484752,
+      "follows_vram": "entry",
+      "subalign": 4,
+      "bss_size": 339216
+    }
+  },
+  "summary": "Exhausted reference evidence reconciled for scheduling only. Existing five-project and sixteen-retail-image searches found no exact counterpart; no matching or assembly-verification credit. A new title or independently uncovered layout requires a pinned reference-only authorization.",
+  "evidence": [
+    {
+      "commit": "05b39e6fcacd9001d3157c77c91c8333a84293db",
+      "path": "docs/raw-asm-census.md",
+      "summary": "Whole-object and routine-sized raw and decoded retail comparisons were negative; compression coverage and remaining limitations are recorded."
+    },
+    {
+      "commit": "0f7f886c315f6b8d50d6f5745ead62de94a214c8",
+      "path": "docs/raw-asm-census.md",
+      "summary": "The 5,024-byte decoder and private helper subdivisions were also negative; boundary ownership and final helper exit remain shared."
+    }
+  ]
+}

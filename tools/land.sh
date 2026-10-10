@@ -43,6 +43,7 @@ trap restore EXIT
 # Schema checks cannot detect renames that invalidate historical source pins.
 # Check before any publication, and again against the final merged tree below.
 python3 tools/lane_status.py --check-reopen-history --base HEAD
+python3 tools/raw_reference_gate.py --check --base HEAD
 
 merge_ref=campaign/unchain
 if [ -n "$release_ref" ]; then
@@ -73,6 +74,7 @@ if [ -z "$release_ref" ]; then git fetch -q origin master; fi
 git merge -q --ff-only origin/master
 git merge --no-edit "$merge_ref"
 python3 tools/lane_status.py --check-reopen-history --base HEAD
+python3 tools/raw_reference_gate.py --check --base HEAD
 if [ -n "$release_ref" ]; then
     landed_oid=$(git rev-parse --verify HEAD)
     git diff --quiet "$merge_ref" "$landed_oid" || {

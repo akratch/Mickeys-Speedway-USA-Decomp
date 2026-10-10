@@ -96,6 +96,49 @@ before publication and again against the merged tree.
 and reports `base-only` only for that exact pair. The first subsequent source
 or handoff commit makes the authorization stale and the target exhausted again.
 
+Raw handwritten translation units have a separate **reference-only** selector:
+`python3 tools/lane_status.py --base HEAD --raw-reference main/gen_anim_data --json`.
+This mode is scheduling support for retail/reference comparison, not permission
+to decompile a contained function, adopt another project's code, classify assembly,
+or award matching credit. Ordinary `--symbol` and `--symbols` behavior is unchanged;
+a raw-reference result cannot enter the C assignment cache or batch queue.
+
+The selector accepts an exact named resident `main/` asm owner in committed
+`mickey.us.yaml`, including its full TU boundaries, parent ROM/VRAM mapping,
+mapping dependencies and configured US ROM identity. It rejects ambiguous,
+malformed or C-converted ownership. Its source pin is the latest committed change
+to that exact ownership identity; unrelated YAML siblings do not consume it.
+Comments are not ownership fields: new reference findings belong in the handoff.
+Executable/padding proof remains the assigned experiment's responsibility.
+
+`docs/raw-reference-handoffs/main/<owner>.json` records the exact identity and
+reconciles committed historical documentation. No missing/null handoff reset is
+available. The separate `config/raw-reference-authorizations.us.json` schema pins
+both full source and handoff commit IDs, a new reason and the reference-only work
+class. Both pins are historically validated. With no authorization, a reconciled
+owner remains exhausted. Source or handoff changes consume an authorization;
+repeating an old reason with refreshed pins is not a new mechanism.
+
+Legacy evidence uses a deliberately conservative check: each cited document must
+still equal its newest cited historical version. Even an unrelated edit to that
+shared legacy document closes the gate until a new handoff reconciles the change.
+New research findings should use the dedicated raw handoff. A changed legacy
+document on an unintegrated lane likewise reserves the target. YAML sibling edits
+remain target-scoped. All lane checks compare committed refs with their merge
+bases and current base, including older divergent lanes; no sibling working tree
+or ROM is read. Raw results use no persistent assignment cache.
+
+`python3 tools/raw_reference_gate.py --check --base HEAD` validates worktree
+metadata against committed history without authorizing work. Structurally valid
+stale evidence passes this check: commit a legacy-document change first, then
+reconcile its actual commit ID in a follow-up handoff. Assignment remains closed
+until reconciliation and a fresh authorization are committed. `gmake check-docs`
+and `tools/land.sh` run this source-only check. Assignment reads committed metadata
+only and requires zero exit with `base-only` and `work_class: raw-reference-only`.
+The initial animation-family handoff reconciles existing exhausted evidence and
+contains no armed authorization.
+
+
 [ADR 0017](adr/0017-causal-exploration-and-risk-proportional-validation.md)
 permits explicitly assigned, 60–90-minute causal exploration packets beyond
 ADR 0016's narrow residual cutoff. Each function still needs current committed

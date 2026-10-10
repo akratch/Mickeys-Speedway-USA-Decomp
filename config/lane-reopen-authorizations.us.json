@@ -1162,7 +1162,7 @@
     },
     "func_overlay_064_F0000000_18C3B28": {
       "ledger_commit": "6aafff83cc6ed4844d38f9270a73ab4d981e320d",
-      "reason": "2026-10-10: transfer 51364 post-use operand kill to odd-loop value after conditional product. Preserve hi/lo roles; test hi GLOBAL retention, original lo copy, and dead identity deletion.",
+      "reason": "2026-10-10: after odd-loop operand-kill control, test entry-only select load through pointer XOR0. Distinct base should remove loop-exit PRE insertions without a new alias; require stock relocation and address-shape checks.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

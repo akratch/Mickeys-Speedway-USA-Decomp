@@ -626,8 +626,8 @@
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {
-      "ledger_commit": "c315f198053773ad5f341c2af476777283d9965f",
-      "reason": "Move the outer pair-loop i increment into j = ++i after fixed pairs, removing its separate latch expression; test whether the i+1 piece loses its colored lifetime while preserving target constant-3 and pairIndex growth.",
+      "ledger_commit": "144d6ea558344e02a554826273cc7a16b133a907",
+      "reason": "2026-10-10: one-region unsigned index partition from measured whale sibling. On faithful explicit-cursor control change only cursor i+1 to (u32)i+1U; test actual shared-piece references and charges, preserving signed j and outer latch.",
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {

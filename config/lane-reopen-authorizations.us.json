@@ -1162,7 +1162,7 @@
     },
     "func_overlay_064_F0000000_18C3B28": {
       "ledger_commit": "6aafff83cc6ed4844d38f9270a73ab4d981e320d",
-      "reason": "2026-10-10: row-pointer kill retains hot src but pixels lacks even-loop definitions. Assign each existing computed even address to pixels before store, preserving src and tail restoration; test actual pointer role and unroll cost.",
+      "reason": "2026-10-10: per-element pixels is LOCAL-forwarded; estimator duplicates address cost and halves unroll. Add o32 src XOR-zero after pixels definition before store; test operand-kill retention, leaf store cost and live-source effects.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

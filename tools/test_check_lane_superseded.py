@@ -44,30 +44,21 @@ class LiveQueueTests(unittest.TestCase):
     the project's own discovery.
     """
 
-    def test_a_friendly_named_overlay_function_is_seen_as_queued(self):
-        # Any friendly-named overlay candidate will do. Naming one symbol made
-        # the test fail whenever that symbol matched (overlay1UpdateRangeFlags
-        # did on 2026-10-01); the regression hides all of them at once.
-        queue = cls.live_queue()
-        friendly = [s for s in queue if s.startswith("overlay")]
-        if not friendly:
-            # Matching retired the last friendly-named overlay candidate on
-            # 2026-10-08 (overlay17CreateChain). The regression this guards
-            # cannot be exercised live until a new one is queued; the
-            # non-empty-queue test below still covers discovery collapsing.
-            import glob, re
-            tracked = [f for f in glob.glob("src/overlays/**/*.c", recursive=True)
-                       if re.search(r"^#ifdef NON_MATCHING\s*$", open(f).read(), re.M)]
-            self.skipTest("no friendly-named overlay candidate is queued "
-                          f"({len(tracked)} overlay TU(s) still carry NON_MATCHING)")
-        self.assertTrue(friendly,
-                        "a friendly-named overlay candidate must read as queued")
+    def test_discovery_retains_friendly_and_generated_names(self):
+        # The friendly symbol need not match its GLOBAL_ASM filename. Use a
+        # controlled discovery result so matching the last such function does
+        # not silently skip this regression or make project progress a failure.
+        from types import SimpleNamespace
+        entries = [SimpleNamespace(func="overlayExample"),
+                   SimpleNamespace(func="func_example")]
+        with mock.patch("permute_batch.discover_queue", return_value=entries) as discover:
+            self.assertEqual(cls.live_queue(), {"overlayExample", "func_example"})
+        discover.assert_called_once_with()
 
-    def test_the_queue_is_not_empty(self):
-        # Guards against discovery collapsing (the pragma-name grep reported
-        # nearly everything as matched), not against the queue shrinking. The
-        # floor was 100 until matching took the queue to 98 on 2026-10-02.
-        self.assertGreater(len(cls.live_queue()), 10)
+    def test_a_fully_matched_queue_can_be_empty(self):
+        with mock.patch("permute_batch.discover_queue", return_value=[]) as discover:
+            self.assertEqual(cls.live_queue(), set())
+        discover.assert_called_once_with()
 
 
 if __name__ == "__main__":

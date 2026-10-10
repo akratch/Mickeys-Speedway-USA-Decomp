@@ -621,8 +621,8 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "d5adc8044794c2ed8efa2df6f9e27f2c07cd2190",
-      "reason": "Isolate case 0x6D in existing motionZ, retaining 0x6E control A. Its product and two stores use f16 versus target f0; test predicted distant start-web interference at block106 with direct adjacency and independent var:-204 evidence.",
+      "ledger_commit": "88c62e9238cd0bd4bed68f22b95418a65bee3fa0",
+      "reason": "Test genuine 0x40 target normalization self-definition on isolated 0x6D/0x6E control: predict saving70/divisor2, priority35 and clique recoloring; check substitution, copies and aggregate residual.",
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {

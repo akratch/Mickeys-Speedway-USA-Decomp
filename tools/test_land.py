@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parent.parent
 class LandingTests(unittest.TestCase):
     def run_landing(self, fail_verify=False, *, release=False, unintegrated=False,
                     outdated=False, fail_gate=False, changed_tree=False,
-                    fail_history=0):
+                    fail_history=0, fail_raw_history=0):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             bin_dir = root / "bin"
@@ -52,11 +52,16 @@ if name == "gmake" and args == ["cleanroom", "check-docs", "check-scoreboard"] a
 if name == "authorizer":
     sys.exit(99)
 if name == "python3":
-    assert args == ["tools/lane_status.py", "--check-reopen-history", "--base", "HEAD"]
-    calls = sum(json.loads(line)[0] == "python3"
+    expected = {
+        "tools/lane_status.py": (["--check-reopen-history", "--base", "HEAD"], "LAND_TEST_HISTORY", 9),
+        "tools/raw_reference_gate.py": (["--check", "--base", "HEAD"], "LAND_TEST_RAW_HISTORY", 10),
+    }
+    tail, setting, code = expected[args[0]]
+    assert args[1:] == tail
+    calls = sum(json.loads(line)[:2] == ["python3", args[0]]
                 for line in pathlib.Path(os.environ["LAND_TEST_LOG"]).read_text().splitlines())
-    if calls == int(os.environ["LAND_TEST_HISTORY"]):
-        sys.exit(9)
+    if calls == int(os.environ[setting]):
+        sys.exit(code)
 '''
             for name in ("git", "gmake", "authorizer", "python3"):
                 path = bin_dir / name
@@ -68,7 +73,8 @@ if name == "python3":
                        LAND_TEST_UNINTEGRATED=str(int(unintegrated)),
                        LAND_TEST_OUTDATED=str(int(outdated)), LAND_TEST_GATE=str(int(fail_gate)),
                        LAND_TEST_TREE=str(int(changed_tree)),
-                       LAND_TEST_HISTORY=str(fail_history))
+                       LAND_TEST_HISTORY=str(fail_history),
+                       LAND_TEST_RAW_HISTORY=str(fail_raw_history))
             result = subprocess.run(["bash", str(ROOT / "tools/land.sh")] +
                                     (["--release-ref", "reviewed-release"] if release else []),
                                     cwd=root, env=env, text=True, capture_output=True)
@@ -94,6 +100,12 @@ if name == "python3":
         self.assertLess(merge, aliases)
         self.assertLess(aliases, verify)
         self.assertLess(verify, push)
+        raw_checks = [i for i, c in enumerate(commands)
+                      if c[:2] == ["python3", "tools/raw_reference_gate.py"]]
+        self.assertEqual(len(raw_checks), 2)
+        self.assertLess(raw_checks[0], merge)
+        self.assertLess(merge, raw_checks[1])
+        self.assertLess(raw_checks[1], verify)
         self.assert_no_reauthorization(commands)
 
     def test_failed_verification_does_not_push_master_and_restores_branch(self):
@@ -112,6 +124,21 @@ if name == "python3":
                         release=release, fail_history=failure,
                     )
                     self.assertEqual(result.returncode, 9, result.stderr)
+                    pushes = [c for c in commands if c[:2] == ["git", "push"]]
+                    expected = ([["git", "push", "origin", "campaign/unchain"]]
+                                if failure == 2 and not release else [])
+                    self.assertEqual(pushes, expected)
+                    self.assertFalse(any(c[0] == "gmake" for c in commands))
+                    self.assert_no_reauthorization(commands)
+
+    def test_invalid_raw_reference_history_stops_publication(self):
+        for release in (False, True):
+            for failure in (1, 2):
+                with self.subTest(release=release, failure=failure):
+                    result, commands = self.run_landing(
+                        release=release, fail_raw_history=failure,
+                    )
+                    self.assertEqual(result.returncode, 10, result.stderr)
                     pushes = [c for c in commands if c[:2] == ["git", "push"]]
                     expected = ([["git", "push", "origin", "campaign/unchain"]]
                                 if failure == 2 and not release else [])

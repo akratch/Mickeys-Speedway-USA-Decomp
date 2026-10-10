@@ -1972,7 +1972,7 @@
     },
     "wakeAllocate": {
       "ledger_commit": "3d874b6379ce250392feb98fe171882537b43cbb",
-      "reason": "2026-10-10: solve authenticated spill-region conflicts against target slot constraints, then price feasible request order in a private compiler oracle. Seek a source cause only if order-only suffices.",
+      "reason": "2026-10-10: request-order oracle removes exactly 12 slot differences. Trace actual new-chain creation with GLOBAL graph, statement and reaching-definition events to identify a source cause for the required order; no first-use proxy.",
       "source_commit": "2ae0a62ae8a8631ee8144d1e6696c3dd88953f17"
     },
     "wakeDraw": {

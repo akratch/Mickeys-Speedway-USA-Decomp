@@ -616,8 +616,8 @@
       "source_commit": "838f8ff7d18ce66f00c1ab7470b30bee06dbf5b5"
     },
     "func_80051364": {
-      "ledger_commit": "2eca6b2652879f37cd68d90229bf5ac1f78b44de",
-      "reason": "AA-1 isolated six register differences. Test a separate narrowed-state local initialized before self-narrowing, measuring command/clock web references; this lifetime split differs from the substituted direct narrowing copy.",
+      "ledger_commit": "6140518cbb658776d9469fd96b708b9543ebdeab",
+      "reason": "2026-10-10: one inert duration XOR-zero probe on split-state region-free control. Wake proves the operator can survive allocation and vanish in as1; measure whether separate unsigned duration gains real references without extra output.",
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
@@ -632,7 +632,7 @@
     },
     "func_80054B3C": {
       "ledger_commit": "f63a7af43a779e144f18975672c597498be6f8ca",
-      "reason": "2026-10-10: square z1/x1/y1 in their own locals before quadB; replace only their quadC square leaves. Predict real operand kills retaining three double stores and separate coordinate homes; compare full stock output and substitution traces.",
+      "reason": "2026-10-10: self-square first coordinates before quadB; reuse second coordinates for existing quadC axis partials. Predict three then six double stores kept by real kills with separate homes. Preserve association and measure stock output.",
       "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
     },
     "func_80055104": {

@@ -1972,7 +1972,7 @@
     },
     "wakeAllocate": {
       "ledger_commit": "3d874b6379ce250392feb98fe171882537b43cbb",
-      "reason": "2026-10-10: factor16/8 founds the needed child early but emits signed-division correction. Replace only /8 with configured arithmetic >>3 on the representable multiple16; test child retention, correction removal and final slot/code costs.",
+      "reason": "2026-10-10: old source-count kills used OR, destination kills used XOR. Replace only j^=0 with segmentCount^=0 after j copy; test actual LOCAL/GLOBAL retention, copy order and live-operand costs on canonical control.",
       "source_commit": "2ae0a62ae8a8631ee8144d1e6696c3dd88953f17"
     },
     "wakeDraw": {

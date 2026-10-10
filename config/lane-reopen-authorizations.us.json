@@ -631,8 +631,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "8bb665f35b7b02faeb8a0197c9ea9dbc23011513",
-      "reason": "2026-10-10: measured position expression shares entry and quadratic blocks (6/2). Add arg3 zero-XOR before quadratic secondPoint definition, keeping its after-definition kill; test operand-version partition on slot-reuse control.",
+      "ledger_commit": "310f20e6a2ac050f85983c3272ba8199f0686940",
+      "reason": "2026-10-10: numeric CDX_DETAIL_WEB enables interferer lists suppressed by all. Recapture current-TU slot-reuse control to distinguish vector and position address conflicts before a supported lifetime change, preserving exact homes.",
       "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
     },
     "func_80055104": {

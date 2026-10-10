@@ -2853,7 +2853,7 @@ bytes and disassembly never belong here.
 - **A distinct address root can still share an inner address expression.**
   In a controlled IDO/o32 comparison, wrapping a complete member address in
   an unsigned zero-XOR preserved a distinct memory-base expression and avoided
-  the plain control's repeated-load traffic. Its inner member-address addition
+  the plain control's frame growth. Its inner member-address addition
   nevertheless retained the old shared allocation range, and the wrapper added
   a separate interfering range. Moving the same identity onto the input pointer
   before deriving the member address removed that shared addition, but also

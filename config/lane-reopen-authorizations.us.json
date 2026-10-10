@@ -632,7 +632,7 @@
     },
     "func_80054B3C": {
       "ledger_commit": "8bb665f35b7b02faeb8a0197c9ea9dbc23011513",
-      "reason": "2026-10-10: overlay92 union self-copy transfer. z1 physical home/reload/double proved; compare added y2 union-only versus immediate self-copy to test last-coordinate retention, preserving z1. No other coordinate or square/partial sweep.",
+      "reason": "2026-10-10: z1 and y2 union self-copies independently prove physical home/reload/double retention. Test six-coordinate composition: remaining unions alone versus four immediate copies, preserving all roles. No subset or expression sweep.",
       "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
     },
     "func_80055104": {

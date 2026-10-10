@@ -2871,9 +2871,12 @@ bytes and disassembly never belong here.
   halved loop unrolling. An observation-only trace of the actual unroll
   estimator showed that address-tree conversions contributed enough cost
   to cross the unroll threshold, even though the final instructions contained
-  no conversion operations.
+  no conversion operations. Another controlled comparison counted both an
+  address definition and its forwarded use before the dead definition was
+  deleted. Retaining that definition changed the estimator's costs as well
+  as the final allocation; a source assignment was not automatically free.
   Moving the integer offset calculation before the pointer addition removed
-  those estimator nodes and restored the earlier unroll factor. Inspect the
+  the conversion nodes and restored the earlier unroll factor. Inspect the
   estimator at its decision point and distinguish a recursive subtree total
   from each operator's own contribution; final instruction count cannot
   substitute for that measurement. Preserve defined pointer arithmetic and

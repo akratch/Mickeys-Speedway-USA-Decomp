@@ -632,7 +632,7 @@
     },
     "func_80054B3C": {
       "ledger_commit": "8bb665f35b7b02faeb8a0197c9ea9dbc23011513",
-      "reason": "2026-10-10: six unions prove coordinate cadence. Compare arg3 self-assignment with pointer/u32 zero-XOR after position definitions; LOCAL treekilled precedes substitution and may retain secondPoint. IDO/o32 domain proved.",
+      "reason": "2026-10-10: arg3 zero-XOR proves secondPoint register retention. Compare added arg1 self-assignment versus the same o32 zero-XOR on six-union control; predict firstPoint retention. No forced colors or padding.",
       "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
     },
     "func_80055104": {

@@ -1162,7 +1162,7 @@
     },
     "func_overlay_064_F0000000_18C3B28": {
       "ledger_commit": "6aafff83cc6ed4844d38f9270a73ab4d981e320d",
-      "reason": "2026-10-10: src kill retains pixels but XOR+CVT costs two, leaving body27/unroll2. Replace that kill with distance XOR-zero after pixels address: same tree operand, no pointer conversion. Test dead barrier and body26/unroll4.",
+      "reason": "2026-10-10: distance kill restores pixels role and unroll4 at target size. Remove only row-entry pixels pointer identity; test whether real even definitions and odd increments now preserve src nonavailability without that barrier.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

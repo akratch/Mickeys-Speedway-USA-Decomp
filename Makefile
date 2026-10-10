@@ -1311,6 +1311,7 @@ $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: $(TOOLS_DIR)/rebind_elf_relocations.py \
     $(TOOLS_DIR)/trim_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym animResetTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym animUpdateTrap=TrapDanglingJump $@ && \
 	$(OBJCOPY) --redefine-sym hitCopyFirstTrap=TrapDanglingJump $@ && \
 	$(OBJCOPY) --add-symbol .L80056C38=.text:0x6C38,global \
 	    --add-symbol .L80056C54=.text:0x6C54,global \

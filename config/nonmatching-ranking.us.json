@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 11,
-  "resolved": 11,
+  "queue_size": 10,
+  "resolved": 10,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 11,
-  "relocation_masked_coverage": 11,
+  "source_context_coverage": 10,
+  "relocation_masked_coverage": 10,
   "functions": [
     {
       "name": "func_8001B798",
@@ -23,21 +23,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "rsuB.FS9Y.zx0h.B1y1.Zj_2.K_Qr.M_14.LuDk.ntMs.DknI.9o8"
-    },
-    {
-      "name": "func_80051364",
-      "file": "src/main/anim.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1148,
-      "objdiff_match_pct": null,
-      "differing_words": 9,
-      "first_mismatch_offset": 96,
-      "relocation_masked_differing_words": 6,
-      "relocation_masked_first_mismatch_offset": 164,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "oHx9.Z-gK.AmT8.AeME.pv1e.-Y7d.bVdZ.g8UT.pkW8.D-az.r8I"
     },
     {
       "name": "func_80011980",
@@ -97,7 +82,7 @@
       "relocation_masked_first_mismatch_offset": 4,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "C2p8.lIby.iWTU.eZOW.NdyN.Hlfk.6o0c.1mfl.98Br.p25L.LYc"
+      "source_context_sha256": "Y26K.rrHk.vs9I.y7Sr.-etY.HBb3.ddJa.WqM_.7LI0.-Xb3.Hfg"
     },
     {
       "name": "func_80053868",
@@ -112,7 +97,7 @@
       "relocation_masked_first_mismatch_offset": 112,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "E9Ee.BGAa.IHKE.Fzby.vVYa.EHk9.B37E.QtMn.OD2K.kwcR.Dik"
+      "source_context_sha256": "CbiH.uDb_.xarT.-KxP.WJa0.-RHx.WmRt.QYyn.uigx.QXYi.iDk"
     },
     {
       "name": "func_overlay_064_F0000000_18C3B28",
@@ -142,7 +127,7 @@
       "relocation_masked_first_mismatch_offset": 208,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "tRI_.MdGg.WO40.MT6i.QFrV.ojX9.ISK5.9n1e.8x0F.-o9u.T6o"
+      "source_context_sha256": "1Mws.xvr1.BEu_.s1Yt.x1h5.Vybu.vALI.wx5n.oH5x.-UEi.ogc"
     },
     {
       "name": "func_8002B040",

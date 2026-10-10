@@ -6,6 +6,26 @@
       "source_commit": "32ccc18a31a64b16d773b5874ec95be94f93751e",
       "ledger_commit": "e2337942412951b29bb798922fc6a1fe31d031b4",
       "reason": "Compare established gen_anim_data executable ownership against DK64 US raw and validated decoded code streams; prior sixteen-image search did not cover this decoded animation reference."
+    },
+    "main/trackasm": {
+      "source_commit": "dd008b48f6e46cdb5fe8ae560c0260ff2c4dfe15",
+      "ledger_commit": "e5b371483e2f6cdb49e7ce24642673f2990af2fa",
+      "reason": "Compare this established raw executable owner against authenticated DK64 US raw and ten independently decoded code streams. Prior DK64 packets covered only the two matrix routines and animation; no C work or matching credit."
+    },
+    "main/shadows_fp_19144": {
+      "source_commit": "f9f3f24c343adb8783fa22515a4d949ab27b2e95",
+      "ledger_commit": "e5b371483e2f6cdb49e7ce24642673f2990af2fa",
+      "reason": "Compare this established raw executable owner against authenticated DK64 US raw and ten independently decoded code streams. Prior DK64 packets covered only the two matrix routines and animation; no C work or matching credit."
+    },
+    "main/weather_snow_asm": {
+      "source_commit": "dd008b48f6e46cdb5fe8ae560c0260ff2c4dfe15",
+      "ledger_commit": "e5b371483e2f6cdb49e7ce24642673f2990af2fa",
+      "reason": "Compare this established raw executable owner against authenticated DK64 US raw and ten independently decoded code streams. Prior DK64 packets covered only the two matrix routines and animation; no C work or matching credit."
+    },
+    "main/conv_mult_matrix": {
+      "source_commit": "32ccc18a31a64b16d773b5874ec95be94f93751e",
+      "ledger_commit": "e5b371483e2f6cdb49e7ce24642673f2990af2fa",
+      "reason": "Compare this established raw executable owner against authenticated DK64 US raw and ten independently decoded code streams. Prior DK64 packets covered only the two matrix routines and animation; no C work or matching credit."
     }
   }
 }

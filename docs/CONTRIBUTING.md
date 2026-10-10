@@ -136,8 +136,10 @@ When one frozen tip affects several raw owners, the separate optional
 Its strict schema has `schema_version: 1`, `work_class: "raw-reference-only"`, and
 `claims` keyed first by full tip commit ID and then by exact `main/` owner.
 Each owner row contains only `state` (`rejected` or `superseded`), the full
-ancestor `decision_commit`, and a nonempty `reason`. Every tip and decision must
-name a real commit. Unknown fields, duplicate keys, invalid owner names and
+ancestor `decision_commit`, and a nonempty `reason`. Tips require full commit-ID
+syntax but need not exist locally: a reviewed private lane may be absent from a
+public clone. A tip can dismiss a lane only by exact hash equality. Decisions
+must resolve to real ancestor commits. Unknown fields, duplicate keys, invalid owner names and
 nonancestor decisions fail closed. These rows use the same legacy-only check
 above; they never dismiss raw identity, C-path or handoff changes. The existing
 single-owner dispositions remain supported and unchanged. Ordinary C assignment

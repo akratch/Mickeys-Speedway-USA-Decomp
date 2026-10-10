@@ -1,5 +1,28 @@
 {
   "schema_version": 1,
   "work_class": "raw-reference-only",
-  "claims": {}
+  "claims": {
+    "a0616374dfa6811795eb8e542376bb91bdc2bcf1": {
+      "main/trackasm": {
+        "state": "superseded",
+        "decision_commit": "e5b371483e2f6cdb49e7ce24642673f2990af2fa",
+        "reason": "Reviewed main/trackasm against merge base 32ccc18a31a64b16d773b5874ec95be94f93751e: raw identity, C path and dedicated raw handoff are unchanged. Only this exact tip and owner shared-census scheduling claim is superseded; no branch contents, proposed assembly policy, search authorization or matching credit are adopted."
+      },
+      "main/shadows_fp_19144": {
+        "state": "superseded",
+        "decision_commit": "e5b371483e2f6cdb49e7ce24642673f2990af2fa",
+        "reason": "Reviewed main/shadows_fp_19144 against merge base 32ccc18a31a64b16d773b5874ec95be94f93751e: raw identity, C path and dedicated raw handoff are unchanged. Only this exact tip and owner shared-census scheduling claim is superseded; no branch contents, proposed assembly policy, search authorization or matching credit are adopted."
+      },
+      "main/weather_snow_asm": {
+        "state": "superseded",
+        "decision_commit": "e5b371483e2f6cdb49e7ce24642673f2990af2fa",
+        "reason": "Reviewed main/weather_snow_asm against merge base 32ccc18a31a64b16d773b5874ec95be94f93751e: raw identity, C path and dedicated raw handoff are unchanged. Only this exact tip and owner shared-census scheduling claim is superseded; no branch contents, proposed assembly policy, search authorization or matching credit are adopted."
+      },
+      "main/conv_mult_matrix": {
+        "state": "superseded",
+        "decision_commit": "e5b371483e2f6cdb49e7ce24642673f2990af2fa",
+        "reason": "Reviewed main/conv_mult_matrix against merge base 32ccc18a31a64b16d773b5874ec95be94f93751e: raw identity, C path and dedicated raw handoff are unchanged. Only this exact tip and owner shared-census scheduling claim is superseded; no branch contents, proposed assembly policy, search authorization or matching credit are adopted."
+      }
+    }
+  }
 }

@@ -415,6 +415,18 @@ class RawGate(unittest.TestCase):
         from lane_status import claim_dispositions
         self.assertEqual(claim_dispositions('HEAD'), {})
 
+    def test_raw_disposition_unavailable_tip_is_portable_without_dismissing_lane(self):
+        unknown = 'f' * 40
+        with self.assertRaises(g.GateError):
+            g.commit(unknown)
+        self.raw_disposition(unknown)
+        self.assertEqual(g.check_worktree('HEAD'), (1,1))
+        self.save('Review of unavailable private lane')
+        self.assertEqual(self.state(), 'base-only')
+        self.legacy_lane()
+        self.assertEqual(self.state(), 'active')
+        self.assertEqual(g.check_worktree('HEAD'), (1,1))
+
     def test_raw_disposition_foreign_owner_and_descendant(self):
         head = self.legacy_lane()
         self.raw_disposition(head, owner='main/other'); self.save('Other owner only')
@@ -486,7 +498,7 @@ class RawGate(unittest.TestCase):
             doc=copy.deepcopy(valid);doc['claims'][head][OWNER][key]=value;cases.append(doc)
         for key,value in [('work_class','matching'),('schema_version',True),('claims',[])]:
             doc=copy.deepcopy(valid);doc[key]=value;cases.append(doc)
-        doc=copy.deepcopy(valid);doc['claims']['f'*40]=doc['claims'].pop(head);cases.append(doc)
+        doc=copy.deepcopy(valid);doc['claims']['not-a-full-commit-id']=doc['claims'].pop(head);cases.append(doc)
         doc=copy.deepcopy(valid);doc['claims'][head]['main/foreign/path']=doc['claims'][head].pop(OWNER);cases.append(doc)
         doc=copy.deepcopy(valid);doc['claims'][head][OWNER]['extra']='x';cases.append(doc)
         for doc in cases:

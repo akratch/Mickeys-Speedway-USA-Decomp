@@ -631,9 +631,9 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f",
-      "reason": "2026-10-09: test treekilled substitution with an existing scalar carrier reused across coordinates; preserve coordinate values and six declared doubles. Prior KEEP, scope, array and cut probes did not test this source kill.",
-      "source_commit": "dacf5ec533ee07ac98f7985d7709d2abd7f3f074"
+      "ledger_commit": "f63a7af43a779e144f18975672c597498be6f8ca",
+      "reason": "2026-10-10: square z1/x1/y1 in their own locals before quadB; replace only their quadC square leaves. Predict real operand kills retaining three double stores and separate coordinate homes; compare full stock output and substitution traces.",
+      "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
     },
     "func_80055104": {
       "ledger_commit": "4b1cb3fb4c85cadf5c6ce8472b9b4c949039d2f3",

@@ -1,5 +1,11 @@
 {
   "schema_version": 1,
   "work_class": "raw-reference-only",
-  "authorizations": {}
+  "authorizations": {
+    "main/gen_anim_data": {
+      "source_commit": "32ccc18a31a64b16d773b5874ec95be94f93751e",
+      "ledger_commit": "e2337942412951b29bb798922fc6a1fe31d031b4",
+      "reason": "Compare established gen_anim_data executable ownership against DK64 US raw and validated decoded code streams; prior sixteen-image search did not cover this decoded animation reference."
+    }
+  }
 }

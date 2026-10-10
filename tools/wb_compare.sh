@@ -285,7 +285,8 @@ if [ "$mode" = rom ]; then
     # two dumps are written by name rather than by looping over pairs.
     dump() {
         local input=$1 output=$2 dump_vram=$3 dump_rom=$4 dump_size=$5
-        "$OBJDUMP" -D -b binary -m mips:4300 -EB \
+        # Include zero words in the owned span; never elide them from the proof.
+        "$OBJDUMP" -D -z -b binary -m mips:4300 -EB \
             --adjust-vma=$(( dump_vram - dump_rom )) \
             --start-address=$(printf 0x%x "$dump_vram") \
             --stop-address=$(printf 0x%x $(( dump_vram + dump_size ))) \

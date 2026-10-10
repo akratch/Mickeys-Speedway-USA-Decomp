@@ -1972,7 +1972,7 @@
     },
     "wakeAllocate": {
       "ledger_commit": "3d874b6379ce250392feb98fe171882537b43cbb",
-      "reason": "2026-10-10: request-order oracle removes exactly 12 slot differences. Trace actual new-chain creation with GLOBAL graph, statement and reaching-definition events to identify a source cause for the required order; no first-use proxy.",
+      "reason": "2026-10-10: creation trace identifies kept-j XOR child. Test triCount=((segmentCount^0)*16)/8 at its existing definition; prove child identity and birth order, early/late cancellation, slot regions and stock output. One causal diagnostic.",
       "source_commit": "2ae0a62ae8a8631ee8144d1e6696c3dd88953f17"
     },
     "wakeDraw": {

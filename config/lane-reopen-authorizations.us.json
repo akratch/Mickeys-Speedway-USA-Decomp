@@ -616,8 +616,8 @@
       "source_commit": "838f8ff7d18ce66f00c1ab7470b30bee06dbf5b5"
     },
     "func_80051364": {
-      "ledger_commit": "6140518cbb658776d9469fd96b708b9543ebdeab",
-      "reason": "2026-10-10: inert duration XOR-zero plus one measured follow-on retaining the lost adjustedRate copy with XOR-zero. Predict separate duration 5/2 and rate 8/2 priorities; prove actual references, copy, colors and stock bytes.",
+      "ledger_commit": "082f78760f7644514ca7049d25be4ba8f9fdb4a1",
+      "reason": "2026-10-10: post-copy duration XOR-zero kill on double-XOR control. Global availability precedes dead-store deletion; predict blocked rate propagation, deleted kill, duration 5/2 and rate 6/2 with restored target copy.",
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {

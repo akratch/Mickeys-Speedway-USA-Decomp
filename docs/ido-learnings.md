@@ -2832,6 +2832,24 @@ bytes and disassembly never belong here.
   object/relocation/linked-ROM proofs before adoption. See the controlled
   negative and exact results in [the scene-update handoff](matching-triage-handoffs/func_80051364.md).
 
+- **An operand redefinition can retain an address temporary before LOCAL
+  forwarding.** A derived pointer may disappear through `single_use_no_ilod`
+  even when its declaration and uses look like a separate lifetime. A controlled
+  full-TU comparison found that redefining its input pointer afterward made
+  LOCAL substitution take `treekilled` before its forwarding rules. The derived
+  pointer store survived and an actual address register appeared; plain
+  self-assignment did not have that effect. The tested zero-XOR round trip was
+  defined only for the configured IDO/o32 pointer and unsigned-word widths,
+  used initialized nonvolatile pointers, and emitted no identity instruction.
+  This does not establish the final register identity: later redundancy
+  elimination can still share an address-expression range across regions.
+  Inspect final address uses and allocation ranges, not just retained stores.
+  Applying the identity before the definition can partition that range while
+  worsening interference and frame allocation. These are ADR 0017 diagnostics;
+  exact adoption still requires independent semantic review and every normal
+  promotion proof. See the controls and limits in [the coordinate-lifetime
+  packet](matching-triage-handoffs/func_80054B3C.md).
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

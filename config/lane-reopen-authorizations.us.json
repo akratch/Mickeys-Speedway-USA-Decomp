@@ -632,7 +632,7 @@
     },
     "func_80054B3C": {
       "ledger_commit": "8bb665f35b7b02faeb8a0197c9ea9dbc23011513",
-      "reason": "2026-10-10: entry vector pair adds one pointer slot. Move secondVector into the genuinely unused same-width padAA declaration, removing duplicate slot; test coordinate homes and address allocation without padding or expression changes.",
+      "reason": "2026-10-10: measured position expression shares entry and quadratic blocks (6/2). Add arg3 zero-XOR before quadratic secondPoint definition, keeping its after-definition kill; test operand-version partition on slot-reuse control.",
       "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
     },
     "func_80055104": {

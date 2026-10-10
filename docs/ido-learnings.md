@@ -2866,6 +2866,22 @@ bytes and disassembly never belong here.
   guidance. See the controlled address-identity comparisons in [the coordinate
   handoff](matching-triage-handoffs/func_80054B3C.md).
 
+- **Unroll cost can count conversions that disappear before emission.** A
+  controlled full-TU comparison restored the desired address arithmetic but
+  halved loop unrolling. An observation-only trace of the actual unroll
+  estimator showed that address-tree conversions contributed enough cost
+  to cross the unroll threshold, even though the final instructions contained
+  no conversion operations.
+  Moving the integer offset calculation before the pointer addition removed
+  those estimator nodes and restored the earlier unroll factor. Inspect the
+  estimator at its decision point and distinguish a recursive subtree total
+  from each operator's own contribution; final instruction count cannot
+  substitute for that measurement. Preserve defined pointer arithmetic and
+  signedness when changing association, and check strength reduction,
+  allocation and the full function separately: restored unrolling did not
+  establish a match. See the controlled address and unroll-cost experiments
+  in [the texture-generation handoff](matching-triage-handoffs/func_overlay_064_F0000000_18C3B28.md).
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

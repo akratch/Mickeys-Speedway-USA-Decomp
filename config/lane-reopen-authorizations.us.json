@@ -1162,7 +1162,7 @@
     },
     "func_overlay_064_F0000000_18C3B28": {
       "ledger_commit": "6aafff83cc6ed4844d38f9270a73ab4d981e320d",
-      "reason": "2026-10-10: per-element pixels is LOCAL-forwarded; estimator duplicates address cost and halves unroll. Add o32 src XOR-zero after pixels definition before store; test operand-kill retention, leaf store cost and live-source effects.",
+      "reason": "2026-10-10: src kill retains pixels but XOR+CVT costs two, leaving body27/unroll2. Replace that kill with distance XOR-zero after pixels address: same tree operand, no pointer conversion. Test dead barrier and body26/unroll4.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

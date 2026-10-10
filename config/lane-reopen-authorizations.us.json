@@ -1162,7 +1162,7 @@
     },
     "func_overlay_064_F0000000_18C3B28": {
       "ledger_commit": "6aafff83cc6ed4844d38f9270a73ab4d981e320d",
-      "reason": "2026-10-10: measured body cost24->27 crosses factor4 threshold. Test defined offset-first byte pointer distance*2+(j<<1), removing conversions while retaining shift; measure cost, unroll, address shape and fidelity.",
+      "reason": "2026-10-10: offset-first address restores unroll4 and hi/lo roles. Reuse dead src as per-row pixel base before parity; use it for even store and tail. Test required row copy, allocation and frame without new locals.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

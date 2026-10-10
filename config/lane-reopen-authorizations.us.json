@@ -631,8 +631,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "f63a7af43a779e144f18975672c597498be6f8ca",
-      "reason": "2026-10-10: self-square first coordinates before quadB; reuse second coordinates for existing quadC axis partials. Predict three then six double stores kept by real kills with separate homes. Preserve association and measure stock output.",
+      "ledger_commit": "8bb665f35b7b02faeb8a0197c9ea9dbc23011513",
+      "reason": "2026-10-10: transfer overlay92 union representation self-copy to AA z1, with union-only control. Predict physical load-home-reload beyond retained IR stores; immediate copy without address-taking is the falsifiable transfer limit.",
       "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
     },
     "func_80055104": {

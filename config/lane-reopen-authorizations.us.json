@@ -632,7 +632,7 @@
     },
     "func_80054B3C": {
       "ledger_commit": "8bb665f35b7b02faeb8a0197c9ea9dbc23011513",
-      "reason": "2026-10-10: transfer overlay92 union representation self-copy to AA z1, with union-only control. Predict physical load-home-reload beyond retained IR stores; immediate copy without address-taking is the falsifiable transfer limit.",
+      "reason": "2026-10-10: overlay92 union self-copy transfer. z1 physical home/reload/double proved; compare added y2 union-only versus immediate self-copy to test last-coordinate retention, preserving z1. No other coordinate or square/partial sweep.",
       "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
     },
     "func_80055104": {

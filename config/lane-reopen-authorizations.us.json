@@ -1162,7 +1162,7 @@
     },
     "func_overlay_064_F0000000_18C3B28": {
       "ledger_commit": "6aafff83cc6ed4844d38f9270a73ab4d981e320d",
-      "reason": "2026-10-10: after odd-loop operand-kill control, test entry-only select load through pointer XOR0. Distinct base should remove loop-exit PRE insertions without a new alias; require stock relocation and address-shape checks.",
+      "reason": "2026-10-10: odd value kill proves hi retention and dead-store deletion. Transfer it to the even-loop product, whose target also compares retained hi; preserve lo copy and address code, then compose independently proved select control.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

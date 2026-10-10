@@ -621,8 +621,8 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "88c62e9238cd0bd4bed68f22b95418a65bee3fa0",
-      "reason": "Test genuine 0x40 target normalization self-definition on isolated 0x6D/0x6E control: predict saving70/divisor2, priority35 and clique recoloring; check substitution, copies and aggregate residual.",
+      "ledger_commit": "7aee4e8590a41f170a1243788e064de16b8a4aeb",
+      "reason": "2026-10-10: inline 0x40 normalized-target argument and move existing low flag update before FP loads. Predict target saving70/divisor2 without flags-join lifetime; measure anonymous argument storage and full interference.",
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {

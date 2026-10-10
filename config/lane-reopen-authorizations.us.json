@@ -632,7 +632,7 @@
     },
     "func_80054B3C": {
       "ledger_commit": "8bb665f35b7b02faeb8a0197c9ea9dbc23011513",
-      "reason": "2026-10-10: arg3 zero-XOR proves secondPoint register retention. Compare added arg1 self-assignment versus the same o32 zero-XOR on six-union control; predict firstPoint retention. No forced colors or padding.",
+      "reason": "2026-10-10: both position pointers retained; frame and coordinate homes exact. Compose natural vector pair: same declarations and views, late versus entry definitions. Preserve six unions and operand kills; test address-web allocation.",
       "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
     },
     "func_80055104": {

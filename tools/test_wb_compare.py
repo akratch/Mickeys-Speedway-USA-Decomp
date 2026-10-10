@@ -601,6 +601,92 @@ class WrapperRoutingTests(unittest.TestCase):
             self.assertIn("omit --no-build", result.stderr)
             self.assertFalse(args_out.exists())
 
+    def test_rom_dump_preserves_internal_zero_words_and_detects_changed_zero(self) -> None:
+        for changed_zero in (False, True):
+            with self.subTest(changed_zero=changed_zero), tempfile.TemporaryDirectory() as directory:
+                fixture = pathlib.Path(directory)
+                wrapper = WrapperFixture(fixture)
+                wrapper.configure_summary()
+                # Synthetic words, never game data. The zero run is internal,
+                # so elision must not be mistaken for alignment or tail padding.
+                words = list(range(1, 44))
+                words[4:8] = [0] * 4
+                candidate = list(words)
+                if changed_zero:
+                    candidate[6] = 1
+                (fixture / "baseroms").mkdir()
+                (fixture / "baseroms/mickey.us.z64").write_bytes(
+                    b"".join(word.to_bytes(4, "big") for word in words)
+                )
+                rom = fixture / "build/mickey.us.z64"
+                rom.write_bytes(b"".join(word.to_bytes(4, "big") for word in candidate))
+                timestamp = (fixture / "build/mickey.us.elf").stat().st_mtime_ns + 1_000_000
+                os.utime(rom, ns=(timestamp, timestamp))
+                (fixture / "symbol_addrs.us.txt").write_text("", encoding="utf-8")
+                dump_args = fixture / "dump-args.jsonl"
+                wrapper._executable(
+                    fixture / "tools/binutils/mips64-elf-objdump",
+                    "#!/usr/bin/env python3\n"
+                    "import json, os, pathlib, sys\n"
+                    "args = sys.argv[1:]\n"
+                    "if args[0] == '-h':\n"
+                    "    print('  0 .text 000000ac 00000000 00000000')\n"
+                    "elif args[0] == '-t':\n"
+                    "    print('00000000 g F .text 000000ac friendly')\n"
+                    "else:\n"
+                    "    with open(os.environ['DUMP_ARGS_OUT'], 'a') as out:\n"
+                    "        out.write(json.dumps(args) + '\\n')\n"
+                    "    data = pathlib.Path(args[-1]).read_bytes()\n"
+                    "    for offset in range(0, len(data), 4):\n"
+                    "        word = int.from_bytes(data[offset:offset + 4], 'big')\n"
+                    "        if word == 0 and '-z' not in args:\n"
+                    "            print('...')\n"
+                    "        else:\n"
+                    "            print(f'{offset:08x}: {word:08x} synthetic')\n",
+                )
+                wrapper._executable(
+                    fixture / ".venv/bin/decomp-workbench",
+                    "#!/usr/bin/env python3\n"
+                    "import json, pathlib, re, sys\n"
+                    "def rows(path):\n"
+                    "    return [(int(a, 16), int(w, 16)) for a, w in re.findall(\n"
+                    "        r'^([0-9a-f]+): ([0-9a-f]{8}) ',\n"
+                    "        pathlib.Path(path).read_text(), re.M)]\n"
+                    "target, candidate = rows(sys.argv[2]), rows(sys.argv[3])\n"
+                    "mismatches = [i for i, pair in enumerate(zip(target, candidate))\n"
+                    "              if pair[0] != pair[1]]\n"
+                    "different = len(mismatches) + abs(len(target) - len(candidate))\n"
+                    "print(json.dumps({'schema': 'decomp-workbench-comparison-v1',\n"
+                    "    'target_instructions': len(target), 'candidate_instructions': len(candidate),\n"
+                    "    'word_mismatches': different, 'first_divergent_row':\n"
+                    "        mismatches[0] if mismatches else None,\n"
+                    "    'target_frame_size': None, 'exact': different == 0,\n"
+                    "    'accepted': different == 0}))\n",
+                )
+                env = os.environ.copy()
+                env['DUMP_ARGS_OUT'] = str(dump_args)
+                result = subprocess.run(
+                    [str(fixture / 'tools/wb_compare.sh'), '--rom', '--no-build',
+                     '--summary-json', 'friendly'],
+                    cwd=fixture, env=env, text=True, capture_output=True, check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                report = json.loads(result.stdout)
+                comparison = report['comparison']
+                self.assertEqual(comparison['target_words'], 43)
+                self.assertEqual(comparison['candidate_words'], 43)
+                self.assertEqual(comparison['differing_words'], int(changed_zero))
+                self.assertEqual(comparison['exact'], not changed_zero)
+                self.assertEqual(comparison['first_mismatch_offset'], 24 if changed_zero else None)
+                calls = [json.loads(line) for line in dump_args.read_text().splitlines()]
+                self.assertEqual(len(calls), 2)
+                self.assertEqual({call[-1] for call in calls},
+                                 {'baseroms/mickey.us.z64', 'build/mickey.us.z64'})
+                for call in calls:
+                    self.assertIn('-z', call)
+                    self.assertIn('--start-address=0x0', call)
+                    self.assertIn('--stop-address=0xac', call)
+
     def test_rom_summary_uses_preflight_boundary_without_size_annotation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             fixture = pathlib.Path(directory)

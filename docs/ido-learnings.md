@@ -2814,6 +2814,24 @@ bytes and disassembly never belong here.
   and rounding proof. Evidence and negative controls: [the overlay 56
   conversion packet](matching-triage-handoffs/func_overlay_056_F00001A0_18A2F18.md).
 
+- **A dead operand redefinition can block global copy propagation before it
+  disappears.** An integer copy intended to have its own allocation lifetime
+  may be forwarded through both a plain assignment and an initialized
+  zero-XOR self-assignment. A controlled full-TU trace showed that redefining
+  the copied expression's operand immediately afterward made that expression
+  unavailable during GLOBAL substitution. The destination definition stayed
+  live; later dead-store deletion removed the unused operand redefinition.
+  Thus the allocation effect survived while the barrier emitted no code.
+  The asymmetry matters: a zero identity on the destination alone was copied
+  through and deleted. This is an optimizer phase-order lever, not a general
+  rule that identity operators retain references or disappear. Prove actual
+  substitution reasons, dead-store decisions and stock compiler fidelity;
+  use initialized nonvolatile integers and establish that the final operand
+  value is dead. Under ADR 0017 this is an inert diagnostic, requiring
+  independent semantic review, disclosure, cleanup tracking and ordinary
+  object/relocation/linked-ROM proofs before adoption. See the controlled
+  negative and exact results in [the scene-update handoff](matching-triage-handoffs/func_80051364.md).
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

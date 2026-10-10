@@ -632,7 +632,7 @@
     },
     "func_80054B3C": {
       "ledger_commit": "8bb665f35b7b02faeb8a0197c9ea9dbc23011513",
-      "reason": "2026-10-10: z1 and y2 union self-copies independently prove physical home/reload/double retention. Test six-coordinate composition: remaining unions alone versus four immediate copies, preserving all roles. No subset or expression sweep.",
+      "reason": "2026-10-10: six unions prove coordinate cadence. Compare arg3 self-assignment with pointer/u32 zero-XOR after position definitions; LOCAL treekilled precedes substitution and may retain secondPoint. IDO/o32 domain proved.",
       "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
     },
     "func_80055104": {

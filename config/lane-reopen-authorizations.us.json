@@ -1162,7 +1162,7 @@
     },
     "func_overlay_064_F0000000_18C3B28": {
       "ledger_commit": "6aafff83cc6ed4844d38f9270a73ab4d981e320d",
-      "reason": "2026-10-10: row-base probe forwards hot src uses to pixels and spills src. Compare plain pixel self-copy with o32 XOR-zero pointer kill after src copy; test operand_altered retention, hot web allocation and unroll cost.",
+      "reason": "2026-10-10: row-pointer kill retains hot src but pixels lacks even-loop definitions. Assign each existing computed even address to pixels before store, preserving src and tail restoration; test actual pointer role and unroll cost.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

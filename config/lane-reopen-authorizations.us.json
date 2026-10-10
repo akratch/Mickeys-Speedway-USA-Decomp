@@ -617,7 +617,7 @@
     },
     "func_80051364": {
       "ledger_commit": "6140518cbb658776d9469fd96b708b9543ebdeab",
-      "reason": "2026-10-10: one inert duration XOR-zero probe on split-state region-free control. Wake proves the operator can survive allocation and vanish in as1; measure whether separate unsigned duration gains real references without extra output.",
+      "reason": "2026-10-10: inert duration XOR-zero plus one measured follow-on retaining the lost adjustedRate copy with XOR-zero. Predict separate duration 5/2 and rate 8/2 priorities; prove actual references, copy, colors and stock bytes.",
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {

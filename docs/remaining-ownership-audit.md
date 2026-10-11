@@ -74,6 +74,32 @@ matrix owners. The generated scoreboard leaves 29,280 executable bytes:
 wake promotion adds 1,404 genuinely matched C bytes; the accounting
 reconciliation itself adds no credit.
 
+
+## Remaining C work after the wake promotion
+
+The current ranking supplies the owned sizes below. These are unresolved
+executable bytes, not score-derived completion estimates. Each linked handoff
+retains the actual baseline, competing candidates and closed experiments.
+A proposed next step must explain a measured compiler mechanism before a new
+source packet is assigned; none of these rows is an exact-match promise.
+
+| Candidate | Bytes | Constraint the next successful source must satisfy |
+| --- | ---: | --- |
+| [func_8001B798](matching-triage-handoffs/func_8001B798.md) | 700 | Emit the normal before x while retaining the existing expression owners, frame and allocation; the measured anonymous-value fixes add an allocation-visible range. |
+| [func_80011980](matching-triage-handoffs/func_80011980.md) | 860 | Combine the late face definition with the required graph membership; priority changes alone cannot postpone the measured allocator traversal. |
+| [overlay 45 draw](matching-triage-handoffs/func_overlay_045_F0001158_188D5B0.md) | 2696 | Preserve the useful cut/product controls while resolving the remaining expression-priority constraint; prove every relocation against the corrected overlay-owned setup identity. |
+| [func_80054B3C](matching-triage-handoffs/func_80054B3C.md) | 1480 | Keep coordinate homes and double-definition cadence while giving the four addresses the required overlapping lifetimes and ordering, without duplicate point blockers. |
+| [func_80053868](matching-triage-handoffs/func_80053868.md) | 4820 | Preserve the proved head/min range together with the improved pair-loop layout; the current best candidates solve different parts of that graph. |
+| [overlay 64 texture generation](matching-triage-handoffs/func_overlay_064_F0000000_18C3B28.md) | 1680 | Retain the measured anonymous argument exclusions without the extra conditional branch, and resolve address/index ordering while preserving unrolling. |
+| [func_800517E0](matching-triage-handoffs/func_800517E0.md) | 7232 | Combine the proved return-liveness copy retention with target-shaped shared address ranges; a signature change alone is byte-identical and does not establish the original return type. |
+
+The path to completion has two separate acceptance tracks: match these seven
+C owners with untouched compiler output and exact linked-range/relocation
+proofs, and close the assembly-authentication inventory above with qualifying
+reference evidence. Each success still requires the ordinary full-ROM,
+clean-room, documentation and scoreboard gates. Better candidate scores,
+resolved compiler hypotheses and tooling fixes add no matching credit.
+
 PROVENANCE: the existing JFG lineage descriptions are drawn from
 mickey.us.yaml, docs/resident.md and docs/modules.md, which disclose the public
 Jet Force Gemini decompilation's track assembly and shadows/weather sources.

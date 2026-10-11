@@ -211,8 +211,8 @@
       "source_commit": "662ffe23ec507b9a9487fff01f042d2395ef375c"
     },
     "func_80011980": {
-      "ledger_commit": "c9d2d65987d50a7051b4c53a61e86f95a3ce392b",
-      "reason": "2026-10-11: transfer proved access-type identity lever: read only c0r loop-face entry via signed16 then u16, keeping unsigned edge/sign read. Test distinct ILOAD ownership with one emitted load and unchanged interference partition.",
+      "ledger_commit": "e16b6909a3f0f5518bfe18c4b0c787358c84d097",
+      "reason": "Inline initial plane component access so face is first assigned in the edge loop. Test late symbol founding without lexical CFG relocation, preserving one common initial address and the measured interference partition.",
       "source_commit": "208ba8109965d4f4df00d3af61c6df091f22a352"
     },
     "func_80011CDC": {

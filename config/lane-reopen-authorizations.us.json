@@ -291,8 +291,8 @@
       "source_commit": "d09352cdaa9a476ab208fd6965e169db3d64bdce"
     },
     "func_8001B798": {
-      "ledger_commit": "f6db8d795e57d1f85c41d5bac0f8aa8cb124b2df",
-      "reason": "Test useful denominator selfdefinition and real x-to-delta role reuse: distinguish named-web retention from anonymous-value lowering while preserving all arithmetic and loads. Fixed controls only; no priority or spelling grid.",
+      "ledger_commit": "0b01051f3b489156027b7308fd29e25fe02959b1",
+      "reason": "2026-10-11: compare post-dot firstDistance and x twice in an empty condition. Measured owners30/2 should become50/3 within prior exact priority interval. Dominating negative-distance guard excludes NaNs; require no extra final operations.",
       "source_commit": "e0b736af01931b8d62b2d83b9b761a319d9cffcc"
     },
     "func_8001BBB4": {

@@ -621,8 +621,8 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "7e930627c13e9194dd7801c3c351c14bfe3e6dac",
-      "reason": "2026-10-11: normalize case 0x40 through explicit if/else assignments to target, then pass target; cross A/A+C isolated value roles and original/early flags. Test anonymous-carrier removal and measured target/value priority crossing.",
+      "ledger_commit": "47154c5835928486d3edab92b0ee65aa6d4673ad",
+      "reason": "Test coupled 7B result-role isolation and two allocation-visible empty integer tests. Prior isolated-role controls lacked late uses; shared-role tests retained unrelated call constraints. Require actual post-store copy, not size alone.",
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {

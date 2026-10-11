@@ -2968,3 +2968,38 @@ Add a short entry only after the result is reproducible. Cite the durable
 Mickey evidence, state where the lever does *not* apply, and prefer updating
 the upstream decomp-workbench field guide when the behavior is toolchain-wide.
 A one-function curiosity belongs in that function's handoff, not here.
+
+
+### Retained expression uses and downstream scheduling
+
+- An empty condition containing floating-point comparisons can retain operand
+  uses through IDO's allocation accounting even when no comparison or branch
+  survives in stock output. Integer-only source-shaping searches therefore do
+  not exhaust the floating-point priority mechanism. Measure the actual
+  expression owners, weighted savings, divisors and forbidden colors; adding
+  references can also change integer allocation through the same block.
+  This is an ADR 0017 diagnostic, not permission to add arbitrary comparisons:
+  establish initialization, finite-value behavior and exception behavior for
+  every extra evaluation. A vanished instruction is not semantic proof.
+- CFE's operand emission order can depend on whether an operand is a source
+  variable or a nonleaf expression. Naming the two operands separately can
+  establish a different order before LOCAL forwards their definitions back
+  into the same arithmetic tree. Preserve each floating-point association;
+  inspect prepared Ucode and stock output instead of assuming that equivalent
+  algebra preserves evaluation order or temporary-register rotation.
+- A spill home's position can follow expression discovery and spill-request
+  order rather than source declaration order. An early conversion only helps
+  if its definition survives until the relevant block cut. Reusing a carrier
+  for another value before that cut can delete the founding definition, while
+  an existing carrier whose value crosses the cut can retain it. Authenticate
+  the request sequence and the real live use; extra dead declarations are not
+  evidence of a stack-home mechanism.
+- Source-line grouping can also break an assembler ready-list tie, separately
+  from the line barriers described above. With equal scheduling time and
+  latency, a strict line-number comparison can keep the current ready-list
+  winner when several statements share one physical line. This may reverse
+  their apparent source-order preference without changing the optimizer's
+  expression owners. Prove equal scheduler keys and unchanged upstream
+  allocation first; do not treat line packing as a general store-order rule.
+  Only ordinary source layout and untouched stock compiler output qualify for
+  adoption, with disclosure and the cleanup queue for an exact inert form.

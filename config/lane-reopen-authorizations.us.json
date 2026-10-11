@@ -616,9 +616,9 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "ccb90be5541a4f5662f66db4744572b03b31c91b",
-      "reason": "CFE synthetic proof: a pointer-local indirect assignment result creates an anonymous old-value home, avoiding the direct global-result reload. Test one ring read plus late local copy after the store, with original global identity.",
-      "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
+      "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204",
+      "ledger_commit": "017979aaac31e710d13ec254522c26d1ed6a8a46",
+      "reason": "Test real 0x79 radius operand kill after duration store to block GLOBAL forwarding and retain shared targetValue; prior product changed only dead 0x7B barriers. Hold defined unsigned 0x63 shift repair common."
     },
     "func_80053868": {
       "ledger_commit": "541f316b9ee1c48df1c37f5a27bd0006021148d2",

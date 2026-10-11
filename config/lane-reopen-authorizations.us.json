@@ -1020,11 +1020,6 @@
       "reason": "One-function 90-minute packet: typed 16-bit texture cursors test row-stride expression creation and allocation priority on the current 13-word baseline; preserve exact byte advances and packet writes. Prior dead-width carriers stay closed.",
       "source_commit": "34a144842e349bc166b1f75ba9230dd2f1d416da"
     },
-    "func_overlay_045_F0001158_188D5B0": {
-      "ledger_commit": "d51002852e9370f92db404bac59f40c8c8c1f662",
-      "reason": "Synthetic float-condition control adds a retained allocation use and block span with identical final instructions. Prior boundary sweeps exclude floats. Test the cosine-product last-use condition on the proved partial-pointer cut control.",
-      "source_commit": "c6f9dd441dff0b60e51ff8e2ee4322c96e347a57"
-    },
     "func_overlay_046_F0000120_188E518": {
       "ledger_commit": "13d845651227cec3dd99c346ca39e63341b48ecc",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",

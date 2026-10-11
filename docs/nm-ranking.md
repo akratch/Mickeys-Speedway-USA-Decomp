@@ -257,22 +257,22 @@ Text outside the markers remains authored and is preserved byte-for-byte.
 > `config/nonmatching-ranking.us.json`. Do not edit this region by hand;
 > `--check-doc` and `gmake check-docs` fail on any drift.
 
-The snapshot contains **9 queued identities**: **9 resolved measurements** and **0 unresolved identities**. Resolved target size totals **19,900 bytes (19.4 KiB)**.
+The snapshot contains **8 queued identities**: **8 resolved measurements** and **0 unresolved identities**. Resolved target size totals **17,204 bytes (16.8 KiB)**.
 
-Resolved rows span **2 overlays** and **1 resident TU group** (`main`).
+Resolved rows span **1 overlays** and **1 resident TU group** (`main`).
 
-A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 9** resolved rows.
+A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 8** resolved rows.
 
-Persisted configured-TU input evidence covers **9 / 9** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
+Persisted configured-TU input evidence covers **8 / 8** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
 
-Relocation-masked mismatch evidence covers **9 / 9** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
+Relocation-masked mismatch evidence covers **8 / 8** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
 
 ### Category distribution
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `other` | 7 | 77.8% |
-| `size-mismatch` | 2 | 22.2% |
+| `other` | 6 | 75.0% |
+| `size-mismatch` | 2 | 25.0% |
 
 ### Differing-word thresholds
 
@@ -295,13 +295,12 @@ units remain distinct.
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 3 | 3 | 140 | 140 | 0 | — |
 | 2 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
-| 3 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 96 | 96 | 1,816 | 1,816 | 0 | — |
-| 4 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
-| 5 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 354 | 354 | 112 | 112 | 0 | — |
-| 6 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 371 | 371 | 0 | 0 | 0 | — |
-| 7 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,129 | 1,127 | 200 | 208 | 0 | — |
-| 8 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
-| 9 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
+| 3 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
+| 4 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 354 | 354 | 112 | 112 | 0 | — |
+| 5 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 371 | 371 | 0 | 0 | 0 | — |
+| 6 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,129 | 1,127 | 200 | 208 | 0 | — |
+| 7 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
+| 8 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
 
 ### Unresolved identities
 

@@ -1998,6 +1998,19 @@ overlay45ColorCallReloc = 0xf0000000;
 overlay45FloatCallReloc = 0xf0000000;
 overlay45MatrixLoadReloc = 0xf0000000;
 
+/* overlay 45: func_overlay_045_F0001158_188D5B0.c.o */
+D_800D60E0_o045Reloc = 0x00000000;
+D_800D60E4_o045Reloc = 0x00000000;
+D_800D64E8_o045Reloc = 0x00000000;
+D_800D6638_o045Reloc = 0x00000000;
+D_800D6648_o045Reloc = 0x00000000;
+D_800D664D_o045Reloc = 0x00000000;
+func_8002A8BC_o045Reloc = 0xf0000000;
+func_8002A8C0_o045Reloc = 0xf0000000;
+func_8004C690_o045Reloc = 0xf0000000;
+func_8004D39C_o045Reloc = 0xf0000000;
+gOverlay45SetupReloc = 0x00000000;
+
 /* overlay 46: overlay46InitializeState.c.o */
 gOverlay46Group54 = 0x00000054;
 gOverlay46Ids = 0x00000000;

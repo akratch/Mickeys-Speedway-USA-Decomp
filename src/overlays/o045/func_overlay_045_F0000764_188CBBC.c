@@ -47,8 +47,9 @@ extern void func_8004B0B8(s32 red, s32 green, s32 blue, s32 alpha,
 extern s32 func_8002997C(s32 minimum, s32 maximum);
 extern f32 func_8002A8C0(s32 angle);
 
+struct Overlay45Vertex;
 extern void func_overlay_045_F0001158_188D5B0(
-    Gfx **displayList, s32 arg1, s32 arg2,
+    Gfx **displayList, struct Overlay45Vertex **arg1, void *arg2,
     Overlay45ResourceDescriptor *descriptor);
 
 /* Mickey-local reconstruction. IDO emits the retail instruction fields; the
@@ -221,7 +222,7 @@ void func_overlay_045_F0000764_188CBBC(
                 }
 
                 func_overlay_045_F0001158_188D5B0(
-                    displayList, arg2, arg3, descriptor);
+                    displayList, (struct Overlay45Vertex **)arg2, (void *)arg3, descriptor);
             }
         }
         descriptor = descriptor->next;

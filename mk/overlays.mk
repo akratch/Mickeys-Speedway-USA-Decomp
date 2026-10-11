@@ -1819,8 +1819,22 @@ $(O45_RENDER_OBJ): POSTPROCESS = \
 		@config/normalizations/func_overlay_045_F0000764_188CBBC.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:c52cb05fd2fed4ffaf80d0f50519a1b99d267a85960aeefe5e036df19162ad00
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/func_overlay_045_F0001158_188D5B0.c.o: CFLAGS += -Wab,-r4300_mul
 ifeq ($(NON_MATCHING),0)
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o045/func_overlay_045_F0001158_188D5B0.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym func_8004D39C=func_8004D39C_o045Reloc \
+		--redefine-sym func_8004C690=func_8004C690_o045Reloc \
+		--redefine-sym func_8002A8BC=func_8002A8BC_o045Reloc \
+		--redefine-sym func_8002A8C0=func_8002A8C0_o045Reloc \
+		--redefine-sym func_80034920=func_80034920_o045Reloc \
+		--redefine-sym D_800D6648=D_800D6648_o045Reloc \
+		--redefine-sym D_800D60E0=D_800D60E0_o045Reloc \
+		--redefine-sym D_800D64E8=D_800D64E8_o045Reloc \
+		--redefine-sym D_800D60E4=D_800D60E4_o045Reloc \
+		--redefine-sym D_800D664D=D_800D664D_o045Reloc \
+		--redefine-sym D_800D6638=D_800D6638_o045Reloc \
+		--redefine-sym gOverlay45InitializedData=gOverlay45SetupReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA88
 endif
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045_tail.c.o: POSTPROCESS = \

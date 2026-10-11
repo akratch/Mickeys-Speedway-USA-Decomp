@@ -74,52 +74,38 @@ extern f32 func_8002A8C0(s32 angle);
  * records, descriptor fields, and final control flow come from Mickey's own
  * instructions and callers.
  */
-/* 2026-10-07 (lane b-o045), 395 -> 153 at size delta 0, frame 0x190, by
- * porting the matched sibling func_8004B1DC's shape: the scissor clamp
- * reuses left/top/right/bottom (the target colours them t4/t0/ra/t5 in both
- * regions); the loop tests *current and reads first = *current++, and the
- * escape byte is read back into first; the screen offsets are unsigned
- * subtractions (0xA0U), which stops uopt folding (r - 0xA0) - (l - 0xA0)
- * into a pre-call r - l; the expand amounts reuse x and y instead of block
- * locals (frame 0x198 -> 0x190); the corner offsets go through
- * negativeHalfWidth/negativeHalfHeight, which gives the target's shared
- * products and its float spill. 153 -> 135: each vertex writes its colour
- * bytes before z, and the x sums convert the screen offset inline
- * ((f32)screenLeft + ...), which puts the conversion on the target's left
- * operand; leftFloat/rightFloat stay declared as frame slots. The
- * triangles are written through the walking pointer (triangles->field,
- * triangles++ after each), which retires the inherited all-ones mask the
- * indexed form needed to keep the allocation pointer in s1. 135 -> 119:
- * func_8004C690 takes a u8, as its definition in src/main/font.c does;
- * the escape byte is then loaded into a0 and copied into first's v0 as
- * shipped, and the colour packets take v1/a0. 119 -> 117: each triangle
- * writes vertex2 before vertex1. 117 -> 116 (lane e-ovl1): no dead
- * `leftFloat = screenLeft;` store; the left conversion is then numbered at
- * its first use and takes f26 as shipped. The dead `rightFloat` store stays:
- * it numbers the right conversion ahead of the half-height webs (removing it
- * is 117). 115 -> 109 (lane q-3): triangle 1 writes vertex0, vertex2,
- * flags, vertex1 and triangle 2 writes its fields in order with flags last,
- * which makes as1 hoist the 2, 1, 3 constants as shipped. 109 -> 96
- * (lane t-4): vertices 0-2 name their corner offsets directly instead of
- * through x/y carriers, and screenRight is converted into rightFloat just
- * before vertex 2 for vertex 3's x (replacing the dead rightFloat store).
- * That puts uopt's second -varref block cut (20 out-of-block variable
- * loads) before vertex 2's colours, where the forced-cut oracle priced it.
- * Earlier passes: see the shard. */
+/* Independently reviewed inert allocation spelling (ADR 0017): the empty
+ * comparisons retain operand uses before stock IDO deletes them. Real color
+ * and index carriers also preserve local homes; no unused padding is retained.
+ * See docs/cleanup-queue.md. Keep the three packed triangle stores together:
+ * their shared source line controls the assembler's scheduling tie.
+ */
 #define PKT(pkt, a, b) { Gfx *_g = (Gfx *)(pkt)++; _g->words.w0 = (a); _g->words.w1 = (b); }
-#ifdef NON_MATCHING
 void func_overlay_045_F0001158_188D5B0(
     Gfx **displayList, Overlay45Vertex **vertexPtr, void *unused,
     Overlay45ResourceDescriptor *descriptor) {
+    typedef struct Overlay45InitializedData {
+        Gfx setup[10];
+        char allocationFailure[0x20];
+        char format[4];
+        f32 bounceReset;
+        f32 bounceStep;
+        f32 positionBlend;
+    } Overlay45InitializedData;
+    extern Overlay45InitializedData gOverlay45InitializedData;
     s32 savedFont;
     s32 screenLeft;
+    /* Retail defect: intentionally uninitialized; authenticated stack reads.
+     * Owner-approved preservation, docs/adr/0019-preserve-retail-loop-defect.md.
+     * Initialize only in a separate future port, not the matching build.
+     */
     s32 loopY;
     s32 left;
     s32 top;
     s32 right;
     s32 bottom;
-    s32 padGlyphW;
-    s32 padGlyphH;
+    s32 secondVertexIndex;
+    s32 thirdVertexIndex;
     s32 textureLeft;
     s32 textureTop;
     s32 textureRight;
@@ -140,10 +126,10 @@ void func_overlay_045_F0001158_188D5B0(
     f32 upperFloat;
     f32 lowerFloat;
     s32 screenRight;
-    s32 padA;
-    s32 padB;
-    s32 padC;
-    s32 padD;
+    Overlay45Vertex *vertex1;
+    s32 opaqueWhite;
+    s32 triangleFlags;
+    s32 firstVertexIndex;
     u8 *current;
     Overlay45FontData *font;
     Overlay45GlyphData *glyph;
@@ -169,7 +155,7 @@ void func_overlay_045_F0001158_188D5B0(
     font = &D_800D60E4[D_800D60E0];
     current = D_800D6648;
 
-    gSPDisplayList(dList++, D_8007D490);
+    gSPDisplayList(dList++, gOverlay45InitializedData.setup);
     if (window != D_800D64E8) {
         left = window->x1;
         top = window->y1;
@@ -276,41 +262,56 @@ void func_overlay_045_F0001158_188D5B0(
                     negativeHalfWidth = -halfWidth;
                     halfHeight = (f32)(upper - lower) * 0.5f;
                     negativeHalfHeight = -halfHeight;
-                    vertices[0].x = (f32)screenLeft + ((negativeHalfWidth * sine - halfHeight * cosine) - negativeHalfWidth);
-                    vertices[0].y = (f32)upper + ((halfHeight * sine + negativeHalfWidth * cosine) - halfHeight);
-                    vertices[0].red = 0xFF;
+                    lowerFloat = (f32)screenLeft;
+                    rightFloat = (f32)screenRight;
+                    opaqueWhite = 0xFF;
+                    vertices[0].red = opaqueWhite;
                     vertices[0].green = 0xFF;
                     vertices[0].blue = 0xFF;
                     vertices[0].alpha = 0xFF;
+                    vertices[0].x = (f32)screenLeft + ((negativeHalfWidth * sine - halfHeight * cosine) - negativeHalfWidth);
+                    upperFloat = (f32)upper;
+                    leftFloat = halfHeight * sine;
+                    y = negativeHalfWidth * cosine;
+                    y = (leftFloat + y) - halfHeight;
+                    vertices[0].y = upperFloat + y;
                     vertices[0].z = 0;
-                    vertices[1].x = (f32)screenRight + ((halfWidth * sine - halfHeight * cosine) - halfWidth);
-                    vertices[1].y = (f32)upper + ((halfHeight * sine + halfWidth * cosine) - halfHeight);
-                    vertices[1].red = 0xFF;
-                    vertices[1].green = 0xFF;
-                    vertices[1].blue = 0xFF;
-                    vertices[1].alpha = 0xFF;
+                    vertex1 = &vertices[1];
+                    vertex1->red = 0xFF;
+                    vertex1->green = 0xFF;
+                    vertex1->blue = 0xFF;
+                    vertex1->alpha = 0xFF;
+                    y = (halfWidth * sine - halfHeight * cosine) - halfWidth;
+                    vertices[1].x = rightFloat + y;
+                    y = halfWidth * cosine;
+                    y = (leftFloat + y) - halfHeight;
+                    vertices[1].y = upperFloat + y;
+                    if (((halfHeight * cosine < halfHeight) | (halfHeight * cosine > halfHeight)) | (upperFloat < leftFloat) | (sine < cosine) | (sine > cosine)) {}
                     vertices[1].z = 0;
                     rightFloat = screenRight;
-                    vertices[2].x = (f32)screenLeft + ((negativeHalfWidth * sine - negativeHalfHeight * cosine) - negativeHalfWidth);
-                    vertices[2].y = (f32)lower + ((negativeHalfHeight * sine + negativeHalfWidth * cosine) - negativeHalfHeight);
                     vertices[2].red = 0xFF;
                     vertices[2].green = 0xFF;
                     vertices[2].blue = 0xFF;
                     vertices[2].alpha = 0xFF;
+                    y = (negativeHalfWidth * sine - negativeHalfHeight * cosine) - negativeHalfWidth;
+                    vertices[2].x = lowerFloat + y;
+                    vertices[2].y = (f32)lower + ((negativeHalfHeight * sine + negativeHalfWidth * cosine) - negativeHalfHeight);
+                    if ((negativeHalfHeight < negativeHalfHeight * cosine) | (negativeHalfHeight > negativeHalfHeight * cosine) | (negativeHalfHeight < (f32)lower) | (negativeHalfHeight > (f32)lower) | (negativeHalfHeight < negativeHalfHeight * sine) | (negativeHalfHeight * cosine < negativeHalfHeight * sine) | (textureLeft < textureTop) | (textureRight < textureBottom)) {}
                     vertices[2].z = 0;
                     x = -negativeHalfWidth;
-                    vertices[3].x = rightFloat + ((x * sine - negativeHalfHeight * cosine) - x);
-                    vertices[3].y = (f32)lower + ((negativeHalfHeight * sine + x * cosine) - negativeHalfHeight);
                     vertices[3].red = 0xFF;
                     vertices[3].green = 0xFF;
                     vertices[3].blue = 0xFF;
                     vertices[3].alpha = 0xFF;
+                    y = (x * sine - negativeHalfHeight * cosine) - x;
+                    vertices[3].x = rightFloat + y;
+                    vertices[3].y = (f32)lower + ((negativeHalfHeight * sine + x * cosine) - negativeHalfHeight);
                     vertices[3].z = 0;
 
-                    triangles->vertex0 = 0;
-                    triangles->vertex2 = 2;
-                    triangles->flags = 0x40;
-                    triangles->vertex1 = 1;
+                    triangles->vertex2 = (thirdVertexIndex = 2, thirdVertexIndex);
+                    triangleFlags = 0x40;
+                    firstVertexIndex = 0;
+                    triangles->flags = triangleFlags; triangles->vertex1 = (secondVertexIndex = 1, secondVertexIndex); triangles->vertex0 = firstVertexIndex;
                     triangles->s0 = textureLeft;
                     triangles->t0 = textureTop;
                     triangles->s1 = textureRight;
@@ -329,9 +330,8 @@ void func_overlay_045_F0001158_188D5B0(
                     triangles->t1 = textureBottom;
                     triangles->s2 = textureLeft;
                     triangles->t2 = textureBottom;
-                    triangles++;
-
                     vertices += 4;
+                    triangles++;
                 }
             }
         }
@@ -348,16 +348,3 @@ void func_overlay_045_F0001158_188D5B0(
     *displayList = dList;
     *vertexPtr = vertices;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o045/func_overlay_045_F0001158_188D5B0/func_overlay_045_F0001158_188D5B0.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
- * symbol: func_overlay_045_F0001158_188D5B0
- * score: 96/674 words
- * frame: 0x190
- * relocations: 25
- * first-mismatch: +0x718
- * summary: 96 at size 0: the target's block-A statements count 20 to 22 variable loads against this body's 24 whatever the field order; aliased loads still count.
- * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
- */

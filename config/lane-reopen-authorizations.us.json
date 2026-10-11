@@ -621,8 +621,8 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "35e11e5a2fcc1af842cf93fa85025063f33e95a1",
-      "reason": "Reverse the chained store under proved integer-return liveness: remove the CFE global-result reload while retaining tests and final copy. Require address one-use saving and original split order; old chain grids lacked this ABI/use pair.",
+      "ledger_commit": "ccb90be5541a4f5662f66db4744572b03b31c91b",
+      "reason": "CFE synthetic proof: a pointer-local indirect assignment result creates an anonymous old-value home, avoiding the direct global-result reload. Test one ring read plus late local copy after the store, with original global identity.",
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {

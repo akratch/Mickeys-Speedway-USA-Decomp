@@ -2885,6 +2885,23 @@ bytes and disassembly never belong here.
   establish a match. See the controlled address and unroll-cost experiments
   in [the texture-generation handoff](matching-triage-handoffs/func_overlay_064_F0000000_18C3B28.md).
 
+- **Identical final byte loads can have different availability identities.**
+  In a controlled IDO/o32 comparison, reading a byte global through a signed
+  character view and converting it to the existing unsigned byte local kept
+  the entry access distinct from a later direct unsigned access during
+  optimization. The frontend recorded a signed indirect load and conversion;
+  the final entry instruction was still a direct unsigned byte load. The old
+  shared expression and its branch-exit reloads disappeared. Casting only the
+  value used by the entry truth test retained the old expression instead.
+  This is a source-type and phase-order lever, not a promise that casts are
+  free or that any alias spelling prevents redundancy elimination. Prove the
+  target's character representation, preservation of every byte value, the
+  unchanged access width and actual compiler-input fidelity. Character aliasing
+  does not authorize a wider or volatile access. Check relocation identities
+  and offsets separately: eliminating extra relocations did not make the
+  whole function exact. See the signed-entry controls in the
+  [texture-generation handoff](matching-triage-handoffs/func_overlay_064_F0000000_18C3B28.md).
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

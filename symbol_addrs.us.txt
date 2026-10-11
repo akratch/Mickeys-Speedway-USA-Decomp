@@ -2976,3 +2976,5 @@ D_8008188C = 0x8008188C; // type:f32 size:0x4 force_not_migration:True tier-D ch
 D_80081890 = 0x80081890; // type:f32 size:0x4 force_not_migration:True tier-D charControl scalar ownership
 D_80081894 = 0x80081894; // type:f32 size:0x4 force_not_migration:True tier-D charControl scalar ownership
 D_80081898 = 0x80081898; // type:f32 size:0x4 force_not_migration:True tier-D charControl scalar ownership
+
+func_8001B798 = 0x8001B798; // type:func size:0x2BC ROM 0x1C398 tier-A src/main/spranim.c.o -O2 -mips2 -32 matched C, 175 stock words, 9 exact relocation identities, reviewed inert allocation aids in cleanup queue

@@ -616,9 +616,9 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204",
       "ledger_commit": "017979aaac31e710d13ec254522c26d1ed6a8a46",
-      "reason": "Test real 0x79 radius operand kill after duration store to block GLOBAL forwarding and retain shared targetValue; prior product changed only dead 0x7B barriers. Hold defined unsigned 0x63 shift repair common."
+      "reason": "Test real 0x79 radius operand kill after duration store to block GLOBAL forwarding and retain shared targetValue; prior product changed only dead 0x7B barriers. Hold defined unsigned 0x63 shift repair common.",
+      "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {
       "ledger_commit": "b98f3696e2954fcb19879e3a7e8ba8b3311eb66a",
@@ -626,8 +626,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "f1e884ebd483edda6d77fac64e35b36e1b846908",
-      "reason": "2026-10-11: inner-base identity control deletes point defs. Fixed entry-kill x quadratic-kill pair tests retained shared point and vector symbols without duplicate expression blockers; prove PRE, homes, overlap and unchanged FP cadence.",
+      "ledger_commit": "5c462e0e8f8590af1ba60647cacc6e22933f70c1",
+      "reason": "Test square-only field rereads while retaining the real scalar square overwrite and early double. Measure whether two removed named references lower gross saving below callee cost and permit the target early home and late FP split.",
       "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
     },
     "func_80055104": {
@@ -1151,9 +1151,9 @@
       "source_commit": "900b48893e83a53be6d2932d2f1d6a47d94fdffd"
     },
     "func_overlay_064_F0000000_18C3B28": {
-      "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950",
       "ledger_commit": "c8dc2715b21d8e9465cb5f58746025498c75a0d3",
-      "reason": "Reuse innerWidth for the real nibble and redefine value as brightness before its guard. Test operand-killed named-leaf costs and allocation, then preserve hi with the existing early value kill if supported."
+      "reason": "Reuse innerWidth for the real nibble and redefine value as brightness before its guard. Test operand-killed named-leaf costs and allocation, then preserve hi with the existing early value kill if supported.",
+      "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {
       "ledger_commit": "554ca5b60eec5c9eeafc8fefcccaa639bd4db9bd",

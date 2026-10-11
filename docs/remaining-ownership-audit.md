@@ -100,6 +100,24 @@ reference evidence. Each success still requires the ordinary full-ROM,
 clean-room, documentation and scoreboard gates. Better candidate scores,
 resolved compiler hypotheses and tooling fixes add no matching credit.
 
+
+## Promotion-proof checkpoint, 2026-10-11
+
+At the wakeAllocate promotion baseline `d5e502469`, the stable full census
+proved 2,178 entries with zero failures and zero uncovered entries. Its
+contract contains 1,348 resident and 830 overlay proof identities, including
+ten zero-size aliases; these are not additional newly matched functions.
+The run reused 149 cached entries. A separate fresh check of exactly those
+149 entries at `90656ebda`, using the new input-stability safeguards, passed
+with zero cache reuse, failures or uncovered entries. The broader uncached
+rerun was stopped to reserve deadline closure and is not counted as a passed
+run. Detailed logs and receipts remain in ignored build evidence.
+
+The census now rejects changed proof inputs before accepting cached results
+or publishing fresh cache entries. Its focused regression suite passes, as
+does the full suite of 111 tooling test files. These validation results add
+confidence to existing promotions; they add no matching credit.
+
 PROVENANCE: the existing JFG lineage descriptions are drawn from
 mickey.us.yaml, docs/resident.md and docs/modules.md, which disclose the public
 Jet Force Gemini decompilation's track assembly and shadows/weather sources.

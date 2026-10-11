@@ -626,8 +626,8 @@
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {
-      "ledger_commit": "413fc728697dd7a2d7dd8ba32f09f35cf3631ce2",
-      "reason": "2026-10-11: after j=i+1, redefine operand i with XOR-zero, preserving outer latch; cross faithful/count-control shapes. Distinct from destination kills and typed self-copies; test shared i+1 availability and pair-index boundary charges.",
+      "ledger_commit": "5778c75bbdf4c2442344748fdc6c00696bf1bbba",
+      "reason": "2026-10-11: numeric split-piece census at pairIndex head growth; identify actual inherited/new neighbors and overlapping blocks before source edits. Test role partition or loop-bound change only against a proved interference owner.",
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
@@ -1161,8 +1161,8 @@
       "source_commit": "900b48893e83a53be6d2932d2f1d6a47d94fdffd"
     },
     "func_overlay_064_F0000000_18C3B28": {
-      "ledger_commit": "359a3be9b4c6daaa7a982440faa1347df544306f",
-      "reason": "2026-10-11: late live pixels definition kills early-store deadness. Put partial address in existing dead out home; test separate-lvalue middle-copy deletion versus retained use flags or joined older ranges.",
+      "ledger_commit": "c92519f0f34090cc42e524663e9ad277244c76ad",
+      "reason": "2026-10-11: inline anonymous signed ternary in real even-address expression versus named-distance control. Test CFE pool reuse with postdecrement, excluding initialization-call history; measure union, cost, unroll and residual.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

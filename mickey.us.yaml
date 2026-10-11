@@ -928,6 +928,9 @@ segments:
       # section; the raw gap resumes after its measured section padding.
       - { type: .bss, vram: 0x800D4A60, name: main/diprint }
       - { type: bss, vram: 0x800D4A90, name: bss_gap_D800D4A90 }
+      # The two four-pointer texture allocation arrays; flags remain raw.
+      - { type: .bss, vram: 0x800D60B0, name: main/fx_texture_buffers }
+      - { type: bss, vram: 0x800D60D0, name: bss_gap_D800D60D0 }
       # Four 0x10-byte positional vehicle-sound slots.
       - { type: .bss, vram: 0x800D78B0, name: main/vehicle_sounds }
       - { type: bss, vram: 0x800D78F0, name: bss_gap_D800D78F0 }

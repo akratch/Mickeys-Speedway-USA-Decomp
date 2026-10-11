@@ -12,9 +12,9 @@ typedef struct O64Image {
 
 extern u8 gO64BufferSelect;
 extern s32 gO64Initialized;
-extern u8 *gO64BuffersA[];
-extern u8 *gO64BuffersB[];
-extern s32 o64RandomRange(s32 minimum, s32 maximum);
+extern void *D_800D60B0[4];
+extern void *D_800D60C0[4];
+extern s32 mathRnd(s32 minimum, s32 maximum);
 
 /*
  * Rewritten from the listing (lane w2-ovld, 2026-10-02): every loop is
@@ -55,9 +55,9 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     width = image->width;
     height = image->height;
     if (select) {
-        src = gO64BuffersA[index];
+        src = D_800D60B0[index];
     } else {
-        src = gO64BuffersB[index];
+        src = D_800D60C0[index];
     }
 
     innerWidth = width - 6;
@@ -70,7 +70,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
             if (distance <= 0) {
                 distance = -distance;
             }
-            *out++ = o64RandomRange(0, 0xFF - (distance << 4));
+            *out++ = mathRnd(0, 0xFF - (distance << 4));
         }
         gO64Initialized = 1;
     } else {
@@ -81,7 +81,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 distance = -distance;
             }
             distance = 0xFF - (distance << 4);
-            value = o64RandomRange(-0x60, 0x60) + *out;
+            value = mathRnd(-0x60, 0x60) + *out;
             if (value > distance) {
                 value = distance;
             }
@@ -95,9 +95,9 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     select = gO64BufferSelect ^ 1;
     gO64BufferSelect = select;
     if (select) {
-        dst = gO64BuffersA[index];
+        dst = D_800D60B0[index];
     } else {
-        dst = gO64BuffersB[index];
+        dst = D_800D60C0[index];
     }
 
     in = src;

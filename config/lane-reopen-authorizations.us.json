@@ -291,9 +291,9 @@
       "source_commit": "d09352cdaa9a476ab208fd6965e169db3d64bdce"
     },
     "func_8001B798": {
-      "ledger_commit": "4ffcf3f0dc0604b7f4cb029ac1ae4c93480e58ba",
-      "reason": "O073 proves integer-vs-float zero changes FP constant sharing. Test either/both distance comparisons against integer zero to split the hoisted zero; no coordinate, coefficient, loop, home or ABI edits.",
-      "source_commit": "7fd3edab8607afe7a89a4f16812f44f9cd75c45a"
+      "ledger_commit": "242d85773ef61613adadcbb12dff09772ac09249",
+      "reason": "2026-10-11: existing evidence locates order only at ugen input. Compare canonical and faithful prior embedded-x control before/after uopt and at emission; identify actual order-origin predicate before proposing new source.",
+      "source_commit": "e0b736af01931b8d62b2d83b9b761a319d9cffcc"
     },
     "func_8001BBB4": {
       "ledger_commit": "770063553502c681e61f13366a408c249df4e797",
@@ -1162,7 +1162,7 @@
     },
     "func_overlay_064_F0000000_18C3B28": {
       "ledger_commit": "359a3be9b4c6daaa7a982440faa1347df544306f",
-      "reason": "2026-10-11: early pixels expands N51 but shrinks distance N23. Place existing address/kill after product and value kill, before hi clamp; predict pixels N41/div11 and distance N33/div9, both below hi, with unchanged unroll cost.",
+      "reason": "2026-10-11: real j defs occur only in peeled/final unroll tails. Split address into early src+j shift and late distance add; test two retained versus three forwarded first definitions, actual block alteration and estimator cost.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

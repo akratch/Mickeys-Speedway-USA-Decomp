@@ -626,8 +626,8 @@
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {
-      "ledger_commit": "144d6ea558344e02a554826273cc7a16b133a907",
-      "reason": "2026-10-10: one-region unsigned index partition from measured whale sibling. On faithful explicit-cursor control change only cursor i+1 to (u32)i+1U; test actual shared-piece references and charges, preserving signed j and outer latch.",
+      "ledger_commit": "660ee5d3803b3f70834bdaf32910327b9d1c02ab",
+      "reason": "2026-10-11: pre/post fixed-pair-loop count identity targets the cached remainder interference without address escape. Cross canonical and faithful displacement shapes; measure inner unroll, remainder lifetime and pairIndex growth.",
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {

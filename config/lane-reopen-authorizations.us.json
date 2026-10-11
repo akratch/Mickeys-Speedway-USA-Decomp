@@ -626,8 +626,8 @@
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {
-      "ledger_commit": "5778c75bbdf4c2442344748fdc6c00696bf1bbba",
-      "reason": "2026-10-11: numeric split-piece census at pairIndex head growth; identify actual inherited/new neighbors and overlapping blocks before source edits. Test role partition or loop-bound change only against a proved interference owner.",
+      "ledger_commit": "541f316b9ee1c48df1c37f5a27bd0006021148d2",
+      "reason": "Test whether splitting three broad unsigned callback constants before pairIndex removes actual min-scan growth neighbors. New evidence is the proved interpreter order mechanism. Selection-only oracle first; forced output earns no credit.",
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {

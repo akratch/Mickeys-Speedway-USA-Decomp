@@ -21,8 +21,8 @@ class DirectOwnerTests(unittest.TestCase):
         candidate = SimpleNamespace(symbols=lambda: carriers)
         return symbols, carriers, linked, candidate
 
-    def collect(self, linked, candidate):
-        return owner.collect(rs, {"overlay": 64}, candidate, "state", linked, b"")
+    def collect(self, linked, candidate, **kwargs):
+        return owner.collect(rs, {"overlay": 64}, candidate, "state", linked, b"", **kwargs)
 
     def test_address_only_assignment_is_not_a_definition(self):
         symbols, _, linked, candidate = self.inputs()
@@ -68,6 +68,20 @@ class DirectOwnerTests(unittest.TestCase):
         _, _, linked, candidate = self.inputs()
         with self.assertRaisesRegex(rs.SurfaceComparisonError, "input owner"):
             self.collect(linked, candidate)
+
+    def test_renamed_carrier_requires_explicit_authenticated_mapping(self):
+        _, carriers, linked, candidate = self.inputs()
+        carriers[0] = ("annotated", *carriers[0][1:])
+        with self.assertRaisesRegex(rs.SurfaceComparisonError, "shadows"):
+            self.collect(linked, candidate)
+        with self.assertRaisesRegex(rs.SurfaceComparisonError, "input owner"):
+            self.collect(linked, candidate, aliases={"annotated": "state"})
+
+    def test_alias_does_not_hide_another_carrier(self):
+        _, carriers, linked, candidate = self.inputs()
+        carriers.append(("annotated", *carriers[0][1:]))
+        with self.assertRaisesRegex(rs.SurfaceComparisonError, "shadows"):
+            self.collect(linked, candidate, aliases={"annotated": "state"})
 
 
 class DirectOwnerResolverTests(unittest.TestCase):

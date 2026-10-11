@@ -33,7 +33,7 @@ def yaml_config(text, error):
     return yaml.load(text, Loader=UniqueLoader)
 
 
-def collect(rs, module, candidate, name, linked, rom, *, root=None):
+def collect(rs, module, candidate, name, linked, rom, *, root=None, aliases=None):
     root = Path(root or rs.REPO)
     error = rs.SurfaceComparisonError
 
@@ -58,7 +58,10 @@ def collect(rs, module, candidate, name, linked, rom, *, root=None):
             "definition is not a sized object")
     require(not any(row[0] == name and row[4] == rs.SHN_ABS
                     for row in linked.symbols()), "unexpected absolute alias")
-    carriers = [row for row in candidate.symbols() if row[0] == name]
+    # The caller authenticates this original-name mapping through its complete
+    # source/object metadata replay; spelling similarity supplies no authority.
+    aliases = dict(aliases or {})
+    carriers = [row for row in candidate.symbols() if aliases.get(row[0], row[0]) == name]
     require(len(carriers) == 1 and carriers[0][4] == rs.SHN_UNDEF
             and carriers[0][3] & 15 in (rs.STT_NOTYPE, rs.STT_OBJECT)
             and carriers[0][2] in (0, definition[2]), "candidate shadows the external owner")

@@ -3,17 +3,18 @@
 import collections
 
 
-def capture_bss(rs, candidate, linked, source, overlay, enabled):
+def capture_bss(rs, candidate, linked, source, overlay, enabled, aliases=None):
     """Explicit reviewed consumer scope; never infer a namespace from sites."""
     if not enabled or overlay != 64:
         return None
     import canonical_bss_view as view
-    names = {row[0] for row in candidate.symbols()} & set(view.OWNER_NAMES)
+    aliases = aliases or {}
+    names = {aliases.get(row[0], row[0]) for row in candidate.symbols()} & set(view.OWNER_NAMES)
     if not names:
         return None
     try:
         return view.collect(candidate, {name: 0xFFF for name in sorted(names)}, linked,
-                            candidate_source=source)
+                            candidate_source=source, candidate_aliases=aliases)
     except view.BssViewError as error:
         raise rs.SurfaceComparisonError(str(error)) from error
 

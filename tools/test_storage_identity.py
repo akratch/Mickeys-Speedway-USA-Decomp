@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import reloc_surface as rs
 import storage_identity as storage
+import canonical_bss_view as bss
 
 
 class ReservedNamespaceTests(unittest.TestCase):
@@ -34,6 +35,19 @@ class ReservedNamespaceTests(unittest.TestCase):
 
     def test_unrequested_names_retain_original_identity(self):
         self.assertEqual(storage.scoped_resident_identity(rs, "other", (0, 4), self.proof()), (0, 4))
+
+    def test_renamed_bss_carrier_needs_authenticated_map(self):
+        row = ("annotated", 0, 16, 0x11, rs.SHN_UNDEF)
+        elf = SimpleNamespace(symbols=lambda: [row])
+        with self.assertRaises(bss.BssViewError):
+            bss.candidate_carrier(elf, self.name, {})
+        self.assertEqual(bss.candidate_carrier(elf, self.name, {"annotated": self.name}), row)
+
+    def test_renamed_bss_carrier_cannot_hide_original_shadow(self):
+        elf = SimpleNamespace(symbols=lambda: [("annotated", 0, 16, 0x11, rs.SHN_UNDEF),
+                                               (self.name, 0, 16, 0x11, 1)])
+        with self.assertRaises(bss.BssViewError):
+            bss.candidate_carrier(elf, self.name, {"annotated": self.name})
 
     def test_resolver_records_scoped_identity_before_alias_resolution(self):
         candidate = SimpleNamespace(

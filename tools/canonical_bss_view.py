@@ -74,6 +74,12 @@ def unique(elf, name):
     return rows[0]
 
 
+def candidate_carrier(elf, name, aliases):
+    rows = [row for row in elf.symbols() if aliases.get(row[0], row[0]) == name]
+    need(len(rows) == 1, 'candidate owner carrier absent or ambiguous')
+    return rows[0]
+
+
 def bss_layout(elf):
     need(elf.names.count('.bss') == 1, 'owner requires one BSS section')
     index = elf.names.index('.bss')
@@ -112,7 +118,8 @@ def loader_identity(name, linked, start, loader_cpp):
     return (0xFFF, offset)
 
 
-def collect(candidate_elf, names, target_elf, *, root=ROOT, candidate_source=None):
+def collect(candidate_elf, names, target_elf, *, root=ROOT, candidate_source=None,
+            candidate_aliases=None):
     """Return ``identities``, JSON ``receipt`` and a terminal ``recheck``.
 
     Names is a unique sequence of reviewed owner names, or a mapping from each
@@ -125,6 +132,7 @@ def collect(candidate_elf, names, target_elf, *, root=ROOT, candidate_source=Non
     root = Path(root).resolve()
     need(root == ROOT.resolve() and root == sv.ROOT.resolve(), 'proof must run in its own checkout')
     requested = list(names)
+    aliases = dict(candidate_aliases or {})
     need(requested and len(requested) == len(set(requested))
          and set(requested) <= set(OWNER_NAMES), 'unsupported or duplicate owner request')
     if isinstance(names, dict):
@@ -147,7 +155,7 @@ def collect(candidate_elf, names, target_elf, *, root=ROOT, candidate_source=Non
     owner_declarations(source.read_text())
     for name in requested:
         candidate_declaration(candidate_source.read_text(), name)
-        row = unique(candidate_elf, name)
+        row = candidate_carrier(candidate_elf, name, aliases)
         need(row[4] == rs.SHN_UNDEF and row[3] >> 4 == 1 and row[3] & 15 in (0, 1)
              and row[2] in (0, 16), 'candidate is not a unique undefined data carrier')
     directory = root / 'build/canonical-bss-view'
@@ -193,6 +201,7 @@ def collect(candidate_elf, names, target_elf, *, root=ROOT, candidate_source=Non
                'inputs': before, 'owner_capture': owner_receipt, 'loader_capture': loader_receipt,
                'loader_proof': loader_proof, 'candidate_compilation_proved_here': False,
                'candidate_declaration_compatible': True, 'bss_bytes_read': False}
+    receipt['candidate_aliases'] = aliases
     path = out / 'receipt.json'; path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
     recheck()
     return {'identities': identities, 'receipt': receipt, 'receipt_path': path, 'recheck': recheck}

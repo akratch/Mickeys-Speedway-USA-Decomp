@@ -3609,7 +3609,7 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
                 import canonical_data_owner
                 direct = canonical_data_owner.collect(
                     sys.modules[__name__], module, candidate_elf, name,
-                    target_elf, rom, root=root)
+                    target_elf, rom, root=root, aliases=reverse)
                 if direct is not None:
                     proposed[name].add(direct["identity"])
                     explicit_identities[name] = direct["identity"]
@@ -4896,7 +4896,7 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
     from storage_identity import capture_bss
     bss_proof = capture_bss(sys.modules[__name__], candidate_elf, target_elf,
                            REPO / "src" / (row["source"] + ".c") if overlay is not None else None,
-                           overlay, explicit_overlay_storage_bindings)
+                           overlay, explicit_overlay_storage_bindings, candidate_redefine_aliases)
     bss_names = set(bss_proof["identities"]) if bss_proof else set()
     identities, ambiguous_identities = _stable_symbol_identities(
         values_path, candidate_elf, overlay, tu_base_offset, target_elf,

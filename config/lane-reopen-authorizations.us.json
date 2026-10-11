@@ -211,8 +211,8 @@
       "source_commit": "662ffe23ec507b9a9487fff01f042d2395ef375c"
     },
     "func_80011980": {
-      "ledger_commit": "e16b6909a3f0f5518bfe18c4b0c787358c84d097",
-      "reason": "Inline initial plane component access so face is first assigned in the edge loop. Test late symbol founding without lexical CFG relocation, preserving one common initial address and the measured interference partition.",
+      "ledger_commit": "eb51aa3a01a08892a06b45fd83b312d5b965c67c",
+      "reason": "Tail dead store of the shared face after its last use founds one owner after the loop load and mask. Positive: one owner, late face, node colour unchanged. Negative: split owners or the face visited first.",
       "source_commit": "208ba8109965d4f4df00d3af61c6df091f22a352"
     },
     "func_80011CDC": {
@@ -621,8 +621,8 @@
       "reason": "Test real 0x79 radius operand kill after duration store to block GLOBAL forwarding and retain shared targetValue; prior product changed only dead 0x7B barriers. Hold defined unsigned 0x63 shift repair common."
     },
     "func_80053868": {
-      "ledger_commit": "541f316b9ee1c48df1c37f5a27bd0006021148d2",
-      "reason": "Test whether splitting three broad unsigned callback constants before pairIndex removes actual min-scan growth neighbors. New evidence is the proved interpreter order mechanism. Selection-only oracle first; forced output earns no credit.",
+      "ledger_commit": "b98f3696e2954fcb19879e3a7e8ba8b3311eb66a",
+      "reason": "On the head/min body, a kind-3 local defined after the min scan replaces the hoisted late literal. Predict preheader acceptance with the a1 piece kept and pair-loop colours moved. Negative: refusal or loss of either piece.",
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {

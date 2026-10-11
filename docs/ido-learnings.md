@@ -2920,6 +2920,32 @@ bytes and disassembly never belong here.
   explicit disclosure and cleanup tracking even when stock output is exact.
   See the [wake allocation proof](matching-triage-handoffs/wakeAllocate.md).
 
+- **Anonymous temporaries can carry constraints between unrelated expressions.**
+  In measured IDO/o32 inputs, a frontend conditional result shared a 32-bit
+  temporary home with postdecrement results elsewhere in the function. Using
+  a real conditional in a call argument added argument-register exclusions and
+  call cost to that shared allocation range. Assigning the conditional to a
+  named local did not reproduce it. A later comparison also assigned separate
+  source roles to the same physical register without merging their identities.
+  Inspect frontend homes, actual range pieces and argument exclusions before
+  inferring source-variable identity from the final register. This is not a
+  guarantee that every conditional or equal-width type shares a home, and an
+  extra branch or changed lifetime can outweigh the desired allocation effect.
+  See the [texture-generation controls](matching-triage-handoffs/func_overlay_064_F0000000_18C3B28.md).
+
+- **A cheaper dead operand kill can change the unroll decision.** A controlled
+  comparison replaced an initialized local's dead XOR-zero update with a dead
+  constant assignment after its last real use. Both prevented GLOBAL operand
+  substitution and disappeared before emission; the final objects were
+  identical. The constant assignment nevertheless removed an operator from
+  the earlier unroll-cost calculation. Combining it with a separately measured
+  address form restored the desired unroll factor at the cost threshold.
+  Prove that the destination is dead until its next definition and inspect the
+  actual estimator, substitution refusal and deletion point. This is disclosed
+  source shaping under ADR 0017, not evidence of an original source spelling,
+  and restored unrolling alone does not prove the function matches. See the
+  [texture-generation cost receipts](matching-triage-handoffs/func_overlay_064_F0000000_18C3B28.md).
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

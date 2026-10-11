@@ -1161,8 +1161,8 @@
       "source_commit": "900b48893e83a53be6d2932d2f1d6a47d94fdffd"
     },
     "func_overlay_064_F0000000_18C3B28": {
-      "ledger_commit": "8e5cfe27d6ed62ccbe6ec289fa164443c2f9cbaf",
-      "reason": "Existing entry truth test can use a defined byte-valued postdecrement to found the shared anonymous integer home in the incoming-argument block. Test seed exclusions and priority with the ordinary first-init call; no added branch.",
+      "ledger_commit": "e750261c2eae29bd2fad9c86800970e57dc49831",
+      "reason": "2026-10-11: early full address contracts distance divisor to6. Test late empty use before moved dead kill; require original version, retained address owner and loop cost26. Late kill alone was negative.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

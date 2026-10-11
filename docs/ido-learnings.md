@@ -2946,6 +2946,22 @@ bytes and disassembly never belong here.
   and restored unrolling alone does not prove the function matches. See the
   [texture-generation cost receipts](matching-triage-handoffs/func_overlay_064_F0000000_18C3B28.md).
 
+- **Final copy deletion can depend on the function's return contract.** A
+  controlled stock IDO comparison kept the optimizer's operations unchanged
+  while changing the result type consistently in the declaration and definition.
+  The integer result type changed the exit live-out metadata passed to the
+  assembler. In a full-TU diagnostic, that change retained a post-store copy
+  that the void control emitted before assembly but lost from its final object.
+  Check unsupported ABI assumptions before adding more artificial source uses:
+  the deletion can occur after allocation. A discarded call result does not
+  independently establish a void signature. Non-void fall-through is usable
+  only where the result is not used; this experiment proves neither the
+  original signature nor a meaningful return value. Review all observed callers,
+  declaration consistency and the actual stage boundary. The canonical
+  type-only control was byte-identical, and retaining the diagnostic copy did
+  not repair the remaining address and shared-role allocation. See the
+  [interpreter return-liveness proof](matching-triage-handoffs/func_800517E0.md).
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

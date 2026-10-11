@@ -626,8 +626,8 @@
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {
-      "ledger_commit": "660ee5d3803b3f70834bdaf32910327b9d1c02ab",
-      "reason": "2026-10-11: pre/post fixed-pair-loop count identity targets the cached remainder interference without address escape. Cross canonical and faithful displacement shapes; measure inner unroll, remainder lifetime and pairIndex growth.",
+      "ledger_commit": "413fc728697dd7a2d7dd8ba32f09f35cf3631ce2",
+      "reason": "2026-10-11: after j=i+1, redefine operand i with XOR-zero, preserving outer latch; cross faithful/count-control shapes. Distinct from destination kills and typed self-copies; test shared i+1 availability and pair-index boundary charges.",
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {

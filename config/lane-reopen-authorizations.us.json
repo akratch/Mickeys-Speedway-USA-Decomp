@@ -1026,8 +1026,8 @@
       "source_commit": "34a144842e349bc166b1f75ba9230dd2f1d416da"
     },
     "func_overlay_045_F0001158_188D5B0": {
-      "ledger_commit": "dec60b369310d3a9569d10f6c8aef4817cfab783",
-      "reason": "Test local aggregate trig storage with an in-block field view: distinguish scalar LOD counting from field/address counting while preserving values and call order. Prior scalar copies and address-taken scalar probes remain closed.",
+      "ledger_commit": "50c3a0296490b943b82f52656695b7b3e232adf8",
+      "reason": "2026-10-11: vertex1 pointer for four color stores only predicts three fewer block loads, unlike whole-region copies. Compare full-vertex control and measured cuts, address webs and traffic; no blind pointer/bias sweep.",
       "source_commit": "c6f9dd441dff0b60e51ff8e2ee4322c96e347a57"
     },
     "func_overlay_046_F0000120_188E518": {

@@ -292,7 +292,7 @@
     },
     "func_8001B798": {
       "ledger_commit": "242d85773ef61613adadcbb12dff09772ac09249",
-      "reason": "2026-10-11: existing evidence locates order only at ugen input. Compare canonical and faithful prior embedded-x control before/after uopt and at emission; identify actual order-origin predicate before proposing new source.",
+      "reason": "2026-10-11: observed CFE right-child syntactic predicate reverses embedded-x multiply. Put exact first-member indirect normal load on right and x assignment left; test authenticated Indirect versus member predicate and emission order.",
       "source_commit": "e0b736af01931b8d62b2d83b9b761a319d9cffcc"
     },
     "func_8001BBB4": {

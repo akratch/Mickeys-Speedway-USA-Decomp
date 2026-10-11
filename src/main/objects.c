@@ -2868,7 +2868,8 @@ extern void spranimControl(void *object, s32 updateRate);
 extern void texscrollControl(void *object, s32 updateRate);
 extern void effectboxControl(void *object, s32 updateRate);
 extern void trackChangeFog(void *object);
-extern void func_8001B798(void *object, s32 updateRate);
+struct SpranimB798Object;
+extern void func_8001B798(struct SpranimB798Object *object, s32 updateRate);
 extern void func_8001BB04(void *object, s32 updateRate);
 extern void func_8001BB10(void *object, s32 updateRate);
 extern void rangetriggerControl(void *object, s32 updateRate);
@@ -4971,7 +4972,7 @@ void func_8000AEEC(void *rawObject, s32 updateRate) {
             TrapDanglingJump(object, updateRate); /* Overlay 88 +0x4C. */
             break;
         case 25:
-            func_8001B798(object, updateRate);
+            func_8001B798((struct SpranimB798Object *)object, updateRate);
             break;
         case 19:
         case 20:

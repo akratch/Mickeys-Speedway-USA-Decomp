@@ -301,51 +301,14 @@ void texscrollControl(TexscrollState *state, s32 updateRate) {
     y >>= 2;
     trackAddTextureScroll(entry->textureIndex, x, y, updateRate);
 }
-#ifdef NON_MATCHING
-/* 2026-10-07 (lane d-fx): 128 -> 48 at delta 0, frame 0xE0 exact: the
- * per-file -Wab,-r4300_mul (no two mul.s back to back, non-likely bc1f on
- * the radius test); the hit interpolation through delta locals with
- * deltaX/deltaZ reused for the horizontal offsets (the pressure leaves the
- * radius and hit y in memory, as shipped).
- * 2026-10-07 (lane g-4): 44 -> 10. Object x/y/z read in place (no x local:
- * the first block is the target's), plus three ordering levers measured on
- * the allocator records (proc 6):
- *  - `fraction = object->x;` (a dead store uopt removes) numbers the x
- *    expression ahead of the normals, so the y/z split pieces are grown
- *    into the second-distance block (10 registers left, not 8) and take
- *    f24/f26 with their spill stores after the previous-position loads;
- *  - `firstDistance = 0.0f;` in the block above numbers firstDistance
- *    ahead of x, so firstDistance takes f28 and x f30;
- *  - `i = 0;` before the call numbers i ahead of the cursor (s2/s3), and
- *    the second distance summed z, y, x numbers the previous position
- *    px, py, pz (f16/f18/f20).
- * 2026-10-08 (lane q-f): 10 -> 8. The call result goes into `list` (the
- * frame cell the unused x held) and the for-init copies it to the cursor
- * after `i = 0`, so ugen emits the index clear before the cursor copy, as
- * shipped (stream surgery: that emission order alone is worth the 2 words).
- * 2026-10-09 (lane s-2): 8 -> 6. The target state is a struct and the
- * previous position is read through members, summed x, y, z like the first
- * distance: a byte-offset cast is a heavier operand (L92), which had put the
- * position left of the normal and the sum left of the distance. The z, y, x
- * spelling that compensated goes, and so does the dead `i = 0;` (inert).
- * 2026-10-09 (lane y-1): 6 -> 3, every frame offset now the target's. The
- * spill slots go to cross-block temporaries in web-number order, and a
- * later temporary reuses the first slot whose owner it does not meet. So:
- *  - x is a declared local (the cell pad1 held), assigned before the rest,
- *    so it wins the coordinate colour tie (f30, whole) without making a
- *    slot request;
- *  - STAND-IN: the dead `fraction = y + z + previous position` numbers
- *    those five ahead of the plane values, so y and z take slots 0x8C and
- *    0x88 and the plane distance takes 0x78;
- *  - STAND-IN: the dead `fraction = plane->radius;` puts the radius load in
- *    the block before the varref cut, so the compare's radius is a
- *    temporary, and it reuses the distance's slot at 0x78;
- *  - STAND-IN: `secondDistance = 0.0f;` numbers secondDistance ahead of the
- *    previous position (their colour tie).
- * Left (3): x's load is emitted before the plane normal's (its own
- * statement), so as1 puts it in the beql slot. Stream surgery moving that
- * one load after the normal's gives 0. */
-/* PROVENANCE: JFG's public character-plane control role supplies the idiom; Mickey's fields, globals, and action calls are authoritative below. */
+/* PROVENANCE: JFG's public character-plane control role supplies the idiom;
+ * Mickey's fields, globals and action calls are authoritative.
+ * ADR 0017: the unreachable seed, initialized comparison carriers, empty
+ * condition, distance clears, dead radius read and single-execution region
+ * retain IDO expression ownership and allocation. The seed cannot execute;
+ * the negative-distance guard excludes NaNs from the added FP comparisons.
+ * Pointer comparisons use the configured o32 representation and do not read
+ * pointed-to storage. Independently reviewed; see docs/cleanup-queue.md. */
 void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
     SpranimPlane *plane;
     SpranimB798Target **objects;
@@ -363,12 +326,13 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
     f32 deltaY;
     f32 deltaZ;
     s32 count;
-    f32 x;
-    s32 pad1;
-    s32 pad2;
+    f32 firstDistanceForTest;
+    s32 stateIsTwo;
+    s32 stateIsThree;
 
     plane = arg0->state64;
     list = (SpranimB798Target **) func_80005750(&count);
+    arg1 = 0;
     for (i = 0, objects = list; i < count; i++, objects++) {
         object = *objects;
         targetState = object->state64;
@@ -377,12 +341,18 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
         if ((targetState->flags & 1) && (targetState->flag0 != 0)) {
             continue;
         }
-        x = object->x;
-        fraction = object->y + object->z + targetState->previousX + targetState->previousY + targetState->previousZ;
+        if (arg1) {
+            fraction = object->y + object->z + targetState->previousX + targetState->previousY + targetState->previousZ;
+        }
         firstDistance = plane->distance +
-            ((plane->normalX * x) + (plane->normalY * object->y) +
+            ((plane->normalX * object->x) + (plane->normalY * object->y) +
              (plane->normalZ * object->z));
         if (firstDistance < 0.0f) {
+            firstDistanceForTest = firstDistance;
+            stateIsTwo = (s32)(u32)targetState == 2;
+            stateIsThree = (s32)(u32)targetState == 3;
+            if ((firstDistanceForTest < object->x) | (firstDistanceForTest > object->x) | stateIsTwo | stateIsThree | ((u32)arg0 == (u32)&D_8007BF0C) | (i == 1) | ((u32)objects == (u32)arg0)) {
+            }
             do {
                 secondDistance = plane->distance +
                     ((plane->normalX * targetState->previousX) +
@@ -390,7 +360,7 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
                      (plane->normalZ * targetState->previousZ));
             } while (0);
             if (secondDistance >= 0.0f) {
-                deltaX = x - targetState->previousX;
+                deltaX = object->x - targetState->previousX;
                 deltaY = object->y - targetState->previousY;
                 deltaZ = object->z - targetState->previousZ;
                 fraction = secondDistance / (secondDistance - firstDistance);
@@ -428,9 +398,6 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/spranim/func_8001B798.s")
-#endif
 /* PROVENANCE -- adapted from JFG's public asm/nonmatchings/spranim/rangetriggerControl.s, with Mickey's offsets. */
 void rangetriggerControl(RangetriggerState *state, s32 updateRate) {
     RangetriggerState *owner;
@@ -466,13 +433,3 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
     frame = (arg0->flags88 & 3) << 8;
     modSetTextureFrame(arg0->entries68[index], 0, frame, arg0);
 }
-
-/* PLATEAU-HANDOFF:func_8001B798:start
- * symbol: func_8001B798
- * score: 3/175 words
- * frame: 0xE0
- * relocations: 9
- * first-mismatch: +0x8C
- * summary: 3 at 0 with three stand-ins; the plain body without them is 137 at -4; position pointers do not move the x/firstDistance priority
- * PLATEAU-HANDOFF:func_8001B798:end
- */

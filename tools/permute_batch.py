@@ -114,6 +114,8 @@ _LOADED_IMPLEMENTATIONS = sweep_receipts.loaded_implementations(
      ("promotion", promotion_transaction.__file__),
      ("relocations", reloc_surface.__file__),
      ("overlay_call_context", ROOT / "tools/overlay_call_context.py"),
+     *((n, ROOT / ("tools/" + n + ".py")) for n in
+       ("canonical_data_owner", "canonical_bss_view", "storage_identity", "storage_view")),
      ("search_local_bindings", search_local_bindings.__file__),
      ("search_literal_bindings", search_literal_bindings.__file__),
      ("source_symbol_fidelity", source_symbol_fidelity.__file__),
@@ -1699,7 +1701,8 @@ def search_binding_records(report):
         raise RuntimeError("candidate binding identities are incomplete or unresolved")
     routes = {"resident-elf-address", "resident-absolute-symbol",
               "canonical-call-boundary", "canonical-data-owner",
-              "matched-canonical-sibling", "explicit-reserved-storage-witness"}
+              "matched-canonical-sibling", "explicit-reserved-storage-witness",
+              "canonical-reserved-bss-owner"}
     records = []
     def identity(value):
         return (isinstance(value, list) and len(value) == 2
@@ -1849,6 +1852,7 @@ def require_search_bindings(item, evidence, directory, deadline):
                 ROOT / "build/mickey.us.elf", source=item.rel_c_file.removeprefix("src/").removesuffix(".c"),
                 overlay_hint=item.overlay, target_symbol=target_symbol,
                 candidate_redefine_aliases=reverse, include_diagnostics=True,
+                explicit_overlay_storage_bindings=item.overlay == 64,
                 include_candidate_identities=True, measure_size_delta=True)
             sweep_receipts.atomic_json(proof_dir / (path.stem + "-relocations.json"), surface)
             if any("object-local-section-symbol" in row.get("observations", [])
@@ -3749,6 +3753,7 @@ def _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
             report = reloc_surface.function_surface_comparison(item.func, path,
                 ROOT / "build/mickey.us.elf", source=item.rel_c_file.removeprefix("src/").removesuffix(".c"),
                 overlay_hint=item.overlay, target_symbol=evidence["linked_symbol"],
+                explicit_overlay_storage_bindings=item.overlay == 64,
                 include_diagnostics=True, include_candidate_identities=True)
         except (reloc_surface.SurfaceComparisonError, ValueError, KeyError) as error:
             report = {"status": "unresolved", "reason": str(error)}
@@ -3882,7 +3887,7 @@ def seed_object_fidelity(item, original, emitted):
         reports = [reloc_surface.function_surface_comparison(item.func, path,
             ROOT / "build/mickey.us.elf",
             source=item.rel_c_file.removeprefix("src/").removesuffix(".c"),
-            overlay_hint=item.overlay) for path in paths]
+            overlay_hint=item.overlay, explicit_overlay_storage_bindings=item.overlay == 64) for path in paths]
         if not all(r.get("offset_type_exact") is True
                    and r.get("stable_identity_exact") is True for r in reports):
             raise RuntimeError("seed emission relocation identity is unproved") from error

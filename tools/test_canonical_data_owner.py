@@ -10,6 +10,10 @@ import reloc_surface as rs
 
 
 class DirectOwnerTests(unittest.TestCase):
+    def test_duplicate_yaml_owner_key_fails_closed(self):
+        with self.assertRaisesRegex(rs.SurfaceComparisonError, "duplicate YAML"):
+            owner.yaml_config("segments: []\nsegments: []\n", rs.SurfaceComparisonError)
+
     def inputs(self):
         symbols = [("state", rs.SYNTHETIC_VMA + 16, 4, 0x11, 1)]
         linked = SimpleNamespace(names=["", ".overlay_064"], symbols=lambda: symbols)

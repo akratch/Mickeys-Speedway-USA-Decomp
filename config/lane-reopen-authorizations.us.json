@@ -1151,9 +1151,9 @@
       "source_commit": "900b48893e83a53be6d2932d2f1d6a47d94fdffd"
     },
     "func_overlay_064_F0000000_18C3B28": {
-      "ledger_commit": "cd1b877f50dee9e867834a557c75eef0c90754fe",
-      "reason": "Bounded 20-minute strict sweep from the new shared-nibble and address-postincrement residual136 control. Restrict to declaration order, statement grouping, integer commutation and compound assignment; no autoapply, type edits or padding.",
-      "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
+      "ledger_commit": "96a028fbb8e150052a67d7d1b22bdc1e2d79a482",
+      "reason": "Resume the never-started residual136 sweep after independent typed storage and loader-namespace proofs. Four approved mutators only; finish by 21:50 UTC, no autoapply, type edits or padding.",
+      "source_commit": "9887d597a0a6a5f33ea7ab6ae1f1be4084ef7dfa"
     },
     "func_overlay_065_F0000C38_18C4EA0": {
       "ledger_commit": "554ca5b60eec5c9eeafc8fefcccaa639bd4db9bd",

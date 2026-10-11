@@ -26,6 +26,10 @@ OWNER_INPUT = 'main/fx_texture_buffers'
 OWNER_SOURCE_SHA256 = 'd1a47c1d86d6882d83ce42e8ad2aaa52ca9aaaa0de3e863301f4a17f6ef9081f'
 OWNER_NAMES = ('D_800D60B0', 'D_800D60C0')
 EXPECTED_DECLARATIONS = 'void*D_800D60B0[4];void*D_800D60C0[4];'
+# The reviewed loader differs from storage_view's older body only by three
+# func_80000450 -> amSetMuteMode identifier replacements. The actual anchor
+# address and fresh exact loader proof remain mandatory below.
+LOADER_BODY = '683dce5439d7a0894178ca45479a32a400ac092a109bddc029a0a72e7c4d2af7'
 LOADED = {Path(m.__file__): pp.sha256_file(Path(m.__file__))
           for m in (pp, rs, sv)}
 LOADED[Path(__file__)] = pp.sha256_file(Path(__file__))
@@ -88,10 +92,10 @@ def bss_layout(elf):
 
 
 def loader_identity(name, linked, start, loader_cpp):
-    need(sv.body_digest(loader_cpp, 'ResolveRelocAddress') == sv.LOADER_BODY,
+    need(sv.body_digest(loader_cpp, 'ResolveRelocAddress') == LOADER_BODY,
          'reviewed loader semantics changed')
     anchor = unique(linked, 'D_80085A40')
-    resident = unique(linked, 'func_80000450')
+    resident = unique(linked, 'amSetMuteMode')
     need(resident[1] == sv.ot.RESIDENT_VRAM_BASE, 'resident load base changed')
     need(anchor[1] == 0x80085A40, 'resident BSS anchor changed')
     row = unique(linked, name)

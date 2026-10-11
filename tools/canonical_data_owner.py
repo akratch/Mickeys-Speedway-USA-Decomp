@@ -14,6 +14,25 @@ from types import SimpleNamespace
 
 LOADED_SHA256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
+def yaml_config(text, error):
+    import yaml
+
+    class UniqueLoader(yaml.SafeLoader):
+        pass
+
+    def mapping(loader, node, deep=False):
+        result = {}
+        for key_node, value_node in node.value:
+            key = loader.construct_object(key_node, deep=deep)
+            if key in result:
+                raise error("duplicate YAML ownership key")
+            result[key] = loader.construct_object(value_node, deep=deep)
+        return result
+
+    UniqueLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, mapping)
+    return yaml.load(text, Loader=UniqueLoader)
+
+
 def collect(rs, module, candidate, name, linked, rom, *, root=None):
     root = Path(root or rs.REPO)
     error = rs.SurfaceComparisonError
@@ -125,8 +144,7 @@ def collect(rs, module, candidate, name, linked, rom, *, root=None):
     canonical = json.loads((root / "config/overlays.us.json").read_text())
     require([row for row in canonical["modules"] if row.get("overlay") == overlay] == [module],
             "atlas module is not current")
-    import yaml
-    segments = [seg for seg in yaml.safe_load((root / "mickey.us.yaml").read_text())["segments"]
+    segments = [seg for seg in yaml_config((root / "mickey.us.yaml").read_text(), error)["segments"]
                 if isinstance(seg, dict) and seg.get("name") == "overlay_%03d" % overlay]
     require(len(segments) == 1 and segments[0].get("dir") == source.parent.as_posix(),
             "YAML overlay owner differs")
@@ -148,6 +166,8 @@ def collect(rs, module, candidate, name, linked, rom, *, root=None):
     def recheck():
         require(receipt["inputs"] == current() and snapshot() == before,
                 "owner authority changed during proof")
+        require(hashlib.sha256(Path(raw.path).read_bytes()).hexdigest() == receipt["raw_sha256"],
+                "captured stock object changed")
         require(getattr(candidate, "data", None) == Path(candidate.path).read_bytes()
                 and getattr(obj, "data", None) == Path(obj.path).read_bytes()
                 and getattr(linked, "data", None) == Path(linked.path).read_bytes(),

@@ -1968,12 +1968,18 @@ def _candidate_tu_placement_matches_canonical(name, candidate_value,
 def _stable_symbol_identities(path, candidate_elf, overlay, tu_base_offset,
                               target_elf, redefine_aliases=None, evidence=None,
                               atlas=None, root=None, rom=None, elf_loader=None,
-                              boundary_proof_names=None, candidate_source=None):
+                              boundary_proof_names=None, candidate_source=None,
+                              reserved_bss_proof=None):
     """Map names to unambiguous ``(overlay, offset)`` runtime identities."""
     proposed = collections.defaultdict(set)
 
     def propose(name, identity, route):
         if name:
+            if reserved_bss_proof and route in ("resident-elf-address", "resident-address-name"):
+                from storage_identity import scoped_resident_identity
+                scoped = scoped_resident_identity(sys.modules[__name__], name, identity, reserved_bss_proof)
+                if scoped != identity:
+                    identity, route = scoped, "canonical-reserved-bss-owner"
             proposed[name].add(identity)
             _identity_witness(evidence, name, route, identity)
 
@@ -4887,11 +4893,17 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
         if section == ".text" and candidate_start <= offset < candidate_start + candidate_size
         and index < len(candidate_symbols)
     }
+    from storage_identity import capture_bss
+    bss_proof = capture_bss(sys.modules[__name__], candidate_elf, target_elf,
+                           REPO / "src" / (row["source"] + ".c") if overlay is not None else None,
+                           overlay, explicit_overlay_storage_bindings)
+    bss_names = set(bss_proof["identities"]) if bss_proof else set()
     identities, ambiguous_identities = _stable_symbol_identities(
         values_path, candidate_elf, overlay, tu_base_offset, target_elf,
         candidate_redefine_aliases, evidence=evidence,
         atlas=atlas if overlay is not None else None, root=REPO, rom=rom,
         boundary_proof_names=boundary_proof_names,
+        reserved_bss_proof=bss_proof,
         candidate_source=(row.get("source")
                           if overlay is not None else None))
     overlay_call_identities, ambiguous_overlay_calls = (
@@ -4925,7 +4937,7 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                 target_records=target_records,
                 own_range=(target_start, target_start + target_size),
                 evidence=evidence,
-                explicit_foreign_names=set(imported) | set(resident_imported) | set(binary_imported),
+                explicit_foreign_names=set(imported) | set(resident_imported) | set(binary_imported) | bss_names,
                 root=REPO,
                 explicit_storage_registry=explicit_storage_registry,
                 explicit_storage_registry_path=explicit_storage_registry_path,
@@ -5005,6 +5017,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
     })
     for direct in direct_storage_receipts or ():
         direct["recheck"]()
+    if bss_proof:
+        bss_proof["recheck"]()
     if resident_binding_receipt is not None:
         resident_binding_module.recheck_candidate(resident_binding_receipt)
         result["fixed_resident_bindings"] = {

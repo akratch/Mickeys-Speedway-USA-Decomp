@@ -3,6 +3,37 @@
 import collections
 
 
+def capture_bss(rs, candidate, linked, source, overlay, enabled):
+    """Explicit reviewed consumer scope; never infer a namespace from sites."""
+    if not enabled or overlay != 64:
+        return None
+    import canonical_bss_view as view
+    names = {row[0] for row in candidate.symbols()} & set(view.OWNER_NAMES)
+    if not names:
+        return None
+    try:
+        return view.collect(candidate, {name: 0xFFF for name in sorted(names)}, linked,
+                            candidate_source=source)
+    except view.BssViewError as error:
+        raise rs.SurfaceComparisonError(str(error)) from error
+
+
+def scoped_resident_identity(rs, name, identity, proof):
+    """Interpret a proved physical address in its explicitly requested namespace.
+
+    This is performed before any resident identity proposal is made. It does
+    not delete an independent conflict later in the resolution graph.
+    """
+    if proof is None or name not in proof["identities"]:
+        return identity
+    physical = proof["receipt"]["physical_addresses"][name]
+    reserved = tuple(proof["identities"][name])
+    if (identity != (0, physical - rs.ot.RESIDENT_VRAM_BASE)
+            or reserved[0] != 0xFFF or physical != 0x80085A40 + reserved[1]):
+        raise rs.SurfaceComparisonError("reserved BSS namespace conflicts with physical address")
+    return reserved
+
+
 def merge_independent_resident_bindings(rs, imported, identities, ambiguous,
                                          evidence, values_path,
                                          redefine_aliases):

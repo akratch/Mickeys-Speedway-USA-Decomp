@@ -74,11 +74,11 @@ class Guards(unittest.TestCase):
         elf.rows = [(name, 0x80086000 + i * 16, 16, 0x11, 2)
                     for i, name in enumerate(b.OWNER_NAMES)]
         elf.rows += [('D_80085A40', 0x80085A40, 0, 0, 2),
-                     ('func_80000450', b.sv.ot.RESIDENT_VRAM_BASE, 4, 0x12, 1)]
+                     ('amSetMuteMode', b.sv.ot.RESIDENT_VRAM_BASE, 4, 0x12, 1)]
         return elf
 
     def test_loader_retains_reserved_namespace(self):
-        with mock.patch.object(b.sv, 'body_digest', return_value=b.sv.LOADER_BODY):
+        with mock.patch.object(b.sv, 'body_digest', return_value=b.LOADER_BODY):
             self.assertEqual(b.loader_identity(b.OWNER_NAMES[0], self.linked(), 0x80086000, ''),
                              (0xFFF, 0x5C0))
 
@@ -86,7 +86,7 @@ class Guards(unittest.TestCase):
         with mock.patch.object(b.sv, 'body_digest', return_value='changed'), self.assertRaises(b.BssViewError):
             b.loader_identity(b.OWNER_NAMES[0], self.linked(), 0x80086000, '')
         elf = self.linked(); row = list(elf.rows[0]); row[4] = 0xFFF1; elf.rows[0] = tuple(row)
-        with mock.patch.object(b.sv, 'body_digest', return_value=b.sv.LOADER_BODY), self.assertRaises(b.BssViewError):
+        with mock.patch.object(b.sv, 'body_digest', return_value=b.LOADER_BODY), self.assertRaises(b.BssViewError):
             b.loader_identity(b.OWNER_NAMES[0], elf, 0x80086000, '')
 
     def test_full_collect_terminal_recheck_and_derived_identity(self):
@@ -126,7 +126,7 @@ class Guards(unittest.TestCase):
                  mock.patch.object(b, 'LOADED', {}), mock.patch.object(b.sv, 'capture', side_effect=capture), \
                  mock.patch.object(b.sv, 'exact_report', side_effect=loader), \
                  mock.patch.object(b.rs, 'Elf', return_value=Elf()), \
-                 mock.patch.object(b.sv, 'body_digest', return_value=b.sv.LOADER_BODY):
+                 mock.patch.object(b.sv, 'body_digest', return_value=b.LOADER_BODY):
                 proof = b.collect(candidate, {b.OWNER_NAMES[0]: 0xFFF}, linked,
                                   root=root, candidate_source=candidate_source)
                 self.assertEqual(proof['identities'], {b.OWNER_NAMES[0]: (0xFFF, 0x5C0)})

@@ -1151,8 +1151,8 @@
       "source_commit": "900b48893e83a53be6d2932d2f1d6a47d94fdffd"
     },
     "func_overlay_064_F0000000_18C3B28": {
-      "ledger_commit": "6346a0ee06d2d9c3aeb1a866b70263743e069f60",
-      "reason": "Replace the dead post-address distance XOR with zero on the shared-nibble two-stage control. Test retained operand kill, one saved estimator unit and unchanged distance ownership before any address-association composition.",
+      "ledger_commit": "cd1b877f50dee9e867834a557c75eef0c90754fe",
+      "reason": "Bounded 20-minute strict sweep from the new shared-nibble and address-postincrement residual136 control. Restrict to declaration order, statement grouping, integer commutation and compound assignment; no autoapply, type edits or padding.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

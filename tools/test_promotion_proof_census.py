@@ -12,6 +12,7 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 TOOLS = Path(__file__).resolve().parent
@@ -75,6 +76,127 @@ class CensusTests(unittest.TestCase):
         runner = FakeRunner(TABLE)
         self.run_census(runner, None, jobs=3)
         self.assertTrue(all("--no-build" in call for call in runner.calls))
+
+    def test_changed_inputs_do_not_publish_or_replace_cache(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            cache = Path(scratch) / "cache.json"
+            self.run_census(FakeRunner(TABLE), cache)
+            original = cache.read_bytes()
+
+            def changed():
+                census.require_unchanged_inputs({"build/a.o": "old"},
+                                                {"build/a.o": "new"})
+
+            for destination in (cache, Path(scratch) / "new.json", None):
+                with self.subTest(destination=destination), self.assertRaisesRegex(
+                        census.InputsChangedError, "cache not updated"):
+                    census.census(ENTRIES, cache_path=destination, elf_digest="edited",
+                                  environment="env", runner=FakeRunner(TABLE),
+                                  object_digest=lambda obj: obj, validate_inputs=changed)
+            self.assertEqual(original, cache.read_bytes())
+            self.assertFalse((Path(scratch) / "new.json").exists())
+
+    def test_fully_cached_results_still_validate_inputs(self):
+        entries = ENTRIES[:1]
+        with tempfile.TemporaryDirectory() as scratch:
+            cache = Path(scratch) / "cache.json"
+            kwargs = dict(cache_path=cache, elf_digest="e", environment="v",
+                          object_digest=lambda obj: obj)
+            census.census(entries, runner=FakeRunner(TABLE), **kwargs)
+            runner = FakeRunner({})
+            check = mock.Mock(side_effect=census.InputsChangedError("changed"))
+            with self.assertRaises(census.InputsChangedError):
+                census.census(entries, runner=runner, validate_inputs=check, **kwargs)
+            check.assert_called_once_with()
+            self.assertEqual([], runner.calls)
+
+    def test_snapshot_detects_same_content_replacement_and_owner_addition(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            obj = root / "build/a.o"
+            obj.parent.mkdir()
+            obj.write_bytes(b"synthetic object")
+            before = census.input_snapshot(ENTRIES, root=root)
+            replacement = obj.with_suffix(".new")
+            replacement.write_bytes(obj.read_bytes())
+            replacement.replace(obj)
+            with self.assertRaisesRegex(census.InputsChangedError, "build/a.o"):
+                census.require_unchanged_inputs(before, census.input_snapshot(ENTRIES, root=root))
+            before = census.input_snapshot(ENTRIES, root=root)
+            owner = root / "asm/new.s"
+            owner.parent.mkdir()
+            owner.write_text("# synthetic ownership input\n")
+            with self.assertRaisesRegex(census.InputsChangedError, "asm/new.s"):
+                census.require_unchanged_inputs(before, census.input_snapshot(ENTRIES, root=root))
+
+    def test_rom_content_invalidates_environment_cache_key(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            rom = root / "build/mickey.us.z64"
+            rom.parent.mkdir()
+            rom.write_bytes(b"synthetic original")
+            before = census.proof_environment_digest(root)
+            rom.write_bytes(b"synthetic changed")
+            self.assertNotEqual(before, census.proof_environment_digest(root))
+
+    def test_source_and_recipe_changes_invalidate_warm_cache(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            cache = root / "cache.json"
+            entries = ENTRIES[:1]
+            for name in ("src/owner.inc", "include/owner.h", "config/normalizations/owner.mk",
+                         "config/normalizations/owner.filter.spec", "mickey.us.yaml"):
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("synthetic original\n")
+                environment = census.proof_environment_digest(root)
+                kwargs = dict(cache_path=cache, elf_digest="unchanged ELF",
+                              object_digest=lambda obj: "unchanged object")
+                census.census(entries, runner=FakeRunner(TABLE), environment=environment, **kwargs)
+                before = census.input_snapshot(entries, root=root)
+                path.write_text("synthetic changed provenance or recipe\n")
+                with self.assertRaises(census.InputsChangedError):
+                    census.require_unchanged_inputs(before, census.input_snapshot(entries, root=root))
+                runner = FakeRunner(TABLE)
+                outcomes = census.census(entries, runner=runner,
+                                         environment=census.proof_environment_digest(root), **kwargs)
+                self.assertEqual(1, len(runner.calls), name)
+                self.assertFalse(outcomes[0].cached, name)
+
+    def test_transient_owner_addition_is_detected(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            owner = root / "asm/transient.s"
+            owner.parent.mkdir()
+            before = census.input_snapshot(root=root)
+            owner.write_text("# synthetic transient owner\n")
+            owner.unlink()
+            with self.assertRaisesRegex(census.InputsChangedError, "asm"):
+                census.require_unchanged_inputs(before, census.input_snapshot(root=root))
+
+    def test_external_metadata_spec_is_an_input(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            recipe = root / "mk/owner.mk"
+            recipe.parent.mkdir()
+            recipe.write_text("step: @evidence/owner.spec\n")
+            spec = root / "evidence/owner.spec"
+            before = census.input_snapshot(root=root)
+            environment = census.proof_environment_digest(root)
+            spec.parent.mkdir()
+            spec.write_text("synthetic metadata\n")
+            with self.assertRaisesRegex(census.InputsChangedError, "evidence/owner.spec"):
+                census.require_unchanged_inputs(before, census.input_snapshot(root=root))
+            self.assertNotEqual(environment, census.proof_environment_digest(root))
+
+    def test_cli_rejects_stale_build_before_using_cache(self):
+        import function_preflight as fp
+        with mock.patch.object(census, "require_fresh_build", side_effect=fp.StaleEvidenceError(
+                "stale canonical linked ELF")), mock.patch.object(census, "census") as prove:
+            with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as failure:
+                census.main(["--no-build"])
+            self.assertEqual(2, failure.exception.code)
+            prove.assert_not_called()
 
     def test_warm_run_reproves_only_failures_and_changed_objects(self):
         with tempfile.TemporaryDirectory() as scratch:

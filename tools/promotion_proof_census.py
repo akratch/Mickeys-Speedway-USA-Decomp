@@ -33,8 +33,11 @@ and the readers fail with ``wb_compare failed with exit 2``.
 Passing results are cached in ``build/promotion-proof-census/cache.json``,
 keyed per function on its object's hash, the linked ELF's hash, the proof
 tools' source hashes and the tracked proof inputs (atlas, generated alias
-surface, symbol table, Makefile fragments).  Failures are never cached, so a
+surface, symbol table, Makefile fragments and both ROM images). Failures are never cached, so a
 warm run re-proves exactly the failing and the changed functions.
+The CLI checks build freshness even on a fully cached run. It also rejects
+the entire run, without updating the cache, if proof inputs change while
+functions are being enumerated or proved. Do not build in the census lane.
 
 Usage:
     tools/promotion_proof_census.py [-j N] [--no-build] [--no-cache]
@@ -70,7 +73,7 @@ MAP_PATH = REPO / "build" / "mickey.us.map"
 ATLAS = REPO / "config" / "overlays.us.json"
 SYMBOLS = REPO / "symbol_addrs.us.txt"
 CACHE = REPO / "build" / "promotion-proof-census" / "cache.json"
-CACHE_SCHEMA = "mickey-promotion-proof-census-cache-v2"
+CACHE_SCHEMA = "mickey-promotion-proof-census-cache-v3"
 SYNTHETIC_VMA = 0xF0000000
 
 # Every file whose content decides a promotion-proof verdict, beyond the
@@ -86,6 +89,7 @@ TOOL_SOURCES = (
 PROOF_INPUTS = (
     "config/overlays.us.json", "overlay_undefined_syms.us.txt",
     "symbol_addrs.us.txt", "Makefile",
+    "build/mickey.us.z64", "baseroms/mickey.us.z64",
 )
 
 
@@ -213,14 +217,78 @@ def promoted_functions(root: Path = REPO) -> list[Entry]:
 
 # ----------------------------------------------------------------- proof
 
+OWNER_TREES = ("mk", "config", "src", "include", "asm")
+
+
+def proof_input_paths(root: Path) -> set[Path]:
+    """Use one dependency set for cache keys and concurrent-write detection."""
+    paths = {root / name for name in TOOL_SOURCES + PROOF_INPUTS}
+    paths.add(root / "mickey.us.yaml")
+    for directory in OWNER_TREES:
+        paths.update(path for path in (root / directory).rglob("*") if path.is_file())
+    # Metadata recipes may put @SPEC_FILE inputs outside config/. Include
+    # repository-relative references even when missing, so creation is seen.
+    for recipe in [root / "Makefile", *sorted((root / "mk").rglob("*.mk")),
+                   *sorted((root / "config" / "normalizations").rglob("*.mk"))]:
+        if recipe.is_file():
+            for name in re.findall(r"(?<!\S)@([\w./-]+)", recipe.read_text()):
+                relative = Path(name)
+                if "/" in name and not relative.is_absolute() and ".." not in relative.parts:
+                    paths.add(root / relative)
+    return paths
+
+
 def proof_environment_digest(root: Path = REPO) -> str:
     digest = hashlib.sha256()
-    paths = [root / name for name in TOOL_SOURCES + PROOF_INPUTS]
-    paths += sorted((root / "mk").glob("**/*.mk"))
-    for path in paths:
+    for path in sorted(proof_input_paths(root)):
         digest.update(path.relative_to(root).as_posix().encode() + b"\0")
         digest.update((_sha256(path) if path.is_file() else "missing").encode() + b"\n")
     return digest.hexdigest()
+
+
+class InputsChangedError(RuntimeError):
+    """A census cannot certify one coherent set of compiler artifacts."""
+
+
+def input_snapshot(entries: Iterable[Entry] = (), *, root: Path = REPO) -> dict:
+    """Observe content-changing metadata, including replacement and edit/restore.
+
+    Unlike content hashes alone, ctime also detects a file rewritten with the
+    same bytes while a proof might have read its partially written contents.
+    Enumerate source/assembly paths again at the end to detect added owners.
+    """
+    paths = proof_input_paths(root)
+    paths.update(root / name for name in (
+        "build/mickey.us.elf", "build/mickey.us.map", "mickey.us.yaml"))
+    # A transient owner created and removed during enumeration can change the
+    # discovered function set without leaving a file behind. Directory ctime
+    # catches that event; never watch build/ directories that proofs write.
+    for directory in OWNER_TREES:
+        parent = root / directory
+        paths.add(parent)
+        paths.update(path for path in parent.rglob("*") if path.is_dir())
+    paths.update(root / entry.obj for entry in entries if entry.obj)
+    result = {}
+    for path in sorted(paths):
+        try:
+            stat = path.stat()
+            result[path.relative_to(root).as_posix()] = (
+                stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+        except FileNotFoundError:
+            result[path.relative_to(root).as_posix()] = None
+    return result
+
+
+def require_unchanged_inputs(before: dict, after: dict) -> None:
+    changed = sorted(name for name in before.keys() | after.keys()
+                     if name not in before or name not in after or before[name] != after[name])
+    if changed:
+        detail = ", ".join(changed[:5])
+        if len(changed) > 5:
+            detail += f" (+{len(changed) - 5} more)"
+        raise InputsChangedError(
+            f"proof inputs changed during census: {detail}; results discarded, "
+            "cache not updated. Refresh the build and rerun without concurrent writes.")
 
 
 def entry_key(entry: Entry, elf_digest: str, environment: str,
@@ -303,7 +371,8 @@ def census(entries: Iterable[Entry], *, jobs: int = 1, cache_path: Path | None =
            elf_digest: str = "", environment: str = "",
            object_digest: Callable[[str], str] | None = None,
            runner: Runner = subprocess.run,
-           progress: Callable[[int, int], None] | None = None) -> list[Outcome]:
+           progress: Callable[[int, int], None] | None = None,
+           validate_inputs: Callable[[], None] | None = None) -> list[Outcome]:
     entries = [entry for entry in entries if entry.covered]
     aliases = [entry for entry in entries if entry.alias_of is not None]
     entries = [entry for entry in entries if entry.alias_of is None]
@@ -339,6 +408,10 @@ def census(entries: Iterable[Entry], *, jobs: int = 1, cache_path: Path | None =
             done += 1
             if progress is not None:
                 progress(done, len(pending))
+    # Validate before either saving fresh proofs or returning cached results.
+    # A concurrent rebuild invalidates the run, including successful rows.
+    if validate_inputs is not None:
+        validate_inputs()
     if cache_path is not None:
         fresh = {symbol: row for symbol, row in cache.items()
                  if symbol in keys and row.get("key") == keys[symbol]}
@@ -412,6 +485,16 @@ def refresh_build() -> None:
                        cwd=REPO, check=True, stdout=subprocess.DEVNULL)
 
 
+def require_fresh_build() -> None:
+    """Cached proofs must not bypass the ordinary --no-build freshness gate."""
+    import function_preflight as fp
+    fp._require_fresh_linked_boundary()
+    if not (ROM_OUT.is_file() and ROM_OUT.stat().st_mtime_ns > ELF_PATH.stat().st_mtime_ns):
+        raise fp.PreflightError(
+            "compiled ROM is not strictly newer than the linked ELF; "
+            "omit --no-build to refresh the proof artifacts")
+
+
 def render(outcomes: list[Outcome], uncovered: list[Entry], *, list_uncovered: bool,
            require_coverage: bool, elapsed: float) -> int:
     failures = [row for row in outcomes if not row.ok]
@@ -475,7 +558,17 @@ def main(argv: list[str]) -> int:
     started = time.monotonic()
     if not args.no_build:
         refresh_build()
+    import function_preflight as fp
+    try:
+        require_fresh_build()
+    except fp.PreflightError as error:
+        parser.error(str(error))
+    before_discovery = input_snapshot()
     entries = promoted_functions()
+    try:
+        require_unchanged_inputs(before_discovery, input_snapshot())
+    except InputsChangedError as error:
+        parser.error(str(error))
     if args.only:
         entries = [entry for entry in entries if entry.kind == args.only]
     uncovered = [entry for entry in entries if not entry.covered]
@@ -487,11 +580,21 @@ def main(argv: list[str]) -> int:
         if not args.quiet and sys.stderr.isatty():
             print("\r  proving %d/%d" % (done, total), end="", file=sys.stderr, flush=True)
 
-    outcomes = census(covered, jobs=args.jobs,
-                      cache_path=None if args.no_cache else CACHE,
-                      elf_digest=_sha256(ELF_PATH),
-                      environment=proof_environment_digest(),
-                      progress=progress)
+    before_proof = input_snapshot(covered)
+
+    def validate_inputs() -> None:
+        require_unchanged_inputs(before_proof, input_snapshot(covered))
+        require_fresh_build()
+
+    try:
+        require_unchanged_inputs(before_discovery, input_snapshot())
+        outcomes = census(covered, jobs=args.jobs,
+                          cache_path=None if args.no_cache else CACHE,
+                          elf_digest=_sha256(ELF_PATH),
+                          environment=proof_environment_digest(),
+                          progress=progress, validate_inputs=validate_inputs)
+    except (InputsChangedError, fp.PreflightError) as error:
+        parser.error(str(error))
     if not args.quiet and sys.stderr.isatty():
         print(file=sys.stderr)
     return render(outcomes, uncovered, list_uncovered=args.list_uncovered,

@@ -1152,8 +1152,8 @@
     },
     "func_overlay_064_F0000000_18C3B28": {
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950",
-      "ledger_commit": "44169d0114baa71eee4d66fe55f4c24a64341160",
-      "reason": "On the cost-25 packed-pointer body, use distance versus value+52 and delay the existing value kill. Measure even ghost interference/cost against known hi-copy regression; no exactness assumed."
+      "ledger_commit": "c8dc2715b21d8e9465cb5f58746025498c75a0d3",
+      "reason": "Reuse innerWidth for the real nibble and redefine value as brightness before its guard. Test operand-killed named-leaf costs and allocation, then preserve hi with the existing early value kill if supported."
     },
     "func_overlay_065_F0000C38_18C4EA0": {
       "ledger_commit": "554ca5b60eec5c9eeafc8fefcccaa639bd4db9bd",

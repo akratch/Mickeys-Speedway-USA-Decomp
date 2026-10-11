@@ -77,8 +77,7 @@ extern void mathOneFloatPY(void *source, f32 *result, s16 angle);
 extern void camSetScissor(Gfx **dlist);
 extern void texDPInit();
 extern void *mmAlloc2(s32 size, s32 tag);
-/* wakeAllocate's NON_MATCHING body below is owned by another lane and still
- * spells these callees by their old placeholders; drop once that body is renamed. */
+/* Compatibility aliases retain wakeAllocate's historical callee spellings. */
 #define func_8002B314 mmAlloc2
 #define func_80034448 texLoadTexture
 extern u8 D_7D310[];

@@ -2902,6 +2902,24 @@ bytes and disassembly never belong here.
   whole function exact. See the signed-entry controls in the
   [texture-generation handoff](matching-triage-handoffs/func_overlay_064_F0000000_18C3B28.md).
 
+- **Dead stores can change expression founding without extending live ranges.**
+  A controlled full-TU IDO comparison separated three superficially inert
+  spellings: a discarded expression vanished before GLOBAL, an empty condition
+  retained its operands through allocation, and a dead assignment to an existing
+  local survived GLOBAL but disappeared in the subsequent dead-store pass.
+  GLOBAL's reverse traversal therefore let tail assignments establish owners
+  for expressions already used by the real computation, without retaining tail
+  uses during allocation. Independent small compiler controls reproduced the
+  phase distinction. This is useful when correct operations have the wrong
+  expression founding or spill order; it does not reorder an already-founded
+  symbol, override recursive child ownership, or promise that indirect loads
+  behave like integer products. Observe the actual owner and deletion point,
+  rather than assuming any dead expression is equivalent to another. Prove
+  initialized operands, dead destinations and no newly undefined input or
+  observable operation. Such source shaping needs ADR 0017 semantic review,
+  explicit disclosure and cleanup tracking even when stock output is exact.
+  See the [wake allocation proof](matching-triage-handoffs/wakeAllocate.md).
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

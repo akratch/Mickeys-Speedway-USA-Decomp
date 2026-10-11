@@ -66,9 +66,13 @@ The two matrix candidates are outside this raw-owner census: `func_8002AA50`
 owns 296 bytes and `func_8002B040` owns 136, with its eight alignment bytes
 excluded. Together with the 9,380 raw bytes, they account for 9,812 executable
 bytes awaiting assembly authentication. Their separate reference-search
-closures are recorded in their matching handoffs. The other eight C candidates
-own 20,872 bytes. Thus the remaining executable deficit is 30,684 bytes;
-none of this reconciliation adds matching credit.
+closures are recorded in their matching handoffs. After the 2026-10-11
+wakeAllocate promotion, the seven remaining C candidates own 19,468 bytes,
+recomputed from the current nonmatching ranking after excluding those two
+matrix owners. The generated scoreboard leaves 29,280 executable bytes:
+19,468 awaiting C matches and 9,812 awaiting assembly authentication. The
+wake promotion adds 1,404 genuinely matched C bytes; the accounting
+reconciliation itself adds no credit.
 
 PROVENANCE: the existing JFG lineage descriptions are drawn from
 mickey.us.yaml, docs/resident.md and docs/modules.md, which disclose the public

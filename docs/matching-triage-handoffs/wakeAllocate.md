@@ -1043,4 +1043,38 @@ two naming rows remain separately unresolved. More quotient/shift spellings,
 arbitrary permutations or generic identity sweeps are not justified by this
 packet. Best stock body stays the canonical fourteen-difference baseline.
 
+#### 2026-10-11, coordinator: bounded review of later normalization and neutral-expression routes
+
+Read-only compiler inspection supplied no new source attempt. The prior stock
+baseline and fourteen-difference verdict remain unchanged; no candidate,
+compiler output or matching credit was changed.
+
+The inspected induction-elimination path selects an existing induction-table
+candidate with a nonzero factor. Its coefficient helper admits integer affine
+combinations, not a fractional rescaling that would turn a scaled counter into
+the required unit counter. Unrolling precedes GLOBAL, so normalization there
+would not establish the proposed later expression-birth mechanism. This rules
+out the proposed route through these inspected paths, not every possible loop
+reconstruction.
+
+GLOBAL recursive substitution has one reverse-DFS statement walk. Its later
+bitvector and dead-store work does not provide a second recursive substitution
+pass that could defer the loop-bound expression until after other births.
+Keeping an opaque bound also conflicts with the previously authenticated
+propagated guard homes. The naming-copy pair has no new measured mechanism;
+its recorded copy-order, type and identity controls remain exhausted.
+
+A distinct proposed neutral seed used a floating comparison to avoid the
+previously rejected floating-to-integer conversion. The constructor preserves
+the floating operand datatype separately from the comparison's integer result
+type; the inspected GLOBAL folding gate tests the operand datatype. Thus an
+integer comparison result does not make that floating comparison eligible for
+the needed constant fold. The special comparison-zero wrapper simplification
+does not apply to the proposed floating-product child. Integer AND-zero and
+remainder-one alternatives likewise lack a demonstrated post-child fold in
+this path: general binary folding requires both children to be constants or
+addresses, while the intended seed has a variable child. No speculative source
+cells were compiled for these rejected routes. A future reopening needs an
+actual late normalization or folding predicate, not algebraic equivalence alone.
+
 <!-- plateau-handoff:wakeAllocate:end -->

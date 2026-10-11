@@ -291,8 +291,8 @@
       "source_commit": "d09352cdaa9a476ab208fd6965e169db3d64bdce"
     },
     "func_8001B798": {
-      "ledger_commit": "e23576082f268a88eadd083ffadac12f018a3ef4",
-      "reason": "2026-10-11: anonymous conditional result sequences normal load before x without named coefficient. Compare assignment inside/outside identical arms; measure prepare order, eliminated compare, expression owners and reserve. Inert diagnostic.",
+      "ledger_commit": "f6db8d795e57d1f85c41d5bac0f8aa8cb124b2df",
+      "reason": "Test useful denominator selfdefinition and real x-to-delta role reuse: distinguish named-web retention from anonymous-value lowering while preserving all arithmetic and loads. Fixed controls only; no priority or spelling grid.",
       "source_commit": "e0b736af01931b8d62b2d83b9b761a319d9cffcc"
     },
     "func_8001BBB4": {

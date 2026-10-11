@@ -3003,3 +3003,27 @@ A one-function curiosity belongs in that function's handoff, not here.
   allocation first; do not treat line packing as a general store-order rule.
   Only ordinary source layout and untouched stock compiler output qualify for
   adoption, with disclosure and the cleanup queue for an exact inert form.
+
+### Replacing diagnostic storage with consumed source roles
+
+- A frame held by unused integer declarations need not require padding in the
+  accepted source. Two exact reconstructions replaced such declarations with
+  initialized values consumed by real operations: color and triangle-index
+  stores in one case, and existing comparison results in another. Preserve the
+  original value, width and store order. Placing a definition directly inside
+  its consuming expression can preserve compiler statement boundaries that a
+  separate assignment changes. This is not permission to invent output fields
+  or reserve unused storage: prove each declaration's actual use, then repeat
+  the configured byte, relocation and linked-ROM checks. See the
+  [rotated renderer](matching-triage-handoffs/func_overlay_045_F0001158_188D5B0.md)
+  and [collision reconstruction](matching-triage-handoffs/func_8001B798.md).
+- A dead floating-point result is not automatically an inert computation:
+  overflow or exceptional operands can still matter. In the collision closure,
+  an existing integer parameter assigned zero before the loop guarded such an
+  expression, making its evaluation unreachable while retaining useful source
+  structure through earlier compiler phases. The proof requires a dominating
+  assignment, no intervening writes or escapes, and no evaluated side effects
+  in the condition. Moving or changing the guard can change allocation; repeat
+  semantic review and stock-output proof rather than treating any known-false
+  condition as an interchangeable mechanism. Exact inert spellings remain
+  disclosed in source and the cleanup queue under ADR 0017.

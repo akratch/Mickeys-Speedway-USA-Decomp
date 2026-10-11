@@ -104,6 +104,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import reloc_surface  # noqa: E402
 import search_local_bindings  # noqa: E402
+import search_literal_bindings  # noqa: E402
 import source_symbol_fidelity  # noqa: E402
 import prepared_macro_context  # noqa: E402
 import sweep_receipts  # noqa: E402
@@ -114,6 +115,7 @@ _LOADED_IMPLEMENTATIONS = sweep_receipts.loaded_implementations(
      ("relocations", reloc_surface.__file__),
      ("overlay_call_context", ROOT / "tools/overlay_call_context.py"),
      ("search_local_bindings", search_local_bindings.__file__),
+     ("search_literal_bindings", search_literal_bindings.__file__),
      ("source_symbol_fidelity", source_symbol_fidelity.__file__),
      ("prepared_macro_context", prepared_macro_context.__file__),
      ("relocation_identity", reloc_surface.ri.__file__),
@@ -1751,26 +1753,21 @@ def validate_search_binding_authority(report):
         raise RuntimeError("search binding authority changed after readiness proof")
 
 
+def local_binding_ast(source):
+    return search_literal_bindings.source_ast(source, ido_import_parser)
+
+
 def local_table_shape(source, symbol):
-    sys.path.insert(0, str(PERMUTER_DIR))
-    from src import ast_util
-    with ido_import_parser():
-        ast = ast_util.parse_c(source.decode(), from_import=True)
-    return search_local_bindings.source_switch(ast, symbol)
+    return search_local_bindings.source_switch(local_binding_ast(source), symbol)
+
+
+local_binding_fidelity = search_literal_bindings.fidelity_proofs
 
 
 def local_table_proof(item, path, source, out_dir, inputs):
-    """Use the pinned original preprocessor output and actual emitted AST."""
     try:
-        full_source = sweep_receipts.owned_bytes(out_dir, "source-groups.preprocessed.c")
-        expected = inputs["context"].get("original_preprocessed")
-        if not expected or hashlib.sha256(full_source).hexdigest() != expected:
-            raise RuntimeError("local table original preprocessor authority is missing or stale")
-        shape = local_table_shape(source, item.func)
-        if shape != local_table_shape(full_source, item.func):
-            raise RuntimeError("local table prepared/full-TU source switch differs")
-        return search_local_bindings.authenticate(ROOT, item.func,
-            item.rel_c_file.removeprefix("src/").removesuffix(".c"), path, shape, item.overlay)
+        return search_literal_bindings.prove_source_binding(
+            ROOT, item, path, source, out_dir, inputs, ido_import_parser)
     except search_local_bindings.UnsupportedLocalBinding as error:
         raise UnsupportedSearchBinding(error.route) from error
 
@@ -1865,7 +1862,7 @@ def require_search_bindings(item, evidence, directory, deadline):
         if local_proofs:
             if len(local_proofs) != 2:
                 raise RuntimeError("search annotation changed local table presence")
-            search_local_bindings.fidelity(*(p["candidate"] for p in local_proofs))
+            local_binding_fidelity(*local_proofs)
         if reports[0] != reports[1]:
             raise RuntimeError("search annotation changed independently proved candidate bindings")
         if (any(sweep_receipts.owned_bytes(proof_dir, name) != data for name, data in files.items())
@@ -3770,12 +3767,14 @@ def _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
         # both sides must independently reproduce their canonical identities.
         local_proofs = [local_table_proof(item, path, capture.source, out_dir, inputs)
                         for path in (full, raw_emitted, emitted)]
-        search_local_bindings.fidelity(local_proofs[0]["candidate"], local_proofs[1]["candidate"])
-        search_local_bindings.fidelity(local_proofs[1]["candidate"], local_proofs[2]["candidate"])
+        local_binding_fidelity(local_proofs[0], local_proofs[1])
+        local_binding_fidelity(local_proofs[1], local_proofs[2])
         sweep_receipts.atomic_json(directory / "local-tables.json", local_proofs)
         source_records = [local_search_records(surface, proof)
                           for surface, proof in zip(reports, local_proofs)]
-        identity_route = "authenticated-externals-and-owned-switch-table"
+        identity_route = ("authenticated-externals-and-owned-float-literal"
+                          if local_proofs[0]["schema"] == "mickey-resident-float-literal-v1"
+                          else "authenticated-externals-and-owned-switch-table")
     elif not runtime_exact:
         try:
             source_records = [raw_source_relocations(path, item.func) for path in (full, raw_emitted)]

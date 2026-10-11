@@ -291,8 +291,8 @@
       "source_commit": "d09352cdaa9a476ab208fd6965e169db3d64bdce"
     },
     "func_8001B798": {
-      "ledger_commit": "242d85773ef61613adadcbb12dff09772ac09249",
-      "reason": "2026-10-11: observed CFE right-child syntactic predicate reverses embedded-x multiply. Put exact first-member indirect normal load on right and x assignment left; test authenticated Indirect versus member predicate and emission order.",
+      "ledger_commit": "e23576082f268a88eadd083ffadac12f018a3ef4",
+      "reason": "2026-10-11: anonymous conditional result sequences normal load before x without named coefficient. Compare assignment inside/outside identical arms; measure prepare order, eliminated compare, expression owners and reserve. Inert diagnostic.",
       "source_commit": "e0b736af01931b8d62b2d83b9b761a319d9cffcc"
     },
     "func_8001BBB4": {

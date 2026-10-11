@@ -1162,7 +1162,7 @@
     },
     "func_overlay_064_F0000000_18C3B28": {
       "ledger_commit": "359a3be9b4c6daaa7a982440faa1347df544306f",
-      "reason": "2026-10-11: real j defs occur only in peeled/final unroll tails. Split address into early src+j shift and late distance add; test two retained versus three forwarded first definitions, actual block alteration and estimator cost.",
+      "reason": "2026-10-11: late live pixels definition kills early-store deadness. Put partial address in existing dead out home; test separate-lvalue middle-copy deletion versus retained use flags or joined older ranges.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

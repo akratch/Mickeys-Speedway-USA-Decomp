@@ -2382,13 +2382,13 @@ segments:
     vram: 0xF0000000
     bss_size: 0x0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o064
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18C3B28, c, overlay64GenerateTexture]
-      - [0x18C41B8, bin, overlay_064_data_rodata]
+      - [0x18C41B8, .data, overlay64State]
       - [0x18C41C8, bin, overlay_064_reloc1]
       - [0x18C4218, bin, overlay_064_reloc2]
 

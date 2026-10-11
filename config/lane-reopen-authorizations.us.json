@@ -1161,8 +1161,8 @@
       "source_commit": "900b48893e83a53be6d2932d2f1d6a47d94fdffd"
     },
     "func_overlay_064_F0000000_18C3B28": {
-      "ledger_commit": "c92519f0f34090cc42e524663e9ad277244c76ad",
-      "reason": "2026-10-11: inline anonymous signed ternary in real even-address expression versus named-distance control. Test CFE pool reuse with postdecrement, excluding initialization-call history; measure union, cost, unroll and residual.",
+      "ledger_commit": "8e5cfe27d6ed62ccbe6ec289fa164443c2f9cbaf",
+      "reason": "Existing entry truth test can use a defined byte-valued postdecrement to found the shared anonymous integer home in the incoming-argument block. Test seed exclusions and priority with the ordinary first-init call; no added branch.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

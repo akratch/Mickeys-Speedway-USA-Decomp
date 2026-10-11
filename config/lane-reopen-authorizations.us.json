@@ -1162,7 +1162,7 @@
     },
     "func_overlay_064_F0000000_18C3B28": {
       "ledger_commit": "359a3be9b4c6daaa7a982440faa1347df544306f",
-      "reason": "2026-10-11: retained pixels has N21/div6. Move its existing address definition and distance kill before product guard; predict N51/div14, priority below counter, unchanged body26/unroll4. Test actual lifetime and colors.",
+      "reason": "2026-10-11: early pixels expands N51 but shrinks distance N23. Place existing address/kill after product and value kill, before hi clamp; predict pixels N41/div11 and distance N33/div9, both below hi, with unchanged unroll cost.",
       "source_commit": "9dfb0c47e5040b6359c7dbe9bfe5f58fb9ccc950"
     },
     "func_overlay_065_F0000C38_18C4EA0": {

@@ -621,8 +621,8 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "47154c5835928486d3edab92b0ee65aa6d4673ad",
-      "reason": "Test coupled 7B result-role isolation and two allocation-visible empty integer tests. Prior isolated-role controls lacked late uses; shared-role tests retained unrelated call constraints. Require actual post-store copy, not size alone.",
+      "ledger_commit": "0f517d513c0f11a35d3845c9c6b08e71192d7c33",
+      "reason": "Stock compiler control proves void versus s32 changes exit v0 liveness. Test unsupported void-ABI assumption against unused-result callers and the observed UGEN copy removed before final assembly; change only definition and its prototype.",
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {

@@ -451,24 +451,6 @@
       }
     },
     {
-      "name": "asm/59BF0.s",
-      "target_path": "expected/build/asm/59BF0.s.o",
-      "metadata": {
-        "progress_categories": [
-          "resident"
-        ]
-      }
-    },
-    {
-      "name": "asm/59DB0.s",
-      "target_path": "expected/build/asm/59DB0.s.o",
-      "metadata": {
-        "progress_categories": [
-          "resident"
-        ]
-      }
-    },
-    {
       "name": "asm/data/76E60.data.s",
       "target_path": "expected/build/asm/data/76E60.data.s.o",
       "metadata": {
@@ -7768,7 +7750,7 @@
           "resident"
         ],
         "source_path": "src/main/fx.c",
-        "complete": false
+        "complete": true
       }
     },
     {

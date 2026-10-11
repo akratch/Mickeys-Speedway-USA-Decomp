@@ -644,7 +644,6 @@ void func_80048080(s32 count, s16 x, s16 y, s16 z, s16 angle0, s16 angle1,
         ((s16 *)output)[-3] = (s16)((s32)((rotatedZ * sin0) - (inputX * cos0)) + z);
     }
 }
-#ifdef NON_MATCHING
 typedef struct FxWakeAllocation {
     u8 flags;
     u8 segmentCount;
@@ -668,35 +667,12 @@ typedef struct FxWakeAllocation {
     s32 value3C;
 } FxWakeAllocation;
 
-/* Natural-source pass (2026-10-07, lane a-front): -32 bytes -> -8.
- *  - the triangle count is its own variable (segmentCount * 2 again): the
- *    target's second fill loop bounds on a separate copy;
- *  - the flags store is an if/else, the alpha default stays a plain
- *    default-then-override, and the resource id is a full word;
- *  - one pointer local walks both areas; no size/vertexBytes locals (frame
- *    0x98 -> 0x90 and the target's home ladder for groupCount/alpha/triCount).
- * Lane c-fx: both divisors read wake->textureIndex back; uopt forwards the
- * store, so frameCount is reloaded once into a ring temporary after the call
- * (as shipped) and the whole tail's temp ring lines up (naming 84 -> 9).
- * Lane i-6: sampleBytes computed straight after segmentCount (the target's
- * spill cells for frameCount, segmentCount and sampleBytes are adjacent, in
- * creation order): 325 -> 323.
- * Lane k-6: the two dead copies the target makes before the first call are
- * the segment and doubled counts copied into j and i after the alpha branch
- * and kept by an XOR with zero (uopt keeps the copy webs; as1 forwards their
- * uses and leaves the moves): -8 bytes to size delta 0, 323 -> 60 masked.
- * The sample-byte term inline (operand order, 59) and the frame and segment
- * counts written as expressions rather than through frameCount and
- * segmentCount (the segment copy is then numbered ahead of the doubled one
- * and takes v0, 57). Left: the pre-call spill-cell order; see shard.
- * Lane x-1: the frame count is a float local (`frames`, in the unused
- * sampleBytes cell) read through `(s32) frames` everywhere, with the segment
- * count a symbol. Behind a region boundary uopt copy-propagates frames into
- * block 0, so the conversion and segment entries are created after the
- * vertex loop's unrolled temporaries, which then own the three top spill
- * cells as shipped (16 -> 14). Stand-in (flagged): the empty `if (1) {}`
- * after the frames definition is that boundary. Left: the doubled count is
- * still created before the sample and 0x14 terms. */
+/* Allocates the wake's sample and vertex buffers and initializes both frames.
+ * The empty region, initialized XOR-zero copies and four dead tail assignments
+ * are inert IDO source-shaping aids, independently reviewed under ADR 0017.
+ * The tail expressions establish compiler ownership before dead-store removal;
+ * no additional operation survives. See docs/cleanup-queue.md for naturalization.
+ */
 /* PROVENANCE: Mickey's own target accesses and caller ABI supply this reconstruction; JFG supplies only the published role/name. */
 Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
                    f32 wakeValue84, s32 wakeValue8C, f32 wakeValue8E) {
@@ -790,11 +766,13 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
             wake = NULL;
         }
     }
+    /* Inert: these products were already evaluated before allocation. */
+    frameCount = (segmentCount ^ 0) * 0x10;
+    textureBytes = (segmentCount ^ 0) * 0x14;
+    i = ((segmentCount * 2) ^ 0) * 0xA;
+    j = ((segmentCount * 2) ^ 0) * 0x10;
     return (Wake *) wake;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/wakeAllocate.s")
-#endif
 /* Builds the ripple's two display frames in the caller's buffer and allocates
  * its wake.
  *
@@ -2157,15 +2135,3 @@ void fxCpuTextureFlush(void) {
     }
     D_800D60A8 = 0;
 }
-
-
-
-/* PLATEAU-HANDOFF:wakeAllocate:start
- * symbol: wakeAllocate
- * score: 14/351 words
- * frame: 0x90
- * relocations: 3
- * first-mismatch: +0x94
- * summary: 14 at 0: early returns cost size; post-call fill-loop guards read the doubled spill cell, so walk order creates it before the sample terms
- * PLATEAU-HANDOFF:wakeAllocate:end
- */

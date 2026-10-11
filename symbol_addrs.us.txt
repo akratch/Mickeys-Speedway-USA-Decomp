@@ -1165,7 +1165,7 @@ fxMakeConeTextureCoords = 0x800475E8;           // type:func size:0x3EC tier-B R
 fxMakeConeLength = 0x800479D4;           // type:func size:0x304 tier B (JFG fxMakeConeLength), matched C src/main/fx.c -O2 -mips2 -32 -Wab,-r4300_mul, linked exact=193/193, name tier-B JFG src/fx.c order+named anchors
 fxDrawCone = 0x80047CD8;           // type:func size:0x3A8 tier-A ROM 0x488D8 matched C and linked ROM, frame 0x68, four exact texDPTextureX calls, tier-B JFG fxDrawCone role, name tier-B JFG src/fx.c order+named anchors
 func_80048080 = 0x80048080;           // type:func size:0x164 tier-A ROM 0x48C80 matched C, 89/89 words and 4 relocations, frame -0x48, linked ROM 0x48C80-0x48DE4 byte-identical
-wakeAllocate = 0x800481E4;            // type:func size:0x57C tier B (JFG call graph/order)
+wakeAllocate = 0x800481E4;            // type:func size:0x57C tier A matched C, 351 stock words, three exact relocation records and linked ROM identity, tier B JFG role/name
 wakeSetupRipple = 0x80048760;           // type:func size:0x1E4 tier-A ROM 0x49360 matched C, 121/121 words and 4 relocations, frame -0x48, linked ROM 0x49360-0x49544 byte-identical, tier-B JFG wakeSetupRipple role, name tier-B JFG src/fx.c order+named anchors, JFG size 0x1E4 equal
 wakeFree = 0x80048944;                // type:func size:0x3C tier A (exact C, JFG wakeFree)
 wakeFreeRipple = 0x80048980;           // type:func size:0x48 tier A (exact C, JFG wakeFreeRipple), name tier-B JFG src/fx.c order+named anchors

@@ -2,11 +2,11 @@
 ### `wakeAllocate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 14/351 words
+- score: 0 differing words
 - frame: 0x90
 - relocations: 3
-- first mismatch: +0x94
-- summary: 14 at 0: early returns cost size; post-call fill-loop guards read the doubled spill cell, so walk order creates it before the sample terms
+- first mismatch: none
+- summary: Matched. Stock 351 words, three exact relocation records and linked ROM identity; reviewed inert ownership aids are cleanup queued.
 
 Summary before this remeasure: 14 at 0: copy propagation walks reverse depth-first, so the fill-loop guard creates doubled before the sample terms; identity-op copies all equal ^= 0
 
@@ -1076,5 +1076,47 @@ this path: general binary folding requires both children to be constants or
 addresses, while the intended seed has a variable child. No speculative source
 cells were compiled for these rejected routes. A future reopening needs an
 actual late normalization or folding predicate, not algebraic equivalence alone.
+
+#### 2026-10-11, late dead expression owners: exact stock output
+
+The canonical function is now exact: 1,404 executable bytes, 351 stock words,
+frame 0x90 and all three relocation counts, offsets, types and identities.
+The canonical promotion proof and full US ROM comparison pass. No padding,
+forced allocation or post-compile instruction editing contributes credit.
+
+A small independent compiler experiment distinguished discarded expressions,
+empty conditions and dead assignments. The empty-condition use survived GLOBAL
+substitution and allocation although its final test disappeared. In the full
+function it created the desired earlier sample-expression owner but extended
+its lifetime, changing registers. Moving the condition to the common return
+removed the unwanted control flow, not the lifetime cost.
+
+The successful mechanism uses four existing locals after their last real use.
+GLOBAL visits the tail assignments first and creates the sample products,
+then the doubled-count buffer products. The subsequent dead-store pass removes
+all four stores before allocation. Unlike an empty condition, no late use
+extends the expression ranges. Two sample-product assignments reduced fourteen
+differences to four, also fixing the two naming rows. Adding the segment-byte
+owner reduced four to two; adding the texture-byte owner closed the function.
+The discarded-expression control remained identical to the old baseline.
+
+Independent semantic review passed. The count is initialized once, never
+modified or escaped, and every added product was already evaluated before
+allocation on every original path. Thus no baseline-defined input gains a
+signed-overflow case, including either allocation failure. All destinations
+are dead before the return; no declaration, padding, observable memory access,
+call, floating operation or pointer arithmetic is added. The inherited empty
+region and initialized XOR-zero copies are also inert. Source comments and the
+cleanup queue disclose these forms without claiming they recover original C.
+
+Every full-TU attempt retains actual preprocessed context, named procedure
+identity and complete stock/instrumented section, symbol and relocation
+fidelity. The configured baseline reproduces the private baseline's owned
+bytes. The final configured promotion proves the real linked owned range and
+full ROM, beyond the direct-object score. Sources, objects, first differences,
+phase traces, controls and proof receipts remain ignored in build/wake-tail.
+Assignment used base 3fff9c31e with source 2ae0a62ae and handoff 0faa01a75;
+its gate returned zero/base-only. Canonical compiler flags and ownership are
+unchanged. Natural source cleanup remains a follow-up, not missing match proof.
 
 <!-- plateau-handoff:wakeAllocate:end -->

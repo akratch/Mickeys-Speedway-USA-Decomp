@@ -1971,8 +1971,8 @@
       "source_commit": "4a19eaf4143fd79a7053188c64f8656016aae2cf"
     },
     "wakeAllocate": {
-      "ledger_commit": "3d874b6379ce250392feb98fe171882537b43cbb",
-      "reason": "2026-10-10: old source-count kills used OR, destination kills used XOR. Replace only j^=0 with segmentCount^=0 after j copy; test actual LOCAL/GLOBAL retention, copy order and live-operand costs on canonical control.",
+      "ledger_commit": "0faa01a7590f2465b7d0e4af8d75a984a0edfbaf",
+      "reason": "2026-10-11: compiler control proves empty-condition GLOBAL reads survive until allocation while final test vanishes. Test tail sample-product conditions for early owner births against discarded-expression control; inert diagnostic.",
       "source_commit": "2ae0a62ae8a8631ee8144d1e6696c3dd88953f17"
     },
     "wakeDraw": {

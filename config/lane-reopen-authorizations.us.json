@@ -621,8 +621,8 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "0f517d513c0f11a35d3845c9c6b08e71192d7c33",
-      "reason": "Stock compiler control proves void versus s32 changes exit v0 liveness. Test unsupported void-ABI assumption against unused-result callers and the observed UGEN copy removed before final assembly; change only definition and its prototype.",
+      "ledger_commit": "4b64bc5fa1db59483651c01bdb57f8ad3f862be6",
+      "reason": "Observation only: recover omitted numeric neighbors and reuse the proved split-growth observer on frozen isolated/late-use inputs to identify the ten-edge increase. No new C variants or force/bias/keep controls.",
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {

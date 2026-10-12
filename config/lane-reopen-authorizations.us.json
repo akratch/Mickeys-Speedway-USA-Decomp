@@ -616,7 +616,7 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "017979aaac31e710d13ec254522c26d1ed6a8a46",
+      "ledger_commit": "bb2e3c7d52c132a10ecc2b25dee8fdbfc5345db6",
       "reason": "Test real 0x79 radius operand kill after duration store to block GLOBAL forwarding and retain shared targetValue; prior product changed only dead 0x7B barriers. Hold defined unsigned 0x63 shift repair common.",
       "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
@@ -626,7 +626,7 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "5c462e0e8f8590af1ba60647cacc6e22933f70c1",
+      "ledger_commit": "6597b993e302c05b794b266937c7debe86782878",
       "reason": "Test square-only field rereads while retaining the real scalar square overwrite and early double. Measure whether two removed named references lower gross saving below callee cost and permit the target early home and late FP split.",
       "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
     },

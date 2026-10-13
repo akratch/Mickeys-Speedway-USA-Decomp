@@ -28,9 +28,9 @@ extern void amSndStopXYZ(void *handle);
 HitCopyState **func_80005750(s32 *count);
 
 #ifdef NON_MATCHING
-/* The NON_MATCHING bodies of func_80051364, func_800517E0, func_80053868 and
- * func_80054B3C are owned by other lanes and still spell these callees by
- * their old placeholders; drop each line once those bodies are renamed. */
+/* The NON_MATCHING bodies of func_80051364, func_800517E0 and
+ * func_80054B3C still spell these callees by their old placeholders;
+ * drop each line once those bodies are renamed. */
 #define func_80000510 amTunePlay
 #define func_800005CC amTuneSetFade
 #define func_80002FE0 amSndPlayXYZ
@@ -2228,8 +2228,7 @@ void func_800573C8(HitOverlapState *state, HitOverlapVolume *other,
  * update role and case ordering; Mickey's fields, globals, and call targets
  * remain authoritative for this reconstruction.
  */
-#ifdef NON_MATCHING
-/* NON_MATCHING: collision-update reconstruction; Mickey-only field/ABI audit.
+/* Collision-update reconstruction; Mickey-only field/ABI audit.
  * 710 masked words at size delta 0 and the target's 0xF8 frame (2026-10-02,
  * lane o-anim2). Every loop is a plain counted `for` over the object and
  * pair arrays: the target's remainder-then-four-way copies are IDO's default
@@ -2273,7 +2272,10 @@ void func_80053868(s32 updateRate) {
     f32 high;
     f32 extent;
     f32 zpos;
-    Func538Pair *selectedPair;
+    union {
+        Func538Pair *pair;
+        s32 index;
+    } selectedSlot;
     Func538Vertex *vertex;
     f32 offset[3];
     Func538Object **otherCursor;
@@ -2281,7 +2283,7 @@ void func_80053868(s32 updateRate) {
     Func538Object *secondObject;
     Func538Shape *firstShape;
     Func538Shape *secondShape;
-    s32 pad;
+    Func538Model *model;
     s32 firstIndex;
     s32 objectCount;
     s32 fixedCount;
@@ -2291,8 +2293,6 @@ void func_80053868(s32 updateRate) {
     s32 overlaps;
     s32 iteration;
     s32 i;
-    s32 j;
-    s32 axis;
     s16 firstKind;
     s16 secondKind;
 
@@ -2307,8 +2307,8 @@ void func_80053868(s32 updateRate) {
         if ((firstObject->unk91 == 0) && (firstObject->unk48 != NULL)) {
             if ((firstObject->unk48->unk9 == 2) || (firstObject->unk48->unk9 == 1)) {
                 if (firstObject->unk48->unk60 != -1) {
-                    secondObject = (Func538Object *) firstObject->unk68[firstObject->unk3A];
-                    vertex = ((Func538Model *) secondObject)->unk40 + firstShape->unk60;
+                    model = firstObject->unk68[firstObject->unk3A];
+                    vertex = model->unk40 + firstShape->unk60;
                     firstShape->previous[0] = firstShape->position[0];
                     firstShape->previous[1] = firstShape->position[1];
                     firstShape->previous[2] = firstShape->position[2];
@@ -2333,20 +2333,20 @@ void func_80053868(s32 updateRate) {
                     }
                     firstShape->position[1] += firstShape->unk54;
                 }
-                if (firstShape->unk9 == 2U) {
+                if (firstShape->unk9 == 2) {
                     extent = firstShape->unk58 + 5.0f;
-                    for (axis = 0; axis < 3; axis++) {
-                        low = firstShape->previous[axis];
-                        high = firstShape->position[axis];
+                    for (selectedSlot.index = 0; selectedSlot.index < 3; selectedSlot.index++) {
+                        low = firstShape->previous[selectedSlot.index];
+                        high = firstShape->position[selectedSlot.index];
                         if (low < high) {
-                            firstShape->minimum[axis] = low;
-                            firstShape->maximum[axis] = high;
+                            firstShape->minimum[selectedSlot.index] = low;
+                            firstShape->maximum[selectedSlot.index] = high;
                         } else {
-                            firstShape->minimum[axis] = high;
-                            firstShape->maximum[axis] = low;
+                            firstShape->minimum[selectedSlot.index] = high;
+                            firstShape->maximum[selectedSlot.index] = low;
                         }
-                        firstShape->minimum[axis] -= extent;
-                        firstShape->maximum[axis] += extent;
+                        firstShape->minimum[selectedSlot.index] -= extent;
+                        firstShape->maximum[selectedSlot.index] += extent;
                     }
                 } else if (firstShape->unk9 == 1) {
                     low = firstShape->position[0];
@@ -2381,43 +2381,44 @@ void func_80053868(s32 updateRate) {
     while (remainingTime > 0.0f) {
         fraction = 1.0f;
         pairCount = 0;
-        pairIndex = -1;
-        for (i = 0; i < movingCount; i++) {
-            firstShape = D_800D7160[i]->unk48;
+        for (i = 0, pairIndex = -1; i < movingCount; i++) {
+            firstObject = D_800D7160[i];
+            firstShape = firstObject->unk48;
             firstShape->displacement[0] = firstShape->position[0] - firstShape->previous[0];
             firstShape->displacement[1] = firstShape->position[1] - firstShape->previous[1];
             firstShape->displacement[2] = firstShape->position[2] - firstShape->previous[2];
             extent = firstShape->unk58 + 5.0f;
-            for (axis = 0; axis < 3; axis++) {
-                low = firstShape->previous[axis];
-                high = firstShape->position[axis];
+            for (selectedSlot.index = 0; selectedSlot.index < 3; selectedSlot.index++) {
+                low = firstShape->previous[selectedSlot.index];
+                high = firstShape->position[selectedSlot.index];
                 if (low < high) {
-                    firstShape->minimum[axis] = low;
-                    firstShape->maximum[axis] = high;
+                    firstShape->minimum[selectedSlot.index] = low;
+                    firstShape->maximum[selectedSlot.index] = high;
                 } else {
-                    firstShape->minimum[axis] = high;
-                    firstShape->maximum[axis] = low;
+                    firstShape->minimum[selectedSlot.index] = high;
+                    firstShape->maximum[selectedSlot.index] = low;
                 }
-                firstShape->minimum[axis] -= extent;
-                firstShape->maximum[axis] += extent;
+                firstShape->minimum[selectedSlot.index] -= extent;
+                firstShape->maximum[selectedSlot.index] += extent;
             }
         }
         for (i = 0; i < movingCount; i++) {
             firstObject = D_800D7160[i];
             firstShape = firstObject->unk48;
-            for (j = 0; j < fixedCount; j++) {
-                secondObject = D_800D6D60[j];
+            for (selectedSlot.index = 0; selectedSlot.index < fixedCount; selectedSlot.index++) {
+                secondObject = D_800D6D60[selectedSlot.index];
                 secondShape = secondObject->unk48;
                 if ((firstShape->unk6 & 1) && (secondShape->unk6 & 1) && (secondObject != firstShape->unk70)) {
+                    overlaps = 1;
                     if (firstObject != secondShape->unk70) {
-                        for (axis = 0, overlaps = 1; (axis < 3) && overlaps; axis++) {
-                            high = firstShape->minimum[axis];
-                            low = secondShape->minimum[axis];
-                            if ((high < low) && (firstShape->maximum[axis] < low)) {
+                        for (updateRate = 0; (updateRate < 3) && overlaps; updateRate++) {
+                            high = firstShape->minimum[updateRate];
+                            low = secondShape->minimum[updateRate];
+                            if ((high < low) && (firstShape->maximum[updateRate] < low)) {
                                 overlaps = 0;
                             } else {
-                                low = secondShape->maximum[axis];
-                                if ((low < high) && (low < firstShape->maximum[axis])) {
+                                low = secondShape->maximum[updateRate];
+                                if ((low < high) && (low < firstShape->maximum[updateRate])) {
                                     overlaps = 0;
                                 }
                             }
@@ -2431,11 +2432,11 @@ void func_80053868(s32 updateRate) {
                                     pairCount += 1;
                                 }
                             } else if (overlaps == 2) {
-                                if (firstObject->unk44 == 0x40U) {
+                                if (firstObject->unk44 == 0x40) {
                                     TrapDanglingJump(firstObject, 1);
-                                } else if (firstObject->unk44 == 0x39U) {
+                                } else if (firstObject->unk44 == 0x39) {
                                     TrapDanglingJump(firstObject, 5);
-                                } else if (firstObject->unk44 == 0x3AU) {
+                                } else if (firstObject->unk44 == 0x3A) {
                                     TrapDanglingJump(firstObject, 5);
                                 }
                             }
@@ -2443,21 +2444,20 @@ void func_80053868(s32 updateRate) {
                     }
                 }
             }
-            for (j = i + 1; j < movingCount; j++) {
-                secondObject = D_800D7160[j];
+            for (selectedSlot.index = i + 1; selectedSlot.index < movingCount; selectedSlot.index++) {
+                secondObject = D_800D7160[selectedSlot.index];
                 secondShape = secondObject->unk48;
                 if ((firstShape->unk6 & 1) && (secondShape->unk6 & 1) && (secondObject != firstShape->unk70)) {
+                    overlaps = 1;
                     if (firstObject != secondShape->unk70) {
-                        for (axis = 0, overlaps = 1; (axis < 3) && overlaps; axis++) {
-                            high = firstShape->minimum[axis];
-                            low = secondShape->minimum[axis];
-                            if ((high < low) && (firstShape->maximum[axis] < low)) {
+                        for (updateRate = 0; (updateRate < 3) && overlaps; updateRate++) {
+                            high = firstShape->minimum[updateRate];
+                            low = secondShape->minimum[updateRate];
+                            if ((high < low) && (firstShape->maximum[updateRate] < low)) {
                                 overlaps = 0;
-                            } else {
-                                low = secondShape->maximum[axis];
-                                if ((low < high) && (low < firstShape->maximum[axis])) {
-                                    overlaps = 0;
-                                }
+                            } else if ((secondShape->maximum[updateRate] < high) &&
+                                       (secondShape->maximum[updateRate] < firstShape->maximum[updateRate])) {
+                                overlaps = 0;
                             }
                         }
                         if ((overlaps != 0) && (func_80054B3C((s32) firstObject, (AnimCollisionShape *) firstShape, (s32) secondObject, (AnimCollisionShape *) secondShape, (AnimCollisionResult *) FUNC538_PAIR(pairCount)) != 0) && (pairCount < 0xF)) {
@@ -2468,24 +2468,24 @@ void func_80053868(s32 updateRate) {
             }
         }
         for (i = 0; i < pairCount; i++) {
-            selectedPair = &D_800D7560[i];
-            if (selectedPair->fraction <= fraction) {
-                fraction = selectedPair->fraction;
+            selectedSlot.pair = &D_800D7560[i];
+            if (selectedSlot.pair->fraction <= fraction) {
+                fraction = selectedSlot.pair->fraction;
                 pairIndex = i;
             }
         }
         if (pairIndex != -1) {
-            selectedPair = FUNC538_PAIR(pairIndex);
-            remainingTime *= 1.0f - selectedPair->fraction;
+            selectedSlot.pair = FUNC538_PAIR(pairIndex);
+            remainingTime *= 1.0f - selectedSlot.pair->fraction;
             for (i = 0; i < movingCount; i++) {
                 firstObject = D_800D7160[i];
                 firstShape = firstObject->unk48;
-                firstShape->previous[0] += firstShape->displacement[0] * selectedPair->fraction;
-                firstShape->previous[1] += firstShape->displacement[1] * selectedPair->fraction;
-                firstShape->previous[2] += firstShape->displacement[2] * selectedPair->fraction;
+                firstShape->previous[0] += firstShape->displacement[0] * selectedSlot.pair->fraction;
+                firstShape->previous[1] += firstShape->displacement[1] * selectedSlot.pair->fraction;
+                firstShape->previous[2] += firstShape->displacement[2] * selectedSlot.pair->fraction;
             }
-            firstObject = selectedPair->first;
-            secondObject = selectedPair->second;
+            firstObject = selectedSlot.pair->first;
+            secondObject = selectedSlot.pair->second;
             firstKind = firstObject->unk44;
             secondKind = secondObject->unk44;
             if ((firstKind == 1) && (secondKind == 1)) {
@@ -2522,13 +2522,13 @@ void func_80053868(s32 updateRate) {
             } else if ((firstKind == 0x3A) && (secondKind == 0x39)) {
                 func_80055F64((HitCopyState *) secondObject, (HitCopyState *) firstObject, remainingTime);
             } else if ((firstKind == 1) && ((secondKind == 3) || (secondKind == 0x43) || (secondKind == 0x52))) {
-                func_80056DD8((HitCopyState *) firstObject, (HitCopyState *) secondObject, &selectedPair->normal, remainingTime);
+                func_80056DD8((HitCopyState *) firstObject, (HitCopyState *) secondObject, &selectedSlot.pair->normal, remainingTime);
             } else if ((firstKind == 0x40) && ((secondKind == 3) || (secondKind == 0x43) || (secondKind == 0x52))) {
-                func_8005716C((HitCopyState *) firstObject, (HitCopyState *) secondObject, &selectedPair->normal, remainingTime);
+                func_8005716C((HitCopyState *) firstObject, (HitCopyState *) secondObject, &selectedSlot.pair->normal, remainingTime);
             } else if ((firstKind == 0x39) && ((secondKind == 3) || (secondKind == 0x43) || (secondKind == 0x52))) {
-                func_800572AC((HitCopyState *) firstObject, (HitCopyState *) secondObject, &selectedPair->normal, remainingTime);
+                func_800572AC((HitCopyState *) firstObject, (HitCopyState *) secondObject, &selectedSlot.pair->normal, remainingTime);
             } else if ((firstKind == 0x3A) && ((secondKind == 3) || (secondKind == 0x43) || (secondKind == 0x52))) {
-                func_80057350((HitCopyState *) firstObject, (HitCopyState *) secondObject, &selectedPair->normal, remainingTime);
+                func_80057350((HitCopyState *) firstObject, (HitCopyState *) secondObject, &selectedSlot.pair->normal, remainingTime);
             }
             iteration++;
             if (iteration >= 0xB) {
@@ -2546,9 +2546,6 @@ void func_80053868(s32 updateRate) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_80053868.s")
-#endif
 s32 func_80012234(AnimVec3f *point, AnimVec3f *direction,
                   AnimVec3f *origin, AnimVec3f *planeDirection,
                   f32 radius, f32 *minimum, f32 *maximum);
@@ -3987,16 +3984,6 @@ void fmvInit(void) {
  * first-mismatch: +0x4
  * summary: 344 at size 0: KEEP on six declared doubles plus four pointer defs reproduces the target skeleton; entry vector pointers are natural (339 at +8).
  * PLATEAU-HANDOFF:func_80054B3C:end
- */
-
-/* PLATEAU-HANDOFF:func_80053868:start
- * symbol: func_80053868
- * score: 354/1205 words
- * frame: 0xF8
- * relocations: 59
- * first-mismatch: +0x70
- * summary: 354 at size 0: target leaves the i + 1 temp uncoloured; forcing it fixes the pair loops on the j cell but drops first-loop constant pieces.
- * PLATEAU-HANDOFF:func_80053868:end
  */
 
 /* PLATEAU-HANDOFF:func_800517E0:start

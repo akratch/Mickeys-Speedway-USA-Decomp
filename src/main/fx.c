@@ -78,8 +78,8 @@ extern void camSetScissor(Gfx **dlist);
 extern void texDPInit();
 extern void *mmAlloc2(s32 size, s32 tag);
 /* Compatibility aliases retain wakeAllocate's historical callee spellings. */
-#define func_8002B314 mmAlloc2
-#define func_80034448 texLoadTexture
+#define mmAlloc2 mmAlloc2
+#define texLoadTexture texLoadTexture
 extern u8 D_7D310[];
 
 void fxFreeCone(FxCone *cone) {
@@ -706,7 +706,7 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
     i ^= 0;
     segmentBytes = i * 0xA;
     textureBytes = i * 0x10;
-    wake = func_8002B314((j * 0x10) + (j * 0x14) + (alpha * segmentBytes) +
+    wake = mmAlloc2((j * 0x10) + (j * 0x14) + (alpha * segmentBytes) +
                          (textureBytes * 2) + 0x40, 0x87);
     if (wake != NULL) {
         cursor = (u8 *) wake + 0x40;
@@ -723,7 +723,7 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
         for (i = 0; i < alpha; i++) {
             wake->sampleBuffers[i] = cursor + (i * segmentBytes);
         }
-        wake->linked = func_80034448(wakeValue8C);
+        wake->linked = texLoadTexture(wakeValue8C);
         if (wake->linked != NULL) {
             if (wakeType != 0) {
                 wake->flags = 1;

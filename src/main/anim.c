@@ -31,13 +31,13 @@ HitCopyState **func_80005750(s32 *count);
 /* The NON_MATCHING bodies of func_80051364, func_800517E0 and
  * func_80054B3C still spell these callees by their old placeholders;
  * drop each line once those bodies are renamed. */
-#define func_80000510 amTunePlay
-#define func_800005CC amTuneSetFade
-#define func_80002FE0 amSndPlayXYZ
-#define func_800030B4 amSndSetPitchXYZ
-#define func_800031C0 amSndSetXYZ
-#define func_800031E8 amSndStopXYZ
-#define func_80014BAC trackFadeFog
+#define amTunePlay amTunePlay
+#define amTuneSetFade amTuneSetFade
+#define amSndPlayXYZ amSndPlayXYZ
+#define amSndSetPitchXYZ amSndSetPitchXYZ
+#define amSndSetXYZ amSndSetXYZ
+#define amSndStopXYZ amSndStopXYZ
+#define trackFadeFog trackFadeFog
 #endif
 
 /*
@@ -1042,8 +1042,8 @@ extern u8 D_8007BF0C;
 extern s16 D_800D6C4E;
 extern s16 D_800D6C50;
 
-void func_80000510(u8 sequenceId);
-void func_800005CC(f32 fade, u8 volume);
+void amTunePlay(u8 sequenceId);
+void amTuneSetFade(f32 fade, u8 volume);
 void amTuneResetFade(void);
 void amTuneSetVolume(u8 volume);
 void amAmbientPlay(u8 sequenceId);
@@ -1051,11 +1051,11 @@ void amAmbientResetFade(void);
 void amAmbientSetFade(f32 fade, u8 volume);
 void amAmbientSetVolume(u8 volume);
 void amSndPlay(u16 soundId, void **handle);
-void func_80002FE0(s32 id, f32 x, f32 y, f32 z, s32 priority,
+void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority,
                    void **handle);
 void changeWeather(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
                    s32 arg5);
-void func_80014BAC(s32 fogIndex, s32 red, s32 green, s32 blue, s32 near,
+void trackFadeFog(s32 fogIndex, s32 red, s32 green, s32 blue, s32 near,
                    s32 far, f32 timer);
 void func_800498FC(s32 index, f32 duration, f32 delay, s32 red,
                    s32 green, s32 blue, s32 flags);
@@ -1286,14 +1286,14 @@ void func_800517E0(void) {
                 case 0x21:
                     opcode = cursor->command;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    func_80000510(opcode);
+                    amTunePlay(opcode);
                     amTuneResetFade();
                     break;
                 case 0x22:
                     opcode = cursor->command;
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    func_800005CC(value / hundred - delta,
+                    amTuneSetFade(value / hundred - delta,
                                   opcode);
                     break;
                 case 0x23:
@@ -1355,10 +1355,10 @@ void func_800517E0(void) {
                              * apart from the tested load: the load keeps v0
                              * and the argument copy fills the call's delay
                              * slot, as in func_80051364 (596 -> 590). */
-                            func_800031E8((void *) (s32) object->soundHandle);
+                            amSndStopXYZ((void *) (s32) object->soundHandle);
                             object->soundHandle = NULL;
                         }
-                        func_80002FE0(word3 & 0xFFFF, object->x,
+                        amSndPlayXYZ(word3 & 0xFFFF, object->x,
                                       object->y, object->z, 1,
                                       &object->soundHandle);
                     }
@@ -1370,7 +1370,7 @@ void func_800517E0(void) {
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         if (object->soundHandle != NULL) {
-                            func_800031E8((void *) (s32) object->soundHandle);
+                            amSndStopXYZ((void *) (s32) object->soundHandle);
                             object->soundHandle = NULL;
                         }
                     }
@@ -1447,7 +1447,7 @@ void func_800517E0(void) {
                     high2 = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
                     low2 = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
-                    func_80014BAC(0, high, high2, low2,
+                    trackFadeFog(0, high, high2, low2,
                                   packed2, index, value / hundred - delta);
                     break;
                 /* 0x46: the empty ifs are stand-ins (flagged, not the shipped source): each

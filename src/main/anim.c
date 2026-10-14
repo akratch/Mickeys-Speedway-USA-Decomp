@@ -3999,6 +3999,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 413 at size 0. Bias: 0x7A locals coloured after the 6000 remainder give a3 and 403 at size 0; source lever open.
+ * summary: Aligned 413 at size 0. Block 262 cannot accept with four coloured 0x7A values at any count; bias cell (403) is the oracle.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

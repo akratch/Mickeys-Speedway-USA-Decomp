@@ -5262,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, naming. Sibling first read prices at 0 with two forces (edge s7, block-4 address s8); merged edge and face must drop to 21
+ * summary: 10 at 0, naming. First-read shape prices at 0 with edge s7 and address s8 forced; no natural tail web yet to drop edge and face to 21
  * PLATEAU-HANDOFF:func_80011980:end
  */

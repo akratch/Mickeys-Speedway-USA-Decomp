@@ -3999,6 +3999,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 413 at size 0. Shipped 0x7A keeps the 6000 piece only in t0: 0x4B block takes a3 unless 0x78/0x79 add one interferer.
+ * summary: Aligned 413 at size 0. Shipped 0x7A needs the 6000 piece to accept its first block; colour order, not 0x79 spelling, is the open variable.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

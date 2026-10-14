@@ -20,7 +20,7 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * Rewritten from the listing (lane w2-ovld, 2026-10-02): every loop is
  * `while (n--)` (the target's dead copy of the old counter after each test),
  * one counter for the outer and single loops and a second for the inner ones,
- * a u8 local for the buffer select, innerWidth as a variable so the counter is
+ * a u8 local for the buffer select, innerWidth (now temp) as a variable so the counter is
  * built from it, and the clamp limit written back into `distance` so it is
  * computed before the call and saved in that local's own cell. 382 masked at
  * delta 0 against 401. Open: the frame is 0x78 against 0x70 (five compiler
@@ -46,6 +46,12 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * byte through a signed char view, which makes it a different code-motion
  * item from the toggle's read, so the select load is no longer re-inserted
  * at both loop exits and the frame is 0x70 as shipped.
+ * 264 -> 256 (2026-10-15, sixth pass): carriers read from the target's
+ * registers. The first loops' distance magnitude is held in value (v1 there,
+ * as in the pixel loops), so distance carries only the clamp limit and the
+ * even-row offset (a3 in all three). The smoothing sums are held in the
+ * width - 6 local (renamed temp), not lo, so the sum takes v0 and the
+ * below pointer v1 as shipped; lo no longer spans the smoothing loops.
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -54,7 +60,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     u8 select;
     s32 width;
     s32 height;
-    s32 innerWidth;
+    s32 temp;
     s32 k;
     s32 j;
     s32 value;
@@ -75,26 +81,26 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         src = D_800D60C0[index];
     }
 
-    innerWidth = width - 6;
+    temp = width - 6;
     out = src + (height - 6) * width + 3;
     if (!gO64Initialized) {
-        i = innerWidth;
+        i = temp;
         while (i--) {
-            distance = (width >> 1) - i - 3;
-            if (distance <= 0) {
-                distance = -distance;
+            value = (width >> 1) - i - 3;
+            if (value <= 0) {
+                value = -value;
             }
-            *out++ = mathRnd(0, 0xFF - (distance << 4));
+            *out++ = mathRnd(0, 0xFF - (value << 4));
         }
         gO64Initialized = 1;
     } else {
-        i = innerWidth;
+        i = temp;
         while (i--) {
-            distance = (width >> 1) - i - 3;
-            if (distance <= 0) {
-                distance = -distance;
+            value = (width >> 1) - i - 3;
+            if (value <= 0) {
+                value = -value;
             }
-            distance = 0xFF - (distance << 4);
+            distance = 0xFF - (value << 4);
             value = mathRnd(-0x60, 0x60) + *out;
             if (value > distance) {
                 value = distance;
@@ -122,15 +128,15 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         k = width - 2;
         while (k--) {
-            lo = (in[width] * 4 + in[0] * 2 + in[width - 1] + in[width + 1]) >> 3;
-            if (lo < 0xAA) {
-                lo--;
+            temp = (in[width] * 4 + in[0] * 2 + in[width - 1] + in[width + 1]) >> 3;
+            if (temp < 0xAA) {
+                temp--;
             }
             in++;
-            if (lo < 0) {
-                lo = 0;
+            if (temp < 0) {
+                temp = 0;
             }
-            *out++ = lo;
+            *out++ = temp;
         }
         *out++ = 0;
         in++;
@@ -144,15 +150,15 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         k = width - 2;
         while (k--) {
-            lo = (*(in - width) + *(in - 1 - width) + *(in + 1 - width)) >> 2;
+            temp = (*(in - width) + *(in - 1 - width) + *(in + 1 - width)) >> 2;
             in++;
-            if (lo < 0xAA) {
-                lo--;
+            if (temp < 0xAA) {
+                temp--;
             }
-            if (lo < 0) {
-                lo = 0;
+            if (temp < 0) {
+                temp = 0;
             }
-            *out++ = lo;
+            *out++ = temp;
         }
         *out++ = 0;
         in++;
@@ -221,10 +227,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 264/420 words
+ * score: 256/420 words
  * frame: 0x70
  * relocations: 20
  * first-mismatch: +0x1C
- * summary: 264 at 0, frame 0x70: smoothing guards (width-2, width-3) coloured after j rotate width/i/dst/j; the signed-char select view has no natural replacement yet (ADR 0017 blocker)
+ * summary: 256 at 0, frame 0x70: value and temp carriers; guards still after j (bias plus spill oracle 207 at 0); signed-char select view still the ADR 0017 blocker
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

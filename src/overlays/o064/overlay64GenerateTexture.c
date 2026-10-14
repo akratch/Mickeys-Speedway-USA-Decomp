@@ -38,6 +38,14 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * the even rows store at dst + (distance << 1) + (j << 1), so j is the only
  * induction variable), the texel is read twice so the hi clamp compares hi,
  * and the second smoothing loop steps three pointers as shipped.
+ * 355 -> 270 (2026-10-14, third pass): pixels walks the rows and dst is the
+ * row base copied at each row top, the even-row address is assigned to pixels
+ * before the texel; `value = lo` after the product stops uopt forwarding
+ * value + 0x34 into the hi clamp; innerHeight is written as height - 6 (the
+ * declaration is kept, it holds a frame cell); the entry select reads the
+ * byte through a signed char view, which makes it a different code-motion
+ * item from the toggle's read, so the select load is no longer re-inserted
+ * at both loop exits and the frame is 0x70 as shipped.
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -59,18 +67,16 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     s32 lo;
     s32 distance;
 
-    select = gO64BufferSelect;
     width = image->width;
     height = image->height;
-    if (select) {
+    if ((u8)*(signed char *)&gO64BufferSelect) {
         src = D_800D60B0[index];
     } else {
         src = D_800D60C0[index];
     }
 
     innerWidth = width - 6;
-    innerHeight = height - 6;
-    out = src + innerHeight * width + 3;
+    out = src + (height - 6) * width + 3;
     if (!gO64Initialized) {
         i = innerWidth;
         while (i--) {
@@ -110,7 +116,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
     in = src;
     out = dst;
-    i = innerHeight;
+    i = height - 6;
     while (i--) {
         *out++ = 0;
         in++;
@@ -152,7 +158,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
     }
 
-    out = dst + innerHeight * width;
+    out = dst + (height - 6) * width;
     in = out - width;
     i = width;
     while (i--) {
@@ -160,18 +166,19 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     }
 
     in = dst;
-    dst = (u8 *)image->pixels;
+    pixels = image->pixels;
     i = height;
     while (i--) {
-        pixels = (u16 *)dst;
+        dst = (u8 *)pixels;
         if (i & 1) {
             j = width;
             while (j--) {
-                value = *in;
+                value = *in++;
                 lo = value;
-                hi = *in++ + 0x34;
+                hi = value + 0x34;
                 if (value >> 4) {
                     lo *= value >> 4;
+                    value = lo;
                 }
                 if (hi >= 0x100) {
                     hi = 0xFF;
@@ -181,7 +188,6 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 }
                 *pixels++ = (hi << 8) | lo;
             }
-            dst = (u8 *)pixels;
         } else {
             for (j = 0; j < width; j++) {
                 if (j & 2) {
@@ -189,11 +195,13 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 } else {
                     distance = 2;
                 }
-                value = *in;
+                pixels = (u16 *)(dst + (distance << 1) + (j << 1));
+                value = *in++;
                 lo = value;
-                hi = *in++ + 0x34;
+                hi = value + 0x34;
                 if (value >> 4) {
                     lo *= value >> 4;
+                    value = lo;
                 }
                 if (hi >= 0x100) {
                     hi = 0xFF;
@@ -201,9 +209,9 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 if (lo >= 0x100) {
                     lo = 0xFF;
                 }
-                *(u16 *)(dst + (distance << 1) + (j << 1)) = (hi << 8) | lo;
+                *pixels = (hi << 8) | lo;
             }
-            dst += width << 1;
+            pixels = (u16 *)(dst + (width << 1));
         }
     }
 }
@@ -213,10 +221,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 355/420 words
- * frame: 0x80
- * relocations: 22
- * first-mismatch: +0x0
- * summary: 355 at 0: dst-master rows, shifted even-row address, hi kill, three-pointer loop 2; frame 0x80 vs 0x70 from loop 2; structural lead 359 (dst copy at row top)
+ * score: 270/420 words
+ * frame: 0x70
+ * relocations: 20
+ * first-mismatch: +0x1C
+ * summary: 270 at 0, frame 0x70, 20 relocs: signed-char entry view ends the select PRE; residual is a register rotation (width t5 not ra; j+k webs take a1)
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

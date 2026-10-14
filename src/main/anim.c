@@ -1428,15 +1428,17 @@ void func_800517E0(void) {
                                   (s32) (value * factor * scale));
                     break;
                 case 0x44:
-                    value = (f32) *((u16 *) ((u8 *) cursor + 4));
-                    start = *((s16 *) ((u8 *) cursor + 6));
-                    end = *((s16 *) ((u8 *) cursor + 8));
-                    target = *((s16 *) ((u8 *) cursor + 0xA));
-                    cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
+                    /* The scaled values are the locals and unit is set
+                     * first: the products land in coloured float
+                     * registers and the handler is the shipped
+                     * sequence, colours aside (lane opus-517e0). */
                     unit = 0.00390625f;
-                    changeWeather((s32) (start * unit),
-                                  (s32) (end * unit),
-                                  (s32) (target * unit), 1, 1,
+                    value = (f32) *((u16 *) ((u8 *) cursor + 4));
+                    start = *((s16 *) ((u8 *) cursor + 6)) * unit;
+                    end = *((s16 *) ((u8 *) cursor + 8)) * unit;
+                    target = *((s16 *) ((u8 *) cursor + 0xA)) * unit;
+                    cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
+                    changeWeather((s32) start, (s32) end, (s32) target, 1, 1,
                                   (s32) value);
                     break;
                 case 0x45:
@@ -1823,7 +1825,8 @@ void func_800517E0(void) {
                     break;
                 case 0x6F:
                     pathIndex = cursor->command & 0xFF;
-                    high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
+                    /* Mask then shift, as shipped (lane opus-517e0). */
+                    high = (*((u16 *) ((u8 *) cursor + 4)) & 0xFF00) >> 8;
                     low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     frame6F = *((u16 *) ((u8 *) cursor + 6));
                     path = paths[pathIndex];
@@ -1880,10 +1883,14 @@ void func_800517E0(void) {
                     mainSyncNextLevel();
                     break;
                 case 0x78:
-                    pathIndex = cursor->command & 0xFF;
+                    /* The byte through a forwarded local, not pathIndex:
+                     * both arguments are formed before the advance and
+                     * the handler is the shipped sequence (lane
+                     * opus-517e0). */
+                    word2 = cursor->command & 0xFF;
                     word1 = *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    func_80029084(word1, pathIndex);
+                    func_80029084(word1, word2);
                     break;
                 case 0x79:
                     /* The byte is converted straight from the stream: a
@@ -3988,10 +3995,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1127/1808 words
+ * score: 1063/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 423 at size 0: 0x63/0x66 ring phase, 0x78 arguments before the advance, 0x6E through the object local. 0x6D, 0x6F, 0x79-0x7B remain.
+ * summary: Aligned 413 at size 0: 0x44 scaled locals, 0x78 byte via word2, 0x6F mask-shift. Per-handler map; 0x7A shipped shape costs the 6000 piece.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

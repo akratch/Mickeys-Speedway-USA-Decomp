@@ -32,7 +32,20 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * loads' block stops uopt's loop-carried load webs (shard, 2026-10-08).
  * The second smoothing sum through pointer expressions rather than negative
  * subscripts: masked unchanged (371 at 0), aligned residual 297 -> 283, out
- * now takes a2 as shipped (lane opus-o064, 2026-10-14).
+ * now takes a2 as shipped (lane opus-o064, 2026-10-14). 371 -> 369: the
+ * product as `lo *= value >> 4`, which gives the shipped multiply operand order.
+ * 369 -> 355 (2026-10-14): the pixel rows walk through dst (a byte row base;
+ * the even rows store at dst + (distance << 1) + (j << 1), so j is the only
+ * induction variable), the texel is read twice so the hi clamp compares hi,
+ * and the second smoothing loop steps three pointers as shipped.
+ * 355 -> 270 (2026-10-14, third pass): pixels walks the rows and dst is the
+ * row base copied at each row top, the even-row address is assigned to pixels
+ * before the texel; `value = lo` after the product stops uopt forwarding
+ * value + 0x34 into the hi clamp; innerHeight is written as height - 6 and
+ * its local becomes the smoothing loops' counter k (270 -> 264); the entry select reads the
+ * byte through a signed char view, which makes it a different code-motion
+ * item from the toggle's read, so the select load is no longer re-inserted
+ * at both loop exits and the frame is 0x70 as shipped.
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -42,7 +55,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     s32 width;
     s32 height;
     s32 innerWidth;
-    s32 innerHeight;
+    s32 k;
     s32 j;
     s32 value;
     s32 hi;
@@ -54,18 +67,16 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     s32 lo;
     s32 distance;
 
-    select = gO64BufferSelect;
     width = image->width;
     height = image->height;
-    if (select) {
+    if ((u8)*(signed char *)&gO64BufferSelect) {
         src = D_800D60B0[index];
     } else {
         src = D_800D60C0[index];
     }
 
     innerWidth = width - 6;
-    innerHeight = height - 6;
-    out = src + innerHeight * width + 3;
+    out = src + (height - 6) * width + 3;
     if (!gO64Initialized) {
         i = innerWidth;
         while (i--) {
@@ -105,12 +116,12 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
     in = src;
     out = dst;
-    i = innerHeight;
+    i = height - 6;
     while (i--) {
         *out++ = 0;
         in++;
-        j = width - 2;
-        while (j--) {
+        k = width - 2;
+        while (k--) {
             lo = (in[width] * 4 + in[0] * 2 + in[width - 1] + in[width + 1]) >> 3;
             if (lo < 0xAA) {
                 lo--;
@@ -131,9 +142,9 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     while (i--) {
         *out++ = 0;
         in++;
-        j = width - 2;
-        while (j--) {
-            lo = (*(in - width) + *(in - width - 1) + *(in - width + 1)) >> 2;
+        k = width - 2;
+        while (k--) {
+            lo = (*(in - width) + *(in - 1 - width) + *(in + 1 - width)) >> 2;
             in++;
             if (lo < 0xAA) {
                 lo--;
@@ -147,7 +158,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
     }
 
-    out = dst + innerHeight * width;
+    out = dst + (height - 6) * width;
     in = out - width;
     i = width;
     while (i--) {
@@ -158,6 +169,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     pixels = image->pixels;
     i = height;
     while (i--) {
+        dst = (u8 *)pixels;
         if (i & 1) {
             j = width;
             while (j--) {
@@ -165,7 +177,8 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 lo = value;
                 hi = value + 0x34;
                 if (value >> 4) {
-                    lo = value * (value >> 4);
+                    lo *= value >> 4;
+                    value = lo;
                 }
                 if (hi >= 0x100) {
                     hi = 0xFF;
@@ -182,11 +195,13 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 } else {
                     distance = 2;
                 }
+                pixels = (u16 *)(dst + (distance << 1) + (j << 1));
                 value = *in++;
                 lo = value;
                 hi = value + 0x34;
                 if (value >> 4) {
-                    lo = value * (value >> 4);
+                    lo *= value >> 4;
+                    value = lo;
                 }
                 if (hi >= 0x100) {
                     hi = 0xFF;
@@ -194,9 +209,9 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 if (lo >= 0x100) {
                     lo = 0xFF;
                 }
-                pixels[distance + j] = (hi << 8) | lo;
+                *pixels = (hi << 8) | lo;
             }
-            pixels += width;
+            pixels = (u16 *)(dst + (width << 1));
         }
     }
 }
@@ -206,10 +221,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 371/420 words
- * frame: 0x78
- * relocations: 22
- * first-mismatch: +0x0
- * summary: 371 at 0: the select load is codemotion's partial-redundancy insertion at both loop exits (web 2); select, toggle, global and loop-form products flat
+ * score: 264/420 words
+ * frame: 0x70
+ * relocations: 20
+ * first-mismatch: +0x1C
+ * summary: 264 at 0, frame 0x70: smoothing guards (width-2, width-3) coloured after j rotate width/i/dst/j; the signed-char select view has no natural replacement yet (ADR 0017 blocker)
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

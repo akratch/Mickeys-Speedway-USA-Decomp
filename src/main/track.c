@@ -5262,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, all naming. Interference count exact; target needs 22 webs on blocks 4/10 plus a code-free preheader web, and the face numbered after the loop webs
+ * summary: 10 at 0, naming. Sibling first read prices at 0 with two forces (edge s7, block-4 address s8); merged edge and face must drop to 21
  * PLATEAU-HANDOFF:func_80011980:end
  */

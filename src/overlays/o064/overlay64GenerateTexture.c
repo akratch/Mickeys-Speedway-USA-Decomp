@@ -32,7 +32,8 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * loads' block stops uopt's loop-carried load webs (shard, 2026-10-08).
  * The second smoothing sum through pointer expressions rather than negative
  * subscripts: masked unchanged (371 at 0), aligned residual 297 -> 283, out
- * now takes a2 as shipped (lane opus-o064, 2026-10-14).
+ * now takes a2 as shipped (lane opus-o064, 2026-10-14). 371 -> 369: the
+ * product as `lo *= value >> 4`, which gives the shipped multiply operand order.
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -165,7 +166,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 lo = value;
                 hi = value + 0x34;
                 if (value >> 4) {
-                    lo = value * (value >> 4);
+                    lo *= value >> 4;
                 }
                 if (hi >= 0x100) {
                     hi = 0xFF;
@@ -186,7 +187,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 lo = value;
                 hi = value + 0x34;
                 if (value >> 4) {
-                    lo = value * (value >> 4);
+                    lo *= value >> 4;
                 }
                 if (hi >= 0x100) {
                     hi = 0xFF;
@@ -206,10 +207,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 371/420 words
+ * score: 369/420 words
  * frame: 0x78
  * relocations: 22
  * first-mismatch: +0x0
- * summary: 371 at 0: the select load is codemotion's partial-redundancy insertion at both loop exits (web 2); select, toggle, global and loop-form products flat
+ * summary: 369 at 0: lo *= value >> 4; select v1 is codemotion's load web 2 (not the local); even-row walk row++ gives residual 249 at -12, the IV elimination is next
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

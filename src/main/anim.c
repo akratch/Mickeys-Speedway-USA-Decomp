@@ -3999,6 +3999,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 413 at size 0: 0x44 scaled locals, 0x78 byte via word2, 0x6F mask-shift. Per-handler map; 0x7A shipped shape costs the 6000 piece.
+ * summary: Aligned 413 at size 0. Shipped 0x7A keeps the 6000 piece only in t0: 0x4B block takes a3 unless 0x78/0x79 add one interferer.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

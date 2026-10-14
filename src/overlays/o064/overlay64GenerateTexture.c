@@ -34,6 +34,10 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * subscripts: masked unchanged (371 at 0), aligned residual 297 -> 283, out
  * now takes a2 as shipped (lane opus-o064, 2026-10-14). 371 -> 369: the
  * product as `lo *= value >> 4`, which gives the shipped multiply operand order.
+ * 369 -> 355 (2026-10-14): the pixel rows walk through dst (a byte row base;
+ * the even rows store at dst + (distance << 1) + (j << 1), so j is the only
+ * induction variable), the texel is read twice so the hi clamp compares hi,
+ * and the second smoothing loop steps three pointers as shipped.
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -134,7 +138,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         j = width - 2;
         while (j--) {
-            lo = (*(in - width) + *(in - width - 1) + *(in - width + 1)) >> 2;
+            lo = (*(in - width) + *(in - 1 - width) + *(in + 1 - width)) >> 2;
             in++;
             if (lo < 0xAA) {
                 lo--;
@@ -156,15 +160,16 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     }
 
     in = dst;
-    pixels = image->pixels;
+    dst = (u8 *)image->pixels;
     i = height;
     while (i--) {
+        pixels = (u16 *)dst;
         if (i & 1) {
             j = width;
             while (j--) {
-                value = *in++;
+                value = *in;
                 lo = value;
-                hi = value + 0x34;
+                hi = *in++ + 0x34;
                 if (value >> 4) {
                     lo *= value >> 4;
                 }
@@ -176,6 +181,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 }
                 *pixels++ = (hi << 8) | lo;
             }
+            dst = (u8 *)pixels;
         } else {
             for (j = 0; j < width; j++) {
                 if (j & 2) {
@@ -183,9 +189,9 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 } else {
                     distance = 2;
                 }
-                value = *in++;
+                value = *in;
                 lo = value;
-                hi = value + 0x34;
+                hi = *in++ + 0x34;
                 if (value >> 4) {
                     lo *= value >> 4;
                 }
@@ -195,9 +201,9 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 if (lo >= 0x100) {
                     lo = 0xFF;
                 }
-                pixels[distance + j] = (hi << 8) | lo;
+                *(u16 *)(dst + (distance << 1) + (j << 1)) = (hi << 8) | lo;
             }
-            pixels += width;
+            dst += width << 1;
         }
     }
 }
@@ -207,10 +213,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 369/420 words
- * frame: 0x78
+ * score: 355/420 words
+ * frame: 0x80
  * relocations: 22
  * first-mismatch: +0x0
- * summary: 369 at 0: lo *= value >> 4; select v1 is codemotion's load web 2 (not the local); even-row walk row++ gives residual 249 at -12, the IV elimination is next
+ * summary: 355 at 0: dst-master rows, shifted even-row address, hi kill, three-pointer loop 2; frame 0x80 vs 0x70 from loop 2; structural lead 359 (dst copy at row top)
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

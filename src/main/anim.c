@@ -3999,6 +3999,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 413 at size 0. Block 262 cannot accept with four coloured 0x7A values at any count; bias cell (403) is the oracle.
+ * summary: Aligned 413 at size 0. Loop-tail target forms give the shipped 6000 piece (a3, 0x7A exact) but the state piece loses a0 at 0x7D by one.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

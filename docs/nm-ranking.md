@@ -293,7 +293,7 @@ units remain distinct.
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
-| 2 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 266 | 264 | 28 | 28 | 0 | — |
+| 2 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 258 | 256 | 28 | 28 | 0 | — |
 | 3 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
 | 4 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,065 | 1,063 | 200 | 208 | 0 | — |
 

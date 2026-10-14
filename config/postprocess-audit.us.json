@@ -194,20 +194,6 @@
       "class": "metadata",
       "matched_c": null,
       "nonmatching": null,
-      "object": "build/src/main/matrix.c.o",
-      "offset": null,
-      "overlay": null,
-      "size": null,
-      "source": "src/main/matrix.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": null,
-      "class": "metadata",
-      "matched_c": null,
-      "nonmatching": null,
       "object": "build/src/main/menu.c.o",
       "offset": null,
       "overlay": null,
@@ -9424,10 +9410,10 @@
     "altered_bytes": 16816,
     "by_class": {
       "altered": 9,
-      "metadata": 638,
+      "metadata": 637,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 456944,
-    "objects_with_postprocess": 648
+    "objects_with_postprocess": 647
   }
 }

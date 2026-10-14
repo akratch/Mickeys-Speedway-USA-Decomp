@@ -5262,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, naming. First-read shape prices at 0 with two forces; full lever sweeps on it and the s32 cell reproduce neither
+ * summary: 10 at 0, naming. Target loop holds no extra value; the missing index neighbour must be a zero-emission web in block 9 or 11-16, none found
  * PLATEAU-HANDOFF:func_80011980:end
  */

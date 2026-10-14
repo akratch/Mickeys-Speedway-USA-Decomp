@@ -41,8 +41,8 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * 355 -> 270 (2026-10-14, third pass): pixels walks the rows and dst is the
  * row base copied at each row top, the even-row address is assigned to pixels
  * before the texel; `value = lo` after the product stops uopt forwarding
- * value + 0x34 into the hi clamp; innerHeight is written as height - 6 (the
- * declaration is kept, it holds a frame cell); the entry select reads the
+ * value + 0x34 into the hi clamp; innerHeight is written as height - 6 and
+ * its local becomes the smoothing loops' counter k (270 -> 264); the entry select reads the
  * byte through a signed char view, which makes it a different code-motion
  * item from the toggle's read, so the select load is no longer re-inserted
  * at both loop exits and the frame is 0x70 as shipped.
@@ -55,7 +55,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     s32 width;
     s32 height;
     s32 innerWidth;
-    s32 innerHeight;
+    s32 k;
     s32 j;
     s32 value;
     s32 hi;
@@ -120,8 +120,8 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     while (i--) {
         *out++ = 0;
         in++;
-        j = width - 2;
-        while (j--) {
+        k = width - 2;
+        while (k--) {
             lo = (in[width] * 4 + in[0] * 2 + in[width - 1] + in[width + 1]) >> 3;
             if (lo < 0xAA) {
                 lo--;
@@ -142,8 +142,8 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     while (i--) {
         *out++ = 0;
         in++;
-        j = width - 2;
-        while (j--) {
+        k = width - 2;
+        while (k--) {
             lo = (*(in - width) + *(in - 1 - width) + *(in + 1 - width)) >> 2;
             in++;
             if (lo < 0xAA) {
@@ -221,10 +221,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 270/420 words
+ * score: 264/420 words
  * frame: 0x70
  * relocations: 20
  * first-mismatch: +0x1C
- * summary: 270 at 0, frame 0x70, 20 relocs: signed-char entry view ends the select PRE; residual is a register rotation (width t5 not ra; j+k webs take a1)
+ * summary: 264 at 0, frame 0x70: smoothing guards (width-2, width-3) coloured after j rotate width/i/dst/j; the signed-char select view has no natural replacement yet (ADR 0017 blocker)
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

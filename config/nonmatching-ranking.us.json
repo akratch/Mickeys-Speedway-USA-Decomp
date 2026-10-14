@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 6,
-  "resolved": 6,
+  "queue_size": 4,
+  "resolved": 4,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 6,
-  "relocation_masked_coverage": 6,
+  "source_context_coverage": 4,
+  "relocation_masked_coverage": 4,
   "functions": [
     {
       "name": "func_80011980",
@@ -68,36 +68,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "mGt0.PbLn.5Vgo.7MSy.TxQc.rMVM.zYpV.NGrb.hVEs.fM3T.kfE"
-    },
-    {
-      "name": "func_8002B040",
-      "file": "src/main/matrix_2BC40.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 136,
-      "objdiff_match_pct": null,
-      "differing_words": 34,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 34,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": 4,
-      "category": "size-mismatch",
-      "source_context_sha256": "RQv-.uwJj.dnWb.ZAWS.UfFh.5rit.l2Yc.DaJP.AvCE.Vtuj.rC4"
-    },
-    {
-      "name": "func_8002AA50",
-      "file": "src/main/matrix.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 296,
-      "objdiff_match_pct": null,
-      "differing_words": 90,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 90,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": 68,
-      "category": "size-mismatch",
-      "source_context_sha256": "cdo4.18ZL.Mce3.pU61.EUaD.C7MM.7dJO.Ls6Y.HXPk.RNe7.lSU"
     }
   ],
   "unresolved_functions": []

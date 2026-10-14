@@ -28,9 +28,9 @@ the segment, carrying 194 function names.
 | `0x27BB4`, `0x28BB8` | — | `"main/main.c"` asserts | — | **`main` code is resident** |
 | `0x29FD0` | `0x800293D0` | `"x = %5d"` … `"a = %3.1f"` | — | On-screen coordinate readout |
 | `0x2A250`–`0x2AE44` | `0x80029650` | 11 named `math_util.s` routines | A | Matrix / vector / RNG library. 13 routines matched: 11 named here, `rand_range` already carried as `mathRnd`, and `func_80070058` left unnamed as a placeholder |
-| `0x2B650`–`0x2B778` | `0x8002AA50` | `main/matrix` | — | Working split: JFG `matrix_SCL_RPY_XYZ` in a shorter revision, guarded C (§6.2) |
+| `0x2B650`–`0x2B778` | `0x8002AA50` | `main/matrix` | D | Verified hand-written assembly, evidence class 3 (mechanism, no reference identity): non-IDO 8-byte non-leaf frame, odd caller-saved FP held across calls, 49 odd-FP operands. JFG `matrix_SCL_RPY_XYZ` in a shorter revision (modules §1.2, §6.2) |
 | `0x2B778`–`0x2BC40` | `0x8002AB78` | `main/math_matrix` | A | Verified hand-written assembly: JFG `hasm/math_matrix` routines two to five, byte-identical with R_MIPS_26 masked; routine run, not file boundary |
-| `0x2BC40`–`0x2BCD0` | `0x8002B040` | `main/matrix_2BC40` | — | Working split: one function with no JFG counterpart, guarded C |
+| `0x2BC40`–`0x2BCD0` | `0x8002B040` | `main/matrix_2BC40` | D | Verified hand-written assembly, evidence class 3: Banjo-Kazooie's built ultralib `guMtxXFMF` object with its six translation-term instructions deleted by hand is this routine, 0 of 34 words differing; no JFG counterpart (modules §1.2) |
 | `0x2C860` | `0x8002BC60` | `align16`/`align8`/`align4` | A | The allocator |
 | `0x2C8C0`–`0x2ECA0` | `0x8002BCC0` | `main/saves` | A/B/D | Rumble, EEPROM/save bitstreams, and Controller Pak files (§3.15) |
 | `0x2ECA0`–`0x2F0D0` | `0x8002E0A0` | `main/pi` | B | Asset lookup and cartridge DMA (§3.15) |
@@ -65,8 +65,8 @@ the segment, carrying 194 function names.
 | `0x50820`–`0x50C00` | `0x8004FC20` | `main/refractOutputAssembler` | A | Verified hand-written assembly: JFG `src/hasm/refractOutputAssembler.s`, whole `.text` byte-identical with HI16/LO16 masked |
 | `0x58E50`–`0x59B90` | `0x80058250` | `main/vehicle_sounds` | B + D | Four-function positional racer-sound block. Calls the resident XYZ sound API to maintain engine handles and derives pitch/volume from racer speed and listener distance. No exact JFG skeleton hit; the name is descriptive and the existing splat boundary is not claimed as measured |
 | `0x59B90`–`0x59BF0` | `0x80058F90` | `main/osBootRamTest` | A | Measured file boundary and byte-exact C (JFG): both IPL3 6105 RAM checks compile to the complete 96-byte target object. |
-| `0x59BF0`–`0x59DB0` | `0x80058FF0` | `main/conv_mult_matrix` | B + D | Hand-written float-to-fixed conversion of the `camConvertMatrixList` list (odd single-precision registers, trapping `add`/`sub`; docs/modules.md 6.2). Takes JFG `conv_mult_matrix`'s role but is a shorter revision (count argument, no multiply); no reference object matches, so it is not in `verified_asm.us.txt` |
-| `0x59DB0`–`0x5B300` | `0x800591B0` | `main/gen_anim_data` | B + D | Hand-written animation-frame decoder with four private t-register-convention helpers. Called from `func_8005AF14` where JFG's `modGenAnimMatrices` calls `gen_anim_data`; Mickey reads a byte-wise bitstream where JFG reads 64-bit words, so no reference object matches |
+| `0x59BF0`–`0x59DB0` | `0x80058FF0` | `main/conv_mult_matrix` | B + D | Hand-written float-to-fixed conversion of the `camConvertMatrixList` list (odd single-precision registers, trapping `add`/`sub`; docs/modules.md 6.2). Takes JFG `conv_mult_matrix`'s role but is a shorter revision (count argument, no multiply); no reference object matches, so it is not class 1 or 2; verified assembly under evidence class 3 (mechanism, no reference identity) |
+| `0x59DB0`–`0x5B300` | `0x800591B0` | `main/gen_anim_data` | B + D | Hand-written animation-frame decoder with four private t-register-convention helpers. Called from `func_8005AF14` where JFG's `modGenAnimMatrices` calls `gen_anim_data`; Mickey reads a byte-wise bitstream where JFG reads 64-bit words, so no reference object matches. Verified assembly, evidence class 3 (mechanism per routine in `mickey.us.yaml`) |
 | `0x5B300`–`0x5C310` | `0x8005A700` | `main/models` | B + D; one A island | Animation-table loading, reference-counted animation storage, frame selection and model-matrix construction establish the descriptive TU name. `camConvertMatrixList` at ROM `0x5B778` alone is byte-identical to JFG `camera.c`; no whole-object identity is claimed |
 | `0x5C310`–`0x5E6B0` | `0x8005B710` | `main/gsSnd` | A | **The sound player**, 0x23A0 in one piece, 22 named functions. Two of those names were predicted at tier C from error strings and fall inside this TU at exactly the predicted addresses |
 | `0x5E6B0`–`0x6AF90` | `0x8005DAB0` | libultra's `n_audio` synthesis library | A | 45 consecutive measured file boundaries, 106 names, plus two JFG maths TUs interleaved (`math_atan`, `math_acosf`); a third, `math_arc`, begins at `0x6AF90` immediately after. §4.2 |
@@ -161,6 +161,11 @@ and uopt-O3 forms. Four shipped callers in Overlays 69,
 88, and 94 authenticate the scalar-vector ABI. DKR/JFG matrix-transform
 assembly supplies structural context only; it does not justify a friendly
 name or a C-origin claim. The assembly fallback remains canonical.
+Since 2026-10-14 it is verified assembly (`main/matrix_2BC40`, evidence
+class 3): libultra's `guMtxXFMF`, compiled at `-O3 -mips2 -Wab,-r4300_mul`
+as in Banjo-Kazooie's built ultralib, becomes these 34 words exactly once
+each row's translation load and add are deleted by hand, and the guarded C
+was retired.
 
 Of the 68 adopted, 46 carry a real JFG/BK function name (adopted verbatim,
 `symbol_addrs.us.txt`); 22 are JFG placeholder names (`func_8xxxxxxx`), which
@@ -1522,6 +1527,9 @@ explicitly **not tier A whole-object matches**:
   and helper call graph, plus **tier D** from JFG's exact four-function order
   (`trackMakePolylist`, `getXZCompareMask`, `getYCompareMask`,
   `trackLightAsm`). JFG carries the same run in `asm/hasm/trackasm.s`.
+  Verified assembly since 2026-10-14, evidence class 3 (mechanism, no
+  reference identity): every routine uses the trapping signed add/sub
+  forms and `trackLightAsm` has odd-FP operands (`mickey.us.yaml`).
 - `main/shadows`, ROM `0x16A90`–`0x18FF0`: **tier B** from allocation/free and
   track-render call relationships, plus **tier D** from JFG `src/shadows.c`'s
   order and the per-function masked-skeleton results. Its upper boundary is
@@ -1624,7 +1632,9 @@ The logical TU is represented by three physical splat fragments:
 `main/weather` (`0x3B480`–`0x3D030`), the hand-written
 `main/weather_snow_asm` island (`0x3D030`–`0x3D370`), and
 `main/weather_tail` (`0x3D370`–`0x3D5F0`). This keeps the hand-written pair
-out of asm-processor while retaining C ownership around it.
+out of asm-processor while retaining C ownership around it. The island is
+verified assembly since 2026-10-14 under evidence class 3 (mechanism, no
+reference identity; per-routine evidence in `mickey.us.yaml`).
 
 **PROVENANCE:** the TU and descriptive function names are borrowed from Jet
 Force Gemini's and Diddy Kong Racing's public retail-derived `src/weather.c`

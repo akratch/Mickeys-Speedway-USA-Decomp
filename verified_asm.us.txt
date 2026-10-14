@@ -3,10 +3,10 @@
 # One named splat subsegment per line. This is an evidence ledger, not a list
 # of everything currently emitted through asm/: compiler-generated functions
 # remain unresolved until matched to C. Every entry below belongs to one of
-# two evidence classes, and in both the comparison masks only relocated
-# fields (R_MIPS_26/HI16/LO16) and covers a whole object or a contiguous run
-# of one object's routines in that object's own order (file boundary not
-# claimed for a run):
+# three evidence classes. In classes 1 and 2 the comparison masks only
+# relocated fields (R_MIPS_26/HI16/LO16) and covers a whole object or a
+# contiguous run of one object's routines in that object's own order (file
+# boundary not claimed for a run):
 #
 # 1. Byte-identical to a hand-written assembly object in a permitted
 #    reference build (main/math_matrix: JFG hasm/math_matrix's routines two
@@ -18,6 +18,23 @@
 #    whether that build carries it as a hand-written object or as extracted
 #    assembly (GLOBAL_ASM). main/shadows_fp: JFG src/shadows_214A0's routines
 #    one and two; main/shadows_fp_19254: its routine four.
+# 3. Proved hand-written by mechanism, with no reference identity. Owner
+#    decision 2026-10-14: "100% by the typical community standards, with
+#    HASM etc. handled appropriately" -- a routine established as original
+#    hand-written assembly is finished work, kept as assembly. Every routine
+#    in the subsegment must carry, by itself, evidence that no SGI IDO build
+#    can have produced it (docs/modules.md 6.2): odd single-precision FP
+#    registers; the trapping signed add/sub forms; arguments in t-registers;
+#    s-registers clobbered unsaved; a computed jump into its own code; a
+#    non-IDO prologue; or a permitted library routine's built object with
+#    instructions deleted by hand. A routine with no mechanism of its own is
+#    admitted only as another routine's private exit or helper, said so in
+#    mickey.us.yaml. The mechanism is named per routine beside the boundary
+#    in mickey.us.yaml and the tier argued in docs/modules.md 1.2. Class 3
+#    claims authorship, not a file boundary, and adopts no name.
+#
+# For all three classes the disassembly stays untracked: splat extracts it
+# from the baserom at build time.
 #
 # The per-entry evidence lives beside its boundary in mickey.us.yaml and
 # symbol_addrs.us.txt.
@@ -31,6 +48,15 @@ main/lights2
 main/trapDanglingJump
 main/gzip_asm
 main/refractOutputAssembler
+
+# Evidence class 3 (mechanism, no reference identity), 2026-10-14.
+main/trackasm
+main/shadows_fp_19144
+main/matrix
+main/matrix_2BC40
+main/weather_snow_asm
+main/conv_mult_matrix
+main/gen_anim_data
 
 libultra/exceptasm
 libultra/sqrtf

@@ -76,6 +76,40 @@ name may still describe that project's use of it. `weather_clip_planes` and
 `audspat_jingle_off` are carried because renaming shared code would hide the
 sharing, and are flagged where they appear.
 
+**Assembly credited by mechanism is a tier-D claim, argued per symbol.**
+Evidence class 3 of `verified_asm.us.txt` (owner decision 2026-10-14) credits
+a routine as original hand-written assembly with no byte-identical reference
+routine behind it, so no tier-A measurement carries it. Each row below is a
+tier-D structural inference from the routine's own bytes (§6.2), plus tier B
+where a caller pins the role. **None of these adopts a name**: every symbol
+keeps the name it already had, so the six-row exception list above is
+untouched. What each row adopts is the classification "hand-written, kept as
+assembly". The per-routine counts sit beside each boundary in
+`mickey.us.yaml`; odd-FP counts are every odd `$fN` operand outside
+double-precision instructions.
+
+| Symbol (subsegment) | Tier | What carries it |
+|---|---|---|
+| `trackMakePolylist` (`main/trackasm`) | D, with B/D boundary | 46 trapping signed add/sub sites; IDO emits only the unsigned forms for C arithmetic |
+| `getXZCompareMask` (`main/trackasm`) | D | 9 trapping add/sub sites |
+| `getYCompareMask` (`main/trackasm`) | D | 5 trapping add/sub sites |
+| `trackLightAsm` (`main/trackasm`) | D | 34 odd-FP operands, 6 trapping add/sub |
+| `func_80018544` (`main/shadows_fp_19144`) | D | 33 odd-FP operands; JFG's `shadowYHeight` in a shorter revision, so not class 2 |
+| `func_8002AA50` (`main/matrix`) | D | Non-leaf 8-byte frame with no o32 argument area; caller-saved `$f2`-`$f6` (odd `$f3`, `$f5`) live across its `Cosf`/`Sinf` calls; 49 odd-FP operands |
+| `func_8002B040` (`main/matrix_2BC40`) | D, by reproduction | Banjo-Kazooie's built ultralib `guMtxXFMF` object minus its six translation-term instructions is this routine word for word (0 of 34 differ); a compiler fed the shorter body reschedules it |
+| `snow_update` (`main/weather_snow_asm`) | D | 26 trapping add/sub; a register jump to an arithmetically computed code address inside its own unrolled ladder, no jump table |
+| `snow_vertices` (`main/weather_snow_asm`) | D | 44 odd-FP operands, 10 trapping add/sub |
+| `func_80058FF0` (`main/conv_mult_matrix`) | D, role B | 37 odd-FP operands (constant loaded into `$f19`), 3 trapping add/sub; JFG's `camTick` calls `conv_mult_matrix` where Mickey calls this |
+| `func_800591B0` (`main/gen_anim_data`) | D, role B | 796 odd-FP operands; callee-saved FP saved one word at a time at 4-byte offsets; 113 trapping add/sub |
+| `func_8005A550` (`main/gen_anim_data`) | D | Reads t-registers it never sets (arguments outside o32's `a0`-`a3`); 8 trapping add/sub |
+| `func_8005A5C0` (`main/gen_anim_data`) | D | as `func_8005A550` |
+| `func_8005A630` (`main/gen_anim_data`) | D | Writes `s0`-`s6` with no save; takes `t1` from its caller; 11 trapping add/sub |
+| `func_8005A6F0` (`main/gen_anim_data`) | D, as part of the object | No mechanism of its own: a bare return reached only as `func_8005A630`'s closing jump, so it is that helper's exit |
+
+`func_8005A6F0` is the one row whose bytes alone prove nothing, and it is
+admitted only because it has no caller of its own; the ledger header states
+that rule. A future row of that kind needs the same argument.
+
 **A whole-`.text` match outranks a standalone function match.** When both are
 available for one address, the whole-object match wins and the standalone one
 is recorded as noise; see the `__osPfsGetInitData` and `__osPiGetAccess`
@@ -610,7 +644,7 @@ are masked, and every masked word is a `jal` whose JFG relocation names
 `Cosf` or `Sinf`, landing here on `0x8002A8BC` or `0x8002A8C0` (JFG also
 places `Cosf` four bytes before `Sinf`). The odd-register question is
 answered for them: they were never compiler output. The other two functions
-of the old TU stay guarded C in working splits: `0x8002AA50` (`main/matrix`)
+of the old TU stayed guarded C in working splits at the time: `0x8002AA50` (`main/matrix`)
 is JFG's first routine `matrix_SCL_RPY_XYZ` in a shorter revision, `0x128`
 bytes against `0x148`, identical for its first 18 words and different after;
 `0x8002B040` (`main/matrix_2BC40`) has no JFG counterpart, and JFG's object
@@ -618,6 +652,18 @@ is followed directly by `memory.c` exactly as `main/memory` follows it here.
 The four JFG names now clear section 1.5 (the bytes are in the ROM as
 assembly) but were not adopted in the ownership change, to keep it a pure
 reclassification; adopting them is a rename across their callers.
+
+**The other two followed on 2026-10-14, as evidence class 3.** With the owner
+decision crediting hand-written assembly proved by mechanism, `main/matrix`
+(`0x8002AA50`) and `main/matrix_2BC40` (`0x8002B040`) became assembly
+subsegments in `verified_asm.us.txt`, and their guarded C candidates were
+retired. `0x8002AA50`'s mechanism is its own: an 8-byte non-leaf frame no
+IDO prologue has, odd caller-saved results held across calls, and 49 odd-FP
+operands. `0x8002B040` has no odd registers; it is libultra's `guMtxXFMF`
+compiled object with the translation load and add deleted by hand from each
+row, reproduced word for word from Banjo-Kazooie's built ultralib object
+(section 1.2's class-3 table). The whole JFG `hasm/math_matrix` counterpart,
+`0x2B650`-`0x2BCD0`, is now assembly.
 
 ### 6.3 Data ownership: SDK tails carved without guessing the bulk boundary
 

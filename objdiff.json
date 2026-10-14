@@ -757,6 +757,15 @@
       }
     },
     {
+      "name": "asm/data/bss_gap_D800D60D0.bss.s",
+      "target_path": "expected/build/asm/data/bss_gap_D800D60D0.bss.s.o",
+      "metadata": {
+        "progress_categories": [
+          "resident"
+        ]
+      }
+    },
+    {
       "name": "asm/data/bss_gap_D800D78F0.bss.s",
       "target_path": "expected/build/asm/data/bss_gap_D800D78F0.bss.s.o",
       "metadata": {
@@ -1047,6 +1056,24 @@
     {
       "name": "asm/main/math_util.s",
       "target_path": "expected/build/asm/main/math_util.s.o",
+      "metadata": {
+        "progress_categories": [
+          "resident"
+        ]
+      }
+    },
+    {
+      "name": "asm/main/matrix.s",
+      "target_path": "expected/build/asm/main/matrix.s.o",
+      "metadata": {
+        "progress_categories": [
+          "resident"
+        ]
+      }
+    },
+    {
+      "name": "asm/main/matrix_2BC40.s",
+      "target_path": "expected/build/asm/main/matrix_2BC40.s.o",
       "metadata": {
         "progress_categories": [
           "resident"
@@ -3697,16 +3724,6 @@
         "progress_categories": [
           "overlay",
           "overlay-o063"
-        ]
-      }
-    },
-    {
-      "name": "assets/overlays/o064/overlay_064_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o064/overlay_064_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o064"
         ]
       }
     },
@@ -7958,40 +7975,6 @@
       }
     },
     {
-      "name": "src/main/matrix.c",
-      "target_path": "expected/build/src/main/matrix.c.o",
-      "base_path": "build/src/main/matrix.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "resident"
-        ],
-        "source_path": "src/main/matrix.c",
-        "complete": false
-      }
-    },
-    {
-      "name": "src/main/matrix_2BC40.c",
-      "target_path": "expected/build/src/main/matrix_2BC40.c.o",
-      "base_path": "build/src/main/matrix_2BC40.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "resident"
-        ],
-        "source_path": "src/main/matrix_2BC40.c",
-        "complete": false
-      }
-    },
-    {
       "name": "src/main/memory.c",
       "target_path": "expected/build/src/main/memory.c.o",
       "base_path": "build/src/main/memory.c.o",
@@ -8277,7 +8260,7 @@
           "resident"
         ],
         "source_path": "src/main/spranim.c",
-        "complete": false
+        "complete": true
       }
     },
     {
@@ -13426,7 +13409,7 @@
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
@@ -13434,7 +13417,7 @@
           "overlay-o045"
         ],
         "source_path": "src/overlays/o045/func_overlay_045_F0001158_188D5B0.c",
-        "complete": false
+        "complete": true
       }
     },
     {

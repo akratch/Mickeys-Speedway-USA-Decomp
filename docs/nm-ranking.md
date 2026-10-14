@@ -257,22 +257,21 @@ Text outside the markers remains authored and is preserved byte-for-byte.
 > `config/nonmatching-ranking.us.json`. Do not edit this region by hand;
 > `--check-doc` and `gmake check-docs` fail on any drift.
 
-The snapshot contains **6 queued identities**: **6 resolved measurements** and **0 unresolved identities**. Resolved target size totals **11,684 bytes (11.4 KiB)**.
+The snapshot contains **4 queued identities**: **4 resolved measurements** and **0 unresolved identities**. Resolved target size totals **11,252 bytes (11.0 KiB)**.
 
 Resolved rows span **1 overlays** and **1 resident TU group** (`main`).
 
-A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 6** resolved rows.
+A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 4** resolved rows.
 
-Persisted configured-TU input evidence covers **6 / 6** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
+Persisted configured-TU input evidence covers **4 / 4** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
 
-Relocation-masked mismatch evidence covers **6 / 6** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
+Relocation-masked mismatch evidence covers **4 / 4** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
 
 ### Category distribution
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `other` | 4 | 66.7% |
-| `size-mismatch` | 2 | 33.3% |
+| `other` | 4 | 100.0% |
 
 ### Differing-word thresholds
 
@@ -297,8 +296,6 @@ units remain distinct.
 | 2 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
 | 3 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 371 | 371 | 0 | 0 | 0 | — |
 | 4 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,065 | 1,063 | 200 | 208 | 0 | — |
-| 5 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
-| 6 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
 
 ### Unresolved identities
 

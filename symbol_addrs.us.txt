@@ -977,9 +977,12 @@ linkSlotTable = 0x800D2E48;
 // are not adopted in this change, which only moves ownership.
 // 0x8002AA50 is JFG's matrix_SCL_RPY_XYZ in a shorter revision (0x128 against
 // 0x148; identical through +0x48, different after) and 0x8002B040 has no
-// counterpart; both stay guarded C candidates, unnamed.
+// counterpart. Since 2026-10-14 both are verified assembly under evidence
+// class 3 (proved hand-written by mechanism, no reference identity;
+// mechanisms in mickey.us.yaml, tier D argued in docs/modules.md 1.2), and
+// both stay unnamed.
 // ---------------------------------------------------------------------------
-func_8002B040 = 0x8002B040; // type:func size:0x88 ROM 0x2bc40 tier-D NON_MATCHING bounded plateau, canonical 1/34 words and +1 instruction, first +0x0, frameless/no padding/zero relocs, 119 flags plus 10 structural forms nonexact, 4 overlay callers, linked exactness fallback-only
+func_8002B040 = 0x8002B040; // type:func size:0x88 ROM 0x2bc40 tier-D verified assembly class 3, BK ultralib guMtxXFMF object minus its six translation-term instructions, 0/34 words differ, frameless, zero relocs, 4 overlay callers
 
 // ---------------------------------------------------------------------------
 // STRING-LITERAL CORRESPONDENCE WITH THE JET FORCE GEMINI PUBLIC DECOMP

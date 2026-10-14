@@ -160,8 +160,8 @@ segments:
       # Mickey's first three routines are shorter revisions, so this is a
       # tier-B/D file-boundary attribution rather than a whole-object match.
       # Measured 2026-10-09 against JFG's built `asm/hasm/trackasm.s.o`
-      # (R_MIPS_26/HI16/LO16 masked; no routine identical, so not in
-      # verified_asm.us.txt). Words are Mickey/JFG; "aligned" counts words in
+      # (R_MIPS_26/HI16/LO16 masked; no routine identical, so not class 1
+      # or 2). Words are Mickey/JFG; "aligned" counts words in
       # common blocks after an insert/delete alignment:
       #   trackMakePolylist 295/333 words, first divergence +0x0, 243 aligned
       #   getXZCompareMask   71/72,  first divergence +0x0, 68 aligned
@@ -172,6 +172,18 @@ segments:
       # trapping signed add/sub forms IDO does not emit for C arithmetic
       # (46, 9, 5 and 6 sites), and trackLightAsm has 15 odd-FP operands
       # (docs/modules.md 6.2). Not compiler output.
+      # Verified assembly, evidence class 3 (proved hand-written by
+      # mechanism, no reference identity; verified_asm.us.txt). Re-counted
+      # 2026-10-14 from the extracted routines, counting every odd $fN
+      # operand outside double-precision instructions (the 2026-10-09
+      # figures above used a narrower count):
+      #   trackMakePolylist  295 words, 46 trapping add/sub, 0 odd-FP
+      #   getXZCompareMask    71 words,  9 trapping add/sub, 0 odd-FP
+      #   getYCompareMask     38 words,  5 trapping add/sub, 0 odd-FP
+      #   trackLightAsm      192 words,  6 trapping add/sub, 34 odd-FP
+      #                      operands in 23 instructions ($f1-$f11)
+      # IDO emits only the non-trapping unsigned forms for C arithmetic, so
+      # each routine carries its own mechanism.
       - [0x16140, asm, main/trackasm]
       # JFG shadows.c begins with shadowInitBuffers immediately after trackasm.
       # The other end is independently fixed by the tier-A
@@ -198,8 +210,10 @@ segments:
       # main/shadows_fp_19144: func_80018544, JFG's routine three
       # shadowYHeight in a shorter revision, 68 against 69 words. Its first
       # word already differs (+0x0); 63 words agree after an insert/delete
-      # alignment. Hand-written (12 odd-FP operands), not proved by identity,
-      # so it stays unverified assembly.
+      # alignment. Hand-written (12 odd-FP operands), not proved by identity.
+      # Verified assembly, evidence class 3 (mechanism, no reference
+      # identity): re-counted 2026-10-14, 68 words, 33 odd single-precision
+      # operands in 21 instructions ($f1-$f15), a leaf with no frame.
       #
       # main/shadows_fp_19254: func_80018654, JFG's routine four
       # shadowMakeYs, 47/47 words with 0 masked [romocc=1]; JFG's three
@@ -258,8 +272,15 @@ segments:
       # main/matrix (0x2B650): one function, JFG's first routine
       # matrix_SCL_RPY_XYZ in a shorter revision (0x128 against 0x148). Its
       # first 18 words agree and the body after them does not, so it is not
-      # proved and stays a guarded C candidate. Working split, trimmed to
-      # 0x128 in the Makefile.
+      # class 1 or 2. Verified assembly, evidence class 3 (mechanism, no
+      # reference identity), checked 2026-10-14: func_8002AA50 (74 words)
+      # calls Cosf/Sinf six times from an 8-byte frame holding only $ra, with
+      # no o32 outgoing-argument area (a non-IDO prologue: IDO's smallest
+      # non-leaf frame is 0x18); it keeps the sine/cosine results in
+      # caller-saved $f2-$f6, odd $f3 and $f5 included, live across the
+      # later calls; and it has 49 odd single-precision operands in 32
+      # instructions ($f1-$f19). Formerly a guarded C candidate in
+      # src/main/matrix.c; its plateau handoff is retired (git history).
       #
       # main/math_matrix (0x2B778): JFG's routines two to five, in JFG's
       # order, each byte-identical to JFG's built
@@ -273,10 +294,22 @@ segments:
       # likely ends at 0x2BCD0.
       #
       # main/matrix_2BC40: func_8002B040, which JFG's object does not have.
-      # Working split; guarded C candidate.
-      - [0x2B650, c, main/matrix]
+      # Verified assembly, evidence class 3 by the hand-edited library
+      # object mechanism, reproduced 2026-10-14: Banjo-Kazooie's built
+      # ultralib object for guMtxXFMF (lib/ultralib build, libultra_rom,
+      # src/mgu/mtxxfmf.o; 40 words, no relocations) becomes this
+      # routine's 34 words with 0 differing once its three loads of
+      # mf[3][i] and the three adds of them are deleted and each row's
+      # store is pointed at the row sum's register; the ROM then holds the
+      # 8 zero bytes of alignment. A compiler given the translation-free
+      # body reschedules the rows (16 words differ at best, -O3
+      # -Wab,-r4300_mul); only deleting six instructions from the compiled
+      # longer routine leaves its schedule in place. Formerly a guarded C
+      # candidate in src/main/matrix_2BC40.c; its plateau handoff (the
+      # 2026-10-09 lane t-3 derivation) is retired (git history).
+      - [0x2B650, asm, main/matrix]
       - [0x2B778, asm, main/math_matrix]
-      - [0x2BC40, c, main/matrix_2BC40]
+      - [0x2BC40, asm, main/matrix_2BC40]
       # The resident allocator. The linked baseline gives the old 2BCD0.s.o a
       # 0xBF0-byte .text section ending exactly where 2C8C0.s.o begins. Its
       # final function ends at 0x2C8B4; the remaining 0xC bytes are alignment.
@@ -336,7 +369,15 @@ segments:
       # closer counterpart. Hand-written, not compiler output: snow_update
       # dispatches through a computed jump into an unrolled add ladder, both
       # use the trapping signed add/sub forms (26 and 10 sites), and
-      # snow_vertices has 20 odd-FP operands. Not in verified_asm.us.txt.
+      # snow_vertices has 20 odd-FP operands.
+      # Verified assembly, evidence class 3 (mechanism, no reference
+      # identity). Re-checked 2026-10-14 from the extracted routines:
+      #   snow_update    81 words: 26 trapping add/sub; its one register
+      #                  jump goes to a code address computed as the ladder
+      #                  label 0x8003C4E0 + 0x48 minus a scaled count, with
+      #                  no jump table, a Duff-style entry into its own body
+      #   snow_vertices 127 words: 10 trapping add/sub, 44 odd-FP operands
+      #                  in 32 instructions ($f1-$f17)
       - [0x3D030, asm, main/weather_snow_asm]
       - [0x3D370, c, main/weather_tail]
       - [0x3D5F0, c, main/particles]
@@ -419,7 +460,11 @@ segments:
       # func_8005A770 calls it the same way, then clears the count. Mickey's
       # revision takes a count instead of a -1 sentinel and does not multiply,
       # so JFG's built asm/hasm/conv_mult_matrix.s.o does not match byte for
-      # byte (find_known_objects, 0 hits): not in verified_asm.us.txt.
+      # byte (find_known_objects, 0 hits), so not class 1 or 2.
+      # Verified assembly, evidence class 3 (mechanism, no reference
+      # identity). Re-checked 2026-10-14: 112 words, 37 odd single-precision
+      # operands in 25 instructions ($f1-$f11 and $f19, the scale constant
+      # moved into $f19 by the routine's third word), 3 trapping add/sub.
       # 0x1C0 bytes, the last word alignment.
       # PROVENANCE: subsegment name from JFG's asm/hasm/conv_mult_matrix.s.
       - [0x59BF0, asm, main/conv_mult_matrix]
@@ -432,6 +477,23 @@ segments:
       # bitstream where JFG's revision reads 64-bit words, so no reference
       # object matches (find_known_objects, 0 hits). 0x1550 bytes, the last
       # two words alignment.
+      # Verified assembly, evidence class 3 (mechanism, no reference
+      # identity). Re-checked 2026-10-14 per routine:
+      #   func_800591B0 1256 words: 796 odd-FP operands in 454
+      #                 instructions, using all sixteen odd registers as
+      #                 independent singles; saves $f20-$f31 one word at a
+      #                 time at 4-byte offsets 0x14-0x40, where an IDO
+      #                 -mips2 frame saves each callee-saved pair as one
+      #                 8-aligned doubleword; 113 trapping add/sub
+      #   func_8005A550, func_8005A5C0 (28 words each): read t-registers
+      #                 they never set (t1-t3/t7/t8 and t4-t8), set by the
+      #                 caller before each call (o32 passes arguments in
+      #                 a0-a3 only); 8 trapping add/sub each
+      #   func_8005A630 48 words: writes s0-s6 with no save or restore,
+      #                 takes t1 from the caller, 11 trapping add/sub
+      #   func_8005A6F0 4 words: no mechanism of its own; it is reached
+      #                 only as func_8005A630's exit (below), so it is owned
+      #                 as part of the same object
       # func_8005A6F0 (a bare return) is not a separate C function: its only
       # reference is the closing `j` of func_8005A630, which has no return of
       # its own, so it is that helper's exit. `void f(void) {}` reproduces its

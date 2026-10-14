@@ -38,14 +38,16 @@ the carve-before-decomp workflow in ADR 0016.
 ## What the current unclassified ranges are
 
 The census's resident-unclassified rows are not a hidden matching queue.
-`main/trackasm` is a Jet Force Gemini handwritten run whose Mickey routines
-are shorter revisions, so it is a file-boundary attribution and not a
-whole-object match (`mickey.us.yaml`). `main/shadows_fp_19144` (the one
-shadows routine that is a shorter JFG revision; its neighbours are verified),
-`main/weather_snow_asm`, and the two unnamed odd-register blocks are the
-files `docs/modules.md` already closes: IDO cannot emit them, and they do
-not become verified assembly without a byte-identical permitted reference
-object. `main/refractOutputAssembler`, once listed here as a compiler-shaped
+Since 2026-10-14 the only one left is the four-byte `nop` below. The five
+owners this paragraph used to list -- `main/trackasm` (a Jet Force Gemini
+handwritten run in shorter revisions), `main/shadows_fp_19144`,
+`main/weather_snow_asm`, `main/conv_mult_matrix` and `main/gen_anim_data` --
+are verified assembly under evidence class 3 of `verified_asm.us.txt`
+(proved hand-written by mechanism, no reference identity), as are the two
+matrix routines `main/matrix` and `main/matrix_2BC40`. No byte-identical
+reference was found for any of them; the reference searches below are what
+established that, and class 3 is the owner decision that credits them
+without one. `main/refractOutputAssembler`, once listed here as a compiler-shaped
 near miss, is verified assembly since 2026-10-07: its whole `.text` agrees
 with Jet Force Gemini's hand-written `src/hasm/refractOutputAssembler.s`
 on every word outside the 16 HI16/LO16 relocated fields, and it saves

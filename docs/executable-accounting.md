@@ -47,6 +47,12 @@ zero words, assembly owners or particular filenames are padding.
   until it was matched in C (2026-10-02); its compiled ELF extent is now its
   824 executable bytes, the alignment word lies outside every function
   extent, and its exclusion row was retired.
+- `func_8002B040`'s row was retired on 2026-10-14, when `main/matrix_2BC40`
+  became a verified assembly subsegment (`verified_asm.us.txt`, evidence
+  class 3). Its extracted ELF extent is its 136 executable bytes, the eight
+  alignment bytes lie outside every function extent, and a credited symbol
+  may not carry an exclusion row. The manifest's excluded total falls from
+  684 to 676 bytes; no credited numerator moves because of the exclusion.
 - `func_8005800C` is a separate four-byte alignment identity. The preceding
   `osFlashReadArray` ends at 0x80058008 after a return and its executed nop
   delay slot; the next function starts at 0x80058010. The isolated identity

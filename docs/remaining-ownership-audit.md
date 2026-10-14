@@ -29,6 +29,15 @@ separately from newly ROM-exact executable bytes.
 
 ## Unresolved original-assembly evidence: 9,380 executable bytes
 
+**Closed 2026-10-14.** The owner decision of that date ("100% by the typical
+community standards, with HASM etc. handled appropriately") added evidence
+class 3 to `verified_asm.us.txt`: proved hand-written by mechanism, with no
+reference identity. All five owners below and both matrix candidates are now
+credited under it, each routine with its own mechanism in `mickey.us.yaml`
+and its tier argued in `docs/modules.md` 1.2. Resolved bytes rose by exactly
+the 9,812 this section counted. The inventory below is kept as the record of
+what class 3 closed.
+
 The 2026-10-11 raw resident census still reports 9,396 bytes outside the accepted original-asm
 ledger. Twelve bytes are trailing section padding, and four are the nop
 identity above. The remaining executable inventory is:
@@ -93,10 +102,10 @@ source packet is assigned; none of these rows is an exact-match promise.
 | [overlay 64 texture generation](matching-triage-handoffs/func_overlay_064_F0000000_18C3B28.md) | 1680 | Retain the measured anonymous argument exclusions without the extra conditional branch, and resolve address/index ordering while preserving unrolling. |
 | [func_800517E0](matching-triage-handoffs/func_800517E0.md) | 7232 | Combine the proved return-liveness copy retention with target-shaped shared address ranges; a signature change alone is byte-identical and does not establish the original return type. |
 
-The path to completion has two separate acceptance tracks: match these seven
+The path to completion had two separate acceptance tracks: match these seven
 C owners with untouched compiler output and exact linked-range/relocation
-proofs, and close the assembly-authentication inventory above with qualifying
-reference evidence. Each success still requires the ordinary full-ROM,
+proofs, and close the assembly-authentication inventory above. The second
+closed on 2026-10-14 under evidence class 3; the C track remains. Each success still requires the ordinary full-ROM,
 clean-room, documentation and scoreboard gates. Better candidate scores,
 resolved compiler hypotheses and tooling fixes add no matching credit.
 

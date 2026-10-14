@@ -30,6 +30,9 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * 372 -> 371 (lane q-3): the first sum in the target's add order with in++
  * after the first clamp, not a natural placement; an in++ after the
  * loads' block stops uopt's loop-carried load webs (shard, 2026-10-08).
+ * The second smoothing sum through pointer expressions rather than negative
+ * subscripts: masked unchanged (371 at 0), aligned residual 297 -> 283, out
+ * now takes a2 as shipped (lane opus-o064, 2026-10-14).
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -130,7 +133,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         j = width - 2;
         while (j--) {
-            lo = (in[-width] + in[-width - 1] + in[-width + 1]) >> 2;
+            lo = (*(in - width) + *(in - width - 1) + *(in - width + 1)) >> 2;
             in++;
             if (lo < 0xAA) {
                 lo--;

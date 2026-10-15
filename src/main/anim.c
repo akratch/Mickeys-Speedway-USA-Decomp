@@ -2617,6 +2617,13 @@ extern f32 D_8008420C;
  * 2026-10-07 (lane i-5): the step components are read z first (z, x, y),
  * which numbers their webs in the target's colour order (z f0/f14, x
  * f2/f16, y f12/f18); masked unchanged at 344, aligned residual 270 to 255.
+ * 2026-10-16 (lane muse-54b3c): pz2 body (Fable session permuter). The
+ * quadratic block is inline; `addr = &x;` takes the address of the five
+ * doubles that must stay in memory (twoZ1, twoX1, twoY1, twoZ2, twoX2)
+ * and of secondPoint->z, read back as z2, which kills the z2 hoist.
+ * Those `addr =` lines are the only unnatural spelling. Instruction
+ * stream identical to the target; masked 70 at size 0, all stack
+ * offsets (frame 0xE8 against 0xD8).
  */
 s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                   s32 arg2, AnimCollisionShape *arg3,
@@ -2624,9 +2631,9 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     AnimVec3f *firstPoint;
     AnimVec3f *secondPoint;
     f32 radiusSq;
-    f32 discriminant;
     f32 fraction;
     AnimVec3f *firstVector;
+    AnimVec3f *secondVector;
     f32 quadA;
     f32 quadB;
     f32 quadC;
@@ -2649,108 +2656,124 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     f32 dx;
     f32 dy;
     f32 dz;
-    f32 ex;
+    f32 discriminant;
     f32 ey;
     f32 ez;
-
+    f32 twoY2;
+    f32 twoZ2;
+    f32 *addr;
+    f32 twoX2;
     radiusSq = arg1->radius + arg3->radius;
-    if (1) {
-    }
+    addr = &twoZ1;
+    addr = &twoX1;
+    addr = &twoY1;
+    addr = &twoZ2;
+    addr = &twoX2;
     hit = 0;
     firstPoint = &arg1->position;
+    firstVector = &arg1->vector;
     radiusSq = radiusSq * radiusSq;
     secondPoint = &arg3->position;
-    if ((arg1->flags & 2) || (arg3->flags & 2)) {
+    secondVector = &arg3->vector;
+    if ((arg1->flags & 2) || (arg3->flags & 2))
+    {
         dx = secondPoint->x - firstPoint->x;
         dy = secondPoint->y - firstPoint->y;
         dz = secondPoint->z - firstPoint->z;
-        if (dx * dx + dy * dy + dz * dz <= radiusSq) {
+        if ((((dx * dx) + (dy * dy)) + (dz * dz)) <= radiusSq)
+        {
             arg4->object = arg0;
             arg4->value = arg2;
             arg4->fraction = 0.0f;
             return 1;
         }
     }
-    firstVector = &arg1->vector;
+    addr = &secondPoint->z;
     stepZ1 = firstVector->z;
-    stepZ2 = arg3->vector.z;
+    stepZ2 = secondVector->z;
     stepX1 = firstVector->x;
-    stepX2 = arg3->vector.x;
+    stepX2 = secondVector->x;
     stepY1 = firstVector->y;
-    stepY2 = arg3->vector.y;
-    quadA = ((stepX1 * stepX1) - (2.0f * stepX1 * stepX2) + (stepX2 * stepX2)) +
-            ((stepY1 * stepY1) - (2.0f * stepY1 * stepY2) + (stepY2 * stepY2)) +
-            ((stepZ1 * stepZ1) - (2.0f * stepZ1 * stepZ2) + (stepZ2 * stepZ2));
-    secondPoint = &arg3->position;
-    firstPoint = &arg1->position;
-    z2 = secondPoint->z;
+    stepY2 = secondVector->y;
+    quadA = ((stepZ2 * stepZ2) + ((stepZ1 * stepZ1) - ((2.0f * stepZ1) * stepZ2))) + ((((stepX1 * stepX1) - ((2.0f * stepX1) * stepX2)) + (stepX2 * stepX2)) + (((stepY1 * stepY1) - ((2.0f * stepY1) * stepY2)) + (stepY2 * stepY2)));
+    z2 = *addr;
+    twoZ2 = z2 + z2;
     z1 = firstPoint->z;
     twoZ1 = z1 + z1;
     x1 = firstPoint->x;
     twoX1 = x1 + x1;
     x2 = secondPoint->x;
+    twoX2 = x2 + x2;
     y1 = firstPoint->y;
     twoY1 = y1 + y1;
     y2 = secondPoint->y;
-    quadB = ((stepZ2 * (z2 + z2)) +
-             (((twoZ1 * stepZ1) - (twoZ1 * stepZ2)) - ((z2 + z2) * stepZ1))) +
-            ((((twoX1 * stepX1) - (twoX1 * stepX2)) - ((x2 + x2) * stepX1)) +
-             ((x2 + x2) * stepX2) +
-             ((((twoY1 * stepY1) - (twoY1 * stepY2)) - ((y2 + y2) * stepY1)) +
-              ((y2 + y2) * stepY2)));
-    quadC = (z2 * z2) + ((z1 * z1) - (twoZ1 * z2)) +
-            (((x1 * x1) - (twoX1 * x2)) + (x2 * x2) +
-             (((y1 * y1) - (twoY1 * y2)) + (y2 * y2)));
-    if (quadA != 0.0f) {
-        z1 = 4.0f * quadA;
-        discriminant = z1 * (quadC - radiusSq);
-        z2 = quadB * quadB;
-        if (discriminant < z2) {
-            discriminant = sqrtf(z2 - discriminant);
-            twoZ1 = -quadB;
-            x1 = 2.0f * quadA;
-            fraction = (twoZ1 - discriminant) / x1;
-            if (fraction >= 0.0f && fraction <= 1.0f) {
-                discriminant = z1 * (quadC - (radiusSq + 83.0f));
-                if (discriminant < z2) {
-                    fraction = (twoZ1 - sqrtf(z2 - discriminant)) / x1;
-                    hit = 1;
-                    if (fraction > 1.0f) {
+    twoY2 = y2 + y2;
+    quadB = ((stepZ2 * twoZ2) + (((twoZ1 * stepZ1) - (twoZ1 * stepZ2)) - (twoZ2 * stepZ1))) + (((((twoX1 * stepX1) - (twoX1 * stepX2)) - (twoX2 * stepX1)) + (twoX2 * stepX2)) + ((((twoY1 * stepY1) - (twoY1 * stepY2)) - (twoY2 * stepY1)) + (twoY2 * stepY2)));
+    quadC = ((z2 * z2) + ((z1 * z1) - (twoZ1 * z2))) + ((((x1 * x1) - (twoX1 * x2)) + (x2 * x2)) + (((y1 * y1) - (twoY1 * y2)) + (y2 * y2)));
+    if (quadA != 0.0f)
+    {
+        discriminant = (4.0f * quadA) * (quadC - radiusSq);
+        if (discriminant < (quadB * quadB))
+        {
+            discriminant = sqrtf((quadB * quadB) - discriminant);
+            fraction = ((-quadB) - discriminant) / (2.0f * quadA);
+            if ((fraction >= 0.0f) && (fraction <= 1.0f))
+            {
+                discriminant = (4.0f * quadA) * (quadC - (radiusSq + 83.0f));
+                if (discriminant < (quadB * quadB))
+                {
+                    fraction = ((-quadB) - sqrtf((quadB * quadB) - discriminant)) / (2.0f * quadA);
+                    if (fraction > 1.0f)
+                    {
                         fraction = 1.0f;
-                    } else if (fraction < 0.0f) {
+                    }
+                    else
+                        if (fraction < 0.0f)
+                    {
                         fraction = 0.0f;
                     }
                     arg4->object = arg0;
                     arg4->value = arg2;
                     arg4->fraction = fraction;
+                    hit = 1;
                 }
-            } else {
-                ex = arg3->edge.x - arg1->edge.x;
-                ey = arg3->edge.y - arg1->edge.y;
-                ez = arg3->edge.z - arg1->edge.z;
-                if (ex * ex + ey * ey + ez * ez <= radiusSq) {
-                    discriminant = z1 * (quadC - (radiusSq + 83.0f));
-                    if (discriminant < z2) {
-                        fraction = (twoZ1 - sqrtf(z2 - discriminant)) / x1;
-                        hit = 1;
-                        if (fraction > 1.0f) {
+            }
+            else
+            {
+                dx = arg3->edge.x - arg1->edge.x;
+                dy = arg3->edge.y - arg1->edge.y;
+                dz = arg3->edge.z - arg1->edge.z;
+                if ((((dx * dx) + (dy * dy)) + (dz * dz)) <= radiusSq)
+                {
+                    discriminant = (4.0f * quadA) * (quadC - (radiusSq + 83.0f));
+                    if (discriminant < (quadB * quadB))
+                    {
+                        fraction = ((-quadB) - sqrtf((quadB * quadB) - discriminant)) / (2.0f * quadA);
+                        if (fraction > 1.0f)
+                        {
                             fraction = 1.0f;
-                        } else if (fraction < 0.0f) {
+                        }
+                        else
+                            if (fraction < 0.0f)
+                        {
                             fraction = 0.0f;
                         }
                         arg4->object = arg0;
                         arg4->value = arg2;
                         arg4->fraction = fraction;
+                        hit = 1;
                     }
                 }
             }
         }
     }
-    if (hit == 0) {
-        ex = arg3->edge.x - arg1->edge.x;
-        ey = arg3->edge.y - arg1->edge.y;
-        ez = arg3->edge.z - arg1->edge.z;
-        if (ex * ex + ey * ey + ez * ez <= radiusSq) {
+    if (hit == 0)
+    {
+        dx = arg3->edge.x - arg1->edge.x;
+        dy = arg3->edge.y - arg1->edge.y;
+        dz = arg3->edge.z - arg1->edge.z;
+        if ((((dx * dx) + (dy * dy)) + (dz * dz)) <= radiusSq)
+        {
             arg4->object = arg0;
             arg4->value = arg2;
             hit = 1;
@@ -4000,11 +4023,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80054B3C:start
  * symbol: func_80054B3C
- * score: 344/370 words
- * frame: 0xD8
+ * score: 70/370 words
+ * frame: 0xE8 (target 0xD8)
  * relocations: 3
- * first-mismatch: +0x4
- * summary: 344 at size 0: KEEP on six declared doubles plus four pointer defs reproduces the target skeleton; entry vector pointers are natural (339 at +8).
+ * first-mismatch: +0x0
+ * summary: 70 at size 0 (pz2 body): instruction stream identical to the target; every residual word is a stack offset from the frame (four uopt temporaries for 4a, b^2, 2a, -b where the target uses homes). The `addr = &x;` lines are the only unnatural spelling.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

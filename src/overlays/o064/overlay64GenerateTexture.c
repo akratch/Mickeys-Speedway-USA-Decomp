@@ -63,6 +63,11 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * redundant double mask on in[width - 1] at 168 showed one extra scratch
  * draw there; this is the natural spelling nearest it).
  * 191 -> 190: the noise value as *out + mathRnd(...), the shipped add order.
+ * 190 -> 175: one counter k for both noise loops, assigned width - 6 once
+ * before the branch (the target keeps one counter there), then a rescan:
+ * the five-row smoothing loop counts with lo, its sum is held in distance,
+ * the copy loop counts with distance. temp is now unused; deleting its
+ * declaration moves the frame offsets and costs 17 words (192).
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -92,10 +97,9 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         src = D_800D60C0[index];
     }
 
-    temp = width - 6;
+    k = width - 6;
     out = src + (height - 6) * width + 3;
     if (!gO64Initialized) {
-        k = temp;
         while (k--) {
             value = (width >> 1) - k - 3;
             if (value <= 0) {
@@ -105,9 +109,8 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         }
         gO64Initialized = 1;
     } else {
-        i = temp;
-        while (i--) {
-            value = (width >> 1) - i - 3;
+        while (k--) {
+            value = (width >> 1) - k - 3;
             if (value <= 0) {
                 value = -value;
             }
@@ -156,21 +159,21 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
     out += width;
     in += width;
-    i = 5;
-    while (i--) {
+    lo = 5;
+    while (lo--) {
         *out++ = 0;
         in++;
         k = width - 2;
         while (k--) {
-            j = (*(in - width) + *(in - 1 - width) + *(in + 1 - width)) >> 2;
+            distance = (*(in - width) + *(in - 1 - width) + *(in + 1 - width)) >> 2;
             in++;
-            if (j < 0xAA) {
-                j--;
+            if (distance < 0xAA) {
+                distance--;
             }
-            if (j < 0) {
-                j = 0;
+            if (distance < 0) {
+                distance = 0;
             }
-            *out++ = j;
+            *out++ = distance;
         }
         *out++ = 0;
         in++;
@@ -178,8 +181,8 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
     out = dst + (height - 6) * width;
     in = out - width;
-    k = width;
-    while (k--) {
+    distance = width;
+    while (distance--) {
         *out++ = *in++;
     }
 
@@ -239,10 +242,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 190/420 words
+ * score: 175/420 words
  * frame: 0x70
  * relocations: 20
  * first-mismatch: +0x9C
- * summary: noise value as *out + mathRnd (190); counter-merging cells priced, none pays
+ * summary: one noise counter k assigned once (175); scratch parity from the select toggle on
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

@@ -70,6 +70,13 @@ class RegionTests(unittest.TestCase):
         self.assertNotIn((12, 14, "i", "sum"), moves, "sum occurs in the region")
         self.assertFalse(any(m[3] == "p" for m in moves), "a pointer is not an int's class")
 
+    def test_static_guard_refuses_a_live_in_read(self):
+        # Lines 12-14 read i (the while test) before writing it: i is live into the region.
+        guarded = rrs.candidate_moves(self.lines, "sample", {"w": [12, 14]}, static_guard=True)
+        self.assertNotIn((12, 14, "i", "j"), guarded)
+        # Lines 11-14 write i first and i is not read afterwards.
+        self.assertIn((11, 14, "i", "j"), rrs.candidate_moves(self.lines, "sample", {"w": [11, 14]}, static_guard=True))
+
     def test_apply_moves_keeps_line_numbers(self):
         out = rrs.apply_moves(self.lines, [(11, 14, "i", "j")])
         self.assertEqual(len(out), len(self.lines))

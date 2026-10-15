@@ -2,7 +2,7 @@
  * Behaviour driver for src/overlays/o064/overlay64GenerateTexture.c
  * (func_overlay_064_F0000000_18C3B28), used by tools/behaviour_check.py.
  *
- * Synthetic inputs only: patterned source/destination buffers, a byte image
+ * Synthetic inputs only: source/destination buffers in five patterns, a byte image
  * with the TU's header layout (u16 width at +6, u16 height at +8, pixels at
  * +0x20) placed with room on both sides for the even rows' -4 byte offset,
  * nine image sizes, both initialised states and both buffer selects.
@@ -33,6 +33,30 @@ void func_overlay_064_F0000000_18C3B28(s32 index, void *image, u8 *unused);
 
 static unsigned digest;
 
+/*
+ * Buffer contents by pattern: a ramp, all zeros, near zero (so the smoothing
+ * sums reach 0 and every clamp is taken), near 0xFF, and LCG noise. A
+ * pattern set that never makes a sum zero lets a cell that drops the
+ * `< 0` clamp pass, which happened once (2026-10-15).
+ */
+static u8 fill(int k, int salt, int pattern)
+{
+    unsigned x = (unsigned)(k * 2654435761u + salt * 40503u);
+
+    switch (pattern % 5) {
+        case 0:
+            return (u8)(k * 7 + salt);
+        case 1:
+            return 0;
+        case 2:
+            return (u8)((x >> 13) % 3);
+        case 3:
+            return (u8)(0xFF - (x >> 11) % 4);
+        default:
+            return (u8)(x >> 16);
+    }
+}
+
 static void mix(const void *p, size_t n)
 {
     const u8 *q = p;
@@ -60,8 +84,8 @@ int main(void)
             seed = t * 100 + r;
             for (i = 0; i < 4; i++) {
                 for (k = 0; k < 8192; k++) {
-                    bufA[i][k] = (u8)(k * 7 + i + r);
-                    bufB[i][k] = (u8)(k * 13 + i);
+                    bufA[i][k] = fill(k, i + r, t + r);
+                    bufB[i][k] = fill(k, i + 4, t + r + 1);
                 }
             }
             memset(block, 0x5A, sizeof block);

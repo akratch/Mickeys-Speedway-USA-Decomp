@@ -21,10 +21,14 @@ brace block opened by `while`, `for`, `do`, `if` or `else` inside the
 function, plus each top-level statement run between blank lines.
 
 A rename can change meaning (the region reads a value of `old` set outside
-it, or writes `new` while `new` is live across it). With --driver, every
+it, or writes `new` while `new` is live across it). --static-guard refuses
+the first kind where it is visible in straight-line text. With --driver, every
 cell is run through tools/behaviour_check.py against the starting candidate
 and a cell whose behaviour differs is dropped before it is scored. Without a
 driver nothing is checked and every adopted row must be argued by hand.
+A driver only checks the inputs it builds: on 2026-10-15 a move that turned
+a `< 0` clamp into a test of the loop counter passed a driver whose buffers
+never made the sum zero. Make the driver reach every branch.
 
 `scan` scores every move once (tools/fast_score.py --aligned) and prints
 `masked delta residual moves` rows, best first. `greedy` adopts the best
@@ -125,13 +129,34 @@ def apply_moves(lines: list[str], moves) -> list[str]:
     return out
 
 
-def candidate_moves(lines: list[str], symbol: str, regions: dict[str, list[int]]):
+def first_mention_is_assignment(text: str, name: str) -> bool | None:
+    """True if `name`'s first mention in TEXT is a plain `name = ...` store, None if absent."""
+    m = re.search(rf"\b{re.escape(name)}\b", text)
+    if not m:
+        return None
+    return re.match(rf"{re.escape(name)}\s*=(?!=)", text[m.start():]) is not None
+
+
+def locally_dead(lines: list[str], symbol: str, first: int, last: int, old: str) -> bool:
+    """A cheap static screen: `old` is written before it is read inside the region, and
+    is written before it is read after it (or not mentioned again). Loops that carry
+    the value around the region's back edge are not seen; the driver is the check."""
+    _, body, end = function_lines(lines, symbol)
+    inside = "\n".join(lines[first - 1:last])
+    after = "\n".join(lines[last:end])
+    return first_mention_is_assignment(inside, old) is True and \
+        first_mention_is_assignment(after, old) is not False
+
+
+def candidate_moves(lines: list[str], symbol: str, regions: dict[str, list[int]], static_guard: bool = False):
     decl = declared_locals(lines, symbol)
     moves = []
     for first, last in regions.values():
         seg = "\n".join(lines[first - 1:last])
         for old, t in decl.items():
             if not re.search(rf"\b{re.escape(old)}\b", seg):
+                continue
+            if static_guard and not locally_dead(lines, symbol, first, last, old):
                 continue
             for new, t2 in decl.items():
                 if new == old or t2 != t or re.search(rf"\b{re.escape(new)}\b", seg):
@@ -160,12 +185,12 @@ def score(symbol: str, text: str, workdir: Path, reference: Path | None, driver:
         os.unlink(path)
 
 
-def scan(symbol, lines, regions, driver, jobs, workdir):
+def scan(symbol, lines, regions, driver, jobs, workdir, static_guard=False):
     ref = None
     if driver is not None:
         ref = workdir / "reference.c"
         ref.write_text("\n".join(lines))
-    moves = candidate_moves(lines, symbol, regions)
+    moves = candidate_moves(lines, symbol, regions, static_guard)
 
     def one(mv):
         return mv, score(symbol, "\n".join(apply_moves(lines, [mv])), workdir, ref, driver)
@@ -185,6 +210,8 @@ def main(argv=None) -> int:
     ap.add_argument("--driver", type=Path)
     ap.add_argument("-j", "--jobs", type=int, default=8)
     ap.add_argument("--out", type=Path)
+    ap.add_argument("--static-guard", action="store_true",
+                    help="also refuse moves whose `old` is read before written in the region or after it")
     a = ap.parse_args(argv)
     lines = a.candidate.read_text().split("\n")
     regions = json.loads(a.regions.read_text()) if a.regions else auto_regions(lines, a.symbol)
@@ -195,7 +222,7 @@ def main(argv=None) -> int:
     with tempfile.TemporaryDirectory(prefix="rrscan_") as tmp:
         workdir = Path(tmp)
         if a.mode == "scan":
-            rows, total = scan(a.symbol, lines, regions, a.driver, a.jobs, workdir)
+            rows, total = scan(a.symbol, lines, regions, a.driver, a.jobs, workdir, a.static_guard)
             text = "".join(f"{s[0]}\t{s[1]}\t{s[2]}\t{json.dumps(list(mv))}\n" for mv, s in rows)
             (a.out.write_text(text) if a.out else sys.stdout.write(text))
             print(f"{total} cells, {len(rows)} scored", file=sys.stderr)
@@ -206,7 +233,7 @@ def main(argv=None) -> int:
         best = base[0] if base else 10**9
         print(f"start {best}", file=sys.stderr)
         while True:
-            rows, _ = scan(a.symbol, lines, regions, a.driver, a.jobs, workdir)
+            rows, _ = scan(a.symbol, lines, regions, a.driver, a.jobs, workdir, a.static_guard)
             if not rows or rows[0][1][1] != 0 or rows[0][1][0] >= best:
                 break
             mv, s = rows[0]

@@ -1936,14 +1936,17 @@ void func_800517E0(void) {
                     D_8007D6A4 = currentCommand;
                     break;
                 case 0x7C:
-                    currentCommand = cursor->command;
+                    /* The command masked into index, as 0x7D: the value
+                     * joins a web the 6000 piece already holds from 0x49
+                     * (lane rewrite-517e0, tenth round). */
+                    index = cursor->command & 3;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    joyDisable(currentCommand & 3);
+                    joyDisable(index);
                     break;
                 case 0x7D:
-                    word2 = cursor->command;
+                    index = cursor->command & 3;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    joyEnable(word2 & 3);
+                    joyEnable(index);
                     break;
                 case 0x7E:
                     D_8007D6A8 -= ((s32) commandDuration * 0x3C) / 100;
@@ -3996,10 +3999,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 603/1808 words
+ * score: 599/1808 words
  * frame: 0x1B0
  * relocations: 243
  * first-mismatch: +0xDC
- * summary: Back at 603 masked / 282 aligned, size 0; the size -24 structural round is parked on lane/rewrite-517e0-structural
+ * summary: 0x7C/0x7D through index at size 0; the other shipped shapes each shorten the function
  * PLATEAU-HANDOFF:func_800517E0:end
  */

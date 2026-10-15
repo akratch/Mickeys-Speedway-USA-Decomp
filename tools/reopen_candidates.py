@@ -169,6 +169,8 @@ def candidates(since: str) -> list[dict]:
     open_functions = queued()
     rows = []
     for path in sorted(HANDOFFS.glob("*.md")):
+        if ".archive-" in path.stem:      # folded into its shard's text below
+            continue
         symbol = path.stem
         row = open_functions.get(symbol)
         if row is None:
@@ -177,6 +179,8 @@ def candidates(since: str) -> list[dict]:
         if not date or date >= since:
             continue                      # written with the laws already in hand
         text = path.read_text(encoding="utf-8", errors="replace")
+        for archive in sorted(HANDOFFS.glob(f"{symbol}.archive-*.md")):
+            text += "\n" + archive.read_text(encoding="utf-8", errors="replace")
         laws = [name for name, rx in LAW_CONSTRUCTS.items() if rx.search(text)]
         if any(name in LOOP_LAWS for name in laws):
             # A row without a file, like a row whose body will not parse, is

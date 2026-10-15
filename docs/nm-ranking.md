@@ -295,7 +295,7 @@ units remain distinct.
 | 1 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
 | 2 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 254 | 252 | 28 | 28 | 0 | — |
 | 3 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
-| 4 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 611 | 606 | 200 | 220 | 0 | — |
+| 4 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 608 | 603 | 200 | 220 | 0 | — |
 
 ### Unresolved identities
 

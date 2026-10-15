@@ -1704,7 +1704,7 @@ void func_800517E0(void) {
                     targetValue = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     high2 = *((u16 *) ((u8 *) cursor + 6)) >> 8;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
-                    word12 = *((u16 *) ((u8 *) cursor + 8));
+                    frame4D = *((u16 *) ((u8 *) cursor + 8));
                     value = (f32) *((u16 *) ((u8 *) cursor + 0xA));
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
@@ -1716,7 +1716,7 @@ void func_800517E0(void) {
                             entry = *(void **)
                                 ((u8 *) reference + packed2 * 4);
                             animCommandSlotTrap(
-                                entry, targetValue, high2, low2, word12, value, 1);
+                                entry, targetValue, high2, low2, frame4D, value, 1);
                         }
                     }
                     break;
@@ -1930,17 +1930,15 @@ void func_800517E0(void) {
                     break;
                 case 0x7B:
                     D_8007D6A8 = ((s32) commandDuration * 0x3C) / 100;
-                    duration = cursor->duration;
-                    value = (f32) duration;
-                    D_8007D6AC = value * factor;
+                    D_8007D6AC = (f32) cursor->duration * factor;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     currentCommand = (s8) (*((u16 *) ((u8 *) cursor - 2)) & 0xFF);
                     D_8007D6A4 = currentCommand;
                     break;
                 case 0x7C:
-                    signedValue = cursor->command;
+                    currentCommand = cursor->command;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    joyDisable(signedValue & 3);
+                    joyDisable(currentCommand & 3);
                     break;
                 case 0x7D:
                     word2 = cursor->command;
@@ -3998,10 +3996,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 606/1808 words
+ * score: 603/1808 words
  * frame: 0x1B0
  * relocations: 243
  * first-mismatch: +0xDC
- * summary: Aligned 287 at size 0: role-guided case locals (target keeps one value class per saved register); 0x79 still keeps both pieces.
+ * summary: Aligned 282 at size 0. Natural 0x41/78/7C/7D call shapes plus the shipped 0x79 block sum to size 0; pieces must refuse 0x79's first block.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

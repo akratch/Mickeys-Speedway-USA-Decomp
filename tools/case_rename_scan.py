@@ -116,16 +116,40 @@ def apply_moves(src: str, symbol: str, moves) -> str:
     return src
 
 
+def loop_wide(src: str, symbol: str, locs) -> set[str]:
+    """Locals used outside every case block (loop state, hoisted constants).
+
+    Renaming a case's value onto one of these would clobber it for the rest of
+    the function, so they are never a move's source or destination.
+    """
+    a, b = function_span(src, symbol)
+    blocks = sorted(case_blocks(src, symbol).values())
+    outside, pos = [], a
+    for st, en in blocks:
+        outside.append(src[pos:st])
+        pos = en
+    outside.append(src[pos:b])
+    text = re.sub(r"/\*.*?\*/", " ", "".join(outside), flags=re.S)
+    used = set()
+    for line in text.splitlines():
+        s = line.strip()
+        if re.match(r"^[A-Za-z_][\w\s]*\**\s*[A-Za-z_]\w*;$", s) and s.split()[-1].rstrip(";").lstrip("*") in locs:
+            continue  # a declaration, not a use
+        used |= {w for w in re.findall(r"\b\w+\b", s) if w in locs}
+    return used
+
+
 def all_moves(src: str, symbol: str, cases=None):
     locs = declared_locals(src, symbol)
+    fixed = FIXED | loop_wide(src, symbol, locs)
     for lab, (st, en) in case_blocks(src, symbol).items():
         if cases and lab.lower() not in cases:
             continue
         blk = src[st:en]
         used = {w for w in re.findall(r"\b\w+\b", blk) if w in locs}
-        for old in sorted(used - FIXED):
+        for old in sorted(used - fixed):
             for new in locs:
-                if new in used or new in FIXED or kind(locs[new]) != kind(locs[old]):
+                if new in used or new in fixed or kind(locs[new]) != kind(locs[old]):
                     continue
                 yield (lab, old, new)
 

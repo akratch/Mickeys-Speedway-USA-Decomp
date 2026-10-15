@@ -1059,7 +1059,7 @@ void trackFadeFog(s32 fogIndex, s32 red, s32 green, s32 blue, s32 near,
                    s32 far, f32 timer);
 void func_800498FC(s32 index, f32 duration, f32 delay, s32 red,
                    s32 green, s32 blue, s32 flags);
-void func_8004EED0(u8 arg0);
+void func_8004EED0(s32 arg0);
 void func_8004E99C(void);
 f32 func_8002A8BC(s32 angle);
 f32 func_8002A8C0(s32 angle);
@@ -1508,12 +1508,12 @@ void func_800517E0(void) {
                     s32 scrollY;
 
 
-                    packed = cursor->command & 0xFF;
+                    targetValue = cursor->command & 0xFF;
 
                     /* scrollX is read before scrollY again once 0x46 and
                      * 0x47 colour as shipped (lane q-4; p-4 had measured
                      * the reverse on the earlier ring phase). The byte goes
-                     * through packed and the duration through value (a1 and
+                     * through targetValue and the duration through value (a1 and
                      * f16 as shipped). */
                     index = *((u16 *) ((u8 *) cursor + 4));
                     scrollX = *((s16 *) ((u8 *) cursor + 6));
@@ -1523,7 +1523,7 @@ void func_800517E0(void) {
                     scrollX = (s32) ((u32) scrollX << 16) / 6000;
                     scrollY = (s32) ((u32) scrollY << 16) / 6000;
                     scroll = (AnimCommandScroll *)
-                        &D_800D6B58[packed & 7];
+                        &D_800D6B58[targetValue & 7];
                     scroll->textureIndex = index;
                     scroll->duration = (s16) (s32) (value *
                                                (60.0f * 0.01f));
@@ -1701,7 +1701,7 @@ void func_800517E0(void) {
                 case 0x6A: {
                     pathIndex = cursor->command & 0xFF;
                     packed2 = *((u16 *) ((u8 *) cursor + 4)) >> 8;
-                    targetValue = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    word3 = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     high2 = *((u16 *) ((u8 *) cursor + 6)) >> 8;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     frame4D = *((u16 *) ((u8 *) cursor + 8));
@@ -1716,7 +1716,7 @@ void func_800517E0(void) {
                             entry = *(void **)
                                 ((u8 *) reference + packed2 * 4);
                             animCommandSlotTrap(
-                                entry, targetValue, high2, low2, frame4D, value, 1);
+                                entry, word3, high2, low2, frame4D, value, 1);
                         }
                     }
                     break;
@@ -1936,14 +1936,17 @@ void func_800517E0(void) {
                     D_8007D6A4 = currentCommand;
                     break;
                 case 0x7C:
-                    currentCommand = cursor->command;
+                    /* The command masked into index, as 0x7D: the value
+                     * joins a web the 6000 piece already holds from 0x49
+                     * (lane rewrite-517e0, tenth round). */
+                    index = cursor->command & 3;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    joyDisable(currentCommand & 3);
+                    joyDisable(index);
                     break;
                 case 0x7D:
-                    word2 = cursor->command;
+                    index = cursor->command & 3;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    joyEnable(word2 & 3);
+                    joyEnable(index);
                     break;
                 case 0x7E:
                     D_8007D6A8 -= ((s32) commandDuration * 0x3C) / 100;
@@ -3996,10 +3999,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 603/1808 words
+ * score: 595/1808 words
  * frame: 0x1B0
  * relocations: 243
  * first-mismatch: +0xDC
- * summary: Aligned 282 at size 0. The 0x79 &D_8007D6BC web is split with no pieces; bias and force cannot colour it; it needs a second counted use.
+ * summary: 0x46 exact at size 0; 0x7A/0x41/0x78 shapes need the short handlers 0x40, 0x6A, 0x79 to gain their words first
  * PLATEAU-HANDOFF:func_800517E0:end
  */

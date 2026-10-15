@@ -4000,6 +4000,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 243
  * first-mismatch: +0xDC
- * summary: Aligned 282 at size 0. The 0x79 &D_8007D6BC web is split with no pieces; bias and force cannot colour it; it needs a second counted use.
+ * summary: Aligned 282 at size 0, a per-case rename optimum. Struct and second-use routes do not hold 0x79's address; 0x40/41/60 shipped forms still cost.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

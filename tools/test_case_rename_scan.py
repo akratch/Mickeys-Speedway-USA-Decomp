@@ -12,8 +12,10 @@ SRC = """
 void f(void) {
     s32 a;
     s32 b;
+    s32 k;
     f32 x;
     Thing *p;
+    k = 3; /* b is named here only in a comment */
     switch (g) {
         case 0:
             a = 1;
@@ -36,7 +38,7 @@ void f(void) {
 class CaseRenameTests(unittest.TestCase):
     def test_locals_and_kinds(self):
         locs = crs.declared_locals(SRC, "f")
-        self.assertEqual(locs, {"a": "s32", "b": "s32", "x": "f32", "p": "Thing*"})
+        self.assertEqual(locs, {"a": "s32", "b": "s32", "k": "s32", "x": "f32", "p": "Thing*"})
         self.assertEqual(crs.kind(locs["x"]), "f")
         self.assertNotEqual(crs.kind(locs["p"]), crs.kind(locs["a"]))
 
@@ -55,6 +57,10 @@ class CaseRenameTests(unittest.TestCase):
     def test_refuses_merge(self):
         with self.assertRaises(ValueError):
             crs.apply_moves(SRC, "f", [("0x1A", "b", "a")])
+
+    def test_loop_wide_locals_are_never_moved(self):
+        self.assertEqual(crs.loop_wide(SRC, "f", crs.declared_locals(SRC, "f")), {"k"})
+        self.assertFalse(any("k" in m[1:] for m in crs.all_moves(SRC, "f")))
 
     def test_moves_respect_class(self):
         moves = set(crs.all_moves(SRC, "f"))

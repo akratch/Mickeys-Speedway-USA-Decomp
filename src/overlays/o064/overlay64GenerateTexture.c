@@ -86,6 +86,14 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * both smoothing passes store and then step in; the second sum takes the
  * two side texels before the centre; the even rows step in after the
  * product.
+ * 6 -> 4: the row stride is read through a copy, `i = width` before the
+ * row loop and `dst + (i << 1)` after the even rows. uopt numbers an
+ * expression when it is first hashed: reading (codeimage, source order)
+ * first, then the unroller's new copies, then copy propagation. `width << 1`
+ * written directly is numbered at reading, between the even loop's `j + 1`
+ * (its own increment) and the unroller's `j + 2`, and spilltemps serves
+ * slots in that order, so it took 0x1C. Reached by propagating the copy, it
+ * is numbered after `j + 2` and shares 0x18 with `width >> 1` as shipped.
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -207,6 +215,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
     in = dst;
     pixels = image->pixels;
+    i = width;
     k = height;
     while (k--) {
         dst = (u8 *)pixels;
@@ -254,7 +263,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 }
                 *pixels = (hi << 8) | lo;
             }
-            pixels = (u16 *)(dst + (width << 1));
+            pixels = (u16 *)(dst + (i << 1));
         }
     }
 }
@@ -264,10 +273,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 6/420 words
+ * score: 4/420 words
  * frame: 0x70
  * relocations: 20
  * first-mismatch: +0x214
- * summary: statics; one outer counter k declared first; sums in i; named nibble; store then step (6)
+ * summary: statics; one outer counter k declared first; sums in i; named nibble; store then step; stride via i = width (4)
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

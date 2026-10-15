@@ -5262,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, naming. Inside carrier plus kept face stores is 22 (one-register shift); no natural face-store keep at size 0; entry/sign merge is worse
+ * summary: 10 at 0, naming. Natural face keeps via memory-reading rhs give 22 on the inside carrier; the loop reread adds the extra neighbour
  * PLATEAU-HANDOFF:func_80011980:end
  */

@@ -5262,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, naming. Outer value carried by inside drops edge to 21 under kept face stores but shifts s-regs by one; need a neighbour cut keeping encoded on s5
+ * summary: 10 at 0, naming. Inside carrier plus kept face stores is 22 (one-register shift); no natural face-store keep at size 0; entry/sign merge is worse
  * PLATEAU-HANDOFF:func_80011980:end
  */

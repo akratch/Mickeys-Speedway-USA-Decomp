@@ -1323,8 +1323,8 @@ void func_800517E0(void) {
                     amAmbientResetFade();
                     break;
                 case 0x27:
-                    frame68 = cursor->command & 0xFF;
-                    soundSlot = &D_800D6B18[frame68];
+                    targetValue = cursor->command & 0xFF;
+                    soundSlot = &D_800D6B18[targetValue];
                     sound = *soundSlot;
                     word2 = *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
@@ -1335,8 +1335,8 @@ void func_800517E0(void) {
                     amSndPlay(word2, soundSlot);
                     break;
                 case 0x28:
-                    frame68 = cursor->command & 0xFF;
-                    soundSlot = &D_800D6B18[frame68];
+                    targetValue = cursor->command & 0xFF;
+                    soundSlot = &D_800D6B18[targetValue];
                     sound = *soundSlot;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     if (sound != NULL) {
@@ -1446,12 +1446,12 @@ void func_800517E0(void) {
                     value = (f32) *((u16 *) ((u8 *) cursor + 6));
                     high = cursor->command & 0xFF;
                     packed2 = *((u16 *) ((u8 *) cursor + 8));
-                    index = *((u16 *) ((u8 *) cursor + 0xA));
+                    timer = *((u16 *) ((u8 *) cursor + 0xA));
                     high2 = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
                     low2 = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     trackFadeFog(0, high, high2, low2,
-                                  packed2, index, value / hundred - delta);
+                                  packed2, timer, value / hundred - delta);
                     break;
                 /* 0x46: the empty ifs are stand-ins (flagged, not the shipped source): each
                  * adds one counted reference so height, motionDuration and motionX outbid
@@ -1556,16 +1556,16 @@ void func_800517E0(void) {
                     break;
                 case 0x4C:
                     packedField = cursor->command & 0xFF;
-                    high = *((u16 *) ((u8 *) cursor + 4)) >> 8;
+                    packed2 = *((u16 *) ((u8 *) cursor + 4)) >> 8;
                     low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
-                    packed2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF00;
+                    high = *((u16 *) ((u8 *) cursor + 6)) & 0xFF00;
                     word8 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     word9 = *((u16 *) ((u8 *) cursor + 8)) & 0xFF00;
                     frame = *((u16 *) ((u8 *) cursor + 8)) & 0xFF;
                     frame4C = *((u16 *) ((u8 *) cursor + 0xA));
                     duration = *((u16 *) ((u8 *) cursor + 0xC));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
-                    TrapDanglingJump(packedField, high, low, packed2, word8 << 8, word9, frame << 8, frame4C, duration);
+                    TrapDanglingJump(packedField, packed2, low, high, word8 << 8, word9, frame << 8, frame4C, duration);
                     break;
                 case 0x4D:
                     word6 = *((u16 *) ((u8 *) cursor + 4));
@@ -1811,10 +1811,10 @@ void func_800517E0(void) {
                     /* Both bytes read from the stream, no halfword
                      * carrier: the handler is the shipped sequence. */
                     word3 = *((u16 *) ((u8 *) cursor + 4)) >> 8;
-                    word4 = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    word12 = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     pathIndex = cursor->command & 0xFF;
                     packed2 = *((u16 *) ((u8 *) cursor + 6));
-                    timer = *((u16 *) ((u8 *) cursor + 8));
+                    index = *((u16 *) ((u8 *) cursor + 8));
                     word8 = *((u16 *) ((u8 *) cursor + 0xA));
                     unit = (f32) *((u16 *) ((u8 *) cursor + 0xC));
                     path = paths[pathIndex];
@@ -1822,7 +1822,7 @@ void func_800517E0(void) {
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         TrapDanglingJump(object, word3,
-                                         word4, packed2, timer,
+                                         word12, packed2, index,
                                          word8, (s32) (unit * factor *
                                                        scale));
                     }
@@ -3998,10 +3998,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 616/1808 words
+ * score: 606/1808 words
  * frame: 0x1B0
  * relocations: 243
  * first-mismatch: +0xDC
- * summary: Aligned 298 at size 0 (corrects 304: 0x7A command back in its own local). Target keeps one value class per saved register; 0x4C/4D/6E/7A still differ.
+ * summary: Aligned 287 at size 0: role-guided case locals (target keeps one value class per saved register); 0x79 still keeps both pieces.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

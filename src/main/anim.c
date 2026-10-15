@@ -4000,6 +4000,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 243
  * first-mismatch: +0xDC
- * summary: Aligned 282 at size 0, a per-case rename optimum. Struct and second-use routes do not hold 0x79's address; 0x40/41/60 shipped forms still cost.
+ * summary: Back at 603 masked / 282 aligned, size 0; the size -24 structural round is parked on lane/rewrite-517e0-structural
  * PLATEAU-HANDOFF:func_800517E0:end
  */

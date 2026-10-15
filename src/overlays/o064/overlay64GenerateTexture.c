@@ -82,16 +82,20 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * (v0); the pixel products are lo in both row kinds; the texel's high
  * nibble is named (temp), which takes the register ahead of lo; the first
  * smoothing pass counts its columns with temp too. select is still unused.
+ * 65 -> 6: k declared first (its home is the first local slot, as shipped);
+ * both smoothing passes store and then step in; the second sum takes the
+ * two side texels before the centre; the even rows step in after the
+ * product.
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 {
-    s32 i;
+    s32 k;
     u8 select;
     s32 width;
     s32 height;
     s32 temp;
-    s32 k;
+    s32 i;
     s32 j;
     s32 value;
     s32 hi;
@@ -162,11 +166,11 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
             if (i < 0xAA) {
                 i--;
             }
-            in++;
             if (i < 0) {
                 i = 0;
             }
             *out++ = i;
+            in++;
         }
         *out++ = 0;
         in++;
@@ -180,15 +184,15 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         j = width - 2;
         while (j--) {
-            i = (*(in - 1 - width) + *(in - width) + *(in + 1 - width)) >> 2;
+            i = (*(in - 1 - width) + *(in + 1 - width) + *(in - width)) >> 2;
             if (i < 0xAA) {
                 i--;
             }
-            in++;
             if (i < 0) {
                 i = 0;
             }
             *out++ = i;
+            in++;
         }
         *out++ = 0;
         in++;
@@ -233,7 +237,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                     distance = 2;
                 }
                 pixels = (u16 *)(dst + (distance << 1) + (j << 1));
-                value = *in++;
+                value = *in;
                 temp = value >> 4;
                 lo = value;
                 hi = value + 0x34;
@@ -241,6 +245,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                     lo *= temp;
                     value = lo;
                 }
+                in++;
                 if (hi >= 0x100) {
                     hi = 0xFF;
                 }
@@ -259,10 +264,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 65/420 words
+ * score: 6/420 words
  * frame: 0x70
  * relocations: 20
- * first-mismatch: +0xD4
- * summary: statics; one outer counter k; sums in i; named nibble (65)
+ * first-mismatch: +0x214
+ * summary: statics; one outer counter k declared first; sums in i; named nibble; store then step (6)
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

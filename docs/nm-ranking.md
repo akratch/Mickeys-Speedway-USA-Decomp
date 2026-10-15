@@ -280,10 +280,10 @@ Relocation-masked mismatch evidence covers **6 / 6** resolved rows. The raw coun
 |---|---:|
 | raw `differing_words <= 5` | 0 |
 | relocation-masked `differing_words <= 5` | 0 |
-| raw `differing_words <= 10` | 0 |
-| relocation-masked `differing_words <= 10` | 1 |
-| raw `differing_words <= 20` | 1 |
-| relocation-masked `differing_words <= 20` | 1 |
+| raw `differing_words <= 10` | 1 |
+| relocation-masked `differing_words <= 10` | 2 |
+| raw `differing_words <= 20` | 2 |
+| relocation-masked `differing_words <= 20` | 2 |
 
 ### Complete ranked queue
 
@@ -293,8 +293,8 @@ units remain distinct.
 
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
-| 2 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 65 | 65 | 212 | 212 | 0 | — |
+| 1 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 6 | 6 | 532 | 532 | 0 | — |
+| 2 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
 | 3 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
 | 4 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,129 | 1,127 | 200 | 208 | 0 | — |
 | 5 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |

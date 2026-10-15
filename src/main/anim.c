@@ -4003,6 +4003,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 243
  * first-mismatch: +0xDC
- * summary: 0x46 exact at size 0; 0x7A/0x41/0x78 shapes need the short handlers 0x40, 0x6A, 0x79 to gain their words first
+ * summary: 274 is a rename optimum; the short handlers' missing words are piece split boundaries (0x40 a3, 0x6A a1, 0x79 v1/a0/a3)
  * PLATEAU-HANDOFF:func_800517E0:end
  */

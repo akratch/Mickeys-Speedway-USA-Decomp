@@ -16,13 +16,13 @@
       "tu": "overlays/o064",
       "size_bytes": 1680,
       "objdiff_match_pct": null,
-      "differing_words": 6,
+      "differing_words": 4,
       "first_mismatch_offset": 532,
-      "relocation_masked_differing_words": 6,
+      "relocation_masked_differing_words": 4,
       "relocation_masked_first_mismatch_offset": 532,
       "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "M9nG.ye-z.RfOh.lpmm.Anqx.yNga.VjEk.-Mhm.e-lj.NNBb.gfw"
+      "category": "register-only",
+      "source_context_sha256": "dgtP.TwWa.7iR-.sKD8.CA9X._H39.Fb8J.kbqS.Pgxu.j3Gu.23I"
     },
     {
       "name": "func_80011980",

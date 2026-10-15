@@ -1059,9 +1059,7 @@ void trackFadeFog(s32 fogIndex, s32 red, s32 green, s32 blue, s32 near,
                    s32 far, f32 timer);
 void func_800498FC(s32 index, f32 duration, f32 delay, s32 red,
                    s32 green, s32 blue, s32 flags);
-/* s32, as block_4F4E0.c defines it: the u8 prototype masked the
- * argument at the call and put 0x41 one word long. */
-void func_8004EED0(s32 stringIndex);
+void func_8004EED0(s32 arg0);
 void func_8004E99C(void);
 f32 func_8002A8BC(s32 angle);
 f32 func_8002A8C0(s32 angle);
@@ -1161,7 +1159,6 @@ void func_800517E0(void) {
     AnimPath *path;
     s32 pad4;
     AnimPath **paths;
-    u8 byte;
 
     /* Case-local values share locals across cases (0x2B's flag byte and
      * the sound/0x4B command byte in frame68, 0x60/0x6x/0x7x floats in
@@ -1415,9 +1412,9 @@ void func_800517E0(void) {
                     }
                     break;
                 case 0x41:
-                    index = cursor->command & 0xFF;
+                    pathIndex = cursor->command & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    func_8004EED0(index);
+                    func_8004EED0(pathIndex);
                     break;
                 case 0x42:
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
@@ -1511,12 +1508,12 @@ void func_800517E0(void) {
                     s32 scrollY;
 
 
-                    targetValue = cursor->command & 0xFF;
+                    packed = cursor->command & 0xFF;
 
                     /* scrollX is read before scrollY again once 0x46 and
                      * 0x47 colour as shipped (lane q-4; p-4 had measured
                      * the reverse on the earlier ring phase). The byte goes
-                     * through targetValue and the duration through value (a1 and
+                     * through packed and the duration through value (a1 and
                      * f16 as shipped). */
                     index = *((u16 *) ((u8 *) cursor + 4));
                     scrollX = *((s16 *) ((u8 *) cursor + 6));
@@ -1526,7 +1523,7 @@ void func_800517E0(void) {
                     scrollX = (s32) ((u32) scrollX << 16) / 6000;
                     scrollY = (s32) ((u32) scrollY << 16) / 6000;
                     scroll = (AnimCommandScroll *)
-                        &D_800D6B58[targetValue & 7];
+                        &D_800D6B58[packed & 7];
                     scroll->textureIndex = index;
                     scroll->duration = (s16) (s32) (value *
                                                (60.0f * 0.01f));
@@ -1704,7 +1701,7 @@ void func_800517E0(void) {
                 case 0x6A: {
                     pathIndex = cursor->command & 0xFF;
                     packed2 = *((u16 *) ((u8 *) cursor + 4)) >> 8;
-                    high = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    targetValue = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     high2 = *((u16 *) ((u8 *) cursor + 6)) >> 8;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     frame4D = *((u16 *) ((u8 *) cursor + 8));
@@ -1719,7 +1716,7 @@ void func_800517E0(void) {
                             entry = *(void **)
                                 ((u8 *) reference + packed2 * 4);
                             animCommandSlotTrap(
-                                entry, high, high2, low2, frame4D, value, 1);
+                                entry, targetValue, high2, low2, frame4D, value, 1);
                         }
                     }
                     break;
@@ -1814,7 +1811,7 @@ void func_800517E0(void) {
                     /* Both bytes read from the stream, no halfword
                      * carrier: the handler is the shipped sequence. */
                     word3 = *((u16 *) ((u8 *) cursor + 4)) >> 8;
-                    high = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    word12 = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     pathIndex = cursor->command & 0xFF;
                     packed2 = *((u16 *) ((u8 *) cursor + 6));
                     index = *((u16 *) ((u8 *) cursor + 8));
@@ -1825,7 +1822,7 @@ void func_800517E0(void) {
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         TrapDanglingJump(object, word3,
-                                         high, packed2, index,
+                                         word12, packed2, index,
                                          word8, (s32) (unit * factor *
                                                        scale));
                     }
@@ -1890,12 +1887,14 @@ void func_800517E0(void) {
                     mainSyncNextLevel();
                     break;
                 case 0x78:
-                    /* A u8 byte: no sign extension at the call
-                     * (lane rewrite-517e0, ninth round). */
-                    byte = cursor->command & 0xFF;
+                    /* The byte through a forwarded local, not pathIndex:
+                     * both arguments are formed before the advance and
+                     * the handler is the shipped sequence (lane
+                     * opus-517e0). */
+                    signedValue = cursor->command & 0xFF;
                     word1 = *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    func_80029084(word1, byte);
+                    func_80029084(word1, signedValue);
                     break;
                 case 0x79:
                     /* The byte is converted straight from the stream: a
@@ -1916,39 +1915,35 @@ void func_800517E0(void) {
                     }
                     break;
                 case 0x7A:
-                    /* Fields in the roles the other cases give them
-                     * (index s3, pathIndex s0, packed2 s4, low s5), both
-                     * halfword reads from the stream. Paired with 0x7C
-                     * and 0x7D through index: with their command in a
-                     * local outside this set the 6000 piece refuses this
-                     * block, without one the state piece takes them. */
-                    index = (cursor->command >> 4) & 0xF;
-                    pathIndex = *((u16 *) ((u8 *) cursor + 4)) & 0xFFF;
-                    packed2 = cursor->command & 0xF;
-                    low = *((u16 *) ((u8 *) cursor + 4)) >> 12;
+                    frame61 = cursor->command;
+                    word12 = *((u16 *) ((u8 *) cursor + 4));
+                    index = word12 & 0xFFF;
+                    high = (frame61 >> 4) & 0xF;
+                    low = (word12 >> 12) & 0xF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    if (pathIndex == 0xFFF) {
-                        pathIndex = 0;
+                    if (index == 0xFFF) {
+                        index = 0;
                     }
-                    mainChangeLevel(pathIndex, index, low, frontGetMode(), 1,
+                    mainChangeLevel(index, high, low, frontGetMode(), 1,
                                      0);
-                    mainSetAnimGroup(packed2);
+                    mainSetAnimGroup(frame61 & 0xF);
                     break;
                 case 0x7B:
                     D_8007D6A8 = ((s32) commandDuration * 0x3C) / 100;
                     D_8007D6AC = (f32) cursor->duration * factor;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    currentCommand = D_8007D6A4 = (s8) (*((u16 *) ((u8 *) cursor - 2)) & 0xFF);
+                    currentCommand = (s8) (*((u16 *) ((u8 *) cursor - 2)) & 0xFF);
+                    D_8007D6A4 = currentCommand;
                     break;
                 case 0x7C:
-                    index = cursor->command & 3;
+                    currentCommand = cursor->command;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    joyDisable(index);
+                    joyDisable(currentCommand & 3);
                     break;
                 case 0x7D:
-                    index = cursor->command & 3;
+                    word2 = cursor->command;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    joyEnable(index);
+                    joyEnable(word2 & 3);
                     break;
                 case 0x7E:
                     D_8007D6A8 -= ((s32) commandDuration * 0x3C) / 100;
@@ -4001,10 +3996,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1086/1808 words
+ * score: 603/1808 words
  * frame: 0x1B0
  * relocations: 243
- * first-mismatch: +0x48
- * summary: 0x7A/7C/7D/78/41 shipped shapes, 6000 and state pieces kept; size -24, per-handler sum 193 to 172
+ * first-mismatch: +0xDC
+ * summary: Aligned 282 at size 0, a per-case rename optimum. Struct and second-use routes do not hold 0x79's address; 0x40/41/60 shipped forms still cost.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

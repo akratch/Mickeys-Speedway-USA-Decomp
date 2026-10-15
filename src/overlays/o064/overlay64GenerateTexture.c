@@ -256,6 +256,6 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
  * frame: 0x70
  * relocations: 20
  * first-mismatch: +0x9C
- * summary: select byte and init flag as function statics (not promoted, toggle exact); smoothing sums reordered (129)
+ * summary: state bytes as function statics; smoothing sums reordered (129); loop web owners mapped, shared counter regresses
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

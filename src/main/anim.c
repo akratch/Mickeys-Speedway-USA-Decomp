@@ -1172,9 +1172,12 @@ void func_800517E0(void) {
         hundred = 100.0f;
         scale = 60.0f;
         factor = 0.01f;
+        /* 1U: the loop test's constant is its own web, so the in-loop
+         * constant 1 is an original web decided before the 6000 web and
+         * the 6000 piece takes 0x7A's first block (lane rewrite-517e0, L177). */
         while (cursor->command != 0x7F00 &&
                (commandTime = (f32) (commandDuration = cursor->duration) /
-                              hundred) < D_8007D6AC && D_8007D6A4 == 1) {
+                              hundred) < D_8007D6AC && D_8007D6A4 == 1U) {
             delta = D_8007D6AC - commandTime;
             /* The switch reads the opcode itself; opcode is now only the
              * audio commands' byte (lane rewrite-517e0). */
@@ -1391,12 +1394,12 @@ void func_800517E0(void) {
                     high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
                     flagsValue = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     high2 = (*((u16 *) ((u8 *) cursor + 6)) >> 8) & 0xFF;
-                    low = cursor->command & 0xFF;
+                    word12 = cursor->command & 0xFF;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     value = (f32) (*((u16 *) ((u8 *) cursor + 8)));
                     target = (f32) *((u16 *) ((u8 *) cursor + 0xA));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
-                    if ((low & 0xF) == 7) {
+                    if ((word12 & 0xF) == 7) {
                         frame68 = flagsValue != 0 ? 0 : 0xFF;
                         TrapDanglingJump(high, high2, low2, frame68,
                                          (s32) (value * factor * scale));
@@ -1404,11 +1407,11 @@ void func_800517E0(void) {
                         color = target != 65535.0f ?
                             target / hundred : -1.0f;
                         if (flagsValue != 0) {
-                            low |= 0x80;
+                            word12 |= 0x80;
                         }
                         normalized = value / hundred;
                         func_800498FC(4, normalized, color, high,
-                                      high2, low2, low);
+                                      high2, low2, word12);
                     }
                     break;
                 case 0x41:
@@ -1862,7 +1865,9 @@ void func_800517E0(void) {
                                     (s16) ((packed2 << 8) / 6000);
                                 switch (low) {
                                     case 1:
-                                        record->flags |= 0x800000;
+                                        /* Unsigned: one 0x800000 web per use, so the state
+                                         * piece keeps a0 (lane rewrite-517e0, L177). */
+                                        record->flags |= 0x800000U;
                                         reference->flags |= 0x800000;
                                         break;
                                     case 2:
@@ -1905,9 +1910,9 @@ void func_800517E0(void) {
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
                     /* Chained store, divisor read back from the global
                      * (lane rewrite-517e0). */
-                    currentCommand = D_8007D6BC = (s32) (value * scale * factor);
+                    opcode = D_8007D6BC = (s32) (value * scale * factor);
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    if (currentCommand > 0) {
+                    if (opcode > 0) {
                         D_8007D6B8 = (radius - D_8007D6B4) /
                                      (f32) D_8007D6BC;
                     } else {
@@ -1915,18 +1920,23 @@ void func_800517E0(void) {
                     }
                     break;
                 case 0x7A:
-                    frame61 = cursor->command;
-                    word12 = *((u16 *) ((u8 *) cursor + 4));
-                    index = word12 & 0xFFF;
-                    high = (frame61 >> 4) & 0xF;
-                    low = (word12 >> 12) & 0xF;
+                    /* Fields in the roles the other cases give them
+                     * (index s3, pathIndex s0, packed2 s4, low s5), both
+                     * halfword reads from the stream. Paired with 0x7C
+                     * and 0x7D through index: with their command in a
+                     * local outside this set the 6000 piece refuses this
+                     * block, without one the state piece takes them. */
+                    index = (cursor->command >> 4) & 0xF;
+                    pathIndex = *((u16 *) ((u8 *) cursor + 4)) & 0xFFF;
+                    packed2 = cursor->command & 0xF;
+                    low = *((u16 *) ((u8 *) cursor + 4)) >> 12;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    if (index == 0xFFF) {
-                        index = 0;
+                    if (pathIndex == 0xFFF) {
+                        pathIndex = 0;
                     }
-                    mainChangeLevel(index, high, low, frontGetMode(), 1,
+                    mainChangeLevel(pathIndex, index, low, frontGetMode(), 1,
                                      0);
-                    mainSetAnimGroup(frame61 & 0xF);
+                    mainSetAnimGroup(packed2);
                     break;
                 case 0x7B:
                     D_8007D6A8 = ((s32) commandDuration * 0x3C) / 100;
@@ -3999,10 +4009,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 595/1808 words
+ * score: 617/1808 words
  * frame: 0x1B0
- * relocations: 243
+ * relocations: 245
  * first-mismatch: +0xDC
- * summary: loop skeleton already shipped; short handlers are piece split boundaries inside handlers
+ * summary: 0x7A exact via constant-web numbering; open: 0x79 address piece, 0x7B dead copy, 0x40/0x6A copies vs 0x41/0x60/0x78
  * PLATEAU-HANDOFF:func_800517E0:end
  */

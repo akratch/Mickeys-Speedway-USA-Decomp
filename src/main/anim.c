@@ -1554,7 +1554,7 @@ void func_800517E0(void) {
                     D_800D6C52 = frame68;
                     break;
                 case 0x4C:
-                    pathIndex = cursor->command & 0xFF;
+                    packedField = cursor->command & 0xFF;
                     high = *((u16 *) ((u8 *) cursor + 4)) >> 8;
                     low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     packed2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF00;
@@ -1564,7 +1564,7 @@ void func_800517E0(void) {
                     frame4C = *((u16 *) ((u8 *) cursor + 0xA));
                     duration = *((u16 *) ((u8 *) cursor + 0xC));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
-                    TrapDanglingJump(pathIndex, high, low, packed2, word8 << 8, word9, frame << 8, frame4C, duration);
+                    TrapDanglingJump(packedField, high, low, packed2, word8 << 8, word9, frame << 8, frame4C, duration);
                     break;
                 case 0x4D:
                     word6 = *((u16 *) ((u8 *) cursor + 4));
@@ -1584,16 +1584,16 @@ void func_800517E0(void) {
                     pathIndex = cursor->command & 0xFF;
                     signedValue = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
                     low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
-                    value = (f32) *((u16 *) ((u8 *) cursor + 6)) / 16384.0f;
+                    unit = (f32) *((u16 *) ((u8 *) cursor + 6)) / 16384.0f;
                     radius = (f32) *((u16 *) ((u8 *) cursor + 8)) / 16384.0f;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xA);
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         if (object->model->animationKinds[object->animationIndex] == 1) {
-                            object->animationValue = value;
+                            object->animationValue = unit;
                         } else {
-                            func_8005AD64(object, signedValue, -1, value);
+                            func_8005AD64(object, signedValue, -1, unit);
                         }
                         path->unkC = radius;
                         path->unk14 = low;
@@ -1807,19 +1807,22 @@ void func_800517E0(void) {
                     }
                     break;
                 case 0x6E:
-                    word10 = *((u16 *) ((u8 *) cursor + 4));
+                    /* Both bytes read from the stream, no halfword
+                     * carrier: the handler is the shipped sequence. */
+                    word3 = *((u16 *) ((u8 *) cursor + 4)) >> 8;
+                    word4 = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     pathIndex = cursor->command & 0xFF;
                     packed2 = *((u16 *) ((u8 *) cursor + 6));
                     timer = *((u16 *) ((u8 *) cursor + 8));
                     word8 = *((u16 *) ((u8 *) cursor + 0xA));
-                    value = (f32) *((u16 *) ((u8 *) cursor + 0xC));
+                    unit = (f32) *((u16 *) ((u8 *) cursor + 0xC));
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
-                        TrapDanglingJump(object, word10 >> 8,
-                                         word10 & 0xFF, packed2, timer,
-                                         word8, (s32) (value * factor *
+                        TrapDanglingJump(object, word3,
+                                         word4, packed2, timer,
+                                         word8, (s32) (unit * factor *
                                                        scale));
                     }
                     break;
@@ -1900,13 +1903,13 @@ void func_800517E0(void) {
                     value = (f32) (cursor->command & 0xFF);
                     radius = (f32) *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    /* currentCommand also carries 0x7B's byte: one shared
-                     * local keeps the chained 0x4B's break pieces (the
-                     * D_8007D6A4 a0 piece accepts the 0x7B block). */
-                    D_8007D6BC = currentCommand = (s32) (radius * scale * factor);
+                    /* Stored, then the divisor read back from the global
+                     * (lane rewrite-517e0; with 0x7B's byte in state). */
+                    currentCommand = (s32) (radius * scale * factor);
+                    D_8007D6BC = currentCommand;
                     if (currentCommand > 0) {
                         D_8007D6B8 = (value - D_8007D6B4) /
-                                     (f32) currentCommand;
+                                     (f32) D_8007D6BC;
                     } else {
                         D_8007D6B4 = value;
                     }
@@ -1931,8 +1934,8 @@ void func_800517E0(void) {
                     value = (f32) duration;
                     D_8007D6AC = value * factor;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    currentCommand = (s8) (*((u16 *) ((u8 *) cursor - 2)) & 0xFF);
-                    D_8007D6A4 = currentCommand;
+                    state = (s8) (*((u16 *) ((u8 *) cursor - 2)) & 0xFF);
+                    D_8007D6A4 = state;
                     break;
                 case 0x7C:
                     currentCommand = cursor->command;
@@ -3995,10 +3998,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1063/1808 words
+ * score: 813/1808 words
  * frame: 0x1B0
- * relocations: 245
+ * relocations: 247
  * first-mismatch: +0xD0
- * summary: Aligned 413 at size 0. The scratch's 944 lacks the leaked u8 prototype of func_8005055C; restoring the target's conversion gives the tree's 1063.
+ * summary: Aligned 365 at size 0: 0x6E direct byte reads, case-local renames in 0x4C/0x60/0x6E, 0x79 divides by the re-read global, 0x7B byte via state.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

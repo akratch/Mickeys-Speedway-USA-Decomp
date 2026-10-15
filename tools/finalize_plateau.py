@@ -26,6 +26,14 @@ import time
 
 SYMBOL_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 HANDOFF_SHARD_DIR = "docs/matching-triage-handoffs"
+# `<symbol>.archive-<n>.md` holds dated sections moved out of a live shard by
+# tools/archive_shard.py. It is evidence, not a shard: no markers, no grammar.
+ARCHIVE_NAME_RE = re.compile(r"^(?P<symbol>[A-Za-z_][A-Za-z0-9_]*)\.archive-(?P<number>[1-9][0-9]*)\.md$")
+
+
+def is_archive_name(name: str) -> bool:
+    """True for a shard archive file name; every shard reader must skip these."""
+    return ARCHIVE_NAME_RE.fullmatch(name) is not None
 SCORE_RE = re.compile(r"^(?:\d+/\d+ (?:words|instructions|bytes)|\d+ differing words)$")
 FRAME_RE = re.compile(r"^(?:-?0x[0-9A-Fa-f]+|frameless|unknown)$")
 MISMATCH_RE = re.compile(r"^(?:\+?0x[0-9A-Fa-f]+|none|unknown)$")

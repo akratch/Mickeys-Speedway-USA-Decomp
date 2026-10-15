@@ -155,8 +155,12 @@ def text_claims(text: str) -> list[Claim]:
 def shard_texts() -> dict[str, tuple[str, str]]:
     out = {}
     for path in sorted(HANDOFFS.glob("*.md")):
-        out[path.stem] = (path.relative_to(ROOT).as_posix(),
-                          path.read_text(encoding="utf-8", errors="replace"))
+        if ".archive-" in path.stem:      # folded into its shard's text below
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for archive in sorted(HANDOFFS.glob(f"{path.stem}.archive-*.md")):
+            text += "\n" + archive.read_text(encoding="utf-8", errors="replace")
+        out[path.stem] = (path.relative_to(ROOT).as_posix(), text)
     return out
 
 

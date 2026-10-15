@@ -352,7 +352,7 @@ def discover_shards(
         raise AuditFailure(f"missing or unsafe shard directory: {SHARD_DIR.as_posix()}")
     shards: dict[str, Shard] = {}
     for path in sorted(directory.glob("*.md")):
-        if path.name == "README.md":
+        if path.name == "README.md" or finalize_plateau.is_archive_name(path.name):
             continue
         relative = path.relative_to(root).as_posix()
         symbol = path.stem

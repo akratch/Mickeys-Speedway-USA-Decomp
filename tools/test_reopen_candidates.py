@@ -77,7 +77,9 @@ class SelectionTests(unittest.TestCase):
         paths = [FakePath(s, t) for s, t in handoffs.items()]
 
         class FakeDir:
-            def glob(self, pattern): return paths
+            def glob(self, pattern):
+                import fnmatch
+                return [p for p in paths if fnmatch.fnmatch(p.stem + ".md", pattern)]
 
         with mock.patch.object(rc, "queued", return_value=queued), \
              mock.patch.object(rc, "closure_date", side_effect=lambda p: dates[p.stem]), \

@@ -116,6 +116,8 @@ def check(root: pathlib.Path = REPO) -> "list[dict]":
     findings: list[dict] = []
 
     for path in sorted((root / SHARD_DIR.relative_to(REPO)).glob("*.md")):
+        if ".archive-" in path.stem:      # tools/archive_shard.py output
+            continue
         symbol = path.stem
         head = header_of(path)
         score_m = SCORE_RE.search(head)

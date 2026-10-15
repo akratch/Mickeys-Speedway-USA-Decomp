@@ -10,8 +10,6 @@ typedef struct O64Image {
     u16 pixels[1];
 } O64Image;
 
-extern u8 gO64BufferSelect;
-extern s32 gO64Initialized;
 extern void *D_800D60B0[4];
 extern void *D_800D60C0[4];
 extern s32 mathRnd(s32 minimum, s32 maximum);
@@ -68,6 +66,17 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * the five-row smoothing loop counts with lo, its sum is held in distance,
  * the copy loop counts with distance. temp is now unused; deleting its
  * declaration moves the frame offsets and costs 17 words (192).
+ * 175 -> 129 (2026-10-15, twelfth pass): the select byte and the
+ * initialised flag are function-scope statics (the TU's 16-byte .data,
+ * select at 0 and the flag at 4, the layout overlay64State.c gives them now).
+ * uopt promotes a file-scope or extern scalar into a register across the
+ * function and re-inserts its load at both noise-loop exits; it does not
+ * promote a function static, so the entry test and `^= 1` read it plainly
+ * and the toggle is exact (185, with no cast view). Then the first smoothing
+ * sum as one expression shifted in place, centre texel first and the row
+ * below's centre last (129), the second sum left to right and its in++
+ * after the first clamp.
+ * select and temp are still frame-holding unused declarations.
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -86,12 +95,14 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     u8 *dst;
     u16 *pixels;
     u8 *src;
+    static u8 sBufferSelect = 0;
+    static s32 sInitialized = 0;
     s32 lo;
     s32 distance;
 
     width = image->width;
     height = image->height;
-    if ((u8)*(signed char *)&gO64BufferSelect) {
+    if (sBufferSelect) {
         src = D_800D60B0[index];
     } else {
         src = D_800D60C0[index];
@@ -99,7 +110,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
     k = width - 6;
     out = src + (height - 6) * width + 3;
-    if (!gO64Initialized) {
+    if (!sInitialized) {
         while (k--) {
             value = (width >> 1) - k - 3;
             if (value <= 0) {
@@ -107,7 +118,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
             }
             *out++ = mathRnd(0, 0xFF - (value << 4));
         }
-        gO64Initialized = 1;
+        sInitialized = 1;
     } else {
         while (k--) {
             value = (width >> 1) - k - 3;
@@ -126,9 +137,8 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         }
     }
 
-    select = gO64BufferSelect ^ 1;
-    gO64BufferSelect = select;
-    if (select) {
+    sBufferSelect ^= 1;
+    if (sBufferSelect) {
         dst = D_800D60B0[index];
     } else {
         dst = D_800D60C0[index];
@@ -142,8 +152,8 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         j = width - 2;
         while (j--) {
-            lo = in[width] * 4 + in[0] * 2 + in[width - 1];
-            lo = (lo + in[width + 1]) >> 3;
+            lo = in[0] * 2 + in[width - 1] + in[width + 1] + in[width] * 4;
+            lo >>= 3;
             if (lo < 0xAA) {
                 lo--;
             }
@@ -165,11 +175,11 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         k = width - 2;
         while (k--) {
-            distance = (*(in - width) + *(in - 1 - width) + *(in + 1 - width)) >> 2;
-            in++;
+            distance = (*(in - 1 - width) + *(in - width) + *(in + 1 - width)) >> 2;
             if (distance < 0xAA) {
                 distance--;
             }
+            in++;
             if (distance < 0) {
                 distance = 0;
             }
@@ -242,10 +252,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 175/420 words
+ * score: 129/420 words
  * frame: 0x70
  * relocations: 20
  * first-mismatch: +0x9C
- * summary: one noise counter k assigned once (175); scratch parity from the select toggle on
+ * summary: select byte and init flag as function statics (not promoted, toggle exact); smoothing sums reordered (129)
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

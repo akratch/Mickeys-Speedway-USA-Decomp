@@ -62,6 +62,7 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * three terms and then the fourth with the shift (a permuter cell's
  * redundant double mask on in[width - 1] at 168 showed one extra scratch
  * draw there; this is the natural spelling nearest it).
+ * 191 -> 190: the noise value as *out + mathRnd(...), the shipped add order.
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -111,7 +112,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 value = -value;
             }
             distance = 0xFF - (value << 4);
-            value = mathRnd(-0x60, 0x60) + *out;
+            value = *out + mathRnd(-0x60, 0x60);
             if (value > distance) {
                 value = distance;
             }
@@ -238,10 +239,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 191/420 words
+ * score: 190/420 words
  * frame: 0x70
  * relocations: 20
  * first-mismatch: +0x9C
- * summary: first smoothing sum in two statements (191); noise-loop counter slot next
+ * summary: noise value as *out + mathRnd (190); counter-merging cells priced, none pays
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

@@ -1911,9 +1911,9 @@ void func_800517E0(void) {
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
                     /* Chained store, divisor read back from the global
                      * (lane rewrite-517e0). */
-                    opcode = D_8007D6BC = (s32) (value * scale * factor);
+                    frame = D_8007D6BC = (s32) (value * scale * factor);
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    if (opcode > 0) {
+                    if (frame > 0) {
                         D_8007D6B8 = (radius - D_8007D6B4) /
                                      (f32) D_8007D6BC;
                     } else {
@@ -4010,10 +4010,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 597/1808 words
+ * score: 596/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xDC
- * summary: type-5..8 handler carries duration in word1: 617 -> 597 masked, aligned 262, size 0
+ * summary: 0x79 integer through frame; open: 0x79 address piece, 0x7B dead copy, 0x40/0x6A argument-copy placement vs 0x41/0x60/0x78
  * PLATEAU-HANDOFF:func_800517E0:end
  */

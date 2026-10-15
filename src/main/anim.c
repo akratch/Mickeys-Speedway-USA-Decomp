@@ -4014,6 +4014,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xDC
- * summary: 0x79 integer through frame; open: 0x79 address piece, 0x7B dead copy, 0x40/0x6A argument-copy placement vs 0x41/0x60/0x78
+ * summary: Open: 0x79 address piece, 0x7B dead copy (uopt-simplified store operand), 0x40/0x6A argument-copy placement vs 0x41/0x60/0x78
  * PLATEAU-HANDOFF:func_800517E0:end
  */

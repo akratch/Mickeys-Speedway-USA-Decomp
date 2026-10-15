@@ -296,7 +296,7 @@ units remain distinct.
 | 1 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `register-only` | 1,680 | 4 | 4 | 532 | 532 | 0 | — |
 | 2 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
 | 3 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
-| 4 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 600 | 595 | 200 | 220 | 0 | — |
+| 4 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 622 | 617 | 200 | 220 | 0 | — |
 
 ### Unresolved identities
 

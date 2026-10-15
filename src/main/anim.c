@@ -4000,6 +4000,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 243
  * first-mismatch: +0xDC
- * summary: Aligned 282 at size 0. Role product and 0x79 address forms flat; the target's v1 in 0x79 is a coloured piece of the &D_8007D6BC address web.
+ * summary: Aligned 282 at size 0. The 0x79 &D_8007D6BC web is split with no pieces; bias and force cannot colour it; it needs a second counted use.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

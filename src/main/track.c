@@ -5262,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, naming. Target loop holds no extra value; the missing index neighbour must be a zero-emission web in block 9 or 11-16, none found
+ * summary: 10 at 0, naming. Outer value carried by inside drops edge to 21 under kept face stores but shifts s-regs by one; need a neighbour cut keeping encoded on s5
  * PLATEAU-HANDOFF:func_80011980:end
  */

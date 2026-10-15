@@ -5262,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, naming. Natural face keeps via memory-reading rhs give 22 on the inside carrier; the loop reread adds the extra neighbour
+ * summary: 10 at 0, naming. Memory-reading loop face keeps the store only with an extra load web or a size change; tree stays best
  * PLATEAU-HANDOFF:func_80011980:end
  */

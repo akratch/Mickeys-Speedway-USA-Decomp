@@ -58,6 +58,10 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * harness, best adopted, rescanned): the second smoothing sum in j, the even
  * rows' lo in i, the first smoothing loop's counter in j and its sum in lo,
  * the copy loop and the first noise loop counting with k.
+ * 203 -> 191: the first smoothing sum built in two statements, the first
+ * three terms and then the fourth with the shift (a permuter cell's
+ * redundant double mask on in[width - 1] at 168 showed one extra scratch
+ * draw there; this is the natural spelling nearest it).
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -134,7 +138,8 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         j = width - 2;
         while (j--) {
-            lo = (in[width] * 4 + in[0] * 2 + in[width - 1] + in[width + 1]) >> 3;
+            lo = in[width] * 4 + in[0] * 2 + in[width - 1];
+            lo = (lo + in[width + 1]) >> 3;
             if (lo < 0xAA) {
                 lo--;
             }
@@ -233,10 +238,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 203/420 words
+ * score: 191/420 words
  * frame: 0x70
  * relocations: 20
  * first-mismatch: +0x9C
- * summary: region rename scan (252 -> 203); rescan after any structural change
+ * summary: first smoothing sum in two statements (191); noise-loop counter slot next
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

@@ -52,6 +52,12 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * even-row offset (a3 in all three). The smoothing sums are held in the
  * width - 6 local (renamed temp), not lo, so the sum takes v0 and the
  * below pointer v1 as shipped; lo no longer spans the smoothing loops.
+ * 252 -> 203 (2026-10-15, seventh pass): a region-by-region local rename
+ * scan (each local's occurrences in one loop renamed to every other declared
+ * local of its class that the loop does not use, behaviour checked by a host
+ * harness, best adopted, rescanned): the second smoothing sum in j, the even
+ * rows' lo in i, the first smoothing loop's counter in j and its sum in lo,
+ * the copy loop and the first noise loop counting with k.
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -84,9 +90,9 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     temp = width - 6;
     out = src + (height - 6) * width + 3;
     if (!gO64Initialized) {
-        i = temp;
-        while (i--) {
-            value = (width >> 1) - i - 3;
+        k = temp;
+        while (k--) {
+            value = (width >> 1) - k - 3;
             if (value <= 0) {
                 value = -value;
             }
@@ -126,17 +132,17 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     while (i--) {
         *out++ = 0;
         in++;
-        k = width - 2;
-        while (k--) {
-            temp = (in[width] * 4 + in[0] * 2 + in[width - 1] + in[width + 1]) >> 3;
-            if (temp < 0xAA) {
-                temp--;
+        j = width - 2;
+        while (j--) {
+            lo = (in[width] * 4 + in[0] * 2 + in[width - 1] + in[width + 1]) >> 3;
+            if (lo < 0xAA) {
+                lo--;
             }
             in++;
-            if (temp < 0) {
-                temp = 0;
+            if (lo < 0) {
+                lo = 0;
             }
-            *out++ = temp;
+            *out++ = lo;
         }
         *out++ = 0;
         in++;
@@ -150,15 +156,15 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         k = width - 2;
         while (k--) {
-            temp = (*(in - width) + *(in - 1 - width) + *(in + 1 - width)) >> 2;
+            j = (*(in - width) + *(in - 1 - width) + *(in + 1 - width)) >> 2;
             in++;
-            if (temp < 0xAA) {
-                temp--;
+            if (j < 0xAA) {
+                j--;
             }
-            if (temp < 0) {
-                temp = 0;
+            if (j < 0) {
+                j = 0;
             }
-            *out++ = temp;
+            *out++ = j;
         }
         *out++ = 0;
         in++;
@@ -166,8 +172,8 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
     out = dst + (height - 6) * width;
     in = out - width;
-    i = width;
-    while (i--) {
+    k = width;
+    while (k--) {
         *out++ = *in++;
     }
 
@@ -203,19 +209,19 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 }
                 pixels = (u16 *)(dst + (distance << 1) + (j << 1));
                 value = *in++;
-                lo = value;
+                i = value;
                 hi = value + 0x34;
                 if (value >> 4) {
-                    lo *= value >> 4;
-                    value = lo;
+                    i *= value >> 4;
+                    value = i;
                 }
                 if (hi >= 0x100) {
                     hi = 0xFF;
                 }
-                if (lo >= 0x100) {
-                    lo = 0xFF;
+                if (i >= 0x100) {
+                    i = 0xFF;
                 }
-                *pixels = (hi << 8) | lo;
+                *pixels = (hi << 8) | i;
             }
             pixels = (u16 *)(dst + (width << 1));
         }
@@ -227,10 +233,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 252/420 words
+ * score: 203/420 words
  * frame: 0x70
  * relocations: 20
- * first-mismatch: +0x1C
- * summary: row loop counts with k (252); permuter 218 cell clobbers the row counter, not valid
+ * first-mismatch: +0x9C
+ * summary: region rename scan (252 -> 203); rescan after any structural change
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

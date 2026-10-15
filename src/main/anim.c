@@ -1789,17 +1789,18 @@ void func_800517E0(void) {
                                 case 8:
                                     sub->type10 = type == 5 ? 0xD : 9;
                                     next = object->sub->next1C;
+                                    word1 = duration;
                                     if ((next != NULL) &&
                                         (next->type10 & 8)) {
-                                        next->unkBA = duration;
+                                        next->unkBA = word1;
                                         next->type11 = type == 5 ?
                                             1 : type - 5;
-                                        if (duration == 0) {
+                                        if (word1 == 0) {
                                             next->unk0 = object->sub->unk0;
                                             next->unk4 = object->sub->unk4;
                                             next->unkAC =
                                                 object->model->scale5C;
-                                        } else if (duration == 2) {
+                                        } else if (word1 == 2) {
                                             next->unk0 = value;
                                             next->unk4 = value;
                                             next->unkAC = radius;
@@ -4009,10 +4010,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 617/1808 words
+ * score: 597/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xDC
- * summary: 0x7A exact via constant-web numbering; open: 0x79 address piece, 0x7B dead copy, 0x40/0x6A copies vs 0x41/0x60/0x78
+ * summary: type-5..8 handler carries duration in word1: 617 -> 597 masked, aligned 262, size 0
  * PLATEAU-HANDOFF:func_800517E0:end
  */

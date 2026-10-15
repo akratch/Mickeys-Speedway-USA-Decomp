@@ -173,10 +173,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
     in = dst;
     pixels = image->pixels;
-    i = height;
-    while (i--) {
+    k = height;
+    while (k--) {
         dst = (u8 *)pixels;
-        if (i & 1) {
+        if (k & 1) {
             j = width;
             while (j--) {
                 value = *in++;
@@ -227,10 +227,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 256/420 words
+ * score: 252/420 words
  * frame: 0x70
  * relocations: 20
  * first-mismatch: +0x1C
- * summary: 256 at 0, frame 0x70: value and temp carriers; guards still after j (bias plus spill oracle 207 at 0); signed-char select view still the ADR 0017 blocker
+ * summary: row loop counts with k (252); permuter 218 cell clobbers the row counter, not valid
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

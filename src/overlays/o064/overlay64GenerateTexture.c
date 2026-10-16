@@ -100,6 +100,12 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * temporary takes a3. k |= 0 at the top of the row loop is deleted by as1
  * and puts k back in t5 and width back in ra. The five words are the copy
  * counter, which is that same nibble web.
+ * Putting the copy loop back on k (2026-10-16) returns that counter to t5
+ * and drops web 42 off a3. A nibble use in the odd while test, an empty
+ * if on temp, and a named pass-2 pointer all do that: the nibble's save
+ * falls from 300 to about 119 once its span grows, and web 42 stays at
+ * 181. Naming the j post-decrements and wrapping the bodies in if (1)
+ * are size 0 and still leave the shared temporary at save 181.
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)

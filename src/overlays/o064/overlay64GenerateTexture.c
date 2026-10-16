@@ -220,8 +220,8 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
     out = dst + (height - 6) * width;
     in = out - width;
-    temp = width;
-    while (temp--) {
+    k = width;
+    while (k--) {
         *out++ = *in++;
     }
 
@@ -249,6 +249,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 if (lo >= 0x100) {
                     lo = 0xFF;
                 }
+                lo |= temp * 0;
                 *pixels++ = (hi << 8) | lo;
             }
         } else {

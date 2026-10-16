@@ -2058,12 +2058,21 @@ include mk/overlay_046.mk
 include mk/overlay_065.mk
 
 
-# The typed source owns O64's complete procedural texture generator. IDO's
-# natural stream contains four redundant representations; the target-local
-# digest-guarded preparation removes exactly those words before a complete
-# decoded schedule/register selection. Restore all 20 shipped runtime carrier
-# records, then expose only the two configured R26 call records; the retained
-# relocation tail owns the 18 loader-local HILO records.
+# The typed source owns O64's complete procedural texture generator.
+# Eighteen HI16/LO16 sites are loader-owned: the runtime tables supply the
+# base and the compiled fields already hold the stored addend. The two
+# resident data symbols are renamed to per-overlay placeholders valued at
+# that addend, so the resident definitions stay intact. The local data
+# section symbol becomes an absolute zero while its 16 payload bytes stay
+# in this object, so those sites keep the stored field displacement. The
+# two call records use the same placeholder form. No instruction word is
+# edited.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay64GenerateTexture.c.o: POSTPROCESS = \
+	$(OBJCOPY) --redefine-sym mathRnd=mathRnd_o064Reloc \
+		--redefine-sym D_800D60B0=D_800D60B0_o064Reloc \
+		--redefine-sym D_800D60C0=D_800D60C0_o064Reloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .data \
+		sha256:374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb keep
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay64GenerateTexture.c.o: CFLAGS += -woff 835
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F0000000_1885D10.c.o: POSTPROCESS = \

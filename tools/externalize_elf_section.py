@@ -13,17 +13,26 @@ import struct
 import sys
 
 
-if len(sys.argv) not in (4, 5):
+if len(sys.argv) not in (4, 5, 6):
     raise SystemExit(
         "usage: externalize_elf_section.py OBJECT SECTION "
         "EXPECTED_HEX_OR_SHA256 "
-        "[ABSOLUTE_ANCHOR]"
+        "[ABSOLUTE_ANCHOR] [keep]"
     )
 
 path = pathlib.Path(sys.argv[1])
 section_name = sys.argv[2]
 expected_spec = sys.argv[3]
-anchor = int(sys.argv[4], 0) if len(sys.argv) == 5 else 0
+keep = False
+anchor_text = None
+for extra in sys.argv[4:]:
+    if extra == "keep":
+        keep = True
+    elif anchor_text is None:
+        anchor_text = extra
+    else:
+        raise SystemExit(f"unexpected argument {extra!r}")
+anchor = int(anchor_text, 0) if anchor_text is not None else 0
 if not 0 <= anchor < 0x8000:
     raise SystemExit(
         f"absolute anchor must fit the supported positive MIPS LO16 range: "
@@ -170,6 +179,9 @@ if anchor:
             f"{section_name}, found {hi_count} HI16 and {lo_count} LO16"
         )
 
-# Retain the section header/name but contribute no bytes to the linked image.
-struct.pack_into(">I", data, target_header_offset + 20, 0)
+# Retain the section header/name. The default contributes no bytes, because
+# those bytes already live in a retained data segment. `keep` leaves the
+# proved payload in place and only retargets the section symbol to ABS zero.
+if not keep:
+    struct.pack_into(">I", data, target_header_offset + 20, 0)
 path.write_bytes(data)

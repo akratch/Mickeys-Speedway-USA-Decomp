@@ -195,7 +195,7 @@ def classify(command):
         t.startswith(p) for t in tools for p in ALTERED_PREFIXES
     )
     externalize = EXTERNALIZE_RE.search(command)
-    if externalize and externalize.group(1) not in (None, "&&", ";"):
+    if externalize and externalize.group(1) not in (None, "&&", ";", "keep"):
         try:
             is_altered = is_altered or int(externalize.group(1), 0) != 0
         except ValueError:

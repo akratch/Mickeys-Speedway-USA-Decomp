@@ -177,7 +177,15 @@ class RecipeTests(unittest.TestCase):
                         "--add-symbol broken"):
                 with self.subTest(bad=bad), self.assertRaises(pp.MetadataProofError):
                     pp.metadata_filter_plan("$(OBJCOPY) %s $@" % bad, "x.o", root)
+            kept = ("$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py "
+                    "$@ .data sha256:00 keep")
+            self.assertEqual(pp.metadata_filter_plan(kept, "x.o", root),
+                             [("externalize", (".data", "sha256:00", 0))])
+            self.assertEqual(pp.metadata_filter_plan(kept.replace(" keep", " 0x10 keep"), "x.o", root),
+                             [("externalize", (".data", "sha256:00", 0x10))])
             for bad in ("externalize_elf_section.py $@ .text sha256:00",
+                        "externalize_elf_section.py $@ .data sha256:00 keep extra",
+                        "externalize_elf_section.py $@ .data sha256:00 0x8000",
                         "rebind_elf_relocations.py $@ .text 0x2:a:b",
                         "rebind_elf_relocations.py $@ .text 0x4:a:a",
                         "unknown_helper.py $@ .text 0"):

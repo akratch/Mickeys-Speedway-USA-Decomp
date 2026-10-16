@@ -1,29 +1,14 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 4,
-  "resolved": 4,
+  "queue_size": 3,
+  "resolved": 3,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 4,
-  "relocation_masked_coverage": 4,
+  "source_context_coverage": 3,
+  "relocation_masked_coverage": 3,
   "functions": [
-    {
-      "name": "func_overlay_064_F0000000_18C3B28",
-      "file": "src/overlays/o064/overlay64GenerateTexture.c",
-      "overlay": 64,
-      "tu": "overlays/o064",
-      "size_bytes": 1680,
-      "objdiff_match_pct": null,
-      "differing_words": 5,
-      "first_mismatch_offset": 820,
-      "relocation_masked_differing_words": 5,
-      "relocation_masked_first_mismatch_offset": 820,
-      "size_delta": 0,
-      "category": "register-only",
-      "source_context_sha256": "LXv-.40UA.Dtbt.Wkt7.kojP.tsKM.P2ri.elNm.8NWt.fnkL.rxw"
-    },
     {
       "name": "func_80011980",
       "file": "src/main/track.c",

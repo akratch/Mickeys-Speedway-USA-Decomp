@@ -107,7 +107,7 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * 181. Naming the j post-decrements and wrapping the bodies in if (1)
  * are size 0 and still leave the shared temporary at save 181.
  */
-#ifdef NON_MATCHING
+
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 {
     s32 k;
@@ -281,16 +281,16 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o064/overlay64GenerateTexture/func_overlay_064_F0000000_18C3B28.s")
-#endif
 
-/* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
- * symbol: func_overlay_064_F0000000_18C3B28
- * score: 5/420 words
- * frame: 0x70
- * relocations: 20
- * first-mismatch: +0x334
- * summary: lo-first split; pass 1 counts with j; copy counter is temp; row-loop or-zero restores k to t5; shared n-- temporary is a3 (5)
- * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
- */
+
+
+
+
+
+
+
+
+
+
+
+

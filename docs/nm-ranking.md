@@ -257,33 +257,32 @@ Text outside the markers remains authored and is preserved byte-for-byte.
 > `config/nonmatching-ranking.us.json`. Do not edit this region by hand;
 > `--check-doc` and `gmake check-docs` fail on any drift.
 
-The snapshot contains **4 queued identities**: **4 resolved measurements** and **0 unresolved identities**. Resolved target size totals **11,252 bytes (11.0 KiB)**.
+The snapshot contains **3 queued identities**: **3 resolved measurements** and **0 unresolved identities**. Resolved target size totals **9,572 bytes (9.3 KiB)**.
 
-Resolved rows span **1 overlays** and **1 resident TU group** (`main`).
+Resolved rows span **0 overlays** and **1 resident TU group** (`main`).
 
-A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 4** resolved rows.
+A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 3** resolved rows.
 
-Persisted configured-TU input evidence covers **4 / 4** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
+Persisted configured-TU input evidence covers **3 / 3** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
 
-Relocation-masked mismatch evidence covers **4 / 4** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
+Relocation-masked mismatch evidence covers **3 / 3** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
 
 ### Category distribution
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `register-only` | 1 | 25.0% |
-| `other` | 3 | 75.0% |
+| `other` | 3 | 100.0% |
 
 ### Differing-word thresholds
 
 | Threshold | Count |
 |---|---:|
-| raw `differing_words <= 5` | 1 |
-| relocation-masked `differing_words <= 5` | 1 |
-| raw `differing_words <= 10` | 1 |
-| relocation-masked `differing_words <= 10` | 2 |
-| raw `differing_words <= 20` | 2 |
-| relocation-masked `differing_words <= 20` | 2 |
+| raw `differing_words <= 5` | 0 |
+| relocation-masked `differing_words <= 5` | 0 |
+| raw `differing_words <= 10` | 0 |
+| relocation-masked `differing_words <= 10` | 1 |
+| raw `differing_words <= 20` | 1 |
+| relocation-masked `differing_words <= 20` | 1 |
 
 ### Complete ranked queue
 
@@ -293,10 +292,9 @@ units remain distinct.
 
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `register-only` | 1,680 | 5 | 5 | 820 | 820 | 0 | — |
-| 2 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
-| 3 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 70 | 70 | 0 | 0 | 0 | — |
-| 4 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 601 | 596 | 200 | 220 | 0 | — |
+| 1 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
+| 2 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 70 | 70 | 0 | 0 | 0 | — |
+| 3 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 601 | 596 | 200 | 220 | 0 | — |
 
 ### Unresolved identities
 

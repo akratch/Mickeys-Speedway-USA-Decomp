@@ -211,8 +211,8 @@
       "source_commit": "662ffe23ec507b9a9487fff01f042d2395ef375c"
     },
     "func_80011980": {
-      "ledger_commit": "eb51aa3a01a08892a06b45fd83b312d5b965c67c",
-      "reason": "Tail dead store of the shared face after its last use founds one owner after the loop load and mask. Positive: one owner, late face, node colour unchanged. Negative: split owners or the face visited first.",
+      "ledger_commit": "1cc559de099b34e38a5bc4f1c168c083c430468b",
+      "reason": "Keep the loop face store without a second load web, with edge defined in block 4 before the face. Memory-reading faces either add that neighbour or change size.",
       "source_commit": "208ba8109965d4f4df00d3af61c6df091f22a352"
     },
     "func_80011CDC": {
@@ -616,9 +616,9 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "bb2e3c7d52c132a10ecc2b25dee8fdbfc5345db6",
-      "reason": "Test real 0x79 radius operand kill after duration store to block GLOBAL forwarding and retain shared targetValue; prior product changed only dead 0x7B barriers. Hold defined unsigned 0x63 shift repair common.",
-      "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
+      "ledger_commit": "52b931c5b0c2bb5f2e28cd346fc369896d69e397",
+      "reason": "After the 261-aligned rename optimum, the 0x7B dead copy must survive uopt simplification rather than front-end folding, and the 0x79 address piece must colour v1.",
+      "source_commit": "52b931c5b0c2bb5f2e28cd346fc369896d69e397"
     },
     "func_80053868": {
       "ledger_commit": "b98f3696e2954fcb19879e3a7e8ba8b3311eb66a",
@@ -626,9 +626,9 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "6597b993e302c05b794b266937c7debe86782878",
-      "reason": "Test square-only field rereads while retaining the real scalar square overwrite and early double. Measure whether two removed named references lower gross saving below callee cost and permit the target early home and late FP split.",
-      "source_commit": "a3d82f762b62384714b2e5fa103b545ace0fc45f"
+      "ledger_commit": "e19b11cac7e7522ba2089c6d3bbe697b22ebfb9d",
+      "reason": "Two-pass ugen FP ring: keeps and colours make frame, offsets and shape exact, then 204 names remain because pass two inherits pass one's ring. Need 4a as a symbol home and a temporary reload.",
+      "source_commit": "eefcb62b14c29cb020b4a9bc4c6c05519589117c"
     },
     "func_80055104": {
       "ledger_commit": "4b1cb3fb4c85cadf5c6ce8472b9b4c949039d2f3",
@@ -1151,9 +1151,9 @@
       "source_commit": "900b48893e83a53be6d2932d2f1d6a47d94fdffd"
     },
     "func_overlay_064_F0000000_18C3B28": {
-      "ledger_commit": "96a028fbb8e150052a67d7d1b22bdc1e2d79a482",
-      "reason": "Resume the never-started residual136 sweep after independent typed storage and loader-namespace proofs. Four approved mutators only; finish by 21:50 UTC, no autoapply, type edits or padding.",
-      "source_commit": "9887d597a0a6a5f33ea7ab6ae1f1be4084ef7dfa"
+      "ledger_commit": "014f2ec432866cf771d15e778fff88f1dd7d630a",
+      "reason": "Decision oracle: rank edits by whether the shared n-- temporary is unforced a3, as on the proved zero-force object. lo-before-shift is already source. Score sweeps discarded the 61-word interference cell.",
+      "source_commit": "cea0635db176df7584babf1af3087c60a3870b15"
     },
     "func_overlay_065_F0000C38_18C4EA0": {
       "ledger_commit": "554ca5b60eec5c9eeafc8fefcccaa639bd4db9bd",

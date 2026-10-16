@@ -3728,6 +3728,16 @@
       }
     },
     {
+      "name": "assets/overlays/o064/overlay_064_data_rodata.bin",
+      "target_path": "expected/build/assets/overlays/o064/overlay_064_data_rodata.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o064"
+        ]
+      }
+    },
+    {
       "name": "assets/overlays/o064/overlay_064_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o064/overlay_064_reloc1.bin.o",
       "metadata": {
@@ -15631,7 +15641,7 @@
           "overlay-o064"
         ],
         "source_path": "src/overlays/o064/overlay64GenerateTexture.c",
-        "complete": false
+        "complete": true
       }
     },
     {

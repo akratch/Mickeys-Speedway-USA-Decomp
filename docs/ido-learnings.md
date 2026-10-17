@@ -3004,6 +3004,34 @@ A one-function curiosity belongs in that function's handoff, not here.
   Only ordinary source layout and untouched stock compiler output qualify for
   adoption, with disclosure and the cleanup queue for an exact inert form.
 
+### Evaluation order, operand release and emitted storage
+
+- **Evaluation order and operand release order are separate.** In controlled
+  IDO 5.3 floating-product experiments, UGEN evaluates the heavier child first
+  and breaks equal-weight ties toward the structural left child. Binary
+  operand handling subsequently releases the structural left operand before
+  the right, independently of evaluation order. Changing evaluation order
+  alone therefore need not reproduce the later scratch-register sequence.
+  Compare child orientation, reference counts and release events as well as
+  emitted operations. An explicit same-type `f32` cast changed commutative
+  child orientation while retaining direct loads and adding no runtime
+  instruction in the measured control. This fixed orientation, not the whole
+  allocation; an earlier pair of source assignments also changed the release
+  sequence. Do not generalize either spelling to every expression or infer an
+  original source idiom. Surviving widening-and-narrowing numeric conversion
+  nodes emit runtime work and are a different experiment. See the
+  [collision compiler controls](matching-triage-handoffs/func_80054B3C.md).
+- **A spill graph is not a final-frame calculator.** A faithful conflict graph
+  can prove that the allocator needs a minimum number of slots for that
+  graph. It does not by itself prove the emitted frame size. Distinguish
+  reserved variable storage, spill-slot allocation, later temporary requests,
+  and the highest home actually emitted. A controlled reconstruction reduced
+  its final frame despite later temporary allocation extending beyond the
+  earlier spill high-water. Measure all stages and actual stack accesses;
+  neither graph renumbering nor a slot-count arithmetic estimate proves a
+  frame or home-layout match. See the
+  [spill and emission measurements](matching-triage-handoffs/func_80054B3C.md).
+
 ### Replacing diagnostic storage with consumed source roles
 
 - A frame held by unused integer declarations need not require padding in the

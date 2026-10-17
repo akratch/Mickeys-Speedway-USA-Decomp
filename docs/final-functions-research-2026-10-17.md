@@ -127,8 +127,11 @@ and two-pass register-ring discrepancy, not another global coloring sweep.
 
 The current body is 215 words long, with ten mismatches; it is not a ten-word
 function. Five early face-address uses and five later edge-loop uses are
-coupled. The committed two-force control reaches zero masked differences;
-forcing the early address alone exchanges one five-word error for the other.
+coupled. Follow-up full-TU reproduction distinguishes the controls: the
+canonical two-force control retains one operand-order difference, while the
+sibling byte-offset control reaches zero masked differences under its two
+forces. Neither is a stock match. Forcing only the early address exchanges
+one five-word error for the other.
 
 The more informative source control is the matched sibling's first-edge-read
 shape in `func_80010654`. In the recorded experiment it creates the early
@@ -178,8 +181,15 @@ redundant: front-end folding, optimizer copy propagation, and final emission
 must be distinguished. The report that the copy is dead does not imply an
 extra runtime operation belongs in the source.
 
-**Next interpreter packet:** after reconciling ownership, reproduce the
-canonical and narrow-carrier positive controls in the same full TU. Capture
+**Interpreter history correction:** the October 11 handoff already proves
+UGEN-to-assembler copy retention and the address-priority change. Those older
+sections were missed when this research proposal emphasized the latest tail.
+Fresh phase captures confirm an existing mechanism; they are not its discovery.
+The narrow-carrier positive-control claim also needs reproduction on the
+current source before it can guide a new candidate.
+
+**Interpreter verification packet:** after reconciling ownership, reproduce the
+canonical and narrow-carrier controls in the same full TU. Capture
 the actual CFE, UOPT, UGEN and assembler boundaries. Identify the last phase
 where the extra narrowing exists and the phase retaining the copy. Only then
 test a defined, range-proved identity that simplifies at that later phase.

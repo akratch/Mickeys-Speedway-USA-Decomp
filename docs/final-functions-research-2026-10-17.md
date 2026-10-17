@@ -262,9 +262,14 @@ owned words, the target frame and every stack access. The coordinator
 independently scored the frozen object at zero raw and masked differences and
 checked all three relocation offsets, types and symbol identities. This is
 **not a match**: the result still requires three source-line retention
-controls, five forced allocation splits and one priority adjustment. The
+controls, five allocation-split controls and one priority adjustment. The
 source-line controls are not necessarily single destinations; the embedded
 factor/discriminant assignment requires destination-specific analysis.
+One split control is also consumed more than once. The final private phases
+extend previously instrumented IDO 5.3 sources. With controls disabled, their
+text, data, rodata, symbols and relocations agree with stock; whole-file
+metadata differs. These phases are distinct from the pristine-source observer
+used for the initial spill-graph measurement.
 
 Two source changes resolve the earlier UGEN discrepancy under those controls:
 same-type casts on the later factor uses establish the needed child

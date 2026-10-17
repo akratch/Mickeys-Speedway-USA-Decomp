@@ -4048,6 +4048,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xDC
- * summary: Open: 0x79 address piece in v1 (store before the byte cast is size +8; a3 still refills 6000), 0x7B dead copy (and-minus-one folds in uopt), 0x40/0x6A argument-copy placement vs 0x41/0x60/0x78
+ * summary: 0x7B copy is removed by AS1 producer renaming; defined CFG control preserves it but needs address-priority repair; other short handlers differ before AS1
  * PLATEAU-HANDOFF:func_800517E0:end
  */

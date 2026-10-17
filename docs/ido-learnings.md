@@ -3031,6 +3031,31 @@ A one-function curiosity belongs in that function's handoff, not here.
   neither graph renumbering nor a slot-count arithmetic estimate proves a
   frame or home-layout match. See the
   [spill and emission measurements](matching-triage-handoffs/func_80054B3C.md).
+- **A dead store can retain an expression and still change allocation.** A
+  defined overwrite after an operand's last real use can make LOCAL reject
+  substitution through `treekilled`, even when the overwrite itself is later
+  deleted. This replaced some diagnostic retention controls without emitted
+  work. It is not a general substitute for a keep override: an earlier kill
+  can shorten a needed live range, and preserving the value in another scalar
+  can transfer its call-crossing obligation to a different owner. Check value
+  generations, owner classes and live blocks after the predicate succeeds.
+  Restoring the same value from unchanged input memory does not necessarily
+  restore the original allocation generation.
+- **Use-site casts act after LOCAL has read the operand.** In the measured
+  Ucode sequence, LOCAL decides whether to forward a definition while reading
+  the variable load, before a following same-type conversion. Such a cast can
+  affect later tree handling but cannot undo that earlier forwarding. A plain
+  temporary carrier can fail for the same reason: its definition is forwarded
+  into the consumer before a subsequent dead overwrite is parsed, leaving no
+  carrier dependency for that overwrite to kill.
+- **Ordinary lexical scopes do not overlay scalar homes.** In the inspected
+  IDO 5.3 CFE, compound scopes share the containing owner's monotonically
+  increasing automatic-storage counter. UOPT identifies a variable location
+  by offset, memory type and block number; lexical debug markers do not create
+  a fresh location identity. Braces and distinct C names therefore do not
+  provide an early address-taken owner and a later register owner at one home.
+  This observation is limited to ordinary automatic scalars in compound
+  scopes; it is not a claim about every aggregate or storage representation.
 
 ### Replacing diagnostic storage with consumed source roles
 

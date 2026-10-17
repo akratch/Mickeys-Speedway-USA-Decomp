@@ -249,3 +249,70 @@ Priority: collision first, because instruction shape is already exact and its
 storage obstruction is now proved; interpreter second, using the positive
 phase control; ray query when a new defined source mechanism can satisfy its
 paired allocation constraint. None is promised to close in one edit.
+
+## SOL execution follow-through
+
+The following results supersede the proposed packets above where they overlap.
+The reconciled Grok handoffs and fresh assignment authorizations were integrated
+before the three SOL workers started their isolated lanes.
+
+The collision packet reached a stronger diagnostic than the earlier
+204-word naming residual: its controlled compiler output reproduces all 370
+owned words, the target frame and every stack access. The coordinator
+independently scored the frozen object at zero raw and masked differences and
+checked all three relocation offsets, types and symbol identities. This is
+**not a match**: the result still requires three source-line retention
+controls, five forced allocation splits and one priority adjustment. The
+source-line controls are not necessarily single destinations; the embedded
+factor/discriminant assignment requires destination-specific analysis.
+
+Two source changes resolve the earlier UGEN discrepancy under those controls:
+same-type casts on the later factor uses establish the needed child
+orientation, and putting the negated-coefficient assignment before the doubled
+coefficient fixes the earlier operand-release order. Three of the original
+six source-line retention controls were then replaced by defined source
+changes while preserving diagnostic zero. Removing each remaining allocation
+control still loses that result. The ordinary compiler does not produce an
+improvement over the canonical 70-word residual.
+
+The natural-retention experiments explain the remaining obstruction more
+precisely. Killing an operand can prevent substitution, but its original
+allocation generation or call-crossing lifetime can be lost. Both direct
+input rereads and named restores preserved the desired retention predicate
+while changing the required coordinate ownership. Saving the coefficient
+before killing it retained the square but transferred the cross-call
+obligation to another owner. A cast at the first comparison and a cast on its
+factor did not change the measured evaluation weights. Ordinary sibling
+scopes do not reuse scalar homes in the inspected CFE. These routes are
+closed on the tested anchor; none is evidence that a stock match is impossible.
+The next packet needs a concrete source mechanism that preserves the required
+owner generations while replacing a remaining compiler control. See the
+[collision handoff](matching-triage-handoffs/func_80054B3C.md).
+
+The ray packet reproduced both forced controls and modeled the coupled
+allocation decisions. Its faithful replay accounts for the observed cost
+decisions; neither a priority change nor one conflict-edge deletion supplies
+the required complete assignment. The small abstract deletion solutions would
+remove conflicts whose source live ranges still overlap. This excludes those
+specific mechanisms, not every possible C spelling. No new source candidate
+was adopted; the stock residual remains ten words. See the
+[ray handoff](matching-triage-handoffs/func_80011980.md).
+
+The interpreter packet confirmed the older assembler copy-retention mechanism
+and corrected the research-history attribution above. Its new controlled
+experiment separates a scheduling barrier from the address-priority change:
+retaining the desired local copy still changes the surrounding function, and
+the diagnostic allocation adjustment is not an untouched-compiler source
+solution. Other short handlers lose their desired structure at different
+compiler phases, so the assembler mechanism cannot explain them all. No new
+source candidate was adopted; the stock aligned residual remains 261. See the
+[interpreter handoff](matching-triage-handoffs/func_800517E0.md).
+
+The coordinator's isolated checkout passed the full ROM rebuild after
+regenerating its fresh overlay aliases. The result has the configured SHA-1
+`507341c0a40ca3e9a7cee969b396ee53facfb548`. The tooling suite passed all 119
+test files; documentation, clean-room and scoreboard checks also passed.
+These validate the unchanged canonical game source and tooling, not any
+forced compiler diagnostic. The main checkout's pre-existing campaign-note
+edits were preserved. No new matching credit or publication follows from
+these research and handoff commits.

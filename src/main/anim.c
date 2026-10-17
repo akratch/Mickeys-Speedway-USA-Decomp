@@ -1940,6 +1940,9 @@ void func_800517E0(void) {
                     mainSetAnimGroup(packed2);
                     break;
                 case 0x7B:
+                    /* s8, s16, or-zero, an s16 of the masked halfword (size
+                     * +4) and a nested s8 assignment (size +8) do not leave
+                     * the dead copy at size 0 (lane anim-close). */
                     D_8007D6A8 = ((s32) commandDuration * 0x3C) / 100;
                     D_8007D6AC = (f32) cursor->duration * factor;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
@@ -2624,6 +2627,14 @@ extern f32 D_8008420C;
  * Those `addr =` lines are the only unnatural spelling. Instruction
  * stream identical to the target; masked 70 at size 0, all stack
  * offsets (frame 0xE8 against 0xD8).
+ * 2026-10-16 (lane anim-close): carrying 4a/b^2/2a/-b in z1/z2/x1/twoZ1
+ * keeps only 4a (mpy_operand_op) and -b (twoZ1 already not a vreg).
+ * b^2 and 2a are still copied, the frame stops at 0xE0, and a
+ * `(z1 * 1.0f)` wrapper or address-taking x1 and z2 does not reach
+ * 0xD8. Writing the second discriminant as `(z1 = 4.0f * quadA) * ...`
+ * stays at frame 0xE0, masked 241, size 0. A cast child
+ * `(z1 = ((f32) quadA) * 4.0f)` with b^2 stored through z2 folds away:
+ * masked 70, size 0, frame 0xE8. Canonical stays this body.
  */
 s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                   s32 arg2, AnimCollisionShape *arg3,
@@ -4027,7 +4038,7 @@ void fmvInit(void) {
  * frame: 0xE8 (target 0xD8)
  * relocations: 3
  * first-mismatch: +0x0
- * summary: 70 at size 0 (pz2 body): instruction stream identical to the target; every residual word is a stack offset from the frame (four uopt temporaries for 4a, b^2, 2a, -b where the target uses homes). The `addr = &x;` lines are the only unnatural spelling.
+ * summary: 70 at size 0 (pz2 body): the second-discriminant cast child folds away and the frame stays 0xE8. Every residual word is a stack offset.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 
@@ -4037,6 +4048,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xDC
- * summary: Open: 0x79 address piece, 0x7B dead copy (uopt-simplified store operand), 0x40/0x6A argument-copy placement vs 0x41/0x60/0x78
+ * summary: Open: 0x79 address piece in v1 (store before the byte cast is size +8; a3 still refills 6000), 0x7B dead copy (and-minus-one folds in uopt), 0x40/0x6A argument-copy placement vs 0x41/0x60/0x78
  * PLATEAU-HANDOFF:func_800517E0:end
  */

@@ -5262,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, naming. Memory-reading loop face keeps the store only with an extra load web or a size change; tree stays best
+ * summary: 10 at 0, naming. Diagnose stays allocation-mismatch, register-permutation, lever none-known. Reservation is unauthenticated and names no source change. Tree stays best
  * PLATEAU-HANDOFF:func_80011980:end
  */

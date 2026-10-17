@@ -211,8 +211,8 @@
       "source_commit": "662ffe23ec507b9a9487fff01f042d2395ef375c"
     },
     "func_80011980": {
-      "ledger_commit": "1cc559de099b34e38a5bc4f1c168c083c430468b",
-      "reason": "Keep the loop face store without a second load web, with edge defined in block 4 before the face. Memory-reading faces either add that neighbour or change size.",
+      "ledger_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df",
+      "reason": "New inverse-allocation measurement: faithfully replay all stock decisions, solve complete paired-color constraints under single-edge and priority changes, then trace a proved solution to a defined source mechanism; no repeated ladder sweep.",
       "source_commit": "208ba8109965d4f4df00d3af61c6df091f22a352"
     },
     "func_80011CDC": {
@@ -616,9 +616,9 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "52b931c5b0c2bb5f2e28cd346fc369896d69e397",
-      "reason": "After the 261-aligned rename optimum, the 0x7B dead copy must survive uopt simplification rather than front-end folding, and the 0x79 address piece must colour v1.",
-      "source_commit": "52b931c5b0c2bb5f2e28cd346fc369896d69e397"
+      "ledger_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df",
+      "reason": "New phase-attribution packet: capture CFE/UOPT/UGEN/as1 boundaries for retained narrow-carrier controls, prove where copy and narrowing survive, then test a range-proved identity at the measured late phase; no syntax sweep.",
+      "source_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df"
     },
     "func_80053868": {
       "ledger_commit": "b98f3696e2954fcb19879e3a7e8ba8b3311eb66a",
@@ -626,9 +626,9 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "e19b11cac7e7522ba2089c6d3bbe697b22ebfb9d",
-      "reason": "Two-pass ugen FP ring: keeps and colours make frame, offsets and shape exact, then 204 names remain because pass two inherits pass one's ring. Need 4a as a symbol home and a temporary reload.",
-      "source_commit": "eefcb62b14c29cb020b4a9bc4c6c05519589117c"
+      "ledger_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df",
+      "reason": "New faithful spill graph proves two five-owner cliques. Trace the code-motion region creating a core conflict and test a predicted edge removal against the exact stack-access map and UGEN reload order, not frame size alone.",
+      "source_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df"
     },
     "func_80055104": {
       "ledger_commit": "4b1cb3fb4c85cadf5c6ce8472b9b4c949039d2f3",

@@ -63,7 +63,7 @@ METADATA_TOOLS = {
 }
 
 EXTERNALIZE_RE = re.compile(
-    r"externalize_elf_section\.py\s+\S+\s+\S+\s+\S+(?:\s+(\S+))?"
+    r"externalize_elf_section\.py\s+\S+\s+\S+\s+\S+([^&;]*)"
 )
 DANGEROUS_OBJCOPY_RE = re.compile(
     r"--(?:update|add)-section|--change-section|"
@@ -194,12 +194,27 @@ def classify(command):
     is_altered = any(t in ALTERED_TOOLS for t in tools) or any(
         t.startswith(p) for t in tools for p in ALTERED_PREFIXES
     )
-    externalize = EXTERNALIZE_RE.search(command)
-    if externalize and externalize.group(1) not in (None, "&&", ";", "keep"):
+    for externalize in EXTERNALIZE_RE.finditer(command):
+        saw_keep = False
+        saw_anchor = False
         try:
-            is_altered = is_altered or int(externalize.group(1), 0) != 0
+            extras = shlex.split(externalize.group(1))
         except ValueError:
             return "review-required", tools
+        for extra in extras:
+            if extra == "keep":
+                if saw_keep:
+                    return "review-required", tools
+                saw_keep = True
+            else:
+                if saw_anchor:
+                    return "review-required", tools
+                try:
+                    anchor = int(extra, 0)
+                except ValueError:
+                    return "review-required", tools
+                saw_anchor = True
+                is_altered = is_altered or anchor != 0
     if OBJCOPY_RE.search(command) and DANGEROUS_OBJCOPY_RE.search(command):
         is_altered = True
     if is_altered:

@@ -29,6 +29,59 @@ bytes and disassembly never belong here.
 
 ## Proven reusable behavior
 
+### Load-cache state can couple a missing load to many register differences
+
+- **Symptom:** introducing a source block boundary retains the intended
+  expression but removes one required load and changes many later temporary
+  registers. **Mechanism:** the pinned UGEN load-CSE table holds ten entries.
+  At capacity, it still searches existing entries, but cannot admit a new
+  unmatched candidate. Repeated loads absent from the table can therefore
+  remain distinct; a translated label can clear the table, allowing the first
+  load to enter and the second to merge. That changes reference counts,
+  expression evaluation and temporary release order. A controlled experiment
+  isolated two qualified load-cache calls and recovered both the missing load and
+  the later register order without forcing the temporary queue.
+- **Lever:** authenticate cache occupancy and reset events immediately before
+  the first missing load. Separate the source boundary's UOPT retention effect
+  from its later UGEN cache effect; preserving one does not preserve the other.
+  Inspect actual load-node identity and accepted cache operations, rather than
+  infer cache state from source statements or object size.
+- **Limits:** cache interventions are diagnostic only. They do not establish
+  original source or authorize dummy reads, volatile accesses, compiler edits
+  or output patches. A different source boundary still needs untouched compiler
+  output and the normal exact-match proofs. A division routed directly into a
+  call argument is a different mechanism: leaf-cache occupancy alone does not
+  change the root's requested destination. Evidence: the collision storage
+  packet in the symbol-owned matching-triage handoff.
+
+### Temporary-event inversion needs both anonymous and named ownership
+
+- **Symptom:** a late handler has the wrong temporary registers and a copy
+  disappears, although its own C is unchanged. **Mechanism:** earlier narrow
+  conversions or a table-index expression can consume anonymous temporaries.
+  Removing those events changes later queue choices; assembler copy retention
+  can then change because a different physical register belongs to the
+  historical, conservative exception live-out set. This is assembler dataflow,
+  not a C variable's semantic lifetime. A controlled source pair recovered the predicted
+  later temporary choices and copy naturally under the stock toolchain.
+- **Lever:** observe successful list mutations with before/after queues,
+  procedure and pass identity, usage counts, and typed expression provenance.
+  Prove replay continuity, bank membership, unique list membership and release
+  conditions. Derive constraints from several later producers, then test a
+  semantically equivalent source change with a specific predicted event delta.
+  Review static colored owners separately: replacing an anonymous expression
+  with a named local can displace another owner despite the desired queue delta.
+- **Limits:** final instruction count does not count temporary events. A named
+  copy is not an anonymous draw. A named source result can still require an
+  anonymous draw when reference-count or register-class checks override the
+  requested destination; trace the effective request. Matching a late queue does
+  not establish
+  the target's original intermediate representation or a whole-function match.
+  Preserve conversion domains, memory stability and call/store order. Require
+  stock/observer-off/observer-on section, symbol and relocation fidelity before
+  trusting the trace. Evidence: the interpreter event packet in the symbol-owned
+  matching-triage handoff; its source gain remains nonexact.
+
 ### In-place narrow updates can retain a converted value across calls
 
 - **Symptom:** a converted short value is computed after intervening calls,

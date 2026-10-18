@@ -3113,6 +3113,21 @@ A one-function curiosity belongs in that function's handoff, not here.
   generations, owner classes and live blocks after the predicate succeeds.
   Restoring the same value from unchanged input memory does not necessarily
   restore the original allocation generation.
+- **A retention predicate and its emitted cost belong to different phases.**
+  A controlled source diagnostic crossed LOCAL's expression-depth limit using
+  defined unsigned identities around a complete address. LOCAL retained the
+  address; UGEN later folded the identities. The untouched owned output and
+  relocation records equalled a separate diagnostic that forced only the same
+  retention decisions, without introducing another allocation owner. This
+  isolates retention from the operand-read cost of a self-redefinition; it does
+  not supply acceptable source through dummy depth padding. A fixed local
+  aggregate exposed another real phase window: its indirect load retained the
+  address before later folding into a variable load. That variable lacked
+  virtual-register eligibility and emitted extra memory work. Check both the
+  early rejection reason and the later variable class, owners and output.
+  Neither zero identity instructions nor successful retention establishes a
+  matching reconstruction. See the controlled retention experiments in the
+  [ray handoff](matching-triage-handoffs/func_80011980.md).
 - **Use-site casts act after LOCAL has read the operand.** In the measured
   Ucode sequence, LOCAL decides whether to forward a definition while reading
   the variable load, before a following same-type conversion. Such a cast can
@@ -3128,6 +3143,41 @@ A one-function curiosity belongs in that function's handoff, not here.
   provide an early address-taken owner and a later register owner at one home.
   This observation is limited to ordinary automatic scalars in compound
   scopes; it is not a claim about every aggregate or storage representation.
+
+- **Late dead branches can retain conversion owners without emitting work.**
+  A controlled transfer of an existing matched guard pattern created a shared
+  narrow conversion in an unreachable child block. Its two arithmetic uses
+  formed one allocation owner before the known-false branch disappeared; stock
+  output retained the original instruction count. An independent guarded
+  operand store also retained address definitions without emitting a store,
+  but still increased the operand's allocation cost. Folding an unsigned
+  identity during per-block constant arithmetic also left its live destination
+  store's allocation cost intact. These are different effects: an absent final
+  instruction or operator does not imply an absent use, definition or
+  control-flow cost during allocation. A faithful replay additionally showed
+  that the second allocation pass scans expression identities in founding
+  order, computing profitability after selecting each identity. Raising a late
+  owner's saving therefore cannot move it ahead of its already-founded child.
+  A subsequent controlled source pair separated expression numbering from
+  range formation: a real single-use promotion in a loop condition established
+  an early identity, while later guarded fanout formed its range only in the
+  tail. The earlier single-use occurrence did not need its own colored range.
+  Using an already-live flag also avoided extending a short-lived input into
+  the tail. Review the whole register assignment and floating-point costs
+  before combining these mechanisms. These defined inert diagnostics remain
+  subject to ADR 0017 semantic review, disclosure, cleanup tracking and all
+  exact-match proofs.
+  See the [ray guard controls](matching-triage-handoffs/func_80011980.md).
+- **Allocation cost changes at discrete incidence boundaries.** An empty
+  branch can emit nothing while its blocks still affect allocation priority.
+  Record both expression occurrences and auxiliary block incidences before
+  predicting a profitability change; removing one block need not cross the
+  divisor boundary. An equivalent conditional spelling reduced incidences
+  without changing the emitted operation sequence, but did not change the
+  divisor. Moving a loop test crossed the boundary but changed conversion
+  formation and PRE placement, losing the desired live range. Cost, expression
+  identity and value generation must therefore be checked together. See the
+  [ray control-flow measurements](matching-triage-handoffs/func_80011980.md).
 
 ### Replacing diagnostic storage with consumed source roles
 

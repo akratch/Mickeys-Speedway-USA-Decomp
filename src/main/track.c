@@ -5262,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: Stock remains 10 at size zero. A real old-value latch owner realizes the paired/sign allocation with natural face retention, but adds a copy and changes other priorities. The measured cost and copy barriers remain; no matching gain.
+ * summary: Stock remains 10 at size zero. New zero-emission conversion controls realize the complete GP assignment or a six-owner naming residual at 215 words. Early founding, tail-only incidence and priority costs remain coupled; no matching gain.
  * PLATEAU-HANDOFF:func_80011980:end
  */

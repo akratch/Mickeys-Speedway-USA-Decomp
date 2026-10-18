@@ -3224,6 +3224,24 @@ A one-function curiosity belongs in that function's handoff, not here.
   parameter instead can retain an exit writeback. Inspect new owners, split
   pieces and emitted stores/reloads; matching colours for the original owners
   alone is insufficient.
+- **Preserve split history as well as numeric priorities.** Later ranges enter
+  the candidate set only after their parents split. In a controlled IDO 5.3
+  experiment, changed initial priorities altered range creation order; a later
+  equal-priority tie then selected a different range. Restoring selected
+  priority values did not reconstruct the earlier split history. Compare
+  actual eligible candidates at each decision, including creation and decision
+  ordinals, total split cost and the priorities of every resulting piece. A
+  sorted list combining candidates from different decisions cannot prove an
+  allocation sequence.
+- **Deleted guards can leave a materialization boundary.** A known-false guard
+  between an arithmetic definition and its first consumer disappeared from
+  final output, but the new block boundary retained a store/reload pair and
+  changed temporary spill-request order. Restoring allocation priorities did
+  not remove that traffic. Check forwarding, load CSE and temporary request
+  order alongside the allocation graph. Moving the guard across definitions
+  needs a fresh lifetime prediction; it may fix forwarding while changing
+  range formation. These are bounded causal observations, not stock matching
+  results. See the [paired-cost collision investigation](matching-triage-handoffs/func_80054B3C.md).
 - **Limits:** qualify observers against the same configured full-TU stock input,
   with observation disabled and enabled, including sections, symbols and
   relocations. These are causal diagnostics, not a reference-padding recipe.

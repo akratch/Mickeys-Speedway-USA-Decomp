@@ -626,8 +626,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "25f88c85b6ffa7cc175fdc9a75a558b8180b0e95",
-      "reason": "Target/pz2 CFG reaching-store proof isolates four safe home overlays and one generation fission; one early home is store-only. Derive source storage from these constraints instead of preserving the forced KEEP anchor.",
+      "ledger_commit": "2f6705d1afdad7d218e748c3b82b62871350b224",
+      "reason": "RAY-proved paired numerator control: unreachable post-capture A/QC copies compensate x1 cost and compressed incidence together, with tail-region toll conservation; test removal of only the z1-remainder selection bias.",
       "source_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df"
     },
     "func_80055104": {

@@ -1857,8 +1857,8 @@ void func_800517E0(void) {
                             if (index < animation->header->count10) {
                                 record = animation->records + index;
                                 flagsValue = record->flags;
-                                header = animation->header;
-                                reference = header->recordTable[flagsValue & 0xFF].reference;
+                                word3 = record->flags & 0xFF;
+                                reference = animation->header->recordTable[word3].reference;
                                 record->flags = flagsValue & 0xFF1FFFFF;
                                 reference->flags = reference->flags &
                                     0xFF1FFFFF;
@@ -1897,10 +1897,10 @@ void func_800517E0(void) {
                      * both arguments are formed before the advance and
                      * the handler is the shipped sequence (lane
                      * opus-517e0). */
-                    signedValue = cursor->command & 0xFF;
+                    word3 = cursor->command & 0xFF;
                     word1 = *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    func_80029084(word1, signedValue);
+                    func_80029084(word1, word3);
                     break;
                 case 0x79:
                     /* The byte is converted straight from the stream: a
@@ -4044,10 +4044,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 596/1808 words
+ * score: 520/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xDC
- * summary: 0x7B copy is removed by AS1 producer renaming; defined CFG control preserves it but needs address-priority repair; other short handlers differ before AS1
+ * summary: Typed event inversion recovers 0x78 and 0x7B; remaining argument copies, FP scratch phase and static address owners are nonexact
  * PLATEAU-HANDOFF:func_800517E0:end
  */

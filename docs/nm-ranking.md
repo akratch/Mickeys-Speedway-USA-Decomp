@@ -294,7 +294,7 @@ units remain distinct.
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
 | 2 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 70 | 70 | 0 | 0 | 0 | — |
-| 3 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 601 | 596 | 200 | 220 | 0 | — |
+| 3 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 525 | 520 | 200 | 220 | 0 | — |
 
 ### Unresolved identities
 

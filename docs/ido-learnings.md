@@ -2143,18 +2143,18 @@ bytes and disassembly never belong here.
   affect downstream FIFO membership, so that interaction must be measured
   separately. See the [entry-cycle control](whale-entry-phase.md).
 
-- **The `ugen` temporary ring is a FIFO free list.** A temporary pops the head
-  of the queue and is pushed back on the tail when it dies, so a short-lived
-  temporary that emits **no instruction at all** -- for example the boolean
-  temporary a `(a == b) != 0U` normalization creates, which `as1` folds back
-  into the branch -- still consumes a pop and renumbers every temporary after
-  it. That makes such a normalization a one-notch dial on the whole downstream
-  ring, and it is why a candidate can be exact everywhere except for one pair
-  of temporaries whose creation order differs. Diagnose it by reading the pops
-  off both sides in order; if every pop after the disputed pair agrees, the
-  residual is a creation-order question at that pair, not a phase or an
-  allocator question. Evidence: `func_8005A948`, where patching the two names
-  in the phase input takes a three-word residual to zero.
+- **The `ugen` temporary ring is a FIFO free list.** An anonymous temporary
+  pops the head of its free list and returns to the tail when released. A
+  materialized boolean can consume a temporary even when `as1` later fuses its
+  producer into a branch. The matched relational-guard normalization described
+  above is one measured example; `(a == b) != 0U` is not a general recipe for
+  creating such an event. A normalization can instead fold before UGEN or leave
+  extra instructions. Authenticate the actual pop, release and final emission
+  before treating a spelling as a queue adjustment. Compare later producers and
+  named-owner assignments too: a local event change does not prove that every
+  downstream register changes, or that a register mismatch belongs to this
+  allocator. Evidence: the relational-guard controls on `func_8005A948` and the
+  source-event controls in the interpreter matching-triage handoff.
 
 - **`as1` picks a call's delay-slot filler by memory disambiguation against
   `$sp`, not by emission index or source line.** Where the register holding a

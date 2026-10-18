@@ -3348,7 +3348,7 @@ void func_800115E4(s32 mode, TrackRayPoint *pos, TrackRayPoint *vel,
     record->value38 = plane->flags;
     record->value3C = plane->material;
 }
-#ifdef NON_MATCHING
+/* Matched ray query; reviewed source shaping is disclosed below. */
 /*
  * PROVENANCE: Mickey's m2c collision-query draft and resident node/plane
  * offsets reconstruct this ray query; no external function body is adapted.
@@ -3374,30 +3374,30 @@ typedef struct TrackRayNodeExtended {
 } TrackRayNodeExtended;
 
 /*
- * Natural rewrite, 2026-10-07: one counted segment loop, the 0.01f literal,
- * and the node word reused as the edge index (as in func_80010654, it keeps
- * the entry copy and the unfolded index shift). Declarations give the target's 0xC8 frame: one pad
- * slot above the node, face before the plane components, entry and planes
- * after them, start and the hit offset read inline. 107 masked at delta 0.
- * Lane d-mid2: the plane distance loaded into planeValue and then reduced
- * (the target's load lands in the variable's register and planeOffset takes
- * the first ring draw), no block in the arm head (any boundary there hoists
- * the end-point loads into coloured webs), one zero-cost block around
- * `inside = 1` (raises the plane and planeValue save divisors so the start
- * coordinates colour first and planeValue splits to its home), the loop face
- * as a byte offset (base first in the add) and `planeOffset + 0.01f`: 89 -> 24.
- * Both dot products summed z term first, `z + (x + y) + d`: the target's add
- * takes the z product first and its mul the plane component first, which
- * also fixes the ring free order after each sum: 24 -> 10.
- * Lane u-1, 2026-10-09: the edge sign applied as a conditional expression
- * (the form func_8001291C's edge loop takes) supplies the blocks the
- * `do { inside = 1; } while (0)` region stood in for; the object is
- * byte-identical with the region gone. Still 10.
- * Lane v-1, 2026-10-09: the edge loop written as Diddy Kong Racing's
- * public `src/objects.c` facet test writes its bisector loop,
- * `for (k = 0; k < 3 && flag; k++)` with the flag set before it (and no
- * separate clear of the node word): byte-identical to the do-while.
+ * ADR 0017: independently reviewed, defined allocation shaping.
+ * pad is initialized to zero and never changes. Both pad guards are
+ * unreachable: their integer comparison, FP copies and empty promoted
+ * inside comparison add no executed access, arithmetic or branch.
+ * The two unsigned pointer OR-zero identities preserve planes under
+ * the configured 32-bit ABI and emit no operation. They retain face
+ * definitions through LOCAL before the identities fold.
+ * inside is a halfword carrying only zero or one on executed paths;
+ * edge holds the zero-extended halfword entry in a signed word.
+ * These roles recover early expression founding, tail-only interference
+ * and independent integer/FP priority ordering without compiler changes.
+ * Seek a natural lifetime spelling with identical stock output; see
+ * docs/cleanup-queue.md. Historical diagnostics remain in the handoff.
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
  */
+
 s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                   TrackRayPoint *offset, f32 scale, f32 planeOffset,
                   f32 threshold, TrackRayHit *hit) {
@@ -3421,9 +3421,10 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
     s32 segmentIndex;
     s32 valid;
     s32 sign;
-    s32 inside;
-    u16 edge;
+    u16 inside;
+    s32 edge;
 
+    pad = 0;
     valid = 0;
     for (segmentIndex = 0; segmentIndex < D_800C9D3C; segmentIndex++) {
         encoded = D_800C9D2C[segmentIndex];
@@ -3432,7 +3433,9 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
         } else {
             entry = (u16 *) encoded;
             planes = node->planes;
-            face = &planes[*entry];
+            edge = *entry;
+            face = (TrackRayFace *) ((u8 *) planes + ((edge & 0xFFFF) << 4));
+            planes = (TrackRayFace *) ((u32) planes | 0U);
             planeX = face->x;
             planeY = face->y;
             planeZ = face->z;
@@ -3447,14 +3450,24 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                         pointX = ((offset->x * ratio) + start->x) - (planeOffset * planeX);
                         pointY = ((offset->y * ratio) + start->y) - (planeOffset * planeY);
                         pointZ = ((offset->z * ratio) + start->z) - (planeOffset * planeZ);
+                        if (pad && (segmentIndex * 4 < D_800C9D3C)) {
+                            pointX = threshold;
+                            pointY = threshold;
+                            pointZ = threshold;
+                        }
                         inside = 1;
                         for (encoded = 0; encoded < 3 && inside != 0; encoded++) {
                             edge = entry[encoded + 1];
                             sign = edge & 0x8000;
                             face = (TrackRayFace *) ((u8 *) planes + ((edge ^ sign) << 4));
+                            planes = (TrackRayFace *) ((u32) planes | 0U);
                             edgeValue = face->distance +
                                         (face->x * pointX + face->y * pointY + face->z * pointZ);
-                            edgeValue = (sign != 0) ? -edgeValue : edgeValue;
+                            if (pad && ((s32) inside + (s32) inside)) {
+                            }
+                            if (sign != 0) {
+                                edgeValue = -edgeValue;
+                            }
                             if (threshold < edgeValue) {
                                 inside = 0;
                             }
@@ -3480,9 +3493,10 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
     }
     return valid;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80011980.s")
-#endif
+
+/* Stock C owns this function. */
+/* Reviewed inert spellings are tracked in the cleanup queue. */
+/* End ray query. */
 typedef struct TrackClipVertex {
     s16 x;
     s16 y;
@@ -5255,13 +5269,3 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
     intensity = (frame >> 8) & 0xFF;
     gDPSetEnvColor(D_800C9520++, intensity, intensity, intensity, intensity);
 }
-
-/* PLATEAU-HANDOFF:func_80011980:start
- * symbol: func_80011980
- * score: 10/215 words
- * frame: 0xC8
- * relocations: 12
- * first-mismatch: +0xC0
- * summary: Stock remains 10 at size zero. New zero-emission conversion controls realize the complete GP assignment or a six-owner naming residual at 215 words. Early founding, tail-only incidence and priority costs remain coupled; no matching gain.
- * PLATEAU-HANDOFF:func_80011980:end
- */

@@ -180,6 +180,12 @@
       "state": "superseded",
       "decision_commit": "0edc3b0d1182378151dcc6f7fc3c1adf54399370",
       "reason": "The frozen handoff was reviewed and integrated at 72d0dfc48. The decision commit preserves its complete latest findings and moves older prose into linked history; the old lane has no remaining integration delta or active ownership."
+    },
+    "8ed816dfc83eecc0c7a48f7e93f3d33b0a5292a9": {
+      "symbol": "func_80054B3C",
+      "state": "superseded",
+      "decision_commit": "25f88c85b6ffa7cc175fdc9a75a558b8180b0e95",
+      "reason": "The frozen pricing report was integrated with an identical patch at the decision commit. Its owner confirms release; this report-only tip changes no source and has no remaining integration delta."
     }
   }
 }

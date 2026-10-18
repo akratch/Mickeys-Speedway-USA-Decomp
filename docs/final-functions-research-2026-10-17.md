@@ -321,3 +321,23 @@ These validate the unchanged canonical game source and tooling, not any
 forced compiler diagnostic. The main checkout's pre-existing campaign-note
 edits were preserved. No new matching credit or publication follows from
 these research and handoff commits.
+
+## 2026-10-18 public-branch follow-up
+
+A read-only GitHub inventory covered the eleven forks returned for the public
+[JFG repository](https://github.com/Ryan-Myers/Jet-Force-Gemini/forks): twenty-four
+branch rows, twenty distinct commit heads. The three relevant files,
+`src/anim.c`, `src/hit.c` and `src/track.c`, yielded fifty-seven snapshots;
+all three missing paths belonged to the `queueRAM/none` branch.
+Immutable URLs, hashes, inventories and source diffs are retained in ignored
+`build/research-public-20261018/`.
+
+No new candidate body was found in those snapshots. The animation variants
+contain the existing bitstream helpers or assembly declarations; the command
+processor remains undecompiled. The hit variants contain no C bodies. Track
+variants with the current body set differ in rendering trace and display-list
+source, including the already-merged
+[JFG track contribution](https://github.com/Ryan-Myers/Jet-Force-Gemini/pull/23);
+older variants have fewer bodies and supply no new ray-query reconstruction.
+This excludes these files at these heads, not all public scratches or other
+repositories. No external source was adopted and no matching credit changed.

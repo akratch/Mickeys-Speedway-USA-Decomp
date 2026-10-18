@@ -211,9 +211,9 @@
       "source_commit": "662ffe23ec507b9a9487fff01f042d2395ef375c"
     },
     "func_80011980": {
-      "ledger_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df",
-      "reason": "New inverse-allocation measurement: faithfully replay all stock decisions, solve complete paired-color constraints under single-edge and priority changes, then trace a proved solution to a defined source mechanism; no repeated ladder sweep.",
-      "source_commit": "208ba8109965d4f4df00d3af61c6df091f22a352"
+      "ledger_commit": "0edc3b0d1182378151dcc6f7fc3c1adf54399370",
+      "reason": "Trace actual IDO 5.3 conversion-expression promotion by count/state/parent context on paired controls; test a measured late-eliminated context only if it changes colored ownership while preserving required caller blockers.",
+      "source_commit": "93c540fbe8e9cad734df66a4187c92fcd80c0e6d"
     },
     "func_80011CDC": {
       "ledger_commit": "0b2affd78b0766abdc4d5cfd10c8d3f707417a1e",
@@ -616,9 +616,9 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df",
-      "reason": "New phase-attribution packet: capture CFE/UOPT/UGEN/as1 boundaries for retained narrow-carrier controls, prove where copy and narrowing survive, then test a range-proved identity at the measured late phase; no syntax sweep.",
-      "source_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df"
+      "ledger_commit": "8a22b195768cc037de25e6506d4f2ca019b3a287",
+      "reason": "Attribute 0x6A argument-web precolor/coalescing against 0x6B, then test an authenticated second halfword read at the call to separate storage and outgoing-argument carriers without extra loads; no local-rename sweep.",
+      "source_commit": "8a22b195768cc037de25e6506d4f2ca019b3a287"
     },
     "func_80053868": {
       "ledger_commit": "b98f3696e2954fcb19879e3a7e8ba8b3311eb66a",
@@ -626,8 +626,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df",
-      "reason": "New faithful spill graph proves two five-owner cliques. Trace the code-motion region creating a core conflict and test a predicted edge removal against the exact stack-access map and UGEN reload order, not frame size alone.",
+      "ledger_commit": "0edc3b0d1182378151dcc6f7fc3c1adf54399370",
+      "reason": "Invert selection pricing on controlled zero: raise quadC instead of lowering z1, then test two inert regions around quadB against measured occurrence/aux normalization to remove bias while preserving retained expressions and split controls.",
       "source_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df"
     },
     "func_80055104": {

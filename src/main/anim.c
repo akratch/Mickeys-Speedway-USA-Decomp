@@ -2585,9 +2585,9 @@ extern f32 D_8008420C;
 #ifdef NON_MATCHING
 /* PROVENANCE: JFG's public hit/collision code supplies the capsule and
  * endpoint-overlap role; Mickey's collision-shape offsets are authoritative. */
-/* Workbench verdict: structure-mismatch, 365 differing words; first mismatch is at +0x0. */
-/* Target is 370 instructions/frame -216; candidate is 371 instructions/frame -392. */
-/* Remaining gap is frame/allocation: all three sqrtf identities resolve, but none has the target offset. */
+/* Untouched compiler: 353/370 words exact; all 17 differences are stack offsets. */
+/* Target and candidate: 370 words, frame 0xD8, three exact sqrtf relocations. */
+/* Remaining gap: 17 stack offsets; frame and all three sqrtf relocations match. */
 /*
  * Swept-sphere intersection between two collision shapes, reconstructed from
  * Mickey's own assembly. The quadratic's three coefficients are written out
@@ -2634,7 +2634,8 @@ extern f32 D_8008420C;
  * 0xD8. Writing the second discriminant as `(z1 = 4.0f * quadA) * ...`
  * stays at frame 0xE0, masked 241, size 0. A cast child
  * `(z1 = ((f32) quadA) * 4.0f)` with b^2 stored through z2 folds away:
- * masked 70, size 0, frame 0xE8. Canonical stays this body.
+ * masked 70, size 0, frame 0xE8. Subsequent ordinary home elision
+ * removes unused ey/ez and inlines twoY2: 17/370, frame 0xD8.
  */
 s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                   s32 arg2, AnimCollisionShape *arg3,
@@ -2668,9 +2669,6 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     f32 dy;
     f32 dz;
     f32 discriminant;
-    f32 ey;
-    f32 ez;
-    f32 twoY2;
     f32 twoZ2;
     f32 *addr;
     f32 twoX2;
@@ -2718,8 +2716,7 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     y1 = firstPoint->y;
     twoY1 = y1 + y1;
     y2 = secondPoint->y;
-    twoY2 = y2 + y2;
-    quadB = ((stepZ2 * twoZ2) + (((twoZ1 * stepZ1) - (twoZ1 * stepZ2)) - (twoZ2 * stepZ1))) + (((((twoX1 * stepX1) - (twoX1 * stepX2)) - (twoX2 * stepX1)) + (twoX2 * stepX2)) + ((((twoY1 * stepY1) - (twoY1 * stepY2)) - (twoY2 * stepY1)) + (twoY2 * stepY2)));
+    quadB = ((stepZ2 * twoZ2) + (((twoZ1 * stepZ1) - (twoZ1 * stepZ2)) - (twoZ2 * stepZ1))) + (((((twoX1 * stepX1) - (twoX1 * stepX2)) - (twoX2 * stepX1)) + (twoX2 * stepX2)) + ((((twoY1 * stepY1) - (twoY1 * stepY2)) - ((y2 + y2) * stepY1)) + ((y2 + y2) * stepY2)));
     quadC = ((z2 * z2) + ((z1 * z1) - (twoZ1 * z2))) + ((((x1 * x1) - (twoX1 * x2)) + (x2 * x2)) + (((y1 * y1) - (twoY1 * y2)) + (y2 * y2)));
     if (quadA != 0.0f)
     {
@@ -4034,11 +4031,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80054B3C:start
  * symbol: func_80054B3C
- * score: 70/370 words
- * frame: 0xE8 (target 0xD8)
+ * score: 17/370 words
+ * frame: 0xD8 (target 0xD8)
  * relocations: 3
- * first-mismatch: +0x0
- * summary: 70 at size 0 (pz2 body): the second-discriminant cast child folds away and the frame stays 0xE8. Every residual word is a stack offset.
+ * first-mismatch: +0x148
+ * summary: Ordinary twoY2 home elision and unused ey/ez removal: 353/370 exact, size delta 0; all 17 residual words are stack offsets.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

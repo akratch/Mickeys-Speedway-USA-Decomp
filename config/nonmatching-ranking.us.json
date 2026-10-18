@@ -16,13 +16,13 @@
       "tu": "main",
       "size_bytes": 1480,
       "objdiff_match_pct": null,
-      "differing_words": 70,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 70,
-      "relocation_masked_first_mismatch_offset": 0,
+      "differing_words": 17,
+      "first_mismatch_offset": 328,
+      "relocation_masked_differing_words": 17,
+      "relocation_masked_first_mismatch_offset": 328,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "5WmV.aE21.rBqH.sMjX.a6KN.6hWn.sxFh.tp38.JhXk.lbYj.cV8"
+      "source_context_sha256": "MoSV.nHuQ.y4zH.h_Ot.Os87.t5_z.Q-C5.boSq.nNIF.qP08.Og0"
     },
     {
       "name": "func_800517E0",
@@ -37,7 +37,7 @@
       "relocation_masked_first_mismatch_offset": 220,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "F04L.fIpv.i7O4.VrVg.6lqR.VgjE.dyUL.MbkU.O67h.pLNb.4AE"
+      "source_context_sha256": "x524.KcLX.Mutl.9199.vRFJ.sq95.Pwlb.5Vo-.BnTi.E-HH.ogo"
     }
   ],
   "unresolved_functions": []

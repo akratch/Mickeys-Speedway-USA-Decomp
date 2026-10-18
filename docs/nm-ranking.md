@@ -281,8 +281,8 @@ Relocation-masked mismatch evidence covers **2 / 2** resolved rows. The raw coun
 | relocation-masked `differing_words <= 5` | 0 |
 | raw `differing_words <= 10` | 0 |
 | relocation-masked `differing_words <= 10` | 0 |
-| raw `differing_words <= 20` | 0 |
-| relocation-masked `differing_words <= 20` | 0 |
+| raw `differing_words <= 20` | 1 |
+| relocation-masked `differing_words <= 20` | 1 |
 
 ### Complete ranked queue
 
@@ -292,7 +292,7 @@ units remain distinct.
 
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 70 | 70 | 0 | 0 | 0 | — |
+| 1 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 17 | 17 | 328 | 328 | 0 | — |
 | 2 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 525 | 520 | 200 | 220 | 0 | — |
 
 ### Unresolved identities

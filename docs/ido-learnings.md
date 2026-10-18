@@ -2512,6 +2512,25 @@ bytes and disassembly never belong here.
   disclosure, cleanup-queue coverage and unmodified-compiler promotion proof.
   See the [cost-table and source receipt](matching-triage-handoffs/overlay89InitializeEffect.md).
 
+- **Allocation order and split acceptance use different savings measures.**
+  **Symptom:** lowering a web's priority changes its turn but does not make it
+  split, or raising saved-register cost repairs one owner while another spills.
+  **Mechanism:** controlled IDO 5.3 traces distinguish normalized priority,
+  which orders processing, from total net saving, which the split decision
+  compares with the best available register's cost. Equality takes the split
+  path. A function-wide saved-register toll therefore affects unrelated owners
+  too, including one whose total saving equals the new cost; it cannot directly
+  repair a decision whose best available register has a separate caller cost.
+  **Lever:** trace each decision's total saving, available-register cost and
+  partition before changing normalization or region structure. Qualify a
+  diagnostic priority override by decision: one web identifier can recur for
+  later split pieces, and applying the override repeatedly changes those pieces
+  as well as the initial choice.
+  **Limits:** these are controlled diagnostic observations, not a stock source
+  closure or a universal region recipe. Recheck all affected owners and ordinary
+  compiler output; an improved forced allocation is not promotion evidence.
+  See the [collision allocation evidence](matching-triage-handoffs/func_80054B3C.md).
+
 - **Move a definition into its consumer before assuming its carrier must be
   deleted.** A selector argument computed in a preceding statement and the
   same assignment embedded in its call argument can retain the named value

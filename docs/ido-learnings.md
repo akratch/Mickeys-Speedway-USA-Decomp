@@ -3202,3 +3202,31 @@ A one-function curiosity belongs in that function's handoff, not here.
   semantic review and stock-output proof rather than treating any known-false
   condition as an interchangeable mechanism. Exact inert spellings remain
   disclosed in source and the cleanup queue under ADR 0017.
+
+### Repair coupled priorities using both saving and block incidence
+
+- **Symptom:** several integer and floating colours disagree even though the
+  expected expression owners exist. **Mechanism:** normalized priority divides a net
+  saving numerator by a compressed count of occurrence and auxiliary blocks.
+  Weighted uses and definitions affect the numerator; a source change can
+  change both quantities. One removed block
+  need not change the divisor, and raising a saving can overshoot the desired
+  neighbour rather than repair the ordering.
+- **Lever:** in an authorized causal packet, price a fixed source change from
+  its actual loop weight and before/after live ranges. Check both bounds of each
+  required priority interval, including competitors that seemed unrelated.
+  Existing shared expressions can carry the intended cost without another
+  owner, but authenticate their complete identity and allocation phase.
+- **Placement:** a guard before upcoming loads can create PRE owners and home
+  traffic even when the guard is provably false. Moving it after those
+  definitions can avoid that interference. A known-false copy into a live local
+  can retain use/definition cost without an emitted copy. Assigning a formal
+  parameter instead can retain an exit writeback. Inspect new owners, split
+  pieces and emitted stores/reloads; matching colours for the original owners
+  alone is insufficient.
+- **Limits:** qualify observers against the same configured full-TU stock input,
+  with observation disabled and enabled, including sections, symbols and
+  relocations. These are causal diagnostics, not a reference-padding recipe.
+  Any exact inert source still needs independent domain/evaluation review,
+  disclosure, cleanup coverage and ordinary untouched-compiler, relocation,
+  linked-range and ROM proof.

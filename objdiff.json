@@ -15631,7 +15631,7 @@
           "overlay-o064"
         ],
         "source_path": "src/overlays/o064/overlay64GenerateTexture.c",
-        "complete": false
+        "complete": true
       }
     },
     {

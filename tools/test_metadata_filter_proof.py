@@ -13,6 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import proof_provenance as pp
+import postprocess_audit as audit
 
 
 class ElfFixture:
@@ -177,7 +178,15 @@ class RecipeTests(unittest.TestCase):
                         "--add-symbol broken"):
                 with self.subTest(bad=bad), self.assertRaises(pp.MetadataProofError):
                     pp.metadata_filter_plan("$(OBJCOPY) %s $@" % bad, "x.o", root)
+            kept = ("$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py "
+                    "$@ .data sha256:00 keep")
+            self.assertEqual(pp.metadata_filter_plan(kept, "x.o", root),
+                             [("externalize", (".data", "sha256:00", 0))])
+            self.assertEqual(pp.metadata_filter_plan(kept.replace(" keep", " 0x10 keep"), "x.o", root),
+                             [("externalize", (".data", "sha256:00", 0x10))])
             for bad in ("externalize_elf_section.py $@ .text sha256:00",
+                        "externalize_elf_section.py $@ .data sha256:00 keep extra",
+                        "externalize_elf_section.py $@ .data sha256:00 0x8000",
                         "rebind_elf_relocations.py $@ .text 0x2:a:b",
                         "rebind_elf_relocations.py $@ .text 0x4:a:a",
                         "unknown_helper.py $@ .text 0"):
@@ -514,6 +523,29 @@ class ReportTests(unittest.TestCase):
             altered["relocation_comparison"]["declared_metadata_proof"]["filtered_identities"][0]["rtype"] = rtype
             with self.subTest(symbol=symbol, rtype=rtype), self.assertRaises(proof.ProofError):
                 proof.validate_report("friendly", altered)
+
+class ExternalizeAuditTests(unittest.TestCase):
+    def classify(self, extras):
+        command = ("python3 tools/externalize_elf_section.py x.o .data "
+                   "sha256:00 " + extras)
+        return audit.classify(command)[0]
+
+    def test_keep_and_zero_anchor_in_either_order_are_metadata(self):
+        for extras in ("keep", "0 keep", "keep 0"):
+            with self.subTest(extras=extras):
+                self.assertEqual(self.classify(extras), "metadata")
+
+    def test_nonzero_anchor_in_either_order_is_altered(self):
+        for extras in ("0x10 keep", "keep 0x10"):
+            with self.subTest(extras=extras):
+                self.assertEqual(self.classify(extras), "altered")
+
+    def test_duplicate_malformed_and_unknown_extras_require_review(self):
+        for extras in ("keep keep", "0 0", "keep 0 keep", "keep garbage",
+                       "garbage keep", "keep 0xwat", "keep 'unterminated"):
+            with self.subTest(extras=extras):
+                self.assertEqual(self.classify(extras), "review-required")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -94,8 +94,20 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
  * (its own increment) and the unroller's `j + 2`, and spilltemps serves
  * slots in that order, so it took 0x1C. Reached by propagating the copy, it
  * is numbered after `j + 2` and shares 0x18 with `width >> 1` as shipped.
+ * 4 -> 5 (2026-10-16): pass 1 counts with j, both pixel loops assign lo
+ * before the nibble, and the copy loop counts with temp. That last change
+ * keeps the nibble live across an n-- test, so the shared while (n--)
+ * temporary takes a3. k |= 0 at the top of the row loop is deleted by as1
+ * and puts k back in t5 and width back in ra. The five words are the copy
+ * counter, which is that same nibble web.
+ * Putting the copy loop back on k (2026-10-16) returns that counter to t5
+ * and drops web 42 off a3. A nibble use in the odd while test, an empty
+ * if on temp, and a named pass-2 pointer all do that: the nibble's save
+ * falls from 300 to about 119 once its span grows; web 42 remains at 181.
+ * ADR 0017: k |= 0 and lo |= temp * 0 are initialized integer identities,
+ * retained for exact allocation; cleaner forms remain in docs/cleanup-queue.md.
  */
-#ifdef NON_MATCHING
+
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 {
     s32 k;
@@ -167,8 +179,8 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     while (k--) {
         *out++ = 0;
         in++;
-        temp = width - 2;
-        while (temp--) {
+        j = width - 2;
+        while (j--) {
             i = in[0] * 2 + in[width - 1] + in[width + 1] + in[width] * 4;
             i >>= 3;
             if (i < 0xAA) {
@@ -218,13 +230,14 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
     i = width;
     k = height;
     while (k--) {
+        k |= 0;
         dst = (u8 *)pixels;
         if (k & 1) {
             j = width;
             while (j--) {
                 value = *in++;
-                temp = value >> 4;
                 lo = value;
+                temp = value >> 4;
                 hi = value + 0x34;
                 if (temp) {
                     lo *= temp;
@@ -236,6 +249,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 if (lo >= 0x100) {
                     lo = 0xFF;
                 }
+                lo |= temp * 0;
                 *pixels++ = (hi << 8) | lo;
             }
         } else {
@@ -247,8 +261,8 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
                 }
                 pixels = (u16 *)(dst + (distance << 1) + (j << 1));
                 value = *in;
-                temp = value >> 4;
                 lo = value;
+                temp = value >> 4;
                 hi = value + 0x34;
                 if (temp) {
                     lo *= temp;
@@ -267,16 +281,16 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o064/overlay64GenerateTexture/func_overlay_064_F0000000_18C3B28.s")
-#endif
+/* Preserve source-line positions of the retired assembly fallback.
 
-/* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
- * symbol: func_overlay_064_F0000000_18C3B28
- * score: 4/420 words
- * frame: 0x70
- * relocations: 20
- * first-mismatch: +0x214
- * summary: statics; one outer counter k declared first; sums in i; named nibble; store then step; stride via i = width (4)
- * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
+
+
+
+
+
+
+
+
+
+
  */

@@ -131,8 +131,9 @@ def metadata_filter_plan(command: str, target: str,
       tables);
     * ``filter_elf_relocations.py OBJ .text SPEC...``;
     * ``rebind_elf_relocations.py OBJ SECTION OFFSET:EXPECTED:REPLACEMENT...``;
-    * ``externalize_elf_section.py OBJ SECTION EXPECTED [ANCHOR]`` of a
-      section other than ``.text``;
+    * ``externalize_elf_section.py OBJ SECTION EXPECTED [ANCHOR] [keep]`` of a
+      section other than ``.text``. ``keep`` retains the proved payload and
+      is not an anchor; an integer anchor is independent of that flag;
     * ``trim_elf_section.py OBJ .text SIZE [EXPECTED_DISCARDED]``.
 
     A filter or rebind argument may be ``@SPEC_FILE``, read the way the
@@ -184,9 +185,27 @@ def metadata_filter_plan(command: str, target: str,
                 if not requests:
                     raise MetadataProofError("empty rebind specification")
                 plan.append(("rebind", (words[3], requests)))
-            elif (helper == "tools/externalize_elf_section.py" and len(words) in (5, 6)
+            elif (helper == "tools/externalize_elf_section.py"
+                  and 5 <= len(words) <= 7
                   and words[3] not in _PROTECTED_SECTIONS):
-                anchor = int(words[5], 0) if len(words) == 6 else 0
+                anchor = 0
+                saw_anchor = False
+                saw_keep = False
+                for extra in words[5:]:
+                    if extra == "keep":
+                        if saw_keep:
+                            raise MetadataProofError("unsupported metadata helper")
+                        saw_keep = True
+                        continue
+                    if saw_anchor:
+                        raise MetadataProofError("unsupported metadata helper")
+                    try:
+                        anchor = int(extra, 0)
+                    except ValueError as error:
+                        raise MetadataProofError("unsupported metadata helper") from error
+                    if not 0 <= anchor < 0x8000:
+                        raise MetadataProofError("unsupported metadata helper")
+                    saw_anchor = True
                 plan.append(("externalize", (words[3], words[4], anchor)))
             elif (helper == "tools/trim_elf_section.py" and words[3] == ".text"
                   and len(words) in (5, 6)):

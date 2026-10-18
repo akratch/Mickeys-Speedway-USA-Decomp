@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 466912,
-  "nonmatching_overlay_c_bytes": 1680,
+  "matched_overlay_c_bytes": 468592,
+  "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4900,
   "bss_bytes": 77680,
@@ -12730,7 +12730,7 @@
      "type": "c",
      "source": "overlays/o064/overlay64GenerateTexture",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     }
    ],
    "bss_size": "0x0",
@@ -12786,7 +12786,7 @@
      "size": "0x10",
      "type": "c",
      "section": ".data",
-     "source": "overlays/o064/overlay64State",
+     "source": "overlays/o064/overlay64GenerateTexture",
      "canonical": true
     }
    ]

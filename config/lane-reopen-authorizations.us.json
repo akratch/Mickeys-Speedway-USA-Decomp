@@ -627,7 +627,7 @@
     },
     "func_80054B3C": {
       "ledger_commit": "2f6705d1afdad7d218e748c3b82b62871350b224",
-      "reason": "RAY-proved paired numerator control: unreachable post-capture A/QC copies compensate x1 cost and compressed incidence together, with tail-region toll conservation; test removal of only the z1-remainder selection bias.",
+      "reason": "RAY-derived paired A/QC use-cost repair: unreachable distinct comparisons after capture add no definitions; authenticate compressed incidence and conserve the callee toll before removing only the first z1-remainder selection bias.",
       "source_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df"
     },
     "func_80055104": {

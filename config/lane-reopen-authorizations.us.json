@@ -211,9 +211,9 @@
       "source_commit": "662ffe23ec507b9a9487fff01f042d2395ef375c"
     },
     "func_80011980": {
-      "ledger_commit": "0edc3b0d1182378151dcc6f7fc3c1adf54399370",
-      "reason": "Trace actual IDO 5.3 conversion-expression promotion by count/state/parent context on paired controls; test a measured late-eliminated context only if it changes colored ownership while preserving required caller blockers.",
-      "source_commit": "93c540fbe8e9cad734df66a4187c92fcd80c0e6d"
+      "ledger_commit": "1e63d137131951cb4ffce28c5c935daf154c466e",
+      "reason": "Real postincrement old-value loop test may share the CFE integer temporary while adding header-only incidence. Trace this distinct caller-owner representation and paired assignment; no dead-consumer ladder.",
+      "source_commit": "1e63d137131951cb4ffce28c5c935daf154c466e"
     },
     "func_80011CDC": {
       "ledger_commit": "0b2affd78b0766abdc4d5cfd10c8d3f707417a1e",
@@ -616,8 +616,8 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "8a22b195768cc037de25e6506d4f2ca019b3a287",
-      "reason": "Attribute 0x6A argument-web precolor/coalescing against 0x6B, then test an authenticated second halfword read at the call to separate storage and outgoing-argument carriers without extra loads; no local-rename sweep.",
+      "ledger_commit": "6b5787d277b1ff3f63c1a18fb417b47a13f6b25a",
+      "reason": "Existing traces omit effective FP releases. Observe actual queue mutations, match typed value provenance, and invert event constraints on 0x40/0x41 with PAL retail witness; qualify source changes by proved DAG ownership.",
       "source_commit": "8a22b195768cc037de25e6506d4f2ca019b3a287"
     },
     "func_80053868": {
@@ -626,8 +626,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "0edc3b0d1182378151dcc6f7fc3c1adf54399370",
-      "reason": "Invert selection pricing on controlled zero: raise quadC instead of lowering z1, then test two inert regions around quadB against measured occurrence/aux normalization to remove bias while preserving retained expressions and split controls.",
+      "ledger_commit": "25f88c85b6ffa7cc175fdc9a75a558b8180b0e95",
+      "reason": "Target/pz2 CFG reaching-store proof isolates four safe home overlays and one generation fission; one early home is store-only. Derive source storage from these constraints instead of preserving the forced KEEP anchor.",
       "source_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df"
     },
     "func_80055104": {

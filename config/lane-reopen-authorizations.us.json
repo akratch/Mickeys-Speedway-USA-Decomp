@@ -626,8 +626,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "f577a41b4eea0ddf443e8f8235cacc28962702be",
-      "reason": "Stage A's three six-leaf subtrees in existing B/C/fraction homes to move the measured retained-load cut before early-double uses; prove natural retention, deleted stages and complete allocation/emission.",
+      "ledger_commit": "ce62d31f29048f921d13012067dd7ab7527b60e3",
+      "reason": "Test direct-LHS conditional preassignment for the early double: distinct ADD/zero arm definitions in the existing home, without a new result pool; measure retention, allocation charges and emitted accesses.",
       "source_commit": "349847108e8ac4f873fe9a0ebaa3fb70cb70770a"
     },
     "func_80055104": {

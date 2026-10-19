@@ -3300,6 +3300,26 @@ A one-function curiosity belongs in that function's handoff, not here.
   disclosure, cleanup coverage and ordinary untouched-compiler, relocation,
   linked-range and ROM proof.
 
+### A conditional assignment can use its existing destination
+
+- **Symptom:** a value-producing conditional reserves a result temporary, while
+  assigning that conditional directly to a scalar does not. **Mechanism:** a
+  discarded outer assignment can preassign the conditional result destination;
+  both arm stores then use the existing home and bypass the result-pool request.
+  Distinct arm expressions still have distinct defining stores. Each store can
+  be unavailable individually at the join even though both paths assign the
+  same location, preventing substitution at a later read.
+- **Lever:** authenticate the actual destination, reserve, arm stores and first
+  read's substitution refusal. Separately compare live-range occurrences,
+  auxiliary blocks, split admission and entry/exit charges. Late simplification
+  or emission-time branch deletion does not imply general reconstruction of the
+  earlier control-flow graph; allocation costs can retain those boundaries.
+- **Limits:** direct destination reuse does not prove equal allocation, no
+  additional accesses or matching output. Compare effective control contexts,
+  including runner-injected defaults, before accepting observer fidelity.
+  Defined inert conditions still require semantic review and disclosure before
+  any exact source promotion.
+
 ### Expression sharing does not prove shared allocation ownership
 
 - **Symptom:** moving the first read across a source branch retains an intended

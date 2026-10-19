@@ -626,8 +626,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "0f5719cb71ae8acd2d12695acd6d956bf7b6aab8",
-      "reason": "Test matched lighting self-update retention: copy B into dead z2 before the existing A guard, then square by updating z2 inside it; prove snapshot deletion, named-store retention, allocation and emission.",
+      "ledger_commit": "170b8d84a71560a6bcc1ee45afb53a797a0992f3",
+      "reason": "Test secondary B-chase availability: guard only its polynomial definition with dominating hit==0, leaving the snapshot unconditional; prove candidate rejection, outer copy, snapshot deletion and complete allocation/emission.",
       "source_commit": "349847108e8ac4f873fe9a0ebaa3fb70cb70770a"
     },
     "func_80055104": {

@@ -29,6 +29,35 @@ bytes and disassembly never belong here.
 
 ## Proven reusable behavior
 
+### Direct operand kills can retain a result without retaining its carrier
+
+- **Symptom:** a computed local forwards before its later uses, while an
+  assignment-expression attempt preserves an unwanted carrier instead.
+  **Mechanism:** an incoming operand kept across an existing source boundary
+  can remain in a result's LOCAL tree until a later overwrite marks it killed.
+  GLOBAL may then copy the incoming operand and delete both carrier stores,
+  while retaining the computed result. The measured secondary refusals include
+  unavailable definitions and actual expression-alteration bits; they are
+  distinct predicates.
+- **Lever:** authenticate the result's RHS at its first read, initial and final
+  copy selection, both carrier STORE deletions and final allocation owners.
+  A standalone result assignment followed by the operand overwrite differs
+  from a value-required scalar assignment: the measured CFE path reloads the
+  latter's assigned LHS. The incoming operand also needs its actual block boundary authenticated.
+  A source-name overlap with the producer's leaves does
+  not by itself guarantee that LOCAL preserves the intended operand.
+- **Limits:** LOCAL can also cut an otherwise straight-line region at a
+  stack-empty point when its retained-variable counter reaches the configured
+  limit. Authenticate that event dynamically: source statement adjacency does
+  not prove a common LOCAL block. Staging a real subtree can relocate such a
+  cut while leaving its staging STORE live despite a copied use.
+  Changing a boundary can change block incidence, priorities,
+  temporary caches and emitted accesses even when its condition emits no
+  instruction. A naturally retained result or deleted carrier is not an exact
+  output proof; compare untouched output, relocations and observer fidelity
+  independently. Internal free-event sequences need not be identical when
+  final owned bytes are identical.
+
 ### Accepted copy propagation can chase beyond the initially named value
 
 - **Symptom:** a named snapshot forwards and its store disappears, yet an extra

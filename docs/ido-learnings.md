@@ -3248,3 +3248,26 @@ A one-function curiosity belongs in that function's handoff, not here.
   Any exact inert source still needs independent domain/evaluation review,
   disclosure, cleanup coverage and ordinary untouched-compiler, relocation,
   linked-range and ROM proof.
+
+### Expression sharing does not prove shared allocation ownership
+
+- **Symptom:** moving the first read across a source branch retains an intended
+  expression, but changes stores, copies or temporary registers despite the
+  same arithmetic instruction count. **Mechanism:** LOCAL forwarding and GLOBAL
+  substitution run at different boundaries. A branch condition known only in a
+  later pass can preserve that boundary without an emitted branch. However,
+  arithmetic CSE can share one operation while introducing a short anonymous
+  owner alongside the named destination; sharing an expression does not prove
+  that those live ranges coalesce. A later named definition can also lose an
+  earlier use from its savings and partition calculation.
+- **Lever:** trace the actual first named read and its refusal predicate, the
+  defining store's block and availability flags, both owners' occurrences and
+  interference, and the final producer/store timing. Separately authenticate
+  branch and label events: an emitted label can reset load-cache state even if
+  a conditional branch itself emits nothing. A same-type cast may restore
+  operand orientation without supplying a retention barrier.
+- **Limits:** a known-condition wrapper is a labelled inert diagnostic requiring
+  semantic review and disclosure if promoted. A successful controlled output
+  does not establish untouched-toolchain matching. Require exact bytes,
+  relocations, linked placement and ROM proof; do not infer storage origin or
+  frame size from an allocator's slot count.

@@ -29,6 +29,28 @@ bytes and disassembly never belong here.
 
 ## Proven reusable behavior
 
+### Accepted copy propagation can chase beyond the initially named value
+
+- **Symptom:** a named snapshot forwards and its store disappears, yet an extra
+  full-expression allocation owner and spill remain. **Mechanism:** the pinned
+  GLOBAL pass can first accept a variable RHS, then chase that variable's
+  reaching definition before reconstructing the copied expression. In the
+  measured path, the secondary complexity check uses the original
+  snapshot RHS rather than the newly selected candidate. An initial `rhs=VAR` receipt
+  consequently does not identify the final copied expression.
+- **Lever:** record the initial and final selected ICHAIN, source CODE node,
+  reconstructed CODE node and post-PRE image separately. Also prove snapshot
+  deletion independently: a retained current-generation read of the same home
+  can preserve the incoming block-use bit even after the old operand forwards.
+  Separating those reads with an existing source boundary can permit deletion
+  while leaving the chased expression's owner and spill intact.
+- **Limits:** CODE and ICHAIN layouts are distinct; a kind tag alone is not a
+  typed lineage proof. Copy acceptance, dead-store deletion, expression sharing
+  and allocation ownership are separate claims. This measured path does not
+  establish that every variable copy expands, or justify dummy boundaries,
+  extra reads or behavior-changing compiler controls. Require same-input
+  observer fidelity and untouched output before drawing source conclusions.
+
 ### Load-cache state can couple a missing load to many register differences
 
 - **Symptom:** introducing a source block boundary retains the intended

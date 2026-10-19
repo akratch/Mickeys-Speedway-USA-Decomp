@@ -626,9 +626,9 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "8e3f4dccd87816a8ae65a19321e0d6afbb3359f7",
-      "reason": "Authenticate canonical twoY2 forwarding/dead-store deletion, then remove only its unused fixed home; preserve arithmetic association, pointer identities, other captures, and spill-request/emitted-access order without new CFG.",
-      "source_commit": "195e206999b19b7a53c4a12f8ee47c525113f7df"
+      "ledger_commit": "349847108e8ac4f873fe9a0ebaa3fb70cb70770a",
+      "reason": "Test coefficient retention across the existing quadA guard without new labels, then dead vector-pointer home reuse preserving field captures; measure generation ownership and emission before composing with the stock 17-offset candidate.",
+      "source_commit": "349847108e8ac4f873fe9a0ebaa3fb70cb70770a"
     },
     "func_80055104": {
       "ledger_commit": "4b1cb3fb4c85cadf5c6ce8472b9b4c949039d2f3",

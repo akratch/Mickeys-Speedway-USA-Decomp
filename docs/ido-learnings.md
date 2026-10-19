@@ -3317,6 +3317,18 @@ A one-function curiosity belongs in that function's handoff, not here.
   branch and label events: an emitted label can reset load-cache state even if
   a conditional branch itself emits nothing. A same-type cast may restore
   operand orientation without supplying a retention barrier.
+- **Additional mechanism:** GLOBAL multiplication substitution tests whether the
+  opposite child is an operator before recursing into an operand. A field load
+  can satisfy that test, but may remain as an additional input access. LOCAL
+  forwarding does not use this sibling context. A guarded producer can instead
+  make its definition unavailable at the later read, retaining the value before
+  the multiplication-context test. Trace the actual refusal and cached reuse,
+  rather than inferring retention from source arithmetic.
+- **Allocation limit:** preserving a value with a source boundary can change
+  split admission, transit blocks and entry/exit charges even after the total
+  component count and callee preservation cost are restored. Compare actual
+  generation-specific pieces and interference inequalities; equal total costs
+  or expression inventories do not establish equal allocation or accesses.
 - **Limits:** a known-condition wrapper is a labelled inert diagnostic requiring
   semantic review and disclosure if promoted. A successful controlled output
   does not establish untouched-toolchain matching. Require exact bytes,

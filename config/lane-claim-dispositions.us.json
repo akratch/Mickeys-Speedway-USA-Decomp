@@ -210,6 +210,12 @@
       "state": "superseded",
       "decision_commit": "e3fa658ea3876237b9143c6337599d2774ae53c0",
       "reason": "Reviewed frozen lane has only a documentation delta; its complete handoff is preserved in the newer canonical shard. No source or remaining integration delta."
+    },
+    "253d8d17fd4e6763abf6cd25aee42b6ee66aaf9e": {
+      "symbol": "func_800517E0",
+      "state": "superseded",
+      "decision_commit": "4cb51468c1a007d2308dfeb234568a2fef95ccde",
+      "reason": "The frozen lane changes only the interpreter handoff, integrated verbatim by the decision commit; it has no source delta or remaining scheduling claim."
     }
   }
 }

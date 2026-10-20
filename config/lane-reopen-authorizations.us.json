@@ -616,8 +616,8 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "e3fa658ea3876237b9143c6337599d2774ae53c0",
-      "reason": "Trace the measured AS1 required-width 32 versus 16 decision backward to its real demand or edge seed; qualify a source lifetime repair with unchanged handler controls. No repeated width or naming grid.",
+      "ledger_commit": "4cb51468c1a007d2308dfeb234568a2fef95ccde",
+      "reason": "Measure pre-mask CVTL16 in wide case60 carrier: predict SLL/SRA/AND lifecycles and late contraction under 8-bit mask demand. Stop on early CVTL folding; preserve handler and layout controls.",
       "source_commit": "b932d3e014e59c0e46902262f4adb08defc4ecfc"
     },
     "func_80053868": {

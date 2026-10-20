@@ -3354,3 +3354,25 @@ A one-function curiosity belongs in that function's handoff, not here.
   does not establish untouched-toolchain matching. Require exact bytes,
   relocations, linked placement and ROM proof; do not infer storage origin or
   frame size from an allocator's slot count.
+
+### Replay temporary storage in native phase order
+
+- **Symptom:** a proposed home overlay is rejected because its slot appears to
+  belong to a later operation, or appears available after a source value's last
+  read. **Mechanism:** graph spill slots can all be allocated before instruction
+  emission. Later anonymous expression caches then reuse those slots according
+  to block reservations, size and mutable free flags. A graph-backed reservation
+  can remain busy throughout a block even after a particular emitted use;
+  anonymous caches can instead release at their native last-reference event.
+- **Lever:** identify the executable and phase, then replay graph conflicts,
+  candidate order, descriptor claims, block resets and releases in actual order.
+  Assert old-state continuity and test deliberately corrupted records. Keep
+  declared homes, canonical expressions, mutable CODE caches and physical slots
+  distinct. A choice-only fit can hide missing releases.
+- **Limits:** eligibility and the predicted slot do not preserve producer timing
+  or allocation. Removing a retained definition can move its anonymous
+  arithmetic into its consumers, introduce overlapping caches and alter
+  interference. Final frame size also includes later emission decisions; an
+  allocator frontier alone does not prove it. A call-context rewrite that leaves
+  both temporary requests and compiled output unchanged supplies no new storage
+  origin. Source feasibility and exact output remain separate proof obligations.

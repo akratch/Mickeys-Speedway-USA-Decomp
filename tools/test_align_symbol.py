@@ -116,6 +116,44 @@ class RelocationMaskTests(unittest.TestCase):
         self.assertEqual(out["aligned_exact"], 1)
         self.assertEqual(out["aligned_register_naming"], 0)
 
+    def test_shifted_relocations_do_not_mask_unrelated_immediates(self) -> None:
+        addiu = (0x09 << 26) | (8 << 21) | (8 << 16) | 7
+        lui = (0x0F << 26) | (8 << 16) | 0x1234
+        lw = (0x23 << 26) | (8 << 21) | (8 << 16) | 0x5678
+        target = [addiu, lui, lw]
+        target_reloc = {4: ("R_MIPS_HI16", "global"),
+                        8: ("R_MIPS_LO16", "global")}
+        candidate_reloc = {offset + 4: reloc for offset, reloc in target_reloc.items()}
+        out = al.align(streams([NOP] + target, target, candidate_reloc, target_reloc))
+        self.assertEqual(out["aligned_exact"], 3)
+        self.assertEqual(out["aligned_immediate_only"], 0)
+        self.assertEqual(out["aligned_really_different"], 1)
+        self.assertEqual(out["insertions"], [{"candidate_offset": 0, "words": 1}])
+
+    def test_shifted_symbol_vs_literal_masks_the_actual_pair_in_both_directions(self) -> None:
+        literal = (0x0F << 26) | (2 << 16) | 0x1234
+        symbolic = (0x0F << 26) | (2 << 16) | 0xABCD
+        for candidate_has_reloc in (False, True):
+            with self.subTest(candidate_has_reloc=candidate_has_reloc):
+                out = al.align(streams(
+                    [NOP, symbolic], [literal],
+                    {4: ("R_MIPS_HI16", "global")} if candidate_has_reloc else {},
+                    {} if candidate_has_reloc else {0: ("R_MIPS_HI16", "global")}))
+                self.assertEqual(out["aligned_exact"], 1)
+                self.assertEqual(out["aligned_really_different"], 1)
+                self.assertEqual(out["aligned_immediate_only"], 0)
+
+    def test_same_offset_union_does_not_hide_neighbor_immediate(self) -> None:
+        lui_a = (0x0F << 26) | (2 << 16) | 0x1234
+        lui_b = (0x0F << 26) | (2 << 16) | 0xABCD
+        addiu = (0x09 << 26) | (8 << 21) | (8 << 16)
+        out = al.align(streams([lui_a, addiu | 7], [lui_b, addiu | 9],
+                               target_reloc={0: ("R_MIPS_HI16", "global")}))
+        self.assertEqual(out["aligned_exact"], 1)
+        self.assertEqual(out["aligned_immediate_only"], 1)
+        self.assertEqual(out["insertions"], [])
+        self.assertEqual(out["deletions"], [])
+
     def test_an_unrelocated_immediate_difference_still_counts(self) -> None:
         """It counts -- but as its own bucket, not as structure."""
         addiu_a = (0x09 << 26) | (9 << 21) | (8 << 16) | 0x0010

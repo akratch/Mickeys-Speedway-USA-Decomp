@@ -49,13 +49,15 @@ lever is whatever caused the shift -- usually one instruction, named in the
 Both streams are read through `nm_ranking.word_streams`, the same path the
 ranking scores by, so the positional figure here agrees with `score_symbol.py`
 and `docs/nm-ranking.md` by construction. Relocation payload bits are masked at
-the positional union of both relocation surfaces exactly as the ranking does --
-a hand-rolled comparison that skips this reports differences that do not
+the union of the two actual paired relocation sites during alignment. The
+positional score retains the ranking's same-offset union. Masking either
+surface alone would report literal-versus-symbol differences that do not
 survive linking.
 """
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
 import contextlib
 import difflib
 import json
@@ -126,7 +128,23 @@ def reloc_masked(word: int, offset: int, a_reloc: dict, b_reloc: dict) -> int:
     return word & ((~value_mask) & 0xFFFFFFFF)
 
 
-def _banded_edit_script(a: list[int], b: list[int]) -> list[tuple[str, int, int]]:
+def _reloc_pair_masked(
+    a: int, b: int, a_offset: int, b_offset: int, a_reloc: dict, b_reloc: dict
+) -> tuple[int, int]:
+    """Apply the same linker-bit union at the two sites actually being paired."""
+    value_mask = 0
+    for relocation in (a_reloc.get(a_offset), b_reloc.get(b_offset)):
+        if relocation is not None:
+            value_mask |= nr.RELOC_VALUE_MASKS.get(
+                relocation[0], nr.UNKNOWN_RELOC_VALUE_MASK
+            )
+    mask = (~value_mask) & 0xFFFFFFFF
+    return a & mask, b & mask
+
+
+def _banded_edit_script(
+    a: list[int], b: list[int], *, equal_at: Callable[[int, int], bool] | None = None
+) -> list[tuple[str, int, int]]:
     """Align two instruction streams allowing substitution, in a diagonal band.
 
     `difflib.SequenceMatcher` is the obvious tool and it is the wrong one here.
@@ -150,6 +168,8 @@ def _banded_edit_script(a: list[int], b: list[int]) -> list[tuple[str, int, int]
     {"equal", "replace", "delete", "insert"}; "delete" is present in a only
     (an extra candidate instruction), "insert" is present in b only.
     """
+    if equal_at is None:
+        equal_at = lambda i, j: a[i] == b[j]
     n, m = len(a), len(b)
     band = abs(n - m) + BAND_SLACK
     INF = float("inf")
@@ -182,7 +202,7 @@ def _banded_edit_script(a: list[int], b: list[int]) -> list[tuple[str, int, int]
                 best, pick = previous[k + 1] + 1, 1  # delete
             if j > 0:
                 if previous[k] != INF:
-                    cost = previous[k] + (0 if a[i - 1] == b[j - 1] else 1)
+                    cost = previous[k] + (0 if equal_at(i - 1, j - 1) else 1)
                     # Prefer substitution on a tie: an equal-length difference
                     # is one changed instruction, not an insert plus a delete.
                     if cost <= best:
@@ -210,7 +230,7 @@ def _banded_edit_script(a: list[int], b: list[int]) -> list[tuple[str, int, int]
         elif pick == 3:
             script.append(("insert", i, j - 1)); j -= 1
         else:
-            op = "equal" if a[i - 1] == b[j - 1] else "replace"
+            op = "equal" if equal_at(i - 1, j - 1) else "replace"
             script.append((op, i - 1, j - 1)); i -= 1; j -= 1
     script.reverse()
     return script
@@ -224,17 +244,16 @@ def align(streams: "nr.WordStreams") -> dict:
     base, target = streams.base_words, streams.target_words
     b_reloc, t_reloc = streams.base_reloc, streams.target_reloc
 
-    # The alignment key erases registers AND linker-controlled bits, so that a
-    # rotated allocation still aligns and only real shape drives the matching.
-    def key(words, reloc, other_reloc):
-        return [
-            nr.instr_reg_mask(reloc_masked(w, i * 4, reloc, other_reloc))
-            for i, w in enumerate(words)
-        ]
+    # Relocations belong to the candidate/target sites being compared, not to
+    # the same numeric offset on the opposite surface after an insertion.
+    def pair(i: int, j: int) -> tuple[int, int]:
+        return _reloc_pair_masked(base[i], target[j], i * 4, j * 4, b_reloc, t_reloc)
 
-    base_key = key(base, b_reloc, t_reloc)
-    target_key = key(target, t_reloc, b_reloc)
-    script = _banded_edit_script(base_key, target_key)
+    def equal_at(i: int, j: int) -> bool:
+        bw, tw = pair(i, j)
+        return nr.instr_reg_mask(bw) == nr.instr_reg_mask(tw)
+
+    script = _banded_edit_script(base, target, equal_at=equal_at)
 
     exact = naming = immediate = different = 0
     insertions: list[dict] = []
@@ -244,29 +263,11 @@ def align(streams: "nr.WordStreams") -> dict:
     different_sites: list[int] = []
 
     for op, i, j in script:
-        if op == "equal":
-            bw = reloc_masked(base[i], i * 4, b_reloc, t_reloc)
-            tw = reloc_masked(target[j], j * 4, t_reloc, b_reloc)
+        if op in ("equal", "replace"):
+            bw, tw = pair(i, j)
             if bw == tw:
                 exact += 1
             elif nr.instr_reg_mask(bw) == nr.instr_reg_mask(tw):
-                naming += 1
-                naming_sites.append(j * 4)
-            elif instr_imm_mask(bw) == instr_imm_mask(tw):
-                immediate += 1
-                immediate_sites.append(j * 4)
-            else:
-                different += 1
-                different_sites.append(j * 4)
-        elif op == "replace":
-            # A substitution still has to be sorted by *which field* differs.
-            # The alignment key keeps the immediate, so two loads on the same
-            # registers at different displacements arrive here rather than as
-            # an "equal" pair -- which is exactly how the third bucket came to
-            # over-read frame displacement as structure.
-            bw = reloc_masked(base[i], i * 4, b_reloc, t_reloc)
-            tw = reloc_masked(target[j], j * 4, t_reloc, b_reloc)
-            if nr.instr_reg_mask(bw) == nr.instr_reg_mask(tw):
                 naming += 1
                 naming_sites.append(j * 4)
             elif instr_imm_mask(bw) == instr_imm_mask(tw):

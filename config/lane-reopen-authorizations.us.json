@@ -616,9 +616,9 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "6b5787d277b1ff3f63c1a18fb417b47a13f6b25a",
-      "reason": "Existing traces omit effective FP releases. Observe actual queue mutations, match typed value provenance, and invert event constraints on 0x40/0x41 with PAL retail witness; qualify source changes by proved DAG ownership.",
-      "source_commit": "8a22b195768cc037de25e6506d4f2ca019b3a287"
+      "ledger_commit": "7555ce4d8c1822ec165bd25602b82cfa933aa5ea",
+      "reason": "Test the named-f16 quotient countermodel: allocator color28 permits f16, so candidate scratch-pop repair is not a unique target history. Authenticate retained quotient owner costs and interference before a source-realizable repair.",
+      "source_commit": "7555ce4d8c1822ec165bd25602b82cfa933aa5ea"
     },
     "func_80053868": {
       "ledger_commit": "b98f3696e2954fcb19879e3a7e8ba8b3311eb66a",

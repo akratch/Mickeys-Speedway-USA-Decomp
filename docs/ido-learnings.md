@@ -3430,3 +3430,25 @@ A one-function curiosity belongs in that function's handoff, not here.
   then later optimization can forward the arithmetic into its final argument.
   Check the optimized stream and untouched output. See the
   [interpreter investigation](matching-triage-handoffs/func_800517E0.md).
+
+### Native allocator continuation needs more than a guest-memory snapshot
+
+- **Symptom:** an allocator checkpoint has complete guest tables, yet restoring
+  those bytes at an internal label cannot reproduce execution.
+  **Mechanism:** translated compiler functions also carry live host automatic
+  variables, floating-point state and runtime globals. Forking at the actual
+  caller preserves that execution context, but inherited file descriptors
+  still share offsets and cached observer streams can still write to them.
+- **Lever:** place a private continuation hook before the native call. Compare
+  independent child continuations with the uninterrupted parent, including
+  mapped guest memory, exported runtime state, floating-point state and ordered
+  allocation decisions. Check that children leave parent state and inherited
+  descriptor identities and offsets unchanged. Rebind observer streams and
+  test rejection of guest writes and seeks before their side effects. Repeat
+  the proof for independently captured known source variants, and compare
+  stock, disabled-hook and enabled-hook object sections, symbols and relocations.
+- **Limits:** a fork continuation is not a portable disk checkpoint. Equality
+  for each already-formed source state does not predict how a source change
+  forms its graph, or validate arbitrary graph edits. Explicit runtime-entry
+  guards are not a universal sandbox. Diagnostic output never substitutes for
+  untouched compiler output in matching acceptance.

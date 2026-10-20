@@ -626,8 +626,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "b59b066d38bfc1e797a5e1458b5d71c23b69ce17",
-      "reason": "Test whether field-first capture followed by a scalar snapshot and real self-doubling retains the early double while coalescing the original coordinate home, without added arithmetic or control flow.",
+      "ledger_commit": "9c0602793729c6832e0776fee2bea555fa7b654a",
+      "reason": "Resolve low-reserve field CSE founder order by separating fast-path and coefficient load identities with zero-home pointer representations, while preserving emitted input-load cadence.",
       "source_commit": "349847108e8ac4f873fe9a0ebaa3fb70cb70770a"
     },
     "func_80055104": {

@@ -3395,3 +3395,20 @@ A one-function curiosity belongs in that function's handoff, not here.
   when its divisor is unchanged, removing required memory accesses. Absence of
   an extra physical copy does not establish equal allocation or cadence; do not
   repair that difference with an unproved price override.
+
+### Load identity changes need phase and emission proof
+
+- **Symptom:** later repeated field loads acquire expression owners in an order
+  established by earlier reads, despite being emitted in a different region.
+  **Mechanism:** indirect-load opcode and address-expression identity participate
+  in interning. A qualified early load can leave later ordinary loads to found
+  their own owners, changing both spill order and machine load order.
+- **Lever:** join actual field roles to optimized expressions, graph requests and
+  emitted loads. Compare the complete optimized procedure before inferring that
+  a cast preserved a new identity: a runtime-address witness can survive while
+  a constant member-address round trip disappears entirely.
+- **Limits:** volatile qualification adds access and ordering obligations, and can
+  change scheduling without improving storage. Reusing scalar homes as active
+  pointer/float unions can preserve declared extent yet change memory class,
+  virtual-register eligibility and arithmetic sharing. Neither unchanged extent
+  nor desired founder order proves equal allocation or exact output.

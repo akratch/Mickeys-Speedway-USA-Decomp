@@ -626,8 +626,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "86af9d0125ee152a84ab3b71f9bbe3df9e35138c",
-      "reason": "Reconstruct spill-slot conflicts and CFE call-context temporary lifetimes to test whether generation-separated homes can satisfy target storage without added control-flow paths.",
+      "ledger_commit": "b59b066d38bfc1e797a5e1458b5d71c23b69ce17",
+      "reason": "Test whether field-first capture followed by a scalar snapshot and real self-doubling retains the early double while coalescing the original coordinate home, without added arithmetic or control flow.",
       "source_commit": "349847108e8ac4f873fe9a0ebaa3fb70cb70770a"
     },
     "func_80055104": {

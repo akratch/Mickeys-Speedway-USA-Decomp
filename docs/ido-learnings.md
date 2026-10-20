@@ -3537,8 +3537,17 @@ A one-function curiosity belongs in that function's handoff, not here.
   after local ownership changes; source-use counts do not predict it. Log the
   existing register-classification result: invoking its helper again from an
   observer can mutate compiler state.
-- **Limits:** this is a static compiler-path audit, not a measured explanation
-  of a particular candidate. Bind the actual tree and selected branch before
-  prescribing source changes. An observer whose procedure counter advances
-  during evaluation cannot be assumed to identify an earlier translation
-  phase correctly. Require fresh output-fidelity checks for instrumentation.
+- **Measured distinction:** a follow-up observer found a register child
+  rejected before the reference-count gate, while a shared conversion had
+  a memory-load child with one tree reference and accepted load replacement.
+  Both loads were two bytes; signedness changed. The originally suspected
+  sharing-count distinction was not the deciding predicate in these controls.
+- **Limits:** bind the actual tree and selected branch before prescribing
+  source changes. An observer whose procedure counter advances during
+  evaluation cannot be assumed to identify an earlier translation phase
+  correctly. Join the real procedure entry/name and source locations instead,
+  and require fresh output-fidelity checks for instrumentation. Neither
+  selector success nor an optimized conversion node proves the final operation
+  stream: later contraction may expose an identity operation without deleting
+  it. Copy retention and temporary counts must be checked together with actual
+  executable extent and all collateral changes.

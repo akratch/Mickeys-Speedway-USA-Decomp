@@ -616,9 +616,9 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "0e9e58def5668149fb591620a7ada7963c32c77e",
-      "reason": "Use the verified initial FP graph for faithful native allocator replay and joint semantic-role sharing tests. Require unchanged and held-out control fidelity; candidate colors do not establish target ownership.",
-      "source_commit": "7555ce4d8c1822ec165bd25602b82cfa933aa5ea"
+      "ledger_commit": "7b93b7f5700300245911e81ff129fc9b53800ad3",
+      "reason": "Test a reserve-neutral integer capture of only the third weather coordinate to distinguish anonymous product formation from the rejected fully named role model. Measure retained producers, native costs and whole-function collateral.",
+      "source_commit": "2d84136859f67b2d5b2ba48a9b4cbb5aa9144257"
     },
     "func_80053868": {
       "ledger_commit": "b98f3696e2954fcb19879e3a7e8ba8b3311eb66a",
@@ -626,8 +626,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "2ec2775a6e64024be82182ef611c666b9444373b",
-      "reason": "Exchange four colored X/Y velocity captures for four pointer homes at fixed reserve64. Test new address/field allocation predecessors and actual load cadence; nominal CFE homes do not prove emitted stores.",
+      "ledger_commit": "4224ebe67f06d2e6a81640ef9e1a6bf47971d5a3",
+      "reason": "Reuse existing dead dx/dy homes for second-vector X/Y across A and B in the reserve64 witness. Test the authenticated velocity-range split without new declared extent; preserve field cadence and measure native formation.",
       "source_commit": "349847108e8ac4f873fe9a0ebaa3fb70cb70770a"
     },
     "func_80055104": {

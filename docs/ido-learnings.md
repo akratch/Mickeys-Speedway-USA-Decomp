@@ -3376,3 +3376,22 @@ A one-function curiosity belongs in that function's handoff, not here.
   allocator frontier alone does not prove it. A call-context rewrite that leaves
   both temporary requests and compiled output unchanged supplies no new storage
   origin. Source feasibility and exact output remain separate proof obligations.
+
+### A real self-update can retain arithmetic while changing its owner cost
+
+- **Symptom:** a thin double forwards from an ordinary assignment, but survives
+  when its incoming field capture is copied to the required coordinate home
+  before the double's actual self-update. **Mechanism:** an indirect-load RHS
+  can resist LOCAL substitution at the old-generation reads. The self-update
+  then kills that old variable generation, retaining the new arithmetic. This
+  differs from a neutral update erased before store identity checking.
+- **Lever:** authenticate the incoming capture, snapshot and updated result
+  separately. Record their actual refusal predicates and store liveness, then
+  compare the joined owners' total savings, selection divisors and preservation
+  costs. A later snapshot read may cross a block and refuse GLOBAL substitution
+  rather than supply a LOCAL event.
+- **Limits:** the old capture and snapshot can both survive. Their extra uses
+  and definitions can make a joined owner profitable in a callee register even
+  when its divisor is unchanged, removing required memory accesses. Absence of
+  an extra physical copy does not establish equal allocation or cadence; do not
+  repair that difference with an unproved price override.

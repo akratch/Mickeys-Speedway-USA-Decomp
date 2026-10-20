@@ -1088,16 +1088,16 @@ void func_800517E0(void) {
     s32 pathIndex;
     f32 commandTime;
     f32 hundred;
-    f32 value;
+    f32 motionDuration;
     f32 factor;
     f32 unit;
     s16 signedValue;
     u8 type;
     f32 scale;
-    f32 target;
+    f32 motionX;
     f32 start;
-    f32 end;
-    f32 color;
+    f32 radius;
+    f32 height;
     f32 normalized;
     s32 packed;
     s32 packed2;
@@ -1134,10 +1134,10 @@ void func_800517E0(void) {
     s32 frame68;
     f32 motionZ;
     AnimPath *slot;
-    f32 motionX;
-    f32 height;
-    f32 radius;
-    f32 motionDuration;
+    f32 target;
+    f32 color;
+    f32 end;
+    f32 value;
     s32 word1;
     f32 delta;
     s32 word2;
@@ -1257,12 +1257,12 @@ void func_800517E0(void) {
                 case 8:
                     pathIndex = cursor->command & 0xFF;
                     start = (f32) (*((u16 *) ((u8 *) cursor + 4)));
-                    end = (f32) (*((u16 *) ((u8 *) cursor + 6)));
+                    value = (f32) (*((u16 *) ((u8 *) cursor + 6)));
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
                     if (path != NULL) {
                         start *= factor;
-                        path->unk2A = (s16) (s32) (end * scale * factor);
+                        path->unk2A = (s16) (s32) (value * scale * factor);
                         if (path->unk2A == 0) {
                             path->unk2C = start;
                         } else {
@@ -1397,7 +1397,7 @@ void func_800517E0(void) {
                     word12 = cursor->command & 0xFF;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     value = (f32) (*((u16 *) ((u8 *) cursor + 8)));
-                    target = (f32) *((u16 *) ((u8 *) cursor + 0xA));
+                    start = (f32) *((u16 *) ((u8 *) cursor + 0xA));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     if ((word12 & 0xF) == 7) {
                         frame68 = flagsValue != 0 ? 0 : 0xFF;
@@ -1405,12 +1405,12 @@ void func_800517E0(void) {
                                          (s32) (value * factor * scale));
                     } else {
                         value /= hundred;
-                        color = target != 65535.0f ?
-                            target / hundred : -1.0f;
+                        start = start != 65535.0f ?
+                            start / hundred : -1.0f;
                         if (flagsValue != 0) {
                             word12 |= 0x80;
                         }
-                        func_800498FC(4, value, color, high,
+                        func_800498FC(4, value, start, high,
                                       high2, low2, word12);
                     }
                     break;
@@ -1425,9 +1425,9 @@ void func_800517E0(void) {
                     break;
                 case 0x43:
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
-                    color = ((f32) (cursor->command & 0xFF)) / 255.0f;
+                    start = ((f32) (cursor->command & 0xFF)) / 255.0f;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    changeWeather(0, 0, 0, (s32) (color * 65535.0f), 0xFFFF,
+                    changeWeather(0, 0, 0, (s32) (start * 65535.0f), 0xFFFF,
                                   (s32) (value * factor * scale));
                     break;
                 case 0x44:
@@ -1437,11 +1437,11 @@ void func_800517E0(void) {
                      * sequence, colours aside (lane opus-517e0). */
                     unit = 0.00390625f;
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
-                    start = *((s16 *) ((u8 *) cursor + 6)) * unit;
-                    end = *((s16 *) ((u8 *) cursor + 8)) * unit;
-                    target = *((s16 *) ((u8 *) cursor + 0xA)) * unit;
+                    target = *((s16 *) ((u8 *) cursor + 6)) * unit;
+                    color = *((s16 *) ((u8 *) cursor + 8)) * unit;
+                    end = *((s16 *) ((u8 *) cursor + 0xA)) * unit;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
-                    changeWeather((s32) start, (s32) end, (s32) target, 1, 1,
+                    changeWeather((s32) target, (s32) color, (s32) end, 1, 1,
                                   (s32) value);
                     break;
                 case 0x45:
@@ -1455,13 +1455,13 @@ void func_800517E0(void) {
                     trackFadeFog(0, high, high2, low2,
                                   packed2, timer, value / hundred - delta);
                     break;
-                /* 0x46: the empty ifs are stand-ins (flagged, not the shipped source): each
-                 * adds one counted reference so height, motionDuration and motionX outbid
-                 * their caller-saved cost and take f14, f16 and f12 as shipped (2026-10-08). */
+                /* 0x46: inherited empty conditions remain disclosed source-shaping stand-ins.
+                 * Shared end/target/color/value roles preserve call-result restrictions
+                 * and caller-save economics; declaration homes retain the motion spills. */
                 case 0x46: {
-                    radius = *((s16 *) ((u8 *) cursor + 4));
-                    height = *((s16 *) ((u8 *) cursor + 6)); if (height) {}
-                    motionDuration = *((u16 *) ((u8 *) cursor + 8)) & 0xFF; if (motionDuration) {}
+                    end = *((s16 *) ((u8 *) cursor + 4));
+                    color = *((s16 *) ((u8 *) cursor + 6)); if (color) {}
+                    value = *((u16 *) ((u8 *) cursor + 8)) & 0xFF; if (value) {}
                     motionCount = *((u16 *) ((u8 *) cursor + 8)) >> 8;
                     high = *((u16 *) ((u8 *) cursor + 0xA)) >> 8;
                     high2 = *((u16 *) ((u8 *) cursor + 0xA)) & 0xFF;
@@ -1471,22 +1471,22 @@ void func_800517E0(void) {
                     packedField = *((u16 *) ((u8 *) cursor + 0xE)) & 0xFF;
                     index = cursor->command << 8;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0x10);
-                    motionX = func_8002A8C0(index) * radius;
-                    radius = func_8002A8BC(index) * radius; if (motionX) {} if (motionX) {}
-                    animCommandMotionTrap(motionX, height, radius,
+                    target = func_8002A8C0(index) * end;
+                    end = func_8002A8BC(index) * end; if (target) {} if (target) {}
+                    animCommandMotionTrap(target, color, end,
                                           motionCount * 2, high, high2,
                                           low2, pathIndex, low, packedField,
-                                          motionDuration / hundred);
+                                          value / hundred);
                     break;
                 }
                 case 0x47:
                     start = (f32) *((u16 *) ((u8 *) cursor + 4));
                     end = (f32) *((u16 *) ((u8 *) cursor + 6));
-                    color = (f32) *((u16 *) ((u8 *) cursor + 8));
+                    target = (f32) *((u16 *) ((u8 *) cursor + 8));
                     opcode = cursor->command & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xA);
                     camStartShake(0, start / hundred, end / hundred,
-                                  color / hundred, opcode);
+                                  target / hundred, opcode);
                     if (D_8007BF0C == 0) {
                         rumbleStart(0, 0x4B, 2.0f);
                     }
@@ -4040,10 +4040,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 469/1808 words
+ * score: 448/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xDC
- * summary: Natural 0x40/0x41 scheduling and 0x43 producer timing improve the checkpoint; shared FP owners, argument copies and static address owners remain nonexact
+ * summary: Shared weather and motion roles restore FP palette and motion spill homes; GP copies, static address owners and short-handler structure remain nonexact
  * PLATEAU-HANDOFF:func_800517E0:end
  */

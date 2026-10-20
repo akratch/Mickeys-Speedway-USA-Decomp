@@ -3490,3 +3490,21 @@ A one-function curiosity belongs in that function's handoff, not here.
 - **Limits:** proving the rejecting predicate does not prove its downstream
   origin, an original source spelling or a source-realizable repair. Require
   unchanged-input stock and observer-disabled/enabled fidelity separately.
+
+### Expression order can preserve temporary allocation while changing late copies
+
+- **Symptom:** moving signed narrowing before a byte mask preserves every
+  temporary claim and release, but changes the final instructions.
+- **Mechanism:** a controlled integer expression retained the narrowing in
+  optimized Ucode and moved its two shift operations ahead of the mask. The
+  complete allocation transition stream remained equal. The assembler then
+  removed the final argument copy before contracting the narrowing pair;
+  backward producer replacement also changed the original shift destination.
+- **Lever:** compare operation ownership as well as queue transitions, then
+  inspect the assembler's successive passes. A downstream mask can permit
+  contraction without preserving the copies needed by the target.
+- **Limits:** equal queues and successful contraction do not imply identical
+  instructions, scheduling or copy retention. Establish the source value
+  domain and the actual replacement predicate separately. The controlled
+  [pre-mask experiment](matching-triage-handoffs/func_800517E0.md#pre-mask-narrowing-preserves-lifecycle-but-loses-the-argument-copy)
+  is nonexact and supplies no source-real copy-retention repair.

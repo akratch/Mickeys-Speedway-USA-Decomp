@@ -3521,3 +3521,24 @@ A one-function curiosity belongs in that function's handoff, not here.
   and [shared-conversion follow-up](matching-triage-handoffs/func_800517E0.md#pre-shift-narrowing-lifecycle-restored-copy-protection-falsified)
   are nonexact. Copy retention and the required temporary lifecycle have
   been demonstrated separately, not together in a matching repair.
+
+### Narrowing can fold into a load during tree translation
+
+- **Symptom:** optimized Ucode retains signed narrowing, but code generation
+  emits a signed load and loses the expected conversion temporaries.
+- **Mechanism:** the native narrowing translator can replace a suitable load
+  with one having the requested width and signedness before evaluation. A
+  register child takes a different path. For eligible memory loads, a child
+  flag or multiple tree references prevents this replacement; the signed
+  fallback constructs a pair of shifts. Width and dtype checks also apply.
+- **Lever:** observe the translated child kind and register classification
+  first, then the load flags and reference count at the actual decision.
+  The count is maintained by tree duplication and release, and is checked
+  after local ownership changes; source-use counts do not predict it. Log the
+  existing register-classification result: invoking its helper again from an
+  observer can mutate compiler state.
+- **Limits:** this is a static compiler-path audit, not a measured explanation
+  of a particular candidate. Bind the actual tree and selected branch before
+  prescribing source changes. An observer whose procedure counter advances
+  during evaluation cannot be assumed to identify an earlier translation
+  phase correctly. Require fresh output-fidelity checks for instrumentation.

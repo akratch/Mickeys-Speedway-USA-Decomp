@@ -3472,3 +3472,21 @@ A one-function curiosity belongs in that function's handoff, not here.
   live ranges across new blocks and change their allocation divisors. Measure
   those neighboring lifetimes before treating the condition as a cost-only
   adjustment.
+
+### Required bit width and instantaneous liveness are separate peephole inputs
+
+- **Symptom:** identical local assembler input retains an extension in one
+  full-function context and contracts it in another.
+- **Mechanism:** the assembler's second peephole pass checks a per-register
+  required-width table as well as deadness and the surrounding instruction
+  pattern. A controlled observation found different width requirements even
+  though the destination was live and source dead at the decision in both
+  runs. The block's live-out mask and the evolving per-instruction mask must not
+  be treated as the same state.
+- **Lever:** record the exact width threshold, table value, deadness result,
+  matched producer and relocation checks at the actual decision. Then trace
+  the differing demand backward to a real use or dataflow seed before changing
+  source. Decode register masks using the producer's authenticated bit order.
+- **Limits:** proving the rejecting predicate does not prove its downstream
+  origin, an original source spelling or a source-realizable repair. Require
+  unchanged-input stock and observer-disabled/enabled fidelity separately.

@@ -186,6 +186,30 @@
       "state": "superseded",
       "decision_commit": "25f88c85b6ffa7cc175fdc9a75a558b8180b0e95",
       "reason": "The frozen pricing report was integrated with an identical patch at the decision commit. Its owner confirms release; this report-only tip changes no source and has no remaining integration delta."
+    },
+    "89c785748b8c4062d0de91a1ec9971177624f6a3": {
+      "symbol": "func_800517E0",
+      "state": "superseded",
+      "decision_commit": "e3fa658ea3876237b9143c6337599d2774ae53c0",
+      "reason": "Reviewed frozen lane has only a documentation delta; its complete handoff is preserved in the newer canonical shard. No source or remaining integration delta."
+    },
+    "f5c1ae6c48ca08dff0280a7d636eff0a8d378f96": {
+      "symbol": "func_800517E0",
+      "state": "superseded",
+      "decision_commit": "e3fa658ea3876237b9143c6337599d2774ae53c0",
+      "reason": "Reviewed frozen lane has only a documentation delta; its complete handoff is preserved in the newer canonical shard. No source or remaining integration delta."
+    },
+    "8f0f37ec4adb95337f01187100728812d6008bb7": {
+      "symbol": "func_80054B3C",
+      "state": "superseded",
+      "decision_commit": "e3fa658ea3876237b9143c6337599d2774ae53c0",
+      "reason": "Reviewed frozen lane has only a documentation delta; its complete handoff is preserved in the newer canonical shard. No source or remaining integration delta."
+    },
+    "5ee2a2c03a237dd738a441d531cff14502f8883f": {
+      "symbol": "func_80054B3C",
+      "state": "superseded",
+      "decision_commit": "e3fa658ea3876237b9143c6337599d2774ae53c0",
+      "reason": "Reviewed frozen lane has only a documentation delta; its complete handoff is preserved in the newer canonical shard. No source or remaining integration delta."
     }
   }
 }

@@ -616,8 +616,8 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "60002f0f36916a5c3440c0432cf2f3a56232d62d",
-      "reason": "Isolate case60 width from layout by moving existing type into timer alignment space; measure scratch lifecycle. Separately test the measured sixD B/E priority threshold with one exact-domain additive condition. No spelling or count grid.",
+      "ledger_commit": "e3fa658ea3876237b9143c6337599d2774ae53c0",
+      "reason": "Trace the measured AS1 required-width 32 versus 16 decision backward to its real demand or edge seed; qualify a source lifetime repair with unchanged handler controls. No repeated width or naming grid.",
       "source_commit": "b932d3e014e59c0e46902262f4adb08defc4ecfc"
     },
     "func_80053868": {
@@ -626,8 +626,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "4224ebe67f06d2e6a81640ef9e1a6bf47971d5a3",
-      "reason": "Reuse existing dead dx/dy homes for second-vector X/Y across A and B in the reserve64 witness. Test the authenticated velocity-range split without new declared extent; preserve field cadence and measure native formation.",
+      "ledger_commit": "e3fa658ea3876237b9143c6337599d2774ae53c0",
+      "reason": "Trace upstream fixed-point membership that precedes point-address classification; identify a source-real seed change preserving both address evaluations. Reuse authenticated owner-membership records; no slot-order sweep.",
       "source_commit": "349847108e8ac4f873fe9a0ebaa3fb70cb70770a"
     },
     "func_80055104": {

@@ -616,8 +616,8 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "4cb51468c1a007d2308dfeb234568a2fef95ccde",
-      "reason": "Measure pre-mask CVTL16 in wide case60 carrier: predict SLL/SRA/AND lifecycles and late contraction under 8-bit mask demand. Stop on early CVTL folding; preserve handler and layout controls.",
+      "ledger_commit": "34fbb92ce15a109608336901930134ab1ce01d60",
+      "reason": "Test cast-before-shift: retain named SHR destination so final AND reads the argument register and blocks AS1 producer replacement. Stop on signed-load fusion, lost lifecycle, extra moves or operand forwarding.",
       "source_commit": "b932d3e014e59c0e46902262f4adb08defc4ecfc"
     },
     "func_80053868": {

@@ -216,6 +216,12 @@
       "state": "superseded",
       "decision_commit": "4cb51468c1a007d2308dfeb234568a2fef95ccde",
       "reason": "The frozen lane changes only the interpreter handoff, integrated verbatim by the decision commit; it has no source delta or remaining scheduling claim."
+    },
+    "74147e5b22143146594dee7be116c950ee33b858": {
+      "symbol": "func_800517E0",
+      "state": "superseded",
+      "decision_commit": "34fbb92ce15a109608336901930134ab1ce01d60",
+      "reason": "The frozen documentation-only lane handoff is integrated verbatim by the decision commit; no source delta or remaining scheduling claim."
     }
   }
 }

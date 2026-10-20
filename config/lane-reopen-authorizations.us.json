@@ -616,9 +616,9 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "34fbb92ce15a109608336901930134ab1ce01d60",
-      "reason": "Test cast-before-shift: retain named SHR destination so final AND reads the argument register and blocks AS1 producer replacement. Stop on signed-load fusion, lost lifecycle, extra moves or operand forwarding.",
-      "source_commit": "b932d3e014e59c0e46902262f4adb08defc4ecfc"
+      "source_commit": "b932d3e014e59c0e46902262f4adb08defc4ecfc",
+      "ledger_commit": "40c55751d8563b866658558ee7f1d9ae287344ae",
+      "reason": "Measured CVTL register-child refusal versus shared load folding. Test mixed raw/converted byte fanout for dual owners, retained copy and no extra final operation; reject absorption, extra loads or allocation collateral."
     },
     "func_80053868": {
       "ledger_commit": "b98f3696e2954fcb19879e3a7e8ba8b3311eb66a",

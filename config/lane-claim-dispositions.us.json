@@ -222,6 +222,12 @@
       "state": "superseded",
       "decision_commit": "34fbb92ce15a109608336901930134ab1ce01d60",
       "reason": "The frozen documentation-only lane handoff is integrated verbatim by the decision commit; no source delta or remaining scheduling claim."
+    },
+    "a821c70569c4b4dd6401c5a60fa11b44df0d0343": {
+      "symbol": "func_800517E0",
+      "state": "superseded",
+      "decision_commit": "f5ed605ba9c1b53425e20b95ce1cf6c322d1fa70",
+      "reason": "Frozen documentation-only before-shift and shared-conversion handoff was integrated verbatim by the decision commit; no source delta or remaining scheduling claim."
     }
   }
 }

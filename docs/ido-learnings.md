@@ -3503,8 +3503,21 @@ A one-function curiosity belongs in that function's handoff, not here.
 - **Lever:** compare operation ownership as well as queue transitions, then
   inspect the assembler's successive passes. A downstream mask can permit
   contraction without preserving the copies needed by the target.
+- **Replacement detail:** the backward scan checks reads of the copy's
+  destination before recognizing its producer. A read in that producer
+  itself can therefore block replacement, even when an in-place operation
+  would be valid. Inspect the operands after the first peephole pass;
+  forwarding may remove precisely this dependency.
+- **Shared-expression detail:** sharing a narrowed halfword between two byte
+  extractions retained the converted owner in optimized Ucode, but code
+  generation folded its load and conversion into a signed load. The desired
+  producer read and copy survived while the conversion temporaries vanished.
+  Check both load selection and temporary allocation after establishing
+  sharing; an optimized conversion node alone does not prove emitted shifts.
 - **Limits:** equal queues and successful contraction do not imply identical
   instructions, scheduling or copy retention. Establish the source value
   domain and the actual replacement predicate separately. The controlled
   [pre-mask experiment](matching-triage-handoffs/func_800517E0.md#pre-mask-narrowing-preserves-lifecycle-but-loses-the-argument-copy)
-  is nonexact and supplies no source-real copy-retention repair.
+  and [shared-conversion follow-up](matching-triage-handoffs/func_800517E0.md#pre-shift-narrowing-lifecycle-restored-copy-protection-falsified)
+  are nonexact. Copy retention and the required temporary lifecycle have
+  been demonstrated separately, not together in a matching repair.

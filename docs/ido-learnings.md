@@ -3452,3 +3452,23 @@ A one-function curiosity belongs in that function's handoff, not here.
   forms its graph, or validate arbitrary graph edits. Explicit runtime-entry
   guards are not a universal sandbox. Diagnostic output never substitutes for
   untouched compiler output in matching acceptance.
+
+### The retained arithmetic stage determines which results need temporaries
+
+- **Symptom:** an unchanged conversion/division/multiplication tree has the
+  right operations but the wrong floating-point destinations.
+  **Mechanism:** retaining its input, intermediate quotient or final result
+  gives different operations a named destination. Moving the final conversion
+  into an integer assignment can instead leave the floating-point subtree
+  anonymous while creating a general-register owner.
+- **Lever:** move the assignment boundary along the same arithmetic tree,
+  preserving types, rounding, reads and call order. Authenticate the surviving
+  stores and each operation's requested destination. Compare actual temporary
+  requests and global owner costs; a named intermediate can reproduce a local
+  sequence that an entirely anonymous expression cannot.
+- **Limits:** local register equality does not identify the original source or
+  establish a function match. Removing a role from a shared local changes its
+  priority elsewhere. Even an empty-condition cost diagnostic can extend other
+  live ranges across new blocks and change their allocation divisors. Measure
+  those neighboring lifetimes before treating the condition as a cost-only
+  adjustment.

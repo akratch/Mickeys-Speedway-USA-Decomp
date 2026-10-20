@@ -616,8 +616,8 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "7555ce4d8c1822ec165bd25602b82cfa933aa5ea",
-      "reason": "Test the named-f16 quotient countermodel: allocator color28 permits f16, so candidate scratch-pop repair is not a unique target history. Authenticate retained quotient owner costs and interference before a source-realizable repair.",
+      "ledger_commit": "0e9e58def5668149fb591620a7ada7963c32c77e",
+      "reason": "Use the verified initial FP graph for faithful native allocator replay and joint semantic-role sharing tests. Require unchanged and held-out control fidelity; candidate colors do not establish target ownership.",
       "source_commit": "7555ce4d8c1822ec165bd25602b82cfa933aa5ea"
     },
     "func_80053868": {

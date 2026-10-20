@@ -626,8 +626,8 @@
       "source_commit": "5b811d8bfe9161f3c94438102a7cd06ed574d6d9"
     },
     "func_80054B3C": {
-      "ledger_commit": "9c0602793729c6832e0776fee2bea555fa7b654a",
-      "reason": "Resolve low-reserve field CSE founder order by separating fast-path and coefficient load identities with zero-home pointer representations, while preserving emitted input-load cadence.",
+      "ledger_commit": "2ec2775a6e64024be82182ef611c666b9444373b",
+      "reason": "Exchange four colored X/Y velocity captures for four pointer homes at fixed reserve64. Test new address/field allocation predecessors and actual load cadence; nominal CFE homes do not prove emitted stores.",
       "source_commit": "349847108e8ac4f873fe9a0ebaa3fb70cb70770a"
     },
     "func_80055104": {

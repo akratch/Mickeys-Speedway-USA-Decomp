@@ -3412,3 +3412,21 @@ A one-function curiosity belongs in that function's handoff, not here.
   pointer/float unions can preserve declared extent yet change memory class,
   virtual-register eligibility and arithmetic sharing. Neither unchanged extent
   nor desired founder order proves equal allocation or exact output.
+
+### Physical registers do not uniquely identify allocation owners
+
+- **Symptom:** retaining an expression removes a temporary-register draw and
+  shifts later names, while a private queue adjustment repairs that suffix.
+  **Mechanism:** some floating registers can serve either colored owners or
+  temporary expressions. The target's physical destination does not identify
+  which lifetime produced it.
+- **Lever:** authenticate each candidate's source location, owner, requested
+  destination and actual draw events before comparing models. A queue repair
+  establishes causality for that candidate; it does not prove the target had
+  the same event count or an anonymous owner. Keep a named-owner explanation
+  open when the allocator permits it.
+- **Limits:** an early frontend result temporary is not proof of a retained
+  early producer either. A value-required comma can create that temporary,
+  then later optimization can forward the arithmetic into its final argument.
+  Check the optimized stream and untouched output. See the
+  [interpreter investigation](matching-triage-handoffs/func_800517E0.md).

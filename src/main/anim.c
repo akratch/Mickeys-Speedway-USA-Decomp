@@ -1404,20 +1404,20 @@ void func_800517E0(void) {
                         TrapDanglingJump(high, high2, low2, frame68,
                                          (s32) (value * factor * scale));
                     } else {
+                        value /= hundred;
                         color = target != 65535.0f ?
                             target / hundred : -1.0f;
                         if (flagsValue != 0) {
                             word12 |= 0x80;
                         }
-                        normalized = value / hundred;
-                        func_800498FC(4, normalized, color, high,
+                        func_800498FC(4, value, color, high,
                                       high2, low2, word12);
                     }
                     break;
                 case 0x41:
-                    pathIndex = cursor->command & 0xFF;
+                    word2 = cursor->command & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    func_8004EED0(pathIndex);
+                    func_8004EED0(word2);
                     break;
                 case 0x42:
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
@@ -1425,10 +1425,9 @@ void func_800517E0(void) {
                     break;
                 case 0x43:
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
-                    color = (f32) (cursor->command & 0xFF);
-                    color = (color / 255.0f) * 65535.0f;
+                    color = ((f32) (cursor->command & 0xFF)) / 255.0f;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    changeWeather(0, 0, 0, (s32) color, 0xFFFF,
+                    changeWeather(0, 0, 0, (s32) (color * 65535.0f), 0xFFFF,
                                   (s32) (value * factor * scale));
                     break;
                 case 0x44:
@@ -4041,10 +4040,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 520/1808 words
+ * score: 469/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xDC
- * summary: Typed event inversion recovers 0x78 and 0x7B; remaining argument copies, FP scratch phase and static address owners are nonexact
+ * summary: Natural 0x40/0x41 scheduling and 0x43 producer timing improve the checkpoint; shared FP owners, argument copies and static address owners remain nonexact
  * PLATEAU-HANDOFF:func_800517E0:end
  */

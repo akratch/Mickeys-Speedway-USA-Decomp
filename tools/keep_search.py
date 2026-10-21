@@ -554,7 +554,7 @@ class Runner:
 
     def compile(self, src: pathlib.Path, obj: pathlib.Path, *, trace: pathlib.Path | None = None,
                 keep: str | None = None, force: str | None = None, log: pathlib.Path | None = None) -> str | None:
-        instrumented = bool(trace or keep or force)
+        instrumented = bool(trace or keep or force or (log is not None and self.proc is not None))
         args = fast_score.use_compiler(fast_score.rewrite_io(self.args, src, self.source, obj),
                                        self.inst if instrumented else None)
         env = dict(self.env)

@@ -70,6 +70,39 @@ THE CATALOGUE (each lever names the brief item or wave law it comes from):
   const_iv       `K = C; for (v = K; ...)` for `for (v = C; ...)`: a constant
                  symbol folded into the IV init (w26 on func_80009414).
 
+SOURCE-LEVER MODE (`--source-levers`, 2026-10-21). No --proc, no oracle, stock
+compiles only; the default levers are the five that moved func_800517E0 that
+day, each with a per-cell `sem` of safe | check:<reason> | diag:
+
+  literal_type   integer literal spellings N <-> NU and the bit-identical
+                 M <-> ~(~M) <-> -N forms, ONLY at value-safe sites: ==, !=,
+                 &, |, ^, &=, |=, ^=, case labels and shift counts, and never
+                 against a floating operand (relational, arithmetic, division,
+                 call arguments and plain assignments are refused).
+  carrier_rename a case-scoped rename of a local to another declared,
+                 type-compatible local, generated only when def-before-use
+                 holds on the RENAMED program (class Dataflow): the new name is
+                 written before read inside the region, and on every exit of
+                 the region -- the loop back edge and nested switches included
+                 -- neither the new nor the old name is read before being
+                 written. A width change (s32 -> u16) is `check`.
+  reorder        two adjacent statements with disjoint read/write sets, no
+                 call and no volatile; two memory accesses with a store are
+                 `check:<reason>`.
+  mask_shift     `x = (E) & M; f(x)` <-> `x = E; f(x & M)` and `x = (E) << k`
+                 <-> `f(x << k)` when x has exactly one use; a 0xFF/0xFFFF mask
+                 introduced or dropped when the callee's prototype narrows to
+                 that width (K&R or implicit callee: `check`).
+  read_order     permutations of a run of adjacent independent stream reads
+                 (loads into distinct locals, no store or call between).
+
+--case LABEL restricts to a switch region, --pairs N adds same-handler
+combinations, --diag 'decl:NAME=TYPE' (or @FILE) pins a NON-adoptable base and
+measures every cell on both bases; the ranking uses the diag column whenever
+the adoptable base is off size. --greedy adopts the best SAFE improving cell,
+re-enumerates on the new base and repeats --rounds times; --emit writes the
+frozen adoptable TU (shape_freeze resolves any SHAPE_ axes) plus OUT.c.diff.
+
 "Dead" is decided conservatively from the statement tree: the next mention of
 the local after the position must be a plain `x = ...` (not reading x) at a
 level that every later path passes, no break/continue/goto/label sits between,
@@ -113,6 +146,17 @@ again by expression + line overlap) in the biased order. It can be combined
 with --oracle; use bias alone when the order, not a colour, is what the
 target needs.
 
+V3 FORCES (the shared farm from 2026-10-21). --oracle also accepts the
+colourability verdicts `p1:wN=y`, `=y<save>`, `=n` and the `.K` pricing
+qualifier on any force (`p1:w851.2=y` is the piece split() left under web
+851, read here as the web's K-th decision row); --weight 'p1:wN[.K]:bbB=+k'
+and --grow 'p1:wN=seed|-bbA-bbB' set CDX_WEIGHT / CDX_GROW on the forced
+base. Acceptance reads the always-printed force_verdict / force_weight /
+force_grow records (`v3_force_acceptance`; a declined verdict refuses), and
+the state a cell must reproduce is what the forced base then decided: `=y`
+the colour it took, `=n` memory, a weight or grow force the named web's own
+decision (`state_targets`).
+
 AMBIGUITY. The forced web is re-derived in every cell from its expression text
 and source-line overlap, never by web number. If the best-overlapping rows tie
 and disagree about the outcome the cell reads `ambiguous` (and the candidates
@@ -143,7 +187,9 @@ from __future__ import annotations
 import argparse
 import collections
 import dataclasses
+import difflib
 import hashlib
+import itertools
 import json
 import os
 import pathlib
@@ -153,6 +199,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import typing
 from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -216,6 +263,12 @@ READ_RE = re.compile(
     r"(?<![\w.>])(?:\*\s*[A-Za-z_]\w*|[A-Za-z_]\w*"
     r"(?:\s*(?:->|\.)\s*[A-Za-z_]\w*|\s*\[[^\[\]]*\])+)")
 FORCE_RE = re.compile(r"^p([12]):w(\d+)=(c\d+|s)$")
+# The v3 farm's grammar (workbench instrument_verdict): `.K` names web N's
+# K-th pricing (K=2: the piece split() left under N); `y[save]` forces the
+# colourability verdict to colour, `n` to memory.
+ORACLE_RE = re.compile(r"^(p[12]):w(\d+)(?:\.(\d+))?=(c\d+|s|n|y(?:\d+(?:\.\d+)?)?)$")
+WEIGHT_RE = re.compile(r"^(p[12]):w(\d+)(?:\.(\d+))?:bb(\d+)=([+-]\d+)$")
+GROW_RE = re.compile(r"^(p[12]):w(\d+)=(seed|(?:-bb\d+)+)$")
 
 
 # ---------------------------------------------------------------- lexing
@@ -299,7 +352,19 @@ def strip_comments(s: str) -> str:
 
 
 def idents(s: str) -> list[str]:
-    """Variable-like identifiers: not member names, not keywords."""
+    """Variable-like identifiers: not member names, not keywords (memoised by text)."""
+    got = _IDENTS.get(s)
+    if got is None:
+        got = _IDENTS[s] = _idents(s)
+        if len(_IDENTS) > 200000:
+            _IDENTS.clear()
+    return got
+
+
+_IDENTS: dict = {}
+
+
+def _idents(s: str) -> list[str]:
     s = strip_comments(s)
     s = re.sub(r'"(?:\\.|[^"\\])*"', '""', s)
     out = []
@@ -806,7 +871,46 @@ class Cell:
     line: int
     edit: str
     text: str
-    semantics: str = "safe"
+    semantics: str = "safe"      # safe | check:<reason> | diag
+    edits: tuple = ()            # (start, end, replacement) over the base text, when known
+    region: str = ""             # the innermost switch region the edit lives in, when known
+    group: str = ""              # the outermost one (pairs are formed within it)
+
+
+def apply_edits(text: str, edits) -> str:
+    """Apply (start, end, replacement) edits given against `text`, last first."""
+    for s, e, r in sorted(edits, key=lambda x: (x[0], x[1]), reverse=True):
+        text = text[:s] + r + text[e:]
+    return text
+
+
+def edits_overlap(a, b) -> bool:
+    for s1, e1, _ in a:
+        for s2, e2, _ in b:
+            if s1 < e2 and s2 < e1 or s1 == s2:
+                return True
+    return False
+
+
+def edit_cell(fn: "Function", lever: str, edit: str, edits, sem: str = "safe",
+              region: str = "", line: int | None = None) -> Cell:
+    edits = tuple(edits)
+    first = min(s for s, _, _ in edits)
+    inner, outer = regions_at(fn, first)
+    return Cell(lever, line if line is not None else fn.line_of(first), edit,
+                apply_edits(fn.text, edits), sem, edits, region or inner, outer)
+
+
+def regions_at(fn: "Function", offset: int) -> tuple[str, str]:
+    """(innermost, outermost) switch region names containing a text offset."""
+    inner = outer = None
+    for r in regions_cached(fn):
+        if r.start <= offset < r.end:
+            if inner is None or r.start >= inner.start:
+                inner = r
+            if outer is None or r.start < outer.start:
+                outer = r
+    return (inner.name if inner else ""), (outer.name if outer else "")
 
 
 def stmt_index(stmts: list[Node], offset: int) -> int:
@@ -1140,20 +1244,40 @@ def lever_reorder(fn, ctx):
             a, b = kids[i], kids[i + 1]
             if a.kind != "simple" or b.kind != "simple" or not ctx["in_lines"](fn.line_of(a.start)):
                 continue
-            wa, ra, ca, ma = writes_reads(fn, a)
-            wb, rb, cb, mb = writes_reads(fn, b)
-            if ca or cb or wa is None or wb is None:
+            sem = swap_semantics(fn, a, b)
+            if sem is None:
                 continue
-            if not ma and (wa in rb or (not mb and wa == wb)):
-                continue
-            if not mb and (wb in ra or (not ma and wa == wb)):
-                continue
-            loads_a = bool(re.search(r"->|\[|\*", strip_comments(a.text(t)).split("=", 1)[-1]))
-            loads_b = bool(re.search(r"->|\[|\*", strip_comments(b.text(t)).split("=", 1)[-1]))
-            sem = "check" if (ma and (mb or loads_b)) or (mb and loads_a) else "safe"
-            text = t[:a.start] + b.text(t) + t[a.end:b.start] + a.text(t) + t[b.end:]
-            out.append(Cell("reorder", fn.line_of(a.start), "swap with next", text, sem))
+            out.append(edit_cell(fn, "reorder", "swap with next",
+                                 [(a.start, a.end, b.text(t)), (b.start, b.end, a.text(t))], sem,
+                                 region_name_at(fn, a), fn.line_of(a.start)))
     return out
+
+
+def swap_semantics(fn: Function, a: Node, b: Node) -> str | None:
+    """May two adjacent simple statements swap? None when a dependence forbids it.
+
+    Disjoint read/write sets of locals swap `safe`; a call or a volatile access
+    on either side refuses; two memory accesses of which one is a store are
+    `check:<reason>` (the roots may alias).
+    """
+    t = fn.text
+    wa, ra, ca, ma = writes_reads(fn, a)
+    wb, rb, cb, mb = writes_reads(fn, b)
+    if ca or cb or wa is None or wb is None:
+        return None
+    if "volatile" in a.text(t) or "volatile" in b.text(t):
+        return None
+    if not ma and (wa in rb or (not mb and wa == wb)):
+        return None
+    if not mb and (wb in ra or (not ma and wa == wb)):
+        return None
+    loads_a = bool(re.search(r"->|\[|\*", strip_comments(a.text(t)).split("=", 1)[-1]))
+    loads_b = bool(re.search(r"->|\[|\*", strip_comments(b.text(t)).split("=", 1)[-1]))
+    if ma and mb:
+        return "check:two stores may alias"
+    if (ma and loads_b) or (mb and loads_a):
+        return "check:store may alias the other's load"
+    return "safe"
 
 
 def lever_loop_move(fn, ctx):
@@ -1219,6 +1343,946 @@ def lever_const_iv(fn, ctx):
     return out
 
 
+# ---------------------------------------------------------------- switch regions
+
+@dataclasses.dataclass
+class Region:
+    """The statements of one case group of a switch, labels excluded."""
+    switch: Node
+    labels: list
+    stmts: list
+    name: str
+
+    @property
+    def start(self) -> int:
+        return self.labels[0].start
+
+    @property
+    def end(self) -> int:
+        return (self.stmts[-1] if self.stmts else self.labels[-1]).end
+
+
+def label_name(fn: Function, label: Node) -> str:
+    return re.sub(r"\s+", " ", strip_comments(label.text(fn.text)).strip().rstrip(":")).strip()
+
+
+def switch_regions(fn: Function, switch: Node) -> list[Region]:
+    body = switch.children[0]
+    if body.kind != "compound":
+        return []
+    out: list[Region] = []
+    labels: list[Node] = []
+    for child in body.children:
+        if child.kind == "label":
+            if out and out[-1].stmts == [] and not labels:
+                labels = out.pop().labels
+            labels.append(child)
+            continue
+        if labels:
+            out.append(Region(switch, labels, [], "/".join(label_name(fn, l) for l in labels)))
+            labels = []
+        if out:
+            out[-1].stmts.append(child)
+    if labels:
+        out.append(Region(switch, labels, [], "/".join(label_name(fn, l) for l in labels)))
+    return out
+
+
+def all_regions(fn: Function) -> list[Region]:
+    out = []
+    for node in walk(fn.body):
+        if node.kind == "switch":
+            out.extend(switch_regions(fn, node))
+    return out
+
+
+def region_of(fn: Function, node: Node) -> Region | None:
+    """The innermost switch region a statement lies in."""
+    best = None
+    for r in regions_cached(fn):
+        if r.start <= node.start and node.end <= r.end:
+            if best is None or r.start >= best.start:
+                best = r
+    return best
+
+
+def regions_cached(fn: Function) -> list[Region]:
+    cache = fn.__dict__.setdefault("_regions", None)
+    if cache is None:
+        cache = fn.__dict__["_regions"] = all_regions(fn)
+    return cache
+
+
+def region_name_at(fn: Function, node: Node) -> str:
+    r = region_of(fn, node)
+    return r.name if r else ""
+
+
+def ends_with_jump(fn: Function, node: Node) -> bool:
+    if node.kind == "jump":
+        return True
+    if node.kind == "compound":
+        return bool(node.children) and ends_with_jump(fn, node.children[-1])
+    if node.kind == "if" and len(node.children) == 2:
+        return all(ends_with_jump(fn, c) for c in node.children)
+    return False
+
+
+def region_exit_statuses(fn: Function, region: Region) -> set[str]:
+    """How control can leave the region: break, continue, flow (fall-through); return is silent."""
+    out = set()
+    if not region.stmts:
+        return {"flow"}
+    if not ends_with_jump(fn, region.stmts[-1]):
+        out.add("flow")
+    for top in region.stmts:
+        for node in walk(top):
+            if node.kind != "jump":
+                continue
+            w = word_at(fn.text, node.start)
+            if w == "goto":
+                out.add("goto")
+            elif w in ("break", "continue"):
+                inner = [a.kind for a in ancestors(node) if a.start >= top.start]
+                if w == "break" and ("loop" in inner or "switch" in inner):
+                    continue  # leaves an inner construct, stays in the region
+                if w == "continue" and "loop" in inner:
+                    continue
+                out.add(w)
+    return out
+
+
+# ---------------------------------------------------------------- def-before-use
+
+READ = "READ"
+
+
+class Dataflow:
+    """Is a local read before it is written, along the statement tree?
+
+    `seq(stmts, name)` answers for a statement list: READ when some path through
+    it reads `name` unwritten, else the set of exit statuses ({"flow", "break",
+    "continue"}) of the paths that leave it still unwritten (a path that writes
+    first, or returns, is resolved and drops out). `after(node, name, status)`
+    follows control from `node` leaving with `status` -- the rest of the
+    compound, the enclosing if/switch/loop (a loop goes round: its header and
+    body again, then its exit) -- and answers whether `name` can be read
+    unwritten anywhere afterwards. Loops are followed once (the back edge),
+    `goto` and labels answer READ.
+
+    `rename=(start, end, old, new)` makes the analysis read the text with `old`
+    spelled `new` inside that span, so a case-scoped rename is checked on the
+    renamed program without re-parsing it.
+    """
+
+    def __init__(self, fn: Function, rename: tuple | None = None):
+        self.fn = fn
+        self.rename = rename
+        self.cache: dict = {}
+
+    def names_in(self, node: Node, name: str) -> str | None:
+        """The name to look for inside `node` (`None`: nothing to look for)."""
+        if not self.rename:
+            return name
+        s, e, old, new = self.rename
+        if node.start >= s and node.end <= e:
+            if name == new:
+                return old
+            if name == old:
+                return None
+        return name
+
+    def access(self, stmt: Node, name: str) -> str:
+        look = self.names_in(stmt, name)
+        # outside the renamed span the answer is the same for every rename:
+        # share it across instances through the function
+        shared = look == name and not (self.rename and stmt.start >= self.rename[0]
+                                       and stmt.end <= self.rename[1])
+        cache = self.fn.__dict__.setdefault("_access_cache", {}) if shared else self.cache
+        key = ("a", id(stmt), name)
+        if key in cache:
+            return cache[key]
+        fn = self.fn
+        if look is None:
+            r = "none"
+        else:
+            text = strip_comments(stmt.text(fn.text))
+            if look not in idents(text):
+                r = "none"
+            elif stmt.kind == "decl":
+                m = re.search(rf"(?<![\w.>]){re.escape(look)}\s*(\[[^\]]*\]\s*)?=(?!=)([^,;]*)", text)
+                r = "write" if m and look not in idents(m.group(2)) else \
+                    ("none" if not re.search(r"=(?!=)", text) else "read")
+            elif is_kill(fn, stmt, look):
+                r = "write"
+            else:
+                r = "read"
+        cache[key] = r
+        return r
+
+    def header(self, node: Node, name: str, skip_init: bool = False) -> tuple[str, bool]:
+        """Access of a parenthesised header: ('read'|'write'|'none', write is conditional)."""
+        look = self.names_in(node, name)
+        if look is None:
+            return "none", False
+        t = self.fn.text
+        h0, h1 = node.header
+        text = strip_comments(t[h0 + 1:h1 - 1])
+        if node.kind == "loop" and node.loop == "for":
+            parts = text.split(";")
+            if skip_init:
+                parts = parts[1:]
+            elif parts and look in idents(parts[0]):
+                m = re.match(r"^\s*([A-Za-z_]\w*)\s*=(?!=)(.*)$", parts[0], re.S)
+                if m and m.group(1) == look and look not in idents(m.group(2)):
+                    return "write", False  # `for (x = C; ...)`: later reads follow the write
+                return "read", False
+            return ("read" if any(look in idents(p) for p in parts) else "none"), False
+        if look not in idents(text):
+            return "none", False
+        m = re.search(rf"(?<![\w.>]){re.escape(look)}\s*=(?!=)", text)
+        if m and look not in idents(text[:m.start()]) and look not in idents(text[m.end():]) \
+                and "||" not in text and "?" not in text:
+            return "write", True
+        return "read", False
+
+    def node(self, node: Node, name: str):
+        key = ("n", id(node), name)
+        if key in self.cache:
+            return self.cache[key]
+        r = self._node(node, name)
+        self.cache[key] = r
+        return r
+
+    def _node(self, node: Node, name: str):
+        t = self.fn.text
+        k = node.kind
+        if k in ("simple", "decl"):
+            a = self.access(node, name)
+            return READ if a == "read" else (set() if a == "write" else {"flow"})
+        if k == "jump":
+            w = word_at(t, node.start)
+            if w == "goto":
+                return READ
+            if self.access(node, name) == "read":
+                return READ
+            return {w} if w in ("break", "continue") else set()
+        if k == "label":
+            return {"flow"} if word_at(t, node.start) in ("case", "default") else READ
+        if k == "pp":
+            return {"flow"}
+        if k == "compound":
+            return self.seq(node.children, name)
+        if k == "if":
+            ha, cond = self.header(node, name)
+            if ha == "read":
+                return READ
+            then = set() if ha == "write" else self.node(node.children[0], name)
+            if then == READ:
+                return READ
+            other = self.node(node.children[1], name) if len(node.children) > 1 else {"flow"}
+            if other == READ:
+                return READ
+            return then | other
+        if k == "switch":
+            ha, _ = self.header(node, name)
+            if ha == "read":
+                return READ
+            body = node.children[0]
+            if body.kind != "compound":
+                r = self.node(body, name)
+                return READ if r == READ else {"flow"} | {s for s in r if s != "break"}
+            regions = switch_regions(self.fn, node)
+            out = {"flow"}  # a value no case claims
+            kids = body.children
+            for reg in regions:
+                i = kids.index(reg.labels[0])
+                r = self.seq(kids[i:], name)
+                if r == READ:
+                    return READ
+                out |= {"flow" if s == "break" else s for s in r}
+            return out
+        if k == "loop":
+            return self.loop(node, name, again=False)
+        return READ
+
+    def loop(self, node: Node, name: str, again: bool):
+        """A loop entered (`again=False`: its init runs) or re-entered from its back edge.
+
+        Returns the statuses of the paths that leave the loop still unwritten.
+        A `for`/`while` header runs before the body (a zero-trip exit is always
+        possible); a `do` body runs first and its condition after it.
+        """
+        body = node.children[0]
+        if node.loop == "do":
+            r = self.node(body, name)
+            if r == READ:
+                return READ
+            ha, _ = self.header(node, name)
+            if ha == "read" and r:
+                return READ
+            return {"flow"} if r else set()
+        ha, conditional = self.header(node, name, skip_init=again)
+        if ha == "read":
+            return READ
+        if ha == "write" and not conditional:
+            return set()
+        if ha == "write":
+            return {"flow"}  # the body runs written; the exit path is not
+        r = self.node(body, name)
+        if r == READ:
+            return READ
+        return {"flow"}
+
+    def seq(self, items: list, name: str):
+        states = {"flow"}
+        for it in items:
+            if "flow" not in states:
+                break
+            r = self.node(it, name)
+            if r == READ:
+                return READ
+            states = (states - {"flow"}) | r
+        return states
+
+    def after(self, node: Node, name: str, status: str = "flow", seen: set | None = None) -> bool:
+        """May `name` be read unwritten after `node` finishes with `status`?"""
+        if status == "goto":
+            return True
+        seen = set() if seen is None else seen
+        key = (id(node), status)
+        if key in seen:
+            return False
+        seen.add(key)
+        parent = node.parent
+        if parent is None:
+            return False
+        if parent.kind == "compound":
+            if status != "flow":
+                return self.after(parent, name, status, seen)
+            idx = parent.children.index(node)
+            r = self.seq(parent.children[idx + 1:], name)
+            if r == READ:
+                return True
+            return any(self.after(parent, name, s, seen) for s in r)
+        if parent.kind == "if":
+            return self.after(parent, name, status, seen)
+        if parent.kind == "switch":
+            return self.after(parent, name, "flow" if status == "break" else status, seen)
+        if parent.kind == "loop":
+            if status == "break":
+                return self.after(parent, name, "flow", seen)
+            # the back edge: the header and the body once more, then the exit
+            if self.loop(parent, name, again=True) == READ:
+                return True
+            return self.after(parent, name, "flow", seen)
+        return True
+
+
+def address_taken(fn: Function, name: str) -> bool:
+    return bool(re.search(rf"&\s*{re.escape(name)}\b", strip_comments(fn.body.text(fn.text))))
+
+
+def region_mentions(fn: Function, region: Region, name: str) -> bool:
+    return any(mentions(fn, s, name) for s in region.stmts)
+
+
+def rename_verdict(fn: Function, region: Region, old: str, new: str) -> str | None:
+    """Is `old` -> `new` inside `region` behaviour-preserving? None = yes, else the reason.
+
+    Checked on the renamed program: `new` is written before read inside the
+    region (no value of `old` flows in), and after the region -- every exit it
+    has, the loop back edge included -- neither `new` (its clobbered value) nor
+    `old` (no longer written here) is read before being written again.
+    """
+    if not region.stmts or not region_mentions(fn, region, old):
+        return "old not mentioned"
+    if region_mentions(fn, region, new):
+        return "new mentioned in the region"
+    if address_taken(fn, old) or address_taken(fn, new):
+        return "address taken"
+    exits = region_exit_statuses(fn, region)
+    if "goto" in exits:
+        return "goto"
+    df = Dataflow(fn, (region.start, region.end, old, new))
+    if df.seq(region.stmts, new) == READ:
+        return f"{old} read before written in the region"
+    last = region.stmts[-1]
+    for status in exits or {"return"}:
+        if status == "return":
+            continue
+        if df.after(last, new, status):
+            return f"{new} live after the region ({status})"
+        if df.after(last, old, status):
+            return f"{old} live after the region ({status})"
+    return None
+
+
+# ---------------------------------------------------------------- declared types
+
+TYPE_BITS = {"s8": (8, True), "u8": (8, False), "s16": (16, True), "u16": (16, False),
+             "s32": (32, True), "u32": (32, False), "int": (32, True), "unsigned": (32, False),
+             "unsigned int": (32, False), "char": (8, True), "unsigned char": (8, False),
+             "short": (16, True), "unsigned short": (16, False), "long": (32, True)}
+
+GLOBAL_DECL_RE = re.compile(
+    r"^[ \t]*(?:extern\s+)?(?:static\s+)?(?:(?:const|volatile)\s+)*((?:struct|union|enum)\s+)?"
+    r"([A-Za-z_]\w*)\s+(\**)\s*([A-Za-z_]\w*)\s*((?:\[[^\]]*\]\s*)*)(?:;|=)", re.M)
+PROTO_RE = re.compile(
+    r"^[ \t]*(?:extern\s+)?(?:static\s+)?([A-Za-z_]\w*(?:\s+\*+|\s+)?)\s*([A-Za-z_]\w*)\s*\(([^()]*)\)\s*;", re.M)
+
+_DECLS: dict = {}
+_DECLS_ROOT: list = [None]
+
+
+def repo_declarations() -> tuple[dict, dict]:
+    """(global name -> type info, function name -> parameter list or None for K&R) from include/."""
+    if _DECLS_ROOT[0] != ROOT:
+        _DECLS.clear()
+        _DECLS_ROOT[0] = ROOT
+        globs, protos = {}, {}
+        for h in sorted((ROOT / "include").rglob("*.h")) if (ROOT / "include").is_dir() else []:
+            try:
+                scan_declarations(h.read_text(errors="replace"), globs, protos)
+            except Exception:
+                continue
+        _DECLS.update(globals=globs, protos=protos)
+    return _DECLS["globals"], _DECLS["protos"]
+
+
+def scan_declarations(text: str, globs: dict, protos: dict) -> None:
+    text = strip_comments(text)
+    for m in GLOBAL_DECL_RE.finditer(text):
+        base, stars, name, arr = m.group(2), m.group(3), m.group(4), m.group(5)
+        if base in KEYWORDS and base not in ("int", "char", "short", "long", "float", "double",
+                                             "unsigned", "signed"):
+            continue
+        globs.setdefault(name, {"type": base, "ptr": len(stars), "array": bool(arr.strip())})
+    for m in PROTO_RE.finditer(text):
+        name, params = m.group(2), m.group(3).strip()
+        if name in KEYWORDS:
+            continue
+        if params in ("", "void") and params == "":
+            protos.setdefault(name, None)
+        elif params == "void":
+            protos.setdefault(name, [])
+        else:
+            protos.setdefault(name, [p.strip() for p in split_top(params)])
+
+
+def declarations_for(fn: Function) -> tuple[dict, dict]:
+    """Global and prototype tables: the repository's headers, then the TU itself."""
+    globs, protos = repo_declarations()
+    globs, protos = dict(globs), dict(protos)
+    tu_g, tu_p = {}, {}
+    scan_declarations(fn.text, tu_g, tu_p)
+    globs.update(tu_g)
+    protos.update(tu_p)
+    return globs, protos
+
+
+def param_type(params: list | None, index: int) -> str | None:
+    """The bare declared type of parameter `index` (None: unknown or K&R)."""
+    if params is None or index >= len(params):
+        return None
+    p = params[index]
+    if "*" in p or "[" in p:
+        return "pointer"
+    words = [w for w in re.split(r"\s+", p.strip()) if w not in ("const", "volatile", "register")]
+    if len(words) >= 2 and re.match(r"[A-Za-z_]\w*$", words[-1]) and words[-1] not in INT_TYPES \
+            and words[-1] not in FLOAT_TYPES and words[-1] != "void":
+        words = words[:-1]  # a parameter name
+    return " ".join(words)
+
+
+def operand_is_float(fn: Function, text: str, globs: dict, structs: dict) -> bool | None:
+    """Is the operand expression floating? None when its type is unknown."""
+    s = text.strip()
+    while s.startswith("(") and s.endswith(")"):
+        try:
+            if match_close(s, 0) == len(s):
+                s = s[1:-1].strip()
+                continue
+        except ValueError:
+            pass
+        break
+    m = re.match(r"^\(\s*(f32|f64|float|double)\s*\)", s)
+    if m:
+        return True
+    m = re.match(r"^\(\s*(?:u8|s8|u16|s16|u32|s32|int|unsigned|char|short|long)\s*\)", s)
+    if m:
+        return False
+    m = re.match(r"^\*\s*\(\s*\(\s*([A-Za-z_]\w*)\s*\*\s*\)", s)  # *((T *) addr): a T
+    if m:
+        return m.group(1) in FLOAT_TYPES
+    if re.match(r"^-?(?:\d+\.\d*|\.\d+|\d+[eE][-+]?\d+|\d+\.?\d*[fF])$", s):
+        return True
+    if re.match(r"^-?(?:0x[0-9A-Fa-f]+|\d+)[uUlL]*$", s):
+        return False
+    if re.search(r"[|&^~%]|<<|>>", re.sub(r"->|&&|\|\|", "", s)):
+        return False  # a bitwise or remainder operator only applies to integers
+    if re.search(r"[-+*/<>=!]", re.sub(r"->", "", s)):
+        return None  # a compound expression: not classified
+    ty = expr_type(fn, s, structs)
+    if ty is None:
+        m = IDENT_RE.match(s)
+        if m and m.group(0) in globs and re.sub(r"\s+", "", s) == m.group(0):
+            ty = globs[m.group(0)]
+    if ty is None:
+        return None
+    if ty.get("ptr") or ty.get("array"):
+        return False
+    return bare_type(ty["type"]) in FLOAT_TYPES
+
+
+INT_LITERAL_RE = re.compile(r"(?<![\w.])(0[xX][0-9A-Fa-f]+|\d+)([uU]?[lL]{0,2}|[lL]{1,2}[uU])(?![\w.])")
+SAFE_LEFT = ("==", "!=", "&=", "|=", "^=", "<<=", ">>=", "<<", ">>", "&", "|", "^")
+CHECK_LEFT = {"<=": "relational", ">=": "relational", "<": "relational", ">": "relational",
+              "+": "arithmetic", "-": "arithmetic", "*": "arithmetic", "/": "arithmetic",
+              "%": "arithmetic", "+=": "arithmetic", "-=": "arithmetic", "*=": "arithmetic",
+              "/=": "arithmetic", "%=": "arithmetic", "=": "assignment", "(": "call argument",
+              ",": "call argument", "[": "subscript", "?": "conditional", ":": "conditional",
+              "&&": "logical", "||": "logical", "!": "logical", "return": "return"}
+
+
+def other_operand(text: str, op_end: int, side: str) -> str:
+    """The operand text next to an operator: left of `op_end` or right of it."""
+    if side == "left":
+        s = text[:op_end].rstrip()
+        if s.endswith(")"):
+            depth, i = 0, len(s) - 1
+            while i >= 0:
+                if s[i] == ")":
+                    depth += 1
+                elif s[i] == "(":
+                    depth -= 1
+                    if depth == 0:
+                        break
+                i -= 1
+            j = i
+            while j > 0 and (s[j - 1].isalnum() or s[j - 1] in "_. \t"):
+                j -= 1
+            k = len(s[:j].rstrip())
+            if k and s[k - 1] in "*~!" and not (k > 1 and (s[k - 2].isalnum() or s[k - 2] in ")]_")):
+                j = k - 1  # a unary operator on the parenthesised operand (a dereference)
+            return s[j:]
+        m = re.search(r"(?:\(\s*\w+\s*\*?\s*\)\s*)?[\w.\->\[\]]+$", s)
+        return m.group(0) if m else ""
+    s = text[op_end:].lstrip()
+    m = re.match(r"(?:\(\s*\w+\s*\*?\s*\)\s*)?(?:\(|[\w.\->\[\]]+)", s)
+    if not m:
+        return ""
+    if m.group(0).endswith("("):
+        try:
+            return s[:match_close(s, m.end() - 1)]
+        except ValueError:
+            return ""
+    return m.group(0)
+
+
+def literal_site(text: str, start: int, end: int) -> tuple[str, str, str, int]:
+    """Classify a literal's site: (verdict, reason, other operand text, operator end).
+
+    verdict: 'safe' (==, !=, &, |, ^, their assignments, case labels, shift
+    counts), 'check' with the reason (relational, arithmetic, call argument,
+    assignment, ...). `start:end` spans the spelling unit (unary ~/- included).
+    """
+    left = text[:start].rstrip()
+    right = text[end:].lstrip()
+    if re.search(r"\bcase$", left):
+        return "safe", "case label", "", 0
+    for op in sorted(SAFE_LEFT, key=len, reverse=True):
+        if left.endswith(op):
+            if op in ("&", "|") and left.endswith(op * 2):
+                return "check", "logical", "", 0
+            if op in ("<<", ">>", "<<=", ">>="):
+                return "safe", "shift count", "", 0
+            return "safe", f"left of {op}", other_operand(text, len(left) - len(op), "left"), 0
+    for op in sorted(CHECK_LEFT, key=len, reverse=True):
+        if left.endswith(op) and not (op in ("<", ">") and left.endswith(op * 2)):
+            # a literal that is the LEFT operand of a safe operator on its right
+            for rop in ("==", "!=", "&", "|", "^"):
+                if right.startswith(rop) and not right.startswith(rop * 2) and not right.startswith(rop + "="):
+                    return "safe", f"right of {rop}", other_operand(text, end + text[end:].index(rop) + len(rop), "right"), 0
+            if right.startswith("<<") or right.startswith(">>"):
+                return "check", "shifted operand", "", 0
+            return "check", CHECK_LEFT[op], "", 0
+    for rop in ("==", "!=", "&", "|", "^"):
+        if right.startswith(rop) and not right.startswith(rop * 2) and not right.startswith(rop + "="):
+            return "safe", f"right of {rop}", other_operand(text, end + text[end:].index(rop) + len(rop), "right"), 0
+    return "check", "unclassified site", "", 0
+
+
+def literal_spellings(unit: str) -> list[str]:
+    """Bit-identical 32-bit spellings of one literal unit (`0xFF`, `~0xE00000`, `-1`, `1U`)."""
+    m = re.match(r"^\s*([~-]?)\s*(0[xX][0-9A-Fa-f]+|\d+)([uUlL]*)\s*$", unit)
+    if not m:
+        return []
+    sign, lit, suffix = m.groups()
+    v = int(lit, 0)
+    if v >= 1 << 32:
+        return []
+    if sign == "~":
+        v = ~v & 0xFFFFFFFF
+    elif sign == "-":
+        v = -v & 0xFFFFFFFF
+    is_hex = lit.lower().startswith("0x")
+    out = set()
+    plain = f"0x{v:X}" if is_hex or v >= 1 << 31 else str(v)
+    out.add(plain)
+    out.add(plain + "U")
+    comp = ~v & 0xFFFFFFFF
+    if bin(comp).count("1") <= bin(v).count("1") or v >= 1 << 31:
+        out.add(f"~0x{comp:X}")
+        out.add(f"~0x{comp:X}U")
+    if v >= 1 << 31:
+        out.add(f"-0x{(-v) & 0xFFFFFFFF:X}" if is_hex else f"-{(-v) & 0xFFFFFFFF}")
+    norm = re.sub(r"\s+", "", unit).upper().replace("0X", "0x").rstrip("L")
+    return sorted(s for s in out if s.upper().replace("0X", "0x") != norm)
+
+
+def literal_units(text: str):
+    """(start, end, unit) of every integer literal with its unary ~/- prefix, strings skipped."""
+    text = re.sub(r'"(?:\\.|[^"\\])*"', lambda m: " " * len(m.group(0)), text)
+    text = re.sub(r"'(?:\\.|[^'\\])+'", lambda m: " " * len(m.group(0)), text)
+    for m in INT_LITERAL_RE.finditer(text):
+        s, e = m.start(), m.end()
+        if re.match(r"[eE.]", text[e:e + 1] or " ") or text[e:e + 1] in ("f", "F"):
+            continue
+        left = text[:s].rstrip()
+        if left.endswith("~") or left.endswith("-"):
+            before = left[:-1].rstrip()
+            if left.endswith("-") and (before[-1:].isalnum() or before[-1:] in ")]_"):
+                yield s, e, text[s:e]
+                continue
+            if left.endswith("-") and before.endswith("-"):
+                yield s, e, text[s:e]
+                continue
+            yield len(left) - 1, e, text[len(left) - 1:e]
+            continue
+        yield s, e, text[s:e]
+
+
+def lever_literal_type(fn, ctx):
+    """Integer literal spellings (N <-> NU, M <-> ~M, -N) at value-safe sites only."""
+    out = []
+    t = fn.text
+    globs = ctx.get("globals") or {}
+    for s in ctx["stmts"] + ctx.get("headers", []):
+        line = fn.line_of(s.start)
+        if not ctx["in_lines"](line):
+            continue
+        body = t[s.start:s.end]
+        clean = strip_comments(body)
+        for u0, u1, unit in literal_units(clean):
+            verdict, reason, other, _ = literal_site(clean, u0, u1)
+            if verdict != "safe":
+                continue
+            sem = "safe"
+            if other:
+                isf = operand_is_float(fn, other, globs, ctx["structs"])
+                if isf:
+                    continue
+                if isf is None:
+                    sem = "check:operand type unknown"
+            for sp in literal_spellings(unit):
+                out.append(edit_cell(fn, "literal_type", f"{unit.strip()} -> {sp} ({reason})",
+                                     [(s.start + u0, s.start + u1, sp)], sem,
+                                     region_name_at(fn, s), line))
+    return out
+
+
+def lever_carrier_rename(fn, ctx):
+    """Case-scoped rename of a local to another declared local proven dead across the region."""
+    out = []
+    t = fn.text
+    for region in regions_cached(fn):
+        if not region.stmts or not ctx["region_selected"](region):
+            continue
+        names = set()
+        for s in region.stmts:
+            names.update(idents(s.text(t)))
+        olds = [n for n in names if n in fn.locals]
+        for old in sorted(olds):
+            io = fn.locals[old]
+            if category(io) not in ("int", "pointer", "float"):
+                continue
+            enclosing = {id(a) for a in ancestors(region.switch)} | {id(region.switch)}
+            for new, info in fn.locals.items():
+                if new == old or new in names or category(info) != category(io) \
+                        or info["ptr"] != io["ptr"] or info.get("array") or io.get("array"):
+                    continue
+                if id(info["decl"].parent) not in enclosing:
+                    continue  # declared in a block that does not enclose the region
+                if category(io) != "int" and bare_type(info["type"]) != bare_type(io["type"]):
+                    continue
+                why = rename_verdict(fn, region, old, new)
+                if why:
+                    continue
+                sem = "safe" if bare_type(info["type"]) == bare_type(io["type"]) \
+                    else f"check:carrier width {io['type']} -> {info['type']}"
+                edits = []
+                for s in region.stmts:
+                    body = s.text(t)
+                    nb = merge_locals_tool.rename_str(body, old, new)
+                    if nb != body:
+                        edits.append((s.start, s.end, nb))
+                if edits:
+                    out.append(edit_cell(fn, "carrier_rename", f"{old} -> {new} in {region.name}",
+                                         edits, sem, region.name, fn.line_of(region.start)))
+    return out
+
+
+MASK_RHS_RE = re.compile(r"^\s*(.*?)\s*&\s*(0[xX][0-9A-Fa-f]+|\d+)[uU]?\s*$", re.S)
+SHIFT_RHS_RE = re.compile(r"^\s*(.*?)\s*<<\s*(\d+)\s*$", re.S)
+
+
+def unparen(s: str) -> str:
+    s = s.strip()
+    while s.startswith("(") and s.endswith(")"):
+        try:
+            if match_close(s, 0) != len(s):
+                break
+        except ValueError:
+            break
+        s = s[1:-1].strip()
+    return s
+
+
+def carrier_bits(info: dict) -> tuple[int, bool] | None:
+    if info.get("ptr") or info.get("array"):
+        return None
+    return TYPE_BITS.get(bare_type(info["type"]))
+
+
+def mask_move_sem(info: dict, mask: int) -> str:
+    bits = carrier_bits(info)
+    if bits is None:
+        return "check:carrier type unknown"
+    n, signed = bits
+    if n >= 32:
+        return "safe"
+    if mask < (1 << (n - 1 if signed else n)):
+        return "safe"
+    return f"check:mask exceeds the {info['type']} carrier"
+
+
+def call_arguments(text: str):
+    """(callee, [(arg_start, arg_end)]) for a statement that is one call."""
+    m = re.match(r"^\s*(?:[\w.\->\[\]]+\s*=\s*)?([A-Za-z_]\w*)\s*\(", text)
+    if not m or m.group(1) in KEYWORDS:
+        return None
+    p0 = m.end() - 1
+    try:
+        p1 = match_close(text, p0)
+    except ValueError:
+        return None
+    if text[p1:].strip() != ";":
+        return None
+    args, depth, cur = [], 0, p0 + 1
+    i = p0 + 1
+    while i < p1 - 1:
+        c = text[i]
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            depth -= 1
+        elif c == "," and depth == 0:
+            args.append((cur, i))
+            cur = i + 1
+        i += 1
+    if p1 - 1 > p0 + 1:
+        args.append((cur, p1 - 1))
+    spans = []
+    for a0, a1 in args:
+        s = text[a0:a1]
+        lead = len(s) - len(s.lstrip())
+        trail = len(s) - len(s.rstrip())
+        spans.append((a0 + lead, a1 - trail))
+    return m.group(1), spans
+
+
+def single_use_call(fn: Function, comp: Node, idx: int, name: str):
+    """The one later statement in `comp` reading `name`, when it is a call and nothing redefines first."""
+    use = None
+    for later in comp.children[idx + 1:]:
+        if later.kind in ("label", "jump"):
+            break  # the next case, or the end of this one's flow
+        if not mentions(fn, later, name):
+            continue
+        if later.kind != "simple" or use is not None:
+            return None
+        use = later
+    if use is None:
+        return None
+    body = strip_comments(use.text(fn.text))
+    if len(re.findall(rf"(?<![\w.>]){re.escape(name)}\b", body)) != 1:
+        return None
+    return use
+
+
+def lever_mask_shift(fn, ctx):
+    """`x = (E) & M; f(x)` <-> `x = E; f(x & M)`, likewise `<< k`; introduced or dropped when the callee's parameter type makes them value-identical."""
+    out = []
+    t = fn.text
+    _, protos = declarations_for(fn)
+    for comp in walk(fn.body):
+        if comp.kind != "compound":
+            continue
+        for i, s in enumerate(comp.children):
+            if s.kind != "simple" or not ctx["in_lines"](fn.line_of(s.start)):
+                continue
+            m = ASSIGN_RE.match(strip_comments(s.text(t)))
+            if not m or m.group(1) not in fn.locals:
+                continue
+            x, rhs = m.group(1), m.group(2).strip()
+            if re.search(r"[A-Za-z_]\w*\s*\(", rhs.replace("sizeof", "")):
+                continue  # a call in the carrier's definition: leave it
+            use = single_use_call(fn, comp, i, x)
+            if use is None:
+                continue
+            ubody = use.text(t)
+            ca = call_arguments(strip_comments(ubody))
+            if not ca:
+                continue
+            callee, spans = ca
+            arg_index = next((k for k, (a0, a1) in enumerate(spans)
+                              if re.fullmatch(rf"\(?\s*{re.escape(x)}\s*\)?(?:\s*(?:&|<<)\s*\S+)?", strip_comments(ubody)[a0:a1].strip())), None)
+            if arg_index is None:
+                continue
+            a0, a1 = spans[arg_index]
+            arg = strip_comments(ubody)[a0:a1].strip()
+            if strip_comments(ubody)[a0:a1] != ubody[a0:a1]:
+                continue  # a comment inside the argument: leave it
+            info = fn.locals[x]
+            ptype = param_type(protos.get(callee, None) if callee in protos else None, arg_index)
+            region = region_name_at(fn, s)
+            line = fn.line_of(s.start)
+            m2 = re.match(rf"\s*{re.escape(x)}\s*=", s.text(t))
+            if not m2:
+                continue
+            rhs_span = (s.start + m2.end(), s.end - 1)
+            mm = MASK_RHS_RE.match(rhs)
+            sm = SHIFT_RHS_RE.match(rhs)
+            am = re.fullmatch(rf"{re.escape(x)}\s*&\s*(0[xX][0-9A-Fa-f]+|\d+)[uU]?", arg)
+            asft = re.fullmatch(rf"{re.escape(x)}\s*<<\s*(\d+)", arg)
+            if mm and arg == x:
+                inner, mask = unparen(mm.group(1)), mm.group(2)
+                sem = mask_move_sem(info, int(mask, 0))
+                out.append(edit_cell(fn, "mask_shift", f"{x} & {mask}: assignment -> call ({region})",
+                                     [(rhs_span[0], rhs_span[1], f" {inner}"),
+                                      (use.start + a0, use.start + a1, f"{x} & {mask}")], sem, region, line))
+                if ptype in ("u8", "u16", "unsigned char", "unsigned short") and \
+                        int(mask, 0) == (1 << TYPE_BITS[ptype][0]) - 1:
+                    out.append(edit_cell(fn, "mask_shift", f"{x} & {mask} dropped: {callee} takes {ptype} ({region})",
+                                         [(rhs_span[0], rhs_span[1], f" {inner}")], "safe", region, line))
+            elif am and not mm:
+                mask = am.group(1)
+                sem = mask_move_sem(info, int(mask, 0))
+                out.append(edit_cell(fn, "mask_shift", f"{x} & {mask}: call -> assignment ({region})",
+                                     [(rhs_span[0], rhs_span[1], f" ({rhs}) & {mask}"),
+                                      (use.start + a0, use.start + a1, x)], sem, region, line))
+            elif sm and arg == x:
+                inner, k = unparen(sm.group(1)), sm.group(2)
+                bits = carrier_bits(info)
+                sem = "safe" if bits and bits[0] >= 32 else f"check:shift in a {info['type']} carrier"
+                out.append(edit_cell(fn, "mask_shift", f"{x} << {k}: assignment -> call ({region})",
+                                     [(rhs_span[0], rhs_span[1], f" {inner}"),
+                                      (use.start + a0, use.start + a1, f"{x} << {k}")], sem, region, line))
+            elif asft and not sm:
+                k = asft.group(1)
+                bits = carrier_bits(info)
+                sem = "safe" if bits and bits[0] >= 32 else f"check:shift in a {info['type']} carrier"
+                out.append(edit_cell(fn, "mask_shift", f"{x} << {k}: call -> assignment ({region})",
+                                     [(rhs_span[0], rhs_span[1], f" ({rhs}) << {k}"),
+                                      (use.start + a0, use.start + a1, x)], sem, region, line))
+            if arg == x and not mm and not sm and re.search(r"->|\[|\*\s*\(", rhs):
+                # introduce a byte/halfword mask: value-identical when the callee narrows to it
+                for mask, width in (("0xFF", 8), ("0xFFFF", 16)):
+                    if ptype in TYPE_BITS and TYPE_BITS[ptype][0] == width and not TYPE_BITS[ptype][1]:
+                        sem = "safe"
+                    elif ptype is None:
+                        sem = f"check:{callee} has no prototype"
+                    else:
+                        continue
+                    out.append(edit_cell(fn, "mask_shift", f"{x} & {mask} introduced in the assignment ({region})",
+                                         [(rhs_span[0], rhs_span[1], f" {rhs} & {mask}")], sem, region, line))
+                    out.append(edit_cell(fn, "mask_shift", f"{x} & {mask} introduced at the call ({region})",
+                                         [(use.start + a0, use.start + a1, f"{x} & {mask}")], sem, region, line))
+    return out
+
+
+def is_stream_read(fn: Function, s: Node) -> str | None:
+    """The local a statement `x = <load>;` assigns, when the RHS loads memory without a call or store."""
+    if s.kind != "simple":
+        return None
+    body = strip_comments(s.text(fn.text))
+    m = ASSIGN_RE.match(body)
+    if not m or m.group(1) not in fn.locals:
+        return None
+    rhs = m.group(2)
+    if re.search(r"[A-Za-z_]\w*\s*\(", rhs.replace("sizeof", "")):
+        return None  # a call (a cast is `(type *)`, never `ident(`)
+    if "volatile" in rhs or "=" in re.sub(r"==|!=|<=|>=", "", rhs):
+        return None
+    if not re.search(r"->|\[|\*\s*\(", rhs):
+        return None
+    return m.group(1)
+
+
+def lever_read_order(fn, ctx):
+    """Permutations of a run of adjacent independent stream reads (loads, no store between)."""
+    out = []
+    t = fn.text
+    for comp in walk(fn.body):
+        if comp.kind != "compound":
+            continue
+        kids = comp.children
+        i = comp.ndecls
+        while i < len(kids):
+            run = []
+            written: set = set()
+            j = i
+            while j < len(kids):
+                x = is_stream_read(fn, kids[j])
+                if x is None or x in written:
+                    break
+                reads = set(idents(strip_comments(kids[j].text(t)).split("=", 1)[1]))
+                if reads & written or any(x in set(idents(strip_comments(r.text(t)).split("=", 1)[1])) for r in run):
+                    break
+                written.add(x)
+                run.append(kids[j])
+                j += 1
+            if len(run) >= 2 and ctx["in_lines"](fn.line_of(run[0].start)):
+                n = len(run)
+                orders = []
+                if n <= 4:
+                    orders = [p for p in itertools.permutations(range(n)) if list(p) != list(range(n))]
+                else:
+                    for a in range(n):
+                        for b in range(a + 1, n):
+                            p = list(range(n))
+                            p[a], p[b] = p[b], p[a]
+                            orders.append(tuple(p))
+                        if a:
+                            orders.append(tuple([a] + [k for k in range(n) if k != a]))
+                        if a != n - 1:
+                            orders.append(tuple([k for k in range(n) if k != a] + [a]))
+                texts = [s.text(t) for s in run]
+                seen = set()
+                for p in orders:
+                    if p in seen:
+                        continue
+                    seen.add(p)
+                    edits = [(run[k].start, run[k].end, texts[p[k]]) for k in range(n) if p[k] != k]
+                    out.append(edit_cell(fn, "read_order", "reads in order " + ",".join(str(k) for k in p),
+                                         edits, "safe", region_name_at(fn, run[0]), fn.line_of(run[0].start)))
+            i = j if j > i else i + 1
+    return out
+
+
+SOURCE_LEVERS = ("literal_type", "carrier_rename", "reorder", "mask_shift", "read_order")
+
 LEVERS = {
     "dead_read": lever_dead_read,
     "dead_masked": lever_dead_masked,
@@ -1235,7 +2299,39 @@ LEVERS = {
     "reorder": lever_reorder,
     "loop_move": lever_loop_move,
     "const_iv": lever_const_iv,
+    "literal_type": lever_literal_type,
+    "carrier_rename": lever_carrier_rename,
+    "mask_shift": lever_mask_shift,
+    "read_order": lever_read_order,
 }
+
+
+def header_nodes(fn: Function) -> list[Node]:
+    """Unlinked pseudo-statements for every if/loop/switch header and case label."""
+    out = []
+    for node in walk(fn.body):
+        if node.header:
+            out.append(Node("hdr", node.header[0], node.header[1], parent=node.parent))
+        elif node.kind == "label":
+            out.append(node)
+    return out
+
+
+def parse_case_filter(specs: list[str], fn: Function) -> set[int]:
+    """Source lines of the switch regions whose labels name one of `specs` (`0x22`, `default`)."""
+    want = {re.sub(r"\s+", "", s).lower().replace("case", "") for s in specs}
+    lines: set[int] = set()
+    found = set()
+    for r in regions_cached(fn):
+        labels = {re.sub(r"\s+", "", label_name(fn, l)).lower().replace("case", "") for l in r.labels}
+        hit = labels & want
+        if hit:
+            found |= hit
+            lines.update(range(fn.line_of(r.start), fn.line_of(r.end) + 1))
+    missing = want - found
+    if missing:
+        raise SystemExit(f"--case {sorted(missing)}: no switch region with that label in {fn.symbol}")
+    return lines
 
 
 def generate(fn: Function, levers: list[str], lines: set[int] | None, own_line: bool = False,
@@ -1247,9 +2343,16 @@ def generate(fn: Function, levers: list[str], lines: set[int] | None, own_line: 
     mentioned = set()
     for s in stmts:
         mentioned.update(idents(s.text(fn.text)))
+    def region_selected(region: Region) -> bool:
+        if not lines:
+            return True
+        return bool(lines & set(range(fn.line_of(region.start), fn.line_of(region.end) + 1)))
+
     ctx = {"positions": pos, "stmts": stmts, "in_lines": in_lines, "own_line": own_line,
            "window": window, "max_reads": max_reads, "mentioned": mentioned,
-           "structs": structs_for(fn)}
+           "structs": structs_for(fn), "region_selected": region_selected,
+           "headers": header_nodes(fn) if any(l == "literal_type" for l in levers) else [],
+           "globals": declarations_for(fn)[0] if any(l == "literal_type" for l in levers) else {}}
     seen = {hashlib.sha1(fn.text.encode()).hexdigest()}
     cells = []
     for name in levers:
@@ -1285,14 +2388,139 @@ def interleave(cells: list[Cell], limit: int) -> list[Cell]:
 
 # ---------------------------------------------------------------- oracle
 
-def parse_oracle(spec: str) -> list[tuple[str, int, str]]:
+class OracleForce(typing.NamedTuple):
+    phase: str
+    web: int
+    want: str            # cK | s | n | y | y<save>
+    pricing: int | None = None
+
+    @property
+    def env(self) -> str:
+        return f"{self.phase}:w{self.web}{'' if self.pricing is None else '.' + str(self.pricing)}={self.want}"
+
+    @property
+    def classic(self) -> bool:
+        """A colour or split force the stock-grammar reader (force_lattice) accepts."""
+        return self.pricing is None and self.want[0] in "cs"
+
+
+def parse_oracle(spec: str) -> list[OracleForce]:
+    """`p1:wN=cK|s` (profile grammar) and the v3 verdict forces `p1:wN[.K]=y[save]|n`."""
     out = []
     for f in [s.strip() for s in spec.split(",") if s.strip()]:
-        m = FORCE_RE.match(f)
+        m = ORACLE_RE.match(f)
         if not m:
-            raise SystemExit(f"oracle force {f!r} is not p1:wN=cK or p1:wN=s")
-        out.append((f"p{m.group(1)}", int(m.group(2)), m.group(3)))
+            raise SystemExit(f"oracle force {f!r} is not p1:wN[.K]=cK|s|y[save]|n")
+        out.append(OracleForce(m.group(1), int(m.group(2)), m.group(4),
+                               None if m.group(3) is None else int(m.group(3))))
     return out
+
+
+class WeightForce(typing.NamedTuple):
+    phase: str
+    web: int
+    bb: int
+    delta: int
+    pricing: int | None = None
+
+    @property
+    def env(self) -> str:
+        return f"{self.phase}:w{self.web}{'' if self.pricing is None else '.' + str(self.pricing)}:bb{self.bb}={self.delta:+d}"
+
+
+class GrowForce(typing.NamedTuple):
+    phase: str
+    web: int
+    refuse: tuple | None  # None: seed only (every block refused)
+
+    @property
+    def env(self) -> str:
+        return f"{self.phase}:w{self.web}=" + ("seed" if self.refuse is None
+                                               else "".join(f"-bb{b}" for b in self.refuse))
+
+
+def parse_weight(spec: str) -> list[WeightForce]:
+    """CDX_WEIGHT entries `p1:wN[.K]:bbB=+k`: k more counted occurrences of web N in block B."""
+    out = []
+    for f in [s.strip() for s in spec.split(",") if s.strip()]:
+        m = WEIGHT_RE.match(f)
+        if not m:
+            raise SystemExit(f"weight {f!r} is not p1:wN[.K]:bbB=+k")
+        out.append(WeightForce(m.group(1), int(m.group(2)), int(m.group(4)), int(m.group(5)),
+                               None if m.group(3) is None else int(m.group(3))))
+    return out
+
+
+def parse_grow(spec: str) -> list[GrowForce]:
+    """CDX_GROW entries `p1:wN=seed` or `p1:wN=-bbA-bbB`: blocks split() may not grow web N into."""
+    out = []
+    for f in [s.strip() for s in spec.split(",") if s.strip()]:
+        m = GROW_RE.match(f)
+        if not m:
+            raise SystemExit(f"grow {f!r} is not p1:wN=seed or p1:wN=-bbA-bbB")
+        blocks = m.group(3)
+        out.append(GrowForce(m.group(1), int(m.group(2)),
+                             None if blocks == "seed" else tuple(int(b) for b in blocks.split("-bb")[1:])))
+    return out
+
+
+FORCE_RECORD_RE = re.compile(r"^\[CDX\]\s+(force_verdict|force_weight|force_grow)\s+(.*)$")
+
+
+def force_records(trace: str) -> list[tuple[str, dict]]:
+    """The always-printed v3 force records, as (kind, fields); a bare word (`refused`) is a flag."""
+    out = []
+    for line in trace.splitlines():
+        m = FORCE_RECORD_RE.match(line.strip())
+        if not m:
+            continue
+        fields = dict(re.findall(r"(\w+)=([^\s]+)", m.group(2)))
+        for flag in re.findall(r"(?:^|\s)([a-z]+)(?=\s|$)", m.group(2)):
+            fields.setdefault(flag, True)
+        out.append((m.group(1), fields))
+    return out
+
+
+def v3_force_acceptance(trace: str, proc: int, forces: list, weights: list, grows: list) -> str | None:
+    """Require the v3 farm's own record for every verdict, weight and grow force.
+
+    A verdict force needs a `force_verdict` record for its web (and pricing,
+    when named) with no `declined`; a weight force a `force_weight` record for
+    its web and block; a grow force at least one `force_grow ... refused`
+    record for its web. A force the pass never saw leaves no record, which is
+    not acceptance.
+    """
+    recs = [(k, f) for k, f in force_records(trace) if f.get("proc") == str(proc)]
+    for force in forces:
+        if force.classic:
+            continue
+        rows = [f for k, f in recs if k == "force_verdict" and f.get("phase") == force.phase
+                and f.get("web") == str(force.web)]
+        if force.pricing is not None:
+            rows = [f for f in rows if f.get("pricing") in (None, str(force.pricing))]
+        if not rows:
+            return f"{force.env}: no force_verdict record for web {force.web}"
+        want = force.want[0]
+        if any(f.get("force") != want for f in rows):
+            return f"{force.env}: force_verdict records disagree with {want}"
+        declined = [f for f in rows if f.get("declined")]
+        if declined:
+            return f"{force.env}: declined ({declined[0]['declined']})"
+    for w in weights:
+        rows = [f for k, f in recs if k == "force_weight" and f.get("phase") == w.phase
+                and f.get("web") == str(w.web) and f.get("bb") == str(w.bb)]
+        if w.pricing is not None:
+            rows = [f for f in rows if f.get("pricing") in (None, str(w.pricing))]
+        if not rows:
+            return f"{w.env}: no force_weight record for web {w.web} block {w.bb}"
+    for g in grows:
+        rows = [f for k, f in recs if k == "force_grow" and f.get("phase") == g.phase
+                and f.get("web") == str(g.web) and f.get("refused")]
+        if not rows:
+            return f"{g.env}: no force_grow record for web {g.web}"
+        if g.refuse is not None and not {f.get("bb") for f in rows} & {str(b) for b in g.refuse}:
+            return f"{g.env}: force_grow refused none of the named blocks"
+    return None
 
 
 def decisions(text: str, proc: int) -> tuple[list[dict], dict[int, list[int]]]:
@@ -1326,15 +2554,56 @@ def oracle_targets(forced: list[dict], oracle) -> list[dict]:
     piece's decision); all of them are part of the state to reproduce.
     """
     targets = []
-    for phase, web, want in oracle:
-        rows = [d for d in forced if d["phase"] == phase and d["web"] == web
-                and d["forced"] == "-1"] or \
-               [d for d in forced if d["phase"] == phase and d["web"] == web]
+    for force in oracle:
+        if not isinstance(force, OracleForce):
+            force = OracleForce(*force)  # the profile-grammar triple (phase, web, want)
+        phase, web, want = force.phase, force.web, force.want
+        spec = force.env
+        rows = [d for d in forced if d["phase"] == phase and d["web"] == web]
+        if force.pricing is not None:
+            # the K-th pricing of the web is read as its K-th decision row in
+            # that phase: a split re-prices the piece under the same number
+            if len(rows) < force.pricing:
+                raise SystemExit(f"oracle {spec}: web {web} has {len(rows)} decision row(s), "
+                                 f"pricing {force.pricing} asked")
+            rows = [rows[force.pricing - 1]]
+        else:
+            rows = [d for d in rows if d["forced"] in ("-1", "-3")] or rows
         if not rows:
-            raise SystemExit(f"oracle {phase}:w{web}: no decision for that web in the forced base")
-        targets.append({"spec": f"{phase}:w{web}={want}", "want": want, "rows": [
+            raise SystemExit(f"oracle {spec}: no decision for that web in the forced base")
+        if want[0] == "y":
+            # a verdict force colours with the natural best colour: reproduce THAT colour
+            coloured = [d for d in rows if d["colour"] is not None]
+            if not coloured:
+                raise SystemExit(f"oracle {spec}: the forced base never coloured web {web}")
+            want = f"c{coloured[-1]['colour']}"
+            rows = coloured[-1:]
+        elif want == "n":
+            want = "s"
+        targets.append({"spec": spec, "want": want, "rows": [
             {"expr": d["expr"], "kind": d["kind"], "lines": set(d["lines"]),
              "decision": d["decision"], "colour": d["colour"]} for d in rows]})
+    return targets
+
+
+def state_targets(forced: list[dict], weights: list, grows: list) -> list[dict]:
+    """A weight or grow force prices no colour itself: the state to reproduce is
+    what the forced base DECIDED for the named web (its colour, or memory)."""
+    targets = []
+    for item in list(weights) + list(grows):
+        rows = [d for d in forced if d["phase"] == item.phase and d["web"] == item.web]
+        pricing = getattr(item, "pricing", None)
+        if pricing is not None:
+            if len(rows) < pricing:
+                raise SystemExit(f"{item.env}: web {item.web} has {len(rows)} decision row(s)")
+            rows = [rows[pricing - 1]]
+        if not rows:
+            raise SystemExit(f"{item.env}: no decision for web {item.web} in the forced base")
+        last = rows[-1]
+        want = f"c{last['colour']}" if last["colour"] is not None else "s"
+        targets.append({"spec": f"{item.env} -> {want}", "want": want, "rows": [
+            {"expr": d["expr"], "kind": d["kind"], "lines": set(d["lines"]),
+             "decision": d["decision"], "colour": d["colour"]} for d in ([last] if want != "s" else rows)]})
     return targets
 
 
@@ -1537,8 +2806,8 @@ class Runner:
         return cmd
 
     def compile(self, src: pathlib.Path, obj: pathlib.Path, *, instrumented: bool = False,
-                force: str | None = None, bias: str | None = None,
-                log: pathlib.Path | None = None) -> str | None:
+                force: str | None = None, bias: str | None = None, weight: str | None = None,
+                grow: str | None = None, log: pathlib.Path | None = None) -> str | None:
         env = dict(self.env)
         if instrumented:
             env.update(CDX_LOG="1", CDX_PROC=str(self.proc), CDX_DETAIL_WEB="all",
@@ -1547,6 +2816,10 @@ class Runner:
                 env["CDX_FORCE"] = force
             if bias:
                 env["CDX_BIAS"] = bias
+            if weight:
+                env["CDX_WEIGHT"] = weight
+            if grow:
+                env["CDX_GROW"] = grow
         r = subprocess.run(self._cmd(src, obj, instrumented), env=env, cwd=ROOT,
                            capture_output=True, text=True, timeout=900)
         if r.returncode or not obj.is_file():
@@ -1652,11 +2925,33 @@ def parse_lines(spec: str | None) -> set[int]:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("symbol")
-    ap.add_argument("--proc", type=int, required=True, help="procedure ordinal (as web_report prints)")
+    ap.add_argument("--proc", type=int, help="procedure ordinal (as web_report prints); "
+                                             "required unless --source-levers")
+    ap.add_argument("--source-levers", action="store_true",
+                    help="source-lever mode: stock compile only, both bases measured, no oracle; "
+                         "default levers " + ",".join(SOURCE_LEVERS))
+    ap.add_argument("--diag", metavar="SPEC",
+                    help="pinned NON-adoptable measurement base: 'decl:NAME=TYPE[,...]' or @FILE "
+                         "(a unified diff, or specs one per line); every cell is measured on both")
+    ap.add_argument("--case", action="append", default=[], metavar="LABEL",
+                    help="restrict to the switch region(s) labelled LABEL (e.g. 0x22); repeatable")
+    ap.add_argument("--pairs", type=int, default=0, metavar="N",
+                    help="also measure up to N pairs of same-region non-overlapping cells")
+    ap.add_argument("--onehot", action="store_true", help="rank single cells (the default)")
+    ap.add_argument("--greedy", action="store_true",
+                    help="adopt the best safe improving cell, re-enumerate on the new base, repeat")
+    ap.add_argument("--rounds", type=int, default=4, help="greedy rounds (default 4)")
+    ap.add_argument("--emit", metavar="OUT.c",
+                    help="write the frozen adoptable TU (SHAPE axes resolved) plus OUT.c.diff")
     ap.add_argument("--oracle", default="", help="CDX_FORCE spec the source must reproduce")
     ap.add_argument("--bias", default="",
                     help="CDX_BIAS oracle 'web=delta,...': the decision order it imposes is the "
                          "state to reproduce without it (may be combined with --oracle)")
+    ap.add_argument("--weight", default="",
+                    help="CDX_WEIGHT 'p1:wN[.K]:bbB=+k,...' (v3 farm): the forced base's decision "
+                         "for web N is the state to reproduce")
+    ap.add_argument("--grow", default="",
+                    help="CDX_GROW 'p1:wN=seed|-bbA-bbB,...' (v3 farm): likewise")
     ap.add_argument("--root", help="repository worktree (default: git toplevel of the cwd)")
     ap.add_argument("--candidate", help="base TU (default: the tracked source)")
     ap.add_argument("--web", type=int, action="append", default=[],
@@ -1684,14 +2979,27 @@ def main(argv: list[str] | None = None) -> int:
     ns = ap.parse_args(argv)
 
     use_root(resolve_root(ns.root))
-    oracle = parse_oracle(ns.oracle)
-    bias = parse_bias(ns.bias)
-    # With neither, the sweep has no state to reproduce: cells are ranked by
-    # masked words, aligned residual and size delta alone (oracle column "-").
-    levers = [x.strip() for x in ns.levers.split(",") if x.strip()]
+    source_mode = ns.source_levers or ns.diag or ns.greedy or ns.emit or ns.case or ns.pairs
+    levers_given = ns.levers != ",".join(LEVERS)
+    if source_mode and not levers_given:
+        levers = list(SOURCE_LEVERS)
+    else:
+        levers = [x.strip() for x in ns.levers.split(",") if x.strip()]
     unknown = [x for x in levers if x not in LEVERS]
     if unknown:
         raise SystemExit(f"unknown lever(s) {unknown}; known: {', '.join(LEVERS)}")
+    if source_mode:
+        if ns.oracle or ns.bias or ns.weight or ns.grow:
+            raise SystemExit("--source-levers measures stock compiles only; drop --oracle/--bias/--weight/--grow")
+        return source_main(ns, levers)
+    if ns.proc is None:
+        raise SystemExit("--proc is required (the oracle mode reads the instrumented records)")
+    oracle = parse_oracle(ns.oracle)
+    bias = parse_bias(ns.bias)
+    weights = parse_weight(ns.weight)
+    grows = parse_grow(ns.grow)
+    # With neither, the sweep has no state to reproduce: cells are ranked by
+    # masked words, aligned residual and size delta alone (oracle column "-").
     import fast_score
     source = fast_score.tracked_source_for(ns.symbol)
     base_path = pathlib.Path(ns.candidate).resolve() if ns.candidate else ROOT / source
@@ -1707,10 +3015,12 @@ def main(argv: list[str] | None = None) -> int:
     bdir.mkdir(exist_ok=True)
     bsrc = bdir / ("candidate" + pathlib.Path(source).suffix)
     bsrc.write_text(base_text)
-    force_env = ",".join(f"{p}:w{w}={c}" for p, w, c in oracle) or None
+    force_env = ",".join(f.env for f in oracle) or None
     for label, kw in (("stock", {}), ("unforced", {"instrumented": True}),
                       ("forced", {"instrumented": True, "force": force_env,
-                                  "bias": bias_env(bias) if bias else None})):
+                                  "bias": bias_env(bias) if bias else None,
+                                  "weight": ",".join(w.env for w in weights) or None,
+                                  "grow": ",".join(g.env for g in grows) or None})):
         err = run.compile(bsrc, bdir / f"{label}.o", log=bdir / f"{label}.log", **kw)
         if err:
             raise SystemExit(f"base {label} compile failed: {err}")
@@ -1718,12 +3028,19 @@ def main(argv: list[str] | None = None) -> int:
     if run.func_bytes(bdir / "unforced.o") != base_bytes:
         raise SystemExit("IDENTITY GATE FAILED: instrumented .text differs from stock on the base")
     forced_log = (bdir / "forced.log").read_text(errors="replace")
-    specs = tuple(f"{p}:w{w}={c}" for p, w, c in oracle)
-    refused = run.fl.force_acceptance(forced_log, ns.proc, specs) if specs else None
+    specs = tuple(f.env for f in oracle)
+    classic = tuple(f.env for f in oracle if f.classic)
+    refused = run.fl.force_acceptance(forced_log, ns.proc, classic) if classic else None
     if refused:
         raise SystemExit(f"oracle not accepted on the base: {refused}")
+    refused = v3_force_acceptance(forced_log, ns.proc, oracle, weights, grows)
+    if refused:
+        raise SystemExit(f"force not accepted on the base: {refused}")
     forced_decs, blines = decisions(forced_log, ns.proc)
     targets = oracle_targets(forced_decs, oracle) if oracle else []
+    if weights or grows:
+        targets += state_targets(forced_decs, weights, grows)
+        specs = specs + tuple(w.env for w in weights) + tuple(g.env for g in grows)
     if bias:
         unbiased_decs, _ = decisions((bdir / "unforced.log").read_text(errors="replace"), ns.proc)
         # a bias-only run compares against the unbiased base; with forces too, the
@@ -1836,6 +3153,380 @@ def exit_status(exact: list, no_fail: bool) -> int:
     print("no exact cell: the sweep completed" + (" (exit 0 by --no-fail)" if no_fail
                                                  else " (exit 1; --no-fail makes it 0)"))
     return 0 if no_fail else 1
+
+
+# ---------------------------------------------------------------- source mode
+
+class DiagError(Exception):
+    pass
+
+
+def parse_diag(spec: str | None) -> list[str]:
+    """`decl:NAME=TYPE[,decl:...]` or `@FILE` (a unified diff, or one spec per line)."""
+    if not spec:
+        return []
+    if spec.startswith("@"):
+        text = pathlib.Path(spec[1:]).read_text()
+        if re.match(r"^(---|\+\+\+|diff |@@)", text.lstrip()):
+            return ["patch:" + spec[1:]]
+        return [l.strip() for l in text.splitlines() if l.strip() and not l.startswith("#")]
+    return [s.strip() for s in spec.split(",") if s.strip()]
+
+
+def apply_diag(text: str, symbol: str, diags: list[str]) -> str:
+    """The pinned NON-adoptable measurement base derived from `text`."""
+    for d in diags:
+        kind, _, rest = d.partition(":")
+        if kind == "decl":
+            name, _, ty = rest.partition("=")
+            fn = find_function(text, symbol)
+            info = fn.locals.get(name.strip())
+            if info is None:
+                raise DiagError(f"diag decl: no local {name!r} in {symbol}")
+            decl = info["decl"]
+            dtext = decl.text(text)
+            if "," in strip_comments(dtext):
+                raise DiagError(f"diag decl: {name} shares a declaration line")
+            ntext = re.sub(rf"^(\s*){re.escape(info['type'])}\b", rf"\g<1>{ty.strip()}", dtext, count=1)
+            if ntext == dtext:
+                raise DiagError(f"diag decl: {name} is already {ty}")
+            text = text[:decl.start] + ntext + text[decl.end:]
+        elif kind == "patch":
+            with tempfile.TemporaryDirectory(prefix="lever-diag-") as tmp:
+                src = pathlib.Path(tmp) / "src.c"
+                src.write_text(text)
+                r = subprocess.run(["patch", "-s", "-f", "-o", str(src) + ".out", str(src), rest],
+                                   capture_output=True, text=True)
+                if r.returncode:
+                    raise DiagError("diag patch did not apply: " + (r.stderr.strip() or r.stdout.strip()))
+                text = pathlib.Path(str(src) + ".out").read_text()
+        else:
+            raise DiagError(f"diag spec {d!r}: expected decl:NAME=TYPE or @FILE")
+    return text
+
+
+PERMUTATION_LEVERS = ("reorder", "read_order")
+
+
+def compose_edits(fn: Function, a: Cell, b: Cell):
+    """The edits of two cells applied together, or None when they collide.
+
+    A permutation cell (reorder, read_order) replaces whole statements with
+    other statements' base text, so an edit INSIDE one of those statements is
+    folded into the moved text rather than refused: the 0x22 lever was exactly
+    a swap plus a mask written into the swapped statement.
+    """
+    def fold(perm: Cell, other: Cell):
+        edits = list(perm.edits)
+        rest = []
+        for bs, be, br in other.edits:
+            for i, (s, e, r) in enumerate(edits):
+                # the slot `s:e` now holds the base text of some statement; find it
+                src = next(((ss, se) for ss, se, _ in perm.edits if fn.text[ss:se] == r), None)
+                if src and src[0] <= bs and be <= src[1]:
+                    rel = bs - src[0]
+                    edits[i] = (s, e, r[:rel] + br + r[rel + (be - bs):])
+                    break
+            else:
+                rest.append((bs, be, br))
+        if edits_overlap(edits, rest):
+            return None
+        return tuple(edits) + tuple(rest)
+
+    if a.lever in PERMUTATION_LEVERS and b.lever not in PERMUTATION_LEVERS:
+        return fold(a, b)
+    if b.lever in PERMUTATION_LEVERS and a.lever not in PERMUTATION_LEVERS:
+        return fold(b, a)
+    if edits_overlap(a.edits, b.edits):
+        return None
+    return a.edits + b.edits
+
+
+def compose_pairs(cells: list[Cell], fn: Function, limit: int) -> list[Cell]:
+    """Cells of the same region whose edits do not overlap, applied together."""
+    by: dict[str, list[Cell]] = collections.OrderedDict()
+    for c in cells:
+        if c.edits and c.group:
+            by.setdefault(c.group, []).append(c)  # by OUTERMOST region: nested switches pair too
+    out = []
+    for region, group in by.items():
+        for a, b in itertools.combinations(group, 2):
+            if a.lever == b.lever == "carrier_rename":
+                continue
+            edits = compose_edits(fn, a, b)
+            if edits is None:
+                continue
+            sem = "safe" if a.semantics == b.semantics == "safe" else \
+                ";".join(sorted({s for s in (a.semantics, b.semantics) if s != "safe"}))
+            cell = edit_cell(fn, "+".join(sorted((a.lever, b.lever))),
+                             f"{a.lever}: {a.edit} + {b.lever}: {b.edit}",
+                             edits, sem, region, min(a.line, b.line))
+            out.append(cell)
+    kept = interleave(out, limit) if len(out) > limit else out  # even across lever combinations
+    for c in kept:
+        c.lever = "pair"
+    return kept
+
+
+class SourceScorer:
+    """Compile a TU text with the configured direct command and score one symbol."""
+
+    def __init__(self, symbol: str, scratch: pathlib.Path, source: str):
+        import fast_score
+        import align_symbol
+        self.symbol, self.scratch, self.source = symbol, scratch, source
+        self.args = fast_score.configured_cc_args(source)
+        self.rewrite = fast_score.rewrite_io
+        self.scorer = align_symbol.AlignedScorer(symbol, scratch)
+        self.env = {k: v for k, v in os.environ.items() if not k.startswith(("CDX_", "DKWB_"))}
+        self.n = 0
+        self.lock = threading.Lock()
+
+    def __call__(self, text: str) -> dict:
+        with self.lock:
+            self.n += 1
+            k = self.n
+        d = self.scratch / f"m{k:05d}"
+        d.mkdir(exist_ok=True)
+        src = d / ("candidate" + pathlib.Path(self.source).suffix)
+        obj = d / "stock.o"
+        src.write_text(text)
+        try:
+            r = subprocess.run(self.rewrite(self.args, src, self.source, obj), env=self.env, cwd=ROOT,
+                               capture_output=True, text=True, timeout=900)
+            if r.returncode or not obj.is_file():
+                return {"error": (r.stderr.strip().splitlines() or ["compile failed"])[-1]}
+            score = self.scorer.score(obj)
+            if score is None:
+                return {"error": "symbol not in object"}
+            return {"masked": score["masked"], "delta": score["delta"], "residual": score["residual"],
+                    "buckets": [score["aligned_exact"], score["aligned_register_naming"],
+                                score["aligned_immediate_only"], score["aligned_really_different"]],
+                    "onesided": sum(x["words"] for x in score.get("insertions", []))
+                    + sum(x["words"] for x in score.get("deletions", []))}
+        finally:
+            shutil.rmtree(d, ignore_errors=True)
+
+
+def measure_text(score, text: str, symbol: str, diags: list[str]) -> dict:
+    """Both columns of one text: `a` (adoptable) and, with diags, `d` (the diag base)."""
+    row = {"a": score(text)}
+    if diags:
+        try:
+            row["d"] = score(apply_diag(text, symbol, diags))
+        except DiagError as e:
+            row["d"] = {"error": str(e)}
+    return row
+
+
+def rank_column(base: dict, diags: list[str]) -> str:
+    """Rank on the diag column when the adoptable base is off size (and a diag base exists)."""
+    if diags and "error" not in base.get("d", {"error": 1}) and base["a"].get("delta", 0) != 0:
+        return "d"
+    return "a"
+
+
+def improves(row: dict, base: dict, col: str) -> bool:
+    """Lower residual at no worse size on the ranking column -- or, whatever the
+    column, an adoptable result that is closer to size with no worse residual
+    (the 0x22 swap took the adoptable base from +4 to size 0 at the same
+    residual while the diag column read it as worse)."""
+    def better(c, size_only=False):
+        r, b = row.get(c, {}), base.get(c, {})
+        if "error" in r or "error" in b or "residual" not in r or "residual" not in b:
+            return False
+        if size_only:
+            # a size move that only cancels one long handler against one short
+            # one (0x60 against a dropped 0x25 mask) reads as "closer to size"
+            # with MORE one-sided words: that is a false floor, not progress
+            return abs(r["delta"]) < abs(b["delta"]) and r["residual"] <= b["residual"] \
+                and r.get("onesided", 0) <= b.get("onesided", 0)
+        return r["residual"] < b["residual"] and abs(r["delta"]) <= abs(b["delta"])
+    return better(col) or better("a", size_only=True)
+
+
+def source_rank_key(row: dict, base: dict, col: str):
+    r = row.get(col, {})
+    if "error" in r or "residual" not in r:
+        return (2, 0, 0, 0, 0)
+    return (0 if improves(row, base, col) else 1, r["residual"], abs(r["delta"]), r["masked"],
+            row.get("semantics") != "safe")
+
+
+def source_sweep(text: str, symbol: str, levers: list[str], score, *, lines: set[int] | None = None,
+                 cases: list[str] | None = None, diags: list[str] | None = None, jobs: int = 3,
+                 max_cells: int = 600, pairs: int = 0, greedy: int = 0, log=None) -> dict:
+    """Enumerate, measure (both bases) and rank; with `greedy` rounds, adopt and repeat.
+
+    `score(text) -> {masked, delta, residual, buckets} | {error}` is the
+    measurement; the tool injects the configured compile, tests inject a stub.
+    Returns {"rounds": [...], "final": text, "base": row, "column": "a"|"d"}.
+    """
+    diags = diags or []
+    if log is None:
+        def log(msg):  # a redirected stdout is block-buffered: the progress must reach the file
+            print(msg, flush=True)
+    rounds = []
+    current = text
+    base = measure_text(score, current, symbol, diags)
+    if "error" in base["a"]:
+        raise SystemExit(f"base does not compile: {base['a']['error']}")
+    if diags and "error" in base["d"]:
+        raise SystemExit(f"diag base: {base['d']['error']}")
+    col = rank_column(base, diags)
+    log(f"{symbol}: base adoptable masked {base['a']['masked']} delta {base['a']['delta']:+d} "
+        f"residual {base['a']['residual']}" + (f"; diag masked {base['d']['masked']} delta "
+                                               f"{base['d']['delta']:+d} residual {base['d']['residual']}"
+                                               if diags else "") + f"; ranking on the {'diag' if col == 'd' else 'adoptable'} column")
+    for rnd in range(max(1, greedy + 1) if greedy else 1):
+        fn = find_function(current, symbol)
+        sel = set(lines or set())
+        if cases:
+            sel |= parse_case_filter(cases, fn)
+        cells = generate(fn, levers, sel or None)
+        if pairs:
+            cells += compose_pairs(cells, fn, pairs)
+        counts = collections.Counter(c.lever for c in cells)
+        kept = interleave(cells, max_cells)
+        log(f"round {rnd}: {len(cells)} cells ({', '.join(f'{k} {v}' for k, v in counts.items())})"
+            + (f"; {len(kept)} measured" if len(kept) < len(cells) else ""))
+        counter = [0]
+        lock = threading.Lock()
+
+        def one(ic):
+            i, c = ic
+            row = measure_text(score, c.text, symbol, diags)
+            row.update(index=i, lever=c.lever, line=c.line, edit=c.edit, semantics=c.semantics,
+                       region=c.region, text=c.text)
+            with lock:
+                counter[0] += 1
+                if counter[0] % 50 == 0:
+                    log(f"  {counter[0]} cells measured")
+            return row
+
+        with ThreadPoolExecutor(max_workers=jobs) as pool:
+            results = list(pool.map(one, enumerate(kept)))
+        results.sort(key=lambda r: source_rank_key(r, base, col))
+        improving = [r for r in results if improves(r, base, col)]
+        rounds.append({"round": rnd, "base": {k: v for k, v in base.items()}, "column": col,
+                       "generated": len(cells), "measured": len(results),
+                       "errors": sum("error" in r["a"] for r in results),
+                       "improving": len(improving), "cells": results})
+        if not greedy:
+            break
+        pick = next((r for r in improving if r["semantics"] == "safe"), None)
+        if pick is None:
+            log(f"round {rnd}: no safe improving cell; stopping")
+            break
+        log(f"round {rnd}: adopt {pick['lever']} L{pick['line']} `{pick['edit']}` -> "
+            + render_cols(pick, diags))
+        current = pick["text"]
+        base = {k: pick[k] for k in ("a", "d") if k in pick}
+        rounds[-1]["adopted"] = {k: pick[k] for k in ("lever", "line", "edit", "semantics", "a", "d") if k in pick}
+        col = rank_column(base, diags)
+    return {"rounds": rounds, "final": current, "base": base, "column": col}
+
+
+def render_cols(row: dict, diags: list[str]) -> str:
+    def one(c):
+        r = row.get(c, {})
+        if "error" in r:
+            return f"{'ERR':>6} {'':>6} {'':>5}"
+        if "residual" not in r:
+            return f"{'-':>6} {'':>6} {'':>5}"
+        return f"{r['masked']:>6} {r['delta']:>+6} {r['residual']:>5}"
+    return one("a") + ("  " + one("d") if diags else "")
+
+
+def print_source_table(result: dict, diags: list[str], top: int) -> None:
+    head = f"{'cell':>5} {'lever':<14} {'line':>5} {'region':<12} {'masked':>6} {'delta':>6} {'resid':>5}"
+    if diags:
+        head += f"  {'d.mask':>6} {'d.dlt':>6} {'d.res':>5}"
+    print(head + "  sem  edit")
+    last = result["rounds"][-1]
+    base = last["base"]
+    for r in last["cells"][:top]:
+        mark = "*" if improves(r, base, last["column"]) else " "
+        print(f"{r['index']:>5} {r['lever']:<14} {r['line']:>5} {r['region'][:12]:<12} "
+              + render_cols(r, diags) + f" {mark}{r['semantics'][:24]}  {r['edit'][:60]}")
+
+
+def function_diff(base_text: str, new_text: str, symbol: str) -> str:
+    """A unified diff of the function's own lines (whole-TU line numbers kept)."""
+    a = find_function(base_text, symbol)
+    b = find_function(new_text, symbol)
+    a_lines = base_text[a.body.start:a.body.end].splitlines(keepends=True)
+    b_lines = new_text[b.body.start:b.body.end].splitlines(keepends=True)
+    diff = difflib.unified_diff(a_lines, b_lines, fromfile=f"{symbol} (base)", tofile=f"{symbol} (emitted)",
+                                n=2)
+    out = []
+    la, lb = base_text.count("\n", 0, a.body.start), new_text.count("\n", 0, b.body.start)
+    for line in diff:
+        m = re.match(r"^@@ -(\d+)(,\d+)? \+(\d+)(,\d+)? @@", line)
+        if m:
+            line = f"@@ -{int(m.group(1)) + la}{m.group(2) or ''} +{int(m.group(3)) + lb}{m.group(4) or ''} @@\n"
+        out.append(line)
+    return "".join(out)
+
+
+def emit_frozen(text: str, out: pathlib.Path, base_text: str, symbol: str) -> None:
+    """Write the adoptable TU (SHAPE axes resolved, carrier macros expanded) and its function diff."""
+    if re.search(r"\bSHAPE_\w+", text):
+        import shape_freeze
+        text = shape_freeze.freeze_text(text, {})
+    out.write_text(text)
+    pathlib.Path(str(out) + ".diff").write_text(function_diff(base_text, text, symbol))
+
+
+def source_main(ns, levers: list[str]) -> int:
+    import fast_score
+    source = fast_score.tracked_source_for(ns.symbol)
+    base_path = pathlib.Path(ns.candidate).resolve() if ns.candidate else ROOT / source
+    base_text = base_path.read_text()
+    scratch = pathlib.Path(ns.scratch or f"/private/tmp/claude-501/lever-sweep-{os.getpid()}").resolve()
+    if ROOT.resolve() in scratch.parents or scratch == ROOT.resolve():
+        raise SystemExit("--scratch must be outside the repository")
+    scratch.mkdir(parents=True, exist_ok=True)
+    diags = parse_diag(ns.diag)
+    fn = find_function(base_text, ns.symbol)
+    lines = parse_lines(ns.lines)
+    if ns.case:
+        lines |= parse_case_filter(ns.case, fn)
+    if ns.dry_run:
+        cells = generate(fn, levers, lines or None)
+        if ns.pairs:
+            cells += compose_pairs(cells, fn, ns.pairs)
+        counts = collections.Counter(c.lever for c in cells)
+        print(f"cells: {len(cells)} generated ({', '.join(f'{k} {v}' for k, v in counts.items())})")
+        for c in cells[: ns.top]:
+            print(f"  {c.lever:<14} L{c.line:<5} {c.region[:12]:<12} {c.semantics[:28]:<28} {c.edit[:70]}")
+        return 0
+    score = SourceScorer(ns.symbol, scratch, source)
+    result = source_sweep(base_text, ns.symbol, levers, score, lines=lines or None, cases=None,
+                          diags=diags, jobs=ns.jobs, max_cells=ns.max_cells, pairs=ns.pairs,
+                          greedy=ns.rounds if ns.greedy else 0)
+    print_source_table(result, diags, ns.top)
+    last = result["rounds"][-1]
+    improving = [r for r in last["cells"] if improves(r, last["base"], last["column"])]
+    safe = [r for r in improving if r["semantics"] == "safe"]
+    adopted = [r["adopted"] for r in result["rounds"] if "adopted" in r]
+    print(f"SUMMARY lever_sweep --source-levers {ns.symbol}: {len(result['rounds'])} round(s), "
+          f"{sum(r['measured'] for r in result['rounds'])} cells measured, {len(adopted)} adopted"
+          f"{' (' + '; '.join(a['edit'] for a in adopted) + ')' if adopted else ''}; last round "
+          f"{len(improving)} improving ({len(safe)} safe) on the {'diag' if last['column'] == 'd' else 'adoptable'} column")
+    if ns.emit:
+        final = result["final"]
+        if not adopted and last["cells"] and improves(last["cells"][0], last["base"], last["column"]):
+            final = last["cells"][0]["text"]  # one-hot: the best improving cell
+        emit_frozen(final, pathlib.Path(ns.emit), base_text, ns.symbol)
+        print(f"emitted {ns.emit} (+ .diff)")
+    if ns.json:
+        pathlib.Path(ns.json).write_text(json.dumps({
+            "symbol": ns.symbol, "mode": "source-levers", "levers": levers, "diag": diags,
+            "rounds": [{**r, "cells": [{k: v for k, v in c.items() if k != "text"} for c in r["cells"]]}
+                       for r in result["rounds"]]}, indent=1, default=str))
+    shutil.rmtree(scratch, ignore_errors=True)
+    return 0 if adopted or improving else 1
 
 
 if __name__ == "__main__":

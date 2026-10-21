@@ -203,6 +203,12 @@ def strip_defines(text: str) -> str:
     return DEFINE_RE.sub("", text)
 
 
+def frozen_candidate(text: str, cell: dict[str, int]) -> str:
+    """The candidate with `cell`'s axes (and its own #define pins) resolved into plain C."""
+    import shape_freeze
+    return shape_freeze.freeze_text(text, dict(cell))
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("symbol")
@@ -219,6 +225,8 @@ def main(argv: list[str] | None = None) -> int:
                          "(default when any cell is off size); positional: delta then masked")
     ap.add_argument("--all-axes", action="store_true",
                     help="enumerate axes even when the candidate #defines them")
+    ap.add_argument("--emit-best", metavar="OUT.c",
+                    help="write the best cell as plain C (axes resolved by shape_freeze)")
     ns = ap.parse_args(argv)
 
     candidate = Path(ns.candidate).resolve()
@@ -284,6 +292,11 @@ def main(argv: list[str] | None = None) -> int:
                   f"{r['aligned_really_different']:>5} {one:>5}  {r['cell']}")
     if ns.json:
         Path(ns.json).write_text(json.dumps({"symbol": ns.symbol, "axes": axes, "rank": rank, "cells": results}, indent=1))
+    if ns.emit_best:
+        if best is None:
+            raise SystemExit("--emit-best: no scored cell to emit")
+        Path(ns.emit_best).write_text(frozen_candidate(text, best["cell"]))
+        print(f"emitted best cell {best['cell']} -> {ns.emit_best}")
     return 0 if exact else 1
 
 

@@ -621,7 +621,7 @@ rain_render_splashes = 0x8003BBF8; // type:func size:0x650 tier-D, ROM 0x3c7f8
 rain_lightning = 0x8003C248; // type:func size:0x128 tier-D, ROM 0x3ce48  matched C src/main/weather.c.o -O2 -mips2 -32, DKR/JFG src/weather.c donor, masked=0/74
 rain_sound = 0x8003C370; // type:func size:0xC0 tier-D, ROM 0x3cf70  matched C src/main/weather.c.o -O2 -mips2 -32, JFG src/weather.c donor, masked=0/48
 snow_update = 0x8003C430; // type:func size:0x144 tier-D, ROM 0x3d030  hand-written, no permitted reference object holds it (DKR/JFG have compiled C, 85 vs 81 words, all differ)
-snow_vertices = 0x8003C574; // type:func size:0x1FC tier-D, ROM 0x3d174  hand-written (44 odd-FP operands in 32 instructions by the 2026-10-14 recount; 34 at single width in 22 by tools/hasm_audit.py, which excludes 32-bit moves), no permitted reference object holds it (DKR compiled C 226 vs 127 words)
+snow_vertices = 0x8003C574; // type:func size:0x1FC tier-D, ROM 0x3d174  hand-written (44 odd-FP operands in 32 instructions by the 2026-10-14 recount, or 34 at single width in 22 by tools/hasm_audit.py, which excludes 32-bit moves), no permitted reference object holds it (DKR compiled C 226 vs 127 words)
 func_8003C770 = 0x8003C770; // type:func size:0x9C tier-D, ROM 0x3d370  matched C src/main/weather_tail.c.o -O2 -mips2 -32, Mickey-only reconstruction, linked exact=39/39
 
 // main/particles, ROM 0x3D5F0-0x43470.

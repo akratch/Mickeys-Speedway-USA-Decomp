@@ -3097,7 +3097,9 @@ class SourceScorer:
                 return {"error": "symbol not in object"}
             return {"masked": score["masked"], "delta": score["delta"], "residual": score["residual"],
                     "buckets": [score["aligned_exact"], score["aligned_register_naming"],
-                                score["aligned_immediate_only"], score["aligned_really_different"]]}
+                                score["aligned_immediate_only"], score["aligned_really_different"]],
+                    "onesided": sum(x["words"] for x in score.get("insertions", []))
+                    + sum(x["words"] for x in score.get("deletions", []))}
         finally:
             shutil.rmtree(d, ignore_errors=True)
 
@@ -3130,7 +3132,11 @@ def improves(row: dict, base: dict, col: str) -> bool:
         if "error" in r or "error" in b or "residual" not in r or "residual" not in b:
             return False
         if size_only:
-            return abs(r["delta"]) < abs(b["delta"]) and r["residual"] <= b["residual"]
+            # a size move that only cancels one long handler against one short
+            # one (0x60 against a dropped 0x25 mask) reads as "closer to size"
+            # with MORE one-sided words: that is a false floor, not progress
+            return abs(r["delta"]) < abs(b["delta"]) and r["residual"] <= b["residual"] \
+                and r.get("onesided", 0) <= b.get("onesided", 0)
         return r["residual"] < b["residual"] and abs(r["delta"]) <= abs(b["delta"])
     return better(col) or better("a", size_only=True)
 
@@ -3145,7 +3151,7 @@ def source_rank_key(row: dict, base: dict, col: str):
 
 def source_sweep(text: str, symbol: str, levers: list[str], score, *, lines: set[int] | None = None,
                  cases: list[str] | None = None, diags: list[str] | None = None, jobs: int = 3,
-                 max_cells: int = 600, pairs: int = 0, greedy: int = 0, log=print) -> dict:
+                 max_cells: int = 600, pairs: int = 0, greedy: int = 0, log=None) -> dict:
     """Enumerate, measure (both bases) and rank; with `greedy` rounds, adopt and repeat.
 
     `score(text) -> {masked, delta, residual, buckets} | {error}` is the
@@ -3153,6 +3159,9 @@ def source_sweep(text: str, symbol: str, levers: list[str], score, *, lines: set
     Returns {"rounds": [...], "final": text, "base": row, "column": "a"|"d"}.
     """
     diags = diags or []
+    if log is None:
+        def log(msg):  # a redirected stdout is block-buffered: the progress must reach the file
+            print(msg, flush=True)
     rounds = []
     current = text
     base = measure_text(score, current, symbol, diags)

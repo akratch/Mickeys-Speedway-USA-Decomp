@@ -775,6 +775,11 @@ class ComposeTests(unittest.TestCase):
         better_d = {"a": {"residual": 107, "delta": 4, "masked": 859}, "d": {"residual": 99, "delta": 0, "masked": 120}}
         self.assertTrue(ls.improves(better_d, base, "d"))
         self.assertFalse(ls.improves({"a": {"error": "x"}}, base, "a"))
+        base["a"]["onesided"] = 5
+        cancelled = {"a": {"residual": 101, "delta": 0, "masked": 739, "onesided": 6},
+                     "d": {"residual": 105, "delta": -4, "masked": 1482}}
+        self.assertFalse(ls.improves(cancelled, base, "d"),
+                         "size 0 with more one-sided words is a long handler cancelling a short one")
 
 
 if __name__ == "__main__":

@@ -3596,3 +3596,43 @@ the measurement base for every other handler: here, declaring a byte carrier
 are then meaningful again, and every edit measured on that base transferred
 unchanged to the adoptable source. Record such a base as a diagnostic and
 never land it.
+
+### ugen's FP temporary queue, and a folded zero-weight term that still steers it
+
+Measured on `func_8002B040`, 2026-10-21; the model is
+`tools/fp_queue_model.py`.
+
+- **The queue.** In optimized code ugen hands single-precision temporaries
+  out of a first-in, first-out queue: `$f4 $f6 $f8 $f10 $f16 $f18` in that
+  order, less the registers mtc1 formals hold. A result takes the head before
+  its operands go back; an operand goes back to the tail at its last use; a
+  store is a use. uopt colours locals into `$f0`/`$f2` before it takes any
+  queue register. `--validate` reproduces every compile of 1,152 generated
+  three-row transform forms under IDO 5.3 and 7.1 at -O2, -O3 and -O3 -mips1.
+  -O1 is outside it: without uopt, ugen reuses cached memory contents past a
+  value's last use. **Use:** when a residual is register numbers only, ask
+  whether any evaluation order of the target's own values fits the queue
+  before searching source. If none does, from any start order, the
+  instructions differ from what was compiled. Here they fit once two values
+  per row are put back, and those two values are a deleted load and add.
+- **A folded zero-weight term keeps its orientation effect.** A trailing
+  `+ t*0.0f` (or `+ 0.0f*t`, or `+ (t - t)`) on a memory operand `t` folds
+  away and emits nothing. It still changes which of `$f12/$f14/$f16` each
+  formal is coloured into, and the operand order of the outermost add, as if
+  the term were there. On the natural order of a 3x3 transform under 5.3 -O3
+  it took the residual from 24 differing words to 16: row 0 became exact and
+  the formals came out in argument order. It acts as an orientation flip, so
+  across the other 23 term orders and groupings it moved the count both ways,
+  and it was worse on right-grouped sums. A pure constant (`+ 0.0f`,
+  `* 1.0f`) or a leading term (`t*0.0f + s`) changed nothing. **Limits:**
+  `t*0.0f` is not an identity for an infinite or NaN `t`, or for the sign of a
+  zero sum. It is a diagnostic until it passes ADR 0017 semantic review.
+- **Running IDO 7.1 at -O3.** -O3 also runs `ujoin`, `uld`, `usplit` and
+  `umerge`. The decompals macOS release, and the reference farm's
+  `perfect_dark/build/recomp/7.1` seeded from it, carry only
+  `cc cfe uopt ugen as1`, so -O3 there fails with "can't find or exec ...
+  ujoin". A complete recomp set runs it, for example dinosaur-planet's
+  `<dp64>/tools/ido_static_recomp/7.1`. Point `IDO71_DIR` (or
+  `fp_queue_model.py --ido71`) at it. On all 4,032 forms of the first sweep,
+  7.1 -O3 produced objects byte-identical to 5.3 -O3. At -O2 the two differ
+  on three forms in four.

@@ -17,7 +17,9 @@
  *            equal step vectors (quadA == 0); a tangent sweep (discriminant
  *            exactly b*b) and one ulp either side of it; first roots at
  *            exactly 0 and 1 and just outside; the second, 83-wider test
- *            failing and passing; the edge-point fallback hit and missed.
+ *            failing and passing; the edge-point fallback hit and missed;
+ *            the edge test after a first root past 1, at the summed radius
+ *            and one ulp either side.
  *   sweep    one-dimensional approaches on integer grids, where every
  *            intermediate is exact, through all of the above boundaries.
  *   random   positions, steps and radii on a 1/8 grid and as raw floats,
@@ -203,6 +205,29 @@ static void edge_cases(void)
     }
 }
 
+/*
+ * The edge test after a first root outside [0, 1], at exactly the summed
+ * radius and one ulp either side: A at x = -13 stepping 4, B still, radii
+ * summing to 5 (A = 16, B = -104, C = 169, first root exactly 2), edge
+ * points 3-4-0 apart.
+ */
+static void edge_after_late_root(void)
+{
+    int d, fl;
+
+    bh_scenario("edge late root");
+    for (fl = 0; fl < 2; fl++) {
+        for (d = -1; d <= 1; d++) {
+            reset_shapes();
+            shape(gA, 0, -13.0f, 0.0f, 0.0f, 4.0f, 0.0f, 0.0f, 2.0f);
+            shape(gB, 0, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, d == 0 ? 3.0f : ulp(3.0f, d));
+            set_vec(&gA->edge, 0.0f, 0.0f, (f32) fl);
+            set_vec(&gB->edge, 3.0f, 4.0f, (f32) fl);
+            check("late-root");
+        }
+    }
+}
+
 static void sweeps(void)
 {
     int d, s, r, y;
@@ -357,6 +382,7 @@ int main(void)
     gB = bh_alloc(sizeof(AnimCollisionShape));
     gR = bh_alloc(sizeof(AnimCollisionResult));
     edge_cases();
+    edge_after_late_root();
     sweeps();
     randoms();
     near_equal();

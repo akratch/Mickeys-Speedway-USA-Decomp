@@ -1035,6 +1035,27 @@ shadow -- the dispatch order for Track B.
   hunks only. Checked on two of the 2026-10-21 func_800517E0 lanes (copyfold,
   diagE over naming best4): the four cells reproduce each lane's own residual
   (102, 118) and the base's (122).
+- **`tools/microlab.py --template T.c --vars spec.json --flags-from <tracked TU>`**
+  writes one probe TU per variant (`{{NAME}}` placeholders; the spec is
+  `{"vars": {NAME: [values]}}` for a product or `{"variants": [...]}`) under
+  `build/microlab/`, compiles each with that TU's configured recipe (never a
+  typed cc line; `--instrumented` or any `CDX_*`/`DKWB_*` variable switches
+  driver as fast_score does), and prints per function the instruction count,
+  registers named and opcode counts, and which counts moved against variant 0.
+  `--listing` adds the probe's disassembly, `--function` narrows it.
+- **`finalize_plateau.py --record-only --allow-dirty PATH...`** refreshes the
+  shard header and the source marker without committing while the named dirt
+  (exact paths, `dir/` prefixes or globs: the owner's `docs/NEXT_CAMPAIGN.md`,
+  untracked `slotprobe3.*`) sits in the tree. Dirt nobody named still refuses
+  before anything is written, and the plain refusal now says which flags to use.
+- **`tools/gates.sh`** retries `check-promotion-proofs` once when it stops on
+  "proof inputs changed during census" and says why: a source changed
+  mid-census, so stop the lanes compiling in this tree and rerun. When
+  `check-objdiff-config` fails it names every split file the linker script
+  never places (`tools/objdiff_config.py --orphans`; `--check` names them too)
+  with the fix: delete the leftover extract, never regenerate `objdiff.json`
+  around it. The 2026-10-21 case was a stale
+  `assets/overlays/o064/overlay_064_data_rodata.bin`.
 
 ## Traps that have each cost a lane real time
 

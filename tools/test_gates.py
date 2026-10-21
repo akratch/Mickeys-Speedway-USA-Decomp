@@ -20,15 +20,28 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 GATES = ROOT / "tools" / "gates.sh"
 
 
-def run(stub_body: str, args: list[str]) -> subprocess.CompletedProcess:
-    """Run gates.sh with a stub gmake that behaves as `stub_body` says."""
+def run(stub_body: str, args: list[str], python_body: str | None = None) -> subprocess.CompletedProcess:
+    """Run gates.sh with a stub gmake that behaves as `stub_body` says.
+
+    The stub sees $STUB_DIR (its own directory) for counters. `python_body`,
+    when given, stands in for the interpreter gates.sh runs helpers with.
+    """
     tmp = pathlib.Path(tempfile.mkdtemp())
     stub = tmp / "gmake"
     stub.write_text("#!/usr/bin/env bash\n" + stub_body + "\n", encoding="utf-8")
     stub.chmod(0o755)
-    env = dict(os.environ, PATH=f"{tmp}:{os.environ['PATH']}")
+    env = dict(os.environ, PATH=f"{tmp}:{os.environ['PATH']}", STUB_DIR=str(tmp))
+    if python_body is not None:
+        helper = tmp / "python"
+        helper.write_text("#!/usr/bin/env bash\n" + python_body + "\n", encoding="utf-8")
+        helper.chmod(0o755)
+        env["GATES_PYTHON"] = str(helper)
     return subprocess.run([str(GATES), *args], env=env, capture_output=True,
                           text=True, cwd=ROOT)
+
+
+CHANGED = ("echo 'promotion_proof_census.py: error: proof inputs changed during census: "
+           "src/main/anim.c; results discarded, cache not updated.'")
 
 
 class GateStatusTests(unittest.TestCase):
@@ -97,6 +110,41 @@ class GateStatusTests(unittest.TestCase):
         self.assertIn("CLEANROOM_ARGS=--staged", log)
         verify_log = (ROOT / "build" / "gates" / "verify.log").read_text()
         self.assertNotIn("CLEANROOM_ARGS", verify_log)
+
+    def test_promotion_census_interrupted_by_a_source_change_is_retried_once(self) -> None:
+        body = ('n=$(cat "$STUB_DIR/count" 2>/dev/null || echo 0); echo $((n+1)) > "$STUB_DIR/count"; '
+                f'if [ "$n" -eq 0 ]; then {CHANGED}; exit 2; fi; exit 0')
+        out = run(body, ["check-promotion-proofs"])
+        self.assertEqual(out.returncode, 0, out.stdout)
+        self.assertIn("a source changed mid-census: stop lanes compiling in this tree and rerun", out.stdout)
+        self.assertIn("PASS", out.stdout)
+        self.assertIn("on retry", out.stdout)
+
+    def test_a_census_that_keeps_changing_fails_with_the_hint(self) -> None:
+        out = run(f"{CHANGED}; exit 2", ["check-promotion-proofs"])
+        self.assertEqual(out.returncode, 1)
+        self.assertIn("FAIL", out.stdout)
+        self.assertEqual(out.stdout.count("stop lanes compiling in this tree"), 2)
+
+    def test_other_census_failures_are_not_retried(self) -> None:
+        body = ('n=$(cat "$STUB_DIR/count" 2>/dev/null || echo 0); echo $((n+1)) > "$STUB_DIR/count"; '
+                'echo "coverage incomplete"; exit 2')
+        out = run(body, ["check-promotion-proofs"])
+        self.assertEqual(out.returncode, 1)
+        self.assertNotIn("retry", out.stdout)
+
+    def test_objdiff_failure_names_orphaned_split_files(self) -> None:
+        orphan = ("echo 'objdiff-config: orphaned split file assets/overlays/o064/x.bin: "
+                  "mickey.us.ld never places build/assets/overlays/o064/x.bin.o'; exit 1")
+        out = run('[ "$1" = check-objdiff-config ] && { echo "objdiff.json is stale"; exit 1; }; exit 0',
+                  ["check-objdiff-config"], python_body=orphan)
+        self.assertEqual(out.returncode, 1)
+        self.assertIn("orphaned split file assets/overlays/o064/x.bin", out.stdout)
+
+    def test_objdiff_helper_runs_only_when_the_gate_fails(self) -> None:
+        out = run("exit 0", ["check-objdiff-config"], python_body="echo HELPER-RAN; exit 1")
+        self.assertEqual(out.returncode, 0)
+        self.assertNotIn("HELPER-RAN", out.stdout)
 
     def test_an_unknown_option_is_refused_rather_than_treated_as_a_gate(self) -> None:
         out = run("exit 0", ["--no-verify"])

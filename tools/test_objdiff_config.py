@@ -135,6 +135,21 @@ class ObjdiffConfigTests(unittest.TestCase):
         self.assertEqual(u["base_path"], "build_non_matching/src/main/game.c.o")
         self.assertTrue(u["target_path"].startswith("expected/build/"))
 
+    def test_split_files_the_linker_script_never_places_are_orphans(self):
+        root, _, _, _, _ = self.build()
+        placed = ["asm/data/81590.rodata.s", "asm/main/fastmath.s", "asm/overlays/o001/ov1_tail.s"]
+        (root / "mickey.us.ld").write_text("".join(f"        build/{p}.o(.text);\n" for p in placed))
+        self.assertEqual(oc.split_orphans(root), ["assets/overlays/o001/ov1_reloc1.bin"])
+        self.assertEqual(oc.main(["--root", str(root), "--orphans"]), 1)
+        (root / "mickey.us.ld").write_text((root / "mickey.us.ld").read_text()
+                                           + "        build/assets/overlays/o001/ov1_reloc1.bin.o(.data);\n")
+        self.assertEqual(oc.split_orphans(root), [])
+        self.assertEqual(oc.main(["--root", str(root), "--orphans"]), 0)
+
+    def test_no_linker_script_means_no_orphan_claim(self):
+        root, _, _, _, _ = self.build()
+        self.assertEqual(oc.split_orphans(root), [])
+
 
 if __name__ == "__main__":
     unittest.main()

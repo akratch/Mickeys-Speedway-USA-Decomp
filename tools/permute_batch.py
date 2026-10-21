@@ -103,7 +103,7 @@ from typing import Optional
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import reloc_surface  # noqa: E402
-import search_local_bindings  # noqa: E402
+import search_local_bindings, scratch_fidelity  # noqa: E402
 import search_literal_bindings  # noqa: E402
 import source_symbol_fidelity  # noqa: E402
 import prepared_macro_context  # noqa: E402
@@ -115,7 +115,8 @@ _LOADED_IMPLEMENTATIONS = sweep_receipts.loaded_implementations(
      ("relocations", reloc_surface.__file__),
      ("overlay_call_context", ROOT / "tools/overlay_call_context.py"),
      *((n, ROOT / ("tools/" + n + ".py")) for n in
-       ("canonical_data_owner", "canonical_bss_view", "storage_identity", "storage_view")),
+       ("canonical_data_owner", "canonical_bss_view", "storage_identity", "storage_view",
+        "scratch_fidelity")),
      ("search_local_bindings", search_local_bindings.__file__),
      ("search_literal_bindings", search_literal_bindings.__file__),
      ("source_symbol_fidelity", source_symbol_fidelity.__file__),
@@ -2692,7 +2693,7 @@ def grouped_import_main(symbol: str, plan_path: str, argv: list[str]) -> None:
         ast_util.to_c = checked_emitter(original_to_c)
         ast_util.to_c_raw = checked_emitter(original_to_c_raw)
         sys.argv = [str(IMPORT_PY), *argv]
-        with ido_import_parser():
+        with ido_import_parser(), scratch_fidelity.restoring(ast_util, c_ast):
             runpy.run_path(str(IMPORT_PY), run_name="__main__")
         if len(seen) != 1:
             raise ValueError("importer did not expose original source coordinates")

@@ -999,6 +999,30 @@ every edit that moves a one-sided word. It refuses delta 0 (use
 and writes `docs/small-delta-census.md`, sorted by aligned residual after
 shadow -- the dispatch order for Track B.
 
+### Workflow instruments (2026-10-21)
+
+- **Permuter scratch fidelity.** `tools/permute.sh <fn>` now compiles the
+  imported scratch once and compares the function's `.text` words and
+  relocation records with the same function compiled from the tree's own
+  configured recipe (`tools/scratch_fidelity.py check`), printing
+  `SCRATCH FIDELITY: identical` or `N words off at +0x..`, and refuses to
+  search an unfaithful scratch unless given `--allow-unfaithful`
+  (`--fidelity-only` imports and gates without searching). The import runs
+  through `scratch_fidelity.py import`, which restores what the importer
+  drops: a block-scope prototype inside a stripped function stays in force
+  for the rest of an IDO TU, so it is re-applied at file scope, and a K&R
+  identifier list on a stripped declaration is dropped (cfe Warning 731).
+  `permute_batch.py`'s grouped importer applies the same restoration. This
+  was the func_800517E0 false ceiling: anim.c declares
+  `void func_8005055C(u8 pathIndex);` inside func_800511C4, the importer lost
+  it, and the scratch was one instruction short; it is now identical.
+- **`tools/permute_transplant.py <sym> <output-dir|source.c> <tu.c> -o out.c`**
+  splices a permuter winner's function into a copy of the TU (the definition
+  inside `#ifdef NON_MATCHING` when there are two) and prints
+  `fast_score.py --aligned` beside the permuter's `score.txt`. Lines the
+  permuter changed outside the function are listed, because they are not
+  carried over and the tree score is measured without them.
+
 ## Traps that have each cost a lane real time
 
 1. **Never read target words from splat's `.s` annotation** — that is the ROM's

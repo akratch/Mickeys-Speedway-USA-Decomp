@@ -200,6 +200,12 @@ class ConfiguredContextTests(unittest.TestCase):
             with self.assertRaisesRegex(ranking.RankingDocumentError, "missing configured recipes"):
                 ranking.configured_compile_commands(items)
 
+    def test_empty_queue_expands_no_recipe(self):
+        # gmake with no named target would expand the default goal instead.
+        with mock.patch.object(ranking.subprocess, "run") as run:
+            self.assertEqual(ranking.configured_compile_commands([]), {})
+            run.assert_not_called()
+
     def test_transitive_headers_resolution_cycles_and_unrelated_files(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

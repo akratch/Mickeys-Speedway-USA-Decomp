@@ -703,6 +703,11 @@ def configured_build_contexts(items: list["pb.QueueItem"]) -> dict[str, str]:
 def configured_compile_commands(items: list["pb.QueueItem"]) -> dict[str, list[str]]:
     """Expand every distinct TU in one make invocation, with no mtime writes."""
     sources = list(dict.fromkeys(item.rel_c_file for item in items))
+    if not sources:
+        # With no targets named, `gmake -n` expands the default goal and
+        # prints every TU's recipe, none of which is wanted. An empty queue
+        # (no NON_MATCHING function left) has nothing to expand.
+        return {}
     arguments = ["gmake", "--no-print-directory", "-n", "NON_MATCHING=1"]
     for source in sources:
         arguments.extend(["-W", source])

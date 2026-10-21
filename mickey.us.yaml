@@ -303,9 +303,9 @@ segments:
       # store is pointed at the row sum's register; the ROM then holds the
       # 8 zero bytes of alignment. The same 40-word object also sits whole
       # at ROM 0x2A2B0, as mtxf_transform_point inside the hand-written
-      # main/math_util run that DKR's built src/hasm/ido/math_util.s.o
-      # matches: this ROM's hand-written maths carries compiled guMtxXFMF
-      # verbatim. No C reaches this routine (lane mtxxfmf, 2026-10-21):
+      # main/math_util (JFG's src/hasm/ido/math_util.s, whose
+      # mathMtxXFMF it is; DKR's math_util.s carries the same routine):
+      # Rare's hand-written maths carries compiled guMtxXFMF verbatim. No C reaches this routine (lane mtxxfmf, 2026-10-21):
       # 54,968 compiles of C forms (term order and grouping, operand
       # order, zero-weight and identity translation terms, indexing,
       # temporaries, register hints, casts, loops; -O1/-O2/-O3,

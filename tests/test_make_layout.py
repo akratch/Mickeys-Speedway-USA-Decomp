@@ -40,6 +40,26 @@ class MakeLayoutTests(unittest.TestCase):
         self.assertNotIn("$(TARGET).elf:", text)
         self.assertNotIn("mips64-elf-ld", text)
 
+    def test_c_recipe_applies_declared_rebinds_after_postprocess(self) -> None:
+        # The resident-call renames in mk/overlay_resident_rebinds.generated.mk
+        # replace an in-place objcopy that ran after the whole build, so they
+        # must run after every POSTPROCESS step, in every compile of a C object.
+        text = MAKEFILE.read_text(encoding="utf-8")
+        recipe = text.split("\n$(BUILD_DIR)/%.c.o: %.c ", 1)[1].split("\n\n", 1)[0]
+        self.assertLess(recipe.index("$(RUN_POSTPROCESS)"),
+                        recipe.index("$(RUN_SURFACE_REBIND)"))
+        self.assertIn("SURFACE_REBIND := @:", text)
+
+    def test_overlay_syms_builds_every_object_before_generating(self) -> None:
+        # The resident-name census reads the resident objects and fails closed
+        # when one is missing; building only the overlay objects would refuse
+        # on every cold tree.
+        text = MAKEFILE.read_text(encoding="utf-8")
+        for target in ("overlay-syms:\n", "check-overlay-syms:\n"):
+            recipe = text.split("\n" + target, 1)[1].split("\n\n", 1)[0]
+            self.assertLess(recipe.index("$(MAKE) --no-print-directory $(O_FILES)"),
+                            recipe.index("reloc_surface.py generate"))
+
     def test_root_owns_the_single_final_link(self) -> None:
         text = MAKEFILE.read_text(encoding="utf-8")
         self.assertEqual(1, len(re.findall(r"^\$\(TARGET\)\.elf:", text, re.MULTILINE)))

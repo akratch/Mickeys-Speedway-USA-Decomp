@@ -585,11 +585,13 @@ order of how often they decided a match:
 
 ### Promotion traps (each cost a lane a cycle on 2026-10-01)
 
-1. `gmake verify`'s candidate guard rebuilds changed objects and discards the
-   `*Reloc` renames `overlay-syms` wrote, so a promoted overlay object that
-   calls resident functions needs `--redefine-sym <n>=<n>_oNNNReloc` for each
-   callee in its POSTPROCESS rule in `mk/overlays.mk`; the names are the new
-   lines `overlay-syms` adds to `overlay_undefined_syms.us.txt`.
+1. A promoted overlay object that calls resident functions by their resident
+   names needs a `<n>=<n>_oNNNReloc` rename per callee. `gmake overlay-syms`
+   declares it in `mk/overlay_resident_rebinds.generated.mk` (unless the
+   object's POSTPROCESS rule already spells it), and the compile recipe
+   applies it, so rebuilds keep it; commit that file with the promotion.
+   (Until 2026-10-21 the renames were written into objects in place, and
+   `gmake verify`'s candidate guard discarded them.)
 2. Cross-overlay callees are `*Reloc` placeholder declarations in the C
    (`overlay-syms` says so). Same-module calls can be direct or placeholder
    per call site; read the target's call word.
@@ -599,8 +601,9 @@ order of how often they decided a match:
    `.rel.rodata`, `True` on the atlas ownership row).
 4. A single-function overlay object usually needs
    `trim_elf_section.py $@ .text <size>`.
-5. After any header edit the tree rebuilds and drops renames: run
-   `gmake overlay-syms && gmake -j4` before `gmake verify`.
+5. A header edit rebuilds the tree; the declared renames survive it. Run
+   `gmake overlay-syms` only when an overlay object's sites or resident calls
+   changed (`check-overlay-syms` tells you).
 6. Some TUs are hash-pinned by tests (`tools/test_resident_storage_view.py`,
    `config/overlay_storage_bindings.us.json`): repin in the same commit, never
    skip the test.
@@ -1149,10 +1152,10 @@ shadow -- the dispatch order for Track B.
     instruction the compiler cannot emit at that level — a branch-likely, or a
     rounding-mode float conversion — the override is refuted whatever it scored.
     `tools/check_isa_overrides.py` enforces this.
-11. **Link failure on arrival:** run `gmake overlay-syms`, then build. If
-    `git status` shows `overlay_undefined_syms.us.txt` turning a
-    `<sym>_oNNReloc` back into a bare `<sym>`, that is lost-rename build drift —
-    regenerate and rebuild, never commit that diff.
+11. **Link failure on arrival:** a clean tree links in one pass, so a lane on
+    a current base should not see one. If it does, run `gmake overlay-syms`,
+    then build, and report it: the committed surface was stale. Never commit
+    a diff turning a `<sym>_oNNNReloc` back into a bare `<sym>`.
 12. **Give yourself a private scratch subdirectory, outside the tree.** The
     session scratchpad is shared and two lanes have overwritten each other's
     files. Note that `mickey-lane-<name>` is a **symlink** to

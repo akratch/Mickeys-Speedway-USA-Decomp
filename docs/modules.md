@@ -167,7 +167,8 @@ ROM is what makes the borrowing sound, not a reason to leave it unmentioned.
 Where Mickey's ROM and a public decomp disagree, **Mickey wins and the
 divergence is written down**. Current divergences: `MipsInstruction`'s field
 order, `runlinkCallResumeFunction`'s do/while-15 scan, and `RelocTableEntry`,
-whose layout is not JFG's at all (see §5.2).
+whose two words are in the opposite order to JFG's (see `docs/overlays.md`
+§5.2).
 
 ### 1.4 Casing
 

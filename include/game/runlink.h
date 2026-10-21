@@ -74,10 +74,11 @@ typedef struct RomTableEntry {
  * exactly the resident segment's BSS. tools/overlay_tables.py re-asserts the
  * gap arithmetic against the ROM on every run.
  *
- * initFunction (0x18) is the one field nothing in this project has read. It is
- * present rather than commented out because the struct has to be 0x20 bytes for
- * the indexing to compile correctly; treat it as unverified until a matched
- * function reads it.
+ * initFunction (0x18) is read by runlinkDownloadCode (src/main/runlink.c):
+ * once the module is relocated, a value other than -1 is called as
+ * vramBase + initFunction, the module's init entry point. resumeFunction
+ * (0x1C) is the same kind of offset, read by runlinkCallResumeFunction. JFG's
+ * header gives both the same meaning.
  */
 typedef struct OverlayHeader {
     /* 0x00 */ s32 vramBase; /* 0 while the overlay is not resident */
@@ -114,13 +115,15 @@ typedef struct OverlayHeader {
  *   ROM 0x34070  addu t6, t6, v0      ... into overlayRomTable, so it is an
  *                                     index into RomTableEntry[]
  *
- * THIS IS NOT JFG'S LAYOUT, and the difference is worth stating rather than
- * smoothing over. JFG's table entry is two plain words, `{u32 functionAddress;
- * u32 overlayIndex;}`. Mickey's has the two words in the opposite order AND
- * packs the address: it stores a 24-bit byte offset from 0x80000450 in the
- * high bits of the second word rather than a whole 32-bit address. This struct
- * is therefore derived entirely from Mickey's ROM; only the type's NAME is
- * JFG's.
+ * The words are in the opposite order to JFG's, and the difference is worth
+ * stating rather than smoothing over. JFG's current header (checked at its
+ * commit 0371e91) packs the call site exactly as here -- a 24-bit offset from
+ * 0x80000450 above an 8-bit field it calls unknown, "almost always 0x40" --
+ * but declares that packed word FIRST and overlayIndex second; its headers
+ * before 2026-08-28 declared two plain words, `{u32 functionAddress; u32
+ * overlayIndex;}`. Mickey's reader above takes the index from +0x00 and the
+ * packed word from +0x04. This struct is derived from Mickey's ROM; the type's
+ * name and the packing agree with JFG's, the word order does not.
  *
  * The low 8 bits of the second word are shifted away by the only code that
  * reads them, so no Mickey function establishes what they hold. The table's ROM

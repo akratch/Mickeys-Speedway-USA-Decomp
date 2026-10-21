@@ -36,13 +36,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11UpdateSelection.c.o: POSTPROCESS 
 		--redefine-sym func_8002554C=overlay11ReadInputReloc \
 		--redefine-sym func_overlay_045_F0001BF4_188E04C=overlay11SetValue $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1C8
-# These one-to-one proxies describe the thirteen runtime-authenticated call
-# roles required by a future C promotion. The current NON_MATCHING fallback
-# does not emit the friendly names, so its ordinary object leaves these
-# mappings inert until the candidate body becomes canonical.
+# These one-to-one proxies give the thirteen runtime-authenticated call roles
+# their per-module placeholders now that the C body is canonical.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11UpdateMenu.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym func_overlay_011_F0001398_1869BE0=overlay11UpdateMenu \
 		--redefine-sym func_80028F54=overlay11GetStatusReloc \
 		--redefine-sym func_80000F94=overlay11PlaySoundReloc \
 		--redefine-sym func_overlay_045_F0001BF4_188E04C=overlay11SetValue \

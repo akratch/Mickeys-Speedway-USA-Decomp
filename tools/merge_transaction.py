@@ -20,6 +20,7 @@ GENERATED = {
     "config/postprocess-audit.us.json", "docs/modules.md", "docs/overlays.md",
     "config/nonmatching-ranking.us.json", "docs/nm-ranking.md",
     "mickey.us.yaml", "symbol_addrs.us.txt", "overlay_undefined_syms.us.txt",
+    "mk/overlay_resident_rebinds.generated.mk",
 }
 
 

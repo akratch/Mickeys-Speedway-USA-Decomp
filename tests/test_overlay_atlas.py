@@ -57,6 +57,36 @@ def atlas(modules):
     }
 
 
+class MixedTuRangeTests(unittest.TestCase):
+    """The mixed-TU path is empty today but must stay correct for a future TU."""
+
+    def rows(self, table, ownership_rows):
+        with mock.patch.object(overlay_atlas, "MIXED_TU_EXACT_C_RANGES", table):
+            return overlay_atlas.mixed_tu_exact_c_rows(7, ownership_rows)
+
+    def test_table_is_empty_while_every_overlay_tu_is_complete(self):
+        self.assertEqual({}, overlay_atlas.MIXED_TU_EXACT_C_RANGES)
+
+    def test_range_inside_a_mixed_row_is_emitted(self):
+        container = ownership(0, 0x40, exact=False, source="overlays/o007/overlay_007")
+        got = self.rows({7: [(0x10, 0x28, "overlay7Promoted")]}, [container])
+        self.assertEqual([("0x10", "0x28", "overlay7Promoted", "overlays/o007/overlay_007")],
+                         [(r["offset"].lower(), r["end_offset"].lower(), r["label"],
+                           r["source"]) for r in got])
+
+    def test_range_inside_a_completed_tu_is_skipped(self):
+        container = ownership(0, 0x40, exact=True)
+        self.assertEqual([], self.rows({7: [(0x10, 0x28, "overlay7Done")]}, [container]))
+
+    def test_unsorted_rows_name_the_row_and_the_rule(self):
+        container = ownership(0, 0x40, exact=False)
+        with self.assertRaises(ValueError) as caught:
+            self.rows({7: [(0x20, 0x28, "second"), (0x10, 0x18, "first")]}, [container])
+        message = str(caught.exception)
+        self.assertIn("first", message)
+        self.assertIn("sorted by offset", message)
+
+
 class ExactCDeltaTests(unittest.TestCase):
     def test_reports_promotions_retractions_and_net_bytes(self):
         base = atlas(

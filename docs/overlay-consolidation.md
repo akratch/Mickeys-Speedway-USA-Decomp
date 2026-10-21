@@ -213,6 +213,12 @@ demotion of an instruction-altered object before consolidation.
 
 ### Corrected mixed-TU recipe
 
+Status, 2026-10-21: every overlay TU is complete, so the table this recipe
+fills is empty. Its 182 rows each sat inside a fully matched TU, where the
+generator already skipped them; removing them left `config/overlays.us.json`
+and the `mickey.us.yaml` block byte-identical. The recipe below stays correct
+for a consolidation that produces a mixed TU again.
+
 Do not split a byte-exact consolidated TU merely to restore scoreboard credit.
 After proving the standalone object, merged object, relocations, linked owned
 range, and ROM, record its exact subranges in

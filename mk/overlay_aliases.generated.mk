@@ -2,46 +2,14 @@
 # Source: config/normalizations/overlay-symbol-aliases.us.json
 # Pure objcopy --redefine-sym POSTPROCESS rules only.
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay2ChooseBoundary.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_002_F00006E0_18574D8=overlay2ChooseBoundary $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay2SplitRegion.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_002_F0000B70_1857968=overlay2SplitRegion $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o010/overlay10Initialize.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_010_F0000000_1868450=overlay10Initialize $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CreateChain.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_017_F0000318_1873CD0=overlay17CreateChain $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildPlanes.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym func_overlay_019_F00001E0_1875438=overlay19BuildPlanes \
-		--redefine-sym sqrtf=sqrtf_o019Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19ClassifyEdge.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_019_F0000D78_1875FD0=overlay19ClassifyEdge $@
+	$(OBJCOPY) --redefine-sym sqrtf=sqrtf_o019Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay23RenderEffect.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym overlay23CallReloc=func_overlay_023_F0000000_1879210 $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreateConfig.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_031_F0000A84_187FFA4=overlay31CreateConfig $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34RemoveRecord.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_034_F00002C8_1881470=overlay34RemoveRecord $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57Draw32A0.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_057_F00032A0_18A6E98=overlay57Draw32A0 $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57SmoothAndCheckDistance.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_057_F0002C28_18A6820=overlay57SmoothAndCheckDistance $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58DrawLargePointQuad.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_058_F00050C8_18B42B0=overlay58DrawLargePointQuad $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58DrawPointQuad.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_058_F0004F28_18B4110=overlay58DrawPointQuad $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58FinalizePackedStatus.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_058_F0005554_18B473C=overlay58FinalizePackedStatus $@
@@ -54,48 +22,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o074/overlay74Update.c.o: POSTPROCESS = \
 		--redefine-sym amSndPlay=overlay74SoundReloc \
 		--redefine-sym func_800291B4=overlay74HitReloc \
 		--redefine-sym func_8003A680=overlay74RewardReloc \
-		--redefine-sym func_8005776C=overlay74QueryReloc \
-		--redefine-sym func_overlay_074_F00000B8_18CBD58=overlay74Update $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o080/overlay80UpdateContact.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_080_F000011C_18CE9E4=overlay80UpdateContact $@
+		--redefine-sym func_8005776C=overlay74QueryReloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83BuildBatch.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym addObjectLight=overlay83CreateLinkedReloc \
-		--redefine-sym func_overlay_083_F000053C_18CFCFC=overlay83BuildBatch \
 		--redefine-sym mmAlloc=overlay83AllocateBatchReloc \
 		--redefine-sym pointListRPY=overlay83TransformWorldReloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84LoadCurrent.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_084_F0000C9C_18D117C=overlay84LoadCurrent $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86SelectPosition.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_086_F00002E4_18D211C=overlay86SelectPosition $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay89UpdateStateAndParticles.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_089_F00005A4_18D47D4=overlay89UpdateStateAndParticles $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitScale.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_097_F0000508_18D83A0=overlay97InitScale $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98CollectAccepted.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_098_F0000144_18D8B04=overlay98CollectAccepted $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100UpdateMotion.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_100_F000038C_18DB0B4=overlay100UpdateMotion $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildPresentationA.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_101_F00099C4_18E51E4=overlay101BuildPresentationA $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildPresentationB.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_101_F0009D04_18E5524=overlay101BuildPresentationB $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildPresentationC.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_101_F000A044_18E5864=overlay101BuildPresentationC $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawPanel.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_101_F0002EFC_18DE71C=overlay101DrawPanel $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailA6BC.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_101_F000A6BC_18E5EDC=overlay101TailA6BC $@

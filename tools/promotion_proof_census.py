@@ -445,10 +445,10 @@ def refresh_build() -> None:
     # or mk/ recipe, which the --no-build freshness check would then refuse
     # in every single proof.
     #
-    # A forced rebuild recompiles every overlay object, which discards the
-    # resident-call renames only `gmake overlay-syms` applies, so the first
-    # link can fail with R_MIPS_26 truncations (CLAUDE.md, "Promoting an
-    # overlay function").  Regenerate and link once more before giving up.
+    # A forced rebuild recompiles every overlay object; the resident-call
+    # renames are declared compile rules (mk/overlay_resident_rebinds.
+    # generated.mk), so it keeps them.  If the link still fails, the surface
+    # itself is stale: regenerate and link once more before giving up.
     jobs = "-j%d" % (os.cpu_count() or 4)
     # The ELF can be newer than an edited recipe while the objects it linked
     # are not (an earlier link after the edit rebuilt only what Make saw as

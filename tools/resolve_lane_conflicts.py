@@ -189,7 +189,8 @@ def main():
             open(path, "w").write(keep_both(text))
             how = "keep both"
         elif path.endswith(".json") or path in (
-                "overlay_undefined_syms.us.txt", "mk/overlay_aliases.generated.mk"):
+                "overlay_undefined_syms.us.txt", "mk/overlay_aliases.generated.mk",
+                "mk/overlay_resident_rebinds.generated.mk"):
             # Generated or JSON artifacts: never merge by hunks. A keep-both
             # hunk once duplicated the atlas sha256 key and broke the pin
             # file's JSON, which is why the named files were listed here; the

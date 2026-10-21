@@ -1402,6 +1402,9 @@ void func_800517E0(void) {
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     value = (f32) (*((u16 *) ((u8 *) cursor + 8)));
                     start = (f32) *((u16 *) ((u8 *) cursor + 0xA));
+                    /* An empty block: keeps the procedure's block count where 0x46's
+                     * removed probes left it (constant 6000 piece in a3; lane cp-col). */
+                    do { } while (0);
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     if ((word12 & 0xF) == 7) {
                         frame68 = flagsValue != 0 ? 0 : 0xFF;
@@ -1479,7 +1482,7 @@ void func_800517E0(void) {
                     index = cursor->command << 8;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0x10);
                     target = func_8002A8C0(index) * end;
-                    end = func_8002A8BC(index) * end; if (target) {} if (target) {}
+                    end = func_8002A8BC(index) * end;
                     animCommandMotionTrap(target, color, end,
                                           motionCount * 2, high, high2,
                                           low2, pathIndex, low, packedField,
@@ -1729,6 +1732,9 @@ void func_800517E0(void) {
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     frame4D = *((u16 *) ((u8 *) cursor + 8));
                     value = (f32) *((u16 *) ((u8 *) cursor + 0xA));
+                    /* An empty block: keeps the procedure's block count where 0x46's
+                     * removed probes left it (constant 6000 piece in a3; lane cp-col). */
+                    do { } while (0);
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     if ((path != NULL) &&
@@ -1780,7 +1786,9 @@ void func_800517E0(void) {
                 case 0x6D:
                     pathIndex = cursor->command & 0xFF;
                     type = *((u8 *) cursor + 5);
-                    value = (f32) *((s16 *) ((u8 *) cursor + 6)) * 0.00390625f;
+                    /* The first float in radius, a 0x6D-local web (f0), not
+                     * the function-wide value web (final campaign 2026-10-21). */
+                    radius = (f32) *((s16 *) ((u8 *) cursor + 6)) * 0.00390625f;
                     /* The second float in value2 (f2) and the +0xA halfword
                      * in an s32 local rather than a u16 one: the halfword
                      * then reaches a1 as shipped, which also makes 0x47,
@@ -1823,8 +1831,8 @@ void func_800517E0(void) {
                                             next->unkAC =
                                                 object->model->scale5C;
                                         } else if (frame6E == 2) {
-                                            next->unk0 = value;
-                                            next->unk4 = value;
+                                            next->unk0 = radius;
+                                            next->unk4 = radius;
                                             next->unkAC = value2;
                                         }
                                     }
@@ -4084,10 +4092,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 68/1808 words
+ * score: 65/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xDC
- * summary: Five real words left: 0x6D f0 (value web order) and 0x6F case 2's 0x400000 in a0; 62 masked are reloc-pairing artifacts
+ * summary: Two real words left: 0x6F case 2's 0x400000 in a0 (bb248 interferer count); 62 masked are reloc-pairing artifacts
  * PLATEAU-HANDOFF:func_800517E0:end
  */

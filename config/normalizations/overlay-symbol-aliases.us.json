@@ -2,33 +2,6 @@
   "schema_version": 1,
   "rules": [
     {
-      "object": "overlays/o002/overlay2ChooseBoundary.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_002_F00006E0_18574D8",
-          "to": "overlay2ChooseBoundary"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o002/overlay2SplitRegion.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_002_F0000B70_1857968",
-          "to": "overlay2SplitRegion"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o010/overlay10Initialize.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_010_F0000000_1868450",
-          "to": "overlay10Initialize"
-        }
-      ]
-    },
-    {
       "object": "overlays/o017/overlay17CreateChain.c.o",
       "aliases": [
         {
@@ -41,21 +14,8 @@
       "object": "overlays/o019/overlay19BuildPlanes.c.o",
       "aliases": [
         {
-          "from": "func_overlay_019_F00001E0_1875438",
-          "to": "overlay19BuildPlanes"
-        },
-        {
           "from": "sqrtf",
           "to": "sqrtf_o019Reloc"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o019/overlay19ClassifyEdge.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_019_F0000D78_1875FD0",
-          "to": "overlay19ClassifyEdge"
         }
       ]
     },
@@ -65,60 +25,6 @@
         {
           "from": "overlay23CallReloc",
           "to": "func_overlay_023_F0000000_1879210"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o031/overlay31CreateConfig.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_031_F0000A84_187FFA4",
-          "to": "overlay31CreateConfig"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o034/overlay34RemoveRecord.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_034_F00002C8_1881470",
-          "to": "overlay34RemoveRecord"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o057/overlay57Draw32A0.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_057_F00032A0_18A6E98",
-          "to": "overlay57Draw32A0"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o057/overlay57SmoothAndCheckDistance.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_057_F0002C28_18A6820",
-          "to": "overlay57SmoothAndCheckDistance"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o058/overlay58DrawLargePointQuad.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_058_F00050C8_18B42B0",
-          "to": "overlay58DrawLargePointQuad"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o058/overlay58DrawPointQuad.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_058_F0004F28_18B4110",
-          "to": "overlay58DrawPointQuad"
         }
       ]
     },
@@ -158,29 +64,12 @@
         {
           "from": "func_8003A680",
           "to": "overlay74RewardReloc"
-        },
-        {
-          "from": "func_overlay_074_F00000B8_18CBD58",
-          "to": "overlay74Update"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o080/overlay80UpdateContact.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_080_F000011C_18CE9E4",
-          "to": "overlay80UpdateContact"
         }
       ]
     },
     {
       "object": "overlays/o083/overlay83BuildBatch.c.o",
       "aliases": [
-        {
-          "from": "func_overlay_083_F000053C_18CFCFC",
-          "to": "overlay83BuildBatch"
-        },
         {
           "from": "mmAlloc",
           "to": "overlay83AllocateBatchReloc"
@@ -196,101 +85,11 @@
       ]
     },
     {
-      "object": "overlays/o084/overlay84LoadCurrent.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_084_F0000C9C_18D117C",
-          "to": "overlay84LoadCurrent"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o086/overlay86SelectPosition.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_086_F00002E4_18D211C",
-          "to": "overlay86SelectPosition"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o089/overlay89UpdateStateAndParticles.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_089_F00005A4_18D47D4",
-          "to": "overlay89UpdateStateAndParticles"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o097/overlay97InitScale.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_097_F0000508_18D83A0",
-          "to": "overlay97InitScale"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o098/overlay98CollectAccepted.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_098_F0000144_18D8B04",
-          "to": "overlay98CollectAccepted"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o100/overlay100UpdateMotion.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_100_F000038C_18DB0B4",
-          "to": "overlay100UpdateMotion"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o101/overlay101BuildPresentationA.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_101_F00099C4_18E51E4",
-          "to": "overlay101BuildPresentationA"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o101/overlay101BuildPresentationB.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_101_F0009D04_18E5524",
-          "to": "overlay101BuildPresentationB"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o101/overlay101BuildPresentationC.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_101_F000A044_18E5864",
-          "to": "overlay101BuildPresentationC"
-        }
-      ]
-    },
-    {
       "object": "overlays/o101/overlay101DrawPanel.c.o",
       "aliases": [
         {
           "from": "func_overlay_101_F0002EFC_18DE71C",
           "to": "overlay101DrawPanel"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o101/overlay101TailA6BC.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_101_F000A6BC_18E5EDC",
-          "to": "overlay101TailA6BC"
         }
       ]
     }

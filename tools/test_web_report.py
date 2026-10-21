@@ -250,11 +250,15 @@ class CompileEnvironment(unittest.TestCase):
 
     def test_force_bias_and_keep_survive_alongside_the_cuts(self):
         env = {"PATH": "p", "CDX_FORCE": "p1:w1=s", "CDX_BIAS": "w2=5",
+               "CDX_WEIGHT": "p1:w3.1:bb7=-2", "CDX_GROW": "p1:w4=seed",
                "DKWB_SUBST_KEEP": "12", "CDX_LOG": "1", "DKWB_CUT_A": "3", "CDX_PROC": "4"}
         self.assertEqual(wr.setting_env(env), {"CDX_FORCE": "p1:w1=s", "CDX_BIAS": "w2=5",
+                                               "CDX_WEIGHT": "p1:w3.1:bb7=-2",
+                                               "CDX_GROW": "p1:w4=seed",
                                                "DKWB_SUBST_KEEP": "12"})
         self.assertEqual(set(wr.pinned_env(env)),
-                         {"CDX_FORCE", "CDX_BIAS", "DKWB_SUBST_KEEP", "DKWB_CUT_A"})
+                         {"CDX_FORCE", "CDX_BIAS", "CDX_WEIGHT", "CDX_GROW",
+                          "DKWB_SUBST_KEEP", "DKWB_CUT_A"})
         self.assertIn("CDX_FORCE=p1:w1=s", wr.describe_pinned(env))
         self.assertEqual(wr.pinned_env({"PATH": "p"}), {})
 

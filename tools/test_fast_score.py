@@ -132,5 +132,32 @@ class RelativeCandidateTests(unittest.TestCase):
         self.assertIn(str(Path(directory).resolve() / "nope.c"), str(caught.exception))
 
 
+class WindowTests(unittest.TestCase):
+    # Synthetic rows (word, text): our own placeholder values, not target code.
+    TGT = [(1, "a"), (2, "b"), (3, "c"), (4, "d"), (5, "e")]
+    CAND = [(1, "a"), (9, "x"), (3, "c"), (8, "y"), (5, "e")]
+
+    def test_parse_window_accepts_hex_with_or_without_prefix(self):
+        self.assertEqual(fast_score.parse_window("0x18e0-0x1920"), (0x18E0, 0x1920))
+        self.assertEqual(fast_score.parse_window("+18E0 - +1920"), (0x18E0, 0x1920))
+        for bad in ("18e0", "0x20-0x10", "x-y"):
+            with self.assertRaises(SystemExit):
+                fast_score.parse_window(bad)
+
+    def test_without_a_window_only_differing_rows_print(self):
+        rows = fast_score.diff_rows(self.TGT, self.CAND)
+        self.assertEqual([r.split()[0] for r in rows], ["+0x0004", "+0x000c"])
+
+    def test_a_window_prints_every_row_in_range_and_marks_the_differing(self):
+        rows = fast_score.diff_rows(self.TGT, self.CAND, (0x4, 0x8))
+        self.assertEqual(len(rows), 2)
+        self.assertTrue(rows[0].startswith("* +0x0004"))
+        self.assertTrue(rows[1].startswith("  +0x0008"))
+
+    def test_window_needs_diff(self):
+        with self.assertRaises(SystemExit):
+            fast_score.main(["func_x", "cand.c", "--window", "0-4"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1056,6 +1056,14 @@ shadow -- the dispatch order for Track B.
   with the fix: delete the leftover extract, never regenerate `objdiff.json`
   around it. The 2026-10-21 case was a stale
   `assets/overlays/o064/overlay_064_data_rodata.bin`.
+- **Reading aids.** `fast_score.py <sym> <cand.c> --diff --window A-B` (hex
+  function offsets) prints every row of that range, `*` on the differing ones,
+  so one handler reads whole instead of as scattered differing words.
+  `tools/product_group.py <product.json> --group AXIS[,AXIS]` reads a
+  `shape_product.py --json` file (no compile) and prints the best cell per
+  setting of the named axes, with the other axes' settings that achieved it;
+  a group whose best is worse than another group's best is a closed setting
+  for those axes.
 
 ## Traps that have each cost a lane real time
 

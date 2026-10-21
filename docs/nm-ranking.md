@@ -293,7 +293,7 @@ units remain distinct.
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 17 | 17 | 328 | 328 | 0 | — |
-| 2 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 77 | 70 | 200 | 220 | 0 | — |
+| 2 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 75 | 68 | 200 | 220 | 0 | — |
 
 ### Unresolved identities
 

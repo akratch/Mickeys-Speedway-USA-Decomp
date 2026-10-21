@@ -1171,10 +1171,10 @@ void func_800517E0(void) {
         hundred = 100.0f;
         scale = 60.0f;
         factor = 0.01f;
-        /* The constant 1 is split into two webs by type. The unsigned one
-         * is 0x6F's `state == 1U`: with the U there rather than on this
-         * loop test (L177's placement), 0x6F's naming rows go and the
-         * aligned naming count falls by three (final campaign 2026-10-21). */
+        /* The constant 1 stays one web (no `U` here or on 0x6F's state
+         * test): how many loop-spanning constant webs exist decides
+         * whether the &D_8007D6A4 break piece grows through the loop
+         * (final campaign 2026-10-21; L177 put a U here once). */
         while (cursor->command != 0x7F00 &&
                (commandTime = (f32) (commandDuration = cursor->duration) /
                               hundred) < D_8007D6AC && D_8007D6A4 == 1) {
@@ -1870,7 +1870,7 @@ void func_800517E0(void) {
                         } else {
                             state = object->model->animationKinds[object->animationIndex];
                         }
-                        if (state == 1U) {
+                        if (state == 1) {
                             object->animationValue = index;
                             path->unkC = (f32) packed2 / scale;
                         } else if (state == 0) {
@@ -2005,10 +2005,11 @@ void func_800517E0(void) {
                     joyEnable(index);
                     break;
                 case 0x7E:
+                    /* The halfword converted inside the statement: a ring
+                     * draw as shipped, where a duration or radius carrier
+                     * keeps its own web (lane cp-60). */
                     D_8007D6A8 -= ((s32) commandDuration * 0x3C) / 100;
-                    duration = cursor->duration;
-                    radius = (f32) duration;
-                    D_8007D6AC = D_8007D6AC - radius * factor;
+                    D_8007D6AC = D_8007D6AC - (f32) cursor->duration * factor;
                     cursor = D_8007D698;
                     break;
             }
@@ -4083,10 +4084,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 70/1808 words
+ * score: 68/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xDC
- * summary: 0x79 exact: store through the address register, no frame copy; 8 real naming words remain (0x6D f0, 0x7E/loop tail t9/t8); 62 masked are reloc-pairing artifacts
+ * summary: Five real words left: 0x6D f0 (value web order) and 0x6F case 2's 0x400000 in a0; 62 masked are reloc-pairing artifacts
  * PLATEAU-HANDOFF:func_800517E0:end
  */

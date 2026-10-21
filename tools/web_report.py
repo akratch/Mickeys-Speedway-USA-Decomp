@@ -50,8 +50,8 @@ other tools' `--candidate` do); `DKWB_CUT_*` in the environment reach the
 instrumented compile, and the identity gate then compares it with an
 instrumented compile that has the same cuts and no `CDX_*` logging.
 
-`CDX_FORCE`, `CDX_BIAS` and `DKWB_SUBST_KEEP`, when set, reach the instrumented
-compile, so the report describes the forced allocation (records print
+`CDX_FORCE`, `CDX_BIAS`, `CDX_WEIGHT`, `CDX_GROW` and `DKWB_SUBST_KEEP`, when set,
+reach the instrumented compile, so the report describes the forced allocation (records print
 `forced=-1` where a force was accepted). A stock compiler ignores them, so the
 identity gate then compares against a second instrumented compile with the same
 settings and no logging, and the header says so. `CDX_FORCE`/`CDX_BIAS` need an
@@ -574,11 +574,11 @@ def cut_env(environ) -> dict:
     return {k: v for k, v in environ.items() if k.startswith("DKWB_CUT_") and v}
 
 
-SETTING_VARS = ("CDX_FORCE", "CDX_BIAS", "DKWB_SUBST_KEEP")
+SETTING_VARS = ("CDX_FORCE", "CDX_BIAS", "CDX_WEIGHT", "CDX_GROW", "DKWB_SUBST_KEEP")
 
 
 def setting_env(environ) -> dict:
-    """Force, bias and kept-substitution settings, which change the object and must reach the compile."""
+    """Force, bias, weight, grow and kept-substitution settings: they change the object and must reach the compile."""
     return {k: environ[k] for k in SETTING_VARS if environ.get(k)}
 
 
@@ -603,7 +603,7 @@ def compile_tu(symbol: str, work: pathlib.Path, proc: str,
                candidate: pathlib.Path | None = None, detail_web: str = "all"):
     """Instrumented, stock and `-g3` names compiles of the TU (or of `candidate`).
 
-    `DKWB_CUT_*`, `CDX_FORCE`, `CDX_BIAS` and `DKWB_SUBST_KEEP` reach the
+    `DKWB_CUT_*`, `CDX_FORCE`, `CDX_BIAS`, `CDX_WEIGHT`, `CDX_GROW` and `DKWB_SUBST_KEEP` reach the
     instrumented compile. A stock compiler ignores them, so with any set the
     identity gate compares the instrumented object with a second instrumented
     compile (same settings, no logging) in the `stock` slot: the gate then
@@ -721,8 +721,8 @@ def main(argv: list[str] | None = None) -> int:
         env_proc = os.environ.get("CDX_PROC", "")
         if args.proc is None and env_proc.isdigit():
             proc_arg = env_proc
-        if proc_arg == "all" and any(os.environ.get(k) for k in ("CDX_FORCE", "CDX_BIAS")):
-            print("web_report: CDX_FORCE/CDX_BIAS are ignored by the compiler without a "
+        if proc_arg == "all" and any(os.environ.get(k) for k in ("CDX_FORCE", "CDX_BIAS", "CDX_WEIGHT", "CDX_GROW")):
+            print("web_report: CDX_FORCE/CDX_BIAS/CDX_WEIGHT/CDX_GROW are ignored by the compiler without a "
                   "procedure ordinal; pass --proc N (or a numeric CDX_PROC).", file=sys.stderr)
             return 2
         runs = compile_tu(args.symbol, work, proc_arg, candidate,

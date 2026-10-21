@@ -1063,6 +1063,30 @@ shadow -- the dispatch order for Track B.
   with the fix: delete the leftover extract, never regenerate `objdiff.json`
   around it. The 2026-10-21 case was a stale
   `assets/overlays/o064/overlay_064_data_rodata.bin`.
+- **`tools/hasm_audit.py [--json] [--check [--strict]]`** re-derives the proof
+  behind every routine `verified_asm.us.txt` credits, reading neither the yaml
+  notes nor `symbol_addrs` comments. Coverage: the routines are enumerated with
+  `progress.py`'s own functions (107 asserted), each must link from a `.s.o`,
+  and nothing under `src/` may define it or name it in a GLOBAL_ASM pragma.
+  Identity: each subsegment's run, then each routine, is searched in every
+  object of the farm `tools/reference-builds.lock` pins (each title's digest
+  is checked), with only the reference's own relocated fields masked, and the
+  matching object is classed hand-written source / the reference's `hasm` /
+  GLOBAL_ASM (asm-processor's `.NON_MATCHING` twin, or the pinned C source) /
+  extracted / compiled C, which refutes. Mechanisms: per-routine detectors
+  (odd single FP, trapping add/sub, non-argument registers read on entry,
+  callee-saved writes with no save, computed jumps into own code, frame
+  shapes, COP0/system, reserved registers, foreign control transfers,
+  secondary entries) that also run over every C-matched resident function as
+  a negative control; a label that fires there carries no verdict. IDO does,
+  measurably, schedule a load before the frame, use `ra` as scratch and then
+  save it in a leaf, save callee FP by word at -mips1, and leave dead code
+  behind a branch-likely. A routine with neither is accepted only as an
+  instruction-deleted copy of a reference routine or as a private helper all
+  of whose references (resident code and data, the overlay export table, raw
+  overlay constants) lie in one parent. Offsets and labels only; ~3 s with a
+  build and the farm. `--check` fails on an unsupported or refuted routine
+  or a coverage failure; `--strict` also on a ledger-class mismatch.
 - **Reading aids.** `fast_score.py <sym> <cand.c> --diff --window A-B` (hex
   function offsets) prints every row of that range, `*` on the differing ones,
   so one handler reads whole instead of as scattered differing words.

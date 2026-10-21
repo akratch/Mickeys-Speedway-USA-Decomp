@@ -982,7 +982,7 @@ linkSlotTable = 0x800D2E48;
 // mechanisms in mickey.us.yaml, tier D argued in docs/modules.md 1.2), and
 // both stay unnamed.
 // ---------------------------------------------------------------------------
-func_8002B040 = 0x8002B040; // type:func size:0x88 ROM 0x2bc40 tier-D verified assembly class 3, BK ultralib guMtxXFMF object minus its six translation-term instructions, 0/34 words differ, frameless, zero relocs, 4 overlay callers
+func_8002B040 = 0x8002B040; // type:func size:0x88 ROM 0x2bc40 tier-D verified assembly class 3, BK ultralib guMtxXFMF object minus its six translation-term instructions, 0/34 words differ, frameless, zero relocs, 4 overlay callers; no C reaches it (best 16/34, FP register numbers only; tools/fp_queue_model.py --rom)
 
 // ---------------------------------------------------------------------------
 // STRING-LITERAL CORRESPONDENCE WITH THE JET FORCE GEMINI PUBLIC DECOMP

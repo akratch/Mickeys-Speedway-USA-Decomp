@@ -301,12 +301,35 @@ segments:
       # routine's 34 words with 0 differing once its three loads of
       # mf[3][i] and the three adds of them are deleted and each row's
       # store is pointed at the row sum's register; the ROM then holds the
-      # 8 zero bytes of alignment. A compiler given the translation-free
-      # body reschedules the rows (16 words differ at best, -O3
-      # -Wab,-r4300_mul); only deleting six instructions from the compiled
-      # longer routine leaves its schedule in place. Formerly a guarded C
-      # candidate in src/main/matrix_2BC40.c; its plateau handoff (the
-      # 2026-10-09 lane t-3 derivation) is retired (git history).
+      # 8 zero bytes of alignment. The same 40-word object also sits whole
+      # at ROM 0x2A2B0, as mtxf_transform_point inside the hand-written
+      # main/math_util run that DKR's built src/hasm/ido/math_util.s.o
+      # matches: this ROM's hand-written maths carries compiled guMtxXFMF
+      # verbatim. No C reaches this routine (lane mtxxfmf, 2026-10-21):
+      # 54,968 compiles of C forms (term order and grouping, operand
+      # order, zero-weight and identity translation terms, indexing,
+      # temporaries, register hints, casts, loops; -O1/-O2/-O3,
+      # -mips1/2/3, -g0/2/3, -Olimit, with and without -Wab,-r4300_mul;
+      # IDO 5.3 and 7.1) reach 16 differing words at best, with this
+      # routine's own schedule, offsets and data flow: the 16 are FP
+      # register numbers in rows 1 and 2, nothing else. Those numbers come
+      # from ugen's FP temporary queue, which tools/fp_queue_model.py
+      # models; its --validate reproduces every one of 6,912 IDO 5.3/7.1
+      # compiles of 1,152 generated forms (-O2, -O3, -O3 -mips1), and
+      # rejects all 96 of those compiles that write neither $f0 nor $f2
+      # once their translation loads and adds are deleted the same way.
+      # This routine writes neither $f0 nor $f2, so it has no
+      # uopt-coloured local, and --rom finds that no evaluation order of
+      # its values fits from any of 6,600 queue start orders, but it fits
+      # exactly once rows 0 and 1 each carry one more loaded value and one
+      # more sum after the row sum: the deleted translation load and add,
+      # in the registers BK's object gives them. No IDO stage
+      # removes an instruction once registers are assigned: uopt folds
+      # identity terms before ugen, ugen assigned no register without an
+      # instruction in any validated compile, and as1 keeps dead loads and
+      # arithmetic (measured). Formerly a guarded C candidate in
+      # src/main/matrix_2BC40.c; its plateau handoff (the 2026-10-09 lane
+      # t-3 derivation) is retired (git history).
       - [0x2B650, asm, main/matrix]
       - [0x2B778, asm, main/math_matrix]
       - [0x2BC40, asm, main/matrix_2BC40]

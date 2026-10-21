@@ -841,16 +841,58 @@ class V3ForceTests(unittest.TestCase):
         t = ls.oracle_targets(decs, ls.parse_oracle("p1:w5=y"))
         self.assertEqual((t[0]["want"], t[0]["spec"], len(t[0]["rows"])), ("c21", "p1:w5=y", 1),
                          "a verdict force reproduces the colour the forced base took")
-        t = ls.oracle_targets(decs, ls.parse_oracle("p1:w5.1=n"))
-        self.assertEqual((t[0]["want"], t[0]["rows"][0]["decision"]), ("s", "split"))
-        t = ls.oracle_targets(decs, ls.parse_oracle("p1:w5.2=c21"))
-        self.assertEqual(t[0]["rows"][0]["lines"], {12, 13}, "pricing 2 is the second decision row")
         with self.assertRaises(SystemExit):
-            ls.oracle_targets(decs, ls.parse_oracle("p1:w5.3=y"))
+            ls.oracle_targets(decs, ls.parse_oracle("p1:w5.2=c21"))  # no savedetail rows: no pricings
         st = ls.state_targets(decs, ls.parse_weight("p2:w9:bb2=+1"), ls.parse_grow("p1:w5=seed"))
         self.assertEqual([(s["want"], s["spec"]) for s in st], [("c19", "p2:w9:bb2=+1 -> c19"), ("c21", "p1:w5=seed -> c21")])
         hits, _ = ls.oracle_status(decs, st)
         self.assertEqual(hits, 2, "the forced base reproduces its own state")
+
+
+PRICED_RECORDS = """\
+[CDX] bbline proc=3 bb=0 weight=1 entry=1 lines=10,11 mask1=0x0 mask2=0x0
+[CDX] bbline proc=3 bb=1 weight=10 entry=0 lines=12,13 mask1=0x0 mask2=0x0
+[CDX] saveocc proc=3 web=5 lr=0xa occ=0 bb=0 uses=1 defs=0 usesdefs=1.0 weight=1.0 term=1.0
+[CDX] saveocc proc=3 web=5 lr=0xa occ=1 bb=1 uses=2 defs=0 usesdefs=2.0 weight=10.0 term=20.0
+[CDX] savedetail proc=3 web=5 lr=0xa sym=5 occ=2 gross=21.0 chargeA=0.0 chargeB=0.0 net=21.0 nocs=2 save=3.0 verdict=1
+[CDX] p1dec phase=p1 proc=3 web=5 sym=5 save=3.0 nocs=1 totalsave=3.0 bestcost=0.0 numintf=2 regsleft=9 forbidden0=0x0 decision=split forced=-2
+[CDX] webblocks phase=p1 proc=3 role=target web=5 sym=5 lr=0xa bbs=0,1 aux=-
+[CDX] webexpr phase=p1 proc=3 web=5 lr=0xa kind=3 dtype=6 expr=var:8:2:4
+[CDX] saveocc proc=3 web=5 lr=0xa occ=0 bb=1 uses=2 defs=0 usesdefs=2.0 weight=10.0 term=20.0
+[CDX] savedetail proc=3 web=5 lr=0xa sym=5 occ=1 gross=20.0 chargeA=10.0 chargeB=0.0 net=10.0 nocs=1 save=10.0 verdict=1
+[CDX] force_verdict phase=p1 site=save proc=3 web=5 lr=0xa pricing=2 force=n save=10.000000->0.000000 how=kept verdict=1->2
+[CDX] p1cand phase=p1 proc=3 web=5 sym=5 save=0.000000 nocs=1 best=0.3
+"""
+
+
+class PricingTests(unittest.TestCase):
+    def test_piece_without_a_decision_is_a_memory_row(self):
+        decs, _ = ls.decisions(PRICED_RECORDS, 3)
+        rows = [d for d in decs if d["web"] == 5]
+        self.assertEqual([(d["pricing"], d["decision"], d["colour"]) for d in rows],
+                         [(1, "split", None), (2, "memory", None)])
+        self.assertEqual(rows[1]["lines"], [12, 13], "the piece's blocks come from its saveocc rows")
+        self.assertEqual(rows[1]["expr"], "var:8:2:4", "the web's expression, from its first decision")
+        unforced, _ = ls.decisions(RECORDS, 3)
+        self.assertEqual([d["pricing"] for d in unforced], [None, None, None],
+                         "no savedetail records: nothing is numbered, nothing synthesised")
+
+    def test_pricing_selects_the_piece(self):
+        forced, _ = ls.decisions(PRICED_RECORDS, 3)
+        targets = ls.oracle_targets(forced, ls.parse_oracle("p1:w5.2=n"))
+        self.assertEqual((targets[0]["want"], targets[0]["rows"][0]["decision"], targets[0]["rows"][0]["lines"]),
+                         ("s", "memory", {12, 13}))
+        with self.assertRaises(SystemExit):
+            ls.oracle_targets(forced, ls.parse_oracle("p1:w5.3=n"))
+        first = ls.oracle_targets(forced, ls.parse_oracle("p1:w5.1=n"))
+        self.assertEqual(first[0]["rows"][0]["decision"], "split")
+        # the unforced records (RECORDS) colour the piece over block 1 (lines 12-13) s7: not reproduced
+        unforced, _ = ls.decisions(RECORDS, 3)
+        self.assertEqual(ls.oracle_status(unforced, targets)[0], 0)
+        uncoloured = [dict(d, colour=None) if d["web"] == 5 else d for d in unforced]
+        self.assertEqual(ls.oracle_status(uncoloured, targets)[0], 1)
+        self.assertIsNone(ls.v3_force_acceptance(PRICED_RECORDS, 3, ls.parse_oracle("p1:w5.2=n"), [], []))
+        self.assertIn("no force_verdict", ls.v3_force_acceptance(PRICED_RECORDS, 3, ls.parse_oracle("p1:w5.1=n"), [], []))
 
 
 if __name__ == "__main__":

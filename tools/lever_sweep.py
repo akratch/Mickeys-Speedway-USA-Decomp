@@ -2530,7 +2530,8 @@ def decisions(text: str, proc: int) -> tuple[list[dict], dict[int, list[int]]]:
     decision's colour is the colour row that follows it, as web_report reads it.
     """
     import web_report as wr
-    model = wr.build(wr.parse_records(text), proc)
+    rows = wr.parse_records(text)
+    model = wr.build(rows, proc)
     blocks = model["blocks"]
     out = []
     for d in model["decisions"]:
@@ -2543,8 +2544,80 @@ def decisions(text: str, proc: int) -> tuple[list[dict], dict[int, list[int]]]:
         out.append({"web": d["web"], "phase": d["phase"], "expr": expr.get("expr"),
                     "kind": expr.get("kind"), "bbs": bbs, "lines": sorted(lines),
                     "decision": d["dec"].get("decision"), "forced": d["dec"].get("forced"),
-                    "colour": int(d["color"]["color"]) if d["color"] else None})
+                    "colour": int(d["color"]["color"]) if d["color"] else None,
+                    "index": d["index"], "pricing": None})
+    attach_pricings(out, pricings(rows, proc, blocks))
     return out, {b: info["lines"] for b, info in blocks.items()}
+
+
+def pricings(rows, proc: int, blocks: dict) -> dict[int, list[dict]]:
+    """web -> its compute_save pricings in order: one per `savedetail` record.
+
+    A split piece keeps its parent's web number and is priced again, so "web
+    N at pricing K" (the v3 farm's `.K`) is the K-th savedetail of web N. The
+    piece's blocks come from the `saveocc` rows that precede its savedetail;
+    the phase is p1 until the procedure's first phase-two record.
+    """
+    p = str(proc)
+    occ: dict[str, list[int]] = collections.defaultdict(list)
+    out: dict[int, list[dict]] = {}
+    phase = "p1"
+    for index, (event, f) in enumerate(rows):
+        if f.get("proc") != p:
+            continue
+        if event.startswith("p2"):
+            phase = "p2"
+        if event == "saveocc":
+            occ[f["lr"]].append(int(f["bb"]))
+        elif event == "savedetail":
+            web = int(f["web"])
+            lines: set[int] = set()
+            bbs = occ.pop(f["lr"], [])
+            for b in bbs:
+                lines.update(blocks.get(b, {}).get("lines", []))
+            out.setdefault(web, []).append({
+                "index": index, "pricing": len(out.get(web, [])) + 1, "phase": phase,
+                "bbs": bbs, "lines": sorted(lines), "verdict": f.get("verdict"),
+                "save": f.get("save"), "lr": f.get("lr")})
+    return out
+
+
+def attach_pricings(decs: list[dict], priced: dict[int, list[dict]]) -> None:
+    """Number each decision row by the pricing it follows; a pricing that reaches
+    no decision (verdict 2: never a candidate, `=n` forced or natural) becomes a
+    synthetic `memory` row with the web's expression and the piece's lines, so
+    `p1:wN.K=n` has a row to read and a cell's records can be asked the same
+    question."""
+    by_web: dict[tuple, list[dict]] = collections.defaultdict(list)
+    for d in decs:
+        by_web[(d["phase"], d["web"])].append(d)
+    for web, prs in priced.items():
+        for pr in prs:
+            rows = by_web.get((pr["phase"], web), [])
+            later = [d for d in rows if d["index"] > pr["index"] and d["pricing"] is None]
+            nxt = [q for q in prs if q["index"] > pr["index"] and q["phase"] == pr["phase"]]
+            limit = nxt[0]["index"] if nxt else float("inf")
+            owned = [d for d in later if d["index"] < limit]
+            if owned:
+                owned[0]["pricing"] = pr["pricing"]
+                continue
+            known = next((d for d in rows if d.get("expr") is not None), None)
+            decs.append({"web": web, "phase": pr["phase"],
+                         "expr": known["expr"] if known else None,
+                         "kind": known["kind"] if known else None,
+                         "bbs": pr["bbs"], "lines": pr["lines"], "decision": "memory",
+                         "forced": "-2", "colour": None, "index": pr["index"],
+                         "pricing": pr["pricing"]})
+    decs.sort(key=lambda d: d["index"])
+
+
+def rows_at_pricing(rows: list[dict], web: int, pricing: int, spec: str) -> list[dict]:
+    hit = [d for d in rows if d.get("pricing") == pricing]
+    if not hit:
+        have = sorted({d.get("pricing") for d in rows if d.get("pricing")})
+        raise SystemExit(f"oracle {spec}: web {web} has pricings {have or 'none'} in the forced base, "
+                         f"pricing {pricing} asked")
+    return hit
 
 
 def oracle_targets(forced: list[dict], oracle) -> list[dict]:
@@ -2561,12 +2634,9 @@ def oracle_targets(forced: list[dict], oracle) -> list[dict]:
         spec = force.env
         rows = [d for d in forced if d["phase"] == phase and d["web"] == web]
         if force.pricing is not None:
-            # the K-th pricing of the web is read as its K-th decision row in
-            # that phase: a split re-prices the piece under the same number
-            if len(rows) < force.pricing:
-                raise SystemExit(f"oracle {spec}: web {web} has {len(rows)} decision row(s), "
-                                 f"pricing {force.pricing} asked")
-            rows = [rows[force.pricing - 1]]
+            # the K-th compute_save pricing of the web (a split piece keeps the
+            # number); a pricing that reached no decision is a `memory` row
+            rows = rows_at_pricing(rows, web, force.pricing, spec)
         else:
             rows = [d for d in rows if d["forced"] in ("-1", "-3")] or rows
         if not rows:
@@ -2594,9 +2664,7 @@ def state_targets(forced: list[dict], weights: list, grows: list) -> list[dict]:
         rows = [d for d in forced if d["phase"] == item.phase and d["web"] == item.web]
         pricing = getattr(item, "pricing", None)
         if pricing is not None:
-            if len(rows) < pricing:
-                raise SystemExit(f"{item.env}: web {item.web} has {len(rows)} decision row(s)")
-            rows = [rows[pricing - 1]]
+            rows = rows_at_pricing(rows, item.web, pricing, item.env)
         if not rows:
             raise SystemExit(f"{item.env}: no decision for web {item.web} in the forced base")
         last = rows[-1]
@@ -2979,19 +3047,21 @@ def main(argv: list[str] | None = None) -> int:
     ns = ap.parse_args(argv)
 
     use_root(resolve_root(ns.root))
-    source_mode = ns.source_levers or ns.diag or ns.greedy or ns.emit or ns.case or ns.pairs
+    oracle_mode = bool(ns.oracle or ns.bias or ns.weight or ns.grow)
+    source_mode = not oracle_mode and (ns.source_levers or ns.diag or ns.greedy or ns.emit
+                                       or ns.case or ns.pairs)
     levers_given = ns.levers != ",".join(LEVERS)
-    if source_mode and not levers_given:
-        levers = list(SOURCE_LEVERS)
+    if ns.source_levers and not levers_given:
+        levers = list(SOURCE_LEVERS)  # with --oracle too: the source levers under the records
     else:
         levers = [x.strip() for x in ns.levers.split(",") if x.strip()]
     unknown = [x for x in levers if x not in LEVERS]
     if unknown:
         raise SystemExit(f"unknown lever(s) {unknown}; known: {', '.join(LEVERS)}")
     if source_mode:
-        if ns.oracle or ns.bias or ns.weight or ns.grow:
-            raise SystemExit("--source-levers measures stock compiles only; drop --oracle/--bias/--weight/--grow")
         return source_main(ns, levers)
+    if oracle_mode and (ns.diag or ns.greedy or ns.emit or ns.pairs):
+        raise SystemExit("--diag/--greedy/--emit/--pairs belong to the source mode; drop --oracle/--bias/--weight/--grow")
     if ns.proc is None:
         raise SystemExit("--proc is required (the oracle mode reads the instrumented records)")
     oracle = parse_oracle(ns.oracle)
@@ -3072,6 +3142,8 @@ def main(argv: list[str] | None = None) -> int:
                   f"{len(r['lines'])} lines in {span}, forced colour {r['colour']}")
 
     lines = parse_lines(ns.lines)
+    if ns.case:
+        lines |= parse_case_filter(ns.case, fn)
     for w in ns.web:
         rows = [d for d in forced_decs if d["web"] == w]
         if not rows:

@@ -616,9 +616,9 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "source_commit": "b932d3e014e59c0e46902262f4adb08defc4ecfc",
-      "ledger_commit": "40c55751d8563b866658558ee7f1d9ae287344ae",
-      "reason": "Measured CVTL register-child refusal versus shared load folding. Test mixed raw/converted byte fanout for dual owners, retained copy and no extra final operation; reject absorption, extra loads or allocation collateral."
+      "ledger_commit": "dc46807df2deb8e57791b8b5b54b0754db5fb8b2",
+      "reason": "2026-10-21 landing campaign: decision-level oracles and source levers landed (listing surgery, uopt/ugen/as1 v3 instruments, lever_sweep source levers, keep_search, behaviour drivers); each blocker has a priced counterfactual",
+      "source_commit": "97cc90a6c60209881be3421a84bb4f7c91ca43a8"
     },
     "func_80053868": {
       "ledger_commit": "b98f3696e2954fcb19879e3a7e8ba8b3311eb66a",

@@ -76,6 +76,11 @@ Two practices worth reusing:
 On the size-0 diagnostic, 45 words differ: 20 in 0x79, 3 in 0x60, and the rest
 in clusters of one to five.
 
+## Next campaign
+
+The tooling pass that followed this handoff, and the decision-level plan for the
+remaining matching, are in [LANDING_CAMPAIGN_2026-10-21.md](LANDING_CAMPAIGN_2026-10-21.md).
+
 ## Restart
 
 ```sh

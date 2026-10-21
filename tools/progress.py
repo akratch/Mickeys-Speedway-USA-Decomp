@@ -650,7 +650,9 @@ def render_markdown(st):
         f"compiled in place of its assembly, so a `NON_MATCHING` body counts as "
         f"unmatched exactly like extracted assembly. Verified assembly is "
         f"{st['n_verified_asm']} hand-written functions kept as assembly on "
-        f"purpose. {st['n_named']:,} symbols are adopted in "
+        f"purpose; [the proof for each](docs/VERIFIED_ASSEMBLY.md) is "
+        f"re-derived from the ROM by `tools/hasm_audit.py`. "
+        f"{st['n_named']:,} symbols are adopted in "
         f"`symbol_addrs.{st['version']}.txt`."
     )
     L.append("")

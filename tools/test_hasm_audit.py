@@ -5,6 +5,7 @@ Every instruction word here is assembled field by field from the encoders
 below; nothing is read from, or derived from, the ROM or any reference build.
 """
 import os
+import re
 import struct
 import tempfile
 import unittest
@@ -595,6 +596,67 @@ class BaselineTests(unittest.TestCase):
             self.assertEqual(sources.compiled_c_object(missing), (False, "no C source found"))
             self.assertFalse(sources.compiled_c_object(gcc)[0])
 
+
+
+def synthetic_audit():
+    routine = {
+        "name": "func_80100000", "rom": "0x1000", "size": "0x10", "subsegment": "main/x",
+        "ledger_class": 3, "verdict": "supported", "identity": None,
+        "mechanisms": [{"label": "trapping-add-sub", "count": 2}],
+        "edited_library": None, "helper": None,
+    }
+    helper = dict(routine, name="func_80100010", rom="0x1010", size="0x8", mechanisms=[],
+                  helper={"parent": "func_80100000"})
+    return {
+        "inputs": {"rom_sha1": "0" * 40, "reference_lock": "tools/reference-builds.lock",
+                   "reference_objects": 3},
+        "summary": {"verdicts": {"supported": 2}},
+        "flags": [{"kind": "weak", "subject": "func_80100010", "text": "helper only"}],
+        "subsegments": [{"name": "main/x", "ledger_class": 3, "rom": "0x1000-0x1018",
+                         "routines": ["func_80100000", "func_80100010"],
+                         "run": {"claim": "none", "covered_words": 0, "words": 6}}],
+        "routines": [routine, helper],
+    }
+
+
+class MarkdownTests(unittest.TestCase):
+    def test_tables_name_every_routine_and_mark_thin_evidence(self):
+        block = ha.render_markdown(synthetic_audit())
+        self.assertTrue(block.startswith(ha.MARKDOWN_START))
+        self.assertTrue(block.endswith(ha.MARKDOWN_END))
+        self.assertIn("| `main/x` | 3 | 0x1000-0x1018 | 2 | 24 |", block)
+        self.assertIn("| 3 | 2 | 24 |", block)
+        self.assertIn("| **all** | **2** | **24** |", block)
+        self.assertIn("trapping signed add/sub x2", block)
+        self.assertIn("only reference is func_80100000's closing jump | supported (thin) |", block)
+
+    def test_write_doc_replaces_only_the_marked_block(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "doc.md")
+            with open(path, "w") as fh:
+                fh.write("intro\n%s\nstale\n%s\noutro\n" % (ha.MARKDOWN_START, ha.MARKDOWN_END))
+            ha.write_doc(path, ha.render_markdown(synthetic_audit()))
+            text = open(path).read()
+            self.assertTrue(text.startswith("intro\n"))
+            self.assertTrue(text.endswith("\noutro\n"))
+            self.assertNotIn("stale", text)
+            self.assertEqual(text.count(ha.MARKDOWN_START), 1)
+
+    def test_write_doc_refuses_a_file_without_markers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "doc.md")
+            with open(path, "w") as fh:
+                fh.write("no markers\n")
+            with self.assertRaises(SystemExit):
+                ha.write_doc(path, "x")
+
+    def test_every_label_has_its_own_prose(self):
+        # Several labels share the ledger's "non-IDO prologue" summary, which
+        # would make the generated baseline table ambiguous.
+        labels = set(ha.LEDGER_MECHANISMS) | set(ha.EXTRA_MECHANISMS) | ha.INFO_LABELS
+        self.assertEqual(sorted(labels - set(ha.LABEL_TEXT)), [])
+        texts = [ha.LABEL_TEXT[label] for label in labels]
+        self.assertEqual(len(texts), len(set(texts)))
 
 if __name__ == "__main__":
     unittest.main()

@@ -1022,6 +1022,19 @@ shadow -- the dispatch order for Track B.
   `fast_score.py --aligned` beside the permuter's `score.txt`. Lines the
   permuter changed outside the function are listed, because they are not
   carried over and the tree score is measured without them.
+- **`tools/lane_combine.py <base.c> --lane NAME=cand.c ... -o product.c`**
+  turns each lane's hunks against the shared base into a `SHAPE_<NAME>` axis
+  (`--per-hunk`: `SHAPE_<NAME>_<k>`), ready for `shape_product.py`. A hunk is
+  widened until it holds whole `#if ... #endif` chains on both sides, so a lane
+  that froze an axis does not break the product's nesting. Overlapping lanes
+  are reported with their base line ranges and joined into one
+  `#if/#elif/#else` chain (the earlier `--lane` wins where both are on;
+  `--strict` refuses). `--rebase newbase.c` carries every hunk onto a newer
+  base where the lines it touched are unchanged, and names the ones the new
+  base changed or already contains. `--function SYM` keeps that function's
+  hunks only. Checked on two of the 2026-10-21 func_800517E0 lanes (copyfold,
+  diagE over naming best4): the four cells reproduce each lane's own residual
+  (102, 118) and the base's (122).
 
 ## Traps that have each cost a lane real time
 

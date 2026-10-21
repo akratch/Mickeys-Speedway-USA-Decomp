@@ -543,6 +543,7 @@ check-docs:
 	$(PYTHON) $(TOOLS_DIR)/check_derived_numbers.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/overlay_donor_scan.py --check
 	$(HOST_PYTHON) $(TOOLS_DIR)/postprocess_audit.py --check-redefines
+	$(HOST_PYTHON) $(TOOLS_DIR)/postprocess_audit.py --check-credit
 	$(HOST_PYTHON) $(TOOLS_DIR)/nm_ranking.py --check-doc
 	$(HOST_PYTHON) $(TOOLS_DIR)/nm_ranking.py --check-retired
 	$(HOST_PYTHON) $(TOOLS_DIR)/plateau_handoff_audit.py --check

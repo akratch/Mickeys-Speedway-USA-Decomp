@@ -291,9 +291,6 @@ class DataAccountingTests(unittest.TestCase):
             self.count()
 
 
-if __name__ == '__main__':
-    unittest.main()
-
 class StaleExtractTests(unittest.TestCase):
     """The scoreboard must refuse a stale extract, not report it backwards."""
 
@@ -343,3 +340,59 @@ class StaleExtractTests(unittest.TestCase):
         tmp = tempfile.mkdtemp()
         self.assertEqual(progress.stale_extract_names(tmp, tmp), set())
 
+
+def audit_row(obj, cls, *, overlay=None, size=None, matched_c=None):
+    """One synthetic tools/postprocess_audit.py row."""
+    return {"object": obj, "class": cls, "overlay": overlay, "size": size,
+            "matched_c": matched_c, "tools": ["tool.py"]}
+
+
+class AlteredCreditTests(unittest.TestCase):
+    """ADR 0002: an instruction-altering POSTPROCESS forfeits scoreboard credit."""
+
+    def refuse(self, rows, matched=frozenset({"kept", "edited"}), overlay=1000,
+               functions=None):
+        functions = functions or {}
+        return progress.refuse_altered_credit(
+            rows, set(matched), overlay, lambda obj: functions[obj])
+
+    def test_metadata_objects_keep_every_credit(self):
+        rows = [audit_row("build/a.c.o", "metadata", overlay=1, size=64, matched_c=True),
+                audit_row("build/b.c.o", "metadata")]
+        matched, overlay, refused = self.refuse(rows)
+        self.assertEqual((matched, overlay, refused), ({"kept", "edited"}, 1000, []))
+
+    def test_altered_matched_overlay_object_loses_its_range(self):
+        rows = [audit_row("build/a.c.o", "altered", overlay=1, size=64, matched_c=True),
+                audit_row("build/b.c.o", "metadata", overlay=1, size=32, matched_c=True)]
+        matched, overlay, refused = self.refuse(rows)
+        self.assertEqual(overlay, 936)
+        self.assertEqual(matched, {"kept", "edited"})
+        self.assertEqual(refused, [("build/a.c.o", 64, [])])
+
+    def test_altered_resident_object_loses_its_functions(self):
+        rows = [audit_row("build/r.c.o", "altered")]
+        matched, overlay, refused = self.refuse(
+            rows, functions={"build/r.c.o": ["edited", "neverMatched"]})
+        self.assertEqual(matched, {"kept"})
+        self.assertEqual(overlay, 1000)
+        self.assertEqual(refused, [("build/r.c.o", 0, ["edited"])])
+
+    def test_uncredited_overlay_range_has_nothing_to_withdraw(self):
+        rows = [audit_row("build/a.c.o", "altered", overlay=1, size=64, matched_c=False)]
+        self.assertEqual(self.refuse(rows)[1:], (1000, []))
+
+    def test_unsized_altered_overlay_object_refuses(self):
+        for row in (audit_row("build/a.c.o", "altered", overlay=1),
+                    audit_row("build/a.c.o", "altered", overlay=1, matched_c=True)):
+            with self.subTest(row=row), self.assertRaisesRegex(RuntimeError, "cannot be withdrawn"):
+                self.refuse([row])
+
+    def test_withdrawal_beyond_the_matched_total_refuses(self):
+        rows = [audit_row("build/a.c.o", "altered", overlay=1, size=2000, matched_c=True)]
+        with self.assertRaisesRegex(RuntimeError, "exceeds"):
+            self.refuse(rows)
+
+
+if __name__ == '__main__':
+    unittest.main()

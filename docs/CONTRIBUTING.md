@@ -581,38 +581,61 @@ assignments straight out of that expansion, then classifies each one:
 
 - **`altered`** — touches instruction words (`normalize_elf_instructions.py`,
   `normalize_o63_*.py`, `resize_elf_function.py`,
-  `extend_elf_function_to_text.py`, `patch_elf_words.py`). Forbidden by ADR
-  0002; any object in this class cannot count as decompiled on the
-  scoreboard.
+  `extend_elf_function_to_text.py`, `patch_elf_words.py`, a section-rewriting
+  `objcopy` (`--update-section`, `--add-section`, `--change-section`, or
+  `--set-section-flags`/`--remove-section` on `.text`), and
+  `externalize_elf_section.py` with a nonzero anchor,
+  which adds the anchor to every LO16 immediate that addresses the section).
+  Forbidden by ADR 0002, and enforced: `tools/progress.py` withdraws the
+  scoreboard credit of every such object the atlas would otherwise count
+  (`credit_refusals`; an overlay object loses its ownership range, a resident
+  object the functions its `.text` defines), classifying live from the
+  Makefile so a stale JSON cannot restore it, and `--check-credit` (run by
+  `gmake check-docs`) fails while one exists.
 - **`metadata`** — everything ADR 0002 permits: ELF header/ABI bits, symbol
-  renames, section trimming, relocation filter/rebind. Safe to credit.
+  renames, section trimming, relocation filter/rebind, and unanchored section
+  externalization. Safe to credit.
+- **`review-required`** — a helper the classifier does not know, or arguments
+  it cannot parse. Fails closed: never silently `metadata`.
 
-Run it three ways:
+To bind compiler-private literals or jump tables to the copy a module's
+retained rodata already ships, keep the compiler's addends and move the base
+into a symbol instead of into the instructions: `objcopy --add-symbol
+<pool>Reloc=<offset>,global`, `rebind_elf_relocations.py` every `.text`
+relocation against `.rodata` to it, then `externalize_elf_section.py` by
+digest with no anchor (overlay 11's `func_overlay_011_F0000150_1868998` is
+the pattern). `gmake overlay-syms` also writes a `<pool>Reloc` value line,
+derived from the shipped words, and a linker-script assignment overrides the
+object's own definition, so the link uses the generated value; the
+`--add-symbol` offset only gives the rebind a symbol to name.
+
+Run it these ways:
 
 ```sh
 tools/postprocess_audit.py            # table to stdout
 tools/postprocess_audit.py --write    # refresh config/postprocess-audit.us.json
 tools/postprocess_audit.py --check    # fail if that JSON is stale
+tools/postprocess_audit.py --check-credit # fail if credited code is altered
 tools/postprocess_audit.py --check-redefines # reject duplicate objcopy targets
 ```
 
-`gmake check-docs` runs the redefine check automatically. When multiple input
-symbols are present, GNU `objcopy` rejects the shared destination; even when
-only one is emitted, an accidental many-to-one mapping can erase distinct
-runtime relocation identities that happen to share an encoded addend. The
-checker therefore requires every destination to be unique within an `objcopy`
-invocation.
+`gmake check-docs` runs the credit and redefine checks automatically. When
+multiple input symbols are present, GNU `objcopy` rejects the shared
+destination; even when only one is emitted, an accidental many-to-one mapping
+can erase distinct runtime relocation identities that happen to share an
+encoded addend. The checker therefore requires every destination to be unique
+within an `objcopy` invocation.
 
 `config/postprocess-audit.us.json` is the committed result: one row per
 object carrying a `POSTPROCESS` override, its class, tool list, and
 (where known) its `(overlay, offset, size)` ownership joined from
 `config/overlays.us.json`. `c_owned` means the atlas assigns the range to C;
 `nonmatching` records a guarded fallback; `matched_c` is true only when the
-range is C-owned and not `NON_MATCHING`. As of this pass its
-`summary.by_class` reads
-`{"metadata": 619}` — zero `altered` objects — which is the mechanical proof
-that the ADR 0002 conversion reached every object in the tree, not just the
-functions this lane's prose describes.
+range is C-owned and not `NON_MATCHING`. Its `summary.by_class` is the
+current count per class; read it there rather than from this page. The
+invariant `gmake check-docs` holds is that no credited row is `altered`,
+which is the mechanical proof that the ADR 0002 conversion reached every
+object in the tree, not just the functions any lane's prose describes.
 
 ### Report-only m2c sweep: `tools/m2c_sweep.py`
 

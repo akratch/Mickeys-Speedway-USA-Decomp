@@ -36,6 +36,7 @@ import sys
 from pathlib import Path
 
 import executable_accounting as accounting
+import postprocess_audit
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 ROOT_DIR = os.path.normpath(os.path.join(SCRIPT_DIR, ".."))
@@ -496,6 +497,44 @@ TU_NOTES = {
     "main/runlink.c": "the runtime overlay linker core",
     "main/matrix.c": "matrix/vector maths",
 }
+
+
+def refuse_altered_credit(rows, matched_funcs, overlay_matched_bytes,
+                          object_functions=postprocess_audit.object_text_functions):
+    """Withdraw credit from every object ADR 0002 forbids the scoreboard to count.
+
+    ``rows`` are tools/postprocess_audit.py's per-object rows; its
+    ``credit_refusals`` picks the ``altered`` ones that would otherwise be
+    credited. A refused overlay object loses its atlas range's bytes from the
+    overlay matched-C total. A refused resident object loses every function
+    its ``.text`` defines (``object_functions``) from the matched set, so those
+    bytes count as GLOBAL_ASM remaining rather than decompiled. An overlay
+    object the atlas cannot size is an error: its credit cannot be withdrawn
+    exactly, and guessing would be worse than stopping.
+
+    Returns ``(matched_funcs, overlay_matched_bytes, refused)``, where
+    ``refused`` lists ``(object, overlay_bytes, resident_function_names)``.
+    """
+    matched = set(matched_funcs)
+    overlay_bytes = overlay_matched_bytes
+    refused = []
+    for row in postprocess_audit.credit_refusals(rows):
+        if row["overlay"] is not None:
+            if not row["matched_c"] or row["size"] is None:
+                raise RuntimeError(
+                    "%s: altered overlay object has no matched atlas range, so "
+                    "its scoreboard credit cannot be withdrawn exactly"
+                    % row["object"]
+                )
+            overlay_bytes -= row["size"]
+            refused.append((row["object"], row["size"], []))
+        else:
+            withdrawn = sorted(matched & set(object_functions(row["object"])))
+            matched -= set(withdrawn)
+            refused.append((row["object"], 0, withdrawn))
+    if overlay_bytes < 0:
+        raise RuntimeError("withdrawn overlay credit exceeds the matched total")
+    return matched, overlay_bytes, refused
 
 
 def subsegment_index(yaml_path):
@@ -1036,6 +1075,22 @@ def main(args):
             os.path.join(ROOT_DIR, "baseroms", f"mickey.{args.version}.z64")
         )
     )
+    # ADR 0002: an object whose POSTPROCESS edits an instruction word is not
+    # decompiled, whatever the atlas or asm/ says. Classified live from the
+    # Makefile, not from the committed audit JSON, so a stale JSON cannot
+    # restore the credit.
+    audit_rows, _ = postprocess_audit.audit()
+    matched_funcs, overlay_matched_bytes, altered_refusals = refuse_altered_credit(
+        audit_rows, matched_funcs, overlay_matched_bytes,
+        lambda obj: postprocess_audit.object_text_functions(os.path.join(ROOT_DIR, obj)),
+    )
+    for obj, refused_bytes, refused_names in altered_refusals:
+        print(
+            f"scoreboard: refusing credit to {obj}: its POSTPROCESS alters "
+            f"instruction words (ADR 0002); withdrew {refused_bytes} overlay "
+            f"bytes and {len(refused_names)} resident functions",
+            file=sys.stderr,
+        )
     atlas = json.loads(Path(ROOT_DIR, "config/overlays.us.json").read_text())
     all_funcs, exclusions = accounting.apply_accounting(
         ROOT_DIR, atlas, Path(ROOT_DIR, "baseroms", f"mickey.{args.version}.z64").read_bytes(),
@@ -1231,6 +1286,10 @@ def main(args):
         print(
             f"#   overlay matched C = explicit `(overlay, offset)` ownership ranges "
             f"in config/overlays.{args.version}.json"
+        )
+        print(
+            f"#   minus every object tools/postprocess_audit.py classes `altered` "
+            f"(ADR 0002): {len(altered_refusals)} refused"
         )
         print()
 

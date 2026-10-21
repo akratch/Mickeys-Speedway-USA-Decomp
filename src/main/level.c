@@ -1,5 +1,6 @@
 #include "ultra64.h"
 #include "game/level.h"
+#include "game/overlay_exports.h"
 
 /*
  * Resident level lifecycle and metadata, ROM 0x263F0-0x27760.
@@ -154,20 +155,6 @@ extern void rcpSetScreenColour(u8, u8, u8);
 extern void viFrameRateReset(void);
 extern void levelTunePlay(void);
 
-#pragma weak levelTrackInitTrap = TrapDanglingJump
-extern void levelTrackInitTrap(s32, s32, s32, s32, s32, s32);
-#pragma weak levelOverlay7InitPoolTrap = TrapDanglingJump
-extern void levelOverlay7InitPoolTrap(void);
-#pragma weak levelOverlay34InitStorageTrap = TrapDanglingJump
-extern void levelOverlay34InitStorageTrap(s32);
-#pragma weak levelOverlay33InitializeBuffersTrap = TrapDanglingJump
-extern void levelOverlay33InitializeBuffersTrap(void);
-#pragma weak levelOverlay42InitTrap = TrapDanglingJump
-extern void levelOverlay42InitTrap(void);
-#pragma weak levelOverlay16InitializeBufferTrap = TrapDanglingJump
-extern void levelOverlay16InitializeBufferTrap(u8 *);
-#pragma weak levelOverlay103CheckSignatureTrap = TrapDanglingJump
-extern s32 levelOverlay103CheckSignatureTrap(void);
 extern void camSetNo(s32);
 extern void camSetFOV(f32, s32);
 extern void func_8003C770(s32, s32);
@@ -377,9 +364,9 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
     func_8000A6DC(mode);
 
     mainPreNMI();
-    levelTrackInitTrap(D_800CF3C8->trackArg0, D_800CF3C8->trackArg1, trackParam,
-                       D_800CF3C8->trackArg3, D_800CF3C8->trackArg4,
-                       D_800CF3C8->trackArg5);
+    func_overlay_035_F0000000_1881CE0(D_800CF3C8->trackArg0, D_800CF3C8->trackArg1, trackParam,
+                                      D_800CF3C8->trackArg3, D_800CF3C8->trackArg4,
+                                      D_800CF3C8->trackArg5);
 
     mainPreNMI();
 
@@ -424,13 +411,13 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
         runlinkDownloadCode(0x1B);
         runlinkDownloadCode(0x18);
         runlinkDownloadCode(7);
-        levelOverlay7InitPoolTrap();
+        overlay7InitPool();
         runlinkDownloadCode(0x25);
         runlinkDownloadCode(0x26);
         if (D_8007BF0C != 0) {
-            levelOverlay34InitStorageTrap(0x28);
+            overlay34InitStorage(0x28);
         } else {
-            levelOverlay34InitStorageTrap(0x50);
+            overlay34InitStorage(0x50);
         }
     }
 
@@ -486,13 +473,13 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
     mainPreNMI();
 
     if (D_800CF3C8->featureC6 != 0) {
-        levelOverlay33InitializeBuffersTrap();
+        overlay33InitializeBuffers();
     }
     if (D_800CF3C8->screenMode != 0) {
-        levelOverlay42InitTrap();
+        overlay42Init();
     }
     if (D_800CF3C8->featureFB != 0) {
-        levelOverlay16InitializeBufferTrap((u8 *)D_800CF3C8);
+        overlay16InitializeBuffer((u8 *)D_800CF3C8);
     }
     func_8003C770(0, D_800CF3C8->weatherScale * 0xF0);
     mainPreNMI();
@@ -512,7 +499,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
         }
     }
 
-    if (levelOverlay103CheckSignatureTrap() == 0) {
+    if (overlay103CheckSignature() == 0) {
         D_800CF3C8->fogNear = 0x384;
         D_800CF3C8->fogFar = 0x398;
     }

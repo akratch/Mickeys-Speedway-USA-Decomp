@@ -13,6 +13,7 @@
 #include "game/gameVi.h"
 #include "game/sched_internal.h"
 #include "n_audio/mbi.h"
+#include "game/overlay_exports.h"
 
 typedef struct RcpCommand {
     u32 w0;
@@ -134,7 +135,6 @@ extern void func_80034910();
 
 OSMesgQueue *osScGetInterruptQ(OSSched *scheduler);
 void osWritebackDCacheAll(void);
-s32 TrapDanglingJump(void);
 s32 camIsUserView(s32 arg0);
 s32 camGetVisibleUserView(s32 arg0, s32 *x1, s32 *y1, s32 *x2, s32 *y2);
 s32 camGetMode(void);
@@ -239,7 +239,7 @@ s32 rcpWaitDP(void) {
         D_8007A3EC = 0;
     }
     if (D_8007A3C8 != 0) {
-        TrapDanglingJump();
+        func_overlay_043_F0000194_188A164();
         D_8007A3C8 = 0;
     }
     D_8007A3C4 = 0;
@@ -385,7 +385,7 @@ void rcpClearScreen(RcpCommand **dlist, s32 unused, s32 drawBackground) {
     s32 y2;
 
     viGetCurrentSize(&width, &height);
-    if (TrapDanglingJump() == 0) {
+    if (overlay66GetCurrent() == 0) {
         rcpClearZBuffer(dlist, width, height, 0, 0, width, height);
     }
     if (drawBackground != 0) {

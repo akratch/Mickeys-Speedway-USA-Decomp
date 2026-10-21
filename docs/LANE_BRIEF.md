@@ -606,6 +606,17 @@ order of how often they decided a match:
    skip the test.
 7. `config/postprocess-audit.us.json` goes stale on any POSTPROCESS edit and
    only `tools/postprocess_audit.py --write` fixes it.
+8. Resident C calls an overlay function by its real name: never write
+   `TrapDanglingJump(...)` and never add a typed weak alias. Declare the callee
+   in `include/game/overlay_exports.h`, using the definition's prototype with
+   overlay-private pointers as `void *`, or an old-style `T name();` tagged
+   `[arity]`, `[types]` or `[codegen]` when that prototype changes the shipped
+   call. After the object compiles, `tools/trap_names.py` renames the listed
+   names (`config/overlay_funcs_to_trap.us.txt`) to `TrapDanglingJump`, and
+   `gmake verify` fails unless every site's name is the export its main-table
+   ORT row targets. The ROM hash cannot see a swapped callee. If you rename an
+   overlay export that resident code calls, run `gmake trap-names` and then
+   update the resident call and its declaration (docs/overlays.md §5.1).
 
 ## The laws
 

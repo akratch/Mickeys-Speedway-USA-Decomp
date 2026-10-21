@@ -16,6 +16,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/math.h"
+#include "game/overlay_exports.h"
 
 typedef struct AudioPoint {
     f32 x;
@@ -111,7 +112,6 @@ void gsSndpSetPriority(void *sound, u8 priority);
 s32 runlinkIsModuleLoaded(s32 moduleId);
 s32 scalevol(s32 volume);
 f32 sqrtf(f32 value);
-void TrapDanglingJump();
 void mtxf_transform_point(MtxF matrix, f32 x, f32 y, f32 z, f32 *outX, f32 *outY, f32 *outZ);
 s32 Arctanf(f32 x, f32 z);
 s32 mainGetNumberOfCameras(void);
@@ -201,7 +201,7 @@ void amResetAudioMap(void) {
     D_800C92E8.point = NULL;
 
     if (runlinkIsModuleLoaded(6) != 0) {
-        TrapDanglingJump();
+        overlay6Empty();
     }
 }
 /*
@@ -378,7 +378,7 @@ void amPlayAudioMap(void *players, s32 playerCount, s32 updateRate) {
     }
 
     if (runlinkIsModuleLoaded(6)) {
-        TrapDanglingJump(cameras, cameraCount);
+        overlay6Noop(cameras, cameraCount);
     }
 }
 /* PROVENANCE: body adapted from JFG src/audio_manager_36D0.c amCalcSfxStereo. */

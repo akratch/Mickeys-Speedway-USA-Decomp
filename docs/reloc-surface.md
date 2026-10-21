@@ -1280,8 +1280,10 @@ inside its `0x810`-byte range: `+0x208` to ORT 1350 (Overlay 35 `+0`),
 (`overlay34InitStorage`), `+0x648` to ORT 1353
 (`overlay33InitializeBuffers`), `+0x660` to ORT 1354 (`overlay42Init`),
 `+0x678` to ORT 1355 (`overlay16InitializeBuffer`), and `+0x720` to ORT
-1356 (`overlay103CheckSignature`). Typed weak aliases expose those ABIs and a
-metadata-only object rename restores the shipped `TrapDanglingJump` identity.
+1356 (`overlay103CheckSignature`). The C calls each by that name with its
+prototype in `include/game/overlay_exports.h` (once typed weak aliases), and the
+generic trap rename restores the shipped `TrapDanglingJump` identity
+(docs/overlays.md §5.1).
 ORT 526 exports `levelInit`; `func_80028564+0x5F8` is its sole direct caller,
 with no resident runtime, overlay `SYMBOL`, or aligned-pointer inbound. Current
 linked equality proves fallback only.

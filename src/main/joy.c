@@ -1,5 +1,6 @@
 #include "ultra64.h"
 #include "game/saves.h"
+#include "game/overlay_exports.h"
 
 /*
  * Resident controller input, ROM 0x25C20-0x263F0.
@@ -39,7 +40,6 @@ u8 D_800CF3B4[4];
 u8 D_800CF3B8[4];
 s32 D_800CF3BC;
 extern s32 func_8003A550(void);
-extern void TrapDanglingJump();
 extern s32 osContInit(OSMesgQueue *, u8 *, OSContStatus *);
 extern s32 osContStartReadData(OSMesgQueue *);
 extern void joyResetMap(void);
@@ -329,12 +329,12 @@ void joySetSecurity(void) {
 /* PROVENANCE: body adapted from JFG src/joy.c; Mickey byte identity is decisive. */
 void arithmeticFunction(u8 *challenge, u8 *response) {
     osRecvMesg(&D_800CF340, NULL, OS_MESG_BLOCK);
-    TrapDanglingJump(challenge, &D_800CF340);
+    overlay39Write(challenge, &D_800CF340);
     osRecvMesg(&D_800CF340, NULL, OS_MESG_BLOCK);
-    TrapDanglingJump(&D_800CF340);
+    overlay39Reset(&D_800CF340);
     osRecvMesg(&D_800CF340, NULL, OS_MESG_BLOCK);
     osContStartReadData(&D_800CF340);
-    TrapDanglingJump(response);
+    overlay39Read(response);
 }
 
 /* PROVENANCE: body adapted from JFG src/joy.c; Mickey byte identity is decisive. */

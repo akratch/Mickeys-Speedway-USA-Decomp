@@ -24,7 +24,7 @@ Physical text: 944,316 bytes; reviewed nonexecutable alignment: 676 bytes.
 | Functions matched | 1,353 | 1,460 | 92.67% |
 | Names adopted | 1,434 | 1,460 | 98.22% |
 
-Whole program is resident C plus verified assembly plus overlay C. Totals exclude [reviewed nonexecutable alignment](docs/executable-accounting.md). A function counts only when the ROM rebuilds byte-identically with its C compiled in place of its assembly, so a `NON_MATCHING` body counts as unmatched exactly like extracted assembly. Verified assembly is 107 hand-written functions kept as assembly on purpose. 1,478 symbols are adopted in `symbol_addrs.us.txt`.
+Whole program is resident C plus verified assembly plus overlay C. Totals exclude [reviewed nonexecutable alignment](docs/executable-accounting.md). A function counts only when the ROM rebuilds byte-identically with its C compiled in place of its assembly, so a `NON_MATCHING` body counts as unmatched exactly like extracted assembly. Verified assembly is 107 hand-written functions kept as assembly on purpose; [the proof for each](docs/VERIFIED_ASSEMBLY.md) is re-derived from the ROM by `tools/hasm_audit.py`. 1,478 symbols are adopted in `symbol_addrs.us.txt`.
 
 | Area | Functions | Matched to C | Named, still asm | Unnamed | Identified |
 | :--- | ---: | ---: | ---: | ---: | :--- |

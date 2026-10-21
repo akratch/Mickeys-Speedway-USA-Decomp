@@ -1091,7 +1091,6 @@ void func_800517E0(void) {
     f32 motionDuration;
     f32 factor;
     f32 unit;
-    s16 signedValue;
     u8 type;
     f32 scale;
     f32 motionX;
@@ -1395,9 +1394,10 @@ void func_800517E0(void) {
                     }
                     break;
                 case 0x40:
-                    high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
-                    flagsValue = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
-                    high2 = (*((u16 *) ((u8 *) cursor + 6)) >> 8) & 0xFF;
+                    /* One source line for the three reads: emission ties are
+                     * broken by line (L59), which orders the two byte masks
+                     * as shipped (final campaign 2026-10-21). */
+                    high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF; flagsValue = *((u16 *) ((u8 *) cursor + 4)) & 0xFF; high2 = (*((u16 *) ((u8 *) cursor + 6)) >> 8) & 0xFF;
                     word12 = cursor->command & 0xFF;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     value = (f32) (*((u16 *) ((u8 *) cursor + 8)));
@@ -1570,9 +1570,8 @@ void func_800517E0(void) {
                     packed2 = *((u16 *) ((u8 *) cursor + 4)) >> 8;
                     low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     word4 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF00;
-                    word8 = (*((u16 *) ((u8 *) cursor + 6)) & 0xFF) << 8;
-                    word9 = *((u16 *) ((u8 *) cursor + 8)) & 0xFF00;
-                    frame = (*((u16 *) ((u8 *) cursor + 8)) & 0xFF) << 8;
+                    /* One line, as 0x40: the shifts and stores order as shipped. */
+                    word8 = (*((u16 *) ((u8 *) cursor + 6)) & 0xFF) << 8; word9 = *((u16 *) ((u8 *) cursor + 8)) & 0xFF00; frame = (*((u16 *) ((u8 *) cursor + 8)) & 0xFF) << 8;
                     pathIndex = cursor->command & 0xFF;
                     frame4C = *((u16 *) ((u8 *) cursor + 0xA));
                     duration = *((u16 *) ((u8 *) cursor + 0xC));
@@ -1581,21 +1580,26 @@ void func_800517E0(void) {
                     break;
                 case 0x4D:
                     word6 = *((u16 *) ((u8 *) cursor + 4));
-                    pathIndex = cursor->command & 0xFF;
+                    low2 = cursor->command & 0xFF;
                     value = (f32) *((u16 *) ((u8 *) cursor + 6));
                     frame6F = *((u16 *) ((u8 *) cursor + 8));
                     timer = *((u16 *) ((u8 *) cursor + 0xA));
-                    frame61 = *((u16 *) ((u8 *) cursor + 0xC));
+                    /* Both bytes read from the stream before the advance, which
+                     * kills their forward substitution: the webs stay in the
+                     * saved registers and 0x4D draws one ring temp as shipped,
+                     * putting 0x60's mask on t9 (final campaign 2026-10-21). */
+                    high = *((u16 *) ((u8 *) cursor + 0xC)) >> 8;
+                    high2 = *((u16 *) ((u8 *) cursor + 0xC)) & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
-                    high2 = frame61 >> 8;
-                    low2 = frame61 & 0xFF;
                     TrapDanglingJump(word6, (s32) value,
-                                     frame6F, timer, high2,
-                                     low2, pathIndex);
+                                     frame6F, timer, high,
+                                     high2, low2);
                     break;
                 case 0x60:
                     pathIndex = cursor->command & 0xFF;
-                    signedValue = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
+                    /* An s32 carrier: no narrowing pair, so the byte reaches
+                     * a1 through the shipped mask-and-copy. */
+                    word5 = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
                     low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     unit = (f32) *((u16 *) ((u8 *) cursor + 6)) / 16384.0f;
                     value2 = (f32) *((u16 *) ((u8 *) cursor + 8)) / 16384.0f;
@@ -1606,7 +1610,7 @@ void func_800517E0(void) {
                         if (object->model->animationKinds[object->animationIndex] == 1) {
                             object->animationValue = unit;
                         } else {
-                            func_8005AD64(object, signedValue, -1, unit);
+                            func_8005AD64(object, word5, -1, unit);
                         }
                         path->unkC = value2;
                         path->unk14 = low;
@@ -4057,10 +4061,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 841/1808 words
+ * score: 101/1808 words
  * frame: 0x1B0
  * relocations: 245
- * first-mismatch: +0x48
- * summary: Six handlers made exact (aligned residual 141->103); 0x60's extra word is the one length defect, coupled to 0x4B/0x79/0x7B; 0x79 needs a 2nd address use
+ * first-mismatch: +0xDC
+ * summary: Size 0 again: 0x60 closed by 0x4D's ring phase plus an s32 carrier; 0x79 (store through the address register, no frame copy) is 20 of the 84 aligned
  * PLATEAU-HANDOFF:func_800517E0:end
  */

@@ -271,7 +271,8 @@ Relocation-masked mismatch evidence covers **2 / 2** resolved rows. The raw coun
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `other` | 2 | 100.0% |
+| `other` | 1 | 50.0% |
+| `size-mismatch` | 1 | 50.0% |
 
 ### Differing-word thresholds
 
@@ -293,7 +294,7 @@ units remain distinct.
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 17 | 17 | 328 | 328 | 0 | — |
-| 2 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 455 | 448 | 200 | 220 | 0 | — |
+| 2 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 847 | 841 | 72 | 72 | 4 | — |
 
 ### Unresolved identities
 

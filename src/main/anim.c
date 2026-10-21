@@ -1172,12 +1172,13 @@ void func_800517E0(void) {
         hundred = 100.0f;
         scale = 60.0f;
         factor = 0.01f;
-        /* 1U: the loop test's constant is its own web, so the in-loop
-         * constant 1 is an original web decided before the 6000 web and
-         * the 6000 piece takes 0x7A's first block (lane rewrite-517e0, L177). */
+        /* The constant 1 is split into two webs by type. The unsigned one
+         * is 0x6F's `state == 1U`: with the U there rather than on this
+         * loop test (L177's placement), 0x6F's naming rows go and the
+         * aligned naming count falls by three (final campaign 2026-10-21). */
         while (cursor->command != 0x7F00 &&
                (commandTime = (f32) (commandDuration = cursor->duration) /
-                              hundred) < D_8007D6AC && D_8007D6A4 == 1U) {
+                              hundred) < D_8007D6AC && D_8007D6A4 == 1) {
             delta = D_8007D6AC - commandTime;
             /* The switch reads the opcode itself; opcode is now only the
              * audio commands' byte (lane rewrite-517e0). */
@@ -1294,8 +1295,11 @@ void func_800517E0(void) {
                     amTuneResetFade();
                     break;
                 case 0x22:
-                    opcode = cursor->command;
+                    /* The command byte masked after the value read, as in
+                     * 0x25: its copy then schedules behind the divide
+                     * (final campaign 2026-10-21). */
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
+                    opcode = cursor->command & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     amTuneSetFade(value / hundred - delta,
                                   opcode);
@@ -1313,8 +1317,8 @@ void func_800517E0(void) {
                     amAmbientResetFade();
                     break;
                 case 0x25:
-                    opcode = cursor->command;
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
+                    opcode = cursor->command & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     amAmbientSetFade(value / hundred - delta,
                                      opcode);
@@ -1446,11 +1450,11 @@ void func_800517E0(void) {
                     break;
                 case 0x45:
                     value = (f32) *((u16 *) ((u8 *) cursor + 6));
-                    high = cursor->command & 0xFF;
                     packed2 = *((u16 *) ((u8 *) cursor + 8));
                     timer = *((u16 *) ((u8 *) cursor + 0xA));
                     high2 = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
                     low2 = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    high = cursor->command & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     trackFadeFog(0, high, high2, low2,
                                   packed2, timer, value / hundred - delta);
@@ -1557,17 +1561,23 @@ void func_800517E0(void) {
                     D_800D6C52 = frame68;
                     break;
                 case 0x4C:
-                    packedField = cursor->command & 0xFF;
+                    /* The command byte in pathIndex (s0, then copied into
+                     * a0) and the +6 high byte in a word local outside the
+                     * s6/s7/fp web, as shipped; the two byte shifts are made
+                     * in their carriers and the command byte is read last,
+                     * which places its mask and copy as shipped (final
+                     * campaign 2026-10-21). */
                     packed2 = *((u16 *) ((u8 *) cursor + 4)) >> 8;
                     low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
-                    high = *((u16 *) ((u8 *) cursor + 6)) & 0xFF00;
-                    word8 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
+                    word4 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF00;
+                    word8 = (*((u16 *) ((u8 *) cursor + 6)) & 0xFF) << 8;
                     word9 = *((u16 *) ((u8 *) cursor + 8)) & 0xFF00;
-                    frame = *((u16 *) ((u8 *) cursor + 8)) & 0xFF;
+                    frame = (*((u16 *) ((u8 *) cursor + 8)) & 0xFF) << 8;
+                    pathIndex = cursor->command & 0xFF;
                     frame4C = *((u16 *) ((u8 *) cursor + 0xA));
                     duration = *((u16 *) ((u8 *) cursor + 0xC));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
-                    TrapDanglingJump(packedField, packed2, low, high, word8 << 8, word9, frame << 8, frame4C, duration);
+                    TrapDanglingJump(pathIndex, packed2, low, word4, word8, word9, frame, frame4C, duration);
                     break;
                 case 0x4D:
                     word6 = *((u16 *) ((u8 *) cursor + 4));
@@ -1701,9 +1711,10 @@ void func_800517E0(void) {
                     }
                     break;
                 case 0x6A: {
+                    /* The low byte in high, the s6 web 0x6B and 0x4A use. */
                     pathIndex = cursor->command & 0xFF;
                     packed2 = *((u16 *) ((u8 *) cursor + 4)) >> 8;
-                    word3 = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    high = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     high2 = *((u16 *) ((u8 *) cursor + 6)) >> 8;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     frame4D = *((u16 *) ((u8 *) cursor + 8));
@@ -1718,7 +1729,7 @@ void func_800517E0(void) {
                             entry = *(void **)
                                 ((u8 *) reference + packed2 * 4);
                             animCommandSlotTrap(
-                                entry, word3, high2, low2, frame4D, value, 1);
+                                entry, high, high2, low2, frame4D, value, 1);
                         }
                     }
                     break;
@@ -1760,8 +1771,12 @@ void func_800517E0(void) {
                     pathIndex = cursor->command & 0xFF;
                     type = *((u8 *) cursor + 5);
                     value = (f32) *((s16 *) ((u8 *) cursor + 6)) * 0.00390625f;
-                    radius = (f32) *((s16 *) ((u8 *) cursor + 8)) * 0.00390625f;
-                    duration = *((u16 *) ((u8 *) cursor + 0xA));
+                    /* The second float in value2 (f2) and the +0xA halfword
+                     * in an s32 local rather than a u16 one: the halfword
+                     * then reaches a1 as shipped, which also makes 0x47,
+                     * 0x6A and 0x6B exact (final campaign 2026-10-21). */
+                    value2 = (f32) *((s16 *) ((u8 *) cursor + 8)) * 0.00390625f;
+                    frame6E = *((u16 *) ((u8 *) cursor + 0xA));
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     if ((path != NULL) &&
@@ -1787,22 +1802,20 @@ void func_800517E0(void) {
                                 case 7:
                                 case 8:
                                     sub->type10 = type == 5 ? 0xD : 9;
-                                    next = object->sub->next1C;
-                                    word1 = duration;
-                                    if ((next != NULL) &&
-                                        (next->type10 & 8)) {
-                                        next->unkBA = word1;
+                                    if ((object->sub->next1C != NULL) &&
+                                        ((next = object->sub->next1C)->type10 & 8)) {
+                                        next->unkBA = frame6E;
                                         next->type11 = type == 5 ?
                                             1 : type - 5;
-                                        if (word1 == 0) {
+                                        if (frame6E == 0) {
                                             next->unk0 = object->sub->unk0;
                                             next->unk4 = object->sub->unk4;
                                             next->unkAC =
                                                 object->model->scale5C;
-                                        } else if (word1 == 2) {
+                                        } else if (frame6E == 2) {
                                             next->unk0 = value;
                                             next->unk4 = value;
-                                            next->unkAC = radius;
+                                            next->unkAC = value2;
                                         }
                                     }
                                     break;
@@ -1847,7 +1860,7 @@ void func_800517E0(void) {
                         } else {
                             state = object->model->animationKinds[object->animationIndex];
                         }
-                        if (state == 1) {
+                        if (state == 1U) {
                             object->animationValue = index;
                             path->unkC = (f32) packed2 / scale;
                         } else if (state == 0) {
@@ -1858,16 +1871,20 @@ void func_800517E0(void) {
                                 flagsValue = record->flags;
                                 word3 = record->flags & 0xFF;
                                 reference = animation->header->recordTable[word3].reference;
+                                /* The two masks spelled with different types are two
+                                 * one-use constant webs, so neither is coloured: both
+                                 * ANDs take the assembler's $at immediate and the
+                                 * divide follows them, as shipped. The extra web this
+                                 * adds is paid back by one shared 0x800000 web below,
+                                 * which keeps the a0 break pieces (final campaign
+                                 * 2026-10-21; supersedes the L177 unsigned split). */
                                 record->flags = flagsValue & 0xFF1FFFFF;
-                                reference->flags = reference->flags &
-                                    0xFF1FFFFF;
+                                reference->flags = reference->flags & ~0xE00000;
                                 reference->speed12 =
                                     (s16) ((packed2 << 8) / 6000);
                                 switch (low) {
                                     case 1:
-                                        /* Unsigned: one 0x800000 web per use, so the state
-                                         * piece keeps a0 (lane rewrite-517e0, L177). */
-                                        record->flags |= 0x800000U;
+                                        record->flags |= 0x800000;
                                         reference->flags |= 0x800000;
                                         break;
                                     case 2:
@@ -4040,10 +4057,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 448/1808 words
+ * score: 841/1808 words
  * frame: 0x1B0
  * relocations: 245
- * first-mismatch: +0xDC
- * summary: Shared weather and motion roles restore FP palette and motion spill homes; GP copies, static address owners and short-handler structure remain nonexact
+ * first-mismatch: +0x48
+ * summary: Six handlers made exact (aligned residual 141->103); 0x60's extra word is the one length defect, coupled to 0x4B/0x79/0x7B; 0x79 needs a 2nd address use
  * PLATEAU-HANDOFF:func_800517E0:end
  */

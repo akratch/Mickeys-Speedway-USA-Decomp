@@ -3551,3 +3551,48 @@ A one-function curiosity belongs in that function's handoff, not here.
   stream: later contraction may expose an identity operation without deleting
   it. Copy retention and temporary counts must be checked together with actual
   executable extent and all collateral changes.
+
+### A literal's type splits a constant web; one loop-spanning web more or less flips break pieces
+
+Measured on `func_800517E0`, 2026-10-21. uopt treats a repeated large constant
+as one web. With two uses its piece can be worth colouring (gross 20 against a
+materialization charge of 10), so the constant lands in a register and every
+use reads that register. Spelling the same bit pattern with a different type at
+one of the sites, for example `~0xE00000` beside `0xFF1FFFFF`, makes two one-use
+webs. Neither is worth colouring, so both uses keep the immediate operand and
+the assembler builds it once in `$at`. Writing `U` on both sites, or on neither,
+leaves one web.
+
+Every loop-hoisted constant web interferes in every loop block. A piece's
+growth is refused when the neighbours not yet sent to memory (numintf) exceed
+twice the colours left, so one extra loop-spanning web moves that count at
+every margin at once. Here the split mask pushed two unrelated pieces over
+their margins, and every loop-break tail from one handler onward lost a
+rematerialized constant (-748 B). Merging another constant pair back into one
+web (dropping a `U` from one `0x800000` site) removed one loop-spanning web,
+and both pieces returned. Treat constant-literal spellings as a whole-function
+web-count budget, not as a local spelling.
+
+### Masking in the assignment versus at the call moves an argument copy
+
+When a byte is passed through a `u8` parameter, the narrowing can be written
+in the assignment (`x = v & 0xFF`) or left to the call. The two give the same
+value but different trees. With the mask in the assignment, read after the
+other stream value, the carrier's copy into the argument register was
+scheduled behind a floating-point divide, as shipped. With the mask left to
+the call, or the byte read first, the copy was either folded or scheduled
+early. In the same way, a shift made in its carrier (`w = (v & 0xFF) << 8`)
+is emitted at that statement, while a shift written at the call is emitted in
+right-to-left argument order. Statement order and carrier renames alone were
+flat on both handlers.
+
+### A size-0 diagnostic base for whole-function measurement
+
+When one handler of a large function is a word long and the rest is being
+tuned, the positional masked count is dominated by the shift. A deliberately
+non-adoptable one-line change that restores that handler's length can serve as
+the measurement base for every other handler: here, declaring a byte carrier
+`s8`, which is wrong because the callee clamps negatives. Positional counts
+are then meaningful again, and every edit measured on that base transferred
+unchanged to the adoptable source. Record such a base as a diagnostic and
+never land it.

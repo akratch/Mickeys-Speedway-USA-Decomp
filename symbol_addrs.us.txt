@@ -621,7 +621,7 @@ rain_render_splashes = 0x8003BBF8; // type:func size:0x650 tier-D, ROM 0x3c7f8
 rain_lightning = 0x8003C248; // type:func size:0x128 tier-D, ROM 0x3ce48  matched C src/main/weather.c.o -O2 -mips2 -32, DKR/JFG src/weather.c donor, masked=0/74
 rain_sound = 0x8003C370; // type:func size:0xC0 tier-D, ROM 0x3cf70  matched C src/main/weather.c.o -O2 -mips2 -32, JFG src/weather.c donor, masked=0/48
 snow_update = 0x8003C430; // type:func size:0x144 tier-D, ROM 0x3d030  hand-written, no permitted reference object holds it (DKR/JFG have compiled C, 85 vs 81 words, all differ)
-snow_vertices = 0x8003C574; // type:func size:0x1FC tier-D, ROM 0x3d174  hand-written (20 odd-FP operands), no permitted reference object holds it (DKR compiled C 226 vs 127 words)
+snow_vertices = 0x8003C574; // type:func size:0x1FC tier-D, ROM 0x3d174  hand-written (44 odd-FP operands in 32 instructions by the 2026-10-14 recount; 34 at single width in 22 by tools/hasm_audit.py, which excludes 32-bit moves), no permitted reference object holds it (DKR compiled C 226 vs 127 words)
 func_8003C770 = 0x8003C770; // type:func size:0x9C tier-D, ROM 0x3d370  matched C src/main/weather_tail.c.o -O2 -mips2 -32, Mickey-only reconstruction, linked exact=39/39
 
 // main/particles, ROM 0x3D5F0-0x43470.
@@ -1798,9 +1798,10 @@ cpuLine = 0x8001AE80; // type:func size:0x1D8
 rainFastDraw = 0x8001B058; // type:func size:0x1EC
 // main/refractOutputAssembler  ROM 0x50820  (jfg/game: src/refractOutputAssembler.c.o)  whole .text 0x3e0, masked=16, romocc=1
 //   Verified hand-written assembly (verified_asm.us.txt): the 16 masked words
-//   are the R_MIPS_HI16/LO16 fields only. That built object is a GLOBAL_ASM
-//   wrapper; JFG's tree now keeps the routine as hand-written
-//   src/hasm/refractOutputAssembler.s, whose GNU-as .text is identical to it.
+//   are the R_MIPS_HI16/LO16 fields only. That built object (the lock-pinned
+//   JFG build) is a GLOBAL_ASM wrapper; JFG commit 0371e91, newer than the
+//   pin, reclassified the routine as hasm in src/hasm/refractOutputAssembler.s
+//   (spimdisasm output), whose GNU-as .text is identical to it.
 refractOutputAssembler = 0x8004FC20; // type:func size:0x3E0
 // main/osBootRamTest  ROM 0x59b90  (jfg/game: src/osBootRamTest.c.o)  whole .text 0x60, masked=0, romocc=1
 osBootRamTest1_6105 = 0x80058F90; // type:func size:0x2C tier-A ROM 0x59B90 exact C, JFG source body
@@ -1857,12 +1858,15 @@ asins = 0x8006A508; // type:func size:0x8C tier-A exact C, JFG source body
 // 0x800296B0. Banjo-Kazooie's `src/mgu/mtxxfmf.o` is a whole-object match here
 // -- 0xA0 bytes, 0 masked, romocc=1 -- which would ordinarily buy a declared
 // file boundary. It is NOT declared, and the reason is that the surrounding
-// evidence is stronger and says something different: ROM 0x2A250-0x2AE44 is a
-// contiguous run of thirteen routines matched against DKR's ONE hand-written
-// `math_util.s` object, in DKR's order. So Mickey has the SDK's `guMtxXFMF`
-// inlined into a hand-written maths file, exactly as DKR does, and asserting a
-// TU boundary at 0x2A2B0 would assert a file that is not there. What the BK
-// match adds is the identification, not the boundary.
+// evidence is stronger and says something different: ROM 0x2A250-0x2B650 is
+// JFG's ONE hand-written `src/hasm/ido/math_util.s` object in JFG's order --
+// four runs holding 37 of its 39 routines, the other two filed at class 3 in
+// verified_asm.us.txt -- and DKR's `math_util.s` matches 15 of the same
+// routines in DKR's order (13 of them 0x10 bytes or more). JFG's copy of these
+// bytes is its `mathMtxXFMF`. So Mickey has the SDK's `guMtxXFMF` inside a
+// hand-written maths file, as both JFG and DKR do, and asserting a TU boundary
+// at 0x2A2B0 would assert a file that is not there. What the BK match adds is
+// the identification, not the boundary.
 //
 // 0x800725F4 is a genuine ambiguity and the name is weaker than its neighbours
 // because of it. DKR's build calls this TU `libc/rmonPrintf.c`; JFG's calls it

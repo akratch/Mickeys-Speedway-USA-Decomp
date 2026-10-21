@@ -3,14 +3,24 @@
 # One named splat subsegment per line. This is an evidence ledger, not a list
 # of everything currently emitted through asm/: compiler-generated functions
 # remain unresolved until matched to C. Every entry below belongs to one of
-# three evidence classes. In classes 1 and 2 the comparison masks only
-# relocated fields (R_MIPS_26/HI16/LO16) and covers a whole object or a
-# contiguous run of one object's routines in that object's own order (file
-# boundary not claimed for a run):
+# three evidence classes, and its routines take the subsegment's class
+# unless a `# routine class N:` comment below files them separately. In
+# classes 1 and 2 the comparison masks only the fields the reference
+# object's own relocation records patch -- R_MIPS_26 and HI16/LO16, plus
+# four R_MIPS_PC16 branch fields in main/lights2, which equal Mickey's
+# words in JFG's linked ROM -- and covers a whole object, a contiguous run
+# of one object's routines in that object's own order, or (main/math_util)
+# several runs of one object in its order whose only gaps are zero padding
+# and routines filed at class 3 (file boundary not claimed for a run):
 #
 # 1. Byte-identical to a hand-written assembly object in a permitted
-#    reference build (main/math_matrix: JFG hasm/math_matrix's routines two
-#    to five; the other entries are whole objects).
+#    reference build. main/math_matrix: JFG hasm/math_matrix's routines two
+#    to five. main/math_util: JFG src/hasm/ido/math_util.s in JFG's order,
+#    four runs from ROM 0x2A250, 0x2A630, 0x2AE50 and 0x2B100, zero padding
+#    at 0x2AE48 (8 bytes) and 0x2B64C (4 bytes), and the two routines JFG
+#    lacks, func_800299E8 and func_8002A414, filed at class 3 below; DKR's
+#    math_util.s matches only 15 of its routines and is not the reference.
+#    The other entries are whole objects.
 # 2. Proved hand-written by docs/modules.md section 6.2 -- odd single-
 #    precision FP registers no IDO build can emit, or a non-IDO prologue,
 #    with the registers or prologue named per routine in mickey.us.yaml --
@@ -23,14 +33,21 @@
 #    HASM etc. handled appropriately" -- a routine established as original
 #    hand-written assembly is finished work, kept as assembly. Every routine
 #    in the subsegment must carry, by itself, evidence that no SGI IDO build
-#    can have produced it (docs/modules.md 6.2): odd single-precision FP
-#    registers; the trapping signed add/sub forms; arguments in t-registers;
+#    can have produced it: odd single-precision FP registers (docs/modules.md
+#    6.2); the trapping signed add/sub forms; arguments in t-registers;
 #    s-registers clobbered unsaved; a computed jump into its own code; a
-#    non-IDO prologue; or a permitted library routine's built object with
-#    instructions deleted by hand. A routine with no mechanism of its own is
-#    admitted only as another routine's private exit or helper, said so in
-#    mickey.us.yaml. The mechanism is named per routine beside the boundary
-#    in mickey.us.yaml and the tier argued in docs/modules.md 1.2. Class 3
+#    non-IDO prologue (a non-leaf frame below the o32 minimum, a leaf that
+#    saves an otherwise-unwritten $ra, a callee-saved FP pair out of IDO's
+#    slot order); or a permitted library routine's built object with
+#    instructions deleted by hand. Each instruction-level mechanism is a
+#    shape the measured baseline of docs/modules.md 6.2.1 finds in no
+#    IDO-compiled function (`tools/hasm_audit.py --baseline` re-derives it);
+#    a shape IDO does emit -- a load before the frame, $ra as scratch, FP
+#    saved word-wise at -mips1, dead code behind a branch-likely -- is not
+#    evidence. A routine with no mechanism of its own is admitted only as
+#    another routine's private exit or helper, said so in mickey.us.yaml.
+#    The mechanism is named per routine beside the boundary in
+#    mickey.us.yaml and the tier argued in docs/modules.md 1.2. Class 3
 #    claims authorship, not a file boundary, and adopts no name.
 #
 # For all three classes the disassembly stays untracked: splat extracts it
@@ -50,6 +67,11 @@ main/gzip_asm
 main/refractOutputAssembler
 
 # Evidence class 3 (mechanism, no reference identity), 2026-10-14.
+# routine class 3: main/math_util func_800299E8 func_8002A414 -- the two
+#    main/math_util routines JFG's math_util.s lacks. No reference build
+#    holds either, and each carries its own mechanism: func_800299E8 a
+#    trapping signed add, func_8002A414 28 odd single-precision FP operands
+#    and a non-leaf frame below 0x18 (tools/hasm_audit.py, 2026-10-21).
 main/trackasm
 main/shadows_fp_19144
 main/matrix

@@ -100,11 +100,13 @@ double-precision instructions.
 | `snow_update` (`main/weather_snow_asm`) | D | 26 trapping add/sub; a register jump to an arithmetically computed code address inside its own unrolled ladder, no jump table |
 | `snow_vertices` (`main/weather_snow_asm`) | D | 44 odd-FP operands, 10 trapping add/sub |
 | `func_80058FF0` (`main/conv_mult_matrix`) | D, role B | 37 odd-FP operands (constant loaded into `$f19`), 3 trapping add/sub; JFG's `camTick` calls `conv_mult_matrix` where Mickey calls this |
-| `func_800591B0` (`main/gen_anim_data`) | D, role B | 796 odd-FP operands; callee-saved FP saved one word at a time at 4-byte offsets; 113 trapping add/sub |
+| `func_800591B0` (`main/gen_anim_data`) | D, role B | 796 odd-FP operands; its six callee-saved FP pairs saved word-wise out of IDO's slot order, each even half below its odd half (a word-wise save alone is no evidence: `-mips1` IDO saves word-wise too, §6.2.1); 113 trapping add/sub, 110 reachable |
 | `func_8005A550` (`main/gen_anim_data`) | D | Reads t-registers it never sets (arguments outside o32's `a0`-`a3`); 8 trapping add/sub |
 | `func_8005A5C0` (`main/gen_anim_data`) | D | as `func_8005A550` |
 | `func_8005A630` (`main/gen_anim_data`) | D | Writes `s0`-`s6` with no save; takes `t1` from its caller; 11 trapping add/sub |
 | `func_8005A6F0` (`main/gen_anim_data`) | D, as part of the object | No mechanism of its own: a bare return reached only as `func_8005A630`'s closing jump, so it is that helper's exit |
+| `func_800299E8` (`main/math_util`, declared class 3) | D | 1 trapping signed add. JFG's `math_util.s` lacks it, so the subsegment's class-1 identity does not carry it |
+| `func_8002A414` (`main/math_util`, declared class 3) | D | 33 odd-FP operands (28 at single width); a non-leaf frame below 0x18. JFG's `math_util.s` lacks it |
 
 `func_8005A6F0` is the one row whose bytes alone prove nothing, and it is
 admitted only because it has no caller of its own; the ledger header states
@@ -340,7 +342,7 @@ hold against the evidence now:
 | `0x2C8AC` | PD `game/stubs/game_11eff0.o` | `stub0f11eff0`, an 8-byte stub. Semantically vacuous, same ground as `leointerrupt` |
 | `0x58E40` | ten objects across four titles | A `0x10` `return x->field`. **Ten candidate names**, `romocc=?`. Fails §1.2's one-candidate rule outright, and the `?` is the tool declining to answer rather than a `1` |
 | `0x63B40`, `0x68110`, `0x76C80` | Conker `n_synaddplayer`, PD `n_save`, Conker `ldiv` | **Subsumed.** Each is a fragment of a TU already matched whole at a lower address. §1.2's "a whole-`.text` match outranks a standalone function match" |
-| `0x2A2B0` | BK `src/mgu/mtxxfmf.o` → `guMtxXFMF` | A clean whole-object match (`0xA0`, 0 masked, `romocc=1`), and its **boundary is still not declared**. The surrounding evidence is stronger and says something different: `0x2A250`–`0x2AE44` is thirteen routines matched against DKR's *one* hand-written `math_util.s` object, in DKR's order. Mickey inlines the SDK's `guMtxXFMF` into a hand-written maths file, exactly as DKR does, so declaring a TU boundary here would assert a file that is not there. The identification is recorded in `symbol_addrs.us.txt` §6; the address keeps `mtxf_transform_point` |
+| `0x2A2B0` | BK `src/mgu/mtxxfmf.o` → `guMtxXFMF` | A clean whole-object match (`0xA0`, 0 masked, `romocc=1`), and its **boundary is still not declared**. The surrounding evidence is stronger and says something different: `0x2A250`–`0x2B650` is JFG's *one* hand-written `src/hasm/ido/math_util.s` object in JFG's order (four runs, 37 of Mickey's 39 routines; the other two are filed at class 3), and DKR's `math_util.s` matches 15 of the same routines in DKR's order. Mickey has the SDK's `guMtxXFMF` inside a hand-written maths file, as JFG (`mathMtxXFMF`) and DKR do, so declaring a TU boundary here would assert a file that is not there. The identification is recorded in `symbol_addrs.us.txt` §6; the address keeps `mtxf_transform_point` |
 
 ### 4.4 n_audio: matching progress
 
@@ -664,6 +666,58 @@ compiled object with the translation load and add deleted by hand from each
 row, reproduced word for word from Banjo-Kazooie's built ultralib object
 (section 1.2's class-3 table). The whole JFG `hasm/math_matrix` counterpart,
 `0x2B650`-`0x2BCD0`, is now assembly.
+
+### 6.2.1 The measured baseline: shapes IDO-compiled C never takes
+
+Every class-3 mechanism is a claim that IDO emits some shape nowhere.
+`tools/hasm_audit.py --baseline` measures it instead of asserting it. It runs
+every mechanism detector over every C-matched resident function, and over
+every function of every reference-farm object positively identified as
+IDO-compiled C: the C file it was built from is found at the lock's pinned
+commit and includes no assembly at all, no symbol carries asm-processor's
+GLOBAL_ASM mark, and no `.comment` names GCC. Relocated jumps in an
+unlinked object are pointed at their relocation targets. A detector that
+fires anywhere in this corpus carries no verdict. Measured 2026-10-21:
+
+| Corpus | Objects | Functions | Words |
+|---|---|---|---|
+| Mickey resident C (bytes from the ROM) | — | 1,342 | 110,957 |
+| Banjo-Kazooie compiled C | 1,046 | 8,361 | 389,251 |
+| Perfect Dark compiled C | 428 | 5,591 | 512,640 |
+| Diddy Kong Racing compiled C | 193 | 1,845 | 211,021 |
+| Jet Force Gemini compiled C | 120 | 254 | 15,437 |
+| Conker's Bad Fur Day compiled C | 135 | 205 | 5,916 |
+| Total | 1,922 | 17,598 | 1,245,222 |
+
+**No hit in any of the 17,598 functions:** odd single-precision operands, odd
+registers at double width, the trapping signed add/sub forms, a non-leaf
+frame below the o32 minimum or with no frame, a non-leaf that never saves
+`$ra`, a leaf that saves an otherwise-unwritten `$ra`, a callee-saved
+register written with no save, a callee-saved FP pair out of IDO's slot
+order, a non-argument register read where no definition reaches, a register
+jump to a constant or computed code address, COP0/TLB/cache/system
+instructions, `k0`/`k1`/`gp`, `$sp` set other than by a frame adjustment, a
+plain `j` or a jump to another routine, a branch out of the routine, falling
+off its end, a secondary entry point.
+
+**Fires in compiled C, so refused as evidence** (resident / reference
+functions): the frame allocation after the first instruction (154 / 1,789);
+`$ra` used as a scratch register (35 / 130), and then saved in a leaf
+(2 / 12); callee-saved FP saved a word at a time, as `-mips1` does (19 / 274);
+unreachable code left behind a branch-likely delay slot (284 / 2,295). Odd FP
+registers do occur in 32-bit moves, loads and stores (2 / 607), as the halves
+of doubles, which is why the odd-FP count excludes those instructions.
+
+An independent count over Mickey's, JFG's and DKR's built objects (803,259
+words in 1,309 objects; it admits JFG objects whose C still includes
+GLOBAL_ASM, which this corpus excludes) agrees: no trapping add/sub, no plain
+`j` in Mickey's objects, no non-leaf frame below 0x18, and odd singles only
+in JFG's GLOBAL_ASM `shadows_214A0.c.o`. The baseline
+also checks the detectors: its first run caught two of them firing on
+compiled C through imprecision, calls reachable only through switch tables
+an unlinked object cannot resolve, and a 64-bit FP move defining one half of
+its pair, both fixed before the figures above. Re-derive it with
+`tools/hasm_audit.py --baseline` (a build and the reference farm, about 7 s).
 
 ### 6.3 Data ownership: SDK tails carved without guessing the bulk boundary
 

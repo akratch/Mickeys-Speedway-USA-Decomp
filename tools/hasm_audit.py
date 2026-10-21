@@ -41,9 +41,17 @@ the scoreboard counts as verified assembly carries proof of its own.
    end.  Every category is also run over every C-matched resident function
    -- code IDO demonstrably produced -- as a negative control, and a category
    that fires there is demoted to information and carries no verdict.
+   `--baseline` widens the control to every function of every farm object
+   positively identified as IDO-compiled C and prints per-detector hits and
+   words scanned (docs/modules.md 6.2.1).
 
 4. Classification.  Per routine, which classes the re-derived evidence
-   supports, checked against the ledger.  A routine with neither a mechanism
+   supports, checked against the ledger: the subsegment's class, or the
+   class a `# routine class N: <subsegment> <routine>... -- why` comment in
+   the ledger files it under.  A class-1 subsegment may also be several runs
+   of ONE hand-written object in that object's order when every gap is zero
+   padding or such a declared routine carrying its own mechanism (claim
+   "ordered-runs").  A routine with neither a mechanism
    nor reference identity is accepted on two structural grounds only: as a
    permitted library routine's built object with instructions deleted (an
    order-preserving alignment with deletions and store-register repointing
@@ -60,6 +68,7 @@ Usage:
     tools/hasm_audit.py --json       # per-routine records (schema hasm-audit/1)
     tools/hasm_audit.py --check      # exit 1 unless every routine is supported
     tools/hasm_audit.py --check --strict   # also fail on a ledger-class mismatch
+    tools/hasm_audit.py --baseline   # control over the farm's compiled C too
 """
 
 from __future__ import annotations
@@ -188,6 +197,8 @@ class Insn:
     trapping: bool = False
     odd_single: int = 0          # odd FPR operands used at single/word width
     odd_double: int = 0          # odd FPR named at double width (illegal at FR=0)
+    odd_move: int = 0            # odd FPR in a 32-bit move, load or store
+    external: bool = False       # a relocated jump/call to another object
     system: bool = False
     trap: bool = False
     wide: bool = False           # a MIPS III 64-bit operation
@@ -212,10 +223,16 @@ def _fp_operand(ins, reg, width, *, write):
 
 def _decode_cop1(ins, branch_target):
     fmt, ft, fs, fd, funct = ins.rs, ins.rt, ins.rd, ins.sa, ins.funct
+    # A 64-bit move names an even/odd pair in this model, like ldc1/sdc1.
+    pair = bit(FPR + fs) | (bit(FPR + fs + 1) if fs < 31 else 0)
     if fmt in (COP1_MF, COP1_DMF):
-        ins.defs, ins.uses, ins.wide = bit(ft), bit(FPR + fs), fmt == COP1_DMF
+        ins.defs, ins.wide = bit(ft), fmt == COP1_DMF
+        ins.uses = pair if fmt == COP1_DMF else bit(FPR + fs)
+        ins.odd_move = fs & 1 if fmt == COP1_MF else 0
     elif fmt in (COP1_MT, COP1_DMT):
-        ins.uses, ins.defs, ins.wide = bit(ft), bit(FPR + fs), fmt == COP1_DMT
+        ins.uses, ins.wide = bit(ft), fmt == COP1_DMT
+        ins.defs = pair if fmt == COP1_DMT else bit(FPR + fs)
+        ins.odd_move = fs & 1 if fmt == COP1_MT else 0
     elif fmt == COP1_CF:
         ins.defs = bit(ft)
     elif fmt == COP1_CT:
@@ -333,11 +350,13 @@ def decode(word, addr):
     elif op in (OP_LWC1, OP_LDC1):
         ins.uses, ins.load = bit(rs), (rs, imm)
         ins.defs = bit(FPR + rt)
+        ins.odd_move = rt & 1 if op == OP_LWC1 else 0
         if op == OP_LDC1:
             ins.defs |= bit(FPR + rt + 1) if rt < 31 else 0
             ins.odd_double = rt & 1
     elif op in (OP_SWC1, OP_SDC1):
         regs = bit(FPR + rt)
+        ins.odd_move = rt & 1 if op == OP_SWC1 else 0
         if op == OP_SDC1:
             regs |= bit(FPR + rt + 1) if rt < 31 else 0
             ins.odd_double = rt & 1
@@ -570,6 +589,8 @@ def detect_odd_fp(insns, cfg):
             out.append((4 * i, "odd-fp-single", ins.odd_single))
         if ins.odd_double:
             out.append((4 * i, "odd-fp-double", ins.odd_double))
+        if ins.odd_move:
+            out.append((4 * i, "odd-fp-move", None))
     return out
 
 
@@ -637,13 +658,19 @@ def detect_unsaved_writes(insns, cfg):
 
 
 def detect_frame(insns, cfg):
-    """Frame shapes, over every reachable instruction."""
+    """Frame shapes.
+
+    Calls and $ra saves are counted over every instruction, reachable or
+    not: a call reached only through an unresolved switch table still makes
+    the routine a non-leaf.
+    """
     out = []
     reach = sorted(cfg.reachable)
-    calls = [i for i in reach if insns[i].ctl == CTL_CALL]
+    every = range(len(insns))
+    calls = [i for i in every if insns[i].ctl == CTL_CALL]
     allocs = [i for i in reach if insns[i].op == OP_ADDIU and insns[i].rs == R_SP
               and insns[i].rt == R_SP and insns[i].imm < 0]
-    ra_saves = [i for i in reach if insns[i].store and insns[i].store[1] == R_SP
+    ra_saves = [i for i in every if insns[i].store and insns[i].store[1] == R_SP
                 and insns[i].store[0] >> R_RA & 1]
     if allocs:
         first, size = allocs[0], -insns[allocs[0]].imm
@@ -661,7 +688,7 @@ def detect_frame(insns, cfg):
     # (the negative control has both cases), so only a save with no other
     # write of ra is a shape IDO cannot produce.
     ra_scratch = any(insns[i].defs >> R_RA & 1 and insns[i].ctl != CTL_CALL
-                     and not (insns[i].load and insns[i].load[0] == R_SP) for i in reach)
+                     and not (insns[i].load and insns[i].load[0] == R_SP) for i in every)
     if not calls and ra_saves:
         out.append((4 * ra_saves[0], "leaf-saves-ra" if ra_scratch
                     else "leaf-saves-unused-ra", None))
@@ -711,6 +738,10 @@ def detect_foreign_control(insns, cfg, function_starts):
     out = []
     for i in sorted(cfg.reachable):
         ins = insns[i]
+        if ins.op == OP_J and i not in cfg.delay_of:
+            out.append((4 * i, "plain-jump", None))
+        if ins.external and ins.ctl == CTL_JUMP and i not in cfg.delay_of:
+            out.append((4 * i, "tail-jump", None))
         if ins.target is None or i in cfg.delay_of:
             continue
         inside = start <= ins.target < end
@@ -777,7 +808,7 @@ EXTRA_MECHANISMS = {
 }
 INFO_LABELS = {
     "trap-instruction", "64-bit-instruction", "table-or-pointer-jump",
-    "register-jump-unresolved", "call-to-non-entry",
+    "register-jump-unresolved", "call-to-non-entry", "odd-fp-move", "plain-jump",
 }
 
 
@@ -789,12 +820,21 @@ class Program:
     interior_entries: dict = field(default_factory=dict)  # start -> {addr}
 
 
-def analyse_routine(words, base, prog=None):
-    """All findings for one routine: [(offset, label, detail)], sorted."""
+def analyse_routine(words, base, prog=None, targets=None):
+    """All findings for one routine: [(offset, label, detail)], sorted.
+
+    targets: {word index: target address or None} for an unlinked object,
+    whose relocated jump fields hold addends: None marks a jump or call to
+    another object.
+    """
     prog = prog or Program()
     insns = decode_words(words, base)
     if not insns:
         return []
+    for k, target in (targets or {}).items():
+        if 0 <= k < len(insns) and insns[k].op in (OP_J, OP_JAL):
+            insns[k].target = target
+            insns[k].external = target is None
     jumps = classify_register_jumps(insns, prog.read_word)
     end = base + 4 * len(insns)
     interior = sorted(a for a in prog.interior_entries.get(base, ())
@@ -987,6 +1027,9 @@ class RefObject:
     masks: list
     symbols: list            # [(offset, size, name)] sorted by offset
     irregular: bool = False  # a relocation outside prefilter()'s superset
+    functions: list = field(default_factory=list)   # STT_FUNC symbols only
+    call_targets: dict = field(default_factory=dict)  # R_MIPS_26 word -> offset|None
+    gcc: bool = False        # a .comment naming GCC: not an IDO object
 
     def symbol_at(self, offset):
         names = [s[2] for s in self.symbols if s[0] == offset]
@@ -1020,8 +1063,23 @@ def parse_object(blob, title="", path=""):
         text += bytes(4 - len(text) % 4)
     if not text:
         return None
+    # The symbol table first: relocations name its entries by index.
+    table = []
+    for name, stype, soff, ssize, link, entsize in sections:
+        if stype != 2 or not entsize:
+            continue
+        stroff, strsize = sections[link][2], sections[link][3]
+        strtab = blob[stroff:stroff + strsize]
+        for k in range(soff, soff + ssize, entsize):
+            nameoff, value, sym_size, info, _other, shndx = struct.unpack_from(
+                end + "IIIBBH", blob, k)
+            stop = strtab.find(b"\0", nameoff)
+            sym = strtab[nameoff:stop if stop >= 0 else None].decode("ascii", "replace")
+            table.append((sym, value, sym_size, info & 0xF, shndx))
+        break
     masks = [MASK32] * (len(text) // 4)
     irregular = False
+    call_targets = {}
     for name, stype, roff, rsize, _link, entsize in sections:
         if name != ".rel.text" or stype != 9:
             continue
@@ -1034,23 +1092,29 @@ def parse_object(blob, title="", path=""):
             word = struct.unpack_from(">I", text, r_offset & ~3)[0]
             if prefilter(word) & ~mask & MASK32:
                 irregular = True
-    symbols = []
-    for name, stype, soff, ssize, link, entsize in sections:
-        if stype != 2 or not entsize:
+            if info & 0xFF == 4:
+                # Where an R_MIPS_26 field really points: a .text symbol's
+                # value plus the in-place addend, or None when external.
+                sym = table[info >> 8] if info >> 8 < len(table) else None
+                addend = (word & 0x3FFFFFF) << 2
+                if sym and sym[4] == text_index:
+                    call_targets[r_offset // 4] = (sym[1] if sym[3] != 3 else 0) + addend
+                else:
+                    call_targets[r_offset // 4] = None
+    symbols, functions = [], []
+    for sym, value, sym_size, typ, shndx in table:
+        if shndx != text_index or typ in (3, 4):
             continue
-        stroff, strsize = sections[link][2], sections[link][3]
-        strtab = blob[stroff:stroff + strsize]
-        for k in range(soff, soff + ssize, entsize):
-            nameoff, value, sym_size, info, _other, shndx = struct.unpack_from(
-                end + "IIIBBH", blob, k)
-            if shndx != text_index or (info & 0xF) in (3, 4):
-                continue
-            stop = strtab.find(b"\0", nameoff)
-            sym = strtab[nameoff:stop if stop >= 0 else None].decode("ascii", "replace")
-            if sym and not sym.startswith((".L", "$")):
-                symbols.append((value, sym_size, sym))
+        if sym and not sym.startswith((".L", "$")):
+            symbols.append((value, sym_size, sym))
+            if typ == 2 and not sym.endswith(GLOBAL_ASM_MARK):
+                functions.append((value, sym_size, sym))
     symbols.sort()
-    return RefObject(title, path, text, masks, symbols, irregular)
+    functions.sort()
+    gcc = any(s[0] == ".comment" and b"GCC" in blob[s[2]:s[2] + s[3]] for s in sections)
+    obj = RefObject(title, path, text, masks, symbols, irregular)
+    obj.functions, obj.call_targets, obj.gcc = functions, call_targets, gcc
+    return obj
 
 
 def parse_lock(path):
@@ -1196,10 +1260,47 @@ KIND_RANK = {
     "reference-hasm": 1,         # extracted, but filed as hasm by that project
     "global-asm": 2,             # GLOBAL_ASM/INCLUDE_ASM inside a C file
     "extracted-asm": 3,          # splat output the project has not decompiled
-    "compiled-c": 4,             # a C function the reference compiler built
+    "unclassified": 4,           # a C-built object whose source was not found
+    "compiled-c": 5,             # a C function the reference compiler built
 }
 HANDWRITTEN_KINDS = {"handwritten-source", "reference-hasm"}
 EXCLUDED_SOURCE_DIRS = {"asm", "build", "tools", ".git", "expected", "assets", "extracted"}
+
+
+ASM_IN_C = re.compile(r"GLOBAL_ASM|INCLUDE_ASM|INCLUDE_RODATA|\bglabel\b|__asm__|\basm\s*\(")
+
+
+class GitBlobs:
+    """Read files at a commit through one `git cat-file --batch` per repository."""
+
+    def __init__(self):
+        self.procs = {}
+
+    def read(self, repo, commit, path):
+        proc = self.procs.get(repo)
+        if proc is None:
+            if not os.path.isdir(os.path.join(repo, ".git")):
+                return None
+            proc = subprocess.Popen(["git", "-C", repo, "cat-file", "--batch"],
+                                    stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                    stderr=subprocess.DEVNULL)
+            self.procs[repo] = proc
+        proc.stdin.write(("%s:%s\n" % (commit, path)).encode())
+        proc.stdin.flush()
+        header = proc.stdout.readline().split()
+        if len(header) != 3:
+            return None
+        data = proc.stdout.read(int(header[2]))
+        proc.stdout.read(1)
+        if header[1] != b"blob":
+            return None
+        return data.decode("utf-8", "replace")
+
+    def close(self):
+        for proc in self.procs.values():
+            proc.stdin.close()
+            proc.wait()
+        self.procs = {}
 
 
 class SourceIndex:
@@ -1211,7 +1312,9 @@ class SourceIndex:
         self._asm = {}
         self._label_cache = {}
         self._c_text = {}
+        self._c_index = {}
         self._kind = {}
+        self.git = GitBlobs()
 
     def asm_sources(self, title):
         if title not in self._asm:
@@ -1259,30 +1362,86 @@ class SourceIndex:
         return None
 
     def c_source_text(self, obj):
-        """The C source of a `.c.o` object at the pinned commit, else HEAD."""
+        """(text, where) of an object's C source at the pinned commit, else HEAD."""
+        return self.c_source(obj)[:2]
+
+    def c_source(self, obj):
         if obj.path not in self._c_text:
             self._c_text[obj.path] = self._find_c_source(obj)
         return self._c_text[obj.path]
 
+    def compiled_c_object(self, obj):
+        """(True, source) when the whole object is IDO-compiled C, else (False, why).
+
+        Positive identification only: the C file it was built from is found
+        and includes no assembly at all, no symbol carries asm-processor's
+        GLOBAL_ASM mark, and no .comment names GCC.
+        """
+        if obj.gcc:
+            return False, "a .comment names GCC"
+        if obj.path.endswith(".s.o") or "hasm" in obj.path.split(os.sep):
+            return False, "assembled"
+        if any(s[2].endswith(GLOBAL_ASM_MARK) for s in obj.symbols):
+            return False, "GLOBAL_ASM symbol"
+        text, where, path = self.c_source(obj)
+        if text is None:
+            return False, "no C source found"
+        if ASM_IN_C.search(text):
+            return False, "assembly in the C source"
+        if self.handwritten_source_for(obj, None):
+            return False, "a hand-written .s of the same name exists"
+        return True, "%s:%s" % (where, path)
+
+    def _c_files(self, title):
+        """{basename: [repository-relative .c paths]} of a checkout."""
+        if title not in self._c_index:
+            by_name = defaultdict(list)
+            top = os.path.join(self.refs_root, title)
+            for dirpath, dirnames, filenames in os.walk(top):
+                dirnames[:] = sorted(d for d in dirnames if d not in EXCLUDED_SOURCE_DIRS)
+                for fn in filenames:
+                    if fn.endswith(".c"):
+                        by_name[fn].append(os.path.relpath(os.path.join(dirpath, fn), top))
+            self._c_index[title] = by_name
+        return self._c_index[title]
+
     def _find_c_source(self, obj):
+        """(text, 'pinned'|'checkout', path) of the C file an object was built from.
+
+        Candidates are the object path's own suffixes (also under src/), then
+        same-named files ranked by how many trailing directories they share
+        with the object path; each is read at the lock's pinned commit first.
+        """
         rel = os.path.relpath(os.path.join(self.refs_root, obj.path),
                               os.path.join(self.refs_root, obj.title))
         rel = rel[:-2] if rel.endswith(".o") else rel
+        if not rel.endswith(".c"):
+            rel += ".c"
         parts = rel.split(os.sep)
         candidates = [os.sep.join(parts[k:]) for k in range(len(parts))]
+        candidates += ["src" + os.sep + c for c in candidates]
+
+        def shared(path):
+            a, b = path.split(os.sep)[::-1], parts[::-1]
+            n = 0
+            while n < min(len(a), len(b)) and a[n] == b[n]:
+                n += 1
+            return n
+        named = sorted(self._c_files(obj.title).get(parts[-1], []), key=lambda c: -shared(c))
+        candidates += [c for c in named if c not in candidates]
         repo = os.path.join(self.refs_root, obj.title)
         commit = self.commits.get(obj.title)
         for cand in candidates:
             if commit:
-                got = subprocess.run(["git", "-C", repo, "show", "%s:%s" % (commit, cand)],
-                                     capture_output=True)
-                if got.returncode == 0:
-                    return got.stdout.decode("utf-8", "replace"), "pinned"
+                text = self.git.read(repo, commit, cand)
+                if text is not None:
+                    return text, "pinned", cand
+        for cand in candidates:
             path = os.path.join(repo, cand)
             if os.path.isfile(path):
                 with open(path, encoding="utf-8", errors="replace") as fh:
-                    return fh.read(), "checkout"
-        return None, None
+                    return fh.read(), "checkout", cand
+        return None, None, None
 
     def kind(self, obj, symbol, offset=None):
         key = (obj.path, symbol, offset)
@@ -1301,10 +1460,13 @@ class SourceIndex:
         if offset is not None and obj.marked_global_asm(offset):
             return "global-asm"
         text, _where = self.c_source_text(obj)
-        if text is not None and symbol:
-            if re.search(r"GLOBAL_ASM\s*\(\s*\"[^\"]*\b%s\.s\"" % re.escape(symbol), text) or \
-               re.search(r"INCLUDE_ASM\s*\([^)]*\b%s\s*\)" % re.escape(symbol), text):
-                return "global-asm"
+        if text is None:
+            return "unclassified"           # no source: neither asm nor C proved
+        if symbol and (
+                re.search(r"GLOBAL_ASM\s*\(\s*\"[^\"]*\b%s\.s\"" % re.escape(symbol), text)
+                or re.search(r"INCLUDE_ASM\s*\([^)]*\b%s\s*\)" % re.escape(symbol), text)
+                or re.search(r"\bglabel\s+%s\b" % re.escape(symbol), text)):
+            return "global-asm"
         return "compiled-c"
 
 
@@ -1436,6 +1598,7 @@ class Identifier:
     def __init__(self, farm, sources, refs_root, workdir):
         self.farm, self.sources = farm, sources
         self.refs_root, self.workdir = refs_root, workdir
+        self._positions = {}
 
     def describe(self, obj, at, n, via, segment_words=None):
         sym = obj.symbol_at(4 * at)
@@ -1502,10 +1665,97 @@ class Identifier:
                 "masked": masked_count(built, at // 4, len(words)), "boundary_agrees": True,
                 "via": "assembled-from-source", "source_commit": head[:12]}
 
-    def identify_subsegment(self, run_words, spans):
+    def ordered_cover(self, words, obj, excluded=frozenset()):
+        """[(run start, words, object word offset)]: runs of `words` found in
+        `obj` in the object's own order, never crossing an excluded word.
+
+        Greedy: at each position the longest match at or after the end of the
+        previous run is taken, if it has MIN_IDENTITY_UNMASKED unmasked words.
+        """
+        idx = self._positions.get(obj.path)
+        if idx is None:
+            idx = defaultdict(list)
+            for k, w in enumerate(struct.unpack(">%dI" % len(obj.masks), obj.text)):
+                idx[prefilter(w)].append(k)
+            self._positions[obj.path] = idx
+        n, m = len(words), len(obj.masks)
+        runs, p, floor = [], 0, 0
+        while p < n:
+            if p in excluded:
+                p += 1
+                continue
+            best_len, best_q = 0, None
+            for q in idx.get(prefilter(words[p]), ()):
+                if q < floor:
+                    continue
+                k = 0
+                while (p + k < n and p + k not in excluded and q + k < m
+                       and exact_match([words[p + k]], obj, q + k)):
+                    k += 1
+                if k > best_len:
+                    best_len, best_q = k, q
+            if (best_q is not None and best_len - masked_count(obj, best_q, best_len)
+                    >= MIN_IDENTITY_UNMASKED):
+                runs.append((p, best_len, best_q))
+                floor = best_q + best_len
+                p += best_len
+            else:
+                p += 1
+        return runs
+
+    def ordered_claim(self, words, segments, spans, declared):
+        """The best one-object, in-order cover of a run, gaps classified.
+
+        Every word outside the runs is zero padding, part of a routine the
+        ledger declares at a different class, or uncovered.
+        """
+        excluded, owner = set(), {}
+        for name, off, size in spans:
+            if name in declared:
+                for k in range(off // 4, (off + size) // 4):
+                    excluded.add(k)
+                    owner[k] = name
+        best = None
+        objs = {o.path: o for _p, n, hits in segments if n >= MIN_IDENTITY_UNMASKED
+                for o, _a in hits}
+        for path in sorted(objs):
+            obj = objs[path]
+            runs = self.ordered_cover(words, obj, excluded)
+            covered = set()
+            for p, n, _q in runs:
+                covered.update(range(p, p + n))
+            gaps = []
+            for k in range(len(words)):
+                if k in covered:
+                    continue
+                kind = ("declared:" + owner[k] if k in owner
+                        else "padding" if words[k] == 0 else "uncovered")
+                if gaps and gaps[-1][2] == kind and gaps[-1][0] + gaps[-1][1] == k:
+                    gaps[-1][1] += 1
+                else:
+                    gaps.append([k, 1, kind])
+            uncovered = sum(g[1] for g in gaps if g[2] == "uncovered")
+            score = (uncovered, -len(covered), KIND_RANK[self.sources.kind(obj, None, 0)], path)
+            if best is None or score < best[0]:
+                best = (score, obj, runs, gaps)
+        if best is None:
+            return None
+        _score, obj, runs, gaps = best
+        return {
+            "object": obj.path, "kind": self.sources.kind(obj, None, 0),
+            "runs": [{"run_offset": "%#x" % (4 * p), "words": n, "object_offset": "%#x" % (4 * q)}
+                     for p, n, q in runs],
+            "gaps": [{"run_offset": "%#x" % (4 * k), "words": n,
+                      "kind": kind.split(":")[0], "routine": kind.partition(":")[2] or None}
+                     for k, n, kind in gaps],
+            "uncovered_words": sum(n for _k, n, kind in gaps if kind == "uncovered"),
+        }
+
+    def identify_subsegment(self, run_words, spans, declared=frozenset()):
         """(run record, {routine: [identity candidates, best first]}).
 
-        spans: [(name, byte offset in the run, byte size)].
+        spans: [(name, byte offset in the run, byte size)].  declared: the
+        routines the ledger files under a class of their own.
         """
         trimmed = trailing_nonzero(run_words)
         segments = self.cover(run_words[:trimmed])
@@ -1557,6 +1807,11 @@ class Identifier:
             claim = "whole-object" if whole else "single-object-run"
         elif long_segments:
             claim = "multi-segment"
+        ordered = None
+        if claim == "multi-segment":
+            ordered = self.ordered_claim(run_words, segments, spans, declared)
+            if ordered and len(ordered["runs"]) > 1 and not ordered["uncovered_words"]:
+                claim = "ordered-runs"
         run = {
             "words": trimmed, "covered_words": covered, "claim": claim,
             "segments": [{"run_offset": "%#x" % (4 * p), "words": n,
@@ -1564,6 +1819,8 @@ class Identifier:
                          for p, n, hits in segments if n >= MIN_IDENTITY_UNMASKED],
             "short_segments": sum(1 for _p, n, _h in segments if n < MIN_IDENTITY_UNMASKED),
         }
+        if ordered:
+            run["ordered"] = ordered
         return run, per_routine
 
 
@@ -1606,6 +1863,40 @@ def parse_ledger(text):
     for name in entries:
         cls = 3 if name in class3 else 2 if name in header2 else 1
         out.append((name, cls))
+    return out
+
+
+DECLARATION_RE = re.compile(
+    r"^routine class ([123]):\s+(\S+)\s+(.+?)\s+--\s+(.*)$")
+
+
+def parse_routine_declarations(text):
+    """{routine: {class, subsegment, reason}} from comment-borne declarations.
+
+    A ledger comment `# routine class N: <subsegment> <routine>... -- why`
+    files those routines under class N while their subsegment keeps its own
+    class; comment lines indented by three or more spaces continue the
+    reason.  Comments are invisible to progress.py and raw_asm_census.py.
+    """
+    out, last = {}, None
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line.startswith("#"):
+            last = None
+            continue
+        body = line[1:]
+        m = DECLARATION_RE.match(body.strip())
+        if m:
+            cls, sub, names, reason = m.groups()
+            last = []
+            for name in names.split():
+                out[name] = {"class": int(cls), "subsegment": sub, "reason": reason.strip()}
+                last.append(name)
+        elif last and body.startswith("   ") and body.strip():
+            for name in last:
+                out[name]["reason"] += " " + body.strip()
+        else:
+            last = None
     return out
 
 
@@ -1768,6 +2059,31 @@ def summarise_findings(findings, control):
     return mechanisms, info
 
 
+def ordered_run_problems(sub, by_name):
+    """Why a subsegment's ordered-runs claim fails, or [] when it holds.
+
+    Several runs of ONE object in that object's order stand for the
+    subsegment's class when the object is hand-written (class 1) and every
+    gap is zero padding or a declared routine with a mechanism of its own
+    and no reference identity.
+    """
+    ordered = sub["run"]["ordered"]
+    bad = []
+    if sub["ledger_class"] == 1 and ordered["kind"] not in HANDWRITTEN_KINDS:
+        bad.append("the object is %s, not hand-written" % ordered["kind"])
+    for gap in ordered["gaps"]:
+        if gap["kind"] == "uncovered":
+            bad.append("%d uncovered word(s) at %s" % (gap["words"], gap["run_offset"]))
+        rec = by_name.get(gap["routine"]) if gap["routine"] else None
+        if gap["kind"] == "declared" and not (rec and rec["mechanisms"]):
+            bad.append("declared routine %s carries no mechanism" % gap["routine"])
+    for name in sub["routines"]:
+        rec = by_name[name]
+        if rec.get("declaration") and rec["identity"]:
+            bad.append("declared routine %s has reference identity" % name)
+    return bad
+
+
 def derive_classes(identity, mechanisms, edited, helper):
     classes = []
     if identity and identity["kind"] in HANDWRITTEN_KINDS:
@@ -1792,6 +2108,99 @@ def verdict_for(ledger_class, classes, identity):
 # --------------------------------------------------------------------------
 # The audit.
 # --------------------------------------------------------------------------
+
+class Corpus:
+    """Per-label hit counts over a body of IDO-compiled functions."""
+
+    def __init__(self, name):
+        self.name = name
+        self.objects = 0
+        self.functions = 0
+        self.words = 0
+        self.labels = defaultdict(lambda: [0, 0])   # label -> [functions, sites]
+        self.examples = defaultdict(list)
+
+    def add(self, who, words, findings):
+        self.functions += 1
+        self.words += words
+        sites = Counter(label for _o, label, _d in findings)
+        for label, n in sites.items():
+            row = self.labels[label]
+            row[0] += 1
+            row[1] += n
+            if len(self.examples[label]) < 4:
+                self.examples[label].append(who)
+
+    def record(self):
+        return {"name": self.name, "objects": self.objects, "functions": self.functions,
+                "words": self.words,
+                "labels": {l: {"functions": r[0], "sites": r[1], "examples": self.examples[l]}
+                           for l, r in sorted(self.labels.items())}}
+
+
+def mickey_counts(corpus):
+    return Counter({l: row[0] for l, row in corpus.labels.items()})
+
+
+def object_function_spans(obj):
+    """[(offset, size, name)] of an object's functions, sizes filled in."""
+    out = []
+    starts = sorted({s[0] for s in obj.symbols} | {len(obj.text)})
+    for offset, size, name in obj.functions:
+        if not size:
+            size = min(x for x in starts if x > offset) - offset
+        if size >= 4 and offset % 4 == 0 and offset + size <= len(obj.text):
+            out.append((offset, size - size % 4, name))
+    return out
+
+
+def scan_farm_baseline(farm, sources):
+    """({title: Corpus}, {exclusion reason: objects}) over compiled-C objects.
+
+    An unlinked object's functions are analysed at their section offsets;
+    each relocated jump or call is pointed at its relocation's target, or
+    marked external, so an addend is never read as an address.
+    """
+    corpora, excluded = {}, Counter()
+    for obj in farm.objects:
+        ok, why = sources.compiled_c_object(obj)
+        if not ok:
+            excluded[why] += 1
+            continue
+        corpus = corpora.setdefault(obj.title, Corpus("%s compiled C" % obj.title))
+        corpus.objects += 1
+        spans = object_function_spans(obj)
+        prog = Program(function_starts={o for o, _z, _n in spans})
+        for offset, size, name in spans:
+            lo, hi = offset // 4, (offset + size) // 4
+            words = list(struct.unpack_from(">%dI" % (hi - lo), obj.text, offset))
+            targets = {k - lo: t for k, t in obj.call_targets.items() if lo <= k < hi}
+            corpus.add("%s:%s" % (obj.path, name), hi - lo,
+                       analyse_routine(words, offset, prog, targets))
+    return corpora, excluded
+
+
+def baseline_record(baseline):
+    corpora = [c.record() for c in baseline["corpora"]]
+    labels = sorted({l for c in corpora for l in c["labels"]}
+                    | set(LEDGER_MECHANISMS) | set(EXTRA_MECHANISMS) | INFO_LABELS)
+    rows = []
+    for label in labels:
+        hits = {c["name"]: c["labels"].get(label, {"functions": 0, "sites": 0}) for c in corpora}
+        total = sum(h["functions"] for h in hits.values())
+        evidence = label in LEDGER_MECHANISMS or label in EXTRA_MECHANISMS
+        rows.append({"label": label, "evidence_candidate": evidence,
+                     "functions": {k: v["functions"] for k, v in hits.items()},
+                     "sites": {k: v["sites"] for k, v in hits.items()},
+                     "verdict": ("refused: fires in compiled C" if evidence and total
+                                 else "usable" if evidence else "information only")})
+    return {"corpora": [{k: c[k] for k in ("name", "objects", "functions", "words")}
+                        for c in corpora],
+            "excluded_objects": baseline["excluded_objects"],
+            "labels": rows,
+            "examples": {c["name"]: {l: r["examples"] for l, r in c["labels"].items()}
+                         for c in corpora}}
+
 
 def load_tree(version):
     """Everything progress.py reads, enumerated with progress.py itself."""
@@ -1828,11 +2237,14 @@ def load_tree(version):
         if seg.get("name") == "main":
             main_vram = seg["vram"]
     with open(ledger_path, encoding="utf-8") as fh:
-        ledger = parse_ledger(fh.read())
+        ledger_text = fh.read()
+    ledger = parse_ledger(ledger_text)
+    declarations = parse_routine_declarations(ledger_text)
     return {
         "all_funcs": all_funcs, "func_addrs": func_addrs, "matched": matched,
         "index": index, "subsegments": subsegments, "verified": verified,
         "segments": segments, "main_vram": main_vram, "ledger": ledger,
+        "declarations": declarations,
         "subsegment_of": progress.subsegment_of,
     }
 
@@ -1865,17 +2277,16 @@ def _run_audit(args, workdir):
     prog = Program(starts, image.read_word, interior_entries(functions, xrefs))
 
     # Negative control: every C-matched resident function.
-    control = Counter()
-    control_examples = defaultdict(list)
+    mickey = Corpus("mickey-resident-c")
     control_names = sorted(n for n in tree["matched"] if n in func_addrs
                            and all_funcs.get(n, 0) >= 4 and image.rom_of(func_addrs[n]))
     for name in control_names:
         a = func_addrs[name]
-        labels = {l for _o, l, _d in analyse_routine(image.words(a, all_funcs[name]), a, prog)}
-        for l in labels:
-            control[l] += 1
-            if len(control_examples[l]) < 4:
-                control_examples[l].append(name)
+        words = image.words(a, all_funcs[name])
+        mickey.add(name, len(words), analyse_routine(words, a, prog))
+    control = Counter({l: row[0] for l, row in mickey.labels.items()})
+    control_examples = mickey.examples
+    baseline = None
 
     # Coverage.
     verified = sorted(tree["verified"], key=lambda n: func_addrs[n])
@@ -1896,12 +2307,30 @@ def _run_audit(args, workdir):
     by_sub = defaultdict(list)
     for name in verified:
         by_sub[tree["subsegment_of"](func_addrs[name], tree["index"])].append(name)
+    declarations = tree["declarations"]
+    for name, decl in sorted(declarations.items()):
+        if decl["subsegment"] not in ledger:
+            coverage_failures.append("declaration for %s names %s, not a ledger subsegment"
+                                     % (name, decl["subsegment"]))
+        elif name not in by_sub.get(decl["subsegment"], []):
+            coverage_failures.append("declaration for %s: no such counted routine in %s"
+                                     % (name, decl["subsegment"]))
 
     farm = None
     sources = None
     if not args.no_references:
         farm = Farm.load(args.refs_root, os.path.join(ROOT_DIR, "tools", "reference-builds.lock"))
         sources = SourceIndex(args.refs_root, farm.commits)
+        if args.baseline:
+            # The wider control: every function of every reference object
+            # positively identified as IDO-compiled C.  A label it shows
+            # carries no verdict, exactly as one the resident control shows.
+            corpora, excluded = scan_farm_baseline(farm, sources)
+            baseline = {"corpora": [mickey] + [corpora[t] for t in sorted(corpora)],
+                        "excluded_objects": dict(sorted(excluded.items()))}
+            for corpus in corpora.values():
+                for l, row in corpus.labels.items():
+                    control[l] += row[0]
 
     ident = Identifier(farm, sources, args.refs_root, workdir) if farm else None
 
@@ -1913,9 +2342,16 @@ def _run_audit(args, workdir):
             coverage_failures.append("ledger subsegment %s holds no counted routine" % sub)
             continue
         first, last = func_addrs[names[0]], func_addrs[names[-1]] + all_funcs[names[-1]]
+        # The run reaches the subsegment's own end, so trailing alignment is
+        # reported as padding rather than dropped with the last routine.
+        later = [a for a, _n in tree["index"] if a > func_addrs[names[-1]]]
+        if later and image.rom_of(min(later) - 4) is not None:
+            last = max(last, min(later))
         spans = [(n, func_addrs[n] - first, all_funcs[n]) for n in names]
+        declared = {n for n in names if n in declarations and declarations[n]["class"] != cls}
         if ident:
-            run, per_routine = ident.identify_subsegment(image.words(first, last - first), spans)
+            run, per_routine = ident.identify_subsegment(image.words(first, last - first), spans,
+                                                         declared)
         else:
             run, per_routine = {"segments": [], "claim": "not searched"}, {n: [] for n in names}
         subsegment_records.append({
@@ -1932,7 +2368,9 @@ def _run_audit(args, workdir):
             record = {
                 "name": n, "vram": "%#x" % a, "rom": "%#x" % image.rom_of(a),
                 "size": "%#x" % size, "words": size // 4, "subsegment": sub,
-                "ledger_class": cls,
+                "ledger_class": declarations[n]["class"] if n in declarations else cls,
+                "subsegment_class": cls,
+                "declaration": declarations[n]["reason"] if n in declarations else None,
                 "linked_from": object_at(map_sections, a),
                 "source_references": [{"file": f, "line": l, "kind": kd}
                                       for f, l, kd in in_src.get(n, [])],
@@ -2000,13 +2438,24 @@ def _run_audit(args, workdir):
         if not row["ok"]:
             flag("farm", title, "reference objects do not match the lock's pinned digest; "
                  "identity evidence from this title is not reproducible")
+    by_name = {r["name"]: r for r in routine_records}
     for sub in subsegment_records:
         claim = sub["run"]["claim"]
-        if farm and sub["ledger_class"] in (1, 2) and claim not in ("whole-object",
-                                                                   "single-object-run"):
+        ordered = sub["run"].get("ordered")
+        if farm and sub["ledger_class"] in (1, 2) and claim == "ordered-runs":
+            # Several runs of ONE object in that object's order: accepted
+            # when the object is hand-written (class 1) and every gap is
+            # zero padding or a declared routine carrying its own mechanism.
+            bad = ordered_run_problems(sub, by_name)
+            if bad:
+                flag("mismatch", sub["name"], "ordered runs of %s not accepted: %s"
+                     % (ordered["object"], "; ".join(bad)))
+        elif farm and sub["ledger_class"] in (1, 2) and claim not in ("whole-object",
+                                                                     "single-object-run"):
             flag("mismatch", sub["name"],
-                 "ledger class %d claims one object or one object's routine run; the "
-                 "re-derived run is %s" % (sub["ledger_class"], claim))
+                 "ledger class %d claims one object, one object's routine run, or one "
+                 "object's routines in order around declared routines; the re-derived run "
+                 "is %s" % (sub["ledger_class"], claim))
         if farm and sub["ledger_class"] == 3 and claim in ("whole-object", "single-object-run"):
             flag("mismatch", sub["name"], "ledger class 3 claims no reference identity; the "
                  "whole run matches (%s)" % claim)
@@ -2048,8 +2497,9 @@ def _run_audit(args, workdir):
         "control": {
             "functions": len(control_names),
             "labels": {l: {"functions": c, "examples": control_examples[l]}
-                       for l, c in sorted(control.items())},
+                       for l, c in sorted(mickey_counts(mickey).items())},
         },
+        "baseline": baseline_record(baseline) if baseline else None,
         "subsegments": subsegment_records,
         "routines": routine_records,
         "flags": flags,
@@ -2090,6 +2540,22 @@ def render_report(audit):
     out.append("negative control (labels that fire in IDO-compiled C; demoted):")
     for label, row in audit["control"]["labels"].items():
         out.append("  %-34s %4d  e.g. %s" % (label, row["functions"], ", ".join(row["examples"])))
+    if audit.get("baseline"):
+        base = audit["baseline"]
+        out.append("")
+        out.append("baseline: every detector over IDO-compiled functions")
+        for c in base["corpora"]:
+            out.append("  %-30s %5s objects %6d functions %8d words" % (
+                c["name"], c["objects"] or "-", c["functions"], c["words"]))
+        out.append("  excluded farm objects: %s" % ", ".join(
+            "%s %d" % kv for kv in base["excluded_objects"].items()))
+        names = [c["name"] for c in base["corpora"]]
+        out.append("  %-34s %s  %s" % ("label (functions hit per corpus)",
+                                        " ".join("%9s" % n.split()[0][:9] for n in names),
+                                        "verdict"))
+        for row in base["labels"]:
+            out.append("  %-34s %s  %s" % (row["label"], " ".join(
+                "%9d" % row["functions"][n] for n in names), row["verdict"]))
     out.append("")
     out.append("%-28s %-28s %s %-22s %s" % ("routine", "subsegment", "L", "verdict", "evidence"))
     for rec in audit["routines"]:
@@ -2128,6 +2594,10 @@ def main(argv=None):
     ap.add_argument("--expected", type=int, default=EXPECTED_ROUTINES)
     ap.add_argument("--no-references", action="store_true",
                     help="skip the reference farm (mechanism evidence only)")
+    ap.add_argument("--baseline", action="store_true",
+                    help="also run every detector over every function of every farm object "
+                         "identified as IDO-compiled C, report per-detector hits and words "
+                         "scanned, and refuse any label that fires there")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--check", action="store_true",
                     help="exit 1 if coverage fails or any routine is unsupported or refuted")

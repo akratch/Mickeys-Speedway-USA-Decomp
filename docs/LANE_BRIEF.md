@@ -1084,7 +1084,14 @@ shadow -- the dispatch order for Track B.
   behind a branch-likely. A routine with neither is accepted only as an
   instruction-deleted copy of a reference routine or as a private helper all
   of whose references (resident code and data, the overlay export table, raw
-  overlay constants) lie in one parent. Offsets and labels only; ~3 s with a
+  overlay constants) lie in one parent. A ledger comment `# routine class N:
+  <subsegment> <routine>... -- why` files routines apart from their
+  subsegment (main/math_util's two non-JFG routines), and a class-1 run may
+  be several runs of one object in its order around those and zero padding.
+  `--baseline` also scans every farm function identified as IDO-compiled C
+  (17,598 functions, 1.25M words) and refuses any label that fires there; it
+  caught two detector bugs on its first run, so run it after touching a
+  detector. Offsets and labels only; ~3 s (~7 s with `--baseline`) with a
   build and the farm. `--check` fails on an unsupported or refuted routine
   or a coverage failure; `--strict` also on a ledger-class mismatch.
 - **Reading aids.** `fast_score.py <sym> <cand.c> --diff --window A-B` (hex

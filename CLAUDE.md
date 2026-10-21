@@ -161,24 +161,23 @@ on *different* steps, and both hold. The atlas must be current before the
 extract, and the extract must precede `overlay-syms`:
 
 ```sh
-# 1. Add the promoted range by hand to MIXED_TU_EXACT_C_RANGES in
-#    tools/overlay_atlas.py, then write the atlas. `overlay-atlas-write`
-#    will NOT invent the range -- it reports "overlay artifacts current" --
-#    and editing config/overlays.us.json directly is overwritten. Keep each
-#    overlay's entries SORTED BY OFFSET, or `gmake build/.splat-stamp` dies
-#    with `ValueError: invalid overlay N mixed-TU exact range` from a
-#    traceback naming neither the entry nor the ordering rule.
+# 1. Write the atlas. The writer derives every text_ownership row from the
+#    source, including the matched/nonmatching flag a promotion flips.
+#
+#    Every overlay TU is complete today, so MIXED_TU_EXACT_C_RANGES in
+#    tools/overlay_atlas.py is empty (it carried 182 rows, all inside
+#    completed TUs, until 2026-10-21). Only a promotion that leaves its TU
+#    *mixed* -- exact C beside a GLOBAL_ASM fallback in one source file --
+#    needs that function's range added there by hand first; the table's
+#    comment gives the row format. `overlay-atlas-write` will NOT invent such
+#    a range (it reports "overlay artifacts current"), editing
+#    config/overlays.us.json directly is overwritten, and rows must be sorted
+#    by offset (`invalid overlay N mixed-TU exact range` names the row).
 #
 #    This comes first because `gmake extract` refuses to run while
 #    config/overlays.us.json is stale.
 gmake overlay-atlas-write
 .venv/bin/python tools/refresh_atlas_digest.py
-
-#    When the promotion COMPLETES a TU -- the last GLOBAL_ASM in it goes away
-#    -- this step is a no-op: the writer drops every mixed-TU range for a TU
-#    that has stopped being mixed, so the manifest is byte-identical with and
-#    without your entry. Run it anyway; it costs a second and its output tells
-#    you which case you are in.
 
 # 2. Re-extract. Removing a GLOBAL_ASM pragma leaves splat's .s behind;
 #    running overlay-syms before this fails on build/.splat-stamp, and

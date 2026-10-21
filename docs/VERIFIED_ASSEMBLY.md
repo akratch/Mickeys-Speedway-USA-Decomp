@@ -225,32 +225,44 @@ instructions deleted by hand.**
   routine into hand-written assembly.
 - **Nothing in it is impossible for IDO on its own,** so the case is that no
   compiler produces the shortened form.
-- **The search (2026-10-21):**
-  - 46,776 compiles of the translation-free body under IDO 5.3 and 7.1;
-  - 78 flag sets: `-O1` to `-O3`, `-mips1` to `-mips3`, with and without
-    `-Wab,-r4300_mul`, three `-g` levels, `-Olimit`;
-  - variations of order, grouping and operand order, zero-weighted terms,
-    indexing style, temporaries, `register`, loops, structs and pointers.
-- **The best result.** 16 words differ. The instruction schedule, opcodes and
-  offsets are identical to the ROM; the 16 words differ only in FP register
-  numbers.
-- **Why no compiler gets there.**
-  - **The allocator model.** IDO's code generator hands out FP temporaries from
-    a queue: a result takes the front register, and its inputs' registers
-    rejoin at the back. That model reproduces the register fields of every one
-    of 3,093 distinct compiles of this body, and of the 40-word reference.
-  - **No evaluation order fits.** The ROM's registers fit no evaluation order
-    of its own values, over every queue starting order.
-  - **The deleted values fit exactly.** The registers fit only if each row also
-    held one load and one sum after the row sum. Those are exactly the deleted
-    translation-term load and add, so the registers were assigned before the
-    six instructions were removed.
-  - **Nothing in the toolchain deletes them.** The assembler keeps dead
-    instructions, and the optimizer folds identities before registers are
-    assigned.
+- **The search (2026-10-21).** More than 50,000 compiles of the
+  translation-free body, under IDO 5.3 and 7.1. They span:
+  - `-O1` to `-O3` and `-mips1` to `-mips3`, with and without
+    `-Wab,-r4300_mul`, three `-g` levels and `-Olimit`;
+  - term order, grouping and operand order, zero-weighted and identity terms,
+    indexing style, temporaries, `register`, casts, loops, structs and
+    pointers.
 
-  `tools/fp_queue_model.py` re-derives the model, its validation and the fit
-  from your own ROM and compilers.
+  The exact count and axes are in the evidence note beside the boundary in
+  `mickey.us.yaml`.
+- **The best result.** 16 words differ. The instruction schedule, opcodes,
+  offsets and data flow are identical to the ROM; the 16 words differ only in
+  FP register numbers, in rows 1 and 2.
+- **Why no compiler gets there.** `tools/fp_queue_model.py` re-derives each
+  step of this argument from your own ROM and compilers.
+  - **The allocator model.** IDO's code generator hands out single-precision
+    temporaries from a queue: a result takes the front register, and its
+    inputs' registers rejoin at the back when last used. `--validate` compiles
+    generated forms under both compilers and checks that the model reproduces
+    every one of their register fields.
+  - **Its one premise.** The model's one premise is that no register in the
+    queue is taken over by an optimizer-coloured local. The optimizer fills
+    `$f0`/`$f2` first, and this routine writes neither, so it has no such
+    local. `--validate` re-measures the premise and fails if it breaks.
+  - **No evaluation order fits.** `--rom` finds that the ROM's registers fit no
+    evaluation order of its own values, from any queue starting order.
+  - **The deleted values fit exactly.** The registers fit exactly once rows 0
+    and 1 each also hold one more loaded value and one more sum after the row
+    sum, in the registers the reference object gives them. Those are the
+    deleted translation-term load and add, so the registers were assigned
+    before the six instructions were removed.
+  - **Deletion is caught.** As a control, `--validate` deletes the same
+    instructions from compiles that meet the premise, and the model rejects
+    every one of them.
+  - **Nothing in the toolchain deletes them.** The optimizer folds identity
+    terms before registers are assigned, the code generator assigned no
+    register without an instruction in any validated compile, and the
+    assembler keeps dead loads and arithmetic.
 
 **`func_8005A6F0` (8 bytes): a private exit.**
 
@@ -325,12 +337,16 @@ routine:
 You need a legally dumped ROM at `baseroms/mickey.us.z64`, a build, and the
 reference builds checked out at the commits in `tools/reference-builds.lock`
 (the audit reads `$REFS_ROOT`, defaulting to the documented location).
+`fp_queue_model.py --validate` also covers IDO 7.1 at `-O3` when `$IDO71_DIR`
+names a complete 7.1 recomp set; without one, it says what it skipped.
 
 ```sh
 gmake verify                                        # the whole ROM rebuilds byte-identically
 .venv/bin/python tools/hasm_audit.py --check --strict    # every routine's proof, re-derived
 .venv/bin/python tools/hasm_audit.py --baseline          # what IDO never emits, measured
-.venv/bin/python tools/fp_queue_model.py --rom func_8002B040   # the guMtxXFMF register proof
+.venv/bin/python tools/fp_queue_model.py --validate             # the register-queue model, measured
+.venv/bin/python tools/fp_queue_model.py --rom func_8002B040   # no order fits; the deleted values do
+.venv/bin/python tools/fp_queue_model.py --reference           # the reference object fits as built
 .venv/bin/python tools/hasm_audit.py --baseline --write-doc docs/VERIFIED_ASSEMBLY.md  # regenerate the tables below
 ```
 

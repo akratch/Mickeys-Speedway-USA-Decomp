@@ -1290,35 +1290,130 @@ $(BUILD_DIR)/$(SRC_DIR)/main/models_5B300.c.o: CFLAGS += -Wab,-r4300_mul
 # it two scheduler-tied words at +0xDC differ under every source spelling
 # tried.
 $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: CFLAGS += -Wab,-r4300_mul
-# The path reset trap needs a typed alias to preserve its f32 argument.
+# The path reset trap needs a typed alias to preserve its f32 argument, and
+# func_800517E0's motion and slot-colour dangling calls need their own typed
+# aliases (animCommandMotionTrap, animCommandSlotTrap) for the same reason.
 # Canonicalize only the undefined symbol name; section contents are unchanged.
-# func_800508D4's 0.01f literal owns one word of the anim literal pool; the
-# rest of IDO's input section is alignment padding, and the still
-# anonymous pool (0.02f onward) begins immediately after it.
-# func_800563B4's six-entry face switch table already lives in that retained
-# pool (jtbl_800841F4, directly after D_800841F0), and its entries name the
-# six case labels. Export those labels at their .text offsets, rebind the
-# table's %hi/%lo pair from the compiler's private .rodata copy (in-place
-# addend 4) to D_800841F0, whose address plus 4 is the retained table, then
-# drop the checked duplicate table and its relocations. No instruction word
-# or addend is edited.
+# func_800508D4's 0.01f literal owns one word of the anim literal pool, and
+# the retained pool (D_80083FAC, 0.02f, onward) begins immediately after it.
+# The rest of IDO's input section (0x4..0x250) duplicates tables and
+# literals the retained pool already owns, and the pool's table entries name
+# the case labels:
+#   0x004..0x238  func_800517E0: D_80083FB4, jtbl_80083FB8 (127 entries),
+#                 D_800841B4..D_800841C0, jtbl_800841C4 (9 entries);
+#   0x238..0x250  func_800563B4's six-entry face table, jtbl_800841F4.
+# Export the 73 distinct case labels at their .text offsets and rebind each
+# %hi/%lo pair from .rodata to a symbol whose address plus the compiler's
+# in-place addend is the retained object: D_80083FB0 for func_800517E0's
+# seven pairs (the private copy holds D_80083FB4 at +0x4, because the C
+# names D_80083FAC/D_80083FB0 as externs), and a local absolute
+# anchor at jtbl_800841F4 - 0x238 for the face table, which no shipped
+# symbol sits under. Then drop the checked duplicate and its relocations.
+# No instruction word or addend is edited. The labels, sites and digest are
+# generated, and every discarded word proved equal to the pool word it
+# stands for, by tools/private_rodata_plan.py.
 $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: $(TOOLS_DIR)/rebind_elf_relocations.py \
     $(TOOLS_DIR)/trim_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym animResetTrap=TrapDanglingJump $@ && \
 	$(OBJCOPY) --redefine-sym animUpdateTrap=TrapDanglingJump $@ && \
 	$(OBJCOPY) --redefine-sym hitCopyFirstTrap=TrapDanglingJump $@ && \
-	$(OBJCOPY) --add-symbol .L80056C38=.text:0x6C38,global \
+	$(OBJCOPY) --redefine-sym animCommandMotionTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym animCommandSlotTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --add-symbol .L800518DC=.text:0x18DC,global \
+	    --add-symbol .L80051928=.text:0x1928,global \
+	    --add-symbol .L8005194C=.text:0x194C,global \
+	    --add-symbol .L800519D0=.text:0x19D0,global \
+	    --add-symbol .L80051A24=.text:0x1A24,global \
+	    --add-symbol .L80051A60=.text:0x1A60,global \
+	    --add-symbol .L80051A84=.text:0x1A84,global \
+	    --add-symbol .L80051AC8=.text:0x1AC8,global \
+	    --add-symbol .L80051B28=.text:0x1B28,global \
+	    --add-symbol .L80051BEC=.text:0x1BEC,global \
+	    --add-symbol .L80051C10=.text:0x1C10,global \
+	    --add-symbol .L80051C34=.text:0x1C34,global \
+	    --add-symbol .L80051C58=.text:0x1C58,global \
+	    --add-symbol .L80051C80=.text:0x1C80,global \
+	    --add-symbol .L80051CCC=.text:0x1CCC,global \
+	    --add-symbol .L80051CF4=.text:0x1CF4,global \
+	    --add-symbol .L80051D1C=.text:0x1D1C,global \
+	    --add-symbol .L80051D68=.text:0x1D68,global \
+	    --add-symbol .L80051D90=.text:0x1D90,global \
+	    --add-symbol .L80051DE4=.text:0x1DE4,global \
+	    --add-symbol .L80051E28=.text:0x1E28,global \
+	    --add-symbol .L80051EA8=.text:0x1EA8,global \
+	    --add-symbol .L80051F00=.text:0x1F00,global \
+	    --add-symbol .L80051F44=.text:0x1F44,global \
+	    --add-symbol .L80052070=.text:0x2070,global \
+	    --add-symbol .L80052090=.text:0x2090,global \
+	    --add-symbol .L800520AC=.text:0x20AC,global \
+	    --add-symbol .L80052140=.text:0x2140,global \
+	    --add-symbol .L800521EC=.text:0x21EC,global \
+	    --add-symbol .L80052268=.text:0x2268,global \
+	    --add-symbol .L80052344=.text:0x2344,global \
+	    --add-symbol .L80052408=.text:0x2408,global \
+	    --add-symbol .L80052470=.text:0x2470,global \
+	    --add-symbol .L800525C4=.text:0x25C4,global \
+	    --add-symbol .L80052624=.text:0x2624,global \
+	    --add-symbol .L800526A4=.text:0x26A4,global \
+	    --add-symbol .L80052718=.text:0x2718,global \
+	    --add-symbol .L80052784=.text:0x2784,global \
+	    --add-symbol .L80052878=.text:0x2878,global \
+	    --add-symbol .L800528D0=.text:0x28D0,global \
+	    --add-symbol .L80052928=.text:0x2928,global \
+	    --add-symbol .L80052984=.text:0x2984,global \
+	    --add-symbol .L800529CC=.text:0x29CC,global \
+	    --add-symbol .L80052A14=.text:0x2A14,global \
+	    --add-symbol .L80052A68=.text:0x2A68,global \
+	    --add-symbol .L80052ACC=.text:0x2ACC,global \
+	    --add-symbol .L80052B58=.text:0x2B58,global \
+	    --add-symbol .L80052C20=.text:0x2C20,global \
+	    --add-symbol .L80052CE4=.text:0x2CE4,global \
+	    --add-symbol .L80052D28=.text:0x2D28,global \
+	    --add-symbol .L80052DB4=.text:0x2DB4,global \
+	    --add-symbol .L80052DBC=.text:0x2DBC,global \
+	    --add-symbol .L80052DD4=.text:0x2DD4,global \
+	    --add-symbol .L80052DEC=.text:0x2DEC,global \
+	    --add-symbol .L80052EA4=.text:0x2EA4,global \
+	    --add-symbol .L80052F48=.text:0x2F48,global \
+	    --add-symbol .L800530E8=.text:0x30E8,global \
+	    --add-symbol .L80053108=.text:0x3108,global \
+	    --add-symbol .L80053128=.text:0x3128,global \
+	    --add-symbol .L80053144=.text:0x3144,global \
+	    --add-symbol .L80053168=.text:0x3168,global \
+	    --add-symbol .L80053200=.text:0x3200,global \
+	    --add-symbol .L80053270=.text:0x3270,global \
+	    --add-symbol .L800532DC=.text:0x32DC,global \
+	    --add-symbol .L800532FC=.text:0x32FC,global \
+	    --add-symbol .L8005331C=.text:0x331C,global \
+	    --add-symbol .L80053384=.text:0x3384,global \
+	    --add-symbol .L80056C38=.text:0x6C38,global \
 	    --add-symbol .L80056C54=.text:0x6C54,global \
 	    --add-symbol .L80056C68=.text:0x6C68,global \
 	    --add-symbol .L80056C84=.text:0x6C84,global \
 	    --add-symbol .L80056C98=.text:0x6C98,global \
-	    --add-symbol .L80056CB4=.text:0x6CB4,global $@ && \
+	    --add-symbol .L80056CB4=.text:0x6CB4,global \
+	    --add-symbol animAnchor_jtbl_800841F4=0x80083FBC,local $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-	    0x6C24:.rodata:D_800841F0 0x6C2C:.rodata:D_800841F0 && \
+	    0x18A4:.rodata:D_80083FB0 \
+	    0x18A8:.rodata:D_80083FB0 \
+	    0x18C8:.rodata:D_80083FB0 \
+	    0x18D0:.rodata:D_80083FB0 \
+	    0x1AF4:.rodata:D_80083FB0 \
+	    0x1AF8:.rodata:D_80083FB0 \
+	    0x2000:.rodata:D_80083FB0 \
+	    0x2004:.rodata:D_80083FB0 \
+	    0x20E0:.rodata:D_80083FB0 \
+	    0x20E4:.rodata:D_80083FB0 \
+	    0x2524:.rodata:D_80083FB0 \
+	    0x2528:.rodata:D_80083FB0 \
+	    0x2DA0:.rodata:D_80083FB0 \
+	    0x2DA8:.rodata:D_80083FB0 \
+	    0x6C24:.rodata:animAnchor_jtbl_800841F4 \
+	    0x6C2C:.rodata:animAnchor_jtbl_800841F4 && \
 	$(OBJCOPY) --remove-section=.rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x4 \
-	    sha256:e9739b2f444aa9553825f049d40986c3d21ab1fa194bf048ab7f97b66a9c57a0
+	    sha256:d75fa82ed6c6e0ca3e779e6ef5a392425a5dec716780c3786d43a4e1e99b7ece
 
 # menu.c compiles at the plain game-code preset. It once carried
 # -Wo,-loopunroll,0 "for initFront"; that flag was measured byte-inert for

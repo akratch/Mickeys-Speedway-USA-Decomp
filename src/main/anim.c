@@ -28,8 +28,8 @@ extern void amSndStopXYZ(void *handle);
 HitCopyState **func_80005750(s32 *count);
 
 #ifdef NON_MATCHING
-/* The NON_MATCHING bodies of func_80051364, func_800517E0 and
- * func_80054B3C still spell these callees by their old placeholders;
+/* The NON_MATCHING bodies of func_80051364 and func_80054B3C still
+ * spell these callees by their old placeholders;
  * drop each line once those bodies are renamed. */
 #define amTunePlay amTunePlay
 #define amTuneSetFade amTuneSetFade
@@ -111,7 +111,6 @@ void func_8005013C(void) {
     }
     *D_800D6D54 = (s32) D_800D6D58;
 }
-
 
 /*
  * Clear the current animation-sequence cursors. The exact JFG donor assembly
@@ -893,7 +892,6 @@ void func_80051364(s32 updateRate) {
  * command widths, globals, object offsets, call targets, and body below are
  * established independently from Mickey's ROM and remain authoritative.
  */
-#ifdef NON_MATCHING
 struct AnimCommandSub;
 struct AnimCommandSubState;
 struct AnimCommandAnimation;
@@ -951,8 +949,12 @@ typedef struct AnimCommandSub {
     f32 unk0;
     f32 unk4;
     u8 pad8[8];
-    u8 type10;
-    s8 type11;
+    /* Both fields are only stored here. Signed type10 makes the 5
+     * store share the `type == 5` constant (decided before 0x6F's
+     * 0x400000), unsigned type11 keeps the stored 1s split as they
+     * were (lane op-6f, landing campaign 2026-10-21). */
+    s8 type10;
+    u8 type11;
     u8 pad12[8];
     struct AnimCommandSubState *next1C;
 } AnimCommandSub;
@@ -1077,8 +1079,9 @@ void mainSetAnimGroup(s32 arg0);
 void joyDisable(s32 player);
 void joyEnable(s32 player);
 
-/* NON_MATCHING: Mickey-led call/type reconstruction. Shared loop carriers
- * and handler dataflow still differ; see the symbol-owned handoff. */
+/* Mickey-led call/type reconstruction, matched in the 2026-10-21 landing
+ * campaign; the case-level notes below record why each carrier, literal and
+ * statement shape is what it is. */
 void func_800517E0(void) {
     AnimStreamEntry *cursor;
     s32 currentCommand;
@@ -1519,7 +1522,6 @@ void func_800517E0(void) {
                     s32 scrollX;
                     s32 scrollY;
 
-
                     targetValue = cursor->command & 0xFF;
 
                     /* scrollX is read before scrollY again once 0x46 and
@@ -1914,7 +1916,11 @@ void func_800517E0(void) {
                                         reference->flags |= 0x800000;
                                         break;
                                     case 2:
-                                        record->flags |= 0x400000;
+                                        /* Unsigned on the record line, as case 1: the
+                                         * two 0x400000 constants are then two one-use
+                                         * webs, both left to the assembler's $at
+                                         * immediate as shipped (lane op-6f). */
+                                        record->flags |= 0x400000U;
                                         reference->flags |= 0x400000;
                                         break;
                                 }
@@ -2025,9 +2031,6 @@ void func_800517E0(void) {
         D_8007D69C = cursor;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_800517E0.s")
-#endif
 /*
  * PROVENANCE: JFG's public src/anim.c supplies the ordered animseqCamera
  * comparison; the body and local layouts are reconstructed from Mickey.
@@ -4079,7 +4082,6 @@ void fmvInit(void) {
     }
 }
 
-
 /* PLATEAU-HANDOFF:func_80054B3C:start
  * symbol: func_80054B3C
  * score: 17/370 words
@@ -4088,14 +4090,4 @@ void fmvInit(void) {
  * first-mismatch: +0x148
  * summary: Ordinary twoY2 home elision and unused ey/ez removal: 353/370 exact, size delta 0; all 17 residual words are stack offsets.
  * PLATEAU-HANDOFF:func_80054B3C:end
- */
-
-/* PLATEAU-HANDOFF:func_800517E0:start
- * symbol: func_800517E0
- * score: 65/1808 words
- * frame: 0x1B0
- * relocations: 245
- * first-mismatch: +0xDC
- * summary: Two real words left: 0x6F case 2's 0x400000 in a0 (bb248 interferer count); 62 masked are reloc-pairing artifacts
- * PLATEAU-HANDOFF:func_800517E0:end
  */

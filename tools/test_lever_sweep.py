@@ -358,5 +358,424 @@ class ExitStatusTests(unittest.TestCase):
         self.assertEqual(self.status([{"index": 1}], False), (0, ""))
 
 
+
+# ---------------------------------------------------------------- source levers (2026-10-21)
+
+SWITCH_SRC = """\
+typedef struct Entry { s16 command; u16 duration; } Entry;
+extern Entry *gCursor;
+extern s32 gState;
+extern f32 gTime;
+extern void fade(f32 v, u8 which);
+extern void stop(s32 v);
+extern s32 trap();
+
+void interp(void) {
+    Entry *cursor;
+    s32 opcode;
+    s32 pathIndex;
+    s32 low;
+    s32 word;
+    s32 carry;
+    s32 spare;
+    u16 half;
+    f32 value;
+    f32 hundred;
+    s16 narrow;
+    s16 narrow2;
+
+    cursor = gCursor;
+    hundred = 100.0f;
+    carry = 0;
+    while (cursor->command != 0x7F00 && gState == 1) {
+        switch ((cursor->command >> 8) & 0xFF) {
+            case 0:
+                pathIndex = cursor->command & 0xFF;
+                cursor = (Entry *) ((u8 *) cursor + 4);
+                stop(pathIndex);
+                break;
+            case 0x22:
+                opcode = cursor->command;
+                value = (f32) *((u16 *) ((u8 *) cursor + 4));
+                cursor = (Entry *) ((u8 *) cursor + 6);
+                fade(value / hundred, opcode);
+                break;
+            case 0x30:
+                low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                word = (*((u16 *) ((u8 *) cursor + 6)) & 0xFF) << 8;
+                carry = carry + low;
+                cursor = (Entry *) ((u8 *) cursor + 8);
+                trap(low, word, carry);
+                break;
+            case 0x40:
+                if (gState & 2) {
+                    narrow = cursor->command & 0xFF;
+                    stop(narrow);
+                }
+                if (gTime == 1) {
+                    stop(0);
+                }
+                cursor = (Entry *) ((u8 *) cursor + 4);
+                break;
+            case 0x50:
+                pathIndex = cursor->command & 0xFF;
+                if (pathIndex == 0xFFF) {
+                    pathIndex = 0;
+                }
+                gState = gState & 0xFF1FFFFF;
+                gState |= 0x800000U;
+                switch (low) {
+                    case 1:
+                        gState |= 0x400000;
+                        break;
+                }
+                cursor = (Entry *) ((u8 *) cursor + 4);
+                break;
+        }
+    }
+    gCursor = cursor;
+}
+"""
+
+
+def interp():
+    return ls.find_function(SWITCH_SRC, "interp")
+
+
+def region(fn, name):
+    return next(r for r in ls.regions_cached(fn) if r.name == name)
+
+
+class RegionTests(unittest.TestCase):
+    def test_regions_and_exits(self):
+        fn = interp()
+        names = [r.name for r in ls.regions_cached(fn)]
+        self.assertEqual(names, ["case 0", "case 0x22", "case 0x30", "case 0x40", "case 0x50", "case 1"])
+        r = region(fn, "case 0x22")
+        self.assertEqual([s.kind for s in r.stmts], ["simple"] * 4 + ["jump"])
+        self.assertEqual(ls.region_exit_statuses(fn, r), {"break"})
+        inner = region(fn, "case 1")
+        self.assertEqual(ls.region_exit_statuses(fn, inner), {"break"})
+        self.assertEqual(ls.regions_at(fn, inner.start), ("case 1", "case 0x50"))
+
+    def test_case_filter(self):
+        fn = interp()
+        lines = ls.parse_case_filter(["0x22"], fn)
+        self.assertEqual((min(lines), max(lines)), (33, 38))
+        with self.assertRaises(SystemExit):
+            ls.parse_case_filter(["0x99"], fn)
+
+
+class DefBeforeUseTests(unittest.TestCase):
+    def verdict(self, reg, old, new):
+        fn = interp()
+        return ls.rename_verdict(fn, region(fn, reg), old, new)
+
+    def test_loop_carried_read_is_refused(self):
+        self.assertIn("read before written", self.verdict("case 0x30", "carry", "spare"))
+
+    def test_value_read_by_another_case_next_iteration_is_refused(self):
+        self.assertIn("low live after", self.verdict("case 0x30", "low", "spare"),
+                      "case 0x50 reads low without writing it first")
+
+    def test_new_name_live_elsewhere_is_refused(self):
+        self.assertIn("carry live after", self.verdict("case 0x22", "opcode", "carry"))
+
+    def test_dead_carrier_is_accepted(self):
+        self.assertIsNone(self.verdict("case 0x30", "word", "spare"))
+        self.assertIsNone(self.verdict("case 0x22", "opcode", "spare"))
+        self.assertIsNone(self.verdict("case 0x22", "opcode", "pathIndex"),
+                          "every other case that reads pathIndex writes it first")
+
+    def test_guarded_block_assignment_is_accepted(self):
+        self.assertIsNone(self.verdict("case 0x40", "narrow", "narrow2"))
+
+    def test_new_mentioned_in_region_is_refused(self):
+        self.assertEqual(self.verdict("case 0x30", "low", "carry"), "new mentioned in the region")
+
+    def test_dataflow_primitives(self):
+        fn = interp()
+        df = ls.Dataflow(fn)
+        r = region(fn, "case 0x30")
+        self.assertEqual(df.seq(r.stmts, "carry"), ls.READ)
+        self.assertEqual(df.seq(r.stmts, "low"), set(), "written first, no unwritten path leaves")
+        self.assertEqual(df.seq(r.stmts, "spare"), {"break"})
+        self.assertTrue(df.after(r.stmts[-1], "low", "break"), "the back edge reaches case 0x50's read")
+        self.assertFalse(df.after(r.stmts[-1], "word", "break"))
+
+    def test_dataflow_loop_header_read_is_live(self):
+        fn = interp()
+        df = ls.Dataflow(fn)
+        r = region(fn, "case 0")
+        self.assertTrue(df.after(r.stmts[-1], "cursor", "break"), "the while header reads cursor")
+
+
+class LiteralTests(unittest.TestCase):
+    TABLE = [
+        ("x = y & 0xFF;", "0xFF", "safe", "left of &"),
+        ("if (a == 1)", "1", "safe", "left of =="),
+        ("x = y != 2;", "2", "safe", "left of !="),
+        ("case 3:", "3", "safe", "case label"),
+        ("x = y << 8;", "8", "safe", "shift count"),
+        ("g |= 0x800000U;", "0x800000U", "safe", "left of |="),
+        ("x = 0x10 | y;", "0x10", "safe", "right of |"),
+        ("x = y + 4;", "4", "check", "arithmetic"),
+        ("x = y - 1;", "1", "check", "arithmetic"),
+        ("if (a < 16)", "16", "check", "relational"),
+        ("f(a, 5);", "5", "check", "call argument"),
+        ("x = 7;", "7", "check", "assignment"),
+        ("x = -1;", "-1", "check", "assignment"),
+        ("if (a && 1)", "1", "check", "logical"),
+        ("x = 1 << k;", "1", "check", "shifted operand"),
+    ]
+
+    def test_value_safety_table(self):
+        for snippet, lit, want, reason in self.TABLE:
+            units = [u for u in ls.literal_units(snippet) if u[2].strip() == lit]
+            self.assertEqual(len(units), 1, snippet)
+            verdict, why, _, _ = ls.literal_site(snippet, units[0][0], units[0][1])
+            self.assertEqual((verdict, why), (want, reason), snippet)
+
+    def test_spellings_are_bit_identical(self):
+        self.assertEqual(ls.literal_spellings("0xFF1FFFFF"),
+                         ["-0xE00001", "0xFF1FFFFFU", "~0xE00000", "~0xE00000U"])
+        self.assertIn("0xFF1FFFFF", ls.literal_spellings("~0xE00000"))
+        self.assertEqual(ls.literal_spellings("1U"), ["1"])
+        self.assertEqual(ls.literal_spellings("8"), ["8U"], "no complement with 31 set bits")
+        self.assertIn("0xFFFFFFFF", ls.literal_spellings("-1"))
+
+    def test_cells_only_at_safe_sites(self):
+        cells = ls.generate(interp(), ["literal_type"], None)
+        edits = {(c.line, c.edit) for c in cells}
+        self.assertIn((26, "1 -> 1U (left of ==)"), edits, "the loop header's gState == 1")
+        self.assertIn((61, "0xFF1FFFFF -> ~0xE00000 (left of &)"), edits)
+        self.assertIn((62, "0x800000U -> 0x800000 (left of |=)"), edits)
+        self.assertIn((65, "0x400000 -> 0x400000U (left of |=)"), edits)
+        self.assertIn((26, "0x7F00 -> 0x7F00U (left of !=)"), edits, "!= against a s16 field")
+        self.assertFalse([e for e in edits if e[0] == 51], "gTime == 1 compares a float")
+        self.assertFalse([e for e in edits if e[0] == 52], "stop(0) is a call argument")
+        self.assertFalse([e for e in edits if " + 4" in e[1] or "4 ->" in e[1]], "cursor + 4 is arithmetic")
+        self.assertTrue(all(c.semantics == "safe" for c in cells), {c.semantics for c in cells})
+        self.assertTrue(all(c.edits for c in cells))
+
+
+class CarrierRenameTests(unittest.TestCase):
+    def test_cells_and_semantics(self):
+        cells = {c.edit: c for c in ls.generate(interp(), ["carrier_rename"], None)}
+        self.assertIn("opcode -> spare in case 0x22", cells)
+        self.assertEqual(cells["opcode -> spare in case 0x22"].semantics, "safe")
+        self.assertIn("fade(value / hundred, spare);", cells["opcode -> spare in case 0x22"].text)
+        self.assertNotIn("opcode -> carry in case 0x22", cells)
+        self.assertNotIn("carry -> spare in case 0x30", cells)
+        self.assertNotIn("low -> spare in case 0x30", cells)
+        self.assertIn("word -> spare in case 0x30", cells)
+        self.assertEqual(cells["opcode -> half in case 0x22"].semantics, "check:carrier width s32 -> u16")
+        self.assertIn("narrow -> narrow2 in case 0x40", cells)
+        self.assertFalse([e for e in cells if "-> cursor" in e or "-> value" in e.split(" in ")[0] and "opcode" in e],
+                         "no pointer or float target for an int")
+
+    def test_region_filter(self):
+        fn = interp()
+        lines = ls.parse_case_filter(["0x30"], fn)
+        cells = ls.generate(fn, ["carrier_rename"], lines)
+        self.assertTrue(cells)
+        self.assertTrue(all(c.region == "case 0x30" for c in cells))
+
+
+class MaskShiftTests(unittest.TestCase):
+    def test_introduce_move_and_drop(self):
+        cells = {c.edit: c for c in ls.generate(interp(), ["mask_shift"], None)}
+        a = cells["opcode & 0xFF introduced in the assignment (case 0x22)"]
+        self.assertEqual(a.semantics, "safe", "fade takes a u8")
+        self.assertIn("opcode = cursor->command & 0xFF;", a.text)
+        b = cells["opcode & 0xFF introduced at the call (case 0x22)"]
+        self.assertIn("fade(value / hundred, opcode & 0xFF);", b.text)
+        self.assertNotIn("opcode & 0xFFFF introduced in the assignment (case 0x22)", cells)
+        c = cells["word << 8: assignment -> call (case 0x30)"]
+        self.assertEqual(c.semantics, "safe")
+        self.assertIn("word = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;", c.text)
+        self.assertIn("trap(low, word << 8, carry);", c.text)
+        d = cells["pathIndex & 0xFF: assignment -> call (case 0)"]
+        self.assertIn("stop(pathIndex & 0xFF);", d.text)
+        self.assertNotIn("pathIndex & 0xFF dropped: stop takes s32 (case 0)", cells)
+        self.assertFalse([e for e in cells if e.startswith("low &")], "low has two uses")
+
+    def test_prototypes(self):
+        fn = interp()
+        _, protos = ls.declarations_for(fn)
+        self.assertEqual(protos["fade"], ["f32 v", "u8 which"])
+        self.assertIsNone(protos["trap"], "K&R")
+        self.assertEqual(ls.param_type(protos["fade"], 1), "u8")
+        self.assertIsNone(ls.param_type(protos["trap"], 0))
+
+
+class ReadOrderTests(unittest.TestCase):
+    def test_runs_and_permutations(self):
+        cells = ls.generate(interp(), ["read_order"], None)
+        by = {}
+        for c in cells:
+            by.setdefault(c.region, []).append(c)
+        self.assertEqual(sorted(by), ["case 0x22", "case 0x30"])
+        self.assertEqual(len(by["case 0x22"]), 1)
+        t = by["case 0x22"][0].text
+        self.assertLess(t.index("value = (f32)"), t.index("opcode = cursor->command"))
+        self.assertEqual(len(by["case 0x30"]), 1, "carry = carry + low is not a stream read")
+        self.assertEqual(len(t.splitlines()), len(SWITCH_SRC.splitlines()))
+
+    def test_long_run_is_sampled(self):
+        src = SWITCH_SRC.replace("                opcode = cursor->command;\n",
+                                 "".join(f"                {n} = cursor->command;\n"
+                                         for n in ("opcode", "low", "word", "carry", "spare")))
+        fn = ls.find_function(src, "interp")
+        cells = [c for c in ls.generate(fn, ["read_order"], None) if c.region == "case 0x22"]
+        n = 6  # five commands plus the value read: every swap, each read first and last
+        self.assertEqual(len(cells), n * (n - 1) // 2 + (n - 1) + (n - 1) - 2,
+                         "moving the second read first and the penultimate last repeat two swaps")
+
+    def test_reorder_reasons(self):
+        cells = {(c.line, c.semantics) for c in ls.generate(interp(), ["reorder"], None)}
+        self.assertIn((34, "safe"), cells, "two loads into different locals")
+        self.assertFalse([c for c in cells if c[0] == 35], "value reads cursor, cursor is rewritten")
+
+
+class PairTests(unittest.TestCase):
+    def test_pairs_within_the_outer_region(self):
+        fn = interp()
+        cells = ls.generate(fn, ["literal_type"], ls.parse_case_filter(["0x50"], fn))
+        pairs = ls.compose_pairs(cells, fn, 100)
+        edits = {c.edit for c in pairs}
+        self.assertTrue(any("~0xE00000" in e and "0x800000U -> 0x800000" in e for e in edits),
+                        "a cell in the nested switch pairs with one in its outer case")
+        self.assertTrue(all(c.lever == "pair" and c.region == "case 0x50" for c in pairs))
+        self.assertTrue(all(not ls.edits_overlap(c.edits[:1], c.edits[1:]) for c in pairs))
+
+
+class DiagTests(unittest.TestCase):
+    def test_decl_diag(self):
+        out = ls.apply_diag(SWITCH_SRC, "interp", ["decl:narrow=s8"])
+        self.assertIn("    s8 narrow;\n", out)
+        self.assertEqual(len(out.splitlines()), len(SWITCH_SRC.splitlines()))
+        with self.assertRaises(ls.DiagError):
+            ls.apply_diag(SWITCH_SRC, "interp", ["decl:nothing=s8"])
+        with self.assertRaises(ls.DiagError):
+            ls.apply_diag(SWITCH_SRC, "interp", ["frob:x"])
+        self.assertEqual(ls.parse_diag("decl:a=s8, decl:b=u8"), ["decl:a=s8", "decl:b=u8"])
+
+    def test_spec_file(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "diag.txt"
+            p.write_text("# pinned base\ndecl:narrow=s8\n")
+            self.assertEqual(ls.parse_diag("@" + str(p)), ["decl:narrow=s8"])
+            patch = Path(d) / "diag.patch"
+            patch.write_text("--- a\n+++ b\n@@ -20,1 +20,1 @@\n-    s16 narrow;\n+    s8 narrow;\n")
+            specs = ls.parse_diag("@" + str(patch))
+            self.assertEqual(specs, ["patch:" + str(patch)])
+            out = ls.apply_diag(SWITCH_SRC, "interp", specs)
+            self.assertIn("    s8 narrow;\n", out)
+
+
+def stub_scorer(text: str) -> dict:
+    """A measurement stub: rewards the 0x22 mask and read order; off size unless narrow is s8."""
+    residual = 10
+    if "opcode = cursor->command & 0xFF;" in text or "fade(value / hundred, opcode & 0xFF);" in text:
+        residual -= 3
+    value_read, opcode_read = text.find("value = (f32)"), text.find("opcode = cursor->command")
+    if 0 <= value_read < opcode_read:
+        residual -= 2
+    if "half = cursor->command" in text:
+        residual -= 5  # a `check` carrier that scores best of all
+    delta = 0 if "s8 narrow;" in text else 4
+    return {"masked": residual + (0 if delta == 0 else 100), "delta": delta, "residual": residual,
+            "buckets": [0, residual, 0, 0]}
+
+
+class SourceSweepTests(unittest.TestCase):
+    def sweep(self, **kw):
+        logs = []
+        res = ls.source_sweep(SWITCH_SRC, "interp", list(ls.SOURCE_LEVERS), stub_scorer, cases=["0x22"],
+                              log=logs.append, jobs=2, **kw)
+        return res, logs
+
+    def test_double_measure_and_column(self):
+        res, _ = self.sweep(diags=["decl:narrow=s8"])
+        self.assertEqual(res["column"], "d", "the adoptable base is off size, so the diag column ranks")
+        rows = res["rounds"][0]["cells"]
+        self.assertTrue(all("a" in r and "d" in r for r in rows))
+        self.assertTrue(all(r["a"]["delta"] == 4 and r["d"]["delta"] == 0 for r in rows))
+        self.assertEqual(res["rounds"][0]["base"]["d"]["residual"], 10)
+        best = rows[0]
+        self.assertEqual(best["semantics"], "check:carrier width s32 -> u16", "ranked, never adopted")
+        self.assertTrue(ls.improves(best, res["rounds"][0]["base"], "d"))
+        res2, _ = self.sweep()
+        self.assertEqual(res2["column"], "a")
+        self.assertTrue(all("d" not in r for r in res2["rounds"][0]["cells"]))
+
+    def test_greedy_adopts_safe_improving_cells_only(self):
+        res, logs = self.sweep(diags=["decl:narrow=s8"], greedy=4)
+        adopted = [r["adopted"]["edit"] for r in res["rounds"] if "adopted" in r]
+        self.assertEqual(len(adopted), 2, adopted)
+        self.assertTrue(adopted[0].startswith("opcode & 0xFF introduced in the assignment"))
+        self.assertIn(adopted[1], ("swap with next", "reads in order 1,0"))
+        self.assertIn("opcode = cursor->command & 0xFF;", res["final"])
+        self.assertNotIn("half = cursor->command", res["final"])
+        self.assertLess(res["final"].index("value = (f32)"), res["final"].index("opcode = cursor->command"))
+        self.assertEqual(res["rounds"][-1]["base"]["d"]["residual"], 5)
+        self.assertTrue(any("no safe improving cell" in l for l in logs))
+        self.assertEqual(len(res["rounds"]), 3)
+
+    def test_pairs_reach_the_combination_in_one_round(self):
+        res, _ = self.sweep(diags=["decl:narrow=s8"], pairs=50)
+        rows = [r for r in res["rounds"][0]["cells"] if r["lever"] == "pair" and r["semantics"] == "safe"]
+        self.assertTrue(any(r["d"]["residual"] == 5 for r in rows))
+
+    def test_function_diff_and_emit(self):
+        res, _ = self.sweep(greedy=2)
+        diff = ls.function_diff(SWITCH_SRC, res["final"], "interp")
+        self.assertIn("-                opcode = cursor->command;", diff)
+        self.assertIn("+                opcode = cursor->command & 0xFF;", diff)
+        self.assertRegex(diff, r"@@ -3\d,\d+ \+3\d,\d+ @@", "hunk numbers are whole-TU line numbers")
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / "out.c"
+            ls.emit_frozen("#define SHAPE_k 1\n" + SWITCH_SRC.replace(
+                "    carry = 0;\n", "#if SHAPE_k == 0\n    carry = 1;\n#else\n    carry = 0;\n#endif\n"),
+                out, SWITCH_SRC, "interp")
+            self.assertEqual(out.read_text(), SWITCH_SRC, "axes resolved, nothing else changed")
+            self.assertEqual(Path(str(out) + ".diff").read_text(), "")
+
+    def test_edit_cells_apply_and_overlap(self):
+        self.assertEqual(ls.apply_edits("abcdef", [(1, 2, "X"), (4, 4, "Y")]), "aXcdYef")
+        self.assertTrue(ls.edits_overlap([(1, 3, "")], [(2, 5, "")]))
+        self.assertFalse(ls.edits_overlap([(1, 3, "")], [(3, 5, "")]))
+        self.assertTrue(ls.edits_overlap([(3, 3, "")], [(3, 3, "")]), "two insertions at one point")
+
+
+class ComposeTests(unittest.TestCase):
+    def test_edit_inside_a_swapped_statement_is_folded(self):
+        fn = interp()
+        cells = ls.generate(fn, ["reorder", "mask_shift"], ls.parse_case_filter(["0x22"], fn))
+        swap = next(c for c in cells if c.lever == "reorder")
+        mask = next(c for c in cells if c.edit.startswith("opcode & 0xFF introduced in the assignment"))
+        edits = ls.compose_edits(fn, swap, mask)
+        self.assertIsNotNone(edits, "the mask lives inside the swapped statement: folded, not refused")
+        text = ls.apply_edits(fn.text, edits)
+        self.assertIn("                value = (f32) *((u16 *) ((u8 *) cursor + 4));\n"
+                      "                opcode = cursor->command & 0xFF;\n", text)
+        self.assertEqual(ls.compose_edits(fn, mask, swap), edits)
+        drop = next((c for c in cells if "dropped" in c.edit), None)
+        self.assertIsNone(drop, "stop takes s32: no mask to drop")
+        pairs = {c.edit for c in ls.compose_pairs(cells, fn, 100)}
+        self.assertTrue(any("swap with next" in e and "introduced in the assignment" in e for e in pairs))
+
+    def test_improves_accepts_adoptable_size_zero(self):
+        base = {"a": {"residual": 107, "delta": 4, "masked": 859}, "d": {"residual": 103, "delta": 0, "masked": 134}}
+        swap = {"a": {"residual": 103, "delta": 0, "masked": 103}, "d": {"residual": 107, "delta": -4, "masked": 1491}}
+        self.assertTrue(ls.improves(swap, base, "d"), "closer to size on the adoptable column")
+        worse = {"a": {"residual": 107, "delta": 4, "masked": 859}, "d": {"residual": 104, "delta": 0, "masked": 140}}
+        self.assertFalse(ls.improves(worse, base, "d"))
+        better_d = {"a": {"residual": 107, "delta": 4, "masked": 859}, "d": {"residual": 99, "delta": 0, "masked": 120}}
+        self.assertTrue(ls.improves(better_d, base, "d"))
+        self.assertFalse(ls.improves({"a": {"error": "x"}}, base, "a"))
+
+
 if __name__ == "__main__":
     unittest.main()

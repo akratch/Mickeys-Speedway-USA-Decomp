@@ -22,9 +22,23 @@
 #   - --stack-diffs is forced on: the permuter's scorer otherwise normalizes
 #     stack-relative offsets and reports a false 0 for a candidate that is only
 #     a spill/local at the wrong sp offset -- bytes that still fail verify.
+#   - Block-scope prototypes the importer drops with a stripped function body
+#     (IDO keeps them in force for the rest of the file) are restored, and K&R
+#     identifier lists are dropped from stripped declarations: the import runs
+#     through tools/scratch_fidelity.py, which prints each restoration.
 #   NOT yet corrected: gfx-macro TUs whose real headers expand gDP*/gSP*/_SHIFTL
 #   differently from the importer's latedefine stubs (see the block near the end
 #   of this file's flag-correction logic and docs/matching-triage.md).
+#
+# FIDELITY GATE: before any search, the scratch base.c is compiled once and the
+# function's .text words and relocation records are compared with the same
+# function compiled from the tree's own configured recipe
+# (tools/scratch_fidelity.py check). It prints `SCRATCH FIDELITY: identical` or
+# `SCRATCH FIDELITY: N words off at +0x..`, and an unfaithful scratch is
+# refused: every score it would report is measured against the wrong base.
+#
+#   ./tools/permute.sh <function> --allow-unfaithful   # search anyway (scores are then suspect)
+#   ./tools/permute.sh <function> --fidelity-only      # import + gate, no search
 #
 # MACHINE SAFETY: the permuter is niced (-n 15), wall-clock capped (timeout),
 # and its worker count is capped at 4 (many -j workers freeze the machine).
@@ -69,8 +83,20 @@ if [ $# -lt 1 ]; then
 fi
 func=$1; shift
 
+# This script's own options; everything else goes to permuter.py.
+allow_unfaithful=0
+fidelity_only=0
+passthrough=()
+for a in "$@"; do
+    case "$a" in
+        --allow-unfaithful) allow_unfaithful=1 ;;
+        --fidelity-only) fidelity_only=1 ;;
+        *) passthrough+=("$a") ;;
+    esac
+done
+set -- ${passthrough[@]+"${passthrough[@]}"}
+
 PYTHON=.venv/bin/python
-IMPORT=tools/permuter/import.py
 PERMUTER=tools/permuter/permuter.py
 OUT=build/permuter/$func
 MINUTES=${PERMUTE_MINUTES:-20}
@@ -248,7 +274,9 @@ PYPRESERVE
     echo "Preserving macros: $preserve"
 fi
 
-"$PYTHON" "$IMPORT" "${import_args[@]}" "$c_file" "$asmfile" 2>&1 | tee "$OUT/import.log"
+# Through tools/scratch_fidelity.py: import.py unchanged, plus the restoration
+# of block-scope prototypes the stripped bodies carried (see the header).
+"$PYTHON" tools/scratch_fidelity.py import -- ${import_args[@]+"${import_args[@]}"} "$c_file" "$asmfile" 2>&1 | tee "$OUT/import.log"
 imported=$(grep -oE 'Imported into \S+' "$OUT/import.log" | awk '{print $3}')
 if [ -z "$imported" ] || [ ! -d "$imported" ]; then
     echo "$0: import.py did not report a scratch directory; see $OUT/import.log" >&2
@@ -322,6 +350,25 @@ if [ -n "$postproc" ]; then
     printf '\n%s\n' "$remapped" >> "$csh"
     echo "Replicated post-compile objcopy -> $remapped"
   fi
+fi
+
+# --- Fidelity gate: scratch base.c vs the tree's own recipe -------------
+set +e
+"$PYTHON" tools/scratch_fidelity.py check "$func" "$OUT/scratch" --source "$c_file" \
+    --workdir "$OUT/fidelity" --json "$OUT/fidelity.json"
+fidelity=$?
+set -e
+if [ "$fidelity" -ne 0 ]; then
+    if [ "$allow_unfaithful" -eq 1 ]; then
+        echo "WARNING: searching an unfaithful scratch (--allow-unfaithful); its scores do not transfer as-is." >&2
+    else
+        echo "$0: refusing to search an unfaithful scratch (see $OUT/fidelity.json)." \
+             "Fix the scratch, or pass --allow-unfaithful to search it anyway." >&2
+        exit 1
+    fi
+fi
+if [ "$fidelity_only" -eq 1 ]; then
+    exit "$fidelity"
 fi
 
 # --- Run the permuter, capped, non-interactive --------------------------

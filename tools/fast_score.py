@@ -30,6 +30,8 @@ when the candidate is an instruction long or short and the positional count is
 noise. `--diff` prints the words that still differ, target word beside candidate
 word, read from the extracted target listing and the candidate object. It is a
 reading aid for choosing the next edit; the masked count is the measurement.
+`--window A-B` (function offsets, hex) narrows `--diff` to that range and prints
+every row in it, `*` marking the differing ones, so one handler reads whole.
 
 The candidate must be a complete TU for the same source file the symbol lives
 in (copy the tracked file, edit the copy). Relocation-bearing words are masked
@@ -237,7 +239,35 @@ def candidate_words(symbol: str, obj: Path) -> list[tuple[int, str]]:
 RELOC_NOISE = ("%lo", "%hi", ">> 16", "& 0xFFFF")
 
 
-def print_diff(symbol: str, source: str, obj: Path, target_obj: Path | None = None) -> None:
+def parse_window(text: str) -> tuple[int, int]:
+    """`A-B` (hex function offsets, `0x` optional) as an inclusive (start, end)."""
+    m = re.fullmatch(r"\s*\+?(?:0[xX])?([0-9A-Fa-f]+)\s*-\s*\+?(?:0[xX])?([0-9A-Fa-f]+)\s*", text)
+    if not m:
+        raise SystemExit(f"--window wants A-B in hex function offsets, e.g. 0x18e0-0x1920, not {text!r}")
+    start, end = int(m.group(1), 16), int(m.group(2), 16)
+    if end < start:
+        raise SystemExit(f"--window end {end:#x} is before its start {start:#x}")
+    return start, end
+
+
+def diff_rows(tgt, cand, window: tuple[int, int] | None = None) -> list[str]:
+    """Rendered rows: differing words, or every row of `window` with `*` on the differing ones."""
+    out = []
+    for i in range(max(len(tgt), len(cand))):
+        if window and not window[0] <= i * 4 <= window[1]:
+            continue
+        t = tgt[i] if i < len(tgt) else (None, "-")
+        c = cand[i] if i < len(cand) else (None, "-")
+        differs = t[0] != c[0] and not (any(n in t[1] for n in RELOC_NOISE) or t[1].startswith("jal"))
+        if window:
+            out.append(f"{'*' if differs else ' '} +{i * 4:#06x}  T: {t[1]:40s} C: {c[1]}")
+        elif differs:  # relocation payload is skipped; the masked count already excludes it
+            out.append(f"  +{i * 4:#06x}  T: {t[1]:40s} C: {c[1]}")
+    return out
+
+
+def print_diff(symbol: str, source: str, obj: Path, target_obj: Path | None = None,
+               window: tuple[int, int] | None = None) -> None:
     """Differing words, target beside candidate.
 
     `target_obj` (a matched symbol's built object) replaces the extracted
@@ -245,13 +275,8 @@ def print_diff(symbol: str, source: str, obj: Path, target_obj: Path | None = No
     """
     tgt = candidate_words(symbol, target_obj) if target_obj else target_words(symbol, source)
     cand = candidate_words(symbol, obj)
-    for i in range(max(len(tgt), len(cand))):
-        t = tgt[i] if i < len(tgt) else (None, "-")
-        c = cand[i] if i < len(cand) else (None, "-")
-        if t[0] != c[0]:
-            if any(n in t[1] for n in RELOC_NOISE) or t[1].startswith("jal"):
-                continue  # relocation payload; the masked count already excludes it
-            print(f"  +{i * 4:#06x}  T: {t[1]:40s} C: {c[1]}")
+    for row in diff_rows(tgt, cand, window):
+        print(row)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -259,6 +284,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("symbol")
     ap.add_argument("candidate")
     ap.add_argument("--diff", action="store_true", help="print differing words")
+    ap.add_argument("--window", metavar="A-B", help="with --diff: only offsets A..B (hex), every row shown")
     ap.add_argument("--aligned", action="store_true",
                     help="also print align_symbol's four buckets for this candidate")
     ap.add_argument("--instrumented", action="store_true",
@@ -266,6 +292,9 @@ def main(argv: list[str] | None = None) -> int:
                          "or DKWB_SUBST_* variable)")
     ap.add_argument("--keep-object", help="write the object here instead of beside the candidate")
     ns = ap.parse_args(argv)
+    window = parse_window(ns.window) if ns.window else None
+    if window and not ns.diff:
+        ap.error("--window needs --diff")
 
     candidate = Path(ns.candidate).resolve()
     if not candidate.is_file():
@@ -321,7 +350,7 @@ def main(argv: list[str] | None = None) -> int:
         if matched:
             import align_symbol
             target_obj = align_symbol.matched_target_object(ns.symbol)
-        print_diff(ns.symbol, source, obj, target_obj)
+        print_diff(ns.symbol, source, obj, target_obj, window)
     return 0
 
 

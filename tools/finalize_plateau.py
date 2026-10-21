@@ -10,11 +10,19 @@ each ``--trailer 'Co-Authored-By: Name <address>'`` (repeatable), or, when none
 is given, the line(s) in the environment variable ``MICKEY_COMMIT_TRAILER``.
 Until 2026-09-23 it wrote none, so every plateau commit a lane made through it
 was the one commit in the lane without its trailer.
+
+``--record-only`` refreshes the shard header and the source marker and never
+commits. With it, ``--allow-dirty PATH...`` names dirt the command may leave
+alone (exact repository-relative paths, ``dir/`` prefixes or shell globs): an
+owner's unrelated ``docs/NEXT_CAMPAIGN.md`` edit or untracked probe files no
+longer block a record. Dirt nobody named still refuses, before anything is
+written, and a commit is never made around tolerated dirt.
 """
 
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -607,10 +615,37 @@ REGENERATED_PATHS = frozenset({
 })
 
 
-def require_only_allowed_dirt(root: Path, allowed: set[str]) -> None:
-    unrelated = sorted(changed_paths(root) - allowed - REGENERATED_PATHS)
+def tolerated(path: str, patterns: list[str]) -> bool:
+    """True when `path` is named by an --allow-dirty pattern."""
+    for pattern in patterns:
+        if pattern.endswith("/") and path.startswith(pattern):
+            return True
+        if path == pattern or fnmatch.fnmatchcase(path, pattern):
+            return True
+    return False
+
+
+def validate_allow_dirty(patterns: list[str]) -> list[str]:
+    for pattern in patterns:
+        if not pattern or pattern.startswith("/") or ".." in Path(pattern).parts:
+            raise PlateauError(
+                f"--allow-dirty takes repository-relative paths or globs, not {pattern!r}"
+            )
+    return patterns
+
+
+def require_only_allowed_dirt(root: Path, allowed: set[str],
+                              allow_dirty: list[str] | None = None) -> list[str]:
+    """Refuse dirt outside `allowed`; return the dirt --allow-dirty tolerated."""
+    loose = sorted(changed_paths(root) - allowed - REGENERATED_PATHS)
+    kept = [p for p in loose if tolerated(p, allow_dirty or [])]
+    unrelated = [p for p in loose if p not in kept]
     if unrelated:
-        raise PlateauError("unrelated worktree/index dirt: " + ", ".join(unrelated))
+        hint = "" if allow_dirty is not None else (
+            "; to record without committing, name it: --record-only --allow-dirty PATH..."
+        )
+        raise PlateauError("unrelated worktree/index dirt: " + ", ".join(unrelated) + hint)
+    return kept
 
 
 def tracked_relative_path(root: Path, value: str, kind: str, suffix: str) -> tuple[Path, str]:
@@ -671,6 +706,18 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("--commit", action="store_true", help="Commit the source, the handoff doc and any regenerated ranking/README files")
+    parser.add_argument(
+        "--record-only", action="store_true",
+        help="refresh the shard header and the source marker; never commit",
+    )
+    parser.add_argument(
+        "--allow-dirty", action="extend", nargs="+", default=None, metavar="PATH",
+        help=(
+            "with --record-only: leave dirt in these repository-relative paths, "
+            "dir/ prefixes or globs alone (the owner's unrelated edits); any "
+            "other dirt still refuses"
+        ),
+    )
     parser.add_argument("--message", help="Commit subject; requires --commit")
     parser.add_argument(
         "--trailer", action="append", default=None,
@@ -712,6 +759,12 @@ def main() -> int:
             raise PlateauError("--message requires --commit")
         if args.trailer and not args.commit:
             raise PlateauError("--trailer requires --commit")
+        if args.record_only and (args.commit or args.message or args.trailer):
+            raise PlateauError("--record-only never commits; drop --commit/--message/--trailer")
+        if args.allow_dirty is not None and not args.record_only:
+            raise PlateauError("--allow-dirty requires --record-only")
+        allow_dirty = (validate_allow_dirty(args.allow_dirty or [])
+                       if args.record_only else None)
         trailers = commit_trailers(args.trailer, dict(os.environ)) if args.commit else []
         metrics = validate_metrics(args)
         root = repository_root()
@@ -733,7 +786,7 @@ def main() -> int:
         else:
             doc_path, doc_rel = default_handoff_path(root, args.symbol)
         allowed = {source_rel, *([doc_rel] if doc_rel else [])}
-        require_only_allowed_dirt(root, allowed)
+        kept_dirt = require_only_allowed_dirt(root, allowed, allow_dirty)
 
         source_text = source_path.read_text(encoding="utf-8")
         rules = root / OVERLAY_RULES_PATH
@@ -758,11 +811,11 @@ def main() -> int:
         require_guarded_candidate(
             source_path.read_text(encoding="utf-8"), args.symbol, aliases,
         )
-        require_only_allowed_dirt(root, allowed)
+        require_only_allowed_dirt(root, allowed, allow_dirty)
         run_source_gates(root)
-        require_only_allowed_dirt(root, allowed)
+        require_only_allowed_dirt(root, allowed, allow_dirty)
 
-        commit = "not requested"
+        commit = "not requested (record-only)" if args.record_only else "not requested"
         if args.commit:
             message = validate_one_line(args.message or f"Plateau {args.symbol}", "commit message", 100)
             regenerated = sorted(REGENERATED_PATHS & changed_paths(root))
@@ -787,6 +840,8 @@ def main() -> int:
         print(f"handoff-doc: {doc_rel}")
         print("source-only-gates: cleanroom, check-docs")
         print(f"commit: {commit}")
+        if args.record_only:
+            print("tolerated dirt: " + (", ".join(kept_dirt) if kept_dirt else "none"))
     except (OSError, PlateauError) as error:
         print(f"finalize-plateau: {error}", file=sys.stderr)
         return 2

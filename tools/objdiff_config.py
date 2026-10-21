@@ -30,8 +30,16 @@ unit with no `#pragma GLOBAL_ASM`.
     tools/objdiff_config.py --apply-excludes --stdout   # what objdiff-cli is fed
     tools/objdiff_config.py --verify-built  # also require build/ objects exist
     tools/objdiff_config.py --base-dir build_non_matching --stdout
+    tools/objdiff_config.py --orphans     # split files the linker script never places
 
 Needs the split tree (`gmake extract`) but no compiled objects.
+
+A split file on disk that the linker script does not place (`build/<path>.o`
+named nowhere in mickey.us.ld) is a leftover of an earlier extract -- a carve
+boundary moved, or an overlay's data split differently -- and still becomes a
+unit here, which is how a clean tree reads `objdiff.json is stale`. The fix is
+to delete the leftover, not to regenerate objdiff.json around it; `--orphans`
+names them and `--check` names them when it fails.
 """
 import argparse
 import difflib
@@ -114,6 +122,28 @@ def disk_objects(root, y):
                 if fn.endswith(ext):
                     found.append(pathlib.Path(dp, fn).relative_to(root).as_posix())
     return found
+
+
+LINKER_OBJECT_RE = re.compile(r"build/(\S+?)\.o\s*\(")
+
+
+def split_orphans(root, y=None, linker_script="mickey.us.ld"):
+    """Split files (asm/**.s, assets/**.bin) the linker script never places."""
+    ld = root / linker_script
+    if not ld.is_file():
+        return []
+    y = y if y is not None else load_yaml(root / "mickey.us.yaml")
+    placed = set(LINKER_OBJECT_RE.findall(ld.read_text()))
+    return [p for p in disk_objects(root, y) if p not in placed]
+
+
+def print_orphans(orphans, stream):
+    for p in orphans:
+        print(f"objdiff-config: orphaned split file {p}: mickey.us.ld never places "
+              f"build/{p}.o (a leftover of an earlier extract)", file=stream)
+    if orphans:
+        print("objdiff-config: fix: delete it (`rm " + " ".join(orphans) + "`), then "
+              "rerun the check; do not regenerate objdiff.json around it", file=stream)
 
 
 def categories_for(path):
@@ -257,8 +287,16 @@ def main(argv=None):
                     "the committed objdiff.json")
     ap.add_argument("--base-dir", default="build")
     ap.add_argument("--root", default=str(ROOT))
+    ap.add_argument("--orphans", action="store_true",
+                    help="list split files the linker script never places; exit 1 if any")
     a = ap.parse_args(argv)
     root = pathlib.Path(a.root)
+    if a.orphans:
+        orphans = split_orphans(root)
+        print_orphans(orphans, sys.stdout)
+        if not orphans:
+            print("objdiff-config: no orphaned split files")
+        return 1 if orphans else 0
     base_dir = a.base_dir.strip("/")
     config, orphans, problems = build_config(root, base_dir, apply_excludes=a.apply_excludes)
     text = render(config)
@@ -280,8 +318,11 @@ def main(argv=None):
                                              "objdiff.json (committed)",
                                              "objdiff.json (derived)", lineterm="", n=0))
             print("\n".join(diff[:40]), file=sys.stderr)
+            stale = split_orphans(root)
             print(f"objdiff-config: objdiff.json is stale ({len(diff)} diff lines); "
-                  "run `gmake objdiff-config`", file=sys.stderr)
+                  + ("the derived side includes the orphaned split file(s) below"
+                     if stale else "run `gmake objdiff-config`"), file=sys.stderr)
+            print_orphans(stale, sys.stderr)
             return 1
         print(f"objdiff.json up to date ({len(config['units'])} units"
               f", {len(orphans)} orphan sources skipped)")

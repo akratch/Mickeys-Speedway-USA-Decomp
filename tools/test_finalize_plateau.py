@@ -600,6 +600,44 @@ class FinalizeCommandTests(unittest.TestCase):
         self.assertEqual((self.repo / "src" / "demo.c").read_text(encoding="utf-8"), before)
         self.assertFalse(self.gate_log.exists())
 
+    def test_record_only_tolerates_named_dirt_and_never_commits(self) -> None:
+        (self.repo / "other.txt").write_text("dirty\n", encoding="utf-8")
+        (self.repo / "slotprobe3.B").write_text("probe\n", encoding="utf-8")
+        before = self.run_command("git", "rev-list", "--count", "HEAD").stdout.strip()
+        result = self.finalize("--record-only", "--allow-dirty", "other.txt", "slotprobe3.*")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.run_command("git", "rev-list", "--count", "HEAD").stdout.strip(), before)
+        self.assertIn("commit: not requested (record-only)", result.stdout)
+        self.assertIn("tolerated dirt: other.txt, slotprobe3.B", result.stdout)
+        self.assertIn("PLATEAU-HANDOFF", (self.repo / "src" / "demo.c").read_text())
+        shard = self.repo / "docs" / "matching-triage-handoffs" / "demo_symbol.md"
+        self.assertIn("plateau-handoff:demo_symbol:start", shard.read_text())
+        self.assertEqual((self.repo / "other.txt").read_text(), "dirty\n")
+        self.assertEqual(self.gate_log.read_text().splitlines(), ["cleanroom", "check-docs"])
+
+    def test_record_only_still_refuses_dirt_nobody_named(self) -> None:
+        (self.repo / "other.txt").write_text("dirty\n", encoding="utf-8")
+        (self.repo / "stray.txt").write_text("new\n", encoding="utf-8")
+        before = (self.repo / "src" / "demo.c").read_text(encoding="utf-8")
+        result = self.finalize("--record-only", "--allow-dirty", "other.txt")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("unrelated worktree/index dirt: stray.txt", result.stderr)
+        self.assertEqual((self.repo / "src" / "demo.c").read_text(encoding="utf-8"), before)
+        self.assertFalse(self.gate_log.exists())
+
+    def test_plain_refusal_points_at_record_only(self) -> None:
+        (self.repo / "other.txt").write_text("dirty\n", encoding="utf-8")
+        result = self.finalize()
+        self.assertIn("--record-only --allow-dirty", result.stderr)
+
+    def test_record_only_option_conflicts_are_refused(self) -> None:
+        for extra in (("--record-only", "--commit"), ("--allow-dirty", "other.txt"),
+                      ("--record-only", "--allow-dirty", "/etc/passwd"),
+                      ("--record-only", "--allow-dirty", "../outside")):
+            result = self.finalize(*extra)
+            self.assertEqual(result.returncode, 2, extra)
+        self.assertFalse(self.gate_log.exists())
+
     def test_regenerated_files_are_allowed_dirt_and_committed(self) -> None:
         for rel in ("config/nonmatching-ranking.us.json", "docs/nm-ranking.md", "README.md"):
             path = self.repo / rel

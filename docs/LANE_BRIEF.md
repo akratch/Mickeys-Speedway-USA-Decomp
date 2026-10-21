@@ -1001,6 +1001,72 @@ every edit that moves a one-sided word. It refuses delta 0 (use
 and writes `docs/small-delta-census.md`, sorted by aligned residual after
 shadow -- the dispatch order for Track B.
 
+### Workflow instruments (2026-10-21)
+
+- **Permuter scratch fidelity.** `tools/permute.sh <fn>` now compiles the
+  imported scratch once and compares the function's `.text` words and
+  relocation records with the same function compiled from the tree's own
+  configured recipe (`tools/scratch_fidelity.py check`), printing
+  `SCRATCH FIDELITY: identical` or `N words off at +0x..`, and refuses to
+  search an unfaithful scratch unless given `--allow-unfaithful`
+  (`--fidelity-only` imports and gates without searching). The import runs
+  through `scratch_fidelity.py import`, which restores what the importer
+  drops: a block-scope prototype inside a stripped function stays in force
+  for the rest of an IDO TU, so it is re-applied at file scope, and a K&R
+  identifier list on a stripped declaration is dropped (cfe Warning 731).
+  `permute_batch.py`'s grouped importer applies the same restoration. This
+  was the func_800517E0 false ceiling: anim.c declares
+  `void func_8005055C(u8 pathIndex);` inside func_800511C4, the importer lost
+  it, and the scratch was one instruction short; it is now identical.
+- **`tools/permute_transplant.py <sym> <output-dir|source.c> <tu.c> -o out.c`**
+  splices a permuter winner's function into a copy of the TU (the definition
+  inside `#ifdef NON_MATCHING` when there are two) and prints
+  `fast_score.py --aligned` beside the permuter's `score.txt`. Lines the
+  permuter changed outside the function are listed, because they are not
+  carried over and the tree score is measured without them.
+- **`tools/lane_combine.py <base.c> --lane NAME=cand.c ... -o product.c`**
+  turns each lane's hunks against the shared base into a `SHAPE_<NAME>` axis
+  (`--per-hunk`: `SHAPE_<NAME>_<k>`), ready for `shape_product.py`. A hunk is
+  widened until it holds whole `#if ... #endif` chains on both sides, so a lane
+  that froze an axis does not break the product's nesting. Overlapping lanes
+  are reported with their base line ranges and joined into one
+  `#if/#elif/#else` chain (the earlier `--lane` wins where both are on;
+  `--strict` refuses). `--rebase newbase.c` carries every hunk onto a newer
+  base where the lines it touched are unchanged, and names the ones the new
+  base changed or already contains. `--function SYM` keeps that function's
+  hunks only. Checked on two of the 2026-10-21 func_800517E0 lanes (copyfold,
+  diagE over naming best4): the four cells reproduce each lane's own residual
+  (102, 118) and the base's (122).
+- **`tools/microlab.py --template T.c --vars spec.json --flags-from <tracked TU>`**
+  writes one probe TU per variant (`{{NAME}}` placeholders; the spec is
+  `{"vars": {NAME: [values]}}` for a product or `{"variants": [...]}`) under
+  `build/microlab/`, compiles each with that TU's configured recipe (never a
+  typed cc line; `--instrumented` or any `CDX_*`/`DKWB_*` variable switches
+  driver as fast_score does), and prints per function the instruction count,
+  registers named and opcode counts, and which counts moved against variant 0.
+  `--listing` adds the probe's disassembly, `--function` narrows it.
+- **`finalize_plateau.py --record-only --allow-dirty PATH...`** refreshes the
+  shard header and the source marker without committing while the named dirt
+  (exact paths, `dir/` prefixes or globs: the owner's `docs/NEXT_CAMPAIGN.md`,
+  untracked `slotprobe3.*`) sits in the tree. Dirt nobody named still refuses
+  before anything is written, and the plain refusal now says which flags to use.
+- **`tools/gates.sh`** retries `check-promotion-proofs` once when it stops on
+  "proof inputs changed during census" and says why: a source changed
+  mid-census, so stop the lanes compiling in this tree and rerun. When
+  `check-objdiff-config` fails it names every split file the linker script
+  never places (`tools/objdiff_config.py --orphans`; `--check` names them too)
+  with the fix: delete the leftover extract, never regenerate `objdiff.json`
+  around it. The 2026-10-21 case was a stale
+  `assets/overlays/o064/overlay_064_data_rodata.bin`.
+- **Reading aids.** `fast_score.py <sym> <cand.c> --diff --window A-B` (hex
+  function offsets) prints every row of that range, `*` on the differing ones,
+  so one handler reads whole instead of as scattered differing words.
+  `tools/product_group.py <product.json> --group AXIS[,AXIS]` reads a
+  `shape_product.py --json` file (no compile) and prints the best cell per
+  setting of the named axes, with the other axes' settings that achieved it;
+  a group whose best is worse than another group's best is a closed setting
+  for those axes.
+
 ## Traps that have each cost a lane real time
 
 1. **Never read target words from splat's `.s` annotation** — that is the ROM's

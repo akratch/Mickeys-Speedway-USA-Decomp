@@ -27,6 +27,14 @@
 # Logs go to build/gates/<gate>.log. Exits nonzero if any gate failed, and
 # prints the failing gates again at the end so the verdict is the last thing
 # on screen.
+#
+# TWO FAILURES THAT ARE NOT THE TREE'S. check-promotion-proofs refuses with
+# "proof inputs changed during census" when a source changed while it ran --
+# another lane compiling in this tree, typically. It is retried once, and the
+# message says what to stop. check-objdiff-config reads the split tree on
+# disk, so a leftover extract (an old carve's .bin or .s that the linker
+# script no longer places) reads as a stale objdiff.json; the orphans are
+# named, with the fix (delete them; never regenerate objdiff.json around one).
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
@@ -85,11 +93,29 @@ for g in "${gates[@]}"; do
   # No pipe. The status below is gmake's own.
   gmake "$g" "${args[@]}" > "$logdir/$g.log" 2>&1
   status=$?
+  retried=""
+  if [ "$status" -ne 0 ] && [ "$g" = check-promotion-proofs ] \
+      && grep -q "proof inputs changed during census" "$logdir/$g.log"; then
+    echo "NOTE  $g: a source changed mid-census: stop lanes compiling in this tree and rerun (retrying once)"
+    mv "$logdir/$g.log" "$logdir/$g.first.log"
+    gmake "$g" "${args[@]}" > "$logdir/$g.log" 2>&1
+    status=$?
+    retried=" (on retry; first attempt in $logdir/$g.first.log)"
+  fi
   if [ "$status" -eq 0 ]; then
-    printf 'PASS  %-26s %s\n' "$g" "$logdir/$g.log"
+    printf 'PASS  %-26s %s%s\n' "$g" "$logdir/$g.log" "$retried"
   else
-    printf 'FAIL  %-26s exit=%d  %s\n' "$g" "$status" "$logdir/$g.log"
+    printf 'FAIL  %-26s exit=%d  %s%s\n' "$g" "$status" "$logdir/$g.log" "$retried"
     sed 's/^/      | /' "$logdir/$g.log" | tail -6
+    if [ "$g" = check-promotion-proofs ] && grep -q "proof inputs changed during census" "$logdir/$g.log"; then
+      echo "      a source changed mid-census: stop lanes compiling in this tree and rerun"
+    fi
+    if [ "$g" = check-objdiff-config ]; then
+      # Name split files the linker script never places: a leftover extract
+      # makes a clean tree read stale. Status of the helper is informational.
+      "${GATES_PYTHON:-.venv/bin/python}" tools/objdiff_config.py --orphans > "$logdir/$g.orphans.log" 2>&1
+      sed 's/^/      > /' "$logdir/$g.orphans.log"
+    fi
     failed+=("$g")
   fi
 done

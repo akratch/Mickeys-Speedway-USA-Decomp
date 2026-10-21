@@ -111,6 +111,10 @@ INCLUDE_CFLAGS := -I . -I include -I include/libc -I include/PR -I assets
 CFLAGS  := -non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -nostdinc \
            $(DEFINES) $(INCLUDE_CFLAGS)
 POSTPROCESS := @:
+# Declared resident-call rebinds for overlay objects, generated into
+# mk/overlay_resident_rebinds.generated.mk by `gmake overlay-syms` and applied
+# after POSTPROCESS (tools/resident_rebinds.py).
+SURFACE_REBIND := @:
 
 # Report-and-skip for the digest-guarded POSTPROCESS passes, for
 # tools/promotion_trial.py only. Unset (the default) every guard aborts the
@@ -141,8 +145,10 @@ export PROMOTION_TRIAL
 # target-specific POSTPROCESS override is the one that runs.
 ifeq ($(NON_MATCHING),0)
 RUN_POSTPROCESS = $(POSTPROCESS)
+RUN_SURFACE_REBIND = $(SURFACE_REBIND)
 else
 RUN_POSTPROCESS = @:
+RUN_SURFACE_REBIND = @:
 endif
 
 # asm-processor (simonlindholm) is what makes `#pragma GLOBAL_ASM("...")` work
@@ -454,20 +460,34 @@ overlay-atlas-write:
 # objects, so the surface regenerates on every promotion instead of being
 # hand-derived per function. See docs/reloc-surface.md.
 #
-# It needs the overlay objects compiled (not linked -- the link is exactly what
-# is missing when a promotion fails to resolve), so both targets build them
-# first. `check-overlay-syms` fails on drift and is an explicit release gate;
-# unlike `check-docs`, it also requires the complete compiled overlay set.
-OVERLAY_SYM_OBJECTS := $(filter $(BUILD_DIR)/$(SRC_DIR)/overlays/%,$(O_FILES))
-
+# The same run writes mk/overlay_resident_rebinds.generated.mk: the renames
+# that send an overlay's call to a resident function through its per-module
+# *Reloc placeholder, as declared rules the compile recipe applies. Nothing
+# rewrites a compiled object, so a clean tree links in one pass; the listed
+# objects depend on that file and rebuild when it changes.
+#
+# It needs every object compiled (not linked -- the link is exactly what is
+# missing when a promotion fails to resolve): the overlay objects for their
+# sites, the resident ones for the resident-name census, which fails closed
+# on a missing object. `check-overlay-syms` fails on drift in either file and
+# is an explicit release gate; unlike `check-docs`, it needs that build.
+#
+# overlay-syms runs twice. The first pass may add a rebind for an object built
+# without it; the second rebuilds just the listed objects and regenerates from
+# what the rule actually produces, because objcopy does more than rename (it
+# canonicalizes a relocation against a defined absolute symbol to *ABS*, which
+# drops that symbol's value line). When nothing changed, the second pass
+# rebuilds nothing and rewrites the same bytes.
 overlay-syms:
 	@$(MAKE) --no-print-directory $(SPLAT_STAMP)
-	@$(MAKE) --no-print-directory $(OVERLAY_SYM_OBJECTS)
+	@$(MAKE) --no-print-directory $(O_FILES)
+	$(HOST_PYTHON) $(TOOLS_DIR)/reloc_surface.py generate --write --quiet
+	@$(MAKE) --no-print-directory $(O_FILES)
 	$(HOST_PYTHON) $(TOOLS_DIR)/reloc_surface.py generate --write
 
 check-overlay-syms:
 	@$(MAKE) --no-print-directory $(SPLAT_STAMP)
-	@$(MAKE) --no-print-directory $(OVERLAY_SYM_OBJECTS)
+	@$(MAKE) --no-print-directory $(O_FILES)
 	$(HOST_PYTHON) $(TOOLS_DIR)/reloc_surface.py generate --check
 
 # objdiff.json is derived from mickey.us.yaml, the overlay atlas and the split
@@ -654,6 +674,7 @@ $(BUILD_DIR)/%.c.o: %.c $(H_FILES) $(TOOLS_DIR)/normalize_elf_instructions.py $(
 	$(ASM_PROCESSOR) $(CC) -- $(AS) $(ASM_PROC_ASFLAGS) -- \
 		-c $(CFLAGS) $(OPT_FLAGS) $(MIPSISET) -o $@ $<
 	$(RUN_POSTPROCESS)
+	$(RUN_SURFACE_REBIND)
 
 # The DKR-exact rmonprintf source has no GLOBAL_ASM. Sending it through
 # asm-processor changes IDO's line metadata and produces a seven-word schedule

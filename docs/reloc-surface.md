@@ -849,24 +849,76 @@ generated-identity alias case of §5.3 and must keep its own name.
 **The fix is the rebind the tree already does by hand.** Overlay 49's
 POSTPROCESS rule rebinds the relocation at `0x218` from `func_800254FC` to
 `overlay65UpdateReloc`, a per-module placeholder, and values *that*. The
-generator now derives the same thing: `reloc_surface.py generate` renames every
-undefined `R_MIPS_26` relocation against a resident-owned name to
-`<name>_o<NNN>Reloc` in the object, then values the alias from the site like
-any other placeholder. The resident name keeps its real address; the overlay
-keeps its stored addend.
+generator derives the same thing: `reloc_surface.py generate` plans a rename of
+every undefined `R_MIPS_26` relocation against a resident-owned name to
+`<name>_o<NNN>Reloc`, then values the alias from the site like any other
+placeholder. The resident name keeps its real address; the overlay keeps its
+stored addend.
 
-Three properties make it safe to run inside `generate --write`:
+**The rename is a declared rule, not a mutation.** Until 2026-10-21 the
+generator applied the plan by running `objcopy` over the compiled objects in
+place. Nothing in the tree declared those renames -- 63 of them, in 13
+objects, and 49 of the placeholder names they produced appeared in no source,
+mk rule or spec file at all -- so a fresh worktree could not link until `gmake overlay-syms` had mutated its
+objects, and any rebuild of one of those objects (`--always-make`, a
+re-extract, an edit to `symbol_addrs.us.txt`) silently discarded them again.
+Every lane paid for it (`tools/new_lane.sh` carried a build / overlay-syms /
+build dance), and overlay 60 once shipped a promotion that linked only in its
+own worktree.
 
-- **It is a no-op on the matching tree.** No overlay object in the current
-  build carries an `R_MIPS_26` against a resident auto-name -- every matched
-  resident call is already rebound by a hand-written rule -- so the generated
-  block is byte-for-byte what it was, `--audit` stays at 100%, and
-  `check-overlay-syms` reports no drift.
-- **Checks are read-only.** The alias no longer matches the resident-name
-  pattern, so a second write pass renames nothing and values the alias from the
-  same site. `generate --check` never invokes `objcopy`; if an object still
-  needs a resident-call rebind, the check names the object and required
-  `POSTPROCESS` mapping and fails. `--compare` is also read-only.
+`generate --write` now writes the plan to
+`mk/overlay_resident_rebinds.generated.mk` (format and parser:
+`tools/resident_rebinds.py`) as ordinary target-specific variables, one
+`SURFACE_REBIND = $(OBJCOPY) --redefine-sym ...` per object, and
+`mk/overlays.mk` makes every overlay object depend on the file. The `.c.o`
+compile recipe runs
+`$(SURFACE_REBIND)` after `$(POSTPROCESS)`, the order the in-place pass had, so
+every build of the object carries the rename and nothing rewrites an object
+after its recipe. Measured on the tree that introduced it: rebuilding every
+overlay object under the declared rules reproduced the symbol tables,
+relocations and section bytes of all 649 previously mutated objects (the raw
+files differ only in asm-processor's temporary path, which every compile
+embeds), the generated surface stayed byte-identical, and a clean worktree
+(`gmake extract && gmake -j8`, no other step) linked the expected SHA1 in one
+pass where the same procedure on the parent commit stopped at `relocation
+truncated to fit: R_MIPS_26 against fontBackground`.
+
+Four properties keep it honest:
+
+- **The plan is a fixed point of the tree.** A built object already carries
+  its declared renames, so the planner reads each object through the inverse
+  of its current entry (`resident_call_aliases(..., undo=...)`) and sees the
+  names the C spells. Regenerating after a build reproduces the file byte for
+  byte; an entry whose call left the source drops out; a new resident call is
+  planned whether or not its object has been rebuilt since. Value lines are
+  emitted under the planned name in either state, so `tools/promotion_trial.py`'s
+  single `generate --write` between its two builds still links.
+- **`gmake overlay-syms` regenerates twice.** objcopy does more than rename:
+  rewriting an object canonicalizes a relocation against a defined absolute
+  symbol (overlay 45's `overlay45ScissorReloc`) to `*ABS*`, which drops that
+  symbol's value line. A surface derived from an object built *before* its
+  rule existed therefore carries one line too many, so the target rebuilds the
+  newly listed objects and regenerates from what the rule actually produced.
+  When nothing changed, the second pass rebuilds nothing.
+- **Checks compare both files and modify nothing.** `generate --check` fails
+  when either `overlay_undefined_syms.us.txt` or the rule file differs from
+  what the tree generates, and `tools/test_resident_rebinds.py` re-renders the
+  tracked rule file in `check-tooling`, so a malformed edit or a bad merge
+  fails without a build. The dependency is on *every* overlay object, not
+  only the listed ones, because the planner undoes the file's own entries: a
+  deleted entry must rebuild its object bare, or the stale object would keep
+  the rename and the check would agree with the edited file. Measured both
+  ways: deleting `overlay14PrepareInputState`'s entry, or adding an inert
+  `mathRnd` rename to it, each fails `gmake check-overlay-syms` with the
+  missing or surplus line. `--compare` is read-only too.
+- **One limit.** A rename a hand-written POSTPROCESS rule later starts doing
+  as well leaves the generated copy inert (objcopy ignores an absent name) and
+  the planner cannot see it, because the object is the same either way. It
+  cannot change a byte; delete the duplicate from the hand rule.
+- **The census fails closed.** `resident_defined_names()` refuses when a
+  resident object named by the linker script is missing, because a partial
+  census silently drops a resident call from the plan; `overlay-syms` and
+  `check-overlay-syms` therefore compile every object, not just the overlays.
 - **It names what it cannot read, and a refusal is total.** Only `R_MIPS_26`
   sites are aliased. A resident symbol reached by *both* a call and a data
   reference is refused -- one placeholder cannot carry two different addends --

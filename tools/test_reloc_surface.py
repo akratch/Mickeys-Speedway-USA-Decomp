@@ -60,59 +60,165 @@ class LinkedObjectCompletenessTests(unittest.TestCase):
             self.assertEqual([(2, repo / rels[0]), (1, repo / rels[1])], got)
 
 
+class FakeElf:
+    """Just enough of rs.Elf for the resident-call planner."""
+
+    def __init__(self, symbols, relocations):
+        self._symbols = list(symbols)
+        self._relocations = list(relocations)
+
+    def symbols(self):
+        return list(self._symbols)
+
+    def relocations(self, target=r"\.text"):
+        return list(self._relocations)
+
+
 class ResidentRebindSafetyTests(unittest.TestCase):
-    def test_dry_run_reports_plan_without_objcopy(self):
+    OBJ = Path("build/src/overlays/o014/example.c.o")
+
+    def fake_object(self, name):
+        # One undefined symbol reached by one R_MIPS_26 at object offset 0x10.
+        return FakeElf([("", 0, 0, 0, 0), (name, 0, 0, 0x12, rs.SHN_UNDEF)],
+                       [(".text", 0x10, rs.R_MIPS_26, 1)])
+
+    def aliases(self, carried, undo=None):
+        with mock.patch.object(rs, "Elf", return_value=self.fake_object(carried)), \
+                mock.patch.object(rs, "tu_base", return_value=(0x100, 0x40)):
+            return rs.resident_call_aliases(
+                self.OBJ, 14, [], [{"target_offset": 0x110, "mode": rs.R_MIPS_26,
+                                    "op_name": "SYMBOL"}],
+                {"fontColour"}, undo=undo)
+
+    def test_bare_resident_call_is_planned(self):
+        renames, refusals, notes = self.aliases("fontColour")
+        self.assertEqual({"fontColour": "fontColour_o014Reloc"}, renames)
+        self.assertEqual(([], []), (refusals, notes))
+
+    def test_declared_rename_is_undone_so_the_plan_is_a_fixed_point(self):
+        # An object built with its declared rule carries the placeholder; seen
+        # through the inverse of that rule it plans the same rename again.
+        self.assertEqual(({}, [], []), self.aliases("fontColour_o014Reloc"))
+        renames, _r, _n = self.aliases(
+            "fontColour_o014Reloc", undo={"fontColour_o014Reloc": "fontColour"})
+        self.assertEqual({"fontColour": "fontColour_o014Reloc"}, renames)
+
+    def test_plan_is_keyed_by_object_path_and_never_runs_objcopy(self):
         objects = [(40, Path("build/src/overlays/o040/example.c.o"))]
-        with mock.patch.object(rs, "resident_defined_names", return_value=set()):
-            with mock.patch.object(
-                rs,
-                "resident_call_aliases",
-                return_value=({"func_80000000": "func_80000000_o040Reloc"}, [], []),
-            ):
-                refusals, notes, planned = rs.rebind_resident_calls(
-                    objects,
-                    b"",
-                    {40: []},
-                    [None] * 40,
-                    [],
-                    records_cache={40: []},
-                    apply=False,
-                )
+        declared = {"build/src/overlays/o040/example.c.o":
+                    {"func_80000000": "func_80000000_o040Reloc"}}
+        with mock.patch.object(rs, "resident_defined_names", return_value=set()), \
+                mock.patch.object(
+                    rs, "resident_call_aliases",
+                    return_value=({"func_80000000": "func_80000000_o040Reloc"},
+                                  [], [])) as aliases, \
+                mock.patch("subprocess.run",
+                           side_effect=AssertionError("objcopy ran")):
+            refusals, notes, plan = rs.plan_resident_rebinds(
+                objects, b"", {40: []}, [None] * 40, [],
+                records_cache={40: []}, declared=declared)
 
-        self.assertEqual([], refusals)
-        self.assertEqual([], notes)
-        self.assertEqual(
-            [("example.c.o", "func_80000000", "func_80000000_o040Reloc")],
-            planned,
-        )
+        self.assertEqual(([], []), (refusals, notes))
+        self.assertEqual(declared, plan)
+        self.assertEqual({"func_80000000_o040Reloc": "func_80000000"},
+                         aliases.call_args.kwargs["undo"])
 
-    def test_check_mode_refuses_pending_rebind(self):
+    def test_census_fails_closed_on_a_missing_resident_object(self):
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            (repo / "mickey.us.ld").write_text(
+                "build/src/main/present.c.o(.text)\n"
+                "build/src/main/absent.c.o(.text)\n"
+                "build/src/overlays/o001/skipped.c.o(.text)\n")
+            with mock.patch.object(rs, "REPO", repo), \
+                    mock.patch.object(rs, "Elf"):
+                (repo / "build/src/main").mkdir(parents=True)
+                (repo / "build/src/main/present.c.o").write_bytes(b"x")
+                with self.assertRaises(SystemExit) as caught:
+                    rs.resident_defined_names()
+        self.assertIn("build/src/main/absent.c.o", str(caught.exception))
+
+    def test_generate_values_a_planned_rename_under_its_placeholder(self):
+        # The object on disk still spells the bare name (built before its rule
+        # existed); the value line must already carry the placeholder.
+        obj = Path("build/src/overlays/o014/example.c.o")
+        plan = {"build/src/overlays/o014/example.c.o":
+                {"fontColour": "fontColour_o014Reloc"}}
+        atlas = {"modules": [{"overlay": 14, "text_ownership": [],
+                              "rom": {"start": "0x0"}}]}
+        with mock.patch.object(rs.ot, "read_rom_table", return_value=[]), \
+                mock.patch.object(rs.ot, "read_headers", return_value=[]), \
+                mock.patch.object(rs.ot, "build_modules", return_value=[None] * 14), \
+                mock.patch.object(rs.ot, "read_module_relocations", return_value=[]), \
+                mock.patch.object(rs, "plan_resident_rebinds",
+                                  return_value=([], [], plan)), \
+                mock.patch.object(rs, "module_text_defs", return_value=set()), \
+                mock.patch.object(rs, "object_aliases", return_value=[]), \
+                mock.patch.object(rs, "synthesize", return_value=(
+                    [], {"fontColour": 0xF0000000}, [], {"attempted": False})):
+            text, diag = rs.generate(b"", atlas, objects=[(14, obj)],
+                                     declared_rebinds={})
+
+        self.assertIn("fontColour_o014Reloc = 0xf0000000;", text)
+        self.assertNotIn("\nfontColour = ", text)
+        self.assertEqual(plan, diag["rebinds"])
+        self.assertIn("--redefine-sym fontColour=fontColour_o014Reloc $@",
+                      diag["rebinds_text"])
+
+
+class RebindFileModeTests(unittest.TestCase):
+    """--check compares the declared-rebind file; --write rewrites it."""
+
+    def run_generate(self, mode_args, tracked_rules, generated_rules):
         with tempfile.TemporaryDirectory() as td:
             repo = Path(td)
             config = repo / "config"
             config.mkdir()
             (config / "overlays.us.json").write_text(json.dumps({"modules": []}))
             rom = repo / "rom.z64"
-            out = repo / "surface.txt"
             rom.write_bytes(b"")
-            out.write_text("tracked\n")
-            diag = {
-                "pending_rebinds": [
-                    ("example.c.o", "func_80000000", "func_80000000_o040Reloc")
-                ]
-            }
-
+            out = repo / "surface.txt"
+            out.write_text("generated\n")
+            rules = repo / "rebinds.mk"
+            rules.write_text(tracked_rules)
+            os.utime(rules, (1, 1))
+            diag = {"values": 0, "aliases": 0, "objects": 0, "conflicts": [],
+                    "alignment": {}, "resident_notes": [], "rebinds": {},
+                    "rebinds_text": generated_rules}
             stderr = io.StringIO()
-            with mock.patch.object(rs, "REPO", repo):
-                with mock.patch.object(rs, "generate", return_value=("generated\n", diag)) as gen:
-                    with contextlib.redirect_stderr(stderr):
-                        status = rs.cmd_generate(
-                            ["--check", "--rom", str(rom), "--out", str(out)]
-                        )
+            with mock.patch.object(rs, "REPO", repo), \
+                    mock.patch.object(rs.rr, "read", return_value={}), \
+                    mock.patch.object(rs, "generate",
+                                      return_value=("generated\n", diag)), \
+                    mock.patch.object(rs, "misspelled_generated_names",
+                                      return_value=[]), \
+                    mock.patch.object(rs, "tree_generated_name_texts",
+                                      return_value=[]), \
+                    contextlib.redirect_stderr(stderr), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                status = rs.cmd_generate(
+                    mode_args + ["--quiet", "--rom", str(rom), "--out", str(out),
+                                 "--rebinds-out", str(rules)])
+            return status, rules.read_text(), rules.stat().st_mtime, stderr.getvalue()
 
-            self.assertEqual(1, status)
-            self.assertFalse(gen.call_args.kwargs["mutate_objects"])
-            self.assertIn("read-only generation will not modify", stderr.getvalue())
+    def test_check_fails_when_the_rules_drift(self):
+        status, _text, _mtime, err = self.run_generate(["--check"], "old\n", "new\n")
+        self.assertEqual(1, status)
+        self.assertIn("rebinds.mk: out of date", err)
+
+    def test_check_passes_when_both_files_match(self):
+        status, _text, _mtime, err = self.run_generate(["--check"], "same\n", "same\n")
+        self.assertEqual(0, status, err)
+
+    def test_write_rewrites_changed_rules(self):
+        status, text, _mtime, _err = self.run_generate(["--write"], "old\n", "new\n")
+        self.assertEqual((0, "new\n"), (status, text))
+
+    def test_write_leaves_unchanged_rules_untouched(self):
+        # The listed objects depend on the file: a no-op rewrite would rebuild
+        # them for nothing.
+        status, _text, mtime, _err = self.run_generate(["--write"], "same\n", "same\n")
+        self.assertEqual((0, 1), (status, mtime))
 
 
 class UnresolvedExitTests(unittest.TestCase):
@@ -145,7 +251,8 @@ class UnresolvedExitTests(unittest.TestCase):
                     contextlib.redirect_stderr(stderr), \
                     contextlib.redirect_stdout(io.StringIO()):
                 status = rs.cmd_generate(
-                    mode_args + ["--quiet", "--rom", str(rom), "--out", str(out)])
+                    mode_args + ["--quiet", "--rom", str(rom), "--out", str(out),
+                                 "--rebinds-out", str(repo / "rebinds.mk")])
             return status, out.read_text(), stderr.getvalue()
 
     def test_write_with_conflict_writes_file_and_exits_nonzero(self):
@@ -3377,7 +3484,7 @@ class ForeignTextValueTests(unittest.TestCase):
             patch(mock.patch.object(rs, "synthesize", side_effect=synthesize))
             patch(mock.patch.object(rs, "object_aliases", return_value=[]))
             text, diag = rs.generate(b"", atlas, objects=[(49, caller), (65, callee)],
-                                     rebind_resident=False, mutate_objects=False)
+                                     rebind_resident=False)
 
         self.assertIn("overlay49TimerReloc = 0x00000028;", text)
         self.assertNotIn("overlay65Initialize =", text)

@@ -58,8 +58,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65ResetSlots.c.o: OPT_FLAGS := -O2 
 # The trail updater is compiled C. Its seven resident callees are renamed to
 # this module's relocation-surface placeholders here, because an overlay linked
 # at 0xF0000000 cannot `jal` a 0x8000xxxx entry point directly; without the
-# renames the link fails with R_MIPS_26 overflow in a fresh worktree, where
-# tools/reloc_surface.py has not yet rewritten the object.
+# renames the link fails with R_MIPS_26 overflow. (A rename no POSTPROCESS rule
+# spells is declared in mk/overlay_resident_rebinds.generated.mk instead.)
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/func_overlay_065_F0000C38_18C4EA0.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym camSetNo=camSetNo_o065Reloc \

@@ -3191,9 +3191,10 @@ def _promote_locked(item: QueueItem, winner: bytes, jobs: int,
     atlas = ATLAS_PATH
     yaml = ROOT / "mickey.us.yaml"
     symbols = ROOT / "overlay_undefined_syms.us.txt"
+    rebinds = ROOT / "mk/overlay_resident_rebinds.generated.mk"
     donors = ROOT / "config/overlay-donors.us.json"
     readme = ROOT / "README.md"
-    paths = [source, shard, atlas, yaml, symbols, donors, readme]
+    paths = [source, shard, atlas, yaml, symbols, rebinds, donors, readme]
     rel_paths = [str(path.relative_to(ROOT)) for path in paths]
     evidence = BUILD_PERMUTER / item.func / "promotions" / uuid.uuid4().hex
     review = review_context(item, prepared, winner, deadline)
@@ -3288,12 +3289,11 @@ def _promote_locked(item: QueueItem, winner: bytes, jobs: int,
         if item.overlay is not None:
             run(["gmake", "overlay-atlas-write"], outputs=[atlas, yaml])
             run(["gmake", f"-j{jobs}", f"build/{item.rel_c_file}.o"])
-            run(["gmake", "overlay-syms"], outputs=[symbols])
+            run(["gmake", "overlay-syms"], outputs=[symbols, rebinds])
             run([str(PYTHON), "tools/refresh_atlas_digest.py"], outputs=[donors])
-            # Generation may normalize a built object's symbol table. That
-            # transient object is not proof that the configured recipe can
-            # reproduce it. Retain it, then build the affected TU from an
-            # absent object and check the generated surface without mutation.
+            # Generation may declare a rebind this object was built without;
+            # only the configured recipe is proof. Retain it, rebuild the TU
+            # from an absent object and check the generated surface.
             object_target = f"build/{item.rel_c_file}.o"
             object_path = ROOT / object_target
             if (not object_path.is_file() or object_path.is_symlink()

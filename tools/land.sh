@@ -98,15 +98,19 @@ echo "== regenerate the overlay alias list"
 # stale aliases and dies with `R_MIPS_26 relocation truncated` -- even when the
 # committed overlay_undefined_syms.us.txt is already correct. Regenerating is
 # idempotent and cheap next to the verify it protects.
+# The same run regenerates mk/overlay_resident_rebinds.generated.mk, the
+# declared resident-call renames; a commit that moves it carried a resident
+# call no committed rule renamed.
+surface_files=(overlay_undefined_syms.us.txt mk/overlay_resident_rebinds.generated.mk)
 gmake overlay-syms >/dev/null
-if ! git diff --quiet -- overlay_undefined_syms.us.txt; then
-    echo "tools/land.sh: overlay_undefined_syms.us.txt was stale in the commit." >&2
+if ! git diff --quiet -- "${surface_files[@]}"; then
+    echo "tools/land.sh: the overlay relocation surface was stale in the commit." >&2
     echo "  Regenerating it from the built objects changed it, which means some" >&2
-    echo "  overlay object was compiled without the POSTPROCESS rule that is now" >&2
-    echo "  committed -- usually an incomplete set of --redefine-sym rebinds." >&2
-    echo "  Check mk/overlays.mk names every resident call the promoted object" >&2
-    echo "  makes, then rebuild that object and re-run." >&2
-    git --no-pager diff --stat -- overlay_undefined_syms.us.txt >&2
+    echo "  overlay object was compiled from a recipe other than the committed" >&2
+    echo "  one, or a promotion committed without running gmake overlay-syms." >&2
+    echo "  Run gmake overlay-syms, rebuild, commit both generated files, and" >&2
+    echo "  re-run." >&2
+    git --no-pager diff --stat -- "${surface_files[@]}" >&2
     exit 1
 fi
 

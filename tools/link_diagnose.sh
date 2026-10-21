@@ -3,17 +3,16 @@
 #
 #   tools/link_diagnose.sh <ld> <ldflags...> -o <out>
 #
-# A fresh lane worktree cannot link until `gmake overlay-syms` has run: an
-# overlay is linked at 0xF0000000 and cannot `jal` a 0x8000xxxx entry point
-# directly, so it must reach it through the generated *Reloc surface, and
-# tools/reloc_surface.py writes those names into the compiled overlay objects
-# only when overlay-syms runs. Until then the link reports undefined resident
-# references and R_MIPS_26 overflows, which read like a defect in someone's
-# source and are not.
-#
-# Four lanes in one campaign lost time to this. It is documented in CLAUDE.md
-# and it was still costing people, because nobody reads a build-setup note
-# while staring at a linker error. So the error says it now.
+# Overlays are linked at 0xF0000000 and cannot `jal` a 0x8000xxxx entry point
+# directly, so they reach resident functions through the generated *Reloc
+# surface: overlay_undefined_syms.us.txt values each placeholder, and
+# mk/overlay_resident_rebinds.generated.mk renames the calls adopted C spells
+# with the resident name. Both are tracked and the renames are ordinary
+# compile rules, so a clean tree links in one pass. When the link reports
+# undefined resident references or R_MIPS_26 overflows anyway, the usual cause
+# is that the tree changed (a promotion, a new resident call) and the surface
+# was not regenerated -- which reads like a defect in someone's source and is
+# not.
 #
 # The success path is untouched: this passes the linker's own output through
 # and exits with its status.
@@ -33,15 +32,16 @@ if grep -qE 'R_MIPS_26|relocation truncated|undefined reference' "$log"; then
 
 link failed with undefined resident references or R_MIPS_26 overflows.
 
-This is almost always build state rather than source. Overlays reach resident
-entry points through the generated *Reloc surface, and tools/reloc_surface.py
-writes those names into the compiled overlay objects only when overlay-syms
-runs. A fresh worktree has never had it run; `gmake extract` and any edit to
-symbol_addrs discard it again.
+This is usually a stale relocation surface rather than a source defect.
+Overlays reach resident entry points through *Reloc placeholders that
+`gmake overlay-syms` derives from the compiled objects: the values in
+overlay_undefined_syms.us.txt and the renames in
+mk/overlay_resident_rebinds.generated.mk. A promotion or a new resident call
+needs it rerun:
 
     gmake overlay-syms && gmake
 
-If that fixes it, nothing was wrong with the source. See "Promoting an overlay
+If that fixes it, commit both generated files. See "Promoting an overlay
 function" in CLAUDE.md.
 MSG
 fi

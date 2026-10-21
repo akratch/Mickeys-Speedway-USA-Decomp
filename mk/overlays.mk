@@ -24,6 +24,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/%.c.o: MIPSISET := -mips2 -32
 # a strict JSON manifest and rendered deterministically. Mixed
 # trim/filter/rebind chains remain beside their measured object policy below.
 include mk/overlay_aliases.generated.mk
+# Resident-call placeholder renames derived by `gmake overlay-syms`, applied by
+# the compile recipe after POSTPROCESS (tools/resident_rebinds.py). Every
+# overlay object depends on the file, not only the listed ones: an entry that
+# disappears must rebuild its object without the rename, or the stale object
+# would keep it and `check-overlay-syms` would agree with the edited file.
+include mk/overlay_resident_rebinds.generated.mk
+$(filter $(BUILD_DIR)/$(SRC_DIR)/overlays/%.c.o,$(O_FILES)): mk/overlay_resident_rebinds.generated.mk
 
 .PHONY: check-overlay-aliases test-overlay-aliases
 check-overlay-aliases:

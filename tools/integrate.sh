@@ -44,7 +44,8 @@ branch=${MICKEY_INTEGRATE_BRANCH:-campaign/unchain}
 poll=${MICKEY_INTEGRATE_POLL:-2}
 lock_dir=$(git rev-parse --path-format=absolute --git-common-dir)/integrate.lock
 generated=(README.md docs/nm-ranking.md docs/matching-triage-handoffs config
-           overlay_undefined_syms.us.txt mickey.us.yaml)
+           overlay_undefined_syms.us.txt mk/overlay_resident_rebinds.generated.mk
+           mickey.us.yaml)
 
 step=lock; base=""; held=0; stash_ref=""; start_branch=""
 logs=$(mktemp -d -t mickey-integrate.XXXXXX)

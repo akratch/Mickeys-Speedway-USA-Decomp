@@ -123,7 +123,7 @@ run_gate gmake cleanroom
 # tree (the live queue's size, for one) only shows up here.
 run_gate gmake check-tooling
 if ! git diff --quiet || ! git diff --cached --quiet; then
-  git add -A README.md docs/nm-ranking.md docs/matching-triage-handoffs config overlay_undefined_syms.us.txt mickey.us.yaml 2>/dev/null || true
+  git add -A README.md docs/nm-ranking.md docs/matching-triage-handoffs config overlay_undefined_syms.us.txt mk/overlay_resident_rebinds.generated.mk mickey.us.yaml 2>/dev/null || true
   git diff --cached --quiet || git commit -q -m "Regenerate derived artifacts after batch integration"
 fi
 echo "== batch integrated"; git log --oneline -1

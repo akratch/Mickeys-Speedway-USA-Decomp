@@ -25,10 +25,16 @@ For each such object it:
     keyed by the object's path under src/ with the .c/.o stripped -- the
     same string overlay_atlas.py stores as ``source``.
 
+The class is also what the scoreboard credits. ``credit_refusals`` names every
+``altered`` object the atlas would otherwise count as decompiled;
+tools/progress.py withdraws those objects' credit, and ``--check-credit``
+(run by ``gmake check-docs``) fails while any exists.
+
 Usage:
     tools/postprocess_audit.py               # table to stdout
     tools/postprocess_audit.py --write        # also refresh the committed JSON
     tools/postprocess_audit.py --check        # fail if the JSON is stale
+    tools/postprocess_audit.py --check-credit # fail if credited code is altered
 """
 
 import argparse
@@ -36,6 +42,7 @@ import json
 import os
 import re
 import shlex
+import struct
 import subprocess
 import sys
 
@@ -256,6 +263,13 @@ def object_to_src(target):
 def audit(root_dir=ROOT_DIR, atlas_path=ATLAS_PATH):
     dump = run_make_database()
     seen = postprocess_commands(dump)
+    if not seen:
+        # Fail closed: an empty rule set would read as "nothing altered" and
+        # restore every refused credit if gmake failed or printed nothing.
+        raise RuntimeError(
+            "gmake -p -q reported no POSTPROCESS rules; refusing to audit an "
+            "empty rule set"
+        )
 
     atlas_index, atlas_totals = load_atlas_index(atlas_path)
 
@@ -291,6 +305,69 @@ def audit(root_dir=ROOT_DIR, atlas_path=ATLAS_PATH):
             }
         )
     return rows, atlas_totals
+
+
+def credit_refusals(rows):
+    """Rows ADR 0002 forbids the scoreboard to credit.
+
+    That is every ``altered`` row whose code would otherwise count as
+    decompiled. An overlay row is credited when the atlas joins it to a matched,
+    non-``NON_MATCHING`` C range (``matched_c`` true). A resident row has no
+    atlas join (``matched_c`` None), and every C function its object defines
+    is credited, so it is refused as well; so is an overlay row the atlas
+    cannot join, because its credit cannot be ruled out. Only a row the atlas
+    explicitly marks uncredited (``matched_c`` false) escapes: its bytes
+    already count as ``GLOBAL_ASM`` or ``NON_MATCHING``.
+    """
+    return [
+        r for r in rows if r["class"] == "altered" and r["matched_c"] is not False
+    ]
+
+
+def object_text_functions(path):
+    """Names of the ``STT_FUNC`` symbols an ELF32 object defines in ``.text``.
+
+    What tools/progress.py withdraws for a refused resident object: the
+    scoreboard credits a resident function by name, and these are the names
+    that object's ``.text`` supplies to the link. Fails closed on a missing or
+    malformed object, since an unreadable object cannot prove what to withdraw.
+    """
+    with open(path, "rb") as fh:
+        data = fh.read()
+    if data[:6] != b"\x7fELF\x01\x02":
+        raise RuntimeError("%s: expected a big-endian ELF32 object" % path)
+    shoff = struct.unpack_from(">I", data, 0x20)[0]
+    shentsize, shnum, shstrndx = struct.unpack_from(">HHH", data, 0x2E)
+    headers = [
+        struct.unpack_from(">10I", data, shoff + index * shentsize)
+        for index in range(shnum)
+    ]
+    names_header = headers[shstrndx]
+    names = data[names_header[4] : names_header[4] + names_header[5]]
+
+    def c_string(blob, offset):
+        return blob[offset : blob.index(b"\0", offset)].decode("ascii")
+
+    text = [
+        index for index, header in enumerate(headers)
+        if c_string(names, header[0]) == ".text"
+    ]
+    symtabs = [header for header in headers if header[1] == 2]  # SHT_SYMTAB
+    if len(text) != 1 or len(symtabs) != 1:
+        raise RuntimeError("%s: expected one .text and one symbol table" % path)
+    symtab = symtabs[0]
+    strtab = headers[symtab[6]]
+    strings = data[strtab[4] : strtab[4] + strtab[5]]
+    functions = []
+    for offset in range(symtab[4], symtab[4] + symtab[5], symtab[9] or 16):
+        st_name, _value, _size, st_info, _other, st_shndx = struct.unpack_from(
+            ">IIIBBH", data, offset
+        )
+        if st_info & 0xF == 2 and st_shndx == text[0]:  # STT_FUNC in .text
+            name = c_string(strings, st_name)
+            if name:
+                functions.append(name)
+    return functions
 
 
 def summarize(rows):
@@ -363,6 +440,11 @@ def main():
         action="store_true",
         help="fail on duplicate objcopy --redefine-sym destinations",
     )
+    ap.add_argument(
+        "--check-credit",
+        action="store_true",
+        help="fail if any credited object carries an altered POSTPROCESS step",
+    )
     ap.add_argument("--out", default=DEFAULT_OUT)
     ap.add_argument(
         "--atlas",
@@ -385,6 +467,24 @@ def main():
         return 0
 
     rows, atlas_totals = audit(atlas_path=args.atlas)
+
+    if args.check_credit:
+        refused = credit_refusals(rows)
+        for r in refused:
+            print(
+                "%s: credited code with an instruction-altering POSTPROCESS "
+                "step (%s); ADR 0002 forbids crediting it"
+                % (r["object"], ", ".join(r["tools"])),
+                file=sys.stderr,
+            )
+        if refused:
+            return 1
+        print(
+            "OK: no credited object carries an instruction-altering "
+            "POSTPROCESS step (%d audited)" % len(rows)
+        )
+        return 0
+
     summary = summarize(rows)
     doc = {
         "schema_version": 3,

@@ -8,3 +8,10 @@
 0x1D4:.rodata:gOverlay46ParticleStepPoolReloc
 0x434:.rodata:gOverlay46ParticleStepPoolReloc
 0x438:.rodata:gOverlay46ParticleStepPoolReloc
+# Bind the two caption references to the retained caption pool. The compiler
+# places them at +0x0/+0x10 of its private section; the caption base carries
+# the difference to the retained +0xC/+0x1C.
+0x5AC:.rodata:gOverlay46ParticleCaptionPoolReloc
+0x5B8:.rodata:gOverlay46ParticleCaptionPoolReloc
+0x5F0:.rodata:gOverlay46ParticleCaptionPoolReloc
+0x5FC:.rodata:gOverlay46ParticleCaptionPoolReloc

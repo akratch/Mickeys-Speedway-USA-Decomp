@@ -743,6 +743,7 @@ gOverlay11GridPhases = 0x00000000;
 gOverlay11GridTriangles = 0x00000030;
 gOverlay11HighlightStep = 0x000001bc;
 gOverlay11InputDelay = 0x00000200;
+gOverlay11MenuBackgroundPoolReloc = 0x00000020;
 gOverlay11Mode = 0x000001c0;
 gOverlay11OptionAction = 0x000001c4;
 gOverlay11OptionDone = 0x00000204;
@@ -902,6 +903,7 @@ camDoSpriteDirect_o012Reloc = 0xf0000000;
 func_800084C4_o012Reloc = 0xf0000000;
 func_80024938_o012Reloc = 0xf0000000;
 gOverlay12EffectColors = 0x00000064;
+gOverlay12F0910LiteralPoolReloc = 0x0000000c;
 gOverlay12ParticleColors = 0x000000c4;
 gOverlay12QuadTriangles = 0x00000040;
 gOverlay12Resources = 0x00000000;
@@ -1857,6 +1859,7 @@ func_8000FAE0_o041Reloc = 0xf0000000;
 func_8002A878_o041Reloc = 0xf0000000;
 func_8002A910_o041Reloc = 0xf0000000;
 func_8003EDEC_o041Reloc = 0xf0000000;
+gOverlay41CurveObjectPoolReloc = 0x0000003c;
 gOverlay41Disabled = 0x00000000;
 gOverlay41Targets = 0x00000000;
 overlay41SampleCurveReloc = 0xf0000000;
@@ -1941,6 +1944,7 @@ gO43QueueCountReloc = 0x000000c8;
 gO43QueueReloc = 0x00000120;
 gO43RecordsReloc = 0x00000000;
 gO43RenderPendingReloc = 0x00000000;
+gOverlay43ImageScalePoolReloc = 0x00000020;
 levelGetLevel_o043Reloc = 0xf0000000;
 mtxf_mul_o043Reloc = 0xf0000000;
 mtxf_transform_point_o043Reloc = 0xf0000000;
@@ -1959,6 +1963,7 @@ overlay43RspSegmentReloc = 0xf0000000;
 
 /* overlay 43: overlay43ComputeMotion.c.o */
 func_80029FE4_o043Reloc = 0xf0000000;
+gOverlay43MotionScalePoolReloc = 0x00000024;
 
 /* overlay 44: overlay44CreateAnimationState.c.o */
 gOverlay44FrameSources = 0x00000000;
@@ -2091,6 +2096,7 @@ fontPrintXY_o046Reloc = 0xf0000000;
 func_8002A8C0_o046Reloc = 0xf0000000;
 func_8002F618_o046Reloc = 0xf0000000;
 gOverlay46MatrixHead = 0x00000000;
+gOverlay46ParticleCaptionPoolReloc = 0x0000000c;
 gOverlay46ParticleStepPoolReloc = 0x00000024;
 gOverlay46VertexHead = 0x00000000;
 texDPInit_o046Reloc = 0xf0000000;
@@ -3522,6 +3528,7 @@ gOverlay59EntriesEnd = 0x00000110;
 gOverlay59ValueTables = 0x00000708;
 
 /* overlay 59: overlay59Advance.c.o */
+gOverlay59AdvancePoolReloc = 0x00000018;
 gOverlay59EntriesOneEnd = 0x00000044;
 gOverlay59TableInfo = 0x000005a0;
 
@@ -4306,6 +4313,7 @@ func_8002A8BC_o079Reloc = 0xf0000000;
 func_8002A8C0_o079Reloc = 0xf0000000;
 func_8005ABA8_o079Reloc = 0xf0000000;
 func_8005AD64_o079Reloc = 0xf0000000;
+gOverlay79F0134LiteralPoolReloc = 0x00000004;
 gOverlay79FlagsReloc = 0x00000000;
 gOverlay79ModeFactorsReloc = 0x00000000;
 mathOneFloatRPY_o079Reloc = 0xf0000000;
@@ -4316,6 +4324,9 @@ trackMakePolylist_o079Reloc = 0xf0000000;
 
 /* overlay 79: overlay79FindNearby.c.o */
 overlay79GetEntriesReloc = 0xf0000000;
+
+/* overlay 79: func_overlay_079_F0000FA0_18CDF40.c.o */
+gOverlay79F0FA0LiteralPoolReloc = 0x00000030;
 
 /* overlay 79: func_overlay_079_F0001290_18CE230.c.o */
 gOverlay79CounterReloc = 0x00000014;

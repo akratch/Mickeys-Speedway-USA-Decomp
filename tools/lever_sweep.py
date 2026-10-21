@@ -146,6 +146,17 @@ again by expression + line overlap) in the biased order. It can be combined
 with --oracle; use bias alone when the order, not a colour, is what the
 target needs.
 
+V3 FORCES (the shared farm from 2026-10-21). --oracle also accepts the
+colourability verdicts `p1:wN=y`, `=y<save>`, `=n` and the `.K` pricing
+qualifier on any force (`p1:w851.2=y` is the piece split() left under web
+851, read here as the web's K-th decision row); --weight 'p1:wN[.K]:bbB=+k'
+and --grow 'p1:wN=seed|-bbA-bbB' set CDX_WEIGHT / CDX_GROW on the forced
+base. Acceptance reads the always-printed force_verdict / force_weight /
+force_grow records (`v3_force_acceptance`; a declined verdict refuses), and
+the state a cell must reproduce is what the forced base then decided: `=y`
+the colour it took, `=n` memory, a weight or grow force the named web's own
+decision (`state_targets`).
+
 AMBIGUITY. The forced web is re-derived in every cell from its expression text
 and source-line overlap, never by web number. If the best-overlapping rows tie
 and disagree about the outcome the cell reads `ambiguous` (and the candidates
@@ -188,6 +199,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import typing
 from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -251,6 +263,12 @@ READ_RE = re.compile(
     r"(?<![\w.>])(?:\*\s*[A-Za-z_]\w*|[A-Za-z_]\w*"
     r"(?:\s*(?:->|\.)\s*[A-Za-z_]\w*|\s*\[[^\[\]]*\])+)")
 FORCE_RE = re.compile(r"^p([12]):w(\d+)=(c\d+|s)$")
+# The v3 farm's grammar (workbench instrument_verdict): `.K` names web N's
+# K-th pricing (K=2: the piece split() left under N); `y[save]` forces the
+# colourability verdict to colour, `n` to memory.
+ORACLE_RE = re.compile(r"^(p[12]):w(\d+)(?:\.(\d+))?=(c\d+|s|n|y(?:\d+(?:\.\d+)?)?)$")
+WEIGHT_RE = re.compile(r"^(p[12]):w(\d+)(?:\.(\d+))?:bb(\d+)=([+-]\d+)$")
+GROW_RE = re.compile(r"^(p[12]):w(\d+)=(seed|(?:-bb\d+)+)$")
 
 
 # ---------------------------------------------------------------- lexing
@@ -2370,14 +2388,139 @@ def interleave(cells: list[Cell], limit: int) -> list[Cell]:
 
 # ---------------------------------------------------------------- oracle
 
-def parse_oracle(spec: str) -> list[tuple[str, int, str]]:
+class OracleForce(typing.NamedTuple):
+    phase: str
+    web: int
+    want: str            # cK | s | n | y | y<save>
+    pricing: int | None = None
+
+    @property
+    def env(self) -> str:
+        return f"{self.phase}:w{self.web}{'' if self.pricing is None else '.' + str(self.pricing)}={self.want}"
+
+    @property
+    def classic(self) -> bool:
+        """A colour or split force the stock-grammar reader (force_lattice) accepts."""
+        return self.pricing is None and self.want[0] in "cs"
+
+
+def parse_oracle(spec: str) -> list[OracleForce]:
+    """`p1:wN=cK|s` (profile grammar) and the v3 verdict forces `p1:wN[.K]=y[save]|n`."""
     out = []
     for f in [s.strip() for s in spec.split(",") if s.strip()]:
-        m = FORCE_RE.match(f)
+        m = ORACLE_RE.match(f)
         if not m:
-            raise SystemExit(f"oracle force {f!r} is not p1:wN=cK or p1:wN=s")
-        out.append((f"p{m.group(1)}", int(m.group(2)), m.group(3)))
+            raise SystemExit(f"oracle force {f!r} is not p1:wN[.K]=cK|s|y[save]|n")
+        out.append(OracleForce(m.group(1), int(m.group(2)), m.group(4),
+                               None if m.group(3) is None else int(m.group(3))))
     return out
+
+
+class WeightForce(typing.NamedTuple):
+    phase: str
+    web: int
+    bb: int
+    delta: int
+    pricing: int | None = None
+
+    @property
+    def env(self) -> str:
+        return f"{self.phase}:w{self.web}{'' if self.pricing is None else '.' + str(self.pricing)}:bb{self.bb}={self.delta:+d}"
+
+
+class GrowForce(typing.NamedTuple):
+    phase: str
+    web: int
+    refuse: tuple | None  # None: seed only (every block refused)
+
+    @property
+    def env(self) -> str:
+        return f"{self.phase}:w{self.web}=" + ("seed" if self.refuse is None
+                                               else "".join(f"-bb{b}" for b in self.refuse))
+
+
+def parse_weight(spec: str) -> list[WeightForce]:
+    """CDX_WEIGHT entries `p1:wN[.K]:bbB=+k`: k more counted occurrences of web N in block B."""
+    out = []
+    for f in [s.strip() for s in spec.split(",") if s.strip()]:
+        m = WEIGHT_RE.match(f)
+        if not m:
+            raise SystemExit(f"weight {f!r} is not p1:wN[.K]:bbB=+k")
+        out.append(WeightForce(m.group(1), int(m.group(2)), int(m.group(4)), int(m.group(5)),
+                               None if m.group(3) is None else int(m.group(3))))
+    return out
+
+
+def parse_grow(spec: str) -> list[GrowForce]:
+    """CDX_GROW entries `p1:wN=seed` or `p1:wN=-bbA-bbB`: blocks split() may not grow web N into."""
+    out = []
+    for f in [s.strip() for s in spec.split(",") if s.strip()]:
+        m = GROW_RE.match(f)
+        if not m:
+            raise SystemExit(f"grow {f!r} is not p1:wN=seed or p1:wN=-bbA-bbB")
+        blocks = m.group(3)
+        out.append(GrowForce(m.group(1), int(m.group(2)),
+                             None if blocks == "seed" else tuple(int(b) for b in blocks.split("-bb")[1:])))
+    return out
+
+
+FORCE_RECORD_RE = re.compile(r"^\[CDX\]\s+(force_verdict|force_weight|force_grow)\s+(.*)$")
+
+
+def force_records(trace: str) -> list[tuple[str, dict]]:
+    """The always-printed v3 force records, as (kind, fields); a bare word (`refused`) is a flag."""
+    out = []
+    for line in trace.splitlines():
+        m = FORCE_RECORD_RE.match(line.strip())
+        if not m:
+            continue
+        fields = dict(re.findall(r"(\w+)=([^\s]+)", m.group(2)))
+        for flag in re.findall(r"(?:^|\s)([a-z]+)(?=\s|$)", m.group(2)):
+            fields.setdefault(flag, True)
+        out.append((m.group(1), fields))
+    return out
+
+
+def v3_force_acceptance(trace: str, proc: int, forces: list, weights: list, grows: list) -> str | None:
+    """Require the v3 farm's own record for every verdict, weight and grow force.
+
+    A verdict force needs a `force_verdict` record for its web (and pricing,
+    when named) with no `declined`; a weight force a `force_weight` record for
+    its web and block; a grow force at least one `force_grow ... refused`
+    record for its web. A force the pass never saw leaves no record, which is
+    not acceptance.
+    """
+    recs = [(k, f) for k, f in force_records(trace) if f.get("proc") == str(proc)]
+    for force in forces:
+        if force.classic:
+            continue
+        rows = [f for k, f in recs if k == "force_verdict" and f.get("phase") == force.phase
+                and f.get("web") == str(force.web)]
+        if force.pricing is not None:
+            rows = [f for f in rows if f.get("pricing") in (None, str(force.pricing))]
+        if not rows:
+            return f"{force.env}: no force_verdict record for web {force.web}"
+        want = force.want[0]
+        if any(f.get("force") != want for f in rows):
+            return f"{force.env}: force_verdict records disagree with {want}"
+        declined = [f for f in rows if f.get("declined")]
+        if declined:
+            return f"{force.env}: declined ({declined[0]['declined']})"
+    for w in weights:
+        rows = [f for k, f in recs if k == "force_weight" and f.get("phase") == w.phase
+                and f.get("web") == str(w.web) and f.get("bb") == str(w.bb)]
+        if w.pricing is not None:
+            rows = [f for f in rows if f.get("pricing") in (None, str(w.pricing))]
+        if not rows:
+            return f"{w.env}: no force_weight record for web {w.web} block {w.bb}"
+    for g in grows:
+        rows = [f for k, f in recs if k == "force_grow" and f.get("phase") == g.phase
+                and f.get("web") == str(g.web) and f.get("refused")]
+        if not rows:
+            return f"{g.env}: no force_grow record for web {g.web}"
+        if g.refuse is not None and not {f.get("bb") for f in rows} & {str(b) for b in g.refuse}:
+            return f"{g.env}: force_grow refused none of the named blocks"
+    return None
 
 
 def decisions(text: str, proc: int) -> tuple[list[dict], dict[int, list[int]]]:
@@ -2411,15 +2554,56 @@ def oracle_targets(forced: list[dict], oracle) -> list[dict]:
     piece's decision); all of them are part of the state to reproduce.
     """
     targets = []
-    for phase, web, want in oracle:
-        rows = [d for d in forced if d["phase"] == phase and d["web"] == web
-                and d["forced"] == "-1"] or \
-               [d for d in forced if d["phase"] == phase and d["web"] == web]
+    for force in oracle:
+        if not isinstance(force, OracleForce):
+            force = OracleForce(*force)  # the profile-grammar triple (phase, web, want)
+        phase, web, want = force.phase, force.web, force.want
+        spec = force.env
+        rows = [d for d in forced if d["phase"] == phase and d["web"] == web]
+        if force.pricing is not None:
+            # the K-th pricing of the web is read as its K-th decision row in
+            # that phase: a split re-prices the piece under the same number
+            if len(rows) < force.pricing:
+                raise SystemExit(f"oracle {spec}: web {web} has {len(rows)} decision row(s), "
+                                 f"pricing {force.pricing} asked")
+            rows = [rows[force.pricing - 1]]
+        else:
+            rows = [d for d in rows if d["forced"] in ("-1", "-3")] or rows
         if not rows:
-            raise SystemExit(f"oracle {phase}:w{web}: no decision for that web in the forced base")
-        targets.append({"spec": f"{phase}:w{web}={want}", "want": want, "rows": [
+            raise SystemExit(f"oracle {spec}: no decision for that web in the forced base")
+        if want[0] == "y":
+            # a verdict force colours with the natural best colour: reproduce THAT colour
+            coloured = [d for d in rows if d["colour"] is not None]
+            if not coloured:
+                raise SystemExit(f"oracle {spec}: the forced base never coloured web {web}")
+            want = f"c{coloured[-1]['colour']}"
+            rows = coloured[-1:]
+        elif want == "n":
+            want = "s"
+        targets.append({"spec": spec, "want": want, "rows": [
             {"expr": d["expr"], "kind": d["kind"], "lines": set(d["lines"]),
              "decision": d["decision"], "colour": d["colour"]} for d in rows]})
+    return targets
+
+
+def state_targets(forced: list[dict], weights: list, grows: list) -> list[dict]:
+    """A weight or grow force prices no colour itself: the state to reproduce is
+    what the forced base DECIDED for the named web (its colour, or memory)."""
+    targets = []
+    for item in list(weights) + list(grows):
+        rows = [d for d in forced if d["phase"] == item.phase and d["web"] == item.web]
+        pricing = getattr(item, "pricing", None)
+        if pricing is not None:
+            if len(rows) < pricing:
+                raise SystemExit(f"{item.env}: web {item.web} has {len(rows)} decision row(s)")
+            rows = [rows[pricing - 1]]
+        if not rows:
+            raise SystemExit(f"{item.env}: no decision for web {item.web} in the forced base")
+        last = rows[-1]
+        want = f"c{last['colour']}" if last["colour"] is not None else "s"
+        targets.append({"spec": f"{item.env} -> {want}", "want": want, "rows": [
+            {"expr": d["expr"], "kind": d["kind"], "lines": set(d["lines"]),
+             "decision": d["decision"], "colour": d["colour"]} for d in ([last] if want != "s" else rows)]})
     return targets
 
 
@@ -2622,8 +2806,8 @@ class Runner:
         return cmd
 
     def compile(self, src: pathlib.Path, obj: pathlib.Path, *, instrumented: bool = False,
-                force: str | None = None, bias: str | None = None,
-                log: pathlib.Path | None = None) -> str | None:
+                force: str | None = None, bias: str | None = None, weight: str | None = None,
+                grow: str | None = None, log: pathlib.Path | None = None) -> str | None:
         env = dict(self.env)
         if instrumented:
             env.update(CDX_LOG="1", CDX_PROC=str(self.proc), CDX_DETAIL_WEB="all",
@@ -2632,6 +2816,10 @@ class Runner:
                 env["CDX_FORCE"] = force
             if bias:
                 env["CDX_BIAS"] = bias
+            if weight:
+                env["CDX_WEIGHT"] = weight
+            if grow:
+                env["CDX_GROW"] = grow
         r = subprocess.run(self._cmd(src, obj, instrumented), env=env, cwd=ROOT,
                            capture_output=True, text=True, timeout=900)
         if r.returncode or not obj.is_file():
@@ -2759,6 +2947,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--bias", default="",
                     help="CDX_BIAS oracle 'web=delta,...': the decision order it imposes is the "
                          "state to reproduce without it (may be combined with --oracle)")
+    ap.add_argument("--weight", default="",
+                    help="CDX_WEIGHT 'p1:wN[.K]:bbB=+k,...' (v3 farm): the forced base's decision "
+                         "for web N is the state to reproduce")
+    ap.add_argument("--grow", default="",
+                    help="CDX_GROW 'p1:wN=seed|-bbA-bbB,...' (v3 farm): likewise")
     ap.add_argument("--root", help="repository worktree (default: git toplevel of the cwd)")
     ap.add_argument("--candidate", help="base TU (default: the tracked source)")
     ap.add_argument("--web", type=int, action="append", default=[],
@@ -2796,13 +2989,15 @@ def main(argv: list[str] | None = None) -> int:
     if unknown:
         raise SystemExit(f"unknown lever(s) {unknown}; known: {', '.join(LEVERS)}")
     if source_mode:
-        if ns.oracle or ns.bias:
-            raise SystemExit("--source-levers measures stock compiles only; drop --oracle/--bias")
+        if ns.oracle or ns.bias or ns.weight or ns.grow:
+            raise SystemExit("--source-levers measures stock compiles only; drop --oracle/--bias/--weight/--grow")
         return source_main(ns, levers)
     if ns.proc is None:
         raise SystemExit("--proc is required (the oracle mode reads the instrumented records)")
     oracle = parse_oracle(ns.oracle)
     bias = parse_bias(ns.bias)
+    weights = parse_weight(ns.weight)
+    grows = parse_grow(ns.grow)
     # With neither, the sweep has no state to reproduce: cells are ranked by
     # masked words, aligned residual and size delta alone (oracle column "-").
     import fast_score
@@ -2820,10 +3015,12 @@ def main(argv: list[str] | None = None) -> int:
     bdir.mkdir(exist_ok=True)
     bsrc = bdir / ("candidate" + pathlib.Path(source).suffix)
     bsrc.write_text(base_text)
-    force_env = ",".join(f"{p}:w{w}={c}" for p, w, c in oracle) or None
+    force_env = ",".join(f.env for f in oracle) or None
     for label, kw in (("stock", {}), ("unforced", {"instrumented": True}),
                       ("forced", {"instrumented": True, "force": force_env,
-                                  "bias": bias_env(bias) if bias else None})):
+                                  "bias": bias_env(bias) if bias else None,
+                                  "weight": ",".join(w.env for w in weights) or None,
+                                  "grow": ",".join(g.env for g in grows) or None})):
         err = run.compile(bsrc, bdir / f"{label}.o", log=bdir / f"{label}.log", **kw)
         if err:
             raise SystemExit(f"base {label} compile failed: {err}")
@@ -2831,12 +3028,19 @@ def main(argv: list[str] | None = None) -> int:
     if run.func_bytes(bdir / "unforced.o") != base_bytes:
         raise SystemExit("IDENTITY GATE FAILED: instrumented .text differs from stock on the base")
     forced_log = (bdir / "forced.log").read_text(errors="replace")
-    specs = tuple(f"{p}:w{w}={c}" for p, w, c in oracle)
-    refused = run.fl.force_acceptance(forced_log, ns.proc, specs) if specs else None
+    specs = tuple(f.env for f in oracle)
+    classic = tuple(f.env for f in oracle if f.classic)
+    refused = run.fl.force_acceptance(forced_log, ns.proc, classic) if classic else None
     if refused:
         raise SystemExit(f"oracle not accepted on the base: {refused}")
+    refused = v3_force_acceptance(forced_log, ns.proc, oracle, weights, grows)
+    if refused:
+        raise SystemExit(f"force not accepted on the base: {refused}")
     forced_decs, blines = decisions(forced_log, ns.proc)
     targets = oracle_targets(forced_decs, oracle) if oracle else []
+    if weights or grows:
+        targets += state_targets(forced_decs, weights, grows)
+        specs = specs + tuple(w.env for w in weights) + tuple(g.env for g in grows)
     if bias:
         unbiased_decs, _ = decisions((bdir / "unforced.log").read_text(errors="replace"), ns.proc)
         # a bias-only run compares against the unbiased base; with forces too, the

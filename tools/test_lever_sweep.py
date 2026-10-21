@@ -184,7 +184,7 @@ RECORDS = """\
 class OracleTests(unittest.TestCase):
     def test_parse_oracle(self):
         self.assertEqual(ls.parse_oracle("p1:w387=s, p2:w131=c21"),
-                         [("p1", 387, "s"), ("p2", 131, "c21")])
+                         [("p1", 387, "s", None), ("p2", 131, "c21", None)])
         with self.assertRaises(SystemExit):
             ls.parse_oracle("p1:387=s")
 
@@ -780,6 +780,77 @@ class ComposeTests(unittest.TestCase):
                      "d": {"residual": 105, "delta": -4, "masked": 1482}}
         self.assertFalse(ls.improves(cancelled, base, "d"),
                          "size 0 with more one-sided words is a long handler cancelling a short one")
+
+
+V3_RECORDS = """\
+[CDX] force_verdict phase=p1 site=save proc=3 web=5 lr=0xa force=y save=0.000000->0.000100 verdict=2->1
+[CDX] force_verdict phase=p1 site=dec proc=3 web=5 lr=0xa force=y decision=split->color bestcolor=21 regsleft=9
+[CDX] force_verdict phase=p1 site=dec proc=3 web=6 lr=0xb force=y declined=no-regs
+[CDX] force_weight phase=p1 proc=3 web=9 lr=0xc pricing=1 bb=2 usesdefs=1.0->2.0
+[CDX] force_grow phase=p1 proc=3 web=5 lr=0xa bb=2 refused
+[CDX] force_verdict phase=p1 site=save proc=4 web=7 lr=0xd force=n save=3.0->0 verdict=1->2
+"""
+
+
+class V3ForceTests(unittest.TestCase):
+    def test_parse_grammar(self):
+        got = ls.parse_oracle("p1:w851.2=y, p2:w3=n, p1:w9=y4.5, p1:w387=s")
+        self.assertEqual(got, [("p1", 851, "y", 2), ("p2", 3, "n", None), ("p1", 9, "y4.5", None),
+                               ("p1", 387, "s", None)])
+        self.assertEqual([f.env for f in got], ["p1:w851.2=y", "p2:w3=n", "p1:w9=y4.5", "p1:w387=s"])
+        self.assertEqual([f.classic for f in got], [False, False, False, True])
+        self.assertFalse(ls.parse_oracle("p1:w9.2=c21")[0].classic, "a pricing qualifier is v3 grammar")
+        for bad in ("p1:w9=x", "p1:w9.=y", "w9=y", "p3:w9=y"):
+            with self.assertRaises(SystemExit):
+                ls.parse_oracle(bad)
+        self.assertEqual(ls.parse_weight("p1:w851:bb258=+1, p1:w851.2:bb259=-2"),
+                         [("p1", 851, 258, 1, None), ("p1", 851, 259, -2, 2)])
+        self.assertEqual(ls.parse_weight("p1:w851.2:bb259=-2")[0].env, "p1:w851.2:bb259=-2")
+        with self.assertRaises(SystemExit):
+            ls.parse_weight("p1:w851:bb258=1")
+        grows = ls.parse_grow("p1:w851=seed, p1:w852=-bb259-bb260")
+        self.assertEqual(grows, [("p1", 851, None), ("p1", 852, (259, 260))])
+        self.assertEqual([g.env for g in grows], ["p1:w851=seed", "p1:w852=-bb259-bb260"])
+        with self.assertRaises(SystemExit):
+            ls.parse_grow("p1:w851=bb259")
+
+    def test_records_and_acceptance(self):
+        recs = ls.force_records(V3_RECORDS)
+        self.assertEqual([k for k, _ in recs], ["force_verdict"] * 3 + ["force_weight", "force_grow",
+                                                                         "force_verdict"])
+        self.assertTrue(recs[4][1]["refused"])
+        self.assertEqual(recs[2][1]["declined"], "no-regs")
+        ok = ls.parse_oracle("p1:w5=y")
+        self.assertIsNone(ls.v3_force_acceptance(V3_RECORDS, 3, ok, [], []))
+        self.assertIn("declined", ls.v3_force_acceptance(V3_RECORDS, 3, ls.parse_oracle("p1:w6=y"), [], []))
+        self.assertIn("no force_verdict", ls.v3_force_acceptance(V3_RECORDS, 3, ls.parse_oracle("p1:w7=n"), [], []),
+                      "web 7 was forced in another procedure")
+        self.assertIsNone(ls.v3_force_acceptance(V3_RECORDS, 4, ls.parse_oracle("p1:w7=n"), [], []))
+        self.assertIn("disagree", ls.v3_force_acceptance(V3_RECORDS, 3, ls.parse_oracle("p1:w5=n"), [], []))
+        self.assertIsNone(ls.v3_force_acceptance(V3_RECORDS, 3, ls.parse_oracle("p1:w387=s"), [], []),
+                          "classic forces are force_lattice's to accept")
+        self.assertIsNone(ls.v3_force_acceptance(V3_RECORDS, 3, [], ls.parse_weight("p1:w9.1:bb2=+1"), []))
+        self.assertIn("no force_weight", ls.v3_force_acceptance(V3_RECORDS, 3, [], ls.parse_weight("p1:w9:bb3=+1"), []))
+        self.assertIsNone(ls.v3_force_acceptance(V3_RECORDS, 3, [], [], ls.parse_grow("p1:w5=seed")))
+        self.assertIsNone(ls.v3_force_acceptance(V3_RECORDS, 3, [], [], ls.parse_grow("p1:w5=-bb2")))
+        self.assertIn("none of the named", ls.v3_force_acceptance(V3_RECORDS, 3, [], [], ls.parse_grow("p1:w5=-bb9")))
+        self.assertIn("no force_grow", ls.v3_force_acceptance(V3_RECORDS, 3, [], [], ls.parse_grow("p1:w8=seed")))
+
+    def test_targets_from_verdict_pricing_and_state(self):
+        decs, _ = ls.decisions(RECORDS, 3)  # web 5: split row then colour row c21; web 9: c19
+        t = ls.oracle_targets(decs, ls.parse_oracle("p1:w5=y"))
+        self.assertEqual((t[0]["want"], t[0]["spec"], len(t[0]["rows"])), ("c21", "p1:w5=y", 1),
+                         "a verdict force reproduces the colour the forced base took")
+        t = ls.oracle_targets(decs, ls.parse_oracle("p1:w5.1=n"))
+        self.assertEqual((t[0]["want"], t[0]["rows"][0]["decision"]), ("s", "split"))
+        t = ls.oracle_targets(decs, ls.parse_oracle("p1:w5.2=c21"))
+        self.assertEqual(t[0]["rows"][0]["lines"], {12, 13}, "pricing 2 is the second decision row")
+        with self.assertRaises(SystemExit):
+            ls.oracle_targets(decs, ls.parse_oracle("p1:w5.3=y"))
+        st = ls.state_targets(decs, ls.parse_weight("p2:w9:bb2=+1"), ls.parse_grow("p1:w5=seed"))
+        self.assertEqual([(s["want"], s["spec"]) for s in st], [("c19", "p2:w9:bb2=+1 -> c19"), ("c21", "p1:w5=seed -> c21")])
+        hits, _ = ls.oracle_status(decs, st)
+        self.assertEqual(hits, 2, "the forced base reproduces its own state")
 
 
 if __name__ == "__main__":

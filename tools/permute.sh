@@ -320,9 +320,10 @@ fi
 
 # --- Replicate the TU's post-compile objcopy steps ----------------------
 # Some TUs apply an `objcopy --redefine-sym A=B` (or --add-symbol) to the object
-# AFTER cc, via the Makefile's per-file POSTPROCESS -- e.g. src/main/track.c gets
-#   objcopy --redefine-sym trackCamPosTrap=TrapDanglingJump build/src/main/track.c.o
-# (the func_8000D018 TrapDanglingJump fix). import.py's scratch runs cc only, so
+# AFTER cc, via the Makefile's per-file POSTPROCESS -- e.g. src/main/menu.c gets
+#   objcopy --redefine-sym menuRepeatX=D_800D3198 ... build/src/main/menu.c.o
+# and every resident object gets tools/trap_names.py's rename of its overlay
+# calls to TrapDanglingJump (replicated below). import.py's scratch runs cc only, so
 # the scratch object differs from the real per-TU object and a score-0 in the
 # scratch does NOT transfer to the real build -- a "false ceiling" that wastes
 # search time. Recover the same post-compile step from the `gmake -n` output
@@ -350,6 +351,16 @@ if [ -n "$postproc" ]; then
     printf '\n%s\n' "$remapped" >> "$csh"
     echo "Replicated post-compile objcopy -> $remapped"
   fi
+fi
+# A resident object's overlay calls are named in C and renamed to
+# TrapDanglingJump after compilation (tools/trap_names.py); without the same
+# step every such call scores as a wrong jal target. The rename is pure symbol
+# metadata, so unlike the digest-guarded passes it is safe on a permuted object.
+traprename=$(printf '%s\n' "$dryrun" | grep -F "$obj" | grep -F 'trap_names.py rename' || true)
+if [ -n "$traprename" ]; then
+  remapped=$(printf '%s\n' "$traprename" | sed "s#${obj}#\"\$OUTPUT\"#g")
+  printf '\n%s\n' "$remapped" >> "$csh"
+  echo "Replicated trap rename -> $remapped"
 fi
 
 # --- Fidelity gate: scratch base.c vs the tree's own recipe -------------

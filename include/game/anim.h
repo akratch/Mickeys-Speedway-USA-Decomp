@@ -438,7 +438,6 @@ void mmFree(void *ptr);
 void animseqFreeLevelData(void);
 void animseqFreeGroup(void);
 void func_800534C0();
-s32 TrapDanglingJump();
 void func_800534EC(s32 arg0);
 void animseqResetGroup(void);
 void *piRomLoad(s32 resourceId);

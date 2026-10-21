@@ -25,6 +25,58 @@ mechanism, entirely from Mickey's own disassembly:
 6. The trampoline recomputes `overlayTable[n].vramBase + offset`, restores the
    arguments and `jr`s to the real function. The caller never knows.
 
+**Resident C names the callee.** The `jal` at a trap site encodes only
+`TrapDanglingJump`; which overlay function the site calls is data, in the main
+relocation table. The C states it anyway, as Jet Force Gemini's decomp does
+(`tools/patch_symbols.py`, `ver/symbols/overlay_funcs_to_trap.txt`): every
+resident call is written against the overlay export's own name, declared in
+`include/game/overlay_exports.h`, and once a resident object is compiled, after
+its own POSTPROCESS, `tools/trap_names.py rename` renames each undefined
+reference to a name in `config/overlay_funcs_to_trap.us.txt` to
+`TrapDanglingJump`. Only symbol names change: the instruction words, the
+relocation offsets and types, and the linked ROM are what a literal
+`TrapDanglingJump(...)` call produced. The rename refuses a listed name the
+object defines, a listed name referenced by anything but a `.text`
+`R_MIPS_26`, and an undefined name spelled like an overlay export
+(`func_overlay_NNN_...`, `overlayN...`) that the list lacks.
+
+The list is generated, never edited: `gmake trap-names` follows every
+main-table record whose call-site word is the trap `jal` through its ORT row to
+(overlay, offset), and from there to the function the linked ELF defines at
+that offset, taking its friendly name when it has exactly one and its canonical
+`func_overlay_NNN_...` name otherwise. The 370 sites reach 313 exports. Once the
+ROM hash matches, `gmake verify` runs `tools/trap_names.py check`, which
+requires four things: the name the C used at each site, read from the
+`.trapsites` sidecar the rename writes beside the object, is a function that
+site's ORT row targets; no resident C calls `TrapDanglingJump` literally; the
+list equals what the tables generate; and the atlas's `resident_inbound` row
+agrees with the ROM. A swapped callee leaves the ROM hash unchanged, and this
+check is the gate that fails on it.
+
+196 of the 313 declarations are prototypes. 194 are the overlay definition's
+own, with overlay-private pointer types spelled `void *`, and 2 keep the
+parameter types the resident call compiles against: `overlay17CreateChain`'s
+narrowed arguments and `func_overlay_043_F0000324_188A2F4`'s f32. The other
+117 are old-style declarations, `T name();`, because the definition's
+prototype either changes the shipped call or does not compile against it.
+They are tagged `[arity]` (64: the resident passes a different number of
+arguments, for example `objects.c`'s uniform `(object, packet,
+preserveState)` init dispatch), `[types]` (41: a pointer passed where the
+definition takes an integer, or the reverse) and `[codegen]` (12: an int
+passed where the definition declares an `f32` or narrow parameter). In each
+case the two reconstructions disagree, and reconciling either side would let
+the prototype in. Renaming an overlay export that resident code calls means
+running `gmake trap-names` and updating the resident call and its declaration;
+the rename step names any stale spelling it finds.
+
+This replaced 370 literal `TrapDanglingJump(...)` calls on 2026-10-21, along
+with 20 typed aliases (19 `#pragma weak x = TrapDanglingJump`, plus
+`rainFreeTrap`), each of which existed to give one call a prototype and each
+paired with an `objcopy --redefine-sym x=TrapDanglingJump` POSTPROCESS rule.
+IDO makes such an alias a weak *undefined* symbol named after the alias (the
+`runlinkInit` note below), so every alias needed that rename. Declaring the real
+callee gives the call the same prototype without one.
+
 Step 0 is `runlinkInit` (`0x800328CC`), which runs once at boot, out of
 `func_80026E4C`, immediately before the first `TrapDanglingJump`: it allocates
 and DMA-copies the three tables out of ROM and synthesizes `overlayTable[0]`

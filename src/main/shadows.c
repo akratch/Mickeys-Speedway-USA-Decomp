@@ -15,6 +15,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/overlay_exports.h"
 
 /* Shadow buffer state occupies one contiguous compiler-owned .data input
  * section. Keep the retail labels at their measured offsets for all users;
@@ -188,7 +189,6 @@ void shadowGetBuffers(s32 arg0, void **arg1, void **arg2, void **arg3) {
  */
 extern s16 Arctanf(f32 x, f32 y);
 extern f32 Powerf(f32 value);
-extern s32 TrapDanglingJump(void *object, s32 mode, f32 updateRate);
 extern f32 camDistance(f32 x, f32 y, f32 z);
 extern s32 camGetMode(void);
 extern f32 sqrtf(f32 value);
@@ -353,7 +353,7 @@ void shadowGenerate(s32 arg0, s32 arg1) {
                                 j = 0;
                                 if ((angleSource != NULL) &&
                                     ((SG_U8(angleSource, 0x10) & 8) != 0)) {
-                                    j = TrapDanglingJump(object, 0,
+                                    j = func_overlay_043_F0000324_188A2F4(object, 0,
                                                               (f32) arg1);
                                 }
                                 if (j != 0) {
@@ -365,8 +365,8 @@ void shadowGenerate(s32 arg0, s32 arg1) {
                                 }
                             } else if ((angleSource != NULL) &&
                                        ((SG_U8(angleSource, 0x10) & 8) != 0)) {
-                                if (TrapDanglingJump(object, 1,
-                                                     (f32) arg1) != 0) {
+                                if (func_overlay_043_F0000324_188A2F4(object, 1,
+                                                                      (f32) arg1) != 0) {
                                     func_80016890(object, NULL, angleSource,
                                                   x, y, z, type);
                                 } else {

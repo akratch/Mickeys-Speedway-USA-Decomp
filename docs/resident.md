@@ -939,7 +939,7 @@ Matched C in this TU:
 | `func_8000CC78` | `0xD878` | 0x258 | `-O2 -mips2 -32 -Wab,-r4300_mul` | JFG background-gradient builder and display-list command forms at the established tier-D TU position, revised to Mickey's ten-byte vertex layout and resident bindings; donor placeholder deliberately not adopted; 150/150 instruction words and all 24 relocation records exact, linked ROM exact |
 | `func_8000CED0` | `0xDAD0` | 0x13C | `-O2 -mips2 -32 -Wab,-r4300_mul` | JFG's assembly-only `func_80013478` supplies tier-D sky-object update structure; Mickey proves the revised mode test, fields, calls, and final draw condition, so the donor placeholder is deliberately not adopted; 79/79 instruction words and all 19 relocation records exact, linked ROM exact |
 | `trackGetSky` | `0xDC0C` | 0xC | `-O2 -mips2 -32 -Wab,-r4300_mul` | Mickey reconstruction; JFG's corresponding `trackGetSky` is only tier D and is deliberately not adopted; 3/3 instruction words and relocation layout exact, linked ROM exact |
-| `func_8000D018` | `0xDC18` | 0x154 | `-O2 -mips2 -32 -Wab,-r4300_mul` | JFG's assembly-only `func_800135E0` supplies the camera/update skeleton; public name deliberately not adopted. The camera-position dangling call uses a typed `trackCamPosTrap` weak alias, canonicalized back to `TrapDanglingJump` with `objcopy --redefine-sym` in the track.c.o rule, so its three f32 args pass single-precision (no double promotion) while every other `TrapDanglingJump` call site and the canonical relocation identity are preserved; 85/85 instruction words and all 32 relocation records exact, linked ROM exact |
+| `func_8000D018` | `0xDC18` | 0x154 | `-O2 -mips2 -32 -Wab,-r4300_mul` | JFG's assembly-only `func_800135E0` supplies the camera/update skeleton; public name deliberately not adopted. The camera-position overlay call is `overlay96FindVolume`, whose prototype passes its three f32 args single-precision (no double promotion); the generic trap rename restores the shipped `TrapDanglingJump` relocation identity (docs/overlays.md §5.1). It once went through a typed `trackCamPosTrap` weak alias, retired 2026-10-21; 85/85 instruction words and all 32 relocation records exact, linked ROM exact |
 | `trackAddTextureScroll` | `0xDD6C` | 0x4C | `-O2 -mips2 -32 -Wab,-r4300_mul` | Mickey reconstruction; JFG's corresponding `trackAddTextureScroll` is tier D only and its public name is deliberately not adopted; 19/19 instruction words and both HI16/LO16 relocation pairs exact, linked ROM exact |
 | `trackUpdateTextureScroll` | `0xDDB8` | 0x200 | `-O2 -mips2 -32 -Wab,-r4300_mul` | Mickey reconstruction of the packed texture-scroll apply loop; JFG's assembly-only `trackUpdateTextureScroll` supplies tier-D role/TU context only and its public name is deliberately not adopted. Matched 2026-09-23 (Track B): the packed command word is reused as the texture index after both scroll deltas are shifted out of it, each delta is shifted in place, the segment count is read after the mask selection, and the triangle cursor precedes its count; 128/128 instruction words and all eight relocation records exact, linked ROM exact |
 | `trackLightFreeMem` | `0xE170` | 0xBC | `-O2 -mips2 -32 -Wab,-r4300_mul` | JFG's assembly-only `trackLightFreeMem` supplies tier-D role/TU and control-flow context; Mickey reconstruction retains the placeholder; 47/47 instruction words and all 17 relocation records exact, linked ROM exact |
@@ -1702,7 +1702,10 @@ canonical `-O2 -mips2 -32`, with all 61 relocations and the linked ROM range agr
 
 `rain_init` and `free_rain_memory` share a synthetic static
 `TrapDanglingJump` binding with `rain_update`, but require incompatible integer,
-void, and float call signatures inside the consolidated TU. Their JFG bodies
+void, and float call signatures inside the consolidated TU. (The three are
+different overlay-15 exports, `overlay15InitStars`, `overlay15ReleaseResource10`
+and `overlay15UpdateMovingStars`, and since 2026-10-21 each call names its own
+callee: docs/overlays.md §5.1.) Their JFG bodies
 otherwise reproduce all 59 and 33 instruction words and every relocation kind;
 the best candidates retain one relocation-identity mismatch each, at `+0xA0`
 and `+0x68` respectively. Direct calls, typed function-pointer casts, weak
@@ -2375,7 +2378,7 @@ placeholders are never imported.
 | `0x80055104` | `0x6F4` | no unique `hit.c` candidate | tier-D; GLOBAL_ASM-only, shared type pass not applicable; residual collision/vector assembly |
 | `0x800557F8` | `0x178` | no unique `hit.c` candidate | D; collision handler family. Matched C: exact 376 B and eight-call relocation surface at `-O2 -mips2 -32 -Wo,-loopunroll,0`; reconstructed from Mickey's resident state/counter/audio ABI after no external skeleton exceeded 0.070 similarity |
 | `0x80055970` | `0x1B4` | no unique `hit.c` candidate | D; placeholder retained. Matched C: exact 436 B and relocation surface at `-O2 -mips2 -32 -Wo,-loopunroll,0`; uopt homes declared locals at descending offsets in declaration order, so firstVehicle declared second lands its call-crossing spill at the target `sp+0x48` |
-| `0x80055B24` | `0x1E4` | no unique `hit.c` candidate | tier-D; matched C: exact 484 B, 121 instructions, `0x50` frame, FP schedule, and nine-call relocation surface at `-O2 -mips2 -32 -Wo,-loopunroll,0`. A typed `void` weak alias for the first collision callback removes the generic trap placeholder's phantom return web; metadata-only rebinding restores the measured `TrapDanglingJump` relocation identity. |
+| `0x80055B24` | `0x1E4` | no unique `hit.c` candidate | tier-D; matched C: exact 484 B, 121 instructions, `0x50` frame, FP schedule, and nine-call relocation surface at `-O2 -mips2 -32 -Wo,-loopunroll,0`. The first collision callback is `overlay23SpawnAttachments`, whose `void` declaration keeps an int-returning declaration's phantom return web out (formerly the typed weak alias `hitCopyFirstTrap`); the generic trap rename restores the measured `TrapDanglingJump` relocation identity (docs/overlays.md §5.1). |
 | `0x80055D08` | `0x148` | no unique `hit.c` candidate | D; collision handler family. Matched C: exact 328 B and three-call relocation surface at `-O2 -mips2 -32 -Wo,-loopunroll,0`; composed from Mickey-local exact state-update and normalization patterns |
 | `0x80055E50` | `0x114` | no unique `hit.c` candidate | D; collision handler family. Matched C: exact 276 B and three-call relocation surface at `-O2 -mips2 -32 -Wo,-loopunroll,0` |
 | `0x80055F64` | `0x16C` | no unique `hit.c` candidate | D; collision handler family. Matched C: exact 364 B and three-call relocation surface at `-O2 -mips2 -32 -Wo,-loopunroll,0`; declare volatile `secondZ` before `secondY` to retain the target stack home |
@@ -2564,9 +2567,10 @@ layouts, packed flag extractions, bounded/wraparound searches, and guarded
 input calls. `arithmeticFunction` binds its three unavailable CIC-overlay
 calls to Mickey's existing `TrapDanglingJump` relocations. `mainCPUeffects`
 reproduces its cropped-framebuffer register allocation by beginning the
-product-plus-base update before the independent height calculation; its typed
-rain callback alias is folded back to the target `TrapDanglingJump` symbol in
-ELF metadata without changing an instruction word.
+product-plus-base update before the independent height calculation; its rain
+callback is overlay 15's `overlay15DrawRain`, renamed back to the target
+`TrapDanglingJump` symbol in ELF metadata without changing an instruction word
+(docs/overlays.md §5.1).
 
 Two ABI/name exceptions remain explicit. Mickey's `mainGameWindowChanging`
 returns a 32-bit word, not JFG's declared `s16`; the JFG signature changed the

@@ -18,6 +18,7 @@
 #include "game/math.h"
 #include "n_audio/mbi.h"
 #include "PR/os_internal.h"
+#include "game/overlay_exports.h"
 
 typedef struct TrackRotation {
     s16 x;
@@ -420,7 +421,6 @@ void texAnimateTexture(TrackTextureHeader *texture, u32 *flags, s32 *frame,
                    s32 updateRate);
 void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags);
 s32 runlinkIsModuleLoaded(s32 module);
-s32 TrapDanglingJump();
 void func_8000A62C(f32 x, f32 y, f32 z);
 void func_8000E5EC(s32 arg0, s32 arg1);
 void func_8000E920(s32 arg0, s32 arg1);
@@ -489,13 +489,13 @@ void func_80009E78(Gfx **displayList, Mtx **matrix, TrackVertex **vertices,
  */
 void func_8000BD50(s32 updateRate) {
     if (runlinkIsModuleLoaded(13) != 0) {
-        TrapDanglingJump(updateRate);
+        overlay13ProcessActive(updateRate);
     }
     if (runlinkIsModuleLoaded(12) != 0) {
-        TrapDanglingJump(updateRate);
+        func_overlay_012_F00003A8_186D628(updateRate);
     }
     if (runlinkIsModuleLoaded(34) != 0) {
-        TrapDanglingJump(updateRate);
+        overlay34UpdateRecords(updateRate);
     }
 }
 /*
@@ -574,8 +574,8 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
 
     temp_s2 = mainGetNumberOfCameras();
     camSetNo(0);
-    if (TrapDanglingJump() != 0) {
-        TrapDanglingJump(arg0);
+    if (overlay66GetCurrent() != 0) {
+        func_overlay_066_F0000040_18C64A8(arg0);
         return;
     }
     D_800C9520 = *arg0;
@@ -645,7 +645,7 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
         func_8000C400(targetUpdateRate);
     }
     if (D_80079274 != 0) {
-        TrapDanglingJump((void **) (s32) targetUpdateRate);
+        overlay71UpdateCoordinates((void **) (s32) targetUpdateRate);
     }
     if ((D_8007A128 != 0) && (temp_s2 == 1)) {
         camEnableUserView(0, 1);
@@ -665,9 +665,9 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
             }
             if (D_80079278 > 0) {
                 if (D_800C9534 == 0) {
-                    TrapDanglingJump((void **) (s32) targetUpdateRate);
+                    overlay100ApplyValue((void **) (s32) targetUpdateRate);
                 }
-                TrapDanglingJump(&D_800C9520);
+                overlay100ApplyToValue(&D_800C9520);
             }
         } else {
             if ((((TrackFrameLevel *) D_800792EC)->unk52 != 4) &&
@@ -687,11 +687,11 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
         }
     }
     if (D_8007D6B0 > 0) {
-        TrapDanglingJump(&D_800C9520);
+        overlay40DrawEntries(&D_800C9520);
     }
     func_800534EC((s32) &D_800C9520);
     if (D_800D6C3E != 0) {
-        TrapDanglingJump(&D_800C9520);
+        overlay40DrawTintRectangle(&D_800C9520);
     }
     if (levelInitRegionFlags() != 0) {
         gSPClearGeometryMode(D_800C9520++, G_CULL_FRONT);
@@ -1035,14 +1035,9 @@ void func_8000CED0(s32 updateRate) {
 void *trackGetSky(void) {
     return D_800C9550;
 }
-/* Dangling overlay call taking the camera world position (three f32 args in
- * f12/f14/a2-raw) and returning a pointer. Typed weak alias so this call site
- * passes single-precision floats without the default-argument double promotion
- * that the unprototyped `s32 TrapDanglingJump()` forces; the build canonicalizes
- * the undefined symbol to the shared TrapDanglingJump target (0x800333A0)
- * without changing section contents. */
-#pragma weak trackCamPosTrap = TrapDanglingJump
-extern void *trackCamPosTrap(f32, f32, f32);
+/* overlay96FindVolume takes the camera world position (three f32 args in
+ * f12/f14/a2-raw) and returns a pointer; its prototype passes the floats
+ * single-precision, where an unprototyped call would promote them to double. */
 /* PROVENANCE: the camera/update structure is adapted from Jet Force Gemini's
  * public src/track.c TU position (`func_800135E0`); Mickey's fields, globals,
  * call graph, and instruction boundary remain authoritative. */
@@ -1066,8 +1061,8 @@ void func_8000D018(s32 arg0, s32 arg1) {
     D_800C99B4 = D_800C9530->y;
     D_800C99B8 = D_800C9530->z;
     if (D_80078F84 > 0) {
-        D_8007926C = trackCamPosTrap(D_800C9530->x, D_800C9530->y,
-                                     D_800C9530->z);
+        D_8007926C = overlay96FindVolume(D_800C9530->x, D_800C9530->y,
+                                         D_800C9530->z);
     } else {
         D_8007926C = 0;
     }
@@ -1449,10 +1444,10 @@ void trackUpdateLighting(s32 copySegmentData, s32 updateRate) {
             }
         }
         if (runlinkIsModuleLoaded(16) != 0) {
-            TrapDanglingJump(&D_800C95B4, D_800792E8, updateRate);
+            overlay16ApplyGradient(&D_800C95B4, D_800792E8, updateRate);
         } else if ((D_800D6C54 != 0xFF) || (D_800D6C4C != 0)) {
             /* Runtime relocation: overlay 40 +0x690 (overlay40FadeRecords). */
-            TrapDanglingJump(&D_800C95B4, D_800792E8, updateRate);
+            overlay40FadeRecords(&D_800C95B4, D_800792E8, updateRate);
         } else {
             func_8000D820();
         }
@@ -1589,7 +1584,7 @@ s32 func_8000DDE4(s32 key, s32 recordCount, TrackKeyRecord *records,
         }
     }
     if ((matchCount > 0) && (runlinkIsModuleLoaded(21) != 0)) {
-        TrapDanglingJump(key, matchCount, matches);
+        overlay21ApplyPriorities(key, matchCount, matches);
     }
     if (matchCount >= 2) {
         recordIndex = matchCount - 1;
@@ -1756,22 +1751,22 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                     func_80009414(&D_800C9520, &D_800C9524, &D_800C9528, object);
                     break;
                 case 0x1D:
-                    TrapDanglingJump(&D_800C9520, &D_800C9524,
-                                     &D_800C9528, object);
+                    overlay69DrawSortedGeometry(&D_800C9520, &D_800C9524,
+                                                &D_800C9528, object);
                     break;
                 case 0x49:
-                    TrapDanglingJump(&D_800C9520, &D_800C9524,
-                                     &D_800C9528, object);
+                    overlay88DrawSortedGeometry(&D_800C9520, &D_800C9524,
+                                                &D_800C9528, object);
                     break;
                 case 0x3F:
-                    TrapDanglingJump(&D_800C9520, &D_800C9524,
-                                     &D_800C9528, object);
+                    overlay68DrawSortedEntries(&D_800C9520, &D_800C9524,
+                                               &D_800C9528, object);
                     break;
                 case 0x39:
-                    TrapDanglingJump(&D_800C9520, &D_800C9524, object);
+                    func_overlay_026_F0001158_187B550(&D_800C9520, &D_800C9524, object);
                     break;
                 case 0x3A:
-                    TrapDanglingJump(&D_800C9520, &D_800C9524, object);
+                    overlay29DrawGroups(&D_800C9520, &D_800C9524, object);
                     break;
                 }
             }
@@ -1854,7 +1849,7 @@ void func_8000E5EC(s32 updateRate, s32 arg1) {
                       (s32) matches);
     }
     if (runlinkIsModuleLoaded(0x22) != 0) {
-        TrapDanglingJump(&D_800C9520, &D_800C9528);
+        overlay34SortAndDraw(&D_800C9520, &D_800C9528);
     }
     if (D_8007A124 == 0 && camGetMode() == 0) {
         partDraw(&D_800C9520, (s32) &D_800C9524, 0);
@@ -1870,8 +1865,9 @@ void func_8000E5EC(s32 updateRate, s32 arg1) {
  * `index = visibleCount; while (index--)` over `segmentIds[index]` (uopt makes
  * the cursor and keeps the post-decrement copy), the forward walks are
  * `for (index = 0; index < selectedCount;) object = selectedObjects[index++]`,
- * the 0x8E shadow walk sits inside the D_80079260 test, the TrapDanglingJump
- * display-list argument is uncast, and `selectedCount - 1` is written at each
+ * the 0x8E shadow walk sits inside the D_80079260 test, the reflection draws'
+ * (func_overlay_012_F0000910_186DB90, overlay98RenderReflections) display-list
+ * argument is uncast, and `selectedCount - 1` is written at each
  * reverse walk (uopt's spilled common subexpression, not a declared local).
  * No `child` or `segment` carrier; one unused s32 above segmentIds sizes the
  * frame. */
@@ -1945,7 +1941,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
         }
     }
     if (E920_S8(D_800792EC, 0xF6) != 0) {
-        TrapDanglingJump(selectedCount, selectedObjects);
+        overlay98CollectAccepted(selectedCount, selectedObjects);
     }
     diRcpTrace(D_800C9520, "track/track.c", 0x5D7);
     for (index = 0; index < selectedCount;) {
@@ -1990,11 +1986,11 @@ void func_8000E920(s32 arg0, s32 arg1) {
         }
     }
     if (runlinkIsModuleLoaded(0xC) != 0) {
-        TrapDanglingJump(&D_800C9520, &D_800C9524, &D_800C9528);
+        func_overlay_012_F0000910_186DB90(&D_800C9520, &D_800C9524, &D_800C9528);
     }
     if (E920_S8(D_800792EC, 0xF6) != 0) {
         diRcpTrace(D_800C9520, "track/track.c", 0x61A);
-        TrapDanglingJump(&D_800C9520, &D_800C9524, &D_800C9528);
+        overlay98RenderReflections(&D_800C9520, &D_800C9524, &D_800C9528);
         if (D_80079260 != 0) {
             index = visibleCount;
             while (index--) {
@@ -2030,10 +2026,10 @@ void func_8000E920(s32 arg0, s32 arg1) {
         }
     }
     if (runlinkIsModuleLoaded(0xD) != 0) {
-        TrapDanglingJump((s32) &D_800C9520, &D_800C9524, &D_800C9528);
+        overlay13DrawActive((s32) &D_800C9520, &D_800C9524, &D_800C9528);
     }
     if (runlinkIsModuleLoaded(0x22) != 0) {
-        TrapDanglingJump((s32) &D_800C9520, &D_800C9528);
+        overlay34SortAndDraw((s32) &D_800C9520, &D_800C9528);
     }
     diRcpTrace(D_800C9520, "track/track.c", 0x64E);
     for (index = selectedCount - 1; index >= 0;) {
@@ -2049,22 +2045,22 @@ void func_8000E920(s32 arg0, s32 arg1) {
                               (TrackSkyObject *) object);
                 break;
             case 0x1D:
-                TrapDanglingJump((s32) &D_800C9520, &D_800C9524,
-                                 &D_800C9528, object);
+                overlay69DrawSortedGeometry((s32) &D_800C9520, &D_800C9524,
+                                            &D_800C9528, object);
                 break;
             case 0x49:
-                TrapDanglingJump((s32) &D_800C9520, &D_800C9524,
-                                 &D_800C9528, object);
+                overlay88DrawSortedGeometry((s32) &D_800C9520, &D_800C9524,
+                                            &D_800C9528, object);
                 break;
             case 0x3F:
-                TrapDanglingJump((s32) &D_800C9520, &D_800C9524,
-                                 &D_800C9528, object);
+                overlay68DrawSortedEntries((s32) &D_800C9520, &D_800C9524,
+                                           &D_800C9528, object);
                 break;
             case 0x39:
-                TrapDanglingJump((s32) &D_800C9520, &D_800C9524, object);
+                func_overlay_026_F0001158_187B550((s32) &D_800C9520, &D_800C9524, object);
                 break;
             case 0x3A:
-                TrapDanglingJump((s32) &D_800C9520, &D_800C9524, object);
+                overlay29DrawGroups((s32) &D_800C9520, &D_800C9524, object);
                 break;
             }
         }
@@ -2617,7 +2613,7 @@ s32 func_80010178(u32 segmentIndex) {
     s32 planeCount;
 
     if (D_8007926C != NULL) {
-        if (TrapDanglingJump(D_8007926C, segmentIndex) == 0) {
+        if (overlay96TestBit(D_8007926C, segmentIndex) == 0) {
             return FALSE;
         }
     } else {
@@ -4634,7 +4630,7 @@ void func_80013EC0(void) {
 
     trackSlot = &D_800792E8;
     if (D_80079278 > 0) {
-        TrapDanglingJump();
+        overlay100ReleaseAll();
         D_80079278 = 0;
     }
     trackLightFreeMem();
@@ -4662,7 +4658,7 @@ void func_80013EC0(void) {
                     ((u8 *) track->segments + offset);
             }
             if (segment->unk38 != NULL) {
-                TrapDanglingJump(segment->unk38);
+                overlay20ReleaseTree(segment->unk38);
                 track = *trackSlot;
             }
             index++;
@@ -4686,7 +4682,7 @@ void func_80013EC0(void) {
     mmFree(D_800C9D2C);
     mmFree(D_800C9D30);
     mmFree(D_800C9D34);
-    if (TrapDanglingJump(osRomBase) != 0) {
+    if (overlay105CheckWord(osRomBase) != 0) {
         mmFree(D_800C9D20);
     }
     shadowFreeBuffers();

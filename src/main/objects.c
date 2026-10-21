@@ -1,5 +1,6 @@
 #include "PR/ultratypes.h"
 #include "game/particles.h"
+#include "game/overlay_exports.h"
 
 /* This TU uses -Wab,-r4300_mul; target func_8000A62C requires its three
  * R4300 multiply-hazard delay nops, and the flag is validated against the
@@ -780,12 +781,6 @@ extern void *func_8000590C();
 extern f32 sqrtf(f32 value);
 extern void func_80006FA0(void);
 extern void func_80007118();
-extern s32 TrapDanglingJump();
-/* func_80004FE0's first flag-gated trap call returns nothing; the typed
- * alias is canonicalized back to TrapDanglingJump by the object's
- * POSTPROCESS rule. */
-#pragma weak objectsVoidTrap = TrapDanglingJump
-extern void objectsVoidTrap();
 extern void mmFree(void *data);
 extern void modFreeModel(void *resource);
 extern void texFreeTexture(void *texture);
@@ -1168,7 +1163,7 @@ void func_80004C28(s32 tableIndex, s32 slot) {
         D_80078F78 = 1;
         runlinkDownloadCode(8);
         runlinkDownloadCode(1);
-        TrapDanglingJump();
+        overlay1LoadBuildRecords();
         D_80078F78 = 0;
     }
 
@@ -1448,14 +1443,14 @@ void func_80004FE0(s32 groupId) {
         }
         if ((modeState->unk0 == 1) && (D_800C94F4[0] != NULL)) {
             if (((Objects04FE0Flags *)D_800D3128)->unk19) {
-                objectsVoidTrap(D_8007A1F4);
+                overlay68CreatePayload(D_8007A1F4);
             }
             if (((Objects04FE0Flags *)D_800D3128)->unk20) {
-                TrapDanglingJump(levelGetNumber());
-                TrapDanglingJump(D_8007A1F8);
+                overlay68RebuildSecondaryEntry(levelGetNumber());
+                overlay68CreatePayload(D_8007A1F8);
             }
-            D_8007A1FC = TrapDanglingJump(levelGetNumber());
-            TrapDanglingJump(); TrapDanglingJump(D_800C94F4[0]);
+            D_8007A1FC = overlay68CheckKind(levelGetNumber());
+            overlay68CreateSecondary(); overlay68AttachObject(D_800C94F4[0]);
         }
         D_800C947C = 1;
         D_800C9480 = 0x80;
@@ -1464,7 +1459,7 @@ void func_80004FE0(s32 groupId) {
     }
     runlinkDownloadCode(8);
     runlinkDownloadCode(1);
-    TrapDanglingJump((s8)level[0x83]);
+    overlay1BuildObjectMappings((s8)level[0x83]);
     func_80058250();
 }
 /* Lane lm-obj: the ROM's two rank-copy loops are IDO's unroller output of a
@@ -1999,7 +1994,7 @@ void *func_8000590C(void *packet, s32 spawnFlags) {
     }
     func_8000AA38((Objects0AA38Object *)object, packet, 0);
     if (object->unk58 != 0) {
-        TrapDanglingJump(object);
+        overlay19Dispatch(object);
     }
     if (object->unk48 != 0) {
         asset = object->unk40;
@@ -2027,7 +2022,7 @@ void *func_8000590C(void *packet, s32 spawnFlags) {
     if ((loadFlags & 0x200) && (object->unk40->unk61 != 0)) {
         if ((*(s32 *)((u8 *)object->unk4C + 0x1C) != 0) &&
             ((*(u8 *)((u8 *)object->unk4C + 0x10) & 8) != 0)) {
-            TrapDanglingJump(object);
+            func_overlay_043_F0000000_1889FD0(object);
         }
     }
     D_8007A21C = 4;
@@ -2548,7 +2543,7 @@ void func_80007118(u8 *object, s32 unused) {
 
     switch (*(s16 *)(object + 0x44)) {
         case 92:
-            TrapDanglingJump(*(u8 **)(object + 0x64));
+            overlay96Unregister(*(u8 **)(object + 0x64));
             break;
         case 65: {
             payload = *(u8 **)(object + 0x64);
@@ -2564,10 +2559,10 @@ void func_80007118(u8 *object, s32 unused) {
             break;
         }
         case 72:
-            TrapDanglingJump();
+            overlay87ReleaseCurrent();
             break;
         case 76:
-            TrapDanglingJump();
+            overlay77RunCallback();
             break;
         case 78: {
             payload = *(u8 **)(object + 0x64);
@@ -2663,10 +2658,10 @@ void func_80007118(u8 *object, s32 unused) {
             }
             break;
         case 61:
-            TrapDanglingJump(object);
+            overlay20ReleaseHandle(object);
             break;
         case 62:
-            TrapDanglingJump(object);
+            overlay20RemoveEntry(object);
             break;
         case 14:
             func_8001C088(object);
@@ -2762,7 +2757,7 @@ void func_80007118(u8 *object, s32 unused) {
             for (j = 0; j < 0x10; j += 4) {
                 value = *(void **)(payload + 0x134 + j);
                 if (value != NULL) {
-                    TrapDanglingJump(value);
+                    overlay17ReleaseChain(value);
                 }
             }
             for (j = 0; j != 0x30; j += 0xC) {
@@ -2779,7 +2774,7 @@ void func_80007118(u8 *object, s32 unused) {
     payload = *(u8 **)(object + 0x4C);
     if (payload != NULL) {
         if (*(void **)(payload + 0x1C) != NULL && ((*(u8 *)(*(u8 **)(object + 0x40) + 0x61) & 8) != 0)) {
-            TrapDanglingJump(*(void **)(payload + 0x1C));
+            func_overlay_043_F0000280_188A250(*(void **)(payload + 0x1C));
             payload = *(u8 **)(object + 0x4C);
         }
         value = *(void **)(payload + 8);
@@ -2938,7 +2933,7 @@ void func_8000784C(s32 updateRate) {
 
 
     if (runlinkIsModuleLoaded(0x14) != 0) {
-        TrapDanglingJump(updateRate);
+        overlay20AdvanceEntries(updateRate);
     }
 
     count = D_800C9498;
@@ -3016,7 +3011,7 @@ void func_8000784C(s32 updateRate) {
     lightUpdateObjects();
     amPlayAudioMap(D_800C94F4, D_800C94F8, updateRate);
     if (*func_80028F54() == 1) {
-        TrapDanglingJump(updateRate);
+        overlay68UpdateTrail(updateRate);
     }
     if (D_800C9478 == 0) {
         func_80006FA0();
@@ -3457,24 +3452,24 @@ void func_80008A8C(Objects08A20Arg *object) {
     switch (object->unk44) {
         case 0x3D:
             if (object->unk88 != NULL) {
-                TrapDanglingJump(object);
+                overlay20ReleaseEntry(object);
             }
-            TrapDanglingJump(&D_800C94B4, object);
+            overlay20DrawResource(&D_800C94B4, object);
             break;
         case 0x24:
-            TrapDanglingJump(&D_800C94B4, &D_800C94B8, object);
+            func_overlay_071_F0000870_18CA390(&D_800C94B4, &D_800C94B8, object);
             break;
         case 0x3B:
             func_80008A20(object);
             break;
         case 0x41:
-            TrapDanglingJump(object, &D_800C94B4, &D_800C94B8, &D_800C94BC);
+            overlay23RenderEffect(object, &D_800C94B4, &D_800C94B8, &D_800C94BC);
             break;
         case 0x55:
-            TrapDanglingJump(&D_800C94B4, &D_800C94B8, object);
+            func_overlay_073_F0000D70_18CB830(&D_800C94B4, &D_800C94B8, object);
             break;
         case 0x5B:
-            TrapDanglingJump(&D_800C94B4, &D_800C94B8, object);
+            func_overlay_038_F000047C_188618C(&D_800C94B4, &D_800C94B8, object);
             break;
     }
 }
@@ -3600,7 +3595,7 @@ void func_80008B94(void *rawObject) {
     object = (Objects08B94Object *)rawObject;
     specialColour = 0;
     if (((Objects08B94Object *)rawObject)->unk44 == 0x45) {
-        TrapDanglingJump(&D_800C94B4, &D_800C94B8, &D_800C94BC, object);
+        overlay24RenderState(&D_800C94B4, &D_800C94B8, &D_800C94BC, object);
         return;
     }
 
@@ -3687,8 +3682,8 @@ void func_80008B94(void *rawObject) {
     } else if (object->unk44 == 0x50) {
         info = object->unk64;
         cameraData2 = (s8 *)info->unk14->unk64;
-        TrapDanglingJump((s32)cameraData2[1], &computedAlpha,
-                         &extraGreen, &extraBlue);
+        overlay56UnpackColor((s32)cameraData2[1], &computedAlpha,
+                             &extraGreen, &extraBlue);
         white = 0xFF;
         sprSetIA2ColOverride(white, white, white, (u8)computedAlpha,
                       extraGreen, extraBlue);
@@ -3928,7 +3923,7 @@ void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void
      * before the next loop; lane n-f1). */
     for (k = 0; k < 4; k++) {
         if (*(s32 *)((u8 *)resource + 0x134 + (k * 4)) != 0) {
-            TrapDanglingJump(displayListPtr, *(s32 *)((u8 *)resource + 0x134 + (k * 4)));
+            overlay17DrawStrip(displayListPtr, *(s32 *)((u8 *)resource + 0x134 + (k * 4)));
         }
     }
     k = 0;
@@ -4049,13 +4044,13 @@ void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void
 
     }
     if (*(s32 *)((u8 *)resource + 0xD0) != 0) {
-        TrapDanglingJump(displayListPtr, vertexList, *(s32 *)((u8 *)resource + 0xD0));
+        func_overlay_028_F00004D8_187CDA8(displayListPtr, vertexList, *(s32 *)((u8 *)resource + 0xD0));
     }
     if (*(s32 *)((u8 *)resource + 0xD4) != 0) {
-        TrapDanglingJump(displayListPtr, vertexList, triangleList, *(s32 *)((u8 *)resource + 0xD4));
+        func_overlay_027_F0000624_187BFFC(displayListPtr, vertexList, triangleList, *(s32 *)((u8 *)resource + 0xD4));
     }
     if (*(s32 *)((u8 *)resource + 0xD8) != 0) {
-        TrapDanglingJump(displayListPtr, vertexList, *(s32 *)((u8 *)resource + 0xD8));
+        overlay37RenderEffect(displayListPtr, vertexList, *(s32 *)((u8 *)resource + 0xD8));
     }
 }
 typedef struct {
@@ -4668,18 +4663,18 @@ void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState) 
             func_8001C4C0(object, packet, 1);
             break;
         case 28:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 69 +0x0. */
+            overlay69Init(object, packet, preserveState); /* Overlay 69 +0x0. */
             break;
         case 72:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 88 +0x0. */
+            overlay88Init(object, packet, preserveState); /* Overlay 88 +0x0. */
             break;
         case 1:
         case 2:
         case 3:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 85 +0x0. */
+            overlay85Configure(object, packet, preserveState); /* Overlay 85 +0x0. */
             break;
         case 30:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x508. */
+            overlay97InitScale(object, packet, preserveState); /* Overlay 97 +0x508. */
             break;
         case 31:
         case 33:
@@ -4689,49 +4684,49 @@ void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState) 
             sprasjiInit(object, packet);
             break;
         case 19:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x36C. */
+            overlay97InitSelection(object, packet, preserveState); /* Overlay 97 +0x36C. */
             break;
         case 5:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x0. */
+            overlay97InitDirection(object, packet, preserveState); /* Overlay 97 +0x0. */
             break;
         case 4:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x14C. */
+            overlay97InitTransform(object, packet, preserveState); /* Overlay 97 +0x14C. */
             break;
         case 10:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x130. */
+            overlay97CopyAngles(object, packet, preserveState); /* Overlay 97 +0x130. */
             break;
         case 11:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 92 +0x0. */
+            overlay92Init(object, packet, preserveState); /* Overlay 92 +0x0. */
             break;
         case 13:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x748. */
+            overlay97InitBounds(object, packet, preserveState); /* Overlay 97 +0x748. */
             break;
         case 14:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x3F4. */
+            overlay97AssignState(object, packet, preserveState); /* Overlay 97 +0x3F4. */
             break;
         case 40:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 89 +0x270. */
+            overlay89InitializeEffect(object, packet, preserveState); /* Overlay 89 +0x270. */
             break;
         case 34:
             lightAdjustGlowingLight(object);
             break;
         case 35:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 71 +0x0. */
+            func_overlay_071_F0000000_18C9B20(object, packet, preserveState); /* Overlay 71 +0x0. */
             break;
         case 8:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x420. */
+            overlay97CreateDescriptor(object, packet, preserveState); /* Overlay 97 +0x420. */
             break;
         case 41:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 83 +0x53C. */
+            overlay83BuildBatch(object, packet, preserveState); /* Overlay 83 +0x53C. */
             break;
         case 7:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 93 +0x0. */
+            overlay93Init(object, packet, preserveState); /* Overlay 93 +0x0. */
             break;
         case 6:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x1A8. */
+            overlay97InitRadius(object, packet, preserveState); /* Overlay 97 +0x1A8. */
             break;
         case 27:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x944. */
+            overlay97InitPlane(object, packet, preserveState); /* Overlay 97 +0x944. */
             break;
         case 23:
         case 24:
@@ -4741,145 +4736,145 @@ void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState) 
             func_8001BAF8(object, packet);
             break;
         case 32:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 36 +0x0. */
+            overlay36InitObject(object, packet, preserveState); /* Overlay 36 +0x0. */
             break;
         case 45:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 1 +0x6788. */
+            overlay1CopyBytes(object, packet, preserveState); /* Overlay 1 +0x6788. */
             break;
         case 46:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 1 +0x69A0. */
+            overlay1InitMotion(object, packet, preserveState); /* Overlay 1 +0x69A0. */
             break;
         case 47:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 1 +0x6B28. */
+            overlay1InitRange(object, packet, preserveState); /* Overlay 1 +0x6B28. */
             break;
         case 48:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 4 +0x0. */
+            overlay4InitializeObjectMotion(object, packet, preserveState); /* Overlay 4 +0x0. */
             break;
         case 49:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 84 +0x0. */
+            overlay84InitState(object, packet, preserveState); /* Overlay 84 +0x0. */
             break;
         case 50:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 84 +0xDBC. */
+            overlay84CopyPair(object, packet, preserveState); /* Overlay 84 +0xDBC. */
             break;
         case 20:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x1E8. */
+            overlay97InitResource(object, packet, preserveState); /* Overlay 97 +0x1E8. */
             break;
         case 42:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 2 +0x1DF8. */
+            func_overlay_002_F0001DF8_1858BF0(object, packet, preserveState); /* Overlay 2 +0x1DF8. */
             break;
         case 43:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 2 +0x2528. */
+            overlay2CopyColor(object, packet, preserveState); /* Overlay 2 +0x2528. */
             break;
         case 44:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 1 +0x36A0. */
+            overlay1AssignRecordIndex(object, packet, preserveState); /* Overlay 1 +0x36A0. */
             break;
         case 52:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 72 +0x0. */
+            overlay72Init(object, packet, preserveState); /* Overlay 72 +0x0. */
             break;
         case 53:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 90 +0x0. */
+            overlay90Initialize(object, packet, preserveState); /* Overlay 90 +0x0. */
             break;
         case 54:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 86 +0x444. */
+            overlay86Init(object, packet, preserveState); /* Overlay 86 +0x444. */
             break;
         case 56:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 26 +0x0. */
+            func_overlay_026_F0000000_187A3F8(object, packet, preserveState); /* Overlay 26 +0x0. */
             break;
         case 57:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 29 +0x42C. */
+            func_overlay_029_F000042C_187D6DC(object, packet, preserveState); /* Overlay 29 +0x42C. */
             break;
         case 59:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 25 +0x0. */
+            overlay25InitializeEffect(object, packet, preserveState); /* Overlay 25 +0x0. */
             break;
         case 60:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 20 +0x204. */
+            overlay20UpdateObjectResource(object, packet, preserveState); /* Overlay 20 +0x204. */
             break;
         case 61:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 20 +0xF78. */
+            overlay20CreateEntry(object, packet, preserveState); /* Overlay 20 +0xF78. */
             break;
         case 62:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 68 +0x8E0. */
+            overlay68InitializeObject(object, packet, preserveState); /* Overlay 68 +0x8E0. */
             break;
         case 63:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 22 +0x0. */
+            func_overlay_022_F0000000_1878108(object, packet, preserveState); /* Overlay 22 +0x0. */
             break;
         case 64:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 23 +0x208. */
+            overlay23Init(object, packet, preserveState); /* Overlay 23 +0x208. */
             break;
         case 65:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 28 +0x1B8. */
+            overlay28InitializeWork(object, packet, preserveState); /* Overlay 28 +0x1B8. */
             break;
         case 66:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 75 +0x0. */
+            overlay75Init(object, packet, preserveState); /* Overlay 75 +0x0. */
             break;
         case 67:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 27 +0x0. */
+            overlay27Init(object, packet, preserveState); /* Overlay 27 +0x0. */
             break;
         case 68:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 24 +0x0. */
+            overlay24Init(object, packet, preserveState); /* Overlay 24 +0x0. */
             break;
         case 69:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 21 +0x0. */
+            overlay21RegisterPlane(object, packet, preserveState); /* Overlay 21 +0x0. */
             break;
         case 70:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 91 +0x0. */
+            overlay91Init(object, packet, preserveState); /* Overlay 91 +0x0. */
             break;
         case 71:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 87 +0x0. */
+            overlay87InitializeObject(object, packet, preserveState); /* Overlay 87 +0x0. */
             break;
         case 73:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 74 +0x0. */
+            overlay74Init(object, packet, preserveState); /* Overlay 74 +0x0. */
             break;
         case 79:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 70 +0x0. */
+            func_overlay_070_F0000000_18C91C8(object, packet, preserveState); /* Overlay 70 +0x0. */
             break;
         case 74:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 76 +0x0. */
+            overlay76Register(object, packet, preserveState); /* Overlay 76 +0x0. */
             break;
         case 75:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 77 +0x0. */
+            overlay77Init(object, packet, preserveState); /* Overlay 77 +0x0. */
             break;
         case 76:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 78 +0x0. */
+            overlay78Init(object, packet, preserveState); /* Overlay 78 +0x0. */
             break;
         case 77:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 79 +0x0. */
+            func_overlay_079_F0000000_18CCFA0(object, packet, preserveState); /* Overlay 79 +0x0. */
             break;
         case 80:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 80 +0x0. */
+            overlay80InitializeContact(object, packet, preserveState); /* Overlay 80 +0x0. */
             break;
         case 81:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 81 +0x0. */
+            overlay81Init(object, packet, preserveState); /* Overlay 81 +0x0. */
             break;
         case 82:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 81 +0x240. */
+            overlay81InitState(object, packet, preserveState); /* Overlay 81 +0x240. */
             break;
         case 83:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 82 +0x0. */
+            overlay82Init(object, packet, preserveState); /* Overlay 82 +0x0. */
             break;
         case 84:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 73 +0x0. */
+            func_overlay_073_F0000000_18CAAC0(object, packet, preserveState); /* Overlay 73 +0x0. */
             break;
         case 85:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 94 +0x0. */
+            overlay94InitializeController(object, packet, preserveState); /* Overlay 94 +0x0. */
             break;
         case 86:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 79 +0x1280. */
+            overlay79SetLink(object, packet, preserveState); /* Overlay 79 +0x1280. */
             break;
         case 87:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 79 +0x147C. */
+            overlay79InitState(object, packet, preserveState); /* Overlay 79 +0x147C. */
             break;
         case 88:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 37 +0x0. */
+            overlay37Init(object, packet, preserveState); /* Overlay 37 +0x0. */
             break;
         case 89:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 95 +0x0. */
+            overlay95NoOp(object, packet, preserveState); /* Overlay 95 +0x0. */
             break;
         case 90:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 38 +0x0. */
+            func_overlay_038_F0000000_1885D10(object, packet, preserveState); /* Overlay 38 +0x0. */
             break;
         case 91:
-            TrapDanglingJump(object, packet, preserveState); /* Overlay 96 +0xF8. */
+            overlay96BuildVolume(object, packet, preserveState); /* Overlay 96 +0xF8. */
             break;
         case 9:
             break;
@@ -4936,7 +4931,7 @@ void func_8000AEEC(void *rawObject, s32 updateRate) {
     D_8007A218 = object->unk40 + 4;
     switch (object->unk44 - 3) {
         case 0:
-            TrapDanglingJump(object, updateRate); /* Overlay 85 +0xC0. */
+            overlay85Update(object, updateRate); /* Overlay 85 +0xC0. */
             break;
         case 31:
             spranimOnceControl(object, updateRate);
@@ -4951,25 +4946,25 @@ void func_8000AEEC(void *rawObject, s32 updateRate) {
             effectboxControl(object, updateRate);
             break;
         case 38:
-            TrapDanglingJump(object, updateRate); /* Overlay 89 +0x5A4. */
+            overlay89UpdateStateAndParticles(object, updateRate); /* Overlay 89 +0x5A4. */
             break;
         case 33:
-            TrapDanglingJump(object); /* Overlay 71 +0x278. */
+            func_overlay_071_F0000278_18C9D98(object); /* Overlay 71 +0x278. */
             break;
         case 39:
-            TrapDanglingJump(object, updateRate); /* Overlay 83 +0x7DC. */
+            overlay83DrawEntries(object, updateRate); /* Overlay 83 +0x7DC. */
             break;
         case 5:
-            TrapDanglingJump(object, updateRate); /* Overlay 93 +0x1C. */
+            overlay93Update(object, updateRate); /* Overlay 93 +0x1C. */
             break;
         case 4:
             trackChangeFog(object);
             break;
         case 26:
-            TrapDanglingJump(object, updateRate); /* Overlay 69 +0x4C. */
+            overlay69UpdateAnchor(object, updateRate); /* Overlay 69 +0x4C. */
             break;
         case 70:
-            TrapDanglingJump(object, updateRate); /* Overlay 88 +0x4C. */
+            overlay88UpdateAnchor(object, updateRate); /* Overlay 88 +0x4C. */
             break;
         case 25:
             func_8001B798((struct SpranimB798Object *)object, updateRate);
@@ -4986,124 +4981,124 @@ void func_8000AEEC(void *rawObject, s32 updateRate) {
             func_8001BB10(object, updateRate);
             break;
         case 30:
-            TrapDanglingJump(object, updateRate); /* Overlay 36 +0x1D0. */
+            overlay36UpdateInteractiveEntity(object, updateRate); /* Overlay 36 +0x1D0. */
             break;
         case 43:
-            TrapDanglingJump(object, updateRate); /* Overlay 1 +0x67C0. */
+            overlay1UpdateRangeFlags(object, updateRate); /* Overlay 1 +0x67C0. */
             break;
         case 44:
-            TrapDanglingJump(object, updateRate); /* Overlay 1 +0x6A14. */
+            overlay1ConsumeNearbyPending(object, updateRate); /* Overlay 1 +0x6A14. */
             break;
         case 45:
-            TrapDanglingJump(object, updateRate); /* Overlay 1 +0x6B6C. */
+            overlay1SearchNearby(object, updateRate); /* Overlay 1 +0x6B6C. */
             break;
         case 46:
-            TrapDanglingJump(object, updateRate); /* Overlay 4 +0x138. */
+            overlay4UpdateObjectMotion(object, updateRate); /* Overlay 4 +0x138. */
             break;
         case 47:
-            TrapDanglingJump(object, updateRate); /* Overlay 84 +0x48. */
+            overlay84InitializeAndUpdate(object, updateRate); /* Overlay 84 +0x48. */
             break;
         case 50:
-            TrapDanglingJump(object, updateRate); /* Overlay 72 +0xB4. */
+            overlay72Update(object, updateRate); /* Overlay 72 +0xB4. */
             break;
         case 51:
-            TrapDanglingJump(object, updateRate); /* Overlay 90 +0xFC. */
+            func_overlay_090_F00000FC_18D4BF4(object, updateRate); /* Overlay 90 +0xFC. */
             break;
         case 52:
-            TrapDanglingJump(object, updateRate); /* Overlay 86 +0x474. */
+            func_overlay_086_F0000474_18D22AC(object, updateRate); /* Overlay 86 +0x474. */
             break;
         case 54:
-            TrapDanglingJump(object, updateRate); /* Overlay 26 +0x1A0. */
+            func_overlay_026_F00001A0_187A598(object, updateRate); /* Overlay 26 +0x1A0. */
             break;
         case 55:
-            TrapDanglingJump(object, updateRate); /* Overlay 29 +0x5C4. */
+            func_overlay_029_F00005C4_187D874(object, updateRate); /* Overlay 29 +0x5C4. */
             break;
         case 57:
-            TrapDanglingJump(object, updateRate); /* Overlay 25 +0x17C. */
+            overlay25UpdateEffect(object, updateRate); /* Overlay 25 +0x17C. */
             break;
         case 58:
-            TrapDanglingJump(object); /* Overlay 20 +0xE0C. */
+            overlay20MarkNested(object); /* Overlay 20 +0xE0C. */
             break;
         case 60:
-            TrapDanglingJump(object, updateRate); /* Overlay 68 +0x96C. */
+            overlay68UpdateAnimation(object, updateRate); /* Overlay 68 +0x96C. */
             break;
         case 61:
-            TrapDanglingJump(object, updateRate); /* Overlay 22 +0x2B0. */
+            func_overlay_022_F00002B0_18783B8(object, updateRate); /* Overlay 22 +0x2B0. */
             break;
         case 62:
-            TrapDanglingJump(object, updateRate); /* Overlay 23 +0x350. */
+            overlay23Update(object, updateRate); /* Overlay 23 +0x350. */
             break;
         case 63:
-            TrapDanglingJump(object, updateRate); /* Overlay 28 +0x318. */
+            overlay28UpdateWork(object, updateRate); /* Overlay 28 +0x318. */
             break;
         case 64:
-            TrapDanglingJump(object, updateRate); /* Overlay 75 +0x214. */
+            overlay75UpdateMovingObject(object, updateRate); /* Overlay 75 +0x214. */
             break;
         case 65:
-            TrapDanglingJump(object, updateRate); /* Overlay 27 +0x64. */
+            func_overlay_027_F0000064_187BA3C(object, updateRate); /* Overlay 27 +0x64. */
             break;
         case 66:
-            TrapDanglingJump(object, updateRate); /* Overlay 24 +0x1C. */
+            overlay24Update(object, updateRate); /* Overlay 24 +0x1C. */
             break;
         case 68:
-            TrapDanglingJump(object, updateRate); /* Overlay 91 +0x4C. */
+            overlay91UpdateTimeline(object, updateRate); /* Overlay 91 +0x4C. */
             break;
         case 69:
-            TrapDanglingJump(object, updateRate); /* Overlay 87 +0x128. */
+            func_overlay_087_F0000128_18D3090(object, updateRate); /* Overlay 87 +0x128. */
             break;
         case 71:
-            TrapDanglingJump(object, updateRate); /* Overlay 74 +0xB8. */
+            overlay74Update(object, updateRate); /* Overlay 74 +0xB8. */
             break;
         case 72:
-            TrapDanglingJump(object, updateRate); /* Overlay 76 +0x38. */
+            overlay76Update(object, updateRate); /* Overlay 76 +0x38. */
             break;
         case 73:
-            TrapDanglingJump(object, updateRate); /* Overlay 77 +0x130. */
+            overlay77Update(object, updateRate); /* Overlay 77 +0x130. */
             break;
         case 74:
-            TrapDanglingJump(object, updateRate); /* Overlay 78 +0x70. */
+            overlay78Update(object, updateRate); /* Overlay 78 +0x70. */
             break;
         case 75:
-            TrapDanglingJump(object, updateRate); /* Overlay 79 +0x134. */
+            func_overlay_079_F0000134_18CD0D4(object, updateRate); /* Overlay 79 +0x134. */
             break;
         case 78:
-            TrapDanglingJump(object, updateRate); /* Overlay 80 +0x11C. */
+            overlay80UpdateContact(object, updateRate); /* Overlay 80 +0x11C. */
             break;
         case 79:
-            TrapDanglingJump(object, updateRate); /* Overlay 81 +0xCC. */
+            overlay81Update(object, updateRate); /* Overlay 81 +0xCC. */
             break;
         case 80:
-            TrapDanglingJump(object, updateRate); /* Overlay 81 +0x274. */
+            overlay81CheckNearby(object, updateRate); /* Overlay 81 +0x274. */
             break;
         case 77:
-            TrapDanglingJump(object, updateRate); /* Overlay 70 +0xD8. */
+            func_overlay_070_F00000D8_18C92A0(object, updateRate); /* Overlay 70 +0xD8. */
             break;
         case 81:
-            TrapDanglingJump(object, updateRate); /* Overlay 82 +0x40. */
+            overlay82Update(object, updateRate); /* Overlay 82 +0x40. */
             break;
         case 82:
-            TrapDanglingJump(object, updateRate); /* Overlay 73 +0x190. */
+            func_overlay_073_F0000190_18CAC50(object, updateRate); /* Overlay 73 +0x190. */
             break;
         case 83:
-            TrapDanglingJump(object, updateRate); /* Overlay 94 +0x110. */
+            overlay94UpdateController(object, updateRate); /* Overlay 94 +0x110. */
             break;
         case 84:
-            TrapDanglingJump(object, updateRate); /* Overlay 79 +0x1290. */
+            func_overlay_079_F0001290_18CE230(object, updateRate); /* Overlay 79 +0x1290. */
             break;
         case 85:
-            TrapDanglingJump(object, updateRate); /* Overlay 79 +0x149C. */
+            overlay79UpdateTimers(object, updateRate); /* Overlay 79 +0x149C. */
             break;
         case 86:
-            TrapDanglingJump(object, updateRate); /* Overlay 37 +0x88. */
+            overlay37Update(object, updateRate); /* Overlay 37 +0x88. */
             break;
         case 15:
             rangetriggerControl(object, updateRate);
             break;
         case 87:
-            TrapDanglingJump(object, updateRate); /* Overlay 95 +0xC. */
+            overlay95Update(object, updateRate); /* Overlay 95 +0xC. */
             break;
         case 88:
-            TrapDanglingJump(object, updateRate); /* Overlay 38 +0x154. */
+            func_overlay_038_F0000154_1885E64(object, updateRate); /* Overlay 38 +0x154. */
             break;
         case 1:
         case 2:

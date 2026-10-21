@@ -6,6 +6,7 @@
 #include "game/menu.h"
 #include "game/sched_internal.h"
 #include "n_audio/mbi.h"
+#include "game/overlay_exports.h"
 
 /*
  * Resident main state and frame control, ROM 0x27760-0x2A250.
@@ -231,7 +232,6 @@ extern void func_8004978C(s32, s32, s32);
 extern s32 func_80049864(s32);
 extern s32 func_8004989C(s32, s32 *);
 extern void func_800498FC(s32, f32, f32, s32, s32, s32, s32);
-extern s32 TrapDanglingJump();
 extern s32 joyRead(s32, s32);
 extern void mainInitGame(void);
 extern void mainPreNMI(void);
@@ -364,9 +364,6 @@ extern void func_80049A8C(s32);
 extern void func_80037414(s32, f32, f32, s32, s32, s32, s32);
 extern void amWaitForMidiSync(void);
 
-#pragma weak mainCPUeffectsRainDraw = TrapDanglingJump
-extern void mainCPUeffectsRainDraw(void *, s32, s32, f32, f32);
-
 /*
  * PROVENANCE: body adapted from JFG src/main.c; Mickey byte identity is
  * decisive. Keep the nested statement line-spliced: IDO uses its source-line
@@ -424,7 +421,7 @@ void mainThread(void *unused) {
         }
     }
     D_8007A200 = 1;
-    TrapDanglingJump();
+    overlay68CreatePrimary();
     D_8007A1CC = joyRead(D_8007A1CC, 0);
     D_8007A1B4 = 1;
     D_8007A1D8 = 0;
@@ -503,7 +500,7 @@ void mainInitGame(void) {
     mainPreNMI();
     runlinkInit();
     mainPreNMI();
-    TrapDanglingJump();
+    overlay18Load();
     mainPreNMI();
     runlinkFreeCode(0x12);
     D_8007A320 = 0;
@@ -527,7 +524,7 @@ void func_80026FB4(void) {
     s32 updateRate;
 
     if (D_8007A20C != 0) {
-        TrapDanglingJump(NULL);
+        overlay42DrawCapturedBuffer(NULL);
     }
     osSetTime(0);
     if (D_8007A1D0 == 8) {
@@ -539,7 +536,7 @@ void func_80026FB4(void) {
     }
     rcpFast3d(D_800CF510[D_8007A1B8], D_800CF518, 0, D_800D2FA0);
     if (D_8007A20C != 0) {
-        TrapDanglingJump();
+        overlay42Present();
     }
 
     D_8007A1B8 ^= 1;
@@ -582,13 +579,13 @@ void func_80026FB4(void) {
     if (drawTransition != 0) {
         func_80049E4C(&D_800CF518, 0);
     }
-    TrapDanglingJump(&D_800CF518, &D_800CF530, D_8007A248);
+    func_overlay_056_F00001A0_18A2F18(&D_800CF518, &D_800CF530, D_8007A248);
     if (runlinkIsModuleLoaded(0xB) != 0) {
-        TrapDanglingJump(&D_800CF518, &D_800CF530, &D_800CF588,
-                         D_8007A248);
+        func_overlay_011_F0000150_1868998(&D_800CF518, &D_800CF530, &D_800CF588,
+                                          D_8007A248);
     }
-    TrapDanglingJump(&D_800CF518, &D_800CF530, &D_800CF588, &D_800CF5A0, 0,
-                     D_8007A248);
+    func_overlay_045_F0000764_188CBBC(&D_800CF518, &D_800CF530, &D_800CF588, &D_800CF5A0, 0,
+                                      D_8007A248);
 
     amAudioTick(D_8007A24B);
 
@@ -613,7 +610,7 @@ void func_80026FB4(void) {
     gDPFullSync(D_800CF518++);
     gSPEndDisplayList(D_800CF518++);
     if ((runlinkIsModuleLoaded(0x21) != 0) && (func_80049864(4) == 0)) {
-        TrapDanglingJump();
+        overlay33PresentAndSwap();
     }
     func_8005A770();
 
@@ -623,7 +620,7 @@ void func_80026FB4(void) {
 
     func_80027D14(D_8007A248);
     if (D_800D6C44 != 0) {
-        TrapDanglingJump(D_8007A248);
+        overlay40Interpolate(D_8007A248);
     }
     if ((D_8007C854 != 0) && (func_800290A0() == 0)) {
         func_8003C80C(D_8007A248);
@@ -635,7 +632,7 @@ void func_80026FB4(void) {
     trackUpdateTextureScroll();
     trackUpdateLighting(1, D_8007A248);
     if (D_8007A1E4 != 0) {
-        TrapDanglingJump(D_8007A248);
+        overlay27UpdateCoordinates(D_8007A248);
         D_8007A1E4 = 0;
     }
     runlinkTick();
@@ -843,17 +840,17 @@ void mainCPUeffects(u16 *framebuffer, s32 unused) {
     }
     if ((func_80049864(4) == 0) &&
         (runlinkIsModuleLoaded(0xF) != 0) &&
-        (TrapDanglingJump() != 0)) {
+        (overlay15GetResource10() != 0)) {
         if ((D_800D40E4 > 0) && (screenHeight >= D_800D40E4)) {
-            mainCPUeffectsRainDraw(framebuffer, screenWidth, D_800D40E4,
-                                   256.0f, rainDensity());
+            overlay15DrawRain(framebuffer, screenWidth, D_800D40E4,
+                              256.0f, rainDensity());
         }
         D_800D40E4 = screenHeight;
     }
     fxGenerateTextures();
     if ((runlinkIsModuleLoaded(0x21) != 0) &&
         (func_80049864(4) == 0)) {
-        TrapDanglingJump();
+        overlay33CallB();
     }
     if (func_80049864(4) == 0) {
         func_8004A51C();
@@ -994,7 +991,7 @@ void func_80027FB8(s32 updateRate) {
         func_80051364(updateRate);
         func_8000784C(updateRate);
         if (runlinkIsModuleLoaded(1) != 0) {
-            TrapDanglingJump(updateRate);
+            func_overlay_001_F0002B4C_184EF2C(updateRate);
         }
         partUpdateParticles(updateRate);
         func_80053420(0, camGetPtr());
@@ -1003,7 +1000,7 @@ void func_80027FB8(s32 updateRate) {
             (pressedButtons & 0x1000) && D_8007A1A4 == 0 &&
             D_8007A194 == 0 && D_8007A1BC == 0 && D_800C947C == 0) {
             rumbleKill(1);
-            TrapDanglingJump(pauseController);
+            overlay11Initialize(pauseController);
             D_8007A67C = 0;
         }
     } else {
@@ -1012,7 +1009,7 @@ void func_80027FB8(s32 updateRate) {
     }
 
     if (runlinkIsModuleLoaded(0x24) != 0) {
-        TrapDanglingJump();
+        overlay36FlushQueue();
     }
     if (D_8007A1A4 > 0) {
         D_8007A1A4 -= updateRate;
@@ -1029,18 +1026,18 @@ void func_80027FB8(s32 updateRate) {
     diRcpTrace(D_800CF518, D_80081B3C, 0x589);
     func_8004EDA8(updateRate);
     if (runlinkIsModuleLoaded(0xE) != 0) {
-        TrapDanglingJump(&D_800CF518, updateRate);
+        overlay14UpdateTransition(&D_800CF518, updateRate);
     }
     if (runlinkIsModuleLoaded(7) != 0) {
-        TrapDanglingJump(&D_800CF518, updateRate);
+        func_overlay_007_F0000324_185C1AC(&D_800CF518, updateRate);
     }
     if ((D_8007A1A8 == 0) ||
         ((D_8007A1A8 != 0) && (D_8007A194 != 0))) {
         screenDraw(&D_800CF518);
     }
     if (D_80078F7C != 0) {
-        TrapDanglingJump(&D_800CF518, &D_800CF530, &D_800CF588,
-                         D_80078F7C);
+        overlay91Render(&D_800CF518, &D_800CF530, &D_800CF588,
+                        D_80078F7C);
     }
     diRcpTrace(D_800CF518, D_80081B48, 0x5A0);
 }
@@ -1156,9 +1153,9 @@ void func_80028564(s32 updateRate) {
                 return;
             }
             if (D_800D18E0->pad0[0] == 1) {
-                TrapDanglingJump();
-                TrapDanglingJump();
-                TrapDanglingJump();
+                overlay68PromoteSecondary();
+                overlay68ReleaseSecondary();
+                overlay68ReleaseTertiary();
             }
             D_8007A320 = 1;
             mmFlushFreeStack();
@@ -1167,16 +1164,16 @@ void func_80028564(s32 updateRate) {
             frontFreeMode();
             mainPreNMI();
             if (runlinkIsModuleLoaded(0x22)) {
-                TrapDanglingJump();
+                overlay34ResetStorage();
             }
             if (runlinkIsModuleLoaded(0xC)) {
-                TrapDanglingJump();
+                func_overlay_012_F00000C4_186D344();
             }
             if (runlinkIsModuleLoaded(0xE)) {
-                TrapDanglingJump();
+                func_overlay_014_F0000000_186F8D8();
             }
             if (runlinkIsModuleLoaded(0xB)) {
-                TrapDanglingJump();
+                overlay11ReleaseCurrentGroup();
             }
             mainPreNMI();
             func_80037150();
@@ -1185,9 +1182,9 @@ void func_80028564(s32 updateRate) {
                 if (D_8007A190) {
                     if ((D_800D18E0->pad0[0] == 5) ||
                         (D_800D18E0->pad0[0] == 6)) {
-                        TrapDanglingJump();
+                        overlay1InitializeGaugeObjects();
                     } else {
-                        TrapDanglingJump();
+                        func_overlay_001_F0003258_184F638();
                     }
                 }
                 levelFreeAll();
@@ -1258,7 +1255,7 @@ void func_80028564(s32 updateRate) {
             mmFlushFreeStack();
             mmSetDelay(0);
             mainPreNMI();
-            TrapDanglingJump(levelGetGfxIndex(D_8007A148));
+            overlay18Reconfigure(levelGetGfxIndex(D_8007A148));
             runlinkFreeCode(0x12);
             mainPreNMI();
             mmFlushFreeStack();
@@ -1268,7 +1265,7 @@ void func_80028564(s32 updateRate) {
             mainPreNMI();
             func_8004E8E0();
             mainPreNMI();
-            TrapDanglingJump(0x10, 0x10, 0x64, 0xA, 0xA, 0xC, 0xA);
+            overlay31InitializeBuffers(0x10, 0x10, 0x64, 0xA, 0xA, 0xC, 0xA);
             mainPreNMI();
             runlinkFreeCode(0x1F);
             mainPreNMI();

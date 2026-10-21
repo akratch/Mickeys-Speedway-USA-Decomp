@@ -33,23 +33,31 @@ import sweep_receipts as receipts
 ROOT = Path(__file__).resolve().parent.parent
 TOOLS = ROOT / 'tools'
 LOADER_BODY = sv.LOADER_BODY
-LOADER_RECIPE = '0c80ca4b26661342a8eb479d905aa636e31b01980b911b8c4a43f67d4017b306'
+LOADER_RECIPE = '7d6da39c703a0a58ac74e6e521936e80b8405fde6e398a08a64b52aff7e686f2'
 SOURCE_PINS = {
     'impact_gate': ('src/main/anim.c', 'e75ea3d245cf5076d769b603ff82fc2a50ce04c7d1a100d91de4ea4d0898dfc3'),
     'color_gate': ('src/main/objects.c', '9c88fe52160f7515f97007d6e57f6b640f772b7f81c4d23cf1389d9e50ecc3c0'),
     'gravity': ('src/main/charControl.c', 'f1451f759d9ab13c931904652def4fa3852ffc9ad6cc62a999c621862122a088'),
 }
 WITNESSES = {
-    'impact_gate': {'function':'func_80050348','owner':'D_8007BF04','external':'D_8007BF04','selector':0xFFD,'offset':0x31A4,'size':532,'relocs':22,'uses':3,'recipe':'c9ae34a06b5294868c9bb0a05f888ab6b7942dbf9c6861830bf560a1208858e6','renames':('animResetTrap','hitCopyFirstTrap','TrapDanglingJump')},
-    'color_gate': {'function':'func_80005548','owner':'D_8007BF0C','external':'D_8007BF0C','selector':0xFFD,'offset':0x31AC,'size':348,'relocs':3,'uses':1,'recipe':'52b5e15f163b4eab2263185588b5847570d1e8f7a200eeae4f2a2fec51720eb8','renames':('objectsSizeDefaultBranch','objectsInitDefaultBranch','objectsControlDefaultBranch','objectsSwitchTablesBase')},
-    'gravity': {'function':'', 'owner':'D_800CB304','source':'src/main/charControl.c','address':0x800CB304,'section_address':0x800CB2C0,'size':4,'recipe':'35995259a63973d80aad9abcf387537cb76de50c2135e5926ae657fe9351dd3e'},
+    'impact_gate': {'function':'func_80050348','owner':'D_8007BF04','external':'D_8007BF04','selector':0xFFD,'offset':0x31A4,'size':532,'relocs':22,'uses':3,'recipe':'a93a35a4deaf7b46f367fa6de6cc5ac49a3d320f6674d3d31904ecfaf57d270e','renames':()},
+    'color_gate': {'function':'func_80005548','owner':'D_8007BF0C','external':'D_8007BF0C','selector':0xFFD,'offset':0x31AC,'size':348,'relocs':3,'uses':1,'recipe':'ed94891ebfb8a7392a90b319d96fb4becfab44433418047b2516fced3bea2765','renames':('objectsSizeDefaultBranch','objectsInitDefaultBranch','objectsControlDefaultBranch','objectsSwitchTablesBase')},
+    'gravity': {'function':'', 'owner':'D_800CB304','source':'src/main/charControl.c','address':0x800CB304,'section_address':0x800CB2C0,'size':4,'recipe':'a94ec610adc79731d36c62f329c387f55955c1930ffb91a18a14a93abfcb0bb5'},
 }
+# Every resident object's overlay calls are renamed to TrapDanglingJump after
+# compilation (tools/trap_names.py), so a raw-versus-configured comparison must
+# treat the trap and every listed export as metadata-renamed, like the
+# per-witness objcopy names above.
+TRAP_RENAMES = ('TrapDanglingJump',) + tuple(
+    line.split('#', 1)[0].strip()
+    for line in (ROOT / 'config/overlay_funcs_to_trap.us.txt').read_text().splitlines()
+    if line.split('#', 1)[0].strip())
 LOADED = {Path(m.__file__): pp.sha256_file(Path(m.__file__)) for m in
           (fp, ot, batch, pp, rs, sf, sv, cc, receipts)}
 LOADED[Path(__file__)] = pp.sha256_file(Path(__file__))
 EXECUTED_HELPERS = (ROOT / 'tools/trim_elf_bss.py', ROOT / 'tools/trim_elf_section.py',
                     ROOT / 'tools/add_elf_relocations.py', ROOT / 'tools/rebind_elf_relocations.py',
-                    ROOT / 'tools/binutils/mips64-elf-objcopy')
+                    ROOT / 'tools/binutils/mips64-elf-objcopy', ROOT / 'tools/trap_names.py')
 for _helper in EXECUTED_HELPERS:
     if _helper.is_file():
         LOADED[_helper] = pp.sha256_file(_helper)
@@ -288,7 +296,7 @@ def _gate(key, out, deadline):
          'retained initialized-owner object differs from linked proof input')
     _assert_same_snapshot(before,_common_context(source,cfg,recipe_text,command,metadata,dependency_specs,proof_paths,extra_paths,deadline,recipe_specs,expected_recipes),'source/tool/build')
     raw,cfgelf=rs.Elf(raw_path),rs.Elf(cfg)
-    fidelity,start,owned_sha,uses=_owned_function(raw,cfgelf,function,spec['size'],spec['relocs'],spec['uses'],spec['external'],spec['renames'])
+    fidelity,start,owned_sha,uses=_owned_function(raw,cfgelf,function,spec['size'],spec['relocs'],spec['uses'],spec['external'],spec['renames']+TRAP_RENAMES)
     fp.require_fresh_evidence(resolution)
     preflight=fp.collect(resolution,no_build=True)
     need(preflight['preflight']['status']=='complete' and preflight['workbench']['differing_words']==0,'fresh exact linked/ROM function proof failed')

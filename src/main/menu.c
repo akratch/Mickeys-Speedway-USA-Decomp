@@ -17,6 +17,7 @@
 #include "game/menu.h"
 #include "game/pi.h"
 #include "n_audio/mbi.h"
+#include "game/overlay_exports.h"
 
 extern s8 D_800D312B;
 extern s8 D_800D3050;
@@ -57,7 +58,6 @@ extern s32 levelGetRegionNo(void);
 extern s8 viGetWideAdjust(void);
 extern void gsSndpSetGlobalVolume(s32 volume);
 extern void viSetWideAdjust(s32 offset);
-extern s32 TrapDanglingJump();
 extern void amSndPlay(s32 soundId, s32 *handle);
 extern void amSndSetVol(s32 soundId, s32 handle, s32 volume, s32 *handleOut);
 extern void amSndStop(s32 handle);
@@ -391,63 +391,63 @@ void frontFreeMode(void) {
         case 1:
             break;
         case 2:
-            TrapDanglingJump();
+            overlay46ReleaseState();
             break;
         case 6:
-            TrapDanglingJump();
+            overlay46Submit();
             break;
         case 3:
-            TrapDanglingJump();
+            overlay63Release();
             break;
         case 4:
         case 10:
         case 12:
         case 17:
         case 18:
-            TrapDanglingJump();
+            overlay57ReleaseAll();
             break;
         case 9:
         case 11:
-            TrapDanglingJump();
+            func_overlay_047_F00009D0_18917E8();
             break;
         case 7:
-            TrapDanglingJump();
+            overlay58ReleaseResources();
             break;
         case 8:
-            TrapDanglingJump();
+            refractOutput();
             break;
         case 5:
             value = *selection;
             if ((value == 5) || (value == 6)) {
                 if (D_8007BEF4 == 1) {
-                    TrapDanglingJump();
+                    overlay51ReleaseState();
                 } else if (D_8007BEF4 < 3) {
-                    TrapDanglingJump();
+                    overlay53ReleaseResources();
                 } else {
-                    TrapDanglingJump();
+                    overlay55ReleaseAll();
                 }
             } else {
                 if (D_8007BEF4 == 1) {
-                    TrapDanglingJump();
+                    overlay50Cleanup();
                 } else if (D_8007BEF4 < 3) {
-                    TrapDanglingJump();
+                    overlay52Cleanup();
                 } else {
-                    TrapDanglingJump();
+                    overlay54ReleaseResources();
                 }
             }
-            TrapDanglingJump();
+            overlay59ReleaseAll();
             break;
         case 13:
-            TrapDanglingJump();
+            overlay48ReleaseAll();
             break;
         case 14:
-            TrapDanglingJump();
+            overlay60ReleaseResources();
             break;
         case 15:
-            TrapDanglingJump();
+            overlay101Cleanup();
             break;
         case 16:
-            TrapDanglingJump();
+            overlay62ReleaseAll();
             break;
         }
         if (D_8007C1A4 != 0) {
@@ -471,72 +471,72 @@ void frontInitMode(void) {
         case 1:
             break;
         case 2:
-            TrapDanglingJump();
+            overlay46InitializeState();
             break;
         case 6:
-            TrapDanglingJump();
+            overlay46InitState();
             break;
         case 3:
             D_800D31B0 = 1;
-            TrapDanglingJump();
+            overlay63Initialize();
             break;
         case 4:
         case 10:
         case 12:
         case 17:
         case 18:
-            TrapDanglingJump();
+            func_overlay_057_F0000000_18A3BF8();
             break;
         case 9:
         case 11:
-            TrapDanglingJump();
+            func_overlay_047_F0000000_1890E18();
             break;
         case 7:
-            TrapDanglingJump();
+            func_overlay_058_F0000000_18AF1E8();
             break;
         case 8:
-            TrapDanglingJump();
+            overlay49Initialize();
             break;
         case 5:
             value = *selection;
             if ((value == 5) || (value == 6)) {
                 switch (D_8007BEF4) {
                 case 1:
-                    TrapDanglingJump();
+                    overlay51Initialize();
                     break;
                 case 2:
-                    TrapDanglingJump();
+                    overlay53Initialize();
                     break;
                 default:
-                    TrapDanglingJump();
+                    overlay55Initialize();
                     break;
                 }
             } else {
                 switch (D_8007BEF4) {
                 case 1:
-                    TrapDanglingJump();
+                    func_overlay_050_F0000000_1896970();
                     break;
                 case 2:
-                    TrapDanglingJump();
+                    func_overlay_052_F0000000_189A670();
                     break;
                 default:
-                    TrapDanglingJump();
+                    func_overlay_054_F0000000_189ECA0();
                     break;
                 }
             }
-            TrapDanglingJump();
+            overlay59ResetEntries();
             break;
         case 13:
-            TrapDanglingJump();
+            overlay48InitializeState();
             break;
         case 14:
-            TrapDanglingJump();
+            func_overlay_060_F0000000_18B9DD8();
             break;
         case 15:
-            TrapDanglingJump();
+            func_overlay_101_F000C6E8_18E7F08();
             break;
         case 16:
-            TrapDanglingJump();
+            overlay62Initialize();
             break;
         }
         D_8007C088 = 1;
@@ -602,7 +602,7 @@ s32 frontUpdate(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList, 
         }
     }
     func_80039720(updateRate);
-    if (TrapDanglingJump() != 0) {
+    if (overlay66GetCurrent() != 0) {
         return 0;
     }
         if (func_8003A550() != 0) {
@@ -629,62 +629,62 @@ s32 frontUpdate(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList, 
         case 0:
             break;
         case 2:
-            TrapDanglingJump(updateRate);
+            func_overlay_046_F0000120_188E518(updateRate);
             break;
         case 6:
-            TrapDanglingJump(updateRate);
+            overlay46UpdateTransition(updateRate);
             break;
         case 3:
-            TrapDanglingJump(updateRate);
+            overlay63UpdateEffects(updateRate);
             break;
         case 4:
         case 10:
         case 12:
         case 17:
         case 18:
-            TrapDanglingJump(updateRate);
+            func_overlay_057_F0000954_18A454C(updateRate);
             break;
         case 9:
         case 11:
-            TrapDanglingJump(updateRate);
+            func_overlay_047_F0000B30_1891948(updateRate);
             break;
         case 7:
-            TrapDanglingJump(updateRate);
+            func_overlay_058_F00005FC_18AF7E4(updateRate);
             break;
         case 8:
-            TrapDanglingJump(updateRate);
+            overlay49Update(updateRate);
             break;
         case 5:
             mode = *selection;
             if ((mode == 5) || (mode == 6)) {
                 if (D_8007BEF4 == 1) {
-                    TrapDanglingJump(timerState, updateRate);
-                    TrapDanglingJump(updateRate);
+                    func_overlay_051_F00000D0_18999D0(timerState, updateRate);
+                    overlay59Advance(updateRate);
                 } else if (D_8007BEF4 < 3) {
-                    TrapDanglingJump(updateRate);
+                    func_overlay_053_F0000240_189DBE8(updateRate);
                 } else {
-                    TrapDanglingJump(updateRate);
+                    func_overlay_055_F000031C_18A1E34(updateRate);
                 }
             } else if (D_8007BEF4 == 1) {
-                TrapDanglingJump(timerState, updateRate);
-                TrapDanglingJump(updateRate);
+                func_overlay_050_F0000334_1896CA4(timerState, updateRate);
+                overlay59Advance(updateRate);
             } else if (D_8007BEF4 < 3) {
-                TrapDanglingJump(updateRate);
+                func_overlay_052_F000063C_189ACAC(updateRate);
             } else {
-                TrapDanglingJump(updateRate);
+                func_overlay_054_F00005AC_189F24C(updateRate);
             }
             break;
         case 13:
-            TrapDanglingJump(updateRate);
+            overlay48UpdateState(updateRate);
             break;
         case 14:
-            TrapDanglingJump(updateRate);
+            func_overlay_060_F0000334_18BA10C(updateRate);
             break;
         case 15:
-            TrapDanglingJump((s32)&D_800D3140, (s32)&D_800D3144, &D_800D3148, updateRate);
+            overlay101UpdatePresentation((s32)&D_800D3140, (s32)&D_800D3144, &D_800D3148, updateRate);
             break;
         case 16:
-            TrapDanglingJump(updateRate);
+            overlay62Update(updateRate);
             break;
         }
         diRcpTrace(D_800D3140, D_800826D0, 0x2C5);

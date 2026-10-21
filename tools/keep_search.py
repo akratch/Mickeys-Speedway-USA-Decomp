@@ -78,6 +78,7 @@ import hashlib
 import itertools
 import json
 import os
+import tempfile
 import pathlib
 import re
 import subprocess
@@ -753,7 +754,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--combine", type=int, default=3, help="winners per definition fed to the pair step (0: off)")
     ap.add_argument("--carriers", type=int, default=2, help="dead locals tried per operand by dead_carrier (0: all)")
     ap.add_argument("--picture-only", action="store_true", help="print the picture and the cell list, compile nothing")
-    ap.add_argument("--scratch", help="work directory (default /private/tmp/claude-501/keep-search-<pid>)")
+    ap.add_argument("--scratch", help="work directory (default keep-search-<pid> under the system temp directory)")
     ap.add_argument("--json", metavar="PATH")
     ns = ap.parse_args(argv)
 
@@ -775,7 +776,7 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("--candidate must be a scratch copy, not the tracked source")
     base_text = candidate.read_text()
     fn = ls.find_function(base_text, ns.symbol)
-    scratch = pathlib.Path(ns.scratch or f"/private/tmp/claude-501/keep-search-{os.getpid()}").resolve()
+    scratch = pathlib.Path(ns.scratch or os.path.join(tempfile.gettempdir(), f"keep-search-{os.getpid()}")).resolve()
     if ROOT.resolve() in scratch.parents or scratch == ROOT.resolve():
         raise SystemExit("--scratch must be outside the repository")
     scratch.mkdir(parents=True, exist_ok=True)

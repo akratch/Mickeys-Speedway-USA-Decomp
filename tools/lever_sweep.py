@@ -179,7 +179,7 @@ line keeps its number (as1's tie-break reads source lines, brief trap 7);
 --own-line puts it on a line of its own instead.
 
 Nothing is written into the tree: cells, objects and logs live under
---scratch (default /private/tmp/claude-501/lever-sweep-<pid>), and only
+--scratch (default lever-sweep-<pid> under the system temp directory), and only
 the best --keep cells' sources survive the run.
 """
 from __future__ import annotations
@@ -3041,7 +3041,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--own-line", action="store_true", help="insert statements on their own line")
     ap.add_argument("--top", type=int, default=25)
     ap.add_argument("--keep", type=int, default=5, help="keep this many best cells' sources")
-    ap.add_argument("--scratch", help="work directory (default /private/tmp/claude-501/lever-sweep-<pid>)")
+    ap.add_argument("--scratch", help="work directory (default lever-sweep-<pid> under the system temp directory)")
     ap.add_argument("--json", metavar="PATH")
     ap.add_argument("--dry-run", action="store_true", help="generate and count cells only")
     ns = ap.parse_args(argv)
@@ -3074,7 +3074,7 @@ def main(argv: list[str] | None = None) -> int:
     source = fast_score.tracked_source_for(ns.symbol)
     base_path = pathlib.Path(ns.candidate).resolve() if ns.candidate else ROOT / source
     base_text = base_path.read_text()
-    scratch = pathlib.Path(ns.scratch or f"/private/tmp/claude-501/lever-sweep-{os.getpid()}").resolve()
+    scratch = pathlib.Path(ns.scratch or os.path.join(tempfile.gettempdir(), f"lever-sweep-{os.getpid()}")).resolve()
     if ROOT.resolve() in scratch.parents or scratch == ROOT.resolve():
         raise SystemExit("--scratch must be outside the repository")
     scratch.mkdir(parents=True, exist_ok=True)
@@ -3555,7 +3555,7 @@ def source_main(ns, levers: list[str]) -> int:
     source = fast_score.tracked_source_for(ns.symbol)
     base_path = pathlib.Path(ns.candidate).resolve() if ns.candidate else ROOT / source
     base_text = base_path.read_text()
-    scratch = pathlib.Path(ns.scratch or f"/private/tmp/claude-501/lever-sweep-{os.getpid()}").resolve()
+    scratch = pathlib.Path(ns.scratch or os.path.join(tempfile.gettempdir(), f"lever-sweep-{os.getpid()}")).resolve()
     if ROOT.resolve() in scratch.parents or scratch == ROOT.resolve():
         raise SystemExit("--scratch must be outside the repository")
     scratch.mkdir(parents=True, exist_ok=True)

@@ -31,6 +31,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import tempfile
 import pathlib
 import re
 import sys
@@ -114,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--blocks", default="0,4,8,12,16,20,24", help="how many empty blocks to add per cell")
     ap.add_argument("--maker", default="if0", help="if0 | dowhile | while0 | a literal statement")
     ap.add_argument("--from", dest="start", type=int, default=0, help="first source line eligible for a block")
-    ap.add_argument("--scratch", help="work directory (default /private/tmp/claude-501/block-probe-<pid>)")
+    ap.add_argument("--scratch", help="work directory (default block-probe-<pid> under the system temp directory)")
     ap.add_argument("--json", metavar="PATH")
     ns = ap.parse_args(argv)
 
@@ -128,7 +129,7 @@ def main(argv: list[str] | None = None) -> int:
     text = candidate.read_text()
     fn = ls.find_function(text, ns.symbol)
     maker = MAKERS.get(ns.maker, ns.maker)
-    scratch = pathlib.Path(ns.scratch or f"/private/tmp/claude-501/block-probe-{os.getpid()}").resolve()
+    scratch = pathlib.Path(ns.scratch or os.path.join(tempfile.gettempdir(), f"block-probe-{os.getpid()}")).resolve()
     if ROOT.resolve() in scratch.parents or scratch == ROOT.resolve():
         raise SystemExit("--scratch must be outside the repository")
     scratch.mkdir(parents=True, exist_ok=True)

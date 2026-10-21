@@ -196,34 +196,47 @@ segments:
       #
       # JFG keeps these four as GLOBAL_ASM in src/shadows_214A0.c; its built
       # `src/shadows_214A0.c.o` (816 bytes of .text, no relocations) is the
-      # reference, and the odd-FP mechanism (docs/modules.md 6.2; 11, 11, 12
-      # and 8 odd-FP operands) is what makes it hand-written. Measured
-      # 2026-10-09, relocation fields masked, ROM-wide occurrence in brackets:
+      # reference, and the odd-FP mechanism (docs/modules.md 6.2) is what
+      # makes it hand-written. Odd-FP counts below are tools/hasm_audit.py's
+      # (2026-10-21): odd registers used at single or word width by COP1
+      # arithmetic, compares and conversions, reachable code only, with
+      # 32-bit moves, loads and stores (which IDO also uses for double
+      # halves) excluded. Identity measured 2026-10-09, relocation fields
+      # masked, ROM-wide occurrence in brackets:
       #
       # main/shadows_fp (0x18FF0): JFG's routines one and two, in order,
       # shadowBoxPolyOverlap 0/49 masked, 49/49 words [romocc=1] and
       # shadowBoundingBox 0/36, 36/36 [romocc=1]; 85/85 over the run
       # [romocc=1]. Verified assembly (verified_asm.us.txt, evidence class
-      # 2). 6.2 evidence: shadowBoxPolyOverlap uses odd $f1, $f3, $f5, $f13
-      # and $f15 (11 operands); shadowBoundingBox odd $f1, $f3 and $f5 (11).
+      # 2). 6.2 evidence: shadowBoxPolyOverlap 15 odd single-precision
+      # operands in 13 instructions; shadowBoundingBox 11 in 9.
       #
       # main/shadows_fp_19144: func_80018544, JFG's routine three
       # shadowYHeight in a shorter revision, 68 against 69 words. Its first
       # word already differs (+0x0); 63 words agree after an insert/delete
-      # alignment. Hand-written (12 odd-FP operands), not proved by identity.
-      # Verified assembly, evidence class 3 (mechanism, no reference
-      # identity): re-counted 2026-10-14, 68 words, 33 odd single-precision
-      # operands in 21 instructions ($f1-$f15), a leaf with no frame.
+      # alignment. Hand-written, not proved by identity. Verified assembly,
+      # evidence class 3 (mechanism, no reference identity): 68 words, 27
+      # odd single-precision operands in 15 instructions, a leaf with no
+      # frame (the 2026-10-14 figure, 33 in 21, also counted six odd 32-bit
+      # moves).
       #
       # main/shadows_fp_19254: func_80018654, JFG's routine four
       # shadowMakeYs, 47/47 words with 0 masked [romocc=1]; JFG's three
       # further words are its zero section-alignment padding. Verified
-      # assembly (evidence class 2). 6.2 evidence: odd $f1, $f3 and $f5
-      # (8 operands).
+      # assembly (evidence class 2). 6.2 evidence: 10 odd single-precision
+      # operands in 8 instructions.
       - [0x18FF0, asm, main/shadows_fp]
       - [0x19144, asm, main/shadows_fp_19144]
       - [0x19254, asm, main/shadows_fp_19254]
       - [0x19310, c, main/lights]
+      # Verified assembly, evidence class 1: the whole 0xFF0-byte .text of
+      # JFG's built `asm/hasm/lights2.s.o` (extracted there, filed as hasm by
+      # JFG) matches 0x1AE60-0x1BE50 -- 1,017 code words and 3 zero alignment
+      # words, romocc=1 -- with its 12 relocated fields masked: 8 R_MIPS_26
+      # call targets and 4 R_MIPS_PC16 branch fields, the latter equal to
+      # Mickey's words in JFG's linked ROM. Eight of the nine routines also
+      # carry a mechanism of their own (tools/hasm_audit.py, 2026-10-21);
+      # lightCreateLightTable has none and is carried by the object identity.
       - [0x1AE60, asm, main/lights2]
       # JFG's eight camlight entry points survive here as Mickey no-op stubs,
       # in the same order.  spranimInit begins immediately after camlightDraw.
@@ -260,10 +273,21 @@ segments:
       # Six main/main.c assert-string references plus the ordered game-window,
       # level-change, and main-state routines identify JFG's main.c lineage.
       - [0x27760, c, main/main]
-      # DKR's whole hand-written `math_util.s` object matches this run in its
-      # original function order. It remains assembly by design; naming the
-      # subsegment lets the progress ledger distinguish verified source asm
-      # from compiler-generated code that has not been decompiled yet.
+      # Verified assembly, evidence class 1 (verified_asm.us.txt): JFG's built
+      # hand-written `src/hasm/ido/math_util.s.o`, in JFG's order, in four
+      # runs with relocated fields masked -- from 0x2A250 (230 words),
+      # 0x2A630 (518), 0x2AE50 (113) and 0x2B100 (339, the last two JFG's
+      # own zero alignment) -- covering 37 of the 39 routines here. The gaps
+      # are zero padding (8 bytes at 0x2AE48, 4 at 0x2B64C) and the two
+      # routines JFG lacks, func_800299E8 (0x2A5E8) and func_8002A414
+      # (0x2B014): they match no reference routine and are filed at class 3
+      # by a routine declaration in verified_asm.us.txt, each on its own
+      # mechanism (a trapping signed add; 28 odd single-precision operands
+      # and a non-leaf frame below 0x18). DKR's math_util.s is not the
+      # reference -- it matches 15 of these routines, not the run. Measured
+      # 2026-10-21 (tools/hasm_audit.py). It remains assembly by design;
+      # naming the subsegment lets the progress ledger distinguish verified
+      # source asm from compiler-generated code not yet decompiled.
       - [0x2A250, asm, main/math_util]
       # Matrix and vector maths. In JFG's tree the counterpart of this run is
       # one hand-written object, `hasm/math_matrix`, followed directly by
@@ -411,27 +435,34 @@ segments:
       # half of the inflate subsystem. DKR's src/gzip.c identifies this
       # six-function source unit; each function is independently matched.
       - [0x4E1E0, c, main/gzip]
-      # Measured boundary. The whole 0xA74-byte .text of DKR's built
+      # Measured boundary. The whole 0xA80-byte .text of DKR's built
       # `src/hasm/gzip_asm.s.o` -- the hand-written inflate core the asset
-      # loader runs -- matched here in one piece, 98 of 669 words masked, no
-      # second occurrence in the 32MB image. Named subsegment, five named
-      # functions; the byte-identity claim covers 0x4EA60-0x4F4D4 and the
-      # remaining 0xC bytes to the next split are padding.
+      # loader runs: 669 code words, then 3 zero alignment words -- matches
+      # 0x4EA60-0x4F4E0 in one piece, its 98 relocated words masked, no
+      # second occurrence in the 32MB image. JFG's built
+      # `src/hasm/inflate.s.o` (0xA80, the same 98 masked) is a second exact
+      # reference. Named subsegment, five named functions; the routines end
+      # at 0x4F4D4 and the last 0xC bytes are both objects' own alignment.
       - [0x4EA60, asm, main/gzip_asm]
       - [0x4F4E0, c, main/block_4F4E0]
       - [0x4FC30, asm, libultra/exceptasm]
       - [0x505E0, c, libultra/createthread]
       - [0x506D0, c, main/block_506D0]
-      # Hand-written assembly. The whole 0x3E0-byte .text is byte-identical,
-      # with only its 16 R_MIPS_HI16/LO16 fields masked (248 of 248 words,
-      # romocc=1), to Jet Force Gemini's src/hasm/refractOutputAssembler.s
-      # assembled with GNU as -- JFG's own hand-written (not IDO-built) hasm
-      # directory. Mechanism, independent of the reference: the routine is a
-      # leaf (no call, no relocated jump) that still allocates a 0x48 frame
-      # five instructions into the body and stores only $ra in it; IDO never
-      # saves $ra in a leaf and always opens with the stack adjustment. The C
+      # Verified assembly, evidence class 1. The whole 0x3E0-byte .text is
+      # byte-identical, with only its 16 R_MIPS_HI16/LO16 fields masked (248
+      # of 248 words, romocc=1), to the routine in JFG's lock-pinned build
+      # (`src/refractOutputAssembler.c.o`, a GLOBAL_ASM wrapper there) and to
+      # JFG's `src/hasm/refractOutputAssembler.s` assembled with this repo's
+      # GNU as. That .s is spimdisasm output (its own header says so) which
+      # JFG's maintainers reclassified as hasm in commit 0371e91
+      # (2026-09-02), newer than the lock's pin. Mechanism, control-clean
+      # against 17,598 IDO-compiled functions (docs/modules.md 6.2.1): a leaf,
+      # with no call anywhere, that saves $ra and never otherwise writes it.
+      # The frame opening five instructions into the body is NOT evidence:
+      # IDO schedules loads before the frame allocation in 154 C-matched
+      # functions here and 1,789 in the reference builds' compiled C. The C
       # candidate this range carried from 2026-09-26 sat 35 words short at
-      # frame 0x10 for that reason. Listed in verified_asm.us.txt.
+      # frame 0x10. Listed in verified_asm.us.txt.
       - [0x50820, asm, main/refractOutputAssembler]
       # Resident animation/collision sequence. Individual-function skeleton
       # evidence ties the leading functions to JFG anim.c, the later functions
@@ -469,29 +500,37 @@ segments:
       # PROVENANCE: subsegment name from JFG's asm/hasm/conv_mult_matrix.s.
       - [0x59BF0, asm, main/conv_mult_matrix]
       # Hand-written assembly: the animation-frame decoder and its private
-      # helpers. func_800591B0 saves $f20-$f31 (odd halves included), and the
-      # four helpers take arguments in t-registers, clobber s-registers
-      # unsaved and jump between each other's interiors. Tier B: the matrix
+      # helpers. func_800591B0 calls func_8005A550, func_8005A5C0 and
+      # func_8005A630 at their entries (28 call sites); the helpers take
+      # arguments in t-registers and clobber s-registers unsaved. Apart from
+      # those calls, the only transfer crossing a routine boundary is
+      # func_8005A630's closing jump to func_8005A6F0. Tier B: the matrix
       # generator func_8005AF14 calls it where JFG's modGenAnimMatrices calls
       # gen_anim_data (src/hasm/gen_anim_data.s). Mickey decodes a byte-wise
       # bitstream where JFG's revision reads 64-bit words, so no reference
       # object matches (find_known_objects, 0 hits). 0x1550 bytes, the last
       # two words alignment.
       # Verified assembly, evidence class 3 (mechanism, no reference
-      # identity). Re-checked 2026-10-14 per routine:
-      #   func_800591B0 1256 words: 796 odd-FP operands in 454
-      #                 instructions, using all sixteen odd registers as
-      #                 independent singles; saves $f20-$f31 one word at a
-      #                 time at 4-byte offsets 0x14-0x40, where an IDO
-      #                 -mips2 frame saves each callee-saved pair as one
-      #                 8-aligned doubleword; 113 trapping add/sub
-      #   func_8005A550, func_8005A5C0 (28 words each): read t-registers
-      #                 they never set (t1-t3/t7/t8 and t4-t8), set by the
+      # identity). Re-derived 2026-10-21 per routine by tools/hasm_audit.py
+      # (odd-FP as counted in the shadows note above):
+      #   func_800591B0 1256 words: 683 odd single-precision operands in 341
+      #                 instructions (796 in 454 counting odd 32-bit moves);
+      #                 113 trapping add/sub, 110 of them reachable and 3 in
+      #                 dead code; its six callee-saved FP pairs $f20-$f31 are
+      #                 saved a word at a time with each even half below its
+      #                 odd half, where IDO puts the odd half at the 8-aligned
+      #                 slot and the even half above it. The word-wise save
+      #                 alone is not evidence: this TU's default is -mips1,
+      #                 at which IDO also saves word-wise
+      #   func_8005A550, func_8005A5C0 (28 words each): read t-registers no
+      #                 definition reaches (t1-t3/t7/t8 and t4-t8), set by the
       #                 caller before each call (o32 passes arguments in
       #                 a0-a3 only); 8 trapping add/sub each
-      #   func_8005A630 48 words: writes s0-s6 with no save or restore,
-      #                 takes t1 from the caller, 11 trapping add/sub
-      #   func_8005A6F0 4 words: no mechanism of its own; it is reached
+      #   func_8005A630 48 words: writes s0-s6 with no save or restore, 11
+      #                 trapping add/sub; it also reads t1 before writing it
+      #                 (a loop redefines t1 later, so the audit's
+      #                 conservative detector does not count that read)
+      #   func_8005A6F0 2 words: no mechanism of its own; it is reached
       #                 only as func_8005A630's exit (below), so it is owned
       #                 as part of the same object
       # func_8005A6F0 (a bare return) is not a separate C function: its only

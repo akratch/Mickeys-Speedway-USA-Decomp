@@ -183,7 +183,7 @@ see the caveat below):
 | `libultra/n_drvrNew.c.o` | 1 | `0x659C0` | At the exact start of the already-measured `libultra/n_drvrNew` boundary; corroborates it |
 | `libultra/n_env.c.o` | 1 | `0x6910C` | Inside the already-measured `libultra/n_env` boundary; corroborates it |
 | `libultra/n_load.c.o` | 1 | `0x6A634` | Inside the already-measured `libultra/n_load` boundary; corroborates it |
-| `hasm/ido/math_util.s.o` | 15 | `0x2A9E4`–`0x2B644` | Inside the already-measured `main/math_util` boundary; corroborates it |
+| `hasm/ido/math_util.s.o` | 37 of Mickey's 39 routines (this pass reported 15, `0x2A9E4`–`0x2B644`) | `0x2A250`–`0x2B644` | The whole `main/math_util` subsegment in JFG's order: four runs of this object, relocated fields masked, around zero padding and the two routines JFG lacks (`func_800299E8`, `func_8002A414`, filed at class 3 in `verified_asm.us.txt`). Measured 2026-10-21 by `tools/hasm_audit.py`, which counts ELF routines lying wholly inside a run; it is the class-1 reference, not DKR's `math_util.s` (15 routines) |
 | `src/menu.c.o` | 6 | `0x3A184`–`0x3B008` | Inside yaml's unnamed `0x37D50`–`0x3B480` block. No whole-`.text` match found, so no boundary is claimed |
 | `src/gameVi.c.o` | 4 | `0x34B68`–`0x34E60` | Inside the now-split `main/gameVi` TU (§3.8). The four exact skeleton hits are landmarks; the boundary is separately established at tier B from the complete ordered function/call surface, not claimed as a whole-`.text` byte match |
 | `src/menu.c.o` | 6 | `0x3A184`–`0x3B008` | The automated pass found only interior anchors. A later function-order and call-graph census established the narrower `0x39350`–`0x3B1A0` ownership (§3.11); no whole-`.text` match is claimed |

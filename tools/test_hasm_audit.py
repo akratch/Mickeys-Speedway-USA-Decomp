@@ -68,8 +68,8 @@ def call(target):
     return jtype(ha.OP_JAL, target)
 
 
-def labels(words, base=BASE, prog=None):
-    return {label for _o, label, _d in ha.analyse_routine(words, base, prog)}
+def labels(words, base=BASE, prog=None, targets=None):
+    return {label for _o, label, _d in ha.analyse_routine(words, base, prog, targets)}
 
 
 def findings(words, base=BASE, prog=None):
@@ -312,8 +312,9 @@ def elf_object(text_words, relocs=(), symbols=()):
     rel = b"".join(struct.pack(">II", off, typ) for off, typ in relocs)
     strtab = b"\0"
     syms = [struct.pack(">IIIBBH", 0, 0, 0, 0, 0, 0)]
-    for value, size, name in symbols:
-        syms.append(struct.pack(">IIIBBH", len(strtab), value, size, 0x12, 0, 1))
+    for value, size, name, *where in symbols:
+        shndx = where[0] if where else 1
+        syms.append(struct.pack(">IIIBBH", len(strtab), value, size, 0x12, 0, shndx))
         strtab += name.encode() + b"\0"
     symtab = b"".join(syms)
     names = [b"", b".text", b".rel.text", b".symtab", b".strtab", b".shstrtab"]
@@ -350,6 +351,15 @@ class ElfTests(unittest.TestCase):
         self.assertEqual(obj.symbol_at(0), "f")
         self.assertTrue(obj.marked_global_asm(0))
         self.assertFalse(obj.irregular)
+
+    def test_call_targets_and_functions(self):
+        words = [li(V0, 1), call(0), NOP, call(0), NOP, RET, NOP]
+        blob = elf_object(words, relocs=[(4, (3 << 8) | 4), (12, (1 << 8) | 4)],
+                          symbols=[(0, 28, "f"), (0, 28, "f.NON_MATCHING"), (0, 0, "ext", 0)])
+        obj = ha.parse_object(blob, "t", "t/build/f.c.o")
+        self.assertEqual(obj.call_targets, {1: None, 3: 0})
+        self.assertEqual(obj.functions, [(0, 28, "f")])
+        self.assertFalse(obj.gcc)
 
 
 class TreeTests(unittest.TestCase):
@@ -440,6 +450,150 @@ class HelperTests(unittest.TestCase):
         xrefs = ha.build_xrefs(image, funcs)
         self.assertEqual([x.kind for x in xrefs[b_base + 8]], ["call"])
         self.assertEqual(ha.interior_entries(funcs, xrefs)[b_base], {b_base + 8})
+
+
+class DeclarationTests(unittest.TestCase):
+    TEXT = "\n".join([
+        "# Evidence class 3 (mechanism).",
+        "# routine class 3: main/alpha func_a func_b -- the two routines the",
+        "#    reference lacks, each on its own mechanism.",
+        "# an ordinary comment",
+        "main/beta",
+        "",
+    ])
+
+    def test_parse(self):
+        got = ha.parse_routine_declarations(self.TEXT)
+        self.assertEqual(sorted(got), ["func_a", "func_b"])
+        self.assertEqual(got["func_a"]["class"], 3)
+        self.assertEqual(got["func_b"]["subsegment"], "main/alpha")
+        self.assertTrue(got["func_a"]["reason"].endswith("each on its own mechanism."))
+
+    def test_invisible_to_comment_stripping_parsers(self):
+        entries = {line.split("#", 1)[0].strip() for line in self.TEXT.splitlines()}
+        self.assertEqual(entries - {""}, {"main/beta"})
+        self.assertEqual(ha.parse_ledger(self.TEXT), [("main/beta", 3)])
+
+
+class OrderedRunTests(unittest.TestCase):
+    A = [li(V0, k) for k in range(1, 21)]
+    B = [li(T0, k) for k in range(1, 21)]
+    X = [li(A1, k) for k in range(1, 9)]
+
+    def identifier(self):
+        obj = ref_object(self.A + self.B, symbols=[(0, 80, "a"), (80, 80, "b")],
+                         path="t/build/u.s.o")
+        return ha.Identifier(ha.Farm("", [obj]), StubSources(), "", "")
+
+    def spans(self):
+        return [("a", 0, 80), ("x", 80, 32), ("b", 120, 80)]
+
+    def test_runs_around_a_declared_routine_and_padding(self):
+        run = self.A + self.X + [0, 0] + self.B
+        spans = [("a", 0, 80), ("x", 80, 32), ("b", 120, 80)]
+        record, per = self.identifier().identify_subsegment(run, spans, {"x"})
+        self.assertEqual(record["claim"], "ordered-runs")
+        gaps = [(g["kind"], g["routine"], g["words"]) for g in record["ordered"]["gaps"]]
+        self.assertEqual(gaps, [("declared", "x", 8), ("padding", None, 2)])
+        self.assertEqual(per["b"][0]["symbol"], "b")
+
+    def test_an_undeclared_gap_is_not_accepted(self):
+        run = self.A + self.X + [0, 0] + self.B
+        record, _per = self.identifier().identify_subsegment(run, self.spans())
+        self.assertEqual(record["claim"], "multi-segment")
+        self.assertEqual(record["ordered"]["uncovered_words"], 8)
+
+    def test_out_of_order_runs_are_not_one_object_in_order(self):
+        run = self.B + self.X + self.A
+        spans = [("b", 0, 80), ("x", 80, 32), ("a", 112, 80)]
+        record, _per = self.identifier().identify_subsegment(run, spans, {"x"})
+        self.assertEqual(record["claim"], "multi-segment")
+
+
+class OrderedAcceptanceTests(unittest.TestCase):
+    def sub(self, kind="handwritten-source", gaps=()):
+        return {"ledger_class": 1, "routines": ["a", "x"],
+                "run": {"ordered": {"kind": kind, "gaps": list(gaps)}}}
+
+    def recs(self, mechanisms=True, identity=None):
+        return {"a": {"declaration": None, "identity": {"kind": "handwritten-source"},
+                      "mechanisms": []},
+                "x": {"declaration": "lacks", "identity": identity,
+                      "mechanisms": [{"label": "trapping-add-sub"}] if mechanisms else []}}
+
+    def test_accepts_declared_and_padding_gaps(self):
+        gaps = [{"kind": "declared", "routine": "x", "words": 4, "run_offset": "0x10"},
+                {"kind": "padding", "routine": None, "words": 2, "run_offset": "0x20"}]
+        self.assertEqual(ha.ordered_run_problems(self.sub(gaps=gaps), self.recs()), [])
+
+    def test_refuses_each_failure(self):
+        gaps = [{"kind": "declared", "routine": "x", "words": 4, "run_offset": "0x10"}]
+        self.assertTrue(ha.ordered_run_problems(self.sub(gaps=gaps), self.recs(mechanisms=False)))
+        self.assertTrue(ha.ordered_run_problems(
+            self.sub(gaps=gaps), self.recs(identity={"kind": "handwritten-source"})))
+        self.assertTrue(ha.ordered_run_problems(self.sub(kind="global-asm", gaps=gaps),
+                                                self.recs()))
+        uncovered = [{"kind": "uncovered", "routine": None, "words": 3, "run_offset": "0x8"}]
+        self.assertTrue(ha.ordered_run_problems(self.sub(gaps=uncovered), self.recs()))
+
+
+class BaselineTests(unittest.TestCase):
+    def test_external_jump_is_a_tail_jump(self):
+        got = labels([jtype(ha.OP_J, 0), NOP], prog=ha.Program(), targets={0: None})
+        self.assertIn("tail-jump", got)
+        called = labels([frame(0x18), store_word(RA, SP, 0x14), call(0), NOP,
+                         load_word(RA, SP, 0x14), RET, unframe(0x18)], targets={2: None})
+        self.assertFalse(called & {"tail-jump", "call-to-non-entry", "jump-into-foreign-interior"})
+
+    def test_a_call_behind_an_unresolved_table_is_still_a_call(self):
+        words = [frame(0x18), store_word(RA, SP, 0x14), load_word(T0, A0, 0),
+                 rtype(ha.FN_JR, rs=T0), NOP, call(0x80200000), NOP,
+                 load_word(RA, SP, 0x14), RET, unframe(0x18)]
+        got = labels(words)
+        self.assertNotIn("leaf-saves-unused-ra", got)
+        self.assertNotIn("leaf-saves-ra", got)
+
+    def test_wide_fp_move_defines_the_pair(self):
+        to_fp = (ha.OP_COP1 << 26) | (ha.COP1_DMT << 21) | (A0 << 16) | (4 << 11)
+        to_single = fpop(ha.FMT_L, 0, 4, 0, 32)        # long in f4/f5 to single in f0
+        self.assertNotIn("nonarg-register-read-on-entry", labels([to_fp, to_single, RET, NOP]))
+
+    def test_scan_and_record(self):
+        words = [li(V0, 1), RET, NOP, rtype(ha.FN_ADD, 4, 5, 2), jtype(ha.OP_J, 0), NOP]
+        obj = ref_object(words, path="t/build/c.c.o")
+        obj.functions = [(0, 12, "plain"), (12, 12, "odd")]
+        obj.call_targets = {4: None}
+
+        class Sources:
+            def compiled_c_object(self, o):
+                return True, "stub"
+        corpora, excluded = ha.scan_farm_baseline(ha.Farm("", [obj]), Sources())
+        corpus = corpora["t"]
+        self.assertEqual((corpus.objects, corpus.functions, corpus.words), (1, 2, 6))
+        self.assertEqual(corpus.labels["trapping-add-sub"], [1, 1])
+        record = ha.baseline_record({"corpora": [corpus], "excluded_objects": {}})
+        verdicts = {r["label"]: r["verdict"] for r in record["labels"]}
+        self.assertEqual(verdicts["trapping-add-sub"], "refused: fires in compiled C")
+        self.assertEqual(verdicts["odd-fp-single"], "usable")
+        self.assertEqual(verdicts["plain-jump"], "information only")
+
+    def test_compiled_c_needs_a_clean_source(self):
+        with tempfile.TemporaryDirectory() as root:
+            os.makedirs(os.path.join(root, "t", "src"))
+            with open(os.path.join(root, "t", "src", "a.c"), "w") as fh:
+                fh.write("int a(void) { return 1; }\n")
+            with open(os.path.join(root, "t", "src", "b.c"), "w") as fh:
+                fh.write('int b(void) { return 2; }\n#pragma GLOBAL_ASM("asm/x.s")\n')
+            sources = ha.SourceIndex(root, {})
+            clean = ref_object([RET, NOP], path=os.path.join("t", "build", "src", "a.c.o"))
+            mixed = ref_object([RET, NOP], path=os.path.join("t", "build", "src", "b.c.o"))
+            missing = ref_object([RET, NOP], path=os.path.join("t", "build", "src", "z.c.o"))
+            gcc = ref_object([RET, NOP], path=os.path.join("t", "build", "src", "a.c.o"))
+            gcc.gcc = True
+            self.assertTrue(sources.compiled_c_object(clean)[0])
+            self.assertEqual(sources.compiled_c_object(mixed), (False, "assembly in the C source"))
+            self.assertEqual(sources.compiled_c_object(missing), (False, "no C source found"))
+            self.assertFalse(sources.compiled_c_object(gcc)[0])
 
 
 if __name__ == "__main__":

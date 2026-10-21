@@ -7393,7 +7393,7 @@
           "resident"
         ],
         "source_path": "src/main/anim.c",
-        "complete": false
+        "complete": true
       }
     },
     {

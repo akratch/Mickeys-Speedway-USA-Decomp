@@ -257,21 +257,20 @@ Text outside the markers remains authored and is preserved byte-for-byte.
 > `config/nonmatching-ranking.us.json`. Do not edit this region by hand;
 > `--check-doc` and `gmake check-docs` fail on any drift.
 
-The snapshot contains **1 queued identities**: **1 resolved measurements** and **0 unresolved identities**. Resolved target size totals **1,480 bytes (1.4 KiB)**.
+The snapshot contains **0 queued identities**: **0 resolved measurements** and **0 unresolved identities**. Resolved target size totals **0 bytes (0.0 KiB)**.
 
-Resolved rows span **0 overlays** and **1 resident TU group** (`main`).
+Resolved rows span **0 overlays** and **0 resident TU groups**.
 
-A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 1** resolved rows.
+A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 0** resolved rows.
 
-Persisted configured-TU input evidence covers **1 / 1** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
+Persisted configured-TU input evidence covers **0 / 0** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
 
-Relocation-masked mismatch evidence covers **1 / 1** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
+Relocation-masked mismatch evidence covers **0 / 0** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
 
 ### Category distribution
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `other` | 1 | 100.0% |
 
 ### Differing-word thresholds
 
@@ -281,8 +280,8 @@ Relocation-masked mismatch evidence covers **1 / 1** resolved rows. The raw coun
 | relocation-masked `differing_words <= 5` | 0 |
 | raw `differing_words <= 10` | 0 |
 | relocation-masked `differing_words <= 10` | 0 |
-| raw `differing_words <= 20` | 1 |
-| relocation-masked `differing_words <= 20` | 1 |
+| raw `differing_words <= 20` | 0 |
+| relocation-masked `differing_words <= 20` | 0 |
 
 ### Complete ranked queue
 
@@ -292,7 +291,6 @@ units remain distinct.
 
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 17 | 17 | 328 | 328 | 0 | — |
 
 ### Unresolved identities
 

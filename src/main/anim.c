@@ -28,8 +28,8 @@ extern void amSndStopXYZ(void *handle);
 HitCopyState **func_80005750(s32 *count);
 
 #ifdef NON_MATCHING
-/* The NON_MATCHING bodies of func_80051364 and func_80054B3C still
- * spell these callees by their old placeholders;
+/* The NON_MATCHING body of func_80051364 still spells these callees
+ * by their old placeholders;
  * drop each line once those bodies are renamed. */
 #define amTunePlay amTunePlay
 #define amTuneSetFade amTuneSetFade
@@ -2636,60 +2636,17 @@ s32 func_800131AC(AnimVec3f *origin, AnimVec3f *direction,
                   f32 *near, f32 *far);
 extern f32 D_8008420C;
 
-#ifdef NON_MATCHING
 /* PROVENANCE: JFG's public hit/collision code supplies the capsule and
  * endpoint-overlap role; Mickey's collision-shape offsets are authoritative. */
-/* Untouched compiler: 353/370 words exact; all 17 differences are stack offsets. */
-/* Target and candidate: 370 words, frame 0xD8, three exact sqrtf relocations. */
-/* Remaining gap: 17 stack offsets; frame and all three sqrtf relocations match. */
 /*
  * Swept-sphere intersection between two collision shapes, reconstructed from
- * Mickey's own assembly. The quadratic's three coefficients are written out
- * term by term because the target is: it never forms a difference vector, it
- * squares and cross-multiplies the six coordinates and the six doubled
- * coordinates directly.
- *
- * Plateau (2026-10-02, lane n-anim): 366 masked words at size delta +4
- * (from 374 at +40). Locals follow the target's home ladder (quadratic
- * terms, then the six vector components, then hit, then the position
- * coordinates and their doubles); the dead coordinate carriers hold 4a, b*b,
- * -b and 2a exactly where the target reuses their homes; the doubled second
- * position is an inline sum. Assigning the vector pointers before the
- * flags test reproduces the target's pointer-register vector access
- * (+12 bytes, same score). An empty `if (1) { }` region between the radius
- * sum and `hit = 0` (lane p-anim3, 366 at +4 to 349 at size 0) homes arg0
- * at entry as the target does (`hit` takes a0, so arg0 is left uncoloured);
- * placed anywhere after `hit = 0` it is inert. Left: the target keeps arg1
- * in s0 and hit in t0, defines the position pointers at entry (v0, a0)
- * where this candidate rematerializes them per block.
- * 2026-10-07 (lane a-anim): the three distance tests read their own
- * locals, dx/dy/dz for the position test and ex/ey/ez for both edge tests,
- * declared after the coordinates; those are the target's six untouched
- * slots between the coordinates and the spill area, and the frame is now
- * the target's 0xD8 (349 to 345 at size 0). The second vector is read
- * through `arg3->vector` directly. Left: arg1 in s0 (its callee cost is
- * 8.6 against 3.0 for a1) and the entry pointer webs.
- * 2026-10-07 (lane c-anim2): quadA is the natural x, y, z sum of
- * (a*a - 2ab + b*b) terms (345 to 344).
- * 2026-10-07 (lane i-5): the step components are read z first (z, x, y),
- * which numbers their webs in the target's colour order (z f0/f14, x
- * f2/f16, y f12/f18); masked unchanged at 344, aligned residual 270 to 255.
- * 2026-10-16 (lane muse-54b3c): pz2 body (Fable session permuter). The
- * quadratic block is inline; `addr = &x;` takes the address of the five
- * doubles that must stay in memory (twoZ1, twoX1, twoY1, twoZ2, twoX2)
- * and of secondPoint->z, read back as z2, which kills the z2 hoist.
- * Those `addr =` lines are the only unnatural spelling. Instruction
- * stream identical to the target; masked 70 at size 0, all stack
- * offsets (frame 0xE8 against 0xD8).
- * 2026-10-16 (lane anim-close): carrying 4a/b^2/2a/-b in z1/z2/x1/twoZ1
- * keeps only 4a (mpy_operand_op) and -b (twoZ1 already not a vreg).
- * b^2 and 2a are still copied, the frame stops at 0xE0, and a
- * `(z1 * 1.0f)` wrapper or address-taking x1 and z2 does not reach
- * 0xD8. Writing the second discriminant as `(z1 = 4.0f * quadA) * ...`
- * stays at frame 0xE0, masked 241, size 0. A cast child
- * `(z1 = ((f32) quadA) * 4.0f)` with b^2 stored through z2 folds away:
- * masked 70, size 0, frame 0xE8. Subsequent ordinary home elision
- * removes unused ey/ez and inlines twoY2: 17/370, frame 0xD8.
+ * Mickey's own assembly. The quadratic's coefficients are written term by
+ * term over the shapes' own fields: there are no step or coordinate locals,
+ * so the nine coordinate reads are compiler temporaries whose stack slots
+ * the late values (B squared, 4A, -B, 2A) reuse, as shipped. The six float
+ * locals between quadC and hit are the frame's never-stored homes, and
+ * naming B squared before the first discriminant orders those late values
+ * as shipped (matched 2026-10-21, landing campaign lane op-54).
  */
 s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                   s32 arg2, AnimCollisionShape *arg3,
@@ -2703,35 +2660,14 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     f32 quadA;
     f32 quadB;
     f32 quadC;
-    f32 stepX1;
-    f32 stepY1;
-    f32 stepZ1;
-    f32 stepX2;
-    f32 stepY2;
-    f32 stepZ2;
-    s32 hit;
-    f32 z2;
-    f32 z1;
-    f32 twoZ1;
-    f32 x1;
-    f32 twoX1;
-    f32 x2;
-    f32 y1;
-    f32 twoY1;
-    f32 y2;
     f32 dx;
     f32 dy;
     f32 dz;
     f32 discriminant;
-    f32 twoZ2;
-    f32 *addr;
-    f32 twoX2;
+    f32 distSq;
+    f32 quadBSq;
+    s32 hit;
     radiusSq = arg1->radius + arg3->radius;
-    addr = &twoZ1;
-    addr = &twoX1;
-    addr = &twoY1;
-    addr = &twoZ2;
-    addr = &twoX2;
     hit = 0;
     firstPoint = &arg1->position;
     firstVector = &arg1->vector;
@@ -2743,7 +2679,8 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
         dx = secondPoint->x - firstPoint->x;
         dy = secondPoint->y - firstPoint->y;
         dz = secondPoint->z - firstPoint->z;
-        if ((((dx * dx) + (dy * dy)) + (dz * dz)) <= radiusSq)
+        distSq = ((dx * dx) + (dy * dy)) + (dz * dz);
+        if (distSq <= radiusSq)
         {
             arg4->object = arg0;
             arg4->value = arg2;
@@ -2751,46 +2688,28 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
             return 1;
         }
     }
-    addr = &secondPoint->z;
-    stepZ1 = firstVector->z;
-    stepZ2 = secondVector->z;
-    stepX1 = firstVector->x;
-    stepX2 = secondVector->x;
-    stepY1 = firstVector->y;
-    stepY2 = secondVector->y;
-    quadA = ((stepZ2 * stepZ2) + ((stepZ1 * stepZ1) - ((2.0f * stepZ1) * stepZ2))) + ((((stepX1 * stepX1) - ((2.0f * stepX1) * stepX2)) + (stepX2 * stepX2)) + (((stepY1 * stepY1) - ((2.0f * stepY1) * stepY2)) + (stepY2 * stepY2)));
-    z2 = *addr;
-    twoZ2 = z2 + z2;
-    z1 = firstPoint->z;
-    twoZ1 = z1 + z1;
-    x1 = firstPoint->x;
-    twoX1 = x1 + x1;
-    x2 = secondPoint->x;
-    twoX2 = x2 + x2;
-    y1 = firstPoint->y;
-    twoY1 = y1 + y1;
-    y2 = secondPoint->y;
-    quadB = ((stepZ2 * twoZ2) + (((twoZ1 * stepZ1) - (twoZ1 * stepZ2)) - (twoZ2 * stepZ1))) + (((((twoX1 * stepX1) - (twoX1 * stepX2)) - (twoX2 * stepX1)) + (twoX2 * stepX2)) + ((((twoY1 * stepY1) - (twoY1 * stepY2)) - ((y2 + y2) * stepY1)) + ((y2 + y2) * stepY2)));
-    quadC = ((z2 * z2) + ((z1 * z1) - (twoZ1 * z2))) + ((((x1 * x1) - (twoX1 * x2)) + (x2 * x2)) + (((y1 * y1) - (twoY1 * y2)) + (y2 * y2)));
+    quadA = ((secondVector->z * secondVector->z) + ((firstVector->z * firstVector->z) - ((2.0f * firstVector->z) * secondVector->z))) + ((((firstVector->x * firstVector->x) - ((2.0f * firstVector->x) * secondVector->x)) + (secondVector->x * secondVector->x)) + (((firstVector->y * firstVector->y) - ((2.0f * firstVector->y) * secondVector->y)) + (secondVector->y * secondVector->y)));
+    quadB = ((secondVector->z * (secondPoint->z + secondPoint->z)) + ((((firstPoint->z + firstPoint->z) * firstVector->z) - ((firstPoint->z + firstPoint->z) * secondVector->z)) - ((secondPoint->z + secondPoint->z) * firstVector->z))) + ((((((firstPoint->x + firstPoint->x) * firstVector->x) - ((firstPoint->x + firstPoint->x) * secondVector->x)) - ((secondPoint->x + secondPoint->x) * firstVector->x)) + ((secondPoint->x + secondPoint->x) * secondVector->x)) + (((((firstPoint->y + firstPoint->y) * firstVector->y) - ((firstPoint->y + firstPoint->y) * secondVector->y)) - ((secondPoint->y + secondPoint->y) * firstVector->y)) + ((secondPoint->y + secondPoint->y) * secondVector->y)));
+    quadC = ((secondPoint->z * secondPoint->z) + ((firstPoint->z * firstPoint->z) - ((firstPoint->z + firstPoint->z) * secondPoint->z))) + ((((firstPoint->x * firstPoint->x) - ((firstPoint->x + firstPoint->x) * secondPoint->x)) + (secondPoint->x * secondPoint->x)) + (((firstPoint->y * firstPoint->y) - ((firstPoint->y + firstPoint->y) * secondPoint->y)) + (secondPoint->y * secondPoint->y)));
     if (quadA != 0.0f)
     {
+        quadBSq = quadB * quadB;
         discriminant = (4.0f * quadA) * (quadC - radiusSq);
-        if (discriminant < (quadB * quadB))
+        if (discriminant < quadBSq)
         {
-            discriminant = sqrtf((quadB * quadB) - discriminant);
+            discriminant = sqrtf(quadBSq - discriminant);
             fraction = ((-quadB) - discriminant) / (2.0f * quadA);
             if ((fraction >= 0.0f) && (fraction <= 1.0f))
             {
                 discriminant = (4.0f * quadA) * (quadC - (radiusSq + 83.0f));
-                if (discriminant < (quadB * quadB))
+                if (discriminant < quadBSq)
                 {
-                    fraction = ((-quadB) - sqrtf((quadB * quadB) - discriminant)) / (2.0f * quadA);
+                    fraction = ((-quadB) - sqrtf(quadBSq - discriminant)) / (2.0f * quadA);
                     if (fraction > 1.0f)
                     {
                         fraction = 1.0f;
                     }
-                    else
-                        if (fraction < 0.0f)
+                    else if (fraction < 0.0f)
                     {
                         fraction = 0.0f;
                     }
@@ -2805,18 +2724,18 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                 dx = arg3->edge.x - arg1->edge.x;
                 dy = arg3->edge.y - arg1->edge.y;
                 dz = arg3->edge.z - arg1->edge.z;
-                if ((((dx * dx) + (dy * dy)) + (dz * dz)) <= radiusSq)
+                distSq = ((dx * dx) + (dy * dy)) + (dz * dz);
+                if (distSq <= radiusSq)
                 {
                     discriminant = (4.0f * quadA) * (quadC - (radiusSq + 83.0f));
-                    if (discriminant < (quadB * quadB))
+                    if (discriminant < quadBSq)
                     {
-                        fraction = ((-quadB) - sqrtf((quadB * quadB) - discriminant)) / (2.0f * quadA);
+                        fraction = ((-quadB) - sqrtf(quadBSq - discriminant)) / (2.0f * quadA);
                         if (fraction > 1.0f)
                         {
                             fraction = 1.0f;
                         }
-                        else
-                            if (fraction < 0.0f)
+                        else if (fraction < 0.0f)
                         {
                             fraction = 0.0f;
                         }
@@ -2834,7 +2753,8 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
         dx = arg3->edge.x - arg1->edge.x;
         dy = arg3->edge.y - arg1->edge.y;
         dz = arg3->edge.z - arg1->edge.z;
-        if ((((dx * dx) + (dy * dy)) + (dz * dz)) <= radiusSq)
+        distSq = ((dx * dx) + (dy * dy)) + (dz * dz);
+        if (distSq <= radiusSq)
         {
             arg4->object = arg0;
             arg4->value = arg2;
@@ -2844,9 +2764,6 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     }
     return hit;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_80054B3C.s")
-#endif
 typedef struct HitResolveMass {
     u8 pad0[4];
     f32 mass;
@@ -4081,13 +3998,3 @@ void fmvInit(void) {
         player++;
     }
 }
-
-/* PLATEAU-HANDOFF:func_80054B3C:start
- * symbol: func_80054B3C
- * score: 17/370 words
- * frame: 0xD8 (target 0xD8)
- * relocations: 3
- * first-mismatch: +0x148
- * summary: Ordinary twoY2 home elision and unused ey/ez removal: 353/370 exact, size delta 0; all 17 residual words are stack offsets.
- * PLATEAU-HANDOFF:func_80054B3C:end
- */

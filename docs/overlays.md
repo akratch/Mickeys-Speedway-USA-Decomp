@@ -183,10 +183,13 @@ there is exactly one link slot per overlay. That is the best available
 evidence for what `LinkSlot`'s two fields mean, and still not enough to promote
 them out of inference.
 
-`RelocTableEntry` (`include/game/runlink.h`) is **not JFG's layout**: Mickey
-puts the ROM-table index first and packs the call site as a 24-bit offset from
-`0x80000450` in the high bits of the second word. Derived from Mickey's ROM;
-only the type's name is borrowed.
+`RelocTableEntry` (`include/game/runlink.h`) has JFG's fields in the opposite
+word order. Both pack the call site as a 24-bit offset from `0x80000450` above
+an 8-bit field (JFG's header has done so since its 2026-08-28 revision; it
+declared two plain words before), but JFG declares the packed word first and
+the ROM-table index second, while Mickey's reader takes the index from `+0x00`
+and the packed word from `+0x04`. Derived from Mickey's ROM; the name and the
+packing agree with JFG's, the order does not.
 
 ### 5.3 Where the tables are in ROM
 
@@ -248,8 +251,18 @@ The per-module relocation tables are `RelocationEntry[]` as
 each. Across all 107 modules, table 1 is 6943 records that are overwhelmingly
 `SYMBOL` (`symbolIndex` indexes `overlayRomTable`) and table 2 is 11599 records
 that are overwhelmingly `LOCAL` (`symbolIndex` is a byte offset from the
-module's own base). **That division of labour is inferred from the flag census,
-not proven**; `runlinkDownloadCode` is what would prove it.
+module's own base). The flag census suggested a division of labour, and the
+matched `runlinkDownloadCode` (`src/main/runlink.c`) now proves the lifecycle
+behind it: table 2 is copied into a temporary `mmAlloc` buffer, applied once
+and freed; table 1 is copied behind the module's BSS (`relocBase`), applied,
+and retained. The retained copy is what later passes read -- the same
+function re-walks every loaded module's table 1 and `mainRelocTable` for
+records that name the module it just loaded, and `runlinkFreeCode` walks them
+again to unpatch those references when it goes. So table 2 carries what is
+needed only at load (local fixups, fixed once the module is placed) and table
+1 what must outlive it (references whose targets come and go). The
+SYMBOL/LOCAL proportions are still a census; the retain-versus-free split is
+code. JFG's header states the same split in its field comments.
 
 ### 5.4 The canonical overlay work surface
 

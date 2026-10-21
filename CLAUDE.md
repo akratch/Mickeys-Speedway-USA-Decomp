@@ -254,12 +254,15 @@ values a planned rename under its placeholder whether or not the object has
 been rebuilt since. If that diff ever appears, it is a bug; do not commit it.
 
 **A generically-named `D_` symbol can collide across overlays, and the link
-does not complain.** `D_EE0` exists in overlay 22 and overlay 29 with *different
-stored addends* (`0xEE0` against `0`), so promoting an overlay-22 function that
-referenced it silently rewrote two overlay-29 words — the ROM still built, and
-only `verify` caught it. Give the promoted overlay its own placeholder rather
-than sharing the generic name, and check any `D_`-named reference a promotion
-introduces against the other overlays before believing a clean link.
+does not complain.** `D_EE0` was referenced by overlay 22 and overlay 29 with
+*different stored addends* (`0xEE0` against `0`), so promoting an overlay-22
+function that referenced it silently rewrote two overlay-29 words — the ROM
+still built, and only `verify` caught it. (Overlay 22's two sites are now
+rebound to `D_0` by `config/normalizations/overlay22InitializeObject.rebind.spec`,
+so only overlay 29's block values `D_EE0` today.) Give the promoted overlay its
+own placeholder rather than sharing the generic name, and check any `D_`-named
+reference a promotion introduces against the other overlays before believing a
+clean link.
 
 `check-overlay-syms` is a *drift* check on already-regenerated output, so it
 cannot catch a promotion that never regenerated; reading its table entry below

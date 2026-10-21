@@ -36,6 +36,24 @@ import tempfile
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 TOOLCHAIN = pathlib.Path(os.path.expanduser("~/Desktop/dev/ido-slottrace"))
+INSTRUMENTED = pathlib.Path(os.path.expanduser("~/Desktop/dev/ido-instrumented"))
+FORCE_PREFIXES = ("CDX_", "DKWB_")
+
+
+def trace_env(environ, instrumented: bool) -> dict:
+    """The compile environment: the trace variable set, and the force variables
+    (`CDX_*`, `DKWB_*`) kept only for the instrumented toolchain, whose uopt
+    honours them; the slot-trace toolchain would ignore them silently."""
+    if instrumented:
+        env = dict(environ)
+    else:
+        env = {k: v for k, v in environ.items() if not k.startswith(FORCE_PREFIXES)}
+    env["DKWB_UOPT_SLOT_TRACE"] = "1"
+    return env
+
+
+def toolchain_for(instrumented: bool) -> pathlib.Path:
+    return INSTRUMENTED if instrumented else TOOLCHAIN
 ROW_RE = re.compile(r"^DKWB-SLOT\s+(.*)$")
 FIELD_RE = re.compile(r"(\w+)=(\S+)")
 
@@ -99,15 +117,15 @@ def render(symbol: str, proc: int, rows: list[dict], candidates: bool) -> str:
     return "\n".join(out) + "\n"
 
 
-def compile_trace(symbol: str, work: pathlib.Path, candidate: pathlib.Path | None) -> tuple[str, pathlib.Path]:
+def compile_trace(symbol: str, work: pathlib.Path, candidate: pathlib.Path | None,
+                  instrumented: bool = False) -> tuple[str, pathlib.Path]:
     import force_lattice as fl
-    command = fl.replace_compiler(fl.compile_command(symbol), TOOLCHAIN / "cc")
+    command = fl.replace_compiler(fl.compile_command(symbol), toolchain_for(instrumented) / "cc")
     if candidate is not None:
         command[-1] = str(candidate)
     obj = work / "slot.o"
     command[command.index("-o") + 1] = str(obj)
-    env = {k: v for k, v in os.environ.items() if not k.startswith(("CDX_", "DKWB_"))}
-    env["DKWB_UOPT_SLOT_TRACE"] = "1"
+    env = trace_env(os.environ, instrumented)
     result = subprocess.run(command, env=env, capture_output=True, text=True,
                             cwd=fl.ROOT, timeout=900)
     if result.returncode:
@@ -132,16 +150,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--candidates", action="store_true", help="print rejected candidates too")
     parser.add_argument("--raw", action="store_true", help="print the procedure's rows unparsed")
     parser.add_argument("--keep", type=pathlib.Path, help="keep the object and stderr here")
+    parser.add_argument("--instrumented", action="store_true",
+                        help="compile with the shared instrumented toolchain (whose uopt carries the "
+                             "same DKWB-SLOT trace) and pass CDX_*/DKWB_* forces through, so a forced "
+                             "state's slot requests can be read; implied when any such variable is set")
     args = parser.parse_args(argv)
+    instrumented = args.instrumented or any(k.startswith(FORCE_PREFIXES) for k in os.environ)
 
     candidate = args.source.resolve() if args.source else None
     if candidate is not None and not candidate.is_file():
         raise SystemExit(f"slot_trace: no such --source: {candidate}")
-    if not (TOOLCHAIN / "cc").is_file():
-        raise SystemExit(f"slot_trace: no slot-trace toolchain at {TOOLCHAIN}")
+    if not (toolchain_for(instrumented) / "cc").is_file():
+        raise SystemExit(f"slot_trace: no toolchain at {toolchain_for(instrumented)}")
     work = args.keep or pathlib.Path(tempfile.mkdtemp())
     work.mkdir(parents=True, exist_ok=True)
-    text, obj = compile_trace(args.symbol, work, candidate)
+    text, obj = compile_trace(args.symbol, work, candidate, instrumented)
     if args.keep:
         (work / "slot.stderr").write_text(text)
     rows = parse_rows(text)

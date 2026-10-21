@@ -12,6 +12,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/overlay_exports.h"
 
 typedef struct Gfx Gfx;
 typedef struct Mtx Mtx;
@@ -219,7 +220,6 @@ extern f32 func_8002A8C0(s32 angle);
 extern void amSndSetXYZ(void *sound, f32 x, f32 y, f32 z);
 extern void *texLoadSprite(s32 assetId, s32 arg1);
 extern s32 camGetMode(void);
-extern void TrapDanglingJump(f32, f32, f32, s32);
 extern WeatherLevel *levelGetLevel(void);
 extern void trackSetFog(s32 fogIndex, s16 near, s16 far, s16 targetNear,
                         u8 red, u8 green, u8 blue, s8 state);
@@ -610,12 +610,9 @@ void snow_render(void) {
 /*
  * PROVENANCE -- body adapted from Jet Force Gemini's public retail-derived
  * src/weather.c::func_8005BC44_5C844 (DKR's rain_init). Mickey's rain setup
- * constants and asset IDs are authoritative. The typed alias preserves this
- * call's integer ABI; the build canonicalizes its undefined symbol name to the
- * shared TrapDanglingJump target without changing section contents.
+ * constants and asset IDs are authoritative. overlay15InitStars's prototype
+ * passes the seven integer arguments as the shipped call does.
  */
-#pragma weak rainInitTrap = TrapDanglingJump
-extern void rainInitTrap(s32, s32, s32, s32, s32, s32, s32);
 void rain_init(s32 count, s32 intensity, s32 opacity) {
     D_8007C6EC = intensity;
     D_8007C6F0 = 0;
@@ -629,7 +626,7 @@ void rain_init(s32 count, s32 intensity, s32 opacity) {
     D_8007C710 = 0;
     D_8007C71C = 0;
 
-    rainInitTrap(count, 700, 700, 700, 0x2080E002, 0xA0E0FF04, 550);
+    overlay15InitStars(count, 700, 700, 700, 0x2080E002, 0xA0E0FF04, 550);
     D_8007C714 = texLoadSprite(0x26, 0);
     D_8007C718 = texLoadTexture(0x6A);
     D_8007C6E8 = 1;
@@ -642,7 +639,6 @@ void rain_init(s32 count, s32 intensity, s32 opacity) {
  */
 extern void texFreeSprite(void *sprite);
 extern void amSndStopXYZ(void *sound);
-extern void rainFreeTrap(void);
 void free_rain_memory(void) {
     if (D_8007C714 != NULL) {
         texFreeSprite(D_8007C714);
@@ -656,7 +652,7 @@ void free_rain_memory(void) {
         amSndStopXYZ(D_8007C720);
         D_8007C720 = NULL;
     }
-    rainFreeTrap();
+    overlay15ReleaseResource10();
     D_8007C6E8 = 0;
 }
 /*
@@ -731,9 +727,9 @@ void rain_update(s32 updateRate) {
         }
     }
 
-    TrapDanglingJump((f32) D_800D4078.velX / 65536.0f,
-                     ((f32) D_800D4078.velY / 65536.0f) - 5.0f,
-                     (f32) D_800D4078.velZ / 65536.0f, updateRate);
+    overlay15UpdateMovingStars((f32) D_800D4078.velX / 65536.0f,
+                               ((f32) D_800D4078.velY / 65536.0f) - 5.0f,
+                               (f32) D_800D4078.velZ / 65536.0f, updateRate);
     rain_sound(updateRate);
     rain_render_splashes(updateRate);
     rain_lightning(updateRate);

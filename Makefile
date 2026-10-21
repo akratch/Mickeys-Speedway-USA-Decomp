@@ -333,6 +333,20 @@ endif
 		echo "FAIL $(TARGET).z64 does not match the expected US ROM hash"; \
 		exit 1; \
 	fi
+	@$(HOST_PYTHON) $(TOOLS_DIR)/trap_names.py check
+
+# The semantic half of verify on its own: every resident trap site's C callee
+# is the overlay export its main-table row targets (tools/trap_names.py). Needs
+# the linked ELF, ROM and map, so it builds nothing and reads build/.
+check-trap-names:
+	$(HOST_PYTHON) $(TOOLS_DIR)/trap_names.py check
+
+# Regenerates config/overlay_funcs_to_trap.$(VERSION).txt from the shipped
+# tables and the linked overlay symbol names. It reads the last linked ELF
+# rather than building one, because a resident call to a name the list lacks
+# is exactly what stops the resident objects from building.
+trap-names:
+	$(HOST_PYTHON) $(TOOLS_DIR)/trap_names.py generate --write
 
 # Points git at the tracked hook directory. Separate from `setup` so it can be
 # re-run on its own, and so a clone that only wants the gates does not have to
@@ -654,6 +668,25 @@ $(BUILD_DIR)/%.c.o: %.c $(H_FILES) $(TOOLS_DIR)/normalize_elf_instructions.py $(
 	$(ASM_PROCESSOR) $(CC) -- $(AS) $(ASM_PROC_ASFLAGS) -- \
 		-c $(CFLAGS) $(OPT_FLAGS) $(MIPSISET) -o $@ $<
 	$(RUN_POSTPROCESS)
+	$(TRAP_RENAME)
+
+# Resident code calls a function in a runtime-loaded overlay by its name
+# (include/game/overlay_exports.h), while the shipped instruction at every such
+# site is `jal TrapDanglingJump`: the runtime linker finds the real callee in
+# the main relocation table. So after compiling a resident object, and after
+# its own POSTPROCESS, tools/trap_names.py renames to TrapDanglingJump every
+# undefined reference to an export the trap list names. Only symbol names
+# change.
+# It refuses a listed name the object defines, a listed name used by anything
+# but a .text jal, and an undefined overlay-export name the list lacks, and it
+# writes $@.trapsites, from which `gmake verify` proves that each site's C
+# callee is the export its table row targets. docs/overlays.md section 5.1.
+TRAP_NAMES_LIST := config/overlay_funcs_to_trap.$(VERSION).txt
+TRAP_RENAME = @:
+$(BUILD_DIR)/$(SRC_DIR)/main/%.c.o: TRAP_RENAME = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trap_names.py rename $@ $(TRAP_NAMES_LIST)
+$(filter $(BUILD_DIR)/$(SRC_DIR)/main/%,$(O_FILES)): $(TRAP_NAMES_LIST) \
+	$(TOOLS_DIR)/trap_names.py
 
 # The DKR-exact rmonprintf source has no GLOBAL_ASM. Sending it through
 # asm-processor changes IDO's line metadata and produces a seven-word schedule
@@ -1078,6 +1111,7 @@ $(BUILD_DIR)/$(SRC_DIR)/main/get_stack_pointer.c.o: MIPSISET := -mips1 -32
 $(BUILD_DIR)/$(SRC_DIR)/main/get_stack_pointer.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/get_stack_pointer.c.o: $(SRC_DIR)/main/get_stack_pointer.c $(H_FILES) | $(ALL_DIRS)
 	$(TOOLS_DIR)/ido/cc -c $(CFLAGS) $(OPT_FLAGS) $(MIPSISET) -o $@ $<
+	$(TRAP_RENAME)
 # This nine-instruction accessor ends at the measured 0x24-byte boundary;
 # discard only IDO's three trailing section-alignment words.
 $(BUILD_DIR)/$(SRC_DIR)/main/amAudioMgrSetScheduleMode.c.o: POSTPROCESS = \
@@ -1130,8 +1164,7 @@ endif
 # the two target relocation records using a digest-guarded metadata pass. The
 # source already carries the linked HI16/LO16 addends, so the temporary
 # relocation carrier is zero-valued; the linker script retains the final
-# D_803FFFFC absolute symbol value. Rename it only after the pass, before
-# folding the rain callback's typed alias back to the shipped carrier.
+# D_803FFFFC absolute symbol value. Rename it only after the pass.
 $(BUILD_DIR)/$(SRC_DIR)/main/main.c.o: $(TOOLS_DIR)/add_elf_relocations.py
 $(BUILD_DIR)/$(SRC_DIR)/main/main.c.o: POSTPROCESS = \
 	$(OBJCOPY) --add-symbol mainThreadRamEndAnchor=0x0,global $@ && \
@@ -1139,8 +1172,7 @@ $(BUILD_DIR)/$(SRC_DIR)/main/main.c.o: POSTPROCESS = \
 		$(MAIN_THREAD_TEXT_SIZE) $(MAIN_THREAD_TEXT_SHA256) \
 		0x120:HI16:mainThreadRamEndAnchor:0x8040 \
 		0x130:LO16:mainThreadRamEndAnchor:0xFFFC && \
-	$(OBJCOPY) --redefine-sym mainThreadRamEndAnchor=D_803FFFFC \
-		--redefine-sym mainCPUeffectsRainDraw=TrapDanglingJump $@
+	$(OBJCOPY) --redefine-sym mainThreadRamEndAnchor=D_803FFFFC $@
 # joyInit's enabled-pad bytes are one contiguous array for IDO's exact loop
 # schedule, while the retail relocation table names the adjacent byte labels.
 # Add global aliases at their actual .bss offsets and local relocation carriers
@@ -1176,11 +1208,9 @@ $(BUILD_DIR)/$(SRC_DIR)/main/sched.c.o: POSTPROCESS = \
 # and the exact relocation identities of the assembled fallback functions.
 # Name the input rodata base so table identities remain unambiguous in the ELF.
 # func_80009220's compiler-owned float literal uses the same proved input base.
-# func_80004FE0's first flag-gated dangling call is declared through a void
-# alias (a call with a result keeps the flag word off v0). Canonicalize only
-# the undefined symbol name to the shared TrapDanglingJump target; section
-# contents are unchanged. The rename runs last: add_elf_relocations.py
-# refuses an object holding two symbols of one name.
+# add_elf_relocations.py refuses an object holding two symbols of one name, so
+# this chain runs before the generic trap rename (TRAP_RENAME), which gives
+# every resident overlay call the one name TrapDanglingJump.
 $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: $(TOOLS_DIR)/add_elf_relocations.py \
     $(TOOLS_DIR)/trim_elf_section.py $(TOOLS_DIR)/rebind_elf_relocations.py
 $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: POSTPROCESS = \
@@ -1202,14 +1232,8 @@ $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: POSTPROCESS = \
 	    871e6fd6fcbacef5658c8694182f232c9645e5b87fa19532abab1a81db5baf91 \
 	    0x6500:PC16:objectsSizeDefaultBranch:0x76 \
 	    0x6718:PC16:objectsInitDefaultBranch:0x120 \
-	    0x6C00:PC16:objectsControlDefaultBranch:0x114 && \
-	$(OBJCOPY) --redefine-sym objectsVoidTrap=TrapDanglingJump $@
-# func_80038190 has two independently bound overlay-99 call signatures.
-# IDO leaves the weak source aliases as distinct undefined symbols; normalize
-# only their names to the resident runtime linker's static trap carrier.
+	    0x6C00:PC16:objectsControlDefaultBranch:0x114
 $(BUILD_DIR)/$(SRC_DIR)/main/frontend_37D50.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym frontend38190BuildHeightGridReloc=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym frontend38190DrawHeightGridReloc=TrapDanglingJump $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x1C
 # JFG's source-level string migration reproduces diRcp's complete diagnostic
 # string block followed by the 0x100-byte switch-table span. The following
@@ -1245,30 +1269,6 @@ $(BUILD_DIR)/$(SRC_DIR)/main/vehicle_sounds.c.o: CFLAGS += -Wab,-r4300_mul
 # The track plane builder proves the resident TU's R4300 FP hazard schedule.
 $(BUILD_DIR)/$(SRC_DIR)/main/track.c.o: CFLAGS += -Wab,-r4300_mul
 
-# func_8000D018's camera-position dangling call needs a typed alias to pass its
-# three f32 args single-precision (the unprototyped TrapDanglingJump promotes
-# them to double). Canonicalize only the undefined symbol name to the shared
-# TrapDanglingJump target (0x800333A0); section contents are unchanged.
-$(BUILD_DIR)/$(SRC_DIR)/main/track.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym trackCamPosTrap=TrapDanglingJump $@
-
-# levelInit reaches seven runtime-loaded functions through the shared resident
-# trap. Typed weak aliases preserve each real ABI, and IDO emits each call
-# against the alias name, so the object must be canonicalized: this
-# metadata-only step restores the shipped undefined symbol identity without
-# changing section data. (The rule was once removed as redundant; it is not --
-# without it the promoted object does not link.)
-# One objcopy per alias: a single invocation refuses seven redefinitions onto
-# one target name.
-$(BUILD_DIR)/$(SRC_DIR)/main/level.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym levelTrackInitTrap=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym levelOverlay7InitPoolTrap=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym levelOverlay34InitStorageTrap=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym levelOverlay33InitializeBuffersTrap=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym levelOverlay42InitTrap=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym levelOverlay16InitializeBufferTrap=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym levelOverlay103CheckSignatureTrap=TrapDanglingJump $@
-
 # The gsSnd flag lattice reproduces its debug-shaped epilogues only with bare -g.
 $(BUILD_DIR)/$(SRC_DIR)/main/gsSnd.c.o: OPT_FLAGS := -g
 
@@ -1290,10 +1290,6 @@ $(BUILD_DIR)/$(SRC_DIR)/main/models_5B300.c.o: CFLAGS += -Wab,-r4300_mul
 # it two scheduler-tied words at +0xDC differ under every source spelling
 # tried.
 $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: CFLAGS += -Wab,-r4300_mul
-# The path reset trap needs a typed alias to preserve its f32 argument, and
-# func_800517E0's motion and slot-colour dangling calls need their own typed
-# aliases (animCommandMotionTrap, animCommandSlotTrap) for the same reason.
-# Canonicalize only the undefined symbol name; section contents are unchanged.
 # func_800508D4's 0.01f literal owns one word of the anim literal pool, and
 # the retained pool (D_80083FAC, 0.02f, onward) begins immediately after it.
 # The rest of IDO's input section (0x4..0x250) duplicates tables and
@@ -1315,11 +1311,6 @@ $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: $(TOOLS_DIR)/rebind_elf_relocations.py \
     $(TOOLS_DIR)/trim_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym animResetTrap=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym animUpdateTrap=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym hitCopyFirstTrap=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym animCommandMotionTrap=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym animCommandSlotTrap=TrapDanglingJump $@ && \
 	$(OBJCOPY) --add-symbol .L800518DC=.text:0x18DC,global \
 	    --add-symbol .L80051928=.text:0x1928,global \
 	    --add-symbol .L8005194C=.text:0x194C,global \
@@ -1466,9 +1457,6 @@ $(BUILD_DIR)/$(SRC_DIR)/main/rcpFast3d.c.o: POSTPROCESS = \
 # single-precision smoothing helpers; the flag lattice isolates this assembler
 # mode without changing the resident TU's O2/MIPS-II compiler output.
 $(BUILD_DIR)/$(SRC_DIR)/main/charControl.c.o: CFLAGS += -Wab,-r4300_mul
-# func_8001C4C0's effect-spawn dangling call needs its observed twelve-argument
-# prototype without changing the other shared TrapDanglingJump call sites.
-# Canonicalize only the undefined alias name; section contents are unchanged.
 # The TU's BSS is the collision callback state, the camera state pointer and
 # the gravity scalar (0x48 bytes); IDO rounds its section to 0x50. Normalize
 # only the proved NOBITS tail alignment after the gravity scalar, preserving
@@ -1479,7 +1467,6 @@ $(BUILD_DIR)/$(SRC_DIR)/main/charControl.c.o: $(TOOLS_DIR)/trim_elf_bss.py
 # add global field aliases at their .bss offsets after the trim. No
 # instruction or data byte is changed.
 $(BUILD_DIR)/$(SRC_DIR)/main/charControl.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym charControlEffectSpawnTrap=TrapDanglingJump $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_bss.py $@ D_800CB304 4 && \
 	$(OBJCOPY) --add-symbol D_800CB2C4=.bss:0x4,global,object \
 		--add-symbol D_800CB2C8=.bss:0x8,global,object \
@@ -1567,7 +1554,7 @@ $(TARGET).z64: $(TARGET).bin $(CRC)
 	fi
 	@ls -l $@
 
-.PHONY: default all setup hooks extract prune-asm verify cleanroom system-health check-tooling forced-floor-census promotion-proof check-promotion-proofs release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms objdiff-config check-objdiff-config overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
+.PHONY: default all setup hooks extract prune-asm verify check-trap-names trap-names cleanroom system-health check-tooling forced-floor-census promotion-proof check-promotion-proofs release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms objdiff-config check-objdiff-config overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
 .SECONDARY:
 SHELL = /bin/bash -e -o pipefail
 

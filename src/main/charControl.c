@@ -22,6 +22,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/charControl.h"
+#include "game/overlay_exports.h"
 
 extern u8 D_80079BF8;
 extern u16 D_80079A0C[];
@@ -221,12 +222,6 @@ void func_8001D690(ControlActor *actor, ControlPlayer *player);
 void func_80006EA0(void *handle);
 s32 func_8000FAE0(f32 x, f32 y, f32 z);
 void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode);
-s32 TrapDanglingJump();
-#pragma weak charControlEffectSpawnTrap = TrapDanglingJump
-extern void *charControlEffectSpawnTrap(
-    ControlActor *actor, u8 kind, s16 angle, u8 index,
-    f32 x, f32 y, f32 z, f32 w,
-    u8 arg14, u8 arg15, u8 arg16, u8 arg17);
 void mainChangeLevel(s32 nextLevel, s32 nextCharacter, s32 nextAnimGroup,
                      s32 nextCamera, s32 fadeOut, s32 flags);
 s32 mainGetNextCharacter(void);
@@ -321,13 +316,13 @@ void func_8001BBB4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
         cameraSource = func_80053420(0, D_800CB300);
         if (cameraSource == NULL) {
             if ((player->flags1A8 & 1) && (func_8003A550() == 0)) {
-                TrapDanglingJump(actor, player, D_800CB300, (s32) updateRate);
+                func_overlay_092_F0000308_18D6228(actor, player, D_800CB300, (s32) updateRate);
             } else if (player->controlKeys & 4) {
                 func_80024ED8(actor, player, D_800CB300);
             } else if (D_8007BF10 != 0) {
-                TrapDanglingJump(D_800CB300, actor, *(s32 *) &updateRate);
+                func_overlay_009_F00010B4_186772C(D_800CB300, actor, *(s32 *) &updateRate);
             } else {
-                TrapDanglingJump(D_800CB300, actor, *(s32 *) &updateRate);
+                func_overlay_008_F00042A8_1862000(D_800CB300, actor, *(s32 *) &updateRate);
             }
         }
         track = trackGetTrack();
@@ -654,7 +649,7 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
                 do {
                     if (effectOwner[0x134 / 4] == 0) {
                         effectOwner[0x134 / 4] =
-                            charControlEffectSpawnTrap(
+                            overlay17CreateChain(
                                 actor, effect->kind, effect->angle, effect->index,
                                 effect->x, effect->y, effect->z, effect->w,
                                 effect->arg14, effect->arg15, effect->arg16,
@@ -935,24 +930,24 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
     }
     if (D_8007BF10 != 0) {
         if (player->unk191 == 0) {
-            TrapDanglingJump(actor, updateRate);
+            func_overlay_009_F0000000_1866678(actor, updateRate);
         }
-        TrapDanglingJump(actor, updateRate);
+        overlay1StartTimerCallbacks(actor, updateRate);
     } else if (player->flags1A8 & 1) {
-        TrapDanglingJump(actor, player, updateRate);
+        overlay1TransitionState(actor, player, updateRate);
         if (player->unk191 == 0) {
-            TrapDanglingJump(actor, updateRate);
+            overlay1UpdateObjectPhysics(actor, updateRate);
         }
     } else {
         if (player->unk191 == 0) {
             if ((player->unk1 == 0) || (player->unk1 == 1) ||
                 (player->unk1 == 2) || (player->unk1 == 3)) {
-                TrapDanglingJump(actor, updateRate);
+                func_overlay_008_F0000058_185DDB0(actor, updateRate);
             } else {
-                TrapDanglingJump(actor, updateRate);
+                func_overlay_008_F0000058_185DDB0(actor, updateRate);
             }
         }
-        TrapDanglingJump(actor, updateRate);
+        overlay1StartTimerCallbacks(actor, updateRate);
     }
     if ((player->unk168 != 0) && (player->unk3FA == 0)) {
         player->unk168 = (s16) (player->unk168 - updateRate);
@@ -986,7 +981,7 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
     }
     if (!(player->flags1A8 & 1)) {
         if ((player->unkD8 == NULL) &&
-            (TrapDanglingJump((void *) player->playerIndex) != 0)) {
+            (overlay37RecordActive((void *) player->playerIndex) != 0)) {
             packetD8.kind = 0x14C;
             packetD8.arg02 = 0x10;
             packetD8.arg03 = 0;
@@ -1000,7 +995,7 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
                 ((ControlSpawned *) player->unkD8)->unk3C = 0;
             }
         } else if ((player->unkD8 != NULL) &&
-                   (TrapDanglingJump((void *) player->playerIndex) == 0)) {
+                   (overlay37RecordActive((void *) player->playerIndex) == 0)) {
             func_80006EA0(player->unkD8);
         }
     }
@@ -1053,12 +1048,12 @@ void func_8001D2A0(ControlActor *actor, s32 updateRate)
   }
   if (!(player->flags1A8 & 1))
   {
-    TrapDanglingJump(actor, player, updateRate);
+    func_overlay_008_F0000894_185E5EC(actor, player, updateRate);
     D_800CB300 = D_800CB300;
   }
   if (player->unkD4 != 0)
   {
-    TrapDanglingJump(player->unkD4, updateRate);
+    func_overlay_027_F0000064_187BA3C(player->unkD4, updateRate);
   }
   D_800CB300 = camGetListPtr();
   cameraIndex = mainGetNumberOfCameras() - 1;
@@ -1085,7 +1080,7 @@ void func_8001D41C(ControlActor *actor, ControlPlayer *player, s32 updateRate) {
             if ((D_8007C1A0 == 1) && !(player->flags1A8 & 1)) {
                 effectIndex = player->unk19A;
                 if ((effectIndex >= 2) && (effectIndex < 10)) {
-                    TrapDanglingJump(effectIndex + 30);
+                    overlay7CommitSelection(effectIndex + 30);
                 }
             }
         }
@@ -1093,7 +1088,7 @@ void func_8001D41C(ControlActor *actor, ControlPlayer *player, s32 updateRate) {
 
     actions = player->actions;
     if ((actions == 0) || (player->unk19C != 0) ||
-        (TrapDanglingJump(player->unkD4) != 0)) {
+        (overlay27CanUse(player->unkD4) != 0)) {
         if (player->controlDkeys & 0x2000) {
             if ((player->unk1 >= 0) && (player->unk1 < 10)) {
                 if (D_8007BF1C & 4) {

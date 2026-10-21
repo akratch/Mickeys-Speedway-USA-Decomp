@@ -9,6 +9,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/overlay_exports.h"
 
 typedef struct SpranimBAE4Target {
     u8 pad0[0x132];
@@ -167,7 +168,6 @@ extern void partUpdateTriggers(void *state, s32 updateRate);
 extern void **func_80005750(s32 *count);
 extern void animseqPlay();
 extern void animseqResetGroup();
-extern s32 TrapDanglingJump();
 
 /* PROVENANCE -- adapted from JFG's public asm/nonmatchings/spranim/spranimInit.s, with Mickey's offsets. */
 void spranimInit(SpranimInitState *state, SpranimInitEntry *entry) {
@@ -384,13 +384,13 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
                         }
                         break;
                     case 1:
-                        TrapDanglingJump(plane->parameter);
+                        overlay75MarkSlot(plane->parameter);
                         break;
                     case 2:
-                        TrapDanglingJump();
+                        overlay76TriggerRandom();
                         break;
                     case 3:
-                        TrapDanglingJump();
+                        overlay77EnsureSelection();
                         break;
                     }
                 }

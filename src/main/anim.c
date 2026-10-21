@@ -15,6 +15,7 @@
 #include "PR/ultratypes.h"
 #include "game/anim.h"
 #include "game/charControl.h"
+#include "game/overlay_exports.h"
 
 void *mmAlloc();
 AnimPathObject *func_8000590C(ControlSpawnPacket *packet, s32 mode);
@@ -250,8 +251,6 @@ u8 pathIndex;
     }
 }
 /* JFG's animseqResetPath assembly corroborates this Mickey-led reset. */
-#pragma weak animResetTrap = TrapDanglingJump
-extern s32 animResetTrap(AnimPath *, f32, s32, s32);
 void func_8005055C(pathIndex)
 u8 pathIndex;
 {
@@ -284,7 +283,7 @@ u8 pathIndex;
                 if (path->unk8->unk58 != NULL) {
                     path->unk8->unk58->unk132 = 0;
                 }
-                animResetTrap(path, 0.0f, 0, 0);
+                func_overlay_041_F0000854_1887B8C(path, 0.0f, 0, 0);
                 if (*(s32 *) &object->soundHandle != 0) {
                     amSndStopXYZ(*(s32 *) &object->soundHandle);
                     *(s32 *) &object->soundHandle = 0;
@@ -688,7 +687,7 @@ void animseqResetGroup(void) {
         D_8007D69C = D_8007D698;
         D_8007D6A8 = 0;
         D_8007D6AC = 0.0f;
-        if (TrapDanglingJump(osRomBase) == 0) {
+        if (overlay104CheckWord(osRomBase) == 0) {
             D_8007D69C = NULL;
         }
         func_80050D50();
@@ -773,9 +772,6 @@ extern s32 osTvType;
 void amSndSetPitchXYZ(void *soundHandle, u8 pitch);
 void amSndSetXYZ(void *soundHandle, f32 x, f32 y, f32 z);
 void func_800517E0(void);
-#pragma weak animUpdateTrap = TrapDanglingJump
-extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
-                           s32 originalRate);
 
 /*
  * PROVENANCE: adapted from JFG's public
@@ -811,7 +807,7 @@ void func_80051364(s32 updateRate) {
         }
         originalRate = updateRate;
         if (D_8007D6B0 > 0) {
-            TrapDanglingJump(updateRate);
+            overlay40UpdateEntries(updateRate);
         }
         if (D_8007D69C != NULL && D_8007D6A4 == 1 && (pad2 = cmdWord = D_8007D69C->command, cmdWord >>= 8) == 0x7B) {
             duration = D_8007D69C->duration;
@@ -855,16 +851,16 @@ void func_80051364(s32 updateRate) {
             for (i = 0; i < 256; i++) {
                 path = D_800D6B00[i];
                 if (path != NULL && (path->flags & 5)) {
-                    animUpdateTrap(path, updateRate * timeScale, updateRate,
-                                   originalRate);
+                    func_overlay_041_F0000854_1887B8C(path, updateRate * timeScale, updateRate,
+                                                      originalRate);
                 }
             }
             if (D_8007D6A4 == 1) {
                 func_800517E0();
             }
-            TrapDanglingJump(updateRate);
-            TrapDanglingJump(updateRate);
-            TrapDanglingJump(updateRate);
+            func_overlay_041_F0000000_1887338(updateRate);
+            func_overlay_041_F0000124_188745C(updateRate);
+            overlay41TickTransitions(updateRate);
             for (i = 0; i < 256; i++) {
                 path = D_800D6B00[i];
                 if (path != NULL) {
@@ -1028,17 +1024,9 @@ typedef struct AnimCommandTrack {
     s16 count18;
 } AnimCommandTrack;
 
-/* Tier B: resident relocation entries resolve these calls to overlay 100
- * motion creation and overlay 41 slot insertion. Typed trampoline aliases
- * preserve the destination ABI without default float promotion. */
-#pragma weak animCommandMotionTrap = TrapDanglingJump
-extern void *animCommandMotionTrap(f32 x, f32 y, f32 z, s32 count,
-                                  s32 colorB0, s32 colorB1, s32 colorB2,
-                                  s32 colorA0, s32 colorA1, s32 colorA2,
-                                  f32 duration);
-#pragma weak animCommandSlotTrap = TrapDanglingJump
-extern void animCommandSlotTrap(void *object, s32 red, s32 green, s32 blue,
-                               s32 alpha, f32 duration, s32 alternateColors);
+/* Tier B: resident relocation entries resolve this function's calls to
+ * overlay 100 motion creation and overlay 41 slot insertion. Their prototypes
+ * (game/overlay_exports.h) pass the floats without default promotion. */
 
 extern u8 D_8007BF0C;
 extern s16 D_800D6C4E;
@@ -1189,7 +1177,7 @@ void func_800517E0(void) {
                     pathIndex = cursor->command & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     animseqStartPath(pathIndex);
-                    animResetTrap(paths[pathIndex], delta, 0, 0);
+                    func_overlay_041_F0000854_1887B8C(paths[pathIndex], delta, 0, 0);
                     break;
                 }
                 case 1:
@@ -1205,7 +1193,7 @@ void func_800517E0(void) {
                         if (path->flags & 1) {
                             func_8005055C(pathIndex);
                             animseqStartPath(pathIndex);
-                            animResetTrap(paths[pathIndex], delta, 0, 0);
+                            func_overlay_041_F0000854_1887B8C(paths[pathIndex], delta, 0, 0);
                         } else {
                             func_8005055C(pathIndex);
                         }
@@ -1411,8 +1399,8 @@ void func_800517E0(void) {
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     if ((word12 & 0xF) == 7) {
                         frame68 = flagsValue != 0 ? 0 : 0xFF;
-                        TrapDanglingJump(high, high2, low2, frame68,
-                                         (s32) (value * factor * scale));
+                        overlay40SetValues(high, high2, low2, frame68,
+                                           (s32) (value * factor * scale));
                     } else {
                         value /= hundred;
                         start = start != 65535.0f ?
@@ -1486,10 +1474,10 @@ void func_800517E0(void) {
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0x10);
                     target = func_8002A8C0(index) * end;
                     end = func_8002A8BC(index) * end;
-                    animCommandMotionTrap(target, color, end,
-                                          motionCount * 2, high, high2,
-                                          low2, pathIndex, low, packedField,
-                                          value / hundred);
+                    overlay100InitializeMotion(target, color, end,
+                                               motionCount * 2, high, high2,
+                                               low2, pathIndex, low, packedField,
+                                               value / hundred);
                     break;
                 }
                 case 0x47:
@@ -1553,9 +1541,9 @@ void func_800517E0(void) {
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
                     if (low != 0) {
-                        TrapDanglingJump(pathIndex, high, high2, low2, low);
+                        overlay40AddEntry(pathIndex, high, high2, low2, low);
                     } else {
-                        TrapDanglingJump(pathIndex);
+                        overlay40RemoveEntry(pathIndex);
                     }
                     break;
                 case 0x4B:
@@ -1587,7 +1575,7 @@ void func_800517E0(void) {
                     /* Restores the counted use 0x45 gave packed2, so its web
                      * keeps its place in the decision order (keep_alive). */
                     packed2 |= 0;
-                    TrapDanglingJump(pathIndex, packed2, low, word4, word8, word9, frame, frame4C, duration);
+                    overlay41SpawnItems(pathIndex, packed2, low, word4, word8, word9, frame, frame4C, duration);
                     break;
                 case 0x4D:
                     word6 = *((u16 *) ((u8 *) cursor + 4));
@@ -1602,9 +1590,9 @@ void func_800517E0(void) {
                     high = *((u16 *) ((u8 *) cursor + 0xC)) >> 8;
                     high2 = *((u16 *) ((u8 *) cursor + 0xC)) & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
-                    TrapDanglingJump(word6, (s32) value,
-                                     frame6F, timer, high,
-                                     high2, low2);
+                    func_overlay_041_F000195C_1888C94(word6, (s32) value,
+                                                      frame6F, timer, high,
+                                                      high2, low2);
                     break;
                 case 0x60:
                     pathIndex = cursor->command & 0xFF;
@@ -1746,7 +1734,7 @@ void func_800517E0(void) {
                             (packed2 < object->model->tableCount28)) {
                             entry = *(void **)
                                 ((u8 *) reference + packed2 * 4);
-                            animCommandSlotTrap(
+                            func_overlay_041_F0001650_1888988(
                                 entry, high, high2, low2, frame4D, value, 1);
                         }
                     }
@@ -1769,7 +1757,7 @@ void func_800517E0(void) {
                             (packed2 < object->model->tableCount29)) {
                             entry = *(void **)
                                 ((u8 *) reference + packed2 * 4);
-                            animCommandSlotTrap(
+                            func_overlay_041_F0001650_1888988(
                                 entry, high, high2, low2, frame6B, value, 0);
                         }
                     }
@@ -1857,9 +1845,9 @@ void func_800517E0(void) {
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
-                        TrapDanglingJump(object, word3,
-                                         word12, packed2, index,
-                                         word8, (s32) (unit * factor *
+                        overlay41Ignore(object, word3,
+                                        word12, packed2, index,
+                                        word8, (s32) (unit * factor *
                                                        scale));
                     }
                     break;
@@ -1930,11 +1918,11 @@ void func_800517E0(void) {
                     break;
                 case 0x74:
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    TrapDanglingJump(1);
+                    overlay56SetMode(1);
                     break;
                 case 0x75:
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    TrapDanglingJump(0);
+                    overlay56SetMode(0);
                     break;
                 case 0x76:
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
@@ -2077,7 +2065,7 @@ void func_800534EC(s32 arg0) {
     i = 4;
     do {
         if (slot->unkB > 0) {
-            TrapDanglingJump(arg0, slot);
+            overlay41DrawItem(arg0, slot);
         }
         slot++;
     } while (i--);
@@ -2512,11 +2500,11 @@ void func_80053868(s32 updateRate) {
                                 }
                             } else if (overlaps == 2) {
                                 if (firstObject->unk44 == 0x40) {
-                                    TrapDanglingJump(firstObject, 1);
+                                    func_overlay_022_F0000D30_1878E38(firstObject, 1);
                                 } else if (firstObject->unk44 == 0x39) {
-                                    TrapDanglingJump(firstObject, 5);
+                                    func_overlay_026_F0000D24_187B11C(firstObject, 5);
                                 } else if (firstObject->unk44 == 0x3A) {
-                                    TrapDanglingJump(firstObject, 5);
+                                    func_overlay_029_F00010C4_187E374(firstObject, 5);
                                 }
                             }
                         }
@@ -2570,8 +2558,8 @@ void func_80053868(s32 updateRate) {
             if ((firstKind == 1) && (secondKind == 1)) {
                 func_80055104((HitCopyState *) firstObject, (HitCopyState *) secondObject, remainingTime);
             } else if ((firstKind == 0x40) && (secondKind == 0x40)) {
-                TrapDanglingJump(firstObject, 1);
-                TrapDanglingJump(secondObject, 2);
+                func_overlay_022_F0000D30_1878E38(firstObject, 1);
+                func_overlay_022_F0000D30_1878E38(secondObject, 2);
             } else if ((firstKind == 0x39) && (secondKind == 0x39)) {
                 func_800560D0((HitCopyState *) firstObject, (HitCopyState *) secondObject, remainingTime);
             } else if ((firstKind == 0x3A) && (secondKind == 0x3A)) {
@@ -2844,11 +2832,11 @@ void func_80055104(HitCopyState *first, HitCopyState *second, f32 scale) {
 
     firstVehicle = (HitResolveVehicle *) first->target;
     firstSource = first->source;
-    mass = (HitResolveMass *) TrapDanglingJump(firstVehicle);
+    mass = (HitResolveMass *) overlay8GetIndexed(firstVehicle);
     firstMass = mass->mass;
     secondSource = second->source;
     secondVehicle = (HitResolveVehicle *) second->target;
-    mass = (HitResolveMass *) TrapDanglingJump(secondVehicle);
+    mass = (HitResolveMass *) overlay8GetIndexed(secondVehicle);
     secondMass = mass->mass;
     direction[0] = secondSource->current.x - firstSource->current.x;
     direction[1] = secondSource->current.y - firstSource->current.y;
@@ -2906,27 +2894,27 @@ void func_80055104(HitCopyState *first, HitCopyState *second, f32 scale) {
     second->position.x = secondSource->previous.x + x;
     second->position.y = secondSource->previous.y + y;
     second->position.z = secondSource->previous.z + z;
-    firstCollision = (void *) TrapDanglingJump(firstVehicle->collisionData);
-    secondCollision = (void *) TrapDanglingJump(secondVehicle->collisionData);
+    firstCollision = (void *) overlay27CanUse(firstVehicle->collisionData);
+    secondCollision = (void *) overlay27CanUse(secondVehicle->collisionData);
     if ((firstVehicle->collisionMode != 0 ||
          (firstCollision == NULL && secondCollision != NULL)) &&
-        TrapDanglingJump(second, secondVehicle) != 0) {
+        func_overlay_008_F0000E88_185EBE0(second, secondVehicle) != 0) {
         firstVehicle->collisionCountA++;
         secondVehicle->collisionCountB++;
         if (*func_80028F54() == 5) {
-            TrapDanglingJump(second);
+            func_overlay_070_F0000384_18C954C(second);
         }
-        TrapDanglingJump(first, second);
+        overlay7DispatchModes(first, second);
     }
     if ((secondVehicle->collisionMode != 0 ||
          (secondCollision == NULL && firstCollision != NULL)) &&
-        TrapDanglingJump(first, firstVehicle) != 0) {
+        func_overlay_008_F0000E88_185EBE0(first, firstVehicle) != 0) {
         firstVehicle->collisionCountB++;
         secondVehicle->collisionCountA++;
         if (*func_80028F54() == 5) {
-            TrapDanglingJump(first);
+            func_overlay_070_F0000384_18C954C(first);
         }
-        TrapDanglingJump(second, first);
+        overlay7DispatchModes(second, first);
     }
     firstVehicle->collisionTimer = 100;
     secondVehicle->collisionTimer = 100;
@@ -2968,7 +2956,7 @@ void func_800557F8(HitCopyState *first, HitCopyState *second, f32 unused) {
     firstVehicle = (HitCollisionVehicle *) first->target;
     source = second->source;
     if ((firstVehicle->unk16A == 0) && (firstVehicle->unk168 == 0)) {
-        TrapDanglingJump(first, firstVehicle);
+        overlay23SpawnAttachments(first, firstVehicle);
         /* Inert aid preserving IDO's target v0 allocation; tracked in
          * docs/cleanup-queue.md. */
         if (1) {
@@ -2978,7 +2966,7 @@ void func_800557F8(HitCopyState *first, HitCopyState *second, f32 unused) {
         firstVehicle->unk15A = timer;
         firstVehicle->unk15C = timer;
         firstVehicle->unk150 = 10.0f;
-        TrapDanglingJump(secondTarget->state, first);
+        overlay7DispatchModes(secondTarget->state, first);
         /* Inert aid preserving IDO's target v0 allocation; tracked in
          * docs/cleanup-queue.md. */
         if (1) {
@@ -2986,7 +2974,7 @@ void func_800557F8(HitCopyState *first, HitCopyState *second, f32 unused) {
         ((HitCollisionVehicle *) secondTarget->state->target)->unk3B6++;
         firstVehicle->unk3B8++;
         if (*func_80028F54() == 5) {
-            TrapDanglingJump(first);
+            func_overlay_070_F0000384_18C954C(first);
         }
         soundHandle = firstVehicle->soundHandle;
         firstVehicle->unk185 = 0;
@@ -3007,7 +2995,7 @@ void func_800557F8(HitCopyState *first, HitCopyState *second, f32 unused) {
     source->previous.x = source->current.x;
     source->previous.y = source->current.y;
     source->previous.z = source->current.z;
-    TrapDanglingJump(second, 1);
+    func_overlay_022_F0000D30_1878E38(second, 1);
 }
 /* Declaration order is load-bearing: uopt homes declared locals at descending
  * stack offsets in declaration order, and only firstVehicle (sp+0x48, the
@@ -3029,8 +3017,8 @@ void func_80055970(HitCopyState *first, HitCopyState *second, f32 unused) {
     secondSource = second->source;
     firstSource = first->source;
     firstVehicle = (HitCollisionVehicle *) first->target;
-    if (TrapDanglingJump(first, firstVehicle) != 0) {
-        TrapDanglingJump(secondTarget->state, first, firstVehicle);
+    if (func_overlay_008_F0000E88_185EBE0(first, firstVehicle) != 0) {
+        overlay7DispatchModes(secondTarget->state, first, firstVehicle);
         /* Inert allocation aid retained by exact C; tracked in
          * docs/cleanup-queue.md. */
         if (1) {
@@ -3038,7 +3026,7 @@ void func_80055970(HitCopyState *first, HitCopyState *second, f32 unused) {
         ((HitCollisionVehicle *) secondTarget->state->target)->unk3B6++;
         firstVehicle->unk3B8++;
         if (*func_80028F54() == 5) {
-            TrapDanglingJump(first);
+            func_overlay_070_F0000384_18C954C(first);
         }
     } else {
         amSndPlayXYZ(0x26E, secondSource->current.x,
@@ -3063,14 +3051,12 @@ void func_80055970(HitCopyState *first, HitCopyState *second, f32 unused) {
     secondTarget->unk14 = deltaX / distance;
     secondTarget->unk18 = deltaY / distance;
     secondTarget->unk1C = deltaZ / distance;
-    TrapDanglingJump(second, 0xE);
+    func_overlay_026_F0000D24_187B11C(second, 0xE);
 }
 
-/* The first collision callback returns no value. Its typed weak alias removes
- * the generic trap placeholder's phantom s32 return web; the build restores
- * the measured TrapDanglingJump relocation identity without changing bytes. */
-#pragma weak hitCopyFirstTrap = TrapDanglingJump
-extern void hitCopyFirstTrap(HitCopyState *state, HitCollisionVehicle *vehicle);
+/* The first collision callback, overlay23SpawnAttachments, returns no value;
+ * its void declaration is what keeps an int-returning declaration's phantom
+ * s32 return web out of this function. */
 void func_80055B24(HitCopyState *first, HitCopyState *second, f32 unused) {
     HitCollisionNormalLink *secondTarget;
     HitCopySource *secondSource;
@@ -3087,7 +3073,7 @@ void func_80055B24(HitCopyState *first, HitCopyState *second, f32 unused) {
     firstSource = first->source;
     firstVehicle = (HitCollisionVehicle *) first->target;
     if ((firstVehicle->unk16A == 0) && (firstVehicle->unk168 == 0)) {
-        hitCopyFirstTrap(first, firstVehicle);
+        overlay23SpawnAttachments(first, firstVehicle);
         {
             s32 timer;
 
@@ -3097,7 +3083,7 @@ void func_80055B24(HitCopyState *first, HitCopyState *second, f32 unused) {
             firstVehicle->unk15C = timer;
         }
         firstVehicle->unk150 = 10.0f;
-        TrapDanglingJump(secondTarget->state, first);
+        overlay7DispatchModes(secondTarget->state, first);
         /* Inert allocation aid retained by exact C; tracked in
          * docs/cleanup-queue.md. */
         if (1) {
@@ -3105,7 +3091,7 @@ void func_80055B24(HitCopyState *first, HitCopyState *second, f32 unused) {
         ((HitCollisionVehicle *) secondTarget->state->target)->unk3B6++;
         firstVehicle->unk3B8++;
         if (*func_80028F54() == 5) {
-            TrapDanglingJump(first);
+            func_overlay_070_F0000384_18C954C(first);
         }
         soundHandle = firstVehicle->soundHandle;
         firstVehicle->unk185 = 0;
@@ -3137,7 +3123,7 @@ void func_80055B24(HitCopyState *first, HitCopyState *second, f32 unused) {
     secondTarget->unk1C = deltaX / distance;
     secondTarget->unk20 = deltaY / distance;
     secondTarget->unk24 = deltaZ / distance;
-    TrapDanglingJump(second, 6);
+    func_overlay_029_F00010C4_187E374(second, 6);
 }
 void func_80055D08(HitCopyState *first, HitCopyState *second, f32 unused) {
     HitCopySource *firstSource;
@@ -3177,8 +3163,8 @@ void func_80055D08(HitCopyState *first, HitCopyState *second, f32 unused) {
     target->unk14 = deltaX / distance;
     target->unk18 = deltaY / distance;
     target->unk1C = deltaZ / distance;
-    TrapDanglingJump(first, 1, second);
-    TrapDanglingJump(second, 0x12);
+    func_overlay_022_F0000D30_1878E38(first, 1, second);
+    func_overlay_026_F0000D24_187B11C(second, 0x12);
 }
 void func_80055E50(HitCopyState *first, HitCopyState *second, f32 unused) {
     HitCopySource *firstSource;
@@ -3215,8 +3201,8 @@ void func_80055E50(HitCopyState *first, HitCopyState *second, f32 unused) {
     target->unk1C = deltaX / distance;
     target->unk20 = deltaY / distance;
     target->unk24 = deltaZ / distance;
-    TrapDanglingJump(first, 1, second);
-    TrapDanglingJump(second, 0xA);
+    func_overlay_022_F0000D30_1878E38(first, 1, second);
+    func_overlay_029_F00010C4_187E374(second, 0xA);
 }
 
 /* IDO's local allocation follows declaration order here; retain secondZ before
@@ -3272,8 +3258,8 @@ void func_80055F64(HitCopyState *first, HitCopyState *second, f32 unused) {
     firstTarget->unk14 = -secondTarget->unk1C;
     firstTarget->unk18 = -secondTarget->unk20;
     firstTarget->unk1C = -secondTarget->unk24;
-    TrapDanglingJump(first, 0x12, second);
-    TrapDanglingJump(second, 6);
+    func_overlay_026_F0000D24_187B11C(first, 0x12, second);
+    func_overlay_029_F00010C4_187E374(second, 6);
 }
 void func_800560D0(HitCopyState *first, HitCopyState *second, f32 unused) {
     HitCopyTarget *firstTarget;
@@ -3321,8 +3307,8 @@ void func_800560D0(HitCopyState *first, HitCopyState *second, f32 unused) {
     secondTarget->unk14 = -firstTarget->unk14;
     secondTarget->unk18 = -firstTarget->unk18;
     secondTarget->unk1C = -firstTarget->unk1C;
-    TrapDanglingJump(first, 6);
-    TrapDanglingJump(second, 0x12);
+    func_overlay_026_F0000D24_187B11C(first, 6);
+    func_overlay_026_F0000D24_187B11C(second, 0x12);
 }
 void func_80056274(HitCopyState *first, HitCopyState *second, f32 unused) {
     HitCopyTarget *firstTarget;
@@ -3364,8 +3350,8 @@ void func_80056274(HitCopyState *first, HitCopyState *second, f32 unused) {
     secondTarget->unk1C = -firstTarget->unk1C;
     secondTarget->unk20 = -firstTarget->unk20;
     secondTarget->unk24 = -firstTarget->unk24;
-    TrapDanglingJump(first, 6, firstTarget);
-    TrapDanglingJump(second, 0xA);
+    func_overlay_029_F00010C4_187E374(first, 6, firstTarget);
+    func_overlay_029_F00010C4_187E374(second, 0xA);
 }
 /*
  * PROVENANCE: JFG's public assembly-only hitVectorCheck establishes the
@@ -3622,7 +3608,7 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
              target->velocity.y * target->velocity.y);
     if (speed > 25.0f) {
         /* `factor` carries the mass, then the negated sine. */
-        factor = ((HitResolveMass *) TrapDanglingJump(target))->mass;
+        factor = ((HitResolveMass *) overlay8GetIndexed(target))->mass;
         speed = normal->z * target->velocity.z +
                 (target->velocity.x * normal->x + target->velocity.y * normal->y);
         impulse = ((secondSource->unk6C + 1.0f) * speed) / (1.0f / factor);
@@ -3759,7 +3745,7 @@ void func_800572AC(HitCopyState *state, void *unused, AnimVec3f *position,
     target->unk14 = position->x;
     target->unk18 = position->y;
     target->unk1C = position->z;
-    TrapDanglingJump(state, 0x16);
+    func_overlay_026_F0000D24_187B11C(state, 0x16);
 }
 void func_80057350(HitCopyState *state, void *unused, AnimVec3f *position,
                    f32 unusedFloat) {
@@ -3777,7 +3763,7 @@ void func_80057350(HitCopyState *state, void *unused, AnimVec3f *position,
     target->unk1C = position->x;
     target->unk20 = position->y;
     target->unk24 = position->z;
-    TrapDanglingJump(state, 0xE);
+    func_overlay_029_F00010C4_187E374(state, 0xE);
 }
 
 /*
@@ -3882,11 +3868,11 @@ no_intersection:
             }
             volume->active = 1;
         } else if (state->kind44 == 0x40) {
-            TrapDanglingJump(state, 1);
+            func_overlay_022_F0000D30_1878E38(state, 1);
         } else if (state->kind44 == 0x39) {
-            TrapDanglingJump(state, 5);
+            func_overlay_026_F0000D24_187B11C(state, 5);
         } else if (state->kind44 == 0x3A) {
-            TrapDanglingJump(state, 5);
+            func_overlay_029_F00010C4_187E374(state, 5);
         }
     }
 }

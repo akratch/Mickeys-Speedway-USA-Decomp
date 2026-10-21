@@ -1,5 +1,6 @@
 #include "PR/ultratypes.h"
 #include "game/memory.h"
+#include "game/overlay_exports.h"
 
 extern s32 D_8007BEA8;
 extern s32 D_8007BE90;
@@ -136,13 +137,12 @@ void func_800371BC(void) {
         }
     }
 }
-extern void TrapDanglingJump();
 /* Matched 2026-09-23. Four edits took it from 57 masked words to 0:
  * the call to func_800371BC takes no arguments (the old +4 was the a2/a3
  * argument setup and the s0 carrier it forced); the three tail byte stores
  * are in address order; the first frame count is not a declared variable --
  * D_8007BE94 re-spells the expression and uopt CSEs it; and the
- * TrapDanglingJump argument is `outTicks | 0`. uopt copy-propagates a bare
+ * overlay99ReleaseEntries argument is `outTicks | 0`. uopt copy-propagates a bare
  * variable into a call argument but not into an operand of an operator, so
  * the plain `outTicks` argument was replaced by the expression temp and the two
  * webs traded a1/t0. The `| 0` keeps outTicks itself as the argument, as the
@@ -162,7 +162,7 @@ void func_80037414(s32 mode, f32 outTime, f32 inTime, s32 red, s32 green,
     }
     if ((D_8007BEA8 != 0) &&
         ((D_8007BE90 == 4) || (D_8007BE90 == 5))) {
-        TrapDanglingJump(mode, outTicks | 0, inTicks);
+        overlay99ReleaseEntries(mode, outTicks | 0, inTicks);
     }
     if ((restart == 0) || (D_8007BEA8 == 0)) {
         if ((mode & 1) && (inTicks != 0)) {
@@ -266,7 +266,7 @@ void func_800376CC(s32 updateRate) {
     if ((old_state != 0) && (D_8007BEA8 == 0) &&
         ((D_8007BEB8 = 1, (D_8007BE90 == 4)) ||
          (D_8007BE90 == 5))) {
-        TrapDanglingJump(&D_8007BEAC, done, updateRate, &D_8007BEA8);
+        overlay99ReleaseEntries(&D_8007BEAC, done, updateRate, &D_8007BEA8);
     }
 }
 /* The front-end backdrop's radial shading pass: a 17x17 vertex grid whose
@@ -518,20 +518,9 @@ void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
  * uopt deletes them, globalcolor still counts them) on row, dataOffset and
  * two packet cursors rank those webs above nextRow, which then takes t2 as
  * shipped. A source form carrying those reference counts is still unknown. */
-/* Resident runtime records 245/246 bind these distinct typed call sites to
- * overlay 99's height-grid builder and framebuffer-grid renderer. Both retain
- * the static trap carrier until the runtime linker installs their callees. */
-#pragma weak frontend38190BuildHeightGridReloc = TrapDanglingJump
-#pragma weak frontend38190DrawHeightGridReloc = TrapDanglingJump
-extern void frontend38190BuildHeightGridReloc(f32 scale, void *unused,
-                                              s32 widthMinusOne,
-                                              s32 heightMinusOne,
-                                              s32 stepX, s32 stepY);
-extern void frontend38190DrawHeightGridReloc(Gfx **displayList, Mtx **matrices,
-                                             MainVertex **vertices, f32 scale,
-                                             s32 columns, s32 rows,
-                                             s32 triangles, s32 stepX,
-                                             s32 stepY);
+/* Resident runtime records 245/246 bind the two calls below to overlay 99's
+ * height-grid builder and framebuffer-grid renderer. In the ROM both stay
+ * `jal TrapDanglingJump` until the runtime linker installs their callees. */
 
 #define FRONTEND38190_EMIT(pkt, opcode, data) \
     { \
@@ -576,7 +565,7 @@ void func_80038190(Gfx **gfxList, Mtx **mtxList, MainVertex **vertexList) {
                 break;
             case 4:
             case 5:
-                frontend38190BuildHeightGridReloc(
+                overlay99BuildHeightGrid(
                     progress, (void *) (u32) D_8007BEB0,
                     0x10, 0x10, 0x14, 0xF);
                 break;
@@ -624,7 +613,7 @@ void func_80038190(Gfx **gfxList, Mtx **mtxList, MainVertex **vertexList) {
             FRONTEND38190_EMIT(gfxList, 0xFF10013F, 0x01000000);
             FRONTEND38190_EMIT(gfxList, 0x03800010, (u32) (viewport - 0x80000000));
             if ((D_8007BE90 == 4) || (D_8007BE90 == 5)) {
-                frontend38190DrawHeightGridReloc(
+                func_overlay_099_F0000DDC_18DA38C(
                     gfxList, mtxList, vertexList, progress, 0x10, 0x10, 4, 0x28, 0xF);
             } else {
                 func_80037C74(gfxList, mtxList, vertexList);

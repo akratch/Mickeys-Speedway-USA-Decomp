@@ -152,8 +152,9 @@ TrapDanglingJump with `objcopy --redefine-sym` in the track.c.o build rule. The
 alias gets the correct prototype in isolation, so IDO passes the three f32 args
 single-precision (no `cvt.d.s`/`sdc1`), while every other TrapDanglingJump call
 site and the shared placeholder itself are untouched. ROM stays byte-identical.
-The broader web cleanup (naming the real distinct callees) remains optional
-future health work, not a matching blocker.
+The broader web cleanup, naming the real distinct callees, was done on
+2026-10-21: every resident overlay call names its callee and the typed aliases
+are retired (docs/overlays.md §5.1).
 
 ## Permuter scratch fidelity (2026-08-27, tooling)
 

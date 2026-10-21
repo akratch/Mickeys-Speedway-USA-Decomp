@@ -84,14 +84,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/_bnkfPatchSound.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/_bnkfPatchWaveTable.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6C
 
-# rain_init, free_rain_memory and rain_update call the same unresolved resident
-# target through different integer and float ABIs.  The source alias preserves IDO's shipped
-# integer call sequence; canonicalize only that undefined symbol's name so the
-# relocation identity agrees too.  No section contents are changed.
-$(BUILD_DIR)/$(SRC_DIR)/main/weather.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym rainInitTrap=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym rainFreeTrap=TrapDanglingJump $@
-
 # overlay5InitializeAudio reaches the resident segment through the overlay's
 # own relocation table; rebind each resident call to the module-local alias
 # `gmake overlay-syms` mints for it, exactly as the other overlays do.

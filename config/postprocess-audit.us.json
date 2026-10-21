@@ -127,8 +127,7 @@
       "size": null,
       "source": "src/main/frontend_37D50.c",
       "tools": [
-        "trim_elf_section.py",
-        "objcopy"
+        "trim_elf_section.py"
       ]
     },
     {
@@ -143,20 +142,6 @@
       "source": "src/main/joy.c",
       "tools": [
         "rebind_elf_relocations.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": null,
-      "class": "metadata",
-      "matched_c": null,
-      "nonmatching": null,
-      "object": "build/src/main/level.c.o",
-      "offset": null,
-      "overlay": null,
-      "size": null,
-      "source": "src/main/level.c",
-      "tools": [
         "objcopy"
       ]
     },
@@ -331,34 +316,6 @@
       "source": "src/main/textures_354C8.c",
       "tools": [
         "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": null,
-      "class": "metadata",
-      "matched_c": null,
-      "nonmatching": null,
-      "object": "build/src/main/track.c.o",
-      "offset": null,
-      "overlay": null,
-      "size": null,
-      "source": "src/main/track.c",
-      "tools": [
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": null,
-      "class": "metadata",
-      "matched_c": null,
-      "nonmatching": null,
-      "object": "build/src/main/weather.c.o",
-      "offset": null,
-      "overlay": null,
-      "size": null,
-      "source": "src/main/weather.c",
-      "tools": [
-        "objcopy"
       ]
     },
     {
@@ -9425,10 +9382,10 @@
     "altered_bytes": 16816,
     "by_class": {
       "altered": 9,
-      "metadata": 638,
+      "metadata": 635,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 458624,
-    "objects_with_postprocess": 648
+    "objects_with_postprocess": 645
   }
 }

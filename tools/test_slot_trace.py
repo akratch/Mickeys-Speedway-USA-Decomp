@@ -22,6 +22,16 @@ DKWB-SLOT event=home proc=1 opcode=3 mtype=1 block=2 length=4 offset=-8 before=4
 
 
 class SlotTraceTests(unittest.TestCase):
+    def test_trace_env_keeps_forces_only_for_the_instrumented_toolchain(self):
+        env = {"PATH": "p", "CDX_FORCE": "p1:w1=s", "CDX_PROC": "3", "DKWB_SUBST_KEEP": "9"}
+        plain = st.trace_env(env, instrumented=False)
+        self.assertEqual(plain, {"PATH": "p", "DKWB_UOPT_SLOT_TRACE": "1"})
+        forced = st.trace_env(env, instrumented=True)
+        self.assertEqual(forced["CDX_FORCE"], "p1:w1=s")
+        self.assertEqual(forced["DKWB_UOPT_SLOT_TRACE"], "1")
+        self.assertEqual(st.toolchain_for(True), st.INSTRUMENTED)
+        self.assertEqual(st.toolchain_for(False), st.TOOLCHAIN)
+
     def test_rows_parse_and_noise_is_ignored(self):
         rows = st.parse_rows(LOG)
         self.assertEqual(len(rows), 9)

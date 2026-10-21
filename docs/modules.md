@@ -677,19 +677,12 @@ IDO-compiled C: the C file it was built from is found at the lock's pinned
 commit and includes no assembly at all, no symbol carries asm-processor's
 GLOBAL_ASM mark, and no `.comment` names GCC. Relocated jumps in an
 unlinked object are pointed at their relocation targets. A detector that
-fires anywhere in this corpus carries no verdict. Measured 2026-10-21:
+fires anywhere in this corpus carries no verdict. The per-corpus sizes and
+the per-shape hit counts are generated into `docs/VERIFIED_ASSEMBLY.md` §8
+(`tools/hasm_audit.py --baseline --write-doc docs/VERIFIED_ASSEMBLY.md`) and
+are not repeated here, so they cannot drift from the tree.
 
-| Corpus | Objects | Functions | Words |
-|---|---|---|---|
-| Mickey resident C (bytes from the ROM) | — | 1,342 | 110,957 |
-| Banjo-Kazooie compiled C | 1,046 | 8,361 | 389,251 |
-| Perfect Dark compiled C | 428 | 5,591 | 512,640 |
-| Diddy Kong Racing compiled C | 193 | 1,845 | 211,021 |
-| Jet Force Gemini compiled C | 120 | 254 | 15,437 |
-| Conker's Bad Fur Day compiled C | 135 | 205 | 5,916 |
-| Total | 1,922 | 17,598 | 1,245,222 |
-
-**No hit in any of the 17,598 functions:** odd single-precision operands, odd
+**No hit in any function of the corpus:** odd single-precision operands, odd
 registers at double width, the trapping signed add/sub forms, a non-leaf
 frame below the o32 minimum or with no frame, a non-leaf that never saves
 `$ra`, a leaf that saves an otherwise-unwritten `$ra`, a callee-saved
@@ -700,13 +693,13 @@ instructions, `k0`/`k1`/`gp`, `$sp` set other than by a frame adjustment, a
 plain `j` or a jump to another routine, a branch out of the routine, falling
 off its end, a secondary entry point.
 
-**Fires in compiled C, so refused as evidence** (resident / reference
-functions): the frame allocation after the first instruction (154 / 1,789);
-`$ra` used as a scratch register (35 / 130), and then saved in a leaf
-(2 / 12); callee-saved FP saved a word at a time, as `-mips1` does (19 / 274);
-unreachable code left behind a branch-likely delay slot (284 / 2,295). Odd FP
-registers do occur in 32-bit moves, loads and stores (2 / 607), as the halves
-of doubles, which is why the odd-FP count excludes those instructions.
+**Fires in compiled C, so refused as evidence** (resident and reference
+functions, counted in the generated table): the frame allocation after the
+first instruction; `$ra` used as a scratch register, and then saved in a
+leaf; callee-saved FP saved a word at a time, as `-mips1` does; unreachable
+code left behind a branch-likely delay slot. Odd FP registers do occur in
+32-bit moves, loads and stores, as the halves of doubles, which is why the
+odd-FP count excludes those instructions.
 
 An independent count over Mickey's, JFG's and DKR's built objects (803,259
 words in 1,309 objects; it admits JFG objects whose C still includes
@@ -716,7 +709,7 @@ in JFG's GLOBAL_ASM `shadows_214A0.c.o`. The baseline
 also checks the detectors: its first run caught two of them firing on
 compiled C through imprecision, calls reachable only through switch tables
 an unlinked object cannot resolve, and a 64-bit FP move defining one half of
-its pair, both fixed before the figures above. Re-derive it with
+its pair, both fixed before any verdict was read. Re-derive it with
 `tools/hasm_audit.py --baseline` (a build and the reference farm, about 7 s).
 
 ### 6.3 Data ownership: SDK tails carved without guessing the bulk boundary

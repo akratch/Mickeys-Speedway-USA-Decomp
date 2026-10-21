@@ -308,8 +308,8 @@ evidence wrong. The evidence is fixed in `verified_asm.us.txt`,
   reference's relocations cover.
 - **Mechanism wording that IDO contradicts:**
   - `refractOutputAssembler`'s "frame opened five instructions in" is not
-    evidence; IDO does that in 154 Mickey functions. Its evidence is the leaf
-    `$ra` save.
+    evidence: IDO does that routinely, as the baseline table in §8 counts.
+    Its evidence is the leaf `$ra` save.
   - `func_800591B0`'s "FP saved one word at a time" is not evidence, because
     IDO does that at `-mips1`, the default for this program's C. Its evidence
     is the out-of-order FP pair.
@@ -405,13 +405,13 @@ Baseline: every detector over IDO-compiled functions (`tools/hasm_audit.py --bas
 
 | Corpus | Objects | Functions | Words |
 |---|---|---|---|
-| mickey-resident-c | - | 1,342 | 110,957 |
+| mickey-resident-c | - | 1,343 | 111,327 |
 | banjo-kazooie compiled C | 1,046 | 8,361 | 389,251 |
 | conker compiled C | 135 | 205 | 5,916 |
 | diddy-kong-racing compiled C | 193 | 1,845 | 211,021 |
 | jfg compiled C | 120 | 254 | 15,437 |
 | perfect_dark compiled C | 428 | 5,591 | 512,640 |
-| **all** | | **17,598** | **1,245,222** |
+| **all** | | **17,599** | **1,245,592** |
 
 | Shape | mickey-resident-c | banjo-kazooie compiled C | conker compiled C | diddy-kong-racing compiled C | jfg compiled C | perfect_dark compiled C | Verdict |
 |---|---|---|---|---|---|---|---|
@@ -447,7 +447,7 @@ Baseline: every detector over IDO-compiled functions (`tools/hasm_audit.py --bas
 | register jump through a table or pointer | 33 | 168 | 0 | 64 | 5 | 223 | information only |
 | jump to another routine's entry | 0 | 0 | 0 | 0 | 0 | 0 | usable |
 | trapping signed add/sub | 0 | 0 | 0 | 0 | 0 | 0 | usable |
-| instructions no path reaches | 284 | 771 | 29 | 114 | 35 | 1,346 | refused: fires in compiled C |
+| instructions no path reaches | 285 | 771 | 29 | 114 | 35 | 1,346 | refused: fires in compiled C |
 
 | Routine | Subsegment | Class | ROM | Bytes | Re-derived evidence | Verdict |
 |---|---|---|---|---|---|---|

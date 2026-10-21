@@ -479,11 +479,12 @@ segments:
       # GNU as. That .s is spimdisasm output (its own header says so) which
       # JFG's maintainers reclassified as hasm in commit 0371e91
       # (2026-09-02), newer than the lock's pin. Mechanism, control-clean
-      # against 17,598 IDO-compiled functions (docs/modules.md 6.2.1): a leaf,
+      # against the measured IDO baseline (docs/modules.md 6.2.1): a leaf,
       # with no call anywhere, that saves $ra and never otherwise writes it.
       # The frame opening five instructions into the body is NOT evidence:
-      # IDO schedules loads before the frame allocation in 154 C-matched
-      # functions here and 1,789 in the reference builds' compiled C. The C
+      # IDO schedules loads before the frame allocation in many C-matched
+      # functions here and in the reference builds' compiled C (counted in
+      # docs/VERIFIED_ASSEMBLY.md's generated baseline table). The C
       # candidate this range carried from 2026-09-26 sat 35 words short at
       # frame 0x10. Listed in verified_asm.us.txt.
       - [0x50820, asm, main/refractOutputAssembler]

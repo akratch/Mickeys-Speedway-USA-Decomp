@@ -797,8 +797,9 @@ The surface can only be derived once the candidate's object exists and before
 the link resolves it -- a window a plain `gmake` does not offer.
 `tools/promotion_trial.py` therefore builds, regenerates
 `overlay_undefined_syms.us.txt` from the objects on disk, and builds again; the
-second pass relinks only. Both the source file and the surface are restored
-afterwards.
+second pass relinks only. The source file, the surface and the declared
+resident-call rebinds (`mk/overlay_resident_rebinds.generated.mk`, which the
+same `generate --write` rewrites) are all restored afterwards.
 
 ### 5.6 A resident call is an ordinary addend with a name that is not free
 

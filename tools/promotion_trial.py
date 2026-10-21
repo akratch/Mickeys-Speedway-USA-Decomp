@@ -83,6 +83,9 @@ ROM_TARGET = str(ROM.relative_to(ROOT))
 OUT_JSON = ROOT / "build" / "promotion-trial.json"
 OUT_TXT = ROOT / "build" / "promotion-trial.txt"
 LINK_SYMS = ROOT / "overlay_undefined_syms.us.txt"
+# `generate --write` also rewrites the declared resident-call rebinds; a trial
+# restores both, or a candidate's new rule would outlive the candidate.
+REBINDS = ROOT / "mk" / "overlay_resident_rebinds.generated.mk"
 ATLAS_TOOL = ROOT / "tools" / "overlay_atlas.py"
 MANIFEST = ROOT / "config" / "overlays.us.json"
 YAML = ROOT / "mickey.us.yaml"
@@ -448,6 +451,7 @@ def run_trial(item: pb.QueueItem, rng: Optional[tuple[int, int]], jobs: int) -> 
         t.klass, t.error = "unknown", "could not locate the NON_MATCHING block"
         return t
     surface = LINK_SYMS.read_text()
+    rebinds = REBINDS.read_text() if REBINDS.is_file() else None
     source = trial_source(item)
     manifest_original = MANIFEST.read_text() if item.overlay is not None else None
     yaml_original = YAML.read_text() if item.overlay is not None else None
@@ -564,6 +568,8 @@ def run_trial(item: pb.QueueItem, rng: Optional[tuple[int, int]], jobs: int) -> 
                 )
         if LINK_SYMS.read_text() != surface:
             LINK_SYMS.write_text(surface)
+        if rebinds is not None and REBINDS.read_text() != rebinds:
+            REBINDS.write_text(rebinds)
         t.seconds = time.monotonic() - start
     return t
 

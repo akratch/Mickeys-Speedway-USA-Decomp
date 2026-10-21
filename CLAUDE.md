@@ -229,7 +229,10 @@ such a site, and the function can score **0 masked words** and still fail
 `jal`" is false per call site. The tell is `tools/overlay_tables.py`'s record
 `op_name` at that offset; the fix is a `*Reloc` placeholder declaration, as with
 a resident call. `gmake overlay-syms` reporting `UNRESOLVED ... 2 distinct
-values` for a pair of surface names is a source finding, not tool noise.
+values` for a pair of surface names is a source finding, not tool noise, and
+the generator treats it as one: any `UNRESOLVED` line makes `reloc_surface.py
+generate` exit nonzero in every mode (`--write` still writes the partial file,
+so a promotion trial can link and classify the candidate).
 
 The trap it hides: a promotion's `gmake verify` can pass in a worktree that
 holds renames the *commit* does not carry, so the tree stops linking for

@@ -892,6 +892,16 @@ Three properties make it safe to run inside `generate --write`:
   caller matching `UNRESOLVED` does not read a measurable candidate as a
   failure.
 
+  **A refusal fails closed.** Any `UNRESOLVED` line makes `generate` exit 1 in
+  `--write`, `--check` and print mode alike, so `gmake overlay-syms`,
+  `gmake check-overlay-syms` and `tools/land.sh` stop on it instead of
+  carrying a surface with a missing line to the link. `--write` still writes
+  the file first, because `tools/promotion_trial.py` links the partial surface
+  to classify the candidate and reads the refusal from the log, not from the
+  exit status. `--check` fails on a refusal even when the tracked file is
+  otherwise up to date: a refused name is dropped from both sides, so the two
+  agree on exactly the line that is missing.
+
 Overlay 59's entry preparer demonstrates both roles in one body. Its calls at
 module `+0xB8/+0x140` are local `JUMP` records to `overlay59Release`, while
 `+0xD4/+0x104` are resident `SYMBOL` records to `texLoadTexture`. All four store

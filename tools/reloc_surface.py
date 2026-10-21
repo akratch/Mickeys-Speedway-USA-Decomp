@@ -1040,7 +1040,7 @@ def cmd_generate(argv):
                 print("%s: up to date (%d values, %d aliases, %d objects)"
                       % (args.out.name, diag["values"], diag["aliases"],
                          diag["objects"]))
-            return 0
+            return report_diagnostics(diag)  # a refusal drops both sides' line
         print("%s: out of date; run `gmake overlay-syms`" % args.out.name,
               file=sys.stderr)
         import difflib
@@ -1048,6 +1048,7 @@ def cmd_generate(argv):
                 current.splitlines(), text.splitlines(),
                 "tracked", "generated", lineterm=""))[:60]:
             print(line, file=sys.stderr)
+        report_diagnostics(diag)
         return 1
 
     if args.write:
@@ -1058,6 +1059,11 @@ def cmd_generate(argv):
                      diag["objects"]))
     else:
         sys.stdout.write(text)
+    return report_diagnostics(diag)
+
+
+def report_diagnostics(diag):
+    """Print diagnostics; 1 if any name was refused (docs/reloc-surface.md)."""
     for obj, name, why in diag["conflicts"]:
         print("/* UNRESOLVED %s %s: %s */" % (obj, name, why), file=sys.stderr)
     # A note is not a refusal: the symbol *is* valued and the link resolves it.
@@ -1074,6 +1080,10 @@ def cmd_generate(argv):
                  summary["shifted"],
                  "" if not summary["refused"] else
                  "; refused: " + summary["refused"]), file=sys.stderr)
+    if diag["conflicts"]:
+        print("reloc_surface: %d UNRESOLVED name(s); each is a source "
+              "finding" % len(diag["conflicts"]), file=sys.stderr)
+        return 1
     return 0
 
 

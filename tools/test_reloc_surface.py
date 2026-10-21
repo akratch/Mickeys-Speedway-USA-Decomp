@@ -115,6 +115,65 @@ class ResidentRebindSafetyTests(unittest.TestCase):
             self.assertIn("read-only generation will not modify", stderr.getvalue())
 
 
+class UnresolvedExitTests(unittest.TestCase):
+    """An UNRESOLVED name is a source finding, so every mode fails closed."""
+
+    CONFLICT = ("example.c.o", "overlay2ContainsPoint",
+                "2 distinct values: ['0x123c', '0xf0000000']")
+
+    def run_generate(self, mode_args, conflicts, tracked="generated\n"):
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            config = repo / "config"
+            config.mkdir()
+            (config / "overlays.us.json").write_text(json.dumps({"modules": []}))
+            rom = repo / "rom.z64"
+            rom.write_bytes(b"")
+            out = repo / "surface.txt"
+            out.write_text(tracked)
+            diag = {"values": 0, "aliases": 0, "objects": 0,
+                    "conflicts": list(conflicts), "alignment": {},
+                    "resident_notes": [], "pending_rebinds": []}
+            stderr = io.StringIO()
+            with mock.patch.object(rs, "REPO", repo), \
+                    mock.patch.object(rs, "generate",
+                                      return_value=("generated\n", diag)), \
+                    mock.patch.object(rs, "misspelled_generated_names",
+                                      return_value=[]), \
+                    mock.patch.object(rs, "tree_generated_name_texts",
+                                      return_value=[]), \
+                    contextlib.redirect_stderr(stderr), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                status = rs.cmd_generate(
+                    mode_args + ["--quiet", "--rom", str(rom), "--out", str(out)])
+            return status, out.read_text(), stderr.getvalue()
+
+    def test_write_with_conflict_writes_file_and_exits_nonzero(self):
+        status, written, err = self.run_generate(["--write"], [self.CONFLICT],
+                                                 tracked="stale\n")
+        self.assertEqual(1, status)
+        # The partial surface is still written: a promotion trial links it to
+        # classify the candidate.  Only the exit status gates.
+        self.assertEqual("generated\n", written)
+        self.assertIn("/* UNRESOLVED example.c.o overlay2ContainsPoint", err)
+
+    def test_check_with_conflict_fails_even_when_up_to_date(self):
+        status, _written, err = self.run_generate(["--check"], [self.CONFLICT])
+        self.assertEqual(1, status)
+        self.assertIn("UNRESOLVED", err)
+
+    def test_print_mode_with_conflict_exits_nonzero(self):
+        status, _written, _err = self.run_generate([], [self.CONFLICT])
+        self.assertEqual(1, status)
+
+    def test_clean_surface_exits_zero_in_every_mode(self):
+        for mode in (["--write"], ["--check"], []):
+            with self.subTest(mode=mode):
+                status, _written, err = self.run_generate(mode, [])
+                self.assertEqual(0, status)
+                self.assertNotIn("UNRESOLVED", err)
+
+
 class FunctionSurfaceComparisonTests(unittest.TestCase):
     GENERATED_O22 = "func_overlay_022_F0000D30_1878E38"
 

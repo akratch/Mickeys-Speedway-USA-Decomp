@@ -1450,14 +1450,17 @@ void func_800517E0(void) {
                     break;
                 case 0x45:
                     value = (f32) *((u16 *) ((u8 *) cursor + 6));
-                    packed2 = *((u16 *) ((u8 *) cursor + 8));
+                    /* The +8 halfword in a handler-local carrier (v1), not
+                     * packed2's function-wide s4 web (final campaign
+                     * 2026-10-21, lane cp-col). */
+                    word7 = *((u16 *) ((u8 *) cursor + 8));
                     timer = *((u16 *) ((u8 *) cursor + 0xA));
                     high2 = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
                     low2 = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     high = cursor->command & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     trackFadeFog(0, high, high2, low2,
-                                  packed2, timer, value / hundred - delta);
+                                  word7, timer, value / hundred - delta);
                     break;
                 /* 0x46: inherited empty conditions remain disclosed source-shaping stand-ins.
                  * Shared end/target/color/value roles preserve call-result restrictions
@@ -1576,6 +1579,9 @@ void func_800517E0(void) {
                     frame4C = *((u16 *) ((u8 *) cursor + 0xA));
                     duration = *((u16 *) ((u8 *) cursor + 0xC));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
+                    /* Restores the counted use 0x45 gave packed2, so its web
+                     * keeps its place in the decision order (keep_alive). */
+                    packed2 |= 0;
                     TrapDanglingJump(pathIndex, packed2, low, word4, word8, word9, frame, frame4C, duration);
                     break;
                 case 0x4D:
@@ -1878,17 +1884,25 @@ void func_800517E0(void) {
                                 /* The two masks spelled with different types are two
                                  * one-use constant webs, so neither is coloured: both
                                  * ANDs take the assembler's $at immediate and the
-                                 * divide follows them, as shipped. The extra web this
-                                 * adds is paid back by one shared 0x800000 web below,
-                                 * which keeps the a0 break pieces (final campaign
-                                 * 2026-10-21; supersedes the L177 unsigned split). */
+                                 * divide follows them, as shipped. How many such
+                                 * loop-spanning constant webs exist decides the a0
+                                 * break pieces; case 1's unsigned 0x800000 below is
+                                 * part of that count (final campaign 2026-10-21). */
                                 record->flags = flagsValue & 0xFF1FFFFF;
                                 reference->flags = reference->flags & ~0xE00000;
                                 reference->speed12 =
                                     (s16) ((packed2 << 8) / 6000);
                                 switch (low) {
                                     case 1:
-                                        record->flags |= 0x800000;
+                                        /* The unsigned literal is one more
+                                         * loop-spanning constant web for the
+                                         * allocator to leave undecided when
+                                         * the &D_8007D6A4 piece prices its
+                                         * growth: with 0x79's address web
+                                         * decided early it would otherwise
+                                         * take 0x74/0x75's blocks and lose a0
+                                         * to a1 (lane cp-79). */
+                                        record->flags |= 0x800000U;
                                         reference->flags |= 0x800000;
                                         break;
                                     case 2:
@@ -1929,11 +1943,19 @@ void func_800517E0(void) {
                      * pathIndex is substituted into each arm (lane w-5). */
                     radius = (f32) (cursor->command & 0xFF);
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
-                    /* Chained store, divisor read back from the global
-                     * (lane rewrite-517e0). */
-                    frame = D_8007D6BC = (s32) (value * scale * factor);
+                    /* Chained store through the global's address register
+                     * (la v1 at handler entry, sw 0(v1)), divisor read back
+                     * from the global and forwarded by as1. The literals
+                     * stand in for scale and factor on purpose: those two
+                     * locals are copy-propagated constants, and a constant
+                     * propagated into a global store's right-hand side
+                     * folds the store back to by-symbol (f_istrfold from
+                     * f_copypropagate). The carrier is an a0-coloured
+                     * local so its copy dies under the handler tail's
+                     * la a0; frame's t3 web kept the copy (lane cp-79). */
+                    flagsValue = D_8007D6BC = (s32) (value * 60.0f * 0.01f);
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    if (frame > 0) {
+                    if (flagsValue > 0) {
                         D_8007D6B8 = (radius - D_8007D6B4) /
                                      (f32) D_8007D6BC;
                     } else {
@@ -4061,10 +4083,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 101/1808 words
+ * score: 70/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xDC
- * summary: Size 0 again: 0x60 closed by 0x4D's ring phase plus an s32 carrier; 0x79 (store through the address register, no frame copy) is 20 of the 84 aligned
+ * summary: 0x79 exact: store through the address register, no frame copy; 8 real naming words remain (0x6D f0, 0x7E/loop tail t9/t8); 62 masked are reloc-pairing artifacts
  * PLATEAU-HANDOFF:func_800517E0:end
  */

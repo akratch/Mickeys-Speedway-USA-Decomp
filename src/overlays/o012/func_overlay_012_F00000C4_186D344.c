@@ -7,22 +7,22 @@ void func_overlay_012_F00000C4_186D344(void) {
 
     if (gOverlay12Ready != 0) {
         if (gOverlay12Resource0 != 0) {
-            overlay12ReleaseResource(gOverlay12Resource0);
+            texFreeTexture(gOverlay12Resource0);
         }
         if (gOverlay12Resource1 != 0) {
-            overlay12ReleaseResource(gOverlay12Resource1);
+            texFreeTexture(gOverlay12Resource1);
         }
         if (gOverlay12Resource2 != 0) {
-            overlay12ReleaseResource(gOverlay12Resource2);
+            texFreeTexture(gOverlay12Resource2);
         }
         if (gOverlay12Resource3 != 0) {
-            overlay12ReleaseResource(gOverlay12Resource3);
+            texFreeTexture(gOverlay12Resource3);
         }
         if (gOverlay12Resource4 != 0) {
-            overlay12ReleaseResource(gOverlay12Resource4);
+            texFreeTexture(gOverlay12Resource4);
         }
         if (gOverlay12Resource5 != 0) {
-            overlay12ReleaseResourceAlt(gOverlay12Resource5);
+            texFreeSprite(gOverlay12Resource5);
         }
 
         entry = gOverlay12Entries;

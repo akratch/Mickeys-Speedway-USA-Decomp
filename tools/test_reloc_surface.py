@@ -211,6 +211,16 @@ class OverlayRealNameRebindTests(unittest.TestCase):
             [self.rec(0x110, "LOCAL", rs.R_MIPS_HI16)],
             {"gOverlay14State": {(14, "data")}}))
 
+    def test_same_module_function_address_is_renamed(self):
+        # The surface never values a name the module's own .text defines, so
+        # a LOCAL HI/LO to a function would link its synthetic address.
+        renames, _r = self.plan(
+            [("overlay14Callback", 0x10, rs.R_MIPS_HI16),
+             ("overlay14Callback", 0x14, rs.R_MIPS_LO16)],
+            [self.rec(0x110, "LOCAL", rs.R_MIPS_HI16), self.rec(0x114, "LOCAL", rs.R_MIPS_LO16)],
+            {"overlay14Callback": {(14, "text")}})
+        self.assertEqual({"overlay14Callback": "overlay14Callback_o014Reloc"}, renames)
+
     def test_same_module_export_reached_by_symbol_is_renamed(self):
         renames, _r = self.plan(
             [("overlay14Export", 0x10, rs.R_MIPS_26)],
@@ -225,7 +235,7 @@ class OverlayRealNameRebindTests(unittest.TestCase):
             {"overlay14Export": {(14, "text")}})
         self.assertEqual({}, renames)
         self.assertEqual(["overlay14Export"], [n for n, _why in refusals])
-        self.assertIn("both SYMBOL and JUMP", refusals[0][1])
+        self.assertIn("needing an addend and JUMP", refusals[0][1])
 
     def test_name_defined_by_two_modules_is_refused(self):
         renames, refusals = self.plan(

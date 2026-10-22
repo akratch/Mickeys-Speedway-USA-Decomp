@@ -27,6 +27,9 @@ Everything else is refused and counted, and nothing is renamed for it:
   the middle of an object), `static` -- a target another file defines
   `static`, `disagree` -- sites naming different targets, `no-record` -- no
   shipped record names the site.
+* `export-offset` -- a `SYMBOL` record whose export lies before the target
+  (the C carries the field offset in the name, not in the instruction), so
+  the real spelling needs an expression change, not a rename.
 * `shared` -- the placeholder is also spelled in a file outside the module
   (a shared header, another module's source), so a per-module rename would
   leave its declaration behind; `normalization` -- a normalization spec names
@@ -133,6 +136,11 @@ def classify_groups(groups, tables):
             cls, real = "disagree", None
         else:
             cls, real = classify_target(next(iter(bases)) if bases else None, ov, tables)
+        if cls in CONVERTIBLE and any(op == "SYMBOL-offset" for _b, _s, op in sites):
+            # The record names an export plus an offset the object does not
+            # carry: the C names a field, not the export.  Renaming it to
+            # whatever starts at the field would name an unexported symbol.
+            cls = "export-offset"
         if cls.startswith("overlay-"):
             definers = tables.get("definers", {}).get(real, set())
             if any(src in definers and op == "SYMBOL" for _b, src, op in sites):
@@ -183,6 +191,10 @@ def measure(args):
             e = exp.get((site, c.type)) if site is not None else None
             base = rp.ident_add(e["full"], -c.addend) if e and e["full"] else None
             op = rp.OP_NAMES.get(e["op"]) if e else None
+            if op == "SYMBOL" and base is not None:
+                row = world.shipped.ort[e["symbol_index"]]
+                if base != world.layout.row_identity(row["overlay"], row["offset"]):
+                    op = "SYMBOL-offset"
             groups[(ov, c.target.name)].append((base, c.obj.source, op))
     definers = {name: {o.source for o, _s in lst} for name, lst in world.defs().items()}
     tables = {"overlay_defs": overlay_defs, "overlay_statics": statics,
@@ -362,7 +374,8 @@ def module_files(root, overlay, files, texts, inc):
     return own
 
 
-def plan_module(root, overlay, placeholders, files, texts, inc, normalization_texts):
+def plan_module(root, overlay, placeholders, files, texts, inc, normalization_texts,
+                mk_texts=()):
     """({placeholder: real}, [(placeholder, reason)]) for one module."""
     own = module_files(root, overlay, files, texts, inc)
     mapping, refusals = {}, []
@@ -379,6 +392,12 @@ def plan_module(root, overlay, placeholders, files, texts, inc, normalization_te
             continue
         if any(word.search(t) for t in normalization_texts):
             refusals.append((p.name, "normalization"))
+            continue
+        # A recipe that names the placeholder other than as a rename's old
+        # name (a relocation rebind, an added symbol) would stop matching.
+        if any(len(word.findall(t)) > len(re.findall(r"--redefine-sym\s+%s=" % re.escape(p.name), t))
+               for t in mk_texts):
+            refusals.append((p.name, "normalization (recipe)"))
             continue
         mapping[p.name] = p.real
     return mapping, refusals
@@ -422,6 +441,7 @@ def apply_module(root, overlay, mapping, files, texts, inc, compile=True):
             originals[f] = f.read_text()
     refused = []
     sources = [f for f in own if f.suffix == ".c"]
+    unexplained = []
     while True:
         changed = []
         for f, old in originals.items():
@@ -437,8 +457,9 @@ def apply_module(root, overlay, mapping, files, texts, inc, compile=True):
             break
         names, located, rest = compile_module(root, overlay, sources)
         if rest:
-            raise SystemExit("overlay %d does not compile after the rewrite:\n  %s"
-                             % (overlay, "\n  ".join(rest)))
+            unexplained = rest
+            bad = set()
+            break
         new_names = set(mapping.values())
         bad = names & new_names
         unexplained = []
@@ -454,14 +475,19 @@ def apply_module(root, overlay, mapping, files, texts, inc, compile=True):
             else:
                 unexplained.append("%s:%d: %s" % (path, line, msg))
         if not bad:
-            if unexplained:
-                raise SystemExit("overlay %d does not compile after the rewrite:\n  %s"
-                                 % (overlay, "\n  ".join(unexplained[:10])))
             break
         for old in sorted(mapping):
             if mapping[old] in bad:
                 refused.append((old, "prototype-conflict (%s)" % mapping[old]))
                 del mapping[old]
+    if compile and unexplained:
+        # Not a prototype conflict: put the module back as it was and refuse it.
+        for f, old in originals.items():
+            if f.read_text() != old:
+                f.write_text(old)
+        refused += [(old, "module does not compile: %s" % unexplained[0][:160])
+                    for old in sorted(mapping)]
+        mapping, changed = {}, []
     for f in own:
         texts[f] = f.read_text()
     return changed, refused, mapping
@@ -508,7 +534,8 @@ def main(argv=None):
             for p in sorted((root / "config" / "normalizations").glob("*")) if p.is_file()]
     total_conv = total_ref = 0
     for ov in args.module:
-        mapping, refusals = plan_module(root, ov, placeholders, files, texts, inc, norm)
+        mapping, refusals = plan_module(root, ov, placeholders, files, texts, inc, norm,
+                                        [f.read_text() for f in mk_files(root)])
         sites = {p.name: p.sites for p in placeholders if p.overlay == ov}
         conv = sum(sites[n] for n in mapping)
         ref = collections.Counter()

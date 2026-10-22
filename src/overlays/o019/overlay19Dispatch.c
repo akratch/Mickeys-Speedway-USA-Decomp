@@ -15,7 +15,7 @@ typedef struct Overlay19Object {
 } Overlay19Object;
 
 /* Pinned DKR v77/v80 and JFG donor scans classify overlay 19 as none. */
-extern void overlay19Process(void *item, void *data, void *end);
+extern void overlay19BuildOutput(void *item, void *data, void *end);
 
 void overlay19Dispatch(Overlay19Object *object) {
     Overlay19Header *header;
@@ -30,7 +30,7 @@ void overlay19Dispatch(Overlay19Object *object) {
     if (selected >= 0) {
         item = object->items[selected];
         data = *(void **)item;
-        overlay19Process(item, data, (u8 *)data + 0x58);
+        overlay19BuildOutput(item, data, (u8 *)data + 0x58);
     } else {
         index = 0;
         offset = 0;
@@ -38,7 +38,7 @@ void overlay19Dispatch(Overlay19Object *object) {
             do {
                 item = *(void **)((u8 *)object->items + offset);
                 data = *(void **)item;
-                overlay19Process(item, data, (u8 *)data + 0x58);
+                overlay19BuildOutput(item, data, (u8 *)data + 0x58);
                 index++;
                 offset += 4;
             } while (index < object->header->count);

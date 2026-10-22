@@ -36,10 +36,10 @@ typedef struct Overlay26Context {
     Overlay26Node **nodeTable;
 } Overlay26Context;
 
-extern void o26PrepareNode(Overlay26Context *, Overlay26Node *, void *, s32);
-extern void o26DrawReloc(Gfx **, void *, Overlay26Group *, f32, f32);
-extern void o26FlushReloc(Gfx **);
-extern void o26FinishReloc(Gfx **);
+extern void lightObject(Overlay26Context *, Overlay26Node *, void *, s32);
+extern void camPushModelMtx(Gfx **, void *, Overlay26Group *, f32, f32);
+extern void camRestoreModelMtx(Gfx **);
+extern void texDPInit(Gfx **);
 
 /* PROVENANCE: command expansions use the existing SDK macros in
  * n_audio/mbi.h. Node layout, indexing, call order and command words are
@@ -81,21 +81,21 @@ void func_overlay_026_F0001158_187B550(Gfx **dl, void *drawContext,
                 resourceSegment = choice->alternate;
             }
 
-            o26PrepareNode(context, node, context->drawData, 0);
+            lightObject(context, node, context->drawData, 0);
             gDPSetPrimColor((*dl)++, 0, 0, 0xFF, 0xFF, 0xFF, group->selector);
-            o26DrawReloc(dl, drawContext, group, 1.0f, 0.0f);
+            camPushModelMtx(dl, drawContext, group, 1.0f, 0.0f);
 
             gfx = (*dl)++;
             gfx->words.w0 = 0xBF000000;
             gfx->words.w1 = node->segment + 0x80000000;
             gSPDisplayList((*dl)++, resourceSegment + 0x80000000);
             gSP1Triangle((*dl)++, 0, 0, 0, 0);
-            o26FlushReloc(dl);
+            camRestoreModelMtx(dl);
 
             node->consumed = 0;
         }
 
-        o26FinishReloc(dl);
+        texDPInit(dl);
         gDPSetPrimColor((*dl)++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
     }
 }

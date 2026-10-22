@@ -90,16 +90,16 @@ typedef struct Overlay24RenderObject {
     void **resource;
 } Overlay24RenderObject;
 
-extern s16 gOverlay24InputFlagsReloc;
-extern s32 gOverlay24FadeActiveReloc;
-extern s32 gOverlay24FadeScaleReloc;
+extern s16 D_8007BF1C;
+extern s32 D_8007C854;
+extern s32 D_8007C85C;
 
-void overlay24QueueCleanupReloc(Overlay24Object *object);
-s32 overlay24UpdateRelationReloc(void *resource, s32 *eventId, s32 limit,
+void func_80006EA0(Overlay24Object *object);
+s32 texAnimateSprite(void *resource, s32 *eventId, s32 limit,
                                  f32 *relationValue, s32 updateRate);
-void overlay24EmitEventReloc(s32 eventId, void *handle);
-Overlay24InputState *overlay24GetInputStateReloc(void);
-void overlay24RenderHelperReloc(Overlay24Command **commands, void *arg1,
+void amSndPlay(s32 eventId, void *handle);
+Overlay24InputState *func_80028F54(void);
+void camDoSprite(Overlay24Command **commands, void *arg1,
                                 void *arg2, Overlay24RenderObject *object,
                                 void *resource, s32 mode, s32 intensity);
 

@@ -4,9 +4,9 @@ typedef struct Object {
     u8 pad00[0xC]; f32 x; f32 y; f32 z; u8 pad18[0x2E]; s16 type;
     u8 pad48[0x1C]; State *state;
 } Object;
-extern Object **overlay3GetObjectRangeReloc(s32 *, s32 *);
-extern s32 overlay3ContainsValueReloc(Object *, Object *);
-extern f32 overlay3DistanceSquaredReloc(f32, f32, f32, f32, f32, f32);
+extern Object **func_8000572C(s32 *, s32 *);
+extern s32 overlay3ContainsValue(Object *, Object *);
+extern f32 func_8000BD0C(f32, f32, f32, f32, f32, f32);
 extern f32 gOverlay3SearchMaxDistance[];
 /* Exact C: all 77 instruction words, the 0x78 frame, relocations, and linked
  * overlay range match after bounded permutation. Two inert allocation/block
@@ -27,7 +27,7 @@ Object *overlay3FindClosestObject(Object *anchor, void *unused)
   Object *best;
   State *state;
   s32 index;
-  objects = overlay3GetObjectRangeReloc(&start, &end);
+  objects = func_8000572C(&start, &end);
   bestDistance = gOverlay3SearchMaxDistance[3];
   best = 0;
   index = start;
@@ -46,9 +46,9 @@ Object *overlay3FindClosestObject(Object *anchor, void *unused)
         if ((object->type == 0x86) || (object->type == 0xEB))
         {
           state = object->state;
-          if ((overlay3ContainsValueReloc(anchor, object) == 0) && (state->flags == 0))
+          if ((overlay3ContainsValue(anchor, object) == 0) && (state->flags == 0))
           {
-            distance = overlay3DistanceSquaredReloc(object->x, object->y, object->z, anchor->x, anchor->y, anchor->z);
+            distance = func_8000BD0C(object->x, object->y, object->z, anchor->x, anchor->y, anchor->z);
             if (distance < bestDistance)
             {
               bestDistance = distance;

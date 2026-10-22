@@ -3,7 +3,7 @@ typedef struct G { u32 w0, w1; } G;
 typedef struct V { s16 x,y,z; u8 r,g,b,a; } V;
 typedef struct Pair { V first, second; } Pair;
 typedef struct Strip { s16 count; u8 buffer,pad03; void *material; u8 pad08[0x24]; Pair *buffers[2]; void *triangles; } Strip;
-extern void overlay17PrepareStripReloc(G **, void *, s32, s32);
+extern void texDPTextureX(G **, void *, s32, s32);
 #define S(v,s,w) (((u32)(v)&((1U<<(w))-1U))<<(s))
 #define PRIM(p) { G *m=(G *)(p); m->w0=0xFA000000; m->w1=0xFFFFFFFF; }
 #define VTX(p,a,n) { G *m=(G *)(p); m->w0=S(4,24,8)|S(((n)<<3)|((u32)(a)&6),16,8)|S(((n)<<3)+((n)<<1)+8,0,16); m->w1=(u32)(a); }
@@ -28,7 +28,7 @@ void overlay17DrawStrip(G **commands, Strip *strip) {
     if (strip == 0) return;
     segment=0x80000000U;
     textured = strip->material ? 1 : 0;
-    textured |= (overlay17PrepareStripReloc(commands, strip->material, 0x1F, 0), 0);
+    textured |= (texDPTextureX(commands, strip->material, 0x1F, 0), 0);
     PRIM((*commands)++);
     vertices=strip->count;
     remaining=vertices;

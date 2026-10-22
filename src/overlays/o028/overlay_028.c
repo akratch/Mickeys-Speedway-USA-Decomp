@@ -82,7 +82,7 @@ void overlay28InitializeWork(Overlay28Owner *owner, Overlay28Source *source) {
     work->reset = (void (*)())gOverlay28DataBase;
     work->scaleA = 4.0f;
     work->scaleB = 2.0f;
-    ext_o0_36630(work->object);
+    resetColourCycle(work->object);
     work->intensity = 0;
     work->bufferIndex = 0;
     overlay28ResetBuffer(work);
@@ -140,7 +140,7 @@ void overlay28UpdateWork(Overlay28Owner *owner, s32 updateRate) {
     }
     if ((owner->suppressRelease == 0) &&
         ((work->intensity == 0) || (work->related == 0))) {
-        ext_o0_6a50(owner);
+        func_80006EA0(owner);
     }
 }
 

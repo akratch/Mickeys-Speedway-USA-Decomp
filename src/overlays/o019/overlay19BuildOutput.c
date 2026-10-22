@@ -7,11 +7,11 @@ typedef struct O19BuildGroup {
     s8 gate4E;
 } O19BuildGroup;
 
-extern O19Output *o19AllocateReloc(s32 size, s32 tag);
-extern void o19FreeReloc(void *value);
-extern void *o19BeginReloc(void);
-extern void o19StateReloc(void *value);
-extern void o19CopyReloc(s32 size, void *source, s32 tag);
+extern O19Output *mmAlloc2(s32 size, s32 tag);
+extern void mmFree(void *value);
+extern void *mmGetDelay(void);
+extern void mmSetDelay(void *value);
+extern void mmAllocAtAddr(s32 size, void *source, s32 tag);
 
 /* Pinned DKR v77/v80 and JFG donor scans classify overlay 19 as none. */
 void overlay19BuildOutput(
@@ -25,7 +25,7 @@ void overlay19BuildOutput(
         return;
     }
 
-    output = o19AllocateReloc(0x4000, 0x8A);
+    output = mmAlloc2(0x4000, 0x8A);
     if (output == 0) {
         return;
     }
@@ -46,14 +46,14 @@ void overlay19BuildOutput(
         context, (O19Group *)group, *outputSlot) * 0x10;
     used = cursor - (u8 *)output;
     if (used >= 0x4001) {
-        o19FreeReloc(*outputSlot);
+        mmFree(*outputSlot);
         *outputSlot = 0;
         return;
     }
 
-    state = o19BeginReloc();
-    o19StateReloc(0);
-    o19FreeReloc(output);
-    o19CopyReloc(used, output, 0x8A);
-    o19StateReloc(state);
+    state = mmGetDelay();
+    mmSetDelay(0);
+    mmFree(output);
+    mmAllocAtAddr(used, output, 0x8A);
+    mmSetDelay(state);
 }

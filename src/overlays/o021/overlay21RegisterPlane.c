@@ -36,7 +36,7 @@ typedef struct Overlay21Init {
 extern s32 gOverlay21ObjectCount;
 extern Overlay21Object *gOverlay21Objects[];
 
-f32 overlay21SinReloc(s16 angle);
+f32 func_8002A8C0(s16 angle);
 f32 overlay21CosReloc(s16 angle);
 
 void overlay21RegisterPlane(Overlay21Object *object, Overlay21Init *init) {
@@ -49,7 +49,7 @@ void overlay21RegisterPlane(Overlay21Object *object, Overlay21Init *init) {
     object->unused4 = 0;
     plane = object->plane;
     plane->id = object->id;
-    value = overlay21SinReloc(object->angle0);
+    value = func_8002A8C0(object->angle0);
     plane->normalX = overlay21CosReloc(object->angle1) * value;
     plane->normalY = -overlay21CosReloc(object->angle1);
     value = overlay21CosReloc(object->angle0);

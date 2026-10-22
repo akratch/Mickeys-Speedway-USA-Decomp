@@ -89,10 +89,10 @@ extern Overlay7Entry *gOverlay7FreeHead;
 extern Overlay7Entry *gOverlay7ActiveTail;
 extern Overlay7Entry *gOverlay7Selected;
 #endif
-extern s32 gOverlay7PriorityThresholdReloc;
+extern s32 D_8007C1A0;
 extern s32 D_8;
 /* Runtime SYMBOL ORT 1579 resolves this proxy to resident BSS D_800D3128. */
-extern u32 gOverlay7DispatchFlagsReloc;
+extern u32 D_800D3128;
 extern u16 gOverlay7DispatchOverride[32];
 extern u16 gOverlay7DispatchValues[][30];
 extern u8 gOverlay7DispatchTypes[];
@@ -108,14 +108,14 @@ extern s16 gOverlay7ValuesEnd;
 
 extern Overlay7Entry *overlay7Acquire(void *owner, u16 value, u8 type);
 extern s32 mathRnd(s32 minimum, s32 maximum);
-extern u8 *overlay7GetModeReloc(void);
-extern void *overlay7GetCheckTableReloc(void);
-extern void *overlay7GetCurrentReloc(void);
-extern s32 overlay7GetCheckIndexReloc(void *current);
+extern u8 *func_80028F54(void);
+extern void *func_800291C4(void);
+extern void *levelGetNumber(void);
+extern s32 levelGetBlurEffect(void *current);
 extern void overlay7RecordCheckReloc(s32 value);
 extern void overlay7SetOwnerModeReloc(Overlay7CheckOwner *owner, s32 mode);
-extern s32 camGetModeReloc(void);
-extern void overlay59AppendValueReloc(s32 arg0, s32 index, s32 value,
+extern s32 camGetMode(void);
+extern void overlay59AppendValue(s32 arg0, s32 index, s32 value,
                                       s32 field);
 extern void amSndStopXYZ(void *object);
 extern void amSndPlay(u16 value, void **argument);

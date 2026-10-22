@@ -36,7 +36,7 @@ typedef struct Overlay21PriorityEntry {
 extern s32 gOverlay21ObjectCount;
 extern Overlay21Object *gOverlay21Objects[];
 
-Overlay21Position *overlay21GetReferenceReloc(void);
+Overlay21Position *camGetPtr(void);
 
 /*
  * Exact 114-word match under the measured -Wab,-r4300_mul override. The
@@ -61,7 +61,7 @@ void overlay21ApplyPriorities(s32 planeId, s32 entryCount, Overlay21PriorityEntr
   s32 planeIndex;
   s32 entryIndex;
   s32 continueLoop;
-  reference = overlay21GetReferenceReloc();
+  reference = camGetPtr();
   for (planeIndex = 0; planeIndex < gOverlay21ObjectCount; planeIndex++)
   {
     plane = gOverlay21Objects[planeIndex]->plane;

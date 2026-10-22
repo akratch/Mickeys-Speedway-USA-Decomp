@@ -62,6 +62,10 @@ class ClassifyTests(unittest.TestCase):
         p = self.classify([(("ov", 2, 0x40), "overlays/o002/b", "JUMP")])
         self.assertEqual("overlay-func", p.cls)
 
+    def test_field_of_an_export_is_refused(self):
+        p = self.classify([(("res", 0x8007BEF8), "overlays/o002/a", "SYMBOL-offset")])
+        self.assertEqual("export-offset", p.cls)
+
     def test_kinds(self):
         self.assertEqual("Reloc", rn.placeholder_kind("overlay1SqrtReloc"))
         self.assertEqual("D_short", rn.placeholder_kind("D_1D68"))

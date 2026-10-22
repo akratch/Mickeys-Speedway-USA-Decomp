@@ -83,8 +83,8 @@ typedef struct Overlay23SpawnPacket {
     f32 motionZ;
 } Overlay23SpawnPacket;
 
-extern s32 overlay23RandomRangeReloc(s32 minimum, s32 maximum);
-extern void *overlay23SpawnReloc(Overlay23SpawnPacket *packet, s32 mode);
+extern s32 mathRnd(s32 minimum, s32 maximum);
+extern void *func_8000590C(Overlay23SpawnPacket *packet, s32 mode);
 
 void overlay23SpawnAttachments(Overlay23OwnerObject *object,
                                Overlay23OwnerAnimation *animation) {
@@ -119,13 +119,13 @@ void overlay23SpawnAttachments(Overlay23OwnerObject *object,
         packet.animation0 = animation->angleTable0[index];
         packet.animation1 = animation->angleTable1[index];
         packet.velocityX = (point->x - object->baseX) / 20.0f;
-        packet.velocityY = (f32)overlay23RandomRangeReloc(4, 8);
+        packet.velocityY = (f32)mathRnd(4, 8);
         packet.velocityZ = (point->z - object->baseZ) / 20.0f;
         packet.motionX = object->motionX;
         packet.motionZ = object->motionZ;
         packet.resource = *(u16 *)resourceEntry;
 
-        spawned = overlay23SpawnReloc(&packet, 1);
+        spawned = func_8000590C(&packet, 1);
         if (spawned != NULL) {
             *(s32 *)((u8 *)spawned + 0x3C) = 0;
         }

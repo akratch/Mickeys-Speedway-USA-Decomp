@@ -26,6 +26,7 @@ import collections
 import re
 
 SHN_UNDEF = 0
+R_MIPS_26 = 4
 STT_SECTION = 3
 ALIAS_FMT = "%s_o%03dReloc"
 # A short `D_<hex>` is a per-module placeholder: the same spelling in two
@@ -69,14 +70,16 @@ def real_aliases(elf, overlay, base, records, overlay_defs, undo=None):
 
     * A name defined by another module is always renamed (a value line under
       the name itself would move the definition for its own module).
-    * A name defined by this module is renamed only when the shipped records
-      at its corroborated sites are `SYMBOL`.  A `JUMP` call already stores
-      the offset the synthetic VMA produces, and a `LOCAL` data reference is
-      valued under its own name (section 5.2), so both keep it.
+    * A name defined by this module is renamed only when its corroborated
+      sites need the stored addend: a `SYMBOL` record, or the address (HI/LO)
+      of a function, since the surface never values a name the module's own
+      `.text` defines.  A `JUMP` call already stores the offset the synthetic
+      VMA produces, and a `LOCAL` reference to data is valued under its own
+      name (section 5.2), so both keep it.
 
     Refused, with the reason: a name more than one module defines (no single
-    identity); a name whose corroborated sites in this object mix `SYMBOL`
-    with `JUMP`/`LOCAL` (one placeholder cannot carry both); a cross-module
+    identity); a name whose corroborated sites in this object mix sites that
+    need an addend with sites that link bare; a cross-module
     reference in an object with no `text_ownership` row.  A name this object
     itself defines never reaches here -- its references are not undefined --
     and an objcopy rename would rename the definition with them.
@@ -121,17 +124,30 @@ def real_aliases(elf, overlay, base, records, overlay_defs, undo=None):
             continue
         if base is None:
             continue
-        ops = set()
+        # What each site needs: "bare" (the name links as it stands) or
+        # "addend" (a value line, so a placeholder).  A JUMP call and a LOCAL
+        # data reference are bare; a SYMBOL site needs its addend, and so does
+        # a text name's address (HI/LO), which the surface never values under
+        # a name defined in the module's own .text.
+        text = any(kind == "text" for _ov, kind in overlay_defs[name])
+        needs = set()
         for off, rtype in by_symbol[name]:
-            ops.update(r["op_name"] for r in table.get(base + off, [])
-                       if r["mode"] == rtype)
-        if "SYMBOL" not in ops:
+            for r in table.get(base + off, []):
+                if r["mode"] != rtype:
+                    continue
+                if r["op_name"] == "SYMBOL" or (text and rtype != R_MIPS_26):
+                    needs.add(("addend", r["op_name"]))
+                else:
+                    needs.add(("bare", r["op_name"]))
+        if not any(n == "addend" for n, _op in needs):
             continue
-        if ops != {"SYMBOL"}:
-            refusals.append((name, "this module's own name reached by both "
-                                   "SYMBOL and %s records; one placeholder "
-                                   "cannot carry both addends"
-                             % "/".join(sorted(ops - {"SYMBOL"}))))
+        if any(n == "bare" for n, _op in needs):
+            refusals.append((name, "this module's own name reached by %s "
+                                   "records needing an addend and %s records "
+                                   "that link bare; one placeholder cannot "
+                                   "carry both"
+                             % ("/".join(sorted({op for n, op in needs if n == "addend"})),
+                                "/".join(sorted({op for n, op in needs if n == "bare"})))))
             continue
         renames[name] = ALIAS_FMT % (name, overlay)
     return renames, refusals

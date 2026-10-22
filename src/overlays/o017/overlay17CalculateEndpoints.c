@@ -27,9 +27,9 @@ typedef struct Overlay17ChainHead {
     Overlay17Transform *transform;
 } Overlay17ChainHead;
 
-extern void overlay17TransformReloc(
+extern void pointListRPY(
     s32 mode, Overlay17Transform *transform, f32 *source, f32 *destination);
-extern f32 overlay17SqrtReloc(f32 value);
+extern f32 sqrtf(f32 value);
 
 /* Matched 2026-10-02 (lane x-ovlb). Four edits closed it from 121 words:
  * - the TU takes -Wab,-r4300_mul: the target's `mul.s; nop; mul.s` pair and
@@ -63,7 +63,7 @@ void overlay17CalculateEndpoints(
             points[0] = chain->x * transform->scale;
             points[1] = chain->y * transform->scale;
             points[2] = chain->z * transform->scale;
-            overlay17TransformReloc(1, transform, points, points);
+            pointListRPY(1, transform, points, points);
             points[0] += transform->x;
             points[1] += transform->y;
             points[2] += transform->z;
@@ -77,7 +77,7 @@ void overlay17CalculateEndpoints(
             }
             scale = (deltaX * deltaX) + (deltaZ * deltaZ);
             if (scale > 0.0f) {
-                scale = (chain->radius * transform->scale) / overlay17SqrtReloc(scale);
+                scale = (chain->radius * transform->scale) / sqrtf(scale);
             }
             deltaX *= scale;
             deltaZ *= scale;
@@ -98,7 +98,7 @@ void overlay17CalculateEndpoints(
             points[4] = chain->y;
             points[5] = chain->z;
             if (transform != 0) {
-                overlay17TransformReloc(2, transform, points, points);
+                pointListRPY(2, transform, points, points);
                 for (index = 0; &points[index] < &points[6]; index += 3) {
                     points[index + 0] = (points[index + 0] * transform->scale) + transform->x;
                     points[index + 1] = (points[index + 1] * transform->scale) + transform->y;

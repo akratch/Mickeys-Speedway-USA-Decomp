@@ -46,7 +46,7 @@ void overlay7DispatchModes(Overlay7ModeOwner *first, Overlay7ModeOwner *second) 
                                         : gOverlay7PrimaryModes;
     record = &modes[firstState->index][secondState->index];
 
-    if ((gOverlay7DispatchFlagsReloc << 22) >> 31) {
+    if ((D_800D3128 << 22) >> 31) {
         secondState->timer = 100;
         secondState->height += 5.0f;
         switch (record->mode) {
@@ -105,10 +105,10 @@ void overlay7UpdateOwnerMode(Overlay7CheckOwner *owner, s32 previous) {
     s32 i;
 
     state = owner->state;
-    if (*overlay7GetModeReloc() == 1) {
+    if (*func_80028F54() == 1) {
         failed = 0;
-        table = overlay7GetCheckTableReloc();
-        index = overlay7GetCheckIndexReloc(overlay7GetCurrentReloc());
+        table = func_800291C4();
+        index = levelGetBlurEffect(levelGetNumber());
         entries = table[index];
 
         if (D_8 < state->field383 && !(state->flags1A8 & 1)) {
@@ -170,7 +170,7 @@ void overlay7DispatchSelection(Overlay7DispatchOwner *owner, s32 selection) {
     s8 mapped;
 
     state = owner->state;
-    if ((gOverlay7DispatchFlagsReloc << 22) >> 31) {
+    if ((D_800D3128 << 22) >> 31) {
         if (selection >= 14 && selection < 17) {
             override = &gOverlay7DispatchOverride[state->index];
             if (*override == 0) {
@@ -186,10 +186,10 @@ create:
         }
     } else {
 query:
-        if (camGetModeReloc() == 0) {
+        if (camGetMode() == 0) {
             mapped = gOverlay7DispatchMap[selection];
             if (mapped != -1) {
-                overlay59AppendValueReloc(0, state->index, mapped,
+                overlay59AppendValue(0, state->index, mapped,
                                           state->field45D);
             }
         }

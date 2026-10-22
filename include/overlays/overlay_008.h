@@ -674,7 +674,7 @@ typedef struct O8P4CF0SceneItem {
     s32 callbackGate088;
 } O8P4CF0SceneItem;
 
-extern u8 gOverlay8IndexMode;
+extern u8 D_8007BF04;
 
 extern void *gOverlay8Primary[];
 
@@ -707,7 +707,7 @@ extern void o8Call0894EmitReloc(O8Owner *, O8State *, s32,
 
 extern void ext_o8_3278(O8Owner *, O8State *, s32);
 
-extern void ext_o8_2ec0(O8Owner *, O8State *, s32, s32, s32);
+extern void func_8001D960(O8Owner *, O8State *, s32, s32, s32);
 
 extern void ext_o0_1d510(O8Owner *, O8State *, s32);
 
@@ -719,32 +719,30 @@ extern void ext_o7_ccc(O8Owner *, s32);
 
 extern void ext_o8_3018(O8Owner *, O8State *, void *, s32);
 
-extern void ext_o0_3e990(f32);
+extern void func_8003EDE0(f32);
 
 extern void ext_o0_3e99c(O8Owner *, s32);
 
-extern void ext_o17_668(void *, void *);
+extern void overlay17AdvanceChain(void *, void *);
 
 extern void ext_o0_2d70(void *, s32, s32, s32);
 
 extern void o8StartMotionResourceReloc(void *resource);
 
-extern s32 gOverlay8ActivationGateTimerReloc;
+extern s32 D_80078F80;
 
-extern void overlay8ReleaseResourceReloc(void *resource);
+extern void amSndStopXYZ(void *resource);
 
 extern void overlay8CreateResourceReloc(s32 kind, s32 valueC, s32 value10,
                                         s32 value14, s32 count,
                                         void **resourceOut);
 
-extern void overlay8FinalizeActivationReloc(Overlay8ActivationOwner *owner,
+extern void overlay7DispatchSelection(Overlay8ActivationOwner *owner,
                                             s32 code);
 
-extern u8 gO8RolloverControlReloc;
+extern u8 D_8007BF0C;
 
-extern u8 gO8Phase2ScaleControlReloc;
 
-extern u8 gO8Phase3ScaleControlReloc;
 
 extern const f32 gO8Phase2TargetReloc;
 
@@ -756,28 +754,26 @@ extern const f32 gO8RetireThresholdReloc;
 
 extern const f32 gO8Phase3ScaleReloc;
 
-extern f32 o8RolloverSampleReloc(void);
+extern f32 overlay1DistanceFromCurrent(void);
 
 extern void o8Phase1EmitReloc(O8PhaseState *state, s32 kind, f32 scale);
 
 extern const O8P2640Tuning D_2110[];
 
-extern f32 O8P2640_call_26AC(f32 squaredDistance);
+extern f32 sqrtf(f32 squaredDistance);
 
-extern s32 O8P2640_call_26F0(f32 negX, f32 negZ);
+extern s32 Arctanf(f32 negX, f32 negZ);
 
 extern f32 O8P2640_call_26FC(s32 anchorHalfword);
 
 extern f32 O8P2640_call_2708(s32 anchorHalfword);
 
-extern s32 O8P2640_call_27BC(s32 low, s32 high);
+extern s32 mathRnd(s32 low, s32 high);
 
-extern s32 O8P2640_call_27CC(s32 low, s32 high);
 
-extern s32 O8P2640_call_27DC(s32 low, s32 high);
 
 /* Declared with a result: the caller's dead count copy takes v1, not v0. */
-extern s32 O8P2640_call_28C0(O8P2640Record *record);
+extern s32 overlay34CreateRecord(O8P2640Record *record);
 
 extern f32 O8P291C_data_1A0;
 
@@ -787,7 +783,7 @@ extern f32 O8P291C_data_1A8;
 
 extern f32 O8P291C_data_1AC;
 
-extern f32 O8P291C_gravity;
+extern f32 D_800CB304;
 
 extern f32 D_10;
 
@@ -800,10 +796,10 @@ extern f32 O8P291C_call_cos(s16 angle);
 extern void o8Surface291CReloc(
     O8P291CMotion *motion, O8P291CState *state, s32 updateRate);
 
-extern s32 O8P291C_call_037C(O8P291CMotion *motion, O8P291CState *state,
+extern s32 func_8001DD70(O8P291CMotion *motion, O8P291CState *state,
                              f32 update);
 
-extern s32 O8P291C_call_039C(O8P291CMotion *motion, f32 x, f32 y, f32 z);
+extern s32 func_80008128(O8P291CMotion *motion, f32 x, f32 y, f32 z);
 
 extern const f32 gOverlay8UpdateLowerReloc;
 
@@ -811,7 +807,7 @@ extern const f32 gOverlay8UpdateUpperReloc;
 
 extern const f32 gOverlay8UpdateDecayReloc;
 
-extern void overlay8FinishUpdateReloc(Overlay8UpdateOwner *owner,
+extern void wakeUpdateRipple(Overlay8UpdateOwner *owner,
                                       s32 updateRate);
 
 extern const f32 gOverlay8PhaseScales[];
@@ -1019,41 +1015,38 @@ extern const f32 D_28C;
 
 extern const Overlay8MotionRow D_2230[];
 
-extern s32 overlay8MeasureDirectionReloc(f32 deltaX, f32 deltaY);
+extern s32 Arctanf(f32 deltaX, f32 deltaY);
 
-extern s32 overlay8ConvertDirectionReloc(s32 anchorValue,
+extern s32 mathDiffAngle(s32 anchorValue,
                                          s32 directionCode);
 
-extern f32 overlay8ApproachMotionReloc(s32 difference,
+extern f32 func_80029274(s32 difference,
                                        f32 doubledSecondary, f32 limit);
 
-extern s32 O8P4CF0_call_4D14(s32 selector);
+extern s32 runlinkIsModuleLoaded(s32 selector);
 
-extern O8P4CF0SceneItem **O8P4CF0_call_4D24(s32 *start, s32 *end);
+extern O8P4CF0SceneItem **func_8000572C(s32 *start, s32 *end);
 
-extern void O8P4CF0_call_4D54(s32 mode, O8P4CF0Actor *actor,
+extern void pointListRPY(s32 mode, O8P4CF0Actor *actor,
                               O8P4CF0Vec3f *input, O8P4CF0Vec3f *output);
 
-extern void O8P4CF0_call_4E50(O8P4CF0SceneItem *item);
+extern void overlay20ReleaseEntry(O8P4CF0SceneItem *item);
 
-extern f32 O8P4CF0_call_4E64(O8P4CF0Bounds *bounds, f32 x, f32 z,
+extern f32 func_overlay_020_F0001148_1877720(O8P4CF0Bounds *bounds, f32 x, f32 z,
                              O8P4CF0Normal *normal);
 
 extern f32 O8P4CF0_call_4E9C(s32 angle);
 
 extern f32 O8P4CF0_call_4EAC(s32 angle);
 
-extern s32 O8P4CF0_call_4EE8(f32 horizontal, f32 vertical);
+extern s32 Arctanf(f32 horizontal, f32 vertical);
 
-extern s32 O8P4CF0_call_4EF8(f32 horizontal, f32 vertical);
 
-extern f32 O8P4CF0_call_4F0C(f32 amount, s32 updateRate);
+extern f32 Powerf(f32 amount, s32 updateRate);
 
-extern s32 O8P4CF0_call_4F34(s32 current, s32 target, f32 factor);
+extern s32 dAngle(s32 current, s32 target, f32 factor);
 
-extern f32 O8P4CF0_call_4F48(f32 amount, s32 updateRate);
 
-extern s32 O8P4CF0_call_4F68(s32 current, s32 target, f32 factor);
 
 extern const f32 O8P4CF0_data_290;
 
@@ -1069,6 +1062,5 @@ extern const f32 O8P4CF0_data_2A4;
 
 extern const f32 O8P4CF0_data_2A8;
 
-extern f32 O8P4CF0_data_4FD4;
 
 #endif

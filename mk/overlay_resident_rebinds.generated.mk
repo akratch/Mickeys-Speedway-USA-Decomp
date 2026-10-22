@@ -1986,11 +1986,20 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym rcpClearZBuffer=rcpClearZBuffer_o091Reloc \
 	--redefine-sym viGetCurrentSize=viGetCurrentSize_o091Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/func_overlay_092_F0000308_18D6228.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800C947C=D_800C947C_o092Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay92FindNearestCourse.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8000572C=func_8000572C_o092Reloc $@
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay_092.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o092Reloc \
+	--redefine-sym D_800C947C=D_800C947C_o092Reloc \
+	--redefine-sym _bcopy=_bcopy_o092Reloc \
+	--redefine-sym func_8000572C=func_8000572C_o092Reloc \
+	--redefine-sym func_8000FAE0=func_8000FAE0_o092Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o092Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o092Reloc \
+	--redefine-sym func_overlay_008_F00042A8_1862000=func_overlay_008_F00042A8_o092Reloc \
+	--redefine-sym levelGetNumber=levelGetNumber_o092Reloc \
+	--redefine-sym mathDiffAngle=mathDiffAngle_o092Reloc \
+	--redefine-sym mathRnd=mathRnd_o092Reloc \
+	--redefine-sym overlay1ResolveMotionPoint=overlay1ResolveMotionPoint_o092Reloc \
+	--redefine-sym sqrtf=sqrtf_o092Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o093/overlay_093.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym changeWeather=changeWeather_o093Reloc \

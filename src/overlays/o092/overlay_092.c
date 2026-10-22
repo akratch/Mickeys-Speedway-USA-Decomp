@@ -1,69 +1,98 @@
-#include "PR/os_internal.h"
-#include "PR/ultratypes.h"
+#include "overlays/overlay_092.h"
 
-typedef struct Overlay92Owner {
-    u8 pad00[0x0C];
-    f32 x;
-    f32 y;
-    f32 z;
-} Overlay92Owner;
+void overlay92Init(Overlay92Object *object, Overlay92InitData *init) {
+    Overlay92State *state = object->state;
+    state->x = init->x << 8; state->y = init->y << 8; state->z = init->z << 8;
+    state->w = init->w << 8; state->a = init->a; state->b = init->b; state->mode = init->mode;
+    object->x = state->z; object->y = state->y; object->z = state->x;
+}
 
-typedef struct Overlay92CameraRecord {
-    s16 yaw;
-    s16 pitch;
-    s16 roll;
-    u8 pad06[6];
-    f32 x;
-    f32 y;
-    f32 z;
-    u8 pad18[0x3C];
-} Overlay92CameraRecord;
+/* Matched by writing the scan as a plain `for` over the object range with an
+ * early `continue`: the loop test is then strength-reduced by the compiler,
+ * which is where the scaled index, the cursor and the per-arm bound come from.
+ * No cursor, scaled index or limit is declared. The racer's course position
+ * and the entry's start are named locals read before the valid flag is
+ * cleared (both are frame cells as well as the schedule), and the scan's
+ * distance is one expression, so its deltas are compiler temporaries distinct
+ * from the named deltas of the projection below.
+ */
+s32 func_overlay_092_F0000068_18D5F88(O92Racer *racer, f32 *outX,
+                                      f32 *outY, f32 *outZ, s32 *outValue) {
+    O92Object **objects;
+    s32 start;
+    s32 end;
+    O92Object *object;
+    O92Object *nearest;
+    O92VehicleState *vehicle;
+    s32 i;
+    s32 valid;
+    s32 position;
+    s32 first;
+    O92CourseEntry *course;
+    f32 nearestDistance;
+    f32 distance;
+    f32 scale;
+    f32 dx;
+    f32 dy;
+    f32 dz;
 
-typedef struct Overlay92CameraState {
-    s16 yaw;
-    s16 pitch;
-    s16 roll;
-    u8 pad06[6];
-    f32 x;
-    f32 y;
-    f32 z;
-    f32 targetX;
-    f32 targetY;
-    f32 targetZ;
-    u8 pad24[0x1A];
-    s16 positionTag;
-    u8 pad40[0x0E];
-    u8 mode;
-    s8 pathIndex;
-    u16 timer;
-} Overlay92CameraState;
+    vehicle = racer->vehicle;
+    objects = func_8000572C(&start, &end);
+    nearestDistance = gOverlay92DistanceParameters[0];
+    nearest = 0;
 
-typedef struct Overlay92UpdateConfig {
-    s8 recordIndex;
-    u8 pad001[0x16F];
-    u8 smoothAngles;
-} Overlay92UpdateConfig;
+    for (i = start; i < end; i++) {
+        object = objects[i];
+        if (object->type != 12) {
+            continue;
+        }
+        course = object->course;
+        position = vehicle->coursePosition;
+        first = course->start;
+        valid = 0;
+        if (first < course->end) {
+            if ((position >= first) && (position < course->end)) {
+                valid = 1;
+            }
+        } else if ((position >= first) || (position < course->end)) {
+            valid = 1;
+        }
+        if (valid != 0) {
+            distance = sqrtf(((object->x - racer->x) * (object->x - racer->x)) +
+                             ((object->y - racer->y) * (object->y - racer->y)) +
+                             ((object->z - racer->z) * (object->z - racer->z)));
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearest = object;
+            }
+        }
+    }
 
-extern Overlay92CameraRecord D_0[];
-/* Typed views of the retained module-local literal pool. */
-extern f32 D_8;
-extern f32 D_C;
-extern s32 D_800C947C;
-
-extern s32 mathDiffAngle(s16 current, s16 target);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
-extern s32 Arctanf(f32 x, f32 y);
-extern f32 sqrtf(f32 value);
-extern s32 mathRnd(s32 minimum, s32 maximum);
-extern s32 func_8000FAE0(f32 x, f32 y, f32 z);
-extern s32 levelGetNumber(void);
-extern void func_overlay_008_F00042A8_1862000(void *actor, void *owner,
-                                              f32 update);
-extern void func_overlay_001_F0000DF4_184D1D4(void *owner, s32 path,
-                                              f32 *x, f32 *y, f32 *z);
-extern s32 func_overlay_092_F0000068_18D5F88(void *owner, f32 *x, f32 *y,
-                                             f32 *z, s32 *pathIndex);
+    if (nearest != 0) {
+        dx = nearest->x - racer->x;
+        dy = nearest->y - racer->y;
+        dz = nearest->z - racer->z;
+        course = nearest->course;
+        distance = sqrtf((dx * dx) + (dy * dy) + (dz * dz));
+        nearestDistance = gOverlay92DistanceParameters[1];
+        scale = 60.0f / distance;
+        dx *= scale;
+        dy *= scale;
+        dz *= scale;
+        *outX = racer->x + dx;
+        *outY = racer->y + dy;
+        *outZ = racer->z + dz;
+        dx = *outX - nearest->x;
+        dy = *outY - nearest->y;
+        dz = *outZ - nearest->z;
+        *outX = nearest->x + (dx * nearestDistance);
+        *outY = nearest->y + (dy * nearestDistance);
+        *outZ = nearest->z + (dz * nearestDistance);
+        *outValue = course->value;
+        return 1;
+    }
+    return 0;
+}
 
 /* Reconstructed from Mickey-owned code and relocation evidence.
  * The union self-copy is an independently reviewed IDO-specific allocation
@@ -123,7 +152,7 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
             x.value = record->x;
             y = record->y;
             z = record->z;
-            func_overlay_001_F0000DF4_184D1D4(owner, 0, &pathX, &pathY,
+            overlay1ResolveMotionPoint(owner, 0, &pathX, &pathY,
                                               &pathZ);
             /* Initialized representation self-copy: inert on IDO/o32.
              * Retains the stack-backed float lifetime; see cleanup queue. */
@@ -165,7 +194,7 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
 
         case 2:
             if (func_overlay_092_F0000068_18D5F88(
-                    owner, &x.value, &y, &z, &pathIndex) != 0) {
+                    (O92Racer *)owner, &x.value, &y, &z, &pathIndex) != 0) {
                 state->targetX = x.value;
                 state->x = state->targetX;
                 state->targetY = y;
@@ -205,14 +234,14 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
             }
             if (state->pathIndex == -1) {
                 if ((func_overlay_092_F0000068_18D5F88(
-                         owner, &x.value, &y, &z, &pathIndex) == 0) ||
+                         (O92Racer *)owner, &x.value, &y, &z, &pathIndex) == 0) ||
                     (pathIndex == -1)) {
                     pathIndex = 3;
                 }
                 state->pathIndex = pathIndex;
             }
             state->pathIndex = 3;
-            func_overlay_001_F0000DF4_184D1D4(owner, state->pathIndex, &x.value,
+            overlay1ResolveMotionPoint(owner, state->pathIndex, &x.value,
                                               &y, &z);
             state->targetX = x.value;
             state->x = state->targetX;

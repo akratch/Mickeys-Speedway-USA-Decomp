@@ -859,9 +859,7 @@ TEXT_SUBSEGMENTS = {
         (0xB1C, "asm", "overlay_090_padding"),
     ],
     92: [
-        (0x000, "c", "overlay92Init"),
-        (0x068, "c", "overlay92FindNearestCourse"),
-        (0x308, "c", "func_overlay_092_F0000308_18D6228"),
+        (0x000, "c", "overlay_092"),
     ],
     93: [
         (0x000, "c", "overlay_093"),

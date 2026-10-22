@@ -1,4 +1,0 @@
-0x50:5:gOverlay92DistanceParameters
-0x54:6:gOverlay92DistanceParameters
-0x1b0:5:gOverlay92DistanceParameters
-0x1b4:6:gOverlay92DistanceParameters

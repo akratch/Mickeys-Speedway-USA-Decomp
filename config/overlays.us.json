@@ -17080,28 +17080,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x68",
-     "size": "0x68",
-     "type": "c",
-     "source": "overlays/o092/overlay92Init",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x68",
-     "end_offset": "0x308",
-     "size": "0x2A0",
-     "type": "c",
-     "source": "overlays/o092/overlay92FindNearestCourse",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x308",
      "end_offset": "0xA30",
-     "size": "0x728",
+     "size": "0xA30",
      "type": "c",
-     "source": "overlays/o092/func_overlay_092_F0000308_18D6228",
+     "source": "overlays/o092/overlay_092",
      "matched": true,
      "nonmatching": false
     }

@@ -3066,9 +3066,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18D5F20, c, overlay92Init]
-      - [0x18D5F88, c, overlay92FindNearestCourse]
-      - [0x18D6228, c, func_overlay_092_F0000308_18D6228]
+      - [0x18D5F20, c, overlay_092]
       - [0x18D6950, bin, overlay_092_data_rodata]
       - [0x18D6960, bin, overlay_092_reloc1]
       - [0x18D6A40, bin, overlay_092_reloc2]

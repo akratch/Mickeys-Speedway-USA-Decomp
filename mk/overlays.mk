@@ -1646,27 +1646,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay89InitializeEffect.c.o: CFLAGS += -
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay89InitializeEffect.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x334
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay89UpdateStateAndParticles.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay92Init.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x68
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay92FindNearestCourse.c.o: CFLAGS += \
-	-Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay92FindNearestCourse.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym sqrtf=sqrtf_o092Reloc $@
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/func_overlay_092_F0000308_18D6228.c.o: CFLAGS += \
-	-Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/func_overlay_092_F0000308_18D6228.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x728 && \
-	$(OBJCOPY) --redefine-sym Arctanf=Arctanf_o092Reloc \
-		--redefine-sym _bcopy=_bcopy_o092Reloc \
-		--redefine-sym func_8000FAE0=func_8000FAE0_o092Reloc \
-		--redefine-sym func_8002A8BC=func_8002A8BC_o092Reloc \
-		--redefine-sym func_8002A8C0=func_8002A8C0_o092Reloc \
-		--redefine-sym levelGetNumber=levelGetNumber_o092Reloc \
-		--redefine-sym mathDiffAngle=mathDiffAngle_o092Reloc \
-		--redefine-sym mathRnd=mathRnd_o092Reloc \
-		--redefine-sym sqrtf=sqrtf_o092Reloc \
-		--redefine-sym func_overlay_001_F0000DF4_184D1D4=overlay92ResolveMotionPointReloc \
-		--redefine-sym func_overlay_008_F00042A8_1862000=overlay92UpdateActorReloc $@
+# Overlay 92 is one translation unit under the overlay flag set; its text
+# ends exactly at the module's text size, so no trim is needed, and its
+# resident and cross-module callees go through the generated surface renames.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay_092.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o093/overlay_093.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xEC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o093/overlay_093.c.o: CFLAGS += -Wab,-r4300_mul

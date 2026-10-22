@@ -1744,7 +1744,6 @@
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
         "filter_elf_relocations.py",
-        "trim_elf_section.py",
         "objcopy"
       ]
     },

@@ -854,6 +854,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14GetFlagC8.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14ReleaseCurrent.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x3C
+# Overlay 15 is one translation unit at the overlay flag set; its .text now
+# carries the module's trailing pad (no trim), and its resident calls go
+# through the generated surface rebinds. What remains is data and BSS
+# ownership, kept until phase 3 gives them C owners
+# (docs/OVERLAY_STRUCTURE_SPRINT.md):
 # overlay15DrawScreenStars reads its fade scale as the float literal
 # 255.0f / 292.0f, so the compiler emits a one-word private pool that duplicates
 # the retained data word at data_rodata +0x40 (the last word of
@@ -879,10 +884,7 @@ $(O15_OBJ): \
 	config/normalizations/overlay15DrawScreenStars.rebind.spec
 $(O15_OBJ): CFLAGS += -Wab,-r4300_mul
 $(O15_OBJ): POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym starfieldFastMove=starfieldFastMove_o015Reloc \
-		--redefine-sym rainFastDraw=rainFastDraw_o015Reloc \
-		--add-symbol gOverlay15FadePoolReloc=0x0,global $@ && \
+	$(OBJCOPY) --add-symbol gOverlay15FadePoolReloc=0x0,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay15DrawScreenStars.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
@@ -903,8 +905,7 @@ $(O15_OBJ): POSTPROCESS = \
 		0xb20:5:.bss 0xb2c:6:.bss 0xb30:6:.bss 0xb34:5:.bss \
 		0xb3c:6:.bss 0xbfc:5:.bss 0xc00:6:.bss 0xc24:5:.bss \
 		0xc28:6:.bss 0xc2c:6:.bss 0xc30:5:.bss 0xc34:6:.bss \
-		0x738:5:.bss 0x73c:6:.bss && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC6C
+		0x738:5:.bss 0x73c:6:.bss
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34SetValue10.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC
 # NON_MATCHING fallback assembly supplies the retail body; restore the

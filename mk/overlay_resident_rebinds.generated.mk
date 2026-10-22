@@ -404,6 +404,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o015/overlay_015.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym mathRnd=mathRnd_o015Reloc \
 	--redefine-sym mmAlloc=mmAlloc_o015Reloc \
 	--redefine-sym mmFree=mmFree_o015Reloc \
+	--redefine-sym rainFastDraw=rainFastDraw_o015Reloc \
+	--redefine-sym starfieldFastMove=starfieldFastMove_o015Reloc \
 	--redefine-sym texDPInit=texDPInit_o015Reloc \
 	--redefine-sym viGetCurrentSize=viGetCurrentSize_o015Reloc $@
 

@@ -937,48 +937,35 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay_040.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym camProjectPoint=camProjectPoint_o040Reloc \
 	--redefine-sym frontDrawRectangles=frontDrawRectangles_o040Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41AddSlot.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D6C58=D_800D6C58_o041Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41AdvanceStepRecords.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D6B58=D_800D6B58_o041Reloc \
-	--redefine-sym trackAddTextureScroll=trackAddTextureScroll_o041Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41EnqueueTransition.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D6D18=D_800D6D18_o041Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41IsUnitScale.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D6B00=D_800D6B00_o041Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41ProcessEntry.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80007C68=func_80007C68_o041Reloc \
-	--redefine-sym func_8005AF14=func_8005AF14_o041Reloc \
-	--redefine-sym lightObject=lightObject_o041Reloc \
-	--redefine-sym texAnimateSprite=texAnimateSprite_o041Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41SpawnItems.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D6B00=D_800D6B00_o041Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41TickTransitions.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D6D18=D_800D6D18_o041Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41UpdateColorRecords.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D6C58=D_800D6C58_o041Reloc \
-	--redefine-sym changeLightColour=changeLightColour_o041Reloc \
-	--redefine-sym changeLightIntensity=changeLightIntensity_o041Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41UpdateCurveObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay_041.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_8007C0B8=D_8007C0B8_o041Reloc \
 	--redefine-sym D_8007D6A4=D_8007D6A4_o041Reloc \
 	--redefine-sym D_800D6B00=D_800D6B00_o041Reloc \
+	--redefine-sym D_800D6B08=D_800D6B08_o041Reloc \
+	--redefine-sym D_800D6B58=D_800D6B58_o041Reloc \
+	--redefine-sym D_800D6C58=D_800D6C58_o041Reloc \
+	--redefine-sym D_800D6D18=D_800D6D18_o041Reloc \
+	--redefine-sym changeLightColour=changeLightColour_o041Reloc \
+	--redefine-sym changeLightIntensity=changeLightIntensity_o041Reloc \
+	--redefine-sym fontBackground=fontBackground_o041Reloc \
+	--redefine-sym fontPrintXY=fontPrintXY_o041Reloc \
+	--redefine-sym fontStringWidth=fontStringWidth_o041Reloc \
+	--redefine-sym fontUseFont=fontUseFont_o041Reloc \
+	--redefine-sym func_80007C68=func_80007C68_o041Reloc \
 	--redefine-sym func_8000FAE0=func_8000FAE0_o041Reloc \
 	--redefine-sym func_8002A878=func_8002A878_o041Reloc \
 	--redefine-sym func_8002A910=func_8002A910_o041Reloc \
 	--redefine-sym func_8003EDEC=func_8003EDEC_o041Reloc \
-	--redefine-sym sqrtf=sqrtf_o041Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41UpdateProgress.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D6B08=D_800D6B08_o041Reloc \
-	--redefine-sym func_8005ABA8=func_8005ABA8_o041Reloc $@
+	--redefine-sym func_8004B0B8=func_8004B0B8_o041Reloc \
+	--redefine-sym func_8005ABA8=func_8005ABA8_o041Reloc \
+	--redefine-sym func_8005AF14=func_8005AF14_o041Reloc \
+	--redefine-sym func_overlay_012_F00001B4_186D434=func_overlay_012_F00001B4_o041Reloc \
+	--redefine-sym lightObject=lightObject_o041Reloc \
+	--redefine-sym mathOneFloatPY=mathOneFloatPY_o041Reloc \
+	--redefine-sym mathRnd=mathRnd_o041Reloc \
+	--redefine-sym sqrtf=sqrtf_o041Reloc \
+	--redefine-sym texAnimateSprite=texAnimateSprite_o041Reloc \
+	--redefine-sym trackAddTextureScroll=trackAddTextureScroll_o041Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o042/overlay_042.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007A20C=D_8007A20C_o042Reloc \

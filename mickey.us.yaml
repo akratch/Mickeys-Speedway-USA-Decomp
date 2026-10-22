@@ -1983,20 +1983,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1887338, c, overlay41AdvanceStepRecords]
-      - [0x188745C, c, overlay41UpdateColorRecords]
-      - [0x18875E4, c, overlay41SampleCurve]
-      - [0x1887B34, c, overlay41InterpolateAngle]
-      - [0x1887B8C, c, overlay41UpdateCurveObject]
-      - [0x1888584, c, overlay41IsUnitScale]
-      - [0x18885D0, c, overlay41UpdateProgress]
-      - [0x188879C, c, overlay41ProcessEntry]
-      - [0x1888988, c, overlay41AddSlot]
-      - [0x1888A64, c, overlay41Ignore]
-      - [0x1888A78, c, overlay41SpawnItems]
-      - [0x1888C94, c, overlay41EnqueueTransition]
-      - [0x1888E38, c, overlay41TickTransitions]
-      - [0x1888FBC, c, overlay41DrawItem]
+      - [0x1887338, c, overlay_041]
       - [0x1889118, bin, overlay_041_data_rodata]
       - [0x1889188, bin, overlay_041_reloc1]
       - [0x1889498, bin, overlay_041_reloc2]

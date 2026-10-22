@@ -161,10 +161,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         )
     ],
     25: [(0x20, 0x40, "overlay_025", ".rodata", "overlay25UpdateEffect", True)],
-    41: [
-        (0x0, 0x3C, "overlay41SampleCurve", ".rodata", "func_overlay_041_F00002AC_18875E4"),
-        (0x3C, 0x54, "overlay41UpdateCurveObject", ".rodata", "func_overlay_041_F0000854_1887B8C"),
-    ],
     46: [(0x364, 0x378, "overlay46UpdateSequence", ".rodata", "func_overlay_046_F0000120_188E518", True)],
     58: [
         # The seven-entry state switch table and the 0.02f literal,
@@ -540,20 +536,7 @@ TEXT_SUBSEGMENTS = {
         (0x7E8, "asm", "overlay_038_padding"),
     ],
     41: [
-        (0x0000, "c", "overlay41AdvanceStepRecords"),
-        (0x0124, "c", "overlay41UpdateColorRecords"),
-        (0x02AC, "c", "overlay41SampleCurve"),
-        (0x07FC, "c", "overlay41InterpolateAngle"),
-        (0x0854, "c", "overlay41UpdateCurveObject"),
-        (0x124C, "c", "overlay41IsUnitScale"),
-        (0x1298, "c", "overlay41UpdateProgress"),
-        (0x1464, "c", "overlay41ProcessEntry"),
-        (0x1650, "c", "overlay41AddSlot"),
-        (0x172C, "c", "overlay41Ignore"),
-        (0x1740, "c", "overlay41SpawnItems"),
-        (0x195C, "c", "overlay41EnqueueTransition"),
-        (0x1B00, "c", "overlay41TickTransitions"),
-        (0x1C84, "c", "overlay41DrawItem"),
+        (0x000, "c", "overlay_041"),
     ],
     21: [
         (0x000, "c", "overlay21RegisterPlane"),

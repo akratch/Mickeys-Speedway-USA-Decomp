@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4900,
+  "owned_data_rodata_bytes": 4816,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -8168,127 +8168,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x124",
-     "size": "0x124",
-     "type": "c",
-     "source": "overlays/o041/overlay41AdvanceStepRecords",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x124",
-     "end_offset": "0x2AC",
-     "size": "0x188",
-     "type": "c",
-     "source": "overlays/o041/overlay41UpdateColorRecords",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2AC",
-     "end_offset": "0x7FC",
-     "size": "0x550",
-     "type": "c",
-     "source": "overlays/o041/overlay41SampleCurve",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x7FC",
-     "end_offset": "0x854",
-     "size": "0x58",
-     "type": "c",
-     "source": "overlays/o041/overlay41InterpolateAngle",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x854",
-     "end_offset": "0x124C",
-     "size": "0x9F8",
-     "type": "c",
-     "source": "overlays/o041/overlay41UpdateCurveObject",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x124C",
-     "end_offset": "0x1298",
-     "size": "0x4C",
-     "type": "c",
-     "source": "overlays/o041/overlay41IsUnitScale",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1298",
-     "end_offset": "0x1464",
-     "size": "0x1CC",
-     "type": "c",
-     "source": "overlays/o041/overlay41UpdateProgress",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1464",
-     "end_offset": "0x1650",
-     "size": "0x1EC",
-     "type": "c",
-     "source": "overlays/o041/overlay41ProcessEntry",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1650",
-     "end_offset": "0x172C",
-     "size": "0xDC",
-     "type": "c",
-     "source": "overlays/o041/overlay41AddSlot",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x172C",
-     "end_offset": "0x1740",
-     "size": "0x14",
-     "type": "c",
-     "source": "overlays/o041/overlay41Ignore",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1740",
-     "end_offset": "0x195C",
-     "size": "0x21C",
-     "type": "c",
-     "source": "overlays/o041/overlay41SpawnItems",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x195C",
-     "end_offset": "0x1B00",
-     "size": "0x1A4",
-     "type": "c",
-     "source": "overlays/o041/overlay41EnqueueTransition",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1B00",
-     "end_offset": "0x1C84",
-     "size": "0x184",
-     "type": "c",
-     "source": "overlays/o041/overlay41TickTransitions",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1C84",
      "end_offset": "0x1DE0",
-     "size": "0x15C",
+     "size": "0x1DE0",
      "type": "c",
-     "source": "overlays/o041/overlay41DrawItem",
+     "source": "overlays/o041/overlay_041",
      "matched": true,
      "nonmatching": false
     }
@@ -8462,27 +8345,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 41
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x0",
-     "end_offset": "0x3C",
-     "size": "0x3C",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o041/overlay41SampleCurve",
-     "trial_function": "func_overlay_041_F00002AC_18875E4"
-    },
-    {
-     "offset": "0x3C",
-     "end_offset": "0x54",
-     "size": "0x18",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o041/overlay41UpdateCurveObject",
-     "trial_function": "func_overlay_041_F0000854_1887B8C"
-    }
-   ]
+   }
   },
   {
    "overlay": 42,

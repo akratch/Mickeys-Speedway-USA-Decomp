@@ -1749,52 +1749,36 @@ gOverlay40Value6 = 0x00000000;
 gOverlay40Value7 = 0x00000000;
 o40TintCallReloc = 0xf0000000;
 
-/* overlay 41: overlay41AdvanceStepRecords.c.o */
-D_800D6B58_o041Reloc = 0x00000000;
-trackAddTextureScroll_o041Reloc = 0xf0000000;
-
-/* overlay 41: overlay41UpdateColorRecords.c.o */
-D_800D6C58_o041Reloc = 0x00000000;
-changeLightColour_o041Reloc = 0xf0000000;
-changeLightIntensity_o041Reloc = 0xf0000000;
-
-/* overlay 41: overlay41UpdateCurveObject.c.o */
+/* overlay 41: overlay_041.c.o */
+D_8007C0B8_o041Reloc = 0x00000000;
 D_8007D6A4_o041Reloc = 0x00000000;
 D_800D6B00_o041Reloc = 0x00000000;
+D_800D6B08_o041Reloc = 0x00000000;
+D_800D6B58_o041Reloc = 0x00000000;
+D_800D6C58_o041Reloc = 0x00000000;
+D_800D6D18_o041Reloc = 0x00000000;
+changeLightColour_o041Reloc = 0xf0000000;
+changeLightIntensity_o041Reloc = 0xf0000000;
+fontBackground_o041Reloc = 0xf0000000;
+fontPrintXY_o041Reloc = 0xf0000000;
+fontStringWidth_o041Reloc = 0xf0000000;
+fontUseFont_o041Reloc = 0xf0000000;
+func_80007C68_o041Reloc = 0xf0000000;
 func_8000FAE0_o041Reloc = 0xf0000000;
 func_8002A878_o041Reloc = 0xf0000000;
 func_8002A910_o041Reloc = 0xf0000000;
 func_8003EDEC_o041Reloc = 0xf0000000;
-gOverlay41CurveObjectPoolReloc = 0x0000003c;
-overlay41SampleCurveReloc = 0xf0000000;
-sqrtf_o041Reloc = 0xf0000000;
-
-/* overlay 41: overlay41UpdateProgress.c.o */
-D_800D6B08_o041Reloc = 0x00000000;
+func_8004B0B8_o041Reloc = 0xf0000000;
 func_8005ABA8_o041Reloc = 0xf0000000;
-
-/* overlay 41: overlay41ProcessEntry.c.o */
-func_80007C68_o041Reloc = 0xf0000000;
 func_8005AF14_o041Reloc = 0xf0000000;
+func_overlay_012_F00001B4_o041Reloc = 0xf0000000;
+func_overlay_041_F00002AC_18875E4_o041Reloc = 0xf0000000;
 lightObject_o041Reloc = 0xf0000000;
+mathOneFloatPY_o041Reloc = 0xf0000000;
+mathRnd_o041Reloc = 0xf0000000;
+sqrtf_o041Reloc = 0xf0000000;
 texAnimateSprite_o041Reloc = 0xf0000000;
-
-/* overlay 41: overlay41SpawnItems.c.o */
-gOverlay41SpawnConstants = 0x00000058;
-overlay41ConvertPairReloc = 0xf0000000;
-overlay41RandomRangeReloc = 0xf0000000;
-overlay41SpawnEffectReloc = 0xf0000000;
-
-/* overlay 41: overlay41EnqueueTransition.c.o */
-D_800D6D18_o041Reloc = 0x00000000;
-
-/* overlay 41: overlay41DrawItem.c.o */
-gOverlay41ResourcesReloc = 0x00000000;
-overlay41DrawResourceReloc = 0xf0000000;
-overlay41MeasureReloc = 0xf0000000;
-overlay41SetColorIntensityReloc = 0xf0000000;
-overlay41SetColorReloc = 0xf0000000;
-overlay41SetModeReloc = 0xf0000000;
+trackAddTextureScroll_o041Reloc = 0xf0000000;
 
 /* overlay 42: overlay_042.c.o */
 D_8007A20C_o042Reloc = 0x00000000;
@@ -5521,22 +5505,11 @@ func_overlay_040_F0000490_1886D40 = overlay40Interpolate;
 func_overlay_040_F0000534_1886DE4 = overlay40DrawTintRectangle;
 func_overlay_040_F0000690_1886F40 = overlay40FadeRecords;
 
-/* overlay 41: overlay41InterpolateAngle.c.o */
-func_overlay_041_F00007FC_1887B34 = overlay41InterpolateAngle;
-
-/* overlay 41: overlay41IsUnitScale.c.o */
+/* overlay 41: overlay_041.c.o */
 func_overlay_041_F000124C_1888584 = overlay41IsUnitScale;
-
-/* overlay 41: overlay41Ignore.c.o */
 func_overlay_041_F000172C_1888A64 = overlay41Ignore;
-
-/* overlay 41: overlay41SpawnItems.c.o */
 func_overlay_041_F0001740_1888A78 = overlay41SpawnItems;
-
-/* overlay 41: overlay41TickTransitions.c.o */
 func_overlay_041_F0001B00_1888E38 = overlay41TickTransitions;
-
-/* overlay 41: overlay41DrawItem.c.o */
 func_overlay_041_F0001C84_1888FBC = overlay41DrawItem;
 
 /* overlay 42: overlay_042.c.o */

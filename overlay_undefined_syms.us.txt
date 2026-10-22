@@ -4352,30 +4352,24 @@ mathOneFloatRPY_o097Reloc = 0xf0000000;
 overlay97TrigAReloc = 0xf0000000;
 trackGetTrack_o097Reloc = 0xf0000000;
 
-/* overlay 98: overlay98CollectUniqueY.c.o */
-overlay98UniqueCountReloc = 0x00000080;
-overlay98UniqueYReloc = 0x00000308;
-
-/* overlay 98: overlay98CollectAccepted.c.o */
-camGetPtr_o098Reloc = 0xf0000000;
-gOverlay98AcceptedCount = 0x00000084;
-gOverlay98AcceptedEntries = 0x00000088;
-
-/* overlay 98: overlay98RenderReflections.c.o */
+/* overlay 98: overlay_098.c.o */
 camGetProjectionMtx_o098Reloc = 0xf0000000;
+camGetPtr_o098Reloc = 0xf0000000;
 func_80009E78_o098Reloc = 0xf0000000;
+func_8001291C_o098Reloc = 0xf0000000;
+func_8001357C_o098Reloc = 0xf0000000;
 func_8002AA50_o098Reloc = 0xf0000000;
 func_8002AC84_o098Reloc = 0xf0000000;
 gO98Contexts = 0x00000000;
 gO98SpecialVertices = 0x80000000;
 gO98Toggle = 0x00000000;
+gOverlay98AcceptedCount = 0x00000084;
+gOverlay98AcceptedEntries = 0x00000088;
 mtxf_mul_o098Reloc = 0xf0000000;
 mtxf_to_mtx_o098Reloc = 0xf0000000;
+overlay98UniqueCountReloc = 0x00000080;
+overlay98UniqueYReloc = 0x00000308;
 texDPInit_o098Reloc = 0xf0000000;
-
-/* overlay 98: overlay98CheckObject.c.o */
-func_8001291C_o098Reloc = 0xf0000000;
-func_8001357C_o098Reloc = 0xf0000000;
 
 /* overlay 99: overlay99GetEntries.c.o */
 gOverlay99Entries = 0x00000000;
@@ -6202,17 +6196,11 @@ func_overlay_097_F0000508_18D83A0 = overlay97InitScale;
 func_overlay_097_F0000748_18D85E0 = overlay97InitBounds;
 func_overlay_097_F0000944_18D87DC = overlay97InitPlane;
 
-/* overlay 98: overlay98CollectUniqueY.c.o */
+/* overlay 98: overlay_098.c.o */
 func_overlay_098_F0000000_18D89C0 = overlay98CollectUniqueY;
-
-/* overlay 98: overlay98CollectAccepted.c.o */
 func_overlay_098_F0000144_18D8B04 = overlay98CollectAccepted;
-
-/* overlay 98: overlay98RenderReflections.c.o */
-func_overlay_098_F0000234_18D8BF4 = overlay98RenderReflections;
-
-/* overlay 98: overlay98CheckObject.c.o */
 func_overlay_098_F0000848_18D9208 = overlay98CheckObject;
+func_overlay_098_F0000234_18D8BF4 = overlay98RenderReflections;
 
 /* overlay 99: overlay99GetEntries.c.o */
 func_overlay_099_F0000000_18D95B0 = overlay99GetEntries;

@@ -7562,39 +7562,11 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o098/overlay98CheckObject.c.o",
-      "offset": 2120,
-      "overlay": 98,
-      "size": 444,
-      "source": "src/overlays/o098/overlay98CheckObject.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o098/overlay98CollectUniqueY.c.o",
+      "object": "build/src/overlays/o098/overlay_098.c.o",
       "offset": 0,
       "overlay": 98,
-      "size": 324,
-      "source": "src/overlays/o098/overlay98CollectUniqueY.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o098/overlay98RenderReflections.c.o",
-      "offset": 564,
-      "overlay": 98,
-      "size": 1556,
-      "source": "src/overlays/o098/overlay98RenderReflections.c",
+      "size": 2564,
+      "source": "src/overlays/o098/overlay_098.c",
       "tools": [
         "trim_elf_section.py"
       ]
@@ -8745,10 +8717,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 602,
+      "metadata": 600,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 445952,
-    "objects_with_postprocess": 603
+    "matched_c_bytes_with_postprocess": 446192,
+    "objects_with_postprocess": 601
   }
 }

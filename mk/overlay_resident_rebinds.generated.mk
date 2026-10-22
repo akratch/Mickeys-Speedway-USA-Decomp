@@ -2046,16 +2046,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay_097.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o097Reloc \
 	--redefine-sym trackGetTrack=trackGetTrack_o097Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98CheckObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8001291C=func_8001291C_o098Reloc \
-	--redefine-sym func_8001357C=func_8001357C_o098Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98CollectAccepted.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camGetPtr=camGetPtr_o098Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98RenderReflections.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay_098.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym camGetProjectionMtx=camGetProjectionMtx_o098Reloc \
+	--redefine-sym camGetPtr=camGetPtr_o098Reloc \
 	--redefine-sym func_80009E78=func_80009E78_o098Reloc \
+	--redefine-sym func_8001291C=func_8001291C_o098Reloc \
+	--redefine-sym func_8001357C=func_8001357C_o098Reloc \
 	--redefine-sym func_8002AA50=func_8002AA50_o098Reloc \
 	--redefine-sym func_8002AC84=func_8002AC84_o098Reloc \
 	--redefine-sym mtxf_mul=mtxf_mul_o098Reloc \

@@ -882,10 +882,7 @@ TEXT_SUBSEGMENTS = {
         (0xA54, "asm", "overlay_097_padding"),
     ],
     98: [
-        (0x000, "c", "overlay98CollectUniqueY"),
-        (0x144, "c", "overlay98CollectAccepted"),
-        (0x234, "c", "overlay98RenderReflections"),
-        (0x848, "c", "overlay98CheckObject"),
+        (0x000, "c", "overlay_098"),
         (0xA04, "asm", "overlay_098_padding"),
     ],
     99: [

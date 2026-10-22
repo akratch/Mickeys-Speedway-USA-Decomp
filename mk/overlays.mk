@@ -1663,15 +1663,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay_096.c.o: POSTPROCESS = \
 		0x474:4:overlay96Register && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6D4
 OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay_096.c.o
-# Restore NON_MATCHING fallback symbols and trim the matched updater's merged
-# trailing tail. These renames change symbol metadata only.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98CollectUniqueY.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x144
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98RenderReflections.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x614
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98CheckObject.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1BC
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98CheckObject.c.o: CFLAGS += -Wab,-r4300_mul
+# Overlay 98 is one translation unit under the overlay flag set.
+# The trim keeps the trailing pad in its own atlas row.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay_098.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay_098.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA04
+OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay_098.c.o
 # Overlay 100 is one translation unit under the overlay flag set. Its four
 # calls to exported functions of the same module are SYMBOL records, whose
 # shipped words hold the addend (zero) rather than the callee's address; the

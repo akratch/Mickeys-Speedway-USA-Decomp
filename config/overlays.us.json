@@ -17851,37 +17851,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x144",
-     "size": "0x144",
-     "type": "c",
-     "source": "overlays/o098/overlay98CollectUniqueY",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x144",
-     "end_offset": "0x234",
-     "size": "0xF0",
-     "type": "c",
-     "source": "overlays/o098/overlay98CollectAccepted",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x234",
-     "end_offset": "0x848",
-     "size": "0x614",
-     "type": "c",
-     "source": "overlays/o098/overlay98RenderReflections",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x848",
      "end_offset": "0xA04",
-     "size": "0x1BC",
+     "size": "0xA04",
      "type": "c",
-     "source": "overlays/o098/overlay98CheckObject",
+     "source": "overlays/o098/overlay_098",
      "matched": true,
      "nonmatching": false
     },

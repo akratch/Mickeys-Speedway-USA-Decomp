@@ -3165,10 +3165,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18D89C0, c, overlay98CollectUniqueY]
-      - [0x18D8B04, c, overlay98CollectAccepted]
-      - [0x18D8BF4, c, overlay98RenderReflections]
-      - [0x18D9208, c, overlay98CheckObject]
+      - [0x18D89C0, c, overlay_098]
       - [0x18D93C4, asm, overlay_098_padding]
       - [0x18D93D0, bin, overlay_098_data_rodata]
       - [0x18D93F0, bin, overlay_098_reloc1]

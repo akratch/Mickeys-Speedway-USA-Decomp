@@ -17859,9 +17859,9 @@
       }
     },
     {
-      "name": "src/overlays/o098/overlay98CheckObject.c",
-      "target_path": "expected/build/src/overlays/o098/overlay98CheckObject.c.o",
-      "base_path": "build/src/overlays/o098/overlay98CheckObject.c.o",
+      "name": "src/overlays/o098/overlay_098.c",
+      "target_path": "expected/build/src/overlays/o098/overlay_098.c.o",
+      "base_path": "build/src/overlays/o098/overlay_098.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -17872,61 +17872,7 @@
           "overlay",
           "overlay-o098"
         ],
-        "source_path": "src/overlays/o098/overlay98CheckObject.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o098/overlay98CollectAccepted.c",
-      "target_path": "expected/build/src/overlays/o098/overlay98CollectAccepted.c.o",
-      "base_path": "build/src/overlays/o098/overlay98CollectAccepted.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o098"
-        ],
-        "source_path": "src/overlays/o098/overlay98CollectAccepted.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o098/overlay98CollectUniqueY.c",
-      "target_path": "expected/build/src/overlays/o098/overlay98CollectUniqueY.c.o",
-      "base_path": "build/src/overlays/o098/overlay98CollectUniqueY.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o098"
-        ],
-        "source_path": "src/overlays/o098/overlay98CollectUniqueY.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o098/overlay98RenderReflections.c",
-      "target_path": "expected/build/src/overlays/o098/overlay98RenderReflections.c.o",
-      "base_path": "build/src/overlays/o098/overlay98RenderReflections.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o098"
-        ],
-        "source_path": "src/overlays/o098/overlay98RenderReflections.c",
+        "source_path": "src/overlays/o098/overlay_098.c",
         "complete": true
       }
     },

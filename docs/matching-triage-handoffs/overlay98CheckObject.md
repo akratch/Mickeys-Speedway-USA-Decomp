@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay98CheckObject:start -->
 ### `overlay98CheckObject` plateau handoff
 
-- source: `src/overlays/o098/overlay98CheckObject.c`
+- source: `src/overlays/o098/overlay_098.c`
 - score: 0/111 words
 - frame: 0xA8
 - relocations: 6

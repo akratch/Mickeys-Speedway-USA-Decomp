@@ -1,65 +1,92 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_098.h"
 
-typedef struct Gfx { u32 w0, w1; } Gfx;
-typedef struct O98Mtx { u8 bytes[0x40]; } O98Mtx;
+/* Exact DKR v77/v80 and JFG scans are negative for this routine. */
+/* Matched by indexing the unique list and bounding the scan by the count
+ * global itself: the compiler reduces the subscript to a walking pointer and
+ * an end pointer of its own, each with its own address load, and reads the
+ * count once. No cursor, end pointer, count copy or next count is declared.
+ * The point-reference index, the vertex base and the vertex pointer are named
+ * locals; those three webs are what push the hoisted addresses and the stride
+ * constant into saved registers.
+ */
+void overlay98CollectUniqueY(Overlay98Group *group) {
+    Overlay98Block *block;
+    Overlay98Span *span;
+    s16 value;
+    s32 blockIndex;
+    s32 spanIndex;
+    s32 k;
+    s32 pointRefIndex;
+    s32 vertexBase;
+    s32 isNew;
+    Overlay98Vertex *vertex;
 
-typedef struct O98ModelData {
-    u8 pad00[0x11];
-    u8 special;
-    u8 pad12[0x3C];
-    s8 mode4E;
-    u8 pad4F[0x19];
-    void *displayListA;
-    void *displayListB;
-} O98ModelData;
+    overlay98UniqueCountReloc = 0;
+    for (blockIndex = 0; blockIndex < group->blockCount; blockIndex++) {
+        block = &group->blocks[blockIndex];
+        for (spanIndex = 0; spanIndex < block->spanCount; spanIndex++) {
+            span = &block->spans[spanIndex];
+            if (span->flags & 0x8000) {
+                pointRefIndex = span->pointRefIndex;
+                vertexBase = span->vertexBase;
+                vertex = &block->vertices[
+                    block->pointRefs[pointRefIndex].vertexIndex + vertexBase];
+                value = vertex->y;
+                isNew = 1;
+                for (k = 0; k < overlay98UniqueCountReloc; k++) {
+                    if (overlay98UniqueYReloc[k] == value) {
+                        isNew = 0;
+                    }
+                }
+                if (isNew) {
+                    overlay98UniqueYReloc[overlay98UniqueCountReloc++] = value;
+                    if (overlay98UniqueCountReloc >= 15) {
+                        spanIndex = block->spanCount;
+                        blockIndex = group->blockCount;
+                    }
+                }
+            }
+        }
+    }
+}
+s32 overlay98CheckObject(O98Object *object, u8 *context, f32 *result);
 
-typedef struct O98Node {
-    O98ModelData *data;
-    void *vertexData;
-    s16 useAlternate;
-    s16 partIndex;
-    void *partsA[17];
-    void *partsB[1];
-} O98Node;
+/* PROVENANCE: reproduced from the retired public mirror, commit
+ * f56d08c746f891f76c4b7bab8e3a2a4332894634, which no longer resolves. All
+ * retained measurements and the ABI correction above were independently
+ * derived from Mickey's own source, object, relocation tables, retail bytes. */
+/* Matched 2026-08-31 by tracing IDO's automatic stack-home producers. Removing
+ * two transient entry aliases and making the address-taken result the third
+ * surviving automatic reproduces the 60-word body, 0x50 frame, and all six
+ * relocation sites; the complete linked US ROM is byte-identical. */
+void overlay98CollectAccepted(s32 count, O98Object **objects) {
+    u8 *context;
+    s32 index;
+    f32 value;
 
-typedef struct O98Object {
-    s16 rotX, rotY, rotZ;
-    s16 flags;
-    f32 scale;
-    f32 x, y, z;
-    u8 pad18[0x21];
-    u8 alpha;
-    s8 nodeIndex;
-    u8 pad3B[5];
-    s8 *stateTable;
-    u8 pad44[0x24];
-    void **nodes;
-    u8 pad6C[0x27];
-    u8 stateIndex;
-} O98Object;
+    context = camGetPtr();
+    gOverlay98AcceptedCount = 0;
+    index = count - 1;
+    if (index >= 0) {
+        do {
+            O98Object *object = objects[index];
 
-typedef struct O98VisibleEntry { O98Object *object; f32 referenceY; } O98VisibleEntry;
-typedef struct O98Context { u8 bytes[0x40]; } O98Context;
-typedef struct O98Transform {
-    s16 rot0, rot2, rot4;
-    u16 pad06;
-    f32 scale;
-    f32 x, y, z;
-} O98Transform;
-
-extern void *camGetProjectionMtx(void);
-extern void mtxf_to_mtx(void *, void *);
-extern void func_8002AA50(O98Transform *, O98Mtx *);
-extern void mtxf_mul(O98Mtx *, void *, O98Mtx *);
-extern void func_8002AC84(O98Transform *, O98Mtx *);
-extern void func_80009E78(Gfx **, u8 **, void *, O98Object *);
-extern void texDPInit(Gfx **);
-
-extern s32 gO98Toggle;
-extern O98Context gO98Contexts[2];
-extern s32 gOverlay98AcceptedCount;
-extern O98VisibleEntry gOverlay98AcceptedEntries[0x50];
-extern u8 gO98SpecialVertices[];
+            index--;
+            if (overlay98CheckObject(object, context, &value) != 0) {
+                object->accepted = 1;
+                gOverlay98AcceptedEntries[gOverlay98AcceptedCount].object =
+                    object;
+                gOverlay98AcceptedEntries[gOverlay98AcceptedCount++].referenceY =
+                    value;
+                if (gOverlay98AcceptedCount >= 0x50) {
+                    index = -1;
+                }
+            } else {
+                object->accepted = 0;
+            }
+        } while (index >= 0);
+    }
+}
 
 /* Rewritten from the listing (lane a-ovl4, 2026-10-07): transform and
  * inverse fields written to the offsets the target stores, the entry list
@@ -247,4 +274,56 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
     if (emittedReflection) {
         O98_PACKET(0x01000040, (u32)&gO98Contexts[gO98Toggle] + 0x80000000);
     }
+}
+
+/* PROVENANCE: reproduced from the retired public mirror, commit
+ * f56d08c746f891f76c4b7bab8e3a2a4332894634, which no longer resolves. All
+ * retained measurements were independently derived from Mickey's own source,
+ * object, relocation tables, and retail bytes. */
+/* Mickey byte identity: named data and float-difference carriers reproduce
+ * allocation; initialize accepted after the height branch and preserve the
+ * target homes with the unused scratch area preceding the vectors. */
+s32 overlay98CheckObject(O98Object *object, u8 *context, f32 *result) {
+    O98NodeData *data;
+    f32 difference;
+    s32 scratch[8];
+    Vec3f output;
+    Vec3f input;
+    f32 adjustment;
+    s32 index;
+    s32 accepted;
+    (void)&scratch;
+
+    if (object->stateTable[object->stateIndex + 0x1E] == 0) {
+        O98HeightNode *node = (O98HeightNode *)object->nodes[object->nodeIndex];
+        data = node->data;
+        adjustment = (f32)data->height * object->scale;
+    } else {
+        adjustment = 0.0f;
+    }
+
+    accepted = 0;
+    if ((func_8001357C(object->x, object->z, result, 0x8000, 0) & 0x8000) &&
+        ((*result - 5.0f) < object->y)) {
+        accepted = 1;
+    } else {
+        input.x = object->x;
+        input.z = object->z;
+        index = 0;
+        if (overlay98UniqueCountReloc > 0) {
+            do {
+                f32 height = (f32)overlay98UniqueYReloc[index];
+
+                difference = object->y - height;
+                input.y = (height - difference) - adjustment;
+                if (func_8001291C(context + 0xC, &input, &output, 0, 0x8000) != 0) {
+                    *result = output.z;
+                    accepted = 1;
+                    index = overlay98UniqueCountReloc;
+                }
+                index++;
+            } while (index < overlay98UniqueCountReloc);
+        }
+    }
+    return accepted;
 }

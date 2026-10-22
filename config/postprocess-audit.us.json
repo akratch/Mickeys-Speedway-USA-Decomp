@@ -818,7 +818,6 @@
       "size": 20776,
       "source": "src/overlays/o008/overlay_008.c",
       "tools": [
-        "trim_elf_section.py",
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
         "objcopy"

@@ -2,6 +2,19 @@
 
 /* Overlay 008, ADR 0006 consolidation: functions remain in ROM order. */
 
+/* Unexported, so static: their calls are JUMP records. */
+static void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
+                                              O8P1294State *state, f32 update);
+static void func_overlay_008_F0002640_1860398(
+    O8P2640Anchor *anchor, O8P2640Config *config, s32 orientation,
+    s32 randomLow, s32 randomHigh, f32 distanceX, f32 unusedStackFloat,
+    f32 distanceZ, s32 emissionCount);
+static void func_overlay_008_F000291C_1860674(O8P291CMotion *motion,
+                                              O8P291CState *state, f32 update);
+static void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
+                                              O8P4CF0State *state,
+                                              s32 updateRate);
+
 void overlay8Ignore(volatile s32 unused) {
 }
 
@@ -301,7 +314,8 @@ void func_overlay_008_F0000894_185E5EC(O8Owner *owner, O8State *state,
         }
     }
     if (effect != -1) {
-        o8Call0894EmitReloc(owner, state, effect, angleA, angleB,
+        func_overlay_008_F0002640_1860398((O8P2640Anchor *)owner, (O8P2640Config *)state,
+                                          effect, angleA, angleB,
                                           sideA, sideB, z, 2);
         state->timer3B3 = 0x64;
     }
@@ -656,7 +670,7 @@ typedef struct O8P1294Tuning {
  * through a one-block temporary that would otherwise take v0 first.
  * The update loop tests the old counter; the braking global is a halfword;
  * mathDiffAngle accepts the full requested angle. */
-void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
+static void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
                                        O8P1294State *state, f32 update) {
     s32 updateCount;
     f32 value;
@@ -1153,7 +1167,7 @@ block_74:
  *   the old emission count is not offered v0 and takes v1 (L101).
  * The unused float keeps the ninth four-byte auto above the record, which
  * the home ladder needs (declaration order, 2026-09-12). */
-void func_overlay_008_F0002640_1860398(
+static void func_overlay_008_F0002640_1860398(
     O8P2640Anchor *anchor, O8P2640Config *config, s32 orientation,
     s32 randomLow, s32 randomHigh, f32 distanceX, f32 unusedStackFloat,
     f32 distanceZ, s32 emissionCount) {
@@ -1232,7 +1246,7 @@ void func_overlay_008_F0002640_1860398(
     }
 }
 
-void func_overlay_008_F000291C_1860674(O8P291CMotion *motion,
+static void func_overlay_008_F000291C_1860674(O8P291CMotion *motion,
                                        O8P291CState *state,
                                        f32 update) {
     f32 horizontal;
@@ -1297,7 +1311,8 @@ void func_overlay_008_F000291C_1860674(O8P291CMotion *motion,
 
     horizontal += state->control8 * O8P291C_call_cos(angle);
     vertical -= state->control8 * O8P291C_call_sin(angle);
-    o8Surface291CReloc(motion, state, (s32)update);
+    func_overlay_008_F0004CF0_1862A48((O8P4CF0Actor *)motion, (O8P4CF0State *)state,
+                                      (s32)update);
 
     nextX = horizontal * update + displacementX;
     nextY = (motion->velocity20 * update) -
@@ -2129,6 +2144,9 @@ void overlay8SetValue(s32 value) {
     gOverlay8Value = value;
 }
 
+/* Unexported but not static: its one reference is a pointer word in the
+ * module's blob-owned data, so as a static IDO would delete it as unused.
+ * It becomes static when phase 3 gives that table a C owner. */
 void overlay8UpdateMotionOutput(Overlay8MotionAnchor *anchor,
                                 Overlay8MotionState *state,
                                 f32 inputScale) {
@@ -2206,7 +2224,7 @@ void overlay8UpdateMotionOutput(Overlay8MotionAnchor *anchor,
  * direct member reads let uopt forward it into the call and emit the second
  * product first.  The second block carries its value in horizontalA so axisA
  * stays a short web, and the negation is written at the call. */
-void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
+static void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
                                        O8P4CF0State *state,
                                        s32 updateRate) {
     s32 start;

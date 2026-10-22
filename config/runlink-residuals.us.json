@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 153, "borrowed_records": 9141},
+  "totals": {"differences": 153, "borrowed_records": 9139},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -270,7 +270,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1943,
+      "count": 1941,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -564,7 +564,6 @@
         [8, "gOverlay8UpdateUpperReloc", 2],
         [8, "gOverlay8Value", 6],
         [8, "o8Approach291CReloc", 3],
-        [8, "o8Call0894EmitReloc", 1],
         [8, "o8P0058AcquireReloc", 1],
         [8, "o8P0058BounceReloc", 1],
         [8, "o8P0058CreateReloc", 1],
@@ -578,7 +577,6 @@
         [8, "o8P34A0SetModeReloc", 1],
         [8, "o8P34A0StateEffectReloc", 1],
         [8, "o8Phase1EmitReloc", 1],
-        [8, "o8Surface291CReloc", 1],
         [8, "overlay8CreateResourceReloc", 1],
         [8, "overlay8EmitChannel", 1],
         [8, "overlay8SampleChannel", 1],

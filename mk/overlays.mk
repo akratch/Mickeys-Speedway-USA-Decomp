@@ -408,128 +408,21 @@ $(O8_OBJ): config/normalizations/overlay8P4CF0.rebind.spec
 # that precede it in the object: 0xF8 less 0x1C, 0x198 less 0xBC, 0x1BC less
 # 0xC4, 0x1D8 less 0xD8, 0x260 less 0x160, 0x290 less 0x18C.
 # gOverlay8CommandBuffer is a second header name for gOverlay8Buffer (the
-# +0x34A0 update's second address build); it is bound back to the one cursor.
+# +0x34A0 update's second address build; one name would share the address).
 # No -Wo,-loopunroll,0 (removed 2026-10-02).  It was added for the +0x34A0
 # body's angle loop and was byte-inert on every function of this unit by then;
 # the +0x0058 body's four selector reads are a plain for loop that the
 # default -O2 unroller expands exactly as shipped, which the flag forbade.
+# Overlay 8 is one translation unit at the overlay flag set and owns its pad;
+# --force keeps the static functions' names. Its placeholder calls and data
+# references are valued by the generated surface and its resident calls go
+# through the generated rebinds, so no symbol is renamed here. What remains is
+# rodata ownership, kept until phase 3 (docs/OVERLAY_STRUCTURE_SPRINT.md):
+# the seven literal pools are anchored to the retained image as described
+# above and the duplicate .rodata is dropped by digest.
 $(O8_OBJ): CFLAGS += -Wab,-r4300_mul
+$(O8_OBJ): ASM_PROCESSOR += --force
 $(O8_OBJ): POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym \
-		gO8P34A0ScaleReloc=D_0 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		gO8P34A0ModeReloc=D_0 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		gOverlay8CommandBuffer=gOverlay8Buffer $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P34A0RandomReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P34A0TerrainReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P34A0EffectReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P34A0SetModeReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P34A0AnimateReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P34A0EventReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P34A0StateEffectReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P34A0ApproachReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P34A0TrigAReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P34A0TrigBReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P34A0DecayReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P34A0BlendReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		gO8P0058MirrorGateReloc=D_0 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		gO8P0058PresentReloc=D_0 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		gO8P0058ResultReloc=D_0 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		gO8P0058ActiveReloc=D_0 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		gO8P0058SpawnGateReloc=D_0 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058ResetReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058ModeReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058AcquireReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058SpawnReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058OrientReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058RotateReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058SurfaceReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058CollisionReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058EffectReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058SampleReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058UpdateReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058ReleaseReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058CreateReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P0058BounceReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8Call0894Reloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8StartMotionResourceReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8Approach291CReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8ApplyColorsReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P42A8SampleReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P42A8RandomReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P42A8ApproachReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P42A8TrigAReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P42A8TrigBReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8Call0894EmitReloc=func_overlay_008_F0002640_1860398 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8Surface291CReloc=func_overlay_008_F0004CF0_1862A48 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		gOverlay8SelectorScales=D_520 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		overlay8SampleChannel=func_8002A878_o008Reloc $@ && \
-	$(OBJCOPY) --redefine-sym \
-		overlay8EmitChannel=func_8001F320_o008Reloc $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P1294IndexedReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		o8P1294PhaseReloc=func_overlay_008_F0000000_185DD58 $@ && \
-	$(OBJCOPY) --redefine-sym \
-		controlSetRumble=controlSetRumble_o008Reloc $@ && \
-	$(OBJCOPY) --redefine-sym \
-		func_800299E8=func_800299E8_o008Reloc $@ && \
-	$(OBJCOPY) --redefine-sym \
-		amSndStopXYZ=amSndStopXYZ_o008Reloc $@ && \
-	$(OBJCOPY) --redefine-sym \
-		amSndPlayXYZ=amSndPlayXYZ_o008Reloc $@ && \
-	$(OBJCOPY) --redefine-sym \
-		amSndSetXYZ=amSndSetXYZ_o008Reloc $@ && \
-	$(OBJCOPY) --redefine-sym \
-		func_8002A204=func_8002A204_o008Reloc $@ && \
-	$(OBJCOPY) --redefine-sym \
-		mathDiffAngle=mathDiffAngle_o008Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x5128 && \
 	$(OBJCOPY) --add-symbol \
 		gOverlay8P0058Constants=0xB0,global $@ && \
 	$(OBJCOPY) --add-symbol \
@@ -2841,7 +2734,6 @@ OVERLAY_TRIMMED_OBJECTS := \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19FindAdjacent.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19ClassifyEdge.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildSpatialMasks.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o \
 OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34RemoveRecord.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34CreateRecord.c.o \

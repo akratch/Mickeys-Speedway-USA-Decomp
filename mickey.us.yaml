@@ -1291,7 +1291,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x185DD58, c, overlay_008]
-      - [0x1862E80, asm, overlay_008_padding]
       - [0x1862E88, bin, overlay_008_data_rodata]
       - [0x1863268, .data, overlay8EffectTables]
       - [0x18633A8, bin, overlay_008_data_rodata_520]

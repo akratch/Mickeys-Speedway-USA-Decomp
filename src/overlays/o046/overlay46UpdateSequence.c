@@ -36,8 +36,8 @@ extern Overlay46StatusFlags gOverlay46StatusFlags;
 extern Overlay46DisplayCommand *gDisplayListHead;
 extern Overlay46DisplayCommand *gDisplayListHeadB;
 extern u8 gOverlay46MotionTarget[];
-extern s32 D_80003634;
-extern s32 D_80003638;
+extern s32 D_8007BF44;
+extern s32 D_8007BF48;
 
 extern s32 func_80037664(void);
 extern void func_80037414(s32 mode, f32 scale, f32 value, s32 arg3, s32 arg4,
@@ -177,9 +177,9 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
         if (matched != 0) {
             gOverlay46StatusFlags.nameMatched = 1;
             func_800291B4();
-            D_80003634 = 0;
+            D_8007BF44 = 0;
             func_8003A680(10);
-            D_80003638 = -1;
+            D_8007BF48 = -1;
             func_80001608();
             func_80028374(0x12, 0, 0, 0xF, 1, 0);
             func_80028528(1);

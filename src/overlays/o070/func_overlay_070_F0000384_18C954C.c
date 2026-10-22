@@ -61,6 +61,10 @@ typedef struct O70Record {
 } O70Record;
 
 extern s32 gOverlay70SharedCounterReloc;
+extern O70Object **func_8000572C(s32 *start, s32 *end);
+extern void *func_80028F54(void);
+extern O70Object **func_80005750(s32 *count);
+extern void func_8003A55C(s32 value);
 
 void func_overlay_070_F0000384_18C954C(O70Object *object) {
     O70Object **objects;
@@ -79,7 +83,7 @@ void func_overlay_070_F0000384_18C954C(O70Object *object) {
     s32 maximum;
     s32 inactiveCount;
 
-    objects = func_overlay_070_F0000000_18C91C8(&start, &end);
+    objects = func_8000572C(&start, &end);
     bestType = 0x80;
     best = 0;
     manager = (O70ManagerState *)object->state;
@@ -101,7 +105,7 @@ void func_overlay_070_F0000384_18C954C(O70Object *object) {
     }
 
     if (manager->mode3B8 == 3) {
-        records = func_overlay_070_F0000000_18C91C8();
+        records = func_80028F54();
         manager->registered3FA = 1;
         object->control->flags &= ~1;
         records[manager->index].metric = manager->metric400;
@@ -109,7 +113,7 @@ void func_overlay_070_F0000384_18C954C(O70Object *object) {
             gOverlay70SharedCounterReloc--;
         }
 
-        allObjects = func_overlay_070_F0000000_18C91C8(&count);
+        allObjects = func_80005750(&count);
         maximum = 0;
         inactiveCount = 0;
         i = count - 1;
@@ -130,9 +134,9 @@ void func_overlay_070_F0000384_18C954C(O70Object *object) {
         if (((gOverlay70SharedCounterReloc == 0) &&
              (manager->flags1A8 & 1)) || inactiveCount == 1) {
             if (gOverlay70SharedCounterReloc == 0) {
-                func_overlay_070_F0000000_18C91C8(6);
+                func_8003A55C(6);
             } else {
-                func_overlay_070_F0000000_18C91C8(5);
+                func_8003A55C(5);
             }
 
             i = count - 1;

@@ -2833,8 +2833,13 @@ def _declared_filter_comparison(resolution, comparison, context, records, target
         # requires the configured object to differ from it by exactly the
         # declared filter records. (A full replay is not compared byte for
         # byte: .mdebug records asm-processor's temporary file names.)
+        # The generated resident-call renames run after POSTPROCESS as their own
+        # recipe line; replay them too so the configured object is fully accounted.
+        replayed = receipt["inputs"]["postprocess"]
+        if receipt["inputs"].get("surface_rebind"):
+            replayed += " && " + receipt["inputs"]["surface_rebind"]
         unfiltered_path = pp.replay_metadata(
-            raw_path, receipt["inputs"]["postprocess"], _relative(resolution.candidate_object),
+            raw_path, replayed, _relative(resolution.candidate_object),
             REPO / receipt["directory"] / "unfiltered.o", REPO,
             skip_filters=True, deadline=time.monotonic() + 120, plan=plan)
         receipt["unfiltered_object"] = _relative(unfiltered_path)

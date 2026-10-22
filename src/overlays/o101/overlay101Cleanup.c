@@ -54,8 +54,8 @@ void overlay101Cleanup(void) {
         } while (count--);
     }
 
-    count = gOverlay101Resource32Count;
     gOverlay101Resource20Count = 0;
+    count = gOverlay101Resource32Count;
     resource32 = gOverlay101Resources32;
     if (count--) {
         do {

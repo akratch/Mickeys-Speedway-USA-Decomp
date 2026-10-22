@@ -21,7 +21,7 @@ extern void func_80000F94(s32 soundId, void *handle);
 extern u32 func_8002554C(s32 controller);
 extern void func_80028374(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
                          s32 arg5);
-extern void func_80028528(s32 arg0);
+extern void mainChangeCameras(s32 cameraCount);
 extern void func_800290AC(s32 arg0);
 extern void func_800291D8(s32 arg0);
 extern void func_800006BC(f32 arg0, s32 arg1);
@@ -89,7 +89,7 @@ void overlay11UpdateTwoOptionMenu(s32 updateRate) {
                 return;
             }
             if (OVERLAY11_MENU_INPUT == 1) {
-                func_80028528(1);
+                mainChangeCameras(1);
                 func_overlay_011_F00029AC_186B1F4();
                 func_80028374(0xC, 0, 0, 0xC, 1, 0);
                 OVERLAY11_COUNTER = 1;

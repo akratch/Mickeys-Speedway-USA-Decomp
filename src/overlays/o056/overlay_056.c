@@ -151,14 +151,14 @@ extern void mtxf_mul(O56Mtx *lhs, O56Mtx *rhs, O56Mtx *dest);
 extern void mtxf_to_mtx(O56Mtx *src, O56Mtx *dest);
 extern f32 func_8002A8BC(s16 angle);
 extern f32 func_8002A8C0(s16 angle);
-extern s32 D_800C3A3C;
-extern s32 D_800D3450;
-extern u8 D_800D3198;
-extern u8 D_800D3194;
-extern u8 D_800D31A8;
-extern O56Ghost *D_800D1494;
-extern O56Ghost *D_800D1498;
-extern O56Sprite *D_800CD788[];
+extern s32 D_800C947C;
+extern s32 D_8007C1B0;
+extern u8 D_8007BEF8;
+extern u8 D_8007BEF4;
+extern u8 D_8007BF08;
+extern O56Ghost *D_8007A1F4;
+extern O56Ghost *D_8007A1F8;
+extern O56Sprite *D_800D31C8[];
 extern s16 D_78[];
 extern s16 D_84[];
 extern u8 D_80000004[];
@@ -225,9 +225,9 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     s32 ghostAlpha;
 
     gameState = func_80028F54();
-    if (D_800C3A3C == 0) {
-        gOverlay56ResourceState += updateRate << ((D_800D3198 == 3) ? 2 : 1);
-        if (D_800D3198 != 3 && gOverlay56ResourceState > 160) {
+    if (D_800C947C == 0) {
+        gOverlay56ResourceState += updateRate << ((D_8007BEF8 == 3) ? 2 : 1);
+        if (D_8007BEF8 != 3 && gOverlay56ResourceState > 160) {
             gOverlay56ResourceState = 160;
         } else if (gOverlay56ResourceState > 255) {
             gOverlay56ResourceState = 255;
@@ -236,7 +236,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     if (gOverlay56Resource == NULL) {
         return;
     }
-    if (D_800D3450 != 0 && (*gameState == 0 || *gameState == 2 || *gameState == 1 ||
+    if (D_8007C1B0 != 0 && (*gameState == 0 || *gameState == 2 || *gameState == 1 ||
                             *gameState == 3 || *gameState == 4)) {
         return;
     }
@@ -250,14 +250,14 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     level = levelGetLevel();
     marker.unk4 = 0;
     marker.sprite = gOverlay56Resource;
-    if (D_800D3194 == 2 && frontGet2PlayerSplit() != 0) {
+    if (D_8007BEF4 == 2 && frontGet2PlayerSplit() != 0) {
         slot = 4;
     } else {
-        slot = D_800D3194 - 1;
+        slot = D_8007BEF4 - 1;
     }
     marker.y = D_84[slot] - (((O56Sprite *)gOverlay56Resource)->height >> 1) + 180;
     marker.unk10 = 0;
-    if (D_800D31A8 != 0) {
+    if (D_8007BF08 != 0) {
         marker.x = -D_78[slot] - (((O56Sprite *)gOverlay56Resource)->width >> 1) + 60;
         func_8002FB34(&dl, &marker, 320.0f, 0.0f, 1.0f, 1.0f,
                       gOverlay56ResourceState | ~0xFF, 0x1002);
@@ -266,7 +266,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
         func_8002F618(&dl, &marker, 0, 0, 255, 255, 255, gOverlay56ResourceState);
     }
     viGetCurrentSize(&screenWidth, &screenHeight);
-    dot = D_800CD788[22];
+    dot = D_800D31C8[22];
     c = func_8002A8BC(level->angle);
     sinA = func_8002A8C0(level->angle);
     cosA = c;
@@ -282,13 +282,13 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
         z = obj->z * level->scale;
         mapX = x * cosA - z * sinA;
         mapY = z * cosA + x * sinA;
-        if (D_800D31A8 != 0) {
+        if (D_8007BF08 != 0) {
             mapX = -mapX;
         }
-        if (i < D_800D3194) {
+        if (i < D_8007BEF4) {
             texDPTextureX(&dl, NULL, 5, 0);
             func_8002A82C(&mtxA);
-            if (D_800D31A8 != 0) {
+            if (D_8007BF08 != 0) {
                 mapX += (f32)(D_78[slot] - level->offsetX + 520);
             } else {
                 mapX += (f32)(level->offsetX + D_78[slot]);
@@ -297,7 +297,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
             matrixTranslate(mapX - (f32)(screenWidth >> 1),
                             (f32)(screenHeight >> 1) - mapY,
                             0.0f, &mtxA);
-            if (D_800D31A8 != 0) {
+            if (D_8007BF08 != 0) {
                 func_8002A604(-(obj->angle - level->angle), &mtxA);
             } else {
                 func_8002A604(obj->angle - level->angle, &mtxA);
@@ -314,13 +314,13 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
                 O56_POLYGON(_g2, dl++, D_80000030, 2, 1);
             }
         } else {
-            marker.sprite = D_800CD788[22];
+            marker.sprite = D_800D31C8[22];
             marker.x = mapX - (f32)(dot->width >> 1);
             marker.y = mapY - (f32)(dot->height >> 1);
             red = gOverlay56Data.colors[racer->colour] >> 24;
             green = (gOverlay56Data.colors[racer->colour] >> 16) & 0xFF;
             blue = (gOverlay56Data.colors[racer->colour] >> 8) & 0xFF;
-            if (D_800D31A8 != 0) {
+            if (D_8007BF08 != 0) {
                 posX = D_78[slot] - level->offsetX + 520;
             } else {
                 posX = D_78[slot] + level->offsetX;
@@ -332,11 +332,11 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     if (*gameState == 1) {
         i = 2;
         while (i--) {
-            if (i != 0 && D_800D1494 != NULL) {
-                obj = D_800D1494->object;
+            if (i != 0 && D_8007A1F4 != NULL) {
+                obj = D_8007A1F4->object;
                 ghostAlpha = 255;
-            } else if (i == 0 && D_800D1498 != NULL) {
-                obj = D_800D1498->object;
+            } else if (i == 0 && D_8007A1F8 != NULL) {
+                obj = D_8007A1F8->object;
                 ghostAlpha = 85;
             } else {
                 obj = NULL;
@@ -345,7 +345,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
                 x = obj->x * level->scale;
                 z = obj->z * level->scale;
                 ghostRacer = obj->racer;
-                marker.sprite = D_800CD788[22];
+                marker.sprite = D_800D31C8[22];
                 red = green = blue = ghostAlpha;
                 marker.x = (x * cosA - z * sinA) - (f32)(dot->width >> 1);
                 marker.y = (z * cosA + x * sinA) - (f32)(dot->height >> 1);

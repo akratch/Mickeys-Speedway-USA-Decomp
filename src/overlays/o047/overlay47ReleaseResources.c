@@ -177,7 +177,9 @@ extern u8 D_status2;
 extern u8 D_status3;
 extern u8 D_status4;
 
-extern void func_overlay_047_F0000000_1890E18(void *arg);
+extern void overlay45ReleaseDescriptor(void *descriptor);
+extern void func_80006EA0(void *handle);
+extern void freeFrontEndList(s16 *assetGroup);
 
 /* The four flags are the same field in consecutive entries. Reading the first
  * status byte in every assignment keeps the source symmetric; IDO folds its
@@ -186,15 +188,15 @@ void func_overlay_047_F00009D0_18917E8(void) {
     Overlay47Entry *entry;
     void **slot;
 
-    func_overlay_047_F0000000_1890E18(D_30C);
-    func_overlay_047_F0000000_1890E18(D_314);
-    func_overlay_047_F0000000_1890E18(D_318);
-    func_overlay_047_F0000000_1890E18(D_31C);
-    func_overlay_047_F0000000_1890E18(D_320);
+    overlay45ReleaseDescriptor(D_30C);
+    overlay45ReleaseDescriptor(D_314);
+    overlay45ReleaseDescriptor(D_318);
+    overlay45ReleaseDescriptor(D_31C);
+    overlay45ReleaseDescriptor(D_320);
 
     entry = D_0_entries; do {
         if (entry->handle != NULL) {
-            func_overlay_047_F0000000_1890E18(entry->handle);
+            func_80006EA0(entry->handle);
             entry->handle = NULL;
         }
         entry++;
@@ -202,13 +204,13 @@ void func_overlay_047_F00009D0_18917E8(void) {
 
     slot = &D_38C; do {
         if (*slot != NULL) {
-            func_overlay_047_F0000000_1890E18(*slot);
+            func_80006EA0(*slot);
             *slot = NULL;
         }
         slot++;
     } while (slot < &D_3B4);
 
-    func_overlay_047_F0000000_1890E18(D_358);
+    freeFrontEndList((s16 *) D_358);
     D_status0 = 0;
     if (D_0_entries[0].flag != 0) {
         D_status1 = D_status0 | 1;

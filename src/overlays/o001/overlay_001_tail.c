@@ -166,7 +166,6 @@ typedef struct Overlay1ValueRow {
 
 extern O1ControlTable *D_1D60;
 extern O1ControlTable *D_1D68;
-extern O1ControlTable *D_1D68Read;
 extern O1ControlTable *D_1D6C;
 extern O1ControlPoint *D_208;
 extern O1ControlPoint *D_20C;
@@ -203,7 +202,12 @@ extern f32 overlay1WrapOffset(f32 first, f32 second);
  *    `for`.
  *  - callee identities are the shipped ones: FindType47ByAngle takes only
  *    the progress, the wave is func_8002A8BC, the object list
- *    func_80005750, and the submit call is overlay 36's CallModeZero. */
+ *    func_80005750, and the submit call is overlay 36's CallModeZero.
+ * Relocation order (2026-10-22, lane ov-ident): the control table is read as
+ * D_1D68 at every use, with no `table` carrier and no second alias for it.
+ * Its load before the score loops is then a hoisted invariant, ordered after
+ * the D_1DA0 reload as in the shipped table; `pad1` moves up to keep the
+ * frame homes the `table` slot held. Bytes are unchanged. */
 void overlay1ChoosePath(f32 *outX, f32 *outZ) {
     s32 i;
     s32 selected;
@@ -211,9 +215,9 @@ void overlay1ChoosePath(f32 *outX, f32 *outZ) {
     O1ChoiceObject **objects;
     s32 scores[8];
     O1ChoiceObject **cursor;
+    s32 pad1;
     O1ChoiceObject *object;
     O1ChoiceObject *found;
-    O1ControlTable *table;
     s32 loopValue;
     f32 temporaryX;
     f32 temporaryZ;
@@ -222,7 +226,6 @@ void overlay1ChoosePath(f32 *outX, f32 *outZ) {
     s32 value;
     s32 step;
     f32 difference;
-    s32 pad1;
 
     if (CHOICE_WORLD->transition != 0) {
         weight = (func_8002A8BC((CHOICE_WORLD->transition << 7) + 0x8000) +
@@ -241,14 +244,13 @@ void overlay1ChoosePath(f32 *outX, f32 *outZ) {
     }
 
     if (((O1ControlTable *)D_1D64)->flags & 1) {
-        table = D_1D68;
-        if (table->points[CHOICE_WORLD->selector].enabled == 0) {
+        if (D_1D68->points[CHOICE_WORLD->selector].enabled == 0) {
             i = 7;
             do {
-                if (table->points[i].enabled != 0 &&
+                if (D_1D68->points[i].enabled != 0 &&
                     i != CHOICE_WORLD->selector &&
-                    table->points[CHOICE_WORLD->selector].x == table->points[i].x &&
-                    table->points[CHOICE_WORLD->selector].z == table->points[i].z) {
+                    D_1D68->points[CHOICE_WORLD->selector].x == D_1D68->points[i].x &&
+                    D_1D68->points[CHOICE_WORLD->selector].z == D_1D68->points[i].z) {
                     CHOICE_WORLD->previousSelector = i;
                     CHOICE_WORLD->selector = i;
                     CHOICE_WORLD->transition = 0;
@@ -310,15 +312,15 @@ void overlay1ChoosePath(f32 *outX, f32 *outZ) {
         } while (loopValue != 0);
     }
 
-    for (table = D_1D68Read, i = 7; ; ) {
-        scores[i] += table->points[i].enabled;
+    for (i = 7; ; ) {
+        scores[i] += D_1D68->points[i].enabled;
         loopValue = i;
         i--;
         if (loopValue == 0) break;
     }
 
     for (i = 7; ; ) {
-        if (table->points[i].enabled == 0) scores[i] = -1000000;
+        if (D_1D68->points[i].enabled == 0) scores[i] = -1000000;
         loopValue = i;
         i--;
         if (loopValue == 0) break;

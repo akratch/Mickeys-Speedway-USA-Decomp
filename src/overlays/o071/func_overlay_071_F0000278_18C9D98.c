@@ -44,9 +44,9 @@ typedef struct O71Object {
     s32 active;
 } O71Object;
 
-extern void *gOverlay71InitialResourceReloc;
+extern s32 gOverlay71InitialResourceReloc;
 extern u8 gOverlay71GlobalFlagReloc;
-extern void func_80032BF0(void *resource, s32 mode, s32 flags);
+extern void SetLinkSlot(s32 slot, u16 tag, u16 useCount);
 extern f32 sqrtf(f32 value);
 
 /* Declaration order preserves the retail automatic stack homes. */
@@ -66,7 +66,7 @@ void func_overlay_071_F0000278_18C9D98(O71Object *object) {
     O71State *state;
     O71Vertex *vertex;
 
-    func_80032BF0(gOverlay71InitialResourceReloc, 2, 2);
+    SetLinkSlot(gOverlay71InitialResourceReloc, 2, 2);
     state = object->state;
     state->bank ^= 1;
     state->status = 0;

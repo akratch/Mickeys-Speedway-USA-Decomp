@@ -31,11 +31,11 @@ extern s32 gOverlay49InputEnabled;
 extern u8 gOverlay49MenuModeReloc;
 extern u8 gOverlay49ExtendedModeReloc;
 extern u16 gOverlay49PackedStatusReloc[];
-extern u8 D_8007BF04;
-extern u8 D_8007BF08;
+extern u8 D_8007BF60;
+extern u8 D_8007BF0C;
 extern u16 D_800D3128[];
-extern u8 D_800D0000[];
-extern u8 D_800D0004[];
+extern u8 D_800D3140[];
+extern u8 D_800D3144[];
 
 extern Overlay49Status *func_80028F54(void);
 extern void overlay65Initialize(void);

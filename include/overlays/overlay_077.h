@@ -76,11 +76,6 @@ typedef struct Overlay77Init {
 extern s32 gOverlay77Selection;
 extern void *gOverlay77CallbackArgument;
 extern s32 gOverlay77Sequence;
-extern f32 gOverlay77PositiveDivisor;
-extern f32 gOverlay77PositiveAcceleration;
-extern f32 gOverlay77NegativeDivisor;
-extern f32 gOverlay77NegativeAcceleration;
-extern f32 gOverlay77Gravity;
 
 s32 overlay77RandomReloc(s32 minimum, s32 maximum);
 void overlay77CallbackReloc(void *argument);

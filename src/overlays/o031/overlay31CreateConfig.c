@@ -25,7 +25,7 @@ typedef struct Overlay31Config {
     void *source20;
 } Overlay31Config;
 
-extern void *func_overlay_031_F0000000_187F520(s32 size, s32 tag, s32 recordBytes);
+extern void *mmAlloc(s32 size, u32 colourTag);
 
 Overlay31Config *overlay31CreateConfig(s32 value0, void *source, s32 divisor, s32 multiplier, s32 count)
 {
@@ -47,7 +47,7 @@ Overlay31Config *overlay31CreateConfig(s32 value0, void *source, s32 divisor, s3
   recordBytes = (rawRecordBytes - (((u32) rawRecordBytes) % 4U)) + 4;
   rawRecordBytes = recordBytes;
   rawRecordBytes += maskCount * 4;
-  config = func_overlay_031_F0000000_187F520(rawRecordBytes, 0x8C, recordBytes);
+  config = mmAlloc(rawRecordBytes, 0x8C);
   config->count = count;
   config->masks = (u32 *) (((u8 *) config) + recordBytes);
   config->records = (Overlay31ConfigRecord *) (((u8 *) config) + 0x38);

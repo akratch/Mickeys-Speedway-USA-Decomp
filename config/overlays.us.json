@@ -14802,10 +14802,20 @@
    "data_rodata_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x30",
-     "size": "0x30",
+     "end_offset": "0x10",
+     "size": "0x10",
      "type": "c",
      "source": "overlays/o077/overlay_077"
+    },
+    {
+     "offset": "0x10",
+     "end_offset": "0x30",
+     "size": "0x20",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o077/overlay_077",
+     "trial_function": "overlay77Update",
+     "externalized": true
     }
    ]
   },

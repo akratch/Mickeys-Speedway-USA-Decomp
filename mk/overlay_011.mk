@@ -82,7 +82,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11UpdateTwoOptionMenu.c.o: POSTPROC
 		0x178:func_800291D8:func_overlay_011_F0000000_1868848 \
 		0x188:func_800006BC:func_overlay_011_F0000000_1868848 \
 		0x190:func_overlay_011_F0002BF4_186B43C:func_overlay_011_F0000000_1868848 \
-		0x1E8:func_80028528:func_overlay_011_F0000000_1868848 \
+		0x1E8:mainChangeCameras:func_overlay_011_F0000000_1868848 \
 		0x20C:func_80028374:func_overlay_011_F0000000_1868848
 # The compiler emits the exact five-entry switch table already present at
 # overlay-local +0x40. Rebind the text pair there, discard only the duplicate
@@ -224,7 +224,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11InitializeFour.c.o: POSTPROCESS =
 	$(OBJCOPY) \
 		--redefine-sym func_80028F54=overlay11GetStatusReloc \
 		--redefine-sym sprintf=overlay11FormatReloc \
-		--redefine-sym D_800D31BC=gOverlay11ResidentFlagsReloc $@ && \
+		--redefine-sym D_8007BF1C=gOverlay11ResidentFlagsReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x194
 # The compiler emits the exact six-entry switch table already present in the
 # overlay's extracted data/rodata asset. Rebind the text pair to its proved

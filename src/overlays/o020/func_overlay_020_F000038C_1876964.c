@@ -51,6 +51,7 @@ typedef struct Overlay20InitGrid {
     Overlay20InitTexture *texture;
 } Overlay20InitGrid;
 
+extern void *mmAlloc(s32 size, u32 colourTag);
 extern void *func_overlay_020_F0000000_18765D8();
 
 /*
@@ -87,7 +88,7 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
     texture = grid->texture;
     for (i = 0; i < 2; i++) {
         if (grid->buffers[i] == NULL) {
-            grid->buffers[i] = func_overlay_020_F0000000_18765D8(size, 0x87);
+            grid->buffers[i] = mmAlloc(size, 0x87);
         }
         vertex = grid->buffers[i];
         if (vertex != NULL) {
@@ -108,7 +109,7 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
 
     size = grid->columns * grid->rows * 2 * sizeof(Overlay20Triangle);
     if (grid->triangles == NULL) {
-        grid->triangles = func_overlay_020_F0000000_18765D8(size, 0x87);
+        grid->triangles = mmAlloc(size, 0x87);
     }
     tri = grid->triangles;
     if (tri != NULL) {

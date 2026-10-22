@@ -7,24 +7,25 @@ typedef struct Overlay20TreeNode {
     struct Overlay20TreeNode *child2;
 } Overlay20TreeNode;
 
-void overlay20ReleaseTree(Overlay20TreeNode *node);
-void overlay20ReleaseTreeReloc(Overlay20TreeNode *node);
+extern void mmFree(void *data);
 
-/* DKR v77/v80 and JFG contain no exact donor for this recursive tree release. */
+/* DKR v77/v80 and JFG contain no exact donor. Not recursive: all four calls
+ * are shipped SYMBOL records to the resident mmFree, so this frees the three
+ * child buffers and then the node itself. */
 void overlay20ReleaseTree(Overlay20TreeNode *node) {
     if (node != NULL) {
         if (node->child0 != NULL) {
-            overlay20ReleaseTree(node->child0);
+            mmFree(node->child0);
             node->child0 = NULL;
         }
         if (node->child1 != NULL) {
-            overlay20ReleaseTree(node->child1);
+            mmFree(node->child1);
             node->child1 = NULL;
         }
         if (node->child2 != NULL) {
-            overlay20ReleaseTree(node->child2);
+            mmFree(node->child2);
             node->child2 = NULL;
         }
-        overlay20ReleaseTreeReloc(node);
+        mmFree(node);
     }
 }

@@ -19,23 +19,25 @@ typedef struct Overlay20Resource {
     void *owner;
 } Overlay20Resource;
 
-extern void *func_overlay_020_F0000000_18765D8();
+extern void *mmAlloc(s32 size, u32 colourTag);
+extern void mmFree(void *data);
+extern void *func_overlay_020_F000038C_1876964(void *grid);
 
 Overlay20Resource *overlay20ConfigureResource(
     Overlay20Resource *resource, s32 x, s32 y, s32 width, s32 height,
     s32 stepX, s32 columns, s32 rows, void *owner, s32 value0E,
     s32 value10, s32 start, s32 current, s32 end, s32 scaleDivisor) {
     if (resource == 0) {
-        resource = func_overlay_020_F0000000_18765D8(0x30, 0x87);
+        resource = mmAlloc(0x30, 0x87);
         if (resource != 0) {
             resource->buffers[0] = 0;
             resource->buffers[1] = 0;
             resource->buffers[2] = 0;
         }
     } else if ((columns != resource->columns) || (rows != resource->rows)) {
-        func_overlay_020_F0000000_18765D8(resource->buffers[0]);
-        func_overlay_020_F0000000_18765D8(resource->buffers[1]);
-        func_overlay_020_F0000000_18765D8(resource->buffers[2]);
+        mmFree(resource->buffers[0]);
+        mmFree(resource->buffers[1]);
+        mmFree(resource->buffers[2]);
         resource->buffers[0] = 0;
         resource->buffers[1] = 0;
         resource->buffers[2] = 0;
@@ -59,7 +61,7 @@ Overlay20Resource *overlay20ConfigureResource(
             resource->scale /= (f32)scaleDivisor;
         }
         resource->owner = owner;
-        resource = func_overlay_020_F0000000_18765D8(resource);
+        resource = func_overlay_020_F000038C_1876964(resource);
     }
     return resource;
 }

@@ -28,9 +28,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60ReleaseResources.c.o: POSTPROCESS
 # 0xF0000000 region, so every one of those call sites needs its per-module
 # placeholder or the link fails with R_MIPS_26 overflow. The
 # compiler's private
-# ten-entry switch table duplicates the one already in the extracted
-# data/rodata asset at rodata +0x50; rebind the text pair to that proved
-# runtime-local addend and discard the duplicate.
+# .rodata -- the ten-entry switch table and, at +0x28, the 0.67f literal --
+# duplicates the extracted data/rodata asset at rodata +0x50; rebind both
+# text pairs to that proved runtime-local base and discard the duplicate.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60Prefix.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60Prefix.c.o: POSTPROCESS = \
@@ -94,9 +94,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60Prefix.c.o: POSTPROCESS = \
 		--redefine-sym rcpClearZBuffer=rcpClearZBuffer_o060Reloc \
 		--redefine-sym sprintf=sprintf_o060Reloc \
 		--redefine-sym viDisplayingScreen0=viDisplayingScreen0_o060Reloc \
-		--add-symbol gOverlay60PrefixSwitchTableReloc=0x50,global $@ && \
+		--add-symbol gOverlay60PrefixRodataReloc=0x50,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x324:.rodata:gOverlay60PrefixSwitchTableReloc \
-		0x32C:.rodata:gOverlay60PrefixSwitchTableReloc && \
+		0x324:.rodata:gOverlay60PrefixRodataReloc \
+		0x32C:.rodata:gOverlay60PrefixRodataReloc \
+		0x17C4:.rodata:gOverlay60PrefixRodataReloc \
+		0x17C8:.rodata:gOverlay60PrefixRodataReloc && \
 	$(OBJCOPY) --remove-section=.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2B94

@@ -178,7 +178,6 @@ extern char gOverlay60Data200[];
 extern char gOverlay60Data20C[];
 extern char gOverlay60Data220[];
 extern char gOverlay60Data228[];
-extern f32 gOverlay60Data258;
 extern char *gOverlay60Data260[];
 extern char *gOverlay60Data288[];
 extern char *gOverlay60Data298[];
@@ -693,8 +692,11 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xBA, O60_TEXT(0xD4), 4);
                         if (func_overlay_068_F000146C_18C85CC(
                                 D_8007C0E8_o060Reloc[gOverlay60Data150]) != 0) {
+                            /* 0.67f is a literal: its HI16/LO16 pair is a LOCAL record
+                             * against the module's rodata, ahead of the texture
+                             * address in the shipped table. */
                             func_8002FB34(&D_800D3140_o060Reloc, &gOverlay60Data080,
-                                81.0f, 115.0f, gOverlay60Data258, gOverlay60Data258, -2, 0);
+                                81.0f, 115.0f, 0.67f, 0.67f, -2, 0);
                         }
                         fontColour(0xC0, 0xFF, 0, 0xFF, 0xFF);
                         for (row = 0, record = slot->records; row < 4; record++, row++) {

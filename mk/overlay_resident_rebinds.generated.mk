@@ -1841,11 +1841,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/overlay79FindNearby.c.o: SURFACE_REBIND = 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/overlay79UpdateTimers.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_80006EA0=func_80006EA0_o079Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o080/overlay80InitializeContact.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o080/overlay_080.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_8001398C=func_8001398C_o080Reloc \
-	--redefine-sym func_8001DCD0=func_8001DCD0_o080Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o080/overlay80UpdateContact.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym func_8001DCD0=func_8001DCD0_o080Reloc \
 	--redefine-sym func_8005776C=func_8005776C_o080Reloc \
 	--redefine-sym func_8005ABA8=func_8005ABA8_o080Reloc \
 	--redefine-sym func_8005AD64=func_8005AD64_o080Reloc \

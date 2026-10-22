@@ -6677,20 +6677,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o080/overlay80InitializeContact.c.o",
-      "offset": 0,
-      "overlay": 80,
-      "size": 284,
-      "source": "src/overlays/o080/overlay80InitializeContact.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o082/overlay_082.c.o",
       "offset": 0,
       "overlay": 82,
@@ -8969,10 +8955,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 618,
+      "metadata": 617,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 444484,
-    "objects_with_postprocess": 619
+    "matched_c_bytes_with_postprocess": 444200,
+    "objects_with_postprocess": 618
   }
 }

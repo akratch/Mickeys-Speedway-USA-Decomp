@@ -15161,19 +15161,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x11C",
-     "size": "0x11C",
-     "type": "c",
-     "source": "overlays/o080/overlay80InitializeContact",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x11C",
      "end_offset": "0x3EC",
-     "size": "0x2D0",
+     "size": "0x3EC",
      "type": "c",
-     "source": "overlays/o080/overlay80UpdateContact",
+     "source": "overlays/o080/overlay_080",
      "matched": true,
      "nonmatching": false
     },

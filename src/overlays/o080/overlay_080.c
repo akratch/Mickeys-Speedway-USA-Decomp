@@ -1,57 +1,38 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_080.h"
 
-typedef struct Overlay80State {
-    f32 previousDistance;
-    f32 scale;
-    s32 active;
-} Overlay80State;
+void overlay80InitializeContact(Overlay80Object *object, const Overlay80Init *init)
+{
+  Overlay80State *state;
+  Overlay80Candidate **candidates;
+  s32 count;
+  s32 index;
+  s32 selected;
+  state = object->state;
+  object->scaledValue = (*object->objectScale) * (((f32) ((0, init->scale))) * gOverlay80Scale0);
+  object->key = init->key;
+  count = func_8001398C(object->positionX, object->positionZ, 0x1800, &candidates);
+  if (count != ((0, 0)))
+  {
+    selected = -1;
+    for (index = 0; index < count; index++)
+    {
+      if (candidates[index]->threshold <= object->positionY)
+      {
+        selected = index;
+        break;
+      }
+ } if (selected != (-1)) {
+      func_8001DCD0(object->key, candidates[index]->value, &object->outputA, &object->outputB);
+    }
+  }
+  state->scale = (f32) init->initialValue;
+  if (object->notice != 0)
+  {
+    object->notice->state = 2;
+  }
+ ;
+}
 
-typedef struct Overlay80Notice {
-    u8 pad00[4];
-    u8 state;
-} Overlay80Notice;
-
-typedef struct Overlay80Object {
-    s16 key;
-    s16 outputB;
-    s16 outputA;
-    u8 pad06[2];
-    f32 scaledValue;
-    f32 positionX;
-    f32 positionY;
-    f32 positionZ;
-    u8 pad18[4];
-    f32 normalX;
-    f32 normalY;
-    f32 normalZ;
-    u8 pad28[0x18];
-    f32 *objectScale;
-    u8 pad44[0x0C];
-    Overlay80Notice *notice;
-    u8 pad54[0x10];
-    Overlay80State *state;
-} Overlay80Object;
-
-extern f32 gOverlay80MagnitudeScale;
-extern f32 gOverlay80Band0Lower;
-extern f32 gOverlay80Band0Upper;
-extern f32 gOverlay80Band1Lower;
-extern f32 gOverlay80Band1Upper;
-extern f32 gOverlay80Band2Lower;
-extern f32 gOverlay80Band2Upper;
-extern f32 gOverlay80Band3Lower;
-
-extern s32 func_8005776C(f32 positionX, f32 positionY,
-                                     f32 positionZ, f32 radius,
-                                     s32 ignoreY,
-                                     Overlay80Object **contactOut);
-extern f32 sqrtf(f32 value);
-extern void func_8005AD64(Overlay80Object *object, s32 kind,
-                                      s32 value, f32 amount);
-extern s32 func_8005ABA8(Overlay80Object *object, f32 rate,
-                                        f32 ticks);
-
-/* Pinned DKR v77/v80 and JFG object scans found no exact donor. */
 /* `pad` holds the 0x80 frame: the permuter's two never-read aliases (of
  * `contacts` and of `magnitude`) each reserved a frame word, and without them every
  * stack offset moves (4 words each). Its third alias, of `contactState`, was

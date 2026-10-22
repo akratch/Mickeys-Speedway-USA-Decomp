@@ -1058,10 +1058,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000134_18CD0D4.c.o: CFL
 # The second assembly fallback likewise needs only boundary trimming.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0001290_18CE230.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1EC
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o080/overlay80InitializeContact.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o080/overlay80InitializeContact.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x11C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o080/overlay80UpdateContact.c.o: CFLAGS += -Wab,-r4300_mul
+# Overlay 80 is one translation unit under the overlay flag set; its .text is
+# the module's 0x3F0 bytes, trailing pad included, so it needs no trim.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o080/overlay_080.c.o: CFLAGS += -Wab,-r4300_mul
 include mk/overlay_084.mk
 # The natural O86 tail owns the exact 662-word semantic program and all 32
 # call anchors. Four closed one-to-one schedule basins and the complete private

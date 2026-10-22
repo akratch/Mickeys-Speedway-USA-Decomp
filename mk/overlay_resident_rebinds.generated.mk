@@ -1853,17 +1853,14 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o082/overlay_082_tail.c.o: SURFACE_REBIND = $(O
 	--redefine-sym amSndPlay=amSndPlay_o082Reloc \
 	--redefine-sym modSetTextureFrame=modSetTextureFrame_o082Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83BuildLine.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym pointListRPY=pointListRPY_o083Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83Dispatch.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay_083.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym addObjectLight=addObjectLight_o083Reloc \
 	--redefine-sym camDoSprite=camDoSprite_o083Reloc \
+	--redefine-sym changeLightIntensity=changeLightIntensity_o083Reloc \
+	--redefine-sym mmAlloc=mmAlloc_o083Reloc \
+	--redefine-sym pointListRPY=pointListRPY_o083Reloc \
 	--redefine-sym sprClearIA2ColOverride=sprClearIA2ColOverride_o083Reloc \
 	--redefine-sym sprSetIA2ColOverride=sprSetIA2ColOverride_o083Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83Update.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym changeLightIntensity=changeLightIntensity_o083Reloc \
-	--redefine-sym pointListRPY=pointListRPY_o083Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/func_overlay_084_F0000314_18D07F4.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D31B8=D_800D31B8_o084Reloc \

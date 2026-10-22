@@ -800,15 +800,7 @@ TEXT_SUBSEGMENTS = {
         (0x4CC, "asm", "overlay_082_padding"),
     ],
     83: [
-        (0x000, "c", "overlay83BuildLine"),
-        (0x1AC, "c", "overlay83DrawLines"),
-        (0x2A0, "c", "overlay83Update"),
-        (0x514, "c", "overlay83Submit"),
-        (0x53C, "c", "overlay83BuildBatch"),
-        (0x7DC, "c", "overlay83DrawEntries"),
-        (0x850, "c", "overlay83DrawStrip"),
-        (0x984, "c", "overlay83Dispatch"),
-        (0xA18, "c", "overlay83SubmitAll"),
+        (0x000, "c", "overlay_083"),
     ],
     84: [
         (0x0000, "c", "overlay84InitState"),

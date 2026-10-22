@@ -4071,25 +4071,16 @@ amSndPlay_o082Reloc = 0xf0000000;
 gO82DataBase = 0x00000000;
 modSetTextureFrame_o082Reloc = 0xf0000000;
 
-/* overlay 83: overlay83BuildLine.c.o */
-pointListRPY_o083Reloc = 0xf0000000;
-
-/* overlay 83: overlay83Update.c.o */
-changeLightIntensity_o083Reloc = 0xf0000000;
-
-/* overlay 83: overlay83BuildBatch.c.o */
-gOverlay83ScaleReloc = 0x00000000;
-overlay83AllocateBatchReloc = 0xf0000000;
-overlay83CreateLinkedReloc = 0xf0000000;
-overlay83TransformWorldReloc = 0xf0000000;
-
-/* overlay 83: overlay83Dispatch.c.o */
+/* overlay 83: overlay_083.c.o */
+addObjectLight_o083Reloc = 0xf0000000;
 camDoSprite_o083Reloc = 0xf0000000;
+changeLightIntensity_o083Reloc = 0xf0000000;
+gOverlay83ScaleReloc = 0x00000000;
+mmAlloc_o083Reloc = 0xf0000000;
+overlay83SubmitSetupReloc = 0xf0000000;
+pointListRPY_o083Reloc = 0xf0000000;
 sprClearIA2ColOverride_o083Reloc = 0xf0000000;
 sprSetIA2ColOverride_o083Reloc = 0xf0000000;
-
-/* overlay 83: overlay83SubmitAll.c.o */
-overlay83SubmitSetupReloc = 0xf0000000;
 
 /* overlay 84: overlay84InitState.c.o */
 gOverlay84Object = 0x00000000;
@@ -6031,31 +6022,9 @@ func_overlay_082_F00004A4_18CF624 = overlay82IsActive;
 func_overlay_082_F00004B0_18CF630 = overlay82Disable;
 func_overlay_082_F00004C0_18CF640 = overlay82Enable;
 
-/* overlay 83: overlay83BuildLine.c.o */
-func_overlay_083_F0000000_18CF7C0 = overlay83BuildLine;
-
-/* overlay 83: overlay83DrawLines.c.o */
-func_overlay_083_F00001AC_18CF96C = overlay83DrawLines;
-
-/* overlay 83: overlay83Update.c.o */
-func_overlay_083_F00002A0_18CFA60 = overlay83Update;
-
-/* overlay 83: overlay83Submit.c.o */
-func_overlay_083_F0000514_18CFCD4 = overlay83Submit;
-
-/* overlay 83: overlay83BuildBatch.c.o */
+/* overlay 83: overlay_083.c.o */
 func_overlay_083_F000053C_18CFCFC = overlay83BuildBatch;
-
-/* overlay 83: overlay83DrawEntries.c.o */
 func_overlay_083_F00007DC_18CFF9C = overlay83DrawEntries;
-
-/* overlay 83: overlay83DrawStrip.c.o */
-func_overlay_083_F0000850_18D0010 = overlay83DrawStrip;
-
-/* overlay 83: overlay83Dispatch.c.o */
-func_overlay_083_F0000984_18D0144 = overlay83Dispatch;
-
-/* overlay 83: overlay83SubmitAll.c.o */
 func_overlay_083_F0000A18_18D01D8 = overlay83SubmitAll;
 
 /* overlay 84: overlay84InitState.c.o */

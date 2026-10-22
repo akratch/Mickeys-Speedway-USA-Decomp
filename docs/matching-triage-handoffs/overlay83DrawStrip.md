@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay83DrawStrip:start -->
 ### `overlay83DrawStrip` plateau handoff
 
-- source: `src/overlays/o083/overlay83DrawStrip.c`
+- source: `src/overlays/o083/overlay_083.c`
 - score: 0/77 words, promoted
 - frame: frameless
 - relocations: 2

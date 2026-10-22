@@ -2865,15 +2865,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18CF7C0, c, overlay83BuildLine]
-      - [0x18CF96C, c, overlay83DrawLines]
-      - [0x18CFA60, c, overlay83Update]
-      - [0x18CFCD4, c, overlay83Submit]
-      - [0x18CFCFC, c, overlay83BuildBatch]
-      - [0x18CFF9C, c, overlay83DrawEntries]
-      - [0x18D0010, c, overlay83DrawStrip]
-      - [0x18D0144, c, overlay83Dispatch]
-      - [0x18D01D8, c, overlay83SubmitAll]
+      - [0x18CF7C0, c, overlay_083]
       - [0x18D0320, bin, overlay_083_data_rodata]
       - [0x18D0430, bin, overlay_083_reloc1]
       - [0x18D0488, bin, overlay_083_reloc2]

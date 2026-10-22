@@ -15510,82 +15510,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x1AC",
-     "size": "0x1AC",
-     "type": "c",
-     "source": "overlays/o083/overlay83BuildLine",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1AC",
-     "end_offset": "0x2A0",
-     "size": "0xF4",
-     "type": "c",
-     "source": "overlays/o083/overlay83DrawLines",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2A0",
-     "end_offset": "0x514",
-     "size": "0x274",
-     "type": "c",
-     "source": "overlays/o083/overlay83Update",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x514",
-     "end_offset": "0x53C",
-     "size": "0x28",
-     "type": "c",
-     "source": "overlays/o083/overlay83Submit",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x53C",
-     "end_offset": "0x7DC",
-     "size": "0x2A0",
-     "type": "c",
-     "source": "overlays/o083/overlay83BuildBatch",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x7DC",
-     "end_offset": "0x850",
-     "size": "0x74",
-     "type": "c",
-     "source": "overlays/o083/overlay83DrawEntries",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x850",
-     "end_offset": "0x984",
-     "size": "0x134",
-     "type": "c",
-     "source": "overlays/o083/overlay83DrawStrip",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x984",
-     "end_offset": "0xA18",
-     "size": "0x94",
-     "type": "c",
-     "source": "overlays/o083/overlay83Dispatch",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xA18",
      "end_offset": "0xB60",
-     "size": "0x148",
+     "size": "0xB60",
      "type": "c",
-     "source": "overlays/o083/overlay83SubmitAll",
+     "source": "overlays/o083/overlay_083",
      "matched": true,
      "nonmatching": false
     }

@@ -47,23 +47,6 @@
       ]
     },
     {
-      "object": "overlays/o083/overlay83BuildBatch.c.o",
-      "aliases": [
-        {
-          "from": "mmAlloc",
-          "to": "overlay83AllocateBatchReloc"
-        },
-        {
-          "from": "pointListRPY",
-          "to": "overlay83TransformWorldReloc"
-        },
-        {
-          "from": "addObjectLight",
-          "to": "overlay83CreateLinkedReloc"
-        }
-      ]
-    },
-    {
       "object": "overlays/o101/overlay101DrawPanel.c.o",
       "aliases": [
         {

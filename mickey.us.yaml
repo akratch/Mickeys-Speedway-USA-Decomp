@@ -1337,7 +1337,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1868450, c, overlay10Initialize]
+      - [0x1868450, c, overlay_010]
       - [0x1868700, bin, overlay_010_reloc1]
 
   - name: overlay_011

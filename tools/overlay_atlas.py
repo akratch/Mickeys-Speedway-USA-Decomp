@@ -393,7 +393,7 @@ TEXT_SUBSEGMENTS = {
         (0x151C, "asm", "overlay_009_padding"),
     ],
     10: [
-        (0x000, "c", "overlay10Initialize"),
+        (0x000, "c", "overlay_010"),
     ],
     12: [
         (0x000, "c", "overlay_012"),

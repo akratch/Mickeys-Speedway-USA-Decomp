@@ -226,7 +226,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym mathOneFloatYPR=mathOneFloatYPR_o009Reloc \
 	--redefine-sym partUpdateTriggers=partUpdateTriggers_o009Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o010/overlay10Initialize.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o010/overlay_010.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D60E0=D_800D60E0_o010Reloc \
 	--redefine-sym D_800D60E4=D_800D60E4_o010Reloc \
 	--redefine-sym D_800D60E8=D_800D60E8_o010Reloc \

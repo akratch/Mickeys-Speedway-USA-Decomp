@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay10Initialize:start -->
 ### `overlay10Initialize` plateau handoff
 
-- source: `src/overlays/o010/overlay10Initialize.c`
+- source: `src/overlays/o010/overlay_010.c`
 - score: 0/172 words, promoted
 - frame: 0x58
 - relocations: 41

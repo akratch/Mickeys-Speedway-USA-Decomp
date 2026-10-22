@@ -2644,7 +2644,7 @@
      "end_offset": "0x2B0",
      "size": "0x2B0",
      "type": "c",
-     "source": "overlays/o010/overlay10Initialize",
+     "source": "overlays/o010/overlay_010",
      "matched": true,
      "nonmatching": false
     }

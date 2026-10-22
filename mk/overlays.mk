@@ -2192,6 +2192,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildPresentationD.c.o: POSTPROC
 # the module's trailing pad, so nothing is trimmed. All three functions are
 # exported.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o006/overlay_006.c.o: CFLAGS += -Wab,-r4300_mul
+# Overlay 10 is one translation unit at the overlay flag set.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o010/overlay_010.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 16 is one translation unit at the overlay flag set; its .text
 # carries the module's trailing pad, so nothing is trimmed. --force runs
 # asm-processor's static-symbol pass on this GLOBAL_ASM-free file, so the

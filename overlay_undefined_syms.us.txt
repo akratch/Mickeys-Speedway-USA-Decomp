@@ -662,7 +662,7 @@ overlay9SetSpatialReloc = 0xf0000000;
 overlay9TransformReloc = 0xf0000000;
 partUpdateTriggers_o009Reloc = 0xf0000000;
 
-/* overlay 10: overlay10Initialize.c.o */
+/* overlay 10: overlay_010.c.o */
 D_800D60E0_o010Reloc = 0x00000000;
 D_800D60E4_o010Reloc = 0x00000000;
 D_800D60E8_o010Reloc = 0x00000000;
@@ -5058,7 +5058,7 @@ func_overlay_008_F00049E8_1862740 = overlay8UpdateMotionOutput;
 /* overlay 9: overlay_009.c.o */
 func_overlay_009_F00010A4_186771C = overlay9Ignore;
 
-/* overlay 10: overlay10Initialize.c.o */
+/* overlay 10: overlay_010.c.o */
 func_overlay_010_F0000000_1868450 = overlay10Initialize;
 
 /* overlay 11: overlay11Initialize.c.o */

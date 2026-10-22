@@ -17965,82 +17965,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0xC",
-     "size": "0xC",
-     "type": "c",
-     "source": "overlays/o099/overlay99GetEntries",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xC",
-     "end_offset": "0x64",
-     "size": "0x58",
-     "type": "c",
-     "source": "overlays/o099/overlay99ReleaseEntries",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x64",
-     "end_offset": "0x21C",
-     "size": "0x1B8",
-     "type": "c",
-     "source": "overlays/o099/overlay99InitializeEntries",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x21C",
-     "end_offset": "0x2A0",
-     "size": "0x84",
-     "type": "c",
-     "source": "overlays/o099/overlay99ProjectVector",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2A0",
-     "end_offset": "0x638",
-     "size": "0x398",
-     "type": "c",
-     "source": "overlays/o099/overlay99ApplySegment",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x638",
-     "end_offset": "0x800",
-     "size": "0x1C8",
-     "type": "c",
-     "source": "overlays/o099/overlay99BuildHeightGrid",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x800",
-     "end_offset": "0xBA4",
-     "size": "0x3A4",
-     "type": "c",
-     "source": "overlays/o099/overlay99RenderSortedEntries",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xBA4",
-     "end_offset": "0xDDC",
-     "size": "0x238",
-     "type": "c",
-     "source": "overlays/o099/overlay99RenderSegments",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xDDC",
      "end_offset": "0x135C",
-     "size": "0x580",
+     "size": "0x135C",
      "type": "c",
-     "source": "overlays/o099/func_overlay_099_F0000DDC_18DA38C",
+     "source": "overlays/o099/overlay_099",
      "matched": true,
      "nonmatching": false
     },

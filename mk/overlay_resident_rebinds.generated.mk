@@ -2058,52 +2058,30 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay_098.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym mtxf_to_mtx=mtxf_to_mtx_o098Reloc \
 	--redefine-sym texDPInit=texDPInit_o098Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay_099.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o099Reloc \
 	--redefine-sym D_8007BE80=D_8007BE80_o099Reloc \
 	--redefine-sym D_8007BE84=D_8007BE84_o099Reloc \
 	--redefine-sym D_8007BE88=D_8007BE88_o099Reloc \
 	--redefine-sym D_800D2FAC=D_800D2FAC_o099Reloc \
+	--redefine-sym camGetProjZ=camGetProjZ_o099Reloc \
+	--redefine-sym camGetPtr=camGetPtr_o099Reloc \
 	--redefine-sym camStandardPersp=camStandardPersp_o099Reloc \
-	--redefine-sym overlay99RenderSegments=overlay99RenderSegments_o099Reloc \
-	--redefine-sym texDPInit=texDPInit_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BE84=D_8007BE84_o099Reloc \
-	--redefine-sym D_8007BE88=D_8007BE88_o099Reloc \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o099Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99BuildHeightGrid.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BE84=D_8007BE84_o099Reloc \
-	--redefine-sym D_8007BE88=D_8007BE88_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99InitializeEntries.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_8000590C=func_8000590C_o099Reloc \
-	--redefine-sym func_80037414=func_80037414_o099Reloc \
-	--redefine-sym viFrameRateReset=viFrameRateReset_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ProjectVector.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym sqrtf=sqrtf_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ReleaseEntries.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80006EA0=func_80006EA0_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99RenderSegments.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym Arctanf=Arctanf_o099Reloc \
-	--redefine-sym D_800D2FAC=D_800D2FAC_o099Reloc \
+	--redefine-sym func_80006EA0=func_80006EA0_o099Reloc \
 	--redefine-sym func_80009E78=func_80009E78_o099Reloc \
+	--redefine-sym func_80022E80=func_80022E80_o099Reloc \
+	--redefine-sym func_80022FD4=func_80022FD4_o099Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o099Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o099Reloc \
+	--redefine-sym func_8002AA50=func_8002AA50_o099Reloc \
+	--redefine-sym func_80037414=func_80037414_o099Reloc \
+	--redefine-sym mtxf_transform_point=mtxf_transform_point_o099Reloc \
 	--redefine-sym rcpClearZBuffer=rcpClearZBuffer_o099Reloc \
 	--redefine-sym sqrtf=sqrtf_o099Reloc \
 	--redefine-sym texDPInit=texDPInit_o099Reloc \
+	--redefine-sym viFrameRateReset=viFrameRateReset_o099Reloc \
 	--redefine-sym viGetCurrentSize=viGetCurrentSize_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99RenderSortedEntries.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camGetProjZ=camGetProjZ_o099Reloc \
-	--redefine-sym camGetPtr=camGetPtr_o099Reloc \
-	--redefine-sym func_80022E80=func_80022E80_o099Reloc \
-	--redefine-sym func_80022FD4=func_80022FD4_o099Reloc \
-	--redefine-sym func_8002AA50=func_8002AA50_o099Reloc \
-	--redefine-sym mtxf_transform_point=mtxf_transform_point_o099Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay_100.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_80079278=D_80079278_o100Reloc \

@@ -886,15 +886,7 @@ TEXT_SUBSEGMENTS = {
         (0xA04, "asm", "overlay_098_padding"),
     ],
     99: [
-        (0x000, "c", "overlay99GetEntries"),
-        (0x00C, "c", "overlay99ReleaseEntries"),
-        (0x064, "c", "overlay99InitializeEntries"),
-        (0x21C, "c", "overlay99ProjectVector"),
-        (0x2A0, "c", "overlay99ApplySegment"),
-        (0x638, "c", "overlay99BuildHeightGrid"),
-        (0x800, "c", "overlay99RenderSortedEntries"),
-        (0xBA4, "c", "overlay99RenderSegments"),
-        (0xDDC, "c", "func_overlay_099_F0000DDC_18DA38C"),
+        (0x000, "c", "overlay_099"),
         (0x135C, "asm", "overlay_099_padding"),
     ],
     100: [

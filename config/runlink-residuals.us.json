@@ -2293,7 +2293,7 @@
         [86, "func_overlay_086_F0000474_18D22AC", ".rodata", "0xF50", 6],
         [90, "overlay_090", ".rodata", "0xB28", 16],
         [91, "overlay_091", ".rodata", "0x580", 2],
-        [99, "overlay99ApplySegment", ".rodata", "0x1410", 2],
+        [99, "overlay_099", ".rodata", "0x1410", 2],
         [101, "func_overlay_101_F000571C_18E0F3C", ".bss", "0x12C40", 286],
         [101, "overlay101DispatchActive", ".rodata", "0x12B3C", 2],
         [101, "overlay101DispatchEvents", ".rodata", "0x12B7C", 2],

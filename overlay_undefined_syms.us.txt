@@ -4371,60 +4371,43 @@ overlay98UniqueCountReloc = 0x00000080;
 overlay98UniqueYReloc = 0x00000308;
 texDPInit_o098Reloc = 0xf0000000;
 
-/* overlay 99: overlay99GetEntries.c.o */
-gOverlay99Entries = 0x00000000;
-
-/* overlay 99: overlay99ReleaseEntries.c.o */
-func_80006EA0_o099Reloc = 0xf0000000;
-
-/* overlay 99: overlay99InitializeEntries.c.o */
-func_8000590C_o099Reloc = 0xf0000000;
-func_80037414_o099Reloc = 0xf0000000;
-gOverlay99Storage = 0x00000000;
-viFrameRateReset_o099Reloc = 0xf0000000;
-
-/* overlay 99: overlay99ProjectVector.c.o */
-sqrtf_o099Reloc = 0xf0000000;
-
-/* overlay 99: overlay99ApplySegment.c.o */
+/* overlay 99: overlay_099.c.o */
+Arctanf_o099Reloc = 0xf0000000;
+D_8007BE80_o099Reloc = 0x00000000;
 D_8007BE84_o099Reloc = 0x00000000;
 D_8007BE88_o099Reloc = 0x00000000;
+D_800D2FAC_o099Reloc = 0x00000000;
+camGetProjZ_o099Reloc = 0xf0000000;
+camGetPtr_o099Reloc = 0xf0000000;
+camStandardPersp_o099Reloc = 0xf0000000;
+func_8000590C_o099Reloc = 0xf0000000;
+func_80006EA0_o099Reloc = 0xf0000000;
+func_80009E78_o099Reloc = 0xf0000000;
+func_80022E80_o099Reloc = 0xf0000000;
+func_80022FD4_o099Reloc = 0xf0000000;
 func_8002A8BC_o099Reloc = 0xf0000000;
 func_8002A8C0_o099Reloc = 0xf0000000;
+func_8002AA50_o099Reloc = 0xf0000000;
+func_80037414_o099Reloc = 0xf0000000;
+gO99TrianglesReloc = 0x00000000;
 gOverlay99Arg4 = 0x000000a4;
 gOverlay99Arg5 = 0x000000a8;
+gOverlay99Entries = 0x00000000;
 gOverlay99GridHeight = 0x00000098;
 gOverlay99GridWidth = 0x00000094;
 gOverlay99HeightMinusOne = 0x000000a0;
-gOverlay99WidthMinusOne = 0x0000009c;
-
-/* overlay 99: overlay99BuildHeightGrid.c.o */
+gOverlay99IntensityScale = 0x00000008;
 gOverlay99SegmentCount = 0x00000090;
 gOverlay99Segments = 0x00000000;
-
-/* overlay 99: overlay99RenderSortedEntries.c.o */
-camGetProjZ_o099Reloc = 0xf0000000;
-camGetPtr_o099Reloc = 0xf0000000;
-func_80022E80_o099Reloc = 0xf0000000;
-func_80022FD4_o099Reloc = 0xf0000000;
-func_8002AA50_o099Reloc = 0xf0000000;
-gOverlay99IntensityScale = 0x00000008;
+gOverlay99Storage = 0x00000000;
 gOverlay99TransformZ = 0x00000004;
+gOverlay99WidthMinusOne = 0x0000009c;
 mtxf_transform_point_o099Reloc = 0xf0000000;
-
-/* overlay 99: overlay99RenderSegments.c.o */
-Arctanf_o099Reloc = 0xf0000000;
-D_800D2FAC_o099Reloc = 0x00000000;
-func_80009E78_o099Reloc = 0xf0000000;
 rcpClearZBuffer_o099Reloc = 0xf0000000;
+sqrtf_o099Reloc = 0xf0000000;
 texDPInit_o099Reloc = 0xf0000000;
+viFrameRateReset_o099Reloc = 0xf0000000;
 viGetCurrentSize_o099Reloc = 0xf0000000;
-
-/* overlay 99: func_overlay_099_F0000DDC_18DA38C.c.o */
-D_8007BE80_o099Reloc = 0x00000000;
-camStandardPersp_o099Reloc = 0xf0000000;
-gO99TrianglesReloc = 0x00000000;
-overlay99RenderSegments_o099Reloc = 0xf0000000;
 
 /* overlay 100: overlay_100.c.o */
 D_80079278_o100Reloc = 0x00000000;
@@ -6202,28 +6185,14 @@ func_overlay_098_F0000144_18D8B04 = overlay98CollectAccepted;
 func_overlay_098_F0000848_18D9208 = overlay98CheckObject;
 func_overlay_098_F0000234_18D8BF4 = overlay98RenderReflections;
 
-/* overlay 99: overlay99GetEntries.c.o */
+/* overlay 99: overlay_099.c.o */
 func_overlay_099_F0000000_18D95B0 = overlay99GetEntries;
-
-/* overlay 99: overlay99ReleaseEntries.c.o */
 func_overlay_099_F000000C_18D95BC = overlay99ReleaseEntries;
-
-/* overlay 99: overlay99InitializeEntries.c.o */
 func_overlay_099_F0000064_18D9614 = overlay99InitializeEntries;
-
-/* overlay 99: overlay99ProjectVector.c.o */
 func_overlay_099_F000021C_18D97CC = overlay99ProjectVector;
-
-/* overlay 99: overlay99ApplySegment.c.o */
 func_overlay_099_F00002A0_18D9850 = overlay99ApplySegment;
-
-/* overlay 99: overlay99BuildHeightGrid.c.o */
 func_overlay_099_F0000638_18D9BE8 = overlay99BuildHeightGrid;
-
-/* overlay 99: overlay99RenderSortedEntries.c.o */
 func_overlay_099_F0000800_18D9DB0 = overlay99RenderSortedEntries;
-
-/* overlay 99: overlay99RenderSegments.c.o */
 func_overlay_099_F0000BA4_18DA154 = overlay99RenderSegments;
 
 /* overlay 100: overlay_100.c.o */

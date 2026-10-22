@@ -17877,27 +17877,9 @@
       }
     },
     {
-      "name": "src/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c",
-      "target_path": "expected/build/src/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c.o",
-      "base_path": "build/src/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o099"
-        ],
-        "source_path": "src/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o099/overlay99ApplySegment.c",
-      "target_path": "expected/build/src/overlays/o099/overlay99ApplySegment.c.o",
-      "base_path": "build/src/overlays/o099/overlay99ApplySegment.c.o",
+      "name": "src/overlays/o099/overlay_099.c",
+      "target_path": "expected/build/src/overlays/o099/overlay_099.c.o",
+      "base_path": "build/src/overlays/o099/overlay_099.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -17908,133 +17890,7 @@
           "overlay",
           "overlay-o099"
         ],
-        "source_path": "src/overlays/o099/overlay99ApplySegment.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o099/overlay99BuildHeightGrid.c",
-      "target_path": "expected/build/src/overlays/o099/overlay99BuildHeightGrid.c.o",
-      "base_path": "build/src/overlays/o099/overlay99BuildHeightGrid.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wo,-loopunroll,0 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o099"
-        ],
-        "source_path": "src/overlays/o099/overlay99BuildHeightGrid.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o099/overlay99GetEntries.c",
-      "target_path": "expected/build/src/overlays/o099/overlay99GetEntries.c.o",
-      "base_path": "build/src/overlays/o099/overlay99GetEntries.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o099"
-        ],
-        "source_path": "src/overlays/o099/overlay99GetEntries.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o099/overlay99InitializeEntries.c",
-      "target_path": "expected/build/src/overlays/o099/overlay99InitializeEntries.c.o",
-      "base_path": "build/src/overlays/o099/overlay99InitializeEntries.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o099"
-        ],
-        "source_path": "src/overlays/o099/overlay99InitializeEntries.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o099/overlay99ProjectVector.c",
-      "target_path": "expected/build/src/overlays/o099/overlay99ProjectVector.c.o",
-      "base_path": "build/src/overlays/o099/overlay99ProjectVector.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o099"
-        ],
-        "source_path": "src/overlays/o099/overlay99ProjectVector.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o099/overlay99ReleaseEntries.c",
-      "target_path": "expected/build/src/overlays/o099/overlay99ReleaseEntries.c.o",
-      "base_path": "build/src/overlays/o099/overlay99ReleaseEntries.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o099"
-        ],
-        "source_path": "src/overlays/o099/overlay99ReleaseEntries.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o099/overlay99RenderSegments.c",
-      "target_path": "expected/build/src/overlays/o099/overlay99RenderSegments.c.o",
-      "base_path": "build/src/overlays/o099/overlay99RenderSegments.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o099"
-        ],
-        "source_path": "src/overlays/o099/overlay99RenderSegments.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o099/overlay99RenderSortedEntries.c",
-      "target_path": "expected/build/src/overlays/o099/overlay99RenderSortedEntries.c.o",
-      "base_path": "build/src/overlays/o099/overlay99RenderSortedEntries.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o099"
-        ],
-        "source_path": "src/overlays/o099/overlay99RenderSortedEntries.c",
+        "source_path": "src/overlays/o099/overlay_099.c",
         "complete": true
       }
     },

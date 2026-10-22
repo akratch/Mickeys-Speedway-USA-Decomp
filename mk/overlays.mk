@@ -2255,38 +2255,24 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83DrawStrip.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x134
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83Dispatch.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x94
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99GetEntries.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ReleaseEntries.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x58
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99InitializeEntries.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1B8
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ProjectVector.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x84
-# Exact C. -Wab,-r4300_mul supplies the three multiply-hazard pads the
-# target carries. Its one pool literal (182.0444f) duplicates the retained
-# overlay rodata at +0x0, which the shipped hi/lo pair encodes: the pool is
-# asserted by digest and externalized; no instruction is edited. The two
-# resident trig callees are placeholders.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: \
+# Overlay 99 is one translation unit under the overlay flag set (the former
+# -Wo,-loopunroll,0 on overlay99BuildHeightGrid was inert). Its one pool
+# literal (182.0444f) duplicates the retained overlay rodata at +0x0, which
+# the shipped hi/lo pair encodes, so until phase 3 gives the module's rodata
+# a C owner the pool is asserted by digest and externalized; no instruction
+# is edited. The call to the exported overlay99RenderSegments is a SYMBOL
+# record whose shipped word holds a zero addend, so that relocation is
+# filtered. The trim keeps the trailing pad in its own atlas row.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay_099.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay_099.c.o: \
 	$(TOOLS_DIR)/externalize_elf_section.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: POSTPROCESS = \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay_099.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
+		0x1324:4:overlay99RenderSegments && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:15fbd0fd7f255861ebff752dc2b8e418edd9110dfe29426ed775e3dc124c3f17 && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x398
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99BuildHeightGrid.c.o: CFLAGS += -Wo,-loopunroll,0
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99BuildHeightGrid.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1C8
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99RenderSortedEntries.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x3A4
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99RenderSegments.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99RenderSegments.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x238
-# Exact C. The function is 0x580 bytes; the module's last word (+0x135C) is
-# the overlay_099_padding row, so the trim only pins the natural extent.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x580
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x135C
+OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay_099.c.o
 include mk/overlay_057.mk
 include mk/overlay_058.mk
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CalculateEndpoints.c.o: CFLAGS += \
@@ -3041,15 +3027,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83DrawEntries.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83DrawStrip.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83Dispatch.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99GetEntries.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ReleaseEntries.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99InitializeEntries.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ProjectVector.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99BuildHeightGrid.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99RenderSortedEntries.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99RenderSegments.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60Initialize.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60ReleaseResources.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57ApplyValue.c.o \

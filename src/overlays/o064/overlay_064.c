@@ -1,18 +1,4 @@
-typedef signed int s32;
-typedef unsigned char u8;
-typedef unsigned short u16;
-
-typedef struct O64Image {
-    u8 pad00[6];
-    u16 width;
-    u16 height;
-    u8 pad0A[0x16];
-    u16 pixels[1];
-} O64Image;
-
-extern void *D_800D60B0[4];
-extern void *D_800D60C0[4];
-extern s32 mathRnd(s32 minimum, s32 maximum);
+#include "overlays/overlay_064.h"
 
 /*
  * Rewritten from the listing (lane w2-ovld, 2026-10-02): every loop is

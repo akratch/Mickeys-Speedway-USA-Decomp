@@ -277,7 +277,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
         (0x03E0, 0x0520, "overlay8EffectTables", ".data"),
         (0x2378, 0x2418, "overlay8MotionConstants", ".data"),
     ],
-    64: [(0x0, 0x10, "overlay64GenerateTexture", ".data")],
+    64: [(0x0, 0x10, "overlay_064", ".data")],
 }
 DATA_ONLY_FIXED_DATA_SOURCES = {
     (8, "overlay8MotionConstants", ".data"),
@@ -663,7 +663,7 @@ TEXT_SUBSEGMENTS = {
         (0x928, "asm", "overlay_063_padding"),
     ],
     64: [
-        (0x000, "c", "overlay64GenerateTexture"),
+        (0x000, "c", "overlay_064"),
     ],
     65: [
         (0x000, "c", "overlay65Initialize"),

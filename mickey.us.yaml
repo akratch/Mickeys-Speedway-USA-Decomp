@@ -2502,8 +2502,8 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18C3B28, c, overlay64GenerateTexture]
-      - [0x18C41B8, .data, overlay64GenerateTexture]
+      - [0x18C3B28, c, overlay_064]
+      - [0x18C41B8, .data, overlay_064]
       - [0x18C41C8, bin, overlay_064_reloc1]
       - [0x18C4218, bin, overlay_064_reloc2]
 

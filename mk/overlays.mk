@@ -1946,21 +1946,17 @@ include mk/overlay_065.mk
 
 
 # The typed source owns O64's complete procedural texture generator.
-# Eighteen HI16/LO16 sites are loader-owned: the runtime tables supply the
-# base and the compiled fields already hold the stored addend. The two
-# resident data symbols are renamed to per-overlay placeholders valued at
-# that addend, so the resident definitions stay intact. The local data
-# section symbol becomes an absolute zero while its 16 payload bytes stay
-# in this object, so those sites keep the stored field displacement. The
-# two call records use the same placeholder form. No instruction word is
-# edited.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay64GenerateTexture.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym mathRnd=mathRnd_o064Reloc \
-		--redefine-sym D_800D60B0=D_800D60B0_o064Reloc \
-		--redefine-sym D_800D60C0=D_800D60C0_o064Reloc $@ && \
+# Overlay 64: one module TU under the overlay flag set; its .text is the
+# module's whole 0x690 bytes and resident references are renamed by the
+# generated surface rebinds. Kept, for a mechanical reason: the TU defines the
+# module's 16-byte .data (the two function statics), whose eighteen HI16/LO16
+# sites the runtime tables relocate from the data base. The section symbol
+# becomes an absolute zero, payload kept, so each site stores only its field
+# displacement; the payload is asserted by digest. No instruction is edited.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay_064.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .data \
 		sha256:374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb keep
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay64GenerateTexture.c.o: CFLAGS += -woff 835
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay_064.c.o: CFLAGS += -Wab,-r4300_mul -woff 835
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F0000000_1885D10.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x154
@@ -2800,7 +2796,6 @@ OVERLAY_TRIMMED_OBJECTS += \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Release.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65ResetSlots.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/func_overlay_065_F0000C38_18C4EA0.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay64GenerateTexture.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F0000000_1885D10.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay38UpdateParticles.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F000047C_188618C.c.o \

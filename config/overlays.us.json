@@ -12638,7 +12638,7 @@
      "end_offset": "0x690",
      "size": "0x690",
      "type": "c",
-     "source": "overlays/o064/overlay64GenerateTexture",
+     "source": "overlays/o064/overlay_064",
      "matched": true,
      "nonmatching": false
     }
@@ -12696,7 +12696,7 @@
      "size": "0x10",
      "type": "c",
      "section": ".data",
-     "source": "overlays/o064/overlay64GenerateTexture",
+     "source": "overlays/o064/overlay_064",
      "canonical": true
     }
    ]

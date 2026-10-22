@@ -224,7 +224,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11InitializeFour.c.o: POSTPROCESS =
 	$(OBJCOPY) \
 		--redefine-sym func_80028F54=overlay11GetStatusReloc \
 		--redefine-sym sprintf=overlay11FormatReloc \
-		--redefine-sym D_800D31BC=gOverlay11ResidentFlagsReloc $@ && \
+		--redefine-sym D_8007BF1C=gOverlay11ResidentFlagsReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x194
 # The compiler emits the exact six-entry switch table already present in the
 # overlay's extracted data/rodata asset. Rebind the text pair to its proved

@@ -87,6 +87,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46UpdateSequence.c.o: POSTPROCESS =
 		--redefine-sym fontBackground=fontBackground_o046Reloc \
 		--redefine-sym func_80058240=func_80058240_o046Reloc \
 		--redefine-sym mathRnd=mathRnd_o046Reloc \
+		--redefine-sym D_8007BF44=D_8007BF44_o046Reloc \
+		--redefine-sym D_8007BF48=D_8007BF48_o046Reloc \
 		--add-symbol gOverlay46SequenceJumpTableReloc=0x34,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay46UpdateSequence.rebind.spec && \

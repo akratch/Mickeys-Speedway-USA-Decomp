@@ -1323,14 +1323,14 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: POSTPROCESS = \
 		--redefine-sym mtxf_mul=mtxf_mul_o056Reloc \
 		--redefine-sym mtxf_to_mtx=mtxf_to_mtx_o056Reloc \
 		--redefine-sym viGetCurrentSize=viGetCurrentSize_o056Reloc \
-		--redefine-sym D_800C3A3C=D_800C3A3C_o056Reloc \
-		--redefine-sym D_800CD788=D_800CD788_o056Reloc \
-		--redefine-sym D_800D1494=D_800D1494_o056Reloc \
-		--redefine-sym D_800D1498=D_800D1498_o056Reloc \
-		--redefine-sym D_800D3194=D_800D3194_o056Reloc \
-		--redefine-sym D_800D3198=D_800D3198_o056Reloc \
-		--redefine-sym D_800D31A8=D_800D31A8_o056Reloc \
-		--redefine-sym D_800D3450=D_800D3450_o056Reloc \
+		--redefine-sym D_800C947C=D_800C947C_o056Reloc \
+		--redefine-sym D_800D31C8=D_800D31C8_o056Reloc \
+		--redefine-sym D_8007A1F4=D_8007A1F4_o056Reloc \
+		--redefine-sym D_8007A1F8=D_8007A1F8_o056Reloc \
+		--redefine-sym D_8007BEF4=D_8007BEF4_o056Reloc \
+		--redefine-sym D_8007BEF8=D_8007BEF8_o056Reloc \
+		--redefine-sym D_8007BF08=D_8007BF08_o056Reloc \
+		--redefine-sym D_8007C1B0=D_8007C1B0_o056Reloc \
 		$@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xAF4
 # The minimap renderer's rotated-coordinate products carry the R4300 FP-mul
@@ -2676,22 +2676,18 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o: POSTPROCESS = \
 		--redefine-sym func_80028F54=func_80028F54_o049Reloc \
 		--redefine-sym func_800508B4=func_800508B4_o049Reloc \
 		--redefine-sym func_8002917C=func_8002917C_o049Reloc \
-		--redefine-sym overlay65Initialize=overlay49Overlay65InitializeReloc $@ && \
+		--redefine-sym overlay65Initialize=overlay49Overlay65InitializeReloc \
+		--redefine-sym D_8007BF0C=D_8007BF0C_o049Reloc \
+		--redefine-sym D_8007BF60=D_8007BF60_o049Reloc \
+		--redefine-sym D_800D3140=D_800D3140_o049Reloc \
+		--redefine-sym D_800D3144=D_800D3144_o049Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		0x218:func_800254FC:overlay65UpdateReloc \
 		0x224:func_8002554C:overlay65UpdateReloc \
 		0x2c0:func_800016EC:overlay65UpdateReloc \
-		0x2c8:D_8007BF08:gOverlay49Timer \
-		0x2cc:D_8007BF08:gOverlay49Timer \
 		0x2d8:func_8003A754:overlay65UpdateReloc \
-		0x2e0:D_8007BF04:gOverlay49Timer \
-		0x2e4:D_8007BF04:gOverlay49Timer \
 		0x2f8:overlay48InitializeReloc:overlay65UpdateReloc \
-		0x314:func_80028374:overlay65UpdateReloc \
-		0x324:D_800D0000:gOverlay49Timer \
-		0x328:D_800D0004:gOverlay49Timer \
-		0x32c:D_800D0004:gOverlay49Timer \
-		0x330:D_800D0000:gOverlay49Timer && \
+		0x314:func_80028374:overlay65UpdateReloc && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x374
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.

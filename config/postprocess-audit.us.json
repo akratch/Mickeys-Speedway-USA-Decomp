@@ -2433,7 +2433,6 @@
       "size": 1044,
       "source": "src/overlays/o024/overlay_024.c",
       "tools": [
-        "trim_elf_section.py",
         "externalize_elf_section.py"
       ]
     },

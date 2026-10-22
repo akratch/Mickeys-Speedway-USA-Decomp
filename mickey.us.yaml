@@ -1268,7 +1268,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x185BE68, c, overlay_006]
-      - [0x185BE84, asm, overlay_006_padding]
 
   - name: overlay_007
     type: code

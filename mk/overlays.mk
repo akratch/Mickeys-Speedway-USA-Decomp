@@ -68,8 +68,6 @@ $(OVERLAY5_O3_OBJECTS): $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/%.c.o: \
 # IDO aligns standalone .text sections to 16 bytes, while these reviewed
 # overlay functions continue at four-byte boundaries inside a larger module.
 # The trimmer only reduces the ELF section header and refuses nonzero tails.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o006/overlay_006.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o076/overlay_076.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x114
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o078/overlay_078.c.o: POSTPROCESS = \
@@ -2190,6 +2188,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawTransformed.c.o: POSTPROCESS
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x298
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildPresentationD.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x338
+# Overlay 6 is one translation unit at the overlay flag set; its .text carries
+# the module's trailing pad, so nothing is trimmed. All three functions are
+# exported.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o006/overlay_006.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 16 is one translation unit at the overlay flag set; its .text
 # carries the module's trailing pad, so nothing is trimmed. --force runs
 # asm-processor's static-symbol pass on this GLOBAL_ASM-free file, so the
@@ -2883,7 +2885,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57ApplyTable.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59Interpolate.c.o: CFLAGS += -Wab,-r4300_mul
 
 OVERLAY_TRIMMED_OBJECTS := \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o006/overlay_006.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o076/overlay_076.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o078/overlay_078.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o102/overlay_102.c.o \

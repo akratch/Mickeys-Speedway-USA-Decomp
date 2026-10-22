@@ -495,6 +495,13 @@ manifest is regenerated (`gmake runlink-residuals`), so the manifest only
 shrinks. Like any generated file, regenerate it after a merge rather than
 resolving it by hand.
 
+**The kit.** `tools/runlink/` reimplements these rules, the encoding and the
+comparison without MSU-specific code, for MSU and JFG alike
+(`docs/runlink-toolkit.md`). `gmake check-runlink-kit` requires it to
+reproduce this packer exactly: the same residuals, byte-identical generated
+regions and the same region proof. `docs/runlink-jfg.md` records what it
+measures on JFG.
+
 `tools/runlink_pack.py` exits with one of three codes:
 
 - **0:** success.

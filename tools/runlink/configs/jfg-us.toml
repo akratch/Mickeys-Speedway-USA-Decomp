@@ -1,0 +1,66 @@
+# Jet Force Gemini (US). Run with --root pointing at a JFG checkout, e.g.
+#   python3 tools/runlink --config jfg-us --root path/to/jfg census
+# Values are from JFG's ver/splat/jfg.us.yaml and docs/overlays.txt
+# (OverlayHandling branch), and are re-checked against the ROM by `check`.
+name = "jfg-us"
+rom = "baseroms/baserom.us.z64"
+rom_sha1 = "493ced9008dbe932d6e91179b68e8630cf23a023"
+
+[tables]
+main_table = 0x1ECF220
+main_table_block = 0x1050
+ort = 0x1ED0270
+ort_count = 2372
+headers = 0x1ED2780
+module_count = 157
+modules = 0x1ED3B20
+modules_end = 0x1FEB038
+
+[names]
+# JFG's ROM ships the ORT's names: u32 offsets parallel to the ORT into a
+# blob of NUL-terminated strings (docs/overlays.txt section 2.4).
+offsets = 0x1FEB040
+blob = 0x1FED550
+blob_end = 0x1FF6820
+
+[resident]
+text = 0x80000450                    # __CODE_SECTION_START
+data = 0x800A0660                    # __DATA_SECTION_START
+bss = 0x800B0B50                     # __BSS_SECTION_START
+end = 0x801059A0                     # __BSS_SECTION_END
+trap_symbol = "TrapDanglingJump"
+rom_delta = 0x7FFFF400                # resident VRAM - ROM offset
+trap_address = 0x80054530
+
+[selectors]
+data = [0xFFD, 0xFFE]
+bss = 0xFFF
+reserved = [0xFFC, 0xFFD, 0xFFE, 0xFFF]
+# One row (osTvType) uses 0xFFC with offset 0x300: an absolute KSEG0 address.
+# Inferred from that row alone; JFG's ResolveRelocAddress has no case for it.
+absolute = 0xFFC
+absolute_base = 0x80000000
+
+[build]
+# Inputs of the generic ELF generator (tools/runlink/generate.py), all
+# relative to --root.
+adapter = "ld"
+elf = "build/jfg.us.elf"
+map = "build/jfg.us.map"
+module_section = ".overlay_{n}"      # output section of module n in the link
+module_bss_section = ".overlay_{n}_bss"
+# Input files inside a module section that are the shipped tables, not code or data.
+table_inputs = ['_reloc\.bin\.o$', '_secondary_reloc\.bin\.o$']
+resident_sections = [".main", ".main_bss"]
+text_align = 16
+main_sentinel = "gUnresolvedSymbolAddr"
+runtime_objects = ['/runLink\.c\.o$']
+placeholder = '^(?:func|D)_[0-9A-Fa-f]+$'
+# The shipped main table is address-ascending; JFG's asm-processor objects
+# list a GLOBAL_ASM block's relocations apart from the C's, so link order
+# within an object is not address order (track.c.o).
+main_order = "address"
+
+[build.entry_names]
+init = "_AutoInit{n:05d}"
+resume = "_AutoExit{n:05d}"

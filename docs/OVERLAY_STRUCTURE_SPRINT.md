@@ -269,6 +269,10 @@ Exit: no overlay `data_rodata` `bin`, and no hybrid modules.
 
 ### Phase 5: package for JFG (about 3 days)
 
+Status 2026-10-22: the kit is `tools/runlink/` (`docs/runlink-toolkit.md`);
+`gmake check-runlink-kit` holds it to `tools/runlink_pack.py`'s exact result.
+The JFG demonstration is `docs/runlink-jfg.md`.
+
 - Package a self-contained `runlink` toolset: decode, pack, compare and
   census. It needs no MSU-specific paths and takes configuration for ROM
   offsets, module count and ORT names. Include docs and synthetic tests.

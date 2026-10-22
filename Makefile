@@ -563,6 +563,14 @@ runlink-residuals: runlink-raw
 	@$(QUIET_ELF_BUILD)
 	$(RUNLINK_PACK) compare --write-residuals
 
+# The game-agnostic runlink kit (tools/runlink/, docs/runlink-toolkit.md) must
+# reproduce this packer exactly: the same residuals, the same region bytes and
+# the same region proof. Needs what check-runlink-tables needs.
+check-runlink-kit: runlink-raw
+	@$(QUIET_ELF_BUILD)
+	$(HOST_PYTHON) $(TOOLS_DIR)/runlink check
+	$(HOST_PYTHON) $(TOOLS_DIR)/runlink parity
+
 # objdiff.json is derived from mickey.us.yaml, the overlay atlas and the split
 # tree (tools/objdiff_config.py), never hand-edited and never from build/.
 # `check-objdiff-config` fails on drift; it needs `gmake extract` but no
@@ -1635,7 +1643,7 @@ $(TARGET).z64: $(TARGET).bin $(CRC)
 	fi
 	@ls -l $@
 
-.PHONY: default all setup hooks extract prune-asm verify runlink-raw runlink-raw-objects runlink-ort check-runlink-tables runlink-residuals check-trap-names trap-names cleanroom system-health check-tooling forced-floor-census promotion-proof check-promotion-proofs release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms objdiff-config check-objdiff-config overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
+.PHONY: default all setup hooks extract prune-asm verify runlink-raw runlink-raw-objects runlink-ort check-runlink-tables runlink-residuals check-runlink-kit check-trap-names trap-names cleanroom system-health check-tooling forced-floor-census promotion-proof check-promotion-proofs release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms objdiff-config check-objdiff-config overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
 .SECONDARY:
 SHELL = /bin/bash -e -o pipefail
 

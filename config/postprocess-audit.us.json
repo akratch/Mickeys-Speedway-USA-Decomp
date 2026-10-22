@@ -3501,41 +3501,12 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o038/func_overlay_038_F0000000_1885D10.c.o",
+      "object": "build/src/overlays/o038/overlay_038.c.o",
       "offset": 0,
       "overlay": 38,
-      "size": 340,
-      "source": "src/overlays/o038/func_overlay_038_F0000000_1885D10.c",
+      "size": 2024,
+      "source": "src/overlays/o038/overlay_038.c",
       "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o038/func_overlay_038_F000047C_188618C.c.o",
-      "offset": 1148,
-      "overlay": 38,
-      "size": 876,
-      "source": "src/overlays/o038/func_overlay_038_F000047C_188618C.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o038/overlay38UpdateParticles.c.o",
-      "offset": 340,
-      "overlay": 38,
-      "size": 808,
-      "source": "src/overlays/o038/overlay38UpdateParticles.c",
-      "tools": [
-        "trim_elf_section.py",
         "externalize_elf_section.py"
       ]
     },
@@ -8842,10 +8813,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 609,
+      "metadata": 607,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 443212,
-    "objects_with_postprocess": 610
+    "objects_with_postprocess": 608
   }
 }

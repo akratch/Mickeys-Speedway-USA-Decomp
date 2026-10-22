@@ -7762,28 +7762,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x154",
-     "size": "0x154",
-     "type": "c",
-     "source": "overlays/o038/func_overlay_038_F0000000_1885D10",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x154",
-     "end_offset": "0x47C",
-     "size": "0x328",
-     "type": "c",
-     "source": "overlays/o038/overlay38UpdateParticles",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x47C",
      "end_offset": "0x7E8",
-     "size": "0x36C",
+     "size": "0x7E8",
      "type": "c",
-     "source": "overlays/o038/func_overlay_038_F000047C_188618C",
+     "source": "overlays/o038/overlay_038",
      "matched": true,
      "nonmatching": false
     },

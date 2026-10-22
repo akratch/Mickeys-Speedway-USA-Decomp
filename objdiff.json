@@ -12585,27 +12585,9 @@
       }
     },
     {
-      "name": "src/overlays/o038/func_overlay_038_F0000000_1885D10.c",
-      "target_path": "expected/build/src/overlays/o038/func_overlay_038_F0000000_1885D10.c.o",
-      "base_path": "build/src/overlays/o038/func_overlay_038_F0000000_1885D10.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o038"
-        ],
-        "source_path": "src/overlays/o038/func_overlay_038_F0000000_1885D10.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o038/func_overlay_038_F000047C_188618C.c",
-      "target_path": "expected/build/src/overlays/o038/func_overlay_038_F000047C_188618C.c.o",
-      "base_path": "build/src/overlays/o038/func_overlay_038_F000047C_188618C.c.o",
+      "name": "src/overlays/o038/overlay_038.c",
+      "target_path": "expected/build/src/overlays/o038/overlay_038.c.o",
+      "base_path": "build/src/overlays/o038/overlay_038.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -12616,25 +12598,7 @@
           "overlay",
           "overlay-o038"
         ],
-        "source_path": "src/overlays/o038/func_overlay_038_F000047C_188618C.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o038/overlay38UpdateParticles.c",
-      "target_path": "expected/build/src/overlays/o038/overlay38UpdateParticles.c.o",
-      "base_path": "build/src/overlays/o038/overlay38UpdateParticles.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o038"
-        ],
-        "source_path": "src/overlays/o038/overlay38UpdateParticles.c",
+        "source_path": "src/overlays/o038/overlay_038.c",
         "complete": true
       }
     },

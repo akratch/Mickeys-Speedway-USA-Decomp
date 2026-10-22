@@ -909,20 +909,16 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym func_8002A8C0=func_8002A8C0_o037Reloc \
 	--redefine-sym texDPTextureX=texDPTextureX_o037Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F0000000_1885D10.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mathOneFloatPY=mathOneFloatPY_o038Reloc \
-	--redefine-sym mathRnd=mathRnd_o038Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F000047C_188618C.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay_038.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o038Reloc \
 	--redefine-sym camGetPtr=camGetPtr_o038Reloc \
 	--redefine-sym camPopModelMtx=camPopModelMtx_o038Reloc \
 	--redefine-sym camPushModelMtx=camPushModelMtx_o038Reloc \
+	--redefine-sym func_80006EA0=func_80006EA0_o038Reloc \
+	--redefine-sym mathOneFloatPY=mathOneFloatPY_o038Reloc \
+	--redefine-sym mathRnd=mathRnd_o038Reloc \
 	--redefine-sym sqrtf=sqrtf_o038Reloc \
 	--redefine-sym texDPTextureX=texDPTextureX_o038Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay38UpdateParticles.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80006EA0=func_80006EA0_o038Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007A204=D_8007A204_o039Reloc \

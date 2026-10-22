@@ -2023,25 +2023,19 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay64GenerateTexture.c.o: POSTPROCESS 
 		sha256:374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb keep
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay64GenerateTexture.c.o: CFLAGS += -woff 835
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F0000000_1885D10.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x154
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay38UpdateParticles.c.o: CFLAGS += \
-	-Wab,-r4300_mul
-# The three rates are float literals, so the compiler emits a 0x10-byte pool
-# that duplicates the retained overlay data at rodata-relative +0x0 (the
-# shipped hi/lo pairs are LOCAL records with stored addends 0, 4 and 8).
-# Assert the pool by digest and bind the pairs to the loader-owned base; no
-# instruction is edited (overlay 7's form).
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay38UpdateParticles.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x328 && \
+# Overlay 38 is one translation unit at the overlay flag set; its .text carries
+# the module's trailing pad, so nothing is trimmed. The update's three rates
+# are float literals, so the compiler emits a 0x10-byte pool that duplicates
+# the retained overlay data at rodata-relative +0x0 (the shipped hi/lo pairs
+# are LOCAL records with stored addends 0, 4 and 8). Until the module's data
+# is C-owned (sprint phase 3), assert the pool by digest and bind the pairs to
+# the loader-owned base; no instruction is edited.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay_038.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay_038.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:bdcefd8e01ed3fbf749d94f1d2eca6ebf09ccfef55954c89ecb731ed6d8a3752
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F000047C_188618C.c.o: CFLAGS += \
-	-Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F000047C_188618C.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x36C
+
 
 
 include mk/overlay_070.mk
@@ -2959,9 +2953,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65ResetSlots.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/func_overlay_065_F0000C38_18C4EA0.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay64GenerateTexture.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F0000000_1885D10.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay38UpdateParticles.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F000047C_188618C.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F0000000_18C91C8.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F00000D8_18C92A0.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F0000384_18C954C.c.o \

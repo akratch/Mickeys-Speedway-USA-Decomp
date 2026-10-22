@@ -1937,10 +1937,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1885D10, c, func_overlay_038_F0000000_1885D10]
-      - [0x1885E64, c, overlay38UpdateParticles]
-      - [0x188618C, c, func_overlay_038_F000047C_188618C]
-      - [0x18864F8, asm, overlay_038_padding]
+      - [0x1885D10, c, overlay_038]
       - [0x1886500, bin, overlay_038_data_rodata]
       - [0x18865A0, bin, overlay_038_reloc1]
       - [0x1886630, bin, overlay_038_reloc2]

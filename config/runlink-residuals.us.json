@@ -2251,7 +2251,7 @@
         [26, "func_overlay_026_F00001A0_187A598", ".rodata", "0x1370", 10],
         [27, "overlay_027", ".rodata", "0xD70", 8],
         [29, "func_overlay_029_F00005C4_187D874", ".rodata", "0x16D0", 10],
-        [38, "overlay38UpdateParticles", ".rodata", "0x880", 6],
+        [38, "overlay_038", ".rodata", "0x880", 6],
         [41, "overlay41SpawnItems", ".rodata", "0x1E38", 4],
         [43, "func_overlay_043_F0000324_188A2F4", ".rodata", "0x1520", 2],
         [43, "overlay43ComputeMotion", ".rodata", "0x1524", 2],

@@ -18,7 +18,7 @@ typedef struct Overlay86State {
 } Overlay86State;
 
 extern Overlay86Vec3f gOverlay86Vectors[10];
-extern void overlay86TransformVectorReloc(s32 mode, Overlay86Object *object,
+extern void pointListRPY(s32 mode, Overlay86Object *object,
                                           f32 *input, f32 *output);
 
 void overlay86ScaledVectorPosition(Overlay86Object *object,
@@ -36,7 +36,7 @@ void overlay86ScaledVectorPosition(Overlay86Object *object,
     vector[0] = gOverlay86Vectors[index].x * object->scale;
     vector[1] = gOverlay86Vectors[index].y * object->scale;
     vector[2] = gOverlay86Vectors[index].z * object->scale;
-    overlay86TransformVectorReloc(1, object, vector, vector);
+    pointListRPY(1, object, vector, vector);
     *outX = vector[0] + object->position.x;
     *outY = vector[1] + object->position.y;
     *outZ = vector[2] + object->position.z;

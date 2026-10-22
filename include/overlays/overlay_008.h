@@ -680,9 +680,9 @@ extern void *gOverlay8Primary[];
 
 extern void *gOverlay8Secondary[];
 
-extern void o8Call0894Reloc(O8Node *, void *, O8Owner *);
+extern void func_8005AF14(O8Node *, void *, O8Owner *);
 
-extern void ext_o0_19668(O8Owner *, O8Node *, void *, void *);
+extern void lightObject(O8Owner *, O8Node *, void *, void *);
 
 extern void ext_o8_3368(O8Owner *, O8State *, void *, O8Node *, s32);
 
@@ -711,7 +711,7 @@ extern void func_8001D960(O8Owner *, O8State *, s32, s32, s32);
 
 extern void ext_o0_1d510(O8Owner *, O8State *, s32);
 
-extern void ext_o0_2d98(void *);
+extern void amSndStopXYZ(void *);
 
 extern void ext_o0_2b90(s32, s32, s32, s32, s32, void **);
 
@@ -721,17 +721,16 @@ extern void ext_o8_3018(O8Owner *, O8State *, void *, s32);
 
 extern void func_8003EDE0(f32);
 
-extern void ext_o0_3e99c(O8Owner *, s32);
+extern void partUpdateTriggers(O8Owner *, s32);
 
 extern void overlay17AdvanceChain(void *, void *);
 
 extern void ext_o0_2d70(void *, s32, s32, s32);
 
-extern void o8StartMotionResourceReloc(void *resource);
+extern void amSndStopXYZ(void *resource);
 
 extern s32 D_80078F80;
 
-extern void amSndStopXYZ(void *resource);
 
 extern void overlay8CreateResourceReloc(s32 kind, s32 valueC, s32 value10,
                                         s32 value14, s32 count,
@@ -819,7 +818,7 @@ extern f32 overlay8SampleChannel(f32 argument, void *sampleState);
 extern void overlay8EmitChannel(Overlay8ChannelState *state, s32 kind,
                                 f32 scale);
 
-extern void o8ApplyColorsReloc(void *target, s32 alpha0,
+extern void func_8004707C(void *target, s32 alpha0,
                                                s32 alpha1, s32 alpha2,
                                                s32 red, s32 green, s32 blue);
 
@@ -835,15 +834,15 @@ extern f32 D_21C8[];
 extern s16 D_2208[];
 extern f32 D_2220[];
 
-extern void o8P42A8SampleReloc(f32 value, s32 mode);
+extern void camSetFOV(f32 value, s32 mode);
 
-extern s32 o8P42A8RandomReloc(void);
+extern s32 camGetMode(void);
 
-extern s32 o8P42A8ApproachReloc(s32 current, s32 target);
+extern s32 mathDiffAngle(s32 current, s32 target);
 
-extern f32 o8P42A8TrigAReloc(s32 angle);
+extern f32 func_8002A8C0(s32 angle);
 
-extern f32 o8P42A8TrigBReloc(s32 angle);
+extern f32 func_8002A8BC(s32 angle);
 
 extern f32 D_8;
 
@@ -871,19 +870,17 @@ extern f32 D_310[];
 
 extern u8 D_350[];
 
-extern u8 gO8P0058MirrorGateReloc;
+extern u8 D_8007BF08;
 
-extern s32 gO8P0058PresentReloc;
+extern s32 D_800C947C;
 
-extern f32 gO8P0058ResultReloc;
 
-extern s32 gO8P0058ActiveReloc;
+extern s32 D_800C9480;
 
-extern u8 gO8P0058SpawnGateReloc;
 
-extern void o8P0058ResetReloc(O8P0058State *state, s32 mode);
+extern void controlDisableJoypad(O8P0058State *state, s32 mode);
 
-extern void o8P0058ModeReloc(O8P0058State *state, s32 mode);
+extern void controlReadJoypad(O8P0058State *state, s32 mode);
 
 extern O8P0058Query *o8P0058AcquireReloc(O8P0058State *state);
 
@@ -891,14 +888,14 @@ extern O8P0058Query *o8P0058AcquireReloc(O8P0058State *state);
 extern void o8P0058SpawnReloc(O8P0058Owner *owner, s32 kind, s32 index,
                               f32 blend);
 
-extern void o8P0058OrientReloc(O8P0058Owner *owner, O8P0058State *state);
+extern void controlFSUvels(O8P0058Owner *owner, O8P0058State *state);
 
-extern void o8P0058RotateReloc(s16 *angles, f32 *vector);
+extern void mathOneFloatYPR(s16 *angles, f32 *vector);
 
-extern s32 o8P0058SurfaceReloc(f32 x, f32 z, s32 unused, u32 flags,
+extern s32 func_8001357C(f32 x, f32 z, s32 unused, u32 flags,
                                O8P0058Surface *surface);
 
-extern void o8P0058CollisionReloc(O8P0058Owner *owner,
+extern void func_8001F14C(O8P0058Owner *owner,
                                   O8P0058State *state);
 
 extern void o8P0058EffectReloc(O8P0058State *state, s32 kind, f32 scale,
@@ -907,10 +904,9 @@ extern void o8P0058EffectReloc(O8P0058State *state, s32 kind, f32 scale,
 extern f32 o8P0058SampleReloc(O8P0058Owner *owner, O8P0058State *state,
                               f32 limit, f32 update);
 
-extern void o8P0058UpdateReloc(O8P0058Owner *owner, O8P0058State *state,
+extern void func_8001D41C(O8P0058Owner *owner, O8P0058State *state,
                                s32 updateRate);
 
-extern void o8P0058ReleaseReloc(void *resource);
 
 extern void o8P0058CreateReloc(s32 kind, f32 x, f32 y, f32 z, s32 mode,
                                void **resource);
@@ -967,13 +963,11 @@ extern f32 D_254;
 extern f32 D_258;
 extern f32 D_25C;
 
-extern f32 gO8P34A0ScaleReloc;
 
-extern u8 gO8P34A0ModeReloc;
 
 extern s32 o8P34A0RandomReloc(s32 low, s32 high);
 
-extern s32 o8P34A0TerrainReloc(f32 x, f32 z, s32 flags,
+extern s32 func_8001398C(f32 x, f32 z, s32 flags,
                                f32 ***samples);
 
 /* overlay7DispatchSelection(owner, selection): two arguments. */
@@ -982,23 +976,20 @@ extern void o8P34A0EffectReloc(O8P34A0Owner *owner, s32 kind);
 extern void o8P34A0SetModeReloc(O8P34A0Owner *owner, s32 mode, s32 index,
                                 f32 blend);
 
-extern s32 o8P34A0AnimateReloc(O8P34A0Owner *owner, f32 value,
+extern s32 func_8005ABA8(O8P34A0Owner *owner, f32 value,
                                f32 update);
 
-extern void o8P34A0EventReloc(O8P34A0Owner *owner, s32 kind, s32 mode);
+extern void overlay1InitTimedState(O8P34A0Owner *owner, s32 kind, s32 mode);
 
 extern void o8P34A0StateEffectReloc(O8P34A0State *state, s32 kind,
                                     f32 scale);
 
-extern s32 o8P34A0ApproachReloc(s32 current, s32 target);
 
-extern f32 o8P34A0TrigAReloc(s32 angle);
 
-extern f32 o8P34A0TrigBReloc(s32 angle);
 
-extern f32 o8P34A0DecayReloc(f32 coefficient, s32 updateRate);
+extern f32 Powerf(f32 coefficient, s32 updateRate);
 
-extern s32 o8P34A0BlendReloc(s32 current, s32 target, f32 blend);
+extern s32 dAngle(s32 current, s32 target, f32 blend);
 
 extern void func_overlay_008_F00049E8_1862740(O8P34A0Owner *owner,
                                               O8P34A0State *state,
@@ -1035,9 +1026,7 @@ extern void overlay20ReleaseEntry(O8P4CF0SceneItem *item);
 extern f32 func_overlay_020_F0001148_1877720(O8P4CF0Bounds *bounds, f32 x, f32 z,
                              O8P4CF0Normal *normal);
 
-extern f32 func_8002A8C0(s32 angle);
 
-extern f32 func_8002A8BC(s32 angle);
 
 extern s32 Arctanf(f32 horizontal, f32 vertical);
 

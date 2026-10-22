@@ -172,7 +172,7 @@ extern f32 D_340[];
 extern s16 D_380[];
 extern u8 D_388[];
 extern s16 *gOverlay9PacketCursor;
-extern f32 G_rt_458c4;
+extern f32 D_800CB304;
 
 extern void controlReadJoypad(void *, s8);
 extern void controlFSUvels(void *, void *);
@@ -181,22 +181,21 @@ extern s32 func_8001357C(f32, f32, void *, s32, s32);
 extern f32 ext_o0_2a470(s32);
 extern f32 ext_o0_2a46c(s32);
 /* Overlay 9 +0x540 runtime SYMBOL proxies: resident mathDiffAngle/func_8002A8C0. */
-extern s32 o9P540MathDiffAngleReloc(s32, s32);
-extern f32 o9P540CosReloc(s32);
 extern s32 mathDiffAngle(s32, s32);
+extern f32 func_8002A8C0(s32);
 extern void func_8005AF14(void *, void *, void *);
-extern void ext_o0_19668(void *, void *, void *, void *);
-extern void ext_o0_1d510(void *, void *, void *, void *, s32);
-extern void ext_o0_2d98(void *);
+extern void lightObject(void *, void *, void *, void *);
+extern void func_8001D960(void *, void *, void *, void *, s32);
+extern void amSndStopXYZ(void *);
 /* Mickey resident call boundaries and the spatial-audio ABI are authenticated. */
 extern void amSndPlayXYZ(u16, f32, f32, f32, u8, void **);
-extern void ext_o0_3e99c(void *, s32);
+extern void partUpdateTriggers(void *, s32);
 extern s32 mathRnd(s32, s32);
 extern void amSndSetXYZ(void *, f32, f32, f32);
 extern void amSndSetPitchXYZ(void *, u8);
-extern void ext_o0_7cd8(void *, f32, f32, f32);
+extern void func_80008128(void *, f32, f32, f32);
 extern void func_8001DD70(O9IntegrateOutput *, O9IntegrateControl *, f32);
-extern s32 ext_o0_1353c(f32, f32, s32, O9Hit ***);
+extern s32 func_8001398C(f32, f32, s32, O9Hit ***);
 extern void camSetFOV(f32, s32);
 extern s32 camGetMode(void);
 

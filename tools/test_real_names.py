@@ -121,6 +121,19 @@ class RewriteMkTests(unittest.TestCase):
         self.assertIn("o002/b.c.o: POSTPROCESS = \\\n\t$(OBJCOPY) --redefine-sym P=PReloc $@", out)
 
 
+class SplitRenameTests(unittest.TestCase):
+    def test_wrapped_rename_is_joined_respelled_and_collisions_dropped(self):
+        mk = ("$(BUILD_DIR)/$(SRC_DIR)/overlays/o008/a.c.o: POSTPROCESS = \\\n"
+              "\t$(OBJCOPY) --redefine-sym \\\n\t\tP=func_x $@ && \\\n"
+              "\t$(OBJCOPY) --redefine-sym \\\n\t\tQ=func_x $@ && \\\n"
+              "\t$(OBJCOPY) --redefine-sym \\\n\t\tKEEP=func_y $@ && \\\n"
+              "\t$(HOST_PYTHON) trim $@\n")
+        out = rn.rewrite_mk(mk, 8, {"P": "realP", "Q": "realP"})
+        self.assertIn("\t$(OBJCOPY) --redefine-sym realP=func_x $@ && \\\n", out)
+        self.assertNotIn("Q=", out)
+        self.assertIn("--redefine-sym \\\n\t\tKEEP=func_y", out)
+
+
 class PlanModuleTests(unittest.TestCase):
     def test_shared_and_normalization_refusals_and_exclusive_headers(self):
         with tempfile.TemporaryDirectory() as td:
@@ -133,7 +146,7 @@ class PlanModuleTests(unittest.TestCase):
             (root / "src/overlays/o001/a.c").write_text(
                 '#include "overlays/overlay_001.h"\n#include "common.h"\n'
                 "s32 f(void) { return Own + Shared + Spec + Fine; }\n")
-            (root / "src/overlays/o009/b.c").write_text('#include "common.h"\n')
+            (root / "src/overlays/o009/b.c").write_text('#include "common.h"\nextern s32 Fine;\n')
             files = rn.tree_files(root)
             texts = {f: f.read_text() for f in files}
             inc = rn.includers(root, files, texts)

@@ -291,6 +291,31 @@ def _rule_blocks(lines):
         i = j + 1
 
 
+SPLIT_RENAME_RE = re.compile(r"--redefine-sym \\\n\s*([A-Za-z_]\w*)=")
+
+
+def join_split_renames(text, overlay, mapping):
+    """Join `--redefine-sym \\` + `<old>=<new>` onto one line for a renamed old.
+
+    Some recipes wrap each rename after the option; respelling (or dropping)
+    the entry needs the option and its argument on one line.
+    """
+    prefix = "$(BUILD_DIR)/$(SRC_DIR)/overlays/o%03d/" % overlay
+    lines = text.splitlines(keepends=True)
+    for a, b, target in list(_rule_blocks(lines)):
+        if not target.startswith(prefix):
+            continue
+        rule_map = mapping(target.replace("$(SRC_DIR)", "src")) if callable(mapping) else mapping
+        for k in range(a, b - 1):
+            if lines[k] is None or not lines[k].rstrip("\n").endswith("--redefine-sym \\"):
+                continue
+            m = re.match(r"\s*([A-Za-z_]\w*)=", lines[k + 1] or "")
+            if m and m.group(1) in rule_map:
+                lines[k] = lines[k].rstrip("\n")[:-1] + lines[k + 1].lstrip()
+                lines[k + 1] = None
+    return "".join(l for l in lines if l is not None)
+
+
 def rewrite_mk(text, overlay, mapping):
     """Respell `--redefine-sym <old>=` in module `overlay`'s POSTPROCESS rules.
 
@@ -300,6 +325,7 @@ def rewrite_mk(text, overlay, mapping):
     second command's rename of an already-renamed name is inert.
     """
     prefix = "$(BUILD_DIR)/$(SRC_DIR)/overlays/o%03d/" % overlay
+    text = join_split_renames(text, overlay, mapping)
     lines = text.splitlines(keepends=True)
     drop = set()
     for a, b, target in list(_rule_blocks(lines)):
@@ -380,6 +406,7 @@ def plan_module(root, overlay, placeholders, files, texts, inc, normalization_te
                 mk_texts=()):
     """({placeholder: real}, [(placeholder, reason)]) for one module."""
     own = module_files(root, overlay, files, texts, inc)
+    visible = sorted(h for h, users in inc.items() if h not in own and users & own)
     mapping, refusals = {}, []
     for p in placeholders:
         if p.overlay != overlay:
@@ -388,7 +415,10 @@ def plan_module(root, overlay, placeholders, files, texts, inc, normalization_te
             refusals.append((p.name, p.cls))
             continue
         word = re.compile(r"\b%s\b" % re.escape(p.name))
-        outside = [f for f in files if f not in own and word.search(texts[f])]
+        # Only a header this module's sources include can carry a declaration
+        # the per-module rename would leave behind; another module's own
+        # spelling of the same placeholder is that module's business.
+        outside = [f for f in visible if word.search(texts[f])]
         if outside:
             refusals.append((p.name, "shared (%s)" % outside[0].relative_to(root).as_posix()))
             continue
@@ -397,7 +427,8 @@ def plan_module(root, overlay, placeholders, files, texts, inc, normalization_te
             continue
         # A recipe that names the placeholder other than as a rename's old
         # name (a relocation rebind, an added symbol) would stop matching.
-        if any(len(word.findall(t)) > len(re.findall(r"--redefine-sym\s+%s=" % re.escape(p.name), t))
+        if any(len(word.findall(t)) > len(re.findall(r"--redefine-sym\s+(?:\\\n\s*)?%s="
+                                                      % re.escape(p.name), t))
                for t in mk_texts):
             refusals.append((p.name, "normalization (recipe)"))
             continue

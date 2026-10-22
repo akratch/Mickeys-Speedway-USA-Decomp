@@ -45,7 +45,7 @@ typedef struct Overlay86Transform {
 
 extern Overlay86Vec3f gOverlay86Vectors[10];
 extern void overlay86ProcessCurrent(Overlay86Object *object);
-extern void overlay86TransformVectorReloc(s32 mode,
+extern void pointListRPY(s32 mode,
                                           Overlay86Transform *transform,
                                           Overlay86Vec3f *input,
                                           Overlay86Vec3f *output);
@@ -81,7 +81,7 @@ void overlay86BuildTransform(Overlay86Object *object,
     vector.x = gOverlay86Vectors[index].x * transform->scale;
     vector.y = gOverlay86Vectors[index].y * transform->scale;
     vector.z = gOverlay86Vectors[index].z * transform->scale;
-    overlay86TransformVectorReloc(1, transform, &vector, &vector);
+    pointListRPY(1, transform, &vector, &vector);
     transform->position.x = target.x - vector.x;
     transform->position.y = target.y - vector.y;
     transform->position.z = target.z - vector.z;

@@ -82,7 +82,7 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
     M2C_FIELD(object, s32 *, 0x80) = 0;
     savedEntry = *M2C_FIELD(object, void ***, 0x68);
     controlReadJoypad(state, M2C_FIELD(state, s8 *, 0));
-    G_rt_458c4 = 0.1f;
+    D_800CB304 = 0.1f;
 
     if (M2C_FIELD(state, f32 *, 4) < -30.0f) {
         M2C_FIELD(state, f32 *, 4) = -30.0f;
@@ -170,21 +170,21 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
         M2C_FIELD(object, f32 *, 0x10) +=
             params->unk2C * ext_o0_2a470(params->angle2A);
         func_8005AF14(savedEntry, entryData, object);
-        ext_o0_19668(object, savedEntry, M2C_FIELD(object, void **, 0x50),
+        lightObject(object, savedEntry, M2C_FIELD(object, void **, 0x50),
                       ((O9Entry *)savedEntry)->items[((O9Entry *)savedEntry)->index]);
         M2C_FIELD(savedEntry, s16 *, 8) = 0;
         M2C_FIELD(object, f32 *, 0x10) = savedY;
     }
 
     M2C_FIELD(state, s8 *, 0x186) = 0;
-    ext_o0_1d510(object, state, NULL, NULL, steps);
+    func_8001D960(object, state, NULL, NULL, steps);
     if (M2C_FIELD(state, u8 *, 0x349) != 0) {
         if (M2C_FIELD(state, u8 *, 0x16C) == 1) {
             handle = M2C_FIELD(state, void **, 0xB8);
             M2C_FIELD(state, u8 *, 0x16C) = 0;
             M2C_FIELD(state, s8 *, 0x16E) = 8;
             if (handle != NULL) {
-                ext_o0_2d98(handle);
+                amSndStopXYZ(handle);
             }
             amSndPlayXYZ(6, M2C_FIELD(object, f32 *, 0xC),
                         M2C_FIELD(object, f32 *, 0x10),
@@ -199,7 +199,7 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
     } else {
         M2C_FIELD(state, s8 *, 0x16E) = 0;
     }
-    ext_o0_3e99c(object, steps);
+    partUpdateTriggers(object, steps);
 }
 
 /* PROVENANCE: Mickey-derived from the assigned overlay assembly range; no donor body was imported.
@@ -216,13 +216,13 @@ void func_overlay_009_F0000540_1866BB8(O9Angle *angle, void *unused,
     s32 delta;
 
     while (steps--) {
-        delta = o9P540MathDiffAngleReloc(motion->angle, -angle->angle);
+        delta = mathDiffAngle(motion->angle, -angle->angle);
         if ((delta >= -0x3F) && (delta < 0x40) &&
             (motion->velocity > -16.0f) && (motion->velocity < 16.0f)) {
             motion->velocity = 0.0f;
             motion->angle = -angle->angle;
         } else {
-            motion->velocity += 20.0f * o9P540CosReloc(delta);
+            motion->velocity += 20.0f * func_8002A8C0(delta);
             motion->angle += (s32) motion->velocity;
         }
         motion->velocity *= 0.995f;
@@ -424,7 +424,7 @@ void func_overlay_009_F0000CE4_186735C(O9IntegrateOutput *out, O9IntegrateContro
         else
             control->scaleZ = 0.0f;
     }
-    ext_o0_7cd8(out, (xVelocity * step) + xExtra,
+    func_80008128(out, (xVelocity * step) + xExtra,
                  (yVelocity * step) + yExtra,
                  (zVelocity * step) + zExtra);
     fraction = 1.0f / step;
@@ -440,7 +440,7 @@ void func_overlay_009_F0000F6C_18675E4(O9Point *point, O9Height *offset,
     O9Hit **hits;
     s32 i;
 
-    count = ext_o0_1353c(point->x, point->z, 0x1000, &hits);
+    count = func_8001398C(point->x, point->z, 0x1000, &hits);
     current = point->y;
     result = current;
     distance = 1000.0f;
@@ -461,7 +461,7 @@ void func_overlay_009_F0000F6C_18675E4(O9Point *point, O9Height *offset,
     }
     result += 40.0f - offset->height;
     if (candidate < result) candidate = result;
-    ext_o0_7cd8(point, 0.0f, candidate - current, 0.0f);
+    func_80008128(point, 0.0f, candidate - current, 0.0f);
 }
 
 void overlay9Ignore(volatile s32 unused0, volatile s32 unused1, volatile s32 unused2) {

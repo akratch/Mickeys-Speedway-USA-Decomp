@@ -126,16 +126,16 @@ void overlay28UpdateWork(Overlay28Owner *owner, s32 updateRate) {
         owner->angle = related->angle;
         overlay28UpdateVertices((Overlay28VertexState *)work);
         if (work->handle == 0) {
-            ext_o0_2b90(0x1C2, owner->x, owner->y, owner->z, 1,
+            amSndPlayXYZ(0x1C2, owner->x, owner->y, owner->z, 1,
                         &work->handle);
         } else {
             s16 alpha;
-            ext_o0_2d70(work->handle, owner->x, owner->y, owner->z);
+            amSndSetXYZ(work->handle, owner->x, owner->y, owner->z);
             alpha = work->intensity >> 1;
             if (alpha >= 0x80) {
                 alpha = 0x7F;
             }
-            ext_o0_2c4c(work->handle, alpha & 0xFF);
+            amSndSetVolXYZ(work->handle, alpha & 0xFF);
         }
     }
     if ((owner->suppressRelease == 0) &&

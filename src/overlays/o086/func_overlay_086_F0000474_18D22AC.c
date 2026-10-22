@@ -10,12 +10,12 @@
 M2C_UNK overlay86BuildTransform(void *, void *);    /* extern */
 M2C_UNK overlay86ScaledVectorPosition(void *, void *, f32 *, f32 *, f32 *); /* extern */
 s32 overlay86SelectPosition(void *, void *);        /* extern */
-M2C_UNK ext_o0_2b90(M2C_UNK, f32, f32, f32, s32, void *); /* extern */
-M2C_UNK ext_o0_2c4c(s32, s32);                     /* extern */
+M2C_UNK amSndPlayXYZ(M2C_UNK, f32, f32, f32, s32, void *); /* extern */
+M2C_UNK amSndSetVolXYZ(s32, s32);                     /* extern */
 M2C_UNK amSndSetPitchXYZ(s32, s32);                     /* extern */
-M2C_UNK ext_o0_1bed0(void *, s32, s32, s32, s32, s32, s32); /* extern */
-M2C_UNK ext_o0_2d70(s32, f32, f32, f32);           /* extern */
-M2C_UNK ext_o0_2d98();                             /* extern */
+M2C_UNK controlPlayerReInit(void *, s32, s32, s32, s32, s32, s32); /* extern */
+M2C_UNK amSndSetXYZ(s32, f32, f32, f32);           /* extern */
+M2C_UNK amSndStopXYZ();                             /* extern */
 M2C_UNK func_800291D8(M2C_UNK);                     /* extern */
 s32 ext_o0_2952c(M2C_UNK, M2C_UNK);                /* extern */
 M2C_UNK mathOneFloatPY(void *, void *);              /* extern */
@@ -39,7 +39,7 @@ M2C_UNK overlay7CommitSelection(M2C_UNK);                       /* extern */
  * byte-identical alternative.  Both accesses are written as the expression
  * itself rather than through the declared `result` carrier (L145), which
  * keeps `result` a head-only web on a0 by argument affinity.
- * Also load-bearing: the one-argument `ext_o0_2d98` calls (the ROM cannot
+ * Also load-bearing: the one-argument `amSndStopXYZ` calls (the ROM cannot
  * distinguish them from two-argument calls whose a1 already holds the
  * pointer, and the arity frees a1 for the command pointer), the split advance
  * `*cursor++ = 0xC; cursor += 5;`, the payload stores in memory order, and the
@@ -82,14 +82,14 @@ void func_overlay_086_F0000474_18D22AC(void *object, s32 steps) {
                     }
                     result = M2C_FIELD(state, s32 *, 0x40);
                     if (result == 0) {
-                        ext_o0_2b90(0x1BE, M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14), 1, (u8 *)state + 0x40);
+                        amSndPlayXYZ(0x1BE, M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14), 1, (u8 *)state + 0x40);
                     } else if (result != 0) {
-                        ext_o0_2d70(result, M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
+                        amSndSetXYZ(result, M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
                     }
                 } else {
                     result = M2C_FIELD(state, s32 *, 0x40);
                     if (result != 0) {
-                        ext_o0_2d98(result);
+                        amSndStopXYZ(result);
                     }
                 }
                 shake = (s32) (ext_o0_2a470(M2C_FIELD(state, s16 *, 0x26)) * 1024.0f);
@@ -103,7 +103,7 @@ void func_overlay_086_F0000474_18D22AC(void *object, s32 steps) {
             } else {
                 result = M2C_FIELD(state, s32 *, 0x40);
                 if (result != 0) {
-                    ext_o0_2d98(result);
+                    amSndStopXYZ(result);
                 }
             }
             *cursor = 0x2000;
@@ -161,7 +161,7 @@ loop_26:
                         M2C_FIELD(object, f32 *, 0x10) = (f32) (M2C_FIELD(state, f32 *, 8) + 400.0f);
                         M2C_FIELD(object, f32 *, 0x14) = (f32) M2C_FIELD(state, f32 *, 0xC);
                         overlay86BuildTransform(object, target);
-                        ext_o0_1bed0(target, M2C_FIELD(target, s32 *, 0xC), M2C_FIELD(target, s32 *, 0x10), M2C_FIELD(target, s32 *, 0x14), (s32) M2C_FIELD(target, s16 *, 0), (s32) M2C_FIELD(target, s16 *, 2), (s32) M2C_FIELD(target, s16 *, 4));
+                        controlPlayerReInit(target, M2C_FIELD(target, s32 *, 0xC), M2C_FIELD(target, s32 *, 0x10), M2C_FIELD(target, s32 *, 0x14), (s32) M2C_FIELD(target, s16 *, 0), (s32) M2C_FIELD(target, s16 *, 2), (s32) M2C_FIELD(target, s16 *, 4));
                         M2C_FIELD(racer, s8 *, 0x191) = 1;
                         M2C_FIELD(racer, u8 *, 0x170) = 0U;
                         M2C_FIELD(racer, u16 *, 0x1A8) = (u16) (M2C_FIELD(racer, u16 *, 0x1A8) & 0xFFF7);
@@ -198,7 +198,7 @@ loop_37:
                             M2C_FIELD(state, s16 *, 2) = 0x1E;
                             M2C_FIELD(state, u8 *, 0) = 3U;
                         } else {
-                            ext_o0_2b90(0x1BF, M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14), 4, NULL);
+                            amSndPlayXYZ(0x1BF, M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14), 4, NULL);
                             M2C_FIELD(racer, s8 *, 0x191) = 0;
                             M2C_FIELD(racer, s8 *, 0x16C) = 1;
                             ext_o0_5a914(target, 0xC, -1, 0.0f);
@@ -273,10 +273,10 @@ loop_52:
         if (M2C_FIELD(state, u8 *, 0) != 0) {
             steps = M2C_FIELD(state, s32 *, 0x18);
             if (steps == 0) {
-                ext_o0_2b90(0x16, M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14), 1, (u8 *)state + 0x18);
+                amSndPlayXYZ(0x16, M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14), 1, (u8 *)state + 0x18);
                 steps = M2C_FIELD(state, s32 *, 0x18);
                 if (steps != 0) {
-                    ext_o0_2c4c(steps, 0x7F);
+                    amSndSetVolXYZ(steps, 0x7F);
                 }
             }
             steps = M2C_FIELD(state, s32 *, 0x18);
@@ -290,10 +290,10 @@ loop_52:
                     scale = 150.0f;
                 }
                 scale += (f32) ext_o0_2952c(-5, 5);
-                ext_o0_2d70(M2C_FIELD(state, s32 *, 0x18), M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
+                amSndSetXYZ(M2C_FIELD(state, s32 *, 0x18), M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
                 amSndSetPitchXYZ(M2C_FIELD(state, s32 *, 0x18), (u32) scale & 0xFF);
                 if (M2C_FIELD(state, u8 *, 0) == 4) {
-                    ext_o0_2c4c(M2C_FIELD(state, s32 *, 0x18), ((s32) (M2C_FIELD(state, s16 *, 2) * 0x7F) / 180) & 0xFF);
+                    amSndSetVolXYZ(M2C_FIELD(state, s32 *, 0x18), ((s32) (M2C_FIELD(state, s16 *, 2) * 0x7F) / 180) & 0xFF);
                 }
             }
             shake = (s32) (M2C_FIELD(state, f32 *, 0x10) * 256.0f);
@@ -309,7 +309,7 @@ loop_52:
         }
         steps = M2C_FIELD(state, s32 *, 0x18);
         if (steps != 0) {
-            ext_o0_2d98(steps);
+            amSndStopXYZ(steps);
         }
     }
 }

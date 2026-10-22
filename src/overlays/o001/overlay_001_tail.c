@@ -509,13 +509,13 @@ typedef struct State {
 } State;
 
 extern s32 G_o1_83e4;
-extern void ext_o7_ccc(Transform *, s32);
+extern void overlay7DispatchSelection(Transform *, s32);
 /* Runtime table-2 record 548 at module +0x4018 makes this the sole inbound to
  * Overlay 1 ORT 1485, +0x378 (overlay1FindType5ByKey). The local State-pointer
  * argument and Spawned-pointer result are an inconsistent caller-side typed
  * view; preserve them until a coordinated ABI reconstruction retains codegen. */
 extern Spawned *overlay1FindType5ByKey(State *);
-extern void ext_o0_1bed0(Transform *, f32, f32, f32, s16, s16, s16);
+extern void controlPlayerReInit(Transform *, f32, f32, f32, s16, s16, s16);
 extern void func_8001CB0C(Transform *, State *);
 extern void ext_o0_5a914(Transform *, s32, s32, f32);
 extern Spawned *overlay1FindPreviousUsable(s16, Spawned **);
@@ -569,7 +569,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             return;
         }
         if (phase == 1) {
-            ext_o7_ccc(obj, 0x13);
+            overlay7DispatchSelection(obj, 0x13);
             state->spawned = overlay1FindType5ByKey(state);
             state->phase = 2;
             return;
@@ -592,7 +592,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             obj->rotY = spawned->angle;
             obj->rotX = 0;
             obj->rotZ = 0;
-            ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
+            controlPlayerReInit(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
             func_8001CB0C(obj, state);
             state->flags &= ~8;
             obj->header->flags &= ~1;
@@ -626,7 +626,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             return;
         }
         if (phase == 1) {
-            ext_o7_ccc(obj, 0x13);
+            overlay7DispatchSelection(obj, 0x13);
             state->spawned = overlay1FindPreviousUsable(state->pathId, &sp3C);
             state->pathId = overlay1NextIndex(sp3C);
             state->spawned->at10.flags |= 8;
@@ -654,7 +654,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             obj->rotY = ((O1RouteNode *)spawned)->angle + 0x4000;
             obj->rotX = 0;
             obj->rotZ = 0;
-            ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
+            controlPlayerReInit(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
             func_8001CB0C(obj, state);
             state->flags &= ~8;
             obj->header->flags &= ~1;
@@ -882,7 +882,7 @@ void func_overlay_008_F0003018_1860D70Reloc(void *object, void *state, f32 scale
 void func_8003EDEC(void *object, s32 update);
 extern f32 D_4;
 extern s32 gOverlay1Mode;
-extern f32 G_rt_458c4;
+extern f32 D_800CB304;
 extern s32 D_800C947C;
 extern u8 D_8007BF04;
 extern void *D_1BA4;
@@ -958,7 +958,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
     state = object->state;
     if (func_overlay_001_F00004B4_184C894(object) != 0) {
         tuning = func_overlay_008_F0000008_185DD60Reloc(state);
-        G_rt_458c4 = *tuning;
+        D_800CB304 = *tuning;
         if (gOverlay1Mode == 1) {
             if ((D_800C947C == 0) && (state->joypadDisabled == 0) && (state->spinTimer == 0) && !(state->flags1A8 & 8)) {
                 if (state->previousPathIndex != state->pathIndex) {
@@ -1201,7 +1201,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
                 applySlope = 0;
             }
             if ((applySlope != 0) && (state->boostMode == 0)) {
-                state->forwardVelocity = (f32) (state->forwardVelocity + (G_rt_458c4 * state->slope));
+                state->forwardVelocity = (f32) (state->forwardVelocity + (D_800CB304 * state->slope));
                 if (tuning[7] < state->forwardVelocity) {
                     state->forwardVelocity = tuning[7];
                 }
@@ -1371,11 +1371,11 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
         velocityX += state->sideVelocity * func_8002A8BC(heading);
         velocityZ -= state->sideVelocity * func_8002A8C0(heading);
         deltaX = (velocityX * D_4) + impulseX;
-        deltaY = ((object->velocityY * D_4) - (0.5f * G_rt_458c4 * D_4 * D_4)) + impulseY;
+        deltaY = ((object->velocityY * D_4) - (0.5f * D_800CB304 * D_4 * D_4)) + impulseY;
         deltaZ = (velocityZ * D_4) + impulseZ;
         inverseUpdate = 1.0f / D_4;
         object->velocityX = (f32) (deltaX * inverseUpdate);
-        object->velocityY = (f32) (object->velocityY - (G_rt_458c4 * D_4));
+        object->velocityY = (f32) (object->velocityY - (D_800CB304 * D_4));
         object->velocityZ = (f32) (deltaZ * inverseUpdate);
         object->x += deltaX;
         object->y = (f32) (object->y + deltaY);

@@ -27,11 +27,11 @@ extern s32 gOverlay11OptionAction;
 extern s32 gOverlay11OptionDone;
 
 /* Resident objects, reached through runtime relocation records. */
-extern s8 gOverlay11StickXReloc[];
-extern s32 gOverlay11GameStateReloc;
+extern s8 D_800D3194[];
+extern s32 D_8007C1A0;
 extern u8 gOverlay11GameStateFlagReloc;
-extern u8 gOverlay11ConfigAReloc;
-extern u8 gOverlay11ConfigBReloc;
+extern u8 D_8007BEF8;
+extern u8 D_8007BEFC;
 
 extern O11StatusSlot *func_80028F54(void);
 extern void func_overlay_011_F0001058_18698A0(s32 arg0);
@@ -39,9 +39,9 @@ extern void func_overlay_011_F0001130_1869978(s32 arg0);
 extern void func_overlay_011_F0002A74_186B2BC(void);
 /* A same-module callee whose call site is a SYMBOL record, and the two
  * cross-overlay callees: all three are placeholder declarations. */
-extern void overlay11ResetMenuReloc(void);
-extern void overlay11SetHandleValueReloc(void *handle, s32 value);
-extern void overlay11StopOverlay66Reloc(void *arg0);
+extern void overlay11ReleaseCurrentGroup(void);
+extern void overlay45SetField22(void *handle, s32 value);
+extern void overlay66Select(void *arg0);
 extern void amSndPlay(s32 soundId, void *handle);
 extern u32 joyGetPressed(s32 controller);
 extern O11Object *func_80005820(s32 controller);
@@ -72,15 +72,15 @@ void func_overlay_011_F0001E4C_186A694(s32 updateRate) {
     O11StatusSlot *status;
 
     status = func_80028F54();
-    direction = gOverlay11StickXReloc[gOverlay11PadIndex];
+    direction = D_800D3194[gOverlay11PadIndex];
     if (direction < -32) {
         if (gOverlay11OptionIndex < 5) {
             gOverlay11OptionIndex++;
             amSndPlay(0x32C, 0);
-            direction = gOverlay11StickXReloc[gOverlay11PadIndex];
+            direction = D_800D3194[gOverlay11PadIndex];
         } else {
             amSndPlay(0x32D, 0);
-            direction = gOverlay11StickXReloc[gOverlay11PadIndex];
+            direction = D_800D3194[gOverlay11PadIndex];
         }
     }
     if (direction >= 33) {
@@ -94,17 +94,17 @@ void func_overlay_011_F0001E4C_186A694(s32 updateRate) {
 
     for (index = 1; index < 6; index++) {
         value = (index == gOverlay11OptionIndex) ? gOverlay11OptionHighlight : 0;
-        overlay11SetHandleValueReloc(gOverlay11OptionHandles[index], value);
+        overlay45SetField22(gOverlay11OptionHandles[index], value);
     }
 
     if ((joyGetPressed(gOverlay11PadIndex) & 0x8000) || (gOverlay11OptionAction != 0)) {
         switch (gOverlay11OptionIndex) {
         case 1:
-            overlay11StopOverlay66Reloc(0);
+            overlay66Select(0);
             func_800290AC(0);
             func_800291D8(0x1E);
             amTuneSetFadeScaled(0.5f, 0x7F);
-            overlay11ResetMenuReloc();
+            overlay11ReleaseCurrentGroup();
             gOverlay11OptionDone = 1;
             break;
         case 2:
@@ -117,12 +117,12 @@ void func_overlay_011_F0001E4C_186A694(s32 updateRate) {
                 return;
             }
             if (gOverlay11OptionAction == 1) {
-                if (((gOverlay11GameStateReloc == 2) || (gOverlay11GameStateReloc == 3)) && (gOverlay11GameStateFlagReloc != 0)) {
-                    gOverlay11ConfigBReloc = 4 - gOverlay11GameStateReloc;
-                    gOverlay11ConfigAReloc = 4;
+                if (((D_8007C1A0 == 2) || (D_8007C1A0 == 3)) && (gOverlay11GameStateFlagReloc != 0)) {
+                    D_8007BEFC = 4 - D_8007C1A0;
+                    D_8007BEF8 = 4;
                 } else {
-                    gOverlay11ConfigBReloc = 0;
-                    gOverlay11ConfigAReloc = gOverlay11GameStateReloc;
+                    D_8007BEFC = 0;
+                    D_8007BEF8 = D_8007C1A0;
                 }
                 sub = func_80005820(gOverlay11PadIndex)->sub64;
                 gOverlay11OptionDone = 1;

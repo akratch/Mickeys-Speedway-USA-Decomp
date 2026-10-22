@@ -18,11 +18,11 @@ typedef struct Overlay101FrameSchedule {
     s32 duration;
 } Overlay101FrameSchedule;
 
-extern Overlay101FrameSlot gOverlay101Slots[];
-extern Overlay101FrameSlot *overlay101FindSlotReloc(Overlay101FrameSlot *slot,
+extern Overlay101FrameSlot D_0[];
+extern Overlay101FrameSlot *overlay101FindEntry(Overlay101FrameSlot *slot,
                                                      s32 mode, s32 key);
-extern Overlay101FrameSchedule *overlay101AcquireFrameReloc(void);
-extern void overlay101SubmitFrameReloc(Overlay101FrameSchedule *entry,
+extern Overlay101FrameSchedule *overlay101AllocateEntry(void);
+extern void overlay101UpdateFrames(Overlay101FrameSchedule *entry,
                                         s32 value);
 
 void overlay101ScheduleFrames(s32 index, s32 key, f32 fraction, f32 rate,
@@ -32,14 +32,14 @@ void overlay101ScheduleFrames(s32 index, s32 key, f32 fraction, f32 rate,
     Overlay101FrameSchedule *entry;
     s32 duration;
 
-    slot = overlay101FindSlotReloc(&gOverlay101Slots[index], 3, key);
+    slot = overlay101FindEntry(&D_0[index], 3, key);
     if (slot != NULL) {
         if (fraction >= 0.0f && fraction <= 1.0f) {
             slot->frame = (s32)(slot->frameCount * fraction);
         }
         duration = seconds * 60.0f;
         if (duration > 0) {
-            entry = overlay101AcquireFrameReloc();
+            entry = overlay101AllocateEntry();
             if (entry != NULL) {
                 entry->output = slot;
                 entry->owner = 15;
@@ -47,7 +47,7 @@ void overlay101ScheduleFrames(s32 index, s32 key, f32 fraction, f32 rate,
                 entry->elapsed = 0;
                 entry->duration = duration;
                 if (submitValue > 0) {
-                    overlay101SubmitFrameReloc(entry, submitValue);
+                    overlay101UpdateFrames(entry, submitValue);
                 }
             }
         }

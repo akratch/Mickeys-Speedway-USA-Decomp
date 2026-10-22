@@ -47,18 +47,18 @@ typedef struct O57MiddleTextureNode {
 
 /* Tier B: calls and globals separated by overlay 57 runtime relocations.
  * Reserved data/BSS selectors remain separate from overlay-local storage. */
-extern O57MiddleFlags gO57MiddleFlags;
-extern s16 gO57MiddleHorizontal, gO57MiddleVertical;
-extern s32 gO57MiddleButtons, gO57MiddlePlayerCount;
-extern s16 gO57MiddleCourseIds[], gO57MiddleCourseNames[];
-extern char **gO57MiddleText;
-extern void *gO57MiddleDisplayList, *gO57MiddleVertexList;
-extern void *gO57MiddleGraphics[];
+extern O57MiddleFlags D_800D3128;
+extern s16 D_800D31BC, D_800D31BE;
+extern s32 D_800D31B8, D_8007C1A0;
+extern s16 D_8007C0E8[], D_8007C11C[];
+extern char **D_8007C0B8;
+extern void *D_800D3140, *D_800D3144;
+extern void *D_800D31C8[];
 extern O57MiddleChoice gO57MiddleChoices[];
-extern s32 gO57MiddleData31E4, gO57MiddleData31E8, gO57MiddleData31EC;
+extern s32 D_8007BF44, gO57MiddleData31E8, gO57MiddleData31EC;
 extern s32 gO57MiddleData31F0, gO57MiddleData31F4;
-extern u8 gO57MiddleData3198, gO57MiddleData31AC;
-extern s8 gO57MiddleData319C, gO57MiddleData31A4, gO57MiddleData31A8;
+extern u8 D_8007BEF8, D_8007BF0C;
+extern s8 D_8007BEFC, D_8007BF04, D_8007BF08;
 extern u16 gO57MiddleData31B4, gO57MiddleData31B8;
 extern u8 gO57MiddleData3208, gO57MiddleData3214;
 extern void *gO57MiddleItems[];
@@ -84,7 +84,7 @@ typedef struct O57MiddleRenderParameters {
     f32 position;
     f32 scale;
 } O57MiddleRenderParameters;
-extern O57MiddleRenderParameters gO57MiddleRenderParameters;
+extern O57MiddleRenderParameters D_800D3550;
 
 extern void func_80000F94(u16 soundId, void **handle);
 extern void func_80005548(u8 count);
@@ -111,15 +111,15 @@ extern void func_8004B0B8(s32 r, s32 g, s32 b, s32 a, s32 opacity);
 extern void fontPrintXY(void **displayList, s32 x, s32 y, char *text, s32 align);
 extern void func_80050688(u8 path);
 extern void func_80050704(u8 path);
-extern void o57MiddleO45F0000314Reloc(void *descriptor, s32 x, s32 y, s32 flags);
-extern void o57MiddleO56F00000B8Reloc(s32 time, s32 *first, s32 *second, s32 *third);
+extern void overlay45ConfigureLayout(void *descriptor, s32 x, s32 y, s32 flags);
+extern void overlay56SplitTime(s32 time, s32 *first, s32 *second, s32 *third);
 extern void func_overlay_057_F0001020_18A4C18(s32 updateRate);
 extern void overlay57SetNodeValue(s32 id, s32 argument, f32 value);
-extern s32 o57MiddleO68F000146CReloc(s32 course);
-extern s32 o57MiddleO84F0000C74Reloc(void);
-extern void o57MiddleO84F0001060Reloc(s32 state);
-extern void o57MiddleO84F0001350Reloc(void);
-extern void o57MiddleO84F0001398Reloc(void);
+extern s32 overlay68CheckKind(s32 course);
+extern s32 overlay84GetActive(void);
+extern void overlay84ActivateCurrent(s32 state);
+extern void overlay84ClearMode(void);
+extern void overlay84Mark(void);
 
 /* Overlay 57 text +0x4E18..+0x60F8. Matched 2026-10-01 (lane c-o057big) by
  * discarding inherited carriers rather than by allocator work; 86 -> 0 masked:
@@ -184,12 +184,12 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
     s32 stack78;
     s8 rank;
 
-    if (o57MiddleO84F0000C74Reloc() == 0) {
+    if (overlay84GetActive() == 0) {
         if (gO57MiddleMode != 7) {
             gO57MiddleMode = 2;
         }
 
-        if (gO57MiddleFlags.allUnlocked) {
+        if (D_800D3128.allUnlocked) {
             limit = 0x14;
             state = 3;
         } else if (gO57MiddleUnlocked19C != 0) {
@@ -205,13 +205,13 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
 
         if (gO57MiddleState194 == 0) {
             page = gO57MiddleSelection / 6;
-            if ((gO57MiddleHorizontal < -16) && (gO57MiddleSelection > 0) && (gO57MiddleTransition == 0)) {
+            if ((D_800D31BC < -16) && (gO57MiddleSelection > 0) && (gO57MiddleTransition == 0)) {
                 gO57MiddleMoving = 1;
-                o57MiddleO45F0000314Reloc(
+                overlay45ConfigureLayout(
                     gO57MiddleItems[gO57MiddleSelection], 0xA0, 0x104, 0x104);
                 gO57MiddlePreviousSelection = gO57MiddleSelection;
                 gO57MiddleSelection -= 1;
-                o57MiddleO45F0000314Reloc(
+                overlay45ConfigureLayout(
                     gO57MiddleItems[gO57MiddleSelection], -0xA0, 0xBE, 4);
                 gO57MiddlePreviousAlpha = gO57MiddleAlpha;
                 gO57MiddleAlpha = 0xFF;
@@ -221,14 +221,14 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     overlay57SetNodeValue(
                         0x2F, (gO57MiddleSelection / 6) + 5, 0.012f);
                 }
-            } else if ((gO57MiddleHorizontal >= 17) && (gO57MiddleSelection < limit) &&
+            } else if ((D_800D31BC >= 17) && (gO57MiddleSelection < limit) &&
                        (gO57MiddleTransition == 0)) {
                 gO57MiddleMoving = 1;
-                o57MiddleO45F0000314Reloc(
+                overlay45ConfigureLayout(
                     gO57MiddleItems[gO57MiddleSelection], 0xA0, 0x104, 0x104);
                 gO57MiddlePreviousSelection = gO57MiddleSelection;
                 gO57MiddleSelection += 1;
-                o57MiddleO45F0000314Reloc(
+                overlay45ConfigureLayout(
                     gO57MiddleItems[gO57MiddleSelection], 0x1E0, 0xBE, 4);
                 gO57MiddlePreviousAlpha = gO57MiddleAlpha;
                 gO57MiddleAlpha = 0xFF;
@@ -238,15 +238,15 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     overlay57SetNodeValue(
                         0x2F, gO57MiddleSelection / 6, 0.012f);
                 }
-            } else if ((gO57MiddleVertical < -16) && (gO57MiddleSelection < (limit - 2)) &&
+            } else if ((D_800D31BE < -16) && (gO57MiddleSelection < (limit - 2)) &&
                        (gO57MiddleTransition == 0)) {
                 gO57MiddleMoving = 1;
-                o57MiddleO45F0000314Reloc(
+                overlay45ConfigureLayout(
                     gO57MiddleItems[gO57MiddleSelection], 0xA0, 0x104, 0x104);
                 gO57MiddlePreviousSelection = gO57MiddleSelection;
                 previousGroup = gO57MiddleSelection / 6;
                 gO57MiddleSelection += 3;
-                o57MiddleO45F0000314Reloc(
+                overlay45ConfigureLayout(
                     gO57MiddleItems[gO57MiddleSelection], 0xA0, 0x104, 4);
                 gO57MiddlePreviousAlpha = gO57MiddleAlpha;
                 gO57MiddleAlpha = 0xFF;
@@ -257,15 +257,15 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     overlay57SetNodeValue(
                         0x2F, currentGroup, 0.012f);
                 }
-            } else if ((gO57MiddleVertical >= 17) && (gO57MiddleSelection >= 3) &&
+            } else if ((D_800D31BE >= 17) && (gO57MiddleSelection >= 3) &&
                     (gO57MiddleTransition == 0)) {
                     gO57MiddleMoving = 1;
-                    o57MiddleO45F0000314Reloc(
+                    overlay45ConfigureLayout(
                         gO57MiddleItems[gO57MiddleSelection], 0xA0, 0x104, 0x104);
                     gO57MiddlePreviousSelection = gO57MiddleSelection;
                     previousGroup = gO57MiddleSelection / 6;
                     gO57MiddleSelection -= 3;
-                    o57MiddleO45F0000314Reloc(
+                    overlay45ConfigureLayout(
                         gO57MiddleItems[gO57MiddleSelection], 0xA0, 0x104, 4);
                     gO57MiddlePreviousAlpha = gO57MiddleAlpha;
                     gO57MiddleAlpha = 0xFF;
@@ -276,14 +276,14 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                         overlay57SetNodeValue(
                             0x2F, currentGroup + 5, 0.012f);
                     }
-                } else if ((gO57MiddleButtons & 0x2020) && (gO57MiddleSelection >= 6) &&
+                } else if ((D_800D31B8 & 0x2020) && (gO57MiddleSelection >= 6) &&
                            (gO57MiddleTransition == 0)) {
                 gO57MiddleMoving = 1;
-                o57MiddleO45F0000314Reloc(
+                overlay45ConfigureLayout(
                     gO57MiddleItems[gO57MiddleSelection], 0xA0, 0x104, 0x104);
                 gO57MiddlePreviousSelection = gO57MiddleSelection;
                 gO57MiddleSelection -= 6;
-                o57MiddleO45F0000314Reloc(
+                overlay45ConfigureLayout(
                     gO57MiddleItems[gO57MiddleSelection], -0xA0, 0xBE, 4);
                 gO57MiddlePreviousAlpha = gO57MiddleAlpha;
                 gO57MiddleAlpha = 0xFF;
@@ -291,14 +291,14 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                 gO57MiddleFadeDelay = 0x5A;
                 overlay57SetNodeValue(
                     0x2F, (gO57MiddleSelection / 6) + 5, 0.012f);
-                } else if ((gO57MiddleButtons & 0x10) && (page < state) &&
+                } else if ((D_800D31B8 & 0x10) && (page < state) &&
                            (gO57MiddleTransition == 0)) {
                 gO57MiddleMoving = 1;
-                o57MiddleO45F0000314Reloc(
+                overlay45ConfigureLayout(
                     gO57MiddleItems[gO57MiddleSelection], 0xA0, 0x104, 0x104);
                 gO57MiddlePreviousSelection = gO57MiddleSelection;
                 gO57MiddleSelection += 6;
-                o57MiddleO45F0000314Reloc(
+                overlay45ConfigureLayout(
                     gO57MiddleItems[gO57MiddleSelection], 0x1E0, 0xBE, 4);
                 gO57MiddlePreviousAlpha = gO57MiddleAlpha;
                 gO57MiddleAlpha = 0xFF;
@@ -311,17 +311,17 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                 }
                 }
 
-            if ((gO57MiddleButtons & 0x4000) && (gO57MiddleTransition == 0) &&
+            if ((D_800D31B8 & 0x4000) && (gO57MiddleTransition == 0) &&
                 (gO57MiddleCanLeave != 0)) {
                 func_80000F94(0xD, 0);
-                o57MiddleO84F0001350Reloc();
+                overlay84ClearMode();
                 func_80050704(gO57MiddlePathId);
                 gO57MiddleNextMode = 7;
                 overlay57SetNodeValue(
                     0x2F, 0, -0.012f);
                 gO57MiddleState188 = 0;
                 gO57MiddleMode = 0;
-                o57MiddleO84F0001060Reloc(1);
+                overlay84ActivateCurrent(1);
 
                 list = gO57MiddlePathList;
                 while (*list != -1) {
@@ -346,7 +346,7 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     gO57MiddlePanelPosition += (-gO57MiddlePanelPosition) >> 2;
                 }
             }
-            if ((gO57MiddleButtons & 0x4000) && (gO57MiddleTransition == 0)) {
+            if ((D_800D31B8 & 0x4000) && (gO57MiddleTransition == 0)) {
                 func_80000F94(0xD, 0);
                 gO57MiddleState194 = 0;
                 gO57MiddleMode = 2;
@@ -356,34 +356,34 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
         func_overlay_057_F0001020_18A4C18(updateRate);
         if ((gO57MiddlePanelPosition >> 4) >= -0x135) {
             records = func_800291C4();
-            renderItems = records[func_80025D60(gO57MiddleCourseIds[gO57MiddleSelection])].items;
+            renderItems = records[func_80025D60(D_8007C0E8[gO57MiddleSelection])].items;
             fontUseFont(0);
             row = 0x51;
             panelX = gO57MiddlePanelPosition >> 4;
-            gO57MiddleRenderParameters.position = (f32) panelX;
-            gO57MiddleRenderParameters.scale = 7.0f;
-            func_80022A50(&gO57MiddleDisplayList, &gO57MiddleVertexList);
+            D_800D3550.position = (f32) panelX;
+            D_800D3550.scale = 7.0f;
+            func_80022A50(&D_800D3140, &D_800D3144);
             frontDrawObj(8);
             func_8004B0B8(
                 gO57MiddleInfo.value08, gO57MiddleInfo.value09, gO57MiddleInfo.value0A,
                 0xFF, 0xFF);
             fontPrintXY(
-                &gO57MiddleDisplayList, panelX + 0xA0, 0x23,
-                gO57MiddleText[gO57MiddleCourseNames[gO57MiddleSelection]], 4);
+                &D_800D3140, panelX + 0xA0, 0x23,
+                D_8007C0B8[D_8007C11C[gO57MiddleSelection]], 4);
             func_8004B0B8(0xFF, 0x80, 0, 0xFF, 0xFF);
             fontPrintXY(
-                &gO57MiddleDisplayList, panelX + 0xA0, 0x37,
-                gO57MiddleText[0xD0 / 4], 4);
+                &D_800D3140, panelX + 0xA0, 0x37,
+                D_8007C0B8[0xD0 / 4], 4);
             func_8004B0B8(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-            if (o57MiddleO68F000146CReloc(
-                    gO57MiddleCourseIds[gO57MiddleSelection]) != 0) {
+            if (overlay68CheckKind(
+                    D_8007C0E8[gO57MiddleSelection]) != 0) {
                     func_8002F618(
-                        &gO57MiddleDisplayList, gO57MiddleBadge, panelX + 0x30,
+                        &D_800D3140, gO57MiddleBadge, panelX + 0x30,
                         0x26, 0xFF, 0xFF, 0xFF, 0xFF);
             }
 
             for (i = 0; i < 4; i++) {
-                o57MiddleO56F00000B8Reloc(
+                overlay56SplitTime(
                     renderItems[i].type, &stack80, &stack7C, &stack78);
                 if (renderItems[i].type == 0) {
                     func_800429A4(renderState, gO57MiddleEmptyFormat);
@@ -402,38 +402,38 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                 }
                 if (i < 3) {
                     fontPrintXY(
-                        &gO57MiddleDisplayList, panelX + 0x2E, row,
+                        &D_800D3140, panelX + 0x2E, row,
                         gO57MiddleLabels[i], 0);
                 }
-                textureNodes[0].texture = gO57MiddleGraphics[valueA];
+                textureNodes[0].texture = D_800D31C8[valueA];
                 textureNodes[0].alternate = NULL;
                 textureNodes[0].x = panelX + 0x56;
                 textureNodes[0].y = (s16)(row - 4);
                 textureNodes[0].packedOffset = 0;
                 textureNodes[1].texture = NULL;
                 func_8002F618(
-                    &gO57MiddleDisplayList, textureNodes, 0, 0,
+                    &D_800D3140, textureNodes, 0, 0,
                     0xFF, 0xFF, 0xFF, 0xFF);
                 for (index = 0; index < 11; index++) {
                     stackB0[0] = renderState[index];
                     stackB0[1] = 0;
                     fontPrintXY(
-                        &gO57MiddleDisplayList, gO57MiddleColumns[index] + panelX, row, stackB0, 0);
+                        &D_800D3140, gO57MiddleColumns[index] + panelX, row, stackB0, 0);
                 }
                 if (i == 2) {
                     row += 0x1B;
                     func_8004B0B8(
                         0xFF, 0x80, 0, 0xFF, 0xFF);
                     fontPrintXY(
-                        &gO57MiddleDisplayList, panelX + 0xA0, row,
-                        gO57MiddleText[0xD4 / 4], 4);
+                        &D_800D3140, panelX + 0xA0, row,
+                        D_8007C0B8[0xD4 / 4], 4);
                     func_8004B0B8(
                         0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
                 }
                 row += 0x1B;
             }
             func_8002FB34(
-                &gO57MiddleDisplayList, gO57MiddleCaption, (f32)(panelX + 0x2D),
+                &D_800D3140, gO57MiddleCaption, (f32)(panelX + 0x2D),
                 184.0f, 1.0f, 1.0f, -2, 3);
         }
 
@@ -446,9 +446,9 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
             }
         }
 
-        if ((gO57MiddleButtons & 0x9000) && (gO57MiddleTransition == 0)) {
+        if ((D_800D31B8 & 0x9000) && (gO57MiddleTransition == 0)) {
             func_80000F94(0xC, 0);
-            if (gO57MiddlePlayerCount >= 2 || gO57MiddleState194 == 1) {
+            if (D_8007C1A0 >= 2 || gO57MiddleState194 == 1) {
                 outputIndex = 10;
                 while (outputIndex--) {
                     activePlayers[outputIndex] = 1;
@@ -465,7 +465,7 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     }
                 }
                 i = 0;
-                for (outputIndex = gO57MiddlePlayerCount; outputIndex < 6; outputIndex++) {
+                for (outputIndex = D_8007C1A0; outputIndex < 6; outputIndex++) {
                     while (activePlayers[i] == 0) {
                         i++;
                     }
@@ -475,32 +475,32 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                 func_80025444(
                     sourceState);
                 func_80028D24(0);
-                func_80028540(gO57MiddlePlayerCount);
-                gO57MiddleData31E4 = 0;
-                if (gO57MiddlePlayerCount == 1) {
+                func_80028540(D_8007C1A0);
+                D_8007BF44 = 0;
+                if (D_8007C1A0 == 1) {
                     gO57MiddleOutput[0].value0 = 1;
-                    if (gO57MiddleFlags.pending) {
-                        gO57MiddleFlags.pending = 0;
+                    if (D_800D3128.pending) {
+                        D_800D3128.pending = 0;
                         func_800291B4();
                         func_8003A680(0x14);
                     }
                 } else {
                     gO57MiddleOutput[0].value0 = 4;
                 }
-                if (((gO57MiddlePlayerCount == 2) || (gO57MiddlePlayerCount == 3)) &&
+                if (((D_8007C1A0 == 2) || (D_8007C1A0 == 3)) &&
                     (gO57MiddleData3214 != 0)) {
-                    gO57MiddleData319C = (s8)(4 - gO57MiddlePlayerCount);
-                    gO57MiddleData3198 = 4;
+                    D_8007BEFC = (s8)(4 - D_8007C1A0);
+                    D_8007BEF8 = 4;
                 } else {
-                    gO57MiddleData319C = 0;
-                    gO57MiddleData3198 = (u8)gO57MiddlePlayerCount;
+                    D_8007BEFC = 0;
+                    D_8007BEF8 = (u8)D_8007C1A0;
                 }
-                gO57MiddleData31AC = (u8)(gO57MiddlePlayerCount >= 2);
-                gO57MiddleData31A4 = 2;
+                D_8007BF0C = (u8)(D_8007C1A0 >= 2);
+                D_8007BF04 = 2;
                 gO57MiddleData31B8 = gO57MiddleData31B4;
-                gO57MiddleData31A8 = 0;
-                if (gO57MiddleData31E4 > 0) {
-                    gO57MiddleData31E8 = gO57MiddleCourseIds[gO57MiddleSelection];
+                D_8007BF08 = 0;
+                if (D_8007BF44 > 0) {
+                    gO57MiddleData31E8 = D_8007C0E8[gO57MiddleSelection];
                     gO57MiddleData31EC = gO57MiddleCharacterIds[gO57MiddleChoices[0].tableIndex];
                     gO57MiddleData31F0 = 5;
                     gO57MiddleData31F4 = 0;
@@ -508,15 +508,15 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     func_80028528(1);
                 } else {
                     func_80028374(
-                        gO57MiddleCourseIds[gO57MiddleSelection],
+                        D_8007C0E8[gO57MiddleSelection],
                         gO57MiddleCharacterIds[gO57MiddleChoices[0].tableIndex],
                         0, 5, 1, 0);
                 }
                 gO57MiddleTransition = 1;
-                o57MiddleO84F0001398Reloc();
-                if ((gO57MiddleData31AC == 0) ||
-                    ((gO57MiddleData31AC != 0) && (gO57MiddleData3208 != 0))) {
-                    func_80005548(gO57MiddleData3198);
+                overlay84Mark();
+                if ((D_8007BF0C == 0) ||
+                    ((D_8007BF0C != 0) && (gO57MiddleData3208 != 0))) {
+                    func_80005548(D_8007BEF8);
                     if (gO57MiddleData3208 != 0) {
                         gO57MiddleData3208 = 0;
                     }

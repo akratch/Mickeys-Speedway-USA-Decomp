@@ -28,10 +28,10 @@ typedef struct Overlay101LinkedColorEntry {
     s32 duration;
 } Overlay101LinkedColorEntry;
 
-extern Overlay101LinkedColorSlot gOverlay101Slots[];
-extern Overlay101LinkedColorSlot *overlay101FindSlotReloc(
+extern Overlay101LinkedColorSlot D_0[];
+extern Overlay101LinkedColorSlot *overlay101FindEntry(
     Overlay101LinkedColorSlot *slot, s32 mode, s32 key);
-extern Overlay101LinkedColorEntry *overlay101AcquireTimedReloc(s32 duration);
+extern Overlay101LinkedColorEntry *overlay101AllocateEntry(s32 duration);
 extern void overlay101SubmitLinkedPairReloc(Overlay101LinkedColorEntry *entry,
                                              s32 value);
 
@@ -43,11 +43,11 @@ void overlay101ScheduleLinkedColor(s32 index, s32 key, s32 red, s32 green,
     Overlay101LinkedColorEntry *entry;
     s32 duration;
 
-    slot = overlay101FindSlotReloc(&gOverlay101Slots[index], 3, key);
+    slot = overlay101FindEntry(&D_0[index], 3, key);
     if (slot != NULL) {
         duration = seconds * 60.0f;
         if (duration > 0) {
-            entry = overlay101AcquireTimedReloc(duration);
+            entry = overlay101AllocateEntry(duration);
             if (entry != NULL) {
                 entry->output = slot;
                 entry->owner = 14;

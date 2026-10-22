@@ -48,7 +48,7 @@ typedef struct O70AngleTable {
 extern O70FloatTable gOverlay70FloatTableReloc;
 extern O70VerticalStepTable gOverlay70VerticalStepReloc;
 extern O70AngleTable gOverlay70AngleReloc;
-extern s32 overlay70RandomRange(s32 lower, s32 upper);
+extern s32 mathRnd(s32 lower, s32 upper);
 
 void func_overlay_070_F0000000_18C91C8(O70Object *object, O70Input *input) {
     O70State *state;
@@ -57,11 +57,11 @@ void func_overlay_070_F0000000_18C91C8(O70Object *object, O70Input *input) {
     state = object->state;
     state->related = input->related;
     state->type = input->type;
-    state->angle = overlay70RandomRange(-0x8000, 0x7FFF);
-    if (overlay70RandomRange(0, 1) == 0) {
-        state->angleStep = overlay70RandomRange(-0x200, -0x180);
+    state->angle = mathRnd(-0x8000, 0x7FFF);
+    if (mathRnd(0, 1) == 0) {
+        state->angleStep = mathRnd(-0x200, -0x180);
     } else {
-        state->angleStep = overlay70RandomRange(0x180, 0x200);
+        state->angleStep = mathRnd(0x180, 0x200);
     }
     state->countdown = 0;
     state->active = 0;

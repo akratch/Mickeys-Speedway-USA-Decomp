@@ -183,11 +183,11 @@ typedef struct Overlay43RenderEntry {
 
 /* Resident callees: diRcpTrace (diRcpTrace), rsp_segment,
  * rcpInitDpNoSize, mtxf_mul and mtxf_to_mtx. */
-extern void overlay43RcpTraceReloc(Gfx *dl, char *file, s32 line);
-extern void overlay43RspSegmentReloc(Gfx **dl, s32 segment, void *base);
-extern void overlay43InitDpReloc(Gfx **dl);
-extern void overlay43MtxMulReloc(MtxF a, MtxF b, MtxF out);
-extern void overlay43MtxToMtxReloc(MtxF src, Mtx *dest);
+extern void diRcpTrace(Gfx *dl, char *file, s32 line);
+extern void rsp_segment(Gfx **dl, s32 segment, void *base);
+extern void rcpInitDpNoSize(Gfx **dl);
+extern void mtxf_mul(MtxF a, MtxF b, MtxF out);
+extern void mtxf_to_mtx(MtxF src, Mtx *dest);
 
 /* Module-relative bases: .rodata (the two "clone.c" strings), .data (the
  * two fixed matrices at +0x38/+0x78 and the viewport at +0xB8) and .bss
@@ -199,7 +199,7 @@ extern char gO43RodataBaseReloc[];
 extern u8 gO43DataBaseReloc[];
 extern u8 gO43BssBaseReloc[];
 extern u8 gO43VertexSourceReloc[];
-extern s32 gO43RenderPendingReloc;
+extern s32 D_8007A3C8;
 extern s8 gO43QueueCountReloc;
 
 #define gO43TraceFile0 (gO43RodataBaseReloc)
@@ -232,16 +232,16 @@ void func_overlay_043_F0000BE4_188ABB4(Overlay43RenderInput *input,
         start = state->displayList;
         mtx = state->matrixHeap;
         dl = start;
-        overlay43RcpTraceReloc(start, gO43TraceFile0, 596);
-        overlay43RspSegmentReloc(&dl, 0, 0);
-        overlay43RspSegmentReloc(&dl, 1, state->framebuffer);
+        diRcpTrace(start, gO43TraceFile0, 596);
+        rsp_segment(&dl, 0, 0);
+        rsp_segment(&dl, 1, state->framebuffer);
         gDPSetCycleType(dl++, G_CYC_FILL);
         gDPSetColorImage(dl++, G_IM_FMT_I, G_IM_SIZ_8b, 64,
                          OS_K0_TO_PHYSICAL(state->framebuffer));
         gDPSetFillColor(dl++, 0);
         gDPSetScissor(dl++, G_SC_NON_INTERLACE, 0, 0, 64, 64);
         gDPFillRectangle(dl++, 0, 0, 63, 63);
-        overlay43InitDpReloc(&dl);
+        rcpInitDpNoSize(&dl);
         gSPClearGeometryMode(dl++, 0x1F3204);
         gSPTexture(dl++, 0, 0, 0, 0, 0);
         gMoveWd(dl++, 0x02, 0, 0);
@@ -252,10 +252,10 @@ void func_overlay_043_F0000BE4_188ABB4(Overlay43RenderInput *input,
             alpha = entries[i]->alpha;
             gDPSetPrimColor(dl++, 0, 0, alpha, alpha, alpha, 255);
             gDPSetEnvColor(dl++, alpha, alpha, alpha, 255);
-            overlay43MtxMulReloc(state->transform, entries[i]->matrix, matA);
-            overlay43MtxMulReloc(matA, gO43CloneMatrixB, matA);
-            overlay43MtxMulReloc(matA, gO43CloneMatrixA, matB);
-            overlay43MtxToMtxReloc(matB, mtx);
+            mtxf_mul(state->transform, entries[i]->matrix, matA);
+            mtxf_mul(matA, gO43CloneMatrixB, matA);
+            mtxf_mul(matA, gO43CloneMatrixA, matB);
+            mtxf_to_mtx(matB, mtx);
             gSPMatrix(dl++, OS_K0_TO_PHYSICAL(mtx), 0);
             {
                 Gfx *_g = (Gfx *)(dl++);
@@ -272,10 +272,10 @@ void func_overlay_043_F0000BE4_188ABB4(Overlay43RenderInput *input,
         gMoveWd(dl++, 0x0A, 0, 0);
         gDPFullSync(dl++);
         gSPEndDisplayList(dl++);
-        overlay43RcpTraceReloc(dl, gO43TraceFile1, 675);
+        diRcpTrace(dl, gO43TraceFile1, 675);
         state->displayListEnd = dl;
         state->pending = 1;
-        gO43RenderPendingReloc = 1;
+        D_8007A3C8 = 1;
         gO43Queue[gO43QueueCount] = state;
         gO43QueueCount++;
     }

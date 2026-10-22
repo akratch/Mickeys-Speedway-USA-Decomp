@@ -42,7 +42,7 @@ typedef struct O22Object {
     u32 flags80;
 } O22Object;
 
-extern u8 D_A7C[];
+extern u8 func_overlay_022_F0000A7C_1878B84[];
 
 extern s32 Arctanf(f32 y, f32 x);
 extern f32 sqrtf(f32 value);
@@ -143,7 +143,7 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
     trackMakePolylist(1, &state->previousPosition, &object->position,
                       &distance, 0, 1);
     collision = func_80010900(&state->previousPosition, &object->position,
-                              distance, object, D_A7C);
+                              distance, object, func_overlay_022_F0000A7C_1878B84);
     if ((func_80008128(object, 0.0f, 0.0f, 0.0f) != 0) ||
         (object->result2E == -1)) {
         object->position.x = state->previousPosition.x;

@@ -19,11 +19,11 @@ typedef struct Overlay20EntryConfig {
 } Overlay20EntryConfig;
 
 extern f32 gOverlay20Scale;
-extern void *overlay20CreateReloc(void *, s32, s32, f32, s32, f32, f32, f32);
+extern void *overlay20ConfigureEntry(void *, s32, s32, f32, s32, f32, f32, f32);
 
 /* Exact at +0xF78; DKR v77/v80 and JFG have no exact donor for this wrapper. */
 void overlay20CreateEntry(Overlay20Owner *owner, Overlay20EntryConfig *config) {
-    owner->entry = overlay20CreateReloc(
+    owner->entry = overlay20ConfigureEntry(
         owner->entry, owner->x, owner->z, (f32)config->heading, config->mode,
         (f32)config->scale * gOverlay20Scale, (f32)config->value0,
         (f32)config->value1);

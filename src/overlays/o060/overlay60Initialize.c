@@ -27,8 +27,8 @@ typedef struct Overlay60Object {
     Overlay60Inner **inner;
 } Overlay60Object;
 
-extern u8 *gOverlay60SourceReloc;
-extern u8 gOverlay60PostSourceReloc[];
+extern u8 *D_8007C0B8;
+extern u8 D_800D31C8[];
 extern u32 gOverlay60Data00[10];
 extern u32 gOverlay60Data28[4];
 extern u32 gOverlay60Data38[2];
@@ -65,15 +65,15 @@ extern u32 gOverlay60Bss1E4;
 extern u32 gOverlay60Bss1EC;
 extern u32 gOverlay60Bss0C;
 
-extern Overlay60Object *overlay60SpawnReloc(Overlay60SpawnDesc *desc, s32 arg1);
-extern void overlay60ConfigureReloc(Overlay60Object *object, s32 arg1, s32 arg2,
+extern Overlay60Object *func_8000590C(Overlay60SpawnDesc *desc, s32 arg1);
+extern void func_8005AD64(Overlay60Object *object, s32 arg1, s32 arg2,
                                     f32 arg3);
-extern void overlay60InitReloc(void *arg0);
-extern s32 overlay60ReadyReloc(void);
-extern void overlay60SelectReloc(u8 index);
-extern Overlay60Object *overlay60FindReloc(u8 index);
+extern void loadFrontEndList(void *arg0);
+extern s32 frontGetScreenMode(void);
+extern void animseqStartPath(u8 index);
+extern Overlay60Object *func_800508B4(u8 index);
 
-#define SOURCE(type, offset) (*(type *)(gOverlay60SourceReloc + (offset)))
+#define SOURCE(type, offset) (*(type *)(D_8007C0B8 + (offset)))
 
 /* Workbench: mixed structure/schedule/register, 17 words, first +0x108.
  * A fidelity-clean allocator trace could not attribute source webs or stack
@@ -157,20 +157,20 @@ void func_overlay_060_F0000000_18B9DD8(void) {
         desc.pad0C = 0;
         desc.alpha = 0x80;
         desc.pad0A = 0;
-        object = overlay60SpawnReloc(&desc, 0);
+        object = func_8000590C(&desc, 0);
         *objects = object;
         inner = *object->inner;
         inner->mode = 2;
-        overlay60ConfigureReloc(*objects, 0, 0, 0.0f);
+        func_8005AD64(*objects, 0, 0, 0.0f);
     }
 
-    overlay60InitReloc(gOverlay60Bss00);
-    gOverlay60Bss20 = *(u32 *)(gOverlay60PostSourceReloc + 0x1E4);
-    gOverlay60Bss40 = *(u32 *)(gOverlay60PostSourceReloc + 0x0C);
-    gOverlay60Bss60 = *(u32 *)(gOverlay60PostSourceReloc + 0x144);
-    gOverlay60Bss80 = *(u32 *)(gOverlay60PostSourceReloc + 0x1EC);
+    loadFrontEndList(gOverlay60Bss00);
+    gOverlay60Bss20 = *(u32 *)(D_800D31C8 + 0x1E4);
+    gOverlay60Bss40 = *(u32 *)(D_800D31C8 + 0x0C);
+    gOverlay60Bss60 = *(u32 *)(D_800D31C8 + 0x144);
+    gOverlay60Bss80 = *(u32 *)(D_800D31C8 + 0x1EC);
 
-    i = overlay60ReadyReloc();
+    i = frontGetScreenMode();
     if (i == 1) {
         gOverlay60Data58 = 4;
         gOverlay60ObjectC8->x = (f32)gOverlay60CoordE8;
@@ -185,8 +185,8 @@ void func_overlay_060_F0000000_18B9DD8(void) {
         gOverlay60Data58 = 0;
     }
 
-    overlay60SelectReloc(((u8 *)&gOverlay60Data58)[3]);
-    object = overlay60FindReloc(((u8 *)&gOverlay60Data58)[3]);
+    animseqStartPath(((u8 *)&gOverlay60Data58)[3]);
+    object = func_800508B4(((u8 *)&gOverlay60Data58)[3]);
     if (object != 0) {
         object->flags |= 2;
     }

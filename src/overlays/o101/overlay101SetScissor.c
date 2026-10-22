@@ -5,7 +5,7 @@ typedef struct Overlay101Gfx {
     u32 w1;
 } Overlay101Gfx;
 
-void overlay101GetDimensionsReloc(s32 *width, s32 *height);
+void viGetCurrentSize(s32 *width, s32 *height);
 
 /* DKR and JFG use the same G_SETSCISSOR macro semantics, but neither pinned
  * object set contains this clipping helper as an exact donor. */
@@ -15,7 +15,7 @@ void overlay101SetScissor(Overlay101Gfx **displayList, register s32 left, s32 to
     s32 height;
 
     if ((right >= left) && (bottom >= top)) {
-        overlay101GetDimensionsReloc(&width, &height);
+        viGetCurrentSize(&width, &height);
         if ((right > 0) && (left < width) &&
             (bottom > 0) && (top < height)) {
             if (left < 0) {

@@ -11,7 +11,7 @@ void overlay4InitializeObjectMotion(Overlay4InitObject *object,
     state->timer = (u8)((f32)config->timer * 6.0f);
     state->trigger = 0;
     state->phase = 0;
-    overlay4RuntimeCallReloc(object, 0, -1, 0.0f);
+    func_8005AD64(object, 0, -1, 0.0f);
     gOverlay4InitStatus = 2;
 }
 

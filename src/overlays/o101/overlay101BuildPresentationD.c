@@ -75,15 +75,15 @@ typedef struct O101PresDInputs {
     u8 *text148;
 } O101PresDInputs;
 
-extern O101PresDRoot gO101PresDRoot;
+extern O101PresDRoot D_0;
 extern s32 gO101PresDOrderCount;
 extern void *gO101PresDOrderSlots[];
 extern s32 gO101PresDNode32Count;
-extern O101PresDNode32 gO101PresDNodes32[];
+extern O101PresDNode32 D_340[];
 extern s32 gO101PresDNode20Count;
 extern O101PresDNode20 gO101PresDNodes20[];
 extern s32 gO101PresDNode24Count;
-extern O101PresDNode24 gO101PresDNodes24[];
+extern O101PresDNode24 D_540[];
 extern O101PresDInputs gO101PresDInputs;
 extern u8 gO101PresDAssetD68;
 extern u8 gO101PresDFinalObject3948;
@@ -94,9 +94,9 @@ extern u8 gO101PresDFinalObject3948;
  * the compact creator the one overlay101TailC6E8 calls with (key, node),
  * and the closing call is overlay101Reset (overlay 101 +0x1BB4) with one
  * argument; the a1-a3 the shipped calls carry are leftovers. */
-extern void *o101PresDCreatorReloc(s32 key, void *source);
-extern void *o101PresDCreateCompactReloc(s32 key, O101PresDNode20 *node);
-extern void o101PresDResetReloc(void *value);
+extern void *texLoadSprite(s32 key, void *source);
+extern void *func_80036DD0(s32 key, O101PresDNode20 *node);
+extern void overlay101Reset(void *value);
 extern s32 overlay101ByteLength(u8 *text);
 
 /* Matched 2026-10-02 (lane x-o101), from 136 masked words (130 on D) at
@@ -111,15 +111,15 @@ extern s32 overlay101ByteLength(u8 *text);
  * were the second root header's data, childType, child and the node-24
  * childType before child. */
 void overlay101BuildPresentationD(void) {
-    gO101PresDRoot.kind = 4; gO101PresDRoot.width2E = 0x140; gO101PresDRoot.height30 = 0xF0; gO101PresDRoot.asset34 = &gO101PresDAssetD68; gO101PresDRoot.color32 = 0xFF; gO101PresDRoot.color33 = 0xFF; gO101PresDRoot.value26 = 0; gO101PresDRoot.value28 = 0; gO101PresDRoot.value2A = 0; gO101PresDRoot.value2C = 0; gO101PresDRoot.chainType = 0; gO101PresDRoot.chain = NULL; gO101PresDOrderSlots[gO101PresDOrderCount] = &gO101PresDRoot.chainType; gO101PresDOrderCount = gO101PresDOrderCount + 1;
+    D_0.kind = 4; D_0.width2E = 0x140; D_0.height30 = 0xF0; D_0.asset34 = &gO101PresDAssetD68; D_0.color32 = 0xFF; D_0.color33 = 0xFF; D_0.value26 = 0; D_0.value28 = 0; D_0.value2A = 0; D_0.value2C = 0; D_0.chainType = 0; D_0.chain = NULL; gO101PresDOrderSlots[gO101PresDOrderCount] = &D_0.chainType; gO101PresDOrderCount = gO101PresDOrderCount + 1;
 
-    gO101PresDNodes32[gO101PresDNode32Count].x = 0xF2; gO101PresDNodes32[gO101PresDNode32Count].y = 0x14E; gO101PresDNodes32[gO101PresDNode32Count].value10 = 0; gO101PresDNodes32[gO101PresDNode32Count].color12 = 0xFF; gO101PresDNodes32[gO101PresDNode32Count].color13 = 0; gO101PresDNodes32[gO101PresDNode32Count].value18 = 0; gO101PresDNodes32[gO101PresDNode32Count].scale = 1.0f; gO101PresDNodes32[gO101PresDNode32Count].value14 = 0.0f; gO101PresDNodes32[gO101PresDNode32Count].handle = o101PresDCreatorReloc(0x91, NULL); gO101PresDNodes32[gO101PresDNode32Count].previousType = gO101PresDRoot.chainType; gO101PresDNodes32[gO101PresDNode32Count].previous = gO101PresDRoot.chain; gO101PresDRoot.chainType = 2; gO101PresDRoot.chain = &gO101PresDNodes32[gO101PresDNode32Count]; gO101PresDNode32Count = gO101PresDNode32Count + 1;
+    D_340[gO101PresDNode32Count].x = 0xF2; D_340[gO101PresDNode32Count].y = 0x14E; D_340[gO101PresDNode32Count].value10 = 0; D_340[gO101PresDNode32Count].color12 = 0xFF; D_340[gO101PresDNode32Count].color13 = 0; D_340[gO101PresDNode32Count].value18 = 0; D_340[gO101PresDNode32Count].scale = 1.0f; D_340[gO101PresDNode32Count].value14 = 0.0f; D_340[gO101PresDNode32Count].handle = texLoadSprite(0x91, NULL); D_340[gO101PresDNode32Count].previousType = D_0.chainType; D_340[gO101PresDNode32Count].previous = D_0.chain; D_0.chainType = 2; D_0.chain = &D_340[gO101PresDNode32Count]; gO101PresDNode32Count = gO101PresDNode32Count + 1;
 
-    gO101PresDRoot.x42 = 0x20; gO101PresDRoot.y46 = 0x50; gO101PresDRoot.value4A = 0xA0; gO101PresDRoot.value4C = 0xAE; gO101PresDRoot.width44 = 0x18; gO101PresDRoot.height48 = 0x18; gO101PresDRoot.mode40 = 0; gO101PresDRoot.color4E = 0xFF; gO101PresDRoot.color4F = 0xFF; gO101PresDRoot.data50 = gO101PresDInputs.data144; gO101PresDRoot.childType = 0; gO101PresDRoot.child = NULL; gO101PresDOrderSlots[gO101PresDOrderCount] = &gO101PresDRoot.childType; gO101PresDOrderCount = gO101PresDOrderCount + 1;
+    D_0.x42 = 0x20; D_0.y46 = 0x50; D_0.value4A = 0xA0; D_0.value4C = 0xAE; D_0.width44 = 0x18; D_0.height48 = 0x18; D_0.mode40 = 0; D_0.color4E = 0xFF; D_0.color4F = 0xFF; D_0.data50 = gO101PresDInputs.data144; D_0.childType = 0; D_0.child = NULL; gO101PresDOrderSlots[gO101PresDOrderCount] = &D_0.childType; gO101PresDOrderCount = gO101PresDOrderCount + 1;
 
-    gO101PresDNodes20[gO101PresDNode20Count].x = 0x10; gO101PresDNodes20[gO101PresDNode20Count].y = 0x16; gO101PresDNodes20[gO101PresDNode20Count].scale = 1.0f; gO101PresDNodes20[gO101PresDNode20Count].handle = o101PresDCreateCompactReloc(0x18, &gO101PresDNodes20[gO101PresDNode20Count]); gO101PresDNodes20[gO101PresDNode20Count].previousType = gO101PresDRoot.childType; gO101PresDNodes20[gO101PresDNode20Count].previous = gO101PresDRoot.child; gO101PresDRoot.childType = 1; gO101PresDRoot.child = &gO101PresDNodes20[gO101PresDNode20Count]; gO101PresDNode20Count = gO101PresDNode20Count + 1;
+    gO101PresDNodes20[gO101PresDNode20Count].x = 0x10; gO101PresDNodes20[gO101PresDNode20Count].y = 0x16; gO101PresDNodes20[gO101PresDNode20Count].scale = 1.0f; gO101PresDNodes20[gO101PresDNode20Count].handle = func_80036DD0(0x18, &gO101PresDNodes20[gO101PresDNode20Count]); gO101PresDNodes20[gO101PresDNode20Count].previousType = D_0.childType; gO101PresDNodes20[gO101PresDNode20Count].previous = D_0.child; D_0.childType = 1; D_0.child = &gO101PresDNodes20[gO101PresDNode20Count]; gO101PresDNode20Count = gO101PresDNode20Count + 1;
 
-    gO101PresDNodes24[gO101PresDNode24Count].x = 0x50; gO101PresDNodes24[gO101PresDNode24Count].y = 0x9C; gO101PresDNodes24[gO101PresDNode24Count].length = overlay101ByteLength(gO101PresDInputs.text148); gO101PresDNodes24[gO101PresDNode24Count].opacity = (s8)(s32)((f32)(u32)gO101PresDNodes24[gO101PresDNode24Count].length * (f32)(s32)1); gO101PresDNodes24[gO101PresDNode24Count].mode = 2; gO101PresDNodes24[gO101PresDNode24Count].color0 = 0xFF; gO101PresDNodes24[gO101PresDNode24Count].color1 = 0xFF; gO101PresDNodes24[gO101PresDNode24Count].color2 = 0; gO101PresDNodes24[gO101PresDNode24Count].color3 = 0xFF; gO101PresDNodes24[gO101PresDNode24Count].kind = 4; gO101PresDNodes24[gO101PresDNode24Count].text = gO101PresDInputs.text148; gO101PresDNodes24[gO101PresDNode24Count].previousType = gO101PresDRoot.childType; gO101PresDNodes24[gO101PresDNode24Count].previous = gO101PresDRoot.child; gO101PresDRoot.childType = 3; gO101PresDRoot.child = &gO101PresDNodes24[gO101PresDNode24Count]; gO101PresDNode24Count = gO101PresDNode24Count + 1;
+    D_540[gO101PresDNode24Count].x = 0x50; D_540[gO101PresDNode24Count].y = 0x9C; D_540[gO101PresDNode24Count].length = overlay101ByteLength(gO101PresDInputs.text148); D_540[gO101PresDNode24Count].opacity = (s8)(s32)((f32)(u32)D_540[gO101PresDNode24Count].length * (f32)(s32)1); D_540[gO101PresDNode24Count].mode = 2; D_540[gO101PresDNode24Count].color0 = 0xFF; D_540[gO101PresDNode24Count].color1 = 0xFF; D_540[gO101PresDNode24Count].color2 = 0; D_540[gO101PresDNode24Count].color3 = 0xFF; D_540[gO101PresDNode24Count].kind = 4; D_540[gO101PresDNode24Count].text = gO101PresDInputs.text148; D_540[gO101PresDNode24Count].previousType = D_0.childType; D_540[gO101PresDNode24Count].previous = D_0.child; D_0.childType = 3; D_0.child = &D_540[gO101PresDNode24Count]; gO101PresDNode24Count = gO101PresDNode24Count + 1;
 
-    o101PresDResetReloc(&gO101PresDFinalObject3948);
+    overlay101Reset(&gO101PresDFinalObject3948);
 }

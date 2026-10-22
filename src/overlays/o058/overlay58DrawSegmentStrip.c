@@ -16,11 +16,11 @@ typedef struct Overlay58StripGfx {
     u32 w1;
 } Overlay58StripGfx;
 
-extern Overlay58StripGfx *gOverlay58StripDisplayListReloc;
-extern Overlay58StripVertex *gOverlay58StripVertexCursorReloc;
+extern Overlay58StripGfx *D_800D3140;
+extern Overlay58StripVertex *D_800D3148;
 extern u8 D_80000058[];
-extern f32 overlay58SqrtReloc(f32 value);
-extern void overlay58PrepareStripReloc(Overlay58StripGfx **displayList,
+extern f32 sqrtf(f32 value);
+extern void texDPTextureX(Overlay58StripGfx **displayList,
                                        void *resource, s32 mode, s32 arg3);
 
 /*
@@ -69,7 +69,7 @@ void overlay58DrawSegmentStrip(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1,
     dx = x1 - x0;
     dy = y1 - y0;
     dz = z1 - z0;
-    distance = overlay58SqrtReloc((dx * dx) + (dy * dy) + (dz * dz));
+    distance = sqrtf((dx * dx) + (dy * dy) + (dz * dz));
 
     zPerpendicular = (1.25f * dx) / distance;
     xPerpendicular = (1.25f * dz) / distance;
@@ -77,10 +77,10 @@ void overlay58DrawSegmentStrip(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1,
     quadSpan = 8.0f / distance;
     t = 0.0f;
 
-    overlay58PrepareStripReloc(&gOverlay58StripDisplayListReloc, (void *)0,
+    texDPTextureX(&D_800D3140, (void *)0,
                                5, 0);
     while (t < limit) {
-        vertices = gOverlay58StripVertexCursorReloc;
+        vertices = D_800D3148;
         for (i = 0; i < 4; i++) {
             vertices->r = 0xFF;
             vertices->g = 0xFF;
@@ -93,28 +93,28 @@ void overlay58DrawSegmentStrip(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1,
             next = 1.0f;
         }
         if (next <= limit) {
-            O58_VERTEX(gOverlay58StripDisplayListReloc++, O58_PHYSICAL_TO_K0(gOverlay58StripVertexCursorReloc), 4, 0);
-            O58_POLYGON(gOverlay58StripDisplayListReloc++, D_80000058, 2, 1);
+            O58_VERTEX(D_800D3140++, O58_PHYSICAL_TO_K0(D_800D3148), 4, 0);
+            O58_POLYGON(D_800D3140++, D_80000058, 2, 1);
             startX = (t * dx) + x0;
             startZ = (t * dz) + z0;
-            gOverlay58StripVertexCursorReloc->x = (s16)(startX - xPerpendicular);
-            gOverlay58StripVertexCursorReloc->y = (s16)y0;
-            gOverlay58StripVertexCursorReloc->z = (s16)(startZ + zPerpendicular);
-            gOverlay58StripVertexCursorReloc++;
-            gOverlay58StripVertexCursorReloc->x = (s16)(startX + xPerpendicular);
-            gOverlay58StripVertexCursorReloc->y = (s16)y0;
-            gOverlay58StripVertexCursorReloc->z = (s16)(startZ - zPerpendicular);
-            gOverlay58StripVertexCursorReloc++;
+            D_800D3148->x = (s16)(startX - xPerpendicular);
+            D_800D3148->y = (s16)y0;
+            D_800D3148->z = (s16)(startZ + zPerpendicular);
+            D_800D3148++;
+            D_800D3148->x = (s16)(startX + xPerpendicular);
+            D_800D3148->y = (s16)y0;
+            D_800D3148->z = (s16)(startZ - zPerpendicular);
+            D_800D3148++;
             endX = (next * dx) + x0;
             endZ = (next * dz) + z0;
-            gOverlay58StripVertexCursorReloc->x = (s16)(endX - xPerpendicular);
-            gOverlay58StripVertexCursorReloc->y = (s16)y0;
-            gOverlay58StripVertexCursorReloc->z = (s16)(endZ + zPerpendicular);
-            gOverlay58StripVertexCursorReloc++;
-            gOverlay58StripVertexCursorReloc->x = (s16)(endX + xPerpendicular);
-            gOverlay58StripVertexCursorReloc->y = (s16)y0;
-            gOverlay58StripVertexCursorReloc->z = (s16)(endZ - zPerpendicular);
-            gOverlay58StripVertexCursorReloc++;
+            D_800D3148->x = (s16)(endX - xPerpendicular);
+            D_800D3148->y = (s16)y0;
+            D_800D3148->z = (s16)(endZ + zPerpendicular);
+            D_800D3148++;
+            D_800D3148->x = (s16)(endX + xPerpendicular);
+            D_800D3148->y = (s16)y0;
+            D_800D3148->z = (s16)(endZ - zPerpendicular);
+            D_800D3148++;
         }
         t += stripStep;
     }

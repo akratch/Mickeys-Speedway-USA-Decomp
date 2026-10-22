@@ -45,11 +45,11 @@ typedef struct O70Pair {
 
 extern s16 gOverlay70PairTableReloc[];
 extern s16 gOverlay70HeightTableReloc[];
-extern void overlay70Reset(O70Object *object);
-extern s32 overlay70RandomRange(s32 lower, s32 upper);
-extern f32 overlay70Sin(s32 angle);
-extern f32 overlay70Cos(s32 angle);
-extern void overlay70Apply(void *target, s32 *flags, s32 mode,
+extern void func_80006EA0(O70Object *object);
+extern s32 mathRnd(s32 lower, s32 upper);
+extern f32 func_8002A8BC(s32 angle);
+extern f32 func_8002A8C0(s32 angle);
+extern void texAnimateSprite(void *target, s32 *flags, s32 mode,
                            f32 *coordinates, s32 ticks);
 
 void func_overlay_070_F00000D8_18C92A0(O70Object *object, s32 ticks) {
@@ -73,7 +73,7 @@ void func_overlay_070_F00000D8_18C92A0(O70Object *object, s32 ticks) {
             if ((ticks * 8) < state->timer) {
                 state->timer -= ticks * 8;
             } else {
-                overlay70Reset(object);
+                func_80006EA0(object);
             }
         }
     } else {
@@ -87,19 +87,19 @@ void func_overlay_070_F00000D8_18C92A0(O70Object *object, s32 ticks) {
             angle += state->angleStep * ticks;
             if (angle >= 0x8000) {
                 state->angle = 0x7FFF;
-                state->angleStep = overlay70RandomRange(-0x200, -0x100);
-                state->countdown = overlay70RandomRange(0, 0x3C);
+                state->angleStep = mathRnd(-0x200, -0x100);
+                state->countdown = mathRnd(0, 0x3C);
             } else if (angle < -0x8000) {
                 state->angle = -0x8000;
-                state->angleStep = overlay70RandomRange(0x100, 0x200);
-                state->countdown = overlay70RandomRange(0, 0x3C);
+                state->angleStep = mathRnd(0x100, 0x200);
+                state->countdown = mathRnd(0, 0x3C);
             } else {
                 state->angle = angle;
             }
         }
 
-        sine = overlay70Sin(-related->angle);
-        cosine = overlay70Cos(-related->angle);
+        sine = func_8002A8BC(-related->angle);
+        cosine = func_8002A8C0(-related->angle);
         pair = (O70Pair *)&gOverlay70PairTableReloc[state->type * 2];
         pairX = (f32)pair->x;
         pairZ = (f32)pair->z;
@@ -119,6 +119,6 @@ void func_overlay_070_F00000D8_18C92A0(O70Object *object, s32 ticks) {
         object->phase = -0x600 - angle;
         state->verticalStep = -state->verticalStep;
     }
-    overlay70Apply(*object->targetList, &state->flags, 2, &object->value28,
+    texAnimateSprite(*object->targetList, &state->flags, 2, &object->value28,
                    ticks);
 }

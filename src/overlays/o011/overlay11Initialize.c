@@ -9,7 +9,7 @@ typedef struct Overlay11Status {
 
 extern s32 gOverlay11Argument, gOverlay11Timer, gOverlay11Counter;
 extern s16 gOverlay11Selection;
-extern s32 gOverlay11Initialized, gOverlay11Variant;
+extern s32 gOverlay11Initialized, D_8007C1A0;
 extern void func_800290AC(s32 mode);
 extern void amTuneSetFade(f32 value, s32 arg1);
 extern void overlay66Select(s32 selection);
@@ -52,7 +52,7 @@ void overlay11Initialize(s32 argument) {
             break;
         case 4:
         case 5:
-            if (gOverlay11Variant == 1) {
+            if (D_8007C1A0 == 1) {
                 func_overlay_011_F0000EE4_186972C();
             } else {
                 func_overlay_011_F0000DFC_1869644();

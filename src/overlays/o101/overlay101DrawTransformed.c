@@ -39,13 +39,13 @@ typedef struct Overlay101Transform {
     f32 depth;
 } Overlay101Transform;
 
-void overlay101GetDimensions2Reloc(s32 *width, s32 *height);
-void overlay101GetBounds2Reloc(Overlay101DrawNode *node, s32 *left, s32 *top,
+void viGetCurrentSize(s32 *width, s32 *height);
+void overlay101GetBounds(Overlay101DrawNode *node, s32 *left, s32 *top,
                                s32 *right, s32 *bottom);
-void overlay101SetScissor2Reloc(Overlay101Gfx **displayList, s32 left, s32 top,
+void overlay101SetScissor(Overlay101Gfx **displayList, s32 left, s32 top,
                                 s32 right, s32 bottom);
-void overlay101SetTransformModeReloc(s32 mode);
-void overlay101SubmitTransformReloc(Overlay101Gfx **displayList, void *matrix,
+void sprSetTextureFilter(s32 mode);
+void camDo2DSprite(Overlay101Gfx **displayList, void *matrix,
                                     void *vertices,
                                     Overlay101Transform *transform,
                                     void *object, s32 rotated, s32 color);
@@ -98,7 +98,7 @@ void overlay101SubmitTransformReloc(Overlay101Gfx **displayList, void *matrix,
 
     if (((element->color != 0) && (!(element->scale <= 0.0f))) &&
         ((node->type == 2) || (node->type == 4))) {
-        overlay101GetDimensions2Reloc(&screenWidth, &screenHeight);
+        viGetCurrentSize(&screenWidth, &screenHeight);
         transform.rotateZ = 0;
         transform.rotateY = 0;
         transform.rotateX = element->rotation;
@@ -122,22 +122,22 @@ void overlay101SubmitTransformReloc(Overlay101Gfx **displayList, void *matrix,
             rotated = 1;
         else
             rotated = 0;
-        overlay101GetBounds2Reloc(node, &bounds0, &bounds1, &bounds2, &bounds3);
-        overlay101SetScissor2Reloc(displayList, bounds0, bounds1, bounds2,
+        overlay101GetBounds(node, &bounds0, &bounds1, &bounds2, &bounds3);
+        overlay101SetScissor(displayList, bounds0, bounds1, bounds2,
                                    bounds3);
         if (element->scale == 1.0f)
-            overlay101SetTransformModeReloc(0);
-        overlay101SubmitTransformReloc(displayList, matrix, vertices,
+            sprSetTextureFilter(0);
+        camDo2DSprite(displayList, matrix, vertices,
                                        &transform, element->object, rotated,
                                        element->color);
         if (element->scale == 1.0f)
-            overlay101SetTransformModeReloc(1);
+            sprSetTextureFilter(1);
         command = (syncCommand = (*displayList)++);
         command->w1 = 0;
         command->w0 = 0xE7000000;
         command = (*displayList)++;
         command->w0 = 0xFA000000; command->w1 = 0xFFFFFFFF;
-        overlay101SetScissor2Reloc(displayList, 0, 0, 1000, 1000);
+        overlay101SetScissor(displayList, 0, 0, 1000, 1000);
         (void)right;
         (void)bottom;
     }

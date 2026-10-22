@@ -75,7 +75,7 @@ extern f32 D_2C0;
 extern f32 D_o058_5CE0;
 extern s32 D_DC;
 
-extern u8 gOverlay58MenuGateReloc;
+extern u8 D_8007BF0C;
 extern s16 gOverlay58SelectionTableReloc[][4];
 extern s16 gOverlay58UnlockTableReloc[][4];
 extern s32 D_o058_5E50[6];
@@ -84,23 +84,23 @@ typedef struct Overlay58Options {
     u8 pad04[0xF];
     u8 bits13;
 } Overlay58Options;
-extern Overlay58Options gOverlay58MenuBitsReloc;
-extern s32 gOverlay58MenuReadyReloc;
-extern u8 gOverlay58ConfigAReloc;
-extern u8 gOverlay58ConfigBReloc;
-extern u8 gOverlay58ConfigCReloc;
-extern u8 gOverlay58PlayerReloc;
+extern Overlay58Options D_800D3128;
+extern s32 D_8007BF44;
+extern u8 D_8007BF20;
+extern u8 D_8007BF24;
+extern u8 D_8007BF28;
+extern u8 D_8007BF2C;
 extern s32 gOverlay58LevelReloc;
 extern s32 gOverlay58TrackReloc;
 extern s32 gOverlay58VehicleReloc;
 extern s32 gOverlay58TransitionModeReloc;
-extern u8 gOverlay58ControllerCountReloc;
-extern u8 gOverlay58ControllerModeReloc;
-extern s32 gOverlay58CameraModeReloc;
+extern u8 D_8007BEF8;
+extern u8 D_8007BEFC;
+extern s32 D_8007C1A0;
 extern u8 gOverlay58CameraGateReloc;
-extern s32 gOverlay58InputReloc;
-extern Overlay58Gfx *gOverlay58DisplayListReloc;
-extern void *gOverlay58MatrixReloc;
+extern s32 D_800D31B8;
+extern Overlay58Gfx *D_800D3140;
+extern void *D_800D3144;
 
 extern Overlay58Status *func_80028F54(void);
 extern Overlay58AnimPath *func_800508B4(u8 path);
@@ -242,7 +242,7 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
             D_68 = 0xFE;
         }
         if (D_2B0 == 0) {
-            if (gOverlay58InputReloc & 0x4000) {
+            if (D_800D31B8 & 0x4000) {
                 if (D_2BC != 0) {
                     amSndStop(D_2BC);
                 }
@@ -267,16 +267,16 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                 } else {
                     D_44 = 1;
                 }
-            } else if (gOverlay58InputReloc & 0x9000) {
+            } else if (D_800D31B8 & 0x9000) {
                 if (D_2BC != 0) {
                     amSndStop(D_2BC);
                 }
-                if (gOverlay58MenuGateReloc == 0) {
+                if (D_8007BF0C == 0) {
                     if (status->active < 3) {
                         if (gOverlay58UnlockTableReloc[status->player][status->active + 1] != -1) {
-                            if (!(gOverlay58MenuBitsReloc.bits13 &
+                            if (!(D_800D3128.bits13 &
                                   (1 << gOverlay58UnlockTableReloc[status->player][status->active + 1]))) {
-                                gOverlay58MenuBitsReloc.bits13 |=
+                                D_800D3128.bits13 |=
                                     1 << gOverlay58UnlockTableReloc[status->player][status->active + 1];
                                 func_800291B4();
                                 func_8003A680(
@@ -285,7 +285,7 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                             }
                         }
                     }
-                    if (gOverlay58MenuReadyReloc > 0) {
+                    if (D_8007BF44 > 0) {
                         D_30 = 5;
                         animseqStopPath(D_34.bytes.path);
                         D_34.value = 9;
@@ -308,17 +308,17 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
         if (overlay41IsUnitScale(D_34.value) != 0) {
             status->active++;
             if (status->active == 4) {
-                gOverlay58ConfigAReloc = D_90[0]->mode;
-                gOverlay58ConfigBReloc = D_90[1]->mode;
-                gOverlay58ConfigCReloc = D_90[2]->mode;
-                gOverlay58PlayerReloc = status->player;
+                D_8007BF20 = D_90[0]->mode;
+                D_8007BF24 = D_90[1]->mode;
+                D_8007BF28 = D_90[2]->mode;
+                D_8007BF2C = status->player;
                 gOverlay58LevelReloc = 0x24;
                 gOverlay58TrackReloc = 0;
                 gOverlay58VehicleReloc = 8;
                 gOverlay58TransitionModeReloc = 1;
             } else {
-                gOverlay58ControllerCountReloc = 6;
-                gOverlay58ControllerModeReloc = 5;
+                D_8007BEF8 = 6;
+                D_8007BEFC = 5;
                 joyCreateMap(D_F8);
                 gOverlay58LevelReloc =
                     gOverlay58SelectionTableReloc[status->player]
@@ -347,29 +347,29 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
             status->active++;
         }
         if (status->active == 4) {
-            if (gOverlay58MenuGateReloc != 0) {
+            if (D_8007BF0C != 0) {
                 if (D_DC != 0) {
                     mainChangeLevel(0xC, 0, 0, 0xC, 1, 0);
                     D_DC = 0;
                 }
             } else {
-                gOverlay58ConfigAReloc = D_90[0]->mode;
-                gOverlay58ConfigBReloc = D_90[1]->mode;
-                gOverlay58ConfigCReloc = D_90[2]->mode;
-                gOverlay58PlayerReloc = status->player;
+                D_8007BF20 = D_90[0]->mode;
+                D_8007BF24 = D_90[1]->mode;
+                D_8007BF28 = D_90[2]->mode;
+                D_8007BF2C = status->player;
                 if (D_DC != 0) {
                     mainChangeLevel(0x24, 0, 0, 8, 1, 0);
                     D_DC = 0;
                 }
             }
-        } else if (gOverlay58MenuGateReloc != 0) {
-            mainChangeCameras(gOverlay58CameraModeReloc);
-            if (((gOverlay58CameraModeReloc == 2) ||
-                 (gOverlay58CameraModeReloc == 3)) &&
+        } else if (D_8007BF0C != 0) {
+            mainChangeCameras(D_8007C1A0);
+            if (((D_8007C1A0 == 2) ||
+                 (D_8007C1A0 == 3)) &&
                 (gOverlay58CameraGateReloc != 0)) {
-                gOverlay58ControllerModeReloc = 4 - gOverlay58CameraModeReloc;
+                D_8007BEFC = 4 - D_8007C1A0;
             } else {
-                gOverlay58ControllerModeReloc = 0;
+                D_8007BEFC = 0;
             }
             joyCreateMap(D_F8);
             if (D_DC != 0) {
@@ -380,8 +380,8 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                 D_DC = 0;
             }
         } else {
-            gOverlay58ControllerCountReloc = 6;
-            gOverlay58ControllerModeReloc = 5;
+            D_8007BEF8 = 6;
+            D_8007BEFC = 5;
             joyCreateMap(D_F8);
             if (D_DC != 0) {
                 mainChangeLevel(
@@ -401,9 +401,9 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
     path = func_800508B4(3);
     if ((path != 0) && (D_68 > 0)) {
         geometry = *path->object->geometry;
-        camSetView(&gOverlay58DisplayListReloc,
-                      &gOverlay58MatrixReloc);
-        command = gOverlay58DisplayListReloc++;
+        camSetView(&D_800D3140,
+                      &D_800D3144);
+        command = D_800D3140++;
         command->w0 = 0xFA000000;
         command->w1 = (D_68 & 0xFF) | ~0xFF;
         for (stage = 0; stage <= D_6C; stage++) {
@@ -455,7 +455,7 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
             }
 
             if (!(D_2A8[status->player] &
-                  ((gOverlay58MenuBitsReloc.flags << 5) >> 0x1C))) {
+                  ((D_800D3128.flags << 5) >> 0x1C))) {
                 marker = -1;
                 if (status->player == 0) {
                     if (stage == 0) {

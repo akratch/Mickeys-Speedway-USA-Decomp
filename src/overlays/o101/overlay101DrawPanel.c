@@ -30,24 +30,24 @@ typedef struct Overlay101Panel {
 
 extern u8 D_1F4[];
 
-void overlay101SetScissorReloc(Overlay101Gfx **displayList, s32 left, s32 top,
+void overlay101SetScissor(Overlay101Gfx **displayList, s32 left, s32 top,
                                s32 right, s32 bottom);
-void overlay101DrawRectReloc(Overlay101Gfx **displayList, s32 x, s32 y,
+void overlay101BuildFrame(Overlay101Gfx **displayList, s32 x, s32 y,
                              s32 width, s32 height, u32 color);
-void overlay101BuildIntensityColorsReloc(s32 intensity, s32 alpha, u32 *full,
+void overlay101BuildIntensityColors(s32 intensity, s32 alpha, u32 *full,
                                          u32 *dim, u32 *dimmer, u32 *darkest);
-void overlay101BuilderCreateReloc(Overlay101Gfx **displayList, s32 count,
+void frontDrawRectangles(Overlay101Gfx **displayList, s32 count,
                                   Overlay101PanelRect *rects, s32 flags);
-void overlay101BuildBorderReloc(Overlay101Gfx **displayList, s32 x, s32 y,
+void overlay101BuildBorder(Overlay101Gfx **displayList, s32 x, s32 y,
                                 s32 width, s32 height, s32 intensity,
                                 s32 alpha, s32 swapColors);
-void overlay101SelectElementReloc(s32 element);
-void overlay101SetRenderModeReloc(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
-void overlay101SetColorReloc(s32 red, s32 green, s32 blue, s32 colorAlpha,
+void fontUseFont(s32 element);
+void fontBackground(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+void fontColour(s32 red, s32 green, s32 blue, s32 colorAlpha,
                              s32 alpha);
-void overlay101DrawElementReloc(Overlay101Gfx **displayList, s32 x, s32 y,
+void fontPrintXY(Overlay101Gfx **displayList, s32 x, s32 y,
                                 void *content, s32 flags);
-void overlay101DrawDefaultAssetReloc(Overlay101Gfx **displayList, u8 *asset,
+void func_8002F618(Overlay101Gfx **displayList, u8 *asset,
                                      s32 x, s32 y, s32 red, s32 green,
                                      s32 blue, s32 alpha);
 
@@ -84,7 +84,7 @@ void overlay101DrawPanel(Overlay101Gfx **displayList, Overlay101Panel *panel) {
     Overlay101PanelRect *out;
     Overlay101PanelRect records[20];
 
-    overlay101SetScissorReloc(displayList, 0, 0, 1000, 1000);
+    overlay101SetScissor(displayList, 0, 0, 1000, 1000);
 
     if ((panel->mode == 1) || (panel->mode == 3)) {
         x = panel->currentX +
@@ -93,7 +93,7 @@ void overlay101DrawPanel(Overlay101Gfx **displayList, Overlay101Panel *panel) {
             (((panel->y - panel->currentY) * panel->phase) >> 6);
         width = 32 + (((panel->width - 32) * panel->phase) >> 6);
         height = 32 + (((panel->height - 32) * panel->phase) >> 6);
-        overlay101DrawRectReloc(displayList, x, y, width, height, 0xC0C0C0FF);
+        overlay101BuildFrame(displayList, x, y, width, height, 0xC0C0C0FF);
     } else if (panel->mode == 2) {
         out = records;
         x = panel->x;
@@ -101,7 +101,7 @@ void overlay101DrawPanel(Overlay101Gfx **displayList, Overlay101Panel *panel) {
         width = panel->width;
         height = panel->height;
 
-        overlay101BuildIntensityColorsReloc(panel->intensity + 1, panel->alpha,
+        overlay101BuildIntensityColors(panel->intensity + 1, panel->alpha,
                                             &full, &dim, &dimmer, &darkest);
 
         out->x0 = x + 1;
@@ -174,29 +174,29 @@ void overlay101DrawPanel(Overlay101Gfx **displayList, Overlay101Panel *panel) {
         out->color = darkest;
         out++;
 
-        overlay101BuilderCreateReloc(displayList, 10, records, 0);
+        frontDrawRectangles(displayList, 10, records, 0);
 
-        overlay101BuildBorderReloc(displayList, x, y, 12, 12,
+        overlay101BuildBorder(displayList, x, y, 12, 12,
                                    panel->intensity, panel->alpha, 0);
-        overlay101BuildBorderReloc(displayList, x + 12, y, width - 36, 12,
+        overlay101BuildBorder(displayList, x + 12, y, width - 36, 12,
                                    panel->intensity, panel->alpha, 0);
-        overlay101BuildBorderReloc(displayList, x + width - 24, y, 12, 12,
+        overlay101BuildBorder(displayList, x + width - 24, y, 12, 12,
                                    panel->intensity, panel->alpha, 0);
-        overlay101BuildBorderReloc(displayList, x + width - 12, y, 12, 12,
+        overlay101BuildBorder(displayList, x + width - 12, y, 12, 12,
                                    panel->intensity, panel->alpha, 0);
 
         if (panel->content != NULL) {
-            overlay101SetScissorReloc(displayList, x + 14, y + 2,
+            overlay101SetScissor(displayList, x + 14, y + 2,
                                       x + width - 26, y + 10);
-            overlay101SelectElementReloc(2);
-            overlay101SetRenderModeReloc(0, 0, 0, 0);
-            overlay101SetColorReloc(0, 0, 0, 255, panel->alpha);
-            overlay101DrawElementReloc(displayList, x + 14, y + 2,
+            fontUseFont(2);
+            fontBackground(0, 0, 0, 0);
+            fontColour(0, 0, 0, 255, panel->alpha);
+            fontPrintXY(displayList, x + 14, y + 2,
                                        panel->content, 0);
-            overlay101SetScissorReloc(displayList, 0, 0, 1000, 1000);
+            overlay101SetScissor(displayList, 0, 0, 1000, 1000);
         }
     } else if (panel->mode == 0) {
-        overlay101DrawDefaultAssetReloc(displayList, D_1F4, panel->currentX,
+        func_8002F618(displayList, D_1F4, panel->currentX,
                                         panel->currentY, 255, 255, 255,
                                         panel->alpha);
     }

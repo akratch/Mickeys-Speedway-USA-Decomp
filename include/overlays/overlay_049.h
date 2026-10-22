@@ -28,12 +28,11 @@ extern s32 gOverlay49Shifts[];
 extern Overlay49Object *gOverlay49Result;
 extern s32 gOverlay49InputEnabled;
 /* Overlay-runtime proxies for resident menu state used by the initializer. */
-extern u8 gOverlay49MenuModeReloc;
-extern u8 gOverlay49ExtendedModeReloc;
-extern u16 gOverlay49PackedStatusReloc[];
+extern u8 D_8007BF04;
+extern u8 D_8007BF08;
+extern u16 D_800D3128[];
 extern u8 D_8007BF60;
 extern u8 D_8007BF0C;
-extern u16 D_800D3128[];
 extern u8 D_800D3140[];
 extern u8 D_800D3144[];
 
@@ -45,10 +44,10 @@ extern u32 func_800254FC(s32 index);
 extern u32 func_8002554C(s32 index);
 extern void func_800016EC(s32 mode);
 extern void func_8003A754(void);
-extern void overlay48InitializeReloc(void);
+extern void overlay48Initialize(void);
 extern void func_80028374(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
                          s32 arg5);
-extern void overlay65UpdateReloc(void *arg0, void *arg1, s32 updateRate);
-extern void overlay49RefractOutputReloc(void);
+extern void overlay65UpdateParticles(void *arg0, void *arg1, s32 updateRate);
+extern void overlay65Release(void);
 
 #endif

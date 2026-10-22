@@ -56,7 +56,7 @@ extern s32 gOverlay2BuiltNodeCount;
 extern s32 gOverlay2BuiltLineCount;
 
 /* Cross-overlay callee, reached through a runtime relocation record. */
-extern u16 overlay2GetBuildValueReloc(Overlay2BuildObject *object);
+extern u16 overlay1GetEntryIndex(Overlay2BuildObject *object);
 extern void *mmAlloc(s32 size, s32 tag);
 extern void _bzero(void *memory, s32 size);
 extern void overlay2AppendLine(f32 x1, f32 y1, f32 x2, f32 y2, u16 value1,
@@ -112,7 +112,7 @@ void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
     lastPoint = point + remaining;
     lastPoint--;
     linked = object;
-    rootValue = overlay2GetBuildValueReloc(object);
+    rootValue = overlay1GetEntryIndex(object);
 
     gOverlay2Lines = mmAlloc(0xF000, 0x85);
     gOverlay2Regions = mmAlloc(0x2800, 0x85);
@@ -141,7 +141,7 @@ void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
         linked = linked->next;
         while (linked != NULL) {
             if (linked->flags & 1) {
-                linkedValue = overlay2GetBuildValueReloc(linked);
+                linkedValue = overlay1GetEntryIndex(linked);
                 remaining = linked->pointCount;
                 point = linked->points;
                 firstPoint = point;

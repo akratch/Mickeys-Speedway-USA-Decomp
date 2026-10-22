@@ -32,7 +32,7 @@ typedef struct Overlay46StatusFlags {
     u32 unused0 : 4;
     u32 nameMatched : 1;
 } Overlay46StatusFlags;
-extern Overlay46StatusFlags gOverlay46StatusFlags;
+extern Overlay46StatusFlags D_800D3128;
 extern Overlay46DisplayCommand *gDisplayListHead;
 extern Overlay46DisplayCommand *gDisplayListHeadB;
 extern u8 gOverlay46MotionTarget[];
@@ -45,11 +45,11 @@ extern void func_80037414(s32 mode, f32 scale, f32 value, s32 arg3, s32 arg4,
 extern void func_80037658(void);
 /* Cross-overlay and resident callees are reached through runtime relocation
  * records; the three overlay 44 and 99 entry points are named as placeholders. */
-extern void overlay46InitializeEntriesReloc(s32 mode, void *resource,
+extern void overlay99InitializeEntries(s32 mode, void *resource,
                                                f32 scale, f32 value);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern void func_80000F94(s32 soundId, void *handle);
-extern void overlay46UpdateFrameCacheReloc(void *state, s32 updateRate);
+extern void overlay44UpdateFrameCache(void *state, s32 updateRate);
 extern void *func_80058240(void);
 extern void func_800291B4(void);
 extern void func_8003A680(s32 value);
@@ -60,7 +60,7 @@ extern void func_80028528(s32 value);
 extern void func_80028D30(s32 value);
 extern void func_80036F08(Overlay46DisplayCommand **commands, void *resource,
                           s32 arg2);
-extern void overlay46DrawFrameCacheReloc(void *state, void *target,
+extern void func_overlay_044_F0000580_188BDE0(void *state, void *target,
                                               f32 scale);
 extern void fontUseFont(s32 mode);
 extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);
@@ -111,7 +111,7 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
             gOverlay46Timer5C -= amount;
             if (gOverlay46Timer5C <= 0) {
                 gOverlay46Timer5C = 0;
-                overlay46InitializeEntriesReloc(2, D_60, 2.5f, -1.0f);
+                overlay99InitializeEntries(2, D_60, 2.5f, -1.0f);
                 func_80000F94(mathRnd(0x203, 0x204) & 0xFFFF, 0);
             }
         }
@@ -128,13 +128,13 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
             gOverlay46Timer5C -= amount;
             if (gOverlay46Timer5C <= 0) {
                 gOverlay46Timer5C = 0;
-                overlay46InitializeEntriesReloc(2, D_C0, 2.5f, -1.0f);
+                overlay99InitializeEntries(2, D_C0, 2.5f, -1.0f);
                 func_80000F94(mathRnd(0x203, 0x204) & 0xFFFF, 0);
             }
         }
         break;
     case 3:
-        overlay46UpdateFrameCacheReloc(gOverlay46Group54Update, amount);
+        overlay44UpdateFrameCache(gOverlay46Group54Update, amount);
         counter = gOverlay46Group54Update;
         if (counter->value < 0x200) {
             gOverlay46Value8 = counter->value >> 1;
@@ -143,7 +143,7 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
         }
         if (counter->value >= 0x1E01) {
             if (gOverlay46Timer5C == 0) {
-                overlay46InitializeEntriesReloc(2, D_120, 2.5f, -1.0f);
+                overlay99InitializeEntries(2, D_120, 2.5f, -1.0f);
                 func_80000F94(mathRnd(0x203, 0x204) & 0xFFFF, 0);
                 gOverlay46Timer5C = 1;
             } else if (func_80037664() != 1) {
@@ -160,7 +160,7 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
         break;
     case 5:
         matched = 0;
-        if (!gOverlay46StatusFlags.nameMatched) {
+        if (!D_800D3128.nameMatched) {
             right = func_80058240();
             if (right != 0) {
                 left = gOverlay46ExpectedName180;
@@ -175,7 +175,7 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
             }
         }
         if (matched != 0) {
-            gOverlay46StatusFlags.nameMatched = 1;
+            D_800D3128.nameMatched = 1;
             func_800291B4();
             D_8007BF44 = 0;
             func_8003A680(10);
@@ -205,7 +205,7 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
     value = gOverlay46Value8;
     if (value != 0) {
         gOverlay46Group54Render->alpha = value;
-        overlay46DrawFrameCacheReloc(gOverlay46Group54Render,
+        func_overlay_044_F0000580_188BDE0(gOverlay46Group54Render,
                                           gOverlay46MotionTarget, 1.0f);
         fontUseFont(2);
         fontBackground(0, 0, 0, 0);

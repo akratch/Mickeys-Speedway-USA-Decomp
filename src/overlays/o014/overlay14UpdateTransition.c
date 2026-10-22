@@ -14,21 +14,21 @@ extern s32 gOverlay14CommandHeaderBase[];
 #define gOverlay14CommandHeader gOverlay14CommandHeaderBase[0x3F]
 
 extern void overlay14InitializeReloc(void);
-extern void overlay14SetActiveReloc(s32 active);
-extern void overlay14PrepareReloc(s32 step);
-extern void overlay14AdvanceReloc(s32 step);
-extern void overlay14RetreatReloc(s32 step);
+extern void fontSetButtonMode(s32 active);
+extern void overlay14PrepareInputState(s32 step);
+extern void overlay14AdvanceCommand(s32 step);
+extern void overlay14StepCommand(s32 step);
 extern void overlay14DrawPrimaryReloc(void *context);
 extern void overlay14DrawAlternateReloc(void *context);
 
 /* Pinned DKR v77/v80 and JFG scans found no exact donor for this body. */
 void overlay14UpdateTransition(void *context, s32 step) {
-    overlay14PrepareReloc(step);
+    overlay14PrepareInputState(step);
     if ((gOverlay14FlagC4 != 0) && (gOverlay14FlagC8 == 0)) {
         if ((gOverlay14ModeE4 != 1) && (gOverlay14EnabledF8 != 0)) {
-            overlay14AdvanceReloc(step);
+            overlay14AdvanceCommand(step);
         } else if (gOverlay14CommandHeader != 0) {
-            overlay14RetreatReloc(step);
+            overlay14StepCommand(step);
         }
         gOverlay14TransitionValue[0] += step * 0x10;
         if (gOverlay14TransitionValue[0] >= 0x101) {
@@ -44,7 +44,7 @@ void overlay14UpdateTransition(void *context, s32 step) {
             }
         }
     }
-    overlay14SetActiveReloc(1);
+    fontSetButtonMode(1);
     if (gOverlay14TransitionValue[0] != 0) {
         if (gOverlay14ModeE4 != 1) {
             overlay14DrawPrimaryReloc(context);
@@ -52,5 +52,5 @@ void overlay14UpdateTransition(void *context, s32 step) {
             overlay14DrawAlternateReloc(context);
         }
     }
-    overlay14SetActiveReloc(0);
+    fontSetButtonMode(0);
 }

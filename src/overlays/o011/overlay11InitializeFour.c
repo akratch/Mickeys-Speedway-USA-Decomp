@@ -20,7 +20,7 @@ typedef struct Overlay11Resources {
     void *resource1A8;
 } Overlay11Resources;
 
-extern Overlay11Resources *gOverlay11Resources;
+extern Overlay11Resources *D_8007C0B8;
 extern char gOverlay11Format[];
 extern void *gOverlay11Created[4];
 extern s32 gOverlay11CreatedActive;
@@ -29,7 +29,7 @@ extern u16 D_8007BF1C;
 extern Overlay11Status *func_80028F54(void);
 extern s32 sprintf(char *buffer, const char *format, ...);
 /* overlay45CreateDescriptor, through the placeholder its siblings use. */
-extern void *overlay11CreateReloc(void *resource, s32 x, s32 y, s32 mode);
+extern void *overlay45CreateDescriptor(void *resource, s32 x, s32 y, s32 mode);
 
 /* DKR v77/v80 and JFG contain no matching Overlay 11 initializer donor. */
 void overlay11InitializeFour(void) {
@@ -38,33 +38,33 @@ void overlay11InitializeFour(void) {
 
     status = func_80028F54();
     if (status->mode == 2) {
-        sprintf(buffer, gOverlay11Format, gOverlay11Resources->value190);
+        sprintf(buffer, gOverlay11Format, D_8007C0B8->value190);
     } else {
-        sprintf(buffer, gOverlay11Resources->format194, status->mode - 1);
+        sprintf(buffer, D_8007C0B8->format194, status->mode - 1);
     }
 
-    gOverlay11Created[0] = overlay11CreateReloc(
-        gOverlay11Resources->resource198, 160, 40, 4);
-    gOverlay11Created[1] = overlay11CreateReloc(
-        gOverlay11Resources->resource19C, 160, 100, 4);
+    gOverlay11Created[0] = overlay45CreateDescriptor(
+        D_8007C0B8->resource198, 160, 40, 4);
+    gOverlay11Created[1] = overlay45CreateDescriptor(
+        D_8007C0B8->resource19C, 160, 100, 4);
 
     if (status->mode == 1) {
-        gOverlay11Created[2] = overlay11CreateReloc(
-            gOverlay11Resources->resource50, 160, 135, 4);
+        gOverlay11Created[2] = overlay45CreateDescriptor(
+            D_8007C0B8->resource50, 160, 135, 4);
         gOverlay11Created[3] = 0;
     } else {
         if (D_8007BF1C & 0x100) {
-            gOverlay11Created[2] = overlay11CreateReloc(
-                gOverlay11Resources->resource1A8, 160, 135, 4);
+            gOverlay11Created[2] = overlay45CreateDescriptor(
+                D_8007C0B8->resource1A8, 160, 135, 4);
         } else if (status->value1 == 0) {
-            gOverlay11Created[2] = overlay11CreateReloc(
-                gOverlay11Resources->resource1A0, 160, 135, 4);
+            gOverlay11Created[2] = overlay45CreateDescriptor(
+                D_8007C0B8->resource1A0, 160, 135, 4);
         } else {
             gOverlay11Created[2] =
-                overlay11CreateReloc(buffer, 160, 135, 4);
+                overlay45CreateDescriptor(buffer, 160, 135, 4);
         }
-        gOverlay11Created[3] = overlay11CreateReloc(
-            gOverlay11Resources->resource50, 160, 170, 4);
+        gOverlay11Created[3] = overlay45CreateDescriptor(
+            D_8007C0B8->resource50, 160, 170, 4);
     }
     gOverlay11CreatedActive = 1;
 }

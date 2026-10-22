@@ -17,8 +17,8 @@ typedef struct Overlay101GlobalPairEntry {
 
 extern s32 gOverlay101GlobalX;
 extern s32 gOverlay101GlobalY;
-extern Overlay101GlobalPairEntry *overlay101AcquireGlobalPairReloc(void);
-extern void overlay101SubmitGlobalPairReloc(Overlay101GlobalPairEntry *entry,
+extern Overlay101GlobalPairEntry *overlay101AllocateEntry(void);
+extern void overlay101UpdateGlobalPair(Overlay101GlobalPairEntry *entry,
                                              s32 value);
 
 void overlay101ScheduleGlobalPair(s32 x, s32 y, f32 seconds,
@@ -28,7 +28,7 @@ void overlay101ScheduleGlobalPair(s32 x, s32 y, f32 seconds,
 
     duration = seconds * 60.0f;
     if (duration > 0) {
-        entry = overlay101AcquireGlobalPairReloc();
+        entry = overlay101AllocateEntry();
         if (entry != NULL) {
             entry->output = NULL;
             entry->owner = 16;
@@ -39,7 +39,7 @@ void overlay101ScheduleGlobalPair(s32 x, s32 y, f32 seconds,
             entry->elapsed = 0;
             entry->duration = duration;
             if (submitValue > 0) {
-                overlay101SubmitGlobalPairReloc(entry, submitValue);
+                overlay101UpdateGlobalPair(entry, submitValue);
             }
         }
     } else {

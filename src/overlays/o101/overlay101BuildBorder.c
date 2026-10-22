@@ -13,9 +13,9 @@ typedef struct Overlay101BorderRect {
     u32 color;
 } Overlay101BorderRect;
 
-void overlay101BuildIntensityColorsReloc(s32 intensity, s32 alpha, u32 *full,
+void overlay101BuildIntensityColors(s32 intensity, s32 alpha, u32 *full,
                                          u32 *dim, u32 *dimmer, u32 *darkest);
-void overlay101BuilderCreateReloc(Overlay101Gfx **displayList, s32 count,
+void frontDrawRectangles(Overlay101Gfx **displayList, s32 count,
                                   Overlay101BorderRect *rects, s32 flags);
 
 /* The two `if (1)` blocks are uopt region boundaries, and each is load-bearing
@@ -43,11 +43,11 @@ void overlay101BuildBorder(Overlay101Gfx **displayList, s32 x, s32 y,
     Overlay101BorderRect rects[5];
 
     if (swapColors != 0) {
-        overlay101BuildIntensityColorsReloc(
+        overlay101BuildIntensityColors(
             intensity + 1, alpha, (u32 *)&leadingColor,
             (u32 *)&trailingColor, (u32 *)&interiorColor, NULL);
     } else {
-        overlay101BuildIntensityColorsReloc(
+        overlay101BuildIntensityColors(
             intensity + 1, alpha, (u32 *)&trailingColor,
             (u32 *)&leadingColor, (u32 *)&interiorColor, NULL);
     }
@@ -85,5 +85,5 @@ void overlay101BuildBorder(Overlay101Gfx **displayList, s32 x, s32 y,
     rect->y1 = y + height - 1;
     rect->color = interiorColor;
 
-    overlay101BuilderCreateReloc(displayList, 5, rects, 0);
+    frontDrawRectangles(displayList, 5, rects, 0);
 }

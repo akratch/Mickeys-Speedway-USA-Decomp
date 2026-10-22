@@ -471,9 +471,15 @@ def plan_module(root, overlay, placeholders, files, texts, inc, normalization_te
 SPEC_REF_RE = re.compile(r"@?(config/normalizations/[A-Za-z0-9_.\-]+)")
 
 
+def _spelling(name):
+    """A recipe spelling of ``name``: not a rename's new name (`<old>=<name>`)
+    and not part of a path (`.../<name>.c.o`, `.../<name>.filter.spec`)."""
+    return r"(?<![=\w/.])%s(?![\w.])" % re.escape(name)
+
+
 def recipe_uses(text, name):
     """Spellings of ``name`` a rename must respell (all but `<old>=<name>`)."""
-    return len(re.findall(r"(?<![=\w])%s\b" % re.escape(name), text))
+    return len(re.findall(_spelling(name), text))
 
 
 def module_rules(mk_texts, overlay):
@@ -510,7 +516,7 @@ def rule_specs(root, mk_texts, overlay):
 def respell_rest(text, mapping):
     """Respell every remaining spelling of a mapped name but `<old>=<name>`."""
     for old, new in mapping.items():
-        text = re.sub(r"(?<![=\w])%s\b" % re.escape(old), new, text)
+        text = re.sub(_spelling(old), new, text)
     return text
 
 
@@ -549,7 +555,23 @@ def declares(text, name):
     return bool(re.search(r"\bextern\b[^;{}]*\b%s\b[^;{}]*;" % re.escape(name), text))
 
 
-def apply_module(root, overlay, mapping, files, texts, inc, compile=True):
+def data_collisions(text, mapping, data_names):
+    """Placeholders in ``text`` that would merge onto one real data name.
+
+    Two data placeholders are two objects to the compiler; one name is one
+    object, which it may then alias (a load reused across a store through
+    the other spelling).  The file keeps its placeholders for such a name.
+    """
+    present = [o for o in mapping if re.search(r"\b%s\b" % re.escape(o), text)]
+    by_real = collections.defaultdict(list)
+    for o in present:
+        if mapping[o] in data_names:
+            by_real[mapping[o]].append(o)
+    return {o for group in by_real.values() if len(group) > 1 for o in group}
+
+
+def apply_module(root, overlay, mapping, files, texts, inc, compile=True,
+                 data_names=frozenset()):
     """Rewrite one module; return (changed paths, refusals, renamed mapping).
 
     With ``compile``, the module is compiled after the rewrite.  A real name
@@ -579,6 +601,15 @@ def apply_module(root, overlay, mapping, files, texts, inc, compile=True):
     sources = [f for f in own if f.suffix == ".c"]
     dropped_all, dropped = set(), collections.defaultdict(set)
     reasons = {}
+    # A translation unit sees its own sources and the headers they include.
+    for f in sources:
+        seen = originals[f] + "".join(texts[h] for h, users in inc.items() if f in users)
+        for o in data_collisions(seen, mapping, data_names):
+            if declares(originals[f], o):
+                dropped[f].add(o)
+            else:
+                dropped_all.add(o)
+            reasons[o] = "data-merge (%s)" % mapping[o]
 
     def file_map(f):
         return {o: n for o, n in mapping.items() if o not in dropped_all and o not in dropped[f]}
@@ -725,8 +756,11 @@ def main(argv=None):
                 if not why.startswith(("blob", )):
                     print("  refused %s: %s" % (n, why))
         else:
+            data_names = {p.real for p in placeholders
+                          if p.cls in ("resident-data", "overlay-data")}
             changed, refused, kept = apply_module(root, ov, mapping, files, texts, inc,
-                                                  compile=not args.no_compile)
+                                                  compile=not args.no_compile,
+                                                  data_names=data_names)
             for n, why in refused:
                 print("  refused %s: %s" % (n, why))
                 total_conv -= sites[n]

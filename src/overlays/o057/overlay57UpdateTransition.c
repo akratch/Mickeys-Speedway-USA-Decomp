@@ -12,8 +12,8 @@ extern s32 gOverlay57State;
 extern s32 gOverlay57Delay;
 extern Overlay57Transition gOverlay57Transition;
 
-extern s32 overlay57TransitionQueryReloc(void);
-extern void overlay57AdvanceReloc(s32 updateRate);
+extern s32 overlay84GetActive(void);
+extern void func_overlay_057_F0001020_18A4C18(s32 updateRate);
 extern void overlay57UpdateNode(void);
 
 /*
@@ -31,10 +31,10 @@ void overlay57UpdateTransition(s32 updateRate) {
             (0xBE - gOverlay57Transition.vertical) >> 2;
         gOverlay57Delay += (0xA00 - gOverlay57Delay) >> 3;
     }
-    if (overlay57TransitionQueryReloc() == 2) {
+    if (overlay84GetActive() == 2) {
         gOverlay57Timer = 1;
         gOverlay57State = 1;
     }
-    overlay57AdvanceReloc(updateRate);
+    func_overlay_057_F0001020_18A4C18(updateRate);
     overlay57UpdateNode();
 }

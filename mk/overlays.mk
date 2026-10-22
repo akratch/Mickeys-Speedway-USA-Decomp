@@ -1383,8 +1383,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43FlushPending.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		0x004:5:D_C8 \
 		0x008:6:D_C8 \
-		0x038:5:ext_4d258 \
-		0x03c:6:ext_4d258 \
+		0x038:5:D_800D2C98 \
+		0x03c:6:D_800D2C98 \
 		0x09c:5:D_C8 \
 		0x0a0:6:D_C8 \
 		0x0c4:5:D_C8 \
@@ -1828,7 +1828,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47SpawnObject.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47SpawnObject.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x10:5:D_0 0x20:6:D_0 && \
+		0x10:5:gOverlay47InitializedData 0x20:6:gOverlay47InitializedData && \
 	$(OBJCOPY) --redefine-sym \
 		func_8000590C=func_overlay_047_F0000000_1890E18 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
@@ -2085,16 +2085,15 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F00000D8_18C92A0.c.o: POS
 		0x16C:6:gOverlay70PairTableReloc \
 		0x194:5:gOverlay70HeightTableReloc \
 		0x1CC:6:gOverlay70HeightTableReloc && \
-	$(OBJCOPY) --redefine-sym \
-		overlay70Reset=func_overlay_070_F0000000_18C91C8 $@ && \
+	$(OBJCOPY) --redefine-sym func_80006EA0=func_overlay_070_F0000000_18C91C8 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x0F0:overlay70RandomRange:func_overlay_070_F0000000_18C91C8 \
-		0x100:overlay70RandomRange:func_overlay_070_F0000000_18C91C8 \
-		0x124:overlay70RandomRange:func_overlay_070_F0000000_18C91C8 \
-		0x134:overlay70RandomRange:func_overlay_070_F0000000_18C91C8 \
-		0x14C:overlay70Sin:func_overlay_070_F0000000_18C91C8 \
-		0x15C:overlay70Cos:func_overlay_070_F0000000_18C91C8 \
-		0x28C:overlay70Apply:func_overlay_070_F0000000_18C91C8 && \
+		0x0F0:mathRnd:func_overlay_070_F0000000_18C91C8 \
+		0x100:mathRnd:func_overlay_070_F0000000_18C91C8 \
+		0x124:mathRnd:func_overlay_070_F0000000_18C91C8 \
+		0x134:mathRnd:func_overlay_070_F0000000_18C91C8 \
+		0x14C:func_8002A8BC:func_overlay_070_F0000000_18C91C8 \
+		0x15C:func_8002A8C0:func_overlay_070_F0000000_18C91C8 \
+		0x28C:texAnimateSprite:func_overlay_070_F0000000_18C91C8 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2AC
 else
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F00000D8_18C92A0.c.o: POSTPROCESS = \
@@ -2680,12 +2679,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o: POSTPROCESS = \
 		--redefine-sym D_800D3140=D_800D3140_o049Reloc \
 		--redefine-sym D_800D3144=D_800D3144_o049Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x218:func_800254FC:overlay65UpdateReloc \
-		0x224:func_8002554C:overlay65UpdateReloc \
-		0x2c0:func_800016EC:overlay65UpdateReloc \
-		0x2d8:func_8003A754:overlay65UpdateReloc \
-		0x2f8:overlay48InitializeReloc:overlay65UpdateReloc \
-		0x314:func_80028374:overlay65UpdateReloc && \
+		0x218:func_800254FC:overlay65UpdateParticles \
+		0x224:func_8002554C:overlay65UpdateParticles \
+		0x2c0:func_800016EC:overlay65UpdateParticles \
+		0x2d8:func_8003A754:overlay65UpdateParticles \
+		0x2f8:overlay48Initialize:overlay65UpdateParticles \
+		0x314:func_80028374:overlay65UpdateParticles && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x374
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.
@@ -2800,8 +2799,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29ProjectPoint.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59Release.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x70
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59PrepareEntry.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym \
-		overlay59PrepareReleaseReloc=func_overlay_059_F0000000_18B8750 $@ && \
+	$(OBJCOPY) --redefine-sym overlay59Release=func_overlay_059_F0000000_18B8750 $@ && \
 	$(OBJCOPY) --redefine-sym \
 		texLoadTexture=texLoadTexture_o059Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xF8

@@ -29,7 +29,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14AdvanceCommand.c.o: POSTPROCESS =
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		@config/normalizations/overlay14AdvanceCommand.filter.spec && \
 	$(OBJCOPY) \
-		--redefine-sym overlay14InitializeMode=func_overlay_014_F0000000_186F8D8 \
+		--redefine-sym func_8004D5C0=func_overlay_014_F0000000_186F8D8 \
 		--redefine-sym gOverlay14Transition=D_D8 \
 		--redefine-sym gOverlay14Cursor=D_DC \
 		--redefine-sym overlay14ResetMode=func_overlay_014_F0000498_186FD70 \
@@ -53,7 +53,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/func_overlay_014_F00013F4_1870CCC.c.o: POS
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		@config/normalizations/func_overlay_014_F00013F4_1870CCC.filter.spec && \
 	$(OBJCOPY) \
-		--redefine-sym overlay14BuildPanel=func_overlay_014_F00012D8_1870BB0 \
+		--redefine-sym overlay14BuildRects=func_overlay_014_F00012D8_1870BB0 \
 		--redefine-sym overlay14CreateHandle=func_overlay_014_F0001830_1871108 \
 		--redefine-sym overlay14DrawPrimitive=func_overlay_014_F0000000_186F8D8 \
 		--redefine-sym gOverlay14Args2C=D_2C \
@@ -86,7 +86,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/func_overlay_014_F00009F4_18702CC.c.o: POS
 # the pre-postprocess alias and prove the runtime identity independently.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14ResetMode.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym overlay14ResetReleaseOwnerReloc=func_overlay_014_F0000000_186F8D8 $@ && \
+		--redefine-sym overlay14ReleaseOwner=func_overlay_014_F0000000_186F8D8 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xE0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/func_overlay_014_F0000000_186F8D8.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x13C
@@ -140,19 +140,18 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14UpdateTransition.c.o: POSTPROCESS
 		@config/normalizations/overlay14UpdateTransition.filter.spec && \
 	$(OBJCOPY) \
 		--redefine-sym gOverlay14TransitionValue=D_C0 \
-		--redefine-sym overlay14PrepareReloc=func_overlay_014_F0000B5C_1870434 \
-		--redefine-sym overlay14AdvanceReloc=func_overlay_014_F0000D68_1870640 \
-		--redefine-sym overlay14RetreatReloc=func_overlay_014_F0000F64_187083C \
+		--redefine-sym overlay14PrepareInputState=func_overlay_014_F0000B5C_1870434 \
+		--redefine-sym overlay14AdvanceCommand=func_overlay_014_F0000D68_1870640 \
+		--redefine-sym overlay14StepCommand=func_overlay_014_F0000F64_187083C \
 		--redefine-sym overlay14InitializeReloc=func_overlay_014_F0000000_186F8D8 \
 		--redefine-sym overlay14DrawPrimaryReloc=func_overlay_014_F00013F4_1870CCC \
 		--redefine-sym overlay14DrawAlternateReloc=func_overlay_014_F0001540_1870E18 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0xF4:overlay14SetActiveReloc:func_overlay_014_F0000000_186F8D8 \
-		0x13C:overlay14SetActiveReloc:func_overlay_014_F0000000_186F8D8 && \
+		0xF4:fontSetButtonMode:func_overlay_014_F0000000_186F8D8 \
+		0x13C:fontSetButtonMode:func_overlay_014_F0000000_186F8D8 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x154
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14DispatchCommand.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x124
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14BuildRects.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym \
-		overlay14SubmitRectsReloc=func_overlay_014_F0000000_186F8D8 $@ && \
+	$(OBJCOPY) --redefine-sym frontDrawRectangles=func_overlay_014_F0000000_186F8D8 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x11C

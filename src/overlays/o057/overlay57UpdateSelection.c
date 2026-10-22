@@ -35,27 +35,21 @@ extern s32 gO57SelectionSecondary4ECReloc;
 extern s32 gO57SelectionChanging4F0Reloc;
 extern s32 gO57SelectionDistance50CReloc;
 
-extern u32 gOverlay57Flags37ECReloc;
-extern s32 gOverlay57Mode38C4Reloc;
+extern u32 D_800D31B8;
+extern s32 D_8007C1A0;
 extern s16 gOverlay57Threshold38D8Reloc;
 extern s16 gOverlay57Threshold3970Reloc;
 extern s32 gOverlay57PublishedIndex3A28Reloc;
 
-extern s32 overlay57Call35F8Reloc(void);
-extern void overlay57Call3618Reloc(s32 *primary, s32 *secondary);
-extern Overlay57SelectionResult *overlay57Call3684Reloc(u8 id);
+extern s32 overlay84GetActive(void);
+extern void overlay84GetValues(s32 *primary, s32 *secondary);
+extern Overlay57SelectionResult *func_800508B4(u8 id);
 extern void *overlay57Call36F4Reloc(u8 id);
-extern Overlay57SelectionResult *overlay57Call3758Reloc(u8 id);
-extern s32 overlay57Call37E0Reloc(void);
-extern void overlay57Call3880Reloc(s32 command, s32 argument);
-extern void overlay57Call3888Reloc(s32 argument);
-extern s32 overlay57Call38ACReloc(void);
-extern void overlay57Call3920Reloc(void *item, s32 x, s32 y, s32 z);
-extern void overlay57Call3940Reloc(void *item, s32 x, s32 y, s32 z);
-extern void overlay57Call3960Reloc(void *item, s32 x, s32 y, s32 z);
-extern void overlay57Call39B0Reloc(void *item, s32 x, s32 y, s32 z);
-extern void overlay57Call39D0Reloc(void *item, s32 x, s32 y, s32 z);
-extern void overlay57Call39F0Reloc(void *item, s32 x, s32 y, s32 z);
+extern s32 overlay84GetEnabledCurrent(void);
+extern void amSndPlay(s32 command, s32 argument);
+extern void overlay84LoadCurrent(s32 argument);
+extern s32 overlay84GetCurrent(void);
+extern void overlay45ConfigureLayout(void *item, s32 x, s32 y, s32 z);
 extern void overlay57SetNodeValue(s32 id, s32 argument, f32 value);
 
 /* Overlay 57 text +0x35E0..+0x3A4C. Matched 2026-10-01 (lane d-o057) from 162
@@ -75,11 +69,11 @@ void overlay57UpdateSelection(s32 updateRate) {
     s32 unused1;
     s32 unused2;
 
-    if (overlay57Call35F8Reloc() != 2) {
+    if (overlay84GetActive() != 2) {
         return;
     }
     gO57SelectionActive144Reloc = 1;
-    overlay57Call3618Reloc(&newPrimary, &newSecondary);
+    overlay84GetValues(&newPrimary, &newSecondary);
     if ((newPrimary != gO57SelectionPrimary4E8Reloc) ||
         (newSecondary != gO57SelectionSecondary4ECReloc)) {
         if ((gO57SelectionPrimary4E8Reloc != 0xFF) &&
@@ -87,7 +81,7 @@ void overlay57UpdateSelection(s32 updateRate) {
             list = gO57SelectionIds134Reloc;
             while (*list != -1) {
                 if (*list == gO57SelectionPrimary4E8Reloc) {
-                    result = overlay57Call3684Reloc(*list);
+                    result = func_800508B4(*list);
                     if ((result != NULL) && (result->child != NULL) &&
                         (newSecondary != result->child->selector3B)) {
                         overlay57SetNodeValue(*list, gO57SelectionValues17CReloc[*list], 0.007f);
@@ -107,7 +101,7 @@ void overlay57UpdateSelection(s32 updateRate) {
     }
 
     if ((gO57SelectionChanging4F0Reloc != 0) && (gO57SelectionPrimary4E8Reloc != 0xFF)) {
-        result = overlay57Call3758Reloc(gO57SelectionPrimary4E8Reloc);
+        result = func_800508B4(gO57SelectionPrimary4E8Reloc);
         if ((result != NULL) && (gO57SelectionValue10CReloc.value < result->child->value28)) {
             gO57SelectionChanging4F0Reloc = 0;
             list = gO57SelectionIds134Reloc;
@@ -120,7 +114,7 @@ void overlay57UpdateSelection(s32 updateRate) {
         }
     }
 
-    if (overlay57Call37E0Reloc() != -1) {
+    if (overlay84GetEnabledCurrent() != -1) {
         list = gO57SelectionIds134Reloc;
         while (*list != -1) {
             overlay57SetNodeValue(*list, gO57SelectionValues158Reloc[*list], 0.01f);
@@ -130,31 +124,31 @@ void overlay57UpdateSelection(s32 updateRate) {
         gO57SelectionTimer120Reloc = 10;
         return;
     }
-    if ((gOverlay57Flags37ECReloc & 0x4000) && (gO57SelectionDistance50CReloc == 0)) {
-        overlay57Call3880Reloc(0xD, 0);
-        overlay57Call3888Reloc(0);
+    if ((D_800D31B8 & 0x4000) && (gO57SelectionDistance50CReloc == 0)) {
+        amSndPlay(0xD, 0);
+        overlay84LoadCurrent(0);
         gO57SelectionState118Reloc = 5;
         gO57SelectionMode11CReloc = 0;
         return;
     }
-    entry = overlay57Call38ACReloc();
+    entry = overlay84GetCurrent();
     if (entry == gO57SelectionCurrent100Reloc[0]) {
         return;
     }
-    if (gOverlay57Mode38C4Reloc == 1) {
+    if (D_8007C1A0 == 1) {
         if ((gOverlay57Threshold38D8Reloc < -16) && (gO57SelectionDistance50CReloc == 0)) {
-            overlay57Call3920Reloc(((void **)gO57SelectionList8Reloc)[entry], -0xA0, 0xBE, 4);
+            overlay45ConfigureLayout(((void **)gO57SelectionList8Reloc)[entry], -0xA0, 0xBE, 4);
         } else {
-            overlay57Call3940Reloc(((void **)gO57SelectionList8Reloc)[entry], 0x1E0, 0xBE, 4);
+            overlay45ConfigureLayout(((void **)gO57SelectionList8Reloc)[entry], 0x1E0, 0xBE, 4);
         }
-        overlay57Call3960Reloc(((void **)gO57SelectionList8Reloc)[gO57SelectionCurrent100Reloc[0]], 0xA0, 0x104, 0x104);
+        overlay45ConfigureLayout(((void **)gO57SelectionList8Reloc)[gO57SelectionCurrent100Reloc[0]], 0xA0, 0x104, 0x104);
     } else {
         if ((gOverlay57Threshold3970Reloc < -16) && (gO57SelectionDistance50CReloc == 0)) {
-            overlay57Call39B0Reloc(((void **)gO57SelectionList30Reloc)[entry], -0xA0, 0xBE, 4);
+            overlay45ConfigureLayout(((void **)gO57SelectionList30Reloc)[entry], -0xA0, 0xBE, 4);
         } else {
-            overlay57Call39D0Reloc(((void **)gO57SelectionList30Reloc)[entry], 0x1E0, 0xBE, 4);
+            overlay45ConfigureLayout(((void **)gO57SelectionList30Reloc)[entry], 0x1E0, 0xBE, 4);
         }
-        overlay57Call39F0Reloc(((void **)gO57SelectionList30Reloc)[gO57SelectionCurrent100Reloc[0]], 0xA0, 0x104, 0x104);
+        overlay45ConfigureLayout(((void **)gO57SelectionList30Reloc)[gO57SelectionCurrent100Reloc[0]], 0xA0, 0x104, 0x104);
     }
     gO57SelectionPrevious108Reloc = gO57SelectionCurrent100Reloc[0];
     gO57SelectionCurrent100Reloc[0] = entry;

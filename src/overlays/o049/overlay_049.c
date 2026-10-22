@@ -16,13 +16,13 @@ void overlay49Initialize(void) {
 
     status = func_80028F54();
     overlay65Initialize();
-    packed = gOverlay49PackedStatusReloc;
-    if (gOverlay49ExtendedModeReloc != 0) {
+    packed = D_800D3128;
+    if (D_8007BF08 != 0) {
         mask = 0xE00;
         shift = 9;
     } else {
-        mask = gOverlay49Masks[gOverlay49MenuModeReloc];
-        shift = gOverlay49Shifts[gOverlay49MenuModeReloc];
+        mask = gOverlay49Masks[D_8007BF04];
+        shift = gOverlay49Shifts[D_8007BF04];
     }
     current = (packed[status->player + 4] & mask) >> shift;
     gOverlay49Result = NULL;
@@ -43,8 +43,8 @@ void overlay49Initialize(void) {
         desired = modes[rank];
     }
     if (current < desired) {
-        gOverlay49PackedStatusReloc[status->player + 4] &= ~mask;
-        gOverlay49PackedStatusReloc[status->player + 4] |= desired << shift;
+        D_800D3128[status->player + 4] &= ~mask;
+        D_800D3128[status->player + 4] |= desired << shift;
         func_8002917C(desired);
     }
     if (current < 3 && current < desired) {
@@ -91,14 +91,14 @@ void overlay49Update(s32 updateRate) {
                 func_8003A754();
             }
             if (D_8007BF60 != 0) {
-                overlay48InitializeReloc();
+                overlay48Initialize();
             } else {
                 func_80028374(12, 0, 0, 12, 1, 0);
             }
             gOverlay49Finished = 1;
         }
     }
-    overlay65UpdateReloc(D_800D3140, D_800D3144, updateRate);
+    overlay65UpdateParticles(D_800D3140, D_800D3144, updateRate);
 }
 
 /*
@@ -107,5 +107,5 @@ void overlay49Update(s32 updateRate) {
  * no C credit. Mickey's call relocation targets overlay 65 +0xBC0.
  */
 void refractOutput(void) {
-    overlay49RefractOutputReloc();
+    overlay65Release();
 }

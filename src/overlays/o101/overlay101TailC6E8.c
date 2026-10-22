@@ -39,15 +39,15 @@ typedef struct O101TailC6E8Node20 {
     void *handle;
 } O101TailC6E8Node20;
 
-extern s32 gO101TailC6E8QueueCount;
-extern u8 gO101TailC6E8Queue[];
+extern s32 D_8007BF44;
+extern u8 D_8007BF3C[];
 extern s32 gO101TailC6E8PresentationActive;
 extern s32 gO101TailC6E8PresentationDone;
-extern O101TailC6E8Root gO101TailC6E8Root;
+extern O101TailC6E8Root D_0;
 extern s32 gO101TailC6E8OrderCount;
 extern O101TailC6E8Root *gO101TailC6E8OrderSlots[];
 extern s32 gO101TailC6E8Node32Count;
-extern O101TailC6E8Node32 gO101TailC6E8Nodes32[];
+extern O101TailC6E8Node32 D_340[];
 extern s32 gO101TailC6E8Node20Count;
 extern O101TailC6E8Node20 gO101TailC6E8Nodes20[];
 extern u8 gO101TailC6E8AssetDF0;
@@ -62,33 +62,33 @@ extern void *gO101TailC6E8Handle338;
  * routine per name). The selector's 25-case switch table is the retained
  * rodata at rodata-relative +0xEAC; mk/overlays.mk rebinds the compiler's
  * private copy onto it. */
-extern s32 o101TailC6E8StateReloc(void);
-extern void o101TailC6E8ResetReloc(void *value);
-extern void o101TailC6E8Run3A58Reloc(void);
-extern void o101TailC6E8Run512CReloc(void);
-extern void o101TailC6E8Run571CReloc(void);
-extern void o101TailC6E8Run5E08Reloc(void);
-extern void o101TailC6E8Run63F8Reloc(void);
-extern void o101TailC6E8Run69E8Reloc(void);
-extern void o101TailC6E8Run78F4Reloc(void);
-extern void o101TailC6E8Run8128Reloc(void);
-extern void o101TailC6E8Run895CReloc(void);
-extern void o101TailC6E8Run9190Reloc(void);
-extern void o101TailC6E8PresentationAReloc(void);
-extern void o101TailC6E8PresentationCReloc(void);
-extern void o101TailC6E8PresentationBReloc(void);
-extern void o101TailC6E8PresentationDReloc(void);
-extern void o101TailC6E8TailA6BCReloc(s32 base);
-extern void o101TailC6E8TailAB4CReloc(void);
-extern void o101TailC6E8TailB544Reloc(void);
-extern void o101TailC6E8TailBA34Reloc(s32 variant);
-extern void o101TailC6E8TailC144Reloc(void);
-extern void *o101TailC6E8CreatorReloc(s32 key, void *source);
-extern void *o101TailC6E8CreateCompactReloc(s32 key, O101TailC6E8Node20 *node);
-extern void *o101TailC6E8AcquireReloc(s32 key);
-extern void *o101TailC6E8Acquire338Reloc(s32 a, s32 b);
-extern void o101TailC6E8Tail27Reloc(s32 key);
-extern void o101TailC6E8TailFinalReloc(void);
+extern s32 levelGetNumber(void);
+extern void overlay101Reset(void *value);
+extern void func_overlay_101_F0003A58_18DF278(void);
+extern void func_overlay_101_F000512C_18E094C(void);
+extern void func_overlay_101_F000571C_18E0F3C(void);
+extern void func_overlay_101_F0005E08_18E1628(void);
+extern void func_overlay_101_F00063F8_18E1C18(void);
+extern void func_overlay_101_F00069E8_18E2208(void);
+extern void func_overlay_101_F00078F4_18E3114(void);
+extern void func_overlay_101_F0008128_18E3948(void);
+extern void func_overlay_101_F000895C_18E417C(void);
+extern void func_overlay_101_F0009190_18E49B0(void);
+extern void overlay101BuildPresentationA(void);
+extern void overlay101BuildPresentationC(void);
+extern void overlay101BuildPresentationB(void);
+extern void overlay101BuildPresentationD(void);
+extern void overlay101TailA6BC(s32 base);
+extern void func_overlay_101_F000AB4C_18E636C(void);
+extern void func_overlay_101_F000B544_18E6D64(void);
+extern void func_overlay_101_F000BA34_18E7254(s32 variant);
+extern void func_overlay_101_F000C144_18E7964(void);
+extern void *texLoadSprite(s32 key, void *source);
+extern void *func_80036DD0(s32 key, O101TailC6E8Node20 *node);
+extern void *texLoadTexture(s32 key);
+extern void *mathRnd(s32 a, s32 b);
+extern void amTunePlay(s32 key);
+extern void func_800015F8(void);
 
 /* Matched 2026-10-02 (lane x-o101), 106 -> 0 at delta 0, by rewriting the
  * inherited shape in the matched siblings' (overlay101TailAB4C/A6BC) form
@@ -104,64 +104,64 @@ void func_overlay_101_F000C6E8_18E7F08(void) {
     u8 selector;
     s32 i;
 
-    if (o101TailC6E8StateReloc() == 0x12) {
-        o101TailC6E8ResetReloc(NULL);
+    if (levelGetNumber() == 0x12) {
+        overlay101Reset(NULL);
     } else {
-        selector = gO101TailC6E8Queue[0];
-        if (gO101TailC6E8QueueCount > 0) {
-            gO101TailC6E8QueueCount--;
-            for (i = 0; i < gO101TailC6E8QueueCount; i++) {
-                gO101TailC6E8Queue[i] = gO101TailC6E8Queue[i + 1];
+        selector = D_8007BF3C[0];
+        if (D_8007BF44 > 0) {
+            D_8007BF44--;
+            for (i = 0; i < D_8007BF44; i++) {
+                D_8007BF3C[i] = D_8007BF3C[i + 1];
             }
         }
 
         switch (selector) {
-            case 0:  o101TailC6E8Run3A58Reloc(); break;
-            case 1:  o101TailC6E8Run512CReloc(); break;
-            case 2:  o101TailC6E8Run571CReloc(); break;
-            case 3:  o101TailC6E8Run5E08Reloc(); break;
-            case 4:  o101TailC6E8Run63F8Reloc(); break;
-            case 5:  o101TailC6E8Run69E8Reloc(); break;
-            case 6:  o101TailC6E8Run78F4Reloc(); break;
-            case 7:  o101TailC6E8Run8128Reloc(); break;
-            case 8:  o101TailC6E8Run895CReloc(); break;
-            case 9:  o101TailC6E8Run9190Reloc(); break;
-            case 10: o101TailC6E8PresentationAReloc(); break;
-            case 11: o101TailC6E8PresentationCReloc(); break;
-            case 12: o101TailC6E8PresentationBReloc(); break;
-            case 13: o101TailC6E8PresentationDReloc(); break;
-            case 14: o101TailC6E8TailA6BCReloc(0); break;
-            case 15: o101TailC6E8TailA6BCReloc(1); break;
-            case 16: o101TailC6E8TailA6BCReloc(2); break;
-            case 17: o101TailC6E8TailA6BCReloc(3); break;
-            case 18: o101TailC6E8TailA6BCReloc(4); break;
-            case 19: o101TailC6E8TailA6BCReloc(5); break;
-            case 20: o101TailC6E8TailAB4CReloc(); break;
-            case 21: o101TailC6E8TailB544Reloc(); break;
-            case 22: o101TailC6E8TailBA34Reloc(0); break;
-            case 23: o101TailC6E8TailBA34Reloc(1); break;
-            case 24: o101TailC6E8TailC144Reloc(); break;
-            default: o101TailC6E8ResetReloc(NULL); break;
+            case 0:  func_overlay_101_F0003A58_18DF278(); break;
+            case 1:  func_overlay_101_F000512C_18E094C(); break;
+            case 2:  func_overlay_101_F000571C_18E0F3C(); break;
+            case 3:  func_overlay_101_F0005E08_18E1628(); break;
+            case 4:  func_overlay_101_F00063F8_18E1C18(); break;
+            case 5:  func_overlay_101_F00069E8_18E2208(); break;
+            case 6:  func_overlay_101_F00078F4_18E3114(); break;
+            case 7:  func_overlay_101_F0008128_18E3948(); break;
+            case 8:  func_overlay_101_F000895C_18E417C(); break;
+            case 9:  func_overlay_101_F0009190_18E49B0(); break;
+            case 10: overlay101BuildPresentationA(); break;
+            case 11: overlay101BuildPresentationC(); break;
+            case 12: overlay101BuildPresentationB(); break;
+            case 13: overlay101BuildPresentationD(); break;
+            case 14: overlay101TailA6BC(0); break;
+            case 15: overlay101TailA6BC(1); break;
+            case 16: overlay101TailA6BC(2); break;
+            case 17: overlay101TailA6BC(3); break;
+            case 18: overlay101TailA6BC(4); break;
+            case 19: overlay101TailA6BC(5); break;
+            case 20: func_overlay_101_F000AB4C_18E636C(); break;
+            case 21: func_overlay_101_F000B544_18E6D64(); break;
+            case 22: func_overlay_101_F000BA34_18E7254(0); break;
+            case 23: func_overlay_101_F000BA34_18E7254(1); break;
+            case 24: func_overlay_101_F000C144_18E7964(); break;
+            default: overlay101Reset(NULL); break;
         }
 
         if (gO101TailC6E8PresentationActive != 0) {
-            gO101TailC6E8Root.kind = 2; gO101TailC6E8Root.x = -0x20; gO101TailC6E8Root.y = -0x18; gO101TailC6E8Root.width = 0x180; gO101TailC6E8Root.height = 0x120; gO101TailC6E8Root.asset = &gO101TailC6E8AssetDF0; gO101TailC6E8Root.color0 = 0xFF; gO101TailC6E8Root.color1 = 0xFF; gO101TailC6E8Root.value0A = 0; gO101TailC6E8Root.value0C = 0; gO101TailC6E8Root.chainType = 0; gO101TailC6E8Root.chain = NULL; gO101TailC6E8OrderSlots[gO101TailC6E8OrderCount] = &gO101TailC6E8Root; gO101TailC6E8OrderCount = gO101TailC6E8OrderCount + 1;
+            D_0.kind = 2; D_0.x = -0x20; D_0.y = -0x18; D_0.width = 0x180; D_0.height = 0x120; D_0.asset = &gO101TailC6E8AssetDF0; D_0.color0 = 0xFF; D_0.color1 = 0xFF; D_0.value0A = 0; D_0.value0C = 0; D_0.chainType = 0; D_0.chain = NULL; gO101TailC6E8OrderSlots[gO101TailC6E8OrderCount] = &D_0; gO101TailC6E8OrderCount = gO101TailC6E8OrderCount + 1;
 
-            gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].x = 0x35; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].y = 0xE0; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].value10 = 0; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].color0 = 0xFF; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].color1 = 0; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].value18 = 0; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].scale = 1.0f; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].value14 = 0.0f; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].handle = o101TailC6E8CreatorReloc(0x8F, NULL); gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].previousType = gO101TailC6E8Root.chainType; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].previous = gO101TailC6E8Root.chain; gO101TailC6E8Root.chainType = 2; gO101TailC6E8Root.chain = &gO101TailC6E8Nodes32[gO101TailC6E8Node32Count]; gO101TailC6E8Node32Count = gO101TailC6E8Node32Count + 1;
+            D_340[gO101TailC6E8Node32Count].x = 0x35; D_340[gO101TailC6E8Node32Count].y = 0xE0; D_340[gO101TailC6E8Node32Count].value10 = 0; D_340[gO101TailC6E8Node32Count].color0 = 0xFF; D_340[gO101TailC6E8Node32Count].color1 = 0; D_340[gO101TailC6E8Node32Count].value18 = 0; D_340[gO101TailC6E8Node32Count].scale = 1.0f; D_340[gO101TailC6E8Node32Count].value14 = 0.0f; D_340[gO101TailC6E8Node32Count].handle = texLoadSprite(0x8F, NULL); D_340[gO101TailC6E8Node32Count].previousType = D_0.chainType; D_340[gO101TailC6E8Node32Count].previous = D_0.chain; D_0.chainType = 2; D_0.chain = &D_340[gO101TailC6E8Node32Count]; gO101TailC6E8Node32Count = gO101TailC6E8Node32Count + 1;
 
-            gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].x = 0xC0; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].y = 0xE0; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].value10 = 0; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].color0 = 0xFF; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].color1 = 0; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].value18 = 0; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].scale = 1.0f; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].value14 = 0.0f; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].handle = o101TailC6E8CreatorReloc(0x90, NULL); gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].previousType = gO101TailC6E8Root.chainType; gO101TailC6E8Nodes32[gO101TailC6E8Node32Count].previous = gO101TailC6E8Root.chain; gO101TailC6E8Root.chainType = 2; gO101TailC6E8Root.chain = &gO101TailC6E8Nodes32[gO101TailC6E8Node32Count]; gO101TailC6E8Node32Count = gO101TailC6E8Node32Count + 1;
+            D_340[gO101TailC6E8Node32Count].x = 0xC0; D_340[gO101TailC6E8Node32Count].y = 0xE0; D_340[gO101TailC6E8Node32Count].value10 = 0; D_340[gO101TailC6E8Node32Count].color0 = 0xFF; D_340[gO101TailC6E8Node32Count].color1 = 0; D_340[gO101TailC6E8Node32Count].value18 = 0; D_340[gO101TailC6E8Node32Count].scale = 1.0f; D_340[gO101TailC6E8Node32Count].value14 = 0.0f; D_340[gO101TailC6E8Node32Count].handle = texLoadSprite(0x90, NULL); D_340[gO101TailC6E8Node32Count].previousType = D_0.chainType; D_340[gO101TailC6E8Node32Count].previous = D_0.chain; D_0.chainType = 2; D_0.chain = &D_340[gO101TailC6E8Node32Count]; gO101TailC6E8Node32Count = gO101TailC6E8Node32Count + 1;
 
-            gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].x = 0x20; gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].y = 0x18; gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].scale = 1.0f; gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].handle = o101TailC6E8CreateCompactReloc(1, &gO101TailC6E8Nodes20[gO101TailC6E8Node20Count]); gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].previousType = gO101TailC6E8Root.chainType; gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].previous = gO101TailC6E8Root.chain; gO101TailC6E8Root.chainType = 1; gO101TailC6E8Root.chain = &gO101TailC6E8Nodes20[gO101TailC6E8Node20Count]; gO101TailC6E8Node20Count = gO101TailC6E8Node20Count + 1;
+            gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].x = 0x20; gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].y = 0x18; gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].scale = 1.0f; gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].handle = func_80036DD0(1, &gO101TailC6E8Nodes20[gO101TailC6E8Node20Count]); gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].previousType = D_0.chainType; gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].previous = D_0.chain; D_0.chainType = 1; D_0.chain = &gO101TailC6E8Nodes20[gO101TailC6E8Node20Count]; gO101TailC6E8Node20Count = gO101TailC6E8Node20Count + 1;
 
-            gO101TailC6E8Handle1D4 = o101TailC6E8AcquireReloc(0x5F1);
-            gO101TailC6E8Handle1F4 = o101TailC6E8AcquireReloc(0x5F2);
+            gO101TailC6E8Handle1D4 = texLoadTexture(0x5F1);
+            gO101TailC6E8Handle1F4 = texLoadTexture(0x5F2);
         }
 
-        gO101TailC6E8Handle33C = o101TailC6E8AcquireReloc(0x58);
-        gO101TailC6E8Handle338 = o101TailC6E8Acquire338Reloc(0, 0x278D00);
+        gO101TailC6E8Handle33C = texLoadTexture(0x58);
+        gO101TailC6E8Handle338 = mathRnd(0, 0x278D00);
     }
 
     gO101TailC6E8PresentationDone = 0;
-    o101TailC6E8Tail27Reloc(0x27);
-    o101TailC6E8TailFinalReloc();
+    amTunePlay(0x27);
+    func_800015F8();
 }

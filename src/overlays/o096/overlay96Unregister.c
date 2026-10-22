@@ -1,6 +1,6 @@
 #include "PR/ultratypes.h"
 
-extern s32 gO96EntryCountReloc;
+extern s32 D_80078F84;
 extern void *gO96EntriesReloc[16];
 
 /* Matched 2026-09-17 (lane w7-o096), 25 -> 0 masked words at delta 0,
@@ -12,11 +12,11 @@ extern void *gO96EntriesReloc[16];
 void overlay96Unregister(void *volume) {
     s32 index;
 
-    index = gO96EntryCountReloc;
+    index = D_80078F84;
     while (index--) {
         if (gO96EntriesReloc[index] == volume) {
-            gO96EntryCountReloc--;
-            while (index < gO96EntryCountReloc) {
+            D_80078F84--;
+            while (index < D_80078F84) {
                 gO96EntriesReloc[index] = gO96EntriesReloc[index + 1];
                 index++;
             }

@@ -8,7 +8,7 @@ typedef struct Overlay31Record {
     u8 pad125[0x23];
 } Overlay31Record;
 
-extern void *overlay31AllocateReloc(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 
 /* DKR v77/v80 and JFG contain no exact donor for this record allocator. */
 Overlay31Record *overlay31CreateRecords(s32 count) {
@@ -17,7 +17,7 @@ Overlay31Record *overlay31CreateRecords(s32 count) {
     s32 i;
     s32 j;
 
-    records = overlay31AllocateReloc(count * sizeof(Overlay31Record), 0x8C);
+    records = mmAlloc(count * sizeof(Overlay31Record), 0x8C);
     record = records;
     for (i = 0; i < count; i++) {
         record->owner = NULL;

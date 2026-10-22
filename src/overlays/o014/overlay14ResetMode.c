@@ -10,7 +10,7 @@ extern s32 gOverlay14ValueD8;
 extern s32 gOverlay14ValueDC;
 extern s32 gOverlay14ValueE0;
 extern Overlay14Command D_128[];
-extern void overlay14ResetReleaseOwnerReloc(void);
+extern void overlay14ReleaseOwner(void);
 extern s32 func_overlay_014_F0000578_186FE50(s32);
 
 /* PROVENANCE: Mickey-derived; pinned DKR v77/v80 and JFG scans found no exact
@@ -38,7 +38,7 @@ void overlay14ResetMode(void) { Overlay14Command *command; do {
         if (D_EC <= 0) return;
         D_EC--;
         if (D_EC <= 0) return;
-        overlay14ResetReleaseOwnerReloc();
+        overlay14ReleaseOwner();
         command = &D_128[D_EC - 1];
         D_E4 = command->type;
         if (command->type != 1) {

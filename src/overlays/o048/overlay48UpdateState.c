@@ -19,13 +19,13 @@ extern s16 gOverlay48Finished;
 extern s32 gOverlay48ResourceTable[];
 extern f32 gOverlay48TransitionValue;
 
-extern void overlay48SelectMode(s32 mode);
-extern void overlay45ReleaseHandle(s32 handle);
-extern void overlay45SetHandleValue(s32 handle, s16 value);
-extern s32 overlay45SpawnHandle(s32 resource, s32 value, s16 seed, s32 kind);
-extern void overlay48BeginTransition(s32 mode);
-extern void overlay48ContinueTransition(void);
-extern void overlay48FinishTransition(f32 value, s32 mode);
+extern void fontUseFont(s32 mode);
+extern void overlay45ReleaseDescriptor(s32 handle);
+extern void overlay45SetMode(s32 handle, s16 value);
+extern s32 overlay45CreateDescriptor(s32 resource, s32 value, s16 seed, s32 kind);
+extern void mainTitlePageInit(s32 mode);
+extern void func_80001608(void);
+extern void amTuneSetFade(f32 value, s32 mode);
 
 /* A source-level switch preserves the script operation order while giving
  * IDO the retail control web and register allocation. */
@@ -37,7 +37,7 @@ void overlay48UpdateState(s32 updateRate) {
     u32 control;
 
     allSettled = 1;
-    overlay48SelectMode(3);
+    fontUseFont(3);
     entry = gOverlay48Entries;
     maximum = 0xFF;
     index = 0;
@@ -56,14 +56,14 @@ void overlay48UpdateState(s32 updateRate) {
                 entry->opacity -= updateRate * 4;
                 if (entry->opacity < 0) {
                     entry->opacity = 0;
-                    overlay45ReleaseHandle(entry->handle);
+                    overlay45ReleaseDescriptor(entry->handle);
                     entry->handle = 0;
                 } else {
                     allSettled = 0;
                 }
             }
             if (entry->handle != 0) {
-                overlay45SetHandleValue(entry->handle, entry->opacity);
+                overlay45SetMode(entry->handle, entry->opacity);
             }
         }
         index++;
@@ -86,11 +86,11 @@ void overlay48UpdateState(s32 updateRate) {
                     if (index != 0) {
                         do {
                             if (entry->handle == 0) {
-                                entry->handle = overlay45SpawnHandle(
+                                entry->handle = overlay45CreateDescriptor(
                                     gOverlay48ResourceTable[
                                         gOverlay48ResourceIndex++],
                                     0xA0, entry->seed, 4);
-                                overlay45SetHandleValue(entry->handle, 0);
+                                overlay45SetMode(entry->handle, 0);
                                 index--;
                                 entry->lifetime = gOverlay48Timer;
                             }
@@ -113,9 +113,9 @@ void overlay48UpdateState(s32 updateRate) {
                 break;
             case -4:
                 gOverlay48Finished = 1;
-                overlay48BeginTransition(1);
-                overlay48ContinueTransition();
-                overlay48FinishTransition(gOverlay48TransitionValue, 0);
+                mainTitlePageInit(1);
+                func_80001608();
+                amTuneSetFade(gOverlay48TransitionValue, 0);
                 break;
         }
     }

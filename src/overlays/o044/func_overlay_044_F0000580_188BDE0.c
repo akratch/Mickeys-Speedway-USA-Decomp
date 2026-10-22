@@ -150,7 +150,7 @@ typedef struct Overlay44AnimationState {
     gImmp1(pkt, 0xB2, (_SHIFTL((dsdx), 16, 16) | _SHIFTL((dtdy), 0, 16)));  \
 }
 
-extern Overlay44FrameSource *gOverlay44FrameSources;
+extern Overlay44FrameSource *D_800D76D0;
 extern Gfx D_0[];
 extern Gfx D_28[];
 extern void texDPInit(Gfx **dl);
@@ -174,8 +174,8 @@ void func_overlay_044_F0000580_188BDE0(Overlay44AnimationState *state,
     if (state == NULL || state->sourceIndex == -1) {
         return;
     }
-    width = gOverlay44FrameSources[state->sourceIndex].dimension0;
-    height = gOverlay44FrameSources[state->sourceIndex].dimension1;
+    width = D_800D76D0[state->sourceIndex].dimension0;
+    height = D_800D76D0[state->sourceIndex].dimension1;
     tex0 = state->handles[state->protectedSlot0];
     tex1 = state->handles[state->protectedSlot1];
     alpha = state->phase & 0xFF;

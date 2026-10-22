@@ -10,11 +10,11 @@ typedef struct Overlay58InputRecord {
 
 /* The gate, the two mode bytes and the packed status words are resident
  * objects reached through runtime relocation records. */
-extern u8 gOverlay58FinalizerGate;
+extern u8 D_8007BF0C;
 extern s32 gOverlay58PrimaryOrderIndex; /* overlay-local BSS +0x74 */
-extern u8 gOverlay58PackedMode;
-extern u8 gOverlay58ExtendedPackedMode;
-extern u16 gOverlay58PackedStatus[];
+extern u8 D_8007BF04;
+extern u8 D_8007BF08;
+extern u16 D_800D3128[];
 
 extern Overlay58InputRecord *func_80028F54(void);
 extern void func_8003A680(s32 code);
@@ -50,7 +50,7 @@ void overlay58FinalizePackedStatus(void) {
 
     records = func_80028F54();
 
-    if (gOverlay58FinalizerGate != 0) {
+    if (D_8007BF0C != 0) {
         return;
     }
     if (records[0].state != 0) {
@@ -74,13 +74,13 @@ void overlay58FinalizePackedStatus(void) {
         }
     }
 
-    if (gOverlay58PackedMode == 0) {
+    if (D_8007BF04 == 0) {
         shift = 0;
         mask = 0x7;
-    } else if (gOverlay58PackedMode == 1) {
+    } else if (D_8007BF04 == 1) {
         shift = 3;
         mask = 0x38;
-    } else if (gOverlay58ExtendedPackedMode == 0) {
+    } else if (D_8007BF08 == 0) {
         shift = 6;
         mask = 0x1C0;
     } else {
@@ -88,7 +88,7 @@ void overlay58FinalizePackedStatus(void) {
         mask = 0xE00;
     }
 
-    current = (gOverlay58PackedStatus[records[0].player + 4] & mask) >> shift;
+    current = (D_800D3128[records[0].player + 4] & mask) >> shift;
     if (desired < 3) {
         return;
     }
@@ -96,7 +96,7 @@ void overlay58FinalizePackedStatus(void) {
         return;
     }
 
-    if (gOverlay58PackedMode == 0) {
+    if (D_8007BF04 == 0) {
         if (current >= 3) {
             return;
         }
@@ -104,7 +104,7 @@ void overlay58FinalizePackedStatus(void) {
         count = 0;
         for (; i < 3; i++) {
             self = records[0].player;
-            if ((i != self) && ((gOverlay58PackedStatus[i + 4] & 0x7) >= 3)) {
+            if ((i != self) && ((D_800D3128[i + 4] & 0x7) >= 3)) {
                 count++;
             }
         }
@@ -117,7 +117,7 @@ void overlay58FinalizePackedStatus(void) {
         } else if (count == 2) {
             if ((self >= 0) && (self < 3)) {
                 func_8003A680(0x0B);
-                gOverlay58PackedStatus[10] |= 0x10;
+                D_800D3128[10] |= 0x10;
                 func_800291B4();
                 func_8003A680(0x15);
             }
@@ -125,7 +125,7 @@ void overlay58FinalizePackedStatus(void) {
         return;
     }
 
-    if (gOverlay58PackedMode == 1) {
+    if (D_8007BF04 == 1) {
         if (current >= 3) {
             return;
         }
@@ -134,7 +134,7 @@ void overlay58FinalizePackedStatus(void) {
         for (; i < 3; i++) {
             self = records[0].player;
             if ((i != self) &&
-                (((gOverlay58PackedStatus[i + 4] & 0x38) >> 3) >= 3)) {
+                (((D_800D3128[i + 4] & 0x38) >> 3) >= 3)) {
                 count++;
             }
         }
@@ -147,7 +147,7 @@ void overlay58FinalizePackedStatus(void) {
         } else if (count == 2) {
             if ((self >= 0) && (self < 3)) {
                 func_8003A680(0x0C);
-                gOverlay58PackedStatus[10] |= 0x04;
+                D_800D3128[10] |= 0x04;
                 func_800291B4();
                 func_8003A680(0x15);
             }
@@ -155,14 +155,14 @@ void overlay58FinalizePackedStatus(void) {
         return;
     }
 
-    if (gOverlay58ExtendedPackedMode == 0) {
+    if (D_8007BF08 == 0) {
         i = 0;
         count = 0;
         fourCount = 0;
         for (; i < 5; i++) {
             self = records[0].player;
             if (i != self) {
-                mask = (gOverlay58PackedStatus[i + 4] & 0x1C0) >> 6;
+                mask = (D_800D3128[i + 4] & 0x1C0) >> 6;
                 if (mask >= 3) {
                     count++;
                 }
@@ -180,8 +180,8 @@ void overlay58FinalizePackedStatus(void) {
             func_8003A680(count + 1);
             if ((count + 1) == 5) {
                 func_8003A680(0x18);
-                if ((gOverlay58PackedStatus[10] & 0x40) == 0) {
-                    gOverlay58PackedStatus[10] |= 0x40;
+                if ((D_800D3128[10] & 0x40) == 0) {
+                    D_800D3128[10] |= 0x40;
                     func_800291B4();
                     func_8003A680(0x15);
                 }
@@ -189,8 +189,8 @@ void overlay58FinalizePackedStatus(void) {
         }
 
         if (records[0].player == 3) {
-            if ((gOverlay58PackedStatus[10] & 0x100) == 0) {
-                gOverlay58PackedStatus[10] |= 0x100;
+            if ((D_800D3128[10] & 0x100) == 0) {
+                D_800D3128[10] |= 0x100;
                 func_800291B4();
                 func_8003A680(0x15);
             }
@@ -204,23 +204,23 @@ void overlay58FinalizePackedStatus(void) {
 
     switch (records[0].player) {
         case 0:
-            gOverlay58PackedStatus[10] |= 0x01;
+            D_800D3128[10] |= 0x01;
             func_800291B4();
             break;
         case 1:
-            gOverlay58PackedStatus[10] |= 0x02;
+            D_800D3128[10] |= 0x02;
             func_800291B4();
             break;
         case 2:
-            gOverlay58PackedStatus[10] |= 0x08;
+            D_800D3128[10] |= 0x08;
             func_800291B4();
             break;
         case 3:
-            gOverlay58PackedStatus[10] |= 0x20;
+            D_800D3128[10] |= 0x20;
             func_800291B4();
             break;
         default:
-            gOverlay58PackedStatus[10] |= 0x80;
+            D_800D3128[10] |= 0x80;
             func_800291B4();
             break;
     }

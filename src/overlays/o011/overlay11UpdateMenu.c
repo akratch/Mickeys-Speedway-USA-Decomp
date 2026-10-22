@@ -17,7 +17,7 @@ typedef struct O11Object {
     O11ObjectSub *sub64;
 } O11Object;
 
-extern s8 D_0[];
+extern s8 D_800D3194[];
 extern u8 D_menuBase[];
 extern s16 D_1B8;
 extern s32 D_1BC;
@@ -25,17 +25,17 @@ extern s32 D_1C4;
 extern void *D_1CC[3];
 extern s32 D_204;
 
-extern s8 D_cfgA;
-extern s8 D_cfgB;
-extern s8 D_cfgC;
-extern u16 D_flags;
-extern s32 D_count;
+extern s8 D_8007BEF8;
+extern s8 D_8007BEFC;
+extern s8 D_8007BF0C;
+extern u16 D_8007BF1C;
+extern s32 D_8007BF44;
 extern s16 D_table[][4];
 extern s32 D_paramA;
 extern s32 D_paramB;
 extern s32 D_paramC;
 extern s32 D_paramD;
-extern s32 D_modeFlag;
+extern s32 D_8007C1A0;
 
 extern O11Status *func_80028F54(void);
 extern void func_overlay_011_F0001058_18698A0(s32 arg0);
@@ -102,16 +102,16 @@ void overlay11UpdateMenu(s32 updateRate) {
     s32 finish;
 
     status = func_80028F54();
-    direction = D_0[D_1C4];
+    direction = D_800D3194[D_1C4];
     if (direction < -32) {
         if (((status->mode >= 2) && (D_1BC < 3)) ||
             ((status->mode == 1) && (D_1BC < 2))) {
             D_1BC++;
             func_80000F94(0x32C, 0);
-            direction = D_0[D_1C4];
+            direction = D_800D3194[D_1C4];
         } else {
             func_80000F94(0x32D, 0);
-            direction = D_0[D_1C4];
+            direction = D_800D3194[D_1C4];
         }
     }
     if (direction >= 33) {
@@ -149,17 +149,17 @@ void overlay11UpdateMenu(s32 updateRate) {
             } else if (index == -1) {
                 func_overlay_011_F0001130_1869978(4);
             } else if (index == 1) {
-                D_cfgA = 6;
-                D_cfgB = 5;
-                D_cfgC = 0;
+                D_8007BEF8 = 6;
+                D_8007BEFC = 5;
+                D_8007BF0C = 0;
                 sub = func_80005820(D_1C4)->sub64;
-                if ((status->value1 != 0) && !(D_flags & 0x100)) {
+                if ((status->value1 != 0) && !(D_8007BF1C & 0x100)) {
                     status->mode--;
                 }
                 if (status->mode == 0) {
                     finish = 1;
                 } else {
-                    if (D_count > 0) {
+                    if (D_8007BF44 > 0) {
                         D_paramA = D_table[status->value2][status->value1];
                         D_paramB = sub->value1;
                         D_paramC = 5;
@@ -181,7 +181,7 @@ void overlay11UpdateMenu(s32 updateRate) {
             } else if (index == -1) {
                 func_overlay_011_F0001130_1869978(4);
             } else if (index == 1) {
-                if (D_modeFlag == 1) {
+                if (D_8007C1A0 == 1) {
                     func_8003A754();
                 }
                 func_overlay_011_F0002948_186B190();
@@ -191,7 +191,7 @@ void overlay11UpdateMenu(s32 updateRate) {
         }
 
         if (finish != 0) {
-            if (D_count > 0) {
+            if (D_8007BF44 > 0) {
                 sub = func_80005820(D_1C4)->sub64;
                 D_paramA = 0xC;
                 D_paramB = sub->value1;

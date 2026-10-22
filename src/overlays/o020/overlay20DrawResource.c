@@ -12,7 +12,7 @@ typedef struct Overlay20Object {
     void *resource;
 } Overlay20Object;
 
-extern void overlay20DrawResourceReloc(Overlay20Gfx **gfxP, void *resource,
+extern void overlay20BuildTileCommands(Overlay20Gfx **gfxP, void *resource,
                                        s32 mode);
 
 #define OVERLAY20_SHIFTL(value, shift, width) \
@@ -40,7 +40,7 @@ void overlay20DrawResource(Overlay20Gfx **gfxP, Overlay20Object *object) {
             OVERLAY20_SET_PRIM_COLOR((*gfxP)++, object->alpha);
             mode = 14;
         }
-        overlay20DrawResourceReloc(gfxP, resource, mode);
+        overlay20BuildTileCommands(gfxP, resource, mode);
         OVERLAY20_SET_PRIM_COLOR((*gfxP)++, 255);
     }
 }

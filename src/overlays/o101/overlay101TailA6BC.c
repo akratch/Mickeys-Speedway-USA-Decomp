@@ -67,13 +67,13 @@ typedef struct O101TailInputs {
     u8 *text154;
 } O101TailInputs;
 
-extern O101TailRoot gO101TailRoot;
+extern O101TailRoot D_0;
 extern s32 gO101TailOrderCount;
 extern void *gO101TailOrderSlots[];
 extern s32 gO101TailNode32Count;
-extern O101TailNode32 gO101TailNodes32[];
+extern O101TailNode32 D_340[];
 extern s32 gO101TailNode24Count;
-extern O101TailNode24 gO101TailNodes24[];
+extern O101TailNode24 D_540[];
 extern O101TailInputs gO101TailInputs;
 extern u8 gO101TailAssetD7C;
 extern u8 gO101TailFinalObject3B78;
@@ -82,8 +82,8 @@ extern u8 gO101TailFinalObject3B78;
  * and it takes two arguments: the a2 the shipped calls carry is the node
  * count's leftover register, not an argument. The finalizer is a
  * same-module SYMBOL record, so it is a placeholder too. */
-extern void *o101TailCreatorReloc(s32 key, void *source);
-extern void o101TailFinalizerReloc(void *object);
+extern void *texLoadSprite(s32 key, void *source);
+extern void overlay101Reset(void *object);
 extern s32 overlay101ByteLength(u8 *text);
 
 /* Matched 2026-10-02 (lane x-o101), 53 -> 0 at delta 0, by copying the
@@ -95,19 +95,19 @@ extern s32 overlay101ByteLength(u8 *text);
  * opacity reads the stored length back (2 -> 0, the frame 0x40 -> 0x38, since
  * each declared local had held a frame cell above the base + 0xA2 spill). */
 void overlay101TailA6BC(s32 base) {
-    gO101TailRoot.kind = 4; gO101TailRoot.width2E = 0x140; gO101TailRoot.height30 = 0xF0; gO101TailRoot.asset34 = &gO101TailAssetD7C; gO101TailRoot.color32 = 0xFF; gO101TailRoot.color33 = 0xFF; gO101TailRoot.value26 = 0; gO101TailRoot.value28 = 0; gO101TailRoot.value2A = 0; gO101TailRoot.value2C = 0; gO101TailRoot.chainType = 0; gO101TailRoot.chain = NULL; gO101TailOrderSlots[gO101TailOrderCount] = &gO101TailRoot.chainType; gO101TailOrderCount = gO101TailOrderCount + 1;
+    D_0.kind = 4; D_0.width2E = 0x140; D_0.height30 = 0xF0; D_0.asset34 = &gO101TailAssetD7C; D_0.color32 = 0xFF; D_0.color33 = 0xFF; D_0.value26 = 0; D_0.value28 = 0; D_0.value2A = 0; D_0.value2C = 0; D_0.chainType = 0; D_0.chain = NULL; gO101TailOrderSlots[gO101TailOrderCount] = &D_0.chainType; gO101TailOrderCount = gO101TailOrderCount + 1;
 
-    gO101TailNodes32[gO101TailNode32Count].x = 0xA0; gO101TailNodes32[gO101TailNode32Count].y = 0x78; gO101TailNodes32[gO101TailNode32Count].value10 = 0xE38; gO101TailNodes32[gO101TailNode32Count].color12 = 0; gO101TailNodes32[gO101TailNode32Count].color13 = 0; gO101TailNodes32[gO101TailNode32Count].value18 = 0; gO101TailNodes32[gO101TailNode32Count].scale = 5.0f; gO101TailNodes32[gO101TailNode32Count].value14 = 0.0f; gO101TailNodes32[gO101TailNode32Count].handle = o101TailCreatorReloc(base + 0xA2, NULL); gO101TailNodes32[gO101TailNode32Count].previousType = gO101TailRoot.chainType; gO101TailNodes32[gO101TailNode32Count].previous = gO101TailRoot.chain; gO101TailRoot.chainType = 2; gO101TailRoot.chain = &gO101TailNodes32[gO101TailNode32Count]; gO101TailNode32Count = gO101TailNode32Count + 1;
+    D_340[gO101TailNode32Count].x = 0xA0; D_340[gO101TailNode32Count].y = 0x78; D_340[gO101TailNode32Count].value10 = 0xE38; D_340[gO101TailNode32Count].color12 = 0; D_340[gO101TailNode32Count].color13 = 0; D_340[gO101TailNode32Count].value18 = 0; D_340[gO101TailNode32Count].scale = 5.0f; D_340[gO101TailNode32Count].value14 = 0.0f; D_340[gO101TailNode32Count].handle = texLoadSprite(base + 0xA2, NULL); D_340[gO101TailNode32Count].previousType = D_0.chainType; D_340[gO101TailNode32Count].previous = D_0.chain; D_0.chainType = 2; D_0.chain = &D_340[gO101TailNode32Count]; gO101TailNode32Count = gO101TailNode32Count + 1;
 
-    gO101TailNodes32[gO101TailNode32Count].x = 0xA0; gO101TailNodes32[gO101TailNode32Count].y = 0x78; gO101TailNodes32[gO101TailNode32Count].value10 = 0x71C; gO101TailNodes32[gO101TailNode32Count].color12 = 0; gO101TailNodes32[gO101TailNode32Count].color13 = 0; gO101TailNodes32[gO101TailNode32Count].value18 = 0; gO101TailNodes32[gO101TailNode32Count].scale = 5.0f; gO101TailNodes32[gO101TailNode32Count].value14 = 0.0f; gO101TailNodes32[gO101TailNode32Count].handle = o101TailCreatorReloc(base + 0xA2, NULL); gO101TailNodes32[gO101TailNode32Count].previousType = gO101TailRoot.chainType; gO101TailNodes32[gO101TailNode32Count].previous = gO101TailRoot.chain; gO101TailRoot.chainType = 2; gO101TailRoot.chain = &gO101TailNodes32[gO101TailNode32Count]; gO101TailNode32Count = gO101TailNode32Count + 1;
+    D_340[gO101TailNode32Count].x = 0xA0; D_340[gO101TailNode32Count].y = 0x78; D_340[gO101TailNode32Count].value10 = 0x71C; D_340[gO101TailNode32Count].color12 = 0; D_340[gO101TailNode32Count].color13 = 0; D_340[gO101TailNode32Count].value18 = 0; D_340[gO101TailNode32Count].scale = 5.0f; D_340[gO101TailNode32Count].value14 = 0.0f; D_340[gO101TailNode32Count].handle = texLoadSprite(base + 0xA2, NULL); D_340[gO101TailNode32Count].previousType = D_0.chainType; D_340[gO101TailNode32Count].previous = D_0.chain; D_0.chainType = 2; D_0.chain = &D_340[gO101TailNode32Count]; gO101TailNode32Count = gO101TailNode32Count + 1;
 
-    gO101TailNodes32[gO101TailNode32Count].x = 0xA0; gO101TailNodes32[gO101TailNode32Count].y = 0x78; gO101TailNodes32[gO101TailNode32Count].value10 = 0; gO101TailNodes32[gO101TailNode32Count].color12 = 0; gO101TailNodes32[gO101TailNode32Count].color13 = 0; gO101TailNodes32[gO101TailNode32Count].value18 = 0; gO101TailNodes32[gO101TailNode32Count].scale = 5.0f; gO101TailNodes32[gO101TailNode32Count].value14 = 0.0f; gO101TailNodes32[gO101TailNode32Count].handle = o101TailCreatorReloc(base + 0xA2, NULL); gO101TailNodes32[gO101TailNode32Count].previousType = gO101TailRoot.chainType; gO101TailNodes32[gO101TailNode32Count].previous = gO101TailRoot.chain; gO101TailRoot.chainType = 2; gO101TailRoot.chain = &gO101TailNodes32[gO101TailNode32Count]; gO101TailNode32Count = gO101TailNode32Count + 1;
+    D_340[gO101TailNode32Count].x = 0xA0; D_340[gO101TailNode32Count].y = 0x78; D_340[gO101TailNode32Count].value10 = 0; D_340[gO101TailNode32Count].color12 = 0; D_340[gO101TailNode32Count].color13 = 0; D_340[gO101TailNode32Count].value18 = 0; D_340[gO101TailNode32Count].scale = 5.0f; D_340[gO101TailNode32Count].value14 = 0.0f; D_340[gO101TailNode32Count].handle = texLoadSprite(base + 0xA2, NULL); D_340[gO101TailNode32Count].previousType = D_0.chainType; D_340[gO101TailNode32Count].previous = D_0.chain; D_0.chainType = 2; D_0.chain = &D_340[gO101TailNode32Count]; gO101TailNode32Count = gO101TailNode32Count + 1;
 
-    gO101TailRoot.x42 = 0x20; gO101TailRoot.y46 = 0x3C; gO101TailRoot.height48 = 0x50; gO101TailRoot.value4A = 0xC8; gO101TailRoot.value4C = 0x2A; gO101TailRoot.width44 = 0x18; gO101TailRoot.mode40 = 0; gO101TailRoot.color4E = 0xFF; gO101TailRoot.color4F = 0xFF; gO101TailRoot.childType = 0; gO101TailRoot.child = NULL; gO101TailRoot.data50 = gO101TailInputs.data14C; gO101TailOrderSlots[gO101TailOrderCount] = &gO101TailRoot.childType; gO101TailOrderCount = gO101TailOrderCount + 1;
+    D_0.x42 = 0x20; D_0.y46 = 0x3C; D_0.height48 = 0x50; D_0.value4A = 0xC8; D_0.value4C = 0x2A; D_0.width44 = 0x18; D_0.mode40 = 0; D_0.color4E = 0xFF; D_0.color4F = 0xFF; D_0.childType = 0; D_0.child = NULL; D_0.data50 = gO101TailInputs.data14C; gO101TailOrderSlots[gO101TailOrderCount] = &D_0.childType; gO101TailOrderCount = gO101TailOrderCount + 1;
 
-    gO101TailNodes24[gO101TailNode24Count].x = 0x64; gO101TailNodes24[gO101TailNode24Count].y = 0x10; gO101TailNodes24[gO101TailNode24Count].length = overlay101ByteLength(gO101TailInputs.text150); gO101TailNodes24[gO101TailNode24Count].opacity = (s8)(s32)((f32)(u32)gO101TailNodes24[gO101TailNode24Count].length * (f32)(s32)1); gO101TailNodes24[gO101TailNode24Count].mode = 2; gO101TailNodes24[gO101TailNode24Count].color0 = 0xFF; gO101TailNodes24[gO101TailNode24Count].color1 = 0xFF; gO101TailNodes24[gO101TailNode24Count].color2 = 0xFF; gO101TailNodes24[gO101TailNode24Count].color3 = 0xFF; gO101TailNodes24[gO101TailNode24Count].kind = 4; gO101TailNodes24[gO101TailNode24Count].text = gO101TailInputs.text150; gO101TailNodes24[gO101TailNode24Count].previousType = gO101TailRoot.childType; gO101TailNodes24[gO101TailNode24Count].previous = gO101TailRoot.child; gO101TailRoot.childType = 3; gO101TailRoot.child = &gO101TailNodes24[gO101TailNode24Count]; gO101TailNode24Count = gO101TailNode24Count + 1;
+    D_540[gO101TailNode24Count].x = 0x64; D_540[gO101TailNode24Count].y = 0x10; D_540[gO101TailNode24Count].length = overlay101ByteLength(gO101TailInputs.text150); D_540[gO101TailNode24Count].opacity = (s8)(s32)((f32)(u32)D_540[gO101TailNode24Count].length * (f32)(s32)1); D_540[gO101TailNode24Count].mode = 2; D_540[gO101TailNode24Count].color0 = 0xFF; D_540[gO101TailNode24Count].color1 = 0xFF; D_540[gO101TailNode24Count].color2 = 0xFF; D_540[gO101TailNode24Count].color3 = 0xFF; D_540[gO101TailNode24Count].kind = 4; D_540[gO101TailNode24Count].text = gO101TailInputs.text150; D_540[gO101TailNode24Count].previousType = D_0.childType; D_540[gO101TailNode24Count].previous = D_0.child; D_0.childType = 3; D_0.child = &D_540[gO101TailNode24Count]; gO101TailNode24Count = gO101TailNode24Count + 1;
 
-    gO101TailNodes24[gO101TailNode24Count].x = 0x64; gO101TailNodes24[gO101TailNode24Count].y = 0x1A; gO101TailNodes24[gO101TailNode24Count].length = overlay101ByteLength(gO101TailInputs.text154); gO101TailNodes24[gO101TailNode24Count].opacity = (s8)(s32)((f32)(u32)gO101TailNodes24[gO101TailNode24Count].length * (f32)(s32)1); gO101TailNodes24[gO101TailNode24Count].mode = 2; gO101TailNodes24[gO101TailNode24Count].color0 = 0xFF; gO101TailNodes24[gO101TailNode24Count].color1 = 0xFF; gO101TailNodes24[gO101TailNode24Count].color2 = 0xFF; gO101TailNodes24[gO101TailNode24Count].color3 = 0xFF; gO101TailNodes24[gO101TailNode24Count].kind = 4; gO101TailNodes24[gO101TailNode24Count].text = gO101TailInputs.text154; gO101TailNodes24[gO101TailNode24Count].previousType = gO101TailRoot.childType; gO101TailNodes24[gO101TailNode24Count].previous = gO101TailRoot.child; gO101TailRoot.childType = 3; gO101TailRoot.child = &gO101TailNodes24[gO101TailNode24Count]; gO101TailNode24Count = gO101TailNode24Count + 1;
+    D_540[gO101TailNode24Count].x = 0x64; D_540[gO101TailNode24Count].y = 0x1A; D_540[gO101TailNode24Count].length = overlay101ByteLength(gO101TailInputs.text154); D_540[gO101TailNode24Count].opacity = (s8)(s32)((f32)(u32)D_540[gO101TailNode24Count].length * (f32)(s32)1); D_540[gO101TailNode24Count].mode = 2; D_540[gO101TailNode24Count].color0 = 0xFF; D_540[gO101TailNode24Count].color1 = 0xFF; D_540[gO101TailNode24Count].color2 = 0xFF; D_540[gO101TailNode24Count].color3 = 0xFF; D_540[gO101TailNode24Count].kind = 4; D_540[gO101TailNode24Count].text = gO101TailInputs.text154; D_540[gO101TailNode24Count].previousType = D_0.childType; D_540[gO101TailNode24Count].previous = D_0.child; D_0.childType = 3; D_0.child = &D_540[gO101TailNode24Count]; gO101TailNode24Count = gO101TailNode24Count + 1;
 
-    o101TailFinalizerReloc(&gO101TailFinalObject3B78);
+    overlay101Reset(&gO101TailFinalObject3B78);
 }

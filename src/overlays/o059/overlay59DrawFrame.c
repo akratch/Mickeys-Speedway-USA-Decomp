@@ -10,10 +10,10 @@ typedef struct Overlay59Entry {
 
 extern Overlay59Entry gOverlay59Entries[4];
 extern s32 gOverlay59Styles[];
-extern void overlay59FrameSetup0Reloc(s32);
-extern void overlay59FrameSetup1Reloc(s32, s32, s32, s32);
-extern void overlay59FrameColorReloc(s32, s32, s32, s32, s32);
-extern void overlay59FrameDrawReloc(s32, s32, s32, s32, s32);
+extern void fontUseFont(s32);
+extern void fontBackground(s32, s32, s32, s32);
+extern void fontColour(s32, s32, s32, s32, s32);
+extern void fontPrintXY(s32, s32, s32, s32, s32);
 
 /*
  * DKR v77/v80 and JFG contain generic white primitive-color and menu-frame
@@ -31,14 +31,14 @@ void overlay59DrawFrame(s32 displayList, s32 index, s32 x, s32 y) {
         if (owner != 0) {
             y += 12;
             style = gOverlay59Styles[entry->style];
-            overlay59FrameSetup0Reloc(0);
-            overlay59FrameSetup1Reloc(0, 0, 0, 0);
-            overlay59FrameColorReloc(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-            overlay59FrameDrawReloc(displayList, x - 1, y - 1, style, 0);
-            overlay59FrameColorReloc(0, 0, 0, 0xFF, 0xFF);
-            overlay59FrameDrawReloc(displayList, x + 1, y + 1, style, 0);
-            overlay59FrameColorReloc(0xFF, 0, 0, 0xFF, 0xFF);
-            overlay59FrameDrawReloc(displayList, x, y, style, 0);
+            fontUseFont(0);
+            fontBackground(0, 0, 0, 0);
+            fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
+            fontPrintXY(displayList, x - 1, y - 1, style, 0);
+            fontColour(0, 0, 0, 0xFF, 0xFF);
+            fontPrintXY(displayList, x + 1, y + 1, style, 0);
+            fontColour(0xFF, 0, 0, 0xFF, 0xFF);
+            fontPrintXY(displayList, x, y, style, 0);
         }
     }
 }

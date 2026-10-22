@@ -58,9 +58,9 @@ typedef struct Overlay96FaceDefinition {
 } Overlay96FaceDefinition;
 
 extern Overlay96FaceDefinition gO96FaceDefinitionsReloc[6];
-extern void overlay96TransformPointsReloc(s32 count, s16 *angles, Vec3f *source,
+extern void pointListRPY(s32 count, s16 *angles, Vec3f *source,
                                           Vec3f *destination);
-extern f32 overlay96SqrtReloc(f32 value);
+extern f32 sqrtf(f32 value);
 extern void overlay96Register(Overlay96Volume *volume);
 
 void overlay96BuildVolume(Overlay96Object *object,
@@ -122,7 +122,7 @@ void overlay96BuildVolume(Overlay96Object *object,
     angles[0] = definition->angleX << 8;
     angles[1] = definition->angleY << 6;
     angles[2] = 0;
-    overlay96TransformPointsReloc(8, angles, points, points);
+    pointListRPY(8, angles, points, points);
 
     az = (f32)definition->centerX;
     ay = (f32)definition->centerY;
@@ -166,7 +166,7 @@ void overlay96BuildVolume(Overlay96Object *object,
                            normalZ * normalZ;
         scale = magnitudeSquared;
         if (scale > 0.0f) {
-            scale = 1.0f / overlay96SqrtReloc(scale);
+            scale = 1.0f / sqrtf(scale);
         }
         plane->x = normalX * scale;
         plane->y = normalY * scale;

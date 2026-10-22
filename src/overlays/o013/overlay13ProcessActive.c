@@ -8,7 +8,7 @@ typedef struct Overlay13Record {
 
 extern s32 gOverlay13Enabled;
 extern Overlay13Record gOverlay13Records[];
-extern void overlay13ProcessRecord(Overlay13Record *record, s32 arg);
+extern void overlay13UpdateRecord(Overlay13Record *record, s32 arg);
 
 /* DKR v77/v80 contain only generic fixed-pool loops, not this record walk. */
 void overlay13ProcessActive(s32 arg) {
@@ -19,7 +19,7 @@ void overlay13ProcessActive(s32 arg) {
         record = gOverlay13Records;
         for (i = 0; i < 32; i++, record++) {
             if (record->active != 0) {
-                overlay13ProcessRecord(record, arg);
+                overlay13UpdateRecord(record, arg);
             }
         }
     }

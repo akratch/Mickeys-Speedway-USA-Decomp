@@ -6,7 +6,7 @@ extern u8 gOverlay46StateA[];
 extern u8 gOverlay46StateB[];
 extern s16 gOverlay46Selection;
 extern void overlay46InitResourceReloc(void *state);
-extern void overlay46FinalizeReloc(void);
+extern void overlay46InitializeBuffers(void);
 
 /* DKR v77/v80 and JFG checks found no exact donor for this state initializer. */
 void overlay46InitState(void) {
@@ -14,6 +14,6 @@ void overlay46InitState(void) {
     gOverlay46Limit = 0x5A;
     overlay46InitResourceReloc(gOverlay46StateA);
     overlay46InitResourceReloc(gOverlay46StateB);
-    overlay46FinalizeReloc();
+    overlay46InitializeBuffers();
     gOverlay46Selection = 0;
 }

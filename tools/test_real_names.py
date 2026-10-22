@@ -121,6 +121,14 @@ class RewriteMkTests(unittest.TestCase):
         self.assertIn("o002/b.c.o: POSTPROCESS = \\\n\t$(OBJCOPY) --redefine-sym P=PReloc $@", out)
 
 
+class DataMergeTests(unittest.TestCase):
+    def test_two_data_placeholders_for_one_symbol_are_kept(self):
+        text = "extern s32 *A;\nextern s32 *B;\nextern void F(void);\nextern void G(void);\n"
+        mapping = {"A": "D_1", "B": "D_1", "F": "f", "G": "f"}
+        self.assertEqual({"A", "B"}, rn.data_collisions(text, mapping, {"D_1"}))
+        self.assertEqual(set(), rn.data_collisions("extern s32 *A;\n", mapping, {"D_1"}))
+
+
 class SplitRenameTests(unittest.TestCase):
     def test_wrapped_rename_is_joined_respelled_and_collisions_dropped(self):
         mk = ("$(BUILD_DIR)/$(SRC_DIR)/overlays/o008/a.c.o: POSTPROCESS = \\\n"
@@ -175,6 +183,12 @@ class PlanModuleTests(unittest.TestCase):
               "$(O28_OBJ): POSTPROCESS = \\\n"
               "\t$(HOST_PYTHON) rebind.py $@ .text 0x10:P:func_x\n")
         self.assertEqual(1, len(rn.module_rules([mk], 28)))
+        # A path naming the placeholder (an object, a spec) is not a spelling.
+        head = ("$(BUILD_DIR)/$(SRC_DIR)/overlays/o013/P.c.o: POSTPROCESS = \\\n"
+                "\t$(HOST_PYTHON) f.py $@ @config/normalizations/P.filter.spec 0x8:5:P\n")
+        out = rn.rewrite_mk(head, 13, {"P": "rP"})
+        self.assertIn("o013/P.c.o:", out)
+        self.assertIn("normalizations/P.filter.spec 0x8:5:rP", out)
         self.assertIn("0x10:rP:func_x", rn.rewrite_mk(mk, 28, {"P": "rP"}))
 
     def test_recipe_spellings_refuse_only_on_a_clash(self):

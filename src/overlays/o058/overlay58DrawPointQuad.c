@@ -21,14 +21,14 @@ typedef struct Overlay58PointRenderState {
     void *resource;
 } Overlay58PointRenderState;
 
-extern Overlay58PointGfx *gOverlay58PointDisplayListReloc;
-extern Overlay58PointVertex *gOverlay58PointVertexCursorReloc;
-extern Overlay58PointRenderState gOverlay58PointRenderStateReloc;
+extern Overlay58PointGfx *D_800D3140;
+extern Overlay58PointVertex *D_800D3148;
+extern Overlay58PointRenderState D_800D31C8;
 extern u8 D_80000078[];
 /*
  * The shipped table-1 SYMBOL record names the resident texDPTextureX (its
  * `jal` stores 0, the runtime patches it).  Its first argument is the display
- * list head, the same identity as gOverlay58PointDisplayListReloc below.
+ * list head, the same identity as D_800D3140 below.
  */
 extern void texDPTextureX(Overlay58PointGfx **displayList, void *texture,
                           s32 flags, s32 arg3);
@@ -82,10 +82,10 @@ void overlay58DrawPointQuad(s32 x, s32 y, s32 z) {
     Overlay58PointVertex *vertices;
     s32 i;
 
-    if (1) { texDPTextureX(&gOverlay58PointDisplayListReloc, gOverlay58PointRenderStateReloc.resource, 5, 0); }
-    O58_VERTEX(gOverlay58PointDisplayListReloc++, O58_PHYSICAL_TO_K0(gOverlay58PointVertexCursorReloc), 4, 0);
-    O58_POLYGON(gOverlay58PointDisplayListReloc++, D_80000078, 2, 1);
-    vertices = gOverlay58PointVertexCursorReloc;
+    if (1) { texDPTextureX(&D_800D3140, D_800D31C8.resource, 5, 0); }
+    O58_VERTEX(D_800D3140++, O58_PHYSICAL_TO_K0(D_800D3148), 4, 0);
+    O58_POLYGON(D_800D3140++, D_80000078, 2, 1);
+    vertices = D_800D3148;
     for (i = 0; i < 4; i++) {
         vertices->r = 0xFF;
         vertices->g = 0xFF;
@@ -93,20 +93,20 @@ void overlay58DrawPointQuad(s32 x, s32 y, s32 z) {
         vertices->a = 0xFF;
         vertices++;
     }
-    gOverlay58PointVertexCursorReloc->x = (s16)(x - 8);
-    gOverlay58PointVertexCursorReloc->y = (s16)y;
-    gOverlay58PointVertexCursorReloc->z = (s16)(z - 8);
-    gOverlay58PointVertexCursorReloc++;
-    gOverlay58PointVertexCursorReloc->x = (s16)(x + 8);
-    gOverlay58PointVertexCursorReloc->y = (s16)y;
-    gOverlay58PointVertexCursorReloc->z = (s16)(z - 8);
-    gOverlay58PointVertexCursorReloc++;
-    gOverlay58PointVertexCursorReloc->x = (s16)(x - 8);
-    gOverlay58PointVertexCursorReloc->y = (s16)y;
-    gOverlay58PointVertexCursorReloc->z = (s16)(z + 8);
-    gOverlay58PointVertexCursorReloc++;
-    gOverlay58PointVertexCursorReloc->x = (s16)(x + 8);
-    gOverlay58PointVertexCursorReloc->y = (s16)y;
-    gOverlay58PointVertexCursorReloc->z = (s16)(z + 8);
-    gOverlay58PointVertexCursorReloc++;
+    D_800D3148->x = (s16)(x - 8);
+    D_800D3148->y = (s16)y;
+    D_800D3148->z = (s16)(z - 8);
+    D_800D3148++;
+    D_800D3148->x = (s16)(x + 8);
+    D_800D3148->y = (s16)y;
+    D_800D3148->z = (s16)(z - 8);
+    D_800D3148++;
+    D_800D3148->x = (s16)(x - 8);
+    D_800D3148->y = (s16)y;
+    D_800D3148->z = (s16)(z + 8);
+    D_800D3148++;
+    D_800D3148->x = (s16)(x + 8);
+    D_800D3148->y = (s16)y;
+    D_800D3148->z = (s16)(z + 8);
+    D_800D3148++;
 }

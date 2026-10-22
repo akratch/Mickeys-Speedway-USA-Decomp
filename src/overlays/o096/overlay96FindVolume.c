@@ -14,11 +14,11 @@ typedef struct Overlay96Volume {
     Overlay96Plane planes[6];
 } Overlay96Volume;
 
-extern s32 gO96EntryCountReloc;
+extern s32 D_80078F84;
 extern Overlay96Volume *gO96EntriesReloc[];
 
 Overlay96Volume *overlay96FindVolume(f32 x, f32 y, f32 z) {
-    s32 count = gO96EntryCountReloc;
+    s32 count = D_80078F84;
     s32 planeIndex;
     s32 inside;
     Overlay96Volume *volume;

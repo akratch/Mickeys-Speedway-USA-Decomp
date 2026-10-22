@@ -44,7 +44,7 @@ typedef struct Overlay20Grid {
 
 extern s32 gOverlay20EntryCount;
 extern Overlay20Entry *gOverlay20Entries[];
-extern f32 ext_o0_6ec00(f32 value);
+extern f32 sqrtf(f32 value);
 extern f32 func_8002A8C0(s32 angle);
 
 /*
@@ -117,7 +117,7 @@ void overlay20UpdateGrid(Overlay20Grid *grid) {
                     dy = vertexY - entry->y;
                     distanceSquared = dx * dx + dy * dy;
                     if (distanceSquared < entry->radiusSquared) {
-                        distance = ext_o0_6ec00(distanceSquared);
+                        distance = sqrtf(distanceSquared);
                         amplitude = (entry->radius - distance) * entry->radiusRatio;
                         total += func_8002A8C0(entry->phase + (s32)(entry->frequency * distance)) * amplitude;
                     }

@@ -75,9 +75,9 @@ extern Overlay46Spark D_1458[200];
 extern s16 D_2718;
 extern u8 D_230[];
 
-extern Gfx *gDisplayListHead;
-extern void *gOverlay46MatrixHead;
-extern void *gOverlay46VertexHead;
+extern Gfx *D_800D3140;
+extern void *D_800D3144;
+extern void *D_800D3148;
 extern void *D_800D31C8[];
 
 extern void amSndPlay(s32 soundId, void *handle);
@@ -176,7 +176,7 @@ void func_overlay_046_F0001228_188F620(s32 updateRate) {
         }
     }
 
-    camSetView(&gDisplayListHead, &gOverlay46MatrixHead);
+    camSetView(&D_800D3140, &D_800D3144);
     point.value04 = 0;
     point.value00 = 0;
     point.value02 = 0;
@@ -187,13 +187,13 @@ void func_overlay_046_F0001228_188F620(s32 updateRate) {
             point.baseX0C = D_1458[i].x;
             point.baseY10 = D_1458[i].y;
             point.value14 = D_1458[i].z;
-            gDPSetPrimColor(gDisplayListHead++, 0, 0, 0xA0, 0xA0, 0xA0, D_1458[i].alpha);
-            camDoSprite(&gDisplayListHead, &gOverlay46MatrixHead, &gOverlay46VertexHead,
+            gDPSetPrimColor(D_800D3140++, 0, 0, 0xA0, 0xA0, 0xA0, D_1458[i].alpha);
+            camDoSprite(&D_800D3140, &D_800D3144, &D_800D3148,
                           &point, D_800D31C8[9], 7, D_1458[i].alpha);
         }
     }
-    texDPTextureX(&gDisplayListHead, NULL, 3, 0);
-    gDPSetPrimColor(gDisplayListHead++, 0, 0, 0xC0, 0xC0, 0xC0, 0xFF);
+    texDPTextureX(&D_800D3140, NULL, 3, 0);
+    gDPSetPrimColor(D_800D3140++, 0, 0, 0xC0, 0xC0, 0xC0, 0xFF);
 
     vertex = D_498;
     count = D_1450->vertexCount - 2;
@@ -206,15 +206,15 @@ void func_overlay_046_F0001228_188F620(s32 updateRate) {
             j = remaining;
         }
         k = j + 2;
-        O46_SP_VERTEX(gDisplayListHead++, O46_PHYSICAL(vertex), k, 0);
-        O46_SP_POLYGON(gDisplayListHead++, O46_PHYSICAL(D_230), j, 1);
+        O46_SP_VERTEX(D_800D3140++, O46_PHYSICAL(vertex), k, 0);
+        O46_SP_POLYGON(D_800D3140++, O46_PHYSICAL(D_230), j, 1);
         remaining -= j;
         vertex += j;
     }
     if (count % 16 != 0) {
         k = count % 16 + 2;
-        O46_SP_VERTEX(gDisplayListHead++, O46_PHYSICAL(vertex), k, 0);
-        O46_SP_POLYGON(gDisplayListHead++, O46_PHYSICAL(D_230), count % 16, 1);
+        O46_SP_VERTEX(D_800D3140++, O46_PHYSICAL(vertex), k, 0);
+        O46_SP_POLYGON(D_800D3140++, O46_PHYSICAL(D_230), count % 16, 1);
     }
 
     if (D_2718 > 0) {
@@ -222,8 +222,8 @@ void func_overlay_046_F0001228_188F620(s32 updateRate) {
         point.baseY10 = D_1450->y;
         point.value14 = D_1450->z;
         point.scale08 = 6.0f;
-        gDPSetPrimColor(gDisplayListHead++, 0, 0, 0xA0, 0xA0, 0xA0, D_2718);
-        camDoSprite(&gDisplayListHead, &gOverlay46MatrixHead, &gOverlay46VertexHead,
+        gDPSetPrimColor(D_800D3140++, 0, 0, 0xA0, 0xA0, 0xA0, D_2718);
+        camDoSprite(&D_800D3140, &D_800D3144, &D_800D3148,
                       &point, D_800D31C8[10], 7, D_2718);
     }
 

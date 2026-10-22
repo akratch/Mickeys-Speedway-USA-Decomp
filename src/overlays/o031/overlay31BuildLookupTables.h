@@ -29,10 +29,10 @@ typedef struct Overlay31IndexRecord {
 } Overlay31IndexRecord;
 
 /* Tier B: resident .data identities (selector 0xFFD +0x3D00 and +0x3D38). */
-extern Overlay31IndexRecord *gOverlay31IndexRows[7][2];
-extern f32 *gOverlay31FloatRows[7];
+extern Overlay31IndexRecord *D_8007CA60[7][2];
+extern f32 *D_8007CA98[7];
 
-extern void *overlay31AllocateReloc(s32 size, s32 tag); /* 0:+0x2AE30 */
+extern void *mmAlloc(s32 size, s32 tag); /* 0:+0x2AE30 */
 extern f32 func_8002A8BC_o031Reloc(s32 angle); /* 0:+0x2A46C */
 extern f32 func_8002A8C0_o031Reloc(s32 angle); /* 0:+0x2A470 */
 

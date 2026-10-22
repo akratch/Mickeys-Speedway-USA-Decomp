@@ -30,9 +30,9 @@ extern s16 gOverlay58RankSetIdReloc;
 extern s32 gOverlay58FloorChoice;
 extern s32 gOverlay58InsertChoice;
 
-extern Overlay58RankSet *overlay58RankSetsReloc(void);
-extern s32 overlay58RankSetIndexReloc(s32 id);
-extern Overlay58PrioritySource *overlay58PrioritySourceReloc(void);
+extern Overlay58RankSet *func_800291C4(void);
+extern s32 levelGetBlurEffect(s32 id);
+extern Overlay58PrioritySource *func_80028F54(void);
 
 /* Pinned DKR v77/v80 and JFG scans found no matching donor. */
 void overlay58RefreshRankSet(void) {
@@ -47,10 +47,10 @@ void overlay58RefreshRankSet(void) {
     u8 *sourceMeta;
     s32 *floorCursor;
 
-    sets = overlay58RankSetsReloc();
-    setIndex = overlay58RankSetIndexReloc(gOverlay58RankSetIdReloc);
+    sets = func_800291C4();
+    setIndex = levelGetBlurEffect(gOverlay58RankSetIdReloc);
     set = (Overlay58RankSet *)((u8 *)sets + (setIndex << 5));
-    source = overlay58PrioritySourceReloc();
+    source = func_80028F54();
     sourceMeta = &source->tag;
     gOverlay58FloorChoice = -1;
     floorCursor = (s32 *)sourceMeta;

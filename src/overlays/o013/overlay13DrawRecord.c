@@ -26,11 +26,11 @@ extern void *D_28;
 extern f32 D_4;
 extern u8 D_80000000[];
 
-extern O13RenderState *o13GetRenderState(void);
-extern void o13SetColor(u8, u8, u8, u8, u8, u8);
-extern void o13DrawRecord(O13Command **, void *, void *, O13Record *, void *, s32, s32);
-extern void o13FinishDraw(void);
-extern void o13SetupRecord(O13Command **, void *, s32, s32);
+extern O13RenderState *levelGetLevel(void);
+extern void sprSetIA2ColOverride(u8, u8, u8, u8, u8, u8);
+extern void camDoSprite(O13Command **, void *, void *, O13Record *, void *, s32, s32);
+extern void sprClearIA2ColOverride(void);
+extern void texDPTextureX(O13Command **, void *, s32, s32);
 
 /* Each command is one gbi-style block, `{ Gfx *_g = pkt; _g->w0 = ..; _g->w1 = ..; }`
  * (PROVENANCE: the shape of DKR's `fast3d_cmd`/`gDma1p` macros in
@@ -48,15 +48,15 @@ void overlay13DrawRecord(
     O13RenderState *render;
 
     if (((record->state == 1) && (D_20 != 0)) || record->state == 2) {
-        render = o13GetRenderState();
+        render = levelGetLevel();
         savedScale = record->scale;
         if (record->state != 2) {
-            o13SetColor(0xFF, 0xFF, 0xFF, render->r, render->g, render->b);
+            sprSetIA2ColOverride(0xFF, 0xFF, 0xFF, render->r, render->g, render->b);
             record->scale = savedScale;
-            o13DrawRecord(commands, mtx, vertices, record, D_20, 6, 0xFF);
-            o13FinishDraw();
+            camDoSprite(commands, mtx, vertices, record, D_20, 6, 0xFF);
+            sprClearIA2ColOverride();
         } else {
-            o13SetupRecord(commands, D_28, 0xE, 0);
+            texDPTextureX(commands, D_28, 0xE, 0);
             if (record->timer < 0x20) {
                 O13_GFX(0xFA000000, ((record->timer * 8) & 0xFF) | 0xFFFFFF00);
             }
@@ -73,7 +73,7 @@ void overlay13DrawRecord(
                                         ((render->g & 0xFF) << 16) |
                                         ((render->b & 0xFF) << 8) | 0xA0);
                 O13_GFX(0xFB000000, 0xFFFFFF00);
-                o13DrawRecord(commands, mtx, vertices, record, D_24, 0xE, 0);
+                camDoSprite(commands, mtx, vertices, record, D_24, 0xE, 0);
             }
         }
 

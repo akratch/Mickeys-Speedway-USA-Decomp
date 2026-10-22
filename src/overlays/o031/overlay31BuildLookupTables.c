@@ -19,12 +19,12 @@ void func_overlay_031_F0000000_187F520(void) {
     f32 s;
     f32 c;
 
-    gOverlay31IndexRows[0][0] = overlay31AllocateReloc(0x880, 0x8C);
-    first = gOverlay31IndexRows[0][0];
-    second = gOverlay31IndexRows[0][0] + 34;
+    D_8007CA60[0][0] = mmAlloc(0x880, 0x8C);
+    first = D_8007CA60[0][0];
+    second = D_8007CA60[0][0] + 34;
     for (level = 2; level < 9; level++) {
-        gOverlay31IndexRows[level - 2][0] = first;
-        gOverlay31IndexRows[level - 2][1] = second;
+        D_8007CA60[level - 2][0] = first;
+        D_8007CA60[level - 2][1] = second;
         limit = level - 1;
         for (i = 0; i < limit; i++) {
             first->a0 = 0x40;
@@ -116,10 +116,10 @@ void func_overlay_031_F0000000_187F520(void) {
         }
     }
 
-    out = overlay31AllocateReloc(0x118, 0x8C);
+    out = mmAlloc(0x118, 0x8C);
     for (level = 2; level < 9; level++) {
         angle = 0;
-        gOverlay31FloatRows[level - 2] = out;
+        D_8007CA98[level - 2] = out;
         for (i = 0; i < level; i++) {
             s = func_8002A8BC_o031Reloc(angle);
             c = func_8002A8C0_o031Reloc(angle);

@@ -1533,10 +1533,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18745B8, c, overlay18Load]
-      - [0x18747AC, c, overlay18Initialize]
-      - [0x1874804, c, overlay18Reconfigure]
-      - [0x1874AAC, c, overlay18InitializeBuffers]
+      - [0x18745B8, c, overlay_018]
       - [0x1874C08, bin, overlay_018_data_rodata]
       - [0x1874C98, bin, overlay_018_reloc1]
       - [0x1875140, bin, overlay_018_reloc2]

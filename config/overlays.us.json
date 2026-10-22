@@ -4273,37 +4273,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x1F4",
-     "size": "0x1F4",
-     "type": "c",
-     "source": "overlays/o018/overlay18Load",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1F4",
-     "end_offset": "0x24C",
-     "size": "0x58",
-     "type": "c",
-     "source": "overlays/o018/overlay18Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x24C",
-     "end_offset": "0x4F4",
-     "size": "0x2A8",
-     "type": "c",
-     "source": "overlays/o018/overlay18Reconfigure",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x4F4",
      "end_offset": "0x650",
-     "size": "0x15C",
+     "size": "0x650",
      "type": "c",
-     "source": "overlays/o018/overlay18InitializeBuffers",
+     "source": "overlays/o018/overlay_018",
      "matched": true,
      "nonmatching": false
     }

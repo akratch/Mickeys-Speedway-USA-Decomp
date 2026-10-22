@@ -10657,74 +10657,20 @@
       }
     },
     {
-      "name": "src/overlays/o018/overlay18Initialize.c",
-      "target_path": "expected/build/src/overlays/o018/overlay18Initialize.c.o",
-      "base_path": "build/src/overlays/o018/overlay18Initialize.c.o",
+      "name": "src/overlays/o018/overlay_018.c",
+      "target_path": "expected/build/src/overlays/o018/overlay_018.c.o",
+      "base_path": "build/src/overlays/o018/overlay_018.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
           "overlay",
           "overlay-o018"
         ],
-        "source_path": "src/overlays/o018/overlay18Initialize.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o018/overlay18InitializeBuffers.c",
-      "target_path": "expected/build/src/overlays/o018/overlay18InitializeBuffers.c.o",
-      "base_path": "build/src/overlays/o018/overlay18InitializeBuffers.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o018"
-        ],
-        "source_path": "src/overlays/o018/overlay18InitializeBuffers.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o018/overlay18Load.c",
-      "target_path": "expected/build/src/overlays/o018/overlay18Load.c.o",
-      "base_path": "build/src/overlays/o018/overlay18Load.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o018"
-        ],
-        "source_path": "src/overlays/o018/overlay18Load.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o018/overlay18Reconfigure.c",
-      "target_path": "expected/build/src/overlays/o018/overlay18Reconfigure.c.o",
-      "base_path": "build/src/overlays/o018/overlay18Reconfigure.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o018"
-        ],
-        "source_path": "src/overlays/o018/overlay18Reconfigure.c",
+        "source_path": "src/overlays/o018/overlay_018.c",
         "complete": true
       }
     },

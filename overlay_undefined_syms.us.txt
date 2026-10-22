@@ -1095,50 +1095,12 @@ overlay17ReleaseReloc = 0xf0000000;
 /* overlay 17: overlay17DrawStrip.c.o */
 texDPTextureX_o017Reloc = 0xf0000000;
 
-/* overlay 18: overlay18Load.c.o */
+/* overlay 18: overlay_018.c.o */
 D_8007A1B8_o018Reloc = 0x00000000;
+D_8007A1CC_o018Reloc = 0x00000000;
 D_8007A1D4_o018Reloc = 0x00000000;
 D_800CF510_o018Reloc = 0x00000000;
 D_800CF518_o018Reloc = 0x00000000;
-D_800CF5B8_o018Reloc = 0x00000000;
-animseqInit_o018Reloc = 0xf0000000;
-arithmeticFunction_o018Reloc = 0xf0000000;
-camlightInit_o018Reloc = 0xf0000000;
-diPrintfInit_o018Reloc = 0xf0000000;
-diRcpTraceInit_o018Reloc = 0xf0000000;
-fmvInit_o018Reloc = 0xf0000000;
-func_80002500_o018Reloc = 0xf0000000;
-func_80029104_o018Reloc = 0xf0000000;
-func_80029970_o018Reloc = 0xf0000000;
-func_8004A0F0_o018Reloc = 0xf0000000;
-func_8005A700_o018Reloc = 0xf0000000;
-func_overlay_031_F00002E8_o018Reloc = 0xf0000000;
-fxInit_o018Reloc = 0xf0000000;
-gOverlay18ExternalData = 0x00000000;
-gOverlay18LocalData80 = 0x00000080;
-initFront_o018Reloc = 0xf0000000;
-initWeather_o018Reloc = 0xf0000000;
-joyInit_o018Reloc = 0xf0000000;
-mainPreNMI_o018Reloc = 0xf0000000;
-modInitModels_o018Reloc = 0xf0000000;
-osSetTime_o018Reloc = 0xf0000000;
-overlay10Initialize_o018Reloc = 0xf0000000;
-overlay30Initialize_o018Reloc = 0xf0000000;
-overlay5InitializeAudio_o018Reloc = 0xf0000000;
-packInit_o018Reloc = 0xf0000000;
-runlinkFreeCode_o018Reloc = 0xf0000000;
-texInitTextures_o018Reloc = 0xf0000000;
-
-/* overlay 18: overlay18Initialize.c.o */
-D_8007A1CC_o018Reloc = 0x00000000;
-D_800CF5B0_o018Reloc = 0x00000000;
-D_800D18E0_o018Reloc = 0x00000000;
-func_80028EA0_o018Reloc = 0xf0000000;
-func_80028F3C_o018Reloc = 0xf0000000;
-levelGetCounts_o018Reloc = 0xf0000000;
-mmAlloc_o018Reloc = 0xf0000000;
-
-/* overlay 18: overlay18Reconfigure.c.o */
 D_800CF51C_o018Reloc = 0x00000000;
 D_800CF528_o018Reloc = 0x00000000;
 D_800CF530_o018Reloc = 0x00000000;
@@ -1149,7 +1111,27 @@ D_800CF58C_o018Reloc = 0x00000000;
 D_800CF598_o018Reloc = 0x00000000;
 D_800CF5A0_o018Reloc = 0x00000000;
 D_800CF5A4_o018Reloc = 0x00000000;
+D_800CF5B0_o018Reloc = 0x00000000;
+D_800CF5B8_o018Reloc = 0x00000000;
+D_800D18E0_o018Reloc = 0x00000000;
+animseqInit_o018Reloc = 0xf0000000;
+arithmeticFunction_o018Reloc = 0xf0000000;
+camlightInit_o018Reloc = 0xf0000000;
+diPrintfInit_o018Reloc = 0xf0000000;
+diRcpTraceInit_o018Reloc = 0xf0000000;
+fmvInit_o018Reloc = 0xf0000000;
+func_80002500_o018Reloc = 0xf0000000;
+func_80028EA0_o018Reloc = 0xf0000000;
+func_80028F3C_o018Reloc = 0xf0000000;
+func_80029104_o018Reloc = 0xf0000000;
+func_80029970_o018Reloc = 0xf0000000;
+func_8004A0F0_o018Reloc = 0xf0000000;
+func_8005A700_o018Reloc = 0xf0000000;
+func_overlay_031_F00002E8_o018Reloc = 0xf0000000;
+fxInit_o018Reloc = 0xf0000000;
 gOverlay18Buffers = 0x00000000;
+gOverlay18ExternalData = 0x00000000;
+gOverlay18LocalData80 = 0x00000080;
 gOverlay18Mode = 0x00000000;
 gOverlay18ModeScale10 = 0x00000020;
 gOverlay18ModeScale16 = 0x00000060;
@@ -1160,11 +1142,25 @@ gOverlay18Region64 = 0x00000000;
 gOverlay18Region64Slot0 = 0x00000000;
 gOverlay18Region8 = 0x00000000;
 gOverlay18Region8Slot0 = 0x00000000;
+initFront_o018Reloc = 0xf0000000;
+initWeather_o018Reloc = 0xf0000000;
+joyInit_o018Reloc = 0xf0000000;
+levelGetCounts_o018Reloc = 0xf0000000;
+mainPreNMI_o018Reloc = 0xf0000000;
 mmAllocAtAddr_o018Reloc = 0xf0000000;
+mmAlloc_o018Reloc = 0xf0000000;
 mmFree_o018Reloc = 0xf0000000;
 mmGetDelay_o018Reloc = 0xf0000000;
 mmSetDelay_o018Reloc = 0xf0000000;
+modInitModels_o018Reloc = 0xf0000000;
+osSetTime_o018Reloc = 0xf0000000;
+overlay10Initialize_o018Reloc = 0xf0000000;
 overlay18FinishReconfigureReloc = 0xf0000000;
+overlay30Initialize_o018Reloc = 0xf0000000;
+overlay5InitializeAudio_o018Reloc = 0xf0000000;
+packInit_o018Reloc = 0xf0000000;
+runlinkFreeCode_o018Reloc = 0xf0000000;
+texInitTextures_o018Reloc = 0xf0000000;
 
 /* overlay 19: overlay19BuildOutput.c.o */
 mmAlloc2_o019Reloc = 0xf0000000;
@@ -5258,17 +5254,9 @@ func_overlay_017_F0000668_1874020 = overlay17AdvanceChain;
 /* overlay 17: overlay17DrawStrip.c.o */
 func_overlay_017_F00008B4_187426C = overlay17DrawStrip;
 
-/* overlay 18: overlay18Load.c.o */
+/* overlay 18: overlay_018.c.o */
 func_overlay_018_F0000000_18745B8 = overlay18Load;
-
-/* overlay 18: overlay18Initialize.c.o */
-func_overlay_018_F00001F4_18747AC = overlay18Initialize;
-
-/* overlay 18: overlay18Reconfigure.c.o */
 func_overlay_018_F000024C_1874804 = overlay18Reconfigure;
-
-/* overlay 18: overlay18InitializeBuffers.c.o */
-func_overlay_018_F00004F4_1874AAC = overlay18InitializeBuffers;
 
 /* overlay 19: overlay19Dispatch.c.o */
 func_overlay_019_F0000000_1875258 = overlay19Dispatch;

@@ -2065,62 +2065,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o018/overlay18Initialize.c.o",
-      "offset": 500,
-      "overlay": 18,
-      "size": 88,
-      "source": "src/overlays/o018/overlay18Initialize.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o018/overlay18InitializeBuffers.c.o",
-      "offset": 1268,
-      "overlay": 18,
-      "size": 348,
-      "source": "src/overlays/o018/overlay18InitializeBuffers.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o018/overlay18Load.c.o",
-      "offset": 0,
-      "overlay": 18,
-      "size": 500,
-      "source": "src/overlays/o018/overlay18Load.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o018/overlay18Reconfigure.c.o",
-      "offset": 588,
-      "overlay": 18,
-      "size": 680,
-      "source": "src/overlays/o018/overlay18Reconfigure.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o019/overlay19BuildAdjacency.c.o",
       "offset": 2608,
       "overlay": 19,
@@ -9025,10 +8969,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 622,
+      "metadata": 618,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 445936,
-    "objects_with_postprocess": 623
+    "matched_c_bytes_with_postprocess": 444320,
+    "objects_with_postprocess": 619
   }
 }

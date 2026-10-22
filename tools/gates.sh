@@ -24,7 +24,7 @@
 # reproduces the exact failure it was written to prevent, so the set is now the
 # tool tests too. It needs no build.
 #
-# Logs go to build/gates/<gate>.log. Exits nonzero if any gate failed, and
+# Logs go to build/gates/<gate>.log ($GATES_LOG_DIR overrides, for tests). Exits nonzero if any gate failed, and
 # prints the failing gates again at the end so the verdict is the last thing
 # on screen.
 #
@@ -61,7 +61,7 @@ for a in "$@"; do
 done
 [ ${#gates[@]} -eq 0 ] && gates=("${DEFAULT_GATES[@]}")
 
-logdir=build/gates
+logdir=${GATES_LOG_DIR:-build/gates}
 mkdir -p "$logdir"
 failed=()
 
@@ -74,13 +74,13 @@ extra_gates=0
 # after a full build. It costs milliseconds and needs no build, so it runs
 # first.
 if [ "$staged" -eq 1 ]; then
-  mkdir -p build/gates
-  if git diff --cached --check > build/gates/whitespace.log 2>&1; then
-    printf 'PASS  %-26s %s\n' whitespace build/gates/whitespace.log
+  mkdir -p "$logdir"
+  if git diff --cached --check > "$logdir/whitespace.log" 2>&1; then
+    printf 'PASS  %-26s %s\n' whitespace "$logdir/whitespace.log"
     extra_gates=$((extra_gates + 1))
   else
-    printf 'FAIL  %-26s %s\n' whitespace build/gates/whitespace.log
-    sed 's/^/      | /' build/gates/whitespace.log | tail -6
+    printf 'FAIL  %-26s %s\n' whitespace "$logdir/whitespace.log"
+    sed 's/^/      | /' "$logdir/whitespace.log" | tail -6
     echo
     echo "GATES FAILED: whitespace"
     echo "Do NOT commit. Do NOT pass --no-verify. Fix the gate."

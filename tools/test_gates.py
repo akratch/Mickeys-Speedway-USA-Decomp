@@ -30,14 +30,19 @@ def run(stub_body: str, args: list[str], python_body: str | None = None) -> subp
     stub = tmp / "gmake"
     stub.write_text("#!/usr/bin/env bash\n" + stub_body + "\n", encoding="utf-8")
     stub.chmod(0o755)
-    env = dict(os.environ, PATH=f"{tmp}:{os.environ['PATH']}", STUB_DIR=str(tmp))
+    # Keep fixture logs out of the real build/gates/, where a concurrent census
+    # or a reader would take them for real gate results.
+    env = dict(os.environ, PATH=f"{tmp}:{os.environ['PATH']}", STUB_DIR=str(tmp),
+               GATES_LOG_DIR=str(tmp / "gates"))
     if python_body is not None:
         helper = tmp / "python"
         helper.write_text("#!/usr/bin/env bash\n" + python_body + "\n", encoding="utf-8")
         helper.chmod(0o755)
         env["GATES_PYTHON"] = str(helper)
-    return subprocess.run([str(GATES), *args], env=env, capture_output=True,
-                          text=True, cwd=ROOT)
+    out = subprocess.run([str(GATES), *args], env=env, capture_output=True,
+                         text=True, cwd=ROOT)
+    out.logdir = tmp / "gates"
+    return out
 
 
 CHANGED = ("echo 'promotion_proof_census.py: error: proof inputs changed during census: "
@@ -107,9 +112,9 @@ class GateStatusTests(unittest.TestCase):
     def test_staged_passes_the_index_flag_to_cleanroom_only(self) -> None:
         out = run('echo "ARGS:$*"; exit 0', ["--staged", "cleanroom", "verify"])
         self.assertEqual(out.returncode, 0)
-        log = (ROOT / "build" / "gates" / "cleanroom.log").read_text()
+        log = (out.logdir / "cleanroom.log").read_text()
         self.assertIn("CLEANROOM_ARGS=--staged", log)
-        verify_log = (ROOT / "build" / "gates" / "verify.log").read_text()
+        verify_log = (out.logdir / "verify.log").read_text()
         self.assertNotIn("CLEANROOM_ARGS", verify_log)
 
     def test_promotion_census_interrupted_by_a_source_change_is_retried_once(self) -> None:

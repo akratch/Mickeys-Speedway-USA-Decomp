@@ -205,7 +205,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   **Left** (lane c-1, 2026-10-08): deleting the empty `if (other) {}` changes about 12 words; the extra reference to `other` before `other->state` is load-bearing.
 - `src/overlays/o001/overlay_001_tail.c:2903` `overlay1UpdateValueCache` **A**: multiply-by-zero stand-in for a constant.
   Natural: the literal `0`. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
-- `src/overlays/o003/overlay3FindClosestObject.c:39` `overlay3FindClosestObject` **A**: empty if body.
+- `src/overlays/o003/overlay_003.c:39` `overlay3FindClosestObject` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Partly resolved (lane c-4, 2026-10-09):** the `if (&pad)` probe was byte-inert and is deleted (the `pad` declaration stays: without it the frame moves, 9 lines). **Left:** the empty `!cursor` test and the `if (1)` around the loop body; deleting either swaps the index and cursor registers (s3/s4; 10 and 7 lines). Measured without them: an indexed `objects[index]` loop (12), a pointer-walk `for (index = start, cursor = &objects[start]; ...; index++, cursor++)` (14), the same with the cursor set first (19), `while` with both increments at the tail (14), `*cursor++` (14). The fakes add references that rank the index web ahead of the cursor; a natural second use of `index` is still to find.
 - `src/overlays/o007/overlay_007_tail.c:268` `overlay7FillValues` **A**: `((!value) & 0xFFFFU) && (!value)` with an empty body.

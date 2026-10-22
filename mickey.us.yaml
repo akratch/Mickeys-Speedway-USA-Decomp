@@ -1204,15 +1204,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1859D30, c, overlay3ContainsValue]
-      - [0x1859D80, c, overlay3ResetObjects]
-      - [0x1859DE8, c, overlay3RunCachedModeAction]
-      - [0x1859FAC, c, overlay3FindClosestObject]
-      - [0x185A0E0, c, overlay3SelectScoredObject]
-      - [0x185A2B8, c, overlay3SelectTarget]
-      - [0x185A408, c, overlay3TouchObject]
-      - [0x185A490, c, overlay3UpdateTimedEntries]
-      - [0x185A4F4, asm, overlay_003_padding]
+      - [0x1859D30, c, overlay_003]
       - [0x185A500, bin, overlay_003_data_rodata]
       - [0x185A520, bin, overlay_003_reloc1]
       - [0x185A5B0, bin, overlay_003_reloc2]

@@ -348,16 +348,17 @@ func_8000572C_o002Reloc = 0xf0000000;
 func_8000BCB0_o002Reloc = 0xf0000000;
 joyGetButtons_o002Reloc = 0xf0000000;
 
-/* overlay 3: overlay3ContainsValue.c.o */
-gOverlay3Entries = 0x00000028;
-
-/* overlay 3: overlay3ResetObjects.c.o */
-func_80005750_o003Reloc = 0xf0000000;
-
-/* overlay 3: overlay3RunCachedModeAction.c.o */
+/* overlay 3: overlay_003.c.o */
 Arctanf_o003Reloc = 0xf0000000;
+func_8000572C_o003Reloc = 0xf0000000;
+func_80005750_o003Reloc = 0xf0000000;
+func_8000BD0C_o003Reloc = 0xf0000000;
 func_overlay_002_F0001A94_o003Reloc = 0xf0000000;
+gOverlay3Entries = 0x00000028;
 gOverlay3ModeChance = 0x00000000;
+gOverlay3Objects = 0x00000000;
+gOverlay3SearchMaxDistance = 0x00000000;
+gOverlay3TouchEntries = 0x00000028;
 mathDiffAngle_o003Reloc = 0xf0000000;
 mathRnd_o003Reloc = 0xf0000000;
 overlay1GetEntry_o003Reloc = 0xf0000000;
@@ -365,22 +366,8 @@ overlay36CallModeZero_o003Reloc = 0xf0000000;
 overlay36SpawnDirectional_o003Reloc = 0xf0000000;
 overlay36SpawnLinked7F_o003Reloc = 0xf0000000;
 overlay36TickState_o003Reloc = 0xf0000000;
-
-/* overlay 3: overlay3FindClosestObject.c.o */
-func_8000572C_o003Reloc = 0xf0000000;
-func_8000BD0C_o003Reloc = 0xf0000000;
-gOverlay3SearchMaxDistance = 0x00000000;
-overlay3ContainsValue_o003Reloc = 0xf0000000;
-
-/* overlay 3: overlay3SelectScoredObject.c.o */
-sqrtf_o003Reloc = 0xf0000000;
-
-/* overlay 3: overlay3SelectTarget.c.o */
-gOverlay3Objects = 0x00000000;
 overlay3TouchObject_o003Reloc = 0xf0000000;
-
-/* overlay 3: overlay3TouchObject.c.o */
-gOverlay3TouchEntries = 0x00000028;
+sqrtf_o003Reloc = 0xf0000000;
 
 /* overlay 4: overlay_004.c.o */
 func_80004590_o004Reloc = 0xf0000000;
@@ -4959,28 +4946,12 @@ func_overlay_002_F00016A0_1858498 = overlay2QueryNode;
 /* overlay 2: overlay2CopyColor.c.o */
 func_overlay_002_F0002528_1859320 = overlay2CopyColor;
 
-/* overlay 3: overlay3ContainsValue.c.o */
+/* overlay 3: overlay_003.c.o */
 func_overlay_003_F0000000_1859D30 = overlay3ContainsValue;
-
-/* overlay 3: overlay3ResetObjects.c.o */
 func_overlay_003_F0000050_1859D80 = overlay3ResetObjects;
-
-/* overlay 3: overlay3RunCachedModeAction.c.o */
 func_overlay_003_F00000B8_1859DE8 = overlay3RunCachedModeAction;
-
-/* overlay 3: overlay3FindClosestObject.c.o */
-func_overlay_003_F000027C_1859FAC = overlay3FindClosestObject;
-
-/* overlay 3: overlay3SelectScoredObject.c.o */
-func_overlay_003_F00003B0_185A0E0 = overlay3SelectScoredObject;
-
-/* overlay 3: overlay3SelectTarget.c.o */
 func_overlay_003_F0000588_185A2B8 = overlay3SelectTarget;
-
-/* overlay 3: overlay3TouchObject.c.o */
 func_overlay_003_F00006D8_185A408 = overlay3TouchObject;
-
-/* overlay 3: overlay3UpdateTimedEntries.c.o */
 func_overlay_003_F0000760_185A490 = overlay3UpdateTimedEntries;
 
 /* overlay 4: overlay_004.c.o */

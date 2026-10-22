@@ -89,17 +89,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay2Enable.c.o: SURFACE_REBIND = $(OBJ
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay2QueryNode.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_overlay_002_F0001364_185815C=func_overlay_002_F0001364_o002Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3FindClosestObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8000572C=func_8000572C_o003Reloc \
-	--redefine-sym func_8000BD0C=func_8000BD0C_o003Reloc \
-	--redefine-sym overlay3ContainsValue=overlay3ContainsValue_o003Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3ResetObjects.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80005750=func_80005750_o003Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3RunCachedModeAction.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay_003.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o003Reloc \
+	--redefine-sym func_8000572C=func_8000572C_o003Reloc \
 	--redefine-sym func_80005750=func_80005750_o003Reloc \
+	--redefine-sym func_8000BD0C=func_8000BD0C_o003Reloc \
 	--redefine-sym func_overlay_002_F0001A94_185888C=func_overlay_002_F0001A94_o003Reloc \
 	--redefine-sym mathDiffAngle=mathDiffAngle_o003Reloc \
 	--redefine-sym mathRnd=mathRnd_o003Reloc \
@@ -107,16 +101,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3RunCachedModeAction.c.o: SURFACE_R
 	--redefine-sym overlay36CallModeZero=overlay36CallModeZero_o003Reloc \
 	--redefine-sym overlay36SpawnDirectional=overlay36SpawnDirectional_o003Reloc \
 	--redefine-sym overlay36SpawnLinked7F=overlay36SpawnLinked7F_o003Reloc \
-	--redefine-sym overlay36TickState=overlay36TickState_o003Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3SelectScoredObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80005750=func_80005750_o003Reloc \
-	--redefine-sym mathRnd=mathRnd_o003Reloc \
-	--redefine-sym overlay3ContainsValue=overlay3ContainsValue_o003Reloc \
+	--redefine-sym overlay36TickState=overlay36TickState_o003Reloc \
 	--redefine-sym sqrtf=sqrtf_o003Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3SelectTarget.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay3TouchObject=overlay3TouchObject_o003Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_8000572C=func_8000572C_o004Reloc \

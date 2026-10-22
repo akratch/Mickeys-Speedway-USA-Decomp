@@ -369,25 +369,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_scaled.c.o: CFLAGS += -Wab,-r4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_scaled.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x58
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3UpdateTimedEntries.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x64
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3SelectTarget.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x150
-# The typed body naturally reproduces the complete call/CFG/FP inventory.
-# Select its one relocation-aware carrier cycle and complete private owner webs.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3RunCachedModeAction.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1C4
-# The natural source has the exact 77-word operation/CFG topology. Select the
-# one complete four-use temporary allocation web with field-only guards.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3FindClosestObject.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x134
-# The measured R4300 multiply-hazard flag supplies the target FP spacing nop.
-# Then select the complete carrier/schedule and two stack-owner webs.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3SelectScoredObject.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3SelectScoredObject.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1D8
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3TouchObject.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x88
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19Dispatch.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xAC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildOutput.c.o: POSTPROCESS = \
@@ -2201,6 +2182,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o018/overlay_018.c.o: ASM_PROCESSOR += --force
 # Overlay 17 is one translation unit at the overlay flag set; --force keeps static names.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay_017.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay_017.c.o: ASM_PROCESSOR += --force
+# Overlay 3 is one translation unit at the overlay flag set; --force keeps static names.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay_003.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay_003.c.o: ASM_PROCESSOR += --force
 # Overlay 16 is one translation unit at the overlay flag set; its .text
 # carries the module's trailing pad, so nothing is trimmed. --force runs
 # asm-processor's static-symbol pass on this GLOBAL_ASM-free file, so the
@@ -2649,10 +2633,6 @@ $(O90_OBJ): POSTPROCESS = \
 		sha256:c350971913605d505c513324a16e420965bd2f632cce4c770353b9c7fc954f99 && \
 	$(OBJCOPY) --remove-section .rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xB1C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3ResetObjects.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x68
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3ContainsValue.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48Initialize.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x60
 # NON_MATCHING/GLOBAL_ASM: restore friendly symbols and retain only the
@@ -2893,12 +2873,6 @@ OVERLAY_TRIMMED_OBJECTS := \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007_tail.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3SelectTarget.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3RunCachedModeAction.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3FindClosestObject.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3SelectScoredObject.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3TouchObject.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3UpdateTimedEntries.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19Dispatch.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildOutput.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildPlanes.c.o \
@@ -3193,9 +3167,7 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100ApplyToValue.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100DrawMotion.c.o
 OVERLAY_TRIMMED_OBJECTS += \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o090/overlay_090.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3ResetObjects.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3ContainsValue.c.o
+    $(BUILD_DIR)/$(SRC_DIR)/overlays/o090/overlay_090.c.o
 OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48Initialize.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48InitializeState.c.o \

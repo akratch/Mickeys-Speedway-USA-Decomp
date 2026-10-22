@@ -76,6 +76,7 @@ import reloc_identity as ri  # noqa: E402
 import overlay_storage_types as storage_types  # noqa: E402
 import overlay_storage_freshness as storage_freshness  # noqa: E402
 import resident_rebinds as rr  # noqa: E402
+import real_name_rebinds as rnr  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_ROM = REPO / "baseroms" / "mickey.us.z64"
@@ -660,7 +661,7 @@ def object_aliases(obj_path, overlay, atlas_rows, rom_start):
     return out
 
 
-def resident_defined_names():
+def resident_defined_names(object_names=None):
     """Every global symbol the *resident* side of the link defines.
 
     The defining property of a resident call is not the auto-name shape but
@@ -670,6 +671,7 @@ def resident_defined_names():
     scripts' names (docs/reloc-surface.md section 5.6).  Fails closed when a
     resident object is missing: a partial census silently drops a resident
     call from the plan, and the dropped rename is a link failure later.
+    ``object_names`` also receives the resident objects' own names (5.7).
     """
     ld = (REPO / f"mickey.{VERSION}.ld").read_text()
     out = set()
@@ -686,6 +688,8 @@ def resident_defined_names():
         for name, _v, _s, info, shndx in elf.symbols():
             if name and shndx != SHN_UNDEF and (info >> 4) != 0:
                 out.add(name)
+                if object_names is not None and shndx != SHN_ABS:
+                    object_names.add(name)
     if missing:
         raise SystemExit(
             "the resident-name census requires every resident object; %d are "
@@ -704,7 +708,8 @@ def resident_defined_names():
 
 
 def resident_call_aliases(obj_path, overlay, atlas_rows, records,
-                          resident_names=frozenset(), undo=None):
+                          resident_names=frozenset(), undo=None,
+                          resident_data_names=frozenset()):
     """(renames, refusals, notes) for this object's calls to resident names.
 
     A resident call needs the same `0xF0000000` addend as any cross-module
@@ -712,7 +717,7 @@ def resident_call_aliases(obj_path, overlay, atlas_rows, records,
     it would move the resident function for every resident caller.  So each
     such `R_MIPS_26` site gets a per-module placeholder,
     `<name>_o<NNN>Reloc` (docs/reloc-surface.md section 5.6).  A resident
-    *data* reference stores the real resident address and keeps its name.
+    *data* reference is renamed only for ``resident_data_names`` (5.7).
 
     `undo` maps a declared placeholder back to the name the C spells, so an
     object already built with its declared rebinds plans the same renames as
@@ -743,6 +748,8 @@ def resident_call_aliases(obj_path, overlay, atlas_rows, records,
         sites = by_symbol[name]
         calls = [(off, t) for off, t in sites if t == R_MIPS_26]
         if not calls:
+            if name in resident_data_names and base is not None:
+                renames[name] = RESIDENT_ALIAS_FMT % (name, overlay)
             continue
         other = [(off, t) for off, t in sites if t != R_MIPS_26]
         if other:
@@ -794,7 +801,11 @@ def plan_resident_rebinds(objects, rom, rows, mods, rom_table,
     refusals, notes, plan = [], [], {}
     refused_names = set() if refused_names is None else refused_names
     declared = declared or {}
-    resident_names = resident_defined_names()
+    resident_data = set()
+    resident_names = resident_defined_names(resident_data)
+    overlay_defs = rnr.defined_names(objects, Elf)
+    for name in resident_names:
+        overlay_defs.pop(name, None)
     for ov, obj in objects:
         recs = (records_cache or {}).get(ov)
         if recs is None:
@@ -802,12 +813,22 @@ def plan_resident_rebinds(objects, rom, rows, mods, rom_table,
             if records_cache is not None:
                 records_cache[ov] = recs
         key = object_key(obj)
+        undo = rr.inverse(declared.get(key, {}))
         try:
             renames, refused, noted = resident_call_aliases(
                 obj, ov, rows.get(ov, []), recs, resident_names,
-                undo=rr.inverse(declared.get(key, {})))
+                undo=undo, resident_data_names=resident_data)
         except SystemExit:
             continue
+        try:
+            real, real_refused = rnr.real_aliases(
+                Elf(obj), ov, tu_base(obj, ov, rows.get(ov, []))[0], recs,
+                overlay_defs, undo)
+        except (SystemExit, OSError):
+            real, real_refused = {}, []
+        for name, new in real.items():
+            renames.setdefault(name, new)
+        refused += real_refused
         refusals += [(obj.name, n, why) for n, why in refused]
         notes += [(obj.name, n, why) for n, why in noted]
         refused_names.update(n for n, _why in refused)
@@ -860,8 +881,9 @@ def generate(rom, atlas, objects=None, quiet=False, rebind_resident=True,
         if ov not in records:
             records[ov] = ot.read_module_relocations(rom, mods[ov - 1], rom_table)
         recs = records[ov]
+        renamed = rebinds.get(object_key(obj), {})
         _sites, vals, unresolved, aligned = synthesize(
-            obj, ov, rom, rows.get(ov, []), recs, local[ov])
+            obj, ov, rom, rows.get(ov, []), recs, local[ov] - set(renamed))
         conflicts += [(obj.name, n, why) for n, why in unresolved]
         if aligned["attempted"]:
             alignment[obj.name] = aligned
@@ -872,7 +894,6 @@ def generate(rom, atlas, objects=None, quiet=False, rebind_resident=True,
         # every other resident caller -- 30-odd `relocation truncated to fit`
         # errors, from a line meant to help one overlay.  Refused means
         # refused: no value, and the reason is already reported.
-        renamed = rebinds.get(object_key(obj), {})
         vals = {renamed.get(k, k): v for k, v in vals.items()
                 if k not in refused_resident}
         mine = []

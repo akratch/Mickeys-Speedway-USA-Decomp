@@ -26,11 +26,11 @@ extern s32 D_1D88;
 extern s32 D_1D84;
 extern void *D_1BA4;
 
-extern void overlay1ClearReloc(void *address, s32 size);
+extern void _bzero(void *address, s32 size);
 extern Overlay1PoolRecord *func_overlay_001_F0007BDC_1853FBC(
     s16 x0, s16 y0, s16 x1, s16 y1);
-extern void overlay1ErrorReloc(s32 sound);
-extern s32 overlay1SegmentReloc(f32 x0, f32 y0, f32 x1, f32 y1,
+extern void overlay3TouchObject(s32 sound);
+extern s32 func_overlay_002_F0001A94_185888C(f32 x0, f32 y0, f32 x1, f32 y1,
                                 void *world, s16 *result, s32 sentinel,
                                 u32 mask);
 extern void func_overlay_001_F0007730_1853B10(s16 *x, s16 *y,
@@ -57,15 +57,15 @@ s32 overlay1ResolvePathPoint(s16 x0, s16 y0, s16 x1, s16 y1,
     s16 result[4];
     s32 product;
 
-    overlay1ClearReloc(D_220, sizeof(D_220));
-    overlay1ClearReloc(D_8, sizeof(D_8));
+    _bzero(D_220, sizeof(D_220));
+    _bzero(D_8, sizeof(D_8));
     D_218 = D_220;
     D_1D88 = 0x3F;
     D_1D84 = 0;
 
     record = func_overlay_001_F0007BDC_1853FBC(x0, y0, x1, y1);
     if (record == 0) {
-        overlay1ErrorReloc(((Overlay1ErrorOwner *)D_1DA0)->sound);
+        overlay3TouchObject(((Overlay1ErrorOwner *)D_1DA0)->sound);
         *outX = x0;
         *outY = y0;
         return -1;
@@ -78,7 +78,7 @@ s32 overlay1ResolvePathPoint(s16 x0, s16 y0, s16 x1, s16 y1,
         if (record->count >= 3) {
             do {
                 point = &record->x[scanIndex];
-                if (overlay1SegmentReloc((f32)x0, (f32)y0,
+                if (func_overlay_002_F0001A94_185888C((f32)x0, (f32)y0,
                                          (f32)point[0], (f32)point[32],
                                          D_1BA4, result, -1, 0xFFFF) != 0) {
                     /* Spelling the product twice lets uopt fold the pair into
@@ -135,14 +135,14 @@ s32 overlay1ModeIsThree(void) { return gOverlay1Mode == 3; }
 
 /* Pinned DKR v77/v80 and JFG scans classify overlay 1 as no donor. */
 extern void *gOverlay1DistanceObject;
-extern f32 overlay1DistanceReloc(void *first, void *second);
+extern f32 overlay1SignedOffset(void *first, void *second);
 
 f32 overlay1DistanceFromCurrent(void *other) {
     void *current;
 
     current = gOverlay1DistanceObject;
     if (current != NULL) {
-        return overlay1DistanceReloc(current, other);
+        return overlay1SignedOffset(current, other);
     }
     return 0.0f;
 }
@@ -154,7 +154,6 @@ f32 overlay1DistanceFromCurrent(void *other) {
 extern void *gOverlay1DistanceObject;
 extern u8 gOverlay1SelectedIndex;
 extern void **overlay1GetSelectionReloc(s32 *count);
-extern f32 overlay1DistanceReloc(void *first, void *second);
 
 f32 overlay1DistanceFromSelected(void *object) {
     s32 count;
@@ -164,7 +163,7 @@ f32 overlay1DistanceFromSelected(void *object) {
     if (object == gOverlay1DistanceObject) {
         objects = overlay1GetSelectionReloc(&count);
         if (count >= 2) {
-            return overlay1DistanceReloc(object, objects[gOverlay1SelectedIndex]);
+            return overlay1SignedOffset(object, objects[gOverlay1SelectedIndex]);
         }
     }
     return 0.0f;

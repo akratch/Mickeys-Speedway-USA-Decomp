@@ -37,10 +37,10 @@ typedef struct O1RankPair {
 extern s32 G_o1_83e0;
 extern s32 G_o1_83e4;
 extern f32 gO1RankTime;
-extern s32 gO1RankWord800C947C;
+extern s32 D_800C947C;
 extern u8 gO1RankOrder[];
 extern f32 gO1RankWeights[];
-extern u8 gO1RankMode;
+extern u8 D_8007BF04;
 extern s32 D_1D74;
 extern s32 D_1D78;
 extern s32 D_1D8C;
@@ -127,7 +127,7 @@ void func_overlay_001_F0002B4C_184EF2C(s32 elapsed) {
     }
     D_1D94 = elapsed;
     gO1RankTime = elapsed;
-    if (gO1RankWord800C947C != 0) {
+    if (D_800C947C != 0) {
         D_1D78 = 1;
     } else {
         D_1D78 = 0;
@@ -225,7 +225,7 @@ void func_overlay_001_F0002B4C_184EF2C(s32 elapsed) {
         while (i--) {
             other = list[gO1RankOrder[i]];
             otherState = other->state;
-            if (gO1RankMode == 2) {
+            if (D_8007BF04 == 2) {
                 otherState->spacing = (gO1RankWeights[0] - gO1RankWeights[i]) * step + D_1DB0;
             } else {
                 otherState->spacing = (anchor - gO1RankWeights[i]) * step + D_1DB0;

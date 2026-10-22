@@ -9,9 +9,9 @@ typedef struct O1GaugeState {
 } O1GaugeState;
 typedef struct O1GaugeObject { u8 pad00[0x64]; O1GaugeState *state; } O1GaugeObject;
 typedef struct O1GaugeTableEntry { u8 pad00[8]; s32 value; u8 pad0C[0x1C]; } O1GaugeTableEntry;
-extern O1GaugeTableEntry *overlay1GetGaugeTable(void);
+extern O1GaugeTableEntry *func_80028F54(void);
 extern O1GaugeObject **overlay1GetGaugeObjects(s32 *count);
-extern s32 overlay1RandomRange(s32 minimum, s32 maximum);
+extern s32 mathRnd(s32 minimum, s32 maximum);
 
 /* Two identities close this: the object list is indexed, not walked with a
  * hand-written cursor -- IDO's own strength reduction is what produces the
@@ -32,7 +32,7 @@ void overlay1InitializeGaugeObjects(void) {
     s32 loopValue;
     s32 maximum;
 
-    table = overlay1GetGaugeTable();
+    table = func_80028F54();
     objects = overlay1GetGaugeObjects(&count.shared);
     maximum = 0;
     initialIndex = count.shared - 1;
@@ -53,7 +53,7 @@ void overlay1InitializeGaugeObjects(void) {
             state = object->state;
             state->flags |= 1;
             if (table[state->type].value == 0) {
-                table[state->type].value = overlay1RandomRange(100, 1000) + maximum;
+                table[state->type].value = mathRnd(100, 1000) + maximum;
             }
             loopValue = index;
             index--;
@@ -67,7 +67,7 @@ void overlay1InitializeGaugeObjects(void) {
 typedef struct O1VariableRecord { s16 type; u8 size; u8 pad03[9]; u16 index; } O1VariableRecord;
 typedef struct O1RecordOwner { u8 pad00[0xC]; u16 index; } O1RecordOwner;
 extern s32 D_1D8C;
-extern void overlay1GetRomlistInfoReloc(O1VariableRecord **records, s32 *length,
+extern void GetRomlistInfo(O1VariableRecord **records, s32 *length,
                                         s32 enabled);
 
 /* newIndex is the decoded record value; next is the candidate global maximum.
@@ -85,7 +85,7 @@ void overlay1AssignRecordIndex(void *object, O1RecordOwner *owner) {
     if (owner->index == 0xFFFF) {
         s32 newIndex;
 
-        overlay1GetRomlistInfoReloc(&records, &length, 1);
+        GetRomlistInfo(&records, &length, 1);
         offset = 0;
         record = records;
         if (length > 0) {
@@ -367,10 +367,10 @@ void overlay1ChoosePath(f32 *outX, f32 *outZ) {
 /* Pinned DKR v77/v80 and JFG scans classify overlay 1 as no donor. */
 extern s32 gOverlay1SubmitArg2;
 extern s32 gOverlay1SubmitArg3;
-extern void overlay1SubmitReloc(s32 value0, s32 value1, s32 arg2, s32 arg3);
+extern void overlay4FindSearchPosition(s32 value0, s32 value1, s32 arg2, s32 arg3);
 
 void overlay1SubmitGlobals(s32 value0, s32 value1) {
-    overlay1SubmitReloc(value0, value1, gOverlay1SubmitArg2, gOverlay1SubmitArg3);
+    overlay4FindSearchPosition(value0, value1, gOverlay1SubmitArg2, gOverlay1SubmitArg3);
 }
 
 /* ---- overlay1SubmitAll ---- */
@@ -381,11 +381,11 @@ extern s32 gOverlay1SubmitArg2;
 extern s32 gOverlay1SubmitArg3;
 extern s32 gOverlay1SubmitArg4;
 extern s32 gOverlay1SubmitArg5;
-extern void overlay1SubmitAllReloc(s32 value0, s32 value1, s32 arg2, s32 arg3,
+extern void overlay3SelectTarget(s32 value0, s32 value1, s32 arg2, s32 arg3,
                                    s32 arg4, s32 arg5);
 
 void overlay1SubmitAll(s32 value0, s32 value1) {
-    overlay1SubmitAllReloc(value0, value1, gOverlay1SubmitArg2,
+    overlay3SelectTarget(value0, value1, gOverlay1SubmitArg2,
                            gOverlay1SubmitArg3, gOverlay1SubmitArg4,
                            gOverlay1SubmitArg5);
 }
@@ -400,8 +400,8 @@ typedef struct Overlay1SampleState {
 
 /* Pinned DKR v77/v80 and JFG scans classify overlay 1 as no donor. */
 extern Overlay1SampleState *gOverlay1SampleState;
-extern void overlay1SampleReloc(f32 *x, f32 *y, s32 selector, f32 scale);
-extern s32 overlay1SampleAngleReloc(f32 x, f32 y);
+extern void overlay1InterpolatePath(f32 *x, f32 *y, s32 selector, f32 scale);
+extern s32 Arctanf(f32 x, f32 y);
 
 s32 overlay1AngleBetweenSamples(f32 unusedX, f32 unusedY) {
     f32 firstX;
@@ -409,10 +409,10 @@ s32 overlay1AngleBetweenSamples(f32 unusedX, f32 unusedY) {
     f32 secondX;
     f32 secondY;
 
-    overlay1SampleReloc(&firstX, &firstY, gOverlay1SampleState->selector, 1.0f);
-    overlay1SampleReloc(&secondX, &secondY, gOverlay1SampleState->selector,
+    overlay1InterpolatePath(&firstX, &firstY, gOverlay1SampleState->selector, 1.0f);
+    overlay1InterpolatePath(&secondX, &secondY, gOverlay1SampleState->selector,
                         2.5f);
-    return (s16)(overlay1SampleAngleReloc(firstX - secondX,
+    return (s16)(Arctanf(firstX - secondX,
                                           firstY - secondY) - 0x8000);
 }
 
@@ -428,7 +428,6 @@ typedef struct Overlay1Position {
 
 /* Pinned DKR v77/v80 and JFG scans classify overlay 1 as no donor. */
 extern Overlay1Position *gOverlay1Position;
-extern s32 overlay1AngleReloc(f32 x, f32 y);
 
 s32 overlay1RelativeAngleA(f32 x, f32 y) {
     s32 angle;
@@ -437,7 +436,7 @@ s32 overlay1RelativeAngleA(f32 x, f32 y) {
 
     deltaX = x - gOverlay1Position->x;
     deltaY = y - gOverlay1Position->y;
-    angle = overlay1AngleReloc(deltaX, deltaY);
+    angle = Arctanf(deltaX, deltaY);
     return (s16)(angle + 0x8000);
 }
 
@@ -448,7 +447,7 @@ s32 overlay1RelativeAngleB(f32 x, f32 y) {
 
     deltaX = x - gOverlay1Position->x;
     deltaY = y - gOverlay1Position->y;
-    angle = overlay1AngleReloc(deltaX, deltaY);
+    angle = Arctanf(deltaX, deltaY);
     return (s16)(angle + 0x8000);
 }
 
@@ -515,12 +514,12 @@ extern void ext_o7_ccc(Transform *, s32);
  * Overlay 1 ORT 1485, +0x378 (overlay1FindType5ByKey). The local State-pointer
  * argument and Spawned-pointer result are an inconsistent caller-side typed
  * view; preserve them until a coordinated ABI reconstruction retains codegen. */
-extern Spawned *local_378(State *);
+extern Spawned *overlay1FindType5ByKey(State *);
 extern void ext_o0_1bed0(Transform *, f32, f32, f32, s16, s16, s16);
-extern void ext_o0_1c6bc(Transform *, State *);
+extern void func_8001CB0C(Transform *, State *);
 extern void ext_o0_5a914(Transform *, s32, s32, f32);
-extern Spawned *local_414(s16, Spawned **);
-extern s16 local_c0(Spawned *);
+extern Spawned *overlay1FindPreviousUsable(s16, Spawned **);
+extern s16 overlay1NextIndex(Spawned *);
 
 typedef struct O1RouteSlot {
     f32 x;
@@ -571,7 +570,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
         }
         if (phase == 1) {
             ext_o7_ccc(obj, 0x13);
-            state->spawned = local_378(state);
+            state->spawned = overlay1FindType5ByKey(state);
             state->phase = 2;
             return;
         }
@@ -594,7 +593,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             obj->rotX = 0;
             obj->rotZ = 0;
             ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
-            ext_o0_1c6bc(obj, state);
+            func_8001CB0C(obj, state);
             state->flags &= ~8;
             obj->header->flags &= ~1;
             state->fade = 0;
@@ -628,8 +627,8 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
         }
         if (phase == 1) {
             ext_o7_ccc(obj, 0x13);
-            state->spawned = local_414(state->pathId, &sp3C);
-            state->pathId = local_c0(sp3C);
+            state->spawned = overlay1FindPreviousUsable(state->pathId, &sp3C);
+            state->pathId = overlay1NextIndex(sp3C);
             state->spawned->at10.flags |= 8;
             state->phase = 2;
             return;
@@ -656,7 +655,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             obj->rotX = 0;
             obj->rotZ = 0;
             ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
-            ext_o0_1c6bc(obj, state);
+            func_8001CB0C(obj, state);
             state->flags &= ~8;
             obj->header->flags &= ~1;
             obj->alpha = 0;
@@ -884,8 +883,8 @@ void func_8003EDEC(void *object, s32 update);
 extern f32 D_4;
 extern s32 gOverlay1Mode;
 extern f32 G_rt_458c4;
-extern s32 G_rt_43a3c;
-extern u8 G_offd_31a4;
+extern s32 D_800C947C;
+extern u8 D_8007BF04;
 extern void *D_1BA4;
 extern f32 LOCAL_DATA_4;
 extern s32 LOCAL_BSS_1D78;
@@ -961,7 +960,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
         tuning = func_overlay_008_F0000008_185DD60Reloc(state);
         G_rt_458c4 = *tuning;
         if (gOverlay1Mode == 1) {
-            if ((G_rt_43a3c == 0) && (state->joypadDisabled == 0) && (state->spinTimer == 0) && !(state->flags1A8 & 8)) {
+            if ((D_800C947C == 0) && (state->joypadDisabled == 0) && (state->spinTimer == 0) && !(state->flags1A8 & 8)) {
                 if (state->previousPathIndex != state->pathIndex) {
                     state->previousPathIndex = state->pathIndex;
                     state->stuckTimer = 0;
@@ -1137,20 +1136,20 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
                 state->controlKeys = 0x4000;
             }
         }
-        if (G_rt_43a3c != 0) {
+        if (D_800C947C != 0) {
             state->controlKeys = 0x4000;
             object->velocityX = 0.0f;
             object->velocityY = 0.0f;
             object->velocityZ = 0.0f;
             state->forwardVelocity = 0.0f;
         }
-        if ((LOCAL_BSS_1D78 != 0) && (G_rt_43a3c == 0)) {
+        if ((LOCAL_BSS_1D78 != 0) && (D_800C947C == 0)) {
             state->field183 = 1;
             state->boostMode = 2U;
             state->field187 = 6;
             state->boostScale = 1.0f;
         }
-        if (G_rt_43a3c != 0) {
+        if (D_800C947C != 0) {
             func_overlay_007_F0000EDC_185CD64Reloc();
         }
         if (state->joypadDisabled != 0) {
@@ -1239,7 +1238,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
                 }
             } else if (keys & 0x8000) {
                 if ((state->boostMode == 1) || (state->boostMode == 2)) {
-                    if (G_offd_31a4 == 0) {
+                    if (D_8007BF04 == 0) {
                         extraScale = 0.3334f;
                     } else {
                         extraScale = 0.5f;
@@ -1268,7 +1267,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
                         state->forwardVelocity = -limit;
                     }
                 }
-                if ((gOverlay1Mode == 1) && (G_offd_31a4 == 0) && (state->flags1A8 & 1) && (func_8002675C() == (s32)0x21) && (state->pathIndex == 0x2A) && (0.4f < state->progress398)) {
+                if ((gOverlay1Mode == 1) && (D_8007BF04 == 0) && (state->flags1A8 & 1) && (func_8002675C() == (s32)0x21) && (state->pathIndex == 0x2A) && (0.4f < state->progress398)) {
                     state->forwardVelocity = (f32) (state->forwardVelocity - 2.0f);
                 }
             } else {
@@ -1596,8 +1595,8 @@ typedef struct Overlay1DirectionalObject {
 } Overlay1DirectionalObject;
 extern Overlay1DirectionalObject **overlay1GetObjectList(s32 *count);
 extern f32 sqrtf(f32 value);
-extern f32 overlay1TrigX(s32 angle);
-extern f32 overlay1TrigY(s32 angle);
+extern f32 func_8002A8C0(s32 angle);
+extern f32 func_8002A8BC(s32 angle);
 extern f32 D_160;
 
 Overlay1DirectionalObject *overlay1FindDirectionalObject(
@@ -1633,8 +1632,8 @@ active:
             dx /= distance;
             dz /= distance;
         }
-        directionX = -overlay1TrigX(object->angle);
-        directionY = -overlay1TrigY(object->angle);
+        directionX = -func_8002A8C0(object->angle);
+        directionY = -func_8002A8BC(object->angle);
         dot = (directionX * dx) + (directionY * dz);
         if (DOT_CONDITION) {
             entry = &D_1BA8[*(s8 *)D_1DA0].entries[otherState->tableIndex];
@@ -1690,7 +1689,6 @@ struct Overlay8ActivationOwner; struct Overlay36Object; struct Overlay36TickSour
 WORLD_GLOBAL_DECL
 extern u8 D_6C[];
 extern void func_overlay_008_F0000F1C_185EC74(struct Overlay8ActivationOwner *object, s32 arg);
-extern s32 mathRnd(s32 minimum, s32 maximum);
 extern Overlay1ModeObject *overlay1FindPreviousAngle(f32 angle);
 extern Overlay1ModeObject *overlay1FindNextAngle(f32 angle);
 extern void overlay36SpawnDirectional(struct Overlay36Object *object);
@@ -1844,7 +1842,6 @@ typedef struct O1SelectWorld {
 } O1SelectWorld;
 
 extern void **func_80005750(s32 *count);
-extern s32 mathRnd(s32 minimum, s32 maximum);
 
 s32 overlay1ChooseModeObject(void) {
     s32 count;
@@ -1995,8 +1992,7 @@ void overlay1ReadSelection(Overlay1Object *object, s32 index, f32 *outX,
 /* ---- overlay1SolveAngleCandidates ---- */
 
 
-extern f32 overlay1SqrtReloc(f32 value);
-extern s32 overlay1AngleReloc(f32 y, f32 x);
+extern s32 Arctanf(f32 y, f32 x);
 
 /* The root count is defined before the discriminant region. Keep the signed
  * radical separate from the quotient, and the switch cases in this order. */
@@ -2020,14 +2016,14 @@ s16 overlay1SolveAngleCandidates(
     sign = 2;
     dx = x0 - y1;
     dy = x1 - x2;
-    distance = overlay1SqrtReloc((dx * dx) + (dy * dy));
+    distance = sqrtf((dx * dx) + (dy * dy));
     dy = y2 - y0;
     sum = (dy * slope) + (radius * radius);
     discriminant = (sum * sum) -
         ((slope * slope) * ((distance * distance) + (dy * dy)));
 
     if (discriminant >= 0.0f) {
-        discriminantRoot = overlay1SqrtReloc(discriminant);
+        discriminantRoot = sqrtf(discriminant);
         denominator = (((dy * dy) / (distance * distance)) + 1.0f) * 2.0f;
 
         while (sign--) {
@@ -2038,11 +2034,11 @@ s16 overlay1SolveAngleCandidates(
             }
             root = (dx + sum) / denominator;
             if (root >= 0.0f) {
-                angleX = overlay1SqrtReloc(root);
+                angleX = sqrtf(root);
                 if (distance < 0.0f) {
                     angleX = -angleX;
                 }
-                solutions[solutionCount] = overlay1AngleReloc(
+                solutions[solutionCount] = Arctanf(
                     ((dy / distance) * angleX) -
                     ((slope * distance) / (angleX + angleX)), angleX);
                 solutionCount++;
@@ -2445,7 +2441,7 @@ typedef struct Overlay1MaskedObject {
 } Overlay1MaskedObject;
 
 extern u8 gOverlay1ModeMasks[];
-extern void overlay1SelectModeReloc(void *, s32);
+extern void _bzero(void *, s32);
 
 /* DKR v77/v80 and JFG contain no exact donor for this table-mask selector. */
 s32 overlay1SelectMaskedMode(Overlay1MaskedObject *object, s32 index) {
@@ -2455,7 +2451,7 @@ s32 overlay1SelectMaskedMode(Overlay1MaskedObject *object, s32 index) {
     if (*(u16 *)(gOverlay1ModeMasks + index * 12 + 0xC4) &
         (1 << state->bitIndex)) {
         state->bitIndex = index;
-        overlay1SelectModeReloc(&state->timer, 8);
+        _bzero(&state->timer, 8);
         return 1;
     }
     return 0;
@@ -2550,16 +2546,13 @@ extern f32 overlay1AimedVelocityYReloc;
  * (stored word `jal 0`, patched at load) goes through a placeholder that
  * `gmake overlay-syms` values at 0xF0000000 -- the three same-module callees
  * included, since a same-module call can still be a SYMBOL record. */
-extern Overlay1TransientObject *overlay36SpawnTransientReloc(
+extern Overlay1TransientObject *overlay36SpawnTransient(
     Overlay1TransientOwner *owner, Overlay1TransientWorld *world);
 extern s16 overlay1SolveAngleCandidatesReloc(
     f32, f32, f32, f32, f32, f32, f32, f32, s32);
 extern void overlay1ReadSelectionReloc(Overlay1Object *object, s32 index, f32 *outX, f32 *outY, f32 *outZ);
 extern void overlay1InitTimedStateReloc(Overlay1TimedObject *object, s32 timer);
 extern s32 func_8002A910(f32 y, f32 x);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
-extern f32 sqrtf(f32 value);
 
 /* Matched 2026-09-16 (lane lm-b). The last residual, fourteen positional
  * words in the prologue, was one assembler directive: the target loads the
@@ -2605,7 +2598,7 @@ void overlay1UpdateAimedTransient(void) {
     object = world->object;
     source = world->source;
     if (object == 0) {
-        object = overlay36SpawnTransientReloc(D_1D9C, world);
+        object = overlay36SpawnTransient(D_1D9C, world);
         if (object != 0) {
             state = object->state;
             state->owner = D_1D9C;
@@ -2935,7 +2928,6 @@ typedef struct Overlay1PathState {
     u32 anchorDistanceSquared;
 } Overlay1PathState;
 
-extern f32 sqrtf(f32 value);
 extern s32 overlay1UpdateValueCache(s16 x, s16 y, f32 value);
 extern s16 overlay1AnchorX;
 extern s16 overlay1AnchorY;
@@ -2992,10 +2984,7 @@ typedef struct Overlay1Path {
 
 /* Fresh pinned DKR v77/v80 and JFG scans found no Overlay 1 donor. */
 extern Overlay1Path *overlay1GetPathReloc(s32 selector);
-extern s32 overlay1AngleReloc(f32 y, f32 x);
-extern s32 overlay1AngleDifferenceReloc(s16 first, s16 second);
-extern f32 overlay1TrigXReloc(s32 angle);
-extern f32 overlay1TrigYReloc(s32 angle);
+extern s32 mathDiffAngle(s16 first, s16 second);
 
 /* Matched 2026-10-01 from a plain rewrite; four things closed the last 19:
  *  - `if (index)` rather than `index != 0`. The boolean test reads the u8
@@ -3032,16 +3021,16 @@ void overlay1BendPathPoint(s16 *x, s16 *y, u8 index, u8 selector) {
         i = index + 1;
     }
     next = i + path->points;
-    firstAngle = (s16)(overlay1AngleReloc((f32)(current->y - previous->y),
+    firstAngle = (s16)(Arctanf((f32)(current->y - previous->y),
                                          (f32)(current->x - previous->x)) -
                        0x8000);
-    secondAngle = (s16)(overlay1AngleReloc((f32)(current->y - next->y),
+    secondAngle = (s16)(Arctanf((f32)(current->y - next->y),
                                           (f32)(current->x - next->x)) -
                         0x8000);
     midpointAngle = firstAngle +
-        (overlay1AngleDifferenceReloc(firstAngle, secondAngle) >> 1);
-    *x = (s16)((f32)*x - overlay1TrigXReloc(midpointAngle) * 50.0f);
-    *y = (s16)((f32)*y - overlay1TrigYReloc(midpointAngle) * 50.0f);
+        (mathDiffAngle(firstAngle, secondAngle) >> 1);
+    *x = (s16)((f32)*x - func_8002A8BC(midpointAngle) * 50.0f);
+    *y = (s16)((f32)*y - func_8002A8C0(midpointAngle) * 50.0f);
 }
 
 /* ---- overlay1AdvancePath ---- */
@@ -3093,7 +3082,7 @@ typedef struct Overlay1PathBits {
  * relocation records (stored word `jal 0`), so both go through placeholders
  * that `gmake overlay-syms` values; the append and clone calls are JUMP
  * records and name the in-module definitions. */
-extern s32 overlay1TracePathReloc(f32 x, f32 y, f32 anchorX, f32 anchorY,
+extern s32 func_overlay_002_F0001A94_185888C(f32 x, f32 y, f32 anchorX, f32 anchorY,
                                   void *arg5, Overlay1TraceResult *result,
                                   u8 primary, u8 secondary);
 extern Overlay1PathEntry *overlay1PathEntryReloc(u16 index);
@@ -3120,7 +3109,7 @@ s32 overlay1AdvancePath(Overlay1PathBits *state) {
         return 1;
     }
 
-    if (!overlay1TracePathReloc((f32)currentX, (f32)currentY,
+    if (!func_overlay_002_F0001A94_185888C((f32)currentX, (f32)currentY,
                                 (f32)overlay1AnchorX, (f32)overlay1AnchorY,
                                 (void *)gOverlay1SubmitArg5, &result,
                                 state->primary[count], state->secondary[count]) ||

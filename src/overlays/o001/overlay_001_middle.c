@@ -131,11 +131,11 @@ void overlay1RefreshMode(s32 unused0, s32 unused1, s32 unused2) {
 
 
 /* Pinned DKR v77/v80 and JFG object scans found no exact donor. */
-extern void overlay1GlobalCallReloc();
+extern void overlay3UpdateTimedEntries();
 extern void *gOverlay1SubmitArg4;
 
 void overlay1CallGlobal(s32 unused0, s32 unused1, s32 unused2) {
-    overlay1GlobalCallReloc(gOverlay1SubmitArg4);
+    overlay3UpdateTimedEntries(gOverlay1SubmitArg4);
 }
 
 /* ---- overlay1AdvanceObjectGauges ---- */
@@ -148,7 +148,7 @@ typedef struct O1GaugeObject { u8 pad00[0x64]; O1GaugeState *state; } O1GaugeObj
 typedef struct O1GaugeOwner { u8 pad00[0x86]; s8 levelLimit; } O1GaugeOwner;
 extern s32 D_0;
 extern s32 overlay1GetGaugeObjectsRaw(s32 *count);
-extern s32 overlay1GetGaugeLimit(O1GaugeObject *object);
+extern s32 func_8003A7D0(O1GaugeObject *object);
 
 void overlay1AdvanceObjectGauges(O1GaugeOwner *owner, s32 amount) {
     O1GaugeObject **objects;
@@ -167,7 +167,7 @@ void overlay1AdvanceObjectGauges(O1GaugeOwner *owner, s32 amount) {
             if ((D_0 == 0) && (state->level < owner->levelLimit)) {
                 delta = amount * 5;
                 state->value += delta;
-                limit = overlay1GetGaugeLimit(object);
+                limit = func_8003A7D0(object);
                 if (limit < state->value) state->value = limit;
                 state->levelValues[state->level] += delta;
                 if (state->levelValues[state->level] >= 180001) {

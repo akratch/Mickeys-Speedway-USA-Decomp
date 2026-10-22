@@ -194,8 +194,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_head.c.o: POSTPROCESS = \
 		--redefine-sym splinePos=splinePos_o001Reloc \
 		--redefine-sym func_8002A8BC=func_8002A8BC_o001Reloc \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o001Reloc $@ && \
-	$(OBJCOPY) --redefine-sym overlay1SquareRoot=func_overlay_001_F0000000_184C3E0 $@ && \
-	$(OBJCOPY) --redefine-sym overlay1AngleFromIndex=func_overlay_001_F0000000_184C3E0 $@ && \
+	$(OBJCOPY) --redefine-sym overlay1PreviousIndex=func_overlay_001_F0000000_184C3E0 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x11A4 && \
 	$(OBJCOPY) --add-symbol gOverlay1BuildRecordsPool=0xBC,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
@@ -288,8 +287,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 		--redefine-sym overlay27CanUse=overlay1Overlay27CanUseReloc \
 		--redefine-sym overlay3RunCachedModeAction=overlay1Overlay3RunCachedModeActionReloc \
 		--redefine-sym sqrtf=overlay1SqrtReloc \
-		--redefine-sym overlay1TrigX=overlay1TrigXReloc \
-		--redefine-sym overlay1TrigY=overlay1TrigYReloc \
 		--redefine-sym func_80005750=func_80005750_o001Reloc \
 		--redefine-sym Arctanf=Arctanf_o001Reloc \
 		--redefine-sym mathRnd=mathRnd_o001Reloc \
@@ -338,7 +335,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 		--redefine-sym func_overlay_001_F0007730_1853B10=overlay1BendPathPoint \
 		--redefine-sym func_overlay_001_F00078DC_1853CBC=overlay1AdvancePath \
 		--redefine-sym func_overlay_001_F0007B64_1853F44=overlay1FindBestRecord $@ && \
-	$(OBJCOPY) --redefine-sym overlay1GetRomlistInfoReloc=func_overlay_001_F0000000_184C3E0 $@ && \
+	$(OBJCOPY) --redefine-sym GetRomlistInfo=func_overlay_001_F0000000_184C3E0 $@ && \
 	$(OBJCOPY) --redefine-sym func_8000572C=func_overlay_001_F0000000_184C3E0 $@ && \
 	$(OBJCOPY) --redefine-sym func_80005820=func_overlay_001_F0000000_184C3E0 $@ && \
 	$(OBJCOPY) --redefine-sym overlay4RemoveObject=func_overlay_001_F0000000_184C3E0 $@ && \

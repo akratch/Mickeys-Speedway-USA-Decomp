@@ -105,9 +105,9 @@ extern void *D_020C;
 extern void *D_0210;
 extern void *D_0214;
 extern s32 gO1Finishers;
-extern s32 gO1RaceOver;
-extern u8 gO1FinishEnabled;
-extern u8 gO1PlayerCount;
+extern s32 D_800C9484;
+extern u8 D_8007BF0C;
+extern u8 D_8007BEF8;
 extern u8 gO1RankOrder[];
 extern f32 gO1RankWeights[];
 
@@ -235,7 +235,7 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
                                 STATE->flags |= 0x11;
                             }
                             gO1Finishers++;
-                            if (gO1FinishEnabled != 0 && G_o1_83e0 == 1 && gO1PlayerCount == gO1Finishers + 1) {
+                            if (D_8007BF0C != 0 && G_o1_83e0 == 1 && D_8007BEF8 == gO1Finishers + 1) {
                                 i = objectCount;
                                 while (i--) {
                                     ref = list[i];
@@ -256,7 +256,7 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
                             overlay7UpdateOwnerMode(D_1D9C, level->laps);
                         }
                         if (gO1Finishers >= count - 1) {
-                            gO1RaceOver = 1;
+                            D_800C9484 = 1;
                         }
                     }
                 }

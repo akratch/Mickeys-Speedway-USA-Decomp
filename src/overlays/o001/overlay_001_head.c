@@ -7,8 +7,8 @@ typedef struct O1Reference { u8 pad00[0xC]; f32 x; u8 pad10[4]; f32 y; } O1Refer
 typedef struct O1MotionWorld { u8 pad00[0x37C]; s16 angle; u8 pad37E[0x1A]; f32 scale; f32 heading; } O1MotionWorld;
 extern O1Point2 *D_20C;
 extern O1Point2 *D_210;
-extern f32 overlay1SquareRoot(f32 value);
-extern s32 overlay1AngleFromIndex(s16 value);
+extern f32 sqrtf(f32 value);
+extern s32 overlay1PreviousIndex(s16 value);
 void overlay1InitMotionScale(void) {
     f32 dx;
     f32 dy;
@@ -16,13 +16,13 @@ void overlay1InitMotionScale(void) {
     f32 secondDistance;
     dx = D_20C->x - D_210->x;
     dy = D_20C->y - D_210->y;
-    firstDistance = overlay1SquareRoot((dx * dx) + (dy * dy));
+    firstDistance = sqrtf((dx * dx) + (dy * dy));
     dx = D_20C->x - ((O1Reference *)D_1D9C)->x;
     dy = D_20C->y - ((O1Reference *)D_1D9C)->y;
-    secondDistance = overlay1SquareRoot((dx * dx) + (dy * dy));
+    secondDistance = sqrtf((dx * dx) + (dy * dy));
     ((O1MotionWorld *)D_1DA0)->scale = secondDistance / firstDistance;
     ((O1MotionWorld *)D_1DA0)->heading =
-        (f32)overlay1AngleFromIndex(((O1MotionWorld *)D_1DA0)->angle) +
+        (f32)overlay1PreviousIndex(((O1MotionWorld *)D_1DA0)->angle) +
         ((O1MotionWorld *)D_1DA0)->scale;
 }
 
@@ -106,7 +106,6 @@ extern s32 overlay1ActivateObject(void *owner);
 extern void overlay1InterpolatePath(f32 *x, f32 *z, s32 path, f32 offset);
 extern f32 func_8002A8BC(s32 angle);
 extern f32 func_8002A8C0(s32 angle);
-extern f32 sqrtf(f32 value);
 /* Assigning the measured distance through scale preserves the original FP
  * carrier web; the configured build emits all 100 instruction words exactly. */
 void overlay1ResolveMotionPoint(O1PathOwner *owner, s32 path, f32 *outX,
@@ -145,7 +144,7 @@ void overlay1ResolveMotionPoint(O1PathOwner *owner, s32 path, f32 *outX,
 /* ---- overlay1MeasureCurves ---- */
 
 extern f32 overlay1EvaluateCurve(f32, f32, s32, s32, f32);
-extern f32 overlay1SquareRoot(f32);
+extern f32 sqrtf(f32);
 /* Matched 2026-09-12. The residual was never statement shape: it was the
  * parameter model. The four integer controls have to be reloaded from their
  * argument homes at every call WITHOUT carrying volatile scheduling edges,
@@ -183,7 +182,7 @@ f32 overlay1MeasureCurves(f32 startX, f32 startY,
             y = overlay1EvaluateCurve(startY, endY, *(s32 *)&controlY1, *(s32 *)&controlY2, t);
             dx = x - previousX;
             dy = y - previousY;
-            total += overlay1SquareRoot((dx * dx) + (dy * dy));
+            total += sqrtf((dx * dx) + (dy * dy));
             previousX = x;
             previousY = y;
         } while (remaining--);
@@ -251,7 +250,7 @@ typedef struct Overlay1MetricCursor {
     Overlay1Metric metric;
 } Overlay1MetricCursor;
 
-extern void overlay1LoadPackedRecordsReloc(
+extern void GetRomlistInfo(
     Overlay1PackedRecord **records, s32 *size, s32 resource);
 extern s32 D_1D7C;
 extern s32 D_1D80;
@@ -261,11 +260,11 @@ extern s32 D_1D90;
 extern s32 D_1DBC;
 extern s32 D_1D98;
 extern s32 D_1D98Read;
-extern u8 gOverlay1RankBase;
-extern u8 gOverlay1RankLimit;
+extern u8 D_8007BEF8;
+extern u8 D_8007BEFC;
 extern s32 gOverlay1RankDelta;
 extern s32 gOverlay1ModeConstant;
-extern u8 gOverlay1ConfigMode;
+extern u8 D_8007BF04;
 extern f32 D_BC;
 extern f32 D_C0;
 extern f32 D_C4;
@@ -281,10 +280,10 @@ extern u8 D_0_Clear[];
 extern Overlay1Group *D_1BA0;
 extern Overlay1Point *D_1D70;
 extern void *D_1BA4;
-extern void overlay1ReleaseBuildMemoryReloc(void *memory);
-extern void *overlay1AllocateBuildMemoryReloc(s32 size, s32 tag);
-extern void overlay1RejectBuildCycleReloc(Overlay1Group *group);
-extern void overlay1FinalizeBuildGroupReloc(Overlay1Group *group);
+extern void mmFree(void *memory);
+extern void *mmAlloc(s32 size, s32 tag);
+extern void overlay1GetEntryIndex(Overlay1Group *group);
+extern void overlay2Enable(Overlay1Group *group);
 extern void *overlay1SubmitBuildReloc(s32 value);
 extern Overlay1LargeRecord *D_1D58;
 extern Overlay1LargeRecord *D_1D58Read;
@@ -292,15 +291,15 @@ extern Overlay1LargeRecord *D_1D5C;
 extern u8 *gOverlay1MissingLargeContext;
 extern f32 D_1DA8;
 extern u8 D_1DCC[];
-extern void overlay1ClearLargeRecordsReloc(void *records, s32 size);
-extern void overlay1DecodeLargeRecordReloc(
+extern void _bzero(void *records, s32 size);
+extern void overlay1BuildPointRecord(
     Overlay1LargeRecord *record, Overlay1PackedRecord *packed, s32 mode);
-extern void overlay1ReportMissingLargeReloc(s32 value, s32 type, s32 severity);
-extern Overlay1LargeRecord *overlay1GetMetricSourceAReloc(
+extern void SetLinkSlot(s32 value, s32 type, s32 severity);
+extern Overlay1LargeRecord *overlay1NextPointer(
     Overlay1LargeRecord *record);
-extern Overlay1LargeRecord *overlay1GetMetricSourceBReloc(
+extern Overlay1LargeRecord *overlay1NextPointer(
     Overlay1LargeRecord *record);
-extern Overlay1LargeRecord *overlay1GetMetricSourceCReloc(
+extern Overlay1LargeRecord *overlay1PreviousPointer(
     Overlay1LargeRecord *record);
 extern f32 func_overlay_001_F0000F84_184D364(
     f32 x0, f32 y0, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3,
@@ -314,8 +313,6 @@ extern f32 func_overlay_001_F0000F84_184D364(
 extern s32 gO1Finishers;
 extern s32 G_o1_83e0;
 extern s32 G_o1_83e4;
-extern u8 gO1PlayerCount;
-extern u8 gO1PlayerBase;
 extern u8 gO1RankOrder[];
 extern s32 gOverlay1Data[];
 extern u8 D_1DC8[];
@@ -344,7 +341,7 @@ void overlay1LoadBuildRecords(void) {
     s32 *highest;
     s32 candidate;
 
-    overlay1LoadPackedRecordsReloc(&records, &size, 1);
+    GetRomlistInfo(&records, &size, 1);
     D_1D7C = 0;
     D_1D80 = 0;
     D_1D8C = 0;
@@ -352,9 +349,9 @@ void overlay1LoadBuildRecords(void) {
     D_1D90 = 0;
     D_1DBC = 0;
     D_1D98 = 0;
-    G_o1_83e0 = gO1PlayerCount - gO1PlayerBase;
+    G_o1_83e0 = D_8007BEF8 - D_8007BEFC;
     G_o1_83e4 = 3;
-    switch (gOverlay1ConfigMode) {
+    switch (D_8007BF04) {
     case 2:
         D_1DAC = 1.0f;
         D_1DB0 = 1.0f;
@@ -394,13 +391,13 @@ void overlay1LoadBuildRecords(void) {
     }
     {
         if (D_1BA0 != NULL) {
-            overlay1ReleaseBuildMemoryReloc(D_1BA0);
+            mmFree(D_1BA0);
         }
         if (D_1D70 != NULL) {
-            overlay1ReleaseBuildMemoryReloc(D_1D70);
+            mmFree(D_1D70);
         }
-        D_1BA0 = overlay1AllocateBuildMemoryReloc(D_1D80 * sizeof(Overlay1Group), 0x85);
-        D_1D70 = overlay1AllocateBuildMemoryReloc(D_1D7C * sizeof(Overlay1Point), 0x85);
+        D_1BA0 = mmAlloc(D_1D80 * sizeof(Overlay1Group), 0x85);
+        D_1D70 = mmAlloc(D_1D7C * sizeof(Overlay1Point), 0x85);
         k = D_1D80;
         while (k--) {
             D_1BA0[k].points = NULL;
@@ -438,7 +435,7 @@ void overlay1LoadBuildRecords(void) {
                         link = link->next;
                     }
                     if (link == group) {
-                        overlay1RejectBuildCycleReloc(link);
+                        overlay1GetEntryIndex(link);
                     } else {
                         link->next = group;
                         group->previous = link;
@@ -450,7 +447,7 @@ void overlay1LoadBuildRecords(void) {
         group = &D_1BA0[1];
         while (j-- > 0) {
             if (group->previous == NULL) {
-                overlay1FinalizeBuildGroupReloc(group);
+                overlay2Enable(group);
             }
             group++;
         }
@@ -469,11 +466,11 @@ large:
         }
         value = D_1D8C * sizeof(Overlay1LargeRecord);
         if (value != 0) {
-            D_1D58 = overlay1AllocateBuildMemoryReloc(value, 0x85);
-            overlay1ClearLargeRecordsReloc(D_1D58, value);
+            D_1D58 = mmAlloc(value, 0x85);
+            _bzero(D_1D58, value);
             for (offset = 0, record = records; offset < size; offset += record->size, record = (Overlay1PackedRecord *)((u8 *)record + record->size)) {
                 if (record->type == 0xCA) {
-                    overlay1DecodeLargeRecordReloc(&D_1D58[record->link.index], record, 0);
+                    overlay1BuildPointRecord(&D_1D58[record->link.index], record, 0);
                 }
             }
         } else {
@@ -483,7 +480,7 @@ large:
             G_o1_83e4 = 1;
         } else {
             G_o1_83e4 = 0;
-            overlay1ReportMissingLargeReloc(gOverlay1Data[0], 2, 2);
+            SetLinkSlot(gOverlay1Data[0], 2, 2);
             return;
         }
         D_1D5C = &D_1D58[D_1D8C - 1];
@@ -491,9 +488,9 @@ large:
             if (record->type == 0xCA) {
                 large = &D_1D58[record->link.index];
                 maximum = 0.0f;
-                minimum = 3.4028235e38f; sourceA = overlay1GetMetricSourceAReloc(large);
-                sourceB = overlay1GetMetricSourceBReloc(sourceA);
-                sourceC = overlay1GetMetricSourceCReloc(large);
+                minimum = 3.4028235e38f; sourceA = overlay1NextPointer(large);
+                sourceB = overlay1NextPointer(sourceA);
+                sourceC = overlay1PreviousPointer(large);
                 i = 8;
                 while (i--) {
                     score = func_overlay_001_F0000F84_184D364(
@@ -702,12 +699,10 @@ typedef struct Overlay1BuildState {
 } Overlay1BuildState;
 
 extern Overlay1BuildObject **overlay1GetBuildObjectsReloc(s32 *count);
-extern void overlay1MarkBuildObjectReloc(Overlay1BuildObject *object);
+extern void func_8001CB0C(Overlay1BuildObject *object);
 extern void overlay1BuildActivateReloc(Overlay1BuildObject *object);
-extern void overlay1BuildInitializeStateReloc(s32 value);
+extern void overlay1InitializeModeState(s32 value);
 extern s32 gOverlay1BuildGate;
-extern u8 gOverlay1RankBase;
-extern u8 gOverlay1RankLimit;
 extern u8 gOverlay1ObjectMappingTable[][10];
 extern void *gOverlay1BuildStateReloc;
 
@@ -726,9 +721,9 @@ void overlay1BuildObjectMappings(volatile s32 unused) {
         while (remaining--) {
             object = base[remaining];
             data = object->data;
-            if (data->rank >= (gOverlay1RankBase - gOverlay1RankLimit)) {
+            if (data->rank >= (D_8007BEF8 - D_8007BEFC)) {
                 data->flags |= 1;
-                overlay1MarkBuildObjectReloc(object);
+                func_8001CB0C(object);
             } else {
                 data->flags |= 0x20;
             }
@@ -745,7 +740,7 @@ void overlay1BuildObjectMappings(volatile s32 unused) {
             *(f32 *)((u8 *)gOverlay1BuildStateReloc + 0x3D8) = object->x;
             *(f32 *)((u8 *)gOverlay1BuildStateReloc + 0x3DC) = object->y;
             if (gOverlay1BuildGate == 1) {
-                overlay1BuildInitializeStateReloc(0);
+                overlay1InitializeModeState(0);
                 for (inner = 0; inner < 5; inner++) {
                     ((s32 *)gOverlay1BuildStateReloc)[0x101 + inner] = 0;
                 }
@@ -775,7 +770,7 @@ extern s32 gOverlay1ReleaseRecordCount;
 extern Overlay1ReleaseRecord *gOverlay1ReleaseRecords;
 extern void *gOverlay1ReleaseSecondary;
 extern void *gOverlay1ReleaseFinal;
-extern void overlay1ReleaseReloc(void *resource);
+extern void mmFree(void *resource);
 
 /* DKR v77/v80 and JFG have generic teardown loops, but no exact donor. */
 void overlay1ReleaseRecords(void) {
@@ -787,17 +782,17 @@ void overlay1ReleaseRecords(void) {
         record = &gOverlay1ReleaseRecords[1];
         while (remaining-- > 0) {
             if (record->resource != NULL) {
-                overlay1ReleaseReloc(record->resource);
+                mmFree(record->resource);
             }
             record++;
         }
-        overlay1ReleaseReloc(gOverlay1ReleaseRecords);
-        overlay1ReleaseReloc(gOverlay1ReleaseSecondary);
+        mmFree(gOverlay1ReleaseRecords);
+        mmFree(gOverlay1ReleaseSecondary);
         gOverlay1ReleaseRecords = NULL;
         gOverlay1ReleaseSecondary = NULL;
     }
     if (gOverlay1ReleaseFinal != NULL) {
-        overlay1ReleaseReloc(gOverlay1ReleaseFinal);
+        mmFree(gOverlay1ReleaseFinal);
     }
 }
 

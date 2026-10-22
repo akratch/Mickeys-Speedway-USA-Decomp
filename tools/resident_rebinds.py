@@ -60,9 +60,11 @@ HEADER = """\
 # Regenerate with `gmake overlay-syms`; `gmake check-overlay-syms` fails on
 # drift.  See tools/resident_rebinds.py and docs/reloc-surface.md section 5.6.
 #
-# Resident calls that adopted overlay C spells with the resident function's
-# own name, renamed to the per-module placeholder that
-# overlay_undefined_syms.us.txt values.  The compile recipe applies
+# References that adopted overlay C spells with a real global name -- a
+# resident function or data symbol, another module's export, or this module's
+# own export reached by a SYMBOL record -- renamed to the per-module
+# placeholder that overlay_undefined_syms.us.txt values (docs/reloc-surface.md
+# sections 5.6 and 5.7).  The compile recipe applies
 # $(SURFACE_REBIND) after $(POSTPROCESS); a hand-written rename in an object's
 # POSTPROCESS rule is not repeated here.
 """

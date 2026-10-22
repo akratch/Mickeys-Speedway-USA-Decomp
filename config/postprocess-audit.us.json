@@ -3942,62 +3942,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o048/overlay48Initialize.c.o",
-      "offset": 0,
-      "overlay": 48,
-      "size": 96,
-      "source": "src/overlays/o048/overlay48Initialize.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o048/overlay48InitializeState.c.o",
-      "offset": 96,
-      "overlay": 48,
-      "size": 228,
-      "source": "src/overlays/o048/overlay48InitializeState.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o048/overlay48ReleaseAll.c.o",
-      "offset": 1036,
-      "overlay": 48,
-      "size": 96,
-      "source": "src/overlays/o048/overlay48ReleaseAll.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o048/overlay48UpdateState.c.o",
-      "offset": 324,
-      "overlay": 48,
-      "size": 712,
-      "source": "src/overlays/o048/overlay48UpdateState.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o050/func_overlay_050_F0000334_1896CA4.c.o",
       "offset": 820,
       "overlay": 50,
@@ -8523,10 +8467,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 587,
+      "metadata": 583,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 435512,
-    "objects_with_postprocess": 588
+    "matched_c_bytes_with_postprocess": 434380,
+    "objects_with_postprocess": 584
   }
 }

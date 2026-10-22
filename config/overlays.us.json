@@ -9416,37 +9416,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x60",
-     "size": "0x60",
-     "type": "c",
-     "source": "overlays/o048/overlay48Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x60",
-     "end_offset": "0x144",
-     "size": "0xE4",
-     "type": "c",
-     "source": "overlays/o048/overlay48InitializeState",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x144",
-     "end_offset": "0x40C",
-     "size": "0x2C8",
-     "type": "c",
-     "source": "overlays/o048/overlay48UpdateState",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x40C",
      "end_offset": "0x46C",
-     "size": "0x60",
+     "size": "0x46C",
      "type": "c",
-     "source": "overlays/o048/overlay48ReleaseAll",
+     "source": "overlays/o048/overlay_048",
      "matched": true,
      "nonmatching": false
     },

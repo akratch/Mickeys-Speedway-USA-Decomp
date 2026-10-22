@@ -2119,11 +2119,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1895408, c, overlay48Initialize]
-      - [0x1895468, c, overlay48InitializeState]
-      - [0x189554C, c, overlay48UpdateState]
-      - [0x1895814, c, overlay48ReleaseAll]
-      - [0x1895874, asm, overlay_048_padding]
+      - [0x1895408, c, overlay_048]
       - [0x1895878, bin, overlay_048_data_rodata]
       - [0x1895F78, bin, overlay_048_reloc1]
       - [0x1895FF8, bin, overlay_048_reloc2]

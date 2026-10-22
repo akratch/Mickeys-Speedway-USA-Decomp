@@ -2263,7 +2263,7 @@
         [47, "func_overlay_047_F0000B30_1891948", ".bss", "0x3390", 96],
         [47, "func_overlay_047_F0000B30_1891948", ".data", "0x2DF0", 80],
         [47, "func_overlay_047_F0000B30_1891948", ".rodata", "0x3354", 14],
-        [48, "overlay48InitializeState", ".bss", "0xB70", 13],
+        [48, "overlay_048", ".bss", "0xB70", 13],
         [50, "func_overlay_050_F0000334_1896CA4", ".bss", "0x21F0", 72],
         [50, "func_overlay_050_F0000334_1896CA4", ".data", "0x1E70", 94],
         [50, "overlay50Initialize", ".bss", "0x21F0", 28],

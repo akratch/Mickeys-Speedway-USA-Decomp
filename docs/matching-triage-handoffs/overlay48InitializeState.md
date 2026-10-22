@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay48InitializeState:start -->
 ### `overlay48InitializeState` plateau handoff
 
-- source: `src/overlays/o048/overlay48InitializeState.c`
+- source: `src/overlays/o048/overlay_048.c`
 - score: 0/57 words, promoted
 - frame: 0x18
 - relocations: 24

@@ -1,31 +1,36 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_048.h"
 
-typedef struct Overlay48Entry {
-    s32 handle;
-    s16 lifetime;
-    u8 pad06[2];
-    s16 seed;
-    s8 active;
-    u8 pad0B;
-    s16 opacity;
-    u8 pad0E[2];
-} Overlay48Entry;
+/* DKR v77/v80 and JFG have no exact matching three-call setup tuple. */
+void overlay48Initialize(void) {
+    overlay48ConfigureReloc(0x1C, 0, 0, 0xD, 1, 0);
+    mainChangeCameras(1);
+    overlay48ConfigureReloc(6, 6, 0, 2, 0, 0);
+    gOverlay48State = 0;
+}
 
-extern Overlay48Entry gOverlay48Entries[5];
-extern s16 gOverlay48Timer;
-extern s16 *gOverlay48Script;
-extern s16 gOverlay48ResourceIndex;
-extern s16 gOverlay48Finished;
-extern s32 gOverlay48ResourceTable[];
-extern f32 gOverlay48TransitionValue;
+Overlay48Entry gOverlay48Entries[6];
 
-extern void fontUseFont(s32 mode);
-extern void overlay45ReleaseDescriptor(s32 handle);
-extern void overlay45SetMode(s32 handle, s16 value);
-extern s32 overlay45CreateDescriptor(s32 resource, s32 value, s16 seed, s32 kind);
-extern void mainTitlePageInit(s32 mode);
-extern void func_80001608(void);
-extern void amTuneSetFade(f32 value, s32 mode);
+/* Matched 2026-10-02. One loop over the five entries with the entry pointer
+ * walking beside the index: IDO runs the remainder iteration first (entry 0,
+ * constant addresses) and unrolls the other four, and because the index is
+ * the secondary variable it stays a run-time 1 for the seed address. */
+void overlay48InitializeState(void) {
+    Overlay48Entry *entry;
+    s32 i;
+
+    for (i = 0, entry = gOverlay48Entries; i < 5; i++, entry++) {
+        entry->lifetime = 0;
+        entry->active = 0;
+        entry->seed = D_274.values[i];
+        entry->handle = 0;
+    }
+    gOverlay48Timer = 0;
+    gOverlay48ScriptIndex = 0;
+    gOverlay48Finished = 0;
+    gOverlay48Script = D_174;
+    amTunePlay(0x16);
+    func_800015F8();
+}
 
 /* A source-level switch preserves the script operation order while giving
  * IDO the retail control web and register allocation. */
@@ -119,4 +124,21 @@ void overlay48UpdateState(s32 updateRate) {
                 break;
         }
     }
+}
+
+/* DKR v77/v80 only contain generic fixed-handle cleanup relatives. */
+void overlay48ReleaseAll(void) {
+    s32 index;
+    Overlay48Entry *entry;
+
+    entry = gOverlay48Entries;
+    index = 0;
+    do {
+        if (entry->handle != 0) {
+            overlay45ReleaseDescriptor(entry->handle);
+            entry->handle = 0;
+        }
+        index++;
+        entry++;
+    } while (index != 5);
 }

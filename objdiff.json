@@ -13179,74 +13179,20 @@
       }
     },
     {
-      "name": "src/overlays/o048/overlay48Initialize.c",
-      "target_path": "expected/build/src/overlays/o048/overlay48Initialize.c.o",
-      "base_path": "build/src/overlays/o048/overlay48Initialize.c.o",
+      "name": "src/overlays/o048/overlay_048.c",
+      "target_path": "expected/build/src/overlays/o048/overlay_048.c.o",
+      "base_path": "build/src/overlays/o048/overlay_048.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
           "overlay",
           "overlay-o048"
         ],
-        "source_path": "src/overlays/o048/overlay48Initialize.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o048/overlay48InitializeState.c",
-      "target_path": "expected/build/src/overlays/o048/overlay48InitializeState.c.o",
-      "base_path": "build/src/overlays/o048/overlay48InitializeState.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o048"
-        ],
-        "source_path": "src/overlays/o048/overlay48InitializeState.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o048/overlay48ReleaseAll.c",
-      "target_path": "expected/build/src/overlays/o048/overlay48ReleaseAll.c.o",
-      "base_path": "build/src/overlays/o048/overlay48ReleaseAll.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o048"
-        ],
-        "source_path": "src/overlays/o048/overlay48ReleaseAll.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o048/overlay48UpdateState.c",
-      "target_path": "expected/build/src/overlays/o048/overlay48UpdateState.c.o",
-      "base_path": "build/src/overlays/o048/overlay48UpdateState.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o048"
-        ],
-        "source_path": "src/overlays/o048/overlay48UpdateState.c",
+        "source_path": "src/overlays/o048/overlay_048.c",
         "complete": true
       }
     },

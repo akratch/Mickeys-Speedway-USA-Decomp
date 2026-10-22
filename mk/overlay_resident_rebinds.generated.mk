@@ -1063,20 +1063,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47ReleaseResources.c.o: SURFACE_REB
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47SpawnObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_overlay_047_F0000000_1890E18=func_overlay_047_F0000000_o047Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48Initialize.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mainChangeCameras=mainChangeCameras_o048Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48InitializeState.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay_048.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym amTunePlay=amTunePlay_o048Reloc \
-	--redefine-sym func_800015F8=func_800015F8_o048Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48ReleaseAll.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay45ReleaseDescriptor=overlay45ReleaseDescriptor_o048Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48UpdateState.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym amTuneSetFade=amTuneSetFade_o048Reloc \
 	--redefine-sym fontUseFont=fontUseFont_o048Reloc \
+	--redefine-sym func_800015F8=func_800015F8_o048Reloc \
 	--redefine-sym func_80001608=func_80001608_o048Reloc \
+	--redefine-sym mainChangeCameras=mainChangeCameras_o048Reloc \
 	--redefine-sym mainTitlePageInit=mainTitlePageInit_o048Reloc \
 	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o048Reloc \
 	--redefine-sym overlay45ReleaseDescriptor=overlay45ReleaseDescriptor_o048Reloc \

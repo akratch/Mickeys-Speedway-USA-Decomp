@@ -1,0 +1,38 @@
+# Mickey's Speedway USA (US). docs/overlays.md section 5.3 measures every value.
+name = "msu-us"
+root = "../../.."                    # this repository, relative to this file
+rom = "baseroms/mickey.us.z64"
+rom_sha1 = "507341c0a40ca3e9a7cee969b396ee53facfb548"
+
+[tables]
+main_table = 0x1848B70               # u32 count, then records
+main_table_block = 0xBC0             # the block runs to the ORT; zero padded
+ort = 0x1849730
+ort_count = 2004
+headers = 0x184B680
+module_count = 107
+modules = 0x184C3E0
+modules_end = 0x18F1FE0
+
+[resident]
+text = 0x80000450                    # ORT selector 0 and main-table text sites are relative to this
+data = 0x80078D60                    # selectors 0xFFD/0xFFE and DATA sites
+bss = 0x80085A40                     # selector 0xFFF
+end = 0x800D8750
+trap_symbol = "TrapDanglingJump"
+rom_delta = 0x7FFFF400                # resident VRAM - ROM offset
+trap_address = 0x800333A0
+
+[selectors]
+data = [0xFFD, 0xFFE]
+bss = 0xFFF
+reserved = [0xFFD, 0xFFE, 0xFFF]
+
+[names]
+# MSU's ROM ships no symbol-name table; the names are a tracked list.
+list = "config/runlink-ort.us.txt"
+
+[build]
+# Inputs of the MSU adapter (tools/runlink/adapters/msu.py), which drives
+# tools/runlink_pack.py's input loading.
+adapter = "msu"

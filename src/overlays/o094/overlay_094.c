@@ -1,62 +1,38 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_094.h"
+
+/* Pinned DKR v77/v80 and JFG object scans found no exact donor. */
+void overlay94InitializeController(Overlay94Object *object,
+                                   const Overlay94Init *init) {
+    Overlay94State *state = object->state;
+    Overlay94Entity *entity;
+    Overlay94SavedValue saved;
+    f32 out0;
+    f32 out1;
+    f32 out2;
+
+    state->current = 0.0f;
+    state->selector = init->selector;
+    object->kind = init->kind;
+    object->scale = init->scale;
+
+    func_8005AD64(object, 0, -1, 0.0f);
+    state->command = 0x2000;
+
+    entity = *object->entityRef;
+    saved.value = entity->savedValue;
+    func_8005ABA8(object, state->current, 0.0f);
+    func_8005AF14(entity, saved.value, object);
+
+    lightObject(object, entity, object->renderResource,
+                         entity->records[entity->recordIndex]);
+    entity->status = 0;
+
+    func_8002B040(entity->records[entity->recordIndex]->queryState,
+                        0.0f, 0.0f, -1.0f, &out0, &out1, &out2);
+    state->angle = Arctanf(out2, out0);
+}
 
 /* Pinned DKR v77/v80 and JFG scans found no exact donor for this body. */
-
-typedef struct Overlay94Record {
-    u8 pad00[0x40];
-    u8 queryState[1];
-} Overlay94Record;
-
-typedef struct Overlay94Entity {
-    s32 savedValue;
-    u8 pad04[4];
-    s16 status;
-    s16 recordIndex;
-    Overlay94Record *records[1];
-} Overlay94Entity;
-
-typedef struct Overlay94State {
-    f32 current;
-    s8 selector;
-    s8 active;
-    s16 velocity;
-    s32 angle;
-    s32 accumulator;
-    s16 command;
-} Overlay94State;
-
-typedef struct Overlay94Object {
-    u8 pad00[0x50];
-    void *renderResource;
-    u8 pad54[0x10];
-    Overlay94State *state;
-    Overlay94Entity **entityRef;
-} Overlay94Object;
-
-extern s32 gO94Value;
-extern f32 gO94Const0;
-extern f32 gO94Const4;
-extern f32 gO94Const8;
-extern f32 gO94ConstC;
-extern f32 gO94Const10;
-extern f32 gO94Const14;
-extern f32 gO94Const18;
-extern f32 gO94Const1C;
-extern f32 gO94Const20;
-extern f32 gO94Const24;
-
-extern u32 func_800254FC(s32 selector);
-extern s32 func_8002565C(s32 selector);
-extern f32 func_8002A878(f32 amount, s32 updateRate);
-extern s32 func_8005ABA8(Overlay94Object *object, f32 current, f32 rate);
-extern void func_8005AF14(Overlay94Entity *entity, s32 savedValue,
-                          Overlay94Object *object);
-extern void lightObject(Overlay94Object *object, Overlay94Entity *entity,
-                          void *resource, Overlay94Record *record);
-extern void func_8002B040(void *queryState, f32 x, f32 y, f32 z,
-                          f32 *out0, f32 *out1, f32 *out2);
-extern s32 func_8002A910(f32 z, f32 x);
-
 void overlay94UpdateController(Overlay94Object *object, s32 updateRate) {
     Overlay94State *state;
     Overlay94Entity *entity;
@@ -171,4 +147,8 @@ void overlay94UpdateController(Overlay94Object *object, s32 updateRate) {
     }
 
     state->angle = angle;
+}
+
+void overlay94SetValue(s32 value) {
+    gOverlay94Value = value;
 }

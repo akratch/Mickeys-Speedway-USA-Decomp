@@ -2005,8 +2005,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o093/overlay_093.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym changeWeather=changeWeather_o093Reloc \
 	--redefine-sym func_80005820=func_80005820_o093Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay94InitializeController.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o094Reloc \
+	--redefine-sym func_800254FC=func_800254FC_o094Reloc \
+	--redefine-sym func_8002565C=func_8002565C_o094Reloc \
+	--redefine-sym func_8002A878=func_8002A878_o094Reloc \
+	--redefine-sym func_8002A910=func_8002A910_o094Reloc \
 	--redefine-sym func_8002B040=func_8002B040_o094Reloc \
 	--redefine-sym func_8005ABA8=func_8005ABA8_o094Reloc \
 	--redefine-sym func_8005AD64=func_8005AD64_o094Reloc \

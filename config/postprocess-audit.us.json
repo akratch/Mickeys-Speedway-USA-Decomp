@@ -7505,28 +7505,13 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o094/overlay94SetValue.c.o",
-      "offset": 1372,
+      "object": "build/src/overlays/o094/overlay_094.c.o",
+      "offset": 0,
       "overlay": 94,
-      "size": 12,
-      "source": "src/overlays/o094/overlay94SetValue.c",
+      "size": 1384,
+      "source": "src/overlays/o094/overlay_094.c",
       "tools": [
         "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o094/overlay94UpdateController.c.o",
-      "offset": 272,
-      "overlay": 94,
-      "size": 1100,
-      "source": "src/overlays/o094/overlay94UpdateController.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
       ]
     },
     {
@@ -8927,10 +8912,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 615,
+      "metadata": 614,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 444800,
-    "objects_with_postprocess": 616
+    "matched_c_bytes_with_postprocess": 445072,
+    "objects_with_postprocess": 615
   }
 }

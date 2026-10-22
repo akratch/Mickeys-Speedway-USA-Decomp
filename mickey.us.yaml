@@ -3097,9 +3097,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18D6BA0, c, overlay94InitializeController]
-      - [0x18D6CB0, c, overlay94UpdateController]
-      - [0x18D70FC, c, overlay94SetValue]
+      - [0x18D6BA0, c, overlay_094]
       - [0x18D7108, asm, overlay_094_padding]
       - [0x18D7110, bin, overlay_094_data_rodata]
       - [0x18D7280, bin, overlay_094_reloc1]

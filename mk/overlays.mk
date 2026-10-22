@@ -1104,21 +1104,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86ScaledVectorPosition.c.o: POSTPRO
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86BuildTransform.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x18C
-# NON_MATCHING fallback assembly supplies the retail body; restore the
-# friendly source symbol and retain the exact text extent when needed.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay94UpdateController.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym lightObject=lightObject_o094Reloc \
-		--redefine-sym func_800254FC=func_800254FC_o094Reloc \
-		--redefine-sym func_8002565C=func_8002565C_o094Reloc \
-		--redefine-sym func_8002A878=func_8002A878_o094Reloc \
-		--redefine-sym func_8002A910=func_8002A910_o094Reloc \
-		--redefine-sym func_8002B040=func_8002B040_o094Reloc \
-		--redefine-sym func_8005ABA8=func_8005ABA8_o094Reloc \
-		--redefine-sym func_8005AF14=func_8005AF14_o094Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x44C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay94SetValue.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC
+# Overlay 94 is one translation unit under the overlay flag set. The trim
+# keeps the trailing pad in its own atlas row; resident callees go through
+# the generated surface renames.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x568
+OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101AllocateEntry.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x54
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0002510_18DDD30.c.o: POSTPROCESS = \

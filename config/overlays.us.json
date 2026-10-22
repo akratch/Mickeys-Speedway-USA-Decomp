@@ -17293,28 +17293,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x110",
-     "size": "0x110",
-     "type": "c",
-     "source": "overlays/o094/overlay94InitializeController",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x110",
-     "end_offset": "0x55C",
-     "size": "0x44C",
-     "type": "c",
-     "source": "overlays/o094/overlay94UpdateController",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x55C",
      "end_offset": "0x568",
-     "size": "0xC",
+     "size": "0x568",
      "type": "c",
-     "source": "overlays/o094/overlay94SetValue",
+     "source": "overlays/o094/overlay_094",
      "matched": true,
      "nonmatching": false
     },

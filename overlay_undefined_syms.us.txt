@@ -4292,19 +4292,16 @@ sqrtf_o092Reloc = 0xf0000000;
 changeWeather_o093Reloc = 0xf0000000;
 func_80005820_o093Reloc = 0xf0000000;
 
-/* overlay 94: overlay94InitializeController.c.o */
+/* overlay 94: overlay_094.c.o */
 Arctanf_o094Reloc = 0xf0000000;
-func_8002B040_o094Reloc = 0xf0000000;
-func_8005ABA8_o094Reloc = 0xf0000000;
-func_8005AD64_o094Reloc = 0xf0000000;
-func_8005AF14_o094Reloc = 0xf0000000;
-lightObject_o094Reloc = 0xf0000000;
-
-/* overlay 94: overlay94UpdateController.c.o */
 func_800254FC_o094Reloc = 0xf0000000;
 func_8002565C_o094Reloc = 0xf0000000;
 func_8002A878_o094Reloc = 0xf0000000;
 func_8002A910_o094Reloc = 0xf0000000;
+func_8002B040_o094Reloc = 0xf0000000;
+func_8005ABA8_o094Reloc = 0xf0000000;
+func_8005AD64_o094Reloc = 0xf0000000;
+func_8005AF14_o094Reloc = 0xf0000000;
 gO94Const0 = 0x00000000;
 gO94Const10 = 0x00000010;
 gO94Const14 = 0x00000014;
@@ -4316,9 +4313,8 @@ gO94Const4 = 0x00000004;
 gO94Const8 = 0x00000008;
 gO94ConstC = 0x0000000c;
 gO94Value = 0x00000130;
-
-/* overlay 94: overlay94SetValue.c.o */
 gOverlay94Value = 0x00000130;
+lightObject_o094Reloc = 0xf0000000;
 
 /* overlay 95: overlay_095.c.o */
 D_8007BF0C_o095Reloc = 0x00000000;
@@ -6195,13 +6191,9 @@ func_overlay_092_F0000000_18D5F20 = overlay92Init;
 func_overlay_093_F0000000_18D6AA0 = overlay93Init;
 func_overlay_093_F000001C_18D6ABC = overlay93Update;
 
-/* overlay 94: overlay94InitializeController.c.o */
+/* overlay 94: overlay_094.c.o */
 func_overlay_094_F0000000_18D6BA0 = overlay94InitializeController;
-
-/* overlay 94: overlay94UpdateController.c.o */
 func_overlay_094_F0000110_18D6CB0 = overlay94UpdateController;
-
-/* overlay 94: overlay94SetValue.c.o */
 func_overlay_094_F000055C_18D70FC = overlay94SetValue;
 
 /* overlay 95: overlay_095.c.o */

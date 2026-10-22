@@ -1279,14 +1279,14 @@ func_80006EA0_o025Reloc = 0xf0000000;
 func_80008128_o025Reloc = 0xf0000000;
 func_80010900_o025Reloc = 0xf0000000;
 func_80028F54_o025Reloc = 0xf0000000;
+func_800299E8_o025Reloc = 0xf0000000;
+func_8002A8BC_o025Reloc = 0xf0000000;
+func_8002A8C0_o025Reloc = 0xf0000000;
 func_8005776C_o025Reloc = 0xf0000000;
 func_overlay_008_F0000E88_o025Reloc = 0xf0000000;
 func_overlay_070_F0000384_o025Reloc = 0xf0000000;
 gOverlay25ColorsReloc = 0x00000000;
-overlay25CosReloc = 0xf0000000;
-overlay25RandomReloc = 0xf0000000;
 overlay25SetVectorFlagsReloc = 0x00000588;
-overlay25SinReloc = 0xf0000000;
 overlay7DispatchModes_o025Reloc = 0xf0000000;
 trackMakePolylist_o025Reloc = 0xf0000000;
 

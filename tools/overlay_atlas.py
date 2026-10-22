@@ -313,6 +313,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING.update({
     21: "overlay_021_padding",
     23: "overlay_023_padding",
     24: "overlay_024_padding",
+    25: "overlay_025_padding",
     30: "overlay_030_padding",
 })
 

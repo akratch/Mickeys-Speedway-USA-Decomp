@@ -172,7 +172,14 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
     }
 }
 
-/* No corresponding DKR/JFG source or object match was found. */
+/* No corresponding DKR/JFG source or object match was found.
+ *
+ * Not an ORT export, yet not static: the TU's only reference is the address
+ * the update passes to func_80010900, which the ROM stores module-relative
+ * (+0x588). The 0xF0000000-based overlay link cannot produce that from a C
+ * reference, so the call names the absolute placeholder
+ * overlay25SetVectorFlagsReloc instead, and IDO would drop a static function
+ * nothing in the TU names. */
 void overlay25SetVectorFlags(s32 unused0, Overlay25Vector *out, s32 unused2,
                              s32 unused3, Overlay25Source *source,
                              Overlay25VectorObject *object) {

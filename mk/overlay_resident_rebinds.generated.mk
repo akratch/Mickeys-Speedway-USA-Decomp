@@ -2034,31 +2034,17 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay_096.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym sqrtf=sqrtf_o096Reloc \
 	--redefine-sym texDPTextureX=texDPTextureX_o096Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97AssignState.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym addRomdefLight=addRomdefLight_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97CreateDescriptor.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camlightAdd=camlightAdd_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitBounds.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8001C054=func_8001C054_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitDirection.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitPlane.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitResource.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay_097.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym SetLinkSlot=SetLinkSlot_o097Reloc \
+	--redefine-sym addRomdefLight=addRomdefLight_o097Reloc \
 	--redefine-sym amCreateAudioPoint=amCreateAudioPoint_o097Reloc \
 	--redefine-sym amSoundIsLooped=amSoundIsLooped_o097Reloc \
-	--redefine-sym func_80006EA0=func_80006EA0_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitSelection.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym camlightAdd=camlightAdd_o097Reloc \
+	--redefine-sym func_80006EA0=func_80006EA0_o097Reloc \
+	--redefine-sym func_8001C054=func_8001C054_o097Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o097Reloc \
+	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o097Reloc \
 	--redefine-sym trackGetTrack=trackGetTrack_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitTransform.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym SetLinkSlot=SetLinkSlot_o097Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98CheckObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_8001291C=func_8001291C_o098Reloc \

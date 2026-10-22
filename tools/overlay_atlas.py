@@ -878,17 +878,7 @@ TEXT_SUBSEGMENTS = {
         (0x6D4, "asm", "overlay_096_padding"),
     ],
     97: [
-        (0x000, "c", "overlay97InitDirection"),
-        (0x130, "c", "overlay97CopyAngles"),
-        (0x14C, "c", "overlay97InitTransform"),
-        (0x1A8, "c", "overlay97InitRadius"),
-        (0x1E8, "c", "overlay97InitResource"),
-        (0x36C, "c", "overlay97InitSelection"),
-        (0x3F4, "c", "overlay97AssignState"),
-        (0x420, "c", "overlay97CreateDescriptor"),
-        (0x508, "c", "overlay97InitScale"),
-        (0x748, "c", "overlay97InitBounds"),
-        (0x944, "c", "overlay97InitPlane"),
+        (0x000, "c", "overlay_097"),
         (0xA54, "asm", "overlay_097_padding"),
     ],
     98: [

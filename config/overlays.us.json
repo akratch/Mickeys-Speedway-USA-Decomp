@@ -17650,100 +17650,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x130",
-     "size": "0x130",
-     "type": "c",
-     "source": "overlays/o097/overlay97InitDirection",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x130",
-     "end_offset": "0x14C",
-     "size": "0x1C",
-     "type": "c",
-     "source": "overlays/o097/overlay97CopyAngles",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x14C",
-     "end_offset": "0x1A8",
-     "size": "0x5C",
-     "type": "c",
-     "source": "overlays/o097/overlay97InitTransform",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1A8",
-     "end_offset": "0x1E8",
-     "size": "0x40",
-     "type": "c",
-     "source": "overlays/o097/overlay97InitRadius",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1E8",
-     "end_offset": "0x36C",
-     "size": "0x184",
-     "type": "c",
-     "source": "overlays/o097/overlay97InitResource",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x36C",
-     "end_offset": "0x3F4",
-     "size": "0x88",
-     "type": "c",
-     "source": "overlays/o097/overlay97InitSelection",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x3F4",
-     "end_offset": "0x420",
-     "size": "0x2C",
-     "type": "c",
-     "source": "overlays/o097/overlay97AssignState",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x420",
-     "end_offset": "0x508",
-     "size": "0xE8",
-     "type": "c",
-     "source": "overlays/o097/overlay97CreateDescriptor",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x508",
-     "end_offset": "0x748",
-     "size": "0x240",
-     "type": "c",
-     "source": "overlays/o097/overlay97InitScale",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x748",
-     "end_offset": "0x944",
-     "size": "0x1FC",
-     "type": "c",
-     "source": "overlays/o097/overlay97InitBounds",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x944",
      "end_offset": "0xA54",
-     "size": "0x110",
+     "size": "0xA54",
      "type": "c",
-     "source": "overlays/o097/overlay97InitPlane",
+     "source": "overlays/o097/overlay_097",
      "matched": true,
      "nonmatching": false
     },

@@ -28,10 +28,9 @@ extern u8 D_80000078[];
 /*
  * The shipped table-1 SYMBOL record names the resident texDPTextureX (its
  * `jal` stores 0, the runtime patches it).  Its first argument is the display
- * list head, which this source still spells through the vertex-cursor
- * placeholder.
+ * list head, the same identity as gOverlay58PointDisplayListReloc below.
  */
-extern void texDPTextureX(Overlay58PointVertex **displayList, void *texture,
+extern void texDPTextureX(Overlay58PointGfx **displayList, void *texture,
                           s32 flags, s32 arg3);
 
 /*
@@ -72,20 +71,18 @@ extern void texDPTextureX(Overlay58PointVertex **displayList, void *texture,
  *     coloured v0/v1/a1/a2 in first-occurrence order.  An earlier
  *     straight-line spelling needed two empty `if (vertices != 0);`
  *     probes to cut those blocks (lane c-1, 2026-10-08, byte-identical).
- *  3. The render-state field read in its own region before the call: as1
- *     ties the two argument `lui`s at equal height and breaks the tie on
- *     source line, so the load's line must precede the cursor address's.
- *     Spelled plainly, as a call argument or as an initializer, the
- *     cursor `lui` is scheduled first (4 words differ); the `if (1)`
- *     region is the remaining unnatural form.
+ *  3. The call in its own `if (1)` region, arguments in source order.
+ *     Spelled plainly the display-list `lui` is scheduled first (4 words
+ *     differ).  Reading the render-state field in a region of its own
+ *     before the call also matches the bytes, but it reverses the two
+ *     HI16/LO16 pairs in the relocation table against the shipped order
+ *     (display list first), so the region holds the whole call instead.
  */
 void overlay58DrawPointQuad(s32 x, s32 y, s32 z) {
     Overlay58PointVertex *vertices;
-    void *resource;
     s32 i;
 
-    if (1) { resource = gOverlay58PointRenderStateReloc.resource; }
-    texDPTextureX(&gOverlay58PointVertexCursorReloc, resource, 5, 0);
+    if (1) { texDPTextureX(&gOverlay58PointDisplayListReloc, gOverlay58PointRenderStateReloc.resource, 5, 0); }
     O58_VERTEX(gOverlay58PointDisplayListReloc++, O58_PHYSICAL_TO_K0(gOverlay58PointVertexCursorReloc), 4, 0);
     O58_POLYGON(gOverlay58PointDisplayListReloc++, D_80000078, 2, 1);
     vertices = gOverlay58PointVertexCursorReloc;

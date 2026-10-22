@@ -194,9 +194,9 @@ void overlay15DrawScreenStars(Overlay15Gfx **displayList, f32 projectionScale) {
     f32 fadeScale;
 
     overlay15GetDimensionsReloc(&screenWidth, &screenHeight);
-    remaining = gOverlay15StarCount;
     command = *displayList;
     star = ((Overlay15StarPointerView *)&gOverlay15Stars)->stars;
+    remaining = gOverlay15StarCount;
     initialCommand = command++;
     initialCommand->w0 = 0x06000000; initialCommand->w1 = (u32) gOverlay15StarSetup;
     fadeScale = 255.0f / 292.0f;

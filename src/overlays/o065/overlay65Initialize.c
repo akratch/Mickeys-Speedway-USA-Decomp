@@ -29,8 +29,7 @@ void overlay65Initialize(void) {
     u8 *bufferEnd;
 
     gOverlay65InitFlag0 = 0;
-    gOverlay65InitFlag1 = (record = (u8 *)gOverlay65Records,
-                           end = (u8 *)&gOverlay65RecordsEnd, 0);
+    gOverlay65InitFlag1 = 0; record = (u8 *)gOverlay65Records; end = (u8 *)&gOverlay65RecordsEnd;
     do {
         record[0x37] = 0;
         record[0x6F] = (record[0x53] = 0);

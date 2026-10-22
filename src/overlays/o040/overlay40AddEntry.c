@@ -26,8 +26,13 @@ extern Overlay40Entry gOverlay40Entries[8];
  * The real-TU object is 33 instructions (0x84 bytes) with four relocations:
  * gOverlay40Count HI16/LO16 at 0x00/0x04 and gOverlay40Entries HI16/LO16 at
  * 0x0C/0x1C.
+ *
+ * The one resident caller (func_800517E0, stream command 0x4A) stores a fifth
+ * argument, the byte it has just tested non-zero, and dropping it there
+ * changes that function. Nothing here reads it, and an unused stack argument
+ * leaves no trace in the callee, so the fifth formal is declared and unused.
  */
-void overlay40AddEntry(volatile s32 id, s32 red, s32 green, s32 blue) {
+void overlay40AddEntry(volatile s32 id, s32 red, s32 green, s32 blue, s32 unused) {
     Overlay40Entry *entry;
     s32 remaining;
 

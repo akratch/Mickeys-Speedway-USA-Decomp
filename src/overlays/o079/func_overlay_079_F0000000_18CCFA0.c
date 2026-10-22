@@ -47,12 +47,12 @@ extern void func_8005AD64(Overlay79InitObject *object, s32 mode, s32 index,
 
 void func_overlay_079_F0000000_18CCFA0(Overlay79InitObject *object,
                                         Overlay79InitConfig *config,
-                                        void *unused) {
+                                        s32 preserveState) {
     Overlay79InitState *state;
     f32 range;
     s32 random;
 
-    (void)unused;
+    (void)preserveState;
     state = object->state64;
     object->scaled08 = config->scale0C * gOverlay79InitScaleReloc
                      * object->scale40->value;

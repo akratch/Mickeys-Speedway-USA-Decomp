@@ -53,19 +53,18 @@ list equals what the tables generate; and the atlas's `resident_inbound` row
 agrees with the ROM. A swapped callee leaves the ROM hash unchanged, and this
 check is the gate that fails on it.
 
-196 of the 313 declarations are prototypes. 194 are the overlay definition's
+270 of the 313 declarations are prototypes. 268 are the overlay definition's
 own, with overlay-private pointer types spelled `void *`, and 2 keep the
 parameter types the resident call compiles against: `overlay17CreateChain`'s
 narrowed arguments and `func_overlay_043_F0000324_188A2F4`'s f32. The other
-117 are old-style declarations, `T name();`, because the definition's
+43 are old-style declarations, `T name();`, because the definition's
 prototype either changes the shipped call or does not compile against it.
-They are tagged `[arity]` (64: the resident passes a different number of
-arguments, for example `objects.c`'s uniform `(object, packet,
-preserveState)` init dispatch), `[types]` (41: a pointer passed where the
-definition takes an integer, or the reverse) and `[codegen]` (12: an int
-passed where the definition declares an `f32` or narrow parameter). In each
-case the two reconstructions disagree, and reconciling either side would let
-the prototype in. Renaming an overlay export that resident code calls means
+They are tagged `[arity]` (1: the resident passes a different number of
+arguments), `[types]` (34: a pointer passed where the definition takes an
+integer, or the reverse) and `[codegen]` (8: an int passed where the
+definition declares an `f32` or narrow parameter). In each case the two
+reconstructions disagree, and reconciling either side would let the
+prototype in. Renaming an overlay export that resident code calls means
 running `gmake trap-names` and updating the resident call and its declaration;
 the rename step names any stale spelling it finds.
 

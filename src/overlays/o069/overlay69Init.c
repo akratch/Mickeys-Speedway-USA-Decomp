@@ -10,7 +10,7 @@ typedef struct Overlay69State {
 } Overlay69State;
 typedef struct Overlay69Object { u8 pad0[0x64]; Overlay69State *state; } Overlay69Object;
 
-void overlay69Init(Overlay69Object *object, s32 unused) {
+void overlay69Init(Overlay69Object *object, void *entry) {
     Overlay69State *state = object->state;
     state->field14 = 0; state->byte35 = 0; state->field2 = 0; state->fieldA = 0;
     state->field18 = 0; state->byte36 = 0; state->field4 = 0; state->fieldC = 0;

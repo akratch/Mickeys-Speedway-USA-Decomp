@@ -8,7 +8,7 @@ void overlay93Init(Overlay93Object *object, Overlay93Config *config) {
     object->radiusSquared = radius;
 }
 
-void overlay93Update(Overlay93Object *object, f32 unused) {
+void overlay93Update(Overlay93Object *object, s32 updateRate) {
     Overlay93Object *target = overlay93FindTargetReloc(0, object);
 
     if (target != 0) {

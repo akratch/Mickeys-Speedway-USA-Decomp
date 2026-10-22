@@ -1,7 +1,7 @@
 #include "overlays/overlay_091.h"
 
 /* DKR v77/v80 and JFG checks found no exact donor for this object initializer. */
-void overlay91Init(Overlay91InitObject *object, f32 unused) {
+void overlay91Init(Overlay91InitObject *object, void *entry) {
     Overlay91InitState *state = object->state;
 
     state->timer = 0;

@@ -35,7 +35,7 @@ extern void overlay36ConfigureReloc(Overlay36Data *data, s32 mode);
 extern s32 overlay36QueryReloc(s32 index, s16 value, Overlay36Data *data);
 
 /* DKR v77/v80 and JFG contain no exact donor for this object initializer. */
-void overlay36InitObject(Overlay36Object *object, s16 unused) {
+void overlay36InitObject(Overlay36Object *object, void *entry) {
     Overlay36Data *data;
     u8 *resource;
 

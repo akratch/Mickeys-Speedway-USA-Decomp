@@ -6,7 +6,7 @@
  * relocations prove the resident calls (sound dispatch and mathRnd); twelve
  * LOCAL records prove one 16-byte data range and the 0x20-byte status BSS.
  */
-void overlay76Register(Overlay76Object *object, volatile f32 unused) {
+void overlay76Register(Overlay76Object *object, void *entry) {
     s32 *next = &gOverlay76NextIndex;
     Overlay76Record *record = object->record;
 
@@ -15,7 +15,7 @@ void overlay76Register(Overlay76Object *object, volatile f32 unused) {
     (*next)++;
 }
 
-void overlay76Update(Overlay76Object *object, f32 unused) {
+void overlay76Update(Overlay76Object *object, s32 updateRate) {
     Overlay76Record *record = object->record;
     s32 index = record->index;
     s32 soundId;

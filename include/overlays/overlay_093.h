@@ -38,6 +38,6 @@ Overlay93Object *overlay93FindTargetReloc(s32 type, Overlay93Object *object);
 void overlay93EmitReloc(s32 x, s32 y, s32 z, s32 red, s32 green, s32 arg5);
 
 void overlay93Init(Overlay93Object *object, Overlay93Config *config);
-void overlay93Update(Overlay93Object *object, f32 unused);
+void overlay93Update(Overlay93Object *object, s32 updateRate);
 
 #endif

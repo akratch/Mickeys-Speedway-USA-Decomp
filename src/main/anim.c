@@ -3018,7 +3018,7 @@ void func_80055970(HitCopyState *first, HitCopyState *second, f32 unused) {
     firstSource = first->source;
     firstVehicle = (HitCollisionVehicle *) first->target;
     if (func_overlay_008_F0000E88_185EBE0(first, firstVehicle) != 0) {
-        overlay7DispatchModes(secondTarget->state, first, firstVehicle);
+        overlay7DispatchModes(secondTarget->state, first);
         /* Inert allocation aid retained by exact C; tracked in
          * docs/cleanup-queue.md. */
         if (1) {
@@ -3163,7 +3163,7 @@ void func_80055D08(HitCopyState *first, HitCopyState *second, f32 unused) {
     target->unk14 = deltaX / distance;
     target->unk18 = deltaY / distance;
     target->unk1C = deltaZ / distance;
-    func_overlay_022_F0000D30_1878E38(first, 1, second);
+    func_overlay_022_F0000D30_1878E38(first, 1);
     func_overlay_026_F0000D24_187B11C(second, 0x12);
 }
 void func_80055E50(HitCopyState *first, HitCopyState *second, f32 unused) {
@@ -3201,7 +3201,7 @@ void func_80055E50(HitCopyState *first, HitCopyState *second, f32 unused) {
     target->unk1C = deltaX / distance;
     target->unk20 = deltaY / distance;
     target->unk24 = deltaZ / distance;
-    func_overlay_022_F0000D30_1878E38(first, 1, second);
+    func_overlay_022_F0000D30_1878E38(first, 1);
     func_overlay_029_F00010C4_187E374(second, 0xA);
 }
 
@@ -3258,7 +3258,7 @@ void func_80055F64(HitCopyState *first, HitCopyState *second, f32 unused) {
     firstTarget->unk14 = -secondTarget->unk1C;
     firstTarget->unk18 = -secondTarget->unk20;
     firstTarget->unk1C = -secondTarget->unk24;
-    func_overlay_026_F0000D24_187B11C(first, 0x12, second);
+    func_overlay_026_F0000D24_187B11C(first, 0x12);
     func_overlay_029_F00010C4_187E374(second, 6);
 }
 void func_800560D0(HitCopyState *first, HitCopyState *second, f32 unused) {

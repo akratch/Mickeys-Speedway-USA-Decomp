@@ -63,6 +63,6 @@ s32 overlay72QueryReloc(f32 x, f32 y, f32 z, s32 queryType,
 void overlay72ApplyReloc(Overlay72Candidate *candidate, s32 value);
 
 void overlay72Init(Overlay72InitObject *object, Overlay72Config *config);
-void overlay72Update(Overlay72QueryObject *object, f32 unused);
+void overlay72Update(Overlay72QueryObject *object, s32 updateRate);
 
 #endif

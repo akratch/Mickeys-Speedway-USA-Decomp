@@ -47,13 +47,13 @@ extern void func_8005AD64(Overlay87InitObject *object, s32 mode, s32 index,
                           f32 value);
 
 void overlay87InitializeObject(Overlay87InitObject *object,
-                               Overlay87InitConfig *config, void *unused) {
+                               Overlay87InitConfig *config, s32 preserveState) {
     Overlay87InitState *state;
     f32 value;
 
     state = object->state;
     object->value08 =
-        *object->scale * (((void)unused, config->scale) *
+        *object->scale * (((void)preserveState, config->scale) *
                           gOverlay87InitScaleReloc);
     state->value00 = config->value00;
     state->value08 = config->value08;

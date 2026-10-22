@@ -19,7 +19,7 @@ void overlay72Init(Overlay72InitObject *object, Overlay72Config *config) {
 }
 
 /* Overlay 72 +0x0B4. Fresh DKR v77/v80 and JFG scans are negative. */
-void overlay72Update(Overlay72QueryObject *object, f32 unused) {
+void overlay72Update(Overlay72QueryObject *object, s32 updateRate) {
     Overlay72Bounds *bounds = object->bounds;
     Overlay72Candidate *results[6];
     s32 count;

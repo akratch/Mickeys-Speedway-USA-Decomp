@@ -54,8 +54,20 @@ NON_MATCHING ?= 0
 # Separate build tree for NON_MATCHING=1: objects compiled with -DNON_MATCHING
 # are never byte-identical, so they must never sit next to (or be mistaken
 # for, via stale timestamps) the objects `verify` checks.
+#
+# RUNLINK_RAW=1 is the runlink packer's input tree (tools/runlink_pack.py,
+# `gmake runlink-raw`): the same rules and per-file flags, which are all keyed
+# on $(BUILD_DIR), compile every overlay object into build/runlink_raw/ with
+# the post-compile steps (POSTPROCESS, the surface rebinds, the trap rename)
+# switched off, so the packer reads what the compiler emitted. Nothing there is
+# linked, and the normal build/ tree is not touched.
+RUNLINK_RAW ?= 0
 ifeq ($(NON_MATCHING),0)
+ifeq ($(RUNLINK_RAW),0)
 BUILD_DIR := build
+else
+BUILD_DIR := build/runlink_raw
+endif
 else
 BUILD_DIR := build_non_matching
 endif
@@ -142,8 +154,9 @@ export PROMOTION_TRIAL
 # The escape hatch is compile-only by design (see NON_MATCHING above), so the
 # normalizations are simply skipped in the build_non_matching tree. Recursive
 # assignment on purpose: it has to expand in each target's context so the
-# target-specific POSTPROCESS override is the one that runs.
-ifeq ($(NON_MATCHING),0)
+# target-specific POSTPROCESS override is the one that runs. The RUNLINK_RAW
+# tree skips them too: its whole point is the object before normalization.
+ifeq ($(NON_MATCHING)$(RUNLINK_RAW),00)
 RUN_POSTPROCESS = $(POSTPROCESS)
 RUN_SURFACE_REBIND = $(SURFACE_REBIND)
 else
@@ -237,6 +250,10 @@ EXPECTED_SHA1 := $(firstword $(shell cat $(BASENAME).$(VERSION).sha1))
 # building against stale disassembly. See the .o pattern rules and
 # $(TARGET).elf below for how the ordering is wired up.
 SPLAT_STAMP := $(BUILD_DIR)/.splat-stamp
+# The raw packer tree compiles against the normal tree's split, never its own.
+ifneq ($(RUNLINK_RAW),0)
+SPLAT_STAMP := build/.splat-stamp
+endif
 
 # ---------------------------------------------------------------------------
 # Targets
@@ -503,6 +520,48 @@ check-overlay-syms:
 	@$(MAKE) --no-print-directory $(SPLAT_STAMP)
 	@$(MAKE) --no-print-directory $(O_FILES)
 	$(HOST_PYTHON) $(TOOLS_DIR)/reloc_surface.py generate --check
+
+# The runlink packer (tools/runlink_pack.py, docs/overlays.md "The runlink
+# packer") rebuilds every module's header and relocation tables, the ORT and
+# the main table from compiled objects. Its overlay inputs are the raw objects
+# `runlink-raw` compiles under build/runlink_raw/ (see RUNLINK_RAW above); the
+# resident side is the ordinary build's objects, trap-site sidecars and ELF.
+#
+#   gmake runlink-raw            compile the raw overlay objects only
+#   gmake runlink-ort            regenerate config/runlink-ort.us.txt
+#   gmake check-runlink-tables   packer output vs the shipped tables, every
+#                                difference classified; fails on any not in
+#                                config/runlink-residuals.us.json and on any
+#                                listed residual that no longer differs
+#   gmake runlink-residuals      rewrite that manifest from the current tree
+#
+# All of them need the baserom and a linked build/mickey.us.elf, so like
+# `verify` they cannot run in CI.
+RUNLINK_PACK = $(HOST_PYTHON) $(TOOLS_DIR)/runlink_pack.py
+
+runlink-raw:
+	@$(MAKE) --no-print-directory $(SPLAT_STAMP)
+	@$(MAKE) --no-print-directory RUNLINK_RAW=1 runlink-raw-objects
+
+# Only meaningful inside the RUNLINK_RAW=1 invocation, where $(BUILD_DIR) is
+# build/runlink_raw and these are the raw overlay objects.
+ifneq ($(RUNLINK_RAW),0)
+runlink-raw-objects: $(filter $(BUILD_DIR)/$(SRC_DIR)/overlays/%.c.o,$(O_FILES))
+	@:
+endif
+
+runlink-ort:
+	$(RUNLINK_PACK) ort --write
+
+check-runlink-tables: runlink-raw
+	@$(QUIET_ELF_BUILD)
+	$(RUNLINK_PACK) ort --check
+	$(RUNLINK_PACK) compare --check
+	$(RUNLINK_PACK) region
+
+runlink-residuals: runlink-raw
+	@$(QUIET_ELF_BUILD)
+	$(RUNLINK_PACK) compare --write-residuals
 
 # objdiff.json is derived from mickey.us.yaml, the overlay atlas and the split
 # tree (tools/objdiff_config.py), never hand-edited and never from build/.
@@ -1576,7 +1635,7 @@ $(TARGET).z64: $(TARGET).bin $(CRC)
 	fi
 	@ls -l $@
 
-.PHONY: default all setup hooks extract prune-asm verify check-trap-names trap-names cleanroom system-health check-tooling forced-floor-census promotion-proof check-promotion-proofs release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms objdiff-config check-objdiff-config overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
+.PHONY: default all setup hooks extract prune-asm verify runlink-raw runlink-raw-objects runlink-ort check-runlink-tables runlink-residuals check-trap-names trap-names cleanroom system-health check-tooling forced-floor-census promotion-proof check-promotion-proofs release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms objdiff-config check-objdiff-config overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
 .SECONDARY:
 SHELL = /bin/bash -e -o pipefail
 

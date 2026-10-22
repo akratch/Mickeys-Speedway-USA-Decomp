@@ -795,7 +795,10 @@ bytes and disassembly never belong here.
   `overlay40UpdateEntries` (44/46 to exact), the three scheduled words of
   `overlay57HandleModeInput`, and the exact resident texture-table initializer.
   The first two were found with the workbench's ugen emit-provenance trace on
-  2026-09-02. It does not apply to register renames, to delay-slot fills chosen
+  2026-09-02. `overlay40UpdateEntries` no longer needs it: that spelling made
+  the counter a second formal, and with the counter a local and its sibling
+  `overlay40AddEntry`'s `while (remaining--)` from 8 the function matches on
+  separate lines and takes the one argument its caller passes (2026-10-22). It does not apply to register renames, to delay-slot fills chosen
   by latency (`lightAdjustGlowingLight`'s `li -1`), or to relocation-surface differences.
 - The lexical start of a conditional block can be an allocation boundary for
   a loop-invariant expression. If IDO hoists an invariant value into a saved

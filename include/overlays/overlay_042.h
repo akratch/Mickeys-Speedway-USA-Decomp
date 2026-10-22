@@ -43,7 +43,7 @@ s32 overlay42SetupDisplayBReloc();
 void overlay42Init(void);
 void overlay42Release(void);
 void overlay42Resume(void);
-void overlay42DrawCapturedBuffer(s32 callbackArgument);
+void overlay42DrawCapturedBuffer(void *callbackArgument);
 void overlay42Present(void);
 
 #endif

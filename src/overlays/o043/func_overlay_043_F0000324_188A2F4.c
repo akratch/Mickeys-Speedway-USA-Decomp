@@ -171,7 +171,7 @@ extern void func_overlay_043_F0000BE4_188ABB4(
     Overlay43Input *input, Overlay43Record **records, s32 recordCount);
 
 s32 func_overlay_043_F0000324_188A2F4(Overlay43Input *input, s32 useNodes,
-                                      void *unused) {
+                                      f32 updateRate) {
     Overlay43ModelDefinition *definition;
     Overlay43State *state;
     Overlay43Level *level;

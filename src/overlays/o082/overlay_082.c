@@ -6,7 +6,7 @@
  */
 
 /* DKR v77/v80 and JFG contain no exact donor for this state initializer. */
-void overlay82Init(Overlay82Object *object, f32 updateRate) {
+void overlay82Init(Overlay82Object *object, void *entry) {
     u8 *state;
     s32 *values;
     s32 index;

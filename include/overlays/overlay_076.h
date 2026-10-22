@@ -23,8 +23,8 @@ void overlay76SoundReloc(u16 soundId, s32 x, s32 y, s32 z, s32 arg4,
                          s32 arg5);
 s32 overlay76RandomReloc(s32 min, s32 max);
 
-void overlay76Register(Overlay76Object *object, volatile f32 unused);
-void overlay76Update(Overlay76Object *object, f32 unused);
+void overlay76Register(Overlay76Object *object, void *entry);
+void overlay76Update(Overlay76Object *object, s32 updateRate);
 void overlay76TriggerRandom(void);
 
 #endif

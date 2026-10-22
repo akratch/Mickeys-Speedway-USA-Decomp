@@ -53,19 +53,56 @@ list equals what the tables generate; and the atlas's `resident_inbound` row
 agrees with the ROM. A swapped callee leaves the ROM hash unchanged, and this
 check is the gate that fails on it.
 
-196 of the 313 declarations are prototypes. 194 are the overlay definition's
-own, with overlay-private pointer types spelled `void *`, and 2 keep the
-parameter types the resident call compiles against: `overlay17CreateChain`'s
-narrowed arguments and `func_overlay_043_F0000324_188A2F4`'s f32. The other
-117 are old-style declarations, `T name();`, because the definition's
-prototype either changes the shipped call or does not compile against it.
-They are tagged `[arity]` (64: the resident passes a different number of
-arguments, for example `objects.c`'s uniform `(object, packet,
-preserveState)` init dispatch), `[types]` (41: a pointer passed where the
-definition takes an integer, or the reverse) and `[codegen]` (12: an int
-passed where the definition declares an `f32` or narrow parameter). In each
-case the two reconstructions disagree, and reconciling either side would let
-the prototype in. Renaming an overlay export that resident code calls means
+312 of the 313 declarations are prototypes, each the overlay definition's
+own with overlay-private or untyped pointer types spelled `void *`. One is an
+old-style declaration,
+`T name();`, tagged `[arity]`: `func_overlay_029_F00010C4_187E374` reads a0
+and a1, but `func_80056274` passes it a third argument that uopt keeps in a2
+across `sqrtf`, and dropping that argument changes the caller, so the
+original made that call with three.
+
+Until 2026-10-22 there were 117 such declarations (64 `[arity]`, 41
+`[types]`, 12 `[codegen]`). Reading each definition's argument-register use
+against every resident call showed that 116 were one side's reconstruction,
+and each was reconciled with the ROM byte-identical and every object's
+sections and relocations unchanged:
+
+- `objects.c`'s init dispatch passed `(object, packet, preserveState)` to 55
+  initialisers that read a0 and a1 only. a2 is never loaded at those sites,
+  so the extra argument left no trace; their calls now pass two.
+- IDO homes an unused register argument whatever its type, so a home store
+  says an argument exists but not what it is. Definitions had typed such
+  arguments `s16`, `s32`, `f32` or a pointer against what the caller passes:
+  the init entry, `updateRate`, a message queue, a camera list.
+- Display-list plumbing typed matrix and vertex cursors `s32` where the
+  callers pass their addresses. The definitions forward them, so they take
+  pointers, and the resident side drops the casts that matched the old
+  types: `(s32) &D_800C9520`, `(void **) (s32) targetUpdateRate`, and
+  `&D_800C95B4` for an array.
+- An unused stack argument leaves no trace in the callee:
+  `overlay40AddEntry` and `overlay41Ignore` take the five and seven
+  arguments their caller stores.
+- `func_overlay_008_F00042A8_1862000` and `func_overlay_009_F00010B4_186772C`
+  take an f32 in a2. The prototype produces the shipped call from the float
+  itself; without one the float is promoted to double, which is why the
+  calls had been spelled `*(s32 *) &updateRate`.
+- `overlay40RemoveEntry` and `overlay40UpdateEntries` made a second formal the
+  loop counter to reach their allocation. With a local counter and
+  `overlay40AddEntry`'s `while (remaining--)` from 8 they match with the one
+  parameter they read.
+- Resident locals and globals typed `s32` that hold pointers
+  (`frontUpdate`'s player object, `D_8007A1F4`/`D_8007A1F8`, `main.c`'s
+  `D_80078F7C`, `func_80009414`'s cursors) are pointers.
+
+Two prototypes had kept the resident call's parameter types instead of the
+definition's, and both definitions were the side in error:
+`overlay17CreateChain`'s third argument is a texture id that it compares with
+-1 and passes to `texLoadTexture`, not a material pointer, and
+`func_overlay_043_F0000324_188A2F4` homes, unused, the f32 its callers convert
+(`(f32) arg1`), not a pointer. With the definitions' own prototypes both
+resident callers compile to the same code.
+
+Renaming an overlay export that resident code calls means
 running `gmake trap-names` and updating the resident call and its declaration;
 the rename step names any stale spelling it finds.
 
@@ -315,6 +352,156 @@ needed only at load (local fixups, fixed once the module is placed) and table
 1 what must outlive it (references whose targets come and go). The
 SYMBOL/LOCAL proportions are still a census; the retain-versus-free split is
 code. JFG's header states the same split in its field comments.
+
+### 5.3.1 The runlink packer
+
+`tools/runlink_pack.py` rebuilds all four blocks from compiled objects: every
+module's header, table 1 and table 2, the ORT, and the main table. It then
+compares the result with the shipped blocks and classifies every difference.
+It is phase 1, steps 4 and 5, of `docs/OVERLAY_STRUCTURE_SPRINT.md`. The ROM
+build still links the shipped table `bin` subsegments; switching the link to
+the packer's output is the next step.
+
+```sh
+gmake runlink-raw            # raw overlay objects -> build/runlink_raw/
+gmake runlink-ort            # regenerate config/runlink-ort.us.txt
+gmake check-runlink-tables   # the gate (also in tools/gates.sh --promotion)
+gmake runlink-residuals      # rewrite config/runlink-residuals.us.json
+tools/runlink_pack.py compare -v   # every residual, expected vs got, by name
+tools/runlink_pack.py pack         # write the tables under build/runlink/
+tools/runlink_pack.py region       # byte-compare the whole overlay region
+```
+
+Every target needs the baserom and a linked `build/mickey.us.elf`, so, like
+`verify`, none of them can run in CI. A full pass takes under a second once
+the raw objects exist.
+
+**Inputs.**
+
+- **Raw overlay objects.** `gmake runlink-raw` compiles all 649 overlay
+  sources into `build/runlink_raw/`. It reruns make with `RUNLINK_RAW=1`, so
+  each object gets its exact configured recipe: the same rule and the same
+  per-file flags, because both are keyed on `$(BUILD_DIR)`. POSTPROCESS, the
+  surface rebinds and the trap rename are switched off, so the packer reads
+  what the compiler emitted. Nothing in `build/` is touched.
+- **The atlas.** `config/overlays.us.json` gives object order and text
+  placement.
+- **The normal build.** The linked ELF supplies resident and overlay symbols.
+  The map supplies resident link order and each module's
+  `[.text][data_rodata]` image, everything before the reloc bins. The
+  resident objects and their `.trapsites` sidecars supply the main table.
+- **The ORT name list.** `config/runlink-ort.us.txt` holds one
+  `<row> <name>` line per ORT row and an `entry <overlay> init|resume <name>`
+  line per module entry point. It holds names only. `gmake runlink-ort`
+  generates it from the shipped tables and the linked ELF, preferring a given
+  name over a generated one.
+  - 115 rows name overlay functions that have only their generated
+    `func_overlay_NNN_F...` name. 26 overlay data rows and 3 BSS rows have no
+    symbol at all and carry the canonical generated name,
+    `D_overlay_NNN_F..._<rom>` or `B_overlay_NNN_F...`.
+  - Five resident addresses are exported by more than one row. They are
+    `sinf`'s three names and `_bzero`, `_bcopy` and `_bcmp`. A row past the
+    available names takes an `_ort<row>` suffix.
+  - The packer resolves every name back to an address from the build, so the
+    ORT words are build output. All 2,004 resolve to their shipped values.
+
+**Rules.** These were measured by the regeneration probe, and the packer
+reproduces them.
+
+- **Emission order.** Records come in each object's `.rel.text` order, with
+  objects in atlas order. The data-site records follow: the `.rodata` ones
+  ascending, then the `.data` ones ascending.
+- **Table split.** Table 1 holds records whose target lies outside the module.
+  Table 2 holds the rest.
+- **Operation.** An in-module target is `SYMBOL` when it has an ORT row. If it
+  has none, it is `JUMP` for a call and `LOCAL` for an address. A
+  section-relative (static) reference is never `SYMBOL`.
+- **LOCAL bases.** The base is 0 for text, the text size for `.data`, text plus
+  data for `.bss`, and the module's rodata base for `.rodata`.
+- **JUMP index.** A `JUMP`'s index is the most recent `SYMBOL` index in table 1
+  and then table 2 order (0 before the first). This holds for all 618 shipped
+  `JUMP`s.
+- **Main table.** It holds these entries in link order:
+  - every resident `R_MIPS_26` to `TrapDanglingJump`, named by its sidecar;
+  - every resident `HI16`/`LO16` to the unresolved-symbol sentinel
+    `D_800D2DC4`, excluding the runtime itself (`runlink.c`);
+  - then each `R_MIPS_32` to `TrapDanglingJump` in resident data, as a `DATA`
+    entry relative to the data base.
+
+  Address-of references to `TrapDanglingJump` are the runtime's own and are
+  excluded. The sentinel pairs therefore fall between the trap calls in
+  address order, not after them.
+
+**Identity.** Each relocation's symbol resolves to an address without reading
+the shipped tables. In order, the routes are:
+
+1. a definition in a raw overlay object, placed by the atlas (a short `D_<hex>`
+   only within its own module);
+2. a generated name;
+3. the surface's own conventions, `<name>_oNNNReloc` and `<generated>Reloc`;
+4. a resident symbol or absolute resident address;
+5. a linked overlay symbol.
+
+A name that reaches none of these is a **placeholder**.
+
+**Borrowing.** What the source does not yet express is taken from the shipped
+tables and recorded per entry. It is never silently assumed. Current counts:
+
+| Borrowed | Count | Goes away when |
+|---|---|---|
+| `placeholder`: identity of a symbol the C names only by placeholder | 11,934 records (3,445 module/symbol pairs) | names become real (phase 1, lane ov-ident) |
+| `hybrid-data`: data-site record in blob-owned data | 452, in 13 modules | data moves into C (phase 3) |
+| `placement`: an object's `.data`/`.rodata`/`.bss` placed by the references into it, when neither the link nor a whole-section atlas row places it | 75 sections | the fold and data ownership (phases 2-3) |
+| `rodata-base`: a module's rodata base the objects do not determine | 36 of the 48 modules that have one | phase 3 |
+| `bss-size`: header BSS size no C owns, from the atlas | 43 | phase 3 |
+| `main-placeholder`: main entries whose target the resident source does not name (the asm sentinel pairs, one trap word in data) | 5 | not reachable from C; the asm source would have to name them |
+
+**Residuals on 2026-10-22.** Of 18,542 module records, 6,156 come wholly from
+the objects. They show 378 differences:
+
+| Category | Count | What it is |
+|---|---|---|
+| `callee` | 128 | the C calls another function. 96 call the module's own offset-0 function, 31 name the wrong resident function, and 1 reaches an exported function where the shipped record is a `JUMP` |
+| `data-ref` | 46 | the C addresses another object or offset. 44 are resident data. The other 2 are a `D_0` placeholder in o101 that another o101 object defines as a real BSS symbol |
+| `base` | 10 | o077: const objects in `.data` instead of `.rodata` |
+| `pool-layout` | 124 | an object's own literal pool sits in a different order. o008 has 118, o046 4 and o001 2 |
+| `table-entry` | 26 | switch-table entries: o101 15, o011 4, and o001 7 (o001_tail's table sits 4 bytes from the rest of its rodata) |
+| `order` | 18 | the nine HI/LO pair transpositions (o001, o014, o015, o058 ×2, o059, o060, o065, o101) |
+| `jump-index` | 23 | stale `JUMP` indices that inherit an upstream `callee` difference |
+| `extra`, `missing` | 1 + 1 | o001_tail's table, as above |
+| `unplaced` | 1 | o031's initializer, a function pointer whose word the shipped table leaves unrelocated |
+
+The ORT, the main table, every header field and every module's text and data
+bytes have no differences. `tools/runlink_pack.py region` shows that the
+packer's whole overlay region, `0x1848B70`–`0x18F1FE0` (main table, ORT,
+headers and all 107 images), equals the shipped bytes once exactly the 378
+listed differences are replaced by their shipped records. Without that
+substitution, 10,158 bytes differ.
+
+**The gate.** `gmake check-runlink-tables` runs in this order and stops at the
+first failure:
+
+1. `ort --check`: the name list is current.
+2. `compare --check`: fails on any difference or borrowing that
+   `config/runlink-residuals.us.json` does not list, and on any listed entry
+   that no longer occurs.
+3. `region`: the byte proof above, which also fails if record order differs
+   outside the residuals.
+
+The gate keys differences by category, module and site offset, and
+placeholders by module, symbol and site count. The manifest's expected and got
+names are for the reader. A fix therefore makes the gate fail until the
+manifest is regenerated (`gmake runlink-residuals`), so the manifest only
+shrinks. Like any generated file, regenerate it after a merge rather than
+resolving it by hand.
+
+`tools/runlink_pack.py` exits with one of three codes:
+
+- **0:** success.
+- **1:** a gate failure: a new or gone residual, a stale name list, or a
+  region mismatch.
+- **2:** missing or unusable inputs, such as no build, no raw objects or no
+  baserom.
 
 ### 5.4 The canonical overlay work surface
 

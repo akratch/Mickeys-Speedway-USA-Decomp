@@ -5,7 +5,7 @@
  * module (overlay95NoOp at +0x000, overlay95Update at +0x00C).
  */
 
-void overlay95NoOp(s32 unused0, s32 unused1) {
+void overlay95NoOp(void *object, void *entry) {
 }
 
 void overlay95Update(Overlay95Object *object, s32 updateRate) {

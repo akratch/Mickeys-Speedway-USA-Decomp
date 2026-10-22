@@ -51,7 +51,7 @@ extern void overlay95StopReloc(void *handle);
 extern void overlay95PlayReloc(s32 soundId, Overlay95AudioState *audio);
 extern void overlay95VolumeReloc(s32 soundId, void *handle, s32 volume);
 
-void overlay95NoOp(s32 unused0, s32 unused1);
+void overlay95NoOp(void *object, void *entry);
 void overlay95Update(Overlay95Object *object, s32 updateRate);
 
 #endif

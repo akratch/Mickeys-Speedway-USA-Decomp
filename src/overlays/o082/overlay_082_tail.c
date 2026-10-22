@@ -35,7 +35,7 @@
 
 
 
-void overlay82Update(O82Object *object, f32 updateRate) {
+void overlay82Update(O82Object *object, s32 updateRate) {
     O82State *state;
     O82Resource *resource;
     const s16 (*targets)[6];

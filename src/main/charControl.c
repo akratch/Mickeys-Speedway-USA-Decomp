@@ -320,9 +320,14 @@ void func_8001BBB4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
             } else if (player->controlKeys & 4) {
                 func_80024ED8(actor, player, D_800CB300);
             } else if (D_8007BF10 != 0) {
-                func_overlay_009_F00010B4_186772C(D_800CB300, actor, *(s32 *) &updateRate);
+                /* Both callees take an f32 third argument, which the O32 ABI
+                 * passes in a2 because the first is not floating point. The
+                 * prototypes produce the shipped calls from updateRate itself;
+                 * without one the float is promoted to double, which is why
+                 * these calls were once spelled `*(s32 *) &updateRate`. */
+                func_overlay_009_F00010B4_186772C(D_800CB300, actor, updateRate);
             } else {
-                func_overlay_008_F00042A8_1862000(D_800CB300, actor, *(s32 *) &updateRate);
+                func_overlay_008_F00042A8_1862000(D_800CB300, actor, updateRate);
             }
         }
         track = trackGetTrack();
@@ -981,7 +986,7 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
     }
     if (!(player->flags1A8 & 1)) {
         if ((player->unkD8 == NULL) &&
-            (overlay37RecordActive((void *) player->playerIndex) != 0)) {
+            (overlay37RecordActive(player->playerIndex) != 0)) {
             packetD8.kind = 0x14C;
             packetD8.arg02 = 0x10;
             packetD8.arg03 = 0;
@@ -995,7 +1000,7 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
                 ((ControlSpawned *) player->unkD8)->unk3C = 0;
             }
         } else if ((player->unkD8 != NULL) &&
-                   (overlay37RecordActive((void *) player->playerIndex) == 0)) {
+                   (overlay37RecordActive(player->playerIndex) == 0)) {
             func_80006EA0(player->unkD8);
         }
     }

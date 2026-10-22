@@ -177,7 +177,7 @@ void overlay91UpdateTimeline(Overlay91TimelineObject *object, s32 elapsed) {
 
 /* Pinned DKR v77/v80 and JFG object scans found no exact donor. */
 void overlay91Render(Overlay91Gfx **displayList, void *renderContext,
-                     u32 renderArg, Overlay91RenderObject *object) {
+                     void *vertices, Overlay91RenderObject *object) {
     void *buffer;
     u32 width;
     u32 center;
@@ -191,7 +191,7 @@ void overlay91Render(Overlay91Gfx **displayList, void *renderContext,
         overlay91BeginRenderReloc(displayList, renderContext);
         overlay91EndRenderReloc(displayList);
         object->flags &= ~0x0400;
-        overlay91RenderObjectReloc(displayList, renderContext, renderArg,
+        overlay91RenderObjectReloc(displayList, renderContext, vertices,
                                    object);
         object->flags |= 0x0400;
     }

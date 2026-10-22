@@ -686,7 +686,7 @@ extern s32 camProjectPoint(f32, f32, f32, f32 *, f32 *, u8);
 extern void sprSetIA2ColOverride(u8, u8, u8, u8, u8, u8);
 extern void sprClearIA2ColOverride(void);
 extern void func_80023598(void **, void *, void *, void *, void *, s32);
-extern void camDoSprite(void **, s32, s32, s16 *, s32, s32, s32);
+extern void camDoSprite(void **, void *, void *, s16 *, s32, s32, s32);
 extern f32 sqrtf(f32);
 
 typedef struct {
@@ -758,8 +758,8 @@ extern void **D_800C94EC;
 extern s32 D_800C94F0;
 extern void **D_800C9500;
 extern s32 D_800C9504;
-extern s32 D_8007A1F4;
-extern s32 D_8007A1F8;
+extern void *D_8007A1F4;
+extern void *D_8007A1F8;
 extern s32 D_8007A1FC;
 extern u8 D_8007BEFC;
 extern u8 D_8007BF04;
@@ -3722,8 +3722,8 @@ void func_80008B94(void *rawObject) {
         func_80023598((void **)&D_800C94B4, &D_800C94B8, &D_800C94BC,
                       object, resource, alpha);
     } else {
-        camDoSprite((void **)&D_800C94B4, (s32)&D_800C94B8,
-                      (s32)&D_800C94BC,
+        camDoSprite((void **)&D_800C94B4, &D_800C94B8,
+                      &D_800C94BC,
                       (s16 *)object, resource, flags, alpha);
     }
     if (specialColour) {
@@ -3742,7 +3742,7 @@ void func_80008B94(void *rawObject) {
     object->unk8 = savedScale;
 }
 /* The sprite renderer reads the transform and frame from this segment layout. */
-void func_80009220(void **displayListPtr, s32 vertexList, s32 triangleList, Objects09220Object *object,
+void func_80009220(void **displayListPtr, void *vertexList, void *triangleList, Objects09220Object *object,
                    s32 sourceMatrix, Objects09220Source *source, s32 alpha) {
     f32 distance;
     f32 direction[3];
@@ -3869,13 +3869,13 @@ typedef struct {
 } Objects09414Object;
 
 extern void func_80022E80(void *transform);
-extern void func_80022FD4(void **displayList, s32 matrices, s32 vertices,
+extern void func_80022FD4(void **displayList, void *matrices, void *vertices,
                           void *transform, f32 *opacity,
                           Objects09414Sprite *sprite, s32 flags, s32 alpha);
 extern void fxDrawCone(void **displayList, void *cone, s32 flags, u8 alpha);
 extern f32 func_80009F08(Objects09F08Arg *object);
 
-void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void *rawObject) {
+void func_80009414(void **displayListPtr, void *vertexList, void *triangleList, void *rawObject) {
     s32 i;
     s32 j;
     s32 count;
@@ -3922,8 +3922,8 @@ void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void
      * dead `k = 0` after it keeps uopt's `slti` exit test (a def of the index
      * before the next loop; lane n-f1). */
     for (k = 0; k < 4; k++) {
-        if (*(s32 *)((u8 *)resource + 0x134 + (k * 4)) != 0) {
-            overlay17DrawStrip(displayListPtr, *(s32 *)((u8 *)resource + 0x134 + (k * 4)));
+        if (*(void **)((u8 *)resource + 0x134 + (k * 4)) != NULL) {
+            overlay17DrawStrip(displayListPtr, *(void **)((u8 *)resource + 0x134 + (k * 4)));
         }
     }
     k = 0;
@@ -4043,14 +4043,14 @@ void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void
         }
 
     }
-    if (*(s32 *)((u8 *)resource + 0xD0) != 0) {
-        func_overlay_028_F00004D8_187CDA8(displayListPtr, vertexList, *(s32 *)((u8 *)resource + 0xD0));
+    if (*(void **)((u8 *)resource + 0xD0) != NULL) {
+        func_overlay_028_F00004D8_187CDA8(displayListPtr, vertexList, *(void **)((u8 *)resource + 0xD0));
     }
-    if (*(s32 *)((u8 *)resource + 0xD4) != 0) {
-        func_overlay_027_F0000624_187BFFC(displayListPtr, vertexList, triangleList, *(s32 *)((u8 *)resource + 0xD4));
+    if (*(void **)((u8 *)resource + 0xD4) != NULL) {
+        func_overlay_027_F0000624_187BFFC(displayListPtr, vertexList, triangleList, *(void **)((u8 *)resource + 0xD4));
     }
-    if (*(s32 *)((u8 *)resource + 0xD8) != 0) {
-        overlay37RenderEffect(displayListPtr, vertexList, *(s32 *)((u8 *)resource + 0xD8));
+    if (*(void **)((u8 *)resource + 0xD8) != NULL) {
+        overlay37RenderEffect(displayListPtr, vertexList, *(void **)((u8 *)resource + 0xD8));
     }
 }
 typedef struct {
@@ -4654,8 +4654,13 @@ extern void func_8001BAE4(void *object, void *packet);
 extern void func_8001BAF8(void *object, void *packet);
 
 /* Tier B: Mickey's resident loader records identify each overlay export.
- * The dispatch ABI forwards object, entry, and preserveState. Each call
- * retains the resident trap that the runtime loader patches at that site. */
+ * Every initialiser takes the object and its level entry. Ten also take
+ * preserveState, reading or homing a2: overlays 71, 73, 75, 77, 79, 81 and 87
+ * at +0x0, and overlay 97's InitSelection, InitBounds and AssignState. The
+ * rest touch a0 and a1 only, so their calls pass two arguments; preserveState
+ * stays in a2 from entry and no call loads it, so the code is the same either
+ * way. Each call retains the resident trap that the runtime loader patches at
+ * that site. */
 void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState) {
     object->unk44 = object->unk40->unk1C;
     switch (object->unk44 - 1) {
@@ -4663,18 +4668,18 @@ void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState) 
             func_8001C4C0(object, packet, 1);
             break;
         case 28:
-            overlay69Init(object, packet, preserveState); /* Overlay 69 +0x0. */
+            overlay69Init(object, packet); /* Overlay 69 +0x0. */
             break;
         case 72:
-            overlay88Init(object, packet, preserveState); /* Overlay 88 +0x0. */
+            overlay88Init(object, packet); /* Overlay 88 +0x0. */
             break;
         case 1:
         case 2:
         case 3:
-            overlay85Configure(object, packet, preserveState); /* Overlay 85 +0x0. */
+            overlay85Configure(object, packet); /* Overlay 85 +0x0. */
             break;
         case 30:
-            overlay97InitScale(object, packet, preserveState); /* Overlay 97 +0x508. */
+            overlay97InitScale(object, packet); /* Overlay 97 +0x508. */
             break;
         case 31:
         case 33:
@@ -4687,16 +4692,16 @@ void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState) 
             overlay97InitSelection(object, packet, preserveState); /* Overlay 97 +0x36C. */
             break;
         case 5:
-            overlay97InitDirection(object, packet, preserveState); /* Overlay 97 +0x0. */
+            overlay97InitDirection(object, packet); /* Overlay 97 +0x0. */
             break;
         case 4:
-            overlay97InitTransform(object, packet, preserveState); /* Overlay 97 +0x14C. */
+            overlay97InitTransform(object, packet); /* Overlay 97 +0x14C. */
             break;
         case 10:
-            overlay97CopyAngles(object, packet, preserveState); /* Overlay 97 +0x130. */
+            overlay97CopyAngles(object, packet); /* Overlay 97 +0x130. */
             break;
         case 11:
-            overlay92Init(object, packet, preserveState); /* Overlay 92 +0x0. */
+            overlay92Init(object, packet); /* Overlay 92 +0x0. */
             break;
         case 13:
             overlay97InitBounds(object, packet, preserveState); /* Overlay 97 +0x748. */
@@ -4705,7 +4710,7 @@ void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState) 
             overlay97AssignState(object, packet, preserveState); /* Overlay 97 +0x3F4. */
             break;
         case 40:
-            overlay89InitializeEffect(object, packet, preserveState); /* Overlay 89 +0x270. */
+            overlay89InitializeEffect(object, packet); /* Overlay 89 +0x270. */
             break;
         case 34:
             lightAdjustGlowingLight(object);
@@ -4714,19 +4719,19 @@ void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState) 
             func_overlay_071_F0000000_18C9B20(object, packet, preserveState); /* Overlay 71 +0x0. */
             break;
         case 8:
-            overlay97CreateDescriptor(object, packet, preserveState); /* Overlay 97 +0x420. */
+            overlay97CreateDescriptor(object, packet); /* Overlay 97 +0x420. */
             break;
         case 41:
-            overlay83BuildBatch(object, packet, preserveState); /* Overlay 83 +0x53C. */
+            overlay83BuildBatch(object, packet); /* Overlay 83 +0x53C. */
             break;
         case 7:
-            overlay93Init(object, packet, preserveState); /* Overlay 93 +0x0. */
+            overlay93Init(object, packet); /* Overlay 93 +0x0. */
             break;
         case 6:
-            overlay97InitRadius(object, packet, preserveState); /* Overlay 97 +0x1A8. */
+            overlay97InitRadius(object, packet); /* Overlay 97 +0x1A8. */
             break;
         case 27:
-            overlay97InitPlane(object, packet, preserveState); /* Overlay 97 +0x944. */
+            overlay97InitPlane(object, packet); /* Overlay 97 +0x944. */
             break;
         case 23:
         case 24:
@@ -4736,145 +4741,145 @@ void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState) 
             func_8001BAF8(object, packet);
             break;
         case 32:
-            overlay36InitObject(object, packet, preserveState); /* Overlay 36 +0x0. */
+            overlay36InitObject(object, packet); /* Overlay 36 +0x0. */
             break;
         case 45:
-            overlay1CopyBytes(object, packet, preserveState); /* Overlay 1 +0x6788. */
+            overlay1CopyBytes(object, packet); /* Overlay 1 +0x6788. */
             break;
         case 46:
-            overlay1InitMotion(object, packet, preserveState); /* Overlay 1 +0x69A0. */
+            overlay1InitMotion(object, packet); /* Overlay 1 +0x69A0. */
             break;
         case 47:
-            overlay1InitRange(object, packet, preserveState); /* Overlay 1 +0x6B28. */
+            overlay1InitRange(object, packet); /* Overlay 1 +0x6B28. */
             break;
         case 48:
-            overlay4InitializeObjectMotion(object, packet, preserveState); /* Overlay 4 +0x0. */
+            overlay4InitializeObjectMotion(object, packet); /* Overlay 4 +0x0. */
             break;
         case 49:
-            overlay84InitState(object, packet, preserveState); /* Overlay 84 +0x0. */
+            overlay84InitState(object, packet); /* Overlay 84 +0x0. */
             break;
         case 50:
-            overlay84CopyPair(object, packet, preserveState); /* Overlay 84 +0xDBC. */
+            overlay84CopyPair(object, packet); /* Overlay 84 +0xDBC. */
             break;
         case 20:
-            overlay97InitResource(object, packet, preserveState); /* Overlay 97 +0x1E8. */
+            overlay97InitResource(object, packet); /* Overlay 97 +0x1E8. */
             break;
         case 42:
-            func_overlay_002_F0001DF8_1858BF0(object, packet, preserveState); /* Overlay 2 +0x1DF8. */
+            func_overlay_002_F0001DF8_1858BF0(object, packet); /* Overlay 2 +0x1DF8. */
             break;
         case 43:
-            overlay2CopyColor(object, packet, preserveState); /* Overlay 2 +0x2528. */
+            overlay2CopyColor(object, packet); /* Overlay 2 +0x2528. */
             break;
         case 44:
-            overlay1AssignRecordIndex(object, packet, preserveState); /* Overlay 1 +0x36A0. */
+            overlay1AssignRecordIndex(object, packet); /* Overlay 1 +0x36A0. */
             break;
         case 52:
-            overlay72Init(object, packet, preserveState); /* Overlay 72 +0x0. */
+            overlay72Init(object, packet); /* Overlay 72 +0x0. */
             break;
         case 53:
-            overlay90Initialize(object, packet, preserveState); /* Overlay 90 +0x0. */
+            overlay90Initialize(object, packet); /* Overlay 90 +0x0. */
             break;
         case 54:
-            overlay86Init(object, packet, preserveState); /* Overlay 86 +0x444. */
+            overlay86Init(object, packet); /* Overlay 86 +0x444. */
             break;
         case 56:
-            func_overlay_026_F0000000_187A3F8(object, packet, preserveState); /* Overlay 26 +0x0. */
+            func_overlay_026_F0000000_187A3F8(object, packet); /* Overlay 26 +0x0. */
             break;
         case 57:
-            func_overlay_029_F000042C_187D6DC(object, packet, preserveState); /* Overlay 29 +0x42C. */
+            func_overlay_029_F000042C_187D6DC(object, packet); /* Overlay 29 +0x42C. */
             break;
         case 59:
-            overlay25InitializeEffect(object, packet, preserveState); /* Overlay 25 +0x0. */
+            overlay25InitializeEffect(object, packet); /* Overlay 25 +0x0. */
             break;
         case 60:
-            overlay20UpdateObjectResource(object, packet, preserveState); /* Overlay 20 +0x204. */
+            overlay20UpdateObjectResource(object, packet); /* Overlay 20 +0x204. */
             break;
         case 61:
-            overlay20CreateEntry(object, packet, preserveState); /* Overlay 20 +0xF78. */
+            overlay20CreateEntry(object, packet); /* Overlay 20 +0xF78. */
             break;
         case 62:
-            overlay68InitializeObject(object, packet, preserveState); /* Overlay 68 +0x8E0. */
+            overlay68InitializeObject(object, packet); /* Overlay 68 +0x8E0. */
             break;
         case 63:
-            func_overlay_022_F0000000_1878108(object, packet, preserveState); /* Overlay 22 +0x0. */
+            func_overlay_022_F0000000_1878108(object, packet); /* Overlay 22 +0x0. */
             break;
         case 64:
-            overlay23Init(object, packet, preserveState); /* Overlay 23 +0x208. */
+            overlay23Init(object, packet); /* Overlay 23 +0x208. */
             break;
         case 65:
-            overlay28InitializeWork(object, packet, preserveState); /* Overlay 28 +0x1B8. */
+            overlay28InitializeWork(object, packet); /* Overlay 28 +0x1B8. */
             break;
         case 66:
             overlay75Init(object, packet, preserveState); /* Overlay 75 +0x0. */
             break;
         case 67:
-            overlay27Init(object, packet, preserveState); /* Overlay 27 +0x0. */
+            overlay27Init(object, packet); /* Overlay 27 +0x0. */
             break;
         case 68:
-            overlay24Init(object, packet, preserveState); /* Overlay 24 +0x0. */
+            overlay24Init(object, packet); /* Overlay 24 +0x0. */
             break;
         case 69:
-            overlay21RegisterPlane(object, packet, preserveState); /* Overlay 21 +0x0. */
+            overlay21RegisterPlane(object, packet); /* Overlay 21 +0x0. */
             break;
         case 70:
-            overlay91Init(object, packet, preserveState); /* Overlay 91 +0x0. */
+            overlay91Init(object, packet); /* Overlay 91 +0x0. */
             break;
         case 71:
             overlay87InitializeObject(object, packet, preserveState); /* Overlay 87 +0x0. */
             break;
         case 73:
-            overlay74Init(object, packet, preserveState); /* Overlay 74 +0x0. */
+            overlay74Init(object, packet); /* Overlay 74 +0x0. */
             break;
         case 79:
-            func_overlay_070_F0000000_18C91C8(object, packet, preserveState); /* Overlay 70 +0x0. */
+            func_overlay_070_F0000000_18C91C8(object, packet); /* Overlay 70 +0x0. */
             break;
         case 74:
-            overlay76Register(object, packet, preserveState); /* Overlay 76 +0x0. */
+            overlay76Register(object, packet); /* Overlay 76 +0x0. */
             break;
         case 75:
             overlay77Init(object, packet, preserveState); /* Overlay 77 +0x0. */
             break;
         case 76:
-            overlay78Init(object, packet, preserveState); /* Overlay 78 +0x0. */
+            overlay78Init(object, packet); /* Overlay 78 +0x0. */
             break;
         case 77:
             func_overlay_079_F0000000_18CCFA0(object, packet, preserveState); /* Overlay 79 +0x0. */
             break;
         case 80:
-            overlay80InitializeContact(object, packet, preserveState); /* Overlay 80 +0x0. */
+            overlay80InitializeContact(object, packet); /* Overlay 80 +0x0. */
             break;
         case 81:
             overlay81Init(object, packet, preserveState); /* Overlay 81 +0x0. */
             break;
         case 82:
-            overlay81InitState(object, packet, preserveState); /* Overlay 81 +0x240. */
+            overlay81InitState(object, packet); /* Overlay 81 +0x240. */
             break;
         case 83:
-            overlay82Init(object, packet, preserveState); /* Overlay 82 +0x0. */
+            overlay82Init(object, packet); /* Overlay 82 +0x0. */
             break;
         case 84:
             func_overlay_073_F0000000_18CAAC0(object, packet, preserveState); /* Overlay 73 +0x0. */
             break;
         case 85:
-            overlay94InitializeController(object, packet, preserveState); /* Overlay 94 +0x0. */
+            overlay94InitializeController(object, packet); /* Overlay 94 +0x0. */
             break;
         case 86:
-            overlay79SetLink(object, packet, preserveState); /* Overlay 79 +0x1280. */
+            overlay79SetLink(object, packet); /* Overlay 79 +0x1280. */
             break;
         case 87:
-            overlay79InitState(object, packet, preserveState); /* Overlay 79 +0x147C. */
+            overlay79InitState(object, packet); /* Overlay 79 +0x147C. */
             break;
         case 88:
-            overlay37Init(object, packet, preserveState); /* Overlay 37 +0x0. */
+            overlay37Init(object, packet); /* Overlay 37 +0x0. */
             break;
         case 89:
-            overlay95NoOp(object, packet, preserveState); /* Overlay 95 +0x0. */
+            overlay95NoOp(object, packet); /* Overlay 95 +0x0. */
             break;
         case 90:
-            func_overlay_038_F0000000_1885D10(object, packet, preserveState); /* Overlay 38 +0x0. */
+            func_overlay_038_F0000000_1885D10(object, packet); /* Overlay 38 +0x0. */
             break;
         case 91:
-            overlay96BuildVolume(object, packet, preserveState); /* Overlay 96 +0xF8. */
+            overlay96BuildVolume(object, packet); /* Overlay 96 +0xF8. */
             break;
         case 9:
             break;

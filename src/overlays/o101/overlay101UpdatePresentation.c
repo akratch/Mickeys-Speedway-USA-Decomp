@@ -11,9 +11,9 @@ extern void *gOverlay101Handle1D4;
 extern void overlay101StopFirstReloc(s32 value);
 extern void overlay101StopSecondReloc(s32 value);
 extern void overlay101StopThirdReloc(s32 value);
-extern void overlay101DrawPresentationReloc(s32 context, void *data,
-                                            f32 scale);
-extern void overlay101CreatePresentationReloc(s32 context, void **handle,
+extern void overlay101DrawPresentationReloc(void *context, void *data,
+                                            void *vertices);
+extern void overlay101CreatePresentationReloc(void *context, void **handle,
                                               f32 x, f32 y, f32 scaleX,
                                               f32 scaleY, s32 layer,
                                               s32 mode);
@@ -21,7 +21,7 @@ extern void overlay101AdvancePresentationReloc(void);
 extern s32 overlay101ReadInputReloc(s32 controller);
 extern void overlay101FinishPresentationReloc(void);
 
-void overlay101UpdatePresentation(s32 context, void *data, f32 scale,
+void overlay101UpdatePresentation(void *context, void *data, void *vertices,
                                   s32 step) {
     s32 state;
 
@@ -29,7 +29,7 @@ void overlay101UpdatePresentation(s32 context, void *data, f32 scale,
         overlay101StopFirstReloc(step);
         overlay101StopSecondReloc(step);
         overlay101StopThirdReloc(step);
-        overlay101DrawPresentationReloc(context, data, scale);
+        overlay101DrawPresentationReloc(context, data, vertices);
         overlay101CreatePresentationReloc(
             context, &gOverlay101Handle1D4, (f32)gOverlay101GlobalX,
             (f32)gOverlay101GlobalY, 1.0f, 1.0f, -2, 3);

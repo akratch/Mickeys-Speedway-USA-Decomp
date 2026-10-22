@@ -11,10 +11,10 @@ typedef struct Overlay83Descriptor {
     u8 *entries;
 } Overlay83Descriptor;
 
-extern void overlay83DrawEntryReloc(Overlay83Object *, void *, void *);
+extern void overlay83DrawEntryReloc(Overlay83Object *, void *, s32);
 
 /* DKR v77/v80 and JFG contain no exact donor or semantic source lead for this fixed-stride draw loop. */
-void overlay83DrawEntries(Overlay83Object *object, void *context) {
+void overlay83DrawEntries(Overlay83Object *object, s32 updateRate) {
     Overlay83Descriptor *descriptor;
     u8 *entry;
     u8 *current;
@@ -26,6 +26,6 @@ void overlay83DrawEntries(Overlay83Object *object, void *context) {
     while (remaining--) {
         current = entry;
         entry += 0x258;
-        overlay83DrawEntryReloc(object, current, context);
+        overlay83DrawEntryReloc(object, current, updateRate);
     }
 }

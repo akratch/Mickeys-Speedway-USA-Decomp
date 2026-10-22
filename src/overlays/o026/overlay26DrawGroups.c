@@ -37,14 +37,14 @@ typedef struct Overlay26Context {
 } Overlay26Context;
 
 extern void o26PrepareNode(Overlay26Context *, Overlay26Node *, void *, s32);
-extern void o26DrawReloc(Gfx **, s32, Overlay26Group *, f32, f32);
+extern void o26DrawReloc(Gfx **, void *, Overlay26Group *, f32, f32);
 extern void o26FlushReloc(Gfx **);
 extern void o26FinishReloc(Gfx **);
 
 /* PROVENANCE: command expansions use the existing SDK macros in
  * n_audio/mbi.h. Node layout, indexing, call order and command words are
  * reconstructed from Mickey's own overlay. */
-void func_overlay_026_F0001158_187B550(Gfx **dl, s32 drawContext,
+void func_overlay_026_F0001158_187B550(Gfx **dl, void *drawContext,
                                        Overlay26Context *context) {
     Overlay26RenderState *render;
     Overlay26Group *group;

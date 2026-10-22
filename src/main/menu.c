@@ -64,7 +64,7 @@ extern void amSndStop(s32 handle);
 extern void amTunePlay(u8 sequence);
 extern void func_80006EA0(void *object);
 extern void func_80006FA0(void);
-extern s32 func_80005820(s32 arg0);
+extern void *func_80005820(s32 playerIndex);
 extern u8 *func_80028F54(void);
 extern void texFreeTexture(void *texture);
 extern void texFreeSprite(void *sprite);
@@ -577,12 +577,12 @@ u8 frontGetMode(void) {
  * homes in declaration order: the four joyGetPressed halves and the two
  * call results are the whole 0x28 frame. */
 s32 frontUpdate(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList, s32 updateRate) {
-    s32 timerState;
+    void *timerState;
     u8 *selection;
     u16 pressed0;
     u16 pressed1;
     u16 pressed2;
-    s32 playerObject;
+    void *playerObject;
     u8 mode;
 
     selection = func_80028F54();
@@ -681,7 +681,7 @@ s32 frontUpdate(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList, 
             func_overlay_060_F0000334_18BA10C(updateRate);
             break;
         case 15:
-            overlay101UpdatePresentation((s32)&D_800D3140, (s32)&D_800D3144, &D_800D3148, updateRate);
+            overlay101UpdatePresentation(&D_800D3140, &D_800D3144, &D_800D3148, updateRate);
             break;
         case 16:
             overlay62Update(updateRate);

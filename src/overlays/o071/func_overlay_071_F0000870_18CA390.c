@@ -24,7 +24,7 @@ extern u8 D_80000028[];
 extern u8 D_800000D8[];
 
 extern void func_80032BF0(void *resource, s32 mode, s32 flags);
-extern void func_8002409C(Overlay71Command **commands, s32 context,
+extern void func_8002409C(Overlay71Command **commands, void *context,
                          Overlay71DrawObject *object, f32 scale, f32 extra);
 extern void func_80034554(Overlay71Command **commands, s32 resource, s32 mode,
                          s32 flags);
@@ -60,7 +60,7 @@ extern void func_800241BC(Overlay71Command **commands);
 #define O71_VERTEX_BANK(state) O71_PHYSICAL_TO_K0((u32)(state) + (state)->vertexBank * 0x50)
 
 void func_overlay_071_F0000870_18CA390(Overlay71Command **commands,
-                                       s32 context,
+                                       void *context,
                                        Overlay71DrawObject *object) {
     Overlay71DrawState *state;
 

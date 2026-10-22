@@ -52,7 +52,7 @@ extern void o98LoadMatrixReloc(void *, void *);
 extern void o98BuildMatrixReloc(O98Transform *, O98Mtx *);
 extern void o98CombineMatrixReloc(O98Mtx *, void *, O98Mtx *);
 extern void o98BuildInverseMatrixReloc(O98Transform *, O98Mtx *);
-extern void o98EmitObjectReloc(Gfx **, u8 **, s32, O98Object *);
+extern void o98EmitObjectReloc(Gfx **, u8 **, void *, O98Object *);
 extern void o98RestoreStateReloc(Gfx **);
 
 extern s32 gO98Toggle;
@@ -96,7 +96,7 @@ extern u8 gO98SpecialVertices[];
  * cursor temporary at +0x58 instead of +0x5C). Matched. */
 #define O98_PACKET(word0, word1) gfx = *dl; *dl = gfx + 1; gfx->w0 = (word0); gfx->w1 = (word1)
 
-void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 vertices) {
+void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
     O98Object *object;
     O98Node *node;
     O98Node *node2;

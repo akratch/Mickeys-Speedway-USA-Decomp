@@ -53,18 +53,50 @@ list equals what the tables generate; and the atlas's `resident_inbound` row
 agrees with the ROM. A swapped callee leaves the ROM hash unchanged, and this
 check is the gate that fails on it.
 
-270 of the 313 declarations are prototypes. 268 are the overlay definition's
-own, with overlay-private pointer types spelled `void *`, and 2 keep the
-parameter types the resident call compiles against: `overlay17CreateChain`'s
-narrowed arguments and `func_overlay_043_F0000324_188A2F4`'s f32. The other
-43 are old-style declarations, `T name();`, because the definition's
-prototype either changes the shipped call or does not compile against it.
-They are tagged `[arity]` (1: the resident passes a different number of
-arguments), `[types]` (34: a pointer passed where the definition takes an
-integer, or the reverse) and `[codegen]` (8: an int passed where the
-definition declares an `f32` or narrow parameter). In each case the two
-reconstructions disagree, and reconciling either side would let the
-prototype in. Renaming an overlay export that resident code calls means
+312 of the 313 declarations are prototypes. 310 are the overlay definition's
+own, with overlay-private or untyped pointer types spelled `void *`, and 2
+keep the parameter types the resident call compiles against:
+`overlay17CreateChain`'s narrowed arguments and
+`func_overlay_043_F0000324_188A2F4`'s f32. One is an old-style declaration,
+`T name();`, tagged `[arity]`: `func_overlay_029_F00010C4_187E374` reads a0
+and a1, but `func_80056274` passes it a third argument that uopt keeps in a2
+across `sqrtf`, and dropping that argument changes the caller, so the
+original made that call with three.
+
+Until 2026-10-22 there were 117 such declarations (64 `[arity]`, 41
+`[types]`, 12 `[codegen]`). Reading each definition's argument-register use
+against every resident call showed that 116 were one side's reconstruction,
+and each was reconciled with the ROM byte-identical and every object's
+sections and relocations unchanged:
+
+- `objects.c`'s init dispatch passed `(object, packet, preserveState)` to 55
+  initialisers that read a0 and a1 only. a2 is never loaded at those sites,
+  so the extra argument left no trace; their calls now pass two.
+- IDO homes an unused register argument whatever its type, so a home store
+  says an argument exists but not what it is. Definitions had typed such
+  arguments `s16`, `s32`, `f32` or a pointer against what the caller passes:
+  the init entry, `updateRate`, a message queue, a camera list.
+- Display-list plumbing typed matrix and vertex cursors `s32` where the
+  callers pass their addresses. The definitions forward them, so they take
+  pointers, and the resident side drops the casts that matched the old
+  types: `(s32) &D_800C9520`, `(void **) (s32) targetUpdateRate`, and
+  `&D_800C95B4` for an array.
+- An unused stack argument leaves no trace in the callee:
+  `overlay40AddEntry` and `overlay41Ignore` take the five and seven
+  arguments their caller stores.
+- `func_overlay_008_F00042A8_1862000` and `func_overlay_009_F00010B4_186772C`
+  take an f32 in a2. The prototype produces the shipped call from the float
+  itself; without one the float is promoted to double, which is why the
+  calls had been spelled `*(s32 *) &updateRate`.
+- `overlay40RemoveEntry` and `overlay40UpdateEntries` made a second formal the
+  loop counter to reach their allocation. With a local counter and
+  `overlay40AddEntry`'s `while (remaining--)` from 8 they match with the one
+  parameter they read.
+- Resident locals and globals typed `s32` that hold pointers
+  (`frontUpdate`'s player object, `D_8007A1F4`/`D_8007A1F8`, `main.c`'s
+  `D_80078F7C`, `func_80009414`'s cursors) are pointers.
+
+Renaming an overlay export that resident code calls means
 running `gmake trap-names` and updating the resident call and its declaration;
 the rename step names any stale spelling it finds.
 

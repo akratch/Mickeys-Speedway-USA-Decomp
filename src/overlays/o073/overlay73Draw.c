@@ -29,7 +29,7 @@ typedef struct Overlay73DrawObject {
 } Overlay73DrawObject;
 
 extern u8 D_80000000[];
-extern void func_8002409C(Overlay73Command **commands, s32 context,
+extern void func_8002409C(Overlay73Command **commands, void *context,
                          Overlay73DrawObject *object, f32 scale, f32 extra);
 extern void func_80034554(Overlay73Command **commands, void *resource,
                          s32 mode, s32 flags);
@@ -61,7 +61,7 @@ extern void func_800241BC(Overlay73Command **commands);
 #define O73_PHYSICAL_TO_K0(x) (void *)(((u32)(x) + 0x80000000))
 
 void func_overlay_073_F0000D70_18CB830(Overlay73Command **commands,
-                                       s32 context,
+                                       void *context,
                                        Overlay73DrawObject *object) {
     Overlay73Vertex *vertices;
     s32 pad;

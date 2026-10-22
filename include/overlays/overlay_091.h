@@ -86,12 +86,12 @@ void overlay91BeginRenderReloc(Overlay91Gfx **displayList,
                                void *renderContext);
 void overlay91EndRenderReloc(Overlay91Gfx **displayList);
 void overlay91RenderObjectReloc(Overlay91Gfx **displayList,
-                                void *renderContext, u32 renderArg,
+                                void *renderContext, void *vertices,
                                 Overlay91RenderObject *object);
 
 void overlay91Init(Overlay91InitObject *object, void *entry);
 void overlay91UpdateTimeline(Overlay91TimelineObject *object, s32 elapsed);
 void overlay91Render(Overlay91Gfx **displayList, void *renderContext,
-                     u32 renderArg, Overlay91RenderObject *object);
+                     void *vertices, Overlay91RenderObject *object);
 
 #endif

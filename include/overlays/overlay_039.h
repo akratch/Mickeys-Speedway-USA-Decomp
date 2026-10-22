@@ -14,8 +14,13 @@ void overlay39SendReloc(u8 *buffer, s32 size);
 void overlay39SelectReloc(s32 channel, u8 *buffer);
 void overlay39FinishReloc(void);
 
-void overlay39Write(u8 *source, s32 unused);
-void overlay39Reset(s32 unused);
+/* The resident caller, joy.c's arithmeticFunction, passes its SI message
+ * queue to both; neither reads it. JFG's arithmeticFunction makes the same
+ * three calls as osCic6105SendData(challenge, mq), osCic6105StartGetData(mq)
+ * and osCic6105GetReadData(response) (tier B, argument roles only). */
+struct OSMesgQueue_s;
+void overlay39Write(u8 *source, struct OSMesgQueue_s *mq);
+void overlay39Reset(struct OSMesgQueue_s *mq);
 void overlay39Read(u8 *destination);
 
 #endif

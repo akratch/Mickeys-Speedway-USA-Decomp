@@ -56,7 +56,7 @@ extern void func_overlay_045_F0001158_188D5B0(
  * compiler-private literal-pool relocations are linked to the identical
  * constants already retained in gOverlay45InitializedData. */
 void func_overlay_045_F0000764_188CBBC(
-    Gfx **displayList, void *matrix, s32 arg2, s32 arg3,
+    Gfx **displayList, void *matrix, void *arg2, void *arg3,
     s32 mode, s32 updateRate) {
     Overlay45ResourceDescriptor *descriptor;
     Overlay45Element *element;

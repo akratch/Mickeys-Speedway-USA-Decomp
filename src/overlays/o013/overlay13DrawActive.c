@@ -21,14 +21,14 @@ extern s32 gOverlay13Active;
 extern s32 gOverlay13Enabled;
 extern O13Record gOverlay13Records[];
 extern O13View *overlay13Initialize(void);
-extern void overlay13DrawRecord(O13Record *, s32, s32, s32);
+extern void overlay13DrawRecord(O13Record *, void *, void *, void *);
 
 /* Frame 0x168 is the two pointer pads plus indices[26] and distances[35].
  * temporaryDistance = 0 before the branch takes the first FP colour. The
  * collection walk reuses i, so that web is coloured before record. if (1)
  * is the region boundary that rematerializes the record base. The matched
  * overlay13Initialize is void and leaves the view pointer in v0. */
-void overlay13DrawActive(s32 commands, s32 mtx, s32 vertices) {
+void overlay13DrawActive(void *commands, void *mtx, void *vertices) {
     s32 i;
     void *pad0;
     void *pad1;

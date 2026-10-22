@@ -28,7 +28,7 @@ extern u8 D_80000000[];
 
 extern O13RenderState *o13GetRenderState(void);
 extern void o13SetColor(u8, u8, u8, u8, u8, u8);
-extern void o13DrawRecord(O13Command **, s32, s32, O13Record *, void *, s32, s32);
+extern void o13DrawRecord(O13Command **, void *, void *, O13Record *, void *, s32, s32);
 extern void o13FinishDraw(void);
 extern void o13SetupRecord(O13Command **, void *, s32, s32);
 
@@ -43,7 +43,7 @@ extern void o13SetupRecord(O13Command **, void *, s32, s32);
 #define O13_GFX(w0v, w1v) { O13Command *_g = (*commands)++; _g->w0 = (w0v); _g->w1 = (w1v); }
 
 void overlay13DrawRecord(
-    O13Record *record, O13Command **commands, s32 mtx, s32 vertices) {
+    O13Record *record, O13Command **commands, void *mtx, void *vertices) {
     f32 savedScale;
     O13RenderState *render;
 

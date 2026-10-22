@@ -44,7 +44,7 @@ extern u8 gO38ParticleTriangles[];
 
 /* Resident callees, reached through SYMBOL records: camPushModelMtx,
  * texDPTextureX, camPopModelMtx, camGetPtr, Arctanf and sqrtf. */
-extern void o38PushMatrixReloc(Gfx **dList, s32 context,
+extern void o38PushMatrixReloc(Gfx **dList, void *context,
                                O38Transform *transform, f32 scale, f32 offset);
 extern void o38DrawTextureReloc(Gfx **dList, void *texture, s32 flags,
                                 s32 arg3);
@@ -81,7 +81,7 @@ extern f32 o38SqrtReloc(f32 value);
  *   makes the byte counter and the pool cursor itself;
  * - the locals are declared pool, particle, camera, transform, then the
  *   scalars, which puts the transform at sp+0xC4 under two pointer cells. */
-void func_overlay_038_F000047C_188618C(Gfx **dList, s32 context, O38Object *object) {
+void func_overlay_038_F000047C_188618C(Gfx **dList, void *context, O38Object *object) {
     O38Pool *pool;
     O38Particle *particle;
     O38Camera *camera;

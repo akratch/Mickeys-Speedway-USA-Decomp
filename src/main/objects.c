@@ -686,7 +686,7 @@ extern s32 camProjectPoint(f32, f32, f32, f32 *, f32 *, u8);
 extern void sprSetIA2ColOverride(u8, u8, u8, u8, u8, u8);
 extern void sprClearIA2ColOverride(void);
 extern void func_80023598(void **, void *, void *, void *, void *, s32);
-extern void camDoSprite(void **, s32, s32, s16 *, s32, s32, s32);
+extern void camDoSprite(void **, void *, void *, s16 *, s32, s32, s32);
 extern f32 sqrtf(f32);
 
 typedef struct {
@@ -758,8 +758,8 @@ extern void **D_800C94EC;
 extern s32 D_800C94F0;
 extern void **D_800C9500;
 extern s32 D_800C9504;
-extern s32 D_8007A1F4;
-extern s32 D_8007A1F8;
+extern void *D_8007A1F4;
+extern void *D_8007A1F8;
 extern s32 D_8007A1FC;
 extern u8 D_8007BEFC;
 extern u8 D_8007BF04;
@@ -3722,8 +3722,8 @@ void func_80008B94(void *rawObject) {
         func_80023598((void **)&D_800C94B4, &D_800C94B8, &D_800C94BC,
                       object, resource, alpha);
     } else {
-        camDoSprite((void **)&D_800C94B4, (s32)&D_800C94B8,
-                      (s32)&D_800C94BC,
+        camDoSprite((void **)&D_800C94B4, &D_800C94B8,
+                      &D_800C94BC,
                       (s16 *)object, resource, flags, alpha);
     }
     if (specialColour) {
@@ -3742,7 +3742,7 @@ void func_80008B94(void *rawObject) {
     object->unk8 = savedScale;
 }
 /* The sprite renderer reads the transform and frame from this segment layout. */
-void func_80009220(void **displayListPtr, s32 vertexList, s32 triangleList, Objects09220Object *object,
+void func_80009220(void **displayListPtr, void *vertexList, void *triangleList, Objects09220Object *object,
                    s32 sourceMatrix, Objects09220Source *source, s32 alpha) {
     f32 distance;
     f32 direction[3];
@@ -3869,13 +3869,13 @@ typedef struct {
 } Objects09414Object;
 
 extern void func_80022E80(void *transform);
-extern void func_80022FD4(void **displayList, s32 matrices, s32 vertices,
+extern void func_80022FD4(void **displayList, void *matrices, void *vertices,
                           void *transform, f32 *opacity,
                           Objects09414Sprite *sprite, s32 flags, s32 alpha);
 extern void fxDrawCone(void **displayList, void *cone, s32 flags, u8 alpha);
 extern f32 func_80009F08(Objects09F08Arg *object);
 
-void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void *rawObject) {
+void func_80009414(void **displayListPtr, void *vertexList, void *triangleList, void *rawObject) {
     s32 i;
     s32 j;
     s32 count;
@@ -3922,8 +3922,8 @@ void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void
      * dead `k = 0` after it keeps uopt's `slti` exit test (a def of the index
      * before the next loop; lane n-f1). */
     for (k = 0; k < 4; k++) {
-        if (*(s32 *)((u8 *)resource + 0x134 + (k * 4)) != 0) {
-            overlay17DrawStrip(displayListPtr, *(s32 *)((u8 *)resource + 0x134 + (k * 4)));
+        if (*(void **)((u8 *)resource + 0x134 + (k * 4)) != NULL) {
+            overlay17DrawStrip(displayListPtr, *(void **)((u8 *)resource + 0x134 + (k * 4)));
         }
     }
     k = 0;
@@ -4043,14 +4043,14 @@ void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void
         }
 
     }
-    if (*(s32 *)((u8 *)resource + 0xD0) != 0) {
-        func_overlay_028_F00004D8_187CDA8(displayListPtr, vertexList, *(s32 *)((u8 *)resource + 0xD0));
+    if (*(void **)((u8 *)resource + 0xD0) != NULL) {
+        func_overlay_028_F00004D8_187CDA8(displayListPtr, vertexList, *(void **)((u8 *)resource + 0xD0));
     }
-    if (*(s32 *)((u8 *)resource + 0xD4) != 0) {
-        func_overlay_027_F0000624_187BFFC(displayListPtr, vertexList, triangleList, *(s32 *)((u8 *)resource + 0xD4));
+    if (*(void **)((u8 *)resource + 0xD4) != NULL) {
+        func_overlay_027_F0000624_187BFFC(displayListPtr, vertexList, triangleList, *(void **)((u8 *)resource + 0xD4));
     }
-    if (*(s32 *)((u8 *)resource + 0xD8) != 0) {
-        overlay37RenderEffect(displayListPtr, vertexList, *(s32 *)((u8 *)resource + 0xD8));
+    if (*(void **)((u8 *)resource + 0xD8) != NULL) {
+        overlay37RenderEffect(displayListPtr, vertexList, *(void **)((u8 *)resource + 0xD8));
     }
 }
 typedef struct {

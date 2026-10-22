@@ -145,7 +145,7 @@ void overlay42Resume(void) {
     overlay42ResumeReloc();
 }
 
-void overlay42DrawCapturedBuffer(s32 callbackArgument) {
+void overlay42DrawCapturedBuffer(void *callbackArgument) {
     s32 row;
     u16 *source;
     u32 width;

@@ -18,11 +18,11 @@ extern void overlay14SetActiveReloc(s32 active);
 extern void overlay14PrepareReloc(s32 step);
 extern void overlay14AdvanceReloc(s32 step);
 extern void overlay14RetreatReloc(s32 step);
-extern void overlay14DrawPrimaryReloc(s32 context);
-extern void overlay14DrawAlternateReloc(s32 context);
+extern void overlay14DrawPrimaryReloc(void *context);
+extern void overlay14DrawAlternateReloc(void *context);
 
 /* Pinned DKR v77/v80 and JFG scans found no exact donor for this body. */
-void overlay14UpdateTransition(s32 context, s32 step) {
+void overlay14UpdateTransition(void *context, s32 step) {
     overlay14PrepareReloc(step);
     if ((gOverlay14FlagC4 != 0) && (gOverlay14FlagC8 == 0)) {
         if ((gOverlay14ModeE4 != 1) && (gOverlay14EnabledF8 != 0)) {

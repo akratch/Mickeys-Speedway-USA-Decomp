@@ -62,7 +62,7 @@ typedef struct Overlay68DrawDescriptor {
 
 extern f32 overlay68MeasureVectorReloc(f32 x, f32 y, f32 z);
 extern void overlay68PrepareDrawReloc(Overlay68DrawObject *object);
-extern void overlay68SubmitEntryReloc(Overlay68Command **displayList, s32 mtx, s32 vertices,
+extern void overlay68SubmitEntryReloc(Overlay68Command **displayList, void *mtx, void *vertices,
                                       Overlay68DrawObject *object,
                                       s32 renderState,
                                       Overlay68DrawDescriptor *descriptor,
@@ -78,7 +78,7 @@ extern void overlay68SubmitEntryReloc(Overlay68Command **displayList, s32 mtx, s
  * comes from declaring five scalars above order[] and three between the
  * descriptor and entries[].
  */
-void overlay68DrawSortedEntries(Overlay68Command **displayList, s32 mtx, s32 vertices,
+void overlay68DrawSortedEntries(Overlay68Command **displayList, void *mtx, void *vertices,
                                 Overlay68DrawObject *object) {
     Overlay68VectorOwner *owner;
     Overlay68DrawEntry *entry;

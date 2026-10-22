@@ -25,6 +25,6 @@ void overlay56SplitTime(s32 value, s32 *minutes, s32 *seconds,
 void overlay56SetMode(s32 mode);
 void overlay56LoadResource(void);
 void overlay56ReleaseResource(void);
-void overlay56UnpackColor(s32 index, u32 *red, s32 *green, s32 *blue);
+void overlay56UnpackColor(s32 index, s32 *red, s32 *green, s32 *blue);
 
 #endif

@@ -21,8 +21,10 @@ extern u32 gOverlay20ActiveBits;
  * that left a count web holding the first colour across the compaction loop,
  * so its limit could not take it. The search stays bottom-tested: the `for`
  * spelling schedules two words differently. The marker walk still reuses the
- * parameter as its cursor; a separate cursor local costs nine words. */
-void overlay20RemoveEntry(s32 owner) {
+ * parameter as its cursor; a separate cursor local costs nine words. The
+ * parameter is the owner object the resident caller passes, so it is a byte
+ * pointer rather than an s32; the code is the same (2026-10-22). */
+void overlay20RemoveEntry(u8 *owner) {
     void *entry;
     s32 i;
 
@@ -47,10 +49,10 @@ void overlay20RemoveEntry(s32 owner) {
         gOverlay20Entries[i] = gOverlay20Entries[i + 1];
     }
 
-    owner = (s32)&gOverlay20MarkerEnd;
+    owner = &gOverlay20MarkerEnd;
     i = 31;
     do {
-        if (owner != 0) {
+        if (owner != NULL) {
             gOverlay20ActiveBits &= ~(1U << i);
             return;
         }

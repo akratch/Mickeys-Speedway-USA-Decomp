@@ -2057,7 +2057,7 @@ void func_800534C0(s32 i) {
     } while (i--);
 }
 
-void func_800534EC(s32 arg0) {
+void func_800534EC(void *displayList) {
     AnimPauseSlot *slot;
     s32 i;
 
@@ -2065,7 +2065,7 @@ void func_800534EC(s32 arg0) {
     i = 4;
     do {
         if (slot->unkB > 0) {
-            overlay41DrawItem(arg0, slot);
+            overlay41DrawItem(displayList, slot);
         }
         slot++;
     } while (i--);

@@ -56,7 +56,7 @@ extern s32 D_8007A1A8;
 extern s32 D_8007A194;
 extern s32 D_8007A198;
 extern s32 D_8007A67C;
-extern s32 D_80078F7C;
+extern void *D_80078F7C;
 extern s32 D_8007C1A0;
 extern u8 D_8007A1A0;
 extern u32 D_8007A1CC;

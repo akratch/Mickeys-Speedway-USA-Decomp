@@ -30,7 +30,7 @@ extern void func_800084C4(Overlay12Gfx **displayList,
                           u32 secondary, s32 flags);
 extern void sprSetIA2ColOverride(u8 firstR, u8 firstG, u8 firstB,
                           u8 secondR, u8 secondG, u8 secondB);
-extern void camDoSpriteDirect(Overlay12Gfx **displayList, s32 *matrix,
+extern void camDoSpriteDirect(Overlay12Gfx **displayList, void **matrix,
                           Overlay12Vertex **vertices, void *resource,
                           s32 x, s32 y, s32 z, s32 arg7, f32 scale,
                           f32 arg9, f32 frame, s32 mode,
@@ -76,7 +76,7 @@ extern u8 gOverlay12TrianglesB[];
  * loops initialise their cursor in the for-init.
  */
 void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
-                                       s32 *matrixPtr,
+                                       void **matrixPtr,
                                        Overlay12Vertex **verticesPtr) {
     s32 i;
     s32 *color;
@@ -108,7 +108,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     s16 unused2;
     volatile s16 unused;
     Overlay12Gfx *displayList;
-    s32 matrix;
+    void *matrix;
     s32 k;
 
     displayList = *displayListPtr;

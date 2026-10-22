@@ -359,7 +359,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     *matrixCursor = mtx;
 }
 
-void overlay56UnpackColor(s32 index, u32 *red, s32 *green, s32 *blue) {
+void overlay56UnpackColor(s32 index, s32 *red, s32 *green, s32 *blue) {
     u32 *color = &gOverlay56Colors[index];
     *red = *color >> 24;
     *green = (*color >> 16) & 0xFF;

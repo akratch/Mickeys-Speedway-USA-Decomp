@@ -645,7 +645,7 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
         func_8000C400(targetUpdateRate);
     }
     if (D_80079274 != 0) {
-        overlay71UpdateCoordinates((void **) (s32) targetUpdateRate);
+        overlay71UpdateCoordinates(targetUpdateRate);
     }
     if ((D_8007A128 != 0) && (temp_s2 == 1)) {
         camEnableUserView(0, 1);
@@ -665,7 +665,7 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
             }
             if (D_80079278 > 0) {
                 if (D_800C9534 == 0) {
-                    overlay100ApplyValue((void **) (s32) targetUpdateRate);
+                    overlay100ApplyValue(targetUpdateRate);
                 }
                 overlay100ApplyToValue(&D_800C9520);
             }
@@ -689,7 +689,7 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
     if (D_8007D6B0 > 0) {
         overlay40DrawEntries(&D_800C9520);
     }
-    func_800534EC((s32) &D_800C9520);
+    func_800534EC(&D_800C9520);
     if (D_800D6C3E != 0) {
         overlay40DrawTintRectangle(&D_800C9520);
     }
@@ -1444,10 +1444,10 @@ void trackUpdateLighting(s32 copySegmentData, s32 updateRate) {
             }
         }
         if (runlinkIsModuleLoaded(16) != 0) {
-            overlay16ApplyGradient(&D_800C95B4, D_800792E8, updateRate);
+            overlay16ApplyGradient(D_800C95B4, D_800792E8, updateRate);
         } else if ((D_800D6C54 != 0xFF) || (D_800D6C4C != 0)) {
             /* Runtime relocation: overlay 40 +0x690 (overlay40FadeRecords). */
-            overlay40FadeRecords(&D_800C95B4, D_800792E8, updateRate);
+            overlay40FadeRecords(D_800C95B4, D_800792E8, updateRate);
         } else {
             func_8000D820();
         }
@@ -2026,10 +2026,10 @@ void func_8000E920(s32 arg0, s32 arg1) {
         }
     }
     if (runlinkIsModuleLoaded(0xD) != 0) {
-        overlay13DrawActive((s32) &D_800C9520, &D_800C9524, &D_800C9528);
+        overlay13DrawActive(&D_800C9520, &D_800C9524, &D_800C9528);
     }
     if (runlinkIsModuleLoaded(0x22) != 0) {
-        overlay34SortAndDraw((s32) &D_800C9520, &D_800C9528);
+        overlay34SortAndDraw(&D_800C9520, &D_800C9528);
     }
     diRcpTrace(D_800C9520, "track/track.c", 0x64E);
     for (index = selectedCount - 1; index >= 0;) {
@@ -2045,22 +2045,22 @@ void func_8000E920(s32 arg0, s32 arg1) {
                               (TrackSkyObject *) object);
                 break;
             case 0x1D:
-                overlay69DrawSortedGeometry((s32) &D_800C9520, &D_800C9524,
+                overlay69DrawSortedGeometry(&D_800C9520, &D_800C9524,
                                             &D_800C9528, object);
                 break;
             case 0x49:
-                overlay88DrawSortedGeometry((s32) &D_800C9520, &D_800C9524,
+                overlay88DrawSortedGeometry(&D_800C9520, &D_800C9524,
                                             &D_800C9528, object);
                 break;
             case 0x3F:
-                overlay68DrawSortedEntries((s32) &D_800C9520, &D_800C9524,
+                overlay68DrawSortedEntries(&D_800C9520, &D_800C9524,
                                            &D_800C9528, object);
                 break;
             case 0x39:
-                func_overlay_026_F0001158_187B550((s32) &D_800C9520, &D_800C9524, object);
+                func_overlay_026_F0001158_187B550(&D_800C9520, &D_800C9524, object);
                 break;
             case 0x3A:
-                overlay29DrawGroups((s32) &D_800C9520, &D_800C9524, object);
+                overlay29DrawGroups(&D_800C9520, &D_800C9524, object);
                 break;
             }
         }

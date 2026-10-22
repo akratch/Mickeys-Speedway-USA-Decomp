@@ -23,7 +23,7 @@ typedef struct Overlay84InitObject {
 
 extern Overlay84InitObject *gOverlay84Object;
 
-void overlay84InitState(Overlay84InitObject *object, f32 unused) {
+void overlay84InitState(Overlay84InitObject *object, void *entry) {
     Overlay84InitState *state = object->state;
 
     state->field0 = 0;

@@ -34,14 +34,14 @@ typedef struct Overlay29Context {
     Overlay29Node **nodeTable;
 } Overlay29Context;
 
-extern void camPushModelMtx(Gfx **, s32, Overlay29Group *, f32, f32);
+extern void camPushModelMtx(Gfx **, void *, Overlay29Group *, f32, f32);
 extern void camRestoreModelMtx(Gfx **);
 extern void texDPInit(Gfx **);
 
 /* PROVENANCE: command expansions use the existing SDK macros in
  * n_audio/mbi.h. Node layout, indexing, call order and command words are
  * reconstructed from Mickey's own overlay. */
-void overlay29DrawGroups(Gfx **dl, s32 drawContext,
+void overlay29DrawGroups(Gfx **dl, void *drawContext,
                          Overlay29Context *context) {
     Overlay29RenderState *render;
     Overlay29Group *group;

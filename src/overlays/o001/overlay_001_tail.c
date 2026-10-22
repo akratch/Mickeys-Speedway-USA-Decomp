@@ -73,7 +73,7 @@ extern void overlay1GetRomlistInfoReloc(O1VariableRecord **records, s32 *length,
 /* newIndex is the decoded record value; next is the candidate global maximum.
  * Keeping those roles distinct leaves a redundant assignment after optimization
  * but preserves IDO's shipped allocation. See docs/cleanup-queue.md. */
-void overlay1AssignRecordIndex(s32 unused, O1RecordOwner *owner) {
+void overlay1AssignRecordIndex(void *object, O1RecordOwner *owner) {
     O1VariableRecord *records;
     O1VariableRecord *record;
     s32 *recordIndex;
@@ -2169,7 +2169,7 @@ extern void overlay1InitializeModeState(s32 value);
  *  - both switch arms read and write `otherState->flags` directly, no carrier.
  *  - an unused `s32 pad` after `count` keeps the 0x70 frame (count at 0x68).
  *  - `while (count--)`; the range squared stays a named `f32` (inline, 25). */
-void overlay1UpdateRangeFlags(Overlay1RangeObject *object, void *unused) {
+void overlay1UpdateRangeFlags(Overlay1RangeObject *object, s32 updateRate) {
     Overlay1RangeConfig *config;
     s32 count;
     s32 pad;
@@ -2298,7 +2298,7 @@ typedef struct Overlay1NearbyObject {
  *  - an empty test of `other`, which counts as one more reference and so
  *    ties `other` with `otherState` for the first colour (the tie keeps
  *    `other`); it emits nothing. */
-void overlay1ConsumeNearbyPending(Overlay1NearbyObject *object, void *unused) {
+void overlay1ConsumeNearbyPending(Overlay1NearbyObject *object, s32 updateRate) {
     Overlay1NearbyState *state;
     f32 radiusSquared;
     s32 count;
@@ -2380,7 +2380,7 @@ extern Overlay1SearchObject **func_8000572C(s32 *first, s32 *limit);
 extern Overlay1SearchObject *func_80005820(u8 key);
 extern void overlay4RemoveObject(Overlay1SearchObject *object);
 
-void overlay1SearchNearby(Overlay1SearchObject *object, void *unused) {
+void overlay1SearchNearby(Overlay1SearchObject *object, s32 updateRate) {
     Overlay1SearchState *range;
     s32 first;
     s32 limit;
@@ -2392,7 +2392,7 @@ void overlay1SearchNearby(Overlay1SearchObject *object, void *unused) {
     f32 delta;
     f32 threshold;
 
-    (void)unused;
+    (void)updateRate;
     range = object->state;
     objects = func_8000572C(&first, &limit);
     index = first;

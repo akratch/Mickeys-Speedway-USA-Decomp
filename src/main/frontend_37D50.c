@@ -142,12 +142,13 @@ void func_800371BC(void) {
  * argument setup and the s0 carrier it forced); the three tail byte stores
  * are in address order; the first frame count is not a declared variable --
  * D_8007BE94 re-spells the expression and uopt CSEs it; and the
- * overlay99ReleaseEntries argument is `outTicks | 0`. uopt copy-propagates a bare
- * variable into a call argument but not into an operand of an operator, so
- * the plain `outTicks` argument was replaced by the expression temp and the two
- * webs traded a1/t0. The `| 0` keeps outTicks itself as the argument, as the
- * target does, and folds away before code generation (`& -1` measures the
- * same). */
+ * overlay99ReleaseEntries argument was `outTicks | 0`. uopt copy-propagates a
+ * bare variable into a call argument but not into an operand of an operator,
+ * so the plain `outTicks` argument was replaced by the expression temp and the
+ * two webs traded a1/t0. overlay99ReleaseEntries reads no argument, and with
+ * the other three edits in place the call without arguments is byte-identical
+ * (2026-10-22): mode, outTicks and inTicks sit in a0-a2 because they are live
+ * across func_800371BC, not because the trap call passes them. */
 void func_80037414(s32 mode, f32 outTime, f32 inTime, s32 red, s32 green,
                    s32 blue, s32 restart) {
     s32 outTicks;
@@ -162,7 +163,7 @@ void func_80037414(s32 mode, f32 outTime, f32 inTime, s32 red, s32 green,
     }
     if ((D_8007BEA8 != 0) &&
         ((D_8007BE90 == 4) || (D_8007BE90 == 5))) {
-        overlay99ReleaseEntries(mode, outTicks | 0, inTicks);
+        overlay99ReleaseEntries();
     }
     if ((restart == 0) || (D_8007BEA8 == 0)) {
         if ((mode & 1) && (inTicks != 0)) {
@@ -266,7 +267,7 @@ void func_800376CC(s32 updateRate) {
     if ((old_state != 0) && (D_8007BEA8 == 0) &&
         ((D_8007BEB8 = 1, (D_8007BE90 == 4)) ||
          (D_8007BE90 == 5))) {
-        overlay99ReleaseEntries(&D_8007BEAC, done, updateRate, &D_8007BEA8);
+        overlay99ReleaseEntries();
     }
 }
 /* The front-end backdrop's radial shading pass: a 17x17 vertex grid whose

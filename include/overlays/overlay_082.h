@@ -43,8 +43,8 @@ extern const u8 gO82DataBase[];
 void overlay82PlayEventReloc(u16 eventId, void *nullableHandle);
 void overlay82SetChannelReloc(O82Resource *resource, s32 channel, s32 value);
 
-void overlay82Init(Overlay82Object *object, f32 updateRate);
-void overlay82Update(O82Object *object, f32 updateRate);
+void overlay82Init(Overlay82Object *object, void *entry);
+void overlay82Update(O82Object *object, s32 updateRate);
 s32 overlay82GetSelection(Overlay82Object *object);
 u32 overlay82IsActive(Overlay82Object *object);
 void overlay82Disable(Overlay82Object *object);

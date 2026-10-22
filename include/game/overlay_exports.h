@@ -13,8 +13,9 @@
  * targets.
  *
  * A prototype is the overlay's own C definition with every overlay-private
- * pointer type spelled `void *`: the resident TUs cannot see those types, and
- * a pointer's spelling does not change the call.
+ * or untyped pointer type spelled `void *` (a `void **`, or a byte pointer the
+ * definition walks, included): the resident TUs cannot see those types, and a
+ * pointer's spelling does not change the call.
  *
  * An old-style declaration, `T name();`, marks a call the shipped resident
  * code makes without a prototype in scope, because the definition's prototype
@@ -28,10 +29,11 @@
  *   [codegen] the prototype converts an argument the shipped call passes as
  *             it is (an int for the definition's f32 or narrow parameter).
  *
- * Each is a disagreement between the two sides' reconstructed types, and
- * reconciling either side is what would admit the prototype. Two prototypes
- * keep the parameter types the resident call compiles against instead of the
- * definition's; their comments say where the two differ.
+ * Such a disagreement is usually one side's reconstruction, and the tag stays
+ * only with the evidence that the original made the call that way. One does:
+ * func_overlay_029_F00010C4_187E374. The other 116 tagged declarations were
+ * reconciled against the definitions' argument-register use, all
+ * byte-identical (docs/overlays.md section 5.1).
  */
 
 #include "PR/ultratypes.h"
@@ -42,32 +44,32 @@ void overlay1BuildObjectMappings(s32 unused);
 void func_overlay_001_F0002B4C_184EF2C(s32 elapsed);
 void func_overlay_001_F0003258_184F638(void);
 void overlay1InitializeGaugeObjects(void);
-void overlay1AssignRecordIndex(); /* [arity] */
+void overlay1AssignRecordIndex(void *object, void *owner);
 void overlay1TransitionState(void *obj, void *state, s32 updateRate);
 void overlay1UpdateObjectPhysics(void *object, s32 updateRate);
 void overlay1StartTimerCallbacks(void *object, s32 amount);
-void overlay1CopyBytes(); /* [arity] */
-void overlay1UpdateRangeFlags(); /* [types] */
-void overlay1InitMotion(); /* [arity] */
-void overlay1ConsumeNearbyPending(); /* [types] */
-void overlay1InitRange(); /* [arity] */
-void overlay1SearchNearby(); /* [types] */
+void overlay1CopyBytes(void *object, void *init);
+void overlay1UpdateRangeFlags(void *object, s32 updateRate);
+void overlay1InitMotion(void *object, void *init);
+void overlay1ConsumeNearbyPending(void *object, s32 updateRate);
+void overlay1InitRange(void *object, void *init);
+void overlay1SearchNearby(void *object, s32 updateRate);
 
 /* overlay 2 */
-void func_overlay_002_F0001DF8_1858BF0(); /* [arity] */
-void overlay2CopyColor(); /* [arity] */
+void func_overlay_002_F0001DF8_1858BF0(void *object, void *input);
+void overlay2CopyColor(void *object, u8 *color);
 
 /* overlay 4 */
-void overlay4InitializeObjectMotion(); /* [arity] */
+void overlay4InitializeObjectMotion(void *object, void *config);
 void overlay4UpdateObjectMotion(void *object, s32 updateRate);
 
 /* overlay 6 */
 void overlay6Empty(void);
-void overlay6Noop(); /* [types] */
+void overlay6Noop(void *cameras, s32 cameraCount);
 
 /* overlay 7 */
-void func_overlay_007_F0000324_185C1AC(); /* [types] */
-void overlay7DispatchModes(); /* [arity] */
+void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed);
+void overlay7DispatchModes(void *first, void *second);
 void overlay7CommitSelection(s32 selection);
 void overlay7InitPool(void);
 
@@ -76,29 +78,31 @@ void *overlay8GetIndexed(void *object);
 void func_overlay_008_F0000058_185DDB0(void *owner, s32 updateRate);
 void func_overlay_008_F0000894_185E5EC(void *owner, void *state, s32 updateRate);
 s32 func_overlay_008_F0000E88_185EBE0(void *peer, void *record);
-void func_overlay_008_F00042A8_1862000(); /* [codegen] */
+void func_overlay_008_F00042A8_1862000(void *actor, void *owner, f32 update);
 
 /* overlay 9 */
 void func_overlay_009_F0000000_1866678(void *object, s32 steps);
-void func_overlay_009_F00010B4_186772C(); /* [codegen] */
+void func_overlay_009_F00010B4_186772C(void *out, void *owner, f32 stepsFloat);
 
 /* overlay 11 */
 void overlay11Initialize(s32 argument);
-void func_overlay_011_F0000150_1868998(); /* [types] */
+void func_overlay_011_F0000150_1868998(void *displayList, void *matrix, void *vertices,
+                                       s32 updateRate);
 void overlay11ReleaseCurrentGroup(void);
 
 /* overlay 12 */
 void func_overlay_012_F00000C4_186D344(void);
 void func_overlay_012_F00003A8_186D628(s32 updateRate);
-void func_overlay_012_F0000910_186DB90(); /* [types] */
+void func_overlay_012_F0000910_186DB90(void *displayListPtr, void *matrixPtr,
+                                       void *verticesPtr);
 
 /* overlay 13 */
 void overlay13ProcessActive(s32 arg);
-void overlay13DrawActive(); /* [types] */
+void overlay13DrawActive(void *commands, void *mtx, void *vertices);
 
 /* overlay 14 */
 void func_overlay_014_F0000000_186F8D8(void);
-void overlay14UpdateTransition(); /* [types] */
+void overlay14UpdateTransition(void *context, s32 step);
 
 /* overlay 15 */
 void *overlay15GetResource10(void);
@@ -112,16 +116,14 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height, f32 projectionS
 
 /* overlay 16 */
 void overlay16InitializeBuffer(u8 *config);
-void overlay16ApplyGradient(); /* [types] */
+void overlay16ApplyGradient(s32 *active, void *context, s32 phaseStep);
 
 /* overlay 17 */
-/* Resident-typed: the resident call narrows its second to fourth
- * arguments to u8, s16 and u8, which the definition declares s32, a pointer and s32. */
-void *overlay17CreateChain(void *owner, u8 kind, s16 angle, u8 index,
+void *overlay17CreateChain(void *owner, s32 count, s32 textureId, s32 materialScale,
                            f32 x, f32 y, f32 z, f32 radius, u8 red, u8 green, u8 blue,
                            u8 alpha);
 void overlay17ReleaseChain(void *resource);
-void overlay17DrawStrip(); /* [codegen] */
+void overlay17DrawStrip(void *commands, void *strip);
 
 /* overlay 18 */
 void overlay18Load(void);
@@ -133,61 +135,67 @@ void overlay19Dispatch(void *object);
 /* overlay 20 */
 void overlay20ReleaseTree(void *node);
 void overlay20ReleaseHandle(void *state);
-void overlay20UpdateObjectResource(); /* [arity] */
+void overlay20UpdateObjectResource(void *object, void *config);
 void overlay20DrawResource(void *gfxP, void *object);
 void overlay20ReleaseEntry(void *owner);
 void overlay20MarkNested(void *owner);
-void overlay20CreateEntry(); /* [arity] */
-void overlay20RemoveEntry(); /* [types] */
+void overlay20CreateEntry(void *owner, void *config);
+void overlay20RemoveEntry(void *owner);
 void overlay20AdvanceEntries(s32 amount);
 
 /* overlay 21 */
-void overlay21RegisterPlane(); /* [arity] */
+void overlay21RegisterPlane(void *object, void *init);
 void overlay21ApplyPriorities(s32 planeId, s32 entryCount, void *entries);
 
 /* overlay 22 */
-void func_overlay_022_F0000000_1878108(); /* [arity] */
+void func_overlay_022_F0000000_1878108(void *object, void *init);
 void func_overlay_022_F00002B0_18783B8(void *object, s32 updateRate);
-void func_overlay_022_F0000D30_1878E38(); /* [arity] */
+void func_overlay_022_F0000D30_1878E38(void *object, s32 flags);
 
 /* overlay 23 */
 void overlay23SpawnAttachments(void *object, void *animation);
-void overlay23Init(); /* [arity] */
+void overlay23Init(void *object, void *init);
 void overlay23Update(void *object, s32 updateRate);
-void overlay23RenderEffect(); /* [types] */
+void overlay23RenderEffect(void *object, void *displayList, void *renderArg0,
+                           void *renderArg1);
 
 /* overlay 24 */
-void overlay24Init(); /* [arity] */
+void overlay24Init(void *object, void *init);
 void overlay24Update(void *object, s32 updateRate);
 void overlay24RenderState(void *commands, void *mtx, void *vertices, void *object);
 
 /* overlay 25 */
-void overlay25InitializeEffect(); /* [arity] */
+void overlay25InitializeEffect(void *object, void *init);
 void overlay25UpdateEffect(void *object, s32 updateRate);
 
 /* overlay 26 */
-void func_overlay_026_F0000000_187A3F8(); /* [arity] */
+void func_overlay_026_F0000000_187A3F8(void *object, void *config);
 void func_overlay_026_F00001A0_187A598(void *object, s32 updateRate);
-void func_overlay_026_F0000D24_187B11C(); /* [arity] */
-void func_overlay_026_F0001158_187B550(); /* [types] */
+void func_overlay_026_F0000D24_187B11C(void *object, s32 mode);
+void func_overlay_026_F0001158_187B550(void *dl, void *drawContext, void *context);
 
 /* overlay 27 */
-void overlay27Init(); /* [arity] */
+void overlay27Init(void *object, void *init);
 void func_overlay_027_F0000064_187BA3C(void *object, s32 updateRate);
-void func_overlay_027_F0000624_187BFFC(); /* [codegen] */
+void func_overlay_027_F0000624_187BFFC(void *commands, void *mtx, void *vertices,
+                                       void *object);
 void overlay27UpdateCoordinates(s32 amount);
 s32 overlay27CanUse(void *object);
 
 /* overlay 28 */
-void overlay28InitializeWork(); /* [arity] */
+void overlay28InitializeWork(void *owner, void *source);
 void overlay28UpdateWork(void *owner, s32 updateRate);
-void func_overlay_028_F00004D8_187CDA8(); /* [codegen] */
+void func_overlay_028_F00004D8_187CDA8(void *dl, void *matrixArg, void *owner);
 
 /* overlay 29 */
-void func_overlay_029_F000042C_187D6DC(); /* [arity] */
+void func_overlay_029_F000042C_187D6DC(void *object, void *init);
 void func_overlay_029_F00005C4_187D874(void *object, s32 updateRate);
+/* The original's own mismatch. anim.c's func_80056274 passes a third
+ * argument, firstTarget, which uopt keeps in a2 across sqrtf for this call;
+ * dropping it changes func_80056274. The definition reads a0 and a1 only, and
+ * a third formal would home a2 and grow it. The other eight calls pass two. */
 void func_overlay_029_F00010C4_187E374(); /* [arity] */
-void overlay29DrawGroups(); /* [types] */
+void overlay29DrawGroups(void *dl, void *drawContext, void *context);
 
 /* overlay 31 */
 void overlay31InitializeBuffers(s32 maxTriangle, s32 maxRectangle, s32 maxSprite,
@@ -202,42 +210,42 @@ void overlay33CallB(void);
 void overlay34InitStorage(s32 count);
 void overlay34ResetStorage(void);
 void overlay34UpdateRecords(s32 updateRate);
-void overlay34SortAndDraw(); /* [types] */
+void overlay34SortAndDraw(void *commands, void *vertices);
 
 /* overlay 35 */
 void func_overlay_035_F0000000_1881CE0(s32 modelId, s32 value1, s32 value2, s32 value3,
                                        s32 value4, s32 value5);
 
 /* overlay 36 */
-void overlay36InitObject(); /* [arity] */
+void overlay36InitObject(void *object, void *entry);
 void overlay36FlushQueue(void);
 void overlay36UpdateInteractiveEntity(void *entity, s32 elapsed);
 
 /* overlay 37 */
-void overlay37Init(); /* [arity] */
+void overlay37Init(void *object, void *init);
 void overlay37Update(void *object, s32 ticks);
-void overlay37RenderEffect(); /* [codegen] */
-s32 overlay37RecordActive(); /* [types] */
+void overlay37RenderEffect(void *commands, void *renderContext, void *object);
+s32 overlay37RecordActive(s32 index);
 
 /* overlay 38 */
-void func_overlay_038_F0000000_1885D10(); /* [arity] */
+void func_overlay_038_F0000000_1885D10(void *object, void *descriptor);
 void func_overlay_038_F0000154_1885E64(void *object, s32 ticks);
-void func_overlay_038_F000047C_188618C(); /* [types] */
+void func_overlay_038_F000047C_188618C(void *dList, void *context, void *object);
 
 /* overlay 39 */
-void overlay39Write(); /* [types] */
-void overlay39Reset(); /* [types] */
+void overlay39Write(u8 *source, void *mq);
+void overlay39Reset(void *mq);
 void overlay39Read(u8 *destination);
 
 /* overlay 40 */
-void overlay40AddEntry(); /* [arity] */
-void overlay40RemoveEntry(); /* [arity] */
-void overlay40UpdateEntries(); /* [arity] */
+void overlay40AddEntry(s32 id, s32 red, s32 green, s32 blue, s32 unused);
+void overlay40RemoveEntry(s32 id);
+void overlay40UpdateEntries(s32 amount);
 void overlay40DrawEntries(void *displayList);
 void overlay40SetValues(s32 value0, s32 value1, s32 value2, s32 value3, s32 value4);
 void overlay40Interpolate(s32 amount);
 void overlay40DrawTintRectangle(void *displayList);
-void overlay40FadeRecords(); /* [types] */
+void overlay40FadeRecords(s32 *enabled, void *context, s32 amount);
 
 /* overlay 41 */
 void func_overlay_041_F0000000_1887338(s32 amount);
@@ -246,29 +254,29 @@ void func_overlay_041_F0000854_1887B8C(void *input, f32 amount, s32 updateRate,
                                        s32 argument);
 void func_overlay_041_F0001650_1888988(void *object, s32 value1, s32 value3, s32 value5,
                                        s32 value7, f32 amount, s32 alternateColors);
-void overlay41Ignore(); /* [arity] */
+void overlay41Ignore(void *object, s32 value1, s32 value2, s32 value3, s32 value4,
+                     s32 value5, s32 value6);
 void overlay41SpawnItems(s32 rootIndex, s32 count, s32 mode, s32 centerX, s32 centerY,
                          s32 radiusX, s32 radiusY, s32 centerZ, s32 radiusZ);
 void func_overlay_041_F000195C_1888C94(s32 value2, s32 timer, s32 value4, s32 value6,
                                        s32 value8, s32 value9, s32 valueA);
 void overlay41TickTransitions(s32 step);
-void overlay41DrawItem(); /* [types] */
+void overlay41DrawItem(void *displayList, void *item);
 
 /* overlay 42 */
 void overlay42Init(void);
-void overlay42DrawCapturedBuffer(); /* [types] */
+void overlay42DrawCapturedBuffer(void *callbackArgument);
 void overlay42Present(void);
 
 /* overlay 43 */
 s32 func_overlay_043_F0000000_1889FD0(void *input);
 void func_overlay_043_F0000194_188A164(void);
 void func_overlay_043_F0000280_188A250(void *owner);
-/* Resident-typed: the resident passes an f32 third argument where the
- * definition declares an unused pointer. */
 s32 func_overlay_043_F0000324_188A2F4(void *input, s32 useNodes, f32 updateRate);
 
 /* overlay 45 */
-void func_overlay_045_F0000764_188CBBC(); /* [types] */
+void func_overlay_045_F0000764_188CBBC(void *displayList, void *matrix, void *arg2,
+                                       void *arg3, s32 mode, s32 updateRate);
 
 /* overlay 46 */
 void overlay46InitializeState(void);
@@ -295,12 +303,12 @@ void refractOutput(void);
 
 /* overlay 50 */
 void func_overlay_050_F0000000_1896970(void);
-void func_overlay_050_F0000334_1896CA4(); /* [types] */
+void func_overlay_050_F0000334_1896CA4(void *object, s32 updateRate);
 void overlay50Cleanup(void);
 
 /* overlay 51 */
 void overlay51Initialize(void);
-void func_overlay_051_F00000D0_18999D0(); /* [types] */
+void func_overlay_051_F00000D0_18999D0(void *object, s32 updateRate);
 void overlay51ReleaseState(void);
 
 /* overlay 52 */
@@ -327,7 +335,7 @@ void overlay55ReleaseAll(void);
 void overlay56SetMode(s32 mode);
 void func_overlay_056_F00001A0_18A2F18(void *displayList, void *matrixCursor,
                                        s32 updateRate);
-void overlay56UnpackColor(); /* [types] */
+void overlay56UnpackColor(s32 index, s32 *red, s32 *green, s32 *blue);
 
 /* overlay 57 */
 void func_overlay_057_F0000000_18A3BF8(void);
@@ -367,44 +375,45 @@ void func_overlay_066_F0000040_18C64A8(void *commands);
 void overlay68CreatePrimary(void);
 void overlay68CreateSecondary(void);
 void overlay68ReleaseSecondary(void);
-void overlay68CreatePayload(); /* [types] */
+void overlay68CreatePayload(void *entry);
 void overlay68AttachObject(void *object);
 void overlay68UpdateTrail(s32 updateRate);
 void overlay68PromoteSecondary(void);
-void overlay68InitializeObject(); /* [arity] */
+void overlay68InitializeObject(void *object, void *init);
 void overlay68UpdateAnimation(void *object, s32 updateRate);
-void overlay68DrawSortedEntries(); /* [types] */
+void overlay68DrawSortedEntries(void *displayList, void *mtx, void *vertices, void *object);
 void overlay68RebuildSecondaryEntry(s32 kind);
 void overlay68ReleaseTertiary(void);
 s32 overlay68CheckKind(s32 kind);
 
 /* overlay 69 */
-void overlay69Init(); /* [arity] */
+void overlay69Init(void *object, void *entry);
 void overlay69UpdateAnchor(void *object, s32 updateContext);
-void overlay69DrawSortedGeometry(); /* [types] */
+void overlay69DrawSortedGeometry(void *commands, void *renderArg1, void *renderArg2,
+                                 void *object);
 
 /* overlay 70 */
-void func_overlay_070_F0000000_18C91C8(); /* [arity] */
+void func_overlay_070_F0000000_18C91C8(void *object, void *input);
 void func_overlay_070_F00000D8_18C92A0(void *object, s32 ticks);
 void func_overlay_070_F0000384_18C954C(void *object);
 
 /* overlay 71 */
 void func_overlay_071_F0000000_18C9B20(void *object, void *input, s32 preserveState);
 void func_overlay_071_F0000278_18C9D98(void *object);
-void overlay71UpdateCoordinates(); /* [types] */
-void func_overlay_071_F0000870_18CA390(); /* [types] */
+void overlay71UpdateCoordinates(s32 amount);
+void func_overlay_071_F0000870_18CA390(void *commands, void *context, void *object);
 
 /* overlay 72 */
-void overlay72Init(); /* [arity] */
-void overlay72Update(); /* [codegen] */
+void overlay72Init(void *object, void *config);
+void overlay72Update(void *object, s32 updateRate);
 
 /* overlay 73 */
 void func_overlay_073_F0000000_18CAAC0(void *object, void *header, s32 preserveState);
 void func_overlay_073_F0000190_18CAC50(void *object, s32 updateRate);
-void func_overlay_073_F0000D70_18CB830(); /* [types] */
+void func_overlay_073_F0000D70_18CB830(void *commands, void *context, void *object);
 
 /* overlay 74 */
-void overlay74Init(); /* [arity] */
+void overlay74Init(void *object, void *init);
 void overlay74Update(void *object, s32 amount);
 
 /* overlay 75 */
@@ -413,8 +422,8 @@ void overlay75UpdateMovingObject(void *object, s32 updateRate);
 void overlay75MarkSlot(s32 slot);
 
 /* overlay 76 */
-void overlay76Register(); /* [arity] */
-void overlay76Update(); /* [codegen] */
+void overlay76Register(void *object, void *entry);
+void overlay76Update(void *object, s32 updateRate);
 void overlay76TriggerRandom(void);
 
 /* overlay 77 */
@@ -424,113 +433,115 @@ void overlay77EnsureSelection(void);
 void overlay77RunCallback(void);
 
 /* overlay 78 */
-void overlay78Init(); /* [arity] */
+void overlay78Init(void *object, void *config);
 void overlay78Update(void *object, s32 updateRate);
 
 /* overlay 79 */
-void func_overlay_079_F0000000_18CCFA0(); /* [types] */
+void func_overlay_079_F0000000_18CCFA0(void *object, void *config, s32 preserveState);
 void func_overlay_079_F0000134_18CD0D4(void *object, s32 updateRate);
-void overlay79SetLink(); /* [arity] */
+void overlay79SetLink(void *object, void *entry);
 void func_overlay_079_F0001290_18CE230(void *object, s32 unused1);
-void overlay79InitState(); /* [arity] */
+void overlay79InitState(void *object, void *entry);
 void overlay79UpdateTimers(void *object, s32 step);
 
 /* overlay 80 */
-void overlay80InitializeContact(); /* [arity] */
+void overlay80InitializeContact(void *object, void *init);
 void overlay80UpdateContact(void *object, s32 ticks);
 
 /* overlay 81 */
 void overlay81Init(void *object, void *init, s32 unused);
 void overlay81Update(void *object, s32 updateRate);
-void overlay81InitState(); /* [arity] */
+void overlay81InitState(void *object, void *init);
 void overlay81CheckNearby(void *object, s32 unused);
 
 /* overlay 82 */
-void overlay82Init(); /* [arity] */
-void overlay82Update(); /* [codegen] */
+void overlay82Init(void *object, void *entry);
+void overlay82Update(void *object, s32 updateRate);
 
 /* overlay 83 */
-void overlay83BuildBatch(); /* [arity] */
-void overlay83DrawEntries(); /* [types] */
+void overlay83BuildBatch(void *parent, void *source);
+void overlay83DrawEntries(void *object, s32 updateRate);
 
 /* overlay 84 */
-void overlay84InitState(); /* [arity] */
+void overlay84InitState(void *object, void *entry);
 void overlay84InitializeAndUpdate(void *object, s32 arg);
-void overlay84CopyPair(); /* [arity] */
+void overlay84CopyPair(void *dst, void *src);
 
 /* overlay 85 */
-void overlay85Configure(); /* [arity] */
+void overlay85Configure(void *state, void *config);
 void overlay85Update(void *object, s32 step);
 
 /* overlay 86 */
-void overlay86Init(); /* [arity] */
+void overlay86Init(void *object, void *entry);
 void func_overlay_086_F0000474_18D22AC(void *object, s32 steps);
 
 /* overlay 87 */
-void overlay87InitializeObject(); /* [types] */
+void overlay87InitializeObject(void *object, void *config, s32 preserveState);
 void func_overlay_087_F0000128_18D3090(void *object, s32 updateRate);
 void overlay87ReleaseCurrent(void);
 
 /* overlay 88 */
-void overlay88Init(); /* [arity] */
+void overlay88Init(void *object, void *entry);
 void overlay88UpdateAnchor(void *object, s32 updateContext);
-void overlay88DrawSortedGeometry(); /* [types] */
+/* overlay69DrawSortedGeometry's source, compiled again under this name. */
+void overlay88DrawSortedGeometry(void *commands, void *renderArg1, void *renderArg2,
+                                 void *object);
 
 /* overlay 89 */
-void overlay89InitializeEffect(); /* [arity] */
+void overlay89InitializeEffect(void *object, void *init);
 void overlay89UpdateStateAndParticles(void *object, s32 updateRate);
 
 /* overlay 90 */
-void overlay90Initialize(); /* [arity] */
+void overlay90Initialize(void *owner, void *config);
 void func_overlay_090_F00000FC_18D4BF4(void *owner, s32 updateRate);
 
 /* overlay 91 */
-void overlay91Init(); /* [arity] */
+void overlay91Init(void *object, void *entry);
 void overlay91UpdateTimeline(void *object, s32 elapsed);
-void overlay91Render(); /* [codegen] */
+void overlay91Render(void *displayList, void *renderContext, void *vertices, void *object);
 
 /* overlay 92 */
-void overlay92Init(); /* [arity] */
+void overlay92Init(void *object, void *init);
 void func_overlay_092_F0000308_18D6228(void *owner, void *config, void *state,
                                        s32 update);
 
 /* overlay 93 */
-void overlay93Init(); /* [arity] */
-void overlay93Update(); /* [codegen] */
+void overlay93Init(void *object, void *config);
+void overlay93Update(void *object, s32 updateRate);
 
 /* overlay 94 */
-void overlay94InitializeController(); /* [arity] */
+void overlay94InitializeController(void *object, void *init);
 void overlay94UpdateController(void *object, s32 updateRate);
 
 /* overlay 95 */
-void overlay95NoOp(); /* [arity] */
+void overlay95NoOp(void *object, void *entry);
 void overlay95Update(void *object, s32 updateRate);
 
 /* overlay 96 */
-void overlay96Unregister(); /* [types] */
-void overlay96BuildVolume(); /* [arity] */
+void overlay96Unregister(void *volume);
+void overlay96BuildVolume(void *object, void *definition);
 void *overlay96FindVolume(f32 x, f32 y, f32 z);
 s32 overlay96TestBit(u8 *record, s32 index);
 
 /* overlay 97 */
-void overlay97InitDirection(); /* [arity] */
-void overlay97CopyAngles(); /* [arity] */
-void overlay97InitTransform(); /* [arity] */
-void overlay97InitRadius(); /* [arity] */
-void overlay97InitResource(); /* [arity] */
+void overlay97InitDirection(void *object, void *config);
+void overlay97CopyAngles(void *angles, void *init);
+void overlay97InitTransform(void *transform, void *init);
+void overlay97InitRadius(void *object, void *init);
+void overlay97InitResource(void *object, void *init);
 void overlay97InitSelection(void *object, void *init, s32 preserve);
-void overlay97AssignState(); /* [types] */
-void overlay97CreateDescriptor(); /* [arity] */
-void overlay97InitScale(); /* [arity] */
+void overlay97AssignState(void *object, void *entry, s32 preserveState);
+void overlay97CreateDescriptor(void *object, void *init);
+void overlay97InitScale(void *object, void *entryArg);
 void overlay97InitBounds(void *object, void *init, s32 preserve);
-void overlay97InitPlane(); /* [arity] */
+void overlay97InitPlane(void *object, void *init);
 
 /* overlay 98 */
 void overlay98CollectAccepted(s32 count, void *objects);
-void overlay98RenderReflections(); /* [types] */
+void overlay98RenderReflections(void *dl, void *matrixHeap, void *vertices);
 
 /* overlay 99 */
-void overlay99ReleaseEntries(); /* [arity] */
+void overlay99ReleaseEntries(void);
 void overlay99BuildHeightGrid(f32 scale, void *unused, s32 widthMinusOne,
                               s32 heightMinusOne, s32 extra4, s32 extra5);
 void func_overlay_099_F0000DDC_18DA38C(void *displayList, void *matrices, void *vertices,
@@ -542,12 +553,12 @@ void *overlay100InitializeMotion(f32 x, f32 y, f32 z, s32 count, s32 colorB0, s3
                                  s32 colorB2, s32 colorA0, s32 colorA1, s32 colorA2,
                                  f32 durationSeconds);
 void overlay100ReleaseAll(void);
-void overlay100ApplyValue(); /* [types] */
-void overlay100ApplyToValue(); /* [codegen] */
+void overlay100ApplyValue(s32 value);
+void overlay100ApplyToValue(void *displayList);
 
 /* overlay 101 */
 void func_overlay_101_F000C6E8_18E7F08(void);
-void overlay101UpdatePresentation(); /* [types] */
+void overlay101UpdatePresentation(void *context, void *data, void *vertices, s32 step);
 void overlay101Cleanup(void);
 
 /* overlay 103 */

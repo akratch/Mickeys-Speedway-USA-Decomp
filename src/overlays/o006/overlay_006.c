@@ -13,5 +13,5 @@ void overlay6Init(void) {
 void overlay6Empty(void) {
 }
 
-void overlay6Noop(s32 unused0, s32 unused1) {
+void overlay6Noop(void *cameras, s32 cameraCount) {
 }

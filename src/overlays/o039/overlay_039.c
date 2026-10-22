@@ -7,7 +7,7 @@
  * negative for every function in this module.
  */
 
-void overlay39Write(u8 *source, s32 unused) {
+void overlay39Write(u8 *source, struct OSMesgQueue_s *mq) {
     /* Preserves the original local-slot allocation; emits no instructions. */
     volatile s32 reserved;
     u8 *buffer;
@@ -36,7 +36,7 @@ void overlay39Write(u8 *source, s32 unused) {
     overlay39FinishReloc();
 }
 
-void overlay39Reset(s32 unused) {
+void overlay39Reset(struct OSMesgQueue_s *mq) {
     overlay39BeginReloc();
     gOverlay39State = 0xFE;
     overlay39SendReloc(gOverlay39Buffer, 0x40);

@@ -63,7 +63,7 @@ extern void overlay23CallReloc();
 /* Block-local command temporaries reproduce the original display-list macro
  * expansion and its live ranges. */
 void overlay23RenderEffect(Overlay23RenderObject *object, Gfx **displayList,
-                           s32 renderArg0, s32 renderArg1) {
+                           void *renderArg0, void *renderArg1) {
     Overlay23RenderState *state;
     Overlay23RenderPacket packet;
 

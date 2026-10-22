@@ -614,7 +614,11 @@ order of how often they decided a match:
    in `include/game/overlay_exports.h`, using the definition's prototype with
    overlay-private pointers as `void *`, or an old-style `T name();` tagged
    `[arity]`, `[types]` or `[codegen]` when that prototype changes the shipped
-   call. After the object compiles, `tools/trap_names.py` renames the listed
+   call. A disagreement is usually one side's reconstruction: an argument
+   register the site never loads, an unused argument IDO homes whatever its
+   type, a cast that only matched the other side. Fix that side and keep the
+   tag only with evidence that the original call differed (116 of 117 were
+   reconciled on 2026-10-22). After the object compiles, `tools/trap_names.py` renames the listed
    names (`config/overlay_funcs_to_trap.us.txt`) to `TrapDanglingJump`, and
    `gmake verify` fails unless every site's name is the export its main-table
    ORT row targets. The ROM hash cannot see a swapped callee. If you rename an

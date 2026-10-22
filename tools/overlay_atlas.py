@@ -300,6 +300,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     71: "overlay_071_tail",
     63: "overlay_063_padding",
     59: "overlay_059_padding",
+    60: "overlay_060_padding",
 }
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
@@ -1100,13 +1101,7 @@ TEXT_SUBSEGMENTS = {
         (0xA1C, "asm", "overlay_059_padding"),
     ],
     60: [
-        (0x0000, "c", "overlay60Initialize"),
-        (0x0334, "c", "overlay60Prefix"),
-        (0x2EC8, "c", "overlay60ReleaseResources"),
-        (0x2F54, "c", "func_overlay_060_F0002F54_18BCD2C"),
-        (0x32CC, "c", "overlay60DrawBorder"),
-        (0x33D8, "c", "overlay60DrawLine"),
-        (0x3488, "c", "overlay60ReassignChoiceSlots"),
+        (0x000, "c", "overlay_060"),
         (0x355C, "asm", "overlay_060_padding"),
     ],
     46: [

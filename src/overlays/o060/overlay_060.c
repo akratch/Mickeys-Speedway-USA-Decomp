@@ -1,200 +1,151 @@
-#include "PR/ultratypes.h"
-#include "game/menu.h"
-#include "game/font.h"
-#include "game/charControl.h"
-#include "game/anim.h"
-#include "game/math.h"
-#include "game/gameVi.h"
-#include "n_audio/mbi.h"
-extern int sprintf(char *buffer, const char *format, ...);
+#include "overlays/overlay_060.h"
+
+/* Module-private functions: no ORT row, so their callers use JUMP
+ * records. */
+static s32 func_overlay_060_F0002F54_18BCD2C(s32 left, s32 bottom, s32 width, s32 height, s32 progress, s32 alpha, s32 ticks);
+static void overlay60DrawBorder(s32 left, s32 top, s32 right, s32 bottom);
+static void overlay60DrawLine(s32 left, s32 top, s32 right, s32 bottom);
+static void overlay60ReassignChoiceSlots(void);
+
+#define SOURCE(type, offset) (*(type *)(D_8007C0B8 + (offset)))
+
+/* Workbench: mixed structure/schedule/register, 17 words, first +0x108.
+ * A fidelity-clean allocator trace could not attribute source webs or stack
+ * homes, and coordinate carriers regressed the frame.
+ *
+ * 2026-09-10, lane c6-close: 21 -> 17 in two independent edits, both of them
+ * ordinary C.
+ *
+ * The first is L59's structural form. The counter and the object cursor were
+ * initialised on two statements ahead of a guarded `do`; moving BOTH into one
+ * `for` header makes them share a source line, which is the tie-break as1
+ * reaches last, and the two hoisted address materialisations then complete
+ * before the counter is zeroed as they do in the target. That alone is 21 ->
+ * 19. The bound was already register-resident, so this is not the counted-`for`
+ * rewrite the earlier closure measured at 28 -- what pays here is the shared
+ * line, not the loop shape: `i = 0, objects = ...;` on one statement before an
+ * unchanged `do` scores 22, and putting the cursor first in the header scores
+ * 27.
+ *
+ * The second is the descriptor store order, worth 19 -> 17. The residual is
+ * schedule-sensitive to it: 23,649 orders of the nine loop-body statements
+ * were measured and the floor is 17. The retained order is corroborated
+ * independently of the search -- the target stores z, pad0C, alpha, pad0A in
+ * that sequence, which is the contiguous block every 17-scoring order carries,
+ * and one of objectId/size has to sit last. Nine orders reach 17; this is the
+ * one closest to declaration order.
+ *
+ * 2026-09-11, lane f9-audit: 17 -> 0, byte-exact. The closure above held ONE
+ * variable fixed while it varied the rest: the coordinate index was always
+ * spelled as an integer add on a `(u32)` cast (or `i * 2` in the indexed
+ * form, which is -4 bytes). The ring told the story: with objectId and size
+ * stored first the target's coordinate shift takes the ring slot AFTER the one
+ * the candidate gives it, so the target spends one pop that emits nothing
+ * between the size store and the address. `&gOverlay60CoordsD8[i << 1]` is
+ * that pop -- the doubled index folds into the one shift and still costs a
+ * temp (L65's phantom, on a shift rather than a mask). With the ring phase
+ * right, the named `inner` local takes v1 at save 20 / nocs 1 with no frame
+ * growth, which is the "one more coloured pool web" the closure had correctly
+ * seen and wrongly refuted: every refutation named `inner` while the phase was
+ * still one behind, so the tail shifted and read as a 71-84 word regression.
+ * The 0x68 frames it measured came from that same `(u32)` address spelling,
+ * not from the sixth declaration. */
+void func_overlay_060_F0000000_18B9DD8(void) {
+    Overlay60Object **objects;
+    Overlay60SpawnDesc desc;
+    Overlay60Object *object;
+    s16 *coordinate;
+    Overlay60Inner *inner;
+    s32 i;
+
+    gOverlay60Data00[0] = SOURCE(u32, 0x44);
+    gOverlay60Data00[1] = SOURCE(u32, 0x1C8);
+    gOverlay60Data00[2] = SOURCE(u32, 0x1E4);
+    gOverlay60Data00[3] = SOURCE(u32, 0x48);
+    gOverlay60Data00[4] = SOURCE(u32, 0x40);
+    gOverlay60Data00[5] = SOURCE(u32, 0x3C);
+    gOverlay60Data00[6] = SOURCE(u32, 0x4C);
+    gOverlay60Data00[7] = SOURCE(u32, 0x278);
+    gOverlay60Data00[8] = SOURCE(u32, 0x1CC);
+    gOverlay60Data00[9] = SOURCE(u32, 0x1D0);
+
+    gOverlay60Data28[0] = SOURCE(u32, 0x00);
+    gOverlay60Data28[1] = SOURCE(u32, 0x04);
+    gOverlay60Data28[2] = SOURCE(u32, 0x08);
+    gOverlay60Data28[3] = SOURCE(u32, 0x0C);
+    gOverlay60Data38[0] = SOURCE(u32, 0x1C);
+    gOverlay60Data38[1] = SOURCE(u32, 0x18);
+
+    gOverlay60Data40 = 0;
+    gOverlay60Data44 = 0;
+    gOverlay60Data48 = 0x9B;
+    gOverlay60Data4C = -1;
+
+    for (i = 0, objects = &gOverlay60ObjectC8; i < 4; i++, objects++) {
+        desc.objectId = 0x138;
+        desc.size = 0xE;
+        coordinate = &gOverlay60CoordsD8[i << 1];
+        desc.x = coordinate[0];
+        desc.y = coordinate[1];
+        desc.z = 0;
+        desc.pad0C = 0;
+        desc.alpha = 0x80;
+        desc.pad0A = 0;
+        object = func_8000590C(&desc, 0);
+        *objects = object;
+        inner = *object->inner;
+        inner->mode = 2;
+        func_8005AD64(*objects, 0, 0, 0.0f);
+    }
+
+    loadFrontEndList((s16 *)gOverlay60Bss00);
+    gOverlay60Bss20 = *(u32 *)(D_800D31C8 + 0x1E4);
+    gOverlay60Bss40 = *(u32 *)(D_800D31C8 + 0x0C);
+    gOverlay60Bss60 = *(u32 *)(D_800D31C8 + 0x144);
+    gOverlay60Bss80 = *(u32 *)(D_800D31C8 + 0x1EC);
+
+    i = frontGetScreenMode();
+    if (i == 1) {
+        gOverlay60Data58 = 4;
+        gOverlay60ObjectC8->x = (f32)gOverlay60CoordE8;
+        gOverlay60ObjectC8->y = (f32)gOverlay60CoordEA;
+        gOverlay60ObjectCC->x = (f32)gOverlay60CoordEC;
+        gOverlay60ObjectCCY->y = (f32)gOverlay60CoordEE;
+        gOverlay60ObjectD0->x = (f32)gOverlay60CoordF0;
+        gOverlay60ObjectD0Y->y = (f32)gOverlay60CoordF2;
+        gOverlay60ObjectD4->x = (f32)gOverlay60CoordF4;
+        gOverlay60ObjectD4Y->y = (f32)gOverlay60CoordF6;
+    } else {
+        gOverlay60Data58 = 0;
+    }
+
+    animseqStartPath(((u8 *)&gOverlay60Data58)[3]);
+    object = (Overlay60Object *)func_800508B4(((u8 *)&gOverlay60Data58)[3]);
+    if (object != 0) {
+        object->flags |= 2;
+    }
+    gOverlay60Bss174 = 0;
+}
 
 /* Tier B: the call sites and runtime relocation records identify these
  * resident interfaces. The local views below use Mickey's menu, save-record,
- * and RCP field layouts; unknown fields retain their offsets. */
-typedef struct RcpTextureInfo RcpTextureInfo;
-typedef struct RcpTextureNode {
-    RcpTextureInfo *texture;
-    RcpTextureInfo *alternate;
-    u32 packedOffset;
-    s16 x;
-    s16 y;
-} RcpTextureNode;
-typedef struct SavesPackedEntry {
-    s32 time;
-    u8 initials[3];
-    u8 character;
-} SavesPackedEntry;
-typedef struct SavesSlot { SavesPackedEntry records[4]; } SavesSlot;
-typedef struct Overlay60Point {
-    s16 x;
-    s16 y;
-} Overlay60Point;
-
-typedef struct MenuSpawnInner {
-    u8 pad00[8];
-    s16 mode;
-} MenuSpawnInner;
-
-extern ControlActor **func_8000572C(s32 *start, s32 *end);
-extern void amSndPlay(u16 sound, void **handle);
-extern s32 mathRnd(s32 minimum, s32 maximum);
-extern void amTunePlay(u8 sequence);
-extern void amTuneSetFade(f32 fade, u8 volume);
-extern void fontUseFont(s32 font);
-extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);
-extern void fontPrintXY(Gfx **commands, s32 x, s32 y, char *text, s32 flags);
-extern void func_8002F618(Gfx **commands, RcpTextureNode *texture,
-                        s32 x, s32 y, s32 red, s32 green, s32 blue, s32 alpha);
-extern void func_8002FB34(Gfx **commands, RcpTextureNode *texture,
-                        f32 x, f32 y, f32 scaleX, f32 scaleY, s32 alpha, s32 flags);
-extern void texAnimateTexSprite(void *texture, s32 *state, s32 speed, f32 *frame, s32 ticks);
-extern void frontSet2PlayerSplit(s32 split);
-extern s32 func_8003A700(u8 initial);
-extern void viChangeMode(s32 screenMode);
-extern void viNoClear(void);
-extern void camSetFOV(f32 fov, s32 force);
-extern MtxF *func_8002468C(void);
-extern void func_80029198(void);
-extern SavesSlot *func_800291C4(void);
-extern s32 levelGetBlurEffect(s32 level);
-extern void texDPInit(Gfx **commands);
-extern void texDPTextureX(Gfx **commands, s32 arg1, s32 arg2, s32 arg3);
-extern void camStandardPersp(Gfx **commands, Mtx **matrices);
-extern void camStandardOrtho(Gfx **commands, Mtx **matrices);
-extern void rcpClearZBuffer(Gfx **commands, s32 width, s32 height,
-                           s32 left, s32 top, s32 right, s32 bottom);
-extern void func_8005AD64(ControlActor *object, s32 frame, s32 arg2, f32 value);
-extern s32 func_8005ABA8(ControlActor *object, f32 scale, f32 ticks);
-extern void modSetTextureFrame(MenuSpawnInner *model, s32 index, s32 frame);
-extern void func_80009E78(Gfx **commands, Mtx **matrices,
-                        void **vertices, ControlActor *object);
-extern void *texLoadSprite(s32 asset, s32 flags);
-extern void texFreeSprite(void *sprite);
-extern void camDo2DSprite(Gfx **commands, Mtx **matrices,
-                        void **vertices, void *transform, void *sprite,
-                        s32 flags, s32 alpha);
-extern void mainChangeLevel(s32 level, s32 entrance, s32 cutscene,
-                            s32 arg3, s32 arg4, s32 arg5);
-extern s32 func_overlay_041_F000124C_1888584(s32 index);
-extern void func_overlay_048_F0000000_1895408(void);
-extern void func_overlay_056_F00000B8_18A2E30(s32 time, s32 *minutes,
-                                           s32 *seconds, s32 *hundredths);
-extern s32 func_overlay_068_F000146C_18C85CC(s32 index);
-extern s32 func_overlay_082_F0000498_18CF618(ControlActor *object);
-extern s32 func_overlay_082_F00004A4_18CF624(ControlActor *object);
-extern void func_overlay_082_F00004B0_18CF630(ControlActor *object);
-extern void func_overlay_082_F00004C0_18CF640(ControlActor *object);
-extern s32 func_overlay_060_F0002F54_18BCD2C(s32 left, s32 bottom, s32 width,
-                                         s32 height, s32 value, s32 alpha, s32 ticks);
-extern void overlay60DrawBorder(s32 left, s32 top, s32 right, s32 bottom);
-extern void overlay60DrawLine(s32 x1, s32 y1, s32 x2, s32 y2);
-extern void overlay60ReassignChoiceSlots(void);
-
+ * and RCP field layouts; unknown fields retain their offsets. */  /* (was on typedef RcpTextureInfo) */
 /* Resident globals reached through the module's runtime relocation table.
  * Each is spelled with a per-module placeholder: the runtime SYMBOL records
  * that bind these sites store small section-relative addends, so the linker
  * must value each name from those stored addends rather than from the
  * resident definition (see docs/reloc-surface.md). The resident identity is
- * the address in the name; D_800D3128 is the settings block. */
-extern u16 D_8007BF14_o060Reloc;
-extern u16 D_8007BF1C_o060Reloc;
-extern char **D_8007C0B8_o060Reloc;
-extern s16 D_8007C0E8_o060Reloc[];
-extern s16 D_8007C11C_o060Reloc[];
-extern s32 D_800D2FC0_o060Reloc;
+ * the address in the name; D_800D3128 is the settings block. */  /* (was on extern D_8007BF14_o060Reloc) */
 /* Tier B/D: the shared menu view names language and stereo mode. The
  * remaining fields below are identified by their bit positions: their reads
- * and byte-preserving writes belong to the same resident settings word. */
-typedef struct Overlay60SettingsBits {
-    u32 upper : 5;
-    u32 field26_23 : 4;
-    u32 stereoMode : 2;
-    u32 field20 : 1;
-    u32 field19 : 1;
-    u32 field18 : 1;
-    u32 gap17_16 : 2;
-    u32 language : 6;
-    u32 field9 : 1;
-    u32 field8 : 1;
-    u32 lower : 8;
-} Overlay60SettingsBits;
-typedef struct Overlay60Settings {
-    Overlay60SettingsBits bits;
-    u16 sfxVolume;
-    u16 bgmVolume;
-    u16 progress[5];
-    u8 pad12;
-    u8 unlocked;
-    u16 enabledMask;
-} Overlay60Settings;
-extern Overlay60Settings D_800D3128_o060Reloc;
-extern Gfx *D_800D3140_o060Reloc;
-extern Mtx *D_800D3144_o060Reloc;
-extern void *D_800D3148_o060Reloc;
-extern s32 D_800D31B4_o060Reloc;
-extern s32 D_800D31B8_o060Reloc;
-extern s16 D_800D31BC_o060Reloc;
-extern s16 D_800D31BE_o060Reloc;
-extern RcpTextureInfo *D_800D31C8_o060Reloc[];
-
+ * and byte-preserving writes belong to the same resident settings word. */  /* (was on typedef Overlay60SettingsBits) */
 /* Tier B: overlay-local identities come from overlay 60's LOCAL records.
- * Data and BSS are distinct even where their stored addends coincide. */
-extern RcpTextureNode gOverlay60Data020;
-extern RcpTextureNode gOverlay60Data040;
-extern RcpTextureNode gOverlay60Data060;
-extern RcpTextureNode gOverlay60Data080;
-extern s32 gOverlay60Data0A0;
-extern f32 gOverlay60Data0A4;
-extern ControlActor *gOverlay60Data0A8;
-extern char gOverlay60Data0C0[];
-extern char gOverlay60Data0C4[];
-extern ControlActor *gOverlay60Data0C8[];
-extern Overlay60Point gOverlay60Data0D8[];
-extern Overlay60Point gOverlay60Data0E8[];
-extern f32 gOverlay60Data0F8[];
-extern s32 gOverlay60Data10C[];
-extern s32 gOverlay60Data11C[];
-extern s8 gOverlay60Data12B[];
-extern s8 gOverlay60Data12C[];
-extern s32 gOverlay60Data130;
-extern void *gOverlay60Data134;
-extern u16 gOverlay60Data138[];
-extern s32 gOverlay60Data14C;
-extern s32 gOverlay60Data150;
-extern s32 gOverlay60Data154;
-extern s32 gOverlay60Data158;
-extern s32 gOverlay60Data15C;
-extern s32 gOverlay60Data160;
-extern s32 gOverlay60Data164;
-extern s16 gOverlay60Data168[];
-extern void *gOverlay60Data174;
-extern u8 gOverlay60Data178[];
-extern char *gOverlay60Data1A4[];
-extern s16 gOverlay60Data1B4[];
-extern s16 gOverlay60Data1D0[];
-extern char gOverlay60Data1F0[];
-extern char gOverlay60Data1F8[];
-extern char gOverlay60Data200[];
-extern char gOverlay60Data20C[];
-extern char gOverlay60Data220[];
-extern char gOverlay60Data228[];
-extern char *gOverlay60Data260[];
-extern char *gOverlay60Data288[];
-extern char *gOverlay60Data298[];
-extern s32 gOverlay60Data2A0;
-extern s32 gOverlay60Data2A4;
-extern s32 gOverlay60Data2A8;
-extern s32 gOverlay60Data2AC;
-extern s32 gOverlay60Data2B0;
-extern s32 gOverlay60Data2B4;
-extern s32 gOverlay60Data2B8;
+ * Data and BSS are distinct even where their stored addends coincide. */  /* (was on extern gOverlay60Data020) */
 /* Tier B: the sixteen-byte display list at data +0xB0. The runtime table
  * binds both halves of its address as LOCAL data records, and the shipped
  * words carry the physical-address bias (the module's KSEG0 base plus
  * 0x80000000 wraps to its physical address), so the DMA command takes the
- * list's address plus that bias, folded into the relocation addend. */
-extern Gfx gOverlay60Data0B0[];
-
+ * list's address plus that bias, folded into the relocation addend. */  /* (was on extern gOverlay60Data0B0) */
 #define O60_TEXT(offset) D_8007C0B8_o060Reloc[(offset) / 4]
 
 /* Tier B/D: menu update and drawing reconstructed from Mickey's call graph,
@@ -293,16 +244,16 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
         gOverlay60Data160 = 0;
     }
     if (gOverlay60Data0A8 != NULL &&
-        func_overlay_041_F000124C_1888584(gOverlay60Data2B8) != 0) {
+        overlay41IsUnitScale(gOverlay60Data2B8) != 0) {
         fontUseFont(2);
         gOverlay60Data2A0 += ticks * 2;
         if (gOverlay60Data2A0 >= 0x100) {
             gOverlay60Data2A0 = 0xFF;
         }
         fontColour(0, 0xFF, 0, 0xFF, gOverlay60Data2A0);
-        panel = func_overlay_082_F0000498_18CF618(gOverlay60Data0A8);
+        panel = overlay82GetSelection(gOverlay60Data0A8);
         if (gOverlay60Data2AC == -1 &&
-            func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0) {
+            overlay82IsActive(gOverlay60Data0A8) != 0) {
             gOverlay60Data2AC = panel;
             gOverlay60Data14C = 0;
             gOverlay60Data2B0 = 0;
@@ -311,7 +262,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
             gOverlay60Data154 = 1;
             gOverlay60Data158 = 0;
         }
-        if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0 &&
+        if (overlay82IsActive(gOverlay60Data0A8) != 0 &&
             panel == gOverlay60Data2AC) {
             gOverlay60Data2A4 += ticks * 8;
             if (gOverlay60Data2A4 >= 0x100) {
@@ -324,7 +275,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 gOverlay60Data2AC = -1;
             }
         }
-        if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0) {
+        if (overlay82IsActive(gOverlay60Data0A8) != 0) {
             gOverlay60Data2A8 -= ticks * 4;
             if (gOverlay60Data2A8 < 0x69) {
                 gOverlay60Data2A8 = 0x69;
@@ -347,7 +298,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     0x5F, 0xB9, 0x64, 0x28, spare, gOverlay60Data2A4, ticks));
                 break;
             case 1:
-                if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0) {
+                if (overlay82IsActive(gOverlay60Data0A8) != 0) {
                     if (D_800D31BE_o060Reloc < 0) {
                         if (gOverlay60Data2B0 == 0) {
                             gOverlay60Data2B0 = 1;
@@ -366,7 +317,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 }
                 if (gOverlay60Data2B0 == 0) {
                     fontColour(0x64, 0xFF, 0x64, 0xFF, gOverlay60Data2A4);
-                    if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0 &&
+                    if (overlay82IsActive(gOverlay60Data0A8) != 0 &&
                         D_800D31BC_o060Reloc != 0) {
                         D_800D3128_o060Reloc.bits.field9 = (D_800D3128_o060Reloc.bits.field9 ^ 1) & 1;
                         amSndPlay(0xF, NULL);
@@ -379,7 +330,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x96, text, 0xC);
                 if (gOverlay60Data2B0 == 1) {
                     fontColour(0x64, 0xFF, 0x64, 0xFF, gOverlay60Data2A4);
-                    if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0 &&
+                    if (overlay82IsActive(gOverlay60Data0A8) != 0 &&
                         D_800D31BC_o060Reloc != 0) {
                         D_800D3128_o060Reloc.bits.field8 = (D_800D3128_o060Reloc.bits.field8 ^ 1) & 1;
                         amSndPlay(0xF, NULL);
@@ -393,7 +344,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 break;
             case 2:
                 i = frontGet2PlayerSplit();
-                if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0) {
+                if (overlay82IsActive(gOverlay60Data0A8) != 0) {
                     if (D_800D31BC_o060Reloc != 0) {
                         i ^= 1;
                         frontSet2PlayerSplit(i);
@@ -410,7 +361,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         enabled[count++] = i;
                     }
                 }
-                if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0 &&
+                if (overlay82IsActive(gOverlay60Data0A8) != 0 &&
                     count > 0) {
                     if (D_800D31BE_o060Reloc > 0 && gOverlay60Data2B0 > 0) {
                         gOverlay60Data2B0--;
@@ -457,7 +408,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             amTunePlay(((u8 *)&gOverlay60Data15C)[3]);
                         }
                     }
-                    if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0) {
+                    if (overlay82IsActive(gOverlay60Data0A8) != 0) {
                         if ((D_800D31B8_o060Reloc & 4) && gOverlay60Data2B0 > 0) {
                             gOverlay60Data2B0--;
                             amSndPlay(0xF, NULL);
@@ -483,7 +434,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 break;
             case 5:
                 stereoMode = frontGetStereoMode();
-                if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0) {
+                if (overlay82IsActive(gOverlay60Data0A8) != 0) {
                     if (D_800D31BC_o060Reloc < 0) {
                         stereoMode--;
                         if (stereoMode < 0) {
@@ -514,9 +465,9 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
             case 6:
                 screenMode = frontGetScreenMode();
                 if (gOverlay60Data158 == 0 &&
-                    func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0 &&
+                    overlay82IsActive(gOverlay60Data0A8) != 0 &&
                     D_800D31BC_o060Reloc != 0) {
-                    func_overlay_082_F00004B0_18CF630(gOverlay60Data0A8);
+                    overlay82Disable(gOverlay60Data0A8);
                     gOverlay60Data158 = 1;
                     amSndPlay(0xF, NULL);
                 }
@@ -563,7 +514,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         viChangeMode(screenMode);
                         camSetFOV(60.0f, 1);
                         gOverlay60Data158 = 0;
-                        func_overlay_082_F00004C0_18CF640(gOverlay60Data0A8);
+                        overlay82Enable(gOverlay60Data0A8);
                     }
                 }
                 if (screenMode == 1) {
@@ -594,13 +545,13 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
             case 7:
                 showArrows = 0;
                 if (gOverlay60Data14C == 0) {
-                    func_overlay_082_F00004C0_18CF640(gOverlay60Data0A8);
+                    overlay82Enable(gOverlay60Data0A8);
                     if (gOverlay60Data154 == 0 &&
-                        func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0) {
+                        overlay82IsActive(gOverlay60Data0A8) != 0) {
                         if (D_800D31B8_o060Reloc & 0x9000) {
                             gOverlay60Data14C = 1;
                             gOverlay60Data150 = 0;
-                            func_overlay_082_F00004B0_18CF630(gOverlay60Data0A8);
+                            overlay82Disable(gOverlay60Data0A8);
                             amSndPlay(0xC, NULL);
                         } else if (D_800D31BE_o060Reloc > 0 && gOverlay60Data2B0 > 0) {
                             gOverlay60Data2B0--;
@@ -690,7 +641,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
                         fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x7A, O60_TEXT(0xD0), 4);
                         fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xBA, O60_TEXT(0xD4), 4);
-                        if (func_overlay_068_F000146C_18C85CC(
+                        if (overlay68CheckKind(
                                 D_8007C0E8_o060Reloc[gOverlay60Data150]) != 0) {
                             /* 0.67f is a literal: its HI16/LO16 pair is a LOCAL record
                              * against the module's rodata, ahead of the texture
@@ -700,7 +651,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         }
                         fontColour(0xC0, 0xFF, 0, 0xFF, 0xFF);
                         for (row = 0, record = slot->records; row < 4; record++, row++) {
-                            func_overlay_056_F00000B8_18A2E30(record->time,
+                            overlay56SplitTime(record->time,
                                 &minutes, &seconds, &hundredths);
                             if (record->time == 0) {
                                 sprintf(text, gOverlay60Data200);
@@ -940,7 +891,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 }
                 break;
             case 8:
-                if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0) {
+                if (overlay82IsActive(gOverlay60Data0A8) != 0) {
                     if (D_800D31BE_o060Reloc < 0) {
                         if (gOverlay60Data2B0 == 0) {
                             gOverlay60Data2B0 = 1;
@@ -959,7 +910,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 }
                 if (gOverlay60Data2B0 == 0) {
                     fontColour(0x64, 0xFF, 0x64, 0xFF, gOverlay60Data2A4);
-                    if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0 &&
+                    if (overlay82IsActive(gOverlay60Data0A8) != 0 &&
                         D_800D31BC_o060Reloc != 0) {
                         D_800D3128_o060Reloc.bits.field20 = (D_800D3128_o060Reloc.bits.field20 ^ 1) & 1;
                         amSndPlay(0xF, NULL);
@@ -972,7 +923,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x96, text, 0xC);
                 if (gOverlay60Data2B0 == 1) {
                     fontColour(0x64, 0xFF, 0x64, 0xFF, gOverlay60Data2A4);
-                    if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0 &&
+                    if (overlay82IsActive(gOverlay60Data0A8) != 0 &&
                         D_800D31BC_o060Reloc != 0) {
                         D_800D3128_o060Reloc.bits.field19 = (D_800D3128_o060Reloc.bits.field19 ^ 1) & 1;
                         amSndPlay(0xF, NULL);
@@ -985,7 +936,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xAA, text, 0xC);
                 break;
             case 9:
-                if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0) {
+                if (overlay82IsActive(gOverlay60Data0A8) != 0) {
                     if (D_800D31BE_o060Reloc < 0) {
                         gOverlay60Data2B0++;
                         if (gOverlay60Data2B0 >= 0xC) {
@@ -1035,7 +986,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
             gOverlay60Data164 = 1;
             if (D_8007BF1C_o060Reloc & 0x40) {
                 D_8007BF1C_o060Reloc &= ~0x40;
-                func_overlay_048_F0000000_1895408();
+                overlay48Initialize();
             } else {
                 mainChangeLevel(0xC, 0, 0, 0xC, 1, 0);
             }
@@ -1045,4 +996,202 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
         fontPrintXY(&D_800D3140_o060Reloc, 0x91, gOverlay60Data2A8,
             gOverlay60Data260[panel], 0xC);
     }
+}
+
+/* DKR v77/v80 and JFG contain only generic resource-cleanup idioms. */
+void overlay60ReleaseResources(void) {
+    void **resource;
+    void **end;
+
+    resource = gOverlay60Resources; end = gOverlay60ResourcesEnd;
+    do {
+        if (*resource != NULL) {
+            overlay60ReleaseReloc(*resource);
+            *resource = NULL;
+        }
+        resource++;
+    } while (resource != end);
+
+    if (gOverlay60OptionalResource != NULL) {
+        overlay60ReleaseReloc(gOverlay60OptionalResource);
+        gOverlay60OptionalResource = NULL;
+    }
+    overlay60ReleaseReloc(&gOverlay60PrimaryResource);
+    func_8002917C();
+}
+
+/* Cross-overlay call through the loader's relocation surface: the shipped
+ * word is the 0xF0000000 addend (a SYMBOL record, not a JUMP), so the
+ * callee must be named by its o060 placeholder, as overlay60Prefix does. */  /* (was on extern overlay82IsActive_o060Reloc) */
+/* One display-list append the way the SDK's packet macros write it: a
+ * block-scoped pointer per expansion, on one physical line. */
+
+#define O60_APPEND(a, b) { Overlay60Command *_g = D_800D3140++; _g->w0 = (a); _g->w1 = (b); }
+
+/* The SDK's _SHIFTL: the mask is redundant on a u8 field and as1 folds it
+ * into the lbu, but ugen has already drawn a ring temp for it (L149). */
+
+#define OVERLAY60_SHIFTL(value, shift, width) \
+    (((u32)(value) & ((1U << (width)) - 1U)) << (shift))
+
+/* Matched 2026-09-16 (lane s1-c), 222/222 words, frame 0xC0, from 84 in six
+ * measured cycles, no colour forced. What each edit bought, measured alone:
+ *  - the first append through the block-scoped macro (84 -> 78): the target
+ *    loads three appends into v0 and the loop's last into v1, which one
+ *    declared symbol web cannot do;
+ *  - OVERLAY60_SHIFTL on the raw colour bytes (78 -> 19): each folded mask is
+ *    a spent ring draw, and the target's arm-1 ring skips t2/t5/t8 exactly
+ *    where the three byte reads sit; arm 2 needs it on red only;
+ *  - no `offset` local, `(f32)(x - left)` strength-reduced in the loop
+ *    (19 -> 7): x's web then outranks the display-list address web
+ *    (61/3 against 62/3 with the declared offset) and takes s0;
+ *  - `axis` declared and `topFloat` inlined (7 -> 0): every declared local,
+ *    live or dead, takes a frame slot in declaration order, and the reduced
+ *    form reserves one temp word more, so color's home at 0x9C needs six
+ *    slots above it and one fewer below at frame 0xC0.
+ */
+static s32 func_overlay_060_F0002F54_18BCD2C(s32 left, s32 bottom, s32 width,
+                                       s32 height, s32 progress, s32 alpha,
+                                       s32 ticks) {
+    s16 axis;
+    Overlay60Command *command;
+    s32 right;
+    s32 x;
+    s32 split;
+    u32 top;
+    Overlay60Color color;
+    f32 widthFloat;
+    f32 fraction;
+    f32 verticalOffset;
+
+    if (overlay82IsActive_o060Reloc(
+            *(void **)(gOverlay60LocalDataReloc + 0xA8)) != 0) {
+        axis = D_800D31C0;
+        if (axis < -0x10) {
+            progress -= ticks * 2;
+            if (progress < 0) {
+                progress = 0;
+            }
+        } else if (axis >= 0x11) {
+            progress += ticks * 2;
+            if (progress >= 0x101) {
+                progress = 0x100;
+            }
+        }
+    }
+
+    right = left + width;
+    texDPTextureX(&D_800D3140, 0, 0, 0);
+    O60_APPEND(0x07020010, (u32)D_800000B0);
+
+    x = left;
+    if (left < right) {
+        widthFloat = (f32)width;
+        split = (s32)((f32)left +
+                      widthFloat * ((f32)progress * 0.00390625f));
+        do {
+            fraction = (f32)(x - left) / widthFloat;
+            verticalOffset = (f32)height * fraction;
+            initColourCycle(&color, 0xB);
+            updateColourCycle(&color, (s32)(fraction * 60.0f));
+
+            if (x < split) {
+                command = D_800D3140++;
+                command->w0 = 0xFA000000;
+                command->w1 = OVERLAY60_SHIFTL(color.red, 24, 8) |
+                              OVERLAY60_SHIFTL(color.green, 16, 8) |
+                              OVERLAY60_SHIFTL(color.blue, 8, 8) |
+                              OVERLAY60_SHIFTL(alpha, 0, 8);
+            } else {
+                command = D_800D3140++;
+                command->w0 = 0xFA000000;
+                command->w1 = OVERLAY60_SHIFTL(color.red >> 1, 24, 8) |
+                              OVERLAY60_SHIFTL(color.green >> 1, 16, 8) |
+                              OVERLAY60_SHIFTL(color.blue >> 1, 8, 8) |
+                              OVERLAY60_SHIFTL(alpha >> 1, 0, 8);
+            }
+
+            command = D_800D3140++;
+            command->w0 = 0xF6000000 |
+                          OVERLAY60_SHIFTL(x + 2, 14, 10) |
+                          OVERLAY60_SHIFTL(bottom, 2, 10);
+            top = (u32)((f32)bottom - verticalOffset);
+            command->w1 = OVERLAY60_SHIFTL(x, 14, 10) |
+                          OVERLAY60_SHIFTL(top, 2, 10);
+            x += 4;
+        } while (x < right);
+    }
+    return progress;
+}
+
+#define OVERLAY60_FILL_RECTANGLE(packet, upperLeftX, upperLeftY, lowerRightX, \
+                                 lowerRightY)                              \
+    {                                                                      \
+        Overlay60Command *macroCommand = (Overlay60Command *)(packet);      \
+        macroCommand->w0 = 0xF6000000 |                                    \
+                           OVERLAY60_SHIFTL(lowerRightX, 14, 10) |          \
+                           OVERLAY60_SHIFTL(lowerRightY, 2, 10);            \
+        macroCommand->w1 = OVERLAY60_SHIFTL(upperLeftX, 14, 10) |           \
+                           OVERLAY60_SHIFTL(upperLeftY, 2, 10);             \
+    }
+
+/* DKR v77/v80 and JFG have no exact donor; DKR borders.c confirms the idiom. */
+static void overlay60DrawBorder(s32 left, s32 top, s32 right, s32 bottom) {
+    OVERLAY60_FILL_RECTANGLE(D_800D3140++, left, top, right,
+                             top + 1);
+    OVERLAY60_FILL_RECTANGLE(D_800D3140++, right, top, right + 1,
+                             bottom + 1);
+    OVERLAY60_FILL_RECTANGLE(D_800D3140++, left, bottom, right,
+                             bottom + 1);
+    OVERLAY60_FILL_RECTANGLE(D_800D3140++, left, top, left + 1,
+                             bottom);
+}
+
+/* DKR v77/v80 and JFG have no exact donor; DKR borders.c confirms the idiom. */
+static void overlay60DrawLine(s32 left, s32 top, s32 right, s32 bottom) {
+    if (left == right) {
+        OVERLAY60_FILL_RECTANGLE(D_800D3140++, left, top, right + 1,
+                                 bottom);
+    } else {
+        OVERLAY60_FILL_RECTANGLE(D_800D3140++, left, top, right,
+                                 bottom + 1);
+    }
+}
+
+/* The four-entry resident player block. Two pass names keep the two
+ * address-materialization lifetimes; the pass-2 end sentinel is a distinct
+ * symbol so the back-edge comparison keeps End first (overlay 57's form). */  /* (was on extern D_800D3058_o060Reloc) */
+/* Matched 2026-09-17 (lane w8-o060), 35 -> 0 masked words at delta 0,
+ * frame 0x20, eight relocations, unforced. L160: delete the walking choice
+ * pointer and subscript the player block from a while-index so IDO generates
+ * the cursor. available[14] holds the index home at the 0x20 frame. */
+static void overlay60ReassignChoiceSlots(void) {
+    s32 i;
+    u8 available[14];
+
+    i = 0;
+    while (i < 10) {
+        available[i] = 1;
+        i++;
+    }
+
+    i = 0;
+    do {
+        if (D_800D3058_o060Reloc[i].active != 0) {
+            available[D_800D3058_o060Reloc[i].slot & 0xF] = 0;
+        }
+        i++;
+    } while (&D_800D3058_o060Reloc[i] < &D_800D3058_o060Reloc[4]);
+
+    i = 0;
+    do {
+        if ((D_800D3058Pass2_o060Reloc[i].active != 0) && (D_800D3058Pass2_o060Reloc[i].slot >= 6)) {
+            D_800D3058Pass2_o060Reloc[i].slot = 0;
+            while (available[D_800D3058Pass2_o060Reloc[i].slot] == 0) {
+                D_800D3058Pass2_o060Reloc[i].slot++;
+            }
+            available[D_800D3058Pass2_o060Reloc[i].slot] = 0;
+        }
+        i++;
+    } while (D_800D3058Pass2End_o060Reloc != &D_800D3058Pass2_o060Reloc[i]);
 }

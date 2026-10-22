@@ -3262,13 +3262,65 @@ gOverlay59ValueTables = 0x00000708;
 overlay59ReleaseReloc = 0xf0000000;
 texLoadTexture_o059Reloc = 0xf0000000;
 
-/* overlay 60: overlay60Initialize.c.o */
+/* overlay 60: overlay_060.c.o */
+D_800000B0 = 0x800000b0;
+D_8007BF14_o060Reloc = 0x00000000;
+D_8007BF1C_o060Reloc = 0x00000000;
 D_8007C0B8_o060Reloc = 0x00000000;
+D_8007C0E8_o060Reloc = 0x00000000;
+D_8007C11C_o060Reloc = 0x00000000;
+D_800D2FC0_o060Reloc = 0x00000000;
+D_800D3058Pass2End_o060Reloc = 0x000000d0;
+D_800D3058Pass2_o060Reloc = 0x00000000;
+D_800D3058_o060Reloc = 0x00000000;
+D_800D3128_o060Reloc = 0x00000000;
+D_800D3140_o060Reloc = 0x00000000;
+D_800D3144_o060Reloc = 0x00000000;
+D_800D3148_o060Reloc = 0x00000000;
+D_800D31B4_o060Reloc = 0x00000000;
+D_800D31B8_o060Reloc = 0x00000000;
+D_800D31BC_o060Reloc = 0x00000000;
+D_800D31BE_o060Reloc = 0x00000000;
+D_800D31C0_o060Reloc = 0x00000000;
 D_800D31C8_o060Reloc = 0x00000000;
+amSndPlay_o060Reloc = 0xf0000000;
+amTunePlay_o060Reloc = 0xf0000000;
+amTuneSetFade_o060Reloc = 0xf0000000;
 animseqStartPath_o060Reloc = 0xf0000000;
+animseqStopPath_o060Reloc = 0xf0000000;
+camDo2DSprite_o060Reloc = 0xf0000000;
+camSetFOV_o060Reloc = 0xf0000000;
+camStandardOrtho_o060Reloc = 0xf0000000;
+camStandardPersp_o060Reloc = 0xf0000000;
+fontBackground_o060Reloc = 0xf0000000;
+fontColour_o060Reloc = 0xf0000000;
+fontPrintXY_o060Reloc = 0xf0000000;
+fontUseFont_o060Reloc = 0xf0000000;
+frontGet2PlayerSplit_o060Reloc = 0xf0000000;
+frontGetBgmVolume_o060Reloc = 0xf0000000;
 frontGetScreenMode_o060Reloc = 0xf0000000;
+frontGetSfxVolume_o060Reloc = 0xf0000000;
+frontGetStereoMode_o060Reloc = 0xf0000000;
+frontGetWideAdjust_o060Reloc = 0xf0000000;
+frontSet2PlayerSplit_o060Reloc = 0xf0000000;
+frontSetBgmVolume_o060Reloc = 0xf0000000;
+frontSetLanguage_o060Reloc = 0xf0000000;
+frontSetScreenMode_o060Reloc = 0xf0000000;
+frontSetSfxVolume_o060Reloc = 0xf0000000;
+frontSetStereoMode_o060Reloc = 0xf0000000;
+frontSetWideAdjust_o060Reloc = 0xf0000000;
+func_8000572C_o060Reloc = 0xf0000000;
 func_8000590C_o060Reloc = 0xf0000000;
+func_80009E78_o060Reloc = 0xf0000000;
+func_8002468C_o060Reloc = 0xf0000000;
+func_8002917C_o060Reloc = 0xf0000000;
+func_80029198_o060Reloc = 0xf0000000;
+func_800291C4_o060Reloc = 0xf0000000;
+func_8002F618_o060Reloc = 0xf0000000;
+func_8002FB34_o060Reloc = 0xf0000000;
+func_8003A700_o060Reloc = 0xf0000000;
 func_800508B4_o060Reloc = 0xf0000000;
+func_8005ABA8_o060Reloc = 0xf0000000;
 func_8005AD64_o060Reloc = 0xf0000000;
 gOverlay60Bss00 = 0x00000000;
 gOverlay60Bss174 = 0x00000174;
@@ -3286,69 +3338,6 @@ gOverlay60CoordF4 = 0x000000f4;
 gOverlay60CoordF6 = 0x000000f6;
 gOverlay60CoordsD8 = 0x000000d8;
 gOverlay60Data00 = 0x00000000;
-gOverlay60Data28 = 0x00000028;
-gOverlay60Data38 = 0x00000038;
-gOverlay60Data40 = 0x00000040;
-gOverlay60Data44 = 0x00000044;
-gOverlay60Data48 = 0x00000048;
-gOverlay60Data4C = 0x0000004c;
-gOverlay60Data58 = 0x00000058;
-gOverlay60ObjectC8 = 0x000000c8;
-gOverlay60ObjectCC = 0x000000cc;
-gOverlay60ObjectCCY = 0x000000cc;
-gOverlay60ObjectD0 = 0x000000d0;
-gOverlay60ObjectD0Y = 0x000000d0;
-gOverlay60ObjectD4 = 0x000000d4;
-gOverlay60ObjectD4Y = 0x000000d4;
-loadFrontEndList_o060Reloc = 0xf0000000;
-
-/* overlay 60: overlay60Prefix.c.o */
-D_8007BF14_o060Reloc = 0x00000000;
-D_8007BF1C_o060Reloc = 0x00000000;
-D_8007C0E8_o060Reloc = 0x00000000;
-D_8007C11C_o060Reloc = 0x00000000;
-D_800D2FC0_o060Reloc = 0x00000000;
-D_800D3128_o060Reloc = 0x00000000;
-D_800D3140_o060Reloc = 0x00000000;
-D_800D3144_o060Reloc = 0x00000000;
-D_800D3148_o060Reloc = 0x00000000;
-D_800D31B4_o060Reloc = 0x00000000;
-D_800D31B8_o060Reloc = 0x00000000;
-D_800D31BC_o060Reloc = 0x00000000;
-D_800D31BE_o060Reloc = 0x00000000;
-amSndPlay_o060Reloc = 0xf0000000;
-amTunePlay_o060Reloc = 0xf0000000;
-amTuneSetFade_o060Reloc = 0xf0000000;
-animseqStopPath_o060Reloc = 0xf0000000;
-camDo2DSprite_o060Reloc = 0xf0000000;
-camSetFOV_o060Reloc = 0xf0000000;
-camStandardOrtho_o060Reloc = 0xf0000000;
-camStandardPersp_o060Reloc = 0xf0000000;
-fontBackground_o060Reloc = 0xf0000000;
-fontColour_o060Reloc = 0xf0000000;
-fontPrintXY_o060Reloc = 0xf0000000;
-fontUseFont_o060Reloc = 0xf0000000;
-frontGet2PlayerSplit_o060Reloc = 0xf0000000;
-frontGetBgmVolume_o060Reloc = 0xf0000000;
-frontGetSfxVolume_o060Reloc = 0xf0000000;
-frontGetStereoMode_o060Reloc = 0xf0000000;
-frontGetWideAdjust_o060Reloc = 0xf0000000;
-frontSet2PlayerSplit_o060Reloc = 0xf0000000;
-frontSetBgmVolume_o060Reloc = 0xf0000000;
-frontSetLanguage_o060Reloc = 0xf0000000;
-frontSetScreenMode_o060Reloc = 0xf0000000;
-frontSetSfxVolume_o060Reloc = 0xf0000000;
-frontSetStereoMode_o060Reloc = 0xf0000000;
-frontSetWideAdjust_o060Reloc = 0xf0000000;
-func_8000572C_o060Reloc = 0xf0000000;
-func_80009E78_o060Reloc = 0xf0000000;
-func_8002468C_o060Reloc = 0xf0000000;
-func_80029198_o060Reloc = 0xf0000000;
-func_800291C4_o060Reloc = 0xf0000000;
-func_8002F618_o060Reloc = 0xf0000000;
-func_8002FB34_o060Reloc = 0xf0000000;
-func_8003A700_o060Reloc = 0xf0000000;
-func_8005ABA8_o060Reloc = 0xf0000000;
 gOverlay60Data020 = 0x00000020;
 gOverlay60Data040 = 0x00000040;
 gOverlay60Data060 = 0x00000060;
@@ -3389,6 +3378,7 @@ gOverlay60Data20C = 0x0000002c;
 gOverlay60Data220 = 0x00000040;
 gOverlay60Data228 = 0x00000048;
 gOverlay60Data260 = 0x00000000;
+gOverlay60Data28 = 0x00000028;
 gOverlay60Data288 = 0x00000028;
 gOverlay60Data298 = 0x00000038;
 gOverlay60Data2A0 = 0x00000040;
@@ -3398,14 +3388,34 @@ gOverlay60Data2AC = 0x0000004c;
 gOverlay60Data2B0 = 0x00000050;
 gOverlay60Data2B4 = 0x00000054;
 gOverlay60Data2B8 = 0x00000058;
-gOverlay60PrefixRodataReloc = 0x00000050;
+gOverlay60Data38 = 0x00000038;
+gOverlay60Data40 = 0x00000040;
+gOverlay60Data44 = 0x00000044;
+gOverlay60Data48 = 0x00000048;
+gOverlay60Data4C = 0x0000004c;
+gOverlay60Data58 = 0x00000058;
+gOverlay60LocalDataReloc = 0x00000000;
+gOverlay60ObjectC8 = 0x000000c8;
+gOverlay60ObjectCC = 0x000000cc;
+gOverlay60ObjectCCY = 0x000000cc;
+gOverlay60ObjectD0 = 0x000000d0;
+gOverlay60ObjectD0Y = 0x000000d0;
+gOverlay60ObjectD4 = 0x000000d4;
+gOverlay60ObjectD4Y = 0x000000d4;
+gOverlay60OptionalResource = 0x00000174;
+gOverlay60PrimaryResource = 0x00000000;
+gOverlay60Resources = 0x000000c8;
+gOverlay60ResourcesEnd = 0x000000d8;
+initColourCycle_o060Reloc = 0xf0000000;
 levelGetBlurEffect_o060Reloc = 0xf0000000;
+loadFrontEndList_o060Reloc = 0xf0000000;
 mainChangeLevel_o060Reloc = 0xf0000000;
 mathRnd_o060Reloc = 0xf0000000;
 modSetTextureFrame_o060Reloc = 0xf0000000;
 overlay41IsUnitScale_o060Reloc = 0xf0000000;
 overlay48Initialize_o060Reloc = 0xf0000000;
 overlay56SplitTime_o060Reloc = 0xf0000000;
+overlay60ReleaseReloc = 0xf0000000;
 overlay68CheckKind_o060Reloc = 0xf0000000;
 overlay82Disable_o060Reloc = 0xf0000000;
 overlay82Enable_o060Reloc = 0xf0000000;
@@ -3418,29 +3428,10 @@ texDPInit_o060Reloc = 0xf0000000;
 texDPTextureX_o060Reloc = 0xf0000000;
 texFreeSprite_o060Reloc = 0xf0000000;
 texLoadSprite_o060Reloc = 0xf0000000;
+updateColourCycle_o060Reloc = 0xf0000000;
 viChangeMode_o060Reloc = 0xf0000000;
 viDisplayingScreen0_o060Reloc = 0xf0000000;
 viNoClear_o060Reloc = 0xf0000000;
-
-/* overlay 60: overlay60ReleaseResources.c.o */
-func_8002917C_o060Reloc = 0xf0000000;
-gOverlay60OptionalResource = 0x00000174;
-gOverlay60PrimaryResource = 0x00000000;
-gOverlay60Resources = 0x000000c8;
-gOverlay60ResourcesEnd = 0x000000d8;
-overlay60ReleaseReloc = 0xf0000000;
-
-/* overlay 60: func_overlay_060_F0002F54_18BCD2C.c.o */
-D_800000B0 = 0x800000b0;
-D_800D31C0_o060Reloc = 0x00000000;
-gOverlay60LocalDataReloc = 0x00000000;
-initColourCycle_o060Reloc = 0xf0000000;
-updateColourCycle_o060Reloc = 0xf0000000;
-
-/* overlay 60: overlay60ReassignChoiceSlots.c.o */
-D_800D3058Pass2End_o060Reloc = 0x000000d0;
-D_800D3058Pass2_o060Reloc = 0x00000000;
-D_800D3058_o060Reloc = 0x00000000;
 
 /* overlay 61: overlay61UpdateInput.c.o */
 gOverlay61RepeatXReloc = 0x0000008c;
@@ -5762,17 +5753,8 @@ func_overlay_059_F0000784_18B8ED4 = overlay59Interpolate;
 func_overlay_059_F000084C_18B8F9C = overlay59BuildList;
 func_overlay_059_F00008EC_18B903C = overlay59DrawFrame;
 
-/* overlay 60: overlay60ReleaseResources.c.o */
+/* overlay 60: overlay_060.c.o */
 func_overlay_060_F0002EC8_18BCCA0 = overlay60ReleaseResources;
-
-/* overlay 60: overlay60DrawBorder.c.o */
-func_overlay_060_F00032CC_18BD0A4 = overlay60DrawBorder;
-
-/* overlay 60: overlay60DrawLine.c.o */
-func_overlay_060_F00033D8_18BD1B0 = overlay60DrawLine;
-
-/* overlay 60: overlay60ReassignChoiceSlots.c.o */
-func_overlay_060_F0003488_18BD260 = overlay60ReassignChoiceSlots;
 
 /* overlay 61: overlay61UpdateInput.c.o */
 func_overlay_061_F0000000_18BF3C8 = overlay61UpdateInput;

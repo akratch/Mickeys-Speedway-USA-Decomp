@@ -11879,64 +11879,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x334",
-     "size": "0x334",
-     "type": "c",
-     "source": "overlays/o060/overlay60Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x334",
-     "end_offset": "0x2EC8",
-     "size": "0x2B94",
-     "type": "c",
-     "source": "overlays/o060/overlay60Prefix",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2EC8",
-     "end_offset": "0x2F54",
-     "size": "0x8C",
-     "type": "c",
-     "source": "overlays/o060/overlay60ReleaseResources",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2F54",
-     "end_offset": "0x32CC",
-     "size": "0x378",
-     "type": "c",
-     "source": "overlays/o060/func_overlay_060_F0002F54_18BCD2C",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x32CC",
-     "end_offset": "0x33D8",
-     "size": "0x10C",
-     "type": "c",
-     "source": "overlays/o060/overlay60DrawBorder",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x33D8",
-     "end_offset": "0x3488",
-     "size": "0xB0",
-     "type": "c",
-     "source": "overlays/o060/overlay60DrawLine",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x3488",
      "end_offset": "0x355C",
-     "size": "0xD4",
+     "size": "0x355C",
      "type": "c",
-     "source": "overlays/o060/overlay60ReassignChoiceSlots",
+     "source": "overlays/o060/overlay_060",
      "matched": true,
      "nonmatching": false
     },

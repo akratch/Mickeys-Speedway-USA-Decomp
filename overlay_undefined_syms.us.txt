@@ -3776,65 +3776,36 @@ viGetVideoMode_o066Reloc = 0xf0000000;
 frontDrawRectangles_o067Reloc = 0xf0000000;
 gOverlay67PointSets = 0x000000a4;
 
-/* overlay 68: overlay68CreateEntries.c.o */
-D_8007A1F4_o068Reloc = 0x00000000;
-gOverlay68SecondaryEntry = 0x00000000;
-mmAlloc_o068Reloc = 0xf0000000;
-overlay68PayloadLimit_o068Reloc = 0xf0000000;
-
-/* overlay 68: overlay68ReleasePrimary.c.o */
-mmFree_o068Reloc = 0xf0000000;
-
-/* overlay 68: overlay68ReleaseSecondary.c.o */
-gOverlay68Secondary = 0x00000000;
-
-/* overlay 68: overlay68CreatePayload.c.o */
-func_8000590C_o068Reloc = 0xf0000000;
-gOverlay68Types = 0x00000000;
-levelGetNumber_o068Reloc = 0xf0000000;
-
-/* overlay 68: overlay68AttachObject.c.o */
-gOverlay68Entry = 0x00000000;
-
-/* overlay 68: overlay68UpdateTrail.c.o */
-D_800C947C_o068Reloc = 0x00000000;
-overlay68FinishEntry_o068Reloc = 0xf0000000;
-
-/* overlay 68: overlay68StartTimer.c.o */
-gOverlay68TimerEntry = 0x00000000;
-
-/* overlay 68: overlay68PromoteSecondary.c.o */
-D_8007A1F8_o068Reloc = 0x00000000;
-overlay68ClearNestedFlag_o068Reloc = 0xf0000000;
-
-/* overlay 68: overlay68InitializeObject.c.o */
-func_8005AD64_o068Reloc = 0xf0000000;
-
-/* overlay 68: overlay68UpdateAnimation.c.o */
+/* overlay 68: overlay_068.c.o */
 Arctanf_o068Reloc = 0xf0000000;
-func_8000FAE0_o068Reloc = 0xf0000000;
-func_8005ABA8_o068Reloc = 0xf0000000;
-mathDiffAngle_o068Reloc = 0xf0000000;
-
-/* overlay 68: overlay68DrawSortedEntries.c.o */
+D_8007A1F4_o068Reloc = 0x00000000;
+D_8007A1F8_o068Reloc = 0x00000000;
+D_800C947C_o068Reloc = 0x00000000;
 camGetProjZ_o068Reloc = 0xf0000000;
+func_8000590C_o068Reloc = 0xf0000000;
+func_8000FAE0_o068Reloc = 0xf0000000;
 func_80022E80_o068Reloc = 0xf0000000;
 func_80022FD4_o068Reloc = 0xf0000000;
-
-/* overlay 68: overlay68RebuildSecondaryEntry.c.o */
 func_800291C4_o068Reloc = 0xf0000000;
+func_8005ABA8_o068Reloc = 0xf0000000;
+func_8005AD64_o068Reloc = 0xf0000000;
+gOverlay68Entry = 0x00000000;
 gOverlay68KindMap = 0x00000014;
-levelGetBlurEffect_o068Reloc = 0xf0000000;
-piRomLoadSection_o068Reloc = 0xf0000000;
-
-/* overlay 68: overlay68CheckKind.c.o */
 gOverlay68KindMapInitial = 0x00000014;
 gOverlay68KindMapLoop = 0x00000014;
-overlay68AllocProbeReloc = 0xf0000000;
-overlay68FillProbeReloc = 0xf0000000;
-overlay68FreeProbeReloc = 0xf0000000;
-overlay68GetResidentEntriesReloc = 0xf0000000;
-overlay68MapResidentIndexReloc = 0xf0000000;
+gOverlay68Secondary = 0x00000000;
+gOverlay68SecondaryEntry = 0x00000000;
+gOverlay68TimerEntry = 0x00000000;
+gOverlay68Types = 0x00000000;
+levelGetBlurEffect_o068Reloc = 0xf0000000;
+levelGetNumber_o068Reloc = 0xf0000000;
+mathDiffAngle_o068Reloc = 0xf0000000;
+mmAlloc_o068Reloc = 0xf0000000;
+mmFree_o068Reloc = 0xf0000000;
+overlay68ClearNestedFlag_o068Reloc = 0xf0000000;
+overlay68FinishEntry_o068Reloc = 0xf0000000;
+overlay68PayloadLimit_o068Reloc = 0xf0000000;
+piRomLoadSection_o068Reloc = 0xf0000000;
 
 /* overlay 69: overlay_069.c.o */
 Arctanf_o069Reloc = 0xf0000000;
@@ -5818,59 +5789,24 @@ func_overlay_066_F0000034_18C649C = overlay66GetCurrent;
 /* overlay 67: overlay_067.c.o */
 func_overlay_067_F0000000_18C6F40 = overlay67BuildVertices;
 
-/* overlay 68: overlay68PayloadLimit.c.o */
+/* overlay 68: overlay_068.c.o */
 func_overlay_068_F0000000_18C7160 = overlay68PayloadLimit;
-
-/* overlay 68: overlay68CreateEntries.c.o */
 func_overlay_068_F0000008_18C7168 = overlay68CreatePrimary;
 func_overlay_068_F0000074_18C71D4 = overlay68CreateSecondary;
-
-/* overlay 68: overlay68ReleasePrimary.c.o */
 func_overlay_068_F00000E0_18C7240 = overlay68ReleasePrimary;
-
-/* overlay 68: overlay68ReleaseSecondary.c.o */
 func_overlay_068_F0000114_18C7274 = overlay68ReleaseSecondary;
-
-/* overlay 68: overlay68CreatePayload.c.o */
 func_overlay_068_F0000148_18C72A8 = overlay68CreatePayload;
-
-/* overlay 68: overlay68AttachObject.c.o */
 func_overlay_068_F000021C_18C737C = overlay68AttachObject;
-
-/* overlay 68: overlay68UpdateTrail.c.o */
 func_overlay_068_F00002E0_18C7440 = overlay68UpdateTrail;
-
-/* overlay 68: overlay68ClearNestedFlag.c.o */
 func_overlay_068_F0000484_18C75E4 = overlay68ClearNestedFlag;
-
-/* overlay 68: overlay68FinishEntry.c.o */
 func_overlay_068_F00004B0_18C7610 = overlay68FinishEntry;
-
-/* overlay 68: overlay68StartTimer.c.o */
 func_overlay_068_F00004E4_18C7644 = overlay68StartTimer;
-
-/* overlay 68: overlay68PromoteSecondary.c.o */
 func_overlay_068_F000051C_18C767C = overlay68PromoteSecondary;
-
-/* overlay 68: overlay68Interpolate.c.o */
-func_overlay_068_F0000650_18C77B0 = overlay68Interpolate;
-
-/* overlay 68: overlay68InitializeObject.c.o */
 func_overlay_068_F00008E0_18C7A40 = overlay68InitializeObject;
-
-/* overlay 68: overlay68UpdateAnimation.c.o */
 func_overlay_068_F000096C_18C7ACC = overlay68UpdateAnimation;
-
-/* overlay 68: overlay68DrawSortedEntries.c.o */
 func_overlay_068_F0000EFC_18C805C = overlay68DrawSortedEntries;
-
-/* overlay 68: overlay68RebuildSecondaryEntry.c.o */
 func_overlay_068_F0001250_18C83B0 = overlay68RebuildSecondaryEntry;
-
-/* overlay 68: overlay68ReleaseTertiary.c.o */
 func_overlay_068_F0001438_18C8598 = overlay68ReleaseTertiary;
-
-/* overlay 68: overlay68CheckKind.c.o */
 func_overlay_068_F000146C_18C85CC = overlay68CheckKind;
 
 /* overlay 69: overlay_069.c.o */

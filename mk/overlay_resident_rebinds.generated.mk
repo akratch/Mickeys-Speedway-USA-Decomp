@@ -1779,62 +1779,25 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay_066.c.o: SURFACE_REBIND = $(OBJCOP
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o067/overlay_067.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym frontDrawRectangles=frontDrawRectangles_o067Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68AttachObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym levelGetNumber=levelGetNumber_o068Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68CreateEntries.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007A1F4=D_8007A1F4_o068Reloc \
-	--redefine-sym mmAlloc=mmAlloc_o068Reloc \
-	--redefine-sym overlay68PayloadLimit=overlay68PayloadLimit_o068Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68CreatePayload.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8000590C=func_8000590C_o068Reloc \
-	--redefine-sym levelGetNumber=levelGetNumber_o068Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68DrawSortedEntries.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camGetProjZ=camGetProjZ_o068Reloc \
-	--redefine-sym func_80022E80=func_80022E80_o068Reloc \
-	--redefine-sym func_80022FD4=func_80022FD4_o068Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68InitializeObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8005AD64=func_8005AD64_o068Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68PromoteSecondary.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007A1F4=D_8007A1F4_o068Reloc \
-	--redefine-sym D_8007A1F8=D_8007A1F8_o068Reloc \
-	--redefine-sym overlay68ClearNestedFlag=overlay68ClearNestedFlag_o068Reloc \
-	--redefine-sym overlay68FinishEntry=overlay68FinishEntry_o068Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68RebuildSecondaryEntry.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_800291C4=func_800291C4_o068Reloc \
-	--redefine-sym levelGetBlurEffect=levelGetBlurEffect_o068Reloc \
-	--redefine-sym mmAlloc=mmAlloc_o068Reloc \
-	--redefine-sym mmFree=mmFree_o068Reloc \
-	--redefine-sym overlay68PayloadLimit=overlay68PayloadLimit_o068Reloc \
-	--redefine-sym piRomLoadSection=piRomLoadSection_o068Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68ReleasePrimary.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007A1F4=D_8007A1F4_o068Reloc \
-	--redefine-sym mmFree=mmFree_o068Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68ReleaseSecondary.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmFree=mmFree_o068Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68ReleaseTertiary.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007A1F8=D_8007A1F8_o068Reloc \
-	--redefine-sym mmFree=mmFree_o068Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68UpdateAnimation.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay_068.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o068Reloc \
+	--redefine-sym D_8007A1F4=D_8007A1F4_o068Reloc \
+	--redefine-sym D_8007A1F8=D_8007A1F8_o068Reloc \
 	--redefine-sym D_800C947C=D_800C947C_o068Reloc \
+	--redefine-sym camGetProjZ=camGetProjZ_o068Reloc \
+	--redefine-sym func_8000590C=func_8000590C_o068Reloc \
 	--redefine-sym func_8000FAE0=func_8000FAE0_o068Reloc \
+	--redefine-sym func_80022E80=func_80022E80_o068Reloc \
+	--redefine-sym func_80022FD4=func_80022FD4_o068Reloc \
+	--redefine-sym func_800291C4=func_800291C4_o068Reloc \
 	--redefine-sym func_8005ABA8=func_8005ABA8_o068Reloc \
 	--redefine-sym func_8005AD64=func_8005AD64_o068Reloc \
-	--redefine-sym mathDiffAngle=mathDiffAngle_o068Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68UpdateTrail.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800C947C=D_800C947C_o068Reloc \
-	--redefine-sym overlay68FinishEntry=overlay68FinishEntry_o068Reloc $@
+	--redefine-sym levelGetBlurEffect=levelGetBlurEffect_o068Reloc \
+	--redefine-sym levelGetNumber=levelGetNumber_o068Reloc \
+	--redefine-sym mathDiffAngle=mathDiffAngle_o068Reloc \
+	--redefine-sym mmAlloc=mmAlloc_o068Reloc \
+	--redefine-sym mmFree=mmFree_o068Reloc \
+	--redefine-sym piRomLoadSection=piRomLoadSection_o068Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay_069.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o069Reloc \

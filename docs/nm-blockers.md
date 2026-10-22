@@ -237,10 +237,10 @@ This is a names-only audit of every function body guarded by `NON_MATCHING` in `
 | `func_overlay_022_F0000D30_1878E38` | `src/overlays/o022/overlay_022.c` | matched | — | Promoted as overlay 22 object removal; no ownership work remains. |
 | `func_overlay_022_F0000A7C_1878B84` | `src/overlays/o022/overlay_022.c` | matched | — | Exact 692-byte / 173-word C with frame `0x88`. Floating-point term rotation restores all three operand encodings; the configured object, all three runtime relocation identities, linked owner/module, and full ROM are exact. |
 | `func_overlay_025_F000017C_1879E04` | `src/overlays/o025/overlay_025.c` | resolved-plateau | overlay 25 movement constants | TU-owned +0x20..+0x40 .rodata clears module growth. The call at function `+0x34C` is table-1 record 15 through ORT 1471 to `overlay7DispatchModes`, not an overlay-local hit helper; source now preserves that identity. Code generation and fresh linked C proof remain. |
-| `func_overlay_026_F00001A0_187A598` | `src/overlays/o026/func_overlay_026_F00001A0_187A598.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_overlay_026_F0000B18_187AF10` | `src/overlays/o026/func_overlay_026_F0000B18_187AF10.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_overlay_026_F0001158_187B550` | `src/overlays/o026/overlay26DrawGroups.c` | none | — | Removed an invented empty negative-offset read that manufactured the former exact-size 134-word/`0x58`-frame diagnostic and 65-word score. Clean V0 is uncompiled; reproduce it and authenticate boundaries/relocations before further structure work. |
-| `func_overlay_026_F0000D24_187B11C` | `src/overlays/o026/overlay26HandleEffects.c` | none | — | No ownership change; continue source/codegen work. |
+| `func_overlay_026_F00001A0_187A598` | `src/overlays/o026/overlay_026.c` | none | — | No ownership change; continue source/codegen work. |
+| `func_overlay_026_F0000B18_187AF10` | `src/overlays/o026/overlay_026.c` | none | — | No ownership change; continue source/codegen work. |
+| `func_overlay_026_F0001158_187B550` | `src/overlays/o026/overlay_026.c` | none | — | Removed an invented empty negative-offset read that manufactured the former exact-size 134-word/`0x58`-frame diagnostic and 65-word score. Clean V0 is uncompiled; reproduce it and authenticate boundaries/relocations before further structure work. |
+| `func_overlay_026_F0000D24_187B11C` | `src/overlays/o026/overlay_026.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_027_F0000064_187BA3C` | `src/overlays/o027/overlay_027.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_027_F0000624_187BFFC` | `src/overlays/o027/overlay_027.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_027_F0000A1C_187C3F4` | `src/overlays/o027/overlay_027.c` | none | — | No ownership change; continue source/codegen work. |

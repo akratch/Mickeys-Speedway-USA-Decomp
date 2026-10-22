@@ -1679,11 +1679,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x187A3F8, c, overlay26InitializeObject]
-      - [0x187A598, c, func_overlay_026_F00001A0_187A598]
-      - [0x187AF10, c, func_overlay_026_F0000B18_187AF10]
-      - [0x187B11C, c, overlay26HandleEffects]
-      - [0x187B550, c, overlay26DrawGroups]
+      - [0x187A3F8, c, overlay_026]
       - [0x187B768, bin, overlay_026_data_rodata]
       - [0x187B788, bin, overlay_026_reloc1]
       - [0x187B928, bin, overlay_026_reloc2]

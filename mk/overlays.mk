@@ -855,11 +855,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29HandleEffects.c.o: POSTPROCESS = 
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x404
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29DrawGroups.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x204
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay26InitializeObject.c.o: \
-	config/normalizations/overlay26InitializeObject.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay26InitializeObject.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay26InitializeObject.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o051/overlay_051.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8AC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o051/overlay_051.c.o: CFLAGS += -Wab,-r4300_mul
@@ -2693,63 +2688,22 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/func_overlay_035_F0000B40_1882820.c.o: POS
 	$(OBJCOPY) --redefine-sym sqrtf=sqrtf_o035Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x840
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay26HandleEffects.c.o: CFLAGS += -Wab,-r4300_mul
-# Stored overlay call carriers are zero; keep each resident identity in its
-# own declared alias without changing compiler-emitted instruction words.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay26HandleEffects.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_80006EA0=func_80006EA0_o026Reloc \
-		--redefine-sym func_8002A910=func_8002A910_o026Reloc \
-		--redefine-sym sqrtf=sqrtf_o026Reloc \
-		--redefine-sym func_80029FE4=func_80029FE4_o026Reloc \
-		--redefine-sym func_8002997C=func_8002997C_o026Reloc \
-		--redefine-sym func_8003EDEC=func_8003EDEC_o026Reloc \
-		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o026Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x434
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F00001A0_187A598.c.o: CFLAGS += -Wab,-r4300_mul
-ifneq ($(NON_MATCHING),1)
-# Exact C. Its compiler pool (-0.1f, -0.2f, 6.283185f and two 0.9f) duplicates
-# the retained overlay data at rodata-relative +0x0, which the shipped hi/lo
-# pairs encode. Rebind the ten references to a pool symbol and discard the
-# digest-checked duplicate, overlay 29's metadata-only form; no instruction is
-# edited. The thirteen resident callees go through the generated surface
-# entries.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F00001A0_187A598.c.o: \
-	config/normalizations/func_overlay_026_F00001A0_187A598.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F00001A0_187A598.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym Arctanf=Arctanf_o026Reloc \
-		--redefine-sym Powerf=Powerf_o026Reloc \
-		--redefine-sym dAngle=dAngle_o026Reloc \
-		--redefine-sym func_80006EA0=func_80006EA0_o026Reloc \
-		--redefine-sym func_80008128=func_80008128_o026Reloc \
-		--redefine-sym func_80010900=func_80010900_o026Reloc \
-		--redefine-sym func_8001DCD0=func_8001DCD0_o026Reloc \
-		--redefine-sym func_8002A8BC=func_8002A8BC_o026Reloc \
-		--redefine-sym func_8002A8C0=func_8002A8C0_o026Reloc \
-		--redefine-sym mathDiffAngle=mathDiffAngle_o026Reloc \
-		--redefine-sym partUpdateTriggers=partUpdateTriggers_o026Reloc \
-		--redefine-sym sqrtf=sqrtf_o026Reloc \
-		--redefine-sym trackMakePolylist=trackMakePolylist_o026Reloc \
-		--add-symbol gOverlay26UpdatePoolReloc=0x0,global $@ && \
+# Overlay 26 is one TU under the overlay flag set: no trim, and its resident
+# calls take the generated rebinds. What remains is phase-3 scaffolding for
+# rodata the TU does not own yet, none of it touching an instruction word:
+# the update's compiler pool (-0.1f, -0.2f, 6.283185f and two 0.9f)
+# duplicates the retained overlay data at rodata-relative +0x0, which the
+# shipped hi/lo pairs encode. Rebind its ten references to a pool symbol and
+# discard the digest-checked duplicate (overlay 29's metadata-only form).
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay_026.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay_026.c.o: \
+	config/normalizations/overlay_026.rebind.spec
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay_026.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay26UpdatePoolReloc=0x0,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/func_overlay_026_F00001A0_187A598.rebind.spec && \
+		@config/normalizations/overlay_026.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:65b37d85616c58b2a7b1db845df735b73a82241585f505fda670a9739bdeea4b && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x978
-endif
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F0000B18_187AF10.c.o: CFLAGS += -Wab,-r4300_mul
-# The resident call cannot be valued under its own global name in
-# overlay_undefined_syms.us.txt without moving the resident function for
-# every resident caller; tools/reloc_surface.py derives a per-module
-# placeholder for the R_MIPS_26 site and the rebind is declared here.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F0000B18_187AF10.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym sqrtf=sqrtf_o026Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x20C
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay26DrawGroups.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x218
+		sha256:65b37d85616c58b2a7b1db845df735b73a82241585f505fda670a9739bdeea4b
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29ProjectPoint.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29ProjectPoint.c.o: POSTPROCESS = \
@@ -3174,8 +3128,6 @@ OVERLAY_TRIMMED_OBJECTS += \
 OVERLAY_TRIMMED_OBJECTS += \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o
 OVERLAY_TRIMMED_OBJECTS += \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F00001A0_187A598.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F0000B18_187AF10.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/func_overlay_029_F00005C4_187D874.c.o
 OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/overlay35SelectHeight.c.o \

@@ -1083,11 +1083,7 @@ TEXT_SUBSEGMENTS = {
         (0x16CC, "asm", "overlay_029_padding"),
     ],
     26: [
-        (0x000, "c", "overlay26InitializeObject"),
-        (0x1A0, "c", "func_overlay_026_F00001A0_187A598"),
-        (0xB18, "c", "func_overlay_026_F0000B18_187AF10"),
-        (0xD24, "c", "overlay26HandleEffects"),
-        (0x1158, "c", "overlay26DrawGroups"),
+        (0x000, "c", "overlay_026"),
     ],
     30: [
         (0x000, "c", "overlay_030"),

@@ -5496,46 +5496,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x1A0",
-     "size": "0x1A0",
-     "type": "c",
-     "source": "overlays/o026/overlay26InitializeObject",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1A0",
-     "end_offset": "0xB18",
-     "size": "0x978",
-     "type": "c",
-     "source": "overlays/o026/func_overlay_026_F00001A0_187A598",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xB18",
-     "end_offset": "0xD24",
-     "size": "0x20C",
-     "type": "c",
-     "source": "overlays/o026/func_overlay_026_F0000B18_187AF10",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xD24",
-     "end_offset": "0x1158",
-     "size": "0x434",
-     "type": "c",
-     "source": "overlays/o026/overlay26HandleEffects",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1158",
      "end_offset": "0x1370",
-     "size": "0x218",
+     "size": "0x1370",
      "type": "c",
-     "source": "overlays/o026/overlay26DrawGroups",
+     "source": "overlays/o026/overlay_026",
      "matched": true,
      "nonmatching": false
     }

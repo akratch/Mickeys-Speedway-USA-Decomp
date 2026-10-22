@@ -2410,74 +2410,15 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o026/func_overlay_026_F00001A0_187A598.c.o",
-      "offset": 416,
+      "object": "build/src/overlays/o026/overlay_026.c.o",
+      "offset": 0,
       "overlay": 26,
-      "size": 2424,
-      "source": "src/overlays/o026/func_overlay_026_F00001A0_187A598.c",
+      "size": 4976,
+      "source": "src/overlays/o026/overlay_026.c",
       "tools": [
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
-        "trim_elf_section.py",
         "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o026/func_overlay_026_F0000B18_187AF10.c.o",
-      "offset": 2840,
-      "overlay": 26,
-      "size": 524,
-      "source": "src/overlays/o026/func_overlay_026_F0000B18_187AF10.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o026/overlay26DrawGroups.c.o",
-      "offset": 4440,
-      "overlay": 26,
-      "size": 536,
-      "source": "src/overlays/o026/overlay26DrawGroups.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o026/overlay26HandleEffects.c.o",
-      "offset": 3364,
-      "overlay": 26,
-      "size": 1076,
-      "source": "src/overlays/o026/overlay26HandleEffects.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o026/overlay26InitializeObject.c.o",
-      "offset": 0,
-      "overlay": 26,
-      "size": 416,
-      "source": "src/overlays/o026/overlay26InitializeObject.c",
-      "tools": [
-        "rebind_elf_relocations.py"
       ]
     },
     {
@@ -8806,10 +8747,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 607,
+      "metadata": 603,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 439480,
-    "objects_with_postprocess": 608
+    "objects_with_postprocess": 604
   }
 }

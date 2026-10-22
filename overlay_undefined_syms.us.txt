@@ -1283,38 +1283,35 @@ overlay25SetVectorFlagsReloc = 0x00000588;
 overlay7DispatchModes_o025Reloc = 0xf0000000;
 trackMakePolylist_o025Reloc = 0xf0000000;
 
-/* overlay 26: overlay26InitializeObject.c.o */
-func_overlay_026_F0000B18_o026Reloc = 0x00000b18;
-
-/* overlay 26: func_overlay_026_F00001A0_187A598.c.o */
+/* overlay 26: overlay_026.c.o */
 Arctanf_o026Reloc = 0xf0000000;
 Powerf_o026Reloc = 0xf0000000;
+amSndPlayXYZ_o026Reloc = 0xf0000000;
+camPushModelMtx_o026Reloc = 0xf0000000;
+camRestoreModelMtx_o026Reloc = 0xf0000000;
 dAngle_o026Reloc = 0xf0000000;
 func_80006EA0_o026Reloc = 0xf0000000;
 func_80008128_o026Reloc = 0xf0000000;
+func_8000FAE0_o026Reloc = 0xf0000000;
 func_80010900_o026Reloc = 0xf0000000;
 func_8001DCD0_o026Reloc = 0xf0000000;
+func_8002997C_o026Reloc = 0xf0000000;
+func_80029FE4_o026Reloc = 0xf0000000;
 func_8002A8BC_o026Reloc = 0xf0000000;
 func_8002A8C0_o026Reloc = 0xf0000000;
+func_8002A910_o026Reloc = 0xf0000000;
+func_8003EDEC_o026Reloc = 0xf0000000;
+func_overlay_026_F0000B18_o026Reloc = 0x00000b18;
 func_overlay_026_F0000D24_187B11CReloc = 0xf0000000;
+lightObject_o026Reloc = 0xf0000000;
 mathDiffAngle_o026Reloc = 0xf0000000;
+mathOneFloatPY_o026Reloc = 0xf0000000;
+mathOneFloatRPY_o026Reloc = 0xf0000000;
 overlay37RecordMinimum_o026Reloc = 0xf0000000;
 partUpdateTriggers_o026Reloc = 0xf0000000;
 sqrtf_o026Reloc = 0xf0000000;
-trackMakePolylist_o026Reloc = 0xf0000000;
-
-/* overlay 26: overlay26HandleEffects.c.o */
-amSndPlayXYZ_o026Reloc = 0xf0000000;
-func_8002997C_o026Reloc = 0xf0000000;
-func_80029FE4_o026Reloc = 0xf0000000;
-func_8002A910_o026Reloc = 0xf0000000;
-func_8003EDEC_o026Reloc = 0xf0000000;
-
-/* overlay 26: overlay26DrawGroups.c.o */
-camPushModelMtx_o026Reloc = 0xf0000000;
-camRestoreModelMtx_o026Reloc = 0xf0000000;
-lightObject_o026Reloc = 0xf0000000;
 texDPInit_o026Reloc = 0xf0000000;
+trackMakePolylist_o026Reloc = 0xf0000000;
 
 /* overlay 27: overlay_027.c.o */
 D_80000050 = 0x80000050;

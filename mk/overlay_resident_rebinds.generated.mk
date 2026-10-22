@@ -585,18 +585,33 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o025/overlay_025.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym overlay7DispatchModes=overlay7DispatchModes_o025Reloc \
 	--redefine-sym trackMakePolylist=trackMakePolylist_o025Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F00001A0_187A598.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_026_F0000B18_187AF10=func_overlay_026_F0000B18_o026Reloc \
-	--redefine-sym overlay37RecordMinimum=overlay37RecordMinimum_o026Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay26DrawGroups.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay_026.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o026Reloc \
+	--redefine-sym Powerf=Powerf_o026Reloc \
+	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o026Reloc \
 	--redefine-sym camPushModelMtx=camPushModelMtx_o026Reloc \
 	--redefine-sym camRestoreModelMtx=camRestoreModelMtx_o026Reloc \
+	--redefine-sym dAngle=dAngle_o026Reloc \
+	--redefine-sym func_80006EA0=func_80006EA0_o026Reloc \
+	--redefine-sym func_80008128=func_80008128_o026Reloc \
+	--redefine-sym func_8000FAE0=func_8000FAE0_o026Reloc \
+	--redefine-sym func_80010900=func_80010900_o026Reloc \
+	--redefine-sym func_8001DCD0=func_8001DCD0_o026Reloc \
+	--redefine-sym func_8002997C=func_8002997C_o026Reloc \
+	--redefine-sym func_80029FE4=func_80029FE4_o026Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o026Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o026Reloc \
+	--redefine-sym func_8002A910=func_8002A910_o026Reloc \
+	--redefine-sym func_8003EDEC=func_8003EDEC_o026Reloc \
 	--redefine-sym lightObject=lightObject_o026Reloc \
-	--redefine-sym texDPInit=texDPInit_o026Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay26InitializeObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_026_F0000B18_187AF10=func_overlay_026_F0000B18_o026Reloc $@
+	--redefine-sym mathDiffAngle=mathDiffAngle_o026Reloc \
+	--redefine-sym mathOneFloatPY=mathOneFloatPY_o026Reloc \
+	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o026Reloc \
+	--redefine-sym overlay37RecordMinimum=overlay37RecordMinimum_o026Reloc \
+	--redefine-sym partUpdateTriggers=partUpdateTriggers_o026Reloc \
+	--redefine-sym sqrtf=sqrtf_o026Reloc \
+	--redefine-sym texDPInit=texDPInit_o026Reloc \
+	--redefine-sym trackMakePolylist=trackMakePolylist_o026Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007A1E4=D_8007A1E4_o027Reloc \

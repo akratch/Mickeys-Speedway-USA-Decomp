@@ -2365,18 +2365,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18AF1E8, c, func_overlay_058_F0000000_18AF1E8]
-      - [0x18AF7A8, c, overlay58ReleaseResources]
-      - [0x18AF7E4, c, func_overlay_058_F00005FC_18AF7E4]
-      - [0x18B04D8, c, overlay58SetNodeValue]
-      - [0x18B0574, c, func_overlay_058_F000138C_18B0574]
-      - [0x18B3DEC, c, overlay58DrawSegmentStrip]
-      - [0x18B4110, c, overlay58DrawPointQuad]
-      - [0x18B42B0, c, overlay58DrawLargePointQuad]
-      - [0x18B4450, c, overlay58RefreshRankSet]
-      - [0x18B46B0, c, overlay58EnsureResource]
-      - [0x18B473C, c, overlay58FinalizePackedStatus]
-      - [0x18B4BFC, asm, overlay_058_padding_b]
+      - [0x18AF1E8, c, overlay_058]
       - [0x18B4C08, bin, overlay_058_data_rodata]
       - [0x18B5038, bin, overlay_058_reloc1]
       - [0x18B6A40, bin, overlay_058_reloc2]

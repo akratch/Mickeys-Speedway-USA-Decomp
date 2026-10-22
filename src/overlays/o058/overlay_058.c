@@ -1,4 +1,552 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_058.h"
+
+/* Module-private functions: no ORT row, so their callers use JUMP
+ * records. */
+static void overlay58SetNodeValue(s32 id, s32 argument, f32 value);
+static void func_overlay_058_F000138C_18B0574(s32 ticks);
+static void overlay58DrawSegmentStrip(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1, f32 z1, f32 limit);
+static void overlay58DrawPointQuad(s32 x, s32 y, s32 z);
+static void overlay58DrawLargePointQuad(s32 x, s32 y, s32 z);
+static void overlay58RefreshRankSet(void);
+static void overlay58EnsureResource(void);
+static void overlay58FinalizePackedStatus(void);
+
+/* Matched 2026-10-02 (lane x-o058) by rewriting the inherited shape, not by
+ * any allocator work: 295 -> 0 masked words at size delta 0, frame 0x60.
+ *
+ * The previous candidate walked hand-made cursors over alias extern names
+ * (D_7C for D_78 + 4, D_94, D_AC, D_C4, a separate "end" symbol for the tag
+ * table) and declared nineteen locals.  The function is the matched whale's
+ * vocabulary instead: every table is indexed by `i` and strength reduction
+ * makes the cursors, the entry count is read from its global at each loop
+ * test, and the entry type is the whale's race entry (so the 0x1C byte
+ * increment is `counters[class]++`).  That one rewrite is 295 -> 77.
+ *
+ * The last 77 were one local: the rank-gap clamp reuses `swapped` instead of
+ * declaring its own.  A separate `gap` costs two frame cells (0x68 against
+ * 0x60) and leaves the constant 10 for initColourCycle unhoisted, which moves
+ * the gap into v1 and the table base into a1.  -Wo,-loopunroll,0 was not
+ * load-bearing (identical object either way) and is removed. */  /* (was on typedef RcpTextureInfo) */
+/* Tier D: stride and the one field read here. */  /* (was on typedef Overlay58PlayerSlot) */
+void func_overlay_058_F0000000_18AF1E8(void) {
+    s32 i;
+    s32 swapped;
+    s32 minutesA;
+    s32 minutesB;
+    s32 secondsA;
+    s32 secondsB;
+    s32 centisA;
+    s32 centisB;
+    Overlay58RaceState *state;
+    Overlay58RaceEntry *entry;
+
+    state = func_80028F54();
+    loadFrontEndList(D_o058_5AE8);
+    D_o058_5B40[0].texture = D_800D31C8_o058Reloc[3];
+    D_o058_5B60[0].texture = D_800D31C8_o058Reloc[4];
+    D_o058_5B80[0].texture = D_800D31C8_o058Reloc[5];
+    D_o058_5BA0[0].texture = D_800D31C8_o058Reloc[0x7B];
+    D_o058_5E80 = 0;
+    joyResetMap();
+    for (i = 0; i < 4; i++) {
+        D_o058_5F48[i] = D_800D3058_o058Reloc[i].enabled;
+    }
+    D_o058_5EBC = state->active;
+    for (i = 0; i < D_8007BEF8_o058Reloc; i++) {
+        D_o058_5EC8[i] = &state->entries[i];
+        D_o058_5EE0[i] = &state->entries[i];
+    }
+    if (state->mode == 5) {
+        do {
+            swapped = 0;
+            for (i = 0; i < D_8007BEF8_o058Reloc - 1; i++) {
+                if (D_o058_5EC8[i]->value < D_o058_5EC8[i + 1]->value) {
+                    entry = D_o058_5EC8[i];
+                    D_o058_5EC8[i] = D_o058_5EC8[i + 1];
+                    D_o058_5EC8[i + 1] = entry;
+                    swapped = 1;
+                }
+            }
+        } while (swapped);
+    } else {
+        do {
+            swapped = 0;
+            for (i = 0; i < D_8007BEF8_o058Reloc - 1; i++) {
+                if (D_o058_5EC8[i]->value > D_o058_5EC8[i + 1]->value) {
+                    entry = D_o058_5EC8[i];
+                    D_o058_5EC8[i] = D_o058_5EC8[i + 1];
+                    D_o058_5EC8[i + 1] = entry;
+                    swapped = 1;
+                }
+            }
+        } while (swapped);
+    }
+    D_o058_5EF8[0] = 0;
+    for (i = 1; i < D_8007BEF8_o058Reloc; i++) {
+        overlay56SplitTime(D_o058_5EC8[i - 1]->value, &minutesA, &secondsA, &centisA);
+        overlay56SplitTime(D_o058_5EC8[i]->value, &minutesB, &secondsB, &centisB);
+        if ((minutesA == minutesB) && (secondsA == secondsB) && (centisA == centisB)) {
+            D_o058_5EF8[i] = D_o058_5EF8[i - 1];
+        } else {
+            D_o058_5EF8[i] = i;
+        }
+    }
+    for (i = 0; i < D_8007BEF8_o058Reloc; i++) {
+        if (state->entries == D_o058_5EC8[i]) {
+            D_o058_5EC4 = i;
+            i = 6;
+        }
+    }
+    if (((D_o058_5EC4 < 4) || (D_8007BF0C_o058Reloc != 0)) && (state->mode != 1)) {
+        for (i = 0; i < D_8007BEF8_o058Reloc; i++) {
+            D_o058_5EC8[i]->counters[D_o058_5EF8[i]]++;
+            D_o058_5EC8[i]->rank += D_o058_5B28[D_o058_5EF8[i]];
+            if (D_o058_5EC8[i]->rank > 9999) {
+                D_o058_5EC8[i]->rank = 9999;
+            }
+        }
+    } else if ((state->active != 0) && !(D_8007BF1C_o058Reloc & 0x100)) {
+        state->countdown--;
+    }
+    do {
+        swapped = 0;
+        for (i = 0; i < D_8007BEF8_o058Reloc - 1; i++) {
+            if (D_o058_5EE0[i]->rank < D_o058_5EE0[i + 1]->rank) {
+                entry = D_o058_5EE0[i];
+                D_o058_5EE0[i] = D_o058_5EE0[i + 1];
+                D_o058_5EE0[i + 1] = entry;
+                swapped = 1;
+            }
+        }
+    } while (swapped);
+    for (i = 0; i < D_8007BEF8_o058Reloc; i++) {
+        swapped = D_o058_5EE0[0]->rank - D_o058_5EE0[i]->rank;
+        if (swapped > 100) {
+            swapped = 100;
+        }
+        D_o058_5EE0[i]->gap = swapped;
+    }
+    D_o058_5F10[0] = 0;
+    for (i = 1; i < D_8007BEF8_o058Reloc; i++) {
+        if (D_o058_5EE0[i - 1]->rank == D_o058_5EE0[i]->rank) {
+            D_o058_5F10[i] = D_o058_5F10[i - 1];
+        } else {
+            D_o058_5F10[i] = i;
+        }
+    }
+    D_o058_5F28 = 0;
+    initColourCycle(&D_o058_5F38, 10);
+    D_o058_5E7C = 0;
+    if (D_8007C1B4_o058Reloc == 3) {
+        D_o058_5E78 = 3;
+    } else {
+        D_o058_5E78 = 0;
+    }
+    if (state->mode != 5) {
+        D_o058_5E68[0] = D_8007C0B8_o058Reloc->text[0x24];
+    } else {
+        D_o058_5E68[0] = D_8007C0B8_o058Reloc->text[0x70];
+    }
+    D_o058_5E68[1] = D_8007C0B8_o058Reloc->text[0x25];
+    D_o058_5E68[2] = D_8007C0B8_o058Reloc->text[0x26];
+    D_o058_5E68[3] = D_8007C0B8_o058Reloc->text[0x14];
+    overlay58FinalizePackedStatus();
+    D_o058_5F2C = 1;
+    D_o058_5F30 = 0;
+    D_8007BF6C_o058Reloc++;
+}
+
+/* DKR v77/v80 and JFG checks found only generic resource cleanup. */
+void overlay58ReleaseResources(void) {
+    void *resource;
+
+    overlay58ReleaseReloc(gOverlay58InlineResource);
+    resource = gOverlay58OptionalResource;
+    if (resource != NULL) {
+        overlay58ReleaseReloc(resource);
+    }
+}
+
+/*
+ * Mickey-only reconstruction (no permitted donor counterpart).  Exact.
+ *
+ * What the shipped code fixes about the source, in the order it was found:
+ *   - Plain `-O2`: the first `jal` carries the parameter home store in its
+ *     delay slot, which `-g3` never schedules.
+ *   - `D_54 = 0` is stored in both arms of the case-4 mode test.
+ *   - The menu bits and the screen-mode nibble are one object (one ROM-table
+ *     symbol, addends 0 and 0x13).
+ *   - Case 3 reads its own resident table (ROM-table symbol 0x754), not the
+ *     one the drawing loop, case 5 and the level calls read (symbol 0x666);
+ *     the `= -1` stores in cases 0 and 3 go to overlay BSS +0x0
+ *     (`D_o058_5E50[0]`), not to the camera mode global.
+ *   - The progress float (data +0x2C0) is read under two names.  The two
+ *     compares (`< 1.0f` and `1.0f ==`) are not the same uopt variable as the
+ *     strip argument, the `+=` and the clamp: the shipped code reloads the
+ *     strip argument after the join instead of carrying the compare's read
+ *     around the sound call, and the address is never hoisted into a ninth
+ *     saved register (four references, not six).  The compares therefore use
+ *     the module-offset spelling `D_o058_5CE0` for the same word.  Written
+ *     through a pointer local instead, the `&` and the `==` take the wrong
+ *     operand order and the frame gains a cell.
+ *   - `increment = 0.02f; increment *= updateRate;` loads the literal before
+ *     the conversion and keeps it the multiply's left operand; one
+ *     expression is canonicalised the other way round in every spelling.
+ *   - `1.0f == progress`, constant first, is the shipped `c.eq.s` order.
+ *   - The large point quad's x and z are `s32` locals assigned before the
+ *     call, vertex first (`vertex + offset`), so x and z are complete before
+ *     y is read and the offset conversion is the add's left operand; the
+ *     offsets are one flat `s16` table indexed `player * 2` and
+ *     `player * 2 + 1`.
+ *   - The frame is a declaration count: 40 bytes of locals, status third.
+ *     The mapping scan is an indexed `for` over `D_1A0` using `marker` as
+ *     its index (uopt creates the cursor), so there is no cursor local, and
+ *     start/end are an `s16` pair.
+ */
+void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
+    Overlay58AnimPath *path;
+    Overlay58PathGeometry *geometry;
+    Overlay58Status *status;
+    Overlay58Gfx *command;
+    s16 start;
+    s16 end;
+    s32 marker;
+    s32 stage;
+    f32 increment;
+    s32 x;
+    s32 z;
+
+    status = func_80028F54();
+    D_70 = 0;
+    switch (D_30) {
+    case 0:
+        D_34.value = 0;
+        path = (Overlay58AnimPath *)func_800508B4(D_34.bytes.path);
+        if (path != 0) {
+            animseqStartPath(D_34.bytes.path);
+            path->flags |= 2;
+        }
+        D_30 = 4;
+        if (status->mode == 1) {
+            overlay58RefreshRankSet();
+            overlay58EnsureResource();
+            D_44 = 8;
+        } else if (status->mode == 5) {
+            D_44 = 2;
+            D_o058_5E50[0] = -1;
+        } else {
+            D_44 = 1;
+        }
+        break;
+    case 4:
+        if (D_2BC != 0) {
+            amSndStop(D_2BC);
+        }
+        D_68 -= updateRate * 4;
+        if (overlay41IsUnitScale(D_34.value) != 0) {
+            D_30 = 1;
+            amSndPlay(0x1FA, 0);
+            if (status->mode == 5) {
+                D_48 = 0;
+                D_4C = 0;
+                D_50 = 0x140;
+                D_54 = 0;
+            } else {
+                D_48 = 0x140;
+                D_50 = 0;
+                D_54 = 0;
+            }
+            D_58 = 0;
+            D_5C = 0;
+            D_60 = 0;
+        }
+        break;
+    case 1:
+        D_68 -= updateRate * 4;
+        func_overlay_058_F000138C_18B0574(updateRate);
+        break;
+    case 2:
+        if (D_38 > 0) {
+            D_38 -= updateRate;
+            if (D_38 <= 0) {
+                overlay58SetNodeValue(3, 0, 0.02f);
+            }
+        } else if (D_38 >= 0) {
+            D_38 -= updateRate;
+            if (D_38 < 0) {
+                amSndPlay(0x32A, 0);
+            }
+        }
+        if (overlay41IsUnitScale(D_34.value) != 0) {
+            D_30 = 3;
+            D_68 = 0;
+        }
+        break;
+    case 3:
+        D_68 += updateRate * 4;
+        if (D_68 >= 0xFF) {
+            D_68 = 0xFE;
+        }
+        if (D_2B0 == 0) {
+            if (D_800D31B8 & 0x4000) {
+                if (D_2BC != 0) {
+                    amSndStop(D_2BC);
+                }
+                amSndPlay(0xD, 0);
+                animseqStopPath(D_34.bytes.path);
+                D_34.value = 2;
+                path = (Overlay58AnimPath *)func_800508B4(D_34.bytes.path);
+                if (path != 0) {
+                    func_8005055C(D_34.bytes.path);
+                    animseqStartPath(D_34.bytes.path);
+                    path->flags |= 2;
+                }
+                D_30 = 4;
+                overlay58SetNodeValue(3, 0, -0.01f);
+                if (status->mode == 1) {
+                    overlay58RefreshRankSet();
+                    overlay58EnsureResource();
+                    D_44 = 8;
+                } else if (status->mode == 5) {
+                    D_44 = 2;
+                    D_o058_5E50[0] = -1;
+                } else {
+                    D_44 = 1;
+                }
+            } else if (D_800D31B8 & 0x9000) {
+                if (D_2BC != 0) {
+                    amSndStop(D_2BC);
+                }
+                if (D_8007BF0C == 0) {
+                    if (status->active < 3) {
+                        if (gOverlay58UnlockTableReloc[status->player][status->active + 1] != -1) {
+                            if (!(((Overlay58Options *)D_800D3128)->bits13 &
+                                  (1 << gOverlay58UnlockTableReloc[status->player][status->active + 1]))) {
+                                ((Overlay58Options *)D_800D3128)->bits13 |=
+                                    1 << gOverlay58UnlockTableReloc[status->player][status->active + 1];
+                                func_800291B4();
+                                func_8003A680(
+                                    gOverlay58UnlockTableReloc[status->player][status->active + 1] +
+                                    0xE);
+                            }
+                        }
+                    }
+                    if (D_8007BF44 > 0) {
+                        D_30 = 5;
+                        animseqStopPath(D_34.bytes.path);
+                        D_34.value = 9;
+                        path = (Overlay58AnimPath *)func_800508B4(D_34.bytes.path);
+                        if (path != 0) {
+                            func_8005055C(D_34.bytes.path);
+                            animseqStartPath(D_34.bytes.path);
+                            path->flags |= 2;
+                        }
+                    }
+                }
+                if (D_30 != 5) {
+                    D_70 = 1;
+                    D_2B4 = 1;
+                }
+            }
+        }
+        break;
+    case 5:
+        if (overlay41IsUnitScale(D_34.value) != 0) {
+            status->active++;
+            if (status->active == 4) {
+                D_8007BF20 = D_90[0]->mode;
+                D_8007BF24 = D_90[1]->mode;
+                D_8007BF28 = D_90[2]->mode;
+                D_8007BF2C = status->player;
+                gOverlay58LevelReloc = 0x24;
+                gOverlay58TrackReloc = 0;
+                gOverlay58VehicleReloc = 8;
+                gOverlay58TransitionModeReloc = 1;
+            } else {
+                D_8007BEF8 = 6;
+                D_8007BEFC = 5;
+                joyCreateMap(D_F8);
+                gOverlay58LevelReloc =
+                    gOverlay58SelectionTableReloc[status->player]
+                                                 [status->active];
+                gOverlay58TrackReloc = status->value4;
+                gOverlay58VehicleReloc = 5;
+                gOverlay58TransitionModeReloc = 0;
+            }
+            if (D_DC != 0) {
+                mainChangeLevel(1, 0, 0, 0xF, 1, 0);
+                D_DC = 0;
+            }
+            D_30 = 6;
+            D_68 = 0;
+        }
+        break;
+    case 6:
+        break;
+    }
+
+    if (D_68 < 0) {
+        D_68 = 0;
+    }
+    if ((D_70 != 0) && (D_2B0 == 0)) {
+        if (D_2B4 != 0) {
+            status->active++;
+        }
+        if (status->active == 4) {
+            if (D_8007BF0C != 0) {
+                if (D_DC != 0) {
+                    mainChangeLevel(0xC, 0, 0, 0xC, 1, 0);
+                    D_DC = 0;
+                }
+            } else {
+                D_8007BF20 = D_90[0]->mode;
+                D_8007BF24 = D_90[1]->mode;
+                D_8007BF28 = D_90[2]->mode;
+                D_8007BF2C = status->player;
+                if (D_DC != 0) {
+                    mainChangeLevel(0x24, 0, 0, 8, 1, 0);
+                    D_DC = 0;
+                }
+            }
+        } else if (D_8007BF0C != 0) {
+            mainChangeCameras(D_8007C1A0);
+            if (((D_8007C1A0 == 2) ||
+                 (D_8007C1A0 == 3)) &&
+                (gOverlay58CameraGateReloc != 0)) {
+                D_8007BEFC = 4 - D_8007C1A0;
+            } else {
+                D_8007BEFC = 0;
+            }
+            joyCreateMap(D_F8);
+            if (D_DC != 0) {
+                mainChangeLevel(
+                    gOverlay58SelectionTableReloc[status->player]
+                                                 [status->active],
+                    status->value4, 0, 5, 1, 0);
+                D_DC = 0;
+            }
+        } else {
+            D_8007BEF8 = 6;
+            D_8007BEFC = 5;
+            joyCreateMap(D_F8);
+            if (D_DC != 0) {
+                mainChangeLevel(
+                    gOverlay58SelectionTableReloc[status->player]
+                                                 [status->active],
+                    status->value4, 0, 5, 1, 0);
+                D_DC = 0;
+            }
+        }
+        amSndPlay(0xC, 0);
+        D_2B0 = 1;
+    }
+    if (D_68 < 0) {
+        D_68 = 0;
+    }
+
+    path = (Overlay58AnimPath *)func_800508B4(3);
+    if ((path != 0) && (D_68 > 0)) {
+        geometry = *path->object->geometry;
+        camSetView(&D_800D3140,
+                      &D_800D3144);
+        command = D_800D3140++;
+        command->w0 = 0xFA000000;
+        command->w1 = (D_68 & 0xFF) | ~0xFF;
+        for (stage = 0; stage <= D_6C; stage++) {
+            start = 0;
+            end = 0;
+            for (marker = 0; D_1A0[marker] != -1; marker += 2) {
+                if (D_1A0[marker] ==
+                    gOverlay58SelectionTableReloc[status->player][stage]) {
+                    start = D_1A0[marker + 1];
+                }
+                if (stage == 3) {
+                    end = 0x13;
+                } else if (D_1A0[marker] ==
+                           gOverlay58SelectionTableReloc[status->player]
+                                                        [stage + 1]) {
+                    end = D_1A0[marker + 1];
+                }
+            }
+
+            if (stage == D_6C) {
+                increment = 0.02f;
+                increment *= updateRate;
+                if ((D_2BC == 0) & (D_o058_5CE0 < 1.0f)) {
+                    if (D_30 == 3) {
+                        amSndPlay(0x32B, &D_2BC, D_6C);
+                    }
+                }
+                overlay58DrawSegmentStrip(
+                    geometry->vertices[start].x, geometry->vertices[start].y,
+                    geometry->vertices[start].z, geometry->vertices[end].x,
+                    geometry->vertices[end].y, geometry->vertices[end].z,
+                    D_2C0);
+                D_2C0 += increment;
+                if (D_2C0 > 1.0f) {
+                    D_2C0 = 1.0f;
+                    if (D_2BC != 0) {
+                        amSndStop(D_2BC);
+                    }
+                    overlay58DrawPointQuad((s32)geometry->vertices[end].x,
+                                           (s32)geometry->vertices[end].y,
+                                           (s32)geometry->vertices[end].z);
+                }
+            } else {
+                overlay58DrawSegmentStrip(
+                    geometry->vertices[start].x, geometry->vertices[start].y,
+                    geometry->vertices[start].z, geometry->vertices[end].x,
+                    geometry->vertices[end].y, geometry->vertices[end].z,
+                    1.0f);
+            }
+
+            if (!(D_2A8[status->player] &
+                  ((((Overlay58Options *)D_800D3128)->flags << 5) >> 0x1C))) {
+                marker = -1;
+                if (status->player == 0) {
+                    if (stage == 0) {
+                        marker = start;
+                    }
+                } else if ((status->player > 0) && (status->player < 4)) {
+                    if (stage == 3) {
+                        marker = start;
+                    } else if ((D_6C == 2) && (stage == 2) &&
+                               (1.0f == D_o058_5CE0)) {
+                        marker = end;
+                    }
+                }
+                if (marker != -1) {
+                    x = geometry->vertices[marker].x +
+                        D_B8[status->player * 2];
+                    z = geometry->vertices[marker].z +
+                        D_B8[status->player * 2 + 1];
+                    overlay58DrawLargePointQuad(
+                        x, (s32)geometry->vertices[marker].y, z);
+                }
+            }
+            overlay58DrawPointQuad((s32)geometry->vertices[start].x,
+                                   (s32)geometry->vertices[start].y,
+                                   (s32)geometry->vertices[start].z);
+        }
+    }
+}
+
+/* DKR v77/v80 and JFG have no exact donor for this node-update routine. */
+static void overlay58SetNodeValue(s32 id, s32 argument, f32 value) {
+    Overlay58Node *node;
+
+    node = (Overlay58Node *)func_800508B4(id);
+    if ((node != NULL) && (node->target != NULL)) {
+        if (value < 0.0f) {
+            func_8005AD64(node->target, argument, -1,
+                                        node->target->parameter);
+        } else {
+            func_8005AD64(node->target, argument, -1, 0.0f);
+        }
+        node->value = value;
+        node->active = 0;
+    }
+}
 
 /* Matched reconstruction from Mickey's runtime relocations (Tier A, 2026-09-16,
  * lane wv-y: 3,614 of 3,614 words at frame 0x138 and 1,253 relocations).
@@ -103,132 +651,7 @@
  * a further 144-variant sweep (one probe at the top of each case body, for
  * twelve different locals) found every size-preserving one inert.
  */
-#include "game/anim.h"
-#include "game/menu.h"
-#include "game/font.h"
-#include "overlays/overlay_056.h"
 
-struct MenuCommand { u32 w0; u32 w1; };
-typedef struct RcpTextureInfo RcpTextureInfo;
-typedef struct RcpTextureNode {
-    RcpTextureInfo *texture;
-    RcpTextureInfo *alternate;
-    u32 packedOffset;
-    s16 x;
-    s16 y;
-} RcpTextureNode;
-
-typedef struct Overlay58RaceEntry {
-    u8 character;
-    u8 variant;
-    u8 variantCopy;
-    u8 gap;
-    s32 value;
-    s32 lapTimes[3];
-    u8 pad14[8];
-    u8 counters[6];
-    u16 rank;
-    u8 flags[4];
-} Overlay58RaceEntry;
-
-typedef struct Overlay58RaceState {
-    u8 mode;
-    u8 active;
-    u8 player;
-    u8 countdown;
-    Overlay58RaceEntry entries[6];
-} Overlay58RaceState;
-
-typedef struct SavesPackedEntry {
-    s32 value;
-    u8 name[3];
-    u8 character;
-} SavesPackedEntry;
-
-typedef struct SavesSlot {
-    SavesPackedEntry records[4];
-} SavesSlot;
-
-typedef struct ColourCycle {
-    s32 frame;
-    s32 time;
-    u8 red;
-    u8 green;
-    u8 blue;
-    u8 alpha;
-    struct ColourCycle *table;
-} ColourCycle;
-
-typedef union Overlay58AnimationState {
-    s32 word;
-    u8 bytes[4];
-} Overlay58AnimationState;
-
-typedef struct Overlay58LanguageText {
-    char *text[182];
-} Overlay58LanguageText;
-
-extern Overlay58RaceState *func_80028F54(void);
-extern void updateColourCycle(void *cycle, s32 updateRate);
-extern void fontUseFont(s32 font);
-extern void fontPrintXY(MenuCommand **displayList, s32 x, s32 y, char *text, s32 flags);
-extern void func_8002F618(MenuCommand **displayList, RcpTextureNode *node, s32 x, s32 y, u8 red, u8 green, u8 blue, u8 alpha);
-extern void func_8005055C(s32 pathIndex);
-extern s32 sprintf(char *buffer, const char *format, ...);
-extern void amSndPlay(u16 sound, void **handle);
-extern void mainChangeCameras(s32 mode);
-extern void joyCreateMap(s8 *activePlayers);
-extern void mainChangeLevel(s32 nextLevel, s32 nextCharacter, s32 nextAnimGroup, s32 nextMenu, s32 arg4, s32 arg5);
-extern void mainSetAnimGroup(s32 group);
-extern void func_8003A754(void);
-extern char *func_8003A5A0(s32 value);
-extern SavesSlot *func_800291C4(void);
-extern s32 levelGetBlurEffect(s32 level);
-extern s32 func_8003A6B0(u8 index);
-extern void func_80029120(u32 flags);
-extern void func_8002917C(void);
-extern s32 func_8003A700(u8 index);
-
-extern u8 D_8007BEF8_o058Reloc;
-extern u8 D_8007BEFC_o058Reloc;
-extern u8 D_8007BF0C_o058Reloc;
-extern s32 D_8007BF44_o058Reloc;
-extern s32 D_8007C1A0_o058Reloc;
-extern Overlay58LanguageText *D_8007C0B8_o058Reloc;
-extern MenuCommand *D_800D3140_o058Reloc;
-extern s32 D_800D31B8_o058Reloc;
-extern s16 D_800D31BC_o058Reloc;
-extern s16 D_800D31BE_o058Reloc;
-extern u8 D_800D31C4_o058Reloc[4];
-extern RcpTextureInfo *D_800D31C8_o058Reloc[];
-extern s16 D_8007C0C0_o058Reloc[4][4];
-
-extern s32 D_o058_5E50[6];
-extern char *D_o058_5E68[4];
-extern Overlay58AnimationState D_o058_5E84;
-extern Overlay58RaceEntry *D_o058_5EC8[6];
-extern Overlay58RaceEntry *D_o058_5EE0[6];
-extern s32 D_o058_5EF8[6];
-extern s32 D_o058_5F10[6];
-extern ColourCycle D_o058_5F38;
-extern s32 D_o058_5B28[6];
-extern char *D_o058_5C5C[3];
-extern s16 D_o058_5C68[6];
-extern s16 D_o058_5C74[6];
-extern s16 D_o058_5C80[6];
-extern s16 D_o058_5C8C[6];
-extern char *D_o058_5C98[6];
-extern s16 D_o058_5CB0[12];
-
-
-extern u16 D_8007BF1C_o058Reloc;
-extern s32 D_8007BF48_o058Reloc;
-extern s32 D_8007BF4C_o058Reloc;
-extern s32 D_8007BF50_o058Reloc;
-extern s32 D_8007BF54_o058Reloc;
-extern u8 D_8007BF74_o058Reloc;
-extern s32 D_8007C1B4_o058Reloc;
-extern s16 D_800D304E_o058Reloc;
 /* Runtime relocation evidence, not a resident-address naming inference:
  * all six halfword reads bind the same reserved-selector identity.
  * The former D_800D3050 spelling therefore shares this import; it does
@@ -238,64 +661,8 @@ extern s16 D_800D304E_o058Reloc;
  * relocation map after the proved import renames. The older inference
  * of distinct storage from compiler behavior is superseded.
  * The _o058Reloc imports keep reserved runtime identities separate from
- * resident-address names. See the handoff for the scoped proof. */
-
-extern RcpTextureNode D_o058_5BA0[];
-extern s32 D_o058_5CD8;
-extern char D_o058_5D2C[];
-extern char D_o058_5D30[];
-extern char D_o058_5D34[];
-extern char D_o058_5D38[];
-extern char D_o058_5D3C[];
-extern char D_o058_5D44[];
-extern char D_o058_5D48[];
-extern char D_o058_5D50[];
-extern char D_o058_5D54[];
-extern char D_o058_5D5C[];
-extern char D_o058_5D60[];
-extern char D_o058_5D64[];
-extern char D_o058_5D68[];
-extern char D_o058_5D6C[];
-extern char D_o058_5D70[];
-extern char D_o058_5D74[];
-extern char D_o058_5D78[];
-extern char D_o058_5D7C[];
-extern char D_o058_5D84[];
-extern char D_o058_5D88[];
-extern char D_o058_5D90[];
-extern char D_o058_5D94[];
-extern char D_o058_5D98[];
-extern char D_o058_5DA0[];
-extern char D_o058_5DA4[];
-extern char D_o058_5DAC[];
-extern char D_o058_5DB0[];
-extern char D_o058_5DB4[];
-extern char D_o058_5DB8[];
-extern char D_o058_5DC4[];
-extern s32 D_o058_5E78;
-extern s32 D_o058_5E7C;
-extern s32 D_o058_5E80;
-extern s32 D_o058_5E88;
-extern s32 D_o058_5E8C;
-extern s32 D_o058_5E90;
-extern s32 D_o058_5E94;
-extern s32 D_o058_5E98;
-extern s32 D_o058_5E9C;
-extern s32 D_o058_5EA0;
-extern s32 D_o058_5EA4;
-extern s32 D_o058_5EA8;
-extern s32 D_o058_5EAC;
-extern s32 D_o058_5EB0;
-extern s32 D_o058_5EB4;
-extern s32 D_o058_5EC0;
-extern s32 D_o058_5EC4;
-extern s32 D_o058_5F28;
-extern s32 D_o058_5F2C;
-extern s32 D_o058_5F30;
-
-extern s8 D_o058_5F48[4];
-
-void func_overlay_058_F000138C_18B0574(s32 ticks) {
+ * resident-address names. See the handoff for the scoped proof. */  /* (was on extern D_o058_5BA0) */
+static void func_overlay_058_F000138C_18B0574(s32 ticks) {
     s32 i;
     s32 opponent;
     s32 textY;
@@ -691,7 +1058,6 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
         i &= 0;
         fontPrintXY(&D_800D3140_o058Reloc, D_o058_5E9C + D_o058_5EA0 + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x6E], 4);
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-
 
         /* Roles, not colours: `opponent` is s0 and `columnX` s1 in cases
          * 8-10, and the target keeps column X in s0 and the inner index in
@@ -1549,4 +1915,545 @@ void func_overlay_058_F000138C_18B0574(s32 ticks) {
     default:
         break;
     }
+}
+
+/*
+ * PROVENANCE: the packet macros below are adapted from the Jet Force Gemini
+ * decompilation (include/PR/gbi.h gDma1p and include/PR/mbi.h _SHIFTL,
+ * include/f3ddkr.h gSPVertexJFG and gSPPolygon, include/PR/os_convert.h
+ * OS_PHYSICAL_TO_K0), a permitted source under docs/CLEANROOM.md, exactly as
+ * in this overlay's two point-quad routines.
+ */
+
+#define O58_SHIFTL(v, s, w) ((unsigned int)(((unsigned int)(v) & ((0x01 << (w)) - 1)) << (s)))
+
+#define O58_DMA1P(pkt, c, s, l, p) { Overlay58Gfx *_g = (Overlay58Gfx *)(pkt); _g->w0 = (O58_SHIFTL((c), 24, 8) | O58_SHIFTL((p), 16, 8) | O58_SHIFTL((l), 0, 16)); _g->w1 = (unsigned int)(s); }
+
+#define O58_VERTEX(pkt, v, n, v0) O58_DMA1P(pkt, 4, v, ((((n) << 3) + ((n) << 1))) + 8, ((n))<<3|(((u32)(v) & 6))|(v0))
+
+#define O58_POLYGON(dl, ptr, numTris, texEnabled) { Overlay58Gfx *_g = (Overlay58Gfx *)(dl); _g->w0 = O58_SHIFTL((((numTris) - 1) << 4) | (texEnabled), 16, 8) | O58_SHIFTL(5, 24, 8) | O58_SHIFTL(((numTris)*16), 0, 16); _g->w1 = (unsigned int)(ptr); }
+
+#define O58_PHYSICAL_TO_K0(x) (void *)(((u32)(x)+0x80000000))
+
+/*
+ * Matched 2026-10-01 by shape, from a 68-word plateau whose named blocker was
+ * the ranking of the 0xFF constant against the vertex cursor's address.  The
+ * four vertex colours are set by a four-pass loop over a walking pointer; the
+ * compiler unrolls it completely, which is where the second, third, fourth,
+ * first store order, the reversed third group and the dead pointer advance
+ * all come from, and the constant keeps its inner-loop weight so it is
+ * coloured ahead of the address.  The two packets are the JFG macros, the Y
+ * coordinate is the same cast at each use, and the parameter is initialised
+ * before the prepare call with no probe statement.
+ */
+static void overlay58DrawSegmentStrip(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1,
+                               f32 z1, f32 limit) {
+    f32 dy;
+    f32 dz;
+    f32 distance;
+    f32 t;
+    f32 dx;
+    f32 next;
+    f32 startX;
+    f32 startZ;
+    f32 endX;
+    f32 zPerpendicular;
+    f32 xPerpendicular;
+    f32 endZ;
+    f32 stripStep;
+    f32 quadSpan;
+    Overlay58Vertex *vertices;
+    s32 i;
+
+    dx = x1 - x0;
+    dy = y1 - y0;
+    dz = z1 - z0;
+    distance = sqrtf((dx * dx) + (dy * dy) + (dz * dz));
+
+    zPerpendicular = (1.25f * dx) / distance;
+    xPerpendicular = (1.25f * dz) / distance;
+    stripStep = 12.0f / distance;
+    quadSpan = 8.0f / distance;
+    t = 0.0f;
+
+    texDPTextureX(&D_800D3140, (void *)0,
+                               5, 0);
+    while (t < limit) {
+        vertices = D_800D3148;
+        for (i = 0; i < 4; i++) {
+            vertices->r = 0xFF;
+            vertices->g = 0xFF;
+            vertices->b = 0xFF;
+            vertices->a = 0xFF;
+            vertices++;
+        }
+        next = t + quadSpan;
+        if (next > 1.0f) {
+            next = 1.0f;
+        }
+        if (next <= limit) {
+            O58_VERTEX(D_800D3140++, O58_PHYSICAL_TO_K0(D_800D3148), 4, 0);
+            O58_POLYGON(D_800D3140++, D_80000058, 2, 1);
+            startX = (t * dx) + x0;
+            startZ = (t * dz) + z0;
+            D_800D3148->x = (s16)(startX - xPerpendicular);
+            D_800D3148->y = (s16)y0;
+            D_800D3148->z = (s16)(startZ + zPerpendicular);
+            D_800D3148++;
+            D_800D3148->x = (s16)(startX + xPerpendicular);
+            D_800D3148->y = (s16)y0;
+            D_800D3148->z = (s16)(startZ - zPerpendicular);
+            D_800D3148++;
+            endX = (next * dx) + x0;
+            endZ = (next * dz) + z0;
+            D_800D3148->x = (s16)(endX - xPerpendicular);
+            D_800D3148->y = (s16)y0;
+            D_800D3148->z = (s16)(endZ + zPerpendicular);
+            D_800D3148++;
+            D_800D3148->x = (s16)(endX + xPerpendicular);
+            D_800D3148->y = (s16)y0;
+            D_800D3148->z = (s16)(endZ - zPerpendicular);
+            D_800D3148++;
+        }
+        t += stripStep;
+    }
+}
+
+/*
+ * The shipped table-1 SYMBOL record names the resident texDPTextureX (its
+ * `jal` stores 0, the runtime patches it).  Its first argument is the display
+ * list head, the same identity as D_800D3140 below.
+ */  /* (was on extern texDPTextureX) */
+/*
+ * PROVENANCE: the packet macros below are adapted from the Jet Force Gemini
+ * decompilation (include/PR/gbi.h gDma1p and include/PR/mbi.h _SHIFTL,
+ * include/f3ddkr.h gSPVertexJFG and gSPPolygon, include/PR/os_convert.h
+ * OS_PHYSICAL_TO_K0), a permitted source under docs/CLEANROOM.md.  The two
+ * commands are gSPVertexJFG(dl++, OS_PHYSICAL_TO_K0(cursor), 4, 0) and
+ * gSPPolygon(dl++, payload, 2, TRIN_ENABLE_TEXTURE): the vertex command's
+ * `v` argument is used twice, which is why the cursor is loaded twice, and
+ * each macro is one physical line, which is what retires the store-order
+ * tie at +0x88.  Each macro's block-scoped `_g` is a phantom symbol web
+ * (decided after the shared `dl++` expression web once both appends sit in
+ * one block, which is what gives that web v0).
+ */
+
+/*
+ * Matched by lane w1-b (2026-09-16) from the 21-word register-only plateau;
+ * see docs/lastmile-block-budget-globals.md.  Three things had to hold at
+ * once, all of them block structure rather than colour:
+ *
+ *  1. Both packet appends in ONE uopt block, and `vertices = cursor` in that
+ *     same block: the `dl++` expression web then has one occurrence set
+ *     (save 6.0) and is coloured v0 before the two `_g` phantoms (3.0 each,
+ *     a1/a2), and `vertices` spanning that block and the colour block keeps
+ *     v1 busy there so the display-list address falls to a3.
+ *  2. The colour fill written as the four-vertex loop it is.  IDO unrolls
+ *     the constant-count loop (vertices 1-3 at positive offsets, the cursor
+ *     advanced by three, vertex 0 at -3), and the loop's entry and exit
+ *     are the block boundaries the match needs: the 0xFF constant is a
+ *     single-block web (save 15, v0) that shares no block with the `dl++`
+ *     web, and the four coordinate expressions are single-block webs
+ *     coloured v0/v1/a1/a2 in first-occurrence order.  An earlier
+ *     straight-line spelling needed two empty `if (vertices != 0);`
+ *     probes to cut those blocks (lane c-1, 2026-10-08, byte-identical).
+ *  3. The call in its own `if (1)` region, arguments in source order.
+ *     Spelled plainly the display-list `lui` is scheduled first (4 words
+ *     differ).  Reading the render-state field in a region of its own
+ *     before the call also matches the bytes, but it reverses the two
+ *     HI16/LO16 pairs in the relocation table against the shipped order
+ *     (display list first), so the region holds the whole call instead.
+ */
+static void overlay58DrawPointQuad(s32 x, s32 y, s32 z) {
+    Overlay58Vertex *vertices;
+    s32 i;
+
+    if (1) { texDPTextureX(&D_800D3140, D_800D31C8[0x44 / 4], 5, 0); }
+    O58_VERTEX(D_800D3140++, O58_PHYSICAL_TO_K0(D_800D3148), 4, 0);
+    O58_POLYGON(D_800D3140++, D_80000078, 2, 1);
+    vertices = D_800D3148;
+    for (i = 0; i < 4; i++) {
+        vertices->r = 0xFF;
+        vertices->g = 0xFF;
+        vertices->b = 0xFF;
+        vertices->a = 0xFF;
+        vertices++;
+    }
+    D_800D3148->x = (s16)(x - 8);
+    D_800D3148->y = (s16)y;
+    D_800D3148->z = (s16)(z - 8);
+    D_800D3148++;
+    D_800D3148->x = (s16)(x + 8);
+    D_800D3148->y = (s16)y;
+    D_800D3148->z = (s16)(z - 8);
+    D_800D3148++;
+    D_800D3148->x = (s16)(x - 8);
+    D_800D3148->y = (s16)y;
+    D_800D3148->z = (s16)(z + 8);
+    D_800D3148++;
+    D_800D3148->x = (s16)(x + 8);
+    D_800D3148->y = (s16)y;
+    D_800D3148->z = (s16)(z + 8);
+    D_800D3148++;
+}
+
+/*
+ * The shipped table-1 SYMBOL record names the resident texDPTextureX (its
+ * `jal` stores 0, the runtime patches it).  Its first argument is the display
+ * list head, the same identity as D_800D3140 below.
+ */  /* (was on extern texDPTextureX) */
+/*
+ * PROVENANCE: the packet macros below are adapted from the Jet Force Gemini
+ * decompilation (include/PR/gbi.h gDma1p and include/PR/mbi.h _SHIFTL,
+ * include/f3ddkr.h gSPVertexJFG and gSPPolygon, include/PR/os_convert.h
+ * OS_PHYSICAL_TO_K0), a permitted source under docs/CLEANROOM.md.  The two
+ * commands are gSPVertexJFG(dl++, OS_PHYSICAL_TO_K0(cursor), 4, 0) and
+ * gSPPolygon(dl++, payload, 2, TRIN_ENABLE_TEXTURE): the vertex command's
+ * `v` argument is used twice, which is why the cursor is loaded twice, and
+ * each macro is one physical line, which is what retires the store-order
+ * tie at +0x88.  Each macro's block-scoped `_g` is a phantom symbol web
+ * (decided after the shared `dl++` expression web once both appends sit in
+ * one block, which is what gives that web v0).
+ */
+
+/*
+ * Matched by lane w1-b (2026-09-16) from the 21-word register-only plateau;
+ * see docs/lastmile-block-budget-globals.md.  Three things had to hold at
+ * once, all of them block structure rather than colour:
+ *
+ *  1. Both packet appends in ONE uopt block, and `vertices = cursor` in that
+ *     same block: the `dl++` expression web then has one occurrence set
+ *     (save 6.0) and is coloured v0 before the two `_g` phantoms (3.0 each,
+ *     a1/a2), and `vertices` spanning that block and the colour block keeps
+ *     v1 busy there so the display-list address falls to a3.
+ *  2. The colour fill written as the four-vertex loop it is.  IDO unrolls
+ *     the constant-count loop (vertices 1-3 at positive offsets, the cursor
+ *     advanced by three, vertex 0 at -3), and the loop's entry and exit
+ *     are the block boundaries the match needs: the 0xFF constant is a
+ *     single-block web (save 15, v0) that shares no block with the `dl++`
+ *     web, and the four coordinate expressions are single-block webs
+ *     coloured v0/v1/a1/a2 in first-occurrence order.  An earlier
+ *     straight-line spelling needed two empty `if (vertices != 0);`
+ *     probes to cut those blocks (lane c-1, 2026-10-08, byte-identical).
+ *  3. The call in its own `if (1)` region, arguments in source order.
+ *     Spelled plainly the display-list `lui` is scheduled first (4 words
+ *     differ).  Reading the render-state field in a region of its own
+ *     before the call also matches the bytes, but it reverses the two
+ *     HI16/LO16 pairs in the relocation table against the shipped order
+ *     (display list first), so the region holds the whole call instead.
+ */
+static void overlay58DrawLargePointQuad(s32 x, s32 y, s32 z) {
+    Overlay58Vertex *vertices;
+    s32 i;
+
+    if (1) { texDPTextureX(&D_800D3140, D_800D31C8[0x1E8 / 4], 5, 0); }
+    O58_VERTEX(D_800D3140++, O58_PHYSICAL_TO_K0(D_800D3148), 4, 0);
+    O58_POLYGON(D_800D3140++, D_80000098, 2, 1);
+    vertices = D_800D3148;
+    for (i = 0; i < 4; i++) {
+        vertices->r = 0xFF;
+        vertices->g = 0xFF;
+        vertices->b = 0xFF;
+        vertices->a = 0xFF;
+        vertices++;
+    }
+    D_800D3148->x = (s16)(x - 18);
+    D_800D3148->y = (s16)y;
+    D_800D3148->z = (s16)(z - 18);
+    D_800D3148++;
+    D_800D3148->x = (s16)(x + 18);
+    D_800D3148->y = (s16)y;
+    D_800D3148->z = (s16)(z - 18);
+    D_800D3148++;
+    D_800D3148->x = (s16)(x - 18);
+    D_800D3148->y = (s16)y;
+    D_800D3148->z = (s16)(z + 18);
+    D_800D3148++;
+    D_800D3148->x = (s16)(x + 18);
+    D_800D3148->y = (s16)y;
+    D_800D3148->z = (s16)(z + 18);
+    D_800D3148++;
+}
+
+/* Pinned DKR v77/v80 and JFG scans found no matching donor. */
+static void overlay58RefreshRankSet(void) {
+    Overlay58RankSet *set;
+    Overlay58RankSet *sets;
+    Overlay58PrioritySource *source;
+    s32 setIndex;
+    s32 i;
+    s32 j;
+    s32 candidateFloor;
+    s32 existingFloor;
+    u8 *sourceMeta;
+    s32 *floorCursor;
+
+    sets = func_800291C4();
+    setIndex = levelGetBlurEffect(gOverlay58RankSetIdReloc);
+    set = (Overlay58RankSet *)((u8 *)sets + (setIndex << 5));
+    source = func_80028F54();
+    sourceMeta = &source->tag;
+    gOverlay58FloorChoice = -1;
+    floorCursor = (s32 *)sourceMeta;
+
+    for (i = 0; i < 3; i++) {
+        existingFloor = set->floorValue;
+        candidateFloor = floorCursor[2];
+        if (((candidateFloor / 3) < (existingFloor / 3)) ||
+            (existingFloor == 0)) {
+            set->floorValue = candidateFloor;
+            set->floorTag = *sourceMeta;
+            gOverlay58FloorChoice = i;
+        }
+        floorCursor++;
+    }
+
+    gOverlay58InsertChoice = -1;
+    for (i = 0; i < 3; i++) {
+        if (((*(s32 *)(sourceMeta + 4) / 3) <
+             (set->entries[i].value / 3)) ||
+            (set->entries[i].value == 0)) {
+            gOverlay58InsertChoice = i;
+
+            for (j = 2; j > i; j--) {
+                set->entries[j].reserved4 = set->entries[j - 1].reserved4;
+                set->entries[j].reserved5 = set->entries[j - 1].reserved5;
+                set->entries[j].reserved6 = set->entries[j - 1].reserved6;
+                set->entries[j].value = set->entries[j - 1].value;
+                set->entries[j].tag = set->entries[j - 1].tag;
+            }
+
+            set->entries[i].value = *(s32 *)(sourceMeta + 4);
+            set->entries[i].tag = *sourceMeta;
+
+            /* Keep the ordinary increment/backedge while forcing loop exit. */
+            i = 3;
+        }
+    }
+}
+
+/* Pinned DKR v77/v80 and JFG scans found no matching donor. */
+static void overlay58EnsureResource(void) {
+    if (D_8007A1FC == NULL) {
+        D_8007A1FC = overlay68CheckKind(gOverlay58ResourceId);
+        if (D_8007A1FC != NULL) {
+            gOverlay58ResourceState = 2;
+            ((Overlay58Resource *)D_800D3128)->count++;
+            gOverlay58ResourceReady = 1;
+        } else {
+            gOverlay58ResourceState = 0;
+        }
+    } else {
+        gOverlay58ResourceState = 1;
+    }
+}
+
+/* The gate, the two mode bytes and the packed status words are resident
+ * objects reached through runtime relocation records. */  /* (was on extern D_8007BF0C) */
+/* overlay-local BSS +0x74 */  /* (was on extern D_8007BF04) */
+/* Exact body for executable range +0x5554..+0x5A14.
+ *
+ * Matched 2026-10-01 by discarding the probes, volatile reads and comma
+ * assignments of the plateau shape and writing what the relocation records
+ * and the frame name:
+ * - all twenty-four call sites are three resident functions;
+ * - nine locals, with the records pointer declared last. The packed mode
+ *   and the selected player are not locals: each is read from its object at
+ *   every use, so the compiler keeps one shared load;
+ * - `self` is assigned from the record inside each counting loop. The
+ *   assignment is hoisted to the preheader as a copy of the shared load,
+ *   and the in-loop reference is what ranks that load ahead of the other
+ *   caller-saved values;
+ * - the decoded field of the third loop reuses `mask`, which keeps it in the
+ *   mask's register;
+ * - the posted count is the expression `count + 1` at both uses, so it is a
+ *   compiler temporary with its own home rather than the count's. */
+static void overlay58FinalizePackedStatus(void) {
+    s32 i;
+    s32 count;
+    s32 fourCount;
+    s32 desired;
+    s32 self;
+    s32 current;
+    s32 mask;
+    s32 shift;
+    Overlay58InputRecord *records;
+
+    records = func_80028F54();
+
+    if (D_8007BF0C != 0) {
+        return;
+    }
+    if (records[0].state != 0) {
+        return;
+    }
+    if (records[0].phase != 3) {
+        return;
+    }
+    if (gOverlay58PrimaryOrderIndex >= 4) {
+        return;
+    }
+
+    desired = 3;
+    if (records[0].rank == 0x24) {
+        desired = 4;
+    } else {
+        for (i = 1; (desired > 0) && (i != 6);) {
+            if (records[0].rank < records[i++].rank) {
+                desired--;
+            }
+        }
+    }
+
+    if (D_8007BF04 == 0) {
+        shift = 0;
+        mask = 0x7;
+    } else if (D_8007BF04 == 1) {
+        shift = 3;
+        mask = 0x38;
+    } else if (D_8007BF08 == 0) {
+        shift = 6;
+        mask = 0x1C0;
+    } else {
+        shift = 9;
+        mask = 0xE00;
+    }
+
+    current = (D_800D3128[records[0].player + 4] & mask) >> shift;
+    if (desired < 3) {
+        return;
+    }
+    if (current >= desired) {
+        return;
+    }
+
+    if (D_8007BF04 == 0) {
+        if (current >= 3) {
+            return;
+        }
+        i = 0;
+        count = 0;
+        for (; i < 3; i++) {
+            self = records[0].player;
+            if ((i != self) && ((D_800D3128[i + 4] & 0x7) >= 3)) {
+                count++;
+            }
+        }
+        if (count == 0) {
+            if (desired == 4) {
+                func_8003A680(0x17);
+            } else {
+                func_8003A680(0x16);
+            }
+        } else if (count == 2) {
+            if ((self >= 0) && (self < 3)) {
+                func_8003A680(0x0B);
+                D_800D3128[10] |= 0x10;
+                func_800291B4();
+                func_8003A680(0x15);
+            }
+        }
+        return;
+    }
+
+    if (D_8007BF04 == 1) {
+        if (current >= 3) {
+            return;
+        }
+        i = 0;
+        count = 0;
+        for (; i < 3; i++) {
+            self = records[0].player;
+            if ((i != self) &&
+                (((D_800D3128[i + 4] & 0x38) >> 3) >= 3)) {
+                count++;
+            }
+        }
+        if (count == 0) {
+            if (desired == 4) {
+                func_8003A680(0x17);
+            } else {
+                func_8003A680(0x16);
+            }
+        } else if (count == 2) {
+            if ((self >= 0) && (self < 3)) {
+                func_8003A680(0x0C);
+                D_800D3128[10] |= 0x04;
+                func_800291B4();
+                func_8003A680(0x15);
+            }
+        }
+        return;
+    }
+
+    if (D_8007BF08 == 0) {
+        i = 0;
+        count = 0;
+        fourCount = 0;
+        for (; i < 5; i++) {
+            self = records[0].player;
+            if (i != self) {
+                mask = (D_800D3128[i + 4] & 0x1C0) >> 6;
+                if (mask >= 3) {
+                    count++;
+                }
+                if (mask == 4) {
+                    fourCount++;
+                }
+            }
+        }
+
+        if ((fourCount == 4) && (desired == 4)) {
+            func_8003A680(0x0D);
+        }
+
+        if (current < 3) {
+            func_8003A680(count + 1);
+            if ((count + 1) == 5) {
+                func_8003A680(0x18);
+                if ((D_800D3128[10] & 0x40) == 0) {
+                    D_800D3128[10] |= 0x40;
+                    func_800291B4();
+                    func_8003A680(0x15);
+                }
+            }
+        }
+
+        if (records[0].player == 3) {
+            if ((D_800D3128[10] & 0x100) == 0) {
+                D_800D3128[10] |= 0x100;
+                func_800291B4();
+                func_8003A680(0x15);
+            }
+        }
+        return;
+    }
+
+    if ((desired != 4) || (current == 4)) {
+        return;
+    }
+
+    switch (records[0].player) {
+        case 0:
+            D_800D3128[10] |= 0x01;
+            func_800291B4();
+            break;
+        case 1:
+            D_800D3128[10] |= 0x02;
+            func_800291B4();
+            break;
+        case 2:
+            D_800D3128[10] |= 0x08;
+            func_800291B4();
+            break;
+        case 3:
+            D_800D3128[10] |= 0x20;
+            func_800291B4();
+            break;
+        default:
+            D_800D3128[10] |= 0x80;
+            func_800291B4();
+            break;
+    }
+    func_8003A680(0x15);
 }

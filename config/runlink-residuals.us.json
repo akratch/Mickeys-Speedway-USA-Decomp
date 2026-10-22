@@ -2220,7 +2220,7 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 76,
+      "count": 75,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -2281,8 +2281,7 @@
         [57, "func_overlay_057_F0000000_18A3BF8", ".rodata", "0x705C", 2],
         [57, "func_overlay_057_F0001AE8_18A56E0", ".rodata", "0x70A0", 2],
         [57, "overlay57UpdateModeTrigger", ".bss", "0x7110", 31],
-        [58, "func_overlay_058_F00005FC_18AF7E4", ".rodata", "0x5DF4", 4],
-        [58, "func_overlay_058_F000138C_18B0574", ".rodata", "0x5E14", 2],
+        [58, "overlay_058", ".rodata", "0x5DF4", 6],
         [59, "overlay_059", ".rodata", "0x1188", 4],
         [60, "overlay_060", ".rodata", "0x3790", 4],
         [61, "func_overlay_061_F0000B84_18BFF4C", ".rodata", "0x1D08", 2],

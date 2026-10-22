@@ -167,22 +167,15 @@ FIXED_DATA_RODATA_OWNERSHIP = {
     ],
     46: [(0x364, 0x378, "overlay46UpdateSequence", ".rodata", "func_overlay_046_F0000120_188E518", True)],
     58: [
-        # The seven-entry state switch table and the 0.02f literal,
-        # rodata-relative +0x104 through +0x124.
+        # The module TU's .rodata: the state update's seven-entry switch table
+        # and 0.02f literal, then the mode update's thirteen-entry table,
+        # rodata-relative +0x104 through +0x158.
         (
             0x3D4,
-            0x3F4,
-            "func_overlay_058_F00005FC_18AF7E4",
-            ".rodata",
-            "func_overlay_058_F00005FC_18AF7E4",
-            True,
-        ),
-        (
-            0x3F4,
             0x428,
-            "func_overlay_058_F000138C_18B0574",
+            "overlay_058",
             ".rodata",
-            "func_overlay_058_F000138C_18B0574",
+            "func_overlay_058_F00005FC_18AF7E4",
             True,
         )
     ],
@@ -302,6 +295,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     59: "overlay_059_padding",
     60: "overlay_060_padding",
     68: "overlay_068_padding",
+    58: "overlay_058_padding_b",
 }
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
@@ -985,17 +979,7 @@ TEXT_SUBSEGMENTS = {
         (0x69B0, "c", "overlay57UpdateNode"),
     ],
     58: [
-        (0x000, "c", "func_overlay_058_F0000000_18AF1E8"),
-        (0x5C0, "c", "overlay58ReleaseResources"),
-        (0x5FC, "c", "func_overlay_058_F00005FC_18AF7E4"),
-        (0x12F0, "c", "overlay58SetNodeValue"),
-        (0x138C, "c", "func_overlay_058_F000138C_18B0574"),
-        (0x4C04, "c", "overlay58DrawSegmentStrip"),
-        (0x4F28, "c", "overlay58DrawPointQuad"),
-        (0x50C8, "c", "overlay58DrawLargePointQuad"),
-        (0x5268, "c", "overlay58RefreshRankSet"),
-        (0x54C8, "c", "overlay58EnsureResource"),
-        (0x5554, "c", "overlay58FinalizePackedStatus"),
+        (0x000, "c", "overlay_058"),
         (0x5A14, "asm", "overlay_058_padding_b"),
     ],
     62: [

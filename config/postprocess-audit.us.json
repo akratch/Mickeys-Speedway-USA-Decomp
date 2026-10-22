@@ -2552,7 +2552,6 @@
       "tools": [
         "filter_elf_relocations.py",
         "rebind_elf_relocations.py",
-        "trim_elf_section.py",
         "objcopy"
       ]
     },

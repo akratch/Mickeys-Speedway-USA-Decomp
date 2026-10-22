@@ -2657,33 +2657,30 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48UpdateState.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2C8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48ReleaseAll.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x60
-O28_MERGED_OBJ := \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o
-$(O28_MERGED_OBJ): \
+# Overlay 28 is one TU under the overlay flag set: no trim, and its resident
+# calls take the generated rebinds. What remains is relocation metadata the
+# one-TU build does not yet express (phase 1/3 work), none of it touching an
+# instruction word:
+# - the loader owns the data-base HI/LO stored in the reset field, so the
+#   shipped tables carry no record for those two sites (filtered);
+# - two calls are SYMBOL records whose shipped target differs from the name
+#   the C uses: the update-vertices call carries the external at 0x29E00,
+#   and the render tail's external call carries the module's offset-0 entry;
+# - the render tail's display-list words are absolute 0x80000028 references.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: \
 	$(TOOLS_DIR)/filter_elf_relocations.py \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	$(TOOLS_DIR)/trim_elf_section.py
-$(O28_MERGED_OBJ): CFLAGS += -Wab,-r4300_mul
-# The loader owns the data-base HILO stored in the reset field and the update-vertices call carrier.
-# The render tail's imports likewise retain their overlay-root and resident
-# relocation carriers after the function becomes local to the merged TU.
-$(O28_MERGED_OBJ): POSTPROCESS = \
+	$(TOOLS_DIR)/rebind_elf_relocations.py
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		0x1D8:5:gOverlay28DataBase 0x1F4:6:gOverlay28DataBase && \
 	$(OBJCOPY) \
 		--add-symbol D_80000028=0x80000028,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		0x41C:overlay28UpdateVertices:ext_o0_29e00 \
-		0x4F0:camGetPtr:overlay28ResetBuffer \
 		0x51C:ext_o0_29e00:overlay28ResetBuffer \
-		0x5AC:sqrtf:overlay28ResetBuffer \
-		0x5F8:func_80009F08:overlay28ResetBuffer \
-		0x674:camPushModelMtx:overlay28ResetBuffer \
-		0x688:texDPTextureX:overlay28ResetBuffer \
 		0x744:gOverlay28DisplayList28:D_80000028 \
-		0x754:gOverlay28DisplayList28:D_80000028 \
-		0x7D0:camPopModelMtx:overlay28ResetBuffer && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x7EC
+		0x754:gOverlay28DisplayList28:D_80000028
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/overlay35SelectHeight.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x68
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/func_overlay_035_F00001E0_1881EC0.c.o: CFLAGS += \
@@ -3176,8 +3173,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48ReleaseAll.c.o
 OVERLAY_TRIMMED_OBJECTS += \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o
-OVERLAY_TRIMMED_OBJECTS += \
-	$(O28_MERGED_OBJ)
 OVERLAY_TRIMMED_OBJECTS += \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F00001A0_187A598.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F0000B18_187AF10.c.o \

@@ -1354,11 +1354,17 @@ D_80000028 = 0x80000028;
 amSndPlayXYZ_o028Reloc = 0xf0000000;
 amSndSetVolXYZ_o028Reloc = 0xf0000000;
 amSndSetXYZ_o028Reloc = 0xf0000000;
+camGetPtr_o028Reloc = 0xf0000000;
+camPopModelMtx_o028Reloc = 0xf0000000;
+camPushModelMtx_o028Reloc = 0xf0000000;
 ext_o0_29e00 = 0xf0000000;
 func_80006EA0_o028Reloc = 0xf0000000;
+func_80009F08_o028Reloc = 0xf0000000;
 func_8002A8BC_o028Reloc = 0xf0000000;
 func_8002A8C0_o028Reloc = 0xf0000000;
 resetColourCycle_o028Reloc = 0xf0000000;
+sqrtf_o028Reloc = 0xf0000000;
+texDPTextureX_o028Reloc = 0xf0000000;
 
 /* overlay 29: overlay29Select.c.o */
 gOverlay29Base0 = 0x00000000;

@@ -1095,17 +1095,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym overlay65Release=overlay65Release_o049Reloc \
 	--redefine-sym overlay65UpdateParticles=overlay65UpdateParticles_o049Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50Cleanup.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay_050.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_800D3140=D_800D3140_o050Reloc \
+	--redefine-sym D_800D31C8=D_800D31C8_o050Reloc \
 	--redefine-sym freeFrontEndItem=freeFrontEndItem_o050Reloc \
 	--redefine-sym freeFrontEndList=freeFrontEndList_o050Reloc \
-	--redefine-sym overlay56ReleaseResource=overlay56ReleaseResource_o050Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50PatchIndices.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D31C8=D_800D31C8_o050Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50SubmitTimeGlyphs.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D3140=D_800D3140_o050Reloc \
 	--redefine-sym func_8002F618=func_8002F618_o050Reloc \
+	--redefine-sym overlay56ReleaseResource=overlay56ReleaseResource_o050Reloc \
 	--redefine-sym overlay56SplitTime=overlay56SplitTime_o050Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o051/overlay_051.c.o: SURFACE_REBIND = $(OBJCOPY) \

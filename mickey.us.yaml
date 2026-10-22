@@ -2151,12 +2151,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1896970, c, overlay50Initialize]
-      - [0x1896C54, c, overlay50PatchIndices]
-      - [0x1896CA4, c, func_overlay_050_F0000334_1896CA4]
-      - [0x1898540, c, overlay50Cleanup]
-      - [0x18985C4, c, overlay50SubmitTimeGlyphs]
-      - [0x18987D8, asm, overlay_050_padding]
+      - [0x1896970, c, overlay_050]
       - [0x18987E0, bin, overlay_050_data_rodata]
       - [0x1898B60, bin, overlay_050_reloc1]
       - [0x18990E0, bin, overlay_050_reloc2]

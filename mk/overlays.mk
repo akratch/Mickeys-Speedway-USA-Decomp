@@ -2297,51 +2297,30 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87ReleaseCurrent.c.o: POSTPROCESS =
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87HasNearby.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87HasNearby.c.o: CFLAGS += -Wab,-r4300_mul
-# The function defines overlay 50's .data and .bss at their recorded offsets
-# (as func_overlay_050_F0000334_1896CA4 does); the retained overlay image owns
-# the bytes, so these copies are dropped and their sites rebound to
-# zero-valued bases. Its 0.7f literal is a one-constant pool duplicating the
-# retained overlay rodata at +0x4: the pair is rebound to a base valued 0x4
-# and the pool asserted by digest; no instruction is edited.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50Initialize.c.o: \
+# Overlay 50 is one translation unit at the overlay flag set; its .text carries
+# the trailing pad, so nothing is trimmed. --force runs asm-processor's
+# static-symbol pass so the two static helpers keep local names. The module
+# defines its .data and .bss at their recorded offsets, but the retained
+# overlay image owns the bytes until phase 3: the copies are dropped and every
+# site is rebound to a base placeholder (data and bss at 0, the 0.7f pool at
+# rodata +0x4), and the duplicate pool is asserted by digest. Only relocation
+# symbol indices and section ownership change; no instruction is edited.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay_050.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay_050.c.o: ASM_PROCESSOR += --force
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay_050.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
 	$(TOOLS_DIR)/externalize_elf_section.py \
-	config/normalizations/overlay50Initialize.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50Initialize.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay50InitDataBaseReloc=0x0,global \
-		--add-symbol gOverlay50InitBssBaseReloc=0x0,global \
-		--add-symbol gOverlay50InitScaleReloc=0x4,global $@ && \
+	config/normalizations/overlay_050.rebind.spec
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay_050.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay50DataBaseReloc=0x0,global \
+		--add-symbol gOverlay50BssBaseReloc=0x0,global \
+		--add-symbol gOverlay50ScaleReloc=0x4,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay50Initialize.rebind.spec && \
+		@config/normalizations/overlay_050.rebind.spec && \
 	$(OBJCOPY) --remove-section=.data --remove-section=.bss \
 		--remove-section=.gptab.data --remove-section=.gptab.bss $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:54719d33292c6bb1573315eb3140be35c277ea530a17f384ba3a0027e82bf244 && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2E4
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50PatchIndices.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50
-# -Wab,-r4300_mul: IDO then emits this function's HUD easing loops as the
-# shipped rotated loops from plain for loops (the inherited -g3 and
-# -loopunroll,0 overrides were a hand-unrolled workaround and are retired).
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/func_overlay_050_F0000334_1896CA4.c.o: CFLAGS += -Wab,-r4300_mul
-# The function defines overlay 50's .data and .bss at their recorded
-# offsets; the retained overlay image owns the bytes, so these copies are
-# dropped and their sites rebound to zero-valued bases.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/func_overlay_050_F0000334_1896CA4.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	config/normalizations/func_overlay_050_F0000334_1896CA4.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/func_overlay_050_F0000334_1896CA4.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay50DataBaseReloc=0x0,global \
-		--add-symbol gOverlay50BssBaseReloc=0x0,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/func_overlay_050_F0000334_1896CA4.rebind.spec && \
-	$(OBJCOPY) --remove-section=.data --remove-section=.bss \
-		--remove-section=.gptab.data --remove-section=.gptab.bss $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x189C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50Cleanup.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x84
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50SubmitTimeGlyphs.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x214
+		sha256:54719d33292c6bb1573315eb3140be35c277ea530a17f384ba3a0027e82bf244
 include mk/overlay_052.mk
 # overlay54Initialize owns overlay 54's .data and .bss.  Its text reaches them
 # through the object's own section symbols; the shipped words are
@@ -2957,10 +2936,6 @@ OVERLAY_TRIMMED_OBJECTS += \
 OVERLAY_TRIMMED_OBJECTS += \
 	$(O22_UPDATE_OBJECT_OBJ)
 OVERLAY_TRIMMED_OBJECTS += \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50Initialize.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50PatchIndices.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50Cleanup.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50SubmitTimeGlyphs.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52Initialize.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52PatchIndices.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52CopyOffsetEntries.c.o \

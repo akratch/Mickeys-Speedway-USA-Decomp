@@ -1,157 +1,165 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_050.h"
 
-typedef struct O50Glyph {
-    void *texture;
-    void *alternate;
-    s32 glyph;
-    s16 x;
-    s16 y;
-} O50Glyph;
+/* The module's runtime records address its .data and .bss through LOCAL
+ * (section-relative) records, and as1 shares one high half across the stores
+ * to adjacent fields of record 0 only for a TU-local symbol. So the module
+ * defines its data at the offsets the records address (.data 0x370 and .bss
+ * 0xD0). The bytes belong to the retained overlay image until phase 3: these
+ * zero initializers only fix the layout, and the object's .data and .bss are
+ * dropped at POSTPROCESS with their records rebound to zero-valued bases
+ * (mk/overlays.mk). The D_ names keep their section offsets. */
 
-/* Tier D: field widths and offsets from this caller's loads and stores. */
-typedef struct O50Racer {
-    u8 pad000[4];
-    f32 speed;
-    u8 pad008[0x18A];
-    u8 value192;
-    u8 pad193[7];
-    u8 item;
-    u8 itemCount;
-    s32 itemState;
-    u8 pad1A0[8];
-    u16 flags;
-    u8 pad1AA[0x1D9];
-    s8 laps;
-    u8 pad384;
-    u8 value385;
-    u8 pad386[2];
-    u8 value388;
-    u8 pad389[0x31];
-    s16 value3BA;
-    u8 pad3BC[0x44];
-    s32 raceTime;
-    s32 lapTimes[20];
-    s16 timeDifference;
-    s16 differenceTimer;
-    u8 pad458[4];
-    u8 finished;
-} O50Racer;
-
-typedef struct O50Object {
-    u8 pad00[0x64];
-    O50Racer *racer;
-} O50Object;
-
-typedef struct O50Level {
-    u8 pad00[0x86];
-    s8 laps;
-} O50Level;
-
-/* Tier B: callee identities decoded from overlay 50 runtime exports.
- * Signatures follow Mickey callees and the O32 argument surface; the
- * *_o050Reloc names are the generated relocation surface. */
-u8 *func_80028F54_o050Reloc(void); /* 0:+0x28B04 */
-void camStandardOrtho_o050Reloc(void **, void **); /* 0:+0x22600 */
-void overlay45ReleaseDescriptor_o050Reloc(void *); /* 45:+0x270 */
-void overlay45SetMode_o050Reloc(void *, s32); /* 45:+0x1BE0 */
-void overlay56SplitTime_o050Reloc(s32, s32 *, s32 *, s32 *); /* 56:+0xB8 */
-O50Level *levelGetLevel_o050Reloc(void); /* 0:+0x2634C */
-s32 func_800290A0_o050Reloc(void); /* 0:+0x28C50 */
-s32 func_8003A7D0_o050Reloc(void *); /* 0:+0x3A380 */
-void func_8002F618_o050Reloc(void **, void *, s32, s32, s32, s32, s32, s32); /* 0:+0x2F1C8 */
-void texDPInit_o050Reloc(void **); /* 0:+0x344D0 */
-void frontDrawObj_o050Reloc(s32); /* 0:+0x399E4 */
-void freeFrontEndItem_o050Reloc(s32); /* 0:+0x3964C */
-void loadFrontEndItem_o050Reloc(s32); /* 0:+0x39794 */
-s32 overlay59Interpolate_o050Reloc(s32, s32, s32, s32, s32, s32 *, s32 *, s32); /* 59:+0x784 */
-void overlay59BuildList_o050Reloc(s32, void *); /* 59:+0x84C */
-void overlay59DrawFrame_o050Reloc(void **, s32, s32, s32); /* 59:+0x8EC */
-s32 texAnimateSprite_o050Reloc(void *, s32 *, s32, f32 *, s32); /* 0:+0x360F4 */
-void amSndPlay_o050Reloc(u16, void **); /* 0:+0xB44 */
-u32 joyGetPressed_o050Reloc(s32); /* 0:+0x250FC */
-void func_8004A4B0_o050Reloc(s32, s32, s32, s32, s32); /* 0:+0x4A060 */
-void fontUseFont_o050Reloc(s32); /* 0:+0x4AC54 */
-void fontBackground_o050Reloc(s32, s32, s32, s32); /* 0:+0x4AC8C */
-void fontColour_o050Reloc(s32, s32, s32, s32, s32); /* 0:+0x4AC68 */
-void fontPrintXY_o050Reloc(void **, s32, s32, char *, s32); /* 0:+0x4ACA8 */
-s32 mainGetMode_o050Reloc(void); /* 0:+0x288C8 */
-void func_800016EC_o050Reloc(s32); /* 0:+0x129C */
-void func_8003A590_o050Reloc(void); /* 0:+0x3A140 */
-void func_80037414_o050Reloc(s32, f32, f32, s32, s32, s32, s32); /* 0:+0x36FC4 */
-void mainChangeLevel_o050Reloc(s32, s32, s32, s32, s32, s32); /* 0:+0x27F24 */
-void amTuneSetFade_o050Reloc(f32, u8); /* 0:+0x17C */
-
-void overlay50SubmitTimeGlyphs(s32, s32, s32, s32);
-/* Overlay 50 was one translation unit: its runtime records address this
- * function's .data and .bss through LOCAL (section-relative) records, and
- * as1 shares one high half across the stores to adjacent fields of record
- * 0 only for a TU-local symbol. So this TU defines the overlay's data at
- * the offsets the records address (.data 0x370 and .bss 0xD0, every addend
- * this function uses compared equal). The bytes belong to the retained
- * overlay image: these zero initializers only fix the layout, and the
- * object's .data and .bss are dropped at POSTPROCESS with their records
- * rebound to zero-valued bases (mk/overlays.mk). The D_ names keep their
- * section offsets. The three read-only objects stay extern; the relocation
- * surface values them at their .rodata offsets. */
 static s32 sOverlay50Data000[27] = { 0 };
+
 static O50Glyph D_6C[4] = { 0 };
+
 static O50Glyph D_AC[3] = { 0 };
+
 static O50Glyph D_DC[2] = { 0 };
+
 static O50Glyph D_FC[3] = { 0 };
+
 static O50Glyph D_12C[10] = { 0 };
+
 static O50Glyph D_1CC[5] = { 0 };
+
 static s16 D_21C = 0;
+
 static O50Glyph sOverlay50LapTemplate[10] = { 0 };
+
 static O50Glyph D_2C0[2] = { 0 };
+
 static O50Glyph D_2E0[2] = { 0 };
+
 static O50Glyph D_300[2] = { 0 };
+
 static s8 o50Data320[8] = { 0 };
+
 static s32 D_328 = 0;
+
 static s8 D_32C[4] = { 0 };
+
 static s8 o50Data330[4] = { 0 };
+
 static s32 D_334 = 0;
+
 static s32 sOverlay50Data338 = 0;
+
 static s32 D_33C = 0;
+
 static s32 sOverlay50Data340[12] = { 0 };
 
 static O50Glyph o50LapGlyphs[10];
+
 static s32 sOverlay50BssA0;
+
 static f32 D_A4;
+
 static f32 D_A8;
+
 static s32 sOverlay50BssAC;
+
 static s32 D_B0[3];
+
 static s32 D_BC;
+
 static s32 D_C0;
+
 static void *o50BssC4;
+
 static s16 D_C8;
+
 static s16 D_CA;
 
-extern char o50SpeedText[];
-extern f32 o50ReverseScale;
-extern f32 o50ForwardScale;
-typedef struct O50MenuObject {
-    s16 value00;
-    s16 value02;
-    s16 angle;
-    s16 index;
-    f32 value08;
-    f32 x;
-    f32 y;
-    f32 value14;
-    f32 frame;
-    u8 pad1C[4];
-} O50MenuObject;
+/* Module-private helpers (no ORT row): static, so their calls are JUMP
+ * records. The initializer passes the glyph tables unprototyped. */
+static void overlay50PatchIndices();
+static void overlay50SubmitTimeGlyphs(s32, s32, s32, s32);
 
-/* Tier B: runtime export identities, kept distinct from stored addends. */
-extern void *D_800D3140_o050Reloc;
-extern void *D_800D3144_o050Reloc;
-extern s32 D_800C947C_o050Reloc;
-extern s16 D_8007C180_o050Reloc[];
-extern void *D_800D31C8_o050Reloc[];
-extern O50MenuObject D_800D3550_o050Reloc[];
-extern s32 D_8007C1B0_o050Reloc;
-extern u16 D_8007BF1C_o050Reloc;
-extern s32 D_8007C0BC_o050Reloc;
+/* Matched 2026-10-02 from a 104-word plateau. What it took:
+ *   - the overlay's data defined in the TU (see above), so the copy loop
+ *     indexes two real arrays and IDO's default unroller emits the shipped
+ *     one-plus-two-by-four copy;
+ *   - the descriptor stored to its global and read back from it, with no
+ *     carrier local: the global's address is then one web hoisted above the
+ *     branch, and as1 puts the NULL store in a branch-likely delay slot
+ *     (no -Wab,-r4300_mul needed);
+ *   - one resident callee (func_80028F54) called twice and levelGetNumber
+ *     called twice, where the inherited candidate had four names for them;
+ *   - 0.7f as a literal and an unused leading local for the saved-flag home.
+ */
+void func_overlay_050_F0000000_1896970(void) {
+    s32 pad;
+    u8 *saved;
+    s32 i;
+
+    saved = func_80028F54_o050Reloc();
+    loadFrontEndList_o050Reloc(sOverlay50Data000);
+    setupFrontEndList_o050Reloc(&sOverlay50Data000[18]);
+    amTunePlay_o050Reloc(4);
+    sOverlay50BssA0 = 0x104;
+    runlinkDownloadCode_o050Reloc(0xB);
+
+    overlay50PatchIndices(D_6C);
+    overlay50PatchIndices(D_12C);
+    overlay50PatchIndices(D_AC);
+    overlay50PatchIndices(D_DC);
+    overlay50PatchIndices(D_FC);
+    overlay50PatchIndices(D_300);
+    overlay50PatchIndices(D_2C0);
+    overlay50PatchIndices(D_2E0);
+    overlay50PatchIndices(D_1CC);
+
+    D_A4 = -100.0f;
+    D_A8 = 120.0f;
+    D_800D3550_o050Reloc[4].x = 42.0f;
+    D_800D3550_o050Reloc[1].x = -78.0f;
+    D_800D3550_o050Reloc[1].value08 = 0.7f;
+    D_800D3550_o050Reloc[0].angle = 0x4000;
+    for (i = 0; i < 3; i++) {
+        D_B0[i] = 0xA0;
+    }
+
+    overlay56LoadResource_o050Reloc();
+    o50Data330[0] = -1;
+    D_800D304E_o050Reloc = levelGetNumber_o050Reloc();
+    D_BC = -0x500;
+    D_C0 = -0x140;
+    for (i = 0; i < 9; i++) {
+        o50LapGlyphs[i].x = sOverlay50LapTemplate[i].x;
+        o50LapGlyphs[i].y = sOverlay50LapTemplate[i].y;
+        o50LapGlyphs[i].glyph = sOverlay50LapTemplate[i].glyph;
+    }
+
+    if (*func_80028F54_o050Reloc() == 1) {
+        D_800D3550_o050Reloc[1].x += -40.0f;
+        D_FC[0].x -= 0x28;
+        D_FC[1].x -= 0x28;
+    }
+
+    if (*saved == 0) {
+        fontUseFont_o050Reloc(3);
+        o50BssC4 = overlay45CreateDescriptor_o050Reloc(
+            func_8003A5A0_o050Reloc(levelGetNumber_o050Reloc()), 0xA0, 0x78, 0xC);
+        overlay45SetMode_o050Reloc(o50BssC4, 0);
+    } else {
+        o50BssC4 = NULL;
+    }
+    D_CA = 0;
+    D_C8 = 0;
+}
+
+/* This exact six-overlay Mickey family has no exact DKR v77/v80 or JFG donor. */
+static void overlay50PatchIndices(OverlayPatchIndexEntry *entry) {
+    while (entry->first != 0) {
+        entry->first = (s32) D_800D31C8[entry->first];
+        if (entry->second != 0) {
+            entry->second = (s32) D_800D31C8[entry->second];
+        }
+        entry++;
+    }
+}
+
 extern s32 o50Overlay1StateReloc; /* overlay 1 +0x83E0 */
 
 /* Matched 2026-10-01 from a 1,115-word plateau. What it took:
@@ -480,4 +488,67 @@ racer->laps != level->laps
             }
         }
     }
+}
+
+/* DKR v77/v80 and JFG contain no exact donor for this resource teardown. */
+void overlay50Cleanup(void) {
+    if (gOverlay50ResourceA != NULL) {
+        overlay50ReleaseResourceReloc(gOverlay50ResourceA);
+    }
+    freeFrontEndList(&gOverlay50Storage);
+    overlay56ReleaseResource();
+    if (gOverlay50ResourceB != NULL) {
+        overlay50ReleaseResourceReloc(gOverlay50ResourceB);
+    }
+    if (gOverlay50Slot != -1) {
+        freeFrontEndItem(gOverlay50Slot);
+        gOverlay50Slot = -1;
+    }
+}
+
+/* Exact DKR v77/v80 and JFG donor scans are negative for this formatter. */
+static void overlay50SubmitTimeGlyphs(s32 leadingGlyph, s32 x, s32 y,
+                               s32 timeValue) {
+    s32 i;
+    s32 minutes;
+    s32 seconds;
+    s32 centiseconds;
+    Overlay50GlyphRecord records[10];
+
+    overlay56SplitTime(timeValue, &minutes, &seconds, &centiseconds);
+
+    y -= 4;
+    for (i = 0; i < 9; i++) {
+        x += gOverlay50GlyphOffsets[i];
+        records[i].x = x;
+        records[i].y = y;
+        records[i].sharedWord0 = gOverlay50GlyphWord0;
+        records[i].sharedWord1 = gOverlay50GlyphWord1;
+    }
+
+    records[9].sharedWord0 = 0;
+    records[9].sharedWord1 = 0;
+
+    records[0].packedGlyph = leadingGlyph << 16;
+    records[1].packedGlyph = (minutes / 10) << 16;
+    records[2].packedGlyph = (minutes % 10) << 16;
+    records[3].packedGlyph = 11 << 16;
+    records[4].packedGlyph = (seconds / 10) << 16;
+    records[5].packedGlyph = (seconds % 10) << 16;
+    records[6].packedGlyph = 10 << 16;
+    records[7].packedGlyph = (centiseconds / 10) << 16;
+    records[8].packedGlyph = (centiseconds % 10) << 16;
+
+    for (i = 1; i < 7; i++) {
+        if ((records[i].packedGlyph >> 16) == 1) {
+            if (!(i & 1)) {
+                records[i].x++;
+            } else {
+                records[i].x--;
+            }
+        }
+    }
+
+    func_8002F618(D_800D3140, records, 0, 0,
+                               255, 255, 255, 255);
 }

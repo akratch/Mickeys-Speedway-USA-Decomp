@@ -294,6 +294,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     37: "overlay_037_padding",
     39: "overlay_039_padding",
     40: "overlay_040_padding",
+    50: "overlay_050_padding",
     53: "overlay_053_padding",
     48: "overlay_048_padding",
     44: "overlay_044_padding",
@@ -925,11 +926,7 @@ TEXT_SUBSEGMENTS = {
         (0xC68, "asm", "overlay_055_padding"),
     ],
     50: [
-        (0x000, "c", "overlay50Initialize"),
-        (0x2E4, "c", "overlay50PatchIndices"),
-        (0x334, "c", "func_overlay_050_F0000334_1896CA4"),
-        (0x1BD0, "c", "overlay50Cleanup"),
-        (0x1C54, "c", "overlay50SubmitTimeGlyphs"),
+        (0x000, "c", "overlay_050"),
         (0x1E68, "asm", "overlay_050_padding"),
     ],
     51: [

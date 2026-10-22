@@ -9674,46 +9674,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x2E4",
-     "size": "0x2E4",
-     "type": "c",
-     "source": "overlays/o050/overlay50Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2E4",
-     "end_offset": "0x334",
-     "size": "0x50",
-     "type": "c",
-     "source": "overlays/o050/overlay50PatchIndices",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x334",
-     "end_offset": "0x1BD0",
-     "size": "0x189C",
-     "type": "c",
-     "source": "overlays/o050/func_overlay_050_F0000334_1896CA4",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1BD0",
-     "end_offset": "0x1C54",
-     "size": "0x84",
-     "type": "c",
-     "source": "overlays/o050/overlay50Cleanup",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1C54",
      "end_offset": "0x1E68",
-     "size": "0x214",
+     "size": "0x1E68",
      "type": "c",
-     "source": "overlays/o050/overlay50SubmitTimeGlyphs",
+     "source": "overlays/o050/overlay_050",
      "matched": true,
      "nonmatching": false
     },

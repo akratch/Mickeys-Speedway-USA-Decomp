@@ -17,11 +17,10 @@ typedef struct Overlay20TileSource {
     void *resource;
 } Overlay20TileSource;
 
-/* This source symbol is a zero-valued carrier. Overlay 20 table-1 record 13
- * resolves the call at function +0x38 through ORT 206 to func_80034554. */
-extern void func_overlay_020_F0000000_18765D8(Overlay20Command **commands,
-                                               void *resource, s32 arg2,
-                                               s32 arg3);
+/* Overlay 20 table-1 record 13 resolves the call at function +0x38 through
+ * ORT 206 to the resident texDPTextureX. */
+extern void texDPTextureX(Overlay20Command **commands, void *resource,
+                          s32 arg2, s32 arg3);
 
 #define OVERLAY20_SHIFTL(value, shift, width)                              \
     ((u32)(((u32)(value) & ((1U << (width)) - 1)) << (shift)))
@@ -69,7 +68,7 @@ void overlay20BuildTileCommands(Overlay20Command **commands,
     s32 chunkWidth;
     s32 doubledWidth;
 
-    func_overlay_020_F0000000_18765D8(commands, source->resource, arg2, 0);
+    texDPTextureX(commands, source->resource, arg2, 0);
     width = source->width;
     chunkCount = 0;
     writeCursor = chunks;

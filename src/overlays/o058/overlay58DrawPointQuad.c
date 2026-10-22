@@ -26,15 +26,13 @@ extern Overlay58PointVertex *gOverlay58PointVertexCursorReloc;
 extern Overlay58PointRenderState gOverlay58PointRenderStateReloc;
 extern u8 D_80000078[];
 /*
- * The callee is reached through the overlay loader's relocation table, so its
- * `jal` encodes 0 and splat names it after overlay offset 0 for every such
- * call in this overlay; the real callee is not identified.  Its FIRST
- * ARGUMENT is `&gOverlay58PointVertexCursorReloc`, the same symbol the body
- * re-reads afterwards -- p1 splits that address web around the call and the
- * post-call piece keeps the a0 argument affinity (ido-5.3 L57/L66).
+ * The shipped table-1 SYMBOL record names the resident texDPTextureX (its
+ * `jal` stores 0, the runtime patches it).  Its first argument is the display
+ * list head, which this source still spells through the vertex-cursor
+ * placeholder.
  */
-extern void func_overlay_058_F0000000_18AF1E8(
-    Overlay58PointVertex **cursor, void *resource, s32 mode, s32 arg3);
+extern void texDPTextureX(Overlay58PointVertex **displayList, void *texture,
+                          s32 flags, s32 arg3);
 
 /*
  * PROVENANCE: the packet macros below are adapted from the Jet Force Gemini
@@ -87,7 +85,7 @@ void overlay58DrawPointQuad(s32 x, s32 y, s32 z) {
     s32 i;
 
     if (1) { resource = gOverlay58PointRenderStateReloc.resource; }
-    func_overlay_058_F0000000_18AF1E8(&gOverlay58PointVertexCursorReloc, resource, 5, 0);
+    texDPTextureX(&gOverlay58PointVertexCursorReloc, resource, 5, 0);
     O58_VERTEX(gOverlay58PointDisplayListReloc++, O58_PHYSICAL_TO_K0(gOverlay58PointVertexCursorReloc), 4, 0);
     O58_POLYGON(gOverlay58PointDisplayListReloc++, D_80000078, 2, 1);
     vertices = gOverlay58PointVertexCursorReloc;

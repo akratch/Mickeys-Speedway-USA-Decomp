@@ -179,8 +179,8 @@ extern void initColourCycle(void *cycle, s32 count);
 extern void joyResetMap(void);
 extern s32 o57QueryModeReloc(void);
 extern void overlay57SetNodeValue(s32 id, s32 argument, f32 value);
-extern void o57PublishChoicesReloc(void);
 extern void func_8003A754(void);
+extern void func_80001708(void);
 extern void func_8005AD64(O57Thing *spawned, s32 mode, s32 index,
                           f32 value);
 /* Overlay 45 entry points, reached through the relocation surface. */
@@ -387,7 +387,7 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     }
     if ((choiceMask != gO57ChoiceMaskReloc) ||
         (gO57ChoiceMaskReferenceReloc != gO57ChoiceSourceReloc)) {
-        o57PublishChoicesReloc();
+        func_8003A754();
         gO57ChoiceDirtyReloc = 0;
         gO57ChoiceMaskReloc = choiceMask;
         gO57ChoicePublishedReloc = 1;
@@ -401,7 +401,7 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     } else {
         gO57Value190Reloc = 2;
     }
-    func_8003A754();
+    func_80001708();
     gO57Value198Reloc = 0;
     gO57Value19CReloc = 0;
     gO57Value110Reloc = -140.0f;

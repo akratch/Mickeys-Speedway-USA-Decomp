@@ -29,11 +29,11 @@ typedef struct Overlay73DrawObject {
 } Overlay73DrawObject;
 
 extern u8 D_80000000[];
-extern void func_8002409C(Overlay73Command **commands, s32 context,
+extern void camPushModelMtx(Overlay73Command **commands, s32 context,
                          Overlay73DrawObject *object, f32 scale, f32 extra);
-extern void func_80034554(Overlay73Command **commands, void *resource,
+extern void texDPTextureX(Overlay73Command **commands, void *resource,
                          s32 mode, s32 flags);
-extern void func_800241BC(Overlay73Command **commands);
+extern void camPopModelMtx(Overlay73Command **commands);
 
 /*
  * PROVENANCE: the packet macros below are adapted from the Jet Force Gemini
@@ -70,12 +70,12 @@ void func_overlay_073_F0000D70_18CB830(Overlay73Command **commands,
     state = object->state;
     if (state->resource != NULL) {
         vertices = &state->vertices[state->vertexBank * 6];
-        func_8002409C(commands, context, object, 1.0f, 0.0f);
+        camPushModelMtx(commands, context, object, 1.0f, 0.0f);
         O73_SET_PRIM_COLOR((*commands)++, 0, 0, 255, 255, 255, object->alpha);
-        func_80034554(commands, state->resource, 0xE, 0);
+        texDPTextureX(commands, state->resource, 0xE, 0);
         O73_VERTEX((*commands)++, O73_PHYSICAL_TO_K0(vertices), 6, 0);
         O73_POLYGON((*commands)++, D_80000000, 8, 1);
         O73_SET_PRIM_COLOR((*commands)++, 0, 0, 255, 255, 255, object->alpha);
-        func_800241BC(commands);
+        camPopModelMtx(commands);
     }
 }

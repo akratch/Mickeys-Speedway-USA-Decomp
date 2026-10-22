@@ -54,7 +54,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0001228_188F620.c.o: POS
 	$(OBJCOPY) \
 		--redefine-sym D_800D31C8=D_800D31C8_o046Reloc \
 		--redefine-sym amSndPlay=amSndPlay_o046Reloc \
-		--redefine-sym camStandardOrtho=camStandardOrtho_o046Reloc \
+		--redefine-sym camSetView=camSetView_o046Reloc \
 		--redefine-sym camDoSprite=camDoSprite_o046Reloc \
 		--redefine-sym func_8002A8BC=func_8002A8BC_o046Reloc \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o046Reloc \

@@ -45,6 +45,7 @@ extern void overlay101ScheduleLinkedColor(s32, s32, s32, s32, s32, s32,
                                            f32, s32);
 extern void overlay101ScheduleFrames(s32, s32, f32, f32, f32, s32);
 extern void overlay101ScheduleGlobalPair();
+extern void overlay101Initialize(void);
 
 /* Pinned DKR v77/v80 and JFG scans classify overlay 101 as no donor. */
 void overlay101DispatchEvents(s32 step) {
@@ -137,7 +138,7 @@ void overlay101DispatchEvents(s32 step) {
                         event->value18.i, remaining);
                     break;
                 case 17:
-                    overlay101ScheduleGlobalPair();
+                    overlay101Initialize();
                     gOverlay101PresentationDone = 1;
                     break;
                 case 18:

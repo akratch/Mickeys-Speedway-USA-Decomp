@@ -88,7 +88,8 @@ extern s32 D_1D0;
 extern Node32 D_340[];
 extern Node24 D_540[];
 
-extern void *func_overlay_101_F0000000_18DB820();
+extern void *texLoadSprite(s32 assetId, s32 flags);
+extern void overlay101Reset(void *value);
 extern s32 func_overlay_101_F000CEA8_18E86C8(void *);
 
 /* Ownership: the shared builder BSS (+0x0..+0xFD0) is defined by the F571C TU;
@@ -121,7 +122,7 @@ void func_overlay_101_F000B544_18E6D64(void) {
 
     D_0.kind = 4; D_0.value26 = 0; D_0.value28 = 0; D_0.value2A = 0; D_0.color32 = 0xFF; D_0.color33 = 0xFF; D_0.width2E = 0x140; D_0.value2C = 0; D_0.chainType = 0; D_0.height30 = 0xF0; D_0.asset34 = &D_DA4; D_0.chain = 0; D_1C0[D_1C4] = &D_1C; D_1C4 = D_1C4 + 1;
 
-    D_340[D_1CC].x = 0x108; D_340[D_1CC].scale = 1.0f; D_340[D_1CC].value10 = 0; D_340[D_1CC].color12 = 0xFF; D_340[D_1CC].color13 = 0; D_340[D_1CC].value18 = 0; D_340[D_1CC].y = 0x154; D_340[D_1CC].value14 = 0.0f; handle = func_overlay_101_F0000000_18DB820(0x91, 0); D_340[D_1CC].previousType = D_0.chainType; D_340[D_1CC].previous = D_0.chain; D_340[D_1CC].handle = handle; D_0.chainType = 2; D_0.chain = &D_340[D_1CC]; D_1CC = D_1CC + 1;
+    D_340[D_1CC].x = 0x108; D_340[D_1CC].scale = 1.0f; D_340[D_1CC].value10 = 0; D_340[D_1CC].color12 = 0xFF; D_340[D_1CC].color13 = 0; D_340[D_1CC].value18 = 0; D_340[D_1CC].y = 0x154; D_340[D_1CC].value14 = 0.0f; handle = texLoadSprite(0x91, 0); D_340[D_1CC].previousType = D_0.chainType; D_340[D_1CC].previous = D_0.chain; D_340[D_1CC].handle = handle; D_0.chainType = 2; D_0.chain = &D_340[D_1CC]; D_1CC = D_1CC + 1;
 
     D_0.x42 = 0x20; D_0.width44 = 0x18; D_0.y46 = 0x1C; D_0.height48 = 0x50; D_0.value4A = 0xD8; D_0.value4C = 0x42; D_0.mode40 = 0; D_0.color4E = 0xFF; D_0.color4F = 0xFF; D_0.childType = 0; D_0.child = 0; D_0.data50 = D_INPUT.data184; D_1C0[D_1C4] = &D_38; D_1C4 = D_1C4 + 1;
 
@@ -133,6 +134,6 @@ void func_overlay_101_F000B544_18E6D64(void) {
 
     D_540[D_1D0].x = 0x6C; D_540[D_1D0].y = 0x32; length = func_overlay_101_F000CEA8_18E86C8(D_INPUT.text194); D_540[D_1D0].length = (u8)length; D_540[D_1D0].opacity = (s8)(s32)((f32)(u32)(length & 0xFF) * (f32)(u32)0); D_540[D_1D0].mode = 2; D_540[D_1D0].color0 = 0xFF; D_540[D_1D0].color1 = 0xFF; D_540[D_1D0].color2 = 0; D_540[D_1D0].color3 = 0xFF; D_540[D_1D0].kind = 4; D_540[D_1D0].text = D_INPUT.text194; D_540[D_1D0].previousType = D_0.childType; D_540[D_1D0].previous = D_0.child; D_0.childType = 3; D_0.child = &D_540[D_1D0]; D_1D0 = D_1D0 + 1;
 
-    func_overlay_101_F0000000_18DB820(&D_4358);
+    overlay101Reset(&D_4358);
 }
 

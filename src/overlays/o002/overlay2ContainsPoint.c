@@ -37,8 +37,8 @@ typedef struct Overlay2Shape {
     Overlay2Line *lines;
 } Overlay2Shape;
 
-extern s32 func_8002A4C0(f32 y, f32 x);
-extern s32 func_8002A5BC(s32 first, s32 second);
+extern s32 Arctanf(f32 y, f32 x);
+extern s32 mathDiffAngle(s32 first, s32 second);
 
 /* Pinned DKR v77/v80 and JFG scans found no exact point-containment donor. */
 s32 overlay2ContainsPoint(f32 x, f32 y, Overlay2Shape *shape) {
@@ -72,9 +72,9 @@ s32 overlay2ContainsPoint(f32 x, f32 y, Overlay2Shape *shape) {
     count--;
     if (hasMore != 0) {
         do {
-            firstAngle = func_8002A4C0(line->y0 - y, line->x0 - x);
-            secondAngle = func_8002A4C0(line->y1 - y, line->x1 - x);
-            if (func_8002A5BC(firstAngle, secondAngle) < 0) {
+            firstAngle = Arctanf(line->y0 - y, line->x0 - x);
+            secondAngle = Arctanf(line->y1 - y, line->x1 - x);
+            if (mathDiffAngle(firstAngle, secondAngle) < 0) {
                 return 0;
             }
             line++;

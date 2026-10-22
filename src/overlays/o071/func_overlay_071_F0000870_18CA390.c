@@ -18,17 +18,17 @@ typedef struct Overlay71DrawObject {
     s32 *resourceIndex;
 } Overlay71DrawObject;
 
-extern void *gOverlay71InitialResourceReloc;
+extern s32 gOverlay71InitialResourceReloc;
 extern u8 D_80000008[];
 extern u8 D_80000028[];
 extern u8 D_800000D8[];
 
-extern void func_80032BF0(void *resource, s32 mode, s32 flags);
-extern void func_8002409C(Overlay71Command **commands, s32 context,
+extern void SetLinkSlot(s32 slot, u16 tag, u16 useCount);
+extern void camPushModelMtx(Overlay71Command **commands, s32 context,
                          Overlay71DrawObject *object, f32 scale, f32 extra);
-extern void func_80034554(Overlay71Command **commands, s32 resource, s32 mode,
+extern void texDPTextureX(Overlay71Command **commands, s32 resource, s32 mode,
                          s32 flags);
-extern void func_800241BC(Overlay71Command **commands);
+extern void camPopModelMtx(Overlay71Command **commands);
 
 /*
  * PROVENANCE: the packet macros below are adapted from the Jet Force Gemini
@@ -64,21 +64,21 @@ void func_overlay_071_F0000870_18CA390(Overlay71Command **commands,
                                        Overlay71DrawObject *object) {
     Overlay71DrawState *state;
 
-    func_80032BF0(gOverlay71InitialResourceReloc, 2, 2);
+    SetLinkSlot(gOverlay71InitialResourceReloc, 2, 2);
     state = object->state;
     if (state->active != 0) {
-        func_8002409C(commands, context, object, 1.0f, 0.0f);
+        camPushModelMtx(commands, context, object, 1.0f, 0.0f);
         O71_PIPE_SYNC((*commands)++);
         O71_SET_ENV_COLOR((*commands)++, 255, 255, 255, 255);
         if (state->flags & 1) {
-            func_80034554(commands, 0, 0x17, 0);
+            texDPTextureX(commands, 0, 0x17, 0);
             O71_SET_PRIM_COLOR((*commands)++, 0, 0, 255, 255, 255, 0xD0);
             O71_VERTEX((*commands)++, O71_VERTEX_BANK(state), 4, 0);
             O71_POLYGON((*commands)++, D_80000008, 2, 0);
             O71_PIPE_SYNC((*commands)++);
         }
         if (state->flags & 6) {
-            func_80034554(commands, *object->resourceIndex, 0x17, 0);
+            texDPTextureX(commands, *object->resourceIndex, 0x17, 0);
             O71_SET_PRIM_COLOR((*commands)++, 0, 0, 255, 255, 255, 255);
             O71_VERTEX((*commands)++, O71_VERTEX_BANK(state), 8, 0);
             if (state->flags & 4) {
@@ -90,6 +90,6 @@ void func_overlay_071_F0000870_18CA390(Overlay71Command **commands,
             O71_PIPE_SYNC((*commands)++);
         }
         O71_SET_PRIM_COLOR((*commands)++, 0, 0, 255, 255, 255, 255);
-        func_800241BC(commands);
+        camPopModelMtx(commands);
     }
 }

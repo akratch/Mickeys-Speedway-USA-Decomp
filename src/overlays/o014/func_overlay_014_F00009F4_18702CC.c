@@ -17,7 +17,8 @@ typedef struct Overlay14State {
 extern Overlay14State gOverlay14State;
 extern s32 D_A4;
 extern s32 D_B4;
-extern void *func_overlay_014_F0000000_186F8D8();
+extern void *mmAlloc(s32 size, u32 colourTag);
+extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset, s32 size);
 
 Overlay14Asset *func_overlay_014_F00009F4_18702CC(s32 index, s32 context)
 {
@@ -31,10 +32,10 @@ Overlay14Asset *func_overlay_014_F00009F4_18702CC(s32 index, s32 context)
   pad = index;
   start = gOverlay14State.ranges[index];
   size = gOverlay14State.ranges[index + 1] - start;
-  asset = (Overlay14Asset *) func_overlay_014_F0000000_186F8D8(size, 0x85, start);
+  asset = (Overlay14Asset *) mmAlloc(size, 0x85);
   if (asset != 0)
   {
-    func_overlay_014_F0000000_186F8D8(context, asset, start, size);
+    piRomLoadSection(context, (u32) asset, start, size);
     if (1)
     {
       for (i = 0, entry = asset; i < asset->count; i++, entry++)

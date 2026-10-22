@@ -199,7 +199,7 @@ Overlay4SearchObject *overlay4FindCategory2Object(Overlay4SearchKey *key) {
     Overlay4SearchPayload *payload;
     s32 i;
 
-    objects = func_overlay_004_F0000000_185A678(&start, &end);
+    objects = func_8000572C(&start, &end);
     i = start;
     while (i < end) {
         object = objects[i++];
@@ -230,7 +230,7 @@ void overlay4FindSearchPosition(f32 *outX, f32 *outZ,
     f32 distance;
     f32 bestDistance;
 
-    objects = func_overlay_004_F0000000_185A678(&start, &end);
+    objects = func_8000572C(&start, &end);
     bestDistance = gOverlay4SearchMaxDistance;
     if (key->mode == 1) {
         best = NULL;

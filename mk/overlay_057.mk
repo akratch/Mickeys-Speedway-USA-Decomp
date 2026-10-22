@@ -27,6 +27,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0000000_18A3BF8.c.o: POS
 		--redefine-sym func_8000590C=func_8000590C_o057Reloc \
 		--redefine-sym func_80028F54=func_80028F54_o057Reloc \
 		--redefine-sym func_8003A754=func_8003A754_o057Reloc \
+		--redefine-sym func_80001708=func_80001708_o057Reloc \
 		--redefine-sym fontUseFont=fontUseFont_o057Reloc \
 		--redefine-sym func_800508B4=func_800508B4_o057Reloc \
 		--redefine-sym func_8005AD64=func_8005AD64_o057Reloc \

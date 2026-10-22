@@ -89,7 +89,8 @@ extern s32 D_1D0;
 extern Node32 D_340[];
 extern Node24 D_540[];
 
-extern void *func_overlay_101_F0000000_18DB820();
+extern void *texLoadSprite(s32 assetId, s32 flags);
+extern void overlay101Reset(void *value);
 extern s8 func_overlay_101_F000CEA8_18E86C8(void *);
 
 /* Ownership: the shared builder BSS (+0x0..+0xFD0) is defined by the F571C
@@ -135,7 +136,7 @@ void func_overlay_101_F0008128_18E3948(void) {
 
     D_0.kind = 4; D_0.width2E = 0x140; D_0.height30 = 0xF0; D_0.asset34 = &D_CF0; D_0.color32 = 0xFF; D_0.color33 = 0xFF; D_0.value26 = 0; D_0.value28 = 0; D_0.value2A = 0; D_0.value2C = 0; D_0.chainType = 0; D_0.chain = 0; ownerIndex = D_1C4; D_1C0[ownerIndex] = &D_1C; D_1C4 = ownerIndex + 1;
 
-    D_340[D_1CC].x = 0xF2; D_340[D_1CC].y = 0x14E; D_340[D_1CC].value10 = 0; D_340[D_1CC].color12 = 0xFF; D_340[D_1CC].color13 = 0; D_340[D_1CC].value18 = 0; D_340[D_1CC].scale = 1.0f; D_340[D_1CC].value14 = 0.0f; handle = func_overlay_101_F0000000_18DB820(0x93, 0); D_340[D_1CC].handle = handle; D_340[D_1CC].previousType = D_0.chainType; D_340[D_1CC].previous = D_0.chain; D_0.chain = &D_340[D_1CC]; D_0.chainType = 2; D_1CC = D_1CC + 1;
+    D_340[D_1CC].x = 0xF2; D_340[D_1CC].y = 0x14E; D_340[D_1CC].value10 = 0; D_340[D_1CC].color12 = 0xFF; D_340[D_1CC].color13 = 0; D_340[D_1CC].value18 = 0; D_340[D_1CC].scale = 1.0f; D_340[D_1CC].value14 = 0.0f; handle = texLoadSprite(0x93, 0); D_340[D_1CC].handle = handle; D_340[D_1CC].previousType = D_0.chainType; D_340[D_1CC].previous = D_0.chain; D_0.chain = &D_340[D_1CC]; D_0.chainType = 2; D_1CC = D_1CC + 1;
 
     D_0.width44 = 0x18; D_0.height48 = 0x14; D_0.mode40 = 0; D_0.x42 = 0x20; D_0.color4E = 0xFF; D_0.color4F = 0xFF; D_0.y46 = 0x20; D_0.value4A = 0x100; D_0.value4C = 0xB4; D_0.data50 = D_INPUT.dataF8; D_0.childType = 0; D_0.child = 0; ownerIndex = D_1C4; D_1C0[ownerIndex] = &D_38; D_1C4 = ownerIndex + 1;
 
@@ -148,7 +149,7 @@ void func_overlay_101_F0008128_18E3948(void) {
     D_340[D_1CC].color13 = 0; \
     D_340[D_1CC].value14 = 0.0f; \
     D_340[D_1CC].value18 = 0; \
-    handle = func_overlay_101_F0000000_18DB820((imageId), 0); \
+    handle = texLoadSprite((imageId), 0); \
     D_340[D_1CC].handle = handle; \
     D_340[D_1CC].previousType = D_0.childType; \
     D_0.childType = 2; \
@@ -204,6 +205,6 @@ void func_overlay_101_F0008128_18E3948(void) {
 
 #undef ADD_TEXT_ROW
 
-    func_overlay_101_F0000000_18DB820(&D_2934);
+    overlay101Reset(&D_2934);
 }
 

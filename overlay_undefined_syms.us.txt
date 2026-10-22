@@ -160,7 +160,6 @@ overlay1Overlay7DispatchSelectionReloc = 0xf0000000;
 /* overlay 1: overlay_001_tail.c.o */
 Arctanf_o001Reloc = 0xf0000000;
 D_160 = 0x00000160;
-D_1D68Read = 0x00001d68;
 D_1D84 = 0x00001d84;
 D_1D88 = 0x00001d88;
 D_1DA0_array = 0x00001da0;

@@ -7,16 +7,13 @@ s32 gOverlay77Selection = 0;
 void *gOverlay77CallbackArgument = NULL;
 
 /*
- * Overlay 77, ADR 0006 consolidation: overlay77Init.c and overlay77Update.c
- * fold into this one translation unit (overlay77Init at +0x000,
- * overlay77Update at +0x130). The state tail (overlay77EnsureSelection/
- * overlay77RunCallback, +0x3B8) stays a second translation unit,
- * overlay_077_tail.c: both functions here need -Wab,-r4300_mul's R4300
- * multiply-hazard schedule to match, the tail does not, and IDO applies
- * that flag per translation unit, so merging all four functions into one
- * object measurably changes the tail's compiled bytes (a 16-byte .text
- * growth) even though its C is untouched. Two TUs, not one, is the
- * furthest this module can be folded without editing an instruction word.
+ * Overlay 77, one translation unit (docs/OVERLAY_STRUCTURE_SPRINT.md phase
+ * 2): overlay77Init +0x000, overlay77Update +0x130, overlay77EnsureSelection
+ * +0x3B8, overlay77RunCallback +0x400. The earlier pilot kept the state tail
+ * as a second TU on the belief that -Wab,-r4300_mul changed its bytes; under
+ * the one overlay flag set the whole module, tail included, compiles to the
+ * shipped 0x430 bytes, and the tail needs no volatile view of
+ * gOverlay77Handle either.
  */
 
 void overlay77Init(Overlay77Object *object, Overlay77Init *init, s32 preserveSequence) {
@@ -111,5 +108,23 @@ void overlay77Update(Overlay77Object *object, volatile s32 updateRate) {
         if (gOverlay77CallbackArgument != 0) {
             amSndStopXYZ(gOverlay77CallbackArgument);
         }
+    }
+}
+
+/* Overlay 77 state tail (+0x3B8). Exact DKR and JFG scans are negative. */
+void overlay77EnsureSelection(void) {
+    if (gOverlay77Handle == 0) {
+        s32 count = gOverlay77Sequence;
+
+        gOverlay77Handle = count;
+        gOverlay77Selection = mathRnd(0, count - 1);
+    }
+}
+
+void overlay77RunCallback(void) {
+    void *argument = gOverlay77CallbackArgument;
+
+    if (argument != 0) {
+        amSndStopXYZ(argument);
     }
 }

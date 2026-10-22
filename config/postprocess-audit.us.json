@@ -6531,25 +6531,10 @@
       "object": "build/src/overlays/o077/overlay_077.c.o",
       "offset": 0,
       "overlay": 77,
-      "size": 952,
+      "size": 1072,
       "source": "src/overlays/o077/overlay_077.c",
       "tools": [
-        "externalize_elf_section.py",
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o077/overlay_077_tail.c.o",
-      "offset": 952,
-      "overlay": 77,
-      "size": 120,
-      "source": "src/overlays/o077/overlay_077_tail.c",
-      "tools": [
-        "trim_elf_section.py"
+        "externalize_elf_section.py"
       ]
     },
     {
@@ -8955,10 +8940,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 617,
+      "metadata": 616,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 444200,
-    "objects_with_postprocess": 618
+    "objects_with_postprocess": 617
   }
 }

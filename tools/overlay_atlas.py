@@ -771,7 +771,6 @@ TEXT_SUBSEGMENTS = {
     ],
     77: [
         (0x000, "c", "overlay_077"),
-        (0x3B8, "c", "overlay_077_tail"),
     ],
     78: [
         (0x000, "c", "overlay_078"),

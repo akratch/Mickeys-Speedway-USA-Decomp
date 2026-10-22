@@ -4948,37 +4948,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x2B0",
-     "size": "0x2B0",
-     "type": "c",
-     "source": "overlays/o022/overlay22InitializeObject",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2B0",
-     "end_offset": "0xA7C",
-     "size": "0x7CC",
-     "type": "c",
-     "source": "overlays/o022/func_overlay_022_F00002B0_18783B8",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xA7C",
-     "end_offset": "0xD30",
-     "size": "0x2B4",
-     "type": "c",
-     "source": "overlays/o022/overlay22ResolvePlane",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xD30",
      "end_offset": "0xE9C",
-     "size": "0x16C",
+     "size": "0xE9C",
      "type": "c",
-     "source": "overlays/o022/overlay22RemoveObject",
+     "source": "overlays/o022/overlay_022",
      "matched": true,
      "nonmatching": false
     },
@@ -5098,7 +5071,7 @@
      "end_offset": "0x60",
      "size": "0x60",
      "type": "c",
-     "source": "overlays/o022/overlay22RemoveObject"
+     "source": "overlays/o022/overlay_022"
     }
    ]
   },

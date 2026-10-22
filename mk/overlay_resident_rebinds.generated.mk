@@ -535,25 +535,23 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay_021.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym camGetPtr=camGetPtr_o021Reloc \
 	--redefine-sym func_8002A8C0=func_8002A8C0_o021Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o022/func_overlay_022_F00002B0_18783B8.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_022_F0000A7C_1878B84=func_overlay_022_F0000A7C_o022Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o022/overlay22InitializeObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o022/overlay_022.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o022Reloc \
+	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o022Reloc \
+	--redefine-sym amSndSetVolXYZ=amSndSetVolXYZ_o022Reloc \
+	--redefine-sym amSndStopXYZ=amSndStopXYZ_o022Reloc \
+	--redefine-sym func_80001620=func_80001620_o022Reloc \
 	--redefine-sym func_80006EA0=func_80006EA0_o022Reloc \
+	--redefine-sym func_80008128=func_80008128_o022Reloc \
 	--redefine-sym func_8000FAE0=func_8000FAE0_o022Reloc \
 	--redefine-sym func_80010900=func_80010900_o022Reloc \
-	--redefine-sym func_overlay_022_F0000A7C_1878B84=func_overlay_022_F0000A7C_o022Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o022Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o022Reloc \
 	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o022Reloc \
 	--redefine-sym partUpdateTriggers=partUpdateTriggers_o022Reloc \
+	--redefine-sym sqrtf=sqrtf_o022Reloc \
+	--redefine-sym texAnimateSprite=texAnimateSprite_o022Reloc \
 	--redefine-sym trackMakePolylist=trackMakePolylist_o022Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o022/overlay22RemoveObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o022Reloc \
-	--redefine-sym func_80006EA0=func_80006EA0_o022Reloc \
-	--redefine-sym partUpdateTriggers=partUpdateTriggers_o022Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o022/overlay22ResolvePlane.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_022_F0000000_1878108=func_overlay_022_F0000000_o022Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay_023.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Powerf=Powerf_o023Reloc \

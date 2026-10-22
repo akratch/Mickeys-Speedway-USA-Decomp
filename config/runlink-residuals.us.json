@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 153, "borrowed_records": 9145},
+  "totals": {"differences": 153, "borrowed_records": 9141},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -828,7 +828,7 @@
         [21, "gOverlay21ObjectCount", 8],
         [21, "gOverlay21Objects", 4],
         [21, "overlay21CosReloc", 4],
-        [22, "D_0", 6],
+        [22, "D_0", 2],
         [22, "gOverlay22DistanceReloc", 2],
         [23, "gOverlay23VelocityFactor", 2],
         [23, "overlay23CallReloc", 2],
@@ -2245,7 +2245,7 @@
         [14, "overlay14PrepareInputState", ".bss", "0x1DD0", 30],
         [15, "overlay_015", ".bss", "0xCC0", 58],
         [15, "overlay_015", ".rodata", "0xCB0", 2],
-        [22, "func_overlay_022_F00002B0_18783B8", ".rodata", "0xEE4", 6],
+        [22, "overlay_022", ".rodata", "0xEE4", 6],
         [24, "overlay_024", ".rodata", "0x420", 2],
         [25, "overlay_025", ".rodata", "0x630", 14],
         [26, "func_overlay_026_F00001A0_187A598", ".rodata", "0x1370", 10],

@@ -106,7 +106,7 @@ EXACT_DONOR_OVERLAYS = {
 # deliberately explicit so the manifest, splat YAML, and progress metric share
 # one collision-free `(overlay, offset)` source of truth.
 DATA_RODATA_OWNERSHIP = {
-    22: [(0x0, 0x60, "overlay22RemoveObject")],
+    22: [(0x0, 0x60, "overlay_022")],
     45: [(0x0, 0x80, "func_overlay_045_F0000764_188CBBC")],
     47: [(0x0, 0x5A0, "overlay47ReleaseResources")],
     # Offsets are relative to data_rodata. The source must already own a C text
@@ -485,10 +485,7 @@ TEXT_SUBSEGMENTS = {
         (0x1484, "asm", "overlay_020_padding"),
     ],
     22: [
-        (0x000, "c", "overlay22InitializeObject"),
-        (0x2B0, "c", "func_overlay_022_F00002B0_18783B8"),
-        (0xA7C, "c", "overlay22ResolvePlane"),
-        (0xD30, "c", "overlay22RemoveObject"),
+        (0x000, "c", "overlay_022"),
         (0xE9C, "asm", "overlay_022_padding"),
     ],
     31: [

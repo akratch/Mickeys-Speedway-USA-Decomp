@@ -1224,35 +1224,28 @@ gOverlay21ObjectCount = 0x00000000;
 gOverlay21Objects = 0x00000004;
 overlay21CosReloc = 0xf0000000;
 
-/* overlay 22: overlay22InitializeObject.c.o */
-func_80006EA0_o022Reloc = 0xf0000000;
-func_8000FAE0_o022Reloc = 0xf0000000;
-func_80010900_o022Reloc = 0xf0000000;
-func_overlay_022_F0000A7C_o022Reloc = 0x00000a7c;
-func_overlay_022_F0000D30_1878E38Reloc = 0xf0000000;
-gOverlay22DistanceReloc = 0x00000000;
-mathOneFloatRPY_o022Reloc = 0xf0000000;
-partUpdateTriggers_o022Reloc = 0xf0000000;
-trackMakePolylist_o022Reloc = 0xf0000000;
-
-/* overlay 22: func_overlay_022_F00002B0_18783B8.c.o */
+/* overlay 22: overlay_022.c.o */
 Arctanf_o022Reloc = 0xf0000000;
 amSndPlayXYZ_o022Reloc = 0xf0000000;
 amSndSetVolXYZ_o022Reloc = 0xf0000000;
 amSndStopXYZ_o022Reloc = 0xf0000000;
 func_80001620_o022Reloc = 0xf0000000;
+func_80006EA0_o022Reloc = 0xf0000000;
 func_80008128_o022Reloc = 0xf0000000;
+func_8000FAE0_o022Reloc = 0xf0000000;
+func_80010900_o022Reloc = 0xf0000000;
 func_8002A8BC_o022Reloc = 0xf0000000;
 func_8002A8C0_o022Reloc = 0xf0000000;
+func_overlay_022_F0000A7C_o022Reloc = 0x00000a7c;
+func_overlay_022_F0000D30_1878E38Reloc = 0xf0000000;
+gOverlay22DistanceReloc = 0x00000000;
+gOverlay22Nodes = 0x00000000;
 gOverlay22UpdatePoolReloc = 0x00000004;
+mathOneFloatRPY_o022Reloc = 0xf0000000;
+partUpdateTriggers_o022Reloc = 0xf0000000;
 sqrtf_o022Reloc = 0xf0000000;
 texAnimateSprite_o022Reloc = 0xf0000000;
-
-/* overlay 22: overlay22ResolvePlane.c.o */
-func_overlay_022_F0000000_o022Reloc = 0xf0000000;
-
-/* overlay 22: overlay22RemoveObject.c.o */
-gOverlay22Nodes = 0x00000000;
+trackMakePolylist_o022Reloc = 0xf0000000;
 
 /* overlay 23: overlay_023.c.o */
 Powerf_o023Reloc = 0xf0000000;

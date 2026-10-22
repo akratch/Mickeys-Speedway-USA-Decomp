@@ -2366,59 +2366,14 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o022/func_overlay_022_F00002B0_18783B8.c.o",
-      "offset": 688,
+      "object": "build/src/overlays/o022/overlay_022.c.o",
+      "offset": 0,
       "overlay": 22,
-      "size": 1996,
-      "source": "src/overlays/o022/func_overlay_022_F00002B0_18783B8.c",
+      "size": 3740,
+      "source": "src/overlays/o022/overlay_022.c",
       "tools": [
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o022/overlay22InitializeObject.c.o",
-      "offset": 0,
-      "overlay": 22,
-      "size": 688,
-      "source": "src/overlays/o022/overlay22InitializeObject.c",
-      "tools": [
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o022/overlay22RemoveObject.c.o",
-      "offset": 3376,
-      "overlay": 22,
-      "size": 364,
-      "source": "src/overlays/o022/overlay22RemoveObject.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o022/overlay22ResolvePlane.c.o",
-      "offset": 2684,
-      "overlay": 22,
-      "size": 692,
-      "source": "src/overlays/o022/overlay22ResolvePlane.c",
-      "tools": [
-        "trim_elf_section.py",
         "objcopy"
       ]
     },
@@ -8851,10 +8806,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 610,
+      "metadata": 607,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 439480,
-    "objects_with_postprocess": 611
+    "objects_with_postprocess": 608
   }
 }

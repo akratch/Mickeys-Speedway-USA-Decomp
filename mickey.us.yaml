@@ -1616,10 +1616,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1878108, c, overlay22InitializeObject]
-      - [0x18783B8, c, func_overlay_022_F00002B0_18783B8]
-      - [0x1878B84, c, overlay22ResolvePlane]
-      - [0x1878E38, c, overlay22RemoveObject]
+      - [0x1878108, c, overlay_022]
       - [0x1879008, bin, overlay_022_reloc1]
       - [0x1879110, bin, overlay_022_reloc2]
 

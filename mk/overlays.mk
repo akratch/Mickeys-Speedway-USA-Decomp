@@ -1440,32 +1440,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay44UpdateFrameCache.c.o: POSTPROCESS
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o044/func_overlay_044_F0000580_188BDE0.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o044/func_overlay_044_F0000580_188BDE0.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x574
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay69Init.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4C
-# The source naturally owns the exact frame, schedule, and 73 instruction
-# words. The shipped overlay table retains four distinct runtime callees; the
-# split target normalizes those sites to its offset-zero proxy, so fold the
-# role names through one carrier and preserve that established proxy binding.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay69UpdateAnchor.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay69UpdateAnchor.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x80:Arctanf:func_8002B040 \
-		0x94:func_8002A8C0:func_8002B040 \
-		0xc0:func_8002A8BC:func_8002B040 && \
-	$(OBJCOPY) --redefine-sym func_8002B040=func_overlay_069_F0000000_18C8A68 $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x124
-# Overlay 69 and overlay 88 ship the same reviewed renderer bytes, but each
-# remains an independent object verdict. Splat emits overlay 69's synthetic
-# symbol; restore its friendly name and discard only section alignment.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym overlay17DrawStrip=overlay69DrawFixedResourceReloc \
-		--redefine-sym camGetProjZ=overlay69MetricReloc \
-		--redefine-sym func_80022E80=overlay69PrepareTransformReloc \
-		--redefine-sym func_80022FD4=overlay69SubmitDynamicReloc \
-		--redefine-sym fxDrawCone=overlay69DrawConeReloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x59C
 # Overlay 67: one module TU under the overlay flag set; IDO's 16-byte .text
 # alignment emits the module's trailing pad itself, so no trim.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o067/overlay_067.c.o: CFLAGS += -Wab,-r4300_mul
@@ -1587,7 +1561,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88UpdateAnchor.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x158
 # The wrapper compiles the shared C body in candidate and promoted modes.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: \
-	$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.c
+	$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.inc
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym overlay17DrawStrip=overlay88DrawFixedResourceReloc \
@@ -3175,3 +3149,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay_055.c.o: POSTPROCESS = \
 # module's whole text, so no trim, and resident calls are renamed by the
 # generated surface rebinds.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay_066.c.o: CFLAGS += -Wab,-r4300_mul
+# Overlay 69: one module TU under the overlay flag set. Its renderer body is
+# overlay69DrawSortedGeometry.inc, which overlay 88's TU also includes. The
+# .text is the module's full 0x710 bytes, so no trim; resident calls are
+# renamed by the generated surface rebinds.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay_069.c.o: \
+	$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.inc
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay_069.c.o: CFLAGS += -Wab,-r4300_mul

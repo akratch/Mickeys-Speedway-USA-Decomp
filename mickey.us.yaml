@@ -2612,10 +2612,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18C8A68, c, overlay69Init]
-      - [0x18C8AB4, c, overlay69UpdateAnchor]
-      - [0x18C8BD8, c, overlay69DrawSortedGeometry]
-      - [0x18C9174, asm, overlay_069_padding]
+      - [0x18C8A68, c, overlay_069]
       - [0x18C9178, bin, overlay_069_reloc1]
 
   - name: overlay_070

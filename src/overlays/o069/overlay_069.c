@@ -1,41 +1,13 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_069.h"
 
-typedef f32 Overlay69Matrix[4][4];
-
-typedef struct Overlay69AnchorState {
-    u8 reserved00[0x44];
-    f32 x;
-    f32 y;
-    f32 z;
-    s16 angle;
-} Overlay69AnchorState;
-
-typedef struct Overlay69TransformSet {
-    u8 reserved00[8];
-    s16 direct;
-    s16 matrixIndex;
-    Overlay69Matrix *matrices[1];
-} Overlay69TransformSet;
-
-typedef struct Overlay69AnchorObject {
-    s16 angle;
-    u8 reserved02[0xA];
-    f32 x;
-    f32 y;
-    f32 z;
-    u8 reserved18[0x4C];
-    Overlay69AnchorState *anchorState;
-    Overlay69TransformSet **transformSets;
-    u8 reserved6C[0x27];
-    u8 transformSetIndex;
-} Overlay69AnchorObject;
-
-extern void func_8002B040(Overlay69Matrix *matrix, f32 x, f32 y,
-                                       f32 z, f32 *outX, f32 *outY,
-                                       f32 *outZ);
-extern s32 Arctanf(f32 x, f32 z);
-extern f32 func_8002A8C0(s32 angle);
-extern f32 func_8002A8BC(s32 angle);
+/* Exact DKR and JFG scans are negative. */
+void overlay69Init(Overlay69Object *object, void *entry) {
+    Overlay69State *state = object->state;
+    state->field14 = 0; state->byte35 = 0; state->field2 = 0; state->fieldA = 0;
+    state->field18 = 0; state->byte36 = 0; state->field4 = 0; state->fieldC = 0;
+    state->field1C = 0; state->byte37 = 0; state->field6 = 0; state->fieldE = 0;
+    state->field10 = 0; state->byte34 = 0; state->field0 = 0; state->field8 = 0;
+}
 
 /* Exact DKR v77/v80 and JFG scans are negative for this routine. */
 void overlay69UpdateAnchor(Overlay69AnchorObject *object, s32 updateContext) {
@@ -65,3 +37,6 @@ void overlay69UpdateAnchor(Overlay69AnchorObject *object, s32 updateContext) {
         state->angle = object->angle;
     }
 }
+
+/* +0x170: the renderer overlay 88 also ships. */
+#include "overlay69DrawSortedGeometry.inc"

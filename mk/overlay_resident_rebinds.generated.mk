@@ -1800,6 +1800,17 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68UpdateTrail.c.o: SURFACE_REBIND =
 	--redefine-sym D_800C947C=D_800C947C_o068Reloc \
 	--redefine-sym overlay68FinishEntry=overlay68FinishEntry_o068Reloc $@
 
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay_069.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o069Reloc \
+	--redefine-sym camGetProjZ=camGetProjZ_o069Reloc \
+	--redefine-sym func_80022E80=func_80022E80_o069Reloc \
+	--redefine-sym func_80022FD4=func_80022FD4_o069Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o069Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o069Reloc \
+	--redefine-sym func_8002B040=func_8002B040_o069Reloc \
+	--redefine-sym fxDrawCone=fxDrawCone_o069Reloc \
+	--redefine-sym overlay17DrawStrip=overlay17DrawStrip_o069Reloc $@
+
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F00000D8_18C92A0.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_80006EA0=func_80006EA0_o070Reloc \
 	--redefine-sym func_8002A8BC=func_8002A8BC_o070Reloc \

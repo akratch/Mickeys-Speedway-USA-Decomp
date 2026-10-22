@@ -3866,12 +3866,16 @@ overlay68FreeProbeReloc = 0xf0000000;
 overlay68GetResidentEntriesReloc = 0xf0000000;
 overlay68MapResidentIndexReloc = 0xf0000000;
 
-/* overlay 69: overlay69DrawSortedGeometry.c.o */
-overlay69DrawConeReloc = 0xf0000000;
-overlay69DrawFixedResourceReloc = 0xf0000000;
-overlay69MetricReloc = 0xf0000000;
-overlay69PrepareTransformReloc = 0xf0000000;
-overlay69SubmitDynamicReloc = 0xf0000000;
+/* overlay 69: overlay_069.c.o */
+Arctanf_o069Reloc = 0xf0000000;
+camGetProjZ_o069Reloc = 0xf0000000;
+func_80022E80_o069Reloc = 0xf0000000;
+func_80022FD4_o069Reloc = 0xf0000000;
+func_8002A8BC_o069Reloc = 0xf0000000;
+func_8002A8C0_o069Reloc = 0xf0000000;
+func_8002B040_o069Reloc = 0xf0000000;
+fxDrawCone_o069Reloc = 0xf0000000;
+overlay17DrawStrip_o069Reloc = 0xf0000000;
 
 /* overlay 70: func_overlay_070_F00000D8_18C92A0.c.o */
 func_80006EA0_o070Reloc = 0xf0000000;
@@ -5947,13 +5951,9 @@ func_overlay_068_F0001438_18C8598 = overlay68ReleaseTertiary;
 /* overlay 68: overlay68CheckKind.c.o */
 func_overlay_068_F000146C_18C85CC = overlay68CheckKind;
 
-/* overlay 69: overlay69Init.c.o */
+/* overlay 69: overlay_069.c.o */
 func_overlay_069_F0000000_18C8A68 = overlay69Init;
-
-/* overlay 69: overlay69UpdateAnchor.c.o */
 func_overlay_069_F000004C_18C8AB4 = overlay69UpdateAnchor;
-
-/* overlay 69: overlay69DrawSortedGeometry.c.o */
 func_overlay_069_F0000170_18C8BD8 = overlay69DrawSortedGeometry;
 
 /* overlay 71: overlay71UpdateCoordinates.c.o */

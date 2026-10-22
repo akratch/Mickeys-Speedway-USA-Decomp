@@ -509,10 +509,14 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
             deadline, check=True).stdout.replace("\\\n", " ").splitlines()
         compilers = [line.strip() for line in output if target in line and "tools/ido/cc" in line]
         metadata = [line.strip() for line in output if target in line and "tools/filter_elf_relocations.py" in line]
-        if len(compilers) != 1 or len(metadata) != 1:
+        # The generated resident-call renames (mk/overlay_resident_rebinds.generated.mk)
+        # run as their own recipe line after POSTPROCESS; replay them too, in that order.
+        rebinds = [line.strip() for line in output if target in line and "--redefine-sym" in line
+                   and "tools/filter_elf_relocations.py" not in line and "tools/ido/cc" not in line]
+        if len(compilers) != 1 or len(metadata) != 1 or len(rebinds) > 1:
             raise MetadataProofError("ambiguous expanded compiler/metadata recipe")
-        return compilers[0], metadata[0]
-    command, expanded_postprocess = recipe()
+        return compilers[0], metadata[0], (rebinds[0] if rebinds else "")
+    command, expanded_postprocess, surface_rebind = recipe()
     args = batch.compiler_arguments(command, source.relative_to(root).as_posix(), target)
     words = shlex.split(command)
     wrapped = len(words) > 1 and words[1] == "tools/asm-processor/build.py"
@@ -520,14 +524,16 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
     if words.count("-o") != 1:
         raise MetadataProofError("ambiguous configured output argument")
     plan = metadata_filter_plan(expanded_postprocess, target, root)
+    if surface_rebind:
+        plan = plan + metadata_filter_plan(surface_rebind, target, root)
     def context():
         batch.checked_tool_identity()
         if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF:
             raise MetadataProofError("loaded metadata proof implementation changed")
-        if recipe() != (command, expanded_postprocess):
+        if recipe() != (command, expanded_postprocess, surface_rebind):
             raise MetadataProofError("configured compiler recipe changed during raw proof")
         inputs = {"source": sha256_file(source), "configured": sha256_file(configured),
-                  "linked": sha256_file(linked), "command": command, "postprocess": expanded_postprocess,
+                  "linked": sha256_file(linked), "command": command, "postprocess": expanded_postprocess, "surface_rebind": surface_rebind,
                   "dependencies": batch.source_dependencies(source, dependency_args, deadline),
                   "wrapper_source_directory": receipts.tree_digest(source.parent) if wrapped else None,
                   "include_tree": receipts.tree_digest(root / "include"),

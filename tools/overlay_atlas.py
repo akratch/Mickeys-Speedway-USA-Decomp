@@ -301,10 +301,11 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     3: "overlay_003_padding",
     13: "overlay_013_padding",
     4: "overlay_004_padding",
+    9: "overlay_009_padding",
 }
 # Folded modules whose compiler padding is the tail of the one TU's .text
 # rather than an alignment gap before C-owned data.
-ONE_TU_TEXT_PADDING = {3, 4, 6, 13, 16}
+ONE_TU_TEXT_PADDING = {3, 4, 6, 9, 13, 16}
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
 # an explicit eight-byte gap before initialized data. Emit a bounded asm row
@@ -385,7 +386,7 @@ TEXT_SUBSEGMENTS = {
         (0x5128, "asm", "overlay_008_padding"),
     ],
     9: [
-        (0x0000, "c", "overlay_009"),
+        (0x000, "c", "overlay_009"),
         (0x151C, "asm", "overlay_009_padding"),
     ],
     10: [

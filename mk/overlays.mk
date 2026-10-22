@@ -561,14 +561,17 @@ $(O8_OBJ): POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:cb542eb96174af8e212c2049a1ab797e4bdd93850668aeb935a4771504af5aca
 
+# Overlay 9 is one translation unit at the overlay flag set; it owns its pad,
+# and --force keeps the static functions' names. What remains below is data
+# externalization, kept until the module's initialized data is C-owned
+# (docs/OVERLAY_STRUCTURE_SPRINT.md phase 3): func_overlay_009_F0000000_1866678
+# defines the parameter block in this object's .data at its recorded offset
+# (+0x2D0) only so as1 shares one high half between two stores; the retained
+# overlay image owns the bytes, so the copy is dropped and its 35 sites are
+# rebound to a zero-valued base. The TU's literal pool duplicates the retained
+# overlay rodata and is asserted by digest.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: CFLAGS += -Wab,-r4300_mul
-# func_overlay_009_F0000000_1866678 defines overlay 9's parameter block in
-# this object's .data at its recorded offset (+0x2D0); the retained overlay
-# image owns the bytes, so the copy is dropped and its 35 sites rebound to a
-# zero-valued base. Its three thresholds head the TU's literal pool, which
-# duplicates the retained overlay rodata and is asserted by digest. The TU
-# is 0x151C bytes; the module's last word (+0x151C) is the
-# overlay_009_padding row, so the trim only pins the natural extent.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: ASM_PROCESSOR += --force
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
 	config/normalizations/func_overlay_009_F0000000_1866678.rebind.spec
@@ -577,19 +580,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/func_overlay_009_F0000000_1866678.rebind.spec && \
 	$(OBJCOPY) --remove-section=.data --remove-section=.gptab.data $@ && \
-	$(OBJCOPY) --redefine-sym func_8001398C=overlay9HeightQueryReloc $@ && \
-	$(OBJCOPY) --redefine-sym func_80008128=overlay9TransformReloc $@ && \
-	$(OBJCOPY) --redefine-sym \
-		amSndPlayXYZ=overlay9PlaySpatialReloc $@ && \
-	$(OBJCOPY) --redefine-sym \
-		mathRnd=overlay9RandomReloc $@ && \
-	$(OBJCOPY) --redefine-sym \
-		amSndSetXYZ=overlay9SetSpatialReloc $@ && \
-	$(OBJCOPY) --redefine-sym \
-		amSndSetPitchXYZ=overlay9SetPitchReloc $@ && \
-	$(OBJCOPY) --redefine-sym mathDiffAngle=overlay9AngleDifferenceReloc $@ && \
-	$(OBJCOPY) --redefine-sym func_8002A8C0=overlay9CosineReloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x151C && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:2c21a6f383952f9246cda00fcc1f0456af3e324811b7ca17f018fd4c4f0658d9
 # NON_MATCHING fallback assembly supplies the retail body; restore the
@@ -2851,7 +2841,6 @@ OVERLAY_TRIMMED_OBJECTS := \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19ClassifyEdge.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildSpatialMasks.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o \
 OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34RemoveRecord.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34CreateRecord.c.o \

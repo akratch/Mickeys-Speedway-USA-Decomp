@@ -627,27 +627,27 @@ D_388 = 0x00000388;
 D_78 = 0x00000078;
 D_7C = 0x0000007c;
 D_800CB304_o009Reloc = 0x00000000;
+amSndPlayXYZ_o009Reloc = 0xf0000000;
+amSndSetPitchXYZ_o009Reloc = 0xf0000000;
+amSndSetXYZ_o009Reloc = 0xf0000000;
 amSndStopXYZ_o009Reloc = 0xf0000000;
 camGetMode_o009Reloc = 0xf0000000;
 camSetFOV_o009Reloc = 0xf0000000;
 controlFSUvels_o009Reloc = 0xf0000000;
 controlReadJoypad_o009Reloc = 0xf0000000;
+func_80008128_o009Reloc = 0xf0000000;
 func_8001357C_o009Reloc = 0xf0000000;
+func_8001398C_o009Reloc = 0xf0000000;
 func_8001D960_o009Reloc = 0xf0000000;
 func_8001DD70_o009Reloc = 0xf0000000;
 func_8002A8BC_o009Reloc = 0xf0000000;
+func_8002A8C0_o009Reloc = 0xf0000000;
 func_8005AF14_o009Reloc = 0xf0000000;
 gOverlay9PacketCursor = 0x00000000;
 lightObject_o009Reloc = 0xf0000000;
+mathDiffAngle_o009Reloc = 0xf0000000;
 mathOneFloatYPR_o009Reloc = 0xf0000000;
-overlay9AngleDifferenceReloc = 0xf0000000;
-overlay9CosineReloc = 0xf0000000;
-overlay9HeightQueryReloc = 0xf0000000;
-overlay9PlaySpatialReloc = 0xf0000000;
-overlay9RandomReloc = 0xf0000000;
-overlay9SetPitchReloc = 0xf0000000;
-overlay9SetSpatialReloc = 0xf0000000;
-overlay9TransformReloc = 0xf0000000;
+mathRnd_o009Reloc = 0xf0000000;
 partUpdateTriggers_o009Reloc = 0xf0000000;
 
 /* overlay 10: overlay_010.c.o */
@@ -5003,9 +5003,6 @@ func_overlay_008_F00049A4_18626FC = overlay8SetBuffer;
 func_overlay_008_F00049B4_186270C = overlay8WriteCommand;
 func_overlay_008_F00049DC_1862734 = overlay8SetValue;
 func_overlay_008_F00049E8_1862740 = overlay8UpdateMotionOutput;
-
-/* overlay 9: overlay_009.c.o */
-func_overlay_009_F00010A4_186771C = overlay9Ignore;
 
 /* overlay 10: overlay_010.c.o */
 func_overlay_010_F0000000_1868450 = overlay10Initialize;

@@ -206,18 +206,26 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o: SURFACE_REBIND = $(OBJCOP
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800CB304=D_800CB304_o009Reloc \
+	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o009Reloc \
+	--redefine-sym amSndSetPitchXYZ=amSndSetPitchXYZ_o009Reloc \
+	--redefine-sym amSndSetXYZ=amSndSetXYZ_o009Reloc \
 	--redefine-sym amSndStopXYZ=amSndStopXYZ_o009Reloc \
 	--redefine-sym camGetMode=camGetMode_o009Reloc \
 	--redefine-sym camSetFOV=camSetFOV_o009Reloc \
 	--redefine-sym controlFSUvels=controlFSUvels_o009Reloc \
 	--redefine-sym controlReadJoypad=controlReadJoypad_o009Reloc \
+	--redefine-sym func_80008128=func_80008128_o009Reloc \
 	--redefine-sym func_8001357C=func_8001357C_o009Reloc \
+	--redefine-sym func_8001398C=func_8001398C_o009Reloc \
 	--redefine-sym func_8001D960=func_8001D960_o009Reloc \
 	--redefine-sym func_8001DD70=func_8001DD70_o009Reloc \
 	--redefine-sym func_8002A8BC=func_8002A8BC_o009Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o009Reloc \
 	--redefine-sym func_8005AF14=func_8005AF14_o009Reloc \
 	--redefine-sym lightObject=lightObject_o009Reloc \
+	--redefine-sym mathDiffAngle=mathDiffAngle_o009Reloc \
 	--redefine-sym mathOneFloatYPR=mathOneFloatYPR_o009Reloc \
+	--redefine-sym mathRnd=mathRnd_o009Reloc \
 	--redefine-sym partUpdateTriggers=partUpdateTriggers_o009Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o010/overlay_010.c.o: SURFACE_REBIND = $(OBJCOPY) \

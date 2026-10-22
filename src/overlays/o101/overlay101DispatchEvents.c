@@ -21,7 +21,7 @@ extern Overlay101Event *D_220;
 extern s32 D_224;
 extern s32 D_228;
 extern s32 D_218;
-extern u8 D_0;
+extern u8 D_8007BF60;
 
 #define gOverlay101Events D_220
 #define gOverlay101EventIndex D_224
@@ -142,7 +142,7 @@ void overlay101DispatchEvents(s32 step) {
                     gOverlay101PresentationDone = 1;
                     break;
                 case 18:
-                    D_0 = 1;
+                    D_8007BF60 = 1;
                     break;
             }
             gOverlay101EventIndex++;

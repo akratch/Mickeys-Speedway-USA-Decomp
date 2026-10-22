@@ -6576,6 +6576,7 @@
       "size": 952,
       "source": "src/overlays/o077/overlay_077.c",
       "tools": [
+        "externalize_elf_section.py",
         "trim_elf_section.py"
       ]
     },

@@ -4303,12 +4303,7 @@ overlay76SoundReloc = 0xf0000000;
 
 /* overlay 77: overlay_077.c.o */
 gOverlay77CallbackArgument = 0x0000000c;
-gOverlay77Gravity = 0x00000010;
 gOverlay77Handle = 0x00000000;
-gOverlay77NegativeAcceleration = 0x0000000c;
-gOverlay77NegativeDivisor = 0x00000008;
-gOverlay77PositiveAcceleration = 0x00000004;
-gOverlay77PositiveDivisor = 0x00000000;
 gOverlay77Selection = 0x00000008;
 gOverlay77Sequence = 0x00000004;
 overlay77ContinueReloc = 0xf0000000;
@@ -4904,6 +4899,7 @@ gOverlay101Value228 = 0x00000228;
 /* overlay 101: overlay101DispatchEvents.c.o */
 D_224 = 0x00000224;
 D_228 = 0x00000228;
+D_8007BF60_o101Reloc = 0x00000000;
 overlay101DispatchEventsJumpTable = 0x00000e4c;
 
 /* overlay 101: overlay101SetScissor.c.o */

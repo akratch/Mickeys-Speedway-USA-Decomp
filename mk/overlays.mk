@@ -1596,7 +1596,14 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay75UpdateMovingObject.c.o: CFLAGS +=
 	-Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay75UpdateMovingObject.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4C0
+# overlay77Update's literal pool (-0.2f, 0.4f, 0.6f, 0.4f, -0.1f) is the
+# retained raw data/rodata slice at +0x10; anchor its references at the
+# module's rodata base and discard the duplicate section.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077.c.o: \
+	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:bc3fa5d410f6f629bf2e275c01cf7d89af45df51b3b51b2d97f3335c580c4fec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x3B8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077_tail.c.o: POSTPROCESS = \
@@ -2135,7 +2142,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DispatchEvents.c.o: POSTPROCESS 
 	$(OBJCOPY) \
 		--add-symbol overlay101DispatchEventsJumpTable=0xE4C,global \
 		--redefine-sym \
-			overlay101SchedulePair=func_overlay_101_F0000000_18DB820 $@ && \
+			overlay101SchedulePair=func_overlay_101_F0000000_18DB820 \
+		--redefine-sym D_8007BF60=D_8007BF60_o101Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		0x0B8:.rodata:overlay101DispatchEventsJumpTable \
 		0x0C0:.rodata:overlay101DispatchEventsJumpTable \

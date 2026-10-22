@@ -555,17 +555,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o022/overlay22RemoveObject.c.o: SURFACE_REBIND 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o022/overlay22ResolvePlane.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_overlay_022_F0000000_1878108=func_overlay_022_F0000000_o022Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay23Init.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay_023.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Powerf=Powerf_o023Reloc \
+	--redefine-sym func_8000590C=func_8000590C_o023Reloc \
+	--redefine-sym func_80006EA0=func_80006EA0_o023Reloc \
 	--redefine-sym mathRnd=mathRnd_o023Reloc \
 	--redefine-sym texLoadSprite=texLoadSprite_o023Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay23SpawnAttachments.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8000590C=func_8000590C_o023Reloc \
-	--redefine-sym mathRnd=mathRnd_o023Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay23Update.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym Powerf=Powerf_o023Reloc \
-	--redefine-sym func_80006EA0=func_80006EA0_o023Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o024/overlay_024.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007BF1C=D_8007BF1C_o024Reloc \

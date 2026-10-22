@@ -2427,62 +2427,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o023/overlay23Init.c.o",
-      "offset": 520,
-      "overlay": 23,
-      "size": 328,
-      "source": "src/overlays/o023/overlay23Init.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o023/overlay23RenderEffect.c.o",
-      "offset": 1128,
-      "overlay": 23,
-      "size": 256,
-      "source": "src/overlays/o023/overlay23RenderEffect.c",
-      "tools": [
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o023/overlay23SpawnAttachments.c.o",
-      "offset": 0,
-      "overlay": 23,
-      "size": 520,
-      "source": "src/overlays/o023/overlay23SpawnAttachments.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o023/overlay23Update.c.o",
-      "offset": 848,
-      "overlay": 23,
-      "size": 280,
-      "source": "src/overlays/o023/overlay23Update.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o024/overlay_024.c.o",
       "offset": 0,
       "overlay": 24,
@@ -8913,10 +8857,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 614,
+      "metadata": 610,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 440864,
-    "objects_with_postprocess": 615
+    "matched_c_bytes_with_postprocess": 439480,
+    "objects_with_postprocess": 611
   }
 }

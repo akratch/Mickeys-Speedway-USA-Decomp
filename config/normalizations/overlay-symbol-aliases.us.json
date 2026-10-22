@@ -11,15 +11,6 @@
       ]
     },
     {
-      "object": "overlays/o023/overlay23RenderEffect.c.o",
-      "aliases": [
-        {
-          "from": "overlay23CallReloc",
-          "to": "func_overlay_023_F0000000_1879210"
-        }
-      ]
-    },
-    {
       "object": "overlays/o058/overlay58FinalizePackedStatus.c.o",
       "aliases": [
         {

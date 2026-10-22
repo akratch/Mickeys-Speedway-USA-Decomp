@@ -1254,17 +1254,14 @@ func_overlay_022_F0000000_o022Reloc = 0xf0000000;
 /* overlay 22: overlay22RemoveObject.c.o */
 gOverlay22Nodes = 0x00000000;
 
-/* overlay 23: overlay23SpawnAttachments.c.o */
-func_8000590C_o023Reloc = 0xf0000000;
-mathRnd_o023Reloc = 0xf0000000;
-
-/* overlay 23: overlay23Init.c.o */
-texLoadSprite_o023Reloc = 0xf0000000;
-
-/* overlay 23: overlay23Update.c.o */
+/* overlay 23: overlay_023.c.o */
 Powerf_o023Reloc = 0xf0000000;
+func_8000590C_o023Reloc = 0xf0000000;
 func_80006EA0_o023Reloc = 0xf0000000;
 gOverlay23VelocityFactor = 0x00000000;
+mathRnd_o023Reloc = 0xf0000000;
+overlay23CallReloc = 0xf0000000;
+texLoadSprite_o023Reloc = 0xf0000000;
 
 /* overlay 24: overlay_024.c.o */
 D_8007BF1C_o024Reloc = 0x00000000;
@@ -5314,16 +5311,10 @@ func_overlay_020_F00010EC_18776C4 = overlay20AdvanceEntries;
 func_overlay_021_F0000000_1877C88 = overlay21RegisterPlane;
 func_overlay_021_F000010C_1877D94 = overlay21ApplyPriorities;
 
-/* overlay 23: overlay23SpawnAttachments.c.o */
+/* overlay 23: overlay_023.c.o */
 func_overlay_023_F0000000_1879210 = overlay23SpawnAttachments;
-
-/* overlay 23: overlay23Init.c.o */
 func_overlay_023_F0000208_1879418 = overlay23Init;
-
-/* overlay 23: overlay23Update.c.o */
 func_overlay_023_F0000350_1879560 = overlay23Update;
-
-/* overlay 23: overlay23RenderEffect.c.o */
 func_overlay_023_F0000468_1879678 = overlay23RenderEffect;
 
 /* overlay 24: overlay_024.c.o */

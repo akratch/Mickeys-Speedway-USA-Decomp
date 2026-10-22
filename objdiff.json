@@ -11127,9 +11127,9 @@
       }
     },
     {
-      "name": "src/overlays/o023/overlay23Init.c",
-      "target_path": "expected/build/src/overlays/o023/overlay23Init.c.o",
-      "base_path": "build/src/overlays/o023/overlay23Init.c.o",
+      "name": "src/overlays/o023/overlay_023.c",
+      "target_path": "expected/build/src/overlays/o023/overlay_023.c.o",
+      "base_path": "build/src/overlays/o023/overlay_023.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -11140,61 +11140,7 @@
           "overlay",
           "overlay-o023"
         ],
-        "source_path": "src/overlays/o023/overlay23Init.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o023/overlay23RenderEffect.c",
-      "target_path": "expected/build/src/overlays/o023/overlay23RenderEffect.c.o",
-      "base_path": "build/src/overlays/o023/overlay23RenderEffect.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o023"
-        ],
-        "source_path": "src/overlays/o023/overlay23RenderEffect.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o023/overlay23SpawnAttachments.c",
-      "target_path": "expected/build/src/overlays/o023/overlay23SpawnAttachments.c.o",
-      "base_path": "build/src/overlays/o023/overlay23SpawnAttachments.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o023"
-        ],
-        "source_path": "src/overlays/o023/overlay23SpawnAttachments.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o023/overlay23Update.c",
-      "target_path": "expected/build/src/overlays/o023/overlay23Update.c.o",
-      "base_path": "build/src/overlays/o023/overlay23Update.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o023"
-        ],
-        "source_path": "src/overlays/o023/overlay23Update.c",
+        "source_path": "src/overlays/o023/overlay_023.c",
         "complete": true
       }
     },

@@ -311,6 +311,7 @@ EXPLICIT_TEXT_PADDING = {
 COMPILER_TEXT_ALIGNMENT_PADDING.update({
     19: "overlay_019_padding",
     21: "overlay_021_padding",
+    23: "overlay_023_padding",
     30: "overlay_030_padding",
 })
 
@@ -557,10 +558,7 @@ TEXT_SUBSEGMENTS = {
         (0x2D4, "asm", "overlay_021_padding"),
     ],
     23: [
-        (0x000, "c", "overlay23SpawnAttachments"),
-        (0x208, "c", "overlay23Init"),
-        (0x350, "c", "overlay23Update"),
-        (0x468, "c", "overlay23RenderEffect"),
+        (0x000, "c", "overlay_023"),
         (0x568, "asm", "overlay_023_padding"),
     ],
     24: [

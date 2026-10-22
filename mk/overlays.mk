@@ -1248,14 +1248,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ScheduleByte16.c.o: POSTPROCESS 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay_021.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 30 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o030/overlay_030.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay23SpawnAttachments.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x208
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay23Init.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x148
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay23Init.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay23Update.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x118
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay23Update.c.o: CFLAGS += -Wab,-r4300_mul
+# Overlay 23 is one TU under the overlay flag set; no post-processing.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay_023.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o024/overlay_024.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x414 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \

@@ -204,7 +204,7 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
-    59: [(0x76C, 0x78C, "overlay59Advance", ".rodata", "overlay59Advance", True)],
+    59: [(0x76C, 0x78C, "overlay_059", ".rodata", "overlay59Advance", True)],
     # The 9-entry menu switch table, rodata-relative +0x188.
     61: [
         (
@@ -299,6 +299,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     70: "overlay_070_padding",
     71: "overlay_071_tail",
     63: "overlay_063_padding",
+    59: "overlay_059_padding",
 }
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
@@ -1095,16 +1096,7 @@ TEXT_SUBSEGMENTS = {
         (0x13E8, "asm", "overlay_035_padding"),
     ],
     59: [
-        (0x000, "c", "overlay59Release"),
-        (0x070, "c", "overlay59PrepareEntry"),
-        (0x168, "c", "overlay59ResetEntries"),
-        (0x1D4, "c", "overlay59ReleaseAll"),
-        (0x21C, "c", "overlay59AppendValue"),
-        (0x2D0, "c", "overlay59Update"),
-        (0x36C, "c", "overlay59Advance"),
-        (0x784, "c", "overlay59Interpolate"),
-        (0x84C, "c", "overlay59BuildList"),
-        (0x8EC, "c", "overlay59DrawFrame"),
+        (0x000, "c", "overlay_059"),
         (0xA1C, "asm", "overlay_059_padding"),
     ],
     60: [

@@ -3247,31 +3247,20 @@ D_8007BF04_o058Reloc = 0x00000000;
 D_8007BF08_o058Reloc = 0x00000000;
 gOverlay58PrimaryOrderIndex = 0x00000074;
 
-/* overlay 59: overlay59Release.c.o */
-overlay59ReleaseReloc = 0xf0000000;
-
-/* overlay 59: overlay59PrepareEntry.c.o */
-gOverlay59DescriptorTables = 0x00000000;
-texLoadTexture_o059Reloc = 0xf0000000;
-
-/* overlay 59: overlay59ResetEntries.c.o */
-gOverlay59Entries = 0x00000000;
-gOverlay59EntriesEnd = 0x00000110;
-
-/* overlay 59: overlay59AppendValue.c.o */
-gOverlay59ValueTables = 0x00000708;
-
-/* overlay 59: overlay59Advance.c.o */
-gOverlay59AdvancePoolReloc = 0x00000018;
-gOverlay59EntriesOneEnd = 0x00000044;
-gOverlay59TableInfo = 0x000005a0;
-
-/* overlay 59: overlay59DrawFrame.c.o */
+/* overlay 59: overlay_059.c.o */
 fontBackground_o059Reloc = 0xf0000000;
 fontColour_o059Reloc = 0xf0000000;
 fontPrintXY_o059Reloc = 0xf0000000;
 fontUseFont_o059Reloc = 0xf0000000;
+gOverlay59DescriptorTables = 0x00000000;
+gOverlay59Entries = 0x00000000;
+gOverlay59EntriesEnd = 0x00000110;
+gOverlay59EntriesOneEnd = 0x00000044;
 gOverlay59Styles = 0x00000730;
+gOverlay59TableInfo = 0x000005a0;
+gOverlay59ValueTables = 0x00000708;
+overlay59ReleaseReloc = 0xf0000000;
+texLoadTexture_o059Reloc = 0xf0000000;
 
 /* overlay 60: overlay60Initialize.c.o */
 D_8007C0B8_o060Reloc = 0x00000000;
@@ -5763,34 +5752,14 @@ func_overlay_058_F00054C8_18B46B0 = overlay58EnsureResource;
 /* overlay 58: overlay58FinalizePackedStatus.c.o */
 func_overlay_058_F0005554_18B473C = overlay58FinalizePackedStatus;
 
-/* overlay 59: overlay59Release.c.o */
-func_overlay_059_F0000000_18B8750 = overlay59Release;
-
-/* overlay 59: overlay59PrepareEntry.c.o */
-func_overlay_059_F0000070_18B87C0 = overlay59PrepareEntry;
-
-/* overlay 59: overlay59ResetEntries.c.o */
+/* overlay 59: overlay_059.c.o */
 func_overlay_059_F0000168_18B88B8 = overlay59ResetEntries;
-
-/* overlay 59: overlay59ReleaseAll.c.o */
 func_overlay_059_F00001D4_18B8924 = overlay59ReleaseAll;
-
-/* overlay 59: overlay59AppendValue.c.o */
 func_overlay_059_F000021C_18B896C = overlay59AppendValue;
-
-/* overlay 59: overlay59Update.c.o */
 func_overlay_059_F00002D0_18B8A20 = overlay59Update;
-
-/* overlay 59: overlay59Advance.c.o */
 func_overlay_059_F000036C_18B8ABC = overlay59Advance;
-
-/* overlay 59: overlay59Interpolate.c.o */
 func_overlay_059_F0000784_18B8ED4 = overlay59Interpolate;
-
-/* overlay 59: overlay59BuildList.c.o */
 func_overlay_059_F000084C_18B8F9C = overlay59BuildList;
-
-/* overlay 59: overlay59DrawFrame.c.o */
 func_overlay_059_F00008EC_18B903C = overlay59DrawFrame;
 
 /* overlay 60: overlay60ReleaseResources.c.o */

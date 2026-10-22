@@ -1566,11 +1566,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58SetNodeValue.c.o: SURFACE_REBIND 
 	--redefine-sym func_800508B4=func_800508B4_o058Reloc \
 	--redefine-sym func_8005AD64=func_8005AD64_o058Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59DrawFrame.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay_059.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym fontBackground=fontBackground_o059Reloc \
 	--redefine-sym fontColour=fontColour_o059Reloc \
 	--redefine-sym fontPrintXY=fontPrintXY_o059Reloc \
-	--redefine-sym fontUseFont=fontUseFont_o059Reloc $@
+	--redefine-sym fontUseFont=fontUseFont_o059Reloc \
+	--redefine-sym texLoadTexture=texLoadTexture_o059Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/func_overlay_060_F0002F54_18BCD2C.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D3140=D_800D3140_o060Reloc \

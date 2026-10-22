@@ -11722,91 +11722,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x70",
-     "size": "0x70",
-     "type": "c",
-     "source": "overlays/o059/overlay59Release",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x70",
-     "end_offset": "0x168",
-     "size": "0xF8",
-     "type": "c",
-     "source": "overlays/o059/overlay59PrepareEntry",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x168",
-     "end_offset": "0x1D4",
-     "size": "0x6C",
-     "type": "c",
-     "source": "overlays/o059/overlay59ResetEntries",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1D4",
-     "end_offset": "0x21C",
-     "size": "0x48",
-     "type": "c",
-     "source": "overlays/o059/overlay59ReleaseAll",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x21C",
-     "end_offset": "0x2D0",
-     "size": "0xB4",
-     "type": "c",
-     "source": "overlays/o059/overlay59AppendValue",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2D0",
-     "end_offset": "0x36C",
-     "size": "0x9C",
-     "type": "c",
-     "source": "overlays/o059/overlay59Update",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x36C",
-     "end_offset": "0x784",
-     "size": "0x418",
-     "type": "c",
-     "source": "overlays/o059/overlay59Advance",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x784",
-     "end_offset": "0x84C",
-     "size": "0xC8",
-     "type": "c",
-     "source": "overlays/o059/overlay59Interpolate",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x84C",
-     "end_offset": "0x8EC",
-     "size": "0xA0",
-     "type": "c",
-     "source": "overlays/o059/overlay59BuildList",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x8EC",
      "end_offset": "0xA1C",
-     "size": "0x130",
+     "size": "0xA1C",
      "type": "c",
-     "source": "overlays/o059/overlay59DrawFrame",
+     "source": "overlays/o059/overlay_059",
      "matched": true,
      "nonmatching": false
     },
@@ -11919,7 +11838,7 @@
      "size": "0x20",
      "type": "c",
      "section": ".rodata",
-     "source": "overlays/o059/overlay59Advance",
+     "source": "overlays/o059/overlay_059",
      "trial_function": "overlay59Advance",
      "externalized": true
     }

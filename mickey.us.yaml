@@ -2392,17 +2392,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18B8750, c, overlay59Release]
-      - [0x18B87C0, c, overlay59PrepareEntry]
-      - [0x18B88B8, c, overlay59ResetEntries]
-      - [0x18B8924, c, overlay59ReleaseAll]
-      - [0x18B896C, c, overlay59AppendValue]
-      - [0x18B8A20, c, overlay59Update]
-      - [0x18B8ABC, c, overlay59Advance]
-      - [0x18B8ED4, c, overlay59Interpolate]
-      - [0x18B8F9C, c, overlay59BuildList]
-      - [0x18B903C, c, overlay59DrawFrame]
-      - [0x18B916C, asm, overlay_059_padding]
+      - [0x18B8750, c, overlay_059]
       - [0x18B9170, bin, overlay_059_data_rodata]
       - [0x18B9900, bin, overlay_059_reloc1]
       - [0x18B9958, bin, overlay_059_reloc2]

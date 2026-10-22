@@ -1109,6 +1109,27 @@ shadow -- the dispatch order for Track B.
   detector. Offsets and labels only; ~3 s (~7 s with `--baseline`) with a
   build and the farm. `--check` fails on an unsupported or refuted routine
   or a coverage failure; `--strict` also on a ledger-class mismatch.
+- **`gmake check-runlink-tables`** (`tools/runlink_pack.py`, docs/overlays.md
+  §5.3.1) rebuilds every overlay module's relocation tables, the ORT and the
+  main table from the objects, compiled raw into `build/runlink_raw/` by their
+  exact recipes. It then fails on any difference from the shipped tables that
+  `config/runlink-residuals.us.json` does not list. This is the only check that
+  sees a **wrong target behind matching bytes**: a `SYMBOL` call stores 0
+  whatever it names, so 128 calls and 46 data references name the wrong thing
+  today and `verify` passes. `tools/runlink_pack.py compare -v` prints each one
+  as expected vs got, by name. Run it after renaming or retyping anything an
+  overlay references, and after any overlay data or ordering change.
+  - **A fix also fails the gate.** A residual that has gone is a stale
+    manifest entry. Run `gmake runlink-residuals` and commit the shorter
+    manifest, never a longer one.
+  - **Placeholder names are borrowed, not checked.** A placeholder (`D_xxxx`,
+    a `*Reloc` that is not the surface's `<name>_oNNNReloc` or
+    `<generated>Reloc`) takes its identity from the shipped record and is
+    listed by module and symbol. Replacing it with a real name moves it from
+    borrowed to checked, and a wrong real name then shows up as a `callee` or
+    `data-ref` difference.
+  - **Renaming an exported function** changes `config/runlink-ort.us.txt`:
+    run `gmake runlink-ort`.
 - **Reading aids.** `fast_score.py <sym> <cand.c> --diff --window A-B` (hex
   function offsets) prints every row of that range, `*` on the differing ones,
   so one handler reads whole instead of as scattered differing words.

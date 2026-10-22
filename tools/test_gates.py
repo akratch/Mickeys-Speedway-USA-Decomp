@@ -100,7 +100,8 @@ class GateStatusTests(unittest.TestCase):
     def test_promotion_adds_the_promotion_gates(self) -> None:
         out = run("exit 0", ["--promotion"])
         for gate in ("check-scoreboard", "check-overlay-syms",
-                     "check-nonmatching-builds", "check-promotion-proofs"):
+                     "check-nonmatching-builds", "check-promotion-proofs",
+                     "check-runlink-tables"):
             self.assertIn(gate, out.stdout)
 
     def test_staged_passes_the_index_flag_to_cleanroom_only(self) -> None:

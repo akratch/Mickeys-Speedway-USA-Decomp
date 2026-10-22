@@ -28,6 +28,13 @@
 # prints the failing gates again at the end so the verdict is the last thing
 # on screen.
 #
+# check-runlink-tables (in --promotion) rebuilds every module's relocation
+# tables, the ORT and the main table from the objects and fails on any
+# difference from the shipped ones that config/runlink-residuals.us.json does
+# not list, and on any listed one that has gone (tools/runlink_pack.py). A
+# source edit that fixes a residual therefore fails it too, by design: run
+# `gmake runlink-residuals` and commit the shorter manifest.
+#
 # TWO FAILURES THAT ARE NOT THE TREE'S. check-promotion-proofs refuses with
 # "proof inputs changed during census" when a source changed while it ran --
 # another lane compiling in this tree, typically. It is retried once, and the
@@ -39,7 +46,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 DEFAULT_GATES=(verify cleanroom check-docs check-tooling)
-PROMOTION_GATES=(check-scoreboard check-overlay-syms check-objdiff-config check-nonmatching-builds check-promotion-proofs)
+PROMOTION_GATES=(check-scoreboard check-overlay-syms check-objdiff-config check-nonmatching-builds check-promotion-proofs check-runlink-tables)
 
 gates=()
 staged=0

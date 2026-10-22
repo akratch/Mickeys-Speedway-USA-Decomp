@@ -70,8 +70,9 @@ $(OVERLAY5_O3_OBJECTS): $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/%.c.o: \
 # The trimmer only reduces the ELF section header and refuses nonzero tails.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o006/overlay_006.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o076/overlay_076.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x114
+# Overlay 76 is one translation unit under the overlay flag set; its .text is
+# the module's 0x120 bytes, trailing pad included, so it needs no trim.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o076/overlay_076.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o078/overlay_078.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o102/overlay_102.c.o: POSTPROCESS = \
@@ -2882,7 +2883,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59Interpolate.c.o: CFLAGS += -Wab,-
 
 OVERLAY_TRIMMED_OBJECTS := \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o006/overlay_006.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o076/overlay_076.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o078/overlay_078.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o102/overlay_102.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o103/overlay_103.c.o \

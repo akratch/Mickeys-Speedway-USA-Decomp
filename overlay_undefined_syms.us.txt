@@ -3786,21 +3786,17 @@ texDPTextureX_o065Reloc = 0xf0000000;
 /* overlay 65: overlay65SpawnRecord.c.o */
 D_21C = 0x0000021c;
 
-/* overlay 66: overlay66Select.c.o */
-gOverlay66Current = 0x000000fc;
-gOverlay66Flag = 0x00000100;
-gOverlay66Timer = 0x000000f8;
-
-/* overlay 66: overlay66SmoothAndDraw.c.o */
+/* overlay 66: overlay_066.c.o */
 D_800D2FA0_o066Reloc = 0x00000000;
 D_800D2FA8_o066Reloc = 0x00000000;
 D_800D2FAC_o066Reloc = 0x00000000;
+D_88 = 0x00000088;
 gOverlay66BssControl = 0x00000000;
+gOverlay66Current = 0x000000fc;
+gOverlay66Flag = 0x00000100;
+gOverlay66Timer = 0x000000f8;
 osInvalDCache_o066Reloc = 0xf0000000;
 osWritebackDCacheAll_o066Reloc = 0xf0000000;
-
-/* overlay 66: func_overlay_066_F00004E0_18C6948.c.o */
-D_88 = 0x00000088;
 rsp_segment_o066Reloc = 0xf0000000;
 texDPInit_o066Reloc = 0xf0000000;
 viGetCurrentSize_o066Reloc = 0xf0000000;
@@ -5889,10 +5885,8 @@ func_overlay_065_F0000BC0_18C4E28 = overlay65Release;
 /* overlay 65: overlay65ResetSlots.c.o */
 func_overlay_065_F0000BF0_18C4E58 = overlay65ResetSlots;
 
-/* overlay 66: overlay66Select.c.o */
+/* overlay 66: overlay_066.c.o */
 func_overlay_066_F0000000_18C6468 = overlay66Select;
-
-/* overlay 66: overlay66GetCurrent.c.o */
 func_overlay_066_F0000034_18C649C = overlay66GetCurrent;
 
 /* overlay 67: overlay_067.c.o */

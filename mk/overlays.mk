@@ -42,16 +42,6 @@ test-overlay-aliases:
 check-docs: check-overlay-aliases
 check-tooling: test-overlay-aliases
 
-# The overlay 66 framebuffer renderer is matched at the default -O2 -mips2
-# (an earlier -mips1 override was refuted by its rounding-mode conversions).
-# Its four resident calls go through the module-local aliases that
-# `gmake overlay-syms` mints, as in every other promoted overlay.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o066/func_overlay_066_F00004E0_18C6948.c.o: OPT_FLAGS := -O2
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o066/func_overlay_066_F00004E0_18C6948.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym texDPInit=texDPInit_o066Reloc $@ && \
-	$(OBJCOPY) --redefine-sym rsp_segment=rsp_segment_o066Reloc $@ && \
-	$(OBJCOPY) --redefine-sym viGetCurrentSize=viGetCurrentSize_o066Reloc $@ && \
-	$(OBJCOPY) --redefine-sym viGetVideoMode=viGetVideoMode_o066Reloc $@
 
 # Rare's audio-bank patcher is an -O3 object in DKR and Mickey. Mickey keeps
 # six source boundaries that preserve calls the whole-file DKR build inlines;
@@ -969,10 +959,6 @@ include config/normalizations/overlay22Epoch12.mk
 include config/normalizations/overlay46Epoch12.mk
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41Ignore.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x14
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay66GetCurrent.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay66Select.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x34
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/overlay79SetLink.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x10
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/overlay79InitState.c.o: POSTPROCESS = \
@@ -3185,3 +3171,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay_055.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay_055.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:d131bb7de7509c98fc3533790f960348a16e2e461e7d1f5ffff1cd58ae2243e0
+# Overlay 66: one module TU under the overlay flag set; its .text is the
+# module's whole text, so no trim, and resident calls are renamed by the
+# generated surface rebinds.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay_066.c.o: CFLAGS += -Wab,-r4300_mul

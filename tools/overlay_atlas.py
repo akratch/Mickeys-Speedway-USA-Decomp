@@ -690,10 +690,7 @@ TEXT_SUBSEGMENTS = {
         (0x1A84, "asm", "overlay_061_padding"),
     ],
     66: [
-        (0x000, "c", "overlay66Select"),
-        (0x034, "c", "overlay66GetCurrent"),
-        (0x040, "c", "overlay66SmoothAndDraw"),
-        (0x4E0, "c", "func_overlay_066_F00004E0_18C6948"),
+        (0x000, "c", "overlay_066"),
     ],
     67: [
         (0x000, "c", "overlay_067"),

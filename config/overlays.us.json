@@ -12925,37 +12925,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x34",
-     "size": "0x34",
-     "type": "c",
-     "source": "overlays/o066/overlay66Select",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x34",
-     "end_offset": "0x40",
-     "size": "0xC",
-     "type": "c",
-     "source": "overlays/o066/overlay66GetCurrent",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x40",
-     "end_offset": "0x4E0",
-     "size": "0x4A0",
-     "type": "c",
-     "source": "overlays/o066/overlay66SmoothAndDraw",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x4E0",
      "end_offset": "0x810",
-     "size": "0x330",
+     "size": "0x810",
      "type": "c",
-     "source": "overlays/o066/func_overlay_066_F00004E0_18C6948",
+     "source": "overlays/o066/overlay_066",
      "matched": true,
      "nonmatching": false
     }

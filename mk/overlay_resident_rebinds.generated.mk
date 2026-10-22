@@ -1729,12 +1729,16 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63UpdateSequence.c.o: SURFACE_REBIN
 	--redefine-sym fontUseFont=fontUseFont_o063Reloc \
 	--redefine-sym overlay48Initialize=overlay48Initialize_o063Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay66SmoothAndDraw.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay_066.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D2FA0=D_800D2FA0_o066Reloc \
 	--redefine-sym D_800D2FA8=D_800D2FA8_o066Reloc \
 	--redefine-sym D_800D2FAC=D_800D2FAC_o066Reloc \
 	--redefine-sym osInvalDCache=osInvalDCache_o066Reloc \
-	--redefine-sym osWritebackDCacheAll=osWritebackDCacheAll_o066Reloc $@
+	--redefine-sym osWritebackDCacheAll=osWritebackDCacheAll_o066Reloc \
+	--redefine-sym rsp_segment=rsp_segment_o066Reloc \
+	--redefine-sym texDPInit=texDPInit_o066Reloc \
+	--redefine-sym viGetCurrentSize=viGetCurrentSize_o066Reloc \
+	--redefine-sym viGetVideoMode=viGetVideoMode_o066Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o067/overlay_067.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym frontDrawRectangles=frontDrawRectangles_o067Reloc $@

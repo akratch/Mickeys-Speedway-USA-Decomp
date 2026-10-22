@@ -12389,28 +12389,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0xD4",
-     "size": "0xD4",
-     "type": "c",
-     "source": "overlays/o062/overlay62Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xD4",
-     "end_offset": "0x56C",
-     "size": "0x498",
-     "type": "c",
-     "source": "overlays/o062/overlay62Update",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x56C",
      "end_offset": "0x5B0",
-     "size": "0x44",
+     "size": "0x5B0",
      "type": "c",
-     "source": "overlays/o062/overlay62ReleaseAll",
+     "source": "overlays/o062/overlay_062",
      "matched": true,
      "nonmatching": false
     }
@@ -12523,37 +12505,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x1D4",
-     "size": "0x1D4",
-     "type": "c",
-     "source": "overlays/o063/overlay63Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1D4",
-     "end_offset": "0x74C",
-     "size": "0x578",
-     "type": "c",
-     "source": "overlays/o063/overlay63UpdateEffects",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x74C",
-     "end_offset": "0x77C",
-     "size": "0x30",
-     "type": "c",
-     "source": "overlays/o063/overlay63Release",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x77C",
      "end_offset": "0x928",
-     "size": "0x1AC",
+     "size": "0x928",
      "type": "c",
-     "source": "overlays/o063/overlay63UpdateSequence",
+     "source": "overlays/o063/overlay_063",
      "matched": true,
      "nonmatching": false
     },

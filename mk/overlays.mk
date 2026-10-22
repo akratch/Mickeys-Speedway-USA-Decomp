@@ -2079,18 +2079,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildPresentationD.c.o: POSTPROC
 # trailing-section trimming metadata for the extracted function.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o016/overlay_016.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x424
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63Release.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
-# NON_MATCHING/GLOBAL_ASM: restore friendly symbols and retain only the
-# trailing-section trim metadata for these extracted functions.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63Initialize.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym gO63ChainReload=gO63Chain $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1D4
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63UpdateEffects.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x578
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63UpdateSequence.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1AC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68CreateEntries.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xD8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68ReleasePrimary.c.o: POSTPROCESS = \
@@ -2234,14 +2222,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o018/overlay18Reconfigure.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2A8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o018/overlay18InitializeBuffers.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x15C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62Initialize.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xD4
-# NON_MATCHING fallback assembly supplies the retail body; restore the
-# friendly source symbol and retain the exact text extent when needed.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62Update.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x498
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62ReleaseAll.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x44
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87ReleaseCurrent.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87HasNearby.c.o: POSTPROCESS = \
@@ -2848,10 +2828,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84UpdateResource.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84RefreshCurrent.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84SelectCurrent.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63Initialize.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63UpdateEffects.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63Release.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63UpdateSequence.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68CreateEntries.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68ReleasePrimary.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68ReleaseSecondary.c.o \
@@ -2963,9 +2939,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o018/overlay18Reconfigure.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o018/overlay18InitializeBuffers.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58ReleaseResources.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62Initialize.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62Update.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62ReleaseAll.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87ReleaseCurrent.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87HasNearby.c.o
 OVERLAY_TRIMMED_OBJECTS += \
@@ -3116,3 +3089,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o071/overlay_071.c.o: \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o071/overlay_071.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay71InitializeObject.calls.spec
+# Overlay 62: one module TU under the overlay flag set; its .text is the
+# module's whole 0x5B0 bytes, so no trim, and resident calls are renamed by
+# the generated surface rebinds.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay_062.c.o: CFLAGS += -Wab,-r4300_mul
+# Overlay 63: one module TU under the overlay flag set; its .text is the
+# module's full 0x930 bytes, trailing pad included, so no trim, and resident
+# calls are renamed by the generated surface rebinds. The initializer's
+# second read of the chain head goes through the weak alias gO63ChainReload,
+# which the generated surface values with the chain's own stored address.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay_063.c.o: CFLAGS += -Wab,-r4300_mul

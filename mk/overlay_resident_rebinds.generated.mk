@@ -1657,19 +1657,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61WriteCharacter.c.o: SURFACE_REBIN
 	--redefine-sym mmFree=mmFree_o061Reloc \
 	--redefine-sym packWriteFile=packWriteFile_o061Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62Initialize.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C0B8=D_8007C0B8_o062Reloc \
-	--redefine-sym fontColour=fontColour_o062Reloc \
-	--redefine-sym fontUseFont=fontUseFont_o062Reloc \
-	--redefine-sym loadFrontEndList=loadFrontEndList_o062Reloc \
-	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o062Reloc \
-	--redefine-sym overlay45SetMode=overlay45SetMode_o062Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o062Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62ReleaseAll.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8002C5F4=func_8002C5F4_o062Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62Update.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay_062.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007C0B8=D_8007C0B8_o062Reloc \
 	--redefine-sym D_800D3140=D_800D3140_o062Reloc \
 	--redefine-sym D_800D3144=D_800D3144_o062Reloc \
@@ -1681,33 +1669,32 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62Update.c.o: SURFACE_REBIND = $(OB
 	--redefine-sym fontColour=fontColour_o062Reloc \
 	--redefine-sym fontPrintXY=fontPrintXY_o062Reloc \
 	--redefine-sym fontUseFont=fontUseFont_o062Reloc \
+	--redefine-sym func_8002C5F4=func_8002C5F4_o062Reloc \
 	--redefine-sym func_8002F618=func_8002F618_o062Reloc \
+	--redefine-sym loadFrontEndList=loadFrontEndList_o062Reloc \
 	--redefine-sym mainChangeLevel=mainChangeLevel_o062Reloc \
+	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o062Reloc \
 	--redefine-sym overlay45SetMode=overlay45SetMode_o062Reloc \
 	--redefine-sym rcpSetScreenColour=rcpSetScreenColour_o062Reloc \
 	--redefine-sym sprSetTextureFilter=sprSetTextureFilter_o062Reloc \
-	--redefine-sym texAnimateTexSprite=texAnimateTexSprite_o062Reloc $@
+	--redefine-sym texAnimateTexSprite=texAnimateTexSprite_o062Reloc \
+	--redefine-sym texLoadSprite=texLoadSprite_o062Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63Initialize.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay_063.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_8007A1E0=D_8007A1E0_o063Reloc \
 	--redefine-sym D_8007BF44=D_8007BF44_o063Reloc \
-	--redefine-sym D_800D31C8=D_800D31C8_o063Reloc \
-	--redefine-sym amTunePlay=amTunePlay_o063Reloc \
-	--redefine-sym fontColour=fontColour_o063Reloc \
-	--redefine-sym fontUseFont=fontUseFont_o063Reloc \
-	--redefine-sym func_800015F8=func_800015F8_o063Reloc \
-	--redefine-sym joyEnable=joyEnable_o063Reloc \
-	--redefine-sym loadFrontEndList=loadFrontEndList_o063Reloc \
-	--redefine-sym mathRnd=mathRnd_o063Reloc \
-	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o063Reloc \
-	--redefine-sym overlay45SetMode=overlay45SetMode_o063Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63UpdateEffects.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D3140=D_800D3140_o063Reloc \
 	--redefine-sym D_800D3144=D_800D3144_o063Reloc \
 	--redefine-sym D_800D3148=D_800D3148_o063Reloc \
 	--redefine-sym D_800D3180=D_800D3180_o063Reloc \
+	--redefine-sym D_800D31C8=D_800D31C8_o063Reloc \
+	--redefine-sym amTunePlay=amTunePlay_o063Reloc \
 	--redefine-sym camDo2DSprite=camDo2DSprite_o063Reloc \
 	--redefine-sym camStandardOrtho=camStandardOrtho_o063Reloc \
+	--redefine-sym fontColour=fontColour_o063Reloc \
+	--redefine-sym fontPrintXY=fontPrintXY_o063Reloc \
+	--redefine-sym fontUseFont=fontUseFont_o063Reloc \
+	--redefine-sym func_800015F8=func_800015F8_o063Reloc \
 	--redefine-sym func_80001608=func_80001608_o063Reloc \
 	--redefine-sym func_800291E4=func_800291E4_o063Reloc \
 	--redefine-sym func_8002A8C0=func_8002A8C0_o063Reloc \
@@ -1715,19 +1702,15 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63UpdateEffects.c.o: SURFACE_REBIND
 	--redefine-sym func_80037414=func_80037414_o063Reloc \
 	--redefine-sym func_80037664=func_80037664_o063Reloc \
 	--redefine-sym func_8003A680=func_8003A680_o063Reloc \
+	--redefine-sym joyEnable=joyEnable_o063Reloc \
+	--redefine-sym loadFrontEndList=loadFrontEndList_o063Reloc \
 	--redefine-sym mainChangeLevel=mainChangeLevel_o063Reloc \
 	--redefine-sym mathRnd=mathRnd_o063Reloc \
+	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o063Reloc \
 	--redefine-sym overlay45SetMode=overlay45SetMode_o063Reloc \
+	--redefine-sym overlay48Initialize=overlay48Initialize_o063Reloc \
 	--redefine-sym texAnimateTexSprite=texAnimateTexSprite_o063Reloc \
 	--redefine-sym texDPInit=texDPInit_o063Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63UpdateSequence.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007A1E0=D_8007A1E0_o063Reloc \
-	--redefine-sym D_800D3140=D_800D3140_o063Reloc \
-	--redefine-sym fontColour=fontColour_o063Reloc \
-	--redefine-sym fontPrintXY=fontPrintXY_o063Reloc \
-	--redefine-sym fontUseFont=fontUseFont_o063Reloc \
-	--redefine-sym overlay48Initialize=overlay48Initialize_o063Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay_066.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D2FA0=D_800D2FA0_o066Reloc \

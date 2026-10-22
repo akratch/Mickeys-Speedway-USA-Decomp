@@ -1,70 +1,29 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_062.h"
 
-typedef struct Overlay62Gfx {
-    u32 word0;
-    u32 word1;
-} Overlay62Gfx;
-
-typedef struct Overlay62Root {
-    u8 pad00[0x25C];
-    void *primary;
-    void *items[6];
-} Overlay62Root;
-
-typedef struct Overlay62Transform {
-    s16 x;
-    s16 y;
-    s16 z;
-    u8 pad06[2];
-    f32 scale;
-    f32 screenX;
-    f32 screenY;
-    f32 zero0;
-    u8 pad18[0x10];
-    f32 zero1;
-} Overlay62Transform;
-
-extern f32 gOverlay62PulseReloc;
-extern s32 D_800D3180;
-extern u8 gOverlay62State[];
-extern s32 gOverlay62Values[];
-extern s32 gOverlay62Value8;
-extern s32 gOverlay62ValueC;
-extern Overlay62Root *D_8007C0B8;
-extern Overlay62Gfx *D_800D3140;
-extern u8 D_800D3144[];
-extern u8 D_800D3148[];
-extern u8 gOverlay62FirstItemReloc[];
-extern u8 gOverlay62CommitContextReloc[];
+/* DKR v77/v80 and JFG have no exact donor for this resource initializer. */
+void overlay62Initialize(void) {
+    loadFrontEndList(&gOverlay62Float0);
+    gOverlay62Value4Initial = (s32)gOverlay62Handle18;
+    gOverlay62Float0 = 0.0f;
+    gOverlay62Value4 = 13;
+    fontUseFont(3);
+    fontColour(0xFF, 0xFF, 0xFF, 0, 0xFF);
+    gOverlay62Handle14 = overlay45CreateDescriptor(
+        D_8007C0B8->primary, 0x28, 0x28, 0);
+    gOverlay62Handle18 = texLoadSprite(0x93, 0);
+    gOverlay62Value8 = 0x20;
+    gOverlay62ValueC = 0;
+    gOverlay62Value10 = 0;
+    overlay45SetMode(gOverlay62Handle14, 0);
+}
 
 #define gOverlay62Value4 gOverlay62Values[0]
-#define gOverlay62Value10 (*(s32 *)(gOverlay62State + 0x10))
-#define gOverlay62Handle14 (*(void **)(gOverlay62State + 0x14))
-#define gOverlay62Handle18 (*(void **)(gOverlay62State + 0x18))
 
-extern void overlay45SetMode(void *handle, s32 alpha);
-extern void rcpSetScreenColour(s32 red, s32 green, s32 blue, s32 alpha);
-extern void mainChangeLevel(s32 type, s32 arg1, s32 arg2,
-                                          s32 arg3, s32 arg4, s32 arg5);
-extern void camStandardOrtho(Overlay62Gfx **commands,
-                                         void *viewport);
-extern void sprSetTextureFilter(s32 layer);
-extern void camDo2DSprite(Overlay62Gfx **commands, void *resourceA,
-                                     void *resourceB,
-                                     Overlay62Transform *transform,
-                                     void *handle, s32 arg5, s32 alpha);
-extern void sprSetTextureFilter(s32 mode);
-extern void fontUseFont(s32 mode);
-extern void fontBackground(s32 a, s32 b, s32 c, s32 d);
-extern void fontColour(s32 red, s32 green, s32 blue,
-                                            s32 alpha, s32 intensity);
-extern void fontPrintXY(Overlay62Gfx **commands, s32 x, s32 y,
-                                   void *item, s32 mode);
-extern void texAnimateTexSprite(s32 handle, s32 *state, s32 mode,
-                                      void *context, s32 updateRate);
-extern void func_8002F618(Overlay62Gfx **commands, s32 *state,
-                                    s32 x, s32 y, s32 red, s32 green,
-                                    s32 blue, s32 alpha);
+#define gOverlay62Value10 (*(s32 *)(gOverlay62State + 0x10))
+
+#define gOverlay62Handle14 (*(void **)(gOverlay62State + 0x14))
+
+#define gOverlay62Handle18 (*(void **)(gOverlay62State + 0x18))
 
 #define OVERLAY62_EMIT(commands_, op_, value_) do { \
     Overlay62Gfx *packet_ = *(commands_); \
@@ -196,4 +155,12 @@ void overlay62Update(s32 updateRate) {
     func_8002F618(&D_800D3140,
                             gOverlay62Values, 0x74, 0xCC,
                             0xFF, 0xFF, 0xFF, alpha);
+}
+
+/* DKR v77/v80 and JFG checks found only generic resource cleanup. */
+void overlay62ReleaseAll(void) {
+    overlay62ReleaseReloc(gOverlay62Resource18);
+    overlay62ReleaseReloc(gOverlay62Resource14);
+    overlay62ReleaseReloc(gOverlay62InlineResource);
+    func_8002C5F4();
 }

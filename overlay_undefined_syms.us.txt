@@ -3612,24 +3612,8 @@ gOverlay61RecordPathReloc = 0x0000017c;
 gOverlay61FileNames = 0x00000040;
 gOverlay61FileStatus = 0x000000c0;
 
-/* overlay 62: overlay62Initialize.c.o */
+/* overlay 62: overlay_062.c.o */
 D_8007C0B8_o062Reloc = 0x00000000;
-fontColour_o062Reloc = 0xf0000000;
-fontUseFont_o062Reloc = 0xf0000000;
-gOverlay62Float0 = 0x00000000;
-gOverlay62Handle14 = 0x00000014;
-gOverlay62Handle18 = 0x00000018;
-gOverlay62Value10 = 0x00000010;
-gOverlay62Value4 = 0x00000004;
-gOverlay62Value4Initial = 0x00000004;
-gOverlay62Value8 = 0x00000008;
-gOverlay62ValueC = 0x0000000c;
-loadFrontEndList_o062Reloc = 0xf0000000;
-overlay45CreateDescriptor_o062Reloc = 0xf0000000;
-overlay45SetMode_o062Reloc = 0xf0000000;
-texLoadSprite_o062Reloc = 0xf0000000;
-
-/* overlay 62: overlay62Update.c.o */
 D_800D3140_o062Reloc = 0x00000000;
 D_800D3144_o062Reloc = 0x00000000;
 D_800D3148_o062Reloc = 0x00000000;
@@ -3637,59 +3621,52 @@ D_800D3180_o062Reloc = 0x00000000;
 camDo2DSprite_o062Reloc = 0xf0000000;
 camStandardOrtho_o062Reloc = 0xf0000000;
 fontBackground_o062Reloc = 0xf0000000;
+fontColour_o062Reloc = 0xf0000000;
 fontPrintXY_o062Reloc = 0xf0000000;
+fontUseFont_o062Reloc = 0xf0000000;
+func_8002C5F4_o062Reloc = 0xf0000000;
 func_8002F618_o062Reloc = 0xf0000000;
 gOverlay62CommitContextReloc = 0x00000000;
 gOverlay62FirstItemReloc = 0x00000000;
+gOverlay62Float0 = 0x00000000;
+gOverlay62Handle14 = 0x00000014;
+gOverlay62Handle18 = 0x00000018;
+gOverlay62InlineResource = 0x00000000;
 gOverlay62PulseReloc = 0x00000000;
+gOverlay62Resource14 = 0x00000014;
+gOverlay62Resource18 = 0x00000018;
 gOverlay62State = 0x00000000;
+gOverlay62Value10 = 0x00000010;
+gOverlay62Value4 = 0x00000004;
+gOverlay62Value4Initial = 0x00000004;
+gOverlay62Value8 = 0x00000008;
+gOverlay62ValueC = 0x0000000c;
 gOverlay62Values = 0x00000004;
+loadFrontEndList_o062Reloc = 0xf0000000;
 mainChangeLevel_o062Reloc = 0xf0000000;
+overlay45CreateDescriptor_o062Reloc = 0xf0000000;
+overlay45SetMode_o062Reloc = 0xf0000000;
+overlay62ReleaseReloc = 0xf0000000;
 rcpSetScreenColour_o062Reloc = 0xf0000000;
 sprSetTextureFilter_o062Reloc = 0xf0000000;
 texAnimateTexSprite_o062Reloc = 0xf0000000;
+texLoadSprite_o062Reloc = 0xf0000000;
 
-/* overlay 62: overlay62ReleaseAll.c.o */
-func_8002C5F4_o062Reloc = 0xf0000000;
-gOverlay62InlineResource = 0x00000000;
-gOverlay62Resource14 = 0x00000014;
-gOverlay62Resource18 = 0x00000018;
-overlay62ReleaseReloc = 0xf0000000;
-
-/* overlay 63: overlay63Initialize.c.o */
+/* overlay 63: overlay_063.c.o */
+D_8007A1E0_o063Reloc = 0x00000000;
 D_8007BF44_o063Reloc = 0x00000000;
-D_800D31C8_o063Reloc = 0x00000000;
-amTunePlay_o063Reloc = 0xf0000000;
-fontColour_o063Reloc = 0xf0000000;
-fontUseFont_o063Reloc = 0xf0000000;
-func_800015F8_o063Reloc = 0xf0000000;
-gO63Chain = 0x00000050;
-gO63Configs = 0x00000010;
-gO63CreateResource = 0x00000000;
-gO63ExternalByteReloc = 0x00000000;
-gO63InitResource = 0x00000000;
-gO63LocalFloat = 0x00000008;
-gO63LocalResource = 0x00000000;
-gO63LocalWord = 0x00000004;
-gO63SavedTableWord = 0x00000030;
-gO63State18C = 0x0000018c;
-gO63State190 = 0x00000190;
-gO63State194 = 0x00000194;
-gO63State198 = 0x00000198;
-gO63State19C = 0x0000019c;
-joyEnable_o063Reloc = 0xf0000000;
-loadFrontEndList_o063Reloc = 0xf0000000;
-mathRnd_o063Reloc = 0xf0000000;
-overlay45CreateDescriptor_o063Reloc = 0xf0000000;
-overlay45SetMode_o063Reloc = 0xf0000000;
-
-/* overlay 63: overlay63UpdateEffects.c.o */
 D_800D3140_o063Reloc = 0x00000000;
 D_800D3144_o063Reloc = 0x00000000;
 D_800D3148_o063Reloc = 0x00000000;
 D_800D3180_o063Reloc = 0x00000000;
+D_800D31C8_o063Reloc = 0x00000000;
+amTunePlay_o063Reloc = 0xf0000000;
 camDo2DSprite_o063Reloc = 0xf0000000;
 camStandardOrtho_o063Reloc = 0xf0000000;
+fontColour_o063Reloc = 0xf0000000;
+fontPrintXY_o063Reloc = 0xf0000000;
+fontUseFont_o063Reloc = 0xf0000000;
+func_800015F8_o063Reloc = 0xf0000000;
 func_80001608_o063Reloc = 0xf0000000;
 func_800291E4_o063Reloc = 0xf0000000;
 func_8002A8C0_o063Reloc = 0xf0000000;
@@ -3697,43 +3674,57 @@ func_8002F618_o063Reloc = 0xf0000000;
 func_80037414_o063Reloc = 0xf0000000;
 func_80037664_o063Reloc = 0xf0000000;
 func_8003A680_o063Reloc = 0xf0000000;
+gO63ActiveState = 0x00000134;
+gO63Chain = 0x00000050;
+gO63ChainReload = 0x00000050;
+gO63Configs = 0x00000010;
+gO63CreateResource = 0x00000000;
+gO63ExternalByteReloc = 0x00000000;
 gO63ExternalStateAReloc = 0x00000000;
 gO63ExternalStateBReloc = 0x00000000;
 gO63ExternalTimerReloc = 0x000000d4;
 gO63Fade = 0x0000018c;
 gO63FadeDirection = 0x00000190;
 gO63FadeTimer = 0x0000019c;
+gO63InitResource = 0x00000000;
 gO63Local2C = 0x0000002c;
 gO63Local30 = 0x00000030;
+gO63LocalFloat = 0x00000008;
+gO63LocalResource = 0x00000000;
+gO63LocalWord = 0x00000004;
 gO63ObjectFloat = 0x00000008;
 gO63Opacity = 0x00000004;
 gO63OpacityContextReloc = 0x00000000;
 gO63Particles = 0x00000010;
-gO63TriggerTimer = 0x00000198;
-gO63Triggered = 0x00000194;
-mainChangeLevel_o063Reloc = 0xf0000000;
-o63SetStateReloc = 0xf0000000;
-texAnimateTexSprite_o063Reloc = 0xf0000000;
-texDPInit_o063Reloc = 0xf0000000;
-
-/* overlay 63: overlay63Release.c.o */
-gOverlay63Block = 0x00000000;
-gOverlay63Resource = 0x00000000;
-overlay63ReleaseReloc = 0xf0000000;
-
-/* overlay 63: overlay63UpdateSequence.c.o */
-D_8007A1E0_o063Reloc = 0x00000000;
-fontPrintXY_o063Reloc = 0xf0000000;
-gO63ActiveState = 0x00000134;
 gO63PendingStart = 0x0000000c;
 gO63PendingState = 0x0000012c;
+gO63SavedTableWord = 0x00000030;
 gO63Sequence = 0x00000124;
 gO63SequenceIndex = 0x00000128;
 gO63SequenceStart = 0x00000100;
+gO63State18C = 0x0000018c;
+gO63State190 = 0x00000190;
+gO63State194 = 0x00000194;
+gO63State198 = 0x00000198;
+gO63State19C = 0x0000019c;
 gO63Timer = 0x00000130;
 gO63TransitionEnabled = 0x000000d0;
+gO63TriggerTimer = 0x00000198;
+gO63Triggered = 0x00000194;
+gOverlay63Block = 0x00000000;
+gOverlay63Resource = 0x00000000;
+joyEnable_o063Reloc = 0xf0000000;
 joyGetPressed_o063Reloc = 0xf0000000;
+loadFrontEndList_o063Reloc = 0xf0000000;
+mainChangeLevel_o063Reloc = 0xf0000000;
+mathRnd_o063Reloc = 0xf0000000;
+o63SetStateReloc = 0xf0000000;
+overlay45CreateDescriptor_o063Reloc = 0xf0000000;
+overlay45SetMode_o063Reloc = 0xf0000000;
 overlay48Initialize_o063Reloc = 0xf0000000;
+overlay63ReleaseReloc = 0xf0000000;
+texAnimateTexSprite_o063Reloc = 0xf0000000;
+texDPInit_o063Reloc = 0xf0000000;
 
 /* overlay 64: overlay64GenerateTexture.c.o */
 .data = 0x00000000;
@@ -5848,26 +5839,15 @@ func_overlay_061_F00019B0_18C0D78 = overlay61ChooseFileExtension;
 /* overlay 61: overlay61RecordSize.c.o */
 func_overlay_061_F0001A6C_18C0E34 = overlay61RecordSize;
 
-/* overlay 62: overlay62Initialize.c.o */
+/* overlay 62: overlay_062.c.o */
 func_overlay_062_F0000000_18C2220 = overlay62Initialize;
-
-/* overlay 62: overlay62Update.c.o */
 func_overlay_062_F00000D4_18C22F4 = overlay62Update;
-
-/* overlay 62: overlay62ReleaseAll.c.o */
 func_overlay_062_F000056C_18C278C = overlay62ReleaseAll;
 
-/* overlay 63: overlay63Initialize.c.o */
+/* overlay 63: overlay_063.c.o */
 func_overlay_063_F0000000_18C2B88 = overlay63Initialize;
-
-/* overlay 63: overlay63UpdateEffects.c.o */
 func_overlay_063_F00001D4_18C2D5C = overlay63UpdateEffects;
-
-/* overlay 63: overlay63Release.c.o */
 func_overlay_063_F000074C_18C32D4 = overlay63Release;
-
-/* overlay 63: overlay63UpdateSequence.c.o */
-func_overlay_063_F000077C_18C3304 = overlay63UpdateSequence;
 
 /* overlay 65: overlay65Initialize.c.o */
 func_overlay_065_F0000000_18C4268 = overlay65Initialize;

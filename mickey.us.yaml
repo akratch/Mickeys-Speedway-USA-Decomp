@@ -2470,9 +2470,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18C2220, c, overlay62Initialize]
-      - [0x18C22F4, c, overlay62Update]
-      - [0x18C278C, c, overlay62ReleaseAll]
+      - [0x18C2220, c, overlay_062]
       - [0x18C27D0, bin, overlay_062_data_rodata]
       - [0x18C2810, bin, overlay_062_reloc1]
       - [0x18C29D8, bin, overlay_062_reloc2]
@@ -2488,11 +2486,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18C2B88, c, overlay63Initialize]
-      - [0x18C2D5C, c, overlay63UpdateEffects]
-      - [0x18C32D4, c, overlay63Release]
-      - [0x18C3304, c, overlay63UpdateSequence]
-      - [0x18C34B0, asm, overlay_063_padding]
+      - [0x18C2B88, c, overlay_063]
       - [0x18C34B8, bin, overlay_063_data_rodata]
       - [0x18C3618, bin, overlay_063_reloc1]
       - [0x18C3840, bin, overlay_063_reloc2]

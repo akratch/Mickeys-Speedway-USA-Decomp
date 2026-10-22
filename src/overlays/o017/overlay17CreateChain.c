@@ -79,7 +79,7 @@ extern void overlay17CalculateEndpoints(struct Overlay17ChainHead *chain, f32 *x
  * arm, the else arm storing the global directly, the inherited `red & 0xFF`
  * mask dropped (f-o069, 36 -> 3); the or-zero kill (3 -> 0). */
 Overlay17Chain *overlay17CreateChain(
-    void *owner, s32 count, Overlay17Material *materialToken, s32 materialScale,
+    void *owner, s32 count, s32 textureId, s32 materialScale,
     f32 x, f32 y, f32 z, f32 radius,
     u8 red, u8 green, u8 blue, u8 alpha) {
     s32 padFrame;
@@ -92,7 +92,7 @@ Overlay17Chain *overlay17CreateChain(
     Overlay17Chain *chain;
 
     chain = (Overlay17Chain *)0x40;
-    if (materialToken != (Overlay17Material *)-1) {
+    if (textureId != -1) {
         chain = (Overlay17Chain *)0x140;
     }
     halfBufferBytes = count * 20;
@@ -101,8 +101,8 @@ Overlay17Chain *overlay17CreateChain(
     halfBufferBytes |= 0;
     if (chain != 0) {
 
-    if (materialToken != (Overlay17Material *)-1) {
-        chain->material = (Overlay17Material *)texLoadTexture((s32)materialToken);
+    if (textureId != -1) {
+        chain->material = (Overlay17Material *)texLoadTexture(textureId);
         chain->buffers[0] = (Overlay17Pair *)((u8 *)chain + 0x140);
         chain->buffers[1] = (Overlay17Pair *)((u8 *)chain->buffers[0] + count * 20);
     } else {

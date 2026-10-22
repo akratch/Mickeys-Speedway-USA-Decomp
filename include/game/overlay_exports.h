@@ -33,9 +33,7 @@
  * only with the evidence that the original made the call that way. One does:
  * func_overlay_029_F00010C4_187E374. The other 116 tagged declarations were
  * reconciled against the definitions' argument-register use, all
- * byte-identical (docs/overlays.md section 5.1). Two prototypes keep the
- * parameter types the resident call compiles against instead of the
- * definition's; their comments say where the two differ.
+ * byte-identical (docs/overlays.md section 5.1).
  */
 
 #include "PR/ultratypes.h"
@@ -121,9 +119,7 @@ void overlay16InitializeBuffer(u8 *config);
 void overlay16ApplyGradient(s32 *active, void *context, s32 phaseStep);
 
 /* overlay 17 */
-/* Resident-typed: the resident call narrows its second to fourth
- * arguments to u8, s16 and u8, which the definition declares s32, a pointer and s32. */
-void *overlay17CreateChain(void *owner, u8 kind, s16 angle, u8 index,
+void *overlay17CreateChain(void *owner, s32 count, s32 textureId, s32 materialScale,
                            f32 x, f32 y, f32 z, f32 radius, u8 red, u8 green, u8 blue,
                            u8 alpha);
 void overlay17ReleaseChain(void *resource);
@@ -276,8 +272,6 @@ void overlay42Present(void);
 s32 func_overlay_043_F0000000_1889FD0(void *input);
 void func_overlay_043_F0000194_188A164(void);
 void func_overlay_043_F0000280_188A250(void *owner);
-/* Resident-typed: the resident passes an f32 third argument where the
- * definition declares an unused pointer. */
 s32 func_overlay_043_F0000324_188A2F4(void *input, s32 useNodes, f32 updateRate);
 
 /* overlay 45 */

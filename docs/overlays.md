@@ -53,11 +53,9 @@ list equals what the tables generate; and the atlas's `resident_inbound` row
 agrees with the ROM. A swapped callee leaves the ROM hash unchanged, and this
 check is the gate that fails on it.
 
-312 of the 313 declarations are prototypes. 310 are the overlay definition's
-own, with overlay-private or untyped pointer types spelled `void *`, and 2
-keep the parameter types the resident call compiles against:
-`overlay17CreateChain`'s narrowed arguments and
-`func_overlay_043_F0000324_188A2F4`'s f32. One is an old-style declaration,
+312 of the 313 declarations are prototypes, each the overlay definition's
+own with overlay-private or untyped pointer types spelled `void *`. One is an
+old-style declaration,
 `T name();`, tagged `[arity]`: `func_overlay_029_F00010C4_187E374` reads a0
 and a1, but `func_80056274` passes it a third argument that uopt keeps in a2
 across `sqrtf`, and dropping that argument changes the caller, so the
@@ -95,6 +93,14 @@ sections and relocations unchanged:
 - Resident locals and globals typed `s32` that hold pointers
   (`frontUpdate`'s player object, `D_8007A1F4`/`D_8007A1F8`, `main.c`'s
   `D_80078F7C`, `func_80009414`'s cursors) are pointers.
+
+Two prototypes had kept the resident call's parameter types instead of the
+definition's, and both definitions were the side in error:
+`overlay17CreateChain`'s third argument is a texture id that it compares with
+-1 and passes to `texLoadTexture`, not a material pointer, and
+`func_overlay_043_F0000324_188A2F4` homes, unused, the f32 its callers convert
+(`(f32) arg1`), not a pointer. With the definitions' own prototypes both
+resident callers compile to the same code.
 
 Renaming an overlay export that resident code calls means
 running `gmake trap-names` and updating the resident call and its declaration;

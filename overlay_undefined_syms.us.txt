@@ -2502,45 +2502,23 @@ gOverlay54ResourceA = 0x00000000;
 gOverlay54ResourceB = 0x00000000;
 overlay54ReleaseReloc = 0xf0000000;
 
-/* overlay 55: overlay55Initialize.c.o */
-amTunePlay_o055Reloc = 0xf0000000;
-gOverlay55ExternalSetupTarget = 0x00000000;
-gOverlay55RecordsA = 0x00000020;
-gOverlay55RecordsB = 0x000000c0;
-gOverlay55Result = 0x00000000;
-gOverlay55SetupBase = 0x00000000;
-gOverlay55SetupSecondary = 0x00000018;
-gOverlay55SourceB = 0x00000280;
-gOverlay55SourceBase = 0x00000000;
-gOverlay55StateValue = 0x00000308;
-gOverlay55StateWord = 0x00000300;
-gOverlay55Status = 0x00000304;
-levelGetNumber_o055Reloc = 0xf0000000;
-loadFrontEndList_o055Reloc = 0xf0000000;
-overlay56LoadResource_o055Reloc = 0xf0000000;
-runlinkDownloadCode_o055Reloc = 0xf0000000;
-setupFrontEndList_o055Reloc = 0xf0000000;
-
-/* overlay 55: overlay55PatchIndices.c.o */
-D_800D31C8_o055Reloc = 0x00000000;
-
-/* overlay 55: overlay55CopyOffsetRecords.c.o */
-frontGetScreenMode_o055Reloc = 0xf0000000;
-gOverlay55Offsets = 0x000000e0;
-
-/* overlay 55: func_overlay_055_F000031C_18A1E34.c.o */
+/* overlay 55: overlay_055.c.o */
 D_8007BEF4_o055Reloc = 0x00000000;
-D_8007C180_o055Reloc = 0x00000000;
+D_8007C180 = 0x00000000;
 D_800C947C_o055Reloc = 0x00000000;
 D_800D3140_o055Reloc = 0x00000000;
 D_800D3144_o055Reloc = 0x00000000;
+D_800D31C8_o055Reloc = 0x00000000;
 D_800D3550_o055Reloc = 0x00000000;
+amTunePlay_o055Reloc = 0xf0000000;
 amTuneSetFade_o055Reloc = 0xf0000000;
 camSetNo_o055Reloc = 0xf0000000;
 camSetScissor_o055Reloc = 0xf0000000;
 camStandardOrtho_o055Reloc = 0xf0000000;
-ext_o1_83e0_o055Reloc = 0x00000000;
+ext_o1_83e0 = 0x00000000;
+freeFrontEndList_o055Reloc = 0xf0000000;
 frontDrawObj_o055Reloc = 0xf0000000;
+frontGetScreenMode_o055Reloc = 0xf0000000;
 func_800016EC_o055Reloc = 0xf0000000;
 func_80005750_o055Reloc = 0xf0000000;
 func_80028F54_o055Reloc = 0xf0000000;
@@ -2551,25 +2529,39 @@ func_80037414_o055Reloc = 0xf0000000;
 func_8003A590_o055Reloc = 0xf0000000;
 gOverlay55BlinkCounter = 0x000000f4;
 gOverlay55ClockDigits = 0x00000280;
+gOverlay55ExternalSetupTarget = 0x00000000;
 gOverlay55HudHeight = 0x00000308;
 gOverlay55IconAlpha = 0x000000f8;
 gOverlay55Items = 0x00000304;
+gOverlay55Offsets = 0x000000e0;
+gOverlay55RecordsA = 0x00000020;
+gOverlay55RecordsB = 0x000000c0;
+gOverlay55ResourceA = 0x00000000;
+gOverlay55ResourceB = 0x00000000;
+gOverlay55Result = 0x00000000;
+gOverlay55SetupBase = 0x00000000;
+gOverlay55SetupSecondary = 0x00000018;
+gOverlay55SourceB = 0x00000280;
+gOverlay55SourceBase = 0x00000000;
+gOverlay55StateValue = 0x00000308;
+gOverlay55StateWord = 0x00000300;
+gOverlay55Status = 0x00000304;
 gOverlay55TimeDigits = 0x00000000;
 gOverlay55TimeTemplate = 0x00000020;
 gOverlay55TransitionDone = 0x000000f0;
 levelGetLevel_o055Reloc = 0xf0000000;
+levelGetNumber_o055Reloc = 0xf0000000;
+loadFrontEndList_o055Reloc = 0xf0000000;
 mainChangeCameras_o055Reloc = 0xf0000000;
 mainChangeLevel_o055Reloc = 0xf0000000;
 mainGetMode_o055Reloc = 0xf0000000;
+overlay56LoadResource_o055Reloc = 0xf0000000;
+overlay56ReleaseResource_o055Reloc = 0xf0000000;
 overlay56SplitTime_o055Reloc = 0xf0000000;
+runlinkDownloadCode_o055Reloc = 0xf0000000;
+setupFrontEndList_o055Reloc = 0xf0000000;
 texDPInit_o055Reloc = 0xf0000000;
 viGetCurrentSize_o055Reloc = 0xf0000000;
-
-/* overlay 55: overlay55ReleaseAll.c.o */
-freeFrontEndList_o055Reloc = 0xf0000000;
-gOverlay55ResourceA = 0x00000000;
-gOverlay55ResourceB = 0x00000000;
-overlay56ReleaseResource_o055Reloc = 0xf0000000;
 
 /* overlay 56: overlay_056.c.o */
 D_80000004 = 0x80000004;
@@ -5701,19 +5693,8 @@ func_overlay_054_F0000504_189F1A4 = overlay54GetOffsets;
 /* overlay 54: overlay54ReleaseResources.c.o */
 func_overlay_054_F0001E94_18A0B34 = overlay54ReleaseResources;
 
-/* overlay 55: overlay55Initialize.c.o */
+/* overlay 55: overlay_055.c.o */
 func_overlay_055_F0000000_18A1B18 = overlay55Initialize;
-
-/* overlay 55: overlay55PatchIndices.c.o */
-func_overlay_055_F000013C_18A1C54 = overlay55PatchIndices;
-
-/* overlay 55: overlay55CopyOffsetRecords.c.o */
-func_overlay_055_F000018C_18A1CA4 = overlay55CopyOffsetRecords;
-
-/* overlay 55: overlay55GetOffsets.c.o */
-func_overlay_055_F0000274_18A1D8C = overlay55GetOffsets;
-
-/* overlay 55: overlay55ReleaseAll.c.o */
 func_overlay_055_F0000C30_18A2748 = overlay55ReleaseAll;
 
 /* overlay 56: overlay_056.c.o */

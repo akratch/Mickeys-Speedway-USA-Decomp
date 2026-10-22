@@ -1,101 +1,116 @@
-#include "ultra64.h"
+#include "overlays/overlay_055.h"
 
-typedef struct Overlay55Digit {
-    void *resource;
-    void *alternate;
-    s32 value;
-    s16 x;
-    s16 y;
-} Overlay55Digit;
+/* Module-private functions: no ORT row, so their callers use JUMP
+ * records. */
+static void overlay55PatchIndices(OverlayPatchIndexEntry *entry);
+static void overlay55CopyOffsetRecords(OverlayOffsetRecord *src, OverlayOffsetRecord *dst, s32 mode, s32 index);
+static void overlay55GetOffsets(s32 mode, s32 index, s32 *xOffset, s32 *yOffset);
 
-typedef struct Overlay55PlayerState {
-    u8 pad000[0x19A];
-    u8 character;
-    u8 pad19B;
-    s32 effectTimer;
-    u8 pad1A0[0x383 - 0x1A0];
-    s8 racerIndex;
-    u8 pad384[0x400 - 0x384];
-    s32 time;
-} Overlay55PlayerState;
+/* Overlay 55 +0x000. */
+void overlay55Initialize(void) {
+    s32 index;
+    u8 *sourceA;
+    u8 *sourceB;
+    s8 *status;
 
-typedef struct Overlay55Object {
-    u8 pad00[0x64];
-    Overlay55PlayerState *state;
-} Overlay55Object;
+    loadFrontEndList(gOverlay55SetupBase);
+    loadFrontEndList(gOverlay55ExternalSetupTarget);
+    setupFrontEndList(gOverlay55SetupSecondary);
+    amTunePlay(4);
+    gOverlay55StateWord = 0x104;
+    runlinkDownloadCode(11);
+    overlay55PatchIndices((OverlayPatchIndexEntry *)gOverlay55RecordsA);
+    overlay55PatchIndices((OverlayPatchIndexEntry *)gOverlay55RecordsB);
 
-typedef struct Overlay55Level {
-    u8 pad00[0x86];
-    s8 laps;
-} Overlay55Level;
+    sourceA = gOverlay55SourceBase,
+    sourceB = gOverlay55SourceB,
+    status = gOverlay55Status;
+    index = 0;
+    do {
+        overlay55CopyOffsetRecords(gOverlay55RecordsA,
+                                   (OverlayOffsetRecord *)sourceA, index, 0);
+        overlay55CopyOffsetRecords(gOverlay55RecordsB,
+                                   (OverlayOffsetRecord *)sourceB, index, 0);
+        index++;
+        sourceA += 0xA0;
+        sourceB += 0x20;
+        status++;
+        status[-1] = -1;
+    } while (index != 4);
 
-typedef struct Overlay55Transform {
-    void *resource;
-    s32 unk04;
-    s32 unk08;
-    s16 x;
-    s16 y;
-    s32 unk10;
-} Overlay55Transform;
+    gOverlay55StateValue = -80.0f;
+    overlay56LoadResource();
+    gOverlay55Result = (s16)levelGetNumber();
+}
 
-typedef struct MenuCurrentObject {
-    s16 unk0;
-    s16 unk2;
-    s16 unk4;
-    s16 index;
-    f32 unk8;
-    f32 unkC;
-    f32 unk10;
-    f32 unk14;
-    f32 unk18;
-    s8 pad1C[4];
-} MenuCurrentObject;
+/* This exact six-overlay Mickey family has no exact DKR v77/v80 or JFG donor. */
+static void overlay55PatchIndices(OverlayPatchIndexEntry *entry) {
+    while (entry->first != 0) {
+        entry->first = (s32) D_800D31C8[entry->first];
+        if (entry->second != 0) {
+            entry->second = (s32) D_800D31C8[entry->second];
+        }
+        entry++;
+    }
+}
 
-typedef struct Overlay55DisplayCommand {
-    u32 w0;
-    u32 w1;
-} Overlay55DisplayCommand;
+/* Shared Mickey family; no exact DKR v77/v80 or JFG donor was found. */
+static void overlay55CopyOffsetRecords(OverlayOffsetRecord *src, OverlayOffsetRecord *dst,
+                                s32 mode, s32 index) {
+    s32 xOffset;
+    s32 yOffset;
+    s16 *offsets;
 
-extern Overlay55Digit gOverlay55TimeDigits[4][10];
-extern Overlay55Digit gOverlay55ClockDigits[4][2];
-extern Overlay55Digit gOverlay55TimeTemplate[];
-extern s32 gOverlay55TransitionDone;
-extern s8 gOverlay55BlinkCounter;
-extern s32 gOverlay55IconAlpha[];
-extern s8 gOverlay55Items[];
-extern f32 gOverlay55HudHeight;
+    index *= 4;
+    if (frontGetScreenMode() == 1) {
+        index += 4;
+    }
 
-extern u8 D_8007BEF4;
-extern s16 D_8007C180[];
-extern s32 D_800C947C;
-extern Overlay55DisplayCommand *D_800D3140;
-extern void *D_800D3144;
-extern void *D_800D31C8[];
-extern MenuCurrentObject D_800D3550[];
-extern s32 ext_o1_83e0;
+    offsets = &gOverlay55Offsets[index];
+    if (mode < 2) {
+        yOffset = offsets[1];
+    } else {
+        yOffset = offsets[3];
+    }
+    if (mode & 1) {
+        xOffset = offsets[2];
+    } else {
+        xOffset = offsets[0];
+    }
 
-extern u8 *func_80028F54(void);
-extern void camStandardOrtho(Overlay55DisplayCommand **, void **);
-extern Overlay55Object **func_80005750(s32 *);
-extern void viGetCurrentSize(s32 *, s32 *);
-extern void camSetNo(s32);
-extern void camSetScissor(Overlay55DisplayCommand **);
-extern void overlay56SplitTime(s32, s32 *, s32 *, s32 *);
-extern Overlay55Level *levelGetLevel(void);
-extern s32 func_800290A0(void);
-extern void overlay55GetOffsets(s32, s32, s32 *, s32 *);
-extern void texDPInit(Overlay55DisplayCommand **);
-extern void func_8002F618(Overlay55DisplayCommand **, Overlay55Digit *, s32, s32, u8, u8, u8, u8);
-extern void frontDrawObj(s32);
-extern s32 frontGetScreenMode(void);
-extern void func_8002FB34(Overlay55DisplayCommand **, Overlay55Transform *, f32, f32, f32, f32, s32, u8);
-extern s32 mainGetMode(void);
-extern void mainChangeCameras(s32);
-extern void func_800016EC(u8);
-extern void func_8003A590(void);
-extern void func_80037414(s32, f32, f32, s32, s32, s32, s32);
-extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
-extern void amTuneSetFade(f32, u8);
+    while (src->link != 0) {
+        dst->link = src->link;
+        dst->value = src->value;
+        src++;
+        dst++;
+        dst[-1].x = src[-1].x + xOffset;
+        dst[-1].y = src[-1].y + yOffset;
+        dst[-1].metadata = src[-1].metadata;
+    }
+    dst->link = 0;
+}
+
+/* Shared Mickey family; no exact DKR v77/v80 or JFG donor was found. */
+static void overlay55GetOffsets(s32 mode, s32 index, s32 *xOffset, s32 *yOffset) {
+    s16 *offsets;
+
+    index *= 4;
+    if (frontGetScreenMode() == 1) {
+        index += 4;
+    }
+
+    offsets = &gOverlay55Offsets[index];
+    if (mode < 2) {
+        *yOffset = offsets[1];
+    } else {
+        *yOffset = offsets[3];
+    }
+    if (mode & 1) {
+        *xOffset = offsets[2];
+    } else {
+        *xOffset = offsets[0];
+    }
+}
 
 /* Overlay 55's HUD update: the four-player sibling of overlay 53's
  * func_overlay_053_F0000240_189DBE8 and of overlay52TailB, written the same
@@ -248,4 +263,11 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
     }
     camStandardOrtho(&D_800D3140, &D_800D3144);
     camSetNo(0);
+}
+
+/* DKR v77/v80 and JFG checks found only generic resource cleanup. */
+void overlay55ReleaseAll(void) {
+    freeFrontEndList(gOverlay55ResourceA);
+    freeFrontEndList(gOverlay55ResourceB);
+    overlay56ReleaseResource();
 }

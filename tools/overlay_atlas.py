@@ -291,6 +291,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     22: "overlay_022_padding",
     45: "overlay_045_padding",
     15: "overlay_015_padding",
+    55: "overlay_055_padding",
     56: "overlay_056_padding",
     67: "overlay_067_padding",
     72: "overlay_072_padding",
@@ -940,12 +941,7 @@ TEXT_SUBSEGMENTS = {
         (0x8B4, "c", "overlay17DrawStrip"),
     ],
     55: [
-        (0x000, "c", "overlay55Initialize"),
-        (0x13C, "c", "overlay55PatchIndices"),
-        (0x18C, "c", "overlay55CopyOffsetRecords"),
-        (0x274, "c", "overlay55GetOffsets"),
-        (0x31C, "c", "func_overlay_055_F000031C_18A1E34"),
-        (0xC30, "c", "overlay55ReleaseAll"),
+        (0x000, "c", "overlay_055"),
         (0xC68, "asm", "overlay_055_padding"),
     ],
     50: [

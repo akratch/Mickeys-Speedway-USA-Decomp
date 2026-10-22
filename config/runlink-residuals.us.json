@@ -2277,7 +2277,7 @@
         [54, "overlay54TailA", ".bss", "0x21D0", 76],
         [54, "overlay54TailA", ".data", "0x1EF0", 58],
         [54, "overlay54TailA", ".rodata", "0x21C0", 2],
-        [55, "func_overlay_055_F000031C_18A1E34", ".rodata", "0xD80", 2],
+        [55, "overlay_055", ".rodata", "0xD80", 2],
         [57, "func_overlay_057_F0000000_18A3BF8", ".rodata", "0x705C", 2],
         [57, "func_overlay_057_F0001AE8_18A56E0", ".rodata", "0x70A0", 2],
         [57, "overlay57UpdateModeTrigger", ".bss", "0x7110", 31],

@@ -10832,55 +10832,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x13C",
-     "size": "0x13C",
-     "type": "c",
-     "source": "overlays/o055/overlay55Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x13C",
-     "end_offset": "0x18C",
-     "size": "0x50",
-     "type": "c",
-     "source": "overlays/o055/overlay55PatchIndices",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x18C",
-     "end_offset": "0x274",
-     "size": "0xE8",
-     "type": "c",
-     "source": "overlays/o055/overlay55CopyOffsetRecords",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x274",
-     "end_offset": "0x31C",
-     "size": "0xA8",
-     "type": "c",
-     "source": "overlays/o055/overlay55GetOffsets",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x31C",
-     "end_offset": "0xC30",
-     "size": "0x914",
-     "type": "c",
-     "source": "overlays/o055/func_overlay_055_F000031C_18A1E34",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xC30",
      "end_offset": "0xC68",
-     "size": "0x38",
+     "size": "0xC68",
      "type": "c",
-     "source": "overlays/o055/overlay55ReleaseAll",
+     "source": "overlays/o055/overlay_055",
      "matched": true,
      "nonmatching": false
     },

@@ -1214,26 +1214,42 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54Initialize.c.o: SURFACE_REBIND = 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54PatchIndices.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D31C8=D_800D31C8_o054Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55CopyOffsetRecords.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym frontGetScreenMode=frontGetScreenMode_o055Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55GetOffsets.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym frontGetScreenMode=frontGetScreenMode_o055Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55Initialize.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay_055.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_8007BEF4=D_8007BEF4_o055Reloc \
+	--redefine-sym D_800C947C=D_800C947C_o055Reloc \
+	--redefine-sym D_800D3140=D_800D3140_o055Reloc \
+	--redefine-sym D_800D3144=D_800D3144_o055Reloc \
+	--redefine-sym D_800D31C8=D_800D31C8_o055Reloc \
+	--redefine-sym D_800D3550=D_800D3550_o055Reloc \
 	--redefine-sym amTunePlay=amTunePlay_o055Reloc \
+	--redefine-sym amTuneSetFade=amTuneSetFade_o055Reloc \
+	--redefine-sym camSetNo=camSetNo_o055Reloc \
+	--redefine-sym camSetScissor=camSetScissor_o055Reloc \
+	--redefine-sym camStandardOrtho=camStandardOrtho_o055Reloc \
+	--redefine-sym freeFrontEndList=freeFrontEndList_o055Reloc \
+	--redefine-sym frontDrawObj=frontDrawObj_o055Reloc \
+	--redefine-sym frontGetScreenMode=frontGetScreenMode_o055Reloc \
+	--redefine-sym func_800016EC=func_800016EC_o055Reloc \
+	--redefine-sym func_80005750=func_80005750_o055Reloc \
+	--redefine-sym func_80028F54=func_80028F54_o055Reloc \
+	--redefine-sym func_800290A0=func_800290A0_o055Reloc \
+	--redefine-sym func_8002F618=func_8002F618_o055Reloc \
+	--redefine-sym func_8002FB34=func_8002FB34_o055Reloc \
+	--redefine-sym func_80037414=func_80037414_o055Reloc \
+	--redefine-sym func_8003A590=func_8003A590_o055Reloc \
+	--redefine-sym levelGetLevel=levelGetLevel_o055Reloc \
 	--redefine-sym levelGetNumber=levelGetNumber_o055Reloc \
 	--redefine-sym loadFrontEndList=loadFrontEndList_o055Reloc \
+	--redefine-sym mainChangeCameras=mainChangeCameras_o055Reloc \
+	--redefine-sym mainChangeLevel=mainChangeLevel_o055Reloc \
+	--redefine-sym mainGetMode=mainGetMode_o055Reloc \
 	--redefine-sym overlay56LoadResource=overlay56LoadResource_o055Reloc \
+	--redefine-sym overlay56ReleaseResource=overlay56ReleaseResource_o055Reloc \
+	--redefine-sym overlay56SplitTime=overlay56SplitTime_o055Reloc \
 	--redefine-sym runlinkDownloadCode=runlinkDownloadCode_o055Reloc \
-	--redefine-sym setupFrontEndList=setupFrontEndList_o055Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55PatchIndices.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D31C8=D_800D31C8_o055Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55ReleaseAll.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym freeFrontEndList=freeFrontEndList_o055Reloc \
-	--redefine-sym overlay56ReleaseResource=overlay56ReleaseResource_o055Reloc $@
+	--redefine-sym setupFrontEndList=setupFrontEndList_o055Reloc \
+	--redefine-sym texDPInit=texDPInit_o055Reloc \
+	--redefine-sym viGetCurrentSize=viGetCurrentSize_o055Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007A1F4=D_8007A1F4_o056Reloc \

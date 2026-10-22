@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay96Unregister:start -->
 ### `overlay96Unregister` plateau handoff
 
-- source: `src/overlays/o096/overlay96Unregister.c`
+- source: `src/overlays/o096/overlay_096.c`
 - score: 0/34 words
 - frame: frameless
 - relocations: 6

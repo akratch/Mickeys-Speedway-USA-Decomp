@@ -17513,55 +17513,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x70",
-     "size": "0x70",
-     "type": "c",
-     "source": "overlays/o096/overlay96Register",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x70",
-     "end_offset": "0xF8",
-     "size": "0x88",
-     "type": "c",
-     "source": "overlays/o096/overlay96Unregister",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xF8",
-     "end_offset": "0x4BC",
-     "size": "0x3C4",
-     "type": "c",
-     "source": "overlays/o096/overlay96BuildVolume",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x4BC",
-     "end_offset": "0x57C",
-     "size": "0xC0",
-     "type": "c",
-     "source": "overlays/o096/overlay96FindVolume",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x57C",
-     "end_offset": "0x5C8",
-     "size": "0x4C",
-     "type": "c",
-     "source": "overlays/o096/overlay96TestBit",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x5C8",
      "end_offset": "0x6D4",
-     "size": "0x10C",
+     "size": "0x6D4",
      "type": "c",
-     "source": "overlays/o096/overlay96DrawObject",
+     "source": "overlays/o096/overlay_096",
      "matched": true,
      "nonmatching": false
     },

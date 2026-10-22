@@ -874,12 +874,7 @@ TEXT_SUBSEGMENTS = {
         (0x1D8, "asm", "overlay_095_padding"),
     ],
     96: [
-        (0x000, "c", "overlay96Register"),
-        (0x070, "c", "overlay96Unregister"),
-        (0x0F8, "c", "overlay96BuildVolume"),
-        (0x4BC, "c", "overlay96FindVolume"),
-        (0x57C, "c", "overlay96TestBit"),
-        (0x5C8, "c", "overlay96DrawObject"),
+        (0x000, "c", "overlay_096"),
         (0x6D4, "asm", "overlay_096_padding"),
     ],
     97: [

@@ -7533,54 +7533,13 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o096/overlay96BuildVolume.c.o",
-      "offset": 248,
+      "object": "build/src/overlays/o096/overlay_096.c.o",
+      "offset": 0,
       "overlay": 96,
-      "size": 964,
-      "source": "src/overlays/o096/overlay96BuildVolume.c",
+      "size": 1748,
+      "source": "src/overlays/o096/overlay_096.c",
       "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o096/overlay96DrawObject.c.o",
-      "offset": 1480,
-      "overlay": 96,
-      "size": 268,
-      "source": "src/overlays/o096/overlay96DrawObject.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o096/overlay96TestBit.c.o",
-      "offset": 1404,
-      "overlay": 96,
-      "size": 76,
-      "source": "src/overlays/o096/overlay96TestBit.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o096/overlay96Unregister.c.o",
-      "offset": 112,
-      "overlay": 96,
-      "size": 136,
-      "source": "src/overlays/o096/overlay96Unregister.c",
-      "tools": [
+        "filter_elf_relocations.py",
         "trim_elf_section.py"
       ]
     },
@@ -8912,10 +8871,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 614,
+      "metadata": 611,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 445072,
-    "objects_with_postprocess": 615
+    "matched_c_bytes_with_postprocess": 445376,
+    "objects_with_postprocess": 612
   }
 }

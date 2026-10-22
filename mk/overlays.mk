@@ -1653,18 +1653,16 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitResource.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x184
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitBounds.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1FC
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96Unregister.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x88
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96BuildVolume.c.o: CFLAGS += \
-	-Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96BuildVolume.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x3C4
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96FindVolume.c.o: CFLAGS += \
-	-Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96TestBit.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96DrawObject.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x10C
+# Overlay 96 is one translation unit under the overlay flag set. Its call to
+# the exported overlay96Register is a SYMBOL record whose shipped word holds
+# a zero addend, so that relocation is filtered until the packer owns the
+# overlay link. The trim keeps the trailing pad in its own atlas row.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay_096.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay_096.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
+		0x474:4:overlay96Register && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6D4
+OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay_096.c.o
 # Restore NON_MATCHING fallback symbols and trim the matched updater's merged
 # trailing tail. These renames change symbol metadata only.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98CollectUniqueY.c.o: POSTPROCESS = \

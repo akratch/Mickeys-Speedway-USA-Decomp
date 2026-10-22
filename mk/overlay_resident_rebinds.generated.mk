@@ -2028,22 +2028,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o095/overlay_095.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym partUpdateTriggers=partUpdateTriggers_o095Reloc \
 	--redefine-sym rumbleStart=rumbleStart_o095Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96BuildVolume.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay96Register=overlay96Register_o096Reloc \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay_096.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_80078F84=D_80078F84_o096Reloc \
 	--redefine-sym pointListRPY=pointListRPY_o096Reloc \
-	--redefine-sym sqrtf=sqrtf_o096Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96DrawObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym sqrtf=sqrtf_o096Reloc \
 	--redefine-sym texDPTextureX=texDPTextureX_o096Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96FindVolume.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80078F84=D_80078F84_o096Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96Register.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80078F84=D_80078F84_o096Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96Unregister.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80078F84=D_80078F84_o096Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97AssignState.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym addRomdefLight=addRomdefLight_o097Reloc $@

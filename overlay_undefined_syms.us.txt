@@ -4328,17 +4328,12 @@ gOverlay95FadeRate = 0x00000000;
 partUpdateTriggers_o095Reloc = 0xf0000000;
 rumbleStart_o095Reloc = 0xf0000000;
 
-/* overlay 96: overlay96Register.c.o */
+/* overlay 96: overlay_096.c.o */
 D_80078F84_o096Reloc = 0x00000000;
 gO96EntriesReloc = 0x00000000;
-
-/* overlay 96: overlay96BuildVolume.c.o */
 gO96FaceDefinitionsReloc = 0x00000000;
-overlay96Register_o096Reloc = 0xf0000000;
 pointListRPY_o096Reloc = 0xf0000000;
 sqrtf_o096Reloc = 0xf0000000;
-
-/* overlay 96: overlay96DrawObject.c.o */
 texDPTextureX_o096Reloc = 0xf0000000;
 
 /* overlay 97: overlay97InitDirection.c.o */
@@ -6200,22 +6195,12 @@ func_overlay_094_F000055C_18D70FC = overlay94SetValue;
 func_overlay_095_F0000000_18D73E0 = overlay95NoOp;
 func_overlay_095_F000000C_18D73EC = overlay95Update;
 
-/* overlay 96: overlay96Register.c.o */
+/* overlay 96: overlay_096.c.o */
 func_overlay_096_F0000000_18D7638 = overlay96Register;
-
-/* overlay 96: overlay96Unregister.c.o */
 func_overlay_096_F0000070_18D76A8 = overlay96Unregister;
-
-/* overlay 96: overlay96BuildVolume.c.o */
 func_overlay_096_F00000F8_18D7730 = overlay96BuildVolume;
-
-/* overlay 96: overlay96FindVolume.c.o */
 func_overlay_096_F00004BC_18D7AF4 = overlay96FindVolume;
-
-/* overlay 96: overlay96TestBit.c.o */
 func_overlay_096_F000057C_18D7BB4 = overlay96TestBit;
-
-/* overlay 96: overlay96DrawObject.c.o */
 func_overlay_096_F00005C8_18D7C00 = overlay96DrawObject;
 
 /* overlay 97: overlay97InitDirection.c.o */

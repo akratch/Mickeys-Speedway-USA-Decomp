@@ -1811,18 +1811,16 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay_069.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym fxDrawCone=fxDrawCone_o069Reloc \
 	--redefine-sym overlay17DrawStrip=overlay17DrawStrip_o069Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F00000D8_18C92A0.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80006EA0=func_80006EA0_o070Reloc \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o070Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o070Reloc \
-	--redefine-sym mathRnd=mathRnd_o070Reloc \
-	--redefine-sym texAnimateSprite=texAnimateSprite_o070Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F0000384_18C954C.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o070/overlay_070.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_8000572C=func_8000572C_o070Reloc \
 	--redefine-sym func_80005750=func_80005750_o070Reloc \
+	--redefine-sym func_80006EA0=func_80006EA0_o070Reloc \
 	--redefine-sym func_80028F54=func_80028F54_o070Reloc \
-	--redefine-sym func_8003A55C=func_8003A55C_o070Reloc $@
+	--redefine-sym func_8002A8BC=func_8002A8BC_o070Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o070Reloc \
+	--redefine-sym func_8003A55C=func_8003A55C_o070Reloc \
+	--redefine-sym mathRnd=mathRnd_o070Reloc \
+	--redefine-sym texAnimateSprite=texAnimateSprite_o070Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o071/func_overlay_071_F0000278_18C9D98.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_80079274=D_80079274_o071Reloc $@

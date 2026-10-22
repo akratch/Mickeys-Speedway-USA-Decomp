@@ -13663,28 +13663,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0xD8",
-     "size": "0xD8",
-     "type": "c",
-     "source": "overlays/o070/func_overlay_070_F0000000_18C91C8",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xD8",
-     "end_offset": "0x384",
-     "size": "0x2AC",
-     "type": "c",
-     "source": "overlays/o070/func_overlay_070_F00000D8_18C92A0",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x384",
      "end_offset": "0x728",
-     "size": "0x3A4",
+     "size": "0x728",
      "type": "c",
-     "source": "overlays/o070/func_overlay_070_F0000384_18C954C",
+     "source": "overlays/o070/overlay_070",
      "matched": true,
      "nonmatching": false
     },

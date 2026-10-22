@@ -2010,31 +2010,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F000047C_188618C.c.o: POS
 
 include mk/overlay_070.mk
 
-ifneq ($(NON_MATCHING),0)
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F00000D8_18C92A0.c.o: \
-	$(TOOLS_DIR)/filter_elf_relocations.py \
-	$(TOOLS_DIR)/rebind_elf_relocations.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F00000D8_18C92A0.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x168:5:gOverlay70PairTableReloc \
-		0x16C:6:gOverlay70PairTableReloc \
-		0x194:5:gOverlay70HeightTableReloc \
-		0x1CC:6:gOverlay70HeightTableReloc && \
-	$(OBJCOPY) --redefine-sym func_80006EA0=func_overlay_070_F0000000_18C91C8 $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x0F0:mathRnd:func_overlay_070_F0000000_18C91C8 \
-		0x100:mathRnd:func_overlay_070_F0000000_18C91C8 \
-		0x124:mathRnd:func_overlay_070_F0000000_18C91C8 \
-		0x134:mathRnd:func_overlay_070_F0000000_18C91C8 \
-		0x14C:func_8002A8BC:func_overlay_070_F0000000_18C91C8 \
-		0x15C:func_8002A8C0:func_overlay_070_F0000000_18C91C8 \
-		0x28C:texAnimateSprite:func_overlay_070_F0000000_18C91C8 && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2AC
-else
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F00000D8_18C92A0.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2AC
-endif
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ByteLength.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101PromoteSlot.c.o: POSTPROCESS = \
@@ -2874,9 +2849,6 @@ OVERLAY_TRIMMED_OBJECTS += \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F0000000_1885D10.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay38UpdateParticles.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F000047C_188618C.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F0000000_18C91C8.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F00000D8_18C92A0.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F0000384_18C954C.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ByteLength.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0002510_18DDD30.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0003A58_18DF278.c.o \

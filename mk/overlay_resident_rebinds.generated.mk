@@ -495,16 +495,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o018/overlay18Reconfigure.c.o: SURFACE_REBIND =
 	--redefine-sym mmGetDelay=mmGetDelay_o018Reloc \
 	--redefine-sym mmSetDelay=mmSetDelay_o018Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildOutput.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay_019.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym mmAlloc2=mmAlloc2_o019Reloc \
 	--redefine-sym mmAllocAtAddr=mmAllocAtAddr_o019Reloc \
 	--redefine-sym mmFree=mmFree_o019Reloc \
 	--redefine-sym mmGetDelay=mmGetDelay_o019Reloc \
-	--redefine-sym mmSetDelay=mmSetDelay_o019Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildPlanes.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmAlloc2=mmAlloc2_o019Reloc \
-	--redefine-sym mmFree=mmFree_o019Reloc $@
+	--redefine-sym mmSetDelay=mmSetDelay_o019Reloc \
+	--redefine-sym sqrtf=sqrtf_o019Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/func_overlay_020_F000038C_1876964.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym mmAlloc=mmAlloc_o020Reloc $@
@@ -653,7 +650,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29Sample.c.o: SURFACE_REBIND = $(OB
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29UpdateRatio.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym sqrtf=sqrtf_o029Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o030/overlay30Initialize.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o030/overlay_030.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800C9450=D_800C9450_o030Reloc \
 	--redefine-sym D_800C9454=D_800C9454_o030Reloc \
 	--redefine-sym D_800C9458=D_800C9458_o030Reloc \

@@ -4419,64 +4419,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0xAC",
-     "size": "0xAC",
-     "type": "c",
-     "source": "overlays/o019/overlay19Dispatch",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xAC",
-     "end_offset": "0x1E0",
-     "size": "0x134",
-     "type": "c",
-     "source": "overlays/o019/overlay19BuildOutput",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1E0",
-     "end_offset": "0xA30",
-     "size": "0x850",
-     "type": "c",
-     "source": "overlays/o019/overlay19BuildPlanes",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xA30",
-     "end_offset": "0xC1C",
-     "size": "0x1EC",
-     "type": "c",
-     "source": "overlays/o019/overlay19BuildAdjacency",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xC1C",
-     "end_offset": "0xD78",
-     "size": "0x15C",
-     "type": "c",
-     "source": "overlays/o019/overlay19FindAdjacent",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xD78",
-     "end_offset": "0xF58",
-     "size": "0x1E0",
-     "type": "c",
-     "source": "overlays/o019/overlay19ClassifyEdge",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xF58",
      "end_offset": "0x12E4",
-     "size": "0x38C",
+     "size": "0x12E4",
      "type": "c",
-     "source": "overlays/o019/overlay19BuildSpatialMasks",
+     "source": "overlays/o019/overlay_019",
      "matched": true,
      "nonmatching": false
     },
@@ -6384,19 +6330,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x2B4",
-     "size": "0x2B4",
-     "type": "c",
-     "source": "overlays/o030/overlay30Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2B4",
      "end_offset": "0x438",
-     "size": "0x184",
+     "size": "0x438",
      "type": "c",
-     "source": "overlays/o030/overlay30TransposePixels",
+     "source": "overlays/o030/overlay_030",
      "matched": true,
      "nonmatching": false
     },

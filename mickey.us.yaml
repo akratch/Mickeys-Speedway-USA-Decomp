@@ -1554,14 +1554,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1875258, c, overlay19Dispatch]
-      - [0x1875304, c, overlay19BuildOutput]
-      - [0x1875438, c, overlay19BuildPlanes]
-      - [0x1875C88, c, overlay19BuildAdjacency]
-      - [0x1875E74, c, overlay19FindAdjacent]
-      - [0x1875FD0, c, overlay19ClassifyEdge]
-      - [0x18761B0, c, overlay19BuildSpatialMasks]
-      - [0x187653C, asm, overlay_019_padding]
+      - [0x1875258, c, overlay_019]
       - [0x1876548, bin, overlay_019_reloc1]
       - [0x18765A0, bin, overlay_019_reloc2]
 
@@ -1777,9 +1770,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x187EEF8, c, overlay30Initialize]
-      - [0x187F1AC, c, overlay30TransposePixels]
-      - [0x187F330, asm, overlay_030_padding]
+      - [0x187EEF8, c, overlay_030]
       - [0x187F338, bin, overlay_030_reloc1]
       - [0x187F518, bin, overlay_030_reloc2]
 

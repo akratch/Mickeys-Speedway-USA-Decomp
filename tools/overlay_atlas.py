@@ -305,6 +305,14 @@ EXPLICIT_TEXT_PADDING = {
     52: "overlay_052_padding",
 }
 
+# Phase 2 folds of overlays 19-36: each module is one TU whose
+# trailing pad IDO's 16-byte .text alignment emits, so the pad row stays in
+# the atlas (never credited as C) but gets no yaml row and no trim.
+COMPILER_TEXT_ALIGNMENT_PADDING.update({
+    19: "overlay_019_padding",
+    30: "overlay_030_padding",
+})
+
 TEXT_SUBSEGMENTS = {
     3: [
         (0x000, "c", "overlay3ContainsValue"),
@@ -450,13 +458,7 @@ TEXT_SUBSEGMENTS = {
         (0x4F4, "c", "overlay18InitializeBuffers"),
     ],
     19: [
-        (0x000, "c", "overlay19Dispatch"),
-        (0x0AC, "c", "overlay19BuildOutput"),
-        (0x1E0, "c", "overlay19BuildPlanes"),
-        (0xA30, "c", "overlay19BuildAdjacency"),
-        (0xC1C, "c", "overlay19FindAdjacent"),
-        (0xD78, "c", "overlay19ClassifyEdge"),
-        (0xF58, "c", "overlay19BuildSpatialMasks"),
+        (0x000, "c", "overlay_019"),
         (0x12E4, "asm", "overlay_019_padding"),
     ],
     20: [
@@ -1090,8 +1092,7 @@ TEXT_SUBSEGMENTS = {
         (0x1158, "c", "overlay26DrawGroups"),
     ],
     30: [
-        (0x000, "c", "overlay30Initialize"),
-        (0x2B4, "c", "overlay30TransposePixels"),
+        (0x000, "c", "overlay_030"),
         (0x438, "asm", "overlay_030_padding"),
     ],
     28: [
@@ -2282,7 +2283,10 @@ def render_yaml_block(
         for part in row["text_ownership"]:
             source_name = part["source"].rsplit("/", 1)[1]
             if source_name == compiler_padding:
-                if not owned_data:
+                # A module TU's trailing pad is emitted by IDO's 16-byte
+                # .text alignment (phase 2 of docs/OVERLAY_STRUCTURE_SPRINT.md);
+                # an interior pad still needs C-owned data after it.
+                if not owned_data and part is not row["text_ownership"][-1]:
                     raise ValueError(
                         f"overlay {ov} compiler padding needs C-owned data"
                     )

@@ -1167,14 +1167,12 @@ mmGetDelay_o018Reloc = 0xf0000000;
 mmSetDelay_o018Reloc = 0xf0000000;
 overlay18FinishReconfigureReloc = 0xf0000000;
 
-/* overlay 19: overlay19BuildOutput.c.o */
+/* overlay 19: overlay_019.c.o */
 mmAlloc2_o019Reloc = 0xf0000000;
 mmAllocAtAddr_o019Reloc = 0xf0000000;
 mmFree_o019Reloc = 0xf0000000;
 mmGetDelay_o019Reloc = 0xf0000000;
 mmSetDelay_o019Reloc = 0xf0000000;
-
-/* overlay 19: overlay19BuildPlanes.c.o */
 sqrtf_o019Reloc = 0xf0000000;
 
 /* overlay 20: overlay20ReleaseTree.c.o */
@@ -1431,7 +1429,7 @@ camPushModelMtx_o029Reloc = 0xf0000000;
 camRestoreModelMtx_o029Reloc = 0xf0000000;
 texDPInit_o029Reloc = 0xf0000000;
 
-/* overlay 30: overlay30Initialize.c.o */
+/* overlay 30: overlay_030.c.o */
 D_800C9450_o030Reloc = 0x00000000;
 D_800C9454_o030Reloc = 0x00000000;
 D_800C9458_o030Reloc = 0x00000000;
@@ -5272,26 +5270,8 @@ func_overlay_018_F000024C_1874804 = overlay18Reconfigure;
 /* overlay 18: overlay18InitializeBuffers.c.o */
 func_overlay_018_F00004F4_1874AAC = overlay18InitializeBuffers;
 
-/* overlay 19: overlay19Dispatch.c.o */
+/* overlay 19: overlay_019.c.o */
 func_overlay_019_F0000000_1875258 = overlay19Dispatch;
-
-/* overlay 19: overlay19BuildOutput.c.o */
-func_overlay_019_F00000AC_1875304 = overlay19BuildOutput;
-
-/* overlay 19: overlay19BuildPlanes.c.o */
-func_overlay_019_F00001E0_1875438 = overlay19BuildPlanes;
-
-/* overlay 19: overlay19BuildAdjacency.c.o */
-func_overlay_019_F0000A30_1875C88 = overlay19BuildAdjacency;
-
-/* overlay 19: overlay19FindAdjacent.c.o */
-func_overlay_019_F0000C1C_1875E74 = overlay19FindAdjacent;
-
-/* overlay 19: overlay19ClassifyEdge.c.o */
-func_overlay_019_F0000D78_1875FD0 = overlay19ClassifyEdge;
-
-/* overlay 19: overlay19BuildSpatialMasks.c.o */
-func_overlay_019_F0000F58_18761B0 = overlay19BuildSpatialMasks;
 
 /* overlay 20: overlay20ReleaseTree.c.o */
 func_overlay_020_F0000000_18765D8 = overlay20ReleaseTree;
@@ -5393,11 +5373,8 @@ func_overlay_029_F0000304_187D5B4 = overlay29Sample;
 /* overlay 29: overlay29DrawGroups.c.o */
 func_overlay_029_F00014C8_187E778 = overlay29DrawGroups;
 
-/* overlay 30: overlay30Initialize.c.o */
+/* overlay 30: overlay_030.c.o */
 func_overlay_030_F0000000_187EEF8 = overlay30Initialize;
-
-/* overlay 30: overlay30TransposePixels.c.o */
-func_overlay_030_F00002B4_187F1AC = overlay30TransposePixels;
 
 /* overlay 31: overlay31BuildPalettes.c.o */
 func_overlay_031_F00004F8_187FA18 = overlay31BuildPalettes;

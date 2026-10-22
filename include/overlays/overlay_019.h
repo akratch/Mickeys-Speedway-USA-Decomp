@@ -1,5 +1,5 @@
-#ifndef OVERLAYS_OVERLAY019_H
-#define OVERLAYS_OVERLAY019_H
+#ifndef OVERLAY_019_H
+#define OVERLAY_019_H
 
 #include "PR/ultratypes.h"
 
@@ -56,33 +56,32 @@ typedef struct O19Output {
     f32 *planes;
 } O19Output;
 
-s32 overlay19BuildPlanes(
-    O19Context *context,
-    O19Group *group,
-    O19Output *output);
+typedef struct Overlay19Header {
+    u8 pad0[0x22];
+    s8 count;
+    u8 pad23[0x4E];
+    s8 selected;
+} Overlay19Header;
 
-void overlay19BuildAdjacency(
-    O19Context *context,
-    O19Group *group,
-    O19Output *output);
+typedef struct Overlay19Object {
+    u8 pad0[0x40];
+    Overlay19Header *header;
+    u8 pad44[0x24];
+    void **items;
+} Overlay19Object;
 
-s32 overlay19FindAdjacent(
-    O19Context *context,
-    O19Group *group,
-    s32 selfItem,
-    s32 queryStartIndex,
-    s32 queryEndIndex);
+typedef struct O19BuildGroup {
+    u8 pad00[0x14];
+    s16 itemCount;
+    u8 pad16[0x38];
+    s8 gate4E;
+} O19BuildGroup;
 
-s32 overlay19ClassifyEdge(
-    O19Vertex *vertices,
-    s32 queryStartIndex,
-    s32 queryEndIndex,
-    s32 candidateStartIndex,
-    s32 candidateEndIndex);
-
-void overlay19BuildSpatialMasks(
-    O19Context *context,
-    O19Group *group,
-    O19Output *output);
+extern void *mmAlloc2(s32 size, s32 tag);
+extern void mmFree(void *value);
+extern void *mmGetDelay(void);
+extern void mmSetDelay(void *value);
+extern void mmAllocAtAddr(s32 size, void *source, s32 tag);
+extern f32 sqrtf(f32 value);
 
 #endif

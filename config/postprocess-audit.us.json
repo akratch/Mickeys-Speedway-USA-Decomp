@@ -2149,90 +2149,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o019/overlay19BuildAdjacency.c.o",
-      "offset": 2608,
-      "overlay": 19,
-      "size": 492,
-      "source": "src/overlays/o019/overlay19BuildAdjacency.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o019/overlay19BuildOutput.c.o",
-      "offset": 172,
-      "overlay": 19,
-      "size": 308,
-      "source": "src/overlays/o019/overlay19BuildOutput.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o019/overlay19BuildPlanes.c.o",
-      "offset": 480,
-      "overlay": 19,
-      "size": 2128,
-      "source": "src/overlays/o019/overlay19BuildPlanes.c",
-      "tools": [
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o019/overlay19BuildSpatialMasks.c.o",
-      "offset": 3928,
-      "overlay": 19,
-      "size": 908,
-      "source": "src/overlays/o019/overlay19BuildSpatialMasks.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o019/overlay19Dispatch.c.o",
-      "offset": 0,
-      "overlay": 19,
-      "size": 172,
-      "source": "src/overlays/o019/overlay19Dispatch.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o019/overlay19FindAdjacent.c.o",
-      "offset": 3100,
-      "overlay": 19,
-      "size": 348,
-      "source": "src/overlays/o019/overlay19FindAdjacent.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o020/func_overlay_020_F000038C_1876964.c.o",
       "offset": 908,
       "overlay": 20,
@@ -2882,34 +2798,6 @@
       "overlay": 29,
       "size": 200,
       "source": "src/overlays/o029/overlay29UpdateRatio.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o030/overlay30Initialize.c.o",
-      "offset": 0,
-      "overlay": 30,
-      "size": 692,
-      "source": "src/overlays/o030/overlay30Initialize.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o030/overlay30TransposePixels.c.o",
-      "offset": 692,
-      "overlay": 30,
-      "size": 388,
-      "source": "src/overlays/o030/overlay30TransposePixels.c",
       "tools": [
         "trim_elf_section.py"
       ]
@@ -9053,10 +8941,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 624,
+      "metadata": 616,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 447024,
-    "objects_with_postprocess": 625
+    "matched_c_bytes_with_postprocess": 441588,
+    "objects_with_postprocess": 617
   }
 }

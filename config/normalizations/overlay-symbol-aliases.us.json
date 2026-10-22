@@ -11,15 +11,6 @@
       ]
     },
     {
-      "object": "overlays/o019/overlay19BuildPlanes.c.o",
-      "aliases": [
-        {
-          "from": "sqrtf",
-          "to": "sqrtf_o019Reloc"
-        }
-      ]
-    },
-    {
       "object": "overlays/o023/overlay23RenderEffect.c.o",
       "aliases": [
         {

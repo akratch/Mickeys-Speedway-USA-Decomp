@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay19BuildAdjacency:start -->
 ### `overlay19BuildAdjacency` plateau handoff
 
-- source: `src/overlays/o019/overlay19BuildAdjacency.c`
+- source: `src/overlays/o019/overlay_019.c`
 - score: 0/123 words
 - frame: 0x80
 - relocations: 1

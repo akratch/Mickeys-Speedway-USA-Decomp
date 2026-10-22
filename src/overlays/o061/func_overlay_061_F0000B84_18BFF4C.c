@@ -58,7 +58,7 @@ extern Overlay61ListEntry gOverlay61Entries[];
 extern char gOverlay61NewFileName[];
 extern char gOverlay61GhostLabel[];
 extern char gOverlay61FreeLabel[];
-extern Overlay61GhostEntry *gOverlay61GhostEntry;
+extern Overlay61GhostEntry *D_8007A1F4;
 extern void *gDisplayListHead;
 
 extern void overlay61UpdateInput(s32 *x, s32 *y, s32 *confirm, s32 *cancel);
@@ -75,7 +75,7 @@ extern void overlay61DrawList(void **commands);
 extern s32 func_overlay_061_F0001648_18C0A10(Overlay61GhostEntry *entry,
                                              s32 device, u8 *note);
 /* Overlay 45 +0x1BE0 (SYMBOL records): the shared descriptor mode setter. */
-extern void overlay61SetModeReloc(Overlay45ResourceDescriptor *descriptor,
+extern void overlay45SetMode(Overlay45ResourceDescriptor *descriptor,
                                  s32 mode);
 extern s32 packDirectory(s32 device, s32 count, char **names, char **exts,
                          u32 *sizes, u8 *types);
@@ -115,31 +115,31 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
     overlay61UpdateInput(&x, &y, &confirm, &cancel);
     alpha0 = 0;
     alpha1 = 0;
-    overlay61SetModeReloc(gOverlay61Handle58, 0xFF);
-    overlay61SetModeReloc(gOverlay61Handle5C, 0);
-    overlay61SetModeReloc(gOverlay61Handle60, 0);
-    overlay61SetModeReloc(gOverlay61Handle64, 0);
-    overlay61SetModeReloc(gOverlay61Handle68, 0);
-    overlay61SetModeReloc(gOverlay61Handle6C, 0);
-    overlay61SetModeReloc(gOverlay61Handle70, 0);
-    overlay61SetModeReloc(gOverlay61Handle74, 0);
-    overlay61SetModeReloc(gOverlay61Handle78, 0);
-    overlay61SetModeReloc(gOverlay61Handle7C, 0);
-    overlay61SetModeReloc(gOverlay61Handle80, 0);
-    overlay61SetModeReloc(gOverlay61Handle84, 0);
-    overlay61SetModeReloc(gOverlay61Handle88, 0);
+    overlay45SetMode(gOverlay61Handle58, 0xFF);
+    overlay45SetMode(gOverlay61Handle5C, 0);
+    overlay45SetMode(gOverlay61Handle60, 0);
+    overlay45SetMode(gOverlay61Handle64, 0);
+    overlay45SetMode(gOverlay61Handle68, 0);
+    overlay45SetMode(gOverlay61Handle6C, 0);
+    overlay45SetMode(gOverlay61Handle70, 0);
+    overlay45SetMode(gOverlay61Handle74, 0);
+    overlay45SetMode(gOverlay61Handle78, 0);
+    overlay45SetMode(gOverlay61Handle7C, 0);
+    overlay45SetMode(gOverlay61Handle80, 0);
+    overlay45SetMode(gOverlay61Handle84, 0);
+    overlay45SetMode(gOverlay61Handle88, 0);
 
     switch (gOverlay61State) {
     case 0:
         if (gOverlay61Error == 1 || gOverlay61Error == 8) {
-            overlay61SetModeReloc(gOverlay61Handle6C, 0xFF);
+            overlay45SetMode(gOverlay61Handle6C, 0xFF);
         } else if (gOverlay61Error == 4) {
-            overlay61SetModeReloc(gOverlay61Handle74, 0xFF);
+            overlay45SetMode(gOverlay61Handle74, 0xFF);
         } else {
-            overlay61SetModeReloc(gOverlay61Handle70, 0xFF);
+            overlay45SetMode(gOverlay61Handle70, 0xFF);
         }
-        overlay61SetModeReloc(gOverlay61Handle80, 0xFF);
-        overlay61SetModeReloc(gOverlay61Handle84, 0xFF);
+        overlay45SetMode(gOverlay61Handle80, 0xFF);
+        overlay45SetMode(gOverlay61Handle84, 0xFF);
         alpha0 = 0xFF;
         alpha1 = 0xFF;
         if (confirm) {
@@ -151,7 +151,7 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         }
         break;
     case 1:
-        overlay61SetModeReloc(gOverlay61Handle68, 0xFF);
+        overlay45SetMode(gOverlay61Handle68, 0xFF);
         alpha0 = 0xFF;
         alpha1 = 0xFF;
         if (confirm || cancel) {
@@ -172,7 +172,7 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         overlay61ResetCounters();
         type = gOverlay61DirTypes;
         for (i = 0; i < 16; i++) {
-            if (*type == 0 && gOverlay61GhostEntry != NULL) {
+            if (*type == 0 && D_8007A1F4 != NULL) {
                 if (overlay61ReadCharacter(0, (s32)gOverlay61DirExts[i],
                                            &character, &course, &time) == 0) {
                     overlay61AddEntry(4, i, (s32)gOverlay61DirNames[i],
@@ -191,15 +191,15 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
             }
             type++;
         }
-        if (gOverlay61GhostEntry != NULL && gOverlay61GhostEntry->course != -1) {
-            i = overlay61RecordSize(gOverlay61GhostEntry) + 4;
+        if (D_8007A1F4 != NULL && D_8007A1F4->course != -1) {
+            i = overlay61RecordSize(D_8007A1F4) + 4;
             if (i & 0xFF) {
                 i = (i - (i & 0xFF)) + 0x100;
             }
             overlay61AddEntry(5, 0, (s32)gOverlay61GhostLabel, 0, i,
-                              gOverlay61GhostEntry->character,
-                              gOverlay61GhostEntry->course,
-                              gOverlay61GhostEntry->time);
+                              D_8007A1F4->character,
+                              D_8007A1F4->course,
+                              D_8007A1F4->time);
         }
         packFreeSpace(0, &gOverlay61FreeSpace, NULL);
         overlay61AddEntry(7, 0, (s32)gOverlay61FreeLabel, 0,
@@ -228,9 +228,9 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         }
         break;
     case 4:
-        overlay61SetModeReloc(gOverlay61Handle5C, 0xFF);
-        overlay61SetModeReloc(gOverlay61Handle78, 0xFF);
-        overlay61SetModeReloc(gOverlay61Handle7C, 0xFF);
+        overlay45SetMode(gOverlay61Handle5C, 0xFF);
+        overlay45SetMode(gOverlay61Handle78, 0xFF);
+        overlay45SetMode(gOverlay61Handle7C, 0xFF);
         alpha0 = 0xFF;
         alpha1 = 0xFF;
         if (cancel) {
@@ -239,7 +239,7 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         } else if (confirm) {
             amSndPlay(0xC, NULL);
             result = func_overlay_061_F0001648_18C0A10(
-                gOverlay61GhostEntry, 0,
+                D_8007A1F4, 0,
                 gOverlay61Entries[gOverlay61Selection].note);
             if (result) {
                 gOverlay61State = 0;
@@ -252,9 +252,9 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         }
         break;
     case 5:
-        overlay61SetModeReloc(gOverlay61Handle60, 0xFF);
-        overlay61SetModeReloc(gOverlay61Handle78, 0xFF);
-        overlay61SetModeReloc(gOverlay61Handle7C, 0xFF);
+        overlay45SetMode(gOverlay61Handle60, 0xFF);
+        overlay45SetMode(gOverlay61Handle78, 0xFF);
+        overlay45SetMode(gOverlay61Handle7C, 0xFF);
         alpha0 = 0xFF;
         alpha1 = 0xFF;
         if (cancel) {
@@ -263,7 +263,7 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         } else if (confirm) {
             amSndPlay(0xC, NULL);
             overlay61ChooseFileExtension(gOverlay61NewFileName);
-            result = overlay61WriteCharacter(gOverlay61GhostEntry, 0,
+            result = overlay61WriteCharacter(D_8007A1F4, 0,
                                              gOverlay61NewFileName);
             if (result) {
                 gOverlay61State = 0;
@@ -276,9 +276,9 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         }
         break;
     case 6:
-        overlay61SetModeReloc(gOverlay61Handle64, 0xFF);
-        overlay61SetModeReloc(gOverlay61Handle78, 0xFF);
-        overlay61SetModeReloc(gOverlay61Handle7C, 0xFF);
+        overlay45SetMode(gOverlay61Handle64, 0xFF);
+        overlay45SetMode(gOverlay61Handle78, 0xFF);
+        overlay45SetMode(gOverlay61Handle7C, 0xFF);
         alpha0 = 0xFF;
         alpha1 = 0xFF;
         if (cancel) {

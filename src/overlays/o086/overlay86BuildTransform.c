@@ -49,7 +49,7 @@ extern void overlay86TransformVectorReloc(s32 mode,
                                           Overlay86Transform *transform,
                                           Overlay86Vec3f *input,
                                           Overlay86Vec3f *output);
-extern s16 overlay86AngleFromVectorReloc(f32 x, f32 y, f32 z);
+extern s16 func_8000FAE0(f32 x, f32 y, f32 z);
 
 void overlay86BuildTransform(Overlay86Object *object,
                              Overlay86Transform *transform) {
@@ -85,7 +85,7 @@ void overlay86BuildTransform(Overlay86Object *object,
     transform->position.x = target.x - vector.x;
     transform->position.y = target.y - vector.y;
     transform->position.z = target.z - vector.z;
-    angle = overlay86AngleFromVectorReloc(transform->position.x,
+    angle = func_8000FAE0(transform->position.x,
                                           transform->position.y,
                                           transform->position.z);
     if (angle != -1) {

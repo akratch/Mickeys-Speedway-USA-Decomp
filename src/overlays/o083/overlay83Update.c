@@ -61,9 +61,9 @@ typedef struct Overlay83LinkedObject {
     f32 worldZ;
 } Overlay83LinkedObject;
 
-extern void overlay83TransformObjectReloc(s32 mode, Overlay83Object *object,
+extern void pointListRPY(s32 mode, Overlay83Object *object,
                                           f32 *source, f32 *destination);
-extern void overlay83UpdateLinkedReloc(Overlay83LinkedObject *object,
+extern void changeLightIntensity(Overlay83LinkedObject *object,
                                        s32 opacity);
 
 void overlay83Update(Overlay83Parent *parent,
@@ -121,7 +121,7 @@ void overlay83Update(Overlay83Parent *parent,
     object->worldY = object->height;
     object->worldX = 0.0f;
     object->worldZ = 0.0f;
-    overlay83TransformObjectReloc(1, object, &object->worldX, &object->worldX);
+    pointListRPY(1, object, &object->worldX, &object->worldX);
     linkedObject = object->linkedObject;
     object->worldX += parent->worldX;
     object->worldY += parent->worldY;
@@ -131,6 +131,6 @@ void overlay83Update(Overlay83Parent *parent,
         linkedObject->worldX = object->worldX;
         linkedObject->worldY = object->worldY;
         linkedObject->worldZ = object->worldZ;
-        overlay83UpdateLinkedReloc(linkedObject, object->opacity);
+        changeLightIntensity(linkedObject, object->opacity);
     }
 }

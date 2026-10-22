@@ -23,7 +23,7 @@ extern u8 D_1808[];
 /* The colour-image array read here and the display-list-end array written
  * at the tail are two distinct overlay objects: the reads carry a zero
  * low half, the store carries 0x3788. */
-extern void *gOverlay33ColorBuffers[];
+extern void *D_800D1C28[];
 extern void *gOverlay33DisplayLists[];
 extern void *gOverlay33Texture;
 
@@ -57,7 +57,7 @@ void overlay33BuildDisplayList(void) {
 
     overlay33SetupPassReloc(&locals.cursor, 0, 0);
     overlay33SetupPassReloc(&locals.cursor, 1,
-                            gOverlay33ColorBuffers[gOverlay33BufferIndex]);
+                            D_800D1C28[gOverlay33BufferIndex]);
     overlay33SetupPassReloc(&locals.cursor, 2, gOverlay33Texture);
     overlay33SetupGeometryReloc(&locals.cursor);
     overlay33SetupViewportReloc(&locals.cursor);
@@ -65,7 +65,7 @@ void overlay33BuildDisplayList(void) {
     gSPClearGeometryMode(locals.cursor++, 1);
     gDPSetColorImage(locals.cursor++, G_IM_FMT_RGBA, G_IM_SIZ_16b,
                      locals.width,
-                     (u32)gOverlay33ColorBuffers[gOverlay33BufferIndex] +
+                     (u32)D_800D1C28[gOverlay33BufferIndex] +
                          0x80000000U);
     gDPSetScissor(locals.cursor++, 0, 0, 0, locals.width, locals.height);
     gMoveWd(locals.cursor++, 2, 0, 0);

@@ -8,14 +8,14 @@ s32 overlay105CheckWord(u32 base) {
     } locals;
     volatile u32 *piStatus;
 
-    overlay105PiGetAccessReloc();
+    __osPiGetAccess();
     piStatus = (volatile u32 *)0xA4600010;
     locals.status = *piStatus;
     while ((locals.status & 3) != 0) {
         locals.status = *piStatus;
     }
     locals.status = *(u32 *)((base | 0xB0000A5C) | 0xA0000000);
-    overlay105PiRelAccessReloc();
+    __osPiRelAccess();
     if (locals.status != 0x1740FFF9) {
         return 0;
     }

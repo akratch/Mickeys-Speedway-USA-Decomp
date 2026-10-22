@@ -43,8 +43,8 @@ void overlay77Init(Overlay77Object *object, Overlay77Init *init, s32 preserveSeq
     state->targetYCopy = object->y.value;
     state->targetZ = object->z.value;
     object->angle = init->angle;
-    object->velocityX = overlay77SinReloc(object->angle) * -20.0f;
-    object->velocityZ = overlay77CosReloc(object->angle) * -20.0f;
+    object->velocityX = func_8002A8C0(object->angle) * -20.0f;
+    object->velocityZ = func_8002A8BC(object->angle) * -20.0f;
     if (preserveSequence == 0) {
         state->sequence = gOverlay77Sequence;
         gOverlay77Sequence++;
@@ -69,11 +69,11 @@ void overlay77Update(Overlay77Object *object, volatile s32 updateRate) {
 
     state = object->state;
     mode = 9;
-    overlay77PathReloc(*object->path, &mode, state->kind, &object->field28,
+    texAnimateSprite(*object->path, &mode, state->kind, &object->field28,
                        updateRate);
 
     if (gOverlay77Handle != 0) {
-        if (gOverlay77Selection == state->sequence) { if (gOverlay77CallbackArgument == 0) { overlay77SpawnReloc(0x217, object->x.bits, object->y.bits, object->z.bits, 1, &gOverlay77CallbackArgument); } else { overlay77ContinueReloc(gOverlay77CallbackArgument, object->x.bits, object->y.bits, object->z.bits); } } object->flags &= ~0x400;
+        if (gOverlay77Selection == state->sequence) { if (gOverlay77CallbackArgument == 0) { amSndPlayXYZ(0x217, object->x.bits, object->y.bits, object->z.bits, 1, &gOverlay77CallbackArgument); } else { amSndSetXYZ(gOverlay77CallbackArgument, object->x.bits, object->y.bits, object->z.bits); } } object->flags &= ~0x400;
         velY = object->velocityY;
         accel = 0.0f;
         moveX = updateRate;
@@ -116,7 +116,7 @@ void overlay77Update(Overlay77Object *object, volatile s32 updateRate) {
         overlay77OrientReloc(object, deltaX, deltaY, moveZ);
         object->flags |= 0x400;
         if (gOverlay77CallbackArgument != 0) {
-            overlay77StopReloc(gOverlay77CallbackArgument);
+            amSndStopXYZ(gOverlay77CallbackArgument);
         }
     }
 }

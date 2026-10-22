@@ -27,7 +27,7 @@ typedef struct Overlay97SelectionTable {
     s16 count;
 } Overlay97SelectionTable;
 
-extern Overlay97SelectionTable *overlay97GetSelectionTableReloc(void);
+extern Overlay97SelectionTable *trackGetTrack(void);
 
 void overlay97InitSelection(Overlay97SelectionObject *object,
                             Overlay97SelectionInit *init, s32 preserve) {
@@ -36,7 +36,7 @@ void overlay97InitSelection(Overlay97SelectionObject *object,
     s16 count;
 
     selection = object->selection;
-    table = overlay97GetSelectionTableReloc();
+    table = trackGetTrack();
     selection->index = init->index;
     if (selection->index < 0) {
         selection->index = 0;

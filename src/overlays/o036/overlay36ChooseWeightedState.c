@@ -55,7 +55,7 @@ typedef struct Overlay36NodeDataB {
 } Overlay36NodeDataB;
 
 extern s32 gOverlay36Mode;
-extern u8 gOverlay36AdjustEnabled;
+extern u8 D_8007BF0C;
 extern u16 gOverlay36EnabledMask;
 extern u8 gOverlay36Weights[14][10];
 extern Overlay36AltTable gOverlay36AltTable;
@@ -65,9 +65,9 @@ extern Overlay36StrengthMultiplierData gOverlay36StrengthMultiplier;
 extern Overlay36NodeDataA gOverlay36NodeA;
 extern Overlay36NodeDataB gOverlay36NodeB;
 
-extern u32 overlay36ChooseReloc();
-extern f32 overlay36MeasureReloc(Overlay36Object *object);
-extern Overlay36Choice *overlay36GetChoiceReloc(s8 selector, s32 argument);
+extern u32 mathRnd();
+extern f32 overlay1DistanceFromCurrent(Overlay36Object *object);
+extern Overlay36Choice *func_80028F60(s8 selector, s32 argument);
 extern void func_overlay_036_F0000914_1883DCC(Overlay36Object *object,
                                               s32 argument, s32 state,
                                               s32 enabled);
@@ -93,17 +93,17 @@ void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 argument,
     total = 0;
     if (inner->countdown == 0) {
         if (gOverlay36Mode == 3) {
-            state = gOverlay36AltTable.values[overlay36ChooseReloc(0, 5)];
+            state = gOverlay36AltTable.values[mathRnd(0, 5)];
         } else {
-            value = ((overlay36MeasureReloc(object) /
+            value = ((overlay1DistanceFromCurrent(object) /
                       gOverlay36ScaleDivisor.value) *
                          gOverlay36ScaleMultiplier.value) +
                     ((f32)inner->strength * gOverlay36StrengthMultiplier.value);
 
-            if (gOverlay36AdjustEnabled != 0) {
+            if (D_8007BF0C != 0) {
                 Overlay36Choice *choice;
 
-                choice = overlay36GetChoiceReloc(inner->selector, 0);
+                choice = func_80028F60(inner->selector, 0);
                 if (choice->value >= 0x21) {
                     blend = 32.0f;
                 } else {
@@ -128,7 +128,7 @@ void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 argument,
             }
 
             if (total >= 2) {
-                state = overlay36ChooseReloc(1, total, state, position);
+                state = mathRnd(1, total, state, position);
                 i = 14;
                 while (i--) {
                     if (gOverlay36EnabledMask & (1 << i)) {

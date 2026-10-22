@@ -102,11 +102,11 @@ typedef struct Overlay85Object {
     /* 0x84 */ Overlay85Timer timer;
 } Overlay85Object;
 
-extern void overlay85SpawnReloc(s32 kind, f32 x, f32 y, f32 z, s32 flags,
+extern void amSndPlayXYZ(s32 kind, f32 x, f32 y, f32 z, s32 flags,
                                  s32 arg5);
-extern void overlay85EffectAReloc(f32 value);
-extern void overlay85EffectBReloc(f32 value);
-extern void overlay85ApplyReloc(Overlay85Object *object, s32 step);
+extern void func_8003EDD4(f32 value);
+extern void partAdjustScaling(f32 value);
+extern void partUpdateTriggers(Overlay85Object *object, s32 step);
 
 void overlay85Configure(Overlay85State *state, Overlay85Config *config);
 void overlay85Update(Overlay85Object *object, s32 step);

@@ -6,12 +6,12 @@ typedef struct Overlay41ScaledObject {
 } Overlay41ScaledObject;
 
 /* Fresh pinned DKR v77/v80 and JFG scans found no exact donor for this leaf. */
-extern Overlay41ScaledObject **gOverlay41Objects;
+extern Overlay41ScaledObject **D_800D6B00;
 
 s32 overlay41IsUnitScale(s32 index) {
     Overlay41ScaledObject *object;
 
-    object = gOverlay41Objects[index];
+    object = D_800D6B00[index];
     if (object != NULL && object->scale == 1.0f) {
         return 1;
     }

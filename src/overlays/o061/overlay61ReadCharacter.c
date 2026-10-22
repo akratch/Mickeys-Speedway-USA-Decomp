@@ -12,13 +12,13 @@ typedef struct Overlay61RecordHeader {
 } Overlay61RecordHeader;
 
 extern u8 gOverlay61RecordPathReloc[];
-extern s32 overlay61StorageReadyReloc(void);
-extern s32 overlay61OpenReloc(s32 device, void *path, s32 arg2, void **handle);
-extern s32 overlay61GetSizeReloc(s32 device, void *handle, s32 *size);
-extern void *overlay61AllocReloc(s32 size, s32 tag);
-extern s32 overlay61ReadReloc(s32 device, void *handle, void *data, s32 size);
-extern void overlay61FreeReloc(void *data);
-extern void overlay61CloseReloc(s32 device);
+extern s32 packOpen(void);
+extern s32 packOpenFile(s32 device, void *path, s32 arg2, void **handle);
+extern s32 packFileSize(s32 device, void *handle, s32 *size);
+extern void *mmAlloc(s32 size, s32 tag);
+extern s32 packReadFile(s32 device, void *handle, void *data, s32 size);
+extern void mmFree(void *data);
+extern void packClose(s32 device);
 
 s32 overlay61ReadCharacter(
     s32 device, s32 slot, s32 *out0, s32 *out1, s32 *out2) {
@@ -28,16 +28,16 @@ s32 overlay61ReadCharacter(
     Overlay61RecordHeader *buffer;
     volatile s32 padding[2];
 
-    result = overlay61StorageReadyReloc();
+    result = packOpen();
     if (result == 0) {
-        result = overlay61OpenReloc(
+        result = packOpenFile(
             device, gOverlay61RecordPathReloc, slot, &handle);
         if (result == 0) {
-            result = overlay61GetSizeReloc(device, handle, &size);
+            result = packFileSize(device, handle, &size);
             if (size >= 0x40) {
-                buffer = overlay61AllocReloc(0x40, 0x85);
+                buffer = mmAlloc(0x40, 0x85);
                 if (buffer != 0) {
-                    result = overlay61ReadReloc(device, handle, buffer, 0x40);
+                    result = packReadFile(device, handle, buffer, 0x40);
                     if (result == 0) {
                         if (buffer->magic == 0x43484152) {
                             *out0 = buffer->field8;
@@ -47,13 +47,13 @@ s32 overlay61ReadCharacter(
                             result = 5;
                         }
                     }
-                    overlay61FreeReloc(buffer);
+                    mmFree(buffer);
                 }
             } else {
                 result = 6;
             }
         }
     }
-    overlay61CloseReloc(device);
+    packClose(device);
     return result;
 }

@@ -40,7 +40,7 @@ typedef struct Overlay68Attachment {
 } Overlay68Attachment;
 
 extern Overlay68Attachment *gOverlay68Entry;
-extern s16 overlay68AttachReloc(Overlay68SourceObject *object, Overlay68Attachment *attachment);
+extern s16 levelGetNumber(Overlay68SourceObject *object, Overlay68Attachment *attachment);
 
 void overlay68AttachObject(Overlay68SourceObject *object) {
     Overlay68Attachment *attachment;
@@ -54,7 +54,7 @@ void overlay68AttachObject(Overlay68SourceObject *object) {
         attachment->kind = object->meta->kind;
         attachment->field5 = 0;
         savedAttachment = attachment;
-        generation = overlay68AttachReloc(object, attachment);
+        generation = levelGetNumber(object, attachment);
         attachment = savedAttachment;
         attachment->generation = generation;
         attachment->timer = 0;

@@ -28,7 +28,7 @@ void overlay72Update(Overlay72QueryObject *object, s32 updateRate) {
     Overlay72Candidate **cursor;
     Overlay72Candidate **resultBase = results - 3;
 
-    count = overlay72QueryReloc(
+    count = func_8005776C(
         object->x,
         object->y,
         object->z,
@@ -43,7 +43,7 @@ void overlay72Update(Overlay72QueryObject *object, s32 updateRate) {
             Overlay72Candidate *candidate = *cursor;
             if (bounds->minimum < candidate->height &&
                 candidate->height < bounds->maximum) {
-                overlay72ApplyReloc(candidate, 0);
+                func_overlay_008_F0000F1C_185EC74(candidate, 0);
             }
             keepGoing = index;
             cursor--;

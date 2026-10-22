@@ -25,7 +25,7 @@ typedef struct Overlay67Vertex {
 
 extern Overlay67Point *gOverlay67PointSets[];
 
-void overlay67DrawReloc(void *displayList, s32 count,
+void frontDrawRectangles(void *displayList, s32 count,
                         Overlay67Vertex *vertices, s32 flags);
 void overlay67BuildVertices(void *displayList, u8 setIndex, s32 x, s32 y,
                             s32 xOffset, s32 yOffset, u32 color);

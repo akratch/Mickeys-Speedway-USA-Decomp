@@ -33,7 +33,7 @@ typedef struct O92Racer {
 } O92Racer;
 
 extern f32 gOverlay92DistanceParameters[2];
-extern O92Object **overlay92GetObjectRange(s32 *start, s32 *end);
+extern O92Object **func_8000572C(s32 *start, s32 *end);
 extern f32 sqrtf(f32 value);
 
 /* Matched by writing the scan as a plain `for` over the object range with an
@@ -66,7 +66,7 @@ s32 func_overlay_092_F0000068_18D5F88(O92Racer *racer, f32 *outX,
     f32 dz;
 
     vehicle = racer->vehicle;
-    objects = overlay92GetObjectRange(&start, &end);
+    objects = func_8000572C(&start, &end);
     nearestDistance = gOverlay92DistanceParameters[0];
     nearest = 0;
 

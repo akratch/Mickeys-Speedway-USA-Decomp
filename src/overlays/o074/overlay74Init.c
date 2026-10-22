@@ -31,19 +31,19 @@ typedef struct Overlay74Init {
     s8 maximum;
 } Overlay74Init;
 
-extern u32 gOverlay74Flags;
+extern u32 D_800D3128;
 extern f32 gOverlay74Scale;
 
-u8 *overlay74StatusReloc(void);
+u8 *func_80028F54(void);
 
 void overlay74Init(Overlay74Object *object, Overlay74Init *init) {
     Overlay74State *state;
     u8 *status;
 
-    status = overlay74StatusReloc();
+    status = func_80028F54();
     state = object->state;
     if ((*status != 0) ||
-        ((((gOverlay74Flags << 5) >> 28) & (1 << init->channel)) != 0)) {
+        ((((D_800D3128 << 5) >> 28) & (1 << init->channel)) != 0)) {
         object->flags |= 0x400;
     }
 

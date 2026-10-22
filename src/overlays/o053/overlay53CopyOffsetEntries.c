@@ -9,7 +9,7 @@ typedef struct Overlay53Entry {
 } Overlay53Entry;
 
 extern s16 gOverlay53Offsets[];
-extern s32 overlay53QueryModeReloc(void);
+extern s32 frontGetScreenMode(void);
 
 /* Pinned DKR v77/v80 and JFG scans classify Overlay 53 as no donor. */
 void overlay53CopyOffsetEntries(Overlay53Entry *source,
@@ -20,7 +20,7 @@ void overlay53CopyOffsetEntries(Overlay53Entry *source,
     s16 *offsets;
 
     index *= 4;
-    if (overlay53QueryModeReloc() == 1) {
+    if (frontGetScreenMode() == 1) {
         index += 8;
     }
     if (selection == 0) {

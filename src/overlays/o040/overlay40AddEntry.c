@@ -9,8 +9,8 @@ typedef struct Overlay40Entry {
     u8 id;
 } Overlay40Entry;
 
-extern s32 gOverlay40Count;
-extern Overlay40Entry gOverlay40Entries[8];
+extern s32 D_8007D6B0;
+extern Overlay40Entry D_800D6BF8[8];
 
 /*
  * Claims the first free slot (state -1) of the eight entries.
@@ -24,7 +24,7 @@ extern Overlay40Entry gOverlay40Entries[8];
  * 2026-10-09). The `do`/`while` without the stand-ins swaps a0/v1 (4 words).
  *
  * The real-TU object is 33 instructions (0x84 bytes) with four relocations:
- * gOverlay40Count HI16/LO16 at 0x00/0x04 and gOverlay40Entries HI16/LO16 at
+ * D_8007D6B0 HI16/LO16 at 0x00/0x04 and D_800D6BF8 HI16/LO16 at
  * 0x0C/0x1C.
  *
  * The one resident caller (func_800517E0, stream command 0x4A) stores a fifth
@@ -36,8 +36,8 @@ void overlay40AddEntry(volatile s32 id, s32 red, s32 green, s32 blue, s32 unused
     Overlay40Entry *entry;
     s32 remaining;
 
-    entry = gOverlay40Entries;
-    if (gOverlay40Count < 8) {
+    entry = D_800D6BF8;
+    if (D_8007D6B0 < 8) {
         remaining = 8;
         while (remaining--) {
             if (entry->state == -1) {
@@ -49,7 +49,7 @@ void overlay40AddEntry(volatile s32 id, s32 red, s32 green, s32 blue, s32 unused
                 entry->green = green;
                 entry->blue = blue;
                 entry->id = id;
-                gOverlay40Count++;
+                D_8007D6B0++;
                 return;
             }
             entry++;

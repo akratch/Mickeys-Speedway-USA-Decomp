@@ -5,12 +5,9 @@ typedef struct Overlay66Gfx Overlay66Gfx;
 extern s32 gOverlay66Timer;
 extern s32 gOverlay66Flag;
 extern s32 gOverlay66BssControl;
-extern u16 *gOverlay66FirstPrimary;
-extern u16 *gOverlay66SharedFirst;
-extern u16 *gOverlay66SharedMutation;
-extern u16 *gOverlay66SharedPixels;
-extern u16 *gOverlay66SharedFinal;
-extern u16 *gOverlay66FinalSecondary;
+extern u16 *D_800D2FA0;
+extern u16 *D_800D2FAC;
+extern u16 *D_800D2FA8;
 
 void func_overlay_066_F00004E0_18C6948(Overlay66Gfx **commands,
                                        const u16 *primary,
@@ -40,18 +37,18 @@ void func_overlay_066_F0000040_18C64A8(Overlay66Gfx **commands) {
     s32 blue2;
 
     if (gOverlay66Flag == 0) {
-        func_overlay_066_F00004E0_18C6948(commands, gOverlay66FirstPrimary,
-                                          gOverlay66SharedFirst);
+        func_overlay_066_F00004E0_18C6948(commands, D_800D2FA0,
+                                          D_800D2FAC);
         gOverlay66BssControl = 1;
     } else if (gOverlay66BssControl > 0) {
         gOverlay66BssControl--;
     } else if (gOverlay66Timer > 0) {
-        osInvalDCache(gOverlay66SharedMutation, 0x25800);
+        osInvalDCache(D_800D2FAC, 0x25800);
         /* One rolled 76798-step filter. IDO unrolls it itself: the two
          * remainder steps come first, then the 4x body counting 76796 down,
          * which is the shipped shape. Bare statements, not a do-while(0)
          * macro, or the unroller declines (the call after the loop). */
-        pixels = gOverlay66SharedPixels + 1;
+        pixels = D_800D2FAC + 1;
         pixel = pixels[-1] >> 2;
         red0 = (pixel & 0x3800) >> 8;
         green0 = (pixel & 0x01C0) >> 3;
@@ -84,6 +81,6 @@ void func_overlay_066_F0000040_18C64A8(Overlay66Gfx **commands) {
     }
 
     gOverlay66Flag = 1;
-    func_overlay_066_F00004E0_18C6948(commands, gOverlay66SharedFinal,
-                                      gOverlay66FinalSecondary);
+    func_overlay_066_F00004E0_18C6948(commands, D_800D2FAC,
+                                      D_800D2FA8);
 }

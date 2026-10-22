@@ -182,16 +182,16 @@ void overlay91Render(Overlay91Gfx **displayList, void *renderContext,
     u32 width;
     u32 center;
 
-    if (overlay91CanRenderReloc() == 0) {
+    if (func_800290A0() == 0) {
         object->alpha = 0xFF;
-        overlay91GetDimensionsReloc(&buffer, &width);
+        viGetCurrentSize(&buffer, &width);
         center = width >> 1;
-        overlay91DrawBandReloc(displayList, buffer, width, 0, center - 20,
+        rcpClearZBuffer(displayList, buffer, width, 0, center - 20,
                                buffer, center + 20);
-        overlay91BeginRenderReloc(displayList, renderContext);
-        overlay91EndRenderReloc(displayList);
+        camStandardPersp(displayList, renderContext);
+        camResetView(displayList);
         object->flags &= ~0x0400;
-        overlay91RenderObjectReloc(displayList, renderContext, vertices,
+        func_80009E78(displayList, renderContext, vertices,
                                    object);
         object->flags |= 0x0400;
     }

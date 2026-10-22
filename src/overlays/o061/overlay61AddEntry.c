@@ -17,7 +17,7 @@ extern s32 gOverlay61EntryCountReloc;
 extern Overlay61Entry gOverlay61EntriesReloc[];
 extern u8 gOverlay61Text0Reloc[];
 extern u8 gOverlay61Text1Reloc[];
-extern void overlay61CopyTextReloc(u8 *, u8 *, s32);
+extern void sprintf(u8 *, u8 *, s32);
 
 void overlay61AddEntry(s32 value0, s32 value1, s32 text0Id, s32 text1Id, s32 value4,
                        s32 slot, s32 value6, s32 totalTime) {
@@ -40,13 +40,13 @@ void overlay61AddEntry(s32 value0, s32 value1, s32 text0Id, s32 text1Id, s32 val
         }
 
         if (text0Id != 0) {
-            overlay61CopyTextReloc(entry->text0, gOverlay61Text0Reloc, text0Id);
+            sprintf(entry->text0, gOverlay61Text0Reloc, text0Id);
         } else {
             entry->text0[0] = 0;
         }
 
         if (text1Id != 0) {
-            overlay61CopyTextReloc(entry->text1, gOverlay61Text1Reloc, text1Id);
+            sprintf(entry->text1, gOverlay61Text1Reloc, text1Id);
         } else {
             entry->text1[0] = 0;
         }

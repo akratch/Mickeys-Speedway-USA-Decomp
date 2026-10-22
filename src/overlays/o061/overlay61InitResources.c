@@ -34,13 +34,13 @@ extern s32 gOverlay61StateA4;
 extern s32 gOverlay61StateA8;
 extern s32 gOverlay61StateAC;
 extern s32 gOverlay61StateB0;
-extern s32 gOverlay61ResidentConfig[];
+extern s32 D_800D31C8[];
 
-void overlay61SetupReloc(void *data);
-void overlay61SelectModeReloc(s32 mode);
+void loadFrontEndList(void *data);
+void fontUseFont(s32 mode);
 Overlay45ResourceDescriptor *overlay61CreateDescriptorReloc(
     void *data, s32 width, s32 height, s32 flags);
-void overlay61FinishReloc(s32 arg0, s32 arg1);
+void rumbleProcessing(s32 arg0, s32 arg1);
 
 /*
  * Overlay 61 +0x968. Fresh DKR v77/v80 source searches for the full
@@ -50,8 +50,8 @@ void overlay61FinishReloc(s32 arg0, s32 arg1);
  * basis.
  */
 void overlay61InitResources(void) {
-    overlay61SetupReloc(gOverlay61SetupData);
-    overlay61SelectModeReloc(3);
+    loadFrontEndList(gOverlay61SetupData);
+    fontUseFont(3);
     gOverlay61Handle58 = (s32)overlay61CreateDescriptorReloc(gOverlay61RecordD0, 0xA0, 0xE, 4);
     gOverlay61Handle5C = (s32)overlay61CreateDescriptorReloc(gOverlay61RecordDC, 0xA0, 0xB0, 4);
     gOverlay61Handle60 = (s32)overlay61CreateDescriptorReloc(gOverlay61RecordE8, 0xA0, 0xB0, 4);
@@ -65,11 +65,11 @@ void overlay61InitResources(void) {
     gOverlay61Handle80 = (s32)overlay61CreateDescriptorReloc(gOverlay61Record134, 0x34, 0xCC, 0);
     gOverlay61Handle84 = (s32)overlay61CreateDescriptorReloc(gOverlay61Record13C, 0x10C, 0xCC, 1);
     gOverlay61Handle88 = (s32)overlay61CreateDescriptorReloc(gOverlay61Record144, 0xA0, 0xB0, 4);
-    gOverlay61Config08 = gOverlay61ResidentConfig[4];
-    gOverlay61Config30 = gOverlay61ResidentConfig[5];
+    gOverlay61Config08 = D_800D31C8[4];
+    gOverlay61Config30 = D_800D31C8[5];
     gOverlay61StateA4 = 2;
     gOverlay61StateA8 = 0;
     gOverlay61StateAC = 2;
     gOverlay61StateB0 = 7;
-    overlay61FinishReloc(0, 2);
+    rumbleProcessing(0, 2);
 }

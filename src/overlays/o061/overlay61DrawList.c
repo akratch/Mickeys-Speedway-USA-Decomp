@@ -7,10 +7,10 @@ extern u8 gOverlay61ItemsReloc[];
 extern u8 gOverlay61UpLabelReloc[];
 extern u8 gOverlay61DownLabelReloc[];
 
-extern void overlay61ClampIndexReloc(s32 mode, s32 *index);
-extern void overlay61BeginListReloc(s32, s32, s32, s32);
-extern void overlay61EndListReloc(s32, s32, s32, s32, s32);
-extern void overlay61DrawScrollReloc(s32, s32, s32, void *, s32);
+extern void fontUseFont(s32 mode, s32 *index);
+extern void fontBackground(s32, s32, s32, s32);
+extern void fontColour(s32, s32, s32, s32, s32);
+extern void fontPrintXY(s32, s32, s32, void *, s32);
 extern void func_overlay_061_F00003C0_18BF788(
     s32 context, s32 y, void *item, s32 selected);
 
@@ -26,8 +26,8 @@ void overlay61DrawList(s32 context) {
         gOverlay61TopIndexReloc = gOverlay61SelectedIndexReloc - 6;
     }
 
-    overlay61ClampIndexReloc(2, &gOverlay61TopIndexReloc);
-    overlay61BeginListReloc(0, 0, 0, 0);
+    fontUseFont(2, &gOverlay61TopIndexReloc);
+    fontBackground(0, 0, 0, 0);
 
     index = gOverlay61TopIndexReloc;
     y = 0x32;
@@ -42,13 +42,13 @@ void overlay61DrawList(s32 context) {
         y += 0x18;
     } while (remaining--);
 
-    overlay61EndListReloc(0xFF, 0xFF, 0, 0xFF, 0xFF);
+    fontColour(0xFF, 0xFF, 0, 0xFF, 0xFF);
     if (gOverlay61TopIndexReloc != 0) {
-        overlay61DrawScrollReloc(
+        fontPrintXY(
             context, 0xA0, 0x28, gOverlay61UpLabelReloc, 4);
     }
     if (gOverlay61TopIndexReloc + 7 < gOverlay61ItemCountReloc) {
-        overlay61DrawScrollReloc(
+        fontPrintXY(
             context, 0xA0, 0xD8, gOverlay61DownLabelReloc, 4);
     }
 }

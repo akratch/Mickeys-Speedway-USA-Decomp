@@ -11,7 +11,7 @@ typedef struct Overlay41QueueEntry {
     u8 active;
 } Overlay41QueueEntry;
 
-extern Overlay41QueueEntry gOverlay41QueueEntries[5];
+extern Overlay41QueueEntry D_800D6D18[5];
 
 /* Matched as the loop it is: five queue entries scanned with an index and a
  * walking entry pointer. The compiler peels the first iteration onto the
@@ -27,7 +27,7 @@ void func_overlay_041_F000195C_1888C94(s32 value2, s32 timer, s32 value4,
     s32 i;
     Overlay41QueueEntry *entry;
 
-    for (i = 0, entry = gOverlay41QueueEntries; i < 5; i++, entry++) {
+    for (i = 0, entry = D_800D6D18; i < 5; i++, entry++) {
         if (entry->active == 0 && entry->timer <= 0) {
             entry->value2 = value2;
             entry->timer = timer;

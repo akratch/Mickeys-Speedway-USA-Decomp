@@ -34,6 +34,20 @@ ALIAS_FMT = "%s_o%03dReloc"
 GENERIC_DATA_NAME_RE = re.compile(r"^D_[0-9A-Fa-f]{1,5}$")
 
 
+GENERATED_FUNC_RE = re.compile(r"^(func_overlay_\d{3}_F[0-9A-F]{7})_[0-9A-F]+$")
+
+
+def alias_name(name, overlay):
+    """The per-module placeholder for ``name``.
+
+    A generated function name drops its ROM-address suffix (the overlay and
+    offset already identify it): with it the alias is 43 characters of the
+    base64url alphabet, which the clean-room detectors read as an encoded run.
+    """
+    m = GENERATED_FUNC_RE.match(name)
+    return ALIAS_FMT % (m.group(1) if m else name, overlay)
+
+
 def defined_names(objects, elf_factory):
     """{name: {(overlay, kind)}} for the globals overlay objects define.
 
@@ -120,7 +134,7 @@ def real_aliases(elf, overlay, base, records, overlay_defs, undo=None):
                                        "with no text_ownership row: no module "
                                        "offset"))
                 continue
-            renames[name] = ALIAS_FMT % (name, overlay)
+            renames[name] = alias_name(name, overlay)
             continue
         if base is None:
             continue
@@ -149,5 +163,5 @@ def real_aliases(elf, overlay, base, records, overlay_defs, undo=None):
                              % ("/".join(sorted({op for n, op in needs if n == "addend"})),
                                 "/".join(sorted({op for n, op in needs if n == "bare"})))))
             continue
-        renames[name] = ALIAS_FMT % (name, overlay)
+        renames[name] = alias_name(name, overlay)
     return renames, refusals

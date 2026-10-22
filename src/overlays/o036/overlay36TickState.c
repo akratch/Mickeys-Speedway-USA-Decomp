@@ -17,7 +17,7 @@ typedef struct Overlay36TickSource {
     Overlay36TickObject *object;
 } Overlay36TickSource;
 
-extern void overlay36NotifyReloc(s32 value);
+extern void overlay7CommitSelection(s32 value);
 
 /* State countdown semantics are title-specific; no DKR/JFG donor exists. */
 void overlay36TickState(Overlay36TickSource *source) {
@@ -31,6 +31,6 @@ void overlay36TickState(Overlay36TickSource *source) {
         object->owner = 0;
     }
     if (!(object->flags & 1)) {
-        overlay36NotifyReloc(7);
+        overlay7CommitSelection(7);
     }
 }

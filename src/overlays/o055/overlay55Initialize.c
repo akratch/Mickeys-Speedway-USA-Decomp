@@ -12,15 +12,15 @@ extern s32 gOverlay55StateWord;
 extern f32 gOverlay55StateValue;
 extern s16 gOverlay55Result;
 
-extern void overlay55SetupFirstReloc(void *target);
-extern void overlay55SetupSecondReloc(void *target);
-extern void overlay55SetModeReloc(s32 mode);
-extern void overlay55SetResourceReloc(s32 resource);
+extern void loadFrontEndList(void *target);
+extern void setupFrontEndList(void *target);
+extern void amTunePlay(s32 mode);
+extern void runlinkDownloadCode(s32 resource);
 extern void overlay55PatchIndices(void *records);
 extern void overlay55CopyOffsetRecords(
     void *records, void *source, s32 index, s32 offset);
-extern void overlay56InitializeReloc(void);
-extern s32 overlay55GetResultReloc(void);
+extern void overlay56LoadResource(void);
+extern s32 levelGetNumber(void);
 
 void overlay55Initialize(void) {
     s32 index;
@@ -28,12 +28,12 @@ void overlay55Initialize(void) {
     u8 *sourceB;
     s8 *status;
 
-    overlay55SetupFirstReloc(gOverlay55SetupBase);
-    overlay55SetupFirstReloc(gOverlay55ExternalSetupTarget);
-    overlay55SetupSecondReloc(gOverlay55SetupSecondary);
-    overlay55SetModeReloc(4);
+    loadFrontEndList(gOverlay55SetupBase);
+    loadFrontEndList(gOverlay55ExternalSetupTarget);
+    setupFrontEndList(gOverlay55SetupSecondary);
+    amTunePlay(4);
     gOverlay55StateWord = 0x104;
-    overlay55SetResourceReloc(11);
+    runlinkDownloadCode(11);
     overlay55PatchIndices(gOverlay55RecordsA);
     overlay55PatchIndices(gOverlay55RecordsB);
 
@@ -52,6 +52,6 @@ void overlay55Initialize(void) {
     } while (index != 4);
 
     gOverlay55StateValue = -80.0f;
-    overlay56InitializeReloc();
-    gOverlay55Result = (s16)overlay55GetResultReloc();
+    overlay56LoadResource();
+    gOverlay55Result = (s16)levelGetNumber();
 }

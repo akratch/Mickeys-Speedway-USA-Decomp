@@ -26,7 +26,7 @@ typedef struct Overlay97PlaneInit {
     u16 second;
 } Overlay97PlaneInit;
 
-extern void overlay97BuildBasisReloc(s16 *angles, Overlay97Plane *plane,
+extern void mathOneFloatRPY(s16 *angles, Overlay97Plane *plane,
                                      Overlay97PlaneObject *object,
                                      Overlay97PlaneInit *init);
 
@@ -42,7 +42,7 @@ void overlay97InitPlane(Overlay97PlaneObject *object, Overlay97PlaneInit *init) 
     plane->x = 0.0f;
     plane->y = 0.0f;
     plane->z = -1.0f;
-    overlay97BuildBasisReloc(angles, plane, object, init);
+    mathOneFloatRPY(angles, plane, object, init);
     plane->distance = -((plane->z * object->z) +
                         ((object->x * plane->x) + (object->y * plane->y)));
     plane->radiusSquared = (f32)init->radius;

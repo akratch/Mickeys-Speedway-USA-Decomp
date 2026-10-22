@@ -7,25 +7,25 @@
 /* Same-module callees whose shipped call words are SYMBOL relocation records
  * with a zero addend, so the C names the runtime-table placeholder rather than
  * the in-module definition (CLAUDE.md, "Promoting an overlay function"). */
-M2C_UNK overlay86BuildTransformReloc(void *, void *);    /* extern */
-M2C_UNK overlay86ScaledVectorPositionReloc(void *, void *, f32 *, f32 *, f32 *); /* extern */
-s32 overlay86SelectPositionReloc(void *, void *);        /* extern */
+M2C_UNK overlay86BuildTransform(void *, void *);    /* extern */
+M2C_UNK overlay86ScaledVectorPosition(void *, void *, f32 *, f32 *, f32 *); /* extern */
+s32 overlay86SelectPosition(void *, void *);        /* extern */
 M2C_UNK ext_o0_2b90(M2C_UNK, f32, f32, f32, s32, void *); /* extern */
 M2C_UNK ext_o0_2c4c(s32, s32);                     /* extern */
-M2C_UNK ext_o0_2c64(s32, s32);                     /* extern */
+M2C_UNK amSndSetPitchXYZ(s32, s32);                     /* extern */
 M2C_UNK ext_o0_1bed0(void *, s32, s32, s32, s32, s32, s32); /* extern */
 M2C_UNK ext_o0_2d70(s32, f32, f32, f32);           /* extern */
 M2C_UNK ext_o0_2d98();                             /* extern */
-M2C_UNK ext_o0_28d88(M2C_UNK);                     /* extern */
+M2C_UNK func_800291D8(M2C_UNK);                     /* extern */
 s32 ext_o0_2952c(M2C_UNK, M2C_UNK);                /* extern */
-M2C_UNK ext_o0_29b94(void *, void *);              /* extern */
+M2C_UNK mathOneFloatPY(void *, void *);              /* extern */
 f32 ext_o0_2a470(s16);                             /* extern */
-void *ext_o0_53d0(u8);                             /* extern */
-M2C_UNK ext_o0_494ac(u8, M2C_UNK, f32, M2C_UNK, s32, s32, s32); /* extern */
-M2C_UNK ext_o0_5a758(void *, M2C_UNK, f32);        /* extern */
+void *func_80005820(u8);                             /* extern */
+M2C_UNK func_800498FC(u8, M2C_UNK, f32, M2C_UNK, s32, s32, s32); /* extern */
+M2C_UNK func_8005ABA8(void *, M2C_UNK, f32);        /* extern */
 void ext_o0_5a914(void *, M2C_UNK, s32, f32);   /* extern */
-s16 ext_o0_f690(f32, f32, f32);                    /* extern */
-M2C_UNK ext_o7_dbc(M2C_UNK);                       /* extern */
+s16 func_8000FAE0(f32, f32, f32);                    /* extern */
+M2C_UNK overlay7CommitSelection(M2C_UNK);                       /* extern */
 
 /* Matched 2026-09-16 (lane lm-a), 662/662 words at frame 0xA8, unforced.
  * The fact the score does not show, measured on the allocator's own records
@@ -61,13 +61,13 @@ void func_overlay_086_F0000474_18D22AC(void *object, s32 steps) {
     elapsed = (f32) steps;
     state = M2C_FIELD(object, void **, 0x64);
     M2C_FIELD(state, s16 *, 0x28) = 0x2000;
-    target = ext_o0_53d0(M2C_FIELD(state, u8 *, 1));
+    target = func_80005820(M2C_FIELD(state, u8 *, 1));
     if (target != NULL) {
         racer = M2C_FIELD(target, void **, 0x64);
         shake = 0;
         result = M2C_FIELD(state, u8 *, 0);
         if (result != 0) {
-            ext_o0_5a758(object, 0x3C88CE70, elapsed);
+            func_8005ABA8(object, 0x3C88CE70, elapsed);
             M2C_FIELD(state, s16 *, 0x28) = 0x22;
             M2C_FIELD(state, s16 *, 0x2C) = 0x24; cursor = (s16 *)((u8 *)state + 0x30);
             M2C_FIELD(state, s16 *, 0x2A) = M2C_FIELD(state, s16 *, 0x1C);
@@ -114,21 +114,21 @@ void func_overlay_086_F0000474_18D22AC(void *object, s32 steps) {
                 switch (M2C_FIELD(state, u8 *, 0)) {
                 case 0:
                     if ((M2C_FIELD(racer, u8 *, 0x170) != 0) && !(M2C_FIELD(racer, u16 *, 0x1A8) & 1)) {
-                        overlay86ScaledVectorPositionReloc(target, racer, &targetX, &targetY, &targetZ);
+                        overlay86ScaledVectorPosition(target, racer, &targetX, &targetY, &targetZ);
                         M2C_FIELD(object, s16 *, 0) = (s16) (M2C_FIELD(target, s16 *, 0) + 0x8000);
                         M2C_FIELD(object, s16 *, 2) = -0x1000;
                         M2C_FIELD(object, s16 *, 4) = 0;
                         M2C_FIELD(object, f32 *, 0xC) = targetX;
                         M2C_FIELD(object, f32 *, 0x10) = (f32) (targetY + 320.0f);
                         M2C_FIELD(object, f32 *, 0x14) = targetZ;
-                        M2C_FIELD(object, s16 *, 0x2E) = ext_o0_f690(M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
+                        M2C_FIELD(object, s16 *, 0x2E) = func_8000FAE0(M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
                         M2C_FIELD(state, s16 *, 2) = 0x3C;
                         M2C_FIELD(state, u8 *, 0) = 1U;
                         M2C_FIELD(state, f32 *, 0x10) = 0.0f;
                         M2C_FIELD(state, s16 *, 0x24) = 0;
                         M2C_FIELD(state, f32 *, 0x14) = 320.0f;
-                        ext_o0_494ac(M2C_FIELD(state, u8 *, 1), 0x3F4CCCCD, -1.0f, 0, 0, 0, 0);
-                        ext_o0_28d88(0x5A);
+                        func_800498FC(M2C_FIELD(state, u8 *, 1), 0x3F4CCCCD, -1.0f, 0, 0, 0, 0);
+                        func_800291D8(0x5A);
                         M2C_FIELD(object, s16 *, 6) = (s16) (M2C_FIELD(object, s16 *, 6) & 0xFBFF);
                         ext_o0_5a914(object, 1, -1, 0.0f);
                         M2C_FIELD(M2C_FIELD(target, void **, 0x48), u16 *, 6) &= 0xFFFE;
@@ -137,7 +137,7 @@ void func_overlay_086_F0000474_18D22AC(void *object, s32 steps) {
                     }
                     break;
                 case 1:
-                    overlay86ScaledVectorPositionReloc(target, racer, &targetX, &targetY, &targetZ);
+                    overlay86ScaledVectorPosition(target, racer, &targetX, &targetY, &targetZ);
                     if ((M2C_FIELD(state, s16 *, 2) != 0) && (steps != 0)) {
 loop_26:
                         M2C_FIELD(object, f32 *, 0xC) += (targetX - M2C_FIELD(object, f32 *, 0xC)) * 0.1f;
@@ -155,12 +155,12 @@ loop_26:
                     }
                     M2C_FIELD(object, f32 *, 0x10) = (f32) (M2C_FIELD(state, f32 *, 0x14) + targetY);
                     if (M2C_FIELD(state, s16 *, 2) == 0) {
-                        M2C_FIELD(object, s16 *, 0) = (s16) (overlay86SelectPositionReloc(target, state) + 0x8000);
+                        M2C_FIELD(object, s16 *, 0) = (s16) (overlay86SelectPosition(target, state) + 0x8000);
                         M2C_FIELD(object, s16 *, 2) = -0x1000;
                         M2C_FIELD(object, f32 *, 0xC) = (f32) M2C_FIELD(state, f32 *, 4);
                         M2C_FIELD(object, f32 *, 0x10) = (f32) (M2C_FIELD(state, f32 *, 8) + 400.0f);
                         M2C_FIELD(object, f32 *, 0x14) = (f32) M2C_FIELD(state, f32 *, 0xC);
-                        overlay86BuildTransformReloc(object, target);
+                        overlay86BuildTransform(object, target);
                         ext_o0_1bed0(target, M2C_FIELD(target, s32 *, 0xC), M2C_FIELD(target, s32 *, 0x10), M2C_FIELD(target, s32 *, 0x14), (s32) M2C_FIELD(target, s16 *, 0), (s32) M2C_FIELD(target, s16 *, 2), (s32) M2C_FIELD(target, s16 *, 4));
                         M2C_FIELD(racer, s8 *, 0x191) = 1;
                         M2C_FIELD(racer, u8 *, 0x170) = 0U;
@@ -168,10 +168,10 @@ loop_26:
                         M2C_FIELD(state, u8 *, 0) = 2U;
                         M2C_FIELD(state, s16 *, 0x24) = 0x400;
                         M2C_FIELD(state, s16 *, 2) = 0x5A;
-                        ext_o0_494ac(M2C_FIELD(state, u8 *, 1), 0x3EB33333, 0.0f, 0, 0, 0, 0x80);
-                        ext_o7_dbc(9);
+                        func_800498FC(M2C_FIELD(state, u8 *, 1), 0x3EB33333, 0.0f, 0, 0, 0, 0x80);
+                        overlay7CommitSelection(9);
                     }
-                    result = ext_o0_f690(M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
+                    result = func_8000FAE0(M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
                     if (result != -1) {
                         M2C_FIELD(object, s16 *, 0x2E) = result;
                     }
@@ -191,7 +191,7 @@ loop_37:
                             goto loop_37;
                         }
                     }
-                    overlay86BuildTransformReloc(object, target);
+                    overlay86BuildTransform(object, target);
                     M2C_FIELD(target, s16 *, 4) = (s16) shake;
                     if (M2C_FIELD(state, s16 *, 2) == 0) {
                         if (M2C_FIELD(state, u8 *, 0) == 2) {
@@ -215,7 +215,7 @@ loop_37:
                             M2C_FIELD(M2C_FIELD(target, void **, 0x48), u16 *, 6) |= 1;
                         }
                     }
-                    result = ext_o0_f690(M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
+                    result = func_8000FAE0(M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
                     if (result != -1) {
                         M2C_FIELD(object, s16 *, 0x2E) = result;
                     }
@@ -257,11 +257,11 @@ loop_52:
                             M2C_FIELD(object, s16 *, 4) = -0x2000;
                         }
                         M2C_FIELD(object, f32 *, 0x24) = (f32) (-M2C_FIELD(state, f32 *, 0x10) * elapsed);
-                        ext_o0_29b94(object, (u8 *)object + 0x1C);
+                        mathOneFloatPY(object, (u8 *)object + 0x1C);
                         M2C_FIELD(object, f32 *, 0xC) += M2C_FIELD(object, f32 *, 0x1C) * elapsed;
                         M2C_FIELD(object, f32 *, 0x10) += M2C_FIELD(object, f32 *, 0x20) * elapsed;
                         M2C_FIELD(object, f32 *, 0x14) += M2C_FIELD(object, f32 *, 0x24) * elapsed;
-                        result = ext_o0_f690(M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
+                        result = func_8000FAE0(M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
                         if (result != -1) {
                             M2C_FIELD(object, s16 *, 0x2E) = result;
                         }
@@ -291,7 +291,7 @@ loop_52:
                 }
                 scale += (f32) ext_o0_2952c(-5, 5);
                 ext_o0_2d70(M2C_FIELD(state, s32 *, 0x18), M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
-                ext_o0_2c64(M2C_FIELD(state, s32 *, 0x18), (u32) scale & 0xFF);
+                amSndSetPitchXYZ(M2C_FIELD(state, s32 *, 0x18), (u32) scale & 0xFF);
                 if (M2C_FIELD(state, u8 *, 0) == 4) {
                     ext_o0_2c4c(M2C_FIELD(state, s32 *, 0x18), ((s32) (M2C_FIELD(state, s16 *, 2) * 0x7F) / 180) & 0xFF);
                 }

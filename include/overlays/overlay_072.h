@@ -58,9 +58,9 @@ typedef struct Overlay72QueryObject {
 
 extern f32 gOverlay72ComponentScale;
 
-s32 overlay72QueryReloc(f32 x, f32 y, f32 z, s32 queryType,
+s32 func_8005776C(f32 x, f32 y, f32 z, s32 queryType,
                         s32 includeInactive, Overlay72Candidate **results);
-void overlay72ApplyReloc(Overlay72Candidate *candidate, s32 value);
+void func_overlay_008_F0000F1C_185EC74(Overlay72Candidate *candidate, s32 value);
 
 void overlay72Init(Overlay72InitObject *object, Overlay72Config *config);
 void overlay72Update(Overlay72QueryObject *object, s32 updateRate);

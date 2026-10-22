@@ -61,39 +61,39 @@ typedef struct O35ColorData {
     s16 *flags;
 } O35ColorData;
 
-extern O35LoaderState *D_o35_loader_state;
-extern s32 D_o35_allocation_count;
-extern void **D_o35_allocations;
-extern s16 *D_o35_values_a;
-extern s16 *D_o35_values_b;
-extern void *D_o35_segment_storage;
-extern s32 D_o35_reset;
-extern void *D_o35_model_heap;
-extern O35Model *D_o35_current_model;
+extern O35LoaderState *D_800792EC;
+extern s32 D_800C9D38;
+extern void **D_800C9D2C;
+extern s16 *D_800C9D30;
+extern s16 *D_800C9D34;
+extern void *D_800C9D20;
+extern s32 D_800C9D3C;
+extern void *D_800C95A8;
+extern O35Model *D_800792E8;
 extern s32 *D_o35_model_table;
-extern s32 D_o35_final_reset;
+extern s32 D_80079314;
 
 extern void *call_o0_0_2AE30(s32, s32);
-extern void call_o0_0_29DF4(void);
-extern void call_o0_0_26934(void);
-extern s32 *call_o0_0_2DCF8(s32);
-extern void call_o0_0_2DE90(s32, void *, s32, s32);
-extern void call_o0_0_4D390(void *, void *);
-extern void call_o0_0_2B318(void *);
-extern void *call_o0_0_2B848(void *);
-extern void *call_o0_0_2B810(void *);
-extern s32 call_o0_0_2B6E4(void);
-extern void call_o0_0_2B2A4(s32);
-extern void *call_o0_0_2B0D4(s32, void *, s32);
+extern void func_8002A244(void);
+extern void mainPreNMI(void);
+extern s32 *piRomLoad(s32);
+extern void piRomLoadSection(s32, void *, s32, s32);
+extern void func_8004D7E0(void *, void *);
+extern void mmFree(void *);
+extern void *align4(void *);
+extern void *align16(void *);
+extern s32 mmGetDelay(void);
+extern void mmSetDelay(s32);
+extern void *mmAllocAtAddr(s32, void *, s32);
 extern void *call_o0_0_33FF8(s32);
-extern void call_o0_0_CF68(u8, u8);
+extern void trackLightAllocate(u8, u8);
 
 extern void func_overlay_035_F0000770_1882450(O35Segment *, O35Bounds *,
                                                 O35Segment *);
 extern s32 func_overlay_035_F0000B40_1882820(O35Segment *);
 extern void func_overlay_035_F0001380_1883060(O35Segment *);
 
-/* Matched by spelling every model access as D_o35_current_model (DKR style) so
+/* Matched by spelling every model access as D_800792E8 (DKR style) so
  * uopt CSEs the loop-condition reloads, testing the heap through the current
  * model, walking D_o35_model_table directly (its address web then outranks
  * 0x9F000 for s3), post-decrement copy loops (the target's dead count copy),
@@ -111,21 +111,21 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
     O35Segment *segment;
     u8 *cursor;
 
-    D_o35_allocation_count = D_o35_loader_state->allocationCount;
-    D_o35_allocations = call_o0_0_2AE30(D_o35_allocation_count * 4, 0x91);
-    D_o35_values_a = call_o0_0_2AE30(D_o35_allocation_count * 2, 0x91);
-    D_o35_values_b = call_o0_0_2AE30(D_o35_allocation_count * 2, 0x91);
-    D_o35_segment_storage = call_o0_0_2AE30(
-        D_o35_loader_state->segmentAllocationCount * 0x2C, 0x91);
-    D_o35_reset = 0;
-    D_o35_model_heap = call_o0_0_2AE30(0x9F000, 0x91);
-    D_o35_current_model = D_o35_model_heap;
-    if (D_o35_current_model == 0) {
-        call_o0_0_29DF4();
+    D_800C9D38 = D_800792EC->allocationCount;
+    D_800C9D2C = call_o0_0_2AE30(D_800C9D38 * 4, 0x91);
+    D_800C9D30 = call_o0_0_2AE30(D_800C9D38 * 2, 0x91);
+    D_800C9D34 = call_o0_0_2AE30(D_800C9D38 * 2, 0x91);
+    D_800C9D20 = call_o0_0_2AE30(
+        D_800792EC->segmentAllocationCount * 0x2C, 0x91);
+    D_800C9D3C = 0;
+    D_800C95A8 = call_o0_0_2AE30(0x9F000, 0x91);
+    D_800792E8 = D_800C95A8;
+    if (D_800792E8 == 0) {
+        func_8002A244();
     }
-    call_o0_0_26934();
+    mainPreNMI();
 
-    D_o35_model_table = call_o0_0_2DCF8(0x24);
+    D_o35_model_table = piRomLoad(0x24);
     for (i = 0; D_o35_model_table[i] != -1; i++) {
     }
     i--;
@@ -135,79 +135,79 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
 
     mdl = D_o35_model_table[modelId];
     byteCount = D_o35_model_table[modelId + 1] - mdl;
-    temp = (s32)D_o35_current_model;
+    temp = (s32)D_800792E8;
     temp += 0x9F000 - byteCount;
     temp -= temp % 16;
 
-    call_o0_0_26934();
-    call_o0_0_2DE90(0x25, (void *)temp, mdl, byteCount);
-    call_o0_0_4D390((void *)temp, D_o35_current_model);
-    call_o0_0_2B318(D_o35_model_table);
-    call_o0_0_26934();
+    mainPreNMI();
+    piRomLoadSection(0x25, (void *)temp, mdl, byteCount);
+    func_8004D7E0((void *)temp, D_800792E8);
+    mmFree(D_o35_model_table);
+    mainPreNMI();
 
-    mdl = (s32)D_o35_current_model;
-    D_o35_current_model->textures =
-        (O35TextureInfo *)((s32)D_o35_current_model->textures + mdl);
-    D_o35_current_model->segments =
-        (O35Segment *)((s32)D_o35_current_model->segments + mdl);
-    D_o35_current_model->bounds =
-        (O35Bounds *)((s32)D_o35_current_model->bounds + mdl);
-    D_o35_current_model->unkC = (void *)((s32)D_o35_current_model->unkC + mdl);
-    D_o35_current_model->unk10 =
-        (void *)((s32)D_o35_current_model->unk10 + mdl);
-    D_o35_current_model->unk14 =
-        (void *)((s32)D_o35_current_model->unk14 + mdl);
+    mdl = (s32)D_800792E8;
+    D_800792E8->textures =
+        (O35TextureInfo *)((s32)D_800792E8->textures + mdl);
+    D_800792E8->segments =
+        (O35Segment *)((s32)D_800792E8->segments + mdl);
+    D_800792E8->bounds =
+        (O35Bounds *)((s32)D_800792E8->bounds + mdl);
+    D_800792E8->unkC = (void *)((s32)D_800792E8->unkC + mdl);
+    D_800792E8->unk10 =
+        (void *)((s32)D_800792E8->unk10 + mdl);
+    D_800792E8->unk14 =
+        (void *)((s32)D_800792E8->unk14 + mdl);
 
-    for (k = 0; k < D_o35_current_model->segmentCount; k++) {
-        D_o35_current_model->segments[k].vertices =
-            (u8 *)((s32)D_o35_current_model->segments[k].vertices + mdl);
-        D_o35_current_model->segments[k].triangles =
-            (void *)((s32)D_o35_current_model->segments[k].triangles + mdl);
-        D_o35_current_model->segments[k].groups =
-            (void *)((s32)D_o35_current_model->segments[k].groups + mdl);
-        D_o35_current_model->segments[k].unk18 =
-            (void *)((s32)D_o35_current_model->segments[k].unk18 + mdl);
+    for (k = 0; k < D_800792E8->segmentCount; k++) {
+        D_800792E8->segments[k].vertices =
+            (u8 *)((s32)D_800792E8->segments[k].vertices + mdl);
+        D_800792E8->segments[k].triangles =
+            (void *)((s32)D_800792E8->segments[k].triangles + mdl);
+        D_800792E8->segments[k].groups =
+            (void *)((s32)D_800792E8->segments[k].groups + mdl);
+        D_800792E8->segments[k].unk18 =
+            (void *)((s32)D_800792E8->segments[k].unk18 + mdl);
     }
 
-    cursor = (u8 *)D_o35_current_model + D_o35_current_model->modelSize;
-    for (k = 0; k < D_o35_current_model->segmentCount; k++) {
-        cursor = call_o0_0_2B848(cursor);
-        D_o35_current_model->segments[k].masks = (u32 *)cursor;
-        cursor += D_o35_current_model->segments[k].dataOffset * 4;
-        D_o35_current_model->segments[k].collisionFacets = cursor;
-        cursor += D_o35_current_model->segments[k].dataOffset;
+    cursor = (u8 *)D_800792E8 + D_800792E8->modelSize;
+    for (k = 0; k < D_800792E8->segmentCount; k++) {
+        cursor = align4(cursor);
+        D_800792E8->segments[k].masks = (u32 *)cursor;
+        cursor += D_800792E8->segments[k].dataOffset * 4;
+        D_800792E8->segments[k].collisionFacets = cursor;
+        cursor += D_800792E8->segments[k].dataOffset;
         func_overlay_035_F0000770_1882450(
-            &D_o35_current_model->segments[k],
-            &D_o35_current_model->bounds[k],
-            D_o35_current_model->segments);
-        cursor = call_o0_0_2B810(cursor);
-        D_o35_current_model->segments[k].collisionPlanes = (f32 *)cursor;
+            &D_800792E8->segments[k],
+            &D_800792E8->bounds[k],
+            D_800792E8->segments);
+        cursor = align16(cursor);
+        D_800792E8->segments[k].collisionPlanes = (f32 *)cursor;
         cursor += func_overlay_035_F0000B40_1882820(
-                      &D_o35_current_model->segments[k]) *
+                      &D_800792E8->segments[k]) *
                   0x10;
-        D_o35_current_model->segments[k].selectedValue = 0;
+        D_800792E8->segments[k].selectedValue = 0;
         func_overlay_035_F0001380_1883060(
-            &D_o35_current_model->segments[k]);
+            &D_800792E8->segments[k]);
     }
 
-    cursor = call_o0_0_2B810(cursor);
-    byteCount = cursor - (u8 *)D_o35_current_model;
-    call_o0_0_26934();
-    temp = call_o0_0_2B6E4();
-    call_o0_0_2B2A4(0);
-    call_o0_0_2B318(D_o35_model_heap);
-    call_o0_0_2B0D4(byteCount, D_o35_model_heap, 0x91);
-    call_o0_0_2B2A4(temp);
-    call_o0_0_26934();
+    cursor = align16(cursor);
+    byteCount = cursor - (u8 *)D_800792E8;
+    mainPreNMI();
+    temp = mmGetDelay();
+    mmSetDelay(0);
+    mmFree(D_800C95A8);
+    mmAllocAtAddr(byteCount, D_800C95A8, 0x91);
+    mmSetDelay(temp);
+    mainPreNMI();
 
-    for (k = 0; k < D_o35_current_model->textureCount; k++) {
-        D_o35_current_model->textures[k].texture = call_o0_0_33FF8(
-            (s32)D_o35_current_model->textures[k].texture | 0x8000);
+    for (k = 0; k < D_800792E8->textureCount; k++) {
+        D_800792E8->textures[k].texture = call_o0_0_33FF8(
+            (s32)D_800792E8->textures[k].texture | 0x8000);
     }
-    call_o0_0_26934();
+    mainPreNMI();
 
-    segment = D_o35_current_model->segments;
-    for (k = 0; k < D_o35_current_model->segmentCount; k++) {
+    segment = D_800792E8->segments;
+    for (k = 0; k < D_800792E8->segmentCount; k++) {
         O35ColorData *colorData;
         u8 *colors;
         s16 *flags;
@@ -240,8 +240,8 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
         }
         segment++;
     }
-    call_o0_0_26934();
-    D_o35_final_reset = 0;
-    call_o0_0_CF68(D_o35_loader_state->finalArg0,
-                   D_o35_loader_state->finalArg1);
+    mainPreNMI();
+    D_80079314 = 0;
+    trackLightAllocate(D_800792EC->finalArg0,
+                   D_800792EC->finalArg1);
 }

@@ -24,15 +24,15 @@ typedef struct Overlay36SpawnedObject {
     u8 pad00[0x3C]; s32 state; u8 pad40[0x51]; u8 flag91;
 } Overlay36SpawnedObject;
 
-extern void overlay36OffsetReloc(Overlay36Object *object, f32 *offset);
+extern void mathOneFloatRPY(Overlay36Object *object, f32 *offset);
 extern f32 gOverlay36RodataBaseReloc[];
-extern void *overlay36FindDirectionalReloc(Overlay36Object *object, s32 first,
+extern void *overlay1FindDirectionalObject(Overlay36Object *object, s32 first,
                                            s32 second, f32 cosine,
                                            f32 maximum);
-extern Overlay36SpawnedObject *overlay36SpawnReloc(
+extern Overlay36SpawnedObject *func_8000590C(
     Overlay36Request0D8C *request, s32 mode);
-extern void overlay36ReleaseReloc(void *resource);
-extern void overlay36CreateResourceReloc(u16 kind, f32 x, f32 y, f32 z,
+extern void amSndStopXYZ(void *resource);
+extern void amSndPlayXYZ(u16 kind, f32 x, f32 y, f32 z,
                                          s32 mode, void **resource);
 
 void overlay36SpawnLinked7F(Overlay36Object *object) {
@@ -45,7 +45,7 @@ void overlay36SpawnLinked7F(Overlay36Object *object) {
     locals.offset[0] = 0.0f;
     locals.offset[1] = 16.0f;
     locals.offset[2] = 14.0f;
-    overlay36OffsetReloc(object, locals.offset);
+    mathOneFloatRPY(object, locals.offset);
     locals.request.kind = 0x7F;
     locals.request.x = (s16)(locals.offset[0] + object->x);
     locals.request.y = (s16)(locals.offset[1] + object->y);
@@ -54,10 +54,10 @@ void overlay36SpawnLinked7F(Overlay36Object *object) {
     locals.request.id2 = object->id2;
     locals.request.id4 = object->id4;
     locals.request.owner = object;
-    locals.request.directionalObject = overlay36FindDirectionalReloc(
+    locals.request.directionalObject = overlay1FindDirectionalObject(
         object, 3, 5, 0.707f, gOverlay36RodataBaseReloc[13]);
     actionKind = state->action->kind;
-    spawned = overlay36SpawnReloc(&locals.request, 1);
+    spawned = func_8000590C(&locals.request, 1);
     if (spawned != 0) {
         spawned->state = 0;
         if (spawned->flag91 != 0) {
@@ -66,9 +66,9 @@ void overlay36SpawnLinked7F(Overlay36Object *object) {
     }
     if (state->action->kind != 0) {
         if (state->resource != 0) {
-            overlay36ReleaseReloc(state->resource);
+            amSndStopXYZ(state->resource);
         }
-        overlay36CreateResourceReloc((u16)actionKind, object->x,
+        amSndPlayXYZ((u16)actionKind, object->x,
                                      object->y, object->z, 4,
                                      &state->resource);
     }

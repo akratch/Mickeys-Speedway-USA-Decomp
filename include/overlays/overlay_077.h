@@ -82,18 +82,18 @@ extern f32 gOverlay77NegativeDivisor;
 extern f32 gOverlay77NegativeAcceleration;
 extern f32 gOverlay77Gravity;
 
-s32 overlay77RandomReloc(s32 minimum, s32 maximum);
-void overlay77CallbackReloc(void *argument);
-f32 overlay77SinReloc(s16 angle);
-f32 overlay77CosReloc(s16 angle);
-void overlay77PathReloc(void *path, s32 *mode, s16 kind, f32 *field,
+s32 mathRnd(s32 minimum, s32 maximum);
+void amSndStopXYZ(void *argument);
+f32 func_8002A8C0(s16 angle);
+f32 func_8002A8BC(s16 angle);
+void texAnimateSprite(void *path, s32 *mode, s16 kind, f32 *field,
                         s32 updateRate);
-void overlay77SpawnReloc(s32 objectId, s32 x, s32 y, s32 z, s32 mode,
+void amSndPlayXYZ(s32 objectId, s32 x, s32 y, s32 z, s32 mode,
                          void *argument);
-void overlay77ContinueReloc(void *handle, s32 x, s32 y, s32 z);
+void amSndSetXYZ(void *handle, s32 x, s32 y, s32 z);
 s32 overlay77MoveReloc(Overlay77Object *object, f32 x, f32 y, f32 z);
 void overlay77OrientReloc(Overlay77Object *object, f32 x, f32 y, f32 z);
-void overlay77StopReloc(void *handle);
+void amSndStopXYZ(void *handle);
 
 void overlay77Init(Overlay77Object *object, Overlay77Init *init, s32 preserveSequence);
 void overlay77Update(Overlay77Object *object, volatile s32 updateRate);

@@ -33,8 +33,8 @@ typedef struct Overlay68CreateInfo {
 } Overlay68CreateInfo;
 
 extern s16 gOverlay68Types[];
-extern s32 overlay68QueryReloc(void);
-extern void *overlay68CreateReloc(Overlay68CreateInfo *info, s32 count);
+extern s32 levelGetNumber(void);
+extern void *func_8000590C(Overlay68CreateInfo *info, s32 count);
 
 /* Pinned DKR v77/v80 and JFG object/source checks found payload-construction
  * relatives only; none is an exact donor for this descriptor layout. */
@@ -46,7 +46,7 @@ void overlay68CreatePayload(Overlay68Entry *entry) {
     if (entry != 0) {
         if (entry->width != 0) {
             if (entry->height != 0) {
-                if (overlay68QueryReloc() == entry->generation) {
+                if (levelGetNumber() == entry->generation) {
                     kind = entry->kind;
                     payload = entry->payload;
                     if ((kind < 0) || (kind >= 10)) {
@@ -60,7 +60,7 @@ void overlay68CreatePayload(Overlay68Entry *entry) {
                     info.green = payload->green;
                     info.blue = payload->blue;
                     info.entry = entry;
-                    entry->object = overlay68CreateReloc(&info, 1);
+                    entry->object = func_8000590C(&info, 1);
                     return;
                 }
             }

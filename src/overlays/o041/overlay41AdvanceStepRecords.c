@@ -10,11 +10,11 @@ typedef struct Overlay41StepRecord {
     s32 dy;
 } Overlay41StepRecord;
 
-extern Overlay41StepRecord overlay41StepRecordsReloc[8];
-extern void overlay41EmitStepReloc(s32 id, s32 x, s32 y);
+extern Overlay41StepRecord D_800D6B58[8];
+extern void trackAddTextureScroll(s32 id, s32 x, s32 y);
 
-#define gOverlay41StepRecords overlay41StepRecordsReloc
-#define overlay41EmitStep overlay41EmitStepReloc
+#define gOverlay41StepRecords D_800D6B58
+#define overlay41EmitStep trackAddTextureScroll
 
 /* Updating both accumulators before decrementing the independent remaining
  * field preserves the source semantics and reproduces IDO's retail schedule.

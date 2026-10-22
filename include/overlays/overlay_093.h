@@ -34,8 +34,8 @@ typedef struct Overlay93Object {
     f32 radiusSquared;
 } Overlay93Object;
 
-Overlay93Object *overlay93FindTargetReloc(s32 type, Overlay93Object *object);
-void overlay93EmitReloc(s32 x, s32 y, s32 z, s32 red, s32 green, s32 arg5);
+Overlay93Object *func_80005820(s32 type, Overlay93Object *object);
+void changeWeather(s32 x, s32 y, s32 z, s32 red, s32 green, s32 arg5);
 
 void overlay93Init(Overlay93Object *object, Overlay93Config *config);
 void overlay93Update(Overlay93Object *object, s32 updateRate);

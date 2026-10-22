@@ -32,7 +32,7 @@ void overlay90Initialize(Overlay90Owner *owner, Overlay90Config *config) {
     state->value14 = 15.0f;
     state->value1C = gOverlay90Value1C;
     state->value20 = gOverlay90Value20;
-    overlay90CommitReloc(owner, 0, -1, 0.0f);
+    func_8005AD64(owner, 0, -1, 0.0f);
 }
 
 typedef struct Overlay90Vector {
@@ -78,15 +78,15 @@ typedef struct Overlay90Data {
 
 #define OVERLAY90_DATA (*(Overlay90Data *)&gOverlay90Value1C)
 
-extern s32 gOverlay90SequenceStateReloc;
-extern s32 gOverlay90SequenceDoneReloc;
+extern s32 D_800C9480;
+extern s32 D_800C947C;
 
 extern void pointListRPY(s32 count, s16 *rotation, f32 *input, f32 *output);
 extern s32 func_8005ABA8(Overlay90Owner *owner, f32 value, f32 updateRate);
 extern void func_8005AD64(Overlay90Owner *owner, s32 mode, s32 index,
                           f32 startFrame);
 extern void amSndPlay(s32 soundId, void **handle);
-extern void overlay90SequenceReloc(s32 sequenceId);
+extern void overlay7CommitSelection(s32 sequenceId);
 extern s32 camGetMode(void);
 extern Overlay90Level *levelGetLevel(void);
 extern void amTunePlay(u8 sequenceId);
@@ -199,7 +199,7 @@ void func_overlay_090_F00000FC_18D4BF4(Overlay90Owner *owner,
                 state->active = 3;
                 func_8005AD64(owner, 1, -1, 0.0f);
                 amSndPlay(0x12, 0);
-                overlay90SequenceReloc(0x1D);
+                overlay7CommitSelection(0x1D);
             }
             break;
         case 3:
@@ -221,8 +221,8 @@ void func_overlay_090_F00000FC_18D4BF4(Overlay90Owner *owner,
                 state->flag -= 0x3C;
                 state->active = 5;
                 amSndPlay(0x14, 0);
-                overlay90SequenceReloc(0x1E);
-                gOverlay90SequenceStateReloc = 0;
+                overlay7CommitSelection(0x1E);
+                D_800C9480 = 0;
                 transitioned = 1;
             }
             break;
@@ -231,16 +231,16 @@ void func_overlay_090_F00000FC_18D4BF4(Overlay90Owner *owner,
             func_8005ABA8(owner, 0.01f, (f32)updateRate);
             state->flag += updateRate;
             if (state->flag >= 0x1E) {
-                gOverlay90SequenceStateReloc = 0x83;
+                D_800C9480 = 0x83;
             } else if (state->flag >= 0xF) {
-                gOverlay90SequenceStateReloc = 0x84;
+                D_800C9480 = 0x84;
             }
             if (state->flag >= 0x3C) {
                 state->flag -= 0x3C;
                 state->active = 6;
                 amSndPlay(0x15, 0);
-                overlay90SequenceReloc(0x1F);
-                gOverlay90SequenceDoneReloc = 0;
+                overlay7CommitSelection(0x1F);
+                D_800C947C = 0;
                 transitioned = 1;
             }
             break;

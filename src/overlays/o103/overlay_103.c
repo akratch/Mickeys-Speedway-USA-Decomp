@@ -7,10 +7,10 @@
  * external call targets resident +0x2DF90 (func_8002E3E0).
  */
 s32 overlay103CheckSignature(void) {
-    if (gOverlay103SignatureBlock != 0) {
-        overlay103DmaCopyReloc(0xDC0, gOverlay103SignatureBlock, 0x10);
-        if (gOverlay103SignatureBlock[0] == 0xB06DA99E &&
-            gOverlay103SignatureBlock[1] == 0x5A0B4670) {
+    if (D_8007A204 != 0) {
+        romCopy(0xDC0, D_8007A204, 0x10);
+        if (D_8007A204[0] == 0xB06DA99E &&
+            D_8007A204[1] == 0x5A0B4670) {
             return 1;
         }
     }

@@ -3,8 +3,8 @@
 
 #include "PR/ultratypes.h"
 
-void overlay104PiGetAccessReloc(void);
-void overlay104PiRelAccessReloc(void);
+void __osPiGetAccess(void);
+void __osPiRelAccess(void);
 s32 overlay104CheckWord(u32 base);
 
 #endif

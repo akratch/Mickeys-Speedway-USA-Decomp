@@ -8,11 +8,11 @@ void overlay78Init(Overlay78Object *object, Overlay78Config *config) {
 
     record = object->record;
     record->value = (f32)config->valueE / 1000.0f;
-    overlay78SetTargetReloc(object, 0, -1, target);
+    func_8005AD64(object, 0, -1, target);
     object->value = config->valueA;
 }
 
 void overlay78Update(Overlay78Object *object, s32 updateRate) {
     Overlay78Record *record = object->record;
-    overlay78UpdateReloc(object, record->value, (f32)updateRate);
+    func_8005ABA8(object, record->value, (f32)updateRate);
 }

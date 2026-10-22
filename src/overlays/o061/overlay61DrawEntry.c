@@ -24,11 +24,11 @@ extern u8 gOverlay61LabelB0Reloc[];
 extern u8 gOverlay61FormatBCReloc[];
 extern void *gOverlay61NamesReloc[];
 
-extern void overlay61SetColorReloc(s32, s32, s32, s32, s32);
-extern void overlay61DrawBoxReloc(s32, s32, s32, s32, s32, u32);
-extern s32 overlay61FormatReloc(u8 *, u8 *, ...);
-extern void overlay61DrawTextReloc(s32, s32, s32, void *, s32);
-extern void *overlay61LookupReloc(s8);
+extern void fontColour(s32, s32, s32, s32, s32);
+extern void frontDrawRectangle(s32, s32, s32, s32, s32, u32);
+extern s32 sprintf(u8 *, u8 *, ...);
+extern void fontPrintXY(s32, s32, s32, void *, s32);
+extern void *levelGetName(s8);
 
 void overlay61DrawEntry(s32 context, s32 y, Overlay61Entry *entry,
                         s32 selected) {
@@ -36,9 +36,9 @@ void overlay61DrawEntry(s32 context, s32 y, Overlay61Entry *entry,
     u8 text[128];
 
     if (entry == 0) {
-        overlay61DrawBoxReloc(context, 0x1E, y - 2, 0x62, y + 0x14,
+        frontDrawRectangle(context, 0x1E, y - 2, 0x62, y + 0x14,
                              0x200000FF);
-        overlay61DrawBoxReloc(context, 0x64, y - 2, 0x122, y + 0x14,
+        frontDrawRectangle(context, 0x64, y - 2, 0x122, y + 0x14,
                              0x000020FF);
         return;
     }
@@ -52,54 +52,54 @@ void overlay61DrawEntry(s32 context, s32 y, Overlay61Entry *entry,
     }
 
     if (selected) {
-        overlay61SetColorReloc(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-        overlay61DrawBoxReloc(context, 0x1E, y - 2, 0x62, y + 0x14,
+        fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
+        frontDrawRectangle(context, 0x1E, y - 2, 0x62, y + 0x14,
                              0x800000FF);
-        overlay61DrawBoxReloc(context, 0x64, y - 2, 0x122, y + 0x14,
+        frontDrawRectangle(context, 0x64, y - 2, 0x122, y + 0x14,
                              color & 0x808080FF);
     } else {
-        overlay61SetColorReloc(0xFF, 0xFF, 0, 0xFF, 0xFF);
-        overlay61DrawBoxReloc(context, 0x1E, y - 2, 0x62, y + 0x14,
+        fontColour(0xFF, 0xFF, 0, 0xFF, 0xFF);
+        frontDrawRectangle(context, 0x1E, y - 2, 0x62, y + 0x14,
                              0x500000FF);
-        overlay61DrawBoxReloc(context, 0x64, y - 2, 0x122, y + 0x14,
+        frontDrawRectangle(context, 0x64, y - 2, 0x122, y + 0x14,
                              color & 0x505050FF);
     }
 
     switch (entry->kind) {
         case 4:
-            overlay61FormatReloc(text, gOverlay61Format58Reloc, entry->field2);
-            overlay61DrawTextReloc(context, 0x20, y, text, 0);
+            sprintf(text, gOverlay61Format58Reloc, entry->field2);
+            fontPrintXY(context, 0x20, y, text, 0);
             /* fall through */
         case 5:
-            overlay61FormatReloc(text, gOverlay61Format64Reloc, entry->field3C);
-            overlay61DrawTextReloc(context, 0x20, y + 9, text, 0);
-            overlay61FormatReloc(text, gOverlay61Format70Reloc,
+            sprintf(text, gOverlay61Format64Reloc, entry->field3C);
+            fontPrintXY(context, 0x20, y + 9, text, 0);
+            sprintf(text, gOverlay61Format70Reloc,
                                  entry->text0, entry->text1);
-            overlay61DrawTextReloc(context, 0x66, y, text, 0);
-            overlay61DrawTextReloc(context, 0xD0, y,
+            fontPrintXY(context, 0x66, y, text, 0);
+            fontPrintXY(context, 0xD0, y,
                                    gOverlay61NamesReloc[entry->field3], 0);
-            overlay61DrawTextReloc(context, 0x66, y + 9,
-                                   overlay61LookupReloc(entry->field4), 0);
-            overlay61FormatReloc(text, gOverlay61Format78Reloc,
+            fontPrintXY(context, 0x66, y + 9,
+                                   levelGetName(entry->field4), 0);
+            sprintf(text, gOverlay61Format78Reloc,
                                  entry->field5, entry->field6, entry->field7);
-            overlay61DrawTextReloc(context, 0xD0, y + 9, text, 0);
+            fontPrintXY(context, 0xD0, y + 9, text, 0);
             return;
 
         case 6:
-            overlay61FormatReloc(text, gOverlay61Format90Reloc, entry->field2);
-            overlay61DrawTextReloc(context, 0x20, y, text, 0);
-            overlay61FormatReloc(text, gOverlay61Format9CReloc, entry->field3C);
-            overlay61DrawTextReloc(context, 0x20, y + 9, text, 0);
-            overlay61FormatReloc(text, gOverlay61FormatA8Reloc,
+            sprintf(text, gOverlay61Format90Reloc, entry->field2);
+            fontPrintXY(context, 0x20, y, text, 0);
+            sprintf(text, gOverlay61Format9CReloc, entry->field3C);
+            fontPrintXY(context, 0x20, y + 9, text, 0);
+            sprintf(text, gOverlay61FormatA8Reloc,
                                  entry->text0, entry->text1);
-            overlay61DrawTextReloc(context, 0x66, y + 4, text, 0);
+            fontPrintXY(context, 0x66, y + 4, text, 0);
             return;
 
         default:
-            overlay61DrawTextReloc(context, 0x40, y, gOverlay61LabelB0Reloc, 4);
-            overlay61FormatReloc(text, gOverlay61FormatBCReloc, entry->field3C);
-            overlay61DrawTextReloc(context, 0x40, y + 9, text, 4);
-            overlay61DrawTextReloc(context, 0x66, y + 4, entry->text0, 0);
+            fontPrintXY(context, 0x40, y, gOverlay61LabelB0Reloc, 4);
+            sprintf(text, gOverlay61FormatBCReloc, entry->field3C);
+            fontPrintXY(context, 0x40, y + 9, text, 4);
+            fontPrintXY(context, 0x66, y + 4, entry->text0, 0);
             return;
     }
 }

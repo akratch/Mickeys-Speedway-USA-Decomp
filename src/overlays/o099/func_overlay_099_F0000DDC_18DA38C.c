@@ -87,14 +87,14 @@ typedef struct Overlay99Vertex {
     _g->words.w1 = (u32)(ptr);                                              \
 }
 
-extern void *gO99BlurSourceReloc;
-extern s32 gO99VertexBufferIndexReloc;
-extern Overlay99Vertex *gO99VertexBuffersReloc[];
-extern u16 *gO99FramebufferReloc;
+extern void *D_8007BE80;
+extern s32 D_8007BE84;
+extern Overlay99Vertex *D_8007BE88[];
+extern u16 *D_800D2FAC;
 extern u8 gO99TrianglesReloc[];
-extern void overlay99CamStandardPerspReloc(Gfx **displayList, Mtx **matrices);
-extern void overlay99Func80034920Reloc(Gfx **displayList);
-extern void overlay99RenderSegmentsReloc(Gfx **displayList, Mtx **matrices,
+extern void camStandardPersp(Gfx **displayList, Mtx **matrices);
+extern void texDPInit(Gfx **displayList);
+extern void overlay99RenderSegments(Gfx **displayList, Mtx **matrices,
                                          void *vertices, f32 scale);
 
 void func_overlay_099_F0000DDC_18DA38C(Gfx **displayList, Mtx **matrices,
@@ -114,7 +114,7 @@ void func_overlay_099_F0000DDC_18DA38C(Gfx **displayList, Mtx **matrices,
     Overlay99Vertex *vtx;
     s32 unused;
 
-    if (gO99BlurSourceReloc == NULL) {
+    if (D_8007BE80 == NULL) {
         return;
     }
     width = columns + 1;
@@ -122,7 +122,7 @@ void func_overlay_099_F0000DDC_18DA38C(Gfx **displayList, Mtx **matrices,
     if (alpha >= 0x100) {
         alpha = 0xFF;
     }
-    overlay99CamStandardPerspReloc(displayList, matrices);
+    camStandardPersp(displayList, matrices);
     gDPPipeSyncO99((*displayList)++);
     O99_CMD((*displayList)++, 0xED000000, 0x005003C0);
     O99_CMD((*displayList)++, 0xEF30000F, 0);
@@ -134,7 +134,7 @@ void func_overlay_099_F0000DDC_18DA38C(Gfx **displayList, Mtx **matrices,
     O99_CMD((*displayList)++, 0xB6000000, 0x00010001);
     O99_CMD((*displayList)++, 0xFC45FE03, 0x1FFCFDFE);
     O99_CMD((*displayList)++, 0xEF182C0F, 0x0F0A4000);
-    O99_CMD((*displayList)++, 0xFD10013F, gO99FramebufferReloc);
+    O99_CMD((*displayList)++, 0xFD10013F, D_800D2FAC);
     for (i = 0, y = 0; i < rows; i++, y += stepY) {
         for (j = 0, x = 0; j < columns; j += 2, x += stepX) {
             uls = O99_MAX(x - 1, 0);
@@ -151,15 +151,15 @@ void func_overlay_099_F0000DDC_18DA38C(Gfx **displayList, Mtx **matrices,
                           0, 0, 2, 2);
             gDPSetTileSizeO99((*displayList)++, 0, 0, 0,
                               ((lrs - uls) - 1) << 2, ((lrt - ult) - 1) << 2);
-            vtx = &gO99VertexBuffersReloc[gO99VertexBufferIndexReloc][i * width + j];
+            vtx = &D_8007BE88[D_8007BE84][i * width + j];
             gSPVertexO99((*displayList)++, O99_K0_TO_PHYSICAL(vtx), 3, 0);
-            vtx = &gO99VertexBuffersReloc[gO99VertexBufferIndexReloc][(i + 1) * width + j];
+            vtx = &D_8007BE88[D_8007BE84][(i + 1) * width + j];
             gSPVertexO99((*displayList)++, O99_K0_TO_PHYSICAL(vtx), 3, 3);
             gSPPolygonO99((*displayList)++, O99_K0_TO_PHYSICAL(gO99TrianglesReloc),
                           triangles, 1);
         }
     }
-    overlay99Func80034920Reloc(displayList);
+    texDPInit(displayList);
     O99_CMD((*displayList)++, 0xFA000000, 0xFFFFFFFF);
-    overlay99RenderSegmentsReloc(displayList, matrices, vertices, scale);
+    overlay99RenderSegments(displayList, matrices, vertices, scale);
 }

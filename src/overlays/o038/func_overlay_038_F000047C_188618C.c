@@ -44,14 +44,14 @@ extern u8 gO38ParticleTriangles[];
 
 /* Resident callees, reached through SYMBOL records: camPushModelMtx,
  * texDPTextureX, camPopModelMtx, camGetPtr, Arctanf and sqrtf. */
-extern void o38PushMatrixReloc(Gfx **dList, void *context,
+extern void camPushModelMtx(Gfx **dList, void *context,
                                O38Transform *transform, f32 scale, f32 offset);
-extern void o38DrawTextureReloc(Gfx **dList, void *texture, s32 flags,
+extern void texDPTextureX(Gfx **dList, void *texture, s32 flags,
                                 s32 arg3);
-extern void o38PopMatrixReloc(Gfx **dList);
-extern O38Camera *o38GetCameraReloc(void);
-extern s16 o38ArctanReloc(f32 y, f32 x);
-extern f32 o38SqrtReloc(f32 value);
+extern void camPopModelMtx(Gfx **dList);
+extern O38Camera *camGetPtr(void);
+extern s16 Arctanf(f32 y, f32 x);
+extern f32 sqrtf(f32 value);
 
 /* PROVENANCE: the two packet macros are Jet Force Gemini's gSPVertexJFG and
  * gSPPolygon (include/f3ddkr.h in its public decompilation, a permitted
@@ -99,36 +99,36 @@ void func_overlay_038_F000047C_188618C(Gfx **dList, void *context, O38Object *ob
     transform.x = object->trans.x;
     transform.y = object->trans.y;
     transform.z = object->trans.z;
-    o38PushMatrixReloc(dList, context, &transform, 1.0f, 0.0f);
-    o38DrawTextureReloc(dList, object->resource[0], 0x10, 0);
+    camPushModelMtx(dList, context, &transform, 1.0f, 0.0f);
+    texDPTextureX(dList, object->resource[0], 0x10, 0);
     gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, pool->alpha);
     gSPVertexJFG((*dList)++, gO38ObjectVertices, 4, 0);
     gSPPolygon((*dList)++, gO38ObjectTriangles, 2, 1);
     gDPPipeSync((*dList)++);
     gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, 255);
-    o38PopMatrixReloc(dList);
-    camera = o38GetCameraReloc();
+    camPopModelMtx(dList);
+    camera = camGetPtr();
     for (i = 0; i < 20; i++) {
         particle = &pool->particles[i];
         if (object->trans.y <= particle->y) {
             dx = particle->x - camera->trans.x;
             dy = particle->y - camera->trans.y;
             dz = particle->z - camera->trans.z;
-            transform.rotationY = o38ArctanReloc(dx, dz);
-            transform.rotationX = o38ArctanReloc(-dy, o38SqrtReloc(dx * dx + dz * dz)) + 0x8000;
+            transform.rotationY = Arctanf(dx, dz);
+            transform.rotationX = Arctanf(-dy, sqrtf(dx * dx + dz * dz)) + 0x8000;
             transform.rotationZ = 0;
             transform.scale = particle->scale;
             transform.x = particle->x;
             transform.y = particle->y;
             transform.z = particle->z;
-            o38PushMatrixReloc(dList, context, &transform, 1.0f, 0.0f);
-            o38DrawTextureReloc(dList, object->resource[1], 0x10, 0);
+            camPushModelMtx(dList, context, &transform, 1.0f, 0.0f);
+            texDPTextureX(dList, object->resource[1], 0x10, 0);
             gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, pool->alpha);
             gSPVertexJFG((*dList)++, gO38ParticleVertices, 4, 0);
             gSPPolygon((*dList)++, gO38ParticleTriangles, 2, 1);
             gDPPipeSync((*dList)++);
             gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, 255);
-            o38PopMatrixReloc(dList);
+            camPopModelMtx(dList);
         }
     }
 }

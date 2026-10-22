@@ -41,14 +41,14 @@ extern f32 gOverlay80Band2Lower;
 extern f32 gOverlay80Band2Upper;
 extern f32 gOverlay80Band3Lower;
 
-extern s32 overlay80FindContactReloc(f32 positionX, f32 positionY,
+extern s32 func_8005776C(f32 positionX, f32 positionY,
                                      f32 positionZ, f32 radius,
                                      s32 ignoreY,
                                      Overlay80Object **contactOut);
-extern f32 overlay80SqrtReloc(f32 value);
-extern void overlay80EmitContactReloc(Overlay80Object *object, s32 kind,
+extern f32 sqrtf(f32 value);
+extern void func_8005AD64(Overlay80Object *object, s32 kind,
                                       s32 value, f32 amount);
-extern s32 overlay80AdvanceContactReloc(Overlay80Object *object, f32 rate,
+extern s32 func_8005ABA8(Overlay80Object *object, f32 rate,
                                         f32 ticks);
 
 /* Pinned DKR v77/v80 and JFG object scans found no exact donor. */
@@ -72,7 +72,7 @@ void overlay80UpdateContact(Overlay80Object *object, s32 ticks)
   f32 ratio;
   s32 kind;
   state = object->state;
-  if (overlay80FindContactReloc(object->positionX, object->positionY, object->positionZ, state->scale, 0, contacts) != 0)
+  if (func_8005776C(object->positionX, object->positionY, object->positionZ, state->scale, 0, contacts) != 0)
   {
     contact = contacts[0];
     dx = object->positionX - contact->positionX;
@@ -82,7 +82,7 @@ void overlay80UpdateContact(Overlay80Object *object, s32 ticks)
     distance = ((contact->normalX * dx) + (dy * contact->normalY)) + (dz * contact->normalZ);
     if (((distance < 0.0f) && (state->previousDistance > 0.0f)) || ((state->previousDistance < 0.0f) && (distance > 0.0f)))
     {
-      ratio = 1.0f - (overlay80SqrtReloc(((dx * dx) + (dy * dy)) + (dz * dz)) / state->scale);
+      ratio = 1.0f - (sqrtf(((dx * dx) + (dy * dy)) + (dz * dz)) / state->scale);
       magnitude = contactState->scale;
       if (magnitude < 0.0f)
       {
@@ -112,7 +112,7 @@ void overlay80UpdateContact(Overlay80Object *object, s32 ticks)
       if ((state->active == 0) && (kind != (-1)))
       {
         state->active = 1;
-        overlay80EmitContactReloc(object, kind, -1, 0.0f);
+        func_8005AD64(object, kind, -1, 0.0f);
       }
     }
     state->previousDistance = distance;
@@ -121,7 +121,7 @@ void overlay80UpdateContact(Overlay80Object *object, s32 ticks)
   {
     state->previousDistance = 0.0f;
   }
-  if ((state->active != 0) && (overlay80AdvanceContactReloc(object, 0.0075f, (f32) ticks) != 0))
+  if ((state->active != 0) && (func_8005ABA8(object, 0.0075f, (f32) ticks) != 0))
   {
     state->active = 0;
   }

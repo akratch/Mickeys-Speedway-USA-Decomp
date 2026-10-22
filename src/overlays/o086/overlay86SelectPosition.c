@@ -41,10 +41,10 @@ typedef struct Overlay86Object {
     Overlay86State *state;
 } Overlay86Object;
 
-extern Overlay86RingRecord *overlay86FindPreviousUsableReloc(
+extern Overlay86RingRecord *overlay1FindPreviousUsable(
     s32 index, s32 *selectedIndex);
-extern s32 overlay86NextIndexReloc(s32 index);
-extern Overlay86Node **overlay86GetNodesReloc(s32 *start, s32 *end);
+extern s32 overlay1NextIndex(s32 index);
+extern Overlay86Node **func_8000572C(s32 *start, s32 *end);
 
 /*
  * Near-miss exactness note: IDO assigns the five homed locals in reverse
@@ -61,8 +61,8 @@ s16 overlay86SelectPosition(Overlay86Object *object, Overlay86VecOutput *output)
     Overlay86RingRecord *record;
 
     state = object->state;
-    record = overlay86FindPreviousUsableReloc(state->selectedIndex, &selected);
-    state->selectedIndex = overlay86NextIndexReloc(selected);
+    record = overlay1FindPreviousUsable(state->selectedIndex, &selected);
+    state->selectedIndex = overlay1NextIndex(selected);
     output->x = 0.0f;
     output->y = 0.0f;
     output->z = 0.0f;
@@ -76,7 +76,7 @@ s16 overlay86SelectPosition(Overlay86Object *object, Overlay86VecOutput *output)
         return record->angle + 0x4000;
     }
 
-    nodes = overlay86GetNodesReloc(&start, &end);
+    nodes = func_8000572C(&start, &end);
     while (start < end) {
         node = nodes[start++];
         if ((node->kind == 5) && (node->ownerIndex == state->ownerIndex)) {

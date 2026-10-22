@@ -22,8 +22,8 @@ typedef struct Overlay36SpawnedObject {
     s32 state;
 } Overlay36SpawnedObject;
 
-extern u8 gOverlay36AlternateEffects;
-extern Overlay36SpawnedObject *overlay36SpawnEffectReloc(
+extern u8 D_8007BF0C;
+extern Overlay36SpawnedObject *func_8000590C(
     Overlay36SpawnRequest *request, s32 mode,
     Overlay36PositionObject *owner);
 
@@ -33,7 +33,7 @@ void overlay36SpawnAtPosition(Overlay36PositionObject *object, s32 unused1,
     Overlay36SpawnRequest request;
     Overlay36SpawnedObject *spawned;
 
-    if (gOverlay36AlternateEffects != 0) {
+    if (D_8007BF0C != 0) {
         request.kind = 0xED;
     } else {
         request.kind = 0x90;
@@ -43,7 +43,7 @@ void overlay36SpawnAtPosition(Overlay36PositionObject *object, s32 unused1,
     request.z = object->z;
     request.count = 1;
     request.owner = object;
-    spawned = overlay36SpawnEffectReloc(&request, 1, object);
+    spawned = func_8000590C(&request, 1, object);
     if (spawned != 0) {
         spawned->state = 0;
     }

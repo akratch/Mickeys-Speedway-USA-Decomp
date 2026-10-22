@@ -40,16 +40,16 @@ typedef struct Overlay95QueryResult {
     Overlay95RacerObject *object;
 } Overlay95QueryResult;
 
-extern u8 gOverlay95Disabled;
+extern u8 D_8007BF0C;
 extern f32 gOverlay95FadeRate;
-extern Overlay95QueryResult *overlay95QueryReloc(void **found);
-extern void overlay95ActivateReloc(Overlay95Object *object, s32 updateRate);
-extern void overlay95EmitReloc(s32 type, s32 kind, f32 scale, Overlay95Racer *racer);
-extern void *overlay95CreateReloc(void);
-extern void overlay95ConfigureReloc(void *resource, f32 x, f32 y, f32 z, s32 count);
-extern void overlay95StopReloc(void *handle);
-extern void overlay95PlayReloc(s32 soundId, Overlay95AudioState *audio);
-extern void overlay95VolumeReloc(s32 soundId, void *handle, s32 volume);
+extern Overlay95QueryResult *func_80005750(void **found);
+extern void partUpdateTriggers(Overlay95Object *object, s32 updateRate);
+extern void rumbleStart(s32 type, s32 kind, f32 scale, Overlay95Racer *racer);
+extern void *camGetNo(void);
+extern void camStartShake(void *resource, f32 x, f32 y, f32 z, s32 count);
+extern void amSndStop(void *handle);
+extern void amSndPlay(s32 soundId, Overlay95AudioState *audio);
+extern void amSndSetVol(s32 soundId, void *handle, s32 volume);
 
 void overlay95NoOp(void *object, void *entry);
 void overlay95Update(Overlay95Object *object, s32 updateRate);

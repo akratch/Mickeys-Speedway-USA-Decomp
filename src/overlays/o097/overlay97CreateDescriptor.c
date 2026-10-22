@@ -34,7 +34,7 @@ typedef struct Overlay97DescriptorInit {
     u8 red, green, blue, alpha;
 } Overlay97DescriptorInit;
 
-extern s32 overlay97CreateDescriptorReloc(Overlay97DescriptorObject *object,
+extern s32 camlightAdd(Overlay97DescriptorObject *object,
                                           Overlay97Descriptor *descriptor,
                                           Overlay97DescriptorInit *init);
 
@@ -68,5 +68,5 @@ void overlay97CreateDescriptor(Overlay97DescriptorObject *object,
     descriptor.height = 100;
     descriptor.parent = -1;
     descriptor.enabled = 1;
-    object->handle = overlay97CreateDescriptorReloc(object, &descriptor, init);
+    object->handle = camlightAdd(object, &descriptor, init);
 }

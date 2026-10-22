@@ -57,10 +57,10 @@ typedef struct Overlay84Object {
     Overlay84State *state;
 } Overlay84Object;
 
-extern Overlay84Node **overlay84GetNodes(s32 *start, s32 *end);
-extern s32 overlay84Atan2(f32 x, f32 z);
+extern Overlay84Node **func_8000572C(s32 *start, s32 *end);
+extern s32 Arctanf(f32 x, f32 z);
 extern void overlay84RefreshCurrent(Overlay84Object *, Overlay84State *, s32);
-extern void overlay84UpdateCurrent(Overlay84Object *, Overlay84State *, s32);
+extern void func_overlay_084_F0000314_18D07F4(Overlay84Object *, Overlay84State *, s32);
 extern void overlay84UpdateResource(Overlay84Object *, Overlay84State *, s32);
 
 /* `start` and `end` are declared after `node` so their automatic homes land
@@ -84,7 +84,7 @@ void overlay84InitializeAndUpdate(Overlay84Object *object, s32 arg) {
 
     state = object->state;
     if (state->initialized == 0) {
-        nodes = overlay84GetNodes(&start, &end);
+        nodes = func_8000572C(&start, &end);
         for (i = start; i < end; i++) {
             node = nodes[i];
             if (node->kind == 0x33) {
@@ -100,7 +100,7 @@ void overlay84InitializeAndUpdate(Overlay84Object *object, s32 arg) {
 
         initialNode = state->nodes[0];
         if (initialNode != 0) {
-            state->angle = overlay84Atan2(initialNode->x - object->x,
+            state->angle = Arctanf(initialNode->x - object->x,
                                           initialNode->z - object->z);
             tilt = -initialNode->tilt;
             state->targetTilt = tilt;
@@ -123,7 +123,7 @@ void overlay84InitializeAndUpdate(Overlay84Object *object, s32 arg) {
         overlay84RefreshCurrent(object, state, arg);
         break;
     case 2:
-        overlay84UpdateCurrent(object, state, arg);
+        func_overlay_084_F0000314_18D07F4(object, state, arg);
         break;
     case 3:
         overlay84UpdateResource(object, state, arg);

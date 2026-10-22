@@ -68,12 +68,12 @@ typedef struct Overlay75Object {
 extern f32 gOverlay75Scale;
 extern s32 gOverlay75SlotFlags[];
 
-f32 overlay75Sin(s16 angle);
-f32 overlay75Cos(s16 angle);
-void overlay75Configure(Overlay75Object *object, s32 mode, s32 index,
+f32 func_8002A8C0(s16 angle);
+f32 func_8002A8BC(s16 angle);
+void func_8005AD64(Overlay75Object *object, s32 mode, s32 index,
                         f32 argument);
-void overlay75SetVelocity(Overlay75Object *object, f32 x, f32 y);
-void overlay75AttachModel(void **model, void *data, Overlay75Object *object);
+void func_8005ABA8(Overlay75Object *object, f32 x, f32 y);
+void func_8005AF14(void **model, void *data, Overlay75Object *object);
 
 void overlay75Init(Overlay75Object *object, Overlay75InitData *init, s32 skip) {
     Overlay75Header *header;
@@ -102,9 +102,9 @@ void overlay75Init(Overlay75Object *object, Overlay75InitData *init, s32 skip) {
     state->x = object->x;
     state->y = object->y;
     state->z = object->z;
-    state->projectedX = state->x - (overlay75Sin(object->angle) * state->velocity);
+    state->projectedX = state->x - (func_8002A8C0(object->angle) * state->velocity);
     state->projectedZ = state->y;
-    state->projectedY = state->z - (overlay75Cos(object->angle) * state->velocity);
+    state->projectedY = state->z - (func_8002A8BC(object->angle) * state->velocity);
 
     if (state->slot >= 2) {
         state->width = 20.0f;
@@ -117,9 +117,9 @@ void overlay75Init(Overlay75Object *object, Overlay75InitData *init, s32 skip) {
     if (skip == 0) {
         model = object->models[object->modelIndex];
         modelData = *model;
-        overlay75Configure(object, 0, -1, 0.0f);
-        overlay75SetVelocity(object, 0.0, 0.0);
-        overlay75AttachModel(model, modelData, object);
+        func_8005AD64(object, 0, -1, 0.0f);
+        func_8005ABA8(object, 0.0, 0.0);
+        func_8005AF14(model, modelData, object);
     }
 
     gOverlay75SlotFlags[state->slot] = 0;

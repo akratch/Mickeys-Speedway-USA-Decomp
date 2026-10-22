@@ -53,7 +53,7 @@ void overlay81Update(Overlay81Object *object, s32 updateRate) {
 
         active = object->trigger->active;
         if ((active != 0) && (state->active == 0)) {
-            overlay81SpawnEffectReloc(0x276, object->x.bits, object->y.bits,
+            amSndPlayXYZ(0x276, object->x.bits, object->y.bits,
                                       object->z.bits, 4, 0);
             active = object->trigger->active;
         } else if (active == 0) {
@@ -62,9 +62,9 @@ void overlay81Update(Overlay81Object *object, s32 updateRate) {
                 savedY = object->y.value;
                 object->y.value -= collision->value.yOffset;
                 object->flags |= 1;
-                overlay81ActivateReloc(object, 1);
-                overlay81SpawnEffectReloc(
-                    overlay81RandomRangeReloc(0x22A, 0x22B) & 0xFFFF,
+                partUpdateTriggers(object, 1);
+                amSndPlayXYZ(
+                    mathRnd(0x22A, 0x22B) & 0xFFFF,
                     object->x.bits, object->y.bits, object->z.bits, 4, 0);
                 object->y.value = savedY;
                 active = object->trigger->active;
@@ -105,7 +105,7 @@ void overlay81CheckNearby(Overlay81Object *object, s32 unused) {
     state = object->state;
     radiusSquared = state->radius;
     radiusSquared *= radiusSquared;
-    nearby = overlay81QueryNearbyReloc(&count, object, state);
+    nearby = func_80005750(&count, object, state);
     found = 0;
     if (count != 0) {
         do {

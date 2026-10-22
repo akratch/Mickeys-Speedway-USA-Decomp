@@ -33,8 +33,8 @@ typedef struct Overlay36SpawnedObject {
     s32 owner;
 } Overlay36SpawnedObject;
 
-extern u8 gOverlay36AlternateEffects;
-extern Overlay36SpawnedObject *overlay36SpawnEffectReloc(
+extern u8 D_8007BF0C;
+extern Overlay36SpawnedObject *func_8000590C(
     Overlay36SpawnRequest *request, s32 count, Overlay36EffectSource *source);
 
 void overlay36SpawnFinalEffect(Overlay36EffectSource *source) {
@@ -42,7 +42,7 @@ void overlay36SpawnFinalEffect(Overlay36EffectSource *source) {
     register Overlay36EffectState *state;
 
     state = source->effectState;
-    if (gOverlay36AlternateEffects != 0) {
+    if (D_8007BF0C != 0) {
         request.effectType = 0xED;
     } else {
         request.effectType = 0x90;
@@ -54,7 +54,7 @@ void overlay36SpawnFinalEffect(Overlay36EffectSource *source) {
     request.source = source;
     request.effectState = state;
 
-    source = (Overlay36EffectSource *)overlay36SpawnEffectReloc(&request, 1, source);
+    source = (Overlay36EffectSource *)func_8000590C(&request, 1, source);
     state = request.effectState;
     if (source != NULL) {
         ((Overlay36SpawnedObject *)source)->owner = 0;

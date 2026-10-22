@@ -2,7 +2,7 @@
 
 /* The unloaded JAL field stays zero; the runtime table binds this call to
  * overlay100RemoveEntry at module offset 0x278. */
-extern void overlay100RemoveEntryReloc(Overlay100Motion *motion);
+extern void overlay100RemoveEntry(Overlay100Motion *motion);
 extern f32 gOverlay100GravityReloc[];
 
 Overlay100Motion *overlay100UpdateMotion(Overlay100Motion *motion, s32 step) {
@@ -13,7 +13,7 @@ Overlay100Motion *overlay100UpdateMotion(Overlay100Motion *motion, s32 step) {
     if (motion == 0) return 0;
     motion->remaining -= step;
     if (motion->remaining <= 0) {
-        overlay100RemoveEntryReloc(motion);
+        overlay100RemoveEntry(motion);
         return 0;
     }
     blendScale = step;

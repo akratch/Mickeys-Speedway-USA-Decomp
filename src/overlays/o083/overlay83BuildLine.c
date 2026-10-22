@@ -24,7 +24,7 @@ typedef struct Overlay83LineTransform {
     f32 z;
 } Overlay83LineTransform;
 
-extern void overlay83TransformReloc(s32 count, Overlay83LineTransform *transform,
+extern void pointListRPY(s32 count, Overlay83LineTransform *transform,
                                     Overlay83Vector *source,
                                     Overlay83Vector *destination);
 
@@ -42,7 +42,7 @@ void overlay83BuildLine(Overlay83Vertex **vertices,
     points[1].x = transform->halfLength;
     points[1].y = 0.0f;
     points[1].z = 0.0f;
-    overlay83TransformReloc(2, transform, points, points);
+    pointListRPY(2, transform, points, points);
 
     points[0].x += transform->x;
     points[0].y += transform->y;

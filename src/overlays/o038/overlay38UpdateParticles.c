@@ -18,7 +18,7 @@ typedef struct O38Object {
     O38Pool *pool;
 } O38Object;
 
-extern void o38ReleaseObject(O38Object *object);
+extern void func_80006EA0(O38Object *object);
 
 /* Matched 2026-10-07 (lane h-1), written from the listing. The loop is IDO's
  * own 4x unroll of a plain 20-step loop. The timestep is converted once and
@@ -41,7 +41,7 @@ void func_overlay_038_F0000154_1885E64(O38Object *object, s32 ticks)
     s32 i;
 
     if (pool->alpha == 0) {
-        o38ReleaseObject(object);
+        func_80006EA0(object);
         return;
     }
     object->age += 0.1f * dt;

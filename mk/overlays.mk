@@ -833,7 +833,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41DrawItem.c.o: POSTPROCESS = \
 		--redefine-sym fontStringWidth=overlay41MeasureReloc \
 		--redefine-sym func_8004B0B8=overlay41SetColorIntensityReloc \
 		--redefine-sym fontPrintXY=overlay41DrawResourceReloc \
-		--redefine-sym gOverlay41Resources=gOverlay41ResourcesReloc $@ && \
+		--redefine-sym D_8007C0B8=gOverlay41ResourcesReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x15C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53ReleaseResources.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x78

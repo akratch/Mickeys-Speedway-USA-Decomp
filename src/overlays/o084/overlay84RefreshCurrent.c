@@ -37,7 +37,7 @@ typedef struct Overlay84State {
     u8 marked;
 } Overlay84State;
 
-extern u32 gOverlay84InputFlags;
+extern u32 D_800D31B8;
 extern Overlay84Resource *overlay84GetResource(u8 resource);
 extern void overlay84ReleaseResource(u8 resource);
 
@@ -51,7 +51,7 @@ void overlay84RefreshCurrent(void *unused, Overlay84State *state, s32 unused2) {
     Overlay84Node *node;
 
     locals.changed = 0;
-    if ((gOverlay84InputFlags & 0xD000) != 0 && state->active != 0 &&
+    if ((D_800D31B8 & 0xD000) != 0 && state->active != 0 &&
         state->marked == 0) {
         locals.changed = 1;
         resource = overlay84GetResource(state->resource);

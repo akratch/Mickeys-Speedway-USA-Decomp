@@ -11,7 +11,7 @@ typedef struct Overlay41DrawItem {
     u8 intensity;
 } Overlay41DrawItem;
 
-extern void **gOverlay41Resources;
+extern void **D_8007C0B8;
 
 extern void fontUseFont(s32 mode);
 extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);
@@ -32,15 +32,15 @@ void overlay41DrawItem(void *displayList,
 
     fontUseFont(2);
     fontBackground(0, 0, 0, 0);
-    width = fontStringWidth(gOverlay41Resources[item->resourceIndex], 2, 1) + 40;
+    width = fontStringWidth(D_8007C0B8[item->resourceIndex], 2, 1) + 40;
     x = item->x - (width >> 1);
     y = item->y - 12;
     func_8004B0B8(0, 0, 0, 255, item->intensity);
     func_overlay_067_F0000000_18C6F40(displayList, 0, x, y, width, 24,
                                       item->intensity >> 1);
     fontPrintXY(displayList, item->x + 1, item->y + 1,
-                  gOverlay41Resources[item->resourceIndex], 12);
+                  D_8007C0B8[item->resourceIndex], 12);
     func_8004B0B8(item->red, item->green, item->blue, 255, item->intensity);
     fontPrintXY(displayList, item->x, item->y,
-                  gOverlay41Resources[item->resourceIndex], 12);
+                  D_8007C0B8[item->resourceIndex], 12);
 }

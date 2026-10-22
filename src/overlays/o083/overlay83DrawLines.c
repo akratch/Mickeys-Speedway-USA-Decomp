@@ -37,7 +37,7 @@ typedef struct Overlay83LineObject {
     u8 padF0[0x168];
 } Overlay83LineObject;
 
-extern void overlay83BuildLineReloc(Overlay83Vertex **vertices, void *transform,
+extern void overlay83BuildLine(Overlay83Vertex **vertices, void *transform,
                                     s32 alpha);
 
 /*
@@ -56,7 +56,7 @@ void overlay83DrawLines(Overlay83LineObject *object) {
             ((u8 *)object + object->bufferIndex * 0xB4 + 0xF0);
         savedHalfLength = object->halfLength;
         object->halfLength = object->drawHalfLength;
-        overlay83BuildLineReloc(&vertices, object, object->alpha);
+        overlay83BuildLine(&vertices, object, object->alpha);
         object->halfLength = savedHalfLength;
 
         recordIndex = object->lastRecord;
@@ -65,7 +65,7 @@ void overlay83DrawLines(Overlay83LineObject *object) {
             if (recordIndex < 0) {
                 recordIndex = 7;
             }
-            overlay83BuildLineReloc(&vertices, &object->records[recordIndex],
+            overlay83BuildLine(&vertices, &object->records[recordIndex],
                                     object->records[recordIndex].alpha);
         } while (recordIndex != object->firstRecord);
     }

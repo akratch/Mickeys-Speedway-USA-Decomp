@@ -34,7 +34,7 @@ typedef struct Overlay84Object {
 } Overlay84Object;
 
 extern Overlay84Object *gOverlay84Object;
-extern s32 overlay84Atan2(f32 x, f32 z);
+extern s32 Arctanf(f32 x, f32 z);
 
 /*
  * DKR v77/v80 contain many generic arctan2 object-heading calculations, but
@@ -56,7 +56,7 @@ void overlay84SelectCurrent(s32 index) {
             object = gOverlay84Object;
             node = state->nodes[state->current];
             state->angle =
-                overlay84Atan2(node->x - object->x, node->z - object->z);
+                Arctanf(node->x - object->x, node->z - object->z);
             state->tilt = -node->tilt;
             state->height = node->y;
             state->flags &= ~1;

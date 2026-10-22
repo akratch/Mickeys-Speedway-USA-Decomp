@@ -37,7 +37,7 @@ typedef struct Overlay84Object {
 
 extern Overlay84Object *gOverlay84ObjectRead;
 extern Overlay84Object *gOverlay84ObjectWrite;
-extern s32 overlay84Atan2(f32 x, f32 z);
+extern s32 Arctanf(f32 x, f32 z);
 
 /* Exact C: all 82 instruction words, the -48 frame, relocations, and linked
  * overlay range match after bounded permutation. */
@@ -85,7 +85,7 @@ void overlay84AdvanceCurrent(s32 direction)
       while (found == 0);
       object = gOverlay84ObjectWrite;
       node = state->nodes[*((volatile s8 *) (&state->current))];
-      state->angle = overlay84Atan2(node->x - object->x, node->z - object->z);
+      state->angle = Arctanf(node->x - object->x, node->z - object->z);
       state->tilt = -node->tilt;
       state->height = node->y;
       state->flags &= ~1;

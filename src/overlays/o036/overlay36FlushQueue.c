@@ -11,7 +11,7 @@ typedef struct Overlay36QueueEntry {
 extern s32 gOverlay36QueueCount;
 extern Overlay36QueueEntry *gOverlay36QueueNext;
 extern Overlay36QueueEntry gOverlay36QueueBase[];
-extern void overlay36QueueActionReloc();
+extern void overlay1ReadSelection();
 
 /* Queue flushing is title-specific; DKR v77/v80 and JFG have no donor. */
 void overlay36FlushQueue(void) {
@@ -20,7 +20,7 @@ void overlay36FlushQueue(void) {
     count = gOverlay36QueueCount;
     while (count--) {
         gOverlay36QueueNext--;
-        overlay36QueueActionReloc(gOverlay36QueueNext->arg0,
+        overlay1ReadSelection(gOverlay36QueueNext->arg0,
                                   gOverlay36QueueNext->arg1,
                                   gOverlay36QueueNext->arg2,
                                   gOverlay36QueueNext->arg3,

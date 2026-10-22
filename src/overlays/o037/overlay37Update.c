@@ -31,8 +31,8 @@ struct Overlay37Object {
 };
 
 extern f32 gOverlay37Period;
-extern f32 overlay37SinReloc(s32 angle);
-extern void overlay37UpdateObjectReloc(Overlay37Object *object);
+extern f32 func_8002A8C0(s32 angle);
+extern void func_80006EA0(Overlay37Object *object);
 
 /* Pinned DKR v77/v80 and JFG scans contain no exact source donor. */
 void overlay37Update(Overlay37Object *object, s32 ticks) {
@@ -59,11 +59,11 @@ void overlay37Update(Overlay37Object *object, s32 ticks) {
         if (period <= state->phase) {
             state->phase -= period;
         }
-        sine = overlay37SinReloc(
+        sine = func_8002A8C0(
             (s32)((state->phase / period) * 65536.0f));
         callObject->wave = (s32)(4096.0f * sine);
         if (resource->flags1A8 & 1) {
-            overlay37UpdateObjectReloc(callObject);
+            func_80006EA0(callObject);
         }
     }
 }

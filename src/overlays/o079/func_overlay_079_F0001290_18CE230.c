@@ -41,7 +41,7 @@ typedef struct Overlay79SpawnDesc {
     u8 padC[0xC];
 } Overlay79SpawnDesc;
 
-extern s32 overlay79RandomReloc(s32 lower, s32 upper);
+extern s32 mathRnd(s32 lower, s32 upper);
 extern Overlay79Spawned *overlay79SpawnReloc(Overlay79SpawnDesc *desc, s32 count);
 extern void overlay79EmitAtReloc(s32 id, f32 x, f32 y, f32 z, s32 arg4, s32 arg5);
 extern void overlay79FinishReloc(Overlay79Object *object);
@@ -120,7 +120,7 @@ void func_overlay_079_F0001290_18CE230(Overlay79Object *object, s32 unused1)
     desc.x = object->position.x;
     desc.y = object->position.y;
     desc.z = object->position.z;
-    desc.angle = overlay79RandomReloc(-0x7FFF, 0x8000);
+    desc.angle = mathRnd(-0x7FFF, 0x8000);
     spawned = overlay79SpawnReloc(&desc, 1);
     if (spawned != 0)
     {
@@ -144,7 +144,7 @@ void func_overlay_079_F0001290_18CE230(Overlay79Object *object, s32 unused1)
       desc.x = object->position.x;
       desc.y = object->position.y;
       desc.z = object->position.z;
-      desc.angle = overlay79RandomReloc(-0x7FFF, 0x8000);
+      desc.angle = mathRnd(-0x7FFF, 0x8000);
       spawned = overlay79SpawnReloc(&desc, 1);
       if (spawned != 0)
       {

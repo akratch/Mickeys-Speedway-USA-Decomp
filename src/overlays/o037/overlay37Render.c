@@ -65,7 +65,7 @@ extern Overlay37Record gOverlay37Records[4];
 extern u8 gOverlay37DisplayData[];
 extern u8 gOverlay37DisplayData78[];
 
-extern Overlay37Camera *overlay37CallProxy(void);
+extern Overlay37Camera *camGetPtr(void);
 extern s32 func_80021964(void);
 extern void func_8002A250(s32 mode, void *source, Overlay37State *state,
                           Overlay37Position *position);
@@ -126,7 +126,7 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
     s32 green;
     s32 blue;
 
-    camera = overlay37CallProxy();
+    camera = camGetPtr();
     frame = func_80021964();
     state = object->state;
     if (state->target == NULL) {

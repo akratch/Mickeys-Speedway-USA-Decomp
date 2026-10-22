@@ -16,12 +16,12 @@ typedef struct Overlay97TransformInit {
 } Overlay97TransformInit;
 
 extern s32 gOverlay97TransformContext;
-extern void overlay97SetupTransformReloc(s32 context, s32, s32,
+extern void SetLinkSlot(s32 context, s32, s32,
                                          Overlay97Transform *transform);
 
 void overlay97InitTransform(Overlay97Transform *transform,
                             Overlay97TransformInit *init) {
-    overlay97SetupTransformReloc(gOverlay97TransformContext, 2, 2, transform);
+    SetLinkSlot(gOverlay97TransformContext, 2, 2, transform);
     transform->mode = init->mode;
     transform->index = init->index;
     transform->angle = (s16)((((s32)init->angle) & 0xFF) << 10);

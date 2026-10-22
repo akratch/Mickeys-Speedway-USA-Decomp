@@ -221,6 +221,14 @@ class OverlayRealNameRebindTests(unittest.TestCase):
             {"overlay14Callback": {(14, "text")}})
         self.assertEqual({"overlay14Callback": "overlay14Callback_o014Reloc"}, renames)
 
+    def test_generated_name_alias_drops_its_rom_suffix(self):
+        renames, _r = self.plan(
+            [("func_overlay_045_F00001A0_188C620", 0x10, rs.R_MIPS_26)],
+            [self.rec(0x110, "SYMBOL")],
+            {"func_overlay_045_F00001A0_188C620": {(45, "text")}})
+        self.assertEqual({"func_overlay_045_F00001A0_188C620":
+                          "func_overlay_045_F00001A0_o014Reloc"}, renames)
+
     def test_same_module_export_reached_by_symbol_is_renamed(self):
         renames, _r = self.plan(
             [("overlay14Export", 0x10, rs.R_MIPS_26)],

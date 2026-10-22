@@ -1422,13 +1422,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57UpdateModeState.c.o: SURFACE_REBI
 	--redefine-sym func_800508B4=func_800508B4_o057Reloc \
 	--redefine-sym overlay84GetCurrent=overlay84GetCurrent_o057Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57UpdateModeTrigger.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym animseqStartPath=animseqStartPath_o057Reloc \
-	--redefine-sym func_8005055C=func_8005055C_o057Reloc \
-	--redefine-sym func_800508B4=func_800508B4_o057Reloc \
-	--redefine-sym overlay84GetActive=overlay84GetActive_o057Reloc \
-	--redefine-sym overlay84GetEnabledCurrent=overlay84GetEnabledCurrent_o057Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57UpdateNode.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007BF2C=D_8007BF2C_o057Reloc \
 	--redefine-sym animseqStartPath=animseqStartPath_o057Reloc \

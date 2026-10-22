@@ -6,7 +6,7 @@
  * overlay 57 translation unit for the same runtime relocation identity; the
  * three that are new here (+0x100, +0x108, +0x10C) are the selection indices
  * this function shares with the +0x104 mode value. */
-extern Overlay45ResourceDescriptor *gOverlay57BssPad000;
+extern Overlay45ResourceDescriptor *gOverlay57Resource000;
 extern Overlay45ResourceDescriptor *gOverlay57Range008Start[];
 extern Overlay45ResourceDescriptor *gOverlay57Range030Start[];
 extern Overlay45ResourceDescriptor *gOverlay57Range058Start[];
@@ -138,7 +138,7 @@ void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
     overlay57Draw32A0(updateRate);
 
     if (gOverlay57State == 1) {
-        overlay45ConfigureLayout(gOverlay57BssPad000, 0xA0, 0x20, 0x104);
+        overlay45ConfigureLayout(gOverlay57Resource000, 0xA0, 0x20, 0x104);
         if (D_8007C1A0 == 1) {
             overlay45ConfigureLayout(
                 gOverlay57Range008Start[gOverlay57Selection100], 0xA0, 0xBE, 0x104);
@@ -173,7 +173,7 @@ void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
             overlay45SetMode(gOverlay57Range0E0Start[count], 0);
         }
     } else {
-        overlay45ConfigureLayout(gOverlay57BssPad000, 0xA0, -0x1E, 0x104);
+        overlay45ConfigureLayout(gOverlay57Resource000, 0xA0, -0x1E, 0x104);
         if (D_8007C1A0 == 1) {
             overlay45ConfigureLayout(
                 gOverlay57Range008Start[gOverlay57Selection100], 0xA0, 0x104, 0x104);

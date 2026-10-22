@@ -20,6 +20,10 @@ object's own addend is the symbol the C means (the same subtraction
 
 Everything else is refused and counted, and nothing is renamed for it:
 
+* `c-bss` -- BSS a C object defines (its definition is a promotion proof's
+  witness, and a value line for another object's reference would make it
+  absolute); `normalization (filter)` -- a relocation filter asserts the
+  placeholder, and the proof's unfiltered replay needs its own identity.
 * `blob-data` / `blob-bss` -- the target is overlay data or BSS still owned by
   a ROM blob, which no object defines.  These wait for phase 3 (data into C);
   they are deliberately *not* renamed to generated names.
@@ -117,7 +121,15 @@ def classify_target(base, ov, tables):
     info = tables["module_info"][m]
     names = tables["overlay_defs"].get(base, [])
     if names:
-        return ("overlay-func" if off < info["text_size"] else "overlay-data"), names[0]
+        if off < info["text_size"]:
+            return "overlay-func", names[0]
+        # A C object's own BSS definition is the witness its function's
+        # promotion proof reads; another object naming it gives it a value
+        # line, which turns the definition absolute (overlay 57's
+        # gOverlay57BssPad000).  Its references wait with the blob BSS.
+        if off >= info["prefix"]:
+            return "c-bss", None
+        return "overlay-data", names[0]
     if tables["overlay_statics"].get(base):
         return "static", None
     if off < info["text_size"]:
@@ -453,6 +465,13 @@ def plan_module(root, overlay, placeholders, files, texts, inc, normalization_te
             continue
         if any(word.search(specs[s]) for s in foreign):
             refusals.append((p.name, "normalization"))
+            continue
+        # A relocation filter's asserted name is the identity the promotion
+        # proof replays unfiltered; a real name there has none of its own.
+        if any(re.search(r"0x[0-9A-Fa-f]+:\d+:%s(?![\w.])" % re.escape(p.name),
+                         block + "".join(specs.get(n, "") for n in names))
+               for block, names in rules):
+            refusals.append((p.name, "normalization (filter)"))
             continue
         real = re.compile(r"\b%s\b" % re.escape(p.real))
         clash = False

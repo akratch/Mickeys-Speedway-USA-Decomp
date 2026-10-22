@@ -1,11 +1,11 @@
 #include "PR/ultratypes.h"
 
-extern u8 D_800D3140[];
-extern u8 D_800D3144[];
+extern u8 gOverlay46DisplayState[];
+extern u8 gOverlay46DisplayOutput[];
 extern s32 gOverlay46Mode58;
 extern s32 gOverlay46Timer5C;
 extern s16 gOverlay46Selection;
-extern s32 D_8007C0BC;
+extern s32 gOverlay46FadeOutput;
 
 extern void camSetView(void *state, s32 mode);
 extern void func_80022B94(void *state, void *output);
@@ -19,8 +19,8 @@ void overlay46UpdateTransition(s32 updateRate) {
     s32 finished;
 
     finished = 0;
-    camSetView(D_800D3140, 0);
-    func_80022B94(D_800D3140, D_800D3144);
+    camSetView(gOverlay46DisplayState, 0);
+    func_80022B94(gOverlay46DisplayState, gOverlay46DisplayOutput);
 
     switch (gOverlay46Mode58) {
         case 1:
@@ -50,9 +50,9 @@ void overlay46UpdateTransition(s32 updateRate) {
         if (gOverlay46Selection >= 256) {
             gOverlay46Selection = 255;
         }
-        D_8007C0BC = gOverlay46Selection;
+        gOverlay46FadeOutput = gOverlay46Selection;
         frontDrawObj(5);
-        D_8007C0BC = 255;
+        gOverlay46FadeOutput = 255;
     }
 
     func_overlay_046_F0001228_188F620(updateRate);

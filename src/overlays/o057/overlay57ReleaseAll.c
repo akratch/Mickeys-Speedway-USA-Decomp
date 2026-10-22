@@ -8,7 +8,7 @@ extern void *gOverlay57Resource06C;
 extern void *gOverlay57Resource074;
 extern void *gOverlay57Resource070;
 extern void *gOverlay57Resource078;
-extern void *gOverlay57BssPad000;
+extern void *gOverlay57Resource000;
 extern void *gOverlay57Resource0F8;
 extern void *gOverlay57Resource0FC;
 
@@ -43,7 +43,7 @@ void overlay57ReleaseAll(void) {
     overlay45ReleaseDescriptor(gOverlay57Resource074);
     overlay45ReleaseDescriptor(gOverlay57Resource070);
     overlay45ReleaseDescriptor(gOverlay57Resource078);
-    overlay45ReleaseDescriptor(gOverlay57BssPad000);
+    overlay57ReleaseDescriptorReloc(gOverlay57Resource000);
     overlay45ReleaseDescriptor(gOverlay57Resource0F8);
     overlay45ReleaseDescriptor(gOverlay57Resource0FC);
 

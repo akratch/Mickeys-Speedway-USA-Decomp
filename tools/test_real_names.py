@@ -15,7 +15,8 @@ import real_names as rn  # noqa: E402
 def tables(**extra):
     t = {
         "overlay_defs": {("ov", 2, 0x40): ["overlay2Helper"],
-                         ("ov", 2, 0x900): ["gOverlay2Table"]},
+                         ("ov", 2, 0x900): ["gOverlay2Table"],
+                         ("ov", 2, 0xA20): ["gOverlay2Bss"]},
         "overlay_statics": {("ov", 2, 0x910): ["sOverlay2Private"]},
         "resident": {0x80001000: [("mmAlloc", True)],
                      0x8007BEF8: [("D_8007BEF8", False)]},
@@ -41,6 +42,10 @@ class ClassifyTests(unittest.TestCase):
         self.assertEqual(("overlay-func", "overlay2Helper"), (p.cls, p.real))
         p = self.classify([(("ov", 2, 0x900), "overlays/o002/a", "LOCAL")])
         self.assertEqual(("overlay-data", "gOverlay2Table"), (p.cls, p.real))
+
+    def test_c_defined_bss_is_refused(self):
+        p = self.classify([(("ov", 2, 0xA20), "overlays/o002/a", "LOCAL")])
+        self.assertEqual(("c-bss", None), (p.cls, p.real))
 
     def test_blob_data_and_bss_are_refused_not_named(self):
         self.assertEqual("blob-data", self.classify([(("ov", 2, 0x980), "s", "LOCAL")]).cls)
@@ -213,6 +218,10 @@ class PlanModuleTests(unittest.TestCase):
             mapping, refusals = rn.plan_module(root, 1, ph, files, texts, inc, mk_texts=[mk])
             self.assertEqual({"P": "rP", "N": "rN"}, mapping)
             self.assertEqual([("Q", "normalization (recipe)")], refusals)
+            filt = ("$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/a.c.o: POSTPROCESS = \\\n"
+                    "\t$(HOST_PYTHON) filter.py $@ .text 0x10:5:P 0x14:6:P\n")
+            mapping, refusals = rn.plan_module(root, 1, ph, files, texts, inc, mk_texts=[filt])
+            self.assertIn(("P", "normalization (filter)"), refusals)
 
 
 if __name__ == "__main__":

@@ -45,13 +45,13 @@ static s32 gOverlay57ObjectStatus;
 static u8 gOverlay57BssPad198[0x20];
 
 /* Physical a0 retains updateRate at this site; consumption is not proven. */
-extern void *overlay84GetActive(void);
-extern s32 overlay84GetEnabledCurrent(s32 mode);
-extern void func_8005055C(u8 id);
-extern void animseqStartPath(u8 id);
-extern Overlay57ModeResult *func_800508B4(u8 id);
+extern void *overlay57TailQueryModeReloc(void);
+extern s32 overlay57TailQueryChoiceReloc(s32 mode);
+extern void overlay57TailPrepareObjectReloc(u8 id);
+extern void overlay57TailStartObjectReloc(u8 id);
+extern Overlay57ModeResult *overlay57TailFindObjectReloc(u8 id);
 extern void overlay57SetNodeValue(s32 id, s32 argument, f32 value);
-extern void func_overlay_057_F0001020_18A4C18(s32 updateRate);
+extern void overlay57AdvanceReloc(s32 updateRate);
 
 /* Overlay 57 text +0x4C18..+0x4D90. Exact: 94 words, frame 0x28, 38/38
  * relocation identities.
@@ -92,7 +92,7 @@ void overlay57UpdateModeTrigger(s32 updateRate) {
     }
 
     gOverlay57SetupStatus = 0;
-    if (overlay84GetActive() == 0) {
+    if (overlay57TailQueryModeReloc() == 0) {
         s32 index;
         s32 i;
         Overlay57ModeResult *result;
@@ -102,15 +102,15 @@ void overlay57UpdateModeTrigger(s32 updateRate) {
         for (i = 0; i < 6; i++) gOverlay57SetupValues[i] = i * 0x30;
 
         trigger = 1;
-        if (overlay84GetEnabledCurrent(index) == 5) {
+        if (overlay57TailQueryChoiceReloc(index) == 5) {
             gOverlay57Timer = 10;
         }
 
         gOverlay57ObjectStatus = 0;
         gOverlay57Object.value = 80;
-        func_8005055C(((u8 *)&gOverlay57Object)[3]);
-        animseqStartPath(((u8 *)&gOverlay57Object)[3]);
-        result = func_800508B4(((u8 *)&gOverlay57Object)[3]);
+        overlay57TailPrepareObjectReloc(((u8 *)&gOverlay57Object)[3]);
+        overlay57TailStartObjectReloc(((u8 *)&gOverlay57Object)[3]);
+        result = overlay57TailFindObjectReloc(((u8 *)&gOverlay57Object)[3]);
         if (result != 0) {
             result->flags16 |= 2;
         }
@@ -129,5 +129,5 @@ void overlay57UpdateModeTrigger(s32 updateRate) {
         gOverlay57TriggerLatched = 1;
     }
 
-    func_overlay_057_F0001020_18A4C18(updateRate);
+    overlay57AdvanceReloc(updateRate);
 }

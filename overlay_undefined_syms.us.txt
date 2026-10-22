@@ -2768,7 +2768,6 @@ texDPTextureX_o057Reloc = 0xf0000000;
 /* overlay 57: overlay57ReleaseAll.c.o */
 freeFrontEndList_o057Reloc = 0xf0000000;
 func_80006EA0_o057Reloc = 0xf0000000;
-gOverlay57BssPad000 = 0x00000000;
 gOverlay57Object100 = 0x00000100;
 gOverlay57Range008End = 0x0000002c;
 gOverlay57Range008Start = 0x00000008;
@@ -2782,6 +2781,7 @@ gOverlay57Range0E0End = 0x000000f8;
 gOverlay57Range0E0Start = 0x000000e0;
 gOverlay57Range150End = 0x00000160;
 gOverlay57Range150Start = 0x00000150;
+gOverlay57Resource000 = 0x00000000;
 gOverlay57Resource06C = 0x0000006c;
 gOverlay57Resource070 = 0x00000070;
 gOverlay57Resource074 = 0x00000074;
@@ -2789,6 +2789,7 @@ gOverlay57Resource078 = 0x00000078;
 gOverlay57Resource0F8 = 0x000000f8;
 gOverlay57Resource0FC = 0x000000fc;
 overlay45ReleaseDescriptor_o057Reloc = 0xf0000000;
+overlay57ReleaseDescriptorReloc = 0xf0000000;
 
 /* overlay 57: func_overlay_057_F0001AE8_18A56E0.c.o */
 D_130 = 0x00000130;
@@ -2964,6 +2965,14 @@ gOverlay57MenuSources = 0x00000000;
 gOverlay57MirrorFlag = 0x00000000;
 mainChangeCameras_o057Reloc = 0xf0000000;
 mainSetAnimGroup_o057Reloc = 0xf0000000;
+
+/* overlay 57: overlay57UpdateModeTrigger.c.o */
+overlay57AdvanceReloc = 0xf0001020;
+overlay57TailFindObjectReloc = 0xf0000000;
+overlay57TailPrepareObjectReloc = 0xf0000000;
+overlay57TailQueryChoiceReloc = 0xf0000000;
+overlay57TailQueryModeReloc = 0xf0000000;
+overlay57TailStartObjectReloc = 0xf0000000;
 
 /* overlay 57: func_overlay_057_F0004E18_18A8A10.c.o */
 D_8007C0E8_o057Reloc = 0x00000000;

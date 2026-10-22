@@ -1383,8 +1383,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43FlushPending.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		0x004:5:D_C8 \
 		0x008:6:D_C8 \
-		0x038:5:D_800D2C98 \
-		0x03c:6:D_800D2C98 \
+		0x038:5:ext_4d258 \
+		0x03c:6:ext_4d258 \
 		0x09c:5:D_C8 \
 		0x0a0:6:D_C8 \
 		0x0c4:5:D_C8 \
@@ -2520,14 +2520,14 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091_mul.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x04c:5:D_800C9480 0x05c:6:D_800C9480 \
+		0x04c:5:overlay91GlobalA 0x05c:6:overlay91GlobalA \
 		0x078:5:.rodata 0x080:6:.rodata \
 		0x134:4:func_8002A8C0 0x1a4:4:func_80000F94 \
 		0x1ac:4:func_overlay_007_F0000DBC_185CC44 0x1d0:4:func_8002A8C0 \
 		0x228:4:func_80000F94 0x270:4:func_80000F94 \
 		0x278:4:func_overlay_007_F0000DBC_185CC44 0x2f0:4:func_80000F94 \
-		0x2f8:4:func_overlay_007_F0000DBC_185CC44 0x300:5:D_800C947C \
-		0x308:6:D_800C947C 0x360:4:func_80006EA0 \
+		0x2f8:4:func_overlay_007_F0000DBC_185CC44 0x300:5:overlay91GlobalB \
+		0x308:6:overlay91GlobalB 0x360:4:func_80006EA0 \
 		0x3a4:4:func_8002A8BC && \
 	$(OBJCOPY) --remove-section=.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x528

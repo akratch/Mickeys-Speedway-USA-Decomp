@@ -23,7 +23,7 @@ typedef struct Overlay31Item {
 } Overlay31Item;
 
 extern s32 gOverlay31ItemCount;
-extern Overlay31Item **D_8007C8AC;
+extern Overlay31Item **gOverlay31Items;
 
 extern void initColourCycle(Overlay31PaletteCursor *cursor,
                                       u16 paletteId);
@@ -39,11 +39,11 @@ void overlay31BuildPalettes(void) {
     Overlay31PaletteCursor cursor;
 
     for (i = 0; i < gOverlay31ItemCount; i++) {
-        item = D_8007C8AC[i];
+        item = gOverlay31Items[i];
         if (item->flags & 0x400) {
             for (j = 0; j < i; j++) {
-                if (item->paletteId == D_8007C8AC[j]->paletteId) {
-                    item->palette = D_8007C8AC[j]->palette;
+                if (item->paletteId == gOverlay31Items[j]->paletteId) {
+                    item->palette = gOverlay31Items[j]->palette;
                     item->paletteCount = cursor.state->count;
                     if (item->paletteCount == 0) {
                         item->paletteCount = 1;

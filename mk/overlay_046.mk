@@ -101,21 +101,21 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46UpdateTransition.c.o: \
 	$(TOOLS_DIR)/trim_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46UpdateTransition.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0xC:5:D_800D3140 \
-		0x14:6:D_800D3140 \
+		0xC:5:gOverlay46DisplayState \
+		0x14:6:gOverlay46DisplayState \
 		0x18:4:camSetView \
-		0x20:5:D_800D3140 \
-		0x24:5:D_800D3144 \
-		0x28:6:D_800D3144 \
+		0x20:5:gOverlay46DisplayState \
+		0x24:5:gOverlay46DisplayOutput \
+		0x28:6:gOverlay46DisplayOutput \
 		0x2C:4:func_80022B94 \
-		0x30:6:D_800D3140 \
+		0x30:6:gOverlay46DisplayState \
 		0x84:4:overlay41IsUnitScale \
 		0xD0:4:func_80028D30 \
-		0x12C:5:D_8007C0BC \
+		0x12C:5:gOverlay46FadeOutput \
 		0x130:4:frontDrawObj \
-		0x134:6:D_8007C0BC \
-		0x13C:5:D_8007C0BC \
-		0x140:6:D_8007C0BC && \
+		0x134:6:gOverlay46FadeOutput \
+		0x13C:5:gOverlay46FadeOutput \
+		0x140:6:gOverlay46FadeOutput && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x15C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46InitState.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x54

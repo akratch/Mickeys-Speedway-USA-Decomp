@@ -20,7 +20,7 @@ typedef struct Overlay43State {
 
 extern Overlay43State D_C8;
 extern Overlay43PendingEntry *D_120[];
-extern u8 D_800D2C98[];
+extern u8 ext_4d258[];
 extern void func_8002E800(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 extern void osRecvMesg(void *queue, s32 *message, s32 flags);
 extern void func_overlay_043_F0001378_188B348(void *entry);
@@ -45,7 +45,7 @@ void func_overlay_043_F0000194_188A164(void) {
             if (previous != NULL) {
                 func_overlay_043_F0001378_188B348(previous);
             }
-            osRecvMesg(D_800D2C98, &message, 1);
+            osRecvMesg(ext_4d258, &message, 1);
         }
     }
     func_overlay_043_F0001378_188B348(entry);

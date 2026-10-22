@@ -2413,20 +2413,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18BF3C8, c, overlay61UpdateInput]
-      - [0x18BF588, c, overlay61ResetCounters]
-      - [0x18BF5A4, c, overlay61AddEntry]
-      - [0x18BF788, c, overlay61DrawEntry]
-      - [0x18BFB8C, c, overlay61DrawList]
-      - [0x18BFD30, c, overlay61InitResources]
-      - [0x18BFF4C, c, func_overlay_061_F0000B84_18BFF4C]
-      - [0x18C0940, c, overlay61ReleaseResources]
-      - [0x18C0A10, c, func_overlay_061_F0001648_18C0A10]
-      - [0x18C0B80, c, overlay61WriteCharacter]
-      - [0x18C0C68, c, overlay61ReadCharacter]
-      - [0x18C0D78, c, overlay61ChooseFileExtension]
-      - [0x18C0E34, c, overlay61RecordSize]
-      - [0x18C0E4C, asm, overlay_061_padding]
+      - [0x18BF3C8, c, overlay_061]
       - [0x18C0E58, bin, overlay_061_data_rodata]
       - [0x18C10F8, bin, overlay_061_reloc1]
       - [0x18C15F8, bin, overlay_061_reloc2]

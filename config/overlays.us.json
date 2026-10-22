@@ -11922,118 +11922,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x1C0",
-     "size": "0x1C0",
-     "type": "c",
-     "source": "overlays/o061/overlay61UpdateInput",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1C0",
-     "end_offset": "0x1DC",
-     "size": "0x1C",
-     "type": "c",
-     "source": "overlays/o061/overlay61ResetCounters",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1DC",
-     "end_offset": "0x3C0",
-     "size": "0x1E4",
-     "type": "c",
-     "source": "overlays/o061/overlay61AddEntry",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x3C0",
-     "end_offset": "0x7C4",
-     "size": "0x404",
-     "type": "c",
-     "source": "overlays/o061/overlay61DrawEntry",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x7C4",
-     "end_offset": "0x968",
-     "size": "0x1A4",
-     "type": "c",
-     "source": "overlays/o061/overlay61DrawList",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x968",
-     "end_offset": "0xB84",
-     "size": "0x21C",
-     "type": "c",
-     "source": "overlays/o061/overlay61InitResources",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xB84",
-     "end_offset": "0x1578",
-     "size": "0x9F4",
-     "type": "c",
-     "source": "overlays/o061/func_overlay_061_F0000B84_18BFF4C",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1578",
-     "end_offset": "0x1648",
-     "size": "0xD0",
-     "type": "c",
-     "source": "overlays/o061/overlay61ReleaseResources",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1648",
-     "end_offset": "0x17B8",
-     "size": "0x170",
-     "type": "c",
-     "source": "overlays/o061/func_overlay_061_F0001648_18C0A10",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x17B8",
-     "end_offset": "0x18A0",
-     "size": "0xE8",
-     "type": "c",
-     "source": "overlays/o061/overlay61WriteCharacter",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x18A0",
-     "end_offset": "0x19B0",
-     "size": "0x110",
-     "type": "c",
-     "source": "overlays/o061/overlay61ReadCharacter",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x19B0",
-     "end_offset": "0x1A6C",
-     "size": "0xBC",
-     "type": "c",
-     "source": "overlays/o061/overlay61ChooseFileExtension",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1A6C",
      "end_offset": "0x1A84",
-     "size": "0x18",
+     "size": "0x1A84",
      "type": "c",
-     "source": "overlays/o061/overlay61RecordSize",
+     "source": "overlays/o061/overlay_061",
      "matched": true,
      "nonmatching": false
     },
@@ -12113,7 +12005,7 @@
      "size": "0x24",
      "type": "c",
      "section": ".rodata",
-     "source": "overlays/o061/func_overlay_061_F0000B84_18BFF4C",
+     "source": "overlays/o061/overlay_061",
      "trial_function": "func_overlay_061_F0000B84_18BFF4C",
      "externalized": true
     }

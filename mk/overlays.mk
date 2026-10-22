@@ -2623,7 +2623,6 @@ OVERLAY_TRIMMED_OBJECTS := \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_create.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_end.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_scaled.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61ChooseFileExtension.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007_tail.c.o \
@@ -2655,18 +2654,7 @@ OVERLAY_TRIMMED_OBJECTS += \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045_tail.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000000_1890E18.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47ReleaseResources.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47SpawnObject.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61UpdateInput.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61InitResources.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61AddEntry.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61DrawEntry.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61DrawList.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61ReleaseResources.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/func_overlay_061_F0001648_18C0A10.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61WriteCharacter.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61ReadCharacter.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61ResetCounters.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/func_overlay_061_F0000B84_18BFF4C.c.o
+	$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47SpawnObject.c.o
 OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o085/overlay_085.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14GetFlagCC.c.o \

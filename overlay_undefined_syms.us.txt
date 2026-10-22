@@ -3411,29 +3411,39 @@ viChangeMode_o060Reloc = 0xf0000000;
 viDisplayingScreen0_o060Reloc = 0xf0000000;
 viNoClear_o060Reloc = 0xf0000000;
 
-/* overlay 61: overlay61UpdateInput.c.o */
-gOverlay61RepeatXReloc = 0x0000008c;
-gOverlay61RepeatYReloc = 0x00000090;
-joyGetPressed_o061Reloc = 0xf0000000;
-joyGetStickX_o061Reloc = 0xf0000000;
-joyGetStickY_o061Reloc = 0xf0000000;
-
-/* overlay 61: overlay61ResetCounters.c.o */
+/* overlay 61: overlay_061.c.o */
+D_8007A1F4_o061Reloc = 0x00000000;
+D_800D3140_o061Reloc = 0x00000000;
+D_800D31C8_o061Reloc = 0x00000000;
+amSndPlay_o061Reloc = 0xf0000000;
+fontBackground_o061Reloc = 0xf0000000;
+fontColour_o061Reloc = 0xf0000000;
+fontPrintXY_o061Reloc = 0xf0000000;
+fontUseFont_o061Reloc = 0xf0000000;
+freeFrontEndList_o061Reloc = 0xf0000000;
+frontDrawRectangle_o061Reloc = 0xf0000000;
+func_8002F618_o061Reloc = 0xf0000000;
+gOverlay61Animation0 = 0x00000028;
+gOverlay61Animation1 = 0x00000050;
+gOverlay61Config08 = 0x00000008;
+gOverlay61Config30 = 0x00000030;
 gOverlay61Counter98 = 0x00000098;
 gOverlay61Counter9C = 0x0000009c;
 gOverlay61CounterA0 = 0x000000a0;
-
-/* overlay 61: overlay61AddEntry.c.o */
+gOverlay61DirExts = 0x00000040;
+gOverlay61DirNames = 0x00000000;
+gOverlay61DirSizes = 0x00000080;
+gOverlay61DirTypes = 0x000000c0;
+gOverlay61DownLabelReloc = 0x000000c8;
+gOverlay61Entries = 0x000000d0;
 gOverlay61EntriesReloc = 0x000000d0;
+gOverlay61EntryCount = 0x00000098;
 gOverlay61EntryCountReloc = 0x00000098;
-gOverlay61Text0Reloc = 0x00000050;
-gOverlay61Text1Reloc = 0x00000054;
-sprintf_o061Reloc = 0xf0000000;
-
-/* overlay 61: overlay61DrawEntry.c.o */
-fontColour_o061Reloc = 0xf0000000;
-fontPrintXY_o061Reloc = 0xf0000000;
-frontDrawRectangle_o061Reloc = 0xf0000000;
+gOverlay61Error = 0x000000a8;
+gOverlay61ErrorBack = 0x000000b0;
+gOverlay61ErrorNext = 0x000000ac;
+gOverlay61FileNames = 0x00000040;
+gOverlay61FileStatus = 0x000000c0;
 gOverlay61Format58Reloc = 0x00000058;
 gOverlay61Format64Reloc = 0x00000064;
 gOverlay61Format70Reloc = 0x00000070;
@@ -3442,24 +3452,9 @@ gOverlay61Format90Reloc = 0x00000090;
 gOverlay61Format9CReloc = 0x0000009c;
 gOverlay61FormatA8Reloc = 0x000000a8;
 gOverlay61FormatBCReloc = 0x000000bc;
-gOverlay61LabelB0Reloc = 0x000000b0;
-gOverlay61NamesReloc = 0x000000c0;
-levelGetName_o061Reloc = 0xf0000000;
-
-/* overlay 61: overlay61DrawList.c.o */
-fontBackground_o061Reloc = 0xf0000000;
-fontUseFont_o061Reloc = 0xf0000000;
-gOverlay61DownLabelReloc = 0x000000c8;
-gOverlay61ItemCountReloc = 0x00000098;
-gOverlay61ItemsReloc = 0x000000d0;
-gOverlay61SelectedIndexReloc = 0x0000009c;
-gOverlay61TopIndexReloc = 0x000000a0;
-gOverlay61UpLabelReloc = 0x000000c0;
-
-/* overlay 61: overlay61InitResources.c.o */
-D_800D31C8_o061Reloc = 0x00000000;
-gOverlay61Config08 = 0x00000008;
-gOverlay61Config30 = 0x00000030;
+gOverlay61FreeLabel = 0x0000015c;
+gOverlay61FreeSpace = 0x00000094;
+gOverlay61GhostLabel = 0x00000150;
 gOverlay61Handle58 = 0x00000058;
 gOverlay61Handle5C = 0x0000005c;
 gOverlay61Handle60 = 0x00000060;
@@ -3473,6 +3468,11 @@ gOverlay61Handle7C = 0x0000007c;
 gOverlay61Handle80 = 0x00000080;
 gOverlay61Handle84 = 0x00000084;
 gOverlay61Handle88 = 0x00000088;
+gOverlay61ItemCountReloc = 0x00000098;
+gOverlay61ItemsReloc = 0x000000d0;
+gOverlay61LabelB0Reloc = 0x000000b0;
+gOverlay61NamesReloc = 0x000000c0;
+gOverlay61NewFileName = 0x000005d0;
 gOverlay61Record100 = 0x00000100;
 gOverlay61Record10C = 0x0000010c;
 gOverlay61Record114 = 0x00000114;
@@ -3486,51 +3486,10 @@ gOverlay61RecordD0 = 0x000000d0;
 gOverlay61RecordDC = 0x000000dc;
 gOverlay61RecordE8 = 0x000000e8;
 gOverlay61RecordF4 = 0x000000f4;
-gOverlay61SetupData = 0x00000000;
-gOverlay61StateA4 = 0x000000a4;
-gOverlay61StateA8 = 0x000000a8;
-gOverlay61StateAC = 0x000000ac;
-gOverlay61StateB0 = 0x000000b0;
-loadFrontEndList_o061Reloc = 0xf0000000;
-overlay61CreateDescriptorReloc = 0xf0000000;
-rumbleProcessing_o061Reloc = 0xf0000000;
-
-/* overlay 61: func_overlay_061_F0000B84_18BFF4C.c.o */
-D_8007A1F4_o061Reloc = 0x00000000;
-D_800D3140_o061Reloc = 0x00000000;
-amSndPlay_o061Reloc = 0xf0000000;
-func_8002F618_o061Reloc = 0xf0000000;
-gOverlay61Animation0 = 0x00000028;
-gOverlay61Animation1 = 0x00000050;
-gOverlay61DirExts = 0x00000040;
-gOverlay61DirNames = 0x00000000;
-gOverlay61DirSizes = 0x00000080;
-gOverlay61DirTypes = 0x000000c0;
-gOverlay61Entries = 0x000000d0;
-gOverlay61EntryCount = 0x00000098;
-gOverlay61Error = 0x000000a8;
-gOverlay61ErrorBack = 0x000000b0;
-gOverlay61ErrorNext = 0x000000ac;
-gOverlay61FreeLabel = 0x0000015c;
-gOverlay61FreeSpace = 0x00000094;
-gOverlay61GhostLabel = 0x00000150;
-gOverlay61MenuJumpTableReloc = 0x00000188;
-gOverlay61NewFileName = 0x000005d0;
-gOverlay61Selection = 0x0000009c;
-gOverlay61Sprite0 = 0x00000008;
-gOverlay61Sprite1 = 0x00000030;
-gOverlay61State = 0x000000a4;
-gOverlay61Time0 = 0x0000002c;
-gOverlay61Time1 = 0x00000054;
-mainTitlePageInit_o061Reloc = 0xf0000000;
-overlay45SetMode_o061Reloc = 0xf0000000;
-packDeleteFile_o061Reloc = 0xf0000000;
-packDirectory_o061Reloc = 0xf0000000;
-packFreeSpace_o061Reloc = 0xf0000000;
-texAnimateTexSprite_o061Reloc = 0xf0000000;
-
-/* overlay 61: overlay61ReleaseResources.c.o */
-freeFrontEndList_o061Reloc = 0xf0000000;
+gOverlay61RecordFormatReloc = 0x00000170;
+gOverlay61RecordPathReloc = 0x0000017c;
+gOverlay61RepeatXReloc = 0x0000008c;
+gOverlay61RepeatYReloc = 0x00000090;
 gOverlay61Resource58Reloc = 0x00000058;
 gOverlay61Resource5CReloc = 0x0000005c;
 gOverlay61Resource60Reloc = 0x00000060;
@@ -3545,30 +3504,48 @@ gOverlay61Resource80Reloc = 0x00000080;
 gOverlay61Resource84Reloc = 0x00000084;
 gOverlay61Resource88Reloc = 0x00000088;
 gOverlay61ResourceBaseReloc = 0x00000000;
-overlay45ReleaseDescriptor_o061Reloc = 0xf0000000;
-packDirectoryFree_o061Reloc = 0xf0000000;
-
-/* overlay 61: func_overlay_061_F0001648_18C0A10.c.o */
 gOverlay61SavePathReloc = 0x00000164;
+gOverlay61SelectedIndexReloc = 0x0000009c;
+gOverlay61Selection = 0x0000009c;
+gOverlay61SetupData = 0x00000000;
+gOverlay61Sprite0 = 0x00000008;
+gOverlay61Sprite1 = 0x00000030;
+gOverlay61State = 0x000000a4;
+gOverlay61StateA4 = 0x000000a4;
+gOverlay61StateA8 = 0x000000a8;
+gOverlay61StateAC = 0x000000ac;
+gOverlay61StateB0 = 0x000000b0;
+gOverlay61Text0Reloc = 0x00000050;
+gOverlay61Text1Reloc = 0x00000054;
+gOverlay61Time0 = 0x0000002c;
+gOverlay61Time1 = 0x00000054;
+gOverlay61TopIndexReloc = 0x000000a0;
+gOverlay61UpLabelReloc = 0x000000c0;
+joyGetPressed_o061Reloc = 0xf0000000;
+joyGetStickX_o061Reloc = 0xf0000000;
+joyGetStickY_o061Reloc = 0xf0000000;
+levelGetName_o061Reloc = 0xf0000000;
+loadFrontEndList_o061Reloc = 0xf0000000;
+mainTitlePageInit_o061Reloc = 0xf0000000;
 mmAlloc_o061Reloc = 0xf0000000;
 mmFree_o061Reloc = 0xf0000000;
+overlay45ReleaseDescriptor_o061Reloc = 0xf0000000;
+overlay45SetMode_o061Reloc = 0xf0000000;
+overlay61CreateDescriptorReloc = 0xf0000000;
 overlay68PayloadLimit_o061Reloc = 0xf0000000;
 packClose_o061Reloc = 0xf0000000;
+packDeleteFile_o061Reloc = 0xf0000000;
+packDirectoryFree_o061Reloc = 0xf0000000;
+packDirectory_o061Reloc = 0xf0000000;
 packFileSize_o061Reloc = 0xf0000000;
+packFreeSpace_o061Reloc = 0xf0000000;
 packOpenFile_o061Reloc = 0xf0000000;
 packOpen_o061Reloc = 0xf0000000;
 packReadFile_o061Reloc = 0xf0000000;
-
-/* overlay 61: overlay61WriteCharacter.c.o */
-gOverlay61RecordFormatReloc = 0x00000170;
 packWriteFile_o061Reloc = 0xf0000000;
-
-/* overlay 61: overlay61ReadCharacter.c.o */
-gOverlay61RecordPathReloc = 0x0000017c;
-
-/* overlay 61: overlay61ChooseFileExtension.c.o */
-gOverlay61FileNames = 0x00000040;
-gOverlay61FileStatus = 0x000000c0;
+rumbleProcessing_o061Reloc = 0xf0000000;
+sprintf_o061Reloc = 0xf0000000;
+texAnimateTexSprite_o061Reloc = 0xf0000000;
 
 /* overlay 62: overlay_062.c.o */
 D_8007C0B8_o062Reloc = 0x00000000;
@@ -5684,38 +5661,9 @@ func_overlay_059_F00008EC_18B903C = overlay59DrawFrame;
 /* overlay 60: overlay_060.c.o */
 func_overlay_060_F0002EC8_18BCCA0 = overlay60ReleaseResources;
 
-/* overlay 61: overlay61UpdateInput.c.o */
-func_overlay_061_F0000000_18BF3C8 = overlay61UpdateInput;
-
-/* overlay 61: overlay61ResetCounters.c.o */
-func_overlay_061_F00001C0_18BF588 = overlay61ResetCounters;
-
-/* overlay 61: overlay61AddEntry.c.o */
-func_overlay_061_F00001DC_18BF5A4 = overlay61AddEntry;
-
-/* overlay 61: overlay61DrawEntry.c.o */
-func_overlay_061_F00003C0_18BF788 = overlay61DrawEntry;
-
-/* overlay 61: overlay61DrawList.c.o */
-func_overlay_061_F00007C4_18BFB8C = overlay61DrawList;
-
-/* overlay 61: overlay61InitResources.c.o */
+/* overlay 61: overlay_061.c.o */
 func_overlay_061_F0000968_18BFD30 = overlay61InitResources;
-
-/* overlay 61: overlay61ReleaseResources.c.o */
 func_overlay_061_F0001578_18C0940 = overlay61ReleaseResources;
-
-/* overlay 61: overlay61WriteCharacter.c.o */
-func_overlay_061_F00017B8_18C0B80 = overlay61WriteCharacter;
-
-/* overlay 61: overlay61ReadCharacter.c.o */
-func_overlay_061_F00018A0_18C0C68 = overlay61ReadCharacter;
-
-/* overlay 61: overlay61ChooseFileExtension.c.o */
-func_overlay_061_F00019B0_18C0D78 = overlay61ChooseFileExtension;
-
-/* overlay 61: overlay61RecordSize.c.o */
-func_overlay_061_F0001A6C_18C0E34 = overlay61RecordSize;
 
 /* overlay 62: overlay_062.c.o */
 func_overlay_062_F0000000_18C2220 = overlay62Initialize;

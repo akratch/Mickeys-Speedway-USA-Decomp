@@ -203,7 +203,7 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         (
             0x278,
             0x29C,
-            "func_overlay_061_F0000B84_18BFF4C",
+            "overlay_061",
             ".rodata",
             "func_overlay_061_F0000B84_18BFF4C",
             True,
@@ -296,6 +296,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     60: "overlay_060_padding",
     68: "overlay_068_padding",
     58: "overlay_058_padding_b",
+    61: "overlay_061_padding",
 }
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
@@ -672,19 +673,7 @@ TEXT_SUBSEGMENTS = {
         (0x1BB4, "asm", "overlay_065_padding"),
     ],
     61: [
-        (0x000, "c", "overlay61UpdateInput"),
-        (0x1C0, "c", "overlay61ResetCounters"),
-        (0x1DC, "c", "overlay61AddEntry"),
-        (0x3C0, "c", "overlay61DrawEntry"),
-        (0x7C4, "c", "overlay61DrawList"),
-        (0x968, "c", "overlay61InitResources"),
-        (0xB84, "c", "func_overlay_061_F0000B84_18BFF4C"),
-        (0x1578, "c", "overlay61ReleaseResources"),
-        (0x1648, "c", "func_overlay_061_F0001648_18C0A10"),
-        (0x17B8, "c", "overlay61WriteCharacter"),
-        (0x18A0, "c", "overlay61ReadCharacter"),
-        (0x19B0, "c", "overlay61ChooseFileExtension"),
-        (0x1A6C, "c", "overlay61RecordSize"),
+        (0x000, "c", "overlay_061"),
         (0x1A84, "asm", "overlay_061_padding"),
     ],
     66: [

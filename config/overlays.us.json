@@ -10161,46 +10161,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x11C",
-     "size": "0x11C",
-     "type": "c",
-     "source": "overlays/o053/overlay53Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x11C",
-     "end_offset": "0x16C",
-     "size": "0x50",
-     "type": "c",
-     "source": "overlays/o053/overlay53PatchIndices",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x16C",
-     "end_offset": "0x240",
-     "size": "0xD4",
-     "type": "c",
-     "source": "overlays/o053/overlay53CopyOffsetEntries",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x240",
-     "end_offset": "0xC30",
-     "size": "0x9F0",
-     "type": "c",
-     "source": "overlays/o053/func_overlay_053_F0000240_189DBE8",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xC30",
      "end_offset": "0xCA8",
-     "size": "0x78",
+     "size": "0xCA8",
      "type": "c",
-     "source": "overlays/o053/overlay53ReleaseResources",
+     "source": "overlays/o053/overlay_053",
      "matched": true,
      "nonmatching": false
     },

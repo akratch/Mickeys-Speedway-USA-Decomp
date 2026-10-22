@@ -1,90 +1,82 @@
-#include "PR/ultratypes.h"
-#include "game/menu.h"
-#include "game/gameVi.h"
-#include "overlays/overlay_056.h"
+#include "overlays/overlay_053.h"
 
-/* Same 0x10-byte entry layout used by overlay53CopyOffsetEntries. */
-typedef struct Overlay53Entry {
-    void *resource;
-    void *alternate;
-    u32 value8;
-    s16 x;
-    s16 y;
-} Overlay53Entry;
+/* Module-private helpers (no ORT row): static, so their calls are JUMP
+ * records. The initializer hands them its raw tables unprototyped. */
+static void overlay53PatchIndices();
+static void overlay53CopyOffsetEntries();
 
-typedef struct Overlay53Racer {
-    u8 pad000[0x19A];
-    u8 item;
-    u8 pad19B;
-    s32 value19C;
-    u8 pad1A0[0x383 - 0x1A0];
-    s8 lap;
-    u8 pad384[0x400 - 0x384];
-    s32 time;
-} Overlay53Racer;
+/* Pinned DKR v77/v80 and JFG scans classify Overlay 53 as no donor. */
+void overlay53Initialize(void) {
+    Overlay53Config *configA;
+    Overlay53Config *configB;
+    s32 i;
 
-typedef struct Overlay53Object {
-    u8 pad00[0x64];
-    Overlay53Racer *racer;
-} Overlay53Object;
+    loadFrontEndList(gOverlay53Resource0);
+    setupFrontEndList(gOverlay53Resource14);
+    amTunePlay(4);
+    gOverlay53Value280 = 0x104;
+    runlinkDownloadCode(11);
+    overlay53PatchIndices(gOverlay53PatchTableA);
+    overlay53PatchIndices(gOverlay53PatchTableB);
 
-typedef struct Overlay53Level {
-    u8 pad00[0x86];
-    s8 laps;
-} Overlay53Level;
+    for (configA = gOverlay53ConfigA, configB = gOverlay53ConfigB, i = 0;
+         i != 2;
+         i++, configA++, configB++) {
+        overlay53CopyOffsetEntries(gOverlay53PatchTableA, configA, i, 0);
+        overlay53CopyOffsetEntries(gOverlay53PatchTableB, configB, i, 1);
+    }
 
-typedef struct MenuCurrentObject {
-    s16 unk0;
-    s16 unk2;
-    s16 unk4;
-    s16 index;
-    f32 unk8;
-    f32 unkC;
-    f32 unk10;
-    f32 unk14;
-    f32 unk18;
-    s8 pad1C[4];
-} MenuCurrentObject;
+    gOverlay53Height290 = -80.0f;
+    overlay56LoadResource();
+    gOverlay53Handles288[0] = -1;
+    gOverlay53Handles288[1] = -1;
+    gOverlay53GlobalHandleReloc = levelGetNumber();
+}
 
-extern MenuCommand *D_800D3140;
-extern void *D_800D3144;
-extern void *D_800D31C8[];
-extern MenuCurrentObject D_800D3550[];
-extern s16 D_8007C180[];
-extern s32 D_800C947C;
-extern s32 ext_o1_83e0;
+/* This exact six-overlay Mickey family has no exact DKR v77/v80 or JFG donor. */
+static void overlay53PatchIndices(OverlayPatchIndexEntry *entry) {
+    while (entry->first != 0) {
+        entry->first = (s32) D_800D31C8[entry->first];
+        if (entry->second != 0) {
+            entry->second = (s32) D_800D31C8[entry->second];
+        }
+        entry++;
+    }
+}
 
-extern void camStandardOrtho(MenuCommand **, void **);
-extern Overlay53Object **func_80005750(s32 *);
-extern Overlay53Level *levelGetLevel(void);
-extern void camSetNo(s32);
-extern void camSetScissor(MenuCommand **);
-extern void func_8002F618(MenuCommand **, Overlay53Entry *, s32, s32, u8, u8, u8, u8);
-extern void texDPInit(MenuCommand **);
-extern void frontDrawObj(s32);
-extern void overlay53CopyOffsetEntries(Overlay53Entry *, Overlay53Entry *, s32, s32);
-extern s32 func_800290A0(void);
-extern s32 mainGetMode(void);
-extern u8 *func_80028F54(void);
-extern void mainChangeCameras(s32);
-extern void func_800016EC(u8);
-extern void func_8003A590(void);
-extern void func_80037414(s32, f32, f32, s32, s32, s32, s32);
-extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
-extern void amTuneSetFade(f32, u8);
+/* Pinned DKR v77/v80 and JFG scans classify Overlay 53 as no donor. */
+static void overlay53CopyOffsetEntries(Overlay53Entry *source,
+                                Overlay53Entry *destination, s32 selection,
+                                s32 index) {
+    s16 xOffset;
+    s16 yOffset;
+    s16 *offsets;
 
-extern Overlay53Entry gOverlay53TimeDigits[2][10];
-extern Overlay53Entry gOverlay53ClockDigits[2][10];
-extern Overlay53Entry gOverlay53TimeTemplate[];
-extern s32 gOverlay53TransitionDone;
-extern s8 gOverlay53BlinkCounter;
-extern s32 gOverlay53IconAlpha[2];
-extern s16 gOverlay53HudRowY[];
-extern s16 gOverlay53IconSplitX[];
-extern s16 gOverlay53ItemSplitX[];
-extern s16 gOverlay53ClockSplitX[];
-extern s32 gOverlay53Items[2];
-extern f32 gOverlay53HudHeight;
+    index *= 4;
+    if (frontGetScreenMode() == 1) {
+        index += 8;
+    }
+    if (selection == 0) {
+        offsets = &gOverlay53Offsets[index];
+        xOffset = offsets[0];
+        yOffset = offsets[1];
+    } else {
+        offsets = &gOverlay53Offsets[index];
+        xOffset = offsets[2];
+        yOffset = offsets[3];
+    }
+
+    while (source->resource != 0) {
+        destination->resource = source->resource;
+        destination->alternate = source->alternate;
+        destination->x = source->x + xOffset;
+        destination->y = source->y + yOffset;
+        destination->value8 = source->value8;
+        source++;
+        destination++;
+    }
+    destination->resource = 0;
+}
 
 /* Overlay 53's HUD update: the cut-down sibling of overlay52TailB, written the
  * same way. The callees and resident data are the ones this overlay's
@@ -261,4 +253,20 @@ void func_overlay_053_F0000240_189DBE8(s32 updateRate) {
     }
     camStandardOrtho(&D_800D3140, &D_800D3144);
     camSetNo(0);
+}
+
+void overlay53ReleaseResources(void) {
+    s32 *handle;
+    s32 *end;
+
+    overlay53ReleaseReloc(gOverlay53ResourceA);
+    overlay53ReleaseReloc();
+    handle = &gOverlay53Handle0; end = &gOverlay53HandleEnd;
+    do {
+        if (*handle != -1) {
+            overlay53ReleaseReloc(*handle);
+            *handle = -1;
+        }
+        handle++;
+    } while (handle != end);
 }

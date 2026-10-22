@@ -757,8 +757,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay_041.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:11717def9b3693b05fbb74a032a7280f9579104310696d672798e29ae4898a3f && \
 	$(OBJCOPY) --remove-section .rel.rodata $@
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53ReleaseResources.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x78
+# Overlay 53 is one translation unit at the overlay flag set (the HUD easing
+# needs -Wab,-r4300_mul); its .text carries the trailing pad, so nothing is
+# trimmed. --force runs asm-processor's static-symbol pass so the two static
+# helpers keep local names. Resident and cross-overlay references go through
+# the generated relocation surface.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay_053.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay_053.c.o: ASM_PROCESSOR += --force
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54ReleaseResources.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29BuildChain.c.o: POSTPROCESS = \
@@ -2338,52 +2343,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50Cleanup.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50SubmitTimeGlyphs.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x214
 include mk/overlay_052.mk
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53PatchIndices.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53Initialize.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym gOverlay53Value280=D_280 \
-		--redefine-sym gOverlay53Height290=D_290 $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x11C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53CopyOffsetEntries.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xD4
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o053/func_overlay_053_F0000240_189DBE8.c.o: CFLAGS += -Wab,-r4300_mul
-# Matched C. The resident and overlay 1/56 names it reads and calls are
-# renamed to per-module placeholders, as for overlay52TailB, so the
-# generated relocation surface values them from this module's stored addends.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o053/func_overlay_053_F0000240_189DBE8.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym camSetNo=camSetNo_o053Reloc \
-		--redefine-sym camSetScissor=camSetScissor_o053Reloc \
-		--redefine-sym camStandardOrtho=camStandardOrtho_o053Reloc \
-		--redefine-sym freeFrontEndItem=freeFrontEndItem_o053Reloc \
-		--redefine-sym frontGet2PlayerSplit=frontGet2PlayerSplit_o053Reloc \
-		--redefine-sym frontGetScreenMode=frontGetScreenMode_o053Reloc \
-		--redefine-sym amTuneSetFade=amTuneSetFade_o053Reloc \
-		--redefine-sym func_800016EC=func_800016EC_o053Reloc \
-		--redefine-sym func_80005750=func_80005750_o053Reloc \
-		--redefine-sym func_80028F54=func_80028F54_o053Reloc \
-		--redefine-sym func_800290A0=func_800290A0_o053Reloc \
-		--redefine-sym func_8002F618=func_8002F618_o053Reloc \
-		--redefine-sym texDPInit=texDPInit_o053Reloc \
-		--redefine-sym func_80037414=func_80037414_o053Reloc \
-		--redefine-sym frontDrawObj=frontDrawObj_o053Reloc \
-		--redefine-sym func_8003A590=func_8003A590_o053Reloc \
-		--redefine-sym levelGetLevel=levelGetLevel_o053Reloc \
-		--redefine-sym loadFrontEndItem=loadFrontEndItem_o053Reloc \
-		--redefine-sym mainChangeCameras=mainChangeCameras_o053Reloc \
-		--redefine-sym mainChangeLevel=mainChangeLevel_o053Reloc \
-		--redefine-sym mainGetMode=mainGetMode_o053Reloc \
-		--redefine-sym viGetCurrentSize=viGetCurrentSize_o053Reloc \
-		--redefine-sym overlay56SplitTime=overlay56SplitTime_o053Reloc \
-		--redefine-sym D_8007C180=D_8007C180_o053Reloc \
-		--redefine-sym D_800C947C=D_800C947C_o053Reloc \
-		--redefine-sym D_800D3140=D_800D3140_o053Reloc \
-		--redefine-sym D_800D3144=D_800D3144_o053Reloc \
-		--redefine-sym D_800D31C8=D_800D31C8_o053Reloc \
-		--redefine-sym D_800D3550=D_800D3550_o053Reloc \
-		--redefine-sym ext_o1_83e0=ext_o1_83e0_o053Reloc \
-		$@
 # overlay54Initialize owns overlay 54's .data and .bss.  Its text reaches them
 # through the object's own section symbols; the shipped words are
 # section-relative, so every site is rebound to a zero-valued base.
@@ -3006,9 +2965,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52PatchIndices.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52CopyOffsetEntries.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52Cleanup.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53Initialize.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53PatchIndices.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53CopyOffsetEntries.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54Initialize.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54PatchIndices.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55PatchIndices.c.o

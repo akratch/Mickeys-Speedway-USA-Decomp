@@ -4094,77 +4094,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o053/func_overlay_053_F0000240_189DBE8.c.o",
-      "offset": 576,
-      "overlay": 53,
-      "size": 2544,
-      "source": "src/overlays/o053/func_overlay_053_F0000240_189DBE8.c",
-      "tools": [
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o053/overlay53CopyOffsetEntries.c.o",
-      "offset": 364,
-      "overlay": 53,
-      "size": 212,
-      "source": "src/overlays/o053/overlay53CopyOffsetEntries.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o053/overlay53Initialize.c.o",
-      "offset": 0,
-      "overlay": 53,
-      "size": 284,
-      "source": "src/overlays/o053/overlay53Initialize.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o053/overlay53PatchIndices.c.o",
-      "offset": 284,
-      "overlay": 53,
-      "size": 80,
-      "source": "src/overlays/o053/overlay53PatchIndices.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o053/overlay53ReleaseResources.c.o",
-      "offset": 3120,
-      "overlay": 53,
-      "size": 120,
-      "source": "src/overlays/o053/overlay53ReleaseResources.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o054/overlay54CopyOffsetRecords.c.o",
       "offset": 1052,
       "overlay": 54,
@@ -8467,10 +8396,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 583,
+      "metadata": 578,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 434380,
-    "objects_with_postprocess": 584
+    "matched_c_bytes_with_postprocess": 431140,
+    "objects_with_postprocess": 579
   }
 }

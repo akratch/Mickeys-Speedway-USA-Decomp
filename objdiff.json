@@ -12837,9 +12837,9 @@
       }
     },
     {
-      "name": "src/overlays/o044/func_overlay_044_F0000580_188BDE0.c",
-      "target_path": "expected/build/src/overlays/o044/func_overlay_044_F0000580_188BDE0.c.o",
-      "base_path": "build/src/overlays/o044/func_overlay_044_F0000580_188BDE0.c.o",
+      "name": "src/overlays/o044/overlay_044.c",
+      "target_path": "expected/build/src/overlays/o044/overlay_044.c.o",
+      "base_path": "build/src/overlays/o044/overlay_044.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -12850,61 +12850,7 @@
           "overlay",
           "overlay-o044"
         ],
-        "source_path": "src/overlays/o044/func_overlay_044_F0000580_188BDE0.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o044/overlay44CreateAnimationState.c",
-      "target_path": "expected/build/src/overlays/o044/overlay44CreateAnimationState.c.o",
-      "base_path": "build/src/overlays/o044/overlay44CreateAnimationState.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o044"
-        ],
-        "source_path": "src/overlays/o044/overlay44CreateAnimationState.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o044/overlay44ReleaseHandles.c",
-      "target_path": "expected/build/src/overlays/o044/overlay44ReleaseHandles.c.o",
-      "base_path": "build/src/overlays/o044/overlay44ReleaseHandles.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o044"
-        ],
-        "source_path": "src/overlays/o044/overlay44ReleaseHandles.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o044/overlay44UpdateFrameCache.c",
-      "target_path": "expected/build/src/overlays/o044/overlay44UpdateFrameCache.c.o",
-      "base_path": "build/src/overlays/o044/overlay44UpdateFrameCache.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o044"
-        ],
-        "source_path": "src/overlays/o044/overlay44UpdateFrameCache.c",
+        "source_path": "src/overlays/o044/overlay_044.c",
         "complete": true
       }
     },

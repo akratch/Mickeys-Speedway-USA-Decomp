@@ -2039,11 +2039,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x188B860, c, overlay44CreateAnimationState]
-      - [0x188BA84, c, overlay44ReleaseHandles]
-      - [0x188BAF4, c, overlay44UpdateFrameCache]
-      - [0x188BDE0, c, func_overlay_044_F0000580_188BDE0]
-      - [0x188C354, asm, overlay_044_padding]
+      - [0x188B860, c, overlay_044]
       - [0x188C360, bin, overlay_044_data_rodata]
       - [0x188C3B0, bin, overlay_044_reloc1]
       - [0x188C430, bin, overlay_044_reloc2]

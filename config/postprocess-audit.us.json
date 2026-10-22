@@ -3669,62 +3669,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o044/func_overlay_044_F0000580_188BDE0.c.o",
-      "offset": 1408,
-      "overlay": 44,
-      "size": 1396,
-      "source": "src/overlays/o044/func_overlay_044_F0000580_188BDE0.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o044/overlay44CreateAnimationState.c.o",
-      "offset": 0,
-      "overlay": 44,
-      "size": 548,
-      "source": "src/overlays/o044/overlay44CreateAnimationState.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o044/overlay44ReleaseHandles.c.o",
-      "offset": 548,
-      "overlay": 44,
-      "size": 112,
-      "source": "src/overlays/o044/overlay44ReleaseHandles.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o044/overlay44UpdateFrameCache.c.o",
-      "offset": 660,
-      "overlay": 44,
-      "size": 748,
-      "source": "src/overlays/o044/overlay44UpdateFrameCache.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o045/func_overlay_045_F0000764_188CBBC.c.o",
       "offset": 1892,
       "overlay": 45,
@@ -8579,10 +8523,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 591,
+      "metadata": 587,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 438316,
-    "objects_with_postprocess": 592
+    "matched_c_bytes_with_postprocess": 435512,
+    "objects_with_postprocess": 588
   }
 }

@@ -1,29 +1,15 @@
+#ifndef OVERLAY_044_H
+#define OVERLAY_044_H
+
 #include "PR/ultratypes.h"
 
 /*
- * Overlay 44: draw the animation's two 16-bit frames as one two-tile
- * texture rectangle per TMEM-sized strip.
- *
- * Rewritten 2026-10-02 from the listing (lane w2-capbuf): libultra-style
- * gDPLoadMultiBlockS / gSPTextureRectangle packet macros on (*dl)++, the
- * strip loop as in JFG screen.c's screenDraw (a semantic relative, no code
- * adapted), the frame-source fields read through the global at each use,
- * and an unsigned stride.
- *
- * The byte stride is established before the rectangle dimensions; its signed
- * conversion is repeated at the strip division. This preserves IDO's allocation
- * order. The TU uses the R4300 multiply scheduling mode.
+ * Overlay 44: one translation unit (ADR 0006). Three cached animation
+ * states streamed from ROM into four frame handles each, and the renderer
+ * that draws two 16-bit frames as texture rectangles. The release helper's
+ * private view of the state is the same block: its first byte is the
+ * source index, -1 when the slot is free.
  */
-
-typedef struct {
-    u32 w0;
-    u32 w1;
-} Gwords;
-
-typedef union {
-    Gwords words;
-    long long force_structure_alignment;
-} Gfx;
 
 typedef struct Overlay44FrameSource {
     s16 dimension0;
@@ -37,7 +23,7 @@ typedef struct Overlay44FrameSource {
 
 typedef struct Overlay44AnimationState {
     s8 sourceIndex;
-    u8 mode;
+    u8 storageMode;
     u8 flags;
     u8 subtype;
     s32 phase;
@@ -50,10 +36,42 @@ typedef struct Overlay44AnimationState {
     u8 *handles[4];
 } Overlay44AnimationState;
 
+extern Overlay44AnimationState D_800D76D8[3];
+
+extern Overlay44FrameSource *D_800D76D0;
+
+extern void *mmAlloc(s32 size, s32 tag);
+
+extern void overlay44ReleaseHandles(Overlay44AnimationState *state);
+/* The release helper is exported through the module's runtime table, so the
+ * allocator's call to it is a SYMBOL record that stores zero: it names the
+ * module placeholder, not the definition, until the runlink packer writes the
+ * tables (docs/OVERLAY_STRUCTURE_SPRINT.md, phase 4). */
+extern void overlay44ReleaseHandles_o044Reloc(Overlay44AnimationState *state);
+
+extern s32 piRomLoadSection(u32 assetIndex, void *address,
+                                     s32 assetOffset, s32 size);
+
+extern void viFrameRateReset(void);
+
+
+void mmFree(void *handle);
+
+
+typedef struct {
+    u32 w0;
+    u32 w1;
+} Gwords;
+
+typedef union {
+    Gwords words;
+    long long force_structure_alignment;
+} Gfx;
+
+
 #define _SHIFTL(v, s, w) ((u32)(((u32)(v) & ((0x01 << (w)) - 1)) << (s)))
-#ifndef NULL
-#define NULL 0
-#endif
+
+
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 #define gDma1p(pkt, c, s, l, p) {                                           \
@@ -150,74 +168,8 @@ typedef struct Overlay44AnimationState {
     gImmp1(pkt, 0xB2, (_SHIFTL((dsdx), 16, 16) | _SHIFTL((dtdy), 0, 16)));  \
 }
 
-extern Overlay44FrameSource *D_800D76D0;
 extern Gfx D_0[];
 extern Gfx D_28[];
 extern void texDPInit(Gfx **dl);
 
-void func_overlay_044_F0000580_188BDE0(Overlay44AnimationState *state,
-                                       Gfx **dl, f32 scale) {
-    s32 width;
-    s32 height;
-    s32 rows;
-    s32 maxRows;
-    s32 x;
-    s32 xh;
-    s32 yPrev;
-    s32 y;
-    s32 dsdx;
-    s32 stride;
-    u8 *tex0;
-    u8 *tex1;
-    s32 alpha;
-
-    if (state == NULL || state->sourceIndex == -1) {
-        return;
-    }
-    width = D_800D76D0[state->sourceIndex].dimension0;
-    height = D_800D76D0[state->sourceIndex].dimension1;
-    tex0 = state->handles[state->protectedSlot0];
-    tex1 = state->handles[state->protectedSlot1];
-    alpha = state->phase & 0xFF;
-    if (scale == 1.0f) {
-        gSPDisplayList((*dl)++, D_0);
-    } else {
-        gSPDisplayList((*dl)++, D_28);
-    }
-    gDPSetPrimColor((*dl)++, 0, 0, state->subtype, state->subtype,
-                    state->subtype, 255);
-    gDPSetEnvColor((*dl)++, alpha, alpha, alpha, alpha);
-    x = state->value8 * 4;
-    y = yPrev = state->valueA << 16;
-    stride = (u32)width * 2;
-    xh = (s32)(width * scale * 4.0f) + x;
-    dsdx = (s32)(1024.0f / scale);
-    scale *= 65536.0f;
-    if (height != 0) {
-        maxRows = (0x800 / ((s32)((u32)width * 2))) & ~1;
-        do {
-            if (maxRows < height) {
-                rows = maxRows;
-                height -= maxRows;
-            } else {
-                rows = height;
-                height = 0;
-            }
-            y += (s32)(rows * scale);
-            gDPLoadMultiBlockS((*dl)++, tex1, 0x100, 1, G_IM_FMT_RGBA,
-                               G_IM_SIZ_16b, width, rows, 0, G_TX_CLAMP,
-                               G_TX_CLAMP, 0, 0, 0, 0);
-            gDPLoadMultiBlockS((*dl)++, tex0, 0, 0, G_IM_FMT_RGBA,
-                               G_IM_SIZ_16b, width, rows, 0, G_TX_CLAMP,
-                               G_TX_CLAMP, 0, 0, 0, 0);
-            gSPTextureRectangle((*dl)++, x, yPrev >> 14, xh, y >> 14, 0, 0, 0,
-                                dsdx, dsdx);
-            yPrev = y;
-            tex0 += rows * stride;
-            tex1 += rows * stride;
-        } while (height != 0);
-    }
-    texDPInit(dl);
-    gDPSetPrimColor((*dl)++, 0, 0, 255, 255, 255, 255);
-    gDPSetEnvColor((*dl)++, 255, 255, 255, 255);
-}
+#endif

@@ -8719,37 +8719,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x224",
-     "size": "0x224",
-     "type": "c",
-     "source": "overlays/o044/overlay44CreateAnimationState",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x224",
-     "end_offset": "0x294",
-     "size": "0x70",
-     "type": "c",
-     "source": "overlays/o044/overlay44ReleaseHandles",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x294",
-     "end_offset": "0x580",
-     "size": "0x2EC",
-     "type": "c",
-     "source": "overlays/o044/overlay44UpdateFrameCache",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x580",
      "end_offset": "0xAF4",
-     "size": "0x574",
+     "size": "0xAF4",
      "type": "c",
-     "source": "overlays/o044/func_overlay_044_F0000580_188BDE0",
+     "source": "overlays/o044/overlay_044",
      "matched": true,
      "nonmatching": false
     },

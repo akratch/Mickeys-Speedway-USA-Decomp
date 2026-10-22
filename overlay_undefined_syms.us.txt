@@ -1846,19 +1846,15 @@ gOverlay43MotionScalePoolReloc = 0x00000024;
 /* overlay 43: overlay43SubmitChildren.c.o */
 makeModelGfx_o043Reloc = 0xf0000000;
 
-/* overlay 44: overlay44CreateAnimationState.c.o */
+/* overlay 44: overlay_044.c.o */
 D_800D76D0_o044Reloc = 0x00000000;
 D_800D76D8_o044Reloc = 0x00000000;
 mmAlloc_o044Reloc = 0xf0000000;
+mmFree_o044Reloc = 0xf0000000;
 overlay44ReleaseHandles_o044Reloc = 0xf0000000;
 piRomLoadSection_o044Reloc = 0xf0000000;
-viFrameRateReset_o044Reloc = 0xf0000000;
-
-/* overlay 44: overlay44ReleaseHandles.c.o */
-mmFree_o044Reloc = 0xf0000000;
-
-/* overlay 44: func_overlay_044_F0000580_188BDE0.c.o */
 texDPInit_o044Reloc = 0xf0000000;
+viFrameRateReset_o044Reloc = 0xf0000000;
 
 /* overlay 45: overlay_045.c.o */
 gOverlay45AdvanceTables = 0x00000000;
@@ -5531,13 +5527,9 @@ func_overlay_043_F0001264_188B234 = overlay43SubmitChildren;
 /* overlay 43: overlay43FilterImage.c.o */
 func_overlay_043_F0001378_188B348 = overlay43FilterImage;
 
-/* overlay 44: overlay44CreateAnimationState.c.o */
+/* overlay 44: overlay_044.c.o */
 func_overlay_044_F0000000_188B860 = overlay44CreateAnimationState;
-
-/* overlay 44: overlay44ReleaseHandles.c.o */
 func_overlay_044_F0000224_188BA84 = overlay44ReleaseHandles;
-
-/* overlay 44: overlay44UpdateFrameCache.c.o */
 func_overlay_044_F0000294_188BAF4 = overlay44UpdateFrameCache;
 
 /* overlay 45: overlay_045.c.o */

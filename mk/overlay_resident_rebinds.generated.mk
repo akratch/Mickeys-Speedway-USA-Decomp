@@ -1005,24 +1005,14 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43ReleaseResources.c.o: SURFACE_REB
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43SubmitChildren.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym makeModelGfx=makeModelGfx_o043Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o044/func_overlay_044_F0000580_188BDE0.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D76D0=D_800D76D0_o044Reloc \
-	--redefine-sym texDPInit=texDPInit_o044Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay44CreateAnimationState.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay_044.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D76D0=D_800D76D0_o044Reloc \
 	--redefine-sym D_800D76D8=D_800D76D8_o044Reloc \
 	--redefine-sym mmAlloc=mmAlloc_o044Reloc \
-	--redefine-sym overlay44ReleaseHandles=overlay44ReleaseHandles_o044Reloc \
+	--redefine-sym mmFree=mmFree_o044Reloc \
 	--redefine-sym piRomLoadSection=piRomLoadSection_o044Reloc \
+	--redefine-sym texDPInit=texDPInit_o044Reloc \
 	--redefine-sym viFrameRateReset=viFrameRateReset_o044Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay44ReleaseHandles.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmFree=mmFree_o044Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay44UpdateFrameCache.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D76D0=D_800D76D0_o044Reloc \
-	--redefine-sym piRomLoadSection=piRomLoadSection_o044Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o045/func_overlay_045_F0000764_188CBBC.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_800221E8=func_800221E8_o045Reloc \

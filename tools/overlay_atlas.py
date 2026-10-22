@@ -297,6 +297,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     15: "overlay_015_padding",
     76: "overlay_076_padding",
     78: "overlay_078_padding",
+    81: "overlay_081_padding",
 }
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has

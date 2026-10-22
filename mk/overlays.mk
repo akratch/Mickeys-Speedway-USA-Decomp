@@ -1601,8 +1601,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077_tail.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x78
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o081/overlay_081.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x34C
+# Overlay 81 is one translation unit under the overlay flag set; its .text
+# is the module's whole text, trailing pad included, so it needs no trim.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o081/overlay_081.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o082/overlay_082.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x40

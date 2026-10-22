@@ -7247,62 +7247,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o089/overlay89Evaluate.c.o",
-      "offset": 312,
-      "overlay": 89,
-      "size": 112,
-      "source": "src/overlays/o089/overlay89Evaluate.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o089/overlay89InitializeEffect.c.o",
-      "offset": 624,
-      "overlay": 89,
-      "size": 820,
-      "source": "src/overlays/o089/overlay89InitializeEffect.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o089/overlay89Update.c.o",
-      "offset": 424,
-      "overlay": 89,
-      "size": 200,
-      "source": "src/overlays/o089/overlay89Update.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o089/overlay89UpdateEffect.c.o",
-      "offset": 0,
-      "overlay": 89,
-      "size": 312,
-      "source": "src/overlays/o089/overlay89UpdateEffect.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o090/overlay_090.c.o",
       "offset": 0,
       "overlay": 90,
@@ -8898,10 +8842,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 613,
+      "metadata": 609,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 442416,
-    "objects_with_postprocess": 614
+    "matched_c_bytes_with_postprocess": 440972,
+    "objects_with_postprocess": 610
   }
 }

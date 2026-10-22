@@ -1630,17 +1630,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: POSTPROCE
 		--redefine-sym func_80022FD4=overlay88SubmitDynamicReloc \
 		--redefine-sym fxDrawCone=overlay88DrawConeReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x59C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay89UpdateEffect.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay89UpdateEffect.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x138
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay89Evaluate.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x70
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay89Update.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC8
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay89InitializeEffect.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay89InitializeEffect.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x334
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay89UpdateStateAndParticles.c.o: CFLAGS += -Wab,-r4300_mul
+# Overlay 89 is one translation unit under the overlay flag set; its .text is
+# the module's 0x7D0 bytes, trailing pad included, so it needs no trim. Its
+# three unexported functions are static (JUMP records).
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay_089.c.o: CFLAGS += -Wab,-r4300_mul
+OVERLAY_STATIC_FUNCTION_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay_089.c.o
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay92Init.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x68
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay92FindNearestCourse.c.o: CFLAGS += \
@@ -3251,3 +3245,15 @@ OVERLAY_TRIMMED_OBJECTS += \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57UpdateModeTrigger.c.o
 
 $(OVERLAY_TRIMMED_OBJECTS): $(TOOLS_DIR)/trim_elf_section.py
+
+# One-TU overlay modules make their unexported functions `static`, so the
+# shipped JUMP records follow from the C. IDO writes no symbol for a static
+# function: --force runs asm-processor's static-symbol conversion on these
+# pragma-free sources, which adds a local STT_FUNC per static function, and
+# tools/static_symbol_sizes.py gives each the size IDO recorded in .mdebug.
+# Neither step touches a section byte or a relocation. Keep this block last:
+# the list is complete only after every module's line above.
+$(OVERLAY_STATIC_FUNCTION_OBJECTS): ASM_PROCESSOR += --force
+$(OVERLAY_STATIC_FUNCTION_OBJECTS): STATIC_SIZES = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/static_symbol_sizes.py $@
+$(OVERLAY_STATIC_FUNCTION_OBJECTS): $(TOOLS_DIR)/static_symbol_sizes.py

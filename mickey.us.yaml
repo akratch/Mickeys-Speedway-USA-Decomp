@@ -2999,12 +2999,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18D4230, c, overlay89UpdateEffect]
-      - [0x18D4368, c, overlay89Evaluate]
-      - [0x18D43D8, c, overlay89Update]
-      - [0x18D44A0, c, overlay89InitializeEffect]
-      - [0x18D47D4, c, overlay89UpdateStateAndParticles]
-      - [0x18D49F4, asm, overlay_089_padding]
+      - [0x18D4230, c, overlay_089]
       - [0x18D4A00, bin, overlay_089_data_rodata]
       - [0x18D4A10, bin, overlay_089_reloc1]
       - [0x18D4AA8, bin, overlay_089_reloc2]

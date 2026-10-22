@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay89UpdateStateAndParticles:start -->
 ### `overlay89UpdateStateAndParticles` plateau handoff
 
-- source: `src/overlays/o089/overlay89UpdateStateAndParticles.c`
+- source: `src/overlays/o089/overlay_089.c`
 - score: 136/136 words
 - frame: 0x88
 - relocations: 14

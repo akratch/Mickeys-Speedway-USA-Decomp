@@ -143,7 +143,41 @@ def _resolve_names(symbol: str, alias_path: Path = ALIASES) -> tuple[str, str]:
         )
     if len(generated) == 1:
         return generated[0], symbol
+    static = _static_overlay_identity(symbol, alias_path.parent)
+    if static is not None:
+        return static, symbol
     return symbol, symbol
+
+
+def _static_overlay_identity(symbol: str, root: Path) -> str | None:
+    """The generated identity of a ``static`` overlay function.
+
+    A module folded into one translation unit makes its unexported functions
+    ``static`` (their shipped records are JUMPs). A linker-script alias
+    cannot name a local symbol, so the surface carries no
+    ``func_overlay_NNN_...`` row for them; the linked ELF's sized local
+    ``STT_FUNC`` in ``.overlay_NNN`` and the atlas's module ROM start give
+    the same generated name the alias would have.
+    """
+    elf_path = root / "build" / "mickey.us.elf"
+    atlas_path = root / "config" / "overlays.us.json"
+    if not elf_path.is_file() or not atlas_path.is_file():
+        return None
+    elf = rs.Elf(elf_path)
+    rows = [row for row in elf.symbols()
+            if row[0] == symbol and row[3] >> 4 == 0 and row[3] & 0xF == rs.STT_FUNC
+            and row[2] > 0 and 0 < row[4] < len(elf.names)
+            and re.fullmatch(r"\.overlay_\d{3}", elf.names[row[4]])]
+    if len(rows) != 1:
+        return None
+    _, value, _, _, shndx = rows[0]
+    overlay = int(elf.names[shndx][len(".overlay_"):])
+    modules = [row for row in json.loads(atlas_path.read_text(encoding="utf-8"))
+               .get("modules", []) if row.get("overlay") == overlay]
+    if len(modules) != 1:
+        return None
+    rom = int(modules[0]["rom"]["start"], 16) + value - rs.SYNTHETIC_VMA
+    return f"func_overlay_{overlay:03d}_{value:08X}_{rom:X}"
 
 
 def _guarded_resident_fallback(symbol: str, root: Path) -> str | None:

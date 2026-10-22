@@ -3890,28 +3890,22 @@ gOverlay70PairTableReloc = 0x00000000;
 mathRnd_o070Reloc = 0xf0000000;
 texAnimateSprite_o070Reloc = 0xf0000000;
 
-/* overlay 71: func_overlay_071_F0000000_18C9B20.c.o */
-gOverlay71Scale0 = 0x00000000;
-gOverlay71Scale1 = 0x00000004;
-
-/* overlay 71: func_overlay_071_F0000278_18C9D98.c.o */
+/* overlay 71: overlay_071.c.o */
+D_80000008 = 0x80000008;
+D_800000D8 = 0x800000d8;
 D_80079274_o071Reloc = 0x00000000;
 SetLinkSlot_o071Reloc = 0xf0000000;
+camPopModelMtx_o071Reloc = 0xf0000000;
+camPushModelMtx_o071Reloc = 0xf0000000;
 gOverlay71InitialResourceReloc = 0x00000000;
-sqrtf_o071Reloc = 0xf0000000;
-
-/* overlay 71: overlay71UpdateCoordinates.c.o */
 gOverlay71Offset = 0x00000004;
 gOverlay71PrimaryCoordinates = 0x000000a8;
 gOverlay71PrimaryRecords = 0x00000028;
+gOverlay71Scale0 = 0x00000000;
+gOverlay71Scale1 = 0x00000004;
 gOverlay71SecondaryCoordinates = 0x00000158;
 gOverlay71SecondaryRecords = 0x000000d8;
-
-/* overlay 71: func_overlay_071_F0000870_18CA390.c.o */
-D_80000008 = 0x80000008;
-D_800000D8 = 0x800000d8;
-camPopModelMtx_o071Reloc = 0xf0000000;
-camPushModelMtx_o071Reloc = 0xf0000000;
+sqrtf_o071Reloc = 0xf0000000;
 texDPTextureX_o071Reloc = 0xf0000000;
 
 /* overlay 72: overlay_072.c.o */
@@ -5954,7 +5948,7 @@ func_overlay_069_F0000000_18C8A68 = overlay69Init;
 func_overlay_069_F000004C_18C8AB4 = overlay69UpdateAnchor;
 func_overlay_069_F0000170_18C8BD8 = overlay69DrawSortedGeometry;
 
-/* overlay 71: overlay71UpdateCoordinates.c.o */
+/* overlay 71: overlay_071.c.o */
 func_overlay_071_F00007A8_18CA2C8 = overlay71UpdateCoordinates;
 
 /* overlay 72: overlay_072.c.o */

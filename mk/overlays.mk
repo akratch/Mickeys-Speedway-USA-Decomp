@@ -1443,31 +1443,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o044/func_overlay_044_F0000580_188BDE0.c.o: POS
 # Overlay 67: one module TU under the overlay flag set; IDO's 16-byte .text
 # alignment emits the module's trailing pad itself, so no trim.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o067/overlay_067.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o071/overlay71UpdateCoordinates.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC8
-# NON_MATCHING/GLOBAL_ASM: retain only trailing-section trims where these
-# extracted functions are not naturally aligned.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o071/func_overlay_071_F0000000_18C9B20.c.o: \
-	config/normalizations/overlay71InitializeObject.calls.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o071/func_overlay_071_F0000000_18C9B20.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay71InitializeObject.calls.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x278
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o071/func_overlay_071_F0000278_18C9D98.c.o: CFLAGS += \
-	-Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o071/func_overlay_071_F0000278_18C9D98.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym SetLinkSlot=SetLinkSlot_o071Reloc \
-		--redefine-sym sqrtf=sqrtf_o071Reloc $@
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o071/func_overlay_071_F0000870_18CA390.c.o: CFLAGS += \
-	-Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o071/func_overlay_071_F0000870_18CA390.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym SetLinkSlot=SetLinkSlot_o071Reloc \
-		--redefine-sym camPushModelMtx=camPushModelMtx_o071Reloc \
-		--redefine-sym texDPTextureX=texDPTextureX_o071Reloc \
-		--redefine-sym camPopModelMtx=camPopModelMtx_o071Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2D8
 # Overlay 72: one module TU under the overlay flag set; IDO's 16-byte .text
 # alignment emits the module's trailing pad itself, so no trim.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o072/overlay_072.c.o: CFLAGS += -Wab,-r4300_mul
@@ -3128,3 +3103,16 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay_066.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay_069.c.o: \
 	$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.inc
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay_069.c.o: CFLAGS += -Wab,-r4300_mul
+# Overlay 71: one module TU under the overlay flag set; its .text is the
+# module's full 0xB50 bytes, trailing pad included, so no trim, and resident
+# calls are renamed by the generated surface rebinds. Kept, for a mechanical
+# reason: the initializer's call to the exported refresh (+0x25C) is a SYMBOL
+# record in the shipped table, so its stored word is the 0xF0000000 base, not
+# the callee's offset; the declared rebind binds that one site to the
+# offset-zero export.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o071/overlay_071.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o071/overlay_071.c.o: \
+	config/normalizations/overlay71InitializeObject.calls.spec
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o071/overlay_071.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/overlay71InitializeObject.calls.spec

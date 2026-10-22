@@ -1822,8 +1822,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o070/overlay_070.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym mathRnd=mathRnd_o070Reloc \
 	--redefine-sym texAnimateSprite=texAnimateSprite_o070Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o071/func_overlay_071_F0000278_18C9D98.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80079274=D_80079274_o071Reloc $@
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o071/overlay_071.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_80079274=D_80079274_o071Reloc \
+	--redefine-sym SetLinkSlot=SetLinkSlot_o071Reloc \
+	--redefine-sym camPopModelMtx=camPopModelMtx_o071Reloc \
+	--redefine-sym camPushModelMtx=camPushModelMtx_o071Reloc \
+	--redefine-sym sqrtf=sqrtf_o071Reloc \
+	--redefine-sym texDPTextureX=texDPTextureX_o071Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o072/overlay_072.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_8005776C=func_8005776C_o072Reloc \

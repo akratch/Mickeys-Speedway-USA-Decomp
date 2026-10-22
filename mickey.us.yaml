@@ -2642,11 +2642,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18C9B20, c, func_overlay_071_F0000000_18C9B20]
-      - [0x18C9D98, c, func_overlay_071_F0000278_18C9D98]
-      - [0x18CA2C8, c, overlay71UpdateCoordinates]
-      - [0x18CA390, c, func_overlay_071_F0000870_18CA390]
-      - [0x18CA668, asm, overlay_071_tail]
+      - [0x18C9B20, c, overlay_071]
       - [0x18CA670, bin, overlay_071_data_rodata]
       - [0x18CA810, bin, overlay_071_reloc1]
       - [0x18CA858, bin, overlay_071_reloc2]

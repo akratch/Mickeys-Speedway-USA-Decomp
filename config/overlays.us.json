@@ -13810,37 +13810,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x278",
-     "size": "0x278",
-     "type": "c",
-     "source": "overlays/o071/func_overlay_071_F0000000_18C9B20",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x278",
-     "end_offset": "0x7A8",
-     "size": "0x530",
-     "type": "c",
-     "source": "overlays/o071/func_overlay_071_F0000278_18C9D98",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x7A8",
-     "end_offset": "0x870",
-     "size": "0xC8",
-     "type": "c",
-     "source": "overlays/o071/overlay71UpdateCoordinates",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x870",
      "end_offset": "0xB48",
-     "size": "0x2D8",
+     "size": "0xB48",
      "type": "c",
-     "source": "overlays/o071/func_overlay_071_F0000870_18CA390",
+     "source": "overlays/o071/overlay_071",
      "matched": true,
      "nonmatching": false
     },

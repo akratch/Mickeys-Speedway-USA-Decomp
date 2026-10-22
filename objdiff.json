@@ -1704,16 +1704,6 @@
       }
     },
     {
-      "name": "asm/overlays/o075/overlay_075_padding.s",
-      "target_path": "expected/build/asm/overlays/o075/overlay_075_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o075"
-        ]
-      }
-    },
-    {
       "name": "asm/overlays/o082/overlay_082_padding.s",
       "target_path": "expected/build/asm/overlays/o082/overlay_082_padding.s.o",
       "metadata": {
@@ -16377,9 +16367,9 @@
       }
     },
     {
-      "name": "src/overlays/o075/overlay75Init.c",
-      "target_path": "expected/build/src/overlays/o075/overlay75Init.c.o",
-      "base_path": "build/src/overlays/o075/overlay75Init.c.o",
+      "name": "src/overlays/o075/overlay_075.c",
+      "target_path": "expected/build/src/overlays/o075/overlay_075.c.o",
+      "base_path": "build/src/overlays/o075/overlay_075.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -16390,43 +16380,7 @@
           "overlay",
           "overlay-o075"
         ],
-        "source_path": "src/overlays/o075/overlay75Init.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o075/overlay75MarkSlot.c",
-      "target_path": "expected/build/src/overlays/o075/overlay75MarkSlot.c.o",
-      "base_path": "build/src/overlays/o075/overlay75MarkSlot.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o075"
-        ],
-        "source_path": "src/overlays/o075/overlay75MarkSlot.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o075/overlay75UpdateMovingObject.c",
-      "target_path": "expected/build/src/overlays/o075/overlay75UpdateMovingObject.c.o",
-      "base_path": "build/src/overlays/o075/overlay75UpdateMovingObject.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o075"
-        ],
-        "source_path": "src/overlays/o075/overlay75UpdateMovingObject.c",
+        "source_path": "src/overlays/o075/overlay_075.c",
         "complete": true
       }
     },

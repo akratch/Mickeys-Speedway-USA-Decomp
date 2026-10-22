@@ -6486,48 +6486,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o075/overlay75Init.c.o",
-      "offset": 0,
-      "overlay": 75,
-      "size": 532,
-      "source": "src/overlays/o075/overlay75Init.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o075/overlay75MarkSlot.c.o",
-      "offset": 1748,
-      "overlay": 75,
-      "size": 36,
-      "source": "src/overlays/o075/overlay75MarkSlot.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o075/overlay75UpdateMovingObject.c.o",
-      "offset": 532,
-      "overlay": 75,
-      "size": 1216,
-      "source": "src/overlays/o075/overlay75UpdateMovingObject.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o077/overlay_077.c.o",
       "offset": 0,
       "overlay": 77,
@@ -8940,10 +8898,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 616,
+      "metadata": 613,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 444200,
-    "objects_with_postprocess": 617
+    "matched_c_bytes_with_postprocess": 442416,
+    "objects_with_postprocess": 614
   }
 }

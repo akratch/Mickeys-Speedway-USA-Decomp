@@ -1579,15 +1579,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o073/overlay73Draw.c.o: POSTPROCESS = \
 # Overlay 74 is one translation unit under the overlay flag set; its .text is
 # the module's 0x250 bytes, trailing pad included, so it needs no trim.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o074/overlay_074.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay75MarkSlot.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x24
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay75Init.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x214
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay75Init.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay75UpdateMovingObject.c.o: CFLAGS += \
-	-Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay75UpdateMovingObject.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4C0
+# Overlay 75 is one translation unit under the overlay flag set; its .text is
+# the module's 0x700 bytes, trailing pad included, so it needs no trim.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay_075.c.o: CFLAGS += -Wab,-r4300_mul
 # overlay77Update's literal pool (-0.2f, 0.4f, 0.6f, 0.4f, -0.1f) is the
 # retained raw data/rodata slice at +0x10; anchor its references at the
 # module's rodata base and discard the duplicate section (until the data

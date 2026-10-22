@@ -14447,28 +14447,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x214",
-     "size": "0x214",
-     "type": "c",
-     "source": "overlays/o075/overlay75Init",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x214",
-     "end_offset": "0x6D4",
-     "size": "0x4C0",
-     "type": "c",
-     "source": "overlays/o075/overlay75UpdateMovingObject",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x6D4",
      "end_offset": "0x6F8",
-     "size": "0x24",
+     "size": "0x6F8",
      "type": "c",
-     "source": "overlays/o075/overlay75MarkSlot",
+     "source": "overlays/o075/overlay_075",
      "matched": true,
      "nonmatching": false
     },

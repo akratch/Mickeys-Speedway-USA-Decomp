@@ -1782,14 +1782,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o074/overlay_074.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym func_8003A680=func_8003A680_o074Reloc \
 	--redefine-sym func_8005776C=func_8005776C_o074Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay75Init.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o075Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o075Reloc \
-	--redefine-sym func_8005ABA8=func_8005ABA8_o075Reloc \
-	--redefine-sym func_8005AD64=func_8005AD64_o075Reloc \
-	--redefine-sym func_8005AF14=func_8005AF14_o075Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay75UpdateMovingObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay_075.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o075Reloc \
 	--redefine-sym amSndSetXYZ=amSndSetXYZ_o075Reloc \
 	--redefine-sym amSndStopXYZ=amSndStopXYZ_o075Reloc \
@@ -1798,6 +1791,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay75UpdateMovingObject.c.o: SURFACE_R
 	--redefine-sym func_8002A8BC=func_8002A8BC_o075Reloc \
 	--redefine-sym func_8002A8C0=func_8002A8C0_o075Reloc \
 	--redefine-sym func_8005ABA8=func_8005ABA8_o075Reloc \
+	--redefine-sym func_8005AD64=func_8005AD64_o075Reloc \
 	--redefine-sym func_8005AF14=func_8005AF14_o075Reloc \
 	--redefine-sym lightObject=lightObject_o075Reloc \
 	--redefine-sym partUpdateTriggers=partUpdateTriggers_o075Reloc $@

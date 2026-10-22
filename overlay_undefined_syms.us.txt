@@ -3955,7 +3955,12 @@ func_8003A680_o074Reloc = 0xf0000000;
 func_8005776C_o074Reloc = 0xf0000000;
 gOverlay74Scale = 0x00000000;
 
-/* overlay 75: overlay75Init.c.o */
+/* overlay 75: overlay_075.c.o */
+amSndPlayXYZ_o075Reloc = 0xf0000000;
+amSndSetXYZ_o075Reloc = 0xf0000000;
+amSndStopXYZ_o075Reloc = 0xf0000000;
+camScreenShake_o075Reloc = 0xf0000000;
+func_80008128_o075Reloc = 0xf0000000;
 func_8002A8BC_o075Reloc = 0xf0000000;
 func_8002A8C0_o075Reloc = 0xf0000000;
 func_8005ABA8_o075Reloc = 0xf0000000;
@@ -3963,13 +3968,6 @@ func_8005AD64_o075Reloc = 0xf0000000;
 func_8005AF14_o075Reloc = 0xf0000000;
 gOverlay75Scale = 0x00000000;
 gOverlay75SlotFlags = 0x00000000;
-
-/* overlay 75: overlay75UpdateMovingObject.c.o */
-amSndPlayXYZ_o075Reloc = 0xf0000000;
-amSndSetXYZ_o075Reloc = 0xf0000000;
-amSndStopXYZ_o075Reloc = 0xf0000000;
-camScreenShake_o075Reloc = 0xf0000000;
-func_80008128_o075Reloc = 0xf0000000;
 gOverlay75ThresholdReloc = 0x00000000;
 lightObject_o075Reloc = 0xf0000000;
 overlay75PlayEventReloc = 0xf0000000;
@@ -5986,13 +5984,9 @@ func_overlay_072_F00000B4_18CA9D4 = overlay72Update;
 func_overlay_074_F0000000_18CBCA0 = overlay74Init;
 func_overlay_074_F00000B8_18CBD58 = overlay74Update;
 
-/* overlay 75: overlay75Init.c.o */
+/* overlay 75: overlay_075.c.o */
 func_overlay_075_F0000000_18CBF68 = overlay75Init;
-
-/* overlay 75: overlay75UpdateMovingObject.c.o */
 func_overlay_075_F0000214_18CC17C = overlay75UpdateMovingObject;
-
-/* overlay 75: overlay75MarkSlot.c.o */
 func_overlay_075_F00006D4_18CC63C = overlay75MarkSlot;
 
 /* overlay 76: overlay_076.c.o */

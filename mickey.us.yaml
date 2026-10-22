@@ -2731,10 +2731,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18CBF68, c, overlay75Init]
-      - [0x18CC17C, c, overlay75UpdateMovingObject]
-      - [0x18CC63C, c, overlay75MarkSlot]
-      - [0x18CC660, asm, overlay_075_padding]
+      - [0x18CBF68, c, overlay_075]
       - [0x18CC668, bin, overlay_075_data_rodata]
       - [0x18CC678, bin, overlay_075_reloc1]
       - [0x18CC720, bin, overlay_075_reloc2]

@@ -1534,7 +1534,7 @@ typedef struct Overlay1CallbackEntry {
  * pointer condition after the callback; that invented guard is rejected and
  * must not be promoted. Reproduce the natural baseline before a source-faithful
  * allocator/lifetime attempt. */
-extern s32 overlay1IsObjectActive(void *object);
+extern s32 overlay1ActivateObject(void *object);
 extern s32 gOverlay1TimerStep;
 extern f32 gOverlay1CallbackStepFloat;
 extern Overlay1CallbackEntry gOverlay1CallbackDescriptor[];
@@ -1547,7 +1547,7 @@ void overlay1StartTimerCallbacks(Overlay1CallbackObject *object, s32 amount)
   Overlay1Callback loadedCallback;
   s32 index;
   u8 mode;
-  if (overlay1IsObjectActive(object) != 0)
+  if (overlay1ActivateObject(object) != 0)
   {
     gOverlay1TimerStep = amount;
     gOverlay1CallbackStepFloat = amount;
@@ -1614,7 +1614,7 @@ Overlay1DirectionalObject *overlay1FindDirectionalObject(
     objects = overlay1GetObjectList(&count);
     best = 0;
     bestValue = D_160;
-    if (overlay1IsObjectActive(object)) {
+    if (overlay1ActivateObject(object)) {
         goto active;
     }
     return 0;
@@ -1841,7 +1841,6 @@ typedef struct O1SelectWorld {
     O1SelectObject *selected;
 } O1SelectWorld;
 
-extern void **func_80005750(s32 *count);
 
 s32 overlay1ChooseModeObject(void) {
     s32 count;
@@ -2152,7 +2151,6 @@ typedef struct Overlay1RangeObject {
 /* Retained for the separate nearby-pending reconstruction below. */
 extern Overlay1RangeObject **overlay1GetObjectListReloc(s32 *count);
 extern s32 Arctanf(f32 dz, f32 dx);
-extern s32 overlay1ActivateObject(void *object);
 extern void overlay1InitializeModeState(s32 value);
 
 /* Matched 2026-10-01 by discarding the inherited shape; the 2-word closure
@@ -2983,7 +2981,7 @@ typedef struct Overlay1Path {
 } Overlay1Path;
 
 /* Fresh pinned DKR v77/v80 and JFG scans found no Overlay 1 donor. */
-extern Overlay1Path *overlay1GetPathReloc(s32 selector);
+extern Overlay1Path *overlay1GetEntry(s32 selector);
 extern s32 mathDiffAngle(s16 first, s16 second);
 
 /* Matched 2026-10-01 from a plain rewrite; four things closed the last 19:
@@ -3007,7 +3005,7 @@ void overlay1BendPathPoint(s16 *x, s16 *y, u8 index, u8 selector) {
     s16 firstAngle, secondAngle, midpointAngle;
     s32 i;
 
-    path = overlay1GetPathReloc(selector);
+    path = overlay1GetEntry(selector);
     current = &path->points[index];
     if (index) {
         i = index - 1;

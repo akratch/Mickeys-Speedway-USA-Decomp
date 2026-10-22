@@ -39,7 +39,7 @@ extern void *D_8007A1D4;
 extern u8 gOverlay18LocalData80[];
 extern u8 gOverlay18ExternalData;
 extern s32 D_8007A1B8;
-extern Overlay18Gfx *gOverlay18DisplaySource[];
+extern Overlay18Gfx *D_800CF510[];
 extern Overlay18Gfx *D_800CF518;
 
 /*
@@ -97,7 +97,7 @@ void overlay18Load(void) {
 
     D_8007A1B8 = 0;
     D_800CF518 =
-        gOverlay18DisplaySource[D_8007A1B8];
+        D_800CF510[D_8007A1B8];
     newDisplay = D_800CF518++;
     display = newDisplay;
     display->w0 = 0xE9000000;

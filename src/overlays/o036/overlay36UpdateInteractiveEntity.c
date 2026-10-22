@@ -85,7 +85,7 @@ extern Overlay36Entity *gOverlay36CurrentEntity;
 extern Overlay36State *gOverlay36CurrentState;
 extern s32 D_80078F20;
 
-extern void overlay36ExpireReloc(void);
+extern void func_80006EA0(void);
 extern void partUpdateTriggers(Overlay36Entity *entity, s32 elapsed);
 extern void overlay36QueueAction(s32 value, u8 mode, f32 *x, f32 *y,
                                         f32 *z);
@@ -129,7 +129,7 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
         temp = state->countdownB;
         if (elapsed >= state->countdownB) {
             state->countdownB = 0;
-            overlay36ExpireReloc();
+            func_80006EA0();
             return;
         }
         if (temp != 0xFF) {

@@ -15,13 +15,13 @@ extern s32 D_8007A1B8;
 extern u8 *gOverlay18Buffers[2];
 extern u8 *gOverlay18Region8[2];
 extern u8 *gOverlay18Region64[2];
-extern u8 *gOverlay18Region16[2];
+extern u8 *D_800CF580[2];
 extern u8 *gOverlay18Region8Slot0;
-extern u8 *gOverlay18Region8Slot1[];
+extern u8 *D_800CF528[];
 extern u8 *gOverlay18Region64Slot0;
-extern u8 *gOverlay18Region64Slot1[];
+extern u8 *D_800CF598[];
 extern u8 *gOverlay18Region16Slot0;
-extern u8 *gOverlay18Region16Slot1[];
+extern u8 *D_800CF580[];
 extern Overlay18Command *D_800CF518;
 extern u8 *D_800CF530;
 extern u8 *D_800CF5A0;
@@ -32,7 +32,7 @@ extern s32 D_800CF534;
 extern s32 D_800CF5A4;
 
 extern void *mmGetDelay(s32 mode);
-extern void overlay18SelectReloc(s32 selector);
+extern void mmSetDelay(s32 selector);
 extern void mmFree(void *buffer);
 extern void *mmAllocAtAddr(s32 size, void *oldBuffer, s32 tag);
 extern void overlay18FinishReconfigureReloc(void *token);
@@ -51,7 +51,7 @@ void overlay18Reconfigure(s32 mode) {
         index = mode;
         gOverlay18Mode = mode;
         token = mmGetDelay(mode);
-        overlay18SelectReloc(0);
+        mmSetDelay(0);
 
         size = (gOverlay18ModeScale8[index] * 8) +
                (gOverlay18ModeScale64[index] * 64) +
@@ -84,11 +84,11 @@ void overlay18Reconfigure(s32 mode) {
                                  (gOverlay18ModeScale64[index] * 64);
         gOverlay18Region16Slot0 = gOverlay18Region64[0] +
                                  (gOverlay18ModeScale16[index] * 16);
-        gOverlay18Region8Slot1[1] = gOverlay18Buffers[1] +
+        D_800CF528[1] = gOverlay18Buffers[1] +
                                     (gOverlay18ModeScale8[index] * 8);
-        gOverlay18Region64Slot1[1] = gOverlay18Region8[1] +
+        D_800CF598[1] = gOverlay18Region8[1] +
                                      (gOverlay18ModeScale64[index] * 64);
-        gOverlay18Region16Slot1[1] = gOverlay18Region64[1] +
+        D_800CF580[1] = gOverlay18Region64[1] +
                                      (gOverlay18ModeScale16[index] * 16);
 
         D_800CF51C = gOverlay18ModeScale8[index];
@@ -102,7 +102,7 @@ void overlay18Reconfigure(s32 mode) {
         (Overlay18Command *)gOverlay18Buffers[D_8007A1B8];
     D_800CF530 = gOverlay18Region8[D_8007A1B8];
     D_800CF5A0 = gOverlay18Region64[D_8007A1B8];
-    D_800CF588 = gOverlay18Region16[D_8007A1B8];
+    D_800CF588 = D_800CF580[D_8007A1B8];
 
     {
         Overlay18Command *command;

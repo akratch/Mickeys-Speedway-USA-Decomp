@@ -2268,8 +2268,8 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
             s32 targetA;
             f32 factor;
 
-            axisA = O8P4CF0_call_4E9C(-actor->angle000);
-            axisB = O8P4CF0_call_4EAC(-actor->angle000);
+            axisA = func_8002A8C0(-actor->angle000);
+            axisB = func_8002A8BC(-actor->angle000);
             horizontalA = normalPtr->z * axisA + normalPtr->x * axisB;
             horizontalB = normalPtr->z * axisB - normalPtr->x * axisA;
             targetA = Arctanf(-horizontalA, normalPtr->y);

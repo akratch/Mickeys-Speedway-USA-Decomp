@@ -79,7 +79,7 @@ extern void func_8005AF14(Overlay75Model *model, void *entity,
                                        Overlay75Object *object);
 extern void lightObject(Overlay75Object *object, Overlay75Model *model,
                                     void *renderResource, void *tableEntry);
-extern void overlay75CreateHandleReloc(s32 id, u32 x, u32 y, u32 z,
+extern void amSndPlayXYZ(s32 id, u32 x, u32 y, u32 z,
                                        s32 mode, void **output);
 extern void camScreenShake(f32 x, f32 y, f32 z, f32 scale,
                                           f32 lifetime);
@@ -225,7 +225,7 @@ void overlay75UpdateMovingObject(Overlay75Object *object,
         locals.model->field08 = 0;
 
         if (locals.moved != 0 && state->effectHandle3C == 0) {
-            overlay75CreateHandleReloc(0x1BA, O75_FLOAT_BITS(locals.position->x),
+            amSndPlayXYZ(0x1BA, O75_FLOAT_BITS(locals.position->x),
                                        O75_FLOAT_BITS(locals.position->y),
                                        O75_FLOAT_BITS(locals.position->z), 1,
                                        &state->effectHandle3C);

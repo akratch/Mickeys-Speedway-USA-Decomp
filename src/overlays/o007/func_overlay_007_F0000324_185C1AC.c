@@ -42,7 +42,7 @@ extern void amSndSetXYZ(void *handle, s32 x, s32 y,
                                                s32 z);
 extern f32 overlay1DistanceFromSelected(Overlay7RuntimeObject *object);
 extern f32 overlay1DistanceFromCurrent(Overlay7RuntimeObject *object);
-extern void overlay7RecordRuntimeEventReloc(s32 event);
+extern void overlay7CommitSelection(s32 event);
 extern s32 mathRnd(s32 arg0, s32 arg1);
 extern void overlay7StartRuntimeValueReloc(u8 value);
 extern void overlay7ReleaseRuntimeOwnerReloc(void *owner);
@@ -50,7 +50,7 @@ extern s32 mathRnd(s32 arg0, s32 value);
 extern void *amSndPlayXYZ(u16 value, s32 x, s32 y, s32 z,
                                              s32 kind, void **argument);
 extern void overlay7ReleaseRuntimeHandleReloc(void *handle);
-extern void overlay7ReleaseRuntimeEntryReloc(Overlay7Entry *entry);
+extern void overlay7ReleaseEntry(Overlay7Entry *entry);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern void overlay7SetRuntimeModeReloc(Overlay7RuntimeObject *object,
                                         s32 mode);
@@ -123,7 +123,7 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
                         difference = overlay1DistanceFromSelected(object) -
                                      overlay1DistanceFromCurrent(object);
                         if (difference - state->difference > 4.0f) {
-                            overlay7RecordRuntimeEventReloc(state->kind + 0x15);
+                            overlay7CommitSelection(state->kind + 0x15);
                         }
                         state->difference = difference;
                     }
@@ -175,7 +175,7 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
                     entry->active = 1;
                     found = 1;
                 }
-                overlay7ReleaseRuntimeEntryReloc(D_290);
+                overlay7ReleaseEntry(D_290);
             }
             if (!found) {
                 entry = gOverlay7ActiveHead;
@@ -209,7 +209,7 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
                     if (entry->nested != NULL) {
                         overlay7ReleaseRuntimeHandleReloc(entry->nested);
                     }
-                    overlay7ReleaseRuntimeEntryReloc(entry);
+                    overlay7ReleaseEntry(entry);
                 }
             }
         }

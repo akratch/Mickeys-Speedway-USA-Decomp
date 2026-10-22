@@ -233,7 +233,7 @@ def _code_spans(text):
     return spans
 
 
-def rewrite_text(text, mapping):
+def rewrite_text(text, mapping, dedupe=True):
     """Rename identifiers in C text; comments too, except for short `D_` names.
 
     String literals are never touched.  A short `D_<hex>` spelling is too
@@ -250,7 +250,8 @@ def rewrite_text(text, mapping):
                 return new
             chunk = IDENT_RE.sub(sub, chunk)
         out.append(chunk)
-    return dedupe_declarations("".join(out), set(mapping.values()))
+    text = "".join(out)
+    return dedupe_declarations(text, set(mapping.values())) if dedupe else text
 
 
 def dedupe_declarations(text, names):
@@ -304,14 +305,15 @@ def rewrite_mk(text, overlay, mapping):
     for a, b, target in list(_rule_blocks(lines)):
         if not target.startswith(prefix):
             continue
+        rule_map = mapping(target.replace("$(SRC_DIR)", "src")) if callable(mapping) else mapping
         olds = {mm.group(2) for k in range(a, b) for mm in REDEFINE_RE.finditer(lines[k])}
-        claimed = set(olds) - set(mapping)
+        claimed = set(olds) - set(rule_map)
         for k in range(a, b):
-            def sub(mm):
+            def sub(mm, rule_map=rule_map):
                 old = mm.group(2)
-                if old not in mapping:
+                if old not in rule_map:
                     return mm.group(0)
-                new = mapping[old]
+                new = rule_map[old]
                 if new in claimed:
                     return "\0DROP\0"
                 claimed.add(new)
@@ -424,73 +426,109 @@ def compile_module(root, overlay, sources):
     return names, located, rest
 
 
+PREVIOUS_RE = re.compile(r"previous declaration at line (\d+) in file '([^']+)'")
+
+
+def declares(text, name):
+    """Whether ``text`` carries an `extern` declaration of ``name``."""
+    return bool(re.search(r"\bextern\b[^;{}]*\b%s\b[^;{}]*;" % re.escape(name), text))
+
+
 def apply_module(root, overlay, mapping, files, texts, inc, compile=True):
-    """Rewrite one module; return (changed paths, [(placeholder, reason)]).
+    """Rewrite one module; return (changed paths, refusals, renamed mapping).
 
     With ``compile``, the module is compiled after the rewrite.  A real name
     the rewrite left declared with two different types in one translation
-    unit (two placeholders that spelled one callee with different
-    prototypes, which their call sites' codegen depends on) is a refusal:
-    every placeholder for it is restored and the module rewritten again.
+    unit -- two placeholders that spelled one callee with different
+    prototypes, which their call sites' codegen depends on -- is refused
+    where it conflicts: in that source file when the file declares the
+    placeholder itself, otherwise in the whole module.  The module is then
+    rewritten again from its original text, until it compiles.
     """
-    mapping = dict(mapping)
     own = sorted(module_files(root, overlay, files, texts, inc))
     originals = {f: texts[f] for f in own}
-    for f in mk_files(root):
-        if not f.name.endswith(".generated.mk"):
-            originals[f] = f.read_text()
-    refused = []
+    mks = [f for f in mk_files(root) if not f.name.endswith(".generated.mk")]
+    mk_originals = {f: f.read_text() for f in mks}
     sources = [f for f in own if f.suffix == ".c"]
+    dropped_all, dropped = set(), collections.defaultdict(set)
+    reasons = {}
+
+    def file_map(f):
+        return {o: n for o, n in mapping.items() if o not in dropped_all and o not in dropped[f]}
+
+    def object_map(target):
+        src = root / (target[len("$(BUILD_DIR)/"):-len(".o")])
+        return file_map(src) if src in originals else {}
+
     unexplained = []
     while True:
         changed = []
         for f, old in originals.items():
-            if f.suffix in (".c", ".h"):
-                new = rewrite_text(old, mapping)
-            else:
-                new = rewrite_mk(old, overlay, mapping)
+            new = rewrite_text(old, file_map(f), dedupe=False)
+            if f.read_text() != new:
+                f.write_text(new)
+            if new != old:
+                changed.append(f)
+        for f, old in mk_originals.items():
+            new = rewrite_mk(old, overlay, object_map)
             if f.read_text() != new:
                 f.write_text(new)
             if new != old:
                 changed.append(f)
         if not compile:
             break
-        names, located, rest = compile_module(root, overlay, sources)
+        _names, located, rest = compile_module(root, overlay, sources)
         if rest:
             unexplained = rest
-            bad = set()
             break
-        new_names = set(mapping.values())
-        bad = names & new_names
-        unexplained = []
+        unexplained, progress = [], False
         for path, line, msg in located:
-            if REDECL_RE.search(msg) and REDECL_RE.search(msg).group(1) in bad:
-                continue
-            f = root / path
-            text = f.read_text().splitlines() if f.is_file() else []
-            here = set(IDENT_RE.findall(text[line - 1])) if 0 < line <= len(text) else set()
-            hit = here & new_names
-            if hit:
-                bad |= hit
-            else:
+            spots = [(root / path, line)]
+            m = PREVIOUS_RE.search(msg)
+            if m:
+                spots.append((root / m.group(2), int(m.group(1))))
+            hit = False
+            for f, ln in spots:
+                if f not in originals:
+                    continue
+                lines = originals[f].splitlines()
+                here = set(IDENT_RE.findall(lines[ln - 1])) if 0 < ln <= len(lines) else set()
+                for o in sorted(here & set(file_map(f))):
+                    hit = progress = True
+                    reasons[o] = "prototype-conflict (%s)" % mapping[o]
+                    if f.suffix == ".c" and declares(originals[f], o):
+                        dropped[f].add(o)
+                    else:
+                        dropped_all.add(o)
+                if hit:
+                    break
+            if not hit:
                 unexplained.append("%s:%d: %s" % (path, line, msg))
-        if not bad:
+        if not located or not progress:
             break
-        for old in sorted(mapping):
-            if mapping[old] in bad:
-                refused.append((old, "prototype-conflict (%s)" % mapping[old]))
-                del mapping[old]
     if compile and unexplained:
         # Not a prototype conflict: put the module back as it was and refuse it.
-        for f, old in originals.items():
+        for f, old in list(originals.items()) + list(mk_originals.items()):
             if f.read_text() != old:
                 f.write_text(old)
-        refused += [(old, "module does not compile: %s" % unexplained[0][:160])
-                    for old in sorted(mapping)]
-        mapping, changed = {}, []
-    for f in own:
+        refused = [(o, "module does not compile: %s" % unexplained[0][:160])
+                   for o in sorted(mapping)]
+        for f in own:
+            texts[f] = f.read_text()
+        return [], refused, {}
+    # The collapse of identical declarations is cosmetic; it runs last so the
+    # compile loop's line numbers stay those of the original text.
+    for f in originals:
+        text = f.read_text()
+        new = dedupe_declarations(text, set(file_map(f).values()))
+        if new != text:
+            f.write_text(new)
         texts[f] = f.read_text()
-    return changed, refused, mapping
+    renamed = {o: n for o, n in mapping.items() if o not in dropped_all}
+    refused = [(o, reasons[o] + (" in %d file(s)" % sum(o in d for d in dropped.values())
+                                 if o not in dropped_all else ""))
+               for o in sorted(reasons)]
+    return changed, refused, renamed
 
 
 # ---------------------------------------------------------------- commands

@@ -13,7 +13,7 @@ typedef struct Overlay1AngleObject {
     Overlay1AngleData *data;
 } Overlay1AngleObject;
 
-extern Overlay1AngleObject **overlay1GetAngleObjectsReloc(s32 *count);
+extern Overlay1AngleObject **func_80005750(s32 *count);
 extern f32 overlay1WrapOffset(f32 first, f32 second);
 extern f32 gOverlay1NextAngleLimit;
 
@@ -42,7 +42,7 @@ Overlay1AngleObject *overlay1FindNextAngle(f32 angle) {
     s32 remaining;
     s32 loopValue;
 
-    objects = overlay1GetAngleObjectsReloc(&count);
+    objects = func_80005750(&count);
     bestDifference = gOverlay1NextAngleLimit;
     best = (Overlay1AngleObject *)(count - count);
     remaining = count - 1;
@@ -86,7 +86,7 @@ Overlay1PreviousAngleObject *overlay1FindPreviousAngle(f32 angle) {
     s32 remaining;
     s32 loopValue;
 
-    objects = overlay1GetAngleObjectsReloc(&count);
+    objects = func_80005750(&count);
     bestDifference = gOverlay1PreviousAngleLimit;
     best = (Overlay1PreviousAngleObject *)(count - count);
     remaining = count - 1;

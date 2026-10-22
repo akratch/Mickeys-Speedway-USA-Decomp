@@ -284,7 +284,7 @@ extern void mmFree(void *memory);
 extern void *mmAlloc(s32 size, s32 tag);
 extern void overlay1GetEntryIndex(Overlay1Group *group);
 extern void overlay2Enable(Overlay1Group *group);
-extern void *overlay1SubmitBuildReloc(s32 value);
+extern void *overlay1GetEntry(s32 value);
 extern Overlay1LargeRecord *D_1D58;
 extern Overlay1LargeRecord *D_1D58Read;
 extern Overlay1LargeRecord *D_1D5C;
@@ -451,7 +451,7 @@ void overlay1LoadBuildRecords(void) {
             }
             group++;
         }
-        D_1BA4 = overlay1SubmitBuildReloc(1);
+        D_1BA4 = overlay1GetEntry(1);
         return;
     }
 large:
@@ -698,7 +698,7 @@ typedef struct Overlay1BuildState {
     s32 word410;
 } Overlay1BuildState;
 
-extern Overlay1BuildObject **overlay1GetBuildObjectsReloc(s32 *count);
+extern Overlay1BuildObject **func_80005750(s32 *count);
 extern void func_8001CB0C(Overlay1BuildObject *object);
 extern void overlay1BuildActivateReloc(Overlay1BuildObject *object);
 extern void overlay1InitializeModeState(s32 value);
@@ -715,7 +715,7 @@ void overlay1BuildObjectMappings(volatile s32 unused) {
     s32 remaining;
     s32 inner;
 
-    base = overlay1GetBuildObjectsReloc(&count);
+    base = func_80005750(&count);
     if (gOverlay1BuildGate != 0) {
         remaining = count;
         while (remaining--) {

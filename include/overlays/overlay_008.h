@@ -1035,9 +1035,9 @@ extern void overlay20ReleaseEntry(O8P4CF0SceneItem *item);
 extern f32 func_overlay_020_F0001148_1877720(O8P4CF0Bounds *bounds, f32 x, f32 z,
                              O8P4CF0Normal *normal);
 
-extern f32 O8P4CF0_call_4E9C(s32 angle);
+extern f32 func_8002A8C0(s32 angle);
 
-extern f32 O8P4CF0_call_4EAC(s32 angle);
+extern f32 func_8002A8BC(s32 angle);
 
 extern s32 Arctanf(f32 horizontal, f32 vertical);
 

@@ -112,7 +112,7 @@ extern void setupFrontEndList(void *resource);
 extern void amTunePlay(s32 mode);
 extern void runlinkDownloadCode(s32 mode);
 extern void fontUseFont(s32 arg0);
-extern s16 o54QueryValue(void);
+extern s16 levelGetNumber(void);
 extern s32 o54CreateObject(void);
 extern s32 func_8003A5A0(s32 object);
 extern void *overlay45CreateDescriptor(s32 id, s32 width, s32 height, s32 format);
@@ -176,7 +176,7 @@ void func_overlay_054_F0000000_189ECA0(void) {
 
     sOverlay54Height = -80.0f;
     o54LoadResource();
-    gOverlay54Data00 = o54QueryValue();
+    gOverlay54Data00 = levelGetNumber();
     *(s16 *)(D_800D3550 + 0x26) = 0x28;
     *(f32 *)(D_800D3550 + 0x28) = 1.0f;
     sOverlay54State.field08 = 0;

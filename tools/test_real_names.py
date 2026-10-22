@@ -170,6 +170,13 @@ class PlanModuleTests(unittest.TestCase):
             self.assertEqual({"Shared": "shared", "Spec": "normalization", "Blob": "blob-bss"},
                              {n: why.split(" ")[0] for n, why in refusals})
 
+    def test_rule_on_a_one_object_variable(self):
+        mk = ("O28_OBJ := \\\n\t$(BUILD_DIR)/$(SRC_DIR)/overlays/o028/a.c.o\n"
+              "$(O28_OBJ): POSTPROCESS = \\\n"
+              "\t$(HOST_PYTHON) rebind.py $@ .text 0x10:P:func_x\n")
+        self.assertEqual(1, len(rn.module_rules([mk], 28)))
+        self.assertIn("0x10:rP:func_x", rn.rewrite_mk(mk, 28, {"P": "rP"}))
+
     def test_recipe_spellings_refuse_only_on_a_clash(self):
         mk = ("$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/a.c.o: POSTPROCESS = \\\n"
               "\t$(HOST_PYTHON) rebind.py $@ .text 0x10:P:func_x 0x20:Q:rQ \\\n"

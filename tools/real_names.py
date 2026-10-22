@@ -277,22 +277,32 @@ def dedupe_declarations(text, names):
     return "".join(out)
 
 
-RULE_START_RE = re.compile(r"^(\S+\.o):\s+POSTPROCESS\s*[:+]?=")
+RULE_START_RE = re.compile(r"^(\S+\.o|\$\([A-Za-z0-9_]+\)):\s+POSTPROCESS\s*[:+]?=")
+OBJ_VAR_RE = re.compile(r"^([A-Za-z0-9_]+)\s*:=\s*(?:\\\n\s*)?(\S+\.o)\s*$", re.M)
 REDEFINE_RE = re.compile(r"(--redefine-sym\s+)([A-Za-z_]\w*)=")
 
 
 def _rule_blocks(lines):
-    """Yield (start, end, target) for each POSTPROCESS rule's line range."""
+    """Yield (start, end, target) for each POSTPROCESS rule's line range.
+
+    A rule written against a one-object variable (`O28_MERGED_OBJ := <obj>`,
+    defined in the same file) yields that object as its target.
+    """
+    objs = {m.group(1): m.group(2)
+            for m in OBJ_VAR_RE.finditer("".join(l for l in lines if l is not None))}
     i = 0
     while i < len(lines):
-        m = RULE_START_RE.match(lines[i])
+        m = RULE_START_RE.match(lines[i] or "")
         if not m:
             i += 1
             continue
         j = i
         while lines[j].rstrip("\n").endswith("\\") and j + 1 < len(lines):
             j += 1
-        yield i, j + 1, m.group(1)
+        target = m.group(1)
+        if target.startswith("$("):
+            target = objs.get(target[2:-1], target)
+        yield i, j + 1, target
         i = j + 1
 
 

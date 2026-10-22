@@ -46,13 +46,13 @@ void overlay28UpdateVertices(Overlay28VertexState *state) {
     yScale = state->yScale;
     remaining = 15;
     do {
-        xWave = ext_o0_2a470(xAngle);
-        scale = (ext_o0_2a470(yAngle) * yScale) +
+        xWave = func_8002A8C0(xAngle);
+        scale = (func_8002A8C0(yAngle) * yScale) +
                 ((8.0f * state->baseScale) + (xScale * xWave));
         xAngle += state->xStep;
         yAngle += state->yStep;
-        point->x = (s32)(ext_o0_2a470(angle) * scale);
-        point->y = (s32)(ext_o0_2a46c(angle) * scale);
+        point->x = (s32)(func_8002A8C0(angle) * scale);
+        point->y = (s32)(func_8002A8BC(angle) * scale);
         angle += 0x1000;
         point++;
     } while (remaining--);
@@ -196,7 +196,7 @@ void func_overlay_028_F00004D8_187CDA8(Overlay28Gfx **dl, void *matrixArg,
     Overlay28View *view;
     s32 mask;
 
-    view = ext_o0_241dc();
+    view = camGetPtr();
     work = owner->work;
     related = work->related;
     if (related != 0) {
@@ -210,18 +210,18 @@ void func_overlay_028_F00004D8_187CDA8(Overlay28Gfx **dl, void *matrixArg,
         distanceSquared = (dy * dy) + ((dx * dx) + (dz * dz));
         ratio = distanceSquared;
         if (distanceSquared > 0.0f) {
-            ratio = work->valueA / ext_o0_6ec00(distanceSquared);
+            ratio = work->valueA / sqrtf(distanceSquared);
         }
         transformHome.pitch = -view->pitch;
         transformHome.yaw = view->yaw;
         transformHome.roll = 0;
-        transformHome.scale = ext_o0_9ab8(related) * 0.125f;
+        transformHome.scale = func_80009F08(related) * 0.125f;
         transformHome.x += dx * ratio;
         transformHome.y += dy * ratio;
         transformHome.z += dz * ratio;
         matrix = *owner->matrix;
-        ext_o0_2409c(dl, matrixArg, &transformHome, 1.0f, 0.0f);
-        ext_o0_34554(dl, matrix, 0x214, 0);
+        camPushModelMtx(dl, matrixArg, &transformHome, 1.0f, 0.0f);
+        texDPTextureX(dl, matrix, 0x214, 0);
 
         mask = -0x100;
         WRITE_PRIM((*dl)++, (work->intensity & 0xFF) | mask);
@@ -236,6 +236,6 @@ void func_overlay_028_F00004D8_187CDA8(Overlay28Gfx **dl, void *matrixArg,
             WRITE_PRIM((*dl)++, -1);
         }
         WRITE_ENV((*dl)++, mask);
-        ext_o0_241bc(dl);
+        camPopModelMtx(dl);
     }
 }

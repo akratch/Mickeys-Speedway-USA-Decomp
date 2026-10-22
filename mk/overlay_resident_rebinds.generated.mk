@@ -436,6 +436,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym amSndSetVolXYZ=amSndSetVolXYZ_o028Reloc \
 	--redefine-sym amSndSetXYZ=amSndSetXYZ_o028Reloc \
 	--redefine-sym func_80006EA0=func_80006EA0_o028Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o028Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o028Reloc \
 	--redefine-sym resetColourCycle=resetColourCycle_o028Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/func_overlay_029_F00005C4_187D874.c.o: SURFACE_REBIND = $(OBJCOPY) \

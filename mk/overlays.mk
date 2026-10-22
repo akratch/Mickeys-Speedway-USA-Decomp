@@ -1507,8 +1507,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.c.o: POSTPROCE
 		--redefine-sym func_80022FD4=overlay69SubmitDynamicReloc \
 		--redefine-sym fxDrawCone=overlay69DrawConeReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x59C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o067/overlay_067.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x14C
+# Overlay 67: one module TU under the overlay flag set; IDO's 16-byte .text
+# alignment emits the module's trailing pad itself, so no trim.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o067/overlay_067.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o071/overlay71UpdateCoordinates.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC8
 # NON_MATCHING/GLOBAL_ASM: retain only trailing-section trims where these

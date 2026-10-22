@@ -2573,7 +2573,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18C6F40, c, overlay_067]
-      - [0x18C708C, asm, overlay_067_padding]
       - [0x18C7090, bin, overlay_067_data_rodata]
       - [0x18C7140, bin, overlay_067_reloc1]
       - [0x18C7148, bin, overlay_067_reloc2]

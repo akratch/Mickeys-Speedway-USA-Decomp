@@ -291,6 +291,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     22: "overlay_022_padding",
     45: "overlay_045_padding",
     15: "overlay_015_padding",
+    67: "overlay_067_padding",
 }
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
@@ -2282,7 +2283,10 @@ def render_yaml_block(
         for part in row["text_ownership"]:
             source_name = part["source"].rsplit("/", 1)[1]
             if source_name == compiler_padding:
-                if not owned_data:
+                # A module TU's trailing pad is emitted by IDO's 16-byte
+                # .text alignment (phase 2 of docs/OVERLAY_STRUCTURE_SPRINT.md);
+                # an interior pad still needs C-owned data after it.
+                if not owned_data and part is not row["text_ownership"][-1]:
                     raise ValueError(
                         f"overlay {ov} compiler padding needs C-owned data"
                     )

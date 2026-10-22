@@ -16284,37 +16284,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x128",
-     "size": "0x128",
-     "type": "c",
-     "source": "overlays/o087/overlay87InitializeObject",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x128",
-     "end_offset": "0x890",
-     "size": "0x768",
-     "type": "c",
-     "source": "overlays/o087/func_overlay_087_F0000128_18D3090",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x890",
-     "end_offset": "0x8C0",
-     "size": "0x30",
-     "type": "c",
-     "source": "overlays/o087/overlay87ReleaseCurrent",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x8C0",
      "end_offset": "0x964",
-     "size": "0xA4",
+     "size": "0x964",
      "type": "c",
-     "source": "overlays/o087/overlay87HasNearby",
+     "source": "overlays/o087/overlay_087",
      "matched": true,
      "nonmatching": false
     },

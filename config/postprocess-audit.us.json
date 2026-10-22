@@ -7018,64 +7018,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o087/func_overlay_087_F0000128_18D3090.c.o",
-      "offset": 296,
-      "overlay": 87,
-      "size": 1896,
-      "source": "src/overlays/o087/func_overlay_087_F0000128_18D3090.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o087/overlay87HasNearby.c.o",
-      "offset": 2240,
-      "overlay": 87,
-      "size": 164,
-      "source": "src/overlays/o087/overlay87HasNearby.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o087/overlay87InitializeObject.c.o",
-      "offset": 0,
-      "overlay": 87,
-      "size": 296,
-      "source": "src/overlays/o087/overlay87InitializeObject.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o087/overlay87ReleaseCurrent.c.o",
-      "offset": 2192,
-      "overlay": 87,
-      "size": 48,
-      "source": "src/overlays/o087/overlay87ReleaseCurrent.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o088/overlay88DrawSortedGeometry.c.o",
       "offset": 420,
       "overlay": 88,
@@ -8716,10 +8658,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 600,
+      "metadata": 596,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 438060,
-    "objects_with_postprocess": 601
+    "matched_c_bytes_with_postprocess": 435656,
+    "objects_with_postprocess": 597
   }
 }

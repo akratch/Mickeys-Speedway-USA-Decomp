@@ -1936,11 +1936,20 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86SelectPosition.c.o: SURFACE_REBIN
 	--redefine-sym overlay1FindPreviousUsable=overlay1FindPreviousUsable_o086Reloc \
 	--redefine-sym overlay1NextIndex=overlay1NextIndex_o086Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87HasNearby.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80005750=func_80005750_o087Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87ReleaseCurrent.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndStopXYZ=amSndStopXYZ_o087Reloc $@
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay_087.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o087Reloc \
+	--redefine-sym Powerf=Powerf_o087Reloc \
+	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o087Reloc \
+	--redefine-sym amSndStopXYZ=amSndStopXYZ_o087Reloc \
+	--redefine-sym dAngle=dAngle_o087Reloc \
+	--redefine-sym func_80005750=func_80005750_o087Reloc \
+	--redefine-sym func_80008128=func_80008128_o087Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o087Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o087Reloc \
+	--redefine-sym func_8005ABA8=func_8005ABA8_o087Reloc \
+	--redefine-sym func_8005AD64=func_8005AD64_o087Reloc \
+	--redefine-sym mathRnd=mathRnd_o087Reloc \
+	--redefine-sym sqrtf=sqrtf_o087Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay_089.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym addObjectLight=addObjectLight_o089Reloc \

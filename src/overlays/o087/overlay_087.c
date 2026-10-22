@@ -1,72 +1,40 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_087.h"
 
-typedef struct Overlay87MotionState {
-    f32 liftOffset;
-    f32 value04;
-    f32 radiusSquared;
-    f32 x;
-    f32 y;
-    f32 z;
-    f32 verticalVelocity;
-    f32 targetHeight;
-    f32 verticalAcceleration;
-    f32 bounceAcceleration;
-    s16 turning;
-    s16 phase;
-    s16 angle;
-    s16 targetAngle;
-    u8 pad30[2];
-    s16 angularVelocity;
-    s16 angularAcceleration;
-} Overlay87MotionState;
+static s32 overlay87HasNearby(void *unused, Overlay87MotionState *query);
 
-typedef struct Overlay87MotionObject {
-    s16 angle;
-    s16 turnAmount;
-    s16 liftAmount;
-    u8 pad06[6];
-    f32 x;
-    f32 y;
-    f32 z;
-    u8 pad18[8];
-    f32 verticalVelocity;
-    u8 pad24[0x17];
-    s8 updateMode;
-    u8 pad3C[0x28];
+/* DKR v77/v80 and JFG exact-object scans are negative for this initializer. */
+void overlay87InitializeObject(Overlay87Object *object,
+                               Overlay87Config *config, s32 preserveState) {
     Overlay87MotionState *state;
-} Overlay87MotionObject;
+    f32 value;
 
-extern void *gOverlay87Current;
-extern void *gOverlay87UpdateTable[];
-extern f32 gOverlay87TurnFactor;
-extern f32 gOverlay87StraightFactor;
-extern f32 gOverlay87ApproachFactor;
-extern f32 gOverlay87PositiveDivisor;
-extern f32 gOverlay87PositiveAcceleration;
-extern f32 gOverlay87NegativeDivisor;
-extern f32 gOverlay87NegativeAcceleration;
-extern f32 gOverlay87Gravity;
-
-extern s32 overlay87HasNearby(void *unused, void *query);
-extern void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority,
-                          void **handle);
-extern f32 Powerf(f32 value, s32 exponent);
-extern s16 dAngle(s16 current, s16 target, f32 fraction);
-extern s32 Arctanf(f32 y, f32 x);
-extern f32 sqrtf(f32 value);
-extern f32 func_8002A8C0(s16 angle);
-extern f32 func_8002A8BC(s16 angle);
-extern s32 func_80008128(Overlay87MotionObject *object, f32 x, f32 y, f32 z);
-extern s32 func_8005ABA8(Overlay87MotionObject *object, void *update,
-                         f32 updateRate);
-extern void func_8005AD64(Overlay87MotionObject *object, s32 mode, s32 index,
-                          f32 value);
+    state = object->state;
+    object->scale =
+        *object->scaleSource * (((void)preserveState, config->scale) *
+                          gOverlay87InitScaleReloc);
+    state->liftOffset = config->value00;
+    state->radiusSquared = config->value08;
+    state->phase = 0;
+    value = state->radiusSquared;
+    state->radiusSquared = value * value;
+    state->x = object->x;
+    state->y = object->y;
+    state->z = object->z;
+    state->radius = config->value04;
+    state->angle = config->angle;
+    state->targetAngle = config->angle;
+    state->angularVelocity = 0;
+    state->angularAcceleration = 0x300;
+    state->targetHeight = object->y;
+    object->angle = state->angle + 0x4000;
+    func_8005AD64(object, 2, -1, (f32)mathRnd(0, 0x63) / 100.0f);
+}
 
 /* Matched: f32 0 passed as the integer literal 0, func_80008128 returning s32
  * (as its other callers declare it), verticalDelta reused as the divisor term
  * in the lift test, dx reused for the X step, newAngle/crossed reused for the
  * turn delta, and two unused s32 locals that place the frame homes. */
-void func_overlay_087_F0000128_18D3090(Overlay87MotionObject *object,
+void func_overlay_087_F0000128_18D3090(Overlay87Object *object,
                                        s32 updateRate) {
     Overlay87MotionState *state;
     f32 dx;
@@ -243,4 +211,39 @@ void func_overlay_087_F0000128_18D3090(Overlay87MotionObject *object,
         func_8005AD64(object, 1, -1, 0);
     }
     object->angle = state->angle + 0x4000;
+}
+
+/* DKR v77/v80 and JFG checks found only generic null-guarded release logic. */
+void overlay87ReleaseCurrent(void) {
+    void *resource = gOverlay87Current;
+
+    if (resource != NULL) {
+        amSndStopXYZ(resource);
+    }
+}
+
+/* DKR v77/v80 and JFG exact-object scans are negative for this radius query. */
+static s32 overlay87HasNearby(void *unused, Overlay87MotionState *query) {
+    Overlay87Object **entries;
+    Overlay87Object *entry;
+    f32 radiusSquared;
+    f32 dx;
+    f32 dz;
+    u8 result;
+    s32 count;
+
+    radiusSquared = query->radius;
+    radiusSquared *= radiusSquared;
+    entries = func_80005750(&count);
+    result = FALSE;
+    while (count != 0) {
+        entry = *entries++;
+        dx = entry->x - query->x;
+        dz = entry->z - query->z;
+        if ((dx * dx) + (dz * dz) < radiusSquared) {
+            result = TRUE;
+        }
+        count--;
+    }
+    return result;
 }

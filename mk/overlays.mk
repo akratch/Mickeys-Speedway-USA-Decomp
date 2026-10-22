@@ -1734,26 +1734,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100RemoveEntry.c.o: POSTPROCESS = \
 # onto their shipped pre-loader carriers.
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87InitializeObject.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87InitializeObject.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0xe0:mathRnd:overlay87InitializeObject \
-		0x10c:func_8005AD64:overlay87InitializeObject && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x128
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o087/func_overlay_087_F0000128_18D3090.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o087/func_overlay_087_F0000128_18D3090.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym Arctanf=Arctanf_o087Reloc \
-		--redefine-sym Powerf=Powerf_o087Reloc \
-		--redefine-sym dAngle=dAngle_o087Reloc \
-		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o087Reloc \
-		--redefine-sym func_80008128=func_80008128_o087Reloc \
-		--redefine-sym func_8002A8BC=func_8002A8BC_o087Reloc \
-		--redefine-sym func_8002A8C0=func_8002A8C0_o087Reloc \
-		--redefine-sym func_8005ABA8=func_8005ABA8_o087Reloc \
-		--redefine-sym func_8005AD64=func_8005AD64_o087Reloc \
-		--redefine-sym sqrtf=sqrtf_o087Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x768
+# Overlay 87 is one translation unit under the overlay flag set; its .text is
+# the module's 0x970 bytes, trailing pad included, so it needs no trim. The
+# former offset-zero rebinds of overlay87InitializeObject's resident calls
+# are the generated _o087Reloc renames now. overlay87HasNearby is static
+# (a JUMP record).
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay_087.c.o: CFLAGS += -Wab,-r4300_mul
+OVERLAY_STATIC_FUNCTION_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay_087.c.o
 # All four random-range calls are instruction-natural and share retail's
 # offset-zero stored overlay carrier; retain distinct runtime identities in
 # the authoritative relocation ledger and trim only section alignment.
@@ -2377,11 +2364,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62Update.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x498
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62ReleaseAll.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x44
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87ReleaseCurrent.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87HasNearby.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA4
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87HasNearby.c.o: CFLAGS += -Wab,-r4300_mul
 # The function defines overlay 50's .data and .bss at their recorded offsets
 # (as func_overlay_050_F0000334_1896CA4 does); the retained overlay image owns
 # the bytes, so these copies are dropped and their sites rebound to
@@ -2894,8 +2876,6 @@ OVERLAY_TRIMMED_OBJECTS := \
 OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34RemoveRecord.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34CreateRecord.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87InitializeObject.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/func_overlay_087_F0000128_18D3090.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000134_18CD0D4.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/func_overlay_045_F0000764_188CBBC.c.o \
@@ -3100,9 +3080,7 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58ReleaseResources.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62Initialize.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62Update.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62ReleaseAll.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87ReleaseCurrent.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87HasNearby.c.o
+    $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay62ReleaseAll.c.o
 OVERLAY_TRIMMED_OBJECTS += \
 	$(O22_UPDATE_OBJECT_OBJ)
 OVERLAY_TRIMMED_OBJECTS += \

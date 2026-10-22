@@ -920,13 +920,7 @@ TEXT_SUBSEGMENTS = {
         (0x135C, "asm", "overlay_099_padding"),
     ],
     100: [
-        (0x000, "c", "overlay100InitializeMotion"),
-        (0x214, "c", "overlay100ReleaseAll"),
-        (0x278, "c", "overlay100RemoveEntry"),
-        (0x318, "c", "overlay100ApplyValue"),
-        (0x38C, "c", "overlay100UpdateMotion"),
-        (0x50C, "c", "overlay100ApplyToValue"),
-        (0x580, "c", "overlay100DrawMotion"),
+        (0x000, "c", "overlay_100"),
         (0x94C, "asm", "overlay_100_padding"),
     ],
     17: [

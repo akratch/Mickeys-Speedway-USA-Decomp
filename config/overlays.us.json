@@ -18374,64 +18374,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x214",
-     "size": "0x214",
-     "type": "c",
-     "source": "overlays/o100/overlay100InitializeMotion",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x214",
-     "end_offset": "0x278",
-     "size": "0x64",
-     "type": "c",
-     "source": "overlays/o100/overlay100ReleaseAll",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x278",
-     "end_offset": "0x318",
-     "size": "0xA0",
-     "type": "c",
-     "source": "overlays/o100/overlay100RemoveEntry",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x318",
-     "end_offset": "0x38C",
-     "size": "0x74",
-     "type": "c",
-     "source": "overlays/o100/overlay100ApplyValue",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x38C",
-     "end_offset": "0x50C",
-     "size": "0x180",
-     "type": "c",
-     "source": "overlays/o100/overlay100UpdateMotion",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x50C",
-     "end_offset": "0x580",
-     "size": "0x74",
-     "type": "c",
-     "source": "overlays/o100/overlay100ApplyToValue",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x580",
      "end_offset": "0x94C",
-     "size": "0x3CC",
+     "size": "0x94C",
      "type": "c",
-     "source": "overlays/o100/overlay100DrawMotion",
+     "source": "overlays/o100/overlay_100",
      "matched": true,
      "nonmatching": false
     },

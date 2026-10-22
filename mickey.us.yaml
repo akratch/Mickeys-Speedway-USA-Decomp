@@ -3229,13 +3229,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18DAD28, c, overlay100InitializeMotion]
-      - [0x18DAF3C, c, overlay100ReleaseAll]
-      - [0x18DAFA0, c, overlay100RemoveEntry]
-      - [0x18DB040, c, overlay100ApplyValue]
-      - [0x18DB0B4, c, overlay100UpdateMotion]
-      - [0x18DB234, c, overlay100ApplyToValue]
-      - [0x18DB2A8, c, overlay100DrawMotion]
+      - [0x18DAD28, c, overlay_100]
       - [0x18DB674, asm, overlay_100_padding]
       - [0x18DB678, bin, overlay_100_data_rodata]
       - [0x18DB6B8, bin, overlay_100_reloc1]

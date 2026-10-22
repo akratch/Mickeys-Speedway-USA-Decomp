@@ -18435,45 +18435,9 @@
       }
     },
     {
-      "name": "src/overlays/o100/overlay100ApplyToValue.c",
-      "target_path": "expected/build/src/overlays/o100/overlay100ApplyToValue.c.o",
-      "base_path": "build/src/overlays/o100/overlay100ApplyToValue.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o100"
-        ],
-        "source_path": "src/overlays/o100/overlay100ApplyToValue.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o100/overlay100ApplyValue.c",
-      "target_path": "expected/build/src/overlays/o100/overlay100ApplyValue.c.o",
-      "base_path": "build/src/overlays/o100/overlay100ApplyValue.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o100"
-        ],
-        "source_path": "src/overlays/o100/overlay100ApplyValue.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o100/overlay100DrawMotion.c",
-      "target_path": "expected/build/src/overlays/o100/overlay100DrawMotion.c.o",
-      "base_path": "build/src/overlays/o100/overlay100DrawMotion.c.o",
+      "name": "src/overlays/o100/overlay_100.c",
+      "target_path": "expected/build/src/overlays/o100/overlay_100.c.o",
+      "base_path": "build/src/overlays/o100/overlay_100.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -18484,79 +18448,7 @@
           "overlay",
           "overlay-o100"
         ],
-        "source_path": "src/overlays/o100/overlay100DrawMotion.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o100/overlay100InitializeMotion.c",
-      "target_path": "expected/build/src/overlays/o100/overlay100InitializeMotion.c.o",
-      "base_path": "build/src/overlays/o100/overlay100InitializeMotion.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o100"
-        ],
-        "source_path": "src/overlays/o100/overlay100InitializeMotion.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o100/overlay100ReleaseAll.c",
-      "target_path": "expected/build/src/overlays/o100/overlay100ReleaseAll.c.o",
-      "base_path": "build/src/overlays/o100/overlay100ReleaseAll.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o100"
-        ],
-        "source_path": "src/overlays/o100/overlay100ReleaseAll.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o100/overlay100RemoveEntry.c",
-      "target_path": "expected/build/src/overlays/o100/overlay100RemoveEntry.c.o",
-      "base_path": "build/src/overlays/o100/overlay100RemoveEntry.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o100"
-        ],
-        "source_path": "src/overlays/o100/overlay100RemoveEntry.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o100/overlay100UpdateMotion.c",
-      "target_path": "expected/build/src/overlays/o100/overlay100UpdateMotion.c.o",
-      "base_path": "build/src/overlays/o100/overlay100UpdateMotion.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o100"
-        ],
-        "source_path": "src/overlays/o100/overlay100UpdateMotion.c",
+        "source_path": "src/overlays/o100/overlay_100.c",
         "complete": true
       }
     },

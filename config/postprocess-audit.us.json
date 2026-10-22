@@ -7956,82 +7956,13 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o100/overlay100ApplyToValue.c.o",
-      "offset": 1292,
-      "overlay": 100,
-      "size": 116,
-      "source": "src/overlays/o100/overlay100ApplyToValue.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o100/overlay100ApplyValue.c.o",
-      "offset": 792,
-      "overlay": 100,
-      "size": 116,
-      "source": "src/overlays/o100/overlay100ApplyValue.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o100/overlay100DrawMotion.c.o",
-      "offset": 1408,
-      "overlay": 100,
-      "size": 972,
-      "source": "src/overlays/o100/overlay100DrawMotion.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o100/overlay100InitializeMotion.c.o",
+      "object": "build/src/overlays/o100/overlay_100.c.o",
       "offset": 0,
       "overlay": 100,
-      "size": 532,
-      "source": "src/overlays/o100/overlay100InitializeMotion.c",
+      "size": 2380,
+      "source": "src/overlays/o100/overlay_100.c",
       "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o100/overlay100ReleaseAll.c.o",
-      "offset": 532,
-      "overlay": 100,
-      "size": 100,
-      "source": "src/overlays/o100/overlay100ReleaseAll.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o100/overlay100RemoveEntry.c.o",
-      "offset": 632,
-      "overlay": 100,
-      "size": 160,
-      "source": "src/overlays/o100/overlay100RemoveEntry.c",
-      "tools": [
+        "filter_elf_relocations.py",
         "trim_elf_section.py"
       ]
     },
@@ -9039,10 +8970,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 623,
+      "metadata": 618,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 447024,
-    "objects_with_postprocess": 624
+    "matched_c_bytes_with_postprocess": 447408,
+    "objects_with_postprocess": 619
   }
 }

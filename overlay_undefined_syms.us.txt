@@ -4457,36 +4457,21 @@ camStandardPersp_o099Reloc = 0xf0000000;
 gO99TrianglesReloc = 0x00000000;
 overlay99RenderSegments_o099Reloc = 0xf0000000;
 
-/* overlay 100: overlay100InitializeMotion.c.o */
+/* overlay 100: overlay_100.c.o */
 D_80079278_o100Reloc = 0x00000000;
+camGetPtr_o100Reloc = 0xf0000000;
+func_8002468C_o100Reloc = 0xf0000000;
 func_800299E8_o100Reloc = 0xf0000000;
+func_8002A8BC_o100Reloc = 0xf0000000;
+func_8002A8C0_o100Reloc = 0xf0000000;
+gOverlay100Entries = 0x00000000;
 gOverlay100EntriesReloc = 0x00000000;
+gOverlay100GravityReloc = 0x00000000;
+gOverlay100SegmentReloc = 0x00000000;
 gOverlay100VelocityScaleReloc = 0x00000000;
 mathOneFloatPY_o100Reloc = 0xf0000000;
 mmAlloc_o100Reloc = 0xf0000000;
-
-/* overlay 100: overlay100ReleaseAll.c.o */
-gOverlay100Entries = 0x00000000;
-overlay100RemoveEntry_o100Reloc = 0xf0000000;
-
-/* overlay 100: overlay100RemoveEntry.c.o */
 mmFree_o100Reloc = 0xf0000000;
-
-/* overlay 100: overlay100ApplyValue.c.o */
-overlay100UpdateMotion_o100Reloc = 0xf0000000;
-
-/* overlay 100: overlay100UpdateMotion.c.o */
-gOverlay100GravityReloc = 0x00000000;
-
-/* overlay 100: overlay100ApplyToValue.c.o */
-overlay100DrawMotion_o100Reloc = 0xf0000000;
-
-/* overlay 100: overlay100DrawMotion.c.o */
-camGetPtr_o100Reloc = 0xf0000000;
-func_8002468C_o100Reloc = 0xf0000000;
-func_8002A8BC_o100Reloc = 0xf0000000;
-func_8002A8C0_o100Reloc = 0xf0000000;
-gOverlay100SegmentReloc = 0x00000000;
 texDPInit_o100Reloc = 0xf0000000;
 
 /* overlay 101: overlay101Initialize.c.o */
@@ -6312,25 +6297,13 @@ func_overlay_099_F0000800_18D9DB0 = overlay99RenderSortedEntries;
 /* overlay 99: overlay99RenderSegments.c.o */
 func_overlay_099_F0000BA4_18DA154 = overlay99RenderSegments;
 
-/* overlay 100: overlay100InitializeMotion.c.o */
+/* overlay 100: overlay_100.c.o */
 func_overlay_100_F0000000_18DAD28 = overlay100InitializeMotion;
-
-/* overlay 100: overlay100ReleaseAll.c.o */
 func_overlay_100_F0000214_18DAF3C = overlay100ReleaseAll;
-
-/* overlay 100: overlay100RemoveEntry.c.o */
 func_overlay_100_F0000278_18DAFA0 = overlay100RemoveEntry;
-
-/* overlay 100: overlay100ApplyValue.c.o */
 func_overlay_100_F0000318_18DB040 = overlay100ApplyValue;
-
-/* overlay 100: overlay100UpdateMotion.c.o */
 func_overlay_100_F000038C_18DB0B4 = overlay100UpdateMotion;
-
-/* overlay 100: overlay100ApplyToValue.c.o */
 func_overlay_100_F000050C_18DB234 = overlay100ApplyToValue;
-
-/* overlay 100: overlay100DrawMotion.c.o */
 func_overlay_100_F0000580_18DB2A8 = overlay100DrawMotion;
 
 /* overlay 101: overlay101Initialize.c.o */

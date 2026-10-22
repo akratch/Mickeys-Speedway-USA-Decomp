@@ -2121,37 +2121,17 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99RenderSortedEntries.c.o: SURFACE_
 	--redefine-sym func_8002AA50=func_8002AA50_o099Reloc \
 	--redefine-sym mtxf_transform_point=mtxf_transform_point_o099Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100ApplyToValue.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay_100.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_80079278=D_80079278_o100Reloc \
-	--redefine-sym overlay100DrawMotion=overlay100DrawMotion_o100Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100ApplyValue.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80079278=D_80079278_o100Reloc \
-	--redefine-sym overlay100UpdateMotion=overlay100UpdateMotion_o100Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100DrawMotion.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym camGetPtr=camGetPtr_o100Reloc \
 	--redefine-sym func_8002468C=func_8002468C_o100Reloc \
+	--redefine-sym func_800299E8=func_800299E8_o100Reloc \
 	--redefine-sym func_8002A8BC=func_8002A8BC_o100Reloc \
 	--redefine-sym func_8002A8C0=func_8002A8C0_o100Reloc \
-	--redefine-sym texDPInit=texDPInit_o100Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100InitializeMotion.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80079278=D_80079278_o100Reloc \
-	--redefine-sym func_800299E8=func_800299E8_o100Reloc \
 	--redefine-sym mathOneFloatPY=mathOneFloatPY_o100Reloc \
-	--redefine-sym mmAlloc=mmAlloc_o100Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100ReleaseAll.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80079278=D_80079278_o100Reloc \
-	--redefine-sym overlay100RemoveEntry=overlay100RemoveEntry_o100Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100RemoveEntry.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80079278=D_80079278_o100Reloc \
-	--redefine-sym mmFree=mmFree_o100Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100UpdateMotion.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay100RemoveEntry=overlay100RemoveEntry_o100Reloc $@
+	--redefine-sym mmAlloc=mmAlloc_o100Reloc \
+	--redefine-sym mmFree=mmFree_o100Reloc \
+	--redefine-sym texDPInit=texDPInit_o100Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0002510_18DDD30.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym overlay101GetBounds=overlay101GetBounds_o101Reloc \

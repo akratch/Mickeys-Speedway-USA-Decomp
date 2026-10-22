@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay100DrawMotion:start -->
 ### `overlay100DrawMotion` plateau handoff
 
-- source: `src/overlays/o100/overlay100DrawMotion.c`
+- source: `src/overlays/o100/overlay_100.c`
 - score: 0/243 words, promoted
 - frame: 0xC0
 - relocations: 7

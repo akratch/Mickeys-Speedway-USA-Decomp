@@ -7,13 +7,13 @@ typedef struct Overlay101Slot {
     u8 pad0A[0x12];
 } Overlay101Slot;
 
-extern Overlay101Slot gOverlay101Slots[];
+extern Overlay101Slot D_0[];
 
 void overlay101AdvanceSlot(s32 index) {
     Overlay101Slot *slot;
     s32 state;
 
-    slot = &gOverlay101Slots[index];
+    slot = &D_0[index];
     state = slot->state;
     if (state == 2) {
         slot->state = 3;

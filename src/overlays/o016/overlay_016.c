@@ -30,7 +30,7 @@ s32 overlay16BuildGradient(s8 *output, s32 first0, s32 first1, s32 first2,
 
 /* DKR v77/v80 have no donor; JFG only confirms the gradient helper. */
 void overlay16InitializeBuffer(u8 *config) {
-    gOverlay16Buffer = overlay16AllocateReloc(0x300, 0x87);
+    gOverlay16Buffer = mmAlloc(0x300, 0x87);
     if (gOverlay16Buffer != NULL) {
         overlay16BuildGradientReloc(gOverlay16Buffer, config[0x102], config[0x103],
                                     config[0x104], config[0xFF], config[0x100],
@@ -52,7 +52,7 @@ void overlay16InitializeBuffer(u8 *config) {
 /* DKR v77/v80 and JFG have no donor for this ownership wrapper. */
 void overlay16ReleaseBuffer(void) {
     if (gOverlay16Buffer != NULL) {
-        overlay16ReleaseReloc(gOverlay16Buffer);
+        mmFree(gOverlay16Buffer);
         gOverlay16Buffer = NULL;
     }
 }

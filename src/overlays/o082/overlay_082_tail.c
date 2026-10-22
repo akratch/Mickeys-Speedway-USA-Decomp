@@ -57,7 +57,7 @@ void overlay82Update(O82Object *object, s32 updateRate) {
             movementEvent = -1;
             edgeEvent = -1;
 
-            if (overlay82InputXReloc < -30) {
+            if (D_800D31BC < -30) {
                 state->changed = 1;
                 state->selection--;
                 if (state->selection < 0) {
@@ -69,7 +69,7 @@ void overlay82Update(O82Object *object, s32 updateRate) {
                 } else {
                     movementEvent = 0x26D;
                 }
-            } else if (overlay82InputXReloc >= 31) {
+            } else if (D_800D31BC >= 31) {
                 state->selection++;
                 state->changed = 1;
                 if (state->selection == 10) {
@@ -83,7 +83,7 @@ void overlay82Update(O82Object *object, s32 updateRate) {
                 }
             }
 
-            if (overlay82InputYReloc >= 31) {
+            if (D_800D31BE >= 31) {
                 if (state->selection >= 5 && state->selection < 9) {
                     state->selection -= 5;
                     state->changed = 1;
@@ -91,7 +91,7 @@ void overlay82Update(O82Object *object, s32 updateRate) {
                 } else {
                     edgeEvent = 14;
                 }
-            } else if (overlay82InputYReloc < -30) {
+            } else if (D_800D31BE < -30) {
                 if (state->selection < 4) {
                     state->selection += 5;
                     state->changed = 1;
@@ -102,18 +102,18 @@ void overlay82Update(O82Object *object, s32 updateRate) {
             }
 
             if (movementEvent != -1) {
-                overlay82PlayEventReloc(movementEvent, ((void *)0) );
+                amSndPlay(movementEvent, ((void *)0) );
             }
             if (edgeEvent != -1) {
-                overlay82PlayEventReloc(edgeEvent, ((void *)0) );
+                amSndPlay(edgeEvent, ((void *)0) );
             }
-            if ((overlay82InputButtonsReloc & 0x9000) != 0) {
+            if ((D_800D31B8 & 0x9000) != 0) {
                 state->active = 1;
-                overlay82PlayEventReloc(12, ((void *)0) );
+                amSndPlay(12, ((void *)0) );
             }
-        } else if ((overlay82InputButtonsReloc & 0x4000) != 0 && state->disabled == 0) {
+        } else if ((D_800D31B8 & 0x4000) != 0 && state->disabled == 0) {
             state->active = 0;
-            overlay82PlayEventReloc(13, ((void *)0) );
+            amSndPlay(13, ((void *)0) );
         }
     }
 
@@ -130,9 +130,9 @@ void overlay82Update(O82Object *object, s32 updateRate) {
         index = 0;
         do {
             if (index == state->selection) {
-                overlay82SetChannelReloc(resource, *channelMap, 0x100);
+                modSetTextureFrame(resource, *channelMap, 0x100);
             } else {
-                overlay82SetChannelReloc(resource, *channelMap, 0);
+                modSetTextureFrame(resource, *channelMap, 0);
             }
             index++;
             channelMap++;
@@ -140,14 +140,14 @@ void overlay82Update(O82Object *object, s32 updateRate) {
 
         channelValues = ((const s8 *) (gO82DataBase + 0x84)) ;
         if (state->active != 0) {
-            overlay82SetChannelReloc(resource, 6,
+            modSetTextureFrame(resource, 6,
                 (*(const s8 *)((u32)channelValues + state->selection) + 10) << 8);
-            overlay82SetChannelReloc(resource, 7,
+            modSetTextureFrame(resource, 7,
                 (*(const s8 *)((u32)channelValues + state->selection) + 10) << 8);
         } else {
-            overlay82SetChannelReloc(resource, 6,
+            modSetTextureFrame(resource, 6,
                 *(const s8 *)((u32)channelValues + state->selection) << 8);
-            overlay82SetChannelReloc(resource, 7,
+            modSetTextureFrame(resource, 7,
                 *(const s8 *)((u32)channelValues + state->selection) << 8);
         }
     }

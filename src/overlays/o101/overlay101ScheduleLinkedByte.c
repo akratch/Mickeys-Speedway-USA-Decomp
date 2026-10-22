@@ -19,10 +19,10 @@ typedef struct Overlay101LinkedByteEntry {
     s32 duration;
 } Overlay101LinkedByteEntry;
 
-extern Overlay101LinkedByteSlot gOverlay101Slots[];
-extern Overlay101LinkedByteSlot *overlay101FindSlotReloc(
+extern Overlay101LinkedByteSlot D_0[];
+extern Overlay101LinkedByteSlot *overlay101FindEntry(
     Overlay101LinkedByteSlot *slot, s32 mode, s32 key);
-extern Overlay101LinkedByteEntry *overlay101AcquireTimedReloc(s32 duration);
+extern Overlay101LinkedByteEntry *overlay101AllocateEntry(s32 duration);
 extern void overlay101SubmitLinkedPairReloc(Overlay101LinkedByteEntry *entry,
                                              s32 value);
 
@@ -33,11 +33,11 @@ void overlay101ScheduleLinkedByte(s32 index, s32 key, s32 value, f32 seconds,
     Overlay101LinkedByteEntry *entry;
     s32 duration;
 
-    slot = overlay101FindSlotReloc(&gOverlay101Slots[index], 2, key);
+    slot = overlay101FindEntry(&D_0[index], 2, key);
     if (slot != NULL) {
         duration = seconds * 60.0f;
         if (duration > 0) {
-            entry = overlay101AcquireTimedReloc(duration);
+            entry = overlay101AllocateEntry(duration);
             if (entry != NULL) {
                 entry->output = slot;
                 entry->owner = 12;

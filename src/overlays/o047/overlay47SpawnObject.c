@@ -31,7 +31,7 @@ typedef struct Overlay47Object {
     s16 selectorIndex;
 } Overlay47Object;
 
-extern s16 D_0[];
+extern s16 gOverlay47InitializedData[];
 extern Overlay47Spawned *func_8000590C(Overlay47SpawnPacket *packet, s32 mode);
 extern void func_80005768(Overlay47Spawned *spawned);
 extern void func_8005AD64(Overlay47Spawned *spawned, s32 mode, s32 index,
@@ -40,7 +40,7 @@ extern void func_8005AD64(Overlay47Spawned *spawned, s32 mode, s32 index,
 void func_overlay_047_F0002D10_1893B28(Overlay47Object *object) {
     Overlay47SpawnPacket packet;
 
-    packet.selector = D_0[0x288 + object->selectorIndex];
+    packet.selector = gOverlay47InitializedData[0x288 + object->selectorIndex];
     packet.type = 0xE;
     packet.x = (s16)object->x;
     packet.y = (s16)object->y;

@@ -1,13 +1,13 @@
 #include "PR/ultratypes.h"
 
-extern s32 gOverlay33BufferIndex;
+extern s32 D_800D1C38;
 extern u8 D_8[][0xC00];
 extern void *gOverlay33DisplayLists[];
-extern void *gOverlay33BufferRefs[];
+extern void *D_800D1C28[];
 extern void *gOverlay33ActiveBuffer;
-extern s32 gOverlay33Ready;
+extern s32 D_8007A3EC;
 
-extern void overlay33BuildDisplayListReloc(void);
+extern void overlay33BuildDisplayList(void);
 extern s32 rcpFast3d(u64 *dataStart, u64 *dataEnd, s32 taskType,
                      void *framebuffer);
 
@@ -19,12 +19,12 @@ extern s32 rcpFast3d(u64 *dataStart, u64 *dataEnd, s32 taskType,
 void overlay33PresentAndSwap(void) {
     s32 index;
 
-    overlay33BuildDisplayListReloc();
-    index = gOverlay33BufferIndex;
+    overlay33BuildDisplayList();
+    index = D_800D1C38;
     rcpFast3d((u64 *)&D_8[index][0],
               (u64 *)gOverlay33DisplayLists[index], 4,
-              gOverlay33BufferRefs[index]);
-    gOverlay33BufferIndex ^= 1;
-    gOverlay33ActiveBuffer = gOverlay33BufferRefs[gOverlay33BufferIndex];
-    gOverlay33Ready = 1;
+              D_800D1C28[index]);
+    D_800D1C38 ^= 1;
+    gOverlay33ActiveBuffer = D_800D1C28[D_800D1C38];
+    D_8007A3EC = 1;
 }

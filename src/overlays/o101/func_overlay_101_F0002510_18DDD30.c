@@ -42,9 +42,9 @@ extern Gfx D_230[];
  * the 0xF0000000 addend rather than offset >> 2, so they must be routed
  * through the generated surface. The two overlay callees are ROM-exact, so
  * their prototypes are the matched ones. */
-s32 overlay101GetBoundsReloc(Overlay101ClipNode *node, s32 *leftOut,
+s32 overlay101GetBounds(Overlay101ClipNode *node, s32 *leftOut,
                               s32 *topOut, s32 *rightOut, s32 *bottomOut);
-void overlay101SetScissorReloc(Gfx **displayList, s32 left, s32 top,
+void overlay101SetScissor(Gfx **displayList, s32 left, s32 top,
                                s32 right, s32 bottom);
 void texDPInit(Gfx **displayList);
 
@@ -92,7 +92,7 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     if (texture == NULL) {
         return;
     }
-    x = overlay101GetBoundsReloc(node, &left, &top, &right, &bottom) * 0 + node->x + element->x;
+    x = overlay101GetBounds(node, &left, &top, &right, &bottom) * 0 + node->x + element->x;
     originY = node->y + element->y;
     y = originY;
     edgeX = x;
@@ -102,7 +102,7 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     if ((right < x) || (bottom < originY) || (edgeX < left) || (edgeY < top)) {
         return;
     }
-    overlay101SetScissorReloc(dList, left, top, right, bottom);
+    overlay101SetScissor(dList, left, top, right, bottom);
     rows = 0x800 / texture->width;
     if (rows >= 8) {
         shift = 3;
@@ -161,5 +161,5 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     }
     *dList = gfx;
     texDPInit(dList);
-    overlay101SetScissorReloc(dList, 0, 0, 1000, 1000);
+    overlay101SetScissor(dList, 0, 0, 1000, 1000);
 }

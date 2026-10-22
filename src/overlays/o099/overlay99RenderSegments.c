@@ -13,15 +13,15 @@ typedef struct Overlay99Segment {
 
 extern s32 gOverlay99SegmentCount;
 extern Overlay99Segment gOverlay99Segments[];
-extern void *gOverlay99Texture;
-extern void overlay99GetCurrentSizeReloc(s32 *width, s32 *height);
-extern void overlay99ClearZBufferReloc(Gfx **displayList, u32 width,
+extern void *D_800D2FAC;
+extern void viGetCurrentSize(s32 *width, s32 *height);
+extern void rcpClearZBuffer(Gfx **displayList, u32 width,
                                        u32 height, s32 x1, s32 y1, s32 x2,
                                        s32 y2);
-extern void overlay99Func80034920Reloc(Gfx **displayList);
-extern s16 overlay99ArctanfReloc(f32 x, f32 z);
-extern f32 overlay99SqrtReloc(f32 squared);
-extern void overlay99Func80009E78Reloc(Gfx **displayList, Mtx **matrices,
+extern void texDPInit(Gfx **displayList);
+extern s16 Arctanf(f32 x, f32 z);
+extern f32 sqrtf(f32 squared);
+extern void func_80009E78(Gfx **displayList, Mtx **matrices,
                                        void *vertices,
                                        Overlay99RenderState *object);
 
@@ -50,33 +50,33 @@ void overlay99RenderSegments(Gfx **displayList, Mtx **matrices, void *vertices,
             object = segment->object;
             if (object != 0) {
                 if (initialized == 0) {
-                    overlay99GetCurrentSizeReloc(&width, &height);
+                    viGetCurrentSize(&width, &height);
                     initialized = 1;
                     command = (*displayList)++;
                     command->words.w0 = 0xBC000806;
-                    command->words.w1 = (u32)gOverlay99Texture + 0x80000000;
-                    overlay99ClearZBufferReloc(displayList, width, height, 0,
+                    command->words.w1 = (u32)D_800D2FAC + 0x80000000;
+                    rcpClearZBuffer(displayList, width, height, 0,
                                                0, width, height);
-                    overlay99Func80034920Reloc(displayList);
+                    texDPInit(displayList);
                 }
 
                 dx = segment->x1 - segment->x0;
                 dz = segment->z1 - segment->z0;
                 object->rotation0 = 0;
                 object->rotation1 = 0;
-                object->heading = overlay99ArctanfReloc(-dx, dz);
+                object->heading = Arctanf(-dx, dz);
                 dx *= scale;
                 dz *= scale;
                 object->x = segment->x0 + dx;
                 object->y = segment->z0 + dz;
                 object->z = 5.0f;
-                length = overlay99SqrtReloc((dx * dx) + (dz * dz));
+                length = sqrtf((dx * dx) + (dz * dz));
                 if (segment->headingOffset != 0) {
                     object->heading += (s32)((f32)segment->headingOffset *
                                              65536.0f * scale);
                 }
                 object->flags = (s16)object->flags & ~0x400;
-                overlay99Func80009E78Reloc(displayList, matrices, vertices,
+                func_80009E78(displayList, matrices, vertices,
                                            object);
                 object->flags = (s16)object->flags | 0x400;
                 overlay99RenderSortedEntries(displayList, matrices, vertices,

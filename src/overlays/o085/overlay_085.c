@@ -47,27 +47,27 @@ void overlay85Update(Overlay85Object *object, s32 step) {
         currentTimer = *(volatile s16 *)countdown;
         if (currentTimer == 0 && trigger->active != 0) {
             if (object->type == 2) {
-                overlay85SpawnReloc(0x208, object->x, object->y, object->z, 4,
+                amSndPlayXYZ(0x208, object->x, object->y, object->z, 4,
                                     0);
             } else {
-                overlay85SpawnReloc(0x1F, object->x, object->y, object->z, 4,
+                amSndPlayXYZ(0x1F, object->x, object->y, object->z, 4,
                                     0);
             }
             timer->value = trigger->strength * 182.0f;
             timer->timer = 10;
             type = object->type;
             if (type == 2) {
-                overlay85EffectAReloc(object->effectValue);
-                overlay85EffectBReloc(object->effectValue);
+                func_8003EDD4(object->effectValue);
+                partAdjustScaling(object->effectValue);
                 object->mode = 1;
-                overlay85ApplyReloc(object, step);
+                partUpdateTriggers(object, step);
             } else if (type == 0xF0) {
-                overlay85EffectAReloc(object->effectValue);
+                func_8003EDD4(object->effectValue);
                 object->mode = 0x1F;
-                overlay85ApplyReloc(object, 2);
+                partUpdateTriggers(object, 2);
             } else if (type == 0x107) {
                 object->mode = 1;
-                overlay85ApplyReloc(object, step);
+                partUpdateTriggers(object, step);
             }
         } else if (currentTimer <= 0) {
             timer->timer = 0;

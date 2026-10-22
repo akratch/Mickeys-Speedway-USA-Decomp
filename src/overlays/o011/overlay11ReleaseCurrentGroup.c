@@ -5,8 +5,8 @@ typedef struct Overlay11State {
 } Overlay11State;
 
 extern s32 gOverlay11GroupsActive;
-extern s32 gOverlay11Variant;
-extern Overlay11State *overlay11GetState(void);
+extern s32 D_8007C1A0;
+extern Overlay11State *func_80028F54(void);
 extern void overlay11ReleaseGroup4(void);
 extern void overlay11ReleaseGroup3A(void);
 extern void overlay11ReleaseGroup6A(void);
@@ -19,7 +19,7 @@ void overlay11ReleaseCurrentGroup(void) {
     Overlay11State *state;
 
     if (gOverlay11GroupsActive != 0) {
-        state = overlay11GetState();
+        state = func_80028F54();
         switch (state->mode) {
         case 0:
             overlay11ReleaseGroup4();
@@ -31,7 +31,7 @@ void overlay11ReleaseCurrentGroup(void) {
             overlay11ReleaseGroup3A();
             break;
         case 3:
-            if (gOverlay11Variant == 1) {
+            if (D_8007C1A0 == 1) {
                 overlay11ReleaseGroup6C();
             } else {
                 overlay11ReleaseGroup6B();

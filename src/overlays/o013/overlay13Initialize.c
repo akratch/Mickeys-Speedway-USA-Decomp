@@ -14,8 +14,8 @@ extern u8 gOverlay13Records[];
 extern u8 gOverlay13Output[];
 extern s32 gOverlay13Active;
 
-extern void *overlay13LoadAssetReloc(s32 assetId, s32 arg1);
-extern void *overlay13LoadResourceReloc(s32 resourceId);
+extern void *texLoadSprite(s32 assetId, s32 arg1);
+extern void *texLoadTexture(s32 resourceId);
 
 /* Pinned DKR v77/v80 have no O13 donor; JFG's ambiguous hit is at +0xB0C. */
 void overlay13Initialize(void) {
@@ -27,9 +27,9 @@ void overlay13Initialize(void) {
     s32 width;
     s32 height;
 
-    gOverlay13Resource0 = overlay13LoadAssetReloc(0x2C, 0);
-    gOverlay13Resource1 = overlay13LoadAssetReloc(0x2D, 0);
-    gOverlay13Resource2 = overlay13LoadResourceReloc(0x6A);
+    gOverlay13Resource0 = texLoadSprite(0x2C, 0);
+    gOverlay13Resource1 = texLoadSprite(0x2D, 0);
+    gOverlay13Resource2 = texLoadTexture(0x6A);
 
     record = gOverlay13Records;
     recordIndex = 0;

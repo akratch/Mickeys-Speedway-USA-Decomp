@@ -14,9 +14,9 @@ typedef struct Overlay41ColorRecord {
     s16 duration;
 } Overlay41ColorRecord;
 
-extern Overlay41ColorRecord gOverlay41ColorRecords[12];
-extern void overlay41SetColor(s32 handle, s32 red, s32 green, s32 blue);
-extern void overlay41SetAlpha(s32 handle, s32 alpha);
+extern Overlay41ColorRecord D_800D6C58[12];
+extern void changeLightColour(s32 handle, s32 red, s32 green, s32 blue);
+extern void changeLightIntensity(s32 handle, s32 alpha);
 
 /* Matched 2026-09-12, lane p9-tight. Fifteen words to zero, and the four
  * `initial*` locals were never there: the target's snapshot is a RE-READ of
@@ -51,7 +51,7 @@ void func_overlay_041_F0000124_188745C(s32 amount) {
     s32 factor;
     u8 *direct;
 
-    record = gOverlay41ColorRecords;
+    record = D_800D6C58;
     i = 11;
     do {
         handle = record->handle;
@@ -72,8 +72,8 @@ void func_overlay_041_F0000124_188745C(s32 amount) {
                 alpha += ((record->targetAlpha - record->alpha) * factor) >> 16;
             }
             if (handle < 0) {
-                overlay41SetColor(handle, red & 0xFF, green & 0xFF, blue & 0xFF);
-                overlay41SetAlpha(handle, alpha & 0xFF);
+                changeLightColour(handle, red & 0xFF, green & 0xFF, blue & 0xFF);
+                changeLightIntensity(handle, alpha & 0xFF);
             } else {
                 direct = (u8 *)((u32)handle | 0x80000000U);
                 direct[0x38] = red;

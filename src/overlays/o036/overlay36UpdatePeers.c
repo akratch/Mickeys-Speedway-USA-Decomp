@@ -53,12 +53,12 @@ struct Overlay36SpawnedObject {
     s32 state;
 };
 
-extern Overlay36Object *overlay36LookupObjectReloc(s32 index);
-extern s32 overlay36ActivateReloc(void *resource);
-extern Overlay36SpawnedObject *overlay36SpawnReloc(
+extern Overlay36Object *func_80005820(s32 index);
+extern s32 overlay27Activate(void *resource);
+extern Overlay36SpawnedObject *func_8000590C(
     Overlay36SpawnRequest *request, s32 mode);
-extern void overlay36ReleaseReloc(void *resource);
-extern void overlay36CreateResourceReloc(u16 kind, f32 x, f32 y, f32 z,
+extern void amSndStopXYZ(void *resource);
+extern void amSndPlayXYZ(u16 kind, f32 x, f32 y, f32 z,
                                          s32 mode, void **resource);
 
 void overlay36UpdatePeers(Overlay36Object *object) {
@@ -70,17 +70,17 @@ void overlay36UpdatePeers(Overlay36Object *object) {
 
     state = object->state;
     index = 0;
-    while ((peer = overlay36LookupObjectReloc(index++)) != 0) {
+    while ((peer = func_80005820(index++)) != 0) {
         if (peer != object) {
             peerState = peer->state;
             if (peerState->rank < state->rank && peerState->timer < 0x40 &&
-                overlay36ActivateReloc(peerState->peerResource) == 0) {
+                overlay27Activate(peerState->peerResource) == 0) {
                 request.kind = OVERLAY36_PEER_EFFECT_KIND;
                 request.x = (s16)peer->x;
                 request.y = (s16)peer->y;
                 request.z = (s16)peer->z;
                 request.owner = peer;
-                peerState->peerResource = overlay36SpawnReloc(&request, 0);
+                peerState->peerResource = func_8000590C(&request, 0);
                 if (peerState->peerResource != 0) {
                     peerState->peerResource->state = 0;
                 }
@@ -90,9 +90,9 @@ void overlay36UpdatePeers(Overlay36Object *object) {
 
     if (state->action->kind != 0) {
         if (state->resource != 0) {
-            overlay36ReleaseReloc(state->resource);
+            amSndStopXYZ(state->resource);
         }
-        overlay36CreateResourceReloc(state->action->kind, object->x, object->y,
+        amSndPlayXYZ(state->action->kind, object->x, object->y,
                                      object->z, 4, &state->resource);
     }
 

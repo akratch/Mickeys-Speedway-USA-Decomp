@@ -39,7 +39,7 @@ typedef struct Overlay36World {
 } Overlay36World;
 
 extern s32 gOverlay36Mode;
-extern Overlay36Spawned *overlay36SpawnReloc(Overlay36SpawnDescriptor *desc,
+extern Overlay36Spawned *func_8000590C(Overlay36SpawnDescriptor *desc,
                                               s32 one,
                                               Overlay36World *world);
 
@@ -57,7 +57,7 @@ Overlay36Spawned *overlay36SpawnTransient(
     desc.y = (s16)(s32)(position->y + 30.0f);
     desc.z = (s16)(s32)position->z;
 
-    spawned = overlay36SpawnReloc(&desc, 1, world);
+    spawned = func_8000590C(&desc, 1, world);
     if (spawned != 0) {
         spawned->value3C = 0;
         state = spawned->state;

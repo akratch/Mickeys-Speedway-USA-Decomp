@@ -10,7 +10,7 @@ typedef struct O98Entry {
     f32 value;
 } O98Entry;
 
-extern u8 *overlay98AcquireContextReloc(void);
+extern u8 *camGetPtr(void);
 extern s32 overlay98CheckObject(O98Object *, u8 *, f32 *);
 extern s32 gOverlay98AcceptedCount;
 extern O98Entry gOverlay98AcceptedEntries[0x50];
@@ -28,7 +28,7 @@ void overlay98CollectAccepted(s32 count, O98Object **objects) {
     s32 index;
     f32 value;
 
-    context = overlay98AcquireContextReloc();
+    context = camGetPtr();
     gOverlay98AcceptedCount = 0;
     index = count - 1;
     if (index >= 0) {

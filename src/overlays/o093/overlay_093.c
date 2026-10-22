@@ -9,7 +9,7 @@ void overlay93Init(Overlay93Object *object, Overlay93Config *config) {
 }
 
 void overlay93Update(Overlay93Object *object, s32 updateRate) {
-    Overlay93Object *target = overlay93FindTargetReloc(0, object);
+    Overlay93Object *target = func_80005820(0, object);
 
     if (target != 0) {
         f32 dx = object->x - target->x;
@@ -18,7 +18,7 @@ void overlay93Update(Overlay93Object *object, s32 updateRate) {
         f32 dz = object->z - target->z;
 
         if ((dx * dx) + (dz * dz) <= radiusSquared) {
-            overlay93EmitReloc(
+            changeWeather(
                 config->x << 8,
                 config->y << 8,
                 config->z << 8,

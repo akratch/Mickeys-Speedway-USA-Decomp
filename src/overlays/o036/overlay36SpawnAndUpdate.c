@@ -39,10 +39,10 @@ typedef struct Overlay36SpawnedObject {
     s32 state;
 } Overlay36SpawnedObject;
 
-extern Overlay36SpawnedObject *overlay36SpawnReloc(
+extern Overlay36SpawnedObject *func_8000590C(
     Overlay36SpawnRequest *request, s32 mode);
-extern void overlay36ReleaseReloc(void *resource);
-extern void overlay36CreateResourceReloc(u16 kind, f32 x, f32 y, f32 z,
+extern void amSndStopXYZ(void *resource);
+extern void amSndPlayXYZ(u16 kind, f32 x, f32 y, f32 z,
                                          s32 mode, void **resource);
 
 void overlay36SpawnAndUpdate(Overlay36Object *object, s32 count) {
@@ -57,16 +57,16 @@ void overlay36SpawnAndUpdate(Overlay36Object *object, s32 count) {
     request.z = (s16)object->z;
     request.count = count;
     request.owner = object;
-    spawned = overlay36SpawnReloc(&request, 1);
+    spawned = func_8000590C(&request, 1);
     if (spawned != 0) {
         spawned->state = 0;
     }
 
     if (state->action->kind != 0) {
         if (state->resource != 0) {
-            overlay36ReleaseReloc(state->resource);
+            amSndStopXYZ(state->resource);
         }
-        overlay36CreateResourceReloc(state->action->kind, object->x, object->y,
+        amSndPlayXYZ(state->action->kind, object->x, object->y,
                                      object->z, 4, &state->resource);
     }
 

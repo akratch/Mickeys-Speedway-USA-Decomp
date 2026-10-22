@@ -17,26 +17,26 @@ void overlay95Update(Overlay95Object *object, s32 updateRate) {
     void *resource;
     s32 volume;
 
-    if (gOverlay95Disabled == 0) {
+    if (D_8007BF0C == 0) {
         audio = object->audio;
-        queryResult = overlay95QueryReloc(&found);
+        queryResult = func_80005750(&found);
         if (found != 0) {
             racerOwner = queryResult->object;
             racer = racerOwner->racer;
             if (!(racer->flags & 1) && racer->blocked == 0) {
                 if (racer->mode >= 0x30 && racer->mode < 0x40) {
                     object->flags |= 1;
-                    overlay95ActivateReloc(object, updateRate);
+                    partUpdateTriggers(object, updateRate);
                     if (object->active == 0) {
                         object->active = 1;
                         if (object->timer == 0) {
-                            overlay95EmitReloc(racer->type, 0x4B, 2.0f, racer);
-                            resource = overlay95CreateReloc();
-                            overlay95ConfigureReloc(resource, 0.5f, 1.0f, 0.5f, 15);
+                            rumbleStart(racer->type, 0x4B, 2.0f, racer);
+                            resource = camGetNo();
+                            camStartShake(resource, 0.5f, 1.0f, 0.5f, 15);
                             if (audio->handle != 0) {
-                                overlay95StopReloc(audio->handle);
+                                amSndStop(audio->handle);
                             }
-                            overlay95PlayReloc(0x31E, audio);
+                            amSndPlay(0x31E, audio);
                             audio->volume = 0x7F;
                             object->timer = 0xF0;
                         }
@@ -55,12 +55,12 @@ void overlay95Update(Overlay95Object *object, s32 updateRate) {
                     audio->volume = 0;
                     volume = 0;
                 }
-                overlay95VolumeReloc(0x31E, audio->handle, volume & 0xFF);
+                amSndSetVol(0x31E, audio->handle, volume & 0xFF);
             }
             if (object->timer <= 0) {
                 object->timer = 0;
                 if (audio->handle != 0) {
-                    overlay95StopReloc(audio->handle);
+                    amSndStop(audio->handle);
                 }
             }
         }

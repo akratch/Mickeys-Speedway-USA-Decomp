@@ -46,7 +46,7 @@ extern s32 gOverlay14Args2C;
 extern s32 gOverlay14Args30;
 extern s32 gOverlay14DataBase;
 
-extern void overlay14BuildPanel(s32 context, void *base, s32 width, s32 height,
+extern void overlay14BuildRects(s32 context, void *base, s32 width, s32 height,
                                 s32 extra0, s32 extra1, s32 extra2);
 extern s32 overlay14CreateHandle(s32 context, s32 valueF8, s32 valueDC);
 extern void overlay14DrawPrimitive();
@@ -54,7 +54,7 @@ extern void overlay14DrawPrimitive();
 void func_overlay_014_F00013F4_1870CCC(s32 context) {
     s32 mode;
 
-    overlay14BuildPanel(context, &gOverlay14DataBase, 0x5C, 0x14, 0xD0, 0x58,
+    overlay14BuildRects(context, &gOverlay14DataBase, 0x5C, 0x14, 0xD0, 0x58,
                         (gOverlay14ValueC0Base.value * 0xA0) >> 8);
     gOverlay14HandleE0.value =
         overlay14CreateHandle(context, gOverlay14ValueF8Base.value,

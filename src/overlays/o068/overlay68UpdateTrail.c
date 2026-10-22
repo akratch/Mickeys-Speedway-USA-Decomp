@@ -33,8 +33,8 @@ typedef struct Overlay68Trail {
 } Overlay68Trail;
 
 extern Overlay68Trail *gOverlay68Entry;
-extern s32 gOverlay68Immediate;
-extern void overlay68TrailEventReloc(s8 delay, Overlay68Trail *trail, s32 updateRate);
+extern s32 D_800C947C;
+extern void overlay68FinishEntry(s8 delay, Overlay68Trail *trail, s32 updateRate);
 
 void overlay68UpdateTrail(s32 updateRate) {
     Overlay68Trail *trail;
@@ -52,7 +52,7 @@ void overlay68UpdateTrail(s32 updateRate) {
             index = trail->index;
             if (index < 0x4AF) {
                 point = &trail->points[index];
-                if (gOverlay68Immediate != 0) {
+                if (D_800C947C != 0) {
                     point->red = source->x >> 8;
                     point->green = source->y >> 8;
                     point->blue = source->z >> 8;
@@ -69,7 +69,7 @@ void overlay68UpdateTrail(s32 updateRate) {
                     trail->delay = delay - updateRate;
                     if (trail->delay <= 0) {
                         savedTrail = trail;
-                        overlay68TrailEventReloc(delay, trail, updateRate);
+                        overlay68FinishEntry(delay, trail, updateRate);
                         trail = savedTrail;
                         trail->delay = 0;
                         return;

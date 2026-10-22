@@ -9,7 +9,7 @@ typedef struct Vec3f {
 } Vec3f;
 
 extern f32 gOverlay22DistanceReloc;
-extern u8 D_A7C[];
+extern u8 func_overlay_022_F0000A7C_1878B84[];
 extern void *D_0[];
 extern s32 D_30;
 extern void mathOneFloatRPY(void *, Vec3f *);
@@ -57,7 +57,7 @@ void func_overlay_022_F0000000_1878108(void *object, void *init) {
     distance = gOverlay22DistanceReloc;
     collide[1] = &FIELD(object, Vec3f, 0xC);
     trackMakePolylist(1, &position, &FIELD(object, Vec3f, 0xC), &distance, 0, 1);
-    collide[0] = D_A7C;
+    collide[0] = func_overlay_022_F0000A7C_1878B84;
     if ((func_80010900(&position, collide[1], distance, object, collide[0]) != 0) &&
         (FIELD(contact, u8, 1) & 4)) {
         FIELD(object, s32, 0x80) |= 2;

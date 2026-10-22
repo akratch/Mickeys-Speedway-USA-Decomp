@@ -28,8 +28,8 @@ typedef struct O98Object {
     u8 stateIndex;
 } O98Object;
 
-extern s32 overlay98CheckInitialReloc(f32, f32, f32 *, s32, s32);
-extern s32 overlay98CheckCandidateReloc(void *, Vec3f *, Vec3f *, s32, s32);
+extern s32 func_8001357C(f32, f32, f32 *, s32, s32);
+extern s32 func_8001291C(void *, Vec3f *, Vec3f *, s32, s32);
 extern s32 overlay98UniqueCountReloc;
 extern s16 overlay98UniqueYReloc[];
 
@@ -60,7 +60,7 @@ s32 overlay98CheckObject(O98Object *object, u8 *context, f32 *result) {
     }
 
     accepted = 0;
-    if ((overlay98CheckInitialReloc(object->x, object->z, result, 0x8000, 0) & 0x8000) &&
+    if ((func_8001357C(object->x, object->z, result, 0x8000, 0) & 0x8000) &&
         ((*result - 5.0f) < object->y)) {
         accepted = 1;
     } else {
@@ -73,7 +73,7 @@ s32 overlay98CheckObject(O98Object *object, u8 *context, f32 *result) {
 
                 difference = object->y - height;
                 input.y = (height - difference) - adjustment;
-                if (overlay98CheckCandidateReloc(context + 0xC, &input, &output, 0, 0x8000) != 0) {
+                if (func_8001291C(context + 0xC, &input, &output, 0, 0x8000) != 0) {
                     *result = output.z;
                     accepted = 1;
                     index = overlay98UniqueCountReloc;

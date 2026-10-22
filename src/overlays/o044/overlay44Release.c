@@ -6,7 +6,7 @@ typedef struct Overlay44Owner {
     void *resources[4];
 } Overlay44Owner;
 
-extern void overlay44ReleaseReloc(void *);
+extern void mmFree(void *);
 
 /* DKR v77/v80 and JFG contain no exact donor for this release sweep. */
 void overlay44Release(Overlay44Owner *owner) {
@@ -22,7 +22,7 @@ void overlay44Release(Overlay44Owner *owner) {
             do {
                 resource = *(void **)(cursor + 0x14);
                 if (resource != 0) {
-                    overlay44ReleaseReloc(resource);
+                    mmFree(resource);
                     *(void **)(cursor + 0x14) = 0;
                 }
                 offset += 4;

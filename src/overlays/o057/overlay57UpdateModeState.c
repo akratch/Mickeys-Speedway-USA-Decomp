@@ -35,8 +35,8 @@ typedef struct Overlay57LookupResult {
     Overlay57SelectionChild *child08;
 } Overlay57LookupResult;
 
-extern u32 gOverlay57Flags3B6CReloc;
-extern s32 gOverlay57Mode3B88Reloc;
+extern u32 D_800D31B8;
+extern s32 D_8007C1A0;
 extern u8 gOverlay57Byte3D1CReloc;
 extern u8 gOverlay57Byte3EF4Reloc;
 
@@ -72,35 +72,35 @@ extern Overlay57SetupObject gO57ModeSetup21C;
 #define O57_JOIN(left, right) O57_JOIN_RAW(left, right)
 #define O57_S32(offset) O57_JOIN(D_, offset)
 
-extern s32 o57ModeOpaqueCallReloc();
+extern s32 overlay84GetCurrent();
 extern void o57ModeOpaqueVoidCallReloc();
-extern Overlay57LookupResult *o57ModeOpaquePtrCallReloc();
+extern Overlay57LookupResult *func_800508B4();
 #define overlay57Call3AA4Reloc o57ModeOpaqueVoidCallReloc
 #define overlay57Call3AE0Reloc o57ModeOpaqueVoidCallReloc
 #define overlay57Call3B4CReloc o57ModeOpaqueVoidCallReloc
-#define overlay57Call3BC4Reloc o57ModeOpaqueCallReloc
+#define overlay57Call3BC4Reloc overlay84GetCurrent
 #define overlay57Call3BECReloc o57ModeOpaqueVoidCallReloc
 #define overlay57Call3BF8Reloc o57ModeOpaqueVoidCallReloc
-#define overlay57Call3C08Reloc o57ModeOpaqueCallReloc
+#define overlay57Call3C08Reloc overlay84GetCurrent
 #define overlay57Call3C4CReloc o57ModeOpaqueVoidCallReloc
-#define overlay57Call3C5CReloc o57ModeOpaqueCallReloc
+#define overlay57Call3C5CReloc overlay84GetCurrent
 #define overlay57Call3C84Reloc o57ModeOpaqueVoidCallReloc
-#define overlay57Call3C94Reloc o57ModeOpaqueCallReloc
+#define overlay57Call3C94Reloc overlay84GetCurrent
 #define overlay57Call3CDCReloc o57ModeOpaqueVoidCallReloc
-#define overlay57Call3D08Reloc o57ModeOpaqueCallReloc
+#define overlay57Call3D08Reloc overlay84GetCurrent
 #define overlay57Call3D24Reloc o57ModeOpaqueVoidCallReloc
-#define overlay57Call3D34Reloc o57ModeOpaquePtrCallReloc
+#define overlay57Call3D34Reloc func_800508B4
 #define overlay57Call3DC4Reloc o57ModeOpaqueVoidCallReloc
-#define overlay57Call3DD4Reloc o57ModeOpaqueCallReloc
+#define overlay57Call3DD4Reloc overlay84GetCurrent
 #define overlay57Call3DFCReloc o57ModeOpaqueVoidCallReloc
 #define overlay57Call3E08Reloc o57ModeOpaqueVoidCallReloc
-#define overlay57Call3E18Reloc o57ModeOpaqueCallReloc
+#define overlay57Call3E18Reloc overlay84GetCurrent
 #define overlay57Call3E5CReloc o57ModeOpaqueVoidCallReloc
-#define overlay57Call3E6CReloc o57ModeOpaqueCallReloc
+#define overlay57Call3E6CReloc overlay84GetCurrent
 #define overlay57Call3EB4Reloc o57ModeOpaqueVoidCallReloc
-#define overlay57Call3EE0Reloc o57ModeOpaqueCallReloc
+#define overlay57Call3EE0Reloc overlay84GetCurrent
 #define overlay57Call3EFCReloc o57ModeOpaqueVoidCallReloc
-#define overlay57Call3F0CReloc o57ModeOpaquePtrCallReloc
+#define overlay57Call3F0CReloc func_800508B4
 #define overlay57Call3FA4Reloc o57ModeOpaqueVoidCallReloc
 #define overlay57Call3FB8Reloc o57ModeOpaqueVoidCallReloc
 
@@ -168,7 +168,7 @@ void overlay57UpdateModeState(s32 updateRate) {
     }
     gO57ModeTimer114 -= updateRate;
 
-    eligible = (gOverlay57Flags3B6CReloc & 0xD000) != 0;
+    eligible = (D_800D31B8 & 0xD000) != 0;
     if (eligible != 0) {
         eligible = gO57ModeGate50C == 0;
     }
@@ -179,7 +179,7 @@ void overlay57UpdateModeState(s32 updateRate) {
         }
     }
 
-    if (gOverlay57Mode3B88Reloc == 1) {
+    if (D_8007C1A0 == 1) {
         if (overlay57Call3BC4Reloc() == 8) {
             overlay57Call3BECReloc(0x2A, 0, 0, 0xE, 1, 0);
             gO57ModeGate50C = 1;

@@ -16,12 +16,12 @@ extern f32 gOverlay57DistanceLimit;
 extern Overlay57Position *gOverlay57Reference;
 extern s32 gOverlay57Timer;
 extern s32 gOverlay57DistanceState;
-extern void overlay57DistanceResetReloc(s32 value);
-extern Overlay57Position *overlay57DistanceGetPositionReloc(void);
-extern void overlay57DistanceEmitReloc(s32, s32, s32, s32, s32, s32, s32);
-extern void *overlay57DistanceQueryReloc(void);
-extern void overlay57DistanceStartReloc(s32, s32, s32, s32, s32, s32);
-extern void overlay57DistanceFinishReloc(void);
+extern void camSetNo(s32 value);
+extern Overlay57Position *camGetPtr(void);
+extern void func_800498FC(s32, s32, s32, s32, s32, s32, s32);
+extern void *overlay84GetActive(void);
+extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
+extern void overlay84Mark(void);
 
 /* DKR v77/v80 and JFG contain no donor for this distance/state transition. */
 void overlay57CheckDistance(Overlay57ModeValue value) {
@@ -32,21 +32,21 @@ void overlay57CheckDistance(Overlay57ModeValue value) {
     f32 dz;
 
     gOverlay57ModeFlag = 0;
-    overlay57DistanceResetReloc(0);
-    position = overlay57DistanceGetPositionReloc();
+    camSetNo(0);
+    position = camGetPtr();
     reference = gOverlay57Reference;
     if (reference != NULL) {
         dx = reference->x - position->x;
         dy = reference->y - position->y;
         dz = reference->z - position->z;
         if (dx * dx + dy * dy + dz * dz < gOverlay57DistanceLimit) {
-            overlay57DistanceEmitReloc(4, 0x3EAE147B, 0xBF800000, 0, 0, 0, 0);
+            func_800498FC(4, 0x3EAE147B, 0xBF800000, 0, 0, 0, 0);
         }
     }
-    if (overlay57DistanceQueryReloc() == NULL) {
+    if (overlay84GetActive() == NULL) {
         gOverlay57Timer = 0x11;
-        overlay57DistanceStartReloc(0x1D, 0, 0, 0xB, 1, 0);
+        mainChangeLevel(0x1D, 0, 0, 0xB, 1, 0);
         gOverlay57DistanceState = 1;
-        overlay57DistanceFinishReloc();
+        overlay84Mark();
     }
 }

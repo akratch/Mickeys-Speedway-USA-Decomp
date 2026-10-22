@@ -146,14 +146,14 @@ typedef struct Overlay43Transform {
  * for the resident functions the relocation records select.
  */
 extern s8 gO43QueueCountReloc;
-extern s32 gO43RenderPendingReloc;
+extern s32 D_8007A3C8;
 extern Overlay43Record gO43RecordsReloc[];
 extern Overlay43State *gO43QueueReloc[];
 extern Overlay43Record gO43FallbackReloc;
 #define gO43Records gO43RecordsReloc
 #define gO43Queue gO43QueueReloc
 #define gO43QueueCount gO43QueueCountReloc
-#define gO43RenderPending gO43RenderPendingReloc
+#define gO43RenderPending D_8007A3C8
 #define gO43Fallback gO43FallbackReloc
 
 extern Overlay43Level *levelGetLevel(void);

@@ -48,7 +48,7 @@ extern Overlay92CameraRecord D_0[];
 /* Typed views of the retained module-local literal pool. */
 extern f32 D_8;
 extern f32 D_C;
-extern s32 overlay92TransitionFlagReloc;
+extern s32 D_800C947C;
 
 extern s32 mathDiffAngle(s16 current, s16 target);
 extern f32 func_8002A8BC(s32 angle);
@@ -199,7 +199,7 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
 
         case 3:
             if ((state->timer == 0) ||
-                (overlay92TransitionFlagReloc != 0)) {
+                (D_800C947C != 0)) {
                 state->mode = 2;
                 state->timer = mathRnd(0x1C2, 0x546);
             }

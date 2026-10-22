@@ -41,10 +41,10 @@ typedef struct Overlay80Init {
 } Overlay80Init;
 
 extern f32 gOverlay80Scale0;
-extern s32 overlay80QueryNearbyReloc(
+extern s32 func_8001398C(
     f32 position0, f32 position1, s32 radius,
     Overlay80Candidate ***candidatesOut);
-extern void overlay80ResolveCandidateReloc(
+extern void func_8001DCD0(
     s16 key, s32 selectedValue, s16 *outputA, s16 *outputB);
 
 void overlay80InitializeContact(Overlay80Object *object, const Overlay80Init *init)
@@ -57,7 +57,7 @@ void overlay80InitializeContact(Overlay80Object *object, const Overlay80Init *in
   state = object->state;
   object->scaledValue = (*object->scale) * (((f32) ((0, init->scale))) * gOverlay80Scale0);
   object->key = init->key;
-  count = overlay80QueryNearbyReloc(object->position0, object->position1, 0x1800, &candidates);
+  count = func_8001398C(object->position0, object->position1, 0x1800, &candidates);
   if (count != ((0, 0)))
   {
     selected = -1;
@@ -69,7 +69,7 @@ void overlay80InitializeContact(Overlay80Object *object, const Overlay80Init *in
         break;
       }
  } if (selected != (-1)) {
-      overlay80ResolveCandidateReloc(object->key, candidates[index]->value, &object->outputA, &object->outputB);
+      func_8001DCD0(object->key, candidates[index]->value, &object->outputA, &object->outputB);
     }
   }
   state->initializedValue = (f32) init->initialValue;

@@ -1,19 +1,19 @@
 #include "PR/ultratypes.h"
 
-extern s32 gO96EntryCountReloc;
+extern s32 D_80078F84;
 extern void *gO96EntriesReloc[16];
 
 void overlay96Register(void *volume) {
     s32 index;
 
-    index = gO96EntryCountReloc;
+    index = D_80078F84;
     while (index--) {
         if (gO96EntriesReloc[index] == volume) {
             return;
         }
     }
-    if (gO96EntryCountReloc < 16) {
-        gO96EntriesReloc[gO96EntryCountReloc] = volume;
-        gO96EntryCountReloc++;
+    if (D_80078F84 < 16) {
+        gO96EntriesReloc[D_80078F84] = volume;
+        D_80078F84++;
     }
 }

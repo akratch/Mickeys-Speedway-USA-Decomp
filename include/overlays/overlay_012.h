@@ -78,9 +78,9 @@ extern s32 gOverlay12EffectCount;
 extern s32 gOverlay12ParticleCount;
 
 void *overlay12LoadReloc();
-extern void overlay12ReleaseResource(void *resource);
-extern void overlay12ReleaseResourceAlt(void *resource);
-extern s32 overlay12Lookup(s32 first, s32 second);
+extern void texFreeTexture(void *resource);
+extern void texFreeSprite(void *resource);
+extern s32 mathRnd(s32 first, s32 second);
 
 void overlay12Initialize(void);
 

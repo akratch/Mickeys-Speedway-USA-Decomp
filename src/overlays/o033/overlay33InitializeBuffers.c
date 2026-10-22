@@ -1,19 +1,18 @@
 #include "PR/ultratypes.h"
 
 extern u8 gOverlay33Initialized[];
-extern s32 gOverlay33StateA;
-extern s32 gOverlay33StateB;
-extern s32 gOverlay33Mode;
+extern s32 D_8007A3EC;
+extern s32 D_800D1C38;
+extern s32 D_800D1C34;
 extern volatile s32 gOverlay33Allocation;
-extern s32 gOverlay33InitializeContext;
-extern s32 gOverlay33AlignedBuffers[];
-extern s32 gOverlay33BufferIndex;
+extern s32 D_800D2CD0;
+extern s32 D_800D1C28[];
 extern s32 gOverlay33ActiveBuffer;
 
-extern void overlay33GetDimensionsReloc(s32 *width, s32 *height);
-extern s32 overlay33AllocateReloc(s32 size, s32 tag);
-extern s32 overlay33InitializeBufferReloc(s32 *context, s32 *status, s32 mode);
-extern void overlay33AllocationFailedReloc(void);
+extern void viGetCurrentSize(s32 *width, s32 *height);
+extern s32 mmAlloc(s32 size, s32 tag);
+extern s32 osRecvMesg(s32 *context, s32 *status, s32 mode);
+extern void overlay33ReleaseGlobal(void);
 
 /*
  * Plateau (2026-09-04): the exact-sized 81-word, 0x38-frame candidate is
@@ -114,12 +113,12 @@ void overlay33InitializeBuffers(void) {
 
     status = 0;
     if (gOverlay33Initialized[0x3790] == 0) {
-        gOverlay33StateA = 0;
-        gOverlay33StateB = 0;
-        gOverlay33Mode = 2;
+        D_8007A3EC = 0;
+        D_800D1C38 = 0;
+        D_800D1C34 = 2;
         gOverlay33Allocation = 0;
-        overlay33GetDimensionsReloc(&width, &height);
-        allocation = overlay33AllocateReloc((width * height * 4) + 0x40,
+        viGetCurrentSize(&width, &height);
+        allocation = mmAlloc((width * height * 4) + 0x40,
                                              0x87);
         gOverlay33Allocation = allocation;
         if (1) { original = allocation; }
@@ -129,20 +128,20 @@ void overlay33InitializeBuffers(void) {
             } else {
                 allocation = original;
             }
-            gOverlay33AlignedBuffers[0] = allocation;
-            gOverlay33AlignedBuffers[1] =
+            D_800D1C28[0] = allocation;
+            D_800D1C28[1] =
                 (s32)allocation + (width * height * 2);
             gOverlay33ActiveBuffer =
-                gOverlay33AlignedBuffers[gOverlay33BufferIndex];
-            if (overlay33InitializeBufferReloc(&gOverlay33InitializeContext,
+                D_800D1C28[D_800D1C38];
+            if (osRecvMesg(&D_800D2CD0,
                                                 &status, 0) == 0) {
                 do {
-                } while (overlay33InitializeBufferReloc(
-                             &gOverlay33InitializeContext, &status, 0) == 0);
+                } while (osRecvMesg(
+                             &D_800D2CD0, &status, 0) == 0);
             }
             gOverlay33Initialized[0x3790] = 1;
         } else {
-            overlay33AllocationFailedReloc();
+            overlay33ReleaseGlobal();
         }
     }
 }

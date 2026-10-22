@@ -14,7 +14,7 @@ typedef struct Overlay79Entry {
     f32 z;
 } Overlay79Entry;
 
-extern Overlay79Entry **overlay79GetEntriesReloc(s32 *count);
+extern Overlay79Entry **func_80005750(s32 *count);
 
 Overlay79Entry *overlay79FindNearby(Overlay79Point *point, f32 radiusSquared) {
     Overlay79Entry **entries;
@@ -25,7 +25,7 @@ Overlay79Entry *overlay79FindNearby(Overlay79Point *point, f32 radiusSquared) {
     volatile s32 scratch;
     s32 count;
 
-    entries = overlay79GetEntriesReloc(&count);
+    entries = func_80005750(&count);
     result = NULL;
     while (count != 0) {
         entry = *entries++;

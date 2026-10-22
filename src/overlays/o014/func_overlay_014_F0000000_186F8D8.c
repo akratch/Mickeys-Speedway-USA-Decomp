@@ -9,7 +9,7 @@ extern void *gOverlay14AssetF0, *gOverlay14OffsetsF4;
 extern s32 gOverlay14ResultF8, gOverlay14ResultFC;
 extern s32 gOverlay14Current104, gOverlay14Next108, gOverlay14Context10C, gOverlay14Field114;
 extern void overlay14InitializeReloc(void);
-extern void overlay14FreeReloc(void *ptr);
+extern void mmFree(void *ptr);
 
 /* The slot cursor's initializer shares the `do {` header line, and the loop
  * bound is spelled inline in the tail test rather than kept in a local. Both
@@ -23,10 +23,10 @@ void func_overlay_014_F0000000_186F8D8(void) {
     invalid = -1;
     gOverlay14Current104 = invalid; gOverlay14Next108 = invalid;
     gOverlay14Context10C = 0; gOverlay14Field114 = 0;
-    if (gOverlay14AssetF0) overlay14FreeReloc(gOverlay14AssetF0);
-    if (gOverlay14OffsetsF4) overlay14FreeReloc(gOverlay14OffsetsF4);
+    if (gOverlay14AssetF0) mmFree(gOverlay14AssetF0);
+    if (gOverlay14OffsetsF4) mmFree(gOverlay14OffsetsF4);
     slot = gOverlay14ValueSlots28; do {
-        if ((gOverlay14ValueCountE8 != 0) && slot->value) overlay14FreeReloc(slot->value);
+        if ((gOverlay14ValueCountE8 != 0) && slot->value) mmFree(slot->value);
         slot++;
         slot[-1].value = 0;
         slot[-1].key = invalid;

@@ -50,7 +50,7 @@ typedef struct O26Config {
     s32 word14;
 } O26Config;
 
-extern u8 D_B18[];
+extern u8 func_overlay_026_F0000B18_187AF10[];
 extern void mathOneFloatRPY(O26Object *object, O26Vec3f *vector);
 extern void trackMakePolylist(s32 count, O26Vec3f *position,
                           O26Vec3f *origin, f32 *radius,
@@ -93,7 +93,7 @@ void func_overlay_026_F0000000_187A3F8(O26Object *object, O26Config *config) {
     object->position.z += motion.z;
     trackMakePolylist(1, &position, &object->position, &radius, 0, 0);
 
-    if ((func_80010900(&position, &object->position, radius, object, D_B18) != 0) &&
+    if ((func_80010900(&position, &object->position, radius, object, func_overlay_026_F0000B18_187AF10) != 0) &&
         ((state->flags28 & 4) != 0)) {
         func_overlay_026_F0000D24_187B11C(object, 5);
     } else {

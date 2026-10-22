@@ -40,5 +40,5 @@ void overlay67BuildVertices(void *displayList, u8 setIndex, s32 x, s32 y,
             }
         } while (count != 24);
     }
-    overlay67DrawReloc(displayList, count, vertices, 0);
+    frontDrawRectangles(displayList, count, vertices, 0);
 }

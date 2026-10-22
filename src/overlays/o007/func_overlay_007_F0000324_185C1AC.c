@@ -28,30 +28,30 @@ extern s32 D_4;
 extern Overlay7Entry *D_290;
 extern u16 D_2AA;
 extern Overlay7Pair D_844[];
-extern void *overlay7RuntimeGateReloc;
+extern void *D_800C947C;
 extern void *overlay7RuntimeHandleReloc;
 extern s32 overlay7RuntimeTimerReloc;
 extern Overlay7RuntimeObject *overlay7RuntimeLastObjectReloc;
 extern s32 overlay7RuntimeModeReloc;
-extern u8 overlay7RuntimeLevelReloc;
-extern u8 overlay7RuntimePreviousLevelReloc;
+extern u8 D_8007BEFC;
+extern u8 D_8007BEF8;
 extern u8 overlay7RuntimeValuesReloc[];
 
-extern Overlay7RuntimeObject **overlay7CollectRuntimeObjectsReloc(s32 *count);
-extern void overlay7ContinueRuntimeObjectReloc(void *handle, s32 x, s32 y,
+extern Overlay7RuntimeObject **func_80005750(s32 *count);
+extern void amSndSetXYZ(void *handle, s32 x, s32 y,
                                                s32 z);
-extern f32 overlay7MeasureRuntimeObjectAReloc(Overlay7RuntimeObject *object);
-extern f32 overlay7MeasureRuntimeObjectBReloc(Overlay7RuntimeObject *object);
-extern void overlay7RecordRuntimeEventReloc(s32 event);
-extern s32 overlay7GetRuntimeIndexReloc(s32 arg0, s32 arg1);
+extern f32 overlay1DistanceFromSelected(Overlay7RuntimeObject *object);
+extern f32 overlay1DistanceFromCurrent(Overlay7RuntimeObject *object);
+extern void overlay7CommitSelection(s32 event);
+extern s32 mathRnd(s32 arg0, s32 arg1);
 extern void overlay7StartRuntimeValueReloc(u8 value);
 extern void overlay7ReleaseRuntimeOwnerReloc(void *owner);
-extern s32 overlay7AdjustRuntimeValueReloc(s32 arg0, s32 value);
-extern void *overlay7CreateRuntimeOwnerReloc(u16 value, s32 x, s32 y, s32 z,
+extern s32 mathRnd(s32 arg0, s32 value);
+extern void *amSndPlayXYZ(u16 value, s32 x, s32 y, s32 z,
                                              s32 kind, void **argument);
 extern void overlay7ReleaseRuntimeHandleReloc(void *handle);
-extern void overlay7ReleaseRuntimeEntryReloc(Overlay7Entry *entry);
-extern s32 overlay7RuntimeChanceReloc(s32 minimum, s32 maximum);
+extern void overlay7ReleaseEntry(Overlay7Entry *entry);
+extern s32 mathRnd(s32 minimum, s32 maximum);
 extern void overlay7SetRuntimeModeReloc(Overlay7RuntimeObject *object,
                                         s32 mode);
 
@@ -78,7 +78,7 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
     u16 value;
     f32 difference;
 
-    objects = overlay7CollectRuntimeObjectsReloc(&count);
+    objects = func_80005750(&count);
     cursor = &D_2AA;
     remaining = 9;
     do {
@@ -92,7 +92,7 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
         cursor--;
     } while (remaining--);
 
-    if (overlay7RuntimeGateReloc == NULL) {
+    if (D_800C947C == NULL) {
         entry = gOverlay7ActiveHead;
         while (entry != NULL) {
             if (entry->active != 0) {
@@ -103,7 +103,7 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
 
         if (overlay7RuntimeHandleReloc != NULL) {
 
-            overlay7ContinueRuntimeObjectReloc(overlay7RuntimeHandleReloc,
+            amSndSetXYZ(overlay7RuntimeHandleReloc,
                 overlay7RuntimeLastObjectReloc->x, overlay7RuntimeLastObjectReloc->y,
                 overlay7RuntimeLastObjectReloc->z);
         }
@@ -120,10 +120,10 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
                     state = object->state;
                     if (!(state->flags & 1) && state->kind < 6 &&
                         state->cooldown == 0) {
-                        difference = overlay7MeasureRuntimeObjectAReloc(object) -
-                                     overlay7MeasureRuntimeObjectBReloc(object);
+                        difference = overlay1DistanceFromSelected(object) -
+                                     overlay1DistanceFromCurrent(object);
                         if (difference - state->difference > 4.0f) {
-                            overlay7RecordRuntimeEventReloc(state->kind + 0x15);
+                            overlay7CommitSelection(state->kind + 0x15);
                         }
                         state->difference = difference;
                     }
@@ -133,17 +133,17 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
 
             remaining = count - 1;
             if (overlay7RuntimeModeReloc == 1 &&
-                ((s32)overlay7RuntimePreviousLevelReloc -
-                     (s32)overlay7RuntimeLevelReloc ==
+                ((s32)D_8007BEF8 -
+                     (s32)D_8007BEFC ==
                  1) &&
-                overlay7RuntimeLevelReloc > 0 && count != 0) {
+                D_8007BEFC > 0 && count != 0) {
 
                 do {
                     object = objects[remaining];
                     state = object->state;
                     if (!(state->flags & 1) && state->level != 0 &&
                         state->scale + (f32)state->level > 9.0f) {
-                        index = overlay7GetRuntimeIndexReloc(0, 4);
+                        index = mathRnd(0, 4);
                         overlay7StartRuntimeValueReloc(
                             overlay7RuntimeValuesReloc[index + 0x924]);
                     }
@@ -175,7 +175,7 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
                     entry->active = 1;
                     found = 1;
                 }
-                overlay7ReleaseRuntimeEntryReloc(D_290);
+                overlay7ReleaseEntry(D_290);
             }
             if (!found) {
                 entry = gOverlay7ActiveHead;
@@ -193,14 +193,14 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
                 index = 0x2B;
                 do {
                     if (value == cursor[0]) {
-                        value += overlay7AdjustRuntimeValueReloc(
+                        value += mathRnd(
                             0, cursor[1]);
                         break;
                     }
                     cursor += 2;
                 } while (index--);
                 if ((u32)entry->field04 < 0xB4) {
-                    overlay7CreateRuntimeOwnerReloc(
+                    amSndPlayXYZ(
                         value, object->x, object->y, object->z, 4,
                         &overlay7RuntimeHandleReloc);
                     overlay7RuntimeLastObjectReloc = object;
@@ -209,7 +209,7 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
                     if (entry->nested != NULL) {
                         overlay7ReleaseRuntimeHandleReloc(entry->nested);
                     }
-                    overlay7ReleaseRuntimeEntryReloc(entry);
+                    overlay7ReleaseEntry(entry);
                 }
             }
         }
@@ -224,12 +224,12 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
                     if (state->level == 0) {
                         overlay7SetRuntimeModeReloc(object, 0x10);
                     } else if (!(state->flags & 1) ||
-                               overlay7RuntimeChanceReloc(1, 0x64) < 0x24) {
+                               mathRnd(1, 0x64) < 0x24) {
                         overlay7SetRuntimeModeReloc(object, 0xE);
                     }
                 } else if (state->previousLevel < state->level &&
                            (!(state->flags & 1) ||
-                            overlay7RuntimeChanceReloc(1, 0x64) < 0x24)) {
+                            mathRnd(1, 0x64) < 0x24)) {
                     overlay7SetRuntimeModeReloc(object, 0xF);
                 }
                 state->previousLevel = state->level;

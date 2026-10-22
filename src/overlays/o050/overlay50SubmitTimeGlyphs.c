@@ -11,11 +11,11 @@ typedef struct Overlay50GlyphRecord {
 extern s32 gOverlay50GlyphOffsets[9];
 extern s32 gOverlay50GlyphWord0;
 extern s32 gOverlay50GlyphWord1;
-extern u8 gOverlay50GlyphContext[];
+extern u8 D_800D3140[];
 
-extern void overlay50SplitTimeReloc(s32 value, s32 *minutes, s32 *seconds,
+extern void overlay56SplitTime(s32 value, s32 *minutes, s32 *seconds,
                                     s32 *centiseconds);
-extern void overlay50SubmitGlyphsReloc(void *context,
+extern void func_8002F618(void *context,
                                       Overlay50GlyphRecord *records,
                                       s32 arg2, s32 arg3, s32 red, s32 green,
                                       s32 blue, s32 alpha);
@@ -29,7 +29,7 @@ void overlay50SubmitTimeGlyphs(s32 leadingGlyph, s32 x, s32 y,
     s32 centiseconds;
     Overlay50GlyphRecord records[10];
 
-    overlay50SplitTimeReloc(timeValue, &minutes, &seconds, &centiseconds);
+    overlay56SplitTime(timeValue, &minutes, &seconds, &centiseconds);
 
     y -= 4;
     for (i = 0; i < 9; i++) {
@@ -63,6 +63,6 @@ void overlay50SubmitTimeGlyphs(s32 leadingGlyph, s32 x, s32 y,
         }
     }
 
-    overlay50SubmitGlyphsReloc(gOverlay50GlyphContext, records, 0, 0,
+    func_8002F618(D_800D3140, records, 0, 0,
                                255, 255, 255, 255);
 }

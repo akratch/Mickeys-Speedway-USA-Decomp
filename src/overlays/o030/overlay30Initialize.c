@@ -1,74 +1,74 @@
 #include "PR/ultratypes.h"
 
 /* Module initialization reconstructed from Mickey; exact DKR/JFG scans are negative. */
-extern void overlay30SetupReloc(s32, s32, s32, s32, s32);
-extern void *overlay30InitPoolReloc(s32, s32);
-extern void *overlay30AllocateReloc(s32, s32);
-extern void *overlay30LoadResourceReloc(s32);
-extern s32 overlay30ResourceSizeReloc(s32);
-extern void overlay30ResetReloc(void);
+extern void lightDefaultObjectLight(s32, s32, s32, s32, s32);
+extern void *mmAllocRegion(s32, s32);
+extern void *mmAlloc(s32, s32);
+extern void *piRomLoad(s32);
+extern s32 piRomGetFileSize(s32);
+extern void func_80004340(void);
 
-extern void *gOverlay30WorkBuffer;
-extern s32 gOverlay30WorkBufferSize;
-extern s32 *gOverlay30TableResource;
-extern s32 gOverlay30TableLength;
-extern void *gOverlay30PixelResource;
+extern void *D_800C9450;
+extern s32 D_800C9454;
+extern s32 *D_800C9458;
+extern s32 D_800C945C;
+extern void *D_800C9460;
 extern s32 *gOverlay30PixelHeader;
-extern s32 gOverlay30PixelHeaderLength;
-extern f32 gOverlay30Scale;
-extern void *gOverlay30WordTable;
-extern s16 *gOverlay30HalfwordTable;
-extern void *gOverlay30LargeBuffer;
-extern void *gOverlay30Pool;
-extern void *gOverlay30SmallBuffer;
-extern s16 *gOverlay30SentinelResource;
+extern s32 D_800C9468;
+extern f32 D_800C946C;
+extern void *D_800C9488;
+extern s16 *D_800C948C;
+extern void *D_800C9494;
+extern void *D_800C94A0;
+extern void *D_800C94A4;
+extern s16 *D_800C94E0;
 extern s32 gOverlay30SentinelIndex;
-extern void *gOverlay30Buffer320;
-extern void *gOverlay30Buffer20;
-extern void *gOverlay30Buffer80;
+extern void *D_800C94EC;
+extern void *D_800C94F4;
+extern void *D_800C9500;
 
 extern void overlay30TransposePixels(u8 *data, s32 length);
 
 void overlay30Initialize(void) {
     s32 i;
 
-    overlay30SetupReloc(0xAA, 0x55, 0, -0x2000, 0);
-    gOverlay30Pool = overlay30InitPoolReloc(0x19000, 0x200);
-    gOverlay30Buffer320 = overlay30AllocateReloc(0x320, 0x8B);
-    gOverlay30Buffer20 = overlay30AllocateReloc(0x20, 0x8B);
-    gOverlay30Buffer80 = overlay30AllocateReloc(0x80, 0x8B);
+    lightDefaultObjectLight(0xAA, 0x55, 0, -0x2000, 0);
+    D_800C94A0 = mmAllocRegion(0x19000, 0x200);
+    D_800C94EC = mmAlloc(0x320, 0x8B);
+    D_800C94F4 = mmAlloc(0x20, 0x8B);
+    D_800C9500 = mmAlloc(0x80, 0x8B);
 
-    gOverlay30SentinelResource = overlay30LoadResourceReloc(0x2E);
-    gOverlay30SentinelIndex = (overlay30ResourceSizeReloc(0x2E) >> 1) - 1;
-    while (gOverlay30SentinelResource[gOverlay30SentinelIndex] == 0) {
+    D_800C94E0 = piRomLoad(0x2E);
+    gOverlay30SentinelIndex = (piRomGetFileSize(0x2E) >> 1) - 1;
+    while (D_800C94E0[gOverlay30SentinelIndex] == 0) {
         gOverlay30SentinelIndex--;
     }
 
-    gOverlay30WorkBuffer = overlay30AllocateReloc((gOverlay30WorkBufferSize = 0x2000), 0x8F);
-    gOverlay30TableResource = overlay30LoadResourceReloc(0x2C);
-    gOverlay30TableLength = 0;
-    while (gOverlay30TableResource[gOverlay30TableLength] != -1) {
-        gOverlay30TableLength++;
+    D_800C9450 = mmAlloc((D_800C9454 = 0x2000), 0x8F);
+    D_800C9458 = piRomLoad(0x2C);
+    D_800C945C = 0;
+    while (D_800C9458[D_800C945C] != -1) {
+        D_800C945C++;
     }
-    gOverlay30TableLength--;
+    D_800C945C--;
 
-    gOverlay30WordTable = overlay30AllocateReloc(gOverlay30TableLength * 4, 0x8B);
-    gOverlay30HalfwordTable = overlay30AllocateReloc(gOverlay30TableLength * 2, 0x8B);
-    for (i = 0; i < gOverlay30TableLength; i++) {
-        gOverlay30HalfwordTable[i] = 0;
-    }
-
-    gOverlay30PixelResource = overlay30LoadResourceReloc(0x18);
-    gOverlay30PixelHeader = overlay30LoadResourceReloc(0x19);
-    gOverlay30PixelHeaderLength = 0;
-    while (gOverlay30PixelHeader[gOverlay30PixelHeaderLength] != -1) {
-        gOverlay30PixelHeaderLength++;
+    D_800C9488 = mmAlloc(D_800C945C * 4, 0x8B);
+    D_800C948C = mmAlloc(D_800C945C * 2, 0x8B);
+    for (i = 0; i < D_800C945C; i++) {
+        D_800C948C[i] = 0;
     }
 
-    overlay30TransposePixels((u8 *)gOverlay30PixelResource + (gOverlay30PixelHeader[5] * 4),
+    D_800C9460 = piRomLoad(0x18);
+    gOverlay30PixelHeader = piRomLoad(0x19);
+    D_800C9468 = 0;
+    while (gOverlay30PixelHeader[D_800C9468] != -1) {
+        D_800C9468++;
+    }
+
+    overlay30TransposePixels((u8 *)D_800C9460 + (gOverlay30PixelHeader[5] * 4),
                              (gOverlay30PixelHeader[6] - gOverlay30PixelHeader[5]) * 4);
-    gOverlay30LargeBuffer = overlay30AllocateReloc(0x800, 0x8B);
-    gOverlay30SmallBuffer = overlay30AllocateReloc(0x100, 0x8B);
-    gOverlay30Scale = 2.0f;
-    overlay30ResetReloc();
+    D_800C9494 = mmAlloc(0x800, 0x8B);
+    D_800C94A4 = mmAlloc(0x100, 0x8B);
+    D_800C946C = 2.0f;
+    func_80004340();
 }

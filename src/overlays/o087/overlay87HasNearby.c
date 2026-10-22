@@ -17,7 +17,7 @@ typedef struct Overlay87Entry {
     f32 z;
 } Overlay87Entry;
 
-extern Overlay87Entry **overlay87GetEntriesReloc(s32 *count);
+extern Overlay87Entry **func_80005750(s32 *count);
 
 s32 overlay87HasNearby(void *unused, Overlay87Query *query) {
     Overlay87Entry **entries;
@@ -30,7 +30,7 @@ s32 overlay87HasNearby(void *unused, Overlay87Query *query) {
 
     radiusSquared = query->radius;
     radiusSquared *= radiusSquared;
-    entries = overlay87GetEntriesReloc(&count);
+    entries = func_80005750(&count);
     result = FALSE;
     while (count != 0) {
         entry = *entries++;

@@ -36,31 +36,31 @@ typedef struct O57MenuFlags {
 
 extern s32 gOverlay57ModeFlag;
 extern O57MenuTransition gO57ModeSetup21C;
-extern s16 gOverlay57MenuInputY;
+extern s16 D_800D31BE;
 extern u8 gOverlay57TableIndex;
 extern s32 gO57MenuSelectionCountReloc;
 extern s32 gOverlay57DistanceState;
 extern s32 gOverlay57LayoutBusy;
-extern u32 gOverlay57MenuButtons;
-extern s32 gOverlay57PlayerCount;
+extern u32 D_800D31B8;
+extern s32 D_8007C1A0;
 extern Overlay57MenuEntry *gOverlay57MenuEntries;
-extern u8 gOverlay57MenuByte0;
-extern u8 gOverlay57MenuByte1;
-extern u8 gOverlay57MenuByte2;
-extern u8 gOverlay57MenuByte3;
-extern u8 gOverlay57MirrorSelection;
+extern u8 D_8007BEF8;
+extern u8 D_8007BEFC;
+extern u8 D_8007BF0C;
+extern u8 D_8007BF04;
+extern u8 D_8007BF08;
 extern u16 gOverlay57MenuHalf;
 extern u16 gO57MiddleData31B4;
 extern u8 gOverlay57MirrorFlag;
 extern u8 gO57ChoicePublishedReloc;
 extern Overlay57MenuSource gOverlay57MenuSources[];
 extern s16 gOverlay57ControllerMap[];
-extern s32 gO57MiddleData31E4;
+extern s32 D_8007BF44;
 extern s32 gO57MiddleData31E8;
 extern s32 gO57MiddleData31EC;
 extern s32 gO57MiddleData31F0;
 extern s32 gO57MiddleData31F4;
-extern O57MenuFlags gO57MiddleFlags;
+extern O57MenuFlags D_800D3128;
 extern s16 gO57UnlockTable[][4];
 extern s16 gO57CourseTable[][4];
 extern O57MenuLink gO57ModePrimaryIds[];
@@ -73,10 +73,10 @@ extern s32 gOverlay57State;
 extern void amSndPlay(s32 soundId, void *handle);
 /* Cross-overlay callees reached through the module's relocation table
  * (stored target zero): overlay 84 +0x12FC, +0x1350, +0x1060 and +0x1398. */
-extern s32 o57MenuO84F00012FCReloc(void);
-extern void o57MenuO84F0001350Reloc(void);
-extern void o57MenuO84F0001060Reloc(s32 kind);
-extern void o57MenuO84F0001398Reloc(void);
+extern s32 overlay84GetEnabledCurrent(void);
+extern void overlay84ClearMode(void);
+extern void overlay84ActivateCurrent(s32 kind);
+extern void overlay84Mark(void);
 extern void mainChangeCameras(s32 camera);
 extern void mainChangeLevel(s32 level, s32 entrance, s32 vehicle,
                             s32 cutscene, s32 multiplayer, s32 arg5);
@@ -87,7 +87,7 @@ extern void animseqStartPath(u8 pathId);
 extern void animseqStopPath(u8 pathId);
 extern void overlay57ApplyTable(void);
 extern void overlay57SetNodeValue(s32 id, s32 argument, f32 value);
-extern void o57PublishChoicesReloc(void);
+extern void func_8003A754(void);
 extern void func_80005548(s32 value);
 extern void func_800291B4(void);
 extern void func_8003A680(s32 value);
@@ -115,12 +115,12 @@ void func_overlay_057_F0004460_18A8058(s32 updateRate) {
         gO57ModeSetup21C.vertical += (0xBE - gO57ModeSetup21C.vertical) >> 3;
     }
 
-    if (gOverlay57MenuInputY < -16 && gOverlay57DistanceState == 0) {
+    if (D_800D31BE < -16 && gOverlay57DistanceState == 0) {
         if (gOverlay57TableIndex < gO57MenuSelectionCountReloc) {
             gOverlay57TableIndex++;
             gOverlay57LayoutBusy = 1;
         }
-    } else if (gOverlay57MenuInputY >= 17 && gOverlay57DistanceState == 0) {
+    } else if (D_800D31BE >= 17 && gOverlay57DistanceState == 0) {
         if (gOverlay57TableIndex > 0) {
             gOverlay57TableIndex--;
             gOverlay57LayoutBusy = 1;
@@ -128,48 +128,48 @@ void func_overlay_057_F0004460_18A8058(s32 updateRate) {
     }
 
     overlay57ApplyTable();
-    if ((gOverlay57MenuButtons & 0x9000) && gOverlay57DistanceState == 0) {
+    if ((D_800D31B8 & 0x9000) && gOverlay57DistanceState == 0) {
         amSndPlay(12, 0);
-        current = o57MenuO84F00012FCReloc();
-        mainChangeCameras(gOverlay57PlayerCount);
-        if (gOverlay57PlayerCount == 1) {
+        current = overlay84GetEnabledCurrent();
+        mainChangeCameras(D_8007C1A0);
+        if (D_8007C1A0 == 1) {
             gOverlay57MenuEntries[0].type = 0;
-            gOverlay57MenuByte0 = 6;
-            gOverlay57MenuByte1 = 5;
-            gOverlay57MenuByte2 = 0;
+            D_8007BEF8 = 6;
+            D_8007BEFC = 5;
+            D_8007BF0C = 0;
             if (gOverlay57TableIndex == 3) {
-                gOverlay57MenuByte3 = 2;
-                gOverlay57MirrorSelection = 1;
+                D_8007BF04 = 2;
+                D_8007BF08 = 1;
             } else {
-                gOverlay57MenuByte3 = gOverlay57TableIndex;
-                gOverlay57MirrorSelection = 0;
+                D_8007BF04 = gOverlay57TableIndex;
+                D_8007BF08 = 0;
             }
             gOverlay57MenuHalf = 0x3FC;
         } else {
             gOverlay57MenuEntries[0].type = 3;
-            if ((gOverlay57PlayerCount == 2 || gOverlay57PlayerCount == 3) &&
+            if ((D_8007C1A0 == 2 || D_8007C1A0 == 3) &&
                 gOverlay57MirrorFlag != 0) {
-                gOverlay57MenuByte1 = 4 - gOverlay57PlayerCount;
-                gOverlay57MenuByte0 = 4;
+                D_8007BEFC = 4 - D_8007C1A0;
+                D_8007BEF8 = 4;
             } else {
-                gOverlay57MenuByte1 = 0;
-                gOverlay57MenuByte0 = gOverlay57PlayerCount;
+                D_8007BEFC = 0;
+                D_8007BEF8 = D_8007C1A0;
             }
-            gOverlay57MenuByte2 = 1;
-            gOverlay57MenuByte3 = 2;
+            D_8007BF0C = 1;
+            D_8007BF04 = 2;
             gOverlay57MenuHalf = gO57MiddleData31B4;
             if (gOverlay57TableIndex == 3) {
-                gOverlay57MirrorSelection = 1;
+                D_8007BF08 = 1;
             } else {
-                gOverlay57MirrorSelection = 0;
+                D_8007BF08 = 0;
             }
         }
 
         for (i = 0; i < 10; i++) {
             activePlayers[i] = 1;
         }
-        if (gOverlay57PlayerCount == 1) {
-            o57PublishChoicesReloc();
+        if (D_8007C1A0 == 1) {
+            func_8003A754();
         }
         for (i = 0, index = 0; &gOverlay57MenuSources[index] < &gOverlay57MenuSources[4]; index++) {
             playerOrder[index] = gOverlay57MenuSources[index].active;
@@ -181,7 +181,7 @@ void func_overlay_057_F0004460_18A8058(s32 updateRate) {
             }
         }
         i = 0;
-        for (index = gOverlay57PlayerCount; index < 6; index++) {
+        for (index = D_8007C1A0; index < 6; index++) {
             while (activePlayers[i] == 0) {
                 i++;
             }
@@ -192,24 +192,24 @@ void func_overlay_057_F0004460_18A8058(s32 updateRate) {
         gOverlay57MenuEntries[0].mode = current;
         gOverlay57MenuEntries[0].variant = 0;
         gOverlay57MenuEntries[0].subtype = 3;
-        if (gOverlay57MenuByte2 == 0 || (gOverlay57MenuByte2 != 0 && gO57ChoicePublishedReloc != 0)) {
-            func_80005548(gOverlay57MenuByte0);
+        if (D_8007BF0C == 0 || (D_8007BF0C != 0 && gO57ChoicePublishedReloc != 0)) {
+            func_80005548(D_8007BEF8);
             if (gO57ChoicePublishedReloc != 0) {
                 gO57ChoicePublishedReloc = 0;
             }
         }
 
-        gO57MiddleData31E4 = 0;
-        if (gOverlay57PlayerCount == 1) {
-            if (gO57MiddleFlags.unlockPending) {
-                gO57MiddleFlags.unlockPending = 0;
+        D_8007BF44 = 0;
+        if (D_8007C1A0 == 1) {
+            if (D_800D3128.unlockPending) {
+                D_800D3128.unlockPending = 0;
                 func_800291B4();
                 func_8003A680(0);
             }
             i = gO57UnlockTable[gOverlay57MenuEntries[0].mode][gOverlay57MenuEntries[0].variant];
             if (i != -1) {
-                if (!((1 << i) & gO57MiddleFlags.unlockMask)) {
-                    gO57MiddleFlags.unlockMask |= 1 << i;
+                if (!((1 << i) & D_800D3128.unlockMask)) {
+                    D_800D3128.unlockMask |= 1 << i;
                     func_800291B4();
                     func_8003A680(
                         gO57UnlockTable[gOverlay57MenuEntries[0].mode][gOverlay57MenuEntries[0].variant] + 0xE);
@@ -217,7 +217,7 @@ void func_overlay_057_F0004460_18A8058(s32 updateRate) {
             }
         }
 
-        if (gO57MiddleData31E4 > 0) {
+        if (D_8007BF44 > 0) {
             gO57MiddleData31E8 = gO57CourseTable[gOverlay57MenuEntries[0].mode][gOverlay57MenuEntries[0].variant];
             gO57MiddleData31EC = gOverlay57ControllerMap[gOverlay57MenuSources[0].index];
             gO57MiddleData31F0 = 5;
@@ -230,14 +230,14 @@ void func_overlay_057_F0004460_18A8058(s32 updateRate) {
                             gOverlay57ControllerMap[gOverlay57MenuSources[0].index], 0, 5, 1, 0);
         }
         gOverlay57DistanceState = 1;
-        o57MenuO84F0001398Reloc();
-    } else if ((gOverlay57MenuButtons & 0x4000) && gOverlay57DistanceState == 0) {
+        overlay84Mark();
+    } else if ((D_800D31B8 & 0x4000) && gOverlay57DistanceState == 0) {
         amSndPlay(13, 0);
-        o57MenuO84F0001350Reloc();
+        overlay84ClearMode();
         animseqStopPath(gOverlay57ObjectId);
         gOverlay57Timer = 7;
         gOverlay57State = 0;
-        o57MenuO84F0001060Reloc(3);
+        overlay84ActivateCurrent(3);
 
         link = gO57ModePrimaryIds;
         while (link->index != -1) {

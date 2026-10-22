@@ -77,7 +77,7 @@ extern Inputs D_INPUT;
  * field lets uopt share one of theirs and drops five instructions. The
  * per-overlay name is required -- overlay 55 already publishes a generic
  * D_F4 at a different offset, and sharing that name mis-relocates it. */
-extern u32 D_o101_0;
+extern u32 D_800D3128;
 extern void *D_1C;
 extern void *D_38;
 extern void *D_CF0;
@@ -157,22 +157,22 @@ void func_overlay_101_F0008128_18E3948(void) {
     D_0.child = &D_340[D_1CC]; \
     D_1CC = D_1CC + 1
 
-    if (((D_o101_0 << 5) >> 28) & 1) {
+    if (((D_800D3128 << 5) >> 28) & 1) {
         ADD_IMAGE_NODE(0x26, 0x2E, 0x97);
     } else {
         ADD_IMAGE_NODE(0x26, 0x2E, 0x98);
     }
-    if (((D_o101_0 << 5) >> 28) & 2) {
+    if (((D_800D3128 << 5) >> 28) & 2) {
         ADD_IMAGE_NODE(0x68, 0x2E, 0x99);
     } else {
         ADD_IMAGE_NODE(0x68, 0x2E, 0x9A);
     }
-    if (((D_o101_0 << 5) >> 28) & 4) {
+    if (((D_800D3128 << 5) >> 28) & 4) {
         ADD_IMAGE_NODE(0x26, 0x70, 0x9D);
     } else {
         ADD_IMAGE_NODE(0x26, 0x70, 0x9E);
     }
-    if (((D_o101_0 << 5) >> 28) & 8) {
+    if (((D_800D3128 << 5) >> 28) & 8) {
         ADD_IMAGE_NODE(0x68, 0x70, 0x9B);
     } else {
         ADD_IMAGE_NODE(0x68, 0x70, 0x9C);

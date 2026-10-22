@@ -4,10 +4,10 @@ extern u8 gOverlay52Storage;
 extern void *gOverlay52Resource;
 extern s32 gOverlay52Slots[2];
 
-extern void overlay52ReleaseStorageReloc(void *storage);
-extern void overlay52ResetReloc(void);
-extern void overlay52ReleaseResourceReloc(void *resource);
-extern void overlay52ReleaseSlotReloc(s32 slot);
+extern void freeFrontEndList(void *storage);
+extern void overlay56ReleaseResource(void);
+extern void overlay45ReleaseDescriptor(void *resource);
+extern void freeFrontEndItem(s32 slot);
 
 /*
  * DKR us.v77/us.v80 and JFG object scans found no exact donor. Their resource
@@ -17,15 +17,15 @@ void overlay52Cleanup(void) {
     s32 *slot;
     s32 *end;
 
-    overlay52ReleaseStorageReloc(&gOverlay52Storage);
-    overlay52ResetReloc();
+    freeFrontEndList(&gOverlay52Storage);
+    overlay56ReleaseResource();
     if (gOverlay52Resource != NULL) {
-        overlay52ReleaseResourceReloc(gOverlay52Resource);
+        overlay45ReleaseDescriptor(gOverlay52Resource);
     }
     slot = gOverlay52Slots; end = &gOverlay52Slots[2];
     while (slot != end) {
         if (*slot != -1) {
-            overlay52ReleaseSlotReloc(*slot);
+            freeFrontEndItem(*slot);
             *slot = -1;
         }
         slot++;

@@ -17,6 +17,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import reloc_surface as rs  # noqa: E402
+import real_name_rebinds as rnr  # noqa: E402
 
 
 class LinkedObjectCompletenessTests(unittest.TestCase):
@@ -164,6 +165,137 @@ class ResidentRebindSafetyTests(unittest.TestCase):
         self.assertEqual(plan, diag["rebinds"])
         self.assertIn("--redefine-sym fontColour=fontColour_o014Reloc $@",
                       diag["rebinds_text"])
+
+
+class OverlayRealNameRebindTests(unittest.TestCase):
+    """Real overlay names go through `<name>_oNNNReloc` exactly as resident ones."""
+
+    OBJ = Path("build/src/overlays/o014/example.c.o")
+
+    def plan(self, sites, records, defs, defined=(), undo=None, base=0x100):
+        # sites: [(name, object offset, relocation type)]
+        names = sorted({n for n, _o, _t in sites})
+        symbols = [("", 0, 0, 0, 0)]
+        symbols += [(n, 0, 0, 0x12, rs.SHN_UNDEF) for n in names]
+        symbols += [(n, 0, 4, 0x12, 1) for n in defined]
+        relocs = [(".text", off, t, 1 + names.index(n)) for n, off, t in sites]
+        elf = FakeElf(symbols, relocs)
+        return rnr.real_aliases(elf, 14, base, records, defs, undo=undo)
+
+    @staticmethod
+    def rec(off, op, mode=rs.R_MIPS_26):
+        return {"target_offset": off, "mode": mode, "op_name": op}
+
+    def test_cross_module_call_is_renamed(self):
+        renames, refusals = self.plan(
+            [("overlay45Create", 0x10, rs.R_MIPS_26)],
+            [self.rec(0x110, "SYMBOL")], {"overlay45Create": {(45, "text")}})
+        self.assertEqual({"overlay45Create": "overlay45Create_o014Reloc"}, renames)
+        self.assertEqual([], refusals)
+
+    def test_cross_module_data_is_renamed(self):
+        renames, _r = self.plan(
+            [("gOverlay45Table", 0x10, rs.R_MIPS_HI16),
+             ("gOverlay45Table", 0x14, rs.R_MIPS_LO16)],
+            [], {"gOverlay45Table": {(45, "data")}})
+        self.assertEqual({"gOverlay45Table": "gOverlay45Table_o014Reloc"}, renames)
+
+    def test_same_module_jump_keeps_its_name(self):
+        self.assertEqual(({}, []), self.plan(
+            [("overlay14Helper", 0x10, rs.R_MIPS_26)],
+            [self.rec(0x110, "JUMP")], {"overlay14Helper": {(14, "text")}}))
+
+    def test_same_module_local_data_keeps_its_name(self):
+        self.assertEqual(({}, []), self.plan(
+            [("gOverlay14State", 0x10, rs.R_MIPS_HI16)],
+            [self.rec(0x110, "LOCAL", rs.R_MIPS_HI16)],
+            {"gOverlay14State": {(14, "data")}}))
+
+    def test_same_module_function_address_is_renamed(self):
+        # The surface never values a name the module's own .text defines, so
+        # a LOCAL HI/LO to a function would link its synthetic address.
+        renames, _r = self.plan(
+            [("overlay14Callback", 0x10, rs.R_MIPS_HI16),
+             ("overlay14Callback", 0x14, rs.R_MIPS_LO16)],
+            [self.rec(0x110, "LOCAL", rs.R_MIPS_HI16), self.rec(0x114, "LOCAL", rs.R_MIPS_LO16)],
+            {"overlay14Callback": {(14, "text")}})
+        self.assertEqual({"overlay14Callback": "overlay14Callback_o014Reloc"}, renames)
+
+    def test_generated_name_alias_drops_its_rom_suffix(self):
+        renames, _r = self.plan(
+            [("func_overlay_045_F00001A0_188C620", 0x10, rs.R_MIPS_26)],
+            [self.rec(0x110, "SYMBOL")],
+            {"func_overlay_045_F00001A0_188C620": {(45, "text")}})
+        self.assertEqual({"func_overlay_045_F00001A0_188C620":
+                          "func_overlay_045_F00001A0_o014Reloc"}, renames)
+
+    def test_same_module_export_reached_by_symbol_is_renamed(self):
+        renames, _r = self.plan(
+            [("overlay14Export", 0x10, rs.R_MIPS_26)],
+            [self.rec(0x110, "SYMBOL")], {"overlay14Export": {(14, "text")}})
+        self.assertEqual({"overlay14Export": "overlay14Export_o014Reloc"}, renames)
+
+    def test_mixed_jump_and_symbol_in_one_object_is_refused(self):
+        renames, refusals = self.plan(
+            [("overlay14Export", 0x10, rs.R_MIPS_26),
+             ("overlay14Export", 0x20, rs.R_MIPS_26)],
+            [self.rec(0x110, "SYMBOL"), self.rec(0x120, "JUMP")],
+            {"overlay14Export": {(14, "text")}})
+        self.assertEqual({}, renames)
+        self.assertEqual(["overlay14Export"], [n for n, _why in refusals])
+        self.assertIn("needing an addend and JUMP", refusals[0][1])
+
+    def test_name_defined_by_two_modules_is_refused(self):
+        renames, refusals = self.plan(
+            [("overlayShared", 0x10, rs.R_MIPS_26)], [self.rec(0x110, "SYMBOL")],
+            {"overlayShared": {(45, "text"), (46, "text")}})
+        self.assertEqual({}, renames)
+        self.assertIn("no single identity", refusals[0][1])
+
+    def test_name_the_object_defines_is_never_renamed(self):
+        # objcopy would rename the definition along with the references.
+        self.assertEqual(({}, []), self.plan(
+            [("overlay45Create", 0x10, rs.R_MIPS_26)], [self.rec(0x110, "SYMBOL")],
+            {"overlay45Create": {(45, "text")}}, defined=("overlay45Create",)))
+
+    def test_generic_short_data_name_of_another_module_is_not_a_real_name(self):
+        self.assertEqual(({}, []), self.plan(
+            [("D_0", 0x10, rs.R_MIPS_HI16)], [], {"D_0": {(101, "data")}}))
+
+    def test_cross_module_reference_without_ownership_row_is_refused(self):
+        renames, refusals = self.plan(
+            [("overlay45Create", 0x10, rs.R_MIPS_26)], [],
+            {"overlay45Create": {(45, "text")}}, base=None)
+        self.assertEqual({}, renames)
+        self.assertIn("no text_ownership row", refusals[0][1])
+
+    def test_declared_rename_is_undone_so_the_plan_is_a_fixed_point(self):
+        renames, _r = self.plan(
+            [("overlay45Create_o014Reloc", 0x10, rs.R_MIPS_26)],
+            [self.rec(0x110, "SYMBOL")], {"overlay45Create": {(45, "text")}},
+            undo={"overlay45Create_o014Reloc": "overlay45Create"})
+        self.assertEqual({"overlay45Create": "overlay45Create_o014Reloc"}, renames)
+
+    def test_resident_data_symbol_is_renamed_only_when_an_object_defines_it(self):
+        fake = FakeElf([("", 0, 0, 0, 0), ("gResident", 0, 0, 0x12, rs.SHN_UNDEF)],
+                       [(".text", 0x10, rs.R_MIPS_HI16, 1),
+                        (".text", 0x14, rs.R_MIPS_LO16, 1)])
+        with mock.patch.object(rs, "Elf", return_value=fake), \
+                mock.patch.object(rs, "tu_base", return_value=(0x100, 0x40)):
+            bare = rs.resident_call_aliases(self.OBJ, 14, [], [], {"gResident"})
+            real = rs.resident_call_aliases(self.OBJ, 14, [], [], {"gResident"},
+                                            resident_data_names={"gResident"})
+        self.assertEqual(({}, [], []), bare)
+        self.assertEqual({"gResident": "gResident_o014Reloc"}, real[0])
+
+    def test_overlay_defined_names_reads_text_and_data_but_not_abs(self):
+        fake = FakeElf([("", 0, 0, 0, 0), ("fn", 0, 4, 0x12, 1),
+                        ("gData", 0, 4, 0x11, 2), ("gAbs", 0xAC, 0, 0x10, rs.SHN_ABS),
+                        ("gUndef", 0, 0, 0x10, rs.SHN_UNDEF),
+                        ("sLocal", 0, 4, 0x01, 2)], [])
+        fake.section = lambda name: (1, None) if name == ".text" else (None, None)
+        got = rnr.defined_names([(7, Path("x.c.o"))], lambda _path: fake)
+        self.assertEqual({"fn": {(7, "text")}, "gData": {(7, "data")}}, got)
 
 
 class RebindFileModeTests(unittest.TestCase):

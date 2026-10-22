@@ -13,7 +13,7 @@ void *overlay8GetIndexed(Overlay8IndexedObject *object) {
     if (index < 0 || index >= 10) {
         index = 0;
     }
-    if (gOverlay8IndexMode == 0) {
+    if (D_8007BF04 == 0) {
         result = gOverlay8Primary[index];
     } else {
         result = gOverlay8Secondary[index];
@@ -57,21 +57,21 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
     if ((state->disabled18D != 0) || (state->gate158 != 0) ||
         (state->reset170 != 0) || (owner->mode3B == 0x18) ||
         (state->gate3FA != 0)) {
-        o8P0058ResetReloc(state, 1);
+        controlDisableJoypad(state, 1);
     }
-    o8P0058ModeReloc(state, state->mode0);
+    controlReadJoypad(state, state->mode0);
 
-    if (gO8P0058MirrorGateReloc != 0) {
+    if (D_8007BF08 != 0) {
         state->signed428 = -state->signed428;
         state->signed430 = -state->signed430;
     }
 
     query = o8P0058AcquireReloc(state);
-    gO8P0058ResultReloc = query->initial0;
-    if (gO8P0058PresentReloc != 0) {
+    D_800CB304 = query->initial0;
+    if (D_800C947C != 0) {
         if (((state->modeFlags420 & 0x8000) != 0) &&
             (state->active183 == 0x80)) {
-            state->active183 = (u8)gO8P0058ActiveReloc;
+            state->active183 = (u8)D_800C9480;
         }
         state->value42C = 0;
         state->value434 = 0;
@@ -79,7 +79,7 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
     } else {
         if ((state->active183 & 0x80) != 0) {
             if (state->active183 == 0x84) {
-                if (gO8P0058SpawnGateReloc != 0) {
+                if (D_8007BF04 != 0) {
                     o8P0058SpawnReloc(owner, 0x18, -1, 0.0f);
                 }
             } else if (state->active183 != 0x80) {
@@ -102,19 +102,19 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
         state->upper8 = 31.99f;
     }
 
-    o8P0058OrientReloc(owner, state);
+    controlFSUvels(owner, state);
     angles[0] = -state->angleF0;
     angles[1] = -owner->angle2;
     angles[2] = -owner->angle4;
     vector[2] = 0.0f;
     vector[1] = -1.0f;
     vector[0] = 0.0f;
-    o8P0058RotateReloc(angles, vector);
+    mathOneFloatYPR(angles, vector);
     state->direction60 = vector[0];
     state->direction64 = vector[1];
     state->direction5C = vector[2];
 
-    count = o8P0058SurfaceReloc(owner->xC, owner->z14, 0, 0x08010000,
+    count = func_8001357C(owner->xC, owner->z14, 0, 0x08010000,
                                 surfaces);
     floorHeight = -32768.0f;
     state->surface68 = -32768.0f;
@@ -133,7 +133,7 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
         state->surfaceActive2 = 1;
         state->surface6C = state->surface68;
         if ((state->surface68 - owner->y10) >= 25.0f) {
-            gO8P0058ResultReloc *= 0.125f;
+            D_800CB304 *= 0.125f;
         }
     } else {
         state->surfaceActive2 = 0;
@@ -143,7 +143,7 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
     if (owner->y10 < floorHeight) {
         state->reset170 = 1;
         if ((state->surfaceActive2 != 0) && (state->surfaceMode3 != 1)) {
-            o8P0058CollisionReloc(owner, state);
+            func_8001F14C(owner, state);
         }
     }
 
@@ -189,14 +189,14 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
 
     *gOverlay8Buffer = 0x2000;
     gOverlay8Buffer++;
-    o8P0058UpdateReloc(owner, state, updateRate);
+    func_8001D41C(owner, state, updateRate);
 
     if (state->lowering349 != 0) {
         if (state->mode16C == 1) {
             state->mode16C = 0;
             state->counter16E = 8;
             if (state->resourceB8 != 0) {
-                o8P0058ReleaseReloc(state->resourceB8);
+                amSndStopXYZ(state->resourceB8);
             }
             o8P0058CreateReloc(6, owner->xC, owner->y10, owner->z14, 4,
                                &state->resourceB8);
@@ -252,8 +252,8 @@ void func_overlay_008_F0000894_185E5EC(O8Owner *owner, O8State *state,
     if (((s8 *)owner->children40)[owner->childIndex93 + 0x1e] == 0 &&
         (node != 0) && (node->active != 0)) {
         savedNode = node;
-        o8Call0894Reloc(node, savedResource, owner);
-        ext_o0_19668(owner, savedNode, owner->value50,
+        func_8005AF14(node, savedResource, owner);
+        lightObject(owner, savedNode, owner->value50,
                      savedNode->items[savedNode->index]);
         ext_o8_3368(owner, state, savedResource, node, node->active);
         savedNode->active = 0;
@@ -307,12 +307,12 @@ void func_overlay_008_F0000894_185E5EC(O8Owner *owner, O8State *state,
     }
 
     ext_o8_3278(owner, state, updateRate);
-    ext_o8_2ec0(owner, state, 0, 0, updateRate);
+    func_8001D960(owner, state, 0, 0, updateRate);
     ext_o0_1d510(owner, state, updateRate);
     if ((state->active181 != 0) &&
         (((state->mode34A != 0) && (state->value84 == state->value80)) ||
          (owner->peer48->gate63 != 0))) {
-        if (state->resourceB8 != 0) ext_o0_2d98(state->resourceB8);
+        if (state->resourceB8 != 0) amSndStopXYZ(state->resourceB8);
         ext_o0_2b90(7, owner->valueC, owner->value10, owner->value14, 4,
                     &state->resourceB8);
         ext_o7_ccc(owner, 0x12);
@@ -337,10 +337,10 @@ void func_overlay_008_F0000894_185E5EC(O8Owner *owner, O8State *state,
     if (owner->flags80 & 0x10) owner->flags80 &= ~1;
     if (owner->flags80 & 0x20) owner->flags80 &= ~2;
     if (state->angle106 >= 0x1b)
-        ext_o0_3e990((f32)((0x5a - (s32)state->angle106) << 2));
-    ext_o0_3e99c(owner, updateRate);
-    if (state->resource134 != 0) ext_o17_668(state->resource134, gO8Pointer14);
-    if (state->resource138 != 0) ext_o17_668(state->resource138, gO8Pointer18);
+        func_8003EDE0((f32)((0x5a - (s32)state->angle106) << 2));
+    partUpdateTriggers(owner, updateRate);
+    if (state->resource134 != 0) overlay17AdvanceChain(state->resource134, gO8Pointer14);
+    if (state->resource138 != 0) overlay17AdvanceChain(state->resource138, gO8Pointer18);
     if (state->resourceC4 != 0)
         ext_o0_2d70(state->resourceC4, owner->valueC, owner->value10,
                     owner->value14);
@@ -364,7 +364,7 @@ s32 func_overlay_008_F0000E88_185EBE0(void *peer,
         }
 
         if (record->resource != NULL) {
-            o8StartMotionResourceReloc(record->resource);
+            amSndStopXYZ(record->resource);
         }
         return 1;
     }
@@ -388,16 +388,16 @@ void func_overlay_008_F0000F1C_185EC74(Overlay8ActivationOwner *owner,
     state->timer187 = 0x1E;
 
     if (((state->flags1A8 & 1) == 0) || (state->type == 0) ||
-        (gOverlay8ActivationGateTimerReloc == 0)) {
+        (D_80078F80 == 0)) {
         if (state->resource != NULL) {
-            overlay8ReleaseResourceReloc(state->resource);
+            amSndStopXYZ(state->resource);
         }
         overlay8CreateResourceReloc(8, owner->valueC, owner->value10,
                                     owner->value14, 4, &state->resource);
-        gOverlay8ActivationGateTimerReloc = 0x3C;
+        D_80078F80 = 0x3C;
     }
 
-    overlay8FinalizeActivationReloc(owner, 0x17);
+    overlay7DispatchSelection(owner, 0x17);
 }
 
 /* Matched 2026-09-23 (lane A2-ov), 165/165 words at frame 0x18, unforced.
@@ -430,8 +430,8 @@ f32 func_overlay_008_F0001000_185ED58(void *unused, O8PhaseState *state, f32 inp
         state->countdown--;
 
         if (state->countdown == 0) {
-            if (gO8RolloverControlReloc != 0) {
-                nextCountdown = (s32)(o8RolloverSampleReloc() * 6.0f + 60.0f);
+            if (D_8007BF0C != 0) {
+                nextCountdown = (s32)(overlay1DistanceFromCurrent() * 6.0f + 60.0f);
                 if (nextCountdown >= 181) {
                     nextCountdown = 180;
                 }
@@ -458,7 +458,7 @@ f32 func_overlay_008_F0001000_185ED58(void *unused, O8PhaseState *state, f32 inp
             state->phase = 3;
         }
 
-        if (gO8Phase2ScaleControlReloc == 0) {
+        if (D_8007BF04 == 0) {
             input += gO8Phase2ScaleReloc * state->weight;
         } else {
             input += 7.0f * state->weight;
@@ -473,7 +473,7 @@ f32 func_overlay_008_F0001000_185ED58(void *unused, O8PhaseState *state, f32 inp
             state->weight = 0.0f;
         }
 
-        if (gO8Phase3ScaleControlReloc == 0) {
+        if (D_8007BF04 == 0) {
             input += gO8Phase3ScaleReloc * state->weight;
         } else {
             input += 7.0f * state->weight;
@@ -581,9 +581,9 @@ typedef struct O8P1294ColorTarget {
 extern s16 D_4;
 extern s32 D_3E0[], D_420[], D_460[], D_4A0[];
 extern u8 D_4E0[];
-extern f32 gO8P1294MotionScalarReloc;
-extern u8 gO8P1294ImpactGateReloc;
-extern u8 gO8P1294ColorGateReloc;
+extern f32 D_800CB304;
+extern u8 D_8007BF04;
+extern u8 D_8007BF0C;
 extern void controlSetRumble(void *player, s32 strength, f32 duration);
 extern s32 func_800299E8(s32 minimum, s32 maximum);
 extern void amSndStopXYZ(void *handle);
@@ -752,7 +752,7 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
                 angle = 0;
             }
             if ((angle != 0) && (state->unk185 == 0)) {
-                state->unk4 += gO8P1294MotionScalarReloc * state->unk5C;
+                state->unk4 += D_800CB304 * state->unk5C;
                 if (state->unk4 > tuning->unk1C) {
                     state->unk4 = tuning->unk1C;
                 }
@@ -831,7 +831,7 @@ block_74:
                     (modeFlags = state->unk185, (modeFlags == 1)) ||
                     (modeFlags == 2)) {
                     impactBoost = 1;
-                    if (gO8P1294ImpactGateReloc == 0) {
+                    if (D_8007BF04 == 0) {
                         scale = 0.3334f;
                     } else {
                         scale = 0.5f;
@@ -1113,7 +1113,7 @@ block_74:
     }
     colorEnabled[0] = 0;
     colorEnabled[1] = 0;
-    if ((state->unk2 == 0) && (gO8P1294ColorGateReloc == 0)) {
+    if ((state->unk2 == 0) && (D_8007BF0C == 0)) {
         if (effectMask & 0x10) {
             colorEnabled[0] = 1;
         }
@@ -1176,7 +1176,7 @@ void func_overlay_008_F0002640_1860398(
         tuningIndex = 0;
     }
 
-    clampedDistance = O8P2640_call_26AC(
+    clampedDistance = sqrtf(
         distanceX * distanceX + distanceZ * distanceZ);
     if (clampedDistance < 2.0f) {
         return;
@@ -1185,7 +1185,7 @@ void func_overlay_008_F0002640_1860398(
         clampedDistance = 8.0f;
     }
 
-    baseValue = O8P2640_call_26F0(-distanceX, -distanceZ);
+    baseValue = Arctanf(-distanceX, -distanceZ);
     axisA = O8P2640_call_26FC(anchor->helperInput0);
     tuning = &D_2110[tuningIndex];
     axisB = O8P2640_call_2708(anchor->helperInput0);
@@ -1203,9 +1203,9 @@ void func_overlay_008_F0002640_1860398(
 
     if (emissionCount--) {
         do {
-            randomOffset = O8P2640_call_27BC(-0xC80, 0xC80);
-            randomValue = O8P2640_call_27CC(randomLow, randomHigh);
-            magnitudeValue = O8P2640_call_27DC(0x50, 0x78);
+            randomOffset = mathRnd(-0xC80, 0xC80);
+            randomValue = mathRnd(randomLow, randomHigh);
+            magnitudeValue = mathRnd(0x50, 0x78);
             spread = (f32)randomOffset * tuning->spreadScale8;
             record.value2 = (s16)randomValue;
             record.value0 = (s16)(baseValue + randomOffset);
@@ -1226,7 +1226,7 @@ void func_overlay_008_F0002640_1860398(
                 record.coord10 = anchor->coord14 - spread * axisA;
             }
 
-            O8P2640_call_28C0(&record);
+            overlay34CreateRecord(&record);
             record.phase14 = 1.0f;
         } while (emissionCount--);
     }
@@ -1301,24 +1301,24 @@ void func_overlay_008_F000291C_1860674(O8P291CMotion *motion,
 
     nextX = horizontal * update + displacementX;
     nextY = (motion->velocity20 * update) -
-        (0.5f * O8P291C_gravity * update * update) + displacementY;
+        (0.5f * D_800CB304 * update * update) + displacementY;
     nextZ = vertical * update + displacementZ;
     invUpdate = 1.0f / update;
     motion->velocity1C = nextX * invUpdate;
-    motion->velocity20 -= O8P291C_gravity * update;
+    motion->velocity20 -= D_800CB304 * update;
     motion->velocity24 = nextZ * invUpdate;
     motion->positionC += nextX;
     motion->position10 += nextY;
     motion->position14 += nextZ;
 
-    contact = O8P291C_call_037C(motion, state, update);
-    if ((O8P291C_call_039C(motion, 0.0f, 0.0f, 0.0f) != 0) ||
+    contact = func_8001DD70(motion, state, update);
+    if ((func_80008128(motion, 0.0f, 0.0f, 0.0f) != 0) ||
         (motion->state2E == -1)) {
         state->reset170 = 1;
         motion->positionC = state->origin38;
         motion->position10 = state->origin3C;
         motion->position14 = state->origin40;
-        O8P291C_call_039C(motion, 0.0f, 0.0f, 0.0f);
+        func_80008128(motion, 0.0f, 0.0f, 0.0f);
     }
 
     state->delta94 = (motion->positionC - state->origin38) * invUpdate;
@@ -1387,7 +1387,7 @@ void func_overlay_008_F0002EC0_1860C18(register Overlay8UpdateOwner *owner,
         }
     }
 
-    overlay8FinishUpdateReloc(owner, updateRate);
+    wakeUpdateRipple(owner, updateRate);
 }
 
 /* Mickey-local reconstruction. The compiler-generated constants are linked
@@ -1478,11 +1478,11 @@ void func_overlay_008_F0003278_1860FD0(void *unused0,
     }
 
     if (state->target354 != NULL) {
-        o8ApplyColorsReloc(state->target354, 0xFF, 0xFF, 0xFF,
+        func_8004707C(state->target354, 0xFF, 0xFF, 0xFF,
                                           red, green, blue);
     }
     if (state->target360 != NULL) {
-        o8ApplyColorsReloc(state->target360, 0xFF, 0xFF, 0xFF,
+        func_8004707C(state->target360, 0xFF, 0xFF, 0xFF,
                                           red, green, blue);
     }
 }
@@ -1687,11 +1687,11 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
         if (owner->mode3B == 0xC) {
             selectedMode = 0xC;
             blend = 0.0f;
-            gO8P34A0ScaleReloc *= 0.9f;
+            D_800CB304 *= 0.9f;
             selectedValue = 0.0667f;
             result = 40.0f;
         } else {
-            sampleCount = o8P34A0TerrainReloc(owner->xC, owner->z14,
+            sampleCount = func_8001398C(owner->xC, owner->z14,
                                               0x1800, &samples);
             if (sampleCount != 0) {
                 index = 0;
@@ -1708,7 +1708,7 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                 }
                 result = owner->y10 - result;
                 if (result > 40.0f) {
-                    gO8P34A0ScaleReloc *= 0.9f;
+                    D_800CB304 *= 0.9f;
                     selectedMode = 0xC;
                     blend = 0.0f;
                     selectedValue = 0.0667f;
@@ -1724,7 +1724,7 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
         ((ownerMode == 0xE) && (owner->scale28 != 1.0f))) {
         selectedMode = 0xE;
         blend = 0.0f;
-        selectedValue = (gO8P34A0ModeReloc == 0) ? 0.0167f : 0.0134f;
+        selectedValue = (D_8007BF04 == 0) ? 0.0167f : 0.0134f;
     } else if (((ownerMode == 0x13) || (ownerMode == 0x14) ||
                 (ownerMode == 0x15)) &&
                (owner->scale28 != 1.0f)) {
@@ -1780,7 +1780,7 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     if (selectedMode != sampleCount) {
         o8P34A0SetModeReloc(owner, selectedMode, -1, blend);
     }
-    if ((o8P34A0AnimateReloc(owner, selectedValue, update) != 0) &&
+    if ((func_8005ABA8(owner, selectedValue, update) != 0) &&
         (selectedValue != 0.0f)) {
         state->flags1A8 |= 2;
     } else {
@@ -1788,7 +1788,7 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     }
     if ((state->overrideMode193 != 0) &&
         (selectedMode != state->overrideMode193)) {
-        o8P34A0EventReloc(owner, 0x3C, selectedMode);
+        overlay1InitTimedState(owner, 0x3C, selectedMode);
     }
 
     index = 0;
@@ -1813,7 +1813,7 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     index = steps;
     /* One physical line: as1 then orders the counter save ahead of the
      * second argument's reload, as shipped (L59). */
-    while (index--) state->angle110 += o8P34A0ApproachReloc(state->angle110, target) >> 2;
+    while (index--) state->angle110 += mathDiffAngle(state->angle110, target) >> 2;
     do {
         sample = (f32 **)(state->angle110 & 0xFFFF);
         state->angle112 = (s32)sample;
@@ -1849,24 +1849,24 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
             if (trigA <= state->phase3F0) {
                 state->phase3F0 -= trigA;
             }
-            trigA = o8P34A0TrigAReloc(
+            trigA = func_8002A8C0(
                 (s32)((state->phase3EC / trigA) * 65536.0f));
-            trigB = o8P34A0TrigBReloc(
+            trigB = func_8002A8C0(
                 (s32)((state->phase3F0 / 6.283185f) * 65536.0f));
             strength *= 4096.0f;
             state->output3F4 = outputAngle + (s16)(strength * trigA);
             state->output3F6 = outputAngle + (s16)(strength * trigB);
             state->output3F8 = -outputAngle;
         } else {
-            factor = 1.0f - o8P34A0DecayReloc(0.95f, steps);
+            factor = 1.0f - Powerf(0.95f, steps);
             state->output3F4 =
-                o8P34A0BlendReloc(state->output3F4, 0, factor);
-            factor = 1.0f - o8P34A0DecayReloc(0.95f, steps);
+                dAngle(state->output3F4, 0, factor);
+            factor = 1.0f - Powerf(0.95f, steps);
             state->output3F6 =
-                o8P34A0BlendReloc(state->output3F6, 0, factor);
-            factor = 1.0f - o8P34A0DecayReloc(0.95f, steps);
+                dAngle(state->output3F6, 0, factor);
+            factor = 1.0f - Powerf(0.95f, steps);
             state->output3F8 =
-                o8P34A0BlendReloc(state->output3F8, 0, factor);
+                dAngle(state->output3F8, 0, factor);
         }
 
         *gOverlay8CommandBuffer = 0x1E;
@@ -1890,13 +1890,13 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
             if (factor <= state->phase3EC) {
                 state->phase3EC -= factor;
             }
-            trigA = o8P34A0TrigAReloc(
+            trigA = func_8002A8C0(
                 (s32)((state->phase3EC / factor) * 65536.0f));
             state->output3F4 = (s32)(8192.0f * strength * trigA);
         } else {
-            factor = 1.0f - o8P34A0DecayReloc(0.95f, steps);
+            factor = 1.0f - Powerf(0.95f, steps);
             state->output3F4 =
-                o8P34A0BlendReloc(state->output3F4, 0, factor);
+                dAngle(state->output3F4, 0, factor);
         }
         *gOverlay8CommandBuffer = 0x1E;
         gOverlay8CommandBuffer++;
@@ -1914,7 +1914,7 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
  * throughout).  The sample call returns nothing, so update is offered f0
  * after it.  The step count is converted once after the sample call and is
  * a symbol homed at 0x34 with the counter at 0x28; the gate word is the
- * resident symbol gO8P42A8GateReloc (the +0x2CC/+0x3C4 SYMBOL pair).  The
+ * resident symbol D_800C947C (the +0x2CC/+0x3C4 SYMBOL pair).  The
  * reset loop and the angle2 approach loop count with randomMode, loops 3-6
  * with remaining, and loop 3's `remaining = steps;` is written right after
  * loop 2 so its first test value is made at loop 2's exit (v1, as shipped).
@@ -1924,7 +1924,7 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
  * `while` and the call on one physical line, as1's line tie-break (L59)
  * orders the two float saves ahead of the argument reload, which then
  * fills the jal delay slot as shipped. */
-extern s32 gO8P42A8GateReloc;
+extern s32 D_800C947C;
 void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
                                        O8P42A8Owner *owner, f32 update) {
     O8P42A8State *state;
@@ -1955,7 +1955,7 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
 
     state = owner->state64;
     mode = state->mode0 & 3;
-    o8P42A8SampleReloc(60.0f, 0);
+    camSetFOV(60.0f, 0);
     steps = (s32)update;
 
     if (state->reset170 != 0) {
@@ -1963,9 +1963,9 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
         randomMode = steps;
         while (randomMode--) {
             actor->angle0 +=
-                o8P42A8ApproachReloc(actor->angle0, savedAngle) >> 3;
+                mathDiffAngle(actor->angle0, savedAngle) >> 3;
             actor->angle2 +=
-                o8P42A8ApproachReloc(actor->angle2, 0x800) >> 3;
+                mathDiffAngle(actor->angle2, 0x800) >> 3;
             actor->angle4 -= actor->angle4 >> 3;
         }
         return;
@@ -1975,7 +1975,7 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
         D_0[mode]++;
     }
     D_0[mode] &= 3;
-    randomMode = o8P42A8RandomReloc() & 3;
+    randomMode = camGetMode() & 3;
     tableIndex = D_0[mode];
     if ((state->reset170 != 0) || (state->lock191 != 0)) {
         tableIndex = 1;
@@ -2013,7 +2013,7 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     randomMode = steps;
     /* One physical line: as1 then orders the float saves ahead of the
      * argument reload, which fills the delay slot as shipped (L59). */
-    while (randomMode--) { actor->angle2 += o8P42A8ApproachReloc(actor->angle2, targetAngle) >> 4; }
+    while (randomMode--) { actor->angle2 += mathDiffAngle(actor->angle2, targetAngle) >> 4; }
     remaining = steps;
 
     if (state->velocity4 < 0.0f) {
@@ -2044,7 +2044,7 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
         targetHeight = 10.0f;
     }
 
-    if (gO8P42A8GateReloc == 0) {
+    if (D_800C947C == 0) {
         smoothing = 0.0435f;
     } else {
         smoothing = 0.01f;
@@ -2054,10 +2054,10 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
         actor->motion28 += (targetHeight - actor->motion28) * smoothing;
     }
 
-    firstTrig = o8P42A8TrigAReloc(0x8000 - state->directionDC);
-    secondTrig = o8P42A8TrigBReloc(0x8000 - state->directionDC);
-    relativeFirst = o8P42A8TrigAReloc(actor->angle2 - tableAngle);
-    relativeSecond = o8P42A8TrigBReloc(actor->angle2 - tableAngle);
+    firstTrig = func_8002A8C0(0x8000 - state->directionDC);
+    secondTrig = func_8002A8BC(0x8000 - state->directionDC);
+    relativeFirst = func_8002A8C0(actor->angle2 - tableAngle);
+    relativeSecond = func_8002A8BC(actor->angle2 - tableAngle);
     lateral = (actor->motion24 * relativeSecond) -
               (actor->motion28 * relativeFirst);
     baseX = lateral * firstTrig;
@@ -2079,8 +2079,8 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     posX = owner->xC + (state->offset14 * state->heightE8);
     posY = owner->y10 + (state->offset18 * state->heightE8);
     posZ = owner->z14 + (state->offset1C * state->heightE8);
-    firstTrig = o8P42A8TrigAReloc(state->directionDC + 0x4000);
-    secondTrig = o8P42A8TrigBReloc(state->directionDC + 0x4000);
+    firstTrig = func_8002A8C0(state->directionDC + 0x4000);
+    secondTrig = func_8002A8BC(state->directionDC + 0x4000);
 
     if (state->modifier100 != 0) {
         smoothing = (f32)(state->modifier100 * -12);
@@ -2112,7 +2112,7 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     remaining = steps;
     while (remaining--) {
         actor->angle4 +=
-            o8P42A8ApproachReloc(actor->angle4, owner->angle4 >> 1) >> 5;
+            mathDiffAngle(actor->angle4, owner->angle4 >> 1) >> 5;
     }
 }
 
@@ -2148,9 +2148,9 @@ void overlay8UpdateMotionOutput(Overlay8MotionAnchor *anchor,
     if (target == NULL) {
         delta = 0.0f;
     } else {
-        delta = (f32) overlay8ConvertDirectionReloc(
+        delta = (f32) mathDiffAngle(
             anchor->helperInput,
-            overlay8MeasureDirectionReloc(anchor->x - target->x,
+            Arctanf(anchor->x - target->x,
                                           anchor->y - target->y));
     }
 
@@ -2176,7 +2176,7 @@ void overlay8UpdateMotionOutput(Overlay8MotionAnchor *anchor,
     if (delta != (f32) state->primary) {
         register f32 step;
 
-        step = overlay8ApproachMotionReloc(
+        step = func_80029274(
             (s32) (delta - (f32) state->primary),
             (f32) state->secondary * 2.0f, 800.0f);
         state->secondary = (s16) (s32) ((f32) state->secondary + step);
@@ -2226,12 +2226,12 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
     normalPtr = &normal;
     state->activated173 = 0;
 
-    if (O8P4CF0_call_4D14(20) != 0) {
-        items = O8P4CF0_call_4D24(&start, &end);
+    if (runlinkIsModuleLoaded(20) != 0) {
+        items = func_8000572C(&start, &end);
         point.x = 0.0f;
         point.y = 0.0f;
         point.z = 7.0f;
-        O8P4CF0_call_4D54(1, actor, &point, &point);
+        pointListRPY(1, actor, &point, &point);
         point.x += actor->x00C;
         point.y += actor->y010;
         point.z += actor->z014;
@@ -2252,9 +2252,9 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
                                 ((s32)point.z <=
                                  bounds->minZ004 + bounds->extentZ008)) {
                                 if (item->callbackGate088 != 0) {
-                                    O8P4CF0_call_4E50(item);
+                                    overlay20ReleaseEntry(item);
                                 }
-                                surfaceHeight = O8P4CF0_call_4E64(
+                                surfaceHeight = func_overlay_020_F0001148_1877720(
                                     bounds, point.x, point.z, normalPtr);
                                 break;
                             }
@@ -2268,18 +2268,18 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
             s32 targetA;
             f32 factor;
 
-            axisA = O8P4CF0_call_4E9C(-actor->angle000);
-            axisB = O8P4CF0_call_4EAC(-actor->angle000);
+            axisA = func_8002A8C0(-actor->angle000);
+            axisB = func_8002A8BC(-actor->angle000);
             horizontalA = normalPtr->z * axisA + normalPtr->x * axisB;
             horizontalB = normalPtr->z * axisB - normalPtr->x * axisA;
-            targetA = O8P4CF0_call_4EE8(-horizontalA, normalPtr->y);
-            targetB = O8P4CF0_call_4EF8(horizontalB, normalPtr->y);
+            targetA = Arctanf(-horizontalA, normalPtr->y);
+            targetB = Arctanf(horizontalB, normalPtr->y);
 
-            factor = O8P4CF0_call_4F0C(0.9f, updateRate);
-            actor->angle004 = (s16)O8P4CF0_call_4F34(
+            factor = Powerf(0.9f, updateRate);
+            actor->angle004 = (s16)dAngle(
                 actor->angle004, (s16)targetA, 1.0f - factor);
-            factor = O8P4CF0_call_4F48(0.9f, updateRate);
-            actor->angle002 = (s16)O8P4CF0_call_4F68(
+            factor = Powerf(0.9f, updateRate);
+            actor->angle002 = (s16)dAngle(
                 actor->angle002, (s16)targetB, 1.0f - factor);
 
             start = updateRate - 1;
@@ -2291,7 +2291,7 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
                 } while (start--);
             }
 
-            O8P4CF0_data_4FD4 *= 0.4f;
+            D_800CB304 *= 0.4f;
             state->timer172 = 12;
             state->activated173 = 1;
         }

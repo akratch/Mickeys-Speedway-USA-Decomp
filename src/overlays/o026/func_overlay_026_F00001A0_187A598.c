@@ -74,7 +74,7 @@ typedef struct O26ObjectUpdate {
     O26StateUpdate *state64;
 } O26ObjectUpdate;
 
-extern u8 D_B18[];
+extern u8 func_overlay_026_F0000B18_187AF10[];
 
 extern void func_overlay_026_F0000D24_187B11CReloc(O26ObjectUpdate *object,
                                                s32 mode);
@@ -93,7 +93,7 @@ extern s32 func_80010900(O26Vec3fUpdate *position, O26Vec3fUpdate *origin,
 extern s32 func_80008128(O26ObjectUpdate *object, f32 arg1, f32 arg2, f32 arg3);
 extern void func_8001DCD0(s16 rotation, O26Vec3fUpdate *direction,
                           s16 *pitch, s16 *yaw);
-extern void overlay26RecordMinimumReloc(s32 index, f32 value);
+extern void overlay37RecordMinimum(s32 index, f32 value);
 extern f32 Powerf(f32 value, s32 exponent);
 extern s16 dAngle(s16 first, s16 second, f32 amount);
 
@@ -284,7 +284,7 @@ void func_overlay_026_F00001A0_187A598(O26ObjectUpdate *object,
     object->position.y += 10.0f;
     trackMakePolylist(1, &oldPosition, &object->position, &radius, 0, 0);
     collision = func_80010900(&oldPosition, &object->position, radius,
-                              object, D_B18);
+                              object, func_overlay_026_F0000B18_187AF10);
     i = func_80008128(object, 0, 0, 0);
     object->position.y -= 10.0f;
     pitch = 0;
@@ -313,7 +313,7 @@ void func_overlay_026_F00001A0_187A598(O26ObjectUpdate *object,
             z = entity->position.z - otherEntity->position.z;
             distance = sqrtf(x * x + y * y +
                              z * z);
-            overlay26RecordMinimumReloc(track->index, distance);
+            overlay37RecordMinimum(track->index, distance);
             if (track->finished3FA != 0) {
                 state->linked04 = NULL;
             }

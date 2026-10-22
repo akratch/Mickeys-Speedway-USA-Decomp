@@ -32,7 +32,7 @@ typedef struct Overlay68ObjectInit {
     void *resource;
 } Overlay68ObjectInit;
 
-extern void overlay68ConfigureReloc(Overlay68Object *object, s32 arg1, s32 arg2, f32 arg3);
+extern void func_8005AD64(Overlay68Object *object, s32 arg1, s32 arg2, f32 arg3);
 
 void overlay68InitializeObject(Overlay68Object *object, Overlay68ObjectInit *init) {
     Overlay68ObjectState *state;
@@ -48,5 +48,5 @@ void overlay68InitializeObject(Overlay68Object *object, Overlay68ObjectInit *ini
     state->active = 1;
     state->opacity = 0x80;
     state->value = 0.0f;
-    overlay68ConfigureReloc(object, 0, -1, 0.0f);
+    func_8005AD64(object, 0, -1, 0.0f);
 }

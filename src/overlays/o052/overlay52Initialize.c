@@ -9,7 +9,7 @@ typedef struct O52State {
     s32 unk10;
 } O52State;
 
-extern u8 D_OBJECT0[];
+extern u8 D_800D3550[];
 extern s32 ext_resident_word_190;
 extern s16 ext_resident_result;
 
@@ -109,21 +109,21 @@ static s32 sCurrent;
 static s16 sT4D0;
 static s16 sT4D2;
 
-extern u8 *ext_o0_28b04(void);
-extern void ext_o0_39738(void *);
-extern void ext_o0_39900(void *);
-extern void ext_o0_c0(s32);
-extern void ext_o0_31828(s32);
+extern u8 *func_80028F54(void);
+extern void loadFrontEndList(void *);
+extern void setupFrontEndList(void *);
+extern void amTunePlay(s32);
+extern void runlinkDownloadCode(s32);
 extern void func_overlay_052_F00004F0_189AB60(void *);
 extern void func_overlay_052_F0000540_189ABB0(void *, void *, s32, s32);
-extern void ext_o56_118(void);
-extern s32 ext_o0_2630c(void);
-extern s32 ext_o0_3a0bc(void);
-extern s32 ext_o0_39e48(void);
-extern void ext_o0_4ac54(s32);
-extern s32 ext_o0_3a150(s32);
-extern s32 ext_o45_c(s32, s32, s32, s32);
-extern void ext_o45_1be0(s32, s32);
+extern void overlay56LoadResource(void);
+extern s32 levelGetNumber(void);
+extern s32 frontGet2PlayerSplit(void);
+extern s32 frontGetScreenMode(void);
+extern void fontUseFont(s32);
+extern s32 func_8003A5A0(s32);
+extern s32 overlay45CreateDescriptor(s32, s32, s32, s32);
+extern void overlay45SetMode(s32, s32);
 
 /* Independently reconstructed from Mickey-local evidence; no DKR/JFG donor. */
 /* The bounds stores keep the target's source-line grouping (as1 pairs
@@ -131,12 +131,12 @@ extern void ext_o45_1be0(s32, s32);
 void func_overlay_052_F0000000_189A670(void) {
     s32 i;
     u8 *state;
-    state = ext_o0_28b04();
-    ext_o0_39738(sResourceIds);
-    ext_o0_39900(sPrepareIds);
-    ext_o0_c0(4);
+    state = func_80028F54();
+    loadFrontEndList(sResourceIds);
+    setupFrontEndList(sPrepareIds);
+    amTunePlay(4);
     sMode = 0x104;
-    ext_o0_31828(11);
+    runlinkDownloadCode(11);
     func_overlay_052_F00004F0_189AB60(sListA);
     func_overlay_052_F00004F0_189AB60(sListB);
     func_overlay_052_F00004F0_189AB60(sListE);
@@ -153,18 +153,18 @@ void func_overlay_052_F0000000_189A670(void) {
         func_overlay_052_F0000540_189ABB0(sListD, sCopyD[i], i, 2);
     }
     sHeight = -80.0f;
-    *(s16 *)(D_OBJECT0 + 0x26) = 40;
-    *(f32 *)(D_OBJECT0 + 0x28) = 1.0f;
-    ext_o56_118();
+    *(s16 *)(D_800D3550 + 0x26) = 40;
+    *(f32 *)(D_800D3550 + 0x28) = 1.0f;
+    overlay56LoadResource();
     sFlags[0] = -1;
     sFlags[1] = -1;
-    ext_resident_result = ext_o0_2630c();
+    ext_resident_result = levelGetNumber();
     for (i = 0; i < 9; i++) {
         sRecords[i].x = sSourceRecords[i].x;
         sRecords[i].y = sSourceRecords[i].y;
         sRecords[i].metadata = sSourceRecords[i].metadata;
     }
-    if (ext_o0_3a0bc() != 0) {
+    if (frontGet2PlayerSplit() != 0) {
         sB4BC[0] = -0x500; sB4C0[0] = -0x140;
         sB4BC[1] = 0x400; sB4C0[1] = -0x140;
         sB4C4[0] = 0x3F0;
@@ -173,7 +173,7 @@ void func_overlay_052_F0000000_189A670(void) {
         sB4C8[1] = 0x3C0;
         sBounds4A0[0] = -0x420;
         sBounds4A0[1] = 0x4E0;
-    } else if (ext_o0_39e48() & 1) {
+    } else if (frontGetScreenMode() & 1) {
         sB4BC[0] = -0x500; sB4C0[0] = -0x140;
         sB4BC[1] = -0x500; sB4C0[1] = -0x140;
         sB4C4[0] = 0x830;
@@ -198,11 +198,11 @@ void func_overlay_052_F0000000_189A670(void) {
     sState.unk10 = 0;
     if (*state == 3) {
         s32 handle;
-        ext_o0_4ac54(3);
-        handle = ext_o0_2630c();
-        handle = ext_o0_3a150(handle);
-        sCurrent = ext_o45_c(handle, 0xA0, 0x78, 0xC);
-        ext_o45_1be0(sCurrent, 0);
+        fontUseFont(3);
+        handle = levelGetNumber();
+        handle = func_8003A5A0(handle);
+        sCurrent = overlay45CreateDescriptor(handle, 0xA0, 0x78, 0xC);
+        overlay45SetMode(sCurrent, 0);
     } else {
         sCurrent = 0;
     }

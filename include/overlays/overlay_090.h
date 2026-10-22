@@ -61,7 +61,7 @@ typedef struct Overlay90Config {
 extern f32 gOverlay90Value1C;
 extern f32 gOverlay90Value20;
 
-void overlay90CommitReloc(Overlay90Owner *owner, s32 arg1, s32 arg2,
+void func_8005AD64(Overlay90Owner *owner, s32 arg1, s32 arg2,
                           f32 arg3);
 void overlay90Initialize(Overlay90Owner *owner, Overlay90Config *config);
 

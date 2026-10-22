@@ -15,26 +15,26 @@ extern void *gOverlay61Resource80Reloc;
 extern void *gOverlay61Resource84Reloc;
 extern void *gOverlay61Resource88Reloc;
 
-extern void overlay61ReleaseBaseReloc(void *);
-extern void overlay61ReleaseResourceReloc(void *);
-extern void overlay61FinishReleaseReloc(void);
-extern void overlay61SetReleaseModeReloc(s32);
+extern void freeFrontEndList(void *);
+extern void overlay45ReleaseDescriptor(void *);
+extern void packDirectoryFree(void);
+extern void rumbleProcessing(s32);
 
 void overlay61ReleaseResources(void) {
-    overlay61ReleaseBaseReloc(gOverlay61ResourceBaseReloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource58Reloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource5CReloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource60Reloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource64Reloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource68Reloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource6CReloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource70Reloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource74Reloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource78Reloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource7CReloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource80Reloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource84Reloc);
-    overlay61ReleaseResourceReloc(gOverlay61Resource88Reloc);
-    overlay61FinishReleaseReloc();
-    overlay61SetReleaseModeReloc(1);
+    freeFrontEndList(gOverlay61ResourceBaseReloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource58Reloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource5CReloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource60Reloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource64Reloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource68Reloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource6CReloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource70Reloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource74Reloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource78Reloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource7CReloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource80Reloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource84Reloc);
+    overlay45ReleaseDescriptor(gOverlay61Resource88Reloc);
+    packDirectoryFree();
+    rumbleProcessing(1);
 }

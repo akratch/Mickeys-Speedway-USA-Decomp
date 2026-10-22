@@ -41,16 +41,16 @@ typedef struct Overlay79SpawnDesc {
     u8 padC[0xC];
 } Overlay79SpawnDesc;
 
-extern s32 overlay79RandomReloc(s32 lower, s32 upper);
-extern Overlay79Spawned *overlay79SpawnReloc(Overlay79SpawnDesc *desc, s32 count);
-extern void overlay79EmitAtReloc(s32 id, f32 x, f32 y, f32 z, s32 arg4, s32 arg5);
-extern void overlay79FinishReloc(Overlay79Object *object);
+extern s32 mathRnd(s32 lower, s32 upper);
+extern Overlay79Spawned *func_8000590C(Overlay79SpawnDesc *desc, s32 count);
+extern void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 arg4, s32 arg5);
+extern void func_80006EA0(Overlay79Object *object);
 extern s32 overlay79FindNearby(Overlay79Vector *position, f32 distance);
-extern void overlay79EmitReloc(s32 id, s32 unused1);
-extern void overlay79TriggerReloc(void);
+extern void amSndPlay(s32 id, s32 unused1);
+extern void func_800291B4(void);
 
 extern s32 gOverlay79CounterReloc;
-extern u8 gOverlay79FlagsReloc[];
+extern u8 D_800D3128[];
 
 /* Bounded reproof (2026-08-29): configured -O2 -mips2 -32 C remains exactly
  * 123 instructions / 492 bytes with frame 0x48, 111/123 raw and runtime-
@@ -120,19 +120,19 @@ void func_overlay_079_F0001290_18CE230(Overlay79Object *object, s32 unused1)
     desc.x = object->position.x;
     desc.y = object->position.y;
     desc.z = object->position.z;
-    desc.angle = overlay79RandomReloc(-0x7FFF, 0x8000);
-    spawned = overlay79SpawnReloc(&desc, 1);
+    desc.angle = mathRnd(-0x7FFF, 0x8000);
+    spawned = func_8000590C(&desc, 1);
     if (spawned != 0)
     {
       spawned->field3C = 0;
       if (1)
       {
       }
-      overlay79EmitAtReloc(0x277, object->position.x, object->position.y, object->position.z, 4, 0);
+      amSndPlayXYZ(0x277, object->position.x, object->position.y, object->position.z, 4, 0);
     }
     spawned = node->next->state;
     spawned->field40 = 0;
-    overlay79FinishReloc(object);
+    func_80006EA0(object);
   }
   else
   {
@@ -144,25 +144,25 @@ void func_overlay_079_F0001290_18CE230(Overlay79Object *object, s32 unused1)
       desc.x = object->position.x;
       desc.y = object->position.y;
       desc.z = object->position.z;
-      desc.angle = overlay79RandomReloc(-0x7FFF, 0x8000);
-      spawned = overlay79SpawnReloc(&desc, 1);
+      desc.angle = mathRnd(-0x7FFF, 0x8000);
+      spawned = func_8000590C(&desc, 1);
       if (spawned != 0)
       {
         spawned->field3C = 0;
         if ((++gOverlay79CounterReloc) == 0x14)
         {
-          overlay79EmitReloc(0x27C, 0);
-          gOverlay79FlagsReloc[1] = (gOverlay79FlagsReloc[1] & 0xFF) | 4;
-          overlay79TriggerReloc();
+          amSndPlay(0x27C, 0);
+          D_800D3128[1] = (D_800D3128[1] & 0xFF) | 4;
+          func_800291B4();
         }
         else
         {
-          overlay79EmitAtReloc(0x277, object->position.x, object->position.y, object->position.z, 4, 0);
+          amSndPlayXYZ(0x277, object->position.x, object->position.y, object->position.z, 4, 0);
         }
       }
       spawned = node->next->state;
       spawned->field40 = 0;
-      overlay79FinishReloc(object);
+      func_80006EA0(object);
     }
   }
 }

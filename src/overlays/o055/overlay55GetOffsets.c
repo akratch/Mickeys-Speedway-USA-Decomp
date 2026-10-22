@@ -1,14 +1,14 @@
 #include "ultra64.h"
 
 extern s16 gOverlay55Offsets[];
-extern s32 overlay55QueryModeReloc(void);
+extern s32 frontGetScreenMode(void);
 
 /* Shared Mickey family; no exact DKR v77/v80 or JFG donor was found. */
 void overlay55GetOffsets(s32 mode, s32 index, s32 *xOffset, s32 *yOffset) {
     s16 *offsets;
 
     index *= 4;
-    if (overlay55QueryModeReloc() == 1) {
+    if (frontGetScreenMode() == 1) {
         index += 4;
     }
 

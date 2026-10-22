@@ -30,8 +30,8 @@ typedef struct Overlay36Object {
 } Overlay36Object;
 
 extern u16 gOverlay36Mode;
-extern u8 *overlay36AcquireReloc(void);
-extern void overlay36ConfigureReloc(Overlay36Data *data, s32 mode);
+extern u8 *func_80028F54(void);
+extern void _bzero(Overlay36Data *data, s32 mode);
 extern s32 overlay36QueryReloc(s32 index, s16 value, Overlay36Data *data);
 
 /* DKR v77/v80 and JFG contain no exact donor for this object initializer. */
@@ -40,8 +40,8 @@ void overlay36InitObject(Overlay36Object *object, void *entry) {
     u8 *resource;
 
     data = object->data;
-    resource = overlay36AcquireReloc();
-    overlay36ConfigureReloc(data, 12);
+    resource = func_80028F54();
+    _bzero(data, 12);
     data->intensity = 0x80;
     data->marker = -1;
 

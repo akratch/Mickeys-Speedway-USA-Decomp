@@ -32,15 +32,15 @@ typedef struct Overlay101Element {
 
 extern u32 gOverlay101RenderFlags;
 
-void overlay101SelectElementReloc(s32 kind, s32 alpha, Overlay101Pixel *pixels);
-void overlay101SetRenderModeReloc(s32, s32, s32, s32);
-void overlay101SetColorReloc(s32 red, s32 green, s32 blue, s32 alpha,
+void fontUseFont(s32 kind, s32 alpha, Overlay101Pixel *pixels);
+void fontBackground(s32, s32, s32, s32);
+void fontColour(s32 red, s32 green, s32 blue, s32 alpha,
                              s32 opacity);
-void overlay101GetBoundsReloc(Overlay101BoundsNode *node, s32 *left, s32 *top,
+void overlay101GetBounds(Overlay101BoundsNode *node, s32 *left, s32 *top,
                               s32 *right, s32 *bottom);
-void overlay101SetScissorReloc(s32 displayList, s32 left, s32 top, s32 right,
+void overlay101SetScissor(s32 displayList, s32 left, s32 top, s32 right,
                                s32 bottom);
-void overlay101DrawElementReloc(s32 displayList, s32 x, s32 y,
+void fontPrintXY(s32 displayList, s32 x, s32 y,
                                 Overlay101Pixel *pixels,
                                 s32 flags);
 void overlay101SetScaleReloc(s32 displayList, s32 x, s32 y, s32 width,
@@ -89,13 +89,13 @@ void overlay101DrawElement(s32 displayList, Overlay101BoundsNode *node,
             blue = (element->blue * node->opacity) / 255;
             alpha = (element->alpha * node->scale) / 255;
 
-            overlay101SelectElementReloc(element->kind, element->alpha,
+            fontUseFont(element->kind, element->alpha,
                                          pixels);
-            overlay101SetRenderModeReloc(0, 0, 0, 0);
-            overlay101SetColorReloc(red, green, blue, 0xFF, alpha);
-            overlay101GetBoundsReloc(node, &left, &top, &right, &bottom);
-            overlay101SetScissorReloc(displayList, left, top, right, bottom);
-            overlay101DrawElementReloc(displayList, x, y, pixels,
+            fontBackground(0, 0, 0, 0);
+            fontColour(red, green, blue, 0xFF, alpha);
+            overlay101GetBounds(node, &left, &top, &right, &bottom);
+            overlay101SetScissor(displayList, left, top, right, bottom);
+            fontPrintXY(displayList, x, y, pixels,
                                        element->flags);
             overlay101SetScaleReloc(displayList, 0, 0, 1000, 1000);
 

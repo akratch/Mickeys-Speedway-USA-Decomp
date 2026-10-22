@@ -32,12 +32,12 @@ typedef struct Overlay97ResourceInit {
     u8 extra;
 } Overlay97ResourceInit;
 
-extern s32 overlay97ResourceExistsReloc(u16 first);
-extern void overlay97CreateResourceReloc(u16 first, f32 x, f32 y, f32 z,
+extern s32 amSoundIsLooped(u16 first);
+extern void amCreateAudioPoint(u16 first, f32 x, f32 y, f32 z,
                                          s32 kind, s32 colorB, s32 colorA,
                                          s32 second, s32 flags, s32 mode,
                                          s32 extra, s32 zero, s32 *handle);
-extern void overlay97FinalizeResourceReloc(Overlay97ResourceObject *object);
+extern void func_80006EA0(Overlay97ResourceObject *object);
 
 void overlay97InitResource(Overlay97ResourceObject *object,
                            Overlay97ResourceInit *init) {
@@ -52,20 +52,20 @@ void overlay97InitResource(Overlay97ResourceObject *object,
     resource->colorB = init->colorB;
     resource->extra = init->extra;
     resource->handle = 0;
-    if (overlay97ResourceExistsReloc(resource->first)) {
-        overlay97CreateResourceReloc(resource->first, (f32)init->x,
+    if (amSoundIsLooped(resource->first)) {
+        amCreateAudioPoint(resource->first, (f32)init->x,
                                      (f32)init->y, (f32)init->z, 9,
                                      resource->colorB, resource->colorA,
                                      resource->second, resource->flags,
                                      resource->mode, resource->extra, 0,
                                      &resource->handle);
     } else {
-        overlay97CreateResourceReloc(resource->first, (f32)init->x,
+        amCreateAudioPoint(resource->first, (f32)init->x,
                                      (f32)init->y, (f32)init->z, 10,
                                      resource->colorB, resource->colorA,
                                      resource->second, resource->flags,
                                      resource->mode, resource->extra, 0,
                                      &resource->handle);
     }
-    overlay97FinalizeResourceReloc(object);
+    func_80006EA0(object);
 }

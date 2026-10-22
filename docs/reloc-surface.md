@@ -1074,6 +1074,70 @@ link resolved perfectly well. Markers still come from both passes, since a
 POSTPROCESS marker is printed by the compile; every *link* diagnostic now comes
 from the second pass alone.
 
+### 5.7 Real names for every reference, not only resident calls
+
+Section 5.6's argument is not specific to the resident segment. A shipped
+`SYMBOL` record stores only the addend the runtime adds the export's address
+to, so *any* reference the C spells with a real global name needs a name
+whose value is that addend: a resident function or data symbol, another
+module's function or data, and this module's own export when its record is
+`SYMBOL`. Until 2026-10-22 the C expressed that by spelling a placeholder
+instead (`overlay11CreateReloc` for `overlay45CreateDescriptor`, `D_1D68`,
+`gO1PlayerCount` for `D_8007BEF8`), and the runlink packer, which reads the raw
+objects, had to borrow each such identity from the shipped tables
+(docs/overlays.md section 5.3.1).
+
+The planner now extends the resident rule. `plan_resident_rebinds()` also
+calls `real_name_rebinds.real_aliases()` (`tools/real_name_rebinds.py`), which renames, per object and per module,
+
+- a name another overlay module defines (any reference): `<name>_oNNNReloc`;
+- a name this module defines, when the shipped records at its corroborated
+  sites are `SYMBOL`. A `JUMP` call already stores what the synthetic VMA
+  produces, and a `LOCAL` data reference is valued under its own name
+  (section 5.2), so both keep the bare name.
+
+`resident_call_aliases()` likewise renames a data-only reference to a symbol a
+resident *object* defines (`resident_data_names`); a name only the
+auto-generated symbol scripts assign, such as the low `D_800000xx` labels that
+stand for overlay BSS, keeps its existing value line.
+
+The rules go into the same generated `mk/overlay_resident_rebinds.generated.mk`
+and are applied the same way, so section 5.6's four properties hold unchanged:
+the plan is a fixed point (declared renames are undone before planning), a
+rename planned before its object is rebuilt is already valued under its
+placeholder (`generate()` no longer skips a renamed same-module name as local
+text), and `check-overlay-syms` stays a drift check. Refused, as `UNRESOLVED`
+lines that fail `overlay-syms` closed:
+
+- a name more than one module defines: no single identity;
+- a module's own name reached by both `SYMBOL` and `JUMP`/`LOCAL` records in
+  one object: one placeholder cannot carry both addends;
+- a cross-module reference in an object with no `text_ownership` row.
+
+A short `D_<hex>` defined by *another* module is not treated as a real name;
+the spelling is per-module (CLAUDE.md). A name the calling object defines
+never reaches the planner, because its references are not undefined. That is
+also why `tools/real_names.py` refuses a placeholder whose `SYMBOL` site lies
+in the object defining the target (`self-export`): no objcopy rename can
+separate the reference from the definition.
+
+On the tree that introduced it, the extended planner was a no-op apart from
+eight objects whose C names a module's offset-0 function at a `SYMBOL` site
+(the wrong-target class lane ov-ident fixes); those gained a
+`<generated>_oNNNReloc` rename valued at `0xF0000000`, the same word the bare
+`jal` produced.
+
+`tools/real_names.py` is the codemod that uses it. It measures each
+placeholder's target from the packer's own model (shipped target minus the
+raw object's addend, at every site), renames the placeholders whose sites
+agree on a defined symbol, respells the module's own POSTPROCESS
+`--redefine-sym <old>=` entries so the normal build's objects are unchanged,
+and compiles the module, refusing any real name the rewrite left declared with
+two prototypes in one translation unit. Blob-owned overlay data and BSS are
+refused by design and wait for phase 3. Its synthetic tests are
+`tools/test_real_names.py`; the planner's are `OverlayRealNameRebindTests` in
+`tools/test_reloc_surface.py`.
+
 ## 6. What the trial measures now
 
 `tools/promotion_trial.py --overlays-only`, all 279 overlay candidates, lane

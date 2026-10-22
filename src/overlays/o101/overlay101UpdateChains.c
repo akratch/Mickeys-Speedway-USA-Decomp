@@ -21,7 +21,7 @@ extern s32 gOverlay101Time214;
 extern s32 gOverlay101Time338;
 extern s32 gOverlay101OrderCount;
 extern Overlay101UpdateChain *gOverlay101Order[];
-extern void overlay101UpdateNodeReloc(void *resource, void *flags,
+extern void texAnimateSprite(void *resource, void *flags,
                                      s32 value, void *values, s32 step);
 
 void overlay101UpdateChains(s32 step) {
@@ -55,7 +55,7 @@ void overlay101UpdateChains(s32 step) {
             if ((node != NULL) && (type != 0)) {
                 do {
                     if ((type == 2) && (node->flags & 1)) {
-                        overlay101UpdateNodeReloc(
+                        texAnimateSprite(
                             node->resource, &node->flags, node->value13,
                             &node->flags - 1, step);
                     }

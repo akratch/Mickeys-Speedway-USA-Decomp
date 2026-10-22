@@ -11,20 +11,20 @@ typedef struct O63Config {
     u8 pad10[4];
 } O63Config;
 
-extern void o63InitAReloc(s32 value);
-extern void o63InitBReloc(void);
-extern void o63InitCReloc(void *resource);
-extern void o63SetModeReloc(s32 mode);
-extern void o63SetColorReloc(s32 red, s32 green, s32 blue, s32 alpha, s32 intensity);
-extern void *o63CreateReloc(void *resource, s32 x, s32 y, s32 kind);
-extern void o63AttachReloc(void *resource, s32 value);
-extern s16 o63RandomReloc(s32 lower, s32 upper);
-extern void o63ResetSlotReloc(s32 slot);
+extern void amTunePlay(s32 value);
+extern void func_800015F8(void);
+extern void loadFrontEndList(void *resource);
+extern void fontUseFont(s32 mode);
+extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha, s32 intensity);
+extern void *overlay45CreateDescriptor(void *resource, s32 x, s32 y, s32 kind);
+extern void overlay45SetMode(void *resource, s32 value);
+extern s16 mathRnd(s32 lower, s32 upper);
+extern void joyEnable(s32 slot);
 
 extern u8 gO63InitResource[];
 extern u8 gO63CreateResource[];
-extern void *gO63TableReloc[];
-extern s32 gO63ExternalWordReloc;
+extern void *D_800D31C8[];
+extern s32 D_8007BF44;
 extern u8 gO63ExternalByteReloc;
 extern void *gO63LocalResource;
 extern s32 gO63LocalWord;
@@ -55,16 +55,16 @@ void overlay63Initialize(void)
   O63Config *config;
   s16 index;
   s32 slot;
-  o63InitAReloc(0x16);
-  o63InitBReloc();
-  o63InitCReloc(gO63InitResource);
-  gO63SavedTableWord = (s32) gO63TableReloc[6];
-  o63SetModeReloc(3);
-  o63SetColorReloc(0xFF, 0xFF, 0xFF, 0, 0xFF);
-  gO63LocalResource = o63CreateReloc(gO63CreateResource, 0xA0, 0xC0, 0x204);
+  amTunePlay(0x16);
+  func_800015F8();
+  loadFrontEndList(gO63InitResource);
+  gO63SavedTableWord = (s32) D_800D31C8[6];
+  fontUseFont(3);
+  fontColour(0xFF, 0xFF, 0xFF, 0, 0xFF);
+  gO63LocalResource = overlay45CreateDescriptor(gO63CreateResource, 0xA0, 0xC0, 0x204);
   gO63LocalWord = 0;
   gO63LocalFloat = 0.0f;
-  o63AttachReloc(gO63LocalResource, 0);
+  overlay45SetMode(gO63LocalResource, 0);
   chain = &gO63Chain;
   config = gO63Configs;
   if (gO63Chain != (-1))
@@ -72,13 +72,13 @@ void overlay63Initialize(void)
     index = *((s16 *) ((s32) (&gO63ChainReload)));
     do
     {
-      config->resource = gO63TableReloc[index];
+      config->resource = D_800D31C8[index];
       config->value4 = chain[1];
       config->value6 = chain[2];
-      config->randomA = o63RandomReloc(0, 0x8000);
-      config->randomB = o63RandomReloc(0x600, 0xA00);
-      config->randomC = o63RandomReloc(0x100, 0x300);
-      if (o63RandomReloc(0, 1) == 0)
+      config->randomA = mathRnd(0, 0x8000);
+      config->randomB = mathRnd(0x600, 0xA00);
+      config->randomC = mathRnd(0x100, 0x300);
+      if (mathRnd(0, 1) == 0)
       {
         config->randomC = -config->randomC;
       }
@@ -95,10 +95,10 @@ void overlay63Initialize(void)
   gO63State19C = 0xF0;
   for (slot = 0; slot < 4; slot++)
   {
-    o63ResetSlotReloc(slot);
+    joyEnable(slot);
   }
 
-  gO63ExternalWordReloc = 0;
+  D_8007BF44 = 0;
   gO63ExternalByteReloc = 0;
 }
 

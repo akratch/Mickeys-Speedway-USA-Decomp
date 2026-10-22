@@ -25,11 +25,11 @@ typedef struct Overlay31Item {
 extern s32 gOverlay31ItemCount;
 extern Overlay31Item **gOverlay31Items;
 
-extern void overlay31OpenPaletteReloc(Overlay31PaletteCursor *cursor,
+extern void initColourCycle(Overlay31PaletteCursor *cursor,
                                       u16 paletteId);
-extern void overlay31AdvancePaletteReloc(Overlay31PaletteCursor *cursor,
+extern void updateColourCycle(Overlay31PaletteCursor *cursor,
                                          void *step);
-extern void *overlay31AllocateReloc(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 
 void overlay31BuildPalettes(void) {
     Overlay31Item *item;
@@ -55,7 +55,7 @@ void overlay31BuildPalettes(void) {
             if (item->palette == 0) {
                 u32 *palette;
 
-                overlay31OpenPaletteReloc(&cursor, item->paletteId);
+                initColourCycle(&cursor, item->paletteId);
                 count = cursor.state->count;
                 if (count == 0) {
                     count = 1;
@@ -64,14 +64,14 @@ void overlay31BuildPalettes(void) {
                     count = 0xFF;
                 }
 
-                item->palette = overlay31AllocateReloc(count * 4, 0x8C);
+                item->palette = mmAlloc(count * 4, 0x8C);
                 item->paletteCount = count;
                 palette = item->palette;
                 for (j = 0; j < count; j++) {
                     *palette++ = ((u32)cursor.red << 24) |
                                  ((u32)cursor.green << 16) |
                                  ((u32)cursor.blue << 8) | cursor.alpha;
-                    overlay31AdvancePaletteReloc(&cursor, (void *)1);
+                    updateColourCycle(&cursor, (void *)1);
                 }
             }
         }

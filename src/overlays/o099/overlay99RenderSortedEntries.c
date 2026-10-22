@@ -10,13 +10,13 @@ typedef struct Overlay99Transform {
     f32 z;
 } Overlay99Transform;
 
-extern f32 overlay99CamGetProjZReloc(f32 x, f32 y, f32 z);
-extern Overlay99Transform *overlay99CamGetPtrReloc(void);
-extern void overlay99Func80022E80Reloc(Overlay99RenderState *state);
-extern void overlay99Func8002AA50Reloc(Overlay99RenderState *state, MtxF matrix);
-extern void overlay99MtxfTransformPointReloc(MtxF matrix, f32 x, f32 y, f32 z,
+extern f32 camGetProjZ(f32 x, f32 y, f32 z);
+extern Overlay99Transform *camGetPtr(void);
+extern void func_80022E80(Overlay99RenderState *state);
+extern void func_8002AA50(Overlay99RenderState *state, MtxF matrix);
+extern void mtxf_transform_point(MtxF matrix, f32 x, f32 y, f32 z,
                                              f32 *outX, f32 *outY, f32 *outZ);
-extern void overlay99Func80022FD4Reloc(Gfx **displayList, Mtx **matrices,
+extern void func_80022FD4(Gfx **displayList, Mtx **matrices,
                                        void *vertices,
                                        Overlay99RenderState *state,
                                        f32 *opacity,
@@ -73,7 +73,7 @@ void overlay99RenderSortedEntries(Gfx **displayList, Mtx **matrices,
         i = 0;
         while ((i < state->entryCount) && (i != 4)) {
             vec = &owner->vectors[entry->tableIndex];
-            distances[count] = overlay99CamGetProjZReloc(vec->x, vec->y, vec->z);
+            distances[count] = camGetProjZ(vec->x, vec->y, vec->z);
             sorted[count] = entry;
             entry++;
             i++;
@@ -98,20 +98,20 @@ void overlay99RenderSortedEntries(Gfx **displayList, Mtx **matrices,
         }
     }
 
-    transform = overlay99CamGetPtrReloc();
+    transform = camGetPtr();
     savedX = transform->x;
     savedY = transform->y;
     savedZ = transform->z;
     transform->x = 0.0f;
     transform->y = 0.0f;
     transform->z = gOverlay99TransformZ;
-    overlay99Func80022E80Reloc(state);
+    func_80022E80(state);
     transform->x = savedX;
     transform->y = savedY;
     transform->z = savedZ;
 
     invScale = 1.0f / *state->unitScale;
-    overlay99Func8002AA50Reloc(state, matrix);
+    func_8002AA50(state, matrix);
     sprite.frame = (s16)(s32)(intensityScale * gOverlay99IntensityScale);
     sprite.angle = 0;
     sprite.divisor = 3;
@@ -131,9 +131,9 @@ void overlay99RenderSortedEntries(Gfx **displayList, Mtx **matrices,
         vec = &owner->vectors[entry->tableIndex];
         sprite.transformScale = entry->scale * invScale;
         sprite.spriteData = entry->spriteData;
-        overlay99MtxfTransformPointReloc(matrix, vec->x, vec->y, vec->z,
+        mtxf_transform_point(matrix, vec->x, vec->y, vec->z,
                                          &sprite.x, &sprite.y, &sprite.z);
-        overlay99Func80022FD4Reloc(displayList, matrices, vertices, state,
+        func_80022FD4(displayList, matrices, vertices, state,
                                    state->opacity, &sprite, 14,
                                    state->mode39);
     }

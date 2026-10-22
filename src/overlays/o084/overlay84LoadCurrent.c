@@ -65,11 +65,11 @@ typedef struct Overlay84Object {
 extern Overlay84Object *gOverlay84Object;
 extern Overlay84Resource *overlay84GetResource(
     u8 resource, Overlay84Choice *choice, Overlay84Object *object);
-extern void overlay84PrepareResource(u8 resource);
+extern void func_8005055C(u8 resource);
 extern void overlay84ReleaseResource(u8 resource);
 
 /* Runtime relocation identities are animation-path operations:
- * overlay84GetResource -> func_800508B4, overlay84PrepareResource ->
+ * overlay84GetResource -> func_800508B4, func_8005055C ->
  * func_8005055C, and overlay84ReleaseResource -> animseqStartPath. The getter
  * consumes only the path index; this widened prototype deliberately preserves
  * choice/object in a1/a2 for the exact allocator topology. */
@@ -124,7 +124,7 @@ void overlay84LoadCurrent(s32 kind)
       transform->angle0 = 0x8000 - state->angle;
       transform->angle2 = -state->tilt;
       transform->angle4 = 0;
-      overlay84PrepareResource(state->resource);
+      func_8005055C(state->resource);
       overlay84ReleaseResource(state->resource);
       resource->flags |= 2;
     }

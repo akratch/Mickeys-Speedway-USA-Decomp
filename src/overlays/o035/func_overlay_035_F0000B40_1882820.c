@@ -48,8 +48,8 @@ typedef struct O35CollisionSegment {
 } O35CollisionSegment;
 
 extern s32 D_o35_skip_collision_edges;
-extern void *call_o0_0_2AE30(s32 size, s32 tag);
-extern void call_o0_0_2B318(void *value);
+extern void *mmAlloc(s32 size, s32 tag);
+extern void mmFree(void *value);
 extern f32 sqrtf(f32 value);
 
 /*
@@ -121,7 +121,7 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
     s32 spanOffset;
     f32 *plane;
 
-    scratch = call_o0_0_2AE30(
+    scratch = mmAlloc(
         s->triangleCount * (s32)sizeof(O35CollisionRecord), 0x91);
     record = (s16 *)s->records;
     scratchRecord = (s16 *)scratch;
@@ -156,7 +156,7 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
     }
 
     if (D_o35_skip_collision_edges != 0) {
-        call_o0_0_2B318(scratch);
+        mmFree(scratch);
         return counter;
     }
 
@@ -239,6 +239,6 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
             }
         }
     }
-    call_o0_0_2B318(scratch);
+    mmFree(scratch);
     return counter;
 }

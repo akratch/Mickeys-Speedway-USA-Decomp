@@ -7,7 +7,7 @@ typedef struct Overlay31PoolRecord {
     u8 reservedA5[0x1B];
 } Overlay31PoolRecord;
 
-extern void *overlay31AllocateReloc(s32 size, s32 tag);
+extern void *mmAlloc(s32 size, s32 tag);
 extern void *overlay31CreateConfig(s32 kind, void *source, s32 width, s32 height,
                                    s32 slotCount);
 extern void *D_10;
@@ -27,7 +27,7 @@ Overlay31PoolRecord *overlay31CreatePool(s32 count) {
     s32 *state;
     s32 zero;
 
-    records = (Overlay31PoolRecord *)overlay31AllocateReloc(
+    records = (Overlay31PoolRecord *)mmAlloc(
         count * sizeof(Overlay31PoolRecord), 0x8C);
     record = records;
     zero = 0;

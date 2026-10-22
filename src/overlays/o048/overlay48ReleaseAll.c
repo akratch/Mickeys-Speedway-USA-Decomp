@@ -6,7 +6,7 @@ typedef struct {
 } Overlay48Entry;
 
 extern Overlay48Entry gOverlay48Entries[];
-extern void overlay48ReleaseReloc(void *handle);
+extern void overlay45ReleaseDescriptor(void *handle);
 
 /* DKR v77/v80 only contain generic fixed-handle cleanup relatives. */
 void overlay48ReleaseAll(void) {
@@ -17,7 +17,7 @@ void overlay48ReleaseAll(void) {
     index = 0;
     do {
         if (entry->handle != NULL) {
-            overlay48ReleaseReloc(entry->handle);
+            overlay45ReleaseDescriptor(entry->handle);
             entry->handle = NULL;
         }
         index++;

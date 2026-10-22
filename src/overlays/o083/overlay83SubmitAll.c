@@ -30,9 +30,9 @@ typedef struct Overlay83Context {
 
 extern void overlay83SubmitSetupReloc(Overlay83Command **displayList,
                                       void *data, s32 mode, s32 extra);
-extern void overlay83DrawMeshReloc(Overlay83Command **displayList,
+extern void overlay83DrawStrip(Overlay83Command **displayList,
                                    void *record);
-extern void overlay83DispatchLocalReloc(Overlay83Command **displayList,
+extern void overlay83Dispatch(Overlay83Command **displayList,
                                         void *mtx, void *vertices, void *record,
                                         void *resource);
 
@@ -52,7 +52,7 @@ void overlay83SubmitAll(Overlay83Command **displayList, void *mtx, void *vertice
     while (count--) {
         u8 *currentRecord = record;
         record += 0x258;
-        overlay83DrawMeshReloc(displayList, currentRecord);
+        overlay83DrawStrip(displayList, currentRecord);
     }
 
     count = batch->count;
@@ -60,7 +60,7 @@ void overlay83SubmitAll(Overlay83Command **displayList, void *mtx, void *vertice
     while (count--) {
         u8 *currentRecord = record;
         record += 0x258;
-        overlay83DispatchLocalReloc(displayList, mtx, vertices, currentRecord,
+        overlay83Dispatch(displayList, mtx, vertices, currentRecord,
                                     *context->nested->resource);
     }
 

@@ -10,7 +10,7 @@ typedef struct Overlay101BoundsNode {
     s16 height;
 } Overlay101BoundsNode;
 
-void overlay101GetDimensionsReloc(s32 *width, s32 *height);
+void viGetCurrentSize(s32 *width, s32 *height);
 
 /* DKR v77/v80 and JFG have viewport-clipping relatives but no exact donor. */
 void overlay101GetBounds(Overlay101BoundsNode *node, s32 *leftOut,
@@ -25,7 +25,7 @@ void overlay101GetBounds(Overlay101BoundsNode *node, s32 *leftOut,
 
     valid = 0;
     if ((node->type == 2) || (node->type == 4)) {
-        overlay101GetDimensionsReloc(&screenWidth, &screenHeight);
+        viGetCurrentSize(&screenWidth, &screenHeight);
         left = node->x;
         top = node->y;
         right = node->x + node->width;

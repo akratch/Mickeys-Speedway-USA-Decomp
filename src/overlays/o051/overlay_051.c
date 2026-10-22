@@ -13,8 +13,8 @@ void overlay51Initialize(void) {
     overlay51CreateReloc(gOverlay51Resource18);
     overlay51CreateReloc(4);
     overlay51CreateReloc(11);
-    overlay51PrepareReloc(gOverlay51ClockGlyphs);
-    overlay51PrepareReloc(gOverlay51TimeGlyphs);
+    overlay51PatchIndices(gOverlay51ClockGlyphs);
+    overlay51PatchIndices(gOverlay51TimeGlyphs);
     gOverlay51HudHeight = -80.0f;
     overlay51CreateReloc();
     gOverlay51Item = -1;
@@ -23,9 +23,9 @@ void overlay51Initialize(void) {
 
 void overlay51PatchIndices(OverlayPatchIndexEntry *entry) {
     while (entry->first != 0) {
-        entry->first = (s32) gOverlay51Objects[entry->first];
+        entry->first = (s32) D_800D31C8[entry->first];
         if (entry->second != 0) {
-            entry->second = (s32) gOverlay51Objects[entry->second];
+            entry->second = (s32) D_800D31C8[entry->second];
         }
         entry++;
     }
@@ -194,7 +194,7 @@ void func_overlay_051_F00000D0_18999D0(Overlay51Object *object, s32 updateRate) 
                 itemGlyphs[0].glyph = 0;
                 itemGlyphs[0].alternate = 0;
                 itemGlyphs[1].texture = 0;
-                itemGlyphs[0].texture = gOverlay51Objects[gOverlay51Item];
+                itemGlyphs[0].texture = D_800D31C8[gOverlay51Item];
                 func_8002F618_o051Reloc(&D_800D3140_o051Reloc, itemGlyphs, 0, 0, 0xFF, 0xFF, 0xFF, gOverlay51ItemAlpha);
             }
         } else {
@@ -224,11 +224,11 @@ void func_overlay_051_F00000D0_18999D0(Overlay51Object *object, s32 updateRate) 
 void overlay51ReleaseState(void) {
     s32 index;
 
-    overlay51ReleaseReloc(gOverlay51Resource0);
-    overlay51FinalizeReloc();
+    freeFrontEndList(gOverlay51Resource0);
+    overlay56ReleaseResource();
     index = gOverlay51Item;
     if (index != -1) {
-        overlay51ReleaseIndexReloc(index);
+        freeFrontEndItem(index);
         gOverlay51Item = -1;
     }
 }

@@ -40,20 +40,20 @@ extern s32 D_500;
 extern s32 D_504;
 
 /* Runtime-linked globals shared with the resident module. */
-extern s32 O57_mode0954;
+extern s32 D_8007C1A0;
 extern u8 gOverlay57TableIndex;
 
 /* Runtime-linked calls: overlay 45 +0x314 and +0x1BE0, and the resident
  * trackSetFog, amSndStop and amSndPlay. Each is spelled as an overlay
  * placeholder so the stored `jal 0` addend is preserved. */
-extern void overlay57LayoutDescriptorReloc(Overlay45ResourceDescriptor *descriptor,
+extern void overlay45ConfigureLayout(Overlay45ResourceDescriptor *descriptor,
                                            s32 x, s32 y, s32 flags);
-extern void overlay57SetDescriptorModeReloc(Overlay45ResourceDescriptor *descriptor,
+extern void overlay45SetMode(Overlay45ResourceDescriptor *descriptor,
                                             s32 mode);
-extern void overlay57SetFogReloc(s32 fogIndex, s16 near, s16 far, s16 targetNear,
+extern void trackSetFog(s32 fogIndex, s16 near, s16 far, s16 targetNear,
                                  u8 red, u8 green, u8 blue, s8 state);
-extern void overlay57SoundStopReloc(void *handle);
-extern void overlay57SoundPlayReloc(u16 soundId, void **handle);
+extern void amSndStop(void *handle);
+extern void amSndPlay(u16 soundId, void **handle);
 
 extern void overlay57EaseAndLatch(s32 updateRate);
 extern void overlay57SmoothAndCheckDistance(s32 updateRate);
@@ -138,47 +138,47 @@ void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
     overlay57Draw32A0(updateRate);
 
     if (gOverlay57State == 1) {
-        overlay57LayoutDescriptorReloc(gOverlay57Resource000, 0xA0, 0x20, 0x104);
-        if (O57_mode0954 == 1) {
-            overlay57LayoutDescriptorReloc(
+        overlay45ConfigureLayout(gOverlay57Resource000, 0xA0, 0x20, 0x104);
+        if (D_8007C1A0 == 1) {
+            overlay45ConfigureLayout(
                 gOverlay57Range008Start[gOverlay57Selection100], 0xA0, 0xBE, 0x104);
         } else {
-            overlay57LayoutDescriptorReloc(
+            overlay45ConfigureLayout(
                 gOverlay57Range030Start[gOverlay57Selection100], 0xA0, 0xBE, 0x104);
         }
 
         for (count = 0; count < 9; count++) {
-            overlay57SetDescriptorModeReloc(gOverlay57Range008Start[count], 0);
+            overlay45SetMode(gOverlay57Range008Start[count], 0);
         }
         for (count = 0; count < 9; count++) {
-            overlay57SetDescriptorModeReloc(gOverlay57Range030Start[count], 0);
+            overlay45SetMode(gOverlay57Range030Start[count], 0);
         }
 
-        if (O57_mode0954 == 1) {
-            overlay57SetDescriptorModeReloc(
+        if (D_8007C1A0 == 1) {
+            overlay45SetMode(
                 gOverlay57Range008Start[gOverlay57Selection108], gOverlay57Mode10C);
-            overlay57SetDescriptorModeReloc(
+            overlay45SetMode(
                 gOverlay57Range008Start[gOverlay57Selection100], O57_D_104);
         } else {
-            overlay57SetDescriptorModeReloc(
+            overlay45SetMode(
                 gOverlay57Range030Start[gOverlay57Selection108], gOverlay57Mode10C);
-            overlay57SetDescriptorModeReloc(
+            overlay45SetMode(
                 gOverlay57Range030Start[gOverlay57Selection100], O57_D_104);
         }
 
         for (count = 0; count < 24; count++) {
-            overlay57SetDescriptorModeReloc(gOverlay57Range080Start[count], 0);
+            overlay45SetMode(gOverlay57Range080Start[count], 0);
         }
         for (count = 0; count != 6; count++) {
-            overlay57SetDescriptorModeReloc(gOverlay57Range0E0Start[count], 0);
+            overlay45SetMode(gOverlay57Range0E0Start[count], 0);
         }
     } else {
-        overlay57LayoutDescriptorReloc(gOverlay57Resource000, 0xA0, -0x1E, 0x104);
-        if (O57_mode0954 == 1) {
-            overlay57LayoutDescriptorReloc(
+        overlay45ConfigureLayout(gOverlay57Resource000, 0xA0, -0x1E, 0x104);
+        if (D_8007C1A0 == 1) {
+            overlay45ConfigureLayout(
                 gOverlay57Range008Start[gOverlay57Selection100], 0xA0, 0x104, 0x104);
         } else {
-            overlay57LayoutDescriptorReloc(
+            overlay45ConfigureLayout(
                 gOverlay57Range030Start[gOverlay57Selection100], 0xA0, 0x104, 0x104);
         }
     }
@@ -186,99 +186,99 @@ void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
     if (gOverlay57State == 2) {
         if (gOverlay57Timer == 10) {
             if (O57_D_194 == 1) {
-                overlay57LayoutDescriptorReloc(
+                overlay45ConfigureLayout(
                     gOverlay57Range080Start[O57_D_160], 0xA0, 0x104, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource0FC, 0xA0, -0x20, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource0FC, 0xA0, -0x20, 0x104);
             } else {
-                overlay57LayoutDescriptorReloc(
+                overlay45ConfigureLayout(
                     gOverlay57Range080Start[O57_D_160], 0xA0, 0xBE, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource0FC, 0xA0, 0x20, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource0FC, 0xA0, 0x20, 0x104);
             }
 
             for (count = 0; count < 0x18; count++) {
                 if ((count != gOverlay57Selection108) &&
                     (count != gOverlay57Selection100)) {
-                    overlay57SetDescriptorModeReloc(gOverlay57Range080Start[count], 0);
+                    overlay45SetMode(gOverlay57Range080Start[count], 0);
                 }
             }
-            overlay57SetDescriptorModeReloc(
+            overlay45SetMode(
                 gOverlay57Range080Start[O57_D_164], gOverlay57Mode10C);
-            overlay57SetDescriptorModeReloc(
+            overlay45SetMode(
                 gOverlay57Range080Start[O57_D_160], O57_D_104);
         }
 
         for (count = 0; count != 9; count++) {
-            overlay57SetDescriptorModeReloc(gOverlay57Range008Start[count], 0);
+            overlay45SetMode(gOverlay57Range008Start[count], 0);
         }
     } else {
         if (O57_D_160 < 0x18) {
-            overlay57LayoutDescriptorReloc(
+            overlay45ConfigureLayout(
                 gOverlay57Range080Start[O57_D_160], 0xA0, 0x104, 0x104);
         }
-        overlay57LayoutDescriptorReloc(gOverlay57Resource0FC, 0xA0, -0x20, 0x104);
+        overlay45ConfigureLayout(gOverlay57Resource0FC, 0xA0, -0x20, 0x104);
     }
 
     if (gOverlay57State == 6) {
-        overlay57LayoutDescriptorReloc(gOverlay57Range0E0Start[O57_D_160], 0xA0, 0xBE, 0x104);
-        overlay57LayoutDescriptorReloc(gOverlay57Resource0FC, 0xA0, 0x20, 0x104);
+        overlay45ConfigureLayout(gOverlay57Range0E0Start[O57_D_160], 0xA0, 0xBE, 0x104);
+        overlay45ConfigureLayout(gOverlay57Resource0FC, 0xA0, 0x20, 0x104);
         for (count = 0; count < 6; count++) {
             if ((count != gOverlay57Selection108) &&
                 (count != gOverlay57Selection100)) {
-                overlay57SetDescriptorModeReloc(gOverlay57Range0E0Start[count], 0);
+                overlay45SetMode(gOverlay57Range0E0Start[count], 0);
             }
         }
-        overlay57SetDescriptorModeReloc(gOverlay57Range0E0Start[O57_D_164], gOverlay57Mode10C);
-        overlay57SetDescriptorModeReloc(gOverlay57Range0E0Start[O57_D_160], O57_D_104);
+        overlay45SetMode(gOverlay57Range0E0Start[O57_D_164], gOverlay57Mode10C);
+        overlay45SetMode(gOverlay57Range0E0Start[O57_D_160], O57_D_104);
 
         for (count = 0; count != 9; count++) {
-            overlay57SetDescriptorModeReloc(gOverlay57Range008Start[count], 0);
+            overlay45SetMode(gOverlay57Range008Start[count], 0);
         }
     } else if (O57_D_160 < 6) {
-        overlay57LayoutDescriptorReloc(gOverlay57Range0E0Start[O57_D_160], 0xA0, 0x104, 0x104);
+        overlay45ConfigureLayout(gOverlay57Range0E0Start[O57_D_160], 0xA0, 0x104, 0x104);
     }
 
     if (gOverlay57State == 3) {
-        overlay57LayoutDescriptorReloc(gOverlay57Resource0F8, 0xA0, 0x1E, 0x104);
+        overlay45ConfigureLayout(gOverlay57Resource0F8, 0xA0, 0x1E, 0x104);
     } else {
-        overlay57LayoutDescriptorReloc(gOverlay57Resource0F8, 0xA0, -0x1E, 0x104);
+        overlay45ConfigureLayout(gOverlay57Resource0F8, 0xA0, -0x1E, 0x104);
     }
 
     if (gOverlay57State == 5) {
         switch (gOverlay57TableIndex) {
             case 0:
-                overlay57LayoutDescriptorReloc(gOverlay57Resource06C, 0xA0, 0xBE, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource070, 0xA0, 0x104, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource074, 0xA0, 0x104, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource078, 0xA0, 0x104, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource06C, 0xA0, 0xBE, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource070, 0xA0, 0x104, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource074, 0xA0, 0x104, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource078, 0xA0, 0x104, 0x104);
                 break;
             case 1:
-                overlay57LayoutDescriptorReloc(gOverlay57Resource06C, 0xA0, 0x104, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource070, 0xA0, 0xBE, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource074, 0xA0, 0x104, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource078, 0xA0, 0x104, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource06C, 0xA0, 0x104, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource070, 0xA0, 0xBE, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource074, 0xA0, 0x104, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource078, 0xA0, 0x104, 0x104);
                 break;
             case 2:
-                overlay57LayoutDescriptorReloc(gOverlay57Resource06C, 0xA0, 0x104, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource070, 0xA0, 0x104, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource074, 0xA0, 0xBE, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource078, 0xA0, 0x104, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource06C, 0xA0, 0x104, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource070, 0xA0, 0x104, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource074, 0xA0, 0xBE, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource078, 0xA0, 0x104, 0x104);
                 break;
             case 3:
-                overlay57LayoutDescriptorReloc(gOverlay57Resource06C, 0xA0, 0x104, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource070, 0xA0, 0x104, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource074, 0xA0, 0x104, 0x104);
-                overlay57LayoutDescriptorReloc(gOverlay57Resource078, 0xA0, 0xBE, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource06C, 0xA0, 0x104, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource070, 0xA0, 0x104, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource074, 0xA0, 0x104, 0x104);
+                overlay45ConfigureLayout(gOverlay57Resource078, 0xA0, 0xBE, 0x104);
                 break;
         }
-        overlay57LayoutDescriptorReloc(
+        overlay45ConfigureLayout(
             gOverlay57Range058Start[gOverlay57UpdateSelection], 0xA0, 0x20, 0x104);
     } else {
-        overlay57LayoutDescriptorReloc(
+        overlay45ConfigureLayout(
             gOverlay57Range058Start[gOverlay57UpdateSelection], 0xA0, -0x28, 0x104);
-        overlay57LayoutDescriptorReloc(gOverlay57Resource074, 0xA0, 0x104, 0x104);
-        overlay57LayoutDescriptorReloc(gOverlay57Resource06C, 0xA0, 0x104, 0x104);
-        overlay57LayoutDescriptorReloc(gOverlay57Resource070, 0xA0, 0x104, 0x104);
-        overlay57LayoutDescriptorReloc(gOverlay57Resource078, 0xA0, 0x104, 0x104);
+        overlay45ConfigureLayout(gOverlay57Resource074, 0xA0, 0x104, 0x104);
+        overlay45ConfigureLayout(gOverlay57Resource06C, 0xA0, 0x104, 0x104);
+        overlay45ConfigureLayout(gOverlay57Resource070, 0xA0, 0x104, 0x104);
+        overlay45ConfigureLayout(gOverlay57Resource078, 0xA0, 0x104, 0x104);
     }
 
     D_500 += D_504 * updateRate;
@@ -318,11 +318,11 @@ void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
         }
     }
 
-    overlay57SetFogReloc(0, D_134 >> 8, D_138 >> 8, D_134 >> 8, 0, 0, 0, 0);
+    trackSetFog(0, D_134 >> 8, D_138 >> 8, D_134 >> 8, 0, 0, 0, 0);
     if (D_130 != 0) {
         if (D_148 != NULL) {
-            overlay57SoundStopReloc(D_148);
+            amSndStop(D_148);
         }
-        overlay57SoundPlayReloc(0xF, &D_148);
+        amSndPlay(0xF, &D_148);
     }
 }

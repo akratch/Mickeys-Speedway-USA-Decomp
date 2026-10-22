@@ -46,13 +46,13 @@ void overlay28UpdateVertices(Overlay28VertexState *state) {
     yScale = state->yScale;
     remaining = 15;
     do {
-        xWave = ext_o0_2a470(xAngle);
-        scale = (ext_o0_2a470(yAngle) * yScale) +
+        xWave = func_8002A8C0(xAngle);
+        scale = (func_8002A8C0(yAngle) * yScale) +
                 ((8.0f * state->baseScale) + (xScale * xWave));
         xAngle += state->xStep;
         yAngle += state->yStep;
-        point->x = (s32)(ext_o0_2a470(angle) * scale);
-        point->y = (s32)(ext_o0_2a46c(angle) * scale);
+        point->x = (s32)(func_8002A8C0(angle) * scale);
+        point->y = (s32)(func_8002A8BC(angle) * scale);
         angle += 0x1000;
         point++;
     } while (remaining--);
@@ -82,7 +82,7 @@ void overlay28InitializeWork(Overlay28Owner *owner, Overlay28Source *source) {
     work->reset = (void (*)())gOverlay28DataBase;
     work->scaleA = 4.0f;
     work->scaleB = 2.0f;
-    ext_o0_36630(work->object);
+    resetColourCycle(work->object);
     work->intensity = 0;
     work->bufferIndex = 0;
     overlay28ResetBuffer(work);
@@ -126,21 +126,21 @@ void overlay28UpdateWork(Overlay28Owner *owner, s32 updateRate) {
         owner->angle = related->angle;
         overlay28UpdateVertices((Overlay28VertexState *)work);
         if (work->handle == 0) {
-            ext_o0_2b90(0x1C2, owner->x, owner->y, owner->z, 1,
+            amSndPlayXYZ(0x1C2, owner->x, owner->y, owner->z, 1,
                         &work->handle);
         } else {
             s16 alpha;
-            ext_o0_2d70(work->handle, owner->x, owner->y, owner->z);
+            amSndSetXYZ(work->handle, owner->x, owner->y, owner->z);
             alpha = work->intensity >> 1;
             if (alpha >= 0x80) {
                 alpha = 0x7F;
             }
-            ext_o0_2c4c(work->handle, alpha & 0xFF);
+            amSndSetVolXYZ(work->handle, alpha & 0xFF);
         }
     }
     if ((owner->suppressRelease == 0) &&
         ((work->intensity == 0) || (work->related == 0))) {
-        ext_o0_6a50(owner);
+        func_80006EA0(owner);
     }
 }
 
@@ -196,7 +196,7 @@ void func_overlay_028_F00004D8_187CDA8(Overlay28Gfx **dl, void *matrixArg,
     Overlay28View *view;
     s32 mask;
 
-    view = ext_o0_241dc();
+    view = camGetPtr();
     work = owner->work;
     related = work->related;
     if (related != 0) {
@@ -210,18 +210,18 @@ void func_overlay_028_F00004D8_187CDA8(Overlay28Gfx **dl, void *matrixArg,
         distanceSquared = (dy * dy) + ((dx * dx) + (dz * dz));
         ratio = distanceSquared;
         if (distanceSquared > 0.0f) {
-            ratio = work->valueA / ext_o0_6ec00(distanceSquared);
+            ratio = work->valueA / sqrtf(distanceSquared);
         }
         transformHome.pitch = -view->pitch;
         transformHome.yaw = view->yaw;
         transformHome.roll = 0;
-        transformHome.scale = ext_o0_9ab8(related) * 0.125f;
+        transformHome.scale = func_80009F08(related) * 0.125f;
         transformHome.x += dx * ratio;
         transformHome.y += dy * ratio;
         transformHome.z += dz * ratio;
         matrix = *owner->matrix;
-        ext_o0_2409c(dl, matrixArg, &transformHome, 1.0f, 0.0f);
-        ext_o0_34554(dl, matrix, 0x214, 0);
+        camPushModelMtx(dl, matrixArg, &transformHome, 1.0f, 0.0f);
+        texDPTextureX(dl, matrix, 0x214, 0);
 
         mask = -0x100;
         WRITE_PRIM((*dl)++, (work->intensity & 0xFF) | mask);
@@ -236,6 +236,6 @@ void func_overlay_028_F00004D8_187CDA8(Overlay28Gfx **dl, void *matrixArg,
             WRITE_PRIM((*dl)++, -1);
         }
         WRITE_ENV((*dl)++, mask);
-        ext_o0_241bc(dl);
+        camPopModelMtx(dl);
     }
 }

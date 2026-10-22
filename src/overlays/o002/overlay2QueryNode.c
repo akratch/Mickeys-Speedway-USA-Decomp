@@ -41,7 +41,7 @@ extern f32 D_6C;
 extern u16 D_70;
 extern u16 D_72;
 
-extern s32 overlay2IntersectSegmentsReloc(f32 x0, f32 y0, f32 x1, f32 y1,
+extern s32 func_overlay_002_F0001364_185815C(f32 x0, f32 y0, f32 x1, f32 y1,
                                      f32 x2, f32 y2, f32 x3, f32 y3,
                                      f32 *outX, f32 *outY);
 extern void overlay2IntersectBoundary(f32 x0, f32 y0, f32 x1, f32 y1,
@@ -70,7 +70,7 @@ int overlay2QueryNode(f32 x0, f32 y0, f32 x1, f32 y1, Overlay2Node *node) {
         remaining = node->data.leaf.count;
         line = &D_3C[node->index];
         while (remaining--) {
-            if (overlay2IntersectSegmentsReloc(D_40, D_44, D_48, D_4C,
+            if (func_overlay_002_F0001364_185815C(D_40, D_44, D_48, D_4C,
                                                line->x1, line->y1,
                                                line->x2, line->y2,
                                                &hitX, &hitY) != 0) {

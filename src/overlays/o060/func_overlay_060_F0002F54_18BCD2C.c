@@ -14,8 +14,8 @@ typedef struct Overlay60Color {
 } Overlay60Color;
 
 extern u8 gOverlay60LocalDataReloc[];
-extern Overlay60Command *gOverlay60DisplayListReloc;
-extern s16 gOverlay60InputAxisReloc;
+extern Overlay60Command *D_800D3140;
+extern s16 D_800D31C0;
 extern u8 D_800000B0[];
 
 /* Cross-overlay call through the loader's relocation surface: the shipped
@@ -29,7 +29,7 @@ extern void updateColourCycle(Overlay60Color *color, s32 amount);
 
 /* One display-list append the way the SDK's packet macros write it: a
  * block-scoped pointer per expansion, on one physical line. */
-#define O60_APPEND(a, b) { Overlay60Command *_g = gOverlay60DisplayListReloc++; _g->w0 = (a); _g->w1 = (b); }
+#define O60_APPEND(a, b) { Overlay60Command *_g = D_800D3140++; _g->w0 = (a); _g->w1 = (b); }
 /* The SDK's _SHIFTL: the mask is redundant on a u8 field and as1 folds it
  * into the lbu, but ugen has already drawn a ring temp for it (L149). */
 #define OVERLAY60_SHIFTL(value, shift, width) \
@@ -67,7 +67,7 @@ s32 func_overlay_060_F0002F54_18BCD2C(s32 left, s32 bottom, s32 width,
 
     if (overlay82IsActive_o060Reloc(
             *(void **)(gOverlay60LocalDataReloc + 0xA8)) != 0) {
-        axis = gOverlay60InputAxisReloc;
+        axis = D_800D31C0;
         if (axis < -0x10) {
             progress -= ticks * 2;
             if (progress < 0) {
@@ -82,7 +82,7 @@ s32 func_overlay_060_F0002F54_18BCD2C(s32 left, s32 bottom, s32 width,
     }
 
     right = left + width;
-    texDPTextureX(&gOverlay60DisplayListReloc, 0, 0, 0);
+    texDPTextureX(&D_800D3140, 0, 0, 0);
     O60_APPEND(0x07020010, (u32)D_800000B0);
 
     x = left;
@@ -97,14 +97,14 @@ s32 func_overlay_060_F0002F54_18BCD2C(s32 left, s32 bottom, s32 width,
             updateColourCycle(&color, (s32)(fraction * 60.0f));
 
             if (x < split) {
-                command = gOverlay60DisplayListReloc++;
+                command = D_800D3140++;
                 command->w0 = 0xFA000000;
                 command->w1 = OVERLAY60_SHIFTL(color.red, 24, 8) |
                               OVERLAY60_SHIFTL(color.green, 16, 8) |
                               OVERLAY60_SHIFTL(color.blue, 8, 8) |
                               OVERLAY60_SHIFTL(alpha, 0, 8);
             } else {
-                command = gOverlay60DisplayListReloc++;
+                command = D_800D3140++;
                 command->w0 = 0xFA000000;
                 command->w1 = OVERLAY60_SHIFTL(color.red >> 1, 24, 8) |
                               OVERLAY60_SHIFTL(color.green >> 1, 16, 8) |
@@ -112,7 +112,7 @@ s32 func_overlay_060_F0002F54_18BCD2C(s32 left, s32 bottom, s32 width,
                               OVERLAY60_SHIFTL(alpha >> 1, 0, 8);
             }
 
-            command = gOverlay60DisplayListReloc++;
+            command = D_800D3140++;
             command->w0 = 0xF6000000 |
                           OVERLAY60_SHIFTL(x + 2, 14, 10) |
                           OVERLAY60_SHIFTL(bottom, 2, 10);

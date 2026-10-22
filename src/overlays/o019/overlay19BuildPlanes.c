@@ -1,7 +1,7 @@
 #include "overlays/overlay019.h"
 
-extern void *o19AllocateReloc(s32 size, s32 tag);
-extern void o19FreeReloc(void *value);
+extern void *mmAlloc2(s32 size, s32 tag);
+extern void mmFree(void *value);
 extern f32 sqrtf(f32 value);
 
 /*
@@ -51,7 +51,7 @@ s32 overlay19BuildPlanes(O19Context *context, O19Group *group, O19Output *output
     s32 pad2;
     f32 *plane;
 
-    scratch = o19AllocateReloc(group->itemCount * (s32)sizeof(O19AdjacencyRecord), 0x8A);
+    scratch = mmAlloc2(group->itemCount * (s32)sizeof(O19AdjacencyRecord), 0x8A);
     record = (s32 *)output->records;
     scratchRecord = (s32 *)scratch;
     for (copyIndex = 0; copyIndex < group->itemCount * 2; copyIndex++) {
@@ -183,6 +183,6 @@ s32 overlay19BuildPlanes(O19Context *context, O19Group *group, O19Output *output
             }
         }
     }
-    o19FreeReloc(scratch);
+    mmFree(scratch);
     return counter;
 }

@@ -7,7 +7,7 @@ void overlay5InitSequence(void *owner, s32 value) {
 
     header.count = 14;
     header.value = value;
-    overlay5SequenceInitReloc((u8 *)owner + 0x48, &header, 0);
+    n_alEvtqPostEvent((u8 *)owner + 0x48, &header, 0);
 }
 
 /*
@@ -28,19 +28,19 @@ void overlay5InitializeAudio(void *context) {
     Overlay5SequenceConfig sequenceConfig;
 
     maxValue = 0;
-    gOverlay5AudioOwner = gOverlay5OwnerSoundState;
+    D_800BF900 = gOverlay5OwnerSoundState;
     alHeapInit(gOverlay5HeapState, gOverlay5HeapMemory, 0x30D40);
 
     resource = func_8002E148(0x31);
-    gOverlay5Span0Size = resource->end - resource->span1End;
-    gOverlay5Span0 = mmAlloc(gOverlay5Span0Size, 0x82);
-    func_8002E2E0(0x32, gOverlay5Span0,
-                  (void *)resource->span1End, gOverlay5Span0Size);
-    gOverlay5Span0ScaleValue = gOverlay5Span0Size / 10U;
+    D_800BF7B0 = resource->end - resource->span1End;
+    D_800BF7A0 = mmAlloc(D_800BF7B0, 0x82);
+    func_8002E2E0(0x32, D_800BF7A0,
+                  (void *)resource->span1End, D_800BF7B0);
+    D_800BF7A8 = D_800BF7B0 / 10U;
 
     gOverlay5Span1Size = resource->span1End - resource->span1Start;
-    gOverlay5Span1 = mmAlloc(gOverlay5Span1Size, 0x82);
-    func_8002E2E0(0x32, gOverlay5Span1,
+    D_800BF7A4 = mmAlloc(gOverlay5Span1Size, 0x82);
+    func_8002E2E0(0x32, D_800BF7A4,
                   (void *)resource->span1Start, gOverlay5Span1Size);
     gOverlay5Span1ScaleValue = gOverlay5Span1Size / 3U;
 
@@ -49,21 +49,21 @@ void overlay5InitializeAudio(void *context) {
     alBnkfNew(gOverlay5Span2,
               func_8002E35C(0x32, (void *)resource->span0Start));
 
-    gOverlay5Bank = alHeapDBAlloc(0, 0, gOverlay5HeapState, 1, 4);
-    func_8002E2E0(0x32, gOverlay5Bank,
+    D_800BF790 = alHeapDBAlloc(0, 0, gOverlay5HeapState, 1, 4);
+    func_8002E2E0(0x32, D_800BF790,
                   (void *)resource->span0End, 4);
 
-    bankSize = (u32)gOverlay5Bank->count * sizeof(Overlay5BankEntry) + 4;
-    gOverlay5Bank = mmAlloc(bankSize, 0x82);
-    func_8002E2E0(0x32, gOverlay5Bank,
+    bankSize = (u32)D_800BF790->count * sizeof(Overlay5BankEntry) + 4;
+    D_800BF790 = mmAlloc(bankSize, 0x82);
+    func_8002E2E0(0x32, D_800BF790,
                   (void *)resource->span0End, bankSize);
-    alSeqFileNew(gOverlay5Bank,
+    alSeqFileNew(D_800BF790,
                  func_8002E35C(0x32, (void *)resource->span0End));
 
-    gOverlay5EntryValues = mmAlloc(
-        (u32)gOverlay5Bank->count * sizeof(*gOverlay5EntryValues), 0x82);
+    D_800BF798 = mmAlloc(
+        (u32)D_800BF790->count * sizeof(*D_800BF798), 0x82);
     {
-        Overlay5Bank *bank = gOverlay5Bank;
+        Overlay5Bank *bank = D_800BF790;
         u32 *destination;
         u32 destinationOffset;
         u32 sourceOffset;
@@ -71,25 +71,25 @@ void overlay5InitializeAudio(void *context) {
         index = 0;
         if (bank->count > 0) {
             destinationOffset = 0;
-            destination = gOverlay5EntryValues;
+            destination = D_800BF798;
             sourceOffset = 0;
             do {
                 u32 value;
 
                 *destination = *(u32 *)((u8 *)bank + sourceOffset + 8);
-                destination = (u32 *)((u8 *)gOverlay5EntryValues +
+                destination = (u32 *)((u8 *)D_800BF798 +
                                       destinationOffset);
                 value = *destination;
                 if ((value & 1) != 0) {
                     *destination = value + 1;
-                    destination = (u32 *)((u8 *)gOverlay5EntryValues +
+                    destination = (u32 *)((u8 *)D_800BF798 +
                                           destinationOffset);
                     value = *destination;
                 }
                 if (maxValue < value) {
                     maxValue = value;
                 }
-                bank = gOverlay5Bank;
+                bank = D_800BF790;
                 index++;
                 destinationOffset += 4;
                 destination++;
@@ -108,8 +108,8 @@ void overlay5InitializeAudio(void *context) {
     soundConfig.heap = gOverlay5HeapState;
     func_80001740(&soundConfig, 0x0C, context);
 
-    gOverlay5Player0 = overlay5CreatePlayer(0x20, 0x96);
-    gOverlay5Player1 = overlay5CreatePlayer(0x10, 0x32);
+    D_80078D60 = overlay5CreatePlayer(0x20, 0x96);
+    D_80078D64 = overlay5CreatePlayer(0x10, 0x32);
 
     sequenceConfig.maxEvents = 0xC8;
     sequenceConfig.maxSounds = 0x20;
@@ -124,8 +124,8 @@ void overlay5InitializeAudio(void *context) {
     func_800039F0();
     alSurround_OutputType(4);
     alSurround_ReverbSetup(0, 3);
-    osCreateMesgQueue(gOverlay5MessageQueue, gOverlay5MessageBuffer, 1);
-    n_alCSPSetMessageQ(gOverlay5Player0, gOverlay5MessageQueue);
+    osCreateMesgQueue(D_800BFA10, gOverlay5MessageBuffer, 1);
+    n_alCSPSetMessageQ(D_80078D60, D_800BFA10);
 }
 
 void *overlay5CreatePlayer(s32 voiceCount, s32 value) {
@@ -137,11 +137,11 @@ void *overlay5CreatePlayer(s32 voiceCount, s32 value) {
     config.voiceCount = voiceCount;
     config.channels = 0x10;
     config.heap = gOverlay5AudioHeap;
-    config.initQueue = gOverlay5InitQueue;
-    config.eventQueue = gOverlay5EventQueue;
-    config.frameCallback = gOverlay5FrameCallback;
+    config.initQueue = amInitOsc;
+    config.eventQueue = amStopOsc;
+    config.frameCallback = amUpdateOsc;
     player = overlay5AllocPlayerReloc(0, 0, gOverlay5AudioHeap, 1, 0x90);
-    overlay5InitPlayerReloc(player, &config);
+    n_alCSPNew(player, &config);
     overlay5AttachBankReloc(player, gOverlay5AudioState->sequenceBank);
     return player;
 }

@@ -26,9 +26,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52CopyOffsetEntries.c.o: POSTPROCES
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xFC \
 		00000000 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x40:overlay52QuerySecondaryModeReloc:overlay52QueryPrimaryModeReloc && \
+		0x40:frontGetScreenMode:frontGet2PlayerSplit && \
 	$(OBJCOPY) \
-		--redefine-sym overlay52QueryPrimaryModeReloc=func_overlay_052_F0000000_189A670 \
+		--redefine-sym frontGet2PlayerSplit=func_overlay_052_F0000000_189A670 \
 		--redefine-sym gOverlay52Offsets=D_27C $@ && \
 	$(HOST_PYTHON) config/normalizations/overlay52CopyOffsetEntries.sort.py $@
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52Cleanup.c.o: POSTPROCESS = \

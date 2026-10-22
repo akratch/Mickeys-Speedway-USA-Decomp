@@ -12,10 +12,10 @@ extern s32 gOverlay14ValueC0;
 extern s32 gOverlay14DataBase;
 extern s32 gOverlay14Args34;
 extern Overlay14Entry *gOverlay14Entries;
-extern void overlay14BuildPanel(s32, void *, s32, s32, s32, s32, s32);
+extern void overlay14BuildRects(s32, void *, s32, s32, s32, s32, s32);
 extern s32 overlay14Dispatch();
 extern void overlay14DrawPrimitive();
-extern s32 overlay14ValidateEntry(s16);
+extern s32 overlay14ReturnOneCallbackA(s16);
 
 /* Matched 2026-09-16 (lane lm-a), 188/188 words at frame 0x80, unforced.
  * The last twelve words were a v0/v1 exchange between the entries-base web
@@ -41,7 +41,7 @@ void func_overlay_014_F0001540_1870E18(s32 context) {
     void *drawArg;
     s32 first;
 
-    overlay14BuildPanel(context, &gOverlay14DataBase, 0x5C, 0x14, 0xD0, 0x58,
+    overlay14BuildRects(context, &gOverlay14DataBase, 0x5C, 0x14, 0xD0, 0x58,
                         (gOverlay14ValueC0 * 0xA0) >> 8);
     index = 0;
     cellWidth = overlay14Dispatch(2);
@@ -59,7 +59,7 @@ void func_overlay_014_F0001540_1870E18(s32 context) {
         else
             overlay14DrawPrimitive(0, 0xC0, 0xC0, 0xFF, opacity);
         cursor = gOverlay14Entries[index].text;
-        if (overlay14ValidateEntry(
+        if (overlay14ReturnOneCallbackA(
                 gOverlay14Entries[index].kind) == 0) cursor = 0;
         if ((cursor != 0) && (remaining > 0)) {
             do {

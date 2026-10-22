@@ -10,11 +10,11 @@ typedef struct O100View {
     f32 depthScale;
 } O100View;
 
-extern O100View *overlay100GetViewReloc(void);
-extern s16 *overlay100PrepareAnglesReloc(void);
-extern f32 overlay100SinReloc(s32 angle);
-extern f32 overlay100CosReloc(s32 angle);
-extern void overlay100FinishCommandsReloc(Gfx **commands);
+extern O100View *func_8002468C(void);
+extern s16 *camGetPtr(void);
+extern f32 func_8002A8BC(s32 angle);
+extern f32 func_8002A8C0(s32 angle);
+extern void texDPInit(Gfx **commands);
 extern Gfx gOverlay100SegmentReloc[];
 
 /*
@@ -56,7 +56,7 @@ void overlay100DrawMotion(Gfx **dList, Overlay100Motion *motion) {
         return;
     }
     commands = *dList;
-    view = overlay100GetViewReloc();
+    view = func_8002468C();
     xScale = view->scaleX * 320.0f * 0.5f;
     yScale = view->scaleY * 240.0f * 0.5f;
     depthScale = view->depthScale;
@@ -70,9 +70,9 @@ void overlay100DrawMotion(Gfx **dList, Overlay100Motion *motion) {
     } else {
         alphaStep = motion->remaining * 4;
     }
-    angle = overlay100PrepareAnglesReloc();
-    sinAngle = overlay100SinReloc(*angle + 0x8000);
-    cosAngle = overlay100CosReloc(*angle + 0x8000);
+    angle = camGetPtr();
+    sinAngle = func_8002A8BC(*angle + 0x8000);
+    cosAngle = func_8002A8C0(*angle + 0x8000);
     row = motion->bank;
     phase = motion->nextBank;
     while (row--) {
@@ -99,6 +99,6 @@ void overlay100DrawMotion(Gfx **dList, Overlay100Motion *motion) {
         }
     }
     *dList = commands;
-    overlay100FinishCommandsReloc(dList);
+    texDPInit(dList);
     gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, 255);
 }

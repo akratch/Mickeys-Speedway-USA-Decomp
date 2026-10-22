@@ -77,15 +77,15 @@ extern f32 overlay91CallProxy();
 extern volatile s32 overlay91GlobalA;
 extern s32 overlay91GlobalB;
 
-s32 overlay91CanRenderReloc(void);
-void overlay91GetDimensionsReloc(void **bufferOut, u32 *widthOut);
-void overlay91DrawBandReloc(Overlay91Gfx **displayList, void *buffer,
+s32 func_800290A0(void);
+void viGetCurrentSize(void **bufferOut, u32 *widthOut);
+void rcpClearZBuffer(Overlay91Gfx **displayList, void *buffer,
                             u32 width, void *optional, s32 left,
                             void *bufferAgain, s32 right);
-void overlay91BeginRenderReloc(Overlay91Gfx **displayList,
+void camStandardPersp(Overlay91Gfx **displayList,
                                void *renderContext);
-void overlay91EndRenderReloc(Overlay91Gfx **displayList);
-void overlay91RenderObjectReloc(Overlay91Gfx **displayList,
+void camResetView(Overlay91Gfx **displayList);
+void func_80009E78(Overlay91Gfx **displayList,
                                 void *renderContext, void *vertices,
                                 Overlay91RenderObject *object);
 

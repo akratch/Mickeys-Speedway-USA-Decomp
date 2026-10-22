@@ -6,7 +6,7 @@ typedef struct Overlay44State {
     void *handles[4];
 } Overlay44State;
 
-void overlay44ReleaseReloc(void *handle);
+void mmFree(void *handle);
 
 /* DKR v77/v80 has generic fixed-handle cleanup, but no exact donor. */
 void overlay44ReleaseHandles(Overlay44State *state) {
@@ -18,7 +18,7 @@ void overlay44ReleaseHandles(Overlay44State *state) {
             index = 0;
             do {
                 if (state->handles[index] != 0) {
-                    overlay44ReleaseReloc(state->handles[index]);
+                    mmFree(state->handles[index]);
                     state->handles[index] = 0;
                 }
                 index++;

@@ -20,9 +20,9 @@ typedef struct Overlay78Config {
     s16 valueE;
 } Overlay78Config;
 
-void overlay78SetTargetReloc(Overlay78Object *object, s32 arg1, s32 arg2,
+void func_8005AD64(Overlay78Object *object, s32 arg1, s32 arg2,
                              f32 value);
-void overlay78UpdateReloc(Overlay78Object *object, f32 current, f32 target);
+void func_8005ABA8(Overlay78Object *object, f32 current, f32 target);
 
 void overlay78Init(Overlay78Object *object, Overlay78Config *config);
 void overlay78Update(Overlay78Object *object, s32 updateRate);

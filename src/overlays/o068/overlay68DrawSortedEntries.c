@@ -60,9 +60,9 @@ typedef struct Overlay68DrawDescriptor {
     s32 sourceWord;
 } Overlay68DrawDescriptor;
 
-extern f32 overlay68MeasureVectorReloc(f32 x, f32 y, f32 z);
-extern void overlay68PrepareDrawReloc(Overlay68DrawObject *object);
-extern void overlay68SubmitEntryReloc(Overlay68Command **displayList, void *mtx, void *vertices,
+extern f32 camGetProjZ(f32 x, f32 y, f32 z);
+extern void func_80022E80(Overlay68DrawObject *object);
+extern void func_80022FD4(Overlay68Command **displayList, void *mtx, void *vertices,
                                       Overlay68DrawObject *object,
                                       s32 renderState,
                                       Overlay68DrawDescriptor *descriptor,
@@ -106,7 +106,7 @@ void overlay68DrawSortedEntries(Overlay68Command **displayList, void *mtx, void 
     if (entry != 0) {
         for (i = 0; (i < object->entryCount) && (i != 4); i++) {
             vector = &owner->vectors[entry->vectorIndex];
-            distances[count] = overlay68MeasureVectorReloc(vector->x, vector->y,
+            distances[count] = camGetProjZ(vector->x, vector->y,
                                                            vector->z);
             entries[count] = entry;
             order[count] = count;
@@ -126,7 +126,7 @@ void overlay68DrawSortedEntries(Overlay68Command **displayList, void *mtx, void 
             }
         }
 
-        overlay68PrepareDrawReloc(object);
+        func_80022E80(object);
         inverseScale = 1.0f / *object->scale;
         descriptor.mode6 = 3;
         descriptor.angle = 0x3333;
@@ -142,7 +142,7 @@ void overlay68DrawSortedEntries(Overlay68Command **displayList, void *mtx, void 
             descriptor.y = vector->y;
             descriptor.z = vector->z;
             descriptor.sourceWord = entry->word0;
-            overlay68SubmitEntryReloc(displayList, mtx, vertices, object,
+            func_80022FD4(displayList, mtx, vertices, object,
                                       object->renderState, &descriptor, 0xE,
                                       object->mode39);
         }

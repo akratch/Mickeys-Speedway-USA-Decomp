@@ -1,6 +1,6 @@
 #include "PR/ultratypes.h"
 
-extern s8 gOverlay11DirectionReloc[];
+extern s8 D_800D3190[];
 extern s16 gOverlay11Selection;
 extern s32 gOverlay11Mode;
 extern s32 gOverlay11Argument;
@@ -16,15 +16,15 @@ void overlay11UpdateSelection(s32 updateRate) {
     s8 direction;
     s32 mode;
 
-    direction = gOverlay11DirectionReloc[gOverlay11Argument];
+    direction = D_800D3190[gOverlay11Argument];
     if (direction < -32) {
         if (gOverlay11Mode == 3) {
             gOverlay11Mode--;
             func_80000F94(0x32C, 0);
-            direction = gOverlay11DirectionReloc[gOverlay11Argument];
+            direction = D_800D3190[gOverlay11Argument];
         } else {
             func_80000F94(0x32D, 0);
-            direction = gOverlay11DirectionReloc[gOverlay11Argument];
+            direction = D_800D3190[gOverlay11Argument];
         }
     }
     if (direction >= 33) {

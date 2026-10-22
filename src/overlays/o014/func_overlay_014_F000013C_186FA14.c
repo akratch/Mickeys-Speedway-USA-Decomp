@@ -26,7 +26,7 @@ extern void *gOverlay14OffsetsF4;
 /* The call to overlay 14 +0x0 is a SYMBOL relocation record, so it is named
  * through a placeholder; the three later same-module calls are JUMP records
  * and name their callees directly. */
-extern void overlay14ResetReloc(void);
+extern void func_overlay_014_F0000000_186F8D8(void);
 extern void *piRomLoad_o014Reloc(s32 resourceId);
 extern s32 frontGetLanguage_o014Reloc(void);
 extern s32 overlay14ReturnOne(s32 rule);
@@ -48,7 +48,7 @@ void func_overlay_014_F000013C_186FA14(s32 group, s32 context) {
     Rule *rule;
     RuleGroup *entry;
 
-    overlay14ResetReloc();
+    func_overlay_014_F0000000_186F8D8();
     if (group < 0 || group >= 0) {
         return;
     }

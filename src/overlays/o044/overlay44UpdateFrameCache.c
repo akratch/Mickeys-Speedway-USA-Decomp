@@ -25,8 +25,8 @@ typedef struct Overlay44AnimationState {
     void *handles[4];
 } Overlay44AnimationState;
 
-extern Overlay44FrameSource *gOverlay44FrameSources;
-extern s32 overlay44UploadFrameReloc(u32 assetIndex, void *address,
+extern Overlay44FrameSource *D_800D76D0;
+extern s32 piRomLoadSection(u32 assetIndex, void *address,
                                      s32 assetOffset, s32 size);
 
 /* Mickey-local reconstruction, tier A: stock object and linked ROM exact.
@@ -49,7 +49,7 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
         return;
     }
 
-    source = &gOverlay44FrameSources[state->sourceIndex];
+    source = &D_800D76D0[state->sourceIndex];
     if (state->flags & 4) {
         limit = (source->frameCount << 8) - 1;
     } else {
@@ -113,7 +113,7 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
                 sourceOffset = ((Overlay44FrameSource *)source)->dataOffset + (frame * source->frameSize);
                 state->cachedFrame[slot] = frame;
                 frameSlot = slot;
-                overlay44UploadFrameReloc(0x42, state->handles[slot], sourceOffset,
+                piRomLoadSection(0x42, state->handles[slot], sourceOffset,
                                           source->frameSize);
                 break;
             }
@@ -128,7 +128,7 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
                 sourceOffset = ((Overlay44FrameSource *)source)->dataOffset + (nextFrame * source->frameSize);
                 state->cachedFrame[slot] = nextFrame;
                 nextSlot = slot;
-                overlay44UploadFrameReloc(0x42, state->handles[slot], sourceOffset,
+                piRomLoadSection(0x42, state->handles[slot], sourceOffset,
                                           source->frameSize);
                 break;
             }

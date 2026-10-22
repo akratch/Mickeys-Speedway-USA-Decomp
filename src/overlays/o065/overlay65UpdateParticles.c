@@ -62,15 +62,15 @@ extern O65Vertex *D_2980[];
 extern O65Vertex *D_2988;
 extern u8 D_80000000[];
 
-extern void o65BeginDraw(O65Command **, void *, s32, void *);
-extern O65Camera *o65GetCamera(s32);
-extern void o65PrepareCamera(s32);
-extern void o65LoadCursor(O65Command **, s32 *);
-extern s32 o65RandomRange(s32, s32);
-extern f32 o65Sin(s16);
-extern f32 o65Cos(s16);
-extern s32 o65FindGround(f32, f32, s32, f32 ***);
-extern void o65Transform(s32, s16 *, O65Vec3f *, O65Vec3f *);
+extern void texDPTextureX(O65Command **, void *, s32, void *);
+extern O65Camera *func_80021970(s32);
+extern void camSetNo(s32);
+extern void camSetView(O65Command **, s32 *);
+extern s32 mathRnd(s32, s32);
+extern f32 func_8002A8BC(s16);
+extern f32 func_8002A8C0(s16);
+extern s32 func_8001398C(f32, f32, s32, f32 ***);
+extern void pointListRPY(s32, s16 *, O65Vec3f *, O65Vec3f *);
 extern void func_overlay_065_F0000C38_18C4EA0(O65Command **, s32 *, s32);
 
 /*
@@ -128,10 +128,10 @@ void overlay65UpdateParticles(O65Command **commandList, s32 *cursorPtr,
     particle = D_1908;
     spawnCount = 4;
     remaining = 6;
-    o65BeginDraw(&commands, O65_INPUT, 3, 0);
-    camera = o65GetCamera(0);
-    o65PrepareCamera(0);
-    o65LoadCursor(&commands, &cursor);
+    texDPTextureX(&commands, O65_INPUT, 3, 0);
+    camera = func_80021970(0);
+    camSetNo(0);
+    camSetView(&commands, &cursor);
     particleIndex = 0;
     batchStart = D_2988;
 
@@ -161,25 +161,25 @@ void overlay65UpdateParticles(O65Command **commandList, s32 *cursorPtr,
         }
 
         if ((spawnCount != 0) && (particle->active == 0)) {
-            particle->y = (s16)((f32)o65RandomRange(200, 250) + camera->y);
-            lateralX = (f32)o65RandomRange(-500, 500);
-            lateralZ = (f32)o65RandomRange(-500, 500);
-            sinAngle = o65Sin(camera->angle);
-            cosAngle = o65Cos(camera->angle);
+            particle->y = (s16)((f32)mathRnd(200, 250) + camera->y);
+            lateralX = (f32)mathRnd(-500, 500);
+            lateralZ = (f32)mathRnd(-500, 500);
+            sinAngle = func_8002A8BC(camera->angle);
+            cosAngle = func_8002A8C0(camera->angle);
             particle->x = (s16)((camera->x + lateralX * sinAngle) -
                                 lateralZ * cosAngle);
             particle->z = (s16)(camera->z + lateralZ * sinAngle +
                                 lateralX * cosAngle);
-            particle->dx = o65RandomRange(-0x7FFF, 0x8000);
-            particle->dy = o65RandomRange(-0x7FFF, 0x8000);
-            particle->dz = o65RandomRange(-0x7FFF, 0x8000);
-            particle->ddx = o65RandomRange(-0x300, 0x300);
-            particle->ddy = o65RandomRange(-0x300, 0x300);
-            particle->ddz = o65RandomRange(-0x300, 0x300);
-            particle->angle = o65RandomRange(-0x7FFF, 0x8000);
-            particle->angleStep = o65RandomRange(-0x400, 0x400);
+            particle->dx = mathRnd(-0x7FFF, 0x8000);
+            particle->dy = mathRnd(-0x7FFF, 0x8000);
+            particle->dz = mathRnd(-0x7FFF, 0x8000);
+            particle->ddx = mathRnd(-0x300, 0x300);
+            particle->ddy = mathRnd(-0x300, 0x300);
+            particle->ddz = mathRnd(-0x300, 0x300);
+            particle->angle = mathRnd(-0x7FFF, 0x8000);
+            particle->angleStep = mathRnd(-0x400, 0x400);
 
-            groundCount = o65FindGround((f32)particle->x, (f32)particle->z,
+            groundCount = func_8001398C((f32)particle->x, (f32)particle->z,
                                         0x1000, &ground);
             if (groundCount != 0) {
                 particle->floorY = particle->y - 10000;
@@ -193,7 +193,7 @@ void overlay65UpdateParticles(O65Command **commandList, s32 *cursorPtr,
                 particle->floorY = (s16)(camera->y - 300.0f);
             }
 
-            colors = &D_1C0[o65RandomRange(0, 6) * 3];
+            colors = &D_1C0[mathRnd(0, 6) * 3];
             particle->r = colors[0];
             particle->g = colors[1];
             particle->b = colors[2];
@@ -202,8 +202,8 @@ void overlay65UpdateParticles(O65Command **commandList, s32 *cursorPtr,
         }
 
         if (particle->active != 0) {
-            radius = (s16)(o65Cos(particle->angle) * 50.0f);
-            o65Transform(4, &particle->dx, D_1D8, transformed);
+            radius = (s16)(func_8002A8C0(particle->angle) * 50.0f);
+            pointListRPY(4, &particle->dx, D_1D8, transformed);
             remaining--;
             groundIndex = 0;
             for (groundCount = 4; groundCount != 0; groundCount--) {

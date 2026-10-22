@@ -119,30 +119,30 @@ typedef struct Overlay25VectorObject {
     Overlay25VectorState *state;
 } Overlay25VectorObject;
 
-extern u16 gOverlay25GlobalFlagsReloc;
+extern u16 D_8007BF1C;
 extern const u8 gOverlay25ColorsReloc[];
 
 extern f32 func_8002A8C0(s32 angle);
 extern f32 func_8002A8BC(s32 angle);
 extern s32 func_800299E8(s32 lower, s32 upper);
 extern void overlay25SetVectorFlagsReloc(void);
-extern void overlay25DestroyReloc(Overlay25Object *object);
-extern void overlay25MoveReloc(Overlay25Object *object, f32 x, f32 y, f32 z);
-extern void overlay25SweepReloc(s32 mode, Overlay25Vector *position,
+extern void func_80006EA0(Overlay25Object *object);
+extern void func_80008128(Overlay25Object *object, f32 x, f32 y, f32 z);
+extern void trackMakePolylist(s32 mode, Overlay25Vector *position,
                                 Overlay25Vector *movement, f32 *radius,
                                 s32 arg4, s32 arg5);
-extern s32 overlay25TraceReloc(Overlay25Vector *position,
+extern s32 func_80010900(Overlay25Vector *position,
                                Overlay25Vector *movement, f32 radius,
                                Overlay25Object *object,
                                void (*callback)(void));
-extern s32 overlay25QueryObjectsReloc(f32 x, f32 y, s32 z, f32 radius,
+extern s32 func_8005776C(f32 x, f32 y, s32 z, f32 radius,
                                       s32 mode, Overlay25Object **objects);
-extern s32 overlay25CanHitReloc(Overlay25Object *object,
+extern s32 func_overlay_008_F0000E88_185EBE0(Overlay25Object *object,
                                 Overlay25EntityState *state);
 /* Overlay 25 table-1 record 15 resolves through ORT 1471 to Overlay 7 +0x894. */
-extern void overlay7DispatchModesReloc(Overlay25Object *owner,
+extern void overlay7DispatchModes(Overlay25Object *owner,
                                        Overlay25Object *object);
-extern Overlay25Status *overlay25GetStatusReloc(void);
-extern void overlay25NotifyHitReloc(Overlay25Object *object);
+extern Overlay25Status *func_80028F54(void);
+extern void func_overlay_070_F0000384_18C954C(Overlay25Object *object);
 
 #endif

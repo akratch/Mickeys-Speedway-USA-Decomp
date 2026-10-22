@@ -32,12 +32,12 @@ extern const Overlay68KindPair gOverlay68KindMap[];
 extern Overlay68EntryHeader *gOverlay68SecondaryEntry;
 
 extern s32 overlay68PayloadLimit(void);
-extern void *overlay68AllocReloc(s32 size, s32 tag);
-extern s32 overlay68RomLoadSectionReloc(u32 assetIndex, u32 address,
+extern void *mmAlloc(s32 size, s32 tag);
+extern s32 piRomLoadSection(u32 assetIndex, u32 address,
                                        s32 assetOffset, s32 size);
-extern Overlay68ResidentEntry *overlay68GetResidentEntriesReloc(void);
-extern s32 overlay68GetBlurEffectReloc(s32 kind);
-extern void overlay68ReleaseReloc(void *resource);
+extern Overlay68ResidentEntry *func_800291C4(void);
+extern s32 levelGetBlurEffect(s32 kind);
+extern void mmFree(void *resource);
 
 void overlay68RebuildSecondaryEntry(s32 kind) {
     s32 amount;
@@ -62,21 +62,21 @@ void overlay68RebuildSecondaryEntry(s32 kind) {
         Overlay68EntryHeader *entry;
 
         entrySize = overlay68PayloadLimit();
-        entry = overlay68AllocReloc(entrySize, 0x85);
+        entry = mmAlloc(entrySize, 0x85);
         if (entry != 0) {
             Overlay68Probe *probe;
 
-            probe = overlay68AllocReloc(sizeof(*probe), 0x85);
+            probe = mmAlloc(sizeof(*probe), 0x85);
             if (probe != 0) {
                 Overlay68ResidentEntry *entries;
                 s32 threshold;
                 s32 index;
 
-                overlay68RomLoadSectionReloc(0x3F, (u32)probe,
+                piRomLoadSection(0x3F, (u32)probe,
                                              amount * (s32)sizeof(*probe),
                                              sizeof(*probe));
-                entries = overlay68GetResidentEntriesReloc();
-                index = overlay68GetBlurEffectReloc(kind);
+                entries = func_800291C4();
+                index = levelGetBlurEffect(kind);
                 selectedEntry = entries;
                 selectedEntry += index;
                 threshold = selectedEntry->thresholdNumerator / 5;
@@ -97,17 +97,17 @@ void overlay68RebuildSecondaryEntry(s32 kind) {
                 }
 
                 if (index >= 0) {
-                    overlay68RomLoadSectionReloc(0x40, (u32)entry,
+                    piRomLoadSection(0x40, (u32)entry,
                                                  probe->assetOffsets[index],
                                                  probe->assetSizes[index]);
                     payload = entry + 1;
                     entry->payload = payload;
                     gOverlay68SecondaryEntry = entry;
                 }
-                overlay68ReleaseReloc(probe);
+                mmFree(probe);
             }
             if (gOverlay68SecondaryEntry == 0) {
-                overlay68ReleaseReloc(entry);
+                mmFree(entry);
             }
         }
     }

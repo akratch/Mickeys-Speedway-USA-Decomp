@@ -14,10 +14,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o070/func_overlay_070_F0000000_18C91C8.c.o: POS
 		0x09c:5:gOverlay70AngleReloc \
 		0x0bc:6:gOverlay70AngleReloc && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x028:overlay70RandomRange:func_overlay_070_F0000000_18C91C8 \
-		0x038:overlay70RandomRange:func_overlay_070_F0000000_18C91C8 \
-		0x04c:overlay70RandomRange:func_overlay_070_F0000000_18C91C8 \
-		0x05c:overlay70RandomRange:func_overlay_070_F0000000_18C91C8 && \
+		0x028:mathRnd:func_overlay_070_F0000000_18C91C8 \
+		0x038:mathRnd:func_overlay_070_F0000000_18C91C8 \
+		0x04c:mathRnd:func_overlay_070_F0000000_18C91C8 \
+		0x05c:mathRnd:func_overlay_070_F0000000_18C91C8 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xD8
 # Retail overlay70 routes this carrier's local calls through offset zero and
 # stores its two local table references without reloc records.

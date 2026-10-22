@@ -60,8 +60,8 @@ typedef struct Overlay23InitData {
     f32 velocityY;
 } Overlay23InitData;
 
-s32 overlay23RandomRangeReloc(s32 minimum, s32 maximum);
-void *overlay23LoadAssetReloc(s32 assetId, s32 mode);
+s32 mathRnd(s32 minimum, s32 maximum);
+void *texLoadSprite(s32 assetId, s32 mode);
 
 void overlay23Init(Overlay23Object *object, Overlay23InitData *init) {
     Overlay23State *state;
@@ -76,12 +76,12 @@ void overlay23Init(Overlay23Object *object, Overlay23InitData *init) {
     state->halfTimer = init->timer >> 1;
     state->angle0 = init->stateAngle0;
     state->angle1 = init->stateAngle1;
-    state->randomStep = overlay23RandomRangeReloc(0x20, 0x40);
+    state->randomStep = mathRnd(0x20, 0x40);
     state->alpha = 255.0f;
     state->randomStep *= 8;
     state->alphaStep = 255.0f / (f32)state->halfTimer;
-    state->asset = overlay23LoadAssetReloc(init->assetId, 1);
-    if (overlay23RandomRangeReloc(0, 99) < 50) {
+    state->asset = texLoadSprite(init->assetId, 1);
+    if (mathRnd(0, 99) < 50) {
         state->randomStep = -state->randomStep;
     }
 

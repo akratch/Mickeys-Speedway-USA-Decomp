@@ -7,8 +7,8 @@ typedef struct Overlay97Object {
     void *state;
 } Overlay97Object;
 
-extern void *overlay97AllocStateReloc(Overlay97Object *object, void *entry);
+extern void *addRomdefLight(Overlay97Object *object, void *entry);
 
 void overlay97AssignState(Overlay97Object *object, void *entry, s32 preserveState) {
-    object->state = overlay97AllocStateReloc(object, entry);
+    object->state = addRomdefLight(object, entry);
 }

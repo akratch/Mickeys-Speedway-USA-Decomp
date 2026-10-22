@@ -1,14 +1,14 @@
 #include "PR/ultratypes.h"
 
 extern u8 gOverlay61SavePathReloc[];
-extern s32 overlay61StorageReadyReloc(s32);
-extern s32 overlay61OpenReloc(s32, void *, s32 *, void **);
-extern s32 overlay61GetSizeReloc(s32, void *, s32 *);
-extern s32 *overlay61AllocReloc(s32, s32);
-extern s32 overlay61ReadReloc(s32, void *, void *, s32);
-extern s32 overlay68RecordSizeReloc(s32);
-extern void overlay61FreeReloc(void *);
-extern void overlay61CloseReloc(s32);
+extern s32 packOpen(s32);
+extern s32 packOpenFile(s32, void *, s32 *, void **);
+extern s32 packFileSize(s32, void *, s32 *);
+extern s32 *mmAlloc(s32, s32);
+extern s32 packReadFile(s32, void *, void *, s32);
+extern s32 overlay68PayloadLimit(s32);
+extern void mmFree(void *);
+extern void packClose(s32);
 
 /*
  * Exact 92-word match. The one-iteration do/while grouping is semantically
@@ -24,22 +24,22 @@ s32 func_overlay_061_F0001648_18C0A10(s32 *output, s32 device, s32 *slot) {
     s32 *src;
     s32 *dst;
 
-    result = overlay61StorageReadyReloc(device);
+    result = packOpen(device);
     if (result == 0) {
-        result = overlay61OpenReloc(
+        result = packOpenFile(
             device, gOverlay61SavePathReloc, slot, &handle);
         if (result == 0) {
-            result = overlay61GetSizeReloc(device, handle, &size);
+            result = packFileSize(device, handle, &size);
             if (size >= 4) {
-                buffer = overlay61AllocReloc(size, 0x85);
+                buffer = mmAlloc(size, 0x85);
                 if (buffer != 0) {
-                    result = overlay61ReadReloc(device, handle, buffer, size);
+                    result = packReadFile(device, handle, buffer, size);
                     if (result == 0) {
                         if (buffer[0] == 0x43484152) {
                             copySize = size - 4;
                             do {
-                                if (overlay68RecordSizeReloc(copySize) < copySize) {
-                                    copySize = overlay68RecordSizeReloc(copySize);
+                                if (overlay68PayloadLimit(copySize) < copySize) {
+                                    copySize = overlay68PayloadLimit(copySize);
                                 }
                                 copySize = (copySize + 3) >> 2;
                                 src = buffer + 1;
@@ -53,13 +53,13 @@ s32 func_overlay_061_F0001648_18C0A10(s32 *output, s32 device, s32 *slot) {
                             result = 5;
                         }
                     }
-                    overlay61FreeReloc(buffer);
+                    mmFree(buffer);
                 }
             } else {
                 result = 6;
             }
         }
     }
-    overlay61CloseReloc(device);
+    packClose(device);
     return result;
 }

@@ -21,28 +21,27 @@ extern u8 gO57Draw32A0Local08[];
 extern u8 gO57Draw32A0Local18[];
 extern u8 gO57Draw32A0Local28[];
 
-extern s32 gO57Draw32A0GateReloc;
-extern u8 gO57Draw32A0AnchorReloc[];
+extern s32 D_8007C1A0;
+extern u8 D_800D3140[];
 extern u8 gO57Draw32A0StripeReloc[];
-extern u16 gO57Draw32A0HalfwordsReloc[];
+extern u16 D_800D3128[];
 
-extern s32 o57Draw32A0Call0Reloc(void);
-extern s32 o57Draw32A0Call1Reloc(void);
-extern s32 o57Draw32A0Call2Reloc(void);
-extern void o57Draw32A0SetupReloc(void *anchor, s32 count,
+extern s32 overlay84GetCurrent(void);
+extern s32 overlay84IsUnitScale(void);
+extern void frontDrawRectangles(void *anchor, s32 count,
                                   Overlay57Draw32A0Record *records, s32 mode);
-extern void o57Draw32A0ModeReloc(s32 mode);
-extern void o57Draw32A0ColorReloc(s32 red, s32 green, s32 blue, s32 alpha,
+extern void fontUseFont(s32 mode);
+extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha,
                                   s32 envelope);
-extern void o57Draw32A0Stripe0Reloc(void *anchor, s32 width, s32 position,
+extern void fontPrintXY(void *anchor, s32 width, s32 position,
                                     void *data, s32 count);
-extern void o57Draw32A0Stripe1Reloc(void *anchor, s32 width, s32 position,
+extern void fontPrintXY(void *anchor, s32 width, s32 position,
                                     void *data, s32 count);
-extern void o57Draw32A0Stripe2Reloc(void *anchor, s32 width, s32 position,
+extern void fontPrintXY(void *anchor, s32 width, s32 position,
                                     void *data, s32 count);
-extern void o57Draw32A0Stripe3Reloc(void *anchor, s32 width, s32 position,
+extern void fontPrintXY(void *anchor, s32 width, s32 position,
                                     void *data, s32 count);
-extern void o57Draw32A0RenderReloc(void *anchor,
+extern void func_8002FB34(void *anchor,
                                    Overlay57Draw32A0Record *record,
                                    f32 scale, f32 position, f32 xScale,
                                    f32 yScale, s32 color, s32 command);
@@ -73,10 +72,10 @@ void overlay57Draw32A0(s32 updateRate) {
     }
 
     rising = 0;
-    if ((gO57Draw32A0GateReloc == 1) &&
-        (o57Draw32A0Call0Reloc() < 5) &&
-        (o57Draw32A0Call1Reloc() != 0)) {
-        gO57Draw32A0Selection1A0 = o57Draw32A0Call2Reloc();
+    if ((D_8007C1A0 == 1) &&
+        (overlay84GetCurrent() < 5) &&
+        (overlay84IsUnitScale() != 0)) {
+        gO57Draw32A0Selection1A0 = overlay84GetCurrent();
         if (gO57Draw32A0State118 == 1) {
             rising = 1;
         }
@@ -117,21 +116,21 @@ void overlay57Draw32A0(s32 updateRate) {
         cursor++;
     } while (i < 8);
 
-    o57Draw32A0SetupReloc(gO57Draw32A0AnchorReloc, 8, records, 0);
-    o57Draw32A0ModeReloc(2);
-    o57Draw32A0ColorReloc(0xFF, 0xFF, 0xFF, 0xFF,
+    frontDrawRectangles(D_800D3140, 8, records, 0);
+    fontUseFont(2);
+    fontColour(0xFF, 0xFF, 0xFF, 0xFF,
                           gO57Draw32A0Envelope124);
-    o57Draw32A0Stripe0Reloc(gO57Draw32A0AnchorReloc, 0xF8, position,
+    fontPrintXY(D_800D3140, 0xF8, position,
                             gO57Draw32A0StripeReloc, 4);
     position += 0x1E;
-    o57Draw32A0Stripe1Reloc(gO57Draw32A0AnchorReloc, 0xF8, position,
+    fontPrintXY(D_800D3140, 0xF8, position,
                             gO57Draw32A0Local08, 4);
     position += 0x1E;
-    o57Draw32A0Stripe2Reloc(gO57Draw32A0AnchorReloc, 0xF8, position,
+    fontPrintXY(D_800D3140, 0xF8, position,
                             gO57Draw32A0Local18, 4);
     position += 0x1E;
     if (gO57Draw32A0TableMode18C[0] != 0) {
-        o57Draw32A0Stripe3Reloc(gO57Draw32A0AnchorReloc, 0xF8, position,
+        fontPrintXY(D_800D3140, 0xF8, position,
                                 gO57Draw32A0Local28, 4);
     }
 
@@ -140,9 +139,9 @@ void overlay57Draw32A0(s32 updateRate) {
     if (rowCount[0] > 0) {
         do {
             gO57Draw32A0Work34C[0].packed8 =
-                ((gO57Draw32A0HalfwordsReloc[4 + gO57Draw32A0Selection1A0] &
+                ((D_800D3128[4 + gO57Draw32A0Selection1A0] &
                   gO57Draw32A0Masks3C8[i]) >> gO57Draw32A0Shifts3D8[i]) << 16;
-            o57Draw32A0RenderReloc(gO57Draw32A0AnchorReloc,
+            func_8002FB34(D_800D3140,
                                    gO57Draw32A0Work34C, 248.0f,
                                    (f32)position, 1.0f, 1.0f,
                                    gO57Draw32A0Envelope124 | -256, 0x2003);

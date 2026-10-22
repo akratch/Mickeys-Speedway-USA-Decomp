@@ -23,10 +23,10 @@ typedef struct Overlay89EffectState {
 } Overlay89EffectState;
 
 extern f32 gOverlay89EffectScale;
-extern f32 overlay89TrigAReloc(s16 angle);
-extern f32 overlay89TrigBReloc(s16 angle);
-extern void overlay89MoveEffectReloc(void *handle, f32 x, f32 y, f32 z);
-extern void *overlay89CreateEffectReloc(f32 x, f32 y, f32 z, f32 scale,
+extern f32 func_8002A8C0(s16 angle);
+extern f32 func_8002A8BC(s16 angle);
+extern void trackLightMove(void *handle, f32 x, f32 y, f32 z);
+extern void *trackLightAdd(f32 x, f32 y, f32 z, f32 scale,
                                         f32 scaledSize, s32 red, s32 green,
                                         s32 blue);
 
@@ -51,10 +51,10 @@ void overlay89UpdateEffect(const Overlay89Transform *transform,
         return;
     }
 
-    trigA0 = overlay89TrigAReloc(transform->angleA);
-    trigB0 = overlay89TrigBReloc(transform->angleA);
-    trigA1 = overlay89TrigAReloc(transform->angleB);
-    trigB1 = overlay89TrigBReloc(transform->angleB);
+    trigA0 = func_8002A8C0(transform->angleA);
+    trigB0 = func_8002A8BC(transform->angleA);
+    trigA1 = func_8002A8C0(transform->angleB);
+    trigB1 = func_8002A8BC(transform->angleB);
 
     scaleValue = (scaleArg = effect->scale);
     scaleValue *= gOverlay89EffectScale;
@@ -65,9 +65,9 @@ void overlay89UpdateEffect(const Overlay89Transform *transform,
     z = transform->z - (trigB1 * trigB0);
 
     if (effect->handle != NULL) {
-        overlay89MoveEffectReloc(effect->handle, x, y, z);
+        trackLightMove(effect->handle, x, y, z);
     } else {
-        effect->handle = overlay89CreateEffectReloc(
+        effect->handle = trackLightAdd(
             x,
             y,
             z,

@@ -40,14 +40,14 @@ extern void *D_33C;
 extern u8 D_800002D8[];
 extern Overlay101ClockPoint D_278[12];
 
-void overlay101SetClockScaleReloc(f32 scale);
-void overlay101DrawPanelReloc(Overlay101Gfx **displayList,
+void func_80022A44(f32 scale);
+void camStandardOrtho(Overlay101Gfx **displayList,
                               Overlay101Panel *panel);
-void overlay101PrepareClockMaterialReloc(Overlay101Gfx **displayList,
+void texDPTextureX(Overlay101Gfx **displayList,
                                          void *material, s32 count,
                                          s32 flags);
-f32 overlay101ClockTrigAReloc(s32 angle);
-f32 overlay101ClockTrigBReloc(s32 angle);
+f32 func_8002A8BC(s32 angle);
+f32 func_8002A8C0(s32 angle);
 
 #define O101_PRIM(packet, color)                                            \
     {                                                                       \
@@ -113,9 +113,9 @@ void overlay101DrawClock(Overlay101Gfx **displayList, Overlay101Panel *panel, Ov
   originY *= 10;
   baseX = originX;
   baseY = originY;
-  overlay101SetClockScaleReloc(D_E98);
-  overlay101DrawPanelReloc(displayList, panel);
-  overlay101SetClockScaleReloc(1.0f);
+  func_80022A44(D_E98);
+  camStandardOrtho(displayList, panel);
+  func_80022A44(1.0f);
   timeValue = D_338;
   major = ((f32) timeValue) / D_E9C;
   majorWhole = (s32) major;
@@ -125,7 +125,7 @@ void overlay101DrawClock(Overlay101Gfx **displayList, Overlay101Panel *panel, Ov
   spent = ((u32) (majorWhole * 216000)) + ((u32) (3600 * middleWhole));
   phaseSpill.minor.write = ((f32) (timeValue - ((s32) spent))) / 60.0f;
   vertex = *vertexCursor;
-  overlay101PrepareClockMaterialReloc(displayList, D_33C, 4, 0);
+  texDPTextureX(displayList, D_33C, 4, 0);
   O101_PRIM((*displayList)++, 0xFFFFFFA0);
   O101_VERTICES((*displayList)++, (void *) (((u32) vertex) + 0x80000000U));
   O101_DRAW((*displayList)++, D_800002D8);
@@ -137,23 +137,23 @@ void overlay101DrawClock(Overlay101Gfx **displayList, Overlay101Panel *panel, Ov
     if (item == 2)
     {
       angle = (s32) ((major * 65536.0f) / 24.0f);
-      scaledA = overlay101ClockTrigAReloc(angle) * 10.0f;
-      scaledB = overlay101ClockTrigBReloc(angle) * 10.0f;
+      scaledA = func_8002A8BC(angle) * 10.0f;
+      scaledB = func_8002A8C0(angle) * 10.0f;
       point = 4;
     }
     else if (item == 1)
     {
       angle = (s32) ((middle * 65536.0f) / 60.0f);
-      scaledA = overlay101ClockTrigAReloc(angle) * 10.0f;
+      scaledA = func_8002A8BC(angle) * 10.0f;
       scaledB = 10.0f;
-      scaledB = overlay101ClockTrigBReloc(angle) * scaledB;
+      scaledB = func_8002A8C0(angle) * scaledB;
       point = 4;
     }
     else
     {
       angle = (((s32) phaseSpill.minor.read) << 16) / 60;
-      scaledA = overlay101ClockTrigAReloc(angle) * 10.0f;
-      scaledB = overlay101ClockTrigBReloc(angle) * 10.0f;
+      scaledA = func_8002A8BC(angle) * 10.0f;
+      scaledB = func_8002A8C0(angle) * 10.0f;
       point = 4;
     }
     if (point--)

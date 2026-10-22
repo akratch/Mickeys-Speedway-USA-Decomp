@@ -52,7 +52,7 @@ void *overlay15GetResource4(void) {
 /* DKR v77/v80 has generic resource-release wrappers but no exact donor. */
 void overlay15ReleaseResource(void) {
     if (gOverlay15Resource4 != 0) {
-        overlay15ReleaseReloc(gOverlay15Resource4);
+        mmFree(gOverlay15Resource4);
         gOverlay15Resource4 = 0;
         gOverlay15Resource48 = 0;
     }
@@ -87,7 +87,7 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
     s32 deltaG;
     s32 deltaB;
 
-    gOverlay15StarsWord = overlay15Allocate(count * 12 + 0x200, 0x87);
+    gOverlay15StarsWord = mmAlloc(count * 12 + 0x200, 0x87);
     gOverlay15StarPalette = (u16 *) ((u8 *) gOverlay15StarsWord + count * 12);
     gOverlay15StarCount = count;
     stars = gOverlay15StarsWord;
@@ -110,9 +110,9 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
     zRange = (zRange + 1) << 8;
 
     for (i = 0, star = stars; i < gOverlay15StarCount; i++, star++) {
-        star->x = (f32) overlay15RandomRange(-xRange, xRange) * (1.0f / 256.0f);
-        star->y = (f32) overlay15RandomRange(-yRange, yRange) * (1.0f / 256.0f);
-        star->z = (f32) overlay15RandomRange(0x100, zRange) * (1.0f / 256.0f);
+        star->x = (f32) mathRnd(-xRange, xRange) * (1.0f / 256.0f);
+        star->y = (f32) mathRnd(-yRange, yRange) * (1.0f / 256.0f);
+        star->z = (f32) mathRnd(0x100, zRange) * (1.0f / 256.0f);
     }
 
     startR = (startColor >> 24) & 0xFF;
@@ -193,7 +193,7 @@ void overlay15DrawScreenStars(Overlay15Gfx **displayList, f32 projectionScale) {
     Overlay15Gfx *initialCommand;
     f32 fadeScale;
 
-    overlay15GetDimensionsReloc(&screenWidth, &screenHeight);
+    viGetCurrentSize(&screenWidth, &screenHeight);
     command = *displayList;
     star = ((Overlay15StarPointerView *)&gOverlay15Stars)->stars;
     remaining = gOverlay15StarCount;
@@ -218,7 +218,7 @@ void overlay15DrawScreenStars(Overlay15Gfx **displayList, f32 projectionScale) {
     }
 
     *displayList = command;
-    overlay15FinishDisplayListReloc(displayList);
+    texDPInit(displayList);
 }
 
 void *overlay15GetResource10(void) {
@@ -227,7 +227,7 @@ void *overlay15GetResource10(void) {
 
 void overlay15ReleaseResource10(void) {
     if (gOverlay15Resource10 != 0) {
-        overlay15ReleaseReloc(gOverlay15Resource10);
+        mmFree(gOverlay15Resource10);
         gOverlay15Resource10 = 0;
     }
 }
@@ -258,7 +258,7 @@ void overlay15InitStars(s32 count, s32 xRange, s32 yRange, s32 zRange,
     s32 pad3;
     s32 pad4;
 
-    gOverlay15MovingStars = overlay15Allocate(count << 4, 0x87);
+    gOverlay15MovingStars = mmAlloc(count << 4, 0x87);
     gOverlay15RainColors = (u32 *) ((u8 *) gOverlay15MovingStars + count * 12);
     gOverlay15MovingStarCount = count;
     sOverlay15Rain.bounds.zero = 0;
@@ -287,13 +287,13 @@ void overlay15InitStars(s32 count, s32 xRange, s32 yRange, s32 zRange,
     deltaA = (endColor & 0xFF) - startA;
     for (i = 0, stars = gOverlay15MovingStars, colors = gOverlay15RainColors;
          i < gOverlay15MovingStarCount; i++) {
-        stars->x = (f32) overlay15RandomRange(-xRange, xRange) *
+        stars->x = (f32) mathRnd(-xRange, xRange) *
                    (1.0f / 256.0f);
-        stars->y = (f32) overlay15RandomRange(-yRange, yRange) *
+        stars->y = (f32) mathRnd(-yRange, yRange) *
                    (1.0f / 256.0f);
-        stars->z = (f32) overlay15RandomRange(-zRange, zRange) *
+        stars->z = (f32) mathRnd(-zRange, zRange) *
                    (1.0f / 256.0f);
-        colorTime = overlay15RandomRange(0, 255);
+        colorTime = mathRnd(0, 255);
         *colors = ((((deltaR * colorTime) >> 8) + startR) << 24) |
                   ((((deltaG * colorTime) >> 8) + startG) << 16) |
                   ((((deltaB * colorTime) >> 8) + startB) << 8) |
@@ -322,7 +322,7 @@ void overlay15UpdateMovingStars(f32 positionX, f32 positionY, f32 positionZ,
     f32 scale;
     Overlay15Field *field = &sOverlay15Rain;
 
-    camera = overlay15GetActiveCameraReloc();
+    camera = camGetPtr();
     if (field->bounds.zero != 0 && updateRate != 0) {
         scale = 1.0f / (f32)updateRate;
         deltaX = (field->previous.x - camera->x) * scale;
@@ -381,7 +381,7 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
     if (gOverlay15RainEnabled != 0) {
         visibleCount = (s32)((f32)gOverlay15RainCapacity * intensity);
         if ((gOverlay15RainPositions != 0) && (visibleCount > 0)) {
-            camera = overlay15GetActiveCameraReloc();
+            camera = camGetPtr();
             rainFastDraw(framebuffer, width, height, visibleCount,
                          gOverlay15RainPositions, field->colors,
                          camera->angle + 0x8000, field->movement.x,

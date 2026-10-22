@@ -32,8 +32,8 @@ typedef struct Overlay23Object {
 } Overlay23Object;
 
 extern f32 gOverlay23VelocityFactor;
-f32 overlay23DampingReloc(f32 factor);
-void overlay23ExpireReloc(Overlay23Object *object, s32 updateRate);
+f32 Powerf(f32 factor);
+void func_80006EA0(Overlay23Object *object, s32 updateRate);
 
 void overlay23Update(Overlay23Object *object, s32 updateRate) {
     Overlay23State *state;
@@ -44,7 +44,7 @@ void overlay23Update(Overlay23Object *object, s32 updateRate) {
     state = object->state;
     state->angle0 = state->angle0 + (state->randomStep * updateRate);
     state->timer = state->timer - updateRate;
-    damping = overlay23DampingReloc(gOverlay23VelocityFactor);
+    damping = Powerf(gOverlay23VelocityFactor);
     state->velocityX = state->velocityX * damping;
     state->velocityY = state->velocityY * damping;
     updateRateF = (f32)updateRate;
@@ -54,7 +54,7 @@ void overlay23Update(Overlay23Object *object, s32 updateRate) {
     timer = state->timer;
     if (timer <= 0) {
         state->alpha = 0.0f;
-        overlay23ExpireReloc(object, updateRate);
+        func_80006EA0(object, updateRate);
         return;
     }
     if (timer < state->halfTimer) {

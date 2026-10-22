@@ -34,7 +34,7 @@ void overlay25InitializeEffect(Overlay25Object *object,
         object->flags |= 0x0800;
     }
 
-    if (gOverlay25GlobalFlagsReloc & 0x10) {
+    if (D_8007BF1C & 0x10) {
         paletteIndex = func_800299E8(0, 7) * 3;
     } else {
         paletteIndex = 9;
@@ -83,7 +83,7 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
         state->activeDuration -= updateRate;
         object->value = object->transform->value * 2.0f;
         if (state->activeDuration <= 0) {
-            overlay25DestroyReloc(object);
+            func_80006EA0(object);
             return;
         }
         y = state->lift;
@@ -100,13 +100,13 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
         position.x = object->x;
         position.y = object->y;
         position.z = *(f32 *)&object->z;
-        overlay25MoveReloc(object, x, y, z);
+        func_80008128(object, x, y, z);
         radius = 4;
-        overlay25SweepReloc(1, &position, (Overlay25Vector *)&object->x, &radius, 0, 0);
-        if (overlay25TraceReloc(&position, (Overlay25Vector *)&object->x, radius, object,
+        trackMakePolylist(1, &position, (Overlay25Vector *)&object->x, &radius, 0, 0);
+        if (func_80010900(&position, (Overlay25Vector *)&object->x, radius, object,
                                 overlay25SetVectorFlagsReloc)) {
             if (state->flags & 4) {
-                overlay25DestroyReloc(object);
+                func_80006EA0(object);
                 return;
             }
             state->activeDuration = 0;
@@ -125,7 +125,7 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
             state->lifetime = 0;
             state->multiplier -= 0.4f * updateRate;
             if (state->multiplier <= 0.1f) {
-                overlay25DestroyReloc(object);
+                func_80006EA0(object);
                 return;
             }
         } else {
@@ -133,7 +133,7 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
             if (state->multiplier > 4.0f) {
                 state->multiplier = 4.0f;
             }
-            count = overlay25QueryObjectsReloc(object->x, object->y, object->z,
+            count = func_8005776C(object->x, object->y, object->z,
                                                object->value * state->multiplier * 16.0f,
                                                1, objects);
             hitSomething = 0;
@@ -147,14 +147,14 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
                         if (otherState->enabled == 0) {
                             continue;
                         }
-                        steps = overlay25CanHitReloc(other, otherState);
+                        steps = func_overlay_008_F0000E88_185EBE0(other, otherState);
                         hitSomething = 1;
                         if (steps) {
-                            overlay7DispatchModesReloc(state->owner, other);
+                            overlay7DispatchModes(state->owner, other);
                             state->owner->state->entity.ownerHitCount++;
                             otherState->selfHitCount++;
-                            if (overlay25GetStatusReloc()->type == 5) {
-                                overlay25NotifyHitReloc(other);
+                            if (func_80028F54()->type == 5) {
+                                func_overlay_070_F0000384_18C954C(other);
                             }
                         }
                     }

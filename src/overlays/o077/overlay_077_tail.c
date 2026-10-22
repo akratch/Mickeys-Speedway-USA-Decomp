@@ -16,7 +16,7 @@ void overlay77EnsureSelection(void) {
         s32 count = gOverlay77Sequence;
 
         gOverlay77Handle = count;
-        gOverlay77Selection = overlay77RandomReloc(0, count - 1);
+        gOverlay77Selection = mathRnd(0, count - 1);
     }
 }
 
@@ -24,6 +24,6 @@ void overlay77RunCallback(void) {
     void *argument = gOverlay77CallbackArgument;
 
     if (argument != 0) {
-        overlay77CallbackReloc(argument);
+        amSndStopXYZ(argument);
     }
 }

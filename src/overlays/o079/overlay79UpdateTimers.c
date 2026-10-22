@@ -5,7 +5,7 @@ typedef struct Overlay79TimerObject {
     s32 *timers;
 } Overlay79TimerObject;
 
-extern void overlay79FinishReloc(Overlay79TimerObject *object);
+extern void func_80006EA0(Overlay79TimerObject *object);
 
 /* DKR v77/v80 and JFG checks found only broad timer/update semantics. */
 void overlay79UpdateTimers(Overlay79TimerObject *object, s32 step) {
@@ -16,7 +16,7 @@ void overlay79UpdateTimers(Overlay79TimerObject *object, s32 step) {
         timers[1] -= step;
         if (timers[1] <= 0) {
             timers[1] = 0;
-            overlay79FinishReloc(object);
+            func_80006EA0(object);
         }
     }
 }

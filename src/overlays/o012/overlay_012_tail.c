@@ -31,11 +31,11 @@ void func_overlay_012_F00001B4_186D434(f32 x, f32 y, f32 z, f32 x2, f32 y2,
             effect->x0 = x;
             effect->y0 = y;
             effect->z0 = z;
-            effect->kind1 = overlay12Lookup(0, 1);
+            effect->kind1 = mathRnd(0, 1);
             effect->scaleX = scale << 5;
             effect->scaleY = scale << 5;
             effect->type = type;
-            effect->kind2 = overlay12Lookup(0, 2);
+            effect->kind2 = mathRnd(0, 2);
             gOverlay12EffectCount++;
         }
     }

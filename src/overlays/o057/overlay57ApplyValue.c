@@ -12,17 +12,17 @@ typedef struct Overlay57Entry {
     Overlay57Child *child;
 } Overlay57Entry;
 
-extern Overlay57Entry *overlay57FindEntryReloc(u8 id);
-extern void overlay57ApplyReloc(void *item, s32 value, s32 scaled);
+extern Overlay57Entry *func_800508B4(u8 id);
+extern void modSetTextureFrame(void *item, s32 value, s32 scaled);
 
 /* Pinned DKR v77/v80 and JFG checks found no matching donor. */
 void overlay57ApplyValue(s32 id, s32 value, s32 scaled) {
     Overlay57Entry *entry;
     Overlay57Child *child;
 
-    entry = overlay57FindEntryReloc((u8) id);
+    entry = func_800508B4((u8) id);
     if (entry != NULL && entry->child != NULL) {
         child = entry->child;
-        overlay57ApplyReloc(child->items[child->index], value, scaled << 8);
+        modSetTextureFrame(child->items[child->index], value, scaled << 8);
     }
 }

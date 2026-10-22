@@ -6,13 +6,13 @@
 /* Overlay 39: DKR v77/v80 and JFG object/source scans are negative for the
  * whole module. */
 
-extern u8 *gOverlay39Buffer;
-extern u8 gOverlay39State;
+extern u8 *D_8007A204;
+extern u8 __osContLastCmd;
 
-void overlay39BeginReloc(void);
+void __osSiGetAccess(void);
 void overlay39SendReloc(u8 *buffer, s32 size);
-void overlay39SelectReloc(s32 channel, u8 *buffer);
-void overlay39FinishReloc(void);
+void __osSiRawStartDma(s32 channel, u8 *buffer);
+void __osSiRelAccess(void);
 
 /* The resident caller, joy.c's arithmeticFunction, passes its SI message
  * queue to both; neither reads it. JFG's arithmeticFunction makes the same

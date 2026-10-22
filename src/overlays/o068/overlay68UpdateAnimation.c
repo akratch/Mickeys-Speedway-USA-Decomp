@@ -56,19 +56,19 @@ extern f32 func_overlay_068_F0000650_18C77B0(
 /* The split assembly normalizes these five resident roles to one opaque call
  * symbol.  Distinct proxies preserve their independently proved physical
  * signatures while source shape is iterated. */
-extern s16 overlay68Angle3Reloc(f32 x, f32 y, f32 z);
-extern s16 overlay68Angle2Reloc(f32 x, f32 z);
-extern s16 overlay68AngleDifferenceReloc(s32 from, s32 to);
-extern void overlay68SetDirectionReloc(Overlay68Object *object, s32 direction,
+extern s16 func_8000FAE0(f32 x, f32 y, f32 z);
+extern s16 Arctanf(f32 x, f32 z);
+extern s16 mathDiffAngle(s32 from, s32 to);
+extern void func_8005AD64(Overlay68Object *object, s32 direction,
     s32 arg2, f32 arg3);
-extern void overlay68AdvanceObjectReloc(Overlay68Object *object, f32 scale,
+extern void func_8005ABA8(Overlay68Object *object, f32 scale,
     f32 updateRate);
 
 /* The shipped overlay relocation table proves both loads resolve through its
  * reserved-BSS entry to resident D_800C947C.  This proxy remains zero-linked
  * in the overlay object; the retained runtime relocation table is authoritative. */
-extern s32 gOverlay68GlobalFlagReloc;
-#define OVERLAY68_GLOBAL_FLAG gOverlay68GlobalFlagReloc
+extern s32 D_800C947C;
+#define OVERLAY68_GLOBAL_FLAG D_800C947C
 
 /*
  * Matched 2026-10-07 (lane g-near), 2 -> 0 at size 0. The last two words
@@ -199,13 +199,13 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
                 state->fraction, before->z, current->z, after->z,
                 afterAfter->z, 0, &tangentZ, atStart);
 
-            object->facingAngle = overlay68Angle3Reloc(object->x, object->y,
+            object->facingAngle = func_8000FAE0(object->x, object->y,
                 object->z);
             if ((tangentX == 0.0f) && (tangentZ == 0.0f)) {
                 angle = 0;
             } else {
-                angle = overlay68Angle2Reloc(tangentX, tangentZ);
-                angle = overlay68AngleDifferenceReloc(object->red,
+                angle = Arctanf(tangentX, tangentZ);
+                angle = mathDiffAngle(object->red,
                     angle - 0x8000);
             }
 
@@ -228,9 +228,9 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
             }
 
             if (direction != object->direction) {
-                overlay68SetDirectionReloc(object, direction, -1, 0.0f);
+                func_8005AD64(object, direction, -1, 0.0f);
             }
-            overlay68AdvanceObjectReloc(object, 0.04f, (f32)updateRate);
+            func_8005ABA8(object, 0.04f, (f32)updateRate);
         }
     }
 }

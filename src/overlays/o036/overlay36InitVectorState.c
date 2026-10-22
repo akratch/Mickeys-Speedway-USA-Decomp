@@ -15,7 +15,7 @@ typedef struct Overlay36VectorState {
     Overlay36NestedFlags *nested;
 } Overlay36VectorState;
 
-extern void overlay36VectorReloc(Overlay36VectorState *state, f32 *vector);
+extern void mathOneFloatPY(Overlay36VectorState *state, f32 *vector);
 
 /* Vector-state initialization is Mickey-specific; no DKR/JFG donor exists. */
 void overlay36InitVectorState(Overlay36VectorState *state, s16 kind,
@@ -26,6 +26,6 @@ void overlay36InitVectorState(Overlay36VectorState *state, s16 kind,
     state->kind = kind;
     state->vector[0] = 0.0f;
     state->vector[1] = 0.0f;
-    overlay36VectorReloc(state, state->vector);
+    mathOneFloatPY(state, state->vector);
     state->nested->flags &= ~2;
 }

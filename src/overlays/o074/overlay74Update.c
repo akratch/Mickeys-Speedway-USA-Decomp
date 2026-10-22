@@ -39,7 +39,7 @@ typedef struct Overlay74Flags {
     u16 rest : 7;
 } Overlay74Flags;
 
-extern Overlay74Flags gOverlay74Flags;
+extern Overlay74Flags D_800D3128;
 
 /* Runtime identities: func_8005776C, func_800291B4, amSndPlay, func_8003A680.
  * Resident ROM and matched callers authenticate the floating-point z ABI. */
@@ -67,12 +67,12 @@ void overlay74Update(Overlay74UpdateObject *object, s32 amount) {
                 ((f32)state->minimum < delta) &&
                 (delta < (f32)state->maximum)) {
                 object->flags |= 0x400;
-                gOverlay74Flags.channelMask |= 1 << state->channel;
+                D_800D3128.channelMask |= 1 << state->channel;
                 func_800291B4();
                 amSndPlay(0x27C, 0);
 
                 object = (Overlay74UpdateObject *)5;
-                state = (Overlay74UpdateState *)gOverlay74Flags.channelMask;
+                state = (Overlay74UpdateState *)D_800D3128.channelMask;
                 hitObject = (Overlay74HitObject *)8;
                 do {
                     if ((s32)state & (s32)hitObject) {

@@ -41,7 +41,7 @@ typedef struct Overlay97BoundsInit {
     s16 halfB;
 } Overlay97BoundsInit;
 
-extern void overlay97RefreshBoundsReloc(void);
+extern void func_8001C054(void);
 
 void overlay97InitBounds(Overlay97BoundsObject *object,
                          Overlay97BoundsInit *init, s32 preserve) {
@@ -61,6 +61,6 @@ void overlay97InitBounds(Overlay97BoundsObject *object,
     bounds->y = object->y + (f32)init->y;
     bounds->z = object->z + (f32)init->z;
     if (preserve == 0) {
-        overlay97RefreshBoundsReloc();
+        func_8001C054();
     }
 }

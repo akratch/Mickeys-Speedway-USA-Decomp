@@ -47,13 +47,13 @@ typedef struct O98Transform {
     f32 x, y, z;
 } O98Transform;
 
-extern void *o98AcquireRenderContextReloc(void);
-extern void o98LoadMatrixReloc(void *, void *);
-extern void o98BuildMatrixReloc(O98Transform *, O98Mtx *);
-extern void o98CombineMatrixReloc(O98Mtx *, void *, O98Mtx *);
-extern void o98BuildInverseMatrixReloc(O98Transform *, O98Mtx *);
-extern void o98EmitObjectReloc(Gfx **, u8 **, void *, O98Object *);
-extern void o98RestoreStateReloc(Gfx **);
+extern void *camGetProjectionMtx(void);
+extern void mtxf_to_mtx(void *, void *);
+extern void func_8002AA50(O98Transform *, O98Mtx *);
+extern void mtxf_mul(O98Mtx *, void *, O98Mtx *);
+extern void func_8002AC84(O98Transform *, O98Mtx *);
+extern void func_80009E78(Gfx **, u8 **, void *, O98Object *);
+extern void texDPInit(Gfx **);
 
 extern s32 gO98Toggle;
 extern O98Context gO98Contexts[2];
@@ -133,8 +133,8 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
     O98ModelData *pick;
 
     gO98Toggle ^= 1;
-    savedDisplayList = o98AcquireRenderContextReloc();
-    o98LoadMatrixReloc(savedDisplayList, &gO98Contexts[gO98Toggle]);
+    savedDisplayList = camGetProjectionMtx();
+    mtxf_to_mtx(savedDisplayList, &gO98Contexts[gO98Toggle]);
 
     O98_PACKET(0xB7000000, 0x1000);
     emittedReflection = 0;
@@ -175,9 +175,9 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
                     transform.rot4 = object->rotZ;
                     transform.rot2 = object->rotY;
                     transform.rot0 = object->rotX + 0x8000;
-                    o98BuildMatrixReloc(&transform, &matrixB);
-                    o98CombineMatrixReloc(&matrixB, savedDisplayList, &matrixA);
-                    o98LoadMatrixReloc(&matrixA, *matrixHeap);
+                    func_8002AA50(&transform, &matrixB);
+                    mtxf_mul(&matrixB, savedDisplayList, &matrixA);
+                    mtxf_to_mtx(&matrixA, *matrixHeap);
                     O98_PACKET(0x01010040, (u32)*matrixHeap + 0x80000000);
                     *matrixHeap += 0x40;
                     drewObject = 1;
@@ -189,7 +189,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
                     inverse.rot4 = -object->rotZ;
                     inverse.rot2 = -object->rotY;
                     inverse.rot0 = -object->rotX;
-                    emittedReflection = 1; o98BuildInverseMatrixReloc(&inverse, &matrixC);
+                    emittedReflection = 1; func_8002AC84(&inverse, &matrixC);
                     transform.x = object->x;
                     transform.y = referenceY - distance;
                     transform.z = object->z;
@@ -197,10 +197,10 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
                     transform.rot4 = object->rotZ;
                     transform.rot2 = object->rotY;
                     transform.rot0 = object->rotX + 0x8000;
-                    o98BuildMatrixReloc(&transform, &matrixB);
-                    o98CombineMatrixReloc(&matrixC, &matrixB, &matrixA);
-                    o98CombineMatrixReloc(&matrixA, savedDisplayList, &matrixA);
-                    o98LoadMatrixReloc(&matrixA, *matrixHeap);
+                    func_8002AA50(&transform, &matrixB);
+                    mtxf_mul(&matrixC, &matrixB, &matrixA);
+                    mtxf_mul(&matrixA, savedDisplayList, &matrixA);
+                    mtxf_to_mtx(&matrixA, *matrixHeap);
                     O98_PACKET(0x01000040, (u32)*matrixHeap + 0x80000000);
                     *matrixHeap += 0x40;
                     drewObject = 1;
@@ -226,7 +226,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
                     O98_PACKET(0x06000000, modelDisplayList + 0x80000000);
                     O98_PACKET(0xBF000000, 0);
                     O98_PACKET(0xBC00000A, 0);
-                    o98RestoreStateReloc(dl);
+                    texDPInit(dl);
                     O98_PACKET(0xFA000000, 0xFFFFFFFF);
                 }
             } else if (!(object->flags & 0x400) && object->stateTable[object->stateIndex + 0x1E] == 2) {
@@ -238,7 +238,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
                 oldY = object->y;
                 object->y = referenceY - distance;
                 object->scale = -object->scale;
-                o98EmitObjectReloc(dl, matrixHeap, vertices, object);
+                func_80009E78(dl, matrixHeap, vertices, object);
                 object->y = oldY;
             }
         } while (i < gOverlay98AcceptedCount);

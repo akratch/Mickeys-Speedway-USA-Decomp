@@ -22,11 +22,11 @@ typedef struct Overlay36SpawnedObject {
     u8 pad00[0x3C]; s32 state; u8 pad40[0x51]; u8 flag91;
 } Overlay36SpawnedObject;
 
-extern void overlay36OffsetReloc(Overlay36Object *object, f32 *offset);
-extern Overlay36SpawnedObject *overlay36SpawnReloc(
+extern void mathOneFloatRPY(Overlay36Object *object, f32 *offset);
+extern Overlay36SpawnedObject *func_8000590C(
     Overlay36SpawnRequestF20 *request, s32 mode);
-extern void overlay36ReleaseReloc(void *resource);
-extern void overlay36CreateResourceReloc(u16 kind, f32 x, f32 y, f32 z,
+extern void amSndStopXYZ(void *resource);
+extern void amSndPlayXYZ(u16 kind, f32 x, f32 y, f32 z,
                                          s32 mode, void **resource);
 
 void overlay36SpawnConditional(Overlay36Object *object) {
@@ -45,7 +45,7 @@ void overlay36SpawnConditional(Overlay36Object *object) {
         data.offset[2] = 14.0f;
         data.request.value = -45.0f;
     }
-    overlay36OffsetReloc(object, data.offset);
+    mathOneFloatRPY(object, data.offset);
     data.request.kind = 0x9F;
     data.request.x = (s16)(data.offset[0] + object->x);
     data.request.y = (s16)(data.offset[1] + object->y);
@@ -54,7 +54,7 @@ void overlay36SpawnConditional(Overlay36Object *object) {
     data.request.link = 0;
     data.request.owner = object;
     actionKind = state->action->kind;
-    spawned = overlay36SpawnReloc(&data.request, 1);
+    spawned = func_8000590C(&data.request, 1);
     if (spawned != 0) {
         spawned->state = 0;
         if (spawned->flag91 != 0) {
@@ -63,9 +63,9 @@ void overlay36SpawnConditional(Overlay36Object *object) {
     }
     if (actionKind != 0) {
         if (state->resource != 0) {
-            overlay36ReleaseReloc(state->resource);
+            amSndStopXYZ(state->resource);
         }
-        overlay36CreateResourceReloc((u16)actionKind, object->x, object->y,
+        amSndPlayXYZ((u16)actionKind, object->x, object->y,
                                      object->z, 4, &state->resource);
     }
     state->countdown--;

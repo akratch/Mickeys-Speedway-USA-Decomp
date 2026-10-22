@@ -1,7 +1,7 @@
 #include "overlays/offset_records.h"
 
 extern s16 gOverlay54Offsets[];
-extern s32 overlay54QueryModeReloc(void);
+extern s32 frontGetScreenMode(void);
 
 /* Shared Mickey family; no exact DKR v77/v80 or JFG donor was found. */
 void overlay54CopyOffsetRecords(OverlayOffsetRecord *src, OverlayOffsetRecord *dst,
@@ -11,7 +11,7 @@ void overlay54CopyOffsetRecords(OverlayOffsetRecord *src, OverlayOffsetRecord *d
     s16 *offsets;
 
     index *= 4;
-    if (overlay54QueryModeReloc() == 1) {
+    if (frontGetScreenMode() == 1) {
         index += 0x10;
     }
 

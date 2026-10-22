@@ -10,7 +10,7 @@ typedef struct Overlay40FrameRecord {
 
 /* frontDrawRectangles (resident 0x80039380), reached through the overlay
  * loader's SYMBOL record; the placeholder carries the shipped jal addend. */
-extern void overlay40DrawRectanglesReloc(void *displayList, s32 count,
+extern void frontDrawRectangles(void *displayList, s32 count,
                                          Overlay40FrameRecord *records,
                                          s32 translucent);
 
@@ -85,5 +85,5 @@ void overlay40BuildFrame(void *displayList, s32 x, s32 y, s32 width,
     rec->right = right + 1;
     rec->bottom = bottom + 1;
     rec->color = color;
-    overlay40DrawRectanglesReloc(displayList, 8, records, 0);
+    frontDrawRectangles(displayList, 8, records, 0);
 }

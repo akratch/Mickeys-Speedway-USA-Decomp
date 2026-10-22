@@ -8,28 +8,28 @@
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65UpdateParticles.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65UpdateParticles.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym o65BeginDraw=func_overlay_065_F0000000_18C4268 $@ && \
+	$(OBJCOPY) --redefine-sym texDPTextureX=func_overlay_065_F0000000_18C4268 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0xB4:o65GetCamera:func_overlay_065_F0000000_18C4268 \
-		0xC0:o65PrepareCamera:func_overlay_065_F0000000_18C4268 \
-		0xCC:o65LoadCursor:func_overlay_065_F0000000_18C4268 \
-		0x270:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x298:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x2AC:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x2BC:o65Sin:func_overlay_065_F0000000_18C4268 \
-		0x2C8:o65Cos:func_overlay_065_F0000000_18C4268 \
-		0x318:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x328:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x338:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x348:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x358:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x368:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x378:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x388:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x3B0:o65FindGround:func_overlay_065_F0000000_18C4268 \
-		0x5F4:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x648:o65Cos:func_overlay_065_F0000000_18C4268 \
-		0x680:o65Transform:func_overlay_065_F0000000_18C4268 && \
+		0xB4:func_80021970:func_overlay_065_F0000000_18C4268 \
+		0xC0:camSetNo:func_overlay_065_F0000000_18C4268 \
+		0xCC:camSetView:func_overlay_065_F0000000_18C4268 \
+		0x270:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x298:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x2AC:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x2BC:func_8002A8BC:func_overlay_065_F0000000_18C4268 \
+		0x2C8:func_8002A8C0:func_overlay_065_F0000000_18C4268 \
+		0x318:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x328:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x338:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x348:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x358:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x368:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x378:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x388:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x3B0:func_8001398C:func_overlay_065_F0000000_18C4268 \
+		0x5F4:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x648:func_8002A8C0:func_overlay_065_F0000000_18C4268 \
+		0x680:pointListRPY:func_overlay_065_F0000000_18C4268 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xB40
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Release.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
@@ -45,13 +45,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65SpawnRecord.c.o: OPT_FLAGS := -O2
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65SpawnRecord.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		0x4C:5:D_0 0x64:6:D_0 && \
-	$(OBJCOPY) --redefine-sym \
-		o65GetCamera=func_overlay_065_F0000000_18C4268 $@ && \
+	$(OBJCOPY) --redefine-sym func_80021970=func_overlay_065_F0000000_18C4268 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0xCC:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0xE8:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x104:o65RandomRange:func_overlay_065_F0000000_18C4268 \
-		0x11C:o65RandomRange:func_overlay_065_F0000000_18C4268
+		0xCC:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0xE8:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x104:mathRnd:func_overlay_065_F0000000_18C4268 \
+		0x11C:mathRnd:func_overlay_065_F0000000_18C4268
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65ResetSlots.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x48
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65ResetSlots.c.o: OPT_FLAGS := -O2 -Wo,-loopunroll,0

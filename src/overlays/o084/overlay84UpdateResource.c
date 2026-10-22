@@ -14,9 +14,9 @@ typedef struct Overlay84Resource {
     f32 scale;
 } Overlay84Resource;
 
-extern u32 gOverlay84InputFlags;
+extern u32 D_800D31B8;
 extern Overlay84Resource *overlay84GetResource(u8 resource);
-extern void overlay84ConfigureResource(Overlay84Resource *resource, f32 scale,
+extern void func_overlay_041_F0000854_1887B8C(Overlay84Resource *resource, f32 scale,
                                        s32 arg2, s32 arg3);
 extern void overlay84ReleaseResource(u8 resource);
 
@@ -24,12 +24,12 @@ extern void overlay84ReleaseResource(u8 resource);
 void overlay84UpdateResource(void *unused, Overlay84State *state, s32 value) {
     Overlay84Resource *resource;
 
-    if ((gOverlay84InputFlags & 0xD000) != 0 && state->active != 0 &&
+    if ((D_800D31B8 & 0xD000) != 0 && state->active != 0 &&
         state->marked == 0) {
         resource = overlay84GetResource(state->resource);
         if (resource != 0) {
             resource->scale = 1.0f;
-            overlay84ConfigureResource(resource, (f32)value, value, value);
+            func_overlay_041_F0000854_1887B8C(resource, (f32)value, value, value);
         }
     }
     resource = overlay84GetResource(state->resource);

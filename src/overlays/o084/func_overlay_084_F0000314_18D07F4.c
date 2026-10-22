@@ -81,15 +81,15 @@ typedef struct Overlay84Output {
     s16 verticalAngle;
 } Overlay84Output;
 
-extern u32 gOverlay84InputFlags;
-extern s16 gOverlay84InputAxis;
+extern u32 D_800D31B8;
+extern s16 D_800D31C0;
 extern f32 gOverlay84BlendStep;
 
 extern void amSndPlay(u16 soundId, void **handle);
 /* Both calls to overlay84AdvanceCurrent are SYMBOL relocation records whose
  * shipped word holds the 0xF0000000 addend, so they go through a placeholder
  * rather than the in-module definition. */
-extern void overlay84AdvanceCurrentReloc(s32 direction);
+extern void overlay84AdvanceCurrent(s32 direction);
 extern s32 mathDiffAngle(s32 current, s32 target);
 extern f32 func_8002A8C0(s16 angle);
 extern f32 func_8002A8BC(s16 angle);
@@ -129,7 +129,7 @@ void func_overlay_084_F0000314_18D07F4(Overlay84UpdateObject *object,
         if (state->inputTimer > 0) {
             state->inputTimer -= updateRate;
         } else if (state->inputLatch == 0 &&
-                   (gOverlay84InputFlags & 0x9000) != 0 &&
+                   (D_800D31B8 & 0x9000) != 0 &&
                    state->marked == 0) {
             amSndPlay(0xC, 0);
             state->inputLatch = 1;
@@ -138,15 +138,15 @@ void func_overlay_084_F0000314_18D07F4(Overlay84UpdateObject *object,
         if (state->inputLatch == 0) {
             if (state->actionTimer > 0) {
                 state->actionTimer -= updateRate;
-            } else if (gOverlay84InputAxis < -0x10 && state->marked == 0) {
-                overlay84AdvanceCurrentReloc(1);
+            } else if (D_800D31C0 < -0x10 && state->marked == 0) {
+                overlay84AdvanceCurrent(1);
                 state->actionTimer = 0x14;
                 state->blendTimer = 0xA;
                 state->action = 0;
                 state->blend = 0.0f;
                 amSndPlay(0xF, 0);
-            } else if (gOverlay84InputAxis >= 0x11 && state->marked == 0) {
-                overlay84AdvanceCurrentReloc(0);
+            } else if (D_800D31C0 >= 0x11 && state->marked == 0) {
+                overlay84AdvanceCurrent(0);
                 state->actionTimer = 0x14;
                 state->blendTimer = 0xA;
                 state->action = 0;

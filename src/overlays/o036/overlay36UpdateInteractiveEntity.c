@@ -79,22 +79,22 @@ struct Overlay36Entity {
 };
 
 extern Overlay36Record gOverlay36Records[];
-extern u8 gOverlay36RemapEnabled;
+extern u8 D_8007BF0C;
 extern s32 gOverlay36Elapsed;
 extern Overlay36Entity *gOverlay36CurrentEntity;
 extern Overlay36State *gOverlay36CurrentState;
-extern s32 gOverlay36CurrentValue;
+extern s32 D_80078F20;
 
-extern void overlay36ExpireReloc(void);
-extern void overlay36UpdateReloc(Overlay36Entity *entity, s32 elapsed);
-extern void overlay36ApplyPositionReloc(s32 value, u8 mode, f32 *x, f32 *y,
+extern void func_80006EA0(void);
+extern void partUpdateTriggers(Overlay36Entity *entity, s32 elapsed);
+extern void overlay36QueueAction(s32 value, u8 mode, f32 *x, f32 *y,
                                         f32 *z);
 extern s32 overlay36QueryReloc(f32 x, f32 y, f32 z, f32 radius, s32 one,
                                Overlay36Found **found);
-extern void overlay36CreateEffectReloc(u16 kind, f32 x, f32 y, f32 z,
+extern void amSndPlayXYZ(u16 kind, f32 x, f32 y, f32 z,
                                        s32 mode, void *owner);
 extern void overlay36ReleaseEntityReloc(Overlay36Entity *entity);
-extern void overlay36AnimateReloc(void *resource, s32 *mode, s32 count,
+extern void texAnimateSprite(void *resource, s32 *mode, s32 count,
                                   void *angles, s32 elapsed);
 
 /* Matched (lane c-ovla, 2026-10-07) from the a-ovl3 natural rewrite by:
@@ -129,7 +129,7 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
         temp = state->countdownB;
         if (elapsed >= state->countdownB) {
             state->countdownB = 0;
-            overlay36ExpireReloc();
+            func_80006EA0();
             return;
         }
         if (temp != 0xFF) {
@@ -138,7 +138,7 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
     }
 
     kind = entity->kind46;
-    if (gOverlay36RemapEnabled != 0) {
+    if (D_8007BF0C != 0) {
         if (kind == 0xEA) {
             kind = 0x1B;
         }
@@ -189,18 +189,18 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
     entity->scale8 = (*(f32 *)entity->model40 * (f32)state->alphaA) * 0.0078125f;
     if ((s8)entity->model40[entity->modelIndex93 + 0x1E] == 1) {
         animation = 9;
-        overlay36AnimateReloc(*entity->resource68, &animation, 0x14,
+        texAnimateSprite(*entity->resource68, &animation, 0x14,
                               (u8 *)entity + 0x28, elapsed);
     } else {
         entity->angle0 += elapsed << 8;
     }
 
     if (entity->update80 != 0) {
-        overlay36UpdateReloc(entity, elapsed);
+        partUpdateTriggers(entity, elapsed);
     }
 
     if (state->usePosition7 != 0) {
-        overlay36ApplyPositionReloc(state->value0, state->positionMode8,
+        overlay36QueueAction(state->value0, state->positionMode8,
                                     &entity->xC, &entity->y10, &entity->z14);
         return;
     }
@@ -217,9 +217,9 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
         return;
     }
     if (state->timer4 != 0) {
-        gOverlay36CurrentValue = state->value0;
+        D_80078F20 = state->value0;
     } else {
-        gOverlay36CurrentValue = 0;
+        D_80078F20 = 0;
     }
 
     if (overlay36QueryReloc(entity->xC, entity->y10, entity->z14,
@@ -236,7 +236,7 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
                     record->alternateCallbackC(hit, entity);
                 }
                 if (record->alternateEffect1E != 0) {
-                    overlay36CreateEffectReloc(record->alternateEffect1E,
+                    amSndPlayXYZ(record->alternateEffect1E,
                                                entity->xC, entity->y10,
                                                entity->z14, 4, 0);
                 }
@@ -247,7 +247,7 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
                                             record->callbackArg2);
                 }
                 if (record->normalEffect1C != 0) {
-                    overlay36CreateEffectReloc(record->normalEffect1C,
+                    amSndPlayXYZ(record->normalEffect1C,
                                                entity->xC, entity->y10,
                                                entity->z14, 4, 0);
                 }

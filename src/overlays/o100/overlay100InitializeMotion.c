@@ -1,11 +1,11 @@
 #include "overlays/o100/motion.h"
 
-extern s32 gOverlay100CountReloc;
+extern s32 D_80079278;
 extern Overlay100Motion *gOverlay100EntriesReloc[];
 extern f32 gOverlay100VelocityScaleReloc[];
-extern void *overlay100AllocReloc(s32 size, s32 tag);
-extern s32 overlay100RandomReloc(s32 minimum, s32 maximum);
-extern void overlay100InitVelocityReloc(s16 *angles, Overlay100Vec3 *velocity);
+extern void *mmAlloc(s32 size, s32 tag);
+extern s32 func_800299E8(s32 minimum, s32 maximum);
+extern void mathOneFloatPY(s16 *angles, Overlay100Vec3 *velocity);
 
 Overlay100Motion *overlay100InitializeMotion(
     f32 x, f32 y, f32 z, s32 count, s32 colorB0, s32 colorB1, s32 colorB2,
@@ -18,12 +18,12 @@ Overlay100Motion *overlay100InitializeMotion(
     s32 velocityBytes;
     f32 velocityScale;
 
-    if (gOverlay100CountReloc >= 16) {
+    if (D_80079278 >= 16) {
         return 0;
     }
 
     velocityBytes = count * (s32)sizeof(Overlay100Vec3);
-    motion = overlay100AllocReloc(sizeof(Overlay100Motion) + velocityBytes * 4,
+    motion = mmAlloc(sizeof(Overlay100Motion) + velocityBytes * 4,
                                   0x87);
     if (motion != 0) {
         motion->bank = 1;
@@ -44,11 +44,11 @@ Overlay100Motion *overlay100InitializeMotion(
         if (remaining--) {
             velocityScale = gOverlay100VelocityScaleReloc[0];
             do {
-                angles[0] = overlay100RandomReloc(0, 0xFFFF);
-                angles[1] = overlay100RandomReloc(0, 0xFFFF);
+                angles[0] = func_800299E8(0, 0xFFFF);
+                angles[1] = func_800299E8(0, 0xFFFF);
                 velocity->z =
-                    -(f32)overlay100RandomReloc(0x180, 0x7F) * velocityScale;
-                overlay100InitVelocityReloc(angles, velocity);
+                    -(f32)func_800299E8(0x180, 0x7F) * velocityScale;
+                mathOneFloatPY(angles, velocity);
                 velocity++;
             } while (remaining--);
         }
@@ -69,8 +69,8 @@ Overlay100Motion *overlay100InitializeMotion(
             }
         } while (frameIndex != 3);
 
-        gOverlay100EntriesReloc[gOverlay100CountReloc] = motion;
-        gOverlay100CountReloc++;
+        gOverlay100EntriesReloc[D_80079278] = motion;
+        D_80079278++;
     }
     return motion;
 }

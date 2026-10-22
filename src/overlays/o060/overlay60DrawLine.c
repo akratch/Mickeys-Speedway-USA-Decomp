@@ -5,7 +5,7 @@ typedef struct Overlay60Command {
     u32 w1;
 } Overlay60Command;
 
-extern Overlay60Command *gOverlay60DisplayList;
+extern Overlay60Command *D_800D3140;
 
 #define OVERLAY60_SHIFTL(value, shift, width) \
     (((u32)(value) & ((1U << (width)) - 1U)) << (shift))
@@ -24,10 +24,10 @@ extern Overlay60Command *gOverlay60DisplayList;
 /* DKR v77/v80 and JFG have no exact donor; DKR borders.c confirms the idiom. */
 void overlay60DrawLine(s32 left, s32 top, s32 right, s32 bottom) {
     if (left == right) {
-        OVERLAY60_FILL_RECTANGLE(gOverlay60DisplayList++, left, top, right + 1,
+        OVERLAY60_FILL_RECTANGLE(D_800D3140++, left, top, right + 1,
                                  bottom);
     } else {
-        OVERLAY60_FILL_RECTANGLE(gOverlay60DisplayList++, left, top, right,
+        OVERLAY60_FILL_RECTANGLE(D_800D3140++, left, top, right,
                                  bottom + 1);
     }
 }

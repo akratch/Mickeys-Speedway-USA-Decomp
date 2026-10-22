@@ -45,7 +45,7 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
         state->primaryState = 4;
     }
 
-    gO27Active = 1;
+    D_8007A1E4 = 1;
     initialPhase = 9;
     texAnimateSprite(*object->updateResource, &initialPhase, 10, &object->reserved30[-8],
                   updateRate);

@@ -37,9 +37,9 @@ extern s32 D_C;
 
 /* Resident display-list, matrix and vertex cursors, reached through runtime
  * relocation records and passed by address. */
-extern Overlay46DisplayCommand *gDisplayListHead;
-extern void *gOverlay46MatrixHead;
-extern void *gOverlay46VertexHead;
+extern Overlay46DisplayCommand *D_800D3140;
+extern void *D_800D3144;
+extern void *D_800D3148;
 
 extern void func_80037658(void);
 extern void texDPInit(void *commands);
@@ -90,8 +90,8 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
 
     func_80037658();
     result = 1;
-    texDPInit(&gDisplayListHead);
-    camStandardOrtho(&gDisplayListHead, &gOverlay46MatrixHead);
+    texDPInit(&D_800D3140);
+    camStandardOrtho(&D_800D3140, &D_800D3144);
 
     count = 0x12;
     do {
@@ -249,29 +249,29 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
     fontBackground(0, 0, 0, 0);
     if (D_10 != 0) {
         func_8004B0B8(0xFF, 0xFF, 0xFF, 0xFF, D_10);
-        fontPrintXY(&gDisplayListHead, 0xA0, 0xAC, "< 2000 Disney",
+        fontPrintXY(&D_800D3140, 0xA0, 0xAC, "< 2000 Disney",
                                 0xC);
     }
     if (D_14 != 0) {
         func_8004B0B8(0xFF, 0xFF, 0xFF, 0xFF, D_14);
-        fontPrintXY(&gDisplayListHead, 0xA0, 0xB6, "Licensed to Nintendo",
+        fontPrintXY(&D_800D3140, 0xA0, 0xB6, "Licensed to Nintendo",
                                 0xC);
     }
     if (D_18 != 0) {
-        func_8002F618(&gDisplayListHead, D_2C, 0xA0, 0xCC,
+        func_8002F618(&D_800D3140, D_2C, 0xA0, 0xCC,
                                   0xFF, 0xFF, 0xFF, D_18);
     }
 
-    texDPInit(&gDisplayListHead);
-    O46_PRIM(gDisplayListHead++, 255, 255, 255, 255);
+    texDPInit(&D_800D3140);
+    O46_PRIM(D_800D3140++, 255, 255, 255, 255);
 
     count = 0;
     do {
         particle = particlesByVariant[count++];
         if (particle != NULL) {
             camDo2DSprite(
-                &gDisplayListHead, &gOverlay46MatrixHead,
-                &gOverlay46VertexHead, particle, particle->resource38,
+                &D_800D3140, &D_800D3144,
+                &D_800D3148, particle, particle->resource38,
                 0x8001, 0xFF);
         }
     } while (count != 19);

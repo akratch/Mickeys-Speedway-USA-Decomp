@@ -6,7 +6,7 @@ typedef struct Overlay99Entry {
 } Overlay99Entry;
 
 extern Overlay99Entry gOverlay99Entries[];
-extern void overlay99ReleaseReloc(void *resource);
+extern void func_80006EA0(void *resource);
 
 /* DKR v77/v80 and JFG checks found only generic resource-array cleanup. */
 void overlay99ReleaseEntries(void) {
@@ -15,7 +15,7 @@ void overlay99ReleaseEntries(void) {
 
     do {
         if (entry->resource != NULL) {
-            overlay99ReleaseReloc(entry->resource);
+            func_80006EA0(entry->resource);
             entry->resource = NULL;
         }
         entry++;

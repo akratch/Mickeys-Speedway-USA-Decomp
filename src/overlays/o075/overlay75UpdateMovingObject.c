@@ -71,23 +71,23 @@ typedef struct Overlay75Object {
 
 extern s32 gOverlay75SlotFlags[];
 extern f32 gOverlay75ThresholdReloc[];
-extern f32 overlay75Sin(s16 angle);
-extern f32 overlay75Cos(s16 angle);
-extern void overlay75MoveReloc(Overlay75Object *object, f32 x, f32 y, f32 z);
-extern s32 overlay75TransitionReloc(Overlay75Object *object, f32 rate, f32 tick);
-extern void overlay75RefreshModelReloc(Overlay75Model *model, void *entity,
+extern f32 func_8002A8C0(s16 angle);
+extern f32 func_8002A8BC(s16 angle);
+extern void func_80008128(Overlay75Object *object, f32 x, f32 y, f32 z);
+extern s32 func_8005ABA8(Overlay75Object *object, f32 rate, f32 tick);
+extern void func_8005AF14(Overlay75Model *model, void *entity,
                                        Overlay75Object *object);
-extern void overlay75BindModelReloc(Overlay75Object *object, Overlay75Model *model,
+extern void lightObject(Overlay75Object *object, Overlay75Model *model,
                                     void *renderResource, void *tableEntry);
-extern void overlay75CreateHandleReloc(s32 id, u32 x, u32 y, u32 z,
+extern void amSndPlayXYZ(s32 id, u32 x, u32 y, u32 z,
                                        s32 mode, void **output);
-extern void overlay75SpawnCompletionReloc(f32 x, f32 y, f32 z, f32 scale,
+extern void camScreenShake(f32 x, f32 y, f32 z, f32 scale,
                                           f32 lifetime);
-extern void overlay75UpdateHandleReloc(void *handle, u32 x, u32 y, u32 z);
-extern void overlay75ReleaseHandleReloc(void *handle);
+extern void amSndSetXYZ(void *handle, u32 x, u32 y, u32 z);
+extern void amSndStopXYZ(void *handle);
 extern void overlay75PlayEventReloc(u16 eventId, u32 x, u32 y, u32 z, s32 mode,
                                     s32 flags);
-extern void overlay75FinishUpdateReloc(Overlay75Object *object, s32 updateRate);
+extern void partUpdateTriggers(Overlay75Object *object, s32 updateRate);
 
 #define O75_FLOAT_BITS(value) (*(u32 *)&(value))
 
@@ -162,13 +162,13 @@ void overlay75UpdateMovingObject(Overlay75Object *object,
                 state->progress28 = limit;
                 state->phase04 = 1;
             } else {
-                locals.moveX = -(overlay75Sin(object->angle00) * locals.delta);
-                moveZ = -(overlay75Cos(object->angle00) * locals.delta);
+                locals.moveX = -(func_8002A8C0(object->angle00) * locals.delta);
+                moveZ = -(func_8002A8BC(object->angle00) * locals.delta);
             }
-            overlay75MoveReloc(object, locals.moveX, 0.0f, moveZ);
+            func_80008128(object, locals.moveX, 0.0f, moveZ);
         } else if (state->phase04 == 1) {
             locals.previous = object->transitionValue28;
-            if (overlay75TransitionReloc(object,
+            if (func_8005ABA8(object,
                               state->advanceRate08 / 1000.0f,
                               tick) != 0) {
                 state->phase04 = 2;
@@ -195,7 +195,7 @@ void overlay75UpdateMovingObject(Overlay75Object *object,
                 state->phase04 = 3;
             }
         } else if (state->phase04 == 3) {
-            if (overlay75TransitionReloc(object,
+            if (func_8005ABA8(object,
                               -(state->retractRate0C / 1000.0f),
                               tick) != 0) {
                 state->phase04 = 4;
@@ -212,30 +212,30 @@ void overlay75UpdateMovingObject(Overlay75Object *object,
                 state->phase04 = 0;
                 state->active02 = 0;
             } else {
-                locals.moveX = overlay75Sin(object->angle00) * locals.delta;
-                moveZ = overlay75Cos(object->angle00) * locals.delta;
+                locals.moveX = func_8002A8C0(object->angle00) * locals.delta;
+                moveZ = func_8002A8BC(object->angle00) * locals.delta;
                 locals.moved = 1;
             }
-            overlay75MoveReloc(object, locals.moveX, 0.0f, moveZ);
+            func_80008128(object, locals.moveX, 0.0f, moveZ);
         }
 
-        overlay75RefreshModelReloc(locals.model, locals.savedEntity, object);
-        overlay75BindModelReloc(object, locals.model, object->renderResource50,
+        func_8005AF14(locals.model, locals.savedEntity, object);
+        lightObject(object, locals.model, object->renderResource50,
                       locals.model->table0C[locals.model->tableIndex0A]);
         locals.model->field08 = 0;
 
         if (locals.moved != 0 && state->effectHandle3C == 0) {
-            overlay75CreateHandleReloc(0x1BA, O75_FLOAT_BITS(locals.position->x),
+            amSndPlayXYZ(0x1BA, O75_FLOAT_BITS(locals.position->x),
                                        O75_FLOAT_BITS(locals.position->y),
                                        O75_FLOAT_BITS(locals.position->z), 1,
                                        &state->effectHandle3C);
         } else if (locals.moved != 0 && state->effectHandle3C != 0) {
-            overlay75UpdateHandleReloc(state->effectHandle3C,
+            amSndSetXYZ(state->effectHandle3C,
                           O75_FLOAT_BITS(locals.position->x),
                           O75_FLOAT_BITS(locals.position->y),
                           O75_FLOAT_BITS(locals.position->z));
         } else if (locals.moved == 0 && state->effectHandle3C != 0) {
-            overlay75ReleaseHandleReloc(state->effectHandle3C);
+            amSndStopXYZ(state->effectHandle3C);
         }
 
         if (locals.eventId != -1) {
@@ -245,12 +245,12 @@ void overlay75UpdateMovingObject(Overlay75Object *object,
                           O75_FLOAT_BITS(locals.position->z), 4, 0);
         }
         if (locals.completed != 0) {
-            overlay75SpawnCompletionReloc(locals.position->x,
+            camScreenShake(locals.position->x,
                                            locals.position->y,
                                            locals.position->z,
                                            600.0f, 20.0f);
             object->eventFlags80 |= 1;
-            overlay75FinishUpdateReloc(object, updateRate);
+            partUpdateTriggers(object, updateRate);
         }
     }
 

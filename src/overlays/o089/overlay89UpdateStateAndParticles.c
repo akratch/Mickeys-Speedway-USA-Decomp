@@ -51,14 +51,14 @@ typedef struct Overlay89Particle {
 } Overlay89Particle;
 
 extern f32 gOverlay89RandomScale[];
-extern void overlay89UpdateReloc(void *object, Overlay89EffectState *state,
+extern void overlay89Update(void *object, Overlay89EffectState *state,
                                  s32 updateRate);
-extern void overlay89SetPrimaryReloc(void *handle, u8 value);
-extern void overlay89SetColorReloc(void *handle, u8 red, u8 green, u8 blue,
+extern void changeLightIntensity(void *handle, u8 value);
+extern void trackLightColour(void *handle, u8 red, u8 green, u8 blue,
                                    s32 intensity);
-extern s32 overlay89RandomReloc(s32 minimum, s32 maximum);
-extern s32 overlay34SpawnReloc(Overlay89Particle *particle);
-extern void overlay89MaintainReloc(Overlay89Object *object,
+extern s32 mathRnd(s32 minimum, s32 maximum);
+extern s32 overlay34CreateRecord(Overlay89Particle *particle);
+extern void overlay89UpdateEffect(Overlay89Object *object,
                                    Overlay89EffectState *state);
 
 /* DKR v77/v80 and JFG contain no exact donor for this state updater. */
@@ -88,7 +88,7 @@ void overlay89UpdateStateAndParticles(Overlay89Object *object,
     state = object->state;
     primaryHandle = state->primaryHandle;
     secondaryHandle = state->secondaryHandle;
-    overlay89UpdateReloc(object, state, updateRate);
+    overlay89Update(object, state, updateRate);
 
     if (state->frozen == 0) {
         if (state->timer != 0) {
@@ -97,10 +97,10 @@ void overlay89UpdateStateAndParticles(Overlay89Object *object,
                 state->timer = 0;
                 object->active = 0;
                 if (primaryHandle != NULL) {
-                    overlay89SetPrimaryReloc(primaryHandle, state->intensity);
+                    changeLightIntensity(primaryHandle, state->intensity);
                 }
                 if (secondaryHandle != NULL) {
-                    overlay89SetColorReloc(secondaryHandle, state->red,
+                    trackLightColour(secondaryHandle, state->red,
                                            state->green, state->blue,
                                            state->intensity);
                 }
@@ -122,28 +122,28 @@ void overlay89UpdateStateAndParticles(Overlay89Object *object,
                         randomScale = gOverlay89RandomScale[2];
                         do {
                             particle.angleA =
-                                overlay89RandomReloc(-0x2000, 0x2000) +
+                                mathRnd(-0x2000, 0x2000) +
                                 object->angleA;
                             particle.angleB =
-                                overlay89RandomReloc(-0x2000, 0x2000) +
+                                mathRnd(-0x2000, 0x2000) +
                                 object->angleB;
                             particle.speed =
-                                overlay89RandomReloc(10, 20) * randomScale;
+                                mathRnd(10, 20) * randomScale;
                             particle.size =
-                                overlay89RandomReloc(12, 25) * randomScale;
-                            overlay34SpawnReloc(&particle);
+                                mathRnd(12, 25) * randomScale;
+                            overlay34CreateRecord(&particle);
                         } while (count--);
                     }
                 }
             }
         } else {
             object->active = 1;
-            state->timer = overlay89RandomReloc(30, 480);
+            state->timer = mathRnd(30, 480);
             if (primaryHandle != NULL) {
-                overlay89SetPrimaryReloc(primaryHandle, 0);
+                changeLightIntensity(primaryHandle, 0);
             }
             if (secondaryHandle != NULL) {
-                overlay89SetColorReloc(secondaryHandle, state->red,
+                trackLightColour(secondaryHandle, state->red,
                                        state->green, state->blue, 0);
             }
         }
@@ -152,7 +152,7 @@ void overlay89UpdateStateAndParticles(Overlay89Object *object,
     do { } while (0);
     do { } while (0);
     if (secondaryHandle != NULL) {
-        overlay89MaintainReloc(object, state);
+        overlay89UpdateEffect(object, state);
     }
     object->clearWord = 0;
 }

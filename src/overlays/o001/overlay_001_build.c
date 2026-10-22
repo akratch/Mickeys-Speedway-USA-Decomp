@@ -43,8 +43,8 @@ typedef struct Overlay1PointRecord {
     Overlay1GeneratedPoint points[8];
 } Overlay1PointRecord;
 
-extern f32 overlay1PointComponent0Reloc(s32 angle);
-extern f32 overlay1PointComponent1Reloc(s32 angle);
+extern f32 func_8002A8C0(s32 angle);
+extern f32 func_8002A8BC(s32 angle);
 
 void overlay1BuildPointRecord(Overlay1PointRecord *output,
                               const Overlay1PointTemplate *source,
@@ -58,8 +58,8 @@ void overlay1BuildPointRecord(Overlay1PointRecord *output,
 
     (void)unused;
 
-    angleComponent0 = overlay1PointComponent0Reloc(source->angle);
-    angleComponent1 = overlay1PointComponent1Reloc(source->angle);
+    angleComponent0 = func_8002A8C0(source->angle);
+    angleComponent1 = func_8002A8BC(source->angle);
 
     if (source->flags & 2) {
         scale = -16.0f;

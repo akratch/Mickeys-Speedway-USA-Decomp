@@ -9,9 +9,9 @@ typedef struct Overlay52Entry {
 } Overlay52Entry;
 
 extern s16 gOverlay52Offsets[];
-extern s32 overlay52QueryPrimaryModeReloc(Overlay52Entry *source,
+extern s32 frontGet2PlayerSplit(Overlay52Entry *source,
                                           Overlay52Entry *destination);
-extern s32 overlay52QuerySecondaryModeReloc(Overlay52Entry *source,
+extern s32 frontGetScreenMode(Overlay52Entry *source,
                                             Overlay52Entry *destination);
 
 void overlay52CopyOffsetEntries(Overlay52Entry *source,
@@ -21,9 +21,9 @@ void overlay52CopyOffsetEntries(Overlay52Entry *source,
     s16 yOffset;
 
     index *= 4;
-    if (overlay52QueryPrimaryModeReloc(source, destination) != 0) {
+    if (frontGet2PlayerSplit(source, destination) != 0) {
         index += 0x14;
-    } else if (overlay52QuerySecondaryModeReloc(source, destination) & 1) {
+    } else if (frontGetScreenMode(source, destination) & 1) {
         index += 0x28;
     }
 

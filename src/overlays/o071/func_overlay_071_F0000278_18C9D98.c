@@ -45,7 +45,7 @@ typedef struct O71Object {
 } O71Object;
 
 extern s32 gOverlay71InitialResourceReloc;
-extern u8 gOverlay71GlobalFlagReloc;
+extern u8 D_80079274;
 extern void SetLinkSlot(s32 slot, u16 tag, u16 useCount);
 extern f32 sqrtf(f32 value);
 
@@ -74,7 +74,7 @@ void func_overlay_071_F0000278_18C9D98(O71Object *object) {
     halfX = state->extentX * state->scaleX * 0.5f;
     halfY = state->extentY * state->scaleY * 0.5f;
     if ((halfX != 0.0f) && (halfY != 0.0f)) {
-        gOverlay71GlobalFlagReloc = 1;
+        D_80079274 = 1;
         points[0].x = -halfX;
         points[0].y = halfY;
         points[0].z = 0.0f;

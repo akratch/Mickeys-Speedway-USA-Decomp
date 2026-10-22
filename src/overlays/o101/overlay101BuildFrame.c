@@ -8,7 +8,7 @@ typedef struct Overlay101FrameRect {
     s32 color;
 } Overlay101FrameRect;
 
-extern void overlay101BuilderCreateReloc(s32, s32, Overlay101FrameRect *, s32);
+extern void frontDrawRectangles(s32, s32, Overlay101FrameRect *, s32);
 
 /* DKR v77/v80 and JFG have no exact donor for this four-rectangle builder. */
 void overlay101BuildFrame(s32 kind, s32 x, s32 y, s32 width, s32 height,
@@ -39,5 +39,5 @@ void overlay101BuildFrame(s32 kind, s32 x, s32 y, s32 width, s32 height,
     rect->y1 = y + 1;
     rect->color = color;
 
-    overlay101BuilderCreateReloc(kind, 4, batch, 0);
+    frontDrawRectangles(kind, 4, batch, 0);
 }

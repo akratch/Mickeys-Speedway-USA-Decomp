@@ -14,7 +14,7 @@ void overlay39Write(u8 *source, struct OSMesgQueue_s *mq) {
     u32 offset;
     u32 fill;
 
-    buffer = gOverlay39Buffer;
+    buffer = D_8007A204;
     for (offset = 0, fill = 0xFF; ;) {
         buffer[offset++] = fill;
         if (offset >= 0x2E) {
@@ -29,23 +29,23 @@ void overlay39Write(u8 *source, struct OSMesgQueue_s *mq) {
         buffer[offset + 0x32] = source[offset + 2];
         buffer[offset + 0x33] = source[offset + 3];
     }
-    overlay39BeginReloc();
-    gOverlay39State = 0xFE;
+    __osSiGetAccess();
+    __osContLastCmd = 0xFE;
     overlay39SendReloc(buffer, 0x40);
-    overlay39SelectReloc(1, buffer);
-    overlay39FinishReloc();
+    __osSiRawStartDma(1, buffer);
+    __osSiRelAccess();
 }
 
 void overlay39Reset(struct OSMesgQueue_s *mq) {
-    overlay39BeginReloc();
-    gOverlay39State = 0xFE;
-    overlay39SendReloc(gOverlay39Buffer, 0x40);
-    overlay39SelectReloc(0, gOverlay39Buffer);
-    overlay39FinishReloc();
+    __osSiGetAccess();
+    __osContLastCmd = 0xFE;
+    overlay39SendReloc(D_8007A204, 0x40);
+    __osSiRawStartDma(0, D_8007A204);
+    __osSiRelAccess();
 }
 
 void overlay39Read(u8 *destination) {
-    u8 *buffer = gOverlay39Buffer;
+    u8 *buffer = D_8007A204;
     s32 offset;
 
     for (offset = 0; offset != 0x10; offset += 4) {

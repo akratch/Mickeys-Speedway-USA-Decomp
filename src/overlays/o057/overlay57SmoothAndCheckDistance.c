@@ -21,14 +21,14 @@ extern s32 gO57Tail2C28QueryWord180;
 extern s32 gO57Tail2C28Timer118;
 extern s32 gO57Tail2C28Completion50C;
 
-extern void o57Tail2C28ResetReloc(s32 value);
-extern O57Tail2C28Position *o57Tail2C28GetPositionReloc(void);
-extern void o57Tail2C28EmitReloc(s32 type, u32 scaleBits, u32 valueBits,
+extern void camSetNo(s32 value);
+extern O57Tail2C28Position *camGetPtr(void);
+extern void func_800498FC(s32 type, u32 scaleBits, u32 valueBits,
                                  s32 arg3, s32 arg4, s32 arg5, s32 arg6);
-extern void *o57Tail2C28QueryReloc(s32 value);
-extern void o57Tail2C28StartReloc(s32 type, s32 arg1, s32 arg2, s32 mode,
+extern void *overlay41IsUnitScale(s32 value);
+extern void mainChangeLevel(s32 type, s32 arg1, s32 arg2, s32 mode,
                                   s32 arg4, s32 arg5);
-extern void o57Tail2C28FinishReloc(void);
+extern void overlay84Mark(void);
 
 /* Overlay 57 text +0x2C28..+0x2F48. Exact: 200 words, frame 0x30, 24/24
  * relocation identities.
@@ -61,8 +61,8 @@ void overlay57SmoothAndCheckDistance(s32 smoothingSteps) {
         } while (i != smoothingSteps);
     }
 
-    o57Tail2C28ResetReloc(0);
-    position = o57Tail2C28GetPositionReloc();
+    camSetNo(0);
+    position = camGetPtr();
     reference = gO57Tail2C28Reference14C;
     if (reference != NULL) {
         dx = reference->x - position->x;
@@ -70,15 +70,15 @@ void overlay57SmoothAndCheckDistance(s32 smoothingSteps) {
         dz = reference->z - position->z;
         if (((dx * dx) + (dy * dy)) + (dz * dz) <
             gO57Tail2C28DistanceLimit104) {
-            o57Tail2C28EmitReloc(4, 0x3EAE147B, 0xBF800000,
+            func_800498FC(4, 0x3EAE147B, 0xBF800000,
                                  0, 0, 0, 0);
         }
     }
 
-    if (o57Tail2C28QueryReloc(gO57Tail2C28QueryWord180) != NULL) {
+    if (overlay41IsUnitScale(gO57Tail2C28QueryWord180) != NULL) {
         gO57Tail2C28Timer118 = 0x11;
-        o57Tail2C28StartReloc(0x1D, 0, 0, 9, 1, 0);
+        mainChangeLevel(0x1D, 0, 0, 9, 1, 0);
         gO57Tail2C28Completion50C = 1;
-        o57Tail2C28FinishReloc();
+        overlay84Mark();
     }
 }

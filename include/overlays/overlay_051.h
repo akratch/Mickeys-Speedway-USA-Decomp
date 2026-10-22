@@ -14,7 +14,7 @@ typedef struct Overlay51Glyph {
     s16 y;
 } Overlay51Glyph;
 
-extern void *gOverlay51Objects[];
+extern void *D_800D31C8[];
 extern u8 gOverlay51Resource0[];
 extern u8 gOverlay51Resource18[];
 extern Overlay51Glyph gOverlay51TimeGlyphs[10];
@@ -27,10 +27,10 @@ extern f32 gOverlay51HudHeight;
 extern s16 gOverlay51Handle;
 
 s32 overlay51CreateReloc();
-void overlay51PrepareReloc();
-void overlay51ReleaseReloc(void *resource);
-void overlay51FinalizeReloc(void);
-void overlay51ReleaseIndexReloc(s32 index);
+void overlay51PatchIndices();
+void freeFrontEndList(void *resource);
+void overlay56ReleaseResource(void);
+void freeFrontEndItem(s32 index);
 
 void overlay51Initialize(void);
 void overlay51PatchIndices(OverlayPatchIndexEntry *entry);

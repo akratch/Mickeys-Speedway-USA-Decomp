@@ -84,7 +84,7 @@ typedef struct Overlay29TailLinkedObject {
 
 extern Overlay29TailDirection *gOverlay29Base1;
 extern Overlay29TailDirection *gOverlay29Base2;
-extern u8 D_EE0[];
+extern u8 func_overlay_029_F0000EE0_187E190[];
 
 extern void overlay29BuildChain(Overlay29TailObject *object);
 extern void overlay29UpdateRatio(Overlay29TailObject *object,
@@ -96,10 +96,10 @@ extern void overlay29RotateBackward(s32 count);
 extern void overlay29Select(s32 index);
 extern void func_overlay_029_F00010C4_187E374Reloc(Overlay29TailObject *object,
                                                    s32 effect);
-extern s32 overlay29TestDirectionReloc(Overlay29TailDirection *direction,
+extern s32 overlay1TestDirection(Overlay29TailDirection *direction,
                                        f32 x, f32 z);
-extern Overlay29TailLinkedObject *overlay29FindPreviousAngleReloc(f32 angle);
-extern void overlay29RecordMinimumReloc(s32 index, f32 distance);
+extern Overlay29TailLinkedObject *overlay1FindPreviousAngle(f32 angle);
+extern void overlay37RecordMinimum(s32 index, f32 distance);
 extern void func_80006EA0(Overlay29TailObject *object);
 extern void partUpdateTriggers(Overlay29TailObject *object, s32 updateRate);
 extern f32 sqrtf(f32 value);
@@ -252,21 +252,21 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
         linked = NULL;
         useLinkedPosition = 0;
     } else {
-        if (overlay29TestDirectionReloc(gOverlay29Base2, object->position.x,
+        if (overlay1TestDirection(gOverlay29Base2, object->position.x,
                                               object->position.z) != 0) {
             overlay29RotateForward(1);
             state->selection0 = gOverlay29Base2->selection;
             state->selection1 = gOverlay29Base1->selection;
-        } else if (overlay29TestDirectionReloc(
+        } else if (overlay1TestDirection(
                        gOverlay29Base1, object->position.x, object->position.z) == 0) {
             overlay29RotateBackward(1);
             state->selection0 = gOverlay29Base2->selection;
             state->selection1 = gOverlay29Base2->selection;
         }
         overlay29UpdateRatio(object, state);
-        linked = overlay29FindPreviousAngleReloc(state->referenceAngle);
+        linked = overlay1FindPreviousAngle(state->referenceAngle);
         if (linked == (Overlay29TailLinkedObject *)state->owner) {
-            linked = overlay29FindPreviousAngleReloc(linked->state->angle);
+            linked = overlay1FindPreviousAngle(linked->state->angle);
         }
         if (linked != NULL) {
             linkedEntity = linked->entity;
@@ -349,7 +349,7 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
     radius = 8.0f;
     trackMakePolylist(1, &oldPosition, &object->position, &radius, NULL, 0);
     if ((func_80010900(&oldPosition, &object->position, radius, object,
-                       D_EE0) != 0) &&
+                       func_overlay_029_F0000EE0_187E190) != 0) &&
         (state->collisionFlags & 4)) {
         state->pendingEffect = 1;
     }
@@ -362,6 +362,6 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
         dy = entity->position.y - linkedEntity->position.y;
         dz = entity->position.z - linkedEntity->position.z;
         distance = sqrtf(dx * dx + dy * dy + dz * dz);
-        overlay29RecordMinimumReloc(linkedState->index, distance);
+        overlay37RecordMinimum(linkedState->index, distance);
     }
 }

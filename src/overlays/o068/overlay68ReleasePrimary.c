@@ -1,10 +1,10 @@
 /* DKR v77/v80 has generic release wrappers only, with no exact donor. */
-extern void *gOverlay68Primary;
-extern void overlay68ReleaseReloc(void *resource);
+extern void *D_8007A1F4;
+extern void mmFree(void *resource);
 
 void overlay68ReleasePrimary(void) {
-    if (gOverlay68Primary != 0) {
-        overlay68ReleaseReloc(gOverlay68Primary);
+    if (D_8007A1F4 != 0) {
+        mmFree(D_8007A1F4);
     }
-    gOverlay68Primary = 0;
+    D_8007A1F4 = 0;
 }

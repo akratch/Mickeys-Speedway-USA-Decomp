@@ -9,17 +9,17 @@ typedef struct {
     void *resource1AC;
 } Overlay11Resources;
 
-extern Overlay11Resources *gOverlay11Resources;
+extern Overlay11Resources *D_8007C0B8;
 extern void *gOverlay11Created0;
 extern void *gOverlay11Created1;
 extern void *gOverlay11Created2;
 extern s32 gOverlay11CreatedActive;
-extern void *overlay11CreateReloc(void *resource, s32 x, s32 y, s32 mode);
+extern void *overlay45CreateDescriptor(void *resource, s32 x, s32 y, s32 mode);
 
 /* DKR v77/v80 and JFG have only generic fixed-resource creation idioms. */
 void overlay11InitializeThreeA(void) {
-    gOverlay11Created0 = overlay11CreateReloc(gOverlay11Resources->resource1AC, 160, 40, 4);
-    gOverlay11Created1 = overlay11CreateReloc(gOverlay11Resources->resource19C, 160, 110, 4);
-    gOverlay11Created2 = overlay11CreateReloc(gOverlay11Resources->resource50, 160, 140, 4);
+    gOverlay11Created0 = overlay45CreateDescriptor(D_8007C0B8->resource1AC, 160, 40, 4);
+    gOverlay11Created1 = overlay45CreateDescriptor(D_8007C0B8->resource19C, 160, 110, 4);
+    gOverlay11Created2 = overlay45CreateDescriptor(D_8007C0B8->resource50, 160, 140, 4);
     gOverlay11CreatedActive = 1;
 }

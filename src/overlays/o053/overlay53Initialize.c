@@ -15,14 +15,14 @@ extern s32 gOverlay53Handles288[2];
 extern f32 gOverlay53Height290;
 extern u16 gOverlay53GlobalHandleReloc;
 
-extern void overlay53LoadResourceReloc(void *resource);
-extern void overlay53LoadTableReloc(void *table);
-extern void overlay53SetModeReloc(s32 mode);
-extern void overlay53SetTypeReloc(s32 type);
-extern void overlay53FinalizeReloc(void);
-extern s32 overlay53AcquireHandleReloc(void);
+extern void loadFrontEndList(void *resource);
+extern void setupFrontEndList(void *table);
+extern void amTunePlay(s32 mode);
+extern void runlinkDownloadCode(s32 type);
+extern void overlay56LoadResource(void);
+extern s32 levelGetNumber(void);
 extern void overlay53PatchIndices(void *table);
-extern void overlay53InitializeConfig(void *table, Overlay53Config *config,
+extern void overlay53CopyOffsetEntries(void *table, Overlay53Config *config,
                                      s32 index, s32 mode);
 
 /* Pinned DKR v77/v80 and JFG scans classify Overlay 53 as no donor. */
@@ -31,24 +31,24 @@ void overlay53Initialize(void) {
     Overlay53Config *configB;
     s32 i;
 
-    overlay53LoadResourceReloc(gOverlay53Resource0);
-    overlay53LoadTableReloc(gOverlay53Resource14);
-    overlay53SetModeReloc(4);
+    loadFrontEndList(gOverlay53Resource0);
+    setupFrontEndList(gOverlay53Resource14);
+    amTunePlay(4);
     gOverlay53Value280 = 0x104;
-    overlay53SetTypeReloc(11);
+    runlinkDownloadCode(11);
     overlay53PatchIndices(gOverlay53PatchTableA);
     overlay53PatchIndices(gOverlay53PatchTableB);
 
     for (configA = gOverlay53ConfigA, configB = gOverlay53ConfigB, i = 0;
          i != 2;
          i++, configA++, configB++) {
-        overlay53InitializeConfig(gOverlay53PatchTableA, configA, i, 0);
-        overlay53InitializeConfig(gOverlay53PatchTableB, configB, i, 1);
+        overlay53CopyOffsetEntries(gOverlay53PatchTableA, configA, i, 0);
+        overlay53CopyOffsetEntries(gOverlay53PatchTableB, configB, i, 1);
     }
 
     gOverlay53Height290 = -80.0f;
-    overlay53FinalizeReloc();
+    overlay56LoadResource();
     gOverlay53Handles288[0] = -1;
     gOverlay53Handles288[1] = -1;
-    gOverlay53GlobalHandleReloc = overlay53AcquireHandleReloc();
+    gOverlay53GlobalHandleReloc = levelGetNumber();
 }

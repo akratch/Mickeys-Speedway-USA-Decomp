@@ -34,7 +34,7 @@ typedef struct Overlay97Config {
 extern f32 gOverlay97MinimumScale;
 extern f32 gOverlay97ScaleStep;
 extern f32 overlay97TrigAReloc(s16 angle);
-extern f32 overlay97TrigBReloc(s16 angle);
+extern f32 func_8002A8BC(s16 angle);
 
 void overlay97InitDirection(Overlay97Object *object, Overlay97Config *config) {
     Overlay97State *state;
@@ -51,10 +51,10 @@ void overlay97InitDirection(Overlay97Object *object, Overlay97Config *config) {
     object->angleB = (config->angleB & 0xFF) << 10;
 
     saved = overlay97TrigAReloc(object->angleA);
-    state->direction[0] = overlay97TrigBReloc(object->angleB) * saved;
+    state->direction[0] = func_8002A8BC(object->angleB) * saved;
     state->direction[1] = -overlay97TrigAReloc(object->angleB);
     saved = overlay97TrigAReloc(object->angleA);
-    state->direction[2] = overlay97TrigBReloc(object->angleB) * saved;
+    state->direction[2] = func_8002A8BC(object->angleB) * saved;
     state->offset = -((state->direction[2] * object->position[2]) +
                       ((state->direction[1] * object->position[1]) +
                        (object->position[0] * state->direction[0])));

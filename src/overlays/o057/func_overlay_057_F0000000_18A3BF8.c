@@ -87,7 +87,7 @@ extern s32 gO57Pending104Reloc;
 extern void *gO57Previous108Reloc;
 extern void *gO57Runtime1B8Reloc;
 extern void *gO57ResidentCurrentReloc;
-extern O57ResourceTable *gO57ResourceTableReloc;
+extern O57ResourceTable *D_8007C0B8;
 
 extern Overlay45ResourceDescriptor *gO57Descriptor00Reloc;
 extern Overlay45ResourceDescriptor *gO57Descriptor00PrepareReloc;
@@ -110,11 +110,11 @@ extern Overlay45ResourceDescriptor *gO57Descriptors58Reloc[5];
 extern Overlay45ResourceDescriptor *gO57DescriptorList80Reloc;
 extern s16 gO57DescriptorIndicesD8Reloc[9];
 extern s16 gO57DescriptorIndicesECReloc[9];
-extern s16 gO57DescriptorIndices100Reloc[24];
+extern s16 D_8007C11C[24];
 extern s16 gO57DescriptorIndices130Reloc[6];
 extern s16 gO57DescriptorList130Reloc;
 
-extern O57SeedData gO57SeedDataReloc;
+extern O57SeedData D_800D31C8;
 extern s32 gO57Value1FCReloc;
 extern s32 gO57Value21CReloc;
 extern s32 gO57Value23CReloc;
@@ -146,8 +146,8 @@ extern s16 gO57ColourCycle1A8Reloc;
 extern s32 gO57State118Reloc;
 extern O57ModeObject gO57ModeObject180Reloc;
 extern s32 gO57SpecialModeReloc;
-extern u8 gO57SpecialByteReloc;
-extern s32 gO57SpecialConditionReloc;
+extern u8 D_800D31B0;
+extern s32 D_8007C1A0;
 extern O57Choice gO57ChoicesReloc[4];
 extern u8 gO57ChoiceMaskReloc;
 extern u8 gO57ChoiceMaskReferenceReloc;
@@ -169,7 +169,7 @@ extern O57Thing *gO57Spawned150Reloc[4];
 extern void *func_80028F54(void);
 extern void fontUseFont(s32 font);
 extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha, s32 opacity);
-extern void o57PrepareDescriptorReloc(Overlay45ResourceDescriptor *descriptor,
+extern void overlay45SetMode(Overlay45ResourceDescriptor *descriptor,
                                       s32 value);
 extern void o57PrepareDescriptorListReloc(void *list);
 extern void animseqStartPath(u8 pathId);
@@ -177,7 +177,7 @@ extern O57Thing *func_800508B4(u8 pathId);
 extern O57Thing *func_8000590C(void *packet, s32 mode);
 extern void initColourCycle(void *cycle, s32 count);
 extern void joyResetMap(void);
-extern s32 o57QueryModeReloc(void);
+extern s32 frontGetMode(void);
 extern void overlay57SetNodeValue(s32 id, s32 argument, f32 value);
 extern void func_8003A754(void);
 extern void func_80001708(void);
@@ -218,68 +218,68 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
 
     gO57Descriptor00Reloc = overlay45CreateDescriptor_o057Reloc(
-        gO57ResourceTableReloc->entries[0x40], 0xA0, -0x28, 4);
+        D_8007C0B8->entries[0x40], 0xA0, -0x28, 4);
     gO57DescriptorF8Reloc = overlay45CreateDescriptor_o057Reloc(
-        gO57ResourceTableReloc->entries[0x3C], 0xA0, -0x28, 4);
+        D_8007C0B8->entries[0x3C], 0xA0, -0x28, 4);
     gO57Descriptor6CReloc = overlay45CreateDescriptor_o057Reloc(
-        gO57ResourceTableReloc->entries[0x41], 0xA0, 0x104, 4);
+        D_8007C0B8->entries[0x41], 0xA0, 0x104, 4);
     gO57Descriptor70Reloc = overlay45CreateDescriptor_o057Reloc(
-        gO57ResourceTableReloc->entries[0x42], 0xA0, 0x104, 4);
+        D_8007C0B8->entries[0x42], 0xA0, 0x104, 4);
     gO57Descriptor74Reloc = overlay45CreateDescriptor_o057Reloc(
-        gO57ResourceTableReloc->entries[0x43], 0xA0, 0x104, 4);
+        D_8007C0B8->entries[0x43], 0xA0, 0x104, 4);
     gO57Descriptor78Reloc = overlay45CreateDescriptor_o057Reloc(
-        gO57ResourceTableReloc->entries[0x44], 0xA0, 0x104, 4);
+        D_8007C0B8->entries[0x44], 0xA0, 0x104, 4);
     gO57DescriptorFCReloc = overlay45CreateDescriptor_o057Reloc(
-        gO57ResourceTableReloc->entries[0x6D], 0xA0, -0x20, 4);
+        D_8007C0B8->entries[0x6D], 0xA0, -0x20, 4);
 
     for (i = 0; i < 9; i++) {
         gO57Descriptors08Reloc[i] = overlay45CreateDescriptor_o057Reloc(
-            gO57ResourceTableReloc->entries[gO57DescriptorIndicesD8Reloc[i]], 0xA0, 0xBE,
+            D_8007C0B8->entries[gO57DescriptorIndicesD8Reloc[i]], 0xA0, 0xBE,
             0x204);
         overlay45SetMode_o057Reloc(gO57Descriptors08Reloc[i], 0);
     }
 
     for (i = 0; i < 9; i++) {
         gO57Descriptors30Reloc[i] = overlay45CreateDescriptor_o057Reloc(
-            gO57ResourceTableReloc->entries[gO57DescriptorIndicesECReloc[i]], 0xA0, 0xBE,
+            D_8007C0B8->entries[gO57DescriptorIndicesECReloc[i]], 0xA0, 0xBE,
             0x204);
         overlay45SetMode_o057Reloc(gO57Descriptors30Reloc[i], 0);
     }
 
     for (i = 0; i < 24; i++) {
         gO57Descriptors80Reloc[i] = overlay45CreateDescriptor_o057Reloc(
-            gO57ResourceTableReloc->entries[gO57DescriptorIndices100Reloc[i]], 0xA0, 0x104, 4);
+            D_8007C0B8->entries[D_8007C11C[i]], 0xA0, 0x104, 4);
         overlay45SetMode_o057Reloc(gO57Descriptors80Reloc[i], 0);
     }
 
     for (i = 0; i < 6; i++) {
         gO57DescriptorsE0Reloc[i] = overlay45CreateDescriptor_o057Reloc(
-            gO57ResourceTableReloc->entries[gO57DescriptorIndices130Reloc[i]], 0xA0, 0x104, 4);
+            D_8007C0B8->entries[gO57DescriptorIndices130Reloc[i]], 0xA0, 0x104, 4);
         overlay45SetMode_o057Reloc(gO57DescriptorsE0Reloc[i], 0);
     }
 
     for (i = 0; i < 5; i++) {
         gO57Descriptors58Reloc[i] = overlay45CreateDescriptor_o057Reloc(
-            gO57ResourceTableReloc->entries[0x36 + i], 0xA0, -0x28, 4);
+            D_8007C0B8->entries[0x36 + i], 0xA0, -0x28, 4);
     }
 
-    o57PrepareDescriptorReloc(gO57Descriptor00PrepareReloc, 0xFF);
-    o57PrepareDescriptorReloc(gO57DescriptorF8PrepareReloc, 0xFF);
-    o57PrepareDescriptorReloc(gO57Descriptor6CPrepareReloc, 0xFF);
-    o57PrepareDescriptorReloc(gO57Descriptor70PrepareReloc, 0xFF);
-    o57PrepareDescriptorReloc(gO57Descriptor74PrepareReloc, 0xFF);
-    o57PrepareDescriptorReloc(gO57Descriptor78PrepareReloc, 0xFF);
+    overlay45SetMode(gO57Descriptor00PrepareReloc, 0xFF);
+    overlay45SetMode(gO57DescriptorF8PrepareReloc, 0xFF);
+    overlay45SetMode(gO57Descriptor6CPrepareReloc, 0xFF);
+    overlay45SetMode(gO57Descriptor70PrepareReloc, 0xFF);
+    overlay45SetMode(gO57Descriptor74PrepareReloc, 0xFF);
+    overlay45SetMode(gO57Descriptor78PrepareReloc, 0xFF);
     o57PrepareDescriptorListReloc(&gO57DescriptorList80Reloc);
     o57PrepareDescriptorListReloc(&gO57DescriptorList130Reloc);
 
-    gO57Value1FCReloc = gO57SeedDataReloc.value0C;
-    gO57Value21CReloc = gO57SeedDataReloc.value10;
-    gO57Value23CReloc = gO57SeedDataReloc.value14;
-    gO57Value25CReloc = gO57SeedDataReloc.value10;
-    gO57Value32CReloc = gO57SeedDataReloc.value1EC;
-    gO57Value34CReloc = gO57SeedDataReloc.value1F4;
+    gO57Value1FCReloc = D_800D31C8.value0C;
+    gO57Value21CReloc = D_800D31C8.value10;
+    gO57Value23CReloc = D_800D31C8.value14;
+    gO57Value25CReloc = D_800D31C8.value10;
+    gO57Value32CReloc = D_800D31C8.value1EC;
+    gO57Value34CReloc = D_800D31C8.value1F4;
     for (i = 0; i < 10; i++) {
-        gO57Rows27CReloc[i].value = gO57SeedDataReloc.value1C;
+        gO57Rows27CReloc[i].value = D_800D31C8.value1C;
     }
 
     gO57Mode11CReloc = 0;
@@ -323,7 +323,7 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     gO57Active144Reloc = 0;
     joyResetMap();
 
-    switch (o57QueryModeReloc()) {
+    switch (frontGetMode()) {
     case 4:
         gO57State118Reloc = 0xB;
         gO57ModeObject180Reloc.value = 0x2E;
@@ -333,7 +333,7 @@ void func_overlay_057_F0000000_18A3BF8(void) {
             object->flags |= 2;
         }
         gO57SpecialModeReloc = 0;
-        gO57SpecialByteReloc = 1;
+        D_800D31B0 = 1;
         break;
     case 10:
         gO57State118Reloc = 7;
@@ -372,7 +372,7 @@ void func_overlay_057_F0000000_18A3BF8(void) {
         if (object != 0) {
             object->flags |= 2;
         }
-        if (gO57SpecialConditionReloc == 1) {
+        if (D_8007C1A0 == 1) {
             gO57SpecialModeReloc = 7;
         } else {
             gO57SpecialModeReloc = 6;

@@ -170,26 +170,26 @@ typedef struct Overlay5SequenceConfig {
 } Overlay5SequenceConfig;
 
 extern u8 gOverlay5AudioHeap[];
-extern u8 gOverlay5InitQueue[];
-extern u8 gOverlay5EventQueue[];
-extern u8 gOverlay5FrameCallback[];
+extern u8 amInitOsc[];
+extern u8 amStopOsc[];
+extern u8 amUpdateOsc[];
 extern Overlay5AudioState *gOverlay5AudioState;
 extern u8 gOverlay5HeapState[];
 extern u8 gOverlay5HeapMemory[];
-extern void *gOverlay5AudioOwner;
-extern void *gOverlay5Span0;
-extern void *gOverlay5Span1;
+extern void *D_800BF900;
+extern void *D_800BF7A0;
+extern void *D_800BF7A4;
 extern void *gOverlay5Span2;
-extern u32 gOverlay5Span0Size;
+extern u32 D_800BF7B0;
 extern u32 gOverlay5Span1Size;
-extern u32 gOverlay5Span0ScaleValue;
+extern u32 D_800BF7A8;
 extern u32 gOverlay5Span1ScaleValue;
-extern Overlay5Bank *gOverlay5Bank;
-extern u32 *gOverlay5EntryValues;
-extern void *gOverlay5Player0;
-extern void *gOverlay5Player1;
+extern Overlay5Bank *D_800BF790;
+extern u32 *D_800BF798;
+extern void *D_80078D60;
+extern void *D_80078D64;
 extern u8 gOverlay5OwnerSoundState[];
-extern u8 gOverlay5MessageQueue[];
+extern u8 D_800BFA10[];
 extern u8 gOverlay5MessageBuffer[];
 
 extern void alHeapInit(void *heap, void *base, s32 length);
@@ -218,10 +218,10 @@ extern void alSurround_OutputType(s32 outputType);
 extern void alSurround_ReverbSetup(s32 arg0, s32 outputType);
 extern void osCreateMesgQueue(void *queue, void *buffer, s32 count);
 extern void n_alCSPSetMessageQ(void *player, void *queue);
-extern void overlay5SequenceInitReloc();
+extern void n_alEvtqPostEvent();
 extern void *overlay5AllocPlayerReloc(s32 arg0, s32 arg1, void *heap,
                                       s32 arg3, s32 size);
-extern void overlay5InitPlayerReloc(void *player,
+extern void n_alCSPNew(void *player,
                                     Overlay5PlayerConfig *config);
 extern void overlay5AttachBankReloc(void *player, void *bank);
 

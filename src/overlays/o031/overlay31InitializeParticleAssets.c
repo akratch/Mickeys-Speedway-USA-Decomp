@@ -5,17 +5,17 @@ typedef struct Overlay31Behaviour {
     void *colourLoop;
 } Overlay31Behaviour;
 
-extern s32 gOverlay31AssetStates[];
+extern s32 D_800D4120[];
 extern s32 gOverlay31ParticleAssetCount;
 extern u8 *gOverlay31ParticleAssets;
-extern void **gOverlay31ParticleAssetTable;
-extern s32 gOverlay31BehaviourAssetCount;
+extern void **D_8007C8AC;
+extern s32 D_8007C8B0;
 extern u8 *gOverlay31BehaviourAssets;
-extern Overlay31Behaviour **gOverlay31BehaviourAssetTable;
+extern Overlay31Behaviour **D_8007C8B8;
 
-extern void *overlay31LoadAssetTableReloc(s32 assetId);
-extern void overlay31BuildPalettesReloc(void);
-extern void *overlay31GetMiscAssetReloc(s32 assetId);
+extern void *piRomLoad(s32 assetId);
+extern void overlay31BuildPalettes(void);
+extern void *func_800056A4(s32 assetId);
 extern void func_overlay_031_F0000000_187F520(void);
 
 /* Preserve the raw split carrier identity in a removable private island. */
@@ -28,38 +28,38 @@ void func_overlay_031_F00002E8_187F808(void) {
     s32 i;
 
     for (i = 0; i < 5; i++) {
-        gOverlay31AssetStates[i] = 0;
+        D_800D4120[i] = 0;
     }
 
-    gOverlay31ParticleAssetTable = overlay31LoadAssetTableReloc(0x33);
-    while ((s32)gOverlay31ParticleAssetTable[gOverlay31ParticleAssetCount + 1] != -1) {
+    D_8007C8AC = piRomLoad(0x33);
+    while ((s32)D_8007C8AC[gOverlay31ParticleAssetCount + 1] != -1) {
         gOverlay31ParticleAssetCount++;
     }
 
-    gOverlay31ParticleAssets = overlay31LoadAssetTableReloc(0x34);
+    gOverlay31ParticleAssets = piRomLoad(0x34);
     for (i = 0; i < gOverlay31ParticleAssetCount; i++) {
-        gOverlay31ParticleAssetTable[i] =
-            gOverlay31ParticleAssets + (s32)gOverlay31ParticleAssetTable[i];
+        D_8007C8AC[i] =
+            gOverlay31ParticleAssets + (s32)D_8007C8AC[i];
     }
 
-    overlay31BuildPalettesReloc();
+    overlay31BuildPalettes();
 
-    gOverlay31BehaviourAssetTable = overlay31LoadAssetTableReloc(0x35);
-    while ((s32)gOverlay31BehaviourAssetTable[gOverlay31BehaviourAssetCount + 1] != -1) {
-        gOverlay31BehaviourAssetCount++;
+    D_8007C8B8 = piRomLoad(0x35);
+    while ((s32)D_8007C8B8[D_8007C8B0 + 1] != -1) {
+        D_8007C8B0++;
     }
 
-    gOverlay31BehaviourAssets = overlay31LoadAssetTableReloc(0x36);
-    for (i = 0; i < gOverlay31BehaviourAssetCount; i++) {
-        gOverlay31BehaviourAssetTable[i] =
+    gOverlay31BehaviourAssets = piRomLoad(0x36);
+    for (i = 0; i < D_8007C8B0; i++) {
+        D_8007C8B8[i] =
             (Overlay31Behaviour *)(gOverlay31BehaviourAssets +
-                                   (s32)gOverlay31BehaviourAssetTable[i]);
-        if ((u32)gOverlay31BehaviourAssetTable[i]->colourLoop != 0xFFFFFFFF) {
-            gOverlay31BehaviourAssetTable[i]->colourLoop =
-                overlay31GetMiscAssetReloc(
-                    (s32)gOverlay31BehaviourAssetTable[i]->colourLoop);
+                                   (s32)D_8007C8B8[i]);
+        if ((u32)D_8007C8B8[i]->colourLoop != 0xFFFFFFFF) {
+            D_8007C8B8[i]->colourLoop =
+                func_800056A4(
+                    (s32)D_8007C8B8[i]->colourLoop);
         } else {
-            gOverlay31BehaviourAssetTable[i]->colourLoop = NULL;
+            D_8007C8B8[i]->colourLoop = NULL;
         }
     }
 }

@@ -81,12 +81,12 @@ extern f32 gOverlay15RainOffsetY;
 extern f32 gOverlay15RainOffsetZ;
 extern u32 *gOverlay15RainColors;
 
-extern void *overlay15Allocate(s32 size, s32 tag);
-extern s32 overlay15RandomRange(s32 minimum, s32 maximum);
-extern void overlay15ReleaseReloc(void *resource);
-extern void overlay15GetDimensionsReloc(s32 *width, s32 *height);
-extern void overlay15FinishDisplayListReloc(Overlay15Gfx **displayList);
-extern void *overlay15GetActiveCameraReloc(void);
+extern void *mmAlloc(s32 size, s32 tag);
+extern s32 mathRnd(s32 minimum, s32 maximum);
+extern void mmFree(void *resource);
+extern void viGetCurrentSize(s32 *width, s32 *height);
+extern void texDPInit(Overlay15Gfx **displayList);
+extern void *camGetPtr(void);
 extern void starfieldFastMove(s32 count, Overlay15Star *stars,
                               f32 movementX, f32 movementY, f32 movementZ,
                               f32 bound0, f32 bound1, f32 bound2,

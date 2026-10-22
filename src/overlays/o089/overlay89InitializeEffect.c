@@ -114,11 +114,11 @@ typedef struct Overlay89CreateDescriptor {
 
 extern struct { f32 unused; f32 scale; } gOverlay89InitScale;
 extern u8 overlay89Evaluate(Overlay89EffectState *state);
-extern void *overlay89CreatePrimaryReloc(Overlay89Object *object,
+extern void *addObjectLight(Overlay89Object *object,
                                          Overlay89CreateDescriptor *descriptor,
                                          Overlay89EffectState *state,
                                          Overlay89Init *init);
-extern void overlay89MaintainReloc(Overlay89Object *object,
+extern void overlay89UpdateEffect(Overlay89Object *object,
                                    Overlay89EffectState *state);
 
 /* Mickey-derived reconstruction. The scale member keeps the unsigned size
@@ -186,7 +186,7 @@ void overlay89InitializeEffect(Overlay89Object *object,
     }
 
     state->primaryHandle =
-        overlay89CreatePrimaryReloc(object, &descriptor, state, init);
+        addObjectLight(object, &descriptor, state, init);
     state->scale = (f32)(init->scale * 8);
     state->radius = (f32)(init->radius * 8);
 
@@ -194,7 +194,7 @@ void overlay89InitializeEffect(Overlay89Object *object,
      * ordinary nested-if spelling changes its register bank. Cleanup queued. */
     if (1) {
         if (init->descriptorMode == 3 && !(init->flags & 0x40)) {
-            overlay89MaintainReloc(object, state);
+            overlay89UpdateEffect(object, state);
         }
     }
 

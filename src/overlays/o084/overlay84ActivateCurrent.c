@@ -74,9 +74,9 @@ typedef struct Overlay84Object {
 } Overlay84Object;
 
 extern Overlay84Object *gOverlay84Object;
-extern Overlay84Resource *overlay84LookupReloc(u8 resource);
-extern void overlay84PrepareReloc(u8 resource);
-extern void overlay84ReleaseReloc(u8 resource);
+extern Overlay84Resource *func_800508B4(u8 resource);
+extern void func_8005055C(u8 resource);
+extern void animseqStartPath(u8 resource);
 
 /* Reusing the word-sized selector parameter preserves the retail register
  * lifetime and stack frame while the selected byte is stored in state. */
@@ -110,7 +110,7 @@ void overlay84ActivateCurrent(s32 kind) {
             break;
         }
 
-        resource = overlay84LookupReloc(kind);
+        resource = func_800508B4(kind);
         if (resource != NULL) {
             record = &resource->records[resource->recordIndex - 1];
             record->x = node->x;
@@ -136,8 +136,8 @@ void overlay84ActivateCurrent(s32 kind) {
             state->y = node->y;
             state->z = node->z;
 
-            overlay84PrepareReloc(state->selectedResource);
-            overlay84ReleaseReloc(state->selectedResource);
+            func_8005055C(state->selectedResource);
+            animseqStartPath(state->selectedResource);
             resource->flags |= 2;
         }
         state->mode = 1;

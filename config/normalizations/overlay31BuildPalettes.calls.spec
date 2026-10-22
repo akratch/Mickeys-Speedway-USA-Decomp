@@ -1,2 +1,2 @@
-0x0dc:overlay31OpenPaletteReloc:overlay31AllocateReloc
-0x158:overlay31AdvancePaletteReloc:overlay31AllocateReloc
+0x0dc:initColourCycle:mmAlloc
+0x158:updateColourCycle:mmAlloc

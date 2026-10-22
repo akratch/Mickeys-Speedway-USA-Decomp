@@ -25,8 +25,8 @@ extern u8 D_0[];
 extern u8 D_1C0[];
 extern s32 D_218;
 extern s32 D_21C;
-extern Overlay65Camera *o65GetCamera(s32 index);
-extern s32 o65RandomRange(s32 low, s32 high);
+extern Overlay65Camera *func_80021970(s32 index);
+extern s32 mathRnd(s32 low, s32 high);
 
 void func_overlay_065_F0001A14_18C5C7C(f32 baseX, f32 baseY, f32 baseZ) {
     Overlay65Camera *camera;
@@ -36,7 +36,7 @@ void func_overlay_065_F0001A14_18C5C7C(f32 baseX, f32 baseY, f32 baseZ) {
     void *point;
     u8 *colors;
 
-    camera = o65GetCamera(0);
+    camera = func_80021970(0);
     record = D_0;
     for (i = 0; i < 50; i++, record = (u8 *)record + 0x80) {
         j = 0;
@@ -55,10 +55,10 @@ void func_overlay_065_F0001A14_18C5C7C(f32 baseX, f32 baseY, f32 baseZ) {
                 }
                 break;
             }
-            FIELD(record, f32, 0x6C) = (f32)o65RandomRange(-D_218, D_218);
-            FIELD(record, f32, 0x70) = (f32)o65RandomRange(D_21C, D_21C + 5);
-            FIELD(record, f32, 0x74) = (f32)o65RandomRange(-D_218, D_218);
-            colors = &D_1C0[o65RandomRange(0, 6) * 3];
+            FIELD(record, f32, 0x6C) = (f32)mathRnd(-D_218, D_218);
+            FIELD(record, f32, 0x70) = (f32)mathRnd(D_21C, D_21C + 5);
+            FIELD(record, f32, 0x74) = (f32)mathRnd(-D_218, D_218);
+            colors = &D_1C0[mathRnd(0, 6) * 3];
             FIELD(record, u8, 0x7D) = colors[0];
             FIELD(record, u8, 0x7E) = colors[1];
             FIELD(record, u8, 0x7F) = colors[2];

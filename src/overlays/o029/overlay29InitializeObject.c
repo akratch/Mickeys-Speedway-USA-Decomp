@@ -56,7 +56,7 @@ typedef struct Overlay29Init {
     Overlay29Object *object;
 } Overlay29Init;
 
-extern u8 D_EE0[];
+extern u8 func_overlay_029_F0000EE0_187E190[];
 extern void mathOneFloatRPY(void *, Vec3f *);
 extern void trackMakePolylist(s32, Vec3f *, Vec3f *, f32 *, void *, s32);
 extern s32 func_80010900(Vec3f *, Vec3f *, f32, void *, void *);
@@ -119,7 +119,7 @@ void func_overlay_029_F000042C_187D6DC(Overlay29Object *object,
 
     distance = 8.0f;
     trackMakePolylist(1, &position, &object->position, &distance, NULL, 0);
-    if (func_80010900(&position, &object->position, distance, object, D_EE0) != 0) {
+    if (func_80010900(&position, &object->position, distance, object, func_overlay_029_F0000EE0_187E190) != 0) {
         func_overlay_029_F00010C4_187E374Reloc(object, 5);
         return;
     }

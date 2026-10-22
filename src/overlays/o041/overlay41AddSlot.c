@@ -26,7 +26,7 @@ typedef struct Overlay41ModuleData {
     f32 amountScale;
 } Overlay41ModuleData;
 
-extern Overlay41Slot gOverlay41Slots[];
+extern Overlay41Slot D_800D6C58[];
 extern Overlay41ModuleData D_0;
 
 /* The twelve-slot scan is a top-tested `while (remaining--)`, not the m2c
@@ -45,7 +45,7 @@ void func_overlay_041_F0001650_1888988(void *object, volatile s32 value1,
         return;
     }
 
-    slot = gOverlay41Slots;
+    slot = D_800D6C58;
     remaining = 12;
     while (remaining--) {
         if (slot->object == 0) {

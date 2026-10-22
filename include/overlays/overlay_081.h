@@ -91,11 +91,11 @@ typedef struct Overlay81NearbyObject {
 extern f32 gOverlay81Scale;
 extern s32 gOverlay81Mask;
 
-void overlay81SpawnEffectReloc(s32 effectId, s32 x, s32 y, s32 z,
+void amSndPlayXYZ(s32 effectId, s32 x, s32 y, s32 z,
                                s32 mode, s32 arg5);
-void overlay81ActivateReloc(Overlay81Object *object, s32 mode);
-s32 overlay81RandomRangeReloc(s32 minimum, s32 maximum);
-Overlay81NearbyObject **overlay81QueryNearbyReloc(
+void partUpdateTriggers(Overlay81Object *object, s32 mode);
+s32 mathRnd(s32 minimum, s32 maximum);
+Overlay81NearbyObject **func_80005750(
     s32 *count, Overlay81Object *object, Overlay81NearbyState *state);
 
 void overlay81Init(Overlay81Object *object, Overlay81Init *init, s32 unused);

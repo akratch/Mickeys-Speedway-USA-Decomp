@@ -23,8 +23,8 @@ extern s32 gOverlay101Resource32Count;
 extern s32 gOverlay101OrderCount;
 extern void *gOverlay101Handle33C;
 extern Overlay101Resource20 gOverlay101Resources20[];
-extern Overlay101Resource32 gOverlay101Resources32[];
-extern Overlay101OrderEntry gOverlay101OrderEntries[];
+extern Overlay101Resource32 D_340[];
+extern Overlay101OrderEntry D_0[];
 extern void overlay101ReleaseReloc(void *resource, ...);
 
 void overlay101Cleanup(void) {
@@ -56,7 +56,7 @@ void overlay101Cleanup(void) {
 
     gOverlay101Resource20Count = 0;
     count = gOverlay101Resource32Count;
-    resource32 = gOverlay101Resources32;
+    resource32 = D_340;
     if (count--) {
         do {
             if (resource32->resource != NULL) {
@@ -69,7 +69,7 @@ void overlay101Cleanup(void) {
     gOverlay101Resource32Count = 0;
 
     count = gOverlay101OrderCount;
-    order = gOverlay101OrderEntries;
+    order = D_0;
     if (count--) {
         do {
             order->first = NULL;

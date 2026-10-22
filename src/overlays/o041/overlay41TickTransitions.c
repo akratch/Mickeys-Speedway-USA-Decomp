@@ -11,14 +11,14 @@ typedef struct Overlay41Transition {
     u8 intensity;
 } Overlay41Transition;
 
-extern Overlay41Transition gOverlay41Transitions[5];
+extern Overlay41Transition D_800D6D18[5];
 
 void overlay41TickTransitions(s32 step) {
     Overlay41Transition *transition;
     s32 i;
     s32 intensity;
 
-    transition = gOverlay41Transitions;
+    transition = D_800D6D18;
     for (i = 0; i < 5; i++) {
         if ((transition->remaining > 0) || (transition->intensity > 0)) {
             if (transition->remaining > 0) {

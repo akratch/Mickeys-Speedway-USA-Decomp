@@ -22,7 +22,7 @@ void overlay76Update(Overlay76Object *object, s32 updateRate) {
 
     if (gOverlay76Status[index] == 1) {
         soundId = (index & 1) ? 0x205 : 0x206;
-        overlay76SoundReloc(soundId, object->x, object->y, object->z, 4, 0);
+        amSndPlayXYZ(soundId, object->x, object->y, object->z, 4, 0);
         gOverlay76Status[record->index] = 0;
     }
 }
@@ -31,6 +31,6 @@ void overlay76TriggerRandom(void) {
     s32 count = gOverlay76NextIndex;
 
     if (count > 0) {
-        gOverlay76Status[overlay76RandomReloc(0, count - 1)] = 1;
+        gOverlay76Status[mathRnd(0, count - 1)] = 1;
     }
 }

@@ -47,7 +47,7 @@ extern O14StateCCRef gOverlay14StateCC;
 extern O14Value110Ref gOverlay14Value110;
 extern O14Value114Ref gOverlay14Value114;
 
-extern s32 overlay14InitializeMode(s32 mode);
+extern s32 func_8004D5C0(s32 mode);
 extern void overlay14ResetMode(void);
 extern void overlay14ApplyValues(s32 value, s32 extra);
 
@@ -56,7 +56,7 @@ void overlay14AdvanceCommand(s32 context) {
     s32 limit;
     s32 extra;
 
-    divisor = overlay14InitializeMode(2);
+    divisor = func_8004D5C0(2);
     if (gOverlay14Transition != 0) {
         if (gOverlay14Transition < 0) {
             gOverlay14Transition += 1;

@@ -44,11 +44,11 @@ struct Overlay99Object {
 };
 
 extern Overlay99Storage gOverlay99Storage;
-extern void overlay99PrepareEntriesReloc(s32 mode, f32 x, f32 y, s32 zero0,
+extern void func_80037414(s32 mode, f32 x, f32 y, s32 zero0,
                                          s32 zero1, s32 zero2, s32 zero3);
-extern Overlay99Object *overlay99SpawnEntryReloc(
+extern Overlay99Object *func_8000590C(
     Overlay99SpawnDescriptor *descriptor, s32 one);
-extern void overlay99CommitEntriesReloc(void);
+extern void viFrameRateReset(void);
 
 /* Declaring the address-taken descriptor after the entry cursor gives it the
  * retail sp+0x54 home. The resulting 110 words and all seven linked runtime
@@ -61,7 +61,7 @@ void overlay99InitializeEntries(s32 count, Overlay99Entry *source,
     s32 created;
     s32 i;
 
-    overlay99PrepareEntriesReloc(4, x, y, 0, 0, 0, 0);
+    func_80037414(4, x, y, 0, 0, 0, 0);
     i = 0;
     created = 0;
     entry = gOverlay99Storage.entries;
@@ -89,7 +89,7 @@ void overlay99InitializeEntries(s32 count, Overlay99Entry *source,
                 descriptor.flagsB = 0x40;
                 descriptor.zeroC = 0;
                 descriptor.zeroD = 0;
-                entry->object2C = overlay99SpawnEntryReloc(&descriptor, 1);
+                entry->object2C = func_8000590C(&descriptor, 1);
                 if (entry->object2C != 0) {
                     entry->object2C->owner3C = 0;
                     entry->object2C->flags6 |= 0x400;
@@ -103,6 +103,6 @@ void overlay99InitializeEntries(s32 count, Overlay99Entry *source,
     }
     gOverlay99Storage.count = i;
     if (created > 0) {
-        overlay99CommitEntriesReloc();
+        viFrameRateReset();
     }
 }

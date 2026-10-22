@@ -29,7 +29,7 @@ typedef struct Overlay46ParticleConfig {
     s8 y;
 } Overlay46ParticleConfig;
 
-extern void *gOverlay46ResourceTable0[];
+extern void *D_800D31C8[];
 extern s32 gOverlay46StateC;
 extern s32 gOverlay46Value10;
 extern s32 gOverlay46Value14;
@@ -39,9 +39,9 @@ extern f32 gOverlay46Spacing48;
 extern s32 gOverlay46Timer5C;
 extern Overlay46ParticleConfig gOverlay46Configs1C8[];
 
-extern s32 overlay46RandomRangeReloc(s32 minimum, s32 maximum);
+extern s32 mathRnd(s32 minimum, s32 maximum);
 extern f32 overlay46RandomSignedReloc(s32 magnitude);
-extern s32 overlay46RandomBoolReloc(s32 minimum, s32 maximum);
+extern s32 func_800299E8(s32 minimum, s32 maximum);
 
 /* Pinned DKR v77/v80 and JFG object scans found no exact donor. */
 /*
@@ -63,18 +63,18 @@ void overlay46InitializeParticles(void) {
     config = gOverlay46Configs1C8;
     spacing = gOverlay46Spacing48;
     magnitude = -0x4000;
-    resources = gOverlay46ResourceTable0;
+    resources = D_800D31C8;
     index = 0x12; do {
         particle->value00 = 0;
         particle->value02 = 0;
         particle->value04 = 0;
-        particle->angle06 = overlay46RandomRangeReloc(0x100, 0x200);
+        particle->angle06 = mathRnd(0x100, 0x200);
         particle->scale08 = 1.0f;
         particle->baseX0C = config->x;
         particle->baseY10 = config->y;
         particle->value14 = 0.0f;
-        particle->angle18 = overlay46RandomRangeReloc(0, 0x8000);
-        particle->angle1A = overlay46RandomRangeReloc(0x600, 0xA00);
+        particle->angle18 = mathRnd(0, 0x8000);
+        particle->angle1A = mathRnd(0x600, 0xA00);
         particle->positionX1C =
             overlay46RandomSignedReloc(magnitude) * 400.0f +
             particle->baseX0C;
@@ -88,7 +88,7 @@ void overlay46InitializeParticles(void) {
         particle->targetY30 = baseY;
         particle->targetX2C = particle->baseX0C;
         particle->variant36 = config->variant;
-        if (overlay46RandomBoolReloc(0, 1) != 0) {
+        if (func_800299E8(0, 1) != 0) {
             particle->angle06 = -particle->angle06;
         }
         magnitude += 0x1000;

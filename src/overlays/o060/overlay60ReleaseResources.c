@@ -5,7 +5,7 @@ extern void *gOverlay60ResourcesEnd[];
 extern void *gOverlay60OptionalResource;
 extern u8 gOverlay60PrimaryResource;
 extern void overlay60ReleaseReloc(void *resource);
-extern void overlay60FinalizeReloc(void);
+extern void func_8002917C(void);
 
 /* DKR v77/v80 and JFG contain only generic resource-cleanup idioms. */
 void overlay60ReleaseResources(void) {
@@ -26,5 +26,5 @@ void overlay60ReleaseResources(void) {
         gOverlay60OptionalResource = NULL;
     }
     overlay60ReleaseReloc(&gOverlay60PrimaryResource);
-    overlay60FinalizeReloc();
+    func_8002917C();
 }

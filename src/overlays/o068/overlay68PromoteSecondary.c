@@ -20,12 +20,12 @@ typedef struct Overlay68Entry {
     Overlay68Record *records;
 } Overlay68Entry;
 
-extern Overlay68Entry *gOverlay68PrimaryEntry;
+extern Overlay68Entry *D_8007A1F4;
 extern Overlay68Entry *gOverlay68SecondaryEntry;
-extern void *gOverlay68Tertiary;
+extern void *D_8007A1F8;
 
-extern void overlay68ClearNestedFlagPromoteReloc(void *entryOrHandle);
-extern void overlay68FinishEntryPromoteReloc(void);
+extern void overlay68ClearNestedFlag(void *entryOrHandle);
+extern void overlay68FinishEntry(void);
 
 /* Matched 2026-08-29 by a bounded decomp-permuter pass after the prior hand,
  * flag, and allocator-trace probes plateaued on the frame and stack homes.
@@ -34,7 +34,7 @@ extern void overlay68FinishEntryPromoteReloc(void);
  *
  * `primaryCopy` (the permuter's `new_var`) is never read, but the chained
  * assignment is load-bearing (lane c-5, 2026-10-09): a plain
- * `primary = gOverlay68PrimaryEntry;` moves the stack homes (10 words), with
+ * `primary = D_8007A1F4;` moves the stack homes (10 words), with
  * or without a pad in its place, and testing and passing `primary` instead of
  * re-reading the global differs in 14. */
 void overlay68PromoteSecondary(void)
@@ -48,14 +48,14 @@ void overlay68PromoteSecondary(void)
   secondary = gOverlay68SecondaryEntry;
   if (secondary != ((void *) 0))
   {
-    primary = (primaryCopy = gOverlay68PrimaryEntry);
-    if (gOverlay68PrimaryEntry != ((void *) 0))
+    primary = (primaryCopy = D_8007A1F4);
+    if (D_8007A1F4 != ((void *) 0))
     {
-      overlay68ClearNestedFlagPromoteReloc(gOverlay68PrimaryEntry);
-      overlay68ClearNestedFlagPromoteReloc(gOverlay68Tertiary);
+      overlay68ClearNestedFlag(D_8007A1F4);
+      overlay68ClearNestedFlag(D_8007A1F8);
       if (secondary->field5 != 0)
       {
-        overlay68FinishEntryPromoteReloc();
+        overlay68FinishEntry();
       }
       if (((secondary->timer != 0) && (secondary->object == ((void *) 0))) && ((secondary->timer < primary->timer) || (secondary->generation != primary->generation)))
       {

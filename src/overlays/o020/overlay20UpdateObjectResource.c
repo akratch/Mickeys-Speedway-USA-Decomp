@@ -51,10 +51,10 @@ typedef struct Overlay20Object {
     void *resource;
 } Overlay20Object;
 
-extern Overlay20Context *overlay20GetContextReloc(void);
-extern Overlay20LookupResult *overlay20LookupReloc(s16 index);
-extern void *overlay20ConfigureResourceReloc();
-extern f32 overlay20SqrtReloc(f32 value);
+extern Overlay20Context *trackGetTrack(void);
+extern Overlay20LookupResult *func_8000FEEC(s16 index);
+extern void *overlay20ConfigureResource();
+extern f32 sqrtf(f32 value);
 
 /* Two coupled allocator facts fix the temp ring. The bound check reads
  * context->count directly, so the value is a ugen temp rather than a uopt-
@@ -72,9 +72,9 @@ void overlay20UpdateObjectResource(Overlay20Object *object,
     Overlay20LookupResult *lookup;
     Overlay20Context *context;
 
-    context = overlay20GetContextReloc();
+    context = trackGetTrack();
     if ((config->useLookup != 0) &&
-        ((lookup = overlay20LookupReloc(object->lookupIndex)), lookup != 0)) {
+        ((lookup = func_8000FEEC(object->lookupIndex)), lookup != 0)) {
         baseX = lookup->x0;
         objectY = (s32)object->y;
         baseY = lookup->y0;
@@ -95,11 +95,11 @@ void overlay20UpdateObjectResource(Overlay20Object *object,
         owner = *object->fallbackEntry;
     }
 
-    object->resource = overlay20ConfigureResourceReloc(
+    object->resource = overlay20ConfigureResource(
         object->resource, baseX, objectY, baseY, width, height,
         config->columns, config->rows, owner, config->value0E,
         config->value0F, config->start, config->current, config->end,
         config->scaleDivisor);
-    object->radius = overlay20SqrtReloc((f32)((width * width) +
+    object->radius = sqrtf((f32)((width * width) +
                                                (height * height)));
 }

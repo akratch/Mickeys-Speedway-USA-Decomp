@@ -25,11 +25,11 @@ typedef struct Overlay57IndexLink {
  * (stored target zero): overlay 84 +0xC74, +0x1350, +0x1060, +0x1398 and
  * overlay 45 +0x314. The resident calls are renamed onto their generated
  * surface entries by the object's POSTPROCESS rule. */
-extern s32 o57MenuO84F0000C74Reloc(void);
-extern void o57MenuO84F0001350Reloc(void);
-extern void o57MenuO84F0001060Reloc(s32 kind);
-extern void o57MenuO84F0001398Reloc(void);
-extern void o57MenuO45F0000314Reloc(Overlay45ResourceDescriptor *descriptor, s32 x, s32 y,
+extern s32 overlay84GetActive(void);
+extern void overlay84ClearMode(void);
+extern void overlay84ActivateCurrent(s32 kind);
+extern void overlay84Mark(void);
+extern void overlay45ConfigureLayout(Overlay45ResourceDescriptor *descriptor, s32 x, s32 y,
                                     s32 flags);
 extern void amSndPlay(s32 soundId, void *handle);
 extern void animseqStartPath(u8 pathId);
@@ -61,16 +61,16 @@ extern s16 gOverlay57ControllerMap[];
 extern Overlay57MenuEntry *gOverlay57MenuEntries;
 extern s16 gOverlay57LevelBySelection[];
 extern Overlay57MenuSource gOverlay57MenuSources[];
-extern s32 gOverlay57PlayerCount;
-extern s16 gOverlay57MenuInputX;
-extern s16 gOverlay57MenuInputY;
-extern u32 gOverlay57MenuButtons;
-extern u8 gOverlay57MirrorSelection;
+extern s32 D_8007C1A0;
+extern s16 D_800D31BC;
+extern s16 D_800D31BE;
+extern u32 D_800D31B8;
+extern u8 D_8007BF08;
 extern u8 gOverlay57MirrorFlag;
-extern u8 gOverlay57MenuByte0;
-extern u8 gOverlay57MenuByte1;
-extern u8 gOverlay57MenuByte2;
-extern u8 gOverlay57MenuByte3;
+extern u8 D_8007BEF8;
+extern u8 D_8007BEFC;
+extern u8 D_8007BF0C;
+extern u8 D_8007BF04;
 extern u16 gOverlay57MenuHalf;
 
 /* Overlay 57 text +0x60F8..+0x67DC, the four-way menu step and start. Matched
@@ -91,65 +91,65 @@ void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
     s32 index;
     s8 rank;
 
-    if (o57MenuO84F0000C74Reloc() != 0) {
+    if (overlay84GetActive() != 0) {
         return;
     }
 
     gOverlay57State = 6;
-    if (gOverlay57MenuInputX < -16 && gOverlay57Selection > 0 &&
+    if (D_800D31BC < -16 && gOverlay57Selection > 0 &&
         gOverlay57DistanceState == 0) {
         gOverlay57LayoutBusy = 1;
-        o57MenuO45F0000314Reloc(gOverlay57Layouts[gOverlay57Selection], 0xA0, 0x104,
+        overlay45ConfigureLayout(gOverlay57Layouts[gOverlay57Selection], 0xA0, 0x104,
                                  0x104);
         gOverlay57PreviousSelection = gOverlay57Selection;
         gOverlay57Selection--;
-        o57MenuO45F0000314Reloc(gOverlay57Layouts[gOverlay57Selection], -0xA0, 0xBE,
+        overlay45ConfigureLayout(gOverlay57Layouts[gOverlay57Selection], -0xA0, 0xBE,
                                  4);
         gOverlay57PreviousLayoutValue = gOverlay57LayoutValue;
         gOverlay57LayoutValue = 0xFF;
-    } else if (gOverlay57MenuInputX >= 17 && gOverlay57Selection < 3 &&
+    } else if (D_800D31BC >= 17 && gOverlay57Selection < 3 &&
                gOverlay57DistanceState == 0) {
         gOverlay57LayoutBusy = 1;
-        o57MenuO45F0000314Reloc(gOverlay57Layouts[gOverlay57Selection], 0xA0, 0x104,
+        overlay45ConfigureLayout(gOverlay57Layouts[gOverlay57Selection], 0xA0, 0x104,
                                  0x104);
         gOverlay57PreviousSelection = gOverlay57Selection;
         gOverlay57Selection++;
-        o57MenuO45F0000314Reloc(gOverlay57Layouts[gOverlay57Selection], 0x1E0, 0xBE,
+        overlay45ConfigureLayout(gOverlay57Layouts[gOverlay57Selection], 0x1E0, 0xBE,
                                  4);
         gOverlay57PreviousLayoutValue = gOverlay57LayoutValue;
         gOverlay57LayoutValue = 0xFF;
-    } else if (gOverlay57MenuInputY < -16 && gOverlay57Selection < 2 &&
+    } else if (D_800D31BE < -16 && gOverlay57Selection < 2 &&
                gOverlay57DistanceState == 0) {
         gOverlay57LayoutBusy = 1;
-        o57MenuO45F0000314Reloc(gOverlay57Layouts[gOverlay57Selection], 0xA0, 0x104,
+        overlay45ConfigureLayout(gOverlay57Layouts[gOverlay57Selection], 0xA0, 0x104,
                                  0x104);
         gOverlay57PreviousSelection = gOverlay57Selection;
         gOverlay57Selection += 2;
-        o57MenuO45F0000314Reloc(gOverlay57Layouts[gOverlay57Selection], 0xA0, 0x104,
+        overlay45ConfigureLayout(gOverlay57Layouts[gOverlay57Selection], 0xA0, 0x104,
                                  4);
         gOverlay57PreviousLayoutValue = gOverlay57LayoutValue;
         gOverlay57LayoutValue = 0xFF;
-    } else if (gOverlay57MenuInputY >= 17 && gOverlay57Selection >= 2 &&
+    } else if (D_800D31BE >= 17 && gOverlay57Selection >= 2 &&
                gOverlay57DistanceState == 0) {
         gOverlay57LayoutBusy = 1;
-        o57MenuO45F0000314Reloc(gOverlay57Layouts[gOverlay57Selection], 0xA0, 0x104,
+        overlay45ConfigureLayout(gOverlay57Layouts[gOverlay57Selection], 0xA0, 0x104,
                                  0x104);
         gOverlay57PreviousSelection = gOverlay57Selection;
         gOverlay57Selection -= 2;
-        o57MenuO45F0000314Reloc(gOverlay57Layouts[gOverlay57Selection], 0xA0, 0x104,
+        overlay45ConfigureLayout(gOverlay57Layouts[gOverlay57Selection], 0xA0, 0x104,
                                  4);
         gOverlay57PreviousLayoutValue = gOverlay57LayoutValue;
         gOverlay57LayoutValue = 0xFF;
     }
 
-    if ((gOverlay57MenuButtons & 0x4000) && gOverlay57DistanceState == 0 &&
+    if ((D_800D31B8 & 0x4000) && gOverlay57DistanceState == 0 &&
         gOverlay57ObjectReady != 0) {
         amSndPlay(13, 0);
-        o57MenuO84F0001350Reloc();
+        overlay84ClearMode();
         animseqStopPath(gOverlay57ObjectId);
         gOverlay57Timer = 7;
         gOverlay57State = 0;
-        o57MenuO84F0001060Reloc(1);
+        overlay84ActivateCurrent(1);
 
         link = gOverlay57StartLinks;
         while (link->index != -1) {
@@ -165,7 +165,7 @@ void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
     }
 
     func_overlay_057_F0001020_18A4C18(updateRate);
-    if ((gOverlay57MenuButtons & 0x9000) && gOverlay57DistanceState == 0) {
+    if ((D_800D31B8 & 0x9000) && gOverlay57DistanceState == 0) {
         amSndPlay(12, 0);
         count = 10;
         while (count--) {
@@ -182,7 +182,7 @@ void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
             }
         }
         i = 0;
-        for (count = gOverlay57PlayerCount; count < 6; count++) {
+        for (count = D_8007C1A0; count < 6; count++) {
             while (activePlayers[i] == 0) {
                 i++;
             }
@@ -191,29 +191,29 @@ void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
         }
         joyCreateMap(playerOrder);
         mainSetMode(0);
-        mainChangeCameras(gOverlay57PlayerCount);
+        mainChangeCameras(D_8007C1A0);
         gOverlay57MenuEntries[0].type = 5;
-        if (gOverlay57PlayerCount == 1) {
-            gOverlay57MenuByte0 = 4;
-            gOverlay57MenuByte1 = 3;
+        if (D_8007C1A0 == 1) {
+            D_8007BEF8 = 4;
+            D_8007BEFC = 3;
         } else if (gOverlay57MirrorFlag != 0) {
-            gOverlay57MenuByte0 = 4;
-            gOverlay57MenuByte1 = 4 - gOverlay57PlayerCount;
+            D_8007BEF8 = 4;
+            D_8007BEFC = 4 - D_8007C1A0;
         } else {
-            gOverlay57MenuByte0 = gOverlay57PlayerCount;
-            gOverlay57MenuByte1 = 0;
+            D_8007BEF8 = D_8007C1A0;
+            D_8007BEFC = 0;
         }
-        gOverlay57MenuByte2 = gOverlay57PlayerCount >= 2;
-        gOverlay57MenuByte3 = 2;
+        D_8007BF0C = D_8007C1A0 >= 2;
+        D_8007BF04 = 2;
         for (i = 0; i < 6; i++) {
             gOverlay57MenuEntries[i].value08 = 0;
         }
         gOverlay57MenuHalf = 0x3FC;
-        gOverlay57MirrorSelection = 0;
+        D_8007BF08 = 0;
         mainChangeLevel(gOverlay57LevelBySelection[gOverlay57Selection],
                         gOverlay57ControllerMap[gOverlay57MenuSources[0].index],
                         0, 5, 1, 0);
         gOverlay57DistanceState = 1;
-        o57MenuO84F0001398Reloc();
+        overlay84Mark();
     }
 }

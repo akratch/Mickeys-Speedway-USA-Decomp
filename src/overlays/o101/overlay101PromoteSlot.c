@@ -6,7 +6,7 @@ typedef struct Overlay101Slot {
     u8 data[0x1C];
 } Overlay101Slot;
 
-extern Overlay101Slot gOverlay101Slots[];
+extern Overlay101Slot D_0[];
 extern Overlay101Slot *gOverlay101Order[];
 extern s32 gOverlay101OrderCount;
 
@@ -17,7 +17,7 @@ void overlay101PromoteSlot(s32 index) {
     s32 count;
     s32 i;
 
-    target = &gOverlay101Slots[index];
+    target = &D_0[index];
     i = 1;
     previous = gOverlay101Order[0];
     gOverlay101Order[0] = target;

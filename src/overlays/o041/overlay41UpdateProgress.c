@@ -32,8 +32,8 @@ typedef struct Overlay41Input {
     u8 current27;
 } Overlay41Input;
 
-extern Overlay41State *gOverlay41CurrentState;
-extern void overlay41ApplyAmount(Overlay41State *state, f32 amount, f32 step);
+extern Overlay41State *D_800D6B08;
+extern void func_8005ABA8(Overlay41State *state, f32 amount, f32 step);
 
 /* Matched 2026-09-16 (lane lm-c), 14 -> 0 masked words at delta 0 in four
  * measured batches; every step is a carrier deletion, none a colour force:
@@ -71,9 +71,9 @@ void func_overlay_041_F0001298_18885D0(Overlay41Input *input,
     if ((active && descriptor->reserved16[state->selector93 + 8] == 0) ||
         (!active && descriptor->reserved16[8] == 0)) {
         if (input->negate14 != 0) {
-            overlay41ApplyAmount(state, -input->amount0C, (f32)step);
+            func_8005ABA8(state, -input->amount0C, (f32)step);
         } else {
-            overlay41ApplyAmount(state, input->amount0C, (f32)step);
+            func_8005ABA8(state, input->amount0C, (f32)step);
         }
     }
 
@@ -98,6 +98,6 @@ void func_overlay_041_F0001298_18885D0(Overlay41Input *input,
     }
 
     if (input->flags16 & 2) {
-        gOverlay41CurrentState = state;
+        D_800D6B08 = state;
     }
 }

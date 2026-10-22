@@ -13,17 +13,17 @@ typedef struct Overlay101DrawChain {
     u8 enabled;
 } Overlay101DrawChain;
 
-extern void overlay101BeginChainReloc(void);
-extern void overlay101PrepareChainReloc(void *context,
+extern void camStandardOrtho(void);
+extern void overlay101DrawPanel(void *context,
                                        Overlay101DrawChain *chain);
-extern void overlay101DrawChainType1Reloc(void *context,
+extern void func_overlay_101_F0002510_18DDD30(void *context,
                                          Overlay101DrawChain *chain,
                                          Overlay101DrawNode *node);
-extern void overlay101DrawChainType2Reloc(void *context, void *mtx,
+extern void overlay101DrawTransformed(void *context, void *mtx,
                                          s32 *vertices,
                                          Overlay101DrawChain *chain,
                                          Overlay101DrawNode *node);
-extern void overlay101DrawChainType3Reloc(void *context,
+extern void overlay101DrawElement(void *context,
                                          Overlay101DrawChain *chain,
                                          Overlay101DrawNode *node);
 
@@ -33,9 +33,9 @@ void overlay101DrawChain(void *context, void *mtx, s32 *vertices,
     s32 type;
 
     if (chain->enabled != 0) {
-        overlay101BeginChainReloc();
+        camStandardOrtho();
         if (chain->mode != 4) {
-            overlay101PrepareChainReloc(context, chain);
+            overlay101DrawPanel(context, chain);
         }
         node = chain->next;
         type = chain->type;
@@ -43,14 +43,14 @@ void overlay101DrawChain(void *context, void *mtx, s32 *vertices,
             switch (type) {
                 case 1: {
                     Overlay101DrawNode *current = node;
-                    overlay101DrawChainType1Reloc(context, chain, node);
+                    func_overlay_101_F0002510_18DDD30(context, chain, node);
                     type = current->type;
                     node = current->next;
                     break;
                 }
                 case 2: {
                     Overlay101DrawNode *current = node;
-                    overlay101DrawChainType2Reloc(context, mtx, vertices, chain,
+                    overlay101DrawTransformed(context, mtx, vertices, chain,
                                                   node);
                     type = current->type;
                     node = current->next;
@@ -58,7 +58,7 @@ void overlay101DrawChain(void *context, void *mtx, s32 *vertices,
                 }
                 case 3: {
                     Overlay101DrawNode *current = node;
-                    overlay101DrawChainType3Reloc(context, chain, node);
+                    overlay101DrawElement(context, chain, node);
                     type = current->type;
                     node = current->next;
                     break;

@@ -25,16 +25,15 @@ typedef struct Overlay62Transform {
 } Overlay62Transform;
 
 extern f32 gOverlay62PulseReloc;
-extern s32 gOverlay62InputMaskReloc;
+extern s32 D_800D3180;
 extern u8 gOverlay62State[];
 extern s32 gOverlay62Values[];
 extern s32 gOverlay62Value8;
 extern s32 gOverlay62ValueC;
-extern Overlay62Root *gOverlay62Root;
-extern Overlay62Gfx *gOverlay62DisplayListCursorReloc;
-extern u8 gOverlay62ViewportReloc[];
-extern u8 gOverlay62LayoutResourceAReloc[];
-extern u8 gOverlay62LayoutResourceBReloc[];
+extern Overlay62Root *D_8007C0B8;
+extern Overlay62Gfx *D_800D3140;
+extern u8 D_800D3144[];
+extern u8 D_800D3148[];
 extern u8 gOverlay62FirstItemReloc[];
 extern u8 gOverlay62CommitContextReloc[];
 
@@ -43,28 +42,27 @@ extern u8 gOverlay62CommitContextReloc[];
 #define gOverlay62Handle14 (*(void **)(gOverlay62State + 0x14))
 #define gOverlay62Handle18 (*(void **)(gOverlay62State + 0x18))
 
-extern void overlay62SetHandleAlphaReloc(void *handle, s32 alpha);
-extern void overlay62EntryColorReloc(s32 red, s32 green, s32 blue, s32 alpha);
-extern void overlay62StartTransitionReloc(s32 type, s32 arg1, s32 arg2,
+extern void overlay45SetMode(void *handle, s32 alpha);
+extern void rcpSetScreenColour(s32 red, s32 green, s32 blue, s32 alpha);
+extern void mainChangeLevel(s32 type, s32 arg1, s32 arg2,
                                           s32 arg3, s32 arg4, s32 arg5);
-extern void overlay62SetBackdropReloc(s32 red, s32 green, s32 blue, s32 alpha);
-extern void overlay62PrepareDisplayReloc(Overlay62Gfx **commands,
+extern void camStandardOrtho(Overlay62Gfx **commands,
                                          void *viewport);
-extern void overlay62SelectLayerReloc(s32 layer);
-extern void overlay62DrawLayoutReloc(Overlay62Gfx **commands, void *resourceA,
+extern void sprSetTextureFilter(s32 layer);
+extern void camDo2DSprite(Overlay62Gfx **commands, void *resourceA,
                                      void *resourceB,
                                      Overlay62Transform *transform,
                                      void *handle, s32 arg5, s32 alpha);
-extern void overlay62SetRenderModeReloc(s32 mode);
-extern void overlay62SetCombineModeReloc(s32 mode);
-extern void overlay62SetGeometryReloc(s32 a, s32 b, s32 c, s32 d);
-extern void overlay62SetPrimitiveColorReloc(s32 red, s32 green, s32 blue,
+extern void sprSetTextureFilter(s32 mode);
+extern void fontUseFont(s32 mode);
+extern void fontBackground(s32 a, s32 b, s32 c, s32 d);
+extern void fontColour(s32 red, s32 green, s32 blue,
                                             s32 alpha, s32 intensity);
-extern void overlay62DrawItemReloc(Overlay62Gfx **commands, s32 x, s32 y,
+extern void fontPrintXY(Overlay62Gfx **commands, s32 x, s32 y,
                                    void *item, s32 mode);
-extern void overlay62CommitFrameReloc(s32 handle, s32 *state, s32 mode,
+extern void texAnimateTexSprite(s32 handle, s32 *state, s32 mode,
                                       void *context, s32 updateRate);
-extern void overlay62DrawLabelReloc(Overlay62Gfx **commands, s32 *state,
+extern void func_8002F618(Overlay62Gfx **commands, s32 *state,
                                     s32 x, s32 y, s32 red, s32 green,
                                     s32 blue, s32 alpha);
 
@@ -118,14 +116,14 @@ void overlay62Update(s32 updateRate) {
         green = 0x40 + ((gOverlay62Value8 * -0x40) >> 5);
         blue = 0x80 + ((gOverlay62Value8 * -0x80) >> 5);
 
-        overlay62SetHandleAlphaReloc(gOverlay62Handle14, alpha);
-        overlay62EntryColorReloc(red & 0xFF, green & 0xFF, blue & 0xFF,
+        overlay45SetMode(gOverlay62Handle14, alpha);
+        rcpSetScreenColour(red & 0xFF, green & 0xFF, blue & 0xFF,
                                  green);
     } else if ((gOverlay62ValueC != 0) || (gOverlay62Value10 != 0)) {
         gOverlay62ValueC -= updateRate;
         if (gOverlay62ValueC <= 0) {
             gOverlay62ValueC = 0;
-            overlay62StartTransitionReloc(0xC, 0, 0, 4, 1, 0);
+            mainChangeLevel(0xC, 0, 0, 4, 1, 0);
             gOverlay62Value10 = 1;
         }
 
@@ -143,19 +141,19 @@ void overlay62Update(s32 updateRate) {
         green = 0x40;
         blue = 0x80;
 
-        if ((gOverlay62InputMaskReloc & 0x9000) != 0) {
+        if ((D_800D3180 & 0x9000) != 0) {
             gOverlay62ValueC = 0x20;
         }
     }
 
-    overlay62SetBackdropReloc(red & 0xFF, green & 0xFF, blue & 0xFF, green);
-    overlay62SetHandleAlphaReloc(gOverlay62Handle14, alpha);
-    overlay62PrepareDisplayReloc(&gOverlay62DisplayListCursorReloc,
-                                 gOverlay62ViewportReloc);
+    rcpSetScreenColour(red & 0xFF, green & 0xFF, blue & 0xFF, green);
+    overlay45SetMode(gOverlay62Handle14, alpha);
+    camStandardOrtho(&D_800D3140,
+                                 D_800D3144);
 
-    OVERLAY62_EMIT(&gOverlay62DisplayListCursorReloc, 0xE7000000, 0);
-    OVERLAY62_EMIT(&gOverlay62DisplayListCursorReloc, 0xFA000000, 0xFFFFFFFF);
-    OVERLAY62_EMIT(&gOverlay62DisplayListCursorReloc, 0xFB000000, 0xFFFFFF00);
+    OVERLAY62_EMIT(&D_800D3140, 0xE7000000, 0);
+    OVERLAY62_EMIT(&D_800D3140, 0xFA000000, 0xFFFFFFFF);
+    OVERLAY62_EMIT(&D_800D3140, 0xFB000000, 0xFFFFFF00);
 
     transform.x = 0;
     transform.y = 0;
@@ -166,36 +164,36 @@ void overlay62Update(s32 updateRate) {
     transform.zero0 = 0.0f;
     transform.zero1 = 0.0f;
 
-    overlay62SelectLayerReloc(0);
-    overlay62DrawLayoutReloc(&gOverlay62DisplayListCursorReloc,
-                             gOverlay62LayoutResourceAReloc,
-                             gOverlay62LayoutResourceBReloc, &transform,
+    sprSetTextureFilter(0);
+    camDo2DSprite(&D_800D3140,
+                             D_800D3144,
+                             D_800D3148, &transform,
                              gOverlay62Handle18, 0, 0xFF);
-    overlay62SetRenderModeReloc(1);
-    overlay62SetCombineModeReloc(2);
-    overlay62SetGeometryReloc(0, 0, 0, 0);
-    overlay62SetPrimitiveColorReloc(0xFF, 0xFF, 0, 0xFF, alpha);
+    sprSetTextureFilter(1);
+    fontUseFont(2);
+    fontBackground(0, 0, 0, 0);
+    fontColour(0xFF, 0xFF, 0, 0xFF, alpha);
 
-    overlay62DrawItemReloc(&gOverlay62DisplayListCursorReloc, 0xC4, 0x28,
+    fontPrintXY(&D_800D3140, 0xC4, 0x28,
                            gOverlay62FirstItemReloc, 4);
-    overlay62DrawItemReloc(&gOverlay62DisplayListCursorReloc, 0x74, 0x50,
-                           gOverlay62Root->items[0], 4);
-    overlay62DrawItemReloc(&gOverlay62DisplayListCursorReloc, 0x74, 0x5A,
-                           gOverlay62Root->items[1], 4);
-    overlay62DrawItemReloc(&gOverlay62DisplayListCursorReloc, 0x74, 0x64,
-                           gOverlay62Root->items[2], 4);
-    overlay62DrawItemReloc(&gOverlay62DisplayListCursorReloc, 0x74, 0x6E,
-                           gOverlay62Root->items[3], 4);
-    overlay62DrawItemReloc(&gOverlay62DisplayListCursorReloc, 0x74, 0x78,
-                           gOverlay62Root->items[4], 4);
-    overlay62DrawItemReloc(&gOverlay62DisplayListCursorReloc, 0x74, 0xB4,
-                           gOverlay62Root->items[5], 4);
+    fontPrintXY(&D_800D3140, 0x74, 0x50,
+                           D_8007C0B8->items[0], 4);
+    fontPrintXY(&D_800D3140, 0x74, 0x5A,
+                           D_8007C0B8->items[1], 4);
+    fontPrintXY(&D_800D3140, 0x74, 0x64,
+                           D_8007C0B8->items[2], 4);
+    fontPrintXY(&D_800D3140, 0x74, 0x6E,
+                           D_8007C0B8->items[3], 4);
+    fontPrintXY(&D_800D3140, 0x74, 0x78,
+                           D_8007C0B8->items[4], 4);
+    fontPrintXY(&D_800D3140, 0x74, 0xB4,
+                           D_8007C0B8->items[5], 4);
 
-    overlay62CommitFrameReloc(*(s32 *)(gOverlay62State + 4),
+    texAnimateTexSprite(*(s32 *)(gOverlay62State + 4),
                               gOverlay62Values, 2,
                               gOverlay62CommitContextReloc, updateRate);
     gOverlay62Values[2] = (s32)(gOverlay62PulseReloc * 65536.0f);
-    overlay62DrawLabelReloc(&gOverlay62DisplayListCursorReloc,
+    func_8002F618(&D_800D3140,
                             gOverlay62Values, 0x74, 0xCC,
                             0xFF, 0xFF, 0xFF, alpha);
 }

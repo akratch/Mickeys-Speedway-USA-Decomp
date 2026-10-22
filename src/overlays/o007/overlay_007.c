@@ -73,7 +73,7 @@ Overlay7Entry *overlay7AcquireEntry(Overlay7Owner *owner, u16 value, u8 type) {
         do {
             if (entry->active != 0 &&
                 ((entry->type < type && entry->owner == owner) ||
-                 (*ownerPriority < gOverlay7PriorityThresholdReloc &&
+                 (*ownerPriority < D_8007C1A0 &&
                   type >= entry->type))) {
                 if (entry->nested != 0) {
                     entry->nested->active = 1;

@@ -29,11 +29,11 @@ void overlay24Update(Overlay24Object *object, s32 updateRate) {
     target = state->target;
 
     if (target == 0) {
-        overlay24QueueCleanupReloc(object);
+        func_80006EA0(object);
     } else {
         targetState = target->state;
         eventId = 9;
-        overlay24UpdateRelationReloc(*object->relationResource, &eventId, 20,
+        texAnimateSprite(*object->relationResource, &eventId, 20,
                                      &object->relationValue, updateRate);
 
         integrationTicks = 0;
@@ -65,10 +65,10 @@ void overlay24Update(Overlay24Object *object, s32 updateRate) {
                 if (state->phaseTicks >= 15) {
                     if (((targetState->flags & 1) == 0) ||
                         (targetState->status == 0)) {
-                        overlay24EmitEventReloc(9, 0);
+                        amSndPlay(9, 0);
 
-                        if (((u16)gOverlay24InputFlagsReloc & 2) != 0) {
-                            if (overlay24GetInputStateReloc()->mode != 1) {
+                        if (((u16)D_8007BF1C & 2) != 0) {
+                            if (func_80028F54()->mode != 1) {
                                 if (targetState->adjustment > 0) {
                                     targetState->adjustment =
                                         (u8)(targetState->adjustment - 1);
@@ -105,7 +105,7 @@ void overlay24Update(Overlay24Object *object, s32 updateRate) {
                     if (state->remaining > 0) {
                         state->mode = 0;
                     } else {
-                        overlay24QueueCleanupReloc(object);
+                        func_80006EA0(object);
                     }
                     state->progress = 0;
                 }
@@ -153,8 +153,8 @@ void overlay24RenderState(Overlay24Command **commands, void *mtx, void *vertices
     } else {
         opacity = 0xFF;
     }
-    if (gOverlay24FadeActiveReloc != 0) {
-        opacity = (opacity * gOverlay24FadeScaleReloc) >> 8;
+    if (D_8007C854 != 0) {
+        opacity = (opacity * D_8007C85C) >> 8;
     }
 
     alpha = (object->opacity * state->enabled) >> 8;
@@ -183,7 +183,7 @@ void overlay24RenderState(Overlay24Command **commands, void *mtx, void *vertices
                        O24_SHIFTL(0, 0, 8));
     }
 
-    overlay24RenderHelperReloc(renderCommands, mtx, vertices, object,
+    camDoSprite(renderCommands, mtx, vertices, object,
                                *object->resource, 0xC, 0xFF);
 
     {

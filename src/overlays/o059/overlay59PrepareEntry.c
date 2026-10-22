@@ -50,7 +50,7 @@ typedef struct Overlay59DescriptorGroup {
 } Overlay59DescriptorGroup;
 
 extern Overlay59DescriptorGroup gOverlay59DescriptorTables[];
-extern void overlay59PrepareReleaseReloc(Overlay59Entry *entry);
+extern void overlay59Release(Overlay59Entry *entry);
 extern void *texLoadTexture(s32 textureId);
 
 s32 overlay59PrepareEntry(Overlay59Entry *entry, s32 tableIndex, s32 itemIndex)
@@ -64,7 +64,7 @@ s32 overlay59PrepareEntry(Overlay59Entry *entry, s32 tableIndex, s32 itemIndex)
   result = 1;
   if (descriptor != entry->owner)
   {
-    overlay59PrepareReleaseReloc(entry);
+    overlay59Release(entry);
     entry->owner = descriptor;
     count = 0;
     value = *descriptor;
@@ -105,7 +105,7 @@ s32 overlay59PrepareEntry(Overlay59Entry *entry, s32 tableIndex, s32 itemIndex)
     }
     if (result == 0)
     {
-      overlay59PrepareReleaseReloc(entry);
+      overlay59Release(entry);
     }
   }
   return result;

@@ -19,9 +19,9 @@ extern s32 D_1BC;
 extern s32 D_1C4;
 extern void *D_1CC[5];
 extern s32 D_204;
-extern s8 D_cfgA;
-extern s8 D_cfgB;
-extern s8 D_cfgC;
+extern s8 D_8007BEF8;
+extern s8 D_8007BEFC;
+extern s8 D_8007BF0C;
 extern s32 D_lastMode;
 
 extern void func_80000F94(s32, void *);
@@ -101,9 +101,9 @@ void overlay11UpdateFiveOptionMenu(s32 updateRate) {
                 return;
             }
             if (action == (void *)1) {
-                D_cfgA = 1;
-                D_cfgB = 0;
-                D_cfgC = 0;
+                D_8007BEF8 = 1;
+                D_8007BEFC = 0;
+                D_8007BF0C = 0;
                 object = func_80005820(D_1C4);
                 sub = object->sub64;
                 transition = func_8002675C();

@@ -20,7 +20,7 @@ typedef struct Overlay14RenderRect {
     s32 intensity;
 } Overlay14RenderRect;
 
-extern void overlay14SubmitRectsReloc(void *context, s32 count,
+extern void frontDrawRectangles(void *context, s32 count,
                                       Overlay14RenderRect *rects, s32 flags);
 
 /* Pinned DKR v77/v80 and JFG object scans found no exact donor. */
@@ -60,5 +60,5 @@ void overlay14BuildRects(void *context, const Overlay14PackedRect *packed,
         rect++;
     }
 
-    overlay14SubmitRectsReloc(context, count, rects, 0);
+    frontDrawRectangles(context, count, rects, 0);
 }

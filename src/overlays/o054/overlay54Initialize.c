@@ -10,7 +10,7 @@ typedef struct O54State {
 } O54State;
 
 extern u8 gOverlay54ExternalResource[];
-extern u8 gOverlay54ExternalObject[];
+extern u8 D_800D3550[];
 extern s32 gOverlay54ExternalWord;
 
 /* Overlay 54's initialized data, in ROM order: this TU is its byte owner.
@@ -106,17 +106,17 @@ static s16 sOverlay54Tail66E;
 
 extern s16 gOverlay54Data00;
 
-extern u8 *o54GetContext(void);
+extern u8 *func_80028F54(void);
 extern void o54LoadResource();
-extern void o54PrepareResource(void *resource);
-extern void o54SetMode(s32 mode);
-extern void o54CommitMode(s32 mode);
-extern void o54SetupBounds(s32 arg0);
-extern s16 o54QueryValue(void);
+extern void setupFrontEndList(void *resource);
+extern void amTunePlay(s32 mode);
+extern void runlinkDownloadCode(s32 mode);
+extern void fontUseFont(s32 arg0);
+extern s16 levelGetNumber(void);
 extern s32 o54CreateObject(void);
-extern s32 o54GetObjectId(s32 object);
-extern void *o54Allocate(s32 id, s32 width, s32 height, s32 format);
-extern void o54Configure(void *object, s32 mode);
+extern s32 func_8003A5A0(s32 object);
+extern void *overlay45CreateDescriptor(s32 id, s32 width, s32 height, s32 format);
+extern void overlay45SetMode(void *object, s32 mode);
 
 extern void overlay54PatchIndices(void *entry);
 extern void overlay54CopyOffsetRecords(void *src, void *dst, s32 mode, s32 index);
@@ -141,13 +141,13 @@ void func_overlay_054_F0000000_189ECA0(void) {
     s32 i;
     u8 *context;
 
-    context = o54GetContext();
+    context = func_80028F54();
     o54LoadResource(sOverlay54ResourceIds);
     o54LoadResource(gOverlay54ExternalResource);
-    o54PrepareResource(sOverlay54PrepareIds);
-    o54SetMode(4);
+    setupFrontEndList(sOverlay54PrepareIds);
+    amTunePlay(4);
     sOverlay54Mode = 0x104;
-    o54CommitMode(0xB);
+    runlinkDownloadCode(0xB);
     overlay54PatchIndices(sOverlay54ListA);
     overlay54PatchIndices(sOverlay54ListB);
     overlay54PatchIndices(sOverlay54ListC);
@@ -176,9 +176,9 @@ void func_overlay_054_F0000000_189ECA0(void) {
 
     sOverlay54Height = -80.0f;
     o54LoadResource();
-    gOverlay54Data00 = o54QueryValue();
-    *(s16 *)(gOverlay54ExternalObject + 0x26) = 0x28;
-    *(f32 *)(gOverlay54ExternalObject + 0x28) = 1.0f;
+    gOverlay54Data00 = levelGetNumber();
+    *(s16 *)(D_800D3550 + 0x26) = 0x28;
+    *(f32 *)(D_800D3550 + 0x28) = 1.0f;
     sOverlay54State.field08 = 0;
     sOverlay54State.field00 = gOverlay54ExternalWord;
     sOverlay54State.field04 = 0;
@@ -189,9 +189,9 @@ void func_overlay_054_F0000000_189ECA0(void) {
     sOverlay54Bounds[2] = -0x420;
     sOverlay54Bounds[3] = 0x4E0;
     if (*context == 3) {
-        o54SetupBounds(3);
-        sOverlay54Current = o54Allocate(o54GetObjectId(o54CreateObject()), 0xA0, 0x78, 0xC);
-        o54Configure(sOverlay54Current, 0);
+        fontUseFont(3);
+        sOverlay54Current = overlay45CreateDescriptor(func_8003A5A0(o54CreateObject()), 0xA0, 0x78, 0xC);
+        overlay45SetMode(sOverlay54Current, 0);
     } else {
         sOverlay54Current = 0;
     }

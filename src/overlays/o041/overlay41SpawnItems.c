@@ -27,7 +27,7 @@ typedef struct Overlay41FloatVector {
 } Overlay41FloatVector;
 
 /* Fresh pinned DKR v77/v80 and JFG scans found no exact donor. */
-extern Overlay41Root **gOverlay41RootsReloc;
+extern Overlay41Root **D_800D6B00;
 extern s32 mathRnd(s32 lower, s32 upper);
 extern void mathOneFloatPY(Overlay41ShortPair *input,
                            Overlay41FloatVector *output);
@@ -48,7 +48,7 @@ void overlay41SpawnItems(s32 rootIndex, s32 count, s32 mode, s32 centerX,
     Overlay41Item *item;
     f32 scale;
 
-    root = gOverlay41RootsReloc[rootIndex];
+    root = D_800D6B00[rootIndex];
     scale = 1.0f;
     if (root == 0) {
         return;

@@ -90,11 +90,11 @@
                          SHIFTL((1 << 10), 0, 16)); \
 }
 
-#define ready_call overlay42ReadinessReloc
-#define size_call overlay42GetSizeReloc
-#define segment_call overlay42RspSegmentReloc
-#define setup_a_call overlay42SetupDisplayAReloc
-#define setup_b_call overlay42SetupDisplayBReloc
+#define ready_call viGetTrippleBuffer
+#define size_call viGetCurrentSize
+#define segment_call rsp_segment
+#define setup_a_call rcpInitSp
+#define setup_b_call rcpInitDpNoSize
 
 #define gOverlay42BufferIndex (*(s32 *)(gO42BufferIndexBaseReloc + 8))
 #define gO42PublishedSourceReloc (*(void **)(gO42PublishedSourceBaseReloc + 8))
@@ -118,26 +118,26 @@ Overlay42InitializedData gOverlay42InitializedData = {
 /* DKR thread3_main has the semantic double-display-list lifecycle, not this exact allocator sequence. */
 void overlay42Init(void) {
     overlay42PrepareReloc();
-    gOverlay42Buffer0 = overlay42AllocReloc(0x2000, 0x87);
-    gOverlay42Buffer1 = overlay42AllocReloc(0x2000, 0x87);
+    gOverlay42Buffer0 = mmAlloc(0x2000, 0x87);
+    gOverlay42Buffer1 = mmAlloc(0x2000, 0x87);
     gOverlay42Buffer2 = 0;
-    gOverlay42Ready = 1;
+    D_8007A20C = 1;
 }
 
 /* DKR thread3_main has the semantic double-display-list teardown, not an exact donor. */
 void overlay42Release(void) {
     if (gOverlay42Buffers[0] != 0) {
-        overlay42FreeReloc(gOverlay42Buffers[0]);
+        mmFree(gOverlay42Buffers[0]);
     }
     if (gOverlay42Buffers[1] != 0) {
-        overlay42FreeReloc(gOverlay42Buffers[1]);
+        mmFree(gOverlay42Buffers[1]);
     }
     gOverlay42Buffers[0] = 0;
     gOverlay42Buffers[1] = 0;
     gOverlay42State0 = 0;
     gOverlay42State1 = 0;
-    gOverlay42Ready = 0;
-    gOverlay42Active = 0;
+    D_8007A20C = 0;
+    D_8007A410 = 0;
 }
 
 /* Both local DKR v77/v80 trees are negative for this wrapper. */
@@ -161,18 +161,18 @@ void overlay42DrawCapturedBuffer(void *callbackArgument) {
     displayList = gOverlay42Buffers[gOverlay42BufferIndex];
     size_call(&width, &height);
     gO42PublishedStartReloc = displayList;
-    gO42PublishedSourceReloc = gO42Segment1BaseReloc;
+    gO42PublishedSourceReloc = D_800D2FA4;
 
     segment_call(&displayList, 0, 0);
-    segment_call(&displayList, 1, gO42Segment1BaseReloc);
-    segment_call(&displayList, 2, gO42Segment2BaseReloc);
+    segment_call(&displayList, 1, D_800D2FA4);
+    segment_call(&displayList, 2, D_800D2FAC);
     setup_a_call(&displayList);
     setup_b_call(&displayList);
 
     source = (u16 *)displayList++;
     CLEAR_GEOM((Gfx *)source, 0x00010001U);
     SET_COLOR_IMAGE(displayList++, width,
-                    (u32)gO42Segment1BaseReloc + 0x80000000U);
+                    (u32)D_800D2FA4 + 0x80000000U);
     SET_SCISSOR(displayList++, width, height);
     SET_LIGHTS_ZERO(displayList++);
     PIPE_SYNC(displayList++);
@@ -186,7 +186,7 @@ void overlay42DrawCapturedBuffer(void *callbackArgument) {
     SET_COMBINE(displayList++);
     SET_RENDER(displayList++);
 
-    source = gO42TextureSourceReloc;
+    source = D_800D2FA0;
     row = 0;
     while ((u32)row < (u32)height) {
         rows = height - row;
@@ -209,9 +209,9 @@ void overlay42DrawCapturedBuffer(void *callbackArgument) {
 /* DKR video.c::fb_swap is a semantic index-toggle relative, not an exact donor. */
 void overlay42Present(void) {
     if (gOverlay42Buffer0 != 0) {
-        overlay42PresentReloc(
+        rcpFast3d(
             gOverlay42Buffer0, gOverlay42Buffer1, 5, gOverlay42Buffer2);
-        gOverlay42Active = 1;
+        D_8007A410 = 1;
         gOverlay42BufferIndex ^= 1;
     }
 }

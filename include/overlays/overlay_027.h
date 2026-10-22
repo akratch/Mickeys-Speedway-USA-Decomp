@@ -113,7 +113,7 @@ typedef struct Overlay27UseObject {
     Overlay27UseResource *resource;
 } Overlay27UseObject;
 
-extern s32 gO27Active;
+extern s32 D_8007A1E4;
 extern f32 gO27Scale0;
 extern f32 gO27EaseInput;
 extern f32 gO27Scale8;

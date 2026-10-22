@@ -25,13 +25,13 @@ typedef struct Overlay44AnimationState {
     void *handles[4];
 } Overlay44AnimationState;
 
-extern Overlay44AnimationState gOverlay44StatePool[3];
-extern Overlay44FrameSource *gOverlay44FrameSources;
-extern void *overlay44AllocateFrameReloc(s32 size, s32 tag);
-extern void overlay44CleanupStateReloc(Overlay44AnimationState *state);
-extern s32 overlay44UploadFrameReloc(u32 assetIndex, void *address,
+extern Overlay44AnimationState D_800D76D8[3];
+extern Overlay44FrameSource *D_800D76D0;
+extern void *mmAlloc(s32 size, s32 tag);
+extern void overlay44ReleaseHandles(Overlay44AnimationState *state);
+extern s32 piRomLoadSection(u32 assetIndex, void *address,
                                      s32 assetOffset, s32 size);
-extern void overlay44FinishFramesReloc(void);
+extern void viFrameRateReset(void);
 
 /* Mickey-local reconstruction; no external donor body was used. */
 Overlay44AnimationState *overlay44CreateAnimationState(
@@ -43,7 +43,7 @@ Overlay44AnimationState *overlay44CreateAnimationState(
     s32 allocationSize;
     s32 handleIndex;
 
-    state = &gOverlay44StatePool[0];
+    state = &D_800D76D8[0];
     remainingSlot = 2;
     while ((state->sourceIndex >= 0) && remainingSlot--) {
         state++;
@@ -52,7 +52,7 @@ Overlay44AnimationState *overlay44CreateAnimationState(
         return 0;
     }
 
-    source = &gOverlay44FrameSources[sourceIndex];
+    source = &D_800D76D0[sourceIndex];
     switch (source->storageMode) {
         case 0:
             storageScale = 0x20;
@@ -91,29 +91,29 @@ Overlay44AnimationState *overlay44CreateAnimationState(
         for (handleIndex = 0; handleIndex < 4; handleIndex++) {
             state->cachedFrame[handleIndex] = -1;
             state->handles[handleIndex] =
-                overlay44AllocateFrameReloc(allocationSize, 0x87);
+                mmAlloc(allocationSize, 0x87);
         }
 
         if ((state->handles[0] == 0) || (state->handles[1] == 0) ||
             (state->handles[2] == 0) || (state->handles[3] == 0)) {
-            overlay44CleanupStateReloc(state);
+            overlay44ReleaseHandles(state);
             state = 0;
         } else {
             s32 frameData;
 
             frameData = source->dataOffset;
             state->cachedFrame[0] = 0;
-            overlay44UploadFrameReloc(0x42, state->handles[0], frameData,
+            piRomLoadSection(0x42, state->handles[0], frameData,
                                       source->frameSize);
             {
                 s32 secondData;
 
                 secondData = source->dataOffset + source->frameSize;
                 state->cachedFrame[1] = 1;
-                overlay44UploadFrameReloc(0x42, state->handles[1], secondData,
+                piRomLoadSection(0x42, state->handles[1], secondData,
                                           source->frameSize);
             }
-            overlay44FinishFramesReloc();
+            viFrameRateReset();
         }
     }
 

@@ -8,7 +8,7 @@ typedef struct Overlay89Rule {
     u8 value;
 } Overlay89Rule;
 
-extern s32 overlay89QueryReloc(u8, Overlay89Rule *);
+extern s32 func_8002905C(u8, Overlay89Rule *);
 
 /* DKR v77/v80 and JFG contain no exact donor for this rule evaluator. */
 s32 overlay89Evaluate(Overlay89Rule *rule) {
@@ -16,9 +16,9 @@ s32 overlay89Evaluate(Overlay89Rule *rule) {
         case 0:
             return rule->value;
         case 1:
-            return overlay89QueryReloc(rule->index, rule);
+            return func_8002905C(rule->index, rule);
         case 2:
-            return overlay89QueryReloc(rule->index, rule) == 0;
+            return func_8002905C(rule->index, rule) == 0;
         default:
             return 1;
     }

@@ -14,7 +14,7 @@ typedef struct {
     Overlay3State *state;
 } Overlay3Object;
 
-extern Overlay3Object **overlay3GetObjectsReloc(s32 *count);
+extern Overlay3Object **func_80005750(s32 *count);
 
 /* DKR v77/v80 only provide generic active-object reset relatives. */
 void overlay3ResetObjects(void) {
@@ -22,7 +22,7 @@ void overlay3ResetObjects(void) {
     Overlay3Object **objects;
     Overlay3State *state;
 
-    objects = overlay3GetObjectsReloc(&count);
+    objects = func_80005750(&count);
     if (count--) {
         do {
             state = objects[count]->state;

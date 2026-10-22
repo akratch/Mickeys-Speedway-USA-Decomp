@@ -24,7 +24,7 @@ typedef struct Overlay3State {
 } Overlay3State;
 
 extern Overlay3Object *gOverlay3Objects[];
-extern void overlay3TouchObjectReloc(s32 group);
+extern void overlay3TouchObject(s32 group);
 extern Overlay3Object *func_overlay_003_F000027C_1859FAC(
     Overlay3Object *anchor, Overlay3State *state);
 extern Overlay3Object *func_overlay_003_F00003B0_185A0E0(
@@ -47,7 +47,7 @@ void overlay3SelectTarget(
     if (selected == gOverlay3Objects[state->group]) {
         state->sameObjectTimer += updateRate;
         if (state->sameObjectTimer > 300.0f) {
-            overlay3TouchObjectReloc(state->group);
+            overlay3TouchObject(state->group);
             selected = func_overlay_003_F000027C_1859FAC(anchor, state);
             state->sameObjectTimer = 0;
         }

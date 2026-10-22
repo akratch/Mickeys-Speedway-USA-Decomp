@@ -16,17 +16,17 @@ typedef struct Overlay86Owner {
 } Overlay86Owner;
 
 /* Fresh pinned DKR v77/v80 and JFG scans found no exact donor for this flow. */
-extern void overlay86PrepareReloc(Overlay86Current *current, void *resource,
+extern void func_8005AF14(Overlay86Current *current, void *resource,
                                   Overlay86Owner *owner);
-extern void overlay86SubmitReloc();
+extern void lightObject();
 
 void overlay86ProcessCurrent(Overlay86Owner *owner) {
     Overlay86Current *current;
 
     current = *owner->currentSlot;
     if (current != NULL && current->resource != NULL && current->active != 0) {
-        overlay86PrepareReloc(current, current->resource, owner);
-        overlay86SubmitReloc(owner, current, owner->context,
+        func_8005AF14(current, current->resource, owner);
+        lightObject(owner, current, owner->context,
                              current->values[current->index]);
         current->active = 0;
     }

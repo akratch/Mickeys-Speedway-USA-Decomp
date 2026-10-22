@@ -23,8 +23,8 @@ typedef struct Overlay99GridPoint {
     u8 alpha;
 } Overlay99GridPoint;
 
-extern s32 gOverlay99CurrentGrid;
-extern Overlay99GridPoint *gOverlay99Grids[];
+extern s32 D_8007BE84;
+extern Overlay99GridPoint *D_8007BE88[];
 extern s32 gOverlay99GridWidth;
 extern s32 gOverlay99GridHeight;
 extern s32 gOverlay99WidthMinusOne;
@@ -35,8 +35,8 @@ extern s32 gOverlay99Arg5;
 /* 65536 / 360 as the shipped pool spells it, four decimals. */
 #define G_ANGLE_UNITS_PER_DEGREE 182.0444f
 
-extern f32 overlay99AngleWaveReloc(s32 angle);
-extern f32 overlay99AngleWavePhaseReloc(s32 angle);
+extern f32 func_8002A8BC(s32 angle);
+extern f32 func_8002A8C0(s32 angle);
 extern f32 overlay99ProjectVector(f32 x, f32 y, f32 z, f32 dx, f32 dy);
 
 /* Matched 2026-10-02, 190 words to 0, written from the listing. The
@@ -79,7 +79,7 @@ void overlay99ApplySegment(Overlay99Influence *influence, f32 t) {
     invLength = 1.0f / influence->longitudinalScale;
     phase = (s32)(influence->angleDegrees * G_ANGLE_UNITS_PER_DEGREE);
     invAngle = 1.0f / influence->angleScale;
-    point = gOverlay99Grids[gOverlay99CurrentGrid];
+    point = D_8007BE88[D_8007BE84];
     if (point != 0) {
         for (j = 0; j < gOverlay99GridHeight; j++) {
             for (i = 0; i < gOverlay99GridWidth; i++) {
@@ -92,7 +92,7 @@ void overlay99ApplySegment(Overlay99Influence *influence, f32 t) {
                 if (distance > 0.0f) {
                     along = distance * invLength;
                     if ((along > 0.0f) && (along < 1.0f)) {
-                        wave = overlay99AngleWaveReloc(
+                        wave = func_8002A8BC(
                             (s32)(distance * invLength * 16384.0f));
                         width = influence->widthScale * along;
                         t = overlay99ProjectVector(normalZ, deltaX, sideD,
@@ -104,9 +104,9 @@ void overlay99ApplySegment(Overlay99Influence *influence, f32 t) {
                             t = width - t;
                             edge = influence->edgeWidth;
                             if (t < edge) {
-                                along = overlay99AngleWaveReloc(
+                                along = func_8002A8BC(
                                     (s32)((t * 16384.0f) / edge));
-                                amount = overlay99AngleWavePhaseReloc(
+                                amount = func_8002A8C0(
                                              (s32)(t * 65536.0f *
                                                    invAngle) +
                                              phase) *

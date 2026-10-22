@@ -13,21 +13,21 @@ typedef struct {
     u8 active;
 } Overlay57Node;
 
-extern Overlay57Node *overlay57FindNodeReloc(s32 id);
-extern void overlay57ConfigureNodeReloc(Overlay57Target *target, s32 argument,
+extern Overlay57Node *func_800508B4(s32 id);
+extern void func_8005AD64(Overlay57Target *target, s32 argument,
                                         s32 mode, f32 parameter);
 
 /* DKR v77/v80 and JFG have no exact donor for this node-update routine. */
 void overlay57SetNodeValue(s32 id, s32 argument, f32 value) {
     Overlay57Node *node;
 
-    node = overlay57FindNodeReloc(id & 0xFF);
+    node = func_800508B4(id & 0xFF);
     if ((node != NULL) && (node->target != NULL)) {
         if (value < 0.0f) {
-            overlay57ConfigureNodeReloc(node->target, argument, -1,
+            func_8005AD64(node->target, argument, -1,
                                         node->target->parameter);
         } else {
-            overlay57ConfigureNodeReloc(node->target, argument, -1, 0.0f);
+            func_8005AD64(node->target, argument, -1, 0.0f);
         }
         node->value = value;
         node->active = 0;

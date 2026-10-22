@@ -14,8 +14,8 @@ typedef struct Overlay99Segment {
     u8 bytes[0x30];
 } Overlay99Segment;
 
-extern s32 gOverlay99CurrentGrid;
-extern Overlay99GridPoint *gOverlay99Grids[];
+extern s32 D_8007BE84;
+extern Overlay99GridPoint *D_8007BE88[];
 extern s32 gOverlay99SegmentCount;
 extern Overlay99Segment gOverlay99Segments[];
 extern s32 gOverlay99GridWidth;
@@ -40,7 +40,7 @@ void overlay99BuildHeightGrid(f32 scale, void *unused, s32 widthMinusOne,
     s32 i;
     s32 value;
 
-    point = gOverlay99Grids[gOverlay99CurrentGrid];
+    point = D_8007BE88[D_8007BE84];
     if (point == 0) {
         return;
     }
@@ -77,7 +77,7 @@ void overlay99BuildHeightGrid(f32 scale, void *unused, s32 widthMinusOne,
     widthPtr = &gOverlay99GridWidth;
     heightPtr = &gOverlay99GridHeight;
     i = *heightPtr * *widthPtr;
-    point = gOverlay99Grids[gOverlay99CurrentGrid];
+    point = D_8007BE88[D_8007BE84];
     while (i--) {
         value = point->height - 5;
         if (value < 0) {

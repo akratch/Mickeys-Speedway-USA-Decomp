@@ -5601,7 +5601,6 @@ func_overlay_050_F0001C54_18985C4 = overlay50SubmitTimeGlyphs;
 
 /* overlay 51: overlay_051.c.o */
 func_overlay_051_F0000000_1899900 = overlay51Initialize;
-func_overlay_051_F0000080_1899980 = overlay51PatchIndices;
 func_overlay_051_F0000858_189A158 = overlay51ReleaseState;
 
 /* overlay 52: overlay52PatchIndices.c.o */

@@ -5,8 +5,12 @@
  * The pinned DKR v77/v80 and JFG scans found no exact donor for these
  * functions. The TU is built with -Wab,-r4300_mul (mk/overlays.mk) for the
  * HUD update's easing loop and clock-hand multiply; the other three
- * functions compile identically with and without it.
+ * functions compile identically with and without it. The index patcher is
+ * module-private (no ORT row), so it is static and its calls are JUMP
+ * records; the initializer passes it the glyph tables unprototyped.
  */
+
+static void overlay51PatchIndices();
 
 void overlay51Initialize(void) {
     overlay51CreateReloc(gOverlay51Resource0);
@@ -21,7 +25,7 @@ void overlay51Initialize(void) {
     gOverlay51Handle = overlay51CreateReloc();
 }
 
-void overlay51PatchIndices(OverlayPatchIndexEntry *entry) {
+static void overlay51PatchIndices(OverlayPatchIndexEntry *entry) {
     while (entry->first != 0) {
         entry->first = (s32) D_800D31C8[entry->first];
         if (entry->second != 0) {

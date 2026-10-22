@@ -294,6 +294,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     37: "overlay_037_padding",
     39: "overlay_039_padding",
     40: "overlay_040_padding",
+    51: "overlay_051_padding",
     49: "overlay_049_padding",
     38: "overlay_038_padding",
 }

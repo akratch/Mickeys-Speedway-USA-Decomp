@@ -4129,20 +4129,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o051/overlay_051.c.o",
-      "offset": 0,
-      "overlay": 51,
-      "size": 2220,
-      "source": "src/overlays/o051/overlay_051.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o052/overlay52Cleanup.c.o",
       "offset": 8344,
       "overlay": 52,
@@ -8593,10 +8579,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 592,
+      "metadata": 591,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 440536,
-    "objects_with_postprocess": 593
+    "matched_c_bytes_with_postprocess": 438316,
+    "objects_with_postprocess": 592
   }
 }

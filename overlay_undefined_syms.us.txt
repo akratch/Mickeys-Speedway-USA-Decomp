@@ -866,42 +866,30 @@ sprClearIA2ColOverride_o012Reloc = 0xf0000000;
 sprSetIA2ColOverride_o012Reloc = 0xf0000000;
 texDPTextureX_o012Reloc = 0xf0000000;
 
-/* overlay 13: overlay13Initialize.c.o */
+/* overlay 13: overlay_013.c.o */
+D_28 = 0x00000028;
+D_80000000 = 0x80000000;
+SetLinkSlot_o013Reloc = 0xf0000000;
+camDoSprite_o013Reloc = 0xf0000000;
+camGetPtr_o013Reloc = 0xf0000000;
 gOverlay13Active = 0x00001000;
+gOverlay13ActiveCount = 0x0000002c;
 gOverlay13Enabled = 0x0000002c;
+gOverlay13Gravity = 0x00000000;
 gOverlay13Output = 0x00000000;
 gOverlay13Records = 0x00000000;
 gOverlay13Resource0 = 0x00000020;
 gOverlay13Resource1 = 0x00000024;
 gOverlay13Resource2 = 0x00000028;
-texLoadSprite_o013Reloc = 0xf0000000;
-texLoadTexture_o013Reloc = 0xf0000000;
-
-/* overlay 13: overlay13Release.c.o */
-overlay13ReleaseReloc = 0xf0000000;
-
-/* overlay 13: overlay13ProcessRecord.c.o */
-SetLinkSlot_o013Reloc = 0xf0000000;
-gOverlay13ActiveCount = 0x0000002c;
-gOverlay13Gravity = 0x00000000;
-
-/* overlay 13: overlay13ProcessActive.c.o */
-overlay13UpdateRecord_o013Reloc = 0xf0000000;
-
-/* overlay 13: overlay13DrawRecord.c.o */
-D_28 = 0x00000028;
-D_80000000 = 0x80000000;
-camDoSprite_o013Reloc = 0xf0000000;
 levelGetLevel_o013Reloc = 0xf0000000;
+overlay13ReleaseReloc = 0xf0000000;
+overlay13Release_o013Reloc = 0xf0000000;
+overlay13UpdateRecord_o013Reloc = 0xf0000000;
 sprClearIA2ColOverride_o013Reloc = 0xf0000000;
 sprSetIA2ColOverride_o013Reloc = 0xf0000000;
 texDPTextureX_o013Reloc = 0xf0000000;
-
-/* overlay 13: overlay13DrawActive.c.o */
-camGetPtr_o013Reloc = 0xf0000000;
-
-/* overlay 13: overlay13Call.c.o */
-overlay13Release_o013Reloc = 0xf0000000;
+texLoadSprite_o013Reloc = 0xf0000000;
+texLoadTexture_o013Reloc = 0xf0000000;
 
 /* overlay 14: func_overlay_014_F0000000_186F8D8.c.o */
 gOverlay14AssetF0 = 0x000000f0;
@@ -5094,28 +5082,12 @@ func_overlay_011_F0002BF4_186B43C = overlay11ReleaseCurrentGroup;
 /* overlay 12: overlay_012.c.o */
 func_overlay_012_F0000000_186D280 = overlay12Initialize;
 
-/* overlay 13: overlay13Initialize.c.o */
-func_overlay_013_F0000000_186EB18 = overlay13Initialize;
-
-/* overlay 13: overlay13Release.c.o */
+/* overlay 13: overlay_013.c.o */
 func_overlay_013_F0000124_186EC3C = overlay13Release;
-
-/* overlay 13: overlay13CreateRecord.c.o */
 func_overlay_013_F0000188_186ECA0 = overlay13CreateRecord;
-
-/* overlay 13: overlay13ProcessRecord.c.o */
 func_overlay_013_F0000284_186ED9C = overlay13UpdateRecord;
-
-/* overlay 13: overlay13ProcessActive.c.o */
 func_overlay_013_F0000508_186F020 = overlay13ProcessActive;
-
-/* overlay 13: overlay13DrawRecord.c.o */
-func_overlay_013_F0000580_186F098 = overlay13DrawRecord;
-
-/* overlay 13: overlay13DrawActive.c.o */
 func_overlay_013_F0000874_186F38C = overlay13DrawActive;
-
-/* overlay 13: overlay13Call.c.o */
 func_overlay_013_F0000B0C_186F624 = overlay13Call;
 
 /* overlay 14: overlay14ReturnOne.c.o */

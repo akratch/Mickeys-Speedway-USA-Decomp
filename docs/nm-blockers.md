@@ -200,9 +200,9 @@ This is a names-only audit of every function body guarded by `NON_MATCHING` in `
 | `func_overlay_011_F0001398_1869BE0` | `src/overlays/o011/overlay11UpdateMenu.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `func_overlay_012_F00003A8_186D628` | `src/overlays/o012/func_overlay_012_F00003A8_186D628.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_012_F0000910_186DB90` | `src/overlays/o012/func_overlay_012_F0000910_186DB90.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_overlay_013_F0000874_186F38C` | `src/overlays/o013/overlay13DrawActive.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_overlay_013_F0000580_186F098` | `src/overlays/o013/overlay13DrawRecord.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_overlay_013_F0000284_186ED9C` | `src/overlays/o013/overlay13ProcessRecord.c` | none | — | No ownership change; continue source/codegen work. |
+| `func_overlay_013_F0000874_186F38C` | `src/overlays/o013/overlay_013.c` | none | — | No ownership change; continue source/codegen work. |
+| `func_overlay_013_F0000580_186F098` | `src/overlays/o013/overlay_013.c` | none | — | No ownership change; continue source/codegen work. |
+| `func_overlay_013_F0000284_186ED9C` | `src/overlays/o013/overlay_013.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_014_F0000000_186F8D8` | `src/overlays/o014/func_overlay_014_F0000000_186F8D8.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_014_F000013C_186FA14` | `src/overlays/o014/func_overlay_014_F000013C_186FA14.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `func_overlay_014_F00009F4_18702CC` | `src/overlays/o014/func_overlay_014_F00009F4_18702CC.c` | matched | — | Promoted to exact C; no ownership work remains. |

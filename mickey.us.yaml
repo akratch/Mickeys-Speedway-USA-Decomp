@@ -1407,15 +1407,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x186EB18, c, overlay13Initialize]
-      - [0x186EC3C, c, overlay13Release]
-      - [0x186ECA0, c, overlay13CreateRecord]
-      - [0x186ED9C, c, overlay13ProcessRecord]
-      - [0x186F020, c, overlay13ProcessActive]
-      - [0x186F098, c, overlay13DrawRecord]
-      - [0x186F38C, c, overlay13DrawActive]
-      - [0x186F624, c, overlay13Call]
-      - [0x186F644, asm, overlay_013_padding]
+      - [0x186EB18, c, overlay_013]
       - [0x186F648, bin, overlay_013_data_rodata]
       - [0x186F688, bin, overlay_013_reloc1]
       - [0x186F6F8, bin, overlay_013_reloc2]

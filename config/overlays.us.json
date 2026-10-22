@@ -3191,73 +3191,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x124",
-     "size": "0x124",
-     "type": "c",
-     "source": "overlays/o013/overlay13Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x124",
-     "end_offset": "0x188",
-     "size": "0x64",
-     "type": "c",
-     "source": "overlays/o013/overlay13Release",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x188",
-     "end_offset": "0x284",
-     "size": "0xFC",
-     "type": "c",
-     "source": "overlays/o013/overlay13CreateRecord",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x284",
-     "end_offset": "0x508",
-     "size": "0x284",
-     "type": "c",
-     "source": "overlays/o013/overlay13ProcessRecord",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x508",
-     "end_offset": "0x580",
-     "size": "0x78",
-     "type": "c",
-     "source": "overlays/o013/overlay13ProcessActive",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x580",
-     "end_offset": "0x874",
-     "size": "0x2F4",
-     "type": "c",
-     "source": "overlays/o013/overlay13DrawRecord",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x874",
-     "end_offset": "0xB0C",
-     "size": "0x298",
-     "type": "c",
-     "source": "overlays/o013/overlay13DrawActive",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xB0C",
      "end_offset": "0xB2C",
-     "size": "0x20",
+     "size": "0xB2C",
      "type": "c",
-     "source": "overlays/o013/overlay13Call",
+     "source": "overlays/o013/overlay_013",
      "matched": true,
      "nonmatching": false
     },

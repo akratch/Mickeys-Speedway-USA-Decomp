@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay13DrawActive:start -->
 ### `overlay13DrawActive` plateau handoff
 
-- source: `src/overlays/o013/overlay13DrawActive.c`
+- source: `src/overlays/o013/overlay_013.c`
 - score: 0/166 words, promoted
 - frame: 0x168
 - relocations: 10

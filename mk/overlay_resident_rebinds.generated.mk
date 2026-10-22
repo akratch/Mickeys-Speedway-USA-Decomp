@@ -334,25 +334,16 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00000C4_186D344.c.o: SUR
 	--redefine-sym texFreeSprite=texFreeSprite_o012Reloc \
 	--redefine-sym texFreeTexture=texFreeTexture_o012Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13Call.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay13Release=overlay13Release_o013Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13DrawActive.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camGetPtr=camGetPtr_o013Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13DrawRecord.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay_013.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym SetLinkSlot=SetLinkSlot_o013Reloc \
 	--redefine-sym camDoSprite=camDoSprite_o013Reloc \
+	--redefine-sym camGetPtr=camGetPtr_o013Reloc \
 	--redefine-sym levelGetLevel=levelGetLevel_o013Reloc \
 	--redefine-sym sprClearIA2ColOverride=sprClearIA2ColOverride_o013Reloc \
 	--redefine-sym sprSetIA2ColOverride=sprSetIA2ColOverride_o013Reloc \
-	--redefine-sym texDPTextureX=texDPTextureX_o013Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13Initialize.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym texDPTextureX=texDPTextureX_o013Reloc \
 	--redefine-sym texLoadSprite=texLoadSprite_o013Reloc \
 	--redefine-sym texLoadTexture=texLoadTexture_o013Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13ProcessActive.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay13UpdateRecord=overlay13UpdateRecord_o013Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/func_overlay_014_F0000000_186F8D8.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym mmFree=mmFree_o014Reloc $@

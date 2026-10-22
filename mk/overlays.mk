@@ -383,21 +383,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19FindAdjacent.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildSpatialMasks.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x38C
 
+# Overlay 4 is one translation unit at the overlay flag set and owns its pad.
+# Its resident calls go through the generated surface rebinds; --force keeps
+# the static function's name.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: CFLAGS += -Wab,-r4300_mul
-# The update function's resident calls use module-local stored addends. Keep
-# the target-authenticated generator rebinds in the reproducible mixed
-# alias/trim chain; symbol names change, never compiled section contents.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym func_80004590=func_80004590_o004Reloc \
-		--redefine-sym func_8000590C=func_8000590C_o004Reloc \
-		--redefine-sym func_80029274=func_80029274_o004Reloc \
-		--redefine-sym func_8002997C=func_8002997C_o004Reloc \
-		--redefine-sym func_8002A8C0=func_8002A8C0_o004Reloc \
-		--redefine-sym func_8002AA0C=func_8002AA0C_o004Reloc \
-		--redefine-sym func_8005ABA8=func_8005ABA8_o004Reloc \
-		--redefine-sym sqrtf=func_overlay_004_F0000000_185A678 $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xCAC
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: ASM_PROCESSOR += --force
 O8_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o
 $(O8_OBJ): config/normalizations/overlay8P0058.rebind.spec
 $(O8_OBJ): config/normalizations/overlay8P1294.rebind.spec
@@ -2860,7 +2850,6 @@ OVERLAY_TRIMMED_OBJECTS := \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19FindAdjacent.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19ClassifyEdge.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildSpatialMasks.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o \
 OVERLAY_TRIMMED_OBJECTS += \

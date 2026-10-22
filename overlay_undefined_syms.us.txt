@@ -383,6 +383,7 @@ func_overlay_036_F00007B0 = 0xf0000000;
 gOverlay4Groups = 0x00000000;
 gOverlay4InitStatus = 0x00000000;
 gOverlay4SearchMaxDistance = 0x00000010;
+sqrtf_o004Reloc = 0xf0000000;
 
 /* overlay 5: overlay_005.c.o */
 D_80078D60_o005Reloc = 0x00000000;
@@ -4949,7 +4950,6 @@ func_overlay_004_F00004D0_185AB48 = overlay4AttachObject;
 func_overlay_004_F000052C_185ABA4 = overlay4RemoveObject;
 func_overlay_004_F00005D0_185AC48 = overlay4UpdateGroupSpacing;
 func_overlay_004_F0000710_185AD88 = overlay4GroupCount;
-func_overlay_004_F0000734_185ADAC = overlay4FindCategory2Object;
 func_overlay_004_F00008F4_185AF6C = overlay4FindSearchPosition;
 
 /* overlay 5: alSeqFileNew.c.o */

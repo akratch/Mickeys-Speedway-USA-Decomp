@@ -178,8 +178,6 @@ extern Overlay4Group gOverlay4Groups[];
 extern f32 gOverlay4SearchMaxDistance;
 
 extern Overlay4SearchObject **func_8000572C(s32 *start, s32 *end);
-extern Overlay4SearchObject *func_overlay_004_F0000734_185ADAC(
-    Overlay4SearchKey *key);
 extern void func_8005AD64(Overlay4InitObject *object, s32 arg1,
                                      s32 arg2, f32 arg3);
 extern s32 func_8005ABA8(Overlay4MotionObject *object, f32 scale,

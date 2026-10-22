@@ -105,8 +105,16 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay_003.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym sqrtf=sqrtf_o003Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym func_80004590=func_80004590_o004Reloc \
 	--redefine-sym func_8000572C=func_8000572C_o004Reloc \
-	--redefine-sym func_8005AD64=func_8005AD64_o004Reloc $@
+	--redefine-sym func_8000590C=func_8000590C_o004Reloc \
+	--redefine-sym func_80029274=func_80029274_o004Reloc \
+	--redefine-sym func_8002997C=func_8002997C_o004Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o004Reloc \
+	--redefine-sym func_8002AA0C=func_8002AA0C_o004Reloc \
+	--redefine-sym func_8005ABA8=func_8005ABA8_o004Reloc \
+	--redefine-sym func_8005AD64=func_8005AD64_o004Reloc \
+	--redefine-sym sqrtf=sqrtf_o004Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/overlay_005.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_80078D60=D_80078D60_o005Reloc \

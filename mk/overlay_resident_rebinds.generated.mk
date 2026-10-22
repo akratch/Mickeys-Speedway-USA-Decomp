@@ -931,34 +931,15 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym __osSiRawStartDma=__osSiRawStartDma_o039Reloc \
 	--redefine-sym __osSiRelAccess=__osSiRelAccess_o039Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40AddEntry.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay_040.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007D6B0=D_8007D6B0_o040Reloc \
-	--redefine-sym D_800D6BF8=D_800D6BF8_o040Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40BuildFrame.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym frontDrawRectangles=frontDrawRectangles_o040Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40DrawEntries.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D6B00=D_800D6B00_o040Reloc \
 	--redefine-sym D_800D6BF8=D_800D6BF8_o040Reloc \
-	--redefine-sym camProjectPoint=camProjectPoint_o040Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40DrawTintRectangle.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D6C38=D_800D6C38_o040Reloc \
-	--redefine-sym D_800D6C3E=D_800D6C3E_o040Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40RemoveEntry.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007D6B0=D_8007D6B0_o040Reloc \
-	--redefine-sym D_800D6BF8=D_800D6BF8_o040Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40SetValues.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D6C38=D_800D6C38_o040Reloc \
 	--redefine-sym D_800D6C3E=D_800D6C3E_o040Reloc \
-	--redefine-sym D_800D6C44=D_800D6C44_o040Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40UpdateEntries.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D6B00=D_800D6B00_o040Reloc \
-	--redefine-sym D_800D6BF8=D_800D6BF8_o040Reloc $@
+	--redefine-sym D_800D6C44=D_800D6C44_o040Reloc \
+	--redefine-sym camProjectPoint=camProjectPoint_o040Reloc \
+	--redefine-sym frontDrawRectangles=frontDrawRectangles_o040Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41AddSlot.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D6C58=D_800D6C58_o041Reloc $@

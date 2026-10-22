@@ -1729,40 +1729,28 @@ __osSiRawStartDma_o039Reloc = 0xf0000000;
 __osSiRelAccess_o039Reloc = 0xf0000000;
 overlay39SendReloc = 0xf0000000;
 
-/* overlay 40: overlay40AddEntry.c.o */
+/* overlay 40: overlay_040.c.o */
 D_8007D6B0_o040Reloc = 0x00000000;
-D_800D6BF8_o040Reloc = 0x00000000;
-
-/* overlay 40: overlay40UpdateEntries.c.o */
 D_800D6B00_o040Reloc = 0x00000000;
-
-/* overlay 40: overlay40BuildFrame.c.o */
-frontDrawRectangles_o040Reloc = 0xf0000000;
-
-/* overlay 40: overlay40DrawEntries.c.o */
-camProjectPoint_o040Reloc = 0xf0000000;
-
-/* overlay 40: overlay40SetValues.c.o */
+D_800D6BF8_o040Reloc = 0x00000000;
 D_800D6C38_o040Reloc = 0x00000000;
 D_800D6C3E_o040Reloc = 0x00000000;
 D_800D6C44_o040Reloc = 0x00000000;
-gOverlay40Value1 = 0x00000000;
-gOverlay40Value4 = 0x00000000;
-gOverlay40Value5 = 0x00000000;
-gOverlay40Value6 = 0x00000000;
-gOverlay40Value7 = 0x00000000;
-
-/* overlay 40: overlay40Interpolate.c.o */
+camProjectPoint_o040Reloc = 0xf0000000;
+frontDrawRectangles_o040Reloc = 0xf0000000;
+gO40TintBlueReloc = 0x00000000;
+gO40TintDisplayListReloc = 0x00000000;
+gO40TintGreenReloc = 0x00000000;
 gOverlay40BlendCurrent = 0x00000000;
 gOverlay40BlendDuration = 0x00000000;
 gOverlay40BlendOutput = 0x00000000;
 gOverlay40BlendTarget = 0x00000000;
 gOverlay40BlendTimer = 0x00000000;
-
-/* overlay 40: overlay40DrawTintRectangle.c.o */
-gO40TintBlueReloc = 0x00000000;
-gO40TintDisplayListReloc = 0x00000000;
-gO40TintGreenReloc = 0x00000000;
+gOverlay40Value1 = 0x00000000;
+gOverlay40Value4 = 0x00000000;
+gOverlay40Value5 = 0x00000000;
+gOverlay40Value6 = 0x00000000;
+gOverlay40Value7 = 0x00000000;
 o40TintCallReloc = 0xf0000000;
 
 /* overlay 41: overlay41AdvanceStepRecords.c.o */
@@ -5527,31 +5515,14 @@ func_overlay_039_F0000000_18866A0 = overlay39Write;
 func_overlay_039_F00000C8_1886768 = overlay39Reset;
 func_overlay_039_F000011C_18867BC = overlay39Read;
 
-/* overlay 40: overlay40AddEntry.c.o */
+/* overlay 40: overlay_040.c.o */
 func_overlay_040_F0000000_18868B0 = overlay40AddEntry;
-
-/* overlay 40: overlay40RemoveEntry.c.o */
 func_overlay_040_F0000084_1886934 = overlay40RemoveEntry;
-
-/* overlay 40: overlay40UpdateEntries.c.o */
 func_overlay_040_F00000E8_1886998 = overlay40UpdateEntries;
-
-/* overlay 40: overlay40BuildFrame.c.o */
-func_overlay_040_F00001A0_1886A50 = overlay40BuildFrame;
-
-/* overlay 40: overlay40DrawEntries.c.o */
 func_overlay_040_F00002E4_1886B94 = overlay40DrawEntries;
-
-/* overlay 40: overlay40SetValues.c.o */
 func_overlay_040_F0000448_1886CF8 = overlay40SetValues;
-
-/* overlay 40: overlay40Interpolate.c.o */
 func_overlay_040_F0000490_1886D40 = overlay40Interpolate;
-
-/* overlay 40: overlay40DrawTintRectangle.c.o */
 func_overlay_040_F0000534_1886DE4 = overlay40DrawTintRectangle;
-
-/* overlay 40: overlay40FadeRecords.c.o */
 func_overlay_040_F0000690_1886F40 = overlay40FadeRecords;
 
 /* overlay 41: overlay41InterpolateAngle.c.o */

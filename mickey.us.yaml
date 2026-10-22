@@ -1922,7 +1922,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1885620, c, overlay_037]
-      - [0x1885B78, asm, overlay_037_padding]
       - [0x1885B80, bin, overlay_037_data_rodata]
       - [0x1885C70, bin, overlay_037_reloc1]
       - [0x1885CB0, bin, overlay_037_reloc2]
@@ -1958,7 +1957,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18866A0, c, overlay_039]
-      - [0x1886808, asm, overlay_039_padding]
       - [0x1886810, bin, overlay_039_reloc1]
 
   - name: overlay_040
@@ -1972,16 +1970,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18868B0, c, overlay40AddEntry]
-      - [0x1886934, c, overlay40RemoveEntry]
-      - [0x1886998, c, overlay40UpdateEntries]
-      - [0x1886A50, c, overlay40BuildFrame]
-      - [0x1886B94, c, overlay40DrawEntries]
-      - [0x1886CF8, c, overlay40SetValues]
-      - [0x1886D40, c, overlay40Interpolate]
-      - [0x1886DE4, c, overlay40DrawTintRectangle]
-      - [0x1886F40, c, overlay40FadeRecords]
-      - [0x18870D4, asm, overlay_040_padding]
+      - [0x18868B0, c, overlay_040]
       - [0x18870E0, bin, overlay_040_data_rodata]
       - [0x1887110, bin, overlay_040_reloc1]
       - [0x1887320, bin, overlay_040_reloc2]

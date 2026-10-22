@@ -1328,37 +1328,21 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: POSTPROCESS = \
 # The minimap renderer's rotated-coordinate products carry the R4300 FP-mul
 # hazard nops; without this pass the candidate is two words short.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x168
-# The module's one overlay flag set. The two 16-byte copy loops are written
+# Overlay 39 at the overlay flag set. The two 16-byte copy loops are written
 # per byte: IDO's default unroll (factor 4) emits the shipped four-copy loop
 # body, which the former hand-unrolled spelling only matched with unrolling
-# disabled. The trim keeps the trailing pad on its own atlas asm row.
+# disabled. Its .text carries the trailing pad, so nothing is trimmed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 37 is one translation unit at the overlay flag set (the effect
-# renderer's blend multiplies carry the R4300 FP-mul hazard nops). The trim
-# leaves the eight-byte trailing pad to its own atlas asm row.
+# renderer's blend multiplies carry the R4300 FP-mul hazard nops). Its .text
+# is the module's text, trailing pad included, so nothing is trimmed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x558
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40AddEntry.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x84
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40DrawEntries.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x164
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40RemoveEntry.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x64
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40UpdateEntries.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xB8
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40BuildFrame.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x144
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40SetValues.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x48
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40Interpolate.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA4
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40DrawTintRectangle.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x15C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40FadeRecords.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x194
+# Overlay 40 is one translation unit at the overlay flag set; its .text carries
+# the trailing pad, so nothing is trimmed. --force runs asm-processor's
+# static-symbol pass on this GLOBAL_ASM-free file, so the unexported (static)
+# frame builder keeps its name as a local symbol.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay_040.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay_040.c.o: ASM_PROCESSOR += --force
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o042/overlay_042.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x700
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43InitializeState.c.o: POSTPROCESS = \

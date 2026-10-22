@@ -3501,20 +3501,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o037/overlay_037.c.o",
-      "offset": 0,
-      "overlay": 37,
-      "size": 1368,
-      "source": "src/overlays/o037/overlay_037.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o038/func_overlay_038_F0000000_1885D10.c.o",
       "offset": 0,
       "overlay": 38,
@@ -3551,146 +3537,6 @@
       "tools": [
         "trim_elf_section.py",
         "externalize_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o039/overlay_039.c.o",
-      "offset": 0,
-      "overlay": 39,
-      "size": 360,
-      "source": "src/overlays/o039/overlay_039.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o040/overlay40AddEntry.c.o",
-      "offset": 0,
-      "overlay": 40,
-      "size": 132,
-      "source": "src/overlays/o040/overlay40AddEntry.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o040/overlay40BuildFrame.c.o",
-      "offset": 416,
-      "overlay": 40,
-      "size": 324,
-      "source": "src/overlays/o040/overlay40BuildFrame.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o040/overlay40DrawEntries.c.o",
-      "offset": 740,
-      "overlay": 40,
-      "size": 356,
-      "source": "src/overlays/o040/overlay40DrawEntries.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o040/overlay40DrawTintRectangle.c.o",
-      "offset": 1332,
-      "overlay": 40,
-      "size": 348,
-      "source": "src/overlays/o040/overlay40DrawTintRectangle.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o040/overlay40FadeRecords.c.o",
-      "offset": 1680,
-      "overlay": 40,
-      "size": 404,
-      "source": "src/overlays/o040/overlay40FadeRecords.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o040/overlay40Interpolate.c.o",
-      "offset": 1168,
-      "overlay": 40,
-      "size": 164,
-      "source": "src/overlays/o040/overlay40Interpolate.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o040/overlay40RemoveEntry.c.o",
-      "offset": 132,
-      "overlay": 40,
-      "size": 100,
-      "source": "src/overlays/o040/overlay40RemoveEntry.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o040/overlay40SetValues.c.o",
-      "offset": 1096,
-      "overlay": 40,
-      "size": 72,
-      "source": "src/overlays/o040/overlay40SetValues.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o040/overlay40UpdateEntries.c.o",
-      "offset": 232,
-      "overlay": 40,
-      "size": 184,
-      "source": "src/overlays/o040/overlay40UpdateEntries.c",
-      "tools": [
-        "trim_elf_section.py"
       ]
     },
     {
@@ -8996,10 +8842,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 620,
+      "metadata": 609,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 447024,
-    "objects_with_postprocess": 621
+    "matched_c_bytes_with_postprocess": 443212,
+    "objects_with_postprocess": 610
   }
 }

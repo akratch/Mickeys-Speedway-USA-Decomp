@@ -8015,82 +8015,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x84",
-     "size": "0x84",
-     "type": "c",
-     "source": "overlays/o040/overlay40AddEntry",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x84",
-     "end_offset": "0xE8",
-     "size": "0x64",
-     "type": "c",
-     "source": "overlays/o040/overlay40RemoveEntry",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xE8",
-     "end_offset": "0x1A0",
-     "size": "0xB8",
-     "type": "c",
-     "source": "overlays/o040/overlay40UpdateEntries",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1A0",
-     "end_offset": "0x2E4",
-     "size": "0x144",
-     "type": "c",
-     "source": "overlays/o040/overlay40BuildFrame",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2E4",
-     "end_offset": "0x448",
-     "size": "0x164",
-     "type": "c",
-     "source": "overlays/o040/overlay40DrawEntries",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x448",
-     "end_offset": "0x490",
-     "size": "0x48",
-     "type": "c",
-     "source": "overlays/o040/overlay40SetValues",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x490",
-     "end_offset": "0x534",
-     "size": "0xA4",
-     "type": "c",
-     "source": "overlays/o040/overlay40Interpolate",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x534",
-     "end_offset": "0x690",
-     "size": "0x15C",
-     "type": "c",
-     "source": "overlays/o040/overlay40DrawTintRectangle",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x690",
      "end_offset": "0x824",
-     "size": "0x194",
+     "size": "0x824",
      "type": "c",
-     "source": "overlays/o040/overlay40FadeRecords",
+     "source": "overlays/o040/overlay_040",
      "matched": true,
      "nonmatching": false
     },

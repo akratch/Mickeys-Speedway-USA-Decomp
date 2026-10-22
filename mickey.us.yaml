@@ -2771,6 +2771,7 @@ segments:
     subsegments:
       - [0x18CC910, c, overlay_077]
       - [0x18CCCC8, c, overlay_077_tail]
+      - [0x18CCD50, bin, overlay_077_data_rodata]
       - [0x18CCD70, bin, overlay_077_reloc1]
       - [0x18CCDC0, bin, overlay_077_reloc2]
 

@@ -5,11 +5,6 @@ s32 gOverlay77Handle = 0;
 s32 gOverlay77Sequence = 0;
 s32 gOverlay77Selection = 0;
 void *gOverlay77CallbackArgument = NULL;
-f32 gOverlay77PositiveDivisor = -0.2f;
-f32 gOverlay77PositiveAcceleration = 0.4f;
-f32 gOverlay77NegativeDivisor = 0.6f;
-f32 gOverlay77NegativeAcceleration = 0.4f;
-f32 gOverlay77Gravity = -0.1f;
 
 /*
  * Overlay 77, ADR 0006 consolidation: overlay77Init.c and overlay77Update.c
@@ -55,12 +50,16 @@ void overlay77Init(Overlay77Object *object, Overlay77Init *init, s32 preserveSeq
  * Overlay 77 +0x130. The pinned DKR v77/v80 and JFG object ledgers are exact
  * negative. DKR's object initializers and projectile physics are useful
  * semantic references only; no donor name or source was adopted.
+ *
+ * The five constants are literals: their shipped HI16/LO16 pairs are LOCAL
+ * records against the module's rodata (+0x10 into its initialized data), the
+ * literal pool IDO emits, not named .data globals. Written as literals, with
+ * the vertical velocity read from the object at each use, the bytes match.
  */
 void overlay77Update(Overlay77Object *object, volatile s32 updateRate) {
     Overlay77State *state;
     volatile f32 unused;
     s32 mode;
-    f32 velY;
     f32 deltaY;
     f32 accel;
     f32 moveX;
@@ -74,32 +73,26 @@ void overlay77Update(Overlay77Object *object, volatile s32 updateRate) {
 
     if (gOverlay77Handle != 0) {
         if (gOverlay77Selection == state->sequence) { if (gOverlay77CallbackArgument == 0) { amSndPlayXYZ(0x217, object->x.bits, object->y.bits, object->z.bits, 1, &gOverlay77CallbackArgument); } else { amSndSetXYZ(gOverlay77CallbackArgument, object->x.bits, object->y.bits, object->z.bits); } } object->flags &= ~0x400;
-        velY = object->velocityY;
-        accel = 0.0f;
         moveX = updateRate;
-        if (velY >= accel) {
-            deltaY = (-(velY * velY)) / gOverlay77PositiveDivisor;
+        if (object->velocityY >= 0.0f) {
+            deltaY = (-(object->velocityY * object->velocityY)) / -0.2f;
             if (state->targetY <= (object->y.value + deltaY)) {
-                state->acceleration = accel;
+                state->acceleration = 0.0f;
             } else {
-                {
-                    state->acceleration = gOverlay77PositiveAcceleration;
-                }
+                state->acceleration = 0.4f;
             }
         } else {
-            deltaY = (-(velY * velY)) / gOverlay77NegativeDivisor;
+            deltaY = (-(object->velocityY * object->velocityY)) / 0.6f;
             if ((object->y.value + deltaY) < state->targetY) {
-                state->acceleration = gOverlay77NegativeAcceleration;
+                state->acceleration = 0.4f;
             } else {
-                state->acceleration = accel;
+                state->acceleration = 0.0f;
             }
         }
 
-        velY = ((0, object))->velocityY;
-        accel = state->acceleration + gOverlay77Gravity;
-        deltaY = (velY * moveX) + (((0.5f * accel) * moveX) * moveX);
-        object->velocityY = (0, velY) + (accel * moveX);
-        accel = 0.0f;
+        accel = state->acceleration + -0.1f;
+        deltaY = (object->velocityY * moveX) + (((0.5f * accel) * moveX) * moveX);
+        object->velocityY = object->velocityY + (accel * moveX);
         {
             deltaX = object->velocityX * moveX;
             moveZ = object->velocityZ * moveX;

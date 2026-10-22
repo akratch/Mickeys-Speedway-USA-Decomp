@@ -26,15 +26,12 @@ extern Overlay58PointVertex *gOverlay58PointVertexCursorReloc;
 extern Overlay58PointRenderState gOverlay58PointRenderStateReloc;
 extern u8 D_80000078[];
 /*
- * The callee is reached through the overlay loader's relocation table, so its
- * `jal` encodes 0 and splat names it after overlay offset 0 for every such
- * call in this overlay; the real callee is not identified.  Its FIRST
- * ARGUMENT is `&gOverlay58PointVertexCursorReloc`, the same symbol the body
- * re-reads afterwards -- p1 splits that address web around the call and the
- * post-call piece keeps the a0 argument affinity (ido-5.3 L57/L66).
+ * The shipped table-1 SYMBOL record names the resident texDPTextureX (its
+ * `jal` stores 0, the runtime patches it).  Its first argument is the display
+ * list head, the same identity as gOverlay58PointDisplayListReloc below.
  */
-extern void func_overlay_058_F0000000_18AF1E8(
-    Overlay58PointVertex **cursor, void *resource, s32 mode, s32 arg3);
+extern void texDPTextureX(Overlay58PointGfx **displayList, void *texture,
+                          s32 flags, s32 arg3);
 
 /*
  * PROVENANCE: the packet macros below are adapted from the Jet Force Gemini
@@ -74,20 +71,18 @@ extern void func_overlay_058_F0000000_18AF1E8(
  *     coloured v0/v1/a1/a2 in first-occurrence order.  An earlier
  *     straight-line spelling needed two empty `if (vertices != 0);`
  *     probes to cut those blocks (lane c-1, 2026-10-08, byte-identical).
- *  3. The render-state field read in its own region before the call: as1
- *     ties the two argument `lui`s at equal height and breaks the tie on
- *     source line, so the load's line must precede the cursor address's.
- *     Spelled plainly, as a call argument or as an initializer, the
- *     cursor `lui` is scheduled first (4 words differ); the `if (1)`
- *     region is the remaining unnatural form.
+ *  3. The call in its own `if (1)` region, arguments in source order.
+ *     Spelled plainly the display-list `lui` is scheduled first (4 words
+ *     differ).  Reading the render-state field in a region of its own
+ *     before the call also matches the bytes, but it reverses the two
+ *     HI16/LO16 pairs in the relocation table against the shipped order
+ *     (display list first), so the region holds the whole call instead.
  */
 void overlay58DrawPointQuad(s32 x, s32 y, s32 z) {
     Overlay58PointVertex *vertices;
-    void *resource;
     s32 i;
 
-    if (1) { resource = gOverlay58PointRenderStateReloc.resource; }
-    func_overlay_058_F0000000_18AF1E8(&gOverlay58PointVertexCursorReloc, resource, 5, 0);
+    if (1) { texDPTextureX(&gOverlay58PointDisplayListReloc, gOverlay58PointRenderStateReloc.resource, 5, 0); }
     O58_VERTEX(gOverlay58PointDisplayListReloc++, O58_PHYSICAL_TO_K0(gOverlay58PointVertexCursorReloc), 4, 0);
     O58_POLYGON(gOverlay58PointDisplayListReloc++, D_80000078, 2, 1);
     vertices = gOverlay58PointVertexCursorReloc;

@@ -14,9 +14,8 @@ typedef struct Overlay96DrawLocals {
     void *vertices;
 } Overlay96DrawLocals;
 
-extern void func_overlay_096_F0000000_18D7638(Overlay96Command **commands,
-                                               void *resource, s32 mode,
-                                               s32 flags);
+extern void texDPTextureX(Overlay96Command **commands, void *resource,
+                          s32 mode, s32 flags);
 extern u8 D_80000000[];
 
 #define OVERLAY96_SHIFTL(value, shift, width) \
@@ -73,7 +72,7 @@ void overlay96DrawObject(Overlay96Command **commands, s32 unused1,
     OVERLAY96_PIPE_SYNC((*commands)++);
     OVERLAY96_PRIM_WHITE((*commands)++);
     OVERLAY96_ENV_WHITE((*commands)++);
-    func_overlay_096_F0000000_18D7638(commands, NULL, 0x16, 0);
+    texDPTextureX(commands, NULL, 0x16, 0);
     OVERLAY96_LOAD_VERTICES(
         (*commands)++, (void *)((u32)locals.vertices + 0x80000000U));
     OVERLAY96_DRAW_TRIANGLES((*commands)++, D_80000000, 12, 0);

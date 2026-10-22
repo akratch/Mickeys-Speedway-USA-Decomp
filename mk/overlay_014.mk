@@ -12,11 +12,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14ReleaseOwner.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x28
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14FinalizeActiveHandle.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym func_800053D0=overlay14LookupObjectReloc \
-		--redefine-sym func_8001EF1C=overlay14ApplyObjectPositionReloc \
-		--redefine-sym func_800280FC=overlay14AcquireFirstReloc \
-		--redefine-sym func_800389C0=overlay14AcquireSecondReloc \
-		--redefine-sym func_80027F24=overlay14SubmitHandleReloc $@ && \
+		--redefine-sym func_80005820=overlay14LookupObjectReloc \
+		--redefine-sym controlSetPlayerSetup=overlay14ApplyObjectPositionReloc \
+		--redefine-sym mainGetNextCharacter=overlay14AcquireFirstReloc \
+		--redefine-sym frontGetMode=overlay14AcquireSecondReloc \
+		--redefine-sym mainChangeLevel=overlay14SubmitHandleReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14CallUpdate.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x20

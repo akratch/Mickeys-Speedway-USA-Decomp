@@ -66,7 +66,8 @@ extern s16 gOverlay48Timer;
 extern void *gOverlay48Script;
 extern s16 gOverlay48ScriptIndex;
 extern s16 gOverlay48Finished;
-extern void func_overlay_048_F0000000_1895408();
+extern void amTunePlay(u8 sequenceId);
+extern void func_800015F8(void);
 
 /* Matched 2026-10-02. One loop over the five entries with the entry pointer
  * walking beside the index: IDO runs the remainder iteration first (entry 0,
@@ -86,6 +87,6 @@ void overlay48InitializeState(void) {
     gOverlay48ScriptIndex = 0;
     gOverlay48Finished = 0;
     gOverlay48Script = D_174;
-    func_overlay_048_F0000000_1895408(0x16);
-    func_overlay_048_F0000000_1895408();
+    amTunePlay(0x16);
+    func_800015F8();
 }

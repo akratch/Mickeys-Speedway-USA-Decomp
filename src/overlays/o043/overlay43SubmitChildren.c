@@ -40,7 +40,7 @@ typedef struct Overlay43RenderState {
     u8 childCount;
 } Overlay43RenderState;
 
-extern void func_overlay_043_F0000000_1889FD0(
+extern s32 makeModelGfx(
     void **slot,
     Overlay43Renderable *renderable,
     s32 renderFlags,
@@ -63,7 +63,7 @@ void overlay43SubmitChildren(Overlay43Owner *owner,
 
     primary = *state->primaryRef;
 
-    func_overlay_043_F0000000_1889FD0(
+    makeModelGfx(
         &state->primarySlot,
         primary,
         renderFlags,
@@ -92,7 +92,7 @@ void overlay43SubmitChildren(Overlay43Owner *owner,
     do {
         childRef = *(Overlay43Renderable ***)
             ((u8 *)root->childRefs + childOffset);
-        func_overlay_043_F0000000_1889FD0(
+        makeModelGfx(
             &state->childSlots[index],
             *childRef,
             renderFlags,

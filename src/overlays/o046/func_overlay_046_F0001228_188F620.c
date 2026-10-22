@@ -84,7 +84,7 @@ extern void amSndPlay(s32 soundId, void *handle);
 extern f32 func_8002A8BC(s32 angle);
 extern f32 func_8002A8C0(s32 angle);
 extern s32 mathRnd(s32 minimum, s32 maximum);
-extern void camStandardOrtho(void *commands, void *matrices);
+extern void camSetView(void *commands, void *matrices);
 extern void camDoSprite(void *commands, void *matrices, void *vertices,
                           Overlay46DrawPoint *particle, void *resource,
                           s32 flags, s32 alpha);
@@ -176,7 +176,7 @@ void func_overlay_046_F0001228_188F620(s32 updateRate) {
         }
     }
 
-    camStandardOrtho(&gDisplayListHead, &gOverlay46MatrixHead);
+    camSetView(&gDisplayListHead, &gOverlay46MatrixHead);
     point.value04 = 0;
     point.value00 = 0;
     point.value02 = 0;

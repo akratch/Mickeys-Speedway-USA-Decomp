@@ -13,7 +13,7 @@ void overlay59ReleaseAll(void) {
     Overlay59Entry *entry;
     Overlay59Entry *end;
 
-    end = gOverlay59EntriesEnd; entry = gOverlay59Entries;
+    entry = gOverlay59Entries; end = gOverlay59EntriesEnd;
     do {
         overlay59ReleaseReloc(entry);
         entry++;

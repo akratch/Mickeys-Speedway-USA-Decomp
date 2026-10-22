@@ -82,7 +82,8 @@ extern O101TailC144Inputs gO101TailC144Inputs;
 extern u8 gO101TailC144AssetDCC;
 extern u8 gO101TailC144FinalObject4A90;
 
-extern void *func_overlay_101_F0000000_18DB820();
+extern void *texLoadSprite(s32 assetId, s32 flags);
+extern void overlay101Reset(void *value);
 extern s8 func_overlay_101_F000CEA8_18E86C8(void *text);
 
 /* Mickey-local reconstruction; pinned DKR v77/v80 and JFG scans are negative. */
@@ -119,7 +120,7 @@ void func_overlay_101_F000C144_18E7964(void) {
 
     gO101TailC144Root.width2E = 0x140; gO101TailC144Root.height30 = 0xF0; gO101TailC144Root.asset34 = &gO101TailC144AssetDCC; gO101TailC144Root.kind = 4; gO101TailC144Root.color32 = 0xFF; gO101TailC144Root.color33 = 0xFF; gO101TailC144Root.value26 = 0; gO101TailC144Root.value28 = 0; gO101TailC144Root.value2A = 0; gO101TailC144Root.value2C = 0; gO101TailC144Root.chainType = 0; gO101TailC144Root.chain = NULL; gO101TailC144OrderSlots[gO101TailC144OrderCount] = &gO101TailC144Root.chainType; gO101TailC144OrderCount = gO101TailC144OrderCount + 1;
 
-    gO101TailC144Nodes32[gO101TailC144Node32Count].x = 0xF2; gO101TailC144Nodes32[gO101TailC144Node32Count].y = 0x14E; gO101TailC144Nodes32[gO101TailC144Node32Count].value10 = 0; gO101TailC144Nodes32[gO101TailC144Node32Count].color12 = 0xFF; gO101TailC144Nodes32[gO101TailC144Node32Count].color13 = 0; gO101TailC144Nodes32[gO101TailC144Node32Count].value18 = 0; gO101TailC144Nodes32[gO101TailC144Node32Count].scale = 1.0f; gO101TailC144Nodes32[gO101TailC144Node32Count].value14 = 0.0f; handle = func_overlay_101_F0000000_18DB820(0x93, NULL); gO101TailC144Nodes32[gO101TailC144Node32Count].previousType = gO101TailC144Root.chainType; gO101TailC144Nodes32[gO101TailC144Node32Count].previous = gO101TailC144Root.chain; gO101TailC144Root.chainType = 2; gO101TailC144Root.chain = &gO101TailC144Nodes32[gO101TailC144Node32Count]; gO101TailC144Nodes32[gO101TailC144Node32Count].handle = handle; gO101TailC144Node32Count = gO101TailC144Node32Count + 1;
+    gO101TailC144Nodes32[gO101TailC144Node32Count].x = 0xF2; gO101TailC144Nodes32[gO101TailC144Node32Count].y = 0x14E; gO101TailC144Nodes32[gO101TailC144Node32Count].value10 = 0; gO101TailC144Nodes32[gO101TailC144Node32Count].color12 = 0xFF; gO101TailC144Nodes32[gO101TailC144Node32Count].color13 = 0; gO101TailC144Nodes32[gO101TailC144Node32Count].value18 = 0; gO101TailC144Nodes32[gO101TailC144Node32Count].scale = 1.0f; gO101TailC144Nodes32[gO101TailC144Node32Count].value14 = 0.0f; handle = texLoadSprite(0x93, 0); gO101TailC144Nodes32[gO101TailC144Node32Count].previousType = gO101TailC144Root.chainType; gO101TailC144Nodes32[gO101TailC144Node32Count].previous = gO101TailC144Root.chain; gO101TailC144Root.chainType = 2; gO101TailC144Root.chain = &gO101TailC144Nodes32[gO101TailC144Node32Count]; gO101TailC144Nodes32[gO101TailC144Node32Count].handle = handle; gO101TailC144Node32Count = gO101TailC144Node32Count + 1;
 
     gO101TailC144Root.height48 = 0x51; gO101TailC144Root.value4A = 0xCC; gO101TailC144Root.value4C = 0x4E; gO101TailC144Root.width44 = 0x18; gO101TailC144Root.x42 = 0x20; gO101TailC144Root.y46 = 0x20; gO101TailC144Root.color4E = 0xFF; gO101TailC144Root.color4F = 0xFF; gO101TailC144Root.mode40 = 0; gO101TailC144Root.childType = 0; gO101TailC144Root.child = NULL; gO101TailC144Root.data50 = gO101TailC144Inputs.data084; gO101TailC144OrderSlots[gO101TailC144OrderCount] = &gO101TailC144Root.childType; gO101TailC144OrderCount = gO101TailC144OrderCount + 1;
 
@@ -133,6 +134,6 @@ void func_overlay_101_F000C144_18E7964(void) {
 
     gO101TailC144Nodes24[gO101TailC144Node24Count].x = 0x66; gO101TailC144Nodes24[gO101TailC144Node24Count].y = 0x40; length = func_overlay_101_F000CEA8_18E86C8(gO101TailC144Inputs.text1C0); gO101TailC144Nodes24[gO101TailC144Node24Count].length = (u8)length; gO101TailC144Nodes24[gO101TailC144Node24Count].opacity = (s8)(s32)((f32)(u32)(length & 0xFF) * (f32)(s32)1); gO101TailC144Nodes24[gO101TailC144Node24Count].mode = 2; gO101TailC144Nodes24[gO101TailC144Node24Count].text = gO101TailC144Inputs.text1C0; gO101TailC144Nodes24[gO101TailC144Node24Count].color0 = 0; gO101TailC144Nodes24[gO101TailC144Node24Count].color1 = 0; gO101TailC144Nodes24[gO101TailC144Node24Count].color2 = 0; gO101TailC144Nodes24[gO101TailC144Node24Count].color3 = 0; gO101TailC144Nodes24[gO101TailC144Node24Count].kind = 4; gO101TailC144Nodes24[gO101TailC144Node24Count].previousType = gO101TailC144Root.childType; gO101TailC144Nodes24[gO101TailC144Node24Count].previous = gO101TailC144Root.child; gO101TailC144Root.child = &gO101TailC144Nodes24[gO101TailC144Node24Count]; gO101TailC144Root.childType = 3; gO101TailC144Node24Count = gO101TailC144Node24Count + 1;
 
-    func_overlay_101_F0000000_18DB820(&gO101TailC144FinalObject4A90);
+    overlay101Reset(&gO101TailC144FinalObject4A90);
 }
 

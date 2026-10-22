@@ -108,7 +108,9 @@ extern Node20 D_200[];
 extern Node32 D_340[];
 extern Node24 D_540[];
 
-extern void *func_overlay_101_F0000000_18DB820();
+extern void *texLoadSprite(s32 assetId, s32 flags);
+extern s32 *func_80036DD0(s32 screenIndex);
+extern void overlay101Reset(void *value);
 extern s32 func_overlay_101_F000CEA8_18E86C8(void *);
 
 /* Four source-shape levers took this family from 296/298 masked words to
@@ -199,11 +201,11 @@ void func_overlay_101_F000512C_18E094C(void) {
 
     D_0.kind = 4; D_0.width2E = 0x140; D_0.height30 = 0xF0; D_0.asset34 = &D_C78; D_0.color32 = 0xFF; D_0.color33 = 0xFF; D_0.value26 = 0; D_0.value28 = 0; D_0.value2A = 0; D_0.value2C = 0; D_0.chainType = 0; D_0.chain = 0; D_1C0[D_1C4] = &D_1C; D_1C4 = D_1C4 + 1;
 
-    D_340[D_1CC].x = 0xF2; D_340[D_1CC].y = 0x14E; D_340[D_1CC].value10 = 0; D_340[D_1CC].color12 = 0xFF; D_340[D_1CC].color13 = 0; D_340[D_1CC].value18 = 0; D_340[D_1CC].scale = 1.0f; D_340[D_1CC].value14 = 0.0f; handle = func_overlay_101_F0000000_18DB820(0x93, 0); D_340[D_1CC].handle = handle; D_340[D_1CC].previousType = D_0.chainType; D_340[D_1CC].previous = D_0.chain; D_0.chainType = 2; D_0.chain = &D_340[D_1CC]; D_1CC = D_1CC + 1;
+    D_340[D_1CC].x = 0xF2; D_340[D_1CC].y = 0x14E; D_340[D_1CC].value10 = 0; D_340[D_1CC].color12 = 0xFF; D_340[D_1CC].color13 = 0; D_340[D_1CC].value18 = 0; D_340[D_1CC].scale = 1.0f; D_340[D_1CC].value14 = 0.0f; handle = texLoadSprite(0x93, 0); D_340[D_1CC].handle = handle; D_340[D_1CC].previousType = D_0.chainType; D_340[D_1CC].previous = D_0.chain; D_0.chainType = 2; D_0.chain = &D_340[D_1CC]; D_1CC = D_1CC + 1;
 
     D_0.x42 = 0x20; D_0.width44 = 0x18; D_0.y46 = 0x5A; D_0.height48 = 0x20; D_0.value4A = 0x4C; D_0.value4C = 0x54; D_0.mode40 = 0; D_0.color4E = 0xFF; D_0.color4F = 0xFF; D_0.childType = 0; D_0.child = 0; D_0.data50 = D_INPUT.data68; D_1C0[D_1C4] = &D_38; D_1C4 = D_1C4 + 1;
 
-    D_200[D_1C8].x = 6; D_200[D_1C8].y = 0xE; D_200[D_1C8].scale = 1.0f; handle = func_overlay_101_F0000000_18DB820(7); D_200[D_1C8].handle = handle; D_200[D_1C8].previousType = D_0.childType; D_200[D_1C8].previous = D_0.child; D_0.childType = 1; D_0.child = &D_200[D_1C8]; D_1C8 = D_1C8 + 1;
+    D_200[D_1C8].x = 6; D_200[D_1C8].y = 0xE; D_200[D_1C8].scale = 1.0f; handle = func_80036DD0(7); D_200[D_1C8].handle = handle; D_200[D_1C8].previousType = D_0.childType; D_200[D_1C8].previous = D_0.child; D_0.childType = 1; D_0.child = &D_200[D_1C8]; D_1C8 = D_1C8 + 1;
 
     D_0.x5E = 0x20; D_0.width60 = 0x40; D_0.y62 = 0x20; D_0.height64 = 0x78; D_0.value66 = 0xC0; D_0.value68 = 0x46; D_0.mode5C = 0; D_0.color6A = 0xFF; D_0.color6B = 0xFF; D_0.secondChildType = 0; D_0.secondChild = 0; D_0.data6C = D_INPUT.data6C; D_1C0[D_1C4] = &D_54; D_1C4 = D_1C4 + 1;
 
@@ -233,6 +235,6 @@ void func_overlay_101_F000512C_18E094C(void) {
 
 #undef ADD_TEXT_ROW
 
-    func_overlay_101_F0000000_18DB820(&D_CE0);
+    overlay101Reset(&D_CE0);
 }
 

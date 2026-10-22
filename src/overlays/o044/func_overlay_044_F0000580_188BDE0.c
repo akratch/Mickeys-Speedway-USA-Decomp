@@ -153,7 +153,7 @@ typedef struct Overlay44AnimationState {
 extern Overlay44FrameSource *gOverlay44FrameSources;
 extern Gfx D_0[];
 extern Gfx D_28[];
-extern void func_overlay_044_F0000000_188B860(Gfx **dl);
+extern void texDPInit(Gfx **dl);
 
 void func_overlay_044_F0000580_188BDE0(Overlay44AnimationState *state,
                                        Gfx **dl, f32 scale) {
@@ -217,7 +217,7 @@ void func_overlay_044_F0000580_188BDE0(Overlay44AnimationState *state,
             tex1 += rows * stride;
         } while (height != 0);
     }
-    func_overlay_044_F0000000_188B860(dl);
+    texDPInit(dl);
     gDPSetPrimColor((*dl)++, 0, 0, 255, 255, 255, 255);
     gDPSetEnvColor((*dl)++, 255, 255, 255, 255);
 }

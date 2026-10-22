@@ -22,10 +22,10 @@ extern u8 D_800000B0[];
  * word is the 0xF0000000 addend (a SYMBOL record, not a JUMP), so the
  * callee must be named by its o060 placeholder, as overlay60Prefix does. */
 extern s32 overlay82IsActive_o060Reloc(void *object);
-extern void func_80034554(Overlay60Command **commands, s32 resource, s32 mode,
+extern void texDPTextureX(Overlay60Command **commands, s32 resource, s32 mode,
                           s32 flags);
-extern void func_80036600(Overlay60Color *color, s32 index);
-extern void func_80036660(Overlay60Color *color, s32 amount);
+extern void initColourCycle(Overlay60Color *color, s32 index);
+extern void updateColourCycle(Overlay60Color *color, s32 amount);
 
 /* One display-list append the way the SDK's packet macros write it: a
  * block-scoped pointer per expansion, on one physical line. */
@@ -82,7 +82,7 @@ s32 func_overlay_060_F0002F54_18BCD2C(s32 left, s32 bottom, s32 width,
     }
 
     right = left + width;
-    func_80034554(&gOverlay60DisplayListReloc, 0, 0, 0);
+    texDPTextureX(&gOverlay60DisplayListReloc, 0, 0, 0);
     O60_APPEND(0x07020010, (u32)D_800000B0);
 
     x = left;
@@ -93,8 +93,8 @@ s32 func_overlay_060_F0002F54_18BCD2C(s32 left, s32 bottom, s32 width,
         do {
             fraction = (f32)(x - left) / widthFloat;
             verticalOffset = (f32)height * fraction;
-            func_80036600(&color, 0xB);
-            func_80036660(&color, (s32)(fraction * 60.0f));
+            initColourCycle(&color, 0xB);
+            updateColourCycle(&color, (s32)(fraction * 60.0f));
 
             if (x < split) {
                 command = gOverlay60DisplayListReloc++;

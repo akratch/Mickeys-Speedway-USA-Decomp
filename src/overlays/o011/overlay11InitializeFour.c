@@ -24,7 +24,7 @@ extern Overlay11Resources *gOverlay11Resources;
 extern char gOverlay11Format[];
 extern void *gOverlay11Created[4];
 extern s32 gOverlay11CreatedActive;
-extern u16 D_800D31BC;
+extern u16 D_8007BF1C;
 
 extern Overlay11Status *func_80028F54(void);
 extern s32 sprintf(char *buffer, const char *format, ...);
@@ -53,7 +53,7 @@ void overlay11InitializeFour(void) {
             gOverlay11Resources->resource50, 160, 135, 4);
         gOverlay11Created[3] = 0;
     } else {
-        if (D_800D31BC & 0x100) {
+        if (D_8007BF1C & 0x100) {
             gOverlay11Created[2] = overlay11CreateReloc(
                 gOverlay11Resources->resource1A8, 160, 135, 4);
         } else if (status->value1 == 0) {

@@ -20,14 +20,14 @@ typedef struct O13View {
 extern s32 gOverlay13Active;
 extern s32 gOverlay13Enabled;
 extern O13Record gOverlay13Records[];
-extern O13View *overlay13Initialize(void);
+extern O13View *camGetPtr(void);
 extern void overlay13DrawRecord(O13Record *, void *, void *, void *);
 
 /* Frame 0x168 is the two pointer pads plus indices[26] and distances[35].
  * temporaryDistance = 0 before the branch takes the first FP colour. The
  * collection walk reuses i, so that web is coloured before record. if (1)
- * is the region boundary that rematerializes the record base. The matched
- * overlay13Initialize is void and leaves the view pointer in v0. */
+ * is the region boundary that rematerializes the record base. The view is
+ * the resident camGetPtr (shipped SYMBOL record, resident +0x241DC). */
 void overlay13DrawActive(void *commands, void *mtx, void *vertices) {
     s32 i;
     void *pad0;
@@ -46,7 +46,7 @@ void overlay13DrawActive(void *commands, void *mtx, void *vertices) {
 
     temporaryDistance = 0.0f;
     if (gOverlay13Active != 0 && gOverlay13Enabled != 0) {
-        view = overlay13Initialize();
+        view = camGetPtr();
         if (1) {
             record = gOverlay13Records;
             i = 0;

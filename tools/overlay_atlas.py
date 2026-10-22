@@ -114,7 +114,9 @@ DATA_RODATA_OWNERSHIP = {
     # tail, so no duplicate C subsegment is emitted at the section boundary.
     15: [(0x0, 0x50, "overlay_015")],
     42: [(0x0, 0x10, "overlay_042")],
-    77: [(0x0, 0x30, "overlay_077")],
+    # overlay_077.c owns the four .data words; +0x10..+0x30 is its literal
+    # pool (.rodata), externalized onto the raw slice (fixed row below).
+    77: [(0x0, 0x10, "overlay_077")],
     79: [(0x0, 0x60, "func_overlay_079_F0000134_18CD0D4")],
     # The whole .data section; data_rodata +0x2D0..+0x2E0 is the original
     # TU's .rodata (its own relocation base) and stays raw.
@@ -237,6 +239,9 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
+    # overlay77Update's five float literals, rodata-relative +0x0, after the
+    # four .data words overlay_077.c defines.
+    77: [(0x10, 0x30, "overlay_077", ".rodata", "overlay77Update", True)],
     # The state machine's float literals and seven-entry switch table,
     # rodata-relative +0x8, after overlay90Initialize's two data words.
     90: [

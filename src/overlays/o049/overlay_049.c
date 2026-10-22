@@ -87,10 +87,10 @@ void overlay49Update(s32 updateRate) {
         }
         if (gOverlay49Timer <= 0) {
             func_800016EC(9);
-            if (D_8007BF08 == 0) {
+            if (D_8007BF0C == 0) {
                 func_8003A754();
             }
-            if (D_8007BF04 != 0) {
+            if (D_8007BF60 != 0) {
                 overlay48InitializeReloc();
             } else {
                 func_80028374(12, 0, 0, 12, 1, 0);
@@ -98,7 +98,7 @@ void overlay49Update(s32 updateRate) {
             gOverlay49Finished = 1;
         }
     }
-    overlay65UpdateReloc(D_800D0000, D_800D0004, updateRate);
+    overlay65UpdateReloc(D_800D3140, D_800D3144, updateRate);
 }
 
 /*

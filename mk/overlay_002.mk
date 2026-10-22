@@ -11,8 +11,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay2ValidateRegion.c.o: POSTPROCESS = 
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1BC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay2ContainsPoint.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym func_8002A4C0=overlay2PointAngleReloc \
-		--redefine-sym func_8002A5BC=overlay2PointAngleDifferenceReloc $@ && \
+		--redefine-sym Arctanf=overlay2PointAngleReloc \
+		--redefine-sym mathDiffAngle=overlay2PointAngleDifferenceReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x128
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay2CopyColor.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x20

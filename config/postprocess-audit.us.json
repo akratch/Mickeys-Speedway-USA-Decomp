@@ -1994,77 +1994,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o017/overlay17AdvanceChain.c.o",
-      "offset": 1640,
-      "overlay": 17,
-      "size": 588,
-      "source": "src/overlays/o017/overlay17AdvanceChain.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o017/overlay17CalculateEndpoints.c.o",
-      "offset": 0,
-      "overlay": 17,
-      "size": 792,
-      "source": "src/overlays/o017/overlay17CalculateEndpoints.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o017/overlay17CreateChain.c.o",
-      "offset": 792,
-      "overlay": 17,
-      "size": 784,
-      "source": "src/overlays/o017/overlay17CreateChain.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o017/overlay17DrawStrip.c.o",
-      "offset": 2228,
-      "overlay": 17,
-      "size": 476,
-      "source": "src/overlays/o017/overlay17DrawStrip.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o017/overlay17ReleaseChain.c.o",
-      "offset": 1576,
-      "overlay": 17,
-      "size": 64,
-      "source": "src/overlays/o017/overlay17ReleaseChain.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o019/overlay19BuildAdjacency.c.o",
       "offset": 2608,
       "overlay": 19,
@@ -8969,10 +8898,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 618,
+      "metadata": 613,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 444320,
-    "objects_with_postprocess": 619
+    "matched_c_bytes_with_postprocess": 441616,
+    "objects_with_postprocess": 614
   }
 }

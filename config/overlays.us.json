@@ -4124,46 +4124,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x318",
-     "size": "0x318",
-     "type": "c",
-     "source": "overlays/o017/overlay17CalculateEndpoints",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x318",
-     "end_offset": "0x628",
-     "size": "0x310",
-     "type": "c",
-     "source": "overlays/o017/overlay17CreateChain",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x628",
-     "end_offset": "0x668",
-     "size": "0x40",
-     "type": "c",
-     "source": "overlays/o017/overlay17ReleaseChain",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x668",
-     "end_offset": "0x8B4",
-     "size": "0x24C",
-     "type": "c",
-     "source": "overlays/o017/overlay17AdvanceChain",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x8B4",
      "end_offset": "0xA90",
-     "size": "0x1DC",
+     "size": "0xA90",
      "type": "c",
-     "source": "overlays/o017/overlay17DrawStrip",
+     "source": "overlays/o017/overlay_017",
      "matched": true,
      "nonmatching": false
     }

@@ -2,15 +2,6 @@
   "schema_version": 1,
   "rules": [
     {
-      "object": "overlays/o017/overlay17CreateChain.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_017_F0000318_1873CD0",
-          "to": "overlay17CreateChain"
-        }
-      ]
-    },
-    {
       "object": "overlays/o019/overlay19BuildPlanes.c.o",
       "aliases": [
         {

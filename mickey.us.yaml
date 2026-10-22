@@ -1513,11 +1513,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18739B8, c, overlay17CalculateEndpoints]
-      - [0x1873CD0, c, overlay17CreateChain]
-      - [0x1873FE0, c, overlay17ReleaseChain]
-      - [0x1874020, c, overlay17AdvanceChain]
-      - [0x187426C, c, overlay17DrawStrip]
+      - [0x18739B8, c, overlay_017]
       - [0x1874448, bin, overlay_017_data_rodata]
       - [0x1874548, bin, overlay_017_reloc1]
       - [0x1874588, bin, overlay_017_reloc2]

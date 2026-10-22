@@ -418,12 +418,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o016/overlay_016.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym mmAlloc=mmAlloc_o016Reloc \
 	--redefine-sym mmFree=mmFree_o016Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CalculateEndpoints.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay_017.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym mmAlloc=mmAlloc_o017Reloc \
 	--redefine-sym pointListRPY=pointListRPY_o017Reloc \
-	--redefine-sym sqrtf=sqrtf_o017Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17DrawStrip.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym texDPTextureX=texDPTextureX_o017Reloc $@
+	--redefine-sym sqrtf=sqrtf_o017Reloc \
+	--redefine-sym texDPTextureX=texDPTextureX_o017Reloc \
+	--redefine-sym texLoadTexture=texLoadTexture_o017Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o018/overlay_018.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007A1B8=D_8007A1B8_o018Reloc \

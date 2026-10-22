@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay17CalculateEndpoints:start -->
 ### `overlay17CalculateEndpoints` plateau handoff
 
-- source: `src/overlays/o017/overlay17CalculateEndpoints.c`
+- source: `src/overlays/o017/overlay_017.c`
 - score: 0/198 words, promoted
 - frame: 0x58
 - relocations: 3

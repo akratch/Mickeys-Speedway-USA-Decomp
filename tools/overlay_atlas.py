@@ -937,11 +937,7 @@ TEXT_SUBSEGMENTS = {
         (0x94C, "asm", "overlay_100_padding"),
     ],
     17: [
-        (0x000, "c", "overlay17CalculateEndpoints"),
-        (0x318, "c", "overlay17CreateChain"),
-        (0x628, "c", "overlay17ReleaseChain"),
-        (0x668, "c", "overlay17AdvanceChain"),
-        (0x8B4, "c", "overlay17DrawStrip"),
+        (0x000, "c", "overlay_017"),
     ],
     55: [
         (0x000, "c", "overlay55Initialize"),

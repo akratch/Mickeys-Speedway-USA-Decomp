@@ -1080,20 +1080,14 @@ gOverlay16Phase = 0x00000008;
 mmAlloc_o016Reloc = 0xf0000000;
 mmFree_o016Reloc = 0xf0000000;
 
-/* overlay 17: overlay17CalculateEndpoints.c.o */
-pointListRPY_o017Reloc = 0xf0000000;
-sqrtf_o017Reloc = 0xf0000000;
-
-/* overlay 17: overlay17CreateChain.c.o */
+/* overlay 17: overlay_017.c.o */
 gOverlay17TemplateReloc = 0x00000000;
 mmAlloc_o017Reloc = 0xf0000000;
-texLoadTexture_o017Reloc = 0xf0000000;
-
-/* overlay 17: overlay17ReleaseChain.c.o */
 overlay17ReleaseReloc = 0xf0000000;
-
-/* overlay 17: overlay17DrawStrip.c.o */
+pointListRPY_o017Reloc = 0xf0000000;
+sqrtf_o017Reloc = 0xf0000000;
 texDPTextureX_o017Reloc = 0xf0000000;
+texLoadTexture_o017Reloc = 0xf0000000;
 
 /* overlay 18: overlay_018.c.o */
 D_8007A1B8_o018Reloc = 0x00000000;
@@ -5239,19 +5233,10 @@ func_overlay_016_F000008C_1873524 = overlay16InitializeBuffer;
 func_overlay_016_F00001A8_1873640 = overlay16ReleaseBuffer;
 func_overlay_016_F00001E0_1873678 = overlay16ApplyGradient;
 
-/* overlay 17: overlay17CalculateEndpoints.c.o */
-func_overlay_017_F0000000_18739B8 = overlay17CalculateEndpoints;
-
-/* overlay 17: overlay17CreateChain.c.o */
+/* overlay 17: overlay_017.c.o */
 func_overlay_017_F0000318_1873CD0 = overlay17CreateChain;
-
-/* overlay 17: overlay17ReleaseChain.c.o */
 func_overlay_017_F0000628_1873FE0 = overlay17ReleaseChain;
-
-/* overlay 17: overlay17AdvanceChain.c.o */
 func_overlay_017_F0000668_1874020 = overlay17AdvanceChain;
-
-/* overlay 17: overlay17DrawStrip.c.o */
 func_overlay_017_F00008B4_187426C = overlay17DrawStrip;
 
 /* overlay 18: overlay_018.c.o */

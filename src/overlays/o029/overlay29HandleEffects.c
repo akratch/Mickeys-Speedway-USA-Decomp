@@ -44,13 +44,13 @@ typedef struct Overlay29Object {
     u32 flags80;
 } Overlay29Object;
 
-extern void overlay29ResetReloc(void);
+extern void func_80006EA0(void);
 extern s16 overlay29AngleReloc(f32 x, f32 y);
-extern f32 overlay29SqrtReloc(f32 value);
-extern void overlay29TransformReloc(s16 *angles, Vec3f *vector);
-extern s16 overlay29RandomRangeReloc(s32 low, s32 high);
-extern void overlay29ActivateReloc(Overlay29Object *object, s32 mode);
-extern void overlay29EmitReloc(s32 id, f32 x, f32 y, f32 z, s32 type, s32 arg);
+extern f32 sqrtf(f32 value);
+extern void mathOneFloatPY(s16 *angles, Vec3f *vector);
+extern s16 mathRnd(s32 low, s32 high);
+extern void partUpdateTriggers(Overlay29Object *object, s32 mode);
+extern void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 type, s32 arg);
 
 #define INITIALIZE_RECORD(rec_) \
     do { \
@@ -61,10 +61,10 @@ extern void overlay29EmitReloc(s32 id, f32 x, f32 y, f32 z, s32 type, s32 arg);
         record->angle1 = object->angle1; \
         record->angle2 = object->angle2; \
         record->scalar = object->scalar; \
-        record->random0 = overlay29RandomRangeReloc(-0x500, 0x500);       \
-        record->random1 = overlay29RandomRangeReloc(-0x500, 0x500);       \
+        record->random0 = mathRnd(-0x500, 0x500);       \
+        record->random1 = mathRnd(-0x500, 0x500);       \
         *(volatile s16 *) &record->random2 =                              \
-            overlay29RandomRangeReloc(-0x500, 0x500);                     \
+            mathRnd(-0x500, 0x500);                     \
         *(volatile s16 *) &record->value = 0xFF;                           \
     } while (0)
 
@@ -84,10 +84,10 @@ extern void overlay29EmitReloc(s32 id, f32 x, f32 y, f32 z, s32 type, s32 arg);
         record->angle1 = object->angle1;                                   \
         record->angle2 = object->angle2;                                   \
         record->scalar = object->scalar;                                   \
-        record->random0 = overlay29RandomRangeReloc(-0x500, 0x500);        \
-        record->random1 = overlay29RandomRangeReloc(-0x500, 0x500);        \
+        record->random0 = mathRnd(-0x500, 0x500);        \
+        record->random1 = mathRnd(-0x500, 0x500);        \
         *(volatile s16 *) &record->random2 =                               \
-            overlay29RandomRangeReloc(-0x500, 0x500);                      \
+            mathRnd(-0x500, 0x500);                      \
         *(volatile s16 *) &record->value = 0xFF;                           \
         next_;                                                             \
     } while (0)
@@ -154,11 +154,11 @@ void func_overlay_029_F00010C4_187E374(Overlay29Object *object, s32 mode) {
 
     state = object->state;
     if ((mode & 1) != 0) {
-        overlay29ResetReloc();
+        func_80006EA0();
     } else if ((mode & 2) != 0) {
         baseAngle = overlay29AngleReloc(state->direction.x, state->direction.z);
         verticalAngle = overlay29AngleReloc(
-            overlay29SqrtReloc((state->direction.z * state->direction.z) +
+            sqrtf((state->direction.z * state->direction.z) +
                                (state->direction.x * state->direction.x)),
             state->direction.y);
 
@@ -168,7 +168,7 @@ void func_overlay_029_F00010C4_187E374(Overlay29Object *object, s32 mode) {
         record->vector.x = 0.0f;
         record->vector.y = 0.0f;
         record->vector.z = -10.0f;
-        overlay29TransformReloc(angles, &record->vector);
+        mathOneFloatPY(angles, &record->vector);
         INITIALIZE_RECORD_THEN(record, angles[1] = verticalAngle + 0x2000;
                                        angles[0] = baseAngle);
 
@@ -176,7 +176,7 @@ void func_overlay_029_F00010C4_187E374(Overlay29Object *object, s32 mode) {
         record->vector.x = 0.0f;
         record->vector.y = 0.0f;
         record->vector.z = -10.0f;
-        overlay29TransformReloc(angles, &record->vector);
+        mathOneFloatPY(angles, &record->vector);
         INITIALIZE_RECORD(record);
 
         record = &state->records[2];
@@ -185,7 +185,7 @@ void func_overlay_029_F00010C4_187E374(Overlay29Object *object, s32 mode) {
         record->vector.x = 0.0f;
         record->vector.y = 0.0f;
         record->vector.z = -10.0f;
-        overlay29TransformReloc(angles, &record->vector);
+        mathOneFloatPY(angles, &record->vector);
         INITIALIZE_RECORD(record);
 
         record = &state->records[3];
@@ -194,17 +194,17 @@ void func_overlay_029_F00010C4_187E374(Overlay29Object *object, s32 mode) {
         record->vector.x = 0.0f;
         record->vector.y = 0.0f;
         record->vector.z = -10.0f;
-        overlay29TransformReloc(angles, &record->vector);
+        mathOneFloatPY(angles, &record->vector);
         INITIALIZE_RECORD(record);
         state->active = 1;
     }
 
     if ((mode & 4) != 0) {
         object->flags80 |= 2;
-        overlay29ActivateReloc(object, 1);
+        partUpdateTriggers(object, 1);
     }
     if ((mode & 8) != 0) {
-        overlay29EmitReloc(0x27A, object->position.x, object->position.y,
+        amSndPlayXYZ(0x27A, object->position.x, object->position.y,
                            object->position.z, 4, 0);
     }
     object->resource->flags &= ~1;

@@ -73,7 +73,7 @@ extern O35Model *D_800792E8;
 extern s32 *D_o35_model_table;
 extern s32 D_80079314;
 
-extern void *call_o0_0_2AE30(s32, s32);
+extern void *mmAlloc(s32, s32);
 extern void func_8002A244(void);
 extern void mainPreNMI(void);
 extern s32 *piRomLoad(s32);
@@ -85,7 +85,7 @@ extern void *align16(void *);
 extern s32 mmGetDelay(void);
 extern void mmSetDelay(s32);
 extern void *mmAllocAtAddr(s32, void *, s32);
-extern void *call_o0_0_33FF8(s32);
+extern void *texLoadTexture(s32);
 extern void trackLightAllocate(u8, u8);
 
 extern void func_overlay_035_F0000770_1882450(O35Segment *, O35Bounds *,
@@ -112,13 +112,13 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
     u8 *cursor;
 
     D_800C9D38 = D_800792EC->allocationCount;
-    D_800C9D2C = call_o0_0_2AE30(D_800C9D38 * 4, 0x91);
-    D_800C9D30 = call_o0_0_2AE30(D_800C9D38 * 2, 0x91);
-    D_800C9D34 = call_o0_0_2AE30(D_800C9D38 * 2, 0x91);
-    D_800C9D20 = call_o0_0_2AE30(
+    D_800C9D2C = mmAlloc(D_800C9D38 * 4, 0x91);
+    D_800C9D30 = mmAlloc(D_800C9D38 * 2, 0x91);
+    D_800C9D34 = mmAlloc(D_800C9D38 * 2, 0x91);
+    D_800C9D20 = mmAlloc(
         D_800792EC->segmentAllocationCount * 0x2C, 0x91);
     D_800C9D3C = 0;
-    D_800C95A8 = call_o0_0_2AE30(0x9F000, 0x91);
+    D_800C95A8 = mmAlloc(0x9F000, 0x91);
     D_800792E8 = D_800C95A8;
     if (D_800792E8 == 0) {
         func_8002A244();
@@ -201,7 +201,7 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
     mainPreNMI();
 
     for (k = 0; k < D_800792E8->textureCount; k++) {
-        D_800792E8->textures[k].texture = call_o0_0_33FF8(
+        D_800792E8->textures[k].texture = texLoadTexture(
             (s32)D_800792E8->textures[k].texture | 0x8000);
     }
     mainPreNMI();
@@ -214,7 +214,7 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
 
         j = segment->count20;
         byteCount = ((j + 0xF) >> 4) * 2;
-        colorData = call_o0_0_2AE30(byteCount + 8 + j * 3, 0x91);
+        colorData = mmAlloc(byteCount + 8 + j * 3, 0x91);
         if (colorData != 0) {
             s32 remaining;
             u8 *source;

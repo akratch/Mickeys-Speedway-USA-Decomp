@@ -30,12 +30,12 @@ typedef struct Overlay69AnchorObject {
     u8 transformSetIndex;
 } Overlay69AnchorObject;
 
-extern void overlay69RotateVectorReloc(Overlay69Matrix *matrix, f32 x, f32 y,
+extern void func_8002B040(Overlay69Matrix *matrix, f32 x, f32 y,
                                        f32 z, f32 *outX, f32 *outY,
                                        f32 *outZ);
-extern s32 overlay69AngleReloc(f32 x, f32 z);
-extern f32 overlay69SinReloc(s32 angle);
-extern f32 overlay69CosReloc(s32 angle);
+extern s32 Arctanf(f32 x, f32 z);
+extern f32 func_8002A8C0(s32 angle);
+extern f32 func_8002A8BC(s32 angle);
 
 /* Exact DKR v77/v80 and JFG scans are negative for this routine. */
 void overlay69UpdateAnchor(Overlay69AnchorObject *object, s32 updateContext) {
@@ -51,12 +51,12 @@ void overlay69UpdateAnchor(Overlay69AnchorObject *object, s32 updateContext) {
     state = object->anchorState;
     if (set->direct == 0) {
         matrix = set->matrices[set->matrixIndex];
-        overlay69RotateVectorReloc(matrix, 0.0f, 0.0f, 1.0f,
+        func_8002B040(matrix, 0.0f, 0.0f, 1.0f,
                                    &forwardX, &forwardY, &forwardZ);
-        angle = overlay69AngleReloc(forwardX, forwardZ);
-        state->x = (*matrix)[3][0] - overlay69SinReloc(angle) * 18.0f;
+        angle = Arctanf(forwardX, forwardZ);
+        state->x = (*matrix)[3][0] - func_8002A8C0(angle) * 18.0f;
         state->y = object->y;
-        state->z = (*matrix)[3][2] - overlay69CosReloc(angle) * 18.0f;
+        state->z = (*matrix)[3][2] - func_8002A8BC(angle) * 18.0f;
         state->angle = angle;
     } else {
         state->x = object->x;

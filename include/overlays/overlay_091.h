@@ -74,8 +74,8 @@ typedef struct Overlay91RenderObject {
 } Overlay91RenderObject;
 
 extern f32 overlay91CallProxy();
-extern volatile s32 overlay91GlobalA;
-extern s32 overlay91GlobalB;
+extern volatile s32 D_800C9480;
+extern s32 D_800C947C;
 
 s32 func_800290A0(void);
 void viGetCurrentSize(void **bufferOut, u32 *widthOut);

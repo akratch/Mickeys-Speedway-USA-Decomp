@@ -59,7 +59,7 @@ extern char gOverlay61NewFileName[];
 extern char gOverlay61GhostLabel[];
 extern char gOverlay61FreeLabel[];
 extern Overlay61GhostEntry *D_8007A1F4;
-extern void *gDisplayListHead;
+extern void *D_800D3140;
 
 extern void overlay61UpdateInput(s32 *x, s32 *y, s32 *confirm, s32 *cancel);
 extern void overlay61ResetCounters(void);
@@ -306,7 +306,7 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
     }
 
     if (gOverlay61EntryCount > 0) {
-        overlay61DrawList(&gDisplayListHead);
+        overlay61DrawList(&D_800D3140);
     }
     texAnimateTexSprite(gOverlay61Sprite0.texture, &gOverlay61Animation0, 2,
                   &gOverlay61Time0, updateRate);
@@ -315,11 +315,11 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
                   &gOverlay61Time1, updateRate);
     gOverlay61Sprite1.frame = gOverlay61Time1 * 65536.0f;
     if (alpha0) {
-        func_8002F618(&gDisplayListHead, &gOverlay61Sprite0, 0x24, 0xCC,
+        func_8002F618(&D_800D3140, &gOverlay61Sprite0, 0x24, 0xCC,
                       0xFF, 0xFF, 0xFF, alpha0);
     }
     if (alpha1) {
-        func_8002F618(&gDisplayListHead, &gOverlay61Sprite1, 0x11C, 0xCC,
+        func_8002F618(&D_800D3140, &gOverlay61Sprite1, 0x11C, 0xCC,
                       0xFF, 0xFF, 0xFF, alpha1);
     }
 }

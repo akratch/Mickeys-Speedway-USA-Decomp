@@ -22,7 +22,7 @@ typedef struct Overlay29Ratio {
 
 extern Overlay29Point *gOverlay29PointA;
 extern Overlay29Point *gOverlay29PointB;
-extern f32 overlay29SqrtReloc(f32);
+extern f32 sqrtf(f32);
 extern s32 overlay29AngleReloc(s16);
 
 /* Exact at +0x23C; DKR v77/v80 and JFG have no exact donor for this update. */
@@ -34,11 +34,11 @@ void overlay29UpdateRatio(Overlay29Object *object, Overlay29Ratio *ratio) {
 
     dx = gOverlay29PointA->x - gOverlay29PointB->x;
     dy = gOverlay29PointA->y - gOverlay29PointB->y;
-    referenceDistance = overlay29SqrtReloc((dx * dx) + (dy * dy));
+    referenceDistance = sqrtf((dx * dx) + (dy * dy));
 
     dx = gOverlay29PointA->x - object->x;
     dy = gOverlay29PointA->y - object->y;
-    objectDistance = overlay29SqrtReloc((dx * dx) + (dy * dy));
+    objectDistance = sqrtf((dx * dx) + (dy * dy));
 
     ratio->ratio = objectDistance / referenceDistance;
     ratio->value = (f32)overlay29AngleReloc(ratio->angle) + ratio->ratio;

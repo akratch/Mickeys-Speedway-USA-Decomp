@@ -17,13 +17,13 @@ M2C_UNK controlPlayerReInit(void *, s32, s32, s32, s32, s32, s32); /* extern */
 M2C_UNK amSndSetXYZ(s32, f32, f32, f32);           /* extern */
 M2C_UNK amSndStopXYZ();                             /* extern */
 M2C_UNK func_800291D8(M2C_UNK);                     /* extern */
-s32 ext_o0_2952c(M2C_UNK, M2C_UNK);                /* extern */
+s32 mathRnd(M2C_UNK, M2C_UNK);                /* extern */
 M2C_UNK mathOneFloatPY(void *, void *);              /* extern */
-f32 ext_o0_2a470(s16);                             /* extern */
+f32 func_8002A8C0(s16);                             /* extern */
 void *func_80005820(u8);                             /* extern */
 M2C_UNK func_800498FC(u8, M2C_UNK, f32, M2C_UNK, s32, s32, s32); /* extern */
 M2C_UNK func_8005ABA8(void *, M2C_UNK, f32);        /* extern */
-void ext_o0_5a914(void *, M2C_UNK, s32, f32);   /* extern */
+void func_8005AD64(void *, M2C_UNK, s32, f32);   /* extern */
 s16 func_8000FAE0(f32, f32, f32);                    /* extern */
 M2C_UNK overlay7CommitSelection(M2C_UNK);                       /* extern */
 
@@ -32,7 +32,7 @@ M2C_UNK overlay7CommitSelection(M2C_UNK);                       /* extern */
  * (docs/lastmile-region-boundary.md; the shard has the seven passes before):
  * a call's unused result is a v0 web that occupies the call's whole basic
  * block, so a pointer loaded after the call in that block is denied v0 (L101
- * is block-granular).  `ext_o0_5a914` is the last call before both the
+ * is block-granular).  `func_8005AD64` is the last call before both the
  * case-0 `+0x48` access and the `+0x3E0` access, its result is never used,
  * and declaring it `void` removes the web: both loads then take v0 as the ROM
  * does.  An `if (1) { }` region boundary between the call and the load is the
@@ -92,7 +92,7 @@ void func_overlay_086_F0000474_18D22AC(void *object, s32 steps) {
                         amSndStopXYZ(result);
                     }
                 }
-                shake = (s32) (ext_o0_2a470(M2C_FIELD(state, s16 *, 0x26)) * 1024.0f);
+                shake = (s32) (func_8002A8C0(M2C_FIELD(state, s16 *, 0x26)) * 1024.0f);
                 *cursor++ = 0xC;
                 cursor += 5;
                 M2C_FIELD(cursor, s16 *, -0xA) = (s16) M2C_FIELD(state, s16 *, 0x24);
@@ -130,7 +130,7 @@ void func_overlay_086_F0000474_18D22AC(void *object, s32 steps) {
                         func_800498FC(M2C_FIELD(state, u8 *, 1), 0x3F4CCCCD, -1.0f, 0, 0, 0, 0);
                         func_800291D8(0x5A);
                         M2C_FIELD(object, s16 *, 6) = (s16) (M2C_FIELD(object, s16 *, 6) & 0xFBFF);
-                        ext_o0_5a914(object, 1, -1, 0.0f);
+                        func_8005AD64(object, 1, -1, 0.0f);
                         M2C_FIELD(M2C_FIELD(target, void **, 0x48), u16 *, 6) &= 0xFFFE;
                     } else {
                         steps = 0;
@@ -201,7 +201,7 @@ loop_37:
                             amSndPlayXYZ(0x1BF, M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14), 4, NULL);
                             M2C_FIELD(racer, s8 *, 0x191) = 0;
                             M2C_FIELD(racer, s8 *, 0x16C) = 1;
-                            ext_o0_5a914(target, 0xC, -1, 0.0f);
+                            func_8005AD64(target, 0xC, -1, 0.0f);
                             M2C_FIELD(state, s16 *, 0x1E) = 0;
                             M2C_FIELD(state, s16 *, 0x20) = 0;
                             M2C_FIELD(state, s16 *, 0x22) = 0;
@@ -289,7 +289,7 @@ loop_52:
                 if (scale > 150.0f) {
                     scale = 150.0f;
                 }
-                scale += (f32) ext_o0_2952c(-5, 5);
+                scale += (f32) mathRnd(-5, 5);
                 amSndSetXYZ(M2C_FIELD(state, s32 *, 0x18), M2C_FIELD(object, f32 *, 0xC), M2C_FIELD(object, f32 *, 0x10), M2C_FIELD(object, f32 *, 0x14));
                 amSndSetPitchXYZ(M2C_FIELD(state, s32 *, 0x18), (u32) scale & 0xFF);
                 if (M2C_FIELD(state, u8 *, 0) == 4) {

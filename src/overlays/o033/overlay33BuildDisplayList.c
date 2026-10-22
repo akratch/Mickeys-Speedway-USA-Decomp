@@ -17,7 +17,7 @@ typedef struct Overlay33Locals {
     Gfx *cursor;
 } Overlay33Locals;
 
-extern s32 gOverlay33BufferIndex;
+extern s32 D_800D1C38;
 extern u8 D_8[];
 extern u8 D_1808[];
 /* The colour-image array read here and the display-list-end array written
@@ -25,20 +25,19 @@ extern u8 D_1808[];
  * low half, the store carries 0x3788. */
 extern void *D_800D1C28[];
 extern void *gOverlay33DisplayLists[];
-extern void *gOverlay33Texture;
+extern void *D_800D2FAC;
 
-extern void overlay33GetDimensionsReloc(u32 *width, u32 *height);
-extern void overlay33SetupPassReloc(Gfx **cursor, s32 pass, void *value);
-extern void overlay33SetupGeometryReloc(Gfx **cursor);
-extern void overlay33SetupViewportReloc(Gfx **cursor);
-extern void overlay33ApplyMatrixReloc(Gfx **cursor);
-extern void overlay33PrepareReloc(void *value);
-extern void overlay33CopyPassReloc(Gfx **cursor, Gfx **other);
-extern void overlay33GetColorReloc(void *value, s16 *low, s16 *high,
+extern void viGetCurrentSize(u32 *width, u32 *height);
+extern void rsp_segment(Gfx **cursor, s32 pass, void *value);
+extern void rcpInitSp(Gfx **cursor);
+extern void rcpInitDpNoSize(Gfx **cursor);
+extern void texDPInit(Gfx **cursor);
+extern void camSetNo(void *value);
+extern void camSetView(Gfx **cursor, Gfx **other);
+extern void trackGetFog(void *value, s16 *low, s16 *high,
                                    s16 *unused, u8 *red, u8 *green,
                                    u8 *blue, u8 *alpha);
-extern void overlay33SetRangeReloc(s32 value);
-extern void overlay33FinishReloc(s32 value);
+extern void sprSetTextureFilter(s32 value);
 
 /* Mickey-local reconstruction using the reviewed SDK macro subset below.
  *
@@ -51,21 +50,21 @@ extern void overlay33FinishReloc(s32 value);
 void overlay33BuildDisplayList(void) {
     Overlay33Locals locals;
 
-    overlay33GetDimensionsReloc(&locals.width, &locals.height);
-    locals.cursor = (Gfx *)&D_8[gOverlay33BufferIndex * 0xC00];
-    locals.other = (Gfx *)&D_1808[gOverlay33BufferIndex * 0xC00];
+    viGetCurrentSize(&locals.width, &locals.height);
+    locals.cursor = (Gfx *)&D_8[D_800D1C38 * 0xC00];
+    locals.other = (Gfx *)&D_1808[D_800D1C38 * 0xC00];
 
-    overlay33SetupPassReloc(&locals.cursor, 0, 0);
-    overlay33SetupPassReloc(&locals.cursor, 1,
-                            D_800D1C28[gOverlay33BufferIndex]);
-    overlay33SetupPassReloc(&locals.cursor, 2, gOverlay33Texture);
-    overlay33SetupGeometryReloc(&locals.cursor);
-    overlay33SetupViewportReloc(&locals.cursor);
+    rsp_segment(&locals.cursor, 0, 0);
+    rsp_segment(&locals.cursor, 1,
+                            D_800D1C28[D_800D1C38]);
+    rsp_segment(&locals.cursor, 2, D_800D2FAC);
+    rcpInitSp(&locals.cursor);
+    rcpInitDpNoSize(&locals.cursor);
 
     gSPClearGeometryMode(locals.cursor++, 1);
     gDPSetColorImage(locals.cursor++, G_IM_FMT_RGBA, G_IM_SIZ_16b,
                      locals.width,
-                     (u32)D_800D1C28[gOverlay33BufferIndex] +
+                     (u32)D_800D1C28[D_800D1C38] +
                          0x80000000U);
     gDPSetScissor(locals.cursor++, 0, 0, 0, locals.width, locals.height);
     gMoveWd(locals.cursor++, 2, 0, 0);
@@ -75,7 +74,7 @@ void overlay33BuildDisplayList(void) {
                      locals.height - 1);
     gDPPipeSync(locals.cursor++);
 
-    overlay33ApplyMatrixReloc(&locals.cursor);
+    texDPInit(&locals.cursor);
     gMoveWd(locals.cursor++, 2, 0, 0);
     gSPClearGeometryMode(locals.cursor++, 0x1000);
     gDPSetBlendColor(locals.cursor++, 0, 0, 0, 0x64);
@@ -83,11 +82,11 @@ void overlay33BuildDisplayList(void) {
     gDPSetEnvColor(locals.cursor++, 0xFF, 0xFF, 0xFF, 0);
     gDPPipeSync(locals.cursor++);
 
-    overlay33PrepareReloc(0);
-    overlay33CopyPassReloc(&locals.cursor, &locals.other);
+    camSetNo(0);
+    camSetView(&locals.cursor, &locals.other);
     gDPPipeSync(locals.cursor++);
 
-    overlay33GetColorReloc(0, &locals.low, &locals.high, &locals.unused,
+    trackGetFog(0, &locals.low, &locals.high, &locals.unused,
                            &locals.red, &locals.green, &locals.blue,
                            &locals.alpha);
     gDPSetFogColor(locals.cursor++, locals.red, locals.green, locals.blue,
@@ -101,12 +100,12 @@ void overlay33BuildDisplayList(void) {
         range = locals.high - locals.low;
         fog->words.w1 = _SHIFTL(128000 / range, 16, 16) |
                         _SHIFTL(((500 - locals.low) * 256) / range, 0, 16);
-        overlay33SetRangeReloc(0);
+        sprSetTextureFilter(0);
     }
     gMoveWd(locals.cursor++, 10, 0, 0);
     gDPFullSync(locals.cursor++);
     gSPEndDisplayList(locals.cursor++);
 
-    gOverlay33DisplayLists[gOverlay33BufferIndex] = locals.cursor;
-    overlay33FinishReloc(1);
+    gOverlay33DisplayLists[D_800D1C38] = locals.cursor;
+    sprSetTextureFilter(1);
 }

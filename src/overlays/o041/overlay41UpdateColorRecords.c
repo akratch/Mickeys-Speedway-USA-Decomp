@@ -14,7 +14,7 @@ typedef struct Overlay41ColorRecord {
     s16 duration;
 } Overlay41ColorRecord;
 
-extern Overlay41ColorRecord gOverlay41ColorRecords[12];
+extern Overlay41ColorRecord D_800D6C58[12];
 extern void changeLightColour(s32 handle, s32 red, s32 green, s32 blue);
 extern void changeLightIntensity(s32 handle, s32 alpha);
 
@@ -51,7 +51,7 @@ void func_overlay_041_F0000124_188745C(s32 amount) {
     s32 factor;
     u8 *direct;
 
-    record = gOverlay41ColorRecords;
+    record = D_800D6C58;
     i = 11;
     do {
         handle = record->handle;

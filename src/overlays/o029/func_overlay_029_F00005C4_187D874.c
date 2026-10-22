@@ -84,7 +84,7 @@ typedef struct Overlay29TailLinkedObject {
 
 extern Overlay29TailDirection *gOverlay29Base1;
 extern Overlay29TailDirection *gOverlay29Base2;
-extern u8 D_EE0[];
+extern u8 func_overlay_029_F0000EE0_187E190[];
 
 extern void overlay29BuildChain(Overlay29TailObject *object);
 extern void overlay29UpdateRatio(Overlay29TailObject *object,
@@ -349,7 +349,7 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
     radius = 8.0f;
     trackMakePolylist(1, &oldPosition, &object->position, &radius, NULL, 0);
     if ((func_80010900(&oldPosition, &object->position, radius, object,
-                       D_EE0) != 0) &&
+                       func_overlay_029_F0000EE0_187E190) != 0) &&
         (state->collisionFlags & 4)) {
         state->pendingEffect = 1;
     }

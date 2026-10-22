@@ -32,7 +32,7 @@ typedef struct Overlay41Input {
     u8 current27;
 } Overlay41Input;
 
-extern Overlay41State *gOverlay41CurrentState;
+extern Overlay41State *D_800D6B08;
 extern void func_8005ABA8(Overlay41State *state, f32 amount, f32 step);
 
 /* Matched 2026-09-16 (lane lm-c), 14 -> 0 masked words at delta 0 in four
@@ -98,6 +98,6 @@ void func_overlay_041_F0001298_18885D0(Overlay41Input *input,
     }
 
     if (input->flags16 & 2) {
-        gOverlay41CurrentState = state;
+        D_800D6B08 = state;
     }
 }

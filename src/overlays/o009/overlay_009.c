@@ -168,7 +168,7 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
             params->unk2C = current;
         }
         M2C_FIELD(object, f32 *, 0x10) +=
-            params->unk2C * ext_o0_2a470(params->angle2A);
+            params->unk2C * func_8002A8C0(params->angle2A);
         func_8005AF14(savedEntry, entryData, object);
         lightObject(object, savedEntry, M2C_FIELD(object, void **, 0x50),
                       ((O9Entry *)savedEntry)->items[((O9Entry *)savedEntry)->index]);
@@ -401,14 +401,14 @@ void func_overlay_009_F0000CE4_186735C(O9IntegrateOutput *out, O9IntegrateContro
         }
         fraction = 1.0f - (control->velocity / control->speedLimit);
         control->velocity += control->acceleration * step;
-        xVelocity = ext_o0_2a470(angle) * control->scaleX * fraction;
-        zVelocity = ext_o0_2a46c(angle) * control->scaleX * fraction;
+        xVelocity = func_8002A8C0(angle) * control->scaleX * fraction;
+        zVelocity = func_8002A8BC(angle) * control->scaleX * fraction;
     } else {
         xExtra = 0.0f;
         yExtra = 0.0f;
         zExtra = 0.0f;
-        xVelocity = ext_o0_2a470(angle) * control->scaleX;
-        zVelocity = ext_o0_2a46c(angle) * control->scaleX;
+        xVelocity = func_8002A8C0(angle) * control->scaleX;
+        zVelocity = func_8002A8BC(angle) * control->scaleX;
     }
     yVelocity = 0.0f;
     out->zero = 0.0f;
@@ -588,10 +588,10 @@ void func_overlay_009_F00010B4_186772C(O9MotionResult *out, O9MotionOwner *owner
         i = steps - 1;
     }
 
-    trigA = ext_o0_2a470(0x8000 - state->angle);
-    trigB = ext_o0_2a46c(0x8000 - state->angle);
-    yawA = ext_o0_2a470(out->targetAngle - targetAngle);
-    yawB = ext_o0_2a46c(out->targetAngle - targetAngle);
+    trigA = func_8002A8C0(0x8000 - state->angle);
+    trigB = func_8002A8BC(0x8000 - state->angle);
+    yawA = func_8002A8C0(out->targetAngle - targetAngle);
+    yawB = func_8002A8BC(out->targetAngle - targetAngle);
     /* baseX, not a cross of its own: its live range already overlaps
      * blend's c27 web, so the merged symbol inherits that edge (L115).
      * And smoothY is cached for this one use only.  The copy is deleted by
@@ -618,8 +618,8 @@ void func_overlay_009_F00010B4_186772C(O9MotionResult *out, O9MotionOwner *owner
     baseX = owner->x + (state->axisX * state->tilt);
     baseY = owner->y + (state->axisY * state->tilt);
     baseZ = owner->z + (state->axisZ * state->tilt);
-    trigA = ext_o0_2a470(state->angle + 0x4000);
-    trigB = ext_o0_2a46c(state->angle + 0x4000);
+    trigA = func_8002A8C0(state->angle + 0x4000);
+    trigB = func_8002A8BC(state->angle + 0x4000);
     blend = D_78;
     speedTarget = state->input;
     if (speedTarget < 0.0f) speedTarget = -speedTarget;

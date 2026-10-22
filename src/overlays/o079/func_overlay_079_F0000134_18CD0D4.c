@@ -93,7 +93,7 @@ f32 gOverlay79Constants[16] = {
  * The module reaches its own data through the runtime linker rather than
  * through a link-time address, so the adopted C spells each base as the raw
  * stored addend the shipped record carries (`docs/reloc-surface.md`).
- * `gOverlay79FlagsReloc` is the reserved-BSS selector 0xFFF entry at
+ * `D_800D3128` is the reserved-BSS selector 0xFFF entry at
  * +0x4D6E8 that `func_overlay_079_F0001290_18CE230` already names; ROM-table
  * index 1579 covers both uses, so this is the same object (Tier A).
  */
@@ -107,7 +107,7 @@ typedef struct Overlay79Flags {
     /* 0x0E */ u16 progress;
 } Overlay79Flags;
 
-extern Overlay79Flags gOverlay79FlagsReloc;
+extern Overlay79Flags D_800D3128;
 extern f32 gOverlay79ModeFactors[];
 extern u8 func_overlay_079_F0000FA0_18CDF40[];
 
@@ -194,9 +194,9 @@ void func_overlay_079_F0000134_18CD0D4(Overlay79Object *object,
 
     state = object->state;
     update = updateRate;
-    raceActive = (u32)((((gOverlay79FlagsReloc.progress & 0x1C0) >> 6) >= 3 &&
-                        gOverlay79FlagsReloc.stage == 0xF &&
-                        !gOverlay79FlagsReloc.disabled)
+    raceActive = (u32)((((D_800D3128.progress & 0x1C0) >> 6) >= 3 &&
+                        D_800D3128.stage == 0xF &&
+                        !D_800D3128.disabled)
                            ? 1
                            : 0);
 

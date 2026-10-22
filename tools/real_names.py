@@ -32,12 +32,17 @@ Everything else is refused and counted, and nothing is renamed for it:
   the real spelling needs an expression change, not a rename.
 * `shared` -- the placeholder is also spelled in a file outside the module
   (a shared header, another module's source), so a per-module rename would
-  leave its declaration behind; `normalization` -- a normalization spec names
-  it.
+  leave its declaration behind; `normalization` -- a spec file this module's
+  rules name is also named by another module's rule; `normalization (recipe)`
+  -- one of the module's own rules spells the placeholder and already spells
+  the real name.  A spec file no rule names takes no part in the build and
+  does not count.
 
-The rewrite is purely a spelling change in C.  `--redefine-sym <old>=` steps in
-the module's own POSTPROCESS rules are respelled `<new>=` so the normal
-build's objects stay as they were; any other rename the new name needs is
+The rewrite is purely a spelling change in C.  The module's own POSTPROCESS
+rules, and the spec files they name, are respelled with it -- `--redefine-sym
+<old>=`, a rebind's or filter's asserted name -- so the normal build's objects
+stay as they were; a rename's new name (`<real>=<placeholder>`, which the rule
+produces from another spelling) is left alone; any other rename the new name needs is
 planned by `reloc_surface.py generate` (`<name>_oNNNReloc`, docs/reloc-surface.md
 section 5.7).  The tool cannot prove the ROM is unchanged -- `gmake verify`
 does that -- but it never edits anything but identifiers.
@@ -354,7 +359,9 @@ def rewrite_mk(text, overlay, mapping):
                 if re.fullmatch(r"\$\(OBJCOPY\)\s+\$@ && \\", body):
                     drop.add(k)
                     continue
-            lines[k] = line
+            # A rebind's or filter's spelling is respelled too; a rename's
+            # new name (`<old>=<name>`) is what the rule produces and stays.
+            lines[k] = respell_rest(line, rule_map)
     return "".join(l for k, l in enumerate(lines) if k not in drop)
 
 
@@ -402,11 +409,23 @@ def module_files(root, overlay, files, texts, inc):
     return own
 
 
-def plan_module(root, overlay, placeholders, files, texts, inc, normalization_texts,
+def plan_module(root, overlay, placeholders, files, texts, inc, normalization_texts=None,
                 mk_texts=()):
-    """({placeholder: real}, [(placeholder, reason)]) for one module."""
+    """({placeholder: real}, [(placeholder, reason)]) for one module.
+
+    ``mk_texts`` are the recipe files' texts.  Only this module's own
+    POSTPROCESS rules, and the spec files they name, can make a rename
+    unsafe: every spelling of a placeholder there is respelled with the C
+    (`rewrite_mk`, `rewrite_spec`) except a rename's *new* name, which is a
+    spelling another object's rule produces and stays.  A spec another
+    module's rule also names, or a rule that already spells the real name,
+    refuses the placeholder.  ``normalization_texts`` is unused (a spec no
+    rule names does not take part in the build).
+    """
     own = module_files(root, overlay, files, texts, inc)
     visible = sorted(h for h, users in inc.items() if h not in own and users & own)
+    rules = module_rules(mk_texts, overlay)
+    specs, foreign = rule_specs(root, mk_texts, overlay)
     mapping, refusals = {}, []
     for p in placeholders:
         if p.overlay != overlay:
@@ -422,22 +441,77 @@ def plan_module(root, overlay, placeholders, files, texts, inc, normalization_te
         if outside:
             refusals.append((p.name, "shared (%s)" % outside[0].relative_to(root).as_posix()))
             continue
-        if any(word.search(t) for t in normalization_texts):
+        if any(word.search(specs[s]) for s in foreign):
             refusals.append((p.name, "normalization"))
             continue
-        # A recipe that names the placeholder other than as a rename's old
-        # name (a relocation rebind, an added symbol) would stop matching.
-        if any(len(word.findall(t)) > len(re.findall(r"--redefine-sym\s+(?:\\\n\s*)?%s="
-                                                      % re.escape(p.name), t))
-               for t in mk_texts):
+        real = re.compile(r"\b%s\b" % re.escape(p.real))
+        clash = False
+        for block, names in rules:
+            body = block + "".join(specs.get(n, "") for n in names)
+            if recipe_uses(body, p.name) and real.search(body):
+                clash = True
+                break
+        if clash:
             refusals.append((p.name, "normalization (recipe)"))
             continue
         mapping[p.name] = p.real
     return mapping, refusals
 
 
+SPEC_REF_RE = re.compile(r"@?(config/normalizations/[A-Za-z0-9_.\-]+)")
+
+
+def recipe_uses(text, name):
+    """Spellings of ``name`` a rename must respell (all but `<old>=<name>`)."""
+    return len(re.findall(r"(?<![=\w])%s\b" % re.escape(name), text))
+
+
+def module_rules(mk_texts, overlay):
+    """[(rule text, [spec paths it names])] for module ``overlay``'s POSTPROCESS rules."""
+    prefix = "$(BUILD_DIR)/$(SRC_DIR)/overlays/o%03d/" % overlay
+    out = []
+    for text in mk_texts:
+        lines = text.splitlines(keepends=True)
+        for a, b, target in _rule_blocks(lines):
+            if target.startswith(prefix):
+                block = "".join(lines[a:b])
+                out.append((block, SPEC_REF_RE.findall(block)))
+    return out
+
+
+def rule_specs(root, mk_texts, overlay):
+    """({spec path: text} this module's rules name, {those another module's rules name})."""
+    mine = {n for _b, names in module_rules(mk_texts, overlay) for n in names}
+    specs = {}
+    for n in sorted(mine):
+        f = Path(root) / n
+        if f.is_file() and f.suffix != ".py":
+            specs[n] = f.read_text(errors="replace")
+    foreign = set()
+    for text in mk_texts:
+        lines = text.splitlines(keepends=True)
+        for a, b, target in _rule_blocks(lines):
+            if "/overlays/o%03d/" % overlay in target:
+                continue
+            foreign |= set(SPEC_REF_RE.findall("".join(lines[a:b]))) & set(specs)
+    return specs, foreign
+
+
+def respell_rest(text, mapping):
+    """Respell every remaining spelling of a mapped name but `<old>=<name>`."""
+    for old, new in mapping.items():
+        text = re.sub(r"(?<![=\w])%s\b" % re.escape(old), new, text)
+    return text
+
+
+def rewrite_spec(text, mapping):
+    """Respell a normalization spec's names (spec files carry no renames)."""
+    return respell_rest(text, mapping)
+
+
 def mk_files(root):
-    return [root / "Makefile"] + sorted((root / "mk").glob("*.mk"))
+    return ([root / "Makefile"] + sorted((root / "mk").glob("*.mk"))
+            + sorted((root / "config" / "normalizations").glob("*.mk")))
 
 
 REDECL_RE = re.compile(r"redeclaration of '([A-Za-z_]\w*)'")
@@ -480,6 +554,18 @@ def apply_module(root, overlay, mapping, files, texts, inc, compile=True):
     originals = {f: texts[f] for f in own}
     mks = [f for f in mk_files(root) if not f.name.endswith(".generated.mk")]
     mk_originals = {f: f.read_text() for f in mks}
+    # Spec files this module's rules name, each with the object whose rule names it.
+    spec_owner = {}
+    prefix = "$(BUILD_DIR)/$(SRC_DIR)/overlays/o%03d/" % overlay
+    for text in mk_originals.values():
+        lines = text.splitlines(keepends=True)
+        for a, b, target in _rule_blocks(lines):
+            if target.startswith(prefix):
+                for n in SPEC_REF_RE.findall("".join(lines[a:b])):
+                    f = root / n
+                    if f.is_file() and f.suffix != ".py":
+                        spec_owner.setdefault(f, target)
+    spec_originals = {f: f.read_text() for f in spec_owner}
     sources = [f for f in own if f.suffix == ".c"]
     dropped_all, dropped = set(), collections.defaultdict(set)
     reasons = {}
@@ -502,6 +588,12 @@ def apply_module(root, overlay, mapping, files, texts, inc, compile=True):
                 changed.append(f)
         for f, old in mk_originals.items():
             new = rewrite_mk(old, overlay, object_map)
+            if f.read_text() != new:
+                f.write_text(new)
+            if new != old:
+                changed.append(f)
+        for f, old in spec_originals.items():
+            new = rewrite_spec(old, object_map(spec_owner[f].replace("$(SRC_DIR)", "src")))
             if f.read_text() != new:
                 f.write_text(new)
             if new != old:
@@ -539,7 +631,8 @@ def apply_module(root, overlay, mapping, files, texts, inc, compile=True):
             break
     if compile and unexplained:
         # Not a prototype conflict: put the module back as it was and refuse it.
-        for f, old in list(originals.items()) + list(mk_originals.items()):
+        for f, old in (list(originals.items()) + list(mk_originals.items())
+                       + list(spec_originals.items())):
             if f.read_text() != old:
                 f.write_text(old)
         refused = [(o, "module does not compile: %s" % unexplained[0][:160])

@@ -44,12 +44,12 @@ typedef struct Overlay41Context {
 } Overlay41Context;
 
 /* Fresh pinned DKR v77/v80 and JFG scans found no exact donor. */
-extern void overlay41StartEntry(Overlay41Entry *, s32 *, s32, void *, s32);
-extern void overlay41RefreshEntry(Overlay41Entry *, Overlay41Child *,
+extern void texAnimateSprite(Overlay41Entry *, s32 *, s32, void *, s32);
+extern void func_8005AF14(Overlay41Entry *, Overlay41Child *,
                                   Overlay41Context *, Overlay41Input *);
-extern void overlay41ApplyEntry(Overlay41Context *, Overlay41Entry *, void *,
+extern void lightObject(Overlay41Context *, Overlay41Entry *, void *,
                                 void *);
-extern void overlay41FinishEntry(Overlay41Context *, Overlay41Child *,
+extern void func_80007C68(Overlay41Context *, Overlay41Child *,
                                  Overlay41Entry *, s32);
 
 /* Matched 2026-09-19 (lane w31-o041p), 120 -> 0 masked words at delta 0.
@@ -85,7 +85,7 @@ void func_overlay_041_F0001464_188879C(Overlay41Input *input,
             if (input->alternateMode != 0) {
                 mode = 11;
             }
-            overlay41StartEntry(firstEntry, &mode, scaled, context->work, argument);
+            texAnimateSprite(firstEntry, &mode, scaled, context->work, argument);
         }
     } else if (((selected != 0) &&
                 (((Overlay41State *)((u8 *)state + context->stateIndex))->status == 0)) ||
@@ -94,18 +94,18 @@ void func_overlay_041_F0001464_188879C(Overlay41Input *input,
         if (entry->active != 0) {
             child = entry->child;
             if (child->refreshEnabled != 0) {
-                overlay41RefreshEntry(entry, child, context, input);
-                overlay41ApplyEntry(context, entry, context->argument,
+                func_8005AF14(entry, child, context, input);
+                lightObject(context, entry, context->argument,
                                     entry->values[entry->index]);
             } else {
                 if (child->switchEnabled != 0) {
                     entry->index = 1 - entry->index;
                 }
-                overlay41ApplyEntry(context, entry, context->argument,
+                lightObject(context, entry, context->argument,
                                     entry->values[entry->index]);
             }
             if (child->switchEnabled > 0) {
-                overlay41FinishEntry(context, child, entry, entry->active);
+                func_80007C68(context, child, entry, entry->active);
             }
             entry->active = 0;
         }

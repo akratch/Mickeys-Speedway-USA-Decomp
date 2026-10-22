@@ -27,7 +27,7 @@ typedef struct Overlay29Owner {
 } Overlay29Owner;
 
 extern u8 gOverlay29MinimumYReloc[];
-extern f32 overlay29SqrtReloc(f32 value);
+extern f32 sqrtf(f32 value);
 
 /* Exact configured IDO output: 121 words, a 0x68 frame, and all three
  * static relocation identities. The linked owned range and full US ROM
@@ -65,7 +65,7 @@ void func_overlay_029_F0000EE0_187E190(s32 unused, Vec3f *output, Vec3f *axis, f
     lengthSquared = ((projectedX * projectedX) + (projectedY * projectedY)) + (projectedZ * projectedZ);
     if (lengthSquared > 0.0f)
     {
-      lengthSquared = overlay29SqrtReloc(lengthSquared);
+      lengthSquared = sqrtf(lengthSquared);
       projectedY /= lengthSquared;
       projectedX /= lengthSquared;
       projectedZ /= lengthSquared;

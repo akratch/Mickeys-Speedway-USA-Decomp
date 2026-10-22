@@ -517,7 +517,7 @@ extern void overlay7DispatchSelection(Transform *, s32);
 extern Spawned *overlay1FindType5ByKey(State *);
 extern void controlPlayerReInit(Transform *, f32, f32, f32, s16, s16, s16);
 extern void func_8001CB0C(Transform *, State *);
-extern void ext_o0_5a914(Transform *, s32, s32, f32);
+extern void func_8005AD64(Transform *, s32, s32, f32);
 extern Spawned *overlay1FindPreviousUsable(s16, Spawned **);
 extern s16 overlay1NextIndex(Spawned *);
 
@@ -553,7 +553,7 @@ typedef struct O1RouteNode {
  *  - `phaseValue` and `index` are unreferenced; with `value` and `phase` they
  *    are the four homes that put `sp3C` at 0x3C in the 0x50 frame (L99).
  * Earlier findings kept: rotY is stored before rotX/rotZ, the fade/alpha
- * update is two statements, and ext_o0_5a914's last parameter is f32. */
+ * update is two statements, and func_8005AD64's last parameter is f32. */
 void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
     s32 value;
     u8 phase;
@@ -617,7 +617,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             state->phase = 0;
             state->active = 0;
             state->done = 1;
-            ext_o0_5a914(obj, 12, -1, 0.0f);
+            func_8005AD64(obj, 12, -1, 0.0f);
             state->spawned = 0;
         }
     } else {
@@ -679,7 +679,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             state->phase = 0;
             state->active = 0;
             state->done = 1;
-            ext_o0_5a914(obj, 12, -1, 0.0f);
+            func_8005AD64(obj, 12, -1, 0.0f);
             state->spawned->at10.flags &= 0xFFF7;
             state->spawned = 0;
         }

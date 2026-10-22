@@ -156,11 +156,42 @@ class PlanModuleTests(unittest.TestCase):
             ph = [rn.Placeholder(1, n, 1, "resident-data", "r" + n)
                   for n in ("Own", "Shared", "Spec", "Fine")]
             ph.append(rn.Placeholder(1, "Blob", 1, "blob-bss"))
-            mapping, refusals = rn.plan_module(root, 1, ph, files, texts, inc,
-                                               ["0x10:.text:Spec\n"])
+            norm = root / "config/normalizations"
+            norm.mkdir(parents=True)
+            (norm / "both.rebind.spec").write_text("0x10:Spec:func_x\n")
+            (norm / "dead.rebind.spec").write_text("0x10:Fine:func_x\n")
+            mk = ("$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/a.c.o: POSTPROCESS = \\\n"
+                  "\t$(HOST_PYTHON) rebind.py $@ .text @config/normalizations/both.rebind.spec\n"
+                  "$(BUILD_DIR)/$(SRC_DIR)/overlays/o009/b.c.o: POSTPROCESS = \\\n"
+                  "\t$(HOST_PYTHON) rebind.py $@ .text @config/normalizations/both.rebind.spec\n")
+            mapping, refusals = rn.plan_module(root, 1, ph, files, texts, inc, mk_texts=[mk])
+            # A spec no rule names takes no part in the build.
             self.assertEqual({"Own": "rOwn", "Fine": "rFine"}, mapping)
             self.assertEqual({"Shared": "shared", "Spec": "normalization", "Blob": "blob-bss"},
                              {n: why.split(" ")[0] for n, why in refusals})
+
+    def test_recipe_spellings_refuse_only_on_a_clash(self):
+        mk = ("$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/a.c.o: POSTPROCESS = \\\n"
+              "\t$(HOST_PYTHON) rebind.py $@ .text 0x10:P:func_x 0x20:Q:rQ \\\n"
+              "\t&& $(OBJCOPY) --redefine-sym rN=N $@\n")
+        rules = rn.module_rules([mk], 1)
+        self.assertEqual(1, len(rules))
+        self.assertEqual(1, rn.recipe_uses(rules[0][0], "P"))
+        self.assertEqual(0, rn.recipe_uses(rules[0][0], "N"))
+        out = rn.rewrite_mk(mk, 1, {"P": "rP", "N": "rN2"})
+        self.assertIn("0x10:rP:func_x", out)
+        self.assertIn("--redefine-sym rN=N $@", out)
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "src/overlays/o001").mkdir(parents=True)
+            (root / "src/overlays/o001/a.c").write_text("s32 f(void) { return P() + Q() + N(); }\n")
+            files = rn.tree_files(root)
+            texts = {f: f.read_text() for f in files}
+            inc = rn.includers(root, files, texts)
+            ph = [rn.Placeholder(1, n, 1, "resident-func", "r" + n) for n in ("P", "Q", "N")]
+            mapping, refusals = rn.plan_module(root, 1, ph, files, texts, inc, mk_texts=[mk])
+            self.assertEqual({"P": "rP", "N": "rN"}, mapping)
+            self.assertEqual([("Q", "normalization (recipe)")], refusals)
 
 
 if __name__ == "__main__":

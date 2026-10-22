@@ -12,7 +12,7 @@ typedef struct Overlay34Record {
 
 extern Overlay34Record **gOverlay34Pointers;
 extern s32 gOverlay34ActiveCount;
-extern void overlay34FreeReloc(Overlay34Resource *resource);
+extern void texFreeTexture(Overlay34Resource *resource);
 
 /* Matched 2026-09-12, lane p9-tight. Twelve words to zero. The plateau's
  * `shadow` local was an artefact: the four `move $a1,$v1` the old handoff was
@@ -24,7 +24,7 @@ extern void overlay34FreeReloc(Overlay34Resource *resource);
  * register. Deleting `shadow` and writing both loops as `while (remaining--)`
  * puts the temp in $a1 and reproduces all four copies for free; the condition
  * must be bare, since `remaining-- != 0` materialises a boolean and emits
- * `sltu` where the target has `move`. overlay34FreeReloc therefore takes one
+ * `sltu` where the target has `move`. texFreeTexture therefore takes one
  * argument: $a1 at the call is this dead temp, not a second parameter. */
 void overlay34RemoveRecord(Overlay34Record *record) {
     Overlay34Record **slot;
@@ -39,7 +39,7 @@ void overlay34RemoveRecord(Overlay34Record *record) {
                 slot++;
             }
             if (record->resource != NULL) {
-                overlay34FreeReloc(record->resource);
+                texFreeTexture(record->resource);
             }
             record->active = 0;
             gOverlay34ActiveCount--;

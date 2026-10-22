@@ -102,7 +102,7 @@ void overlay91UpdateTimeline(Overlay91TimelineObject *object, s32 elapsed) {
                     state->mode = 5;
                     func_80000F94(0x14, 0);
                     func_overlay_007_F0000DBC_185CC44(0x1E);
-                    overlay91GlobalA = 0;
+                    D_800C9480 = 0;
                 } else {
                     elapsed = 0;
                 }
@@ -111,9 +111,9 @@ void overlay91UpdateTimeline(Overlay91TimelineObject *object, s32 elapsed) {
                 animation = 3;
                 state->timer += elapsed;
                 if (state->timer >= 30) {
-                    overlay91GlobalA = 0x83;
+                    D_800C9480 = 0x83;
                 } else if (state->timer >= 15) {
-                    overlay91GlobalA = 0x84;
+                    D_800C9480 = 0x84;
                 }
                 if (state->timer >= 60) {
                     elapsed = state->timer - 60;
@@ -121,7 +121,7 @@ void overlay91UpdateTimeline(Overlay91TimelineObject *object, s32 elapsed) {
                     state->mode = 6;
                     func_80000F94(0x15, 0);
                     func_overlay_007_F0000DBC_185CC44(0x1F);
-                    overlay91GlobalB = 0;
+                    D_800C947C = 0;
                 } else {
                     elapsed = 0;
                 }

@@ -1,6 +1,6 @@
 #include "PR/ultratypes.h"
 
-extern s32 gOverlay33BufferIndex;
+extern s32 D_800D1C38;
 extern u8 D_8[][0xC00];
 extern void *gOverlay33DisplayLists[];
 extern void *D_800D1C28[];
@@ -20,11 +20,11 @@ void overlay33PresentAndSwap(void) {
     s32 index;
 
     overlay33BuildDisplayList();
-    index = gOverlay33BufferIndex;
+    index = D_800D1C38;
     rcpFast3d((u64 *)&D_8[index][0],
               (u64 *)gOverlay33DisplayLists[index], 4,
               D_800D1C28[index]);
-    gOverlay33BufferIndex ^= 1;
-    gOverlay33ActiveBuffer = D_800D1C28[gOverlay33BufferIndex];
+    D_800D1C38 ^= 1;
+    gOverlay33ActiveBuffer = D_800D1C28[D_800D1C38];
     D_8007A3EC = 1;
 }

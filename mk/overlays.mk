@@ -654,8 +654,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012_tail.c.o: POSTPROCESS = \
 		--redefine-sym gOverlay12EffectCount=D_0 \
 		--redefine-sym overlay12Initialize=func_overlay_012_F0000000_186D280 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0xD0:overlay12Lookup:func_overlay_012_F0000000_186D280 \
-		0xFC:overlay12Lookup:func_overlay_012_F0000000_186D280 && \
+		0xD0:mathRnd:func_overlay_012_F0000000_186D280 \
+		0xFC:mathRnd:func_overlay_012_F0000000_186D280 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x130
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00002E4_186D564.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
@@ -1480,11 +1480,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay69UpdateAnchor.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay69UpdateAnchor.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x80:overlay69AngleReloc:overlay69RotateVectorReloc \
-		0x94:overlay69SinReloc:overlay69RotateVectorReloc \
-		0xc0:overlay69CosReloc:overlay69RotateVectorReloc && \
-	$(OBJCOPY) --redefine-sym \
-		overlay69RotateVectorReloc=func_overlay_069_F0000000_18C8A68 $@ && \
+		0x80:Arctanf:func_8002B040 \
+		0x94:func_8002A8C0:func_8002B040 \
+		0xc0:func_8002A8BC:func_8002B040 && \
+	$(OBJCOPY) --redefine-sym func_8002B040=func_overlay_069_F0000000_18C8A68 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x124
 # Overlay 69 and overlay 88 ship the same reviewed renderer bytes, but each
 # remains an independent object verdict. Splat emits overlay 69's synthetic
@@ -1599,14 +1598,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88UpdateAnchor.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88UpdateAnchor.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x60:overlay88UpdateNodeReloc:overlay88PrepareNodeReloc \
-		0x80:overlay88RefreshNodeReloc:overlay88PrepareNodeReloc \
-		0xc4:overlay88ForwardVectorReloc:overlay88PrepareNodeReloc \
-		0xd0:overlay88AngleReloc:overlay88PrepareNodeReloc \
-		0xec:overlay88SinReloc:overlay88PrepareNodeReloc \
-		0x118:overlay88CosReloc:overlay88PrepareNodeReloc && \
-	$(OBJCOPY) --redefine-sym \
-		overlay88PrepareNodeReloc=func_overlay_088_F0000000_18D3A88 $@ && \
+		0x60:lightObject:func_8005AF14 \
+		0x80:func_80007C68:func_8005AF14 \
+		0xc4:func_8002B040:func_8005AF14 \
+		0xd0:Arctanf:func_8005AF14 \
+		0xec:func_8002A8C0:func_8005AF14 \
+		0x118:func_8002A8BC:func_8005AF14 && \
+	$(OBJCOPY) --redefine-sym func_8005AF14=func_overlay_088_F0000000_18D3A88 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x158
 # The wrapper compiles the shared C body in candidate and promoted modes.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: \
@@ -2501,14 +2499,14 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091_mul.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x04c:5:overlay91GlobalA 0x05c:6:overlay91GlobalA \
+		0x04c:5:D_800C9480 0x05c:6:D_800C9480 \
 		0x078:5:.rodata 0x080:6:.rodata \
 		0x134:4:func_8002A8C0 0x1a4:4:func_80000F94 \
 		0x1ac:4:func_overlay_007_F0000DBC_185CC44 0x1d0:4:func_8002A8C0 \
 		0x228:4:func_80000F94 0x270:4:func_80000F94 \
 		0x278:4:func_overlay_007_F0000DBC_185CC44 0x2f0:4:func_80000F94 \
-		0x2f8:4:func_overlay_007_F0000DBC_185CC44 0x300:5:overlay91GlobalB \
-		0x308:6:overlay91GlobalB 0x360:4:func_80006EA0 \
+		0x2f8:4:func_overlay_007_F0000DBC_185CC44 0x300:5:D_800C947C \
+		0x308:6:D_800C947C 0x360:4:func_80006EA0 \
 		0x3a4:4:func_8002A8BC && \
 	$(OBJCOPY) --remove-section=.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x528

@@ -35,7 +35,7 @@ extern s32 overlay68PayloadLimit(void);
 extern void *mmAlloc(s32 size, s32 tag);
 extern s32 piRomLoadSection(u32 assetIndex, u32 address,
                                        s32 assetOffset, s32 size);
-extern Overlay68ResidentEntry *overlay68GetResidentEntriesReloc(void);
+extern Overlay68ResidentEntry *func_800291C4(void);
 extern s32 levelGetBlurEffect(s32 kind);
 extern void mmFree(void *resource);
 
@@ -75,7 +75,7 @@ void overlay68RebuildSecondaryEntry(s32 kind) {
                 piRomLoadSection(0x3F, (u32)probe,
                                              amount * (s32)sizeof(*probe),
                                              sizeof(*probe));
-                entries = overlay68GetResidentEntriesReloc();
+                entries = func_800291C4();
                 index = levelGetBlurEffect(kind);
                 selectedEntry = entries;
                 selectedEntry += index;

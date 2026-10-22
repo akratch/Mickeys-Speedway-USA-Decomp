@@ -7,10 +7,9 @@ extern s32 D_800D1C34;
 extern volatile s32 gOverlay33Allocation;
 extern s32 D_800D2CD0;
 extern s32 D_800D1C28[];
-extern s32 gOverlay33BufferIndex;
 extern s32 gOverlay33ActiveBuffer;
 
-extern void overlay33GetDimensionsReloc(s32 *width, s32 *height);
+extern void viGetCurrentSize(s32 *width, s32 *height);
 extern s32 mmAlloc(s32 size, s32 tag);
 extern s32 osRecvMesg(s32 *context, s32 *status, s32 mode);
 extern void overlay33ReleaseGlobal(void);
@@ -118,7 +117,7 @@ void overlay33InitializeBuffers(void) {
         D_800D1C38 = 0;
         D_800D1C34 = 2;
         gOverlay33Allocation = 0;
-        overlay33GetDimensionsReloc(&width, &height);
+        viGetCurrentSize(&width, &height);
         allocation = mmAlloc((width * height * 4) + 0x40,
                                              0x87);
         gOverlay33Allocation = allocation;
@@ -133,7 +132,7 @@ void overlay33InitializeBuffers(void) {
             D_800D1C28[1] =
                 (s32)allocation + (width * height * 2);
             gOverlay33ActiveBuffer =
-                D_800D1C28[gOverlay33BufferIndex];
+                D_800D1C28[D_800D1C38];
             if (osRecvMesg(&D_800D2CD0,
                                                 &status, 0) == 0) {
                 do {

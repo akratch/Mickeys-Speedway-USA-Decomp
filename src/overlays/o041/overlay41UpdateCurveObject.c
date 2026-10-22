@@ -71,8 +71,8 @@ typedef struct Overlay41Target {
     Overlay41Object *object;
 } Overlay41Target;
 
-extern s32 gOverlay41Disabled;
-extern Overlay41Target **gOverlay41Targets;
+extern s32 D_8007D6A4;
+extern Overlay41Target **D_800D6B00;
 
 extern void func_overlay_041_F0001298_18885D0(Overlay41Input *,
                                                 Overlay41Object *, s32);
@@ -141,7 +141,7 @@ void func_overlay_041_F0000854_1887B8C(Overlay41Input *input, f32 amount,
         object = input->object;
         frameAmount = amount * 60.0f;
         func_overlay_041_F0001298_18885D0(input, object, argument);
-        if ((input->flags & 4) || (gOverlay41Disabled < 0)) {
+        if ((input->flags & 4) || (D_8007D6A4 < 0)) {
             func_overlay_041_F0001464_188879C(input, object, argument);
             func_8003EDEC(object, updateRate);
             return;
@@ -286,10 +286,10 @@ void func_overlay_041_F0000854_1887B8C(Overlay41Input *input, f32 amount,
                 targetZ = (s32)dz;
                 break;
             case 3:
-                if (gOverlay41Targets[input->targetIndex] != 0) {
+                if (D_800D6B00[input->targetIndex] != 0) {
                     Overlay41Object *targetObject;
 
-                    targetObject = gOverlay41Targets[input->targetIndex]->object;
+                    targetObject = D_800D6B00[input->targetIndex]->object;
                     if (targetObject != 0) {
                         dx = targetObject->x - object->x;
                         dy = targetObject->y - object->y;

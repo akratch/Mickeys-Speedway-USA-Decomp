@@ -703,29 +703,16 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36CallGlobal.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36InitObject.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xD4
-# func_overlay_027_F0000064_187BA3C's four float literals are the first sixteen
-# bytes of the retained overlay rodata. Bind them to that zero-base owner; the
-# digest fails closed if the compiler ever emits a different pool.
+# Overlay 27 is one TU under the overlay flag set; its .text is the module's
+# whole text and its resident calls take the generated rebinds. The one
+# remaining step is phase-3 scaffolding: func_overlay_027_F0000064_187BA3C's
+# four float literals are the first sixteen bytes of the retained overlay
+# rodata, so bind them to that zero-base owner until C owns the module's
+# data; the digest fails closed if the compiler ever emits a different pool.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: \
 	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o027Reloc \
-		--redefine-sym amSndSetVolXYZ=amSndSetVolXYZ_o027Reloc \
-		--redefine-sym amSndSetXYZ=amSndSetXYZ_o027Reloc \
-		--redefine-sym amSndStopXYZ=amSndStopXYZ_o027Reloc \
-		--redefine-sym func_80006EA0=func_80006EA0_o027Reloc \
-		--redefine-sym func_800299E8=func_800299E8_o027Reloc \
-		--redefine-sym func_8002A878=func_8002A878_o027Reloc \
-		--redefine-sym func_8002BD58=func_8002BD58_o027Reloc \
-		--redefine-sym texAnimateSprite=texAnimateSprite_o027Reloc \
-		--redefine-sym camGetPtr=camGetPtr_o027Reloc \
-		--redefine-sym func_80009F08=func_80009F08_o027Reloc \
-		--redefine-sym camPushModelMtx=camPushModelMtx_o027Reloc \
-		--redefine-sym texDPTextureX=texDPTextureX_o027Reloc \
-		--redefine-sym camPopModelMtx=camPopModelMtx_o027Reloc \
-		--redefine-sym func_80009E78=func_80009E78_o027Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xBC0 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:dd6fc9f17b7ca59ee611df3687276c9a16893e66f1c08e0b6d5ef3800683dd6f
 O41_SAMPLE_CURVE_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41SampleCurve.c.o

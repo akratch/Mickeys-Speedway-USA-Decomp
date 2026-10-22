@@ -235,16 +235,6 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
 #define O27_WRITE_COMMAND(word0, word1) \
     { O27Command *_g = (*commands)++; _g->w0 = (word0); _g->w1 = (word1); }
 
-extern s16 *camGetPtr(void);
-extern f32 func_80009F08(void *arg);
-extern void camPushModelMtx(O27Command **commands, void *mtx,
-                            O27Transform *transform, f32 scale, f32 scaleY);
-extern void texDPTextureX(O27Command **commands, void *texture, s32 flags,
-                          s32 frame);
-extern void camPopModelMtx(O27Command **commands);
-extern void func_80009E78(O27Command **commands, void *mtx, s16 *vertices,
-                          O27Object *object);
-
 void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *mtx,
                                        s16 *vertices, O27Object *object) {
     s32 intensity;

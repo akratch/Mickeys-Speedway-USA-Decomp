@@ -17739,24 +17739,6 @@
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o091"
-        ],
-        "source_path": "src/overlays/o091/overlay_091.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o091/overlay_091_mul.c",
-      "target_path": "expected/build/src/overlays/o091/overlay_091_mul.c.o",
-      "base_path": "build/src/overlays/o091/overlay_091_mul.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
         "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
@@ -17764,7 +17746,7 @@
           "overlay",
           "overlay-o091"
         ],
-        "source_path": "src/overlays/o091/overlay_091_mul.c",
+        "source_path": "src/overlays/o091/overlay_091.c",
         "complete": true
       }
     },

@@ -4264,7 +4264,7 @@ mathRnd_o090Reloc = 0xf0000000;
 overlay7CommitSelection_o090Reloc = 0xf0000000;
 pointListRPY_o090Reloc = 0xf0000000;
 
-/* overlay 91: overlay_091_mul.c.o */
+/* overlay 91: overlay_091.c.o */
 camResetView_o091Reloc = 0xf0000000;
 camStandardPersp_o091Reloc = 0xf0000000;
 func_80009E78_o091Reloc = 0xf0000000;
@@ -6202,8 +6202,6 @@ func_overlay_090_F0000000_18D4AF8 = overlay90Initialize;
 
 /* overlay 91: overlay_091.c.o */
 func_overlay_091_F0000000_18D5888 = overlay91Init;
-
-/* overlay 91: overlay_091_mul.c.o */
 func_overlay_091_F000004C_18D58D4 = overlay91UpdateTimeline;
 func_overlay_091_F00004BC_18D5D44 = overlay91Render;
 

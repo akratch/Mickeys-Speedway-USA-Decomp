@@ -1978,7 +1978,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o090/overlay_090.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym D_800C9480=D_800C9480_o090Reloc \
 	--redefine-sym overlay7CommitSelection=overlay7CommitSelection_o090Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091_mul.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym camResetView=camResetView_o091Reloc \
 	--redefine-sym camStandardPersp=camStandardPersp_o091Reloc \
 	--redefine-sym func_80009E78=func_80009E78_o091Reloc \

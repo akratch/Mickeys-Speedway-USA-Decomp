@@ -77,6 +77,15 @@ extern f32 overlay91CallProxy();
 extern volatile s32 overlay91GlobalA;
 extern s32 overlay91GlobalB;
 
+/* Each call names its retail callee; the relocations stay filtered, so no
+ * name here is linked, and each spelling is the identity the shipped table
+ * records at its site. All keep the old proxy's unprototyped f32 shape. */
+extern f32 func_80000F94();
+extern f32 func_80006EA0();
+extern f32 func_8002A8BC();
+extern f32 func_8002A8C0();
+extern f32 func_overlay_007_F0000DBC_185CC44();
+
 s32 func_800290A0(void);
 void viGetCurrentSize(void **bufferOut, u32 *widthOut);
 void rcpClearZBuffer(Overlay91Gfx **displayList, void *buffer,

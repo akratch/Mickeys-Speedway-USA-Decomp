@@ -16955,19 +16955,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x4C",
-     "size": "0x4C",
+     "end_offset": "0x574",
+     "size": "0x574",
      "type": "c",
      "source": "overlays/o091/overlay_091",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x4C",
-     "end_offset": "0x574",
-     "size": "0x528",
-     "type": "c",
-     "source": "overlays/o091/overlay_091_mul",
      "matched": true,
      "nonmatching": false
     },

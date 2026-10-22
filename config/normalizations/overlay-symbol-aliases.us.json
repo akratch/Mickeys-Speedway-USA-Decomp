@@ -47,27 +47,6 @@
       ]
     },
     {
-      "object": "overlays/o074/overlay74Update.c.o",
-      "aliases": [
-        {
-          "from": "func_8005776C",
-          "to": "overlay74QueryReloc"
-        },
-        {
-          "from": "func_800291B4",
-          "to": "overlay74HitReloc"
-        },
-        {
-          "from": "amSndPlay",
-          "to": "overlay74SoundReloc"
-        },
-        {
-          "from": "func_8003A680",
-          "to": "overlay74RewardReloc"
-        }
-      ]
-    },
-    {
       "object": "overlays/o083/overlay83BuildBatch.c.o",
       "aliases": [
         {

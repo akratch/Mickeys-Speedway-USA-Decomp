@@ -1577,9 +1577,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o073/overlay73Draw.c.o: POSTPROCESS = \
 		--redefine-sym texDPTextureX=texDPTextureX_o073Reloc \
 		--redefine-sym camPopModelMtx=camPopModelMtx_o073Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x138
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o074/overlay74Init.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xB8
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o074/overlay74Init.c.o: CFLAGS += -Wab,-r4300_mul
+# Overlay 74 is one translation unit under the overlay flag set; its .text is
+# the module's 0x250 bytes, trailing pad included, so it needs no trim.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o074/overlay_074.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay75MarkSlot.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x24
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay75Init.c.o: POSTPROCESS = \

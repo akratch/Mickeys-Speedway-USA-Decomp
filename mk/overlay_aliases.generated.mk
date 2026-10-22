@@ -17,13 +17,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58FinalizePackedStatus.c.o: POSTPRO
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65UpdateParticles.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_065_F0000080_18C42E8=overlay65UpdateParticles $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o074/overlay74Update.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym amSndPlay=overlay74SoundReloc \
-		--redefine-sym func_800291B4=overlay74HitReloc \
-		--redefine-sym func_8003A680=overlay74RewardReloc \
-		--redefine-sym func_8005776C=overlay74QueryReloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83BuildBatch.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym addObjectLight=overlay83CreateLinkedReloc \

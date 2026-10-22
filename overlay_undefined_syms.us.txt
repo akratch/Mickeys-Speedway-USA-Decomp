@@ -3946,16 +3946,14 @@ camPopModelMtx_o073Reloc = 0xf0000000;
 camPushModelMtx_o073Reloc = 0xf0000000;
 texDPTextureX_o073Reloc = 0xf0000000;
 
-/* overlay 74: overlay74Init.c.o */
+/* overlay 74: overlay_074.c.o */
 D_800D3128_o074Reloc = 0x00000000;
+amSndPlay_o074Reloc = 0xf0000000;
 func_80028F54_o074Reloc = 0xf0000000;
+func_800291B4_o074Reloc = 0xf0000000;
+func_8003A680_o074Reloc = 0xf0000000;
+func_8005776C_o074Reloc = 0xf0000000;
 gOverlay74Scale = 0x00000000;
-
-/* overlay 74: overlay74Update.c.o */
-overlay74HitReloc = 0xf0000000;
-overlay74QueryReloc = 0xf0000000;
-overlay74RewardReloc = 0xf0000000;
-overlay74SoundReloc = 0xf0000000;
 
 /* overlay 75: overlay75Init.c.o */
 func_8002A8BC_o075Reloc = 0xf0000000;
@@ -5988,10 +5986,8 @@ func_overlay_071_F00007A8_18CA2C8 = overlay71UpdateCoordinates;
 func_overlay_072_F0000000_18CA920 = overlay72Init;
 func_overlay_072_F00000B4_18CA9D4 = overlay72Update;
 
-/* overlay 74: overlay74Init.c.o */
+/* overlay 74: overlay_074.c.o */
 func_overlay_074_F0000000_18CBCA0 = overlay74Init;
-
-/* overlay 74: overlay74Update.c.o */
 func_overlay_074_F00000B8_18CBD58 = overlay74Update;
 
 /* overlay 75: overlay75Init.c.o */

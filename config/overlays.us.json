@@ -14338,19 +14338,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0xB8",
-     "size": "0xB8",
-     "type": "c",
-     "source": "overlays/o074/overlay74Init",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xB8",
      "end_offset": "0x248",
-     "size": "0x190",
+     "size": "0x248",
      "type": "c",
-     "source": "overlays/o074/overlay74Update",
+     "source": "overlays/o074/overlay_074",
      "matched": true,
      "nonmatching": false
     },

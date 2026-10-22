@@ -3501,68 +3501,11 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o037/overlay37Init.c.o",
+      "object": "build/src/overlays/o037/overlay_037.c.o",
       "offset": 0,
       "overlay": 37,
-      "size": 136,
-      "source": "src/overlays/o037/overlay37Init.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o037/overlay37RecordActive.c.o",
-      "offset": 1348,
-      "overlay": 37,
-      "size": 20,
-      "source": "src/overlays/o037/overlay37RecordActive.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o037/overlay37RecordMinimum.c.o",
-      "offset": 1268,
-      "overlay": 37,
-      "size": 80,
-      "source": "src/overlays/o037/overlay37RecordMinimum.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o037/overlay37Render.c.o",
-      "offset": 412,
-      "overlay": 37,
-      "size": 856,
-      "source": "src/overlays/o037/overlay37Render.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o037/overlay37Update.c.o",
-      "offset": 136,
-      "overlay": 37,
-      "size": 276,
-      "source": "src/overlays/o037/overlay37Update.c",
+      "size": 1368,
+      "source": "src/overlays/o037/overlay_037.c",
       "tools": [
         "trim_elf_section.py"
       ]
@@ -9053,10 +8996,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 624,
+      "metadata": 620,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 447024,
-    "objects_with_postprocess": 625
+    "objects_with_postprocess": 621
   }
 }

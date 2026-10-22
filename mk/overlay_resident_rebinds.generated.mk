@@ -899,12 +899,15 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36UpdatePeers.c.o: SURFACE_REBIND =
 	--redefine-sym func_8000590C=func_8000590C_o036Reloc \
 	--redefine-sym overlay27Activate=overlay27Activate_o036Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Render.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camGetPtr=camGetPtr_o037Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Update.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym camGetPtr=camGetPtr_o037Reloc \
 	--redefine-sym func_80006EA0=func_80006EA0_o037Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o037Reloc $@
+	--redefine-sym func_80021964=func_80021964_o037Reloc \
+	--redefine-sym func_800244EC=func_800244EC_o037Reloc \
+	--redefine-sym func_8002460C=func_8002460C_o037Reloc \
+	--redefine-sym func_8002A250=func_8002A250_o037Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o037Reloc \
+	--redefine-sym texDPTextureX=texDPTextureX_o037Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F0000000_1885D10.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym mathOneFloatPY=mathOneFloatPY_o038Reloc \

@@ -1,80 +1,53 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_037.h"
 
-typedef struct Overlay37Command {
-    u32 w0;
-    u32 w1;
-} Overlay37Command;
-
-typedef struct Overlay37Camera {
-    s16 angle0;
-    s16 angle2;
-    u8 pad04[8];
-    f32 x;
-    f32 y;
-    f32 z;
-} Overlay37Camera;
-
-typedef struct Overlay37Resource {
-    s8 selector;
-    u8 pad001[0x43B];
-    u8 effectSource[0x0C];
-    f32 x448;
-    f32 y44C;
-    f32 z450;
-} Overlay37Resource;
-
-typedef struct Overlay37Target {
-    u8 pad00[0x64];
-    Overlay37Resource *resource;
-} Overlay37Target;
-
-typedef struct Overlay37State {
-    u8 pad00[0x10];
-    Overlay37Target *target;
-} Overlay37State;
-
-typedef struct Overlay37Object {
-    u8 pad00[4];
-    s16 angle4;
-    u8 pad06[0x5E];
+void overlay37Init(Overlay37Object *object, Overlay37Init *init) {
     Overlay37State *state;
-    void **resource;
-} Overlay37Object;
 
-typedef struct Overlay37Record {
-    s32 active;
-    f32 distance;
-} Overlay37Record;
+    state = object->state;
+    state->x = init->x;
+    state->y = init->y;
+    state->z = init->z;
+    state->target = init->target;
+    if (init->target != 0) {
+        object->x = init->target->x;
+        object->y = init->target->y;
+        object->z = init->target->z;
+        object->angle = init->target->angle;
+    }
+}
 
-typedef struct Overlay37Position {
-    f32 x;
-    f32 y;
-    f32 z;
-} Overlay37Position;
+void overlay37Update(Overlay37Object *object, s32 ticks) {
+    Overlay37State *state;
+    Overlay37Object *target;
+    Overlay37Resource *resource;
+    Overlay37Object *callObject;
+    f32 period;
+    f32 sine;
+    s32 savedTicks;
 
-typedef struct Overlay37Transform {
-    s16 angle0;
-    s16 angle2;
-    s16 objectAngle;
-    u8 pad06[2];
-    f32 scale;
-    Overlay37Position position;
-} Overlay37Transform;
-
-extern Overlay37Record gOverlay37Records[4];
-extern u8 gOverlay37DisplayData[];
-extern u8 gOverlay37DisplayData78[];
-
-extern Overlay37Camera *camGetPtr(void);
-extern s32 func_80021964(void);
-extern void func_8002A250(s32 mode, void *source, Overlay37State *state,
-                          Overlay37Position *position);
-extern void func_800244EC(Overlay37Command **commands, void *renderContext,
-                          Overlay37Transform *transform, f32 scale,
-                          f32 extra);
-extern void texDPTextureX(Overlay37Command **commands, void *resource,
-                          s32 mode, s32 flags);
-extern void func_8002460C(Overlay37Command **commands);
+    savedTicks = ticks;
+    callObject = object;
+    state = object->state;
+    target = state->target;
+    if (target != 0) {
+        resource = (Overlay37Resource *)target->state;
+        period = gOverlay37Period;
+        object->x = ((Overlay37Resource *)target->state)->x448;
+        object->y = resource->y44C;
+        object->z = resource->z450;
+        object->angle = target->angle;
+        state->phase += ((f32)savedTicks / 60.0f) * 10.0f;
+        if (period <= state->phase) {
+            state->phase -= period;
+        }
+        sine = func_8002A8C0(
+            (s32)((state->phase / period) * 65536.0f));
+        callObject->wave = (s32)(4096.0f * sine);
+        if (resource->flags1A8 & 1) {
+            func_80006EA0(callObject);
+        }
+    }
+}
 
 /*
  * PROVENANCE: the packet macros below are adapted from the Jet Force Gemini
@@ -132,7 +105,7 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
     if (state->target == NULL) {
         return;
     }
-    resource = state->target->resource;
+    resource = (Overlay37Resource *)state->target->state;
     if (resource->selector != (frame & 3)) {
         return;
     }
@@ -167,7 +140,7 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
     deltaZ = camera->z - transform.position.z;
     transform.angle0 = -camera->angle0;
     transform.angle2 = camera->angle2;
-    transform.objectAngle = object->angle4;
+    transform.objectAngle = object->wave;
     transform.scale = 0.5f;
     transform.position.x += deltaX * 0.5f;
     transform.position.y += deltaY * 0.5f;
@@ -183,4 +156,22 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
     O37_SET_PRIM_COLOR((*commands)++, 0, 0, 255, 255, 255, 255);
 
     func_8002460C(commands);
+}
+
+void overlay37RecordMinimum(s32 index, f32 value) {
+    Overlay37Record *record;
+
+    record = &gOverlay37Records[index];
+    if (record->active == 0) {
+        record->active = 1;
+        record->distance = value;
+        return;
+    }
+    if (value < record->distance) {
+        record->distance = value;
+    }
+}
+
+s32 overlay37RecordActive(s32 index) {
+    return gOverlay37Records[index].active;
 }

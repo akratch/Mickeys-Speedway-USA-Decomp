@@ -583,11 +583,7 @@ TEXT_SUBSEGMENTS = {
         (0x000, "c", "overlay_027"),
     ],
     37: [
-        (0x000, "c", "overlay37Init"),
-        (0x088, "c", "overlay37Update"),
-        (0x19C, "c", "overlay37Render"),
-        (0x4F4, "c", "overlay37RecordMinimum"),
-        (0x544, "c", "overlay37RecordActive"),
+        (0x000, "c", "overlay_037"),
         (0x558, "asm", "overlay_037_padding"),
     ],
     39: [

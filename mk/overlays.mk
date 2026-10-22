@@ -1335,29 +1335,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: POSTPROCESS = \
 # body, which the former hand-unrolled spelling only matched with unrolling
 # disabled. The trim keeps the trailing pad on its own atlas asm row.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Init.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x88
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Update.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x114
-# The typed reconstruction owns 852 bytes plus one proved zero alignment word;
-# the trim extends that word into the symbol. The redefine-sym rules bind the
-# five resident callees to the overlay's stored-zero placeholders so a fresh
-# object rebuild links without regenerating the alias list.
-# Target emits the R4300 FP-mul hazard nop after the else-arm blend muls;
-# without this pass the object is one word short (measured 213 vs 214).
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Render.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Render.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym func_80021964=func_80021964_o037Reloc \
-		--redefine-sym func_8002A250=func_8002A250_o037Reloc \
-		--redefine-sym func_800244EC=func_800244EC_o037Reloc \
-		--redefine-sym texDPTextureX=texDPTextureX_o037Reloc \
-		--redefine-sym func_8002460C=func_8002460C_o037Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x358
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37RecordMinimum.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37RecordActive.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x14
+# Overlay 37 is one translation unit at the overlay flag set (the effect
+# renderer's blend multiplies carry the R4300 FP-mul hazard nops). The trim
+# leaves the eight-byte trailing pad to its own atlas asm row.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x558
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40AddEntry.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x84
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay40DrawEntries.c.o: POSTPROCESS = \

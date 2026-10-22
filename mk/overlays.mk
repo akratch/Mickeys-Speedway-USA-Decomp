@@ -2190,10 +2190,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawTransformed.c.o: POSTPROCESS
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x298
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildPresentationD.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x338
-# NON_MATCHING/GLOBAL_ASM: retain only friendly-name restoration and
-# trailing-section trimming metadata for the extracted function.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o016/overlay_016.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x424
+# Overlay 16 is one translation unit at the overlay flag set; its .text
+# carries the module's trailing pad, so nothing is trimmed. --force runs
+# asm-processor's static-symbol pass on this GLOBAL_ASM-free file, so the
+# unexported (static) functions keep their names as local symbols.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o016/overlay_016.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o016/overlay_016.c.o: ASM_PROCESSOR += --force
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63Release.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
 # NON_MATCHING/GLOBAL_ASM: restore friendly symbols and retain only the

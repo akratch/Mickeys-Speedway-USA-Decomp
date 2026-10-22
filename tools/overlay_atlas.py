@@ -287,11 +287,20 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
 # When a C owner's initialized input follows its text, IDO's measured .text
 # alignment can emit the intervening zero padding without a separate asm row.
 # Keep the row in the atlas so padding is never counted as executable C credit.
+#
+# A module folded into one translation unit (docs/OVERLAY_STRUCTURE_SPRINT.md
+# phase 2) needs no owned data for this: IDO pads the TU's own .text to the
+# 16-byte boundary the module's text size already ends on, so the C object
+# carries the pad and no trim is needed.
 COMPILER_TEXT_ALIGNMENT_PADDING = {
     22: "overlay_022_padding",
     45: "overlay_045_padding",
     15: "overlay_015_padding",
+    16: "overlay_016_padding",
 }
+# Folded modules whose compiler padding is the tail of the one TU's .text
+# rather than an alignment gap before C-owned data.
+ONE_TU_TEXT_PADDING = {16}
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
 # an explicit eight-byte gap before initialized data. Emit a bounded asm row
@@ -2282,7 +2291,7 @@ def render_yaml_block(
         for part in row["text_ownership"]:
             source_name = part["source"].rsplit("/", 1)[1]
             if source_name == compiler_padding:
-                if not owned_data:
+                if not owned_data and ov not in ONE_TU_TEXT_PADDING:
                     raise ValueError(
                         f"overlay {ov} compiler padding needs C-owned data"
                     )

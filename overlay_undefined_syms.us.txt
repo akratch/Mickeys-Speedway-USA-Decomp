@@ -1079,7 +1079,6 @@ gOverlay16Mode = 0x00000004;
 gOverlay16Phase = 0x00000008;
 mmAlloc_o016Reloc = 0xf0000000;
 mmFree_o016Reloc = 0xf0000000;
-overlay16BuildGradientReloc = 0xf0000000;
 
 /* overlay 17: overlay17CalculateEndpoints.c.o */
 pointListRPY_o017Reloc = 0xf0000000;
@@ -5240,7 +5239,6 @@ func_overlay_015_F0000B88_1872F20 = overlay15ClearValue7C;
 func_overlay_015_F0000B94_1872F2C = overlay15DrawRain;
 
 /* overlay 16: overlay_016.c.o */
-func_overlay_016_F0000000_1873498 = overlay16BuildGradient;
 func_overlay_016_F000008C_1873524 = overlay16InitializeBuffer;
 func_overlay_016_F00001A8_1873640 = overlay16ReleaseBuffer;
 func_overlay_016_F00001E0_1873678 = overlay16ApplyGradient;

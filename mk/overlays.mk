@@ -1296,37 +1296,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o025/overlay_025.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x608 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:258adccbc890f89cf0c2393e490673ba6b5f4d39ca12eeeb9f7d74881dd69d02
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym camStandardOrtho=camStandardOrtho_o056Reloc \
-		--redefine-sym frontGet2PlayerSplit=frontGet2PlayerSplit_o056Reloc \
-		--redefine-sym func_80005750=func_80005750_o056Reloc \
-		--redefine-sym camCopyOrthoMatrix=camCopyOrthoMatrix_o056Reloc \
-		--redefine-sym func_80028F54=func_80028F54_o056Reloc \
-		--redefine-sym func_8002A604=func_8002A604_o056Reloc \
-		--redefine-sym func_8002A82C=func_8002A82C_o056Reloc \
-		--redefine-sym func_8002A8BC=func_8002A8BC_o056Reloc \
-		--redefine-sym func_8002A8C0=func_8002A8C0_o056Reloc \
-		--redefine-sym func_8002F618=func_8002F618_o056Reloc \
-		--redefine-sym func_8002FB34=func_8002FB34_o056Reloc \
-		--redefine-sym texDPTextureX=texDPTextureX_o056Reloc \
-		--redefine-sym levelGetLevel=levelGetLevel_o056Reloc \
-		--redefine-sym matrixTranslate=matrixTranslate_o056Reloc \
-		--redefine-sym mtxf_mul=mtxf_mul_o056Reloc \
-		--redefine-sym mtxf_to_mtx=mtxf_to_mtx_o056Reloc \
-		--redefine-sym viGetCurrentSize=viGetCurrentSize_o056Reloc \
-		--redefine-sym D_800C947C=D_800C947C_o056Reloc \
-		--redefine-sym D_800D31C8=D_800D31C8_o056Reloc \
-		--redefine-sym D_8007A1F4=D_8007A1F4_o056Reloc \
-		--redefine-sym D_8007A1F8=D_8007A1F8_o056Reloc \
-		--redefine-sym D_8007BEF4=D_8007BEF4_o056Reloc \
-		--redefine-sym D_8007BEF8=D_8007BEF8_o056Reloc \
-		--redefine-sym D_8007BF08=D_8007BF08_o056Reloc \
-		--redefine-sym D_8007C1B0=D_8007C1B0_o056Reloc \
-		$@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xAF4
-# The minimap renderer's rotated-coordinate products carry the R4300 FP-mul
-# hazard nops; without this pass the candidate is two words short.
+# Overlay 56: one module TU under the overlay flag set (the minimap
+# renderer's rotated-coordinate products carry the R4300 FP-mul hazard nops).
+# IDO's 16-byte .text alignment emits the trailing pad, so no trim; resident
+# calls are renamed by the generated surface rebinds.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x168

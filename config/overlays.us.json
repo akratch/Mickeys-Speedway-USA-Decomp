@@ -4841,19 +4841,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x10C",
-     "size": "0x10C",
-     "type": "c",
-     "source": "overlays/o021/overlay21RegisterPlane",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x10C",
      "end_offset": "0x2D4",
-     "size": "0x1C8",
+     "size": "0x2D4",
      "type": "c",
-     "source": "overlays/o021/overlay21ApplyPriorities",
+     "source": "overlays/o021/overlay_021",
      "matched": true,
      "nonmatching": false
     },

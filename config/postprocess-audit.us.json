@@ -2366,34 +2366,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o021/overlay21ApplyPriorities.c.o",
-      "offset": 268,
-      "overlay": 21,
-      "size": 456,
-      "source": "src/overlays/o021/overlay21ApplyPriorities.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o021/overlay21RegisterPlane.c.o",
-      "offset": 0,
-      "overlay": 21,
-      "size": 268,
-      "source": "src/overlays/o021/overlay21RegisterPlane.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o022/func_overlay_022_F00002B0_18783B8.c.o",
       "offset": 688,
       "overlay": 22,
@@ -8941,10 +8913,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 616,
+      "metadata": 614,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 441588,
-    "objects_with_postprocess": 617
+    "matched_c_bytes_with_postprocess": 440864,
+    "objects_with_postprocess": 615
   }
 }

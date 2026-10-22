@@ -1,42 +1,37 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_021.h"
 
 /*
- * Plane-side priority selection reconstructed from Mickey's call and field
- * evidence; exact DKR v77/v80 and JFG scans are negative. IDO needs the
- * measured -Wab,-r4300_mul override to reproduce the shipped FP schedule.
+ * Overlay 21: one translation unit in ROM order (ADR 0006); both functions
+ * are ORT exports. Plane registration and plane-side priority selection are
+ * reconstructed from Mickey's call and field evidence; exact DKR v77/v80 and
+ * JFG scans are negative. The module compiles under the overlay flag set
+ * (-Wab,-r4300_mul), which reproduces the shipped FP schedule.
  */
-typedef struct Overlay21Plane {
-    s16 id;
-    s8 lowerPriority;
-    s8 upperPriority;
-    f32 normalX;
-    f32 normalY;
-    f32 normalZ;
-    f32 distance;
-} Overlay21Plane;
 
-typedef struct Overlay21Object {
-    u8 pad0[0x64];
+void overlay21RegisterPlane(Overlay21Object *object, Overlay21Init *init) {
     Overlay21Plane *plane;
-} Overlay21Object;
+    f32 value;
+    s32 count;
 
-typedef struct Overlay21Position {
-    u8 pad0[0xC];
-    f32 x;
-    f32 y;
-    f32 z;
-} Overlay21Position;
-
-typedef struct Overlay21PriorityEntry {
-    u8 pad0[2];
-    s16 priority;
-    Overlay21Position *position;
-} Overlay21PriorityEntry;
-
-extern s32 gOverlay21ObjectCount;
-extern Overlay21Object *gOverlay21Objects[];
-
-Overlay21Position *camGetPtr(void);
+    object->angle0 = init->angle0 << 8;
+    object->angle1 = init->angle1 << 8;
+    object->unused4 = 0;
+    plane = object->plane;
+    plane->id = object->id;
+    value = func_8002A8C0(object->angle0);
+    plane->normalX = overlay21CosReloc(object->angle1) * value;
+    plane->normalY = -overlay21CosReloc(object->angle1);
+    value = overlay21CosReloc(object->angle0);
+    plane->normalZ = overlay21CosReloc(object->angle1) * value;
+    plane->distance = -((plane->normalX * object->x) +
+                        (plane->normalY * object->y) +
+                        (plane->normalZ * object->z));
+    plane->lowerPriority = init->lowerPriority;
+    plane->upperPriority = init->upperPriority;
+    count = gOverlay21ObjectCount;
+    gOverlay21Objects[count] = object;
+    gOverlay21ObjectCount = count + 1;
+}
 
 /*
  * Exact 114-word match under the measured -Wab,-r4300_mul override. The

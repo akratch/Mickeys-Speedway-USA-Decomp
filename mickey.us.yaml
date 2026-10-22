@@ -1600,9 +1600,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1877C88, c, overlay21RegisterPlane]
-      - [0x1877D94, c, overlay21ApplyPriorities]
-      - [0x1877F5C, asm, overlay_021_padding]
+      - [0x1877C88, c, overlay_021]
       - [0x1877F68, bin, overlay_021_data_rodata]
       - [0x1878078, bin, overlay_021_reloc1]
       - [0x18780A8, bin, overlay_021_reloc2]

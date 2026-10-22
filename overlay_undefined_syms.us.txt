@@ -1217,14 +1217,12 @@ gOverlay20TailXLimit = 0x0000002c;
 gOverlay20TailYLimit = 0x00000030;
 overlay20TailSqrtReloc = 0xf0000000;
 
-/* overlay 21: overlay21RegisterPlane.c.o */
+/* overlay 21: overlay_021.c.o */
+camGetPtr_o021Reloc = 0xf0000000;
 func_8002A8C0_o021Reloc = 0xf0000000;
 gOverlay21ObjectCount = 0x00000000;
 gOverlay21Objects = 0x00000004;
 overlay21CosReloc = 0xf0000000;
-
-/* overlay 21: overlay21ApplyPriorities.c.o */
-camGetPtr_o021Reloc = 0xf0000000;
 
 /* overlay 22: overlay22InitializeObject.c.o */
 func_80006EA0_o022Reloc = 0xf0000000;
@@ -5312,10 +5310,8 @@ func_overlay_020_F0001018_18775F0 = overlay20RemoveEntry;
 /* overlay 20: overlay20AdvanceEntries.c.o */
 func_overlay_020_F00010EC_18776C4 = overlay20AdvanceEntries;
 
-/* overlay 21: overlay21RegisterPlane.c.o */
+/* overlay 21: overlay_021.c.o */
 func_overlay_021_F0000000_1877C88 = overlay21RegisterPlane;
-
-/* overlay 21: overlay21ApplyPriorities.c.o */
 func_overlay_021_F000010C_1877D94 = overlay21ApplyPriorities;
 
 /* overlay 23: overlay23SpawnAttachments.c.o */

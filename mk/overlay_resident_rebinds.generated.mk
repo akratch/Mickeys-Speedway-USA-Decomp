@@ -531,10 +531,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20UpdateObjectResource.c.o: SURFACE
 	--redefine-sym sqrtf=sqrtf_o020Reloc \
 	--redefine-sym trackGetTrack=trackGetTrack_o020Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay21ApplyPriorities.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camGetPtr=camGetPtr_o021Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay21RegisterPlane.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay_021.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym camGetPtr=camGetPtr_o021Reloc \
 	--redefine-sym func_8002A8C0=func_8002A8C0_o021Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o022/func_overlay_022_F00002B0_18783B8.c.o: SURFACE_REBIND = $(OBJCOPY) \

@@ -2554,28 +2554,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3ContainsValue.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48Initialize.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x60
-# NON_MATCHING/GLOBAL_ASM: restore friendly symbols and retain only the
-# trailing-section trim metadata for these extracted functions.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym func_80028F54=func_80028F54_o049Reloc \
-		--redefine-sym func_800508B4=func_800508B4_o049Reloc \
-		--redefine-sym func_8002917C=func_8002917C_o049Reloc \
-		--redefine-sym overlay65Initialize=overlay49Overlay65InitializeReloc \
-		--redefine-sym D_8007BF0C=D_8007BF0C_o049Reloc \
-		--redefine-sym D_8007BF60=D_8007BF60_o049Reloc \
-		--redefine-sym D_800D3140=D_800D3140_o049Reloc \
-		--redefine-sym D_800D3144=D_800D3144_o049Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x218:func_800254FC:overlay65UpdateParticles \
-		0x224:func_8002554C:overlay65UpdateParticles \
-		0x2c0:func_800016EC:overlay65UpdateParticles \
-		0x2d8:func_8003A754:overlay65UpdateParticles \
-		0x2f8:overlay48Initialize:overlay65UpdateParticles \
-		0x314:func_80028374:overlay65UpdateParticles && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x374
+# Overlay 49 is one translation unit at the overlay flag set; its .text carries
+# the trailing pad, so nothing is trimmed. Its resident and cross-overlay
+# references go through the generated relocation surface.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o: CFLAGS += -Wab,-r4300_mul
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48InitializeState.c.o: POSTPROCESS = \
@@ -3107,8 +3089,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48InitializeState.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48UpdateState.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48ReleaseAll.c.o
-OVERLAY_TRIMMED_OBJECTS += \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o
 OVERLAY_TRIMMED_OBJECTS += \
 	$(O28_MERGED_OBJ)
 OVERLAY_TRIMMED_OBJECTS += \

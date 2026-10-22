@@ -1,0 +1,486 @@
+#!/usr/bin/env python3
+"""tools/runlink_pack.py against a synthetic tree.
+
+Every fixture is built here: big-endian ELF32 objects, a linked "ELF", a link
+map, an atlas, and a ROM image whose tables were written by hand from the
+format rules (not by the packer's own encoders). No build and no baserom.
+"""
+
+from __future__ import annotations
+
+import collections
+import contextlib
+import hashlib
+import io
+import json
+import struct
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import overlay_tables as ot  # noqa: E402
+import runlink_pack as rp  # noqa: E402
+
+R32, R26, HI16, LO16 = 2, 4, 5, 6
+LOCAL, GLOBAL = 0, 1
+NOTYPE, OBJECT, FUNC = 0, 1, 2
+
+
+class ObjBuilder:
+    """A minimal big-endian ELF32 file: sections, symbols, REL relocations."""
+
+    def __init__(self):
+        self.sections = []      # (name, type, addr, bytes)
+        self.symbols = []       # (name, value, size, bind, type, section)
+        self.relocs = collections.defaultdict(list)
+
+    def section(self, name, data=b"", addr=0, nobits=None):
+        if nobits is not None:
+            self.sections.append((name, 8, addr, nobits))
+        else:
+            self.sections.append((name, 1, addr, bytes(data)))
+        return self
+
+    def sym(self, name, value=0, size=0, bind=GLOBAL, type=FUNC, section="UND"):
+        self.symbols.append((name, value, size, bind, type, section))
+        return self
+
+    def rel(self, target, offset, rtype, symbol):
+        """`symbol` is a symbol name or ("section", name)."""
+        self.relocs[target].append((offset, rtype, symbol))
+        return self
+
+    def build(self):
+        user = [s[0] for s in self.sections]
+        rel_targets = [t for t in user if t in self.relocs]
+        names = [""] + user + [".rel" + t for t in rel_targets] + [".symtab", ".strtab", ".shstrtab"]
+        shstr = b"\0"
+        name_off = {}
+        for n in names[1:]:
+            name_off[n] = len(shstr)
+            shstr += n.encode() + b"\0"
+        strtab = b"\0"
+        str_off = {}
+
+        def sname(n):
+            nonlocal strtab
+            if n not in str_off:
+                str_off[n] = len(strtab)
+                strtab += n.encode() + b"\0"
+            return str_off[n]
+
+        def shndx(sec):
+            if sec == "UND":
+                return 0
+            if sec == "ABS":
+                return 0xFFF1
+            return 1 + user.index(sec)
+
+        syms = [(0, 0, 0, 0, 0, 0)]
+        sec_sym = {}
+        for i, n in enumerate(user):
+            sec_sym[n] = len(syms)
+            syms.append((0, 0, 0, (LOCAL << 4) | 3, 0, 1 + i))
+        index = {}
+        ordered = [s for s in self.symbols if s[3] == LOCAL] + [s for s in self.symbols if s[3] != LOCAL]
+        first_global = len(syms) + sum(1 for s in self.symbols if s[3] == LOCAL)
+        for name, value, size, bind, typ, sec in ordered:
+            index[name] = len(syms)
+            syms.append((sname(name), value, size, (bind << 4) | typ, 0, shndx(sec)))
+        symtab = b"".join(struct.pack(">IIIBBH", *s) for s in syms)
+        rel_blobs = []
+        for t in rel_targets:
+            b = b""
+            for off, rtype, symbol in self.relocs[t]:
+                si = sec_sym[symbol[1]] if isinstance(symbol, tuple) else index[symbol]
+                b += struct.pack(">II", off, (si << 8) | rtype)
+            rel_blobs.append(b)
+        out = bytearray(52)
+        headers = [(0,) * 10]
+
+        def place(blob):
+            while len(out) % 4:
+                out.append(0)
+            off = len(out)
+            out.extend(blob)
+            return off
+
+        for name, typ, addr, data in self.sections:
+            if typ == 8:
+                headers.append((name_off[name], 8, 3, addr, len(out), data, 0, 0, 16, 0))
+            else:
+                headers.append((name_off[name], 1, 6, addr, place(data), len(data), 0, 0, 16, 0))
+        symtab_index = len(names) - 3
+        for t, blob in zip(rel_targets, rel_blobs):
+            headers.append((name_off[".rel" + t], 9, 0, 0, place(blob), len(blob),
+                            symtab_index, 1 + user.index(t), 4, 8))
+        headers.append((name_off[".symtab"], 2, 0, 0, place(symtab), len(symtab),
+                        symtab_index + 1, first_global, 4, 16))
+        headers.append((name_off[".strtab"], 3, 0, 0, place(strtab), len(strtab), 0, 0, 1, 0))
+        headers.append((name_off[".shstrtab"], 3, 0, 0, place(shstr), len(shstr), 0, 0, 1, 0))
+        while len(out) % 4:
+            out.append(0)
+        shoff = len(out)
+        for h in headers:
+            out.extend(struct.pack(">10I", *h))
+        struct.pack_into(">4sBBBB8xHHIIIIIHHHHHH", out, 0, b"\x7fELF", 1, 2, 1, 0, 1, 8, 1, 0, 0,
+                         shoff, 0, 52, 0, 0, 40, len(headers), len(headers) - 1)
+        return bytes(out)
+
+
+def words(*ws):
+    return b"".join(struct.pack(">I", w & 0xFFFFFFFF) for w in ws)
+
+
+def jal(field=0):
+    return 0x0C000000 | field
+
+
+def lui(hi):
+    return 0x3C010000 | (hi & 0xFFFF)
+
+
+def addiu(lo):
+    return 0x24210000 | (lo & 0xFFFF)
+
+
+def record(symidx, site, rtype, op):
+    return struct.pack(">II", symidx, (site << 8) | (rtype << 4) | op)
+
+
+TB, DB, BB, BE = 0x80000450, 0x80001000, 0x80002000, 0x80003000
+RES = {"resFunc": 0x80000500, "resFunc2": 0x80000550, "resFunY": 0x80000580, "resData": 0x80001010,
+       "TrapDanglingJump": 0x80000600, "resFirst": TB}
+TS, DS, BSS = 0x40, 0x10, 0x20
+
+
+class Tree:
+    """One synthetic checkout: module 1 has two objects, everything else is empty.
+
+    The shipped tables below are what the measured rules say Rare's converter
+    writes for these objects; the test is that the packer derives them."""
+
+    def __init__(self, root: Path):
+        self.root = root
+        self.write_objects()
+        self.write_resident()
+        self.write_atlas()
+        self.write_rom()
+        self.write_linked()
+
+    def p(self, rel):
+        path = self.root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return path
+
+    # -- overlay 1's raw objects
+
+    def write_objects(self):
+        a_text = words(jal(), lui(0), addiu(0x10), jal(), jal(), lui(0), addiu(4), jal())
+        a = (ObjBuilder()
+             .section(".text", a_text).section(".rodata", words(4, 8)).section(".bss", nobits=BSS)
+             .sym("a_func", 0, 0x20, GLOBAL, FUNC, ".text")
+             .rel(".text", 0x00, R26, "resFunc")
+             .rel(".text", 0x04, HI16, ("section", ".bss"))
+             .rel(".text", 0x08, LO16, ("section", ".bss"))
+             .rel(".text", 0x0C, R26, "b_exported")
+             .rel(".text", 0x10, R26, "b_static")
+             .rel(".text", 0x14, HI16, "resData")
+             .rel(".text", 0x18, LO16, "resData")
+             .rel(".text", 0x1C, R26, "D_123")
+             .rel(".rodata", 0x0, R32, ("section", ".text"))
+             .rel(".rodata", 0x4, R32, ("section", ".text")))
+        for n in ("resFunc", "b_exported", "b_static", "resData", "D_123"):
+            a.sym(n)
+        b = (ObjBuilder()
+             .section(".text", words(jal(), *([0] * 7)))
+             .sym("b_exported", 0, 0x10, GLOBAL, FUNC, ".text")
+             .sym("b_static", 0x10, 0x10, GLOBAL, FUNC, ".text")
+             .sym("a_func")
+             .rel(".text", 0x00, R26, "a_func"))
+        self.p("build/runlink_raw/src/overlays/o001/a.c.o").write_bytes(a.build())
+        self.p("build/runlink_raw/src/overlays/o001/b.c.o").write_bytes(b.build())
+
+    # -- resident objects the main table comes from
+
+    def write_resident(self):
+        r_text = words(0, 0, jal(), 0)
+        r = (ObjBuilder().section(".text", r_text).sym("TrapDanglingJump")
+             .rel(".text", 0x8, R26, "TrapDanglingJump"))
+        r_bytes = r.build()
+        self.p("build/src/main/r.c.o").write_bytes(r_bytes)
+        sidecar = {"format": 1, "literal": [], "sites": [{"name": "b_exported", "offset": 8}],
+                   "text_sha256": hashlib.sha256(r_text).hexdigest()}
+        self.p("build/src/main/r.c.o.trapsites").write_text(json.dumps(sidecar))
+        s = (ObjBuilder().section(".text", words(lui(0), addiu(0))).sym("D_800D2DC4")
+             .rel(".text", 0, HI16, "D_800D2DC4").rel(".text", 4, LO16, "D_800D2DC4"))
+        self.p("build/asm/main/s.s.o").write_bytes(s.build())
+        d = (ObjBuilder().section(".data", words(0, 0)).sym("TrapDanglingJump")
+             .rel(".data", 0, R32, "TrapDanglingJump"))
+        self.p("build/asm/data/d.data.s.o").write_bytes(d.build())
+        rt = (ObjBuilder().section(".text", words(lui(0), addiu(0), lui(0), addiu(0)))
+              .sym("TrapDanglingJump").sym("D_800D2DC4")
+              .rel(".text", 0, HI16, "TrapDanglingJump").rel(".text", 4, LO16, "TrapDanglingJump")
+              .rel(".text", 8, HI16, "D_800D2DC4").rel(".text", 12, LO16, "D_800D2DC4"))
+        self.p("build/src/main/runlink.c.o").write_bytes(rt.build())
+
+    def write_atlas(self):
+        mods = []
+        for ov in range(1, ot.HEADER_COUNT + 1):
+            m = {"overlay": ov, "rom": {"start": "0x%X" % (ot.MODULES_BASE + (0 if ov == 1 else 0xB0))},
+                 "sections": {"text": {"size": "0x%X" % (TS if ov == 1 else 0)}},
+                 "bss_size": "0x%X" % (BSS if ov == 1 else 0), "text_ownership": [],
+                 "data_rodata_ownership": []}
+            if ov == 1:
+                m["text_ownership"] = [
+                    {"offset": "0x0", "end_offset": "0x20", "size": "0x20", "type": "c",
+                     "source": "overlays/o001/a"},
+                    {"offset": "0x20", "end_offset": "0x40", "size": "0x20", "type": "c",
+                     "source": "overlays/o001/b"}]
+                m["data_rodata_ownership"] = [
+                    {"offset": "0x0", "end_offset": "0x8", "size": "0x8", "type": "c",
+                     "section": ".rodata", "source": "overlays/o001/a"}]
+            mods.append(m)
+        self.p("config/overlays.us.json").write_text(json.dumps({"modules": mods}))
+
+    # -- the shipped ROM, by hand
+
+    def write_rom(self):
+        text = words(jal(), lui(0), addiu(0x18), jal(), jal(0x30 >> 2), lui(0), addiu(4), jal(),
+                     jal(0), *([0] * 7))
+        data = words(4, 8, 0, 0)
+        self.image_prefix = text + data
+        t1 = (record(0, 0x00, R26, 0) + record(1, 0x14, HI16, 0) + record(1, 0x18, LO16, 0)
+              + record(3, 0x1C, R26, 0))
+        t2 = (record(TS + DS, 0x04, HI16, 1) + record(TS + DS, 0x08, LO16, 1)
+              + record(2, 0x0C, R26, 0) + record(2, 0x10, R26, 2) + record(2, 0x20, R26, 2)
+              + record(0, 0x40, R32, 1) + record(0, 0x44, R32, 1) + record(2, 0x48, R32, 0))
+        self.t1, self.t2 = t1, t2
+        image = text + data + t1 + t2
+        rom = bytearray(ot.MODULES_BASE + len(image) + 0x100)
+        main = [(2, 0x80000708 - TB, (R26 << 4) | 0), (1, 0x80000800 - TB, (HI16 << 4) | 0),
+                (1, 0x80000804 - TB, (LO16 << 4) | 0), (2, 0x20, (R32 << 4) | 3)]
+        struct.pack_into(">I", rom, ot.RELOC_TABLE_BASE, len(main))
+        for i, (row, off, flags) in enumerate(main):
+            struct.pack_into(">II", rom, ot.RELOC_TABLE_BASE + 4 + 8 * i, row, (off << 8) | flags)
+        ort = [(0, 0xB0), (0xFFD, 0x10), (1, 0x20), (0, 0x100)] + [(0, 0)] * (ot.ROM_TABLE_COUNT - 4)
+        for i, (sel, off) in enumerate(ort):
+            struct.pack_into(">I", rom, ot.ROM_TABLE_BASE + 4 * i, (sel << 20) | off)
+        for ov in range(1, ot.HEADER_COUNT + 1):
+            h = (0, 0, TS, DS, BSS, len(t1), len(t2), -1, 0x30) if ov == 1 else \
+                (0, len(image), 0, 0, 0, 0, 0, -1, -1)
+            struct.pack_into(">iiiiiHHii", rom, ot.HEADER_TABLE_BASE + 32 * (ov - 1), *h)
+        rom[ot.MODULES_BASE:ot.MODULES_BASE + len(image)] = image
+        self.rom = bytes(rom)
+        self.p("baseroms/mickey.us.z64").write_bytes(self.rom)
+
+    # -- the linked ELF and its map
+
+    def write_linked(self):
+        main = bytearray(BB - TB)
+        e = ObjBuilder()
+        e.section(".main", bytes(main), TB).section(".main_bss", addr=BB, nobits=BE - BB)
+        e.section(".overlay_001", self.image_prefix + b"\0" * 0x60, rp.OVERLAY_VMA)
+        e.sym("main_TEXT_START", TB, 0, GLOBAL, NOTYPE, ".main")
+        e.sym("runlinkCodeEnd", DB, 0, GLOBAL, NOTYPE, ".main")
+        e.sym("main_BSS_START", BB, 0, GLOBAL, NOTYPE, ".main_bss")
+        e.sym("main_BSS_END", BE, 0, GLOBAL, NOTYPE, ".main_bss")
+        for n, a in RES.items():
+            e.sym(n, a, 0x10, GLOBAL, OBJECT if a >= DB else FUNC, ".main")
+        e.sym("overlay_001_TEXT_SIZE", TS, 0, GLOBAL, NOTYPE, "ABS")
+        for n, off in (("a_func", 0), ("b_exported", 0x20), ("b_static", 0x30)):
+            e.sym(n, rp.OVERLAY_VMA + off, 0x10, GLOBAL, FUNC, ".overlay_001")
+        e.sym("func_overlay_001_F0000020_184C400", rp.OVERLAY_VMA + 0x20, 0, GLOBAL, FUNC, ".overlay_001")
+        self.p("build/mickey.us.elf").write_bytes(e.build())
+        lines = ["Archive member included", "", "Linker script and memory map", "",
+                 ".main           0x%08x     0x%x" % (TB, BB - TB),
+                 " .text          0x%08x       0x10 build/src/main/r.c.o" % 0x80000700,
+                 " .text          0x%08x        0x8 build/asm/main/s.s.o" % 0x80000800,
+                 " .text          0x%08x       0x10 build/src/main/runlink.c.o" % 0x80000900,
+                 " .data          0x%08x        0x8 build/asm/data/d.data.s.o" % (DB + 0x20),
+                 "                0x%08x                main_TEXT_END = ." % 0x80000910,
+                 "",
+                 ".overlay_001    0xf0000000       0xb0 load address 0x0184c3e0",
+                 " .text          0xf0000000       0x20 build/src/overlays/o001/a.c.o",
+                 " .text          0xf0000020       0x20 build/src/overlays/o001/b.c.o",
+                 " .data          0xf0000040       0x10 build/assets/overlays/o001/overlay_001_data_rodata.bin.o",
+                 " .data          0xf0000050       0x20 build/assets/overlays/o001/overlay_001_reloc1.bin.o",
+                 " .data          0xf0000070       0x40 build/assets/overlays/o001/overlay_001_reloc2.bin.o",
+                 ""]
+        self.p("build/mickey.us.map").write_text("\n".join(lines) + "\n")
+
+    def args(self, *extra):
+        return ["--root", str(self.root)] + list(extra)
+
+
+def run(argv):
+    out, err = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+        status = rp.main(argv)
+    return status, out.getvalue() + err.getvalue()
+
+
+class SyntheticTreeTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.tree = Tree(Path(self.tmp.name))
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def pack(self):
+        status, out = run(self.tree.args("ort", "--write"))
+        self.assertEqual(status, 0, out)
+        paths = rp.resolve_paths(type("A", (), {"root": str(self.tree.root), **{k: None for k in rp.DEFAULTS}})())
+        world = rp.World(paths)
+        ort = rp.OrtNames.load(paths["ort"])
+        return world, rp.pack_all(world, ort)
+
+    def test_ort_names_follow_symbols_and_number_duplicates(self):
+        world, packed = self.pack()
+        rows = rp.OrtNames.load(self.tree.root / "config/runlink-ort.us.txt").rows
+        self.assertEqual(rows[:5], ["resFunc", "resData", "b_exported", "resFunc2", "resFirst"])
+        self.assertEqual(rows[5], "func_80000450")
+        self.assertEqual(rows[6], "func_80000450_ort6")
+        status, out = run(self.tree.args("ort", "--check"))
+        self.assertEqual(status, 0, out)
+
+    def test_module_tables_reproduce_the_hand_written_ones(self):
+        world, packed = self.pack()
+        pm = packed.modules[1]
+        self.assertEqual(pm.reloc_bytes(1), self.tree.t1)
+        self.assertEqual(pm.reloc_bytes(2), self.tree.t2)
+        prov = {r.site: r.provenance for r in pm.table1 + pm.table2}
+        self.assertEqual(prov[0x1C], "placeholder")
+        self.assertEqual(prov[0x48], "hybrid-data")
+        self.assertEqual(prov[0x10], "object")
+        self.assertEqual(packed.ort_words[:4], [0xB0, (0xFFD << 20) | 0x10, (1 << 20) | 0x20, 0x100])
+
+    def test_borrowings_are_recorded(self):
+        world, packed = self.pack()
+        b = packed.borrowed
+        self.assertEqual(b["placeholder"], [[1, "D_123", 1]])
+        self.assertEqual(b["hybrid-data"], [[1, "0x48"]])
+        self.assertEqual(b["placement"], [[1, "a", ".bss", "0x58", 2]])
+        self.assertEqual(sorted(x[2] for x in b["main-placeholder"]), ["R_MIPS_32", "R_MIPS_HI16", "R_MIPS_LO16"])
+        self.assertNotIn("bss-size", b)
+        self.assertNotIn("rodata-base", b)
+
+    def test_compare_is_clean_and_region_is_identical(self):
+        world, packed = self.pack()
+        self.assertEqual(rp.compare_all(packed, world), [])
+        proof = rp.region_proof(packed, world, [])
+        self.assertTrue(proof["raw_equal"], proof)
+        status, out = run(self.tree.args("compare", "--write-residuals"))
+        self.assertEqual(status, 0, out)
+        status, out = run(self.tree.args("compare", "--check"))
+        self.assertEqual(status, 0, out)
+        status, out = run(self.tree.args("region"))
+        self.assertEqual(status, 0, out)
+        self.assertIn("identical", out)
+
+    def test_main_table_excludes_the_runtime_and_names_trap_callees(self):
+        world, packed = self.pack()
+        got = [(e.row, e.offset, e.type, e.op, e.provenance) for e in packed.main]
+        self.assertEqual(got, [(2, 0x2B8, R26, 0, "object"), (1, 0x3B0, HI16, 0, "placeholder"),
+                               (1, 0x3B4, LO16, 0, "placeholder"), (2, 0x20, R32, 3, "placeholder")])
+
+    def test_a_wrong_callee_is_classified_and_ratchets(self):
+        status, out = run(self.tree.args("ort", "--write"))
+        run(self.tree.args("compare", "--write-residuals"))
+        # The source now calls resFunY where the shipped record targets resFunc.
+        a = self.tree.root / "build/runlink_raw/src/overlays/o001/a.c.o"
+        a.write_bytes(a.read_bytes().replace(b"resFunc\0", b"resFunY\0"))
+        status, out = run(self.tree.args("compare", "--check", "--verbose"))
+        self.assertEqual(status, 1, out)
+        self.assertIn("NEW    diff callee 1 0x0", out)
+        status, out = run(self.tree.args("region"))
+        self.assertEqual(status, 0, out)
+        status, out = run(self.tree.args("compare", "--write-residuals"))
+        self.assertEqual(status, 0, out)
+        status, out = run(self.tree.args("compare", "--check"))
+        self.assertEqual(status, 0, out)
+        man = json.loads((self.tree.root / "config/runlink-residuals.us.json").read_text())
+        self.assertEqual(man["differences"]["callee"]["entries"][0][:3], [1, "0x0", "SYMBOL resFunc"])
+        # Fixing it makes the manifest stale: the gate fails until it ratchets down.
+        a.write_bytes(a.read_bytes().replace(b"resFunY\0", b"resFunc\0"))
+        status, out = run(self.tree.args("compare", "--check"))
+        self.assertEqual(status, 1, out)
+        self.assertIn("GONE   diff callee 1 0x0", out)
+
+    def test_order_differences_are_classified(self):
+        world, packed = self.pack()
+        pm = packed.modules[1]
+        pm.table1[1], pm.table1[2] = pm.table1[2], pm.table1[1]
+        residuals = rp.compare_all(packed, world)
+        cats = collections.Counter(r.category for r in residuals)
+        self.assertEqual(cats["order"], 1, cats)
+        self.assertFalse(rp.region_proof(packed, world, [])["patched_equal"])
+        self.assertTrue(rp.region_proof(packed, world, residuals)["patched_equal"])
+
+    def test_missing_raw_objects_exit_2(self):
+        (self.tree.root / "build/runlink_raw/src/overlays/o001/b.c.o").unlink()
+        run(self.tree.args("ort", "--write"))
+        status, out = run(self.tree.args("compare"))
+        self.assertEqual(status, 2, out)
+        self.assertIn("gmake runlink-raw", out)
+
+
+class UnitTests(unittest.TestCase):
+    def test_in_place_addends_pair_hi_with_the_next_lo_and_reuse_it(self):
+        b = (ObjBuilder().section(".text", words(lui(1), addiu(0x8000), addiu(4), jal(3), 0x12345678))
+             .sym("x").rel(".text", 0, HI16, "x").rel(".text", 4, LO16, "x").rel(".text", 8, LO16, "x")
+             .rel(".text", 12, R26, "x").rel(".text", 16, R32, "x"))
+        elf = rp.Elf("x.o", b.build())
+        rels = elf.rels(".text")
+        self.assertEqual(rp.in_place_addends(elf, ".text", rels),
+                         [0x10000 - 0x8000, 0x10000 - 0x8000, 0x10004, 12, 0x12345678])
+
+    def test_parse_map_reads_wrapped_input_lines(self):
+        with tempfile.TemporaryDirectory() as t:
+            p = Path(t) / "m.map"
+            p.write_text("Linker script and memory map\n\n.main 0x80000450 0x100\n"
+                         " .text.long_section_name\n                0x80000460       0x20 build/x.o\n"
+                         " .text          0x80000480       0x10 build/y.o\n")
+            got = rp.parse_map(p)
+        self.assertEqual([(m.insec, m.addr, m.size, m.file) for m in got],
+                         [(".text.long_section_name", 0x80000460, 0x20, "build/x.o"),
+                          (".text", 0x80000480, 0x10, "build/y.o")])
+
+    def test_generated_names_round_trip(self):
+        layout = rp.ResidentLayout(TB, DB, BB, BE)
+        info = {3: {"text_size": 0x100, "data_size": 0x20, "rom_start": 0x1000}}
+        for ident in (("ov", 3, 0x40), ("ov", 3, 0x110), ("ov", 3, 0x200), ("res", 0x80000500), ("res", 0x80002010)):
+            name = rp.generated_name(ident, layout, info)
+            self.assertEqual(rp.parse_generated(name, layout), ident, name)
+            self.assertEqual(rp.parse_generated(name + "_ort12", layout), ident)
+        self.assertEqual(rp.generated_name(("ov", 3, 0x110), layout, info), "D_overlay_003_F0000110_1110")
+        self.assertEqual(rp.generated_name(("ov", 3, 0x200), layout, info), "B_overlay_003_F0000200")
+
+    def test_ort_list_round_trips_and_refuses_duplicates(self):
+        o = rp.OrtNames(["a", "b"], {(1, "resume"): "b"})
+        with tempfile.TemporaryDirectory() as t:
+            p = Path(t) / "ort.txt"
+            p.write_text(o.render())
+            back = rp.OrtNames.load(p)
+        self.assertEqual(back.rows, ["a", "b"])
+        self.assertEqual(back.entries, {(1, "resume"): "b"})
+        with self.assertRaises(rp.PackError):
+            rp.OrtNames(["a", "a"], {})
+
+    def test_manifest_keys_cover_differences_and_borrowings(self):
+        res = [rp.Residual("callee", 4, 0x10, "SYMBOL f", "SYMBOL g")]
+        bor = {"placeholder": [[4, "D_10", 2]], "hybrid-data": [[4, "0x80"]]}
+        keys = rp.manifest_keys(json.loads(rp.render_manifest(rp.manifest_from(res, bor))))
+        self.assertEqual(keys, {("diff", "callee", 4, "0x10"), ("borrowed", "placeholder", 4, "D_10", 2),
+                                ("borrowed", "hybrid-data", 4, "0x80")})
+
+    def test_record_encoding(self):
+        r = rp.Record(2, rp.OP_JUMP, 7, 0x1234, R26)
+        self.assertEqual(r.encode(), struct.pack(">II", 7, (0x1234 << 8) | 0x42))
+
+
+if __name__ == "__main__":
+    unittest.main()

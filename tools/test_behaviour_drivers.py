@@ -1,11 +1,14 @@
-"""The anim.c behaviour drivers against the tracked source (host cc, no build).
+"""Focused host behavior checks against tracked source, with no ROM input.
 
 These compile src/main/anim.c for the host, which is tracked C, so they need
 no ROM. A test that cannot find the line it mutates skips rather than fails:
 the source moves on, and the mutation then needs rewriting, not the driver.
+The overlay query case also checks its real result buffer with sanitizers.
 """
 
+import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -77,6 +80,29 @@ class AnimDriverTests(unittest.TestCase):
     def test_collision_rejects_a_changed_constant(self):
         cand = self.mutant("c83.c", "radiusSq + 83.0f", "radiusSq + 82.0f")
         self.assertEqual(self.verdict(cand, COLLISION), 1)
+
+
+@unittest.skipUnless(shutil.which("clang"), "no clang for sanitizer checks")
+class Overlay72QueryTests(unittest.TestCase):
+    def test_radius_abi_and_empty_single_full_result_buffers(self):
+        source = ROOT / "src/overlays/o072/overlay_072.c"
+        driver = ROOT / "tools/behaviour_drivers/o072_query.c"
+        with tempfile.TemporaryDirectory(prefix="test_o072_query_") as directory:
+            executable = Path(directory) / "query"
+            command = [
+                "clang", "-std=c99", "-O1", "-g", "-D_LANGUAGE_C",
+                "-fsanitize=address,undefined", "-fno-omit-frame-pointer",
+                "-I", str(ROOT / "tools/behaviour_drivers/host"),
+                "-I", str(ROOT / "include"), "-I", str(ROOT),
+                f'-DBEHAVIOUR_TU="{source}"', str(driver), "-o", str(executable),
+            ]
+            built = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
+            environment = dict(os.environ, UBSAN_OPTIONS="halt_on_error=1")
+            result = subprocess.run([str(executable)], env=environment,
+                                    capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(result.stdout.strip(), "overlay72 query scenarios: OK")
 
 
 if __name__ == "__main__":

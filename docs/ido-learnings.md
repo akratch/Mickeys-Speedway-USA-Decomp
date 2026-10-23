@@ -3730,3 +3730,4 @@ Measured on `func_8002B040`, 2026-10-21; the model is
 
 
 Additional measured notes: [buffer argument affinity and finite-float diagnostics](ido-buffer-contracts.md).
+See also [aggregate initialization, symbol extents and actual storage](ido-symbol-metadata.md).

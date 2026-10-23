@@ -1267,9 +1267,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 81 is one translation unit under the overlay flag set; its .text
 # is the module's whole text, trailing pad included, so it needs no trim.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o081/overlay_081.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 82 is one translation unit under the overlay flag set. Its
-# six-element initializer clear matches at the default unroll setting, as do
-# the update loops; the module's .text includes its trailing alignment.
+# Overlay 82 owns the bounded serialized table image and links all sections
+# through the ordinary module link. Its .text includes compiler alignment.
+MODULE_LINKED_OVERLAYS += 082
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o082/overlay_082.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 88 is one translation unit under the overlay flag set; its .text is
 # the module's 0x740 bytes, so it needs no trim. Its renderer is overlay 69's

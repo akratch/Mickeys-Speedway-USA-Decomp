@@ -1154,162 +1154,12 @@
       }
     },
     {
-      "name": "asm/overlays/o047/overlay_047_padding.s",
-      "target_path": "expected/build/asm/overlays/o047/overlay_047_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o047"
-        ]
-      }
-    },
-    {
       "name": "asm/overlays/o065/overlay_065_padding.s",
       "target_path": "expected/build/asm/overlays/o065/overlay_065_padding.s.o",
       "metadata": {
         "progress_categories": [
           "overlay",
           "overlay-o065"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o091/overlay_091_padding.s",
-      "target_path": "expected/build/asm/overlays/o091/overlay_091_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o091"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o093/overlay_093_padding.s",
-      "target_path": "expected/build/asm/overlays/o093/overlay_093_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o093"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o094/overlay_094_padding.s",
-      "target_path": "expected/build/asm/overlays/o094/overlay_094_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o094"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o095/overlay_095_padding.s",
-      "target_path": "expected/build/asm/overlays/o095/overlay_095_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o095"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o096/overlay_096_padding.s",
-      "target_path": "expected/build/asm/overlays/o096/overlay_096_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o096"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o097/overlay_097_padding.s",
-      "target_path": "expected/build/asm/overlays/o097/overlay_097_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o097"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o098/overlay_098_padding.s",
-      "target_path": "expected/build/asm/overlays/o098/overlay_098_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o098"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o099/overlay_099_padding.s",
-      "target_path": "expected/build/asm/overlays/o099/overlay_099_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o099"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o100/overlay_100_padding.s",
-      "target_path": "expected/build/asm/overlays/o100/overlay_100_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o100"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o101/overlay_101_padding.s",
-      "target_path": "expected/build/asm/overlays/o101/overlay_101_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o101"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o102/overlay_102_padding.s",
-      "target_path": "expected/build/asm/overlays/o102/overlay_102_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o102"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o103/overlay_103_padding.s",
-      "target_path": "expected/build/asm/overlays/o103/overlay_103_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o103"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o106/overlay_106_padding.s",
-      "target_path": "expected/build/asm/overlays/o106/overlay_106_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o106"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o107/overlay_107_padding.s",
-      "target_path": "expected/build/asm/overlays/o107/overlay_107_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o107"
         ]
       }
     },
@@ -1768,16 +1618,6 @@
       }
     },
     {
-      "name": "assets/overlays/o016/overlay_016_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o016/overlay_016_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o016"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o016/overlay_016_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o016/overlay_016_reloc1.bin.o",
       "metadata": {
@@ -1958,16 +1798,6 @@
       }
     },
     {
-      "name": "assets/overlays/o023/overlay_023_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o023/overlay_023_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o023"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o023/overlay_023_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o023/overlay_023_reloc1.bin.o",
       "metadata": {
@@ -1984,16 +1814,6 @@
         "progress_categories": [
           "overlay",
           "overlay-o023"
-        ]
-      }
-    },
-    {
-      "name": "assets/overlays/o024/overlay_024_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o024/overlay_024_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o024"
         ]
       }
     },
@@ -3278,16 +3098,6 @@
       }
     },
     {
-      "name": "assets/overlays/o072/overlay_072_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o072/overlay_072_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o072"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o072/overlay_072_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o072/overlay_072_reloc1.bin.o",
       "metadata": {
@@ -3428,16 +3238,6 @@
       }
     },
     {
-      "name": "assets/overlays/o077/overlay_077_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o077/overlay_077_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o077"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o077/overlay_077_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o077/overlay_077_reloc1.bin.o",
       "metadata": {
@@ -3544,16 +3344,6 @@
         "progress_categories": [
           "overlay",
           "overlay-o081"
-        ]
-      }
-    },
-    {
-      "name": "assets/overlays/o082/overlay_082_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o082/overlay_082_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o082"
         ]
       }
     },
@@ -3874,16 +3664,6 @@
         "progress_categories": [
           "overlay",
           "overlay-o094"
-        ]
-      }
-    },
-    {
-      "name": "assets/overlays/o095/overlay_095_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o095/overlay_095_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o095"
         ]
       }
     },

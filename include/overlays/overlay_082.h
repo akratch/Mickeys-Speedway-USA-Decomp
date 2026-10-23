@@ -38,7 +38,6 @@ typedef Overlay82Object O82Object;
 extern u32 D_800D31B8;
 extern s16 D_800D31BC;
 extern s16 D_800D31BE;
-extern const u8 gO82DataBase[];
 
 void amSndPlay(u16 eventId, void *nullableHandle);
 void modSetTextureFrame(O82Resource *resource, s32 channel, s32 value);

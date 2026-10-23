@@ -3564,14 +3564,6 @@ gOverlay81Scale = 0x00000000;
 mathRnd_o081Reloc = 0xf0000000;
 partUpdateTriggers_o081Reloc = 0xf0000000;
 
-/* overlay 82: overlay_082.c.o */
-D_800D31B8_o082Reloc = 0x00000000;
-D_800D31BC_o082Reloc = 0x00000000;
-D_800D31BE_o082Reloc = 0x00000000;
-amSndPlay_o082Reloc = 0xf0000000;
-gO82DataBase = 0x00000000;
-modSetTextureFrame_o082Reloc = 0xf0000000;
-
 /* overlay 83: overlay_083.c.o */
 addObjectLight_o083Reloc = 0xf0000000;
 camDoSprite_o083Reloc = 0xf0000000;
@@ -4606,12 +4598,12 @@ func_overlay_081_F0000240_18CEFE8 = overlay81InitState;
 func_overlay_081_F0000274_18CF01C = overlay81CheckNearby;
 
 /* overlay 82: overlay_082.c.o */
-func_overlay_082_F0000000_18CF180 = overlay82Init;
+func_overlay_082_F00004A4_18CF624 = overlay82IsActive;
+func_overlay_082_F00004C0_18CF640 = overlay82Enable;
 func_overlay_082_F0000040_18CF1C0 = overlay82Update;
 func_overlay_082_F0000498_18CF618 = overlay82GetSelection;
-func_overlay_082_F00004A4_18CF624 = overlay82IsActive;
 func_overlay_082_F00004B0_18CF630 = overlay82Disable;
-func_overlay_082_F00004C0_18CF640 = overlay82Enable;
+func_overlay_082_F0000000_18CF180 = overlay82Init;
 
 /* overlay 83: overlay_083.c.o */
 func_overlay_083_F000053C_18CFCFC = overlay83BuildBatch;

@@ -15905,55 +15905,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x7C",
-     "size": "0x7C",
-     "type": "c",
-     "source": "overlays/o086/overlay86ProcessCurrent",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x7C",
-     "end_offset": "0x158",
-     "size": "0xDC",
-     "type": "c",
-     "source": "overlays/o086/overlay86ScaledVectorPosition",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x158",
-     "end_offset": "0x2E4",
-     "size": "0x18C",
-     "type": "c",
-     "source": "overlays/o086/overlay86BuildTransform",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2E4",
-     "end_offset": "0x444",
-     "size": "0x160",
-     "type": "c",
-     "source": "overlays/o086/overlay86SelectPosition",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x444",
-     "end_offset": "0x474",
-     "size": "0x30",
-     "type": "c",
-     "source": "overlays/o086/overlay86Init",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x474",
      "end_offset": "0xECC",
-     "size": "0xA58",
+     "size": "0xECC",
      "type": "c",
-     "source": "overlays/o086/func_overlay_086_F0000474_18D22AC",
+     "source": "overlays/o086/overlay_086",
      "matched": true,
      "nonmatching": false
     },
@@ -16054,7 +16009,7 @@
      "size": "0x20",
      "type": "c",
      "section": ".rodata",
-     "source": "overlays/o086/func_overlay_086_F0000474_18D22AC",
+     "source": "overlays/o086/overlay_086",
      "trial_function": "func_overlay_086_F0000474_18D22AC",
      "externalized": true
     }

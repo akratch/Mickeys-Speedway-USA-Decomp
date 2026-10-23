@@ -1,15 +1,138 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_086.h"
 
-#define NULL ((void *)0)
+void overlay86ProcessCurrent(Overlay86Object *owner) {
+    Overlay86Current *current;
+
+    current = *owner->currentSlot;
+    if (current != NULL && current->resource != NULL && current->active != 0) {
+        func_8005AF14(current, current->resource, owner);
+        lightObject(owner, current, owner->context,
+                             current->values[current->index]);
+        current->active = 0;
+    }
+}
+
+void overlay86ScaledVectorPosition(Overlay86Object *object,
+                                   Overlay86RacerState *state, f32 *outX,
+                                   f32 *outY, f32 *outZ) {
+    s32 index;
+    f32 vector[3];
+
+    index = state->vectorIndex;
+
+    if ((index < 0) || (index >= 10)) {
+        index = 0;
+    }
+
+    vector[0] = gOverlay86Vectors[index].x * object->scale;
+    vector[1] = gOverlay86Vectors[index].y * object->scale;
+    vector[2] = gOverlay86Vectors[index].z * object->scale;
+    pointListRPY(1, object, vector, vector);
+    *outX = vector[0] + object->position.x;
+    *outY = vector[1] + object->position.y;
+    *outZ = vector[2] + object->position.z;
+}
+
+void overlay86BuildTransform(Overlay86Object *object,
+                             Overlay86Object *transform) {
+    s32 index;
+    volatile Overlay86Vec3f target; /* load-bearing: without it the body is 4 words short */
+    Overlay86Vec3f vector;
+    Overlay86Current *current;
+    s16 angle;
+
+    index = ((Overlay86RacerState *)transform->state)->vectorIndex;
+    if ((index < 0) || (index >= 10)) {
+        index = 0;
+    }
+    current = *object->currentSlot;
+    if ((current != 0) && (current->resource != 0) &&
+        (current->resource->active != 0)) {
+        overlay86ProcessCurrent_o086Reloc(object);
+        target.x = current->position->x;
+        target.y = current->position->y;
+        target.z = current->position->z;
+    } else {
+        target.x = object->position.x;
+        target.y = object->position.y;
+        target.z = object->position.z;
+    }
+    transform->angle = object->angle + 0x8000;
+    transform->tilt = 0;
+    transform->roll = 0;
+    vector.x = gOverlay86Vectors[index].x * transform->scale;
+    vector.y = gOverlay86Vectors[index].y * transform->scale;
+    vector.z = gOverlay86Vectors[index].z * transform->scale;
+    pointListRPY(1, transform, &vector, &vector);
+    transform->position.x = target.x - vector.x;
+    transform->position.y = target.y - vector.y;
+    transform->position.z = target.z - vector.z;
+    angle = func_8000FAE0(transform->position.x,
+                                          transform->position.y,
+                                          transform->position.z);
+    if (angle != -1) {
+        transform->resultAngle = angle;
+    }
+}
+
+/*
+ * Near-miss exactness note: IDO assigns the five homed locals in reverse
+ * declaration order here; keeping the owner comparison in node-first order
+ * also preserves the target's two-load schedule.
+ */
+s16 overlay86SelectPosition(Overlay86Object *object, Overlay86State *output) {
+    s32 start;
+    s32 end;
+    s32 selected;
+    Overlay86Object **nodes;
+    Overlay86Object *node;
+    Overlay86RacerState *state;
+    Overlay86RingRecord *record;
+
+    state = object->state;
+    record = overlay1FindPreviousUsable(state->selectedIndex, &selected);
+    state->selectedIndex = overlay1NextIndex(selected);
+    output->spawn.x = 0.0f;
+    output->spawn.y = 0.0f;
+    output->spawn.z = 0.0f;
+
+    if (record != 0) {
+        output->spawn.x = record->x;
+        output->spawn.y = record->y + 96.0f;
+        output->spawn.z = record->z;
+        state->record = record;
+        record->flags |= 8;
+        return record->angle + 0x4000;
+    }
+
+    nodes = func_8000572C(&start, &end);
+    while (start < end) {
+        node = nodes[start++];
+        if ((node->kind == 5) && (node->ownerIndex == state->ownerIndex)) {
+            output->spawn.x = node->position.x;
+            output->spawn.y = node->position.y + 96.0f;
+            output->spawn.z = node->position.z;
+            state->record = 0;
+            return node->angle;
+        }
+    }
+    return 0;
+}
+
+void overlay86Init(Overlay86Object *object, Overlay86Entry *entry) {
+    Overlay86State *state = object->state;
+    state->mode = 0;
+    state->targetIndex = entry->type;
+    state->loopSound = 0;
+    state->effectSound = 0;
+    object->resultAngle = -1;
+    object->flags |= 0x400;
+}
+
 #define M2C_UNK s32
 #define M2C_FIELD(expr, type_ptr, offset) (*(type_ptr)((s8 *)(expr) + (offset)))
 
-/* Same-module callees whose shipped call words are SYMBOL relocation records
- * with a zero addend, so the C names the runtime-table placeholder rather than
- * the in-module definition (CLAUDE.md, "Promoting an overlay function"). */
-M2C_UNK overlay86BuildTransform(void *, void *);    /* extern */
-M2C_UNK overlay86ScaledVectorPosition(void *, void *, f32 *, f32 *, f32 *); /* extern */
-s32 overlay86SelectPosition(void *, void *);        /* extern */
+/* Resident callees of func_overlay_086_F0000474_18D22AC. */
 M2C_UNK amSndPlayXYZ(M2C_UNK, f32, f32, f32, s32, void *); /* extern */
 M2C_UNK amSndSetVolXYZ(s32, s32);                     /* extern */
 M2C_UNK amSndSetPitchXYZ(s32, s32);                     /* extern */
@@ -24,7 +147,6 @@ void *func_80005820(u8);                             /* extern */
 M2C_UNK func_800498FC(u8, M2C_UNK, f32, M2C_UNK, s32, s32, s32); /* extern */
 M2C_UNK func_8005ABA8(void *, M2C_UNK, f32);        /* extern */
 void func_8005AD64(void *, M2C_UNK, s32, f32);   /* extern */
-s16 func_8000FAE0(f32, f32, f32);                    /* extern */
 M2C_UNK overlay7CommitSelection(M2C_UNK);                       /* extern */
 
 /* Matched 2026-09-16 (lane lm-a), 662/662 words at frame 0xA8, unforced.
@@ -114,7 +236,7 @@ void func_overlay_086_F0000474_18D22AC(void *object, s32 steps) {
                 switch (M2C_FIELD(state, u8 *, 0)) {
                 case 0:
                     if ((M2C_FIELD(racer, u8 *, 0x170) != 0) && !(M2C_FIELD(racer, u16 *, 0x1A8) & 1)) {
-                        overlay86ScaledVectorPosition(target, racer, &targetX, &targetY, &targetZ);
+                        overlay86ScaledVectorPosition_o086Reloc(target, racer, &targetX, &targetY, &targetZ);
                         M2C_FIELD(object, s16 *, 0) = (s16) (M2C_FIELD(target, s16 *, 0) + 0x8000);
                         M2C_FIELD(object, s16 *, 2) = -0x1000;
                         M2C_FIELD(object, s16 *, 4) = 0;
@@ -137,7 +259,7 @@ void func_overlay_086_F0000474_18D22AC(void *object, s32 steps) {
                     }
                     break;
                 case 1:
-                    overlay86ScaledVectorPosition(target, racer, &targetX, &targetY, &targetZ);
+                    overlay86ScaledVectorPosition_o086Reloc(target, racer, &targetX, &targetY, &targetZ);
                     if ((M2C_FIELD(state, s16 *, 2) != 0) && (steps != 0)) {
 loop_26:
                         M2C_FIELD(object, f32 *, 0xC) += (targetX - M2C_FIELD(object, f32 *, 0xC)) * 0.1f;
@@ -155,12 +277,12 @@ loop_26:
                     }
                     M2C_FIELD(object, f32 *, 0x10) = (f32) (M2C_FIELD(state, f32 *, 0x14) + targetY);
                     if (M2C_FIELD(state, s16 *, 2) == 0) {
-                        M2C_FIELD(object, s16 *, 0) = (s16) (overlay86SelectPosition(target, state) + 0x8000);
+                        M2C_FIELD(object, s16 *, 0) = (s16) (overlay86SelectPosition_o086Reloc(target, state) + 0x8000);
                         M2C_FIELD(object, s16 *, 2) = -0x1000;
                         M2C_FIELD(object, f32 *, 0xC) = (f32) M2C_FIELD(state, f32 *, 4);
                         M2C_FIELD(object, f32 *, 0x10) = (f32) (M2C_FIELD(state, f32 *, 8) + 400.0f);
                         M2C_FIELD(object, f32 *, 0x14) = (f32) M2C_FIELD(state, f32 *, 0xC);
-                        overlay86BuildTransform(object, target);
+                        overlay86BuildTransform_o086Reloc(object, target);
                         controlPlayerReInit(target, M2C_FIELD(target, s32 *, 0xC), M2C_FIELD(target, s32 *, 0x10), M2C_FIELD(target, s32 *, 0x14), (s32) M2C_FIELD(target, s16 *, 0), (s32) M2C_FIELD(target, s16 *, 2), (s32) M2C_FIELD(target, s16 *, 4));
                         M2C_FIELD(racer, s8 *, 0x191) = 1;
                         M2C_FIELD(racer, u8 *, 0x170) = 0U;
@@ -191,7 +313,7 @@ loop_37:
                             goto loop_37;
                         }
                     }
-                    overlay86BuildTransform(object, target);
+                    overlay86BuildTransform_o086Reloc(object, target);
                     M2C_FIELD(target, s16 *, 4) = (s16) shake;
                     if (M2C_FIELD(state, s16 *, 2) == 0) {
                         if (M2C_FIELD(state, u8 *, 0) == 2) {

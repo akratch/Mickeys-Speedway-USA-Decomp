@@ -1062,49 +1062,36 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0001290_18CE230.c.o: POS
 # the module's 0x3F0 bytes, trailing pad included, so it needs no trim.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o080/overlay_080.c.o: CFLAGS += -Wab,-r4300_mul
 include mk/overlay_084.mk
-# The natural O86 tail owns the exact 662-word semantic program and all 32
-# call anchors. Four closed one-to-one schedule basins and the complete private
-# register/frame web select retail codegen. The compiler literal/jump pool is
-# asserted against the retained module data, while the loader remains sole
-# owner of its six LOCAL HILO roles. All 32 static calls are folded to the raw
-# overlay carrier only after their runtime identities have been independently
-# censused.
-# The compiler's private pool for this unit -- two float constants and the
-# five-entry state-switch table -- duplicates the retained overlay data segment
-# at data_rodata +0x80 (rodata-relative +0x0, which the shipped %hi/%lo pairs
-# encode; the loader's six LOCAL HILO roles supply the base).  Rebind the six
-# references to a pool symbol and discard the digest-checked duplicate; no
-# instruction or compiler addend is edited (overlay 58's metadata-only form).
-O86_0474_OBJ := \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o086/func_overlay_086_F0000474_18D22AC.c.o
-$(O86_0474_OBJ): \
+# Overlay 86 is one translation unit under the overlay flag set; its .text is
+# the module's 0xED0 bytes, trailing pad included, so it needs no trim. Two
+# steps remain until the module's data moves into C
+# (docs/OVERLAY_STRUCTURE_SPRINT.md phase 3):
+# - The compiler's pool for func_overlay_086_F0000474_18D22AC -- two float
+#   constants and the five-entry state-switch table -- duplicates the
+#   retained overlay data at data_rodata +0x80 (rodata-relative +0x0, which
+#   the shipped %hi/%lo pairs encode). Rebind the six references to a pool
+#   symbol and discard the digest-checked duplicate; no instruction or
+#   compiler addend is edited.
+# - overlay86ScaledVectorPosition's vector-table address is loader-owned in
+#   the shipped table (a LOCAL pair with zero base addend), so its two
+#   relocations against the blob-owned gOverlay86Vectors are dropped.
+# Same-module calls to exported functions name the _o086Reloc placeholders.
+O86_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay_086.c.o
+$(O86_OBJ): CFLAGS += -Wab,-r4300_mul
+$(O86_OBJ): \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
 	$(TOOLS_DIR)/externalize_elf_section.py \
-	config/normalizations/func_overlay_086_F0000474_18D22AC.rebind.spec
-$(O86_0474_OBJ): POSTPROCESS = \
+	$(TOOLS_DIR)/filter_elf_relocations.py \
+	config/normalizations/overlay_086.rebind.spec
+$(O86_OBJ): POSTPROCESS = \
 	$(OBJCOPY) --add-symbol gOverlay86StatePoolReloc=0x0,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/func_overlay_086_F0000474_18D22AC.rebind.spec && \
+		@config/normalizations/overlay_086.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:08f3e1a4c518600a11dd66005593764a3a35e9d74386fd2bb4c863c379dbee52 && \
+		sha256:eaecfbbed7d41ea06a4083ce0ec8d40fe5d624fab5574d44903561c845808cec && \
 	$(OBJCOPY) --remove-section .rel.rodata $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA58
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86Init.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86ProcessCurrent.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x7C
-# The vector table address is loader-owned in the shipped overlay relocation
-# table; retain its zero-base addend and bind the sole static call to the raw
-# overlay carrier used by the extracted object.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86ScaledVectorPosition.c.o: \
-	$(TOOLS_DIR)/filter_elf_relocations.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86ScaledVectorPosition.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x18:5:gOverlay86Vectors 0x24:6:gOverlay86Vectors && \
-	$(OBJCOPY) --redefine-sym pointListRPY=func_overlay_086_F0000000_18D1E38 $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDC
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86BuildTransform.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x18C
+		0x94:5:gOverlay86Vectors 0xa0:6:gOverlay86Vectors
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay94UpdateController.c.o: POSTPROCESS = \

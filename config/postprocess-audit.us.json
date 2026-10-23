@@ -6648,73 +6648,15 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o086/func_overlay_086_F0000474_18D22AC.c.o",
-      "offset": 1140,
+      "object": "build/src/overlays/o086/overlay_086.c.o",
+      "offset": 0,
       "overlay": 86,
-      "size": 2648,
-      "source": "src/overlays/o086/func_overlay_086_F0000474_18D22AC.c",
+      "size": 3788,
+      "source": "src/overlays/o086/overlay_086.c",
       "tools": [
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o086/overlay86BuildTransform.c.o",
-      "offset": 344,
-      "overlay": 86,
-      "size": 396,
-      "source": "src/overlays/o086/overlay86BuildTransform.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o086/overlay86Init.c.o",
-      "offset": 1092,
-      "overlay": 86,
-      "size": 48,
-      "source": "src/overlays/o086/overlay86Init.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o086/overlay86ProcessCurrent.c.o",
-      "offset": 0,
-      "overlay": 86,
-      "size": 124,
-      "source": "src/overlays/o086/overlay86ProcessCurrent.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o086/overlay86ScaledVectorPosition.c.o",
-      "offset": 124,
-      "overlay": 86,
-      "size": 220,
-      "source": "src/overlays/o086/overlay86ScaledVectorPosition.c",
-      "tools": [
         "filter_elf_relocations.py",
-        "trim_elf_section.py",
         "objcopy"
       ]
     },
@@ -8363,10 +8305,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 575,
+      "metadata": 571,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 430892,
-    "objects_with_postprocess": 576
+    "matched_c_bytes_with_postprocess": 431244,
+    "objects_with_postprocess": 572
   }
 }

@@ -324,7 +324,6 @@ extern void diCpuTraceGetFault(void);
 extern void diCpuTraceTick(s32);
 extern void fxUnQueueScreenEffect(Gfx **);
 extern s32 func_80049B14(s32);
-extern void frontUpdate(Gfx **, Mtx **, MainVertex **, MainTriangle **, s32);
 extern void func_80049E4C(Gfx **, s32);
 extern void amAudioTick(u8);
 extern void diPrintfAll(Gfx **);

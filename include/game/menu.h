@@ -2,8 +2,12 @@
 #define _GAME_MENU_H_
 
 #include "PR/ultratypes.h"
+#include "n_audio/mbi.h"
 
-typedef struct MenuCommand MenuCommand;
+typedef Gfx MenuCommand;
+
+struct MainVertex;
+struct MainTriangle;
 
 /* PROVENANCE: base layout adapted from JFG's public decomp,
  * src/menu.h::Resbitfield; twoPlayerSplit and stereoMode are Mickey-derived
@@ -32,6 +36,9 @@ typedef struct MenuControllerRepeatState {
     u32 previousButtons[4];
 } MenuControllerRepeatState;
 
+s32 frontUpdate(Gfx **gfxList, Mtx **mtxList,
+                struct MainVertex **vertexList, struct MainTriangle **triangleList,
+                s32 updateRate);
 void frontSetMode(s32 mode);
 u8 frontGetMode(void);
 void frontDrawRectangle(MenuCommand **displayList, s32 left, s32 top, s32 right, s32 bottom, u32 colour);

@@ -1185,32 +1185,6 @@ sqrtf_o029Reloc = 0xf0000000;
 texDPInit_o029Reloc = 0xf0000000;
 trackMakePolylist_o029Reloc = 0xf0000000;
 
-/* overlay 30: overlay_030.c.o */
-D_800C9450_o030Reloc = 0x00000000;
-D_800C9454_o030Reloc = 0x00000000;
-D_800C9458_o030Reloc = 0x00000000;
-D_800C945C_o030Reloc = 0x00000000;
-D_800C9460_o030Reloc = 0x00000000;
-D_800C9468_o030Reloc = 0x00000000;
-D_800C946C_o030Reloc = 0x00000000;
-D_800C9488_o030Reloc = 0x00000000;
-D_800C948C_o030Reloc = 0x00000000;
-D_800C9494_o030Reloc = 0x00000000;
-D_800C94A0_o030Reloc = 0x00000000;
-D_800C94A4_o030Reloc = 0x00000000;
-D_800C94E0_o030Reloc = 0x00000000;
-D_800C94EC_o030Reloc = 0x00000000;
-D_800C94F4_o030Reloc = 0x00000000;
-D_800C9500_o030Reloc = 0x00000000;
-func_80004340_o030Reloc = 0xf0000000;
-gOverlay30PixelHeader = 0x00000000;
-gOverlay30SentinelIndex = 0x00000000;
-lightDefaultObjectLight_o030Reloc = 0xf0000000;
-mmAllocRegion_o030Reloc = 0xf0000000;
-mmAlloc_o030Reloc = 0xf0000000;
-piRomGetFileSize_o030Reloc = 0xf0000000;
-piRomLoad_o030Reloc = 0xf0000000;
-
 /* overlay 31: overlay_031.c.o */
 D_8007C884_o031Reloc = 0x00000000;
 D_8007C888_o031Reloc = 0x00000000;

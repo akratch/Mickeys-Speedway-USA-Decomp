@@ -642,7 +642,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o: POSTPROCESS = \
 	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 21 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay_021.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 30 is one TU under the overlay flag set; no post-processing.
+# Overlay 30 has no initialized storage or BSS; all imports name runtime exports.
+MODULE_LINKED_OVERLAYS += 030
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o030/overlay_030.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 23 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay_023.c.o: CFLAGS += -Wab,-r4300_mul

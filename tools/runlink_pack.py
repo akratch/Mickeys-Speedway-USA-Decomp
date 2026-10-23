@@ -1018,6 +1018,19 @@ def collect_relocs(world, resolver, obj):
     return out
 
 
+def linked_bss_output(world, ov):
+    """Authenticate the allocated BSS output independently of retail size."""
+    info = world.module_info[ov]
+    output = world.elf.section(f".overlay_{ov:03d}_bss")
+    if (not output or output["type"] != SHT_NOBITS
+            or output["flags"] & 3 != 3 or output["flags"] & 4
+            or output["addr"] != info["bss_vma"]
+            or output["addr"] != OVERLAY_VMA + info["prefix"]
+            or output["size"] != info["linked_bss"]):
+        return None
+    return output
+
+
 def linked_bss_placement(world, obj):
     """Accept an actual BSS input, never a whole-module guess for a raw object.
 
@@ -1029,17 +1042,11 @@ def linked_bss_placement(world, obj):
     """
     info = world.module_info[obj.module]
     raw = obj.elf.section(".bss")
-    output = world.elf.section(f".overlay_{obj.module:03d}_bss")
+    output = linked_bss_output(world, obj.module)
     if not raw or not output or not raw["size"]:
         return None
-    for section in (raw, output):
-        if (section["type"] != SHT_NOBITS or section["flags"] & 3 != 3
-                or section["flags"] & 4):
-            return None
-    if (output["addr"] != info["bss_vma"]
-            or output["addr"] != OVERLAY_VMA + info["prefix"]
-            or output["size"] != info["linked_bss"]
-            or output["size"] != info["atlas_bss"]):
+    if (raw["type"] != SHT_NOBITS or raw["flags"] & 3 != 3
+            or raw["flags"] & 4):
         return None
     inputs = [mi for mi in info["bss_inputs"] if mi.size]
     source = f"build/src/{obj.source}.c.o"
@@ -1054,6 +1061,96 @@ def linked_bss_placement(world, obj):
                    and item.addr < other.addr + other.size for other in inputs)):
         return None
     return item.addr - OVERLAY_VMA
+
+
+def header_bss(world, ov):
+    """(size, source-owned): use faithful source layout or explicit atlas fallback.
+
+    A matching sum is insufficient: discarded/trimmed/duplicate raw producers
+    can have the same size as a retained reserve. Every nonempty map input must
+    have exactly one raw C owner, and every raw allocated BSS section must
+    survive. The initialized body must also be completely source-produced:
+    a faithful partial BSS allocation beside retained data cannot establish
+    that the source accounts for the module's entire storage contract.
+    Only ordinary input alignment may separate contributors; neither
+    a configured trailing reserve nor an unexplained gap establishes ownership.
+    Atlas size is a comparison/fallback value, never the size of proved BSS.
+    """
+    info = world.module_info[ov]
+    fallback = (info["atlas_bss"], False)
+    objects = world.objects(ov)
+    inputs = [mi for mi in info["bss_inputs"] if mi.size]
+    owners = []
+    for obj in objects:
+        if any(s.shndx == SHN_COMMON and s.size for s in obj.elf.symbols):
+            return fallback
+        if any(s["size"] and s["flags"] & 2 and s["type"] == SHT_NOBITS
+               and s["name"] != ".bss" for s in obj.elf.sections):
+            return fallback
+        if obj.elf.size(".bss"):
+            if obj.kind != "c" or linked_bss_placement(world, obj) is None:
+                return fallback
+            owners.append(obj)
+    if not owners:
+        # No source allocation cannot disprove an existing retail reserve.
+        # Zero-sized output sections need not have NOBITS/ALLOC flags in GNU ld.
+        output = world.elf.section(f".overlay_{ov:03d}_bss")
+        if (info["atlas_bss"] or info["linked_bss"] or inputs
+                or (output and (output["size"]
+                    or output["addr"] != info["bss_vma"]
+                    or output["addr"] != OVERLAY_VMA + info["prefix"]))):
+            return fallback
+        return 0, True
+    output = linked_bss_output(world, ov)
+    if not output or len(inputs) != len(owners):
+        return fallback
+    body = {}
+    for obj in objects:
+        if obj.kind != "c":
+            return fallback
+        if any(s["size"] and s["flags"] & 2 and s["name"] not in
+               (".text", ".data", ".rodata", ".bss", ".reginfo", ".MIPS.abiflags")
+               for s in obj.elf.sections):
+            return fallback
+        for section in (".text", ".data", ".rodata"):
+            raw = obj.elf.section(section)
+            if raw and raw["size"]:
+                key = (f"build/src/{obj.source}.c.o", section)
+                if key in body:
+                    return fallback
+                body[key] = raw
+    cursor = OVERLAY_VMA
+    for item in sorted(info["inputs"], key=lambda mi: mi.addr):
+        if not item.size or re.search(r"_reloc[12]\.bin\.o$", item.file):
+            continue
+        raw = body.pop((item.file, item.insec), None)
+        if (raw is None or not raw["flags"] & 2 or raw["type"] == SHT_NOBITS
+                or raw["size"] != item.size):
+            return fallback
+        alignment = raw["align"]
+        if (alignment < 1 or alignment & (alignment - 1)
+                or item.addr != ((cursor + alignment - 1) & -alignment)):
+            return fallback
+        cursor = item.addr + item.size
+    if body or cursor != OVERLAY_VMA + info["prefix"]:
+        return fallback
+    by_source = {f"build/src/{obj.source}.c.o": obj for obj in owners}
+    if len(by_source) != len(owners):
+        return fallback
+    cursor = output["addr"]
+    for item in sorted(inputs, key=lambda mi: mi.addr):
+        obj = by_source.pop(item.file, None)
+        if obj is None or item.insec != ".bss":
+            return fallback
+        alignment = obj.elf.section(".bss")["align"]
+        if alignment < 1 or alignment & (alignment - 1):
+            return fallback
+        if item.addr != ((cursor + alignment - 1) & -alignment):
+            return fallback
+        cursor = item.addr + item.size
+    if by_source or cursor != output["addr"] + output["size"]:
+        return fallback
+    return output["size"], True
 
 
 def place_sections(world, resolver, relocs_by_module):
@@ -1279,9 +1376,8 @@ def pack_module(world, resolver, ov, relocs):
             init = ident[2]
         else:
             resume = ident[2]
-    bss = info["atlas_bss"]
-    c_bss = sum(o.elf.size(".bss") for o in world.objects(ov))
-    if bss != c_bss:
+    bss, source_bss = header_bss(world, ov)
+    if not source_bss:
         borrowed["bss-size"].append([ov])
     return PackedModule(ov, t1, t2, ts, ds, bss, rodata0, init, resume,
                         world.module_image_prefix(ov), notes, dict(borrowed), unresolved)
@@ -1607,7 +1703,7 @@ BORROWED_DOC = {
     "hybrid-data": "data-site record in blob-owned data, taken from the shipped table (module, site)",
     "placement": "object data section placed from the shipped references (module, object, section, offset, evidence)",
     "rodata-base": "module rodata base the objects do not determine (module)",
-    "bss-size": "header BSS size with no C owner, from the atlas (module)",
+    "bss-size": "header BSS size without a complete faithful linked source allocation, from the atlas (module)",
     "main-placeholder": "main-table entry whose target the resident source does not name (site, op, type)",
 }
 DIFF_DOC = {

@@ -106,7 +106,8 @@ def header_for(world, resolver, ov, shipped_mod):
                 init = ident[2]
             else:
                 resume = ident[2]
-    return codec.Header(0, 0, info["text_size"], info["data_size"], info["atlas_bss"], 0, 0, init, resume)
+    bss, _source_owned = _rp().header_bss(world, ov)
+    return codec.Header(0, 0, info["text_size"], info["data_size"], bss, 0, 0, init, resume)
 
 
 def main_refs(rp, world, resolver, cfg, shipped):

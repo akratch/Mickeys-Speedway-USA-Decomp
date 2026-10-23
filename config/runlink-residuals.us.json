@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 148, "borrowed_records": 8870},
+  "totals": {"differences": 148, "borrowed_records": 8860},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -180,7 +180,7 @@
   "borrowed": {
     "bss-size": {
       "about": "header BSS size with no C owner, from the atlas (module)",
-      "count": 40,
+      "count": 39,
       "entries": [
         [1],
         [2],
@@ -195,7 +195,6 @@
         [20],
         [29],
         [33],
-        [35],
         [36],
         [42],
         [43],
@@ -256,7 +255,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1860,
+      "count": 1855,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -838,11 +837,6 @@
         [33, "gOverlay33Handle", 4],
         [33, "gOverlay33Initialized", 4],
         [33, "overlay33CallReloc", 2],
-        [35, "D_4", 2],
-        [35, "D_o35_model_table", 2],
-        [35, "D_o35_paramB", 2],
-        [35, "D_o35_reset1", 2],
-        [35, "D_o35_skip_collision_edges", 2],
         [36, "gOverlay36AltTable", 2],
         [36, "gOverlay36CallTarget", 2],
         [36, "gOverlay36CurrentEntity", 2],

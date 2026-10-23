@@ -1054,7 +1054,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 28 directly owns its colour-cycle table and triangle records.
 MODULE_LINKED_OVERLAYS += 028
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 35 is one TU under the overlay flag set; no post-processing.
+# Overlay 35 directly owns its model-table cursor and collision-mode flag.
+MODULE_LINKED_OVERLAYS += 035
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/overlay_035.c.o: CFLAGS += -Wab,-r4300_mul
 
 # Overlay 26 directly owns the update and projection's compiler literal pool.

@@ -3002,3 +3002,6 @@ D_800D6C3C = 0x800D6C3C; // tier-B ORT export and overlay 40 references, unsized
 D_800D6C40 = 0x800D6C40; // tier-B ORT export and overlay 40 references, unsized data view
 D_800D6C42 = 0x800D6C42; // tier-B ORT export and overlay 40 references, unsized data view
 D_800D6C46 = 0x800D6C46; // tier-B ORT export and overlay 40 references, unsized data view
+
+// Tier B: ORT data export used by overlay 35; unsized resident view only.
+D_800C99BC = 0x800C99BC; // tier-B ORT1758 export and overlay 35 references, unsized data view

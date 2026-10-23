@@ -174,10 +174,8 @@ typedef struct {
 extern O35Level *D_800792EC;
 extern O35Model *D_800792E8;
 extern void *D_800C9548;
-extern s32 D_4;
-extern s32 D_o35_reset1;
 extern s32 D_800C9544;
-extern void *D_o35_paramB;
+extern void *D_800C99BC;
 extern s32 D_800C9560;
 extern s32 D_800C9568;
 extern void *D_800792F0;
@@ -190,9 +188,9 @@ extern s16 *D_800C9D34;
 extern void *D_800C9D20;
 extern s32 D_800C9D3C;
 extern void *D_800C95A8;
-extern s32 *D_o35_model_table;
+extern s32 *gOverlay35ModelTable;
 extern s32 D_80079314;
-extern s32 D_o35_skip_collision_edges;
+extern s32 gOverlay35SkipCollisionEdges;
 
 extern void *mmAlloc(s32 size, s32 tag);
 extern void mmFree(void *value);

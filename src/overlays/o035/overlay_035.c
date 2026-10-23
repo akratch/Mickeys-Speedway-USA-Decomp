@@ -1,5 +1,8 @@
 #include "overlays/overlay_035.h"
 
+s32 *gOverlay35ModelTable;
+s32 gOverlay35SkipCollisionEdges;
+
 /*
  * Overlay 35: one translation unit in ROM order (ADR 0006). Only the
  * initializer (+0x0) is an ORT export; the model loader, grid-mask builder,
@@ -8,9 +11,8 @@
  */
 
 static void func_overlay_035_F00001E0_1881EC0(s32 modelId);
-/* The loader passes the segment table as a third argument the builder never
- * reads, so this forward declaration carries no prototype. */
-static void func_overlay_035_F0000770_1882450();
+static void func_overlay_035_F0000770_1882450(O35GridSource *source,
+                                             O35GridBounds *bounds);
 static s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s);
 static void overlay35SelectHeight(Overlay35State *state);
 
@@ -20,14 +22,14 @@ void func_overlay_035_F0000000_1881CE0(s32 modelId, s32 value1, s32 value2,
 
     D_800C9548 = mmAlloc(0x800, 0x8F);
     D_800792EC = levelGetLevel();
-    D_4 = 0;
+    gOverlay35SkipCollisionEdges = 0;
     if ((D_800792EC->flagF6 == 0) &&
         ((D_800792EC->mode83 == 1) || (D_800792EC->mode83 == 2))) {
-        D_4 = 1;
+        gOverlay35SkipCollisionEdges = 1;
     }
 
     func_overlay_035_F00001E0_1881EC0(modelId);
-    D_o35_reset1 = 0;
+    D_800C99BC = 0;
     camSetMode(mainGetNumberOfCameras() - 1);
     func_80004C28(value4, 0);
     func_80004C28(value3, 1);
@@ -35,7 +37,7 @@ void func_overlay_035_F0000000_1881CE0(s32 modelId, s32 value1, s32 value2,
     func_80004FE0(value2);
 
     D_800C9544 = 0;
-    shadowInitBuffers(D_800792E8, D_o35_paramB, 0x1F4, 0xC8, 0x64);
+    shadowInitBuffers(D_800792E8, D_800C99BC, 0x1F4, 0xC8, 0x64);
     shadowGenerate(2, 0);
     shadowGenerate(1, 0);
     shadowChangeBuffer();
@@ -64,7 +66,7 @@ void func_overlay_035_F0000000_1881CE0(s32 modelId, s32 value1, s32 value2,
 
 /* Matched by spelling every model access as D_800792E8 (DKR style) so
  * uopt CSEs the loop-condition reloads, testing the heap through the current
- * model, walking D_o35_model_table directly (its address web then outranks
+ * model, walking gOverlay35ModelTable directly (its address web then outranks
  * 0x9F000 for s3), post-decrement copy loops (the target's dead count copy),
  * and reading the walkers back through the stored colorData fields.
  * The unreferenced pad keeps mdl's home at sp+0x38 (L99).
@@ -94,16 +96,16 @@ static void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
     }
     mainPreNMI();
 
-    D_o35_model_table = piRomLoad(0x24);
-    for (i = 0; D_o35_model_table[i] != -1; i++) {
+    gOverlay35ModelTable = piRomLoad(0x24);
+    for (i = 0; gOverlay35ModelTable[i] != -1; i++) {
     }
     i--;
     if (modelId >= i) {
         modelId = 0;
     }
 
-    mdl = D_o35_model_table[modelId];
-    byteCount = D_o35_model_table[modelId + 1] - mdl;
+    mdl = gOverlay35ModelTable[modelId];
+    byteCount = gOverlay35ModelTable[modelId + 1] - mdl;
     temp = (s32)D_800792E8;
     temp += 0x9F000 - byteCount;
     temp -= temp % 16;
@@ -111,7 +113,7 @@ static void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
     mainPreNMI();
     piRomLoadSection(0x25, (void *)temp, mdl, byteCount);
     func_8004D7E0((void *)temp, D_800792E8);
-    mmFree(D_o35_model_table);
+    mmFree(gOverlay35ModelTable);
     mainPreNMI();
 
     mdl = (s32)D_800792E8;
@@ -146,9 +148,8 @@ static void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
         D_800792E8->segments[k].collisionFacets = cursor;
         cursor += D_800792E8->segments[k].dataOffset;
         func_overlay_035_F0000770_1882450(
-            &D_800792E8->segments[k],
-            &D_800792E8->bounds[k],
-            D_800792E8->segments);
+            (O35GridSource *)&D_800792E8->segments[k],
+            (O35GridBounds *)&D_800792E8->bounds[k]);
         cursor = align16(cursor);
         D_800792E8->segments[k].collisionPlanes = (f32 *)cursor;
         cursor += func_overlay_035_F0000B40_1882820(
@@ -433,7 +434,7 @@ static s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
         }
     }
 
-    if (D_o35_skip_collision_edges != 0) {
+    if (gOverlay35SkipCollisionEdges != 0) {
         mmFree(scratch);
         return counter;
     }

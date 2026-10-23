@@ -1,20 +1,10 @@
 #include "overlays/overlay_065.h"
 
-typedef struct Overlay65Record {
-    u8 pad00[0x1B];
-    u8 flag1B;
-    u8 pad1C[0x1B];
-    u8 flag37;
-    u8 pad38[0x1B];
-    u8 flag53;
-    u8 pad54[0x1B];
-    u8 flag6F;
-} Overlay65Record;
-
 extern u8 gOverlay65InitFlag0;
 extern u8 gOverlay65InitFlag1;
-extern Overlay65Record gOverlay65Records[];
-extern Overlay65Record gOverlay65RecordsEnd;
+extern O65Particle gOverlay65Records[148];
+/* Legacy link marker at the one-past end of the particle pool. */
+extern u8 gOverlay65RecordsEnd[];
 extern TextureHeader *gOverlay65Handle;
 extern u8 *gOverlay65Buffers[2];
 

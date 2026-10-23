@@ -6,8 +6,8 @@
 
 
 extern O65Particle D_1908[150];
-extern u8 D_1C0[];
-extern O65Vec3f D_1D8[];
+extern O65Color D_1C0[7];
+extern O65Vec3f D_1D8[4];
 extern void *D_208;
 extern s32 D_20C;
 extern s32 D_210;
@@ -17,7 +17,7 @@ extern f32 D_2978;
 extern f32 D_297C;
 extern O65Vertex *D_2980[];
 extern O65Vertex *D_2988;
-extern u8 D_80000000[];
+extern O65Triangle D_80000000[12];
 
 extern void texDPTextureX(Gfx **, TextureFrameHeader *, s32, s32);
 extern O65Camera *func_80021970(s32);
@@ -76,7 +76,7 @@ void overlay65UpdateParticles(Gfx **commandList, Mtx **cursorPtr,
     f32 sinAngle;
     f32 cosAngle;
     f32 **ground;
-    u8 *colors;
+    const O65Color *colors;
 
     commands = *commandList;
     cursor = *cursorPtr;
@@ -150,10 +150,10 @@ void overlay65UpdateParticles(Gfx **commandList, Mtx **cursorPtr,
                 particle->floorY = (s16)(camera->y - 300.0f);
             }
 
-            colors = &D_1C0[mathRnd(0, 6) * 3];
-            particle->r = colors[0];
-            particle->g = colors[1];
-            particle->b = colors[2];
+            colors = &D_1C0[mathRnd(0, 6)];
+            particle->r = colors->red;
+            particle->g = colors->green;
+            particle->b = colors->blue;
             particle->active = 1;
             spawnCount--;
         }
@@ -234,7 +234,7 @@ extern f32 D_214;
 extern f32 D_2978;
 extern f32 D_297C;
 extern O65Vertex *D_2988;
-extern u8 D_800000C0[];
+extern O65Triangle D_800000C0[16];
 
 /*
  * Tier B: Overlay 65 runtime SYMBOL records distinguish the camera getter,
@@ -371,7 +371,7 @@ void func_overlay_065_F0000C38_18C4EA0(Gfx **commandPtr,
 #define FIELD(base, type, off) (*(type *)((u8 *)(base) + (off)))
 
 
-extern u8 D_1C0[];
+extern O65Color D_1C0[7];
 extern s32 D_218;
 extern s32 D_21C;
 
@@ -383,7 +383,7 @@ void func_overlay_065_F0001A14_18C5C7C(f32 baseX, f32 baseY, f32 baseZ) {
     s32 i;
     s32 j;
     void *point;
-    u8 *colors;
+    const O65Color *colors;
 
     camera = func_80021970(0);
     record = (Overlay65TrailRecord *)D_0;
@@ -407,10 +407,10 @@ void func_overlay_065_F0001A14_18C5C7C(f32 baseX, f32 baseY, f32 baseZ) {
             record->velocityX = (f32)mathRnd(-D_218, D_218);
             record->velocityY = (f32)mathRnd(D_21C, D_21C + 5);
             record->velocityZ = (f32)mathRnd(-D_218, D_218);
-            colors = &D_1C0[mathRnd(0, 6) * 3];
-            record->red = colors[0];
-            record->green = colors[1];
-            record->blue = colors[2];
+            colors = &D_1C0[mathRnd(0, 6)];
+            record->red = colors->red;
+            record->green = colors->green;
+            record->blue = colors->blue;
             record->floorY = camera->y - 200.0f;
             i = 50;
         }

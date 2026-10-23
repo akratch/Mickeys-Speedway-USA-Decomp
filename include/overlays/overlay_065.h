@@ -21,6 +21,16 @@ typedef struct Overlay65TrailRecord {
     u8 blue;
 } Overlay65TrailRecord;
 
+/* Tier A: triangle packet fields and the seven RGB entries share the module data layout. */
+typedef struct O65Triangle {
+    u8 flags, vertex0, vertex1, vertex2;
+    s16 s0, t0, s1, t1, s2, t2;
+} O65Triangle;
+
+typedef struct O65Color {
+    u8 red, green, blue;
+} O65Color;
+
 typedef struct O65Particle {
     s16 x;
     s16 y;

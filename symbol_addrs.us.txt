@@ -3020,3 +3020,6 @@ D_800C9464 = 0x800C9464; // tier-B ORT row 1715 plus mapped resident BSS, pointe
 // The surrounding physical loader reserve remains unowned; no extent claimed.
 B_overlay_001_F00083E0 = 0xF00083E0; // segment:overlay_001 tier-B ORT1475 unsized physical BSS base export
 B_overlay_001_F00083E4 = 0xF00083E4; // segment:overlay_001 tier-B unsized runtime mode export at BSS plus four
+
+// Tier B: ORT1775 uses resident data selector FFD at data-base plus 12728.
+D_8007BF18 = 0x8007BF18; // tier-B overlay 36 mask references within retained resident data, unsized view

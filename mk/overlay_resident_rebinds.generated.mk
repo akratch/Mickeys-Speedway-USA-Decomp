@@ -76,18 +76,22 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: SURFACE_REBIND = $(O
 	--redefine-sym overlay4FindSearchPosition=overlay4FindSearchPosition_o001Reloc \
 	--redefine-sym overlay7DispatchSelection=overlay7DispatchSelection_o001Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o002/func_overlay_002_F0000C90_1857A88.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay1GetEntryIndex=overlay1GetEntryIndex_o002Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o002/func_overlay_002_F0001A94_185888C.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay_002.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o002Reloc \
+	--redefine-sym _bzero=_bzero_o002Reloc \
+	--redefine-sym func_8000572C=func_8000572C_o002Reloc \
+	--redefine-sym func_8000BCB0=func_8000BCB0_o002Reloc \
+	--redefine-sym func_8002A910=func_8002A910_o002Reloc \
+	--redefine-sym func_8002AA0C=func_8002AA0C_o002Reloc \
+	--redefine-sym joyGetButtons=joyGetButtons_o002Reloc \
+	--redefine-sym mathDiffAngle=mathDiffAngle_o002Reloc \
+	--redefine-sym mmAlloc=mmAlloc_o002Reloc \
+	--redefine-sym mmAllocAtAddr=mmAllocAtAddr_o002Reloc \
+	--redefine-sym mmFree=mmFree_o002Reloc \
+	--redefine-sym mmGetDelay=mmGetDelay_o002Reloc \
+	--redefine-sym mmSetDelay=mmSetDelay_o002Reloc \
 	--redefine-sym overlay1GetEntry=overlay1GetEntry_o002Reloc \
-	--redefine-sym overlay2ContainsPoint=overlay2ContainsPoint_o002Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay2Enable.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_002_F0000C90_1857A88=func_overlay_002_F0000C90_o002Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay2QueryNode.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_002_F0001364_185815C=func_overlay_002_F0001364_o002Reloc $@
+	--redefine-sym overlay1GetEntryIndex=overlay1GetEntryIndex_o002Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay_003.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o003Reloc \

@@ -306,10 +306,11 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     5: "overlay_005_padding",
     7: "overlay_007_padding",
     12: "overlay_012_padding",
+    2: "overlay_002_tail",
 }
 # Folded modules whose compiler padding is the tail of the one TU's .text
 # rather than an alignment gap before C-owned data.
-ONE_TU_TEXT_PADDING = {3, 4, 5, 6, 7, 8, 9, 12, 13, 16}
+ONE_TU_TEXT_PADDING = {2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 16}
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
 # an explicit eight-byte gap before initialized data. Emit a bounded asm row
@@ -347,22 +348,7 @@ TEXT_SUBSEGMENTS = {
         (0x8114, "asm", "overlay_001_padding"),
     ],
     2: [
-        (0x0000, "c", "overlay2ValidateRegion"),
-        (0x01BC, "c", "overlay2AppendLine"),
-        (0x02C4, "c", "overlay2ClassifyBoundary"),
-        (0x0400, "c", "overlay2IntersectBoundary"),
-        (0x049C, "c", "overlay2ClipLines"),
-        (0x06E0, "c", "overlay2ChooseBoundary"),
-        (0x0B70, "c", "overlay2SplitRegion"),
-        (0x0C90, "c", "func_overlay_002_F0000C90_1857A88"),
-        (0x121C, "c", "overlay2Enable"),
-        (0x123C, "c", "overlay2ContainsPoint"),
-        (0x1364, "c", "func_overlay_002_F0001364_185815C"),
-        (0x1658, "c", "overlay2AdjacentIndices"),
-        (0x16A0, "c", "overlay2QueryNode"),
-        (0x1A94, "c", "func_overlay_002_F0001A94_185888C"),
-        (0x1DF8, "c", "func_overlay_002_F0001DF8_1858BF0"),
-        (0x2528, "c", "overlay2CopyColor"),
+        (0x000, "c", "overlay_002"),
         (0x2548, "asm", "overlay_002_tail"),
     ],
     5: [

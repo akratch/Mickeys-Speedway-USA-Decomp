@@ -265,51 +265,11 @@ overlay3TouchObject_o001Reloc = 0xf0000000;
 /* overlay 1: overlay_001_scaled.c.o */
 gOverlay1DistanceScale = 0x00001da8;
 
-/* overlay 2: overlay2ValidateRegion.c.o */
-gOverlay2Lines = 0x00000000;
-overlay2AngleDifferenceReloc = 0xf0000000;
-overlay2AngleReloc = 0xf0000000;
-
-/* overlay 2: overlay2AppendLine.c.o */
-gOverlay2LineCount = 0x00000020;
-
-/* overlay 2: overlay2ClassifyBoundary.c.o */
-gOverlay2BoundaryAxis = 0x00000030;
-gOverlay2BoundaryValue = 0x00000034;
-
-/* overlay 2: overlay2ChooseBoundary.c.o */
-gOverlay2BoundaryCandidateCount = 0x00000028;
-gOverlay2BoundaryCandidates = 0x0000001c;
-gOverlay2SelectedBoundary = 0x0000002c;
-gOverlay2TemporaryMode = 0x00000000;
-gOverlay2TemporaryRange = 0x00000008;
-
-/* overlay 2: overlay2SplitRegion.c.o */
-D_24 = 0x00000024;
-
-/* overlay 2: func_overlay_002_F0000C90_1857A88.c.o */
-_bzero_o002Reloc = 0xf0000000;
-gOverlay2BuiltLineCount = 0x00000078;
-gOverlay2BuiltNodeCount = 0x00000074;
-gOverlay2RegionCount = 0x00000024;
-gOverlay2Regions = 0x00000004;
-mmAllocAtAddr_o002Reloc = 0xf0000000;
-mmAlloc_o002Reloc = 0xf0000000;
-mmFree_o002Reloc = 0xf0000000;
-mmGetDelay_o002Reloc = 0xf0000000;
-mmSetDelay_o002Reloc = 0xf0000000;
-overlay1GetEntryIndex_o002Reloc = 0xf0000000;
-
-/* overlay 2: overlay2Enable.c.o */
-func_overlay_002_F0000C90_o002Reloc = 0xf0000000;
-
-/* overlay 2: overlay2ContainsPoint.c.o */
-overlay2PointAngleDifferenceReloc = 0xf0000000;
-overlay2PointAngleReloc = 0xf0000000;
-
-/* overlay 2: overlay2QueryNode.c.o */
+/* overlay 2: overlay_002.c.o */
+Arctanf_o002Reloc = 0xf0000000;
 D_30 = 0x00000030;
 D_34 = 0x00000034;
+D_38 = 0x00000038;
 D_3C = 0x0000003c;
 D_40 = 0x00000040;
 D_44 = 0x00000044;
@@ -324,10 +284,21 @@ D_64 = 0x00000064;
 D_68 = 0x00000068;
 D_70 = 0x00000070;
 D_72 = 0x00000072;
-func_overlay_002_F0001364_o002Reloc = 0xf0000000;
-
-/* overlay 2: func_overlay_002_F0001A94_185888C.c.o */
-D_38 = 0x00000038;
+_bzero_o002Reloc = 0xf0000000;
+func_8000572C_o002Reloc = 0xf0000000;
+func_8000BCB0_o002Reloc = 0xf0000000;
+func_8002A910_o002Reloc = 0xf0000000;
+func_8002AA0C_o002Reloc = 0xf0000000;
+func_overlay_002_F0000C90_1857A88_o002Reloc = 0xf0000000;
+func_overlay_002_F0001364_185815C_o002Reloc = 0xf0000000;
+gOverlay2BoundaryAxis = 0x00000030;
+gOverlay2BoundaryCandidateCount = 0x00000028;
+gOverlay2BoundaryCandidates = 0x0000001c;
+gOverlay2BoundaryValue = 0x00000034;
+gOverlay2BuiltLineCount = 0x00000078;
+gOverlay2BuiltNodeCount = 0x00000074;
+gOverlay2LineCount = 0x00000020;
+gOverlay2Lines = 0x00000000;
 gOverlay2QueryBestReloc = 0x0000006c;
 gOverlay2QueryHitReloc = 0x00000060;
 gOverlay2QueryHitXReloc = 0x00000064;
@@ -340,13 +311,21 @@ gOverlay2QueryX0Reloc = 0x00000040;
 gOverlay2QueryX1Reloc = 0x00000048;
 gOverlay2QueryY0Reloc = 0x00000044;
 gOverlay2QueryY1Reloc = 0x0000004c;
+gOverlay2RegionCount = 0x00000024;
+gOverlay2Regions = 0x00000004;
+gOverlay2SelectedBoundary = 0x0000002c;
+gOverlay2TemporaryMode = 0x00000000;
+gOverlay2TemporaryRange = 0x00000008;
+joyGetButtons_o002Reloc = 0xf0000000;
+mathDiffAngle_o002Reloc = 0xf0000000;
+mmAllocAtAddr_o002Reloc = 0xf0000000;
+mmAlloc_o002Reloc = 0xf0000000;
+mmFree_o002Reloc = 0xf0000000;
+mmGetDelay_o002Reloc = 0xf0000000;
+mmSetDelay_o002Reloc = 0xf0000000;
+overlay1GetEntryIndex_o002Reloc = 0xf0000000;
 overlay1GetEntry_o002Reloc = 0xf0000000;
 overlay2ContainsPoint_o002Reloc = 0xf0000000;
-
-/* overlay 2: func_overlay_002_F0001DF8_1858BF0.c.o */
-func_8000572C_o002Reloc = 0xf0000000;
-func_8000BCB0_o002Reloc = 0xf0000000;
-joyGetButtons_o002Reloc = 0xf0000000;
 
 /* overlay 3: overlay_003.c.o */
 Arctanf_o003Reloc = 0xf0000000;
@@ -863,6 +842,7 @@ trackGetTrack_o012Reloc = 0xf0000000;
 
 /* overlay 13: overlay_013.c.o */
 D_20 = 0x00000020;
+D_24 = 0x00000024;
 D_28 = 0x00000028;
 D_80000000 = 0x80000000;
 SetLinkSlot_o013Reloc = 0xf0000000;
@@ -4899,40 +4879,9 @@ func_overlay_001_F0008048_1854428 = overlay1DistanceFromSelected;
 /* overlay 1: overlay_001_scaled.c.o */
 func_overlay_001_F00080BC_185449C = overlay1ScaledDistance;
 
-/* overlay 2: overlay2ValidateRegion.c.o */
-func_overlay_002_F0000000_1856DF8 = overlay2ValidateRegion;
-
-/* overlay 2: overlay2AppendLine.c.o */
-func_overlay_002_F00001BC_1856FB4 = overlay2AppendLine;
-
-/* overlay 2: overlay2ClassifyBoundary.c.o */
-func_overlay_002_F00002C4_18570BC = overlay2ClassifyBoundary;
-
-/* overlay 2: overlay2IntersectBoundary.c.o */
-func_overlay_002_F0000400_18571F8 = overlay2IntersectBoundary;
-
-/* overlay 2: overlay2ClipLines.c.o */
-func_overlay_002_F000049C_1857294 = overlay2ClipLines;
-
-/* overlay 2: overlay2ChooseBoundary.c.o */
-func_overlay_002_F00006E0_18574D8 = overlay2ChooseBoundary;
-
-/* overlay 2: overlay2SplitRegion.c.o */
-func_overlay_002_F0000B70_1857968 = overlay2SplitRegion;
-
-/* overlay 2: overlay2Enable.c.o */
+/* overlay 2: overlay_002.c.o */
 func_overlay_002_F000121C_1858014 = overlay2Enable;
-
-/* overlay 2: overlay2ContainsPoint.c.o */
 func_overlay_002_F000123C_1858034 = overlay2ContainsPoint;
-
-/* overlay 2: overlay2AdjacentIndices.c.o */
-func_overlay_002_F0001658_1858450 = overlay2AdjacentIndices;
-
-/* overlay 2: overlay2QueryNode.c.o */
-func_overlay_002_F00016A0_1858498 = overlay2QueryNode;
-
-/* overlay 2: overlay2CopyColor.c.o */
 func_overlay_002_F0002528_1859320 = overlay2CopyColor;
 
 /* overlay 3: overlay_003.c.o */

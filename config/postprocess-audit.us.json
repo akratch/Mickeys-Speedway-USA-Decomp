@@ -6605,34 +6605,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o082/overlay_082.c.o",
-      "offset": 0,
-      "overlay": 82,
-      "size": 64,
-      "source": "src/overlays/o082/overlay_082.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o082/overlay_082_tail.c.o",
-      "offset": 64,
-      "overlay": 82,
-      "size": 1164,
-      "source": "src/overlays/o082/overlay_082_tail.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o086/overlay_086.c.o",
       "offset": 0,
       "overlay": 86,
@@ -8289,10 +8261,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 570,
+      "metadata": 568,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 431644,
-    "objects_with_postprocess": 571
+    "matched_c_bytes_with_postprocess": 430416,
+    "objects_with_postprocess": 569
   }
 }

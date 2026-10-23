@@ -8823,37 +8823,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x764",
-     "size": "0x764",
+     "end_offset": "0x1C1C",
+     "size": "0x1C1C",
      "type": "c",
      "source": "overlays/o045/overlay_045",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x764",
-     "end_offset": "0x1158",
-     "size": "0x9F4",
-     "type": "c",
-     "source": "overlays/o045/func_overlay_045_F0000764_188CBBC",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1158",
-     "end_offset": "0x1BE0",
-     "size": "0xA88",
-     "type": "c",
-     "source": "overlays/o045/func_overlay_045_F0001158_188D5B0",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1BE0",
-     "end_offset": "0x1C1C",
-     "size": "0x3C",
-     "type": "c",
-     "source": "overlays/o045/overlay_045_tail",
      "matched": true,
      "nonmatching": false
     },
@@ -8956,7 +8929,7 @@
      "end_offset": "0x80",
      "size": "0x80",
      "type": "c",
-     "source": "overlays/o045/func_overlay_045_F0000764_188CBBC"
+     "source": "overlays/o045/overlay_045"
     }
    ]
   },

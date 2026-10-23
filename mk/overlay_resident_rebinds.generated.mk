@@ -1014,10 +1014,23 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay_044.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym texDPInit=texDPInit_o044Reloc \
 	--redefine-sym viFrameRateReset=viFrameRateReset_o044Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/func_overlay_045_F0000764_188CBBC.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_800D60E0=D_800D60E0_o045Reloc \
+	--redefine-sym D_800D60E4=D_800D60E4_o045Reloc \
+	--redefine-sym D_800D64E8=D_800D64E8_o045Reloc \
+	--redefine-sym D_800D6638=D_800D6638_o045Reloc \
+	--redefine-sym D_800D6648=D_800D6648_o045Reloc \
+	--redefine-sym D_800D664D=D_800D664D_o045Reloc \
 	--redefine-sym func_800221E8=func_800221E8_o045Reloc \
+	--redefine-sym func_80022A50=func_80022A50_o045Reloc \
+	--redefine-sym func_8002997C=func_8002997C_o045Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o045Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o045Reloc \
 	--redefine-sym func_80034920=func_80034920_o045Reloc \
-	--redefine-sym func_8004B0A4=func_8004B0A4_o045Reloc $@
+	--redefine-sym func_8004B0A4=func_8004B0A4_o045Reloc \
+	--redefine-sym func_8004B0B8=func_8004B0B8_o045Reloc \
+	--redefine-sym func_8004C690=func_8004C690_o045Reloc \
+	--redefine-sym func_8004D39C=func_8004D39C_o045Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0000874_188EC6C.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D3140=D_800D3140_o046Reloc \

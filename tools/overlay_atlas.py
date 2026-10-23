@@ -107,7 +107,7 @@ EXACT_DONOR_OVERLAYS = {
 # one collision-free `(overlay, offset)` source of truth.
 DATA_RODATA_OWNERSHIP = {
     22: [(0x0, 0x60, "overlay22RemoveObject")],
-    45: [(0x0, 0x80, "func_overlay_045_F0000764_188CBBC")],
+    45: [(0x0, 0x80, "overlay_045")],
     47: [(0x0, 0x5A0, "overlay47ReleaseResources")],
     # Offsets are relative to data_rodata. The source must already own a C text
     # row: its compiled .data is linked before any remaining raw initialized
@@ -607,9 +607,6 @@ TEXT_SUBSEGMENTS = {
     ],
     45: [
         (0x000, "c", "overlay_045"),
-        (0x764, "c", "func_overlay_045_F0000764_188CBBC"),
-        (0x1158, "c", "func_overlay_045_F0001158_188D5B0"),
-        (0x1BE0, "c", "overlay_045_tail"),
         (0x1C1C, "asm", "overlay_045_padding"),
     ],
     47: [

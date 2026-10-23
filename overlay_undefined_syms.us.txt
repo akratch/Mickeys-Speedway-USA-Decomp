@@ -1857,12 +1857,29 @@ texDPInit_o044Reloc = 0xf0000000;
 viFrameRateReset_o044Reloc = 0xf0000000;
 
 /* overlay 45: overlay_045.c.o */
+D_800D60E0_o045Reloc = 0x00000000;
+D_800D60E4_o045Reloc = 0x00000000;
+D_800D64E8_o045Reloc = 0x00000000;
+D_800D6638_o045Reloc = 0x00000000;
+D_800D6648_o045Reloc = 0x00000000;
+D_800D664D_o045Reloc = 0x00000000;
+func_800221E8_o045Reloc = 0xf0000000;
+func_80022A50_o045Reloc = 0xf0000000;
+func_8002997C_o045Reloc = 0xf0000000;
+func_8002A8BC_o045Reloc = 0xf0000000;
+func_8002A8C0_o045Reloc = 0xf0000000;
+func_80034920_o045Reloc = 0xf0000000;
+func_8004B0A4_o045Reloc = 0xf0000000;
+func_8004B0B8_o045Reloc = 0xf0000000;
+func_8004C690_o045Reloc = 0xf0000000;
+func_8004D39C_o045Reloc = 0xf0000000;
 gOverlay45AdvanceTables = 0x00000000;
 gOverlay45ControlStream = 0x00000000;
 gOverlay45Defaults = 0x00000000;
 gOverlay45Metrics = 0x00000000;
 gOverlay45MetricsIndex = 0x00000000;
 gOverlay45ResourceHead = 0x00000000;
+gOverlay45RetainedMotionConstants = 0x00000024;
 gOverlay45TightAdvance = 0x00000000;
 overlay45AllocReloc = 0xf0000000;
 overlay45BuildControlStream = 0xf0000000;
@@ -1872,29 +1889,8 @@ overlay45FreeReloc = 0xf0000000;
 overlay45GetGlyph = 0xf0000000;
 overlay45MeasureStream = 0xf0000000;
 overlay45RandomRangeReloc = 0xf0000000;
+overlay45RandomRangeStoredReloc = 0xf0000000;
 overlay45StringLengthReloc = 0xf0000000;
-
-/* overlay 45: func_overlay_045_F0000764_188CBBC.c.o */
-func_800221E8_o045Reloc = 0xf0000000;
-func_80034920_o045Reloc = 0xf0000000;
-func_8004B0A4_o045Reloc = 0xf0000000;
-gOverlay45RetainedMotionConstants = 0x00000024;
-overlay45ColorCallReloc = 0xf0000000;
-overlay45FloatCallReloc = 0xf0000000;
-overlay45MatrixLoadReloc = 0xf0000000;
-
-/* overlay 45: func_overlay_045_F0001158_188D5B0.c.o */
-D_800D60E0_o045Reloc = 0x00000000;
-D_800D60E4_o045Reloc = 0x00000000;
-D_800D64E8_o045Reloc = 0x00000000;
-D_800D6638_o045Reloc = 0x00000000;
-D_800D6648_o045Reloc = 0x00000000;
-D_800D664D_o045Reloc = 0x00000000;
-func_8002A8BC_o045Reloc = 0xf0000000;
-func_8002A8C0_o045Reloc = 0xf0000000;
-func_8004C690_o045Reloc = 0xf0000000;
-func_8004D39C_o045Reloc = 0xf0000000;
-gOverlay45SetupReloc = 0x00000000;
 
 /* overlay 46: overlay46InitializeState.c.o */
 func_800015F8_o046Reloc = 0xf0000000;
@@ -5500,8 +5496,6 @@ func_overlay_045_F000000C_188C464 = overlay45CreateDescriptor;
 func_overlay_045_F0000270_188C6C8 = overlay45ReleaseDescriptor;
 func_overlay_045_F0000314_188C76C = overlay45ConfigureLayout;
 func_overlay_045_F0000640_188CA98 = overlay45ReadPair;
-
-/* overlay 45: overlay_045_tail.c.o */
 func_overlay_045_F0001BE0_188E038 = overlay45SetMode;
 func_overlay_045_F0001BF4_188E04C = overlay45SetField22;
 func_overlay_045_F0001C08_188E060 = overlay45SetField20;

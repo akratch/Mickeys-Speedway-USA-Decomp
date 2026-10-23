@@ -3669,60 +3669,15 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o045/func_overlay_045_F0000764_188CBBC.c.o",
-      "offset": 1892,
-      "overlay": 45,
-      "size": 2548,
-      "source": "src/overlays/o045/func_overlay_045_F0000764_188CBBC.c",
-      "tools": [
-        "trim_elf_section.py",
-        "rebind_elf_relocations.py",
-        "externalize_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o045/func_overlay_045_F0001158_188D5B0.c.o",
-      "offset": 4440,
-      "overlay": 45,
-      "size": 2696,
-      "source": "src/overlays/o045/func_overlay_045_F0001158_188D5B0.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o045/overlay_045.c.o",
       "offset": 0,
       "overlay": 45,
-      "size": 1892,
+      "size": 7196,
       "source": "src/overlays/o045/overlay_045.c",
       "tools": [
-        "trim_elf_section.py",
+        "rebind_elf_relocations.py",
+        "externalize_elf_section.py",
         "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o045/overlay_045_tail.c.o",
-      "offset": 7136,
-      "overlay": 45,
-      "size": 60,
-      "source": "src/overlays/o045/overlay_045_tail.c",
-      "tools": [
-        "trim_elf_section.py"
       ]
     },
     {
@@ -8202,10 +8157,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 565,
+      "metadata": 562,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 431140,
-    "objects_with_postprocess": 566
+    "objects_with_postprocess": 563
   }
 }

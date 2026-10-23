@@ -1680,60 +1680,27 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/func_overlay_087_F0000128_18D3090.c.o: POS
 		--redefine-sym func_8005AD64=func_8005AD64_o087Reloc \
 		--redefine-sym sqrtf=sqrtf_o087Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x768
-# All four random-range calls are instruction-natural and share retail's
-# offset-zero stored overlay carrier; retain distinct runtime identities in
-# the authoritative relocation ledger and trim only section alignment.
+# Overlay 45 is one translation unit at the overlay flag set; its .text
+# carries the trailing pad, so nothing is trimmed. --force runs
+# asm-processor's static-symbol pass so the static glyph renderer keeps a
+# local name. The module owns its .data (data_rodata +0x0..+0x80); the
+# shipped words that address it are section-relative, so the setup-list
+# sites are rebound to a zero-valued base, and the path updater's float pool,
+# a duplicate of the three motion constants at data +0x24, is bound to a base
+# valued 0x24 and dropped after its digest agrees. No instruction is edited.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045.c.o: ASM_PROCESSOR += --force
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/overlay_045.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym \
-		overlay45RandomRangeStoredReloc=func_overlay_045_F0000000_188C458 $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x764
-O45_RENDER_OBJ := \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/func_overlay_045_F0000764_188CBBC.c.o
-$(O45_RENDER_OBJ): \
-	config/normalizations/func_overlay_045_F0000764_188CBBC.rebind.spec
-$(O45_RENDER_OBJ): CFLAGS += -Wab,-r4300_mul
-# Preserve the compiler's exact instruction fields while binding its private
-# literal-pool references to the three identical constants already retained
-# in Overlay 45's initialized-data owner. The duplicate pool is discarded only
-# after its full payload digest agrees. Call/scissor renames change symbols,
-# not instructions; the runtime relocation table remains the identity oracle.
-$(O45_RENDER_OBJ): POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym texDPInit=overlay45DisplayCallReloc \
-		--redefine-sym fontUseFont=overlay45FontCallReloc \
-		--redefine-sym camSetView=overlay45MatrixPushReloc \
-		--redefine-sym func_80022A50=overlay45MatrixLoadReloc \
-		--redefine-sym func_8004B0B8=overlay45ColorCallReloc \
-		--redefine-sym func_8002997C=overlay45RandomRangeReloc \
-		--redefine-sym func_8002A8C0=overlay45FloatCallReloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x9F4 && \
-	$(OBJCOPY) \
-		--add-symbol gOverlay45RetainedMotionConstants=0x24,global \
-		--add-symbol overlay45ScissorReloc=0,global $@ && \
+	$(OBJCOPY) --add-symbol gOverlay45DataBaseReloc=0x0,global \
+		--add-symbol gOverlay45RetainedMotionConstants=0x24,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/func_overlay_045_F0000764_188CBBC.rebind.spec && \
+		@config/normalizations/overlay_045.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:c52cb05fd2fed4ffaf80d0f50519a1b99d267a85960aeefe5e036df19162ad00
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/func_overlay_045_F0001158_188D5B0.c.o: CFLAGS += -Wab,-r4300_mul
-ifeq ($(NON_MATCHING),0)
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/func_overlay_045_F0001158_188D5B0.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym func_8004D39C=func_8004D39C_o045Reloc \
-		--redefine-sym func_8004C690=func_8004C690_o045Reloc \
-		--redefine-sym func_8002A8BC=func_8002A8BC_o045Reloc \
-		--redefine-sym func_8002A8C0=func_8002A8C0_o045Reloc \
-		--redefine-sym func_80034920=func_80034920_o045Reloc \
-		--redefine-sym D_800D6648=D_800D6648_o045Reloc \
-		--redefine-sym D_800D60E0=D_800D60E0_o045Reloc \
-		--redefine-sym D_800D64E8=D_800D64E8_o045Reloc \
-		--redefine-sym D_800D60E4=D_800D60E4_o045Reloc \
-		--redefine-sym D_800D664D=D_800D664D_o045Reloc \
-		--redefine-sym D_800D6638=D_800D6638_o045Reloc \
-		--redefine-sym gOverlay45InitializedData=gOverlay45SetupReloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA88
-endif
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045_tail.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x3C
 # The selector table is the overlay-local +0x510 address already encoded in
 # retail, so retain that addend without a static-link relocation. The three
 # runtime calls use the extracted range's offset-zero carrier; their distinct
@@ -2702,10 +2669,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87InitializeObject.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/func_overlay_087_F0000128_18D3090.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000134_18CD0D4.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/func_overlay_045_F0000764_188CBBC.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/func_overlay_045_F0001158_188D5B0.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045_tail.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000000_1890E18.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47ReleaseResources.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47SpawnObject.c.o \

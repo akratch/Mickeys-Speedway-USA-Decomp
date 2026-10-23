@@ -63,3 +63,4 @@ the ordinary way (a commit, a campaign entry), not by leaving the ADR
 | [0017](0017-causal-exploration-and-risk-proportional-validation.md) | Causal exploration and risk-proportional validation |
 | [0018](0018-progress-based-stopping.md) | Progress-based stopping replaces the fixed attempt cap |
 | [0019](0019-preserve-retail-loop-defect.md) | Preserve the authenticated overlay 45 retail loop defect |
+| [0020](0020-maintaining-exact-source.md) | Maintenance of already-exact source |

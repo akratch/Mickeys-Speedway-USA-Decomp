@@ -1505,31 +1505,21 @@ trackGetFog_o033Reloc = 0xf0000000;
 overlay33BuildDisplayList_o033Reloc = 0xf0000000;
 rcpFast3d_o033Reloc = 0xf0000000;
 
-/* overlay 34: overlay34InitStorage.c.o */
+/* overlay 34: overlay_034.c.o */
+func_800084C4_o034Reloc = 0xf0000000;
+func_80024938_o034Reloc = 0xf0000000;
+func_80029FE4_o034Reloc = 0xf0000000;
+func_8002B768_o034Reloc = 0xf0000000;
+func_overlay_034_F00002C8_1881470Reloc = 0xf0000000;
+func_overlay_034_F0000540_18816E8Reloc = 0xf0000000;
+gOverlay34ActiveCount = 0x0000000c;
 gOverlay34Count = 0x00000008;
 gOverlay34Pointers = 0x00000004;
 gOverlay34Records = 0x00000000;
-mmAlloc_o034Reloc = 0xf0000000;
-
-/* overlay 34: overlay34SetValue10.c.o */
 gOverlay34Value10 = 0x00000010;
-
-/* overlay 34: overlay34CreateRecord.c.o */
-func_80029FE4_o034Reloc = 0xf0000000;
-gOverlay34ActiveCount = 0x0000000c;
-texLoadTexture_o034Reloc = 0xf0000000;
-
-/* overlay 34: overlay34RemoveRecord.c.o */
+mmAlloc_o034Reloc = 0xf0000000;
 texFreeTexture_o034Reloc = 0xf0000000;
-
-/* overlay 34: overlay34ResetStorage.c.o */
-overlay34FreeReloc = 0xf0000000;
-overlay34RemoveRecordReloc = 0xf0000000;
-
-/* overlay 34: overlay34SortAndDraw.c.o */
-func_800084C4_o034Reloc = 0xf0000000;
-func_80024938_o034Reloc = 0xf0000000;
-overlay34InterpolateColorReloc = 0xf0000000;
+texLoadTexture_o034Reloc = 0xf0000000;
 
 /* overlay 35: overlay_035.c.o */
 D_80079274_o035Reloc = 0x00000000;
@@ -5352,28 +5342,14 @@ func_overlay_033_F000066C_1880E54 = overlay33PresentAndSwap;
 /* overlay 33: overlay33CallB.c.o */
 func_overlay_033_F0000708_1880EF0 = overlay33CallB;
 
-/* overlay 34: overlay34InitStorage.c.o */
+/* overlay 34: overlay_034.c.o */
 func_overlay_034_F0000000_18811A8 = overlay34InitStorage;
-
-/* overlay 34: overlay34SetValue10.c.o */
 func_overlay_034_F00000C8_1881270 = overlay34SetValue10;
-
-/* overlay 34: overlay34CreateRecord.c.o */
 func_overlay_034_F00000D4_188127C = overlay34CreateRecord;
-
-/* overlay 34: overlay34RemoveRecord.c.o */
 func_overlay_034_F00002C8_1881470 = overlay34RemoveRecord;
-
-/* overlay 34: overlay34ResetStorage.c.o */
 func_overlay_034_F0000378_1881520 = overlay34ResetStorage;
-
-/* overlay 34: overlay34UpdateRecords.c.o */
 func_overlay_034_F000040C_18815B4 = overlay34UpdateRecords;
-
-/* overlay 34: overlay34InterpolateColor.c.o */
 func_overlay_034_F0000540_18816E8 = overlay34InterpolateColor;
-
-/* overlay 34: overlay34SortAndDraw.c.o */
 func_overlay_034_F0000608_18817B0 = overlay34SortAndDraw;
 
 /* overlay 36: overlay36InitObject.c.o */

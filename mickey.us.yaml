@@ -1805,14 +1805,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18811A8, c, overlay34InitStorage]
-      - [0x1881270, c, overlay34SetValue10]
-      - [0x188127C, c, overlay34CreateRecord]
-      - [0x1881470, c, overlay34RemoveRecord]
-      - [0x1881520, c, overlay34ResetStorage]
-      - [0x18815B4, c, overlay34UpdateRecords]
-      - [0x18816E8, c, overlay34InterpolateColor]
-      - [0x18817B0, c, overlay34SortAndDraw]
+      - [0x18811A8, c, overlay_034]
       - [0x1881AA8, bin, overlay_034_data_rodata]
       - [0x1881AC8, bin, overlay_034_reloc1]
       - [0x1881B10, bin, overlay_034_reloc2]

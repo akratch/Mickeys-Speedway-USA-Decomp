@@ -6656,73 +6656,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0xC8",
-     "size": "0xC8",
-     "type": "c",
-     "source": "overlays/o034/overlay34InitStorage",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xC8",
-     "end_offset": "0xD4",
-     "size": "0xC",
-     "type": "c",
-     "source": "overlays/o034/overlay34SetValue10",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xD4",
-     "end_offset": "0x2C8",
-     "size": "0x1F4",
-     "type": "c",
-     "source": "overlays/o034/overlay34CreateRecord",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2C8",
-     "end_offset": "0x378",
-     "size": "0xB0",
-     "type": "c",
-     "source": "overlays/o034/overlay34RemoveRecord",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x378",
-     "end_offset": "0x40C",
-     "size": "0x94",
-     "type": "c",
-     "source": "overlays/o034/overlay34ResetStorage",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x40C",
-     "end_offset": "0x540",
-     "size": "0x134",
-     "type": "c",
-     "source": "overlays/o034/overlay34UpdateRecords",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x540",
-     "end_offset": "0x608",
-     "size": "0xC8",
-     "type": "c",
-     "source": "overlays/o034/overlay34InterpolateColor",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x608",
      "end_offset": "0x900",
-     "size": "0x2F8",
+     "size": "0x900",
      "type": "c",
-     "source": "overlays/o034/overlay34SortAndDraw",
+     "source": "overlays/o034/overlay_034",
      "matched": true,
      "nonmatching": false
     }

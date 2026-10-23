@@ -2629,108 +2629,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o034/overlay34CreateRecord.c.o",
-      "offset": 212,
-      "overlay": 34,
-      "size": 500,
-      "source": "src/overlays/o034/overlay34CreateRecord.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o034/overlay34InitStorage.c.o",
-      "offset": 0,
-      "overlay": 34,
-      "size": 200,
-      "source": "src/overlays/o034/overlay34InitStorage.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o034/overlay34InterpolateColor.c.o",
-      "offset": 1344,
-      "overlay": 34,
-      "size": 200,
-      "source": "src/overlays/o034/overlay34InterpolateColor.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o034/overlay34ResetStorage.c.o",
-      "offset": 888,
-      "overlay": 34,
-      "size": 148,
-      "source": "src/overlays/o034/overlay34ResetStorage.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o034/overlay34SetValue10.c.o",
-      "offset": 200,
-      "overlay": 34,
-      "size": 12,
-      "source": "src/overlays/o034/overlay34SetValue10.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o034/overlay34SortAndDraw.c.o",
-      "offset": 1544,
-      "overlay": 34,
-      "size": 760,
-      "source": "src/overlays/o034/overlay34SortAndDraw.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o034/overlay34UpdateRecords.c.o",
-      "offset": 1036,
-      "overlay": 34,
-      "size": 308,
-      "source": "src/overlays/o034/overlay34UpdateRecords.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o036/overlay36CallGlobal.c.o",
       "offset": 2440,
       "overlay": 36,
@@ -8563,10 +8461,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 590,
+      "metadata": 583,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 435840,
-    "objects_with_postprocess": 591
+    "matched_c_bytes_with_postprocess": 433712,
+    "objects_with_postprocess": 584
   }
 }

@@ -572,14 +572,7 @@ TEXT_SUBSEGMENTS = {
         (0x608, "asm", "overlay_025_padding"),
     ],
     34: [
-        (0x000, "c", "overlay34InitStorage"),
-        (0x0C8, "c", "overlay34SetValue10"),
-        (0x0D4, "c", "overlay34CreateRecord"),
-        (0x2C8, "c", "overlay34RemoveRecord"),
-        (0x378, "c", "overlay34ResetStorage"),
-        (0x40C, "c", "overlay34UpdateRecords"),
-        (0x540, "c", "overlay34InterpolateColor"),
-        (0x608, "c", "overlay34SortAndDraw"),
+        (0x000, "c", "overlay_034"),
     ],
     27: [
         (0x000, "c", "overlay_027"),

@@ -4867,20 +4867,6 @@
       ]
     },
     {
-      "c_owned": null,
-      "class": "metadata",
-      "matched_c": null,
-      "nonmatching": null,
-      "object": "build/src/overlays/o058/overlay58FinalizePackedStatus.c.o",
-      "offset": null,
-      "overlay": 58,
-      "size": null,
-      "source": "src/overlays/o058/overlay58FinalizePackedStatus.c",
-      "tools": [
-        "objcopy"
-      ]
-    },
-    {
       "c_owned": true,
       "class": "metadata",
       "matched_c": true,
@@ -7678,10 +7664,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 528,
+      "metadata": 527,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 435144,
-    "objects_with_postprocess": 529
+    "objects_with_postprocess": 528
   }
 }

@@ -29,15 +29,6 @@
       ]
     },
     {
-      "object": "overlays/o058/overlay58FinalizePackedStatus.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_058_F0005554_18B473C",
-          "to": "overlay58FinalizePackedStatus"
-        }
-      ]
-    },
-    {
       "object": "overlays/o065/overlay65UpdateParticles.c.o",
       "aliases": [
         {

@@ -343,6 +343,55 @@ def _overlay_promotion_evidence(
     return rs.SYNTHETIC_VMA + start, end - start, f"overlay atlas {kinds}"
 
 
+_C_DEFINITION_RE = re.compile(
+    r"^(?:static\s+)?[A-Za-z_][\w \t\*]*?\b([A-Za-z_]\w*)\s*\([^;{}]*\)\s*\{",
+    re.MULTILINE,
+)
+
+
+def _static_tiled_boundary(root: Path, source_key: str, start: int, end: int,
+                           offset: int) -> int | None:
+    """The end offset of the function at ``offset`` in a one-TU module.
+
+    The compiled object records every function's extent: a global as a sized
+    STT_FUNC, a static (no linked symbol) as a sized UND entry. Laid end to
+    end in definition order from the owner's start, the extents must place
+    every global exactly where the object does and end inside the owner's
+    final 16-byte alignment; only then is the tiling evidence.
+    """
+    obj = root / "build" / "src" / f"{source_key}.c.o"
+    src = root / "src" / f"{source_key}.c"
+    if not obj.is_file() or not src.is_file():
+        return None
+    elf = rs.Elf(obj)
+    sizes: dict[str, int] = {}
+    globals_at: dict[str, int] = {}
+    for name, value, size, info, shndx in elf.symbols():
+        if not name or size <= 0:
+            continue
+        if shndx == rs.SHN_UNDEF and info & 0xF == 0:
+            sizes.setdefault(name, size)
+        elif info & 0xF == rs.STT_FUNC:
+            sizes[name] = size
+            globals_at[name] = value
+    text = src.read_text(encoding="utf-8", errors="replace")
+    masked = pp._mask_c(text) if hasattr(pp, "_mask_c") else text
+    order = [m.group(1) for m in _C_DEFINITION_RE.finditer(masked)
+             if m.group(1) in sizes]
+    if len(order) != len(set(order)) or not set(globals_at) <= set(order):
+        return None
+    cursor = start
+    ends: dict[int, int] = {}
+    for name in order:
+        if name in globals_at and globals_at[name] + start != cursor:
+            return None
+        ends[cursor] = cursor + sizes[name]
+        cursor += sizes[name]
+    if not (cursor <= end < cursor + 16):
+        return None
+    return ends.get(offset)
+
+
 def _fully_matched_inner_geometry(
     module: dict[str, object], overlay: int, offset: int, candidate: str,
     target: str, source_key: str, root: Path,
@@ -409,7 +458,11 @@ def _fully_matched_inner_geometry(
                 and (info & 0xF) == rs.STT_FUNC):
             following.append(other_value)
     if limit != min(following):
-        raise PreflightError("inner function boundary leaves unauthenticated padding/gap")
+        # A static function has no linked symbol: IDO emits it as a sized UND
+        # entry. Authenticate the gap from the TU's own function extents.
+        boundary = _static_tiled_boundary(root, source_key, start, end, offset)
+        if boundary is None or rs.SYNTHETIC_VMA + boundary != limit:
+            raise PreflightError("inner function boundary leaves unauthenticated padding/gap")
     rom_start = _hex_field(module["rom"], "start", "overlay ROM range")
     if int(target.rsplit("_", 1)[1], 16) != rom_start + offset:
         raise PreflightError("inner function generated ROM identity disagrees with atlas")

@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay60ReassignChoiceSlots:start -->
 ### `overlay60ReassignChoiceSlots` plateau handoff
 
-- source: `src/overlays/o060/overlay60ReassignChoiceSlots.c`
+- source: `src/overlays/o060/overlay_060.c`
 - score: 0/53 words
 - frame: 0x20
 - relocations: 8

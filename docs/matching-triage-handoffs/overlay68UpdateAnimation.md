@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay68UpdateAnimation:start -->
 ### `overlay68UpdateAnimation` plateau handoff
 
-- source: `src/overlays/o068/overlay68UpdateAnimation.c`
+- source: `src/overlays/o068/overlay_068.c`
 - score: 0/356 words, promoted
 - frame: 0x78
 - relocations: 15

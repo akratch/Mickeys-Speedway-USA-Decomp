@@ -11,11 +11,20 @@
       ]
     },
     {
-      "object": "overlays/o058/overlay58FinalizePackedStatus.c.o",
+      "object": "overlays/o019/overlay19BuildPlanes.c.o",
       "aliases": [
         {
-          "from": "func_overlay_058_F0005554_18B473C",
-          "to": "overlay58FinalizePackedStatus"
+          "from": "sqrtf",
+          "to": "sqrtf_o019Reloc"
+        }
+      ]
+    },
+    {
+      "object": "overlays/o023/overlay23RenderEffect.c.o",
+      "aliases": [
+        {
+          "from": "overlay23CallReloc",
+          "to": "func_overlay_023_F0000000_1879210"
         }
       ]
     },

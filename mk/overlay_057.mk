@@ -1,129 +1,52 @@
-# Overlay 57 POSTPROCESS rules.
-# Included from mk/overlays.mk at the position these rules always held, so
-# evaluation order is unchanged. Split out on 2026-10-02 when mk/overlays.mk
-# crossed the clean-room 256 KiB tracked-file limit.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57ApplyValue.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x68
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57UpdateInterface.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6CC
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57InitializeMode.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x88
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57BeginMode.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x90
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57StartMode.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x98
-# The module initializer is instruction-exact. Its mode switch table is the
-# retained overlay table at rodata +0x6C: bind the two table references to
-# that owner and drop the compiler's private copy by digest. Its resident
-# callees go through the generated surface entries.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0000000_18A3BF8.c.o: \
+# Overlay 57 rules, split out of mk/overlays.mk on 2026-10-02 to keep it under
+# the clean-room 256 KiB tracked-file limit.
+#
+# One module TU under the overlay flag set; its .text is the module's full
+# 0x6AB0 bytes, trailing pad included, so no trim, and resident calls are
+# renamed by the generated surface rebinds. -woff 835: several resident
+# callees are deliberately unprototyped (overlay_057.h). Two steps stay, both
+# for a mechanical reason:
+#
+# - .rodata: the initializer's and the dispatch's switch tables and the grid
+#   draw's two blend literals between them are still owned by the raw data
+#   blob at data_rodata +0x5AC (phase 3), so the section is asserted by digest
+#   and its four %hi/%lo pairs bound to a pool symbol at the shipped rodata-relative 0x6C;
+#   the tables' own text relocations go with it.
+# - .bss: the TU defines the module's BSS block (overlay_057.c), so every
+#   access is a section-relative record whose addend is already the offset the
+#   shipped word carries. Overlay 57's runtime table owns those 73 HI16/LO16
+#   records, so the static link must not adjust them: they are removed,
+#   asserted one by one. No instruction word is edited.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay_057.c.o: CFLAGS += -Wab,-r4300_mul -woff 835
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay_057.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
 	$(TOOLS_DIR)/externalize_elf_section.py \
-	config/normalizations/func_overlay_057_F0000000_18A3BF8.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0000000_18A3BF8.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym animseqStartPath=animseqStartPath_o057Reloc \
-		--redefine-sym fontColour=fontColour_o057Reloc \
-		--redefine-sym func_8000590C=func_8000590C_o057Reloc \
-		--redefine-sym func_80028F54=func_80028F54_o057Reloc \
-		--redefine-sym func_8003A754=func_8003A754_o057Reloc \
-		--redefine-sym func_80001708=func_80001708_o057Reloc \
-		--redefine-sym fontUseFont=fontUseFont_o057Reloc \
-		--redefine-sym func_800508B4=func_800508B4_o057Reloc \
-		--redefine-sym func_8005AD64=func_8005AD64_o057Reloc \
-		--redefine-sym initColourCycle=initColourCycle_o057Reloc \
-		--redefine-sym joyResetMap=joyResetMap_o057Reloc \
-		--add-symbol gOverlay57InitModeJumpTableReloc=0x6C,global $@ && \
+	$(TOOLS_DIR)/filter_elf_relocations.py
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay_057.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay57RodataReloc=0x6C,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/func_overlay_057_F0000000_18A3BF8.rebind.spec && \
+		0x578:.rodata:gOverlay57RodataReloc 0x580:.rodata:gOverlay57RodataReloc 0x10AC:.rodata:gOverlay57RodataReloc 0x10C0:.rodata:gOverlay57RodataReloc \
+		0x1128:.rodata:gOverlay57RodataReloc 0x1154:.rodata:gOverlay57RodataReloc 0x1B18:.rodata:gOverlay57RodataReloc 0x1B20:.rodata:gOverlay57RodataReloc && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:8331339c4a36b067bfd51dbb9354792b63fed3c4aa69893b7386269e8345fd0a && \
-	$(OBJCOPY) --remove-section .rel.rodata $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x954
-# The grid quad draw is instruction-exact. Its resident callees and data go
-# through the generated surface entries; the trim only pins the size.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001020_18A4C18.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym D_800D3140=D_800D3140_o057Reloc \
-		--redefine-sym D_800D3144=D_800D3144_o057Reloc \
-		--redefine-sym D_800D3148=D_800D3148_o057Reloc \
-		--redefine-sym D_800D31C8=D_800D31C8_o057Reloc \
-		--redefine-sym func_8002109C=func_8002109C_o057Reloc \
-		--redefine-sym camSetView=camSetView_o057Reloc \
-		--redefine-sym texDPTextureX=texDPTextureX_o057Reloc \
-		--redefine-sym texAnimateTexSprite=texAnimateTexSprite_o057Reloc \
-		--redefine-sym func_800508B4=func_800508B4_o057Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x958
-# The mode dispatch is instruction-exact. Its switch table is the retained
-# overlay table at rodata +0xB0: bind the two table references to that owner
-# and drop the compiler's private copy by digest. No instruction changes.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	$(TOOLS_DIR)/externalize_elf_section.py \
-	config/normalizations/func_overlay_057_F0001AE8_18A56E0.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay57DispatchJumpTableReloc=0xB0,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/func_overlay_057_F0001AE8_18A56E0.rebind.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:97d2a20db5917a686e817319bc36f7a4771d8e9799e1d0e8c0b6104c1f2dbdb6 && \
-	$(OBJCOPY) --remove-section .rel.rodata $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDCC
-# The one-player menu step and start is instruction-exact. Its resident
-# callees go through the generated surface entries; the trim only pins the size.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0004460_18A8058.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym amSndPlay=amSndPlay_o057Reloc \
-		--redefine-sym animseqStartPath=animseqStartPath_o057Reloc \
-		--redefine-sym animseqStopPath=animseqStopPath_o057Reloc \
-		--redefine-sym func_80005548=func_80005548_o057Reloc \
-		--redefine-sym func_800291B4=func_800291B4_o057Reloc \
-		--redefine-sym func_8003A680=func_8003A680_o057Reloc \
-		--redefine-sym joyCreateMap=joyCreateMap_o057Reloc \
-		--redefine-sym mainChangeCameras=mainChangeCameras_o057Reloc \
-		--redefine-sym mainChangeLevel=mainChangeLevel_o057Reloc \
-		--redefine-sym mainSetAnimGroup=mainSetAnimGroup_o057Reloc \
-		--redefine-sym mainSetMode=mainSetMode_o057Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x7B8
-# The menu step and start is instruction-exact. Its resident callees go
-# through the generated surface entries; the trim only pins the size.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F00060F8_18A9CF0.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym amSndPlay=amSndPlay_o057Reloc \
-		--redefine-sym animseqStartPath=animseqStartPath_o057Reloc \
-		--redefine-sym animseqStopPath=animseqStopPath_o057Reloc \
-		--redefine-sym joyCreateMap=joyCreateMap_o057Reloc \
-		--redefine-sym mainChangeCameras=mainChangeCameras_o057Reloc \
-		--redefine-sym mainChangeLevel=mainChangeLevel_o057Reloc \
-		--redefine-sym mainSetMode=mainSetMode_o057Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6E4
-# The middle-panel update is instruction-exact. Its resident callees go
-# through the generated surface entries; the text is already 0x12E0 so the
-# trim only pins the size. No instruction changes.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0004E18_18A8A10.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym func_80000F94=func_80000F94_o057Reloc \
-		--redefine-sym func_80005548=func_80005548_o057Reloc \
-		--redefine-sym func_80022A50=func_80022A50_o057Reloc \
-		--redefine-sym func_80025444=func_80025444_o057Reloc \
-		--redefine-sym func_80025D60=func_80025D60_o057Reloc \
-		--redefine-sym func_80028374=func_80028374_o057Reloc \
-		--redefine-sym func_80028528=func_80028528_o057Reloc \
-		--redefine-sym func_80028540=func_80028540_o057Reloc \
-		--redefine-sym func_80028D24=func_80028D24_o057Reloc \
-		--redefine-sym func_800291B4=func_800291B4_o057Reloc \
-		--redefine-sym func_800291C4=func_800291C4_o057Reloc \
-		--redefine-sym func_8002F618=func_8002F618_o057Reloc \
-		--redefine-sym func_8002FB34=func_8002FB34_o057Reloc \
-		--redefine-sym frontDrawObj=frontDrawObj_o057Reloc \
-		--redefine-sym func_8003A680=func_8003A680_o057Reloc \
-		--redefine-sym func_8003A700=func_8003A700_o057Reloc \
-		--redefine-sym func_800429A4=func_800429A4_o057Reloc \
-		--redefine-sym fontUseFont=fontUseFont_o057Reloc \
-		--redefine-sym func_8004B0B8=func_8004B0B8_o057Reloc \
-		--redefine-sym fontPrintXY=fontPrintXY_o057Reloc \
-		--redefine-sym func_80050688=func_80050688_o057Reloc \
-		--redefine-sym func_80050704=func_80050704_o057Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x12E0
-# The packed-status finalizer is instruction-exact. Its three resident
-# callees go through the generated surface entries; no instruction changes.
+		sha256:6c9d41212841e67ae005670bb37e90e37a8bca7f188c3980fff0c999c4e69a52 && \
+	$(OBJCOPY) --remove-section=.rel.rodata $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
+		0x1AE8:5:.bss 0x1AEC:6:.bss 0x1E84:5:.bss 0x1E90:6:.bss \
+		0x254C:5:.bss 0x2550:6:.bss 0x2F54:5:.bss 0x2F58:6:.bss \
+		0x3000:5:.bss 0x3008:6:.bss 0x3054:5:.bss 0x3060:6:.bss \
+		0x3204:5:.bss 0x3208:6:.bss 0x3FDC:5:.bss 0x3FE8:6:.bss \
+		0x3FFC:5:.bss 0x4008:6:.bss 0x4000:5:.bss 0x400C:6:.bss \
+		0x4070:5:.bss 0x4078:6:.bss 0x4228:5:.bss 0x422C:6:.bss \
+		0x43D0:5:.bss 0x43DC:6:.bss 0x43EC:5:.bss 0x43F4:6:.bss \
+		0x43E8:5:.bss 0x43F0:6:.bss 0x4468:5:.bss 0x4478:6:.bss \
+		0x4B48:5:.bss 0x4B4C:6:.bss 0x4C18:5:.bss 0x4C24:6:.bss \
+		0x4C20:5:.bss 0x4C28:6:.bss 0x4C54:5:.bss 0x4C5C:6:.bss \
+		0x4C74:5:.bss 0x4C94:6:.bss 0x4C8C:6:.bss 0x4C78:5:.bss \
+		0x4C7C:6:.bss 0x4CCC:5:.bss 0x4CD0:6:.bss 0x4CD4:5:.bss \
+		0x4CDC:6:.bss 0x4CD8:5:.bss 0x4CE0:6:.bss 0x4CF0:5:.bss \
+		0x4CF8:6:.bss 0x4CFC:5:.bss 0x4D04:6:.bss 0x4D0C:5:.bss \
+		0x4D1C:6:.bss 0x4D30:5:.bss 0x4D38:6:.bss 0x4D24:5:.bss \
+		0x4D3C:6:.bss 0x4D44:5:.bss 0x4D50:6:.bss 0x4D70:5:.bss \
+		0x4D74:6:.bss 0x4D9C:5:.bss 0x4DA8:6:.bss 0x4DB4:5:.bss \
+		0x4DBC:6:.bss 0x4DB8:5:.bss 0x4DC0:6:.bss 0x6478:5:.bss \
+		0x647C:6:.bss

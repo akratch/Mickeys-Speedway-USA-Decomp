@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay57UpdateModeState:start -->
 ### `overlay57UpdateModeState` plateau handoff
 
-- source: `src/overlays/o057/overlay57UpdateModeState.c`
+- source: `src/overlays/o057/overlay_057.c`
 - score: 0/354 words, promoted
 - frame: 0x30
 - relocations: 59

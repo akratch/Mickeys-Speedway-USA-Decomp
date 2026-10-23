@@ -1,7 +1,7 @@
 <!-- plateau-handoff:func_overlay_057_F0001AE8_18A56E0:start -->
 ### `func_overlay_057_F0001AE8_18A56E0` plateau handoff
 
-- source: `src/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c`
+- source: `src/overlays/o057/overlay_057.c`
 - score: 0/883 words, promoted
 - frame: 0x38
 - relocations: 359

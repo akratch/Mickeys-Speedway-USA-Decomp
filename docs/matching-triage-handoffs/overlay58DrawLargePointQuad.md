@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay58DrawLargePointQuad:start -->
 ### `overlay58DrawLargePointQuad` plateau handoff
 
-- source: `src/overlays/o058/overlay58DrawLargePointQuad.c`
+- source: `src/overlays/o058/overlay_058.c`
 - score: matched (0/104 words, promoted 2026-09-16 by lane w1-b)
 - frame: 0x18
 - relocations: 11

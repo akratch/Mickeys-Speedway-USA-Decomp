@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay63UpdateEffects:start -->
 ### `overlay63UpdateEffects` plateau handoff
 
-- source: `src/overlays/o063/overlay63UpdateEffects.c`
+- source: `src/overlays/o063/overlay_063.c`
 - score: 0/350 words, promoted
 - frame: 0xF8
 - relocations: 71

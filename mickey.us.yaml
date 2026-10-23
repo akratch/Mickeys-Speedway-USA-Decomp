@@ -1711,12 +1711,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1885620, c, overlay37Init]
-      - [0x18856A8, c, overlay37Update]
-      - [0x18857BC, c, overlay37Render]
-      - [0x1885B14, c, overlay37RecordMinimum]
-      - [0x1885B64, c, overlay37RecordActive]
-      - [0x1885B78, asm, overlay_037_padding]
+      - [0x1885620, c, overlay_037]
       - [0x1885B80, bin, overlay_037_data_rodata]
       - [0x1885C70, bin, overlay_037_reloc1]
       - [0x1885CB0, bin, overlay_037_reloc2]
@@ -1732,10 +1727,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1885D10, c, func_overlay_038_F0000000_1885D10]
-      - [0x1885E64, c, overlay38UpdateParticles]
-      - [0x188618C, c, func_overlay_038_F000047C_188618C]
-      - [0x18864F8, asm, overlay_038_padding]
+      - [0x1885D10, c, overlay_038]
       - [0x1886500, bin, overlay_038_data_rodata]
       - [0x18865A0, bin, overlay_038_reloc1]
       - [0x1886630, bin, overlay_038_reloc2]
@@ -1752,7 +1744,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18866A0, c, overlay_039]
-      - [0x1886808, asm, overlay_039_padding]
       - [0x1886810, bin, overlay_039_reloc1]
 
   - name: overlay_040
@@ -1766,16 +1757,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18868B0, c, overlay40AddEntry]
-      - [0x1886934, c, overlay40RemoveEntry]
-      - [0x1886998, c, overlay40UpdateEntries]
-      - [0x1886A50, c, overlay40BuildFrame]
-      - [0x1886B94, c, overlay40DrawEntries]
-      - [0x1886CF8, c, overlay40SetValues]
-      - [0x1886D40, c, overlay40Interpolate]
-      - [0x1886DE4, c, overlay40DrawTintRectangle]
-      - [0x1886F40, c, overlay40FadeRecords]
-      - [0x18870D4, asm, overlay_040_padding]
+      - [0x18868B0, c, overlay_040]
       - [0x18870E0, bin, overlay_040_data_rodata]
       - [0x1887110, bin, overlay_040_reloc1]
       - [0x1887320, bin, overlay_040_reloc2]
@@ -1791,20 +1773,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1887338, c, overlay41AdvanceStepRecords]
-      - [0x188745C, c, overlay41UpdateColorRecords]
-      - [0x18875E4, c, overlay41SampleCurve]
-      - [0x1887B34, c, overlay41InterpolateAngle]
-      - [0x1887B8C, c, overlay41UpdateCurveObject]
-      - [0x1888584, c, overlay41IsUnitScale]
-      - [0x18885D0, c, overlay41UpdateProgress]
-      - [0x188879C, c, overlay41ProcessEntry]
-      - [0x1888988, c, overlay41AddSlot]
-      - [0x1888A64, c, overlay41Ignore]
-      - [0x1888A78, c, overlay41SpawnItems]
-      - [0x1888C94, c, overlay41EnqueueTransition]
-      - [0x1888E38, c, overlay41TickTransitions]
-      - [0x1888FBC, c, overlay41DrawItem]
+      - [0x1887338, c, overlay_041]
       - [0x1889118, bin, overlay_041_data_rodata]
       - [0x1889188, bin, overlay_041_reloc1]
       - [0x1889498, bin, overlay_041_reloc2]
@@ -1835,16 +1804,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1889FD0, c, overlay43InitializeState]
-      - [0x188A164, c, overlay43FlushPending]
-      - [0x188A250, c, overlay43ReleaseResources]
-      - [0x188A2F4, c, func_overlay_043_F0000324_188A2F4]
-      - [0x188ABB4, c, func_overlay_043_F0000BE4_188ABB4]
-      - [0x188B078, c, overlay43ComputeMotion]
-      - [0x188B154, c, overlay43AllocateResources]
-      - [0x188B234, c, overlay43SubmitChildren]
-      - [0x188B348, c, overlay43FilterImage]
-      - [0x188B3F4, asm, overlay_043_padding]
+      - [0x1889FD0, c, overlay_043]
       - [0x188B400, bin, overlay_043_data_rodata]
       - [0x188B500, bin, overlay_043_reloc1]
       - [0x188B6A0, bin, overlay_043_reloc2]
@@ -1860,11 +1820,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x188B860, c, overlay44CreateAnimationState]
-      - [0x188BA84, c, overlay44ReleaseHandles]
-      - [0x188BAF4, c, overlay44UpdateFrameCache]
-      - [0x188BDE0, c, func_overlay_044_F0000580_188BDE0]
-      - [0x188C354, asm, overlay_044_padding]
+      - [0x188B860, c, overlay_044]
       - [0x188C360, bin, overlay_044_data_rodata]
       - [0x188C3B0, bin, overlay_044_reloc1]
       - [0x188C430, bin, overlay_044_reloc2]
@@ -1881,9 +1837,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x188C458, c, overlay_045]
-      - [0x188CBBC, c, func_overlay_045_F0000764_188CBBC]
-      - [0x188D5B0, c, func_overlay_045_F0001158_188D5B0]
-      - [0x188E038, c, overlay_045_tail]
       - [0x188E0F8, bin, overlay_045_reloc1]
       - [0x188E348, bin, overlay_045_reloc2]
 
@@ -1898,17 +1851,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x188E3F8, c, overlay46InitializeState]
-      - [0x188E518, c, overlay46UpdateSequence]
-      - [0x188EA0C, c, overlay46ReleaseState]
-      - [0x188EA94, c, overlay46InitializeParticles]
-      - [0x188EC6C, c, func_overlay_046_F0000874_188EC6C]
-      - [0x188F374, c, overlay46InitState]
-      - [0x188F3C8, c, overlay46UpdateTransition]
-      - [0x188F524, c, overlay46Submit]
-      - [0x188F548, c, overlay46InitializeBuffers]
-      - [0x188F620, c, func_overlay_046_F0001228_188F620]
-      - [0x188FD54, asm, overlay_046_padding]
+      - [0x188E3F8, c, overlay_046]
       - [0x188FD58, bin, overlay_046_data_rodata]
       - [0x18900E8, bin, overlay_046_reloc1]
       - [0x18905B8, bin, overlay_046_reloc2]
@@ -1944,11 +1887,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1895408, c, overlay48Initialize]
-      - [0x1895468, c, overlay48InitializeState]
-      - [0x189554C, c, overlay48UpdateState]
-      - [0x1895814, c, overlay48ReleaseAll]
-      - [0x1895874, asm, overlay_048_padding]
+      - [0x1895408, c, overlay_048]
       - [0x1895878, bin, overlay_048_data_rodata]
       - [0x1895F78, bin, overlay_048_reloc1]
       - [0x1895FF8, bin, overlay_048_reloc2]
@@ -1965,7 +1904,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1896410, c, overlay_049]
-      - [0x1896784, asm, overlay_049_padding]
       - [0x1896790, bin, overlay_049_data_rodata]
       - [0x18967C0, bin, overlay_049_reloc1]
       - [0x18968A0, bin, overlay_049_reloc2]
@@ -1981,12 +1919,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1896970, c, overlay50Initialize]
-      - [0x1896C54, c, overlay50PatchIndices]
-      - [0x1896CA4, c, func_overlay_050_F0000334_1896CA4]
-      - [0x1898540, c, overlay50Cleanup]
-      - [0x18985C4, c, overlay50SubmitTimeGlyphs]
-      - [0x18987D8, asm, overlay_050_padding]
+      - [0x1896970, c, overlay_050]
       - [0x18987E0, bin, overlay_050_data_rodata]
       - [0x1898B60, bin, overlay_050_reloc1]
       - [0x18990E0, bin, overlay_050_reloc2]
@@ -2003,7 +1936,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1899900, c, overlay_051]
-      - [0x189A1AC, asm, overlay_051_padding]
       - [0x189A1B0, bin, overlay_051_data_rodata]
       - [0x189A2B0, bin, overlay_051_reloc1]
       - [0x189A4B0, bin, overlay_051_reloc2]
@@ -2019,13 +1951,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x189A670, c, overlay52Initialize]
-      - [0x189AB60, c, overlay52PatchIndices]
-      - [0x189ABB0, c, overlay52CopyOffsetEntries]
-      - [0x189ACAC, c, overlay52TailB]
-      - [0x189C708, c, overlay52Cleanup]
-      - [0x189C798, asm, overlay_052_padding]
-      - [0x189C7A0]
+      - [0x189A670, c, overlay_052]
       - [0x189CAD0, bin, overlay_052_reloc1]
       - [0x189D010, bin, overlay_052_reloc2]
 
@@ -2040,12 +1966,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x189D9A8, c, overlay53Initialize]
-      - [0x189DAC4, c, overlay53PatchIndices]
-      - [0x189DB14, c, overlay53CopyOffsetEntries]
-      - [0x189DBE8, c, func_overlay_053_F0000240_189DBE8]
-      - [0x189E5D8, c, overlay53ReleaseResources]
-      - [0x189E650, asm, overlay_053_padding]
+      - [0x189D9A8, c, overlay_053]
       - [0x189E658, bin, overlay_053_data_rodata]
       - [0x189E788, bin, overlay_053_reloc1]
       - [0x189EA08, bin, overlay_053_reloc2]
@@ -2061,14 +1982,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x189ECA0, c, overlay54Initialize]
-      - [0x189F06C, c, overlay54PatchIndices]
-      - [0x189F0BC, c, overlay54CopyOffsetRecords]
-      - [0x189F1A4, c, overlay54GetOffsets]
-      - [0x189F24C, c, overlay54TailA]
-      - [0x18A0B34, c, overlay54ReleaseResources]
-      - [0x18A0B84, asm, overlay_054_padding]
-      - [0x18A0B90]
+      - [0x189ECA0, c, overlay_054]
       - [0x18A0E60, bin, overlay_054_data_rodata]
       - [0x18A0E70, bin, overlay_054_reloc1]
       - [0x18A1370, bin, overlay_054_reloc2]

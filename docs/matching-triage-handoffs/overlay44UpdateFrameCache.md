@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay44UpdateFrameCache:start -->
 ### `overlay44UpdateFrameCache` plateau handoff
 
-- source: `src/overlays/o044/overlay44UpdateFrameCache.c`
+- source: `src/overlays/o044/overlay_044.c`
 - score: 0/187 words
 - frame: 0x48
 - relocations: 4

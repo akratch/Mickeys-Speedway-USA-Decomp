@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay40BuildFrame:start -->
 ### `overlay40BuildFrame` plateau handoff
 
-- source: `src/overlays/o040/overlay40BuildFrame.c`
+- source: `src/overlays/o040/overlay_040.c`
 - score: 0/81 words, promoted
 - frame: 0xB0
 - relocations: 1

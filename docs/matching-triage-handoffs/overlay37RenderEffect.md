@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay37RenderEffect:start -->
 ### `overlay37RenderEffect` plateau handoff
 
-- source: `src/overlays/o037/overlay37Render.c`
+- source: `src/overlays/o037/overlay_037.c`
 - score: 0/214 words, promoted
 - frame: 0x98
 - relocations: 12

@@ -11,7 +11,7 @@ from the original stub but have not been modernized or verified.
 <!-- SCOREBOARD_BEGIN -->
 ## Progress
 
-[![functions](https://img.shields.io/badge/functions_matched-1353_of_1460_(92.67%25)-blue)](#progress) [![bytes](https://img.shields.io/badge/code_bytes_resolved-943640_of_943640_(100.00%25)-blue)](#progress) [![names](https://img.shields.io/badge/symbols_named-1478_adopted-blue)](#progress)
+[![resident functions](https://img.shields.io/badge/resident_functions_matched-1353_of_1460_(92.67%25)-blue)](#progress) [![bytes](https://img.shields.io/badge/code_bytes_resolved-943640_of_943640_(100.00%25)-blue)](#progress) [![names](https://img.shields.io/badge/symbols_named-1478_adopted-blue)](#progress)
 
 Physical text: 944,316 bytes; reviewed nonexecutable alignment: 676 bytes.
 
@@ -21,12 +21,12 @@ Physical text: 944,316 bytes; reviewed nonexecutable alignment: 676 bytes.
 | Resident C | 445,308 | 475,048 | 93.74% |
 | Verified assembly | 29,740 | 475,048 | 6.26% |
 | Overlay C | 468,592 | 468,592 | 100.00% |
-| Functions matched | 1,353 | 1,460 | 92.67% |
-| Names adopted | 1,434 | 1,460 | 98.22% |
+| Resident functions matched | 1,353 | 1,460 | 92.67% |
+| Resident functions named | 1,434 | 1,460 | 98.22% |
 
-Whole program is resident C plus verified assembly plus overlay C. Totals exclude [reviewed nonexecutable alignment](docs/executable-accounting.md). A function counts only when the ROM rebuilds byte-identically with its C compiled in place of its assembly, so a `NON_MATCHING` body counts as unmatched exactly like extracted assembly. Verified assembly is 107 hand-written functions kept as assembly on purpose; [the proof for each](docs/VERIFIED_ASSEMBLY.md) is re-derived from the ROM by `tools/hasm_audit.py`. 1,478 symbols are adopted in `symbol_addrs.us.txt`.
+Whole program is resident C plus verified assembly plus overlay C. Totals exclude [reviewed nonexecutable alignment](docs/executable-accounting.md). Function and naming ratios cover the resident segment; overlay progress is measured separately in executable bytes. A function counts only when the ROM rebuilds byte-identically with its C compiled in place of its assembly, so a `NON_MATCHING` body counts as unmatched exactly like extracted assembly. Verified assembly is 107 hand-written functions kept as assembly on purpose; [the proof for each](docs/VERIFIED_ASSEMBLY.md) is re-derived from the ROM by `tools/hasm_audit.py`. 1,478 symbols are adopted in `symbol_addrs.us.txt`.
 
-| Area | Functions | Matched to C | Named, still asm | Unnamed | Identified |
+| Resident area | Functions | Matched to C | Named, still asm | Unnamed | Identified |
 | :--- | ---: | ---: | ---: | ---: | :--- |
 | libultra corridor | 300 | 271 | 29 | 0 | `██████████████████▓▓` 100.0% |
 | game code, TU identified | 1160 | 1082 | 52 | 26 | `███████████████████▓` 97.8% |
@@ -69,7 +69,7 @@ for all three regions are in `mickey.*.sha1` and `tools/verify_baseroms.sh`.
 
 ```sh
 gmake setup   # venv, deps, toolchain, baserom SHA1 check, splat, git hooks
-gmake -j2     # builds build/mickey.us.z64
+gmake -j$(sysctl -n hw.ncpu)  # builds build/mickey.us.z64 on macOS
 gmake verify  # byte-compares it against the baserom SHA1
 ```
 
@@ -143,24 +143,25 @@ code, justified in the source file's header comment. Measured per-file flags are
 
 ## Roadmap
 
-The measurable epoch definitions and exit criteria live in
-[`docs/campaigns.md`](docs/campaigns.md).
+The US executable reconstruction is complete. Current work recovers the
+overlay source and linker structure, with exact ROM identity preserved at
+each step. The [overlay structure sprint](docs/OVERLAY_STRUCTURE_SPRINT.md)
+defines its acceptance criteria; [campaigns.md](docs/campaigns.md) records
+the earlier matching campaigns.
 
-| Phase | Scope | State |
-|---|---|---|
-| 0 | Split the US ROM with splat; rebuild it byte-identically from disassembly | done |
-| 1 | First matched C, libultra corridor, symbol/struct ontology | in progress |
-| 2 | Clean-room gates; mine the published Rare decomps for matching objects | in progress |
-| 3 | Overlay system: 107-module atlas, relocation graph, 106 buildable segments, DKR/JFG donor ledger | done |
-| 4 | Overlay frontier tranche A: exact-match seeds, four structural pilots, one dependency neighborhood | done |
-| 5 | Overlay semantic spine: 45/61/68 APIs, cohort closure, and hub API maps | done |
-| 6 | Exact-leaf recovery: close narrow compiler blockers and add 1 KiB matched overlay C | done |
-| 7 | Exact leaf and wrapper retirement across ten overlays (508 bytes) | done |
-| 8 | Overlay 84 accessor closure plus resource wrappers (436 bytes) | done |
-| 9 | Overlay 68 lifecycle/allocation semantic cluster (524 bytes) | done |
-| 10 | Double-digit breakthrough: reach 10.00% whole-program resolved and close four Epoch 5 cohort modules | done |
-| 11 | Fifteen-percent offensive: reach 15.00% whole-program resolved and close eight more overlays | active |
-| 12 | Assets: `1172`/`1173` decompress/recompress with matching output | not started |
+| Work | State |
+|---|---|
+| US matched C and authenticated hand-written assembly | Complete; [assembly evidence](docs/VERIFIED_ASSEMBLY.md) |
+| Overlay translation units, shared declarations, initialized data and BSS ownership | In progress |
+| Generate runtime-linker tables from source objects and retire overlay build scaffolding | Comparison tool available; final build integration pending |
+| Source cleanup and semantic naming | [Review queue](docs/cleanup-queue.md) remains open; changes must preserve matching |
+| JFG reference tooling and documentation | [Runlink kit](docs/runlink-toolkit.md) available; final roadmap follows the completed overlay sprint |
+| Asset-format recovery and matching repacking | Pending |
+| PAL and JPN builds | [Measured separately](docs/REGIONAL_VERSIONS.md); build plumbing and matching remain pending |
+
+Recovering typed storage and relocatable modules also prepares the source for
+future native-port work. Implementing that port is outside this repository's
+decompilation scope.
 
 ## Clean room
 

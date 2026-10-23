@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 
 extern s8 D_8007D640;
 extern s32 D_800D6AB0;
@@ -15,7 +16,6 @@ extern s16 D_800D6AC6;
 extern s16 D_800D6AC8;
 extern s32 D_800D6AD8[];
 extern s32 D_800D6AE4;
-extern s32 piRomGetFileSize(s32 fileId);
 extern s32 mmAlloc(s32 size, s32 tag);
 
 extern char *D_800D6AD0[];
@@ -201,8 +201,6 @@ void func_8004EDA8(s32 updateRate)
   }
 }
 extern s32 frontGetLanguage(void);
-extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset,
-                            s32 size);
 
 /* PROVENANCE: adapted from Jet Force Gemini src/subtitles.c subtitleStart
  * and Diddy Kong Racing src/game_text.c set_current_text. Mickey's globals,
@@ -235,11 +233,11 @@ void func_8004EED0(s32 stringIndex) {
             stringIndex += 4;
             break;
         }
-        piRomLoadSection(5, D_800D6AB0, (stringIndex & ~1) << 2, 0x10);
+        piRomLoadSection(5, (void *) D_800D6AB0, (stringIndex & ~1) << 2, 0x10);
         entries = (s32 *)D_800D6AB0;
         temp = entries[stringIndex & 1] & 0xFF000000;
         size = (entries[(stringIndex & 1) + 1] & 0xFFFFFF) - (entries[stringIndex & 1] & 0xFFFFFF);
-        piRomLoadSection(4, D_800D6AD8[D_800D6AE4], entries[stringIndex & 1] ^ temp, size);
+        piRomLoadSection(4, (void *) D_800D6AD8[D_800D6AE4], entries[stringIndex & 1] ^ temp, size);
         D_800D6AE0 = (u8 *)D_800D6AD8[D_800D6AE4];
         func_8004EC60();
         D_800D6AE4 = (D_800D6AE4 + 1) & 1;

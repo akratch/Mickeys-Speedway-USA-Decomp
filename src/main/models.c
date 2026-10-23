@@ -18,6 +18,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 #include "game/math.h"
 #include "game/models.h"
 #include "n_audio/mbi.h"
@@ -50,7 +51,6 @@ extern ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source,
 
 void *mmAlloc(s32 size, s32 tag);
 void *mmAlloc2(s32 size, s32 tag);
-s32 *piRomLoad(s32 assetId);
 void *texLoadTexture(s16 textureId);
 void texFreeTexture(void *texture);
 s32 texGetTextureNum(void *texture);
@@ -63,7 +63,6 @@ void func_8005AAC0(void *animation);
 extern s32 func_8004D7A8(s32 assetId, s32 assetOffset);
 extern u8 *func_8004D7E0(u8 *compressed, u8 *output);
 extern s32 func_8005A7A0(void *model, s32 modelId);
-extern s32 piRomLoadSection(u32 assetId, u32 address, s32 offset, s32 size);
 struct ModelGfxSource;
 s32 makeModelGfx(Gfx **out, struct ModelGfxSource *model, s32 arg2, s32 arg3,
                   s32 arg4, s32 arg5, s32 arg6);
@@ -91,7 +90,7 @@ void modInitModels(void) {
     D_800CB48C = 0;
     D_800CB494 = 0;
     D_800CB4A4 = mmAlloc(0x2000, 0x8A);
-    D_800CB480 = piRomLoad(0x26);
+    D_800CB480 = (s32 *) piRomLoad(0x26);
     D_800CB490 = 0;
     while (D_800CB480[D_800CB490] != -1) {
         D_800CB490++;
@@ -139,7 +138,7 @@ void *modLoadModel(s32 modelID, s32 flags) {
     s32 unused; /* unreferenced: the target's home ladder has a cell here (L99) */
     s32 modelSize;
     s32 group;
-    u32 compressedData;
+    u8 *compressedData;
     s32 last;
 
     highBit = modelID & 0x8000;
@@ -185,9 +184,9 @@ void *modLoadModel(s32 modelID, s32 flags) {
         }
         return NULL;
     }
-    compressedData = (u32) ((u8 *) objMdl + modelSize) - compressedSize;
+    compressedData = (u8 *) objMdl + modelSize - compressedSize;
     piRomLoadSection(0x27, compressedData, romOffset, compressedSize);
-    func_8004D7E0((u8 *) compressedData, (u8 *) objMdl);
+    func_8004D7E0(compressedData, (u8 *) objMdl);
     if (objMdl->nestedCount != 0) {
         objMdl->nestedAllocations = (void **) mmAlloc2((objMdl->nestedCount * 4) + 4, 0x8A);
         if (objMdl->nestedAllocations == NULL) {

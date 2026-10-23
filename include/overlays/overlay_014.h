@@ -2,6 +2,7 @@
 #define OVERLAY_014_H
 
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 
 /* A loaded value keyed by id; the module keeps 32 of them. */
 typedef struct Overlay14ValueSlot {
@@ -218,8 +219,7 @@ extern Overlay14Owner *gOverlay14Owner;
 extern void overlay14InitializeReloc(void);
 extern void mmFree(void *ptr);
 extern void *mmAlloc(s32 size, u32 colourTag);
-extern void piRomLoadSection(u32 source, void *destination, s32 start, s32 size);
-extern void *piRomLoad_o014Reloc(s32 resourceId);
+extern u32 *piRomLoad_o014Reloc(u32 resourceId);
 extern s32 frontGetLanguage_o014Reloc(void);
 extern s32 frontGetLanguage(void);
 extern u16 joyGetPressed(s32 player);

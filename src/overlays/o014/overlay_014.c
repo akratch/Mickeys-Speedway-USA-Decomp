@@ -76,7 +76,7 @@ void func_overlay_014_F000013C_186FA14(s32 group, s32 context) {
         return;
     }
     gOverlay14Context10C = context;
-    gOverlay14AssetF0 = piRomLoad_o014Reloc(8);
+    gOverlay14AssetF0 = (Overlay14RuleGroup *) piRomLoad_o014Reloc(8);
     switch (frontGetLanguage_o014Reloc()) {
         case 1: size = 0xB; break;
         case 2: size = 0xD; break;
@@ -428,7 +428,7 @@ static Overlay14Asset *func_overlay_014_F00009F4_18702CC(s32 index, s32 context)
   asset = (Overlay14Asset *) mmAlloc(size, 0x85);
   if (asset != 0)
   {
-    piRomLoadSection(context, (void *) asset, start, size);
+    piRomLoadSection(context, asset, start, size);
     if (1)
     {
       for (i = 0, entry = asset; i < asset->count; i++, entry++)

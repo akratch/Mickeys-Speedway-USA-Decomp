@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 #include "game/particles.h"
 #include "game/overlay_exports.h"
 
@@ -774,8 +775,6 @@ extern s16 D_80078FF0[];
 extern s32 D_800C947C;
 extern s32 D_800C9480;
 extern s32 D_800C9484;
-extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset, s32 size);
-extern s32 *piRomLoad(s32 assetIndex);
 extern s32 runlinkDownloadCode(s32 overlayIndex);
 extern void *func_8000590C();
 extern f32 sqrtf(f32 value);
@@ -1009,7 +1008,7 @@ void *func_8000486C(s32 assetIndex) {
         asset = (Objects0486CAsset *)mmAlloc(assetSize, 0x8B);
     }
     if (asset != NULL) {
-        piRomLoadSection(0x2D, (u32)asset, assetStart, assetSize);
+        piRomLoadSection(0x2D, asset, assetStart, assetSize);
         asset->unk4C = (s32)((u8 *)asset + asset->unk4C);
         asset->unk50 = (s32)((u8 *)asset + asset->unk50);
         asset->unk44 = (s32)((u8 *)asset + asset->unk44);
@@ -1140,7 +1139,7 @@ void func_80004C28(s32 tableIndex, s32 slot) {
     D_800C94C8[slot] = 0;
     D_800C94D0[slot] = tableIndex;
 
-    romTable = piRomLoad(0x1C);
+    romTable = (s32 *) piRomLoad(0x1C);
     for (tableCount = 0; romTable[tableCount] != -1; tableCount++) {
     }
     tableCount -= 1;
@@ -1154,7 +1153,7 @@ void func_80004C28(s32 tableIndex, s32 slot) {
         return;
     }
 
-    piRomLoadSection(0x1D, (u32)heap, start, size);
+    piRomLoadSection(0x1D, heap, start, size);
     D_800C94C0[slot] = (s32)((u8 *)D_800C94D8[slot] + 0x10);
     D_800C94C8[slot] = *heap;
     D_800C94E8 = slot;
@@ -1546,7 +1545,7 @@ s16 func_80005868(s32 assetIndex) {
     u8 buffer[0xC0];
 
     assetOffset = D_800C9458[D_800C94E0[assetIndex]];
-    piRomLoadSection(0x2D, (u32)buffer, assetOffset, 0xC0);
+    piRomLoadSection(0x2D, buffer, assetOffset, 0xC0);
     entry = (s16 *)(buffer + 0x1C);
     return *entry;
 }

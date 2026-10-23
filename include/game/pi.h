@@ -3,11 +3,15 @@
 
 #include "PR/ultratypes.h"
 
-/*
- * Cartridge asset DMA -- src/main/pi.c. Declared once here so every caller
- * shares one prototype instead of a per-file guess; src/main/models_5B300.c
- * and src/main/pi.c both include this header.
- */
-s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset, s32 size);
+/* Cartridge asset DMA, defined in src/main/pi.c. Asset IDs and ROM offsets
+ * are distinct from the caller-owned RAM buffers used by the copy APIs. */
+void piInit(void);
+u32 *piRomLoad(u32 assetIndex);
+u8 *piRomLoadCompressed(u32 assetIndex, s32 extraMemory);
+s32 piRomLoadSection(u32 assetIndex, void *address, s32 assetOffset, s32 size);
+/* ROM offset value only; this does not return a RAM allocation. */
+u8 *piRomGetSectionPtr(u32 assetIndex, u32 assetOffset);
+s32 piRomGetFileSize(u32 assetIndex);
+void romCopy(u32 romOffset, void *ramAddress, s32 numBytes);
 
 #endif

@@ -2,6 +2,7 @@
 #define OVERLAY_068_H
 
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 
 /* Overlay 68: the trail and payload effect entries. */
 
@@ -305,8 +306,6 @@ extern void func_80022FD4(Overlay68Command **displayList, void *mtx, void *verti
                                       Overlay68DrawDescriptor *descriptor,
                                       s32 mode, s32 objectMode);
 extern const Overlay68KindPair gOverlay68KindMap[];
-extern s32 piRomLoadSection(u32 assetIndex, u32 address,
-                                       s32 assetOffset, s32 size);
 extern Overlay68ResidentEntry *func_800291C4(void);
 extern s32 levelGetBlurEffect(s32 kind);
 extern const Overlay68KindPair gOverlay68KindMapInitial[];

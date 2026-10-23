@@ -10,6 +10,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 #include "n_audio/mbi.h"
 #include "game/particles.h"
 
@@ -20,7 +21,6 @@ void modFreeModel(void *resource);
 void texAnimateSprite(void *texture, void *state, s32 speed, f32 *frame, s32 updateRate);
 void mathOneFloatPY(void *rotation, void *vector);
 void pointListRPY(s32 count, s16 *rotation, f32 *input, f32 *output);
-void *piRomLoad(s32 assetId);
 ParticleTexture *texLoadTexture(s32 resourceId);
 ParticleSprite *texLoadSprite(s32 resourceId, s32 arg1);
 void *modLoadModel(s32 resourceId, s32 arg1);
@@ -88,7 +88,7 @@ void func_8003CA20(void) {
     s32 count;
 
     if (D_8007C884 != NULL) {
-        types = piRomLoad(0x3A);
+        types = (s16 *) piRomLoad(0x3A);
         count = D_8007C888;
         i = 0;
         typePtr = types;

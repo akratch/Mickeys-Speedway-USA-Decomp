@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 #include "n_audio/mbi.h"
 
 /*
@@ -135,8 +136,6 @@ extern s32 func_800299E8(s32 minimum, s32 maximum);
 extern void mmFree(void *ptr);
 extern void *mmAlloc2(s32 size, u32 colourTag);
 extern u8 *align16(u8 *address);
-extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset,
-                            s32 size);
 extern TextureFrameHeader *texLoadTexture(s32 textureId);
 extern void texFreeTexture(TextureFrameHeader *texture);
 
@@ -591,7 +590,7 @@ Sprite *texLoadSprite(s32 spriteId, s32 flags) {
 
     size = D_800D2FF8[spriteId];
     spriteAsset = D_800D3000;
-    piRomLoadSection(0x15, (u32)spriteAsset, size, D_800D2FF8[spriteId + 1] - size);
+    piRomLoadSection(0x15, spriteAsset, size, D_800D2FF8[spriteId + 1] - size);
 
     numTextures = spriteAsset->frameTexOffsets[spriteAsset->numberOfFrames];
     i = numTextures;

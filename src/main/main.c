@@ -1,4 +1,5 @@
 #include "ultra64.h"
+#include "game/pi.h"
 #include "game/font.h"
 #include "game/gameVi.h"
 #include "game/level.h"
@@ -252,7 +253,6 @@ extern void func_8004D750(void);
 extern void *mmAlloc(s32, s32);
 extern void osCreateScheduler(OSSched *, void *, s32, u8, u8);
 extern void osScAddClient(OSSched *, OSScClient *, OSMesgQueue *, u8);
-extern void piInit(void);
 extern void rcpInit(OSSched *);
 extern void runlinkInit(void);
 extern void runlinkFreeCode(s32);

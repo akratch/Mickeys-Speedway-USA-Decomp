@@ -17,6 +17,7 @@
  */
 
 #include "game/font.h"
+#include "game/pi.h"
 #include "n_audio/mbi.h"
 
 typedef struct FontSpacingData {
@@ -91,7 +92,6 @@ u8 *func_8004D40C(s32 font, char *text, s32 maxWidth, u8 **lineStart,
 void func_8004C140(Gfx **displayList, s32 x1, s32 y1, s32 x2, s32 y2);
 void fontWindowDraw(Gfx **displayList, void *matrix, void *vertices,
                    s32 windowId);
-void piRomLoadSection(s32 resourceId, void *destination, u32 offset, s32 size);
 
 void fontPrintWindowXY(Gfx **displayList, s32 windowId, s32 xpos, s32 ypos,
                    char *text, s32 alignmentFlags);

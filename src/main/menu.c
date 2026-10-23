@@ -81,7 +81,6 @@ extern s8 joyGetStickY(s32 controller);
 extern void mainTitlePageInit(s32 mode);
 extern void modFreeModel(void *model);
 extern void *mmAlloc(s32 size, s32 tag);
-extern u32 *piRomLoad(u32 assetIndex);
 
 extern u32 D_800D3170[4];
 extern u32 D_800D3180[4];
@@ -312,7 +311,7 @@ void setLanguage(s32 language) {
     destination = (s32) D_8007C0B8;
     end -= assetIndex;
     if (destination != 0) {
-        piRomLoadSection(6, destination, assetIndex, end);
+        piRomLoadSection(6, (void *) destination, assetIndex, end);
         index = 0;
         while (index < D_8007C094[0]) {
             destination = (s32) D_8007C0B8;

@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 
 /*
  * PROVENANCE: this texture-TU sequence was compared with Jet Force Gemini's
@@ -44,8 +45,6 @@ extern s32 D_8007BD84;
 extern void *mmAlloc2(s32 size, u32 colourTag);
 extern void *mmAllocAtAddr(s32 size, u8 *address, u32 colourTag);
 extern void mmFree(void *ptr);
-extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset,
-                            s32 size);
 extern s32 byteswap32(u8 *address);
 extern void func_8004D7E0(void *compressed, void *output);
 extern void *align16(void *address);
@@ -64,24 +63,10 @@ void func_80034434(u8 value) {
  * public texLoadTexture object. Mickey's globals, layouts, helpers, and
  * compiled bytes remain authoritative.
  *
- * Matched 2026-09-16 (lane s2-c), 54 -> 0 masked words at delta 0, frame
- * 0x50, no colour force, ten measured batches. Four edits carry it, each
- * priced alone: (1) the aligned DMA address is DKR's `u32` local with
- * `(s32)` casts on the modulo, which is what puts the sum and remainder in
- * ring temps and lands every later temp on the target's register (the base
- * and every `s32` spelling are one ring position ahead from +0x58); (2) the
- * redundant `else loadSize = uncompressedSize` stays, because the target's
- * branch-over shape at +0x1AC comes from it (dropping it is one word short);
- * (3) a twelfth declared scalar between assetIndex and assetOffset, because
- * every declared local takes a slot in declaration order and the target's
- * homes sit one slot below ours from assetOffset down; (4) the post-call use
- * of the aligned address sits inside a direct assignment to one of its own
- * operands, `loadSize = alignedAddress + 0x20`, which is the one form uopt
- * refuses to forward the definition into, so the local stays a symbol web
- * spilled to its own home (0x20) instead of an expression temp in an 8-byte
- * temp region. A comma expression, a region opener, `register`, a pointer
- * type, block scope and a second def after the call all leave the temp in
- * place; the kill applied to `assetSize` instead is byte-identical. */
+ * PI receives a byte pointer to the compressed staging buffer. Alignment
+ * retains the target's signed-word remainder operation; the legacy inflater
+ * call still carries that target address through loadSize.
+ */
 TextureHeader *texLoadTexture(s32 textureId) {
     s32 i;
     TextureHeader *texture;
@@ -94,7 +79,7 @@ TextureHeader *texLoadTexture(s32 textureId) {
     s32 tableType;
     s32 uncompressedSize;
     s32 loadSize;
-    u32 alignedAddress;
+    u8 *alignedAddress;
 
     textureId &= 0xFFFF;
     assetIndex = textureId;
@@ -120,7 +105,7 @@ TextureHeader *texLoadTexture(s32 textureId) {
     assetOffset = D_800D2FD0[tableType][assetIndex];
     assetSize = D_800D2FD0[tableType][assetIndex + 1] - assetOffset;
     D_8007A278 = textureId;
-    piRomLoadSection(assetSection, (u32)D_800D301C, assetOffset, 0x28);
+    piRomLoadSection(assetSection, D_800D301C, assetOffset, 0x28);
 
     if (!(D_800D301C->header.flags & 1)) {
         if (D_8007BDA4 != NULL) {
@@ -133,7 +118,7 @@ TextureHeader *texLoadTexture(s32 textureId) {
         if (texture == NULL) {
             return NULL;
         }
-        piRomLoadSection(assetSection, (u32)texture, assetOffset, assetSize);
+        piRomLoadSection(assetSection, texture, assetOffset, assetSize);
     } else {
         uncompressedSize = byteswap32((u8 *)&D_800D301C->uncompressedSize);
         loadSize = uncompressedSize;
@@ -153,10 +138,10 @@ TextureHeader *texLoadTexture(s32 textureId) {
         if (texture == NULL) {
             return NULL;
         }
-        alignedAddress = (((s32)texture + loadSize) - assetSize);
-        alignedAddress = (s32)alignedAddress - (s32)alignedAddress % 16;
+        alignedAddress = (u8 *)texture + loadSize - assetSize;
+        alignedAddress = (u8 *)((s32)alignedAddress - (s32)alignedAddress % 16);
         piRomLoadSection(assetSection, alignedAddress, assetOffset, assetSize);
-        loadSize = alignedAddress + 0x20;
+        loadSize = (s32)(alignedAddress + 0x20);
         func_8004D7E0((void *)loadSize, texture);
         assetSize = uncompressedSize;
     }

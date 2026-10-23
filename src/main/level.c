@@ -1,4 +1,5 @@
 #include "ultra64.h"
+#include "game/pi.h"
 #include "game/level.h"
 #include "game/overlay_exports.h"
 
@@ -125,8 +126,6 @@ extern void amTuneResetChls(void);
 extern void amTuneStop(void);
 extern u8 amTuneGetSeqNo(void);
 extern void updateColourCycle(void *, s32);
-extern s32 *piRomLoad(s32);
-extern s32 piRomLoadSection(s32, void *, s32, s32);
 extern void mmFree(void *);
 extern void *mmAlloc(s32, s32);
 extern u8 *align4(u8 *);
@@ -186,7 +185,7 @@ void levelGetCounts(void) {
     u8 *nameData;
 
     header = mmAlloc(sizeof(LevelHeaderSummarySource), 0x8F);
-    D_800CF3C0 = piRomLoad(0x1E);
+    D_800CF3C0 = (s32 *) piRomLoad(0x1E);
 
     for (i = 0; i != 16; i++) { D_800CF3E0[i] = 0;
     }
@@ -220,7 +219,7 @@ void levelGetCounts(void) {
     mmFree(header);
 
     D_8007A0D0 = mmAlloc(0x20, 0x8F);
-    D_800CF3C0 = piRomLoad(0x22);
+    D_800CF3C0 = (s32 *) piRomLoad(0x22);
     i = 0;
     while (D_800CF3C0[i] != -1) {
         i++;
@@ -312,7 +311,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
     s32 resourceId;
 
     rumbleKill(1);
-    D_800CF3C0 = piRomLoad(0x1E);
+    D_800CF3C0 = (s32 *) piRomLoad(0x1E);
     if (mode < 0) {
         mode = 0;
     }
@@ -374,9 +373,9 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
 
     if ((D_800CF3C8->type == 0) || (D_800CF3C8->type == 3)) {
         if (D_8007BF0C != 0) {
-            D_8007A0F4 = piRomLoad(0x3C);
+            D_8007A0F4 = (s16 *) piRomLoad(0x3C);
         } else {
-            D_8007A0F4 = piRomLoad(0x3B);
+            D_8007A0F4 = (s16 *) piRomLoad(0x3B);
         }
         D_800CF508 = 0;
         while (D_8007A0F4[D_800CF508] != -1) {
@@ -580,7 +579,7 @@ u8 *levelGetLevel(void) {
 u8 *levelGetName(s32 levelIndex) {
     *D_8007A0D0 = 0;
     if (levelIndex < D_800CF3D4) {
-        D_800CF3C0 = piRomLoad(0x1E);
+        D_800CF3C0 = (s32 *) piRomLoad(0x1E);
         if (D_800CF3C0 != NULL) {
             piRomLoadSection(0x1F, D_8007A0D0, D_800CF3C0[levelIndex], 0x20);
             mmFree(D_800CF3C0);

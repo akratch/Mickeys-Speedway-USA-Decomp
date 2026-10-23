@@ -47,6 +47,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 #include "PR/os.h"
 #include "game/memory.h"
 #include "game/runlink.h"
@@ -72,7 +73,6 @@ extern void *mmAlloc(s32 size, s32 tag);
 extern void mmFree(void *address);
 extern s32 mmGetDelay(void);
 extern void mmSetDelay(s32 delay);
-extern void romCopy(u32 romAddress, u32 ramAddress, s32 size);
 extern s32 D_8007A670;
 extern s32 D_8007A674;
 extern s32 D_8007A678;
@@ -369,7 +369,7 @@ s32 runlinkDownloadCode(s32 overlayIndex) {
         }
         romCopy(overlay->romAddress + overlay->textSize + overlay->dataSize +
                     (u16) overlay->relocTableSize,
-                (u32) relocTable, overlay->relocTableSize2);
+                relocTable, overlay->relocTableSize2);
     }
 
     D_800D2DA8.textBase = (u8 *) overlay->vramBase;
@@ -381,13 +381,13 @@ s32 runlinkDownloadCode(s32 overlayIndex) {
         (u8 *) ((s32) D_800D2DA8.bssBase + overlay->bssSize);
 
     if (overlay->bssSize == 0) {
-        romCopy(overlay->romAddress, (u32) overlay->vramBase,
+        romCopy(overlay->romAddress, (void *) overlay->vramBase,
                 overlay->textSize + overlay->dataSize +
                     (u16) overlay->relocTableSize);
     } else {
         s32 *bss;
 
-        romCopy(overlay->romAddress, (u32) overlay->vramBase,
+        romCopy(overlay->romAddress, (void *) overlay->vramBase,
                 overlay->textSize + overlay->dataSize);
         bss = (s32 *) D_800D2DA8.bssBase;
         relocCount = (u32) overlay->bssSize >> 2;
@@ -395,7 +395,7 @@ s32 runlinkDownloadCode(s32 overlayIndex) {
             *bss++ = 0;
         }
         romCopy(overlay->romAddress + overlay->textSize + overlay->dataSize,
-                (u32) D_800D2DA8.relocBase,
+                D_800D2DA8.relocBase,
                 (u16) overlay->relocTableSize);
     }
 
@@ -821,13 +821,13 @@ void runlinkInit(void) {
     s32 i;
 
     overlayTable = mmAlloc((u32) (D_184C3E0 - D_184B680) + sizeof(OverlayHeader), 0x83);
-    romCopy((u32) D_184B680, (u32) (overlayTable + 1), (u32) (D_184C3E0 - D_184B680));
+    romCopy((u32) D_184B680, overlayTable + 1, (u32) (D_184C3E0 - D_184B680));
 
     overlayRomTable = mmAlloc((u32) (D_184B680 - D_1849730), 0x83);
-    romCopy((u32) D_1849730, (u32) overlayRomTable, (u32) (D_184B680 - D_1849730));
+    romCopy((u32) D_1849730, overlayRomTable, (u32) (D_184B680 - D_1849730));
 
     mainRelocTable = mmAlloc((u32) (D_1849730 - D_1848B70), 0x83);
-    romCopy((u32) D_1848B70, (u32) mainRelocTable, (u32) (D_1849730 - D_1848B70));
+    romCopy((u32) D_1848B70, mainRelocTable, (u32) (D_1849730 - D_1848B70));
     mainRelocTableCount = *(u32 *) mainRelocTable;
     mainRelocTable = (RelocationEntry *) ((u8 *) mainRelocTable + 4);
     overlayCount = ((u32) (D_184C3E0 - D_184B680) / sizeof(OverlayHeader)) + 1;
@@ -952,7 +952,7 @@ void runlinkResumeCode(s32 overlayIndex) {
             }
             romCopy(overlay->romAddress + overlay->textSize + overlay->dataSize +
                         (u16) overlay->relocTableSize,
-                    (u32) relocTable, overlay->relocTableSize2);
+                    relocTable, overlay->relocTableSize2);
         }
 
         D_800D2DA8.textBase = (u8 *) overlay->vramBase;
@@ -963,7 +963,7 @@ void runlinkResumeCode(s32 overlayIndex) {
         D_800D2DA8.relocBase =
             (u8 *) ((s32) D_800D2DA8.bssBase + overlay->bssSize);
 
-        romCopy(overlay->romAddress, (u32) overlay->vramBase, overlay->textSize);
+        romCopy(overlay->romAddress, (void *) overlay->vramBase, overlay->textSize);
 
         if (relocTable != NULL) {
             relocSavedDelay = mmGetDelay();

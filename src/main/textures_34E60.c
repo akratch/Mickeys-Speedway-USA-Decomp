@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 
 /*
  * PROVENANCE: the texture-TU placement and the small mode setter below were
@@ -14,7 +15,6 @@ typedef struct TextureRomTable {
 } TextureRomTable;
 
 extern void *mmAlloc(s32 size, s32 tag);
-extern s32 *piRomLoad(s32 assetId);
 extern TextureRomTable D_800D2FD0;
 extern s32 *D_800D2FD8;
 extern s32 *D_800D2FDC;
@@ -36,8 +36,8 @@ void texInitTextures(void) {
     D_800D2FDC = mmAlloc(0x280, 0x90);
     D_800D2FE0 = 0;
     D_800D2FF0 = 0;
-    D_800D2FD0.first = piRomLoad(3);
-    D_800D2FD0.second = piRomLoad(1);
+    D_800D2FD0.first = (s32 *) piRomLoad(3);
+    D_800D2FD0.second = (s32 *) piRomLoad(1);
     i = 0;
     for (; D_800D2FD0.first[i] != -1; i++) {
     }
@@ -48,7 +48,7 @@ void texInitTextures(void) {
     D_800D2FFC = mmAlloc(0x320, 0x90);
     D_800D3000 = mmAlloc(0x200, 0x90);
     D_800D3008 = 0;
-    D_800D2FF8 = piRomLoad(0x16);
+    D_800D2FF8 = (s32 *) piRomLoad(0x16);
     D_800D3004 = 0;
     while (D_800D2FF8[D_800D3004] != -1) {
         D_800D3004++;

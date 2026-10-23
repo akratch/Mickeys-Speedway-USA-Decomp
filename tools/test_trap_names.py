@@ -50,7 +50,7 @@ def build_elf(symbols, relocations, *, text=b"\0" * 0x40, data=b"\0" * 8,
     for name, value, bind, kind, section in locals_first:
         offset = len(strtab)
         strtab += name.encode() + b"\0"
-        shndx = 0 if section == "UND" else index[section]
+        shndx = 0 if section == "UND" else 0xFFF1 if section == "ABS" else index[section]
         symbol_index.setdefault(name, len(entries))
         entries.append(struct.pack(">IIIBBH", offset, value, 0, (bind << 4) | kind, 0, shndx))
     first_global = 1 + sum(1 for row in symbols if row[2] == 0)
@@ -258,6 +258,29 @@ class ListTests(unittest.TestCase):
 
 
 class LinkedInputTests(unittest.TestCase):
+    def test_local_import_bindings_do_not_shadow_an_export_definition(self):
+        elf = build_elf([
+            ("overlay5Spawn", 0xF0000010, 1, 2, ".overlay_005"),
+            ("overlay5Spawn", 0, 0, 0, "ABS"),
+            ("overlay5Spawn", 0, 1, 2, "UND"),
+            ("privateHelper", 0xF0000020, 0, 2, ".overlay_005"),
+        ], [], sections=[(".overlay_005", 0xF0000000, 0x40)])
+        functions, census = tn.overlay_functions(elf)
+        self.assertEqual(census, {"overlay5Spawn": 1})
+        self.assertNotIn((5, 0x20), functions)
+        self.assertEqual(tn.callee_name(functions[(5, 0x10)], census), "overlay5Spawn")
+
+    def test_distinct_visible_definitions_remain_ambiguous(self):
+        elf = build_elf([
+            ("shared", 0xF0000010, 1, 2, ".overlay_005"),
+            ("shared", 0xF0000010, 1, 2, ".overlay_006"),
+        ], [], sections=[(".overlay_005", 0xF0000000, 0x40),
+                         (".overlay_006", 0xF0000000, 0x40)])
+        functions, census = tn.overlay_functions(elf)
+        self.assertEqual(census["shared"], 2)
+        with self.assertRaisesRegex(tn.TrapError, "no unambiguous name"):
+            tn.callee_name(functions[(5, 0x10)], census)
+
     def test_overlay_functions_reads_overlay_sections_only(self):
         elf = build_elf(
             [("overlay5Spawn", 0xF0000010, 1, 2, ".overlay_005"),

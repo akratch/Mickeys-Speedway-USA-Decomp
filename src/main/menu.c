@@ -39,7 +39,7 @@ extern s32 D_8007C1A4;
 extern s32 D_8007C1AC;
 extern u8 D_8007C308[];
 extern s32 D_800C947C;
-extern s32 D_800D314C;
+extern void *D_800D314C;
 extern s32 D_800D3150[];
 extern s32 D_800D3168[];
 extern u8 D_800826C0[];
@@ -128,27 +128,22 @@ extern u32 menuPreviousButtons[4];
 u8 D_800D3044[4];
 extern u8 D_800D3498[];
 
-struct MenuCommand {
-    u32 w0;
-    u32 w1;
-};
-
 extern MenuCommand D_8007C2E8[];
 
 /* Historical display-list macro topology is significant to IDO's register
  * allocation in the rectangle batcher. */
 #define MENU_COMMAND(pkt, a, b) { \
     MenuCommand *_g = (MenuCommand *)(pkt); \
-    _g->w0 = (u32)(a); \
-    _g->w1 = (u32)(b); \
+    _g->words.w0 = (u32)(a); \
+    _g->words.w1 = (u32)(b); \
 }
 
 /* The same packet written through the function's one `command` carrier. */
 #define MENU_COMMAND_CARRIER(a, b) { \
     command = D_800D3140; \
     D_800D3140 = command + 1; \
-    command->w0 = (a); \
-    command->w1 = (b); \
+    command->words.w0 = (a); \
+    command->words.w1 = (b); \
 }
 
 typedef struct MenuRectangle {
@@ -576,7 +571,9 @@ u8 frontGetMode(void) {
  * argument -- the other Mickey callers agree). The locals keep their target
  * homes in declaration order: the four joyGetPressed halves and the two
  * call results are the whole 0x28 frame. */
-s32 frontUpdate(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList, s32 updateRate) {
+s32 frontUpdate(Gfx **gfxList, Mtx **mtxList,
+                struct MainVertex **vertexList, struct MainTriangle **triangleList,
+                s32 updateRate) {
     void *timerState;
     u8 *selection;
     u16 pressed0;

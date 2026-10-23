@@ -127,8 +127,6 @@ typedef struct {
     u8 active;
 } Overlay58Node;
 
-struct MenuCommand { u32 w0; u32 w1; };
-
 typedef struct SavesPackedEntry {
     s32 value;
     u8 name[3];

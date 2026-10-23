@@ -1,5 +1,6 @@
 #include "PR/ultratypes.h"
 #include "game/pi.h"
+#include "game/gzip.h"
 #include "game/memory.h"
 #include "n_audio/mbi.h"
 
@@ -54,7 +55,6 @@ typedef struct PulsatingLightData {
 
 extern MemoryPoolSlot *mmAlloc(s32 size, u32 tag);
 extern s32 byteswap32(u8 *address);
-extern u8 *func_8004D7E0(u8 *compressed, u8 *output);
 extern void mmFree(void *address);
 extern Gfx D_8007BDB0[];
 extern Gfx D_8007BDD8[];

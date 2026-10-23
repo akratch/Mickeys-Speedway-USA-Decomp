@@ -1,5 +1,6 @@
 #include "PR/ultratypes.h"
 #include "game/pi.h"
+#include "game/gzip.h"
 
 /*
  * PROVENANCE: this texture-TU sequence was compared with Jet Force Gemini's
@@ -46,7 +47,6 @@ extern void *mmAlloc2(s32 size, u32 colourTag);
 extern void *mmAllocAtAddr(s32 size, u8 *address, u32 colourTag);
 extern void mmFree(void *ptr);
 extern s32 byteswap32(u8 *address);
-extern void func_8004D7E0(void *compressed, void *output);
 extern void *align16(void *address);
 extern void func_80035E88(TextureHeader *texture, void *displayList);
 
@@ -142,7 +142,7 @@ TextureHeader *texLoadTexture(s32 textureId) {
         alignedAddress = (u8 *)((s32)alignedAddress - (s32)alignedAddress % 16);
         piRomLoadSection(assetSection, alignedAddress, assetOffset, assetSize);
         loadSize = (s32)(alignedAddress + 0x20);
-        func_8004D7E0((void *)loadSize, texture);
+        func_8004D7E0((u8 *)loadSize, (u8 *)texture);
         assetSize = uncompressedSize;
     }
 

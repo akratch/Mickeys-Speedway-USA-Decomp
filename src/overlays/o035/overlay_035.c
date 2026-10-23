@@ -112,7 +112,7 @@ static void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
 
     mainPreNMI();
     piRomLoadSection(0x25, (void *) temp, mdl, byteCount);
-    func_8004D7E0((void *)temp, D_800792E8);
+    func_8004D7E0((u8 *)temp, (u8 *)D_800792E8);
     mmFree(gOverlay35ModelTable);
     mainPreNMI();
 

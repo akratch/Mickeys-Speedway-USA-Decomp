@@ -13,6 +13,7 @@
 #include "PR/os_message.h"
 #include "PR/os_pi.h"
 #include "game/pi.h"
+#include "game/gzip.h"
 
 typedef struct AssetLookupTable {
     u32 fileCount;
@@ -37,7 +38,6 @@ void func_8004D5E0(OSPri priority, OSMesgQueue *queue, OSMesg *messages,
                    s32 count);
 void mainPreNMI(void);
 s32 byteswap32(void *address);
-void func_8004D7E0(void *compressed, void *output);
 void mmFree(void *address);
 
 /* PROVENANCE: body adapted from Jet Force Gemini's public decomp, src/pi.c:piInit. */

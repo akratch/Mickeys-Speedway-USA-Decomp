@@ -1,5 +1,7 @@
 #include "overlays/overlay_056.h"
 #include "game/math.h"
+#include "game/math.h"
+#include "n_audio/mbi.h"
 
 /*
  * Overlay 56, ADR 0006 consolidation: one translation unit in ROM order.
@@ -75,10 +77,6 @@ typedef struct O56Gfx {
     u32 w1;
 } O56Gfx;
 
-typedef struct O56Mtx {
-    f32 m[4][4];
-} O56Mtx;
-
 typedef struct O56Sprite {
     u8 pad0[6];
     u16 width;
@@ -134,7 +132,7 @@ typedef struct Overlay56Data {
 extern Overlay56Data gOverlay56Data;
 extern u8 *func_80028F54(void);
 extern void viGetCurrentSize(u32 *width, u32 *height);
-extern void camStandardOrtho(O56Gfx **displayList, O56Mtx **matrix);
+extern void camStandardOrtho(O56Gfx **displayList, Mtx **matrix);
 extern O56Object **func_80005750(s32 *count);
 extern O56Level *levelGetLevel(void);
 extern s32 frontGet2PlayerSplit(void);
@@ -144,12 +142,12 @@ extern void func_8002F618(O56Gfx **displayList, O56Marker *marker, s32 x, s32 y,
                          u8 red, u8 green, u8 blue, s32 alpha);
 extern void texDPTextureX(O56Gfx **displayList, void *texture, s32 mode,
                          s32 flags);
-extern void func_8002A82C(O56Mtx *matrix);
-extern void matrixTranslate(f32 x, f32 y, f32 z, O56Mtx *matrix);
-extern void func_8002A604(s16 angle, O56Mtx *matrix);
-extern void camCopyOrthoMatrix(O56Mtx *matrix);
-extern void mtxf_mul(O56Mtx *lhs, O56Mtx *rhs, O56Mtx *dest);
-extern void mtxf_to_mtx(O56Mtx *src, O56Mtx *dest);
+extern void func_8002A82C(MtxF matrix);
+extern void matrixTranslate(f32 x, f32 y, f32 z, MtxF matrix);
+extern void func_8002A604(s16 angle, MtxF matrix);
+extern void camCopyOrthoMatrix(MtxF matrix);
+extern void mtxf_mul(MtxF lhs, MtxF rhs, MtxF dest);
+extern void mtxf_to_mtx(MtxF src, Mtx *dest);
 extern s32 D_800C947C;
 extern s32 D_8007C1B0;
 extern u8 D_8007BEF8;
@@ -181,7 +179,7 @@ extern u8 D_80000030[];
     g->w1 = (unsigned int)(ptr); }
 #define O56_PRIMCOLOR(g, pkt, rgba) { g = (O56Gfx *)(pkt); g->w0 = O56_SHIFTL(0xFA, 24, 8); g->w1 = (rgba); }
 
-void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCursor,
+void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, Mtx **matrixCursor,
                                       s32 updateRate) {
     f32 x;
     f32 z;
@@ -203,16 +201,16 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     s32 alpha;
     s32 i;
     f32 cosA;
-    O56Mtx mtxA;
-    O56Mtx mtxB;
-    O56Mtx mtxC;
+    MtxF mtxA;
+    MtxF mtxB;
+    MtxF mtxC;
     u32 screenWidth;
     u32 screenHeight;
     O56Marker marker;
     u8 *gameState;
     f32 sinA;
     O56Gfx *dl;
-    O56Mtx *mtx;
+    Mtx *mtx;
     u32 width;
     u32 height;
     f32 mapY;
@@ -286,7 +284,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
         }
         if (i < D_8007BEF4) {
             texDPTextureX(&dl, NULL, 5, 0);
-            func_8002A82C(&mtxA);
+            func_8002A82C(mtxA);
             if (D_8007BF08 != 0) {
                 mapX += (f32)(D_78[slot] - level->offsetX + 520);
             } else {
@@ -295,15 +293,15 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
             mapY += (f32)(level->offsetY + D_84[slot]);
             matrixTranslate(mapX - (f32)(screenWidth >> 1),
                             (f32)(screenHeight >> 1) - mapY,
-                            0.0f, &mtxA);
+                            0.0f, mtxA);
             if (D_8007BF08 != 0) {
-                func_8002A604(-(obj->angle - level->angle), &mtxA);
+                func_8002A604(-(obj->angle - level->angle), mtxA);
             } else {
-                func_8002A604(obj->angle - level->angle, &mtxA);
+                func_8002A604(obj->angle - level->angle, mtxA);
             }
-            camCopyOrthoMatrix(&mtxB);
-            mtxf_mul(&mtxA, &mtxB, &mtxC);
-            mtxf_to_mtx(&mtxC, mtx);
+            camCopyOrthoMatrix(mtxB);
+            mtxf_mul(mtxA, mtxB, mtxC);
+            mtxf_to_mtx(mtxC, mtx);
             O56_MATRIX(_g, dl++, mtx);
             mtx++;
             shade = (racer->alpha * alpha) >> 8;

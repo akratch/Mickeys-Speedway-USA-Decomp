@@ -204,6 +204,8 @@ still referenced by overlay75 or overlay75 itself is refused with actual callers
 Overlay75 actually calls the new module's offset-zero function and references
 its BSS export; both must have authentic raw and final SYMBOL identities.
 The resident relocation count remains 375; this is not a resident-growth test.
+Before emitting wrappers, the driver rejects signed loader allocation overflow
+including RT1 and any relocation whose complete four-byte word escapes its body.
 
 Each run preserves a fresh `build/editable-layout/check-*` directory containing
 commands, compiler/module receipts, generated inputs, final maps/images and a

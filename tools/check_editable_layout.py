@@ -76,7 +76,10 @@ def checked_layout(main, ort, modules, cfg):
         record.encode()
     for m in modules:
         require(0 <= m.header.text and 0 <= m.header.data and 0 <= m.header.bss, "negative module size")
-        require(m.header.text+m.header.data+m.header.bss < 1 << 31, "module allocation overflow")
+        # runlinkDownloadCode adds (u16)relocTableSize to the three s32
+        # extents before mmAlloc; RT2 has its own allocation.
+        allocation=m.header.text+m.header.data+m.header.bss+codec.RECORD_SIZE*len(m.table1)
+        require(allocation < 1 << 31, "module allocation overflow including RT1")
         require(8*len(m.table1) < 1 << 15 and 8*len(m.table2) < 1 << 16, "runtime relocation size overflow")
         seen=set()
         for table in (m.table1, m.table2):
@@ -85,7 +88,8 @@ def checked_layout(main, ort, modules, cfg):
                 seen.add((r.site,r.type))
                 require(r.type in rp.TYPE_NAMES and 0 <= r.op <= 3, "unsupported relocation")
                 require(0 <= r.symidx < 1 << 32, "relocation index overflow")
-                require(0 <= r.site < len(m.image), "relocation site escapes body")
+                # Every PatchInstruction mode writes the full u32 word.
+                require(0 <= r.site and r.site+4 <= len(m.image), "relocation word escapes body")
                 if r.op == codec.OP_SYMBOL: require(r.symidx < len(ort), "module ORT index out of range")
                 r.encode()
         for entry in (m.header.init, m.header.resume):

@@ -35,6 +35,32 @@ class LayoutTests(unittest.TestCase):
             pilot.checked_layout([], [codec.OrtRow(1,0)],
                 [replace(self.module,table2=[codec.Record(0,0,4,1)]*2)], self.cfg)
 
+    def test_loader_allocation_includes_rt1_but_allocates_rt2_separately(self):
+        record=codec.Record(0,0,codec.R_MIPS_26,codec.OP_SYMBOL)
+        maximum=(1<<31)-1
+        # The ROM-backed body stays tiny; only its declared NOBITS grows.
+        exact=replace(self.module,header=replace(self.module.header,bss=maximum-32-codec.RECORD_SIZE),
+                      table1=[record])
+        pilot.checked_layout([], [codec.OrtRow(1,0)], [exact], self.cfg)
+        overflow=replace(exact,header=replace(exact.header,bss=exact.header.bss+1))
+        with self.assertRaisesRegex(pilot.PilotError,"allocation overflow including RT1"):
+            pilot.checked_layout([], [codec.OrtRow(1,0)], [overflow], self.cfg)
+        separate=replace(self.module,header=replace(self.module.header,bss=maximum-32),
+                         table2=[record])
+        pilot.checked_layout([], [codec.OrtRow(1,0)], [separate], self.cfg)
+
+    def test_every_relocation_requires_its_complete_four_byte_word(self):
+        for table in ("table1","table2"):
+            for kind in codec.TYPE_NAMES:
+                last=codec.Record(0,28,kind,codec.OP_SYMBOL)
+                valid=replace(self.module,**{table:[last]})
+                pilot.checked_layout([], [codec.OrtRow(1,0)], [valid], self.cfg)
+                for site in (29,30,31):
+                    partial=replace(valid,**{table:[replace(last,site=site)]})
+                    with self.subTest(table=table,type=kind,site=site):
+                        with self.assertRaisesRegex(pilot.PilotError,"relocation word escapes body"):
+                            pilot.checked_layout([], [codec.OrtRow(1,0)], [partial], self.cfg)
+
     def test_removal_reports_actual_caller_and_allows_unreferenced_tail(self):
         tables=codec.Tables([], [codec.OrtRow(2,0)],
             [replace(self.module,table1=[codec.Record(0,0,4,0)]),replace(self.module,number=2)])

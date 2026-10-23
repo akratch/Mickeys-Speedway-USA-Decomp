@@ -1,5 +1,34 @@
 #include "overlays/overlay_037.h"
 
+#define O37_PERIOD 6.283185f
+#define O37_PHYSICAL(address) ((u32)((char *)(address) - 0x80000000))
+
+Overlay37Vertex gOverlay37Vertices[12] = {
+    {  0,   5, 0, 255, 255, 255, 255},
+    { -5,  20, 0, 255, 255, 255, 255},
+    {  5,  20, 0, 255, 255, 255, 255},
+    {  5,   0, 0, 255, 255, 255, 255},
+    { 20,   5, 0, 255, 255, 255, 255},
+    { 20,  -5, 0, 255, 255, 255, 255},
+    {  0,  -5, 0, 255, 255, 255, 255},
+    {  5, -20, 0, 255, 255, 255, 255},
+    { -5, -20, 0, 255, 255, 255, 255},
+    { -5,   0, 0, 255, 255, 255, 255},
+    {-20,  -5, 0, 255, 255, 255, 255},
+    {-20,   5, 0, 255, 255, 255, 255},
+};
+
+#define O37_TRIANGLE(i0, i1, i2) \
+    {0x40, i0, i1, i2, {{512, 0}, {0, 1024}, {1024, 1024}}}
+Overlay37Triangle gOverlay37Triangles[4] = {
+    O37_TRIANGLE(0, 1, 2),
+    O37_TRIANGLE(3, 4, 5),
+    O37_TRIANGLE(6, 7, 8),
+    O37_TRIANGLE(9, 10, 11),
+};
+
+Overlay37Record gOverlay37Records[4] = {{0}};
+
 void overlay37Init(Overlay37Object *object, Overlay37Init *init) {
     Overlay37State *state;
 
@@ -31,7 +60,7 @@ void overlay37Update(Overlay37Object *object, s32 ticks) {
     target = state->target;
     if (target != 0) {
         resource = (Overlay37Resource *)target->state;
-        period = gOverlay37Period;
+        period = O37_PERIOD;
         object->x = ((Overlay37Resource *)target->state)->x448;
         object->y = resource->y44C;
         object->z = resource->z450;
@@ -100,7 +129,7 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
     s32 blue;
 
     camera = camGetPtr();
-    frame = func_80021964();
+    frame = camGetNo();
     state = object->state;
     if (state->target == NULL) {
         return;
@@ -130,7 +159,7 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
         blue = blend * 13.0f;
     }
 
-    func_8002A250(1, resource->effectSource, state, &transform.position);
+    pointListRPY(1, resource->effectSource, state, &transform.position);
     transform.position.x += resource->x448;
     transform.position.y += resource->y44C;
     transform.position.z += resource->z450;
@@ -146,16 +175,16 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
     transform.position.y += deltaY * 0.5f;
     transform.position.z += deltaZ * 0.5f;
 
-    func_800244EC(commands, renderContext, &transform, 1.0f, 0.0f);
+    camPushModelMtx(commands, renderContext, &transform, 1.0f, 0.0f);
     texDPTextureX(commands, *object->resource, 0x10, 0);
 
     O37_SET_PRIM_COLOR((*commands)++, 0, 0, red, green, blue, 255);
-    O37_VERTEX((*commands)++, gOverlay37DisplayData, 12, 0);
-    O37_POLYGON((*commands)++, gOverlay37DisplayData78, 4, 1);
+    O37_VERTEX((*commands)++, O37_PHYSICAL(gOverlay37Vertices), 12, 0);
+    O37_POLYGON((*commands)++, O37_PHYSICAL(gOverlay37Triangles), 4, 1);
     O37_PIPE_SYNC((*commands)++);
     O37_SET_PRIM_COLOR((*commands)++, 0, 0, 255, 255, 255, 255);
 
-    func_8002460C(commands);
+    camPopModelMtx(commands);
 }
 
 void overlay37RecordMinimum(s32 index, f32 value) {

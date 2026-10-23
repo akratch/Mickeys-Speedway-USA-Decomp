@@ -1325,20 +1325,6 @@ overlay7CommitSelection_o036Reloc = 0xf0000000;
 partUpdateTriggers_o036Reloc = 0xf0000000;
 texAnimateSprite_o036Reloc = 0xf0000000;
 
-/* overlay 37: overlay_037.c.o */
-camGetPtr_o037Reloc = 0xf0000000;
-func_80006EA0_o037Reloc = 0xf0000000;
-func_80021964_o037Reloc = 0xf0000000;
-func_800244EC_o037Reloc = 0xf0000000;
-func_8002460C_o037Reloc = 0xf0000000;
-func_8002A250_o037Reloc = 0xf0000000;
-func_8002A8C0_o037Reloc = 0xf0000000;
-gOverlay37DisplayData = 0x80000000;
-gOverlay37DisplayData78 = 0x80000078;
-gOverlay37Period = 0x00000000;
-gOverlay37Records = 0x000000b8;
-texDPTextureX_o037Reloc = 0xf0000000;
-
 /* overlay 38: overlay_038.c.o */
 Arctanf_o038Reloc = 0xf0000000;
 camGetPtr_o038Reloc = 0xf0000000;
@@ -4241,11 +4227,11 @@ func_overlay_036_F000150C_18849C4 = overlay36UpdatePeers;
 func_overlay_036_F0001688_1884B40 = overlay36SpawnFinalEffect;
 
 /* overlay 37: overlay_037.c.o */
+func_overlay_037_F000019C_18857BC = overlay37RenderEffect;
+func_overlay_037_F0000544_1885B64 = overlay37RecordActive;
+func_overlay_037_F00004F4_1885B14 = overlay37RecordMinimum;
 func_overlay_037_F0000000_1885620 = overlay37Init;
 func_overlay_037_F0000088_18856A8 = overlay37Update;
-func_overlay_037_F000019C_18857BC = overlay37RenderEffect;
-func_overlay_037_F00004F4_1885B14 = overlay37RecordMinimum;
-func_overlay_037_F0000544_1885B64 = overlay37RecordActive;
 
 /* overlay 39: overlay_039.c.o */
 func_overlay_039_F0000000_18866A0 = overlay39Write;

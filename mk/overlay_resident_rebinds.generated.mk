@@ -621,16 +621,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay_036.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym partUpdateTriggers=partUpdateTriggers_o036Reloc \
 	--redefine-sym texAnimateSprite=texAnimateSprite_o036Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camGetPtr=camGetPtr_o037Reloc \
-	--redefine-sym func_80006EA0=func_80006EA0_o037Reloc \
-	--redefine-sym func_80021964=func_80021964_o037Reloc \
-	--redefine-sym func_800244EC=func_800244EC_o037Reloc \
-	--redefine-sym func_8002460C=func_8002460C_o037Reloc \
-	--redefine-sym func_8002A250=func_8002A250_o037Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o037Reloc \
-	--redefine-sym texDPTextureX=texDPTextureX_o037Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay_038.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o038Reloc \
 	--redefine-sym camGetPtr=camGetPtr_o038Reloc \

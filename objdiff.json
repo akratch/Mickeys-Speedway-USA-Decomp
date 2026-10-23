@@ -2088,16 +2088,6 @@
       }
     },
     {
-      "name": "assets/overlays/o037/overlay_037_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o037/overlay_037_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o037"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o037/overlay_037_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o037/overlay_037_reloc1.bin.o",
       "metadata": {

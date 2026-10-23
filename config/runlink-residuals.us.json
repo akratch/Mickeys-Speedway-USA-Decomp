@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 148, "borrowed_records": 8928},
+  "totals": {"differences": 148, "borrowed_records": 8916},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -256,7 +256,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1882,
+      "count": 1878,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -866,10 +866,6 @@
         [36, "gOverlay36WorldStateReloc", 2],
         [36, "overlay36ActionReloc", 2],
         [36, "overlay36ReleaseEntityReloc", 1],
-        [37, "gOverlay37DisplayData", 2],
-        [37, "gOverlay37DisplayData78", 2],
-        [37, "gOverlay37Period", 2],
-        [37, "gOverlay37Records", 6],
         [38, "gO38ObjectTriangles", 2],
         [38, "gO38ObjectVertices", 2],
         [38, "gO38ParticleTriangles", 2],
@@ -2194,7 +2190,7 @@
     },
     "rodata-base": {
       "about": "module rodata base the objects do not determine (module)",
-      "count": 35,
+      "count": 34,
       "entries": [
         [1],
         [2],
@@ -2206,7 +2202,6 @@
         [20],
         [22],
         [36],
-        [37],
         [43],
         [45],
         [46],

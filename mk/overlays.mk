@@ -680,9 +680,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o025/overlay_025.c.o: CFLAGS += -Wab,-r4300_mul
 # body, which the former hand-unrolled spelling only matched with unrolling
 # disabled. Its .text carries the trailing pad, so nothing is trimmed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 37 is one translation unit at the overlay flag set (the effect
-# renderer's blend multiplies carry the R4300 FP-mul hazard nops). Its .text
-# is the module's text, trailing pad included, so nothing is trimmed.
+# Overlay 37 directly owns its compact geometry, distance records and period.
+MODULE_LINKED_OVERLAYS += 037
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 40 is one translation unit at the overlay flag set; its .text carries
 # the trailing pad, so nothing is trimmed.

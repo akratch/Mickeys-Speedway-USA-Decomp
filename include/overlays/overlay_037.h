@@ -64,6 +64,20 @@ typedef struct Overlay37Record {
     f32 distance;
 } Overlay37Record;
 
+typedef struct Overlay37Vertex {
+    s16 x, y, z;
+    u8 red, green, blue, alpha;
+} Overlay37Vertex;
+
+typedef struct Overlay37UV {
+    s16 u, v;
+} Overlay37UV;
+
+typedef struct Overlay37Triangle {
+    u8 flags, firstIndex, secondIndex, thirdIndex;
+    Overlay37UV coordinates[3];
+} Overlay37Triangle;
+
 typedef struct Overlay37Command {
     u32 w0;
     u32 w1;
@@ -93,23 +107,22 @@ typedef struct Overlay37Transform {
     Overlay37Position position;
 } Overlay37Transform;
 
-extern f32 gOverlay37Period;
 extern Overlay37Record gOverlay37Records[4];
-extern u8 gOverlay37DisplayData[];
-extern u8 gOverlay37DisplayData78[];
+extern Overlay37Vertex gOverlay37Vertices[12];
+extern Overlay37Triangle gOverlay37Triangles[4];
 
 extern Overlay37Camera *camGetPtr(void);
-extern s32 func_80021964(void);
+extern s32 camGetNo(void);
 extern f32 func_8002A8C0(s32 angle);
 extern void func_80006EA0(Overlay37Object *object);
-extern void func_8002A250(s32 mode, void *source, Overlay37State *state,
+extern void pointListRPY(s32 mode, void *source, Overlay37State *state,
                           Overlay37Position *position);
-extern void func_800244EC(Overlay37Command **commands, void *renderContext,
+extern void camPushModelMtx(Overlay37Command **commands, void *renderContext,
                           Overlay37Transform *transform, f32 scale,
                           f32 extra);
 extern void texDPTextureX(Overlay37Command **commands, void *resource,
                           s32 mode, s32 flags);
-extern void func_8002460C(Overlay37Command **commands);
+extern void camPopModelMtx(Overlay37Command **commands);
 
 void overlay37Init(Overlay37Object *object, Overlay37Init *init);
 void overlay37Update(Overlay37Object *object, s32 ticks);

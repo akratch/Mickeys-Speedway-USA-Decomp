@@ -24,6 +24,7 @@ import runlink_pack as rp
 SECTIONS = (".text", ".data", ".rodata", ".bss")
 ABI_METADATA = (".reginfo", ".MIPS.abiflags")
 NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_.$]*\Z")
+IMPORT_PREFIX = "__runlink_import_"
 
 
 class LinkError(RuntimeError):
@@ -70,6 +71,8 @@ def prepare(raw, path, exports, objcopy, rebind, commands=None):
     if unexpected:
         raise LinkError("unsupported allocated sections: " + ", ".join(unexpected))
     external, retarget = binding_plan(elf, exports)
+    if {IMPORT_PREFIX + name for name in external} & {s.name for s in elf.symbols}:
+        raise LinkError("generated import binding collides with an input symbol")
     aliases = {index: f"__runlink_export_{index}" for _name, index, _row in retarget.values()}
     if set(aliases.values()) & {s.name for s in elf.symbols}:
         raise LinkError("generated export binding collides with an input symbol")
@@ -150,7 +153,10 @@ SECTIONS {{
     if external:
         args = [objcopy]
         for name in sorted(external):
-            args += ["--localize-symbol", name]
+            # These are linker bindings, not definitions of the imported C
+            # functions/objects. Keep their names out of canonical lookups.
+            args += ["--localize-symbol", IMPORT_PREFIX + name,
+                     "--redefine-sym", name + "=" + IMPORT_PREFIX + name]
         run(args + [linked, localized], commands)
     else:
         shutil.copyfile(linked, localized)

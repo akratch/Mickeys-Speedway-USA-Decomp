@@ -27,7 +27,9 @@ def _pack_symbol(name, value, size, info, shndx):
 
 
 def build_object(*, statics=(("helper", 0x10, 0x10), ("tail", 0x20, 0x8)),
-                 placeholder=True, entry_size=0x10, asmproc_local=False):
+                 placeholder=True, entry_size=0x10, asmproc_local=False,
+                 bss=(), nested_bss=(), nil_bss=(), bss_size=0x20,
+                 bss_kind=ss.SHT_NOBITS, bss_flags=2, existing_bss=(), emit_bss=True):
     text = bytes(0x30)
     strings = bytearray(b"\0")
 
@@ -40,28 +42,59 @@ def build_object(*, statics=(("helper", 0x10, 0x10), ("tail", 0x20, 0x8)),
     symbols = [_pack_symbol(0, 0, 0, 0, 0), _pack_symbol(0, 0, len(text), 3, 1)]
     if asmproc_local:
         symbols.append(_pack_symbol(string("helper"), 0x10, 0, ss.STT_FUNC, 1))
+    has_bss = bool(bss or nested_bss or nil_bss or existing_bss) and emit_bss
+    bss_symbol = None
+    if has_bss:
+        bss_symbol = len(symbols)
+        symbols.append(_pack_symbol(0, 0, bss_size, 3, 7))
+    for name, value, size, kind in existing_bss:
+        if kind == "local":
+            symbols.append(_pack_symbol(string(name), value, size, ss.STT_OBJECT, 7))
     first_global = len(symbols)
+    for name, value, size, kind in existing_bss:
+        if kind != "local":
+            symbols.append(_pack_symbol(string(name), value, size,
+                                        STB_GLOBAL << 4 | ss.STT_OBJECT,
+                                        0 if kind == "import" else 7))
     if placeholder and not asmproc_local:
         symbols.append(_pack_symbol(string("helper"), 0, 0x10, STB_GLOBAL << 4, 0))
     symbols.append(_pack_symbol(string("entry"), 0, entry_size, STB_GLOBAL << 4 | ss.STT_FUNC, 1))
     callee = len(symbols)
     symbols.append(_pack_symbol(string("callee"), 0, 0, STB_GLOBAL << 4 | ss.STT_FUNC, 0))
     rel = struct.pack(">II", 0x4, callee << 8 | R_MIPS_26)
+    if bss_symbol is not None:
+        rel += struct.pack(">IIII", 0x8, bss_symbol << 8 | 5, 0xC, bss_symbol << 8 | 6)
 
     # .mdebug: header, local symbols, local strings, one file descriptor.
     procs = [("entry", 0, entry_size, ss.ST_PROC)] + [
         (name, start, size, ss.ST_STATIC_PROC) for name, start, size in statics]
     local_strings = bytearray(b"\0")
     local_syms = b""
-    for name, start, size, st in procs:
+
+    def debug(name, value, st, sc):
+        nonlocal local_syms
         iss = len(local_strings)
         local_strings.extend(name.encode() + b"\0")
-        local_syms += struct.pack(">III", iss, start, st << 26 | ss.SC_TEXT << 21)
-        local_syms += struct.pack(">III", iss, size, ss.ST_END << 26 | ss.SC_TEXT << 21)
+        local_syms += struct.pack(">III", iss, value, st << 26 | sc << 21)
 
-    shstr = b"\0.text\0.rel.text\0.mdebug\0.symtab\0.strtab\0.shstrtab\0"
+    debug("fixture.c", 0, ss.ST_FILE, ss.SC_TEXT)
+    for name, offset in bss:
+        debug(name, offset, ss.ST_STATIC, ss.SC_BSS)
+    for name, offset in nil_bss:
+        debug(name, offset, ss.ST_STATIC, 0)
+    for name, start, size, st in procs:
+        debug(name, start, st, ss.SC_TEXT)
+        if name == "entry" and nested_bss:
+            debug("", 0, ss.ST_BLOCK, ss.SC_TEXT)
+            for nested_name, offset in nested_bss:
+                debug(nested_name, offset, ss.ST_STATIC, ss.SC_BSS)
+            debug("", 0, ss.ST_END, ss.SC_TEXT)
+        debug(name, size, ss.ST_END, ss.SC_TEXT)
+    debug("fixture.c", 0, ss.ST_END, ss.SC_TEXT)
+
+    shstr = b"\0.text\0.rel.text\0.mdebug\0.symtab\0.strtab\0.shstrtab\0.bss\0"
     names = {n: shstr.index(n.encode() + b"\0") for n in
-             (".text", ".rel.text", ".mdebug", ".symtab", ".strtab", ".shstrtab")}
+             (".text", ".rel.text", ".mdebug", ".symtab", ".strtab", ".shstrtab", ".bss")}
     body = bytearray(0x34)
     placed = {}
 
@@ -92,18 +125,22 @@ def build_object(*, statics=(("helper", 0x10, 0x10), ("tail", 0x20, 0x8)),
     body.extend(bytes(-len(body) % 4))
     shoff = len(body)
     order = [".text", ".rel.text", ".mdebug", ".symtab", ".strtab", ".shstrtab"]
-    kinds = {".text": 1, ".rel.text": ss.SHT_REL, ".mdebug": 0x70000005,
+    if has_bss:
+        order.append(".bss")
+        placed[".bss"] = (0, bss_size)
+    kinds = {".bss": bss_kind, ".text": 1, ".rel.text": ss.SHT_REL, ".mdebug": 0x70000005,
              ".symtab": ss.SHT_SYMTAB, ".strtab": 3, ".shstrtab": 3}
     links = {".rel.text": (4, 1), ".symtab": (5, first_global)}
     body.extend(bytes(40))
     for name in order:
         offset, length = placed[name]
         link, info = links.get(name, (0, 0))
-        body.extend(struct.pack(">10I", names[name], kinds[name], 0, 0, offset, length,
+        body.extend(struct.pack(">10I", names[name], kinds[name], bss_flags if name == ".bss" else 6 if name == ".text" else 0,
+                                0, offset, length,
                                 link, info, 4, {".symtab": 16, ".rel.text": 8}.get(name, 0)))
     ident = b"\x7fELF\x01\x02\x01" + bytes(9)
     body[:0x34] = ident + struct.pack(">HHIIIIIHHHHHH", 1, 8, 1, 0, 0, shoff, 0,
-                                      0x34, 0, 0, 40, len(order) + 1, len(order))
+                                      0x34, 0, 0, 40, len(order) + 1, order.index(".shstrtab") + 1)
     return bytes(body)
 
 
@@ -178,6 +215,94 @@ class StaticSymbolsTest(unittest.TestCase):
     def test_overlapping_static_refuses(self):
         with self.assertRaisesRegex(ss.Failure, "overlap"):
             ss.add_static_symbols(build_object(statics=(("helper", 0x8, 0x10),)))
+
+
+    def test_file_scope_bss_anchors_without_static_functions(self):
+        original = build_object(statics=(), placeholder=False,
+                                bss=(("pool", 0), ("head", 0x10)))
+        data, added = ss.add_static_symbols(original)
+        self.assertEqual(added, ["head", "pool"])
+        rows, first_global, _ = symbols(data)
+        self.assertIn(("pool", 0, 0, ss.STT_OBJECT, 7), rows[:first_global])
+        self.assertIn(("head", 0x10, 0, ss.STT_OBJECT, 7), rows[:first_global])
+        self.assertEqual([row[0] for row in rows[first_global:]], ["entry", "callee"])
+        self.assertEqual(ss.add_static_symbols(data), (data, []))
+        for name in (".text", ".mdebug"):
+            self.assertEqual(section_bytes(data, name), section_bytes(original, name))
+        self.assertEqual(relocation_targets(data), relocation_targets(original))
+        before = section_bytes(original, ".rel.text")
+        after = section_bytes(data, ".rel.text")
+        for index in range(0, len(before), 8):
+            self.assertEqual(before[index:index + 4], after[index:index + 4])
+            self.assertEqual(before[index + 7], after[index + 7])
+
+    def test_functions_and_bss_are_restored_together(self):
+        original = build_object(bss=(("pool", 0),))
+        data, added = ss.add_static_symbols(original)
+        self.assertEqual(added, ["helper", "pool", "tail"])
+        rows, first_global, _ = symbols(data)
+        self.assertIn(("helper", 0x10, 0x10, ss.STT_FUNC, 1), rows[:first_global])
+        self.assertIn(("pool", 0, 0, ss.STT_OBJECT, 7), rows[:first_global])
+        self.assertEqual(relocation_targets(data), relocation_targets(original))
+        self.assertEqual(ss.add_static_symbols(data), (data, []))
+
+    def test_unbalanced_bss_scope_and_linked_input_refuse(self):
+        original = bytearray(build_object(bss=(("pool", 0),)))
+        struct.pack_into(">H", original, 0x10, 2)
+        with self.assertRaisesRegex(ss.Failure, "relocatable"):
+            ss.add_static_symbols(bytes(original))
+        original = bytearray(build_object(bss=(("pool", 0),)))
+        mdebug = next(s for s in ss._sections(original) if s[10] == ".mdebug")
+        words = struct.unpack_from(">24I", original, mdebug[4])
+        # Remove the compiler's file-scope opener without altering any symbol value.
+        struct.pack_into(">I", original, words[9] + 8, ss.SC_TEXT << 21)
+        with self.assertRaisesRegex(ss.Failure, "ambiguous .mdebug scope"):
+            ss.add_static_symbols(bytes(original))
+
+    def test_nested_and_unemitted_bss_are_not_restored(self):
+        original = build_object(statics=(), placeholder=False,
+                                nested_bss=(("cache", 4),), nil_bss=(("unemitted", 8),))
+        self.assertEqual(ss.add_static_symbols(original), (original, []))
+
+    def test_ambiguous_file_and_nested_names_refuse(self):
+        with self.assertRaisesRegex(ss.Failure, "ambiguous nested"):
+            ss.add_static_symbols(build_object(bss=(("cache", 0),),
+                                               nested_bss=(("cache", 4),)))
+        with self.assertRaisesRegex(ss.Failure, "recorded twice"):
+            ss.add_static_symbols(build_object(bss=(("cache", 0), ("cache", 4))))
+
+    def test_bss_anchors_require_real_allocated_nobits_and_interior_offset(self):
+        for options in ({"bss_kind": 1}, {"bss_flags": 0}, {"emit_bss": False}):
+            with self.subTest(options=options):
+                with self.assertRaisesRegex(ss.Failure, "allocated NOBITS|unambiguous .bss"):
+                    ss.add_static_symbols(build_object(bss=(("pool", 0),), **options))
+        for offset in (0x20, 0xFFFFFFFF):
+            with self.subTest(offset=offset):
+                with self.assertRaisesRegex(ss.Failure, "outside .bss"):
+                    ss.add_static_symbols(build_object(bss=(("pool", offset),)))
+
+    def test_existing_valid_local_bss_definition_is_preserved(self):
+        for size in (0, 4):
+            with self.subTest(size=size):
+                original = build_object(statics=(), placeholder=False, bss=(("pool", 0),),
+                                        existing_bss=(("pool", 0, size, "local"),))
+                self.assertEqual(ss.add_static_symbols(original), (original, []))
+
+    def test_bss_collisions_do_not_convert_imports_globals_or_functions(self):
+        for kind in ("import", "global"):
+            with self.subTest(kind=kind):
+                with self.assertRaisesRegex(ss.Failure, "conflicts"):
+                    ss.add_static_symbols(build_object(bss=(("pool", 0),),
+                                                       existing_bss=(("pool", 0, 0, kind),)))
+        with self.assertRaisesRegex(ss.Failure, "conflicts"):
+            ss.add_static_symbols(build_object(bss=(("entry", 0),)))
+        with self.assertRaisesRegex(ss.Failure, "names collide"):
+            ss.add_static_symbols(build_object(bss=(("helper", 0),)))
+        for value, size in ((4, 0), (0, 0x24)):
+            with self.subTest(value=value, size=size):
+                with self.assertRaisesRegex(ss.Failure, "conflicts"):
+                    ss.add_static_symbols(build_object(bss=(("pool", 0),),
+                                                       existing_bss=(("pool", value, size, "local"),)))
 
 
 if __name__ == "__main__":

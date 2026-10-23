@@ -147,6 +147,9 @@ class CensusTests(unittest.TestCase):
             for name in ("src/owner.inc", "include/owner.h", "config/normalizations/owner.mk",
                          "config/normalizations/owner.filter.spec", "mickey.us.yaml",
                          "tools/ido/cc", "tools/ido/cfe",
+                         "tools/externalize_elf_section.py", "tools/postprocess_guard.py",
+                         "tools/permute_batch.py", "tools/sweep_receipts.py",
+                         "tools/asm-processor/asm_processor.py",
                          "tools/binutils/mips64-elf-ld", "tools/binutils/mips64-elf-objcopy"):
                 path = root / name
                 path.parent.mkdir(parents=True, exist_ok=True)

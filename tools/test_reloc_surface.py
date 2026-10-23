@@ -75,6 +75,37 @@ class FakeElf:
         return list(self._relocations)
 
 
+class LocalAbsoluteSurfaceTests(unittest.TestCase):
+    def surface(self, value, binding=0):
+        elf = FakeElf([( "", 0, 0, 0, 0),
+                       (".rodata", value, 0, binding << 4, rs.SHN_ABS)],
+                      [(".text", 0, rs.R_MIPS_LO16, 1)])
+        elf.section_bytes = lambda name: struct.pack(">I", 0x10)
+        elf.section = lambda name: (1, None)
+        records = [{"target_offset": 0, "mode": rs.R_MIPS_LO16, "op_name": "LOCAL"}]
+        with mock.patch.object(rs, "Elf", return_value=elf), \
+             mock.patch.object(rs, "tu_base", return_value=(0, 4)), \
+             mock.patch.object(rs.ot, "read_headers", return_value=[]), \
+             mock.patch.object(rs.ot, "build_modules", return_value=[{"text_size": 4}]), \
+             mock.patch.object(rs.ot, "module_section_ranges", return_value={"text": (0, 4)}):
+            return rs.synthesize(Path("owner.o"), 1, struct.pack(">I", 0xF8), [], records)
+
+    def test_local_absolute_is_checked_without_global_assignment(self):
+        _sites, values, conflicts, _alignment = self.surface(0xE8)
+        self.assertEqual({}, values)
+        self.assertEqual([], conflicts)
+
+    def test_wrong_local_absolute_fails_instead_of_being_reassigned(self):
+        _sites, values, conflicts, _alignment = self.surface(0xE0)
+        self.assertEqual({}, values)
+        self.assertIn("local absolute binding", conflicts[0][1])
+
+    def test_global_assignment_behavior_is_unchanged(self):
+        _sites, values, conflicts, _alignment = self.surface(0xE8, binding=1)
+        self.assertEqual({".rodata": 0xE8}, values)
+        self.assertEqual([], conflicts)
+
+
 class ResidentRebindSafetyTests(unittest.TestCase):
     OBJ = Path("build/src/overlays/o014/example.c.o")
 

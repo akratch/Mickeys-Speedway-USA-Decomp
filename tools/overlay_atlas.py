@@ -266,6 +266,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     44: [(0x0, 0x50, "overlay_044", ".rodata")],
     8: [
         (0x0310, 0x0360, "overlay8SelectorTables", ".data"),
+        (0x0360, 0x03E0, "overlay8SelectorFlags", ".data"),
         (0x03E0, 0x0520, "overlay8EffectTables", ".data"),
         (0x2378, 0x2418, "overlay8MotionConstants", ".data"),
     ],
@@ -316,6 +317,7 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
     (101, "overlay101State", ".data"),
     (101, "overlay101ClockData", ".data"),
     (101, "overlay101EventStreams", ".data"),
+    (8, "overlay8SelectorFlags", ".data"),
     (8, "overlay8MotionConstants", ".data"),
     (8, "overlay8EffectTables", ".data"),
     (8, "overlay8SelectorTables", ".data"),

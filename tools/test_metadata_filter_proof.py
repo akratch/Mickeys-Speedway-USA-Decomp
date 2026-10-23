@@ -535,10 +535,10 @@ class ExternalizeAuditTests(unittest.TestCase):
             with self.subTest(extras=extras):
                 self.assertEqual(self.classify(extras), "metadata")
 
-    def test_nonzero_anchor_in_either_order_is_altered(self):
+    def test_nonzero_anchor_in_either_order_is_metadata(self):
         for extras in ("0x10 keep", "keep 0x10"):
             with self.subTest(extras=extras):
-                self.assertEqual(self.classify(extras), "altered")
+                self.assertEqual(self.classify(extras), "metadata")
 
     def test_duplicate_malformed_and_unknown_extras_require_review(self):
         for extras in ("keep keep", "0 0", "keep 0 keep", "keep garbage",

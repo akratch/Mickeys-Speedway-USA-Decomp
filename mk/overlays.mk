@@ -306,16 +306,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/func_overlay_001_F0003258_184F638.c.o: POS
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_middle.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x408
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: config/normalizations/overlay1DispatchMode.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: config/normalizations/overlay1UpdateObjectPhysics.rebind.spec
-# The eight-entry table retains its raw owner at initialized-data +0x274.
-# Its runtime LOCAL base is +0x110 into initialized data: bind the unchanged
-# compiler pair to stored addend +0x164, without editing instruction fields.
-# The object's .rodata is ChoosePath's four float literals (-1.2f, 400.5f,
-# 0.1f, 0.1f; shipped LOCAL addends +0xE8..+0xF4), then UpdateObjectPhysics's
-# 26 (+0xF8..+0x15C), then that table at object +0x78, so the table symbol
-# is 0x164 - 0x78 and every literal pair binds to a base of 0xE8. Assert the
-# whole pool by digest.
+# Tail literals and its jump table retain one section identity. The compiler
+# emits the complete pool at initialized rodata +0xE8; ordinary linking applies
+# that section anchor to the untouched relocation addends. The retained pool
+# remains the canonical data owner until overlay 1's data conversion.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_overlay_001_F0003578_184F958=overlay1InitializeGaugeObjects \
@@ -383,23 +377,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4664 && \
 	candidate_rodata_size=$$( $(OBJDUMP) -h $@ | awk '$$2 == ".rodata" { print $$3; exit }' ); \
 	if [ -n "$$candidate_rodata_size" ] && [ "$$candidate_rodata_size" != "00000000" ]; then \
-		$(OBJCOPY) --add-symbol gOverlay1ModeTable=0xEC,global \
-			--add-symbol gOverlay1ChoosePathLiterals=0xE8,global $@ && \
-		$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-			@config/normalizations/overlay1DispatchMode.rebind.spec && \
-		$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-			@config/normalizations/overlay1UpdateObjectPhysics.rebind.spec && \
-		$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-			0x4B8:.rodata:gOverlay1ChoosePathLiterals \
-			0x4FC:.rodata:gOverlay1ChoosePathLiterals \
-			0x5EC:.rodata:gOverlay1ChoosePathLiterals \
-			0x5F0:.rodata:gOverlay1ChoosePathLiterals \
-			0x718:.rodata:gOverlay1ChoosePathLiterals \
-			0x71C:.rodata:gOverlay1ChoosePathLiterals \
-			0x734:.rodata:gOverlay1ChoosePathLiterals \
-			0x738:.rodata:gOverlay1ChoosePathLiterals && \
 		$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-			sha256:19bf9f9139510fe5a4bb8f6ac08f0857e9d257e0fb70474f046534d12c6e46da && \
+			sha256:0afcdc9e849b61e9bf0954183dbf26af570bc12f8c281fb1c444651f957d45e5 0xE8 && \
 		$(OBJCOPY) --remove-section=.rel.rodata $@; \
 	fi
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_create.c.o: CFLAGS += -Wab,-r4300_mul

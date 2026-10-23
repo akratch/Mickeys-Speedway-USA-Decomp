@@ -484,7 +484,6 @@
       "source": "src/overlays/o001/overlay_001_tail.c",
       "tools": [
         "trim_elf_section.py",
-        "rebind_elf_relocations.py",
         "externalize_elf_section.py",
         "objcopy"
       ]

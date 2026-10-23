@@ -149,7 +149,6 @@ gOverlay1RankSentinelLiteral = 0x000000e4;
 overlay1Overlay7DispatchSelectionReloc = 0xf0000000;
 
 /* overlay 1: overlay_001_tail.c.o */
-D_160 = 0x00000160;
 D_1D84 = 0x00001d84;
 D_1D88 = 0x00001d88;
 D_1DA0_array = 0x00001da0;
@@ -200,7 +199,6 @@ gO1PhysicsActions = 0x000000bc;
 gO1PhysicsPaths = 0x0000007c;
 gOverlay1CallbackDescriptor = 0x000000bc;
 gOverlay1CallbackStepFloat = 0x00000004;
-gOverlay1ChoosePathLiterals = 0x000000e8;
 gOverlay1CountdownAmount = 0x00001d94;
 gOverlay1CountdownObject = 0x00001da0;
 gOverlay1CountdownResource = 0x00001d9c;
@@ -208,8 +206,6 @@ gOverlay1Mode = 0x00000000;
 gOverlay1ModeCallbacks = 0x000000c0;
 gOverlay1ModeMasks = 0x00000000;
 gOverlay1ModeResource = 0x00001d9c;
-gOverlay1ModeTable = 0x000000ec;
-gOverlay1MotionScale = 0x00000184;
 gOverlay1PoolExhausted = 0x00001d84;
 gOverlay1Position = 0x00001d9c;
 gOverlay1SampleState = 0x00001da0;

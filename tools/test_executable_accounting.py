@@ -225,8 +225,11 @@ class AccountingTests(unittest.TestCase):
         self.assertEqual(check(block), 0)
         self.assertEqual(check(block.replace('reviewed nonexecutable alignment: 20',
                                             'reviewed nonexecutable alignment: 16')), 1)
-        self.assertEqual(check(block.replace('| Functions matched | 1 | 4 | 25.00%',
-                                            '| Functions matched | 1 | 4 | 50.00%')), 1)
+        wrong_function_ratio = block.replace(
+            '| Resident functions matched | 1 | 4 | 25.00%',
+            '| Resident functions matched | 1 | 4 | 50.00%')
+        self.assertNotEqual(wrong_function_ratio, block)
+        self.assertEqual(check(wrong_function_ratio), 1)
         self.assertEqual(check(block.replace('| Overlay C | 8 | 20 | 40.00%',
                                             '| Overlay C | 10 | 20 | 50.00%')), 1)
         self.assertEqual(check(block.replace('0 symbols are adopted', '1 symbols are adopted')), 1)

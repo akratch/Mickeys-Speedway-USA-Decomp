@@ -835,42 +835,42 @@ void overlay101DispatchActive(void *value) {
                 case 2:
                     overlay101UpdateEntry12(entry, value);
                     break;
-                case 3:
+                case 6:
                     overlay101UpdateByte17(entry, value);
                     break;
-                case 4:
+                case 7:
                     overlay101UpdateByte16(entry, value);
                     break;
-                case 5:
+                case 8:
                     overlay101UpdateEntry8(entry, value);
                     break;
-                case 6:
+                case 9:
                     overlay101UpdateEntry8B(entry, value);
                     break;
-                case 7:
+                case 10:
                     overlay101UpdateFloat12(entry, value);
                     break;
-                case 8:
+                case 11:
                     overlay101UpdateDelta16(entry, value);
                     break;
-                case 9:
+                case 12:
                     overlay101UpdateByte18(entry, value);
                     break;
-                case 10:
+                case 13:
                     overlay101UpdateEntry8C(entry, value);
                     break;
-                case 11:
+                case 14:
                     overlay101UpdateColor(entry, value);
                     break;
-                case 12:
+                case 15:
                     overlay101UpdateFrames(entry, value);
                     break;
-                case 13:
+                case 16:
                     overlay101UpdateGlobalPair(entry, value);
                     break;
-                case 14:
-                case 15:
-                case 16:
+                case 3:
+                case 4:
+                case 5:
                     break;
             }
             entry++;
@@ -914,7 +914,7 @@ void overlay101DispatchEvents(s32 step) {
         if (remaining >= 0) {
             switch ((u16)event->type) {
                 case 0:
-                    break;
+                    return;
                 case 1:
                     overlay101SchedulePair(event->index, event->value8,
                         event->valueC, event->value18.f, remaining);

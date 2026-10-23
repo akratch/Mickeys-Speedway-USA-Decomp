@@ -1231,18 +1231,18 @@ void overlay11ReleaseCurrentGroup(void) {
         case 1:
             overlay11ReleaseGroup6A();
             break;
-        case 2:
+        case 3:
             overlay11ReleaseGroup3A();
             break;
-        case 3:
+        case 4:
+        case 5:
             if (D_8007C1A0 == 1) {
                 overlay11ReleaseGroup6C();
             } else {
                 overlay11ReleaseGroup6B();
             }
             break;
-        case 4:
-        case 5:
+        case 2:
             overlay11ReleaseGroup3B();
             break;
         }

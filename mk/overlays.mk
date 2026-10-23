@@ -620,9 +620,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o: CFLAGS += -Wab,-r4300_mul
 #   against the shipped records). Calls to unexported callees are JUMP records
 #   and link as compiled.
 # - The object's .rodata is the shipped pool tail at rodata +0xE0C..+0xF10
-#   (both switch tables, the clock and builder literals, the selector table),
-#   apart from the DispatchActive/DispatchEvents table residuals; the bytes
-#   stay in the retained data blob. Its 16 text HI/LO pairs are rebound to an
+#   (both switch tables, the clock and builder literals, the selector table).
+#   All payload bytes match; its 12 trailing compiler-alignment bytes are zero.
+#   The bytes stay retained. Its 16 text HI/LO pairs are rebound to an
 #   absolute +0xE0C anchor (no instruction word changes), the payload is
 #   asserted by digest and dropped, with its now-orphaned table relocations.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o: CFLAGS += -Wab,-r4300_mul -woff 835
@@ -639,7 +639,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		@config/normalizations/overlay_101.filter.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:8a8fd1a2dc784d558ac66b908e977fc3581d6aeabdc409d536cd287716dd511f && \
+		sha256:cf2288cf839e4bf2dc1210508145352a794e74096da468ba9f85e32cd7f3e0e8 && \
 	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 21 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay_021.c.o: CFLAGS += -Wab,-r4300_mul
@@ -829,9 +829,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay_002.c.o: CFLAGS += -Wab,-r4300_mul
 # tables and the background's two 0.05f literals) is the retained data at
 # data_rodata +0x218, and the shipped LOCAL records' rodata addends run from a
 # base eight bytes before it, so its 16 references are rebound to a base
-# symbol at +0x8 and the section is dropped by digest. (Its
-# ReleaseCurrentGroup table disagrees with the shipped one in four entries;
-# the retained bytes are what links.)
+# symbol at +0x8 and the section is dropped by digest. All six tables and
+# both literals now match; retained storage remains until complete ownership.
 O11_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay_011.c.o
 $(O11_OBJ): CFLAGS += -Wab,-r4300_mul
 $(O11_OBJ): $(TOOLS_DIR)/rebind_elf_relocations.py \
@@ -848,7 +847,7 @@ $(O11_OBJ): POSTPROCESS = \
 		0x2458:.rodata:gOverlay11RodataBaseReloc 0x2460:.rodata:gOverlay11RodataBaseReloc \
 		0x2c24:.rodata:gOverlay11RodataBaseReloc 0x2c2c:.rodata:gOverlay11RodataBaseReloc && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:808256f231ed1e6ec17b5941d4dc25adfe13414394067ec3f26266c7358c1d49 && \
+		sha256:080ab1959bdeaaf4e936cbc07ce11a09953f58f59f41c7a84e81a9552d2533af && \
 	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 14 is one translation unit at the overlay flag set; its placeholder,
 # resident and data

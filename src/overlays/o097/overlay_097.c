@@ -1,5 +1,7 @@
 #include "overlays/overlay_097.h"
 
+s32 gOverlay97TransformContext = 97;
+
 void overlay97InitDirection(Overlay97Object *object, Overlay97Config *config) {
     Overlay97State *state;
     f32 saved;
@@ -145,18 +147,6 @@ void overlay97CreateDescriptor(Overlay97DescriptorObject *object,
  * Mickey's model-bound scan tail. The local header-sized pointer step is
  * intentional: it preserves the original traversal base through the scan.
  *
- * Promotion reproof (2026-08-29): historical configured NON_MATCHING C was
- * measured at 143/144, one word away at +0xD0, frameless and 0x240 bytes with
- * zero relocations. No candidate object, target object, comparison digest, or
- * linked-C artifact survives in canonical Git. The source body is unchanged,
- * but current-HEAD C remains uncompiled; ordinary linked equality proves the
- * fallback only. The owned +0x508..+0x748 / ROM 0x18D83A0..0x18D85E0 range
- * has no padding; Overlay 97's separate +0xA54..+0xA60 padding follows another
- * function. ORT 1194 and resident relocation 36 authenticate
- * func_8000AA38+0x7C as the sole inbound. Historical C derived the values
- * cursor as a1+0x3E while retail used equivalent a3+2. This is an address-
- * carrier allocation difference, not CFG, size, frame, padding, or relocation
- * drift.
  * The model-bound scan is a six-trip loop over a volatile s16 cursor, not an
  * unrolled chain. IDO unrolls it, and the unroller materialises the initial
  * induction pointer (a3 = model + 0x3C) so the first read goes through it,

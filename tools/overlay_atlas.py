@@ -271,6 +271,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     ],
     47: [(1376, 1440, 'overlay_047', '.rodata')],
     97: [(0x10, 0x20, "overlay_097", ".rodata")],
+    82: [(0x0, 0xA0, "overlay_082", ".rodata")],
 }
 DATA_ONLY_FIXED_DATA_SOURCES = {
     (8, "overlay8MotionConstants", ".data"),

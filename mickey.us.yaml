@@ -3346,13 +3346,13 @@ segments:
     vram: 0xF0000000
     bss_size: 0x0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o082
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18CF180, c, overlay_082]
-      - [0x18CF650, bin, overlay_082_data_rodata]
+      - [0x18CF650, .rodata, overlay_082]
 
   - name: overlay_082_reloc1
     type: bin

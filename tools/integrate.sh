@@ -13,7 +13,7 @@
 #      merge_lanes.sh takes that one itself for verify, so wrapping it here
 #      would deadlock.
 #   2. Record the recovery base (HEAD).
-#   3. Stash uncommitted tracked changes to files the batch does not touch;
+#   3. Save uncommitted tracked changes under a private per-run Git ref;
 #      refuse, naming the file, if a dirty file IS touched (a lane's diff, or
 #      a generated file the gates rewrite).
 #   4. tools/merge_lanes.sh <lanes>. If it dies at check-docs, run the
@@ -56,8 +56,10 @@ release() {
 }
 restore_stash() {
   [ -n "$stash_ref" ] || return 0
-  if git stash pop -q "$stash_ref" >/dev/null 2>&1; then stash_ref=""
-  else echo "integrate: could not pop $stash_ref; your edits are still in that stash" >&2; fi
+  if git stash apply -q "$stash_ref" >/dev/null 2>&1; then
+    git update-ref -d "$stash_ref" "$stash_oid" || return 1
+    stash_ref=""
+  else echo "integrate: could not apply $stash_ref; your edits remain at $stash_oid" >&2; fi
 }
 fail() {
   echo "== FAILED at $step: $1; recover with git reset --hard ${base:-HEAD}"
@@ -125,10 +127,15 @@ for p in ${dirty[@]+"${dirty[@]}"}; do
 done
 if [ "${#dirty[@]}" -gt 0 ]; then
   step=stash
-  git stash push -q -m "integrate-$$" -- "${dirty[@]}" || fail "git stash failed"
-  stash_ref=$(git stash list --format='%gd %s' | awk -v m="integrate-$$" '$NF==m{print $1; exit}')
-  [ -n "$stash_ref" ] || fail "stash vanished"
-  echo "== stashed ${#dirty[@]} unrelated file(s): ${dirty[*]}"
+  # Linked worktrees share refs/stash. Never retain a moving stash@{N}
+  # selector, or pop another lane's snapshot after it pushes a new entry.
+  stash_oid=$(git stash create "integrate-$$") || fail "git stash create failed"
+  [ -n "$stash_oid" ] || fail "stash snapshot is empty"
+  saved_ref="refs/mickey-integrate-stash/$$"
+  git update-ref "$saved_ref" "$stash_oid" "" || fail "cannot preserve owner snapshot $stash_oid"
+  stash_ref=$saved_ref
+  git restore --source=HEAD --staged --worktree -- "${dirty[@]}" || fail "cannot clear saved changes"
+  echo "== saved ${#dirty[@]} unrelated file(s) at $stash_ref: ${dirty[*]}"
 fi
 
 # 4. merge -------------------------------------------------------------------
@@ -177,7 +184,7 @@ fi
 step=restore
 git checkout -q "$start_branch" || fail "cannot return to $start_branch"
 restore_stash
-[ -z "$stash_ref" ] || fail "stash pop conflicted"
+[ -z "$stash_ref" ] || fail "owner snapshot restoration conflicted"
 rm -rf "$logs"
 if [ "$land" -eq 1 ]; then echo "== integrated ${lanes[*]} landed $landed"
 else echo "== integrated ${lanes[*]} (not landed) head $(git rev-parse HEAD)"; fi

@@ -14,6 +14,9 @@ SCRIPT = ROOT / "tools/integrate.sh"
 STUB_MERGE = """#!/bin/bash
 set -e
 for n in "$@"; do git merge -q --no-edit "lane/$n" >/dev/null; done
+if [ -n "${FAKE_OTHER_WORKTREE:-}" ]; then
+  git -C "$FAKE_OTHER_WORKTREE" stash push -q -m other-lane -- b.txt
+fi
 if [ "${FAKE_DOCS_FAIL:-0}" = 1 ] && [ ! -f .repaired ]; then
   echo "gate FAILED: gmake check-docs"; exit 1
 fi
@@ -108,6 +111,18 @@ class IntegrateTests(unittest.TestCase):
         self.assertIn(f"git reset --hard {base}", res.stdout)
         self.assertEqual(git(self.repo, "rev-parse", "HEAD"), base)
         self.assertEqual((self.repo / "a.txt").read_text(), "owner edit\n")
+
+    def test_other_worktree_stash_cannot_replace_owner_snapshot(self):
+        other = Path(self._tmp.name) / "other"
+        git(self.repo, "worktree", "add", "--detach", str(other), "HEAD")
+        (other / "b.txt").write_text("other lane edit\n")
+        (self.repo / "b.txt").write_text("owner edit\n")
+        res = self.run_it("x", FAKE_OTHER_WORKTREE=other)
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+        self.assertEqual((self.repo / "b.txt").read_text(), "owner edit\n")
+        self.assertEqual(git(self.repo, "stash", "show", "-p", "stash@{0}").count("+other lane edit"), 1)
+        self.assertEqual(git(self.repo, "for-each-ref", "--format=%(refname)",
+                             "refs/mickey-integrate-stash/"), "")
 
     def test_dirty_generated_file_is_refused(self):
         (self.repo / "README.md").write_text("owner edit\n")

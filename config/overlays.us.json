@@ -14903,73 +14903,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x134",
-     "size": "0x134",
-     "type": "c",
-     "source": "overlays/o079/func_overlay_079_F0000000_18CCFA0",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x134",
-     "end_offset": "0xEFC",
-     "size": "0xDC8",
-     "type": "c",
-     "source": "overlays/o079/func_overlay_079_F0000134_18CD0D4",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xEFC",
-     "end_offset": "0xFA0",
-     "size": "0xA4",
-     "type": "c",
-     "source": "overlays/o079/overlay79FindNearby",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xFA0",
-     "end_offset": "0x1280",
-     "size": "0x2E0",
-     "type": "c",
-     "source": "overlays/o079/func_overlay_079_F0000FA0_18CDF40",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1280",
-     "end_offset": "0x1290",
-     "size": "0x10",
-     "type": "c",
-     "source": "overlays/o079/overlay79SetLink",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1290",
-     "end_offset": "0x147C",
-     "size": "0x1EC",
-     "type": "c",
-     "source": "overlays/o079/func_overlay_079_F0001290_18CE230",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x147C",
-     "end_offset": "0x149C",
-     "size": "0x20",
-     "type": "c",
-     "source": "overlays/o079/overlay79InitState",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x149C",
      "end_offset": "0x14E0",
-     "size": "0x44",
+     "size": "0x14E0",
      "type": "c",
-     "source": "overlays/o079/overlay79UpdateTimers",
+     "source": "overlays/o079/overlay_079",
      "matched": true,
      "nonmatching": false
     }
@@ -15077,7 +15014,7 @@
      "end_offset": "0x60",
      "size": "0x60",
      "type": "c",
-     "source": "overlays/o079/func_overlay_079_F0000134_18CD0D4"
+     "source": "overlays/o079/overlay_079"
     }
    ]
   },

@@ -503,6 +503,7 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
         raise MetadataProofError("unsupported raw-proof root or relaxed trial environment")
     target = configured.relative_to(root).as_posix()
     deadline = time.monotonic() + 120
+    static_sizes = []
     def recipe():
         output = batch.bounded_capture(
             ["gmake", "--no-print-directory", "-n", "-W", source.relative_to(root).as_posix(), target],
@@ -515,6 +516,13 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
                    and "tools/filter_elf_relocations.py" not in line and "tools/ido/cc" not in line]
         if len(compilers) != 1 or len(metadata) != 1 or len(rebinds) > 1:
             raise MetadataProofError("ambiguous expanded compiler/metadata recipe")
+        # A one-TU overlay object with static functions sizes their local
+        # symbols right after compiling (tools/static_symbol_sizes.py); that
+        # is part of the raw object, not of the declared metadata.
+        static_sizes[:] = [line.strip() for line in output
+                           if target in line and "tools/static_symbol_sizes.py" in line]
+        if len(static_sizes) > 1:
+            raise MetadataProofError("ambiguous static-symbol sizing recipe")
         return compilers[0], metadata[0], (rebinds[0] if rebinds else "")
     command, expanded_postprocess, surface_rebind = recipe()
     args = batch.compiler_arguments(command, source.relative_to(root).as_posix(), target)
@@ -550,6 +558,9 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
                     ("tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
                      "tools/rebind_elf_relocations.py", "tools/externalize_elf_section.py",
                      "tools/postprocess_guard.py", "tools/binutils/mips64-elf-objcopy")}}
+        if static_sizes:
+            inputs["static_sizes"] = {"command": static_sizes[0], "tool": sha256_file(
+                root / "tools/static_symbol_sizes.py")}
         assembly = {}
         for pragma in _all_pragmas(source.read_text()):
             path = root / pragma.path
@@ -575,6 +586,13 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
         (directory / "compile.log").write_text(str(getattr(failure, "output", "")) + "\n" + repr(failure))
         raise
     (directory / "compile.log").write_text(result.stdout)
+    if static_sizes:
+        import static_symbol_sizes
+        try:
+            sized, _count = static_symbol_sizes.size_statics(raw.read_bytes())
+        except static_symbol_sizes.Failure as error:
+            raise MetadataProofError(f"static-symbol sizing failed: {error}") from error
+        raw.write_bytes(sized)
     if before != context():
         raise MetadataProofError("source, input, recipe, object or tool changed during raw proof")
     receipt = {"schema": "mickey-declared-metadata-proof-v1", "inputs": before,

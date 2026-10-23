@@ -1,70 +1,7 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_079.h"
 
-typedef struct Overlay79Vector {
-    f32 x;
-    f32 y;
-    f32 z;
-} Overlay79Vector;
-
-typedef struct Overlay79Object Overlay79Object;
-typedef struct Overlay79MotionState Overlay79MotionState;
-
-struct Overlay79MotionState {
-    /* 0x00 */ s16 targetAngle;
-    /* 0x02 */ s8 mode;
-    /* 0x03 */ s8 active;
-    /* 0x04 */ s16 event;
-    /* 0x06 */ s16 step;
-    /* 0x08 */ u32 collisionFlags;
-    /* 0x0C */ s32 effectTimer;
-    /* 0x10 */ f32 targetX;
-    /* 0x14 */ f32 targetZ;
-    /* 0x18 */ f32 acceleration;
-    /* 0x1C */ f32 speed;
-    /* 0x20 */ f32 heightOffset;
-    /* 0x24 */ f32 homeX;
-    /* 0x28 */ f32 homeY;
-    /* 0x2C */ f32 homeZ;
-    /* 0x30 */ f32 radiusSquared;
-    /* 0x34 */ f32 travelRadius;
-    /* 0x38 */ f32 previousHeight;
-    /* 0x3C */ void *effect;
-    /* 0x40 */ Overlay79Object *target;
-};
-
-struct Overlay79Object {
-    /* 0x00 */ s16 angle;
-    u8 pad02[6];
-    /* 0x08 */ f32 scale;
-    /* 0x0C */ f32 x;
-    /* 0x10 */ f32 y;
-    /* 0x14 */ f32 z;
-    u8 pad18[4];
-    /* 0x1C */ f32 velocityX;
-    /* 0x20 */ f32 velocityY;
-    /* 0x24 */ f32 velocityZ;
-    /* 0x28 */ f32 floorHeight;
-    u8 pad2C[0xF];
-    /* 0x3B */ s8 mode;
-    /* 0x3C */ s32 field3C;
-    u8 pad40[0x24];
-    /* 0x64 */ Overlay79MotionState *state;
-    u8 pad68[0x18];
-    /* 0x80 */ u32 flags;
-};
-
-typedef struct Overlay79SpawnDesc {
-    /* 0x00 */ s16 objectId;
-    /* 0x02 */ u8 kind;
-    /* 0x03 */ u8 flags;
-    /* 0x04 */ s16 x;
-    /* 0x06 */ s16 y;
-    /* 0x08 */ s16 z;
-    /* 0x0A */ s16 angle;
-    /* 0x0C */ Overlay79Object *parent;
-    /* 0x10 */ f32 scale;
-    u8 pad14[4];
-} Overlay79SpawnDesc;
+static Overlay79Object *overlay79FindNearby(Overlay79Vector *point,
+                                            f32 radiusSquared);
 
 /*
  * Overlay 79's initialized image (ROM 0x18CE480..0x18CE4E0, module offsets
@@ -89,28 +26,6 @@ f32 gOverlay79Constants[16] = {
     0.46f,  0.9f,  -0.1f, -0.2f, 0.707f, 0.1f, 0.01f, 0.01f,
 };
 
-/*
- * The module reaches its own data through the runtime linker rather than
- * through a link-time address, so the adopted C spells each base as the raw
- * stored addend the shipped record carries (`docs/reloc-surface.md`).
- * `D_800D3128` is the reserved-BSS selector 0xFFF entry at
- * +0x4D6E8 that `func_overlay_079_F0001290_18CE230` already names; ROM-table
- * index 1579 covers both uses, so this is the same object (Tier A).
- */
-typedef struct Overlay79Flags {
-    /* 0x00 */ u32 unused0 : 5;
-    u32 stage : 4;
-    u32 unused9 : 4;
-    u32 disabled : 1;
-    u32 unused14 : 18;
-    u8 pad04[0xA];
-    /* 0x0E */ u16 progress;
-} Overlay79Flags;
-
-extern Overlay79Flags D_800D3128;
-extern f32 gOverlay79ModeFactors[];
-extern u8 func_overlay_079_F0000FA0_18CDF40[];
-
 #define O79_ACTIVE_ACCELERATION   -0.2f
 #define O79_INACTIVE_ACCELERATION 0.2f
 #define O79_TURN_POWER            0.9f
@@ -123,30 +38,31 @@ extern u8 func_overlay_079_F0000FA0_18CDF40[];
 #define O79_GRAVITY_HALF          -0.1f
 #define O79_GRAVITY               -0.2f
 
-extern Overlay79Object *overlay79FindNearby(Overlay79Vector *position,
-                                            f32 radiusSquared);
-extern void func_8005AD64(Overlay79Object *object, s32 mode, s32 index,
-                          f32 value);
-extern f32 sqrtf(f32 value);
-extern void amSndStopXYZ(void *handle);
-extern s32 mathRnd(s32 lower, s32 upper);
-extern void amSndPlayXYZ(u16 id, f32 x, f32 y, f32 z, s32 priority,
-                          void **handle);
-extern s32 Arctanf(f32 y, f32 x);
-extern f32 Powerf(f32 value, s32 exponent);
-extern s16 dAngle(s16 current, s16 target, f32 fraction);
-extern void mathOneFloatRPY(Overlay79Object *object, f32 *vector);
-extern f32 func_8002A8C0(s32 angle);
-extern f32 func_8002A8BC(s32 angle);
-extern Overlay79Object *func_8000590C(Overlay79SpawnDesc *desc, s32 count);
-extern s32 func_80008128(Overlay79Object *object, f32 x, f32 y, f32 z);
-extern s32 func_8005ABA8(Overlay79Object *object, f32 factor, f32 updateRate);
-extern void amSndSetXYZ(void *handle, f32 x, f32 y, f32 z);
-extern void partUpdateTriggers(Overlay79Object *object, s32 updateRate);
-extern void trackMakePolylist(s32 mode, f32 *start, f32 *end, f32 *height,
-                              void *unused, s32 flags);
-extern s32 func_80010900(f32 *start, f32 *end, f32 height,
-                         Overlay79Object *object, void *callback);
+void func_overlay_079_F0000000_18CCFA0(Overlay79Object *object,
+                                        Overlay79Config *config,
+                                        s32 preserveState) {
+    Overlay79MotionState *state;
+    f32 range;
+    s32 random;
+
+    (void)preserveState;
+    state = object->state;
+    object->scale = config->scale * gOverlay79InitScaleReloc
+                     * object->scaleSource->value;
+    object->angle = config->angle;
+    state->heightOffset = object->scale * 60.0f;
+    state->travelRadius = config->range;
+    state->radiusSquared = state->travelRadius * state->travelRadius;
+    state->homeX = object->x;
+    state->homeY = object->y;
+    state->homeZ = object->z;
+    state->effectTimer = 0xF0;
+    random = mathRnd(-0x7FFF, 0x8000);
+    range = mathRnd(0, (s32)state->travelRadius);
+    state->targetX = state->homeX - (func_8002A8C0(random) * range);
+    state->targetZ = state->homeZ - (func_8002A8BC(random) * range);
+    func_8005AD64(object, 0, -1, 0.0f);
+}
 
 /*
  * Matched 2026-10-01 by rewriting the inherited shape rather than its
@@ -447,7 +363,7 @@ void func_overlay_079_F0000134_18CD0D4(Overlay79Object *object,
     end[2] = start[2] + dz;
     state->collisionFlags = 0;
     trackMakePolylist(1, start, end, &state->heightOffset, NULL, 1);
-    if (func_80010900(start, end, state->heightOffset, object, func_overlay_079_F0000FA0_18CDF40) != 0) {
+    if (func_80010900(start, end, state->heightOffset, object, func_overlay_079_F0000FA0_o079Reloc) != 0) {
         object->velocityY = 0.0f;
     }
     dx = end[0] - start[0];
@@ -469,5 +385,250 @@ void func_overlay_079_F0000134_18CD0D4(Overlay79Object *object,
     if (object->mode == 3) {
         object->flags |= 1;
         partUpdateTriggers(object, updateRate);
+    }
+}
+
+/* DKR v77/v80 and JFG exact-object scans are negative for this radius query. */
+static Overlay79Object *overlay79FindNearby(Overlay79Vector *point, f32 radiusSquared) {
+    Overlay79Object **entries;
+    Overlay79Object *entry;
+    Overlay79Object *result;
+    f32 dx;
+    f32 dz;
+    /* Unused volatile slot kept: it sizes the frame; removing it moves 11 words. */
+    volatile s32 scratch;
+    s32 count;
+
+    entries = func_80005750(&count);
+    result = NULL;
+    while (count != 0) {
+        entry = *entries++;
+        dx = entry->x - point->x;
+        dz = entry->z - point->z;
+        if ((dx * dx) + (dz * dz) < radiusSquared) {
+            result = entry;
+        }
+        count--;
+    }
+    return result;
+}
+
+/*
+ * PROVENANCE: copied from the shape of the matched resident sibling
+ * func_800115E4 (src/main/track.c), the same collision response with one
+ * branch fewer; no external function body is adapted. The plane offset is
+ * computed inside the slide branch, the three literals are written at their
+ * uses (the module's constant pool, two distinct 0.01f words), and the
+ * declaration order places d, delta, u, v and w on the target's stack homes.
+ */
+void func_overlay_079_F0000FA0_18CDF40(
+    void *unused, Overlay79Vector *pos, Overlay79Vector *vel,
+    f32 radius, Overlay79Plane *plane, Overlay79Object *object) {
+    f32 nx;
+    f32 ny;
+    f32 nz;
+    f32 dx;
+    f32 d;
+    f32 dy;
+    f32 dz;
+    f32 len;
+    f32 delta;
+    f32 u;
+    f32 v;
+    f32 w;
+    f32 value;
+    f32 angle;
+    Overlay79MotionState *state;
+
+    nx = plane->normal.x;
+    ny = plane->normal.y;
+    nz = plane->normal.z;
+    state = object->state;
+    d = plane->constant;
+    if ((0.707f <= ny) || (plane->flags & 0x10000000)) {
+        u = vel->z * ny;
+        v = -(vel->z * nx) + (nz * vel->x);
+        w = -(vel->x * ny);
+        dx = (v * nz) - (w * ny);
+        dy = (w * nx) - (u * nz);
+        dz = (u * ny) - (v * nx);
+        len = (dx * dx) + (dy * dy) + (dz * dz);
+        if (0.1f < len) {
+            len = sqrtf(len);
+            dx /= len;
+            dy /= len;
+            dz /= len;
+            len = radius - plane->distance;
+            pos->x = plane->origin.x + (len * dx);
+            pos->y = plane->origin.y + (len * dy);
+            pos->z = plane->origin.z + (len * dz);
+        } else {
+            pos->y = (-((pos->z * nz) + (nx * pos->x) + d) / ny) + 0.01f;
+        }
+        state->collisionFlags |= 2;
+    } else {
+        value = (pos->z * nz) + ((nx * pos->x) + (ny * pos->y)) + d;
+        len = 0.01f - value;
+        delta = len;
+        u = pos->x + (len * nx);
+        v = pos->y + (len * ny);
+        w = pos->z + (len * nz);
+        dx = pos->x - u;
+        dy = pos->y - v;
+        dz = pos->z - w;
+        len = sqrtf((dx * dx) + (dz * dz));
+        angle = func_8002A8BC((s16) Arctanf(dy, len));
+        if (angle != 0.0f) {
+            value = delta / angle;
+            len = sqrtf((nx * nx) + (nz * nz));
+            pos->x += value * (nx / len);
+            pos->z += value * (nz / len);
+        } else {
+            pos->x = u;
+            pos->y = v;
+            pos->z = w;
+        }
+        state->collisionFlags |= 4;
+    }
+}
+
+void overlay79SetLink(Overlay79TimerObject *object, Overlay79LinkConfig *entry) {
+    s32 *state = object->timers;
+    state[1] = entry->link;
+}
+
+/* Bounded reproof (2026-08-29): configured -O2 -mips2 -32 C remains exactly
+ * 123 instructions / 492 bytes with frame 0x48, 111/123 raw and runtime-
+ * normalized words, 12 register-field differences, and first mismatch +0xC8.
+ * Its executable-text SHA-256 is d8b80e23d14ea9c2. All 119 flag identities
+ * were attempted; seven O2/MIPS-II rows tie V0 and none is exact. A fidelity-
+ * clean proc-0 globalcolor trace identifies separate v1/v0 linked-state webs.
+ * A distinct linked-state local and branch-local linked-state scopes both
+ * regress to frame 0x50 and 30 differences; a distinct next-node carrier
+ * regresses to frame 0x50 and 43 differences. No strict gain authorized a
+ * combination or generic batch. Earlier source-faithful lifetime/access forms
+ * likewise remained at 12 or regressed.
+ *
+ * A follow-on trace-led pass spent 20 stock configured builds (two V0 proofs
+ * and 18 new representation, ABI, expression, scoped-constant, and declaration-
+ * order forms) plus one fidelity-clean instrumented ugen capture. The trace
+ * attributes the tail to a one-slot temp-FIFO phase: the candidate allocates
+ * t1/t2 for the flags update and t3 for the alternate emit, while the target
+ * requires t2/t3 and t4. The linked-state loads remain an independent v1/v0
+ * global-color outcome. Every new form was byte-flat at 12 differences or
+ * regressed to 14-42; the scoped emit-id local was exact-sized but regressed
+ * to 33. No JFG function supplies a body, ABI, or allocator mechanism here.
+ *
+ * A resumed bounded pass (2026-08-30) proved the missing temp-FIFO mechanism.
+ * Preserving the u8 width explicitly as `(value & 0xFF) | 4` consumes one
+ * backend temp while the redundant mask emits no instruction. The retained C
+ * remains exactly 123 words / 492 bytes with frame 0x48 and first mismatch
+ * +0xC8, improves to 119/123 raw and runtime-normalized words, and reproduces
+ * the complete integer temp lane. An opaque `void *` state slot and a zero-
+ * offset typed state-slot wrapper were independently byte-flat on top of that
+ * gain. The sole executable residual is now the four-site v1/v0 linked-state
+ * pool web; no source-faithful coalescing form was found within the narrow
+ * follow-up cap.
+ *
+ * The owned +0x1290..+0x147C range has no target padding. IDO's four trailing
+ * alignment bytes are outside the function and production trims only them.
+ * The C object emits all 15 shipped runtime tuples. Fresh ordinary preflight
+ * proves every offset/type but resolves only one candidate identity and fails
+ * closed on the other 14. A prior identity-canonical diagnostic comparison
+ * proves all 15 identities/addends; it is evidence, not promotion machinery.
+ * The assembled target has 13 static records because the runtime table adds the
+ * already-zero flags pair. The committed filter/rebind metadata remains
+ * diagnostic and is not production POSTPROCESS, so linked C proof is absent.
+ * ORT 1297 and resident relocation 139 establish func_8000AEEC+0x43C as the
+ * sole inbound; no cross-overlay inbound exists. Pinned DKR v77/v80 and JFG
+ * scans are negative. Preserve the fallback and resume only with a newly
+ * proved natural v0/v1 linked-state coalescing form; do not repeat the flag
+ * lattice, temp-FIFO lever, state-slot type forms, or a generic batch.
+ *
+ * Naturalness pass (lane c-1, 2026-10-08): the empty `if (object->position.y)`
+ * and the `if (1)` that opened the else arm were byte-inert and are gone. The
+ * empty `if (1)` between the `field3C` store and the emit call is load-bearing:
+ * without it the linked-state load after the call takes v1 instead of v0 at
+ * both sites (4 words), and storing through `node->next->state` directly
+ * instead of reusing `spawned` costs 26 words. */
+void func_overlay_079_F0001290_18CE230(Overlay79SpawnerObject *object, s32 unused1)
+{
+  Overlay79Node *node;
+  Overlay79SpawnDesc desc;
+  Overlay79Spawned *spawned;
+  node = object->node;
+  if (node->active != 0)
+  {
+    desc.objectId = 0x14B;
+    desc.kind = 0xC;
+    desc.flags = 0;
+    desc.x = object->position.x;
+    desc.y = object->position.y;
+    desc.z = object->position.z;
+    desc.angle = mathRnd(-0x7FFF, 0x8000);
+    spawned = func_8000590C(&desc, 1);
+    if (spawned != 0)
+    {
+      spawned->field3C = 0;
+      if (1)
+      {
+      }
+      amSndPlayXYZ(0x277, object->position.x, object->position.y, object->position.z, 4, 0);
+    }
+    spawned = node->next->state;
+    spawned->field40 = 0;
+    func_80006EA0(object);
+  }
+  else
+  {
+    if (overlay79FindNearby(&object->position, 900.0f) != 0)
+    {
+      desc.objectId = 0x14B;
+      desc.kind = 0xC;
+      desc.flags = 0;
+      desc.x = object->position.x;
+      desc.y = object->position.y;
+      desc.z = object->position.z;
+      desc.angle = mathRnd(-0x7FFF, 0x8000);
+      spawned = func_8000590C(&desc, 1);
+      if (spawned != 0)
+      {
+        spawned->field3C = 0;
+        if ((++gOverlay79CounterReloc) == 0x14)
+        {
+          amSndPlay(0x27C, 0);
+          ((u8 *)&D_800D3128)[1] = (((u8 *)&D_800D3128)[1] & 0xFF) | 4;
+          func_800291B4();
+        }
+        else
+        {
+          amSndPlayXYZ(0x277, object->position.x, object->position.y, object->position.z, 4, 0);
+        }
+      }
+      spawned = node->next->state;
+      spawned->field40 = 0;
+      func_80006EA0(object);
+    }
+  }
+}
+
+void overlay79InitState(Overlay79TimerObject *object, Overlay79Config *entry) {
+    s32 *state = object->timers;
+    state[1] = 0xFF;
+    state[0] = 0x78;
+    object->angle = entry->angle;
+}
+
+/* DKR v77/v80 and JFG checks found only broad timer/update semantics. */
+void overlay79UpdateTimers(Overlay79TimerObject *object, s32 step) {
+    s32 *timers = object->timers;
+
+    timers[0] -= step;
+    if (timers[0] <= 0) {
+        timers[1] -= step;
+        if (timers[1] <= 0) {
+            timers[1] = 0;
+            func_80006EA0(object);
+        }
     }
 }

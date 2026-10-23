@@ -2536,7 +2536,7 @@ class SourceViewTests(unittest.TestCase):
             dependency.parent.mkdir(parents=True)
             dependency.touch()
             for mode in ("build", "build_non_matching"):
-                target = root / mode / "src/overlays/o088/overlay88DrawSortedGeometry.c.o"
+                target = root / mode / "src/overlays/o088/overlay_088.c.o"
                 target.parent.mkdir(parents=True)
                 target.touch()
                 os.utime(dependency, ns=(1_000_000_000, 1_000_000_000))

@@ -3996,45 +3996,34 @@ texAnimateSprite_o077Reloc = 0xf0000000;
 func_8005ABA8_o078Reloc = 0xf0000000;
 func_8005AD64_o078Reloc = 0xf0000000;
 
-/* overlay 79: func_overlay_079_F0000000_18CCFA0.c.o */
-ext_o0_2952c = 0xf0000000;
-ext_o0_5a914 = 0xf0000000;
-
-/* overlay 79: func_overlay_079_F0000134_18CD0D4.c.o */
+/* overlay 79: overlay_079.c.o */
 Arctanf_o079Reloc = 0xf0000000;
 D_800D3128_o079Reloc = 0x00000000;
 Powerf_o079Reloc = 0xf0000000;
 amSndPlayXYZ_o079Reloc = 0xf0000000;
+amSndPlay_o079Reloc = 0xf0000000;
 amSndSetXYZ_o079Reloc = 0xf0000000;
 amSndStopXYZ_o079Reloc = 0xf0000000;
 dAngle_o079Reloc = 0xf0000000;
+func_80005750_o079Reloc = 0xf0000000;
 func_8000590C_o079Reloc = 0xf0000000;
+func_80006EA0_o079Reloc = 0xf0000000;
 func_80008128_o079Reloc = 0xf0000000;
 func_80010900_o079Reloc = 0xf0000000;
+func_800291B4_o079Reloc = 0xf0000000;
 func_8002A8BC_o079Reloc = 0xf0000000;
 func_8002A8C0_o079Reloc = 0xf0000000;
 func_8005ABA8_o079Reloc = 0xf0000000;
 func_8005AD64_o079Reloc = 0xf0000000;
 func_overlay_079_F0000FA0_o079Reloc = 0x00000fa0;
-gOverlay79F0134LiteralPoolReloc = 0x00000004;
+gOverlay79CounterReloc = 0x00000014;
+gOverlay79LiteralPoolReloc = 0x00000004;
 gOverlay79ModeFactors = 0x00000000;
 mathOneFloatRPY_o079Reloc = 0xf0000000;
 mathRnd_o079Reloc = 0xf0000000;
 partUpdateTriggers_o079Reloc = 0xf0000000;
 sqrtf_o079Reloc = 0xf0000000;
 trackMakePolylist_o079Reloc = 0xf0000000;
-
-/* overlay 79: overlay79FindNearby.c.o */
-func_80005750_o079Reloc = 0xf0000000;
-
-/* overlay 79: func_overlay_079_F0000FA0_18CDF40.c.o */
-gOverlay79F0FA0LiteralPoolReloc = 0x00000030;
-
-/* overlay 79: func_overlay_079_F0001290_18CE230.c.o */
-amSndPlay_o079Reloc = 0xf0000000;
-func_80006EA0_o079Reloc = 0xf0000000;
-func_800291B4_o079Reloc = 0xf0000000;
-gOverlay79CounterReloc = 0x00000014;
 
 /* overlay 80: overlay_080.c.o */
 func_8001398C_o080Reloc = 0xf0000000;
@@ -5967,16 +5956,9 @@ func_overlay_077_F0000400_18CCD10 = overlay77RunCallback;
 func_overlay_078_F0000000_18CCEE0 = overlay78Init;
 func_overlay_078_F0000070_18CCF50 = overlay78Update;
 
-/* overlay 79: overlay79FindNearby.c.o */
-func_overlay_079_F0000EFC_18CDE9C = overlay79FindNearby;
-
-/* overlay 79: overlay79SetLink.c.o */
+/* overlay 79: overlay_079.c.o */
 func_overlay_079_F0001280_18CE220 = overlay79SetLink;
-
-/* overlay 79: overlay79InitState.c.o */
 func_overlay_079_F000147C_18CE41C = overlay79InitState;
-
-/* overlay 79: overlay79UpdateTimers.c.o */
 func_overlay_079_F000149C_18CE43C = overlay79UpdateTimers;
 
 /* overlay 80: overlay_080.c.o */

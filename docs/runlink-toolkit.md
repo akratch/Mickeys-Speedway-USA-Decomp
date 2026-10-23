@@ -192,6 +192,45 @@ none once the residuals are replaced. The gate itself stays
 `check-runlink-tables`. The kit reimplements the rules, the encoding and the
 comparison; it does not replace MSU's packer.
 
+### Bounded editable-layout diagnostic
+
+`gmake check-editable-layout` compiles copies of the complete overlay75 source
+and a deliberate tail module108, links their sections with the ordinary module
+linker, regenerates the individual metadata inputs, then runs the ordinary final
+linker. It checks an unchanged retail control, actual function/data/BSS growth,
+changed exports and relocation counts, an odd-export alignment gap, addition of
+module108, and removal of an unreferenced tail module. Removing either a target
+still referenced by overlay75 or overlay75 itself is refused with actual callers.
+Overlay75 actually calls the new module's offset-zero function and references
+its BSS export; both must have authentic raw and final SYMBOL identities.
+The resident relocation count remains 375; this is not a resident-growth test.
+Before emitting wrappers, the driver rejects signed loader allocation overflow
+including RT1 and any relocation whose complete four-byte word escapes its body.
+
+Each run preserves a fresh `build/editable-layout/check-*` directory containing
+commands, compiler/module receipts, generated inputs, final maps/images and a
+separate nonmatching diagnostic receipt. Check its freshness with
+`.venv/bin/python tools/check_editable_layout.py --check-receipt <directory>/receipt.json`.
+Missing, modified or stale artifacts/inputs are refused. Receipts carry the
+semantically validated artifact snapshots through publication; later observations
+must match those hashes and cannot replace them. Toolchain snapshots are checked
+again when freshness validation ends. The final image is
+independently decoded and joined to raw source relocation identities, ordinary
+module payload/NOBITS layout and actual final symbols. Unselected payloads,
+VMAs and program symbols remain exact; the loader is independently relinked at
+its real VMA against the new boundary values. Header DMA excludes alignment
+padding. The diagnostic removes only the declared fill input and symbols, checks
+the script mapping by exact reversal, and emits a 32 MiB image with an FF tail
+and a stable recalculated checksum.
+
+Canonical overlay75 source, IDs 1–107 and existing export-row identities stay
+unchanged. The diagnostic receipts retain the canonical catalog and its named
+borrowing, including the retained bootstrap. Data-only discovery is inventoried
+but not activated. This bounded source-complete pilot does not establish a
+source-only build, arbitrary module renumbering, resident growth or general
+relayout. The canonical retail producer still requires raw equality with zero
+differences, and its final link still requires bootstrap equality.
+
 ## Tests
 
 `tools/test_runlink_codec.py`, `tools/test_runlink_rules.py` and

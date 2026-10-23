@@ -252,11 +252,14 @@ def encode_modules(modules) -> tuple:
     return headers, images
 
 
-def encode_region(tables: Tables, cfg, relayout=True) -> bytes:
+def encode_region(tables: Tables, cfg, relayout=True, *, gap_fill=0) -> bytes:
     """Main table block, ORT, headers and images, contiguous as both games ship them.
 
-    Requires the config's blocks to be back to back (main, ORT, headers,
-    modules), which holds for MSU US and JFG US."""
+    Configured blocks may have gaps. Their fill defaults to zero, preserving
+    existing MSU/JFG encoding; diagnostic links may request objcopy's FF fill."""
+    if not isinstance(gap_fill, int) or not 0 <= gap_fill <= 255:
+        raise FormatError("gap fill must fit one byte")
+    fill = bytes([gap_fill])
     mods = layout_modules(tables.modules) if relayout else tables.modules
     headers, images = encode_modules(mods)
     main = encode_main(tables.main, cfg.main_table_block)
@@ -266,7 +269,7 @@ def encode_region(tables: Tables, cfg, relayout=True) -> bytes:
     gap_mod = cfg.modules_rom - (cfg.headers_rom + len(headers))
     if min(gap_ort, gap_hdr, gap_mod) < 0:
         raise FormatError("the configured blocks overlap")
-    return (main + b"\0" * gap_ort + ort + b"\0" * gap_hdr + headers + b"\0" * gap_mod + images)
+    return (main + fill * gap_ort + ort + fill * gap_hdr + headers + fill * gap_mod + images)
 
 
 def region_bounds(tables: Tables, cfg):

@@ -453,11 +453,7 @@ TEXT_SUBSEGMENTS = {
     ],
     65: [
         (0x000, "c", "overlay65Initialize"),
-        (0x080, "c", "overlay65UpdateParticles"),
-        (0xBC0, "c", "overlay65Release"),
-        (0xBF0, "c", "overlay65ResetSlots"),
-        (0xC38, "c", "func_overlay_065_F0000C38_18C4EA0"),
-        (0x1A14, "c", "overlay65SpawnRecord"),
+        (0x080, "c", "overlay_065"),
         (0x1BB4, "asm", "overlay_065_padding"),
     ],
     61: [

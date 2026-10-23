@@ -9866,46 +9866,10 @@
     },
     {
      "offset": "0x80",
-     "end_offset": "0xBC0",
-     "size": "0xB40",
-     "type": "c",
-     "source": "overlays/o065/overlay65UpdateParticles",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xBC0",
-     "end_offset": "0xBF0",
-     "size": "0x30",
-     "type": "c",
-     "source": "overlays/o065/overlay65Release",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xBF0",
-     "end_offset": "0xC38",
-     "size": "0x48",
-     "type": "c",
-     "source": "overlays/o065/overlay65ResetSlots",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xC38",
-     "end_offset": "0x1A14",
-     "size": "0xDDC",
-     "type": "c",
-     "source": "overlays/o065/func_overlay_065_F0000C38_18C4EA0",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1A14",
      "end_offset": "0x1BB4",
-     "size": "0x1A0",
+     "size": "0x1B34",
      "type": "c",
-     "source": "overlays/o065/overlay65SpawnRecord",
+     "source": "overlays/o065/overlay_065",
      "matched": true,
      "nonmatching": false
     },

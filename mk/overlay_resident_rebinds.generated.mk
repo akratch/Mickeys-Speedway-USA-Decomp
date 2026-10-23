@@ -1475,15 +1475,18 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Initialize.c.o: SURFACE_REBIND = 
 	--redefine-sym mmAlloc=mmAlloc_o065Reloc \
 	--redefine-sym texLoadTexture=texLoadTexture_o065Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Release.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay_065.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym camSetNo=camSetNo_o065Reloc \
+	--redefine-sym camSetView=camSetView_o065Reloc \
+	--redefine-sym func_8001398C=func_8001398C_o065Reloc \
+	--redefine-sym func_80021970=func_80021970_o065Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o065Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o065Reloc \
+	--redefine-sym mathRnd=mathRnd_o065Reloc \
 	--redefine-sym mmFree=mmFree_o065Reloc \
+	--redefine-sym pointListRPY=pointListRPY_o065Reloc \
+	--redefine-sym texDPTextureX=texDPTextureX_o065Reloc \
 	--redefine-sym texFreeTexture=texFreeTexture_o065Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65SpawnRecord.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_065_F0000000_18C4268=func_overlay_065_F0000000_o065Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65UpdateParticles.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_065_F0000000_18C4268=func_overlay_065_F0000000_o065Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay_066.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D2FA0=D_800D2FA0_o066Reloc \

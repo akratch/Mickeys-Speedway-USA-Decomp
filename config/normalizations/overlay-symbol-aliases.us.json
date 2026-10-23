@@ -1,14 +1,4 @@
 {
   "schema_version": 1,
-  "rules": [
-    {
-      "object": "overlays/o065/overlay65UpdateParticles.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_065_F0000080_18C42E8",
-          "to": "overlay65UpdateParticles"
-        }
-      ]
-    }
-  ]
+  "rules": []
 }

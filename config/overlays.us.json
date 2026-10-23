@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 29952,
+  "owned_data_rodata_bytes": 26512,
   "diagnostic_data_rodata_bytes": 840,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -2194,6 +2194,15 @@
      "section": ".rodata",
      "source": "overlays/o008/overlay_008",
      "trial_function": "func_overlay_008_F0004CF0_1862A48"
+    },
+    {
+     "offset": "0x310",
+     "end_offset": "0x360",
+     "size": "0x50",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o008/overlay8SelectorTables",
+     "canonical": true
     },
     {
      "offset": "0x3E0",
@@ -15117,15 +15126,6 @@
      "externalized": true
     },
     {
-     "offset": "0x1D0",
-     "end_offset": "0x230",
-     "size": "0x60",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o101/overlay101State",
-     "canonical": true
-    },
-    {
      "offset": "0x230",
      "end_offset": "0x340",
      "size": "0x110",
@@ -15141,24 +15141,6 @@
      "type": "c",
      "section": ".data",
      "source": "overlays/o101/overlay101EventStreams",
-     "canonical": true
-    },
-    {
-     "offset": "0x4E50",
-     "end_offset": "0x5A70",
-     "size": "0xC20",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o101/overlay101Labels",
-     "canonical": true
-    },
-    {
-     "offset": "0x5AF0",
-     "end_offset": "0x5C30",
-     "size": "0x140",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o101/overlay101WindowLabels",
      "canonical": true
     }
    ]

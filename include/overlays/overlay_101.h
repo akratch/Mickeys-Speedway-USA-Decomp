@@ -2078,11 +2078,11 @@ extern void *D_C8C;
 
 extern Overlay101Event D_10EC;
 
-extern void *D_CA0;
+extern u8 D_CA0[];
 
 extern Overlay101Event D_1514;
 
-extern void *D_CB4;
+extern u8 D_CB4[];
 
 extern Overlay101Event D_1920;
 
@@ -2102,19 +2102,19 @@ extern Overlay101Event D_1D2C[];
  * different offset, and a shared generic name silently mis-relocates it. */
 extern u32 D_800D3128;
 
-extern void *D_CDC;
+extern u8 D_CDC[];
 
 extern Overlay101Event D_2608;
 
-extern void *D_CF0;
+extern u8 D_CF0[];
 
 extern Overlay101Event D_2934;
 
-extern void *D_D04;
+extern u8 D_D04[];
 
 extern Overlay101Event D_2C60;
 
-extern void *D_D18;
+extern u8 D_D18[];
 
 extern Overlay101Event D_2F8C;
 
@@ -2132,7 +2132,7 @@ extern s32 gO101PresANode24Count;
 
 extern O101PresAInputs gO101PresAInputs;
 
-extern u8 gO101PresAAssetD2C;
+extern u8 gO101PresAAssetD2C[];
 
 extern Overlay101Event gO101PresAFinalObject32B8;
 
@@ -2150,7 +2150,7 @@ extern s32 gO101PresBNode24Count;
 
 extern O101PresBInputs gO101PresBInputs;
 
-extern u8 gO101PresBAssetD40;
+extern u8 gO101PresBAssetD40[];
 
 extern Overlay101Event gO101PresBFinalObject34E8;
 
@@ -2168,7 +2168,7 @@ extern s32 gO101PresCNode24Count;
 
 extern O101PresCInputs gO101PresCInputs;
 
-extern u8 gO101PresCAssetD54;
+extern u8 gO101PresCAssetD54[];
 
 extern Overlay101Event gO101PresCFinalObject3718;
 
@@ -2186,7 +2186,7 @@ extern s32 gO101PresDNode24Count;
 
 extern O101PresDInputs gO101PresDInputs;
 
-extern u8 gO101PresDAssetD68;
+extern u8 gO101PresDAssetD68[];
 
 extern Overlay101Event gO101PresDFinalObject3948;
 
@@ -2200,7 +2200,7 @@ extern s32 gO101TailNode24Count;
 
 extern O101TailInputs gO101TailInputs;
 
-extern u8 gO101TailAssetD7C;
+extern u8 gO101TailAssetD7C[];
 
 extern Overlay101Event gO101TailFinalObject3B78;
 
@@ -2214,11 +2214,11 @@ extern s32 gO101TailAB4CNode24Count;
 
 extern O101TailAB4CInputs gO101TailAB4CInputs;
 
-extern u8 gO101TailAB4CAssetD90;
+extern u8 gO101TailAB4CAssetD90[];
 
 extern Overlay101Event gO101TailAB4CFinalObject3F14;
 
-extern void *D_DA4;
+extern u8 D_DA4[];
 
 extern Overlay101Event D_4358;
 
@@ -2238,7 +2238,7 @@ extern s32 gO101TailBA34Node24Count;
 
 extern O101TailBA34Inputs gO101TailBA34Inputs;
 
-extern u8 gO101TailBA34AssetDB8;
+extern u8 gO101TailBA34AssetDB8[];
 
 extern Overlay101Event gO101TailBA34FinalObject4630;
 
@@ -2252,7 +2252,7 @@ extern s32 gO101TailC144Node24Count;
 
 extern O101TailC144Inputs gO101TailC144Inputs;
 
-extern u8 gO101TailC144AssetDCC;
+extern u8 gO101TailC144AssetDCC[];
 
 extern Overlay101Event gO101TailC144FinalObject4A90;
 

@@ -3668,8 +3668,18 @@
       }
     },
     {
-      "name": "assets/overlays/o101/overlay_101_data_rodata_4e50.bin",
-      "target_path": "expected/build/assets/overlays/o101/overlay_101_data_rodata_4e50.bin.o",
+      "name": "assets/overlays/o101/overlay_101_data_rodata_5a70.bin",
+      "target_path": "expected/build/assets/overlays/o101/overlay_101_data_rodata_5a70.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o101"
+        ]
+      }
+    },
+    {
+      "name": "assets/overlays/o101/overlay_101_data_rodata_5c30.bin",
+      "target_path": "expected/build/assets/overlays/o101/overlay_101_data_rodata_5c30.bin.o",
       "metadata": {
         "progress_categories": [
           "overlay",

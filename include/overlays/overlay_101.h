@@ -430,9 +430,11 @@ typedef struct Overlay101DispatchEntry {
     u8 pad08[0x28];
 } Overlay101DispatchEntry;
 
+/* Tier B: the dispatcher reads serialized payloads as f32. The first member
+ * also permits ordinary C89 initialization of those active float payloads. */
 typedef union Overlay101EventValue {
-    s32 i;
     f32 f;
+    s32 i;
 } Overlay101EventValue;
 
 typedef struct Overlay101Event {
@@ -2042,7 +2044,7 @@ extern s32 D_1D0;
  * through the generated surface name even though the callee is defined in
  * this same overlay. */
 /* Tier B: initialized data +0x340, distinct from the BSS node pool. */
-extern u8 D_o101ResetData340[];
+extern Overlay101Event D_o101ResetData340[];
 
 extern void *D_C78;
 

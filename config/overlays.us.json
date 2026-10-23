@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 6112,
+  "owned_data_rodata_bytes": 8576,
   "diagnostic_data_rodata_bytes": 840,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -15092,6 +15092,15 @@
      "type": "c",
      "section": ".data",
      "source": "overlays/o101/overlay101ClockData",
+     "canonical": true
+    },
+    {
+     "offset": "0x340",
+     "end_offset": "0xCE0",
+     "size": "0x9A0",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o101/overlay101InitialEvents",
      "canonical": true
     }
    ]

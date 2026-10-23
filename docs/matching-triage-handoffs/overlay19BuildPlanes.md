@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay19BuildPlanes:start -->
 ### `overlay19BuildPlanes` plateau handoff
 
-- source: `src/overlays/o019/overlay19BuildPlanes.c`
+- source: `src/overlays/o019/overlay_019.c`
 - score: 0/532 words, promoted
 - frame: 0x140
 - relocations: 4

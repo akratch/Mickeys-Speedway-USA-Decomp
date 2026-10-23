@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay19BuildSpatialMasks:start -->
 ### `overlay19BuildSpatialMasks` plateau handoff
 
-- source: `src/overlays/o019/overlay19BuildSpatialMasks.c`
+- source: `src/overlays/o019/overlay_019.c`
 - score: 0/227 words, promoted
 - frame: 0x80
 - relocations: 0

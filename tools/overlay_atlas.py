@@ -106,7 +106,7 @@ EXACT_DONOR_OVERLAYS = {
 # deliberately explicit so the manifest, splat YAML, and progress metric share
 # one collision-free `(overlay, offset)` source of truth.
 DATA_RODATA_OWNERSHIP = {
-    22: [(0x0, 0x60, "overlay22RemoveObject")],
+    22: [(0x0, 0x60, "overlay_022")],
     45: [(0x0, 0x80, "func_overlay_045_F0000764_188CBBC")],
     47: [(0x0, 0x5A0, "overlay47ReleaseResources")],
     # Offsets are relative to data_rodata. The source must already own a C text
@@ -151,7 +151,7 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         (
             0x0,
             0x14,
-            "func_overlay_029_F00005C4_187D874",
+            "overlay_029",
             ".rodata",
             "func_overlay_029_F00005C4_187D874",
             True,
@@ -305,10 +305,20 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     12: "overlay_012_padding",
     2: "overlay_002_tail",
     11: "overlay_011_padding",
+    19: "overlay_019_padding",
+    20: "overlay_020_padding",
+    21: "overlay_021_padding",
+    23: "overlay_023_padding",
+    24: "overlay_024_padding",
+    25: "overlay_025_padding",
+    28: "overlay_028_padding",
+    29: "overlay_029_padding",
+    30: "overlay_030_padding",
+    31: "overlay_031_padding",
+    33: "overlay_033_padding",
+    35: "overlay_035_padding",
+    36: "overlay_036_padding",
 }
-# Folded modules whose compiler padding is the tail of the one TU's .text
-# rather than an alignment gap before C-owned data.
-ONE_TU_TEXT_PADDING = {2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 16}
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
 # an explicit eight-byte gap before initialized data. Emit a bounded asm row
@@ -321,6 +331,7 @@ EXPLICIT_TEXT_PADDING = {
     # Overlay 52's text tail pads to 0x2130; overlay52Initialize's .data follows.
     52: "overlay_052_padding",
 }
+
 
 TEXT_SUBSEGMENTS = {
     3: [
@@ -395,81 +406,27 @@ TEXT_SUBSEGMENTS = {
         (0x000, "c", "overlay_018"),
     ],
     19: [
-        (0x000, "c", "overlay19Dispatch"),
-        (0x0AC, "c", "overlay19BuildOutput"),
-        (0x1E0, "c", "overlay19BuildPlanes"),
-        (0xA30, "c", "overlay19BuildAdjacency"),
-        (0xC1C, "c", "overlay19FindAdjacent"),
-        (0xD78, "c", "overlay19ClassifyEdge"),
-        (0xF58, "c", "overlay19BuildSpatialMasks"),
+        (0x000, "c", "overlay_019"),
         (0x12E4, "asm", "overlay_019_padding"),
     ],
     20: [
-        (0x000, "c", "overlay20ReleaseTree"),
-        (0x07C, "c", "overlay20ReleaseHandle"),
-        (0x0A8, "c", "overlay20ConfigureResource"),
-        (0x204, "c", "overlay20UpdateObjectResource"),
-        (0x38C, "c", "func_overlay_020_F000038C_1876964"),
-        (0x07C4, "c", "overlay20BuildTileCommands"),
-        (0x09DC, "c", "overlay20DrawResource"),
-        (0x0A68, "c", "overlay20UpdateGrid"),
-        (0x0DC4, "c", "overlay20ReleaseEntry"),
-        (0x0E0C, "c", "overlay20MarkNested"),
-        (0x0E28, "c", "overlay20ConfigureEntry"),
-        (0x0F78, "c", "overlay20CreateEntry"),
-        (0x1018, "c", "overlay20RemoveEntry"),
-        (0x10EC, "c", "overlay20AdvanceEntries"),
-        (0x1148, "c", "func_overlay_020_F0001148_1877720"),
+        (0x000, "c", "overlay_020"),
         (0x1484, "asm", "overlay_020_padding"),
     ],
     22: [
-        (0x000, "c", "overlay22InitializeObject"),
-        (0x2B0, "c", "func_overlay_022_F00002B0_18783B8"),
-        (0xA7C, "c", "overlay22ResolvePlane"),
-        (0xD30, "c", "overlay22RemoveObject"),
+        (0x000, "c", "overlay_022"),
         (0xE9C, "asm", "overlay_022_padding"),
     ],
     31: [
-        (0x000, "c", "overlay31BuildLookupTables"),
-        (0x2E8, "c", "overlay31InitializeParticleAssets"),
-        (0x4F8, "c", "overlay31BuildPalettes"),
-        (0x6B0, "c", "overlay31InitializeBuffers"),
-        (0xA84, "c", "overlay31CreateConfig"),
-        (0xDC4, "c", "overlay31CreateRecords"),
-        (0xE7C, "c", "overlay31CreatePool"),
+        (0x000, "c", "overlay_031"),
         (0xF44, "asm", "overlay_031_padding"),
     ],
     33: [
-        (0x000, "c", "overlay33InitializeBuffers"),
-        (0x144, "c", "overlay33ReleaseGlobal"),
-        (0x17C, "c", "overlay33CallA"),
-        (0x19C, "c", "overlay33BuildDisplayList"),
-        (0x66C, "c", "overlay33PresentAndSwap"),
-        (0x708, "c", "overlay33CallB"),
+        (0x000, "c", "overlay_033"),
         (0x728, "asm", "overlay_033_padding"),
     ],
     36: [
-        (0x000, "c", "overlay36InitObject"),
-        (0x0D4, "c", "overlay36QueueAction"),
-        (0x140, "c", "overlay36FlushQueue"),
-        (0x1D0, "c", "overlay36UpdateInteractiveEntity"),
-        (0x694, "c", "overlay36SpawnTransient"),
-        (0x7B0, "c", "overlay36InitVectorState"),
-        (0x818, "c", "overlay36CheckNearbyHeight"),
-        (0x914, "c", "overlay36SelectState"),
-        (0x988, "c", "overlay36CallGlobal"),
-        (0x9B8, "c", "overlay36SpawnAtPosition"),
-        (0xA60, "c", "overlay36ChooseWeightedState"),
-        (0xD08, "c", "overlay36PrepareAndTick"),
-        (0xD8C, "c", "overlay36SpawnLinked7F"),
-        (0xF20, "c", "overlay36SpawnDirectional"),
-        (0x1084, "c", "overlay36SpawnConditional"),
-        (0x1214, "c", "overlay36SpawnOffsetA9"),
-        (0x1378, "c", "overlay36SpawnAndUpdate"),
-        (0x1470, "c", "overlay36CallModes"),
-        (0x14B0, "c", "overlay36TickState"),
-        (0x150C, "c", "overlay36UpdatePeers"),
-        (0x1688, "c", "overlay36SpawnFinalEffect"),
+        (0x000, "c", "overlay_036"),
         (0x1748, "asm", "overlay_036_padding"),
     ],
     38: [
@@ -495,15 +452,11 @@ TEXT_SUBSEGMENTS = {
         (0x1C84, "c", "overlay41DrawItem"),
     ],
     21: [
-        (0x000, "c", "overlay21RegisterPlane"),
-        (0x10C, "c", "overlay21ApplyPriorities"),
+        (0x000, "c", "overlay_021"),
         (0x2D4, "asm", "overlay_021_padding"),
     ],
     23: [
-        (0x000, "c", "overlay23SpawnAttachments"),
-        (0x208, "c", "overlay23Init"),
-        (0x350, "c", "overlay23Update"),
-        (0x468, "c", "overlay23RenderEffect"),
+        (0x000, "c", "overlay_023"),
         (0x568, "asm", "overlay_023_padding"),
     ],
     24: [
@@ -515,14 +468,7 @@ TEXT_SUBSEGMENTS = {
         (0x608, "asm", "overlay_025_padding"),
     ],
     34: [
-        (0x000, "c", "overlay34InitStorage"),
-        (0x0C8, "c", "overlay34SetValue10"),
-        (0x0D4, "c", "overlay34CreateRecord"),
-        (0x2C8, "c", "overlay34RemoveRecord"),
-        (0x378, "c", "overlay34ResetStorage"),
-        (0x40C, "c", "overlay34UpdateRecords"),
-        (0x540, "c", "overlay34InterpolateColor"),
-        (0x608, "c", "overlay34SortAndDraw"),
+        (0x000, "c", "overlay_034"),
     ],
     27: [
         (0x000, "c", "overlay_027"),
@@ -948,29 +894,14 @@ TEXT_SUBSEGMENTS = {
         (0x2CB4, "asm", "overlay_011_padding"),
     ],
     29: [
-        (0x000, "c", "overlay29Select"),
-        (0x084, "c", "overlay29RotateForward"),
-        (0x124, "c", "overlay29RotateBackward"),
-        (0x1C4, "c", "overlay29BuildChain"),
-        (0x23C, "c", "overlay29UpdateRatio"),
-        (0x304, "c", "overlay29Sample"),
-        (0x42C, "c", "overlay29InitializeObject"),
-        (0x5C4, "c", "func_overlay_029_F00005C4_187D874"),
-        (0xEE0, "c", "overlay29ProjectPoint"),
-        (0x10C4, "c", "overlay29HandleEffects"),
-        (0x14C8, "c", "overlay29DrawGroups"),
+        (0x000, "c", "overlay_029"),
         (0x16CC, "asm", "overlay_029_padding"),
     ],
     26: [
-        (0x000, "c", "overlay26InitializeObject"),
-        (0x1A0, "c", "func_overlay_026_F00001A0_187A598"),
-        (0xB18, "c", "func_overlay_026_F0000B18_187AF10"),
-        (0xD24, "c", "overlay26HandleEffects"),
-        (0x1158, "c", "overlay26DrawGroups"),
+        (0x000, "c", "overlay_026"),
     ],
     30: [
-        (0x000, "c", "overlay30Initialize"),
-        (0x2B4, "c", "overlay30TransposePixels"),
+        (0x000, "c", "overlay_030"),
         (0x438, "asm", "overlay_030_padding"),
     ],
     28: [
@@ -978,11 +909,7 @@ TEXT_SUBSEGMENTS = {
         (0x7EC, "asm", "overlay_028_padding"),
     ],
     35: [
-        (0x000, "c", "overlay35Initialize"),
-        (0x1E0, "c", "func_overlay_035_F00001E0_1881EC0"),
-        (0x770, "c", "overlay35BuildGridMasks"),
-        (0xB40, "c", "func_overlay_035_F0000B40_1882820"),
-        (0x1380, "c", "overlay35SelectHeight"),
+        (0x000, "c", "overlay_035"),
         (0x13E8, "asm", "overlay_035_padding"),
     ],
     59: [
@@ -2091,7 +2018,10 @@ def render_yaml_block(
         for part in row["text_ownership"]:
             source_name = part["source"].rsplit("/", 1)[1]
             if source_name == compiler_padding:
-                if not owned_data and ov not in ONE_TU_TEXT_PADDING:
+                # A module TU's trailing pad is emitted by IDO's 16-byte
+                # .text alignment (phase 2 of docs/OVERLAY_STRUCTURE_SPRINT.md);
+                # an interior pad still needs C-owned data after it.
+                if not owned_data and part is not row["text_ownership"][-1]:
                     raise ValueError(
                         f"overlay {ov} compiler padding needs C-owned data"
                     )

@@ -2,11 +2,8 @@
 # Source: config/normalizations/overlay-symbol-aliases.us.json
 # Pure objcopy --redefine-sym POSTPROCESS rules only.
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildPlanes.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym sqrtf=sqrtf_o019Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay23RenderEffect.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym overlay23CallReloc=func_overlay_023_F0000000_1879210 $@
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CreateChain.c.o: POSTPROCESS = \
+	$(OBJCOPY) --redefine-sym func_overlay_017_F0000318_1873CD0=overlay17CreateChain $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58FinalizePackedStatus.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_058_F0005554_18B473C=overlay58FinalizePackedStatus $@
@@ -26,3 +23,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83BuildBatch.c.o: POSTPROCESS = \
 		--redefine-sym addObjectLight=overlay83CreateLinkedReloc \
 		--redefine-sym mmAlloc=overlay83AllocateBatchReloc \
 		--redefine-sym pointListRPY=overlay83TransformWorldReloc $@
+
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawPanel.c.o: POSTPROCESS = \
+	$(OBJCOPY) --redefine-sym func_overlay_101_F0002EFC_18DE71C=overlay101DrawPanel $@

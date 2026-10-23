@@ -137,16 +137,16 @@ void func_8002BD58(s32, s32, f32);
 void amSndSetXYZ(void *, f32, f32, f32);
 void amSndSetVolXYZ(void *, u8);
 void func_80006EA0(O27Object *);
-s16 *overlay27GetValue(void);
-f32 overlay27GetChildScale(O27Child *child);
-void overlay27Prepare(O27Command **commands, void *arg1,
-                      O27Transform *transform, f32 arg3, f32 arg4);
-void overlay27DrawPart(O27Command **commands, void *displayList, s32 arg2,
-                       s32 arg3);
-void overlay27SetMode(O27Command **commands, s32 arg1, s32 arg2, s32 arg3);
-void overlay27Finish(O27Command **commands, void *arg1);
-void overlay27Finalize(O27Command **commands, void *arg1, s16 *arg2,
-                       O27Object *object);
+extern s16 *camGetPtr(void);
+extern f32 func_80009F08(void *arg);
+extern void camPushModelMtx(O27Command **commands, void *mtx,
+                            O27Transform *transform, f32 scale, f32 scaleY);
+extern void texDPTextureX(O27Command **commands, void *texture, s32 flags,
+                          s32 frame);
+extern void camPopModelMtx(O27Command **commands);
+extern void func_80009E78(O27Command **commands, void *mtx, s16 *vertices,
+                          O27Object *object);
+
 
 void overlay27Init(O27Object *object, Overlay27InitData *init);
 void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate);

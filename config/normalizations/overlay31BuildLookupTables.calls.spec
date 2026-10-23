@@ -1,2 +1,0 @@
-0x268:func_8002A8BC:overlay31AllocateReloc
-0x274:func_8002A8C0:overlay31AllocateReloc

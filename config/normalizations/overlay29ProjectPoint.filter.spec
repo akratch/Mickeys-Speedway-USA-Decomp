@@ -1,2 +1,0 @@
-0x020:5:gOverlay29MinimumYReloc
-0x024:6:gOverlay29MinimumYReloc

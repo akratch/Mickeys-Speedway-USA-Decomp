@@ -1,7 +1,0 @@
-# The overlay's stored call carriers link through its synthetic base symbol.
-0x0bc:mathOneFloatRPY:func_overlay_026_F0000000_187A3F8
-0x10c:trackMakePolylist:func_overlay_026_F0000000_187A3F8
-0x12c:func_80010900:func_overlay_026_F0000000_187A3F8
-0x150:func_overlay_026_F0000D24_187B11C:func_overlay_026_F0000000_187A3F8
-0x170:mathOneFloatPY:func_overlay_026_F0000000_187A3F8
-0x180:func_8000FAE0:func_overlay_026_F0000000_187A3F8

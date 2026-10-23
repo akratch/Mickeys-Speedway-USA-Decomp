@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay34SortAndDraw:start -->
 ### `overlay34SortAndDraw` plateau handoff
 
-- source: `src/overlays/o034/overlay34SortAndDraw.c`
+- source: `src/overlays/o034/overlay_034.c`
 - score: 0 differing words
 - frame: 0x1A0
 - relocations: 16

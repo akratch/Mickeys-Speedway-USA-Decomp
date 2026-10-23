@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay33PresentAndSwap:start -->
 ### `overlay33PresentAndSwap` plateau handoff
 
-- source: `src/overlays/o033/overlay33PresentAndSwap.c`
+- source: `src/overlays/o033/overlay_033.c`
 - score: 0/39 words
 - frame: 0x18
 - relocations: 18

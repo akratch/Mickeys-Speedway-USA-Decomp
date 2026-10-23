@@ -1,0 +1,2 @@
+0x5d4:initColourCycle:mmAlloc
+0x650:updateColourCycle:mmAlloc

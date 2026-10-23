@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay3SelectScoredObject:start -->
 ### `overlay3SelectScoredObject` plateau handoff
 
-- source: `src/overlays/o003/overlay3SelectScoredObject.c`
+- source: `src/overlays/o003/overlay_003.c`
 - score: 118/118 words
 - frame: 0x80
 - relocations: 5

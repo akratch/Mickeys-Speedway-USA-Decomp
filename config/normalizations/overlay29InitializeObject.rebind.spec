@@ -1,3 +1,0 @@
-0x0bc:trackMakePolylist:func_overlay_029_F0000000_187D2B0
-0x0dc:func_80010900:func_overlay_029_F0000000_187D2B0
-0x0f0:func_overlay_029_F00010C4_187E374:func_overlay_029_F0000000_187D2B0

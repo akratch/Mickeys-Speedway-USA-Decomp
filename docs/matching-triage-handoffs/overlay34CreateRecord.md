@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay34CreateRecord:start -->
 ### `overlay34CreateRecord` plateau handoff
 
-- source: `src/overlays/o034/overlay34CreateRecord.c`
+- source: `src/overlays/o034/overlay_034.c`
 - score: matched (0/125 words, promoted 2026-09-17 by lane w3-o034)
 - frame: 0x30
 - relocations: 12

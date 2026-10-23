@@ -205,17 +205,17 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   **Left** (lane c-1, 2026-10-08): deleting the empty `if (other) {}` changes about 12 words; the extra reference to `other` before `other->state` is load-bearing.
 - `src/overlays/o001/overlay_001_tail.c:2903` `overlay1UpdateValueCache` **A**: multiply-by-zero stand-in for a constant.
   Natural: the literal `0`. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
-- `src/overlays/o003/overlay3FindClosestObject.c:39` `overlay3FindClosestObject` **A**: empty if body.
+- `src/overlays/o003/overlay_003.c:39` `overlay3FindClosestObject` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Partly resolved (lane c-4, 2026-10-09):** the `if (&pad)` probe was byte-inert and is deleted (the `pad` declaration stays: without it the frame moves, 9 lines). **Left:** the empty `!cursor` test and the `if (1)` around the loop body; deleting either swaps the index and cursor registers (s3/s4; 10 and 7 lines). Measured without them: an indexed `objects[index]` loop (12), a pointer-walk `for (index = start, cursor = &objects[start]; ...; index++, cursor++)` (14), the same with the cursor set first (19), `while` with both increments at the tail (14), `*cursor++` (14). The fakes add references that rank the index web ahead of the cursor; a natural second use of `index` is still to find.
-- `src/overlays/o007/overlay_007_tail.c:268` `overlay7FillValues` **A**: `((!value) & 0xFFFFU) && (!value)` with an empty body.
+- `src/overlays/o007/overlay_007.c:268` `overlay7FillValues` **A**: `((!value) & 0xFFFFU) && (!value)` with an empty body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Left (lane c-4, 2026-10-09):** deleted, the counter takes v0 and its post-decrement copy v1, the target has them the other way round (4 lines). The two reads of the parameter before it is overwritten are what number its web first. Measured: a separate `s16 *entry` local (6), counter assigned before the pointer (4), a `for (i = 9; i >= 0; i--)` with `*value-- = 0xF0` (6), an indexed store below the end symbol (unrolled), `void` return with and without the parameter (4, 5), declaration initialisers with `!= 0` (6). The function overwrites its only parameter, so the signature itself is suspect; a caller-side reading of the argument would settle it.
 - `src/overlays/o008/overlay_008.c:416` `func_overlay_008_F0001000_185ED58` **A**: empty if body.
   **Left** (lane c-1, 2026-10-08, measured): deleting the empty `if (unused) {}` changes about 100 words; the parameter reference removes its home store (cf. overlay99BuildHeightGrid). Prior note: Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/overlays/o008/overlay_008.c:1519` `overlay8ScaleOutputs` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
-- `src/overlays/o012/func_overlay_012_F00000C4_186D344.c:41` `func_overlay_012_F00000C4_186D344` **A**: empty if body.
+- `src/overlays/o012/overlay_012.c:41` `func_overlay_012_F00000C4_186D344` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Left (lane c-4, 2026-10-09):** the empty `!i` test keeps `i` live after the clear loop, which stops IDO turning the `< 64` exit into `!= 64` (2 lines: `li`/`bne` against `slti`/`bnez`). The sibling overlay12Initialize resolved with `for (i = 0, entry = gOverlay12Entries; i < 64; i++, entry++)` because its counter is reused after the loop; here the same loop (2), `<= 63` (2), a plain `do`/`while` (3, 4), an indexed loop (8) and deleting the test (7) all differ. A natural later use of `i` is still to find.
 - `src/overlays/o012/overlay_012.c:26` `overlay12Initialize` **A**: empty if body.

@@ -1,0 +1,665 @@
+#include "overlays/overlay_052.h"
+
+/* Overlay 52's .data and .bss, in ROM order: this module is the byte owner
+ * of the .data (the atlas's whole initialized range). The shipped code
+ * shares high halves between data/bss sites the way as1 does only for
+ * objects defined in the same TU (extern declarations of the same objects
+ * measure 1,598 words off). The names are the section offsets; the 0x24C
+ * table is split into the 2-entry arrays the HUD indexes. The initializer's
+ * header state is the record pair at .bss +0x480 (it writes record 0's three
+ * words and record 1's first). */
+static s16 o52_data_0[18] = {
+    2, 38, 39, 41, 42, 20, 21, 22, 23, 24, 25, 26, 30, 31, 40, 80, 100, -1,
+};
+static s16 o52_data_24[6] = { 0, 1, 2, 3, 4, -1 };
+static Overlay52Entry o52_data_30[3] = {
+    { (void *)38, (void *)39, 0, 0, 0 },
+    { (void *)41, (void *)42, 0, 12, 0 },
+};
+static Overlay52Entry o52_data_60[2] = {
+    { (void *)38, (void *)39, 0x00060000, 0, 0 },
+};
+static Overlay52Entry o52_data_80[3] = {
+    { (void *)20, (void *)21, 0, 0, 0 },
+    { (void *)20, (void *)21, 0, 7, 0 },
+};
+static Overlay52Entry o52_data_B0[3] = {
+    { (void *)30, (void *)31, 0, 0, -3 },
+    { (void *)20, (void *)21, 0, 32, 1 },
+};
+static Overlay52Entry o52_data_E0[10] = {
+    { (void *)20, (void *)21, 0, -7, 0 },
+    { (void *)20, (void *)21, 0, 0, 0 },
+    { (void *)20, (void *)21, 0, 7, 0 },
+    { (void *)20, (void *)21, 0x000B0000, 14, 0 },
+    { (void *)20, (void *)21, 0, 20, 0 },
+    { (void *)20, (void *)21, 0, 27, 0 },
+    { (void *)20, (void *)21, 0x000A0000, 33, 0 },
+    { (void *)20, (void *)21, 0, 40, 0 },
+    { (void *)20, (void *)21, 0, 47, 0 },
+};
+static Overlay52Entry o52_data_180[10] = {
+    { (void *)20, (void *)21, 0, 0, 0 },
+    { (void *)20, (void *)21, 0, 7, 0 },
+    { (void *)20, (void *)21, 0x000B0000, 14, 0 },
+    { (void *)20, (void *)21, 0, 20, 0 },
+    { (void *)20, (void *)21, 0, 27, 0 },
+    { (void *)20, (void *)21, 0x000A0000, 33, 0 },
+    { (void *)20, (void *)21, 0, 40, 0 },
+    { (void *)20, (void *)21, 0, 47, 0 },
+    { (void *)23, (void *)24, 0, -25, -8 },
+};
+static Overlay52Entry o52_data_220[2] = {
+    { (void *)25, (void *)0, 0, -25, -6 },
+};
+static s8 o52_data_240[12] = { 1, 1, 0, 0, 0, 1, 2, 3, 3, 3, 0, 0 };
+static s16 o52_data_24C[2] = { -12, -120 };
+static s16 o52_data_250[2] = { 0, 160 };
+static s16 o52_data_254[2] = { -84, 66 };
+static s16 o52_data_258[2] = { 25, 251 };
+static s16 o52_data_25C[2] = { 31, 257 };
+static s16 o52_data_260[2] = { -80, 26 };
+static s16 o52_data_264[2] = { 768, 3072 };
+static s16 o52_data_268[2] = { -1056, 1248 };
+static s16 o52_data_26C[2] = { 3200, 5504 };
+static s16 o52_data_270[2] = { 1920, 1920 };
+static s16 o52_data_274[2] = { -640, -640 };
+static s16 o52_data_278[2] = { 5760, 5760 };
+static s16 o52_data_27C[60] = {
+    28, 28, 28, 136, 117, 37, 117, 145, 165, 37, 165, 145,
+    128, 37, 128, 145, 128, 37, 128, 145, 28, 28, 262, 28,
+    88, 37, 238, 37, 110, 37, 165, 37, 92, 37, 198, 37,
+    92, 37, 198, 37, 28, 16, 28, 136, 117, 25, 117, 145,
+    165, 25, 165, 145, 128, 25, 128, 145, 128, 25, 128, 145,
+};
+static Overlay52Entry o52_data_2F4[2] = {
+    { (void *)20, (void *)21, 0, -3, -4 },
+};
+static s32 o52_data_314 = 9;
+static s32 o52_data_318 = 0;
+static s8 o52_data_31C = 0;
+static s32 o52_data_320[4] = { 0 };
+
+static Overlay52Entry o52_bss_0[2][3];
+static Overlay52Entry o52_bss_60[2][2];
+static Overlay52Entry o52_bss_A0[2][3];
+static Overlay52Entry o52_bss_100[2][3];
+static Overlay52Entry o52_bss_160[10];
+static Overlay52Entry o52_bss_200[2][10];
+static Overlay52Entry o52_bss_340[2][10];
+static Overlay52Entry o52_bss_480[2];
+static s16 o52_bss_4A0[2];
+static s32 o52_bss_4A4;
+static s32 o52_bss_4A8[2];
+static f32 o52_bss_4B0;
+static s16 o52_bss_4B4[2];
+static s16 o52_bss_4B8[2];
+static s16 o52_bss_4BC[2];
+static s16 o52_bss_4C0[2];
+static s16 o52_bss_4C4[2];
+static s16 o52_bss_4C8[2];
+static Overlay45ResourceDescriptor *o52_bss_4CC;
+static s16 o52_bss_4D0;
+static s16 o52_bss_4D2;
+
+/* Module-private helpers (no ORT row): static, so their calls are JUMP
+ * records. The initializer hands them its tables unprototyped. */
+static void overlay52PatchIndices();
+static void overlay52CopyOffsetEntries();
+
+
+/* Independently reconstructed from Mickey-local evidence; no DKR/JFG donor. */
+/* The bounds stores keep the target's source-line grouping (as1 pairs
+ * statements by line); the 4A0 pair is one store per line. */
+void func_overlay_052_F0000000_189A670(void) {
+    s32 i;
+    u8 *state;
+    state = func_80028F54();
+    loadFrontEndList(o52_data_0);
+    setupFrontEndList(o52_data_24);
+    amTunePlay(4);
+    o52_bss_4A4 = 0x104;
+    runlinkDownloadCode(11);
+    overlay52PatchIndices(o52_data_30);
+    overlay52PatchIndices(o52_data_60);
+    overlay52PatchIndices(o52_data_180);
+    overlay52PatchIndices(o52_data_220);
+    overlay52PatchIndices(o52_data_80);
+    overlay52PatchIndices(o52_data_B0);
+    overlay52PatchIndices(o52_data_2F4);
+    for (i = 0; i < 2; i++) {
+        overlay52CopyOffsetEntries(o52_data_30, o52_bss_0[i], i, 0);
+        overlay52CopyOffsetEntries(o52_data_60, o52_bss_60[i], i, 0);
+        overlay52CopyOffsetEntries(o52_data_180, o52_bss_200[i], i, 3);
+        overlay52CopyOffsetEntries(o52_data_220, o52_bss_340[i], i, 4);
+        overlay52CopyOffsetEntries(o52_data_80, o52_bss_A0[i], i, 1);
+        overlay52CopyOffsetEntries(o52_data_B0, o52_bss_100[i], i, 2);
+    }
+    o52_bss_4B0 = -80.0f;
+    *(s16 *)((u8 *)D_800D3550 + 0x26) = 40;
+    *(f32 *)((u8 *)D_800D3550 + 0x28) = 1.0f;
+    overlay56LoadResource();
+    o52_bss_4A8[0] = -1;
+    o52_bss_4A8[1] = -1;
+    ext_resident_result = levelGetNumber();
+    for (i = 0; i < 9; i++) {
+        o52_bss_160[i].x = o52_data_E0[i].x;
+        o52_bss_160[i].y = o52_data_E0[i].y;
+        o52_bss_160[i].value8 = o52_data_E0[i].value8;
+    }
+    if (frontGet2PlayerSplit() != 0) {
+        o52_bss_4BC[0] = -0x500; o52_bss_4C0[0] = -0x140;
+        o52_bss_4BC[1] = 0x400; o52_bss_4C0[1] = -0x140;
+        o52_bss_4C4[0] = 0x3F0;
+        o52_bss_4C8[0] = 0x3C0;
+        o52_bss_4C4[1] = 0xCF0;
+        o52_bss_4C8[1] = 0x3C0;
+        o52_bss_4A0[0] = -0x420;
+        o52_bss_4A0[1] = 0x4E0;
+    } else if (frontGetScreenMode() & 1) {
+        o52_bss_4BC[0] = -0x500; o52_bss_4C0[0] = -0x140;
+        o52_bss_4BC[1] = -0x500; o52_bss_4C0[1] = -0x140;
+        o52_bss_4C4[0] = 0x830;
+        o52_bss_4C8[0] = 0x210;
+        o52_bss_4C4[1] = 0x830;
+        o52_bss_4C8[1] = 0x990;
+        o52_bss_4A0[0] = -0x280; o52_bss_4A0[1] = -0x280;
+    } else {
+        o52_bss_4BC[0] = -0x500; o52_bss_4C0[0] = -0x140;
+        o52_bss_4BC[1] = -0x500; o52_bss_4C0[1] = -0x140;
+        o52_bss_4C4[0] = 0x830;
+        o52_bss_4C8[0] = 0x2D0;
+        o52_bss_4C4[1] = 0x830;
+        o52_bss_4C8[1] = 0x990;
+        o52_bss_4A0[0] = -0x280; o52_bss_4A0[1] = -0x280;
+    }
+    o52_bss_480[0].value8 = 0;
+    o52_bss_4B4[0] = o52_bss_4BC[0]; o52_bss_4B4[1] = o52_bss_4BC[1];
+    o52_bss_4B8[0] = o52_bss_4C0[0]; o52_bss_4B8[1] = o52_bss_4C0[1];
+    o52_bss_480[0].resource = (RcpTextureInfo *)ext_resident_word_190;
+    o52_bss_480[0].alternate = 0;
+    o52_bss_480[1].resource = 0;
+    if (*state == 3) {
+        s32 handle;
+        fontUseFont(3);
+        handle = levelGetNumber();
+        handle = func_8003A5A0(handle);
+        o52_bss_4CC = overlay45CreateDescriptor((const char *)handle, 0xA0, 0x78, 0xC);
+        overlay45SetMode(o52_bss_4CC, 0);
+    } else {
+        o52_bss_4CC = 0;
+    }
+    o52_bss_4D2 = 0;
+    o52_bss_4D0 = 0;
+}
+
+/* This exact six-overlay Mickey family has no exact DKR v77/v80 or JFG donor. */
+static void overlay52PatchIndices(OverlayPatchIndexEntry *entry) {
+    while (entry->first != 0) {
+        entry->first = (s32) D_800D31C8[entry->first];
+        if (entry->second != 0) {
+            entry->second = (s32) D_800D31C8[entry->second];
+        }
+        entry++;
+    }
+}
+
+static void overlay52CopyOffsetEntries(Overlay52Entry *source,
+                                Overlay52Entry *destination, s32 selection,
+                                s32 index) {
+    s16 xOffset;
+    s16 yOffset;
+
+    index *= 4;
+    if (frontGet2PlayerSplit() != 0) {
+        index += 0x14;
+    } else if (frontGetScreenMode() & 1) {
+        index += 0x28;
+    }
+
+    if (selection == 0) {
+        xOffset = gOverlay52Offsets[index];
+        yOffset = gOverlay52Offsets[index + 1];
+    } else {
+        xOffset = gOverlay52Offsets[index + 2];
+        yOffset = gOverlay52Offsets[index + 3];
+    }
+
+    while (source->resource != 0) {
+        destination->resource = source->resource;
+        destination->alternate = source->alternate;
+        destination->x = source->x + xOffset;
+        destination->y = source->y + yOffset;
+        destination->value8 = source->value8;
+        source++;
+        destination++;
+    }
+    destination->resource = 0;
+}
+
+/* Reconstructed from Mickey's call/global relocation identities and field
+ * accesses. Built with -Wab,-r4300_mul (mk/overlays.mk): the HUD height
+ * easing is then a plain for loop, as in overlay54TailA. Every local has a
+ * frame home in declaration order, so the set of locals is the shipped
+ * one: the screen-mode bit and the pad buttons share one (both s0), the
+ * time difference rides in iconX's (s1; loading it and then negating the
+ * local is what ranks that web above iconY's), the lap count and the
+ * shadow alpha each have their own, and the first and second HUD rows are
+ * indexed at each use. The alpha is passed as (u8), which spends the ring
+ * draw the shipped code has; the clock hand is a multiply by -65536
+ * (as1's -r4300_mul expansion: negate into at, then shift). */
+void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
+    s32 i;
+    s32 lap;
+    s32 player;
+    s32 desiredItems[2];
+    s32 bits;
+    s32 split;
+    Overlay52Object **racers;
+    Overlay52Level *level;
+    Overlay52Object *object;
+    Overlay52Racer *racer;
+    Overlay52Entry *digits;
+    s32 racerCount;
+    s32 alpha;
+    s32 minutes;
+    s32 seconds;
+    s32 hundredths;
+    s32 hudOffset;
+    Overlay52Entry icon[2];
+    s32 width;
+    u32 halfHeight;
+    s32 value0;
+    s32 value1;
+    s32 value2;
+    s32 iconY;
+    s32 active;
+    s32 iconX;
+
+    viGetCurrentSize(&width, (s32 *)&halfHeight);
+    halfHeight >>= 1;
+    split = frontGet2PlayerSplit();
+    bits = frontGetScreenMode() & 1;
+    camStandardOrtho(&D_800D3140, &D_800D3144);
+    if (o52_bss_4CC != 0) {
+        o52_bss_4D0 += updateRate;
+        if (o52_bss_4D0 >= 61) {
+            if (o52_bss_4D0 >= 241) {
+                o52_bss_4D2 -= updateRate * 4;
+                if (o52_bss_4D2 < 0) {
+                    overlay45ReleaseDescriptor(o52_bss_4CC);
+                    o52_bss_4CC = 0;
+                } else {
+                    overlay45SetMode(o52_bss_4CC, o52_bss_4D2);
+                }
+            } else {
+                o52_bss_4D2 += updateRate * 4;
+                if (o52_bss_4D2 >= 256) {
+                    o52_bss_4D2 = 255;
+                }
+                overlay45SetMode(o52_bss_4CC, o52_bss_4D2);
+            }
+        }
+    }
+    racers = func_80005750(&racerCount);
+    if (bits != 0) {
+        o52_data_24C[0] = 0;
+        o52_data_24C[1] = -120;
+    } else {
+        o52_data_24C[0] = -12;
+        o52_data_24C[1] = -120;
+    }
+    if (D_800C947C == 0) {
+        for (i = 0; i < updateRate; i++) {
+            o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
+        }
+    }
+    texAnimateSprite(D_800D31C8[2], &o52_data_314, 20, &D_800D3550[2].unk18, updateRate);
+    texAnimateSprite(D_800D31C8[40], &o52_data_314, 20, &D_800D3550[1].unk18, updateRate);
+    hudOffset = (s32)o52_bss_4B0;
+    level = levelGetLevel();
+    o52_data_31C++;
+    o52_data_31C %= 10;
+    desiredItems[0] = -1;
+    desiredItems[1] = -1;
+
+    for (player = 0; player < 2; player++) {
+        object = racers[player];
+        if (object == NULL) {
+            return;
+        }
+        racer = object->racer;
+        if (racer->item != 255) {
+            o52_data_320[player] += updateRate * 16;
+            if (o52_data_320[player] >= 256) {
+                o52_data_320[player] = 255;
+            }
+        } else {
+            o52_data_320[player] -= updateRate * 8;
+            if (o52_data_320[player] < 0) {
+                o52_data_320[player] = 0;
+            }
+        }
+        if (o52_data_320[player] > 0) {
+            if (racer->value19C != 0) {
+                desiredItems[player] = 53;
+            } else if (racer->item != 255) {
+                desiredItems[player] = D_8007C180[racer->item];
+            } else {
+                desiredItems[player] = o52_bss_4A8[player];
+            }
+            if (desiredItems[player] != o52_bss_4A8[player]) {
+                if (o52_bss_4A8[player] != -1) {
+                    freeFrontEndItem(o52_bss_4A8[player]);
+                }
+                o52_bss_4A8[player] = desiredItems[player];
+                if (o52_bss_4A8[player] != -1) {
+                    loadFrontEndItem(o52_bss_4A8[player]);
+                }
+            }
+        }
+    }
+    for (i = 0; i < 2; i++) {
+        if (o52_bss_4A8[i] != -1 && o52_bss_4A8[i] != desiredItems[0] && o52_bss_4A8[i] != desiredItems[1]) {
+            freeFrontEndItem(o52_bss_4A8[i]);
+            o52_bss_4A8[i] = -1;
+        }
+    }
+    for (i = 0; i < 2; i++) {
+        if (desiredItems[i] != -1) {
+            o52_bss_4A8[i] = desiredItems[i];
+            if (D_800D31C8[o52_bss_4A8[i]] == NULL) {
+                loadFrontEndItem(o52_bss_4A8[i]);
+            }
+        }
+    }
+
+    for (player = 0; player < 2; player++) {
+        object = racers[player];
+        if (object == NULL) {
+            return;
+        }
+        if (joyGetPressed(player) & 2) {
+            o52_data_240[player] ^= 1;
+        }
+        racer = object->racer;
+        camSetNo(player);
+        camSetScissor(&D_800D3140);
+        if (racer->value3BA != 255) {
+            o52_bss_0[player][0].value8 = racer->value3BA << 16;
+            o52_bss_0[player][1].value8 = o52_data_240[4 + racer->value3BA] << 16;
+        } else {
+            o52_bss_0[player][0].value8 = racer->position << 16;
+            o52_bss_0[player][1].value8 = o52_data_240[4 + racer->position] << 16;
+        }
+        if (racer->flags & 8) {
+            func_8002F618(&D_800D3140, o52_bss_60[player], 0, hudOffset, 255, 255, 255, 255);
+        } else {
+            func_8002F618(&D_800D3140, o52_bss_0[player], 0, hudOffset, 255, 255, 255, 255);
+        }
+        if (o52_data_240[player] != 0) {
+            digits = o52_bss_A0[player];
+            overlay52CopyOffsetEntries(o52_data_80, digits, player, 1);
+            digits[0].value8 = (racer->value192 / 10) << 16;
+            digits[1].value8 = (racer->value192 % 10) << 16;
+            if (((s32)digits[0].value8 >> 16) == 1) {
+                digits[0].x++;
+            }
+            if (((s32)digits[1].value8 >> 16) == 1) {
+                digits[1].x--;
+            }
+            func_8002F618(&D_800D3140, digits, 0, hudOffset, 255, 255, 255, 255);
+            lap = racer->lap + 1;
+            if (racer->value45C != 0) {
+                lap++;
+            }
+            if (lap >= 4) {
+                lap = 3;
+            }
+            if (lap <= 0) {
+                lap = 1;
+            }
+            o52_bss_100[player][1].value8 = lap << 16;
+            func_8002F618(&D_800D3140, o52_bss_100[player], 0, hudOffset, 255, 255, 255, 255);
+            texDPInit(&D_800D3140);
+            if (split != 0) {
+                D_800D3550[1].unkC = o52_data_254[racer->playerIndex];
+                D_800D3550[1].unk10 = 71 - hudOffset;
+            } else {
+                D_800D3550[1].unkC = -55.0f;
+                D_800D3550[1].unk10 = o52_data_24C[player] - hudOffset + 83;
+            }
+            sprSetTextureFilter(0);
+            frontDrawObj(1);
+            sprSetTextureFilter(1);
+            texDPInit(&D_800D3140);
+        } else {
+            digits = o52_bss_200[player];
+            overlay56SplitTime(racer->time, &minutes, &seconds, &hundredths);
+            if (D_800C947C == 0 && racer->lap != level->laps &&
+                func_800290A0() == 0 && func_8003A7D0(object) != racer->time) {
+                hundredths -= hundredths % 10;
+                hundredths += o52_data_31C;
+            }
+            overlay52CopyOffsetEntries(o52_data_180, digits, player, 3);
+            o52_bss_200[player][0].value8 = (minutes / 10) << 16;
+            o52_bss_200[player][1].value8 = (minutes % 10) << 16;
+            o52_bss_200[player][3].value8 = (seconds / 10) << 16;
+            o52_bss_200[player][4].value8 = (seconds % 10) << 16;
+            o52_bss_200[player][6].value8 = (hundredths / 10) << 16;
+            o52_bss_200[player][7].value8 = (hundredths % 10) << 16;
+            for (i = 0; i < 8; i++) {
+                if (((s32)o52_bss_200[player][i].value8 >> 16) == 1) {
+                    if (i == 0 || i == 3 || i == 6) {
+                        o52_bss_200[player][i].x++;
+                    } else {
+                        o52_bss_200[player][i].x--;
+                    }
+                }
+            }
+            func_8002F618(&D_800D3140, digits, 0, hudOffset, 255, 255, 255, 255);
+            texDPInit(&D_800D3140);
+            if (split != 0) {
+                D_800D3550[4].unkC = o52_data_260[player];
+                D_800D3550[4].unk10 = 80 - hudOffset;
+            } else {
+                D_800D3550[4].unkC = -44.0f;
+                D_800D3550[4].unk10 = o52_data_24C[player] - hudOffset + 92;
+            }
+            D_800D3550[4].unk4 = racer->time * -65536 / 300;
+            frontDrawObj(4);
+            func_8002F618(&D_800D3140, o52_bss_340[player], 0,
+ hudOffset, 255, 255, 255, 255);
+        }
+        if (o52_data_320[player] > 0 && o52_bss_4A8[player] != -1) {
+            if (split != 0) {
+                if (o52_bss_4A8[player] == 53) {
+                    icon[0].x = o52_data_258[player];
+                    icon[0].y = 180;
+                } else {
+                    icon[0].x = o52_data_25C[player];
+                    icon[0].y = 186;
+                }
+            } else if (o52_bss_4A8[player] == 53) {
+                icon[0].x = 25;
+                icon[0].y = 62 - o52_data_24C[player];
+            } else {
+                icon[0].x = 31;
+                icon[0].y = 68 - o52_data_24C[player];
+            }
+            icon[0].value8 = 0;
+            icon[0].alternate = NULL;
+            icon[1].resource = NULL;
+            icon[0].resource = D_800D31C8[o52_bss_4A8[player]];
+            func_8002F618(&D_800D3140, icon, 0, 0, 255, 255, 255, o52_data_320[player]);
+            if (o52_bss_4A8[player] != 53 && racer->itemCount >= 2) {
+                iconX = icon[0].x;
+                iconY = icon[0].y;
+                alpha = o52_data_320[player] - (o52_data_320[player] >> 1);
+                o52_data_2F4[0].value8 = racer->itemCount << 16;
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 28, iconY + 27, 0, 0, 0, (u8)alpha);
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 30, iconY + 29, 0, 0, 0, (u8)alpha);
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 29, iconY + 28, 255, 255, 255, 255);
+            }
+        }
+        if (split != 0) {
+            value0 = o52_data_264[player];
+            value1 = o52_data_268[player];
+            value2 = o52_data_26C[player];
+        } else {
+            value0 = o52_data_270[player];
+            value1 = o52_data_274[player];
+            value2 = o52_data_278[player];
+        }
+        if (racer->value388 != 0) {
+            for (i = 0; i < updateRate; i++) {
+                o52_bss_4A0[player] += (value0 - o52_bss_4A0[player]) >> 3;
+            }
+            active = 1;
+        } else if (value1 == o52_bss_4A0[player]) {
+            active = 0;
+        } else {
+            for (i = 0; i < updateRate; i++) {
+                o52_bss_4A0[player] += (value2 - o52_bss_4A0[player]) >> 3;
+            }
+            if ((value2 >> 6) == (o52_bss_4A0[player] >> 6)) {
+                o52_bss_4A0[player] = value1;
+                active = 0;
+            } else {
+                active = 1;
+            }
+        }
+        if (active) {
+            o52_bss_480[0].x = o52_bss_4A0[player] >> 4;
+            if (split != 0) {
+                o52_bss_480[0].y = 60;
+            } else if (player == 0) {
+                o52_bss_480[0].y = 40;
+            } else {
+                o52_bss_480[0].y = 160;
+            }
+            func_8002F618(&D_800D3140, o52_bss_480, 0, 0, 255, 255, 255, 192);
+        }
+        if (racer->lap < level->laps) {
+            if (racer->timeDifferenceTimer >= updateRate) {
+                racer->timeDifferenceTimer -= updateRate;
+                for (i = 0; i < updateRate; i++) {
+                    o52_bss_4B4[racer->playerIndex] +=
+                        (o52_bss_4C4[racer->playerIndex] - o52_bss_4B4[racer->playerIndex]) >> 3;
+                    o52_bss_4B8[racer->playerIndex] +=
+                        (o52_bss_4C8[racer->playerIndex] - o52_bss_4B8[racer->playerIndex]) >> 3;
+                }
+            } else if (o52_bss_4B4[racer->playerIndex] != o52_bss_4BC[racer->playerIndex]) {
+                if (racer->timeDifferenceTimer != -1 && racer->timeDifference < 0) {
+                    amSndPlay(505, NULL);
+                    racer->timeDifferenceTimer = -1;
+                }
+                for (i = 0; i < updateRate; i++) {
+                    o52_bss_4B4[racer->playerIndex] += (6400 - o52_bss_4B4[racer->playerIndex]) >> 3;
+                    o52_bss_4B8[racer->playerIndex] +=
+                        (halfHeight * racer->playerIndex * 16 - o52_bss_4B8[racer->playerIndex] - 320) >> 3;
+                }
+                if (o52_bss_4B4[racer->playerIndex] >= 6241) {
+                    o52_bss_4B4[racer->playerIndex] = o52_bss_4BC[racer->playerIndex];
+                    o52_bss_4B8[racer->playerIndex] = o52_bss_4C0[racer->playerIndex];
+                }
+            }
+            if (racer->timeDifference <= 0) {
+                o52_bss_160[0].value8 = 12 << 16;
+                iconX = racer->timeDifference;
+                iconX = -iconX;
+                for (i = 0; i < 9; i++) {
+                    o52_bss_160[i].resource = D_800D31C8[20];
+                    o52_bss_160[i].alternate = D_800D31C8[21];
+                }
+            } else {
+                o52_bss_160[0].value8 = 13 << 16;
+                iconX = racer->timeDifference;
+                for (i = 0; i < 9; i++) {
+                    o52_bss_160[i].resource = D_800D31C8[80];
+                    o52_bss_160[i].alternate = D_800D31C8[21];
+                }
+            }
+            overlay56SplitTime(iconX, &minutes, &seconds, &hundredths);
+            o52_bss_160[1].value8 = (minutes / 10) << 16;
+            o52_bss_160[2].value8 = (minutes % 10) << 16;
+            o52_bss_160[4].value8 = (seconds / 10) << 16;
+            o52_bss_160[5].value8 = (seconds % 10) << 16;
+            o52_bss_160[7].value8 = (hundredths / 10) << 16;
+            o52_bss_160[8].value8 = (hundredths % 10) << 16;
+            for (i = 1; i < 9; i++) {
+                if (((s32)o52_bss_160[i].value8 >> 16) == 1) {
+                    if (i == 1 || i == 4 || i == 7) {
+                        o52_bss_160[i].x = o52_data_E0[i].x + 1;
+                    } else {
+                        o52_bss_160[i].x = o52_data_E0[i].x - 1;
+                    }
+                } else {
+                    o52_bss_160[i].x = o52_data_E0[i].x;
+                }
+            }
+            func_8002F618(&D_800D3140, o52_bss_160,
+                         o52_bss_4B4[racer->playerIndex] >> 4,
+                         o52_bss_4B8[racer->playerIndex] >> 4, 255, 255, 255, 254);
+        }
+        if (joyGetPressed(player) & 1) {
+            D_8007C1B0 ^= 1;
+        }
+        if (mainGetMode() == 0) {
+            switch (*func_80028F54()) {
+                case 3:
+                    if (ext_o1_83e0 == 0) {
+                        bits = joyGetPressed(0) & 65535;
+                        if (((joyGetPressed(1) | bits) & 0x9000) && o52_data_318 == 0) {
+                            mainChangeCameras(1);
+                            func_800016EC(1);
+                            func_8003A590();
+                            func_80037414(2, 4.0f, -1.0f, 0, 0, 0, 0);
+                            mainChangeLevel(18, 0, 0, 7, 1, 1);
+                            amTuneSetFade(3.0f, 0);
+                            o52_data_318 = 1;
+                        }
+                    }
+                    break;
+                case 4:
+                    if (ext_o1_83e0 == 0) {
+                        bits = joyGetPressed(0) & 65535;
+                        if (((joyGetPressed(1) | bits) & 0x9000) && o52_data_318 == 0) {
+                            mainChangeCameras(1);
+                            func_800016EC(1);
+                            func_8003A590();
+                            func_80037414(2, 4.0f, -1.0f, 0, 0, 0, 0);
+                            mainChangeLevel(18, 0, 0, 7, 1, 1);
+                            amTuneSetFade(3.0f, 0);
+                            o52_data_318 = 1;
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+    camSetNo(0);
+}
+
+/*
+ * DKR us.v77/us.v80 and JFG object scans found no exact donor. Their resource
+ * cleanup code shares only the generic release-and-clear pattern used here.
+ */
+void overlay52Cleanup(void) {
+    s32 *slot;
+    s32 *end;
+
+    freeFrontEndList(&gOverlay52Storage);
+    overlay56ReleaseResource();
+    if (gOverlay52Resource != NULL) {
+        overlay45ReleaseDescriptor(gOverlay52Resource);
+    }
+    slot = gOverlay52Slots; end = &gOverlay52Slots[2];
+    while (slot != end) {
+        if (*slot != -1) {
+            freeFrontEndItem(*slot);
+            *slot = -1;
+        }
+        slot++;
+    }
+}

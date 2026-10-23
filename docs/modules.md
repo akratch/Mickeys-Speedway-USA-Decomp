@@ -455,7 +455,7 @@ donor scan, and the retired normalization notes) moved to
 | `src/main/` (game code) | `-O2 -mips2 -32` | **Measured.** `ResolveRelocAddress` at `-mips1` emits five load-delay `nop`s the ROM does not have |
 | overlay game code, except overlay 5 | `-O2 -mips2 -32` | **Measured** across tranche-A leaves and structural pilots |
 | selected overlay TUs | `-O2 -mips2 -32 -Wab,-r4300_mul` | **Measured per object** where the R4300 hazard schedule changes emitted words; kept as narrow `mk/overlays.mk` overrides |
-| six overlay 5 audio-bank patcher TUs | `-O3 -mips2 -32` | **Measured.** DKR supplies the source/flag crosswalk; Mickey's own text fixes six separate boundaries. The game-code `overlay_005.c` TU remains `-O2` |
+| overlay 5's audio-bank patcher | `-O2 -mips2 -32 -Wab,-r4300_mul`, in the module's one TU | **Measured.** DKR builds `bnkf.c` at `-O3`, which inlines the patch calls Mickey keeps; as static functions in one `-O2` TU the six routines compile to the shipped bytes (they were six separate `-O3` objects before the 2026-10-23 fold) |
 | `src/libultra/string.c` | `-O2 -mips2 -32` | **Measured.** Branch-likely instructions |
 | 49 libultra io/os TUs | `-O1 -mips2 -32` | **Measured**, one variant at a time. At `-O2` IDO folds away a stack frame the ROM has. Locals need `register` or `-O1` spills them |
 | 23 libultra PI/EPI/PFS TUs | `-O2 -g3 -mips2 -32` | **Measured**, one TU at a time. See below |

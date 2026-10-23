@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay2ChooseBoundary:start -->
 ### `overlay2ChooseBoundary` plateau handoff
 
-- source: `src/overlays/o002/overlay2ChooseBoundary.c`
+- source: `src/overlays/o002/overlay_002.c`
 - score: 0 differing words
 - frame: 0x90
 - relocations: 64

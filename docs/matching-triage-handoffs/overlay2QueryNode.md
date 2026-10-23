@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay2QueryNode:start -->
 ### `overlay2QueryNode` plateau handoff
 
-- source: `src/overlays/o002/overlay2QueryNode.c`
+- source: `src/overlays/o002/overlay_002.c`
 - score: 0/253 words, promoted
 - frame: 0x68
 - relocations: 51

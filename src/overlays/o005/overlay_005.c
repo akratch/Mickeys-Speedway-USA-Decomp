@@ -1,6 +1,135 @@
 #include "overlays/overlay_005.h"
 
-/* Overlay 5, ADR 0006 consolidation: the -O2 game-code portion. */
+/*
+ * Overlay 5: audio start-up. One translation unit at the overlay flag set.
+ * Only overlay5InitializeAudio is exported. The libaudio bank patcher
+ * (alSeqFileNew .. _bnkfPatchWaveTable) and overlay5CreatePlayer are static;
+ * overlay5InitSequence has no caller at all and stays global, because IDO
+ * deletes an unreferenced static.
+ */
+
+static void _bnkfPatchBank(ALBank *bank, s32 offset, s32 table);
+static void _bnkfPatchInst(ALInstrument *inst, s32 offset, s32 table);
+static void _bnkfPatchSound(ALSound *sound, s32 offset, s32 table);
+static void _bnkfPatchWaveTable(ALWaveTable *wave, s32 offset, s32 table);
+static void *overlay5CreatePlayer(s32 voiceCount, s32 value);
+
+/* PROVENANCE: adapted from DKR us.v77, libultra/src/audio/bnkf.c::alSeqFileNew. */
+static void alSeqFileNew(ALSeqFile *file, u8 *base) {
+    s32 offset = (s32)base;
+    s32 i;
+
+    for (i = 0; i < file->seqCount; i++) {
+        file->seqArray[i].offset =
+            (u8 *)((u8 *)file->seqArray[i].offset + offset);
+    }
+}
+
+/*
+ * PROVENANCE: adapted from DKR us.v77,
+ * libultra/src/audio/bnkf.c::alBnkfNew.
+ */
+static void alBnkfNew(ALBankFile *file, u8 *table) {
+    s32 offset = (s32)file;
+    s32 tableOffset = (s32)table;
+    s32 i;
+
+    if (file->revision != AL_BANK_VERSION) {
+        return;
+    }
+
+    for (i = 0; i < file->bankCount; i++) {
+        file->bankArray[i] = (ALBank *)((u8 *)file->bankArray[i] + offset);
+        if (file->bankArray[i] != 0) {
+            _bnkfPatchBank(file->bankArray[i], offset, tableOffset);
+        }
+    }
+}
+
+/*
+ * PROVENANCE: adapted from DKR us.v77,
+ * libultra/src/audio/bnkf.c::_bnkfPatchBank.
+ */
+static void _bnkfPatchBank(ALBank *bank, s32 offset, s32 table) {
+    s32 i;
+
+    if (bank->flags != 0) {
+        return;
+    }
+    bank->flags = 1;
+
+    if (bank->percussion != 0) {
+        bank->percussion = (ALInstrument *)((u8 *)bank->percussion + offset);
+        _bnkfPatchInst(bank->percussion, offset, table);
+    }
+
+    for (i = 0; i < bank->instCount; i++) {
+        bank->instArray[i] = (ALInstrument *)((u8 *)bank->instArray[i] + offset);
+        if (bank->instArray[i] != 0) {
+            _bnkfPatchInst(bank->instArray[i], offset, table);
+        }
+    }
+}
+
+/*
+ * PROVENANCE: adapted from DKR us.v77,
+ * libultra/src/audio/bnkf.c::_bnkfPatchInst.
+ */
+static void _bnkfPatchInst(ALInstrument *inst, s32 offset, s32 table) {
+    s32 i;
+
+    if (inst->flags != 0) {
+        return;
+    }
+    inst->flags = 1;
+
+    for (i = 0; i < inst->soundCount; i++) {
+        inst->soundArray[i] = (ALSound *)((u8 *)inst->soundArray[i] + offset);
+        _bnkfPatchSound(inst->soundArray[i], offset, table);
+    }
+}
+
+/*
+ * PROVENANCE: adapted from DKR us.v77,
+ * libultra/src/audio/bnkf.c::_bnkfPatchSound.
+ */
+static void _bnkfPatchSound(ALSound *sound, s32 offset, s32 table) {
+    if (sound->flags != 0) {
+        return;
+    }
+    sound->flags = 1;
+
+    sound->envelope = (ALEnvelope *)((u8 *)sound->envelope + offset);
+    sound->keyMap = (ALKeyMap *)((u8 *)sound->keyMap + offset);
+    sound->wavetable = (ALWaveTable *)((u8 *)sound->wavetable + offset);
+    _bnkfPatchWaveTable(sound->wavetable, offset, table);
+}
+
+/*
+ * PROVENANCE: adapted from DKR us.v77,
+ * libultra/src/audio/bnkf.c::_bnkfPatchWaveTable.
+ */
+static void _bnkfPatchWaveTable(ALWaveTable *wave, s32 offset, s32 table) {
+    if (wave->flags != 0) {
+        return;
+    }
+    wave->flags = 1;
+    wave->base += table;
+
+    if (wave->type == AL_ADPCM_WAVE) {
+        wave->waveInfo.adpcmWave.book =
+            (ALADPCMBook *)((u8 *)wave->waveInfo.adpcmWave.book + offset);
+        if (wave->waveInfo.adpcmWave.loop != 0) {
+            wave->waveInfo.adpcmWave.loop =
+                (ALADPCMloop *)((u8 *)wave->waveInfo.adpcmWave.loop + offset);
+        }
+    } else if (wave->type == AL_RAW16_WAVE) {
+        if (wave->waveInfo.rawWave.loop != 0) {
+            wave->waveInfo.rawWave.loop =
+                (ALRawLoop *)((u8 *)wave->waveInfo.rawWave.loop + offset);
+        }
+    }
+}
 
 void overlay5InitSequence(void *owner, s32 value) {
     Overlay5SequenceHeader header;
@@ -128,7 +257,7 @@ void overlay5InitializeAudio(void *context) {
     n_alCSPSetMessageQ(D_80078D60, D_800BFA10);
 }
 
-void *overlay5CreatePlayer(s32 voiceCount, s32 value) {
+static void *overlay5CreatePlayer(s32 voiceCount, s32 value) {
     void *player;
     Overlay5PlayerConfig config;
 

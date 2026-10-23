@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay17CreateChain:start -->
 ### `overlay17CreateChain` plateau handoff
 
-- source: `src/overlays/o017/overlay17CreateChain.c`
+- source: `src/overlays/o017/overlay_017.c`
 - score: 0 differing words
 - frame: 0x80
 - relocations: 7

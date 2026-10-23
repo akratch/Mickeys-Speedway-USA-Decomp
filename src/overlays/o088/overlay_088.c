@@ -47,5 +47,5 @@ void overlay88UpdateAnchor(Overlay88Object *object, s32 updateContext) {
  * gives them this module's runtime-relocation names.
  */
 #define overlay69DrawSortedGeometry overlay88DrawSortedGeometry
-#include "src/overlays/o069/overlay69DrawSortedGeometry.c"
+#include "src/overlays/o069/overlay69DrawSortedGeometry.inc.c"
 #undef overlay69DrawSortedGeometry

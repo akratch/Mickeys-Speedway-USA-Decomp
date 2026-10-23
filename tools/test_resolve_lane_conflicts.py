@@ -140,5 +140,41 @@ class GeneratedRankingMergeTests(unittest.TestCase):
         self.assertNotIn("lane-old", (shard_dir / "demo_symbol.md").read_text(encoding="utf-8"))
 
 
+class MergeHunk(unittest.TestCase):
+    """Residual hunks after git merge-file, re-merged against the base."""
+
+    BASE = ["a1\n", "a2\n", "b1\n", "b2\n"]
+
+    def test_adjacent_deletions_resurrect_neither_block(self):
+        # Two lanes each delete their own overlay's rules, and the blocks
+        # touch. Keep-both kept a2/b-block from one side and a-block from
+        # the other: 128 rules for deleted sources came back that way.
+        ours = ["A\n", "b1\n", "b2\n"]
+        theirs = ["a1\n", "a2\n", "B\n"]
+        self.assertEqual(rlc.merge_hunk(self.BASE, ours, theirs), ["A\n", "B\n"])
+
+    def test_insertions_at_one_point_keep_ours_first(self):
+        base = ["x\n"]
+        self.assertEqual(
+            rlc.merge_hunk(base, ["x\n", "o\n"], ["x\n", "t\n"]),
+            ["x\n", "o\n", "t\n"])
+
+    def test_identical_edits_apply_once(self):
+        side = ["a1\n", "b2\n"]
+        self.assertEqual(rlc.merge_hunk(self.BASE, side, side), side)
+
+    def test_edits_to_the_same_base_lines_stay_a_conflict(self):
+        self.assertIsNone(rlc.merge_hunk(
+            self.BASE, ["a1\n", "O\n", "b1\n", "b2\n"],
+            ["a1\n", "T\n", "b1\n", "b2\n"]))
+
+    def test_remerge_leaves_a_real_conflict_marked(self):
+        text = ("<<<<<<< ours\nO\n||||||| base\nx\n=======\nT\n>>>>>>> theirs\n"
+                "<<<<<<< ours\nA\nb\n||||||| base\na\nb\n=======\na\nB\n>>>>>>> theirs\n")
+        out = rlc.remerge_hunks(text)
+        self.assertEqual(out.count("<<<<<<<"), 1)
+        self.assertTrue(out.endswith("A\nB\n"))
+
+
 if __name__ == "__main__":
     unittest.main()

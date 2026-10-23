@@ -191,7 +191,7 @@ s32 overlay4GroupCount(Overlay4GroupObject *object) {
     return gOverlay4Groups[state->group].count;
 }
 
-Overlay4SearchObject *overlay4FindCategory2Object(Overlay4SearchKey *key) {
+static Overlay4SearchObject *overlay4FindCategory2Object(Overlay4SearchKey *key) {
     s32 start;
     s32 end;
     Overlay4SearchObject **objects;
@@ -259,7 +259,7 @@ void overlay4FindSearchPosition(f32 *outX, f32 *outZ,
             return;
         }
     } else {
-        best = func_overlay_004_F0000734_185ADAC(key);
+        best = overlay4FindCategory2Object(key);
         if (best != NULL) {
             *outX = best->x;
             *outZ = best->z;

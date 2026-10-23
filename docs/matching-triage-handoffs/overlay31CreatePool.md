@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay31CreatePool:start -->
 ### `overlay31CreatePool` plateau handoff
 
-- source: `src/overlays/o031/overlay31CreatePool.c`
+- source: `src/overlays/o031/overlay_031.c`
 - score: 0/50 words
 - frame: 0x38
 - relocations: 4

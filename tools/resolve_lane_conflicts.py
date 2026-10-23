@@ -21,18 +21,23 @@ shared file):
   *.py                             -> resolved as below, then parse-checked:
                                       a keep-both residue can splice a
                                       function tail onto nothing
-  Makefile                         -> keep both sides of every hunk
+  Makefile                         -> as "everything else" below
   files only the lane touched
   (AA add/add or under --own-prefix) -> theirs
   docs/resident.md, docs/overlays.md -> theirs per hunk when ours is a subset
                                        of the lane's rows (else keep both)
   everything else (symbol_addrs,
-  yaml, headers, shared .c)        -> git merge-file against the lane's
-                                       merge-base, then keep both on residual
-                                       conflicts
+  yaml, headers, shared .c, .mk)   -> git merge-file --diff3 against the
+                                       lane's merge-base, then each residual
+                                       hunk re-merged line by line: edits to
+                                       disjoint base lines are both applied,
+                                       insertions at one point are kept ours
+                                       first; edits to the same base lines
+                                       stay conflicted for a human
 Exits nonzero if any conflict marker survives.
 """
 import ast
+import difflib
 import json
 import re
 import subprocess
@@ -45,8 +50,67 @@ def git(*a, **k):
     return subprocess.run(["git", *a], capture_output=True, text=True, **k)
 
 
-def keep_both(text):
-    return MARK.sub(lambda m: m.group(1) + m.group(2), text)
+DIFF3 = re.compile(
+    r"<<<<<<< [^\n]*\n(.*?)\|\|\|\|\|\|\| [^\n]*\n(.*?)=======\n(.*?)>>>>>>> [^\n]*\n",
+    re.S)
+
+
+def _edits(base, side):
+    matcher = difflib.SequenceMatcher(None, base, side, autojunk=False)
+    return [(i1, i2, side[j1:j2])
+            for op, i1, i2, j1, j2 in matcher.get_opcodes() if op != "equal"]
+
+
+def merge_hunk(base, ours, theirs):
+    """Three-way merge of one conflict hunk's lines, or None.
+
+    git reports a conflict whenever two sides' edits are adjacent, which in
+    an overlay rule file is the normal case: two lanes each delete the
+    per-function rules of their own overlays, and those blocks touch.
+    Concatenating the sides ("keep both") is wrong there, because each side
+    still carries the base lines the other deleted; one integration
+    resurrected 128 rules for deleted sources that way. Here both sides'
+    edits are applied to the base when they touch disjoint base lines.
+    Two pure insertions at one point keep ours first, as keep-both did.
+    Anything else is a real conflict and returns None.
+    """
+    eo, et = _edits(base, ours), _edits(base, theirs)
+    for a in eo:
+        for b in et:
+            if a == b:
+                continue
+            if a[0] == a[1] == b[0] == b[1]:
+                continue
+            if a[0] < b[1] and b[0] < a[1]:
+                return None
+            for ins, rng in ((a, b), (b, a)):
+                if ins[0] == ins[1] and rng[0] < ins[0] < rng[1]:
+                    return None
+            if (a[0] == a[1] and a[0] in (b[0], b[1]) and b[0] != b[1]) or (
+                    b[0] == b[1] and b[0] in (a[0], a[1]) and a[0] != a[1]):
+                return None
+    ordered, seen = [], set()
+    for rank, side in enumerate((eo, et)):
+        for i1, i2, rep in side:
+            key = (i1, i2, tuple(rep))
+            if key not in seen:
+                seen.add(key)
+                ordered.append((i1, i2, rank, rep))
+    ordered.sort(key=lambda e: (e[0], e[1], e[2]))
+    out, pos = [], 0
+    for i1, i2, _, rep in ordered:
+        out += base[pos:i1] + rep
+        pos = max(pos, i2)
+    return out + base[pos:]
+
+
+def remerge_hunks(text):
+    """Resolve every diff3 hunk merge_hunk can; leave the rest marked."""
+    def fix(m):
+        merged = merge_hunk(*(g.splitlines(keepends=True) for g in
+                              (m.group(2), m.group(1), m.group(3))))
+        return m.group(0) if merged is None else "".join(merged)
+    return DIFF3.sub(fix, text)
 
 
 GENERATED_RANKING = "config/nonmatching-ranking.us.json"
@@ -184,10 +248,6 @@ def main():
                 how = "dropped lane-only generated file pending regeneration"
             else:
                 how = "ours; merged-tree regeneration replaces the lane copy"
-        elif path == "Makefile":
-            text = open(path).read()
-            open(path, "w").write(keep_both(text))
-            how = "keep both"
         elif path.endswith(".json") or path in (
                 "overlay_undefined_syms.us.txt", "mk/overlay_aliases.generated.mk",
                 "mk/overlay_resident_rebinds.generated.mk"):
@@ -219,10 +279,11 @@ def main():
             d = tempfile.mkdtemp()
             po, pb, pt = [os.path.join(d, n) for n in ("ours", "base", "theirs")]
             open(po, "w").write(ours); open(pb, "w").write(basetxt); open(pt, "w").write(theirs)
-            subprocess.run(["git", "merge-file", po, pb, pt], capture_output=True)
+            subprocess.run(["git", "merge-file", "--diff3", po, pb, pt],
+                           capture_output=True)
             merged = open(po).read()
-            open(path, "w").write(keep_both(merged))
-            how = "three-way merge-file, keep both on residue"
+            open(path, "w").write(remerge_hunks(merged))
+            how = "three-way merge-file, residue re-merged by line"
         if "<<<<<<<" in open(path, errors="replace").read():
             print(f"UNRESOLVED {path}")
             return 1

@@ -100,7 +100,7 @@ offered `v0`. Not adopted: 41 is worse positionally than 39.
   branch-over).
 - The corrected L99 ("every declared local takes a slot, a dead `s32` costs
   8") holds on `textures_35024.c` and `particles.c` and does **not** hold
-  on `src/overlays/o002/func_overlay_002_F0000C90_1857A88.c`, where one to
+  on `src/overlays/o002/overlay_002.c`, where one to
   three unused function-scope or block-scope `s32` declarations are
   byte-identical at frame 0x60. p5-ovl's shard was right for its TU. The
   rule is per TU and needs its condition named before it is cited again.

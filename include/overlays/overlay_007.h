@@ -82,13 +82,35 @@ typedef struct Overlay7Pair {
     u16 value;
 } Overlay7Pair;
 
+typedef struct Overlay7SelectionRow {
+    u16 values[3];
+} Overlay7SelectionRow;
+
+typedef struct Overlay7RuntimeState {
+    u8 pad000[1];
+    s8 kind;
+    u8 pad002[0x1A6];
+    u16 flags;
+    u8 pad1AA[0x1DB];
+    u8 level;
+    u8 previousLevel;
+    u8 pad387[0x2C];
+    u8 cooldown;
+    u8 pad3B4[0x10];
+    f32 difference;
+    f32 scale;
+} Overlay7RuntimeState;
+
+typedef struct Overlay7RuntimeObject {
+    u8 pad00C[0xC];
+    s32 x;
+    s32 y;
+    s32 z;
+    u8 pad018[0x4C];
+    Overlay7RuntimeState *state;
+} Overlay7RuntimeObject;
+
 extern Overlay7Entry *gOverlay7Current;
-#ifndef OVERLAY_007_DEFINE_BSS
-extern Overlay7Entry *gOverlay7ActiveHead;
-extern Overlay7Entry *gOverlay7FreeHead;
-extern Overlay7Entry *gOverlay7ActiveTail;
-extern Overlay7Entry *gOverlay7Selected;
-#endif
 extern s32 D_8007C1A0;
 extern s32 D_8;
 /* Runtime SYMBOL ORT 1579 resolves this proxy to resident BSS D_800D3128. */
@@ -120,10 +142,38 @@ extern void overlay59AppendValue(s32 arg0, s32 index, s32 value,
 extern void amSndStopXYZ(void *object);
 extern void amSndPlay(u16 value, void **argument);
 
-void overlay7ReleaseEntry(Overlay7Entry *entry);
+extern s32 D_4;
+extern u16 D_2AA;
+extern Overlay7Pair D_844[];
+extern void *D_800C947C;
+extern void *overlay7RuntimeHandleReloc;
+extern s32 overlay7RuntimeTimerReloc;
+extern Overlay7RuntimeObject *overlay7RuntimeLastObjectReloc;
+extern s32 overlay7RuntimeModeReloc;
+extern u8 D_8007BEFC;
+extern u8 D_8007BEF8;
+extern u8 overlay7RuntimeValuesReloc[];
+
+extern Overlay7RuntimeObject **func_80005750(s32 *count);
+extern void amSndSetXYZ(void *handle, s32 x, s32 y, s32 z);
+extern f32 overlay1DistanceFromSelected(Overlay7RuntimeObject *object);
+extern f32 overlay1DistanceFromCurrent(Overlay7RuntimeObject *object);
+extern void overlay7StartRuntimeValueReloc(u8 value);
+extern void overlay7ReleaseRuntimeOwnerReloc(void *owner);
+extern void *amSndPlayXYZ(u16 value, s32 x, s32 y, s32 z,
+                          s32 kind, void **argument);
+extern void overlay7ReleaseRuntimeHandleReloc(void *handle);
+extern void overlay7SetRuntimeModeReloc(Overlay7RuntimeObject *object,
+                                        s32 mode);
+/*
+ * The runtime update's call to the exported overlay7CommitSelection is a
+ * SYMBOL relocation record: the shipped word stores the 0xF0000000 addend,
+ * not the callee's offset, so it names this undefined placeholder until the
+ * overlay tables are linker output.
+ */
+extern void overlay7CommitSelection_o007Reloc(s32 event);
+
 Overlay7Entry *overlay7AcquireEntry(Overlay7Owner *owner, u16 value, u8 type);
-void overlay7CreateEntry(void *owner, u16 value, u8 type);
-void overlay7AppendEntry(void *owner, u16 value, u8 type);
 void overlay7DispatchModes(Overlay7ModeOwner *first, Overlay7ModeOwner *second);
 void overlay7UpdateOwnerMode(Overlay7CheckOwner *owner, s32 previous);
 void overlay7DispatchSelection(Overlay7DispatchOwner *owner, s32 selection);

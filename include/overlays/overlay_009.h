@@ -199,14 +199,6 @@ extern void camSetFOV(f32, s32);
 extern s32 camGetMode(void);
 
 void func_overlay_009_F0000000_1866678(void *, s32);
-void func_overlay_009_F0000540_1866BB8(O9Angle *, void *, O9Motion *, s32);
-void func_overlay_009_F0000744_1866DBC(O9OutputRecord *, O9OutputControl *,
-                                       O9OutputState *, s32);
-void func_overlay_009_F00009BC_1867034(s16 *, O9InputControl *, O9InputState *);
-void func_overlay_009_F0000CE4_186735C(O9IntegrateOutput *,
-                                       O9IntegrateControl *, void *, f32);
-void func_overlay_009_F0000F6C_18675E4(O9Point *, O9Height *, s32);
-void overlay9Ignore(volatile s32, volatile s32, volatile s32);
 void func_overlay_009_F00010B4_186772C(O9MotionResult *, O9MotionOwner *, f32);
 
 #endif

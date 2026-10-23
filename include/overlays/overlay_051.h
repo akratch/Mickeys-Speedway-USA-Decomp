@@ -27,13 +27,11 @@ extern f32 gOverlay51HudHeight;
 extern s16 gOverlay51Handle;
 
 s32 overlay51CreateReloc();
-void overlay51PatchIndices();
 void freeFrontEndList(void *resource);
 void overlay56ReleaseResource(void);
 void freeFrontEndItem(s32 index);
 
 void overlay51Initialize(void);
-void overlay51PatchIndices(OverlayPatchIndexEntry *entry);
 void overlay51ReleaseState(void);
 
 #endif

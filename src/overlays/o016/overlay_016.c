@@ -5,8 +5,8 @@
  * pinned DKR v77/v80 scans are negative. JFG retains it as assembly, so this
  * C reconstruction follows the shared instruction semantics conservatively.
  */
-s32 overlay16BuildGradient(s8 *output, s32 first0, s32 first1, s32 first2,
-                           s32 last0, s32 last1, s32 last2) {
+static s32 overlay16BuildGradient(u8 *output, s32 first0, s32 first1, s32 first2,
+                                  s32 last0, s32 last1, s32 last2) {
     s32 remaining;
 
     last0 -= first0;
@@ -32,18 +32,18 @@ s32 overlay16BuildGradient(s8 *output, s32 first0, s32 first1, s32 first2,
 void overlay16InitializeBuffer(u8 *config) {
     gOverlay16Buffer = mmAlloc(0x300, 0x87);
     if (gOverlay16Buffer != NULL) {
-        overlay16BuildGradientReloc(gOverlay16Buffer, config[0x102], config[0x103],
-                                    config[0x104], config[0xFF], config[0x100],
-                                    config[0x101]);
-        overlay16BuildGradientReloc(gOverlay16Buffer + 0xC0, config[0xFF], config[0x100],
-                                    config[0x101], config[0xFC], config[0xFD],
-                                    config[0xFE]);
-        overlay16BuildGradientReloc(gOverlay16Buffer + 0x180, config[0xFC], config[0xFD],
-                                    config[0xFE], config[0xFF], config[0x100],
-                                    config[0x101]);
-        overlay16BuildGradientReloc(gOverlay16Buffer + 0x240, config[0xFF], config[0x100],
-                                    config[0x101], config[0x102], config[0x103],
-                                    config[0x104]);
+        overlay16BuildGradient(gOverlay16Buffer, config[0x102], config[0x103],
+                               config[0x104], config[0xFF], config[0x100],
+                               config[0x101]);
+        overlay16BuildGradient(gOverlay16Buffer + 0xC0, config[0xFF], config[0x100],
+                               config[0x101], config[0xFC], config[0xFD],
+                               config[0xFE]);
+        overlay16BuildGradient(gOverlay16Buffer + 0x180, config[0xFC], config[0xFD],
+                               config[0xFE], config[0xFF], config[0x100],
+                               config[0x101]);
+        overlay16BuildGradient(gOverlay16Buffer + 0x240, config[0xFF], config[0x100],
+                               config[0x101], config[0x102], config[0x103],
+                               config[0x104]);
         gOverlay16Phase = 0;
         gOverlay16Mode = config[0xFB];
     }

@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay13UpdateRecord:start -->
 ### `overlay13UpdateRecord` plateau handoff
 
-- source: `src/overlays/o013/overlay13ProcessRecord.c`
+- source: `src/overlays/o013/overlay_013.c`
 - score: matched (0/161 words), promoted 2026-09-17 by lane s2-b
 - frame: 0x20
 - relocations: 5

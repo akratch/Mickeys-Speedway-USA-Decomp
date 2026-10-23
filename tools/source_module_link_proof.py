@@ -148,6 +148,7 @@ def prove(root, resolution, context, records, target_elf, linked_name, input_sna
     raw_path, _plan, receipt, current_context = pp.capture_configured_raw(
         root, resolution.source, configured, root / "build/mickey.us.elf", "", module_link=True)
     if (receipt["linked_sha256"] != input_snapshot["linked"]
+            or receipt["inputs"].get("generated_metadata", {}) != input_snapshot.get("generated_metadata", {})
             or receipt["inputs"]["target_inputs"] != input_snapshot["target_inputs"]
             or hashlib.sha256(target_elf.data).hexdigest() != input_snapshot["linked"]):
         raise pp.MetadataProofError("canonical module inputs changed before reproduction")

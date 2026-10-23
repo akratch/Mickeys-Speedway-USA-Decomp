@@ -113,13 +113,15 @@ print(census.rule_checks(tables, cfg)["JUMP index = most recent SYMBOL index (ta
 After the ordinary build and `gmake runlink-raw`, run:
 
 ```sh
-python3 tools/runlink_pack.py emit-metadata
-# Optional separate output directory:
-python3 tools/runlink_pack.py --out build/metadata-review emit-metadata
+python3 tools/runlink_pack.py --elf build/runlink/bootstrap.elf --map build/runlink/bootstrap.map emit-metadata
+# Optional separate output directory, with the same explicit bootstrap inputs:
+python3 tools/runlink_pack.py --elf build/runlink/bootstrap.elf --map build/runlink/bootstrap.map --out build/metadata-review emit-metadata
 ```
 
-The default output is `build/runlink/metadata/`. This is a producer for a
-future final-build consumer; the current Make/Splat final inputs are unchanged.
+The default output is `build/runlink/metadata/`. Canonical Make invokes this
+producer with distinct bootstrap ELF/map inputs and consumes its exact metadata.
+A standalone emission using the default final ELF is diagnostic; the canonical
+consumer refuses that provenance and regenerates from the bootstrap.
 It uses the existing packer and encoders, and refuses any input problem,
 classified difference, stale borrowing ledger, or nonidentical **raw** region.
 The existing `region` command's successful residual-patched proof is
@@ -147,6 +149,38 @@ implementation, payload and borrowing hashes. Failed validation can leave an
 older output set available for inspection; it cannot make that set evidence
 for changed inputs. Interrupted publication leaves no completion marker.
 Unrelated files and symlink outputs are refused rather than overwritten.
+
+### Fixed-layout final consumers
+
+The canonical dependency graph is:
+
+```text
+ordinary objects + retained metadata -> bootstrap.elf / bootstrap.map
+raw overlay objects + bootstrap -> guarded metadata bins + borrowing manifest
+generated wrappers + metadata-only mapped script + ordinary code/data -> final ELF/map
+```
+
+`build/runlink/metadata-link.json` binds the producer manifest, source/mapped
+scripts, actual implementation and linker/binutils hashes, and generated wrappers.
+The script mapper requires exactly one ordinary `.data` selector for every
+expected metadata object and verifies that reversing those replacements restores
+all other script bytes. Binary wrappers retain the old `_binary_*` symbol names.
+No whole-module blob replaces compiled code/data.
+
+`build/runlink/final-proof.json` records both actual ordinary linker commands,
+the full generated map inventory, zero retained metadata consumers, allocated
+section/program-symbol equality, and the observed whole-ELF equality. The live
+producer ledger remains explicit. Promotion preflight/raw receipts and the
+existing census dependency set include the producer/consumer artifacts and
+hashes; missing or tampered evidence cannot be treated as fresh.
+
+Normal Make validates content on every canonical invocation, repairs missing or
+tampered generated payloads/wrappers/scripts, and preserves timestamps on an
+unchanged build. Question-mode Make traversals omit build-only validators;
+proof freshness checks first validate the complete generated context and then
+query real object/bootstrap dependencies. Non-matching/raw diagnostic rules
+retain their existing paths. This does not relax the exact retail raw-region
+requirement, remove the retained bootstrap, or permit general source growth.
 
 `gmake check-runlink-kit` runs `check` and `parity`. Like
 `check-runlink-tables`, it needs the baserom, a linked ELF and the raw

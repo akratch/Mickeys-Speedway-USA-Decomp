@@ -75,6 +75,7 @@ def _check_filter_implementations():
 def _require_capture_snapshot(receipt, input_snapshot, linked_bytes):
     if (receipt["linked_sha256"] != input_snapshot["linked"]
             or hashlib.sha256(linked_bytes).hexdigest() != receipt["linked_sha256"]
+            or receipt["inputs"].get("generated_metadata", {}) != input_snapshot.get("generated_metadata", {})
             or receipt["inputs"]["target_inputs"] != input_snapshot["target_inputs"]):
         raise pp.MetadataProofError("previously parsed linked/runtime ownership changed before raw capture")
 
@@ -782,6 +783,12 @@ def _require_fresh_target(
 ) -> None:
     if not target.is_file():
         raise StaleEvidenceError(f"missing {label}: {_relative(target)}")
+
+    if target == TARGET_ELF and not non_matching:
+        try:
+            pp.generated_metadata_context(REPO)
+        except pp.MetadataProofError as error:
+            raise StaleEvidenceError(f"stale {label}: {error}") from error
 
     newer = _newer_inputs(target, build_logic_inputs)
     if newer:
@@ -3066,7 +3073,11 @@ def collect(resolution: Resolution, *, no_build: bool = False) -> dict[str, obje
         if not path.is_file():
             raise PreflightError(f"missing {label}: {_relative(path)}")
 
-    input_snapshot = {"linked": pp.sha256_file(TARGET_ELF),
+    try:
+        generated_metadata = pp.generated_metadata_context(REPO)
+    except pp.MetadataProofError as error:
+        raise PreflightError(str(error)) from error
+    input_snapshot = {"linked": pp.sha256_file(TARGET_ELF), "generated_metadata": generated_metadata,
                       "target_inputs": {name: pp.sha256_file(REPO / name) for name in
                         ("baseroms/mickey.us.z64", "config/overlays.us.json",
                          "overlay_undefined_syms.us.txt", "symbol_addrs.us.txt")}}

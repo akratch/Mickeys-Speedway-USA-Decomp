@@ -1,5 +1,22 @@
 #include "overlays/overlay_025.h"
 
+/* Eight RGB choices; section alignment supplies the initialized tail. */
+u8 gOverlay25Colors[8 * 3] = {
+    255,   0,   0, /* red */
+    255, 128,   0, /* orange */
+    255, 255,   0, /* yellow */
+      0, 255,   0, /* green */
+      0,   0, 255, /* blue */
+      0, 255, 255, /* cyan */
+    255,   0, 255, /* magenta */
+      0,   0,   0, /* black */
+};
+
+static void overlay25SetVectorFlags(Overlay25Vector *unused0, Overlay25Vector *out,
+                                    Overlay25Vector *unused2, f32 unused3,
+                                    Overlay25Source *source,
+                                    Overlay25VectorObject *object);
+
 /* Exact 95-word match. Reading the retained owner through state reproduces the
  * shipped s0/s1 carrier allocation; -Wab,-r4300_mul supplies its FP hazard nop. */
 void overlay25InitializeEffect(Overlay25Object *object,
@@ -39,9 +56,9 @@ void overlay25InitializeEffect(Overlay25Object *object,
     } else {
         paletteIndex = 9;
     }
-    state->color[0] = gOverlay25ColorsReloc[paletteIndex + 0];
-    state->color[1] = gOverlay25ColorsReloc[paletteIndex + 1];
-    state->color[2] = gOverlay25ColorsReloc[paletteIndex + 2];
+    state->color[0] = gOverlay25Colors[paletteIndex + 0];
+    state->color[1] = gOverlay25Colors[paletteIndex + 1];
+    state->color[2] = gOverlay25Colors[paletteIndex + 2];
 
     if (object->vector != NULL) {
         object->vector->x = 0.0f;
@@ -104,7 +121,7 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
         radius = 4;
         trackMakePolylist(1, &position, (Overlay25Vector *)&object->x, &radius, 0, 0);
         if (func_80010900(&position, (Overlay25Vector *)&object->x, radius, object,
-                                overlay25SetVectorFlagsReloc)) {
+                                overlay25SetVectorFlags)) {
             if (state->flags & 4) {
                 func_80006EA0(object);
                 return;
@@ -174,15 +191,12 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
 
 /* No corresponding DKR/JFG source or object match was found.
  *
- * Not an ORT export, yet not static: the TU's only reference is the address
- * the update passes to func_80010900, which the ROM stores module-relative
- * (+0x588). The 0xF0000000-based overlay link cannot produce that from a C
- * reference, so the call names the absolute placeholder
- * overlay25SetVectorFlagsReloc instead, and IDO would drop a static function
- * nothing in the TU names. */
-void overlay25SetVectorFlags(s32 unused0, Overlay25Vector *out, s32 unused2,
-                             s32 unused3, Overlay25Source *source,
-                             Overlay25VectorObject *object) {
+ * The private callback is retained by the update's actual address reference.
+ * Its argument types follow the resident collision routine's callback ABI. */
+static void overlay25SetVectorFlags(Overlay25Vector *unused0, Overlay25Vector *out,
+                                    Overlay25Vector *unused2, f32 unused3,
+                                    Overlay25Source *source,
+                                    Overlay25VectorObject *object) {
     Overlay25VectorState *state;
 
     state = object->state;

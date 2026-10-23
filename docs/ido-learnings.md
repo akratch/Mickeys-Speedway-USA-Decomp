@@ -321,6 +321,19 @@ bytes and disassembly never belong here.
   instructions, even when the size and opcode inventory already agree.
   Keep the flag local and prove all TU consumers and linked bytes before
   adoption; a diagnostic replay never supplies matching build output.
+- A two-element peel followed by four interleaved stores can be the default
+  unroller's output for one complete fixed-count clear loop. IDO 5.3 at
+  `-O2 -mips2` reproduced this pattern for a six-element scalar array and a
+  50-element record array: it clears the remainder first, then advances four
+  elements and emits the group in second/third/fourth/first order. Recover the
+  actual element type and pool extent before writing the complete loop;
+  interpreting the emitted groups as source-level records can create a false
+  unroll override. This does not establish whole-function exactness. A
+  150-element record clear recovered the loop but changed a later temporary's
+  register, so retain the existing source until every owned instruction and
+  relocation is proved. Separately re-test inherited unroll flags against the
+  current source: an old rolled spelling can remain exact under defaults even
+  when a new indexed spelling unrolls and grows.
 - A per-TU flag adopted mid-iteration can be byte-inert by the time the source
   lever lands, and loop unrolling is the common case. IDO's rotator peels a
   loop head into the preheader when a separate start-value copy keeps the

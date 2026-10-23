@@ -1,6 +1,6 @@
 # Overlay 14 entry-condition audit
 
-- source: `src/overlays/o014/func_overlay_014_F000013C_186FA14.c`
+- source: `src/overlays/o014/overlay_014.c`
 - score: 0/120 words, promoted
 - frame: 0x28
 - relocations: 20

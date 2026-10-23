@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import resident_rebinds as rr  # noqa: E402
 
-A = "build/src/overlays/o014/overlay14PrepareInputState.c.o"
+A = "build/src/overlays/o014/overlay_014.c.o"
 B = "build/src/overlays/o058/func_overlay_058_F000138C_18B0574.c.o"
 PLAN = {
     B: {"sprintf": "sprintf_o058Reloc"},

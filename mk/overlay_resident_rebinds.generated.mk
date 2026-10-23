@@ -340,43 +340,27 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay_013.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym texLoadSprite=texLoadSprite_o013Reloc \
 	--redefine-sym texLoadTexture=texLoadTexture_o013Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/func_overlay_014_F0000000_186F8D8.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmFree=mmFree_o014Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/func_overlay_014_F000013C_186FA14.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_014_F0000000_186F8D8=func_overlay_014_F0000000_o014Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/func_overlay_014_F00009F4_18702CC.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmAlloc=mmAlloc_o014Reloc \
-	--redefine-sym piRomLoadSection=piRomLoadSection_o014Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/func_overlay_014_F00013F4_1870CCC.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_014_F0000000_186F8D8=func_overlay_014_F0000000_o014Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/func_overlay_014_F0001830_1871108.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay_014.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym controlSetPlayerSetup=controlSetPlayerSetup_o014Reloc \
 	--redefine-sym fontBackground=fontBackground_o014Reloc \
 	--redefine-sym fontColour=fontColour_o014Reloc \
 	--redefine-sym fontPrintXY=fontPrintXY_o014Reloc \
+	--redefine-sym fontSetButtonMode=fontSetButtonMode_o014Reloc \
 	--redefine-sym fontUseFont=fontUseFont_o014Reloc \
+	--redefine-sym frontDrawRectangles=frontDrawRectangles_o014Reloc \
+	--redefine-sym frontGetLanguage=frontGetLanguage_o014Reloc \
+	--redefine-sym frontGetMode=frontGetMode_o014Reloc \
+	--redefine-sym func_80005820=func_80005820_o014Reloc \
 	--redefine-sym func_8004D40C=func_8004D40C_o014Reloc \
-	--redefine-sym func_8004D5C0=func_8004D5C0_o014Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14AdvanceCommand.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_014_F0000000_186F8D8=func_overlay_014_F0000000_o014Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14BuildRects.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_014_F0000000_186F8D8=func_overlay_014_F0000000_o014Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14PrepareInputState.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym func_8004D5C0=func_8004D5C0_o014Reloc \
 	--redefine-sym joyGetPressed=joyGetPressed_o014Reloc \
 	--redefine-sym joyGetStickX=joyGetStickX_o014Reloc \
-	--redefine-sym joyGetStickY=joyGetStickY_o014Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14ResetMode.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_014_F0000000_186F8D8=func_overlay_014_F0000000_o014Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14UpdateTransition.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_014_F0000000_186F8D8=func_overlay_014_F0000000_o014Reloc $@
+	--redefine-sym joyGetStickY=joyGetStickY_o014Reloc \
+	--redefine-sym mainChangeLevel=mainChangeLevel_o014Reloc \
+	--redefine-sym mainGetNextCharacter=mainGetNextCharacter_o014Reloc \
+	--redefine-sym mmAlloc=mmAlloc_o014Reloc \
+	--redefine-sym mmFree=mmFree_o014Reloc \
+	--redefine-sym piRomLoadSection=piRomLoadSection_o014Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o015/overlay_015.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym camGetPtr=camGetPtr_o015Reloc \

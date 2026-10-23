@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay14LoadRelocatedValue:start -->
 ### `overlay14LoadRelocatedValue` plateau handoff
 
-- source: `src/overlays/o014/overlay14LoadRelocatedValue.c`
+- source: `src/overlays/o014/overlay_014.c`
 - score: 0/94 words
 - frame: 0x28
 - relocations: 6

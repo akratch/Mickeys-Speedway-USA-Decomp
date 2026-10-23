@@ -430,7 +430,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeParticleAssets.c.o: POS
 	$(OBJCOPY) --redefine-sym func_overlay_031_F00002E8_187F808=func_overlay_031_F00002E8_187F808 $@ && \
 	$(OBJCOPY) --remove-section=.data --remove-section=.rel.data \
 		--remove-section=.gptab.data $@
-include mk/overlay_014.mk
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36CallGlobal.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36InitObject.c.o: POSTPROCESS = \
@@ -608,14 +607,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay26InitializeObject.c.o: POSTPROCESS
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o051/overlay_051.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8AC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o051/overlay_051.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14ResetFlags.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x14
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14GetFlagC4.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14GetFlagC8.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14ReleaseCurrent.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x3C
 # Overlay 15 is one translation unit at the overlay flag set; its .text now
 # carries the module's trailing pad (no trim), and its resident calls go
 # through the generated surface rebinds. What remains is data and BSS
@@ -1649,8 +1640,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o085/overlay_085.c.o: CFLAGS += -Wab,-r4300_mul
 # compilation (normalize_elf_instructions.py), which no gold-standard N64
 # decomp does. The .c now GLOBAL_ASMs the extracted retail bytes instead;
 # only the symbol rename below (metadata, not instructions) survives.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14GetFlagCC.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20ReleaseHandle.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20ReleaseTree.c.o: POSTPROCESS = \
@@ -1981,6 +1970,27 @@ $(O11_OBJ): POSTPROCESS = \
 		0x2c24:.rodata:gOverlay11RodataBaseReloc 0x2c2c:.rodata:gOverlay11RodataBaseReloc && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:808256f231ed1e6ec17b5941d4dc25adfe13414394067ec3f26266c7358c1d49 && \
+	$(OBJCOPY) --remove-section .rel.rodata $@
+# Overlay 14 is one translation unit at the overlay flag set; --force keeps
+# the static functions' names, and its placeholder, resident and data
+# references are valued and rebound by the generated surface. What remains is
+# rodata ownership, kept until phase 3: the TU's .rodata (the loader's and the
+# draw's seven-entry switch tables) is the retained data at data_rodata
+# +0x158, and the shipped LOCAL records' rodata addends run from a base 0x38
+# bytes before it, so its four references are rebound to a base symbol at
+# +0x38 and the section is dropped by digest.
+O14_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay_014.c.o
+$(O14_OBJ): CFLAGS += -Wab,-r4300_mul
+$(O14_OBJ): ASM_PROCESSOR += --force
+$(O14_OBJ): $(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py
+$(O14_OBJ): POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay14RodataBaseReloc=0x38,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		0x914:.rodata:gOverlay14RodataBaseReloc 0x91c:.rodata:gOverlay14RodataBaseReloc \
+		0x1944:.rodata:gOverlay14RodataBaseReloc 0x194c:.rodata:gOverlay14RodataBaseReloc && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:a1d78d3f7fb36b44d65aae7a5aed14af5a74f46d965b1cb4408485477bbdb033 && \
 	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 16 is one translation unit at the overlay flag set; its .text
 # carries the module's trailing pad, so nothing is trimmed. --force runs
@@ -2676,7 +2686,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68PayloadLimit.c.o
 OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o085/overlay_085.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14GetFlagCC.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20ReleaseTree.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20ReleaseHandle.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20ConfigureResource.c.o \
@@ -2772,7 +2781,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60DrawLine.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/func_overlay_060_F0002F54_18BCD2C.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60ReassignChoiceSlots.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14DispatchCommand.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83Submit.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83BuildLine.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83DrawLines.c.o \
@@ -2925,7 +2933,6 @@ OVERLAY_TRIMMED_OBJECTS += \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57ApplyTable.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0004460_18A8058.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46UpdateTransition.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14UpdateTransition.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57UpdateModeTrigger.c.o
 
 $(OVERLAY_TRIMMED_OBJECTS): $(TOOLS_DIR)/trim_elf_section.py

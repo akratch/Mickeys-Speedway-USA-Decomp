@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 153, "borrowed_records": 9137},
+  "totals": {"differences": 153, "borrowed_records": 9134},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -270,7 +270,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1938,
+      "count": 1935,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -767,10 +767,7 @@
         [14, "gOverlay14ValueF8Base", 2],
         [14, "gOverlay14ValueSlots28", 2],
         [14, "gOverlay14ValueSlotsEnd128", 2],
-        [14, "overlay14CreateHandle", 1],
         [14, "overlay14Dispatch", 2],
-        [14, "overlay14DrawAlternateReloc", 1],
-        [14, "overlay14DrawPrimaryReloc", 1],
         [14, "overlay14DrawPrimitive", 12],
         [14, "overlay14InitializeReloc", 2],
         [15, "gOverlay15InitBounds", 2],
@@ -2214,7 +2211,7 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 69,
+      "count": 68,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -2227,9 +2224,8 @@
         [9, "overlay_009", ".rodata", "0x18B0", 42],
         [11, "overlay_011", ".rodata", "0x2ED8", 16],
         [12, "overlay_012", ".rodata", "0x13D0", 10],
-        [14, "func_overlay_014_F0001830_1871108", ".rodata", "0x1DB4", 2],
-        [14, "overlay14LoadRelocatedValue", ".rodata", "0x1D98", 2],
-        [14, "overlay14PrepareInputState", ".bss", "0x1DD0", 30],
+        [14, "overlay_014", ".bss", "0x1DD0", 30],
+        [14, "overlay_014", ".rodata", "0x1D98", 4],
         [15, "overlay_015", ".bss", "0xCC0", 58],
         [15, "overlay_015", ".rodata", "0xCB0", 2],
         [22, "func_overlay_022_F00002B0_18783B8", ".rodata", "0xEE4", 6],

@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay14PrepareInputState:start -->
 ### `overlay14PrepareInputState` plateau handoff
 
-- source: `src/overlays/o014/overlay14PrepareInputState.c`
+- source: `src/overlays/o014/overlay_014.c`
 - score: 0/131 words
 - frame: 0x20
 - relocations: 29

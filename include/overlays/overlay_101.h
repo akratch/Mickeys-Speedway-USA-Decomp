@@ -486,10 +486,6 @@ typedef struct Overlay101BoundsNode_DrawElement {
     u8 scale;
 } Overlay101BoundsNode_DrawElement;
 
-typedef struct Overlay101Pixel {
-    u8 value;
-} Overlay101Pixel;
-
 typedef struct Overlay101Element {
     u8 pad00[8];
     s16 x;
@@ -502,7 +498,8 @@ typedef struct Overlay101Element {
     u8 blue;
     u8 alpha;
     u8 flags;
-    Overlay101Pixel *pixels;
+    /* Tier B: the font path patches and restores bytes in text buffers. */
+    u8 *pixels;
 } Overlay101Element;
 
 typedef struct Overlay101ClipNode {

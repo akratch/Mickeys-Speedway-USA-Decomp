@@ -1120,8 +1120,8 @@ void overlay101DrawElement(s32 displayList, Overlay101BoundsNode_DrawElement *no
     s32 bottom;
     u8 saved0;
     u8 saved1;
-    Overlay101Pixel *pixels;
-    Overlay101Pixel *savedPixel;
+    u8 *pixels;
+    u8 *savedPixel;
 
     if ((node->type == 2) || (node->type == 4)) {
         if ((element->index > 0) && (element->alpha > 0) &&
@@ -1131,13 +1131,13 @@ void overlay101DrawElement(s32 displayList, Overlay101BoundsNode_DrawElement *no
             y = node->y + element->y;
             if (element->index < element->count) {
                 savedPixel = pixels + element->index;
-                saved0 = savedPixel[0].value;
-                saved1 = savedPixel[1].value;
+                saved0 = savedPixel[0];
+                saved1 = savedPixel[1];
                 if (gOverlay101RenderFlags & 8) {
-                    savedPixel[0].value = 0x24;
-                    savedPixel[1].value = 0;
+                    savedPixel[0] = 0x24;
+                    savedPixel[1] = 0;
                 } else {
-                    savedPixel[0].value = 0;
+                    savedPixel[0] = 0;
                 }
             } else {
                 savedPixel = 0;
@@ -1158,8 +1158,8 @@ void overlay101DrawElement(s32 displayList, Overlay101BoundsNode_DrawElement *no
             overlay101SetScissor(displayList, 0, 0, 1000, 1000);
 
             if (savedPixel != 0) {
-                savedPixel[0].value = saved0;
-                savedPixel[1].value = saved1;
+                savedPixel[0] = saved0;
+                savedPixel[1] = saved1;
             }
         }
     }

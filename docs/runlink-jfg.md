@@ -38,8 +38,8 @@ re-encodes them and compares the result with the ROM: the region
 `0x1ECF220`–`0x1FEB038` (1,162,776 bytes) and the name table round-trip
 byte-identically.
 
-- **Headers.** All 157 headers chain back to back from `0x1ED3B20`. Modules
-  21 and 56 are empty.
+- **Headers.** The 157 headers occupy `0x1ED2780`–`0x1ED3B20`. The module
+  images they describe begin at `0x1ED3B20`. Modules 21 and 56 are empty.
 - **Name table.** The table has 2,372 names and 2,371 distinct ones. Row 2371
   reuses offset 0, so a repeated name is stored once. A generator that writes
   every name out would differ from the ROM by that one name.

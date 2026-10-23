@@ -1250,6 +1250,36 @@ def data_rodata_ownership_rows(overlay, data_size, text_ownership):
     return rows
 
 
+def data_rodata_ownership_totals(module_rows):
+    """Separate canonical projected C storage from diagnostic declarations.
+
+    Leading implicit .data rows and explicitly canonical fixed rows are the
+    normal projection's physical owners. A trial-only declaration or an
+    externalized duplicate earns no credit. Canonical fixed rows may retain a
+    trial_function tag as provenance without losing their projected ownership.
+    Diagnostic bytes sum declarations; they are not additional physical data.
+    """
+    owned = diagnostic = 0
+    for module in module_rows:
+        leading_end = 0
+        for part in module.get("data_rodata_ownership", []):
+            size = int(part["size"], 16)
+            normal = part.get("type") == "c" and not part.get("externalized")
+            leading = (normal and "section" not in part
+                       and "trial_function" not in part
+                       and int(part["offset"], 16) == leading_end)
+            fixed = (normal and part.get("canonical") is True
+                     and part.get("section") in (".data", ".rodata"))
+            if leading:
+                leading_end = int(part["end_offset"], 16)
+            if leading or fixed:
+                owned += size
+            else:
+                diagnostic += size
+    return {"owned_data_rodata_bytes": owned,
+            "diagnostic_data_rodata_bytes": diagnostic}
+
+
 def mixed_tu_exact_c_rows(overlay, ownership):
     """Reviewed exact-C subranges inside a source-level NON_MATCHING row.
 
@@ -1583,11 +1613,7 @@ def build_atlas(rom):
                 for part in row.get("mixed_tu_exact_c_ranges", [])
             ),
             "data_rodata_bytes": sum(m["data_size"] for m in modules),
-            "owned_data_rodata_bytes": sum(
-                int(part["size"], 16)
-                for row in module_rows
-                for part in row.get("data_rodata_ownership", [])
-            ),
+            **data_rodata_ownership_totals(module_rows),
             "bss_bytes": sum(m["bss_size"] for m in modules),
             "module_rom_bytes": sum(m["rom_end"] - m["rom_start"] for m in modules),
             "resident_relocations": len(resident_relocs),

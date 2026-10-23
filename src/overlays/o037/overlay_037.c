@@ -1,7 +1,11 @@
 #include "overlays/overlay_037.h"
 
 #define O37_PERIOD 6.283185f
-#define O37_PHYSICAL(address) ((u32)((char *)(address) - 0x80000000))
+/* N64 ABI: pointer and signed word representations are both 32 bits. */
+typedef char Overlay37AddressWordWidth[(sizeof(void *) == 4 && sizeof(s32) == 4) ? 1 : -1];
+#define O37_PHYSICAL(address) \
+    ((geometryAddress.pointer = (const void *)(address)), \
+     (u32)(geometryAddress.bits ^ (-2147483647 - 1)))
 
 Overlay37Vertex gOverlay37Vertices[12] = {
     {  0,   5, 0, 255, 255, 255, 255},
@@ -123,7 +127,7 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
     f32 deltaZ;
     f32 distanceDelta;
     f32 blend;
-    s32 pad;
+    union { const void *pointer; s32 bits; } geometryAddress;
     s32 red;
     s32 green;
     s32 blue;

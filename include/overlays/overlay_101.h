@@ -430,9 +430,11 @@ typedef struct Overlay101DispatchEntry {
     u8 pad08[0x28];
 } Overlay101DispatchEntry;
 
+/* Tier B: the dispatcher reads serialized payloads as f32. The first member
+ * also permits ordinary C89 initialization of those active float payloads. */
 typedef union Overlay101EventValue {
-    s32 i;
     f32 f;
+    s32 i;
 } Overlay101EventValue;
 
 typedef struct Overlay101Event {
@@ -2042,11 +2044,14 @@ extern s32 D_1D0;
  * through the generated surface name even though the callee is defined in
  * this same overlay. */
 /* Tier B: initialized data +0x340, distinct from the BSS node pool. */
-extern u8 D_o101ResetData340[];
+extern Overlay101Event D_o101ResetData340[];
 
 extern void *D_C78;
 
-extern void *D_CE0;
+/* Tier B: the stream-head declarations below are address-only arguments
+ * to overlay101Reset; its dispatcher establishes Overlay101Event records.
+ * A scalar head declaration does not claim the complete array extent. */
+extern Overlay101Event D_CE0;
 
 extern void *D_1C0[];
 
@@ -2060,15 +2065,15 @@ extern Node20 D_200[];
 
 extern void *D_C8C;
 
-extern void *D_10EC;
+extern Overlay101Event D_10EC;
 
 extern void *D_CA0;
 
-extern void *D_1514;
+extern Overlay101Event D_1514;
 
 extern void *D_CB4;
 
-extern void *D_1920;
+extern Overlay101Event D_1920;
 
 /* Tier B: runtime LOCAL relocation pairs and ROM-exact cleanup/draw
  * siblings identify the order records, order list, resource arrays and
@@ -2076,7 +2081,7 @@ extern void *D_1920;
  * objects; equal encoded addends never establish an alias. */
 extern u8 D_CC8[];
 
-extern u8 D_1D2C[];
+extern Overlay101Event D_1D2C[];
 
 /* The builder flags word sits at the head of the same shared block. It has
  * to be its own symbol rather than a field of D_0 or D_INPUT: the shipped
@@ -2088,19 +2093,19 @@ extern u32 D_800D3128;
 
 extern void *D_CDC;
 
-extern void *D_2608;
+extern Overlay101Event D_2608;
 
 extern void *D_CF0;
 
-extern void *D_2934;
+extern Overlay101Event D_2934;
 
 extern void *D_D04;
 
-extern void *D_2C60;
+extern Overlay101Event D_2C60;
 
 extern void *D_D18;
 
-extern void *D_2F8C;
+extern Overlay101Event D_2F8C;
 
 extern s32 gO101PresAOrderCount;
 
@@ -2118,7 +2123,7 @@ extern O101PresAInputs gO101PresAInputs;
 
 extern u8 gO101PresAAssetD2C;
 
-extern u8 gO101PresAFinalObject32B8;
+extern Overlay101Event gO101PresAFinalObject32B8;
 
 extern s32 gO101PresBOrderCount;
 
@@ -2136,7 +2141,7 @@ extern O101PresBInputs gO101PresBInputs;
 
 extern u8 gO101PresBAssetD40;
 
-extern u8 gO101PresBFinalObject34E8;
+extern Overlay101Event gO101PresBFinalObject34E8;
 
 extern s32 gO101PresCOrderCount;
 
@@ -2154,7 +2159,7 @@ extern O101PresCInputs gO101PresCInputs;
 
 extern u8 gO101PresCAssetD54;
 
-extern u8 gO101PresCFinalObject3718;
+extern Overlay101Event gO101PresCFinalObject3718;
 
 extern s32 gO101PresDOrderCount;
 
@@ -2172,7 +2177,7 @@ extern O101PresDInputs gO101PresDInputs;
 
 extern u8 gO101PresDAssetD68;
 
-extern u8 gO101PresDFinalObject3948;
+extern Overlay101Event gO101PresDFinalObject3948;
 
 extern s32 gO101TailOrderCount;
 
@@ -2186,7 +2191,7 @@ extern O101TailInputs gO101TailInputs;
 
 extern u8 gO101TailAssetD7C;
 
-extern u8 gO101TailFinalObject3B78;
+extern Overlay101Event gO101TailFinalObject3B78;
 
 extern s32 gO101TailAB4COrderCount;
 
@@ -2200,11 +2205,11 @@ extern O101TailAB4CInputs gO101TailAB4CInputs;
 
 extern u8 gO101TailAB4CAssetD90;
 
-extern u8 gO101TailAB4CFinalObject3F14;
+extern Overlay101Event gO101TailAB4CFinalObject3F14;
 
 extern void *D_DA4;
 
-extern void *D_4358;
+extern Overlay101Event D_4358;
 
 extern s32 gO101TailBA34OrderCount;
 
@@ -2224,7 +2229,7 @@ extern O101TailBA34Inputs gO101TailBA34Inputs;
 
 extern u8 gO101TailBA34AssetDB8;
 
-extern u8 gO101TailBA34FinalObject4630;
+extern Overlay101Event gO101TailBA34FinalObject4630;
 
 extern s32 gO101TailC144OrderCount;
 
@@ -2238,7 +2243,7 @@ extern O101TailC144Inputs gO101TailC144Inputs;
 
 extern u8 gO101TailC144AssetDCC;
 
-extern u8 gO101TailC144FinalObject4A90;
+extern Overlay101Event gO101TailC144FinalObject4A90;
 
 extern u8 D_8007BF3C[];
 

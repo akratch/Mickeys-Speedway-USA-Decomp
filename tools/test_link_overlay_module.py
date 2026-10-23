@@ -14,7 +14,7 @@ LD = ROOT / "tools/binutils/mips64-elf-ld"
 OBJCOPY = ROOT / "tools/binutils/mips64-elf-objcopy"
 
 
-def fixture():
+def fixture(*, import_collision=False):
     # Three synthetic calls: external, same-module export, private helper.
     # The HI/LO pair addresses .rodata; two data words take local/exported
     # function addresses. This fixture contains no retail-derived bytes.
@@ -26,6 +26,8 @@ def fixture():
     obj.sym("exported", 12, 4, GLOBAL, FUNC, ".text")
     obj.sym("helper", 16, 4, LOCAL, FUNC, ".text")
     obj.sym("external")
+    if import_collision:
+        obj.sym(tool.IMPORT_PREFIX + "external", 16, 4, LOCAL, FUNC, ".text")
     for offset, name in ((0, "external"), (4, "exported"), (8, "helper")):
         obj.rel(".text", offset, rp.R_MIPS_26, name)
     obj.rel(".text", 20, rp.R_MIPS_HI16, ("section", ".rodata"))
@@ -77,7 +79,26 @@ class BindingTests(unittest.TestCase):
             self.assertEqual(fixture(), raw.read_bytes())
             self.assertTrue(any(s.name == "exported" and s.value == 12 and s.bind == GLOBAL
                                 for s in result.symbols))
-            self.assertTrue(any(s.name == "external" and s.bind == LOCAL for s in result.symbols))
+            self.assertFalse(any(s.name == "external" for s in result.symbols))
+            self.assertTrue(any(s.name == tool.IMPORT_PREFIX + "external"
+                                and s.bind == LOCAL and s.shndx == rp.SHN_ABS and s.value == 0
+                                for s in result.symbols))
+            ordinary = rp.Elf(root / "module/module.elf")
+            self.assertTrue(any(s.name == "external" and s.bind == GLOBAL
+                                for s in ordinary.symbols))
+
+    @unittest.skipUnless(LD.is_file() and OBJCOPY.is_file(), "needs MIPS binutils")
+    def test_import_namespace_collision_is_refused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            raw = root / "raw.o"
+            original = fixture(import_collision=True)
+            raw.write_bytes(original)
+            with self.assertRaisesRegex(tool.LinkError, "import binding collides"):
+                tool.link(raw, root / "configured.o", rp.OrtNames(["exported", "external"], {}),
+                          root / "module", ld=LD, objcopy=OBJCOPY,
+                          rebind=ROOT / "tools/rebind_elf_relocations.py")
+            self.assertEqual(original, raw.read_bytes())
 
 
 if __name__ == "__main__":

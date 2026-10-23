@@ -1848,16 +1848,6 @@
       }
     },
     {
-      "name": "assets/overlays/o025/overlay_025_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o025/overlay_025_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o025"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o025/overlay_025_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o025/overlay_025_reloc1.bin.o",
       "metadata": {
@@ -1874,16 +1864,6 @@
         "progress_categories": [
           "overlay",
           "overlay-o025"
-        ]
-      }
-    },
-    {
-      "name": "assets/overlays/o026/overlay_026_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o026/overlay_026_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o026"
         ]
       }
     },
@@ -1908,16 +1888,6 @@
       }
     },
     {
-      "name": "assets/overlays/o027/overlay_027_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o027/overlay_027_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o027"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o027/overlay_027_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o027/overlay_027_reloc1.bin.o",
       "metadata": {
@@ -1934,16 +1904,6 @@
         "progress_categories": [
           "overlay",
           "overlay-o027"
-        ]
-      }
-    },
-    {
-      "name": "assets/overlays/o028/overlay_028_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o028/overlay_028_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o028"
         ]
       }
     },

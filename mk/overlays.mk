@@ -1072,30 +1072,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay_048.c.o: CFLAGS += -Wab,-r4300_mul
 # the trailing pad, so nothing is trimmed. Its resident and cross-overlay
 # references go through the generated relocation surface.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 28 is one TU under the overlay flag set: no trim, and its resident
-# calls take the generated rebinds. What remains is relocation metadata the
-# one-TU build does not yet express (phase 1/3 work), none of it touching an
-# instruction word:
-# - the loader owns the data-base HI/LO stored in the reset field, so the
-#   shipped tables carry no record for those two sites (filtered);
-# - two calls are SYMBOL records whose shipped target differs from the name
-#   the C uses: the update-vertices call carries the external at 0x29E00,
-#   and the render tail's external call carries the module's offset-0 entry;
-# - the render tail's display-list words are absolute 0x80000028 references.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: \
-	$(TOOLS_DIR)/filter_elf_relocations.py \
-	$(TOOLS_DIR)/rebind_elf_relocations.py
+# Overlay 28 directly owns its colour-cycle table and triangle records.
+MODULE_LINKED_OVERLAYS += 028
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x1D8:5:gOverlay28DataBase 0x1F4:6:gOverlay28DataBase && \
-	$(OBJCOPY) \
-		--add-symbol D_80000028=0x80000028,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x41C:overlay28UpdateVertices:ext_o0_29e00 \
-		0x51C:ext_o0_29e00:overlay28ResetBuffer \
-		0x744:gOverlay28DisplayList28:D_80000028 \
-		0x754:gOverlay28DisplayList28:D_80000028
 # Overlay 35 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/overlay_035.c.o: CFLAGS += -Wab,-r4300_mul
 

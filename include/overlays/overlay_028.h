@@ -55,6 +55,33 @@ typedef struct Overlay28Source {
     void *related;
 } Overlay28Source;
 
+typedef struct Overlay28ColourFrame {
+    u8 red, green, blue, alpha;
+    s32 duration;
+} Overlay28ColourFrame;
+
+typedef struct Overlay28ColourTable {
+    s32 frameCount;
+    s32 totalDuration;
+    Overlay28ColourFrame frames[4];
+} Overlay28ColourTable;
+
+typedef struct Overlay28ColourCycle {
+    s32 frameIndex;
+    s32 time;
+    u8 red, green, blue, alpha;
+    Overlay28ColourTable *table;
+} Overlay28ColourCycle;
+
+typedef struct Overlay28UV {
+    s16 u, v;
+} Overlay28UV;
+
+typedef struct Overlay28Triangle {
+    u8 flags, firstIndex, secondIndex, thirdIndex;
+    Overlay28UV coordinates[3];
+} Overlay28Triangle;
+
 struct Overlay28Work {
     Overlay28Owner *related;
     f32 x;
@@ -71,12 +98,7 @@ struct Overlay28Work {
     s16 stepB;
     s16 stepC;
     s16 stepD;
-    u8 object[8];
-    u8 red;
-    u8 green;
-    u8 blue;
-    u8 pad3B;
-    void (*reset)();
+    Overlay28ColourCycle colourCycle;
     s16 intensity;
     s16 bufferIndex;
     u8 vertices[0x154];
@@ -123,11 +145,13 @@ typedef struct Overlay28Transform {
     f32 z;
 } Overlay28Transform;
 
-extern u8 gOverlay28DisplayList28[];
+extern Overlay28ColourTable gOverlay28ColourTable;
+extern Overlay28Triangle gOverlay28Triangles[16];
 extern f32 func_8002A8C0(s32 angle);
 extern f32 func_8002A8BC(s32 angle);
-extern void resetColourCycle(void *object);
-extern void ext_o0_29e00();
+extern void resetColourCycle(Overlay28ColourCycle *cycle);
+extern void updateColourCycle(Overlay28ColourCycle *cycle, s32 updateRate);
+extern void pointListRPY(s32 count, void *object, f32 *input, f32 *output);
 extern void amSndPlayXYZ(s32, f32, f32, f32, s32, void **);
 extern void amSndSetXYZ(void *, f32, f32, f32);
 extern void amSndSetVolXYZ(void *, s32);

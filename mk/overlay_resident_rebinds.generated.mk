@@ -485,21 +485,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay_023.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym mathRnd=mathRnd_o023Reloc \
 	--redefine-sym texLoadSprite=texLoadSprite_o023Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o028Reloc \
-	--redefine-sym amSndSetVolXYZ=amSndSetVolXYZ_o028Reloc \
-	--redefine-sym amSndSetXYZ=amSndSetXYZ_o028Reloc \
-	--redefine-sym camGetPtr=camGetPtr_o028Reloc \
-	--redefine-sym camPopModelMtx=camPopModelMtx_o028Reloc \
-	--redefine-sym camPushModelMtx=camPushModelMtx_o028Reloc \
-	--redefine-sym func_80006EA0=func_80006EA0_o028Reloc \
-	--redefine-sym func_80009F08=func_80009F08_o028Reloc \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o028Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o028Reloc \
-	--redefine-sym resetColourCycle=resetColourCycle_o028Reloc \
-	--redefine-sym sqrtf=sqrtf_o028Reloc \
-	--redefine-sym texDPTextureX=texDPTextureX_o028Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay_029.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o029Reloc \
 	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o029Reloc \

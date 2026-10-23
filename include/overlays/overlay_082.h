@@ -14,8 +14,8 @@ typedef struct Overlay82State {
     u8 active;
     u8 disabled;
     s32 values[6];
-    O82DisplayPair display[6];
-    u16 flags;
+    /* Six value pairs followed by the label-only terminator. */
+    O82DisplayPair display[7];
 } Overlay82State;
 
 typedef Overlay82State O82State;

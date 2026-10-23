@@ -77,6 +77,8 @@ class ObjBuilder:
                 return 0
             if sec == "ABS":
                 return 0xFFF1
+            if sec == "COMMON":
+                return 0xFFF2
             return 1 + user.index(sec)
 
         syms = [(0, 0, 0, 0, 0, 0)]
@@ -366,7 +368,9 @@ class SyntheticTreeTests(unittest.TestCase):
         self.assertEqual(b["hybrid-data"], [[1, "0x48"]])
         self.assertEqual(b["placement"], [[1, "a", ".bss", "0x58", 2]])
         self.assertEqual(sorted(x[2] for x in b["main-placeholder"]), ["R_MIPS_32", "R_MIPS_HI16", "R_MIPS_LO16"])
-        self.assertNotIn("bss-size", b)
+        # Equal raw/atlas sums do not prove ownership: this fixture discards
+        # the raw BSS and has no linked BSS input at all.
+        self.assertEqual(b["bss-size"], [[1]])
         self.assertNotIn("rodata-base", b)
 
     def test_compare_is_clean_and_region_is_identical(self):
@@ -431,14 +435,19 @@ class SyntheticTreeTests(unittest.TestCase):
 
 class LinkedBssTests(unittest.TestCase):
     def fixture(self):
-        raw = (ObjBuilder().section(".text", words(lui(0), addiu(0)))
+        raw = (ObjBuilder().section(".text", words(lui(0), addiu(0), *([0] * 14)))
+               .section(".data", bytes(0x10))
                .section(".bss", nobits=0x20))
-        obj = rp.ObjRef(1, Path("raw/a.c.o"), "overlays/o001/a", 0, 8, "c",
+        obj = rp.ObjRef(1, Path("raw/a.c.o"), "overlays/o001/a", 0, 0x40, "c",
                         rp.Elf("raw/a.c.o", raw.build()))
         output = ObjBuilder().section(".overlay_001_bss", addr=rp.OVERLAY_VMA + 0x50,
                                       nobits=0x20)
-        info = dict(text_size=0x40, prefix=0x50, bss_vma=rp.OVERLAY_VMA + 0x50,
-                    linked_bss=0x20, atlas_bss=0x20, inputs=[], bss_inputs=[
+        info = dict(text_size=0x40, data_size=0x10, prefix=0x50, bss_vma=rp.OVERLAY_VMA + 0x50,
+                    linked_bss=0x20, atlas_bss=0x20, inputs=[
+                        rp.MapInput(".overlay_001", ".text", rp.OVERLAY_VMA,
+                                    0x40, "build/src/overlays/o001/a.c.o"),
+                        rp.MapInput(".overlay_001", ".data", rp.OVERLAY_VMA + 0x40,
+                                    0x10, "build/src/overlays/o001/a.c.o")], bss_inputs=[
                         rp.MapInput(".overlay_001_bss", ".bss", rp.OVERLAY_VMA + 0x50,
                                     0x20, "build/src/overlays/o001/a.c.o")])
         world = SimpleNamespace(module_info={1: info}, elf=rp.Elf("linked", output.build()),
@@ -468,6 +477,105 @@ class LinkedBssTests(unittest.TestCase):
                 self.assertEqual(obj.placement[".bss"], (expected, "link"))
                 self.assertNotIn("placement", borrowed)
 
+    def test_header_uses_complete_source_allocation_and_can_outgrow_atlas(self):
+        for atlas_size in (0, 0x10, 0x20, 0x40):
+            with self.subTest(atlas_size=atlas_size):
+                world, obj, _relocs = self.fixture()
+                world.module_info[1]["atlas_bss"] = atlas_size
+                self.assertEqual(rp.header_bss(world, 1), (0x20, True))
+                # Exercise the serialized-header producer as well as its helper.
+                world.shipped = SimpleNamespace(modules={})
+                world.module_image_prefix = lambda ov: bytes(0x50)
+                resolver = SimpleNamespace(ort=SimpleNamespace(entries={}))
+                packed = rp.pack_module(world, resolver, 1, [])
+                self.assertEqual(packed.bss_size, 0x20)
+                self.assertNotIn("bss-size", packed.borrowed)
+
+    def test_header_requires_all_body_and_bss_contributors(self):
+        cases = ("discarded", "trimmed", "duplicate", "overlap", "wrong-producer",
+                 "gap", "trailing-reserve", "initialized", "executable", "wrong-boundary",
+                 "wrong-extent", "blob-body", "trimmed-body", "body-gap", "missing-body",
+                 "duplicate-object", "extra-raw-bss", "common", "other-nobits")
+        for case in cases:
+            with self.subTest(case=case):
+                world, obj, _relocs = self.fixture()
+                info = world.module_info[1]
+                item = info["bss_inputs"][0]
+                output = world.elf.section(".overlay_001_bss")
+                if case == "discarded":
+                    info["bss_inputs"] = []
+                elif case == "trimmed":
+                    info["bss_inputs"] = [rp.MapInput(item.outsec, item.insec, item.addr, 0x10, item.file)]
+                elif case == "duplicate":
+                    info["bss_inputs"] *= 2
+                elif case == "overlap":
+                    info["bss_inputs"].append(rp.MapInput(item.outsec, item.insec, item.addr,
+                                                        item.size, "build/src/overlays/o001/b.c.o"))
+                elif case == "wrong-producer":
+                    info["bss_inputs"] = [rp.MapInput(item.outsec, item.insec, item.addr,
+                                                     item.size, "build/asm/reserve.s.o")]
+                elif case in ("gap", "trailing-reserve"):
+                    output["size"] = info["linked_bss"] = 0x30
+                    if case == "gap":
+                        info["bss_inputs"] = [rp.MapInput(item.outsec, item.insec, item.addr + 0x10,
+                                                         item.size, item.file)]
+                elif case == "initialized":
+                    output["type"] = 1
+                elif case == "executable":
+                    output["flags"] |= 4
+                elif case == "wrong-boundary":
+                    output["addr"] = info["bss_vma"] = rp.OVERLAY_VMA + 0xB0
+                elif case == "wrong-extent":
+                    info["linked_bss"] = 0x40
+                elif case in ("blob-body", "trimmed-body", "body-gap", "missing-body"):
+                    body = info["inputs"][1]
+                    if case == "missing-body":
+                        info["inputs"].pop()
+                    else:
+                        info["inputs"][1] = rp.MapInput(body.outsec, body.insec,
+                            body.addr + (0x10 if case == "body-gap" else 0),
+                            8 if case == "trimmed-body" else body.size,
+                            "build/assets/retained.bin.o" if case == "blob-body" else body.file)
+                elif case == "duplicate-object":
+                    world.objects = lambda ov: [obj, obj]
+                elif case == "extra-raw-bss":
+                    extra = rp.ObjRef(1, Path("raw/b.c.o"), "overlays/o001/b", 0, 0, "c", obj.elf)
+                    world.objects = lambda ov: [obj, extra]
+                elif case == "common":
+                    obj.elf = rp.Elf("common", (ObjBuilder().sym("reserve", 4, 8, GLOBAL,
+                                                                  OBJECT, "COMMON")).build())
+                elif case == "other-nobits":
+                    obj.elf.sections.append(dict(name=".sbss", size=8, flags=3, type=8))
+                self.assertEqual(rp.header_bss(world, 1), (0x20, False))
+
+    def test_header_allows_only_actual_input_alignment_between_owners(self):
+        world, obj, _relocs = self.fixture()
+        extra = rp.ObjRef(1, Path("raw/b.c.o"), "overlays/o001/b", 0x40, 0, "c",
+                         rp.Elf("raw/b.c.o", ObjBuilder().section(".bss", nobits=0x10).build()))
+        extra.elf.section(".bss")["align"] = 0x20
+        world.objects = lambda ov: [obj, extra]
+        info = world.module_info[1]
+        info["linked_bss"] = 0x40
+        world.elf.section(".overlay_001_bss")["size"] = 0x40
+        info["bss_inputs"].append(rp.MapInput(".overlay_001_bss", ".bss",
+            rp.OVERLAY_VMA + 0x80, 0x10, "build/src/overlays/o001/b.c.o"))
+        self.assertEqual(rp.header_bss(world, 1), (0x40, True))
+
+    def test_zero_bss_has_no_reserve_or_unaccounted_producer(self):
+        world, obj, _relocs = self.fixture()
+        info = world.module_info[1]
+        obj.elf.section(".bss")["size"] = 0
+        info["atlas_bss"] = info["linked_bss"] = 0
+        info["bss_inputs"] = []
+        output = world.elf.section(".overlay_001_bss")
+        output["size"], output["type"], output["flags"] = 0, 1, 1
+        self.assertEqual(rp.header_bss(world, 1), (0, True))
+        info["atlas_bss"] = 0x20
+        self.assertEqual(rp.header_bss(world, 1), (0x20, False))
+        info["atlas_bss"] = 0
+        info["linked_bss"] = 0x10
+        self.assertEqual(rp.header_bss(world, 1), (0, False))
+
     def test_unproved_legacy_bss_keeps_its_named_borrowing(self):
         cases = ("discarded", "trimmed", "duplicate", "overlap", "wrong-producer",
                  "tables-before-bss", "wrong-extent", "initialized", "executable")
@@ -492,7 +600,7 @@ class LinkedBssTests(unittest.TestCase):
                 elif case == "tables-before-bss":
                     output["addr"] = info["bss_vma"] = rp.OVERLAY_VMA + 0xB0
                 elif case == "wrong-extent":
-                    info["atlas_bss"] = 0x40
+                    info["linked_bss"] = 0x40
                 elif case == "initialized":
                     output["type"] = 1
                 elif case == "executable":

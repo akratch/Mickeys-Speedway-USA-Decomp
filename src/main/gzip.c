@@ -10,6 +10,7 @@
 #include "PR/os_internal.h"
 #include "PR/os_message.h"
 #include "game/pi.h"
+#include "game/gzip.h"
 #include "PRinternal/piint.h"
 
 extern s32 D_8007D630;

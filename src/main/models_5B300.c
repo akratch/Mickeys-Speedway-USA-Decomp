@@ -759,25 +759,25 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
 
 /* Mickey-derived parented matrix-list builder; JFG retains its peer as asm. */
 void func_8005B644(Matrix *matrices, Matrix *root, ModelMatrixNode *node, s32 count) {
-    Matrix temp;
     Matrix *output;
     Matrix *parent;
+    Matrix temp;
     s32 i;
 
     output = matrices;
     i = 0;
     if (count > 0) {
         do {
-            func_8002A82C((u8 *)temp - 8);
-            *(f32 *)((u8 *)temp + 0x28) = node->x;
-            *(f32 *)((u8 *)temp + 0x2C) = node->y;
-            *(f32 *)((u8 *)temp + 0x30) = node->z;
+            func_8002A82C(temp);
+            temp[3][0] = node->x;
+            temp[3][1] = node->y;
+            temp[3][2] = node->z;
             if ((node->parent == -1) != FALSE) {
                 parent = root;
             } else {
                 parent = &matrices[node->parent];
             }
-            mtxf_mul((u8 *)temp - 8, parent, output);
+            mtxf_mul(temp, parent, output);
             i++;
             output++;
             node++;

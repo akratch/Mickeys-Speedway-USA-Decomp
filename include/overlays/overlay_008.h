@@ -4,6 +4,8 @@
 #include "PR/ultratypes.h"
 #include "game/math.h"
 
+struct Overlay17Chain;
+
 typedef struct Overlay8IndexedObject {
     u8 pad0;
     s8 index;
@@ -62,8 +64,8 @@ typedef struct O8State {
     u8 padD8[0x2e];
     s16 angle106;
     u8 pad108[0x2c];
-    void *resource134;
-    void *resource138;
+    struct Overlay17Chain *resource134;
+    struct Overlay17Chain *resource138;
     u8 pad13c[0x36];
     s8 condition172;
     u8 pad173[0xe];
@@ -688,7 +690,9 @@ extern void ext_o8_3368(O8Owner *, O8State *, void *, O8Node *, s32);
 
 
 
-extern void *gO8Pointer14, *gO8Pointer18;
+/* Legacy LOCAL names for the owner's s32 left/right alpha-enable flags
+ * at BSS +0x14/+0x18, respectively. */
+extern s32 gO8Pointer14, gO8Pointer18;
 
 extern s32 gO8Table360[], gO8Table3A0[];
 
@@ -718,7 +722,7 @@ extern void func_8003EDE0(f32);
 
 extern void partUpdateTriggers(O8Owner *, s32);
 
-extern void overlay17AdvanceChain(void *, void *);
+extern void overlay17AdvanceChain(struct Overlay17Chain *chain, s32 useAlpha);
 
 extern void ext_o0_2d70(void *, s32, s32, s32);
 

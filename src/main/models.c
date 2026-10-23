@@ -19,6 +19,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/pi.h"
+#include "game/gzip.h"
 #include "game/math.h"
 #include "game/models.h"
 #include "n_audio/mbi.h"
@@ -61,7 +62,6 @@ void texDPTextureX(Gfx **displayList, void *texture, s32 flags, s32 parameter);
 void func_80020AD4(void);
 void func_8005AAC0(void *animation);
 extern s32 func_8004D7A8(s32 assetId, s32 assetOffset);
-extern u8 *func_8004D7E0(u8 *compressed, u8 *output);
 extern s32 func_8005A7A0(void *model, s32 modelId);
 struct ModelGfxSource;
 s32 makeModelGfx(Gfx **out, struct ModelGfxSource *model, s32 arg2, s32 arg3,

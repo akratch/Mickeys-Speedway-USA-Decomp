@@ -1107,22 +1107,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: POSTPROCESS = \
 # Overlay 35 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/overlay_035.c.o: CFLAGS += -Wab,-r4300_mul
 
-# Overlay 26 is one TU under the overlay flag set: no trim, and its resident
-# calls take the generated rebinds. What remains is phase-3 scaffolding for
-# rodata the TU does not own yet, none of it touching an instruction word:
-# the update's compiler pool (-0.1f, -0.2f, 6.283185f and two 0.9f)
-# duplicates the retained overlay data at rodata-relative +0x0, which the
-# shipped hi/lo pairs encode. Rebind its ten references to a pool symbol and
-# discard the digest-checked duplicate (overlay 29's metadata-only form).
+# Overlay 26 directly owns the update and projection's compiler literal pool.
+MODULE_LINKED_OVERLAYS += 026
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay_026.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay_026.c.o: \
-	config/normalizations/overlay_026.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay_026.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay26UpdatePoolReloc=0x0,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay_026.rebind.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:65b37d85616c58b2a7b1db845df735b73a82241585f505fda670a9739bdeea4b
 OVERLAY_TRIMMED_OBJECTS := \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o102/overlay_102.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o103/overlay_103.c.o \

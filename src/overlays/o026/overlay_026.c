@@ -1,11 +1,20 @@
 #include "overlays/overlay_026.h"
 
+#define O26_PROJECTION_MIN_NORMAL_Y 0.707f
+#define O26_PROJECTION_MIN_LENGTH_SQUARED 0.1f
+#define O26_PROJECTION_HEIGHT_BIAS 0.01f
+
+static void func_overlay_026_F0000B18_187AF10(
+    O26ProjectionVec3f *unused, O26ProjectionVec3f *out,
+    O26ProjectionVec3f *direction, f32 distance,
+    O26ProjectionPlane *plane, O26ProjectionOwner *owner);
+
 /*
  * Overlay 26: one translation unit in ROM order (ADR 0006). The ORT exports
  * the initializer (+0x0), the update (+0x1A0), the effect handler (+0xD24)
  * and the group renderer (+0x1158). The plane projection (+0xB18) is reached
- * only through its stored address, so it stays extern: IDO drops a static
- * function nothing in the TU names.
+ * through its stored address; the direct callback reference retains its
+ * private definition in this translation unit.
  */
 
 void func_overlay_026_F0000000_187A3F8(O26Object *object, O26Config *config) {
@@ -40,9 +49,9 @@ void func_overlay_026_F0000000_187A3F8(O26Object *object, O26Config *config) {
     object->position.z += motion.z;
     trackMakePolylist(1, &position, &object->position, &radius, 0, 0);
 
-    if ((func_80010900(&position, &object->position, radius, object, func_overlay_026_F0000B18_o026Reloc) != 0) &&
+    if ((func_80010900(&position, &object->position, radius, object, func_overlay_026_F0000B18_187AF10) != 0) &&
         ((state->flags28 & 4) != 0)) {
-        func_overlay_026_F0000D24_187B11CReloc(object, 5);
+        func_overlay_026_F0000D24_187B11C((O26ObjectD24 *)object, 5);
     } else {
         object->direction.z = -33.0f;
         mathOneFloatPY(object, &object->direction);
@@ -95,7 +104,7 @@ void func_overlay_026_F00001A0_187A598(O26ObjectUpdate *object,
     }
 
     if ((state->recordsActive30 == 0) && (state->pendingEffect31 != 0)) {
-        func_overlay_026_F0000D24_187B11CReloc(object, 0x16);
+        func_overlay_026_F0000D24_187B11C((O26ObjectD24 *)object, 0x16);
         state->pendingEffect31 = 0;
     }
 
@@ -239,7 +248,7 @@ void func_overlay_026_F00001A0_187A598(O26ObjectUpdate *object,
     object->position.y += 10.0f;
     trackMakePolylist(1, &oldPosition, &object->position, &radius, 0, 0);
     collision = func_80010900(&oldPosition, &object->position, radius,
-                              object, func_overlay_026_F0000B18_o026Reloc);
+                              object, func_overlay_026_F0000B18_187AF10);
     i = func_80008128(object, 0, 0, 0);
     object->position.y -= 10.0f;
     pitch = 0;
@@ -284,8 +293,8 @@ void func_overlay_026_F00001A0_187A598(O26ObjectUpdate *object,
 /* `lengthSquared` carries the plane offset after the normalisation divides:
  * one fewer declared local leaves a word below the local block, which is what
  * puts the caller-save spill of the first component at sp+0x44. */
-void func_overlay_026_F0000B18_187AF10(
-    s32 unused, O26ProjectionVec3f *out, O26ProjectionVec3f *direction,
+static void func_overlay_026_F0000B18_187AF10(
+    O26ProjectionVec3f *unused, O26ProjectionVec3f *out, O26ProjectionVec3f *direction,
     f32 distance, O26ProjectionPlane *plane, O26ProjectionOwner *owner) {
     O26ProjectionResult *result;
     f32 crossX;
@@ -302,7 +311,7 @@ void func_overlay_026_F0000B18_187AF10(
 
     result = owner->result64;
     planeConstant = plane->constant;
-    if ((D_14 <= normalY) || (plane->flags & 0x10000000)) {
+    if ((O26_PROJECTION_MIN_NORMAL_Y <= normalY) || (plane->flags & 0x10000000)) {
         crossX = direction->z * normalY;
         crossY = -(direction->z * normalX) +
                  (normalZ * direction->x);
@@ -315,7 +324,7 @@ void func_overlay_026_F0000B18_187AF10(
                         (projectedY * projectedY) +
                         (projectedZ * projectedZ);
 
-        if (D_18 < lengthSquared) {
+        if (O26_PROJECTION_MIN_LENGTH_SQUARED < lengthSquared) {
             lengthSquared = sqrtf(lengthSquared);
             projectedX /= lengthSquared;
             projectedY /= lengthSquared;
@@ -328,7 +337,7 @@ void func_overlay_026_F0000B18_187AF10(
             out->y = (-((out->z * normalZ) +
                         (normalX * out->x) + planeConstant) /
                       normalY) +
-                     D_1C;
+                     O26_PROJECTION_HEIGHT_BIAS;
         }
 
         result->normal08.x = normalX;
@@ -359,9 +368,9 @@ void func_overlay_026_F0000D24_187B11C(O26ObjectD24 *object, s32 mode) {
     if (mode & 1) {
         func_80006EA0(object);
     } else if (mode & 2) {
-        azimuth = func_8002A910(state->sourceDirection.x,
+        azimuth = Arctanf(state->sourceDirection.x,
                                state->sourceDirection.z);
-        elevation = func_8002A910(
+        elevation = Arctanf(
             sqrtf((state->sourceDirection.z * state->sourceDirection.z) +
                   (state->sourceDirection.x * state->sourceDirection.x)),
             state->sourceDirection.y);
@@ -372,7 +381,7 @@ void func_overlay_026_F0000D24_187B11C(O26ObjectD24 *object, s32 mode) {
         effect->direction.x = 0.0f;
         effect->direction.y = 0.0f;
         effect->direction.z = -7.0f;
-        func_80029FE4(&angles, &effect->direction);
+        mathOneFloatPY(&angles, &effect->direction);
 
         effect->position.x = object->position.x;
         effect->position.y = object->position.y;
@@ -381,9 +390,9 @@ void func_overlay_026_F0000D24_187B11C(O26ObjectD24 *object, s32 mode) {
         effect->angleY = object->angleY;
         effect->angleZ = object->angleZ;
         effect->scale = object->scale;
-        effect->randomX = func_8002997C(-0x500, 0x500);
-        effect->randomY = func_8002997C(-0x500, 0x500);
-        effect->randomZ = func_8002997C(-0x500, 0x500);
+        effect->randomX = mathRnd(-0x500, 0x500);
+        effect->randomY = mathRnd(-0x500, 0x500);
+        effect->randomZ = mathRnd(-0x500, 0x500);
         effect->alpha = 0xFF;
 
         angles.y = elevation + 0x2000;
@@ -392,7 +401,7 @@ void func_overlay_026_F0000D24_187B11C(O26ObjectD24 *object, s32 mode) {
         effect->direction.x = 0.0f;
         effect->direction.y = 0.0f;
         effect->direction.z = -7.0f;
-        func_80029FE4(&angles, &effect->direction);
+        mathOneFloatPY(&angles, &effect->direction);
 
         effect->position.x = object->position.x;
         effect->position.y = object->position.y;
@@ -401,9 +410,9 @@ void func_overlay_026_F0000D24_187B11C(O26ObjectD24 *object, s32 mode) {
         effect->angleY = object->angleY;
         effect->angleZ = object->angleZ;
         effect->scale = object->scale;
-        effect->randomX = func_8002997C(-0x500, 0x500);
-        effect->randomY = func_8002997C(-0x500, 0x500);
-        effect->randomZ = func_8002997C(-0x500, 0x500);
+        effect->randomX = mathRnd(-0x500, 0x500);
+        effect->randomY = mathRnd(-0x500, 0x500);
+        effect->randomZ = mathRnd(-0x500, 0x500);
         effect->alpha = 0xFF;
 
         angles.x = azimuth - 0x2000;
@@ -412,7 +421,7 @@ void func_overlay_026_F0000D24_187B11C(O26ObjectD24 *object, s32 mode) {
         effect->direction.x = 0.0f;
         effect->direction.y = 0.0f;
         effect->direction.z = -7.0f;
-        func_80029FE4(&angles, &effect->direction);
+        mathOneFloatPY(&angles, &effect->direction);
 
         effect->position.x = object->position.x;
         effect->position.y = object->position.y;
@@ -421,9 +430,9 @@ void func_overlay_026_F0000D24_187B11C(O26ObjectD24 *object, s32 mode) {
         effect->angleY = object->angleY;
         effect->angleZ = object->angleZ;
         effect->scale = object->scale;
-        effect->randomX = func_8002997C(-0x500, 0x500);
-        effect->randomY = func_8002997C(-0x500, 0x500);
-        effect->randomZ = func_8002997C(-0x500, 0x500);
+        effect->randomX = mathRnd(-0x500, 0x500);
+        effect->randomY = mathRnd(-0x500, 0x500);
+        effect->randomZ = mathRnd(-0x500, 0x500);
         effect->alpha = 0xFF;
 
         angles.x = azimuth + 0x2000;
@@ -432,7 +441,7 @@ void func_overlay_026_F0000D24_187B11C(O26ObjectD24 *object, s32 mode) {
         effect->direction.x = 0.0f;
         effect->direction.y = 0.0f;
         effect->direction.z = -7.0f;
-        func_80029FE4(&angles, &effect->direction);
+        mathOneFloatPY(&angles, &effect->direction);
 
         effect->position.x = object->position.x;
         effect->position.y = object->position.y;
@@ -441,16 +450,16 @@ void func_overlay_026_F0000D24_187B11C(O26ObjectD24 *object, s32 mode) {
         effect->angleY = object->angleY;
         effect->angleZ = object->angleZ;
         effect->scale = object->scale;
-        effect->randomX = func_8002997C(-0x500, 0x500);
-        effect->randomY = func_8002997C(-0x500, 0x500);
-        effect->randomZ = func_8002997C(-0x500, 0x500);
+        effect->randomX = mathRnd(-0x500, 0x500);
+        effect->randomY = mathRnd(-0x500, 0x500);
+        effect->randomZ = mathRnd(-0x500, 0x500);
         effect->alpha = 0xFF;
         state->active30 = 1;
     }
 
     if (mode & 4) {
         object->active80 |= 2;
-        func_8003EDEC(object, 1);
+        partUpdateTriggers(object, 1);
     }
     if (mode & 8) {
         amSndPlayXYZ(0x278, object->position.x, object->position.y,

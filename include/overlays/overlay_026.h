@@ -233,29 +233,27 @@ typedef struct Overlay26Context {
     Overlay26Node **nodeTable;
 } Overlay26Context;
 
-/* The collision query calls the plane projection back through this
- * address, which the ROM stores module-relative. */
-extern u8 func_overlay_026_F0000B18_o026Reloc[];
-/* SYMBOL calls to the module's exported effect handler store zero, so they
- * name a placeholder rather than the in-module definition. */
-extern void func_overlay_026_F0000D24_187B11CReloc(void *object, s32 mode);
-/* Literal-block placeholders the shipped LOCAL pairs address. */
-extern f32 D_14;
-extern f32 D_18;
-extern f32 D_1C;
+typedef void (*O26CollisionCallback)(O26ProjectionVec3f *start,
+                                     O26ProjectionVec3f *end,
+                                     O26ProjectionVec3f *direction, f32 distance,
+                                     O26ProjectionPlane *plane,
+                                     O26ProjectionOwner *owner);
+
+extern void func_overlay_026_F0000D24_187B11C(O26ObjectD24 *object, s32 mode);
 
 extern void mathOneFloatRPY(O26Object *object, O26Vec3f *vector);
-extern void mathOneFloatPY(O26Object *object, O26Vec3f *direction);
+/* Accepts either the object angle prefix or a standalone x/y angle record. */
+extern void mathOneFloatPY(void *angles, O26Vec3f *direction);
 extern void trackMakePolylist(s32 count, O26Vec3f *position,
                               O26Vec3f *origin, f32 *radius,
                               s32 arg4, s32 arg5);
 extern s32 func_80010900(O26Vec3f *position, O26Vec3f *origin,
-                         f32 radius, void *object, void *callback);
+                         f32 radius, void *object, O26CollisionCallback callback);
 extern s32 func_8000FAE0(f32 x, f32 y, f32 z);
 extern void func_80006EA0(void *object);
 extern void partUpdateTriggers(void *object, s32 updateRate);
 extern f32 sqrtf(f32 value);
-extern s16 Arctanf(f32 x, f32 z);
+extern s32 Arctanf(f32 x, f32 z);
 extern s32 mathDiffAngle(s16 first, s16 second, s32 step);
 extern f32 func_8002A8C0(s32 angle);
 extern f32 func_8002A8BC(s32 angle);
@@ -265,10 +263,7 @@ extern void func_8001DCD0(s16 rotation, O26Vec3f *direction,
 extern void overlay37RecordMinimum(s32 index, f32 value);
 extern f32 Powerf(f32 value, s32 exponent);
 extern s16 dAngle(s16 first, s16 second, f32 amount);
-extern s32 func_8002A910(f32 first, f32 second);
-extern void func_80029FE4(O26Angles2 *angles, O26Vec3f *direction);
-extern s32 func_8002997C(s32 minimum, s32 maximum);
-extern void func_8003EDEC(O26ObjectD24 *object, s32 mode);
+extern s32 mathRnd(s32 minimum, s32 maximum);
 extern void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z,
                           s32 priority, s32 unused);
 extern void lightObject(Overlay26Context *, Overlay26Node *, void *, s32);

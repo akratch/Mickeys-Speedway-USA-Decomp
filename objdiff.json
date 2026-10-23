@@ -460,8 +460,8 @@
       }
     },
     {
-      "name": "asm/data/7A060.data.s",
-      "target_path": "expected/build/asm/data/7A060.data.s.o",
+      "name": "asm/data/7A064.data.s",
+      "target_path": "expected/build/asm/data/7A064.data.s.o",
       "metadata": {
         "progress_categories": [
           "resident"
@@ -2214,16 +2214,6 @@
         "progress_categories": [
           "overlay",
           "overlay-o043"
-        ]
-      }
-    },
-    {
-      "name": "assets/overlays/o044/overlay_044_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o044/overlay_044_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o044"
         ]
       }
     },

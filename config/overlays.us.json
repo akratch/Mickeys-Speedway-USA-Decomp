@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 37360,
+  "owned_data_rodata_bytes": 38560,
   "diagnostic_data_rodata_bytes": 840,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -1858,6 +1858,15 @@
      "section": ".rodata",
      "source": "overlays/o007/overlay_007",
      "trial_function": "overlay7DispatchModes"
+    },
+    {
+     "offset": "0x2A4",
+     "end_offset": "0x754",
+     "size": "0x4B0",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o007/overlay7ModeTables",
+     "canonical": true
     }
    ]
   },

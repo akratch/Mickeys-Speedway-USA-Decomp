@@ -1727,18 +1727,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x187D2B0, c, overlay29Select]
-      - [0x187D334, c, overlay29RotateForward]
-      - [0x187D3D4, c, overlay29RotateBackward]
-      - [0x187D474, c, overlay29BuildChain]
-      - [0x187D4EC, c, overlay29UpdateRatio]
-      - [0x187D5B4, c, overlay29Sample]
-      - [0x187D6DC, c, overlay29InitializeObject]
-      - [0x187D874, c, func_overlay_029_F00005C4_187D874]
-      - [0x187E190, c, overlay29ProjectPoint]
-      - [0x187E374, c, overlay29HandleEffects]
-      - [0x187E778, c, overlay29DrawGroups]
-      - [0x187E97C, asm, overlay_029_padding]
+      - [0x187D2B0, c, overlay_029]
       - [0x187E980, bin, overlay_029_data_rodata]
       - [0x187E9A0, bin, overlay_029_reloc1]
       - [0x187EB78, bin, overlay_029_reloc2]

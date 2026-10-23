@@ -811,50 +811,27 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53ReleaseResources.c.o: POSTPROCESS
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x78
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54ReleaseResources.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29BuildChain.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x78
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29UpdateRatio.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC8
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29UpdateRatio.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29Sample.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x128
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29InitializeObject.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x198
-# Exact C. Its compiler pool -- -0.1f, -0.2f, FLT_MAX, 750.0f and 0.4f --
+
+# Overlay 29 is one TU under the overlay flag set: no trim, and its resident
+# calls take the generated rebinds. What remains is phase-3 scaffolding for
+# rodata the TU does not own yet, none of it touching an instruction word:
+# the update's compiler pool -- -0.1f, -0.2f, FLT_MAX, 750.0f and 0.4f --
 # duplicates the retained overlay data at data_rodata +0x0 (rodata-relative
-# +0x0, which the shipped %hi/%lo pairs encode). Rebind the ten references to
-# a pool symbol and discard the digest-checked duplicate; no instruction or
-# compiler addend is edited (overlay 86's metadata-only form). The nine
-# resident callees go through the generated surface entries.
-O29_05C4_OBJ := \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/func_overlay_029_F00005C4_187D874.c.o
-$(O29_05C4_OBJ): \
+# +0x0, which the shipped %hi/%lo pairs encode). Rebind its ten references to
+# a pool symbol and discard the digest-checked duplicate (overlay 86's
+# metadata-only form).
+O29_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay_029.c.o
+$(O29_OBJ): \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
 	$(TOOLS_DIR)/externalize_elf_section.py \
-	config/normalizations/func_overlay_029_F00005C4_187D874.rebind.spec
-$(O29_05C4_OBJ): CFLAGS += -Wab,-r4300_mul
-$(O29_05C4_OBJ): POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym func_80006EA0=func_80006EA0_o029Reloc \
-		--redefine-sym partUpdateTriggers=partUpdateTriggers_o029Reloc \
-		--redefine-sym sqrtf=sqrtf_o029Reloc \
-		--redefine-sym Arctanf=Arctanf_o029Reloc \
-		--redefine-sym mathDiffAngle=mathDiffAngle_o029Reloc \
-		--redefine-sym mathOneFloatPY=mathOneFloatPY_o029Reloc \
-		--redefine-sym func_80008128=func_80008128_o029Reloc \
-		--redefine-sym trackMakePolylist=trackMakePolylist_o029Reloc \
-		--redefine-sym func_80010900=func_80010900_o029Reloc \
-		--add-symbol gOverlay29UpdatePoolReloc=0x0,global $@ && \
+	config/normalizations/overlay_029.rebind.spec
+$(O29_OBJ): CFLAGS += -Wab,-r4300_mul
+$(O29_OBJ): POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay29UpdatePoolReloc=0x0,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/func_overlay_029_F00005C4_187D874.rebind.spec && \
+		@config/normalizations/overlay_029.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:b59302a556a40d537bcc94b8e036c741672de52d8d671fb8bf20d087fa0b8930 && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x91C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29HandleEffects.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29HandleEffects.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x404
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29DrawGroups.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x204
+		sha256:b59302a556a40d537bcc94b8e036c741672de52d8d671fb8bf20d087fa0b8930
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o051/overlay_051.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8AC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o051/overlay_051.c.o: CFLAGS += -Wab,-r4300_mul
@@ -2519,12 +2496,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55CopyOffsetRecords.c.o: POSTPROCES
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xE8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55GetOffsets.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA8
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29RotateForward.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA0
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29RotateBackward.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA0
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29Select.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x84
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36TickState.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x5C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36PrepareAndTick.c.o: POSTPROCESS = \
@@ -2705,9 +2676,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay_026.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:65b37d85616c58b2a7b1db845df735b73a82241585f505fda670a9739bdeea4b
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29ProjectPoint.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29ProjectPoint.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1E4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59Release.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x70
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59PrepareEntry.c.o: POSTPROCESS = \
@@ -3089,10 +3057,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11ReleaseGroup6C.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11ReleaseGroup3B.c.o
 OVERLAY_TRIMMED_OBJECTS += \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29RotateForward.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29RotateBackward.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29Select.c.o
-OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36TickState.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36PrepareAndTick.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36SelectState.c.o \
@@ -3127,8 +3091,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48ReleaseAll.c.o
 OVERLAY_TRIMMED_OBJECTS += \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o
-OVERLAY_TRIMMED_OBJECTS += \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/func_overlay_029_F00005C4_187D874.c.o
 OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/overlay35SelectHeight.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/func_overlay_035_F00001E0_1881EC0.c.o \

@@ -5944,100 +5944,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x84",
-     "size": "0x84",
-     "type": "c",
-     "source": "overlays/o029/overlay29Select",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x84",
-     "end_offset": "0x124",
-     "size": "0xA0",
-     "type": "c",
-     "source": "overlays/o029/overlay29RotateForward",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x124",
-     "end_offset": "0x1C4",
-     "size": "0xA0",
-     "type": "c",
-     "source": "overlays/o029/overlay29RotateBackward",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1C4",
-     "end_offset": "0x23C",
-     "size": "0x78",
-     "type": "c",
-     "source": "overlays/o029/overlay29BuildChain",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x23C",
-     "end_offset": "0x304",
-     "size": "0xC8",
-     "type": "c",
-     "source": "overlays/o029/overlay29UpdateRatio",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x304",
-     "end_offset": "0x42C",
-     "size": "0x128",
-     "type": "c",
-     "source": "overlays/o029/overlay29Sample",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x42C",
-     "end_offset": "0x5C4",
-     "size": "0x198",
-     "type": "c",
-     "source": "overlays/o029/overlay29InitializeObject",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x5C4",
-     "end_offset": "0xEE0",
-     "size": "0x91C",
-     "type": "c",
-     "source": "overlays/o029/func_overlay_029_F00005C4_187D874",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xEE0",
-     "end_offset": "0x10C4",
-     "size": "0x1E4",
-     "type": "c",
-     "source": "overlays/o029/overlay29ProjectPoint",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x10C4",
-     "end_offset": "0x14C8",
-     "size": "0x404",
-     "type": "c",
-     "source": "overlays/o029/overlay29HandleEffects",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x14C8",
      "end_offset": "0x16CC",
-     "size": "0x204",
+     "size": "0x16CC",
      "type": "c",
-     "source": "overlays/o029/overlay29DrawGroups",
+     "source": "overlays/o029/overlay_029",
      "matched": true,
      "nonmatching": false
     },
@@ -6190,7 +6100,7 @@
      "size": "0x14",
      "type": "c",
      "section": ".rodata",
-     "source": "overlays/o029/func_overlay_029_F00005C4_187D874",
+     "source": "overlays/o029/overlay_029",
      "trial_function": "func_overlay_029_F00005C4_187D874",
      "externalized": true
     }

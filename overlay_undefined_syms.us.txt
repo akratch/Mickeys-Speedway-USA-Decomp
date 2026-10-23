@@ -1356,69 +1356,51 @@ resetColourCycle_o028Reloc = 0xf0000000;
 sqrtf_o028Reloc = 0xf0000000;
 texDPTextureX_o028Reloc = 0xf0000000;
 
-/* overlay 29: overlay29Select.c.o */
+/* overlay 29: overlay_029.c.o */
+Arctanf_o029Reloc = 0xf0000000;
+amSndPlayXYZ_o029Reloc = 0xf0000000;
+camPushModelMtx_o029Reloc = 0xf0000000;
+camRestoreModelMtx_o029Reloc = 0xf0000000;
+func_80006EA0_o029Reloc = 0xf0000000;
+func_80008128_o029Reloc = 0xf0000000;
+func_80010900_o029Reloc = 0xf0000000;
+func_overlay_029_F0000EE0_o029Reloc = 0x00000ee0;
+func_overlay_029_F00010C4_187E374Reloc = 0xf0000000;
 gOverlay29Base0 = 0x00000000;
 gOverlay29Base1 = 0x00000004;
 gOverlay29Base2 = 0x00000008;
 gOverlay29Base3 = 0x0000000c;
 gOverlay29Current = 0x00000020;
-gOverlay29Selected0 = 0x00000010;
-gOverlay29Selected1 = 0x00000014;
-gOverlay29Selected2 = 0x00000018;
-gOverlay29Selected3 = 0x0000001c;
-
-/* overlay 29: overlay29RotateForward.c.o */
-gOverlay29Value0 = 0x00000000;
-gOverlay29Value1 = 0x00000004;
-gOverlay29Value2 = 0x00000008;
-gOverlay29Value3 = 0x0000000c;
-overlay29AdvanceReloc = 0xf0000000;
-
-/* overlay 29: overlay29BuildChain.c.o */
+gOverlay29MinimumYReloc = 0x00000000;
 gOverlay29Node0 = 0x00000000;
 gOverlay29Node4 = 0x00000004;
 gOverlay29Node8 = 0x00000008;
 gOverlay29NodeC = 0x0000000c;
-overlay29CreateReloc = 0xf0000000;
-
-/* overlay 29: overlay29UpdateRatio.c.o */
 gOverlay29PointA = 0x00000014;
 gOverlay29PointB = 0x00000018;
-overlay29AngleReloc = 0xf0000000;
-sqrtf_o029Reloc = 0xf0000000;
-
-/* overlay 29: overlay29Sample.c.o */
-splinePos_o029Reloc = 0xf0000000;
-
-/* overlay 29: overlay29InitializeObject.c.o */
-func_80010900_o029Reloc = 0xf0000000;
-func_overlay_029_F0000EE0_o029Reloc = 0x00000ee0;
-func_overlay_029_F00010C4_187E374Reloc = 0xf0000000;
-mathOneFloatRPY_o029Reloc = 0xf0000000;
-trackMakePolylist_o029Reloc = 0xf0000000;
-
-/* overlay 29: func_overlay_029_F00005C4_187D874.c.o */
-Arctanf_o029Reloc = 0xf0000000;
-func_80006EA0_o029Reloc = 0xf0000000;
-func_80008128_o029Reloc = 0xf0000000;
+gOverlay29Selected0 = 0x00000010;
+gOverlay29Selected1 = 0x00000014;
+gOverlay29Selected2 = 0x00000018;
+gOverlay29Selected3 = 0x0000001c;
+gOverlay29Value0 = 0x00000000;
+gOverlay29Value1 = 0x00000004;
+gOverlay29Value2 = 0x00000008;
+gOverlay29Value3 = 0x0000000c;
 mathDiffAngle_o029Reloc = 0xf0000000;
 mathOneFloatPY_o029Reloc = 0xf0000000;
+mathOneFloatRPY_o029Reloc = 0xf0000000;
+mathRnd_o029Reloc = 0xf0000000;
 overlay1FindPreviousAngle_o029Reloc = 0xf0000000;
 overlay1TestDirection_o029Reloc = 0xf0000000;
+overlay29AdvanceReloc = 0xf0000000;
+overlay29AngleReloc = 0xf0000000;
+overlay29CreateReloc = 0xf0000000;
 overlay37RecordMinimum_o029Reloc = 0xf0000000;
 partUpdateTriggers_o029Reloc = 0xf0000000;
-
-/* overlay 29: overlay29ProjectPoint.c.o */
-gOverlay29MinimumYReloc = 0x00000000;
-
-/* overlay 29: overlay29HandleEffects.c.o */
-amSndPlayXYZ_o029Reloc = 0xf0000000;
-mathRnd_o029Reloc = 0xf0000000;
-
-/* overlay 29: overlay29DrawGroups.c.o */
-camPushModelMtx_o029Reloc = 0xf0000000;
-camRestoreModelMtx_o029Reloc = 0xf0000000;
+splinePos_o029Reloc = 0xf0000000;
+sqrtf_o029Reloc = 0xf0000000;
 texDPInit_o029Reloc = 0xf0000000;
+trackMakePolylist_o029Reloc = 0xf0000000;
 
 /* overlay 30: overlay_030.c.o */
 D_800C9450_o030Reloc = 0x00000000;
@@ -5335,25 +5317,7 @@ func_overlay_028_F0000070_187C940 = overlay28UpdateVertices;
 func_overlay_028_F00001B8_187CA88 = overlay28InitializeWork;
 func_overlay_028_F0000318_187CBE8 = overlay28UpdateWork;
 
-/* overlay 29: overlay29Select.c.o */
-func_overlay_029_F0000000_187D2B0 = overlay29Select;
-
-/* overlay 29: overlay29RotateForward.c.o */
-func_overlay_029_F0000084_187D334 = overlay29RotateForward;
-
-/* overlay 29: overlay29RotateBackward.c.o */
-func_overlay_029_F0000124_187D3D4 = overlay29RotateBackward;
-
-/* overlay 29: overlay29BuildChain.c.o */
-func_overlay_029_F00001C4_187D474 = overlay29BuildChain;
-
-/* overlay 29: overlay29UpdateRatio.c.o */
-func_overlay_029_F000023C_187D4EC = overlay29UpdateRatio;
-
-/* overlay 29: overlay29Sample.c.o */
-func_overlay_029_F0000304_187D5B4 = overlay29Sample;
-
-/* overlay 29: overlay29DrawGroups.c.o */
+/* overlay 29: overlay_029.c.o */
 func_overlay_029_F00014C8_187E778 = overlay29DrawGroups;
 
 /* overlay 30: overlay_030.c.o */

@@ -154,7 +154,7 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         (
             0x0,
             0x14,
-            "func_overlay_029_F00005C4_187D874",
+            "overlay_029",
             ".rodata",
             "func_overlay_029_F00005C4_187D874",
             True,
@@ -315,6 +315,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING.update({
     24: "overlay_024_padding",
     25: "overlay_025_padding",
     28: "overlay_028_padding",
+    29: "overlay_029_padding",
     30: "overlay_030_padding",
 })
 
@@ -1069,17 +1070,7 @@ TEXT_SUBSEGMENTS = {
         (0x2CB4, "asm", "overlay_011_padding"),
     ],
     29: [
-        (0x000, "c", "overlay29Select"),
-        (0x084, "c", "overlay29RotateForward"),
-        (0x124, "c", "overlay29RotateBackward"),
-        (0x1C4, "c", "overlay29BuildChain"),
-        (0x23C, "c", "overlay29UpdateRatio"),
-        (0x304, "c", "overlay29Sample"),
-        (0x42C, "c", "overlay29InitializeObject"),
-        (0x5C4, "c", "func_overlay_029_F00005C4_187D874"),
-        (0xEE0, "c", "overlay29ProjectPoint"),
-        (0x10C4, "c", "overlay29HandleEffects"),
-        (0x14C8, "c", "overlay29DrawGroups"),
+        (0x000, "c", "overlay_029"),
         (0x16CC, "asm", "overlay_029_padding"),
     ],
     26: [

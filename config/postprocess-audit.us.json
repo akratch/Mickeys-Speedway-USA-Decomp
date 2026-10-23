@@ -2456,156 +2456,15 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o029/func_overlay_029_F00005C4_187D874.c.o",
-      "offset": 1476,
+      "object": "build/src/overlays/o029/overlay_029.c.o",
+      "offset": 0,
       "overlay": 29,
-      "size": 2332,
-      "source": "src/overlays/o029/func_overlay_029_F00005C4_187D874.c",
+      "size": 5836,
+      "source": "src/overlays/o029/overlay_029.c",
       "tools": [
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
-        "trim_elf_section.py",
         "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o029/overlay29BuildChain.c.o",
-      "offset": 452,
-      "overlay": 29,
-      "size": 120,
-      "source": "src/overlays/o029/overlay29BuildChain.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o029/overlay29DrawGroups.c.o",
-      "offset": 5320,
-      "overlay": 29,
-      "size": 516,
-      "source": "src/overlays/o029/overlay29DrawGroups.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o029/overlay29HandleEffects.c.o",
-      "offset": 4292,
-      "overlay": 29,
-      "size": 1028,
-      "source": "src/overlays/o029/overlay29HandleEffects.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o029/overlay29InitializeObject.c.o",
-      "offset": 1068,
-      "overlay": 29,
-      "size": 408,
-      "source": "src/overlays/o029/overlay29InitializeObject.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o029/overlay29ProjectPoint.c.o",
-      "offset": 3808,
-      "overlay": 29,
-      "size": 484,
-      "source": "src/overlays/o029/overlay29ProjectPoint.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o029/overlay29RotateBackward.c.o",
-      "offset": 292,
-      "overlay": 29,
-      "size": 160,
-      "source": "src/overlays/o029/overlay29RotateBackward.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o029/overlay29RotateForward.c.o",
-      "offset": 132,
-      "overlay": 29,
-      "size": 160,
-      "source": "src/overlays/o029/overlay29RotateForward.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o029/overlay29Sample.c.o",
-      "offset": 772,
-      "overlay": 29,
-      "size": 296,
-      "source": "src/overlays/o029/overlay29Sample.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o029/overlay29Select.c.o",
-      "offset": 0,
-      "overlay": 29,
-      "size": 132,
-      "source": "src/overlays/o029/overlay29Select.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o029/overlay29UpdateRatio.c.o",
-      "offset": 572,
-      "overlay": 29,
-      "size": 200,
-      "source": "src/overlays/o029/overlay29UpdateRatio.c",
-      "tools": [
-        "trim_elf_section.py"
       ]
     },
     {
@@ -8747,10 +8606,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 603,
+      "metadata": 593,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 439480,
-    "objects_with_postprocess": 604
+    "objects_with_postprocess": 594
   }
 }

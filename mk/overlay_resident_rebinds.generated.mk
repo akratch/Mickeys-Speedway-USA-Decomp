@@ -1575,15 +1575,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o076/overlay_076.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o076Reloc \
 	--redefine-sym mathRnd=mathRnd_o076Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o077Reloc \
-	--redefine-sym amSndSetXYZ=amSndSetXYZ_o077Reloc \
-	--redefine-sym amSndStopXYZ=amSndStopXYZ_o077Reloc \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o077Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o077Reloc \
-	--redefine-sym mathRnd=mathRnd_o077Reloc \
-	--redefine-sym texAnimateSprite=texAnimateSprite_o077Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o078/overlay_078.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_8005ABA8=func_8005ABA8_o078Reloc \
 	--redefine-sym func_8005AD64=func_8005AD64_o078Reloc $@

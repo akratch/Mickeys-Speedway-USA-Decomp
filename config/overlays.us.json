@@ -11541,7 +11541,9 @@
      "end_offset": "0x10",
      "size": "0x10",
      "type": "c",
-     "source": "overlays/o077/overlay_077"
+     "section": ".data",
+     "source": "overlays/o077/overlay_077",
+     "canonical": true
     },
     {
      "offset": "0x10",
@@ -11550,8 +11552,7 @@
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o077/overlay_077",
-     "trial_function": "overlay77Update",
-     "externalized": true
+     "canonical": true
     }
    ]
   },

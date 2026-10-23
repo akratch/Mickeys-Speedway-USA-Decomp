@@ -82,9 +82,8 @@ void texAnimateSprite(void *path, s32 *mode, s16 kind, f32 *field,
 void amSndPlayXYZ(s32 objectId, s32 x, s32 y, s32 z, s32 mode,
                          void *argument);
 void amSndSetXYZ(void *handle, s32 x, s32 y, s32 z);
-s32 overlay77MoveReloc(Overlay77Object *object, f32 x, f32 y, f32 z);
-void overlay77OrientReloc(Overlay77Object *object, f32 x, f32 y, f32 z);
-void amSndStopXYZ(void *handle);
+/* Both movement call sites import this same resident routine (ORT row 201). */
+s32 func_80008128(Overlay77Object *object, f32 x, f32 y, f32 z);
 
 void overlay77Init(Overlay77Object *object, Overlay77Init *init, s32 preserveSequence);
 void overlay77Update(Overlay77Object *object, volatile s32 updateRate);

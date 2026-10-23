@@ -1627,7 +1627,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o081/overlay_081.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym mathRnd=mathRnd_o081Reloc \
 	--redefine-sym partUpdateTriggers=partUpdateTriggers_o081Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o082/overlay_082_tail.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o082/overlay_082.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D31B8=D_800D31B8_o082Reloc \
 	--redefine-sym D_800D31BC=D_800D31BC_o082Reloc \
 	--redefine-sym D_800D31BE=D_800D31BE_o082Reloc \

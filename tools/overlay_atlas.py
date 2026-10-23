@@ -601,7 +601,6 @@ TEXT_SUBSEGMENTS = {
     ],
     82: [
         (0x000, "c", "overlay_082"),
-        (0x040, "c", "overlay_082_tail"),
         (0x4CC, "asm", "overlay_082_padding"),
     ],
     83: [

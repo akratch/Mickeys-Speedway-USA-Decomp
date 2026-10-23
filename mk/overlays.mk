@@ -1349,18 +1349,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 81 is one translation unit under the overlay flag set; its .text
 # is the module's whole text, trailing pad included, so it needs no trim.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o081/overlay_081.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 82 stays two translation units, split at +0x40 (16-aligned).
-# overlay82Init's two-trip clearing loop is fully unrolled in the target,
-# leaving its constant trip count live in a register for the following
-# pointer step. IDO does that only when the trip count equals the unroll
-# factor, so it needs -Wo,-loopunroll,2; at the default factor (4) the loop
-# stays rolled and the function is 0x14 bytes longer, and no loop spelling
-# tried unrolls a two-trip loop at factor 4. The tail's six-trip loops need
-# the default factor: built at factor 2 it is 0x40 bytes short. Both objects
-# take the overlay flag set otherwise, and neither needs a trim: overlay82Init
-# is exactly 0x40 bytes and the tail's .text ends with the module's pad.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o082/overlay_082.c.o: CFLAGS += -Wab,-r4300_mul -Wo,-loopunroll,2
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o082/overlay_082_tail.c.o: CFLAGS += -Wab,-r4300_mul
+# Overlay 82 is one translation unit under the overlay flag set. Its
+# six-element initializer clear matches at the default unroll setting, as do
+# the update loops; the module's .text includes its trailing alignment.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o082/overlay_082.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 88 is one translation unit under the overlay flag set; its .text is
 # the module's 0x740 bytes, so it needs no trim. Its renderer is overlay 69's
 # source, included and renamed (overlay_088.c), so the C spells overlay 69's

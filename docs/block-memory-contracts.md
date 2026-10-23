@@ -17,7 +17,7 @@ void _bzero(void *dst, int len);
 int _bcmp(const void *s1, const void *s2, int len);
 ```
 
-The plain spellings are macros to these underscored entries, not separate providers. These are target o32 signatures: pointers and signed `int` counts are 32 bits. Counts are **bytes**, not words or an unqualified host `size_t`. The provider code and source callers agree on this width/domain. Some local `_bzero` declarations instead use the project's `s32` (`long`): same target width, but not one unified ISO C declaration contract; this debt is listed below.
+The plain spellings are macros to these underscored entries, not separate providers. These are target o32 signatures: pointers and signed `int` counts are 32 bits. Counts are **bytes**, not words or an unqualified host `size_t`. The provider code and source callers agree on this width/domain. The five local `_bzero` declarations that used the project's `s32` (`long`) were unified with the canonical signed-int contract in `772a8aef1`, preserving affected object bytes, relocation identities and the ROM.
 
 Fresh source inventory, excluding comments and declarations, finds:
 
@@ -75,6 +75,6 @@ All three are leaves: no calls, stack frame, global workspace, allocation, FP op
 
 The provider's count/result/overlap behavior and cancelling filler are high-confidence instruction/dataflow findings against existing exact linked bytes. Stable ordinary RAM, valid extents, ownership for the full call, safe address arithmetic and synchronization remain caller preconditions. Target endian merge/store behavior is accounted for; no typed numeric interpretation of copied bytes is introduced.
 
-The remaining source-contract cleanup is narrow: unify local `_bzero` count declarations in `main/runlink.c`, overlay1 head/end/tail and `include/overlays/overlay_002.h` with the canonical signed-int declaration. This packet changes none of them and does not choose a new shared-header scheme. Any such maintenance still needs the affected object/identity/ROM proofs; no provider or native implementation work is required to preserve the finding.
+The declaration repair covers `main/runlink.c`, overlay1 head/end/tail and `include/overlays/overlay_002.h`. It changes no provider or caller behavior and does not establish dynamic count or buffer bounds. The original provider audit and the later declaration maintenance are separate evidence packets.
 
 This closes the bounded provider-family questions sufficiently for the native boundary map. It does not authorize a host implementation or establish all 44 callers' dynamic bounds, hardware memory behavior, or a full resource-safety claim.

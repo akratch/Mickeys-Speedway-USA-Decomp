@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 137, "borrowed_records": 8981},
+  "totals": {"differences": 133, "borrowed_records": 8981},
   "differences": {
     "pool-layout": {
       "about": "an object's own literal or static data sits at a different offset",
@@ -130,12 +130,8 @@
     },
     "table-entry": {
       "about": "a switch or pointer table entry targets a different address",
-      "count": 19,
+      "count": 15,
       "entries": [
-        [11, "0x2F54", "LOCAL func_overlay_011_F0002C9C_186B4E4", "LOCAL func_overlay_011_F0002C58_186B4A0 (overlay 11 0x2C58)"],
-        [11, "0x2F58", "LOCAL func_overlay_011_F0002C58_186B4A0", "LOCAL func_overlay_011_F0002C68_186B4B0 (overlay 11 0x2C68)"],
-        [11, "0x2F5C", "LOCAL func_overlay_011_F0002C68_186B4B0", "LOCAL func_overlay_011_F0002C9C_186B4E4 (overlay 11 0x2C9C)"],
-        [11, "0x2F60", "LOCAL func_overlay_011_F0002C68_186B4B0", "LOCAL func_overlay_011_F0002C9C_186B4E4 (overlay 11 0x2C9C)"],
         [101, "0x12B44", "LOCAL func_overlay_101_F0001B8C_18DD3AC", "LOCAL func_overlay_101_F0001AB8_18DD2D8 (overlay 101 0x1AB8)"],
         [101, "0x12B48", "LOCAL func_overlay_101_F0001B8C_18DD3AC", "LOCAL func_overlay_101_F0001ACC_18DD2EC (overlay 101 0x1ACC)"],
         [101, "0x12B4C", "LOCAL func_overlay_101_F0001B8C_18DD3AC", "LOCAL func_overlay_101_F0001AE0_18DD300 (overlay 101 0x1AE0)"],

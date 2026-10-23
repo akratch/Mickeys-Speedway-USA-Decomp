@@ -1540,79 +1540,52 @@ sqrtf_o035Reloc = 0xf0000000;
 texLoadTexture_o035Reloc = 0xf0000000;
 trackLightAllocate_o035Reloc = 0xf0000000;
 
-/* overlay 36: overlay36InitObject.c.o */
-_bzero_o036Reloc = 0xf0000000;
-func_80028F54_o036Reloc = 0xf0000000;
-gOverlay36Mode = 0x00000000;
-overlay36QueryReloc = 0xf0000000;
-
-/* overlay 36: overlay36QueueAction.c.o */
-gOverlay36QueueCount = 0x00000144;
-gOverlay36QueueNext = 0x00000140;
-
-/* overlay 36: overlay36FlushQueue.c.o */
-gOverlay36QueueBase = 0x00000000;
-overlay1ReadSelection_o036Reloc = 0xf0000000;
-
-/* overlay 36: overlay36UpdateInteractiveEntity.c.o */
+/* overlay 36: overlay_036.c.o */
 D_80078F20_o036Reloc = 0x00000000;
 D_8007BF0C_o036Reloc = 0x00000000;
+_bzero_o036Reloc = 0xf0000000;
 amSndPlayXYZ_o036Reloc = 0xf0000000;
+amSndStopXYZ_o036Reloc = 0xf0000000;
+func_80005820_o036Reloc = 0xf0000000;
+func_8000590C_o036Reloc = 0xf0000000;
 func_80006EA0_o036Reloc = 0xf0000000;
+func_80028F54_o036Reloc = 0xf0000000;
+func_80028F60_o036Reloc = 0xf0000000;
+func_8005776C_o036Reloc = 0xf0000000;
+gOverlay36AltTable = 0x00000000;
+gOverlay36CallTarget = 0x0000014c;
 gOverlay36CurrentEntity = 0x0000014c;
 gOverlay36CurrentState = 0x00000150;
 gOverlay36Elapsed = 0x00000148;
-gOverlay36Records = 0x000000b0;
-overlay36ReleaseEntityReloc = 0xf0000000;
-partUpdateTriggers_o036Reloc = 0xf0000000;
-texAnimateSprite_o036Reloc = 0xf0000000;
-
-/* overlay 36: overlay36SpawnTransient.c.o */
-func_8000590C_o036Reloc = 0xf0000000;
-
-/* overlay 36: overlay36InitVectorState.c.o */
-mathOneFloatPY_o036Reloc = 0xf0000000;
-
-/* overlay 36: overlay36CheckNearbyHeight.c.o */
-func_8005776C_o036Reloc = 0xf0000000;
-gOverlay36WorldStateReloc = 0x00000000;
-
-/* overlay 36: overlay36SelectState.c.o */
-gOverlay36StateData = 0x000000b0;
-gOverlay36StateValues = 0x0000008c;
-
-/* overlay 36: overlay36CallGlobal.c.o */
-gOverlay36CallTarget = 0x0000014c;
-overlay4AttachObject_o036Reloc = 0xf0000000;
-
-/* overlay 36: overlay36ChooseWeightedState.c.o */
-func_80028F60_o036Reloc = 0xf0000000;
-gOverlay36AltTable = 0x00000000;
 gOverlay36EnabledMask = 0x00000000;
+gOverlay36Mode = 0x00000000;
 gOverlay36NodeA = 0x00000000;
 gOverlay36NodeB = 0x00000000;
+gOverlay36QueueBase = 0x00000000;
+gOverlay36QueueCount = 0x00000144;
+gOverlay36QueueNext = 0x00000140;
+gOverlay36Records = 0x000000b0;
+gOverlay36RodataBaseReloc = 0x00000000;
 gOverlay36ScaleDivisor = 0x00000000;
 gOverlay36ScaleMultiplier = 0x00000000;
+gOverlay36StateData = 0x000000b0;
+gOverlay36StateValues = 0x0000008c;
 gOverlay36StrengthMultiplier = 0x00000000;
 gOverlay36Weights = 0x00000000;
+gOverlay36WorldStateReloc = 0x00000000;
+mathOneFloatPY_o036Reloc = 0xf0000000;
+mathOneFloatRPY_o036Reloc = 0xf0000000;
 mathRnd_o036Reloc = 0xf0000000;
 overlay1DistanceFromCurrent_o036Reloc = 0xf0000000;
-
-/* overlay 36: overlay36PrepareAndTick.c.o */
-overlay36ActionReloc = 0xf0000000;
-
-/* overlay 36: overlay36SpawnLinked7F.c.o */
-amSndStopXYZ_o036Reloc = 0xf0000000;
-gOverlay36RodataBaseReloc = 0x00000000;
-mathOneFloatRPY_o036Reloc = 0xf0000000;
 overlay1FindDirectionalObject_o036Reloc = 0xf0000000;
-
-/* overlay 36: overlay36TickState.c.o */
-overlay7CommitSelection_o036Reloc = 0xf0000000;
-
-/* overlay 36: overlay36UpdatePeers.c.o */
-func_80005820_o036Reloc = 0xf0000000;
+overlay1ReadSelection_o036Reloc = 0xf0000000;
 overlay27Activate_o036Reloc = 0xf0000000;
+overlay36ActionReloc = 0xf0000000;
+overlay36ReleaseEntityReloc = 0xf0000000;
+overlay4AttachObject_o036Reloc = 0xf0000000;
+overlay7CommitSelection_o036Reloc = 0xf0000000;
+partUpdateTriggers_o036Reloc = 0xf0000000;
+texAnimateSprite_o036Reloc = 0xf0000000;
 
 /* overlay 37: overlay37Update.c.o */
 func_80006EA0_o037Reloc = 0xf0000000;
@@ -5279,62 +5252,23 @@ func_overlay_034_F000040C_18815B4 = overlay34UpdateRecords;
 func_overlay_034_F0000540_18816E8 = overlay34InterpolateColor;
 func_overlay_034_F0000608_18817B0 = overlay34SortAndDraw;
 
-/* overlay 36: overlay36InitObject.c.o */
+/* overlay 36: overlay_036.c.o */
 func_overlay_036_F0000000_18834B8 = overlay36InitObject;
-
-/* overlay 36: overlay36QueueAction.c.o */
-func_overlay_036_F00000D4_188358C = overlay36QueueAction;
-
-/* overlay 36: overlay36FlushQueue.c.o */
 func_overlay_036_F0000140_18835F8 = overlay36FlushQueue;
-
-/* overlay 36: overlay36UpdateInteractiveEntity.c.o */
 func_overlay_036_F00001D0_1883688 = overlay36UpdateInteractiveEntity;
-
-/* overlay 36: overlay36SpawnTransient.c.o */
 func_overlay_036_F0000694_1883B4C = overlay36SpawnTransient;
-
-/* overlay 36: overlay36InitVectorState.c.o */
 func_overlay_036_F00007B0_1883C68 = overlay36InitVectorState;
-
-/* overlay 36: overlay36SelectState.c.o */
-func_overlay_036_F0000914_1883DCC = overlay36SelectState;
-
-/* overlay 36: overlay36CallGlobal.c.o */
 func_overlay_036_F0000988_1883E40 = overlay36CallGlobal;
-
-/* overlay 36: overlay36SpawnAtPosition.c.o */
 func_overlay_036_F00009B8_1883E70 = overlay36SpawnAtPosition;
-
-/* overlay 36: overlay36PrepareAndTick.c.o */
 func_overlay_036_F0000D08_18841C0 = overlay36PrepareAndTick;
-
-/* overlay 36: overlay36SpawnLinked7F.c.o */
 func_overlay_036_F0000D8C_1884244 = overlay36SpawnLinked7F;
-
-/* overlay 36: overlay36SpawnDirectional.c.o */
 func_overlay_036_F0000F20_18843D8 = overlay36SpawnDirectional;
-
-/* overlay 36: overlay36SpawnConditional.c.o */
 func_overlay_036_F0001084_188453C = overlay36SpawnConditional;
-
-/* overlay 36: overlay36SpawnOffsetA9.c.o */
 func_overlay_036_F0001214_18846CC = overlay36SpawnOffsetA9;
-
-/* overlay 36: overlay36SpawnAndUpdate.c.o */
-func_overlay_036_F0001378_1884830 = overlay36SpawnAndUpdate;
-
-/* overlay 36: overlay36CallModes.c.o */
 func_overlay_036_F0001470_1884928 = overlay36CallModeZero;
 func_overlay_036_F0001490_1884948 = overlay36CallModeOne;
-
-/* overlay 36: overlay36TickState.c.o */
 func_overlay_036_F00014B0_1884968 = overlay36TickState;
-
-/* overlay 36: overlay36UpdatePeers.c.o */
 func_overlay_036_F000150C_18849C4 = overlay36UpdatePeers;
-
-/* overlay 36: overlay36SpawnFinalEffect.c.o */
 func_overlay_036_F0001688_1884B40 = overlay36SpawnFinalEffect;
 
 /* overlay 37: overlay37Init.c.o */

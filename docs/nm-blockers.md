@@ -267,9 +267,9 @@ This is a names-only audit of every function body guarded by `NON_MATCHING` in `
 | `func_overlay_035_F0000B40_1882820` | `src/overlays/o035/overlay_035.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_035_F0000770_1882450` | `src/overlays/o035/overlay_035.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_035_F0000000_1881CE0` | `src/overlays/o035/overlay_035.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_overlay_036_F0000818_1883CD0` | `src/overlays/o036/overlay36CheckNearbyHeight.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_overlay_036_F0000A60_1883F18` | `src/overlays/o036/overlay36ChooseWeightedState.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_overlay_036_F00001D0_1883688` | `src/overlays/o036/overlay36UpdateInteractiveEntity.c` | none | — | No ownership change; continue source/codegen work. |
+| `func_overlay_036_F0000818_1883CD0` | `src/overlays/o036/overlay_036.c` | none | — | No ownership change; continue source/codegen work. |
+| `func_overlay_036_F0000A60_1883F18` | `src/overlays/o036/overlay_036.c` | none | — | No ownership change; continue source/codegen work. |
+| `func_overlay_036_F00001D0_1883688` | `src/overlays/o036/overlay_036.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_037_F000019C_18857BC` | `src/overlays/o037/overlay37Render.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_038_F0000000_1885D10` | `src/overlays/o038/func_overlay_038_F0000000_1885D10.c` | none | — | Exact 85-word/`0x60`-frame candidate has seven schedule words at `+0x48..+0x60`; runtime relocations resolve six calls to `mathRnd` and one to `mathOneFloatPY`. Source routes exhausted; reproof-only V0 pending a new scheduling mechanism. |
 | `func_overlay_038_F000047C_188618C` | `src/overlays/o038/func_overlay_038_F000047C_188618C.c` | none | — | No ownership change; continue source/codegen work. |

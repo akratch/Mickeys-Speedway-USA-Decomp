@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay36UpdateInteractiveEntity:start -->
 ### `overlay36UpdateInteractiveEntity` plateau handoff
 
-- source: `src/overlays/o036/overlay36UpdateInteractiveEntity.c`
+- source: `src/overlays/o036/overlay_036.c`
 - score: 0/305 words, promoted
 - frame: 0x80
 - relocations: 24

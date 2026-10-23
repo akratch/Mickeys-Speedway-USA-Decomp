@@ -321,6 +321,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING.update({
     31: "overlay_031_padding",
     33: "overlay_033_padding",
     35: "overlay_035_padding",
+    36: "overlay_036_padding",
 })
 
 TEXT_SUBSEGMENTS = {
@@ -488,27 +489,7 @@ TEXT_SUBSEGMENTS = {
         (0x728, "asm", "overlay_033_padding"),
     ],
     36: [
-        (0x000, "c", "overlay36InitObject"),
-        (0x0D4, "c", "overlay36QueueAction"),
-        (0x140, "c", "overlay36FlushQueue"),
-        (0x1D0, "c", "overlay36UpdateInteractiveEntity"),
-        (0x694, "c", "overlay36SpawnTransient"),
-        (0x7B0, "c", "overlay36InitVectorState"),
-        (0x818, "c", "overlay36CheckNearbyHeight"),
-        (0x914, "c", "overlay36SelectState"),
-        (0x988, "c", "overlay36CallGlobal"),
-        (0x9B8, "c", "overlay36SpawnAtPosition"),
-        (0xA60, "c", "overlay36ChooseWeightedState"),
-        (0xD08, "c", "overlay36PrepareAndTick"),
-        (0xD8C, "c", "overlay36SpawnLinked7F"),
-        (0xF20, "c", "overlay36SpawnDirectional"),
-        (0x1084, "c", "overlay36SpawnConditional"),
-        (0x1214, "c", "overlay36SpawnOffsetA9"),
-        (0x1378, "c", "overlay36SpawnAndUpdate"),
-        (0x1470, "c", "overlay36CallModes"),
-        (0x14B0, "c", "overlay36TickState"),
-        (0x150C, "c", "overlay36UpdatePeers"),
-        (0x1688, "c", "overlay36SpawnFinalEffect"),
+        (0x000, "c", "overlay_036"),
         (0x1748, "asm", "overlay_036_padding"),
     ],
     38: [

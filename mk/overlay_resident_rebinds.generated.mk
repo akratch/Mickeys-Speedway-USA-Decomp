@@ -773,86 +773,29 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/overlay_035.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym texLoadTexture=texLoadTexture_o035Reloc \
 	--redefine-sym trackLightAllocate=trackLightAllocate_o035Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36CallGlobal.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay4AttachObject=overlay4AttachObject_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36CheckNearbyHeight.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8005776C=func_8005776C_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36ChooseWeightedState.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BF0C=D_8007BF0C_o036Reloc \
-	--redefine-sym func_80028F60=func_80028F60_o036Reloc \
-	--redefine-sym mathRnd=mathRnd_o036Reloc \
-	--redefine-sym overlay1DistanceFromCurrent=overlay1DistanceFromCurrent_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36FlushQueue.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay1ReadSelection=overlay1ReadSelection_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36InitObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym _bzero=_bzero_o036Reloc \
-	--redefine-sym func_80028F54=func_80028F54_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36InitVectorState.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mathOneFloatPY=mathOneFloatPY_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36SpawnAndUpdate.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o036Reloc \
-	--redefine-sym amSndStopXYZ=amSndStopXYZ_o036Reloc \
-	--redefine-sym func_8000590C=func_8000590C_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36SpawnAtPosition.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BF0C=D_8007BF0C_o036Reloc \
-	--redefine-sym func_8000590C=func_8000590C_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36SpawnConditional.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o036Reloc \
-	--redefine-sym amSndStopXYZ=amSndStopXYZ_o036Reloc \
-	--redefine-sym func_8000590C=func_8000590C_o036Reloc \
-	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36SpawnDirectional.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o036Reloc \
-	--redefine-sym amSndStopXYZ=amSndStopXYZ_o036Reloc \
-	--redefine-sym func_8000590C=func_8000590C_o036Reloc \
-	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36SpawnFinalEffect.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BF0C=D_8007BF0C_o036Reloc \
-	--redefine-sym func_8000590C=func_8000590C_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36SpawnLinked7F.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o036Reloc \
-	--redefine-sym amSndStopXYZ=amSndStopXYZ_o036Reloc \
-	--redefine-sym func_8000590C=func_8000590C_o036Reloc \
-	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o036Reloc \
-	--redefine-sym overlay1FindDirectionalObject=overlay1FindDirectionalObject_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36SpawnOffsetA9.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o036Reloc \
-	--redefine-sym amSndStopXYZ=amSndStopXYZ_o036Reloc \
-	--redefine-sym func_8000590C=func_8000590C_o036Reloc \
-	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36SpawnTransient.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8000590C=func_8000590C_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36TickState.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay7CommitSelection=overlay7CommitSelection_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36UpdateInteractiveEntity.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay_036.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_80078F20=D_80078F20_o036Reloc \
 	--redefine-sym D_8007BF0C=D_8007BF0C_o036Reloc \
-	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o036Reloc \
-	--redefine-sym func_80006EA0=func_80006EA0_o036Reloc \
-	--redefine-sym partUpdateTriggers=partUpdateTriggers_o036Reloc \
-	--redefine-sym texAnimateSprite=texAnimateSprite_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36UpdatePeers.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym _bzero=_bzero_o036Reloc \
 	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o036Reloc \
 	--redefine-sym amSndStopXYZ=amSndStopXYZ_o036Reloc \
 	--redefine-sym func_80005820=func_80005820_o036Reloc \
 	--redefine-sym func_8000590C=func_8000590C_o036Reloc \
-	--redefine-sym overlay27Activate=overlay27Activate_o036Reloc $@
+	--redefine-sym func_80006EA0=func_80006EA0_o036Reloc \
+	--redefine-sym func_80028F54=func_80028F54_o036Reloc \
+	--redefine-sym func_80028F60=func_80028F60_o036Reloc \
+	--redefine-sym func_8005776C=func_8005776C_o036Reloc \
+	--redefine-sym mathOneFloatPY=mathOneFloatPY_o036Reloc \
+	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o036Reloc \
+	--redefine-sym mathRnd=mathRnd_o036Reloc \
+	--redefine-sym overlay1DistanceFromCurrent=overlay1DistanceFromCurrent_o036Reloc \
+	--redefine-sym overlay1FindDirectionalObject=overlay1FindDirectionalObject_o036Reloc \
+	--redefine-sym overlay1ReadSelection=overlay1ReadSelection_o036Reloc \
+	--redefine-sym overlay27Activate=overlay27Activate_o036Reloc \
+	--redefine-sym overlay4AttachObject=overlay4AttachObject_o036Reloc \
+	--redefine-sym overlay7CommitSelection=overlay7CommitSelection_o036Reloc \
+	--redefine-sym partUpdateTriggers=partUpdateTriggers_o036Reloc \
+	--redefine-sym texAnimateSprite=texAnimateSprite_o036Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Render.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym camGetPtr=camGetPtr_o037Reloc $@

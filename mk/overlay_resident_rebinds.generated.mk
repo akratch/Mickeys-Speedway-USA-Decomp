@@ -272,103 +272,44 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o010/overlay_010.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym piRomLoadSection=piRomLoadSection_o010Reloc \
 	--redefine-sym viGetCurrentSize=viGetCurrentSize_o010Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/func_overlay_011_F0000150_1868998.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C1A0=D_8007C1A0_o011Reloc \
-	--redefine-sym D_800D3140=D_800D3140_o011Reloc \
-	--redefine-sym D_800D3144=D_800D3144_o011Reloc \
-	--redefine-sym D_800D3148=D_800D3148_o011Reloc \
-	--redefine-sym overlay11ReleaseCurrentGroup=overlay11ReleaseCurrentGroup_o011Reloc \
-	--redefine-sym overlay66Select=overlay66Select_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/func_overlay_011_F0001E4C_186A694.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BEF8=D_8007BEF8_o011Reloc \
-	--redefine-sym D_8007BEFC=D_8007BEFC_o011Reloc \
-	--redefine-sym D_8007C1A0=D_8007C1A0_o011Reloc \
-	--redefine-sym D_800D3194=D_800D3194_o011Reloc \
-	--redefine-sym overlay11ReleaseCurrentGroup=overlay11ReleaseCurrentGroup_o011Reloc \
-	--redefine-sym overlay45SetField22=overlay45SetField22_o011Reloc \
-	--redefine-sym overlay66Select=overlay66Select_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/func_overlay_011_F00022E8_186AB30.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BEF8=D_8007BEF8_o011Reloc \
-	--redefine-sym D_8007BEFC=D_8007BEFC_o011Reloc \
-	--redefine-sym D_800D3194=D_800D3194_o011Reloc \
-	--redefine-sym overlay11ReleaseCurrentGroup=overlay11ReleaseCurrentGroup_o011Reloc \
-	--redefine-sym overlay45SetField22=overlay45SetField22_o011Reloc \
-	--redefine-sym overlay66Select=overlay66Select_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11CreateHandles.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C0B8=D_8007C0B8_o011Reloc \
-	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11Initialize.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C1A0=D_8007C1A0_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11InitializeFour.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C0B8=D_8007C0B8_o011Reloc \
-	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11InitializeSixA.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C0B8=D_8007C0B8_o011Reloc \
-	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11InitializeSixB.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C0B8=D_8007C0B8_o011Reloc \
-	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11InitializeSixC.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C0B8=D_8007C0B8_o011Reloc \
-	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11InitializeThreeA.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C0B8=D_8007C0B8_o011Reloc \
-	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11InitializeThreeB.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C0B8=D_8007C0B8_o011Reloc \
-	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11ReleaseCurrentGroup.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C1A0=D_8007C1A0_o011Reloc \
-	--redefine-sym func_80028F54=func_80028F54_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11ReleaseGroup3A.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay45ReleaseDescriptor=overlay45ReleaseDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11ReleaseGroup3B.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay45ReleaseDescriptor=overlay45ReleaseDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11ReleaseGroup4.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay45ReleaseDescriptor=overlay45ReleaseDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11ReleaseGroup6A.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay45ReleaseDescriptor=overlay45ReleaseDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11ReleaseGroup6B.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay45ReleaseDescriptor=overlay45ReleaseDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11ReleaseGroup6C.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay45ReleaseDescriptor=overlay45ReleaseDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11ReleaseHandles.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay45ReleaseDescriptor=overlay45ReleaseDescriptor_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11UpdateFiveOptionMenu.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BEF8=D_8007BEF8_o011Reloc \
-	--redefine-sym D_8007BEFC=D_8007BEFC_o011Reloc \
-	--redefine-sym D_8007BF0C=D_8007BF0C_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11UpdateMenu.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay_011.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007BEF8=D_8007BEF8_o011Reloc \
 	--redefine-sym D_8007BEFC=D_8007BEFC_o011Reloc \
 	--redefine-sym D_8007BF0C=D_8007BF0C_o011Reloc \
 	--redefine-sym D_8007BF1C=D_8007BF1C_o011Reloc \
 	--redefine-sym D_8007BF44=D_8007BF44_o011Reloc \
+	--redefine-sym D_8007C0B8=D_8007C0B8_o011Reloc \
 	--redefine-sym D_8007C1A0=D_8007C1A0_o011Reloc \
-	--redefine-sym D_800D3194=D_800D3194_o011Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11UpdateSelection.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D3190=D_800D3190_o011Reloc $@
+	--redefine-sym D_800D3140=D_800D3140_o011Reloc \
+	--redefine-sym D_800D3144=D_800D3144_o011Reloc \
+	--redefine-sym D_800D3148=D_800D3148_o011Reloc \
+	--redefine-sym D_800D3190=D_800D3190_o011Reloc \
+	--redefine-sym D_800D3194=D_800D3194_o011Reloc \
+	--redefine-sym amSndPlay=amSndPlay_o011Reloc \
+	--redefine-sym amTuneSetFade=amTuneSetFade_o011Reloc \
+	--redefine-sym amTuneSetFadeScaled=amTuneSetFadeScaled_o011Reloc \
+	--redefine-sym fontUseFont=fontUseFont_o011Reloc \
+	--redefine-sym func_800006BC=func_800006BC_o011Reloc \
+	--redefine-sym func_80000F94=func_80000F94_o011Reloc \
+	--redefine-sym func_80005820=func_80005820_o011Reloc \
+	--redefine-sym func_8002554C=func_8002554C_o011Reloc \
+	--redefine-sym func_8002675C=func_8002675C_o011Reloc \
+	--redefine-sym func_80028374=func_80028374_o011Reloc \
+	--redefine-sym func_80028528=func_80028528_o011Reloc \
+	--redefine-sym func_80028F54=func_80028F54_o011Reloc \
+	--redefine-sym func_800290AC=func_800290AC_o011Reloc \
+	--redefine-sym func_800291D8=func_800291D8_o011Reloc \
+	--redefine-sym func_8003A754=func_8003A754_o011Reloc \
+	--redefine-sym func_8004B0B8=func_8004B0B8_o011Reloc \
+	--redefine-sym joyGetPressed=joyGetPressed_o011Reloc \
+	--redefine-sym levelGetNumber=levelGetNumber_o011Reloc \
+	--redefine-sym mainChangeCameras=mainChangeCameras_o011Reloc \
+	--redefine-sym mainChangeLevel=mainChangeLevel_o011Reloc \
+	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o011Reloc \
+	--redefine-sym overlay45ReleaseDescriptor=overlay45ReleaseDescriptor_o011Reloc \
+	--redefine-sym overlay45SetField22=overlay45SetField22_o011Reloc \
+	--redefine-sym overlay66Select=overlay66Select_o011Reloc \
+	--redefine-sym sprintf=sprintf_o011Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o012Reloc \

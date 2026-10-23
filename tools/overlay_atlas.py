@@ -307,10 +307,11 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     7: "overlay_007_padding",
     12: "overlay_012_padding",
     2: "overlay_002_tail",
+    11: "overlay_011_padding",
 }
 # Folded modules whose compiler padding is the tail of the one TU's .text
 # rather than an alignment gap before C-owned data.
-ONE_TU_TEXT_PADDING = {2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 16}
+ONE_TU_TEXT_PADDING = {2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 16}
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
 # an explicit eight-byte gap before initialized data. Emit a bounded asm row
@@ -1010,32 +1011,7 @@ TEXT_SUBSEGMENTS = {
         (0x574, "asm", "overlay_091_padding"),
     ],
     11: [
-        (0x000, "c", "overlay11Initialize"),
-        (0x150, "c", "func_overlay_011_F0000150_1868998"),
-        (0xA18, "c", "overlay11CreateHandles"),
-        (0xAF4, "c", "overlay11InitializeFour"),
-        (0xC88, "c", "overlay11InitializeSixB"),
-        (0xD70, "c", "overlay11InitializeThreeA"),
-        (0xDFC, "c", "overlay11InitializeSixA"),
-        (0xEE4, "c", "overlay11InitializeSixC"),
-        (0xFCC, "c", "overlay11InitializeThreeB"),
-        (0x1058, "c", "overlay11EnableHandles"),
-        (0x1130, "c", "overlay11DisableHandles"),
-        (0x11D0, "c", "overlay11UpdateSelection"),
-        (0x1398, "c", "overlay11UpdateMenu"),
-        (0x184C, "c", "overlay11UpdateTwoOptionMenu"),
-        (0x1A7C, "c", "overlay11UpdateFiveOptionMenu"),
-        (0x1E4C, "c", "func_overlay_011_F0001E4C_186A694"),
-        (0x22E8, "c", "func_overlay_011_F00022E8_186AB30"),
-        (0x2714, "c", "overlay11UpdateModeSix"),
-        (0x2948, "c", "overlay11ReleaseGroup4"),
-        (0x29AC, "c", "overlay11ReleaseGroup3A"),
-        (0x2A10, "c", "overlay11ReleaseGroup6A"),
-        (0x2A74, "c", "overlay11ReleaseGroup6B"),
-        (0x2AD8, "c", "overlay11ReleaseGroup6C"),
-        (0x2B3C, "c", "overlay11ReleaseGroup3B"),
-        (0x2BA0, "c", "overlay11ReleaseHandles"),
-        (0x2BF4, "c", "overlay11ReleaseCurrentGroup"),
+        (0x000, "c", "overlay_011"),
         (0x2CB4, "asm", "overlay_011_padding"),
     ],
     29: [

@@ -653,84 +653,9 @@ piRomLoadSection_o010Reloc = 0xf0000000;
 piRomLoad_o010Reloc = 0xf0000000;
 viGetCurrentSize_o010Reloc = 0xf0000000;
 
-/* overlay 11: overlay11Initialize.c.o */
-D_8007C1A0_o011Reloc = 0x00000000;
-gOverlay11Argument = 0x000001c4;
-gOverlay11Counter = 0x00000204;
-gOverlay11Initialized = 0x000001b4;
-gOverlay11Selection = 0x000001b8;
-gOverlay11SwitchTableReloc = 0x00000008;
-gOverlay11Timer = 0x00000200;
-overlay11DrawColorReloc = 0xf0000000;
-overlay11DrawModeReloc = 0xf0000000;
-overlay11GetStatusReloc = 0xf0000000;
-overlay11Overlay66SelectReloc = 0xf0000000;
-overlay11ResidentFloatReloc = 0xf0000000;
-overlay11ResidentModeReloc = 0xf0000000;
-
-/* overlay 11: func_overlay_011_F0000150_1868998.c.o */
-D_800D3140_o011Reloc = 0x00000000;
-D_800D3144_o011Reloc = 0x00000000;
-D_800D3148_o011Reloc = 0x00000000;
-amTuneSetFadeScaled_o011Reloc = 0xf0000000;
-camStandardOrtho_o011Reloc = 0xf0000000;
-func_80028F54_o011Reloc = 0xf0000000;
-func_800290A0_o011Reloc = 0xf0000000;
-func_800290AC_o011Reloc = 0xf0000000;
-func_800291D8_o011Reloc = 0xf0000000;
-func_8002A8C0_o011Reloc = 0xf0000000;
-gOverlay11Fade = 0x000001b0;
-gOverlay11GridPhases = 0x00000000;
-gOverlay11GridTriangles = 0x00000030;
-gOverlay11HighlightStep = 0x000001bc;
-gOverlay11InputDelay = 0x00000200;
-gOverlay11MenuBackgroundPoolReloc = 0x00000020;
-gOverlay11Mode = 0x000001c0;
-gOverlay11OptionAction = 0x000001c4;
-gOverlay11OptionDone = 0x00000204;
-gOverlay11OptionHighlight = 0x000001b8;
-gOverlay11PadIndex = 0x000001c4;
-joyGetPressed_o011Reloc = 0xf0000000;
-mathRnd_o011Reloc = 0xf0000000;
-overlay11ReleaseCurrentGroup_o011Reloc = 0xf0000000;
-overlay66Select_o011Reloc = 0xf0000000;
-texDPTextureX_o011Reloc = 0xf0000000;
-viGetCurrentSize_o011Reloc = 0xf0000000;
-
-/* overlay 11: overlay11CreateHandles.c.o */
-D_8007C0B8_o011Reloc = 0x00000000;
-gOverlay11DirectResource = 0x00000000;
-gOverlay11Handles = 0x000001f0;
-overlay11SetValue = 0xf0000000;
-overlay45CreateDescriptor_o011Reloc = 0xf0000000;
-
-/* overlay 11: overlay11InitializeFour.c.o */
-gOverlay11Created = 0x000001c8;
-gOverlay11CreatedActive = 0x000001bc;
-gOverlay11Format = 0x00000004;
-gOverlay11ResidentFlagsReloc = 0x00000000;
-overlay11FormatReloc = 0xf0000000;
-
-/* overlay 11: overlay11InitializeThreeA.c.o */
-gOverlay11Created0 = 0x000001c8;
-gOverlay11Created1 = 0x000001cc;
-gOverlay11Created2 = 0x000001d0;
-
-/* overlay 11: overlay11EnableHandles.c.o */
-gOverlay11ModeFinish = 0x000001c0;
-gOverlay11ModeStart = 0x000001c0;
-
-/* overlay 11: overlay11DisableHandles.c.o */
-gOverlay11Flag = 0x000001c4;
-
-/* overlay 11: overlay11UpdateSelection.c.o */
-D_800D3190_o011Reloc = 0x00000000;
-gOverlay11Handle2 = 0x000001f8;
-gOverlay11Handle3 = 0x000001fc;
-overlay11PlaySoundReloc = 0xf0000000;
-overlay11ReadInputReloc = 0xf0000000;
-
-/* overlay 11: overlay11UpdateMenu.c.o */
+/* overlay 11: overlay_011.c.o */
+D_0_reload_failure = 0x00000000;
+D_0_reload_success = 0x00000000;
 D_1B8 = 0x000001b8;
 D_1BC = 0x000001bc;
 D_1C4 = 0x000001c4;
@@ -741,57 +666,96 @@ D_8007BEFC_o011Reloc = 0x00000000;
 D_8007BF0C_o011Reloc = 0x00000000;
 D_8007BF1C_o011Reloc = 0x00000000;
 D_8007BF44_o011Reloc = 0x00000000;
+D_8007C0B8_o011Reloc = 0x00000000;
+D_8007C1A0_o011Reloc = 0x00000000;
+D_800D3140_o011Reloc = 0x00000000;
+D_800D3144_o011Reloc = 0x00000000;
+D_800D3148_o011Reloc = 0x00000000;
+D_800D3190_o011Reloc = 0x00000000;
 D_800D3194_o011Reloc = 0x00000000;
+D_INPUT = 0x00000000;
+D_lastMode = 0x00000000;
 D_menuBase = 0x00000000;
+D_menuCounterBase = 0x00000000;
+D_menuInputBase = 0x00000000;
 D_paramA = 0x00000000;
 D_paramB = 0x00000000;
 D_paramC = 0x00000000;
 D_paramD = 0x00000000;
 D_table = 0x00000000;
-overlay11Func2BF4Reloc = 0xf0000000;
-overlay11Func800006BCReloc = 0xf0000000;
-overlay11Func80005820Reloc = 0xf0000000;
-overlay11Func80028374Reloc = 0xf0000000;
-overlay11Func80028528Reloc = 0xf0000000;
-overlay11Func800291D8Reloc = 0xf0000000;
-overlay11Func8003A754Reloc = 0xf0000000;
-
-/* overlay 11: overlay11UpdateFiveOptionMenu.c.o */
-D_0_reload_failure = 0x00000000;
-D_0_reload_success = 0x00000000;
-D_lastMode = 0x00000000;
-gOverlay11FiveOptionSwitchTableReloc = 0x00000040;
-
-/* overlay 11: func_overlay_011_F0001E4C_186A694.c.o */
 amSndPlay_o011Reloc = 0xf0000000;
+amTuneSetFadeScaled_o011Reloc = 0xf0000000;
+amTuneSetFade_o011Reloc = 0xf0000000;
+camStandardOrtho_o011Reloc = 0xf0000000;
+fontUseFont_o011Reloc = 0xf0000000;
+func_800006BC_o011Reloc = 0xf0000000;
+func_80000F94_o011Reloc = 0xf0000000;
 func_80005820_o011Reloc = 0xf0000000;
+func_8002554C_o011Reloc = 0xf0000000;
+func_8002675C_o011Reloc = 0xf0000000;
+func_80028374_o011Reloc = 0xf0000000;
+func_80028528_o011Reloc = 0xf0000000;
+func_80028F54_o011Reloc = 0xf0000000;
+func_800290A0_o011Reloc = 0xf0000000;
+func_800290AC_o011Reloc = 0xf0000000;
+func_800291D8_o011Reloc = 0xf0000000;
+func_8002A8C0_o011Reloc = 0xf0000000;
+func_8003A754_o011Reloc = 0xf0000000;
+func_8004B0B8_o011Reloc = 0xf0000000;
+func_overlay_045_F0001BF4_188E04C_o011Reloc = 0xf0000000;
+func_overlay_066_F0000000 = 0xf0000000;
+gOverlay11Argument = 0x000001c4;
+gOverlay11Counter = 0x00000204;
+gOverlay11Created = 0x000001c8;
+gOverlay11Created0 = 0x000001c8;
+gOverlay11Created1 = 0x000001cc;
+gOverlay11Created2 = 0x000001d0;
+gOverlay11CreatedActive = 0x000001bc;
+gOverlay11DirectResource = 0x00000000;
+gOverlay11Fade = 0x000001b0;
+gOverlay11Flag = 0x000001c4;
+gOverlay11Format = 0x00000004;
 gOverlay11GameStateFlagReloc = 0x00000000;
+gOverlay11GridPhases = 0x00000000;
+gOverlay11GridTriangles = 0x00000030;
+gOverlay11GroupEnd3 = 0x000001d4;
+gOverlay11GroupEnd4 = 0x000001d8;
+gOverlay11GroupEnd6 = 0x000001e0;
+gOverlay11GroupHandles = 0x000001c8;
+gOverlay11GroupsActive = 0x000001b4;
+gOverlay11Handle2 = 0x000001f8;
+gOverlay11Handle3 = 0x000001fc;
+gOverlay11Handles = 0x000001f0;
+gOverlay11HighlightStep = 0x000001bc;
+gOverlay11Initialized = 0x000001b4;
+gOverlay11InputDelay = 0x00000200;
+gOverlay11Mode = 0x000001c0;
+gOverlay11ModeFinish = 0x000001c0;
+gOverlay11ModeStart = 0x000001c0;
+gOverlay11NextModeReloc = 0x00000000;
+gOverlay11OptionAction = 0x000001c4;
+gOverlay11OptionDone = 0x00000204;
 gOverlay11OptionHandles = 0x000001c8;
+gOverlay11OptionHighlight = 0x000001b8;
 gOverlay11OptionIndex = 0x000001bc;
-gOverlay11OptionSwitchTableReloc = 0x00000054;
+gOverlay11PadIndex = 0x000001c4;
+gOverlay11RodataBaseReloc = 0x00000008;
+gOverlay11Selection = 0x000001b8;
+gOverlay11Timer = 0x00000200;
+joyGetPressed_o011Reloc = 0xf0000000;
 levelGetNumber_o011Reloc = 0xf0000000;
 mainChangeCameras_o011Reloc = 0xf0000000;
 mainChangeLevel_o011Reloc = 0xf0000000;
-overlay45SetField22_o011Reloc = 0xf0000000;
-
-/* overlay 11: func_overlay_011_F00022E8_186AB30.c.o */
-gOverlay11ModeOptionSwitchTableReloc = 0x00000068;
-gOverlay11NextModeReloc = 0x00000000;
-
-/* overlay 11: overlay11ReleaseGroup4.c.o */
-gOverlay11GroupEnd4 = 0x000001d8;
-gOverlay11GroupHandles = 0x000001c8;
-gOverlay11GroupsActive = 0x000001b4;
+mathRnd_o011Reloc = 0xf0000000;
+overlay11ReleaseCurrentGroup_o011Reloc = 0xf0000000;
+overlay11SetValue = 0xf0000000;
+overlay45CreateDescriptor_o011Reloc = 0xf0000000;
 overlay45ReleaseDescriptor_o011Reloc = 0xf0000000;
-
-/* overlay 11: overlay11ReleaseGroup3A.c.o */
-gOverlay11GroupEnd3 = 0x000001d4;
-
-/* overlay 11: overlay11ReleaseGroup6A.c.o */
-gOverlay11GroupEnd6 = 0x000001e0;
-
-/* overlay 11: overlay11ReleaseCurrentGroup.c.o */
-gOverlay11ReleaseSwitchTableReloc = 0x0000007c;
+overlay45SetField22_o011Reloc = 0xf0000000;
+overlay66Select_o011Reloc = 0xf0000000;
+sprintf_o011Reloc = 0xf0000000;
+texDPTextureX_o011Reloc = 0xf0000000;
+viGetCurrentSize_o011Reloc = 0xf0000000;
 
 /* overlay 12: overlay_012.c.o */
 Arctanf_o012Reloc = 0xf0000000;
@@ -4570,7 +4534,6 @@ D_A8 = 0x000000a8;
 D_C4 = 0x000000c4;
 D_C64 = 0x00000c64;
 D_E0 = 0x000000e0;
-D_INPUT = 0x00000000;
 D_o101ResetData340 = 0x00000340;
 func_80036DD0_o101Reloc = 0xf0000000;
 gOverlay101Resource20Count = 0x000001c8;
@@ -4932,73 +4895,8 @@ func_overlay_008_F00049E8_1862740 = overlay8UpdateMotionOutput;
 /* overlay 10: overlay_010.c.o */
 func_overlay_010_F0000000_1868450 = overlay10Initialize;
 
-/* overlay 11: overlay11Initialize.c.o */
+/* overlay 11: overlay_011.c.o */
 func_overlay_011_F0000000_1868848 = overlay11Initialize;
-
-/* overlay 11: overlay11CreateHandles.c.o */
-func_overlay_011_F0000A18_1869260 = overlay11CreateHandles;
-
-/* overlay 11: overlay11InitializeFour.c.o */
-func_overlay_011_F0000AF4_186933C = overlay11InitializeFour;
-
-/* overlay 11: overlay11InitializeSixB.c.o */
-func_overlay_011_F0000C88_18694D0 = overlay11InitializeSixB;
-
-/* overlay 11: overlay11InitializeThreeA.c.o */
-func_overlay_011_F0000D70_18695B8 = overlay11InitializeThreeA;
-
-/* overlay 11: overlay11InitializeSixA.c.o */
-func_overlay_011_F0000DFC_1869644 = overlay11InitializeSixA;
-
-/* overlay 11: overlay11InitializeSixC.c.o */
-func_overlay_011_F0000EE4_186972C = overlay11InitializeSixC;
-
-/* overlay 11: overlay11InitializeThreeB.c.o */
-func_overlay_011_F0000FCC_1869814 = overlay11InitializeThreeB;
-
-/* overlay 11: overlay11EnableHandles.c.o */
-func_overlay_011_F0001058_18698A0 = overlay11EnableHandles;
-
-/* overlay 11: overlay11DisableHandles.c.o */
-func_overlay_011_F0001130_1869978 = overlay11DisableHandles;
-
-/* overlay 11: overlay11UpdateSelection.c.o */
-func_overlay_011_F00011D0_1869A18 = overlay11UpdateSelection;
-
-/* overlay 11: overlay11UpdateMenu.c.o */
-func_overlay_011_F0001398_1869BE0 = overlay11UpdateMenu;
-
-/* overlay 11: overlay11UpdateTwoOptionMenu.c.o */
-func_overlay_011_F000184C_186A094 = overlay11UpdateTwoOptionMenu;
-
-/* overlay 11: overlay11UpdateFiveOptionMenu.c.o */
-func_overlay_011_F0001A7C_186A2C4 = overlay11UpdateFiveOptionMenu;
-
-/* overlay 11: overlay11UpdateModeSix.c.o */
-func_overlay_011_F0002714_186AF5C = overlay11UpdateModeSix;
-
-/* overlay 11: overlay11ReleaseGroup4.c.o */
-func_overlay_011_F0002948_186B190 = overlay11ReleaseGroup4;
-
-/* overlay 11: overlay11ReleaseGroup3A.c.o */
-func_overlay_011_F00029AC_186B1F4 = overlay11ReleaseGroup3A;
-
-/* overlay 11: overlay11ReleaseGroup6A.c.o */
-func_overlay_011_F0002A10_186B258 = overlay11ReleaseGroup6A;
-
-/* overlay 11: overlay11ReleaseGroup6B.c.o */
-func_overlay_011_F0002A74_186B2BC = overlay11ReleaseGroup6B;
-
-/* overlay 11: overlay11ReleaseGroup6C.c.o */
-func_overlay_011_F0002AD8_186B320 = overlay11ReleaseGroup6C;
-
-/* overlay 11: overlay11ReleaseGroup3B.c.o */
-func_overlay_011_F0002B3C_186B384 = overlay11ReleaseGroup3B;
-
-/* overlay 11: overlay11ReleaseHandles.c.o */
-func_overlay_011_F0002BA0_186B3E8 = overlay11ReleaseHandles;
-
-/* overlay 11: overlay11ReleaseCurrentGroup.c.o */
 func_overlay_011_F0002BF4_186B43C = overlay11ReleaseCurrentGroup;
 
 /* overlay 13: overlay_013.c.o */

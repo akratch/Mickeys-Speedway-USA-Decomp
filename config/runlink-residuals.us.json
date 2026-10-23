@@ -2214,7 +2214,7 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 74,
+      "count": 69,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -2225,12 +2225,7 @@
         [8, "overlay_008", ".rodata", "0x748C", 84],
         [9, "overlay_009", ".data", "0x1520", 35],
         [9, "overlay_009", ".rodata", "0x18B0", 42],
-        [11, "func_overlay_011_F0000150_1868998", ".rodata", "0x2EF0", 6],
-        [11, "func_overlay_011_F0001E4C_186A694", ".rodata", "0x2F24", 2],
-        [11, "func_overlay_011_F00022E8_186AB30", ".rodata", "0x2F38", 2],
-        [11, "overlay11Initialize", ".rodata", "0x2ED8", 2],
-        [11, "overlay11ReleaseCurrentGroup", ".rodata", "0x2F4C", 2],
-        [11, "overlay11UpdateFiveOptionMenu", ".rodata", "0x2F10", 2],
+        [11, "overlay_011", ".rodata", "0x2ED8", 16],
         [12, "overlay_012", ".rodata", "0x13D0", 10],
         [14, "func_overlay_014_F0001830_1871108", ".rodata", "0x1DB4", 2],
         [14, "overlay14LoadRelocatedValue", ".rodata", "0x1D98", 2],

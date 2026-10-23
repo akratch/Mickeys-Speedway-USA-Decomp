@@ -1,13 +1,13 @@
 # Overlay structure sprint: source ownership and final build inputs
 
-Status: active, reviewed 2026-10-23. The US executable reconstruction is
+Status: active, reviewed 2026-10-24. The US executable reconstruction is
 complete under the project's matching standard. The remaining campaign makes
 its storage, identities and build structure faithful enough to maintain and to
 support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `236df8b8a`; the combined borrowing
+The source measurements here are pinned to `91e1386c9`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -16,8 +16,8 @@ not a promise that all overlay data or interfaces are finished.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 30,480 of 61,312 bytes have canonical projected C owners | 30,832 bytes remain. Another 840 diagnostic/trial bytes earn no physical ownership credit. |
-| Initialized images | 34 of 87 data-bearing modules are fully projected to C; three are partial and 50 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
+| Initialized storage | 38,560 of 61,312 bytes have canonical projected C owners | 22,752 bytes remain. Another 840 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized images | 34 of 87 data-bearing modules are fully projected to C; four are partial and 49 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 27 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
 | Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 8,398 records still borrow authority: 7,998 placeholder references, 395 blob-owned data records and five main-table entries. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 41 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
@@ -74,8 +74,13 @@ Overlay 56 now distinguishes float matrix scratch from its SDK packed-matrix
 cursor. Overlay 8 has another 208 initialized bytes of typed selector factors,
 record indices and flag tables, plus 192 bytes of constant scales with exact
 interior read-only input placement. Its six tuning-getter call sites now share
-one bounded 344-byte record type; all 19 affected objects remain exact. Actual
-record storage and geometric/runtime index safety remain separate work.
+one bounded 344-byte record type; all 19 affected objects remain exact. Twenty
+actual mutable C records now supply all 6,880 bytes of that family, with genuine
+sized definitions and exact raw, configured, linked and retail storage. Their
+two pointer tables and geometric/runtime index safety remain separate work.
+Overlay 7 now owns both ten-by-ten mode grids: 1,000 field bytes plus 200 bytes
+of ordinary per-record tail alignment. Its unused explicit padding member was
+removed; the main object's bytes, symbols and relocation identities stay exact.
 Overlay 101 now owns all 113 label targets; its pointer-table prefix and
 768 bytes of initialized storage remain unowned. Local block-clear declarations
 now use the canonical signed-int count type. The runtime loader uses seven real linker boundaries
@@ -100,9 +105,9 @@ the retail ID-67 boundary discrepancy documented in
    alias is not a substitute. A header-sized unowned reserve earns no C credit.
 3. **Recover initialized and BSS families.** Prioritize bounded tables, records,
    strings, geometry and callback families, not opaque copies of whole modules.
-   The largest canonical initialized deficits are overlay 8 (8,640 bytes),
-   overlay 7 (2,384), overlay 59 (1,936), overlay 48 (1,792), overlay 57 (1,632)
-   and overlay 101 (768). Overlay 101's pointer table, remaining formats
+   The largest canonical initialized deficits are overlay 59 (1,936 bytes),
+   overlay 48 (1,792), overlay 8 (1,760), overlay 57 (1,632), overlay 7 (1,184)
+   and overlay 58 (1,072). Overlay 101's 768-byte remainder includes its pointer table, remaining formats
    and small control/compiler-pool tail, and overlay 8's mutable tables/pool
    overlap, need separate owned packets. Unreferenced format strings are actual
    objects, not alignment to be counted away. Asset payloads require an explicit generated binding/format strategy,
@@ -118,19 +123,26 @@ the retail ID-67 boundary discrepancy documented in
    module changes through ordinary linking, header chaining and final layout.
    The bounded editable-layout diagnostic now proves actual function/data/BSS
    growth, moved exports, a genuine call into an added tail module, alignment
-   gaps and safe unreferenced removal through ordinary final linking. It still
-   depends on the retained catalog and borrowing; resident main-table growth,
-   general relayout and source-only generation remain open.
+   gaps and safe unreferenced removal through ordinary final linking. A sixth
+   variant compiles a real resident call-target substitution, producing a
+   376th overlay-call record and an eight-byte main-table increase while all
+   prior 375 records and resident symbol homes remain exact. This is table
+   growth with fixed resident code geometry, not arbitrary resident code growth.
+   The retained catalog, borrowing, general relayout and source-only generation
+   remain open.
 6. **Close source contracts.** Reconcile shared declarations against providers;
    recover actual array/object bounds, signedness and effective types; and work
    the current [cleanup queue](cleanup-queue.md). Reconcile the historical
    [naturalness ledger](NATURALNESS_LEDGER.md) against current folded paths
    before reusing its counts or reopening an old experiment. Preserve the
    authenticated retail defect in [ADR 0019](adr/0019-preserve-retail-loop-defect.md).
-7. **Reproduce the JFG demonstration.** Keep the useful
-   [runlink kit](runlink-toolkit.md) and its MSU parity. Reproduce the documented
-   [JFG snapshot](runlink-jfg.md) in isolation and report its actual unresolved
-   categories. A decoder round trip is not a self-hosting source linker. Donor
+7. **Extend the JFG demonstration.** Keep the useful
+   [runlink kit](runlink-toolkit.md) and its MSU parity. The documented
+   [JFG snapshot and six-site extraction pilot](runlink-jfg.md) have now been
+   reproduced in isolation, including exact ROM and historical residual reports.
+   Next prove actual definitions/section ownership and a bounded complete-module
+   generation/relayout example. A decoder round trip or symbolic extraction is
+   not a self-hosting source linker. Donor
    reference pins and their checkout drift are separate from that demonstration;
    a digest refresh is not a new donor result.
 

@@ -12,6 +12,14 @@
 # rule; MIPS I inserts load-delay nops in several of them.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/%.c.o: MIPSISET := -mips2 -32
 
+# IDO writes no ELF definition for a static function, so a module folded into
+# one TU would link with no boundary at its statics. tools/static_symbols.py
+# adds a sized local STT_FUNC per static procedure from the object's .mdebug,
+# straight after the compile while those offsets are still IDO's. Symbol table
+# only; an object without statics is left byte-identical.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/%.c.o: STATIC_SYMBOLS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/static_symbols.py $@
+
 # Build architecture note: this section does not implement Mickey's runtime
 # overlay loader. Runtime loading and relocation live in src/main/runlink.c and
 # are explained in docs/overlays.md sections 5.1-5.4. mickey.us.yaml and

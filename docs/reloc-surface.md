@@ -20,6 +20,27 @@ With `--no-build`, existing freshness checks still fail closed. This
 route does not grant matching credit or relax ordinary-source, freshness,
 function-byte, frame, or relocation count/type/offset/identity gates.
 
+A `static` function has to be a defined function for this to work. IDO writes
+no ELF definition for one: a forward-declared static leaves only a sized `UND`
+placeholder, an undeclared one leaves nothing. A module folded into one TU
+(`docs/OVERLAY_STRUCTURE_SPRINT.md` phase 2) is mostly statics, so an export
+followed by a static had no next boundary, and the static itself was
+invisible to the census. The object's `.mdebug` does record every procedure:
+an `stStaticProc` symbol with its `.text` start, closed by an `stEnd` whose
+value is its size, the same number IDO writes into a global's `st_size`.
+`tools/static_symbols.py` runs on every overlay object straight after the
+compile, while the `.mdebug` offsets are still IDO's, and writes a sized
+local `STT_FUNC` for each static procedure in place of the placeholder. It
+checks every global against its own procedure first and refuses an overlap;
+only the symbol table, string table and relocation symbol indices change, and
+an object without statics is untouched. A static then bounds its predecessor
+like any function, and proves itself: having no alias line, it resolves to
+the generated name its linked address and the module's ROM start spell.
+The census counts statics separately, and reports any exact-C bytes no sized
+function symbol covers as *uncovered*, so a function with no boundary is
+never silently skipped. Atlas `text_ownership` rows cannot serve as the
+boundary source: after a fold they bound the TU, not its functions.
+
 Matching lanes can compare a full-TU candidate object's static relocations
 with the target function's authenticated relocation surface without rebuilding
 a second relocation decoder:

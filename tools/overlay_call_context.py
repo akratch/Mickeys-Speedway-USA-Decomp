@@ -52,7 +52,8 @@ def callee_build_dependencies(root, source_path, source_text):
             "tools/binutils/mips64-elf-objcopy", "tools/normalize_elf_instructions.py",
             "tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
             "tools/externalize_elf_section.py", "tools/rebind_elf_relocations.py",
-            "tools/set_elf_flags.py", "tools/render_overlay_aliases.py"):
+            "tools/set_elf_flags.py", "tools/render_overlay_aliases.py",
+            "tools/static_symbols.py"):
         path = root / relative
         if path.is_file():
             dependencies.add(path)

@@ -131,7 +131,8 @@ def _aliases(path: Path = ALIASES) -> tuple[dict[str, str], dict[str, list[str]]
     return forward, reverse
 
 
-def _resolve_names(symbol: str, alias_path: Path = ALIASES) -> tuple[str, str]:
+def _resolve_names(symbol: str, alias_path: Path = ALIASES,
+                   root: Path = REPO) -> tuple[str, str]:
     forward, reverse = _aliases(alias_path)
     if symbol in forward:
         return symbol, forward[symbol]
@@ -143,7 +144,46 @@ def _resolve_names(symbol: str, alias_path: Path = ALIASES) -> tuple[str, str]:
         )
     if len(generated) == 1:
         return generated[0], symbol
+    static = _static_overlay_identity(symbol, root)
+    if static is not None:
+        return static, symbol
     return symbol, symbol
+
+
+def _static_overlay_identity(symbol: str, root: Path) -> str | None:
+    """The generated identity of a ``static`` overlay function.
+
+    A linker-script alias cannot name a local symbol, so the alias surface
+    has no row for a static function. Its definition is the sized local
+    ``STT_FUNC`` tools/static_symbols.py gives it from the object's
+    ``.mdebug``; that symbol's address in ``.overlay_NNN`` and the module's
+    ROM start in the atlas spell the generated name an alias would carry.
+    """
+    elf_path = root / "build" / "mickey.us.elf"
+    atlas_path = root / "config" / "overlays.us.json"
+    if not elf_path.is_file() or not atlas_path.is_file():
+        return None
+    elf = rs.Elf(elf_path)
+    rows = [row for row in elf.symbols()
+            if row[0] == symbol and row[3] == rs.STT_FUNC  # STB_LOCAL
+            and row[2] > 0 and 0 < row[4] < len(elf.names)
+            and re.fullmatch(r"\.overlay_\d{3}", elf.names[row[4]])]
+    if not rows:
+        return None
+    if len(rows) > 1:
+        raise PreflightError(
+            f"static function {symbol} is defined in {len(rows)} overlay modules")
+    _name, value, _size, _info, shndx = rows[0]
+    overlay = int(elf.names[shndx][len(".overlay_"):])
+    try:
+        atlas = json.loads(atlas_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as error:
+        raise PreflightError(f"cannot read overlay atlas: {error}") from error
+    modules = [row for row in atlas.get("modules", []) if row.get("overlay") == overlay]
+    if len(modules) != 1:
+        raise PreflightError(f"atlas has {len(modules)} rows for overlay {overlay}")
+    rom = _hex_field(modules[0]["rom"], "start", "overlay ROM range") + value - rs.SYNTHETIC_VMA
+    return f"func_overlay_{overlay:03d}_{value:08X}_{rom:X}"
 
 
 def _guarded_resident_fallback(symbol: str, root: Path) -> str | None:
@@ -586,7 +626,7 @@ def resolve(
     symbol_path: Path = SYMBOLS,
 ) -> Resolution:
     root = root.resolve()
-    target_symbol, candidate_symbol = _resolve_names(symbol, alias_path)
+    target_symbol, candidate_symbol = _resolve_names(symbol, alias_path, root)
     asm_matches = list((root / "asm" / "nonmatchings").rglob(f"{target_symbol}.s"))
     if not asm_matches and target_symbol == candidate_symbol:
         generated = _guarded_resident_fallback(symbol, root)

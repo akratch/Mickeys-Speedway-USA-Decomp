@@ -10,6 +10,7 @@ from __future__ import annotations
 import struct
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from pathlib import Path
 
@@ -148,6 +149,13 @@ def write_tree(root, text_obj):
 
 
 class GenerateTests(unittest.TestCase):
+    def test_msu_refuses_modes_it_cannot_supply(self):
+        cfg = SimpleNamespace(build={"adapter": "msu"})
+        for mode in ("objects", "oracle"):
+            with self.subTest(mode=mode), self.assertRaisesRegex(
+                    config.ConfigError, "supports only --mode hybrid"):
+                generate.main(cfg, b"", None, SimpleNamespace(mode=mode))
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)

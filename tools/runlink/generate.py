@@ -44,7 +44,7 @@ import json
 import re
 from pathlib import Path
 
-from . import codec, compare, mapfile, names, rules
+from . import codec, compare, config, mapfile, names, rules
 from .codec import OP_JUMP, OP_LOCAL, OP_SYMBOL, R_MIPS_26, R_MIPS_32, R_MIPS_HI16, R_MIPS_LO16
 from .elf import STB_LOCAL, STT_FILE, STT_SECTION, Elf, in_place_addends
 
@@ -521,6 +521,10 @@ def measure(tables, mods, main, orows, residuals, stats, routes):
 
 def main(cfg, rom, tables, args):
     if cfg.build.get("adapter") == "msu":
+        if args.mode != "hybrid":
+            raise config.ConfigError(
+                "MSU adapter supports only --mode hybrid; "
+                f"--mode {args.mode} is not implemented")
         from .adapters import msu
         rp, world, ort, mods, main_g, residuals, gt = msu.generate(cfg, rom, tables)
         stats, routes, orows = collections.Counter(), collections.Counter(), None

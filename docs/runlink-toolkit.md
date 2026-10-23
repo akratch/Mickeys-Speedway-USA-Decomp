@@ -54,6 +54,11 @@ exactly the records, header fields and ORT rows named by a residual replaced
 by the shipped ones. Equality of the second image with the ROM proves that
 nothing outside the listed residuals differs, record order included.
 
+These three modes apply to the generic `ld` adapter. The MSU adapter currently
+supports only `hybrid`; requesting `objects` or `oracle` fails explicitly.
+An MSU hybrid pass can still borrow named identities from the shipped tables
+and is not evidence of source-only generation.
+
 `--unpatched OLD=NEW` rewrites the map's object-path prefix `OLD` to `NEW`.
 It is for builds that rename resident trap callees inside the objects after
 compiling, as JFG's `tools/patch_symbols.py` does. The kit then reads each
@@ -102,6 +107,46 @@ print(census.rule_checks(tables, cfg)["JUMP index = most recent SYMBOL index (ta
 ```
 
 ## On MSU
+
+### Generated metadata producer
+
+After the ordinary build and `gmake runlink-raw`, run:
+
+```sh
+python3 tools/runlink_pack.py emit-metadata
+# Optional separate output directory:
+python3 tools/runlink_pack.py --out build/metadata-review emit-metadata
+```
+
+The default output is `build/runlink/metadata/`. This is a producer for a
+future final-build consumer; the current Make/Splat final inputs are unchanged.
+It uses the existing packer and encoders, and refuses any input problem,
+classified difference, stale borrowing ledger, or nonidentical **raw** region.
+The existing `region` command's successful residual-patched proof is
+insufficient for this operation.
+
+Outputs have the retained inputs' granularity: `main_reloc_table.bin`,
+`overlay_rom_table.bin`, `overlay_header_table.bin`, and nonempty
+`overlays/oNNN/overlay_NNN_reloc1.bin` / `reloc2.bin`. The US layout has 198
+such bins. It emits no duplicate module body or instruction patch.
+
+`manifest.json` records input and output sizes/hashes, the loaded packer and
+table parser hashes, checkout revision, raw-region verdict, and live output
+counts. `borrowing.json` reuses the existing residual-manifest format and
+preserves every actual named borrowing; its hash and category counts are in
+the manifest. The producer binds actual object/ELF/map/ROM/atlas/ORT/ledger
+inputs and resident trap sidecars. It does not independently authenticate their
+compilation from current C: the caller still owns the normal build and source
+proofs. This remains hybrid generation, with no source-only or relayout claim.
+
+Inputs are snapshotted before a fresh pack and checked again before publication.
+Files are staged first; publication invalidates the old completion marker,
+replaces payloads, rechecks inputs, and writes `manifest.json` last. A later
+consumer must require a successful invocation and verify the manifest's input,
+implementation, payload and borrowing hashes. Failed validation can leave an
+older output set available for inspection; it cannot make that set evidence
+for changed inputs. Interrupted publication leaves no completion marker.
+Unrelated files and symlink outputs are refused rather than overwritten.
 
 `gmake check-runlink-kit` runs `check` and `parity`. Like
 `check-runlink-tables`, it needs the baserom, a linked ELF and the raw

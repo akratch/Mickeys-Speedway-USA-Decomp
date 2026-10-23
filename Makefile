@@ -1734,3 +1734,9 @@ check-nonmatching-builds:
 	@fail=0; for f in $$(grep -l '#ifdef NON_MATCHING' -r src --include='*.c'); do \
 	  if ! $(MAKE) -s NON_MATCHING=1 build_non_matching/$$f.o >/dev/null 2>&1; then echo "FAIL $$f"; fail=1; fi; \
 	done; [ $$fail -eq 0 ] && echo "check-nonmatching-builds: OK ($$(grep -l '#ifdef NON_MATCHING' -r src --include='*.c' | wc -l | tr -d ' ') TUs)" || exit 1
+
+# Changed-layout diagnostics are separate from retail matching acceptance.
+# The driver preserves every run below build/editable-layout and never executes it.
+.PHONY: check-editable-layout
+check-editable-layout: runlink-raw $(TARGET).elf $(CRC) tools/check_editable_layout.py $(wildcard tests/fixtures/editable_layout/*)
+	$(PYTHON) tools/check_editable_layout.py

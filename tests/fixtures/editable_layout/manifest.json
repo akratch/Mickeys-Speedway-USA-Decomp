@@ -1,0 +1,34 @@
+{
+  "schema": "mickey-editable-layout-pilot-v1",
+  "module": 75,
+  "source": "src/overlays/o075/overlay_075.c",
+  "existing_exports": [
+    {
+      "row": 1232,
+      "name": "overlay75Init"
+    },
+    {
+      "row": 1280,
+      "name": "overlay75UpdateMovingObject"
+    },
+    {
+      "row": 1331,
+      "name": "overlay75MarkSlot"
+    }
+  ],
+  "new_export": "layout75Step",
+  "peer": {
+    "module": 108,
+    "source": "tests/fixtures/editable_layout/peer.c",
+    "exports": [
+      "layout108Init",
+      "layout108Resume",
+      "layout108Step",
+      "layout108State"
+    ],
+    "init": "layout108Init",
+    "resume": "layout108Resume"
+  },
+  "mutated_function": "overlay75Init",
+  "mutation_anchor": "    gOverlay75SlotFlags[state->slot] = 0;"
+}

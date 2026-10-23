@@ -93,6 +93,21 @@ class CodecTests(unittest.TestCase):
         self.assertEqual(mods[0].header.rel2, 8)
         self.assertEqual(mods[1].header.rom, 0x18 + 8 + 8)
 
+    def test_explicit_gap_fill_preserves_every_table_and_module_byte(self):
+        tables = codec.decode(self.rom, self.cfg)
+        zero = codec.encode_region(tables, self.cfg)
+        filled = codec.encode_region(tables, self.cfg, gap_fill=255)
+        begin = self.cfg.ort_rom + 4 * len(tables.ort) - self.cfg.main_table_rom
+        end = self.cfg.headers_rom - self.cfg.main_table_rom
+        self.assertGreater(end, begin)
+        self.assertEqual(zero[:begin], filled[:begin])
+        self.assertEqual(bytes(end-begin), zero[begin:end])
+        self.assertEqual(bytes([255]) * (end-begin), filled[begin:end])
+        self.assertEqual(zero[end:], filled[end:])
+        for value in (-1, 256, None):
+            with self.assertRaises(codec.FormatError):
+                codec.encode_region(tables, self.cfg, gap_fill=value)
+
     def test_names_dedupe_round_trip(self):
         t = codec.decode(self.rom, self.cfg)
         blob = names.encode_names(t.names, self.cfg)

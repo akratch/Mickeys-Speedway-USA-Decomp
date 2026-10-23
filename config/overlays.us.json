@@ -6233,64 +6233,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x2E8",
-     "size": "0x2E8",
-     "type": "c",
-     "source": "overlays/o031/overlay31BuildLookupTables",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2E8",
-     "end_offset": "0x4F8",
-     "size": "0x210",
-     "type": "c",
-     "source": "overlays/o031/overlay31InitializeParticleAssets",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x4F8",
-     "end_offset": "0x6B0",
-     "size": "0x1B8",
-     "type": "c",
-     "source": "overlays/o031/overlay31BuildPalettes",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x6B0",
-     "end_offset": "0xA84",
-     "size": "0x3D4",
-     "type": "c",
-     "source": "overlays/o031/overlay31InitializeBuffers",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xA84",
-     "end_offset": "0xDC4",
-     "size": "0x340",
-     "type": "c",
-     "source": "overlays/o031/overlay31CreateConfig",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xDC4",
-     "end_offset": "0xE7C",
-     "size": "0xB8",
-     "type": "c",
-     "source": "overlays/o031/overlay31CreateRecords",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xE7C",
      "end_offset": "0xF44",
-     "size": "0xC8",
+     "size": "0xF44",
      "type": "c",
-     "source": "overlays/o031/overlay31CreatePool",
+     "source": "overlays/o031/overlay_031",
      "matched": true,
      "nonmatching": false
     },

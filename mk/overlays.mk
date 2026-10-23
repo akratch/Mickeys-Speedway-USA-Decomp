@@ -612,12 +612,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x151C && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:2c21a6f383952f9246cda00fcc1f0456af3e324811b7ca17f018fd4c4f0658d9
-# NON_MATCHING fallback assembly supplies the retail body; restore the
-# friendly source symbol and retain the exact text extent when needed.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeParticleAssets.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_031_F00002E8_187F808=func_overlay_031_F00002E8_187F808 $@ && \
-	$(OBJCOPY) --remove-section=.data --remove-section=.rel.data \
-		--remove-section=.gptab.data $@
+
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: CFLAGS += -Wo,-loopunroll,0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC4
@@ -1901,33 +1896,23 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/func_overlay_020_F0001148_1877720.c.o: POS
 	$(OBJCOPY) --redefine-sym sqrtf=overlay20TailSqrtReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/set_elf_flags.py $@ 0x10000000 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x33C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreateRecords.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xB8
-# Exact C; trim only compiler section alignment beyond the function's
-# 0x2E8-byte extent.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31BuildLookupTables.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2E8
-# Exact C owns all 245 words and 54 relocation records. Trim only compiler
-# section alignment beyond the function's measured 0x3D4-byte extent.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeBuffers.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x3D4
-# NON_MATCHING fallback assembly supplies the retail body; restore the
-# friendly source symbol and retain the exact text extent when needed.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreatePool.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC8
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31BuildPalettes.c.o: \
-	config/normalizations/overlay31BuildPalettes.filter.spec \
-	config/normalizations/overlay31BuildPalettes.calls.spec \
-	$(TOOLS_DIR)/trim_elf_section.py \
+# Overlay 31 is one TU under the overlay flag set: no trim, and its resident
+# calls take the generated rebinds. Two relocation-metadata steps on the
+# palette builder (+0x4F8) stay, neither touching an instruction word: the
+# item table's HI/LO pairs have no shipped record (filtered), and its two
+# colour-cycle calls are SYMBOL records whose shipped target is mmAlloc
+# (rebound). Offsets in both specs are within overlay_031.c's .text.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay_031.c.o: \
+	config/normalizations/overlay_031.filter.spec \
+	config/normalizations/overlay_031.calls.spec \
 	$(TOOLS_DIR)/filter_elf_relocations.py \
 	$(TOOLS_DIR)/rebind_elf_relocations.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31BuildPalettes.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1B8 \
-		0000000000000000 && \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay_031.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay_031.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		@config/normalizations/overlay31BuildPalettes.filter.spec && \
+		@config/normalizations/overlay_031.filter.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay31BuildPalettes.calls.spec
+		@config/normalizations/overlay_031.calls.spec
 # Overlay 33 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay_033.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36CallModes.c.o: POSTPROCESS = \
@@ -2792,13 +2777,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20DrawResource.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20UpdateGrid.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/func_overlay_020_F0001148_1877720.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31BuildLookupTables.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeParticleAssets.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31BuildPalettes.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeBuffers.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreateConfig.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreateRecords.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreatePool.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36CallModes.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46InitializeState.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46ReleaseState.c.o \

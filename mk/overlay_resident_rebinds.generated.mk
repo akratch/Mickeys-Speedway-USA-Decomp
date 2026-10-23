@@ -691,24 +691,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o030/overlay_030.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym piRomGetFileSize=piRomGetFileSize_o030Reloc \
 	--redefine-sym piRomLoad=piRomLoad_o030Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31BuildLookupTables.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007CA60=D_8007CA60_o031Reloc \
-	--redefine-sym D_8007CA98=D_8007CA98_o031Reloc \
-	--redefine-sym mmAlloc=mmAlloc_o031Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31BuildPalettes.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmAlloc=mmAlloc_o031Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreateConfig.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmAlloc=mmAlloc_o031Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreatePool.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmAlloc=mmAlloc_o031Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreateRecords.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmAlloc=mmAlloc_o031Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeBuffers.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay_031.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007C884=D_8007C884_o031Reloc \
 	--redefine-sym D_8007C888=D_8007C888_o031Reloc \
 	--redefine-sym D_8007C88C=D_8007C88C_o031Reloc \
@@ -716,9 +699,15 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeBuffers.c.o: SURFACE_RE
 	--redefine-sym D_8007C894=D_8007C894_o031Reloc \
 	--redefine-sym D_8007C898=D_8007C898_o031Reloc \
 	--redefine-sym D_8007C89C=D_8007C89C_o031Reloc \
+	--redefine-sym D_8007C8AC=D_8007C8AC_o031Reloc \
+	--redefine-sym D_8007C8B0=D_8007C8B0_o031Reloc \
+	--redefine-sym D_8007C8B8=D_8007C8B8_o031Reloc \
 	--redefine-sym D_8007C8BC=D_8007C8BC_o031Reloc \
 	--redefine-sym D_8007C8C0=D_8007C8C0_o031Reloc \
+	--redefine-sym D_8007CA60=D_8007CA60_o031Reloc \
+	--redefine-sym D_8007CA98=D_8007CA98_o031Reloc \
 	--redefine-sym D_800D4120=D_800D4120_o031Reloc \
+	--redefine-sym func_800056A4=func_800056A4_o031Reloc \
 	--redefine-sym mmAlloc=mmAlloc_o031Reloc \
 	--redefine-sym mmFree=mmFree_o031Reloc \
 	--redefine-sym modLoadModel=modLoadModel_o031Reloc \
@@ -726,15 +715,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeBuffers.c.o: SURFACE_RE
 	--redefine-sym reset_particles=reset_particles_o031Reloc \
 	--redefine-sym texLoadSprite=texLoadSprite_o031Reloc \
 	--redefine-sym texLoadTexture=texLoadTexture_o031Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeParticleAssets.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C8AC=D_8007C8AC_o031Reloc \
-	--redefine-sym D_8007C8B0=D_8007C8B0_o031Reloc \
-	--redefine-sym D_8007C8B8=D_8007C8B8_o031Reloc \
-	--redefine-sym D_800D4120=D_800D4120_o031Reloc \
-	--redefine-sym func_800056A4=func_800056A4_o031Reloc \
-	--redefine-sym overlay31BuildPalettes=overlay31BuildPalettes_o031Reloc \
-	--redefine-sym piRomLoad=piRomLoad_o031Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay_033.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007A3EC=D_8007A3EC_o033Reloc \

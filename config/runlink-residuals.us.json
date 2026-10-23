@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 153, "borrowed_records": 9139},
+  "totals": {"differences": 152, "borrowed_records": 9139},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -178,13 +178,6 @@
         [101, "0x12B74", "LOCAL func_overlay_101_F0001B6C_18DD38C", "LOCAL func_overlay_101_F0001B8C_18DD3AC (overlay 101 0x1B8C)"],
         [101, "0x12B78", "LOCAL func_overlay_101_F0001B80_18DD3A0", "LOCAL func_overlay_101_F0001B8C_18DD3AC (overlay 101 0x1B8C)"],
         [101, "0x12B7C", "LOCAL func_overlay_101_F0001F68_18DD788", "LOCAL func_overlay_101_F0001F50_18DD770 (overlay 101 0x1F50)"]
-      ]
-    },
-    "unplaced": {
-      "about": "a relocation in an object section no evidence places (offset is section-relative)",
-      "count": 1,
-      "entries": [
-        [31, "0x0", "overlay31InitializeParticleAssets .data", "R_MIPS_32 func_overlay_031_F0000000_187F520"]
       ]
     }
   },

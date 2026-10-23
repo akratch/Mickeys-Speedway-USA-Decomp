@@ -317,6 +317,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING.update({
     28: "overlay_028_padding",
     29: "overlay_029_padding",
     30: "overlay_030_padding",
+    31: "overlay_031_padding",
     33: "overlay_033_padding",
     35: "overlay_035_padding",
 })
@@ -492,13 +493,7 @@ TEXT_SUBSEGMENTS = {
         (0xE9C, "asm", "overlay_022_padding"),
     ],
     31: [
-        (0x000, "c", "overlay31BuildLookupTables"),
-        (0x2E8, "c", "overlay31InitializeParticleAssets"),
-        (0x4F8, "c", "overlay31BuildPalettes"),
-        (0x6B0, "c", "overlay31InitializeBuffers"),
-        (0xA84, "c", "overlay31CreateConfig"),
-        (0xDC4, "c", "overlay31CreateRecords"),
-        (0xE7C, "c", "overlay31CreatePool"),
+        (0x000, "c", "overlay_031"),
         (0xF44, "asm", "overlay_031_padding"),
     ],
     33: [

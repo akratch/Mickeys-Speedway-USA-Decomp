@@ -1428,26 +1428,7 @@ mmAlloc_o030Reloc = 0xf0000000;
 piRomGetFileSize_o030Reloc = 0xf0000000;
 piRomLoad_o030Reloc = 0xf0000000;
 
-/* overlay 31: overlay31BuildLookupTables.c.o */
-D_8007CA60_o031Reloc = 0x00000000;
-D_8007CA98_o031Reloc = 0x00000000;
-func_8002A8BC_o031Reloc = 0xf0000000;
-func_8002A8C0_o031Reloc = 0xf0000000;
-mmAlloc_o031Reloc = 0xf0000000;
-
-/* overlay 31: overlay31InitializeParticleAssets.c.o */
-D_8007C8AC_o031Reloc = 0x00000000;
-D_8007C8B0_o031Reloc = 0x00000000;
-D_8007C8B8_o031Reloc = 0x00000000;
-D_800D4120_o031Reloc = 0x00000000;
-func_800056A4_o031Reloc = 0xf0000000;
-gOverlay31BehaviourAssets = 0x00000000;
-gOverlay31ParticleAssetCount = 0x00000000;
-gOverlay31ParticleAssets = 0x00000000;
-overlay31BuildPalettes_o031Reloc = 0xf0000000;
-piRomLoad_o031Reloc = 0xf0000000;
-
-/* overlay 31: overlay31InitializeBuffers.c.o */
+/* overlay 31: overlay_031.c.o */
 D_8007C884_o031Reloc = 0x00000000;
 D_8007C888_o031Reloc = 0x00000000;
 D_8007C88C_o031Reloc = 0x00000000;
@@ -1455,14 +1436,29 @@ D_8007C890_o031Reloc = 0x00000000;
 D_8007C894_o031Reloc = 0x00000000;
 D_8007C898_o031Reloc = 0x00000000;
 D_8007C89C_o031Reloc = 0x00000000;
+D_8007C8AC_o031Reloc = 0x00000000;
+D_8007C8B0_o031Reloc = 0x00000000;
+D_8007C8B8_o031Reloc = 0x00000000;
 D_8007C8BC_o031Reloc = 0x00000000;
 D_8007C8C0_o031Reloc = 0x00000000;
+D_8007CA60_o031Reloc = 0x00000000;
+D_8007CA98_o031Reloc = 0x00000000;
+D_800D4120_o031Reloc = 0x00000000;
+func_800056A4_o031Reloc = 0xf0000000;
+func_8002A8BC_o031Reloc = 0xf0000000;
+func_8002A8C0_o031Reloc = 0xf0000000;
+func_overlay_031_F00004F8_187FA18Reloc = 0xf0000000;
+gOverlay31BehaviourAssets = 0x00000000;
+gOverlay31ParticleAssetCount = 0x00000000;
+gOverlay31ParticleAssets = 0x00000000;
 gOverlay31RectangleSourceA = 0x00000000;
 gOverlay31RectangleSourceB = 0x00000000;
 gOverlay31TriangleSourceA = 0x00000000;
 gOverlay31TriangleSourceB = 0x00000000;
+mmAlloc_o031Reloc = 0xf0000000;
 mmFree_o031Reloc = 0xf0000000;
 modLoadModel_o031Reloc = 0xf0000000;
+piRomLoad_o031Reloc = 0xf0000000;
 reset_particles_o031Reloc = 0xf0000000;
 texLoadSprite_o031Reloc = 0xf0000000;
 texLoadTexture_o031Reloc = 0xf0000000;
@@ -5301,20 +5297,9 @@ func_overlay_029_F00014C8_187E778 = overlay29DrawGroups;
 /* overlay 30: overlay_030.c.o */
 func_overlay_030_F0000000_187EEF8 = overlay30Initialize;
 
-/* overlay 31: overlay31BuildPalettes.c.o */
+/* overlay 31: overlay_031.c.o */
 func_overlay_031_F00004F8_187FA18 = overlay31BuildPalettes;
-
-/* overlay 31: overlay31InitializeBuffers.c.o */
 func_overlay_031_F00006B0_187FBD0 = overlay31InitializeBuffers;
-
-/* overlay 31: overlay31CreateConfig.c.o */
-func_overlay_031_F0000A84_187FFA4 = overlay31CreateConfig;
-
-/* overlay 31: overlay31CreateRecords.c.o */
-func_overlay_031_F0000DC4_18802E4 = overlay31CreateRecords;
-
-/* overlay 31: overlay31CreatePool.c.o */
-func_overlay_031_F0000E7C_188039C = overlay31CreatePool;
 
 /* overlay 33: overlay_033.c.o */
 func_overlay_033_F0000000_18807E8 = overlay33InitializeBuffers;

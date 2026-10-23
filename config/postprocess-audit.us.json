@@ -2472,85 +2472,14 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o031/overlay31BuildLookupTables.c.o",
+      "object": "build/src/overlays/o031/overlay_031.c.o",
       "offset": 0,
       "overlay": 31,
-      "size": 744,
-      "source": "src/overlays/o031/overlay31BuildLookupTables.c",
+      "size": 3908,
+      "source": "src/overlays/o031/overlay_031.c",
       "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o031/overlay31BuildPalettes.c.o",
-      "offset": 1272,
-      "overlay": 31,
-      "size": 440,
-      "source": "src/overlays/o031/overlay31BuildPalettes.c",
-      "tools": [
-        "trim_elf_section.py",
         "filter_elf_relocations.py",
         "rebind_elf_relocations.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o031/overlay31CreatePool.c.o",
-      "offset": 3708,
-      "overlay": 31,
-      "size": 200,
-      "source": "src/overlays/o031/overlay31CreatePool.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o031/overlay31CreateRecords.c.o",
-      "offset": 3524,
-      "overlay": 31,
-      "size": 184,
-      "source": "src/overlays/o031/overlay31CreateRecords.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o031/overlay31InitializeBuffers.c.o",
-      "offset": 1712,
-      "overlay": 31,
-      "size": 980,
-      "source": "src/overlays/o031/overlay31InitializeBuffers.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o031/overlay31InitializeParticleAssets.c.o",
-      "offset": 744,
-      "overlay": 31,
-      "size": 528,
-      "source": "src/overlays/o031/overlay31InitializeParticleAssets.c",
-      "tools": [
-        "objcopy"
       ]
     },
     {
@@ -8390,10 +8319,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 578,
+      "metadata": 573,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 433112,
-    "objects_with_postprocess": 579
+    "matched_c_bytes_with_postprocess": 433944,
+    "objects_with_postprocess": 574
   }
 }

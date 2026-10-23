@@ -1758,14 +1758,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x187F520, c, overlay31BuildLookupTables]
-      - [0x187F808, c, overlay31InitializeParticleAssets]
-      - [0x187FA18, c, overlay31BuildPalettes]
-      - [0x187FBD0, c, overlay31InitializeBuffers]
-      - [0x187FFA4, c, overlay31CreateConfig]
-      - [0x18802E4, c, overlay31CreateRecords]
-      - [0x188039C, c, overlay31CreatePool]
-      - [0x1880464, asm, overlay_031_padding]
+      - [0x187F520, c, overlay_031]
       - [0x1880470, bin, overlay_031_data_rodata]
       - [0x18804B0, bin, overlay_031_reloc1]
       - [0x18807A0, bin, overlay_031_reloc2]

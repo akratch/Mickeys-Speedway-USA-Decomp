@@ -251,10 +251,10 @@ This is a names-only audit of every function body guarded by `NON_MATCHING` in `
 | `func_overlay_029_F000042C_187D6DC` | `src/overlays/o029/overlay_029.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_029_F0000EE0_187E190` | `src/overlays/o029/overlay_029.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_030_F00002B4_187F1AC` | `src/overlays/o030/overlay_030.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_overlay_031_F0000000_187F520` | `src/overlays/o031/overlay31BuildLookupTables.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_overlay_031_F0000A84_187FFA4` | `src/overlays/o031/overlay31CreateConfig.c` | matched | — | Promoted as `overlay31CreateConfig`; no ownership work remains. |
-| `func_overlay_031_F0000E7C_188039C` | `src/overlays/o031/overlay31CreatePool.c` | matched | — | Promoted as `overlay31CreatePool`; no ownership work remains. |
-| `func_overlay_031_F00002E8_187F808` | `src/overlays/o031/overlay31InitializeParticleAssets.c` | none | — | No ownership change; continue source/codegen work. |
+| `func_overlay_031_F0000000_187F520` | `src/overlays/o031/overlay_031.c` | none | — | No ownership change; continue source/codegen work. |
+| `func_overlay_031_F0000A84_187FFA4` | `src/overlays/o031/overlay_031.c` | matched | — | Promoted as `overlay31CreateConfig`; no ownership work remains. |
+| `func_overlay_031_F0000E7C_188039C` | `src/overlays/o031/overlay_031.c` | matched | — | Promoted as `overlay31CreatePool`; no ownership work remains. |
+| `func_overlay_031_F00002E8_187F808` | `src/overlays/o031/overlay_031.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_033_F000019C_1880984` | `src/overlays/o033/overlay_033.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_033_F0000000_18807E8` | `src/overlays/o033/overlay_033.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_033_F000066C_1880E54` | `src/overlays/o033/overlay_033.c` | matched | — | Promoted as `overlay33PresentAndSwap`; no ownership work remains. |

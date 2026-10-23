@@ -1884,13 +1884,13 @@ segments:
     vram: 0xF0000000
     bss_size: 0x0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o028
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x187C8D0, c, overlay_028]
-      - [0x187D0C0, bin, overlay_028_data_rodata]
+      - [0x187D0C0, .data, overlay_028]
 
   - name: overlay_028_reloc1
     type: bin
@@ -1967,13 +1967,13 @@ segments:
     vram: 0xF0000000
     bss_size: 0x0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o031
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x187F520, c, overlay_031]
-      - [0x1880470, bin, overlay_031_data_rodata]
+      - [0x1880470, .rodata, overlay_031]
 
   - name: overlay_031_reloc1
     type: bin
@@ -2025,13 +2025,13 @@ segments:
     vram: 0xF0000000
     bss_size: 0x0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o034
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18811A8, c, overlay_034]
-      - [0x1881AA8, bin, overlay_034_data_rodata]
+      - [0x1881AA8, .data, overlay_034]
 
   - name: overlay_034_reloc1
     type: bin
@@ -2108,13 +2108,14 @@ segments:
     vram: 0xF0000000
     bss_size: 0x0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o037
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1885620, c, overlay_037]
-      - [0x1885B80, bin, overlay_037_data_rodata]
+      - [0x1885B80, .data, overlay_037]
+      - [0x1885C60, .rodata, overlay_037]
 
   - name: overlay_037_reloc1
     type: bin

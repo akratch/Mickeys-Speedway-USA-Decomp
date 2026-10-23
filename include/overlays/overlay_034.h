@@ -122,20 +122,16 @@ extern s32 gOverlay34Count;
 extern s32 gOverlay34ActiveCount;
 extern f32 gOverlay34Value10;
 
-/* SYMBOL calls to the module's own exports (the remover at +0x2C8, the
- * colour interpolator at +0x540) store zero, so they name the surface's
- * <generated>Reloc proxies rather than the in-module definitions. */
-extern void func_overlay_034_F00002C8_1881470Reloc(void *record);
-extern void func_overlay_034_F0000540_18816E8Reloc(s32 position, s32 length,
-                                           const u8 *start, const u8 *end,
-                                           u8 *output);
+extern void overlay34RemoveRecord(Overlay34Record *record);
+extern void overlay34InterpolateColor(s32 position, s32 length,
+                                      const u8 *start, const u8 *end, u8 *output);
 
 extern void *mmAlloc(s32 size, u32 colourTag);
-extern Overlay34Resource *texLoadTexture(s16 resourceId);
-extern void func_80029FE4(Overlay34Input *input, f32 direction[3]);
+extern Overlay34Resource *texLoadTexture(s32 resourceId);
+extern void mathOneFloatPY(Overlay34Input *input, f32 direction[3]);
 extern void texFreeTexture(Overlay34Resource *resource);
-extern void func_8002B768(void *address);
-extern f32 func_80024938(f32 x, f32 y, f32 z);
+extern void mmFree(void *address);
+extern f32 camGetProjZ(f32 x, f32 y, f32 z);
 extern void func_800084C4(void *commands, void *vertices, void *resource,
                           void *record, f32 *position,
                           f32 *secondPosition, f32 value, u32 color1,

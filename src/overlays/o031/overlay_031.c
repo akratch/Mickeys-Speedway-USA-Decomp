@@ -1,5 +1,9 @@
 #include "overlays/overlay_031.h"
 
+/* Retained diagnostic text from the module's initialized storage. */
+const char gOverlay31ColourCycleWarning[] =
+    "Particle warning: colour cycle table exceeds 255 entries\n";
+
 /*
  * Overlay 31: one translation unit in ROM order (ADR 0006). The ORT exports
  * the particle-asset initializer (+0x2E8), the palette builder (+0x4F8) and
@@ -9,9 +13,6 @@
  */
 
 static void func_overlay_031_F0000000_187F520(void);
-/* The asset initializer's call to the exported palette builder is a SYMBOL
- * record that stores zero, so it names the surface's <generated>Reloc proxy. */
-extern void func_overlay_031_F00004F8_187FA18Reloc(void);
 static Overlay31Config *overlay31CreateConfig(s32 value0, void *source,
                                               s32 divisor, s32 multiplier,
                                               s32 count);
@@ -139,8 +140,8 @@ static void func_overlay_031_F0000000_187F520(void) {
         angle = 0;
         D_8007CA98[level - 2] = out;
         for (i = 0; i < level; i++) {
-            s = func_8002A8BC_o031Reloc(angle);
-            c = func_8002A8C0_o031Reloc(angle);
+            s = func_8002A8BC(angle);
+            c = func_8002A8C0(angle);
             *out++ = s * 2.0f + c * 2.0f;
             *out++ = s * 2.0f - c * 2.0f;
             angle += (s16)(0xFFFF / level);
@@ -159,27 +160,27 @@ void func_overlay_031_F00002E8_187F808(void) {
     }
 
     D_8007C8AC = piRomLoad(0x33);
-    while ((s32)D_8007C8AC[gOverlay31ParticleAssetCount + 1] != -1) {
-        gOverlay31ParticleAssetCount++;
+    while ((s32)D_8007C8AC[D_8007C8A4 + 1] != -1) {
+        D_8007C8A4++;
     }
 
-    gOverlay31ParticleAssets = piRomLoad(0x34);
-    for (i = 0; i < gOverlay31ParticleAssetCount; i++) {
+    D_8007C8A8 = piRomLoad(0x34);
+    for (i = 0; i < D_8007C8A4; i++) {
         D_8007C8AC[i] =
-            gOverlay31ParticleAssets + (s32)D_8007C8AC[i];
+            (Overlay31Item *)(D_8007C8A8 + (s32)D_8007C8AC[i]);
     }
 
-    func_overlay_031_F00004F8_187FA18Reloc();
+    overlay31BuildPalettes();
 
     D_8007C8B8 = piRomLoad(0x35);
     while ((s32)D_8007C8B8[D_8007C8B0 + 1] != -1) {
         D_8007C8B0++;
     }
 
-    gOverlay31BehaviourAssets = piRomLoad(0x36);
+    D_8007C8B4 = piRomLoad(0x36);
     for (i = 0; i < D_8007C8B0; i++) {
         D_8007C8B8[i] =
-            (Overlay31Behaviour *)(gOverlay31BehaviourAssets +
+            (Overlay31Behaviour *)(D_8007C8B4 +
                                    (s32)D_8007C8B8[i]);
         if ((u32)D_8007C8B8[i]->colourLoop != 0xFFFFFFFF) {
             D_8007C8B8[i]->colourLoop =
@@ -198,12 +199,12 @@ void overlay31BuildPalettes(void) {
     s32 j;
     Overlay31PaletteCursor cursor;
 
-    for (i = 0; i < gOverlay31ItemCount; i++) {
-        item = gOverlay31Items[i];
+    for (i = 0; i < D_8007C8A4; i++) {
+        item = D_8007C8AC[i];
         if (item->flags & 0x400) {
             for (j = 0; j < i; j++) {
-                if (item->paletteId == gOverlay31Items[j]->paletteId) {
-                    item->palette = gOverlay31Items[j]->palette;
+                if (item->paletteId == D_8007C8AC[j]->paletteId) {
+                    item->palette = D_8007C8AC[j]->palette;
                     item->paletteCount = cursor.state->count;
                     if (item->paletteCount == 0) {
                         item->paletteCount = 1;
@@ -231,7 +232,7 @@ void overlay31BuildPalettes(void) {
                     *palette++ = ((u32)cursor.red << 24) |
                                  ((u32)cursor.green << 16) |
                                  ((u32)cursor.blue << 8) | cursor.alpha;
-                    updateColourCycle(&cursor, (void *)1);
+                    updateColourCycle(&cursor, 1);
                 }
             }
         }
@@ -283,10 +284,10 @@ void overlay31InitializeBuffers(s32 maxTriangle, s32 maxRectangle,
         (u8 *)D_8007C89C[0] + vertexCount * 10;
 
     D_800D4120[0] = overlay31CreateConfig(
-        (s32)gOverlay31TriangleSourceA, gOverlay31TriangleSourceB,
+        (s32)D_8007CAB4, D_8007CAC0,
         3, 1, maxTriangle);
     D_800D4120[1] = overlay31CreateConfig(
-        (s32)gOverlay31RectangleSourceA, gOverlay31RectangleSourceB,
+        (s32)D_8007CC40, D_8007CC50,
         4, 2, maxRectangle);
     D_800D4120[2] = overlay31CreateConfig(0, 0, 0, 0, maxSprite);
     D_800D4120[3] = overlay31CreateConfig(0, 0, 0, 0, maxExtra);
@@ -472,6 +473,6 @@ static Overlay31PoolRecord *overlay31CreatePool(s32 count) {
         } while (i != count);
     }
 
-    D_10 = overlay31CreateConfig(0, 0, 0, 0, count * 15);
+    D_800D4120[4] = overlay31CreateConfig(0, 0, 0, 0, count * 15);
     return records;
 }

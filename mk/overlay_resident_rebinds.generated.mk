@@ -485,21 +485,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay_023.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym mathRnd=mathRnd_o023Reloc \
 	--redefine-sym texLoadSprite=texLoadSprite_o023Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o028Reloc \
-	--redefine-sym amSndSetVolXYZ=amSndSetVolXYZ_o028Reloc \
-	--redefine-sym amSndSetXYZ=amSndSetXYZ_o028Reloc \
-	--redefine-sym camGetPtr=camGetPtr_o028Reloc \
-	--redefine-sym camPopModelMtx=camPopModelMtx_o028Reloc \
-	--redefine-sym camPushModelMtx=camPushModelMtx_o028Reloc \
-	--redefine-sym func_80006EA0=func_80006EA0_o028Reloc \
-	--redefine-sym func_80009F08=func_80009F08_o028Reloc \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o028Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o028Reloc \
-	--redefine-sym resetColourCycle=resetColourCycle_o028Reloc \
-	--redefine-sym sqrtf=sqrtf_o028Reloc \
-	--redefine-sym texDPTextureX=texDPTextureX_o028Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay_029.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o029Reloc \
 	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o029Reloc \
@@ -545,31 +530,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o030/overlay_030.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym piRomGetFileSize=piRomGetFileSize_o030Reloc \
 	--redefine-sym piRomLoad=piRomLoad_o030Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay_031.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C884=D_8007C884_o031Reloc \
-	--redefine-sym D_8007C888=D_8007C888_o031Reloc \
-	--redefine-sym D_8007C88C=D_8007C88C_o031Reloc \
-	--redefine-sym D_8007C890=D_8007C890_o031Reloc \
-	--redefine-sym D_8007C894=D_8007C894_o031Reloc \
-	--redefine-sym D_8007C898=D_8007C898_o031Reloc \
-	--redefine-sym D_8007C89C=D_8007C89C_o031Reloc \
-	--redefine-sym D_8007C8AC=D_8007C8AC_o031Reloc \
-	--redefine-sym D_8007C8B0=D_8007C8B0_o031Reloc \
-	--redefine-sym D_8007C8B8=D_8007C8B8_o031Reloc \
-	--redefine-sym D_8007C8BC=D_8007C8BC_o031Reloc \
-	--redefine-sym D_8007C8C0=D_8007C8C0_o031Reloc \
-	--redefine-sym D_8007CA60=D_8007CA60_o031Reloc \
-	--redefine-sym D_8007CA98=D_8007CA98_o031Reloc \
-	--redefine-sym D_800D4120=D_800D4120_o031Reloc \
-	--redefine-sym func_800056A4=func_800056A4_o031Reloc \
-	--redefine-sym mmAlloc=mmAlloc_o031Reloc \
-	--redefine-sym mmFree=mmFree_o031Reloc \
-	--redefine-sym modLoadModel=modLoadModel_o031Reloc \
-	--redefine-sym piRomLoad=piRomLoad_o031Reloc \
-	--redefine-sym reset_particles=reset_particles_o031Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o031Reloc \
-	--redefine-sym texLoadTexture=texLoadTexture_o031Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay_033.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007A3EC=D_8007A3EC_o033Reloc \
 	--redefine-sym D_800D1C28=D_800D1C28_o033Reloc \
@@ -590,15 +550,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay_033.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym texDPInit=texDPInit_o033Reloc \
 	--redefine-sym trackGetFog=trackGetFog_o033Reloc \
 	--redefine-sym viGetCurrentSize=viGetCurrentSize_o033Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay_034.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_800084C4=func_800084C4_o034Reloc \
-	--redefine-sym func_80024938=func_80024938_o034Reloc \
-	--redefine-sym func_80029FE4=func_80029FE4_o034Reloc \
-	--redefine-sym func_8002B768=func_8002B768_o034Reloc \
-	--redefine-sym mmAlloc=mmAlloc_o034Reloc \
-	--redefine-sym texFreeTexture=texFreeTexture_o034Reloc \
-	--redefine-sym texLoadTexture=texLoadTexture_o034Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/overlay_035.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_80079274=D_80079274_o035Reloc \
@@ -669,16 +620,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay_036.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym overlay7CommitSelection=overlay7CommitSelection_o036Reloc \
 	--redefine-sym partUpdateTriggers=partUpdateTriggers_o036Reloc \
 	--redefine-sym texAnimateSprite=texAnimateSprite_o036Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camGetPtr=camGetPtr_o037Reloc \
-	--redefine-sym func_80006EA0=func_80006EA0_o037Reloc \
-	--redefine-sym func_80021964=func_80021964_o037Reloc \
-	--redefine-sym func_800244EC=func_800244EC_o037Reloc \
-	--redefine-sym func_8002460C=func_8002460C_o037Reloc \
-	--redefine-sym func_8002A250=func_8002A250_o037Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o037Reloc \
-	--redefine-sym texDPTextureX=texDPTextureX_o037Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay_038.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o038Reloc \

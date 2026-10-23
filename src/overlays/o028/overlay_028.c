@@ -1,5 +1,37 @@
 #include "overlays/overlay_028.h"
 
+Overlay28ColourTable gOverlay28ColourTable = {
+    4, 60, {
+        {96,  0,  0, 160, 15},
+        {96, 96,  0, 192, 15},
+        { 0, 96,  0, 160, 15},
+        { 0,  0, 96, 192, 15},
+    }
+};
+
+/* One triangle carries three vertex indices and three texture UV pairs. */
+#define O28_TRIANGLE(i0, i1, i2, u0, v0, u1, v1, u2, v2) \
+    {0x40, i0, i1, i2, {{u0, v0}, {u1, v1}, {u2, v2}}}
+
+Overlay28Triangle gOverlay28Triangles[16] = {
+    O28_TRIANGLE(0,  1,  2, 1024, 1024, 1024, 2048,  631, 1970),
+    O28_TRIANGLE(0,  2,  3, 1024, 1024,  631, 1970,  300, 1747),
+    O28_TRIANGLE(0,  3,  4, 1024, 1024,  300, 1747,   77, 1416),
+    O28_TRIANGLE(0,  4,  5, 1024, 1024,   77, 1416,    0, 1024),
+    O28_TRIANGLE(0,  5,  6, 1024, 1024,    0, 1024,   77,  631),
+    O28_TRIANGLE(0,  6,  7, 1024, 1024,   77,  631,  300,  300),
+    O28_TRIANGLE(0,  7,  8, 1024, 1024,  300,  300,  631,   77),
+    O28_TRIANGLE(0,  8,  9, 1024, 1024,  631,   77, 1024,    0),
+    O28_TRIANGLE(0,  9, 10, 1024, 1024, 1024,    0, 1416,   77),
+    O28_TRIANGLE(0, 10, 11, 1024, 1024, 1416,   77, 1747,  300),
+    O28_TRIANGLE(0, 11, 12, 1024, 1024, 1747,  300, 1970,  631),
+    O28_TRIANGLE(0, 12, 13, 1024, 1024, 1970,  631, 2048, 1024),
+    O28_TRIANGLE(0, 13, 14, 1024, 1024, 2048, 1024, 1970, 1416),
+    O28_TRIANGLE(0, 14, 15, 1024, 1024, 1970, 1416, 1747, 1747),
+    O28_TRIANGLE(0, 15, 16, 1024, 1024, 1747, 1747, 1416, 1970),
+    O28_TRIANGLE(0, 16,  1, 1024, 1024, 1416, 1970, 1024, 2048),
+};
+
 /* Overlay 28, ADR 0006 consolidation: one translation unit in ROM order. */
 
 /* DKR v77/v80 have only generic double-buffered particle reset relatives. */
@@ -58,11 +90,6 @@ void overlay28UpdateVertices(Overlay28VertexState *state) {
     } while (remaining--);
 }
 
-/* The shipped relocation for this field names the start of overlay 28's
-   initialized data (module +0x7F0), not overlay28ResetBuffer at +0: the
-   pointer is set to the data base, whatever the field is. */
-extern u8 gOverlay28DataBase[];
-
 void overlay28InitializeWork(Overlay28Owner *owner, Overlay28Source *source) {
     Overlay28Work *work;
 
@@ -79,10 +106,10 @@ void overlay28InitializeWork(Overlay28Owner *owner, Overlay28Source *source) {
     work->stepB = 0x4000;
     work->stepC = 0x1000;
     work->stepD = -0x2000;
-    work->reset = (void (*)())gOverlay28DataBase;
+    work->colourCycle.table = &gOverlay28ColourTable;
     work->scaleA = 4.0f;
     work->scaleB = 2.0f;
-    resetColourCycle(work->object);
+    resetColourCycle(&work->colourCycle);
     work->intensity = 0;
     work->bufferIndex = 0;
     overlay28ResetBuffer(work);
@@ -107,7 +134,7 @@ void overlay28UpdateWork(Overlay28Owner *owner, s32 updateRate) {
         context = (Overlay28Context *)related->work;
         work->angleA += work->stepC * updateRate;
         work->angleB += work->stepD * updateRate;
-        ext_o0_29e00(work->object);
+        updateColourCycle(&work->colourCycle, updateRate);
         sourceIntensity = context->intensity;
         if (sourceIntensity < 0) {
             work->intensity = 0;
@@ -151,6 +178,12 @@ void overlay28UpdateWork(Overlay28Owner *owner, s32 updateRate) {
  */
 #define _SHIFTL(v, s, w) \
     ((u32)(((u32)(v) & ((0x01 << (w)) - 1)) << (s)))
+/* N64 ABI: reinterpret a 32-bit pointer word, then toggle its sign bit.
+ * Geometry uses the same encoding without outside-object pointer arithmetic. */
+typedef char Overlay28AddressWordWidth[(sizeof(void *) == 4 && sizeof(s32) == 4) ? 1 : -1];
+#define O28_GEOMETRY_ADDRESS(address) \
+    ((geometryAddress.pointer = (const void *)(address)), \
+     (u32)(geometryAddress.bits ^ (-2147483647 - 1)))
 #define VERTEX_ADDRESS(work) \
     ((u32)(work) + ((u32)(work)->bufferIndex * 0xAAU) + 0x80000044U)
 #define WRITE_PRIM(pkt, rgba) { \
@@ -190,7 +223,7 @@ void func_overlay_028_F00004D8_187CDA8(Overlay28Gfx **dl, void *matrixArg,
     f32 distanceSquared;
     f32 ratio;
     Overlay28Transform transformHome;
-    void *matrix;
+    union { void *texture; const void *pointer; s32 bits; } geometryAddress;
     Overlay28Work *work;
     Overlay28Owner *related;
     Overlay28View *view;
@@ -200,7 +233,7 @@ void func_overlay_028_F00004D8_187CDA8(Overlay28Gfx **dl, void *matrixArg,
     work = owner->work;
     related = work->related;
     if (related != 0) {
-        ext_o0_29e00(1, related, &work->x, &transformHome.x);
+        pointListRPY(1, related, &work->x, &transformHome.x);
         transformHome.x += related->x;
         transformHome.y += related->y;
         transformHome.z += related->z;
@@ -219,18 +252,18 @@ void func_overlay_028_F00004D8_187CDA8(Overlay28Gfx **dl, void *matrixArg,
         transformHome.x += dx * ratio;
         transformHome.y += dy * ratio;
         transformHome.z += dz * ratio;
-        matrix = *owner->matrix;
+        geometryAddress.texture = *owner->matrix;
         camPushModelMtx(dl, matrixArg, &transformHome, 1.0f, 0.0f);
-        texDPTextureX(dl, matrix, 0x214, 0);
+        texDPTextureX(dl, geometryAddress.texture, 0x214, 0);
 
         mask = -0x100;
         WRITE_PRIM((*dl)++, (work->intensity & 0xFF) | mask);
         WRITE_ENV((*dl)++,
-                  _SHIFTL(work->red, 24, 8) |
-                  _SHIFTL(work->green, 16, 8) |
-                  _SHIFTL(work->blue, 8, 8) | 0xFF);
+                  _SHIFTL(work->colourCycle.red, 24, 8) |
+                  _SHIFTL(work->colourCycle.green, 16, 8) |
+                  _SHIFTL(work->colourCycle.blue, 8, 8) | 0xFF);
         WRITE_VERTEX((*dl)++, VERTEX_ADDRESS(work));
-        WRITE_DL((*dl)++, gOverlay28DisplayList28);
+        WRITE_DL((*dl)++, O28_GEOMETRY_ADDRESS(gOverlay28Triangles));
         WRITE_SYNC((*dl)++);
         if (work->intensity != 0xFF) {
             WRITE_PRIM((*dl)++, -1);

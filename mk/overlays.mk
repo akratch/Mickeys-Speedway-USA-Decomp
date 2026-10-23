@@ -603,7 +603,8 @@ $(O15_OBJ): POSTPROCESS = \
 		0xb3c:6:.bss 0xbfc:5:.bss 0xc00:6:.bss 0xc24:5:.bss \
 		0xc28:6:.bss 0xc2c:6:.bss 0xc30:5:.bss 0xc34:6:.bss \
 		0x738:5:.bss 0x73c:6:.bss
-# Overlay 34 is one TU under the overlay flag set; no post-processing.
+# Overlay 34 directly owns its pointer/count state and vertical acceleration.
+MODULE_LINKED_OVERLAYS += 034
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay_034.c.o: CFLAGS += -Wab,-r4300_mul
 include config/normalizations/overlay22Epoch12.mk
 # Overlay 94 is one translation unit under the overlay flag set. Its .text
@@ -658,9 +659,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o025/overlay_025.c.o: CFLAGS += -Wab,-r4300_mul
 # body, which the former hand-unrolled spelling only matched with unrolling
 # disabled. Its .text carries the trailing pad, so nothing is trimmed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 37 is one translation unit at the overlay flag set (the effect
-# renderer's blend multiplies carry the R4300 FP-mul hazard nops). Its .text
-# is the module's text, trailing pad included, so nothing is trimmed.
+# Overlay 37 directly owns its compact geometry, distance records and period.
+MODULE_LINKED_OVERLAYS += 037
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 40 is one translation unit at the overlay flag set; its .text carries
 # the trailing pad, so nothing is trimmed.
@@ -773,23 +773,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay_020.c.o: POSTPROCESS = \
 		0xE40:5:gOverlay20EntryCount 0xE44:6:gOverlay20EntryCount \
 		0xEA0:5:gOverlay20Entries 0xEA8:6:gOverlay20Entries \
 		0xEEC:5:D_0 0xF30:6:D_0
-# Overlay 31 is one TU under the overlay flag set: no trim, and its resident
-# calls take the generated rebinds. Two relocation-metadata steps on the
-# palette builder (+0x4F8) stay, neither touching an instruction word: the
-# item table's HI/LO pairs have no shipped record (filtered), and its two
-# colour-cycle calls are SYMBOL records whose shipped target is mmAlloc
-# (rebound). Offsets in both specs are within overlay_031.c's .text.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay_031.c.o: \
-	config/normalizations/overlay_031.filter.spec \
-	config/normalizations/overlay_031.calls.spec \
-	$(TOOLS_DIR)/filter_elf_relocations.py \
-	$(TOOLS_DIR)/rebind_elf_relocations.py
+# Overlay 31 directly owns its retained diagnostic text; original source
+# relocations bind the actual resident slots and colour-cycle operations.
+MODULE_LINKED_OVERLAYS += 031
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay_031.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay_031.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		@config/normalizations/overlay_031.filter.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay_031.calls.spec
 # Overlay 33 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay_033.c.o: CFLAGS += -Wab,-r4300_mul
 include mk/overlay_046.mk
@@ -941,30 +928,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay_048.c.o: CFLAGS += -Wab,-r4300_mul
 # the trailing pad, so nothing is trimmed. Its resident and cross-overlay
 # references go through the generated relocation surface.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 28 is one TU under the overlay flag set: no trim, and its resident
-# calls take the generated rebinds. What remains is relocation metadata the
-# one-TU build does not yet express (phase 1/3 work), none of it touching an
-# instruction word:
-# - the loader owns the data-base HI/LO stored in the reset field, so the
-#   shipped tables carry no record for those two sites (filtered);
-# - two calls are SYMBOL records whose shipped target differs from the name
-#   the C uses: the update-vertices call carries the external at 0x29E00,
-#   and the render tail's external call carries the module's offset-0 entry;
-# - the render tail's display-list words are absolute 0x80000028 references.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: \
-	$(TOOLS_DIR)/filter_elf_relocations.py \
-	$(TOOLS_DIR)/rebind_elf_relocations.py
+# Overlay 28 directly owns its colour-cycle table and triangle records.
+MODULE_LINKED_OVERLAYS += 028
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o028/overlay_028.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x1D8:5:gOverlay28DataBase 0x1F4:6:gOverlay28DataBase && \
-	$(OBJCOPY) \
-		--add-symbol D_80000028=0x80000028,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x41C:overlay28UpdateVertices:ext_o0_29e00 \
-		0x51C:ext_o0_29e00:overlay28ResetBuffer \
-		0x744:gOverlay28DisplayList28:D_80000028 \
-		0x754:gOverlay28DisplayList28:D_80000028
 # Overlay 35 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/overlay_035.c.o: CFLAGS += -Wab,-r4300_mul
 

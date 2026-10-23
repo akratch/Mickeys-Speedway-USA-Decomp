@@ -109,43 +109,42 @@ typedef struct Overlay31PoolRecord {
     u8 reservedA5[0x1B];
 } Overlay31PoolRecord;
 
-extern void *D_800D4120[4];
-extern s32 gOverlay31ParticleAssetCount;
-extern u8 *gOverlay31ParticleAssets;
-extern void **D_8007C8AC;
+extern void *D_800D4120[5];
+extern u8 *D_8007C8A8;
 extern s32 D_8007C8B0;
-extern u8 *gOverlay31BehaviourAssets;
+extern u8 *D_8007C8B4;
 extern Overlay31Behaviour **D_8007C8B8;
-extern s32 gOverlay31ItemCount;
-extern Overlay31Item **gOverlay31Items;
+extern s32 D_8007C8A4;
+extern Overlay31Item **D_8007C8AC;
 extern s32 D_8007C88C;
 extern s32 D_8007C890;
 extern void *D_8007C89C[2];
-extern u8 gOverlay31TriangleSourceA[];
-extern u8 gOverlay31TriangleSourceB[];
-extern u8 gOverlay31RectangleSourceA[];
-extern u8 gOverlay31RectangleSourceB[];
+extern u8 D_8007CAB4[];
+extern u8 D_8007CAC0[];
+extern u8 D_8007CC40[];
+extern u8 D_8007CC50[];
 extern void *D_8007C898;
 extern void *D_8007C894;
 extern void **D_8007C884;
 extern s32 D_8007C888;
 extern Overlay31EffectRecord *D_8007C8BC;
 extern s32 D_8007C8C0;
-extern void *D_10;
+
+extern void overlay31BuildPalettes(void);
 
 extern void *mmAlloc(s32 size, s32 tag); /* 0:+0x2AE30 */
-extern f32 func_8002A8BC_o031Reloc(s32 angle); /* 0:+0x2A46C */
-extern f32 func_8002A8C0_o031Reloc(s32 angle); /* 0:+0x2A470 */
+extern f32 func_8002A8BC(s32 angle); /* 0:+0x2A46C */
+extern f32 func_8002A8C0(s32 angle); /* 0:+0x2A470 */
 extern void mmFree(void *asset);
 extern void *piRomLoad(s32 assetId);
 extern void *func_800056A4(s32 assetId);
 extern void initColourCycle(Overlay31PaletteCursor *cursor,
-                                      u16 paletteId);
+                                      s32 paletteId);
 extern void updateColourCycle(Overlay31PaletteCursor *cursor,
-                                         void *step);
+                                         s32 step);
 extern void reset_particles(void);
-extern void *texLoadSprite();
-extern void *texLoadTexture();
-extern void *modLoadModel();
+extern void *texLoadSprite(s32 spriteId, s32 flags);
+extern void *texLoadTexture(s32 textureId);
+extern void *modLoadModel(s32 modelId, s32 flags);
 
 #endif

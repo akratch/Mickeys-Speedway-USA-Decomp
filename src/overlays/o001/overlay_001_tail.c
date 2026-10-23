@@ -1,4 +1,5 @@
 #include "overlays/overlay_001.h"
+#include "game/overlay8_tuning.h"
 #include "game/math.h"
 
 /* ---- overlay1InitializeGaugeObjects ---- */
@@ -849,7 +850,7 @@ extern O1PhysicsActionMode gO1PhysicsActions[6];
 s32 func_overlay_001_F00004B4_184C894(void *object);
 s32 func_overlay_001_F0007D6C_185414C(s16, s16, s16, s16,
                                      s16 *, s16 *, void *);
-f32 *func_overlay_008_F0000008_185DD60Reloc(void *state);
+Overlay8TuningRecord *func_overlay_008_F0000008_185DD60Reloc(const void *state);
 void func_8001F25C(void *state, s32 disabled);
 void func_overlay_008_F00049DC_1862734Reloc(s32 value);
 void func_8001D910(void *object, void *state);
@@ -891,15 +892,6 @@ extern s32 gOverlay1TimerStep;
 extern void *LOCAL_BSS_1BA4;
 extern void *LOCAL_BSS_1D9C;
 
-/* The first four words of the tuning block; only the slope factor is read
- * through it (an array element loads before the product, a field after). */
-typedef struct O1PhysicsTuningHead {
-    f32 gravity;
-    f32 unk4;
-    f32 levelStep;
-    f32 slopeFactor;
-} O1PhysicsTuningHead;
-
 /* Every declared local takes a home in declaration order (the target's
  * ladder), so a new local must replace a free one. Load-bearing shapes: the
  * empty `if` around the action predicate and func_800299E8 (reloads at the
@@ -909,7 +901,7 @@ typedef struct O1PhysicsTuningHead {
  * Shard: docs/matching-triage-handoffs/overlay1UpdateObjectPhysics.md. */
 void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
     f32 absAngle;
-    f32 *tuning;
+    Overlay8TuningRecord *tuning;
     O1PhysicsSurface surfaces[8];
     f32 normal[3];
     s16 angles[3];
@@ -957,7 +949,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
     state = object->state;
     if (func_overlay_001_F00004B4_184C894(object) != 0) {
         tuning = func_overlay_008_F0000008_185DD60Reloc(state);
-        D_800CB304 = *tuning;
+        D_800CB304 = tuning->gravity;
         if (gOverlay1Mode == 1) {
             if ((D_800C947C == 0) && (state->joypadDisabled == 0) && (state->spinTimer == 0) && !(state->flags1A8 & 8)) {
                 if (state->previousPathIndex != state->pathIndex) {
@@ -1042,7 +1034,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
         if (level > 10) {
             level = 10;
         }
-        limit = (((f32) level * tuning[2]) + tuning[16]) * state->speedScale;
+        limit = (((f32) level * tuning->levelStep) + tuning->response[O8_RESPONSE_SPEED_BASE]) * state->speedScale;
         for (index = 1, path = &gO1PhysicsPaths[1]; index != 4; index++, path++) {
             if ((path->test != NULL) && (path->mask & (1 << state->pathMode))) {
                 if (path->test() != 0) {
@@ -1162,7 +1154,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
         }
         if (state->boostMode == 0) {
             if (state->slope != 0.0f) {
-                extraScale = 1.0f - (state->slope * 0.5f * ((O1PhysicsTuningHead *)tuning)->slopeFactor);
+                extraScale = 1.0f - (state->slope * 0.5f * tuning->slopeFactor);
                 if (extraScale < 0.1f) {
                     extraScale = 0.1f;
                 }
@@ -1201,8 +1193,8 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
             }
             if ((applySlope != 0) && (state->boostMode == 0)) {
                 state->forwardVelocity = (f32) (state->forwardVelocity + (D_800CB304 * state->slope));
-                if (tuning[7] < state->forwardVelocity) {
-                    state->forwardVelocity = tuning[7];
+                if (tuning->reverseCap < state->forwardVelocity) {
+                    state->forwardVelocity = tuning->reverseCap;
                 }
             }
             if (state->spinTimer != 0) {
@@ -1220,17 +1212,17 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
                     func_overlay_008_F00049DC_1862734Reloc(1);
                 }
                 if (state->forwardVelocity < 0.0f) {
-                    state->forwardVelocity += tuning[(s32) -state->forwardVelocity + 50];
+                    state->forwardVelocity += tuning->response[(s32) -state->forwardVelocity + O8_RESPONSE_BRAKING];
                     if ((state->forwardVelocity > 0.0f) && (state->controlYjoy >= -0x1E)) {
                         state->forwardVelocity = 0.0f;
                     }
                 } else if (state->controlYjoy < -0x1E) {
-                    state->forwardVelocity += tuning[(s32) state->forwardVelocity + 8];
+                    state->forwardVelocity += tuning->response[(s32) state->forwardVelocity + O8_RESPONSE_REVERSE];
                     if (state->forwardVelocity > 6.0f) {
                         state->forwardVelocity = 6.0f;
                     }
                 } else {
-                    state->forwardVelocity = (f32) (state->forwardVelocity - tuning[50]);
+                    state->forwardVelocity = (f32) (state->forwardVelocity - tuning->response[O8_RESPONSE_BRAKING]);
                     if (state->forwardVelocity <= 0.0f) {
                         state->forwardVelocity = 0.0f;
                     }
@@ -1251,8 +1243,8 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
                         index = (s32) work;
                         extraScale = work - (f32) index;
                     }
-                    work = tuning[index + 17];
-                    extraScale = ((tuning[index + 18] - work) * extraScale) + work;
+                    work = tuning->response[index + O8_RESPONSE_FORWARD];
+                    extraScale = ((tuning->response[index + O8_RESPONSE_FORWARD + 1] - work) * extraScale) + work;
                 }
                 extraScale *= state->speedScale;
                 if (state->forwardVelocity < -limit) {

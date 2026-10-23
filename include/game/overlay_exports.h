@@ -37,6 +37,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/overlay8_tuning.h"
 
 /* overlay 1 */
 void overlay1LoadBuildRecords(void);
@@ -74,7 +75,8 @@ void overlay7CommitSelection(s32 selection);
 void overlay7InitPool(void);
 
 /* overlay 8 */
-void *overlay8GetIndexed(void *object);
+/* Shared record contract; input supplies at least two readable bytes. */
+Overlay8TuningRecord *overlay8GetIndexed(const void *object);
 void func_overlay_008_F0000058_185DDB0(void *owner, s32 updateRate);
 void func_overlay_008_F0000894_185E5EC(void *owner, void *state, s32 updateRate);
 s32 func_overlay_008_F0000E88_185EBE0(void *peer, void *record);

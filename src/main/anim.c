@@ -2751,11 +2751,6 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     }
     return hit;
 }
-typedef struct HitResolveMass {
-    u8 pad0[4];
-    f32 mass;
-} HitResolveMass;
-
 typedef struct HitResolveVehicle {
     s8 playerIndex;
     u8 pad1[3];
@@ -2810,7 +2805,7 @@ void func_80055104(HitCopyState *first, HitCopyState *second, f32 scale) {
     HitCopySource *secondSource;
     HitResolveVehicle *firstVehicle;
     HitResolveVehicle *secondVehicle;
-    HitResolveMass *mass;
+    Overlay8TuningRecord *mass;
     f32 direction[3];
     f32 relative[3];
     f32 vector[3];
@@ -2831,11 +2826,11 @@ void func_80055104(HitCopyState *first, HitCopyState *second, f32 scale) {
 
     firstVehicle = (HitResolveVehicle *) first->target;
     firstSource = first->source;
-    mass = (HitResolveMass *) overlay8GetIndexed(firstVehicle);
+    mass = overlay8GetIndexed(firstVehicle);
     firstMass = mass->mass;
     secondSource = second->source;
     secondVehicle = (HitResolveVehicle *) second->target;
-    mass = (HitResolveMass *) overlay8GetIndexed(secondVehicle);
+    mass = overlay8GetIndexed(secondVehicle);
     secondMass = mass->mass;
     direction[0] = secondSource->current.x - firstSource->current.x;
     direction[1] = secondSource->current.y - firstSource->current.y;
@@ -3579,8 +3574,8 @@ s32 func_800563B4(s32 object, AnimCollisionShape *first, s32 value,
  * and the else arm's plane correction is formed in two statements in its own
  * local. With the mass and the correction in different locals, the
  * correction no longer outranks the normal's x component, and the two
- * statements put the intermediate in the correction's register. `offsetX`
- * is unused; it keeps the 0x70 frame.
+ * statements put the intermediate in the correction's register. The genuine
+ * tuning pointer names the returned record before its mass is read.
  */
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
                    AnimVec3f *normal, f32 timeStep) {
@@ -3593,7 +3588,7 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
     f32 cosine;
     f32 offsetY;
     f32 offsetZ;
-    f32 offsetX;
+    Overlay8TuningRecord *tuning;
     f32 negDot;
     f32 speed;
 
@@ -3605,7 +3600,8 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
              target->velocity.y * target->velocity.y);
     if (speed > 25.0f) {
         /* `factor` carries the mass, then the negated sine. */
-        factor = ((HitResolveMass *) overlay8GetIndexed(target))->mass;
+        tuning = overlay8GetIndexed(target);
+        factor = tuning->mass;
         speed = normal->z * target->velocity.z +
                 (target->velocity.x * normal->x + target->velocity.y * normal->y);
         impulse = ((secondSource->unk6C + 1.0f) * speed) / (1.0f / factor);

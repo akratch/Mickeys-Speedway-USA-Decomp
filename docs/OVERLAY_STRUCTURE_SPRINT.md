@@ -1,43 +1,144 @@
-# Overlay structure sprint: from matched code to Rare's structure
+# Overlay structure sprint: source ownership and final build inputs
 
-Status: planned 2026-10-21, revised the same day with the regeneration probe's results. Every overlay function is matched C and the ROM
-rebuilds byte-identically, but the overlays are not yet in Rare's structure.
-The relocation tables, headers, ORT and main table ship as ROM blobs. Most
-initialised data is a blob. The code is split into 649 files where Rare had
-one per module. A layer of per-object post-processing reconciles the
-difference. This sprint removes that gap, so the overlay build derives
-everything from source and the result can be handed to the JFG decomp as a
-reference implementation of Rare's runlink format.
+Status: active, reviewed 2026-10-23. The US executable reconstruction is
+complete under the project's matching standard. The remaining campaign makes
+its storage, identities and build structure faithful enough to maintain and to
+support future native work. Implementing a native port is outside this sprint.
 
-## Definition of done
+## Current evidence
 
-1. **One translation unit per module.** Each of the 106 non-empty modules
-   is built from `src/overlays/oNNN/overlay_NNN.c` with a single flag set,
-   over shared headers (ADR 0006). The evidence for that target is below.
-2. **Data and BSS owned by C.** No overlay `data_rodata` `bin` subsegment
-   remains. Literal pools and jump tables are emitted by the compiler, and
-   BSS offsets come from C definitions.
-3. **Real names in C.** No `*Reloc` placeholder identifiers in overlay C,
-   and no `TrapDanglingJump(...)` spelled in resident C (lane hk-trapnames
-   covers the latter).
-4. **Tables are build output.** A packer emits every module's header,
-   table 1 and table 2, plus the ORT and the main table, from the linked
-   objects. A gate requires byte equality with the shipped tables, and no
-   overlay table `bin` subsegment remains.
-5. **No overlay post-processing.** `config/postprocess-audit.us.json` lists
-   no overlay object with a POSTPROCESS recipe. The overlay half of
-   `overlay_undefined_syms.us.txt` and the per-module alias machinery are
-   retired.
-6. **Shiftable.** A test changes an overlay function's size in a scratch
-   tree and confirms that the packer's tables, the header chaining and the
-   loader's invariants all follow.
-7. **Upstreamable.** The decoder, packer and comparison tools are packaged
-   with documentation and synthetic tests, for contribution to JFG, and are
-   demonstrated against JFG's own build.
+The measurements here are pinned to `53bbb53cc394d8af20d474e98ad6bded504a54ff`.
+They describe the integrated source and a freshly rebuilt raw-object inventory,
+not a promise that all overlay data or interfaces are finished.
 
-`gmake verify` holds after every commit, as always.
+| Area | Proven state | Remaining work |
+|---|---|---|
+| Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
+| Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
+| Initialized storage | 5,840 of 61,312 bytes have canonical projected C owners | 55,472 bytes remain. Another 840 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized images | 32 of 87 data-bearing modules are fully projected to C; two are partial and 53 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
+| Source-module linking | 25 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 8,651 records still borrow authority: 8,194 placeholder references, 452 blob-owned data records and five main-table entries. Layout borrowing remains explicit too. |
+| BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 43 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
+| Final build inputs | The packer and kit compare against the retail region byte-for-byte | The final build still consumes retained main/ORT/header/relocation binaries. Switching those inputs and proving full relayout remain open. |
 
-## Evidence base (measured 2026-10-21)
+All executable counts exclude new credit for padding or data. A compiler pool
+that matches a retained slice does not acquire physical ownership while another
+object still supplies that slice. In particular, overlay 8's restored pool and
+its existing data-only owners need reconciliation before full data integration.
+
+The full-function promotion census is the final release gate, in addition to
+ROM, provenance, documentation, symbol, scoreboard and tooling checks. Focused
+receipts are not a substitute for that completed release check. Integrate exact
+units through `campaign/unchain` and publish with `tools/land.sh`.
+
+## Completed structural and source repairs
+
+The fold batches, including overlays 73–90 and normalization of 91–107, are
+integrated. Overlays 47 and 82 no longer have the old per-function split. Module
+end padding is derived, static procedure symbols are restored from compiler
+metadata, and the obsolete `--force` steps are gone. Imported zero bindings have
+private names, preventing them from impersonating real function definitions.
+Compiler-recorded file-scope BSS anchors restore identities without inventing
+allocation sizes. Generated aliases and the overlay graph have freshness gates.
+
+The compiler's own pools now agree with retail: overlay 1's missing literals,
+overlay 8's 21 read-only scalar loads, overlay 11's release cases and overlay
+101's dispatch/sentinel cases were corrected in C. Their existing executable
+bytes remain exact. Seven overlay 8 site specifications became one guarded
+section anchor; no instruction words are edited.
+
+Source-quality repairs include the two actual `Powerf` exponents, the shared
+front-end command/cursor boundary, bounded overlay 47 scroll storage and address
+encoding, and the complete six-byte shadow angle record. These close specific
+contract errors; they do not imply whole-program type or bounds closure.
+
+## Remaining campaign, in dependency order
+
+1. **Keep proof and ownership truthful.** Rebuild raw objects after integrations,
+   review every ratchet delta and preserve explicit borrowing. Canonical C data
+   totals exclude inactive trial and externalized declarations. Complete source
+   and linked-input evidence must precede retiring a reserve or placement.
+2. **Finish overlays 1 and 65.** Recover actual storage identities and C
+   definitions, then revisit their remaining TU/flag constraints. A shared
+   synthetic VMA or repeated placeholder spelling is not an object identity.
+   Cross-overlay BSS imports need real bounded NOBITS definitions; a zero-valued
+   alias is not a substitute. A header-sized unowned reserve earns no C credit.
+3. **Recover initialized and BSS families.** Prioritize bounded tables, records,
+   strings, geometry and callback families, not opaque copies of whole modules.
+   The largest canonical initialized deficits are overlay 101 (23,904 bytes),
+   overlay 8 (9,040), overlay 7 (2,384), overlay 59 (1,936), overlay 48 (1,792)
+   and overlay 57 (1,632). Overlay 101's timeline streams and small graphics
+   families, and overlay 8's mutable tables/pool overlap, need separate owned
+   packets. Asset payloads require an explicit generated binding/format strategy,
+   not public extracted-byte arrays.
+4. **Remove borrowed identities.** Replace each placeholder and blob-owned
+   pointer field with its actual source definition, compatible callback type or
+   authenticated export. Resolve the five resident main-table targets as well.
+   Delete filters, rebinds, aliases and retained pools only after their genuine
+   producer supplies the exact identities and bytes.
+5. **Make generation authoritative.** Feed generated headers, tables, ORT and
+   main table into the final build. Exercise a real function-size change and a
+   BSS-size change through compilation, table generation, header chaining,
+   exports and final layout. The existing BSS growth experiment and codec
+   relayout test are groundwork, not this complete end-to-end result.
+6. **Close source contracts.** Reconcile shared declarations against providers;
+   recover actual array/object bounds, signedness and effective types; and work
+   the current [cleanup queue](cleanup-queue.md). Reconcile the historical
+   [naturalness ledger](NATURALNESS_LEDGER.md) against current folded paths
+   before reusing its counts or reopening an old experiment. Preserve the
+   authenticated retail defect in [ADR 0019](adr/0019-preserve-retail-loop-defect.md).
+7. **Reproduce the JFG demonstration.** Keep the useful
+   [runlink kit](runlink-toolkit.md) and its MSU parity. Reproduce the documented
+   [JFG snapshot](runlink-jfg.md) in isolation and report its actual unresolved
+   categories. A decoder round trip is not a self-hosting source linker. Donor
+   reference pins and their checkout drift are separate from that demonstration;
+   a digest refresh is not a new donor result.
+
+Each packet has disjoint ownership, a proved baseline, a bounded hypothesis and
+an exact commit or explicit plateau. Apply ADRs 0017, 0018, 0020 and 0021; do not
+replace an eliminated mechanism with an unbounded permutation sweep.
+
+## Native-start boundary
+
+A matching target is not automatically a portable C program. The remaining work
+must leave a concrete interface map for the verified assembly, scheduler/cache/
+PI and RSP/RDP providers, serialized assets, word widths, byte order, pointer
+rebasing and lifetime. The [verified-assembly ledger](VERIFIED_ASSEMBLY.md)
+remains a completed matching result: its 107 routines need future replacement
+contracts, not a new assembly-matching campaign or premature host implementations.
+
+The [asset-loading reference](asset-loading.md) records actual directory,
+compression-front-end, DMA, ownership and caller contracts. It also distinguishes
+trusted metadata from enforced bounds and documents unresolved framing/core
+semantics. Broader cursor extern views, PI declarations, offset-directory object
+bounds and float/word views still need source-contract packets.
+
+The native-start exit is an explicit, source-backed ABI/resource/hardware map
+and a decomp whose C identities and storage are trustworthy. Implementing host
+rendering, audio, input, timing, DMA or portable assembly replacements belongs to
+the later port project.
+
+## Structural exit criteria
+
+- One justified translation-unit layout per module, with compatible shared
+  headers and evidence for every retained flag exception.
+- Initialized data and BSS supplied by actual source producers; no remaining
+  overlay `data_rodata` binary owner, placeholder identity or hybrid data record.
+- Generated relocation tables, headers, ORT and main table used by the final
+  build with zero borrowing, exact retail output and a real relayout proof.
+- Obsolete overlay post-processing and alias machinery retired. Ordinary module
+  linking and compiler-metadata restoration remain documented format/toolchain
+  operations, not instruction editing.
+- Current source-quality findings resolved or supported by explicit evidence,
+  with preserved retail behavior and no hidden source-shaping diagnostics.
+- Reproducible tooling and a bounded, accurately reported JFG demonstration.
+
+The following probe is historical evidence from before these integrations. Its
+counts, file layout and descriptions of missing gates refer to 2026-10-21;
+use the pinned current measurements above for scheduling and reporting.
+
+## Historical probe: 2026-10-21
 
 - **The format is shared with JFG** and fully decoded by
   `tools/overlay_tables.py`. The loader, `src/main/runlink.c`, is matched C.
@@ -98,7 +199,7 @@ reference implementation of Rare's runlink format.
   - 10 const objects are placed in `.data` instead of `.rodata` (o077);
   - 1 exported function is reached by a JUMP.
 
-  A byte-equal packer gate catches all of these. Today nothing does.
+  The packer comparison now checks these identities; this was a gap at the probe date.
 - **Main table.** Its 370 R26 entries are exactly the `TrapDanglingJump`
   call sites in the resident objects' `.rel.text`, in link order (370/370).
   The two HI/LO pairs, from an asm object, follow by ascending site, and the
@@ -128,215 +229,3 @@ reference implementation of Rare's runlink format.
   (77,680 bytes) has no C owner.
 - **The ORT** has 2,004 rows and no names in MSU's ROM; 844 rows are
   referenced by no relocation.
-
-## Phases
-
-### Phase 0: housekeeping and probe (probe done; lanes in flight)
-
-- **hk-altered.** The 9 "altered" objects are re-expressed as metadata-only
-  steps, and the audit is wired into credit.
-- **hk-surface.** Surface conflicts fail closed. Generated rename rules
-  replace in-place object mutation, so a fresh clone builds on its own.
-  Vestigial atlas rows and inert renames are deleted, and stale docs fixed.
-- **hk-trapnames.** Resident C calls overlay functions by their real names,
-  which are renamed to the trap at object level and checked against the main
-  table. This gives the packer the resident call graph it needs for the main
-  table.
-- **Probe (done).** Its results are recorded under Evidence above. The
-  scripts live in session scratch. Phase 1 turns them into tracked tools.
-
-Exit: all three lanes integrated.
-
-### Phase 1: identities, then the packer (about 5 days)
-
-The probe shows that sites, types, order and the table split already come
-out of the objects. What the objects lack is identity, so this phase restores
-identity first and then emits the tables.
-
-1. **Real names.** Replace the placeholder identities: 1,573 `*Reloc`
-   identifiers across 371 files, plus the `D_xxxx` absolute placeholders.
-   Use the symbol each one stands for, from the surface's
-   generated-identity → name mapping.
-2. **Fix the wrong targets.** Correct the 182 references whose names resolve
-   to a different target than the shipped record. Each fix is a source edit
-   that leaves the ROM identical. The packer gate is what proves them
-   correct.
-3. **The export set.** Exported means having an ORT row. Until phase 2 makes
-   callees `static`, the packer takes the static/export distinction from the
-   ORT name list: a same-module call to an unexported target becomes JUMP.
-   After the fold, `static` in the C carries it directly.
-4. **`tools/runlink_pack.py`:**
-   - **Inputs.** Each module's raw objects in atlas order, the resident
-     objects, and a tracked ORT name list (`config/runlink-ort.us.txt`: row
-     index → symbol name, names only).
-   - **Records.** Each ELF relocation becomes a Rare record using the
-     measured emission order. Table 1 is outbound targets, and table 2 is
-     the rest, with data records after text records. The stale `symbolIndex`
-     rule applies to JUMP.
-   - **LOCAL bases.** `.data` is based at the text size and `.bss` at
-     text + data. A per-module rodata base comes from the C object's
-     `.rodata` start, for the 48 modules that need one.
-   - **Headers and main table.** Headers come from section sizes, text
-     including its pad, and from the init/resume symbols. The main table
-     takes the resident trap call sites in link order, then the asm HI/LO
-     pairs by site, then the DATA record. Address-of-`TrapDanglingJump`
-     relocations are excluded.
-   - **Hybrid mode.** For the 13 modules with blob-owned pointer data, the
-     packer takes those 452 data records from the shipped table, and each
-     such module stays flagged hybrid until phase 3.
-5. **Gate: `gmake check-runlink-tables`.** Packer output must be
-   byte-identical to the shipped tables for every module, the ORT and the
-   main table. It runs in `tools/gates.sh --promotion` and `land.sh`. Then
-   switch the build: the atlas stops emitting table `bin` subsegments, and
-   the link takes the packer's output.
-6. **Source fixes for the 9 HI/LO transpositions**: o001, o014, o015, o058
-   twice, o059, o060, o065 and o101. Reorder the address evaluation to match
-   the original.
-
-Exit: tables are build output for all 106 modules (13 hybrid), the gate is
-green, and no placeholder names remain in overlay C.
-
-### Phase 2: one translation unit per module (about 1 week)
-
-The probe removed most of this phase's risk. One flag set
-(`-Wab,-r4300_mul -O2 -mips2 -32`) reproduces 636 of the 641 objects, so
-folding is mostly type de-duplication. The work is per-overlay lanes in the
-TU-batch shape, integrated in batches of about ten with `tools/integrate.sh`.
-Each lane:
-
-1. Folds the module's files, in atlas order, into `overlay_NNN.c` plus one
-   header. Private typedefs and duplicate externs collapse into shared
-   definitions (ADR 0006; `docs/overlay-consolidation.md`). Duplicate type
-   definitions are what stopped 61 of 70 overlays compiling as a plain
-   concatenation.
-2. Makes every unexported function `static`. JUMP then follows from the C,
-   as the o030 trial showed.
-3. Builds with the single overlay flag set and deletes the module's trims,
-   renames and rebinds. Done means no POSTPROCESS recipe for that module.
-4. Proves the result: `gmake verify`, `check-runlink-tables`, and
-   promotion-proof for every function in the module, statics included.
-   `tools/static_symbols.py` gives each static a sized local symbol from the
-   object's `.mdebug`, on every overlay object, so no per-module list or
-   recipe is needed (`docs/reloc-surface.md`).
-
-Order of work:
-
-- **o069, o091 and o100:** already byte-identical as one file.
-- **The other single-file modules and the uniform-flag modules.**
-- **The five loop-unroll objects:** o039, o046, o065 (two) and o082. The
-  o065 and o082 conflicts are matching targets, to be re-spelled until they
-  match under one setting.
-
-Exit: 106 single-file modules, one overlay flag set, and zero overlay
-POSTPROCESS recipes outside the data-ownership remainder.
-
-### Phase 3: data and BSS into C (about 1–2 weeks, overlapping phase 2)
-
-The work is per-module, after that module's fold:
-
-1. **Rodata.** Delete the externalized copy. With the TU whole and in order,
-   IDO emits the jump tables, float literals and string pools itself.
-   - Three C switch tables currently disagree with the shipped entries, and
-     post-processing hides it today: o011 ReleaseCurrentGroup (4 of 6
-     entries), o101 DispatchActive (14 of 16, the same targets permuted) and
-     o101 DispatchEvents (1 of 19).
-   - Each is a case-order or case-value correction in the source.
-   - o001_tail's table sits 4 bytes away from the rest of its rodata;
-     resolve it in the fold.
-2. **Initialised data.** Define tables, strings and pointer tables in C,
-   with types. The 452 missing R32 records are the pointer fields:
-   - 267 point to rodata;
-   - 91 to data;
-   - 38 to static functions;
-   - 56 to exported functions.
-
-   Also remove the o031 initializer that is a function pointer where the
-   shipped word has no relocation.
-3. **BSS.** Defining BSS in C makes the LOCAL BSS-base offsets fall out of
-   the definitions. Watch for COMMON ordering: IDO emits uninitialised
-   globals as COMMON, so control the order with `static` or explicit
-   definitions where the layout requires it.
-4. Clear the module's hybrid flag in the packer.
-
-Exit: no overlay `data_rodata` `bin`, and no hybrid modules.
-
-### Phase 4: retire the scaffolding (about 2 days)
-
-- Remove the overlay half of the surface: value lines, alias lines and the
-  `_oNNNReloc` renames. Remove the atlas `TEXT_SUBSEGMENTS` rows beyond one
-  per module, and the overlay rebind, filter, externalize and trim spec files.
-- Add the shiftability test.
-- Update `docs/overlays.md`, `docs/reloc-surface.md`, ADR 0006 (to
-  "Implemented"), CLAUDE.md's overlay promotion recipe, `docs/LANE_BRIEF.md`
-  and the README scoreboard text.
-
-### Phase 5: package for JFG (about 3 days)
-
-Status 2026-10-22: the kit is `tools/runlink/` (`docs/runlink-toolkit.md`);
-`gmake check-runlink-kit` holds it to `tools/runlink_pack.py`'s exact result.
-The JFG demonstration is `docs/runlink-jfg.md`.
-
-- Package a self-contained `runlink` toolset: decode, pack, compare and
-  census. It needs no MSU-specific paths and takes configuration for ROM
-  offsets, module count and ORT names. Include docs and synthetic tests.
-  MSU is CC0.
-- **Demonstrate it on JFG.** Run the packer over JFG's current overlay
-  objects (assembly, in hybrid mode) and compare with JFG's shipped tables.
-  Measure how much of JFG's tables regenerate today, and what JFG needs for
-  each remaining category. JFG's ROM ships ORT names, so its name list comes
-  from the ROM.
-- Write the format and rules document, extending the notes already shared,
-  with the measured rules, the order rule and the single-TU evidence.
-
-## Gates added by this sprint
-
-| Gate | Checks | Runs in |
-|---|---|---|
-| `check-runlink-tables` | Packer output equals the shipped tables, byte for byte | `gates.sh --promotion`, `land.sh` |
-| altered-object credit | No credited object is classed `altered` | `check-docs` or `check-scoreboard` (hk-altered) |
-| surface conflicts | `reloc_surface.py generate` fails on unresolved values | `overlay-syms` (hk-surface) |
-| trap-name check | Each resident trap site's main-table target equals the name the C uses | hk-trapnames |
-| shiftability | Tables follow a size change | `check-tooling` (scratch build) |
-
-## Risks and fallbacks
-
-- **The order rule meets a new exception.** The probe confirmed it across
-  every module, apart from 9 single-pair HI/LO transpositions with a source
-  cause.
-  - If a fold or a data conversion surfaces a different exception, treat it
-    as a source finding first.
-  - Only if no source fix exists, record a per-module order override
-    (offsets only, generated by the decoder) and document it in the format
-    write-up.
-- **A wrong-target fix changes behaviour.** The 182 fixes rename symbols
-  without changing any byte, but the C then names a different function or
-  object. Give each one a quick semantic check that the new callee's
-  signature fits the call, and run the behaviour drivers where one exists
-  for that code.
-- **A function cannot be re-matched under the overlay flag set.** Only five
-  objects are at risk (o039, o046, o065 ×2, o082).
-  - First, recheck the single-TU evidence for that module.
-  - If the evidence stands, the source spelling is wrong: work it as a
-    matching target.
-  - Splitting a module into two translation units is allowed only when an
-    alignment-consistent boundary and independent evidence both support it.
-- **Data typing.** The ROM catches wrong bytes. Semantic mistakes (for
-  example, a pointer typed as an integer) are caught by the packer, because
-  a pointer field must produce the shipped R32 record.
-- **ORT names.** Of the 844 unreferenced rows, overlay rows name the
-  function at that offset; resident rows use the resident symbol at that
-  address. Rows with no symbol get a generated name in the project's
-  convention.
-- **IDO literal and COMMON ordering** after a fold. The overlay 77 pilot hit
-  two consolidation hazards. Verify each fold before folding the next.
-
-## Schedule
-
-| Week | Work |
-|---|---|
-| 1 | Phase 0 integrates; phase 1: real names, the 182 target fixes, the packer and gate |
-| 2 | Phase 2 folds (all batches; flag work is limited to five objects); phase 3 starts on folded modules |
-| 3 | Phase 3: data, BSS and the three switch tables |
-| 4 | Phase 4 retirement; phase 5 package and JFG demonstration |
-
-Phase 1 is the critical path. Phases 2 and 3 parallelise per module.

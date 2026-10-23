@@ -173,22 +173,16 @@ current detectors.
   `ledger_redaction._sweep`: it covers target-naming keys in any case at any
   depth in any container, but it does not read string *contents*, so target
   code under an innocuous key name or as a bare list element survives).
-- **Absolute filesystem paths in the workbench manifests**, which are a
-  publication problem rather than a clean-room one, and are *known and
-  deliberately not scrubbed*. Both tracked manifests under
-  `.decomp-workbench/campaigns/` record `/Users/<name>/…` in
-  `identity_inputs`, and the manifest schema check permits them: `_m_path`
-  requires a path, not a relative one. They are not quietly fixed because the
-  quiet fix would be worse. `identity` is
-  `sha256(json.dumps(identity_inputs, sort_keys=True, separators=(",",":")))`
-  (verified, both manifests reproduce their recorded digest exactly), and the
-  campaign directory name embeds its first twelve hex characters
-  (`SetLinkSlot-ee19dab3a5b2`). Rewriting the paths to relative ones
-  invalidates the digest and the directory name together, and re-deriving both
-  would produce a record of a campaign that was never run under those inputs.
-  **The fix at publication time is to drop `.decomp-workbench/` from the
-  published tree, or to re-run the two campaigns from a neutral root and commit
-  the manifests they genuinely produce**, not to edit these.
+- **Absolute filesystem paths in historical workbench manifests.** Earlier
+  campaign manifests recorded machine-local paths in their identity inputs,
+  and the schema allowed them. Those manifests are no longer tracked: the
+  2026-10-23 tree has no entries under `.decomp-workbench/`. This is a
+  historical failure, not a current publication blocker. Paths participate in
+  the manifest digest and directory identity, so replacing a path in a saved
+  manifest does not preserve the original campaign record. Keep that record
+  private or rerun the campaign from a neutral root. The repository's existing
+  [path rule](../AGENTS.md) prohibits absolute workstation paths in tracked
+  files; the content detectors do not establish compliance with that rule.
 
 The pattern across all of these: **content detection here is calibrated for
 accidents, and the accident case is well covered. Against someone trying, the

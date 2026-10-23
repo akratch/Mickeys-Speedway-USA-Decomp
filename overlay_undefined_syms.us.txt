@@ -815,63 +815,54 @@ gOverlay11GroupEnd6 = 0x000001e0;
 gOverlay11ReleaseSwitchTableReloc = 0x0000007c;
 
 /* overlay 12: overlay_012.c.o */
+Arctanf_o012Reloc = 0xf0000000;
+camDoSpriteDirect_o012Reloc = 0xf0000000;
+func_800084C4_o012Reloc = 0xf0000000;
+func_8001291C_o012Reloc = 0xf0000000;
+func_80024938_o012Reloc = 0xf0000000;
+func_8002A8BC_o012Reloc = 0xf0000000;
+func_8002A8C0_o012Reloc = 0xf0000000;
 gOverlay12Count = 0x00000000;
+gOverlay12EffectColors = 0x00000064;
+gOverlay12EffectCount = 0x00000000;
+gOverlay12Effects = 0x00000020;
 gOverlay12Entries = 0x00000020;
 gOverlay12Flag1536 = 0x00001536;
+gOverlay12ParticleColors = 0x000000c4;
+gOverlay12ParticleCount = 0x00000004;
+gOverlay12Particles = 0x00001520;
+gOverlay12QuadTriangles = 0x00000040;
 gOverlay12Ready = 0x00000060;
+gOverlay12Resource0 = 0x00000008;
+gOverlay12Resource1 = 0x0000000c;
+gOverlay12Resource2 = 0x00000010;
+gOverlay12Resource3 = 0x00000014;
 gOverlay12Resource39 = 0x0000001c;
+gOverlay12Resource4 = 0x00000018;
+gOverlay12Resource5 = 0x0000001c;
 gOverlay12ResourceF2 = 0x0000000c;
 gOverlay12ResourceF3 = 0x00000008;
 gOverlay12ResourceF4 = 0x00000010;
 gOverlay12ResourceF5 = 0x00000014;
 gOverlay12ResourceF6 = 0x00000018;
-gOverlay12Selection = 0x00000004;
-gOverlay12Value1598 = 0x00001598;
-overlay12LoadReloc = 0xf0000000;
-
-/* overlay 12: func_overlay_012_F00000C4_186D344.c.o */
-D_1C = 0x0000001c;
-texFreeSprite_o012Reloc = 0xf0000000;
-texFreeTexture_o012Reloc = 0xf0000000;
-
-/* overlay 12: overlay_012_tail.c.o */
-D_20 = 0x00000020;
-
-/* overlay 12: func_overlay_012_F00002E4_186D564.c.o */
-D_1520 = 0x00001520;
-
-/* overlay 12: func_overlay_012_F00003A8_186D628.c.o */
-.rodata = 0x00000000;
-Arctanf_o012Reloc = 0xf0000000;
-func_8001291C_o012Reloc = 0xf0000000;
-func_8002A8BC_o012Reloc = 0xf0000000;
-func_8002A8C0_o012Reloc = 0xf0000000;
-gOverlay12EffectCount = 0x00000000;
-gOverlay12Effects = 0x00000020;
-gOverlay12ParticleCount = 0x00000004;
-gOverlay12Particles = 0x00001520;
-gOverlay12Resource5 = 0x0000001c;
-mathRnd_o012Reloc = 0xf0000000;
-sqrtf_o012Reloc = 0xf0000000;
-texAnimateSprite_o012Reloc = 0xf0000000;
-trackGetTrack_o012Reloc = 0xf0000000;
-
-/* overlay 12: func_overlay_012_F0000910_186DB90.c.o */
-camDoSpriteDirect_o012Reloc = 0xf0000000;
-func_800084C4_o012Reloc = 0xf0000000;
-func_80024938_o012Reloc = 0xf0000000;
-gOverlay12EffectColors = 0x00000064;
-gOverlay12F0910LiteralPoolReloc = 0x0000000c;
-gOverlay12ParticleColors = 0x000000c4;
-gOverlay12QuadTriangles = 0x00000040;
 gOverlay12Resources = 0x00000000;
+gOverlay12Selection = 0x00000004;
 gOverlay12TrianglesA = 0x00000000;
 gOverlay12TrianglesB = 0x00000020;
+gOverlay12Value1598 = 0x00001598;
+mathRnd_o012Reloc = 0xf0000000;
+overlay12LoadReloc = 0xf0000000;
 sprClearIA2ColOverride_o012Reloc = 0xf0000000;
 sprSetIA2ColOverride_o012Reloc = 0xf0000000;
+sqrtf_o012Reloc = 0xf0000000;
+texAnimateSprite_o012Reloc = 0xf0000000;
 texDPTextureX_o012Reloc = 0xf0000000;
+texFreeSprite_o012Reloc = 0xf0000000;
+texFreeTexture_o012Reloc = 0xf0000000;
+trackGetTrack_o012Reloc = 0xf0000000;
 
 /* overlay 13: overlay_013.c.o */
+D_20 = 0x00000020;
 D_28 = 0x00000028;
 D_80000000 = 0x80000000;
 SetLinkSlot_o013Reloc = 0xf0000000;
@@ -1285,6 +1276,9 @@ overlay37RecordMinimum_o026Reloc = 0xf0000000;
 partUpdateTriggers_o026Reloc = 0xf0000000;
 sqrtf_o026Reloc = 0xf0000000;
 trackMakePolylist_o026Reloc = 0xf0000000;
+
+/* overlay 26: func_overlay_026_F0000B18_187AF10.c.o */
+D_1C = 0x0000001c;
 
 /* overlay 26: overlay26HandleEffects.c.o */
 amSndPlayXYZ_o026Reloc = 0xf0000000;
@@ -2433,6 +2427,7 @@ frontGetScreenMode_o054Reloc = 0xf0000000;
 gOverlay54Offsets = 0x00000198;
 
 /* overlay 54: overlay54TailA.c.o */
+.rodata = 0x00000000;
 D_8007BEF4_o054Reloc = 0x00000000;
 D_8007C180_o054Reloc = 0x00000000;
 D_8007C1B0_o054Reloc = 0x00000000;
@@ -5056,9 +5051,6 @@ func_overlay_011_F0002BA0_186B3E8 = overlay11ReleaseHandles;
 
 /* overlay 11: overlay11ReleaseCurrentGroup.c.o */
 func_overlay_011_F0002BF4_186B43C = overlay11ReleaseCurrentGroup;
-
-/* overlay 12: overlay_012.c.o */
-func_overlay_012_F0000000_186D280 = overlay12Initialize;
 
 /* overlay 13: overlay_013.c.o */
 func_overlay_013_F0000124_186EC3C = overlay13Release;

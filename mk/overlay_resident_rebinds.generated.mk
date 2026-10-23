@@ -366,9 +366,23 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11UpdateMenu.c.o: SURFACE_REBIND = 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11UpdateSelection.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D3190=D_800D3190_o011Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00000C4_186D344.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o012Reloc \
+	--redefine-sym camDoSpriteDirect=camDoSpriteDirect_o012Reloc \
+	--redefine-sym func_800084C4=func_800084C4_o012Reloc \
+	--redefine-sym func_8001291C=func_8001291C_o012Reloc \
+	--redefine-sym func_80024938=func_80024938_o012Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o012Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o012Reloc \
+	--redefine-sym mathRnd=mathRnd_o012Reloc \
+	--redefine-sym sprClearIA2ColOverride=sprClearIA2ColOverride_o012Reloc \
+	--redefine-sym sprSetIA2ColOverride=sprSetIA2ColOverride_o012Reloc \
+	--redefine-sym sqrtf=sqrtf_o012Reloc \
+	--redefine-sym texAnimateSprite=texAnimateSprite_o012Reloc \
+	--redefine-sym texDPTextureX=texDPTextureX_o012Reloc \
 	--redefine-sym texFreeSprite=texFreeSprite_o012Reloc \
-	--redefine-sym texFreeTexture=texFreeTexture_o012Reloc $@
+	--redefine-sym texFreeTexture=texFreeTexture_o012Reloc \
+	--redefine-sym trackGetTrack=trackGetTrack_o012Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay_013.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym SetLinkSlot=SetLinkSlot_o013Reloc \

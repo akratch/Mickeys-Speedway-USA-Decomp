@@ -430,86 +430,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeParticleAssets.c.o: POS
 	$(OBJCOPY) --redefine-sym func_overlay_031_F00002E8_187F808=func_overlay_031_F00002E8_187F808 $@ && \
 	$(OBJCOPY) --remove-section=.data --remove-section=.rel.data \
 		--remove-section=.gptab.data $@
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: CFLAGS += -Wo,-loopunroll,0
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC4
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00000C4_186D344.c.o: CFLAGS += -Wo,-loopunroll,0
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00000C4_186D344.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym gOverlay12Resource0=D_8 \
-		--redefine-sym gOverlay12Resource1=D_C \
-		--redefine-sym gOverlay12Resource2=D_10 \
-		--redefine-sym gOverlay12Resource3=D_14 \
-		--redefine-sym gOverlay12Resource4=D_18 \
-		--redefine-sym gOverlay12Resource5=D_1C $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xF0
-# The typed source naturally owns all 76 instruction words. The overlay-local
-# globals and three runtime roles use the split target's established carriers;
-# normalize only those symbol identities and trim compiler section alignment.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012_tail.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	$(TOOLS_DIR)/trim_elf_section.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012_tail.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym gOverlay12Effects=D_20 \
-		--redefine-sym gOverlay12EffectCount=D_0 \
-		--redefine-sym overlay12Initialize=func_overlay_012_F0000000_186D280 $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0xD0:mathRnd:func_overlay_012_F0000000_186D280 \
-		0xFC:mathRnd:func_overlay_012_F0000000_186D280 && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x130
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00002E4_186D564.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym gOverlay12ParticleCount=D_4 \
-		--redefine-sym gOverlay12Particles=D_1520 $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC4
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00003A8_186D628.c.o: CFLAGS += -Wab,-r4300_mul
-# Exact C. Its three float literals duplicate the retained overlay data at
-# rodata-relative +0x0/+0x4/+0x8 (LOCAL records with those stored addends):
-# assert the pool by digest and bind it to the loader-owned base (overlay 7's
-# form), then trim compiler alignment beyond the 0x568-byte extent. The eight
-# resident callees are SYMBOL records and go through the _o012Reloc surface.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00003A8_186D628.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym Arctanf=Arctanf_o012Reloc \
-		--redefine-sym func_8001291C=func_8001291C_o012Reloc \
-		--redefine-sym func_8002A8BC=func_8002A8BC_o012Reloc \
-		--redefine-sym func_8002A8C0=func_8002A8C0_o012Reloc \
-		--redefine-sym texAnimateSprite=texAnimateSprite_o012Reloc \
-		--redefine-sym mathRnd=mathRnd_o012Reloc \
-		--redefine-sym sqrtf=sqrtf_o012Reloc \
-		--redefine-sym trackGetTrack=trackGetTrack_o012Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x568 && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:43c85de24b2a93e5fd07941d9d508c8651dd80ad9465a64d0533fb6b19f4667d
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: CFLAGS += -Wab,-r4300_mul
-# Exact C. Its two float literals (0.01f, 1.8f) duplicate the retained
-# overlay rodata at +0xC/+0x10, after the three of
-# func_overlay_012_F00003A8_186D628: bind both %hi/%lo pairs to a pool base
-# there (reloc_surface generates the same value from the shipped words) and
-# drop the private copy by digest. Only relocation symbol indices change. The
-# seven resident callees go through the _o012Reloc surface.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	$(TOOLS_DIR)/externalize_elf_section.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym func_800084C4=func_800084C4_o012Reloc \
-		--redefine-sym camDoSpriteDirect=camDoSpriteDirect_o012Reloc \
-		--redefine-sym func_80024938=func_80024938_o012Reloc \
-		--redefine-sym texDPTextureX=texDPTextureX_o012Reloc \
-		--redefine-sym sprSetIA2ColOverride=sprSetIA2ColOverride_o012Reloc \
-		--redefine-sym sprClearIA2ColOverride=sprClearIA2ColOverride_o012Reloc \
-		--redefine-sym sqrtf=sqrtf_o012Reloc \
-		--add-symbol gOverlay12F0910LiteralPoolReloc=0xC,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x2C4:.rodata:gOverlay12F0910LiteralPoolReloc \
-		0x300:.rodata:gOverlay12F0910LiteralPoolReloc \
-		0x730:.rodata:gOverlay12F0910LiteralPoolReloc \
-		0x760:.rodata:gOverlay12F0910LiteralPoolReloc && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x98C && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:7e3ad0b04bf68a26c81389889b86122d1edb7aa3b037cfa4f65e6f131a6ab4a7
 include mk/overlay_014.mk
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36CallGlobal.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
@@ -2017,6 +1937,19 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay_013.c.o: ASM_PROCESSOR += --force
 # keeps the static names.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/overlay_005.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/overlay_005.c.o: ASM_PROCESSOR += --force
+# Overlay 12 is one translation unit at the overlay flag set and owns its pad;
+# --force keeps the static function's name, and the resident calls go through
+# the generated surface rebinds. What remains is rodata ownership, kept until
+# phase 3: the TU's five float literals are the retained data at data_rodata
+# +0x130, in the order the shipped rodata-relative LOCAL records expect, so the
+# pool is asserted by digest and anchored at zero.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: ASM_PROCESSOR += --force
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: \
+	$(TOOLS_DIR)/externalize_elf_section.py
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:0d02c190457cd94e2b33b9a8fe45a73687e90716f4b71bf32203ccd7723733d6
 # Overlay 16 is one translation unit at the overlay flag set; its .text
 # carries the module's trailing pad, so nothing is trimmed. --force runs
 # asm-processor's static-symbol pass on this GLOBAL_ASM-free file, so the

@@ -215,7 +215,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   **Left** (lane c-1, 2026-10-08, measured): deleting the empty `if (unused) {}` changes about 100 words; the parameter reference removes its home store (cf. overlay99BuildHeightGrid). Prior note: Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/overlays/o008/overlay_008.c:1519` `overlay8ScaleOutputs` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
-- `src/overlays/o012/func_overlay_012_F00000C4_186D344.c:41` `func_overlay_012_F00000C4_186D344` **A**: empty if body.
+- `src/overlays/o012/overlay_012.c:41` `func_overlay_012_F00000C4_186D344` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Left (lane c-4, 2026-10-09):** the empty `!i` test keeps `i` live after the clear loop, which stops IDO turning the `< 64` exit into `!= 64` (2 lines: `li`/`bne` against `slti`/`bnez`). The sibling overlay12Initialize resolved with `for (i = 0, entry = gOverlay12Entries; i < 64; i++, entry++)` because its counter is reused after the loop; here the same loop (2), `<= 63` (2), a plain `do`/`while` (3, 4), an indexed loop (8) and deleting the test (7) all differ. A natural later use of `i` is still to find.
 - `src/overlays/o012/overlay_012.c:26` `overlay12Initialize` **A**: empty if body.

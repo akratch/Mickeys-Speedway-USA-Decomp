@@ -2948,55 +2948,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0xC4",
-     "size": "0xC4",
+     "end_offset": "0x129C",
+     "size": "0x129C",
      "type": "c",
      "source": "overlays/o012/overlay_012",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xC4",
-     "end_offset": "0x1B4",
-     "size": "0xF0",
-     "type": "c",
-     "source": "overlays/o012/func_overlay_012_F00000C4_186D344",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1B4",
-     "end_offset": "0x2E4",
-     "size": "0x130",
-     "type": "c",
-     "source": "overlays/o012/overlay_012_tail",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2E4",
-     "end_offset": "0x3A8",
-     "size": "0xC4",
-     "type": "c",
-     "source": "overlays/o012/func_overlay_012_F00002E4_186D564",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x3A8",
-     "end_offset": "0x910",
-     "size": "0x568",
-     "type": "c",
-     "source": "overlays/o012/func_overlay_012_F00003A8_186D628",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x910",
-     "end_offset": "0x129C",
-     "size": "0x98C",
-     "type": "c",
-     "source": "overlays/o012/func_overlay_012_F0000910_186DB90",
      "matched": true,
      "nonmatching": false
     },

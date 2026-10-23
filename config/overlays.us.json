@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4900,
+  "owned_data_rodata_bytes": 4908,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -11108,217 +11108,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x954",
-     "size": "0x954",
-     "type": "c",
-     "source": "overlays/o057/func_overlay_057_F0000000_18A3BF8",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x954",
-     "end_offset": "0x1020",
-     "size": "0x6CC",
-     "type": "c",
-     "source": "overlays/o057/overlay57UpdateInterface",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1020",
-     "end_offset": "0x1978",
-     "size": "0x958",
-     "type": "c",
-     "source": "overlays/o057/func_overlay_057_F0001020_18A4C18",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1978",
-     "end_offset": "0x1AE8",
-     "size": "0x170",
-     "type": "c",
-     "source": "overlays/o057/overlay57ReleaseAll",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1AE8",
-     "end_offset": "0x28B4",
-     "size": "0xDCC",
-     "type": "c",
-     "source": "overlays/o057/func_overlay_057_F0001AE8_18A56E0",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x28B4",
-     "end_offset": "0x2C28",
-     "size": "0x374",
-     "type": "c",
-     "source": "overlays/o057/overlay57EaseAndLatch",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2C28",
-     "end_offset": "0x2F48",
-     "size": "0x320",
-     "type": "c",
-     "source": "overlays/o057/overlay57SmoothAndCheckDistance",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2F48",
-     "end_offset": "0x3048",
-     "size": "0x100",
-     "type": "c",
-     "source": "overlays/o057/overlay57CheckDistance",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x3048",
-     "end_offset": "0x3238",
-     "size": "0x1F0",
-     "type": "c",
-     "source": "overlays/o057/overlay57UpdateTransition",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x3238",
-     "end_offset": "0x32A0",
-     "size": "0x68",
-     "type": "c",
-     "source": "overlays/o057/overlay57ApplyValue",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x32A0",
-     "end_offset": "0x35E0",
-     "size": "0x340",
-     "type": "c",
-     "source": "overlays/o057/overlay57Draw32A0",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x35E0",
-     "end_offset": "0x3A4C",
-     "size": "0x46C",
-     "type": "c",
-     "source": "overlays/o057/overlay57UpdateSelection",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x3A4C",
-     "end_offset": "0x3FD4",
-     "size": "0x588",
-     "type": "c",
-     "source": "overlays/o057/overlay57UpdateModeState",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x3FD4",
-     "end_offset": "0x4064",
-     "size": "0x90",
-     "type": "c",
-     "source": "overlays/o057/overlay57BeginMode",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x4064",
-     "end_offset": "0x43C8",
-     "size": "0x364",
-     "type": "c",
-     "source": "overlays/o057/overlay57HandleModeInput",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x43C8",
-     "end_offset": "0x4460",
-     "size": "0x98",
-     "type": "c",
-     "source": "overlays/o057/overlay57StartMode",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x4460",
-     "end_offset": "0x4C18",
-     "size": "0x7B8",
-     "type": "c",
-     "source": "overlays/o057/func_overlay_057_F0004460_18A8058",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x4C18",
-     "end_offset": "0x4D90",
-     "size": "0x178",
-     "type": "c",
-     "source": "overlays/o057/overlay57UpdateModeTrigger",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x4D90",
-     "end_offset": "0x4E18",
-     "size": "0x88",
-     "type": "c",
-     "source": "overlays/o057/overlay57InitializeMode",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x4E18",
-     "end_offset": "0x60F8",
-     "size": "0x12E0",
-     "type": "c",
-     "source": "overlays/o057/func_overlay_057_F0004E18_18A8A10",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x60F8",
-     "end_offset": "0x67DC",
-     "size": "0x6E4",
-     "type": "c",
-     "source": "overlays/o057/func_overlay_057_F00060F8_18A9CF0",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x67DC",
-     "end_offset": "0x6878",
-     "size": "0x9C",
-     "type": "c",
-     "source": "overlays/o057/overlay57SetNodeValue",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x6878",
-     "end_offset": "0x69B0",
-     "size": "0x138",
-     "type": "c",
-     "source": "overlays/o057/overlay57ApplyTable",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x69B0",
      "end_offset": "0x6AB0",
-     "size": "0x100",
+     "size": "0x6AB0",
      "type": "c",
-     "source": "overlays/o057/overlay57UpdateNode",
+     "source": "overlays/o057/overlay_057",
      "matched": true,
      "nonmatching": false
     }
@@ -11420,22 +11213,12 @@
    "data_rodata_ownership": [
     {
      "offset": "0x5AC",
-     "end_offset": "0x5E8",
-     "size": "0x3C",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o057/func_overlay_057_F0000000_18A3BF8",
-     "trial_function": "func_overlay_057_F0000000_18A3BF8",
-     "externalized": true
-    },
-    {
-     "offset": "0x5F0",
      "end_offset": "0x644",
-     "size": "0x54",
+     "size": "0x98",
      "type": "c",
      "section": ".rodata",
-     "source": "overlays/o057/func_overlay_057_F0001AE8_18A56E0",
-     "trial_function": "func_overlay_057_F0001AE8_18A56E0",
+     "source": "overlays/o057/overlay_057",
+     "trial_function": "func_overlay_057_F0000000_18A3BF8",
      "externalized": true
     }
    ]

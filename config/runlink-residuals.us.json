@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 153, "borrowed_records": 9144},
+  "totals": {"differences": 153, "borrowed_records": 9098},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -270,7 +270,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1944,
+      "count": 1939,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1302,8 +1302,6 @@
         [57, "gO57Ease28B4State144", 2],
         [57, "gO57Ease28B4State180", 2],
         [57, "gO57GridAlpha13C", 6],
-        [57, "gO57GridBlendA8", 2],
-        [57, "gO57GridBlendAC", 2],
         [57, "gO57GridMode184", 4],
         [57, "gO57GridRecord160", 2],
         [57, "gO57GridTriangles", 8],
@@ -1446,9 +1444,7 @@
         [57, "gOverlay57MenuSources", 14],
         [57, "gOverlay57MirrorFlag", 4],
         [57, "gOverlay57Mode10C", 8],
-        [57, "gOverlay57ModeFlag", 16],
         [57, "gOverlay57NodeArguments", 2],
-        [57, "gOverlay57Object", 6],
         [57, "gOverlay57Object100", 2],
         [57, "gOverlay57ObjectId", 16],
         [57, "gOverlay57ObjectReady", 2],
@@ -1488,7 +1484,6 @@
         [57, "gOverlay57TableMode", 2],
         [57, "gOverlay57Threshold38D8Reloc", 2],
         [57, "gOverlay57Threshold3970Reloc", 2],
-        [57, "gOverlay57Timer", 20],
         [57, "gOverlay57Transition", 4],
         [57, "gOverlay57UpdateFlags", 2],
         [57, "gOverlay57UpdateIndex", 2],
@@ -2220,7 +2215,7 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 75,
+      "count": 74,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -2278,9 +2273,8 @@
         [54, "overlay54TailA", ".data", "0x1EF0", 58],
         [54, "overlay54TailA", ".rodata", "0x21C0", 2],
         [55, "overlay_055", ".rodata", "0xD80", 2],
-        [57, "func_overlay_057_F0000000_18A3BF8", ".rodata", "0x705C", 2],
-        [57, "func_overlay_057_F0001AE8_18A56E0", ".rodata", "0x70A0", 2],
-        [57, "overlay57UpdateModeTrigger", ".bss", "0x7110", 31],
+        [57, "overlay_057", ".bss", "0x7110", 73],
+        [57, "overlay_057", ".rodata", "0x705C", 8],
         [58, "overlay_058", ".rodata", "0x5DF4", 6],
         [59, "overlay_059", ".rodata", "0x1188", 4],
         [60, "overlay_060", ".rodata", "0x3790", 4],

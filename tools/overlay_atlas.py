@@ -180,20 +180,14 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         )
     ],
     57: [
+        # The module TU's .rodata: the initializer's mode switch table, then
+        # the dispatch's, rodata-relative +0x6C through +0x104.
         (
             0x5AC,
-            0x5E8,
-            "func_overlay_057_F0000000_18A3BF8",
-            ".rodata",
-            "func_overlay_057_F0000000_18A3BF8",
-            True,
-        ),
-        (
-            0x5F0,
             0x644,
-            "func_overlay_057_F0001AE8_18A56E0",
+            "overlay_057",
             ".rodata",
-            "func_overlay_057_F0001AE8_18A56E0",
+            "func_overlay_057_F0000000_18A3BF8",
             True,
         )
     ],
@@ -942,30 +936,7 @@ TEXT_SUBSEGMENTS = {
         (0x1EE4, "asm", "overlay_054_padding"),
     ],
     57: [
-        (0x000, "c", "func_overlay_057_F0000000_18A3BF8"),
-        (0x954, "c", "overlay57UpdateInterface"),
-        (0x1020, "c", "func_overlay_057_F0001020_18A4C18"),
-        (0x1978, "c", "overlay57ReleaseAll"),
-        (0x1AE8, "c", "func_overlay_057_F0001AE8_18A56E0"),
-        (0x28B4, "c", "overlay57EaseAndLatch"),
-        (0x2C28, "c", "overlay57SmoothAndCheckDistance"),
-        (0x2F48, "c", "overlay57CheckDistance"),
-        (0x3048, "c", "overlay57UpdateTransition"),
-        (0x3238, "c", "overlay57ApplyValue"),
-        (0x32A0, "c", "overlay57Draw32A0"),
-        (0x35E0, "c", "overlay57UpdateSelection"),
-        (0x3A4C, "c", "overlay57UpdateModeState"),
-        (0x3FD4, "c", "overlay57BeginMode"),
-        (0x4064, "c", "overlay57HandleModeInput"),
-        (0x43C8, "c", "overlay57StartMode"),
-        (0x4460, "c", "func_overlay_057_F0004460_18A8058"),
-        (0x4C18, "c", "overlay57UpdateModeTrigger"),
-        (0x4D90, "c", "overlay57InitializeMode"),
-        (0x4E18, "c", "func_overlay_057_F0004E18_18A8A10"),
-        (0x60F8, "c", "func_overlay_057_F00060F8_18A9CF0"),
-        (0x67DC, "c", "overlay57SetNodeValue"),
-        (0x6878, "c", "overlay57ApplyTable"),
-        (0x69B0, "c", "overlay57UpdateNode"),
+        (0x000, "c", "overlay_057"),
     ],
     58: [
         (0x000, "c", "overlay_058"),

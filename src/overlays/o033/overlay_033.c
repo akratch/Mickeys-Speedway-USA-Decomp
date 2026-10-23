@@ -1,18 +1,9 @@
-#include "PR/ultratypes.h"
+#include "overlays/overlay_033.h"
 
-extern u8 gOverlay33Initialized[];
-extern s32 D_8007A3EC;
-extern s32 D_800D1C38;
-extern s32 D_800D1C34;
-extern volatile s32 gOverlay33Allocation;
-extern s32 D_800D2CD0;
-extern s32 D_800D1C28[];
-extern s32 gOverlay33ActiveBuffer;
-
-extern void viGetCurrentSize(s32 *width, s32 *height);
-extern s32 mmAlloc(s32 size, s32 tag);
-extern s32 osRecvMesg(s32 *context, s32 *status, s32 mode);
-extern void overlay33ReleaseGlobal(void);
+/*
+ * Overlay 33: one translation unit in ROM order (ADR 0006). All six
+ * functions are ORT exports.
+ */
 
 /*
  * Plateau (2026-09-04): the exact-sized 81-word, 0x38-frame candidate is
@@ -128,9 +119,9 @@ void overlay33InitializeBuffers(void) {
             } else {
                 allocation = original;
             }
-            D_800D1C28[0] = allocation;
+            D_800D1C28[0] = (void *)allocation;
             D_800D1C28[1] =
-                (s32)allocation + (width * height * 2);
+                (void *)((s32)allocation + (width * height * 2));
             gOverlay33ActiveBuffer =
                 D_800D1C28[D_800D1C38];
             if (osRecvMesg(&D_800D2CD0,
@@ -141,7 +132,114 @@ void overlay33InitializeBuffers(void) {
             }
             gOverlay33Initialized[0x3790] = 1;
         } else {
-            overlay33ReleaseGlobal();
+            func_overlay_033_F0000144_188092CReloc();
         }
     }
+}
+
+/* DKR v77/v80 has the generic optional-release idiom, but no exact donor. */
+void overlay33ReleaseGlobal(void) {
+    if (gOverlay33Handle != 0) {
+        mmFree((void *)gOverlay33Handle);
+        gOverlay33Handle = 0;
+    }
+}
+
+/* Pinned DKR scans found only generic zero-argument wrappers. */
+void overlay33CallA(void) {
+    overlay33CallReloc();
+}
+
+/* Mickey-local reconstruction using the reviewed SDK macro subset below.
+ *
+ * The fog block is the SDK's `gSPFogPosition` shape: the `gMoveWd` packet
+ * word is written before the range is read back, and each half of the packed
+ * word goes through `_SHIFTL`.  `_SHIFTL(q, 16, 16)` is `(q & 0xFFFF) << 16`;
+ * uopt drops the mask as redundant under the shift but keeps the masked value
+ * as its own web, which is the register-to-register copy the target spends
+ * ahead of the second divide. */
+void overlay33BuildDisplayList(void) {
+    Overlay33Locals locals;
+
+    viGetCurrentSize((s32 *)&locals.width, (s32 *)&locals.height);
+    locals.cursor = (Gfx *)&D_8[D_800D1C38 * 0xC00];
+    locals.other = (Gfx *)&D_1808[D_800D1C38 * 0xC00];
+
+    rsp_segment(&locals.cursor, 0, 0);
+    rsp_segment(&locals.cursor, 1,
+                            D_800D1C28[D_800D1C38]);
+    rsp_segment(&locals.cursor, 2, D_800D2FAC);
+    rcpInitSp(&locals.cursor);
+    rcpInitDpNoSize(&locals.cursor);
+
+    gSPClearGeometryMode(locals.cursor++, 1);
+    gDPSetColorImage(locals.cursor++, G_IM_FMT_RGBA, G_IM_SIZ_16b,
+                     locals.width,
+                     (u32)D_800D1C28[D_800D1C38] +
+                         0x80000000U);
+    gDPSetScissor(locals.cursor++, 0, 0, 0, locals.width, locals.height);
+    gMoveWd(locals.cursor++, 2, 0, 0);
+    gDPSetFillColor(locals.cursor++, 0);
+    gDPSetCycleType(locals.cursor++, G_CYC_FILL);
+    gDPFillRectangle(locals.cursor++, 0, 0, locals.width - 1,
+                     locals.height - 1);
+    gDPPipeSync(locals.cursor++);
+
+    texDPInit(&locals.cursor);
+    gMoveWd(locals.cursor++, 2, 0, 0);
+    gSPClearGeometryMode(locals.cursor++, 0x1000);
+    gDPSetBlendColor(locals.cursor++, 0, 0, 0, 0x64);
+    gDPSetPrimColor(locals.cursor++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
+    gDPSetEnvColor(locals.cursor++, 0xFF, 0xFF, 0xFF, 0);
+    gDPPipeSync(locals.cursor++);
+
+    camSetNo(0);
+    camSetView(&locals.cursor, &locals.other);
+    gDPPipeSync(locals.cursor++);
+
+    trackGetFog(0, &locals.low, &locals.high, &locals.unused,
+                           &locals.red, &locals.green, &locals.blue,
+                           &locals.alpha);
+    gDPSetFogColor(locals.cursor++, locals.red, locals.green, locals.blue,
+                   0xFF);
+
+    {
+        Gfx *fog = locals.cursor++;
+        s32 range;
+
+        fog->words.w0 = 0xBC000008;
+        range = locals.high - locals.low;
+        fog->words.w1 = _SHIFTL(128000 / range, 16, 16) |
+                        _SHIFTL(((500 - locals.low) * 256) / range, 0, 16);
+        sprSetTextureFilter(0);
+    }
+    gMoveWd(locals.cursor++, 10, 0, 0);
+    gDPFullSync(locals.cursor++);
+    gSPEndDisplayList(locals.cursor++);
+
+    gOverlay33DisplayLists[D_800D1C38] = locals.cursor;
+    sprSetTextureFilter(1);
+}
+
+/* Matched 2026-09-17, lane w7-o033. 39/39 words, frame 0x18, 18 relocs.
+ * Non-volatile `g ^= 1` then `refs[g]` keeps the buffer-index address as one
+ * coloured web through both regions and forwards the xor into the subscript.
+ * `volatile` on the index forced a post-store reload. The build-list call is
+ * a same-overlay SYMBOL reloc, so it goes through the Reloc placeholder. */
+void overlay33PresentAndSwap(void) {
+    s32 index;
+
+    func_overlay_033_F000019C_1880984Reloc();
+    index = D_800D1C38;
+    rcpFast3d((u64 *)&((u8 (*)[0xC00])D_8)[index][0],
+              (u64 *)gOverlay33DisplayLists[index], 4,
+              D_800D1C28[index]);
+    D_800D1C38 ^= 1;
+    gOverlay33ActiveBuffer = D_800D1C28[D_800D1C38];
+    D_8007A3EC = 1;
+}
+
+/* Pinned DKR scans found only generic zero-argument wrappers. */
+void overlay33CallB(void) {
+    overlay33CallReloc();
 }

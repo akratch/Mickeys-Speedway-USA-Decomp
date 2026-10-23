@@ -1928,23 +1928,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31BuildPalettes.c.o: POSTPROCESS = 
 		@config/normalizations/overlay31BuildPalettes.filter.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay31BuildPalettes.calls.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33CallA.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x20
-# NON_MATCHING/GLOBAL_ASM: retain only friendly-name restoration and
-# trailing-section trimming metadata for these extracted functions.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33InitializeBuffers.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x144
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33ReleaseGlobal.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x38
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33CallB.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x20
-# The resident rcpFast3d call cannot be valued under its own global name in
-# overlay_undefined_syms.us.txt; tools/reloc_surface.py derives a per-module
-# placeholder and the rebind is declared here so a fresh worktree still links.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33PresentAndSwap.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym rcpFast3d=rcpFast3d_o033Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x9C
+# Overlay 33 is one TU under the overlay flag set; no post-processing.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay_033.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36CallModes.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x40
 include mk/overlay_046.mk
@@ -2814,12 +2799,6 @@ OVERLAY_TRIMMED_OBJECTS += \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreateConfig.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreateRecords.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreatePool.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33InitializeBuffers.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33ReleaseGlobal.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33CallA.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33BuildDisplayList.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33PresentAndSwap.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33CallB.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36CallModes.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46InitializeState.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46ReleaseState.c.o \

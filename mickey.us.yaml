@@ -1784,13 +1784,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18807E8, c, overlay33InitializeBuffers]
-      - [0x188092C, c, overlay33ReleaseGlobal]
-      - [0x1880964, c, overlay33CallA]
-      - [0x1880984, c, overlay33BuildDisplayList]
-      - [0x1880E54, c, overlay33PresentAndSwap]
-      - [0x1880EF0, c, overlay33CallB]
-      - [0x1880F10, asm, overlay_033_padding]
+      - [0x18807E8, c, overlay_033]
       - [0x1880F18, bin, overlay_033_reloc1]
       - [0x18810F0, bin, overlay_033_reloc2]
 

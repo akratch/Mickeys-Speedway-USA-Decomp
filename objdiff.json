@@ -11343,110 +11343,20 @@
       }
     },
     {
-      "name": "src/overlays/o033/overlay33BuildDisplayList.c",
-      "target_path": "expected/build/src/overlays/o033/overlay33BuildDisplayList.c.o",
-      "base_path": "build/src/overlays/o033/overlay33BuildDisplayList.c.o",
+      "name": "src/overlays/o033/overlay_033.c",
+      "target_path": "expected/build/src/overlays/o033/overlay_033.c.o",
+      "base_path": "build/src/overlays/o033/overlay_033.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
           "overlay",
           "overlay-o033"
         ],
-        "source_path": "src/overlays/o033/overlay33BuildDisplayList.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o033/overlay33CallA.c",
-      "target_path": "expected/build/src/overlays/o033/overlay33CallA.c.o",
-      "base_path": "build/src/overlays/o033/overlay33CallA.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o033"
-        ],
-        "source_path": "src/overlays/o033/overlay33CallA.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o033/overlay33CallB.c",
-      "target_path": "expected/build/src/overlays/o033/overlay33CallB.c.o",
-      "base_path": "build/src/overlays/o033/overlay33CallB.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o033"
-        ],
-        "source_path": "src/overlays/o033/overlay33CallB.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o033/overlay33InitializeBuffers.c",
-      "target_path": "expected/build/src/overlays/o033/overlay33InitializeBuffers.c.o",
-      "base_path": "build/src/overlays/o033/overlay33InitializeBuffers.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o033"
-        ],
-        "source_path": "src/overlays/o033/overlay33InitializeBuffers.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o033/overlay33PresentAndSwap.c",
-      "target_path": "expected/build/src/overlays/o033/overlay33PresentAndSwap.c.o",
-      "base_path": "build/src/overlays/o033/overlay33PresentAndSwap.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o033"
-        ],
-        "source_path": "src/overlays/o033/overlay33PresentAndSwap.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o033/overlay33ReleaseGlobal.c",
-      "target_path": "expected/build/src/overlays/o033/overlay33ReleaseGlobal.c.o",
-      "base_path": "build/src/overlays/o033/overlay33ReleaseGlobal.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o033"
-        ],
-        "source_path": "src/overlays/o033/overlay33ReleaseGlobal.c",
+        "source_path": "src/overlays/o033/overlay_033.c",
         "complete": true
       }
     },

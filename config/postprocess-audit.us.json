@@ -2558,77 +2558,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o033/overlay33CallA.c.o",
-      "offset": 380,
-      "overlay": 33,
-      "size": 32,
-      "source": "src/overlays/o033/overlay33CallA.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o033/overlay33CallB.c.o",
-      "offset": 1800,
-      "overlay": 33,
-      "size": 32,
-      "source": "src/overlays/o033/overlay33CallB.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o033/overlay33InitializeBuffers.c.o",
-      "offset": 0,
-      "overlay": 33,
-      "size": 324,
-      "source": "src/overlays/o033/overlay33InitializeBuffers.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o033/overlay33PresentAndSwap.c.o",
-      "offset": 1644,
-      "overlay": 33,
-      "size": 156,
-      "source": "src/overlays/o033/overlay33PresentAndSwap.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o033/overlay33ReleaseGlobal.c.o",
-      "offset": 324,
-      "overlay": 33,
-      "size": 56,
-      "source": "src/overlays/o033/overlay33ReleaseGlobal.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o036/overlay36CallGlobal.c.o",
       "offset": 2440,
       "overlay": 36,
@@ -8461,10 +8390,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 583,
+      "metadata": 578,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 433712,
-    "objects_with_postprocess": 584
+    "matched_c_bytes_with_postprocess": 433112,
+    "objects_with_postprocess": 579
   }
 }

@@ -736,12 +736,19 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeParticleAssets.c.o: SUR
 	--redefine-sym overlay31BuildPalettes=overlay31BuildPalettes_o031Reloc \
 	--redefine-sym piRomLoad=piRomLoad_o031Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33BuildDisplayList.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay_033.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_8007A3EC=D_8007A3EC_o033Reloc \
 	--redefine-sym D_800D1C28=D_800D1C28_o033Reloc \
+	--redefine-sym D_800D1C34=D_800D1C34_o033Reloc \
 	--redefine-sym D_800D1C38=D_800D1C38_o033Reloc \
+	--redefine-sym D_800D2CD0=D_800D2CD0_o033Reloc \
 	--redefine-sym D_800D2FAC=D_800D2FAC_o033Reloc \
 	--redefine-sym camSetNo=camSetNo_o033Reloc \
 	--redefine-sym camSetView=camSetView_o033Reloc \
+	--redefine-sym mmAlloc=mmAlloc_o033Reloc \
+	--redefine-sym mmFree=mmFree_o033Reloc \
+	--redefine-sym osRecvMesg=osRecvMesg_o033Reloc \
+	--redefine-sym rcpFast3d=rcpFast3d_o033Reloc \
 	--redefine-sym rcpInitDpNoSize=rcpInitDpNoSize_o033Reloc \
 	--redefine-sym rcpInitSp=rcpInitSp_o033Reloc \
 	--redefine-sym rsp_segment=rsp_segment_o033Reloc \
@@ -749,26 +756,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33BuildDisplayList.c.o: SURFACE_REB
 	--redefine-sym texDPInit=texDPInit_o033Reloc \
 	--redefine-sym trackGetFog=trackGetFog_o033Reloc \
 	--redefine-sym viGetCurrentSize=viGetCurrentSize_o033Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33InitializeBuffers.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007A3EC=D_8007A3EC_o033Reloc \
-	--redefine-sym D_800D1C28=D_800D1C28_o033Reloc \
-	--redefine-sym D_800D1C34=D_800D1C34_o033Reloc \
-	--redefine-sym D_800D1C38=D_800D1C38_o033Reloc \
-	--redefine-sym D_800D2CD0=D_800D2CD0_o033Reloc \
-	--redefine-sym mmAlloc=mmAlloc_o033Reloc \
-	--redefine-sym osRecvMesg=osRecvMesg_o033Reloc \
-	--redefine-sym overlay33ReleaseGlobal=overlay33ReleaseGlobal_o033Reloc \
-	--redefine-sym viGetCurrentSize=viGetCurrentSize_o033Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33PresentAndSwap.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007A3EC=D_8007A3EC_o033Reloc \
-	--redefine-sym D_800D1C28=D_800D1C28_o033Reloc \
-	--redefine-sym D_800D1C38=D_800D1C38_o033Reloc \
-	--redefine-sym overlay33BuildDisplayList=overlay33BuildDisplayList_o033Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33ReleaseGlobal.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmFree=mmFree_o033Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay_034.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_800084C4=func_800084C4_o034Reloc \

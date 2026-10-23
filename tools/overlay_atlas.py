@@ -317,6 +317,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING.update({
     28: "overlay_028_padding",
     29: "overlay_029_padding",
     30: "overlay_030_padding",
+    33: "overlay_033_padding",
     35: "overlay_035_padding",
 })
 
@@ -501,12 +502,7 @@ TEXT_SUBSEGMENTS = {
         (0xF44, "asm", "overlay_031_padding"),
     ],
     33: [
-        (0x000, "c", "overlay33InitializeBuffers"),
-        (0x144, "c", "overlay33ReleaseGlobal"),
-        (0x17C, "c", "overlay33CallA"),
-        (0x19C, "c", "overlay33BuildDisplayList"),
-        (0x66C, "c", "overlay33PresentAndSwap"),
-        (0x708, "c", "overlay33CallB"),
+        (0x000, "c", "overlay_033"),
         (0x728, "asm", "overlay_033_padding"),
     ],
     36: [

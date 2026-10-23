@@ -1467,43 +1467,35 @@ reset_particles_o031Reloc = 0xf0000000;
 texLoadSprite_o031Reloc = 0xf0000000;
 texLoadTexture_o031Reloc = 0xf0000000;
 
-/* overlay 33: overlay33InitializeBuffers.c.o */
+/* overlay 33: overlay_033.c.o */
+D_1808 = 0x00001808;
 D_8007A3EC_o033Reloc = 0x00000000;
 D_800D1C28_o033Reloc = 0x00000000;
 D_800D1C34_o033Reloc = 0x00000000;
 D_800D1C38_o033Reloc = 0x00000000;
 D_800D2CD0_o033Reloc = 0x00000000;
-gOverlay33ActiveBuffer = 0x00000000;
-gOverlay33Allocation = 0x00000000;
-gOverlay33Initialized = 0x00000000;
-mmAlloc_o033Reloc = 0xf0000000;
-osRecvMesg_o033Reloc = 0xf0000000;
-overlay33ReleaseGlobal_o033Reloc = 0xf0000000;
-viGetCurrentSize_o033Reloc = 0xf0000000;
-
-/* overlay 33: overlay33ReleaseGlobal.c.o */
-gOverlay33Handle = 0x00000000;
-mmFree_o033Reloc = 0xf0000000;
-
-/* overlay 33: overlay33CallA.c.o */
-overlay33CallReloc = 0xf0000000;
-
-/* overlay 33: overlay33BuildDisplayList.c.o */
-D_1808 = 0x00001808;
 D_800D2FAC_o033Reloc = 0x00000000;
 camSetNo_o033Reloc = 0xf0000000;
 camSetView_o033Reloc = 0xf0000000;
+func_overlay_033_F0000144_188092CReloc = 0xf0000000;
+func_overlay_033_F000019C_1880984Reloc = 0xf0000000;
+gOverlay33ActiveBuffer = 0x00000000;
+gOverlay33Allocation = 0x00000000;
 gOverlay33DisplayLists = 0x00003788;
+gOverlay33Handle = 0x00000000;
+gOverlay33Initialized = 0x00000000;
+mmAlloc_o033Reloc = 0xf0000000;
+mmFree_o033Reloc = 0xf0000000;
+osRecvMesg_o033Reloc = 0xf0000000;
+overlay33CallReloc = 0xf0000000;
+rcpFast3d_o033Reloc = 0xf0000000;
 rcpInitDpNoSize_o033Reloc = 0xf0000000;
 rcpInitSp_o033Reloc = 0xf0000000;
 rsp_segment_o033Reloc = 0xf0000000;
 sprSetTextureFilter_o033Reloc = 0xf0000000;
 texDPInit_o033Reloc = 0xf0000000;
 trackGetFog_o033Reloc = 0xf0000000;
-
-/* overlay 33: overlay33PresentAndSwap.c.o */
-overlay33BuildDisplayList_o033Reloc = 0xf0000000;
-rcpFast3d_o033Reloc = 0xf0000000;
+viGetCurrentSize_o033Reloc = 0xf0000000;
 
 /* overlay 34: overlay_034.c.o */
 func_800084C4_o034Reloc = 0xf0000000;
@@ -5324,22 +5316,12 @@ func_overlay_031_F0000DC4_18802E4 = overlay31CreateRecords;
 /* overlay 31: overlay31CreatePool.c.o */
 func_overlay_031_F0000E7C_188039C = overlay31CreatePool;
 
-/* overlay 33: overlay33InitializeBuffers.c.o */
+/* overlay 33: overlay_033.c.o */
 func_overlay_033_F0000000_18807E8 = overlay33InitializeBuffers;
-
-/* overlay 33: overlay33ReleaseGlobal.c.o */
 func_overlay_033_F0000144_188092C = overlay33ReleaseGlobal;
-
-/* overlay 33: overlay33CallA.c.o */
 func_overlay_033_F000017C_1880964 = overlay33CallA;
-
-/* overlay 33: overlay33BuildDisplayList.c.o */
 func_overlay_033_F000019C_1880984 = overlay33BuildDisplayList;
-
-/* overlay 33: overlay33PresentAndSwap.c.o */
 func_overlay_033_F000066C_1880E54 = overlay33PresentAndSwap;
-
-/* overlay 33: overlay33CallB.c.o */
 func_overlay_033_F0000708_1880EF0 = overlay33CallB;
 
 /* overlay 34: overlay_034.c.o */

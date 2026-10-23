@@ -6451,55 +6451,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x144",
-     "size": "0x144",
-     "type": "c",
-     "source": "overlays/o033/overlay33InitializeBuffers",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x144",
-     "end_offset": "0x17C",
-     "size": "0x38",
-     "type": "c",
-     "source": "overlays/o033/overlay33ReleaseGlobal",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x17C",
-     "end_offset": "0x19C",
-     "size": "0x20",
-     "type": "c",
-     "source": "overlays/o033/overlay33CallA",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x19C",
-     "end_offset": "0x66C",
-     "size": "0x4D0",
-     "type": "c",
-     "source": "overlays/o033/overlay33BuildDisplayList",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x66C",
-     "end_offset": "0x708",
-     "size": "0x9C",
-     "type": "c",
-     "source": "overlays/o033/overlay33PresentAndSwap",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x708",
      "end_offset": "0x728",
-     "size": "0x20",
+     "size": "0x728",
      "type": "c",
-     "source": "overlays/o033/overlay33CallB",
+     "source": "overlays/o033/overlay_033",
      "matched": true,
      "nonmatching": false
     },

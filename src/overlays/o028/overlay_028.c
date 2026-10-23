@@ -178,7 +178,12 @@ void overlay28UpdateWork(Overlay28Owner *owner, s32 updateRate) {
  */
 #define _SHIFTL(v, s, w) \
     ((u32)(((u32)(v) & ((0x01 << (w)) - 1)) << (s)))
-#define OS_K0_TO_PHYSICAL(address) ((u32)((char *)(address) - 0x80000000))
+/* N64 ABI: reinterpret a 32-bit pointer word, then toggle its sign bit.
+ * Geometry uses the same encoding without outside-object pointer arithmetic. */
+typedef char Overlay28AddressWordWidth[(sizeof(void *) == 4 && sizeof(s32) == 4) ? 1 : -1];
+#define O28_GEOMETRY_ADDRESS(address) \
+    ((geometryAddress.pointer = (const void *)(address)), \
+     (u32)(geometryAddress.bits ^ (-2147483647 - 1)))
 #define VERTEX_ADDRESS(work) \
     ((u32)(work) + ((u32)(work)->bufferIndex * 0xAAU) + 0x80000044U)
 #define WRITE_PRIM(pkt, rgba) { \
@@ -218,7 +223,7 @@ void func_overlay_028_F00004D8_187CDA8(Overlay28Gfx **dl, void *matrixArg,
     f32 distanceSquared;
     f32 ratio;
     Overlay28Transform transformHome;
-    void *matrix;
+    union { void *texture; const void *pointer; s32 bits; } geometryAddress;
     Overlay28Work *work;
     Overlay28Owner *related;
     Overlay28View *view;
@@ -247,9 +252,9 @@ void func_overlay_028_F00004D8_187CDA8(Overlay28Gfx **dl, void *matrixArg,
         transformHome.x += dx * ratio;
         transformHome.y += dy * ratio;
         transformHome.z += dz * ratio;
-        matrix = *owner->matrix;
+        geometryAddress.texture = *owner->matrix;
         camPushModelMtx(dl, matrixArg, &transformHome, 1.0f, 0.0f);
-        texDPTextureX(dl, matrix, 0x214, 0);
+        texDPTextureX(dl, geometryAddress.texture, 0x214, 0);
 
         mask = -0x100;
         WRITE_PRIM((*dl)++, (work->intensity & 0xFF) | mask);
@@ -258,7 +263,7 @@ void func_overlay_028_F00004D8_187CDA8(Overlay28Gfx **dl, void *matrixArg,
                   _SHIFTL(work->colourCycle.green, 16, 8) |
                   _SHIFTL(work->colourCycle.blue, 8, 8) | 0xFF);
         WRITE_VERTEX((*dl)++, VERTEX_ADDRESS(work));
-        WRITE_DL((*dl)++, OS_K0_TO_PHYSICAL(gOverlay28Triangles));
+        WRITE_DL((*dl)++, O28_GEOMETRY_ADDRESS(gOverlay28Triangles));
         WRITE_SYNC((*dl)++);
         if (work->intensity != 0xFF) {
             WRITE_PRIM((*dl)++, -1);

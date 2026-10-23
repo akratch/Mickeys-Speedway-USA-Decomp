@@ -53,7 +53,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65SpawnRecord.c.o: POSTPROCESS = \
 		0x11C:mathRnd:func_overlay_065_F0000000_18C4268
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65ResetSlots.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x48
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65ResetSlots.c.o: OPT_FLAGS := -O2 -Wo,-loopunroll,0
 # The trail updater is compiled C. Its seven resident callees are renamed to
 # this module's relocation-surface placeholders here, because an overlay linked
 # at 0xF0000000 cannot `jal` a 0x8000xxxx entry point directly; without the

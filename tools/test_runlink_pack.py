@@ -18,6 +18,7 @@ import sys
 import tempfile
 from types import SimpleNamespace
 import unittest
+from unittest import mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -323,6 +324,122 @@ def run(argv):
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
         status = rp.main(argv)
     return status, out.getvalue() + err.getvalue()
+
+
+class MetadataEmitterTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.tree = Tree(Path(self.tmp.name))
+        self.assertEqual(run(self.tree.args("ort", "--write"))[0], 0)
+        self.assertEqual(run(self.tree.args("compare", "--write-residuals"))[0], 0)
+        self.out = self.tree.root / "build/runlink/metadata"
+
+    def emit(self):
+        return run(self.tree.args("emit-metadata"))
+
+    def test_exact_bins_and_named_borrowing_are_reproducible(self):
+        status, log = self.emit()
+        self.assertEqual(status, 0, log)
+        marker = self.out / "manifest.json"
+        manifest_bytes = marker.read_bytes()
+        manifest = json.loads(manifest_bytes)
+        self.assertEqual(manifest["metadata_files"], 5)
+        expected = {
+            "main_reloc_table.bin": self.tree.rom[ot.RELOC_TABLE_BASE:ot.ROM_TABLE_BASE],
+            "overlay_rom_table.bin": self.tree.rom[ot.ROM_TABLE_BASE:ot.HEADER_TABLE_BASE],
+            "overlay_header_table.bin": self.tree.rom[ot.HEADER_TABLE_BASE:ot.MODULES_BASE],
+            "overlays/o001/overlay_001_reloc1.bin": self.tree.t1,
+            "overlays/o001/overlay_001_reloc2.bin": self.tree.t2,
+        }
+        self.assertEqual(set(manifest["files"]), set(expected))
+        for name, data in expected.items():
+            self.assertEqual((self.out / name).read_bytes(), data)
+            self.assertEqual(manifest["files"][name], {
+                "size": len(data), "sha256": hashlib.sha256(data).hexdigest()})
+        ledger = (self.out / "borrowing.json").read_bytes()
+        self.assertEqual(manifest["borrowing"]["sha256"], hashlib.sha256(ledger).hexdigest())
+        borrowing = json.loads(ledger)["borrowed"]
+        self.assertIn([1, "D_123", 1], borrowing["placeholder"]["entries"])
+        self.assertEqual(borrowing["hybrid-data"]["modules"], {"1": ["0x48"]})
+        self.assertFalse(manifest["proof"]["source_only"])
+        self.assertFalse(manifest["proof"]["relayout"])
+        for name in ("build/src/main/r.c.o.trapsites", "build/asm/data/d.data.s.o",
+                     "build/runlink_raw/src/overlays/o001/a.c.o"):
+            self.assertIn(name, manifest["inputs"])
+        self.assertEqual(self.emit()[0], 0)
+        self.assertEqual(marker.read_bytes(), manifest_bytes)
+
+    def test_patched_equality_alone_never_emits(self):
+        proof = {"raw_equal": False, "raw_differing_bytes": 4,
+                 "patched_equal": True, "order_breaks": [], "region": [0, 1]}
+        with mock.patch.object(rp, "region_proof", return_value=proof):
+            status, log = self.emit()
+        self.assertEqual(status, 2, log)
+        self.assertIn("exact unpatched region", log)
+        self.assertFalse(self.out.exists())
+
+    def test_listed_callee_difference_is_still_refused(self):
+        obj = self.tree.root / "build/runlink_raw/src/overlays/o001/a.c.o"
+        obj.write_bytes(obj.read_bytes().replace(b"resFunc\0", b"resFunY\0"))
+        self.assertEqual(run(self.tree.args("compare", "--write-residuals"))[0], 0)
+        status, log = self.emit()
+        self.assertEqual(status, 2, log)
+        self.assertIn("zero differences", log)
+        self.assertFalse(self.out.exists())
+
+    def test_stale_borrowing_is_refused(self):
+        path = self.tree.root / "config/runlink-residuals.us.json"
+        ledger = json.loads(path.read_text())
+        ledger["borrowed"].pop("placeholder")
+        path.write_text(json.dumps(ledger))
+        status, log = self.emit()
+        self.assertEqual(status, 2, log)
+        self.assertIn("borrowing ledger is stale", log)
+        self.assertFalse(self.out.exists())
+
+    def test_input_change_during_packing_is_refused(self):
+        pack = rp.pack_all
+        def changed(world, ort):
+            result = pack(world, ort)
+            path = self.tree.root / "config/runlink-ort.us.txt"
+            path.write_text(path.read_text() + "\n# changed during generation\n")
+            return result
+        with mock.patch.object(rp, "pack_all", side_effect=changed):
+            status, log = self.emit()
+        self.assertEqual(status, 2, log)
+        self.assertIn("inputs changed", log)
+        self.assertFalse(self.out.exists())
+
+    def test_missing_resident_input_is_refused(self):
+        (self.tree.root / "build/asm/data/d.data.s.o").unlink()
+        status, log = self.emit()
+        self.assertEqual(status, 2, log)
+        self.assertIn("resident input is missing", log)
+        self.assertFalse(self.out.exists())
+
+    def test_failed_publication_leaves_no_completion_marker_and_can_retry(self):
+        self.assertEqual(self.emit()[0], 0)
+        replace = rp.os.replace
+        def fail(source, target):
+            if Path(target).name == "overlay_rom_table.bin":
+                raise OSError("synthetic publication failure")
+            replace(source, target)
+        with mock.patch.object(rp.os, "replace", side_effect=fail):
+            status, log = self.emit()
+        self.assertEqual(status, 2, log)
+        self.assertFalse((self.out / "manifest.json").exists())
+        self.assertEqual(self.emit()[0], 0)
+
+    def test_unrelated_output_is_preserved(self):
+        self.out.mkdir(parents=True)
+        path = self.out / "keep.txt"
+        path.write_text("unrelated")
+        status, log = self.emit()
+        self.assertEqual(status, 2, log)
+        self.assertIn("unexpected file", log)
+        self.assertEqual(path.read_text(), "unrelated")
+        self.assertFalse((self.out / "manifest.json").exists())
 
 
 class SyntheticTreeTests(unittest.TestCase):

@@ -55,6 +55,7 @@ Subcommands
 -----------
   ort [--write | --check]         generate the ORT name list
   pack [--out DIR]                write the packed tables under build/runlink/
+  emit-metadata                  emit exact individual metadata bins and hashes
   compare [--check | --write-residuals] [--verbose] [--json PATH]
   region                          byte-compare the whole overlay region
 
@@ -70,15 +71,23 @@ import collections
 import difflib
 import hashlib
 import json
+import os
 import re
 import struct
+import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "tools"))
 import overlay_tables as ot  # noqa: E402
+
+_LOADED_IMPLEMENTATIONS = {
+    "tools/runlink_pack.py": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    "tools/overlay_tables.py": hashlib.sha256(Path(ot.__file__).read_bytes()).hexdigest(),
+}
 
 VERSION = "us"
 
@@ -1993,6 +2002,146 @@ def cmd_pack(args):
     return 1 if packed.problems else 0
 
 
+def metadata_input_paths(paths, world):
+    """The files the metadata producer reads, including resident trap sidecars."""
+    inputs = {paths[k] for k in ("atlas", "ort", "residuals", "rom", "elf", "map")}
+    for ov in world.amods:
+        inputs.update(obj.path for obj in world.objects(ov))
+    for mi in world.map:
+        if (mi.outsec not in (".main", ".entry") or mi.insec not in (".text", ".data")
+                or not mi.size or not mi.file.endswith(".o")):
+            continue
+        path = world.paths["build"].parent / mi.file
+        if not path.is_file():
+            raise PackError(f"metadata resident input is missing: {path}")
+        inputs.add(path)
+        sidecar = Path(str(path) + ".trapsites")
+        if mi.insec == ".text" and mi.file.endswith(".c.o") and sidecar.exists():
+            inputs.add(sidecar)
+    return inputs
+
+
+def metadata_digests(inputs, root):
+    result = {}
+    for path in sorted(inputs):
+        data = path.read_bytes()
+        result[os.path.relpath(path, root)] = {
+            "size": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+    return result
+
+
+def metadata_implementations():
+    for name, digest in _LOADED_IMPLEMENTATIONS.items():
+        if hashlib.sha256((REPO / name).read_bytes()).hexdigest() != digest:
+            raise PackError(f"loaded metadata implementation changed: {name}")
+    return dict(_LOADED_IMPLEMENTATIONS)
+
+
+def metadata_artifacts(packed, world):
+    """Use the ordinary encoders at the final link's existing bin granularity."""
+    headers, _images = encode_headers(packed, world)
+    files = {"main_reloc_table.bin": encode_main(packed.main),
+             "overlay_rom_table.bin": encode_ort(packed.ort_words),
+             "overlay_header_table.bin": headers}
+    for ov, module in sorted(packed.modules.items()):
+        for table in (1, 2):
+            data = module.reloc_bytes(table)
+            if data:
+                files[f"overlays/o{ov:03d}/overlay_{ov:03d}_reloc{table}.bin"] = data
+    return files
+
+
+def emit_metadata(args):
+    """Publish exact hybrid metadata; the manifest is the last completion marker."""
+    root = Path(args.root).resolve() if args.root else REPO
+    paths = resolve_paths(args)
+    # Discover inputs, then reload them after the initial snapshot. The probe's
+    # cached ELF objects must not stand in for the bytes bound by that snapshot.
+    probe = World(paths)
+    inputs = metadata_input_paths(paths, probe)
+    before = metadata_digests(inputs, root)
+    implementation = metadata_implementations()
+    _paths, world, packed = load_and_pack(args)
+
+    def unchanged():
+        if (metadata_input_paths(paths, world) != inputs
+                or metadata_digests(inputs, root) != before
+                or metadata_implementations() != implementation):
+            raise PackError("metadata inputs changed during generation")
+
+    unchanged()
+    differences = compare_all(packed, world)
+    proof = region_proof(packed, world, differences)
+    if (packed.problems or differences or proof["raw_equal"] is not True
+            or proof["raw_differing_bytes"] != 0 or proof["order_breaks"]):
+        raise PackError("metadata requires zero differences/problems and an exact unpatched region")
+    borrowing = manifest_from(differences, packed.borrowed)
+    expected = json.loads(paths["residuals"].read_text())
+    if manifest_keys(borrowing) != manifest_keys(expected):
+        raise PackError("metadata borrowing ledger is stale; run the normal table gates and ratchet it")
+    files = metadata_artifacts(packed, world)
+    ledger = render_manifest(borrowing).encode()
+    revision = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"],
+                              text=True, capture_output=True)
+    manifest = {
+        "schema": "mickey-generated-metadata-v1",
+        "source_revision": revision.stdout.strip() if revision.returncode == 0 else None,
+        "implementation": implementation, "inputs": before,
+        "proof": {"raw_equal": True, "raw_differing_bytes": 0, "differences": 0,
+                  "region": proof["region"], "source_only": False, "relayout": False},
+        "metadata_files": len(files), "metadata_bytes": sum(map(len, files.values())),
+        "files": {name: {"size": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+                  for name, data in sorted(files.items())},
+        "borrowing": {"path": "borrowing.json", "sha256": hashlib.sha256(ledger).hexdigest(),
+                      "borrowed_records": borrowing["totals"]["borrowed_records"],
+                      "entries_by_kind": {k: v["count"] for k, v in borrowing["borrowed"].items()}},
+    }
+    files["borrowing.json"] = ledger
+    files["manifest.json"] = (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode()
+    out = paths["out"] if args.out else paths["out"] / "metadata"
+    if any(path.resolve().is_relative_to(out.resolve()) for path in inputs):
+        raise PackError("metadata output overlaps a producer input")
+    if out.is_symlink() or (out.exists() and not out.is_dir()):
+        raise PackError("metadata output is not an ordinary directory")
+    if out.exists():
+        for path in out.rglob("*"):
+            if path.is_symlink() or (path.is_file() and path.relative_to(out).as_posix() not in files):
+                raise PackError("metadata output contains an unexpected file")
+        marker = out / "manifest.json"
+        if marker.exists() and json.loads(marker.read_text()).get("schema") != manifest["schema"]:
+            raise PackError("metadata output has an unrelated manifest")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".metadata-", dir=out.parent) as temporary:
+        stage = Path(temporary)
+        for name, data in files.items():
+            target = stage / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+        unchanged()
+        out.mkdir(exist_ok=True)
+        # Invalidate the old marker before replacing any payload. A failed
+        # publication cannot leave a valid-looking completion manifest behind.
+        marker = out / "manifest.json"
+        if marker.exists():
+            os.replace(marker, stage / "previous-manifest.json")
+        for name in sorted(files.keys() - {"manifest.json"}):
+            target = out / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(stage / name, target)
+        unchanged()
+        os.replace(stage / "manifest.json", marker)
+    print(f"wrote exact metadata: {manifest['metadata_files']} bins, {manifest['metadata_bytes']} bytes; "
+          f"{manifest['borrowing']['borrowed_records']} borrowed records remain; {out / 'manifest.json'}")
+    return 0
+
+
+def cmd_emit_metadata(args):
+    try:
+        return emit_metadata(args)
+    except (OSError, ValueError) as error:
+        raise PackError(f"metadata emission failed: {error}") from error
+
+
 def cmd_compare(args):
     paths, world, packed = load_and_pack(args)
     residuals = compare_all(packed, world)
@@ -2069,6 +2218,7 @@ def main(argv=None):
     g.add_argument("--write", action="store_true")
     g.add_argument("--check", action="store_true")
     sub.add_parser("pack", help="write the packed tables under build/runlink/")
+    sub.add_parser("emit-metadata", help="emit exact table bins and a hashed hybrid borrowing manifest")
     p = sub.add_parser("compare", help="classify every difference from the shipped tables")
     g = p.add_mutually_exclusive_group()
     g.add_argument("--check", action="store_true", help="fail on residuals the manifest does not list")
@@ -2078,7 +2228,8 @@ def main(argv=None):
     sub.add_parser("region", help="byte-compare the whole overlay region")
     args = ap.parse_args(argv)
     try:
-        return {"ort": cmd_ort, "pack": cmd_pack, "compare": cmd_compare, "region": cmd_region}[args.cmd](args)
+        return {"ort": cmd_ort, "pack": cmd_pack, "emit-metadata": cmd_emit_metadata,
+                "compare": cmd_compare, "region": cmd_region}[args.cmd](args)
     except PackError as e:
         print(f"runlink_pack: {e}", file=sys.stderr)
         return 2

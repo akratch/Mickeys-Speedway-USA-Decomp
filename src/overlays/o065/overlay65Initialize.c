@@ -1,24 +1,15 @@
-#include "PR/ultratypes.h"
-
-typedef struct Overlay65Record {
-    u8 pad00[0x1B];
-    u8 flag1B;
-    u8 pad1C[0x1B];
-    u8 flag37;
-    u8 pad38[0x1B];
-    u8 flag53;
-    u8 pad54[0x1B];
-    u8 flag6F;
-} Overlay65Record;
+#include "overlays/overlay_065.h"
 
 extern u8 gOverlay65InitFlag0;
 extern u8 gOverlay65InitFlag1;
-extern Overlay65Record gOverlay65Records[];
-extern Overlay65Record gOverlay65RecordsEnd;
-extern void *gOverlay65Handle;
+extern O65Particle gOverlay65Records[148];
+/* Legacy link marker at the one-past end of the particle pool. */
+extern u8 gOverlay65RecordsEnd[];
+extern TextureHeader *gOverlay65Handle;
 extern u8 *gOverlay65Buffers[2];
 
-void *overlay65AllocateReloc();
+TextureHeader *texLoadTexture(s32 textureId);
+void *mmAlloc(s32 size, u32 colourTag);
 void overlay65ResetSlots(void);
 
 /* DKR v77/v80 and JFG contain no exact donor for this fixed-pool initializer. */
@@ -36,9 +27,9 @@ void overlay65Initialize(void) {
         record[0x1B] = 0;
         record += 0x70;
     } while (record != end);
-    gOverlay65Handle = overlay65AllocateReloc(0x91);
+    gOverlay65Handle = texLoadTexture(0x91);
     overlay65ResetSlots();
-    buffer = overlay65AllocateReloc(0x7530, 0x87);
+    buffer = mmAlloc(0x7530, 0x87);
     bufferEnd = buffer + 0x3A98;
     gOverlay65Buffers[0] = buffer;
     gOverlay65Buffers[1] = bufferEnd;

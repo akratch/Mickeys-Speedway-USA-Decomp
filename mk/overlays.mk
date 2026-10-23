@@ -1009,11 +1009,7 @@ OVERLAY_TRIMMED_OBJECTS := \
 OVERLAY_TRIMMED_OBJECTS += \
     $(O22_UPDATE_OBJECT_OBJ)
 OVERLAY_TRIMMED_OBJECTS += \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Initialize.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65UpdateParticles.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Release.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65ResetSlots.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/func_overlay_065_F0000C38_18C4EA0.c.o
+    $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Initialize.c.o
 
 include mk/overlay_084.mk
 

@@ -50,6 +50,23 @@ bytes and disassembly never belong here.
   host link consumes it; its physical ownership and runtime base still need
   a linked proof.
 
+### Static const aggregate arrays can split the initialized sections
+
+- **Symptom:** typed tables reproduce their values but the combined initialized
+  extent grows and the runtime section bases disagree.
+- **Mechanism:** with IDO 5.3 at `-O2 -mips2 -32 -G0 -Xcpluscomm
+  -non_shared`, static const arrays of triangle and RGB structs were placed in
+  `.rodata`; unqualified static or global arrays occupied `.data`. Splitting
+  them from mutable vectors and scalars added independent section alignment.
+- **Lever:** recover each table's actual fields and access behavior, then
+  compare `.data`, `.rodata`, their alignment and relocation bases separately.
+  Do not infer a target section solely from read-only uses or scalar-constant
+  behavior, and do not add padding objects to repair a section split.
+- **Limits:** this measured aggregate case does not establish global const
+  array placement, other optimization modes or other IDO versions. A typed
+  initialized/BSS layout proof alone does not establish exact function code
+  or configured ownership.
+
 ### Direct operand kills can retain a result without retaining its carrier
 
 - **Symptom:** a computed local forwards before its later uses, while an
@@ -321,6 +338,19 @@ bytes and disassembly never belong here.
   instructions, even when the size and opcode inventory already agree.
   Keep the flag local and prove all TU consumers and linked bytes before
   adoption; a diagnostic replay never supplies matching build output.
+- A two-element peel followed by four interleaved stores can be the default
+  unroller's output for one complete fixed-count clear loop. IDO 5.3 at
+  `-O2 -mips2` reproduced this pattern for a six-element scalar array and a
+  50-element record array: it clears the remainder first, then advances four
+  elements and emits the group in second/third/fourth/first order. Recover the
+  actual element type and pool extent before writing the complete loop;
+  interpreting the emitted groups as source-level records can create a false
+  unroll override. This does not establish whole-function exactness. A
+  150-element record clear recovered the loop but changed a later temporary's
+  register, so retain the existing source until every owned instruction and
+  relocation is proved. Separately re-test inherited unroll flags against the
+  current source: an old rolled spelling can remain exact under defaults even
+  when a new indexed spelling unrolls and grows.
 - A per-TU flag adopted mid-iteration can be byte-inert by the time the source
   lever lands, and loop unrolling is the common case. IDO's rotator peels a
   loop head into the preheader when a separate start-value copy keeps the

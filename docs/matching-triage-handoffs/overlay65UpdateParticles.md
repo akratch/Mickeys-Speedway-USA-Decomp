@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay65UpdateParticles:start -->
 ### `overlay65UpdateParticles` plateau handoff
 
-- source: `src/overlays/o065/overlay65UpdateParticles.c`
+- source: `src/overlays/o065/overlay_065.c`
 - score: 0/720 words, promoted
 - frame: 0xF8
 - relocations: 64
@@ -68,4 +68,38 @@ still hoists `li a0, 6` there) or move spawnCount from 0xE8 to 0xD4.
 Next: keep the index out of a0 so `li v1, 3` occupies the vertex-0 nop, then
 L99 so spawnCount lands at 0xD4, transformed at 0x9C, ground at 0x88. Do not
 invent overlay65Initialize relocation identities from the target.
+
+
+
+#### 2026-10-23: typed storage-context maintenance
+
+The configured two-TU baseline remains ROM-exact. Authenticated triangle/RGB
+array declarations and the actual particle type now preserve every raw text
+byte and all 132 raw relocation identities. No initialized-data or BSS
+ownership was added.
+
+An ignored complete storage reconstruction byte-proves 544 initialized bytes:
+12 particle triangles, 16 trail triangles, seven RGB colors, four quad vectors,
+and the texture handle, camera-valid flag, buffer bank, gravity, horizontal
+spread and vertical lift. Its 10,640-byte BSS extent and named field offsets
+are exact: 50 trail records, a short cooldown, compiler alignment before 150
+particles, four camera/delta floats, two vertex-buffer pointers and a cursor.
+No explicit padding object is needed.
+
+The complete one-TU probe exposes two independent blockers. Defined unsigned
+integer addition or subtraction of the physical-address base adds four
+instructions around the triangle packets; the particle updater grows by 16
+bytes and the trail updater's GPR allocation changes. A pointer-arithmetic
+diagnostic recovers all five tail functions but forms an outside-object
+pointer, so it was not adopted. The natural 150-particle clear, including a
+bound derived from the completed array extent, retains two differing Init
+words at +0x6C/+0x74: the buffer-end temporary uses t6 rather than t7. A typed
+particle-pointer rewrite of the existing peeled loop changes seven preheader
+words and was also rejected.
+
+Next: establish a defined physical-address expression with exact compiler
+output before wiring storage ownership. Revisit Init only with a new causal
+mechanism; do not repeat loop/flag spellings or add a linkage shim. The typed
+storage source, objects and ordinary-link receipts remain ignored evidence,
+not configured source ownership.
 <!-- plateau-handoff:overlay65UpdateParticles:end -->

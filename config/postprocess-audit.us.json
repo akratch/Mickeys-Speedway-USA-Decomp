@@ -960,21 +960,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o065/func_overlay_065_F0000C38_18C4EA0.c.o",
-      "offset": 3128,
-      "overlay": 65,
-      "size": 3548,
-      "source": "src/overlays/o065/func_overlay_065_F0000C38_18C4EA0.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o065/overlay65Initialize.c.o",
       "offset": 0,
       "overlay": 65,
@@ -989,59 +974,13 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o065/overlay65Release.c.o",
-      "offset": 3008,
-      "overlay": 65,
-      "size": 48,
-      "source": "src/overlays/o065/overlay65Release.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o065/overlay65ResetSlots.c.o",
-      "offset": 3056,
-      "overlay": 65,
-      "size": 72,
-      "source": "src/overlays/o065/overlay65ResetSlots.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o065/overlay65SpawnRecord.c.o",
-      "offset": 6676,
-      "overlay": 65,
-      "size": 416,
-      "source": "src/overlays/o065/overlay65SpawnRecord.c",
-      "tools": [
-        "filter_elf_relocations.py",
-        "rebind_elf_relocations.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o065/overlay65UpdateParticles.c.o",
+      "object": "build/src/overlays/o065/overlay_065.c.o",
       "offset": 128,
       "overlay": 65,
-      "size": 2880,
-      "source": "src/overlays/o065/overlay65UpdateParticles.c",
+      "size": 6964,
+      "source": "src/overlays/o065/overlay_065.c",
       "tools": [
-        "rebind_elf_relocations.py",
-        "trim_elf_section.py",
-        "objcopy"
+        "filter_elf_relocations.py"
       ]
     },
     {
@@ -1157,6 +1096,21 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
+      "object": "build/src/overlays/o091/overlay_091.c.o",
+      "offset": 0,
+      "overlay": 91,
+      "size": 1396,
+      "source": "src/overlays/o091/overlay_091.c",
+      "tools": [
+        "filter_elf_relocations.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o096/overlay_096.c.o",
       "offset": 0,
       "overlay": 96,
@@ -1217,9 +1171,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 80
+      "metadata": 77
     },
-    "matched_c_bytes_with_postprocess": 342552,
-    "objects_with_postprocess": 80
+    "matched_c_bytes_with_postprocess": 343948,
+    "objects_with_postprocess": 77
   }
 }

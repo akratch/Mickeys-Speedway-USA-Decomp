@@ -29,6 +29,3 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83BuildBatch.c.o: POSTPROCESS = \
 		--redefine-sym addObjectLight=overlay83CreateLinkedReloc \
 		--redefine-sym mmAlloc=overlay83AllocateBatchReloc \
 		--redefine-sym pointListRPY=overlay83TransformWorldReloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawPanel.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_101_F0002EFC_18DE71C=overlay101DrawPanel $@

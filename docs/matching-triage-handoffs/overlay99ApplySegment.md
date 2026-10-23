@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay99ApplySegment:start -->
 ### `overlay99ApplySegment` plateau handoff
 
-- source: `src/overlays/o099/overlay99ApplySegment.c`
+- source: `src/overlays/o099/overlay_099.c`
 - score: 0/230 words, promoted
 - frame: 0xD0
 - relocations: 27

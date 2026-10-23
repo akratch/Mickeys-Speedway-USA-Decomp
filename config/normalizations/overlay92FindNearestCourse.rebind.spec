@@ -1,2 +1,0 @@
-0x11c:sqrtf:func_overlay_092_F0000000_18D5F20
-0x1a8:sqrtf:func_overlay_092_F0000000_18D5F20

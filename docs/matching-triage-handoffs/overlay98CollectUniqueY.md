@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay98CollectUniqueY:start -->
 ### `overlay98CollectUniqueY` plateau handoff
 
-- source: `src/overlays/o098/overlay98CollectUniqueY.c`
+- source: `src/overlays/o098/overlay_098.c`
 - score: 0/81 words, promoted
 - frame: 0x10
 - relocations: 8

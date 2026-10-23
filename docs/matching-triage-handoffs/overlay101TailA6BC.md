@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay101TailA6BC:start -->
 ### `overlay101TailA6BC` plateau handoff
 
-- source: `src/overlays/o101/overlay101TailA6BC.c`
+- source: `src/overlays/o101/overlay_101.c`
 - score: 0/292 words, promoted
 - frame: 0x38
 - relocations: 44

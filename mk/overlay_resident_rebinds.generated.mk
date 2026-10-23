@@ -1978,7 +1978,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o090/overlay_090.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym D_800C9480=D_800C9480_o090Reloc \
 	--redefine-sym overlay7CommitSelection=overlay7CommitSelection_o090Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091_mul.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym camResetView=camResetView_o091Reloc \
 	--redefine-sym camStandardPersp=camStandardPersp_o091Reloc \
 	--redefine-sym func_80009E78=func_80009E78_o091Reloc \
@@ -1986,18 +1986,31 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091_mul.c.o: SURFACE_REBIND = $(OB
 	--redefine-sym rcpClearZBuffer=rcpClearZBuffer_o091Reloc \
 	--redefine-sym viGetCurrentSize=viGetCurrentSize_o091Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/func_overlay_092_F0000308_18D6228.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800C947C=D_800C947C_o092Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay92FindNearestCourse.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8000572C=func_8000572C_o092Reloc $@
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay_092.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o092Reloc \
+	--redefine-sym D_800C947C=D_800C947C_o092Reloc \
+	--redefine-sym _bcopy=_bcopy_o092Reloc \
+	--redefine-sym func_8000572C=func_8000572C_o092Reloc \
+	--redefine-sym func_8000FAE0=func_8000FAE0_o092Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o092Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o092Reloc \
+	--redefine-sym func_overlay_008_F00042A8_1862000=func_overlay_008_F00042A8_o092Reloc \
+	--redefine-sym levelGetNumber=levelGetNumber_o092Reloc \
+	--redefine-sym mathDiffAngle=mathDiffAngle_o092Reloc \
+	--redefine-sym mathRnd=mathRnd_o092Reloc \
+	--redefine-sym overlay1ResolveMotionPoint=overlay1ResolveMotionPoint_o092Reloc \
+	--redefine-sym sqrtf=sqrtf_o092Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o093/overlay_093.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym changeWeather=changeWeather_o093Reloc \
 	--redefine-sym func_80005820=func_80005820_o093Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay94InitializeController.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o094Reloc \
+	--redefine-sym func_800254FC=func_800254FC_o094Reloc \
+	--redefine-sym func_8002565C=func_8002565C_o094Reloc \
+	--redefine-sym func_8002A878=func_8002A878_o094Reloc \
+	--redefine-sym func_8002A910=func_8002A910_o094Reloc \
 	--redefine-sym func_8002B040=func_8002B040_o094Reloc \
 	--redefine-sym func_8005ABA8=func_8005ABA8_o094Reloc \
 	--redefine-sym func_8005AD64=func_8005AD64_o094Reloc \
@@ -2015,384 +2028,106 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o095/overlay_095.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym partUpdateTriggers=partUpdateTriggers_o095Reloc \
 	--redefine-sym rumbleStart=rumbleStart_o095Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96BuildVolume.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay96Register=overlay96Register_o096Reloc \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay_096.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_80078F84=D_80078F84_o096Reloc \
 	--redefine-sym pointListRPY=pointListRPY_o096Reloc \
-	--redefine-sym sqrtf=sqrtf_o096Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96DrawObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym sqrtf=sqrtf_o096Reloc \
 	--redefine-sym texDPTextureX=texDPTextureX_o096Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96FindVolume.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80078F84=D_80078F84_o096Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96Register.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80078F84=D_80078F84_o096Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay96Unregister.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80078F84=D_80078F84_o096Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97AssignState.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym addRomdefLight=addRomdefLight_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97CreateDescriptor.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camlightAdd=camlightAdd_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitBounds.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8001C054=func_8001C054_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitDirection.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitPlane.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitResource.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay_097.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym SetLinkSlot=SetLinkSlot_o097Reloc \
+	--redefine-sym addRomdefLight=addRomdefLight_o097Reloc \
 	--redefine-sym amCreateAudioPoint=amCreateAudioPoint_o097Reloc \
 	--redefine-sym amSoundIsLooped=amSoundIsLooped_o097Reloc \
-	--redefine-sym func_80006EA0=func_80006EA0_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitSelection.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym camlightAdd=camlightAdd_o097Reloc \
+	--redefine-sym func_80006EA0=func_80006EA0_o097Reloc \
+	--redefine-sym func_8001C054=func_8001C054_o097Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o097Reloc \
+	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o097Reloc \
 	--redefine-sym trackGetTrack=trackGetTrack_o097Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay97InitTransform.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym SetLinkSlot=SetLinkSlot_o097Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98CheckObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8001291C=func_8001291C_o098Reloc \
-	--redefine-sym func_8001357C=func_8001357C_o098Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98CollectAccepted.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camGetPtr=camGetPtr_o098Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay98RenderReflections.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay_098.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym camGetProjectionMtx=camGetProjectionMtx_o098Reloc \
+	--redefine-sym camGetPtr=camGetPtr_o098Reloc \
 	--redefine-sym func_80009E78=func_80009E78_o098Reloc \
+	--redefine-sym func_8001291C=func_8001291C_o098Reloc \
+	--redefine-sym func_8001357C=func_8001357C_o098Reloc \
 	--redefine-sym func_8002AA50=func_8002AA50_o098Reloc \
 	--redefine-sym func_8002AC84=func_8002AC84_o098Reloc \
 	--redefine-sym mtxf_mul=mtxf_mul_o098Reloc \
 	--redefine-sym mtxf_to_mtx=mtxf_to_mtx_o098Reloc \
 	--redefine-sym texDPInit=texDPInit_o098Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay_099.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o099Reloc \
 	--redefine-sym D_8007BE80=D_8007BE80_o099Reloc \
 	--redefine-sym D_8007BE84=D_8007BE84_o099Reloc \
 	--redefine-sym D_8007BE88=D_8007BE88_o099Reloc \
 	--redefine-sym D_800D2FAC=D_800D2FAC_o099Reloc \
+	--redefine-sym camGetProjZ=camGetProjZ_o099Reloc \
+	--redefine-sym camGetPtr=camGetPtr_o099Reloc \
 	--redefine-sym camStandardPersp=camStandardPersp_o099Reloc \
-	--redefine-sym overlay99RenderSegments=overlay99RenderSegments_o099Reloc \
-	--redefine-sym texDPInit=texDPInit_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BE84=D_8007BE84_o099Reloc \
-	--redefine-sym D_8007BE88=D_8007BE88_o099Reloc \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o099Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99BuildHeightGrid.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BE84=D_8007BE84_o099Reloc \
-	--redefine-sym D_8007BE88=D_8007BE88_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99InitializeEntries.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_8000590C=func_8000590C_o099Reloc \
-	--redefine-sym func_80037414=func_80037414_o099Reloc \
-	--redefine-sym viFrameRateReset=viFrameRateReset_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ProjectVector.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym sqrtf=sqrtf_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ReleaseEntries.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80006EA0=func_80006EA0_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99RenderSegments.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym Arctanf=Arctanf_o099Reloc \
-	--redefine-sym D_800D2FAC=D_800D2FAC_o099Reloc \
+	--redefine-sym func_80006EA0=func_80006EA0_o099Reloc \
 	--redefine-sym func_80009E78=func_80009E78_o099Reloc \
+	--redefine-sym func_80022E80=func_80022E80_o099Reloc \
+	--redefine-sym func_80022FD4=func_80022FD4_o099Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o099Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o099Reloc \
+	--redefine-sym func_8002AA50=func_8002AA50_o099Reloc \
+	--redefine-sym func_80037414=func_80037414_o099Reloc \
+	--redefine-sym mtxf_transform_point=mtxf_transform_point_o099Reloc \
 	--redefine-sym rcpClearZBuffer=rcpClearZBuffer_o099Reloc \
 	--redefine-sym sqrtf=sqrtf_o099Reloc \
 	--redefine-sym texDPInit=texDPInit_o099Reloc \
+	--redefine-sym viFrameRateReset=viFrameRateReset_o099Reloc \
 	--redefine-sym viGetCurrentSize=viGetCurrentSize_o099Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99RenderSortedEntries.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camGetProjZ=camGetProjZ_o099Reloc \
-	--redefine-sym camGetPtr=camGetPtr_o099Reloc \
-	--redefine-sym func_80022E80=func_80022E80_o099Reloc \
-	--redefine-sym func_80022FD4=func_80022FD4_o099Reloc \
-	--redefine-sym func_8002AA50=func_8002AA50_o099Reloc \
-	--redefine-sym mtxf_transform_point=mtxf_transform_point_o099Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100ApplyToValue.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay_100.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_80079278=D_80079278_o100Reloc \
-	--redefine-sym overlay100DrawMotion=overlay100DrawMotion_o100Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100ApplyValue.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80079278=D_80079278_o100Reloc \
-	--redefine-sym overlay100UpdateMotion=overlay100UpdateMotion_o100Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100DrawMotion.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym camGetPtr=camGetPtr_o100Reloc \
 	--redefine-sym func_8002468C=func_8002468C_o100Reloc \
+	--redefine-sym func_800299E8=func_800299E8_o100Reloc \
 	--redefine-sym func_8002A8BC=func_8002A8BC_o100Reloc \
 	--redefine-sym func_8002A8C0=func_8002A8C0_o100Reloc \
+	--redefine-sym mathOneFloatPY=mathOneFloatPY_o100Reloc \
+	--redefine-sym mmAlloc=mmAlloc_o100Reloc \
+	--redefine-sym mmFree=mmFree_o100Reloc \
 	--redefine-sym texDPInit=texDPInit_o100Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100InitializeMotion.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80079278=D_80079278_o100Reloc \
-	--redefine-sym func_800299E8=func_800299E8_o100Reloc \
-	--redefine-sym mathOneFloatPY=mathOneFloatPY_o100Reloc \
-	--redefine-sym mmAlloc=mmAlloc_o100Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100ReleaseAll.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80079278=D_80079278_o100Reloc \
-	--redefine-sym overlay100RemoveEntry=overlay100RemoveEntry_o100Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100RemoveEntry.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_80079278=D_80079278_o100Reloc \
-	--redefine-sym mmFree=mmFree_o100Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100UpdateMotion.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay100RemoveEntry=overlay100RemoveEntry_o100Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0002510_18DDD30.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101GetBounds=overlay101GetBounds_o101Reloc \
-	--redefine-sym overlay101SetScissor=overlay101SetScissor_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0003A58_18DF278.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101Reset=overlay101Reset_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F000512C_18E094C.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80036DD0=func_80036DD0_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F000571C_18E0F3C.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0005E08_18E1628.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80036DD0=func_80036DD0_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F00063F8_18E1C18.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80036DD0=func_80036DD0_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F00069E8_18E2208.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101Reset=overlay101Reset_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F00078F4_18E3114.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_8007BF3C=D_8007BF3C_o101Reloc \
+	--redefine-sym D_8007BF44=D_8007BF44_o101Reloc \
 	--redefine-sym D_800D3128=D_800D3128_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0008128_18E3948.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D3128=D_800D3128_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F000895C_18E417C.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D3128=D_800D3128_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0009190_18E49B0.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D3128=D_800D3128_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ActivateSlot.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndPlay=amSndPlay_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildBorder.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym amSndPlay=amSndPlay_o101Reloc \
+	--redefine-sym amTunePlay=amTunePlay_o101Reloc \
+	--redefine-sym camDo2DSprite=camDo2DSprite_o101Reloc \
+	--redefine-sym camStandardOrtho=camStandardOrtho_o101Reloc \
+	--redefine-sym fontBackground=fontBackground_o101Reloc \
+	--redefine-sym fontColour=fontColour_o101Reloc \
+	--redefine-sym fontPrintXY=fontPrintXY_o101Reloc \
+	--redefine-sym fontUseFont=fontUseFont_o101Reloc \
 	--redefine-sym frontDrawRectangles=frontDrawRectangles_o101Reloc \
-	--redefine-sym overlay101BuildIntensityColors=overlay101BuildIntensityColors_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildFrame.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym frontDrawRectangles=frontDrawRectangles_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildPresentationA.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80036DD0=func_80036DD0_o101Reloc \
-	--redefine-sym overlay101Reset=overlay101Reset_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildPresentationB.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80036DD0=func_80036DD0_o101Reloc \
-	--redefine-sym overlay101Reset=overlay101Reset_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildPresentationC.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80036DD0=func_80036DD0_o101Reloc \
-	--redefine-sym overlay101Reset=overlay101Reset_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildPresentationD.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_80036DD0=func_80036DD0_o101Reloc \
-	--redefine-sym overlay101Reset=overlay101Reset_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawChain.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camStandardOrtho=camStandardOrtho_o101Reloc \
-	--redefine-sym func_overlay_101_F0002510_18DDD30=func_overlay_101_F0002510_o101Reloc \
-	--redefine-sym overlay101DrawElement=overlay101DrawElement_o101Reloc \
-	--redefine-sym overlay101DrawPanel=overlay101DrawPanel_o101Reloc \
-	--redefine-sym overlay101DrawTransformed=overlay101DrawTransformed_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawClock.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camStandardOrtho=camStandardOrtho_o101Reloc \
+	--redefine-sym func_800015F8=func_800015F8_o101Reloc \
+	--redefine-sym func_80001608=func_80001608_o101Reloc \
 	--redefine-sym func_80022A44=func_80022A44_o101Reloc \
 	--redefine-sym func_8002A8BC=func_8002A8BC_o101Reloc \
 	--redefine-sym func_8002A8C0=func_8002A8C0_o101Reloc \
-	--redefine-sym texDPTextureX=texDPTextureX_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawElement.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym fontBackground=fontBackground_o101Reloc \
-	--redefine-sym fontColour=fontColour_o101Reloc \
-	--redefine-sym fontPrintXY=fontPrintXY_o101Reloc \
-	--redefine-sym fontUseFont=fontUseFont_o101Reloc \
-	--redefine-sym overlay101GetBounds=overlay101GetBounds_o101Reloc \
-	--redefine-sym overlay101SetScissor=overlay101SetScissor_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawPanel.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym fontBackground=fontBackground_o101Reloc \
-	--redefine-sym fontColour=fontColour_o101Reloc \
-	--redefine-sym fontPrintXY=fontPrintXY_o101Reloc \
-	--redefine-sym fontUseFont=fontUseFont_o101Reloc \
-	--redefine-sym frontDrawRectangles=frontDrawRectangles_o101Reloc \
 	--redefine-sym func_8002F618=func_8002F618_o101Reloc \
-	--redefine-sym overlay101BuildBorder=overlay101BuildBorder_o101Reloc \
-	--redefine-sym overlay101BuildFrame=overlay101BuildFrame_o101Reloc \
-	--redefine-sym overlay101BuildIntensityColors=overlay101BuildIntensityColors_o101Reloc \
-	--redefine-sym overlay101SetScissor=overlay101SetScissor_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawSlots.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101DrawChain=overlay101DrawChain_o101Reloc \
-	--redefine-sym overlay101DrawClock=overlay101DrawClock_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawTransformed.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camDo2DSprite=camDo2DSprite_o101Reloc \
-	--redefine-sym overlay101GetBounds=overlay101GetBounds_o101Reloc \
-	--redefine-sym overlay101SetScissor=overlay101SetScissor_o101Reloc \
-	--redefine-sym sprSetTextureFilter=sprSetTextureFilter_o101Reloc \
-	--redefine-sym viGetCurrentSize=viGetCurrentSize_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101GetBounds.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym viGetCurrentSize=viGetCurrentSize_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101Initialize.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BF44=D_8007BF44_o101Reloc \
-	--redefine-sym func_80001608=func_80001608_o101Reloc \
+	--redefine-sym func_8002FB34=func_8002FB34_o101Reloc \
+	--redefine-sym func_80036DD0=func_80036DD0_o101Reloc \
+	--redefine-sym levelGetNumber=levelGetNumber_o101Reloc \
 	--redefine-sym mainChangeLevel=mainChangeLevel_o101Reloc \
 	--redefine-sym mainSetMode=mainSetMode_o101Reloc \
-	--redefine-sym mainTitlePageInit=mainTitlePageInit_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ScheduleByte16.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101UpdateByte16=overlay101UpdateByte16_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ScheduleByte17.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101UpdateByte17=overlay101UpdateByte17_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ScheduleFrames.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101FindEntry=overlay101FindEntry_o101Reloc \
-	--redefine-sym overlay101UpdateFrames=overlay101UpdateFrames_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ScheduleGlobalPair.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101UpdateGlobalPair=overlay101UpdateGlobalPair_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ScheduleLinkedByte.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101FindEntry=overlay101FindEntry_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ScheduleLinkedColor.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101FindEntry=overlay101FindEntry_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ScheduleLinkedFloat.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101FindEntry=overlay101FindEntry_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ScheduleLinkedPair.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101FindEntry=overlay101FindEntry_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ScheduleLinkedPair2.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101FindEntry=overlay101FindEntry_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ScheduleLinkedPair3.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101FindEntry=overlay101FindEntry_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101ScheduleLinkedScaled.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101FindEntry=overlay101FindEntry_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101SchedulePair.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101UpdateEntry=overlay101UpdateEntry_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101SchedulePair12.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101AllocateEntry=overlay101AllocateEntry_o101Reloc \
-	--redefine-sym overlay101UpdateEntry12=overlay101UpdateEntry12_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101SetScissor.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym viGetCurrentSize=viGetCurrentSize_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailA6BC.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101Reset=overlay101Reset_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailAB4C.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101Reset=overlay101Reset_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailB544.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailBA34.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay101Reset=overlay101Reset_o101Reloc \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailC144.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailC6E8.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BF3C=D_8007BF3C_o101Reloc \
-	--redefine-sym D_8007BF44=D_8007BF44_o101Reloc \
-	--redefine-sym amTunePlay=amTunePlay_o101Reloc \
-	--redefine-sym func_800015F8=func_800015F8_o101Reloc \
-	--redefine-sym func_80036DD0=func_80036DD0_o101Reloc \
-	--redefine-sym func_overlay_101_F0003A58_18DF278=func_overlay_101_F0003A58_o101Reloc \
-	--redefine-sym func_overlay_101_F000512C_18E094C=func_overlay_101_F000512C_o101Reloc \
-	--redefine-sym func_overlay_101_F000571C_18E0F3C=func_overlay_101_F000571C_o101Reloc \
-	--redefine-sym func_overlay_101_F0005E08_18E1628=func_overlay_101_F0005E08_o101Reloc \
-	--redefine-sym func_overlay_101_F00063F8_18E1C18=func_overlay_101_F00063F8_o101Reloc \
-	--redefine-sym func_overlay_101_F00069E8_18E2208=func_overlay_101_F00069E8_o101Reloc \
-	--redefine-sym func_overlay_101_F00078F4_18E3114=func_overlay_101_F00078F4_o101Reloc \
-	--redefine-sym func_overlay_101_F0008128_18E3948=func_overlay_101_F0008128_o101Reloc \
-	--redefine-sym func_overlay_101_F000895C_18E417C=func_overlay_101_F000895C_o101Reloc \
-	--redefine-sym func_overlay_101_F0009190_18E49B0=func_overlay_101_F0009190_o101Reloc \
-	--redefine-sym func_overlay_101_F000AB4C_18E636C=func_overlay_101_F000AB4C_o101Reloc \
-	--redefine-sym func_overlay_101_F000B544_18E6D64=func_overlay_101_F000B544_o101Reloc \
-	--redefine-sym func_overlay_101_F000BA34_18E7254=func_overlay_101_F000BA34_o101Reloc \
-	--redefine-sym func_overlay_101_F000C144_18E7964=func_overlay_101_F000C144_o101Reloc \
-	--redefine-sym levelGetNumber=levelGetNumber_o101Reloc \
+	--redefine-sym mainTitlePageInit=mainTitlePageInit_o101Reloc \
 	--redefine-sym mathRnd=mathRnd_o101Reloc \
-	--redefine-sym overlay101BuildPresentationA=overlay101BuildPresentationA_o101Reloc \
-	--redefine-sym overlay101BuildPresentationB=overlay101BuildPresentationB_o101Reloc \
-	--redefine-sym overlay101BuildPresentationC=overlay101BuildPresentationC_o101Reloc \
-	--redefine-sym overlay101BuildPresentationD=overlay101BuildPresentationD_o101Reloc \
-	--redefine-sym overlay101Reset=overlay101Reset_o101Reloc \
-	--redefine-sym overlay101TailA6BC=overlay101TailA6BC_o101Reloc \
+	--redefine-sym sprSetTextureFilter=sprSetTextureFilter_o101Reloc \
+	--redefine-sym texAnimateSprite=texAnimateSprite_o101Reloc \
+	--redefine-sym texDPInit=texDPInit_o101Reloc \
+	--redefine-sym texDPTextureX=texDPTextureX_o101Reloc \
 	--redefine-sym texLoadSprite=texLoadSprite_o101Reloc \
-	--redefine-sym texLoadTexture=texLoadTexture_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101UpdateChains.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym texAnimateSprite=texAnimateSprite_o101Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101UpdatePresentation.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8002FB34=func_8002FB34_o101Reloc \
-	--redefine-sym overlay101DispatchActive=overlay101DispatchActive_o101Reloc \
-	--redefine-sym overlay101DispatchEvents=overlay101DispatchEvents_o101Reloc \
-	--redefine-sym overlay101DrawSlots=overlay101DrawSlots_o101Reloc \
-	--redefine-sym overlay101UpdateChains=overlay101UpdateChains_o101Reloc $@
+	--redefine-sym texLoadTexture=texLoadTexture_o101Reloc \
+	--redefine-sym viGetCurrentSize=viGetCurrentSize_o101Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o102/overlay_102.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007A204=D_8007A204_o102Reloc \

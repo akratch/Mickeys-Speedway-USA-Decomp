@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay101BuildPresentationD:start -->
 ### `overlay101BuildPresentationD` plateau handoff
 
-- source: `src/overlays/o101/overlay101BuildPresentationD.c`
+- source: `src/overlays/o101/overlay_101.c`
 - score: 0/206 words, promoted
 - frame: 0x20
 - relocations: 52

@@ -1,5 +1,9 @@
 #include "overlays/overlay_076.h"
 
+/* Tier B: module-local records and section extents identify the index and eight statuses. */
+static s32 sNextIndex = 0;
+static s32 sStatus[8];
+
 /*
  * Overlay 76 function map: +0x000, +0x038, +0x0D0; text ends at +0x120.
  * Fresh exact scans against DKR v77/v80 and JFG are negative. Two SYMBOL
@@ -7,11 +11,11 @@
  * LOCAL records prove one 16-byte data range and the 0x20-byte status BSS.
  */
 void overlay76Register(Overlay76Object *object, void *entry) {
-    s32 *next = &gOverlay76NextIndex;
+    s32 *next = &sNextIndex;
     Overlay76Record *record = object->record;
 
     record->index = *next;
-    gOverlay76Status[*next] = 0;
+    sStatus[*next] = 0;
     (*next)++;
 }
 
@@ -20,17 +24,17 @@ void overlay76Update(Overlay76Object *object, s32 updateRate) {
     s32 index = record->index;
     s32 soundId;
 
-    if (gOverlay76Status[index] == 1) {
+    if (sStatus[index] == 1) {
         soundId = (index & 1) ? 0x205 : 0x206;
         amSndPlayXYZ(soundId, object->x, object->y, object->z, 4, 0);
-        gOverlay76Status[record->index] = 0;
+        sStatus[record->index] = 0;
     }
 }
 
 void overlay76TriggerRandom(void) {
-    s32 count = gOverlay76NextIndex;
+    s32 count = sNextIndex;
 
     if (count > 0) {
-        gOverlay76Status[mathRnd(0, count - 1)] = 1;
+        sStatus[mathRnd(0, count - 1)] = 1;
     }
 }

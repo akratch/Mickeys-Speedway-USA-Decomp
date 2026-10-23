@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4968,
+  "owned_data_rodata_bytes": 5016,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -11182,7 +11182,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 21
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x10",
+     "size": "0x10",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o074/overlay_074",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 75,
@@ -11416,7 +11427,18 @@
     "pilot_role": "text, initialized data, BSS, and both relocation tables",
     "exact_donor_match": null,
     "priority_rank": 6
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x10",
+     "size": "0x10",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o076/overlay_076",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 77,
@@ -11914,18 +11936,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 39
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x0",
-     "end_offset": "0x30",
-     "size": "0x30",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o080/overlay_080",
-     "canonical": true
-    }
-   ]
+   }
   },
   {
    "overlay": 81,
@@ -12056,7 +12067,27 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 12
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x10",
+     "size": "0x10",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o081/overlay_081",
+     "canonical": true
+    },
+    {
+     "offset": "0x10",
+     "end_offset": "0x20",
+     "size": "0x10",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o081/overlay_081",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 82,
@@ -13323,7 +13354,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 37
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x20",
+     "size": "0x20",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o091/overlay_091",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 92,

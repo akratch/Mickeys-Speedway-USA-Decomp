@@ -88,9 +88,6 @@ typedef struct Overlay81NearbyObject {
     f32 z;
 } Overlay81NearbyObject;
 
-extern f32 gOverlay81Scale;
-extern s32 gOverlay81Mask;
-
 void amSndPlayXYZ(s32 effectId, s32 x, s32 y, s32 z,
                                s32 mode, s32 arg5);
 void partUpdateTriggers(Overlay81Object *object, s32 mode);

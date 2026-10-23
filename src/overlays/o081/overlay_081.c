@@ -1,5 +1,8 @@
 #include "overlays/overlay_081.h"
 
+/* Tier B: module-local mask accesses and the initialized image identify this state. */
+static s32 sTriggerMask = 0;
+
 /*
  * Overlay 81, ADR 0006 consolidation: one translation unit in ROM order.
  * The canonical layouts combine the compatible partial struct views from
@@ -12,7 +15,7 @@ void overlay81Init(Overlay81Object *object, Overlay81Init *init, s32 unused) {
     Overlay81Collision *collision;
     s32 bit;
 
-    object->scale = (f32) init->valueA.scale * gOverlay81Scale;
+    object->scale = (f32) init->valueA.scale * 0.05f;
     state = object->state;
     if (object->dimensions != 0) {
         object->dimensions[0] = object->transform->width * object->scale;
@@ -41,7 +44,7 @@ void overlay81Update(Overlay81Object *object, s32 updateRate) {
     u8 active;
 
     state = object->state;
-    if (state->mask & gOverlay81Mask) {
+    if (state->mask & sTriggerMask) {
         if (state->timer != 0) {
             state->timer -= updateRate;
             if (state->timer <= 0) {
@@ -80,7 +83,7 @@ void overlay81Update(Overlay81Object *object, s32 updateRate) {
 
 /* Small state helpers; the exact DKR and JFG donor scans are negative. */
 void overlay81SetMaskBit(s32 bit) {
-    gOverlay81Mask |= 1 << bit;
+    sTriggerMask |= 1 << bit;
 }
 
 void overlay81InitState(Overlay81Object *object, Overlay81Init *init) {
@@ -119,6 +122,6 @@ void overlay81CheckNearby(Overlay81Object *object, s32 unused) {
         } while (count != 0);
     }
     if (found != 0) {
-        gOverlay81Mask |= 1 << state->index;
+        sTriggerMask |= 1 << state->index;
     }
 }

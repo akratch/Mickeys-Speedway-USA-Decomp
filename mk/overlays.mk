@@ -950,25 +950,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay_050.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:54719d33292c6bb1573315eb3140be35c277ea530a17f384ba3a0027e82bf244
 include mk/overlay_052.mk
-# Overlay 91 is one translation unit under the overlay flag set. Until phase 3
-# gives the module's initialized data and rodata a C owner, the object's own
-# .rodata is dropped (the shipped blob supplies it) and the relocations that
-# name blob data, rodata, or a callee reached through the runtime table are
-# filtered so the linker leaves the compiler's stored words alone. Its .text
-# includes the trailing pad.
+# Overlay 91 owns its compiler jump table and names every runtime export.
+MODULE_LINKED_OVERLAYS += 091
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x098:5:overlay91GlobalA 0x0a8:6:overlay91GlobalA \
-		0x0c4:5:.rodata 0x0cc:6:.rodata \
-		0x180:4:func_8002A8C0 0x1f0:4:func_80000F94 \
-		0x1f8:4:func_overlay_007_F0000DBC_185CC44 0x21c:4:func_8002A8C0 \
-		0x274:4:func_80000F94 0x2bc:4:func_80000F94 \
-		0x2c4:4:func_overlay_007_F0000DBC_185CC44 0x33c:4:func_80000F94 \
-		0x344:4:func_overlay_007_F0000DBC_185CC44 0x34c:5:overlay91GlobalB \
-		0x354:6:overlay91GlobalB 0x3ac:4:func_80006EA0 \
-		0x3f0:4:func_8002A8BC && \
-	$(OBJCOPY) --remove-section=.rodata $@
 # Overlay 48 is one translation unit at the overlay flag set; its .text carries
 # the trailing pad, so nothing is trimmed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay_048.c.o: CFLAGS += -Wab,-r4300_mul
@@ -1036,6 +1020,8 @@ include mk/overlay_084.mk
 # Overlays 73-90 (one translation unit per module; OVERLAY_STRUCTURE_SPRINT.md phase 2).
 # Overlay 76 is one translation unit under the overlay flag set; its .text is
 # the module's 0x120 bytes, trailing pad included, so it needs no trim.
+# The module owns its initialized index and eight-word status BSS.
+MODULE_LINKED_OVERLAYS += 076
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o076/overlay_076.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 78 is one translation unit under the overlay flag set; its .text
 # is the module's whole text, trailing pad included, so it needs no trim.
@@ -1129,6 +1115,8 @@ $(O73_OBJ): POSTPROCESS = \
 	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 74 is one translation unit under the overlay flag set; its .text is
 # the module's 0x250 bytes, trailing pad included, so it needs no trim.
+# The compiler owns the single floating-point literal pool.
+MODULE_LINKED_OVERLAYS += 074
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o074/overlay_074.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 75 is one translation unit under the overlay flag set; its .text is
 # the module's 0x700 bytes, trailing pad included, so it needs no trim.
@@ -1139,6 +1127,8 @@ MODULE_LINKED_OVERLAYS += 077
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 81 is one translation unit under the overlay flag set; its .text
 # is the module's whole text, trailing pad included, so it needs no trim.
+# The private mask and compiler literal pool are owned by the whole module.
+MODULE_LINKED_OVERLAYS += 081
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o081/overlay_081.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 82 owns the bounded serialized table image and links all sections
 # through the ordinary module link. Its .text includes compiler alignment.

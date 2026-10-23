@@ -11,7 +11,7 @@ from the original stub but have not been modernized or verified.
 <!-- SCOREBOARD_BEGIN -->
 ## Progress
 
-[![resident functions](https://img.shields.io/badge/resident_functions_matched-1353_of_1460_(92.67%25)-blue)](#progress) [![bytes](https://img.shields.io/badge/code_bytes_resolved-943640_of_943640_(100.00%25)-blue)](#progress) [![names](https://img.shields.io/badge/symbols_named-1483_adopted-blue)](#progress)
+[![resident functions](https://img.shields.io/badge/resident_functions_matched-1353_of_1460_(92.67%25)-blue)](#progress) [![bytes](https://img.shields.io/badge/code_bytes_resolved-943640_of_943640_(100.00%25)-blue)](#progress) [![names](https://img.shields.io/badge/symbols_named-1496_adopted-blue)](#progress)
 
 Physical text: 944,316 bytes; reviewed nonexecutable alignment: 676 bytes.
 
@@ -24,7 +24,7 @@ Physical text: 944,316 bytes; reviewed nonexecutable alignment: 676 bytes.
 | Resident functions matched | 1,353 | 1,460 | 92.67% |
 | Resident functions named | 1,434 | 1,460 | 98.22% |
 
-Whole program is resident C plus verified assembly plus overlay C. Totals exclude [reviewed nonexecutable alignment](docs/executable-accounting.md). Function and naming ratios cover the resident segment; overlay progress is measured separately in executable bytes. A function counts only when the ROM rebuilds byte-identically with its C compiled in place of its assembly, so a `NON_MATCHING` body counts as unmatched exactly like extracted assembly. Verified assembly is 107 hand-written functions kept as assembly on purpose; [the proof for each](docs/VERIFIED_ASSEMBLY.md) is re-derived from the ROM by `tools/hasm_audit.py`. 1,483 symbols are adopted in `symbol_addrs.us.txt`.
+Whole program is resident C plus verified assembly plus overlay C. Totals exclude [reviewed nonexecutable alignment](docs/executable-accounting.md). Function and naming ratios cover the resident segment; overlay progress is measured separately in executable bytes. A function counts only when the ROM rebuilds byte-identically with its C compiled in place of its assembly, so a `NON_MATCHING` body counts as unmatched exactly like extracted assembly. Verified assembly is 107 hand-written functions kept as assembly on purpose; [the proof for each](docs/VERIFIED_ASSEMBLY.md) is re-derived from the ROM by `tools/hasm_audit.py`. 1,496 symbols are adopted in `symbol_addrs.us.txt`.
 
 | Resident area | Functions | Matched to C | Named, still asm | Unnamed | Identified |
 | :--- | ---: | ---: | ---: | ---: | :--- |

@@ -450,7 +450,7 @@ D_8007944C = 0x8007944C; // type:u8 size:0x4 tier-A compiler-owned main/shadows 
 D_80079450 = 0x80079450; // type:u8 size:0x4 tier-A compiler-owned main/shadows .data buffer state
 D_80079454 = 0x80079454; // type:u8 size:0x4 tier-A compiler-owned main/shadows .data buffer state
 D_80079458 = 0x80079458; // type:s32 size:0x4 tier-A compiler-owned main/shadows .data buffer state
-D_8007945C = 0x8007945C; // type:u16 size:0x4 tier-A compiler-owned main/shadows .data terminal pair
+D_8007945C = 0x8007945C; // type:s16 size:0x6 tier-A compiler-owned main/shadows three-field angle record
 
 // main/camlight and the opening of main/spranim -- PROVENANCE: descriptive
 // names borrowed from JFG's public src/camlight.c and src/spranim.c.  Each

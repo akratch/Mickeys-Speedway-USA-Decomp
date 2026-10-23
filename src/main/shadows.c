@@ -17,9 +17,16 @@
 #include "PR/ultratypes.h"
 #include "game/overlay_exports.h"
 
+typedef struct ShadowGenerateAngle {
+    s16 horizontal;
+    s16 vertical;
+    s16 material;
+} ShadowGenerateAngle;
+
 /* Shadow buffer state occupies one contiguous compiler-owned .data input
  * section. Keep the retail labels at their measured offsets for all users;
- * the terminal halfword pair is part of IDO's measured 0x50-byte section. */
+ * the terminal angle record includes its material halfword before the next
+ * float table's two-byte alignment. */
 u8 *D_80079410[1] = { 0 };
 u8 *D_80079414[3] = { 0 };
 u8 *D_80079420[1] = { 0 };
@@ -33,7 +40,7 @@ s32 D_8007944C = 0;
 s32 D_80079450 = 0;
 s32 D_80079454 = 0;
 s32 D_80079458 = 0;
-u16 D_8007945C[2] = { 0, 0x4000 };
+ShadowGenerateAngle D_8007945C = { 0, 0x4000, 128 };
 extern s32 D_800CB278;
 extern s32 D_800CB27C;
 extern s32 D_800CB280;
@@ -201,14 +208,7 @@ extern void func_80016890(void *object, void *angles, void *surface,
                           f32 x, f32 y, f32 z, s16 type);
 extern void func_800180B4(ShadowQuery *query);
 extern u8 *levelGetLevel(void);
-extern s16 D_80079460;
 extern f32 D_800817A0;
-
-typedef struct ShadowGenerateAngle {
-    s16 horizontal;
-    s16 vertical;
-    s16 material;
-} ShadowGenerateAngle;
 
 #define SG_U8(p, o) (*(u8 *) ((u8 *) (p) + (o)))
 #define SG_S16(p, o) (*(s16 *) ((u8 *) (p) + (o)))
@@ -228,7 +228,7 @@ typedef struct ShadowGenerateAngle {
  *     reload after each call rather than the angle loop's saved model;
  *   - angleSource is set in an if/else over `flags & 8 && link != NULL`;
  *   - object->0x44 is read at each use after camGetMode, not carried;
- *   - angleCount starts at 0 and becomes 1 under D_80079460 > 0;
+ *   - angleCount starts at 0 and becomes 1 when the shared material is positive;
  *   - the angle pointer is stored after the three part loads, and the
  *     material is stored before angleCount++;
  *   - the sort's bound is assigned in its guard: (k = angleCount - 1) > 0;
@@ -274,9 +274,9 @@ void shadowGenerate(s32 arg0, s32 arg1) {
     D_800CB28C = 1.0f - Powerf(D_800817A0, arg1);
 
     level = levelGetLevel();
-    D_8007945C[0] = (u16) SG_S16(level, 0xD8);
-    D_8007945C[1] = (u16) SG_S16(level, 0xDA);
-    *(s16 *) ((u8 *) D_8007945C + 4) = SG_U8(level, 0xE2);
+    D_8007945C.horizontal = SG_S16(level, 0xD8);
+    D_8007945C.vertical = SG_S16(level, 0xDA);
+    D_8007945C.material = SG_U8(level, 0xE2);
 
     objects = func_8000572C(&first, &selected);
     if (first < selected) {
@@ -375,10 +375,10 @@ void shadowGenerate(s32 arg0, s32 arg1) {
                                 }
                             } else {
                                 angleCount = 0;
-                                if (D_80079460 > 0) {
+                                if (D_8007945C.material > 0) {
                                     angleCount = 1;
                                     anglePointers[0] =
-                                        (ShadowGenerateAngle *) D_8007945C;
+                                        &D_8007945C;
                                 }
                                 model = SG_PTR(object, 0x50);
                                 if (model != NULL) {

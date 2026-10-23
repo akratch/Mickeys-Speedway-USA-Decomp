@@ -16,9 +16,6 @@ typedef struct Overlay76Object {
     Overlay76Record *record;
 } Overlay76Object;
 
-extern s32 gOverlay76NextIndex;
-extern s32 gOverlay76Status[8];
-
 void amSndPlayXYZ(u16 soundId, s32 x, s32 y, s32 z, s32 arg4,
                          s32 arg5);
 s32 mathRnd(s32 min, s32 max);

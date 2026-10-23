@@ -1556,10 +1556,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay_075.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym lightObject=lightObject_o075Reloc \
 	--redefine-sym partUpdateTriggers=partUpdateTriggers_o075Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o076/overlay_076.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o076Reloc \
-	--redefine-sym mathRnd=mathRnd_o076Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o078/overlay_078.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_8005ABA8=func_8005ABA8_o078Reloc \
 	--redefine-sym func_8005AD64=func_8005AD64_o078Reloc $@

@@ -3411,12 +3411,6 @@ lightObject_o075Reloc = 0xf0000000;
 overlay75PlayEventReloc = 0xf0000000;
 partUpdateTriggers_o075Reloc = 0xf0000000;
 
-/* overlay 76: overlay_076.c.o */
-amSndPlayXYZ_o076Reloc = 0xf0000000;
-gOverlay76NextIndex = 0x00000000;
-gOverlay76Status = 0x00000000;
-mathRnd_o076Reloc = 0xf0000000;
-
 /* overlay 78: overlay_078.c.o */
 func_8005ABA8_o078Reloc = 0xf0000000;
 func_8005AD64_o078Reloc = 0xf0000000;
@@ -4454,9 +4448,9 @@ func_overlay_075_F0000214_18CC17C = overlay75UpdateMovingObject;
 func_overlay_075_F00006D4_18CC63C = overlay75MarkSlot;
 
 /* overlay 76: overlay_076.c.o */
-func_overlay_076_F0000000_18CC770 = overlay76Register;
 func_overlay_076_F0000038_18CC7A8 = overlay76Update;
 func_overlay_076_F00000D0_18CC840 = overlay76TriggerRandom;
+func_overlay_076_F0000000_18CC770 = overlay76Register;
 
 /* overlay 77: overlay_077.c.o */
 func_overlay_077_F0000000_18CC910 = overlay77Init;

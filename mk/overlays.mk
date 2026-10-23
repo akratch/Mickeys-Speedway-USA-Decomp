@@ -1050,6 +1050,8 @@ include mk/overlay_084.mk
 # Overlays 73-90 (one translation unit per module; OVERLAY_STRUCTURE_SPRINT.md phase 2).
 # Overlay 76 is one translation unit under the overlay flag set; its .text is
 # the module's 0x120 bytes, trailing pad included, so it needs no trim.
+# The module owns its initialized index and eight-word status BSS.
+MODULE_LINKED_OVERLAYS += 076
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o076/overlay_076.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 78 is one translation unit under the overlay flag set; its .text
 # is the module's whole text, trailing pad included, so it needs no trim.

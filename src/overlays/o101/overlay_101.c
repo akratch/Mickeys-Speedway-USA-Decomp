@@ -2,17 +2,27 @@
 
 
 
-/* The builder root and node pools occupy one overlay-local BSS owner.  The
- * relocation table uses the overlay BSS base for these three ranges; keep the
- * measured gaps explicit so the aliases retain their original offsets.
- * IDO lays .bss out in first-reference order, so the owner is defined
- * here, before any function reads it. Each union collects the views the
- * per-function sources took of the same storage. */
+/* Tier B: consumer strides and independent neighboring LOCAL identities
+ * bound these storage families. The entry allocator/dispatcher scans 40.
+ * Tier D: 16 root/order/node slots and 32 text slots are bounded storage
+ * views, not recovered original declarations; constructors select 0..11.
+ * Only ordinary compiler section alignment follows the final entry. */
 O101View_D_0 D_0;
-O101View_o101BuilderBssPad70 o101BuilderBssPad70;
-O101Elem_D_340 D_340[0x10];
-O101Elem_D_540 D_540[0x70];
-u8 o101BuilderBssTail[0x10];
+O101Elem_gOverlay101Order gOverlay101Order[16];
+O101Elem_gOverlay101Resources20 gOverlay101Resources20[16];
+O101Elem_D_340 D_340[16];
+O101Elem_D_540 D_540[32];
+s32 gOverlay101GlobalX;
+s32 gOverlay101GlobalY;
+O101Elem_gOverlay101Entries gOverlay101Entries[40];
+
+typedef char O101RootSlotSize[(sizeof(O101Elem_D_0) == 28) ? 1 : -1];
+typedef char O101RootStorageSize[(sizeof(O101View_D_0) == 448) ? 1 : -1];
+typedef char O101OrderSlotSize[(sizeof(O101Elem_gOverlay101Order) == 4) ? 1 : -1];
+typedef char O101Node20Size[(sizeof(O101Elem_gOverlay101Resources20) == 20) ? 1 : -1];
+typedef char O101Node32Size[(sizeof(O101Elem_D_340) == 32) ? 1 : -1];
+typedef char O101TextNodeSize[(sizeof(O101Elem_D_540) == 24) ? 1 : -1];
+typedef char O101AnimationEntrySize[(sizeof(O101Elem_gOverlay101Entries) == 48) ? 1 : -1];
 
 /* Pinned DKR v77/v80 and JFG scans classify overlay 101 as no donor. */
 void overlay101Initialize(void) {
@@ -34,18 +44,18 @@ void overlay101Initialize(void) {
 }
 
 /* Pinned DKR v77/v80 and JFG scans found no exact donor for this pool scan. */
-Overlay101Entry *overlay101AllocateEntry() {
-    Overlay101Entry *entry;
-    Overlay101Entry *result;
+void *overlay101AllocateEntry(void) {
+    O101Elem_gOverlay101Entries *entry;
+    void *result;
     s32 count;
     register s32 remaining;
 
     count = gOverlay101EntryCount;
-    entry = (&gOverlay101Entries[0].m0);
+    entry = &gOverlay101Entries[0];
     remaining = 0x27;
     if (gOverlay101EntryCount < 0x28) {
         do {
-            if (entry->value4 == NULL) {
+            if (entry->m0.type == 0) {
                 gOverlay101EntryCount = count + 1;
                 return entry;
             }
@@ -88,7 +98,7 @@ void overlay101UpdateEntry(Overlay101TimedEntry *entry, s32 step) {
 
     elapsed = (entry->elapsed += step);
     if (elapsed >= entry->duration) {
-        entry->owner = NULL;
+        entry->type = 0;
         x = entry->endX;
         y = entry->endY;
         gOverlay101EntryCount--;
@@ -118,7 +128,7 @@ void overlay101SchedulePair(s32 index, s32 x, s32 y, f32 seconds,
         if (entry != NULL) {
             slot = &D_0.el[index].m0;
             entry->output = slot;
-            entry->owner = 1;
+            entry->type = 1;
             entry->startX = slot->x;
             entry->startY = slot->y;
             entry->endX = x;
@@ -126,7 +136,7 @@ void overlay101SchedulePair(s32 index, s32 x, s32 y, f32 seconds,
             entry->elapsed = 0;
             entry->duration = duration;
             if (submitValue > 0) {
-                overlay101UpdateEntry(entry, submitValue);
+                overlay101UpdateEntry((void *)entry, submitValue);
             }
         }
     } else {
@@ -143,7 +153,7 @@ void overlay101UpdateEntry12(Overlay101TimedEntry12 *entry, s32 step) {
 
     elapsed = (entry->elapsed += step);
     if (elapsed >= entry->duration) {
-        entry->owner = NULL;
+        entry->type = 0;
         x = entry->endX;
         y = entry->endY;
         gOverlay101EntryCount--;
@@ -173,7 +183,7 @@ void overlay101SchedulePair12(s32 index, s32 x, s32 y, f32 seconds,
         if (entry != NULL) {
             slot = &D_0.el[index].m1;
             entry->output = slot;
-            entry->owner = 2;
+            entry->type = 2;
             entry->startX = slot->x;
             entry->startY = slot->y;
             entry->endX = x;
@@ -181,7 +191,7 @@ void overlay101SchedulePair12(s32 index, s32 x, s32 y, f32 seconds,
             entry->elapsed = 0;
             entry->duration = duration;
             if (submitValue > 0) {
-                overlay101UpdateEntry12(entry, submitValue);
+                overlay101UpdateEntry12((void *)entry, submitValue);
             }
         }
     } else {
@@ -243,7 +253,7 @@ void overlay101UpdateByte17(Overlay101ByteEntry17_UpdateByte17 *entry, s32 step)
 
     elapsed = (entry->elapsed += step);
     if (elapsed >= entry->duration) {
-        entry->owner = NULL;
+        entry->type = 0;
         value = entry->end;
         gOverlay101EntryCount--;
     } else {
@@ -267,12 +277,12 @@ void overlay101ScheduleByte17(s32 index, s32 value, f32 seconds,
         if (entry != NULL) {
             slot = &D_0.el[index].m5;
             entry->output = slot;
-            entry->owner = 6;
+            entry->type = 6;
             entry->start = slot->value;
             entry->end = value;
             entry->elapsed = 0;
             entry->duration = duration;
-            if (submitValue > 0) overlay101UpdateByte17(entry, submitValue);
+            if (submitValue > 0) overlay101UpdateByte17((void *)entry, submitValue);
         }
     } else {
         slot->value = value;
@@ -286,7 +296,7 @@ void overlay101UpdateByte16(Overlay101ByteEntry16_UpdateByte16 *entry, s32 step)
 
     elapsed = (entry->elapsed += step);
     if (elapsed >= entry->duration) {
-        entry->owner = NULL;
+        entry->type = 0;
         value = entry->end;
         gOverlay101EntryCount--;
     } else {
@@ -310,12 +320,12 @@ void overlay101ScheduleByte16(s32 index, s32 value, f32 seconds,
         if (entry != NULL) {
             slot = &D_0.el[index].m6;
             entry->output = slot;
-            entry->owner = 7;
+            entry->type = 7;
             entry->start = slot->value;
             entry->end = value;
             entry->elapsed = 0;
             entry->duration = duration;
-            if (submitValue > 0) overlay101UpdateByte16(entry, submitValue);
+            if (submitValue > 0) overlay101UpdateByte16((void *)entry, submitValue);
         }
     } else {
         slot->value = value;
@@ -330,7 +340,7 @@ void overlay101UpdateEntry8(Overlay101TimedEntry8 *entry, s32 step) {
 
     elapsed = (entry->elapsed += step);
     if (elapsed >= entry->duration) {
-        entry->owner = NULL;
+        entry->type = 0;
         x = entry->endX;
         y = entry->endY;
         gOverlay101EntryCount--;
@@ -358,10 +368,10 @@ void overlay101ScheduleLinkedPair(s32 index, s32 key, s32 x, s32 y,
     if (slot != NULL) {
         duration = seconds * 60.0f;
         if (duration > 0) {
-            entry = overlay101AllocateEntry(duration);
+            entry = overlay101AllocateEntry();
             if (entry != NULL) {
                 entry->output = slot;
-                entry->owner = 8;
+                entry->type = 8;
                 entry->startX = slot->x;
                 entry->startY = slot->y;
                 entry->endX = x;
@@ -388,7 +398,7 @@ void overlay101UpdateEntry8B(Overlay101TimedEntry8 *entry, s32 step) {
 
     elapsed = (entry->elapsed += step);
     if (elapsed >= entry->duration) {
-        entry->owner = NULL;
+        entry->type = 0;
         x = entry->endX;
         y = entry->endY;
         gOverlay101EntryCount--;
@@ -416,10 +426,10 @@ void overlay101ScheduleLinkedPair2(s32 index, s32 key, s32 x, s32 y,
     if (slot != NULL) {
         duration = seconds * 60.0f;
         if (duration > 0) {
-            entry = overlay101AllocateEntry(duration);
+            entry = overlay101AllocateEntry();
             if (entry != NULL) {
                 entry->output = slot;
-                entry->owner = 9;
+                entry->type = 9;
                 entry->startX = slot->x;
                 entry->startY = slot->y;
                 entry->endX = x;
@@ -444,7 +454,7 @@ void overlay101UpdateFloat12(Overlay101FloatEntry *entry, s32 step) {
 
     elapsed = (entry->elapsed += step);
     if (elapsed >= entry->duration) {
-        entry->owner = NULL;
+        entry->type = 0;
         value = entry->end;
         gOverlay101EntryCount--;
     } else {
@@ -469,10 +479,10 @@ void overlay101ScheduleLinkedFloat(s32 index, s32 key, f32 value, f32 seconds,
     if (slot != NULL) {
         duration = seconds * 60.0f;
         if (duration > 0) {
-            entry = overlay101AllocateEntry(duration);
+            entry = overlay101AllocateEntry();
             if (entry != NULL) {
                 entry->output = slot;
-                entry->owner = 10;
+                entry->type = 10;
                 entry->start = slot->value;
                 entry->end = value;
                 entry->elapsed = 0;
@@ -495,7 +505,7 @@ void overlay101UpdateDelta16(Overlay101DeltaEntry *entry, s32 step) {
     elapsed = (entry->elapsed += step);
     value = entry->start;
     if (elapsed >= entry->duration) {
-        entry->owner = NULL;
+        entry->type = 0;
         value += entry->delta;
         gOverlay101EntryCount--;
     } else {
@@ -518,10 +528,10 @@ void overlay101ScheduleLinkedScaled(s32 index, s32 key, f32 value, f32 seconds,
     if (slot != NULL) {
         duration = seconds * 60.0f;
         if (duration > 0) {
-            entry = overlay101AllocateEntry(duration);
+            entry = overlay101AllocateEntry();
             if (entry != NULL) {
                 entry->output = slot;
-                entry->owner = 11;
+                entry->type = 11;
                 entry->start = slot->value;
                 entry->end = value * gOverlay101TimedScale;
                 entry->elapsed = 0;
@@ -543,7 +553,7 @@ void overlay101UpdateByte18(Overlay101Byte18Entry *entry, s32 step) {
 
     elapsed = (entry->elapsed += step);
     if (elapsed >= entry->duration) {
-        entry->owner = NULL;
+        entry->type = 0;
         value = entry->end;
         gOverlay101EntryCount--;
     } else {
@@ -568,10 +578,10 @@ void overlay101ScheduleLinkedByte(s32 index, s32 key, s32 value, f32 seconds,
     if (slot != NULL) {
         duration = seconds * 60.0f;
         if (duration > 0) {
-            entry = overlay101AllocateEntry(duration);
+            entry = overlay101AllocateEntry();
             if (entry != NULL) {
                 entry->output = slot;
-                entry->owner = 12;
+                entry->type = 12;
                 entry->start = slot->value;
                 entry->end = value;
                 entry->elapsed = 0;
@@ -595,7 +605,7 @@ void overlay101UpdateEntry8C(Overlay101TimedEntry8 *entry, s32 step) {
 
     elapsed = (entry->elapsed += step);
     if (elapsed >= entry->duration) {
-        entry->owner = NULL;
+        entry->type = 0;
         x = entry->endX;
         y = entry->endY;
         gOverlay101EntryCount--;
@@ -623,10 +633,10 @@ void overlay101ScheduleLinkedPair3(s32 index, s32 key, s32 x, s32 y,
     if (slot != NULL) {
         duration = seconds * 60.0f;
         if (duration > 0) {
-            entry = overlay101AllocateEntry(duration);
+            entry = overlay101AllocateEntry();
             if (entry != NULL) {
                 entry->output = slot;
-                entry->owner = 13;
+                entry->type = 13;
                 entry->startX = slot->x;
                 entry->startY = slot->y;
                 entry->endX = x;
@@ -654,7 +664,7 @@ void overlay101UpdateColor(Overlay101ColorEntry *entry, s32 step) {
 
     elapsed = (entry->elapsed += step);
     if (elapsed >= entry->duration) {
-        entry->owner = NULL;
+        entry->type = 0;
         red = entry->endRed;
         green = entry->endGreen;
         blue = entry->endBlue;
@@ -691,10 +701,10 @@ void overlay101ScheduleLinkedColor(s32 index, s32 key, s32 red, s32 green,
     if (slot != NULL) {
         duration = seconds * 60.0f;
         if (duration > 0) {
-            entry = overlay101AllocateEntry(duration);
+            entry = overlay101AllocateEntry();
             if (entry != NULL) {
                 entry->output = slot;
-                entry->owner = 14;
+                entry->type = 14;
                 entry->startRed = slot->red;
                 entry->startGreen = slot->green;
                 entry->startBlue = slot->blue;
@@ -736,11 +746,11 @@ void overlay101UpdateFrames(Overlay101FrameEntry *entry, s32 step) {
             }
             if (output->frame >= output->frameCount) {
                 output->frame = output->frameCount;
-                entry->owner = 0;
+                entry->type = 0;
                 gOverlay101EntryCount--;
             }
         } else {
-            entry->owner = 0;
+            entry->type = 0;
             gOverlay101EntryCount--;
         }
     }
@@ -763,12 +773,12 @@ void overlay101ScheduleFrames(s32 index, s32 key, f32 fraction, f32 rate,
             entry = overlay101AllocateEntry();
             if (entry != NULL) {
                 entry->output = slot;
-                entry->owner = 15;
+                entry->type = 15;
                 entry->delay = rate * 60.0f;
                 entry->elapsed = 0;
                 entry->duration = duration;
                 if (submitValue > 0) {
-                    overlay101UpdateFrames(entry, submitValue);
+                    overlay101UpdateFrames((void *)entry, submitValue);
                 }
             }
         }
@@ -782,7 +792,7 @@ void overlay101UpdateGlobalPair(Overlay101GlobalPairEntry_UpdateGlobalPair *entr
     if (elapsed >= entry->duration) {
         gOverlay101GlobalX = entry->endX;
         gOverlay101GlobalY = entry->endY;
-        entry->owner = NULL;
+        entry->type = 0;
         gOverlay101EntryCount--;
         return;
     }
@@ -802,7 +812,7 @@ void overlay101ScheduleGlobalPair(s32 x, s32 y, f32 seconds,
         entry = overlay101AllocateEntry();
         if (entry != NULL) {
             entry->output = NULL;
-            entry->owner = 16;
+            entry->type = 16;
             entry->startX = gOverlay101GlobalX;
             entry->startY = gOverlay101GlobalY;
             entry->endX = x;
@@ -810,7 +820,7 @@ void overlay101ScheduleGlobalPair(s32 x, s32 y, f32 seconds,
             entry->elapsed = 0;
             entry->duration = duration;
             if (submitValue > 0) {
-                overlay101UpdateGlobalPair(entry, submitValue);
+                overlay101UpdateGlobalPair((void *)entry, submitValue);
             }
         }
     } else {
@@ -820,53 +830,53 @@ void overlay101ScheduleGlobalPair(s32 x, s32 y, f32 seconds,
 }
 
 /* Pinned DKR v77/v80 and JFG scans classify overlay 101 as no donor. */
-void overlay101DispatchActive(void *value) {
-    Overlay101DispatchEntry *entry;
+void overlay101DispatchActive(s32 value) {
+    O101Elem_gOverlay101Entries *entry;
     s32 remaining;
 
     if (gOverlay101EntryCount > 0) {
-        entry = (&gOverlay101Entries[0].m1);
+        entry = &gOverlay101Entries[0];
         remaining = 39;
         do {
-            switch (entry->type) {
+            switch (entry->m1.type) {
                 case 1:
-                    overlay101UpdateEntry(entry, value);
+                    overlay101UpdateEntry((void *)entry, value);
                     break;
                 case 2:
-                    overlay101UpdateEntry12(entry, value);
+                    overlay101UpdateEntry12((void *)entry, value);
                     break;
                 case 6:
-                    overlay101UpdateByte17(entry, value);
+                    overlay101UpdateByte17((void *)entry, value);
                     break;
                 case 7:
-                    overlay101UpdateByte16(entry, value);
+                    overlay101UpdateByte16((void *)entry, value);
                     break;
                 case 8:
-                    overlay101UpdateEntry8(entry, value);
+                    overlay101UpdateEntry8((void *)entry, value);
                     break;
                 case 9:
-                    overlay101UpdateEntry8B(entry, value);
+                    overlay101UpdateEntry8B((void *)entry, value);
                     break;
                 case 10:
-                    overlay101UpdateFloat12(entry, value);
+                    overlay101UpdateFloat12((void *)entry, value);
                     break;
                 case 11:
-                    overlay101UpdateDelta16(entry, value);
+                    overlay101UpdateDelta16((void *)entry, value);
                     break;
                 case 12:
-                    overlay101UpdateByte18(entry, value);
+                    overlay101UpdateByte18((void *)entry, value);
                     break;
                 case 13:
-                    overlay101UpdateEntry8C(entry, value);
+                    overlay101UpdateEntry8C((void *)entry, value);
                     break;
                 case 14:
-                    overlay101UpdateColor(entry, value);
+                    overlay101UpdateColor((void *)entry, value);
                     break;
                 case 15:
-                    overlay101UpdateFrames(entry, value);
+                    overlay101UpdateFrames((void *)entry, value);
                     break;
                 case 16:
-                    overlay101UpdateGlobalPair(entry, value);
+                    overlay101UpdateGlobalPair((void *)entry, value);
                     break;
                 case 3:
                 case 4:
@@ -1844,7 +1854,7 @@ void overlay101DrawChain(void *context, void *mtx, s32 *vertices,
 void overlay101UpdateChains(s32 step) {
     s32 count;
     s32 type;
-    Overlay101UpdateChain **order;
+    O101Elem_gOverlay101Order *order;
     Overlay101UpdateChain *chain;
     Overlay101UpdateNode *node;
 
@@ -1852,9 +1862,9 @@ void overlay101UpdateChains(s32 step) {
     gOverlay101Time338 += step;
     count = gOverlay101OrderCount;
     if (count--) {
-        order = &gOverlay101Order[count].m1;
+        order = &gOverlay101Order[count];
         do {
-            chain = *order;
+            chain = order->m1;
             if (chain->state == 1) {
                 chain->amount += step * 4;
                 if (chain->amount >= 0x40) {
@@ -1888,14 +1898,14 @@ void overlay101UpdateChains(s32 step) {
 void overlay101DrawSlots(void *context, s32 x, s32 y) {
     s32 count;
     s32 first;
-    void **slot;
+    O101Elem_gOverlay101Order *slot;
 
     count = gOverlay101OrderCount;
     first = 1;
     if (count--) {
-        slot = &gOverlay101Order[count].m2;
+        slot = &gOverlay101Order[count];
         do {
-            overlay101DrawChain(context, x, y, *slot);
+            overlay101DrawChain(context, x, y, slot->m2);
             if (first != 0) {
                 overlay101DrawClock(context, x, y, 0x6E, 0x4D);
                 first = 0;
@@ -1906,7 +1916,6 @@ void overlay101DrawSlots(void *context, s32 x, s32 y) {
 }
 
 /* ---- func_overlay_101_F0003A58_18DF278 (+0x3A58) ---- */
-#define o101BuilderBssPad70 o101BuilderBssPad70.m0
 #define D_1C D_1C.m0
 #define D_38 D_38.m0
 #define D_54 D_54.m0
@@ -2014,7 +2023,7 @@ void func_overlay_101_F0003A58_18DF278(void) {
     ADD_TEXT(2, text10, 80, 112, 255, 255, 255, 255);
     ADD_NODE20(2, 32, 14, 11);
 
-    INIT_GROUP(3, 32, 64, 58, 24, 204, 192, data14, o101BuilderBssPad70);
+    INIT_GROUP(3, 32, 64, 58, 24, 204, 192, data14, D_0.el[4].m15);
     ADD_NODE20(3, 6, 14, 6);
 
     INIT_GROUP(4, 40, -132, 40, -132, 240, 132, data18, D_8C);
@@ -2058,7 +2067,6 @@ void func_overlay_101_F0003A58_18DF278(void) {
 #undef INIT_GROUP
 #undef INIT_GROUP0
 }
-#undef o101BuilderBssPad70
 #undef D_1C
 #undef D_38
 #undef D_54
@@ -2631,7 +2639,6 @@ void func_overlay_101_F00063F8_18E1C18(void) {
 #undef D_INPUT
 
 /* ---- func_overlay_101_F00069E8_18E2208 (+0x69E8) ---- */
-#define o101BuilderBssPad70 o101BuilderBssPad70.m1
 #define D_1C D_1C.m2
 #define D_38 D_38.m2
 #define D_54 D_54.m2
@@ -2798,7 +2805,7 @@ void func_overlay_101_F00069E8_18E2208(void) {
     INIT_GROUP(2, 0x20, 0x40, 0x62, 0x18, 0x7C, 0x84, dataD4, D_54);
     ADD_NODE20(2, 0x16, 0x1E, 0x10);
 
-    INIT_GROUP(3, 0x20, 0x68, 0x40, 0xA0, 0xC0, 0x26, dataD8, o101BuilderBssPad70);
+    INIT_GROUP(3, 0x20, 0x68, 0x40, 0xA0, 0xC0, 0x26, dataD8, D_0.el[4].m16);
     ADD_TEXT(3, textDC, 0x60, 0xE);
     ADD_TEXT(3, textE0, 0x60, 0x18);
 
@@ -2819,7 +2826,6 @@ void func_overlay_101_F00069E8_18E2208(void) {
 #undef INIT_GROUP
 #undef INIT_GROUP0
 }
-#undef o101BuilderBssPad70
 #undef D_1C
 #undef D_38
 #undef D_54
@@ -3852,9 +3858,9 @@ void overlay101UpdatePresentation(void *context, void *data, void *vertices,
 
 void overlay101Cleanup(void) {
     s32 count;
-    Overlay101Resource20 *resource20;
-    Overlay101Resource32 *resource32;
-    Overlay101OrderEntry *order;
+    O101Elem_gOverlay101Resources20 *resource20;
+    O101Elem_D_340 *resource32;
+    O101Elem_D_0 *order;
 
     if (gOverlay101Handle1D4[0].texture != NULL) {
         overlay101ReleaseReloc(gOverlay101Handle1D4[0].texture);
@@ -3866,12 +3872,12 @@ void overlay101Cleanup(void) {
     }
 
     count = gOverlay101Resource20Count;
-    resource20 = (&gOverlay101Resources20[0].m2);
+    resource20 = &gOverlay101Resources20[0];
     if (count--) {
         do {
-            if (resource20->resource != NULL) {
-                overlay101ReleaseReloc(resource20->resource);
-                resource20->resource = NULL;
+            if (resource20->m2.resource != NULL) {
+                overlay101ReleaseReloc(resource20->m2.resource);
+                resource20->m2.resource = NULL;
             }
             resource20++;
         } while (count--);
@@ -3879,12 +3885,12 @@ void overlay101Cleanup(void) {
 
     gOverlay101Resource20Count = 0;
     count = gOverlay101Resource32Count;
-    resource32 = (&D_340[0].m12);
+    resource32 = &D_340[0];
     if (count--) {
         do {
-            if (resource32->resource != NULL) {
-                overlay101ReleaseReloc(resource32->resource);
-                resource32->resource = NULL;
+            if (resource32->m12.resource != NULL) {
+                overlay101ReleaseReloc(resource32->m12.resource);
+                resource32->m12.resource = NULL;
             }
             resource32++;
         } while (count--);
@@ -3892,11 +3898,11 @@ void overlay101Cleanup(void) {
     gOverlay101Resource32Count = 0;
 
     count = gOverlay101OrderCount;
-    order = (&D_0.el[0].m17);
+    order = &D_0.el[0];
     if (count--) {
         do {
-            order->first = NULL;
-            order->second = NULL;
+            order->m17.first = NULL;
+            order->m17.second = NULL;
             order++;
         } while (count--);
     }

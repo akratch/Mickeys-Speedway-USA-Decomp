@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 8651},
+  "totals": {"differences": 0, "borrowed_records": 8533},
   "differences": {
   },
   "borrowed": {
@@ -87,7 +87,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1765,
+      "count": 1760,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1825,16 +1825,12 @@
         [101, "gOverlay101ConfigValue", 2],
         [101, "gOverlay101CurrentConfig", 2],
         [101, "gOverlay101CurrentResource", 2],
-        [101, "gOverlay101Entries", 4],
         [101, "gOverlay101EntryCount", 32],
-        [101, "gOverlay101GlobalX", 10],
-        [101, "gOverlay101GlobalY", 10],
         [101, "gOverlay101Handle1D4", 4],
         [101, "gOverlay101Handle1F4", 2],
         [101, "gOverlay101Handle33C", 2],
         [101, "gOverlay101ImmediateScale", 2],
         [101, "gOverlay101InputMode", 2],
-        [101, "gOverlay101Order", 42],
         [101, "gOverlay101OrderCount", 50],
         [101, "gOverlay101PresentationActive", 2],
         [101, "gOverlay101PresentationDone", 10],
@@ -1843,7 +1839,6 @@
         [101, "gOverlay101RenderFlags", 2],
         [101, "gOverlay101Resource20Count", 24],
         [101, "gOverlay101Resource32Count", 8],
-        [101, "gOverlay101Resources20", 52],
         [101, "gOverlay101Time214", 2],
         [101, "gOverlay101Time338", 2],
         [101, "gOverlay101TimedScale", 2],

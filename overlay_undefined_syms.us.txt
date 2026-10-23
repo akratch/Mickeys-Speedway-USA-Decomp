@@ -3883,11 +3883,11 @@ camlightAdd_o097Reloc = 0xf0000000;
 func_80006EA0_o097Reloc = 0xf0000000;
 func_8001C054_o097Reloc = 0xf0000000;
 func_8002A8BC_o097Reloc = 0xf0000000;
+func_8002A8C0_o097Reloc = 0xf0000000;
 gOverlay97MinimumScale = 0x00000000;
 gOverlay97ScaleStep = 0x00000004;
 gOverlay97TransformContext = 0x00000000;
 mathOneFloatRPY_o097Reloc = 0xf0000000;
-overlay97TrigAReloc = 0xf0000000;
 trackGetTrack_o097Reloc = 0xf0000000;
 
 /* overlay 98: overlay_098.c.o */

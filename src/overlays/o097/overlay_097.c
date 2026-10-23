@@ -16,10 +16,10 @@ void overlay97InitDirection(Overlay97Object *object, Overlay97Config *config) {
     object->angleA = (config->angleA & 0xFF) << 10;
     object->angleB = (config->angleB & 0xFF) << 10;
 
-    saved = overlay97TrigAReloc(object->angleA);
+    saved = func_8002A8C0(object->angleA);
     state->direction[0] = func_8002A8BC(object->angleB) * saved;
-    state->direction[1] = -overlay97TrigAReloc(object->angleB);
-    saved = overlay97TrigAReloc(object->angleA);
+    state->direction[1] = -func_8002A8C0(object->angleB);
+    saved = func_8002A8BC(object->angleA);
     state->direction[2] = func_8002A8BC(object->angleB) * saved;
     state->offset = -((state->direction[2] * object->position[2]) +
                       ((state->direction[1] * object->position[1]) +

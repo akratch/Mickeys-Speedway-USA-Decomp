@@ -39,9 +39,9 @@ extern f32 gOverlay97MinimumScale;
 
 extern f32 gOverlay97ScaleStep;
 
-extern f32 overlay97TrigAReloc(s16 angle);
+extern f32 func_8002A8C0(s32 angle);
 
-extern f32 func_8002A8BC(s16 angle);
+extern f32 func_8002A8BC(s32 angle);
 
 /* DKR source/object scans found no corresponding routine. */
 typedef struct Overlay97Angles {

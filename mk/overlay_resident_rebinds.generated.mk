@@ -551,15 +551,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay_033.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym trackGetFog=trackGetFog_o033Reloc \
 	--redefine-sym viGetCurrentSize=viGetCurrentSize_o033Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay_034.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_800084C4=func_800084C4_o034Reloc \
-	--redefine-sym func_80024938=func_80024938_o034Reloc \
-	--redefine-sym func_80029FE4=func_80029FE4_o034Reloc \
-	--redefine-sym func_8002B768=func_8002B768_o034Reloc \
-	--redefine-sym mmAlloc=mmAlloc_o034Reloc \
-	--redefine-sym texFreeTexture=texFreeTexture_o034Reloc \
-	--redefine-sym texLoadTexture=texLoadTexture_o034Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/overlay_035.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_80079274=D_80079274_o035Reloc \
 	--redefine-sym D_800792E8=D_800792E8_o035Reloc \

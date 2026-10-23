@@ -1,5 +1,11 @@
 #include "overlays/overlay_034.h"
 
+Overlay34Record *gOverlay34Records = 0;
+Overlay34Record **gOverlay34Pointers = 0;
+s32 gOverlay34Count = 0;
+s32 gOverlay34ActiveCount = 0;
+f32 gOverlay34Value10 = 0.275f;
+
 /*
  * Overlay 34: one translation unit in ROM order (ADR 0006). All eight
  * functions are ORT exports.
@@ -111,7 +117,7 @@ Overlay34Record *overlay34CreateRecord(Overlay34Input *input) {
                 record->y2 = input->y;
                 record->z2 = input->z;
                 record->depth = -input->depth;
-                func_80029FE4(input, record->direction);
+                mathOneFloatPY(input, record->direction);
                 record->value = input->value;
                 record->active = 1;
                 gOverlay34Pointers[gOverlay34ActiveCount] = record;
@@ -161,11 +167,11 @@ void overlay34ResetStorage(void) {
     if (gOverlay34Pointers != NULL) {
         if (gOverlay34ActiveCount != 0) {
             do {
-                func_overlay_034_F00002C8_1881470Reloc(*gOverlay34Pointers);
+                overlay34RemoveRecord(*gOverlay34Pointers);
             } while (gOverlay34ActiveCount != 0);
         }
-        func_8002B768(gOverlay34Records);
-        func_8002B768(gOverlay34Pointers);
+        mmFree(gOverlay34Records);
+        mmFree(gOverlay34Pointers);
     }
     gOverlay34Count = 0;
     gOverlay34ActiveCount = 0;
@@ -210,7 +216,7 @@ void overlay34UpdateRecords(s32 updateRate) {
                         } while (remaining--);
                     }
                 } else {
-                    func_overlay_034_F00002C8_1881470Reloc(record);
+                    overlay34RemoveRecord(record);
                     index--;
                     offset -= 4;
                 }
@@ -266,7 +272,7 @@ void overlay34SortAndDraw(void *commands, void *vertices) {
     if (gOverlay34ActiveCount > 0) {
         do {
             record = (Overlay34DrawRecord *)gOverlay34Pointers[j];
-            distances[j] = func_80024938(record->x1, record->y1, record->z1);
+            distances[j] = camGetProjZ(record->x1, record->y1, record->z1);
             j++;
         } while (j < gOverlay34ActiveCount);
     }
@@ -295,22 +301,22 @@ void overlay34SortAndDraw(void *commands, void *vertices) {
                 half = length >> 1;
                 if (position = record->frame, record->frame < half) {
                     position |= 0;
-                    func_overlay_034_F0000540_18816E8Reloc(position, half,
+                    overlay34InterpolateColor(position, half,
                                               (u8 *)&record->color0A,
                                               (u8 *)&record->color1A,
                                               (u8 *)&color1);
-                    func_overlay_034_F0000540_18816E8Reloc(position, half,
+                    overlay34InterpolateColor(position, half,
                                               (u8 *)&record->color0B,
                                               (u8 *)&record->color1B,
                                               (u8 *)&color2);
                 } else {
                     position -= half;
                     length -= half;
-                    func_overlay_034_F0000540_18816E8Reloc(position, length,
+                    overlay34InterpolateColor(position, length,
                                               (u8 *)&record->color1A,
                                               (u8 *)&record->color2A,
                                               (u8 *)&color1);
-                    func_overlay_034_F0000540_18816E8Reloc(position, length,
+                    overlay34InterpolateColor(position, length,
                                               (u8 *)&record->color1B,
                                               (u8 *)&record->color2B,
                                               (u8 *)&color2);

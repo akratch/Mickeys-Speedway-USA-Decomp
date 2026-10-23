@@ -2026,13 +2026,13 @@ segments:
     vram: 0xF0000000
     bss_size: 0x0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o034
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18811A8, c, overlay_034]
-      - [0x1881AA8, bin, overlay_034_data_rodata]
+      - [0x1881AA8, .data, overlay_034]
 
   - name: overlay_034_reloc1
     type: bin

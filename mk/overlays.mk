@@ -624,7 +624,8 @@ $(O15_OBJ): POSTPROCESS = \
 		0xb3c:6:.bss 0xbfc:5:.bss 0xc00:6:.bss 0xc24:5:.bss \
 		0xc28:6:.bss 0xc2c:6:.bss 0xc30:5:.bss 0xc34:6:.bss \
 		0x738:5:.bss 0x73c:6:.bss
-# Overlay 34 is one TU under the overlay flag set; no post-processing.
+# Overlay 34 directly owns its pointer/count state and vertical acceleration.
+MODULE_LINKED_OVERLAYS += 034
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay_034.c.o: CFLAGS += -Wab,-r4300_mul
 include config/normalizations/overlay22Epoch12.mk
 # Overlay 94 is one translation unit under the overlay flag set. Its .text

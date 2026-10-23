@@ -19,12 +19,12 @@ EXTERNALIZE = "$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata
 
 
 class ClassifyTests(unittest.TestCase):
-    def test_anchored_externalization_is_altered(self):
-        # A nonzero anchor moves into every LO16 immediate: an instruction edit.
+    def test_anchored_externalization_is_metadata(self):
+        # The helper sets an ABS section-symbol value; ld applies relocations.
         for anchor in ("0x20", "4", "0x3C"):
             with self.subTest(anchor=anchor):
-                self.assertEqual(pa.classify(EXTERNALIZE + " " + anchor)[0], "altered")
-                self.assertEqual(pa.classify(EXTERNALIZE + " keep " + anchor)[0], "altered")
+                self.assertEqual(pa.classify(EXTERNALIZE + " " + anchor)[0], "metadata")
+                self.assertEqual(pa.classify(EXTERNALIZE + " keep " + anchor)[0], "metadata")
 
     def test_unanchored_externalization_is_metadata(self):
         for extra in ("", " 0", " keep", " 0x0 keep"):
@@ -74,6 +74,8 @@ class ClassifyTests(unittest.TestCase):
             EXTERNALIZE + " keep keep",
             EXTERNALIZE + " 0x10 0x20",
             EXTERNALIZE + " anchor",
+            EXTERNALIZE + " -1",
+            EXTERNALIZE + " 0x8000",
         ):
             with self.subTest(command=command):
                 self.assertEqual(pa.classify(command)[0], "review-required")

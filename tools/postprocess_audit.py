@@ -16,8 +16,8 @@ For each such object it:
   * classifies the command as ``altered`` (touches instruction words),
     ``metadata`` (reviewed symbol/section/relocation metadata only), or
     ``review-required``. Unknown helpers fail closed instead of silently
-    receiving metadata status. Anchored section externalization is altered
-    because it rewrites relocated instruction immediates;
+    receiving metadata status. Guarded section externalization changes only
+    section extent and the existing section symbol's absolute value/type;
   * records which tool(s) the command invokes;
   * joins the object to its ownership range in config/overlays.us.json's
     per-overlay ``text_ownership`` list (offset, size, C ownership and
@@ -224,7 +224,8 @@ def classify(command):
                 except ValueError:
                     return "review-required", tools
                 saw_anchor = True
-                is_altered = is_altered or anchor != 0
+                if not 0 <= anchor < 0x8000:
+                    return "review-required", tools
     if OBJCOPY_RE.search(command) and DANGEROUS_OBJCOPY_RE.search(command):
         is_altered = True
     if is_altered:

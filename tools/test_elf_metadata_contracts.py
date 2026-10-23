@@ -7,12 +7,16 @@ import struct
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 
+import proof_provenance as provenance
 from reloc_surface import Elf
+from runlink.synth import ElfBuilder, words
 
 
 TOOLS = Path(__file__).resolve().parent
+LD = TOOLS / "binutils/mips64-elf-ld"
 
 
 def fixture(path, *, anchor=0, displacement=1, opcode=4, rodata_flags=2):
@@ -130,6 +134,121 @@ class MetadataContracts(unittest.TestCase):
         before = self.path.read_bytes()
         self.assertNotEqual(self.run_tool("trim_elf_section.py", ".rodata", "4").returncode, 0)
         self.assertEqual(self.path.read_bytes(), before)
+
+
+def section_anchor_fixture(path, *, executable=False):
+    # Synthetic HI16/LO16 pairs include a carry that ordinary ld must resolve.
+    obj = ElfBuilder().section(".text", words(
+        0x3C010000, 0x24210000, 0x3C020000, 0x24427FF0))
+    obj.section(".rodata", struct.pack(">ff", 1.25, 2.5))
+    for offset, kind in ((0, 5), (4, 6), (8, 5), (12, 6)):
+        obj.rel(".text", offset, kind, ("section", ".rodata"))
+    data = bytearray(obj.build())
+    shoff = struct.unpack_from(">I", data, 32)[0]
+    struct.pack_into(">I", data, shoff + 2 * 40 + 8, 6 if executable else 2)
+    path.write_bytes(data)
+
+
+class SectionAnchorContracts(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.path = self.root / "anchor.o"
+        section_anchor_fixture(self.path)
+
+    def externalize(self, *extras, expected=None, section=".rodata"):
+        if expected is None:
+            expected = "sha256:" + hashlib.sha256(
+                Elf(self.path).section_bytes(section)).hexdigest()
+        return subprocess.run(
+            [sys.executable, str(TOOLS / "externalize_elf_section.py"),
+             str(self.path), section, expected, *extras],
+            capture_output=True, text=True)
+
+    def test_zero_and_nonzero_anchors_only_change_declared_metadata(self):
+        for extras, anchor, keep in (((), 0, False), (("0xe8",), 0xe8, False),
+                                     (("keep", "0xe8"), 0xe8, True),
+                                     (("0", "keep"), 0, True)):
+            with self.subTest(extras=extras):
+                section_anchor_fixture(self.path)
+                before_bytes = self.path.read_bytes()
+                before = Elf(self.path)
+                result = self.externalize(*extras)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                after_bytes = self.path.read_bytes()
+                after = Elf(self.path)
+                self.assertEqual(before.section_bytes(".text"), after.section_bytes(".text"))
+                self.assertEqual(before.section_bytes(".rel.text"), after.section_bytes(".rel.text"))
+                self.assertEqual(before.relocations(), after.relocations())
+                target_index = before.section(".rodata")[0]
+                symbol_index = next(i for i, row in enumerate(before.symbols())
+                                    if row[4] == target_index and row[3] & 15 == 3)
+                symtab = before.section(".symtab")[1]
+                symbol_offset = symtab[4] + symbol_index * symtab[9]
+                permitted = set(range(symbol_offset + 4, symbol_offset + 12))
+                permitted.update(range(symbol_offset + 14, symbol_offset + 16))
+                if anchor:
+                    permitted.add(symbol_offset + 12)
+                if not keep:
+                    shoff = struct.unpack_from(">I", before_bytes, 32)[0]
+                    permitted.update(range(shoff + target_index * 40 + 20,
+                                           shoff + target_index * 40 + 24))
+                self.assertEqual(len(before_bytes), len(after_bytes))
+                self.assertTrue(all(i in permitted for i, (a, b) in
+                                    enumerate(zip(before_bytes, after_bytes)) if a != b))
+                self.assertEqual(after.symbols()[symbol_index][1:], (anchor, 0, 0 if anchor else 3, 0xfff1))
+                self.assertEqual(after.section_bytes(".rodata"),
+                                 before.section_bytes(".rodata") if keep else b"")
+
+    @unittest.skipUnless(LD.is_file(), "needs MIPS GNU ld")
+    def test_ordinary_link_applies_anchor_and_original_addends(self):
+        original_text = Elf(self.path).section_bytes(".text")
+        result = self.externalize("0xe8")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(original_text, Elf(self.path).section_bytes(".text"))
+        output = self.root / "linked.elf"
+        linked = subprocess.run([str(LD), "-m", "elf32ebmip", "-e", "0",
+                                 "-Ttext", "0", "-o", str(output), str(self.path)],
+                                capture_output=True, text=True)
+        self.assertEqual(linked.returncode, 0, linked.stderr)
+        text = Elf(output).section_bytes(".text")
+        self.assertEqual(struct.unpack(">4I", text),
+                         (0x3C010000, 0x242100E8, 0x3C020001, 0x244280D8))
+
+    def test_existing_proof_parser_and_replay_preserve_anchored_object(self):
+        digest = hashlib.sha256(Elf(self.path).section_bytes(".rodata")).hexdigest()
+        command = (f"{sys.executable} tools/externalize_elf_section.py input.o "
+                   f".rodata sha256:{digest} 0xe8 keep")
+        plan = provenance.metadata_filter_plan(command, "input.o")
+        self.assertEqual(plan, [("externalize", (".rodata", "sha256:" + digest, 0xe8))])
+        output = provenance.replay_metadata(
+            self.path, command, "input.o", self.root / "replayed.o", TOOLS.parent,
+            skip_filters=True, deadline=time.monotonic() + 30, plan=plan)
+        original = self.path.read_bytes()
+        result = self.externalize("0xe8", "keep")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(output.read_bytes(), self.path.read_bytes())
+        self.assertNotEqual(original, output.read_bytes())
+
+    def test_guards_refuse_without_writing(self):
+        for extras, expected, executable, section in (
+                (("-1",), None, False, ".rodata"),
+                (("0x8000",), None, False, ".rodata"),
+                (("bad",), None, False, ".rodata"),
+                (("keep", "keep"), None, False, ".rodata"),
+                (("0", "1"), None, False, ".rodata"),
+                ((), "sha256:bad", False, ".rodata"),
+                ((), "sha256:" + "0" * 64, False, ".rodata"),
+                ((), "not-hex", False, ".rodata"),
+                ((), None, True, ".rodata"),
+                ((), None, False, ".text")):
+            with self.subTest(extras=extras, expected=expected, section=section):
+                section_anchor_fixture(self.path, executable=executable)
+                before = self.path.read_bytes()
+                result = self.externalize(*extras, expected=expected, section=section)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(before, self.path.read_bytes())
 
 
 if __name__ == "__main__":

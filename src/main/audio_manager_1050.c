@@ -15,6 +15,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 #include "PR/os_message.h"
 
 typedef struct AudioSequencePlayer {
@@ -136,8 +137,6 @@ extern void n_alCSeqNew(void *sequence, u8 *data);
 extern void n_alCSPSetSeq(void *player, void *sequence);
 extern void n_alCSPPlay(void *player);
 extern void mainPreNMI(void);
-extern u8 *piRomGetSectionPtr(u32 assetIndex, u32 assetOffset);
-extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset, s32 size);
 extern s32 amDittyPlaying(void);
 extern void func_80001308(u8 value, void *player);
 extern void stop_ALSeqp(void *player);
@@ -623,7 +622,7 @@ void func_8000137C(void *player, u8 *sequenceData, u8 *sequenceId, void *sequenc
     s32 channel;
 
     if (n_alCSPGetState(player) == 0 && *sequenceId != 0) {
-        piRomLoadSection(0x32, (u32)sequenceData,
+        piRomLoadSection(0x32, sequenceData,
                          D_800BF790[*sequenceId].romAddress - piRomGetSectionPtr(0x32, 0),
                          D_800BF798[*sequenceId]);
         n_alCSeqNew(sequence, sequenceData);

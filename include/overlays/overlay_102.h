@@ -2,10 +2,10 @@
 #define OVERLAY_102_H
 
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 
 extern u32 *D_8007A204;
 
-void romCopy(s32 size, void *address, s32 alignment);
 s32 overlay102CheckSignature(void);
 
 #endif

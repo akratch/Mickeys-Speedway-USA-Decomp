@@ -2,6 +2,7 @@
 #define OVERLAY_035_H
 
 #include "ultra64.h"
+#include "game/pi.h"
 
 /* The level header, as the initializer (mode and texture fields) and the
  * model loader (allocation counts and the light arguments) read it. */
@@ -209,8 +210,6 @@ extern void *texLoadTexture(s32);
 extern void overlay98CollectUniqueY(void *);
 extern void func_8002A244(void);
 extern void mainPreNMI(void);
-extern s32 *piRomLoad(s32);
-extern void piRomLoadSection(s32, void *, s32, s32);
 extern void func_8004D7E0(void *, void *);
 extern void *align4(void *);
 extern void *align16(void *);

@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 
 typedef struct Overlay10Viewport {
     s16 left;
@@ -70,8 +71,6 @@ extern u8 D_800D664D;
 
 extern void viGetCurrentSize(s32 *width, s32 *height);
 extern void *mmAlloc();
-extern void *piRomLoad();
-extern void piRomLoadSection();
 extern void fontCreateDisplayList();
 extern void overlay45ResetState(void);
 
@@ -148,7 +147,7 @@ void overlay10Initialize(void) {
         j += 0x100;
         D_800D663C[i].state1 = 0;
     }
-    D_800D60E4 = piRomLoad(0x38);
+    D_800D60E4 = (Overlay10Resource *) piRomLoad(0x38);
     D_800D6640 = mmAlloc(0x200, 0x86);
     D_800D6644 = mmAlloc(0x200, 0x86);
     D_800D6648 = mmAlloc(0x200, 0x86);

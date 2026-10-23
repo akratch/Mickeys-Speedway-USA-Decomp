@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 #include "game/memory.h"
 #include "n_audio/mbi.h"
 
@@ -52,9 +53,6 @@ typedef struct PulsatingLightData {
 } PulsatingLightData;
 
 extern MemoryPoolSlot *mmAlloc(s32 size, u32 tag);
-extern u32 *piRomLoad(u32 assetIndex);
-extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset,
-                             s32 size);
 extern s32 byteswap32(u8 *address);
 extern u8 *func_8004D7E0(u8 *compressed, u8 *output);
 extern void mmFree(void *address);
@@ -217,14 +215,14 @@ s32 *func_80036DD0(s32 screenIndex) {
     decompressedAddr = NULL;
     header = (u8 *) mmAlloc(0x10, 0x90);
     if (header != NULL) {
-        piRomLoadSection(0x13, (u32) header, start, 0x10);
+        piRomLoadSection(0x13, header, start, 0x10);
         uncompressedSize = byteswap32(header) + 0x80;
         mmFree(header);
         decompressedAddr = (u8 *) mmAlloc(uncompressedSize, 0x90);
         if (decompressedAddr != NULL) {
             compressedAddr = (u32) ((decompressedAddr + uncompressedSize) - size);
             compressedAddr -= compressedAddr & 0xF;
-            piRomLoadSection(0x13, compressedAddr, start, size);
+            piRomLoadSection(0x13, (void *) compressedAddr, start, size);
             func_8004D7E0((u8 *) (compressedAddr & 0xFFFFFFFF), decompressedAddr);
         }
     }

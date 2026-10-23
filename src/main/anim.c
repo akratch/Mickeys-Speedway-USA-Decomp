@@ -13,6 +13,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 #include "game/anim.h"
 #include "game/charControl.h"
 #include "game/overlay_exports.h"
@@ -20,7 +21,6 @@
 void *mmAlloc();
 AnimPathObject *func_8000590C(ControlSpawnPacket *packet, s32 mode);
 void func_80005768(AnimPathObject *object);
-void piRomLoadSection();
 u8 *levelGetLevel(void);
 void func_800511C4();
 void camSetFOV(f32 value, s32 arg1);
@@ -490,7 +490,7 @@ void animseqInit(void)
   s32 offset;
   int new_var;
   u8 *cursor;
-  D_800D6B04 = piRomLoad(0x3D);
+  D_800D6B04 = (AnimLevelRomEntry *) piRomLoad(0x3D);
   D_800D6B00 = mmAlloc(0x400, 0x81);
   offset = 0;
   new_var = 4;

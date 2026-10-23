@@ -2,13 +2,12 @@
 #define OVERLAY_030_H
 
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 #include "game/lights.h"
 #include "game/memory.h"
 
 extern MemoryPoolSlot *mmAllocRegion(s32, s32);
 extern void *mmAlloc(s32, u32);
-extern u32 *piRomLoad(u32);
-extern s32 piRomGetFileSize(u32);
 extern void func_80004340(void);
 
 extern void *D_800C9450;

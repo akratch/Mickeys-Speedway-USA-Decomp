@@ -2,6 +2,7 @@
 #define OVERLAY_044_H
 
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 
 /*
  * Overlay 44: one translation unit (ADR 0006). Three cached animation
@@ -43,8 +44,6 @@ extern Overlay44FrameSource *D_800D76D0;
 extern void *mmAlloc(s32 size, s32 tag);
 
 extern void overlay44ReleaseHandles(Overlay44AnimationState *state);
-extern s32 piRomLoadSection(u32 assetIndex, void *address,
-                                     s32 assetOffset, s32 size);
 
 extern void viFrameRateReset(void);
 

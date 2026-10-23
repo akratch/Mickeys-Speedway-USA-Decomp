@@ -96,7 +96,7 @@ static void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
     }
     mainPreNMI();
 
-    gOverlay35ModelTable = piRomLoad(0x24);
+    gOverlay35ModelTable = (s32 *) piRomLoad(0x24);
     for (i = 0; gOverlay35ModelTable[i] != -1; i++) {
     }
     i--;
@@ -111,7 +111,7 @@ static void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
     temp -= temp % 16;
 
     mainPreNMI();
-    piRomLoadSection(0x25, (void *)temp, mdl, byteCount);
+    piRomLoadSection(0x25, (void *) temp, mdl, byteCount);
     func_8004D7E0((void *)temp, D_800792E8);
     mmFree(gOverlay35ModelTable);
     mainPreNMI();

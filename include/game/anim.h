@@ -2,6 +2,7 @@
 #define GAME_ANIM_H
 
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 
 typedef struct AnimStreamEntry {
     u16 duration;
@@ -440,7 +441,6 @@ void animseqFreeGroup(void);
 void func_800534C0();
 void func_800534EC(void *displayList);
 void animseqResetGroup(void);
-void *piRomLoad(s32 resourceId);
 void fmvInit(void);
 void func_800557F8(HitCopyState *first, HitCopyState *second, f32 unused);
 void func_80055D08(HitCopyState *first, HitCopyState *second, f32 unused);

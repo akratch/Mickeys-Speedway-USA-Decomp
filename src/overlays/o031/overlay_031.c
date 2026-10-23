@@ -159,12 +159,12 @@ void func_overlay_031_F00002E8_187F808(void) {
         D_800D4120[i] = 0;
     }
 
-    D_8007C8AC = piRomLoad(0x33);
+    D_8007C8AC = (Overlay31Item **) piRomLoad(0x33);
     while ((s32)D_8007C8AC[D_8007C8A4 + 1] != -1) {
         D_8007C8A4++;
     }
 
-    D_8007C8A8 = piRomLoad(0x34);
+    D_8007C8A8 = (u8 *) piRomLoad(0x34);
     for (i = 0; i < D_8007C8A4; i++) {
         D_8007C8AC[i] =
             (Overlay31Item *)(D_8007C8A8 + (s32)D_8007C8AC[i]);
@@ -172,12 +172,12 @@ void func_overlay_031_F00002E8_187F808(void) {
 
     overlay31BuildPalettes();
 
-    D_8007C8B8 = piRomLoad(0x35);
+    D_8007C8B8 = (Overlay31Behaviour **) piRomLoad(0x35);
     while ((s32)D_8007C8B8[D_8007C8B0 + 1] != -1) {
         D_8007C8B0++;
     }
 
-    D_8007C8B4 = piRomLoad(0x36);
+    D_8007C8B4 = (u8 *) piRomLoad(0x36);
     for (i = 0; i < D_8007C8B0; i++) {
         D_8007C8B8[i] =
             (Overlay31Behaviour *)(D_8007C8B4 +
@@ -296,7 +296,7 @@ void overlay31InitializeBuffers(s32 maxTriangle, s32 maxRectangle,
     func_overlay_031_F0000000_187F520();
 
     if (D_8007C884 == 0) {
-        assetBuffer = piRomLoad(0x3A);
+        assetBuffer = (s16 *) piRomLoad(0x3A);
         D_8007C888 = 0;
         while (assetBuffer[D_8007C888] != -1) {
             D_8007C888++;

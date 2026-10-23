@@ -12,6 +12,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/pi.h"
 #include "game/overlay_exports.h"
 
 typedef struct Gfx Gfx;
@@ -209,7 +210,6 @@ extern s32 mathRnd(s32 min, s32 max);
 extern void *mmAlloc(s32 size, s32 tag);
 extern Camera *camGetPtr(void);
 extern Matrix *camGetRotationMtx(void);
-extern s32 *piRomLoad(s32 assetId);
 extern s32 coss_s16(s16 angle);
 extern s32 func_8002A1A4(s16 angle);
 extern WeatherTexture *texLoadTexture(s32 textureId);
@@ -263,7 +263,7 @@ void initWeather(void) {
     D_800D40B8.near = -1;
     D_800D40B8.far = -0x200;
     if (D_8007C3DC == NULL) {
-        table = piRomLoad(0x1B);
+        table = (s32 *) piRomLoad(0x1B);
         D_8007C3E0 = 0;
         D_8007C3DC = table;
         while (D_8007C3DC[D_8007C3E0] != -1) {

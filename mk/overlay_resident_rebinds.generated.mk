@@ -21,6 +21,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/func_overlay_001_F0002B4C_184EF2C.c.o: SUR
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o001Reloc \
+	--redefine-sym func_overlay_001_F0000000_184C3E0=func_overlay_001_F0000000_o001Reloc \
 	--redefine-sym mathDiffAngle=mathDiffAngle_o001Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_build.c.o: SURFACE_REBIND = $(OBJCOPY) \
@@ -42,6 +43,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_head.c.o: SURFACE_REBIND = $(O
 	--redefine-sym _bzero=_bzero_o001Reloc \
 	--redefine-sym func_80005750=func_80005750_o001Reloc \
 	--redefine-sym func_8001CB0C=func_8001CB0C_o001Reloc \
+	--redefine-sym func_overlay_001_F0000000_184C3E0=func_overlay_001_F0000000_o001Reloc \
 	--redefine-sym mmAlloc=mmAlloc_o001Reloc \
 	--redefine-sym mmFree=mmFree_o001Reloc \
 	--redefine-sym overlay1BuildPointRecord=overlay1BuildPointRecord_o001Reloc \
@@ -65,6 +67,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: SURFACE_REBIND = $(O
 	--redefine-sym func_8001CB0C=func_8001CB0C_o001Reloc \
 	--redefine-sym func_80028F54=func_80028F54_o001Reloc \
 	--redefine-sym func_8005AD64=func_8005AD64_o001Reloc \
+	--redefine-sym func_overlay_001_F0000000_184C3E0=func_overlay_001_F0000000_o001Reloc \
 	--redefine-sym func_overlay_002_F0001A94_185888C=func_overlay_002_F0001A94_o001Reloc \
 	--redefine-sym mathDiffAngle=mathDiffAngle_o001Reloc \
 	--redefine-sym overlay1FindPreviousUsable=overlay1FindPreviousUsable_o001Reloc \
@@ -799,6 +802,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay_041.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym func_8005ABA8=func_8005ABA8_o041Reloc \
 	--redefine-sym func_8005AF14=func_8005AF14_o041Reloc \
 	--redefine-sym func_overlay_012_F00001B4_186D434=func_overlay_012_F00001B4_o041Reloc \
+	--redefine-sym func_overlay_067_F0000000_18C6F40=func_overlay_067_F0000000_o041Reloc \
 	--redefine-sym lightObject=lightObject_o041Reloc \
 	--redefine-sym mathOneFloatPY=mathOneFloatPY_o041Reloc \
 	--redefine-sym mathRnd=mathRnd_o041Reloc \
@@ -1466,6 +1470,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay_064.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym D_800D60B0=D_800D60B0_o064Reloc \
 	--redefine-sym D_800D60C0=D_800D60C0_o064Reloc \
 	--redefine-sym mathRnd=mathRnd_o064Reloc $@
+
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65SpawnRecord.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym func_overlay_065_F0000000_18C4268=func_overlay_065_F0000000_o065Reloc $@
+
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65UpdateParticles.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym func_overlay_065_F0000000_18C4268=func_overlay_065_F0000000_o065Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay_066.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D2FA0=D_800D2FA0_o066Reloc \

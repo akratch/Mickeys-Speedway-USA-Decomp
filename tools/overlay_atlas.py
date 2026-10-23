@@ -41,6 +41,7 @@ import sys
 from pathlib import Path
 
 import overlay_tables
+import executable_accounting
 
 
 REPO = Path(__file__).resolve().parent.parent
@@ -262,86 +263,6 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
 DATA_ONLY_FIXED_DATA_SOURCES = {
     (8, "overlay8MotionConstants", ".data"),
     (8, "overlay8EffectTables", ".data"),
-}
-
-# When a C owner's initialized input follows its text, IDO's measured .text
-# alignment can emit the intervening zero padding without a separate asm row.
-# Keep the row in the atlas so padding is never counted as executable C credit.
-#
-# A module folded into one translation unit (docs/OVERLAY_STRUCTURE_SPRINT.md
-# phase 2) needs no owned data for this: IDO pads the TU's own .text to the
-# 16-byte boundary the module's text size already ends on, so the C object
-# carries the pad and no trim is needed.
-COMPILER_TEXT_ALIGNMENT_PADDING = {
-    22: "overlay_022_padding",
-    45: "overlay_045_padding",
-    15: "overlay_015_padding",
-    76: "overlay_076_padding",
-    78: "overlay_078_padding",
-    81: "overlay_081_padding",
-    85: "overlay_085_padding",
-    74: "overlay_074_padding",
-    80: "overlay_080_padding",
-    75: "overlay_075_padding",
-    89: "overlay_089_padding",
-    87: "overlay_087_padding",
-    84: "overlay_084_padding",
-    86: "overlay_086_padding",
-    73: "overlay_073_padding",
-    90: "overlay_090_padding",
-    82: "overlay_082_padding",
-    6: "overlay_006_padding",
-    16: "overlay_016_padding",
-    3: "overlay_003_padding",
-    13: "overlay_013_padding",
-    4: "overlay_004_padding",
-    9: "overlay_009_padding",
-    8: "overlay_008_padding",
-    5: "overlay_005_padding",
-    7: "overlay_007_padding",
-    12: "overlay_012_padding",
-    2: "overlay_002_tail",
-    11: "overlay_011_padding",
-    19: "overlay_019_padding",
-    20: "overlay_020_padding",
-    21: "overlay_021_padding",
-    23: "overlay_023_padding",
-    24: "overlay_024_padding",
-    25: "overlay_025_padding",
-    28: "overlay_028_padding",
-    29: "overlay_029_padding",
-    30: "overlay_030_padding",
-    31: "overlay_031_padding",
-    33: "overlay_033_padding",
-    35: "overlay_035_padding",
-    36: "overlay_036_padding",
-    37: "overlay_037_padding",
-    39: "overlay_039_padding",
-    40: "overlay_040_padding",
-    43: "overlay_043_padding",
-    46: "overlay_046_padding",
-    52: "overlay_052_padding",
-    54: "overlay_054_padding",
-    50: "overlay_050_padding",
-    53: "overlay_053_padding",
-    48: "overlay_048_padding",
-    44: "overlay_044_padding",
-    51: "overlay_051_padding",
-    49: "overlay_049_padding",
-    38: "overlay_038_padding",
-    55: "overlay_055_padding",
-    56: "overlay_056_padding",
-    67: "overlay_067_padding",
-    72: "overlay_072_padding",
-    69: "overlay_069_padding",
-    70: "overlay_070_padding",
-    71: "overlay_071_tail",
-    63: "overlay_063_padding",
-    59: "overlay_059_padding",
-    60: "overlay_060_padding",
-    68: "overlay_068_padding",
-    58: "overlay_058_padding_b",
-    61: "overlay_061_padding",
 }
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
@@ -1738,11 +1659,46 @@ def trial_functions(cli=None):
     return frozenset(part for part in raw if part)
 
 
+def compiler_text_padding(module, reviewed_padding):
+    """Return the final aligned C TU's reviewed trailing alignment owner.
+
+    The atlas keeps the padding row for accounting, while IDO's full .text
+    emits its bytes. A name or zero-filled asm row alone is not evidence:
+    only the separately reviewed nonexecutable identity may be absorbed.
+    A split module can use the same rule when its final TU starts at a
+    16-byte boundary. An unaligned TU cannot supply module-end alignment.
+    """
+    parts = module["text_ownership"]
+    if len(parts) < 2 or parts[-2]["type"] != "c" or parts[-1]["type"] != "asm":
+        return None
+    code, padding = parts[-2:]
+    text_size = int(module["sections"]["text"]["size"], 16)
+    code_start = int(code["offset"], 16)
+    code_end = int(code["end_offset"], 16)
+    pad_start = int(padding["offset"], 16)
+    pad_end = int(padding["end_offset"], 16)
+    pad_size = int(padding["size"], 16)
+    identity = (module["overlay"], padding["source"], pad_start, pad_size)
+    if (
+        identity not in reviewed_padding
+        or code_start % 16 != 0
+        or int(code["size"], 16) != code_end - code_start
+        or code_end != pad_start
+        or pad_end != text_size
+        or pad_end - pad_start != pad_size
+        or pad_size not in (4, 8, 12)
+        or ((code_end + 15) & ~15) != text_size
+    ):
+        return None
+    return padding["source"]
+
+
 def render_yaml_block(
     atlas,
     trial_ownership=False,
     trial_sources=frozenset(),
     trial_functions=frozenset(),
+    reviewed_padding=frozenset(),
 ):
     lines = [YAML_BEGIN]
     lines += [
@@ -1808,19 +1764,13 @@ def render_yaml_block(
             "    subsegments:",
         ]
         text_start = int(row["sections"]["text"]["start"], 16)
-        compiler_padding = COMPILER_TEXT_ALIGNMENT_PADDING.get(ov)
+        compiler_padding = compiler_text_padding(row, reviewed_padding)
         explicit_padding = EXPLICIT_TEXT_PADDING.get(ov)
         for part in row["text_ownership"]:
             source_name = part["source"].rsplit("/", 1)[1]
-            if source_name == compiler_padding:
-                # A module TU's trailing pad is emitted by IDO's 16-byte
-                # .text alignment (phase 2 of docs/OVERLAY_STRUCTURE_SPRINT.md);
-                # an interior pad still needs C-owned data after it.
-                if not owned_data and part is not row["text_ownership"][-1]:
-                    raise ValueError(
-                        f"overlay {ov} compiler padding needs C-owned data "
-                        "or must end the module's text"
-                    )
+            if part["source"] == compiler_padding:
+                # Keep the reviewed asm owner in the atlas for accounting;
+                # IDO already supplies this sole TU's trailing alignment.
                 continue
             if source_name == explicit_padding:
                 if part["type"] != "asm" or not owned_data:
@@ -2059,6 +2009,11 @@ def main():
     rom = args.rom.read_bytes()
     atlas, records_by_overlay = build_atlas(rom)
     manifest = render_manifest(atlas)
+    reviewed_padding = {
+        (part["overlay"], part["source"], int(part["offset"], 16), part["bytes"])
+        for part in executable_accounting.reviewed_ranges(REPO, atlas, rom)
+        if part["kind"] == "overlay-padding"
+    }
     yaml_text = args.yaml.read_text()
     trial_ownership = args.trial_yaml or args.trial_projection or (
         os.environ.get("PROMOTION_TRIAL", "") not in ("", "0")
@@ -2070,6 +2025,7 @@ def main():
             trial_ownership=trial_ownership,
             trial_sources=trial_sources(args.trial_source),
             trial_functions=trial_functions(args.trial_function),
+            reviewed_padding=reviewed_padding,
         ),
     )
 

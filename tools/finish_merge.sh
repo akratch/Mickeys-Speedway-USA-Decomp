@@ -54,7 +54,8 @@ esac
 { .venv/bin/python tools/nm_ranking.py --refresh-stale 2>&1 | tail -1; } || echo "warning: ranking refresh failed" >&2
 .venv/bin/python tools/nm_ranking.py --write-doc >/dev/null 2>&1 || true
 { .venv/bin/python tools/postprocess_audit.py --write 2>&1 | tail -1; } || echo "warning: postprocess audit refresh failed" >&2
-git add -- config/nonmatching-ranking.us.json docs/nm-ranking.md config/postprocess-audit.us.json 2>/dev/null || true
+# Keep generated changes unstaged until the transaction validates them.
+# Staging here would change the reviewed index captured by begin above.
 docs_log=$(mktemp -t mickey-merge-check-docs)
 gmake check-docs >"$docs_log" 2>&1 || { echo "check-docs FAILED; merge left uncommitted" >&2; tail -30 "$docs_log" >&2; exit 1; }
 tail -1 "$docs_log"; rm -f "$docs_log"

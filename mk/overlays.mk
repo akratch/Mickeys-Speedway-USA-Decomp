@@ -398,6 +398,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay_019.c.o: CFLAGS += -Wab,-r4300_mul
 # Its resident calls go through the generated surface rebinds.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: CFLAGS += -Wab,-r4300_mul
 O8_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o
+# Complete pure-ORT pointer input; separate artifacts and durable data guard.
+MODULE_LINKED_DATA_SOURCES += overlays/o008/overlay8TuningTables
+
 # Mickey's LOCAL records distinguish the rodata base from data/BSS. Restoring
 # the intervening scalar literals makes the compiler's complete 512-byte float
 # pool identical to retained rodata +0xB0..+0x2B0. One section anchor replaces
@@ -1097,3 +1100,15 @@ $(O90_OBJ): POSTPROCESS = \
 # Overlay 47 owns all source sections and links them at runtime section bases.
 MODULE_LINKED_OVERLAYS += 047
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay_047.c.o: CFLAGS += -Wab,-r4300_mul
+
+ifeq ($(NON_MATCHING)$(RUNLINK_RAW),00)
+# A reviewed data-only registry expands to independent per-source module links.
+MODULE_LINK_DATA_OBJECTS = $(addprefix $(BUILD_DIR)/$(SRC_DIR)/,$(addsuffix .c.o,$(MODULE_LINKED_DATA_SOURCES)))
+$(MODULE_LINK_DATA_OBJECTS): $(TOOLS_DIR)/link_overlay_module.py $(TOOLS_DIR)/runlink_pack.py $(TOOLS_DIR)/rebind_elf_relocations.py config/runlink-ort.$(VERSION).txt Makefile mk/overlays.mk $(LD) $(OBJCOPY)
+$(MODULE_LINK_DATA_OBJECTS): MODULE_LINK = $(HOST_PYTHON) $(TOOLS_DIR)/link_overlay_module.py $@ \
+	--directory $(BUILD_DIR)/modules/$(notdir $(patsubst %/,%,$(dir $@)))/$(patsubst %.c.o,%,$(notdir $@)) \
+	--ort config/runlink-ort.$(VERSION).txt --ld $(LD) --objcopy $(OBJCOPY)
+$(MODULE_LINK_DATA_OBJECTS): RUN_POSTPROCESS = @:
+$(MODULE_LINK_DATA_OBJECTS): RUN_SURFACE_REBIND = @:
+
+endif

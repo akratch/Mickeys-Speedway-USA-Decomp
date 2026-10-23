@@ -317,5 +317,49 @@ class ManifestPrimitiveTests(unittest.TestCase):
         )
 
 
+class ProducerCaptureLifecycleTests(unittest.TestCase):
+    def test_stale_final_output_does_not_block_bound_bootstrap_producer_inputs(self):
+        import runlink_metadata_link as metadata
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            names = [metadata.BOOT_ELF, metadata.BOOT_MAP, metadata.BOOT_LOG,
+                     "mickey.us.ld", "tools/link_diagnose.sh", "tools/run_logged.py",
+                     "tools/binutils/mips64-elf-ld", "undefined_funcs_auto.us.txt",
+                     "undefined_syms_auto.us.txt", "libultra_undefined_syms.us.txt",
+                     "overlay_undefined_syms.us.txt"]
+            for name in names:
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("synthetic producer input\n")
+            with mock.patch.object(metadata, "provenance_context", side_effect=
+                    metadata.MetadataLinkError("stale final output")), mock.patch.object(
+                    metadata, "link_command", return_value=["ordinary-bootstrap-link"]) as link:
+                producer = provenance.producer_link_context(
+                    root, root / metadata.BOOT_ELF, root / metadata.BOOT_MAP)
+                self.assertEqual(producer["role"], "metadata-producer-input")
+                self.assertIn(metadata.BOOT_ELF, producer["inputs"])
+                link.assert_called_once_with(root, final=False)
+                with self.assertRaisesRegex(provenance.MetadataProofError, "stale final output"):
+                    provenance.generated_metadata_context(root)
+                (root / metadata.BOOT_MAP).write_text("changed map\n")
+                self.assertNotEqual(producer, provenance.producer_link_context(
+                    root, root / metadata.BOOT_ELF, root / metadata.BOOT_MAP))
+                with self.assertRaisesRegex(provenance.MetadataProofError, "ELF-map pair"):
+                    provenance.producer_link_context(root, root / metadata.BOOT_ELF,
+                                                     root / "build/mickey.us.map")
+
+    def test_capture_roles_are_explicit_and_promotion_keeps_the_strict_default(self):
+        arguments = [pathlib.Path("root") / name for name in
+                     (".", "source.c", "configured.o", "build/mickey.us.elf")]
+        with mock.patch.object(provenance, "_capture_configured_raw", return_value="captured") as capture:
+            self.assertEqual(provenance.capture_configured_raw(*arguments, "", module_link=True),
+                             "captured")
+            self.assertNotIn("producer_map", capture.call_args.kwargs)
+            capture.reset_mock()
+            provenance.capture_data_module_producer_raw(*arguments, pathlib.Path("root/build/mickey.us.map"))
+            self.assertEqual(capture.call_args.kwargs["producer_map"], pathlib.Path("root/build/mickey.us.map"))
+            self.assertTrue(capture.call_args.kwargs["module_link"])
+
+
 if __name__ == "__main__":
     unittest.main()

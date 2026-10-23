@@ -270,7 +270,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1944,
+      "count": 1942,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1979,9 +1979,7 @@
         [83, "gOverlay83ScaleReloc", 2],
         [83, "overlay83SubmitSetupReloc", 2],
         [84, "gOverlay84BlendStep", 2],
-        [84, "gOverlay84CurrentObject", 2],
-        [84, "gOverlay84Object", 30],
-        [84, "gOverlay84ObjectRead", 2],
+        [84, "gOverlay84Object", 34],
         [84, "gOverlay84ObjectWrite", 2],
         [84, "overlay84GetResource", 6],
         [84, "overlay84ReleaseResource", 4],

@@ -4082,45 +4082,29 @@ pointListRPY_o083Reloc = 0xf0000000;
 sprClearIA2ColOverride_o083Reloc = 0xf0000000;
 sprSetIA2ColOverride_o083Reloc = 0xf0000000;
 
-/* overlay 84: overlay84InitState.c.o */
-gOverlay84Object = 0x00000000;
-
-/* overlay 84: overlay84InitializeAndUpdate.c.o */
+/* overlay 84: overlay_084.c.o */
 Arctanf_o084Reloc = 0xf0000000;
-func_8000572C_o084Reloc = 0xf0000000;
-
-/* overlay 84: func_overlay_084_F0000314_18D07F4.c.o */
 D_800D31B8_o084Reloc = 0x00000000;
 D_800D31C0_o084Reloc = 0x00000000;
 amSndPlay_o084Reloc = 0xf0000000;
+animseqStartPath_o084Reloc = 0xf0000000;
 camGetPtr_o084Reloc = 0xf0000000;
 camSetNo_o084Reloc = 0xf0000000;
 dAngle_o084Reloc = 0xf0000000;
+func_8000572C_o084Reloc = 0xf0000000;
 func_8000FAE0_o084Reloc = 0xf0000000;
 func_8002A8BC_o084Reloc = 0xf0000000;
 func_8002A8C0_o084Reloc = 0xf0000000;
+func_8005055C_o084Reloc = 0xf0000000;
+func_800508B4_o084Reloc = 0xf0000000;
+func_overlay_041_F0000854_o084Reloc = 0xf0000000;
 gOverlay84BlendStep = 0x00000000;
+gOverlay84Object = 0x00000000;
+gOverlay84ObjectWrite = 0x00000000;
 mathDiffAngle_o084Reloc = 0xf0000000;
 overlay84AdvanceCurrent_o084Reloc = 0xf0000000;
-
-/* overlay 84: overlay84UpdateResource.c.o */
-func_overlay_041_F0000854_o084Reloc = 0xf0000000;
 overlay84GetResource = 0xf0000000;
 overlay84ReleaseResource = 0xf0000000;
-
-/* overlay 84: overlay84LoadCurrent.c.o */
-func_8005055C_o084Reloc = 0xf0000000;
-
-/* overlay 84: overlay84AdvanceCurrent.c.o */
-gOverlay84ObjectRead = 0x00000000;
-gOverlay84ObjectWrite = 0x00000000;
-
-/* overlay 84: overlay84ActivateCurrent.c.o */
-animseqStartPath_o084Reloc = 0xf0000000;
-func_800508B4_o084Reloc = 0xf0000000;
-
-/* overlay 84: overlay84InitializeCurrent.c.o */
-gOverlay84CurrentObject = 0x00000000;
 
 /* overlay 85: overlay_085.c.o */
 amSndPlayXYZ_o085Reloc = 0xf0000000;
@@ -6022,67 +6006,25 @@ func_overlay_083_F000053C_18CFCFC = overlay83BuildBatch;
 func_overlay_083_F00007DC_18CFF9C = overlay83DrawEntries;
 func_overlay_083_F0000A18_18D01D8 = overlay83SubmitAll;
 
-/* overlay 84: overlay84InitState.c.o */
+/* overlay 84: overlay_084.c.o */
 func_overlay_084_F0000000_18D04E0 = overlay84InitState;
-
-/* overlay 84: overlay84InitializeAndUpdate.c.o */
 func_overlay_084_F0000048_18D0528 = overlay84InitializeAndUpdate;
-
-/* overlay 84: overlay84UpdateResource.c.o */
-func_overlay_084_F0000A54_18D0F34 = overlay84UpdateResource;
-
-/* overlay 84: overlay84ResetCurrent.c.o */
 func_overlay_084_F0000AFC_18D0FDC = overlay84ResetCurrent;
-
-/* overlay 84: overlay84RefreshCurrent.c.o */
-func_overlay_084_F0000B7C_18D105C = overlay84RefreshCurrent;
-
-/* overlay 84: overlay84GetActive.c.o */
 func_overlay_084_F0000C74_18D1154 = overlay84GetActive;
-
-/* overlay 84: overlay84LoadCurrent.c.o */
 func_overlay_084_F0000C9C_18D117C = overlay84LoadCurrent;
-
-/* overlay 84: overlay84CopyPair.c.o */
 func_overlay_084_F0000DBC_18D129C = overlay84CopyPair;
-
-/* overlay 84: overlay84AdvanceCurrent.c.o */
 func_overlay_084_F0000DD0_18D12B0 = overlay84AdvanceCurrent;
-
-/* overlay 84: overlay84SelectCurrent.c.o */
 func_overlay_084_F0000F18_18D13F8 = overlay84SelectCurrent;
-
-/* overlay 84: overlay84GetCurrent.c.o */
 func_overlay_084_F0000FC4_18D14A4 = overlay84GetCurrent;
-
-/* overlay 84: overlay84SetBit.c.o */
 func_overlay_084_F0001004_18D14E4 = overlay84SetBit;
-
-/* overlay 84: overlay84GetValues.c.o */
 func_overlay_084_F0001034_18D1514 = overlay84GetValues;
-
-/* overlay 84: overlay84ActivateCurrent.c.o */
 func_overlay_084_F0001060_18D1540 = overlay84ActivateCurrent;
-
-/* overlay 84: overlay84InitializeCurrent.c.o */
 func_overlay_084_F00011F4_18D16D4 = overlay84InitializeCurrent;
-
-/* overlay 84: overlay84ClearActive.c.o */
 func_overlay_084_F0001294_18D1774 = overlay84ClearActive;
-
-/* overlay 84: overlay84IsUnitScale.c.o */
 func_overlay_084_F00012B4_18D1794 = overlay84IsUnitScale;
-
-/* overlay 84: overlay84GetEnabledCurrent.c.o */
 func_overlay_084_F00012FC_18D17DC = overlay84GetEnabledCurrent;
-
-/* overlay 84: overlay84ClearMode.c.o */
 func_overlay_084_F0001350_18D1830 = overlay84ClearMode;
-
-/* overlay 84: overlay84SetAngle.c.o */
 func_overlay_084_F0001370_18D1850 = overlay84SetAngle;
-
-/* overlay 84: overlay84Mark.c.o */
 func_overlay_084_F0001398_18D1878 = overlay84Mark;
 
 /* overlay 85: overlay_085.c.o */

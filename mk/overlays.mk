@@ -2957,18 +2957,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0008128_18E3948.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F000895C_18E417C.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/func_overlay_101_F0009190_18E49B0.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84InitState.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84InitializeAndUpdate.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/func_overlay_084_F0000314_18D07F4.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84GetActive.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84GetCurrent.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84IsUnitScale.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84GetEnabledCurrent.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84InitializeCurrent.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84ResetCurrent.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84UpdateResource.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84RefreshCurrent.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84SelectCurrent.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63Initialize.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63UpdateEffects.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63Release.c.o \

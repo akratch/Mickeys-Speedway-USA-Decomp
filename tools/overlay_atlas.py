@@ -304,6 +304,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     75: "overlay_075_padding",
     89: "overlay_089_padding",
     87: "overlay_087_padding",
+    84: "overlay_084_padding",
 }
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
@@ -804,28 +805,7 @@ TEXT_SUBSEGMENTS = {
         (0x000, "c", "overlay_083"),
     ],
     84: [
-        (0x0000, "c", "overlay84InitState"),
-        (0x0048, "c", "overlay84InitializeAndUpdate"),
-        (0x0314, "c", "func_overlay_084_F0000314_18D07F4"),
-        (0x0A54, "c", "overlay84UpdateResource"),
-        (0x0AFC, "c", "overlay84ResetCurrent"),
-        (0x0B7C, "c", "overlay84RefreshCurrent"),
-        (0x0C74, "c", "overlay84GetActive"),
-        (0x0C9C, "c", "overlay84LoadCurrent"),
-        (0x0DBC, "c", "overlay84CopyPair"),
-        (0x0DD0, "c", "overlay84AdvanceCurrent"),
-        (0x0F18, "c", "overlay84SelectCurrent"),
-        (0x0FC4, "c", "overlay84GetCurrent"),
-        (0x1004, "c", "overlay84SetBit"),
-        (0x1034, "c", "overlay84GetValues"),
-        (0x1060, "c", "overlay84ActivateCurrent"),
-        (0x11F4, "c", "overlay84InitializeCurrent"),
-        (0x1294, "c", "overlay84ClearActive"),
-        (0x12B4, "c", "overlay84IsUnitScale"),
-        (0x12FC, "c", "overlay84GetEnabledCurrent"),
-        (0x1350, "c", "overlay84ClearMode"),
-        (0x1370, "c", "overlay84SetAngle"),
-        (0x1398, "c", "overlay84Mark"),
+        (0x000, "c", "overlay_084"),
         (0x13BC, "asm", "overlay_084_padding"),
     ],
     85: [

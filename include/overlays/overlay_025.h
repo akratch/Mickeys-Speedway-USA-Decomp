@@ -120,12 +120,17 @@ typedef struct Overlay25VectorObject {
 } Overlay25VectorObject;
 
 extern u16 D_8007BF1C;
-extern const u8 gOverlay25ColorsReloc[];
+extern u8 gOverlay25Colors[];
+
+typedef void (*Overlay25CollisionCallback)(Overlay25Vector *start,
+                                            Overlay25Vector *end,
+                                            Overlay25Vector *direction,
+                                            f32 length, Overlay25Source *source,
+                                            Overlay25VectorObject *object);
 
 extern f32 func_8002A8C0(s32 angle);
 extern f32 func_8002A8BC(s32 angle);
 extern s32 func_800299E8(s32 lower, s32 upper);
-extern void overlay25SetVectorFlagsReloc(void);
 extern void func_80006EA0(Overlay25Object *object);
 extern void func_80008128(Overlay25Object *object, f32 x, f32 y, f32 z);
 extern void trackMakePolylist(s32 mode, Overlay25Vector *position,
@@ -134,7 +139,7 @@ extern void trackMakePolylist(s32 mode, Overlay25Vector *position,
 extern s32 func_80010900(Overlay25Vector *position,
                                Overlay25Vector *movement, f32 radius,
                                Overlay25Object *object,
-                               void (*callback)(void));
+                               Overlay25CollisionCallback callback);
 extern s32 func_8005776C(f32 x, f32 y, s32 z, f32 radius,
                                       s32 mode, Overlay25Object **objects);
 extern s32 func_overlay_008_F0000E88_185EBE0(Overlay25Object *object,

@@ -679,18 +679,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay_023.c.o: CFLAGS += -Wab,-r4300_mul
 # section-relative before its initialized sections enter the ROM link.
 MODULE_LINKED_OVERLAYS += 024
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o024/overlay_024.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 25 is one TU under the overlay flag set. Its .text needs no trim and
-# its resident calls take the generated rebinds. The one remaining step is
-# phase-3 scaffolding: the TU's literal pool is the retained overlay rodata at
-# +0x20 byte for byte (the updater's six literals, then
-# overlay25SetVectorFlags' 0.707f), so assert it by digest and keep the
-# section-relative addends on a zero base until C owns the module's data.
+# Overlay 25 directly owns its RGB palette and compiler-emitted literal pool.
+MODULE_LINKED_OVERLAYS += 025
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o025/overlay_025.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o025/overlay_025.c.o: \
-	$(TOOLS_DIR)/externalize_elf_section.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o025/overlay_025.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:258adccbc890f89cf0c2393e490673ba6b5f4d39ca12eeeb9f7d74881dd69d02
 # Overlay 39 at the overlay flag set. The two 16-byte copy loops are written
 # per byte: IDO's default unroll (factor 4) emits the shipped four-copy loop
 # body, which the former hand-unrolled spelling only matched with unrolling

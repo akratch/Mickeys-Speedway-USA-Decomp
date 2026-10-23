@@ -1126,23 +1126,6 @@ mathRnd_o023Reloc = 0xf0000000;
 overlay23CallReloc = 0xf0000000;
 texLoadSprite_o023Reloc = 0xf0000000;
 
-/* overlay 25: overlay_025.c.o */
-D_8007BF1C_o025Reloc = 0x00000000;
-func_80006EA0_o025Reloc = 0xf0000000;
-func_80008128_o025Reloc = 0xf0000000;
-func_80010900_o025Reloc = 0xf0000000;
-func_80028F54_o025Reloc = 0xf0000000;
-func_800299E8_o025Reloc = 0xf0000000;
-func_8002A8BC_o025Reloc = 0xf0000000;
-func_8002A8C0_o025Reloc = 0xf0000000;
-func_8005776C_o025Reloc = 0xf0000000;
-func_overlay_008_F0000E88_o025Reloc = 0xf0000000;
-func_overlay_070_F0000384_o025Reloc = 0xf0000000;
-gOverlay25ColorsReloc = 0x00000000;
-overlay25SetVectorFlagsReloc = 0x00000588;
-overlay7DispatchModes_o025Reloc = 0xf0000000;
-trackMakePolylist_o025Reloc = 0xf0000000;
-
 /* overlay 26: overlay_026.c.o */
 Arctanf_o026Reloc = 0xf0000000;
 D_1C = 0x0000001c;
@@ -4318,9 +4301,8 @@ func_overlay_024_F0000284_1879A6C = overlay24RenderState;
 func_overlay_024_F000001C_1879804 = overlay24Update;
 
 /* overlay 25: overlay_025.c.o */
-func_overlay_025_F0000000_1879C88 = overlay25InitializeEffect;
 func_overlay_025_F000017C_1879E04 = overlay25UpdateEffect;
-func_overlay_025_F0000588_187A210 = overlay25SetVectorFlags;
+func_overlay_025_F0000000_1879C88 = overlay25InitializeEffect;
 
 /* overlay 27: overlay_027.c.o */
 func_overlay_027_F0000000_187B9D8 = overlay27Init;

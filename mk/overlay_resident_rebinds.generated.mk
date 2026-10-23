@@ -485,21 +485,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay_023.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym mathRnd=mathRnd_o023Reloc \
 	--redefine-sym texLoadSprite=texLoadSprite_o023Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o025/overlay_025.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007BF1C=D_8007BF1C_o025Reloc \
-	--redefine-sym func_80006EA0=func_80006EA0_o025Reloc \
-	--redefine-sym func_80008128=func_80008128_o025Reloc \
-	--redefine-sym func_80010900=func_80010900_o025Reloc \
-	--redefine-sym func_80028F54=func_80028F54_o025Reloc \
-	--redefine-sym func_800299E8=func_800299E8_o025Reloc \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o025Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o025Reloc \
-	--redefine-sym func_8005776C=func_8005776C_o025Reloc \
-	--redefine-sym func_overlay_008_F0000E88_185EBE0=func_overlay_008_F0000E88_o025Reloc \
-	--redefine-sym func_overlay_070_F0000384_18C954C=func_overlay_070_F0000384_o025Reloc \
-	--redefine-sym overlay7DispatchModes=overlay7DispatchModes_o025Reloc \
-	--redefine-sym trackMakePolylist=trackMakePolylist_o025Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay_026.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o026Reloc \
 	--redefine-sym Powerf=Powerf_o026Reloc \

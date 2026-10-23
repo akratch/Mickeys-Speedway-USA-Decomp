@@ -144,7 +144,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
     8: [(0x27C, 0x2AC, "overlay_008", ".rodata", "func_overlay_008_F0004CF0_1862A48")],
     9: [(0x390, 0x3E0, "overlay_009", ".rodata", "func_overlay_009_F0000CE4_186735C", True)],
     14: [(0x158, 0x190, "overlay_014", ".rodata", "overlay14LoadRelocatedValue", True)],
-    25: [(0x20, 0x40, "overlay_025", ".rodata", "overlay25UpdateEffect")],
     # The record/targeting update's five float literals, rodata-relative +0x0.
     29: [
         (
@@ -156,7 +155,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
-    25: [(0x20, 0x40, "overlay_025", ".rodata", "overlay25UpdateEffect", True)],
     58: [
         # The module TU's .rodata: the state update's seven-entry switch table
         # and 0.02f literal, then the mode update's thirteen-entry table,
@@ -253,6 +251,10 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
         (0x2378, 0x2418, "overlay8MotionConstants", ".data"),
     ],
     24: [(0x0, 0x10, "overlay_024", ".rodata")],
+    25: [
+        (0x0, 0x20, "overlay_025", ".data"),
+        (0x20, 0x40, "overlay_025", ".rodata"),
+    ],
     64: [(0x0, 0x10, "overlay_064", ".data")],
     77: [
         (0x0, 0x10, "overlay_077", ".data"),

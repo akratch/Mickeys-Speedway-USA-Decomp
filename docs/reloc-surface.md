@@ -41,6 +41,15 @@ function symbol covers as *uncovered*, so a function with no boundary is
 never silently skipped. Atlas `text_ownership` rows cannot serve as the
 boundary source: after a fold they bound the TU, not its functions.
 
+A function's owner is a translation unit, which the link map names, not the
+file its body is written in. Overlay 69's renderer lives in a shared
+`overlay69DrawSortedGeometry.inc.c` that overlay 69's TU (and overlay 88's)
+includes; the `.inc.c` compiles on its own but is never linked. Preflight
+therefore maps a definition in an unlinked file to the linked TUs that
+`#include` it and whose compiler view still defines the name (a renaming
+`#define` in the other includer drops it), and reads that TU's preprocessed
+view.
+
 Matching lanes can compare a full-TU candidate object's static relocations
 with the target function's authenticated relocation surface without rebuilding
 a second relocation decoder:

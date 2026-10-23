@@ -225,6 +225,37 @@ class SymbolResolutionTests(unittest.TestCase):
                     fp.resolve("helper", root=root, alias_path=alias,
                                atlas_path=atlas, symbol_path=root / "unused")
 
+    def test_shared_inc_body_belongs_to_the_including_unit(self) -> None:
+        # A body written in a shared .inc.c is compiled by the TUs that include
+        # it; the proof's owner is the linked unit whose view defines the name.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            body = root / "src/overlays/o069/shared.inc.c"
+            body.parent.mkdir(parents=True)
+            body.write_text("void shared(void) {}\n")
+            owner = root / "src/overlays/o069/overlay_069.c"
+            owner.write_text('#include "shared.inc.c"\n')
+            renamer = root / "src/overlays/o088/overlay_088.c"
+            renamer.parent.mkdir(parents=True)
+            renamer.write_text('#define shared overlay88Shared\n'
+                               '#include "../o069/shared.inc.c"\n')
+            (root / "build").mkdir()
+            (root / "build/mickey.us.map").write_text(
+                " .text 0xf0000000 0x10 build/src/overlays/o069/overlay_069.c.o\n"
+                " .text 0xf0000000 0x10 build/src/overlays/o088/overlay_088.c.o\n")
+
+            def view(unit: Path, symbol: str, _root: Path) -> object:
+                text = unit.read_text()
+                if "#define shared" in text:
+                    return fp.pp.source_facts("void overlay88Shared(void) {}\n", symbol)
+                return fp.pp.source_facts(body.read_text(), symbol)
+
+            with mock.patch.object(fp.pp, "source_facts_for", side_effect=view):
+                self.assertEqual(owner.resolve(), fp._definition_source("shared", root))
+                (root / "build/mickey.us.map").write_text("")
+                with self.assertRaisesRegex(fp.PreflightError, "found 0"):
+                    fp._definition_source("shared", root)
+
     def fixture(self, root: Path, alias_lines: str) -> Path:
         alias = root / "overlay_undefined_syms.us.txt"
         alias.write_text(alias_lines, encoding="utf-8")

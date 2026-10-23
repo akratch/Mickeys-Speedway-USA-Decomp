@@ -268,7 +268,53 @@ def _definition_source(candidate_symbol: str, root: Path) -> Path:
                 raise PreflightError(f"{_relative(source)}: {error}") from error
             if facts.definitions:
                 candidates.append(source)
+    linked = _linked_sources(root)
+    if linked is not None:
+        units: list[Path] = []
+        for source in candidates:
+            if source.resolve() in linked:
+                units.append(source)
+            else:
+                units.extend(_including_units(source, candidate_symbol, root, linked))
+        candidates = units
     return _unique(candidates, f"C definition source for {candidate_symbol}")
+
+
+def _linked_sources(root: Path) -> set[Path] | None:
+    """The C files whose objects the link map places: the translation units."""
+    map_path = root / "build" / "mickey.us.map"
+    if not map_path.is_file():
+        return None
+    text = map_path.read_text(encoding="utf-8", errors="replace")
+    return {(root / name).resolve()
+            for name in re.findall(r"(?<![\w/])build/(src/\S+?\.c)\.o\b", text)}
+
+
+def _including_units(source: Path, candidate_symbol: str, root: Path,
+                     linked: set[Path]) -> list[Path]:
+    """The linked translation units that compile ``source``'s definition.
+
+    A body in a shared ``.inc.c`` belongs to the TU that includes it, not to
+    the file it is written in; when several TUs include it, only those whose
+    compiler view still defines ``candidate_symbol`` (no renaming macro) own it.
+    """
+    target = source.resolve()
+    units = []
+    for unit in sorted(linked):
+        if not unit.is_file():
+            continue
+        text = unit.read_text(encoding="utf-8", errors="replace")
+        names = re.findall(r'^\s*#\s*include\s+"([^"\n]+)"', text, re.MULTILINE)
+        if not any((base / name).resolve() == target for name in names
+                   for base in (unit.parent, root, root / "include")):
+            continue
+        try:
+            facts = pp.source_facts_for(unit, candidate_symbol, root)
+        except pp.MetadataProofError as error:
+            raise PreflightError(f"{_relative(unit)}: {error}") from error
+        if facts.definitions:
+            units.append(unit)
+    return units
 
 
 def _hex_field(row: dict[str, object], field: str, description: str) -> int:

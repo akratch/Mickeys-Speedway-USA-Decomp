@@ -887,10 +887,11 @@ def source_view(source: pathlib.Path, symbol: str,
     """
     root = pathlib.Path(__file__).resolve().parent.parent if root is None else root
     text = source.read_text(encoding="utf-8", errors="replace")
-    if non_matching and not source_facts(text, symbol).definitions and (
+    # A body in an included .c (a shared .inc.c) is visible only once inlined.
+    if not source_facts(text, symbol).definitions and (
             _macro_spells(text, symbol) or re.search(
                 r'^\s*#\s*include\s+"[^"\n]+\.(?:c|inc)"', text, re.MULTILINE)):
-        return preprocessed_text(source, root, non_matching=True), "preprocessed"
+        return preprocessed_text(source, root, non_matching=non_matching), "preprocessed"
     if not needs_preprocessed_view(text, symbol):
         return text, "source"
     if non_matching:

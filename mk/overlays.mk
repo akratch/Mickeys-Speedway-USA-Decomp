@@ -833,14 +833,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay_021.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o030/overlay_030.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 23 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o023/overlay_023.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 24 is one TU under the overlay flag set. Its .text needs no trim;
-# the one remaining step is phase-3 scaffolding: the TU's literal pool is
-# still the retained data/rodata blob, so the compiled copy is externalized
-# onto that zero-based owner until C owns the module's data.
+# Overlay 24 owns its compiler-emitted pool; the whole module is linked
+# section-relative before its initialized sections enter the ROM link.
+MODULE_LINKED_OVERLAYS += 024
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o024/overlay_024.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o024/overlay_024.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		3e99999a000000000000000000000000
 # Overlay 25 is one TU under the overlay flag set. Its .text needs no trim and
 # its resident calls take the generated rebinds. The one remaining step is
 # phase-3 scaffolding: the TU's literal pool is the retained overlay rodata at

@@ -90,11 +90,12 @@ TOOL_SOURCES = (
     "tools/postprocess_audit.py", "tools/function_history.py",
     "tools/wb_compare.sh", "tools/promotion_proof_census.py",
     "tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
-    "tools/static_symbols.py",
+    "tools/static_symbols.py", "tools/link_overlay_module.py",
+    "tools/source_module_link_proof.py", "tools/runlink_pack.py", "tools/rebind_elf_relocations.py",
 )
 PROOF_INPUTS = (
     "config/overlays.us.json", "overlay_undefined_syms.us.txt",
-    "symbol_addrs.us.txt", "Makefile",
+    "symbol_addrs.us.txt", "config/runlink-ort.us.txt", "Makefile",
     "build/mickey.us.z64", "baseroms/mickey.us.z64",
 )
 

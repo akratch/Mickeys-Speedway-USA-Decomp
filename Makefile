@@ -162,10 +162,13 @@ export PROMOTION_TRIAL
 ifeq ($(NON_MATCHING)$(RUNLINK_RAW),00)
 RUN_POSTPROCESS = $(POSTPROCESS)
 RUN_SURFACE_REBIND = $(SURFACE_REBIND)
+RUN_MODULE_LINK = $(MODULE_LINK)
 else
 RUN_POSTPROCESS = @:
 RUN_SURFACE_REBIND = @:
+RUN_MODULE_LINK = @:
 endif
+MODULE_LINK = @:
 
 # asm-processor (simonlindholm) is what makes `#pragma GLOBAL_ASM("...")` work
 # with IDO: it strips the pragmas out, compiles the remaining real C, assembles
@@ -771,6 +774,7 @@ $(BUILD_DIR)/%.c.o: %.c $(H_FILES) $(TOOLS_DIR)/normalize_elf_instructions.py $(
 	$(ASM_PROCESSOR) $(CC) -- $(AS) $(ASM_PROC_ASFLAGS) -- \
 		-c $(CFLAGS) $(OPT_FLAGS) $(MIPSISET) -o $@ $<
 	$(STATIC_SYMBOLS)
+	$(RUN_MODULE_LINK)
 	$(RUN_POSTPROCESS)
 	$(RUN_SURFACE_REBIND)
 	$(TRAP_RENAME)
@@ -1606,6 +1610,18 @@ $(BUILD_DIR)/$(SRC_DIR)/main/audio_manager_4C50.c.o: CFLAGS += -Wab,-r4300_mul
 # include contains only target-specific compiler and ELF-metadata settings;
 # runtime overlay loading remains game code in src/main/runlink.c.
 include mk/overlays.mk
+
+# Complete whole-TU modules link with independent section-relative addresses.
+# The original compiler object and ordinary linker result stay under build/modules.
+ifeq ($(NON_MATCHING)$(RUNLINK_RAW),00)
+MODULE_LINK_OBJECTS = $(foreach ov,$(MODULE_LINKED_OVERLAYS),$(BUILD_DIR)/$(SRC_DIR)/overlays/o$(ov)/overlay_$(ov).c.o)
+$(MODULE_LINK_OBJECTS): $(TOOLS_DIR)/link_overlay_module.py $(TOOLS_DIR)/runlink_pack.py $(TOOLS_DIR)/rebind_elf_relocations.py config/runlink-ort.$(VERSION).txt
+$(MODULE_LINK_OBJECTS): MODULE_LINK = $(HOST_PYTHON) $(TOOLS_DIR)/link_overlay_module.py $@ \
+	--directory $(BUILD_DIR)/modules/$(notdir $(patsubst %/,%,$(dir $@))) \
+	--ort config/runlink-ort.$(VERSION).txt --ld $(LD) --objcopy $(OBJCOPY)
+$(MODULE_LINK_OBJECTS): RUN_POSTPROCESS = @:
+$(MODULE_LINK_OBJECTS): RUN_SURFACE_REBIND = @:
+endif
 
 # One final link builds the complete ROM image. For overlays the dependency
 # flow is:

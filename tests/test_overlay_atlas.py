@@ -389,9 +389,26 @@ class CanonicalDataOnlyOwnershipTests(unittest.TestCase):
         return [{"type": "c", "source": "overlays/o008/overlay_008"}]
 
     def test_registered_data_only_owner_is_a_canonical_atlas_row(self):
-        rows = overlay_atlas.data_rodata_ownership_rows(
-            8, 0x2500, self.text_ownership()
-        )
+        # Exercise registration independently of the growing campaign's live
+        # owner list, including one trial row beside two canonical owners.
+        registered = [
+            (0x3E0, 0x520, "fixtureEffects", ".data"),
+            (0x2378, 0x2418, "fixtureMotion", ".data"),
+        ]
+        with mock.patch.dict(
+            overlay_atlas.FIXED_DATA_RODATA_OWNERSHIP,
+            {8: [(0x27C, 0x2AC, "overlay_008", ".rodata", "fixtureBody")]},
+            clear=True,
+        ), mock.patch.dict(
+            overlay_atlas.CANONICAL_FIXED_DATA_RODATA_OWNERSHIP,
+            {8: registered}, clear=True,
+        ), mock.patch.object(
+            overlay_atlas, "DATA_ONLY_FIXED_DATA_SOURCES",
+            {(8, "fixtureEffects", ".data"), (8, "fixtureMotion", ".data")},
+        ):
+            rows = overlay_atlas.data_rodata_ownership_rows(
+                8, 0x2500, self.text_ownership()
+            )
         self.assertEqual(
             rows[-1],
             {
@@ -400,7 +417,7 @@ class CanonicalDataOnlyOwnershipTests(unittest.TestCase):
                 "size": "0xA0",
                 "type": "c",
                 "section": ".data",
-                "source": "overlays/o008/overlay8MotionConstants",
+                "source": "overlays/o008/fixtureMotion",
                 "canonical": True,
             },
         )
@@ -412,7 +429,7 @@ class CanonicalDataOnlyOwnershipTests(unittest.TestCase):
                 "size": "0x140",
                 "type": "c",
                 "section": ".data",
-                "source": "overlays/o008/overlay8EffectTables",
+                "source": "overlays/o008/fixtureEffects",
                 "canonical": True,
             },
         )

@@ -229,11 +229,11 @@ transfer conflicts are reported, not guessed through. This keeps matching work
 active during review without allowing `merge_lane.sh` to chase a moving lane
 tip.
 
-The paste-ready role prompts live in `.codex/crew/`. They also carry the
-occupied-workstation limits: never launch tests, generated programs, browsers,
-emulators, simulators, or GUI workflows; any permitted compilation is low
-priority and limited to two jobs, with only one compile-heavy process per
-worker slot.
+Use `tools/crew.py` for mailbox state and assignments. Build inside each
+actor's isolated worktree with the machine's available cores (ADR 0004).
+Workstation preferences come from the owner; the crew adds no compiler-job
+ceiling or blanket test ban. The decomp validation rules in `AGENTS.md` still
+apply, including its prohibition on executing a generated game binary or ROM.
 
 ## Known sources and reusable compiler knowledge
 
@@ -702,9 +702,9 @@ interrupted report without recompiling recorded identities, and repeated
   changes, and commit-hook failures stop rather than silently enter a commit.
   It exits non-zero and leaves the merge in progress if anything else
   conflicts or a gate fails, rather than guessing a resolution. Set
-  `MICKEY_BUILD_JOBS` and `MICKEY_BUILD_NICE` when local workstation policy
-  requires a lower compiler concurrency or priority; the three-session crew
-  uses two jobs and niceness 15.
+  `MICKEY_BUILD_JOBS` and `MICKEY_BUILD_NICE` to choose compiler concurrency
+  and priority for the integration build. These are configurable build
+  settings, not workstation restrictions.
 - **`tools/integrate.sh [--land] <lane> [lane ...]`** is the serialized
   coordinator entry point for a batch. It takes `<git-common-dir>/integrate.lock`
   (pid-stamped; a dead owner's lock is reclaimed, a live owner makes the next

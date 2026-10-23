@@ -16,6 +16,7 @@ import json
 import struct
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from pathlib import Path
 
@@ -426,6 +427,79 @@ class SyntheticTreeTests(unittest.TestCase):
         status, out = run(self.tree.args("compare"))
         self.assertEqual(status, 2, out)
         self.assertIn("gmake runlink-raw", out)
+
+
+class LinkedBssTests(unittest.TestCase):
+    def fixture(self):
+        raw = (ObjBuilder().section(".text", words(lui(0), addiu(0)))
+               .section(".bss", nobits=0x20))
+        obj = rp.ObjRef(1, Path("raw/a.c.o"), "overlays/o001/a", 0, 8, "c",
+                        rp.Elf("raw/a.c.o", raw.build()))
+        output = ObjBuilder().section(".overlay_001_bss", addr=rp.OVERLAY_VMA + 0x50,
+                                      nobits=0x20)
+        info = dict(text_size=0x40, prefix=0x50, bss_vma=rp.OVERLAY_VMA + 0x50,
+                    linked_bss=0x20, atlas_bss=0x20, inputs=[], bss_inputs=[
+                        rp.MapInput(".overlay_001_bss", ".bss", rp.OVERLAY_VMA + 0x50,
+                                    0x20, "build/src/overlays/o001/a.c.o")])
+        world = SimpleNamespace(module_info={1: info}, elf=rp.Elf("linked", output.build()),
+            amods={1: {}}, objects=lambda ov: [obj],
+            # Deliberately contradictory shipped-site evidence cannot supply
+            # the map-proved source placement.
+            expected_cache=lambda ov: {(0, HI16): {"full": ("ov", 1, 0x58)}})
+        target = rp.Target("section", "section", "section", obj=obj, secname=".bss")
+        relocs = {1: [rp.CReloc(obj, ".text", 0, HI16, None, 0, target)]}
+        return world, obj, relocs
+
+    def test_actual_input_map_places_complete_and_interior_source_bss(self):
+        for interior in (False, True):
+            with self.subTest(interior=interior):
+                world, obj, relocs = self.fixture()
+                expected = 0x60 if interior else 0x50
+                if interior:
+                    info = world.module_info[1]
+                    info["linked_bss"] = info["atlas_bss"] = 0x30
+                    world.elf.section(".overlay_001_bss")["size"] = 0x30
+                    info["bss_inputs"] = [
+                        rp.MapInput(".overlay_001_bss", ".bss", rp.OVERLAY_VMA + 0x50,
+                                    0x10, "build/src/overlays/o001/b.c.o"),
+                        rp.MapInput(".overlay_001_bss", ".bss", rp.OVERLAY_VMA + 0x60,
+                                    0x20, "build/src/overlays/o001/a.c.o")]
+                borrowed = rp.place_sections(world, None, relocs)
+                self.assertEqual(obj.placement[".bss"], (expected, "link"))
+                self.assertNotIn("placement", borrowed)
+
+    def test_unproved_legacy_bss_keeps_its_named_borrowing(self):
+        cases = ("discarded", "trimmed", "duplicate", "overlap", "wrong-producer",
+                 "tables-before-bss", "wrong-extent", "initialized", "executable")
+        for case in cases:
+            with self.subTest(case=case):
+                world, obj, relocs = self.fixture()
+                info = world.module_info[1]
+                item = info["bss_inputs"][0]
+                output = world.elf.section(".overlay_001_bss")
+                if case == "discarded":
+                    info["bss_inputs"] = []
+                elif case == "trimmed":
+                    info["bss_inputs"] = [rp.MapInput(item.outsec, item.insec, item.addr, 0x10, item.file)]
+                elif case == "duplicate":
+                    info["bss_inputs"] *= 2
+                elif case == "overlap":
+                    info["bss_inputs"].append(rp.MapInput(item.outsec, item.insec, item.addr,
+                                                        item.size, "build/src/overlays/o001/b.c.o"))
+                elif case == "wrong-producer":
+                    info["bss_inputs"] = [rp.MapInput(item.outsec, item.insec, item.addr,
+                                                     item.size, "build/src/overlays/o001/b.c.o")]
+                elif case == "tables-before-bss":
+                    output["addr"] = info["bss_vma"] = rp.OVERLAY_VMA + 0xB0
+                elif case == "wrong-extent":
+                    info["atlas_bss"] = 0x40
+                elif case == "initialized":
+                    output["type"] = 1
+                elif case == "executable":
+                    output["flags"] |= 4
+                borrowed = rp.place_sections(world, None, relocs)
+                self.assertEqual(obj.placement[".bss"], (0x58, "borrowed"))
+                self.assertEqual(borrowed["placement"], [[1, "a", ".bss", "0x58", 1]])
 
 
 class UnitTests(unittest.TestCase):

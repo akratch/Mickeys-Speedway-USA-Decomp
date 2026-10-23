@@ -1018,6 +1018,44 @@ def collect_relocs(world, resolver, obj):
     return out
 
 
+def linked_bss_placement(world, obj):
+    """Accept an actual BSS input, never a whole-module guess for a raw object.
+
+    Legacy objects may emit duplicate BSS which their configured rules discard
+    or shorten. Such raw sections have no faithful linked input and must keep
+    their named borrowing. The final typed section and input map establish
+    ownership only when the complete raw section survives at the runtime body's
+    BSS boundary, with the exact declared extent and no overlapping contributor.
+    """
+    info = world.module_info[obj.module]
+    raw = obj.elf.section(".bss")
+    output = world.elf.section(f".overlay_{obj.module:03d}_bss")
+    if not raw or not output or not raw["size"]:
+        return None
+    for section in (raw, output):
+        if (section["type"] != SHT_NOBITS or section["flags"] & 3 != 3
+                or section["flags"] & 4):
+            return None
+    if (output["addr"] != info["bss_vma"]
+            or output["addr"] != OVERLAY_VMA + info["prefix"]
+            or output["size"] != info["linked_bss"]
+            or output["size"] != info["atlas_bss"]):
+        return None
+    inputs = [mi for mi in info["bss_inputs"] if mi.size]
+    source = f"build/src/{obj.source}.c.o"
+    owned = [mi for mi in inputs if mi.file == source and mi.insec == ".bss"]
+    if len(owned) != 1:
+        return None
+    item = owned[0]
+    end = item.addr + item.size
+    if (item.size != raw["size"] or item.addr < output["addr"]
+            or end > output["addr"] + output["size"]
+            or any(other is not item and other.addr < end
+                   and item.addr < other.addr + other.size for other in inputs)):
+        return None
+    return item.addr - OVERLAY_VMA
+
+
 def place_sections(world, resolver, relocs_by_module):
     """Decide where each object's .data/.rodata/.bss sits in its module.
 
@@ -1059,6 +1097,11 @@ def place_sections(world, resolver, relocs_by_module):
                 if (proc, secname) in linked:
                     o.placement[secname] = (linked[(proc, secname)], "link")
                     continue
+                if secname == ".bss":
+                    offset = linked_bss_placement(world, o)
+                    if offset is not None:
+                        o.placement[secname] = (offset, "link")
+                        continue
                 row = atlas_rows.get((o.source, secname))
                 # A row that covers the whole section, short of its trailing
                 # alignment pad, places it; a row for part of a section (one

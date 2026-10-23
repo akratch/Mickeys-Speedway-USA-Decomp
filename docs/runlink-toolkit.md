@@ -54,6 +54,11 @@ exactly the records, header fields and ORT rows named by a residual replaced
 by the shipped ones. Equality of the second image with the ROM proves that
 nothing outside the listed residuals differs, record order included.
 
+These three modes apply to the generic `ld` adapter. The MSU adapter currently
+supports only `hybrid`; requesting `objects` or `oracle` fails explicitly.
+An MSU hybrid pass can still borrow named identities from the shipped tables
+and is not evidence of source-only generation.
+
 `--unpatched OLD=NEW` rewrites the map's object-path prefix `OLD` to `NEW`.
 It is for builds that rename resident trap callees inside the objects after
 compiling, as JFG's `tools/patch_symbols.py` does. The kit then reads each

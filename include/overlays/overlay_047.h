@@ -10,7 +10,7 @@
 /* Tier D: member widths and offsets follow this module's access sites. */
 typedef struct Overlay47TextureScroll {
     u8 pad00[8];
-    s16 a, b, c, d;
+    s16 offsets[4];
 } Overlay47TextureScroll;
 
 typedef struct Overlay47Actor {

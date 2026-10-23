@@ -676,7 +676,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             func_8005ABA8(player->actor, ov47Data_3F0[(s8)player->actor->frame], rate);
             scroll = player->actor->scroll;
             for (field = 0; field < 4; field++) {
-                (&scroll->a)[field] += speed;
+                scroll->offsets[field] += speed;
             }
             if (!player->ready && !player->leaving && player->active && !start) {
                 if (D_800D3190[controller] < -16 && !ov47Bss_324) {

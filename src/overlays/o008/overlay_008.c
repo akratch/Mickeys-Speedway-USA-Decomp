@@ -2,6 +2,11 @@
 
 /* Overlay 008, ADR 0006 consolidation: functions remain in ROM order. */
 
+/* Tier B: LOCAL records and value-only reads identify the intervening
+ * scalar constants as part of the read-only float pool. Literal expressions
+ * restore that pool in function order; the whole pool and every instruction
+ * outside its relocation addends are byte-proved against Mickey. */
+
 /* Unexported, so static: their calls are JUMP records. */
 static void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
                                               O8P1294State *state, f32 update);
@@ -273,7 +278,7 @@ void func_overlay_008_F0000894_185E5EC(O8Owner *owner, O8State *state,
     }
 
     effect = -1;
-    if ((state->active181 != 0) && (owner->position28 <= gO8FloatCC)) {
+    if ((state->active181 != 0) && (owner->position28 <= 0.2f)) {
         if (owner->mode3B == 0x14) effect = 0;
         else if (owner->mode3B == 0x13) effect = 1;
         else if (owner->mode3B == 0x15) effect = 2;
@@ -292,14 +297,14 @@ void func_overlay_008_F0000894_185E5EC(O8Owner *owner, O8State *state,
         if ((state->mode34A & 3) == 3) {
             effect = 1;
             y = 0.0f;
-            x = 4.0f - state->lateral4 * gO8FloatD0;
+            x = 4.0f - state->lateral4 * 0.05f;
         } else if (state->mode34A & 5) {
             effect = 0;
-            y = 4.0f - state->lateral4 * gO8FloatD4;
+            y = 4.0f - state->lateral4 * 0.05f;
             x = 0.0f;
         } else if (state->mode34A & 0xa) {
             effect = 2;
-            y = state->lateral4 * gO8FloatD8 + -4.0f;
+            y = state->lateral4 * 0.05f + -4.0f;
             x = 0.0f;
         }
         if (effect != -1) {
@@ -338,8 +343,8 @@ void func_overlay_008_F0000894_185E5EC(O8Owner *owner, O8State *state,
         owner->flags80 |= gO8Value370;
         owner->flags80 |= gO8Value3B0;
     } else if (((state->condition2 != 0) || (state->conditionD4 != 0)) &&
-               ((state->lateral4 < gO8FloatDC) ||
-                (state->lateral4 > gO8FloatE0))) {
+               ((state->lateral4 < -1.2f) ||
+                (state->lateral4 > 1.2f))) {
         owner->flags80 &= ~0x33;
         owner->flags80 |= gO8Value364;
         owner->flags80 |= gO8Value3A4;
@@ -467,13 +472,13 @@ f32 func_overlay_008_F0001000_185ED58(void *unused, O8PhaseState *state, f32 inp
             state->countdown--;
         } else if (state->timer > 0) {
             state->weight +=
-                (gO8Phase2TargetReloc - state->weight) * 0.875f;
+                (0.4f - state->weight) * 0.875f;
         } else {
             state->phase = 3;
         }
 
         if (D_8007BF04 == 0) {
-            input += gO8Phase2ScaleReloc * state->weight;
+            input += 4.67f * state->weight;
         } else {
             input += 7.0f * state->weight;
         }
@@ -481,14 +486,14 @@ f32 func_overlay_008_F0001000_185ED58(void *unused, O8PhaseState *state, f32 inp
 
     case 3:
         state->effect = 0;
-        state->weight *= gO8Phase3DecayReloc;
-        if (state->weight < gO8RetireThresholdReloc) {
+        state->weight *= 0.985f;
+        if (state->weight < 0.025f) {
             state->phase = 0;
             state->weight = 0.0f;
         }
 
         if (D_8007BF04 == 0) {
-            input += gO8Phase3ScaleReloc * state->weight;
+            input += 4.67f * state->weight;
         } else {
             input += 7.0f * state->weight;
         }
@@ -1268,7 +1273,7 @@ static void func_overlay_008_F000291C_1860674(O8P291CMotion *motion,
     angle = state->angleF0 + state->angleFE;
 
     if (state->mode438 == 1) {
-        delta = o8Approach291CReloc(O8P291C_data_1A0, (s32)update);
+        delta = o8Approach291CReloc(0.8f, (s32)update);
         if ((state->control4 < -0.5f) || (state->control4 > 0.5f)) {
             state->control4 *= delta;
         } else {
@@ -1345,19 +1350,19 @@ static void func_overlay_008_F000291C_1860674(O8P291CMotion *motion,
         invUpdate = (state->flags41C & 0x8000) ? 3.0f : 0.0f;
         state->blendC +=
             (invUpdate - state->blendC) *
-            (1.0f - o8Approach291CReloc(O8P291C_data_1A4, (s32)update));
+            (1.0f - o8Approach291CReloc(0.9f, (s32)update));
         if (state->control4 < -state->blendC) state->control4 = -state->blendC;
         if (state->blendC < state->control4) state->control4 = state->blendC;
         if (state->control8 < -state->blendC) state->control8 = -state->blendC;
         if (state->blendC < state->control8) state->control8 = state->blendC;
     } else {
-        if (D_10 < state->blendC + O8P291C_data_1A8) {
+        if (D_10 < state->blendC + 0.1f) {
             state->blendC = D_10;
             return;
         }
         state->blendC +=
             (D_10 - state->blendC) *
-            (1.0f - o8Approach291CReloc(O8P291C_data_1AC, (s32)update));
+            (1.0f - o8Approach291CReloc(0.825f, (s32)update));
     }
 }
 
@@ -1384,8 +1389,8 @@ void func_overlay_008_F0002EC0_1860C18(register Overlay8UpdateOwner *owner,
         delta = input->delta6C;
 
         if (delta < 25.0f) {
-            if ((input->lateral < gOverlay8UpdateLowerReloc) ||
-                (input->lateral > gOverlay8UpdateUpperReloc)) {
+            if ((input->lateral < -1.2f) ||
+                (input->lateral > 1.2f)) {
                 if (flag != NULL) {
                     flag->flags |= 2;
                 }
@@ -1395,7 +1400,7 @@ void func_overlay_008_F0002EC0_1860C18(register Overlay8UpdateOwner *owner,
             owner->child->target80 = owner->position10 + 4.0f;
         } else if ((owner->velocity20 < 0.0f) && (updateRate != 0)) {
             remaining = updateRate - 1;
-            decay = gOverlay8UpdateDecayReloc;
+            decay = 0.167f;
             do {
                 owner->velocity20 -= owner->velocity20 * decay;
             } while (remaining--);
@@ -1505,8 +1510,8 @@ void func_overlay_008_F0003278_1860FD0(void *unused0,
 /* Mickey-local reconstruction; pinned DKR v77/v80 and JFG scans found no
  * donor. Loading the lower threshold through upperThreshold before
  * overwriting it preserves IDO's copy-coalescing order ($f2, then $f0).
- * Retained post-correction C is 78/78 after four runtime LOCAL tuples; a fresh
- * compile/link/full-bin chain remains queued. */
+ * The complete TU, four runtime LOCAL identities and configured ROM are
+ * freshly proved with the restored literal-pool source. */
 void overlay8ScaleOutputs(void *unused, Overlay8ScaleState *state,
                           Overlay8ScaleContext *context,
                           Overlay8ScaleOutput *output) {
@@ -1523,9 +1528,9 @@ void overlay8ScaleOutputs(void *unused, Overlay8ScaleState *state,
     i = 0;
 
     if (context->count > 0) {
-        upperThreshold = gOverlay8ScaleLowerReloc;
+        upperThreshold = 0.2f;
         lowerThreshold = upperThreshold;
-        upperThreshold = gOverlay8ScaleUpperReloc;
+        upperThreshold = -0.2f;
         do {
             output = (Overlay8ScaleOutput *)pair->selector;
             index = (u32)output & 0xFF;
@@ -2185,7 +2190,7 @@ void overlay8UpdateMotionOutput(Overlay8MotionAnchor *anchor,
     if ((8000.0f < delta) || (delta < -8000.0f)) {
         if (state->outsideLatch == 0) {
             state->outsideLatch = 1;
-            state->outsideValue = gOverlay8MotionOutsideValueReloc;
+            state->outsideValue = 0.04f;
         }
     } else if (state->outsideLatch == 1) {
         state->outsideLatch = 0;

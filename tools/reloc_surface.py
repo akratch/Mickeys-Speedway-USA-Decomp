@@ -636,29 +636,9 @@ def linked_overlay_objects():
 
 
 def object_aliases(obj_path, overlay, atlas_rows, rom_start):
-    """[(generated_identity, friendly_name)] for one object's defined text.
-
-    Only global function symbols matter: a static is not linkable and a name
-    that already *is* its generated identity needs no alias (and a self
-    assignment would be circular).
-    """
-    elf = Elf(obj_path)
-    text_idx, _ = elf.section(".text")
-    if text_idx is None:
-        return []
+    """Generated linker identities for an object's global text functions."""
     base, _extent = tu_base(obj_path, overlay, atlas_rows)
-    if base is None:
-        return []
-    out = []
-    for name, value, _size, info, shndx in elf.symbols():
-        if shndx != text_idx or not name:
-            continue
-        if (info >> 4) != STB_GLOBAL or (info & 0xF) != STT_FUNC:
-            continue
-        ident = generated_identity(overlay, base + value, rom_start)
-        if name != ident:
-            out.append((ident, name))
-    return out
+    return rnr.text_aliases(Elf(obj_path), overlay, base, rom_start)
 
 
 def resident_defined_names(object_names=None):
@@ -792,7 +772,7 @@ def plan_resident_rebinds(objects, rom, rows, mods, rom_table,
                           declared=None):
     """(refusals, notes, {object path: {old: new}}) for every linked object.
 
-    Read-only: nothing here touches an object.  The plan is written to
+    Read-only: never modifies an object.  The plan is written to
     `mk/overlay_resident_rebinds.generated.mk` (tools/resident_rebinds.py)
     and applied by the compile recipe, so a clean build carries it.
     `declared` is that file's current content, undone per object so the plan
@@ -803,7 +783,8 @@ def plan_resident_rebinds(objects, rom, rows, mods, rom_table,
     declared = declared or {}
     resident_data = set()
     resident_names = resident_defined_names(resident_data)
-    overlay_defs = rnr.defined_names(objects, Elf)
+    overlay_defs = rnr.defined_names(objects, Elf, lambda ov, obj:
+        object_aliases(obj, ov, rows.get(ov, []), mods[ov - 1]["rom_start"]))
     for name in resident_names:
         overlay_defs.pop(name, None)
     for ov, obj in objects:

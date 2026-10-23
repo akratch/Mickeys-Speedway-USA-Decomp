@@ -28,6 +28,8 @@ import re
 SHN_UNDEF = 0
 R_MIPS_26 = 4
 STT_SECTION = 3
+STT_FUNC = 2
+STB_GLOBAL = 1
 ALIAS_FMT = "%s_o%03dReloc"
 # A short `D_<hex>` is a per-module placeholder: the same spelling in two
 # overlays is two different things (CLAUDE.md, "A generically-named D_ symbol").
@@ -48,7 +50,28 @@ def alias_name(name, overlay):
     return ALIAS_FMT % (m.group(1) if m else name, overlay)
 
 
-def defined_names(objects, elf_factory):
+def text_aliases(elf, overlay, base, rom_start):
+    """(generated identity, friendly name) for each global text function.
+
+    Statics are not linkable, and a function already using its generated
+    identity needs no equality alias. The canonical module and ROM offsets
+    distinguish functions even though overlay VMAs share a synthetic base.
+    """
+    text_index, _section = elf.section(".text")
+    if text_index is None or base is None:
+        return []
+    aliases = []
+    for name, value, _size, info, section in elf.symbols():
+        if section != text_index or not name or info >> 4 != STB_GLOBAL or info & 0xF != STT_FUNC:
+            continue
+        offset = base + value
+        identity = "func_overlay_%03d_F%07X_%X" % (overlay, offset, rom_start + offset)
+        if name != identity:
+            aliases.append((identity, name))
+    return aliases
+
+
+def defined_names(objects, elf_factory, aliases=None):
     """{name: {(overlay, kind)}} for the globals overlay objects define.
 
     ``kind`` is ``"text"`` for a definition in the object's ``.text`` and
@@ -56,7 +79,11 @@ def defined_names(objects, elf_factory):
     are not definitions an identity can be read from (an ``--add-symbol``
     literal marker is absolute; a COMMON block is placed by the link), so they
     are left out.  Read from the normal build objects, the same ones the
-    surface is valued from.
+    surface is valued from. ``aliases``, when supplied, returns the generated
+    linker identities of each object's global text functions. They are real
+    definitions too: callers may keep an address-qualified name after the
+    callee's C adopts a friendly name. Count these identities in the rename
+    plan before its value pass can shadow a linker equality alias.
     """
     out = collections.defaultdict(set)
     for ov, obj in objects:
@@ -71,6 +98,9 @@ def defined_names(objects, elf_factory):
             if shndx == SHN_UNDEF or shndx >= 0xFF00:
                 continue
             out[name].add((ov, "text" if shndx == text_idx else "data"))
+        if aliases is not None:
+            for identity, _friendly in aliases(ov, obj):
+                out[identity].add((ov, "text"))
     return dict(out)
 
 

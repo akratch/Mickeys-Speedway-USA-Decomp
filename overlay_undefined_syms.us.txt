@@ -1325,21 +1325,6 @@ overlay7CommitSelection_o036Reloc = 0xf0000000;
 partUpdateTriggers_o036Reloc = 0xf0000000;
 texAnimateSprite_o036Reloc = 0xf0000000;
 
-/* overlay 38: overlay_038.c.o */
-Arctanf_o038Reloc = 0xf0000000;
-camGetPtr_o038Reloc = 0xf0000000;
-camPopModelMtx_o038Reloc = 0xf0000000;
-camPushModelMtx_o038Reloc = 0xf0000000;
-func_80006EA0_o038Reloc = 0xf0000000;
-gO38ObjectTriangles = 0x80000028;
-gO38ObjectVertices = 0x80000000;
-gO38ParticleTriangles = 0x80000070;
-gO38ParticleVertices = 0x80000048;
-mathOneFloatPY_o038Reloc = 0xf0000000;
-mathRnd_o038Reloc = 0xf0000000;
-sqrtf_o038Reloc = 0xf0000000;
-texDPTextureX_o038Reloc = 0xf0000000;
-
 /* overlay 39: overlay_039.c.o */
 D_8007A204_o039Reloc = 0x00000000;
 __osContLastCmd_o039Reloc = 0x00000000;

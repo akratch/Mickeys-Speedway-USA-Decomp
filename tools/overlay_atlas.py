@@ -78,6 +78,12 @@ YAML_END = "  # END GENERATED OVERLAY SEGMENTS -- tools/overlay_atlas.py"
 SYNTHETIC_VMA = 0xF0000000
 OVERLAY_RAM_CLASS = "overlay_modules"
 
+# Physical loader capacity only, never reconstructed C ownership. Splat's
+# automatic .bss inputs reserve nothing when every C object has empty BSS.
+# The explicit unowned segment materializes module 1's authenticated capacity;
+# remove or split it when actual source-owned storage replaces that reserve.
+UNOWNED_BSS_RESERVE_OVERLAYS = frozenset({1})
+
 # The ladder exercises successively harder format cases before the generated
 # split is treated as settled.  These are campaign choices, not inferred names.
 PILOT_ROLES = {
@@ -1852,6 +1858,15 @@ def render_yaml_block(
             lines.append(
                 f"      - [{hx(int(data_row['start'], 16) + owned_end)}, "
                 f"bin, {name}_data_rodata]"
+            )
+        if ov in UNOWNED_BSS_RESERVE_OVERLAYS:
+            bss_size = int(row["bss_size"], 16)
+            if bss_size <= 0:
+                raise ValueError(f"overlay {ov} unowned BSS reserve has no capacity")
+            body_size = int(row["sections"]["text"]["size"], 16) + data_size
+            lines.append(
+                "      - { type: bss, vram: "
+                f"{hx(SYNTHETIC_VMA + body_size)}, name: {name}_bss_reserve }}"
             )
         for section, suffix in (("reloc1", "_reloc1"), ("reloc2", "_reloc2")):
             section_row = row["sections"][section]

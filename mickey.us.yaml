@@ -1158,6 +1158,7 @@ segments:
       - [0x185449C, c, overlay_001_scaled]
       - [0x18544F4, asm, overlay_001_padding]
       - [0x1854500, bin, overlay_001_data_rodata]
+      - { type: bss, vram: 0xF00083E0, name: overlay_001_bss_reserve }
 
   - name: overlay_001_reloc1
     type: bin

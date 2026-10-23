@@ -1599,7 +1599,6 @@ extern Overlay1DirectionalObject **overlay1GetObjectList(s32 *count);
 extern f32 sqrtf(f32 value);
 extern f32 func_8002A8C0(s32 angle);
 extern f32 func_8002A8BC(s32 angle);
-extern f32 D_160;
 
 Overlay1DirectionalObject *overlay1FindDirectionalObject(
     Overlay1DirectionalObject *object, void *unused1, void *unused2,
@@ -1615,7 +1614,7 @@ Overlay1DirectionalObject *overlay1FindDirectionalObject(
 
     objects = overlay1GetObjectList(&count);
     best = 0;
-    bestValue = D_160;
+    bestValue = 3.40282347e+38f;
     if (overlay1ActivateObject(object)) {
         goto active;
     }
@@ -2239,13 +2238,11 @@ typedef struct Overlay1MotionInit {
     u16 second;
 } Overlay1MotionInit;
 
-extern f32 gOverlay1MotionScale;
-
 void overlay1InitMotion(Overlay1MotionObject *object, Overlay1MotionInit *init) {
     Overlay1MotionState *state;
 
     state = object->state;
-    object->scaledMagnitude = (f32)init->magnitude * gOverlay1MotionScale;
+    object->scaledMagnitude = (f32)init->magnitude * 0.1f;
     state->magnitude = (f32)init->magnitude;
     state->mode = init->mode;
     state->first = init->first;

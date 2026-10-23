@@ -26,7 +26,7 @@ labels, not new matching evidence tiers.
 | Overlay trap | 1 | `trapDanglingJump` | Call-site identity, loaded module/code lifetime, argument preservation |
 | Machine startup | 1 | `entrypoint` | BSS, stack and boot-to-game transfer |
 | Block memory | 3 | SDK `bzero`, `bcopy`, `bcmp` | Caller-owned byte ranges |
-| Exception and scheduler context | 9 | SDK `exceptasm` | CPU/thread context, queues, interrupt/exception continuations |
+| Exception and scheduler context | 9 | SDK `exceptasm` | [Audited contract](exception-scheduler-contracts.md): target contexts, queues and private continuations; FP/backing gaps remain |
 | CPU state, interrupt, cache and TLB | 18 | 16 other SDK entries plus the two `math_util` interrupt wrappers | Privileged state, cache visibility, counters and address translation |
 | **Total** | **107** | Disjoint partition of the stored table | No per-function ledger is duplicated here |
 
@@ -72,7 +72,10 @@ that plus `OSThread *`, pop returns `OSThread *`, and dispatch has no arguments.
 64-bit GPR/FP context storage, sign-extends entry argument/stack values, installs
 cleanup as the saved return address and initializes FP status. Context, thread,
 queue and stack lifetimes are coupled; a host pointer-sized `OSThread` overlay is
-not an established representation.
+not an established representation. The [exception/scheduler audit](exception-scheduler-contracts.md)
+proves the conditional `0x230` context extent and cleanup nonreturn path. It
+also identifies the short C-view/VI-backing gap, real negative-ID audio mode
+and optional hook continuations that still require reconciliation.
 
 **The two Rare interrupt wrappers are not SDK aliases.** The
 [symbol evidence](../symbol_addrs.us.txt#L397) says the SDK disable/
@@ -179,7 +182,7 @@ separate source/resource work.
 | Animation outer/private cluster | Map live-in/out registers and writable record intervals at `func_800591B0`, including its private t/s-register helpers and exit. Keep the converter batch separate until its matrix mutation/format is proved. |
 | Render resource anchor: `rainFastDraw` plus its sole inspected overlay15 call family | Recover exact pixel/position/color formats, count/bounds/clipping and stack FP words. Then schedule snow/lighting/output independently rather than porting twelve labels as one renderer. |
 | Geometry anchor: `getXZCompareMask` | Resolve integer-coordinate conversion, box schema, mask bits, scratch writes and lifetimes against the existing float-expression callers; expand to other track/shadow helpers only with new evidence. |
-| OS state/context boundary | Separate mask-token/count/compare semantics from exception/context continuations; authenticate context layout, vector installation, FP status, queue atomicity and cleanup exits. Hardware instruction names do not choose a scheduling provider. |
+| OS state/context boundary | The [exception/scheduler contract](exception-scheduler-contracts.md) establishes entry roles, queue ordering, lazy FP and cleanup. Next reconcile full FP context/backing, the audio FR mode and optional hook continuations; mask-token/count/compare semantics remain separate. |
 | Small ABI closure: block-memory trio and Rare interrupt prefixes | Audit overlap/return/clobber effects and wrapper-only state. A familiar SDK name or matching tail is insufficient evidence for an interchangeable primitive. |
 | Overlay continuation | Audit the saved argument/result/stack set against typed exports and code load/unload lifetimes. Reuse committed ORT/ownership evidence, not donor scans or an untyped dispatcher design. |
 

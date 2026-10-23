@@ -102,13 +102,15 @@ without saving and jump through a private exit; `func_8005A6F0` is that exit, no
 an independently established public function. Audit the outer boundary and all
 internal continuations as a unit before assigning helper prototypes.
 
-**Two matrix boundaries need a clobber audit.** `mtxf_mul` is declared with three
-matrix pointers, yet the ledger records a nonargument register read. Its role
-must be followed before that declaration is called complete. Camera also makes
-[in-place multiply calls](../src/main/camera.c#L1166), so aliasing is
-part of the observed caller requirements. The `func_8002AA50` ledger documents
-caller-saved FP values held across its trig calls; replacing an internal trig
-callee under the ordinary ABI alone could break that narrower clobber contract.
+**The two matrix boundaries have specific alias and preservation rules.** The
+[matrix audit](matrix-contracts.md) identifies `mtxf_mul`'s incoming f2 read as
+save/restore state, not a hidden matrix operand. Destination-equals-left-input
+calls work with disjoint rhs; general destination-equals-rhs calls do not.
+`func_8002AA50` retains argument and FP registers across its trig calls and has
+no ordinary argument-home area. A replacement's ordinary ABI compatibility alone
+does not establish that narrower preservation/stack contract. Float/fixed caller
+views, actual stack-matrix ownership and graphics completion lifetime remain
+separate source/resource work.
 
 ## Data, numerical and lifetime assumptions by family
 
@@ -168,7 +170,7 @@ callee under the ordinary ABI alone could break that narrower clobber contract.
 | Packet / initial owned anchor | Deliverable and stopping boundary |
 |---|---|
 | Angle and FP ABI: `Arctanf`, then its trig pair | Authenticate input/result widths, low-word/wrap rules and clobbers from Mickey; reconcile the conflicting caller declarations. Record FP-state dependencies. Stop before shared-header edits until that evidence supports one contract. |
-| Matrix alias/clobber: `mtxf_mul`, then `func_8002AA50` | Explain the reported nonargument read, prove in-place source/destination cases and the trig-call FP preservation contract. Produce matrix-format/rounding/alias rules; no generic matrix-library substitution. |
+| Matrix follow-up | The [matrix contract](matrix-contracts.md) settles the nonargument read, lhs-only alias allowance and private trig preservation. Repair `func_8005B644`'s actual stack-matrix view, then overlay 56's float/fixed views. Bound conversion edge cases and graphics completion lifetime before replacement decisions. |
 | Inflater follow-up | Core dialect, continuation and shared-state lifetime are audited in the [contract](inflater-contract.md). Derive lookahead bounds, resolve fixed-handler incoming memory and measure per-record output/workspace/overlap limits privately. Establish byte-4 meaning from producer evidence; stop before decoder implementation. |
 | Animation outer/private cluster | Map live-in/out registers and writable record intervals at `func_800591B0`, including its private t/s-register helpers and exit. Keep the converter batch separate until its matrix mutation/format is proved. |
 | Render resource anchor: `rainFastDraw` plus its sole inspected overlay15 call family | Recover exact pixel/position/color formats, count/bounds/clipping and stack FP words. Then schedule snow/lighting/output independently rather than porting twelve labels as one renderer. |

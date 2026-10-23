@@ -61,6 +61,24 @@ class LayoutTests(unittest.TestCase):
                         with self.assertRaisesRegex(pilot.PilotError,"relocation word escapes body"):
                             pilot.checked_layout([], [codec.OrtRow(1,0)], [partial], self.cfg)
 
+    def test_resident_call_delta_requires_the_actual_declared_replacement(self):
+        old=[(".text",0,4,"residentCall"),(".text",8,4,"existingOverlay")]
+        new=[(".text",0,4,"sourceOverlay"),(".text",8,4,"existingOverlay")]
+        self.assertEqual(0,pilot.resident_call_delta(old,new,"residentCall","sourceOverlay"))
+        changed=[new[0],(".text",8,4,"differentOverlay")]
+        with self.assertRaisesRegex(pilot.PilotError,"not one call-target replacement"):
+            pilot.resident_call_delta(old,changed,"residentCall","sourceOverlay")
+
+    def test_resident_witness_preserves_old_records_and_refuses_placeholder(self):
+        entry=pilot.rp.MainEntry
+        old=[entry(0,0,4,0,100,"first"),entry(1,8,4,0,108,"second")]
+        witness=entry(2,4,4,0,104,"sourceOverlay")
+        self.assertIs(witness,pilot.resident_main_delta(old,[old[0],witness,old[1]],104,"sourceOverlay"))
+        with self.assertRaisesRegex(pilot.PilotError,"identity/order changed"):
+            pilot.resident_main_delta(old,[old[1],witness,old[0]],104,"sourceOverlay")
+        with self.assertRaisesRegex(pilot.PilotError,"lacks a raw name"):
+            pilot.resident_main_delta(old,[old[0],replace(witness,provenance="placeholder"),old[1]],104,"sourceOverlay")
+
     def test_removal_reports_actual_caller_and_allows_unreferenced_tail(self):
         tables=codec.Tables([], [codec.OrtRow(2,0)],
             [replace(self.module,table1=[codec.Record(0,0,4,0)]),replace(self.module,number=2)])
@@ -74,6 +92,7 @@ class LayoutTests(unittest.TestCase):
         for name in sorted(pilot.metadata.TOP):source+=f"    build/assets/{name}.o(.data);\n"
         source+="    overlay_001_ROM_START = __romPos;\n"
         for section in pilot.SECTIONS:source+=f"    build/src/overlays/o075/overlay_075.c.o({section});\n"
+        for section in pilot.SECTIONS:source+=f"    build/src/main/spranim.c.o({section});\n"
         source+="    build/src/unrelated.c.o(.text);\n"
         source+="\n    rom_fill_ROM_START = __romPos;\n    .rom_fill : { build/assets/rom_fill.bin.o(.data); }\n    rom_fill_ROM_END = __romPos;\n\n    /DISCARD/ : { *(*) }\n}\n"
         result=pilot.script_for(source,pilot.metadata.TOP,"build/editable-layout/test/generated",
@@ -81,6 +100,10 @@ class LayoutTests(unittest.TestCase):
         self.assertIn("build/src/unrelated.c.o(.text);",result)
         self.assertNotIn("rom_fill",result)
         self.assertEqual(4,result.count("build/editable-layout/test/module.o"))
+        resident=pilot.script_for(source,pilot.metadata.TOP,"build/editable-layout/test/generated",
+                                  "build/editable-layout/test/module.o",None,"build/editable-layout/test/spranim.c.o")
+        self.assertEqual(4,resident.count("build/editable-layout/test/spranim.c.o"))
+        self.assertNotIn("build/src/main/spranim.c.o",resident)
         with self.assertRaises(pilot.PilotError):
             pilot.script_for(source.replace("rom_fill_ROM_END", "overlay_extra_ROM_END"),pilot.metadata.TOP,
                              "build/editable-layout/test/generated","build/editable-layout/test/module.o",None)

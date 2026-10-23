@@ -21,6 +21,7 @@ import runlink_metadata_link as metadata
 import runlink_pack as rp
 import source_module_link_proof as source_proof
 import sweep_receipts
+import trap_names
 from runlink import codec, compare, config, rules
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -38,7 +39,7 @@ def require(condition, message):
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
-LOADED = {Path(p.__file__): sha(p.__file__) for p in (rp, codec, compare, config, rules, module_link, source_proof, source_proof.pp, source_proof.rs, metadata, sweep_receipts)}
+LOADED = {Path(p.__file__): sha(p.__file__) for p in (rp, codec, compare, config, rules, module_link, source_proof, source_proof.pp, source_proof.rs, metadata, sweep_receipts, trap_names)}
 LOADED[Path(__file__)] = sha(__file__)
 
 def save(path, value):
@@ -128,14 +129,13 @@ def removed_targets(tables, removed, names, callers=None):
                     failures.append(f"module {m.number} {callers.get((m.number,r.site,r.type), 'input')} site+{r.site:#x} -> {names[r.symidx]}")
     require(not failures, "referenced module removal: " + "; ".join(failures))
 
-def compiler(root):
-    target = "build/src/overlays/o075/overlay_075.c.o"
-    source = "src/overlays/o075/overlay_075.c"
+def compiler(root,source="src/overlays/o075/overlay_075.c"):
+    target = "build/"+source+".o"
     expanded = subprocess.check_output(["gmake", "-n", "-W", source, target], cwd=root, text=True).replace("\\\n", " ")
     lines = [s.strip() for s in expanded.splitlines() if "tools/ido/cc" in s and target in s]
-    require(len(lines) == 1, "ambiguous actual source75 compiler recipe")
+    require(len(lines) == 1, "ambiguous actual pilot compiler recipe")
     words = shlex.split(lines[0]); args = words[max(i for i,w in enumerate(words) if w == "--")+1:]
-    require(args.count("-o") == 1 and args[-1] == source, "unexpected source75 compiler command")
+    require(args.count("-o") == 1 and args[-1] == source, "unexpected pilot compiler command")
     return args, lines[0]
 
 def compile_module(root, directory, source_text, exports, commands, label, args):
@@ -162,7 +162,88 @@ def compile_module(root, directory, source_text, exports, commands, label, args)
     require(all(sha(directory/name)==value for name,value in expected.items()),"compiler/module generation snapshot changed")
     return raw, output, receipt, expected
 
-def script_for(source, names, generated, module75, peer108):
+def resident_geometry(elf):
+    allocated={section["name"] for section in elf.sections if section["flags"]&2}
+    sections=sorted((s["name"],s["type"],s["flags"],s["size"],s["align"])
+                    for s in elf.sections if s["name"] in allocated)
+    symbols=sorted((s.name,s.value,s.size,s.bind,s.type,s.section) for s in elf.symbols
+                   if s.section in allocated and s.type not in (rp.STT_FILE,rp.STT_SECTION))
+    return sections,symbols
+
+def resident_call_delta(old,new,previous,target):
+    removed=set(old)-set(new);added=set(new)-set(old)
+    require(len(removed)==len(added)==1,"resident change is not one call-target replacement")
+    before=next(iter(removed));after=next(iter(added))
+    require(before[:3]==after[:3] and before[0]==".text" and before[2]==rp.R_MIPS_26
+            and before[3]==previous and after[3]==target,"resident change lacks the declared raw R26 identity")
+    return after[1]
+
+def resident_main_delta(old,new,site,target):
+    fresh=[entry for entry in new if entry.site==site]
+    require(len(fresh)==1 and fresh[0].name==target and fresh[0].provenance=="object","new resident call lacks a raw name")
+    signature=lambda entry:(entry.row,entry.offset,entry.type,entry.op,entry.name)
+    require(len(new)==len(old)+1 and [signature(entry) for entry in new if entry is not fresh[0]]
+            ==[signature(entry) for entry in old],"old resident relocation identity/order changed")
+    return fresh[0]
+
+def compile_resident(root,directory,spec,catalog,commands):
+    args,_recipe=compiler(root,spec["source"])
+    original=(root/spec["source"]).read_text()
+    require(original.count(spec["anchor"])==1,"resident source anchor changed")
+    changed=original.replace(spec["anchor"],spec["replacement"])
+    generated={};objects={}
+    for label,text in (("resident-baseline",original),("resident",changed)):
+        source=directory/(label+".c");raw=directory/(label+".raw.o")
+        payload=text.encode();source.write_bytes(payload)
+        expected=hashlib.sha256(payload).hexdigest()
+        flags=list(args);flags[flags.index("-o")+1]=raw.relative_to(root).as_posix();flags[-1]=source.relative_to(root).as_posix()
+        generated[label+"-compile.log"]=run(root,["tools/ido/cc",*flags],directory/(label+"-compile.log"),commands)
+        elf=rp.Elf(raw)
+        require(sha(source)==expected,"resident compiler source changed")
+        generated[source.name]=expected;generated[raw.name]=hashlib.sha256(elf.data).hexdigest()
+        require(sha(raw)==generated[raw.name],"loaded resident compiler output changed")
+        objects[label]=elf
+    old,new=objects["resident-baseline"],objects["resident"]
+    require(resident_geometry(old)==resident_geometry(new),"resident TU geometry changed; broader layout proof required")
+    caller=real_symbol(old,spec["caller"],section=".text")
+    require(caller.type==rp.STT_FUNC and caller.size>0,"resident caller lacks a real function extent")
+    require(old.bytes_of(".text")[:caller.value]==new.bytes_of(".text")[:caller.value]
+            and old.bytes_of(".text")[caller.value+caller.size:]==new.bytes_of(".text")[caller.value+caller.size:],
+            "other resident functions changed")
+    signature=lambda e:[(section,r.offset,r.type,r.sym.name) for section in SECTIONS for r in e.rels(section)]
+    site=resident_call_delta(signature(old),signature(new),spec["previous"],spec["target"])
+    require(caller.value<=site and site+4<=caller.value+caller.size,"new call escapes its actual caller")
+    call=[r for r in new.rels(".text") if r.offset==site and r.type==rp.R_MIPS_26]
+    require(len(call)==1 and call[0].sym.shndx==rp.SHN_UNDEF and rp.u32(new.bytes_of(".text"),site)>>26==3,
+            "resident witness is not an actual external jal call")
+    canonical=rp.Elf(root/spec["object"])
+    require(hashlib.sha256(canonical.data).hexdigest()==catalog[spec["object"]]
+            and resident_geometry(old)==resident_geometry(canonical),"resident baseline geometry differs from canonical")
+    for section in SECTIONS:
+        require(old.bytes_of(section)==canonical.bytes_of(section),"resident baseline bytes differ from canonical")
+    names=set(trap_names.load_names(root/"config/overlay_funcs_to_trap.us.txt"))
+    converted,sidecar=trap_names.rename_object(new.data,names)
+    old_converted,old_sidecar=trap_names.rename_object(old.data,names)
+    require(len(sidecar["sites"])==len(old_sidecar["sites"])+1,"resident overlay-call count did not grow by one")
+    require({(r["offset"],r["name"]) for r in sidecar["sites"]}-{(r["offset"],r["name"]) for r in old_sidecar["sites"]}
+            =={(site,spec["target"])},"old resident call identities changed")
+    before=rp.Elf(directory/"resident-baseline.raw.o",data=old_converted)
+    require(signature(before)==signature(canonical),"resident baseline relocation identities differ from canonical")
+    configured=directory/"spranim.c.o";configured.write_bytes(new.data)
+    generated["resident-rename.log"]=run(root,[sys.executable,"tools/trap_names.py","rename",configured.relative_to(root),
+        "config/overlay_funcs_to_trap.us.txt"],directory/"resident-rename.log",commands)
+    sidecar_bytes=(json.dumps(sidecar,indent=1,sort_keys=True)+"\n").encode()
+    require(configured.read_bytes()==converted and Path(str(configured)+".trapsites").read_bytes()==sidecar_bytes,
+            "resident conversion is not the declared metadata-only rename")
+    generated[configured.name]=hashlib.sha256(converted).hexdigest()
+    generated[configured.name+".trapsites"]=hashlib.sha256(sidecar_bytes).hexdigest()
+    require(all(sha(directory/name)==value for name,value in generated.items()),"resident generation snapshot changed")
+    return dict(raw=directory/"resident.raw.o",configured=configured,sites=sidecar["sites"],new_site=site,
+                caller=spec["caller"],target=spec["target"],module=spec["module"],original=spec["object"],
+                artifacts=generated,geometry=resident_geometry(new),raw_sha256=generated["resident.raw.o"],
+                configured_sha256=generated[configured.name])
+
+def script_for(source, names, generated, module75, peer108, resident=None):
     """Declared script changes only, with exact reconstruction of the original."""
     original = source
     names = tuple(names)
@@ -175,6 +256,10 @@ def script_for(source, names, generated, module75, peer108):
     old75 = "build/src/overlays/o075/overlay_075.c.o"
     require(result.count(old75) == 4, "source75 must have four ordinary section inputs")
     result = result.replace(old75,module75)
+    if resident:
+        old="build/src/main/spranim.c.o"
+        require(result.count(old)==4,"resident must have four ordinary section selectors")
+        result=result.replace(old,resident)
     first = "    overlay_001_ROM_START = __romPos;"
     require(result.count(first) == 1, "missing module base boundary")
     aligned = "    __romPos = ALIGN(__romPos, 8);\n"+first
@@ -200,6 +285,7 @@ def script_for(source, names, generated, module75, peer108):
         reverse = reverse.replace(appended,"",1)
     reverse = reverse.replace("\n    /DISCARD/",fill+"\n    /DISCARD/",1)
     reverse = reverse.replace(aligned,first,1).replace(module75,old75)
+    if resident:reverse=reverse.replace(resident,"build/src/main/spranim.c.o")
     for new,old in substitutions: reverse = reverse.replace(new,old)
     for name in names: reverse = reverse.replace(f"build/runlink/generated/{name}.o",f"build/assets/{name}.o")
     require(reverse == original, "diagnostic mapping changed undeclared script bytes")
@@ -218,32 +304,32 @@ def wrappers(root, directory, files, commands):
         run(root,command+[relative,target.relative_to(root)],directory/"wrapper.log",commands)
     return generated
 
-def loader_replay(root,directory,elf,mapping,commands,catalog):
-    inputs=[i for i in mapping if i.file=="build/src/main/runlink.c.o" and i.insec==".text" and i.size]
-    require(len(inputs)==1,"ambiguous real loader input")
+def resident_replay(root,directory,elf,mapping,commands,file,expected_hash,prefix):
+    inputs=[i for i in mapping if i.file==file and i.insec==".text" and i.size]
+    require(len(inputs)==1,"ambiguous actual resident replay input")
     item=inputs[0]; raw=rp.Elf(root/item.file)
-    require(hashlib.sha256(raw.data).hexdigest()==catalog[item.file],"loaded loader input changed")
+    require(hashlib.sha256(raw.data).hexdigest()==expected_hash,"loaded resident replay input changed")
     bindings=[]
     for name in sorted({r.sym.name for r in raw.rels(".text") if r.sym.shndx==rp.SHN_UNDEF}):
         bindings.append(f"{name} = {real_symbol(elf,name).value:#x};")
-    script=directory/"loader-replay.ld"
+    script=directory/(prefix+".ld")
     script_bytes=("\n".join(bindings)+f'\nSECTIONS {{ .text {item.addr:#x} : {{ {item.file}(.text) }} /DISCARD/ : {{ *(*) }} }}\n').encode()
     script.write_bytes(script_bytes)
-    output=directory/"loader-replay.elf"
-    log_hash=run(root,["tools/binutils/mips64-elf-ld","--no-check-sections","-e","0","-T",script.relative_to(root),"-o",output.relative_to(root)],directory/"loader-replay.log",commands)
+    output=directory/(prefix+".elf")
+    log_hash=run(root,["tools/binutils/mips64-elf-ld","--no-check-sections","-e","0","-T",script.relative_to(root),"-o",output.relative_to(root)],directory/(prefix+".log"),commands)
     actual=elf.bytes_of(".main"); section=elf.section(".main");offset=item.addr-section["addr"]
     replay=rp.Elf(output)
-    require(replay.bytes_of(".text")==actual[offset:offset+item.size],"loader bytes not explained by ordinary link")
-    expected={"loader-replay.ld":hashlib.sha256(script_bytes).hexdigest(),
-              "loader-replay.elf":hashlib.sha256(replay.data).hexdigest(),"loader-replay.log":log_hash}
-    require(sha(root/item.file)==catalog[item.file] and all(sha(directory/n)==value for n,value in expected.items()),
-            "loader replay inputs/outputs changed during validation")
+    require(replay.bytes_of(".text")==actual[offset:offset+item.size],"resident bytes not explained by ordinary link")
+    expected={prefix+".ld":hashlib.sha256(script_bytes).hexdigest(),
+              prefix+".elf":hashlib.sha256(replay.data).hexdigest(),prefix+".log":log_hash}
+    require(sha(root/item.file)==expected_hash and all(sha(directory/n)==value for n,value in expected.items()),
+            "resident replay inputs/outputs changed during validation")
     return offset,item.size,expected
 
-def validate_final(root,directory,tables,cfg,headers_end,selected,expected_refs,exports,base_elf,commands,catalog,incoming):
+def validate_final(root,directory,tables,cfg,headers_end,selected,expected_refs,exports,base_elf,commands,catalog,incoming,resident=None):
     snapshot=artifact_hashes(directory)
     require(all(snapshot.get(name)==value for name,value in incoming.items()),"ordinary final-link inputs changed")
-    require(not any(n.startswith("loader-replay.") for n in snapshot),"unexpected existing loader replay")
+    require(not any(n.startswith(("loader-replay.","resident-replay.")) for n in snapshot),"unexpected existing resident replay")
     require(all(snapshot[name]==value for product in selected.values() for name,value in product[3].items()),
             "compiler/module snapshot changed before final validation")
     elf=rp.Elf(directory/"final.elf");mapping=rp.parse_map(directory/"final.map");rom=(directory/"final.z64").read_bytes()
@@ -256,7 +342,7 @@ def validate_final(root,directory,tables,cfg,headers_end,selected,expected_refs,
     require(codec.encode_region(decoded,cfg,gap_fill=255)==codec.encode_region(tables,cfg,gap_fill=255),"actual final metadata/body differs from proposed source layout")
     require(len(rom)==0x2000000 and all(b==255 for b in rom[cfg.modules_end:]),"wrong actual image size/fill")
     require(decoded.module(32).empty and decoded.module(32).header.rom==decoded.module(33).header.rom,"empty module32 geometry changed")
-    require(len(decoded.main)==375,"pilot must not claim resident source growth")
+    require(len(decoded.main)==(376 if resident else 375),"unexpected bounded resident relocation count")
     anchors={"main_reloc_table_ROM_START":cfg.main_table_rom,"main_reloc_table_ROM_END":cfg.ort_rom,
              "overlay_rom_table_ROM_START":cfg.ort_rom,"overlay_rom_table_ROM_END":cfg.headers_rom,
              "overlay_header_table_ROM_START":cfg.headers_rom,"overlay_header_table_ROM_END":headers_end,
@@ -321,13 +407,52 @@ def validate_final(root,directory,tables,cfg,headers_end,selected,expected_refs,
         and not rp.LINKER_NAME_RE.search(s.name)
         and s.section not in {f".overlay_{n:03d}{suffix}" for n in selected for suffix in ("","_bss")})
     require(program(base_elf)==program(elf),"unselected program symbol changed")
-    off,size,replay_snapshot=loader_replay(root,directory,elf,mapping,commands,catalog)
-    snapshot.update(replay_snapshot)
+    off,size,replay_snapshot=resident_replay(root,directory,elf,mapping,commands,"build/src/main/runlink.c.o",
+                                          catalog["build/src/main/runlink.c.o"],"loader-replay")
+    snapshot.update(replay_snapshot);ranges=[(off,off+size)]
+    if resident:
+        require(all(snapshot[name]==value for name,value in resident["artifacts"].items()),"resident generation snapshot changed")
+        raw=rp.Elf(resident["raw"])
+        require(hashlib.sha256(raw.data).hexdigest()==resident["raw_sha256"],"loaded resident witness changed")
+        filename=resident["configured"].relative_to(root).as_posix()
+        inputs=[i for i in mapping if i.file==filename and i.insec==".text" and i.size]
+        require(len(inputs)==1 and (inputs[0].addr,inputs[0].size)==(resident["addr"],raw.size(".text")),
+                "actual resident final home/extent changed")
+        sites={r.offset:r.sym.name for r in raw.rels(".text") if r.type==rp.R_MIPS_26 and r.offset in {e["offset"] for e in resident["sites"]}}
+        actual=[r for r in decoded.main if resident["addr"]<=resident["text_base"]+r.site<resident["addr"]+raw.size(".text")]
+        require(len(actual)==len(sites),"actual final resident call inventory differs")
+        for record in actual:
+            offset=resident["text_base"]+record.site-resident["addr"]
+            name=sites.get(offset);row=exports.by_name.get(name)
+            require(row is not None and (record.symidx,record.type,record.op)==(row,rp.R_MIPS_26,codec.OP_SYMBOL),
+                    "actual final resident site lacks its raw symbol/export identity")
+            target=real_symbol(elf,name)
+            runtime=decoded.ort[row];module=decoded.module(runtime.selector)
+            require(target.type==rp.STT_FUNC and target.size>0 and target.section==f".overlay_{runtime.selector:03d}"
+                    and target.value-rp.OVERLAY_VMA==runtime.offset
+                    and 0<=runtime.offset and runtime.offset+target.size<=module.header.text,
+                    "resident target lacks actual qualified source function ownership")
+        witness=[r for r in actual if resident["text_base"]+r.site==resident["addr"]+resident["new_site"]]
+        require(len(witness)==1 and sites[resident["new_site"]]==resident["target"]
+                and decoded.ort[witness[0].symidx].selector==resident["module"],"new resident witness missing")
+        linked_word=rp.u32(elf.bytes_of(".main"),resident["addr"]+resident["new_site"]-elf.section(".main")["addr"])
+        trap=real_symbol(elf,rp.TRAP)
+        require(linked_word>>26==3 and linked_word&0x3FFFFFF==(trap.value>>2)&0x3FFFFFF,
+                "actual final resident call does not target the real trap")
+        start,length,replay_snapshot=resident_replay(root,directory,elf,mapping,commands,filename,
+                                                     resident["configured_sha256"],"resident-replay")
+        snapshot.update(replay_snapshot);ranges.append((start,start+length))
     old,new=base_elf.bytes_of(".main"),elf.bytes_of(".main")
-    require(old[:off]==new[:off] and old[off+size:]==new[off+size:],"changed non-loader resident payload")
+    require(all(base_elf.section(".main")[key]==elf.section(".main")[key] for key in ("type","flags","addr","size","align")),
+            "resident output geometry changed")
+    previous=0
+    for start,end in sorted(ranges):
+        require(previous<=start<end<=len(old) and old[previous:start]==new[previous:start],"changed unselected resident payload")
+        previous=end
+    require(old[previous:]==new[previous:],"changed unselected resident tail")
     require(artifact_hashes(directory)==snapshot,"diagnostic inputs changed while validating final image")
     return {"artifacts":snapshot,"generated_inputs":len(inventory),"retained_metadata_inputs":0,"retained_fill_inputs":0,
-            "module_headers":len(decoded.modules),"runtime_slots":len(decoded.modules)+1,"main_records":len(decoded.main),
+            "module_headers":len(decoded.modules),"runtime_slots":len(decoded.modules)+1,"main_records":len(decoded.main),"main_table_bytes":cfg.main_table_block,
             "ort_rows":len(decoded.ort),"header_dma_bytes":headers_end-cfg.headers_rom,
             "header_alignment_gap":cfg.modules_rom-headers_end,"module_base":cfg.modules_rom,"payload_end":cfg.modules_end,
             "rom_sha1":hashlib.sha1(rom).hexdigest(),"selected_records":{n:len(expected_refs[n]) for n in selected},
@@ -342,7 +467,7 @@ def output_files(tables):
             if rows:files[f"overlays/o{m.number:03d}/overlay_{m.number:03d}_reloc{t}.bin"]=b"".join(r.encode() for r in rows)
     return files
 
-def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,catalog,*,grow=False,peer=False,use_peer=False):
+def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,catalog,*,grow=False,peer=False,use_peer=False,resident_call=False):
     directory=run_dir/label;directory.mkdir()
     commands=[]
     names=list(original_names.rows)
@@ -428,14 +553,29 @@ def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,c
         for r in refs:
             functions=[s for s in obj.elf.symbols if s.type==rp.STT_FUNC and s.size and s.value<=r.site<s.value+s.size]
             callers[(n,r.site,r.type)]=functions[0].name if functions else r.obj
-    main=[codec.Record(e.row,e.offset,e.type,e.op) for e in baseline.main]
+    resident=None;main_entries=baseline.main
+    if resident_call:
+        resident=compile_resident(root,directory,spec["resident"],catalog,commands)
+        original=resident["original"];path=resident["configured"].relative_to(root).as_posix()
+        inputs=[i for i in world.map if i.file==original and i.insec==".text" and i.size]
+        require(len(inputs)==1,"ambiguous canonical resident home")
+        resident.update(addr=inputs[0].addr,text_base=world.layout.text)
+        world.map=[replace(i,file=path) if i.file==original else i for i in world.map]
+        main_entries,borrowing,problems=rp.pack_main(world,resolver)
+        require(not problems and borrowing=={k:v for k,v in baseline.borrowed.items() if k.startswith("main-")},
+                "resident witness introduced unresolved identity/borrowing")
+        resident_main_delta(baseline.main,main_entries,resident["addr"]+resident["new_site"],resident["target"])
+        for item in resident["sites"]:
+            callers[(0,resident["addr"]+item["offset"]-resident["text_base"],rp.R_MIPS_26)]=resident["caller"]
+    main=[codec.Record(e.row,e.offset,e.type,e.op) for e in main_entries]
     tables,dynamic,header_end=checked_layout(main,ort,[modules[n] for n in sorted(modules)],cfg)
     files=output_files(tables)
     generated=wrappers(root,directory,files,commands)
     source_script=(root/"mickey.us.ld").read_text()
     script=script_for(source_script,root_catalog_names(root),generated.relative_to(root).as_posix(),
                       selected[75][1].relative_to(root).as_posix(),
-                      selected[108][1].relative_to(root).as_posix() if peer else None)
+                      selected[108][1].relative_to(root).as_posix() if peer else None,
+                      resident["configured"].relative_to(root).as_posix() if resident else None)
     final_script=directory/"final.ld";final_script.write_text(script)
     require(sha(final_script)==hashlib.sha256(script.encode()).hexdigest()
             and sha(directory/"exports.txt")==hashlib.sha256(export_bytes).hexdigest(),"generated link script/exports changed")
@@ -456,7 +596,9 @@ def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,c
     run(root,["tools/n64crc",(directory/"final.z64").relative_to(root)],directory/"crc-check.log",commands)
     require(sha(directory/"final.z64")==checksum,"computed diagnostic checksum is not stable")
     base_elf=world.elf
-    result=validate_final(root,directory,tables,dynamic,header_end,selected,expected,exports,base_elf,commands,catalog,incoming)
+    result=validate_final(root,directory,tables,dynamic,header_end,selected,expected,exports,base_elf,commands,catalog,incoming,resident)
+    if resident:
+        result["resident_call"]={key:resident[key] for key in ("caller","target","module","new_site","addr","text_base","raw_sha256","configured_sha256","sites","geometry")}
     original_raw=world.paths["raw"]/"src/overlays/o075/overlay_075.c.o"
     old=rp.Elf(original_raw);new=rp.Elf(selected[75][0])
     require(hashlib.sha256(old.data).hexdigest()==catalog[original_raw.relative_to(root).as_posix()]
@@ -477,7 +619,7 @@ def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,c
         require(result["selected_records"][75]>31 and result["ort_rows"]>2004,"record/export growth absent")
         require(any(r.op==codec.OP_JUMP for r in modules[75].table1+modules[75].table2),"private source JUMP use disappeared")
         require(result["header_alignment_gap"]>0,"odd export did not exercise header/module alignment")
-    else:
+    elif not resident_call:
         require(result["rom_sha1"]=="507341c0a40ca3e9a7cee969b396ee53facfb548","unchanged control is not retail exact")
     if peer:
         peer_raw=rp.Elf(selected[108][0])
@@ -574,8 +716,12 @@ def main():
     print("editable-layout artifacts",directory.relative_to(root),flush=True)
     spec=json.loads((root/FIXTURE/"manifest.json").read_text())
     require(spec["schema"]=="mickey-editable-layout-pilot-v1" and spec["module"]==75 and spec["peer"]["module"]==108,"unexpected deliberate pilot identity")
+    require(spec["resident"]["source"]=="src/main/spranim.c" and spec["resident"]["object"]=="build/src/main/spranim.c.o"
+            and spec["resident"]["caller"]=="func_8001B798" and spec["resident"]["target"]=="overlay75MarkSlot"
+            and spec["resident"]["module"]==75,"unexpected bounded resident identity")
     require(spec["source"]=="src/overlays/o075/overlay_075.c" and spec["peer"]["source"]==FIXTURE+"/peer.c","pilot source identities changed")
-    inputs={str(p.relative_to(root)):sha(p) for p in [Path(__file__),root/spec["source"],root/"Makefile",*(root/FIXTURE).glob("*"),
+    inputs={str(p.relative_to(root)):sha(p) for p in [Path(__file__),root/spec["source"],root/spec["resident"]["source"],root/"tools/trap_names.py",
+            root/"config/overlay_funcs_to_trap.us.txt",root/"Makefile",*(root/FIXTURE).glob("*"),
             root/"tools/link_overlay_module.py",root/"tools/runlink_pack.py",root/"tools/runlink/codec.py",
             root/"tools/runlink/rules.py",root/"tools/runlink/compare.py",root/"tools/source_module_link_proof.py",root/"tools/proof_provenance.py",root/"tools/reloc_surface.py",
             root/"tools/rebind_elf_relocations.py",root/"tools/binutils/mips64-elf-ld",
@@ -591,7 +737,7 @@ def main():
     original_objects={n:list(world.objects(n)) for n in world.amods}
     original_names={n:list(v) for n,v in world.by_name.items()}
     original_info=dict(world.module_info)
-    original_amods=dict(world.amods)
+    original_amods=dict(world.amods);original_map=list(world.map)
     compiler_args,command=compiler(root)
     resident_callers={}
     base_elf=world.elf
@@ -601,14 +747,18 @@ def main():
     results={};products={}
     require(artifact_hashes(directory)=={},"unexpected diagnostic root artifact")
     validated={}
-    variants=[("control",False,False,False)]
-    if options.only=="all":variants += [("grow",True,False,False),("peer",True,True,True),("peer-unreferenced",True,True,False),("removed-unreferenced",True,False,False)]
-    for name,grow,peer,use_peer in variants:
-        world._objects=original_objects;world.by_name=original_names;world.module_info=dict(original_info);world.amods=dict(original_amods)
-        products[name]=one_variant(root,directory,name,world,packed,ort,cfg,spec,compiler_args,before,grow=grow,peer=peer,use_peer=use_peer)
+    variants=[("control",False,False,False,False)]
+    if options.only=="all":variants += [("grow",True,False,False,False),("peer",True,True,True,False),("peer-unreferenced",True,True,False,False),("removed-unreferenced",True,False,False,False),("resident-call",False,False,False,True)]
+    for name,grow,peer,use_peer,resident_call in variants:
+        world._objects=original_objects;world.by_name=original_names;world.module_info=dict(original_info);world.amods=dict(original_amods);world.map=list(original_map)
+        products[name]=one_variant(root,directory,name,world,packed,ort,cfg,spec,compiler_args,before,grow=grow,peer=peer,use_peer=use_peer,resident_call=resident_call)
         results[name]=products[name][2]
         validated.update({f"{name}/{path}":value for path,value in results[name]["artifacts"].items()})
         validated[f"{name}/receipt.json"]=products[name][4]
+    if "resident-call" in products:
+        control=products["control"][0];resident_tables=products["resident-call"][0]
+        require(control.ort==resident_tables.ort and control.modules==resident_tables.modules,
+                "isolated resident witness changed module payload/export identities")
     refusals={}
     for label,product,removed in [("resident-to75",products["control"],{75})]+([("source75-to108",products["peer"],{108})] if "peer" in products else []):
         try: removed_targets(product[0],removed,product[1],{**resident_callers,**product[3]})

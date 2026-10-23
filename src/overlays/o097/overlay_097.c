@@ -7,9 +7,9 @@ void overlay97InitDirection(Overlay97Object *object, Overlay97Config *config) {
     f32 saved;
 
     if (config->scaleIndex < 5) {
-        object->scale = gOverlay97MinimumScale;
+        object->scale = 0.05f;
     } else {
-        object->scale = config->scaleIndex * gOverlay97ScaleStep;
+        object->scale = config->scaleIndex * 0.01f;
     }
 
     state = object->state;

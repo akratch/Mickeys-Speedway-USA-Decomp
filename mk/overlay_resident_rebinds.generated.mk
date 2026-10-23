@@ -1796,19 +1796,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay_096.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym sqrtf=sqrtf_o096Reloc \
 	--redefine-sym texDPTextureX=texDPTextureX_o096Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay_097.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym SetLinkSlot=SetLinkSlot_o097Reloc \
-	--redefine-sym addRomdefLight=addRomdefLight_o097Reloc \
-	--redefine-sym amCreateAudioPoint=amCreateAudioPoint_o097Reloc \
-	--redefine-sym amSoundIsLooped=amSoundIsLooped_o097Reloc \
-	--redefine-sym camlightAdd=camlightAdd_o097Reloc \
-	--redefine-sym func_80006EA0=func_80006EA0_o097Reloc \
-	--redefine-sym func_8001C054=func_8001C054_o097Reloc \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o097Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o097Reloc \
-	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o097Reloc \
-	--redefine-sym trackGetTrack=trackGetTrack_o097Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay_098.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym camGetProjectionMtx=camGetProjectionMtx_o098Reloc \
 	--redefine-sym camGetPtr=camGetPtr_o098Reloc \

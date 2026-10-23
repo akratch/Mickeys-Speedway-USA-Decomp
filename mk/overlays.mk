@@ -746,9 +746,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay_044.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay_092.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o093/overlay_093.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o095/overlay_095.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 97 is one translation unit under the overlay flag set; its .text
-# includes the trailing pad.
+# Overlay 97 directly owns its transform context and scale literal pool.
+# The whole-module link preserves their separate section-relative bases.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay_097.c.o: CFLAGS += -Wab,-r4300_mul
+MODULE_LINKED_OVERLAYS += 097
 # Overlay 96 is one translation unit under the overlay flag set. Its call to
 # the exported overlay96Register is a SYMBOL record whose shipped word holds
 # a zero addend, so that relocation is filtered until the packer owns the

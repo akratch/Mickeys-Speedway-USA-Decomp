@@ -3794,22 +3794,6 @@ pointListRPY_o096Reloc = 0xf0000000;
 sqrtf_o096Reloc = 0xf0000000;
 texDPTextureX_o096Reloc = 0xf0000000;
 
-/* overlay 97: overlay_097.c.o */
-SetLinkSlot_o097Reloc = 0xf0000000;
-addRomdefLight_o097Reloc = 0xf0000000;
-amCreateAudioPoint_o097Reloc = 0xf0000000;
-amSoundIsLooped_o097Reloc = 0xf0000000;
-camlightAdd_o097Reloc = 0xf0000000;
-func_80006EA0_o097Reloc = 0xf0000000;
-func_8001C054_o097Reloc = 0xf0000000;
-func_8002A8BC_o097Reloc = 0xf0000000;
-func_8002A8C0_o097Reloc = 0xf0000000;
-gOverlay97MinimumScale = 0x00000000;
-gOverlay97ScaleStep = 0x00000004;
-gOverlay97TransformContext = 0x00000000;
-mathOneFloatRPY_o097Reloc = 0xf0000000;
-trackGetTrack_o097Reloc = 0xf0000000;
-
 /* overlay 98: overlay_098.c.o */
 camGetProjectionMtx_o098Reloc = 0xf0000000;
 camGetPtr_o098Reloc = 0xf0000000;
@@ -4696,17 +4680,17 @@ func_overlay_096_F000057C_18D7BB4 = overlay96TestBit;
 func_overlay_096_F00005C8_18D7C00 = overlay96DrawObject;
 
 /* overlay 97: overlay_097.c.o */
-func_overlay_097_F0000000_18D7E98 = overlay97InitDirection;
-func_overlay_097_F0000130_18D7FC8 = overlay97CopyAngles;
-func_overlay_097_F000014C_18D7FE4 = overlay97InitTransform;
-func_overlay_097_F00001A8_18D8040 = overlay97InitRadius;
+func_overlay_097_F00003F4_18D828C = overlay97AssignState;
+func_overlay_097_F0000944_18D87DC = overlay97InitPlane;
 func_overlay_097_F00001E8_18D8080 = overlay97InitResource;
 func_overlay_097_F000036C_18D8204 = overlay97InitSelection;
-func_overlay_097_F00003F4_18D828C = overlay97AssignState;
 func_overlay_097_F0000420_18D82B8 = overlay97CreateDescriptor;
 func_overlay_097_F0000508_18D83A0 = overlay97InitScale;
+func_overlay_097_F000014C_18D7FE4 = overlay97InitTransform;
 func_overlay_097_F0000748_18D85E0 = overlay97InitBounds;
-func_overlay_097_F0000944_18D87DC = overlay97InitPlane;
+func_overlay_097_F00001A8_18D8040 = overlay97InitRadius;
+func_overlay_097_F0000130_18D7FC8 = overlay97CopyAngles;
+func_overlay_097_F0000000_18D7E98 = overlay97InitDirection;
 
 /* overlay 98: overlay_098.c.o */
 func_overlay_098_F0000000_18D89C0 = overlay98CollectUniqueY;

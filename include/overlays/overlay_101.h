@@ -4,9 +4,23 @@
 #include "PR/ultratypes.h"
 #include "n_audio/gbi.h"
 #include "game/math.h"
+/* Tier B: both resident texture renderers consume this exact 16-byte node
+ * and stop at a null texture. Tags and fields match their resident contract. */
+typedef struct RcpTextureInfo RcpTextureInfo;
+typedef struct RcpTextureNode {
+    RcpTextureInfo *texture;
+    RcpTextureInfo *alternate;
+    u32 packedOffset;
+    s16 x;
+    s16 y;
+} RcpTextureNode;
+
+/* Tier B: pooled entries share an output pointer and integer operation tag.
+ * The allocator tests tag zero; schedulers set it before typed callbacks.
+ * Concrete records appear together in the completed entry union below. */
 typedef struct Overlay101Entry {
-    u8 pad00[4];
-    void *value4;
+    void *output;
+    s32 type;
     u8 pad08[0x28];
 } Overlay101Entry;
 
@@ -22,8 +36,8 @@ typedef struct Overlay101Output {
 } Overlay101Output;
 
 typedef struct Overlay101TimedEntry {
-    Overlay101Output *output;
-    void *owner;
+    void *output;
+    s32 type;
     s32 startX;
     s32 startY;
     u8 pad10[8];
@@ -42,8 +56,8 @@ typedef struct Overlay101PairSlot {
 } Overlay101PairSlot;
 
 typedef struct Overlay101PairEntry {
-    Overlay101PairSlot *output;
-    s32 owner;
+    void *output;
+    s32 type;
     s32 startX;
     s32 startY;
     u8 pad10[8];
@@ -61,8 +75,8 @@ typedef struct Overlay101Output12 {
 } Overlay101Output12;
 
 typedef struct Overlay101TimedEntry12 {
-    Overlay101Output12 *output;
-    void *owner;
+    void *output;
+    s32 type;
     s32 startX;
     s32 startY;
     u8 pad10[8];
@@ -76,7 +90,7 @@ typedef struct Overlay101TimedEntry12 {
 typedef struct Overlay101PairSlot12 { u8 pad00[0x12]; s16 x; s16 y; u8 pad16[6]; } Overlay101PairSlot12;
 
 typedef struct Overlay101PairEntry12 {
-    Overlay101PairSlot12 *output; s32 owner; s32 startX; s32 startY;
+    void *output; s32 type; s32 startX; s32 startY;
     u8 pad10[8]; s32 endX; s32 endY; u8 pad20[8]; s32 elapsed; s32 duration;
 } Overlay101PairEntry12;
 
@@ -103,35 +117,35 @@ typedef struct Overlay101Slot_PromoteSlot {
 typedef struct Overlay101ByteOutput17 { u8 pad00[0x17]; u8 value; } Overlay101ByteOutput17;
 
 typedef struct Overlay101ByteEntry17_UpdateByte17 {
-    Overlay101ByteOutput17 *output; void *owner; s32 start;
+    void *output; s32 type; s32 start;
     u8 pad0C[0xC]; s32 end; u8 pad1C[0xC]; s32 elapsed; s32 duration;
 } Overlay101ByteEntry17_UpdateByte17;
 
 typedef struct Overlay101ByteSlot17 { u8 pad00[0x17]; u8 value; u8 pad18[4]; } Overlay101ByteSlot17;
 
 typedef struct Overlay101ByteEntry17_ScheduleByte17 {
-    Overlay101ByteSlot17 *output; s32 owner; s32 start; u8 pad0C[0xC];
+    void *output; s32 type; s32 start; u8 pad0C[0xC];
     s32 end; u8 pad1C[0xC]; s32 elapsed; s32 duration;
 } Overlay101ByteEntry17_ScheduleByte17;
 
 typedef struct Overlay101ByteOutput16 { u8 pad00[0x16]; u8 value; } Overlay101ByteOutput16;
 
 typedef struct Overlay101ByteEntry16_UpdateByte16 {
-    Overlay101ByteOutput16 *output; void *owner; s32 start;
+    void *output; s32 type; s32 start;
     u8 pad0C[0xC]; s32 end; u8 pad1C[0xC]; s32 elapsed; s32 duration;
 } Overlay101ByteEntry16_UpdateByte16;
 
 typedef struct Overlay101ByteSlot16 { u8 pad00[0x16]; u8 value; u8 pad17[5]; } Overlay101ByteSlot16;
 
 typedef struct Overlay101ByteEntry16_ScheduleByte16 {
-    Overlay101ByteSlot16 *output; s32 owner; s32 start; u8 pad0C[0xC];
+    void *output; s32 type; s32 start; u8 pad0C[0xC];
     s32 end; u8 pad1C[0xC]; s32 elapsed; s32 duration;
 } Overlay101ByteEntry16_ScheduleByte16;
 
 typedef struct Overlay101Output8 { u8 pad00[8]; s16 x; s16 y; } Overlay101Output8;
 
 typedef struct Overlay101TimedEntry8 {
-    Overlay101Output8 *output; void *owner; s32 startX; s32 startY;
+    void *output; s32 type; s32 startX; s32 startY;
     u8 pad10[8]; s32 endX; s32 endY; u8 pad20[8];
     s32 elapsed; s32 duration;
 } Overlay101TimedEntry8;
@@ -146,8 +160,8 @@ typedef struct Overlay101LinkedSlot {
 } Overlay101LinkedSlot;
 
 typedef struct Overlay101LinkedEntry {
-    Overlay101LinkedSlot *output;
-    s32 owner;
+    void *output;
+    s32 type;
     s32 startX;
     s32 startY;
     u8 pad10[8];
@@ -168,8 +182,8 @@ typedef struct Overlay101LinkedSlot2 {
 } Overlay101LinkedSlot2;
 
 typedef struct Overlay101LinkedEntry2 {
-    Overlay101LinkedSlot2 *output;
-    s32 owner;
+    void *output;
+    s32 type;
     s32 startX;
     s32 startY;
     u8 pad10[8];
@@ -186,8 +200,8 @@ typedef struct Overlay101Float12Output {
 } Overlay101Float12Output;
 
 typedef struct Overlay101FloatEntry {
-    Overlay101Float12Output *output;
-    void *owner;
+    void *output;
+    s32 type;
     u8 pad08[8];
     f32 start;
     u8 pad14[0xC];
@@ -206,8 +220,8 @@ typedef struct Overlay101LinkedFloatSlot {
 } Overlay101LinkedFloatSlot;
 
 typedef struct Overlay101LinkedFloatEntry {
-    Overlay101LinkedFloatSlot *output;
-    s32 owner;
+    void *output;
+    s32 type;
     u8 pad08[8];
     f32 start;
     u8 pad14[0xC];
@@ -223,8 +237,8 @@ typedef struct Overlay101Delta16Output {
 } Overlay101Delta16Output;
 
 typedef struct Overlay101DeltaEntry {
-    Overlay101Delta16Output *output;
-    void *owner;
+    void *output;
+    s32 type;
     s32 start;
     u8 pad0C[0xC];
     s32 delta;
@@ -242,8 +256,8 @@ typedef struct Overlay101LinkedScaledSlot {
 } Overlay101LinkedScaledSlot;
 
 typedef struct Overlay101LinkedScaledEntry {
-    Overlay101LinkedScaledSlot *output;
-    s32 owner;
+    void *output;
+    s32 type;
     s32 start;
     u8 pad0C[0xC];
     s32 end;
@@ -258,8 +272,8 @@ typedef struct Overlay101Byte18Output {
 } Overlay101Byte18Output;
 
 typedef struct Overlay101Byte18Entry {
-    Overlay101Byte18Output *output;
-    void *owner;
+    void *output;
+    s32 type;
     s32 start;
     u8 pad0C[0xC];
     s32 end;
@@ -277,8 +291,8 @@ typedef struct Overlay101LinkedByteSlot {
 } Overlay101LinkedByteSlot;
 
 typedef struct Overlay101LinkedByteEntry {
-    Overlay101LinkedByteSlot *output;
-    s32 owner;
+    void *output;
+    s32 type;
     s32 start;
     u8 pad0C[0xC];
     s32 end;
@@ -297,8 +311,8 @@ typedef struct Overlay101LinkedSlot3 {
 } Overlay101LinkedSlot3;
 
 typedef struct Overlay101LinkedEntry3 {
-    Overlay101LinkedSlot3 *output;
-    s32 owner;
+    void *output;
+    s32 type;
     s32 startX;
     s32 startY;
     u8 pad10[8];
@@ -318,8 +332,8 @@ typedef struct Overlay101ColorOutput {
 } Overlay101ColorOutput;
 
 typedef struct Overlay101ColorEntry {
-    Overlay101ColorOutput *output;
-    void *owner;
+    void *output;
+    s32 type;
     s16 startRed;
     s16 startGreen;
     s16 startBlue;
@@ -346,8 +360,8 @@ typedef struct Overlay101LinkedColorSlot {
 } Overlay101LinkedColorSlot;
 
 typedef struct Overlay101LinkedColorEntry {
-    Overlay101LinkedColorSlot *output;
-    s32 owner;
+    void *output;
+    s32 type;
     s16 startRed;
     s16 startGreen;
     s16 startBlue;
@@ -371,8 +385,8 @@ typedef struct Overlay101FrameOutput {
 } Overlay101FrameOutput;
 
 typedef struct Overlay101FrameEntry {
-    Overlay101FrameOutput *output;
-    s32 owner;
+    void *output;
+    s32 type;
     s32 delay;
     u8 pad0C[0x1C];
     s32 elapsed;
@@ -389,8 +403,8 @@ typedef struct Overlay101FrameSlot {
 } Overlay101FrameSlot;
 
 typedef struct Overlay101FrameSchedule {
-    Overlay101FrameSlot *output;
-    s32 owner;
+    void *output;
+    s32 type;
     s32 delay;
     u8 pad0C[0x1C];
     s32 elapsed;
@@ -399,7 +413,7 @@ typedef struct Overlay101FrameSchedule {
 
 typedef struct Overlay101GlobalPairEntry_UpdateGlobalPair {
     void *output;
-    void *owner;
+    s32 type;
     s32 startX;
     s32 startY;
     u8 pad10[8];
@@ -414,7 +428,7 @@ typedef struct Overlay101GlobalPairEntry_UpdateGlobalPair {
 
 typedef struct Overlay101GlobalPairEntry_ScheduleGlobalPair {
     void *output;
-    s32 owner;
+    s32 type;
     s32 startX;
     s32 startY;
     u8 pad10[8];
@@ -426,7 +440,7 @@ typedef struct Overlay101GlobalPairEntry_ScheduleGlobalPair {
 } Overlay101GlobalPairEntry_ScheduleGlobalPair;
 
 typedef struct Overlay101DispatchEntry {
-    u8 pad00[4];
+    void *output;
     s32 type;
     u8 pad08[0x28];
 } Overlay101DispatchEntry;
@@ -476,10 +490,6 @@ typedef struct Overlay101BoundsNode_DrawElement {
     u8 scale;
 } Overlay101BoundsNode_DrawElement;
 
-typedef struct Overlay101Pixel {
-    u8 value;
-} Overlay101Pixel;
-
 typedef struct Overlay101Element {
     u8 pad00[8];
     s16 x;
@@ -492,7 +502,8 @@ typedef struct Overlay101Element {
     u8 blue;
     u8 alpha;
     u8 flags;
-    Overlay101Pixel *pixels;
+    /* Tier B: the font path patches and restores bytes in text buffers. */
+    u8 *pixels;
 } Overlay101Element;
 
 typedef struct Overlay101ClipNode {
@@ -1938,7 +1949,7 @@ extern s32 gOverlay101GlobalX;
 
 extern s32 gOverlay101GlobalY;
 
-extern void *gOverlay101Value220;
+extern Overlay101Event *gOverlay101Value220;
 
 extern s32 gOverlay101Value224;
 
@@ -1982,14 +1993,14 @@ void camDo2DSprite(Overlay101Gfx **displayList, void *matrix,
                                     Overlay101Transform *transform,
                                     void *object, s32 rotated, s32 color);
 
-extern u8 D_1F4[];
+extern RcpTextureNode D_1F4[];
 
 void fontBackground(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 
 void fontColour(s32 red, s32 green, s32 blue, s32 colorAlpha,
                              s32 alpha);
 
-void func_8002F618(Overlay101Gfx **displayList, u8 *asset,
+void func_8002F618(Overlay101Gfx **displayList, RcpTextureNode *asset,
                                      s32 x, s32 y, s32 red, s32 green,
                                      s32 blue, s32 alpha);
 
@@ -2064,11 +2075,11 @@ extern void *D_C8C;
 
 extern Overlay101Event D_10EC;
 
-extern void *D_CA0;
+extern u8 D_CA0[];
 
 extern Overlay101Event D_1514;
 
-extern void *D_CB4;
+extern u8 D_CB4[];
 
 extern Overlay101Event D_1920;
 
@@ -2088,19 +2099,19 @@ extern Overlay101Event D_1D2C[];
  * different offset, and a shared generic name silently mis-relocates it. */
 extern u32 D_800D3128;
 
-extern void *D_CDC;
+extern u8 D_CDC[];
 
 extern Overlay101Event D_2608;
 
-extern void *D_CF0;
+extern u8 D_CF0[];
 
 extern Overlay101Event D_2934;
 
-extern void *D_D04;
+extern u8 D_D04[];
 
 extern Overlay101Event D_2C60;
 
-extern void *D_D18;
+extern u8 D_D18[];
 
 extern Overlay101Event D_2F8C;
 
@@ -2118,7 +2129,7 @@ extern s32 gO101PresANode24Count;
 
 extern O101PresAInputs gO101PresAInputs;
 
-extern u8 gO101PresAAssetD2C;
+extern u8 gO101PresAAssetD2C[];
 
 extern Overlay101Event gO101PresAFinalObject32B8;
 
@@ -2136,7 +2147,7 @@ extern s32 gO101PresBNode24Count;
 
 extern O101PresBInputs gO101PresBInputs;
 
-extern u8 gO101PresBAssetD40;
+extern u8 gO101PresBAssetD40[];
 
 extern Overlay101Event gO101PresBFinalObject34E8;
 
@@ -2154,7 +2165,7 @@ extern s32 gO101PresCNode24Count;
 
 extern O101PresCInputs gO101PresCInputs;
 
-extern u8 gO101PresCAssetD54;
+extern u8 gO101PresCAssetD54[];
 
 extern Overlay101Event gO101PresCFinalObject3718;
 
@@ -2172,7 +2183,7 @@ extern s32 gO101PresDNode24Count;
 
 extern O101PresDInputs gO101PresDInputs;
 
-extern u8 gO101PresDAssetD68;
+extern u8 gO101PresDAssetD68[];
 
 extern Overlay101Event gO101PresDFinalObject3948;
 
@@ -2186,7 +2197,7 @@ extern s32 gO101TailNode24Count;
 
 extern O101TailInputs gO101TailInputs;
 
-extern u8 gO101TailAssetD7C;
+extern u8 gO101TailAssetD7C[];
 
 extern Overlay101Event gO101TailFinalObject3B78;
 
@@ -2200,11 +2211,11 @@ extern s32 gO101TailAB4CNode24Count;
 
 extern O101TailAB4CInputs gO101TailAB4CInputs;
 
-extern u8 gO101TailAB4CAssetD90;
+extern u8 gO101TailAB4CAssetD90[];
 
 extern Overlay101Event gO101TailAB4CFinalObject3F14;
 
-extern void *D_DA4;
+extern u8 D_DA4[];
 
 extern Overlay101Event D_4358;
 
@@ -2224,7 +2235,7 @@ extern s32 gO101TailBA34Node24Count;
 
 extern O101TailBA34Inputs gO101TailBA34Inputs;
 
-extern u8 gO101TailBA34AssetDB8;
+extern u8 gO101TailBA34AssetDB8[];
 
 extern Overlay101Event gO101TailBA34FinalObject4630;
 
@@ -2238,13 +2249,13 @@ extern s32 gO101TailC144Node24Count;
 
 extern O101TailC144Inputs gO101TailC144Inputs;
 
-extern u8 gO101TailC144AssetDCC;
+extern u8 gO101TailC144AssetDCC[];
 
 extern Overlay101Event gO101TailC144FinalObject4A90;
 
 extern u8 D_8007BF3C[];
 
-extern s32 gO101TailC6E8PresentationActive;
+extern Overlay101Event *gO101TailC6E8PresentationActive;
 
 extern s32 gO101TailC6E8PresentationDone;
 
@@ -2260,9 +2271,9 @@ extern O101TailC6E8Node20 gO101TailC6E8Nodes20[];
 
 extern u8 gO101TailC6E8AssetDF0;
 
-extern void *gO101TailC6E8Handle1D4;
+extern RcpTextureNode gO101TailC6E8Handle1D4[2];
 
-extern void *gO101TailC6E8Handle1F4;
+extern RcpTextureNode gO101TailC6E8Handle1F4[2];
 
 extern void *gO101TailC6E8Handle33C;
 
@@ -2284,7 +2295,7 @@ extern void amTunePlay(s32 key);
 
 extern void func_800015F8(void);
 
-extern s32 gOverlay101PresentationActive;
+extern Overlay101Event *gOverlay101PresentationActive;
 
 extern s32 gOverlay101PresentationDone;
 
@@ -2292,16 +2303,16 @@ extern s32 gOverlay101PresentationTimer;
 
 extern s32 gOverlay101InputMode;
 
-extern void *gOverlay101Handle1D4;
+extern RcpTextureNode gOverlay101Handle1D4[2];
 
-extern void func_8002FB34(void *context, void **handle,
+extern void func_8002FB34(void *context, RcpTextureNode *handle,
                                               f32 x, f32 y, f32 scaleX,
                                               f32 scaleY, s32 layer,
                                               s32 mode);
 
 extern s32 overlay101ReadInputReloc(s32 controller);
 
-extern void *gOverlay101Handle1F4;
+extern RcpTextureNode gOverlay101Handle1F4[2];
 
 extern void *gOverlay101Handle33C;
 
@@ -2309,8 +2320,7 @@ extern void overlay101ReleaseReloc(void *resource, ...);
 
 /* Unions over the per-function views of shared module storage. */
 typedef union O101Elem_D_0 { Overlay101PairSlot m0; Overlay101PairSlot12 m1; Overlay101Slot_ActivateSlot m2; Overlay101Slot_AdvanceSlot m3; Overlay101Slot_PromoteSlot m4; Overlay101ByteSlot17 m5; Overlay101ByteSlot16 m6; Overlay101LinkedSlot m7; Overlay101LinkedSlot2 m8; Overlay101LinkedFloatSlot m9; Overlay101LinkedScaledSlot m10; Overlay101LinkedByteSlot m11; Overlay101LinkedSlot3 m12; Overlay101LinkedColorSlot m13; Overlay101FrameSlot m14; O101RootGroup3A58 m15; O101RootGroup m16; Overlay101OrderEntry m17; } O101Elem_D_0;
-typedef union O101View_D_0 { Root_F000512C m0; Root_F0005E08 m1; Root_F00063F8 m2; Root_F00078F4 m3; Root_F0008128 m4; Root_F000895C m5; Root_F0009190 m6; O101PresARoot m7; O101PresBRoot m8; O101PresCRoot m9; O101PresDRoot m10; O101TailRoot m11; O101TailAB4CRoot m12; Root_TailB544 m13; O101TailBA34Root m14; O101TailC144Root m15; O101TailC6E8Root m16; Root_F000571C m17; O101Elem_D_0 el[4]; } O101View_D_0;
-typedef union O101View_o101BuilderBssPad70 { O101RootGroup3A58 m0; O101RootGroup m1; u8 raw[0x2D0]; } O101View_o101BuilderBssPad70;
+typedef union O101View_D_0 { Root_F000512C m0; Root_F0005E08 m1; Root_F00063F8 m2; Root_F00078F4 m3; Root_F0008128 m4; Root_F000895C m5; Root_F0009190 m6; O101PresARoot m7; O101PresBRoot m8; O101PresCRoot m9; O101PresDRoot m10; O101TailRoot m11; O101TailAB4CRoot m12; Root_TailB544 m13; O101TailBA34Root m14; O101TailC144Root m15; O101TailC6E8Root m16; Root_F000571C m17; O101Elem_D_0 el[16]; } O101View_D_0;
 typedef union O101Elem_D_340 { O101Node32_3A58 m0; Node32 m1; O101Node32_69E8 m2; O101PresANode32 m3; O101PresBNode32 m4; O101PresCNode32 m5; O101PresDNode32 m6; O101TailNode32 m7; O101TailAB4CNode32 m8; O101TailBA34Node32 m9; O101TailC144Node32 m10; O101TailC6E8Node32 m11; Overlay101Resource32 m12; } O101Elem_D_340;
 typedef union O101Elem_D_540 { O101Node24_3A58 m0; Node24 m1; O101Node24_69E8 m2; O101PresANode24 m3; O101PresBNode24 m4; O101PresCNode24 m5; O101PresDNode24 m6; O101TailNode24 m7; O101TailAB4CNode24 m8; O101TailBA34Node24 m9; O101TailC144Node24 m10; } O101Elem_D_540;
 typedef union O101View_D_1C { O101RootGroup3A58 m0; void * m1; O101RootGroup m2; } O101View_D_1C;
@@ -2319,22 +2329,51 @@ typedef union O101View_D_54 { O101RootGroup3A58 m0; void * m1; O101RootGroup m2;
 typedef union O101View_D_8C { O101RootGroup3A58 m0; O101RootGroup m1; } O101View_D_8C;
 typedef union O101View_D_A8 { O101RootGroup3A58 m0; O101RootGroup m1; } O101View_D_A8;
 typedef union O101View_D_INPUT { O101Inputs3A58 m0; Inputs_F000512C m1; Inputs_F000571C m2; Inputs_F0005E08 m3; Inputs_F00063F8 m4; O101Inputs69E8 m5; Inputs_F00078F4 m6; Inputs_F0008128 m7; Inputs_F000895C m8; Inputs_F0009190 m9; Inputs_TailB544 m10; } O101View_D_INPUT;
-typedef union O101Elem_gOverlay101Entries { Overlay101Entry m0; Overlay101DispatchEntry m1; } O101Elem_gOverlay101Entries;
+/* The generic reads use only the compatible output/type prefix. Dispatch
+ * selects concrete records by that tag; root/node presentation views above
+ * retain their separate interpretation and are not claimed common tags. */
+typedef union O101Elem_gOverlay101Entries {
+    Overlay101Entry m0;
+    Overlay101DispatchEntry m1;
+    Overlay101Byte18Entry variant0;
+    Overlay101ByteEntry16_ScheduleByte16 variant1;
+    Overlay101ByteEntry16_UpdateByte16 variant2;
+    Overlay101ByteEntry17_ScheduleByte17 variant3;
+    Overlay101ByteEntry17_UpdateByte17 variant4;
+    Overlay101ColorEntry variant5;
+    Overlay101DeltaEntry variant6;
+    Overlay101FloatEntry variant7;
+    Overlay101FrameEntry variant8;
+    Overlay101FrameSchedule variant9;
+    Overlay101GlobalPairEntry_ScheduleGlobalPair variant10;
+    Overlay101GlobalPairEntry_UpdateGlobalPair variant11;
+    Overlay101LinkedByteEntry variant12;
+    Overlay101LinkedColorEntry variant13;
+    Overlay101LinkedEntry variant14;
+    Overlay101LinkedEntry2 variant15;
+    Overlay101LinkedEntry3 variant16;
+    Overlay101LinkedFloatEntry variant17;
+    Overlay101LinkedScaledEntry variant18;
+    Overlay101PairEntry variant19;
+    Overlay101PairEntry12 variant20;
+    Overlay101TimedEntry variant21;
+    Overlay101TimedEntry12 variant22;
+    Overlay101TimedEntry8 variant23;
+} O101Elem_gOverlay101Entries;
 typedef union O101Elem_gOverlay101Order { Overlay101Slot_PromoteSlot * m0; Overlay101UpdateChain * m1; void * m2; } O101Elem_gOverlay101Order;
 typedef union O101Elem_gOverlay101Resources20 { O101Node20_3A58 m0; O101Node20_69E8 m1; Overlay101Resource20 m2; } O101Elem_gOverlay101Resources20;
 extern O101View_D_0 D_0;
-extern O101View_o101BuilderBssPad70 o101BuilderBssPad70;
-extern O101Elem_D_340 D_340[];
-extern O101Elem_D_540 D_540[];
+extern O101Elem_D_340 D_340[16];
+extern O101Elem_D_540 D_540[32];
 extern O101View_D_1C D_1C;
 extern O101View_D_38 D_38;
 extern O101View_D_54 D_54;
 extern O101View_D_8C D_8C;
 extern O101View_D_A8 D_A8;
 extern O101View_D_INPUT D_INPUT;
-extern O101Elem_gOverlay101Entries gOverlay101Entries[];
-extern O101Elem_gOverlay101Order gOverlay101Order[];
-extern O101Elem_gOverlay101Resources20 gOverlay101Resources20[];
+extern O101Elem_gOverlay101Entries gOverlay101Entries[40];
+extern O101Elem_gOverlay101Order gOverlay101Order[16];
+extern O101Elem_gOverlay101Resources20 gOverlay101Resources20[16];
 extern void camStandardOrtho();
 extern void fontPrintXY();
 extern void fontUseFont();
@@ -2344,7 +2383,7 @@ extern void overlay101SubmitLinkedPairReloc();
 extern void * texLoadSprite();
 
 void overlay101Initialize(void);
-Overlay101Entry *overlay101AllocateEntry();
+void *overlay101AllocateEntry(void);
 Overlay101Node *overlay101FindEntry(Overlay101Node *head, s32 value, s32 occurrence);
 void overlay101UpdateEntry(Overlay101TimedEntry *entry, s32 step);
 void overlay101SchedulePair(s32 index, s32 x, s32 y, f32 seconds, s32 submitValue);
@@ -2375,7 +2414,7 @@ void overlay101UpdateFrames(Overlay101FrameEntry *entry, s32 step);
 void overlay101ScheduleFrames(s32 index, s32 key, f32 fraction, f32 rate, f32 seconds, s32 submitValue);
 void overlay101UpdateGlobalPair(Overlay101GlobalPairEntry_UpdateGlobalPair *entry, s32 step);
 void overlay101ScheduleGlobalPair(s32 x, s32 y, f32 seconds, s32 submitValue);
-void overlay101DispatchActive(void *value);
+void overlay101DispatchActive(s32 value);
 void overlay101Reset(void *value);
 void overlay101DispatchEvents(s32 step);
 void overlay101SetScissor(Overlay101Gfx **displayList, register s32 left, s32 top, s32 right, s32 bottom);

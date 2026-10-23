@@ -3859,9 +3859,13 @@ segments:
     subsegments:
       - [0x18DB820, c, overlay_101]
       - [0x18E8700, bin, overlay_101_data_rodata]
+      - [0x18E88D0, .data, overlay101State]
       - [0x18E8930, .data, overlay101ClockData]
       - [0x18E8A40, .data, overlay101EventStreams]
-      - [0x18ED550, bin, overlay_101_data_rodata_4e50]
+      - [0x18ED550, .data, overlay101Labels]
+      - [0x18EE170, bin, overlay_101_data_rodata_5a70]
+      - [0x18EE1F0, .data, overlay101WindowLabels]
+      - [0x18EE330, bin, overlay_101_data_rodata_5c30]
 
   - name: overlay_101_reloc1
     type: bin

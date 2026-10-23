@@ -3464,7 +3464,6 @@ mainChangeLevel_o101Reloc = 0xf0000000;
 mainSetMode_o101Reloc = 0xf0000000;
 mainTitlePageInit_o101Reloc = 0xf0000000;
 mathRnd_o101Reloc = 0xf0000000;
-o101BuilderBssPad70 = 0x00000070;
 overlay101ReadInputReloc = 0xf0000000;
 overlay101ReleaseReloc = 0xf0000000;
 overlay101RodataE0C = 0x00000e0c;

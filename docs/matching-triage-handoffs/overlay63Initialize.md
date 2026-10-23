@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay63Initialize:start -->
 ### `overlay63Initialize` plateau handoff
 
-- source: `src/overlays/o063/overlay63Initialize.c`
+- source: `src/overlays/o063/overlay_063.c`
 - score: 0 differing words
 - frame: 0x30
 - relocations: 46

@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay68DrawSortedEntries:start -->
 ### `overlay68DrawSortedEntries` plateau handoff
 
-- source: `src/overlays/o068/overlay68DrawSortedEntries.c`
+- source: `src/overlays/o068/overlay_068.c`
 - score: 0/213 words, promoted
 - frame: 0x108
 - relocations: 3

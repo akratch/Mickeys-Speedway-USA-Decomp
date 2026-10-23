@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay57UpdateSelection:start -->
 ### `overlay57UpdateSelection` plateau handoff
 
-- source: `src/overlays/o057/overlay57UpdateSelection.c`
+- source: `src/overlays/o057/overlay_057.c`
 - score: 0/283 words, promoted
 - frame: 0x48
 - relocations: 91

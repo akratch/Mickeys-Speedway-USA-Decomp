@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay58FinalizePackedStatus:start -->
 ### `overlay58FinalizePackedStatus` plateau handoff
 
-- source: `src/overlays/o058/overlay58FinalizePackedStatus.c`
+- source: `src/overlays/o058/overlay_058.c`
 - score: 0/304 words, promoted
 - frame: 0x48
 - relocations: 48

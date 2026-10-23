@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay68CheckKind:start -->
 ### `overlay68CheckKind` plateau handoff
 
-- source: `src/overlays/o068/overlay68CheckKind.c`
+- source: `src/overlays/o068/overlay_068.c`
 - score: 0/80 words
 - frame: 0x48
 - relocations: 9

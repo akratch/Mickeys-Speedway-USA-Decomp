@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay58DrawSegmentStrip:start -->
 ### `overlay58DrawSegmentStrip` plateau handoff
 
-- source: `src/overlays/o058/overlay58DrawSegmentStrip.c`
+- source: `src/overlays/o058/overlay_058.c`
 - score: 0/201 words, promoted
 - frame: 0x88
 - relocations: 8

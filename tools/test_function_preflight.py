@@ -2532,7 +2532,7 @@ class SourceViewTests(unittest.TestCase):
                            if not line.startswith("include "))
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            dependency = root / "src/overlays/o069/overlay69DrawSortedGeometry.inc"
+            dependency = root / "src/overlays/o069/overlay_069.c"
             dependency.parent.mkdir(parents=True)
             dependency.touch()
             for mode in ("build", "build_non_matching"):

@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay69DrawSortedGeometry:start -->
 ### `overlay69DrawSortedGeometry` plateau handoff
 
-- source: `src/overlays/o069/overlay69DrawSortedGeometry.c`
+- source: `src/overlays/o069/overlay_069.c`
 - score: 0 differing words
 - frame: 0x148
 - relocations: 6

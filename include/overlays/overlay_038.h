@@ -63,10 +63,24 @@ typedef struct O38DirectionInput {
 
 /* Overlay 38's own vertex and triangle data, reached through the module's
  * LOCAL relocation records. */
-extern u8 gO38ObjectVertices[];
-extern u8 gO38ObjectTriangles[];
-extern u8 gO38ParticleVertices[];
-extern u8 gO38ParticleTriangles[];
+typedef struct O38Vertex {
+    s16 x, y, z;
+    u8 red, green, blue, alpha;
+} O38Vertex;
+
+typedef struct O38UV {
+    s16 u, v;
+} O38UV;
+
+typedef struct O38Triangle {
+    u8 flags, firstIndex, secondIndex, thirdIndex;
+    O38UV coordinates[3];
+} O38Triangle;
+
+extern O38Vertex gO38ObjectVertices[4];
+extern O38Triangle gO38ObjectTriangles[2];
+extern O38Vertex gO38ParticleVertices[4];
+extern O38Triangle gO38ParticleTriangles[2];
 
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern void mathOneFloatPY(s16 *rotation, f32 *vector);
@@ -76,7 +90,7 @@ extern void camPushModelMtx(Gfx **dList, void *context,
 extern void texDPTextureX(Gfx **dList, void *texture, s32 flags, s32 arg3);
 extern void camPopModelMtx(Gfx **dList);
 extern O38Camera *camGetPtr(void);
-extern s16 Arctanf(f32 y, f32 x);
+extern s32 Arctanf(f32 y, f32 x);
 extern f32 sqrtf(f32 value);
 
 /* PROVENANCE: the two packet macros are Jet Force Gemini's gSPVertexJFG and

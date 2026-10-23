@@ -85,26 +85,24 @@ extern Overlay40Entry D_800D6BF8[8];
 extern Overlay40Object **D_800D6B00;
 
 extern s16 D_800D6C38;
-extern s16 gOverlay40Value1;
-extern s16 D_800D6C44;
+extern s16 D_800D6C3A;
+extern s16 D_800D6C3C;
 extern s16 D_800D6C3E;
-extern s16 gOverlay40Value4;
-extern s16 gOverlay40Value5;
-extern s16 gOverlay40Value6;
-extern s16 gOverlay40Value7;
+extern s16 D_800D6C40;
+extern s16 D_800D6C42;
+extern s16 D_800D6C44;
+extern s16 D_800D6C46;
+extern s16 D_800D6C4C;
+extern s16 D_800D6C4E;
+extern s16 D_800D6C50;
+extern s16 D_800D6C52;
+extern s16 D_800D6C54;
 
-extern s16 gOverlay40BlendTimer;
-extern s16 gOverlay40BlendCurrent;
-extern s16 gOverlay40BlendOutput;
-extern s16 gOverlay40BlendTarget;
-extern s16 gOverlay40BlendDuration;
+extern Gfx gOverlay40TintDisplayList[];
+extern void viGetCurrentSize(s32 *width, s32 *height);
+extern void texDPInit(Gfx **displayList);
 
-extern s16 gO40TintGreenReloc, gO40TintBlueReloc;
-extern Gfx gO40TintDisplayListReloc[];
-extern void o40TintCallReloc();
-
-/* frontDrawRectangles (resident 0x80039380), reached through the overlay
- * loader's SYMBOL record; the placeholder carries the shipped jal addend. */
+/* Resident rectangle primitive, authenticated by the module's SYMBOL record. */
 extern void frontDrawRectangles(void *displayList, s32 count,
                                 Overlay40FrameRecord *records,
                                 s32 translucent);

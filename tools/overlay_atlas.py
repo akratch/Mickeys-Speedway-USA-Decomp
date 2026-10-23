@@ -272,6 +272,11 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
         (0x0, 0xE0, "overlay_037", ".data"),
         (0xE0, 0xF0, "overlay_037", ".rodata"),
     ],
+    38: [
+        (0x0, 0x90, "overlay_038", ".data"),
+        (0x90, 0xA0, "overlay_038", ".rodata"),
+    ],
+    40: [(0x0, 0x30, "overlay_040", ".data")],
     64: [(0x0, 0x10, "overlay_064", ".data")],
     77: [
         (0x0, 0x10, "overlay_077", ".data"),

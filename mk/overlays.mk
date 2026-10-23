@@ -662,8 +662,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 37 directly owns its compact geometry, distance records and period.
 MODULE_LINKED_OVERLAYS += 037
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 40 is one translation unit at the overlay flag set; its .text carries
-# the trailing pad, so nothing is trimmed.
+# Overlay 40 directly owns the tint display-list setup and its alignment.
+MODULE_LINKED_OVERLAYS += 040
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay_040.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 42 owns its command-buffer data and published-task BSS separately.
 # The source-module link preserves both section bases and exported release calls.
@@ -781,17 +781,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay_031.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay_033.c.o: CFLAGS += -Wab,-r4300_mul
 include mk/overlay_046.mk
 
-# Overlay 38 is one translation unit at the overlay flag set; its .text carries
-# the module's trailing pad, so nothing is trimmed. The update's three rates
-# are float literals, so the compiler emits a 0x10-byte pool that duplicates
-# the retained overlay data at rodata-relative +0x0 (the shipped hi/lo pairs
-# are LOCAL records with stored addends 0, 4 and 8). Until the module's data
-# is C-owned (sprint phase 3), assert the pool by digest and bind the pairs to
-# the loader-owned base; no instruction is edited.
+# Overlay 38 directly owns both compact quads and its private motion pool.
+MODULE_LINKED_OVERLAYS += 038
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay_038.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay_038.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:bdcefd8e01ed3fbf749d94f1d2eca6ebf09ccfef55954c89ecb731ed6d8a3752
 
 ifneq ($(NON_MATCHING),0)
 else

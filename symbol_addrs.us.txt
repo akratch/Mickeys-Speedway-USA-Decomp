@@ -3001,3 +3001,10 @@ D_8007CAB4 = 0x8007CAB4; // tier-B ORT export and overlay 31 references, unsized
 D_8007CAC0 = 0x8007CAC0; // tier-B ORT export and overlay 31 references, unsized data view
 D_8007CC40 = 0x8007CC40; // tier-B ORT export and overlay 31 references, unsized data view
 D_8007CC50 = 0x8007CC50; // tier-B ORT export and overlay 31 references, unsized data view
+
+// Tier B: ORT data exports used by overlay 40; unsized resident views only.
+D_800D6C3A = 0x800D6C3A; // tier-B ORT export and overlay 40 references, unsized data view
+D_800D6C3C = 0x800D6C3C; // tier-B ORT export and overlay 40 references, unsized data view
+D_800D6C40 = 0x800D6C40; // tier-B ORT export and overlay 40 references, unsized data view
+D_800D6C42 = 0x800D6C42; // tier-B ORT export and overlay 40 references, unsized data view
+D_800D6C46 = 0x800D6C46; // tier-B ORT export and overlay 40 references, unsized data view

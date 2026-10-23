@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 5992,
+  "owned_data_rodata_bytes": 6664,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -4170,7 +4170,16 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 17
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x10",
+     "size": "0x10",
+     "type": "c",
+     "source": "overlays/o023/overlay_023"
+    }
+   ]
   },
   {
    "overlay": 24,
@@ -6279,7 +6288,27 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 52
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x90",
+     "size": "0x90",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o038/overlay_038",
+     "canonical": true
+    },
+    {
+     "offset": "0x90",
+     "end_offset": "0xA0",
+     "size": "0x10",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o038/overlay_038",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 39,
@@ -6568,7 +6597,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 19
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x30",
+     "size": "0x30",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o040/overlay_040",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 41,
@@ -7151,7 +7191,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 82
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x50",
+     "size": "0x50",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o044/overlay_044",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 45,
@@ -7498,37 +7549,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x9D0",
-     "size": "0x9D0",
-     "type": "c",
-     "source": "overlays/o047/func_overlay_047_F0000000_1890E18",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x9D0",
-     "end_offset": "0xB30",
-     "size": "0x160",
-     "type": "c",
-     "source": "overlays/o047/overlay47ReleaseResources",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xB30",
-     "end_offset": "0x2D10",
-     "size": "0x21E0",
-     "type": "c",
-     "source": "overlays/o047/func_overlay_047_F0000B30_1891948",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2D10",
      "end_offset": "0x2DE8",
-     "size": "0xD8",
+     "size": "0x2DE8",
      "type": "c",
-     "source": "overlays/o047/overlay47SpawnObject",
+     "source": "overlays/o047/overlay_047",
      "matched": true,
      "nonmatching": false
     },
@@ -7619,10 +7643,19 @@
    "data_rodata_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x5A0",
-     "size": "0x5A0",
+     "end_offset": "0x560",
+     "size": "0x560",
      "type": "c",
-     "source": "overlays/o047/overlay47ReleaseResources"
+     "source": "overlays/o047/overlay_047"
+    },
+    {
+     "offset": "0x560",
+     "end_offset": "0x5A0",
+     "size": "0x40",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o047/overlay_047",
+     "canonical": true
     }
    ]
   },
@@ -9960,46 +9993,10 @@
     },
     {
      "offset": "0x80",
-     "end_offset": "0xBC0",
-     "size": "0xB40",
-     "type": "c",
-     "source": "overlays/o065/overlay65UpdateParticles",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xBC0",
-     "end_offset": "0xBF0",
-     "size": "0x30",
-     "type": "c",
-     "source": "overlays/o065/overlay65Release",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xBF0",
-     "end_offset": "0xC38",
-     "size": "0x48",
-     "type": "c",
-     "source": "overlays/o065/overlay65ResetSlots",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xC38",
-     "end_offset": "0x1A14",
-     "size": "0xDDC",
-     "type": "c",
-     "source": "overlays/o065/func_overlay_065_F0000C38_18C4EA0",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1A14",
      "end_offset": "0x1BB4",
-     "size": "0x1A0",
+     "size": "0x1B34",
      "type": "c",
-     "source": "overlays/o065/overlay65SpawnRecord",
+     "source": "overlays/o065/overlay_065",
      "matched": true,
      "nonmatching": false
     },
@@ -11035,7 +11032,16 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 11
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x10",
+     "size": "0x10",
+     "type": "c",
+     "source": "overlays/o072/overlay_072"
+    }
+   ]
   },
   {
    "overlay": 73,
@@ -11274,7 +11280,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 21
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x10",
+     "size": "0x10",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o074/overlay_074",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 75,
@@ -11508,7 +11525,18 @@
     "pilot_role": "text, initialized data, BSS, and both relocation tables",
     "exact_donor_match": null,
     "priority_rank": 6
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x10",
+     "size": "0x10",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o076/overlay_076",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 77,
@@ -12006,7 +12034,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 39
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x30",
+     "size": "0x30",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o080/overlay_080",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 81,
@@ -12137,7 +12176,27 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 12
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x10",
+     "size": "0x10",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o081/overlay_081",
+     "canonical": true
+    },
+    {
+     "offset": "0x10",
+     "end_offset": "0x20",
+     "size": "0x10",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o081/overlay_081",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 82,
@@ -12174,19 +12233,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x40",
-     "size": "0x40",
+     "end_offset": "0x4CC",
+     "size": "0x4CC",
      "type": "c",
      "source": "overlays/o082/overlay_082",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x40",
-     "end_offset": "0x4CC",
-     "size": "0x48C",
-     "type": "c",
-     "source": "overlays/o082/overlay_082_tail",
      "matched": true,
      "nonmatching": false
     },
@@ -12275,7 +12325,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 13
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0xA0",
+     "size": "0xA0",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o082/overlay_082",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 83,
@@ -13413,7 +13474,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 37
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x20",
+     "size": "0x20",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o091/overlay_091",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 92,
@@ -13846,7 +13918,16 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 16
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x10",
+     "size": "0x10",
+     "type": "c",
+     "source": "overlays/o095/overlay_095"
+    }
+   ]
   },
   {
    "overlay": 96,
@@ -14184,7 +14265,25 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 14
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x10",
+     "size": "0x10",
+     "type": "c",
+     "source": "overlays/o097/overlay_097"
+    },
+    {
+     "offset": "0x10",
+     "end_offset": "0x20",
+     "size": "0x10",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o097/overlay_097",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 98,

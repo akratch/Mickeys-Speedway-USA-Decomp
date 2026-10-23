@@ -1,5 +1,34 @@
 #include "overlays/overlay_038.h"
 
+O38Vertex gO38ObjectVertices[4] = {
+    {-40,  40, 0, 255, 255, 255, 255},
+    { 40,  40, 0, 255, 255, 255, 255},
+    { 40, -40, 0, 255, 255, 255, 255},
+    {-40, -40, 0, 255, 255, 255, 255},
+};
+
+#define O38_QUAD_TRIANGLES \
+    {0x40, 0, 1, 2, {{0, 0}, {0, 2048}, {2048, 2048}}}, \
+    {0x40, 2, 3, 0, {{2048, 2048}, {2048, 0}, {0, 0}}}
+
+O38Triangle gO38ObjectTriangles[2] = {O38_QUAD_TRIANGLES};
+
+O38Vertex gO38ParticleVertices[4] = {
+    {-5,  5, 0, 255, 255, 255, 255},
+    { 5,  5, 0, 255, 255, 255, 255},
+    { 5, -5, 0, 255, 255, 255, 255},
+    {-5, -5, 0, 255, 255, 255, 255},
+};
+
+O38Triangle gO38ParticleTriangles[2] = {O38_QUAD_TRIANGLES};
+
+/* N64 pointers and signed words share a 32-bit representation. XOR of the
+ * sign bit encodes the RSP physical address without pointer arithmetic. */
+typedef char O38AddressWordWidth[(sizeof(void *) == 4 && sizeof(s32) == 4) ? 1 : -1];
+#define O38_PHYSICAL(address) \
+    ((geometryAddress.pointer = (const void *)(address)), \
+     (u32)(geometryAddress.bits ^ (-2147483647 - 1)))
+
 /* Emit one burst of particles for an object, seeding each with a random
  * horizontal offset, speed and pitch.
  * PROVENANCE: Mickey-derived; no external C is adapted here.
@@ -113,7 +142,7 @@ void func_overlay_038_F0000154_1885E64(O38Object *object, s32 ticks)
  *   scalars, which puts the transform at sp+0xC4 under two pointer cells. */
 void func_overlay_038_F000047C_188618C(Gfx **dList, void *context, O38Object *object) {
     O38Pool *pool;
-    O38Particle *particle;
+    union { O38Particle *particle; const void *pointer; s32 bits; } geometryAddress;
     O38Camera *camera;
     O38Transform transform;
     f32 dx;
@@ -132,30 +161,30 @@ void func_overlay_038_F000047C_188618C(Gfx **dList, void *context, O38Object *ob
     camPushModelMtx(dList, context, &transform, 1.0f, 0.0f);
     texDPTextureX(dList, object->resource[0], 0x10, 0);
     gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, pool->alpha);
-    gSPVertexJFG((*dList)++, gO38ObjectVertices, 4, 0);
-    gSPPolygon((*dList)++, gO38ObjectTriangles, 2, 1);
+    gSPVertexJFG((*dList)++, O38_PHYSICAL(gO38ObjectVertices), 4, 0);
+    gSPPolygon((*dList)++, O38_PHYSICAL(gO38ObjectTriangles), 2, 1);
     gDPPipeSync((*dList)++);
     gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, 255);
     camPopModelMtx(dList);
     camera = camGetPtr();
     for (i = 0; i < 20; i++) {
-        particle = &pool->particles[i];
-        if (object->trans.y <= particle->y) {
-            dx = particle->x - camera->trans.x;
-            dy = particle->y - camera->trans.y;
-            dz = particle->z - camera->trans.z;
+        geometryAddress.particle = &pool->particles[i];
+        if (object->trans.y <= geometryAddress.particle->y) {
+            dx = geometryAddress.particle->x - camera->trans.x;
+            dy = geometryAddress.particle->y - camera->trans.y;
+            dz = geometryAddress.particle->z - camera->trans.z;
             transform.rotationY = Arctanf(dx, dz);
             transform.rotationX = Arctanf(-dy, sqrtf(dx * dx + dz * dz)) + 0x8000;
             transform.rotationZ = 0;
-            transform.scale = particle->scale;
-            transform.x = particle->x;
-            transform.y = particle->y;
-            transform.z = particle->z;
+            transform.scale = geometryAddress.particle->scale;
+            transform.x = geometryAddress.particle->x;
+            transform.y = geometryAddress.particle->y;
+            transform.z = geometryAddress.particle->z;
             camPushModelMtx(dList, context, &transform, 1.0f, 0.0f);
             texDPTextureX(dList, object->resource[1], 0x10, 0);
             gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, pool->alpha);
-            gSPVertexJFG((*dList)++, gO38ParticleVertices, 4, 0);
-            gSPPolygon((*dList)++, gO38ParticleTriangles, 2, 1);
+            gSPVertexJFG((*dList)++, O38_PHYSICAL(gO38ParticleVertices), 4, 0);
+            gSPPolygon((*dList)++, O38_PHYSICAL(gO38ParticleTriangles), 2, 1);
             gDPPipeSync((*dList)++);
             gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, 255);
             camPopModelMtx(dList);

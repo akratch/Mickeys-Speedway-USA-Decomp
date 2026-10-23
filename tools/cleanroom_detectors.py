@@ -343,6 +343,10 @@ CONTENT_EXEMPTIONS: "dict[tuple[str, str], str]" = {
     ): "generated overlay relocation surface: thousands of reviewed symbol addresses and addends required by the linker, never an instruction-word dump",
     (
         "symbol_addrs.us.txt",
+        "oversize",
+    ): "canonical symbol map of named addresses, sizes, evidence tiers and provenance; additional reviewed data labels crossed the generic file-size limit; all content detectors remain active",
+    (
+        "symbol_addrs.us.txt",
         "decoder-audit:hex-run",
     ): "canonical symbol map: thousands of explicit ROM/VRAM addresses by design; it remains fully subject to the clean-room word-table detector",
     (

@@ -1158,8 +1158,20 @@ segments:
       - [0x185449C, c, overlay_001_scaled]
       - [0x18544F4, asm, overlay_001_padding]
       - [0x1854500, bin, overlay_001_data_rodata]
-      - [0x18547C0, bin, overlay_001_reloc1]
-      - [0x1855020, bin, overlay_001_reloc2]
+
+  - name: overlay_001_reloc1
+    type: bin
+    start: 0x18547C0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o001
+
+  - name: overlay_001_reloc2
+    type: bin
+    start: 0x1855020
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o001
 
   - name: overlay_002
     type: code
@@ -1174,8 +1186,20 @@ segments:
     subsegments:
       - [0x1856DF8, c, overlay_002]
       - [0x1859348, bin, overlay_002_data_rodata]
-      - [0x18593F8, bin, overlay_002_reloc1]
-      - [0x1859518, bin, overlay_002_reloc2]
+
+  - name: overlay_002_reloc1
+    type: bin
+    start: 0x18593F8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o002
+
+  - name: overlay_002_reloc2
+    type: bin
+    start: 0x1859518
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o002
 
   - name: overlay_003
     type: code
@@ -1190,8 +1214,20 @@ segments:
     subsegments:
       - [0x1859D30, c, overlay_003]
       - [0x185A500, bin, overlay_003_data_rodata]
-      - [0x185A520, bin, overlay_003_reloc1]
-      - [0x185A5B0, bin, overlay_003_reloc2]
+
+  - name: overlay_003_reloc1
+    type: bin
+    start: 0x185A520
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o003
+
+  - name: overlay_003_reloc2
+    type: bin
+    start: 0x185A5B0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o003
 
   - name: overlay_004
     type: code
@@ -1206,8 +1242,20 @@ segments:
     subsegments:
       - [0x185A678, c, overlay_004]
       - [0x185B328, bin, overlay_004_data_rodata]
-      - [0x185B348, bin, overlay_004_reloc1]
-      - [0x185B3D0, bin, overlay_004_reloc2]
+
+  - name: overlay_004_reloc1
+    type: bin
+    start: 0x185B348
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o004
+
+  - name: overlay_004_reloc2
+    type: bin
+    start: 0x185B3D0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o004
 
   - name: overlay_005
     type: code
@@ -1221,8 +1269,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x185B428, c, overlay_005]
-      - [0x185BB98, bin, overlay_005_reloc1]
-      - [0x185BE18, bin, overlay_005_reloc2]
+
+  - name: overlay_005_reloc1
+    type: bin
+    start: 0x185BB98
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o005
+
+  - name: overlay_005_reloc2
+    type: bin
+    start: 0x185BE18
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o005
 
   - name: overlay_006
     type: code
@@ -1250,8 +1310,20 @@ segments:
     subsegments:
       - [0x185BE88, c, overlay_007]
       - [0x185CE48, bin, overlay_007_data_rodata]
-      - [0x185D798, bin, overlay_007_reloc1]
-      - [0x185D8D0, bin, overlay_007_reloc2]
+
+  - name: overlay_007_reloc1
+    type: bin
+    start: 0x185D798
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o007
+
+  - name: overlay_007_reloc2
+    type: bin
+    start: 0x185D8D0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o007
 
   - name: overlay_008
     type: code
@@ -1270,8 +1342,20 @@ segments:
       - [0x18633A8, bin, overlay_008_data_rodata_520]
       - [0x1865200, .data, overlay8MotionConstants]
       - [0x18652A0, bin, overlay_008_data_rodata_2418]
-      - [0x18653B8, bin, overlay_008_reloc1]
-      - [0x18658F0, bin, overlay_008_reloc2]
+
+  - name: overlay_008_reloc1
+    type: bin
+    start: 0x18653B8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o008
+
+  - name: overlay_008_reloc2
+    type: bin
+    start: 0x18658F0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o008
 
   - name: overlay_009
     type: code
@@ -1286,8 +1370,20 @@ segments:
     subsegments:
       - [0x1866678, c, overlay_009]
       - [0x1867B98, bin, overlay_009_data_rodata]
-      - [0x1867FA8, bin, overlay_009_reloc1]
-      - [0x18680D8, bin, overlay_009_reloc2]
+
+  - name: overlay_009_reloc1
+    type: bin
+    start: 0x1867FA8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o009
+
+  - name: overlay_009_reloc2
+    type: bin
+    start: 0x18680D8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o009
 
   - name: overlay_010
     type: code
@@ -1301,7 +1397,13 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1868450, c, overlay_010]
-      - [0x1868700, bin, overlay_010_reloc1]
+
+  - name: overlay_010_reloc1
+    type: bin
+    start: 0x1868700
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o010
 
   - name: overlay_011
     type: code
@@ -1316,8 +1418,20 @@ segments:
     subsegments:
       - [0x1868848, c, overlay_011]
       - [0x186B508, bin, overlay_011_data_rodata]
-      - [0x186B7B8, bin, overlay_011_reloc1]
-      - [0x186C278, bin, overlay_011_reloc2]
+
+  - name: overlay_011_reloc1
+    type: bin
+    start: 0x186B7B8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o011
+
+  - name: overlay_011_reloc2
+    type: bin
+    start: 0x186C278
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o011
 
   - name: overlay_012
     type: code
@@ -1332,8 +1446,20 @@ segments:
     subsegments:
       - [0x186D280, c, overlay_012]
       - [0x186E520, bin, overlay_012_data_rodata]
-      - [0x186E670, bin, overlay_012_reloc1]
-      - [0x186E7A8, bin, overlay_012_reloc2]
+
+  - name: overlay_012_reloc1
+    type: bin
+    start: 0x186E670
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o012
+
+  - name: overlay_012_reloc2
+    type: bin
+    start: 0x186E7A8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o012
 
   - name: overlay_013
     type: code
@@ -1348,8 +1474,20 @@ segments:
     subsegments:
       - [0x186EB18, c, overlay_013]
       - [0x186F648, bin, overlay_013_data_rodata]
-      - [0x186F688, bin, overlay_013_reloc1]
-      - [0x186F6F8, bin, overlay_013_reloc2]
+
+  - name: overlay_013_reloc1
+    type: bin
+    start: 0x186F688
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o013
+
+  - name: overlay_013_reloc2
+    type: bin
+    start: 0x186F6F8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o013
 
   - name: overlay_014
     type: code
@@ -1364,8 +1502,20 @@ segments:
     subsegments:
       - [0x186F8D8, c, overlay_014]
       - [0x1871518, bin, overlay_014_data_rodata]
-      - [0x18716A8, bin, overlay_014_reloc1]
-      - [0x1871810, bin, overlay_014_reloc2]
+
+  - name: overlay_014_reloc1
+    type: bin
+    start: 0x18716A8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o014
+
+  - name: overlay_014_reloc2
+    type: bin
+    start: 0x1871810
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o014
 
   - name: overlay_015
     type: code
@@ -1379,8 +1529,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1872398, c, overlay_015]
-      - [0x1873058, bin, overlay_015_reloc1]
-      - [0x18730E8, bin, overlay_015_reloc2]
+
+  - name: overlay_015_reloc1
+    type: bin
+    start: 0x1873058
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o015
+
+  - name: overlay_015_reloc2
+    type: bin
+    start: 0x18730E8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o015
 
   - name: overlay_016
     type: code
@@ -1394,8 +1556,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1873498, c, overlay_016]
-      - [0x18738D8, bin, overlay_016_reloc1]
-      - [0x18738E8, bin, overlay_016_reloc2]
+
+  - name: overlay_016_reloc1
+    type: bin
+    start: 0x18738D8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o016
+
+  - name: overlay_016_reloc2
+    type: bin
+    start: 0x18738E8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o016
 
   - name: overlay_017
     type: code
@@ -1410,8 +1584,20 @@ segments:
     subsegments:
       - [0x18739B8, c, overlay_017]
       - [0x1874448, bin, overlay_017_data_rodata]
-      - [0x1874548, bin, overlay_017_reloc1]
-      - [0x1874588, bin, overlay_017_reloc2]
+
+  - name: overlay_017_reloc1
+    type: bin
+    start: 0x1874548
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o017
+
+  - name: overlay_017_reloc2
+    type: bin
+    start: 0x1874588
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o017
 
   - name: overlay_018
     type: code
@@ -1426,8 +1612,20 @@ segments:
     subsegments:
       - [0x18745B8, c, overlay_018]
       - [0x1874C08, bin, overlay_018_data_rodata]
-      - [0x1874C98, bin, overlay_018_reloc1]
-      - [0x1875140, bin, overlay_018_reloc2]
+
+  - name: overlay_018_reloc1
+    type: bin
+    start: 0x1874C98
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o018
+
+  - name: overlay_018_reloc2
+    type: bin
+    start: 0x1875140
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o018
 
   - name: overlay_019
     type: code
@@ -1441,8 +1639,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1875258, c, overlay_019]
-      - [0x1876548, bin, overlay_019_reloc1]
-      - [0x18765A0, bin, overlay_019_reloc2]
+
+  - name: overlay_019_reloc1
+    type: bin
+    start: 0x1876548
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o019
+
+  - name: overlay_019_reloc2
+    type: bin
+    start: 0x18765A0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o019
 
   - name: overlay_020
     type: code
@@ -1457,8 +1667,20 @@ segments:
     subsegments:
       - [0x18765D8, c, overlay_020]
       - [0x1877A68, bin, overlay_020_data_rodata]
-      - [0x1877AB8, bin, overlay_020_reloc1]
-      - [0x1877B40, bin, overlay_020_reloc2]
+
+  - name: overlay_020_reloc1
+    type: bin
+    start: 0x1877AB8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o020
+
+  - name: overlay_020_reloc2
+    type: bin
+    start: 0x1877B40
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o020
 
   - name: overlay_021
     type: code
@@ -1473,8 +1695,20 @@ segments:
     subsegments:
       - [0x1877C88, c, overlay_021]
       - [0x1877F68, bin, overlay_021_data_rodata]
-      - [0x1878078, bin, overlay_021_reloc1]
-      - [0x18780A8, bin, overlay_021_reloc2]
+
+  - name: overlay_021_reloc1
+    type: bin
+    start: 0x1878078
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o021
+
+  - name: overlay_021_reloc2
+    type: bin
+    start: 0x18780A8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o021
 
   - name: overlay_022
     type: code
@@ -1488,8 +1722,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1878108, c, overlay_022]
-      - [0x1879008, bin, overlay_022_reloc1]
-      - [0x1879110, bin, overlay_022_reloc2]
+
+  - name: overlay_022_reloc1
+    type: bin
+    start: 0x1879008
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o022
+
+  - name: overlay_022_reloc2
+    type: bin
+    start: 0x1879110
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o022
 
   - name: overlay_023
     type: code
@@ -1503,8 +1749,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1879210, c, overlay_023]
-      - [0x1879790, bin, overlay_023_reloc1]
-      - [0x18797D8, bin, overlay_023_reloc2]
+
+  - name: overlay_023_reloc1
+    type: bin
+    start: 0x1879790
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o023
+
+  - name: overlay_023_reloc2
+    type: bin
+    start: 0x18797D8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o023
 
   - name: overlay_024
     type: code
@@ -1512,15 +1770,27 @@ segments:
     vram: 0xF0000000
     bss_size: 0x0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o024
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18797E8, c, overlay_024]
-      - [0x1879C08, bin, overlay_024_data_rodata]
-      - [0x1879C18, bin, overlay_024_reloc1]
-      - [0x1879C78, bin, overlay_024_reloc2]
+      - [0x1879C08, .rodata, overlay_024]
+
+  - name: overlay_024_reloc1
+    type: bin
+    start: 0x1879C18
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o024
+
+  - name: overlay_024_reloc2
+    type: bin
+    start: 0x1879C78
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o024
 
   - name: overlay_025
     type: code
@@ -1535,8 +1805,20 @@ segments:
     subsegments:
       - [0x1879C88, c, overlay_025]
       - [0x187A298, bin, overlay_025_data_rodata]
-      - [0x187A2D8, bin, overlay_025_reloc1]
-      - [0x187A368, bin, overlay_025_reloc2]
+
+  - name: overlay_025_reloc1
+    type: bin
+    start: 0x187A2D8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o025
+
+  - name: overlay_025_reloc2
+    type: bin
+    start: 0x187A368
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o025
 
   - name: overlay_026
     type: code
@@ -1551,8 +1833,20 @@ segments:
     subsegments:
       - [0x187A3F8, c, overlay_026]
       - [0x187B768, bin, overlay_026_data_rodata]
-      - [0x187B788, bin, overlay_026_reloc1]
-      - [0x187B928, bin, overlay_026_reloc2]
+
+  - name: overlay_026_reloc1
+    type: bin
+    start: 0x187B788
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o026
+
+  - name: overlay_026_reloc2
+    type: bin
+    start: 0x187B928
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o026
 
   - name: overlay_027
     type: code
@@ -1567,8 +1861,20 @@ segments:
     subsegments:
       - [0x187B9D8, c, overlay_027]
       - [0x187C598, bin, overlay_027_data_rodata]
-      - [0x187C758, bin, overlay_027_reloc1]
-      - [0x187C800, bin, overlay_027_reloc2]
+
+  - name: overlay_027_reloc1
+    type: bin
+    start: 0x187C758
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o027
+
+  - name: overlay_027_reloc2
+    type: bin
+    start: 0x187C800
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o027
 
   - name: overlay_028
     type: code
@@ -1583,8 +1889,20 @@ segments:
     subsegments:
       - [0x187C8D0, c, overlay_028]
       - [0x187D0C0, bin, overlay_028_data_rodata]
-      - [0x187D1F0, bin, overlay_028_reloc1]
-      - [0x187D278, bin, overlay_028_reloc2]
+
+  - name: overlay_028_reloc1
+    type: bin
+    start: 0x187D1F0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o028
+
+  - name: overlay_028_reloc2
+    type: bin
+    start: 0x187D278
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o028
 
   - name: overlay_029
     type: code
@@ -1599,8 +1917,20 @@ segments:
     subsegments:
       - [0x187D2B0, c, overlay_029]
       - [0x187E980, bin, overlay_029_data_rodata]
-      - [0x187E9A0, bin, overlay_029_reloc1]
-      - [0x187EB78, bin, overlay_029_reloc2]
+
+  - name: overlay_029_reloc1
+    type: bin
+    start: 0x187E9A0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o029
+
+  - name: overlay_029_reloc2
+    type: bin
+    start: 0x187EB78
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o029
 
   - name: overlay_030
     type: code
@@ -1614,8 +1944,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x187EEF8, c, overlay_030]
-      - [0x187F338, bin, overlay_030_reloc1]
-      - [0x187F518, bin, overlay_030_reloc2]
+
+  - name: overlay_030_reloc1
+    type: bin
+    start: 0x187F338
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o030
+
+  - name: overlay_030_reloc2
+    type: bin
+    start: 0x187F518
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o030
 
   - name: overlay_031
     type: code
@@ -1630,8 +1972,20 @@ segments:
     subsegments:
       - [0x187F520, c, overlay_031]
       - [0x1880470, bin, overlay_031_data_rodata]
-      - [0x18804B0, bin, overlay_031_reloc1]
-      - [0x18807A0, bin, overlay_031_reloc2]
+
+  - name: overlay_031_reloc1
+    type: bin
+    start: 0x18804B0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o031
+
+  - name: overlay_031_reloc2
+    type: bin
+    start: 0x18807A0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o031
 
   # overlay_032 is a real zero-length header row;
   # it is represented in config/overlays.us.json and has no ROM segment.
@@ -1648,8 +2002,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18807E8, c, overlay_033]
-      - [0x1880F18, bin, overlay_033_reloc1]
-      - [0x18810F0, bin, overlay_033_reloc2]
+
+  - name: overlay_033_reloc1
+    type: bin
+    start: 0x1880F18
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o033
+
+  - name: overlay_033_reloc2
+    type: bin
+    start: 0x18810F0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o033
 
   - name: overlay_034
     type: code
@@ -1664,8 +2030,20 @@ segments:
     subsegments:
       - [0x18811A8, c, overlay_034]
       - [0x1881AA8, bin, overlay_034_data_rodata]
-      - [0x1881AC8, bin, overlay_034_reloc1]
-      - [0x1881B10, bin, overlay_034_reloc2]
+
+  - name: overlay_034_reloc1
+    type: bin
+    start: 0x1881AC8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o034
+
+  - name: overlay_034_reloc2
+    type: bin
+    start: 0x1881B10
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o034
 
   - name: overlay_035
     type: code
@@ -1679,8 +2057,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1881CE0, c, overlay_035]
-      - [0x18830D0, bin, overlay_035_reloc1]
-      - [0x1883468, bin, overlay_035_reloc2]
+
+  - name: overlay_035_reloc1
+    type: bin
+    start: 0x18830D0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o035
+
+  - name: overlay_035_reloc2
+    type: bin
+    start: 0x1883468
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o035
 
   - name: overlay_036
     type: code
@@ -1695,8 +2085,20 @@ segments:
     subsegments:
       - [0x18834B8, c, overlay_036]
       - [0x1884C08, bin, overlay_036_data_rodata]
-      - [0x1885048, bin, overlay_036_reloc1]
-      - [0x1885298, bin, overlay_036_reloc2]
+
+  - name: overlay_036_reloc1
+    type: bin
+    start: 0x1885048
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o036
+
+  - name: overlay_036_reloc2
+    type: bin
+    start: 0x1885298
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o036
 
   - name: overlay_037
     type: code
@@ -1711,8 +2113,20 @@ segments:
     subsegments:
       - [0x1885620, c, overlay_037]
       - [0x1885B80, bin, overlay_037_data_rodata]
-      - [0x1885C70, bin, overlay_037_reloc1]
-      - [0x1885CB0, bin, overlay_037_reloc2]
+
+  - name: overlay_037_reloc1
+    type: bin
+    start: 0x1885C70
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o037
+
+  - name: overlay_037_reloc2
+    type: bin
+    start: 0x1885CB0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o037
 
   - name: overlay_038
     type: code
@@ -1727,8 +2141,20 @@ segments:
     subsegments:
       - [0x1885D10, c, overlay_038]
       - [0x1886500, bin, overlay_038_data_rodata]
-      - [0x18865A0, bin, overlay_038_reloc1]
-      - [0x1886630, bin, overlay_038_reloc2]
+
+  - name: overlay_038_reloc1
+    type: bin
+    start: 0x18865A0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o038
+
+  - name: overlay_038_reloc2
+    type: bin
+    start: 0x1886630
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o038
 
   - name: overlay_039
     type: code
@@ -1742,7 +2168,13 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18866A0, c, overlay_039]
-      - [0x1886810, bin, overlay_039_reloc1]
+
+  - name: overlay_039_reloc1
+    type: bin
+    start: 0x1886810
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o039
 
   - name: overlay_040
     type: code
@@ -1757,8 +2189,20 @@ segments:
     subsegments:
       - [0x18868B0, c, overlay_040]
       - [0x18870E0, bin, overlay_040_data_rodata]
-      - [0x1887110, bin, overlay_040_reloc1]
-      - [0x1887320, bin, overlay_040_reloc2]
+
+  - name: overlay_040_reloc1
+    type: bin
+    start: 0x1887110
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o040
+
+  - name: overlay_040_reloc2
+    type: bin
+    start: 0x1887320
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o040
 
   - name: overlay_041
     type: code
@@ -1773,8 +2217,20 @@ segments:
     subsegments:
       - [0x1887338, c, overlay_041]
       - [0x1889118, bin, overlay_041_data_rodata]
-      - [0x1889188, bin, overlay_041_reloc1]
-      - [0x1889498, bin, overlay_041_reloc2]
+
+  - name: overlay_041_reloc1
+    type: bin
+    start: 0x1889188
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o041
+
+  - name: overlay_041_reloc2
+    type: bin
+    start: 0x1889498
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o041
 
   - name: overlay_042
     type: code
@@ -1788,8 +2244,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18896C0, c, overlay_042]
-      - [0x1889DD0, bin, overlay_042_reloc1]
-      - [0x1889EA0, bin, overlay_042_reloc2]
+
+  - name: overlay_042_reloc1
+    type: bin
+    start: 0x1889DD0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o042
+
+  - name: overlay_042_reloc2
+    type: bin
+    start: 0x1889EA0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o042
 
   - name: overlay_043
     type: code
@@ -1804,8 +2272,20 @@ segments:
     subsegments:
       - [0x1889FD0, c, overlay_043]
       - [0x188B400, bin, overlay_043_data_rodata]
-      - [0x188B500, bin, overlay_043_reloc1]
-      - [0x188B6A0, bin, overlay_043_reloc2]
+
+  - name: overlay_043_reloc1
+    type: bin
+    start: 0x188B500
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o043
+
+  - name: overlay_043_reloc2
+    type: bin
+    start: 0x188B6A0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o043
 
   - name: overlay_044
     type: code
@@ -1820,8 +2300,20 @@ segments:
     subsegments:
       - [0x188B860, c, overlay_044]
       - [0x188C360, bin, overlay_044_data_rodata]
-      - [0x188C3B0, bin, overlay_044_reloc1]
-      - [0x188C430, bin, overlay_044_reloc2]
+
+  - name: overlay_044_reloc1
+    type: bin
+    start: 0x188C3B0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o044
+
+  - name: overlay_044_reloc2
+    type: bin
+    start: 0x188C430
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o044
 
   - name: overlay_045
     type: code
@@ -1835,8 +2327,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x188C458, c, overlay_045]
-      - [0x188E0F8, bin, overlay_045_reloc1]
-      - [0x188E348, bin, overlay_045_reloc2]
+
+  - name: overlay_045_reloc1
+    type: bin
+    start: 0x188E0F8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o045
+
+  - name: overlay_045_reloc2
+    type: bin
+    start: 0x188E348
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o045
 
   - name: overlay_046
     type: code
@@ -1851,8 +2355,20 @@ segments:
     subsegments:
       - [0x188E3F8, c, overlay_046]
       - [0x188FD58, bin, overlay_046_data_rodata]
-      - [0x18900E8, bin, overlay_046_reloc1]
-      - [0x18905B8, bin, overlay_046_reloc2]
+
+  - name: overlay_046_reloc1
+    type: bin
+    start: 0x18900E8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o046
+
+  - name: overlay_046_reloc2
+    type: bin
+    start: 0x18905B8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o046
 
   - name: overlay_047
     type: code
@@ -1869,8 +2385,20 @@ segments:
       - [0x18917E8, c, overlay47ReleaseResources]
       - [0x1891948, c, func_overlay_047_F0000B30_1891948]
       - [0x1893B28, c, overlay47SpawnObject]
-      - [0x18941A8, bin, overlay_047_reloc1]
-      - [0x1894930, bin, overlay_047_reloc2]
+
+  - name: overlay_047_reloc1
+    type: bin
+    start: 0x18941A8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o047
+
+  - name: overlay_047_reloc2
+    type: bin
+    start: 0x1894930
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o047
 
   - name: overlay_048
     type: code
@@ -1885,8 +2413,20 @@ segments:
     subsegments:
       - [0x1895408, c, overlay_048]
       - [0x1895878, bin, overlay_048_data_rodata]
-      - [0x1895F78, bin, overlay_048_reloc1]
-      - [0x1895FF8, bin, overlay_048_reloc2]
+
+  - name: overlay_048_reloc1
+    type: bin
+    start: 0x1895F78
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o048
+
+  - name: overlay_048_reloc2
+    type: bin
+    start: 0x1895FF8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o048
 
   - name: overlay_049
     type: code
@@ -1901,8 +2441,20 @@ segments:
     subsegments:
       - [0x1896410, c, overlay_049]
       - [0x1896790, bin, overlay_049_data_rodata]
-      - [0x18967C0, bin, overlay_049_reloc1]
-      - [0x18968A0, bin, overlay_049_reloc2]
+
+  - name: overlay_049_reloc1
+    type: bin
+    start: 0x18967C0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o049
+
+  - name: overlay_049_reloc2
+    type: bin
+    start: 0x18968A0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o049
 
   - name: overlay_050
     type: code
@@ -1917,8 +2469,20 @@ segments:
     subsegments:
       - [0x1896970, c, overlay_050]
       - [0x18987E0, bin, overlay_050_data_rodata]
-      - [0x1898B60, bin, overlay_050_reloc1]
-      - [0x18990E0, bin, overlay_050_reloc2]
+
+  - name: overlay_050_reloc1
+    type: bin
+    start: 0x1898B60
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o050
+
+  - name: overlay_050_reloc2
+    type: bin
+    start: 0x18990E0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o050
 
   - name: overlay_051
     type: code
@@ -1933,8 +2497,20 @@ segments:
     subsegments:
       - [0x1899900, c, overlay_051]
       - [0x189A1B0, bin, overlay_051_data_rodata]
-      - [0x189A2B0, bin, overlay_051_reloc1]
-      - [0x189A4B0, bin, overlay_051_reloc2]
+
+  - name: overlay_051_reloc1
+    type: bin
+    start: 0x189A2B0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o051
+
+  - name: overlay_051_reloc2
+    type: bin
+    start: 0x189A4B0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o051
 
   - name: overlay_052
     type: code
@@ -1948,8 +2524,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x189A670, c, overlay_052]
-      - [0x189CAD0, bin, overlay_052_reloc1]
-      - [0x189D010, bin, overlay_052_reloc2]
+
+  - name: overlay_052_reloc1
+    type: bin
+    start: 0x189CAD0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o052
+
+  - name: overlay_052_reloc2
+    type: bin
+    start: 0x189D010
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o052
 
   - name: overlay_053
     type: code
@@ -1964,8 +2552,20 @@ segments:
     subsegments:
       - [0x189D9A8, c, overlay_053]
       - [0x189E658, bin, overlay_053_data_rodata]
-      - [0x189E788, bin, overlay_053_reloc1]
-      - [0x189EA08, bin, overlay_053_reloc2]
+
+  - name: overlay_053_reloc1
+    type: bin
+    start: 0x189E788
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o053
+
+  - name: overlay_053_reloc2
+    type: bin
+    start: 0x189EA08
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o053
 
   - name: overlay_054
     type: code
@@ -1980,8 +2580,20 @@ segments:
     subsegments:
       - [0x189ECA0, c, overlay_054]
       - [0x18A0E60, bin, overlay_054_data_rodata]
-      - [0x18A0E70, bin, overlay_054_reloc1]
-      - [0x18A1370, bin, overlay_054_reloc2]
+
+  - name: overlay_054_reloc1
+    type: bin
+    start: 0x18A0E70
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o054
+
+  - name: overlay_054_reloc2
+    type: bin
+    start: 0x18A1370
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o054
 
   - name: overlay_055
     type: code
@@ -1996,8 +2608,20 @@ segments:
     subsegments:
       - [0x18A1B18, c, overlay_055]
       - [0x18A2788, bin, overlay_055_data_rodata]
-      - [0x18A28A8, bin, overlay_055_reloc1]
-      - [0x18A2B58, bin, overlay_055_reloc2]
+
+  - name: overlay_055_reloc1
+    type: bin
+    start: 0x18A28A8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o055
+
+  - name: overlay_055_reloc2
+    type: bin
+    start: 0x18A2B58
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o055
 
   - name: overlay_056
     type: code
@@ -2012,8 +2636,20 @@ segments:
     subsegments:
       - [0x18A2D78, c, overlay_056]
       - [0x18A3878, bin, overlay_056_data_rodata]
-      - [0x18A3908, bin, overlay_056_reloc1]
-      - [0x18A3AD8, bin, overlay_056_reloc2]
+
+  - name: overlay_056_reloc1
+    type: bin
+    start: 0x18A3908
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o056
+
+  - name: overlay_056_reloc2
+    type: bin
+    start: 0x18A3AD8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o056
 
   - name: overlay_057
     type: code
@@ -2028,8 +2664,20 @@ segments:
     subsegments:
       - [0x18A3BF8, c, overlay_057]
       - [0x18AA6A8, bin, overlay_057_data_rodata]
-      - [0x18AAD08, bin, overlay_057_reloc1]
-      - [0x18AC418, bin, overlay_057_reloc2]
+
+  - name: overlay_057_reloc1
+    type: bin
+    start: 0x18AAD08
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o057
+
+  - name: overlay_057_reloc2
+    type: bin
+    start: 0x18AC418
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o057
 
   - name: overlay_058
     type: code
@@ -2044,8 +2692,20 @@ segments:
     subsegments:
       - [0x18AF1E8, c, overlay_058]
       - [0x18B4C08, bin, overlay_058_data_rodata]
-      - [0x18B5038, bin, overlay_058_reloc1]
-      - [0x18B6A40, bin, overlay_058_reloc2]
+
+  - name: overlay_058_reloc1
+    type: bin
+    start: 0x18B5038
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o058
+
+  - name: overlay_058_reloc2
+    type: bin
+    start: 0x18B6A40
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o058
 
   - name: overlay_059
     type: code
@@ -2060,8 +2720,20 @@ segments:
     subsegments:
       - [0x18B8750, c, overlay_059]
       - [0x18B9170, bin, overlay_059_data_rodata]
-      - [0x18B9900, bin, overlay_059_reloc1]
-      - [0x18B9958, bin, overlay_059_reloc2]
+
+  - name: overlay_059_reloc1
+    type: bin
+    start: 0x18B9900
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o059
+
+  - name: overlay_059_reloc2
+    type: bin
+    start: 0x18B9958
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o059
 
   - name: overlay_060
     type: code
@@ -2076,8 +2748,20 @@ segments:
     subsegments:
       - [0x18B9DD8, c, overlay_060]
       - [0x18BD338, bin, overlay_060_data_rodata]
-      - [0x18BD598, bin, overlay_060_reloc1]
-      - [0x18BE598, bin, overlay_060_reloc2]
+
+  - name: overlay_060_reloc1
+    type: bin
+    start: 0x18BD598
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o060
+
+  - name: overlay_060_reloc2
+    type: bin
+    start: 0x18BE598
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o060
 
   - name: overlay_061
     type: code
@@ -2092,8 +2776,20 @@ segments:
     subsegments:
       - [0x18BF3C8, c, overlay_061]
       - [0x18C0E58, bin, overlay_061_data_rodata]
-      - [0x18C10F8, bin, overlay_061_reloc1]
-      - [0x18C15F8, bin, overlay_061_reloc2]
+
+  - name: overlay_061_reloc1
+    type: bin
+    start: 0x18C10F8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o061
+
+  - name: overlay_061_reloc2
+    type: bin
+    start: 0x18C15F8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o061
 
   - name: overlay_062
     type: code
@@ -2108,8 +2804,20 @@ segments:
     subsegments:
       - [0x18C2220, c, overlay_062]
       - [0x18C27D0, bin, overlay_062_data_rodata]
-      - [0x18C2810, bin, overlay_062_reloc1]
-      - [0x18C29D8, bin, overlay_062_reloc2]
+
+  - name: overlay_062_reloc1
+    type: bin
+    start: 0x18C2810
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o062
+
+  - name: overlay_062_reloc2
+    type: bin
+    start: 0x18C29D8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o062
 
   - name: overlay_063
     type: code
@@ -2124,8 +2832,20 @@ segments:
     subsegments:
       - [0x18C2B88, c, overlay_063]
       - [0x18C34B8, bin, overlay_063_data_rodata]
-      - [0x18C3618, bin, overlay_063_reloc1]
-      - [0x18C3840, bin, overlay_063_reloc2]
+
+  - name: overlay_063_reloc1
+    type: bin
+    start: 0x18C3618
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o063
+
+  - name: overlay_063_reloc2
+    type: bin
+    start: 0x18C3840
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o063
 
   - name: overlay_064
     type: code
@@ -2140,8 +2860,20 @@ segments:
     subsegments:
       - [0x18C3B28, c, overlay_064]
       - [0x18C41B8, .data, overlay_064]
-      - [0x18C41C8, bin, overlay_064_reloc1]
-      - [0x18C4218, bin, overlay_064_reloc2]
+
+  - name: overlay_064_reloc1
+    type: bin
+    start: 0x18C41C8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o064
+
+  - name: overlay_064_reloc2
+    type: bin
+    start: 0x18C4218
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o064
 
   - name: overlay_065
     type: code
@@ -2162,8 +2894,20 @@ segments:
       - [0x18C5C7C, c, overlay65SpawnRecord]
       - [0x18C5E1C, asm, overlay_065_padding]
       - [0x18C5E28, bin, overlay_065_data_rodata]
-      - [0x18C6048, bin, overlay_065_reloc1]
-      - [0x18C6180, bin, overlay_065_reloc2]
+
+  - name: overlay_065_reloc1
+    type: bin
+    start: 0x18C6048
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o065
+
+  - name: overlay_065_reloc2
+    type: bin
+    start: 0x18C6180
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o065
 
   - name: overlay_066
     type: code
@@ -2178,8 +2922,20 @@ segments:
     subsegments:
       - [0x18C6468, c, overlay_066]
       - [0x18C6C78, bin, overlay_066_data_rodata]
-      - [0x18C6D88, bin, overlay_066_reloc1]
-      - [0x18C6E50, bin, overlay_066_reloc2]
+
+  - name: overlay_066_reloc1
+    type: bin
+    start: 0x18C6D88
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o066
+
+  - name: overlay_066_reloc2
+    type: bin
+    start: 0x18C6E50
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o066
 
   - name: overlay_067
     type: code
@@ -2194,8 +2950,20 @@ segments:
     subsegments:
       - [0x18C6F40, c, overlay_067]
       - [0x18C7090, bin, overlay_067_data_rodata]
-      - [0x18C7140, bin, overlay_067_reloc1]
-      - [0x18C7148, bin, overlay_067_reloc2]
+
+  - name: overlay_067_reloc1
+    type: bin
+    start: 0x18C7140
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o067
+
+  - name: overlay_067_reloc2
+    type: bin
+    start: 0x18C7148
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o067
 
   - name: overlay_068
     type: code
@@ -2210,8 +2978,20 @@ segments:
     subsegments:
       - [0x18C7160, c, overlay_068]
       - [0x18C8710, bin, overlay_068_data_rodata]
-      - [0x18C8750, bin, overlay_068_reloc1]
-      - [0x18C89B0, bin, overlay_068_reloc2]
+
+  - name: overlay_068_reloc1
+    type: bin
+    start: 0x18C8750
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o068
+
+  - name: overlay_068_reloc2
+    type: bin
+    start: 0x18C89B0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o068
 
   - name: overlay_069
     type: code
@@ -2225,7 +3005,13 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18C8A68, c, overlay_069]
-      - [0x18C9178, bin, overlay_069_reloc1]
+
+  - name: overlay_069_reloc1
+    type: bin
+    start: 0x18C9178
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o069
 
   - name: overlay_070
     type: code
@@ -2240,8 +3026,20 @@ segments:
     subsegments:
       - [0x18C91C8, c, overlay_070]
       - [0x18C98F8, bin, overlay_070_data_rodata]
-      - [0x18C99B8, bin, overlay_070_reloc1]
-      - [0x18C9A80, bin, overlay_070_reloc2]
+
+  - name: overlay_070_reloc1
+    type: bin
+    start: 0x18C99B8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o070
+
+  - name: overlay_070_reloc2
+    type: bin
+    start: 0x18C9A80
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o070
 
   - name: overlay_071
     type: code
@@ -2256,8 +3054,20 @@ segments:
     subsegments:
       - [0x18C9B20, c, overlay_071]
       - [0x18CA670, bin, overlay_071_data_rodata]
-      - [0x18CA810, bin, overlay_071_reloc1]
-      - [0x18CA858, bin, overlay_071_reloc2]
+
+  - name: overlay_071_reloc1
+    type: bin
+    start: 0x18CA810
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o071
+
+  - name: overlay_071_reloc2
+    type: bin
+    start: 0x18CA858
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o071
 
   - name: overlay_072
     type: code
@@ -2271,8 +3081,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18CA920, c, overlay_072]
-      - [0x18CAAA0, bin, overlay_072_reloc1]
-      - [0x18CAAB0, bin, overlay_072_reloc2]
+
+  - name: overlay_072_reloc1
+    type: bin
+    start: 0x18CAAA0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o072
+
+  - name: overlay_072_reloc2
+    type: bin
+    start: 0x18CAAB0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o072
 
   - name: overlay_073
     type: code
@@ -2287,8 +3109,20 @@ segments:
     subsegments:
       - [0x18CAAC0, c, overlay_073]
       - [0x18CB970, bin, overlay_073_data_rodata]
-      - [0x18CBAA0, bin, overlay_073_reloc1]
-      - [0x18CBB38, bin, overlay_073_reloc2]
+
+  - name: overlay_073_reloc1
+    type: bin
+    start: 0x18CBAA0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o073
+
+  - name: overlay_073_reloc2
+    type: bin
+    start: 0x18CBB38
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o073
 
   - name: overlay_074
     type: code
@@ -2303,8 +3137,20 @@ segments:
     subsegments:
       - [0x18CBCA0, c, overlay_074]
       - [0x18CBEF0, bin, overlay_074_data_rodata]
-      - [0x18CBF00, bin, overlay_074_reloc1]
-      - [0x18CBF58, bin, overlay_074_reloc2]
+
+  - name: overlay_074_reloc1
+    type: bin
+    start: 0x18CBF00
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o074
+
+  - name: overlay_074_reloc2
+    type: bin
+    start: 0x18CBF58
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o074
 
   - name: overlay_075
     type: code
@@ -2319,8 +3165,20 @@ segments:
     subsegments:
       - [0x18CBF68, c, overlay_075]
       - [0x18CC668, bin, overlay_075_data_rodata]
-      - [0x18CC678, bin, overlay_075_reloc1]
-      - [0x18CC720, bin, overlay_075_reloc2]
+
+  - name: overlay_075_reloc1
+    type: bin
+    start: 0x18CC678
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o075
+
+  - name: overlay_075_reloc2
+    type: bin
+    start: 0x18CC720
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o075
 
   - name: overlay_076
     type: code
@@ -2335,8 +3193,20 @@ segments:
     subsegments:
       - [0x18CC770, c, overlay_076]
       - [0x18CC890, bin, overlay_076_data_rodata]
-      - [0x18CC8A0, bin, overlay_076_reloc1]
-      - [0x18CC8B0, bin, overlay_076_reloc2]
+
+  - name: overlay_076_reloc1
+    type: bin
+    start: 0x18CC8A0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o076
+
+  - name: overlay_076_reloc2
+    type: bin
+    start: 0x18CC8B0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o076
 
   - name: overlay_077
     type: code
@@ -2351,8 +3221,20 @@ segments:
     subsegments:
       - [0x18CC910, c, overlay_077]
       - [0x18CCD50, bin, overlay_077_data_rodata]
-      - [0x18CCD70, bin, overlay_077_reloc1]
-      - [0x18CCDC0, bin, overlay_077_reloc2]
+
+  - name: overlay_077_reloc1
+    type: bin
+    start: 0x18CCD70
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o077
+
+  - name: overlay_077_reloc2
+    type: bin
+    start: 0x18CCDC0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o077
 
   - name: overlay_078
     type: code
@@ -2366,7 +3248,13 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18CCEE0, c, overlay_078]
-      - [0x18CCF90, bin, overlay_078_reloc1]
+
+  - name: overlay_078_reloc1
+    type: bin
+    start: 0x18CCF90
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o078
 
   - name: overlay_079
     type: code
@@ -2380,8 +3268,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18CCFA0, c, overlay_079]
-      - [0x18CE4E0, bin, overlay_079_reloc1]
-      - [0x18CE778, bin, overlay_079_reloc2]
+
+  - name: overlay_079_reloc1
+    type: bin
+    start: 0x18CE4E0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o079
+
+  - name: overlay_079_reloc2
+    type: bin
+    start: 0x18CE778
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o079
 
   - name: overlay_080
     type: code
@@ -2396,8 +3296,20 @@ segments:
     subsegments:
       - [0x18CE8C8, c, overlay_080]
       - [0x18CECB8, bin, overlay_080_data_rodata]
-      - [0x18CECE8, bin, overlay_080_reloc1]
-      - [0x18CED18, bin, overlay_080_reloc2]
+
+  - name: overlay_080_reloc1
+    type: bin
+    start: 0x18CECE8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o080
+
+  - name: overlay_080_reloc2
+    type: bin
+    start: 0x18CED18
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o080
 
   - name: overlay_081
     type: code
@@ -2412,8 +3324,20 @@ segments:
     subsegments:
       - [0x18CEDA8, c, overlay_081]
       - [0x18CF0F8, bin, overlay_081_data_rodata]
-      - [0x18CF118, bin, overlay_081_reloc1]
-      - [0x18CF140, bin, overlay_081_reloc2]
+
+  - name: overlay_081_reloc1
+    type: bin
+    start: 0x18CF118
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o081
+
+  - name: overlay_081_reloc2
+    type: bin
+    start: 0x18CF140
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o081
 
   - name: overlay_082
     type: code
@@ -2429,8 +3353,20 @@ segments:
       - [0x18CF180, c, overlay_082]
       - [0x18CF1C0, c, overlay_082_tail]
       - [0x18CF650, bin, overlay_082_data_rodata]
-      - [0x18CF6F0, bin, overlay_082_reloc1]
-      - [0x18CF780, bin, overlay_082_reloc2]
+
+  - name: overlay_082_reloc1
+    type: bin
+    start: 0x18CF6F0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o082
+
+  - name: overlay_082_reloc2
+    type: bin
+    start: 0x18CF780
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o082
 
   - name: overlay_083
     type: code
@@ -2445,8 +3381,20 @@ segments:
     subsegments:
       - [0x18CF7C0, c, overlay_083]
       - [0x18D0320, bin, overlay_083_data_rodata]
-      - [0x18D0430, bin, overlay_083_reloc1]
-      - [0x18D0488, bin, overlay_083_reloc2]
+
+  - name: overlay_083_reloc1
+    type: bin
+    start: 0x18D0430
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o083
+
+  - name: overlay_083_reloc2
+    type: bin
+    start: 0x18D0488
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o083
 
   - name: overlay_084
     type: code
@@ -2461,8 +3409,20 @@ segments:
     subsegments:
       - [0x18D04E0, c, overlay_084]
       - [0x18D18A0, bin, overlay_084_data_rodata]
-      - [0x18D18C0, bin, overlay_084_reloc1]
-      - [0x18D1A00, bin, overlay_084_reloc2]
+
+  - name: overlay_084_reloc1
+    type: bin
+    start: 0x18D18C0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o084
+
+  - name: overlay_084_reloc2
+    type: bin
+    start: 0x18D1A00
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o084
 
   - name: overlay_085
     type: code
@@ -2476,7 +3436,13 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18D1B58, c, overlay_085]
-      - [0x18D1DF8, bin, overlay_085_reloc1]
+
+  - name: overlay_085_reloc1
+    type: bin
+    start: 0x18D1DF8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o085
 
   - name: overlay_086
     type: code
@@ -2491,8 +3457,20 @@ segments:
     subsegments:
       - [0x18D1E38, c, overlay_086]
       - [0x18D2D08, bin, overlay_086_data_rodata]
-      - [0x18D2DA8, bin, overlay_086_reloc1]
-      - [0x18D2EC0, bin, overlay_086_reloc2]
+
+  - name: overlay_086_reloc1
+    type: bin
+    start: 0x18D2DA8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o086
+
+  - name: overlay_086_reloc2
+    type: bin
+    start: 0x18D2EC0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o086
 
   - name: overlay_087
     type: code
@@ -2507,8 +3485,20 @@ segments:
     subsegments:
       - [0x18D2F68, c, overlay_087]
       - [0x18D38D8, bin, overlay_087_data_rodata]
-      - [0x18D3918, bin, overlay_087_reloc1]
-      - [0x18D39C0, bin, overlay_087_reloc2]
+
+  - name: overlay_087_reloc1
+    type: bin
+    start: 0x18D3918
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o087
+
+  - name: overlay_087_reloc2
+    type: bin
+    start: 0x18D39C0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o087
 
   - name: overlay_088
     type: code
@@ -2522,7 +3512,13 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18D3A88, c, overlay_088]
-      - [0x18D41C8, bin, overlay_088_reloc1]
+
+  - name: overlay_088_reloc1
+    type: bin
+    start: 0x18D41C8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o088
 
   - name: overlay_089
     type: code
@@ -2537,8 +3533,20 @@ segments:
     subsegments:
       - [0x18D4230, c, overlay_089]
       - [0x18D4A00, bin, overlay_089_data_rodata]
-      - [0x18D4A10, bin, overlay_089_reloc1]
-      - [0x18D4AA8, bin, overlay_089_reloc2]
+
+  - name: overlay_089_reloc1
+    type: bin
+    start: 0x18D4A10
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o089
+
+  - name: overlay_089_reloc2
+    type: bin
+    start: 0x18D4AA8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o089
 
   - name: overlay_090
     type: code
@@ -2553,8 +3561,20 @@ segments:
     subsegments:
       - [0x18D4AF8, c, overlay_090]
       - [0x18D5618, bin, overlay_090_data_rodata]
-      - [0x18D5658, bin, overlay_090_reloc1]
-      - [0x18D57B0, bin, overlay_090_reloc2]
+
+  - name: overlay_090_reloc1
+    type: bin
+    start: 0x18D5658
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o090
+
+  - name: overlay_090_reloc2
+    type: bin
+    start: 0x18D57B0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o090
 
   - name: overlay_091
     type: code
@@ -2569,8 +3589,20 @@ segments:
     subsegments:
       - [0x18D5888, c, overlay_091]
       - [0x18D5E08, bin, overlay_091_data_rodata]
-      - [0x18D5E28, bin, overlay_091_reloc1]
-      - [0x18D5ED0, bin, overlay_091_reloc2]
+
+  - name: overlay_091_reloc1
+    type: bin
+    start: 0x18D5E28
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o091
+
+  - name: overlay_091_reloc2
+    type: bin
+    start: 0x18D5ED0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o091
 
   - name: overlay_092
     type: code
@@ -2585,8 +3617,20 @@ segments:
     subsegments:
       - [0x18D5F20, c, overlay_092]
       - [0x18D6950, bin, overlay_092_data_rodata]
-      - [0x18D6960, bin, overlay_092_reloc1]
-      - [0x18D6A40, bin, overlay_092_reloc2]
+
+  - name: overlay_092_reloc1
+    type: bin
+    start: 0x18D6960
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o092
+
+  - name: overlay_092_reloc2
+    type: bin
+    start: 0x18D6A40
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o092
 
   - name: overlay_093
     type: code
@@ -2600,7 +3644,13 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18D6AA0, c, overlay_093]
-      - [0x18D6B90, bin, overlay_093_reloc1]
+
+  - name: overlay_093_reloc1
+    type: bin
+    start: 0x18D6B90
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o093
 
   - name: overlay_094
     type: code
@@ -2615,8 +3665,20 @@ segments:
     subsegments:
       - [0x18D6BA0, c, overlay_094]
       - [0x18D7110, bin, overlay_094_data_rodata]
-      - [0x18D7280, bin, overlay_094_reloc1]
-      - [0x18D7310, bin, overlay_094_reloc2]
+
+  - name: overlay_094_reloc1
+    type: bin
+    start: 0x18D7280
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o094
+
+  - name: overlay_094_reloc2
+    type: bin
+    start: 0x18D7310
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o094
 
   - name: overlay_095
     type: code
@@ -2630,8 +3692,20 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18D73E0, c, overlay_095]
-      - [0x18D75D0, bin, overlay_095_reloc1]
-      - [0x18D7628, bin, overlay_095_reloc2]
+
+  - name: overlay_095_reloc1
+    type: bin
+    start: 0x18D75D0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o095
+
+  - name: overlay_095_reloc2
+    type: bin
+    start: 0x18D7628
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o095
 
   - name: overlay_096
     type: code
@@ -2646,8 +3720,20 @@ segments:
     subsegments:
       - [0x18D7638, c, overlay_096]
       - [0x18D7D18, bin, overlay_096_data_rodata]
-      - [0x18D7DD8, bin, overlay_096_reloc1]
-      - [0x18D7E20, bin, overlay_096_reloc2]
+
+  - name: overlay_096_reloc1
+    type: bin
+    start: 0x18D7DD8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o096
+
+  - name: overlay_096_reloc2
+    type: bin
+    start: 0x18D7E20
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o096
 
   - name: overlay_097
     type: code
@@ -2662,8 +3748,20 @@ segments:
     subsegments:
       - [0x18D7E98, c, overlay_097]
       - [0x18D8908, bin, overlay_097_data_rodata]
-      - [0x18D8918, bin, overlay_097_reloc1]
-      - [0x18D8990, bin, overlay_097_reloc2]
+
+  - name: overlay_097_reloc1
+    type: bin
+    start: 0x18D8918
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o097
+
+  - name: overlay_097_reloc2
+    type: bin
+    start: 0x18D8990
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o097
 
   - name: overlay_098
     type: code
@@ -2678,8 +3776,20 @@ segments:
     subsegments:
       - [0x18D89C0, c, overlay_098]
       - [0x18D93D0, bin, overlay_098_data_rodata]
-      - [0x18D93F0, bin, overlay_098_reloc1]
-      - [0x18D9478, bin, overlay_098_reloc2]
+
+  - name: overlay_098_reloc1
+    type: bin
+    start: 0x18D93F0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o098
+
+  - name: overlay_098_reloc2
+    type: bin
+    start: 0x18D9478
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o098
 
   - name: overlay_099
     type: code
@@ -2694,8 +3804,20 @@ segments:
     subsegments:
       - [0x18D95B0, c, overlay_099]
       - [0x18DA910, bin, overlay_099_data_rodata]
-      - [0x18DA9D0, bin, overlay_099_reloc1]
-      - [0x18DAB40, bin, overlay_099_reloc2]
+
+  - name: overlay_099_reloc1
+    type: bin
+    start: 0x18DA9D0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o099
+
+  - name: overlay_099_reloc2
+    type: bin
+    start: 0x18DAB40
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o099
 
   - name: overlay_100
     type: code
@@ -2710,8 +3832,20 @@ segments:
     subsegments:
       - [0x18DAD28, c, overlay_100]
       - [0x18DB678, bin, overlay_100_data_rodata]
-      - [0x18DB6B8, bin, overlay_100_reloc1]
-      - [0x18DB770, bin, overlay_100_reloc2]
+
+  - name: overlay_100_reloc1
+    type: bin
+    start: 0x18DB6B8
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o100
+
+  - name: overlay_100_reloc2
+    type: bin
+    start: 0x18DB770
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o100
 
   - name: overlay_101
     type: code
@@ -2726,8 +3860,20 @@ segments:
     subsegments:
       - [0x18DB820, c, overlay_101]
       - [0x18E8700, bin, overlay_101_data_rodata]
-      - [0x18EE460, bin, overlay_101_reloc1]
-      - [0x18EEA88, bin, overlay_101_reloc2]
+
+  - name: overlay_101_reloc1
+    type: bin
+    start: 0x18EE460
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o101
+
+  - name: overlay_101_reloc2
+    type: bin
+    start: 0x18EEA88
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o101
 
   - name: overlay_102
     type: code
@@ -2741,7 +3887,13 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18F1D50, c, overlay_102]
-      - [0x18F1DC0, bin, overlay_102_reloc1]
+
+  - name: overlay_102_reloc1
+    type: bin
+    start: 0x18F1DC0
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o102
 
   - name: overlay_103
     type: code
@@ -2755,7 +3907,13 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18F1DE8, c, overlay_103]
-      - [0x18F1E58, bin, overlay_103_reloc1]
+
+  - name: overlay_103_reloc1
+    type: bin
+    start: 0x18F1E58
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o103
 
   - name: overlay_104
     type: code
@@ -2769,7 +3927,13 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18F1E80, c, overlay_104]
-      - [0x18F1F00, bin, overlay_104_reloc1]
+
+  - name: overlay_104_reloc1
+    type: bin
+    start: 0x18F1F00
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o104
 
   - name: overlay_105
     type: code
@@ -2783,7 +3947,13 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18F1F10, c, overlay_105]
-      - [0x18F1F90, bin, overlay_105_reloc1]
+
+  - name: overlay_105_reloc1
+    type: bin
+    start: 0x18F1F90
+    align: 0x8
+    subalign: 0x1
+    dir: overlays/o105
 
   - name: overlay_106
     type: code

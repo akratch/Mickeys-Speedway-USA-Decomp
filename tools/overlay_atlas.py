@@ -262,6 +262,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
         (0x03E0, 0x0520, "overlay8EffectTables", ".data"),
         (0x2378, 0x2418, "overlay8MotionConstants", ".data"),
     ],
+    24: [(0x0, 0x10, "overlay_024", ".rodata")],
     64: [(0x0, 0x10, "overlay_064", ".data")],
 }
 DATA_ONLY_FIXED_DATA_SOURCES = {
@@ -1846,9 +1847,19 @@ def render_yaml_block(
                 continue
             if section == "data_rodata" and row.get("data_rodata_ownership"):
                 continue
-            lines.append(
-                f"      - [{section_row['start']}, bin, {name}{suffix}]"
-            )
+            # Runtime relocation records follow the loadable module image;
+            # they are not the module's initialized .data section. Keeping
+            # them in the code segment would order them before compiler
+            # .rodata and move BSS past the serialized tables.
+            lines += [
+                "",
+                f"  - name: {name}{suffix}",
+                "    type: bin",
+                f"    start: {section_row['start']}",
+                "    align: 0x8",
+                "    subalign: 0x1",
+                f"    dir: overlays/o{ov:03d}",
+            ]
     lines += ["", YAML_END]
     return "\n".join(lines)
 

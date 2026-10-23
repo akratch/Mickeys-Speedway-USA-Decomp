@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4888,
+  "owned_data_rodata_bytes": 4824,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -3231,16 +3231,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 40
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x0",
-     "end_offset": "0x10",
-     "size": "0x10",
-     "type": "c",
-     "source": "overlays/o016/overlay_016"
-    }
-   ]
+   }
   },
   {
    "overlay": 17,
@@ -4170,16 +4161,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 17
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x0",
-     "end_offset": "0x10",
-     "size": "0x10",
-     "type": "c",
-     "source": "overlays/o023/overlay_023"
-    }
-   ]
+   }
   },
   {
    "overlay": 24,
@@ -4298,7 +4280,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 27
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x10",
+     "size": "0x10",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o024/overlay_024",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 25,
@@ -10941,16 +10934,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 11
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x0",
-     "end_offset": "0x10",
-     "size": "0x10",
-     "type": "c",
-     "source": "overlays/o072/overlay_072"
-    }
-   ]
+   }
   },
   {
    "overlay": 73,
@@ -10987,10 +10971,28 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0xEA8",
-     "size": "0xEA8",
+     "end_offset": "0x190",
+     "size": "0x190",
      "type": "c",
-     "source": "overlays/o073/overlay_073",
+     "source": "overlays/o073/overlay73Initialize",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x190",
+     "end_offset": "0xD70",
+     "size": "0xBE0",
+     "type": "c",
+     "source": "overlays/o073/func_overlay_073_F0000190_18CAC50",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xD70",
+     "end_offset": "0xEA8",
+     "size": "0x138",
+     "type": "c",
+     "source": "overlays/o073/overlay73Draw",
      "matched": true,
      "nonmatching": false
     },
@@ -11076,7 +11078,7 @@
      "size": "0x50",
      "type": "c",
      "section": ".rodata",
-     "source": "overlays/o073/overlay_073",
+     "source": "overlays/o073/func_overlay_073_F0000190_18CAC50",
      "trial_function": "func_overlay_073_F0000190_18CAC50",
      "externalized": true
     }
@@ -11117,10 +11119,19 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x248",
-     "size": "0x248",
+     "end_offset": "0xB8",
+     "size": "0xB8",
      "type": "c",
-     "source": "overlays/o074/overlay_074",
+     "source": "overlays/o074/overlay74Init",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xB8",
+     "end_offset": "0x248",
+     "size": "0x190",
+     "type": "c",
+     "source": "overlays/o074/overlay74Update",
      "matched": true,
      "nonmatching": false
     },
@@ -11226,10 +11237,28 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x6F8",
-     "size": "0x6F8",
+     "end_offset": "0x214",
+     "size": "0x214",
      "type": "c",
-     "source": "overlays/o075/overlay_075",
+     "source": "overlays/o075/overlay75Init",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x214",
+     "end_offset": "0x6D4",
+     "size": "0x4C0",
+     "type": "c",
+     "source": "overlays/o075/overlay75UpdateMovingObject",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x6D4",
+     "end_offset": "0x6F8",
+     "size": "0x24",
+     "type": "c",
+     "source": "overlays/o075/overlay75MarkSlot",
      "matched": true,
      "nonmatching": false
     },
@@ -11460,10 +11489,19 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x430",
-     "size": "0x430",
+     "end_offset": "0x3B8",
+     "size": "0x3B8",
      "type": "c",
      "source": "overlays/o077/overlay_077",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x3B8",
+     "end_offset": "0x430",
+     "size": "0x78",
+     "type": "c",
+     "source": "overlays/o077/overlay_077_tail",
      "matched": true,
      "nonmatching": false
     }
@@ -11700,10 +11738,73 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x14E0",
-     "size": "0x14E0",
+     "end_offset": "0x134",
+     "size": "0x134",
      "type": "c",
-     "source": "overlays/o079/overlay_079",
+     "source": "overlays/o079/func_overlay_079_F0000000_18CCFA0",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x134",
+     "end_offset": "0xEFC",
+     "size": "0xDC8",
+     "type": "c",
+     "source": "overlays/o079/func_overlay_079_F0000134_18CD0D4",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xEFC",
+     "end_offset": "0xFA0",
+     "size": "0xA4",
+     "type": "c",
+     "source": "overlays/o079/overlay79FindNearby",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xFA0",
+     "end_offset": "0x1280",
+     "size": "0x2E0",
+     "type": "c",
+     "source": "overlays/o079/func_overlay_079_F0000FA0_18CDF40",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x1280",
+     "end_offset": "0x1290",
+     "size": "0x10",
+     "type": "c",
+     "source": "overlays/o079/overlay79SetLink",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x1290",
+     "end_offset": "0x147C",
+     "size": "0x1EC",
+     "type": "c",
+     "source": "overlays/o079/func_overlay_079_F0001290_18CE230",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x147C",
+     "end_offset": "0x149C",
+     "size": "0x20",
+     "type": "c",
+     "source": "overlays/o079/overlay79InitState",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x149C",
+     "end_offset": "0x14E0",
+     "size": "0x44",
+     "type": "c",
+     "source": "overlays/o079/overlay79UpdateTimers",
      "matched": true,
      "nonmatching": false
     }
@@ -11811,7 +11912,7 @@
      "end_offset": "0x60",
      "size": "0x60",
      "type": "c",
-     "source": "overlays/o079/overlay_079"
+     "source": "overlays/o079/func_overlay_079_F0000134_18CD0D4"
     }
    ]
   },
@@ -11850,10 +11951,19 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x3EC",
-     "size": "0x3EC",
+     "end_offset": "0x11C",
+     "size": "0x11C",
      "type": "c",
-     "source": "overlays/o080/overlay_080",
+     "source": "overlays/o080/overlay80InitializeContact",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x11C",
+     "end_offset": "0x3EC",
+     "size": "0x2D0",
+     "type": "c",
+     "source": "overlays/o080/overlay80UpdateContact",
      "matched": true,
      "nonmatching": false
     },
@@ -12226,10 +12336,82 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0xB60",
-     "size": "0xB60",
+     "end_offset": "0x1AC",
+     "size": "0x1AC",
      "type": "c",
-     "source": "overlays/o083/overlay_083",
+     "source": "overlays/o083/overlay83BuildLine",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x1AC",
+     "end_offset": "0x2A0",
+     "size": "0xF4",
+     "type": "c",
+     "source": "overlays/o083/overlay83DrawLines",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x2A0",
+     "end_offset": "0x514",
+     "size": "0x274",
+     "type": "c",
+     "source": "overlays/o083/overlay83Update",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x514",
+     "end_offset": "0x53C",
+     "size": "0x28",
+     "type": "c",
+     "source": "overlays/o083/overlay83Submit",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x53C",
+     "end_offset": "0x7DC",
+     "size": "0x2A0",
+     "type": "c",
+     "source": "overlays/o083/overlay83BuildBatch",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x7DC",
+     "end_offset": "0x850",
+     "size": "0x74",
+     "type": "c",
+     "source": "overlays/o083/overlay83DrawEntries",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x850",
+     "end_offset": "0x984",
+     "size": "0x134",
+     "type": "c",
+     "source": "overlays/o083/overlay83DrawStrip",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x984",
+     "end_offset": "0xA18",
+     "size": "0x94",
+     "type": "c",
+     "source": "overlays/o083/overlay83Dispatch",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xA18",
+     "end_offset": "0xB60",
+     "size": "0x148",
+     "type": "c",
+     "source": "overlays/o083/overlay83SubmitAll",
      "matched": true,
      "nonmatching": false
     }
@@ -12329,10 +12511,199 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x13BC",
-     "size": "0x13BC",
+     "end_offset": "0x48",
+     "size": "0x48",
      "type": "c",
-     "source": "overlays/o084/overlay_084",
+     "source": "overlays/o084/overlay84InitState",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x48",
+     "end_offset": "0x314",
+     "size": "0x2CC",
+     "type": "c",
+     "source": "overlays/o084/overlay84InitializeAndUpdate",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x314",
+     "end_offset": "0xA54",
+     "size": "0x740",
+     "type": "c",
+     "source": "overlays/o084/func_overlay_084_F0000314_18D07F4",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xA54",
+     "end_offset": "0xAFC",
+     "size": "0xA8",
+     "type": "c",
+     "source": "overlays/o084/overlay84UpdateResource",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xAFC",
+     "end_offset": "0xB7C",
+     "size": "0x80",
+     "type": "c",
+     "source": "overlays/o084/overlay84ResetCurrent",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xB7C",
+     "end_offset": "0xC74",
+     "size": "0xF8",
+     "type": "c",
+     "source": "overlays/o084/overlay84RefreshCurrent",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xC74",
+     "end_offset": "0xC9C",
+     "size": "0x28",
+     "type": "c",
+     "source": "overlays/o084/overlay84GetActive",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xC9C",
+     "end_offset": "0xDBC",
+     "size": "0x120",
+     "type": "c",
+     "source": "overlays/o084/overlay84LoadCurrent",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xDBC",
+     "end_offset": "0xDD0",
+     "size": "0x14",
+     "type": "c",
+     "source": "overlays/o084/overlay84CopyPair",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xDD0",
+     "end_offset": "0xF18",
+     "size": "0x148",
+     "type": "c",
+     "source": "overlays/o084/overlay84AdvanceCurrent",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xF18",
+     "end_offset": "0xFC4",
+     "size": "0xAC",
+     "type": "c",
+     "source": "overlays/o084/overlay84SelectCurrent",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0xFC4",
+     "end_offset": "0x1004",
+     "size": "0x40",
+     "type": "c",
+     "source": "overlays/o084/overlay84GetCurrent",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x1004",
+     "end_offset": "0x1034",
+     "size": "0x30",
+     "type": "c",
+     "source": "overlays/o084/overlay84SetBit",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x1034",
+     "end_offset": "0x1060",
+     "size": "0x2C",
+     "type": "c",
+     "source": "overlays/o084/overlay84GetValues",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x1060",
+     "end_offset": "0x11F4",
+     "size": "0x194",
+     "type": "c",
+     "source": "overlays/o084/overlay84ActivateCurrent",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x11F4",
+     "end_offset": "0x1294",
+     "size": "0xA0",
+     "type": "c",
+     "source": "overlays/o084/overlay84InitializeCurrent",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x1294",
+     "end_offset": "0x12B4",
+     "size": "0x20",
+     "type": "c",
+     "source": "overlays/o084/overlay84ClearActive",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x12B4",
+     "end_offset": "0x12FC",
+     "size": "0x48",
+     "type": "c",
+     "source": "overlays/o084/overlay84IsUnitScale",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x12FC",
+     "end_offset": "0x1350",
+     "size": "0x54",
+     "type": "c",
+     "source": "overlays/o084/overlay84GetEnabledCurrent",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x1350",
+     "end_offset": "0x1370",
+     "size": "0x20",
+     "type": "c",
+     "source": "overlays/o084/overlay84ClearMode",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x1370",
+     "end_offset": "0x1398",
+     "size": "0x28",
+     "type": "c",
+     "source": "overlays/o084/overlay84SetAngle",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x1398",
+     "end_offset": "0x13BC",
+     "size": "0x24",
+     "type": "c",
+     "source": "overlays/o084/overlay84Mark",
      "matched": true,
      "nonmatching": false
     },
@@ -12621,10 +12992,55 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0xECC",
-     "size": "0xECC",
+     "end_offset": "0x7C",
+     "size": "0x7C",
      "type": "c",
-     "source": "overlays/o086/overlay_086",
+     "source": "overlays/o086/overlay86ProcessCurrent",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x7C",
+     "end_offset": "0x158",
+     "size": "0xDC",
+     "type": "c",
+     "source": "overlays/o086/overlay86ScaledVectorPosition",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x158",
+     "end_offset": "0x2E4",
+     "size": "0x18C",
+     "type": "c",
+     "source": "overlays/o086/overlay86BuildTransform",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x2E4",
+     "end_offset": "0x444",
+     "size": "0x160",
+     "type": "c",
+     "source": "overlays/o086/overlay86SelectPosition",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x444",
+     "end_offset": "0x474",
+     "size": "0x30",
+     "type": "c",
+     "source": "overlays/o086/overlay86Init",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x474",
+     "end_offset": "0xECC",
+     "size": "0xA58",
+     "type": "c",
+     "source": "overlays/o086/func_overlay_086_F0000474_18D22AC",
      "matched": true,
      "nonmatching": false
     },
@@ -12725,7 +13141,7 @@
      "size": "0x20",
      "type": "c",
      "section": ".rodata",
-     "source": "overlays/o086/overlay_086",
+     "source": "overlays/o086/func_overlay_086_F0000474_18D22AC",
      "trial_function": "func_overlay_086_F0000474_18D22AC",
      "externalized": true
     }
@@ -12766,10 +13182,37 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x964",
-     "size": "0x964",
+     "end_offset": "0x128",
+     "size": "0x128",
      "type": "c",
-     "source": "overlays/o087/overlay_087",
+     "source": "overlays/o087/overlay87InitializeObject",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x128",
+     "end_offset": "0x890",
+     "size": "0x768",
+     "type": "c",
+     "source": "overlays/o087/func_overlay_087_F0000128_18D3090",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x890",
+     "end_offset": "0x8C0",
+     "size": "0x30",
+     "type": "c",
+     "source": "overlays/o087/overlay87ReleaseCurrent",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x8C0",
+     "end_offset": "0x964",
+     "size": "0xA4",
+     "type": "c",
+     "source": "overlays/o087/overlay87HasNearby",
      "matched": true,
      "nonmatching": false
     },
@@ -12884,10 +13327,28 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x740",
-     "size": "0x740",
+     "end_offset": "0x4C",
+     "size": "0x4C",
      "type": "c",
-     "source": "overlays/o088/overlay_088",
+     "source": "overlays/o088/overlay88Init",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x4C",
+     "end_offset": "0x1A4",
+     "size": "0x158",
+     "type": "c",
+     "source": "overlays/o088/overlay88UpdateAnchor",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x1A4",
+     "end_offset": "0x740",
+     "size": "0x59C",
+     "type": "c",
+     "source": "overlays/o088/overlay88DrawSortedGeometry",
      "matched": true,
      "nonmatching": false
     }
@@ -12999,10 +13460,46 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x7C4",
-     "size": "0x7C4",
+     "end_offset": "0x138",
+     "size": "0x138",
      "type": "c",
-     "source": "overlays/o089/overlay_089",
+     "source": "overlays/o089/overlay89UpdateEffect",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x138",
+     "end_offset": "0x1A8",
+     "size": "0x70",
+     "type": "c",
+     "source": "overlays/o089/overlay89Evaluate",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x1A8",
+     "end_offset": "0x270",
+     "size": "0xC8",
+     "type": "c",
+     "source": "overlays/o089/overlay89Update",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x270",
+     "end_offset": "0x5A4",
+     "size": "0x334",
+     "type": "c",
+     "source": "overlays/o089/overlay89InitializeEffect",
+     "matched": true,
+     "nonmatching": false
+    },
+    {
+     "offset": "0x5A4",
+     "end_offset": "0x7C4",
+     "size": "0x220",
+     "type": "c",
+     "source": "overlays/o089/overlay89UpdateStateAndParticles",
      "matched": true,
      "nonmatching": false
     },
@@ -13760,16 +14257,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 16
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x0",
-     "end_offset": "0x10",
-     "size": "0x10",
-     "type": "c",
-     "source": "overlays/o095/overlay_095"
-    }
-   ]
+   }
   },
   {
    "overlay": 96,
@@ -14107,16 +14595,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 14
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x0",
-     "end_offset": "0x10",
-     "size": "0x10",
-     "type": "c",
-     "source": "overlays/o097/overlay_097"
-    }
-   ]
+   }
   },
   {
    "overlay": 98,

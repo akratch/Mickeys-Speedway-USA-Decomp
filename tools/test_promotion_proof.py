@@ -47,6 +47,56 @@ def exact_report() -> dict[str, object]:
     }
 
 
+def module_link_report():
+    report = exact_report()
+    raw = copy.deepcopy(report["relocation_comparison"])
+    raw.update(stable_identity_exact=True, candidate_identity_resolved_count=3)
+    digests = [str(i) * 64 for i in range(1, 9)]
+    inputs = {"command": "tools/ido/cc source.c", "module_link": "tools/link_overlay_module.py object.o",
+              "configured": digests[0], "linked": digests[1],
+              "module_link_inputs": {name: digests[0] for name in (
+                  "config/runlink-ort.us.txt", "tools/link_overlay_module.py", "tools/runlink_pack.py",
+                  "tools/rebind_elf_relocations.py", "tools/binutils/mips64-elf-ld")}}
+    receipt = {"schema": "mickey-source-module-link-proof-v1", "source_selection": "ordinary_c",
+               "raw_count": 3, "retained_count": 0, "module_relocations": 3,
+               "raw_sha256": digests[2], "configured_sha256": digests[0],
+               "linked_sha256": digests[1], "replayed_sha256": digests[3], "inputs": inputs,
+               "allocated_sections_exact": True, "symbols_exact": True, "module_body_exact": True,
+               "identities": [{"offset": off, "rtype": 4, "identity": [1, off]} for off in (0, 4, 8)],
+               "link": {"schema": "mickey-source-module-link-v1", "compiler_sha256": digests[2],
+                        "configured_sha256": digests[3], "linked_sha256": digests[4],
+                        "prepared_sha256": digests[5], "script_sha256": digests[6],
+                        "localized_sha256": digests[7],
+                        "container_conversion": "zero-based-exec-to-rel-header-only",
+                        "commands": [["mips64-elf-ld", "--no-check-sections", "-T", "module.ld"]]}}
+    report["relocation_comparison"].update(candidate_record_count=0, original_raw_comparison=raw,
+        identity_proof_mode="raw-static-with-source-module-link", source_module_link_proof=receipt)
+    return report
+
+
+class ModuleLinkTests(unittest.TestCase):
+    def test_fresh_module_route_retains_literal_configured_count(self):
+        result = proof.validate_report("friendly", module_link_report())
+        self.assertEqual(0, result["configured_relocations"])
+        self.assertEqual(3, result["exact_relocations"])
+        self.assertEqual("raw-static-with-source-module-link", result["identity_proof_mode"])
+
+    def test_stripped_object_or_incomplete_replay_is_not_a_module_proof(self):
+        mutations = [
+            lambda r: r["relocation_comparison"].pop("source_module_link_proof"),
+            lambda r: r["relocation_comparison"]["original_raw_comparison"].update(stable_identity_exact=False),
+            lambda r: r["relocation_comparison"]["source_module_link_proof"].update(module_body_exact=False),
+            lambda r: r["relocation_comparison"]["source_module_link_proof"]["link"].update(commands=[]),
+            lambda r: r["relocation_comparison"]["source_module_link_proof"]["link"].update(compiler_sha256="0" * 64),
+            lambda r: r["relocation_comparison"]["source_module_link_proof"]["inputs"].update(module_link_inputs={}),
+        ]
+        for mutate in mutations:
+            report = module_link_report()
+            mutate(report)
+            with self.subTest(mutate=mutate), self.assertRaises(proof.ProofError):
+                proof.validate_report("friendly", report)
+
+
 class ReportPolicyTests(unittest.TestCase):
     def test_exact_post_promotion_report_becomes_compact_receipt(self) -> None:
         receipt = proof.validate_report("friendly", exact_report())

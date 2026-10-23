@@ -134,6 +134,15 @@ def validate_report(symbol: str, report: dict[str, object]) -> dict[str, object]
     configured_relocations = _integer(relocation.get("candidate_record_count"), "candidate_record_count")
     configured_target_relocations = _integer(relocation.get("target_record_count"), "target_record_count")
     metadata = relocation.get("declared_metadata_proof")
+    module_link = relocation.get("source_module_link_proof")
+    if metadata is not None and module_link is not None:
+        raise ProofError("multiple incompatible configured-object proof routes")
+    if module_link is not None:
+        original = relocation.get("original_raw_comparison")
+        if (not isinstance(original, dict)
+                or relocation.get("identity_proof_mode") != "raw-static-with-source-module-link"):
+            raise ProofError("missing original source-module relocation evidence")
+        relocation = dict(original, identity_proof_mode="raw-static-with-source-module-link")
     if metadata is not None:
         original = relocation.get("original_raw_comparison")
         if not isinstance(original, dict) or relocation.get("identity_proof_mode") != "raw-static-with-declared-metadata-filters":
@@ -168,7 +177,7 @@ def validate_report(symbol: str, report: dict[str, object]) -> dict[str, object]
         )
 
     identity_mode = relocation.get("identity_proof_mode")
-    if identity_mode not in {"static", "static-plus-runtime-table-and-linked-rom", "raw-static-with-declared-metadata-filters"}:
+    if identity_mode not in {"static", "static-plus-runtime-table-and-linked-rom", "raw-static-with-declared-metadata-filters", "raw-static-with-source-module-link"}:
         raise ProofError(f"unexpected relocation identity proof mode: {identity_mode!r}")
     metadata = relocation.get("declared_metadata_proof")
     if identity_mode == "raw-static-with-declared-metadata-filters":
@@ -216,6 +225,64 @@ def validate_report(symbol: str, report: dict[str, object]) -> dict[str, object]
         if inputs.get("configured") != metadata["configured_sha256"] or inputs.get("linked") != metadata["linked_sha256"]:
             raise ProofError("fresh configured/linked binding disagrees")
 
+    if identity_mode == "raw-static-with-source-module-link":
+        if (not isinstance(module_link, dict)
+                or module_link.get("schema") != "mickey-source-module-link-proof-v1"
+                or module_link.get("source_selection") != "ordinary_c"
+                or _integer(module_link.get("raw_count"), "raw_count") != target_relocations
+                or _integer(module_link.get("retained_count"), "retained_count") != 0 or configured_relocations != 0
+                or _integer(module_link.get("module_relocations"), "module_relocations") < target_relocations
+                or relocation.get("stable_identity_exact") is not True
+                or relocation.get("candidate_identity_resolved_count") != target_relocations):
+            raise ProofError("incomplete source-module compiler/relocation proof")
+        for field in ("allocated_sections_exact", "symbols_exact", "module_body_exact"):
+            if module_link.get(field) is not True:
+                raise ProofError("source-module link does not reproduce configured ownership")
+        inputs = module_link.get("inputs")
+        link = module_link.get("link")
+        if (not isinstance(inputs, dict) or not inputs.get("command") or not inputs.get("module_link")
+                or not inputs.get("module_link_inputs") or not isinstance(link, dict)
+                or link.get("schema") != "mickey-source-module-link-v1"
+                or link.get("container_conversion") != "zero-based-exec-to-rel-header-only"
+                or not link.get("commands")):
+            raise ProofError("missing authenticated ordinary module linker")
+        required_module_inputs = {"config/runlink-ort.us.txt", "tools/link_overlay_module.py",
+                                  "tools/runlink_pack.py", "tools/rebind_elf_relocations.py",
+                                  "tools/binutils/mips64-elf-ld"}
+        module_inputs = inputs["module_link_inputs"]
+        if (not isinstance(module_inputs, dict) or not required_module_inputs <= module_inputs.keys()
+                or any(not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value)
+                       for value in module_inputs.values())
+                or not any(isinstance(argv, list) and argv and isinstance(argv[0], str)
+                           and Path(argv[0]).name == "mips64-elf-ld" and "-T" in argv
+                           and "--no-check-sections" in argv for argv in link["commands"])):
+            raise ProofError("missing source-module implementation/linker binding")
+        for field in ("raw_sha256", "configured_sha256", "linked_sha256", "replayed_sha256"):
+            if not isinstance(module_link.get(field), str) or not re.fullmatch(r"[0-9a-f]{64}", module_link[field]):
+                raise ProofError("missing fresh source-module object binding")
+        for field in ("linked_sha256", "prepared_sha256", "script_sha256", "localized_sha256"):
+            if not isinstance(link.get(field), str) or not re.fullmatch(r"[0-9a-f]{64}", link[field]):
+                raise ProofError("missing ordinary linker product binding")
+        if (inputs.get("configured") != module_link["configured_sha256"]
+                or inputs.get("linked") != module_link["linked_sha256"]
+                or link.get("compiler_sha256") != module_link["raw_sha256"]
+                or link.get("configured_sha256") != module_link["replayed_sha256"]):
+            raise ProofError("source-module object bindings disagree")
+        identities = module_link.get("identities")
+        if not isinstance(identities, list) or len(identities) != target_relocations:
+            raise ProofError("missing independently resolved source-module identities")
+        keys = []
+        for row in identities:
+            identity = row.get("identity") if isinstance(row, dict) else None
+            if (not isinstance(identity, (list, tuple)) or len(identity) != 2
+                    or any(type(value) is not int or value < 0 for value in identity)
+                    or type(row.get("offset")) is not int or not 0 <= row["offset"] < target_words * 4
+                    or row["offset"] % 4 or row.get("rtype") not in (2, 4, 5, 6)):
+                raise ProofError("malformed source-module identity")
+            keys.append((row["offset"], row["rtype"]))
+        if len(keys) != len(set(keys)):
+            raise ProofError("duplicate source-module identity site")
+
     candidate_symbol = report.get("candidate_symbol")
     linked_symbol = report.get("linked_symbol")
     if not isinstance(candidate_symbol, str) or not candidate_symbol:
@@ -237,6 +304,7 @@ def validate_report(symbol: str, report: dict[str, object]) -> dict[str, object]
         "identity_proof_mode": identity_mode,
         "geometry_evidence": report.get("identity_evidence"),
         "declared_metadata_proof": metadata,
+        "source_module_link_proof": module_link,
         "canonical_commands": [],
         "verdict": "exact",
     }

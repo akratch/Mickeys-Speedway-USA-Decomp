@@ -2,14 +2,10 @@
 #define OVERLAY_008_H
 
 #include "PR/ultratypes.h"
+#include "game/overlay8_tuning.h"
 #include "game/math.h"
 
 struct Overlay17Chain;
-
-typedef struct Overlay8IndexedObject {
-    u8 pad0;
-    s8 index;
-} Overlay8IndexedObject;
 
 typedef struct O8P1294Owner O8P1294Owner;
 typedef struct O8P1294State O8P1294State;
@@ -505,12 +501,6 @@ struct O8P0058State {
     s32 value434;
 };
 
-typedef struct O8P0058Query {
-    f32 initial0;
-    u8 pad004[0x144];
-    f32 heights148[1];
-} O8P0058Query;
-
 typedef struct O8P0058Surface {
     f32 height0;
     u32 flags4;
@@ -678,9 +668,9 @@ typedef struct O8P4CF0SceneItem {
 
 extern u8 D_8007BF04;
 
-extern void *gOverlay8Primary[];
+extern Overlay8TuningRecord *gOverlay8Primary[];
 
-extern void *gOverlay8Secondary[];
+extern Overlay8TuningRecord *gOverlay8Secondary[];
 
 extern void func_8005AF14(O8Node *, void *, O8Owner *);
 
@@ -861,7 +851,9 @@ extern void controlDisableJoypad(O8P0058State *state, s32 mode);
 
 extern void controlReadJoypad(O8P0058State *state, s32 mode);
 
-extern O8P0058Query *o8P0058AcquireReloc(O8P0058State *state);
+/* The getter reads only the signed character at input byte 1. */
+Overlay8TuningRecord *overlay8GetIndexed(const void *object);
+extern Overlay8TuningRecord *o8P0058AcquireReloc(const void *object);
 
 /* Resident +0x5A914, the same mode setter o8P34A0SetModeReloc calls. */
 extern void o8P0058SpawnReloc(O8P0058Owner *owner, s32 kind, s32 index,
@@ -895,7 +887,7 @@ extern void o8P0058BounceReloc(O8P0058State *state, s32 kind, f32 scale);
 /* The +0x1294 update's two same-module calls are SYMBOL records (the shipped
  * words carry the module base), so they go through placeholders as the
  * +0x0058 body's do: the indexed tuning lookup and the +0x1000 phase helper. */
-extern void *o8P1294IndexedReloc(Overlay8IndexedObject *object);
+extern Overlay8TuningRecord *o8P1294IndexedReloc(const void *object);
 
 extern f32 o8P1294PhaseReloc(void *unused, O8PhaseState *state, f32 input);
 

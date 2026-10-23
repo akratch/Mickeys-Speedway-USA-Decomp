@@ -2149,216 +2149,13 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o020/func_overlay_020_F000038C_1876964.c.o",
-      "offset": 908,
-      "overlay": 20,
-      "size": 1080,
-      "source": "src/overlays/o020/func_overlay_020_F000038C_1876964.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/func_overlay_020_F0001148_1877720.c.o",
-      "offset": 4424,
-      "overlay": 20,
-      "size": 828,
-      "source": "src/overlays/o020/func_overlay_020_F0001148_1877720.c",
-      "tools": [
-        "set_elf_flags.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20AdvanceEntries.c.o",
-      "offset": 4332,
-      "overlay": 20,
-      "size": 92,
-      "source": "src/overlays/o020/overlay20AdvanceEntries.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20BuildTileCommands.c.o",
-      "offset": 1988,
-      "overlay": 20,
-      "size": 536,
-      "source": "src/overlays/o020/overlay20BuildTileCommands.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20ConfigureEntry.c.o",
-      "offset": 3624,
-      "overlay": 20,
-      "size": 336,
-      "source": "src/overlays/o020/overlay20ConfigureEntry.c",
-      "tools": [
-        "filter_elf_relocations.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20ConfigureResource.c.o",
-      "offset": 168,
-      "overlay": 20,
-      "size": 348,
-      "source": "src/overlays/o020/overlay20ConfigureResource.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20CreateEntry.c.o",
-      "offset": 3960,
-      "overlay": 20,
-      "size": 160,
-      "source": "src/overlays/o020/overlay20CreateEntry.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20DrawResource.c.o",
-      "offset": 2524,
-      "overlay": 20,
-      "size": 140,
-      "source": "src/overlays/o020/overlay20DrawResource.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20MarkNested.c.o",
-      "offset": 3596,
-      "overlay": 20,
-      "size": 28,
-      "source": "src/overlays/o020/overlay20MarkNested.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20ReleaseEntry.c.o",
-      "offset": 3524,
-      "overlay": 20,
-      "size": 72,
-      "source": "src/overlays/o020/overlay20ReleaseEntry.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20ReleaseHandle.c.o",
-      "offset": 124,
-      "overlay": 20,
-      "size": 44,
-      "source": "src/overlays/o020/overlay20ReleaseHandle.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20ReleaseTree.c.o",
+      "object": "build/src/overlays/o020/overlay_020.c.o",
       "offset": 0,
       "overlay": 20,
-      "size": 124,
-      "source": "src/overlays/o020/overlay20ReleaseTree.c",
+      "size": 5252,
+      "source": "src/overlays/o020/overlay_020.c",
       "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20RemoveEntry.c.o",
-      "offset": 4120,
-      "overlay": 20,
-      "size": 212,
-      "source": "src/overlays/o020/overlay20RemoveEntry.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20UpdateGrid.c.o",
-      "offset": 2664,
-      "overlay": 20,
-      "size": 860,
-      "source": "src/overlays/o020/overlay20UpdateGrid.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o020/overlay20UpdateObjectResource.c.o",
-      "offset": 516,
-      "overlay": 20,
-      "size": 392,
-      "source": "src/overlays/o020/overlay20UpdateObjectResource.c",
-      "tools": [
-        "trim_elf_section.py"
+        "filter_elf_relocations.py"
       ]
     },
     {
@@ -8319,10 +8116,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 573,
+      "metadata": 559,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 433944,
-    "objects_with_postprocess": 574
+    "objects_with_postprocess": 560
   }
 }

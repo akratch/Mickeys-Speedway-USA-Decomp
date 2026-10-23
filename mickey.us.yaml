@@ -1569,22 +1569,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18765D8, c, overlay20ReleaseTree]
-      - [0x1876654, c, overlay20ReleaseHandle]
-      - [0x1876680, c, overlay20ConfigureResource]
-      - [0x18767DC, c, overlay20UpdateObjectResource]
-      - [0x1876964, c, func_overlay_020_F000038C_1876964]
-      - [0x1876D9C, c, overlay20BuildTileCommands]
-      - [0x1876FB4, c, overlay20DrawResource]
-      - [0x1877040, c, overlay20UpdateGrid]
-      - [0x187739C, c, overlay20ReleaseEntry]
-      - [0x18773E4, c, overlay20MarkNested]
-      - [0x1877400, c, overlay20ConfigureEntry]
-      - [0x1877550, c, overlay20CreateEntry]
-      - [0x18775F0, c, overlay20RemoveEntry]
-      - [0x18776C4, c, overlay20AdvanceEntries]
-      - [0x1877720, c, func_overlay_020_F0001148_1877720]
-      - [0x1877A5C, asm, overlay_020_padding]
+      - [0x18765D8, c, overlay_020]
       - [0x1877A68, bin, overlay_020_data_rodata]
       - [0x1877AB8, bin, overlay_020_reloc1]
       - [0x1877B40, bin, overlay_020_reloc2]

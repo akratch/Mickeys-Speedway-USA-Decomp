@@ -1175,47 +1175,28 @@ mmGetDelay_o019Reloc = 0xf0000000;
 mmSetDelay_o019Reloc = 0xf0000000;
 sqrtf_o019Reloc = 0xf0000000;
 
-/* overlay 20: overlay20ReleaseTree.c.o */
-mmFree_o020Reloc = 0xf0000000;
-
-/* overlay 20: overlay20ReleaseHandle.c.o */
-overlay20ReleaseReloc = 0xf0000000;
-
-/* overlay 20: overlay20ConfigureResource.c.o */
-mmAlloc_o020Reloc = 0xf0000000;
-overlay20InitGridReloc = 0xf0000000;
-
-/* overlay 20: overlay20UpdateObjectResource.c.o */
+/* overlay 20: overlay_020.c.o */
 func_8000FEEC_o020Reloc = 0xf0000000;
-overlay20ConfigureResource_o020Reloc = 0xf0000000;
-sqrtf_o020Reloc = 0xf0000000;
-trackGetTrack_o020Reloc = 0xf0000000;
-
-/* overlay 20: overlay20BuildTileCommands.c.o */
-texDPTextureX_o020Reloc = 0xf0000000;
-
-/* overlay 20: overlay20DrawResource.c.o */
-overlay20BuildTileCommands_o020Reloc = 0xf0000000;
-
-/* overlay 20: overlay20UpdateGrid.c.o */
 func_8002A8C0_o020Reloc = 0xf0000000;
+func_overlay_020_F0000000_18765D8Reloc = 0xf0000000;
+func_overlay_020_F00000A8_1876680Reloc = 0xf0000000;
+func_overlay_020_F000038C_1876964Reloc = 0xf0000000;
+func_overlay_020_F00007C4_1876D9CReloc = 0xf0000000;
+func_overlay_020_F0000A68_1877040Reloc = 0xf0000000;
+func_overlay_020_F0000E28_1877400Reloc = 0xf0000000;
+gOverlay20ActiveBits = 0x00000004;
 gOverlay20Entries = 0x00000000;
 gOverlay20EntryCount = 0x00000000;
-
-/* overlay 20: overlay20ConfigureEntry.c.o */
-D_80 = 0x00000080;
-
-/* overlay 20: overlay20CreateEntry.c.o */
+gOverlay20MarkerEnd = 0x000004dc;
+gOverlay20Pool = 0x00000080;
 gOverlay20Scale = 0x00000028;
-overlay20ConfigureEntry_o020Reloc = 0xf0000000;
-
-/* overlay 20: overlay20RemoveEntry.c.o */
-D_4DC = 0x000004dc;
-
-/* overlay 20: func_overlay_020_F0001148_1877720.c.o */
 gOverlay20TailXLimit = 0x0000002c;
 gOverlay20TailYLimit = 0x00000030;
-overlay20TailSqrtReloc = 0xf0000000;
+mmAlloc_o020Reloc = 0xf0000000;
+mmFree_o020Reloc = 0xf0000000;
+sqrtf_o020Reloc = 0xf0000000;
+texDPTextureX_o020Reloc = 0xf0000000;
+trackGetTrack_o020Reloc = 0xf0000000;
 
 /* overlay 21: overlay_021.c.o */
 camGetPtr_o021Reloc = 0xf0000000;
@@ -3874,6 +3855,9 @@ func_8005776C_o072Reloc = 0xf0000000;
 func_overlay_008_F0000F1C_o072Reloc = 0xf0000000;
 gOverlay72ComponentScale = 0x00000000;
 
+/* overlay 73: overlay73Initialize.c.o */
+D_80 = 0x00000080;
+
 /* overlay 73: func_overlay_073_F0000190_18CAC50.c.o */
 Arctanf_o073Reloc = 0xf0000000;
 func_80008118_o073Reloc = 0xf0000000;
@@ -5220,43 +5204,19 @@ func_overlay_018_F00004F4_1874AAC = overlay18InitializeBuffers;
 /* overlay 19: overlay_019.c.o */
 func_overlay_019_F0000000_1875258 = overlay19Dispatch;
 
-/* overlay 20: overlay20ReleaseTree.c.o */
+/* overlay 20: overlay_020.c.o */
 func_overlay_020_F0000000_18765D8 = overlay20ReleaseTree;
-
-/* overlay 20: overlay20ReleaseHandle.c.o */
 func_overlay_020_F000007C_1876654 = overlay20ReleaseHandle;
-
-/* overlay 20: overlay20ConfigureResource.c.o */
 func_overlay_020_F00000A8_1876680 = overlay20ConfigureResource;
-
-/* overlay 20: overlay20UpdateObjectResource.c.o */
 func_overlay_020_F0000204_18767DC = overlay20UpdateObjectResource;
-
-/* overlay 20: overlay20BuildTileCommands.c.o */
 func_overlay_020_F00007C4_1876D9C = overlay20BuildTileCommands;
-
-/* overlay 20: overlay20DrawResource.c.o */
 func_overlay_020_F00009DC_1876FB4 = overlay20DrawResource;
-
-/* overlay 20: overlay20UpdateGrid.c.o */
 func_overlay_020_F0000A68_1877040 = overlay20UpdateGrid;
-
-/* overlay 20: overlay20ReleaseEntry.c.o */
 func_overlay_020_F0000DC4_187739C = overlay20ReleaseEntry;
-
-/* overlay 20: overlay20MarkNested.c.o */
 func_overlay_020_F0000E0C_18773E4 = overlay20MarkNested;
-
-/* overlay 20: overlay20ConfigureEntry.c.o */
 func_overlay_020_F0000E28_1877400 = overlay20ConfigureEntry;
-
-/* overlay 20: overlay20CreateEntry.c.o */
 func_overlay_020_F0000F78_1877550 = overlay20CreateEntry;
-
-/* overlay 20: overlay20RemoveEntry.c.o */
 func_overlay_020_F0001018_18775F0 = overlay20RemoveEntry;
-
-/* overlay 20: overlay20AdvanceEntries.c.o */
 func_overlay_020_F00010EC_18776C4 = overlay20AdvanceEntries;
 
 /* overlay 21: overlay_021.c.o */

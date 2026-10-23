@@ -503,32 +503,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay_019.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym mmSetDelay=mmSetDelay_o019Reloc \
 	--redefine-sym sqrtf=sqrtf_o019Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/func_overlay_020_F000038C_1876964.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmAlloc=mmAlloc_o020Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20BuildTileCommands.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym texDPTextureX=texDPTextureX_o020Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20ConfigureResource.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmAlloc=mmAlloc_o020Reloc \
-	--redefine-sym mmFree=mmFree_o020Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20CreateEntry.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay20ConfigureEntry=overlay20ConfigureEntry_o020Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20DrawResource.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym overlay20BuildTileCommands=overlay20BuildTileCommands_o020Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20ReleaseTree.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym mmFree=mmFree_o020Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20UpdateGrid.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym sqrtf=sqrtf_o020Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20UpdateObjectResource.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay_020.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_8000FEEC=func_8000FEEC_o020Reloc \
-	--redefine-sym overlay20ConfigureResource=overlay20ConfigureResource_o020Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o020Reloc \
+	--redefine-sym mmAlloc=mmAlloc_o020Reloc \
+	--redefine-sym mmFree=mmFree_o020Reloc \
 	--redefine-sym sqrtf=sqrtf_o020Reloc \
+	--redefine-sym texDPTextureX=texDPTextureX_o020Reloc \
 	--redefine-sym trackGetTrack=trackGetTrack_o020Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay_021.c.o: SURFACE_REBIND = $(OBJCOPY) \

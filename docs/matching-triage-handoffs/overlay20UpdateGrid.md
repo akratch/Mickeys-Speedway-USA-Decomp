@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay20UpdateGrid:start -->
 ### `overlay20UpdateGrid` plateau handoff
 
-- source: `src/overlays/o020/overlay20UpdateGrid.c`
+- source: `src/overlays/o020/overlay_020.c`
 - score: 0/215 words, promoted
 - frame: 0x140
 - relocations: 6

@@ -310,6 +310,7 @@ EXPLICIT_TEXT_PADDING = {
 # the atlas (never credited as C) but gets no yaml row and no trim.
 COMPILER_TEXT_ALIGNMENT_PADDING.update({
     19: "overlay_019_padding",
+    20: "overlay_020_padding",
     21: "overlay_021_padding",
     23: "overlay_023_padding",
     24: "overlay_024_padding",
@@ -471,21 +472,7 @@ TEXT_SUBSEGMENTS = {
         (0x12E4, "asm", "overlay_019_padding"),
     ],
     20: [
-        (0x000, "c", "overlay20ReleaseTree"),
-        (0x07C, "c", "overlay20ReleaseHandle"),
-        (0x0A8, "c", "overlay20ConfigureResource"),
-        (0x204, "c", "overlay20UpdateObjectResource"),
-        (0x38C, "c", "func_overlay_020_F000038C_1876964"),
-        (0x07C4, "c", "overlay20BuildTileCommands"),
-        (0x09DC, "c", "overlay20DrawResource"),
-        (0x0A68, "c", "overlay20UpdateGrid"),
-        (0x0DC4, "c", "overlay20ReleaseEntry"),
-        (0x0E0C, "c", "overlay20MarkNested"),
-        (0x0E28, "c", "overlay20ConfigureEntry"),
-        (0x0F78, "c", "overlay20CreateEntry"),
-        (0x1018, "c", "overlay20RemoveEntry"),
-        (0x10EC, "c", "overlay20AdvanceEntries"),
-        (0x1148, "c", "func_overlay_020_F0001148_1877720"),
+        (0x000, "c", "overlay_020"),
         (0x1484, "asm", "overlay_020_padding"),
     ],
     22: [

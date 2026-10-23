@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay20RemoveEntry:start -->
 ### `overlay20RemoveEntry` plateau handoff
 
-- source: `src/overlays/o020/overlay20RemoveEntry.c`
+- source: `src/overlays/o020/overlay_020.c`
 - score: 0/53 words, promoted
 - frame: frameless
 - relocations: 10

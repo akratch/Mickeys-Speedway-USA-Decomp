@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4992,
+  "owned_data_rodata_bytes": 5840,
   "diagnostic_data_rodata_bytes": 840,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -4931,7 +4931,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 48
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x130",
+     "size": "0x130",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o028/overlay_028",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 29,
@@ -5328,7 +5339,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 85
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x40",
+     "size": "0x40",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o031/overlay_031",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 32,
@@ -5690,7 +5712,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 28
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x20",
+     "size": "0x20",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o034/overlay_034",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 35,
@@ -6119,7 +6152,27 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 18
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0xE0",
+     "size": "0xE0",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o037/overlay_037",
+     "canonical": true
+    },
+    {
+     "offset": "0xE0",
+     "end_offset": "0xF0",
+     "size": "0x10",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o037/overlay_037",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 38,
@@ -6236,7 +6289,27 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 52
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x90",
+     "size": "0x90",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o038/overlay_038",
+     "canonical": true
+    },
+    {
+     "offset": "0x90",
+     "end_offset": "0xA0",
+     "size": "0x10",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o038/overlay_038",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 39,
@@ -6525,7 +6598,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 19
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x30",
+     "size": "0x30",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o040/overlay_040",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 41,

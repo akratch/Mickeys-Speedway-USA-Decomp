@@ -211,7 +211,10 @@ Each run preserves a fresh `build/editable-layout/check-*` directory containing
 commands, compiler/module receipts, generated inputs, final maps/images and a
 separate nonmatching diagnostic receipt. Check its freshness with
 `.venv/bin/python tools/check_editable_layout.py --check-receipt <directory>/receipt.json`.
-Missing, modified or stale artifacts/inputs are refused. The final image is
+Missing, modified or stale artifacts/inputs are refused. Receipts carry the
+semantically validated artifact snapshots through publication; later observations
+must match those hashes and cannot replace them. Toolchain snapshots are checked
+again when freshness validation ends. The final image is
 independently decoded and joined to raw source relocation identities, ordinary
 module payload/NOBITS layout and actual final symbols. Unselected payloads,
 VMAs and program symbols remain exact; the loader is independently relinked at

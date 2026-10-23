@@ -85,6 +85,53 @@ class LayoutTests(unittest.TestCase):
             pilot.script_for(source.replace("rom_fill_ROM_END", "overlay_extra_ROM_END"),pilot.metadata.TOP,
                              "build/editable-layout/test/generated","build/editable-layout/test/module.o",None)
 
+    def test_mutation_between_validation_and_receipt_never_replaces_validated_hash(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory=Path(temp);artifact=directory/"final.elf"
+            artifact.write_bytes(b"semantically validated")
+            validated=pilot.artifact_hashes(directory)
+            artifact.write_bytes(b"replacement after validation")
+            self.assertNotEqual(pilot.sha(artifact),validated["final.elf"])
+            with self.assertRaisesRegex(pilot.PilotError,"before receipt publication"):
+                pilot.publish_receipt(directory,{},validated)
+            self.assertFalse((directory/"receipt.json").exists())
+            artifact.write_bytes(b"semantically validated")
+            actual_save=pilot.save
+            def replace_during_publication(path,value):
+                artifact.write_bytes(b"replacement during receipt write")
+                return actual_save(path,value)
+            with mock.patch.object(pilot,"save",side_effect=replace_during_publication):
+                with self.assertRaisesRegex(pilot.PilotError,"during receipt publication"):
+                    pilot.publish_receipt(directory,{},validated)
+            recorded=json.loads((directory/"receipt.json").read_text())["artifacts"]
+            self.assertEqual(recorded,validated)
+            self.assertNotEqual(recorded["final.elf"],pilot.sha(artifact))
+
+    def test_aggregate_retains_the_generated_variant_receipt_digest(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory=Path(temp);variant=directory/"control";variant.mkdir()
+            (variant/"final.elf").write_bytes(b"validated final output")
+            validated=pilot.artifact_hashes(variant)
+            receipt_hash=pilot.publish_receipt(variant,{},validated)
+            expected={"control/final.elf":validated["final.elf"],"control/receipt.json":receipt_hash}
+            (variant/"receipt.json").write_text('{"unproved":"replacement"}\n')
+            self.assertNotEqual(receipt_hash,pilot.sha(variant/"receipt.json"))
+            with self.assertRaisesRegex(pilot.PilotError,"before receipt publication"):
+                pilot.publish_receipt(directory,{},expected)
+            self.assertFalse((directory/"receipt.json").exists())
+
+    def test_toolchain_replacement_during_receipt_validation_refuses(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);directory=root/"build/editable-layout/check";directory.mkdir(parents=True)
+            (directory/"final.elf").write_bytes(b"validated output")
+            pilot.save(directory/"receipt.json",{
+                "schema":"mickey-editable-layout-check-v1","nonmatching_diagnostic":True,
+                "artifacts":pilot.artifact_hashes(directory),"inputs":{},"tool_context":{},"canonical_context":{}})
+            with mock.patch.object(pilot,"tool_context",side_effect=[{}, {"ido":"replacement"}]), \
+                 mock.patch.object(pilot.metadata,"provenance_context",return_value={}):
+                with self.assertRaisesRegex(pilot.PilotError,"changed during receipt validation"):
+                    pilot.check_receipt(root,directory/"receipt.json")
+
     def test_missing_or_tampered_artifacts_and_changed_inputs_refuse(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);directory=root/"build/editable-layout/check";directory.mkdir(parents=True)

@@ -43,15 +43,21 @@ LOADED[Path(__file__)] = sha(__file__)
 
 def save(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
+    payload=(json.dumps(value, indent=2, sort_keys=True) + "\n").encode()
+    path.write_bytes(payload)
+    require(path.read_bytes()==payload,"generated receipt changed during write")
+    return hashlib.sha256(payload).hexdigest()
 
 def run(root, command, log, commands):
     command = [str(x) for x in command]
     result = subprocess.run(command, cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     log.parent.mkdir(parents=True, exist_ok=True)
     log.write_text(result.stdout)
+    output_hash=hashlib.sha256(result.stdout.encode()).hexdigest()
+    require(sha(log)==output_hash,"command log changed during write")
     commands.append(command)
     require(result.returncode == 0, f"command failed; see {log.relative_to(root)}")
+    return output_hash
 
 def real_symbol(elf, name, *, section=None):
     choices = [s for s in elf.symbols if s.name == name and s.bind == rp.STB_GLOBAL
@@ -137,7 +143,7 @@ def compile_module(root, directory, source_text, exports, commands, label, args)
     source.write_text(source_text)
     source_sha = sha(source)
     flags = list(args); flags[flags.index("-o")+1] = raw.relative_to(root).as_posix(); flags[-1] = source.relative_to(root).as_posix()
-    run(root, ["tools/ido/cc", *flags], directory/(label+"-compile.log"), commands)
+    log_hash=run(root, ["tools/ido/cc", *flags], directory/(label+"-compile.log"), commands)
     require(sha(source) == source_sha, "source changed during compiler execution")
     raw_sha = sha(raw)
     output = directory/(label+"-linked.o")
@@ -146,7 +152,15 @@ def compile_module(root, directory, source_text, exports, commands, label, args)
         rebind=root/"tools/rebind_elf_relocations.py")
     require(sha(source) == source_sha and sha(raw) == raw_sha, "compiler input changed during link")
     require(receipt["compiler_sha256"] == raw_sha and receipt["configured_sha256"] == sha(output), "unbound module receipt")
-    return raw, output, receipt
+    expected={source.name:source_sha,raw.name:raw_sha,output.name:receipt["configured_sha256"],
+              label+"-compile.log":log_hash}
+    for name,field in (("compiler.o","compiler_sha256"),("bindings.o","prepared_sha256"),
+                       ("module.ld","script_sha256"),("module.elf","linked_sha256"),
+                       ("localized.elf","localized_sha256"),("module.o","configured_sha256"),("body.bin","body_sha256")):
+        expected[f"{label}-module/{name}"]=receipt[field]
+    expected[f"{label}-module/receipt.json"]=hashlib.sha256((json.dumps(receipt,indent=2)+"\n").encode()).hexdigest()
+    require(all(sha(directory/name)==value for name,value in expected.items()),"compiler/module generation snapshot changed")
+    return raw, output, receipt, expected
 
 def script_for(source, names, generated, module75, peer108):
     """Declared script changes only, with exact reconstruction of the original."""
@@ -204,23 +218,34 @@ def wrappers(root, directory, files, commands):
         run(root,command+[relative,target.relative_to(root)],directory/"wrapper.log",commands)
     return generated
 
-def loader_replay(root,directory,elf,mapping,commands):
+def loader_replay(root,directory,elf,mapping,commands,catalog):
     inputs=[i for i in mapping if i.file=="build/src/main/runlink.c.o" and i.insec==".text" and i.size]
     require(len(inputs)==1,"ambiguous real loader input")
     item=inputs[0]; raw=rp.Elf(root/item.file)
+    require(hashlib.sha256(raw.data).hexdigest()==catalog[item.file],"loaded loader input changed")
     bindings=[]
     for name in sorted({r.sym.name for r in raw.rels(".text") if r.sym.shndx==rp.SHN_UNDEF}):
         bindings.append(f"{name} = {real_symbol(elf,name).value:#x};")
     script=directory/"loader-replay.ld"
-    script.write_text("\n".join(bindings)+f'\nSECTIONS {{ .text {item.addr:#x} : {{ {item.file}(.text) }} /DISCARD/ : {{ *(*) }} }}\n')
+    script_bytes=("\n".join(bindings)+f'\nSECTIONS {{ .text {item.addr:#x} : {{ {item.file}(.text) }} /DISCARD/ : {{ *(*) }} }}\n').encode()
+    script.write_bytes(script_bytes)
     output=directory/"loader-replay.elf"
-    run(root,["tools/binutils/mips64-elf-ld","--no-check-sections","-e","0","-T",script.relative_to(root),"-o",output.relative_to(root)],directory/"loader-replay.log",commands)
+    log_hash=run(root,["tools/binutils/mips64-elf-ld","--no-check-sections","-e","0","-T",script.relative_to(root),"-o",output.relative_to(root)],directory/"loader-replay.log",commands)
     actual=elf.bytes_of(".main"); section=elf.section(".main");offset=item.addr-section["addr"]
-    require(rp.Elf(output).bytes_of(".text")==actual[offset:offset+item.size],"loader bytes not explained by ordinary link")
-    return offset,item.size
+    replay=rp.Elf(output)
+    require(replay.bytes_of(".text")==actual[offset:offset+item.size],"loader bytes not explained by ordinary link")
+    expected={"loader-replay.ld":hashlib.sha256(script_bytes).hexdigest(),
+              "loader-replay.elf":hashlib.sha256(replay.data).hexdigest(),"loader-replay.log":log_hash}
+    require(sha(root/item.file)==catalog[item.file] and all(sha(directory/n)==value for n,value in expected.items()),
+            "loader replay inputs/outputs changed during validation")
+    return offset,item.size,expected
 
-def validate_final(root,directory,tables,cfg,headers_end,selected,expected_refs,exports,base_elf,commands):
+def validate_final(root,directory,tables,cfg,headers_end,selected,expected_refs,exports,base_elf,commands,catalog,incoming):
     snapshot=artifact_hashes(directory)
+    require(all(snapshot.get(name)==value for name,value in incoming.items()),"ordinary final-link inputs changed")
+    require(not any(n.startswith("loader-replay.") for n in snapshot),"unexpected existing loader replay")
+    require(all(snapshot[name]==value for product in selected.values() for name,value in product[3].items()),
+            "compiler/module snapshot changed before final validation")
     elf=rp.Elf(directory/"final.elf");mapping=rp.parse_map(directory/"final.map");rom=(directory/"final.z64").read_bytes()
     require(hashlib.sha256(elf.data).hexdigest()==snapshot["final.elf"] and hashlib.sha256(rom).hexdigest()==snapshot["final.z64"],"loaded final bytes changed")
     decoded=codec.decode(rom,cfg)
@@ -241,7 +266,7 @@ def validate_final(root,directory,tables,cfg,headers_end,selected,expected_refs,
     wanted={f"{directory.relative_to(root)}/generated/{name}.o" for name in output_files(tables)}
     require(inventory==wanted,"incomplete actual generated input inventory")
     require(not any(i.size and i.file.startswith("build/assets/") and (metadata.metadata_name(i.file[13:-2]) or i.file=="build/assets/rom_fill.bin.o") for i in mapping),"retained metadata/fill final consumer")
-    ends=[]
+    ends=[];selected_sections={}
     for m in decoded.modules:
         if m.empty:continue
         actual=elf.bytes_of(f".overlay_{m.number:03d}")
@@ -250,13 +275,18 @@ def validate_final(root,directory,tables,cfg,headers_end,selected,expected_refs,
         require(begin==cfg.modules_rom+m.header.rom,"downstream ROM location differs")
         ends.append((begin,begin+m.header.image_size))
         if m.number in selected:
-            obj=rp.Elf(selected[m.number][1])
-            require(hashlib.sha256(obj.data).hexdigest()==selected[m.number][2]["configured_sha256"] and sha(selected[m.number][0])==selected[m.number][2]["compiler_sha256"],"loaded compiler/module product changed")
+            raw=rp.Elf(selected[m.number][0]); obj=rp.Elf(selected[m.number][1])
+            raw_key=selected[m.number][0].relative_to(directory).as_posix()
+            linked_key=selected[m.number][1].relative_to(directory).as_posix()
+            require(hashlib.sha256(raw.data).hexdigest()==snapshot[raw_key]==selected[m.number][2]["compiler_sha256"]
+                    and hashlib.sha256(obj.data).hexdigest()==snapshot[linked_key]==selected[m.number][2]["configured_sha256"],
+                    "loaded compiler/module product changed")
+            selected_sections[m.number]={section:obj.size(section) for section in SECTIONS}
             require(actual==b"".join(obj.bytes_of(s) for s in SECTIONS[:-1]),"selected payload differs from ordinary module link")
             bss=elf.section(f".overlay_{m.number:03d}_bss")
             require(bss and bss["type"]==rp.SHT_NOBITS and bss["flags"]&3==3 and bss["size"]==obj.size(".bss") and bss["addr"]==rp.OVERLAY_VMA+len(actual),"selected NOBITS differs")
             identities=compare.shipped_identities(m,decoded,cfg)
-            strict = source_proof.source_identities(rp.Elf(selected[m.number][0]),obj,elf,exports,m.number,
+            strict = source_proof.source_identities(raw,obj,elf,exports,m.number,
                                                     rom=rom,runtime_modules=runtime_modules)
             strict_ids = {key: rules.row_identity(codec.OrtRow(*value),cfg) for key,value in strict.items()}
             require({k:v["full"] for k,v in identities.items()} == strict_ids,
@@ -291,16 +321,17 @@ def validate_final(root,directory,tables,cfg,headers_end,selected,expected_refs,
         and not rp.LINKER_NAME_RE.search(s.name)
         and s.section not in {f".overlay_{n:03d}{suffix}" for n in selected for suffix in ("","_bss")})
     require(program(base_elf)==program(elf),"unselected program symbol changed")
-    off,size=loader_replay(root,directory,elf,mapping,commands)
+    off,size,replay_snapshot=loader_replay(root,directory,elf,mapping,commands,catalog)
+    snapshot.update(replay_snapshot)
     old,new=base_elf.bytes_of(".main"),elf.bytes_of(".main")
     require(old[:off]==new[:off] and old[off+size:]==new[off+size:],"changed non-loader resident payload")
-    require(all(sha(directory/n)==value for n,value in snapshot.items()),"diagnostic inputs changed while validating final image")
-    return {"generated_inputs":len(inventory),"retained_metadata_inputs":0,"retained_fill_inputs":0,
+    require(artifact_hashes(directory)==snapshot,"diagnostic inputs changed while validating final image")
+    return {"artifacts":snapshot,"generated_inputs":len(inventory),"retained_metadata_inputs":0,"retained_fill_inputs":0,
             "module_headers":len(decoded.modules),"runtime_slots":len(decoded.modules)+1,"main_records":len(decoded.main),
             "ort_rows":len(decoded.ort),"header_dma_bytes":headers_end-cfg.headers_rom,
             "header_alignment_gap":cfg.modules_rom-headers_end,"module_base":cfg.modules_rom,"payload_end":cfg.modules_end,
             "rom_sha1":hashlib.sha1(rom).hexdigest(),"selected_records":{n:len(expected_refs[n]) for n in selected},
-            "selected_sections":{n:{s:rp.Elf(selected[n][1]).size(s) for s in SECTIONS} for n in selected}}
+            "selected_sections":selected_sections}
 
 def output_files(tables):
     files={"main_reloc_table.bin":codec.encode_main(tables.main, (4+8*len(tables.main)+7)&-8),
@@ -311,7 +342,7 @@ def output_files(tables):
             if rows:files[f"overlays/o{m.number:03d}/overlay_{m.number:03d}_reloc{t}.bin"]=b"".join(r.encode() for r in rows)
     return files
 
-def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,*,grow=False,peer=False,use_peer=False):
+def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,catalog,*,grow=False,peer=False,use_peer=False):
     directory=run_dir/label;directory.mkdir()
     commands=[]
     names=list(original_names.rows)
@@ -322,7 +353,8 @@ def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,*
     if peer:
         exports.entries[(108,"init")]=spec["peer"]["init"]
         exports.entries[(108,"resume")]=spec["peer"]["resume"]
-    (directory/"exports.txt").write_text(exports.render())
+    export_bytes=exports.render().encode()
+    (directory/"exports.txt").write_bytes(export_bytes)
     source=(root/spec["source"]).read_text()
     if grow:
         anchor="\n"+spec["mutation_anchor"]+"\n"
@@ -344,8 +376,10 @@ def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,*
                    for name,syms in world.by_name.items()}
     world.amods = dict(world.amods)
     if peer: world.amods[108] = {"overlay": 108}
-    for n,(raw,linked,_receipt) in selected.items():
+    for n,(raw,linked,_receipt,_generated) in selected.items():
         e=rp.Elf(raw);linked_elf=rp.Elf(linked)
+        require(hashlib.sha256(e.data).hexdigest()==_receipt["compiler_sha256"]
+                and hashlib.sha256(linked_elf.data).hexdigest()==_receipt["configured_sha256"],"loaded module-generation input changed")
         require(all(e.size(s)==linked_elf.size(s) for s in SECTIONS),"ordinary module changed section extent")
         obj=rp.ObjRef(n,raw,f"diagnostic/{label}/overlay{n}",0,e.size(".text"),"c",e)
         bases={".data":e.size(".text"),".rodata":e.size(".text")+e.size(".data"),
@@ -370,8 +404,9 @@ def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,*
     ort=[codec.OrtRow(*rules.identity_row(i,cfg)) for i in identities]
     modules={n:module_record(pm) for n,pm in baseline.modules.items()}
     expected={};callers={}
-    for n,(raw,linked,_receipt) in selected.items():
+    for n,(raw,linked,_receipt,_generated) in selected.items():
         obj=world.objects(n)[0];e=rp.Elf(linked)
+        require(hashlib.sha256(e.data).hexdigest()==_receipt["configured_sha256"],"loaded module layout changed")
         rels=rp.collect_relocs(world,resolver,obj)
         refs=[]
         for c in rels:
@@ -402,6 +437,13 @@ def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,*
                       selected[75][1].relative_to(root).as_posix(),
                       selected[108][1].relative_to(root).as_posix() if peer else None)
     final_script=directory/"final.ld";final_script.write_text(script)
+    require(sha(final_script)==hashlib.sha256(script.encode()).hexdigest()
+            and sha(directory/"exports.txt")==hashlib.sha256(export_bytes).hexdigest(),"generated link script/exports changed")
+    for name,data in files.items():
+        wrapper=rp.Elf(generated/(name+".o"))
+        require(wrapper.bytes_of(".data")==data and sha(wrapper.path)==hashlib.sha256(wrapper.data).hexdigest()
+                and sha(directory/"metadata"/name)==hashlib.sha256(data).hexdigest(),"generated metadata input changed")
+    incoming=artifact_hashes(directory)
     command=["tools/link_diagnose.sh","tools/binutils/mips64-elf-ld","-T",final_script.relative_to(root)]
     for f in ("undefined_funcs_auto.us.txt","undefined_syms_auto.us.txt","libultra_undefined_syms.us.txt","overlay_undefined_syms.us.txt"):
         command += ["-T",f]
@@ -413,10 +455,12 @@ def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,*
     checksum=sha(directory/"final.z64")
     run(root,["tools/n64crc",(directory/"final.z64").relative_to(root)],directory/"crc-check.log",commands)
     require(sha(directory/"final.z64")==checksum,"computed diagnostic checksum is not stable")
-    base_elf=rp.Elf(root/metadata.BOOT_ELF)
-    result=validate_final(root,directory,tables,dynamic,header_end,selected,expected,exports,base_elf,commands)
+    base_elf=world.elf
+    result=validate_final(root,directory,tables,dynamic,header_end,selected,expected,exports,base_elf,commands,catalog,incoming)
     original_raw=world.paths["raw"]/"src/overlays/o075/overlay_075.c.o"
     old=rp.Elf(original_raw);new=rp.Elf(selected[75][0])
+    require(hashlib.sha256(old.data).hexdigest()==catalog[original_raw.relative_to(root).as_posix()]
+            and hashlib.sha256(new.data).hexdigest()==result["artifacts"][selected[75][0].name],"loaded growth evidence changed")
     result["existing_function_bytes"]={"baseline":real_symbol(old,spec["mutated_function"]).size,
                                       "diagnostic":real_symbol(new,spec["mutated_function"]).size}
     selected_rows={r["row"] for r in spec["existing_exports"]}
@@ -437,6 +481,7 @@ def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,*
         require(result["rom_sha1"]=="507341c0a40ca3e9a7cee969b396ee53facfb548","unchanged control is not retail exact")
     if peer:
         peer_raw=rp.Elf(selected[108][0])
+        require(hashlib.sha256(peer_raw.data).hexdigest()==result["artifacts"][selected[108][0].name],"loaded peer evidence changed")
         init=real_symbol(peer_raw,spec["peer"]["init"],section=".text")
         require(init.value==0 and init.type==rp.STT_FUNC and init.size>0,"peer offset-zero function absent")
         if use_peer:
@@ -456,10 +501,9 @@ def one_variant(root,run_dir,label,world,baseline,original_names,cfg,spec,args,*
                   compiler_receipts={str(n):r[2] for n,r in selected.items()},
                   named_borrowing_sha256=sha(root/"config/runlink-residuals.us.json"),
                   borrowed_records=json.loads((root/"config/runlink-residuals.us.json").read_text())["totals"]["borrowed_records"])
-    result["artifacts"]=artifact_hashes(directory)
-    save(directory/"receipt.json",result)
+    receipt_hash=publish_receipt(directory,result,result["artifacts"])
     print(label,json.dumps({k:result[k] for k in ("generated_inputs","runtime_slots","ort_rows","header_alignment_gap","selected_records","rom_sha1")}),flush=True)
-    return tables,names,result,callers
+    return tables,names,result,callers,receipt_hash
 
 def root_catalog_names(root):
     return json.loads((root/metadata.MANIFEST).read_text())["files"]
@@ -474,9 +518,19 @@ def artifact_hashes(directory):
     return {p.relative_to(directory).as_posix():sha(p) for p in sorted(directory.rglob("*"))
             if p.is_file() and p != directory/"receipt.json"}
 
+def publish_receipt(directory,result,validated):
+    # Never replace the semantically validated hashes with a later observation.
+    require(artifact_hashes(directory)==validated,"validated artifacts changed before receipt publication")
+    result["artifacts"]=dict(validated)
+    receipt_hash=save(directory/"receipt.json",result)
+    require(artifact_hashes(directory)==validated and sha(directory/"receipt.json")==receipt_hash,
+            "validated artifacts changed during receipt publication")
+    return receipt_hash
+
 def check_receipt(root,path):
     path=(path if path.is_absolute() else root/path).resolve()
     require(path.is_relative_to((root/OUT).resolve()),"receipt is outside the diagnostic output tree")
+    require(all(sha(p)==value for p,value in LOADED.items()),"loaded pilot implementation changed")
     loaded=path.read_bytes(); receipt=json.loads(loaded)
     require(receipt.get("schema")=="mickey-editable-layout-check-v1" and receipt.get("nonmatching_diagnostic") is True,
             "not a diagnostic layout receipt")
@@ -490,7 +544,8 @@ def check_receipt(root,path):
     require(receipt["canonical_context"]==context,"stale canonical catalog")
     require(path.read_bytes()==loaded and artifact_hashes(path.parent)==artifacts
             and inputs=={n:sha(root/n) for n in inputs}
-            and context=={n:metadata.digest(root/n) for n in context},
+            and context=={n:metadata.digest(root/n) for n in context}
+            and tools==tool_context(root) and all(sha(p)==value for p,value in LOADED.items()),
             "diagnostic proof inputs changed during receipt validation")
 
 def main():
@@ -539,17 +594,21 @@ def main():
     original_amods=dict(world.amods)
     compiler_args,command=compiler(root)
     resident_callers={}
-    base_elf=rp.Elf(root/metadata.BOOT_ELF)
+    base_elf=world.elf
     for e in packed.main:
         functions=[s for s in base_elf.symbols if s.type==rp.STT_FUNC and s.size and s.value<=e.site<s.value+s.size]
         resident_callers[(0,e.offset,e.type)]=(functions[0].name if functions else e.obj)
     results={};products={}
+    require(artifact_hashes(directory)=={},"unexpected diagnostic root artifact")
+    validated={}
     variants=[("control",False,False,False)]
     if options.only=="all":variants += [("grow",True,False,False),("peer",True,True,True),("peer-unreferenced",True,True,False),("removed-unreferenced",True,False,False)]
     for name,grow,peer,use_peer in variants:
         world._objects=original_objects;world.by_name=original_names;world.module_info=dict(original_info);world.amods=dict(original_amods)
-        products[name]=one_variant(root,directory,name,world,packed,ort,cfg,spec,compiler_args,grow=grow,peer=peer,use_peer=use_peer)
+        products[name]=one_variant(root,directory,name,world,packed,ort,cfg,spec,compiler_args,before,grow=grow,peer=peer,use_peer=use_peer)
         results[name]=products[name][2]
+        validated.update({f"{name}/{path}":value for path,value in results[name]["artifacts"].items()})
+        validated[f"{name}/receipt.json"]=products[name][4]
     refusals={}
     for label,product,removed in [("resident-to75",products["control"],{75})]+([("source75-to108",products["peer"],{108})] if "peer" in products else []):
         try: removed_targets(product[0],removed,product[1],{**resident_callers,**product[3]})
@@ -559,7 +618,7 @@ def main():
     if "removed-unreferenced" in products:
         removed_targets(products["peer-unreferenced"][0],{108},products["peer-unreferenced"][1])
         require(results["grow"]["rom_sha1"]==results["removed-unreferenced"]["rom_sha1"],"unreferenced removal did not return the genuine grow image")
-    require(all(result["artifacts"]==artifact_hashes(directory/name) for name,result in results.items()),"validated diagnostic artifacts changed before publication")
+    require(artifact_hashes(directory)==validated,"validated diagnostic artifacts changed before publication")
     require(before==metadata.provenance_context(root),"canonical catalog changed during diagnostic build")
     require(inputs=={n:sha(root/n) for n in inputs} and tools_before==tool_context(root),"pilot implementation/input/toolchain changed during check")
     require(all(sha(p)==value for p,value in LOADED.items()),"loaded pilot implementation changed")
@@ -567,11 +626,13 @@ def main():
     for m in world.atlas["modules"]:
         code={r["source"] for r in m["text_ownership"] if r["type"]=="c"}
         data_only.extend(r["source"] for r in m.get("data_rodata_ownership",[]) if r.get("canonical") and not r.get("externalized") and r["source"] not in code)
-    save(directory/"receipt.json",{"schema":"mickey-editable-layout-check-v1","nonmatching_diagnostic":True,
+    publish_receipt(directory,{"schema":"mickey-editable-layout-check-v1","nonmatching_diagnostic":True,
          "source_only":False,"general_relayout":False,"inputs":inputs,"canonical_context":before,"tool_context":tools_before,
-         "artifacts":artifact_hashes(directory),
          "canonical_recipe":command,"named_borrowing":json.loads((root/"config/runlink-residuals.us.json").read_text()),
-         "data_only_inventory_not_enabled":sorted(set(data_only)),"variants":results,"removal_refusals":refusals})
+         "data_only_inventory_not_enabled":sorted(set(data_only)),"variants":results,"removal_refusals":refusals},validated)
+    require(inputs=={n:sha(root/n) for n in inputs} and tools_before==tool_context(root)
+            and before==metadata.provenance_context(root) and all(sha(p)==value for p,value in LOADED.items()),
+            "pilot inputs changed during aggregate publication")
     print("editable-layout check PASS",directory.relative_to(root),flush=True)
 
 if __name__=="__main__":

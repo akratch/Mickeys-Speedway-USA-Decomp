@@ -3674,3 +3674,26 @@ Measured on `func_8002B040`, 2026-10-21; the model is
   `fp_queue_model.py --ido71`) at it. On all 4,032 forms of the first sweep,
   7.1 -O3 produced objects byte-identical to 5.3 -O3. At -O2 the two differ
   on three forms in four.
+
+### Pointer representation can preserve a physical-address operand shape
+
+- **Symptom:** replacing a cached-segment pointer adjustment with unsigned
+  integer arithmetic changes address materialization and register allocation,
+  even though the intended N64 address bits agree. Pointer arithmetic outside
+  the referenced object is not a sound way to preserve that compiler shape.
+- **Mechanism:** IDO distinguishes an address expression from an unsigned
+  integer expression. A union containing a pointer and a signed word can
+  expose the target representation without subtracting from the pointer.
+  Writing the pointer member, then reading the signed member and XORing its
+  sign bit preserved an exact static-geometry operand in a whole-module proof.
+  The unsigned-word union alternative did not preserve the same output.
+- **Lever:** use the pointer/signed-word union only for a real N64 address
+  conversion, with explicit sequencing and an assertion that both pointer and
+  signed word are 32 bits. Convert the resulting word to unsigned. Ordinary
+  unsigned pointer-to-integer conversion remains the simpler first choice.
+- **Limits:** this relies on the configured compiler's union representation
+  behavior and the N64 two's-complement ABI. It is not a host-portability
+  abstraction or permission to reinterpret unrelated storage. Keep command
+  cursor lvalue types unchanged unless their actual allocation and consumers
+  establish a shared type. Require whole-function and relocation proof; a
+  matching local expression does not establish a matching function.

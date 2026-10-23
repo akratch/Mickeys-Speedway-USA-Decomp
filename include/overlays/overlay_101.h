@@ -3,6 +3,17 @@
 
 #include "PR/ultratypes.h"
 #include "n_audio/gbi.h"
+/* Tier B: both resident texture renderers consume this exact 16-byte node
+ * and stop at a null texture. Tags and fields match their resident contract. */
+typedef struct RcpTextureInfo RcpTextureInfo;
+typedef struct RcpTextureNode {
+    RcpTextureInfo *texture;
+    RcpTextureInfo *alternate;
+    u32 packedOffset;
+    s16 x;
+    s16 y;
+} RcpTextureNode;
+
 typedef struct Overlay101Entry {
     u8 pad00[4];
     void *value4;
@@ -1937,7 +1948,7 @@ extern s32 gOverlay101GlobalX;
 
 extern s32 gOverlay101GlobalY;
 
-extern void *gOverlay101Value220;
+extern Overlay101Event *gOverlay101Value220;
 
 extern s32 gOverlay101Value224;
 
@@ -1981,14 +1992,14 @@ void camDo2DSprite(Overlay101Gfx **displayList, void *matrix,
                                     Overlay101Transform *transform,
                                     void *object, s32 rotated, s32 color);
 
-extern u8 D_1F4[];
+extern RcpTextureNode D_1F4[];
 
 void fontBackground(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 
 void fontColour(s32 red, s32 green, s32 blue, s32 colorAlpha,
                              s32 alpha);
 
-void func_8002F618(Overlay101Gfx **displayList, u8 *asset,
+void func_8002F618(Overlay101Gfx **displayList, RcpTextureNode *asset,
                                      s32 x, s32 y, s32 red, s32 green,
                                      s32 blue, s32 alpha);
 
@@ -2247,7 +2258,7 @@ extern Overlay101Event gO101TailC144FinalObject4A90;
 
 extern u8 D_8007BF3C[];
 
-extern s32 gO101TailC6E8PresentationActive;
+extern Overlay101Event *gO101TailC6E8PresentationActive;
 
 extern s32 gO101TailC6E8PresentationDone;
 
@@ -2263,9 +2274,9 @@ extern O101TailC6E8Node20 gO101TailC6E8Nodes20[];
 
 extern u8 gO101TailC6E8AssetDF0;
 
-extern void *gO101TailC6E8Handle1D4;
+extern RcpTextureNode gO101TailC6E8Handle1D4[2];
 
-extern void *gO101TailC6E8Handle1F4;
+extern RcpTextureNode gO101TailC6E8Handle1F4[2];
 
 extern void *gO101TailC6E8Handle33C;
 
@@ -2287,7 +2298,7 @@ extern void amTunePlay(s32 key);
 
 extern void func_800015F8(void);
 
-extern s32 gOverlay101PresentationActive;
+extern Overlay101Event *gOverlay101PresentationActive;
 
 extern s32 gOverlay101PresentationDone;
 
@@ -2295,16 +2306,16 @@ extern s32 gOverlay101PresentationTimer;
 
 extern s32 gOverlay101InputMode;
 
-extern void *gOverlay101Handle1D4;
+extern RcpTextureNode gOverlay101Handle1D4[2];
 
-extern void func_8002FB34(void *context, void **handle,
+extern void func_8002FB34(void *context, RcpTextureNode *handle,
                                               f32 x, f32 y, f32 scaleX,
                                               f32 scaleY, s32 layer,
                                               s32 mode);
 
 extern s32 overlay101ReadInputReloc(s32 controller);
 
-extern void *gOverlay101Handle1F4;
+extern RcpTextureNode gOverlay101Handle1F4[2];
 
 extern void *gOverlay101Handle33C;
 

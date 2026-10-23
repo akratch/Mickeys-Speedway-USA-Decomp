@@ -3798,8 +3798,8 @@ void func_overlay_101_F000C6E8_18E7F08(void) {
 
             gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].x = 0x20; gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].y = 0x18; gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].scale = 1.0f; gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].handle = func_80036DD0(1, &gO101TailC6E8Nodes20[gO101TailC6E8Node20Count]); gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].previousType = D_0.chainType; gO101TailC6E8Nodes20[gO101TailC6E8Node20Count].previous = D_0.chain; D_0.chainType = 1; D_0.chain = &gO101TailC6E8Nodes20[gO101TailC6E8Node20Count]; gO101TailC6E8Node20Count = gO101TailC6E8Node20Count + 1;
 
-            gO101TailC6E8Handle1D4 = texLoadTexture(0x5F1);
-            gO101TailC6E8Handle1F4 = texLoadTexture(0x5F2);
+            gO101TailC6E8Handle1D4[0].texture = texLoadTexture(0x5F1);
+            gO101TailC6E8Handle1F4[0].texture = texLoadTexture(0x5F2);
         }
 
         gO101TailC6E8Handle33C = texLoadTexture(0x58);
@@ -3822,7 +3822,7 @@ void overlay101UpdatePresentation(void *context, void *data, void *vertices,
         overlay101UpdateChains(step);
         overlay101DrawSlots(context, data, vertices);
         func_8002FB34(
-            context, &gOverlay101Handle1D4, (f32)gOverlay101GlobalX,
+            context, gOverlay101Handle1D4, (f32)gOverlay101GlobalX,
             (f32)gOverlay101GlobalY, 1.0f, 1.0f, -2, 3);
         state = gOverlay101PresentationDone;
     } else {
@@ -3856,13 +3856,13 @@ void overlay101Cleanup(void) {
     Overlay101Resource32 *resource32;
     Overlay101OrderEntry *order;
 
-    if (gOverlay101Handle1D4 != NULL) {
-        overlay101ReleaseReloc(gOverlay101Handle1D4);
-        gOverlay101Handle1D4 = NULL;
+    if (gOverlay101Handle1D4[0].texture != NULL) {
+        overlay101ReleaseReloc(gOverlay101Handle1D4[0].texture);
+        gOverlay101Handle1D4[0].texture = NULL;
     }
-    if (gOverlay101Handle1F4 != NULL) {
-        overlay101ReleaseReloc(gOverlay101Handle1F4);
-        gOverlay101Handle1F4 = NULL;
+    if (gOverlay101Handle1F4[0].texture != NULL) {
+        overlay101ReleaseReloc(gOverlay101Handle1F4[0].texture);
+        gOverlay101Handle1F4[0].texture = NULL;
     }
 
     count = gOverlay101Resource20Count;

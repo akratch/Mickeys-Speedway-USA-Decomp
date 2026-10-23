@@ -268,6 +268,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
         (0x0310, 0x0360, "overlay8SelectorTables", ".data"),
         (0x0360, 0x03E0, "overlay8SelectorFlags", ".data"),
         (0x03E0, 0x0520, "overlay8EffectTables", ".data"),
+        (0x0520, 0x05E0, "overlay8MotionScales", ".rodata"),
         (0x2378, 0x2418, "overlay8MotionConstants", ".data"),
     ],
     24: [(0x0, 0x10, "overlay_024", ".rodata")],
@@ -321,6 +322,7 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
     (8, "overlay8MotionConstants", ".data"),
     (8, "overlay8EffectTables", ".data"),
     (8, "overlay8SelectorTables", ".data"),
+    (8, "overlay8MotionScales", ".rodata"),
 }
 
 # Reviewed gaps that require explicit padding rather than compiler alignment.
@@ -1882,8 +1884,17 @@ def render_yaml_block(
                     f"bin, {name}_data_rodata{suffix}]"
                 )
 
+            ordered_fixed = sorted(
+                fixed_data, key=lambda item: int(item["offset"], 16)
+            )
+            readonly_tail_start = data_size
+            for part in reversed(ordered_fixed):
+                if (part["section"] != ".rodata"
+                        or int(part["end_offset"], 16) != readonly_tail_start):
+                    break
+                readonly_tail_start = int(part["offset"], 16)
             cursor = owned_end
-            for part in sorted(fixed_data, key=lambda item: int(item["offset"], 16)):
+            for part in ordered_fixed:
                 fixed_start = int(part["offset"], 16)
                 fixed_end = int(part["end_offset"], 16)
                 if fixed_start < cursor:
@@ -1893,10 +1904,22 @@ def render_yaml_block(
                     )
                 if cursor < fixed_start:
                     raw_slice(cursor)
-                lines.append(
-                    f"      - [{hx(int(data_row['start'], 16) + fixed_start)}, "
-                    f"{part['section']}, {part['source'].rsplit('/', 1)[1]}]"
-                )
+                start = hx(int(data_row["start"], 16) + fixed_start)
+                source = part["source"].rsplit("/", 1)[1]
+                if (part["section"] == ".rodata"
+                        and fixed_start < readonly_tail_start):
+                    # Splat normally groups every .rodata input after .data.
+                    # An interior read-only contributor must keep its physical
+                    # order before subsequent initialized slices. Change only
+                    # ordering: the selected ELF section remains .rodata.
+                    lines.append(
+                        f"      - {{start: {start}, type: .rodata, name: {source}, "
+                        "linker_section_order: .data}"
+                    )
+                else:
+                    lines.append(
+                        f"      - [{start}, {part['section']}, {source}]"
+                    )
                 cursor = fixed_end
             if cursor < data_size:
                 raw_slice(cursor)

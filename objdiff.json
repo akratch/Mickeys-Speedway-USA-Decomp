@@ -1418,6 +1418,16 @@
       }
     },
     {
+      "name": "assets/overlays/o008/overlay_008_data_rodata_5e0.bin",
+      "target_path": "expected/build/assets/overlays/o008/overlay_008_data_rodata_5e0.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o008"
+        ]
+      }
+    },
+    {
       "name": "assets/overlays/o008/overlay_008_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o008/overlay_008_reloc1.bin.o",
       "metadata": {

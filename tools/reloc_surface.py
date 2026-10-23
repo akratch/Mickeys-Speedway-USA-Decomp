@@ -537,6 +537,13 @@ def synthesize(obj_path: Path, overlay: int, rom: bytes, atlas_rows, records,
     seen = {s["symbol"] for s in sites}
     filtered = sorted(seen - set(wanted) - unmapped)
 
+    # Local absolute bindings already resolve inside this object. Validate
+    # them against the required value, but never publish their private names
+    # into the shared linker script (section anchors may share a spelling).
+    local_absolute = collections.defaultdict(set)
+    for name, value, _size, info, shndx in syms:
+        if name and info >> 4 == 0 and shndx == SHN_ABS:
+            local_absolute[name].add(value)
     values, conflicts = {}, []
     for name in filtered:
         conflicts.append((name, "no corroborated site survived: the schedule "
@@ -544,6 +551,9 @@ def synthesize(obj_path: Path, overlay: int, rom: bytes, atlas_rows, records,
     for name in sorted(wanted):
         if name in unmapped:
             conflicts.append((name, "unmapped site"))
+        elif name in local_absolute:
+            if local_absolute[name] != wanted[name]:
+                conflicts.append((name, "local absolute binding disagrees with shipped operands"))
         elif len(wanted[name]) == 1:
             values[name] = next(iter(wanted[name]))
         else:

@@ -296,6 +296,27 @@ class CensusTests(unittest.TestCase):
         self.assertIn("   2  symbol_addrs function row+progress matched-C rule", out.getvalue())
         self.assertNotIn("atlas", out.getvalue())
 
+    def test_exact_c_bytes_without_a_function_symbol_are_spans(self):
+        # An export at +0 then a static at +0x20: tiled, nothing unbounded.
+        self.assertEqual([], census.unbounded_spans([(0, 0x60)], [(0, 0x20), (0x20, 0x60)]))
+        # The same module before the static had a symbol.
+        self.assertEqual([(0x20, 0x60)], census.unbounded_spans([(0, 0x60)], [(0, 0x20)]))
+        self.assertEqual([(0, 0x10), (0x30, 0x40)], census.unbounded_spans(
+            [(0, 0x40), (0, 0x40)], [(0x10, 0x30), (0x80, 0x90)]))
+
+    def test_static_functions_are_proved_and_tallied(self):
+        entries = [census.Entry("overlay4Export", "overlay", "build/o.o"),
+                   census.Entry("overlay4Helper", "overlay", "build/o.o", static=True)]
+        runner = FakeRunner({"overlay4Export": "static", "overlay4Helper": "static"})
+        outcomes = census.census(entries, cache_path=None, elf_digest="e", environment="v",
+                                 runner=runner, object_digest=lambda obj: obj)
+        self.assertEqual({"overlay4Export", "overlay4Helper"}, {call[2] for call in runner.calls})
+        self.assertEqual([False, True], [row.static for row in outcomes])
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            census.render(outcomes, [], list_uncovered=False, require_coverage=True,
+                          elapsed=0.0)
+        self.assertIn("of which 1 proved / 1 in contract are static", out.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

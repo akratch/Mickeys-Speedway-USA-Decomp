@@ -1694,16 +1694,6 @@
       }
     },
     {
-      "name": "asm/overlays/o073/overlay_073_padding.s",
-      "target_path": "expected/build/asm/overlays/o073/overlay_073_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o073"
-        ]
-      }
-    },
-    {
       "name": "asm/overlays/o082/overlay_082_padding.s",
       "target_path": "expected/build/asm/overlays/o082/overlay_082_padding.s.o",
       "metadata": {
@@ -16255,9 +16245,9 @@
       }
     },
     {
-      "name": "src/overlays/o073/func_overlay_073_F0000190_18CAC50.c",
-      "target_path": "expected/build/src/overlays/o073/func_overlay_073_F0000190_18CAC50.c.o",
-      "base_path": "build/src/overlays/o073/func_overlay_073_F0000190_18CAC50.c.o",
+      "name": "src/overlays/o073/overlay_073.c",
+      "target_path": "expected/build/src/overlays/o073/overlay_073.c.o",
+      "base_path": "build/src/overlays/o073/overlay_073.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -16268,43 +16258,7 @@
           "overlay",
           "overlay-o073"
         ],
-        "source_path": "src/overlays/o073/func_overlay_073_F0000190_18CAC50.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o073/overlay73Draw.c",
-      "target_path": "expected/build/src/overlays/o073/overlay73Draw.c.o",
-      "base_path": "build/src/overlays/o073/overlay73Draw.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o073"
-        ],
-        "source_path": "src/overlays/o073/overlay73Draw.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o073/overlay73Initialize.c",
-      "target_path": "expected/build/src/overlays/o073/overlay73Initialize.c.o",
-      "base_path": "build/src/overlays/o073/overlay73Initialize.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o073"
-        ],
-        "source_path": "src/overlays/o073/overlay73Initialize.c",
+        "source_path": "src/overlays/o073/overlay_073.c",
         "complete": true
       }
     },

@@ -223,7 +223,7 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         (
             0xDC,
             0x12C,
-            "func_overlay_073_F0000190_18CAC50",
+            "overlay_073",
             ".rodata",
             "func_overlay_073_F0000190_18CAC50",
             True,
@@ -306,6 +306,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     87: "overlay_087_padding",
     84: "overlay_084_padding",
     86: "overlay_086_padding",
+    73: "overlay_073_padding",
 }
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
@@ -755,9 +756,7 @@ TEXT_SUBSEGMENTS = {
         (0x168, "asm", "overlay_072_padding"),
     ],
     73: [
-        (0x000, "c", "overlay73Initialize"),
-        (0x190, "c", "func_overlay_073_F0000190_18CAC50"),
-        (0xD70, "c", "overlay73Draw"),
+        (0x000, "c", "overlay_073"),
         (0xEA8, "asm", "overlay_073_padding"),
     ],
     74: [

@@ -3929,8 +3929,10 @@ func_8005776C_o072Reloc = 0xf0000000;
 func_overlay_008_F0000F1C_o072Reloc = 0xf0000000;
 gOverlay72ComponentScale = 0x00000000;
 
-/* overlay 73: func_overlay_073_F0000190_18CAC50.c.o */
+/* overlay 73: overlay_073.c.o */
 Arctanf_o073Reloc = 0xf0000000;
+camPopModelMtx_o073Reloc = 0xf0000000;
+camPushModelMtx_o073Reloc = 0xf0000000;
 func_80008118_o073Reloc = 0xf0000000;
 func_80008128_o073Reloc = 0xf0000000;
 func_800299E8_o073Reloc = 0xf0000000;
@@ -3940,10 +3942,6 @@ func_8005776C_o073Reloc = 0xf0000000;
 gOverlay73UpdatePoolReloc = 0x0000000c;
 mathRnd_o073Reloc = 0xf0000000;
 sqrtf_o073Reloc = 0xf0000000;
-
-/* overlay 73: overlay73Draw.c.o */
-camPopModelMtx_o073Reloc = 0xf0000000;
-camPushModelMtx_o073Reloc = 0xf0000000;
 texDPTextureX_o073Reloc = 0xf0000000;
 
 /* overlay 74: overlay_074.c.o */

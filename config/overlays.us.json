@@ -14190,28 +14190,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x190",
-     "size": "0x190",
-     "type": "c",
-     "source": "overlays/o073/overlay73Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x190",
-     "end_offset": "0xD70",
-     "size": "0xBE0",
-     "type": "c",
-     "source": "overlays/o073/func_overlay_073_F0000190_18CAC50",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xD70",
      "end_offset": "0xEA8",
-     "size": "0x138",
+     "size": "0xEA8",
      "type": "c",
-     "source": "overlays/o073/overlay73Draw",
+     "source": "overlays/o073/overlay_073",
      "matched": true,
      "nonmatching": false
     },
@@ -14297,7 +14279,7 @@
      "size": "0x50",
      "type": "c",
      "section": ".rodata",
-     "source": "overlays/o073/func_overlay_073_F0000190_18CAC50",
+     "source": "overlays/o073/overlay_073",
      "trial_function": "func_overlay_073_F0000190_18CAC50",
      "externalized": true
     }

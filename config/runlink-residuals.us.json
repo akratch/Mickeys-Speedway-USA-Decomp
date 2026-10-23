@@ -2284,7 +2284,7 @@
         [59, "overlay59Advance", ".rodata", "0x1188", 4],
         [60, "overlay60Prefix", ".rodata", "0x3790", 4],
         [61, "func_overlay_061_F0000B84_18BFF4C", ".rodata", "0x1D08", 2],
-        [73, "func_overlay_073_F0000190_18CAC50", ".rodata", "0xF8C", 30],
+        [73, "overlay_073", ".rodata", "0xF8C", 30],
         [77, "overlay_077", ".rodata", "0x440", 10],
         [79, "func_overlay_079_F0000134_18CD0D4", ".rodata", "0x1504", 22],
         [79, "func_overlay_079_F0000FA0_18CDF40", ".rodata", "0x1530", 8],

@@ -1774,6 +1774,20 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o072/overlay_072.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym func_8005776C=func_8005776C_o072Reloc \
 	--redefine-sym func_overlay_008_F0000F1C_185EC74=func_overlay_008_F0000F1C_o072Reloc $@
 
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o073/overlay_073.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o073Reloc \
+	--redefine-sym camPopModelMtx=camPopModelMtx_o073Reloc \
+	--redefine-sym camPushModelMtx=camPushModelMtx_o073Reloc \
+	--redefine-sym func_80008118=func_80008118_o073Reloc \
+	--redefine-sym func_80008128=func_80008128_o073Reloc \
+	--redefine-sym func_800299E8=func_800299E8_o073Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o073Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o073Reloc \
+	--redefine-sym func_8005776C=func_8005776C_o073Reloc \
+	--redefine-sym mathRnd=mathRnd_o073Reloc \
+	--redefine-sym sqrtf=sqrtf_o073Reloc \
+	--redefine-sym texDPTextureX=texDPTextureX_o073Reloc $@
+
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o074/overlay_074.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D3128=D_800D3128_o074Reloc \
 	--redefine-sym amSndPlay=amSndPlay_o074Reloc \

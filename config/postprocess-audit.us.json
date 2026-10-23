@@ -6455,29 +6455,14 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o073/func_overlay_073_F0000190_18CAC50.c.o",
-      "offset": 400,
+      "object": "build/src/overlays/o073/overlay_073.c.o",
+      "offset": 0,
       "overlay": 73,
-      "size": 3040,
-      "source": "src/overlays/o073/func_overlay_073_F0000190_18CAC50.c",
+      "size": 3752,
+      "source": "src/overlays/o073/overlay_073.c",
       "tools": [
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o073/overlay73Draw.c.o",
-      "offset": 3440,
-      "overlay": 73,
-      "size": 312,
-      "source": "src/overlays/o073/overlay73Draw.c",
-      "tools": [
-        "trim_elf_section.py",
         "objcopy"
       ]
     },
@@ -8305,10 +8290,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 571,
+      "metadata": 570,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 431244,
-    "objects_with_postprocess": 572
+    "matched_c_bytes_with_postprocess": 431644,
+    "objects_with_postprocess": 571
   }
 }

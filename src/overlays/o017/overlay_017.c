@@ -352,4 +352,3 @@ check_flush:
     ((Overlay17Gfx *)pair)->w1 = 0;
     ((Overlay17Gfx *)pair)->w0 = 0xE7000000;
 }
-

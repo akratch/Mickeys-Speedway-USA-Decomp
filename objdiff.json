@@ -1154,12 +1154,472 @@
       }
     },
     {
+      "name": "asm/overlays/o002/overlay_002_tail.s",
+      "target_path": "expected/build/asm/overlays/o002/overlay_002_tail.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o002"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o003/overlay_003_padding.s",
+      "target_path": "expected/build/asm/overlays/o003/overlay_003_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o003"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o004/overlay_004_padding.s",
+      "target_path": "expected/build/asm/overlays/o004/overlay_004_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o004"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o005/overlay_005_padding.s",
+      "target_path": "expected/build/asm/overlays/o005/overlay_005_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o005"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o006/overlay_006_padding.s",
+      "target_path": "expected/build/asm/overlays/o006/overlay_006_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o006"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o007/overlay_007_padding.s",
+      "target_path": "expected/build/asm/overlays/o007/overlay_007_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o007"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o008/overlay_008_padding.s",
+      "target_path": "expected/build/asm/overlays/o008/overlay_008_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o008"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o009/overlay_009_padding.s",
+      "target_path": "expected/build/asm/overlays/o009/overlay_009_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o009"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o011/overlay_011_padding.s",
+      "target_path": "expected/build/asm/overlays/o011/overlay_011_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o011"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o012/overlay_012_padding.s",
+      "target_path": "expected/build/asm/overlays/o012/overlay_012_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o012"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o013/overlay_013_padding.s",
+      "target_path": "expected/build/asm/overlays/o013/overlay_013_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o013"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o016/overlay_016_padding.s",
+      "target_path": "expected/build/asm/overlays/o016/overlay_016_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o016"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o019/overlay_019_padding.s",
+      "target_path": "expected/build/asm/overlays/o019/overlay_019_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o019"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o020/overlay_020_padding.s",
+      "target_path": "expected/build/asm/overlays/o020/overlay_020_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o020"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o021/overlay_021_padding.s",
+      "target_path": "expected/build/asm/overlays/o021/overlay_021_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o021"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o023/overlay_023_padding.s",
+      "target_path": "expected/build/asm/overlays/o023/overlay_023_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o023"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o024/overlay_024_padding.s",
+      "target_path": "expected/build/asm/overlays/o024/overlay_024_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o024"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o025/overlay_025_padding.s",
+      "target_path": "expected/build/asm/overlays/o025/overlay_025_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o025"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o028/overlay_028_padding.s",
+      "target_path": "expected/build/asm/overlays/o028/overlay_028_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o028"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o029/overlay_029_padding.s",
+      "target_path": "expected/build/asm/overlays/o029/overlay_029_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o029"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o030/overlay_030_padding.s",
+      "target_path": "expected/build/asm/overlays/o030/overlay_030_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o030"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o031/overlay_031_padding.s",
+      "target_path": "expected/build/asm/overlays/o031/overlay_031_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o031"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o033/overlay_033_padding.s",
+      "target_path": "expected/build/asm/overlays/o033/overlay_033_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o033"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o035/overlay_035_padding.s",
+      "target_path": "expected/build/asm/overlays/o035/overlay_035_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o035"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o036/overlay_036_padding.s",
+      "target_path": "expected/build/asm/overlays/o036/overlay_036_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o036"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o037/overlay_037_padding.s",
+      "target_path": "expected/build/asm/overlays/o037/overlay_037_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o037"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o038/overlay_038_padding.s",
+      "target_path": "expected/build/asm/overlays/o038/overlay_038_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o038"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o039/overlay_039_padding.s",
+      "target_path": "expected/build/asm/overlays/o039/overlay_039_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o039"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o040/overlay_040_padding.s",
+      "target_path": "expected/build/asm/overlays/o040/overlay_040_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o040"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o043/overlay_043_padding.s",
+      "target_path": "expected/build/asm/overlays/o043/overlay_043_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o043"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o044/overlay_044_padding.s",
+      "target_path": "expected/build/asm/overlays/o044/overlay_044_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o044"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o046/overlay_046_padding.s",
+      "target_path": "expected/build/asm/overlays/o046/overlay_046_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o046"
+        ]
+      }
+    },
+    {
       "name": "asm/overlays/o047/overlay_047_padding.s",
       "target_path": "expected/build/asm/overlays/o047/overlay_047_padding.s.o",
       "metadata": {
         "progress_categories": [
           "overlay",
           "overlay-o047"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o048/overlay_048_padding.s",
+      "target_path": "expected/build/asm/overlays/o048/overlay_048_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o048"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o049/overlay_049_padding.s",
+      "target_path": "expected/build/asm/overlays/o049/overlay_049_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o049"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o050/overlay_050_padding.s",
+      "target_path": "expected/build/asm/overlays/o050/overlay_050_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o050"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o051/overlay_051_padding.s",
+      "target_path": "expected/build/asm/overlays/o051/overlay_051_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o051"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o052/overlay_052_padding.s",
+      "target_path": "expected/build/asm/overlays/o052/overlay_052_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o052"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o053/overlay_053_padding.s",
+      "target_path": "expected/build/asm/overlays/o053/overlay_053_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o053"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o054/overlay_054_padding.s",
+      "target_path": "expected/build/asm/overlays/o054/overlay_054_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o054"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o055/overlay_055_padding.s",
+      "target_path": "expected/build/asm/overlays/o055/overlay_055_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o055"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o056/overlay_056_padding.s",
+      "target_path": "expected/build/asm/overlays/o056/overlay_056_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o056"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o058/overlay_058_padding_b.s",
+      "target_path": "expected/build/asm/overlays/o058/overlay_058_padding_b.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o058"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o059/overlay_059_padding.s",
+      "target_path": "expected/build/asm/overlays/o059/overlay_059_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o059"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o060/overlay_060_padding.s",
+      "target_path": "expected/build/asm/overlays/o060/overlay_060_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o060"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o061/overlay_061_padding.s",
+      "target_path": "expected/build/asm/overlays/o061/overlay_061_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o061"
+        ]
+      }
+    },
+    {
+      "name": "asm/overlays/o063/overlay_063_padding.s",
+      "target_path": "expected/build/asm/overlays/o063/overlay_063_padding.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o063"
         ]
       }
     },
@@ -1174,142 +1634,62 @@
       }
     },
     {
-      "name": "asm/overlays/o073/overlay_073_padding.s",
-      "target_path": "expected/build/asm/overlays/o073/overlay_073_padding.s.o",
+      "name": "asm/overlays/o067/overlay_067_padding.s",
+      "target_path": "expected/build/asm/overlays/o067/overlay_067_padding.s.o",
       "metadata": {
         "progress_categories": [
           "overlay",
-          "overlay-o073"
+          "overlay-o067"
         ]
       }
     },
     {
-      "name": "asm/overlays/o074/overlay_074_padding.s",
-      "target_path": "expected/build/asm/overlays/o074/overlay_074_padding.s.o",
+      "name": "asm/overlays/o068/overlay_068_padding.s",
+      "target_path": "expected/build/asm/overlays/o068/overlay_068_padding.s.o",
       "metadata": {
         "progress_categories": [
           "overlay",
-          "overlay-o074"
+          "overlay-o068"
         ]
       }
     },
     {
-      "name": "asm/overlays/o075/overlay_075_padding.s",
-      "target_path": "expected/build/asm/overlays/o075/overlay_075_padding.s.o",
+      "name": "asm/overlays/o069/overlay_069_padding.s",
+      "target_path": "expected/build/asm/overlays/o069/overlay_069_padding.s.o",
       "metadata": {
         "progress_categories": [
           "overlay",
-          "overlay-o075"
+          "overlay-o069"
         ]
       }
     },
     {
-      "name": "asm/overlays/o076/overlay_076_padding.s",
-      "target_path": "expected/build/asm/overlays/o076/overlay_076_padding.s.o",
+      "name": "asm/overlays/o070/overlay_070_padding.s",
+      "target_path": "expected/build/asm/overlays/o070/overlay_070_padding.s.o",
       "metadata": {
         "progress_categories": [
           "overlay",
-          "overlay-o076"
+          "overlay-o070"
         ]
       }
     },
     {
-      "name": "asm/overlays/o078/overlay_078_padding.s",
-      "target_path": "expected/build/asm/overlays/o078/overlay_078_padding.s.o",
+      "name": "asm/overlays/o071/overlay_071_tail.s",
+      "target_path": "expected/build/asm/overlays/o071/overlay_071_tail.s.o",
       "metadata": {
         "progress_categories": [
           "overlay",
-          "overlay-o078"
+          "overlay-o071"
         ]
       }
     },
     {
-      "name": "asm/overlays/o080/overlay_080_padding.s",
-      "target_path": "expected/build/asm/overlays/o080/overlay_080_padding.s.o",
+      "name": "asm/overlays/o072/overlay_072_padding.s",
+      "target_path": "expected/build/asm/overlays/o072/overlay_072_padding.s.o",
       "metadata": {
         "progress_categories": [
           "overlay",
-          "overlay-o080"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o081/overlay_081_padding.s",
-      "target_path": "expected/build/asm/overlays/o081/overlay_081_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o081"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o082/overlay_082_padding.s",
-      "target_path": "expected/build/asm/overlays/o082/overlay_082_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o082"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o084/overlay_084_padding.s",
-      "target_path": "expected/build/asm/overlays/o084/overlay_084_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o085/overlay_085_padding.s",
-      "target_path": "expected/build/asm/overlays/o085/overlay_085_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o085"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o086/overlay_086_padding.s",
-      "target_path": "expected/build/asm/overlays/o086/overlay_086_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o086"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o087/overlay_087_padding.s",
-      "target_path": "expected/build/asm/overlays/o087/overlay_087_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o087"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o089/overlay_089_padding.s",
-      "target_path": "expected/build/asm/overlays/o089/overlay_089_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o089"
-        ]
-      }
-    },
-    {
-      "name": "asm/overlays/o090/overlay_090_padding.s",
-      "target_path": "expected/build/asm/overlays/o090/overlay_090_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o090"
+          "overlay-o072"
         ]
       }
     },
@@ -1904,6 +2284,16 @@
         "progress_categories": [
           "overlay",
           "overlay-o015"
+        ]
+      }
+    },
+    {
+      "name": "assets/overlays/o016/overlay_016_data_rodata.bin",
+      "target_path": "expected/build/assets/overlays/o016/overlay_016_data_rodata.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o016"
         ]
       }
     },
@@ -9499,9 +9889,9 @@
       }
     },
     {
-      "name": "src/overlays/o073/func_overlay_073_F0000190_18CAC50.c",
-      "target_path": "expected/build/src/overlays/o073/func_overlay_073_F0000190_18CAC50.c.o",
-      "base_path": "build/src/overlays/o073/func_overlay_073_F0000190_18CAC50.c.o",
+      "name": "src/overlays/o073/overlay_073.c",
+      "target_path": "expected/build/src/overlays/o073/overlay_073.c.o",
+      "base_path": "build/src/overlays/o073/overlay_073.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -9512,50 +9902,14 @@
           "overlay",
           "overlay-o073"
         ],
-        "source_path": "src/overlays/o073/func_overlay_073_F0000190_18CAC50.c",
+        "source_path": "src/overlays/o073/overlay_073.c",
         "complete": true
       }
     },
     {
-      "name": "src/overlays/o073/overlay73Draw.c",
-      "target_path": "expected/build/src/overlays/o073/overlay73Draw.c.o",
-      "base_path": "build/src/overlays/o073/overlay73Draw.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o073"
-        ],
-        "source_path": "src/overlays/o073/overlay73Draw.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o073/overlay73Initialize.c",
-      "target_path": "expected/build/src/overlays/o073/overlay73Initialize.c.o",
-      "base_path": "build/src/overlays/o073/overlay73Initialize.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o073"
-        ],
-        "source_path": "src/overlays/o073/overlay73Initialize.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o074/overlay74Init.c",
-      "target_path": "expected/build/src/overlays/o074/overlay74Init.c.o",
-      "base_path": "build/src/overlays/o074/overlay74Init.c.o",
+      "name": "src/overlays/o074/overlay_074.c",
+      "target_path": "expected/build/src/overlays/o074/overlay_074.c.o",
+      "base_path": "build/src/overlays/o074/overlay_074.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -9566,32 +9920,14 @@
           "overlay",
           "overlay-o074"
         ],
-        "source_path": "src/overlays/o074/overlay74Init.c",
+        "source_path": "src/overlays/o074/overlay_074.c",
         "complete": true
       }
     },
     {
-      "name": "src/overlays/o074/overlay74Update.c",
-      "target_path": "expected/build/src/overlays/o074/overlay74Update.c.o",
-      "base_path": "build/src/overlays/o074/overlay74Update.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o074"
-        ],
-        "source_path": "src/overlays/o074/overlay74Update.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o075/overlay75Init.c",
-      "target_path": "expected/build/src/overlays/o075/overlay75Init.c.o",
-      "base_path": "build/src/overlays/o075/overlay75Init.c.o",
+      "name": "src/overlays/o075/overlay_075.c",
+      "target_path": "expected/build/src/overlays/o075/overlay_075.c.o",
+      "base_path": "build/src/overlays/o075/overlay_075.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -9602,43 +9938,7 @@
           "overlay",
           "overlay-o075"
         ],
-        "source_path": "src/overlays/o075/overlay75Init.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o075/overlay75MarkSlot.c",
-      "target_path": "expected/build/src/overlays/o075/overlay75MarkSlot.c.o",
-      "base_path": "build/src/overlays/o075/overlay75MarkSlot.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o075"
-        ],
-        "source_path": "src/overlays/o075/overlay75MarkSlot.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o075/overlay75UpdateMovingObject.c",
-      "target_path": "expected/build/src/overlays/o075/overlay75UpdateMovingObject.c.o",
-      "base_path": "build/src/overlays/o075/overlay75UpdateMovingObject.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o075"
-        ],
-        "source_path": "src/overlays/o075/overlay75UpdateMovingObject.c",
+        "source_path": "src/overlays/o075/overlay_075.c",
         "complete": true
       }
     },
@@ -9649,7 +9949,7 @@
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
@@ -9679,31 +9979,13 @@
       }
     },
     {
-      "name": "src/overlays/o077/overlay_077_tail.c",
-      "target_path": "expected/build/src/overlays/o077/overlay_077_tail.c.o",
-      "base_path": "build/src/overlays/o077/overlay_077_tail.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o077"
-        ],
-        "source_path": "src/overlays/o077/overlay_077_tail.c",
-        "complete": true
-      }
-    },
-    {
       "name": "src/overlays/o078/overlay_078.c",
       "target_path": "expected/build/src/overlays/o078/overlay_078.c.o",
       "base_path": "build/src/overlays/o078/overlay_078.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
@@ -9715,27 +9997,9 @@
       }
     },
     {
-      "name": "src/overlays/o079/func_overlay_079_F0000000_18CCFA0.c",
-      "target_path": "expected/build/src/overlays/o079/func_overlay_079_F0000000_18CCFA0.c.o",
-      "base_path": "build/src/overlays/o079/func_overlay_079_F0000000_18CCFA0.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o079"
-        ],
-        "source_path": "src/overlays/o079/func_overlay_079_F0000000_18CCFA0.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o079/func_overlay_079_F0000134_18CD0D4.c",
-      "target_path": "expected/build/src/overlays/o079/func_overlay_079_F0000134_18CD0D4.c.o",
-      "base_path": "build/src/overlays/o079/func_overlay_079_F0000134_18CD0D4.c.o",
+      "name": "src/overlays/o079/overlay_079.c",
+      "target_path": "expected/build/src/overlays/o079/overlay_079.c.o",
+      "base_path": "build/src/overlays/o079/overlay_079.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -9746,122 +10010,14 @@
           "overlay",
           "overlay-o079"
         ],
-        "source_path": "src/overlays/o079/func_overlay_079_F0000134_18CD0D4.c",
+        "source_path": "src/overlays/o079/overlay_079.c",
         "complete": true
       }
     },
     {
-      "name": "src/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c",
-      "target_path": "expected/build/src/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c.o",
-      "base_path": "build/src/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o079"
-        ],
-        "source_path": "src/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o079/func_overlay_079_F0001290_18CE230.c",
-      "target_path": "expected/build/src/overlays/o079/func_overlay_079_F0001290_18CE230.c.o",
-      "base_path": "build/src/overlays/o079/func_overlay_079_F0001290_18CE230.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o079"
-        ],
-        "source_path": "src/overlays/o079/func_overlay_079_F0001290_18CE230.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o079/overlay79FindNearby.c",
-      "target_path": "expected/build/src/overlays/o079/overlay79FindNearby.c.o",
-      "base_path": "build/src/overlays/o079/overlay79FindNearby.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o079"
-        ],
-        "source_path": "src/overlays/o079/overlay79FindNearby.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o079/overlay79InitState.c",
-      "target_path": "expected/build/src/overlays/o079/overlay79InitState.c.o",
-      "base_path": "build/src/overlays/o079/overlay79InitState.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o079"
-        ],
-        "source_path": "src/overlays/o079/overlay79InitState.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o079/overlay79SetLink.c",
-      "target_path": "expected/build/src/overlays/o079/overlay79SetLink.c.o",
-      "base_path": "build/src/overlays/o079/overlay79SetLink.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o079"
-        ],
-        "source_path": "src/overlays/o079/overlay79SetLink.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o079/overlay79UpdateTimers.c",
-      "target_path": "expected/build/src/overlays/o079/overlay79UpdateTimers.c.o",
-      "base_path": "build/src/overlays/o079/overlay79UpdateTimers.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o079"
-        ],
-        "source_path": "src/overlays/o079/overlay79UpdateTimers.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o080/overlay80InitializeContact.c",
-      "target_path": "expected/build/src/overlays/o080/overlay80InitializeContact.c.o",
-      "base_path": "build/src/overlays/o080/overlay80InitializeContact.c.o",
+      "name": "src/overlays/o080/overlay_080.c",
+      "target_path": "expected/build/src/overlays/o080/overlay_080.c.o",
+      "base_path": "build/src/overlays/o080/overlay_080.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -9872,25 +10028,7 @@
           "overlay",
           "overlay-o080"
         ],
-        "source_path": "src/overlays/o080/overlay80InitializeContact.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o080/overlay80UpdateContact.c",
-      "target_path": "expected/build/src/overlays/o080/overlay80UpdateContact.c.o",
-      "base_path": "build/src/overlays/o080/overlay80UpdateContact.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o080"
-        ],
-        "source_path": "src/overlays/o080/overlay80UpdateContact.c",
+        "source_path": "src/overlays/o080/overlay_080.c",
         "complete": true
       }
     },
@@ -9919,7 +10057,7 @@
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wo,-loopunroll,2 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -Wo,-loopunroll,2 -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
@@ -9937,7 +10075,7 @@
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
@@ -9949,171 +10087,27 @@
       }
     },
     {
-      "name": "src/overlays/o083/overlay83BuildBatch.c",
-      "target_path": "expected/build/src/overlays/o083/overlay83BuildBatch.c.o",
-      "base_path": "build/src/overlays/o083/overlay83BuildBatch.c.o",
+      "name": "src/overlays/o083/overlay_083.c",
+      "target_path": "expected/build/src/overlays/o083/overlay_083.c.o",
+      "base_path": "build/src/overlays/o083/overlay_083.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
           "overlay",
           "overlay-o083"
         ],
-        "source_path": "src/overlays/o083/overlay83BuildBatch.c",
+        "source_path": "src/overlays/o083/overlay_083.c",
         "complete": true
       }
     },
     {
-      "name": "src/overlays/o083/overlay83BuildLine.c",
-      "target_path": "expected/build/src/overlays/o083/overlay83BuildLine.c.o",
-      "base_path": "build/src/overlays/o083/overlay83BuildLine.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o083"
-        ],
-        "source_path": "src/overlays/o083/overlay83BuildLine.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o083/overlay83Dispatch.c",
-      "target_path": "expected/build/src/overlays/o083/overlay83Dispatch.c.o",
-      "base_path": "build/src/overlays/o083/overlay83Dispatch.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o083"
-        ],
-        "source_path": "src/overlays/o083/overlay83Dispatch.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o083/overlay83DrawEntries.c",
-      "target_path": "expected/build/src/overlays/o083/overlay83DrawEntries.c.o",
-      "base_path": "build/src/overlays/o083/overlay83DrawEntries.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o083"
-        ],
-        "source_path": "src/overlays/o083/overlay83DrawEntries.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o083/overlay83DrawLines.c",
-      "target_path": "expected/build/src/overlays/o083/overlay83DrawLines.c.o",
-      "base_path": "build/src/overlays/o083/overlay83DrawLines.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o083"
-        ],
-        "source_path": "src/overlays/o083/overlay83DrawLines.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o083/overlay83DrawStrip.c",
-      "target_path": "expected/build/src/overlays/o083/overlay83DrawStrip.c.o",
-      "base_path": "build/src/overlays/o083/overlay83DrawStrip.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o083"
-        ],
-        "source_path": "src/overlays/o083/overlay83DrawStrip.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o083/overlay83Submit.c",
-      "target_path": "expected/build/src/overlays/o083/overlay83Submit.c.o",
-      "base_path": "build/src/overlays/o083/overlay83Submit.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o083"
-        ],
-        "source_path": "src/overlays/o083/overlay83Submit.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o083/overlay83SubmitAll.c",
-      "target_path": "expected/build/src/overlays/o083/overlay83SubmitAll.c.o",
-      "base_path": "build/src/overlays/o083/overlay83SubmitAll.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o083"
-        ],
-        "source_path": "src/overlays/o083/overlay83SubmitAll.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o083/overlay83Update.c",
-      "target_path": "expected/build/src/overlays/o083/overlay83Update.c.o",
-      "base_path": "build/src/overlays/o083/overlay83Update.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o083"
-        ],
-        "source_path": "src/overlays/o083/overlay83Update.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/func_overlay_084_F0000314_18D07F4.c",
-      "target_path": "expected/build/src/overlays/o084/func_overlay_084_F0000314_18D07F4.c.o",
-      "base_path": "build/src/overlays/o084/func_overlay_084_F0000314_18D07F4.c.o",
+      "name": "src/overlays/o084/overlay_084.c",
+      "target_path": "expected/build/src/overlays/o084/overlay_084.c.o",
+      "base_path": "build/src/overlays/o084/overlay_084.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -10124,385 +10118,7 @@
           "overlay",
           "overlay-o084"
         ],
-        "source_path": "src/overlays/o084/func_overlay_084_F0000314_18D07F4.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84ActivateCurrent.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84ActivateCurrent.c.o",
-      "base_path": "build/src/overlays/o084/overlay84ActivateCurrent.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84ActivateCurrent.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84AdvanceCurrent.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84AdvanceCurrent.c.o",
-      "base_path": "build/src/overlays/o084/overlay84AdvanceCurrent.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84AdvanceCurrent.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84ClearActive.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84ClearActive.c.o",
-      "base_path": "build/src/overlays/o084/overlay84ClearActive.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84ClearActive.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84ClearMode.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84ClearMode.c.o",
-      "base_path": "build/src/overlays/o084/overlay84ClearMode.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84ClearMode.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84CopyPair.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84CopyPair.c.o",
-      "base_path": "build/src/overlays/o084/overlay84CopyPair.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84CopyPair.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84GetActive.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84GetActive.c.o",
-      "base_path": "build/src/overlays/o084/overlay84GetActive.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84GetActive.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84GetCurrent.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84GetCurrent.c.o",
-      "base_path": "build/src/overlays/o084/overlay84GetCurrent.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84GetCurrent.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84GetEnabledCurrent.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84GetEnabledCurrent.c.o",
-      "base_path": "build/src/overlays/o084/overlay84GetEnabledCurrent.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84GetEnabledCurrent.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84GetValues.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84GetValues.c.o",
-      "base_path": "build/src/overlays/o084/overlay84GetValues.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84GetValues.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84InitState.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84InitState.c.o",
-      "base_path": "build/src/overlays/o084/overlay84InitState.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84InitState.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84InitializeAndUpdate.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84InitializeAndUpdate.c.o",
-      "base_path": "build/src/overlays/o084/overlay84InitializeAndUpdate.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84InitializeAndUpdate.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84InitializeCurrent.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84InitializeCurrent.c.o",
-      "base_path": "build/src/overlays/o084/overlay84InitializeCurrent.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84InitializeCurrent.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84IsUnitScale.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84IsUnitScale.c.o",
-      "base_path": "build/src/overlays/o084/overlay84IsUnitScale.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84IsUnitScale.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84LoadCurrent.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84LoadCurrent.c.o",
-      "base_path": "build/src/overlays/o084/overlay84LoadCurrent.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84LoadCurrent.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84Mark.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84Mark.c.o",
-      "base_path": "build/src/overlays/o084/overlay84Mark.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84Mark.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84RefreshCurrent.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84RefreshCurrent.c.o",
-      "base_path": "build/src/overlays/o084/overlay84RefreshCurrent.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84RefreshCurrent.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84ResetCurrent.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84ResetCurrent.c.o",
-      "base_path": "build/src/overlays/o084/overlay84ResetCurrent.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84ResetCurrent.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84SelectCurrent.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84SelectCurrent.c.o",
-      "base_path": "build/src/overlays/o084/overlay84SelectCurrent.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84SelectCurrent.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84SetAngle.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84SetAngle.c.o",
-      "base_path": "build/src/overlays/o084/overlay84SetAngle.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84SetAngle.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84SetBit.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84SetBit.c.o",
-      "base_path": "build/src/overlays/o084/overlay84SetBit.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84SetBit.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o084/overlay84UpdateResource.c",
-      "target_path": "expected/build/src/overlays/o084/overlay84UpdateResource.c.o",
-      "base_path": "build/src/overlays/o084/overlay84UpdateResource.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o084"
-        ],
-        "source_path": "src/overlays/o084/overlay84UpdateResource.c",
+        "source_path": "src/overlays/o084/overlay_084.c",
         "complete": true
       }
     },
@@ -10525,117 +10141,27 @@
       }
     },
     {
-      "name": "src/overlays/o086/func_overlay_086_F0000474_18D22AC.c",
-      "target_path": "expected/build/src/overlays/o086/func_overlay_086_F0000474_18D22AC.c.o",
-      "base_path": "build/src/overlays/o086/func_overlay_086_F0000474_18D22AC.c.o",
+      "name": "src/overlays/o086/overlay_086.c",
+      "target_path": "expected/build/src/overlays/o086/overlay_086.c.o",
+      "base_path": "build/src/overlays/o086/overlay_086.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
           "overlay",
           "overlay-o086"
         ],
-        "source_path": "src/overlays/o086/func_overlay_086_F0000474_18D22AC.c",
+        "source_path": "src/overlays/o086/overlay_086.c",
         "complete": true
       }
     },
     {
-      "name": "src/overlays/o086/overlay86BuildTransform.c",
-      "target_path": "expected/build/src/overlays/o086/overlay86BuildTransform.c.o",
-      "base_path": "build/src/overlays/o086/overlay86BuildTransform.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o086"
-        ],
-        "source_path": "src/overlays/o086/overlay86BuildTransform.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o086/overlay86Init.c",
-      "target_path": "expected/build/src/overlays/o086/overlay86Init.c.o",
-      "base_path": "build/src/overlays/o086/overlay86Init.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o086"
-        ],
-        "source_path": "src/overlays/o086/overlay86Init.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o086/overlay86ProcessCurrent.c",
-      "target_path": "expected/build/src/overlays/o086/overlay86ProcessCurrent.c.o",
-      "base_path": "build/src/overlays/o086/overlay86ProcessCurrent.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o086"
-        ],
-        "source_path": "src/overlays/o086/overlay86ProcessCurrent.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o086/overlay86ScaledVectorPosition.c",
-      "target_path": "expected/build/src/overlays/o086/overlay86ScaledVectorPosition.c.o",
-      "base_path": "build/src/overlays/o086/overlay86ScaledVectorPosition.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o086"
-        ],
-        "source_path": "src/overlays/o086/overlay86ScaledVectorPosition.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o086/overlay86SelectPosition.c",
-      "target_path": "expected/build/src/overlays/o086/overlay86SelectPosition.c.o",
-      "base_path": "build/src/overlays/o086/overlay86SelectPosition.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o086"
-        ],
-        "source_path": "src/overlays/o086/overlay86SelectPosition.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o087/func_overlay_087_F0000128_18D3090.c",
-      "target_path": "expected/build/src/overlays/o087/func_overlay_087_F0000128_18D3090.c.o",
-      "base_path": "build/src/overlays/o087/func_overlay_087_F0000128_18D3090.c.o",
+      "name": "src/overlays/o087/overlay_087.c",
+      "target_path": "expected/build/src/overlays/o087/overlay_087.c.o",
+      "base_path": "build/src/overlays/o087/overlay_087.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -10646,140 +10172,32 @@
           "overlay",
           "overlay-o087"
         ],
-        "source_path": "src/overlays/o087/func_overlay_087_F0000128_18D3090.c",
+        "source_path": "src/overlays/o087/overlay_087.c",
         "complete": true
       }
     },
     {
-      "name": "src/overlays/o087/overlay87HasNearby.c",
-      "target_path": "expected/build/src/overlays/o087/overlay87HasNearby.c.o",
-      "base_path": "build/src/overlays/o087/overlay87HasNearby.c.o",
+      "name": "src/overlays/o088/overlay_088.c",
+      "target_path": "expected/build/src/overlays/o088/overlay_088.c.o",
+      "base_path": "build/src/overlays/o088/overlay_088.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
         "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o087"
-        ],
-        "source_path": "src/overlays/o087/overlay87HasNearby.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o087/overlay87InitializeObject.c",
-      "target_path": "expected/build/src/overlays/o087/overlay87InitializeObject.c.o",
-      "base_path": "build/src/overlays/o087/overlay87InitializeObject.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o087"
-        ],
-        "source_path": "src/overlays/o087/overlay87InitializeObject.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o087/overlay87ReleaseCurrent.c",
-      "target_path": "expected/build/src/overlays/o087/overlay87ReleaseCurrent.c.o",
-      "base_path": "build/src/overlays/o087/overlay87ReleaseCurrent.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o087"
-        ],
-        "source_path": "src/overlays/o087/overlay87ReleaseCurrent.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o088/overlay88DrawSortedGeometry.c",
-      "target_path": "expected/build/src/overlays/o088/overlay88DrawSortedGeometry.c.o",
-      "base_path": "build/src/overlays/o088/overlay88DrawSortedGeometry.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
           "overlay",
           "overlay-o088"
         ],
-        "source_path": "src/overlays/o088/overlay88DrawSortedGeometry.c",
+        "source_path": "src/overlays/o088/overlay_088.c",
         "complete": true
       }
     },
     {
-      "name": "src/overlays/o088/overlay88Init.c",
-      "target_path": "expected/build/src/overlays/o088/overlay88Init.c.o",
-      "base_path": "build/src/overlays/o088/overlay88Init.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o088"
-        ],
-        "source_path": "src/overlays/o088/overlay88Init.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o088/overlay88UpdateAnchor.c",
-      "target_path": "expected/build/src/overlays/o088/overlay88UpdateAnchor.c.o",
-      "base_path": "build/src/overlays/o088/overlay88UpdateAnchor.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o088"
-        ],
-        "source_path": "src/overlays/o088/overlay88UpdateAnchor.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o089/overlay89Evaluate.c",
-      "target_path": "expected/build/src/overlays/o089/overlay89Evaluate.c.o",
-      "base_path": "build/src/overlays/o089/overlay89Evaluate.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o089"
-        ],
-        "source_path": "src/overlays/o089/overlay89Evaluate.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o089/overlay89InitializeEffect.c",
-      "target_path": "expected/build/src/overlays/o089/overlay89InitializeEffect.c.o",
-      "base_path": "build/src/overlays/o089/overlay89InitializeEffect.c.o",
+      "name": "src/overlays/o089/overlay_089.c",
+      "target_path": "expected/build/src/overlays/o089/overlay_089.c.o",
+      "base_path": "build/src/overlays/o089/overlay_089.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -10790,61 +10208,7 @@
           "overlay",
           "overlay-o089"
         ],
-        "source_path": "src/overlays/o089/overlay89InitializeEffect.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o089/overlay89Update.c",
-      "target_path": "expected/build/src/overlays/o089/overlay89Update.c.o",
-      "base_path": "build/src/overlays/o089/overlay89Update.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o089"
-        ],
-        "source_path": "src/overlays/o089/overlay89Update.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o089/overlay89UpdateEffect.c",
-      "target_path": "expected/build/src/overlays/o089/overlay89UpdateEffect.c.o",
-      "base_path": "build/src/overlays/o089/overlay89UpdateEffect.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o089"
-        ],
-        "source_path": "src/overlays/o089/overlay89UpdateEffect.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o089/overlay89UpdateStateAndParticles.c",
-      "target_path": "expected/build/src/overlays/o089/overlay89UpdateStateAndParticles.c.o",
-      "base_path": "build/src/overlays/o089/overlay89UpdateStateAndParticles.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o089"
-        ],
-        "source_path": "src/overlays/o089/overlay89UpdateStateAndParticles.c",
+        "source_path": "src/overlays/o089/overlay_089.c",
         "complete": true
       }
     },

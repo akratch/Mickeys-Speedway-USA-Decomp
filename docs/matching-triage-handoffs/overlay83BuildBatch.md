@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay83BuildBatch:start -->
 ### `overlay83BuildBatch` plateau handoff
 
-- source: `src/overlays/o083/overlay83BuildBatch.c`
+- source: `src/overlays/o083/overlay_083.c`
 - score: 0/168 words, promoted
 - frame: 0x78
 - relocations: 5

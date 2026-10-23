@@ -24,7 +24,6 @@ D_1D68 = 0x00001d68;
 D_1D6C = 0x00001d6c;
 D_1D9C = 0x00001d9c;
 D_1DA0 = 0x00001da0;
-func_overlay_001_F0000000_o001Reloc = 0xf0000000;
 gOverlay1ClosestDistanceLiteral = 0x000000ac;
 gOverlay1CycleLength = 0x00001d8c;
 gOverlay1End = 0x00001d5c;
@@ -1562,7 +1561,6 @@ func_8005ABA8_o041Reloc = 0xf0000000;
 func_8005AF14_o041Reloc = 0xf0000000;
 func_overlay_012_F00001B4_o041Reloc = 0xf0000000;
 func_overlay_041_F00002AC_18875E4_o041Reloc = 0xf0000000;
-func_overlay_067_F0000000_o041Reloc = 0xf0000000;
 lightObject_o041Reloc = 0xf0000000;
 mathOneFloatPY_o041Reloc = 0xf0000000;
 mathRnd_o041Reloc = 0xf0000000;
@@ -3342,7 +3340,6 @@ D_2978 = 0x00002978;
 D_297C = 0x0000297c;
 D_2980 = 0x00002980;
 D_2988 = 0x00002988;
-func_overlay_065_F0000000_o065Reloc = 0xf0000000;
 
 /* overlay 65: overlay65Release.c.o */
 gOverlay65Resource208 = 0x00000208;
@@ -3467,11 +3464,11 @@ func_8005776C_o072Reloc = 0xf0000000;
 func_overlay_008_F0000F1C_o072Reloc = 0xf0000000;
 gOverlay72ComponentScale = 0x00000000;
 
-/* overlay 73: overlay73Initialize.c.o */
-D_80 = 0x00000080;
-
-/* overlay 73: func_overlay_073_F0000190_18CAC50.c.o */
+/* overlay 73: overlay_073.c.o */
 Arctanf_o073Reloc = 0xf0000000;
+D_80 = 0x00000080;
+camPopModelMtx_o073Reloc = 0xf0000000;
+camPushModelMtx_o073Reloc = 0xf0000000;
 func_80008118_o073Reloc = 0xf0000000;
 func_80008128_o073Reloc = 0xf0000000;
 func_800299E8_o073Reloc = 0xf0000000;
@@ -3481,24 +3478,23 @@ func_8005776C_o073Reloc = 0xf0000000;
 gOverlay73UpdatePoolReloc = 0x0000000c;
 mathRnd_o073Reloc = 0xf0000000;
 sqrtf_o073Reloc = 0xf0000000;
-
-/* overlay 73: overlay73Draw.c.o */
-camPopModelMtx_o073Reloc = 0xf0000000;
-camPushModelMtx_o073Reloc = 0xf0000000;
 texDPTextureX_o073Reloc = 0xf0000000;
 
-/* overlay 74: overlay74Init.c.o */
+/* overlay 74: overlay_074.c.o */
 D_800D3128_o074Reloc = 0x00000000;
+amSndPlay_o074Reloc = 0xf0000000;
 func_80028F54_o074Reloc = 0xf0000000;
+func_800291B4_o074Reloc = 0xf0000000;
+func_8003A680_o074Reloc = 0xf0000000;
+func_8005776C_o074Reloc = 0xf0000000;
 gOverlay74Scale = 0x00000000;
 
-/* overlay 74: overlay74Update.c.o */
-overlay74HitReloc = 0xf0000000;
-overlay74QueryReloc = 0xf0000000;
-overlay74RewardReloc = 0xf0000000;
-overlay74SoundReloc = 0xf0000000;
-
-/* overlay 75: overlay75Init.c.o */
+/* overlay 75: overlay_075.c.o */
+amSndPlayXYZ_o075Reloc = 0xf0000000;
+amSndSetXYZ_o075Reloc = 0xf0000000;
+amSndStopXYZ_o075Reloc = 0xf0000000;
+camScreenShake_o075Reloc = 0xf0000000;
+func_80008128_o075Reloc = 0xf0000000;
 func_8002A8BC_o075Reloc = 0xf0000000;
 func_8002A8C0_o075Reloc = 0xf0000000;
 func_8005ABA8_o075Reloc = 0xf0000000;
@@ -3506,13 +3502,6 @@ func_8005AD64_o075Reloc = 0xf0000000;
 func_8005AF14_o075Reloc = 0xf0000000;
 gOverlay75Scale = 0x00000000;
 gOverlay75SlotFlags = 0x00000000;
-
-/* overlay 75: overlay75UpdateMovingObject.c.o */
-amSndPlayXYZ_o075Reloc = 0xf0000000;
-amSndSetXYZ_o075Reloc = 0xf0000000;
-amSndStopXYZ_o075Reloc = 0xf0000000;
-camScreenShake_o075Reloc = 0xf0000000;
-func_80008128_o075Reloc = 0xf0000000;
 gOverlay75ThresholdReloc = 0x00000000;
 lightObject_o075Reloc = 0xf0000000;
 overlay75PlayEventReloc = 0xf0000000;
@@ -3534,38 +3523,37 @@ gOverlay77CallbackArgument = 0x0000000c;
 gOverlay77Handle = 0x00000000;
 gOverlay77Selection = 0x00000008;
 gOverlay77Sequence = 0x00000004;
+mathRnd_o077Reloc = 0xf0000000;
 overlay77MoveReloc = 0xf0000000;
 overlay77OrientReloc = 0xf0000000;
 texAnimateSprite_o077Reloc = 0xf0000000;
-
-/* overlay 77: overlay_077_tail.c.o */
-mathRnd_o077Reloc = 0xf0000000;
 
 /* overlay 78: overlay_078.c.o */
 func_8005ABA8_o078Reloc = 0xf0000000;
 func_8005AD64_o078Reloc = 0xf0000000;
 
-/* overlay 79: func_overlay_079_F0000000_18CCFA0.c.o */
-ext_o0_2952c = 0xf0000000;
-ext_o0_5a914 = 0xf0000000;
-
-/* overlay 79: func_overlay_079_F0000134_18CD0D4.c.o */
+/* overlay 79: overlay_079.c.o */
 Arctanf_o079Reloc = 0xf0000000;
 D_800D3128_o079Reloc = 0x00000000;
 Powerf_o079Reloc = 0xf0000000;
 amSndPlayXYZ_o079Reloc = 0xf0000000;
+amSndPlay_o079Reloc = 0xf0000000;
 amSndSetXYZ_o079Reloc = 0xf0000000;
 amSndStopXYZ_o079Reloc = 0xf0000000;
 dAngle_o079Reloc = 0xf0000000;
+func_80005750_o079Reloc = 0xf0000000;
 func_8000590C_o079Reloc = 0xf0000000;
+func_80006EA0_o079Reloc = 0xf0000000;
 func_80008128_o079Reloc = 0xf0000000;
 func_80010900_o079Reloc = 0xf0000000;
+func_800291B4_o079Reloc = 0xf0000000;
 func_8002A8BC_o079Reloc = 0xf0000000;
 func_8002A8C0_o079Reloc = 0xf0000000;
 func_8005ABA8_o079Reloc = 0xf0000000;
 func_8005AD64_o079Reloc = 0xf0000000;
 func_overlay_079_F0000FA0_o079Reloc = 0x00000fa0;
-gOverlay79F0134LiteralPoolReloc = 0x00000004;
+gOverlay79CounterReloc = 0x00000014;
+gOverlay79LiteralPoolReloc = 0x00000004;
 gOverlay79ModeFactors = 0x00000000;
 mathOneFloatRPY_o079Reloc = 0xf0000000;
 mathRnd_o079Reloc = 0xf0000000;
@@ -3573,24 +3561,9 @@ partUpdateTriggers_o079Reloc = 0xf0000000;
 sqrtf_o079Reloc = 0xf0000000;
 trackMakePolylist_o079Reloc = 0xf0000000;
 
-/* overlay 79: overlay79FindNearby.c.o */
-func_80005750_o079Reloc = 0xf0000000;
-
-/* overlay 79: func_overlay_079_F0000FA0_18CDF40.c.o */
-gOverlay79F0FA0LiteralPoolReloc = 0x00000030;
-
-/* overlay 79: func_overlay_079_F0001290_18CE230.c.o */
-amSndPlay_o079Reloc = 0xf0000000;
-func_80006EA0_o079Reloc = 0xf0000000;
-func_800291B4_o079Reloc = 0xf0000000;
-gOverlay79CounterReloc = 0x00000014;
-
-/* overlay 80: overlay80InitializeContact.c.o */
+/* overlay 80: overlay_080.c.o */
 func_8001398C_o080Reloc = 0xf0000000;
 func_8001DCD0_o080Reloc = 0xf0000000;
-gOverlay80Scale0 = 0x00000000;
-
-/* overlay 80: overlay80UpdateContact.c.o */
 func_8005776C_o080Reloc = 0xf0000000;
 func_8005ABA8_o080Reloc = 0xf0000000;
 func_8005AD64_o080Reloc = 0xf0000000;
@@ -3602,6 +3575,7 @@ gOverlay80Band2Lower = 0x00000018;
 gOverlay80Band2Upper = 0x0000001c;
 gOverlay80Band3Lower = 0x00000020;
 gOverlay80MagnitudeScale = 0x00000004;
+gOverlay80Scale0 = 0x00000000;
 sqrtf_o080Reloc = 0xf0000000;
 
 /* overlay 81: overlay_081.c.o */
@@ -3620,65 +3594,40 @@ amSndPlay_o082Reloc = 0xf0000000;
 gO82DataBase = 0x00000000;
 modSetTextureFrame_o082Reloc = 0xf0000000;
 
-/* overlay 83: overlay83BuildLine.c.o */
-pointListRPY_o083Reloc = 0xf0000000;
-
-/* overlay 83: overlay83Update.c.o */
-changeLightIntensity_o083Reloc = 0xf0000000;
-
-/* overlay 83: overlay83BuildBatch.c.o */
-gOverlay83ScaleReloc = 0x00000000;
-overlay83AllocateBatchReloc = 0xf0000000;
-overlay83CreateLinkedReloc = 0xf0000000;
-overlay83TransformWorldReloc = 0xf0000000;
-
-/* overlay 83: overlay83Dispatch.c.o */
+/* overlay 83: overlay_083.c.o */
+addObjectLight_o083Reloc = 0xf0000000;
 camDoSprite_o083Reloc = 0xf0000000;
+changeLightIntensity_o083Reloc = 0xf0000000;
+gOverlay83ScaleReloc = 0x00000000;
+mmAlloc_o083Reloc = 0xf0000000;
+overlay83SubmitSetupReloc = 0xf0000000;
+pointListRPY_o083Reloc = 0xf0000000;
 sprClearIA2ColOverride_o083Reloc = 0xf0000000;
 sprSetIA2ColOverride_o083Reloc = 0xf0000000;
 
-/* overlay 83: overlay83SubmitAll.c.o */
-overlay83SubmitSetupReloc = 0xf0000000;
-
-/* overlay 84: overlay84InitState.c.o */
-gOverlay84Object = 0x00000000;
-
-/* overlay 84: overlay84InitializeAndUpdate.c.o */
+/* overlay 84: overlay_084.c.o */
 Arctanf_o084Reloc = 0xf0000000;
-func_8000572C_o084Reloc = 0xf0000000;
-
-/* overlay 84: func_overlay_084_F0000314_18D07F4.c.o */
 D_800D31B8_o084Reloc = 0x00000000;
 D_800D31C0_o084Reloc = 0x00000000;
 amSndPlay_o084Reloc = 0xf0000000;
+animseqStartPath_o084Reloc = 0xf0000000;
 camGetPtr_o084Reloc = 0xf0000000;
 camSetNo_o084Reloc = 0xf0000000;
 dAngle_o084Reloc = 0xf0000000;
+func_8000572C_o084Reloc = 0xf0000000;
 func_8000FAE0_o084Reloc = 0xf0000000;
 func_8002A8BC_o084Reloc = 0xf0000000;
 func_8002A8C0_o084Reloc = 0xf0000000;
+func_8005055C_o084Reloc = 0xf0000000;
+func_800508B4_o084Reloc = 0xf0000000;
+func_overlay_041_F0000854_o084Reloc = 0xf0000000;
 gOverlay84BlendStep = 0x00000000;
+gOverlay84Object = 0x00000000;
+gOverlay84ObjectWrite = 0x00000000;
 mathDiffAngle_o084Reloc = 0xf0000000;
 overlay84AdvanceCurrent_o084Reloc = 0xf0000000;
-
-/* overlay 84: overlay84UpdateResource.c.o */
-func_overlay_041_F0000854_o084Reloc = 0xf0000000;
 overlay84GetResource = 0xf0000000;
 overlay84ReleaseResource = 0xf0000000;
-
-/* overlay 84: overlay84LoadCurrent.c.o */
-func_8005055C_o084Reloc = 0xf0000000;
-
-/* overlay 84: overlay84AdvanceCurrent.c.o */
-gOverlay84ObjectRead = 0x00000000;
-gOverlay84ObjectWrite = 0x00000000;
-
-/* overlay 84: overlay84ActivateCurrent.c.o */
-animseqStartPath_o084Reloc = 0xf0000000;
-func_800508B4_o084Reloc = 0xf0000000;
-
-/* overlay 84: overlay84InitializeCurrent.c.o */
-gOverlay84CurrentObject = 0x00000000;
 
 /* overlay 85: overlay_085.c.o */
 amSndPlayXYZ_o085Reloc = 0xf0000000;
@@ -3686,52 +3635,42 @@ func_8003EDD4_o085Reloc = 0xf0000000;
 partAdjustScaling_o085Reloc = 0xf0000000;
 partUpdateTriggers_o085Reloc = 0xf0000000;
 
-/* overlay 86: overlay86ProcessCurrent.c.o */
-func_8005AF14_o086Reloc = 0xf0000000;
-lightObject_o086Reloc = 0xf0000000;
-
-/* overlay 86: overlay86ScaledVectorPosition.c.o */
-func_overlay_086_F0000000_o086Reloc = 0xf0000000;
-
-/* overlay 86: overlay86BuildTransform.c.o */
-func_8000FAE0_o086Reloc = 0xf0000000;
-gOverlay86Vectors = 0x00000000;
-overlay86ProcessCurrent_o086Reloc = 0xf0000000;
-pointListRPY_o086Reloc = 0xf0000000;
-
-/* overlay 86: overlay86SelectPosition.c.o */
-func_8000572C_o086Reloc = 0xf0000000;
-overlay1FindPreviousUsable_o086Reloc = 0xf0000000;
-overlay1NextIndex_o086Reloc = 0xf0000000;
-
-/* overlay 86: func_overlay_086_F0000474_18D22AC.c.o */
+/* overlay 86: overlay_086.c.o */
 amSndPlayXYZ_o086Reloc = 0xf0000000;
 amSndSetPitchXYZ_o086Reloc = 0xf0000000;
 amSndSetVolXYZ_o086Reloc = 0xf0000000;
 amSndSetXYZ_o086Reloc = 0xf0000000;
 amSndStopXYZ_o086Reloc = 0xf0000000;
 controlPlayerReInit_o086Reloc = 0xf0000000;
+func_8000572C_o086Reloc = 0xf0000000;
 func_80005820_o086Reloc = 0xf0000000;
+func_8000FAE0_o086Reloc = 0xf0000000;
 func_800291D8_o086Reloc = 0xf0000000;
 func_8002A8C0_o086Reloc = 0xf0000000;
 func_800498FC_o086Reloc = 0xf0000000;
 func_8005ABA8_o086Reloc = 0xf0000000;
 func_8005AD64_o086Reloc = 0xf0000000;
+func_8005AF14_o086Reloc = 0xf0000000;
+gOverlay86Vectors = 0x00000000;
+lightObject_o086Reloc = 0xf0000000;
 mathOneFloatPY_o086Reloc = 0xf0000000;
 mathRnd_o086Reloc = 0xf0000000;
+overlay1FindPreviousUsable_o086Reloc = 0xf0000000;
+overlay1NextIndex_o086Reloc = 0xf0000000;
 overlay7CommitSelection_o086Reloc = 0xf0000000;
 overlay86BuildTransform_o086Reloc = 0xf0000000;
+overlay86ProcessCurrent_o086Reloc = 0xf0000000;
 overlay86ScaledVectorPosition_o086Reloc = 0xf0000000;
 overlay86SelectPosition_o086Reloc = 0xf0000000;
+pointListRPY_o086Reloc = 0xf0000000;
 
-/* overlay 87: overlay87InitializeObject.c.o */
-gOverlay87InitScaleReloc = 0x00000000;
-
-/* overlay 87: func_overlay_087_F0000128_18D3090.c.o */
+/* overlay 87: overlay_087.c.o */
 Arctanf_o087Reloc = 0xf0000000;
 Powerf_o087Reloc = 0xf0000000;
 amSndPlayXYZ_o087Reloc = 0xf0000000;
+amSndStopXYZ_o087Reloc = 0xf0000000;
 dAngle_o087Reloc = 0xf0000000;
+func_80005750_o087Reloc = 0xf0000000;
 func_80008128_o087Reloc = 0xf0000000;
 func_8002A8BC_o087Reloc = 0xf0000000;
 func_8002A8C0_o087Reloc = 0xf0000000;
@@ -3740,6 +3679,7 @@ func_8005AD64_o087Reloc = 0xf0000000;
 gOverlay87ApproachFactor = 0x0000000c;
 gOverlay87Current = 0x00000000;
 gOverlay87Gravity = 0x00000020;
+gOverlay87InitScaleReloc = 0x00000000;
 gOverlay87NegativeAcceleration = 0x0000001c;
 gOverlay87NegativeDivisor = 0x00000018;
 gOverlay87PositiveAcceleration = 0x00000014;
@@ -3747,44 +3687,37 @@ gOverlay87PositiveDivisor = 0x00000010;
 gOverlay87StraightFactor = 0x00000008;
 gOverlay87TurnFactor = 0x00000004;
 gOverlay87UpdateTable = 0x00000000;
+mathRnd_o087Reloc = 0xf0000000;
 sqrtf_o087Reloc = 0xf0000000;
 
-/* overlay 87: overlay87ReleaseCurrent.c.o */
-amSndStopXYZ_o087Reloc = 0xf0000000;
-
-/* overlay 87: overlay87HasNearby.c.o */
-func_80005750_o087Reloc = 0xf0000000;
-
-/* overlay 88: overlay88UpdateAnchor.c.o */
-func_overlay_088_F0000000_o088Reloc = 0xf0000000;
-
-/* overlay 88: overlay88DrawSortedGeometry.c.o */
+/* overlay 88: overlay_088.c.o */
+Arctanf_o088Reloc = 0xf0000000;
+func_80007C68_o088Reloc = 0xf0000000;
+func_8002A8BC_o088Reloc = 0xf0000000;
+func_8002A8C0_o088Reloc = 0xf0000000;
+func_8002B040_o088Reloc = 0xf0000000;
+func_8005AF14_o088Reloc = 0xf0000000;
+lightObject_o088Reloc = 0xf0000000;
 overlay88DrawConeReloc = 0xf0000000;
 overlay88DrawFixedResourceReloc = 0xf0000000;
 overlay88MetricReloc = 0xf0000000;
 overlay88PrepareTransformReloc = 0xf0000000;
 overlay88SubmitDynamicReloc = 0xf0000000;
 
-/* overlay 89: overlay89UpdateEffect.c.o */
+/* overlay 89: overlay_089.c.o */
+addObjectLight_o089Reloc = 0xf0000000;
+changeLightIntensity_o089Reloc = 0xf0000000;
+func_8002905C_o089Reloc = 0xf0000000;
 func_8002A8BC_o089Reloc = 0xf0000000;
 func_8002A8C0_o089Reloc = 0xf0000000;
 gOverlay89EffectScale = 0x00000000;
-trackLightAdd_o089Reloc = 0xf0000000;
-trackLightMove_o089Reloc = 0xf0000000;
-
-/* overlay 89: overlay89Evaluate.c.o */
-func_8002905C_o089Reloc = 0xf0000000;
-
-/* overlay 89: overlay89InitializeEffect.c.o */
-addObjectLight_o089Reloc = 0xf0000000;
 gOverlay89InitScale = 0x00000000;
-
-/* overlay 89: overlay89UpdateStateAndParticles.c.o */
-changeLightIntensity_o089Reloc = 0xf0000000;
 gOverlay89RandomScale = 0x00000000;
 mathRnd_o089Reloc = 0xf0000000;
 overlay34CreateRecord_o089Reloc = 0xf0000000;
+trackLightAdd_o089Reloc = 0xf0000000;
 trackLightColour_o089Reloc = 0xf0000000;
+trackLightMove_o089Reloc = 0xf0000000;
 
 /* overlay 90: overlay_090.c.o */
 D_800C947C_o090Reloc = 0x00000000;
@@ -4654,19 +4587,13 @@ func_overlay_071_F00007A8_18CA2C8 = overlay71UpdateCoordinates;
 func_overlay_072_F0000000_18CA920 = overlay72Init;
 func_overlay_072_F00000B4_18CA9D4 = overlay72Update;
 
-/* overlay 74: overlay74Init.c.o */
+/* overlay 74: overlay_074.c.o */
 func_overlay_074_F0000000_18CBCA0 = overlay74Init;
-
-/* overlay 74: overlay74Update.c.o */
 func_overlay_074_F00000B8_18CBD58 = overlay74Update;
 
-/* overlay 75: overlay75Init.c.o */
+/* overlay 75: overlay_075.c.o */
 func_overlay_075_F0000000_18CBF68 = overlay75Init;
-
-/* overlay 75: overlay75UpdateMovingObject.c.o */
 func_overlay_075_F0000214_18CC17C = overlay75UpdateMovingObject;
-
-/* overlay 75: overlay75MarkSlot.c.o */
 func_overlay_075_F00006D4_18CC63C = overlay75MarkSlot;
 
 /* overlay 76: overlay_076.c.o */
@@ -4677,8 +4604,6 @@ func_overlay_076_F00000D0_18CC840 = overlay76TriggerRandom;
 /* overlay 77: overlay_077.c.o */
 func_overlay_077_F0000000_18CC910 = overlay77Init;
 func_overlay_077_F0000130_18CCA40 = overlay77Update;
-
-/* overlay 77: overlay_077_tail.c.o */
 func_overlay_077_F00003B8_18CCCC8 = overlay77EnsureSelection;
 func_overlay_077_F0000400_18CCD10 = overlay77RunCallback;
 
@@ -4686,22 +4611,13 @@ func_overlay_077_F0000400_18CCD10 = overlay77RunCallback;
 func_overlay_078_F0000000_18CCEE0 = overlay78Init;
 func_overlay_078_F0000070_18CCF50 = overlay78Update;
 
-/* overlay 79: overlay79FindNearby.c.o */
-func_overlay_079_F0000EFC_18CDE9C = overlay79FindNearby;
-
-/* overlay 79: overlay79SetLink.c.o */
+/* overlay 79: overlay_079.c.o */
 func_overlay_079_F0001280_18CE220 = overlay79SetLink;
-
-/* overlay 79: overlay79InitState.c.o */
 func_overlay_079_F000147C_18CE41C = overlay79InitState;
-
-/* overlay 79: overlay79UpdateTimers.c.o */
 func_overlay_079_F000149C_18CE43C = overlay79UpdateTimers;
 
-/* overlay 80: overlay80InitializeContact.c.o */
+/* overlay 80: overlay_080.c.o */
 func_overlay_080_F0000000_18CE8C8 = overlay80InitializeContact;
-
-/* overlay 80: overlay80UpdateContact.c.o */
 func_overlay_080_F000011C_18CE9E4 = overlay80UpdateContact;
 
 /* overlay 81: overlay_081.c.o */
@@ -4721,146 +4637,54 @@ func_overlay_082_F00004A4_18CF624 = overlay82IsActive;
 func_overlay_082_F00004B0_18CF630 = overlay82Disable;
 func_overlay_082_F00004C0_18CF640 = overlay82Enable;
 
-/* overlay 83: overlay83BuildLine.c.o */
-func_overlay_083_F0000000_18CF7C0 = overlay83BuildLine;
-
-/* overlay 83: overlay83DrawLines.c.o */
-func_overlay_083_F00001AC_18CF96C = overlay83DrawLines;
-
-/* overlay 83: overlay83Update.c.o */
-func_overlay_083_F00002A0_18CFA60 = overlay83Update;
-
-/* overlay 83: overlay83Submit.c.o */
-func_overlay_083_F0000514_18CFCD4 = overlay83Submit;
-
-/* overlay 83: overlay83BuildBatch.c.o */
+/* overlay 83: overlay_083.c.o */
 func_overlay_083_F000053C_18CFCFC = overlay83BuildBatch;
-
-/* overlay 83: overlay83DrawEntries.c.o */
 func_overlay_083_F00007DC_18CFF9C = overlay83DrawEntries;
-
-/* overlay 83: overlay83DrawStrip.c.o */
-func_overlay_083_F0000850_18D0010 = overlay83DrawStrip;
-
-/* overlay 83: overlay83Dispatch.c.o */
-func_overlay_083_F0000984_18D0144 = overlay83Dispatch;
-
-/* overlay 83: overlay83SubmitAll.c.o */
 func_overlay_083_F0000A18_18D01D8 = overlay83SubmitAll;
 
-/* overlay 84: overlay84InitState.c.o */
+/* overlay 84: overlay_084.c.o */
 func_overlay_084_F0000000_18D04E0 = overlay84InitState;
-
-/* overlay 84: overlay84InitializeAndUpdate.c.o */
 func_overlay_084_F0000048_18D0528 = overlay84InitializeAndUpdate;
-
-/* overlay 84: overlay84UpdateResource.c.o */
-func_overlay_084_F0000A54_18D0F34 = overlay84UpdateResource;
-
-/* overlay 84: overlay84ResetCurrent.c.o */
 func_overlay_084_F0000AFC_18D0FDC = overlay84ResetCurrent;
-
-/* overlay 84: overlay84RefreshCurrent.c.o */
-func_overlay_084_F0000B7C_18D105C = overlay84RefreshCurrent;
-
-/* overlay 84: overlay84GetActive.c.o */
 func_overlay_084_F0000C74_18D1154 = overlay84GetActive;
-
-/* overlay 84: overlay84LoadCurrent.c.o */
 func_overlay_084_F0000C9C_18D117C = overlay84LoadCurrent;
-
-/* overlay 84: overlay84CopyPair.c.o */
 func_overlay_084_F0000DBC_18D129C = overlay84CopyPair;
-
-/* overlay 84: overlay84AdvanceCurrent.c.o */
 func_overlay_084_F0000DD0_18D12B0 = overlay84AdvanceCurrent;
-
-/* overlay 84: overlay84SelectCurrent.c.o */
 func_overlay_084_F0000F18_18D13F8 = overlay84SelectCurrent;
-
-/* overlay 84: overlay84GetCurrent.c.o */
 func_overlay_084_F0000FC4_18D14A4 = overlay84GetCurrent;
-
-/* overlay 84: overlay84SetBit.c.o */
 func_overlay_084_F0001004_18D14E4 = overlay84SetBit;
-
-/* overlay 84: overlay84GetValues.c.o */
 func_overlay_084_F0001034_18D1514 = overlay84GetValues;
-
-/* overlay 84: overlay84ActivateCurrent.c.o */
 func_overlay_084_F0001060_18D1540 = overlay84ActivateCurrent;
-
-/* overlay 84: overlay84InitializeCurrent.c.o */
 func_overlay_084_F00011F4_18D16D4 = overlay84InitializeCurrent;
-
-/* overlay 84: overlay84ClearActive.c.o */
 func_overlay_084_F0001294_18D1774 = overlay84ClearActive;
-
-/* overlay 84: overlay84IsUnitScale.c.o */
 func_overlay_084_F00012B4_18D1794 = overlay84IsUnitScale;
-
-/* overlay 84: overlay84GetEnabledCurrent.c.o */
 func_overlay_084_F00012FC_18D17DC = overlay84GetEnabledCurrent;
-
-/* overlay 84: overlay84ClearMode.c.o */
 func_overlay_084_F0001350_18D1830 = overlay84ClearMode;
-
-/* overlay 84: overlay84SetAngle.c.o */
 func_overlay_084_F0001370_18D1850 = overlay84SetAngle;
-
-/* overlay 84: overlay84Mark.c.o */
 func_overlay_084_F0001398_18D1878 = overlay84Mark;
 
 /* overlay 85: overlay_085.c.o */
 func_overlay_085_F0000000_18D1B58 = overlay85Configure;
 func_overlay_085_F00000C0_18D1C18 = overlay85Update;
 
-/* overlay 86: overlay86ProcessCurrent.c.o */
+/* overlay 86: overlay_086.c.o */
 func_overlay_086_F0000000_18D1E38 = overlay86ProcessCurrent;
-
-/* overlay 86: overlay86ScaledVectorPosition.c.o */
 func_overlay_086_F000007C_18D1EB4 = overlay86ScaledVectorPosition;
-
-/* overlay 86: overlay86BuildTransform.c.o */
 func_overlay_086_F0000158_18D1F90 = overlay86BuildTransform;
-
-/* overlay 86: overlay86SelectPosition.c.o */
 func_overlay_086_F00002E4_18D211C = overlay86SelectPosition;
-
-/* overlay 86: overlay86Init.c.o */
 func_overlay_086_F0000444_18D227C = overlay86Init;
 
-/* overlay 87: overlay87InitializeObject.c.o */
+/* overlay 87: overlay_087.c.o */
 func_overlay_087_F0000000_18D2F68 = overlay87InitializeObject;
-
-/* overlay 87: overlay87ReleaseCurrent.c.o */
 func_overlay_087_F0000890_18D37F8 = overlay87ReleaseCurrent;
 
-/* overlay 87: overlay87HasNearby.c.o */
-func_overlay_087_F00008C0_18D3828 = overlay87HasNearby;
-
-/* overlay 88: overlay88Init.c.o */
+/* overlay 88: overlay_088.c.o */
 func_overlay_088_F0000000_18D3A88 = overlay88Init;
-
-/* overlay 88: overlay88UpdateAnchor.c.o */
 func_overlay_088_F000004C_18D3AD4 = overlay88UpdateAnchor;
-
-/* overlay 88: overlay88DrawSortedGeometry.c.o */
 func_overlay_088_F00001A4_18D3C2C = overlay88DrawSortedGeometry;
 
-/* overlay 89: overlay89UpdateEffect.c.o */
-func_overlay_089_F0000000_18D4230 = overlay89UpdateEffect;
-
-/* overlay 89: overlay89Evaluate.c.o */
-func_overlay_089_F0000138_18D4368 = overlay89Evaluate;
-
-/* overlay 89: overlay89Update.c.o */
-func_overlay_089_F00001A8_18D43D8 = overlay89Update;
-
-/* overlay 89: overlay89InitializeEffect.c.o */
+/* overlay 89: overlay_089.c.o */
 func_overlay_089_F0000270_18D44A0 = overlay89InitializeEffect;
-
-/* overlay 89: overlay89UpdateStateAndParticles.c.o */
 func_overlay_089_F00005A4_18D47D4 = overlay89UpdateStateAndParticles;
 
 /* overlay 90: overlay_090.c.o */

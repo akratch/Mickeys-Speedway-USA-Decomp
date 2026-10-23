@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay89InitializeEffect:start -->
 ### `overlay89InitializeEffect` plateau handoff
 
-- source: `src/overlays/o089/overlay89InitializeEffect.c`
+- source: `src/overlays/o089/overlay_089.c`
 - score: 205/205 words
 - frame: 0x58
 - relocations: 5

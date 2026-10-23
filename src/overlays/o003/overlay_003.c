@@ -304,4 +304,3 @@ void overlay3UpdateTimedEntries(s32 amount) {
         group -= 32;
     } while (groupRemaining--);
 }
-

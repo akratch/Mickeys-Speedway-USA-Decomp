@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 148, "borrowed_records": 9040},
+  "totals": {"differences": 148, "borrowed_records": 9062},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -256,7 +256,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1918,
+      "count": 1919,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -773,6 +773,9 @@
         [15, "gOverlay15StarsWord", 2],
         [15, "gOverlay15Value7C", 2],
         [15, "gOverlay15ValueC", 2],
+        [16, "gOverlay16Buffer", 14],
+        [16, "gOverlay16Mode", 4],
+        [16, "gOverlay16Phase", 4],
         [17, "gOverlay17TemplateReloc", 4],
         [17, "overlay17ReleaseReloc", 2],
         [18, "gOverlay18Buffers", 4],
@@ -1944,9 +1947,7 @@
         [83, "gOverlay83ScaleReloc", 2],
         [83, "overlay83SubmitSetupReloc", 2],
         [84, "gOverlay84BlendStep", 2],
-        [84, "gOverlay84CurrentObject", 2],
-        [84, "gOverlay84Object", 30],
-        [84, "gOverlay84ObjectRead", 2],
+        [84, "gOverlay84Object", 34],
         [84, "gOverlay84ObjectWrite", 2],
         [84, "overlay84GetResource", 6],
         [84, "overlay84ReleaseResource", 4],
@@ -2180,7 +2181,7 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 56,
+      "count": 55,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -2228,11 +2229,10 @@
         [59, "overlay_059", ".rodata", "0x1188", 4],
         [60, "overlay_060", ".rodata", "0x3790", 4],
         [61, "overlay_061", ".rodata", "0x1D08", 2],
-        [73, "func_overlay_073_F0000190_18CAC50", ".rodata", "0xF8C", 30],
+        [73, "overlay_073", ".rodata", "0xF8C", 30],
         [77, "overlay_077", ".rodata", "0x440", 10],
-        [79, "func_overlay_079_F0000134_18CD0D4", ".rodata", "0x1504", 22],
-        [79, "func_overlay_079_F0000FA0_18CDF40", ".rodata", "0x1530", 8],
-        [86, "func_overlay_086_F0000474_18D22AC", ".rodata", "0xF50", 6],
+        [79, "overlay_079", ".rodata", "0x1504", 30],
+        [86, "overlay_086", ".rodata", "0xF50", 6],
         [90, "overlay_090", ".rodata", "0xB28", 16],
         [91, "overlay_091", ".rodata", "0x580", 2],
         [99, "overlay_099", ".rodata", "0x1410", 2],

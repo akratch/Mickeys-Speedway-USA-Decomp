@@ -2,6 +2,33 @@
   "schema_version": 1,
   "rules": [
     {
+      "object": "overlays/o017/overlay17CreateChain.c.o",
+      "aliases": [
+        {
+          "from": "func_overlay_017_F0000318_1873CD0",
+          "to": "overlay17CreateChain"
+        }
+      ]
+    },
+    {
+      "object": "overlays/o019/overlay19BuildPlanes.c.o",
+      "aliases": [
+        {
+          "from": "sqrtf",
+          "to": "sqrtf_o019Reloc"
+        }
+      ]
+    },
+    {
+      "object": "overlays/o023/overlay23RenderEffect.c.o",
+      "aliases": [
+        {
+          "from": "overlay23CallReloc",
+          "to": "func_overlay_023_F0000000_1879210"
+        }
+      ]
+    },
+    {
       "object": "overlays/o065/overlay65UpdateParticles.c.o",
       "aliases": [
         {
@@ -11,40 +38,11 @@
       ]
     },
     {
-      "object": "overlays/o074/overlay74Update.c.o",
+      "object": "overlays/o101/overlay101DrawPanel.c.o",
       "aliases": [
         {
-          "from": "func_8005776C",
-          "to": "overlay74QueryReloc"
-        },
-        {
-          "from": "func_800291B4",
-          "to": "overlay74HitReloc"
-        },
-        {
-          "from": "amSndPlay",
-          "to": "overlay74SoundReloc"
-        },
-        {
-          "from": "func_8003A680",
-          "to": "overlay74RewardReloc"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o083/overlay83BuildBatch.c.o",
-      "aliases": [
-        {
-          "from": "mmAlloc",
-          "to": "overlay83AllocateBatchReloc"
-        },
-        {
-          "from": "pointListRPY",
-          "to": "overlay83TransformWorldReloc"
-        },
-        {
-          "from": "addObjectLight",
-          "to": "overlay83CreateLinkedReloc"
+          "from": "func_overlay_101_F0002EFC_18DE71C",
+          "to": "overlay101DrawPanel"
         }
       ]
     }

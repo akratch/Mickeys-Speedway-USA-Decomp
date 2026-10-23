@@ -209,4 +209,3 @@ static void overlay18InitializeBuffers(void) {
     D_800CF5A4 = gOverlay18ModeScale16[mode];
     D_800CF58C = gOverlay18ModeScale10[mode];
 }
-

@@ -2,6 +2,7 @@
 
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 
 
@@ -24,8 +25,6 @@ extern O65Camera *func_80021970(s32);
 extern void camSetNo(s32);
 extern void camSetView(Gfx **, Mtx **);
 extern s32 mathRnd(s32, s32);
-extern f32 func_8002A8BC(s32);
-extern f32 func_8002A8C0(s32);
 extern s32 func_8001398C(f32, f32, s32, f32 ***);
 extern void pointListRPY(s32, s16 *, O65Vec3f *, O65Vec3f *);
 extern void func_overlay_065_F0000C38_18C4EA0(Gfx **, Mtx **, s32);

@@ -13,4 +13,12 @@
  */
 typedef f32 MtxF[4][4];
 
+/* Integer-angle providers use one full turn = 0x10000. Arctanf returns a
+ * full word in 0..0xFFFF (zero-extended by every assembly exit); interpreting
+ * that result as a signed half-turn belongs to the caller. Both trig entries
+ * accept a full word and observe only its low 16 bits. */
+s32 Arctanf(f32 numerator, f32 denominator);
+f32 func_8002A8BC(s32 angle);
+f32 func_8002A8C0(s32 angle);
+
 #endif /* _GAME_MATH_H_ */

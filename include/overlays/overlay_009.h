@@ -2,6 +2,7 @@
 #define OVERLAY_009_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 typedef struct O9Angle {
     u8 pad000[4];
@@ -178,8 +179,6 @@ extern void controlReadJoypad(void *, s8);
 extern void controlFSUvels(void *, void *);
 extern void mathOneFloatYPR(s16 *, f32 *);
 extern s32 func_8001357C(f32, f32, void *, s32, s32);
-extern f32 func_8002A8C0(s32);
-extern f32 func_8002A8BC(s32);
 /* Overlay 9 +0x540 runtime SYMBOL proxies: resident mathDiffAngle/func_8002A8C0. */
 extern s32 mathDiffAngle(s32, s32);
 extern void func_8005AF14(void *, void *, void *);

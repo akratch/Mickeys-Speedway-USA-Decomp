@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "n_audio/gbi.h"
+#include "game/math.h"
 typedef struct Overlay101Entry {
     u8 pad00[4];
     void *value4;
@@ -2003,10 +2004,6 @@ void func_80022A44(f32 scale);
 void texDPTextureX(Overlay101Gfx **displayList,
                                          void *material, s32 count,
                                          s32 flags);
-
-f32 func_8002A8BC(s32 angle);
-
-f32 func_8002A8C0(s32 angle);
 
 extern s32 gOverlay101Time214;
 

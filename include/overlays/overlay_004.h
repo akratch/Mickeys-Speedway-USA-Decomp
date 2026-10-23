@@ -2,6 +2,7 @@
 #define OVERLAY_004_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 typedef struct Overlay4InitState {
     f32 speed;
@@ -185,7 +186,6 @@ extern s32 func_8005ABA8(Overlay4MotionObject *object, f32 scale,
 extern s32 func_8002997C(s32 minimum, s32 maximum);
 extern s32 func_8002AA0C(s16 current, s16 target);
 extern f32 func_80029274(s32 delta, f32 current, f32 amount);
-extern f32 func_8002A8C0(s16 angle);
 extern s32 func_80004590(s32 maximum);
 extern Overlay4Spawned *func_8000590C(Overlay4SpawnPacket *packet, s32 mode);
 extern void func_overlay_036_F00007B0(Overlay4Spawned *spawned, s16 angle,

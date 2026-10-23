@@ -2,6 +2,7 @@
 #define OVERLAY_069_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 /* Overlay 69. Its sorted-geometry renderer is shared byte for byte with
  * overlay 88 (src/overlays/o069/overlay69DrawSortedGeometry.inc). */
@@ -52,9 +53,6 @@ typedef struct Overlay69AnchorObject {
 /* Resident functions. */
 extern void func_8002B040(Overlay69Matrix *matrix, f32 x, f32 y, f32 z,
                           f32 *outX, f32 *outY, f32 *outZ);
-extern s32 Arctanf(f32 x, f32 z);
-extern f32 func_8002A8C0(s32 angle);
-extern f32 func_8002A8BC(s32 angle);
 
 /* This module's exports (ORT rows); overlay69DrawSortedGeometry is declared
  * by the shared renderer. */

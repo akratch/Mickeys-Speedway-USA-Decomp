@@ -2,6 +2,7 @@
 #define OVERLAY_091_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 typedef struct Overlay91InitState {
     s32 timer;
@@ -79,8 +80,6 @@ extern s32 D_800C947C;
 
 void amSndPlay(u16 effectId, void **handle);
 void func_80006EA0(void *object);
-f32 func_8002A8BC(s32 angle);
-f32 func_8002A8C0(s32 angle);
 void overlay7CommitSelection(s32 selection);
 
 s32 func_800290A0(void);

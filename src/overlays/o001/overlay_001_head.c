@@ -1,4 +1,5 @@
 #include "overlays/overlay_001.h"
+#include "game/math.h"
 
 /* ---- overlay1InitMotionScale ---- */
 
@@ -104,8 +105,6 @@ extern f32 D_B4;
 extern f32 D_B8;
 extern s32 overlay1ActivateObject(void *owner);
 extern void overlay1InterpolatePath(f32 *x, f32 *z, s32 path, f32 offset);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
 /* Assigning the measured distance through scale preserves the original FP
  * carrier web; the configured build emits all 100 instruction words exactly. */
 void overlay1ResolveMotionPoint(O1PathOwner *owner, s32 path, f32 *outX,

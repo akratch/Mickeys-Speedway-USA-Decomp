@@ -2,6 +2,7 @@
 #define OVERLAY_087_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 /* Overlay 87: a lifting, turning object that reacts to a nearby racer.
  * Pinned DKR v77/v80 and JFG object scans found no exact donor. */
@@ -69,15 +70,12 @@ extern f32 gOverlay87Gravity;
 /* Resident callees. */
 extern Overlay87Object **func_80005750(s32 *count);
 extern s32 func_80008128(Overlay87Object *object, f32 x, f32 y, f32 z);
-extern f32 func_8002A8BC(s16 angle);
-extern f32 func_8002A8C0(s16 angle);
 extern s32 func_8005ABA8(Overlay87Object *object, void *update,
                          f32 updateRate);
 extern void func_8005AD64(Overlay87Object *object, s32 mode, s32 index,
                           f32 value);
 extern s32 mathRnd(s32 lower, s32 upper);
 extern f32 sqrtf(f32 value);
-extern s32 Arctanf(f32 y, f32 x);
 extern f32 Powerf(f32 value, s32 exponent);
 extern s16 dAngle(s16 current, s16 target, f32 fraction);
 extern void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority,

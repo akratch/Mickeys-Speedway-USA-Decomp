@@ -2,6 +2,7 @@
 #define OVERLAY_079_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 /* Overlay 79: a roaming creature with a spawner and a timed link object.
  * Pinned DKR v77/v80 and JFG object scans found no exact donor. */
@@ -160,8 +161,6 @@ extern s32 func_80008128(Overlay79Object *object, f32 x, f32 y, f32 z);
 extern s32 func_80010900(f32 *start, f32 *end, f32 height,
                          Overlay79Object *object, void *callback);
 extern void func_800291B4(void);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
 extern s32 func_8005ABA8(Overlay79Object *object, f32 factor, f32 updateRate);
 extern void func_8005AD64(Overlay79Object *object, s32 mode, s32 index,
                           f32 value);
@@ -183,7 +182,6 @@ void func_overlay_079_F0000FA0_18CDF40(void *unused, Overlay79Vector *pos,
 extern void func_overlay_079_F0000FA0_o079Reloc(
     void *unused, Overlay79Vector *pos, Overlay79Vector *vel, f32 radius,
     Overlay79Plane *plane, Overlay79Object *object);
-extern s32 Arctanf(f32 y, f32 x);
 extern f32 Powerf(f32 value, s32 exponent);
 extern s16 dAngle(s16 current, s16 target, f32 fraction);
 extern void mathOneFloatRPY(Overlay79Object *object, f32 *vector);

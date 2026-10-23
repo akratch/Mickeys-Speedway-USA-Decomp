@@ -13,6 +13,7 @@
 #include "game/pi.h"
 #include "n_audio/mbi.h"
 #include "game/particles.h"
+#include "game/math.h"
 
 void mmFree(void *ptr);
 void texFreeTexture(void *resource);
@@ -38,8 +39,6 @@ void sprClearIA2ColOverride(void);
 void texDPTextureX(Gfx **dList, void *texture, s32 mode, s32 flags);
 struct ParticleRenderGroup;
 void func_8003D4FC(void **dList, void **vertices, struct ParticleRenderGroup *group);
-f32 func_8002A8BC(s16 angle);
-f32 func_8002A8C0(s16 angle);
 s32 func_8003CE10(Gfx **dList, s32 arg1, void **vertices, CircularParticlePool *pool, s32 mode);
 void func_8003D25C(Gfx **dList, s32 arg1, void **vertices, CircularParticlePool *pool);
 void func_8003F154(BasicParticle *particle, ParticleEmitterObject *object, ParticleTriggerSlot *trigger,

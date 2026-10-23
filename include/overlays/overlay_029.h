@@ -330,6 +330,9 @@ extern void func_80006EA0();
 extern void partUpdateTriggers(void *object, s32 updateRate);
 /* s16, as the effect handler stores it: the update's s32 view compiles the
  * same, and the shipped records name this callee at all four sites. */
+/* Legacy view: the provider returns a zero-extended full-circle word.
+ * This TU still needs an exact result-domain migration before it can use
+ * game/math.h; its signed-halfword declaration is not the shared ABI. */
 extern s16 Arctanf(f32 x, f32 z);
 extern s32 mathDiffAngle(s16 current, s16 target);
 extern s32 func_80008128(Overlay29TailObject *object, f32 x, f32 y, f32 z);

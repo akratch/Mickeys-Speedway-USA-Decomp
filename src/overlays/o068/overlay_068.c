@@ -421,7 +421,7 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
     Overlay68Keyframe *afterAfter;
     Overlay68Animation *animation;
     Overlay68ObjectState *state;
-    s32 unused1;
+    s32 heading;
     s32 unused2;
 
     state = object->state;
@@ -517,9 +517,9 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
             if ((tangentX == 0.0f) && (tangentZ == 0.0f)) {
                 angle = 0;
             } else {
-                angle = Arctanf(tangentX, tangentZ);
+                heading = Arctanf(tangentX, tangentZ);
                 angle = mathDiffAngle(object->red,
-                    angle - 0x8000);
+                    heading - 0x8000);
             }
 
             if (OVERLAY68_GLOBAL_FLAG != 0) {

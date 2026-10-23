@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "n_audio/mbi.h"
+#include "game/math.h"
 
 typedef struct Overlay46Resource {
     u8 pad00[0x3C];
@@ -284,7 +285,6 @@ extern void texDPInit(void *commands);
 
 extern void camStandardOrtho(void *commands, void *matrices);
 
-extern f32 func_8002A8C0(s32 angle);
 
 extern void fontPrintXY(void *commands, s32 x, s32 y, void *text,
                           s32 size);
@@ -465,7 +465,6 @@ extern u8 D_230[];
 
 extern void amSndPlay(s32 soundId, void *handle);
 
-extern f32 func_8002A8BC(s32 angle);
 
 extern void camDoSprite(void *commands, void *matrices, void *vertices,
                           Overlay46DrawPoint *particle, void *resource,

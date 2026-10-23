@@ -2,6 +2,7 @@
 #define GAME_FX_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 /*
  * PROVENANCE: the cone and wake role names follow Jet Force Gemini's public
@@ -179,8 +180,6 @@ extern void TrapDanglingJump(void);
 extern void fxScreenEffect(FxGfx **dList, s32 type, s32 value4, s32 value6,
                            s32 value8, s32 valueA, s32 valueC, s32 valueE,
                            s32 value10);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
 extern void texDPTextureX(FxGfx **dList, s32 texture, s32 flags, s32 arg3);
 extern void fxDrawCone(FxGfx **dList, FxCone *cone, s32 flags, u8 alpha);
 extern void func_8004A10C(s32 *screen, u8 glyph, s32 x, s32 y, s32 arg4);

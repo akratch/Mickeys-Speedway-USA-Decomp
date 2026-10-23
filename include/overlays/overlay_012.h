@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/track.h"
+#include "game/math.h"
 
 typedef struct Overlay12Entry {
     u8 pad00[0x4A];
@@ -112,9 +113,6 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
 extern s32 func_8001291C(f32 *previous, f32 *current,
                          f32 *result, s32 mask, s32 flags);
 extern f32 sqrtf(f32 value);
-extern s16 Arctanf(f32 x, f32 y);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
 extern s32 texAnimateSprite(void *entry, s32 *mode, s32 animationId,
                             void *state, s32 updateRate);
 extern void texDPTextureX(Overlay12Gfx **displayList, void *resource,

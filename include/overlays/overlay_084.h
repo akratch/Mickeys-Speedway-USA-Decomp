@@ -2,6 +2,7 @@
 #define OVERLAY_084_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 /* Overlay 84: a node-cycling camera selector. Pinned DKR v77/v80 and JFG
  * object scans found no exact donor for any of its functions. */
@@ -154,11 +155,8 @@ extern f32 gOverlay84BlendStep;
 
 /* Resident callees. */
 extern Overlay84Node **func_8000572C(s32 *start, s32 *end);
-extern s32 Arctanf(f32 x, f32 z);
 extern void amSndPlay(u16 soundId, void **handle);
 extern s32 mathDiffAngle(s32 current, s32 target);
-extern f32 func_8002A8C0(s16 angle);
-extern f32 func_8002A8BC(s16 angle);
 extern void camSetNo(s32 camera);
 extern Overlay84Output *camGetPtr(void);
 extern s32 func_8000FAE0(f32 x, f32 y, f32 z);

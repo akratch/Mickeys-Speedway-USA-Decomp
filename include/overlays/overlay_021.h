@@ -2,6 +2,7 @@
 #define OVERLAY_021_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 typedef struct Overlay21Plane {
     s16 id;
@@ -52,7 +53,6 @@ extern s32 gOverlay21ObjectCount;
 extern Overlay21Object *gOverlay21Objects[];
 
 Overlay21Position *camGetPtr(void);
-f32 func_8002A8C0(s16 angle);
 f32 overlay21CosReloc(s16 angle);
 
 #endif

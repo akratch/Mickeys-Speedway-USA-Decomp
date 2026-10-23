@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "n_audio/mbi.h"
+#include "game/math.h"
 
 /*
  * Overlay 38: one translation unit (ADR 0006), a particle burst effect: spawn,
@@ -90,7 +91,6 @@ extern void camPushModelMtx(Gfx **dList, void *context,
 extern void texDPTextureX(Gfx **dList, void *texture, s32 flags, s32 arg3);
 extern void camPopModelMtx(Gfx **dList);
 extern O38Camera *camGetPtr(void);
-extern s32 Arctanf(f32 y, f32 x);
 extern f32 sqrtf(f32 value);
 
 /* PROVENANCE: the two packet macros are Jet Force Gemini's gSPVertexJFG and

@@ -2,6 +2,7 @@
 #define OVERLAY_008_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 typedef struct Overlay8IndexedObject {
     u8 pad0;
@@ -750,7 +751,6 @@ extern const O8P2640Tuning D_2110[];
 
 extern f32 sqrtf(f32 squaredDistance);
 
-extern s32 Arctanf(f32 negX, f32 negZ);
 
 extern f32 O8P2640_call_26FC(s32 anchorHalfword);
 
@@ -817,9 +817,7 @@ extern s32 camGetMode(void);
 
 extern s32 mathDiffAngle(s32 current, s32 target);
 
-extern f32 func_8002A8C0(s32 angle);
 
-extern f32 func_8002A8BC(s32 angle);
 
 extern f32 D_8;
 
@@ -974,7 +972,6 @@ extern s16 gOverlay8Value;
 
 extern const Overlay8MotionRow D_2230[];
 
-extern s32 Arctanf(f32 deltaX, f32 deltaY);
 
 extern s32 mathDiffAngle(s32 anchorValue,
                                          s32 directionCode);
@@ -996,7 +993,6 @@ extern f32 func_overlay_020_F0001148_1877720(O8P4CF0Bounds *bounds, f32 x, f32 z
 
 
 
-extern s32 Arctanf(f32 horizontal, f32 vertical);
 
 
 extern f32 Powerf(f32 amount, s32 updateRate);

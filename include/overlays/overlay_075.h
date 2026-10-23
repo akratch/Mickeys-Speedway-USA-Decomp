@@ -2,6 +2,7 @@
 #define OVERLAY_075_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 typedef struct Overlay75Vector {
     f32 x;
@@ -106,8 +107,6 @@ extern s32 gOverlay75SlotFlags[];
 extern f32 gOverlay75ThresholdReloc[];
 
 /* Resident callees. */
-extern f32 func_8002A8C0(s16 angle);
-extern f32 func_8002A8BC(s16 angle);
 extern void func_8005AD64(Overlay75Object *object, s32 mode, s32 index,
                           f32 argument);
 extern s32 func_8005ABA8(Overlay75Object *object, f32 rate, f32 tick);

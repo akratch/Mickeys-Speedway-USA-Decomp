@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/pi.h"
+#include "game/math.h"
 
 /* Tier D: two 16-byte triangles per record (flags, three vertex indices,
  * three s16 texture coordinate pairs), from this function's stores. */
@@ -134,8 +135,6 @@ extern s32 D_8007C8C0;
 extern void overlay31BuildPalettes(void);
 
 extern void *mmAlloc(s32 size, s32 tag); /* 0:+0x2AE30 */
-extern f32 func_8002A8BC(s32 angle); /* 0:+0x2A46C */
-extern f32 func_8002A8C0(s32 angle); /* 0:+0x2A470 */
 extern void mmFree(void *asset);
 extern void *func_800056A4(s32 assetId);
 extern void initColourCycle(Overlay31PaletteCursor *cursor,

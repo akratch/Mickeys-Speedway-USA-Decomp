@@ -14,6 +14,7 @@
 #include "PR/ultratypes.h"
 #include "game/pi.h"
 #include "game/overlay_exports.h"
+#include "game/math.h"
 
 typedef struct Gfx Gfx;
 typedef struct Mtx Mtx;
@@ -215,8 +216,6 @@ extern s32 func_8002A1A4(s16 angle);
 extern WeatherTexture *texLoadTexture(s32 textureId);
 extern s32 func_80049864(s32 mode);
 extern void func_800498FC(s32 mode, f32 arg1, f32 arg2, s32 red, s32 green, s32 blue, s32 alpha);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
 extern void amSndSetXYZ(void *sound, f32 x, f32 y, f32 z);
 extern void *texLoadSprite(s32 assetId, s32 arg1);
 extern s32 camGetMode(void);

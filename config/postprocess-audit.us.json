@@ -694,45 +694,14 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o",
-      "offset": 804,
-      "overlay": 7,
-      "size": 1392,
-      "source": "src/overlays/o007/func_overlay_007_F0000324_185C1AC.c",
-      "tools": [
-        "trim_elf_section.py",
-        "externalize_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o007/overlay_007.c.o",
       "offset": 0,
       "overlay": 7,
-      "size": 804,
+      "size": 4024,
       "source": "src/overlays/o007/overlay_007.c",
       "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o007/overlay_007_tail.c.o",
-      "offset": 2196,
-      "overlay": 7,
-      "size": 1828,
-      "source": "src/overlays/o007/overlay_007_tail.c",
-      "tools": [
-        "rebind_elf_relocations.py",
         "filter_elf_relocations.py",
         "externalize_elf_section.py",
-        "trim_elf_section.py",
         "objcopy"
       ]
     },
@@ -8584,10 +8553,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 591,
+      "metadata": 589,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 431840,
-    "objects_with_postprocess": 592
+    "objects_with_postprocess": 590
   }
 }

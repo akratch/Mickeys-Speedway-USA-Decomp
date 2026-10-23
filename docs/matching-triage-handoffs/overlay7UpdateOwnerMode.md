@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay7UpdateOwnerMode:start -->
 ### `overlay7UpdateOwnerMode` plateau handoff
 
-- source: `src/overlays/o007/overlay_007_tail.c`
+- source: `src/overlays/o007/overlay_007.c`
 - score: 0/139 words, promoted
 - frame: 0x30
 - relocations: 23

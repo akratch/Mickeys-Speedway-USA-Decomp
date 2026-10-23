@@ -1164,16 +1164,6 @@
       }
     },
     {
-      "name": "asm/overlays/o007/overlay_007_padding.s",
-      "target_path": "expected/build/asm/overlays/o007/overlay_007_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o007"
-        ]
-      }
-    },
-    {
       "name": "asm/overlays/o011/overlay_011_padding.s",
       "target_path": "expected/build/asm/overlays/o011/overlay_011_padding.s.o",
       "metadata": {
@@ -8905,31 +8895,13 @@
       }
     },
     {
-      "name": "src/overlays/o007/func_overlay_007_F0000324_185C1AC.c",
-      "target_path": "expected/build/src/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o",
-      "base_path": "build/src/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wo,-loopunroll,0 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o007"
-        ],
-        "source_path": "src/overlays/o007/func_overlay_007_F0000324_185C1AC.c",
-        "complete": true
-      }
-    },
-    {
       "name": "src/overlays/o007/overlay_007.c",
       "target_path": "expected/build/src/overlays/o007/overlay_007.c.o",
       "base_path": "build/src/overlays/o007/overlay_007.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
@@ -8937,24 +8909,6 @@
           "overlay-o007"
         ],
         "source_path": "src/overlays/o007/overlay_007.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o007/overlay_007_tail.c",
-      "target_path": "expected/build/src/overlays/o007/overlay_007_tail.c.o",
-      "base_path": "build/src/overlays/o007/overlay_007_tail.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o007"
-        ],
-        "source_path": "src/overlays/o007/overlay_007_tail.c",
         "complete": true
       }
     },

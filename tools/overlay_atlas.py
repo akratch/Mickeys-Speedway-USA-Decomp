@@ -141,7 +141,7 @@ FIXED_DATA_RODATA_OWNERSHIP = {
     # emit the owner's compiler data, so trial projection must be function-
     # scoped rather than merely source-file-scoped.
     1: [(0x274, 0x294, "overlay_001_tail", ".rodata", "overlay1DispatchMode", True)],
-    7: [(0x934, 0x950, "overlay_007_tail", ".rodata", "overlay7DispatchModes")],
+    7: [(0x930, 0x950, "overlay_007", ".rodata", "overlay7DispatchModes")],
     8: [(0x27C, 0x2AC, "overlay_008", ".rodata", "func_overlay_008_F0004CF0_1862A48")],
     9: [(0x390, 0x3E0, "overlay_009", ".rodata", "func_overlay_009_F0000CE4_186735C", True)],
     14: [
@@ -304,10 +304,11 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     9: "overlay_009_padding",
     8: "overlay_008_padding",
     5: "overlay_005_padding",
+    7: "overlay_007_padding",
 }
 # Folded modules whose compiler padding is the tail of the one TU's .text
 # rather than an alignment gap before C-owned data.
-ONE_TU_TEXT_PADDING = {3, 4, 5, 6, 8, 9, 13, 16}
+ONE_TU_TEXT_PADDING = {3, 4, 5, 6, 7, 8, 9, 13, 16}
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
 # an explicit eight-byte gap before initialized data. Emit a bounded asm row
@@ -373,8 +374,6 @@ TEXT_SUBSEGMENTS = {
     ],
     7: [
         (0x000, "c", "overlay_007"),
-        (0x324, "c", "func_overlay_007_F0000324_185C1AC"),
-        (0x894, "c", "overlay_007_tail"),
         (0xFB8, "asm", "overlay_007_padding"),
     ],
     8: [

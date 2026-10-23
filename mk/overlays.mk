@@ -71,49 +71,38 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o107/overlay_107.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x28
 
 include mk/overlay_061.mk
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x324
-# The decay factor is a float literal, so the compiler emits a one-constant
-# pool that duplicates the retained overlay data at rodata-relative +0x0 (the
-# shipped hi/lo pair is a LOCAL record with stored addend zero). Assert the
-# pool by digest and bind the pair to the loader-owned base; no instruction is
-# edited (overlay 24's form).
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x570 && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:a601a97e6fc0a02bff61765ba5bff01706c8bf7192401643b23a0f40754d5a18
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o: CFLAGS += -Wo,-loopunroll,0
-# This pool initializer is naturally instruction-exact. Its ten local-BSS
-# records are already owned by overlay 7's shipped runtime relocation table,
-# so retain their exact zero-base addends without static-link adjustment.
-# This fully-C unit still needs asm-processor's local static-symbol conversion:
-# the named BSS definitions witness the filtered records in promotion proofs.
-# --force runs that metadata pass without changing the stock compiler flags.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007_tail.c.o: ASM_PROCESSOR += --force
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007_tail.c.o: \
-	$(TOOLS_DIR)/filter_elf_relocations.py \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	$(TOOLS_DIR)/externalize_elf_section.py \
-	config/normalizations/overlay7DispatchModes.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007_tail.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym amSndPlay=amSndPlay_o007Reloc \
-		--redefine-sym amSndStopXYZ=amSndStopXYZ_o007Reloc \
-		--redefine-sym mathRnd=mathRnd_o007Reloc \
-		--add-symbol gOverlay7ModeSwitchTableReloc=0x4,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay7DispatchModes.rebind.spec && \
+# Overlay 7 is one translation unit at the overlay flag set and owns its pad;
+# its resident calls go through the generated surface rebinds. What remains is
+# data ownership, kept until phase 3 (docs/OVERLAY_STRUCTURE_SPRINT.md):
+# - The TU's .rodata (the runtime update's decay literal, then the mode
+#   switch table and its pool) is the retained overlay data at data_rodata
+#   +0x930, whose shipped LOCAL records store rodata-relative addends. Assert
+#   it by digest and anchor it at zero; the table's .rel.rodata goes with it.
+# - The pool's BSS is defined here as statics (the final 0x10 stays
+#   atlas-owned), so every access is a section-relative record whose addend is
+#   already the module-relative offset the shipped word carries, and overlay
+#   7's own runtime table owns them: the static link must not adjust them, so
+#   the 36 .bss records are dropped. --force keeps the static names, which
+#   witness those records in promotion proofs.
+O7_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007.c.o
+$(O7_OBJ): CFLAGS += -Wab,-r4300_mul
+$(O7_OBJ): ASM_PROCESSOR += --force
+$(O7_OBJ): $(TOOLS_DIR)/filter_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py
+$(O7_OBJ): POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x618:5:.bss 0x620:6:.bss \
-		0x678:5:.bss 0x680:6:.bss \
-		0x674:5:.bss 0x67c:6:.bss \
-		0x708:5:.bss 0x70c:6:.bss \
-		0x710:5:.bss 0x714:6:.bss \
-		0x718:5:.bss 0x720:6:.bss && \
+		0x0:5:.bss 0x4:6:.bss 0x18:5:.bss 0x1c:6:.bss \
+		0x58:5:.bss 0x68:6:.bss 0x8c:5:.bss 0x90:6:.bss \
+		0xac:5:.bss 0xb0:6:.bss 0x1ac:5:.bss 0x1b0:6:.bss \
+		0x1b8:5:.bss 0x1bc:6:.bss 0x1e8:5:.bss 0x1ec:6:.bss \
+		0x398:5:.bss 0x3a8:6:.bss 0x64c:5:.bss 0x650:6:.bss \
+		0x69c:5:.bss 0x6a0:6:.bss 0x858:5:.bss 0x85c:6:.bss \
+		0xeac:5:.bss 0xeb4:6:.bss 0xf0c:5:.bss 0xf14:6:.bss \
+		0xf08:5:.bss 0xf10:6:.bss 0xf9c:5:.bss 0xfa0:6:.bss \
+		0xfa4:5:.bss 0xfa8:6:.bss 0xfac:5:.bss 0xfb4:6:.bss && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:1cd7d0d68f99c402f2e0618199e1d010a1e31ab4b0cf0346275aef9c7c86d829 && \
-	$(OBJCOPY) --remove-section=.rel.rodata $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x724
+		sha256:f5087dde1cdcf2caa664eb528a658f0e0eafbaa8fdee0750b326b52a8aff5c53 && \
+	$(OBJCOPY) --remove-section=.rel.rodata $@
 # Overlay 1 has three C islands separated by owned assembly.  Mixed
 # -Wo,-loopunroll,4 / -Wab,-r4300_mul flag groups require five further
 # boundaries; one object cannot span either an asm range or a flag change.
@@ -2690,9 +2679,6 @@ OVERLAY_TRIMMED_OBJECTS := \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_end.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_scaled.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61ChooseFileExtension.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o \
-	$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007_tail.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19Dispatch.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildOutput.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildPlanes.c.o \

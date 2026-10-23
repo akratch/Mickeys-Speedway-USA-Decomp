@@ -430,46 +430,24 @@ overlay5AllocPlayerReloc = 0xf0000000;
 overlay5AttachBankReloc = 0xf00002e4;
 
 /* overlay 7: overlay_007.c.o */
-D_8007C1A0_o007Reloc = 0x00000000;
-gOverlay7ActiveHead = 0x00000284;
-gOverlay7ActiveTail = 0x0000028c;
-gOverlay7Current = 0x00000280;
-gOverlay7FreeHead = 0x00000288;
-gOverlay7Selected = 0x00000290;
-overlay7Acquire = 0xf0000000;
-
-/* overlay 7: func_overlay_007_F0000324_185C1AC.c.o */
-D_290 = 0x00000290;
 D_2AA = 0x000002aa;
 D_8007BEF8_o007Reloc = 0x00000000;
 D_8007BEFC_o007Reloc = 0x00000000;
+D_8007C1A0_o007Reloc = 0x00000000;
 D_800C947C_o007Reloc = 0x00000000;
+D_800D3128_o007Reloc = 0x00000000;
 D_844 = 0x00000844;
 amSndPlayXYZ_o007Reloc = 0xf0000000;
-amSndSetXYZ_o007Reloc = 0xf0000000;
-func_80005750_o007Reloc = 0xf0000000;
-mathRnd_o007Reloc = 0xf0000000;
-overlay1DistanceFromCurrent_o007Reloc = 0xf0000000;
-overlay1DistanceFromSelected_o007Reloc = 0xf0000000;
-overlay7CommitSelection_o007Reloc = 0xf0000000;
-overlay7ReleaseRuntimeHandleReloc = 0xf0000000;
-overlay7RuntimeHandleReloc = 0x00000000;
-overlay7RuntimeLastObjectReloc = 0x000002ac;
-overlay7RuntimeModeReloc = 0x00000000;
-overlay7RuntimeTimerReloc = 0x00000294;
-overlay7RuntimeValuesReloc = 0x00000000;
-overlay7SetRuntimeModeReloc = 0xf0000000;
-overlay7StartRuntimeValueReloc = 0xf0000000;
-
-/* overlay 7: overlay_007_tail.c.o */
-D_800D3128_o007Reloc = 0x00000000;
 amSndPlay_o007Reloc = 0xf0000000;
+amSndSetXYZ_o007Reloc = 0xf0000000;
 amSndStopXYZ_o007Reloc = 0xf0000000;
 camGetMode_o007Reloc = 0xf0000000;
+func_80005750_o007Reloc = 0xf0000000;
 func_80028F54_o007Reloc = 0xf0000000;
 func_800291C4_o007Reloc = 0xf0000000;
 gOverlay7AlternateModes = 0x000004fc;
 gOverlay7CommitArgument = 0x00000004;
+gOverlay7Current = 0x00000280;
 gOverlay7DispatchData = 0x00000000;
 gOverlay7DispatchMap = 0x0000002c;
 gOverlay7DispatchModeReloc = 0x00000002;
@@ -477,14 +455,26 @@ gOverlay7DispatchObject = 0x00000000;
 gOverlay7DispatchOverride = 0x00000298;
 gOverlay7DispatchTypes = 0x0000000c;
 gOverlay7DispatchValues = 0x0000004c;
-gOverlay7ModeSwitchTableReloc = 0x00000004;
 gOverlay7PrimaryModes = 0x000002a4;
 gOverlay7ValuesEnd = 0x000002aa;
 levelGetBlurEffect_o007Reloc = 0xf0000000;
 levelGetNumber_o007Reloc = 0xf0000000;
+mathRnd_o007Reloc = 0xf0000000;
+overlay1DistanceFromCurrent_o007Reloc = 0xf0000000;
+overlay1DistanceFromSelected_o007Reloc = 0xf0000000;
 overlay59AppendValue_o007Reloc = 0xf0000000;
+overlay7Acquire = 0xf0000000;
+overlay7CommitSelection_o007Reloc = 0xf0000000;
 overlay7RecordCheckReloc = 0xf0000000;
+overlay7ReleaseRuntimeHandleReloc = 0xf0000000;
+overlay7RuntimeHandleReloc = 0x00000000;
+overlay7RuntimeLastObjectReloc = 0x000002ac;
+overlay7RuntimeModeReloc = 0x00000000;
+overlay7RuntimeTimerReloc = 0x00000294;
+overlay7RuntimeValuesReloc = 0x00000000;
 overlay7SetOwnerModeReloc = 0xf0000000;
+overlay7SetRuntimeModeReloc = 0xf0000000;
+overlay7StartRuntimeValueReloc = 0xf0000000;
 
 /* overlay 8: overlay_008.c.o */
 Arctanf_o008Reloc = 0xf0000000;
@@ -2347,6 +2337,7 @@ overlay56ReleaseResource_o052Reloc = 0xf0000000;
 
 /* overlay 53: overlay53Initialize.c.o */
 D_280 = 0x00000280;
+D_290 = 0x00000290;
 amTunePlay_o053Reloc = 0xf0000000;
 gOverlay53ConfigA = 0x00000000;
 gOverlay53ConfigB = 0x00000140;
@@ -4976,12 +4967,7 @@ func_overlay_006_F0000008_185BE70 = overlay6Empty;
 func_overlay_006_F0000010_185BE78 = overlay6Noop;
 
 /* overlay 7: overlay_007.c.o */
-func_overlay_007_F0000000_185BE88 = overlay7ReleaseEntry;
 func_overlay_007_F00000A8_185BF30 = overlay7AcquireEntry;
-func_overlay_007_F0000228_185C0B0 = overlay7CreateEntry;
-func_overlay_007_F0000298_185C120 = overlay7AppendEntry;
-
-/* overlay 7: overlay_007_tail.c.o */
 func_overlay_007_F0000894_185C71C = overlay7DispatchModes;
 func_overlay_007_F0000AA0_185C928 = overlay7UpdateOwnerMode;
 func_overlay_007_F0000CCC_185CB54 = overlay7DispatchSelection;

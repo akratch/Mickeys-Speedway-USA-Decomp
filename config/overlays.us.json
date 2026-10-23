@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4900,
+  "owned_data_rodata_bytes": 4904,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -1838,28 +1838,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x324",
-     "size": "0x324",
+     "end_offset": "0xFB8",
+     "size": "0xFB8",
      "type": "c",
      "source": "overlays/o007/overlay_007",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x324",
-     "end_offset": "0x894",
-     "size": "0x570",
-     "type": "c",
-     "source": "overlays/o007/func_overlay_007_F0000324_185C1AC",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x894",
-     "end_offset": "0xFB8",
-     "size": "0x724",
-     "type": "c",
-     "source": "overlays/o007/overlay_007_tail",
      "matched": true,
      "nonmatching": false
     },
@@ -2003,12 +1985,12 @@
    },
    "data_rodata_ownership": [
     {
-     "offset": "0x934",
+     "offset": "0x930",
      "end_offset": "0x950",
-     "size": "0x1C",
+     "size": "0x20",
      "type": "c",
      "section": ".rodata",
-     "source": "overlays/o007/overlay_007_tail",
+     "source": "overlays/o007/overlay_007",
      "trial_function": "overlay7DispatchModes"
     }
    ]

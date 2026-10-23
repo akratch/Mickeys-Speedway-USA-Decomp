@@ -149,28 +149,25 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/overlay_005.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym n_alEvtqPostEvent=n_alEvtqPostEvent_o005Reloc \
 	--redefine-sym osCreateMesgQueue=osCreateMesgQueue_o005Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007BEF8=D_8007BEF8_o007Reloc \
 	--redefine-sym D_8007BEFC=D_8007BEFC_o007Reloc \
+	--redefine-sym D_8007C1A0=D_8007C1A0_o007Reloc \
 	--redefine-sym D_800C947C=D_800C947C_o007Reloc \
+	--redefine-sym D_800D3128=D_800D3128_o007Reloc \
+	--redefine-sym amSndPlay=amSndPlay_o007Reloc \
 	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o007Reloc \
 	--redefine-sym amSndSetXYZ=amSndSetXYZ_o007Reloc \
-	--redefine-sym func_80005750=func_80005750_o007Reloc \
-	--redefine-sym mathRnd=mathRnd_o007Reloc \
-	--redefine-sym overlay1DistanceFromCurrent=overlay1DistanceFromCurrent_o007Reloc \
-	--redefine-sym overlay1DistanceFromSelected=overlay1DistanceFromSelected_o007Reloc \
-	--redefine-sym overlay7CommitSelection=overlay7CommitSelection_o007Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007C1A0=D_8007C1A0_o007Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007_tail.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D3128=D_800D3128_o007Reloc \
+	--redefine-sym amSndStopXYZ=amSndStopXYZ_o007Reloc \
 	--redefine-sym camGetMode=camGetMode_o007Reloc \
+	--redefine-sym func_80005750=func_80005750_o007Reloc \
 	--redefine-sym func_80028F54=func_80028F54_o007Reloc \
 	--redefine-sym func_800291C4=func_800291C4_o007Reloc \
 	--redefine-sym levelGetBlurEffect=levelGetBlurEffect_o007Reloc \
 	--redefine-sym levelGetNumber=levelGetNumber_o007Reloc \
+	--redefine-sym mathRnd=mathRnd_o007Reloc \
+	--redefine-sym overlay1DistanceFromCurrent=overlay1DistanceFromCurrent_o007Reloc \
+	--redefine-sym overlay1DistanceFromSelected=overlay1DistanceFromSelected_o007Reloc \
 	--redefine-sym overlay59AppendValue=overlay59AppendValue_o007Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o: SURFACE_REBIND = $(OBJCOPY) \

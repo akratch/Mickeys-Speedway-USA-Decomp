@@ -188,7 +188,7 @@ void shadowGetBuffers(s32 arg0, void **arg1, void **arg2, void **arg3) {
  * adapted.
  */
 extern s16 Arctanf(f32 x, f32 y);
-extern f32 Powerf(f32 value);
+extern f32 Powerf(f32 value, s32 exponent);
 extern f32 camDistance(f32 x, f32 y, f32 z);
 extern s32 camGetMode(void);
 extern f32 sqrtf(f32 value);
@@ -271,7 +271,7 @@ void shadowGenerate(s32 arg0, s32 arg1) {
     D_80079450 = 0;
     D_80079448 = D_80079430[selected];
     D_80079454 = 0;
-    D_800CB28C = 1.0f - Powerf(D_800817A0);
+    D_800CB28C = 1.0f - Powerf(D_800817A0, arg1);
 
     level = levelGetLevel();
     D_8007945C[0] = (u16) SG_S16(level, 0xD8);

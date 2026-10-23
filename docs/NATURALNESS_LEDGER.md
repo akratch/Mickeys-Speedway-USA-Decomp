@@ -96,8 +96,11 @@ locals or role reuse, which only the read-through found.
    scale. Reviewers will read the carriers as allocator steering, and the
    comments say that is what they are.
 
-Smaller points a careful reviewer would raise: `Powerf` is declared with one
-argument in `shadows.c` and called with two in `charControl.c`.
+The `Powerf` arity discrepancy was resolved on 2026-10-23: `shadowGenerate`
+and `overlay23Update` now explicitly pass their incoming integer exponent,
+as consumed by Mickey's assembly. Both complete objects retain their text
+and ordered relocation identities.
+Smaller points a careful reviewer would raise:
 `shadowGenerate` writes index 2 of a two-element array. `D_8007CA60` is read at
 negative offsets, which suggests a missing table symbol. `vsprintf` and
 `func_8005BA40` carry stale comments calling them non-matching.
@@ -468,7 +471,7 @@ No fakes;  heavy untyped offsets and reuse.
 - `src/main/shadows.c:356` **B**: `j` reused as the trap result carrier.
   Natural: `if (TrapDanglingJump(...))` as in the sibling arm. Keep bytes: unlikely - comment says j is needed.
 - `src/main/shadows.c:274` **B**: Powerf declared with one argument here, called with two in charControl.c.
-  Natural: one shared correct prototype. Keep bytes: unknown - arity changes the a1 setup.
+  **Resolved 2026-10-23:** declare the actual float/integer contract and pass the incoming second argument explicitly. The same missing exponent in `overlay23Update` is corrected. Both complete objects retain identical text and ordered relocations; fresh function/linked-ROM proofs pass.
 
 #### `func_80016890`: A 0, B 4, C 2
 

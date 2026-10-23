@@ -121,7 +121,7 @@ void overlay23Update(Overlay23Object *object, s32 updateRate) {
     state = object->state;
     state->angle0 = state->angle0 + (state->randomStep * updateRate);
     state->timer = state->timer - updateRate;
-    damping = Powerf(gOverlay23VelocityFactor);
+    damping = Powerf(gOverlay23VelocityFactor, updateRate);
     state->velocityX = state->velocityX * damping;
     state->velocityY = state->velocityY * damping;
     updateRateF = (f32)updateRate;

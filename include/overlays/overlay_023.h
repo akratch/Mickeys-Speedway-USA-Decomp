@@ -197,7 +197,7 @@ extern s32 mathRnd(s32 minimum, s32 maximum);
 extern void *func_8000590C(Overlay23SpawnPacket *packet, s32 mode);
 void *texLoadSprite(s32 assetId, s32 mode);
 extern f32 gOverlay23VelocityFactor;
-f32 Powerf(f32 factor);
+f32 Powerf(f32 factor, s32 exponent);
 void func_80006EA0(Overlay23Object *object, s32 updateRate);
 
 #endif

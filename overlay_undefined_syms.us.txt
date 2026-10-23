@@ -1126,80 +1126,6 @@ mathRnd_o023Reloc = 0xf0000000;
 overlay23CallReloc = 0xf0000000;
 texLoadSprite_o023Reloc = 0xf0000000;
 
-/* overlay 25: overlay_025.c.o */
-D_8007BF1C_o025Reloc = 0x00000000;
-func_80006EA0_o025Reloc = 0xf0000000;
-func_80008128_o025Reloc = 0xf0000000;
-func_80010900_o025Reloc = 0xf0000000;
-func_80028F54_o025Reloc = 0xf0000000;
-func_800299E8_o025Reloc = 0xf0000000;
-func_8002A8BC_o025Reloc = 0xf0000000;
-func_8002A8C0_o025Reloc = 0xf0000000;
-func_8005776C_o025Reloc = 0xf0000000;
-func_overlay_008_F0000E88_o025Reloc = 0xf0000000;
-func_overlay_070_F0000384_o025Reloc = 0xf0000000;
-gOverlay25ColorsReloc = 0x00000000;
-overlay25SetVectorFlagsReloc = 0x00000588;
-overlay7DispatchModes_o025Reloc = 0xf0000000;
-trackMakePolylist_o025Reloc = 0xf0000000;
-
-/* overlay 26: overlay_026.c.o */
-Arctanf_o026Reloc = 0xf0000000;
-D_1C = 0x0000001c;
-Powerf_o026Reloc = 0xf0000000;
-amSndPlayXYZ_o026Reloc = 0xf0000000;
-camPushModelMtx_o026Reloc = 0xf0000000;
-camRestoreModelMtx_o026Reloc = 0xf0000000;
-dAngle_o026Reloc = 0xf0000000;
-func_80006EA0_o026Reloc = 0xf0000000;
-func_80008128_o026Reloc = 0xf0000000;
-func_8000FAE0_o026Reloc = 0xf0000000;
-func_80010900_o026Reloc = 0xf0000000;
-func_8001DCD0_o026Reloc = 0xf0000000;
-func_8002997C_o026Reloc = 0xf0000000;
-func_80029FE4_o026Reloc = 0xf0000000;
-func_8002A8BC_o026Reloc = 0xf0000000;
-func_8002A8C0_o026Reloc = 0xf0000000;
-func_8002A910_o026Reloc = 0xf0000000;
-func_8003EDEC_o026Reloc = 0xf0000000;
-func_overlay_026_F0000B18_o026Reloc = 0x00000b18;
-func_overlay_026_F0000D24_187B11CReloc = 0xf0000000;
-lightObject_o026Reloc = 0xf0000000;
-mathDiffAngle_o026Reloc = 0xf0000000;
-mathOneFloatPY_o026Reloc = 0xf0000000;
-mathOneFloatRPY_o026Reloc = 0xf0000000;
-overlay37RecordMinimum_o026Reloc = 0xf0000000;
-partUpdateTriggers_o026Reloc = 0xf0000000;
-sqrtf_o026Reloc = 0xf0000000;
-texDPInit_o026Reloc = 0xf0000000;
-trackMakePolylist_o026Reloc = 0xf0000000;
-
-/* overlay 27: overlay_027.c.o */
-D_80000050 = 0x80000050;
-D_80000118 = 0x80000118;
-D_80000160 = 0x80000160;
-D_8007A1E4_o027Reloc = 0x00000000;
-amSndPlayXYZ_o027Reloc = 0xf0000000;
-amSndSetVolXYZ_o027Reloc = 0xf0000000;
-amSndSetXYZ_o027Reloc = 0xf0000000;
-amSndStopXYZ_o027Reloc = 0xf0000000;
-camGetPtr_o027Reloc = 0xf0000000;
-camPopModelMtx_o027Reloc = 0xf0000000;
-camPushModelMtx_o027Reloc = 0xf0000000;
-func_80006EA0_o027Reloc = 0xf0000000;
-func_80009E78_o027Reloc = 0xf0000000;
-func_80009F08_o027Reloc = 0xf0000000;
-func_800299E8_o027Reloc = 0xf0000000;
-func_8002A878_o027Reloc = 0xf0000000;
-func_8002BD58_o027Reloc = 0xf0000000;
-gOverlay27CoordinateRecords = 0x00000050;
-gOverlay27XCoordinates = 0x000000f0;
-gOverlay27XOffset = 0x00000110;
-gOverlay27YCoordinates = 0x00000100;
-gOverlay27YOffset = 0x00000114;
-texAnimateSprite_o027Reloc = 0xf0000000;
-texDPTextureX_o027Reloc = 0xf0000000;
-
 /* overlay 28: overlay_028.c.o */
 D_80000028 = 0x80000028;
 amSndPlayXYZ_o028Reloc = 0xf0000000;
@@ -3435,31 +3361,6 @@ partUpdateTriggers_o079Reloc = 0xf0000000;
 sqrtf_o079Reloc = 0xf0000000;
 trackMakePolylist_o079Reloc = 0xf0000000;
 
-/* overlay 80: overlay_080.c.o */
-func_8001398C_o080Reloc = 0xf0000000;
-func_8001DCD0_o080Reloc = 0xf0000000;
-func_8005776C_o080Reloc = 0xf0000000;
-func_8005ABA8_o080Reloc = 0xf0000000;
-func_8005AD64_o080Reloc = 0xf0000000;
-gOverlay80Band0Lower = 0x00000008;
-gOverlay80Band0Upper = 0x0000000c;
-gOverlay80Band1Lower = 0x00000010;
-gOverlay80Band1Upper = 0x00000014;
-gOverlay80Band2Lower = 0x00000018;
-gOverlay80Band2Upper = 0x0000001c;
-gOverlay80Band3Lower = 0x00000020;
-gOverlay80MagnitudeScale = 0x00000004;
-gOverlay80Scale0 = 0x00000000;
-sqrtf_o080Reloc = 0xf0000000;
-
-/* overlay 82: overlay_082.c.o */
-D_800D31B8_o082Reloc = 0x00000000;
-D_800D31BC_o082Reloc = 0x00000000;
-D_800D31BE_o082Reloc = 0x00000000;
-amSndPlay_o082Reloc = 0xf0000000;
-gO82DataBase = 0x00000000;
-modSetTextureFrame_o082Reloc = 0xf0000000;
-
 /* overlay 83: overlay_083.c.o */
 addObjectLight_o083Reloc = 0xf0000000;
 camDoSprite_o083Reloc = 0xf0000000;
@@ -3753,6 +3654,7 @@ D_10EC = 0x000010ec;
 D_118 = 0x00000118;
 D_1514 = 0x00001514;
 D_1920 = 0x00001920;
+D_1C = 0x0000001c;
 D_1C8 = 0x000001c8;
 D_1D0 = 0x000001d0;
 D_1D2C = 0x00001d2c;
@@ -4182,15 +4084,14 @@ func_overlay_024_F0000284_1879A6C = overlay24RenderState;
 func_overlay_024_F000001C_1879804 = overlay24Update;
 
 /* overlay 25: overlay_025.c.o */
-func_overlay_025_F0000000_1879C88 = overlay25InitializeEffect;
 func_overlay_025_F000017C_1879E04 = overlay25UpdateEffect;
-func_overlay_025_F0000588_187A210 = overlay25SetVectorFlags;
+func_overlay_025_F0000000_1879C88 = overlay25InitializeEffect;
 
 /* overlay 27: overlay_027.c.o */
 func_overlay_027_F0000000_187B9D8 = overlay27Init;
+func_overlay_027_F0000B68_187C540 = overlay27Activate;
 func_overlay_027_F0000A1C_187C3F4 = overlay27UpdateCoordinates;
 func_overlay_027_F0000B20_187C4F8 = overlay27CanUse;
-func_overlay_027_F0000B68_187C540 = overlay27Activate;
 
 /* overlay 28: overlay_028.c.o */
 func_overlay_028_F0000000_187C8D0 = overlay28ResetBuffer;
@@ -4455,8 +4356,8 @@ func_overlay_079_F000147C_18CE41C = overlay79InitState;
 func_overlay_079_F000149C_18CE43C = overlay79UpdateTimers;
 
 /* overlay 80: overlay_080.c.o */
-func_overlay_080_F0000000_18CE8C8 = overlay80InitializeContact;
 func_overlay_080_F000011C_18CE9E4 = overlay80UpdateContact;
+func_overlay_080_F0000000_18CE8C8 = overlay80InitializeContact;
 
 /* overlay 81: overlay_081.c.o */
 func_overlay_081_F0000274_18CF01C = overlay81CheckNearby;
@@ -4466,12 +4367,12 @@ func_overlay_081_F00000CC_18CEE74 = overlay81Update;
 func_overlay_081_F0000240_18CEFE8 = overlay81InitState;
 
 /* overlay 82: overlay_082.c.o */
-func_overlay_082_F0000000_18CF180 = overlay82Init;
+func_overlay_082_F00004A4_18CF624 = overlay82IsActive;
+func_overlay_082_F00004C0_18CF640 = overlay82Enable;
 func_overlay_082_F0000040_18CF1C0 = overlay82Update;
 func_overlay_082_F0000498_18CF618 = overlay82GetSelection;
-func_overlay_082_F00004A4_18CF624 = overlay82IsActive;
 func_overlay_082_F00004B0_18CF630 = overlay82Disable;
-func_overlay_082_F00004C0_18CF640 = overlay82Enable;
+func_overlay_082_F0000000_18CF180 = overlay82Init;
 
 /* overlay 83: overlay_083.c.o */
 func_overlay_083_F000053C_18CFCFC = overlay83BuildBatch;

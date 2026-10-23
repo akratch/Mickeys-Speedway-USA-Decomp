@@ -635,50 +635,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o025/overlay_025.c.o",
-      "offset": 0,
-      "overlay": 25,
-      "size": 1544,
-      "source": "src/overlays/o025/overlay_025.c",
-      "tools": [
-        "externalize_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o026/overlay_026.c.o",
-      "offset": 0,
-      "overlay": 26,
-      "size": 4976,
-      "source": "src/overlays/o026/overlay_026.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "externalize_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o027/overlay_027.c.o",
-      "offset": 0,
-      "overlay": 27,
-      "size": 3008,
-      "source": "src/overlays/o027/overlay_027.c",
-      "tools": [
-        "externalize_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o028/overlay_028.c.o",
       "offset": 0,
       "overlay": 28,
@@ -1096,21 +1052,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o091/overlay_091.c.o",
-      "offset": 0,
-      "overlay": 91,
-      "size": 1396,
-      "source": "src/overlays/o091/overlay_091.c",
-      "tools": [
-        "filter_elf_relocations.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o096/overlay_096.c.o",
       "offset": 0,
       "overlay": 96,
@@ -1171,9 +1112,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 77
+      "metadata": 73
     },
-    "matched_c_bytes_with_postprocess": 343948,
-    "objects_with_postprocess": 77
+    "matched_c_bytes_with_postprocess": 333024,
+    "objects_with_postprocess": 73
   }
 }

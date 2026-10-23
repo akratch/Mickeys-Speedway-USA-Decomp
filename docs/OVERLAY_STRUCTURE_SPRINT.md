@@ -214,7 +214,10 @@ Each lane:
 3. Builds with the single overlay flag set and deletes the module's trims,
    renames and rebinds. Done means no POSTPROCESS recipe for that module.
 4. Proves the result: `gmake verify`, `check-runlink-tables`, and
-   promotion-proof for every function in the module.
+   promotion-proof for every function in the module, statics included.
+   `tools/static_symbols.py` gives each static a sized local symbol from the
+   object's `.mdebug`, on every overlay object, so no per-module list or
+   recipe is needed (`docs/reloc-surface.md`).
 
 Order of work:
 

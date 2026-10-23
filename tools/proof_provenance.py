@@ -503,7 +503,7 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
         raise MetadataProofError("unsupported raw-proof root or relaxed trial environment")
     target = configured.relative_to(root).as_posix()
     deadline = time.monotonic() + 120
-    static_sizes = []
+    static_lines = []
     def recipe():
         output = batch.bounded_capture(
             ["gmake", "--no-print-directory", "-n", "-W", source.relative_to(root).as_posix(), target],
@@ -516,13 +516,13 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
                    and "tools/filter_elf_relocations.py" not in line and "tools/ido/cc" not in line]
         if len(compilers) != 1 or len(metadata) != 1 or len(rebinds) > 1:
             raise MetadataProofError("ambiguous expanded compiler/metadata recipe")
-        # A one-TU overlay object with static functions sizes their local
-        # symbols right after compiling (tools/static_symbol_sizes.py); that
-        # is part of the raw object, not of the declared metadata.
-        static_sizes[:] = [line.strip() for line in output
-                           if target in line and "tools/static_symbol_sizes.py" in line]
-        if len(static_sizes) > 1:
-            raise MetadataProofError("ambiguous static-symbol sizing recipe")
+        # An overlay object gets its static functions' symbols right after the
+        # compile (tools/static_symbols.py): part of the raw object, not of the
+        # declared metadata.
+        static_lines[:] = [line.strip() for line in output
+                           if target in line and "tools/static_symbols.py" in line]
+        if len(static_lines) > 1:
+            raise MetadataProofError("ambiguous static-symbol recipe")
         return compilers[0], metadata[0], (rebinds[0] if rebinds else "")
     command, expanded_postprocess, surface_rebind = recipe()
     args = batch.compiler_arguments(command, source.relative_to(root).as_posix(), target)
@@ -558,9 +558,9 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
                     ("tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
                      "tools/rebind_elf_relocations.py", "tools/externalize_elf_section.py",
                      "tools/postprocess_guard.py", "tools/binutils/mips64-elf-objcopy")}}
-        if static_sizes:
-            inputs["static_sizes"] = {"command": static_sizes[0], "tool": sha256_file(
-                root / "tools/static_symbol_sizes.py")}
+        if static_lines:
+            inputs["static_symbols"] = {"command": static_lines[0], "tool": sha256_file(
+                root / "tools/static_symbols.py")}
         assembly = {}
         for pragma in _all_pragmas(source.read_text()):
             path = root / pragma.path
@@ -586,13 +586,12 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
         (directory / "compile.log").write_text(str(getattr(failure, "output", "")) + "\n" + repr(failure))
         raise
     (directory / "compile.log").write_text(result.stdout)
-    if static_sizes:
-        import static_symbol_sizes
+    if static_lines:
+        import static_symbols as statics
         try:
-            sized, _count = static_symbol_sizes.size_statics(raw.read_bytes())
-        except static_symbol_sizes.Failure as error:
-            raise MetadataProofError(f"static-symbol sizing failed: {error}") from error
-        raw.write_bytes(sized)
+            raw.write_bytes(statics.add_static_symbols(raw.read_bytes())[0])
+        except statics.Failure as error:
+            raise MetadataProofError(f"static-symbol pass failed: {error}") from error
     if before != context():
         raise MetadataProofError("source, input, recipe, object or tool changed during raw proof")
     receipt = {"schema": "mickey-declared-metadata-proof-v1", "inputs": before,
@@ -888,10 +887,11 @@ def source_view(source: pathlib.Path, symbol: str,
     """
     root = pathlib.Path(__file__).resolve().parent.parent if root is None else root
     text = source.read_text(encoding="utf-8", errors="replace")
-    if non_matching and not source_facts(text, symbol).definitions and (
+    # A body in an included .c (a shared .inc.c) is visible only once inlined.
+    if not source_facts(text, symbol).definitions and (
             _macro_spells(text, symbol) or re.search(
                 r'^\s*#\s*include\s+"[^"\n]+\.(?:c|inc)"', text, re.MULTILINE)):
-        return preprocessed_text(source, root, non_matching=True), "preprocessed"
+        return preprocessed_text(source, root, non_matching=non_matching), "preprocessed"
     if not needs_preprocessed_view(text, symbol):
         return text, "source"
     if non_matching:

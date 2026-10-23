@@ -164,6 +164,98 @@ class SymbolResolutionTests(unittest.TestCase):
                     fp.resolve("friendly", root=root, alias_path=alias,
                                atlas_path=atlas, symbol_path=root / "unused")
 
+    def test_static_neighbour_bounds_export_and_proves_itself(self) -> None:
+        # An exported function followed by a static one in a one-TU module.
+        # tools/static_symbols.py gives the static a sized local STT_FUNC
+        # (info 0x02); it bounds the export and is resolvable on its own.
+        base = fp.rs.SYNTHETIC_VMA
+        symbols = [
+            ("friendly", base, 0x20, 0x12, 1),
+            ("helper", base + 0x20, 0x40, 0x02, 1),
+        ]
+        module = {"overlay": 4, "rom": {"start": "0x10"}, "text_ownership": [{
+            "offset": "0x0", "end_offset": "0x60", "size": "0x60",
+            "type": "c", "matched": True, "nonmatching": False,
+            "source": "overlays/o004/overlay_004",
+        }], "exports": [{"rom_table_index": 1, "offset": "0x0"}]}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "build").mkdir()
+            (root / "build/mickey.us.elf").touch()
+            (root / "baseroms").mkdir()
+            (root / "baseroms/mickey.us.z64").write_bytes(bytes(0x70))
+            source = root / "src/overlays/o004/overlay_004.c"
+            source.parent.mkdir(parents=True)
+            source.write_text("static void helper(void);\n"
+                              "void friendly(void) { helper(); }\n"
+                              "static void helper(void) {}\n")
+            alias = root / "aliases.txt"
+            alias.write_text("func_overlay_004_F0000000_10 = friendly;\n")
+            atlas = root / "config/overlays.us.json"
+            atlas.parent.mkdir()
+            atlas.write_text(json.dumps({"modules": [module]}))
+            elf = mock.Mock()
+            elf.names = ["", ".overlay_004"]
+            elf.section.return_value = (1, (0, 1, 6, base, 0, 0x60))
+            elf.section_bytes.return_value = bytes(0x60)
+            elf.symbols.return_value = symbols
+            with mock.patch.object(fp.rs, "Elf", return_value=elf):
+                exported = fp.resolve("friendly", root=root, alias_path=alias,
+                                      atlas_path=atlas, symbol_path=root / "unused")
+                static = fp.resolve("helper", root=root, alias_path=alias,
+                                    atlas_path=atlas, symbol_path=root / "unused")
+                self.assertEqual((base, 0x20),
+                                 (exported.expected_value, exported.expected_size))
+                self.assertEqual("func_overlay_004_F0000020_30", static.target_symbol)
+                self.assertEqual((base + 0x20, 0x40),
+                                 (static.expected_value, static.expected_size))
+                self.assertIn("whole-container ROM", static.identity_evidence)
+                # Without the static's symbol the export has no boundary.
+                elf.symbols.return_value = symbols[:1]
+                exported = fp.resolve("friendly", root=root, alias_path=alias,
+                                      atlas_path=atlas, symbol_path=root / "unused")
+                self.assertEqual(0x60, exported.expected_size)
+                with self.assertRaises(fp.PreflightError):
+                    fp.resolve("helper", root=root, alias_path=alias,
+                               atlas_path=atlas, symbol_path=root / "unused")
+                # A static name two modules define is refused, not guessed.
+                elf.names = ["", ".overlay_004", ".overlay_005"]
+                elf.symbols.return_value = symbols + [("helper", base, 0x10, 0x02, 2)]
+                with self.assertRaisesRegex(fp.PreflightError, "2 overlay modules"):
+                    fp.resolve("helper", root=root, alias_path=alias,
+                               atlas_path=atlas, symbol_path=root / "unused")
+
+    def test_shared_inc_body_belongs_to_the_including_unit(self) -> None:
+        # A body written in a shared .inc.c is compiled by the TUs that include
+        # it; the proof's owner is the linked unit whose view defines the name.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            body = root / "src/overlays/o069/shared.inc.c"
+            body.parent.mkdir(parents=True)
+            body.write_text("void shared(void) {}\n")
+            owner = root / "src/overlays/o069/overlay_069.c"
+            owner.write_text('#include "shared.inc.c"\n')
+            renamer = root / "src/overlays/o088/overlay_088.c"
+            renamer.parent.mkdir(parents=True)
+            renamer.write_text('#define shared overlay88Shared\n'
+                               '#include "../o069/shared.inc.c"\n')
+            (root / "build").mkdir()
+            (root / "build/mickey.us.map").write_text(
+                " .text 0xf0000000 0x10 build/src/overlays/o069/overlay_069.c.o\n"
+                " .text 0xf0000000 0x10 build/src/overlays/o088/overlay_088.c.o\n")
+
+            def view(unit: Path, symbol: str, _root: Path) -> object:
+                text = unit.read_text()
+                if "#define shared" in text:
+                    return fp.pp.source_facts("void overlay88Shared(void) {}\n", symbol)
+                return fp.pp.source_facts(body.read_text(), symbol)
+
+            with mock.patch.object(fp.pp, "source_facts_for", side_effect=view):
+                self.assertEqual(owner.resolve(), fp._definition_source("shared", root))
+                (root / "build/mickey.us.map").write_text("")
+                with self.assertRaisesRegex(fp.PreflightError, "found 0"):
+                    fp._definition_source("shared", root)
+
     def fixture(self, root: Path, alias_lines: str) -> Path:
         alias = root / "overlay_undefined_syms.us.txt"
         alias.write_text(alias_lines, encoding="utf-8")

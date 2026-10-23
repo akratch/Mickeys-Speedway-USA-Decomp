@@ -11,6 +11,11 @@ remembered list:
   extent lies inside exact C ownership in ``config/overlays.us.json`` (a
   matched, non-``NON_MATCHING`` C ``text_ownership`` row, or a
   ``mixed_tu_exact_c_ranges`` island), and whose name no ``.s`` still labels.
+  A ``static`` function counts too: tools/static_symbols.py gives it a sized
+  local ``STT_FUNC`` from its object's ``.mdebug``, and the census tallies
+  those separately. Exact C bytes that no sized function symbol covers are
+  reported as an uncovered entry, as is a function name the linked ELF
+  defines more than once, so a function with no boundary is never skipped.
 
 ``promotion_proof.py`` decides that a resident function is promoted by the
 same rule (``function_preflight._progress_matched_resident``), so every
@@ -85,6 +90,7 @@ TOOL_SOURCES = (
     "tools/postprocess_audit.py", "tools/function_history.py",
     "tools/wb_compare.sh", "tools/promotion_proof_census.py",
     "tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
+    "tools/static_symbols.py",
 )
 PROOF_INPUTS = (
     "config/overlays.us.json", "overlay_undefined_syms.us.txt",
@@ -101,6 +107,7 @@ class Entry:
     covered: bool = True      # False: outside promotion-proof's contract
     why_uncovered: str = ""
     alias_of: str | None = None  # zero-size alias: proved through this definition
+    static: bool = False      # a local (``static``) overlay function
 
 
 @dataclasses.dataclass
@@ -113,6 +120,7 @@ class Outcome:
     error_class: str | None = None
     cached: bool = False
     evidence: str | None = None
+    static: bool = False
 
 
 # ------------------------------------------------------------------ set
@@ -153,16 +161,36 @@ def object_for(objects: dict[str, list[tuple[int, int, str]]], section: str,
     return owners[0] if len(owners) == 1 else None
 
 
+def _exact_c_ranges(module: dict) -> list[tuple[int, int]]:
+    ranges = [(int(row["offset"], 16), int(row["end_offset"], 16))
+              for row in module.get("text_ownership", [])
+              if row.get("type") == "c" and row.get("matched") is True
+              and row.get("nonmatching") is False]
+    ranges += [(int(row["offset"], 16), int(row["end_offset"], 16))
+               for row in module.get("mixed_tu_exact_c_ranges") or []]
+    return ranges
+
+
 def _exact_c(module: dict, start: int, end: int) -> bool:
-    for row in module.get("text_ownership", []):
-        if (row.get("type") == "c" and row.get("matched") is True
-                and row.get("nonmatching") is False
-                and int(row["offset"], 16) <= start and end <= int(row["end_offset"], 16)):
-            return True
-    for row in module.get("mixed_tu_exact_c_ranges") or []:
-        if int(row["offset"], 16) <= start and end <= int(row["end_offset"], 16):
-            return True
-    return False
+    return any(low <= start and end <= high for low, high in _exact_c_ranges(module))
+
+
+def unbounded_spans(ranges: Iterable[tuple[int, int]],
+                    functions: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
+    """Exact-C ``[start, end)`` spans that no function extent covers."""
+    extents = sorted(functions)
+    spans = []
+    for low, high in sorted(set(ranges)):
+        cursor = low
+        for start, end in extents:
+            if end <= cursor or start >= high:
+                continue
+            if start > cursor:
+                spans.append((cursor, start))
+            cursor = max(cursor, end)
+        if cursor < high:
+            spans.append((cursor, high))
+    return spans
 
 
 def promoted_functions(root: Path = REPO) -> list[Entry]:
@@ -198,20 +226,40 @@ def promoted_functions(root: Path = REPO) -> list[Entry]:
     atlas = json.loads(ATLAS.read_text())
     modules = {module["overlay"]: module for module in atlas["modules"]}
     seen = set()
+    extents = collections.defaultdict(list)
+    definitions = collections.Counter(
+        name for name, _value, size, info, shndx in elf.symbols()
+        if info & 0xF == rs.STT_FUNC and size > 0 and 0 < shndx < len(elf.names))
     for name, value, size, info, shndx in elf.symbols():
         if info & 0xF != rs.STT_FUNC or size <= 0 or not 0 < shndx < len(elf.names):
             continue
         section = elf.names[shndx]
         match = re.fullmatch(r"\.overlay_(\d{3})", section)
-        if not match or name in asm:
+        if not match:
             continue
         overlay, offset = int(match.group(1)), value - SYNTHETIC_VMA
+        extents[overlay].append((offset, offset + size))
         module = modules.get(overlay)
-        if module is None or (overlay, offset) in seen:
+        if name in asm or module is None or (overlay, offset) in seen:
             continue
         if _exact_c(module, offset, offset + size):
             seen.add((overlay, offset))
-            entries.append(Entry(name, "overlay", object_for(objects, section, value)))
+            static = info >> 4 == 0
+            # promotion_proof.py names a function by its symbol; a name that
+            # two definitions share would prove one of them twice.
+            covered = definitions[name] == 1
+            entries.append(Entry(name, "overlay", object_for(objects, section, value),
+                                 covered=covered, static=static,
+                                 why_uncovered="" if covered else
+                                 "function name defined more than once in the linked ELF"))
+    for overlay, module in sorted(modules.items()):
+        rom = int(module["rom"]["start"], 16)
+        section = ".overlay_%03d" % overlay
+        for start, end in unbounded_spans(_exact_c_ranges(module), extents[overlay]):
+            entries.append(Entry(
+                "func_overlay_%03d_%08X_%X" % (overlay, SYNTHETIC_VMA + start, rom + start),
+                "overlay", object_for(objects, section, SYNTHETIC_VMA + start), covered=False,
+                why_uncovered="exact C bytes no sized function symbol bounds"))
     return entries
 
 
@@ -325,6 +373,12 @@ Runner = Callable[..., subprocess.CompletedProcess]
 
 
 def prove(entry: Entry, runner: Runner = subprocess.run) -> Outcome:
+    outcome = _prove(entry, runner)
+    outcome.static = entry.static
+    return outcome
+
+
+def _prove(entry: Entry, runner: Runner) -> Outcome:
     result = runner(
         [sys.executable, str(TOOLS / "promotion_proof.py"), entry.symbol,
          "--no-build", "--json"],
@@ -395,7 +449,8 @@ def census(entries: Iterable[Entry], *, jobs: int = 1, cache_path: Path | None =
         if row and row.get("key") == keys[entry.symbol]:
             outcomes[entry.symbol] = Outcome(entry.symbol, entry.kind, True,
                                              identity=row.get("identity"), cached=True,
-                                             evidence=row.get("evidence"))
+                                             evidence=row.get("evidence"),
+                                             static=entry.static)
         else:
             pending.append(entry)
 
@@ -511,6 +566,9 @@ def render(outcomes: list[Outcome], uncovered: list[Entry], *, list_uncovered: b
         print("  %-8s %4d proved / %4d in contract, %4d uncovered"
               % (kind, passed[kind], by_kind[kind],
                  sum(entry.kind == kind for entry in uncovered)))
+    statics = [row for row in outcomes if row.static]
+    print("  of which %d proved / %d in contract are static overlay functions"
+          % (sum(row.ok for row in statics), len(statics)))
     if failures:
         print("failures by class:")
         for name, count in collections.Counter(

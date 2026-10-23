@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay98RenderReflections:start -->
 ### `overlay98RenderReflections` plateau handoff
 
-- source: `src/overlays/o098/overlay98RenderReflections.c`
+- source: `src/overlays/o098/overlay_098.c`
 - score: 0/389 words, promoted
 - frame: 0x1C8
 - relocations: 36

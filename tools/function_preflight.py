@@ -131,7 +131,8 @@ def _aliases(path: Path = ALIASES) -> tuple[dict[str, str], dict[str, list[str]]
     return forward, reverse
 
 
-def _resolve_names(symbol: str, alias_path: Path = ALIASES) -> tuple[str, str]:
+def _resolve_names(symbol: str, alias_path: Path = ALIASES,
+                   root: Path = REPO) -> tuple[str, str]:
     forward, reverse = _aliases(alias_path)
     if symbol in forward:
         return symbol, forward[symbol]
@@ -143,7 +144,7 @@ def _resolve_names(symbol: str, alias_path: Path = ALIASES) -> tuple[str, str]:
         )
     if len(generated) == 1:
         return generated[0], symbol
-    static = _static_overlay_identity(symbol, alias_path.parent)
+    static = _static_overlay_identity(symbol, root)
     if static is not None:
         return static, symbol
     return symbol, symbol
@@ -152,12 +153,11 @@ def _resolve_names(symbol: str, alias_path: Path = ALIASES) -> tuple[str, str]:
 def _static_overlay_identity(symbol: str, root: Path) -> str | None:
     """The generated identity of a ``static`` overlay function.
 
-    A module folded into one translation unit makes its unexported functions
-    ``static`` (their shipped records are JUMPs). A linker-script alias
-    cannot name a local symbol, so the surface carries no
-    ``func_overlay_NNN_...`` row for them; the linked ELF's sized local
-    ``STT_FUNC`` in ``.overlay_NNN`` and the atlas's module ROM start give
-    the same generated name the alias would have.
+    A linker-script alias cannot name a local symbol, so the alias surface
+    has no row for a static function. Its definition is the sized local
+    ``STT_FUNC`` tools/static_symbols.py gives it from the object's
+    ``.mdebug``; that symbol's address in ``.overlay_NNN`` and the module's
+    ROM start in the atlas spell the generated name an alias would carry.
     """
     elf_path = root / "build" / "mickey.us.elf"
     atlas_path = root / "config" / "overlays.us.json"
@@ -165,18 +165,24 @@ def _static_overlay_identity(symbol: str, root: Path) -> str | None:
         return None
     elf = rs.Elf(elf_path)
     rows = [row for row in elf.symbols()
-            if row[0] == symbol and row[3] >> 4 == 0 and row[3] & 0xF == rs.STT_FUNC
+            if row[0] == symbol and row[3] == rs.STT_FUNC  # STB_LOCAL
             and row[2] > 0 and 0 < row[4] < len(elf.names)
             and re.fullmatch(r"\.overlay_\d{3}", elf.names[row[4]])]
-    if len(rows) != 1:
+    if not rows:
         return None
-    _, value, _, _, shndx = rows[0]
+    if len(rows) > 1:
+        raise PreflightError(
+            f"static function {symbol} is defined in {len(rows)} overlay modules")
+    _name, value, _size, _info, shndx = rows[0]
     overlay = int(elf.names[shndx][len(".overlay_"):])
-    modules = [row for row in json.loads(atlas_path.read_text(encoding="utf-8"))
-               .get("modules", []) if row.get("overlay") == overlay]
+    try:
+        atlas = json.loads(atlas_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as error:
+        raise PreflightError(f"cannot read overlay atlas: {error}") from error
+    modules = [row for row in atlas.get("modules", []) if row.get("overlay") == overlay]
     if len(modules) != 1:
-        return None
-    rom = int(modules[0]["rom"]["start"], 16) + value - rs.SYNTHETIC_VMA
+        raise PreflightError(f"atlas has {len(modules)} rows for overlay {overlay}")
+    rom = _hex_field(modules[0]["rom"], "start", "overlay ROM range") + value - rs.SYNTHETIC_VMA
     return f"func_overlay_{overlay:03d}_{value:08X}_{rom:X}"
 
 
@@ -262,7 +268,53 @@ def _definition_source(candidate_symbol: str, root: Path) -> Path:
                 raise PreflightError(f"{_relative(source)}: {error}") from error
             if facts.definitions:
                 candidates.append(source)
+    linked = _linked_sources(root)
+    if linked is not None:
+        units: list[Path] = []
+        for source in candidates:
+            if source.resolve() in linked:
+                units.append(source)
+            else:
+                units.extend(_including_units(source, candidate_symbol, root, linked))
+        candidates = units
     return _unique(candidates, f"C definition source for {candidate_symbol}")
+
+
+def _linked_sources(root: Path) -> set[Path] | None:
+    """The C files whose objects the link map places: the translation units."""
+    map_path = root / "build" / "mickey.us.map"
+    if not map_path.is_file():
+        return None
+    text = map_path.read_text(encoding="utf-8", errors="replace")
+    return {(root / name).resolve()
+            for name in re.findall(r"(?<![\w/])build/(src/\S+?\.c)\.o\b", text)}
+
+
+def _including_units(source: Path, candidate_symbol: str, root: Path,
+                     linked: set[Path]) -> list[Path]:
+    """The linked translation units that compile ``source``'s definition.
+
+    A body in a shared ``.inc.c`` belongs to the TU that includes it, not to
+    the file it is written in; when several TUs include it, only those whose
+    compiler view still defines ``candidate_symbol`` (no renaming macro) own it.
+    """
+    target = source.resolve()
+    units = []
+    for unit in sorted(linked):
+        if not unit.is_file():
+            continue
+        text = unit.read_text(encoding="utf-8", errors="replace")
+        names = re.findall(r'^\s*#\s*include\s+"([^"\n]+)"', text, re.MULTILINE)
+        if not any((base / name).resolve() == target for name in names
+                   for base in (unit.parent, root, root / "include")):
+            continue
+        try:
+            facts = pp.source_facts_for(unit, candidate_symbol, root)
+        except pp.MetadataProofError as error:
+            raise PreflightError(f"{_relative(unit)}: {error}") from error
+        if facts.definitions:
+            units.append(unit)
+    return units
 
 
 def _hex_field(row: dict[str, object], field: str, description: str) -> int:
@@ -620,7 +672,7 @@ def resolve(
     symbol_path: Path = SYMBOLS,
 ) -> Resolution:
     root = root.resolve()
-    target_symbol, candidate_symbol = _resolve_names(symbol, alias_path)
+    target_symbol, candidate_symbol = _resolve_names(symbol, alias_path, root)
     asm_matches = list((root / "asm" / "nonmatchings").rglob(f"{target_symbol}.s"))
     if not asm_matches and target_symbol == candidate_symbol:
         generated = _guarded_resident_fallback(symbol, root)

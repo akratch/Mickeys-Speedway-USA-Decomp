@@ -127,9 +127,9 @@ POSTPROCESS := @:
 # mk/overlay_resident_rebinds.generated.mk by `gmake overlay-syms` and applied
 # after POSTPROCESS (tools/resident_rebinds.py).
 SURFACE_REBIND := @:
-# Sizes for the local symbols asm-processor adds for static functions
-# (tools/static_symbol_sizes.py); set per object in mk/overlays.mk.
-STATIC_SIZES := @:
+# Sized local symbols for static functions, run first after the compile; set
+# for overlay objects in mk/overlays.mk (tools/static_symbols.py).
+STATIC_SYMBOLS := @:
 
 # Report-and-skip for the digest-guarded POSTPROCESS passes, for
 # tools/promotion_trial.py only. Unset (the default) every guard aborts the
@@ -755,10 +755,10 @@ $(BUILD_DIR)/%.bin.o: %.bin | $(ALL_DIRS) $(SPLAT_STAMP)
 # .c.o rebuilds after any re-split, not just the ones that reference a moved
 # name -- coarser than necessary, but a full rebuild is ~17s and correctness
 # beats precision here.
-$(BUILD_DIR)/%.c.o: %.c $(H_FILES) $(TOOLS_DIR)/normalize_elf_instructions.py $(SPLAT_STAMP) | $(ALL_DIRS)
+$(BUILD_DIR)/%.c.o: %.c $(H_FILES) $(TOOLS_DIR)/normalize_elf_instructions.py $(TOOLS_DIR)/static_symbols.py $(SPLAT_STAMP) | $(ALL_DIRS)
 	$(ASM_PROCESSOR) $(CC) -- $(AS) $(ASM_PROC_ASFLAGS) -- \
 		-c $(CFLAGS) $(OPT_FLAGS) $(MIPSISET) -o $@ $<
-	$(STATIC_SIZES)
+	$(STATIC_SYMBOLS)
 	$(RUN_POSTPROCESS)
 	$(RUN_SURFACE_REBIND)
 	$(TRAP_RENAME)

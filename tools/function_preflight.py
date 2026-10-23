@@ -405,12 +405,8 @@ def _fully_matched_inner_geometry(
             continue
         if other_value < limit and value < other_value + max(other_size, 1):
             raise PreflightError("inner function overlaps another function/data symbol")
-        # A static function in a one-TU overlay module keeps its name only as
-        # asm-processor's size-0 local symbol; it still starts where its
-        # predecessor ends, so it bounds that predecessor.
-        if (value < other_value <= owner_limit
-                and (info & 0xF) == rs.STT_FUNC
-                and (other_size > 0 or (info >> 4) == 0)):
+        if (value < other_value <= owner_limit and other_size > 0
+                and (info & 0xF) == rs.STT_FUNC):
             following.append(other_value)
     if limit != min(following):
         raise PreflightError("inner function boundary leaves unauthenticated padding/gap")

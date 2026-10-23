@@ -65,11 +65,60 @@ stack lifetime; initialization does not allocate or zero the whole image.
 
 The saved status sets FR for ordinary IDs, but clears it for negative IDs.
 This second path is real: [the audio manager creates ID -4](../src/main/audiomgr.c#L182).
-Consequently the emitted 32-slot transfer image must not be assumed to mean 32
-independent host doubles for every thread. Exact FR-dependent register
-interpretation, exceptional FP behavior and a future host representation remain
-explicit prerequisites. The ordinary header's SDK version default does not
-establish one uniform SDK revision or FP mode for this family.
+The manufacturer-defined FR1 mapping and the documented FR0 limit are set out
+below. The ordinary header's SDK version default does not establish one uniform
+SDK revision or FP mode for this family.
+
+### Manufacturer-defined modes and the FR0 limit
+
+NEC's primary VR4300 manual, seventh edition (August 2000), defines FR1 as 32
+64-bit registers and FR0 as 32 word registers forming 16 doubleword pairs
+([sections 7.2.1–7.2.2, pp. 208–210](https://datasheets.chipdb.org/NEC/Vr-Series/Vr43xx/U10504EJ7V0UMJ1.pdf#page=208)).
+FR0 even-register doubleword transfers pair the even low word with the adjacent
+odd high word. Odd-register LDC1/SDC1 is undefined; the load pseudo-code leaves
+an undefined result and the store pseudo-code supplies undefined data
+([LDC1, pp. 590–591](https://datasheets.chipdb.org/NEC/Vr-Series/Vr43xx/U10504EJ7V0UMJ1.pdf#page=590),
+[SDC1, pp. 603–604](https://datasheets.chipdb.org/NEC/Vr-Series/Vr43xx/U10504EJ7V0UMJ1.pdf#page=603)).
+The manufacturer publication is hosted by a public mirror. It provides no
+odd-register aliasing, ignore or deterministic trap rule to adopt here.
+
+Applied to Mickey's retained provider, the mode/flag cases are:
+
+| State at the transfer block | Interpretation supported by this audit |
+|---|---|
+| FP-used zero | The provider skips the FP transfer block. |
+| FP-used nonzero, FR1 | Slot `n` at `0x130 + 8*n` carries register `n`'s raw 64 bits. All 32 emitted transfers have a defined register selection. |
+| FP-used nonzero, FR0 | Even selections have paired-word meaning; the odd selections prevent claiming a complete defined 32-slot round trip. The image cannot be relabelled as duplicated pairs or harmless spare slots. |
+
+FCR31 also carries compare, rounding, cause, enable, flag and flush state
+([section 7.2.4, pp. 211–215](https://datasheets.chipdb.org/NEC/Vr-Series/Vr43xx/U10504EJ7V0UMJ1.pdf#page=211)).
+The future provider contract therefore includes mode, FP-used state, raw
+register bits, FCSR and the save/resume boundary. Numeric host doubles alone
+do not establish preservation. No emulator behavior or simulated execution is
+used to fill the undefined case.
+
+The negative audio argument is an explicit mode selector: creation stores ID
+4 while clearing FR; priority is a separate argument. Its rationale beyond
+that source-proved effect is not documented here. A no-FP precondition is not
+established for the audio lifetime. The real
+[audio loop](../src/main/audiomgr.c#L187) processes a frame through
+[`n_alAudioFrame`](../src/main/audiomgr.c#L356), then receives its completion
+message with blocking enabled. The synthesizer's conditional client-update
+path calls [_n_timeToSamplesNoRound](../src/libultra/n_synthesizer.c#L279),
+which uses CPU FP; the existing linked provider confirms that direct call and
+FP instructions. Whether the client path runs and the completion queue is
+empty are runtime conditions, not observations from this static audit.
+
+The inspected kernel preserves the current FR during saving, and installs the
+selected saved status before restoring FP. Its coprocessor-unusable path sets
+CU1/FP-used without normalizing FR. If audio remains in FR0 at its first FP
+use, this lazy path reaches the odd-register restore stream before retrying
+the instruction; a later blocking receive is not required. This is a
+conditional source derivation, not a hardware observation. It does not prove
+that every audio callback preserves FR, or that a particular undefined transfer
+executes. A complete FR0 codec needs authoritative implementation-specific evidence or
+a proved source precondition excluding that case. The primary manual alone
+cannot supply either, so this audit stops at that boundary.
 
 ### Existing C views are incomplete
 
@@ -88,9 +137,10 @@ by its stack. Existing compiler debug anchors place the thread at BSS offset
 zero and the stack at `0x1B0`; a `0x230` FP-active image reaches into that
 adjacent region. A blanket no-FP lifetime is not established: its main loop
 calls [__osViSwapContext](../src/libultra/viswapcontext.c#L38), whose conditional
-Y-scale update uses FP. Whether that path executes, the complete backing and
-stack live intervals, and a genuine source view must be reconciled before a
-repair. This audit proves a capacity/view gap, not live corruption or a lawful
+Y-scale update uses FP. VI creation passes ID zero, so its initial mode is FR1;
+the FR0 undefined case cannot dismiss this capacity question. Whether the FP
+path executes, the complete backing and simultaneous stack live intervals, and
+a genuine source view must be reconciled before a repair. This audit proves a capacity/view gap, not live corruption or a lawful
 alias. Enlarging the shared type would change an actual owned BSS layout and
 is not authorized by the byte-exact creator alone.
 
@@ -188,9 +238,10 @@ longer running, queued, active or referenced by another subsystem.
 1. Reconcile the full conditional context image with actual thread/backing and
    stack ownership, starting with VI and the real FR-clearing audio caller.
    Prove an exact natural C view before changing shared declarations or BSS.
-2. Authenticate FR-dependent FP image semantics and FCSR handling for both
-   creator modes. Preserve raw bits and target widths in the evidence; do not
-   infer a host floating environment or scheduler from SDK names.
+2. Close the FR0 odd-transfer case with authoritative implementation evidence
+   or a proved excluding precondition. FR1 register selection is documented;
+   FCSR behavior and the actual source lifetime still need preservation proof.
+   No generic host floating environment follows from the register map.
 3. Close the optional hook registration/private-continuation and stack-lifetime
    paths, or establish their absence in a bounded configuration with source
    evidence. Keep CPU/RCP acknowledgement and event ordering separate from

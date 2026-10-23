@@ -1828,12 +1828,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1881CE0, c, overlay35Initialize]
-      - [0x1881EC0, c, func_overlay_035_F00001E0_1881EC0]
-      - [0x1882450, c, overlay35BuildGridMasks]
-      - [0x1882820, c, func_overlay_035_F0000B40_1882820]
-      - [0x1883060, c, overlay35SelectHeight]
-      - [0x18830C8, asm, overlay_035_padding]
+      - [0x1881CE0, c, overlay_035]
       - [0x18830D0, bin, overlay_035_reloc1]
       - [0x1883468, bin, overlay_035_reloc2]
 

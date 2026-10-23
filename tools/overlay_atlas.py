@@ -317,6 +317,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING.update({
     28: "overlay_028_padding",
     29: "overlay_029_padding",
     30: "overlay_030_padding",
+    35: "overlay_035_padding",
 })
 
 TEXT_SUBSEGMENTS = {
@@ -1085,11 +1086,7 @@ TEXT_SUBSEGMENTS = {
         (0x7EC, "asm", "overlay_028_padding"),
     ],
     35: [
-        (0x000, "c", "overlay35Initialize"),
-        (0x1E0, "c", "func_overlay_035_F00001E0_1881EC0"),
-        (0x770, "c", "overlay35BuildGridMasks"),
-        (0xB40, "c", "func_overlay_035_F0000B40_1882820"),
-        (0x1380, "c", "overlay35SelectHeight"),
+        (0x000, "c", "overlay_035"),
         (0x13E8, "asm", "overlay_035_padding"),
     ],
     59: [

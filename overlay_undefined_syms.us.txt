@@ -1531,35 +1531,17 @@ func_800084C4_o034Reloc = 0xf0000000;
 func_80024938_o034Reloc = 0xf0000000;
 overlay34InterpolateColorReloc = 0xf0000000;
 
-/* overlay 35: overlay35Initialize.c.o */
+/* overlay 35: overlay_035.c.o */
 D_80079274_o035Reloc = 0x00000000;
 D_800792E8_o035Reloc = 0x00000000;
 D_800792EC_o035Reloc = 0x00000000;
 D_800792F0_o035Reloc = 0x00000000;
 D_800792F4_o035Reloc = 0x00000000;
+D_80079314_o035Reloc = 0x00000000;
 D_800C9544_o035Reloc = 0x00000000;
 D_800C9548_o035Reloc = 0x00000000;
 D_800C9560_o035Reloc = 0x00000000;
 D_800C9568_o035Reloc = 0x00000000;
-D_o35_paramB = 0x00000000;
-D_o35_reset1 = 0x00000000;
-animseqLoadLevelData_o035Reloc = 0xf0000000;
-camSetMode_o035Reloc = 0xf0000000;
-func_80004C28_o035Reloc = 0xf0000000;
-func_80004FE0_o035Reloc = 0xf0000000;
-func_8000C540_o035Reloc = 0xf0000000;
-levelGetLevel_o035Reloc = 0xf0000000;
-mainGetNumberOfCameras_o035Reloc = 0xf0000000;
-mmAlloc_o035Reloc = 0xf0000000;
-modelSetModelFlags_o035Reloc = 0xf0000000;
-overlay98CollectUniqueY_o035Reloc = 0xf0000000;
-shadowChangeBuffer_o035Reloc = 0xf0000000;
-shadowGenerate_o035Reloc = 0xf0000000;
-shadowInitBuffers_o035Reloc = 0xf0000000;
-texLoadTexture_o035Reloc = 0xf0000000;
-
-/* overlay 35: func_overlay_035_F00001E0_1881EC0.c.o */
-D_80079314_o035Reloc = 0x00000000;
 D_800C95A8_o035Reloc = 0x00000000;
 D_800C9D20_o035Reloc = 0x00000000;
 D_800C9D2C_o035Reloc = 0x00000000;
@@ -1568,22 +1550,36 @@ D_800C9D34_o035Reloc = 0x00000000;
 D_800C9D38_o035Reloc = 0x00000000;
 D_800C9D3C_o035Reloc = 0x00000000;
 D_o35_model_table = 0x00000000;
+D_o35_paramB = 0x00000000;
+D_o35_reset1 = 0x00000000;
+D_o35_skip_collision_edges = 0x00000004;
 align16_o035Reloc = 0xf0000000;
 align4_o035Reloc = 0xf0000000;
+animseqLoadLevelData_o035Reloc = 0xf0000000;
+camSetMode_o035Reloc = 0xf0000000;
+func_80004C28_o035Reloc = 0xf0000000;
+func_80004FE0_o035Reloc = 0xf0000000;
+func_8000C540_o035Reloc = 0xf0000000;
 func_8002A244_o035Reloc = 0xf0000000;
 func_8004D7E0_o035Reloc = 0xf0000000;
+levelGetLevel_o035Reloc = 0xf0000000;
+mainGetNumberOfCameras_o035Reloc = 0xf0000000;
 mainPreNMI_o035Reloc = 0xf0000000;
 mmAllocAtAddr_o035Reloc = 0xf0000000;
+mmAlloc_o035Reloc = 0xf0000000;
 mmFree_o035Reloc = 0xf0000000;
 mmGetDelay_o035Reloc = 0xf0000000;
 mmSetDelay_o035Reloc = 0xf0000000;
+modelSetModelFlags_o035Reloc = 0xf0000000;
+overlay98CollectUniqueY_o035Reloc = 0xf0000000;
 piRomLoadSection_o035Reloc = 0xf0000000;
 piRomLoad_o035Reloc = 0xf0000000;
-trackLightAllocate_o035Reloc = 0xf0000000;
-
-/* overlay 35: func_overlay_035_F0000B40_1882820.c.o */
-D_o35_skip_collision_edges = 0x00000004;
+shadowChangeBuffer_o035Reloc = 0xf0000000;
+shadowGenerate_o035Reloc = 0xf0000000;
+shadowInitBuffers_o035Reloc = 0xf0000000;
 sqrtf_o035Reloc = 0xf0000000;
+texLoadTexture_o035Reloc = 0xf0000000;
+trackLightAllocate_o035Reloc = 0xf0000000;
 
 /* overlay 36: overlay36InitObject.c.o */
 _bzero_o036Reloc = 0xf0000000;
@@ -5379,9 +5375,6 @@ func_overlay_034_F0000540_18816E8 = overlay34InterpolateColor;
 
 /* overlay 34: overlay34SortAndDraw.c.o */
 func_overlay_034_F0000608_18817B0 = overlay34SortAndDraw;
-
-/* overlay 35: overlay35SelectHeight.c.o */
-func_overlay_035_F0001380_1883060 = overlay35SelectHeight;
 
 /* overlay 36: overlay36InitObject.c.o */
 func_overlay_036_F0000000_18834B8 = overlay36InitObject;

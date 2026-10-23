@@ -6865,46 +6865,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x1E0",
-     "size": "0x1E0",
-     "type": "c",
-     "source": "overlays/o035/overlay35Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1E0",
-     "end_offset": "0x770",
-     "size": "0x590",
-     "type": "c",
-     "source": "overlays/o035/func_overlay_035_F00001E0_1881EC0",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x770",
-     "end_offset": "0xB40",
-     "size": "0x3D0",
-     "type": "c",
-     "source": "overlays/o035/overlay35BuildGridMasks",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xB40",
-     "end_offset": "0x1380",
-     "size": "0x840",
-     "type": "c",
-     "source": "overlays/o035/func_overlay_035_F0000B40_1882820",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1380",
      "end_offset": "0x13E8",
-     "size": "0x68",
+     "size": "0x13E8",
      "type": "c",
-     "source": "overlays/o035/overlay35SelectHeight",
+     "source": "overlays/o035/overlay_035",
      "matched": true,
      "nonmatching": false
     },

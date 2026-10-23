@@ -28,7 +28,7 @@ class RenderParseTests(unittest.TestCase):
         text = rr.render(PLAN)
         self.assertLess(text.index("o014/"), text.index("o058/"))
         self.assertLess(text.index("joyGetPressed="), text.index("joyGetStickY="))
-        target = "$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14PrepareInputState.c.o"
+        target = "$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay_014.c.o"
         self.assertIn("%s: SURFACE_REBIND = $(OBJCOPY) \\\n" % target, text)
         self.assertTrue(text.endswith("sprintf=sprintf_o058Reloc $@\n"))
 

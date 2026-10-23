@@ -258,6 +258,7 @@ FIXED_DATA_RODATA_OWNERSHIP = {
 # from executable text ownership and matching credit.
 CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     101: [(0x230, 0x340, "overlay101ClockData", ".data")],
+    75: [(0x0, 0x10, "overlay_075", ".rodata")],
     44: [(0x0, 0x50, "overlay_044", ".rodata")],
     8: [
         (0x03E0, 0x0520, "overlay8EffectTables", ".data"),

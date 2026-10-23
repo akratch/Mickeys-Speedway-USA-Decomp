@@ -1287,20 +1287,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o073/overlay_073.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym sqrtf=sqrtf_o073Reloc \
 	--redefine-sym texDPTextureX=texDPTextureX_o073Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay_075.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o075Reloc \
-	--redefine-sym amSndSetXYZ=amSndSetXYZ_o075Reloc \
-	--redefine-sym amSndStopXYZ=amSndStopXYZ_o075Reloc \
-	--redefine-sym camScreenShake=camScreenShake_o075Reloc \
-	--redefine-sym func_80008128=func_80008128_o075Reloc \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o075Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o075Reloc \
-	--redefine-sym func_8005ABA8=func_8005ABA8_o075Reloc \
-	--redefine-sym func_8005AD64=func_8005AD64_o075Reloc \
-	--redefine-sym func_8005AF14=func_8005AF14_o075Reloc \
-	--redefine-sym lightObject=lightObject_o075Reloc \
-	--redefine-sym partUpdateTriggers=partUpdateTriggers_o075Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o078/overlay_078.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_8005ABA8=func_8005ABA8_o078Reloc \
 	--redefine-sym func_8005AD64=func_8005AD64_o078Reloc $@

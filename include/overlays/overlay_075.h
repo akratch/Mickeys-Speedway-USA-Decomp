@@ -3,6 +3,8 @@
 
 #include "PR/ultratypes.h"
 
+typedef struct AudioPoint AudioPoint;
+
 typedef struct Overlay75Vector {
     f32 x;
     f32 y;
@@ -67,7 +69,7 @@ typedef struct Overlay75State {
     f32 cachedX;
     f32 cachedY;
     f32 cachedZ;
-    void *effectHandle;
+    AudioPoint *effectHandle;
 } Overlay75State;
 
 typedef struct Overlay75Status {
@@ -101,9 +103,7 @@ typedef struct Overlay75Object {
     u32 eventFlags;
 } Overlay75Object;
 
-extern f32 gOverlay75Scale;
-extern s32 gOverlay75SlotFlags[];
-extern f32 gOverlay75ThresholdReloc[];
+extern s32 gOverlay75SlotFlags[5];
 
 /* Resident callees. */
 extern f32 func_8002A8C0(s16 angle);
@@ -116,14 +116,12 @@ extern void func_8005AF14(Overlay75Model *model, void *entity,
 extern void func_80008128(Overlay75Object *object, f32 x, f32 y, f32 z);
 extern void lightObject(Overlay75Object *object, Overlay75Model *model,
                         void *renderResource, void *tableEntry);
-extern void amSndPlayXYZ(s32 id, u32 x, u32 y, u32 z,
-                         s32 mode, void **output);
+extern void amSndPlayXYZ(u16 id, f32 x, f32 y, f32 z,
+                         u8 mode, AudioPoint **output);
 extern void camScreenShake(f32 x, f32 y, f32 z, f32 scale,
                            f32 lifetime);
-extern void amSndSetXYZ(void *handle, u32 x, u32 y, u32 z);
-extern void amSndStopXYZ(void *handle);
-extern void overlay75PlayEventReloc(u16 eventId, u32 x, u32 y, u32 z, s32 mode,
-                                    s32 flags);
+extern void amSndSetXYZ(AudioPoint *handle, f32 x, f32 y, f32 z);
+extern void amSndStopXYZ(AudioPoint *handle);
 extern void partUpdateTriggers(Overlay75Object *object, s32 updateRate);
 
 /* Exported. */

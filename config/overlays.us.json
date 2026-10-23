@@ -4170,7 +4170,16 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 17
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x10",
+     "size": "0x10",
+     "type": "c",
+     "source": "overlays/o023/overlay_023"
+    }
+   ]
   },
   {
    "overlay": 24,

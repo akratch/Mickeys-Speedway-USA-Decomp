@@ -1,5 +1,7 @@
 #include "overlays/overlay_023.h"
 
+f32 gOverlay23VelocityFactor = 0.92f;
+
 /*
  * Overlay 23: one translation unit in ROM order (ADR 0006); all four
  * functions are ORT exports. Exact DKR and JFG scans are negative.

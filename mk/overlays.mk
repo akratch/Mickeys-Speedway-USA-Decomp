@@ -764,8 +764,28 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay_041.c.o: POSTPROCESS = \
 # the generated relocation surface.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay_053.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay_053.c.o: ASM_PROCESSOR += --force
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54ReleaseResources.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50
+# Overlay 54 is one translation unit at the overlay flag set (with it IDO
+# emits the HUD height easing as the shipped rotated branch-likely loop); its
+# .text carries the trailing pad, so nothing is trimmed. --force runs
+# asm-processor's static-symbol pass so the three static helpers keep local
+# names. The module owns its .data (the atlas's data_rodata +0x0..+0x2D0) and
+# .bss; the shipped words that address them are section-relative, so every
+# site is rebound to a zero-valued base. Its 0.66f pool duplicates the
+# retained rodata at +0x2D0 and is asserted by digest until phase 3 gives the
+# module its rodata too. No instruction is edited.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay_054.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay_054.c.o: ASM_PROCESSOR += --force
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay_054.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/overlay_054.rebind.spec
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay_054.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay54DataBaseReloc=0x0,global \
+		--add-symbol gOverlay54BssBaseReloc=0x0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/overlay_054.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:d131bb7de7509c98fc3533790f960348a16e2e461e7d1f5ffff1cd58ae2243e0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29BuildChain.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x78
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29UpdateRatio.c.o: POSTPROCESS = \
@@ -2322,20 +2342,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay_050.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:54719d33292c6bb1573315eb3140be35c277ea530a17f384ba3a0027e82bf244
 include mk/overlay_052.mk
-# overlay54Initialize owns overlay 54's .data and .bss.  Its text reaches them
-# through the object's own section symbols; the shipped words are
-# section-relative, so every site is rebound to a zero-valued base.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54Initialize.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	config/normalizations/func_overlay_054_F0000000_189ECA0.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54Initialize.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay54InitDataBaseReloc=0x0,global \
-		--add-symbol gOverlay54InitBssBaseReloc=0x0,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/func_overlay_054_F0000000_189ECA0.rebind.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x3CC
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54PatchIndices.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55PatchIndices.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: POSTPROCESS = \
@@ -2356,30 +2362,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091_mul.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091_mul.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57SetNodeValue.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x9C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54CopyOffsetRecords.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xE8
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54GetOffsets.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA8
-# overlay54TailA is built with -Wab,-r4300_mul: IDO then emits its HUD
-# height easing as the shipped rotated branch-likely loop. It defines
-# overlay 54's .data and .bss exactly as overlay54Initialize does (the
-# target's code is only reached with TU-local data); that object owns the
-# bytes, so these copies are dropped and their sites rebound to zero-valued
-# bases, and the 0.66f literal is externalized onto the retained rodata.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54TailA.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54TailA.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	config/normalizations/func_overlay_054_F00005AC_189F24C.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54TailA.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay54TailADataBaseReloc=0x0,global \
-		--add-symbol gOverlay54TailABssBaseReloc=0x0,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/func_overlay_054_F00005AC_189F24C.rebind.spec && \
-	$(OBJCOPY) --remove-section=.data --remove-section=.bss \
-		--remove-section=.gptab.data --remove-section=.gptab.bss $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x18E8 && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:d131bb7de7509c98fc3533790f960348a16e2e461e7d1f5ffff1cd58ae2243e0
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55CopyOffsetRecords.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xE8
@@ -2940,8 +2922,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52PatchIndices.c.o \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52CopyOffsetEntries.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52Cleanup.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54Initialize.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54PatchIndices.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55PatchIndices.c.o
 OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o \
@@ -2957,8 +2937,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58SetNodeValue.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46InitState.c.o
 OVERLAY_TRIMMED_OBJECTS += \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54CopyOffsetRecords.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54GetOffsets.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55CopyOffsetRecords.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55GetOffsets.c.o
 OVERLAY_TRIMMED_OBJECTS += \

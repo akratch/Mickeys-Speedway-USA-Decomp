@@ -191,7 +191,7 @@
   "borrowed": {
     "bss-size": {
       "about": "header BSS size with no C owner, from the atlas (module)",
-      "count": 42,
+      "count": 41,
       "entries": [
         [1],
         [2],
@@ -217,7 +217,6 @@
         [51],
         [52],
         [53],
-        [54],
         [55],
         [56],
         [58],
@@ -2218,7 +2217,7 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 74,
+      "count": 72,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -2269,10 +2268,8 @@
         [52, "overlay52Initialize", ".bss", "0x2460", 68],
         [52, "overlay52TailB", ".bss", "0x2460", 90],
         [52, "overlay52TailB", ".data", "0x2130", 82],
-        [54, "overlay54Initialize", ".bss", "0x21D0", 40],
-        [54, "overlay54TailA", ".bss", "0x21D0", 76],
-        [54, "overlay54TailA", ".data", "0x1EF0", 58],
-        [54, "overlay54TailA", ".rodata", "0x21C0", 2],
+        [54, "overlay_054", ".bss", "0x21D0", 116],
+        [54, "overlay_054", ".rodata", "0x21C0", 2],
         [55, "func_overlay_055_F000031C_18A1E34", ".rodata", "0xD80", 2],
         [57, "func_overlay_057_F0000000_18A3BF8", ".rodata", "0x705C", 2],
         [57, "func_overlay_057_F0001AE8_18A56E0", ".rodata", "0x70A0", 2],

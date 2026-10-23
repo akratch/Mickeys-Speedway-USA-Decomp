@@ -2220,14 +2220,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x189ECA0, c, overlay54Initialize]
-      - [0x189F06C, c, overlay54PatchIndices]
-      - [0x189F0BC, c, overlay54CopyOffsetRecords]
-      - [0x189F1A4, c, overlay54GetOffsets]
-      - [0x189F24C, c, overlay54TailA]
-      - [0x18A0B34, c, overlay54ReleaseResources]
-      - [0x18A0B84, asm, overlay_054_padding]
-      - [0x18A0B90]
+      - [0x189ECA0, c, overlay_054]
       - [0x18A0E60, bin, overlay_054_data_rodata]
       - [0x18A0E70, bin, overlay_054_reloc1]
       - [0x18A1370, bin, overlay_054_reloc2]

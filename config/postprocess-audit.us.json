@@ -4035,86 +4035,13 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o054/overlay54CopyOffsetRecords.c.o",
-      "offset": 1052,
-      "overlay": 54,
-      "size": 232,
-      "source": "src/overlays/o054/overlay54CopyOffsetRecords.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o054/overlay54GetOffsets.c.o",
-      "offset": 1284,
-      "overlay": 54,
-      "size": 168,
-      "source": "src/overlays/o054/overlay54GetOffsets.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o054/overlay54Initialize.c.o",
+      "object": "build/src/overlays/o054/overlay_054.c.o",
       "offset": 0,
       "overlay": 54,
-      "size": 972,
-      "source": "src/overlays/o054/overlay54Initialize.c",
+      "size": 7908,
+      "source": "src/overlays/o054/overlay_054.c",
       "tools": [
         "rebind_elf_relocations.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o054/overlay54PatchIndices.c.o",
-      "offset": 972,
-      "overlay": 54,
-      "size": 80,
-      "source": "src/overlays/o054/overlay54PatchIndices.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o054/overlay54ReleaseResources.c.o",
-      "offset": 7828,
-      "overlay": 54,
-      "size": 80,
-      "source": "src/overlays/o054/overlay54ReleaseResources.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o054/overlay54TailA.c.o",
-      "offset": 1452,
-      "overlay": 54,
-      "size": 6376,
-      "source": "src/overlays/o054/overlay54TailA.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "trim_elf_section.py",
         "externalize_elf_section.py",
         "objcopy"
       ]
@@ -8337,10 +8264,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 574,
+      "metadata": 569,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 431140,
-    "objects_with_postprocess": 575
+    "objects_with_postprocess": 570
   }
 }

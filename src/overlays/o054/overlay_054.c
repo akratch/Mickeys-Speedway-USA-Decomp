@@ -1,92 +1,13 @@
-#include "game/charControl.h"
-#include "game/menu.h"
-#include "n_audio/mbi.h"
-#include "overlays/offset_records.h"
-#include "overlays/overlay_045.h"
+#include "overlays/overlay_054.h"
 
-/* Tier B: overlay54PatchIndices stores resolved resource addresses in the
- * signed words copied by overlay54CopyOffsetRecords. Retain that shared
- * record type and the project's explicit pointer-to-word conversion. */
-
-/* Tier B: overlay 54's runtime records identify the resident calls and the
- * overlay 45/56 exports below. Their source declarations establish the ABI;
- * the *_o054Reloc names are the generated relocation surface. */
-extern void camStandardOrtho_o054Reloc(MenuCommand **dlist, Mtx **matrix);
-extern void camSetNo_o054Reloc(s32 camera);
-extern void camSetScissor_o054Reloc(MenuCommand **dlist);
-extern void **func_80005750_o054Reloc(s32 *count);
-extern u8 *levelGetLevel_o054Reloc(void);
-extern s32 func_800290A0_o054Reloc(void);
-extern s32 func_8003A7D0_o054Reloc(ControlActor *actor);
-extern void viGetCurrentSize_o054Reloc(s32 *width, s32 *height);
-extern s32 texAnimateSprite_o054Reloc(u8 *resource, s32 *state,
-    s32 animation, f32 *frame, s32 updateRate);
-extern void func_8002F618_o054Reloc(MenuCommand **dlist,
-    OverlayOffsetRecord *records, s32 x, s32 y, u8 red, u8 green,
-    u8 blue, u8 alpha);
-/* The last parameter is unsigned: the shipped icon call materializes its
- * literal 1 in a fresh temporary instead of reusing the function's s32
- * constant-1 register, which a signed parameter does (one ring draw, worth
- * about 340 aligned rows of temp-register rotation downstream). */
-extern void func_8002FB34_o054Reloc(MenuCommand **dlist,
-    OverlayOffsetRecord *records, f32 x, f32 y, f32 scaleX, f32 scaleY,
-    s32 colour, u8 mode);
-extern u16 joyGetPressed_o054Reloc(s32 player);
-extern void texDPInit_o054Reloc(MenuCommand **dlist);
-extern void sprSetTextureFilter_o054Reloc(s32 mode);
-extern void frontDrawObj_o054Reloc(s32 index);
-extern s32 frontGetScreenMode_o054Reloc(void);
-extern s32 mainGetMode_o054Reloc(void);
-extern void *func_80028F54_o054Reloc(void);
-extern void mainChangeCameras_o054Reloc(s32 cameras);
-extern void func_800016EC_o054Reloc(u8 mode);
-extern void func_8003A590_o054Reloc(void);
-extern void func_80037414_o054Reloc(s32 kind, f32 duration, f32 delay,
-    s32 arg3, s32 arg4, s32 arg5, s32 arg6);
-extern void mainChangeLevel_o054Reloc(s32 level, s32 character,
-    s32 animation, s32 mode, s32 arg4, s32 arg5);
-extern void amTuneSetFade_o054Reloc(f32 fade, u8 volume);
-extern void amSndPlay_o054Reloc(u16 sound, void **handle);
-extern void overlay45ReleaseDescriptor_o054Reloc(Overlay45ResourceDescriptor *descriptor);
-extern void overlay45SetMode_o054Reloc(Overlay45ResourceDescriptor *descriptor, s32 value);
-extern void overlay56SplitTime_o054Reloc(s32 time, s32 *minutes,
-    s32 *seconds, s32 *centiseconds);
-extern void overlay54GetOffsets(s32 player, s32 kind, s32 *x, s32 *y);
-
-/* The current-object layout is shared with src/main/menu.c. */
-typedef struct O54MenuObject {
-    s16 rotationX;
-    s16 rotationY;
-    s16 rotationZ;
-    s16 index;
-    f32 scale;
-    f32 x;
-    f32 y;
-    f32 z;
-    f32 frame;
-    s8 flags[4];
-} O54MenuObject;
-
-extern MenuCommand *D_800D3140_o054Reloc;
-extern Mtx *D_800D3144_o054Reloc;
-extern void *D_800D31C8_o054Reloc[];
-extern O54MenuObject D_800D3550_o054Reloc[];
-extern u8 D_8007BEF4_o054Reloc;
-extern s32 D_800C947C_o054Reloc;
-extern s16 D_8007C180_o054Reloc[];
-extern s32 D_8007C1B0_o054Reloc;
-extern s32 o001_data_83E0_o054Reloc;
-
-/* Overlay 54 was one translation unit: its runtime records address this
- * function's .data and .bss through LOCAL (section-relative) records, and
- * the shipped code shares one high half between stores to adjacent fields
- * of record 0, which as1 does only for a symbol defined in the same TU.
- * So this TU defines the overlay's data exactly as overlay54Initialize.c
- * does (same order, bytes and section sizes), with the three slide-limit
- * pairs as separate arrays because the target addresses them through three
- * high halves. overlay54Initialize.c owns the bytes: this object's .data
- * and .bss are dropped at POSTPROCESS and their records rebound to
- * zero-valued bases (mk/overlays.mk). */
+/* Overlay 54's data, in ROM order: this module is its byte owner. Its
+ * runtime records address .data, a 0x10-byte .rodata and .bss through three
+ * separate section bases (LOCAL, section-relative records), and the shipped
+ * code shares one high half between stores to adjacent fields of record 0,
+ * which as1 does only for a symbol defined in the same TU. The three
+ * slide-limit pairs are separate arrays because the HUD addresses them
+ * through three high halves. The initializer's header state is record pair
+ * sOverlay54State (it writes record 0's three words and record 1's link). */
 static s16 sOverlay54ResourceIds[18] = {
     2, 38, 39, 25, 26, 20, 21, 30, 31, 22, 40, 23, 24, 53, 80, 100, -1, 0,
 };
@@ -139,12 +60,157 @@ static Overlay45ResourceDescriptor *sOverlay54Current;
 static s16 sOverlay54Tail66C;
 static s16 sOverlay54Tail66E;
 
-/* These fields fall in gaps in the partial ControlPlayer header. Their
- * signedness and widths come from this function's own loads. */
-#define O54_LAP(p) ((s8) (p)->pad37C[7])
-#define O54_PLACE(p) ((p)->pad37C[9])
-#define O54_TIME(p) (*(s32 *) ((p)->pad3FC + 4))
-#define O54_TIME_DELTA(p) (*(s16 *) (p)->pad454)
+/* Module-private helpers (no ORT row): static, so their calls are JUMP
+ * records. The initializer hands them its tables unprototyped. */
+static void overlay54PatchIndices();
+static void overlay54CopyOffsetRecords();
+static void overlay54GetOffsets(s32 player, s32 kind, s32 *x, s32 *y);
+
+/* Independently reconstructed from Mickey-local evidence; no DKR/JFG donor. */
+/* Matched 2026-10-01 by writing both loops as plain subscript loops over one
+ * counter.  The 17-word plateau walked eight declared pointers, kept the
+ * ninth and the context in a volatile struct, and stored through [-1] after
+ * hand-placed increments; as1 then hoisted the flag and value stores because
+ * a declared pointer carries no noalias fact.  With `array[i]` at every site
+ * uopt creates all nine induction pointers itself, emits their noalias facts,
+ * and spills the ninth to its own temporary, which is the target's schedule.
+ * What else it took, each measured:
+ *   - the flag bytes are a signed char array (the stored constant is -1);
+ *   - `i` is the only counter: reusing it for the record copy keeps the first
+ *     loop's exit test a set-less-than against 4 (L90 otherwise rewrites it),
+ *     which retires the xor-with-zero;
+ *   - two declared locals, `i` then `context`, land the frame: no state
+ *     pointer and no object local, the stores name the statics directly. */
+void func_overlay_054_F0000000_189ECA0(void) {
+    s32 i;
+    u8 *context;
+
+    context = func_80028F54();
+    o54LoadResource(sOverlay54ResourceIds);
+    o54LoadResource(gOverlay54ExternalResource);
+    setupFrontEndList(sOverlay54PrepareIds);
+    amTunePlay(4);
+    sOverlay54Mode = 0x104;
+    runlinkDownloadCode(0xB);
+    overlay54PatchIndices(sOverlay54ListA);
+    overlay54PatchIndices(sOverlay54ListB);
+    overlay54PatchIndices(sOverlay54ListC);
+    overlay54PatchIndices(sOverlay54ListD);
+    overlay54PatchIndices(sOverlay54ListE);
+    overlay54PatchIndices(sOverlay54ListF);
+    overlay54PatchIndices(sOverlay54ListG);
+
+    for (i = 0; i < 4; i++) {
+        overlay54CopyOffsetRecords(sOverlay54ListA, sOverlay54ListCopyA[i], i, 0);
+        overlay54CopyOffsetRecords(sOverlay54ListB, sOverlay54ListCopyB[i], i, 0);
+        overlay54CopyOffsetRecords(sOverlay54ListC, sOverlay54ListCopyC[i], i, 1);
+        overlay54CopyOffsetRecords(sOverlay54ListD, sOverlay54ListCopyD[i], i, 2);
+        overlay54CopyOffsetRecords(sOverlay54ListE, sOverlay54ListCopyE[i], i, 3);
+        overlay54CopyOffsetRecords(sOverlay54ListF, sOverlay54ListCopyF[i], i, 3);
+        sOverlay54Flags[i] = -1;
+        sOverlay54Values[i] = -0x500;
+        sOverlay54Sentinels[i] = -0x140;
+    }
+
+    for (i = 0; i < 9; i++) {
+        sOverlay54Records[i].x = sOverlay54SourceRecords[i].x;
+        sOverlay54Records[i].y = sOverlay54SourceRecords[i].y;
+        sOverlay54Records[i].metadata = sOverlay54SourceRecords[i].metadata;
+    }
+
+    sOverlay54Height = -80.0f;
+    o54LoadResource();
+    gOverlay54Data00 = levelGetNumber();
+    *(s16 *)(D_800D3550 + 0x26) = 0x28;
+    *(f32 *)(D_800D3550 + 0x28) = 1.0f;
+    sOverlay54State[0].metadata = 0;
+    sOverlay54State[0].link = gOverlay54ExternalWord;
+    sOverlay54State[0].value = 0;
+    sOverlay54State[1].link = 0;
+
+    sOverlay54Bounds[0] = -0x420;
+    sOverlay54Bounds[1] = 0x4E0;
+    sOverlay54Bounds[2] = -0x420;
+    sOverlay54Bounds[3] = 0x4E0;
+    if (*context == 3) {
+        fontUseFont(3);
+        sOverlay54Current = overlay45CreateDescriptor(func_8003A5A0(o54CreateObject()), 0xA0, 0x78, 0xC);
+        overlay45SetMode(sOverlay54Current, 0);
+    } else {
+        sOverlay54Current = 0;
+    }
+    sOverlay54Tail66E = 0;
+    sOverlay54Tail66C = 0;
+}
+
+/* This exact six-overlay Mickey family has no exact DKR v77/v80 or JFG donor. */
+static void overlay54PatchIndices(OverlayPatchIndexEntry *entry) {
+    while (entry->first != 0) {
+        entry->first = (s32) D_800D31C8[entry->first];
+        if (entry->second != 0) {
+            entry->second = (s32) D_800D31C8[entry->second];
+        }
+        entry++;
+    }
+}
+
+/* Shared Mickey family; no exact DKR v77/v80 or JFG donor was found. */
+static void overlay54CopyOffsetRecords(OverlayOffsetRecord *src, OverlayOffsetRecord *dst,
+                                s32 mode, s32 index) {
+    s32 xOffset;
+    s32 yOffset;
+    s16 *offsets;
+
+    index *= 4;
+    if (frontGetScreenMode() == 1) {
+        index += 0x10;
+    }
+
+    offsets = &gOverlay54Offsets[index];
+    if (mode < 2) {
+        yOffset = offsets[1];
+    } else {
+        yOffset = offsets[3];
+    }
+    if (mode & 1) {
+        xOffset = offsets[2];
+    } else {
+        xOffset = offsets[0];
+    }
+
+    while (src->link != 0) {
+        dst->link = src->link;
+        dst->value = src->value;
+        src++;
+        dst++;
+        dst[-1].x = src[-1].x + xOffset;
+        dst[-1].y = src[-1].y + yOffset;
+        dst[-1].metadata = src[-1].metadata;
+    }
+    dst->link = 0;
+}
+
+/* Shared Mickey family; no exact DKR v77/v80 or JFG donor was found. */
+static void overlay54GetOffsets(s32 mode, s32 index, s32 *xOffset, s32 *yOffset) {
+    s16 *offsets;
+
+    index *= 4;
+    if (frontGetScreenMode() == 1) {
+        index += 0x10;
+    }
+
+    offsets = &gOverlay54Offsets[index];
+    if (mode < 2) {
+        *yOffset = offsets[1];
+    } else {
+        *yOffset = offsets[3];
+    }
+    if (mode & 1) {
+        *xOffset = offsets[2];
+    } else {
+        *xOffset = offsets[0];
+    }
+}
 
 /* Independently reconstructed from Mickey-local evidence; no donor body.
  * Matched 2026-10-01 from an 851-word plateau. What it took, in order:
@@ -536,4 +602,13 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
         }
     }
     camSetNo_o054Reloc(0);
+}
+
+void overlay54ReleaseResources(void) {
+    if (gOverlay54Current != NULL) {
+        overlay54ReleaseReloc(gOverlay54Current);
+    }
+    overlay54ReleaseReloc(gOverlay54ResourceA);
+    overlay54ReleaseReloc(gOverlay54ResourceB);
+    overlay54ReleaseReloc();
 }

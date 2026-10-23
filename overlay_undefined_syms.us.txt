@@ -2387,69 +2387,61 @@ setupFrontEndList_o053Reloc = 0xf0000000;
 texDPInit_o053Reloc = 0xf0000000;
 viGetCurrentSize_o053Reloc = 0xf0000000;
 
-/* overlay 54: overlay54Initialize.c.o */
-D_800D3550_o054Reloc = 0x00000000;
-amTunePlay_o054Reloc = 0xf0000000;
-fontUseFont_o054Reloc = 0xf0000000;
-func_80028F54_o054Reloc = 0xf0000000;
-func_8003A5A0_o054Reloc = 0xf0000000;
-gOverlay54Data00 = 0x00000000;
-gOverlay54ExternalResource = 0x00000000;
-gOverlay54ExternalWord = 0x00000190;
-levelGetNumber_o054Reloc = 0xf0000000;
-o54CreateObject = 0xf0000000;
-o54LoadResource = 0xf0000000;
-overlay45CreateDescriptor_o054Reloc = 0xf0000000;
-overlay45SetMode_o054Reloc = 0xf0000000;
-runlinkDownloadCode_o054Reloc = 0xf0000000;
-setupFrontEndList_o054Reloc = 0xf0000000;
-
-/* overlay 54: overlay54PatchIndices.c.o */
-D_800D31C8_o054Reloc = 0x00000000;
-
-/* overlay 54: overlay54CopyOffsetRecords.c.o */
-frontGetScreenMode_o054Reloc = 0xf0000000;
-gOverlay54Offsets = 0x00000198;
-
-/* overlay 54: overlay54TailA.c.o */
+/* overlay 54: overlay_054.c.o */
 D_8007BEF4_o054Reloc = 0x00000000;
 D_8007C180_o054Reloc = 0x00000000;
 D_8007C1B0_o054Reloc = 0x00000000;
 D_800C947C_o054Reloc = 0x00000000;
 D_800D3140_o054Reloc = 0x00000000;
 D_800D3144_o054Reloc = 0x00000000;
+D_800D31C8_o054Reloc = 0x00000000;
+D_800D3550_o054Reloc = 0x00000000;
 amSndPlay_o054Reloc = 0xf0000000;
+amTunePlay_o054Reloc = 0xf0000000;
 amTuneSetFade_o054Reloc = 0xf0000000;
 camSetNo_o054Reloc = 0xf0000000;
 camSetScissor_o054Reloc = 0xf0000000;
 camStandardOrtho_o054Reloc = 0xf0000000;
+fontUseFont_o054Reloc = 0xf0000000;
 frontDrawObj_o054Reloc = 0xf0000000;
+frontGetScreenMode_o054Reloc = 0xf0000000;
 func_800016EC_o054Reloc = 0xf0000000;
 func_80005750_o054Reloc = 0xf0000000;
+func_80028F54_o054Reloc = 0xf0000000;
 func_800290A0_o054Reloc = 0xf0000000;
 func_8002F618_o054Reloc = 0xf0000000;
 func_8002FB34_o054Reloc = 0xf0000000;
 func_80037414_o054Reloc = 0xf0000000;
 func_8003A590_o054Reloc = 0xf0000000;
+func_8003A5A0_o054Reloc = 0xf0000000;
 func_8003A7D0_o054Reloc = 0xf0000000;
+gOverlay54Current = 0x00000668;
+gOverlay54Data00 = 0x00000000;
+gOverlay54ExternalResource = 0x00000000;
+gOverlay54ExternalWord = 0x00000190;
+gOverlay54Offsets = 0x00000198;
+gOverlay54ResourceA = 0x00000000;
+gOverlay54ResourceB = 0x00000000;
 joyGetPressed_o054Reloc = 0xf0000000;
 levelGetLevel_o054Reloc = 0xf0000000;
+levelGetNumber_o054Reloc = 0xf0000000;
 mainChangeCameras_o054Reloc = 0xf0000000;
 mainChangeLevel_o054Reloc = 0xf0000000;
 mainGetMode_o054Reloc = 0xf0000000;
 o001_data_83E0_o054Reloc = 0x00000000;
+o54CreateObject = 0xf0000000;
+o54LoadResource = 0xf0000000;
+overlay45CreateDescriptor_o054Reloc = 0xf0000000;
 overlay45ReleaseDescriptor_o054Reloc = 0xf0000000;
+overlay45SetMode_o054Reloc = 0xf0000000;
+overlay54ReleaseReloc = 0xf0000000;
 overlay56SplitTime_o054Reloc = 0xf0000000;
+runlinkDownloadCode_o054Reloc = 0xf0000000;
+setupFrontEndList_o054Reloc = 0xf0000000;
 sprSetTextureFilter_o054Reloc = 0xf0000000;
 texAnimateSprite_o054Reloc = 0xf0000000;
 texDPInit_o054Reloc = 0xf0000000;
 viGetCurrentSize_o054Reloc = 0xf0000000;
-
-/* overlay 54: overlay54ReleaseResources.c.o */
-gOverlay54Current = 0x00000668;
-gOverlay54ResourceA = 0x00000000;
-gOverlay54ResourceB = 0x00000000;
-overlay54ReleaseReloc = 0xf0000000;
 
 /* overlay 55: overlay55Initialize.c.o */
 amTunePlay_o055Reloc = 0xf0000000;
@@ -5577,16 +5569,7 @@ func_overlay_052_F0002098_189C708 = overlay52Cleanup;
 func_overlay_053_F0000000_189D9A8 = overlay53Initialize;
 func_overlay_053_F0000C30_189E5D8 = overlay53ReleaseResources;
 
-/* overlay 54: overlay54PatchIndices.c.o */
-func_overlay_054_F00003CC_189F06C = overlay54PatchIndices;
-
-/* overlay 54: overlay54CopyOffsetRecords.c.o */
-func_overlay_054_F000041C_189F0BC = overlay54CopyOffsetRecords;
-
-/* overlay 54: overlay54GetOffsets.c.o */
-func_overlay_054_F0000504_189F1A4 = overlay54GetOffsets;
-
-/* overlay 54: overlay54ReleaseResources.c.o */
+/* overlay 54: overlay_054.c.o */
 func_overlay_054_F0001E94_18A0B34 = overlay54ReleaseResources;
 
 /* overlay 55: overlay55Initialize.c.o */

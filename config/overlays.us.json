@@ -10255,55 +10255,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x3CC",
-     "size": "0x3CC",
-     "type": "c",
-     "source": "overlays/o054/overlay54Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x3CC",
-     "end_offset": "0x41C",
-     "size": "0x50",
-     "type": "c",
-     "source": "overlays/o054/overlay54PatchIndices",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x41C",
-     "end_offset": "0x504",
-     "size": "0xE8",
-     "type": "c",
-     "source": "overlays/o054/overlay54CopyOffsetRecords",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x504",
-     "end_offset": "0x5AC",
-     "size": "0xA8",
-     "type": "c",
-     "source": "overlays/o054/overlay54GetOffsets",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x5AC",
-     "end_offset": "0x1E94",
-     "size": "0x18E8",
-     "type": "c",
-     "source": "overlays/o054/overlay54TailA",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1E94",
      "end_offset": "0x1EE4",
-     "size": "0x50",
+     "size": "0x1EE4",
      "type": "c",
-     "source": "overlays/o054/overlay54ReleaseResources",
+     "source": "overlays/o054/overlay_054",
      "matched": true,
      "nonmatching": false
     },
@@ -10404,7 +10359,7 @@
      "end_offset": "0x2D0",
      "size": "0x2D0",
      "type": "c",
-     "source": "overlays/o054/overlay54Initialize"
+     "source": "overlays/o054/overlay_054"
     }
    ]
   },

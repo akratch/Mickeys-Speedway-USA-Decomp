@@ -120,7 +120,7 @@ DATA_RODATA_OWNERSHIP = {
     79: [(0x0, 0x60, "func_overlay_079_F0000134_18CD0D4")],
     # The whole .data section; data_rodata +0x2D0..+0x2E0 is the original
     # TU's .rodata (its own relocation base) and stays raw.
-    54: [(0x0, 0x2D0, "overlay54Initialize")],
+    54: [(0x0, 0x2D0, "overlay_054")],
     # The whole data_rodata range: the compiled .data is 0x328 bytes padded to
     # the section's 16-byte alignment, which covers the zero tail.
     52: [(0x0, 0x330, "overlay52Initialize")],
@@ -294,6 +294,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     37: "overlay_037_padding",
     39: "overlay_039_padding",
     40: "overlay_040_padding",
+    54: "overlay_054_padding",
     50: "overlay_050_padding",
     53: "overlay_053_padding",
     48: "overlay_048_padding",
@@ -308,9 +309,6 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
 # for that gap rather than letting the old row absorb the data block.
 EXPLICIT_TEXT_PADDING = {
     47: "overlay_047_padding",
-    # Overlay 54's text tail pads to 0x1EF0; overlay54Initialize's .data
-    # follows it, so the pad needs its own bounded row.
-    54: "overlay_054_padding",
     # Overlay 52's text tail pads to 0x2130; overlay52Initialize's .data follows.
     52: "overlay_052_padding",
 }
@@ -946,12 +944,7 @@ TEXT_SUBSEGMENTS = {
         (0xCA8, "asm", "overlay_053_padding"),
     ],
     54: [
-        (0x000, "c", "overlay54Initialize"),
-        (0x3CC, "c", "overlay54PatchIndices"),
-        (0x41C, "c", "overlay54CopyOffsetRecords"),
-        (0x504, "c", "overlay54GetOffsets"),
-        (0x5AC, "c", "overlay54TailA"),
-        (0x1E94, "c", "overlay54ReleaseResources"),
+        (0x000, "c", "overlay_054"),
         (0x1EE4, "asm", "overlay_054_padding"),
     ],
     57: [

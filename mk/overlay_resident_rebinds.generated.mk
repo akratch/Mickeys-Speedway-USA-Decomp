@@ -1174,16 +1174,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay_053.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym texDPInit=texDPInit_o053Reloc \
 	--redefine-sym viGetCurrentSize=viGetCurrentSize_o053Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54CopyOffsetRecords.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym frontGetScreenMode=frontGetScreenMode_o054Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54GetOffsets.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym frontGetScreenMode=frontGetScreenMode_o054Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54Initialize.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay_054.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_800D31C8=D_800D31C8_o054Reloc \
 	--redefine-sym D_800D3550=D_800D3550_o054Reloc \
 	--redefine-sym amTunePlay=amTunePlay_o054Reloc \
 	--redefine-sym fontUseFont=fontUseFont_o054Reloc \
+	--redefine-sym frontGetScreenMode=frontGetScreenMode_o054Reloc \
 	--redefine-sym func_80028F54=func_80028F54_o054Reloc \
 	--redefine-sym func_8003A5A0=func_8003A5A0_o054Reloc \
 	--redefine-sym levelGetNumber=levelGetNumber_o054Reloc \
@@ -1191,9 +1187,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54Initialize.c.o: SURFACE_REBIND = 
 	--redefine-sym overlay45SetMode=overlay45SetMode_o054Reloc \
 	--redefine-sym runlinkDownloadCode=runlinkDownloadCode_o054Reloc \
 	--redefine-sym setupFrontEndList=setupFrontEndList_o054Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54PatchIndices.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D31C8=D_800D31C8_o054Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55CopyOffsetRecords.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym frontGetScreenMode=frontGetScreenMode_o055Reloc $@

@@ -50,16 +50,6 @@ typedef struct Overlay80Init {
     s16 initialValue;
 } Overlay80Init;
 
-extern f32 gOverlay80Scale0;
-extern f32 gOverlay80MagnitudeScale;
-extern f32 gOverlay80Band0Lower;
-extern f32 gOverlay80Band0Upper;
-extern f32 gOverlay80Band1Lower;
-extern f32 gOverlay80Band1Upper;
-extern f32 gOverlay80Band2Lower;
-extern f32 gOverlay80Band2Upper;
-extern f32 gOverlay80Band3Lower;
-
 extern s32 func_8001398C(f32 position0, f32 position1, s32 radius,
                          Overlay80Candidate ***candidatesOut);
 extern void func_8001DCD0(s16 key, s32 selectedValue, s16 *outputA,

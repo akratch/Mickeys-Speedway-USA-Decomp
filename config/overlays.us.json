@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 5064,
+  "owned_data_rodata_bytes": 4968,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -7415,37 +7415,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x9D0",
-     "size": "0x9D0",
-     "type": "c",
-     "source": "overlays/o047/func_overlay_047_F0000000_1890E18",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x9D0",
-     "end_offset": "0xB30",
-     "size": "0x160",
-     "type": "c",
-     "source": "overlays/o047/overlay47ReleaseResources",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xB30",
-     "end_offset": "0x2D10",
-     "size": "0x21E0",
-     "type": "c",
-     "source": "overlays/o047/func_overlay_047_F0000B30_1891948",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2D10",
      "end_offset": "0x2DE8",
-     "size": "0xD8",
+     "size": "0x2DE8",
      "type": "c",
-     "source": "overlays/o047/overlay47SpawnObject",
+     "source": "overlays/o047/overlay_047",
      "matched": true,
      "nonmatching": false
     },
@@ -7536,10 +7509,19 @@
    "data_rodata_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x5A0",
-     "size": "0x5A0",
+     "end_offset": "0x560",
+     "size": "0x560",
      "type": "c",
-     "source": "overlays/o047/overlay47ReleaseResources"
+     "source": "overlays/o047/overlay_047"
+    },
+    {
+     "offset": "0x560",
+     "end_offset": "0x5A0",
+     "size": "0x40",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o047/overlay_047",
+     "canonical": true
     }
    ]
   },
@@ -11932,7 +11914,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 39
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x30",
+     "size": "0x30",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o080/overlay_080",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 81,
@@ -12192,18 +12185,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 13
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x0",
-     "end_offset": "0xA0",
-     "size": "0xA0",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o082/overlay_082",
-     "canonical": true
-    }
-   ]
+   }
   },
   {
    "overlay": 83,
@@ -14129,6 +14111,15 @@
      "size": "0x10",
      "type": "c",
      "source": "overlays/o097/overlay_097"
+    },
+    {
+     "offset": "0x10",
+     "end_offset": "0x20",
+     "size": "0x10",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o097/overlay_097",
+     "canonical": true
     }
    ]
   },

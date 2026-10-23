@@ -1536,14 +1536,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/overlay_079.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym sqrtf=sqrtf_o079Reloc \
 	--redefine-sym trackMakePolylist=trackMakePolylist_o079Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o080/overlay_080.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_8001398C=func_8001398C_o080Reloc \
-	--redefine-sym func_8001DCD0=func_8001DCD0_o080Reloc \
-	--redefine-sym func_8005776C=func_8005776C_o080Reloc \
-	--redefine-sym func_8005ABA8=func_8005ABA8_o080Reloc \
-	--redefine-sym func_8005AD64=func_8005AD64_o080Reloc \
-	--redefine-sym sqrtf=sqrtf_o080Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o081/overlay_081.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o081Reloc \
 	--redefine-sym func_80005750=func_80005750_o081Reloc \

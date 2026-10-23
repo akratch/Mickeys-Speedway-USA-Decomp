@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 153, "borrowed_records": 9145},
+  "totals": {"differences": 153, "borrowed_records": 9134},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -270,7 +270,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1944,
+      "count": 1939,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -2099,11 +2099,6 @@
         [101, "D_D18", 2],
         [101, "D_DA4", 2],
         [101, "D_E0", 2],
-        [101, "D_E98", 2],
-        [101, "D_E9C", 2],
-        [101, "D_EA0", 2],
-        [101, "D_EA4", 2],
-        [101, "D_EA8", 2],
         [101, "D_FC", 2],
         [101, "D_INPUT", 72],
         [101, "D_o101ResetData340", 2],
@@ -2214,13 +2209,13 @@
         [101, "gOverlay101Value228", 2],
         [101, "overlay101ReadInputReloc", 2],
         [101, "overlay101ReleaseReloc", 5],
-        [101, "overlay101SetScaleReloc", 2],
+        [101, "overlay101SetScaleReloc", 1],
         [101, "overlay101SubmitLinkedPairReloc", 7]
       ]
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 76,
+      "count": 74,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -2294,10 +2289,8 @@
         [90, "overlay_090", ".rodata", "0xB28", 16],
         [91, "overlay_091", ".rodata", "0x580", 2],
         [99, "overlay_099", ".rodata", "0x1410", 2],
-        [101, "func_overlay_101_F000571C_18E0F3C", ".bss", "0x12C40", 286],
-        [101, "overlay101DispatchActive", ".rodata", "0x12B3C", 2],
-        [101, "overlay101DispatchEvents", ".rodata", "0x12B7C", 2],
-        [101, "overlay101TailC6E8", ".rodata", "0x12BDC", 2]
+        [101, "overlay_101", ".bss", "0x12C40", 286],
+        [101, "overlay_101", ".rodata", "0x12B3C", 16]
       ]
     },
     "rodata-base": {

@@ -83,15 +83,6 @@
           "to": "overlay83CreateLinkedReloc"
         }
       ]
-    },
-    {
-      "object": "overlays/o101/overlay101DrawPanel.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_101_F0002EFC_18DE71C",
-          "to": "overlay101DrawPanel"
-        }
-      ]
     }
   ]
 }

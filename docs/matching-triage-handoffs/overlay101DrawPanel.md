@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay101DrawPanel:start -->
 ### `overlay101DrawPanel` plateau handoff
 
-- source: `src/overlays/o101/overlay101DrawPanel.c`
+- source: `src/overlays/o101/overlay_101.c`
 - score: 0/268 words, promoted
 - frame: 0x178
 - relocations: 17

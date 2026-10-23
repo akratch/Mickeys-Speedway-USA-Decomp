@@ -68,7 +68,7 @@ still hoists `li a0, 6` there) or move spawnCount from 0xE8 to 0xD4.
 Next: keep the index out of a0 so `li v1, 3` occupies the vertex-0 nop, then
 L99 so spawnCount lands at 0xD4, transformed at 0x9C, ground at 0x88. Do not
 invent overlay65Initialize relocation identities from the target.
-<!-- plateau-handoff:overlay65UpdateParticles:end -->
+
 
 
 #### 2026-10-23: typed storage-context maintenance
@@ -102,3 +102,4 @@ output before wiring storage ownership. Revisit Init only with a new causal
 mechanism; do not repeat loop/flag spellings or add a linkage shim. The typed
 storage source, objects and ordinary-link receipts remain ignored evidence,
 not configured source ownership.
+<!-- plateau-handoff:overlay65UpdateParticles:end -->

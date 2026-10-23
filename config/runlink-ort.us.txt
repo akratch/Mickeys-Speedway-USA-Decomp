@@ -1929,7 +1929,7 @@
 1918 overlay96Register
 1919 D_80078F84
 1920 overlay96DrawObject
-1921 D_overlay_097_F0000A60_18D88F8
+1921 gOverlay97TransformContext
 1922 overlay99GetEntries
 1923 D_8007BE88
 1924 D_8007BE84

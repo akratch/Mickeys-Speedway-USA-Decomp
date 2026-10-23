@@ -1101,6 +1101,8 @@ $(O79_OBJ): POSTPROCESS = \
 		sha256:4f4b5cad0bbe4b59b64cdaf4faf9b845a7b61724d8c86ccc7faf7b2b40e01960
 # Overlay 80 is one translation unit under the overlay flag set; its .text is
 # the module's 0x3F0 bytes, trailing pad included, so it needs no trim.
+# Overlay 80 directly owns its compiler-emitted floating-point pool.
+MODULE_LINKED_OVERLAYS += 080
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o080/overlay_080.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 86 is one translation unit under the overlay flag set; its .text is
 # the module's 0xED0 bytes, trailing pad included, so it needs no trim. Two

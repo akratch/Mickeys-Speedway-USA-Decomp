@@ -1,5 +1,7 @@
 #include "overlays/overlay_080.h"
 
+/* Tier A: the nine constant loads emit the module's complete 0x30-byte
+ * compiler literal pool, including its trailing alignment. */
 void overlay80InitializeContact(Overlay80Object *object, const Overlay80Init *init)
 {
   Overlay80State *state;
@@ -8,7 +10,7 @@ void overlay80InitializeContact(Overlay80Object *object, const Overlay80Init *in
   s32 index;
   s32 selected;
   state = object->state;
-  object->scaledValue = (*object->objectScale) * (((f32) ((0, init->scale))) * gOverlay80Scale0);
+  object->scaledValue = (*object->objectScale) * (((f32) ((0, init->scale))) * 0.05f);
   object->key = init->key;
   count = func_8001398C(object->positionX, object->positionZ, 0x1800, &candidates);
   if (count != ((0, 0)))
@@ -70,23 +72,23 @@ void overlay80UpdateContact(Overlay80Object *object, s32 ticks)
         magnitude = -magnitude;
       }
       kind = -1;
-      impact = (magnitude / gOverlay80MagnitudeScale) * ratio;
-      if ((gOverlay80Band0Lower < impact) && (impact <= gOverlay80Band0Upper))
+      impact = (magnitude / 31.99f) * ratio;
+      if ((0.05f < impact) && (impact <= 0.1f))
       {
         kind = 0;
       }
       else
-        if ((gOverlay80Band1Lower < impact) && (impact <= gOverlay80Band1Upper))
+        if ((0.1f < impact) && (impact <= 0.3f))
       {
         kind = 1;
       }
       else
-        if ((gOverlay80Band2Lower < impact) && (impact <= gOverlay80Band2Upper))
+        if ((0.3f < impact) && (impact <= 0.4f))
       {
         kind = 2;
       }
       else
-        if (gOverlay80Band3Lower < impact)
+        if (0.4f < impact)
       {
         kind = 3;
       }

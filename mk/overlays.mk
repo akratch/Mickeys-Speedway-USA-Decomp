@@ -505,18 +505,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 
 # Overlay 36 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay_036.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 27 is one TU under the overlay flag set; its .text is the module's
-# whole text and its resident calls take the generated rebinds. The one
-# remaining step is phase-3 scaffolding: func_overlay_027_F0000064_187BA3C's
-# four float literals are the first sixteen bytes of the retained overlay
-# rodata, so bind them to that zero-base owner until C owns the module's
-# data; the digest fails closed if the compiler ever emits a different pool.
+# Overlay 27 directly owns its compact vertices, triangle/UV records,
+# coordinate state and compiler literal pool.
+MODULE_LINKED_OVERLAYS += 027
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: \
-	$(TOOLS_DIR)/externalize_elf_section.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:dd6fc9f17b7ca59ee611df3687276c9a16893e66f1c08e0b6d5ef3800683dd6f
 # Overlay 41 is one translation unit at the overlay flag set, filling the
 # module's text exactly. The whole module's .rodata (the sampler's
 # jump table and literals, the path updater's literals, the fade scale, the

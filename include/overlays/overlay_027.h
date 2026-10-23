@@ -10,6 +10,16 @@ typedef struct O27Command {
     u32 w1;
 } O27Command;
 
+typedef struct Overlay27Vertex {
+    s16 x;
+    s16 y;
+    s16 z;
+    u8 red;
+    u8 green;
+    u8 blue;
+    u8 alpha;
+} Overlay27Vertex;
+
 typedef struct O27Transform {
     s16 x;
     s16 y;
@@ -90,7 +100,7 @@ typedef struct Overlay27InitData {
 } Overlay27InitData;
 
 typedef struct Overlay27CoordinateRecord {
-    u8 pad0;
+    u8 flags;
     u8 firstIndex;
     u8 secondIndex;
     u8 thirdIndex;
@@ -114,14 +124,9 @@ typedef struct Overlay27UseObject {
 } Overlay27UseObject;
 
 extern s32 D_8007A1E4;
-extern f32 gO27Scale0;
-extern f32 gO27EaseInput;
-extern f32 gO27Scale8;
-extern f32 gO27ScaleC;
-extern u8 D_80000000[];
-extern u8 D_80000050[];
-extern u8 D_80000118[];
-extern u8 D_80000160[];
+extern Overlay27Vertex gOverlay27FadeVertices[];
+extern Overlay27Vertex gOverlay27PulseVertices[];
+extern Overlay27CoordinateRecord gOverlay27PulseTriangles[];
 extern Overlay27CoordinateRecord gOverlay27CoordinateRecords[];
 extern s16 gOverlay27XCoordinates[];
 extern s16 gOverlay27YCoordinates[];
@@ -129,11 +134,11 @@ extern s32 gOverlay27XOffset;
 extern s32 gOverlay27YOffset;
 
 void texAnimateSprite(void *, s32 *, s32, void *, s32);
-f32 func_8002A878(f32, s32);
+f32 Powerf(f32, s32);
 s32 func_800299E8(s32, s32);
 void amSndStopXYZ(void *);
 void amSndPlayXYZ(s32, f32, f32, f32, s32, void **);
-void func_8002BD58(s32, s32, f32);
+void rumbleStart(s32, s32, f32);
 void amSndSetXYZ(void *, f32, f32, f32);
 void amSndSetVolXYZ(void *, u8);
 void func_80006EA0(O27Object *);

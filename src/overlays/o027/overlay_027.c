@@ -1,5 +1,55 @@
 #include "overlays/overlay_027.h"
 
+/* RSP DMA commands use physical addresses for these KSEG0 module arrays. */
+#define OS_K0_TO_PHYSICAL(address) ((u32)((char *)(address) - 0x80000000))
+
+Overlay27Vertex gOverlay27FadeVertices[8] = {
+    {-22,  22, 0, 255, 255, 255,   0},
+    { 22,  22, 0, 255, 255, 255,   0},
+    {-22, -22, 0, 255, 255, 255,   0},
+    { 22, -22, 0, 255, 255, 255,   0},
+    {-14,  14, 0, 255, 255, 255, 255},
+    { 14,  14, 0, 255, 255, 255, 255},
+    {-14, -14, 0, 255, 255, 255, 255},
+    { 14, -14, 0, 255, 255, 255, 255},
+};
+
+Overlay27CoordinateRecord gOverlay27CoordinateRecords[10] = {
+    {0x40, 0, 1, 4, 0, 0, 0, 0, 0, 0},
+    {0x40, 1, 5, 4, 0, 0, 0, 0, 0, 0},
+    {0x40, 1, 7, 5, 0, 0, 0, 0, 0, 0},
+    {0x40, 1, 3, 7, 0, 0, 0, 0, 0, 0},
+    {0x40, 6, 7, 2, 0, 0, 0, 0, 0, 0},
+    {0x40, 7, 3, 2, 0, 0, 0, 0, 0, 0},
+    {0x40, 0, 4, 2, 0, 0, 0, 0, 0, 0},
+    {0x40, 4, 6, 2, 0, 0, 0, 0, 0, 0},
+    {0x40, 4, 5, 6, 0, 0, 0, 0, 0, 0},
+    {0x40, 5, 7, 6, 0, 0, 0, 0, 0, 0},
+};
+
+s16 gOverlay27XCoordinates[8] = {523, 2571, 0, 2048, 800, 2103, 467, 1770};
+s16 gOverlay27YCoordinates[8] = {2048, 2048, 0, 0, 1675, 1675, 372, 372};
+s32 gOverlay27XOffset = 0;
+s32 gOverlay27YOffset = 0;
+
+Overlay27Vertex gOverlay27PulseVertices[7] = {
+    { 2,  24, 0, 255, 255, 255, 255},
+    {-6,  22, 0, 255, 255, 255, 255},
+    {-3,  -2, 0, 255, 255, 255, 255},
+    {10,   6, 0, 255, 255, 255, 255},
+    {18, -10, 0, 255, 255, 255, 255},
+    {10,  14, 0, 255, 255, 255, 255},
+    { 0,   6, 0, 255, 255, 255, 255},
+};
+
+Overlay27CoordinateRecord gOverlay27PulseTriangles[5] = {
+    {0x40, 0, 1, 2, 0, 0, 0, 0, 0, 0},
+    {0x40, 0, 2, 6, 0, 0, 0, 0, 0, 0},
+    {0x40, 2, 3, 5, 0, 0, 0, 0, 0, 0},
+    {0x40, 2, 5, 6, 0, 0, 0, 0, 0, 0},
+    {0x40, 3, 4, 5, 0, 0, 0, 0, 0, 0},
+};
+
 /*
  * Overlay 27, ADR 0006 consolidation: one translation unit in ROM order.
  * Pinned DKR v77/v80 and JFG scans found no exact donor for this module.
@@ -55,7 +105,7 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
             switch (state->primaryState) {
                 case 0:
                     state->timer += updateRate;
-                    fraction = 1.0f - func_8002A878(0.9625f, updateRate);
+                    fraction = 1.0f - Powerf(0.9625f, updateRate);
                     state->scaleTarget +=
                         (32.0f - state->scaleTarget) * fraction;
                     value = state->timer;
@@ -178,7 +228,7 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
             amSndPlayXYZ(0x1BB, object->x, object->y, object->z, 4,
                           &state->secondaryHandle);
             if (!(sourceState->flags1A8 & 1)) {
-                func_8002BD58(*(s8 *)&sourceState->primaryState,
+                rumbleStart(*(s8 *)&sourceState->primaryState,
                               0x32, 0.4f);
             }
         }
@@ -287,10 +337,10 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *mtx,
 
         O27_WRITE_COMMAND(0xFB000000, ((((intensity << 7) >> 8) & 0xFF) << 8) | 0xFF);
 
-        verts = D_80000000;
+        verts = (u8 *)OS_K0_TO_PHYSICAL(gOverlay27FadeVertices);
         O27_WRITE_COMMAND((0x04 << 24) | (((0x40 | ((u32)verts & 6)) & 0xFF) << 16) | 0x58, (u32)verts);
 
-        O27_WRITE_COMMAND(0x059100A0, (u32)D_80000050);
+        O27_WRITE_COMMAND(0x059100A0, OS_K0_TO_PHYSICAL(gOverlay27CoordinateRecords));
 
         O27_WRITE_COMMAND(0xE7000000, 0);
 
@@ -298,11 +348,11 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *mtx,
             texDPTextureX(commands, NULL, 5, 0);
 
             O27_WRITE_COMMAND(0xFA000000, (state->pulseTimer & 0xFF) | 0xFFFF0000);
-            verts = D_80000118;
+            verts = (u8 *)OS_K0_TO_PHYSICAL(gOverlay27PulseVertices);
 
             O27_WRITE_COMMAND((0x04 << 24) | (((0x38 | ((u32)verts & 6)) & 0xFF) << 16) | 0x4E, (u32)verts);
 
-            O27_WRITE_COMMAND(0x05400050, (u32)D_80000160);
+            O27_WRITE_COMMAND(0x05400050, OS_K0_TO_PHYSICAL(gOverlay27PulseTriangles));
 
             O27_WRITE_COMMAND(0xE7000000, 0);
         }

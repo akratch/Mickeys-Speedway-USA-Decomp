@@ -1126,32 +1126,6 @@ mathRnd_o023Reloc = 0xf0000000;
 overlay23CallReloc = 0xf0000000;
 texLoadSprite_o023Reloc = 0xf0000000;
 
-/* overlay 27: overlay_027.c.o */
-D_80000050 = 0x80000050;
-D_80000118 = 0x80000118;
-D_80000160 = 0x80000160;
-D_8007A1E4_o027Reloc = 0x00000000;
-amSndPlayXYZ_o027Reloc = 0xf0000000;
-amSndSetVolXYZ_o027Reloc = 0xf0000000;
-amSndSetXYZ_o027Reloc = 0xf0000000;
-amSndStopXYZ_o027Reloc = 0xf0000000;
-camGetPtr_o027Reloc = 0xf0000000;
-camPopModelMtx_o027Reloc = 0xf0000000;
-camPushModelMtx_o027Reloc = 0xf0000000;
-func_80006EA0_o027Reloc = 0xf0000000;
-func_80009E78_o027Reloc = 0xf0000000;
-func_80009F08_o027Reloc = 0xf0000000;
-func_800299E8_o027Reloc = 0xf0000000;
-func_8002A878_o027Reloc = 0xf0000000;
-func_8002BD58_o027Reloc = 0xf0000000;
-gOverlay27CoordinateRecords = 0x00000050;
-gOverlay27XCoordinates = 0x000000f0;
-gOverlay27XOffset = 0x00000110;
-gOverlay27YCoordinates = 0x00000100;
-gOverlay27YOffset = 0x00000114;
-texAnimateSprite_o027Reloc = 0xf0000000;
-texDPTextureX_o027Reloc = 0xf0000000;
-
 /* overlay 28: overlay_028.c.o */
 D_80000028 = 0x80000028;
 amSndPlayXYZ_o028Reloc = 0xf0000000;
@@ -4276,9 +4250,9 @@ func_overlay_025_F0000000_1879C88 = overlay25InitializeEffect;
 
 /* overlay 27: overlay_027.c.o */
 func_overlay_027_F0000000_187B9D8 = overlay27Init;
+func_overlay_027_F0000B68_187C540 = overlay27Activate;
 func_overlay_027_F0000A1C_187C3F4 = overlay27UpdateCoordinates;
 func_overlay_027_F0000B20_187C4F8 = overlay27CanUse;
-func_overlay_027_F0000B68_187C540 = overlay27Activate;
 
 /* overlay 28: overlay_028.c.o */
 func_overlay_028_F0000000_187C8D0 = overlay28ResetBuffer;

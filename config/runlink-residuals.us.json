@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 148, "borrowed_records": 8977},
+  "totals": {"differences": 148, "borrowed_records": 8973},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -255,7 +255,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1890,
+      "count": 1888,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1943,8 +1943,6 @@
         [89, "gOverlay89RandomScale", 2],
         [90, "gOverlay90Value1C", 2],
         [90, "gOverlay90Value20", 2],
-        [91, "overlay91GlobalA", 2],
-        [91, "overlay91GlobalB", 2],
         [92, "D_0", 2],
         [92, "D_8", 2],
         [92, "D_C", 2],
@@ -2151,7 +2149,7 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 41,
+      "count": 40,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -2191,7 +2189,6 @@
         [79, "overlay_079", ".rodata", "0x1504", 30],
         [86, "overlay_086", ".rodata", "0xF50", 6],
         [90, "overlay_090", ".rodata", "0xB28", 16],
-        [91, "overlay_091", ".rodata", "0x580", 2],
         [99, "overlay_099", ".rodata", "0x1410", 2],
         [101, "overlay_101", ".rodata", "0x12B3C", 16]
       ]

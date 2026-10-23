@@ -73,18 +73,15 @@ typedef struct Overlay91RenderObject {
     u8 alpha;
 } Overlay91RenderObject;
 
-extern f32 overlay91CallProxy();
-extern volatile s32 overlay91GlobalA;
-extern s32 overlay91GlobalB;
+/* Tier B: the declared ORT identities and resident/cross-overlay owners. */
+extern volatile s32 D_800C9480;
+extern s32 D_800C947C;
 
-/* Each call names its retail callee; the relocations stay filtered, so no
- * name here is linked, and each spelling is the identity the shipped table
- * records at its site. All keep the old proxy's unprototyped f32 shape. */
-extern f32 func_80000F94();
-extern f32 func_80006EA0();
-extern f32 func_8002A8BC();
-extern f32 func_8002A8C0();
-extern f32 func_overlay_007_F0000DBC_185CC44();
+void amSndPlay(u16 effectId, void **handle);
+void func_80006EA0(void *object);
+f32 func_8002A8BC(s32 angle);
+f32 func_8002A8C0(s32 angle);
+void overlay7CommitSelection(s32 selection);
 
 s32 func_800290A0(void);
 void viGetCurrentSize(void **bufferOut, u32 *widthOut);

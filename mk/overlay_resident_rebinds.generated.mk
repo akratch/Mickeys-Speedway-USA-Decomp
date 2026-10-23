@@ -1727,14 +1727,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o090/overlay_090.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym overlay7CommitSelection=overlay7CommitSelection_o090Reloc \
 	--redefine-sym pointListRPY=pointListRPY_o090Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym camResetView=camResetView_o091Reloc \
-	--redefine-sym camStandardPersp=camStandardPersp_o091Reloc \
-	--redefine-sym func_80009E78=func_80009E78_o091Reloc \
-	--redefine-sym func_800290A0=func_800290A0_o091Reloc \
-	--redefine-sym rcpClearZBuffer=rcpClearZBuffer_o091Reloc \
-	--redefine-sym viGetCurrentSize=viGetCurrentSize_o091Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay_092.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o092Reloc \
 	--redefine-sym D_800C947C=D_800C947C_o092Reloc \

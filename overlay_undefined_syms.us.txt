@@ -3634,14 +3634,6 @@ mathRnd_o090Reloc = 0xf0000000;
 overlay7CommitSelection_o090Reloc = 0xf0000000;
 pointListRPY_o090Reloc = 0xf0000000;
 
-/* overlay 91: overlay_091.c.o */
-camResetView_o091Reloc = 0xf0000000;
-camStandardPersp_o091Reloc = 0xf0000000;
-func_80009E78_o091Reloc = 0xf0000000;
-func_800290A0_o091Reloc = 0xf0000000;
-rcpClearZBuffer_o091Reloc = 0xf0000000;
-viGetCurrentSize_o091Reloc = 0xf0000000;
-
 /* overlay 92: overlay_092.c.o */
 Arctanf_o092Reloc = 0xf0000000;
 D_800C947C_o092Reloc = 0x00000000;
@@ -4563,9 +4555,9 @@ func_overlay_089_F00005A4_18D47D4 = overlay89UpdateStateAndParticles;
 func_overlay_090_F0000000_18D4AF8 = overlay90Initialize;
 
 /* overlay 91: overlay_091.c.o */
-func_overlay_091_F0000000_18D5888 = overlay91Init;
 func_overlay_091_F000004C_18D58D4 = overlay91UpdateTimeline;
 func_overlay_091_F00004BC_18D5D44 = overlay91Render;
+func_overlay_091_F0000000_18D5888 = overlay91Init;
 
 /* overlay 92: overlay_092.c.o */
 func_overlay_092_F0000000_18D5F20 = overlay92Init;

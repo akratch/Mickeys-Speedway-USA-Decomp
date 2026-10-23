@@ -12199,19 +12199,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x40",
-     "size": "0x40",
+     "end_offset": "0x4CC",
+     "size": "0x4CC",
      "type": "c",
      "source": "overlays/o082/overlay_082",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x40",
-     "end_offset": "0x4CC",
-     "size": "0x48C",
-     "type": "c",
-     "source": "overlays/o082/overlay_082_tail",
      "matched": true,
      "nonmatching": false
     },

@@ -75,7 +75,7 @@
     },
     {
       "c_owned": null,
-      "class": "review-required",
+      "class": "metadata",
       "matched_c": null,
       "nonmatching": null,
       "object": "build/src/main/charControl.c.o",
@@ -2437,8 +2437,7 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 164,
-      "review-required": 1
+      "metadata": 165
     },
     "matched_c_bytes_with_postprocess": 381988,
     "objects_with_postprocess": 165

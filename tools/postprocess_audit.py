@@ -67,6 +67,9 @@ METADATA_TOOLS = {
     "rebind_elf_relocations.py",
     "set_elf_flags.py",
     "trim_elf_section.py",
+    # Guarded SHT_NOBITS size/alignment and section-symbol size only; the
+    # helper rejects executable/initialized sections and non-alignment tails.
+    "trim_elf_bss.py",
 }
 
 EXTERNALIZE_RE = re.compile(

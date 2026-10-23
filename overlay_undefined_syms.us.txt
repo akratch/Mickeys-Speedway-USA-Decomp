@@ -3393,15 +3393,6 @@ mathRnd_o073Reloc = 0xf0000000;
 sqrtf_o073Reloc = 0xf0000000;
 texDPTextureX_o073Reloc = 0xf0000000;
 
-/* overlay 74: overlay_074.c.o */
-D_800D3128_o074Reloc = 0x00000000;
-amSndPlay_o074Reloc = 0xf0000000;
-func_80028F54_o074Reloc = 0xf0000000;
-func_800291B4_o074Reloc = 0xf0000000;
-func_8003A680_o074Reloc = 0xf0000000;
-func_8005776C_o074Reloc = 0xf0000000;
-gOverlay74Scale = 0x00000000;
-
 /* overlay 75: overlay_075.c.o */
 amSndPlayXYZ_o075Reloc = 0xf0000000;
 amSndSetXYZ_o075Reloc = 0xf0000000;
@@ -4454,8 +4445,8 @@ func_overlay_072_F0000000_18CA920 = overlay72Init;
 func_overlay_072_F00000B4_18CA9D4 = overlay72Update;
 
 /* overlay 74: overlay_074.c.o */
-func_overlay_074_F0000000_18CBCA0 = overlay74Init;
 func_overlay_074_F00000B8_18CBD58 = overlay74Update;
+func_overlay_074_F0000000_18CBCA0 = overlay74Init;
 
 /* overlay 75: overlay_075.c.o */
 func_overlay_075_F0000000_18CBF68 = overlay75Init;

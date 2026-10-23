@@ -15,7 +15,7 @@ void overlay74Init(Overlay74Object *object, Overlay74Init *init) {
     state->minimum = init->minimum;
     state->maximum = init->maximum;
     state->channel = init->channel;
-    object->scale = (f32) init->scale * gOverlay74Scale * object->transform->scale;
+    object->scale = (f32) init->scale * 0.05f * object->transform->scale;
 }
 
 void overlay74Update(Overlay74Object *object, s32 amount) {

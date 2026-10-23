@@ -62,7 +62,6 @@ typedef struct Overlay74Flags {
 } Overlay74Flags;
 
 extern Overlay74Flags D_800D3128;
-extern f32 gOverlay74Scale;
 
 /* Runtime identities: func_8005776C, func_800291B4, amSndPlay, func_8003A680.
  * Resident ROM and matched callers authenticate the floating-point z ABI. */

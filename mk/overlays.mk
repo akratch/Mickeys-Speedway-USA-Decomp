@@ -1141,6 +1141,8 @@ $(O73_OBJ): POSTPROCESS = \
 	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 74 is one translation unit under the overlay flag set; its .text is
 # the module's 0x250 bytes, trailing pad included, so it needs no trim.
+# The compiler owns the single floating-point literal pool.
+MODULE_LINKED_OVERLAYS += 074
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o074/overlay_074.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 75 is one translation unit under the overlay flag set; its .text is
 # the module's 0x700 bytes, trailing pad included, so it needs no trim.

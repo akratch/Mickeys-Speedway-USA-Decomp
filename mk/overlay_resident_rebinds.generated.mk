@@ -1542,14 +1542,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o073/overlay_073.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym sqrtf=sqrtf_o073Reloc \
 	--redefine-sym texDPTextureX=texDPTextureX_o073Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o074/overlay_074.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D3128=D_800D3128_o074Reloc \
-	--redefine-sym amSndPlay=amSndPlay_o074Reloc \
-	--redefine-sym func_80028F54=func_80028F54_o074Reloc \
-	--redefine-sym func_800291B4=func_800291B4_o074Reloc \
-	--redefine-sym func_8003A680=func_8003A680_o074Reloc \
-	--redefine-sym func_8005776C=func_8005776C_o074Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay_075.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o075Reloc \
 	--redefine-sym amSndSetXYZ=amSndSetXYZ_o075Reloc \

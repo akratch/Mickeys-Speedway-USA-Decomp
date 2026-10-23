@@ -56,7 +56,7 @@ typedef struct Overlay72QueryObject {
     Overlay72Bounds *bounds;
 } Overlay72QueryObject;
 
-extern f32 gOverlay72ComponentScale;
+extern const f32 gOverlay72ComponentScale;
 
 s32 func_8005776C(f32 x, f32 y, f32 z, s32 queryType,
                         s32 includeInactive, Overlay72Candidate **results);

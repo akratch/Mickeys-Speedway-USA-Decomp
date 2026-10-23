@@ -109,6 +109,9 @@ EXACT_DONOR_OVERLAYS = {
 DATA_RODATA_OWNERSHIP = {
     16: [(0x0, 0x10, "overlay_016")],
     23: [(0x0, 0x10, "overlay_023")],
+    97: [(0x0, 0x10, "overlay_097")],
+    95: [(0x0, 0x10, "overlay_095")],
+    72: [(0x0, 0x10, "overlay_072")],
     22: [(0x0, 0x60, "overlay_022")],
     45: [(0x0, 0x80, "overlay_045")],
     47: [(0x0, 0x5A0, "overlay47ReleaseResources")],

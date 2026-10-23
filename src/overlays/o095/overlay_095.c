@@ -1,5 +1,7 @@
 #include "overlays/overlay_095.h"
 
+const f32 gOverlay95FadeRate = 127.0f / 60.0f;
+
 /*
  * Overlay 95, ADR 0006 consolidation: one translation unit for the whole
  * module (overlay95NoOp at +0x000, overlay95Update at +0x00C).

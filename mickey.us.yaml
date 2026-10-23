@@ -2271,7 +2271,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18CA920, c, overlay_072]
-      - [0x18CAA90, bin, overlay_072_data_rodata]
       - [0x18CAAA0, bin, overlay_072_reloc1]
       - [0x18CAAB0, bin, overlay_072_reloc2]
 
@@ -2631,7 +2630,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18D73E0, c, overlay_095]
-      - [0x18D75C0, bin, overlay_095_data_rodata]
       - [0x18D75D0, bin, overlay_095_reloc1]
       - [0x18D7628, bin, overlay_095_reloc2]
 
@@ -2663,7 +2661,7 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18D7E98, c, overlay_097]
-      - [0x18D88F8, bin, overlay_097_data_rodata]
+      - [0x18D8908, bin, overlay_097_data_rodata]
       - [0x18D8918, bin, overlay_097_reloc1]
       - [0x18D8990, bin, overlay_097_reloc2]
 

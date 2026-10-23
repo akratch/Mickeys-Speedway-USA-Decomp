@@ -1,5 +1,7 @@
 #include "overlays/overlay_072.h"
 
+const f32 gOverlay72ComponentScale = 0.1f;
+
 /* Overlay 72 +0x000. Fresh DKR v77/v80 and JFG scans are negative. */
 void overlay72Init(Overlay72InitObject *object, Overlay72Config *config) {
     Overlay72State *state = object->state;

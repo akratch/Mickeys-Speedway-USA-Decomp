@@ -1824,6 +1824,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay_097.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym func_80006EA0=func_80006EA0_o097Reloc \
 	--redefine-sym func_8001C054=func_8001C054_o097Reloc \
 	--redefine-sym func_8002A8BC=func_8002A8BC_o097Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o097Reloc \
 	--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o097Reloc \
 	--redefine-sym trackGetTrack=trackGetTrack_o097Reloc $@
 

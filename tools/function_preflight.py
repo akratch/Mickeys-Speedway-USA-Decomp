@@ -59,9 +59,10 @@ import postprocess_audit as pa  # noqa: E402
 import reloc_identity as ri  # noqa: E402
 import reloc_surface as rs  # noqa: E402
 import finalize_plateau as fp  # noqa: E402
+import source_module_link_proof as mlp  # noqa: E402
 _LOADED_FILTER_PROOF = pp.sha256_file(Path(__file__))
 _LOADED_FILTER_IMPLEMENTATIONS = {str(Path(module.__file__)): pp.sha256_file(Path(module.__file__))
-                                  for module in (pp, ri, rs, ot)}
+                                  for module in (pp, ri, rs, ot, mlp, mlp.rp)}
 
 
 def _check_filter_implementations():
@@ -2506,7 +2507,8 @@ def _require_tracked_geometry(
 
 def _original_static_surface(comparison):
     """Keep configured counts literal; select explicitly authenticated raw evidence."""
-    if comparison.get("declared_metadata_proof") is not None:
+    if (comparison.get("declared_metadata_proof") is not None
+            or comparison.get("source_module_link_proof") is not None):
         return comparison["original_raw_comparison"]
     return comparison
 
@@ -2617,6 +2619,10 @@ def _preflight_evidence_status(
         "candidate_identities_unresolved": unresolved_count,
     }
     diagnostics: list[dict[str, object]] = []
+    if configured_comparison.get("source_module_link_proof") is not None:
+        counts["candidate_static_relocations"] = configured_comparison["candidate_record_count"]
+        counts["original_raw_static_relocations"] = candidate_count
+        counts["module_link_resolved_relocations"] = candidate_count
     if configured_comparison.get("declared_metadata_proof") is not None:
         counts["candidate_static_relocations"] = configured_comparison["candidate_record_count"]
         counts["original_raw_static_relocations"] = candidate_count
@@ -2687,6 +2693,11 @@ def _augment_runtime_identity_evidence(
         and workbench.get("target_words") == workbench.get("candidate_words")
     )
     result = ri.augment_effective_identity(comparison, linked_exact=linked_exact)
+    if configured_comparison.get("source_module_link_proof") is not None:
+        return dict(configured_comparison, original_raw_comparison=result,
+                    identity_proof_mode="raw-static-with-source-module-link",
+                    effective_identity_exact=result["effective_identity_exact"],
+                    effective_identity_alignment_count=result["effective_identity_alignment_count"])
     if configured_comparison.get("declared_metadata_proof") is None:
         return result
     result.pop("declared_metadata_proof")
@@ -3105,6 +3116,16 @@ def collect(resolution: Resolution, *, no_build: bool = False) -> dict[str, obje
         ) from error
     comparison, filter_binding = _declared_filter_comparison(
         resolution, comparison, context, runtime_records, target_elf, linked_name, input_snapshot)
+    if mlp.selected(_relative(resolution.candidate_object), pa.run_make_database()):
+        if filter_binding is not None:
+            raise PreflightError("source module link cannot use a declared filter proof")
+        try:
+            original, receipt, current_context = mlp.prove(
+                REPO, resolution, context, runtime_records, target_elf, linked_name, input_snapshot)
+            comparison = dict(comparison, original_raw_comparison=original, source_module_link_proof=receipt)
+            filter_binding = (receipt, current_context)
+        except (pp.MetadataProofError, OSError, ValueError, RuntimeError) as error:
+            raise PreflightError("source module link proof failed: " + str(error)) from error
     relocation_evidence = _relocation_evidence(
         resolution,
         context,

@@ -495,7 +495,7 @@ def sha256_file(path: pathlib.Path) -> str:
 _LOADED_METADATA_PROOF = sha256_file(pathlib.Path(__file__))
 
 
-def capture_configured_raw(root, source, configured, linked, postprocess):
+def capture_configured_raw(root, source, configured, linked, postprocess, *, module_link=False):
     """Fresh reproduction only: never authenticate an externally supplied raw object."""
     import permute_batch as batch
     import sweep_receipts as receipts
@@ -509,12 +509,13 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
             ["gmake", "--no-print-directory", "-n", "-W", source.relative_to(root).as_posix(), target],
             deadline, check=True).stdout.replace("\\\n", " ").splitlines()
         compilers = [line.strip() for line in output if target in line and "tools/ido/cc" in line]
-        metadata = [line.strip() for line in output if target in line and "tools/filter_elf_relocations.py" in line]
+        helper = "tools/link_overlay_module.py" if module_link else "tools/filter_elf_relocations.py"
+        metadata = [line.strip() for line in output if target in line and helper in line]
         # The generated resident-call renames (mk/overlay_resident_rebinds.generated.mk)
         # run as their own recipe line after POSTPROCESS; replay them too, in that order.
         rebinds = [line.strip() for line in output if target in line and "--redefine-sym" in line
                    and "tools/filter_elf_relocations.py" not in line and "tools/ido/cc" not in line]
-        if len(compilers) != 1 or len(metadata) != 1 or len(rebinds) > 1:
+        if len(compilers) != 1 or len(metadata) != 1 or len(rebinds) > (0 if module_link else 1):
             raise MetadataProofError("ambiguous expanded compiler/metadata recipe")
         # An overlay object gets its static functions' symbols right after the
         # compile (tools/static_symbols.py): part of the raw object, not of the
@@ -531,7 +532,7 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
     dependency_args = args + (("-I", str(source.parent)) if wrapped else ())
     if words.count("-o") != 1:
         raise MetadataProofError("ambiguous configured output argument")
-    plan = metadata_filter_plan(expanded_postprocess, target, root)
+    plan = [] if module_link else metadata_filter_plan(expanded_postprocess, target, root)
     if surface_rebind:
         plan = plan + metadata_filter_plan(surface_rebind, target, root)
     def context():
@@ -558,6 +559,11 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
                     ("tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
                      "tools/rebind_elf_relocations.py", "tools/externalize_elf_section.py",
                      "tools/postprocess_guard.py", "tools/binutils/mips64-elf-objcopy")}}
+        if module_link:
+            inputs["module_link"] = expanded_postprocess
+            inputs["module_link_inputs"] = {name: sha256_file(root / name) for name in (
+                "config/runlink-ort.us.txt", "tools/link_overlay_module.py", "tools/runlink_pack.py",
+                "tools/rebind_elf_relocations.py", "tools/binutils/mips64-elf-ld")}
         if static_lines:
             inputs["static_symbols"] = {"command": static_lines[0], "tool": sha256_file(
                 root / "tools/static_symbols.py")}
@@ -574,7 +580,7 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
         inputs["assembly"] = assembly
         return inputs
     before = context()
-    parent = root / "build/metadata-filter-proof"
+    parent = root / ("build/source-module-link-proof" if module_link else "build/metadata-filter-proof")
     parent.mkdir(parents=True, exist_ok=True)
     directory = pathlib.Path(tempfile.mkdtemp(prefix="capture-", dir=parent))
     raw = directory / "raw.o"
@@ -594,7 +600,8 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
             raise MetadataProofError(f"static-symbol pass failed: {error}") from error
     if before != context():
         raise MetadataProofError("source, input, recipe, object or tool changed during raw proof")
-    receipt = {"schema": "mickey-declared-metadata-proof-v1", "inputs": before,
+    receipt = {"schema": ("mickey-source-module-link-proof-v1" if module_link
+                          else "mickey-declared-metadata-proof-v1"), "inputs": before,
                "raw_object": raw.relative_to(root).as_posix(), "raw_sha256": sha256_file(raw),
                "configured_sha256": sha256_file(configured),
                "linked_sha256": sha256_file(linked), "directory": directory.relative_to(root).as_posix()}

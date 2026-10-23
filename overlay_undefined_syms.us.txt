@@ -1126,16 +1126,6 @@ mathRnd_o023Reloc = 0xf0000000;
 overlay23CallReloc = 0xf0000000;
 texLoadSprite_o023Reloc = 0xf0000000;
 
-/* overlay 24: overlay_024.c.o */
-D_8007BF1C_o024Reloc = 0x00000000;
-D_8007C854_o024Reloc = 0x00000000;
-D_8007C85C_o024Reloc = 0x00000000;
-amSndPlay_o024Reloc = 0xf0000000;
-camDoSprite_o024Reloc = 0xf0000000;
-func_80006EA0_o024Reloc = 0xf0000000;
-func_80028F54_o024Reloc = 0xf0000000;
-texAnimateSprite_o024Reloc = 0xf0000000;
-
 /* overlay 25: overlay_025.c.o */
 D_8007BF1C_o025Reloc = 0x00000000;
 func_80006EA0_o025Reloc = 0xf0000000;
@@ -4339,8 +4329,8 @@ func_overlay_023_F0000468_1879678 = overlay23RenderEffect;
 
 /* overlay 24: overlay_024.c.o */
 func_overlay_024_F0000000_18797E8 = overlay24Init;
-func_overlay_024_F000001C_1879804 = overlay24Update;
 func_overlay_024_F0000284_1879A6C = overlay24RenderState;
+func_overlay_024_F000001C_1879804 = overlay24Update;
 
 /* overlay 25: overlay_025.c.o */
 func_overlay_025_F0000000_1879C88 = overlay25InitializeEffect;

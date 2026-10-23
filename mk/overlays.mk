@@ -1536,7 +1536,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88UpdateAnchor.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x158
 # The wrapper compiles the shared C body in candidate and promoted modes.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: \
-	$(SRC_DIR)/overlays/o069/overlay_069.c
+	$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.inc
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym overlay17DrawStrip=overlay88DrawFixedResourceReloc \

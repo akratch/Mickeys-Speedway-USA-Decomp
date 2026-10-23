@@ -3,7 +3,6 @@
  * function symbols overlay-local while sharing the implementation spelling.
  * The object recipes supply distinct runtime-relocation names for the callees.
  */
-#define OVERLAY69_RENDERER_ONLY
 #define overlay69DrawSortedGeometry overlay88DrawSortedGeometry
 
-#include "src/overlays/o069/overlay_069.c"
+#include "src/overlays/o069/overlay69DrawSortedGeometry.inc"

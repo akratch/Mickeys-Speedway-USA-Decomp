@@ -4,7 +4,8 @@ This document is for the maintainer of the Jet Force Gemini decomp. It reports
 what the runlink kit (`tools/runlink/`, `docs/runlink-toolkit.md`) measures on
 JFG US: how the shipped tables decode, which of the generation rules found on
 Mickey's Speedway USA (MSU) hold for them, how much of the tables JFG's own
-build regenerates today, and what blocks the rest. Each number is marked
+pinned build regenerates, and what blocks the rest. These are historical
+snapshot measurements, not claims about current upstream JFG. Each number is marked
 **verified** (computed by the kit, re-runnable with the commands in the last
 section) or **inferred** (an interpretation of verified numbers).
 
@@ -18,17 +19,55 @@ section) or **inferred** (an interpretation of verified numbers).
   time with `PATCH_SYMBOLS=:` into `build_unpatched/`. JFG's
   `tools/patch_symbols.py` renames each overlay callee to `TrapDanglingJump`
   inside the object, so only the unpatched objects still carry the names the
-  C uses. 21 of the 22 C objects compiled. `src/hasm/refractOutputAssembler.s`
+  C uses. 21 of the 22 source objects compiled. `src/hasm/refractOutputAssembler.s`
   did not build in that copy; its 4 sites are the HI16/LO16 entries below,
   which no callee name covers anyway.
 - The ORT names come from the ROM's own name table (`symbolsTable_offsets`
   and `symbolsTable_symbol_names`, as described in `docs/overlays.txt` on the
-  OverlayHandling branch). The kit decodes it at run time. Nothing in this
-  repository contains JFG's names or table bytes.
+  OverlayHandling branch). The kit decodes it at run time; no extracted
+  name-table or relocation-table payload is stored here.
 
 An older matching build (2026-08-30) gives different surface numbers, because
 its extraction named placeholders `func_0` and `D_<value>`. Every number
 below is from `efd5abb`.
+
+## Same-commit reproduction, 2026-10-23 (verified)
+
+A fresh isolated checkout of
+`efd5abb1c79636e297b831f7c2d5bf47eac39c0c` reproduced the original build.
+The prior private archive was reference-only. Extraction and a full build
+produced ROM SHA1 `493ced9008dbe932d6e91179b68e8630cf23a023`; all 21 resident
+C objects were also rebuilt with `PATCH_SYMBOLS=:`. This did not rebuild the
+handwritten-assembly object mentioned above.
+
+The reproduction copied the archived IDO 5.3 tools and Python environment
+into the isolated checkout, restored the committed asm-processor submodule
+at `f3b2f85a5bc7e8ae2030ea5a83ea8aa0bcbede03`, and supplied a private GNU
+Binutils `2.46.0.20260210` copy through an explicit
+`CROSS=<private-binutils>/mips64-elf-` make override. No shared toolchain or
+donor pin changed. Python was 3.14.7, Splat 0.50.0 and spimdisasm 1.42.3.
+The copied environment ran extraction/build, but its incomplete pip could
+not run `pip freeze`; installed-package metadata was recorded through
+`importlib.metadata` instead. This is a demonstrated setup, not a claim
+that a new install from the partially pinned requirements is hermetic.
+
+Using this kit at `236df8b8a1dbd6005264228b523aa09b95181bb6`:
+
+- `check` reproduced the 1,162,776-byte region and name-table round trips.
+- `objects` and `oracle`, with the unpatched-object path override, reproduced
+  the archived JSON reports exactly, including all residual records:
+  **32,334** and **11,295** respectively. Surface coverage remained
+  **21,302/27,515**. This is residual-assisted reconstruction, not source-only
+  table generation.
+- Census counts reproduced. Two rule denominators now exclude the 23 empty
+  tables: sorted tables are **174/287**, rather than the archive's 197/310;
+  text-before-data is **287/287**, rather than 310/310. The same **113** tables
+  are unsorted. The table below already uses the non-empty denominators.
+
+Keep the unpatched-object option when comparing identities: without it the
+fresh `objects` run has 32,808 residuals and no source names for the 520 main
+entries. Restoring the 21 C objects recovers the historical 513 named entries;
+46 main-row residuals include 39 wrong names and seven unnamed entries.
 
 ## 1. Format (verified)
 
@@ -286,3 +325,63 @@ copy `tools/runlink/`, delete `adapters/msu.py`, and run it the same way.
 The JFG-specific values are all in `configs/jfg-us.toml`: the table
 locations, resident bases, selectors, section names and entry-point name
 formats.
+
+## 6. Actual `reloc_addrs` extraction pilot (verified)
+
+The same snapshot's installed Splat 0.50.0/spimdisasm 1.42.3 performed a
+separate module-1 extraction with six ROM-site overrides. This was an actual
+split and ELF assembly, beyond an in-memory parser check. The first 288-byte
+initializer was assembled with the snapshot's unmodified asm-processor
+prelude. The control's extracted file equals the full-build extraction.
+
+| Module text site | ELF relocation | Supplied target role |
+|---|---|---|
+| `+0x0C`, `+0x20` | `R_MIPS_26` | One resident callee |
+| `+0x14`, `+0x18` | `R_MIPS_HI16`, `R_MIPS_LO16` | Module-1 data target A |
+| `+0x28`, `+0x2C` | `R_MIPS_HI16`, `R_MIPS_LO16` | Module-1 data target B |
+
+All 13 initializer relocation sites/types/order and all 288 raw text bytes
+remain unchanged; precisely these six references take the supplied target
+names. The shipped records independently confirm two SYMBOL imports and
+two LOCAL address pairs based at the module's data boundary, with relative
+offsets `0x20` and `0x24`. The annotations prevent Splat's old guesses from
+binding the calls to the module's offset-zero function and the data operands
+to labels in its text.
+
+All three supplied targets are still undefined ELF symbols. A qualified name
+is an identity assertion, not an allocated object, section definition or
+export. The string's spelling supplies no addend or data-base semantics;
+these overrides use addend zero. The raw object is not a newly linked-ROM
+proof. The baseline full build remains the ROM proof; the pilot demonstrates
+recovered symbolic operands only. Neither override-file order nor GNU-as site
+order establishes the original compiler's relocation emission order.
+
+### Concrete continuation
+
+1. **Finish a module-1 identity/definition pilot.** Authenticate real objects
+   and types behind the two data-relative word accesses, and define them in
+   their actual section. Module 1 has `0xC30` text, `0x40` initialized data and
+   `0x1010` BSS bytes; the six overrides do not establish ownership of those
+   spans. Use `(module, section, offset)` identities for shared-address
+   overlays and resolve the resident import through its real export.
+2. **Recover the remaining surface with explicit scope.** Cover the missing
+   HI16/LO16 and data references in section 3.1 and remove the extra guessed
+   relocations. ROM-site annotations bootstrap legacy extraction; current
+   symbolic source and object relocations must carry the facts after code
+   moves. Do not retain original ROM sites as the editable build's layout.
+3. **Own sections and exports.** Establish data/rodata boundaries and BSS
+   definitions, section-relative references, actual export descriptors and
+   init/resume entries. The 80 rodata bases and 62 missing BSS owners above
+   remain separate work; unresolved/reserved ORT cases need explicit audit.
+4. **Generate from the current build.** Consume ordinary linked module
+   sections, current ELF relocations and owned exports to choose SYMBOL,
+   LOCAL or JUMP, table split, HI/LO pairing and ordering. Then generate the
+   ORT, main table, headers, cumulative ROM offsets and deduplicated name
+   table. Correct the 39 resident call identities separately: identical trap
+   call bytes cannot prove them. Historical exact order requires its own
+   evidence; the six annotations do not supply it.
+5. **Demonstrate independence and editability separately.** Reprove original
+   bytes and every relocation identity with explicit remaining borrowing,
+   then prove layout/table regeneration after a deliberate bounded source
+   edit. No result in this report establishes that final source-only or
+   generically editable pipeline.

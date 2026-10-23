@@ -22,7 +22,6 @@ typedef struct Overlay7ModeRecord {
     u16 first;
     u16 second;
     u8 mode;
-    u8 pad5;
 } Overlay7ModeRecord;
 
 typedef struct Overlay7ModeState {

@@ -77,10 +77,18 @@ extern s32 D_8007A670;
 extern s32 D_8007A674;
 extern s32 D_8007A678;
 extern char D_80082488[];
-extern u8 D_1848B70[];
-extern u8 D_1849730[];
-extern u8 D_184B680[];
-extern u8 D_184C3E0[];
+/* Splat's ROM offsets lie within the 32 MiB image, so the signed 32-bit
+ * differences below are representable. Each table has its own span;
+ * header-end and module-base stay distinct even when adjacent. A general
+ * module manifest must name its region independently of overlay 1;
+ * the current list retains overlays 1-107. */
+extern u8 main_reloc_table_ROM_START[];
+extern u8 main_reloc_table_ROM_END[];
+extern u8 overlay_rom_table_ROM_START[];
+extern u8 overlay_rom_table_ROM_END[];
+extern u8 overlay_header_table_ROM_START[];
+extern u8 overlay_header_table_ROM_END[];
+extern u8 overlay_001_ROM_START[];
 extern u8 D_800D8750[];
 extern PendingOverlayLoad D_800D2E40;
 extern void _bzero(void *dst, s32 len);
@@ -820,17 +828,25 @@ void runlinkInit(void) {
     OverlayHeader *overlay;
     s32 i;
 
-    overlayTable = mmAlloc((u32) (D_184C3E0 - D_184B680) + sizeof(OverlayHeader), 0x83);
-    romCopy((u32) D_184B680, overlayTable + 1, (u32) (D_184C3E0 - D_184B680));
+    overlayTable = mmAlloc(
+        (u32) ((s32) overlay_header_table_ROM_END - (s32) overlay_header_table_ROM_START) +
+            sizeof(OverlayHeader), 0x83);
+    romCopy((u32) overlay_header_table_ROM_START, overlayTable + 1,
+            (u32) ((s32) overlay_header_table_ROM_END - (s32) overlay_header_table_ROM_START));
 
-    overlayRomTable = mmAlloc((u32) (D_184B680 - D_1849730), 0x83);
-    romCopy((u32) D_1849730, overlayRomTable, (u32) (D_184B680 - D_1849730));
+    overlayRomTable = mmAlloc(
+        (u32) ((s32) overlay_rom_table_ROM_END - (s32) overlay_rom_table_ROM_START), 0x83);
+    romCopy((u32) overlay_rom_table_ROM_START, overlayRomTable,
+            (u32) ((s32) overlay_rom_table_ROM_END - (s32) overlay_rom_table_ROM_START));
 
-    mainRelocTable = mmAlloc((u32) (D_1849730 - D_1848B70), 0x83);
-    romCopy((u32) D_1848B70, mainRelocTable, (u32) (D_1849730 - D_1848B70));
+    mainRelocTable = mmAlloc(
+        (u32) ((s32) main_reloc_table_ROM_END - (s32) main_reloc_table_ROM_START), 0x83);
+    romCopy((u32) main_reloc_table_ROM_START, mainRelocTable,
+            (u32) ((s32) main_reloc_table_ROM_END - (s32) main_reloc_table_ROM_START));
     mainRelocTableCount = *(u32 *) mainRelocTable;
     mainRelocTable = (RelocationEntry *) ((u8 *) mainRelocTable + 4);
-    overlayCount = ((u32) (D_184C3E0 - D_184B680) / sizeof(OverlayHeader)) + 1;
+    overlayCount = ((u32) ((s32) overlay_header_table_ROM_END -
+                           (s32) overlay_header_table_ROM_START) / sizeof(OverlayHeader)) + 1;
 
     i = PENDING_OVERLAY_LOADS;
     while (i--) {
@@ -851,7 +867,7 @@ void runlinkInit(void) {
     overlay = overlayTable + 1;
     i = overlayCount - 1;
     while (i--) {
-        overlay->romAddress = (s32) D_184C3E0 + overlay->romAddress;
+        overlay->romAddress = (s32) overlay_001_ROM_START + overlay->romAddress;
         overlay++;
     }
 

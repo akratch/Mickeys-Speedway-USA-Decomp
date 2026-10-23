@@ -209,9 +209,16 @@ static void func_overlay_047_F0002D10_1893B28(Overlay47Player *player);
     command->w0 = (u32)(a); \
     command->w1 = (u32)(b); \
 }
-#define O47_PHYSICAL(p) ((u32)((u8 *)(p) + 0x80000000))
+/* N64 ABI representation contract: pointer and signed word are 32 bits.
+ * The sign-bit XOR is modulo-32 physical encoding, without signed overflow.
+ * This helper is used consistently for relocated module geometry. Matrix
+ * packets use GBI definitions and the existing command lvalue view with
+ * unsigned runtime-pointer conversion. */
+typedef char Overlay47AddressWordWidth[(sizeof(void *) == 4 && sizeof(s32) == 4) ? 1 : -1];
+#define O47_GEOMETRY_ADDRESS(p) ((geometryAddress.pointer=(const void *)(p)), (u32)(geometryAddress.bits ^ (-2147483647-1)))
+#define O47_MATRIX(p) O47_COMMAND((G_MTX << 24) | ((G_MTX_MODELVIEW | G_MTX_MUL | G_MTX_NOPUSH) << 16) | sizeof(Mtx), ((u32)(p) + 0x80000000U))
 #define O47_VERTICES(p, n) \
-    O47_COMMAND(0x04000000 | (((((n) << 3) | (O47_PHYSICAL(p) & 6)) & 0xFF) << 16) | ((n) * 10 + 8), O47_PHYSICAL(p))
+    O47_COMMAND(0x04000000 | (((((n) << 3) | (O47_GEOMETRY_ADDRESS(p) & 6)) & 0xFF) << 16) | ((n) * 10 + 8), O47_GEOMETRY_ADDRESS(p))
 #define O47_RECTANGLE(x, y) \
     O47_COMMAND(0xF6000000 | ((((x) + 6) & 0x3FF) << 14) | ((((y) + 6) & 0x3FF) << 2), \
                 (((x) & 0x3FF) << 14) | (((y) & 0x3FF) << 2))
@@ -471,7 +478,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     s32 barX;
     s32 stat;
     s32 bars, field;
-    s32 padC; /* unused: holds the frame (every home from x down) */
+    union { const void *pointer; s32 bits; } geometryAddress;
 
     s32 x, y;
     s32 red, green, blue;
@@ -797,7 +804,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     texDPTextureX(&D_800D3140, NULL, 16, 0);
     O47_COMMAND(0xFA000000, -1);
     O47_VERTICES(ov47Data_228.vertices, 6);
-    O47_COMMAND(0x05300040, O47_PHYSICAL(ov47Data_268));
+    O47_COMMAND(0x05300040, O47_GEOMETRY_ADDRESS(ov47Data_268));
     O47_COMMAND(0xE7000000, 0);
     if (allReady && ov47Bss_338) {
         overlay45ConfigureLayout(ov47Bss_314, 160, 178, 0x104);
@@ -841,7 +848,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         savedMatrix = D_800D3144;
         /* Word 0 first: the w0 store separates the savedMatrix load from the
          * operand's reload, so unready keeps its register (lane k-8). */
-        O47_COMMAND(0x01000040, O47_PHYSICAL(D_800D3144));
+        O47_MATRIX(D_800D3144);
         D_800D3144++;
         /* The icon packet and the blend share one set of channels, each
          * masked at the load: the masks spend the ring draws the target
@@ -853,7 +860,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
         O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
         O47_VERTICES(ov47Data_198, 4);
-        O47_COMMAND(0x05100020, O47_PHYSICAL(ov47Data_1C0));
+        O47_COMMAND(0x05100020, O47_GEOMETRY_ADDRESS(ov47Data_1C0));
         camStandardOrtho(&D_800D3140, &D_800D3144);
         texDPInit(&D_800D3140);
         O47_COMMAND(0xFA000000, -1);
@@ -864,7 +871,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             camDo2DSprite(&D_800D3140, &D_800D3144, &D_800D3148, icon, D_800D31C8[124], 0, 255);
             icon->selector = oldSelector;
         }
-        O47_COMMAND(0x01000040, O47_PHYSICAL(savedMatrix));
+        O47_MATRIX(savedMatrix);
         if (selected != -1 && !D_800D3058[selected].ready) {
             O47_COMMAND(0x06000000, ov47Data_2A8);
             red = (ov47Data_3DC[selected] >> 24) & 255;
@@ -876,9 +883,9 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
             O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
             O47_VERTICES(gOverlay47InitializedData, 14);
-            O47_COMMAND(0x05710080, O47_PHYSICAL(ov47Data_118));
+            O47_COMMAND(0x05710080, O47_GEOMETRY_ADDRESS(ov47Data_118));
             O47_VERTICES(ov47Data_8C, 14);
-            O47_COMMAND(0x05710080, O47_PHYSICAL(ov47Data_118));
+            O47_COMMAND(0x05710080, O47_GEOMETRY_ADDRESS(ov47Data_118));
         }
         for (i = 0; i < updateRate; i++) {
             if (icon->rotationZ < 0) {

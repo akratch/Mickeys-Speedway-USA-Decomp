@@ -153,7 +153,7 @@ the earlier matching campaigns.
 |---|---|
 | US matched C and authenticated hand-written assembly | Complete; [assembly evidence](docs/VERIFIED_ASSEMBLY.md) |
 | Overlay translation units, shared declarations, initialized data and BSS ownership | In progress |
-| Generate runtime-linker tables from source objects and retire overlay build scaffolding | Comparison tool available; final build integration pending |
+| Generate runtime-linker tables from source objects and retire overlay build scaffolding | Generated metadata feeds the final link; source ownership and general relayout remain in progress |
 | Source cleanup and semantic naming | [Review queue](docs/cleanup-queue.md) remains open; changes must preserve matching |
 | JFG reference tooling and documentation | [Runlink kit](docs/runlink-toolkit.md) available; final roadmap follows the completed overlay sprint |
 | Asset-format recovery and matching repacking | Pending |

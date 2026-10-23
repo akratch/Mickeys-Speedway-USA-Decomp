@@ -97,10 +97,11 @@ void *)` call and the separate `void func_80058FF0(ConvListEntry *, s32)` batch.
 The latter's list contains a matrix pointer and signed-halfword count; its caller
 flushes the batch before resetting its global count. The outer animation call
 borrows per-model matrices, hierarchy nodes and an optional interior asset view.
-The ledger says its private helpers consume t-register inputs, overwrite s0–s6
-without saving and jump through a private exit; `func_8005A6F0` is that exit, not
-an independently established public function. Audit the outer boundary and all
-internal continuations as a unit before assigning helper prototypes.
+The [animation audit](animation-contracts.md) establishes its private readers'
+t-register inputs, the patcher's s0–s6 clobbers and the private return exit.
+`func_8005A6F0` is that exit, not an independently established public function.
+The outer entry restores its saved registers; descriptor bounds, shared scratch
+serialization and matrix queue lifetime still need resource-level authority.
 
 **The two matrix boundaries have specific alias and preservation rules.** The
 [matrix audit](matrix-contracts.md) identifies `mtxf_mul`'s incoming f2 read as
@@ -114,12 +115,12 @@ separate source/resource work.
 
 ## Data, numerical and lifetime assumptions by family
 
-- **Numeric/angle utilities:** current [camera](../src/main/camera.c#L279),
-  [character](../src/main/charControl.c#L210),
-  [particle](../src/main/particles.c#L29) and
-  [shadow](../src/main/shadows.c#L50) declarations disagree on
-  `Arctanf` return width and trig angle widths. `math.h` supplies matrix storage,
-  not a complete shared function API. Angle wrapping, RNG state/order, float
+- **Numeric/angle utilities:** [math.h](../include/game/math.h) now supplies
+  shared full-word angle/trig declarations to 58 of 59 canonical consumers.
+  `Arctanf` returns a zero-extended 16-bit turn in an `s32`; signed-angle
+  reinterpretation belongs to the caller. Overlay 29 retains its explicitly
+  recorded legacy `s16` disagreement. This does not complete the shared API or
+  all private assembly contracts. Angle wrapping, RNG state/order, float
   rounding/denormals, trapping arithmetic and fixed conversion cannot be inferred
   from the common names. Some small math-util entries have no typed C declaration
   in this inventory; their function role remains open.

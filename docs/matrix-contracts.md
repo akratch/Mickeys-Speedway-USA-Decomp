@@ -109,15 +109,16 @@ storage must outlive its graphics consumer; float locals can end with the CPU
 call chain. Allocator capacity, frame completion/free and concurrent camera
 scratch use are not settled by this audit.
 
-Two concrete source packets remain:
+The stack-matrix source repair is integrated in `2334e4904`:
+[func_8005B644](../src/main/models_5B300.c) now declares the genuine 64-byte
+matrix at stack `[0x40,0x80)` in its `0x88`-byte frame and passes its actual
+base. The earlier pointer eight bytes before its declared object is gone;
+whole-object bytes/identities and ROM remain exact. This closes that local
+backing error, not the model renderer's wider contracts.
 
-- [func_8005B644](../src/main/models_5B300.c) passes `(u8 *)temp - 8` as a matrix.
-  The stock object's actual 64-byte matrix occupies stack `[0x40,0x80)` in an
-  `0x88`-byte frame, but the declared temp starts at +0x48. Recover that genuine
-  storage view with exact object/identity/ROM proof; the source's pointer before
-  its object is not an additional matrix input contract.
-- Overlay 56 uses an f32-shaped type for both float scratch and packed output.
-  Reconcile the value-domain views separately from this provider audit.
+Overlay 56 still uses an f32-shaped type for both float scratch and packed
+output at the source pin above. Its value-domain repair is a separate packet;
+it does not establish graphics capacity, lifetime or the complete renderer API.
 
 These source debts and remaining graphics lifetime questions do not reopen the
 verified assembly's matching status. Future translation must preserve arithmetic

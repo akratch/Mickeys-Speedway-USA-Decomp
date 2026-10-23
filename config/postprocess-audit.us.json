@@ -253,6 +253,20 @@
       "class": "metadata",
       "matched_c": null,
       "nonmatching": null,
+      "object": "build/src/main/shadows.c.o",
+      "offset": null,
+      "overlay": null,
+      "size": null,
+      "source": "src/main/shadows.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
       "object": "build/src/main/texEnableModes.c.o",
       "offset": null,
       "overlay": null,
@@ -1066,9 +1080,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 70
+      "metadata": 71
     },
     "matched_c_bytes_with_postprocess": 325064,
-    "objects_with_postprocess": 70
+    "objects_with_postprocess": 71
   }
 }

@@ -290,7 +290,7 @@ extern Overlay1LargeRecord *D_1D5C;
 extern u8 *gOverlay1MissingLargeContext;
 extern f32 D_1DA8;
 extern u8 D_1DCC[];
-extern void _bzero(void *records, s32 size);
+extern void _bzero(void *records, int size);
 extern void overlay1BuildPointRecord(
     Overlay1LargeRecord *record, Overlay1PackedRecord *packed, s32 mode);
 extern void SetLinkSlot(s32 value, s32 type, s32 severity);

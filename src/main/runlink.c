@@ -91,7 +91,7 @@ extern u8 overlay_header_table_ROM_END[];
 extern u8 overlay_001_ROM_START[];
 extern u8 D_800D8750[];
 extern PendingOverlayLoad D_800D2E40;
-extern void _bzero(void *dst, s32 len);
+extern void _bzero(void *dst, int len);
 
 typedef struct RunlinkRelocContext {
     /* 0x00 */ u32 unk0;

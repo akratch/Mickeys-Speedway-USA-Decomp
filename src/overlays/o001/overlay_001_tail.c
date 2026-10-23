@@ -2431,7 +2431,7 @@ typedef struct Overlay1MaskedObject {
 } Overlay1MaskedObject;
 
 extern u8 gOverlay1ModeMasks[];
-extern void _bzero(void *, s32);
+extern void _bzero(void *, int);
 
 /* DKR v77/v80 and JFG contain no exact donor for this table-mask selector. */
 s32 overlay1SelectMaskedMode(Overlay1MaskedObject *object, s32 index) {

@@ -41,7 +41,7 @@ typedef struct Overlay95QueryResult {
 } Overlay95QueryResult;
 
 extern u8 D_8007BF0C;
-extern f32 gOverlay95FadeRate;
+extern const f32 gOverlay95FadeRate;
 extern Overlay95QueryResult *func_80005750(void **found);
 extern void partUpdateTriggers(Overlay95Object *object, s32 updateRate);
 extern void rumbleStart(s32 type, s32 kind, f32 scale, Overlay95Racer *racer);

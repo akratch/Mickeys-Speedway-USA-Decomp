@@ -80,14 +80,10 @@ const char gOverlay36QueueWarning[] = "WARNING: MAX_POSTPONED_READS too small\n"
 
 
 /*
- * Overlay 36: one translation unit in ROM order (ADR 0006). The action
- * queue, the state selector and the spawn-and-update helper are static:
- * the entity update's, chooser's and mode wrappers' calls to them are the
- * shipped JUMP records, and they call them by the definitions' names (with
- * casts to the callees' own views). The other unexported functions (the
- * height check, the global call, the positioned and conditional spawns and
- * the weighted chooser) are reached only through the module's data tables,
- * so they stay extern: IDO drops a static function nothing in the TU names.
+ * Overlay 36 is one translation unit in ROM order (ADR 0006). The action
+ * queue, state selector and spawn-and-update helper are private static
+ * callees. The initialized callback table also keeps its private static
+ * helpers live, using each callback's compatible signature.
  */
 
 static void overlay36QueueAction(Overlay1Object *object, s32 index, f32 *x,

@@ -665,7 +665,7 @@ void overlay68RebuildSecondaryEntry(s32 kind) {
                 s32 threshold;
                 s32 index;
 
-                piRomLoadSection(0x3F, (u32)probe,
+                piRomLoadSection(0x3F, probe,
                                              amount * (s32)sizeof(*probe),
                                              sizeof(*probe));
                 entries = func_800291C4();
@@ -690,7 +690,7 @@ void overlay68RebuildSecondaryEntry(s32 kind) {
                 }
 
                 if (index >= 0) {
-                    piRomLoadSection(0x40, (u32)entry,
+                    piRomLoadSection(0x40, entry,
                                                  probe->assetOffsets[index],
                                                  probe->assetSizes[index]);
                     payload = entry + 1;
@@ -759,7 +759,7 @@ s32 overlay68CheckKind(s32 kind) {
     if (amount != -1) {
         probe = mmAlloc(sizeof(*probe), 0x85);
         if (probe != NULL) {
-            piRomLoadSection(0x3F, (u32)probe,
+            piRomLoadSection(0x3F, probe,
                                     amount * (s32)sizeof(*probe),
                                     sizeof(*probe));
             entries = (Overlay68ResidentEntry *)func_800291C4();

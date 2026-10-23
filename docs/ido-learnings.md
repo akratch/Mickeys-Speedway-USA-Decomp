@@ -3727,3 +3727,6 @@ Measured on `func_8002B040`, 2026-10-21; the model is
   cursor lvalue types unchanged unless their actual allocation and consumers
   establish a shared type. Require whole-function and relocation proof; a
   matching local expression does not establish a matching function.
+
+
+Additional measured notes: [buffer argument affinity and finite-float diagnostics](ido-buffer-contracts.md).

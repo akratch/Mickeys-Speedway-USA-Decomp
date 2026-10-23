@@ -102,7 +102,7 @@ s32 byteswap32(u8 *bytes) {
 }
 
 s32 func_8004D7A8(s32 assetIndex, s32 assetOffset) {
-    piRomLoadSection(assetIndex, (u32) D_800D6A90, assetOffset, 8);
+    piRomLoadSection(assetIndex, D_800D6A90, assetOffset, 8);
     return byteswap32(D_800D6A90);
 }
 

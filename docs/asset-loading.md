@@ -17,7 +17,7 @@ Keep these domains separate even though the current ABI represents several with
 | Logical file ID | `assetIndex` selects a pair in the top-level directory. It is not a ROM address, a resource type, or a subasset index. |
 | File-relative offset | `assetOffset` selects bytes inside that logical file. Callers often obtain it from another file's offset table. |
 | Physical ROM offset | `D_86760 + offsets[assetIndex] + assetOffset`; this is the PI device address supplied to `romCopy`. |
-| RAM destination | `address`/`ramAddress` is an N64 RAM address, currently carried as `u32` by the section/DMA APIs. |
+| RAM destination | `address`/`ramAddress` is a caller-owned RAM buffer, now expressed as `void *` by the shared section/DMA APIs. Legacy scalar RAM holders convert explicitly at the call boundary. |
 | Decoded pointer/offset | A loaded asset may contain serialized offsets that its consumer later relocates relative to its RAM base. These are not automatically host pointers. |
 
 `piRomGetSectionPtr` returns a `u8 *`-typed **ROM offset value**, without copying or
@@ -41,6 +41,10 @@ and stores it in `D_800D2470`. The source view is:
 | `fileCount` | First native `u32` | Compared against the supplied file ID; the name alone does not establish the valid domain. |
 | `offsets[i]` | Following native `u32` words | Start of file `i`, relative to `D_86760`. |
 | `offsets[i + 1]` | Next word | End of file `i`; size is the adjacent difference. |
+
+The source view covers all 71 copied words after the header: 68 offset/end
+words and three zero alignment words. This physical backing capacity does not
+extend the valid logical file-ID domain.
 
 On the N64 these native directory reads are big-endian. No directory-byte swap is
 performed. The increment-and-pointer expression in the source still selects
@@ -73,19 +77,22 @@ those bands are not a replacement for the directory's file boundaries.
 ## Provider APIs and observed checks
 
 These are the definitions in [pi.c](../src/main/pi.c), not a proposed host ABI.
-[pi.h](../include/game/pi.h) currently declares only `piRomLoadSection`; other
-consumers retain local declarations, some with different pointer or integer
-spellings. The header is not yet a complete shared contract.
+[pi.h](../include/game/pi.h) now shares all seven PI provider declarations with
+the canonical callers. The private overlay14 binding has the same load signature.
+RAM destinations are pointer-valued, while file IDs and ROM offsets remain
+integer-valued. Provider return types and the retail boundary behavior remain
+unchanged; this does not convert serialized fields or legacy address holders into
+a host representation.
 
 | API | Result and ownership | Checks actually present |
 |---|---|---|
 | `piInit(void)` | Creates PI queues/manager, allocates and loads the directory. | No directory allocation-failure check or directory-content validation. |
 | `piRomLoad(u32 id)` | New `mmAlloc(size, 0x84)` buffer, returned as `u32 *`; caller owns it. | Rejects `id > header`, zero span and allocation failure. Does not validate negative spans or serialized contents. |
 | `piRomLoadCompressed(u32 id, s32 extra)` | New output allocation with tail staging; caller owns its base. | Rejects `id > header` and final allocation failure. No empty-file, scratch-allocation, length, overflow, framing or decompression-result check. |
-| `piRomLoadSection(u32 id, u32 address, s32 offset, s32 size)` | Copies into caller-owned RAM; allocates nothing. Returns the requested `size`. | Returns zero for `size == 0` or `id > header`. Does not check `offset`, negative size, file containment or destination capacity. |
+| `piRomLoadSection(u32 id, void *address, s32 offset, s32 size)` | Copies into caller-owned RAM; allocates nothing. Returns the requested `size`. | Returns zero for `size == 0` or `id > header`. Does not check `offset`, negative size, file containment or destination capacity. |
 | `piRomGetSectionPtr(u32 id, u32 offset)` | Returns a ROM address value; no new RAM ownership. | Rejects `id > header`; no offset/end/wrap validation. |
 | `piRomGetFileSize(u32 id)` | Returns adjacent-offset difference as `s32`. | Returns zero for `id > header`; no monotonicity check. Zero is also a valid empty span. |
-| `romCopy(u32 rom, u32 ram, s32 bytes)` | Synchronous-at-return transfer on the normal completion path; no allocation and no status result. | Loops only while `bytes > 0`; does not surface DMA submission or completion errors. |
+| `romCopy(u32 rom, void *ram, s32 bytes)` | Synchronous-at-return transfer on the normal completion path; no allocation and no status result. | Loops only while `bytes > 0`; does not surface DMA submission or completion errors. |
 
 A `piRomLoadSection` return equal to the request is an echo of the requested
 length, not an independently checked byte count. In particular, a negative
@@ -142,7 +149,7 @@ The contract visible at the compression front end is:
 | Prefix byte 4 | Skipped, without interpretation or validation by the C wrapper. Its meaning is not established here. |
 | Bytes beginning at `compressed + 5` | Initial input cursor supplied to `gzip_inflate_block`. |
 | Output | Starts at the caller's supplied buffer; no capacity/end pointer is passed. |
-| Return/termination | The wrapper calls the core at least once, repeats while its return is nonzero, then returns the original output pointer. It exposes no separate error or decoded-length result. |
+| Return/termination | The core returns `1 - finalBlock`; the wrapper repeats while nonzero, then returns the original output pointer. This is continuation, not an error or decoded-length result. |
 
 [func_8004D7E0](../src/main/gzip.c#L109) resets shared bit-state globals and sets
 shared input/output cursors. The source has Huffman-table construction and named
@@ -151,9 +158,13 @@ identified in [mickey.us.yaml](../mickey.us.yaml) and
 [VERIFIED_ASSEMBLY.md](VERIFIED_ASSEMBLY.md). Those names and the five-byte skip
 are insufficient evidence for a general gzip-file API. The C wrapper does not
 parse a variable header, validate a checksum, or enforce input/output bounds.
-The precise stream dialect, byte-4 meaning, trailer handling, core return
-semantics and malformed-stream behavior require a bounded audit of that core.
-Do not select a gzip/zlib/raw-stream replacement solely from the function names.
+The [core audit](inflater-contract.md) establishes a raw DEFLATE-family block
+stream, unchecked stored lengths and reserved block/symbol handling, global
+workspace lifetime, and lookup-driven read-ahead. Prefix byte 4 is unused by the
+consumer and has no established producer meaning. The fixed-table path also
+depends on incoming stack contents. No universal lookahead or safe tail-overlap
+margin has been proved. Choose any replacement against these actual behaviors,
+not solely against the function names.
 
 For `piRomLoadCompressed`, let `U` be the little-endian prefix size, `E` the
 `extraMemory` argument and `C` the directory span. The source computes:
@@ -228,11 +239,11 @@ the existing API.
 | Question | Next source/metadata check |
 |---|---|
 | Can a reachable caller supply top-level ID 67 or another invalid ID? | Trace each PI entry's call/ORT argument domains, including variable IDs. Keep the observed metadata discrepancy separate from a future input-rejection policy. |
-| What exactly is the five-byte framing and core termination contract? | Audit Mickey's `gzip_inflate_block` and its stored/fixed/dynamic paths: bit-header handling, input advancement, returns and trailer accesses. Cross-check only the framing metadata of identified compressed records; do not infer a standard container from names. |
+| What does prefix byte 4 mean to the producer? | The consumer skips it; sampled compressed prefixes all contain nine. Trace producer evidence rather than infer a meaning from the value. Framing, continuation and unchecked core behavior are recorded in the [inflater contract](inflater-contract.md). |
 | Which tail-overlap and output-size constraints are sufficient? | For one owned caller family, prove its staging interval against allocation bounds and the core's maximum read-ahead/write behavior. This reference establishes no universal margin. |
 | Which serialized fields are offsets, indices or native runtime pointers? | Recover one family's bounded header/record schema and every rebase step before defining a native representation. Models, textures, screens and language resources have distinct evidence. |
 | What errors and concurrent use must a future provider expose? | Follow manager submission/completion failures and all calls sharing the request, completion queue and decoder globals. Current APIs provide neither a complete error channel nor per-stream state. |
-| Are all declarations and widths shared correctly? | Reconcile provider definitions with local caller declarations, beginning with PI functions absent from `pi.h` and compression declarations with differing return/pointer types. No header/API change is made here. |
+| Which declarations and address views remain outside the PI repair? | PI declarations are shared and its RAM-buffer contract is pointer-valued. Audit compression declarations with differing return/pointer types, scalar address holders and the ROM-address-valued pointer return before defining host interfaces. |
 
 No host implementation, adapter, payload conversion, emulator run or new test
 framework accompanies this reference.

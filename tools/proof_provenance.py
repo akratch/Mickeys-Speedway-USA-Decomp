@@ -29,9 +29,18 @@ import tempfile
 import time
 from typing import Iterable, Sequence
 
+import runlink_metadata_link as metadata_link
+
 
 class MetadataProofError(RuntimeError):
     """Declared metadata steps do not explain the configured object."""
+
+
+def generated_metadata_context(root):
+    try:
+        return metadata_link.provenance_context(root)
+    except (metadata_link.MetadataLinkError, metadata_link.rp.PackError, OSError, ValueError, KeyError, TypeError) as error:
+        raise MetadataProofError("generated final metadata proof failed: " + str(error)) from error
 
 
 def _filter_spec_file(argument: str, root: pathlib.Path) -> pathlib.Path:
@@ -554,6 +563,7 @@ def capture_configured_raw(root, source, configured, linked, postprocess, *, mod
                   "target_inputs": {name: sha256_file(root / name) for name in
                     ("baseroms/mickey.us.z64", "config/overlays.us.json",
                      "overlay_undefined_syms.us.txt", "symbol_addrs.us.txt")},
+                  "generated_metadata": generated_metadata_context(root),
                   "filter_specs": filter_spec_files(expanded_postprocess, root),
                   "metadata_tools": {name: sha256_file(root / name) for name in
                     ("tools/filter_elf_relocations.py", "tools/trim_elf_section.py",

@@ -1638,8 +1638,50 @@ endif
 # src/main/runlink.c is Mickey's runtime loader reconstructed as game code; it
 # does not participate in this host-side build graph. JFG is evidence for parts
 # of that runtime lineage, not the source of a separate overlay Make pipeline.
+ifeq ($(NON_MATCHING)$(RUNLINK_RAW),00)
+# The analysis link retains the extracted tables. Its distinct ELF/map feed the
+# guarded producer; the final script replaces metadata selectors only.
+RUNLINK_BOOTSTRAP_ELF := build/runlink/bootstrap.elf
+RUNLINK_BOOTSTRAP_MAP := build/runlink/bootstrap.map
+RUNLINK_BOOTSTRAP_LOG := build/runlink/bootstrap-link.log
+RUNLINK_FINAL_LOG := build/runlink/final-link.log
+RUNLINK_METADATA_MANIFEST := build/runlink/metadata/manifest.json
+RUNLINK_METADATA_RECEIPT := build/runlink/metadata-link.json
+RUNLINK_FINAL_SCRIPT := build/runlink/final.ld
+RUNLINK_RETAINED_BINS := $(filter assets/main_reloc_table.bin assets/overlay_rom_table.bin assets/overlay_header_table.bin assets/overlays/%_reloc1.bin assets/overlays/%_reloc2.bin,$(BIN_FILES))
+RUNLINK_RETAINED_OBJECTS := $(addprefix build/,$(addsuffix .o,$(RUNLINK_RETAINED_BINS)))
+RUNLINK_GENERATED_OBJECTS := $(patsubst assets/%,build/runlink/generated/%.o,$(RUNLINK_RETAINED_BINS))
+RUNLINK_SYMBOL_INPUTS := undefined_funcs_auto.$(VERSION).txt undefined_syms_auto.$(VERSION).txt libultra_undefined_syms.$(VERSION).txt overlay_undefined_syms.$(VERSION).txt
+# A question-mode traversal cannot execute hash validators. Proof freshness
+# checks validate the generated context explicitly before querying timestamps.
+ifeq ($(findstring q,$(firstword $(MAKEFLAGS))),)
+RUNLINK_VALIDATE_PREREQUISITE := runlink-raw
+RUNLINK_FINAL_PREREQUISITE := runlink-final-force
+RUNLINK_PREPARE_INPUTS := $(RUNLINK_BOOTSTRAP_ELF) $(RUNLINK_BOOTSTRAP_MAP) $(RUNLINK_BOOTSTRAP_LOG) $(RUNLINK_VALIDATE_PREREQUISITE) $(TOOLS_DIR)/runlink_metadata_link.py $(TOOLS_DIR)/runlink_pack.py $(TOOLS_DIR)/overlay_tables.py $(OBJCOPY)
+endif
+
+$(RUNLINK_BOOTSTRAP_ELF) $(RUNLINK_BOOTSTRAP_MAP) $(RUNLINK_BOOTSTRAP_LOG) &: $(O_FILES) $(LD_SCRIPT) $(RUNLINK_SYMBOL_INPUTS) Makefile $(LD) $(TOOLS_DIR)/run_logged.py $(TOOLS_DIR)/link_diagnose.sh | $(ALL_DIRS) $(SPLAT_STAMP)
+	@mkdir -p build/runlink
+	@$(HOST_PYTHON) $(TOOLS_DIR)/run_logged.py --repo . --log $(RUNLINK_BOOTSTRAP_LOG) --label "retained metadata bootstrap link" -- $(TOOLS_DIR)/link_diagnose.sh $(LD) $(subst -Map $(BUILD_DIR)/$(BASENAME).$(VERSION).map,-Map $(RUNLINK_BOOTSTRAP_MAP),$(LDFLAGS)) -o $(RUNLINK_BOOTSTRAP_ELF)
+
+# Validation runs on every invocation. Unchanged payloads/receipts retain their
+# timestamps, so an unchanged build does not relink. Grouped targets repair a
+# missing wrapper/script once, even under parallel make.
+$(RUNLINK_METADATA_RECEIPT) $(RUNLINK_FINAL_SCRIPT) $(RUNLINK_GENERATED_OBJECTS) &: $(RUNLINK_PREPARE_INPUTS)
+	$(HOST_PYTHON) $(TOOLS_DIR)/runlink_metadata_link.py prepare
+
+.PHONY: runlink-final-force
+runlink-final-force:
+
+$(TARGET).elf $(TARGET).map &: $(filter-out $(RUNLINK_RETAINED_OBJECTS),$(O_FILES)) $(RUNLINK_BOOTSTRAP_ELF) $(RUNLINK_BOOTSTRAP_MAP) $(RUNLINK_BOOTSTRAP_LOG) $(RUNLINK_METADATA_RECEIPT) $(RUNLINK_FINAL_SCRIPT) $(RUNLINK_GENERATED_OBJECTS) $(RUNLINK_SYMBOL_INPUTS) $(LD) $(RUNLINK_FINAL_PREREQUISITE) | $(ALL_DIRS) $(SPLAT_STAMP)
+	@if [ ! -f $(TARGET).elf ] || [ ! -f $(TARGET).map ] || [ ! -f $(RUNLINK_FINAL_LOG) ] || [ -n "$(filter-out runlink-final-force,$?)" ]; then \
+		$(HOST_PYTHON) $(TOOLS_DIR)/run_logged.py --repo . --log $(RUNLINK_FINAL_LOG) --label "generated metadata final link" -- $(TOOLS_DIR)/link_diagnose.sh $(LD) $(subst -T $(LD_SCRIPT),-T $(RUNLINK_FINAL_SCRIPT),$(LDFLAGS)) -o $(TARGET).elf; \
+	fi
+	$(HOST_PYTHON) $(TOOLS_DIR)/runlink_metadata_link.py prove
+else
 $(TARGET).elf: $(O_FILES) $(LD_SCRIPT) overlay_undefined_syms.$(VERSION).txt | $(ALL_DIRS) $(SPLAT_STAMP)
 	$(TOOLS_DIR)/link_diagnose.sh $(LD) $(LDFLAGS) -o $@
+endif
 
 # symbol_addrs is a real input to the split, not just documentation: naming a
 # function there changes the labels in the generated .s and, for `c`

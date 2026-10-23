@@ -91,7 +91,7 @@ TOOL_SOURCES = (
     "tools/wb_compare.sh", "tools/promotion_proof_census.py",
     "tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
     "tools/static_symbols.py", "tools/link_overlay_module.py",
-    "tools/source_module_link_proof.py", "tools/runlink_pack.py", "tools/rebind_elf_relocations.py",
+    "tools/source_module_link_proof.py", "tools/runlink_pack.py", "tools/runlink_metadata_link.py", "tools/rebind_elf_relocations.py",
     "tools/externalize_elf_section.py", "tools/postprocess_guard.py",
     # Fresh raw reproduction also pins these compiler/context implementations.
     "tools/permute_batch.py", "tools/sweep_receipts.py", "tools/promotion_transaction.py",
@@ -282,6 +282,8 @@ OWNER_TREES = ("mk", "config", "src", "include", "asm", "tools/ido", "tools/binu
 def proof_input_paths(root: Path) -> set[Path]:
     """Use one dependency set for cache keys and concurrent-write detection."""
     paths = {root / name for name in TOOL_SOURCES + PROOF_INPUTS}
+    import runlink_metadata_link
+    paths.update(runlink_metadata_link.provenance_paths(root))
     paths.add(root / "mickey.us.yaml")
     for directory in OWNER_TREES:
         paths.update(path for path in (root / directory).rglob("*") if path.is_file())

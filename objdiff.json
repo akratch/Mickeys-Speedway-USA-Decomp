@@ -1978,16 +1978,6 @@
       }
     },
     {
-      "name": "assets/overlays/o031/overlay_031_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o031/overlay_031_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o031"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o031/overlay_031_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o031/overlay_031_reloc1.bin.o",
       "metadata": {

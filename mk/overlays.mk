@@ -888,23 +888,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay_020.c.o: POSTPROCESS = \
 		0xE40:5:gOverlay20EntryCount 0xE44:6:gOverlay20EntryCount \
 		0xEA0:5:gOverlay20Entries 0xEA8:6:gOverlay20Entries \
 		0xEEC:5:D_0 0xF30:6:D_0
-# Overlay 31 is one TU under the overlay flag set: no trim, and its resident
-# calls take the generated rebinds. Two relocation-metadata steps on the
-# palette builder (+0x4F8) stay, neither touching an instruction word: the
-# item table's HI/LO pairs have no shipped record (filtered), and its two
-# colour-cycle calls are SYMBOL records whose shipped target is mmAlloc
-# (rebound). Offsets in both specs are within overlay_031.c's .text.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay_031.c.o: \
-	config/normalizations/overlay_031.filter.spec \
-	config/normalizations/overlay_031.calls.spec \
-	$(TOOLS_DIR)/filter_elf_relocations.py \
-	$(TOOLS_DIR)/rebind_elf_relocations.py
+# Overlay 31 directly owns its retained diagnostic text; original source
+# relocations bind the actual resident slots and colour-cycle operations.
+MODULE_LINKED_OVERLAYS += 031
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay_031.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay_031.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		@config/normalizations/overlay_031.filter.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay_031.calls.spec
 # Overlay 33 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay_033.c.o: CFLAGS += -Wab,-r4300_mul
 include mk/overlay_046.mk

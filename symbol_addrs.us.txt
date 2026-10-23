@@ -2986,3 +2986,12 @@ D_80081894 = 0x80081894; // type:f32 size:0x4 force_not_migration:True tier-D ch
 D_80081898 = 0x80081898; // type:f32 size:0x4 force_not_migration:True tier-D charControl scalar ownership
 
 func_8001B798 = 0x8001B798; // type:func size:0x2BC ROM 0x1C398 tier-A src/main/spranim.c.o -O2 -mips2 -32 matched C, 175 stock words, 9 exact relocation identities, reviewed inert allocation aids in cleanup queue
+
+// Tier B: ORT data exports used by overlay 31; unsized resident views only.
+D_8007C8A4 = 0x8007C8A4; // tier-B ORT export and overlay 31 references, unsized data view
+D_8007C8A8 = 0x8007C8A8; // tier-B ORT export and overlay 31 references, unsized data view
+D_8007C8B4 = 0x8007C8B4; // tier-B ORT export and overlay 31 references, unsized data view
+D_8007CAB4 = 0x8007CAB4; // tier-B ORT export and overlay 31 references, unsized data view
+D_8007CAC0 = 0x8007CAC0; // tier-B ORT export and overlay 31 references, unsized data view
+D_8007CC40 = 0x8007CC40; // tier-B ORT export and overlay 31 references, unsized data view
+D_8007CC50 = 0x8007CC50; // tier-B ORT export and overlay 31 references, unsized data view

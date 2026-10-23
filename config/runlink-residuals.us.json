@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 148, "borrowed_records": 9004},
+  "totals": {"differences": 148, "borrowed_records": 8980},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -256,7 +256,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1897,
+      "count": 1887,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -830,16 +830,6 @@
         [29, "overlay29CreateReloc", 5],
         [30, "gOverlay30PixelHeader", 2],
         [30, "gOverlay30SentinelIndex", 2],
-        [31, "D_10", 2],
-        [31, "gOverlay31BehaviourAssets", 2],
-        [31, "gOverlay31ItemCount", 4],
-        [31, "gOverlay31Items", 2],
-        [31, "gOverlay31ParticleAssetCount", 4],
-        [31, "gOverlay31ParticleAssets", 2],
-        [31, "gOverlay31RectangleSourceA", 2],
-        [31, "gOverlay31RectangleSourceB", 2],
-        [31, "gOverlay31TriangleSourceA", 2],
-        [31, "gOverlay31TriangleSourceB", 2],
         [33, "D_1808", 2],
         [33, "D_8", 4],
         [33, "gOverlay33ActiveBuffer", 4],

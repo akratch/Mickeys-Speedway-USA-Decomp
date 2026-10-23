@@ -29,6 +29,27 @@ bytes and disassembly never belong here.
 
 ## Proven reusable behavior
 
+### Const qualification does not select the initialized section
+
+- **Symptom:** a named floating constant has the right value but occupies
+  `.data`, while the runtime LOCAL records require a separate `.rodata` base.
+- **Mechanism:** in a measured IDO 5.3 TU at `-O2 -mips2 -32 -G0`, with
+  `-Xcpluscomm -non_shared -Wab,-r4300_mul`, both global `const f32` and
+  `static const f32` definitions were emitted into `.data`. Float literal
+  expressions emitted the separate compiler-owned `.rodata` pool. A `const`
+  qualifier constrains C accesses; it is not a section-placement directive.
+- **Lever:** distinguish a stored variable from a private literal value.
+  Where the references prove a private constant with no writes, exports or
+  address uses, a named float literal macro can recover the compiler pool
+  without inventing a storage object. Compare section bytes and relocation
+  bases as well as instruction bytes.
+- **Limits:** this was measured for scalar floats in a TU with an initialized
+  integer global, not for arrays, strings, other optimization modes or other
+  IDO versions. Substituting a literal for mutable or addressable storage is
+  not equivalent. An exact raw pool also does not prove that the configured
+  host link consumes it; its physical ownership and runtime base still need
+  a linked proof.
+
 ### Direct operand kills can retain a result without retaining its carrier
 
 - **Symptom:** a computed local forwards before its later uses, while an

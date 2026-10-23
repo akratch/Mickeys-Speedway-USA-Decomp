@@ -359,6 +359,10 @@ class ProducerCaptureLifecycleTests(unittest.TestCase):
             provenance.capture_data_module_producer_raw(*arguments, pathlib.Path("root/build/mickey.us.map"))
             self.assertEqual(capture.call_args.kwargs["producer_map"], pathlib.Path("root/build/mickey.us.map"))
             self.assertTrue(capture.call_args.kwargs["module_link"])
+            capture.reset_mock()
+            provenance.capture_data_provider_raw(*arguments, pathlib.Path("root/build/mickey.us.map"))
+            self.assertTrue(capture.call_args.kwargs["ordinary_provider"])
+            self.assertNotIn("module_link", capture.call_args.kwargs)
 
 
 if __name__ == "__main__":

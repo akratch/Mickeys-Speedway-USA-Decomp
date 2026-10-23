@@ -541,8 +541,14 @@ def capture_data_module_producer_raw(root, source, configured, linked, map_path)
                                    producer_map=map_path)
 
 
+def capture_data_provider_raw(root, source, configured, linked, map_path):
+    """Fresh ordinary-provider C using the same bound producer capture lifecycle."""
+    return _capture_configured_raw(root, source, configured, linked, "", producer_map=map_path,
+                                   ordinary_provider=True)
+
+
 def _capture_configured_raw(root, source, configured, linked, postprocess, *,
-                            module_link=False, producer_map=None):
+                            module_link=False, producer_map=None, ordinary_provider=False):
     """Fresh reproduction only: never authenticate an externally supplied raw object."""
     import permute_batch as batch
     import sweep_receipts as receipts
@@ -562,7 +568,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
         # run as their own recipe line after POSTPROCESS; replay them too, in that order.
         rebinds = [line.strip() for line in output if target in line and "--redefine-sym" in line
                    and "tools/filter_elf_relocations.py" not in line and "tools/ido/cc" not in line]
-        if len(compilers) != 1 or len(metadata) != 1 or len(rebinds) > (0 if module_link else 1):
+        if (len(compilers) != 1 or len(metadata) != (0 if ordinary_provider else 1)
+                or len(rebinds) > (0 if module_link or ordinary_provider else 1)):
             raise MetadataProofError("ambiguous expanded compiler/metadata recipe")
         # An overlay object gets its static functions' symbols right after the
         # compile (tools/static_symbols.py): part of the raw object, not of the
@@ -571,6 +578,11 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                            if target in line and "tools/static_symbols.py" in line]
         if len(static_lines) > 1:
             raise MetadataProofError("ambiguous static-symbol recipe")
+        if ordinary_provider:
+            allowed = set(compilers + static_lines)
+            if any(target in line and line.strip() not in allowed for line in output):
+                raise MetadataProofError("ordinary provider has an unsupported metadata recipe")
+            return compilers[0], "", ""
         return compilers[0], metadata[0], (rebinds[0] if rebinds else "")
     command, expanded_postprocess, surface_rebind = recipe()
     args = batch.compiler_arguments(command, source.relative_to(root).as_posix(), target)
@@ -579,7 +591,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
     dependency_args = args + (("-I", str(source.parent)) if wrapped else ())
     if words.count("-o") != 1:
         raise MetadataProofError("ambiguous configured output argument")
-    plan = [] if module_link else metadata_filter_plan(expanded_postprocess, target, root)
+    plan = [] if module_link or ordinary_provider else metadata_filter_plan(expanded_postprocess, target, root)
     if surface_rebind:
         plan = plan + metadata_filter_plan(surface_rebind, target, root)
     def context():
@@ -629,7 +641,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
         inputs["assembly"] = assembly
         return inputs
     before = context()
-    parent = root / ("build/data-module-producer-proof" if producer_map is not None else
+    parent = root / ("build/data-provider-proof" if ordinary_provider else
+                     "build/data-module-producer-proof" if producer_map is not None else
                      "build/source-module-link-proof" if module_link else "build/metadata-filter-proof")
     parent.mkdir(parents=True, exist_ok=True)
     directory = pathlib.Path(tempfile.mkdtemp(prefix="capture-", dir=parent))
@@ -650,7 +663,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             raise MetadataProofError(f"static-symbol pass failed: {error}") from error
     if before != context():
         raise MetadataProofError("source, input, recipe, object or tool changed during raw proof")
-    receipt = {"schema": ("mickey-data-module-producer-capture-v1" if producer_map is not None
+    receipt = {"schema": ("mickey-data-provider-capture-v1" if ordinary_provider
+                          else "mickey-data-module-producer-capture-v1" if producer_map is not None
                           else "mickey-source-module-link-proof-v1" if module_link
                           else "mickey-declared-metadata-proof-v1"), "inputs": before,
                "raw_object": raw.relative_to(root).as_posix(), "raw_sha256": sha256_file(raw),

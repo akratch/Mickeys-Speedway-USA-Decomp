@@ -744,6 +744,10 @@ class DataOnlyImportGuardTests(unittest.TestCase):
         provider_row = dict(type="c", canonical=True, section=".data", source=self.provider,
                             offset="0x8", size="0x8", end_offset="0x10")
         self.exports = rp.OrtNames(["first", "second"], {})
+        self.provider_compile = mock.patch.object(rp, "reproduce_data_provider",
+            side_effect=lambda world, source: rp.Elf(world.paths["raw"] / "src" / (source + ".c.o")))
+        self.provider_mock = self.provider_compile.start()
+        self.addCleanup(self.provider_compile.stop)
         self.provider_bytes = struct.pack(">ff", 1.0, 2.0)
         self.write(self.paths["raw"] / "src" / (self.provider + ".c.o"), self.provider_object())
         self.write(self.paths["build"] / "src" / (self.provider + ".c.o"), self.provider_object())
@@ -828,6 +832,28 @@ class DataOnlyImportGuardTests(unittest.TestCase):
         with self.assertRaisesRegex(rp.PackError, "duplicate final source input"):
             rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, self.raw())
 
+    def test_distinct_export_names_share_one_bound_provider_compile(self):
+        self.assertEqual(rp.validate_data_imports(
+            self.world, self.exports, 1, self.row, self.source, self.raw()), 2)
+        self.provider_mock.assert_called_once_with(self.world, self.provider)
+
+    def test_changed_provider_source_with_old_objects_is_freshly_compiled_and_refused(self):
+        import proof_provenance as provenance
+        self.provider_compile.stop()
+        self.world.paths.update(elf=self.root / "linked.elf", map=self.root / "linked.map")
+        source = self.root / "src" / (self.provider + ".c")
+        source.write_text("float renamed = 1.0f, second = 2.0f;\n")
+        fresh = self.write(self.root / "fresh-provider.o", ObjBuilder().section(
+            ".data", self.provider_bytes).sym("renamed", 0, 4, GLOBAL, OBJECT, ".data").sym(
+                "second", 4, 4, GLOBAL, OBJECT, ".data"))
+        def capture(_root, current_source, *_arguments):
+            self.assertEqual(current_source.read_text(), source.read_text())
+            return fresh.path, [], {}, lambda: {}
+        with mock.patch.object(provenance, "capture_data_provider_raw", side_effect=capture) as compiler:
+            with self.assertRaisesRegex(rp.PackError, "stale ordinary raw"):
+                rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, self.raw())
+            compiler.assert_called_once()
+
     def test_fresh_compile_refuses_stale_raw_targets_with_identical_pointer_bytes(self):
         ordinary = self.raw()
         fresh = self.raw(swapped=True)
@@ -846,6 +872,35 @@ class DataOnlyImportGuardTests(unittest.TestCase):
         with self.assertRaisesRegex(rp.PackError, "unsupported LOCAL/group/import"):
             rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source,
                                      self.raw(local=True))
+
+
+class HeldDataCaptureTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.world = SimpleNamespace(paths={"build": self.root / "build"})
+
+    def receipt(self, dependency):
+        return {"inputs": {"source": "source-hash", "configured": "object-hash",
+            "dependencies": {"include/shared.h": dependency},
+            "generated_metadata": {"inputs": {}}, "wrapper_source_directory": "early-tree"}}
+
+    def test_later_capture_cannot_overwrite_a_conflicting_held_dependency(self):
+        early = self.receipt("early-hash")
+        rp.hold_data_capture(self.world, "overlays/o001/first", early, lambda: early["inputs"])
+        later = self.receipt("later-hash")
+        with self.assertRaisesRegex(rp.PackError, "conflicting held"):
+            rp.hold_data_capture(self.world, "overlays/o001/second", later, lambda: later["inputs"])
+        self.assertEqual(self.world.data_import_inputs[self.root / "include/shared.h"], "early-hash")
+
+    def test_end_of_guard_rechecks_earlier_context_even_when_latest_context_is_valid(self):
+        early, later = self.receipt("same-hash"), self.receipt("same-hash")
+        rp.hold_data_capture(self.world, "overlays/o001/first", early, lambda: early["inputs"])
+        rp.hold_data_capture(self.world, "overlays/o001/second", later, lambda: later["inputs"])
+        early["inputs"]["wrapper_source_directory"] = "changed-after-validation"
+        with self.assertRaisesRegex(rp.PackError, "held data-only capture context changed"):
+            rp.check_data_import_holds(self.world)
 
 
 class UnitTests(unittest.TestCase):

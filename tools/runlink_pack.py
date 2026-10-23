@@ -1513,18 +1513,51 @@ def projected_data_rows(module):
             yield row
 
 
-def remember_data_import_inputs(world, source):
-    """Keep selected raw/source inputs in the existing metadata dependency set."""
+def hold_data_import_inputs(world, inputs):
+    """Merge held observations without ever blessing a newer conflicting digest."""
     snapshot = getattr(world, "data_import_inputs", {})
-    root = world.paths["build"].parent
-    for path in (world.paths["raw"] / "src" / (source + ".c.o"),
-                 world.paths["build"] / "src" / (source + ".c.o"),
-                 root / "src" / (source + ".c")):
-        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    for path, digest in inputs.items():
         if path in snapshot and snapshot[path] != digest:
-            raise PackError(f"data-only source/provider input changed during proof: {path}")
+            raise PackError(f"conflicting held data-only input: {path}")
         snapshot[path] = digest
     world.data_import_inputs = snapshot
+
+
+def remember_data_import_inputs(world, source):
+    root = world.paths["build"].parent
+    files = (world.paths["raw"] / "src" / (source + ".c.o"),
+             world.paths["build"] / "src" / (source + ".c.o"),
+             root / "src" / (source + ".c"))
+    hold_data_import_inputs(world, {path: hashlib.sha256(path.read_bytes()).hexdigest()
+                                    for path in files})
+
+
+def hold_data_capture(world, source, receipt, context):
+    """Keep every receipt's original context until the complete guard finishes."""
+    import copy
+    root = world.paths["build"].parent
+    expected = copy.deepcopy(receipt["inputs"])
+    held = getattr(world, "data_import_contexts", [])
+    held.append((expected, context))
+    world.data_import_contexts = held
+    for group in ("dependencies", "makefiles", "module_link_inputs", "metadata_tools"):
+        hold_data_import_inputs(world, {root / name: digest
+                                        for name, digest in expected.get(group, {}).items()})
+    hold_data_import_inputs(world, {
+        root / "src" / (source + ".c"): expected["source"],
+        world.paths["build"] / "src" / (source + ".c.o"): expected["configured"],
+    })
+    hold_data_import_inputs(world, {root / name: digest for name, digest
+                                    in expected["generated_metadata"]["inputs"].items()})
+
+
+def check_data_import_holds(world):
+    for expected, context in getattr(world, "data_import_contexts", []):
+        if expected != context():
+            raise PackError("held data-only capture context changed after validation")
+    for path, digest in getattr(world, "data_import_inputs", {}).items():
+        if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+            raise PackError(f"held data-only input changed after validation: {path}")
 
 
 def data_import_input(world, ov, row, source, raw):
@@ -1570,6 +1603,26 @@ def data_import_input(world, ov, row, source, raw):
     return configured, start
 
 
+def reproduce_data_provider(world, source):
+    """Fresh ordinary-provider compile, sharing the producer capture machinery."""
+    import proof_provenance as provenance
+    root = world.paths["build"].parent
+    configured = world.paths["build"] / "src" / (source + ".c.o")
+    raw, _plan, receipt, context = provenance.capture_data_provider_raw(
+        root, root / "src" / (source + ".c"), configured,
+        world.paths["elf"], world.paths["map"])
+    fresh = Elf(raw)
+    validate_fresh_data_input(Elf(world.paths["raw"] / "src" / (source + ".c.o")), fresh)
+    validate_fresh_data_input(Elf(configured), fresh)
+    hold_data_capture(world, source, receipt, context)
+    receipts = getattr(world, "data_import_provider_receipts", {})
+    receipts[source] = receipt
+    world.data_import_provider_receipts = receipts
+    if receipt["inputs"] != context():
+        raise PackError("provider source/context changed during fresh compilation")
+    return fresh
+
+
 def data_import_definition(world, name):
     """A real raw C definition and unique map input, never an encoded address."""
     choices = [s for s in world.by_name.get(name, ()) if s.bind == STB_GLOBAL
@@ -1596,7 +1649,12 @@ def data_import_definition(world, name):
     _configured, start = data_import_input(world, ov, row, source, raw)
     if any(raw.rels(s) for s in (".text", ".data", ".rodata")):
         raise PackError(f"data-only import provider has unsupported relocations: {name}")
-    definitions = [s for s in raw.symbols if s.name == name and s.section == ".data"
+    providers = getattr(world, "data_import_providers", {})
+    if source not in providers:
+        providers[source] = reproduce_data_provider(world, source)
+    world.data_import_providers = providers
+    fresh = providers[source]
+    definitions = [s for s in fresh.symbols if s.name == name and s.section == ".data"
                    and s.bind == STB_GLOBAL and s.type == 1 and s.size > 0]
     if len(definitions) != 1:
         raise PackError(f"data-only import is not defined by its raw C input: {name}")
@@ -1715,7 +1773,24 @@ def guard_data_module_imports(world, exports):
     if (world.elf.data != world.paths["elf"].read_bytes()
             or world.map != parse_map(world.paths["map"])):
         raise PackError("parsed data-only World ELF/map no longer match the supplied inputs")
+    world.data_import_inputs = {}
+    world.data_import_contexts = []
+    world.data_import_providers = {}
+    world.data_import_provider_receipts = {}
+    import permute_batch as batch
+    files = {root / name for name in ("Makefile", "tools/proof_provenance.py",
+             "tools/source_module_link_proof.py", "tools/postprocess_audit.py",
+             "tools/static_symbols.py", ".venv/bin/python")}
+    files.update((root / "mk").rglob("*.mk"))
+    for directory in ("tools/ido", "tools/binutils"):
+        files.update(path for path in (root / directory).rglob("*") if path.is_file())
+    files.update((root / "tools/asm-processor").rglob("*.py"))
+    hold_data_import_inputs(world, {path: hashlib.sha256(path.read_bytes()).hexdigest()
+                                    for path in files})
+    hold_data_import_inputs(world, {path: digest for path, digest
+                                    in batch._LOADED_IMPLEMENTATIONS.values()})
     dump = audit.run_make_database()
+    outputs = []
     try:
         for ov, module in world.amods.items():
             text = {r["source"] for r in module["text_ownership"] if r["type"] == "c"}
@@ -1728,32 +1803,20 @@ def guard_data_module_imports(world, exports):
                 if len(rows) != 1:
                     raise PackError(f"data-only module lacks one canonical input: {source}")
                 raw, receipt, context = reproduce_data_import(world, source)
-                # Warm metadata reuse must invalidate on the same source/tool
-                # context as fresh capture; capture outputs are not upstream inputs.
-                import permute_batch as batch
-                names = set().union(*(receipt["inputs"][group] for group in
-                    ("dependencies", "makefiles", "module_link_inputs", "metadata_tools")))
-                names.update(("tools/proof_provenance.py", "tools/source_module_link_proof.py",
-                              "tools/postprocess_audit.py", "tools/static_symbols.py",
-                              ".venv/bin/python"))
-                files = {root / name for name in names}
-                files.update(path for path, _digest in batch._LOADED_IMPLEMENTATIONS.values())
-                for directory in ("tools/ido", "tools/binutils"):
-                    files.update(path for path in (root / directory).rglob("*") if path.is_file())
-                files.update((root / "tools/asm-processor").rglob("*.py"))
-                snapshot = getattr(world, "data_import_inputs", {})
-                snapshot.update({path: hashlib.sha256(path.read_bytes()).hexdigest() for path in files})
-                world.data_import_inputs = snapshot
+                hold_data_capture(world, source, receipt, context)
                 validate_data_imports(world, exports, ov, rows[0], source, raw)
-                if (receipt["inputs"] != context()
-                        or any(hashlib.sha256(path.read_bytes()).hexdigest() != digest
-                               for path, digest in world.data_import_inputs.items())):
-                    raise PackError("data-only source/provider context changed during identity proof")
-                receipt.update(data_only_runtime_imports=raw.size(".data") // 4,
-                    provider_inputs={os.path.relpath(path, root): digest
-                                     for path, digest in world.data_import_inputs.items()})
-                (root / receipt["directory"] / "proof.json").write_text(
-                    json.dumps(receipt, sort_keys=True, indent=2))
+                outputs.append((raw, receipt))
+        check_data_import_holds(world)
+        for receipt in world.data_import_provider_receipts.values():
+            receipt["allocated_symbols_ordered_relocations_exact"] = True
+            (root / receipt["directory"] / "proof.json").write_text(
+                json.dumps(receipt, sort_keys=True, indent=2))
+        for raw, receipt in outputs:
+            receipt.update(data_only_runtime_imports=raw.size(".data") // 4,
+                provider_inputs={os.path.relpath(path, root): digest
+                                 for path, digest in world.data_import_inputs.items()})
+            (root / receipt["directory"] / "proof.json").write_text(
+                json.dumps(receipt, sort_keys=True, indent=2))
     except (OSError, ValueError, provenance.MetadataProofError) as error:
         raise PackError(f"data-only module proof refused: {error}") from error
 

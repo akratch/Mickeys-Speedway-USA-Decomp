@@ -601,6 +601,14 @@ assignments straight out of that expansion, then classifies each one:
 - **`review-required`** — a helper the classifier does not know, or arguments
   it cannot parse. Fails closed: never silently `metadata`.
 
+`trim_elf_bss.py` is a reviewed metadata step. It accepts only writable,
+allocated, non-executable `SHT_NOBITS` BSS, and removes precisely the compiler's
+alignment tail after the final sized typed object. Its writes are limited to
+section size/alignment and the section symbol's size; typed-object symbols and
+initialized bytes remain unchanged. The caller still needs independent evidence
+for the C storage ownership. The helper's synthetic byte-difference test checks
+that contract and its refusal tests preserve the input object.
+
 To bind compiler-private literals or jump tables to the copy a module's
 retained rodata already ships, keep the compiler's addends and move the base
 into a symbol instead of into the instructions: `objcopy --add-symbol

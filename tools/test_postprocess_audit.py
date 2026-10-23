@@ -50,6 +50,13 @@ class ClassifyTests(unittest.TestCase):
              "externalize_elf_section.py", "objcopy"],
         )
 
+    def test_guarded_nobits_tail_trim_is_metadata(self):
+        command = "$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_bss.py $@ gravity 4"
+        self.assertEqual(("metadata", ["trim_elf_bss.py"]), pa.classify(command))
+        # Reviewing this helper does not extend to a new helper in the chain.
+        self.assertEqual("review-required", pa.classify(
+            command + " && python unknown_helper.py $@")[0])
+
     def test_instruction_tools_and_section_rewrites_are_altered(self):
         for command in (
             "$(HOST_PYTHON) $(TOOLS_DIR)/normalize_elf_instructions.py $@ x",

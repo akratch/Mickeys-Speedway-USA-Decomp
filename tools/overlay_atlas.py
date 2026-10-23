@@ -270,6 +270,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
         (0x0360, 0x03E0, "overlay8SelectorFlags", ".data"),
         (0x03E0, 0x0520, "overlay8EffectTables", ".data"),
         (0x0520, 0x05E0, "overlay8MotionScales", ".rodata"),
+        (0x05E0, 0x20C0, "overlay8TuningRecords", ".data"),
         (0x2378, 0x2418, "overlay8MotionConstants", ".data"),
     ],
     24: [(0x0, 0x10, "overlay_024", ".rodata")],
@@ -325,6 +326,7 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
     (8, "overlay8EffectTables", ".data"),
     (8, "overlay8SelectorTables", ".data"),
     (8, "overlay8MotionScales", ".rodata"),
+    (8, "overlay8TuningRecords", ".data"),
 }
 
 # Reviewed gaps that require explicit padding rather than compiler alignment.

@@ -3528,7 +3528,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18D4230, c, overlay_089]
-      - [0x18D4A00, bin, overlay_089_data_rodata]
 
   - name: overlay_089_reloc1
     type: bin

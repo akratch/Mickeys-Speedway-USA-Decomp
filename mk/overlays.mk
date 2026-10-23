@@ -1132,6 +1132,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay_088.c.o: POSTPROCESS = \
 # the module's 0x7D0 bytes, trailing pad included, so it needs no trim. Its
 # three unexported functions are static (JUMP records).
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay_089.c.o: CFLAGS += -Wab,-r4300_mul
+MODULE_LINKED_OVERLAYS += 089
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.
 # Overlay 87 is one translation unit under the overlay flag set; its .text is

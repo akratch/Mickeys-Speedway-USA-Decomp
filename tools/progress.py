@@ -646,7 +646,7 @@ def render_markdown(st):
     L.append("## Progress")
     L.append("")
     L.append(
-        f"[![functions]({badge('functions matched', st['func_msg'], 'blue')})]"
+        f"[![resident functions]({badge('resident functions matched', st['func_msg'], 'blue')})]"
         f"(#progress) "
         f"[![bytes]({badge('code bytes resolved', st['byte_msg'], 'blue')})]"
         f"(#progress) "
@@ -674,17 +674,19 @@ def render_markdown(st):
         f"{st['overlay_text_bytes']:,} | {st['overlay_byte_pct']:.2f}% |"
     )
     L.append(
-        f"| Functions matched | {st['n_matched']:,} | {st['n_total']:,} | "
+        f"| Resident functions matched | {st['n_matched']:,} | {st['n_total']:,} | "
         f"{st['func_pct']:.2f}% |"
     )
     L.append(
-        f"| Names adopted | {st['n_named_funcs']:,} | {st['n_total']:,} | "
+        f"| Resident functions named | {st['n_named_funcs']:,} | {st['n_total']:,} | "
         f"{st['named_pct']:.2f}% |"
     )
     L.append("")
     L.append(
         f"Whole program is resident C plus verified assembly plus overlay C. "
-        f"Totals exclude [reviewed nonexecutable alignment](docs/executable-accounting.md). A "
+        f"Totals exclude [reviewed nonexecutable alignment](docs/executable-accounting.md). "
+        f"Function and naming ratios cover the resident segment; overlay progress "
+        f"is measured separately in executable bytes. A "
         f"function counts only when the ROM rebuilds byte-identically with its C "
         f"compiled in place of its assembly, so a `NON_MATCHING` body counts as "
         f"unmatched exactly like extracted assembly. Verified assembly is "
@@ -696,7 +698,7 @@ def render_markdown(st):
     )
     L.append("")
     L.append(
-        "| Area | Functions | Matched to C | Named, still asm | Unnamed | "
+        "| Resident area | Functions | Matched to C | Named, still asm | Unnamed | "
         "Identified |"
     )
     L.append("| :--- | ---: | ---: | ---: | ---: | :--- |")
@@ -922,9 +924,9 @@ def check_partial(args):
                 f"numbers ({num}/{den} = {expected_pct:.2f}%)"
             )
 
-    for label, row in (("functions", "Functions matched"), (".text bytes", "Resident C"),
+    for label, row in (("functions", "Resident functions matched"), (".text bytes", "Resident C"),
                        ("verified asm", "Verified assembly"), ("overlay C", "Overlay C"),
-                       ("whole resolved", "**Whole program**"), ("named", "Names adopted")):
+                       ("whole resolved", "**Whole program**"), ("named", "Resident functions named")):
         check_ratio(label, r"^\| " + re.escape(row)
                     + r" \| ([\d,]+) \| ([\d,]+) \| \*?\*?(\d+\.\d+)%")
     if all(label in ratios for label in (".text bytes", "verified asm", "overlay C", "whole resolved")):

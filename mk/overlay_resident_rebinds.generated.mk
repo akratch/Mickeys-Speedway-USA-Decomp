@@ -1471,6 +1471,14 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay_064.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym D_800D60C0=D_800D60C0_o064Reloc \
 	--redefine-sym mathRnd=mathRnd_o064Reloc $@
 
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Initialize.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym mmAlloc=mmAlloc_o065Reloc \
+	--redefine-sym texLoadTexture=texLoadTexture_o065Reloc $@
+
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Release.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym mmFree=mmFree_o065Reloc \
+	--redefine-sym texFreeTexture=texFreeTexture_o065Reloc $@
+
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65SpawnRecord.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_overlay_065_F0000000_18C4268=func_overlay_065_F0000000_o065Reloc $@
 

@@ -3330,7 +3330,8 @@ gOverlay65InitFlag0 = 0x00001923;
 gOverlay65InitFlag1 = 0x0000193f;
 gOverlay65Records = 0x00001940;
 gOverlay65RecordsEnd = 0x00002970;
-overlay65AllocateReloc = 0xf0000000;
+mmAlloc_o065Reloc = 0xf0000000;
+texLoadTexture_o065Reloc = 0xf0000000;
 
 /* overlay 65: overlay65UpdateParticles.c.o */
 D_1908 = 0x00001908;
@@ -3347,13 +3348,11 @@ func_overlay_065_F0000000_o065Reloc = 0xf0000000;
 /* overlay 65: overlay65Release.c.o */
 gOverlay65Resource208 = 0x00000208;
 gOverlay65Resource2980 = 0x00002980;
-overlay65ReleaseReloc = 0xf0000000;
+mmFree_o065Reloc = 0xf0000000;
+texFreeTexture_o065Reloc = 0xf0000000;
 
 /* overlay 65: overlay65ResetSlots.c.o */
-gOverlay65Flag0 = 0x0000007c;
-gOverlay65Flag1 = 0x000000fc;
 gOverlay65Ready = 0x00001900;
-gOverlay65Slots = 0x00000100;
 
 /* overlay 65: func_overlay_065_F0000C38_18C4EA0.c.o */
 D_1900 = 0x00001900;

@@ -3,6 +3,8 @@
 
 #include "PR/ultratypes.h"
 
+typedef struct TextureHeader TextureHeader;
+
 typedef struct Overlay65TrailRecord {
     f32 x[9];
     f32 y[9];

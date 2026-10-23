@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 133, "borrowed_records": 8981},
+  "totals": {"differences": 118, "borrowed_records": 8981},
   "differences": {
     "pool-layout": {
       "about": "an object's own literal or static data sits at a different offset",
@@ -126,27 +126,6 @@
         [8, "0x50F8", "LOCAL D_overlay_008_F0007654_18653AC", "LOCAL D_overlay_008_F000762C_1865384 (overlay 8 0x762C)"],
         [8, "0x50FC", "LOCAL D_overlay_008_F0007658_18653B0", "LOCAL D_overlay_008_F0007630_1865388 (overlay 8 0x7630)"],
         [8, "0x5100", "LOCAL D_overlay_008_F0007658_18653B0", "LOCAL D_overlay_008_F0007630_1865388 (overlay 8 0x7630)"]
-      ]
-    },
-    "table-entry": {
-      "about": "a switch or pointer table entry targets a different address",
-      "count": 15,
-      "entries": [
-        [101, "0x12B44", "LOCAL func_overlay_101_F0001B8C_18DD3AC", "LOCAL func_overlay_101_F0001AB8_18DD2D8 (overlay 101 0x1AB8)"],
-        [101, "0x12B48", "LOCAL func_overlay_101_F0001B8C_18DD3AC", "LOCAL func_overlay_101_F0001ACC_18DD2EC (overlay 101 0x1ACC)"],
-        [101, "0x12B4C", "LOCAL func_overlay_101_F0001B8C_18DD3AC", "LOCAL func_overlay_101_F0001AE0_18DD300 (overlay 101 0x1AE0)"],
-        [101, "0x12B50", "LOCAL func_overlay_101_F0001AB8_18DD2D8", "LOCAL func_overlay_101_F0001AF4_18DD314 (overlay 101 0x1AF4)"],
-        [101, "0x12B54", "LOCAL func_overlay_101_F0001ACC_18DD2EC", "LOCAL func_overlay_101_F0001B08_18DD328 (overlay 101 0x1B08)"],
-        [101, "0x12B58", "LOCAL func_overlay_101_F0001AE0_18DD300", "LOCAL func_overlay_101_F0001B1C_18DD33C (overlay 101 0x1B1C)"],
-        [101, "0x12B5C", "LOCAL func_overlay_101_F0001AF4_18DD314", "LOCAL func_overlay_101_F0001B30_18DD350 (overlay 101 0x1B30)"],
-        [101, "0x12B60", "LOCAL func_overlay_101_F0001B08_18DD328", "LOCAL func_overlay_101_F0001B44_18DD364 (overlay 101 0x1B44)"],
-        [101, "0x12B64", "LOCAL func_overlay_101_F0001B1C_18DD33C", "LOCAL func_overlay_101_F0001B58_18DD378 (overlay 101 0x1B58)"],
-        [101, "0x12B68", "LOCAL func_overlay_101_F0001B30_18DD350", "LOCAL func_overlay_101_F0001B6C_18DD38C (overlay 101 0x1B6C)"],
-        [101, "0x12B6C", "LOCAL func_overlay_101_F0001B44_18DD364", "LOCAL func_overlay_101_F0001B80_18DD3A0 (overlay 101 0x1B80)"],
-        [101, "0x12B70", "LOCAL func_overlay_101_F0001B58_18DD378", "LOCAL func_overlay_101_F0001B8C_18DD3AC (overlay 101 0x1B8C)"],
-        [101, "0x12B74", "LOCAL func_overlay_101_F0001B6C_18DD38C", "LOCAL func_overlay_101_F0001B8C_18DD3AC (overlay 101 0x1B8C)"],
-        [101, "0x12B78", "LOCAL func_overlay_101_F0001B80_18DD3A0", "LOCAL func_overlay_101_F0001B8C_18DD3AC (overlay 101 0x1B8C)"],
-        [101, "0x12B7C", "LOCAL func_overlay_101_F0001F68_18DD788", "LOCAL func_overlay_101_F0001F50_18DD770 (overlay 101 0x1F50)"]
       ]
     }
   },

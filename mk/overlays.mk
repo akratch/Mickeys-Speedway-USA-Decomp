@@ -619,9 +619,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o: CFLAGS += -Wab,-r4300_mul
 #   against the shipped records). Calls to unexported callees are JUMP records
 #   and link as compiled.
 # - The object's .rodata is the shipped pool tail at rodata +0xE0C..+0xF10
-#   (both switch tables, the clock and builder literals, the selector table),
-#   apart from the DispatchActive/DispatchEvents table residuals; the bytes
-#   stay in the retained data blob. Its 16 text HI/LO pairs are rebound to an
+#   (both switch tables, the clock and builder literals, the selector table).
+#   All payload bytes match; its 12 trailing compiler-alignment bytes are zero.
+#   The bytes stay retained. Its 16 text HI/LO pairs are rebound to an
 #   absolute +0xE0C anchor (no instruction word changes), the payload is
 #   asserted by digest and dropped, with its now-orphaned table relocations.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o: CFLAGS += -Wab,-r4300_mul -woff 835
@@ -638,7 +638,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		@config/normalizations/overlay_101.filter.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:8a8fd1a2dc784d558ac66b908e977fc3581d6aeabdc409d536cd287716dd511f && \
+		sha256:cf2288cf839e4bf2dc1210508145352a794e74096da468ba9f85e32cd7f3e0e8 && \
 	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 21 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay_021.c.o: CFLAGS += -Wab,-r4300_mul

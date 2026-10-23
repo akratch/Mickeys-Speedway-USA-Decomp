@@ -1,5 +1,9 @@
 #include "overlays/overlay_016.h"
 
+u8 *gOverlay16Buffer = NULL;
+s32 gOverlay16Mode = 1;
+s32 gOverlay16Phase = 0;
+
 /*
  * JFG overlay 27 has the unique full 0x8C-byte object match for this routine;
  * pinned DKR v77/v80 scans are negative. JFG retains it as assembly, so this

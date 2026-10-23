@@ -703,8 +703,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 40 is one translation unit at the overlay flag set; its .text carries
 # the trailing pad, so nothing is trimmed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay_040.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 42 is one translation unit at the overlay flag set; its .text is the
-# module's whole text, so nothing is trimmed.
+# Overlay 42 owns its command-buffer data and published-task BSS separately.
+# The source-module link preserves both section bases and exported release calls.
+MODULE_LINKED_OVERLAYS += 042
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o042/overlay_042.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 43 ("clone.c") is one translation unit at the overlay flag set (the
 # projection builder keeps the radius multiply out of the call's delay slot,

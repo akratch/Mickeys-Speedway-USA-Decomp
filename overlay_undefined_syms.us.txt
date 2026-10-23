@@ -1560,35 +1560,6 @@ sqrtf_o041Reloc = 0xf0000000;
 texAnimateSprite_o041Reloc = 0xf0000000;
 trackAddTextureScroll_o041Reloc = 0xf0000000;
 
-/* overlay 42: overlay_042.c.o */
-D_8007A20C_o042Reloc = 0x00000000;
-D_8007A410_o042Reloc = 0x00000000;
-D_800D2FA0_o042Reloc = 0x00000000;
-D_800D2FA4_o042Reloc = 0x00000000;
-D_800D2FAC_o042Reloc = 0x00000000;
-gO42BufferIndexBaseReloc = 0x00000000;
-gO42ImageStateReloc = 0x00000000;
-gO42PublishedEndBaseReloc = 0x00000000;
-gO42PublishedSourceBaseReloc = 0x00000000;
-gO42PublishedStartReloc = 0x00000000;
-gOverlay42Buffer0 = 0x00000000;
-gOverlay42Buffer1 = 0x00000004;
-gOverlay42Buffer2 = 0x00000008;
-gOverlay42BufferIndex = 0x00000008;
-gOverlay42Buffers = 0x00000000;
-gOverlay42State0 = 0x00000000;
-gOverlay42State1 = 0x00000004;
-mmAlloc_o042Reloc = 0xf0000000;
-mmFree_o042Reloc = 0xf0000000;
-overlay42PrepareReloc = 0xf0000000;
-overlay42ResumeReloc = 0xf0000000;
-rcpFast3d_o042Reloc = 0xf0000000;
-rcpInitDpNoSize_o042Reloc = 0xf0000000;
-rcpInitSp_o042Reloc = 0xf0000000;
-rsp_segment_o042Reloc = 0xf0000000;
-viGetCurrentSize_o042Reloc = 0xf0000000;
-viGetTrippleBuffer_o042Reloc = 0xf0000000;
-
 /* overlay 43: overlay_043.c.o */
 Arctanf_o043Reloc = 0xf0000000;
 D_120 = 0x00000120;
@@ -4297,8 +4268,8 @@ func_overlay_041_F0001C84_1888FBC = overlay41DrawItem;
 
 /* overlay 42: overlay_042.c.o */
 func_overlay_042_F0000000_18896C0 = overlay42Init;
-func_overlay_042_F0000058_1889718 = overlay42Release;
 func_overlay_042_F00000D4_1889794 = overlay42Resume;
+func_overlay_042_F0000058_1889718 = overlay42Release;
 func_overlay_042_F00000F4_18897B4 = overlay42DrawCapturedBuffer;
 func_overlay_042_F00006A4_1889D64 = overlay42Present;
 

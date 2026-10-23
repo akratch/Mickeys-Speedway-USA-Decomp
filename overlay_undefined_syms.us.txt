@@ -1621,16 +1621,6 @@ rcpInitDpNoSize_o043Reloc = 0xf0000000;
 rsp_segment_o043Reloc = 0xf0000000;
 sqrtf_o043Reloc = 0xf0000000;
 
-/* overlay 44: overlay_044.c.o */
-D_800D76D0_o044Reloc = 0x00000000;
-D_800D76D8_o044Reloc = 0x00000000;
-mmAlloc_o044Reloc = 0xf0000000;
-mmFree_o044Reloc = 0xf0000000;
-overlay44ReleaseHandles_o044Reloc = 0xf0000000;
-piRomLoadSection_o044Reloc = 0xf0000000;
-texDPInit_o044Reloc = 0xf0000000;
-viFrameRateReset_o044Reloc = 0xf0000000;
-
 /* overlay 45: overlay_045.c.o */
 D_800D60E0_o045Reloc = 0x00000000;
 D_800D60E4_o045Reloc = 0x00000000;
@@ -4313,9 +4303,9 @@ func_overlay_042_F00000F4_18897B4 = overlay42DrawCapturedBuffer;
 func_overlay_042_F00006A4_1889D64 = overlay42Present;
 
 /* overlay 44: overlay_044.c.o */
-func_overlay_044_F0000000_188B860 = overlay44CreateAnimationState;
 func_overlay_044_F0000224_188BA84 = overlay44ReleaseHandles;
 func_overlay_044_F0000294_188BAF4 = overlay44UpdateFrameCache;
+func_overlay_044_F0000000_188B860 = overlay44CreateAnimationState;
 
 /* overlay 45: overlay_045.c.o */
 func_overlay_045_F0000000_188C458 = overlay45ResetState;

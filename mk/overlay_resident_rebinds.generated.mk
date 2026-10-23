@@ -837,15 +837,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay_043.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym rsp_segment=rsp_segment_o043Reloc \
 	--redefine-sym sqrtf=sqrtf_o043Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay_044.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D76D0=D_800D76D0_o044Reloc \
-	--redefine-sym D_800D76D8=D_800D76D8_o044Reloc \
-	--redefine-sym mmAlloc=mmAlloc_o044Reloc \
-	--redefine-sym mmFree=mmFree_o044Reloc \
-	--redefine-sym piRomLoadSection=piRomLoadSection_o044Reloc \
-	--redefine-sym texDPInit=texDPInit_o044Reloc \
-	--redefine-sym viFrameRateReset=viFrameRateReset_o044Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D60E0=D_800D60E0_o045Reloc \
 	--redefine-sym D_800D60E4=D_800D60E4_o045Reloc \

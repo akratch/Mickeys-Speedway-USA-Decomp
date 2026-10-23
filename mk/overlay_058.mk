@@ -7,12 +7,17 @@
 # until phase 3: the TU's .rodata (the state update's seven-entry switch
 # table and 0.02f literal, then the mode update's thirteen-entry table) is
 # still owned by the raw data blob at data_rodata +0x3D4, so the section is
-# asserted by digest and its three %hi/%lo pairs anchored at the shipped
+# asserted by digest and its three %hi/%lo pairs bound to a pool symbol at the shipped
 # rodata-relative 0x104; the tables' own text relocations go with it.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay_058.c.o: CFLAGS += -Wab,-r4300_mul -woff 835
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay_058.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
 	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay_058.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay58RodataReloc=0x104,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		0x654:.rodata:gOverlay58RodataReloc 0x65C:.rodata:gOverlay58RodataReloc 0xFF4:.rodata:gOverlay58RodataReloc 0xFF8:.rodata:gOverlay58RodataReloc \
+		0x149C:.rodata:gOverlay58RodataReloc 0x14A4:.rodata:gOverlay58RodataReloc && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:3dbf1ba8a2f53fbf224e3e1c3b43aca87ad4e03ba1a51538cbd7e818f0d158be 0x104 && \
+		sha256:3dbf1ba8a2f53fbf224e3e1c3b43aca87ad4e03ba1a51538cbd7e818f0d158be && \
 	$(OBJCOPY) --remove-section=.rel.rodata $@

@@ -2894,14 +2894,18 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay_063.c.o: CFLAGS += -Wab,-r4300_mul
 # calls are renamed by the generated surface rebinds. Kept until phase 3: the
 # TU's .rodata (the advance step's 0.15f factor and six-entry switch table)
 # is still owned by the raw data blob at +0x768, so the section is asserted
-# by digest and its two %hi/%lo pairs anchored at the module-relative 0x18
+# by digest and its two %hi/%lo pairs bound to a pool symbol at the module-relative 0x18
 # the shipped text encodes; the table's own text relocations go with it.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay_059.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay_059.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
 	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay_059.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay59RodataReloc=0x18,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		0x39C:.rodata:gOverlay59RodataReloc 0x3C0:.rodata:gOverlay59RodataReloc 0x3F0:.rodata:gOverlay59RodataReloc 0x3F8:.rodata:gOverlay59RodataReloc && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:614e19769956f461b87337c69ff451b22c7a557d16267e7b597407dfa11aa0a0 0x18 && \
+		sha256:614e19769956f461b87337c69ff451b22c7a557d16267e7b597407dfa11aa0a0 && \
 	$(OBJCOPY) --remove-section=.rel.rodata $@
 # Overlay 68: one module TU under the overlay flag set; its .text is the
 # module's full 0x15B0 bytes, trailing pad included, so no trim, and resident

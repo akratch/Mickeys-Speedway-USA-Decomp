@@ -113,7 +113,6 @@ s32 runlinkIsModuleLoaded(s32 moduleId);
 s32 scalevol(s32 volume);
 f32 sqrtf(f32 value);
 void mtxf_transform_point(MtxF matrix, f32 x, f32 y, f32 z, f32 *outX, f32 *outY, f32 *outZ);
-s32 Arctanf(f32 x, f32 z);
 s32 mainGetNumberOfCameras(void);
 void amGetSfxSettings(AudioSoundData **table, s32 *size, s32 *count);
 void *mmAlloc(s32 size, s32 tag);

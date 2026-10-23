@@ -1,4 +1,5 @@
 #include "overlays/overlay_001.h"
+#include "game/math.h"
 
 /* ---- overlay1InitializeGaugeObjects ---- */
 
@@ -174,7 +175,6 @@ extern O1ControlPoint *D_214;
 extern s32 D_1D94;
 extern Overlay1ValueRow D_1BA8[];
 
-f32 func_8002A8BC(s32 angle);
 extern void **func_80005750(s32 *count);
 extern void overlay36CallModeZero(void *object);
 extern void overlay1InterpolatePath(f32 *outX, f32 *outZ, s32 path,
@@ -403,7 +403,6 @@ typedef struct Overlay1SampleState {
 /* Pinned DKR v77/v80 and JFG scans classify overlay 1 as no donor. */
 extern Overlay1SampleState *gOverlay1SampleState;
 extern void overlay1InterpolatePath(f32 *x, f32 *y, s32 selector, f32 scale);
-extern s32 Arctanf(f32 x, f32 y);
 
 s32 overlay1AngleBetweenSamples(f32 unusedX, f32 unusedY) {
     f32 firstX;
@@ -864,12 +863,10 @@ void func_overlay_007_F0000EDC_185CD64Reloc(void);
 f32 func_overlay_008_F0001000_185ED58Reloc(void *object, void *state, f32 limit);
 s32 func_8002675C(void);
 s32 func_800299E8(s32 minimum, s32 maximum);
-f32 func_8002A8BC(s32 angle);
 void amSndStopXYZ(void *handle);
 void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority, void **handle);
 void amSndSetXYZ(void *handle, f32 x, f32 y, f32 z);
 f32 func_8002A878(f32 base, s32 exponent);
-f32 func_8002A8C0(s32 angle);
 s32 func_8001E5C4(void *object, void *state, f32 update);
 s32 func_8001DD70(void *object, void *state, f32 update);
 s32 func_80008128(void *object, f32 x, f32 y, f32 z);
@@ -1597,8 +1594,6 @@ typedef struct Overlay1DirectionalObject {
 } Overlay1DirectionalObject;
 extern Overlay1DirectionalObject **overlay1GetObjectList(s32 *count);
 extern f32 sqrtf(f32 value);
-extern f32 func_8002A8C0(s32 angle);
-extern f32 func_8002A8BC(s32 angle);
 
 Overlay1DirectionalObject *overlay1FindDirectionalObject(
     Overlay1DirectionalObject *object, void *unused1, void *unused2,
@@ -1992,7 +1987,6 @@ void overlay1ReadSelection(Overlay1Object *object, s32 index, f32 *outX,
 /* ---- overlay1SolveAngleCandidates ---- */
 
 
-extern s32 Arctanf(f32 y, f32 x);
 
 /* The root count is defined before the discriminant region. Keep the signed
  * radical separate from the quotient, and the switch cases in this order. */
@@ -2151,7 +2145,6 @@ typedef struct Overlay1RangeObject {
 
 /* Retained for the separate nearby-pending reconstruction below. */
 extern Overlay1RangeObject **overlay1GetObjectListReloc(s32 *count);
-extern s32 Arctanf(f32 dz, f32 dx);
 extern void overlay1InitializeModeState(s32 value);
 
 /* Matched 2026-10-01 by discarding the inherited shape; the 2-word closure

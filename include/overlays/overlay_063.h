@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "n_audio/mbi.h"
+#include "game/math.h"
 
 /* Overlay 63. */
 
@@ -86,7 +87,6 @@ extern void func_8002F618(void *, O63LocalObject *, s32, s32, s32, s32, s32, s32
 extern void texAnimateTexSprite(s32, void *, s32, f32 *, s32);
 extern void texDPInit(void *);
 extern void camStandardOrtho(void *, void *);
-extern f32 func_8002A8C0(u16);
 extern void camDo2DSprite(void *, void *, void *, O63RenderPosition *, void *, s32, s32);
 extern u32 D_800D3180;
 extern s32 gO63ExternalTimerReloc;

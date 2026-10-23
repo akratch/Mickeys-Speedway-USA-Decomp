@@ -12,6 +12,7 @@
 
 #include "game/fx.h"
 #include "n_audio/mbi.h"
+#include "game/math.h"
 
 typedef struct FxConePoint {
     f32 x;
@@ -69,7 +70,6 @@ extern void func_80048080(s32 count, s16 arg1, s16 arg2, s16 arg3,
                           s16 arg4, s16 arg5, FxConePoint *points,
                           u8 *vertices, s32 alpha);
 extern void viGetCurrentSize(s32 *width, s32 *height);
-extern s16 Arctanf(f32 x, f32 y);
 extern s32 viGetVideoMode(void);
 extern void wakeUpdate(Wake *wake, f32 x, f32 height, f32 z, s16 angle,
                        s32 delta);

@@ -2,8 +2,7 @@
 #define OVERLAY_043_H
 
 #include "PR/ultratypes.h"
-
-typedef f32 MtxF[4][4];
+#include "game/math.h"
 
 /* Called with a matrix by the projection builder and with the motion output
  * block by the motion helper; unprototyped so both views pass a pointer. */
@@ -273,7 +272,6 @@ extern Overlay43Record gO43FallbackReloc;
 #define gO43Fallback gO43FallbackReloc
 
 extern Overlay43Level *levelGetLevel(void);
-extern s16 Arctanf(f32 x, f32 y);
 extern f32 sqrtf(f32 value);
 extern s16 dAngle(s16 from, s16 to, f32 fraction);
 extern void func_8002AE10(Overlay43Transform *transform, MtxF matrix);
@@ -311,7 +309,6 @@ typedef union {
     Gwords words;
     long long force_structure_alignment;
 } Gfx;
-
 
 typedef struct {
     long m[4][4];

@@ -17,6 +17,7 @@
 #include "game/anim.h"
 #include "game/charControl.h"
 #include "game/overlay_exports.h"
+#include "game/math.h"
 
 void *mmAlloc();
 AnimPathObject *func_8000590C(ControlSpawnPacket *packet, s32 mode);
@@ -1051,8 +1052,6 @@ void func_800498FC(s32 index, f32 duration, f32 delay, s32 red,
                    s32 green, s32 blue, s32 flags);
 void func_8004EED0(s32 arg0);
 void func_8004E99C(void);
-f32 func_8002A8BC(s32 angle);
-f32 func_8002A8C0(s32 angle);
 void camStartShake(s32 camNo, f32 attack, f32 sustain, f32 decay,
                    s32 magnitude);
 void rumbleStart(s32 playerIndex, s32 strength, f32 duration);
@@ -3571,8 +3570,6 @@ s32 func_800563B4(s32 object, AnimCollisionShape *first, s32 value,
     return status;
 }
 
-f32 func_8002A8BC(s32 angle);
-f32 func_8002A8C0(s32 angle);
 
 /*
  * Matched 2026-10-09 (lane s-2), after many passes on the allocator. Three

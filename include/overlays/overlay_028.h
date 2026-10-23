@@ -2,6 +2,7 @@
 #define OVERLAY_028_H
 
 #include "ultra64.h"
+#include "game/math.h"
 
 typedef union Overlay28Gfx {
     struct {
@@ -147,8 +148,6 @@ typedef struct Overlay28Transform {
 
 extern Overlay28ColourTable gOverlay28ColourTable;
 extern Overlay28Triangle gOverlay28Triangles[16];
-extern f32 func_8002A8C0(s32 angle);
-extern f32 func_8002A8BC(s32 angle);
 extern void resetColourCycle(Overlay28ColourCycle *cycle);
 extern void updateColourCycle(Overlay28ColourCycle *cycle, s32 updateRate);
 extern void pointListRPY(s32 count, void *object, f32 *input, f32 *output);

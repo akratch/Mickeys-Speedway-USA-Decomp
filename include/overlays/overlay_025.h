@@ -2,6 +2,7 @@
 #define OVERLAY_025_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 typedef struct Overlay25Object Overlay25Object;
 
@@ -128,8 +129,6 @@ typedef void (*Overlay25CollisionCallback)(Overlay25Vector *start,
                                             f32 length, Overlay25Source *source,
                                             Overlay25VectorObject *object);
 
-extern f32 func_8002A8C0(s32 angle);
-extern f32 func_8002A8BC(s32 angle);
 extern s32 func_800299E8(s32 lower, s32 upper);
 extern void func_80006EA0(Overlay25Object *object);
 extern void func_80008128(Overlay25Object *object, f32 x, f32 y, f32 z);

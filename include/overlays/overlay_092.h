@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "PR/os_internal.h"
+#include "game/math.h"
 /* Exact DKR and JFG scans are negative. */
 typedef struct Overlay92State { s16 x, y, z, w; u16 a, b; s8 mode; } Overlay92State;
 
@@ -96,9 +97,6 @@ extern f32 D_8;
 extern f32 D_C;
 extern s32 D_800C947C;
 extern s32 mathDiffAngle(s16 current, s16 target);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
-extern s32 Arctanf(f32 x, f32 y);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern s32 func_8000FAE0(f32 x, f32 y, f32 z);
 extern s32 levelGetNumber(void);

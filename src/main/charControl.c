@@ -23,6 +23,7 @@
 #include "PR/ultratypes.h"
 #include "game/charControl.h"
 #include "game/overlay_exports.h"
+#include "game/math.h"
 
 extern u8 D_80079BF8;
 extern u16 D_80079A0C[];
@@ -207,11 +208,8 @@ extern u8 D_800CB2FD;
 
 void pointListRPY(s32 count, s16 *rotation, f32 *input, f32 *output);
 void func_8001EFFC(ControlTransform *transform, ControlPlayer *player, f32 *output);
-f32 func_8002A8BC(s32 angle);
-f32 func_8002A8C0(s32 angle);
 /* Returns int: func_8001EC44 narrows the result itself before the call that
  * consumes it, and func_8001DCD0 stores it through s16 pointers. */
-s32 Arctanf(f32 x, f32 y);
 f32 sqrtf(f32 value);
 void mathOneFloatRPY(ControlTransform *transform, f32 *output);
 s32 mathRnd(s32 minimum, s32 maximum);

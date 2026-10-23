@@ -2,6 +2,7 @@
 #define OVERLAY_089_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 /* Overlay 89: a flickering light effect with a drifting aim and a particle
  * burst. Pinned DKR v77/v80 and JFG object scans found no exact donor. */
@@ -144,8 +145,6 @@ typedef struct Overlay89Particle {
     u32 flagsC;
 } Overlay89Particle;
 
-extern f32 func_8002A8C0(s16 angle);
-extern f32 func_8002A8BC(s16 angle);
 extern void trackLightMove(void *handle, f32 x, f32 y, f32 z);
 extern void *trackLightAdd(f32 x, f32 y, f32 z, f32 scale,
                            f32 scaledSize, s32 red, s32 green, s32 blue);

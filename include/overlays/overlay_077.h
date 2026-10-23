@@ -2,6 +2,7 @@
 #define OVERLAY_077_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 /*
  * Overlay 77: shared module header. DKR v77/v80 object initializers
@@ -75,8 +76,6 @@ extern s32 gOverlay77Sequence;
 
 s32 mathRnd(s32 minimum, s32 maximum);
 void amSndStopXYZ(void *argument);
-f32 func_8002A8C0(s16 angle);
-f32 func_8002A8BC(s16 angle);
 void texAnimateSprite(void *path, s32 *mode, s16 kind, f32 *field,
                         s32 updateRate);
 void amSndPlayXYZ(s32 objectId, s32 x, s32 y, s32 z, s32 mode,

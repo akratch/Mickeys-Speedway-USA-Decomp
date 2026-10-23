@@ -279,9 +279,6 @@ void func_8004FAD0(MtxF matrix, u16 *perspNorm, f32 fovy, f32 aspect,
 void mtxf_transform_point(MtxF matrix, f32 x, f32 y, f32 z,
                           f32 *outX, f32 *outY, f32 *outZ);
 void func_80029AB8(MtxF matrix, f32 scale);
-f32 func_8002A8BC(s32 angle);
-f32 func_8002A8C0(s32 angle);
-s16 Arctanf(f32 x, f32 y);
 void func_8002AA50(CameraScaledTransform *transform, MtxF matrix);
 void func_8002AB78(CameraTransform *transform, MtxF matrix);
 void func_8002AE10(CameraTransform *transform, MtxF matrix);

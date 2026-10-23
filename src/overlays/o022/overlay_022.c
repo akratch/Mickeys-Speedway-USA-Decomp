@@ -154,7 +154,7 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
         slopeZ = state->up.y * x;
         angle = Arctanf(slopeX, slopeZ);
         length = sqrtf(slopeX * slopeX + slopeZ * slopeZ);
-        accelerationY = func_8002A8C0(Arctanf(slopeY, length));
+        accelerationY = func_8002A8C0((s16)Arctanf(slopeY, length));
         accelerationX = func_8002A8C0(angle) * -accelerationY;
         accelerationZ = func_8002A8BC(angle) * -accelerationY;
     } else {

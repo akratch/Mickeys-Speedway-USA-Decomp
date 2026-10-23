@@ -2,6 +2,7 @@
 #define OVERLAY_022_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 typedef struct O22Vec3f {
     f32 x;
@@ -84,10 +85,7 @@ extern void func_overlay_022_F0000D30_1878E38Reloc();
 
 extern void mathOneFloatRPY(void *, Vec3f *);
 extern s32 func_8000FAE0(f32, f32, f32);
-extern s32 Arctanf(f32 y, f32 x);
 extern f32 sqrtf(f32 value);
-extern f32 func_8002A8BC(s16 angle);
-extern f32 func_8002A8C0(s16 angle);
 extern void trackMakePolylist(s32 count, O22Vec3f *start, O22Vec3f *end,
                               f32 *distance, void *arg4, s32 arg5);
 extern s32 func_80010900(O22Vec3f *start, O22Vec3f *end, f32 distance,

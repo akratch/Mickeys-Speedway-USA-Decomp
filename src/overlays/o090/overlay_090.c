@@ -1,4 +1,5 @@
 #include "overlays/overlay_090.h"
+#include "game/math.h"
 
 /* DKR v77/v80 and JFG contain no exact donor for this state initializer. */
 void overlay90Initialize(Overlay90Owner *owner, Overlay90Config *config) {
@@ -92,8 +93,6 @@ extern Overlay90Level *levelGetLevel(void);
 extern void amTunePlay(u8 sequenceId);
 extern void amSndStopXYZ(void *handle);
 extern void func_80006EA0(void *object);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
 extern s32 func_8000FAE0(f32 x, f32 y, f32 z);
 extern void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority,
                           void **handle);

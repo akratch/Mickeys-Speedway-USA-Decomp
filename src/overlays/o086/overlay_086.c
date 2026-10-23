@@ -1,4 +1,5 @@
 #include "overlays/overlay_086.h"
+#include "game/math.h"
 
 void overlay86ProcessCurrent(Overlay86Object *owner) {
     Overlay86Current *current;
@@ -142,7 +143,6 @@ M2C_UNK amSndStopXYZ();                             /* extern */
 M2C_UNK func_800291D8(M2C_UNK);                     /* extern */
 s32 mathRnd(M2C_UNK, M2C_UNK);                /* extern */
 M2C_UNK mathOneFloatPY(void *, void *);              /* extern */
-f32 func_8002A8C0(s16);                             /* extern */
 void *func_80005820(u8);                             /* extern */
 M2C_UNK func_800498FC(u8, M2C_UNK, f32, M2C_UNK, s32, s32, s32); /* extern */
 M2C_UNK func_8005ABA8(void *, M2C_UNK, f32);        /* extern */

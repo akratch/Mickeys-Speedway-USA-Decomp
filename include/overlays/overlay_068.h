@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/pi.h"
+#include "game/math.h"
 
 /* Overlay 68: the trail and payload effect entries. */
 
@@ -294,7 +295,6 @@ extern Overlay68TimerEntry *gOverlay68TimerEntry;
 extern void *D_8007A1F8;
 extern void func_8005AD64(Overlay68Object *object, s32 arg1, s32 arg2, f32 arg3);
 extern s16 func_8000FAE0(f32 x, f32 y, f32 z);
-extern s16 Arctanf(f32 x, f32 z);
 extern s16 mathDiffAngle(s32 from, s32 to);
 extern void func_8005ABA8(Overlay68Object *object, f32 scale,
     f32 updateRate);

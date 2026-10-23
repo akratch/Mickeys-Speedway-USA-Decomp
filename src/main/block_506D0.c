@@ -2,8 +2,6 @@
 #include "game/math.h"
 
 extern f32 D_80083F60;
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
 
 /* PROVENANCE: adapted from Jet Force Gemini's public libultra decomp,
  * libultra/src/gu/perspective.c:guPerspectiveF; Mickey's angle helpers,

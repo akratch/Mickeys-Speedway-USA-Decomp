@@ -2,6 +2,7 @@
 #define OVERLAY_097_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 /* DKR obj_init_scenery shares only the scale-prefix semantics, not this body. */
 typedef struct Overlay97State {
     f32 direction[3];
@@ -35,9 +36,7 @@ typedef struct Overlay97Config {
     u8 angleB;
 } Overlay97Config;
 
-extern f32 func_8002A8C0(s32 angle);
 
-extern f32 func_8002A8BC(s32 angle);
 
 /* DKR source/object scans found no corresponding routine. */
 typedef struct Overlay97Angles {

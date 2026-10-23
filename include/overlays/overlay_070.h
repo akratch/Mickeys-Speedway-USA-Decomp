@@ -2,6 +2,7 @@
 #define OVERLAY_070_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 /* Overlay 70. */
 
@@ -127,8 +128,6 @@ extern s32 gOverlay70SharedCounterReloc;
 /* Resident functions. */
 extern s32 mathRnd(s32 lower, s32 upper);
 extern void func_80006EA0(O70Object *object);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
 extern void texAnimateSprite(void *target, s32 *flags, s32 mode,
                              f32 *coordinates, s32 ticks);
 extern O70Object **func_8000572C(s32 *start, s32 *end);

@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "n_audio/mbi.h"
+#include "game/math.h"
 
 typedef struct O26Vec3f {
     f32 x;
@@ -253,10 +254,7 @@ extern s32 func_8000FAE0(f32 x, f32 y, f32 z);
 extern void func_80006EA0(void *object);
 extern void partUpdateTriggers(void *object, s32 updateRate);
 extern f32 sqrtf(f32 value);
-extern s32 Arctanf(f32 x, f32 z);
 extern s32 mathDiffAngle(s16 first, s16 second, s32 step);
-extern f32 func_8002A8C0(s32 angle);
-extern f32 func_8002A8BC(s32 angle);
 extern s32 func_80008128(O26ObjectUpdate *object, f32 arg1, f32 arg2, f32 arg3);
 extern void func_8001DCD0(s16 rotation, O26Vec3f *direction,
                           s16 *pitch, s16 *yaw);

@@ -17,10 +17,10 @@
 
 #include "PR/ultratypes.h"
 #include "game/lights.h"
+#include "game/math.h"
 
 extern void initColourCycle();
 extern f32 sqrtf(f32 value);
-extern f32 func_8002A8BC(s32 angle);
 extern void mmFree(void *ptr);
 extern void *mmAlloc(s32 size, s32 tag);
 extern void lightCreateLightTable(s32 red, s32 green, s32 blue, void *table);

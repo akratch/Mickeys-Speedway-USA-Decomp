@@ -2,6 +2,7 @@
 #define OVERLAY_094_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 typedef struct Overlay94Record {
     u8 pad00[0x40];
@@ -68,7 +69,6 @@ extern f32 func_8002A878(f32 amount, s32 updateRate);
 extern s32 func_8002A910(f32 z, f32 x);
 extern void func_8002B040(void *queryState, f32 x, f32 y, f32 z,
                           f32 *out0, f32 *out1, f32 *out2);
-extern s32 Arctanf(f32 value0, f32 value1);
 extern s32 func_8005ABA8(Overlay94Object *object, f32 current, f32 rate);
 extern void func_8005AD64(Overlay94Object *object, s32 arg1, s32 arg2,
                           f32 arg3);

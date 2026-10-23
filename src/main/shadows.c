@@ -16,6 +16,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/overlay_exports.h"
+#include "game/math.h"
 
 typedef struct ShadowGenerateAngle {
     s16 horizontal;
@@ -47,8 +48,6 @@ extern s32 D_800CB280;
 extern s32 D_800CB268;
 extern s32 D_800CB26C;
 extern s32 D_800C9D40;
-extern f32 func_8002A8BC(s16 angle);
-extern f32 func_8002A8C0(s16 angle);
 extern s32 D_800CAF58;
 extern u8 D_800CAF60[];
 extern u8 D_800C9D48[];
@@ -194,7 +193,6 @@ void shadowGetBuffers(s32 arg0, void **arg1, void **arg2, void **arg3) {
  * declarations reconstruct this pipeline; no external function body is
  * adapted.
  */
-extern s16 Arctanf(f32 x, f32 y);
 extern f32 Powerf(f32 value, s32 exponent);
 extern f32 camDistance(f32 x, f32 y, f32 z);
 extern s32 camGetMode(void);

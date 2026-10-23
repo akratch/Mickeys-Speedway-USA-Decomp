@@ -438,10 +438,8 @@ void *texFrame(TrackTextureHeader *texture, s32 frame);
 TrackCamera *camGetPtr(void);
 TrackLight *trackLightAsm(TrackData *track, TrackLight *light, void *state);
 s32 mainGetNumberOfCameras(void);
-f32 func_8002A8BC(s32 angle);
 s32 func_80013324(f32 coefficient, f32 numerator,
                   f32 *minimum, f32 *maximum);
-f32 func_8002A8C0(s32 angle);
 void func_8000F82C(s32 start, s32 count, s32 end);
 s32 func_80010178(u32 segmentIndex);
 s32 func_800103D4(void *object);
@@ -3250,7 +3248,6 @@ typedef struct TrackCollisionRecord {
     u8 value3D;
 } TrackCollisionRecord;
 
-s32 Arctanf(f32 x, f32 y);
 
 /* Named vector members preserve the compiler's separate scalar identities.
  * The three first-cross carriers become the projected point in the last branch;

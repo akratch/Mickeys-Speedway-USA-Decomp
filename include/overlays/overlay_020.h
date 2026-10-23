@@ -2,6 +2,7 @@
 #define OVERLAY_020_H
 
 #include "ultra64.h"
+#include "game/math.h"
 
 typedef struct Overlay20TreeNode {
     u8 pad00[0x20];
@@ -294,7 +295,6 @@ extern void mmFree(void *data);
 extern Overlay20Context *trackGetTrack(void);
 extern Overlay20LookupResult *func_8000FEEC(s16 index);
 extern f32 sqrtf(f32 value);
-extern f32 func_8002A8C0(s32 angle);
 extern void texDPTextureX(Overlay20Command **commands, void *resource,
                           s32 arg2, s32 arg3);
 

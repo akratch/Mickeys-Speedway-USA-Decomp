@@ -1,6 +1,7 @@
 #include "PR/ultratypes.h"
 #include "game/memory.h"
 #include "game/overlay_exports.h"
+#include "game/math.h"
 
 extern s32 D_8007BEA8;
 extern s32 D_8007BE90;
@@ -46,7 +47,6 @@ extern s32 D_8007BEB0;
 extern s32 D_8007BEB4;
 extern f32 D_800826A0;
 extern void func_800378A4(f32 amount, s32 intensity);
-extern f32 func_8002A8C0(s32 angle);
 extern f32 sqrtf(f32 value);
 extern void func_80037AEC(f32 amplitude, s32 intensity);
 

@@ -1,4 +1,5 @@
 #include "overlays/overlay_001.h"
+#include "game/math.h"
 
 /* ---- overlay1BuildPointRecord ---- */
 
@@ -43,8 +44,6 @@ typedef struct Overlay1PointRecord {
     Overlay1GeneratedPoint points[8];
 } Overlay1PointRecord;
 
-extern f32 func_8002A8C0(s32 angle);
-extern f32 func_8002A8BC(s32 angle);
 
 void overlay1BuildPointRecord(Overlay1PointRecord *output,
                               const Overlay1PointTemplate *source,

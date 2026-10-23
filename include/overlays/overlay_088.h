@@ -2,6 +2,7 @@
 #define OVERLAY_088_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 /* Overlay 88: an anchored geometry object. Exact DKR and JFG scans are
  * negative for its initializer and anchor update; its renderer is overlay
@@ -69,9 +70,6 @@ extern void func_80007C68(Overlay88Object *object,
                           Overlay88Node *sameNode, s16 selector);
 extern void func_8002B040(Overlay88Transform *transform, f32 x, f32 y, f32 z,
                           f32 *outX, f32 *outY, f32 *outZ);
-extern s16 Arctanf(f32 x, f32 z);
-extern f32 func_8002A8C0(s16 angle);
-extern f32 func_8002A8BC(s32 angle);
 
 void overlay88Init(Overlay88Object *object, void *entry);
 void overlay88UpdateAnchor(Overlay88Object *object, s32 updateContext);

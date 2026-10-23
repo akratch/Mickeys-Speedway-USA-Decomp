@@ -198,9 +198,7 @@ extern s32 gOverlay99Arg4;
 
 extern s32 gOverlay99Arg5;
 
-extern f32 func_8002A8BC(s32 angle);
 
-extern f32 func_8002A8C0(s32 angle);
 
 extern s32 gOverlay99SegmentCount;
 
@@ -236,7 +234,6 @@ extern void rcpClearZBuffer(Gfx **displayList, u32 width,
 
 extern void texDPInit(Gfx **displayList);
 
-extern s16 Arctanf(f32 x, f32 z);
 
 extern f32 sqrtf(f32 squared);
 

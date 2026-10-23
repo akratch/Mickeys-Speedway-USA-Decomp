@@ -21,6 +21,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/pi.h"
+#include "game/math.h"
 
 typedef f32 Matrix[4][4];
 
@@ -229,9 +230,6 @@ void mtxf_transform_point(Matrix matrix, f32 x, f32 y, f32 z,
 ModelRenderCamera *camGetListPtr(void);
 s32 camGetMode(void);
 s32 func_800290A0(void);
-s32 Arctanf(f32 y, f32 x);
-f32 func_8002A8BC(s32 angle);
-f32 func_8002A8C0(s32 angle);
 void func_8002B040(void *matrix, f32 x, f32 y, f32 z,
                    f32 *outX, f32 *outY, f32 *outZ);
 void func_800591B0(Matrix *matrices, Matrix root,

@@ -1,4 +1,5 @@
 #include "overlays/overlay_056.h"
+#include "game/math.h"
 
 /*
  * Overlay 56, ADR 0006 consolidation: one translation unit in ROM order.
@@ -149,8 +150,6 @@ extern void func_8002A604(s16 angle, O56Mtx *matrix);
 extern void camCopyOrthoMatrix(O56Mtx *matrix);
 extern void mtxf_mul(O56Mtx *lhs, O56Mtx *rhs, O56Mtx *dest);
 extern void mtxf_to_mtx(O56Mtx *src, O56Mtx *dest);
-extern f32 func_8002A8BC(s16 angle);
-extern f32 func_8002A8C0(s16 angle);
 extern s32 D_800C947C;
 extern s32 D_8007C1B0;
 extern u8 D_8007BEF8;

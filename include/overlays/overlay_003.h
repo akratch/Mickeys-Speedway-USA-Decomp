@@ -2,6 +2,7 @@
 #define OVERLAY_003_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 /* A racer's AI state block, as overlay 3's target selection reads it. */
 typedef struct Overlay3State {
@@ -55,7 +56,6 @@ extern f32 gOverlay3SearchMaxDistance[];
 extern Overlay3Object **func_80005750(s32 *count);
 extern Overlay3Object **func_8000572C(s32 *start, s32 *end);
 extern f32 func_8000BD0C(f32, f32, f32, f32, f32, f32);
-extern s32 Arctanf(f32 dx, f32 dz);
 extern s32 mathDiffAngle(s16 heading, s32 angle);
 extern s32 overlay1GetEntry(s32 one);
 extern s32 func_overlay_002_F0001A94_185888C(f32 ax, f32 az, f32 bx, f32 bz, s32 angleValue, s32 zero, s32 minusOne, s32 mask);

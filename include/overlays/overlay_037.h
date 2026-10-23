@@ -2,6 +2,7 @@
 #define OVERLAY_037_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 /*
  * Overlay 37: one translation unit (ADR 0006). The per-function files' private
@@ -113,7 +114,6 @@ extern Overlay37Triangle gOverlay37Triangles[4];
 
 extern Overlay37Camera *camGetPtr(void);
 extern s32 camGetNo(void);
-extern f32 func_8002A8C0(s32 angle);
 extern void func_80006EA0(Overlay37Object *object);
 extern void pointListRPY(s32 mode, void *source, Overlay37State *state,
                           Overlay37Position *position);

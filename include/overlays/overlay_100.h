@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "n_audio/mbi.h"
+#include "game/math.h"
 
 typedef struct Overlay100Vec3 {
     f32 x;
@@ -51,8 +52,6 @@ extern s32 func_800299E8(s32 minimum, s32 maximum);
 extern void mathOneFloatPY(s16 *angles, Overlay100Vec3 *velocity);
 extern O100View *func_8002468C(void);
 extern s16 *camGetPtr(void);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
 extern void texDPInit(Gfx **commands);
 
 Overlay100Motion *overlay100InitializeMotion(

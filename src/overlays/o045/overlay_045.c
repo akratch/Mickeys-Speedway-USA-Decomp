@@ -2,6 +2,7 @@
 
 #include "game/font.h"
 #include "n_audio/mbi.h"
+#include "game/math.h"
 
 /* The overlay's initialized owner is a display-list setup followed by the
  * allocator diagnostic and the three motion constants used by this range. */
@@ -53,7 +54,6 @@ extern void func_8004B0B8(s32 red, s32 green, s32 blue, s32 alpha,
 
 extern s32 func_8002997C(s32 minimum, s32 maximum);
 
-extern f32 func_8002A8C0(s32 angle);
 
 struct Overlay45Vertex;
 
@@ -128,7 +128,6 @@ extern void func_8004D39C(char *input, char *output);
 
 extern Overlay45GlyphData *func_8004C690(u8 character);
 
-extern f32 func_8002A8BC(s32 angle);
 
 /*
  * PROVENANCE -- the control-stream and font-command organization was

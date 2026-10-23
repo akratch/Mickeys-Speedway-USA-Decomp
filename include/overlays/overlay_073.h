@@ -2,6 +2,7 @@
 #define OVERLAY_073_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
 
 /* Overlay 73: a twelve-vertex quad effect that tracks a nearby target.
  * DKR v77/v80 and JFG contain no exact donor for its functions. */
@@ -97,14 +98,11 @@ extern u8 D_80000000[];
 
 extern s32 func_8005776C(f32 x, f32 y, f32 z, f32 radius, s32 mode,
                          struct HitCopyState **hits);
-extern s32 Arctanf(f32 x, f32 y);
 extern f32 sqrtf(f32 value);
 extern void func_80008118(void);
 extern void func_80008128(void *object, f32 x, f32 y, f32 z);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern s32 func_800299E8(s32 minimum, s32 maximum);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
 extern void camPushModelMtx(Overlay73Command **commands, void *context,
                             Overlay73Object *object, f32 scale, f32 extra);
 extern void texDPTextureX(Overlay73Command **commands, void *resource,

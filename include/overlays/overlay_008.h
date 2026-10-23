@@ -82,7 +82,6 @@ typedef struct O8State {
 #define O8_S32(address) (*(s32 *)(address))
 #define O8_S32_ARRAY(address) ((s32 *)(address))
 #define O8_PTR(address) (*(void **)(address))
-#define gOverlay8MotionOutsideValueReloc D_28C
 
 typedef struct Overlay8MotionRecord {
     u8 pad000[0xC4];
@@ -686,9 +685,7 @@ extern void lightObject(O8Owner *, O8Node *, void *, void *);
 
 extern void ext_o8_3368(O8Owner *, O8State *, void *, O8Node *, s32);
 
-extern f32 gO8FloatCC, gO8FloatD0, gO8FloatD4, gO8FloatD8;
 
-extern f32 gO8FloatDC, gO8FloatE0;
 
 extern void *gO8Pointer14, *gO8Pointer18;
 
@@ -740,15 +737,10 @@ extern u8 D_8007BF0C;
 
 
 
-extern const f32 gO8Phase2TargetReloc;
 
-extern const f32 gO8Phase2ScaleReloc;
 
-extern const f32 gO8Phase3DecayReloc;
 
-extern const f32 gO8RetireThresholdReloc;
 
-extern const f32 gO8Phase3ScaleReloc;
 
 extern f32 overlay1DistanceFromCurrent(void);
 
@@ -771,13 +763,9 @@ extern s32 mathRnd(s32 low, s32 high);
 /* Declared with a result: the caller's dead count copy takes v1, not v0. */
 extern s32 overlay34CreateRecord(O8P2640Record *record);
 
-extern f32 O8P291C_data_1A0;
 
-extern f32 O8P291C_data_1A4;
 
-extern f32 O8P291C_data_1A8;
 
-extern f32 O8P291C_data_1AC;
 
 extern f32 D_800CB304;
 
@@ -794,11 +782,8 @@ extern s32 func_8001DD70(O8P291CMotion *motion, O8P291CState *state,
 
 extern s32 func_80008128(O8P291CMotion *motion, f32 x, f32 y, f32 z);
 
-extern const f32 gOverlay8UpdateLowerReloc;
 
-extern const f32 gOverlay8UpdateUpperReloc;
 
-extern const f32 gOverlay8UpdateDecayReloc;
 
 extern void wakeUpdateRipple(Overlay8UpdateOwner *owner,
                                       s32 updateRate);
@@ -816,9 +801,7 @@ extern void func_8004707C(void *target, s32 alpha0,
                                                s32 alpha1, s32 alpha2,
                                                s32 red, s32 green, s32 blue);
 
-extern const f32 gOverlay8ScaleLowerReloc;
 
-extern const f32 gOverlay8ScaleUpperReloc;
 
 extern u8 D_0[];
 
@@ -988,7 +971,6 @@ extern s16 *gOverlay8CommandBuffer;
 
 extern s16 gOverlay8Value;
 
-extern const f32 D_28C;
 
 extern const Overlay8MotionRow D_2230[];
 

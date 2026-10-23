@@ -398,69 +398,24 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay_019.c.o: CFLAGS += -Wab,-r4300_mul
 # Its resident calls go through the generated surface rebinds.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: CFLAGS += -Wab,-r4300_mul
 O8_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o
-$(O8_OBJ): config/normalizations/overlay8P0058.rebind.spec
-$(O8_OBJ): config/normalizations/overlay8P1294.rebind.spec
-$(O8_OBJ): config/normalizations/overlay8UpdateChannels.rebind.spec
-$(O8_OBJ): config/normalizations/overlay8P2640.rebind.spec
-$(O8_OBJ): config/normalizations/overlay8P34A0.rebind.spec
-$(O8_OBJ): config/normalizations/overlay8P42A8.rebind.spec
-$(O8_OBJ): config/normalizations/overlay8P4CF0.rebind.spec
-# The object's .rodata is seven literal pools in function order: the +0x0058
-# update's seven floats (retail 0xB0 on), the +0x1294 update's forty (one
-# entry per use, retail 0xF8 through 0x194), the +0x2640 emitter's two
-# (retail 0x198, 0x19C), the +0x3018 channel update's (retail 0x1BC on), the
-# +0x34A0 update's thirty-four (retail 0x1D8 through 0x25C), the +0x42A8
-# update's eleven (retail 0x260 through 0x288; retail's unreferenced 0.04 at
-# 0x28C has no entry here), then the +0x4CF0 surface update's (retail 0x290
-# on).  Each pool is rebound to an absolute anchor and keeps its
-# section-relative addend, so each anchor is its retail offset less the bytes
-# that precede it in the object: 0xF8 less 0x1C, 0x198 less 0xBC, 0x1BC less
-# 0xC4, 0x1D8 less 0xD8, 0x260 less 0x160, 0x290 less 0x18C.
-# gOverlay8CommandBuffer is a second header name for gOverlay8Buffer (the
-# +0x34A0 update's second address build; one name would share the address).
+# Mickey's LOCAL records distinguish the rodata base from data/BSS. Restoring
+# the intervening scalar literals makes the compiler's complete 512-byte float
+# pool identical to retained rodata +0xB0..+0x2B0. One section anchor replaces
+# the former seven per-function bindings; no stored addend is edited.
+# gOverlay8CommandBuffer remains a second header name for gOverlay8Buffer
+# (the +0x34A0 update's second address build).
 # No -Wo,-loopunroll,0 (removed 2026-10-02).  It was added for the +0x34A0
 # body's angle loop and was byte-inert on every function of this unit by then;
 # the +0x0058 body's four selector reads are a plain for loop that the
 # default -O2 unroller expands exactly as shipped, which the flag forbade.
 # Overlay 8 is one translation unit at the overlay flag set and owns its pad;
-# Its placeholder calls and data
-# references are valued by the generated surface and its resident calls go
-# through the generated rebinds, so no symbol is renamed here. What remains is
-# rodata ownership, kept until phase 3 (docs/OVERLAY_STRUCTURE_SPRINT.md):
-# the seven literal pools are anchored to the retained image as described
-# above and the duplicate .rodata is dropped by digest.
+# Its remaining calls/data names use the generated surface. The complete
+# compiler float pool is guarded and externalized onto its retained slice;
+# the rest of the initialized image remains separate phase-3 work.
 $(O8_OBJ): CFLAGS += -Wab,-r4300_mul
 $(O8_OBJ): POSTPROCESS = \
-	$(OBJCOPY) --add-symbol \
-		gOverlay8P0058Constants=0xB0,global $@ && \
-	$(OBJCOPY) --add-symbol \
-		gOverlay8P1294Constants=0xDC,global $@ && \
-	$(OBJCOPY) --add-symbol \
-		gOverlay8P2640Constants=0xDC,global $@ && \
-	$(OBJCOPY) --add-symbol \
-		gOverlay8UpdateChannelConstants=0xF8,global $@ && \
-	$(OBJCOPY) --add-symbol \
-		gOverlay8P34A0Constants=0x100,global $@ && \
-	$(OBJCOPY) --add-symbol \
-		gOverlay8P42A8Constants=0x100,global $@ && \
-	$(OBJCOPY) --add-symbol \
-		gOverlay8P4CF0Constants=0x104,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay8P0058.rebind.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay8P1294.rebind.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay8P2640.rebind.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay8UpdateChannels.rebind.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay8P34A0.rebind.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay8P42A8.rebind.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay8P4CF0.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:cb542eb96174af8e212c2049a1ab797e4bdd93850668aeb935a4771504af5aca
+		sha256:7624884a94483694a30029849c2e893068ed2d27134576687d72ef03019418f7 0xB0
 
 # Overlay 9 is one translation unit at the overlay flag set and owns its pad.
 # Data externalization remains until the module's initialized data is C-owned

@@ -16150,28 +16150,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x4C",
-     "size": "0x4C",
-     "type": "c",
-     "source": "overlays/o088/overlay88Init",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x4C",
-     "end_offset": "0x1A4",
-     "size": "0x158",
-     "type": "c",
-     "source": "overlays/o088/overlay88UpdateAnchor",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1A4",
      "end_offset": "0x740",
-     "size": "0x59C",
+     "size": "0x740",
      "type": "c",
-     "source": "overlays/o088/overlay88DrawSortedGeometry",
+     "source": "overlays/o088/overlay_088",
      "matched": true,
      "nonmatching": false
     }

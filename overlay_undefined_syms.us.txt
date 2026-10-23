@@ -4165,7 +4165,14 @@ gOverlay87UpdateTable = 0x00000000;
 mathRnd_o087Reloc = 0xf0000000;
 sqrtf_o087Reloc = 0xf0000000;
 
-/* overlay 88: overlay88DrawSortedGeometry.c.o */
+/* overlay 88: overlay_088.c.o */
+Arctanf_o088Reloc = 0xf0000000;
+func_80007C68_o088Reloc = 0xf0000000;
+func_8002A8BC_o088Reloc = 0xf0000000;
+func_8002A8C0_o088Reloc = 0xf0000000;
+func_8002B040_o088Reloc = 0xf0000000;
+func_8005AF14_o088Reloc = 0xf0000000;
+lightObject_o088Reloc = 0xf0000000;
 overlay88DrawConeReloc = 0xf0000000;
 overlay88DrawFixedResourceReloc = 0xf0000000;
 overlay88MetricReloc = 0xf0000000;
@@ -6034,13 +6041,9 @@ func_overlay_086_F0000444_18D227C = overlay86Init;
 func_overlay_087_F0000000_18D2F68 = overlay87InitializeObject;
 func_overlay_087_F0000890_18D37F8 = overlay87ReleaseCurrent;
 
-/* overlay 88: overlay88Init.c.o */
+/* overlay 88: overlay_088.c.o */
 func_overlay_088_F0000000_18D3A88 = overlay88Init;
-
-/* overlay 88: overlay88UpdateAnchor.c.o */
 func_overlay_088_F000004C_18D3AD4 = overlay88UpdateAnchor;
-
-/* overlay 88: overlay88DrawSortedGeometry.c.o */
 func_overlay_088_F00001A4_18D3C2C = overlay88DrawSortedGeometry;
 
 /* overlay 89: overlay_089.c.o */

@@ -1939,6 +1939,15 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay_087.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym mathRnd=mathRnd_o087Reloc \
 	--redefine-sym sqrtf=sqrtf_o087Reloc $@
 
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay_088.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o088Reloc \
+	--redefine-sym func_80007C68=func_80007C68_o088Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o088Reloc \
+	--redefine-sym func_8002A8C0=func_8002A8C0_o088Reloc \
+	--redefine-sym func_8002B040=func_8002B040_o088Reloc \
+	--redefine-sym func_8005AF14=func_8005AF14_o088Reloc \
+	--redefine-sym lightObject=lightObject_o088Reloc $@
+
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay_089.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym addObjectLight=addObjectLight_o089Reloc \
 	--redefine-sym changeLightIntensity=changeLightIntensity_o089Reloc \

@@ -6622,43 +6622,12 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o088/overlay88DrawSortedGeometry.c.o",
-      "offset": 420,
-      "overlay": 88,
-      "size": 1436,
-      "source": "src/overlays/o088/overlay88DrawSortedGeometry.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o088/overlay88Init.c.o",
+      "object": "build/src/overlays/o088/overlay_088.c.o",
       "offset": 0,
       "overlay": 88,
-      "size": 76,
-      "source": "src/overlays/o088/overlay88Init.c",
+      "size": 1856,
+      "source": "src/overlays/o088/overlay_088.c",
       "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o088/overlay88UpdateAnchor.c.o",
-      "offset": 76,
-      "overlay": 88,
-      "size": 344,
-      "source": "src/overlays/o088/overlay88UpdateAnchor.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "trim_elf_section.py",
         "objcopy"
       ]
     },
@@ -8261,10 +8230,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 568,
+      "metadata": 566,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 430416,
-    "objects_with_postprocess": 569
+    "objects_with_postprocess": 567
   }
 }

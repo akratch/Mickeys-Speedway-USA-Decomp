@@ -1580,34 +1580,23 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o081/overlay_081.c.o: CFLAGS += -Wab,-r4300_mul
 # is exactly 0x40 bytes and the tail's .text ends with the module's pad.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o082/overlay_082.c.o: CFLAGS += -Wab,-r4300_mul -Wo,-loopunroll,2
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o082/overlay_082_tail.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88Init.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4C
-# Source naturally reproduces every instruction word and the seven retail
-# runtime relocation sites. The split target aliases those sites to its
-# offset-zero static proxy, so fold only the role names and trim alignment.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88UpdateAnchor.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88UpdateAnchor.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x60:lightObject:func_8005AF14 \
-		0x80:func_80007C68:func_8005AF14 \
-		0xc4:func_8002B040:func_8005AF14 \
-		0xd0:Arctanf:func_8005AF14 \
-		0xec:func_8002A8C0:func_8005AF14 \
-		0x118:func_8002A8BC:func_8005AF14 && \
-	$(OBJCOPY) --redefine-sym func_8005AF14=func_overlay_088_F0000000_18D3A88 $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x158
-# The wrapper compiles the shared C body in candidate and promoted modes.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: \
+# Overlay 88 is one translation unit under the overlay flag set; its .text is
+# the module's 0x740 bytes, so it needs no trim. Its renderer is overlay 69's
+# source, included and renamed (overlay_088.c), so the C spells overlay 69's
+# callees; this rename gives the module its own runtime-relocation
+# placeholders for them, one of which (overlay17DrawStrip) is cross-overlay
+# and so has no generated rename. The anchor update's resident calls go
+# through the generated _o088Reloc renames.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay_088.c.o: \
 	$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.c
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: POSTPROCESS = \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay_088.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay_088.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym overlay17DrawStrip=overlay88DrawFixedResourceReloc \
 		--redefine-sym camGetProjZ=overlay88MetricReloc \
 		--redefine-sym func_80022E80=overlay88PrepareTransformReloc \
 		--redefine-sym func_80022FD4=overlay88SubmitDynamicReloc \
-		--redefine-sym fxDrawCone=overlay88DrawConeReloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x59C
+		--redefine-sym fxDrawCone=overlay88DrawConeReloc $@
 # Overlay 89 is one translation unit under the overlay flag set; its .text is
 # the module's 0x7D0 bytes, trailing pad included, so it needs no trim. Its
 # three unexported functions are static (JUMP records).

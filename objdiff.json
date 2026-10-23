@@ -16639,56 +16639,20 @@
       }
     },
     {
-      "name": "src/overlays/o088/overlay88DrawSortedGeometry.c",
-      "target_path": "expected/build/src/overlays/o088/overlay88DrawSortedGeometry.c.o",
-      "base_path": "build/src/overlays/o088/overlay88DrawSortedGeometry.c.o",
+      "name": "src/overlays/o088/overlay_088.c",
+      "target_path": "expected/build/src/overlays/o088/overlay_088.c.o",
+      "base_path": "build/src/overlays/o088/overlay_088.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [
           "overlay",
           "overlay-o088"
         ],
-        "source_path": "src/overlays/o088/overlay88DrawSortedGeometry.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o088/overlay88Init.c",
-      "target_path": "expected/build/src/overlays/o088/overlay88Init.c.o",
-      "base_path": "build/src/overlays/o088/overlay88Init.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o088"
-        ],
-        "source_path": "src/overlays/o088/overlay88Init.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o088/overlay88UpdateAnchor.c",
-      "target_path": "expected/build/src/overlays/o088/overlay88UpdateAnchor.c.o",
-      "base_path": "build/src/overlays/o088/overlay88UpdateAnchor.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o088"
-        ],
-        "source_path": "src/overlays/o088/overlay88UpdateAnchor.c",
+        "source_path": "src/overlays/o088/overlay_088.c",
         "complete": true
       }
     },

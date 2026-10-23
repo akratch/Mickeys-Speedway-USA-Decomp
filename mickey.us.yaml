@@ -2939,9 +2939,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x18D3A88, c, overlay88Init]
-      - [0x18D3AD4, c, overlay88UpdateAnchor]
-      - [0x18D3C2C, c, overlay88DrawSortedGeometry]
+      - [0x18D3A88, c, overlay_088]
       - [0x18D41C8, bin, overlay_088_reloc1]
 
   - name: overlay_089

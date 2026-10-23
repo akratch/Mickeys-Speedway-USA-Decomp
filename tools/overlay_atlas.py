@@ -819,9 +819,7 @@ TEXT_SUBSEGMENTS = {
         (0xECC, "asm", "overlay_086_padding"),
     ],
     88: [
-        (0x000, "c", "overlay88Init"),
-        (0x04C, "c", "overlay88UpdateAnchor"),
-        (0x1A4, "c", "overlay88DrawSortedGeometry"),
+        (0x000, "c", "overlay_088"),
     ],
     89: [
         (0x000, "c", "overlay_089"),

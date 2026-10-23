@@ -389,9 +389,26 @@ class CanonicalDataOnlyOwnershipTests(unittest.TestCase):
         return [{"type": "c", "source": "overlays/o008/overlay_008"}]
 
     def test_registered_data_only_owner_is_a_canonical_atlas_row(self):
-        rows = overlay_atlas.data_rodata_ownership_rows(
-            8, 0x2500, self.text_ownership()
-        )
+        # Exercise registration independently of the growing campaign's live
+        # owner list, including one trial row beside two canonical owners.
+        registered = [
+            (0x3E0, 0x520, "fixtureEffects", ".data"),
+            (0x2378, 0x2418, "fixtureMotion", ".data"),
+        ]
+        with mock.patch.dict(
+            overlay_atlas.FIXED_DATA_RODATA_OWNERSHIP,
+            {8: [(0x27C, 0x2AC, "overlay_008", ".rodata", "fixtureBody")]},
+            clear=True,
+        ), mock.patch.dict(
+            overlay_atlas.CANONICAL_FIXED_DATA_RODATA_OWNERSHIP,
+            {8: registered}, clear=True,
+        ), mock.patch.object(
+            overlay_atlas, "DATA_ONLY_FIXED_DATA_SOURCES",
+            {(8, "fixtureEffects", ".data"), (8, "fixtureMotion", ".data")},
+        ):
+            rows = overlay_atlas.data_rodata_ownership_rows(
+                8, 0x2500, self.text_ownership()
+            )
         self.assertEqual(
             rows[-1],
             {
@@ -400,7 +417,7 @@ class CanonicalDataOnlyOwnershipTests(unittest.TestCase):
                 "size": "0xA0",
                 "type": "c",
                 "section": ".data",
-                "source": "overlays/o008/overlay8MotionConstants",
+                "source": "overlays/o008/fixtureMotion",
                 "canonical": True,
             },
         )
@@ -412,7 +429,7 @@ class CanonicalDataOnlyOwnershipTests(unittest.TestCase):
                 "size": "0x140",
                 "type": "c",
                 "section": ".data",
-                "source": "overlays/o008/overlay8EffectTables",
+                "source": "overlays/o008/fixtureEffects",
                 "canonical": True,
             },
         )
@@ -438,8 +455,33 @@ class CanonicalDataOnlyOwnershipTests(unittest.TestCase):
 
         self.assertIn("subalign: 0x4", block)
         self.assertIn("- [0x1854500, bin, overlay_001_data_rodata]", block)
-        self.assertIn("- [0x1854774, .rodata, storageOnly]", block)
+        self.assertIn(
+            "- {start: 0x1854774, type: .rodata, name: storageOnly, "
+            "linker_section_order: .data}", block,
+        )
         self.assertIn("- [0x1854794, bin, overlay_001_data_rodata_294]", block)
+
+    def test_terminal_readonly_owner_keeps_normal_section_order(self):
+        for split_tail in (False, True):
+            with self.subTest(split_tail=split_tail):
+                module_row = trial_module()
+                part = module_row["data_rodata_ownership"][0]
+                part["source"] = "overlays/o001/storageOnly"
+                part["canonical"] = True
+                module_row["sections"]["data_rodata"].update(
+                    size="0x294", end="0x1854794"
+                )
+                if split_tail:
+                    second = dict(part, source="overlays/o001/nextStorage",
+                                  offset="0x284", size="0x10")
+                    part.update(end_offset="0x284", size="0x10")
+                    module_row["data_rodata_ownership"].append(second)
+                block = overlay_atlas.render_yaml_block({"modules": [module_row]})
+                self.assertIn("- [0x1854774, .rodata, storageOnly]", block)
+                if split_tail:
+                    self.assertIn("- [0x1854784, .rodata, nextStorage]", block)
+                self.assertNotIn("linker_section_order", block)
+                self.assertNotIn("overlay_001_data_rodata_294", block)
 
     def test_canonical_owner_overlap_with_trial_owner_fails_closed(self):
         module_row = trial_module()
@@ -520,7 +562,10 @@ class TrialProjectionTests(unittest.TestCase):
         carved = self.render(
             trial_ownership=True, trial_sources=frozenset({"example_tail"})
         )
-        self.assertIn("- [0x1854774, .rodata, example_tail]", carved)
+        self.assertIn(
+            "- {start: 0x1854774, type: .rodata, name: example_tail, "
+            "linker_section_order: .data}", carved,
+        )
         self.assertIn("subalign: 0x4", carved)
 
     def test_a_named_trial_function_carves_only_its_owned_range(self):
@@ -529,7 +574,10 @@ class TrialProjectionTests(unittest.TestCase):
             trial_sources=frozenset({"example_tail"}),
             trial_functions=frozenset({"example_owner"}),
         )
-        self.assertIn("- [0x1854774, .rodata, example_tail]", carved)
+        self.assertIn(
+            "- {start: 0x1854774, type: .rodata, name: example_tail, "
+            "linker_section_order: .data}", carved,
+        )
 
     def test_an_externalized_owner_keeps_the_retained_raw_slice(self):
         module = trial_module()

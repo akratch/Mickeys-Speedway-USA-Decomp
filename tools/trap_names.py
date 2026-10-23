@@ -73,6 +73,7 @@ SHT_RELA = 4
 SHT_NOBITS = 8
 SHT_REL = 9
 STT_FUNC = 2
+STB_GLOBAL, STB_WEAK = 1, 2
 R_MIPS_26 = 4
 
 OVERLAY_VMA = 0xF0000000
@@ -329,14 +330,18 @@ def table_sites(rom: bytes) -> dict[int, dict]:
 
 
 def overlay_functions(elf: bytes) -> tuple[dict[tuple[int, int], list[str]], dict[str, int]]:
-    """(overlay, offset) -> function names defined there, and a name census."""
+    """Globally callable overlay functions and a visible-definition census."""
     sections = _sections(elf)
     symbols = _symbols(elf, sections, _single_symtab(sections))
     census: dict[str, int] = {}
     at: dict[tuple[int, int], list[str]] = {}
     for symbol in symbols:
-        if symbol["name"]:
-            census[symbol["name"]] = census.get(symbol["name"], 0) + 1
+        # Local ABS bindings are runtime operands, not exported definitions.
+        # Undefined/private symbols cannot name a resident caller's export.
+        if (not symbol["name"] or symbol["bind"] not in (STB_GLOBAL, STB_WEAK)
+                or symbol["shndx"] == 0):
+            continue
+        census[symbol["name"]] = census.get(symbol["name"], 0) + 1
         if symbol["type"] != STT_FUNC or not 0 < symbol["shndx"] < len(sections):
             continue
         match = re.fullmatch(r"\.overlay_(\d{3})", sections[symbol["shndx"]][0])

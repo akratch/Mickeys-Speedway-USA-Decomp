@@ -1614,7 +1614,7 @@ Overlay1DirectionalObject *overlay1FindDirectionalObject(
 
     objects = overlay1GetObjectList(&count);
     best = 0;
-    bestValue = 3.40282347e+38f;
+    bestValue = 3.402823466e+38f;
     if (overlay1ActivateObject(object)) {
         goto active;
     }

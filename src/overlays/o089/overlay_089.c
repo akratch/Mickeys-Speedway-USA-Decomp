@@ -1,5 +1,11 @@
 #include "overlays/overlay_089.h"
 
+/* Tier D: three observed scale values occupy the initialized image;
+ * their individual reads prove these scalar views, not an original array. */
+f32 gOverlay89EffectScale = 0.4f;
+f32 gOverlay89InitScale = 0.01f;
+f32 gOverlay89RandomScale = 0.1f;
+
 /*
  * DKR v77/v80 and JFG have no exact donor for this effect update. The
  * per-file R4300 multiply scheduling flag is required for the shipped hazard
@@ -90,8 +96,8 @@ static void overlay89Update(Overlay89Object *position, Overlay89EffectState *mot
     }
 }
 
-/* Mickey-derived reconstruction. The scale member keeps the unsigned size
- * conversion ahead of the scale load without a named float carrier. */
+/* Mickey-derived reconstruction. The initialized scale is read after the
+ * unsigned size conversion, as proved by the complete source-module link. */
 void overlay89InitializeEffect(Overlay89Object *object,
                                Overlay89Init *init) {
     Overlay89NestedRoot *root;
@@ -106,7 +112,7 @@ void overlay89InitializeEffect(Overlay89Object *object,
     state = object->state;
     object->angleB = init->angleB << 8;
 
-    object->size = (f32)(u32)init->size * gOverlay89InitScale.scale;
+    object->size = (f32)(u32)init->size * gOverlay89InitScale;
 
     state->mode = init->mode;
     state->motionFlags = init->motionFlags;
@@ -245,7 +251,7 @@ void overlay89UpdateStateAndParticles(Overlay89Object *object,
                     particle.rotation = -0x8000;
                     particle.flagsC = 0xFF000000;
                     if (count--) {
-                        randomScale = gOverlay89RandomScale[2];
+                        randomScale = gOverlay89RandomScale;
                         do {
                             particle.angleA =
                                 mathRnd(-0x2000, 0x2000) +

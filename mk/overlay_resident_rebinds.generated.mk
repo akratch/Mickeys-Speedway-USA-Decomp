@@ -1435,18 +1435,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay_088.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym func_8005AF14=func_8005AF14_o088Reloc \
 	--redefine-sym lightObject=lightObject_o088Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay_089.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym addObjectLight=addObjectLight_o089Reloc \
-	--redefine-sym changeLightIntensity=changeLightIntensity_o089Reloc \
-	--redefine-sym func_8002905C=func_8002905C_o089Reloc \
-	--redefine-sym func_8002A8BC=func_8002A8BC_o089Reloc \
-	--redefine-sym func_8002A8C0=func_8002A8C0_o089Reloc \
-	--redefine-sym mathRnd=mathRnd_o089Reloc \
-	--redefine-sym overlay34CreateRecord=overlay34CreateRecord_o089Reloc \
-	--redefine-sym trackLightAdd=trackLightAdd_o089Reloc \
-	--redefine-sym trackLightColour=trackLightColour_o089Reloc \
-	--redefine-sym trackLightMove=trackLightMove_o089Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o090/overlay_090.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800C947C=D_800C947C_o090Reloc \
 	--redefine-sym D_800C9480=D_800C9480_o090Reloc \

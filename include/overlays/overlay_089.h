@@ -144,11 +144,6 @@ typedef struct Overlay89Particle {
     u32 flagsC;
 } Overlay89Particle;
 
-/* Three .rodata placeholders: each site's addend lives in the instruction. */
-extern f32 gOverlay89EffectScale;
-extern struct { f32 unused; f32 scale; } gOverlay89InitScale;
-extern f32 gOverlay89RandomScale[];
-
 extern f32 func_8002A8C0(s16 angle);
 extern f32 func_8002A8BC(s16 angle);
 extern void trackLightMove(void *handle, f32 x, f32 y, f32 z);

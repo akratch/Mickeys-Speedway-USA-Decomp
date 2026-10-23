@@ -3224,21 +3224,6 @@ overlay88MetricReloc = 0xf0000000;
 overlay88PrepareTransformReloc = 0xf0000000;
 overlay88SubmitDynamicReloc = 0xf0000000;
 
-/* overlay 89: overlay_089.c.o */
-addObjectLight_o089Reloc = 0xf0000000;
-changeLightIntensity_o089Reloc = 0xf0000000;
-func_8002905C_o089Reloc = 0xf0000000;
-func_8002A8BC_o089Reloc = 0xf0000000;
-func_8002A8C0_o089Reloc = 0xf0000000;
-gOverlay89EffectScale = 0x00000000;
-gOverlay89InitScale = 0x00000000;
-gOverlay89RandomScale = 0x00000000;
-mathRnd_o089Reloc = 0xf0000000;
-overlay34CreateRecord_o089Reloc = 0xf0000000;
-trackLightAdd_o089Reloc = 0xf0000000;
-trackLightColour_o089Reloc = 0xf0000000;
-trackLightMove_o089Reloc = 0xf0000000;
-
 /* overlay 90: overlay_090.c.o */
 D_800C947C_o090Reloc = 0x00000000;
 D_800C9480_o090Reloc = 0x00000000;
@@ -4174,8 +4159,8 @@ func_overlay_088_F000004C_18D3AD4 = overlay88UpdateAnchor;
 func_overlay_088_F00001A4_18D3C2C = overlay88DrawSortedGeometry;
 
 /* overlay 89: overlay_089.c.o */
-func_overlay_089_F0000270_18D44A0 = overlay89InitializeEffect;
 func_overlay_089_F00005A4_18D47D4 = overlay89UpdateStateAndParticles;
+func_overlay_089_F0000270_18D44A0 = overlay89InitializeEffect;
 
 /* overlay 90: overlay_090.c.o */
 func_overlay_090_F0000000_18D4AF8 = overlay90Initialize;

@@ -40,4 +40,4 @@ void overlay69UpdateAnchor(Overlay69AnchorObject *object, s32 updateContext) {
 }
 
 /* +0x170. Overlay 88 ships the same function and includes this file. */
-#include "overlay69DrawSortedGeometry.inc"
+#include "overlay69DrawSortedGeometry.inc.c"

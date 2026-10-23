@@ -1536,7 +1536,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88UpdateAnchor.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x158
 # The wrapper compiles the shared C body in candidate and promoted modes.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: \
-	$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.inc
+	$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.inc.c
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym overlay17DrawStrip=overlay88DrawFixedResourceReloc \
@@ -2860,11 +2860,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay_055.c.o: POSTPROCESS = \
 # generated surface rebinds.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay_066.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 69: one module TU under the overlay flag set. Its renderer body is
-# overlay69DrawSortedGeometry.inc, which overlay 88's TU also includes. The
+# overlay69DrawSortedGeometry.inc.c, which overlay 88's TU also includes. The
 # .text is the module's full 0x710 bytes, so no trim; resident calls are
 # renamed by the generated surface rebinds.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay_069.c.o: \
-	$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.inc
+	$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.inc.c
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay_069.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 71: one module TU under the overlay flag set; its .text is the
 # module's full 0xB50 bytes, trailing pad included, so no trim, and resident

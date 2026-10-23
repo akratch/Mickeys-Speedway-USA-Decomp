@@ -5,4 +5,4 @@
  */
 #define overlay69DrawSortedGeometry overlay88DrawSortedGeometry
 
-#include "src/overlays/o069/overlay69DrawSortedGeometry.inc"
+#include "src/overlays/o069/overlay69DrawSortedGeometry.inc.c"

@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 153, "borrowed_records": 9143},
+  "totals": {"differences": 149, "borrowed_records": 9141},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -20,7 +20,7 @@
     },
     "pool-layout": {
       "about": "an object's own literal or static data sits at a different offset",
-      "count": 124,
+      "count": 120,
       "entries": [
         [1, "0x5F00", "LOCAL D_overlay_001_F0008394_1854774", "LOCAL D_overlay_001_F0008390_1854770 (overlay 1 0x8390)"],
         [1, "0x5F08", "LOCAL D_overlay_001_F0008394_1854774", "LOCAL D_overlay_001_F0008390_1854770 (overlay 1 0x8390)"],
@@ -141,11 +141,7 @@
         [8, "0x50EC", "LOCAL D_overlay_008_F0007654_18653AC", "LOCAL D_overlay_008_F000762C_1865384 (overlay 8 0x762C)"],
         [8, "0x50F8", "LOCAL D_overlay_008_F0007654_18653AC", "LOCAL D_overlay_008_F000762C_1865384 (overlay 8 0x762C)"],
         [8, "0x50FC", "LOCAL D_overlay_008_F0007658_18653B0", "LOCAL D_overlay_008_F0007630_1865388 (overlay 8 0x7630)"],
-        [8, "0x5100", "LOCAL D_overlay_008_F0007658_18653B0", "LOCAL D_overlay_008_F0007630_1865388 (overlay 8 0x7630)"],
-        [46, "0xE20", "LOCAL D_overlay_046_F0001C9C_1890094", "LOCAL D_overlay_046_F0001CB4_18900AC (overlay 46 0x1CB4)"],
-        [46, "0xE2C", "LOCAL D_overlay_046_F0001C9C_1890094", "LOCAL D_overlay_046_F0001CB4_18900AC (overlay 46 0x1CB4)"],
-        [46, "0xE64", "LOCAL D_overlay_046_F0001CAC_18900A4", "LOCAL D_overlay_046_F0001CC4_18900BC (overlay 46 0x1CC4)"],
-        [46, "0xE70", "LOCAL D_overlay_046_F0001CAC_18900A4", "LOCAL D_overlay_046_F0001CC4_18900BC (overlay 46 0x1CC4)"]
+        [8, "0x5100", "LOCAL D_overlay_008_F0007658_18653B0", "LOCAL D_overlay_008_F0007630_1865388 (overlay 8 0x7630)"]
       ]
     },
     "table-entry": {
@@ -267,7 +263,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1943,
+      "count": 1942,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1038,7 +1034,6 @@
         [46, "gOverlay46Resource4C", 4],
         [46, "gOverlay46Resource50", 4],
         [46, "gOverlay46Selection", 4],
-        [46, "gOverlay46Spacing48", 2],
         [46, "gOverlay46State", 2],
         [46, "gOverlay46StateA", 2],
         [46, "gOverlay46StateB", 2],
@@ -2216,7 +2211,7 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 70,
+      "count": 69,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -2252,8 +2247,7 @@
         [43, "func_overlay_043_F0000324_188A2F4", ".rodata", "0x1520", 2],
         [43, "overlay43ComputeMotion", ".rodata", "0x1524", 2],
         [45, "overlay_045", ".rodata", "0x1C94", 6],
-        [46, "func_overlay_046_F0000874_188EC6C", ".rodata", "0x1CB4", 6],
-        [46, "overlay46UpdateSequence", ".rodata", "0x1CC4", 2],
+        [46, "overlay_046", ".rodata", "0x1C9C", 14],
         [47, "func_overlay_047_F0000000_1890E18", ".bss", "0x3390", 105],
         [47, "func_overlay_047_F0000000_1890E18", ".data", "0x2DF0", 22],
         [47, "func_overlay_047_F0000000_1890E18", ".rodata", "0x3350", 2],

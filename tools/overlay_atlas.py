@@ -161,7 +161,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         )
     ],
     25: [(0x20, 0x40, "overlay_025", ".rodata", "overlay25UpdateEffect", True)],
-    46: [(0x364, 0x378, "overlay46UpdateSequence", ".rodata", "func_overlay_046_F0000120_188E518", True)],
     58: [
         # The seven-entry state switch table and the 0.02f literal,
         # rodata-relative +0x104 through +0x124.
@@ -294,6 +293,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     37: "overlay_037_padding",
     39: "overlay_039_padding",
     40: "overlay_040_padding",
+    46: "overlay_046_padding",
     52: "overlay_052_padding",
     54: "overlay_054_padding",
     50: "overlay_050_padding",
@@ -1087,16 +1087,7 @@ TEXT_SUBSEGMENTS = {
         (0x355C, "asm", "overlay_060_padding"),
     ],
     46: [
-        (0x000, "c", "overlay46InitializeState"),
-        (0x120, "c", "overlay46UpdateSequence"),
-        (0x614, "c", "overlay46ReleaseState"),
-        (0x69C, "c", "overlay46InitializeParticles"),
-        (0x874, "c", "func_overlay_046_F0000874_188EC6C"),
-        (0xF7C, "c", "overlay46InitState"),
-        (0xFD0, "c", "overlay46UpdateTransition"),
-        (0x112C, "c", "overlay46Submit"),
-        (0x1150, "c", "overlay46InitializeBuffers"),
-        (0x1228, "c", "func_overlay_046_F0001228_188F620"),
+        (0x000, "c", "overlay_046"),
         (0x195C, "asm", "overlay_046_padding"),
     ],
     48: [

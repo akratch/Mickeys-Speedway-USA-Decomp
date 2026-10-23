@@ -3685,147 +3685,15 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o046/func_overlay_046_F0000874_188EC6C.c.o",
-      "offset": 2164,
-      "overlay": 46,
-      "size": 1800,
-      "source": "src/overlays/o046/func_overlay_046_F0000874_188EC6C.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "externalize_elf_section.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o046/func_overlay_046_F0001228_188F620.c.o",
-      "offset": 4648,
-      "overlay": 46,
-      "size": 1844,
-      "source": "src/overlays/o046/func_overlay_046_F0001228_188F620.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o046/overlay46InitState.c.o",
-      "offset": 3964,
-      "overlay": 46,
-      "size": 84,
-      "source": "src/overlays/o046/overlay46InitState.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o046/overlay46InitializeBuffers.c.o",
-      "offset": 4432,
-      "overlay": 46,
-      "size": 216,
-      "source": "src/overlays/o046/overlay46InitializeBuffers.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o046/overlay46InitializeParticles.c.o",
-      "offset": 1692,
-      "overlay": 46,
-      "size": 472,
-      "source": "src/overlays/o046/overlay46InitializeParticles.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o046/overlay46InitializeState.c.o",
+      "object": "build/src/overlays/o046/overlay_046.c.o",
       "offset": 0,
       "overlay": 46,
-      "size": 288,
-      "source": "src/overlays/o046/overlay46InitializeState.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o046/overlay46ReleaseState.c.o",
-      "offset": 1556,
-      "overlay": 46,
-      "size": 136,
-      "source": "src/overlays/o046/overlay46ReleaseState.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o046/overlay46Submit.c.o",
-      "offset": 4396,
-      "overlay": 46,
-      "size": 36,
-      "source": "src/overlays/o046/overlay46Submit.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o046/overlay46UpdateSequence.c.o",
-      "offset": 288,
-      "overlay": 46,
-      "size": 1268,
-      "source": "src/overlays/o046/overlay46UpdateSequence.c",
+      "size": 6492,
+      "source": "src/overlays/o046/overlay_046.c",
       "tools": [
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
-        "trim_elf_section.py",
         "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o046/overlay46UpdateTransition.c.o",
-      "offset": 4048,
-      "overlay": 46,
-      "size": 348,
-      "source": "src/overlays/o046/overlay46UpdateTransition.c",
-      "tools": [
-        "filter_elf_relocations.py",
-        "trim_elf_section.py"
       ]
     },
     {
@@ -8157,10 +8025,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 562,
+      "metadata": 553,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 431140,
-    "objects_with_postprocess": 563
+    "objects_with_postprocess": 554
   }
 }

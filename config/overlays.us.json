@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4816,
+  "owned_data_rodata_bytes": 4796,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -8968,91 +8968,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x120",
-     "size": "0x120",
-     "type": "c",
-     "source": "overlays/o046/overlay46InitializeState",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x120",
-     "end_offset": "0x614",
-     "size": "0x4F4",
-     "type": "c",
-     "source": "overlays/o046/overlay46UpdateSequence",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x614",
-     "end_offset": "0x69C",
-     "size": "0x88",
-     "type": "c",
-     "source": "overlays/o046/overlay46ReleaseState",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x69C",
-     "end_offset": "0x874",
-     "size": "0x1D8",
-     "type": "c",
-     "source": "overlays/o046/overlay46InitializeParticles",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x874",
-     "end_offset": "0xF7C",
-     "size": "0x708",
-     "type": "c",
-     "source": "overlays/o046/func_overlay_046_F0000874_188EC6C",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xF7C",
-     "end_offset": "0xFD0",
-     "size": "0x54",
-     "type": "c",
-     "source": "overlays/o046/overlay46InitState",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xFD0",
-     "end_offset": "0x112C",
-     "size": "0x15C",
-     "type": "c",
-     "source": "overlays/o046/overlay46UpdateTransition",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x112C",
-     "end_offset": "0x1150",
-     "size": "0x24",
-     "type": "c",
-     "source": "overlays/o046/overlay46Submit",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1150",
-     "end_offset": "0x1228",
-     "size": "0xD8",
-     "type": "c",
-     "source": "overlays/o046/overlay46InitializeBuffers",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1228",
      "end_offset": "0x195C",
-     "size": "0x734",
+     "size": "0x195C",
      "type": "c",
-     "source": "overlays/o046/func_overlay_046_F0001228_188F620",
+     "source": "overlays/o046/overlay_046",
      "matched": true,
      "nonmatching": false
     },
@@ -9177,19 +9096,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 88
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x364",
-     "end_offset": "0x378",
-     "size": "0x14",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o046/overlay46UpdateSequence",
-     "trial_function": "func_overlay_046_F0000120_188E518",
-     "externalized": true
-    }
-   ]
+   }
   },
   {
    "overlay": 47,

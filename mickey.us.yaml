@@ -2070,17 +2070,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x188E3F8, c, overlay46InitializeState]
-      - [0x188E518, c, overlay46UpdateSequence]
-      - [0x188EA0C, c, overlay46ReleaseState]
-      - [0x188EA94, c, overlay46InitializeParticles]
-      - [0x188EC6C, c, func_overlay_046_F0000874_188EC6C]
-      - [0x188F374, c, overlay46InitState]
-      - [0x188F3C8, c, overlay46UpdateTransition]
-      - [0x188F524, c, overlay46Submit]
-      - [0x188F548, c, overlay46InitializeBuffers]
-      - [0x188F620, c, func_overlay_046_F0001228_188F620]
-      - [0x188FD54, asm, overlay_046_padding]
+      - [0x188E3F8, c, overlay_046]
       - [0x188FD58, bin, overlay_046_data_rodata]
       - [0x18900E8, bin, overlay_046_reloc1]
       - [0x18905B8, bin, overlay_046_reloc2]

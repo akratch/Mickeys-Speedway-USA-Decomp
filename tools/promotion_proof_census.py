@@ -92,6 +92,14 @@ TOOL_SOURCES = (
     "tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
     "tools/static_symbols.py", "tools/link_overlay_module.py",
     "tools/source_module_link_proof.py", "tools/runlink_pack.py", "tools/rebind_elf_relocations.py",
+    "tools/externalize_elf_section.py", "tools/postprocess_guard.py",
+    # Fresh raw reproduction also pins these compiler/context implementations.
+    "tools/permute_batch.py", "tools/sweep_receipts.py", "tools/promotion_transaction.py",
+    "tools/canonical_data_owner.py", "tools/canonical_bss_view.py",
+    "tools/storage_identity.py", "tools/storage_view.py", "tools/scratch_fidelity.py",
+    "tools/search_local_bindings.py", "tools/search_literal_bindings.py",
+    "tools/source_symbol_fidelity.py", "tools/prepared_macro_context.py",
+    "tools/asm-processor/build.py", "tools/asm-processor/asm_processor.py",
 )
 PROOF_INPUTS = (
     "config/overlays.us.json", "overlay_undefined_syms.us.txt",

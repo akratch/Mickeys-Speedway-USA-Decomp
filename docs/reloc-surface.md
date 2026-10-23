@@ -56,7 +56,7 @@ a second relocation decoder:
 
 ```sh
 tools/reloc_surface.py compare overlay7DispatchSelection \
-  --candidate-object build_non_matching/src/overlays/o007/overlay_007_tail.c.o
+  --candidate-object build_non_matching/src/overlays/o007/overlay_007.c.o
 ```
 
 The default target context is `build/mickey.us.elf`; `--target-elf`,

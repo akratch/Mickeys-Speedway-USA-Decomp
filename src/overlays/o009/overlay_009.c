@@ -13,8 +13,15 @@
  * the intervening empty overlay9Ignore function does not change its bytes.
  */
 
-extern void func_overlay_009_F00010A4_186771C(void *object, void *state,
-                                               f32 steps);
+/* Unexported, so static (their calls are JUMP records). */
+static void func_overlay_009_F0000540_1866BB8(O9Angle *, void *, O9Motion *, s32);
+static void func_overlay_009_F0000744_1866DBC(O9OutputRecord *, O9OutputControl *,
+                                              O9OutputState *, s32);
+static void func_overlay_009_F00009BC_1867034(s16 *, O9InputControl *, O9InputState *);
+static void func_overlay_009_F0000CE4_186735C(O9IntegrateOutput *,
+                                              O9IntegrateControl *, void *, f32);
+static void func_overlay_009_F0000F6C_18675E4(O9Point *, O9Height *, s32);
+static void overlay9Ignore(void *object, void *state, f32 steps);
 
 /* Tier D: field widths and offsets from this caller's loads and stores. */
 typedef struct O9Entry {
@@ -128,7 +135,7 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
             break;
     }
     func_overlay_009_F0000CE4_186735C(object, state, params, (f32)steps);
-    func_overlay_009_F00010A4_186771C(object, state, (f32)steps);
+    overlay9Ignore(object, state, (f32)steps);
     func_overlay_009_F0000F6C_18675E4(object, params, steps);
     func_overlay_009_F0000540_1866BB8(object, state, params, steps);
 
@@ -211,7 +218,7 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
  * all five hoisted values colour in one descending run, which is the shipped
  * saved-FPR order the load-versus-literal closures called unreachable. The
  * loop is the plain `while (steps--)`. */
-void func_overlay_009_F0000540_1866BB8(O9Angle *angle, void *unused,
+static void func_overlay_009_F0000540_1866BB8(O9Angle *angle, void *unused,
                                        O9Motion *motion, s32 steps) {
     s32 delta;
 
@@ -241,7 +248,7 @@ void func_overlay_009_F0000540_1866BB8(O9Angle *angle, void *unused,
     *D_0++ = -delta;
 }
 
-void func_overlay_009_F0000744_1866DBC(O9OutputRecord *output, O9OutputControl *control,
+static void func_overlay_009_F0000744_1866DBC(O9OutputRecord *output, O9OutputControl *control,
                                        O9OutputState *state, s32 updateCount) {
     f32 level;
     f32 amount;
@@ -289,7 +296,7 @@ void func_overlay_009_F0000744_1866DBC(O9OutputRecord *output, O9OutputControl *
     }
 }
 
-void func_overlay_009_F00009BC_1867034(s16 *angleOut, O9InputControl *control,
+static void func_overlay_009_F00009BC_1867034(s16 *angleOut, O9InputControl *control,
                                        O9InputState *state) {
     f32 target;
     f32 one = 1.0f;
@@ -375,7 +382,7 @@ void func_overlay_009_F00009BC_1867034(s16 *angleOut, O9InputControl *control,
  * `distance` out of the `if` body into the declaration block (position 8) and
  * declaring `angle` last supplies the two missing cells at an unchanged frame
  * of 0x50, and the 0.65f pool addend follows. */
-void func_overlay_009_F0000CE4_186735C(O9IntegrateOutput *out, O9IntegrateControl *control,
+static void func_overlay_009_F0000CE4_186735C(O9IntegrateOutput *out, O9IntegrateControl *control,
                                        void *unused, f32 step) {
     f32 xVelocity;
     f32 yVelocity;
@@ -433,7 +440,7 @@ void func_overlay_009_F0000CE4_186735C(O9IntegrateOutput *out, O9IntegrateContro
     func_8001DD70(out, control, step);
 }
 
-void func_overlay_009_F0000F6C_18675E4(O9Point *point, O9Height *offset,
+static void func_overlay_009_F0000F6C_18675E4(O9Point *point, O9Height *offset,
                                        s32 steps) {
     f32 current, result, distance, candidate;
     s32 count;
@@ -464,7 +471,7 @@ void func_overlay_009_F0000F6C_18675E4(O9Point *point, O9Height *offset,
     func_80008128(point, 0.0f, candidate - current, 0.0f);
 }
 
-void overlay9Ignore(volatile s32 unused0, volatile s32 unused1, volatile s32 unused2) {
+static void overlay9Ignore(void *object, void *state, f32 steps) {
 }
 
 /* Workbench: allocation-mismatch, 282/282 instructions/frame -152, 20 masked (28 raw)

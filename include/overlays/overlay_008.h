@@ -702,9 +702,6 @@ extern f32 ext_o0_2a46c(s16);
 
 extern f32 ext_o0_2a470(s16);
 
-extern void o8Call0894EmitReloc(O8Owner *, O8State *, s32,
-                                               s32, s32, f32, f32, f32, s32);
-
 extern void ext_o8_3278(O8Owner *, O8State *, s32);
 
 extern void func_8001D960(O8Owner *, O8State *, s32, s32, s32);
@@ -791,9 +788,6 @@ extern f32 o8Approach291CReloc(f32 value, s32 updateRate);
 extern f32 O8P291C_call_sin(s16 angle);
 
 extern f32 O8P291C_call_cos(s16 angle);
-
-extern void o8Surface291CReloc(
-    O8P291CMotion *motion, O8P291CState *state, s32 updateRate);
 
 extern s32 func_8001DD70(O8P291CMotion *motion, O8P291CState *state,
                              f32 update);
@@ -919,14 +913,6 @@ extern void o8P0058BounceReloc(O8P0058State *state, s32 kind, f32 scale);
 extern void *o8P1294IndexedReloc(Overlay8IndexedObject *object);
 
 extern f32 o8P1294PhaseReloc(void *unused, O8PhaseState *state, f32 input);
-
-extern void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
-                                              O8P1294State *state,
-                                              f32 update);
-
-extern void func_overlay_008_F000291C_1860674(O8P291CMotion *motion,
-                                              O8P291CState *state,
-                                              f32 update);
 
 extern f32 D_1D8;
 extern f32 D_1DC;

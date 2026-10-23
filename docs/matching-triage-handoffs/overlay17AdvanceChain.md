@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay17AdvanceChain:start -->
 ### `overlay17AdvanceChain` plateau handoff
 
-- source: `src/overlays/o017/overlay17AdvanceChain.c`
+- source: `src/overlays/o017/overlay_017.c`
 - score: 0/147 words, promoted
 - frame: 0x70
 - relocations: 1

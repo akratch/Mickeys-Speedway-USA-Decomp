@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import resident_rebinds as rr  # noqa: E402
 
-A = "build/src/overlays/o014/overlay14PrepareInputState.c.o"
+A = "build/src/overlays/o014/overlay_014.c.o"
 B = "build/src/overlays/o058/func_overlay_058_F000138C_18B0574.c.o"
 PLAN = {
     B: {"sprintf": "sprintf_o058Reloc"},
@@ -28,7 +28,7 @@ class RenderParseTests(unittest.TestCase):
         text = rr.render(PLAN)
         self.assertLess(text.index("o014/"), text.index("o058/"))
         self.assertLess(text.index("joyGetPressed="), text.index("joyGetStickY="))
-        target = "$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14PrepareInputState.c.o"
+        target = "$(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay_014.c.o"
         self.assertIn("%s: SURFACE_REBIND = $(OBJCOPY) \\\n" % target, text)
         self.assertTrue(text.endswith("sprintf=sprintf_o058Reloc $@\n"))
 

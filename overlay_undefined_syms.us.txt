@@ -265,51 +265,11 @@ overlay3TouchObject_o001Reloc = 0xf0000000;
 /* overlay 1: overlay_001_scaled.c.o */
 gOverlay1DistanceScale = 0x00001da8;
 
-/* overlay 2: overlay2ValidateRegion.c.o */
-gOverlay2Lines = 0x00000000;
-overlay2AngleDifferenceReloc = 0xf0000000;
-overlay2AngleReloc = 0xf0000000;
-
-/* overlay 2: overlay2AppendLine.c.o */
-gOverlay2LineCount = 0x00000020;
-
-/* overlay 2: overlay2ClassifyBoundary.c.o */
-gOverlay2BoundaryAxis = 0x00000030;
-gOverlay2BoundaryValue = 0x00000034;
-
-/* overlay 2: overlay2ChooseBoundary.c.o */
-gOverlay2BoundaryCandidateCount = 0x00000028;
-gOverlay2BoundaryCandidates = 0x0000001c;
-gOverlay2SelectedBoundary = 0x0000002c;
-gOverlay2TemporaryMode = 0x00000000;
-gOverlay2TemporaryRange = 0x00000008;
-
-/* overlay 2: overlay2SplitRegion.c.o */
-D_24 = 0x00000024;
-
-/* overlay 2: func_overlay_002_F0000C90_1857A88.c.o */
-_bzero_o002Reloc = 0xf0000000;
-gOverlay2BuiltLineCount = 0x00000078;
-gOverlay2BuiltNodeCount = 0x00000074;
-gOverlay2RegionCount = 0x00000024;
-gOverlay2Regions = 0x00000004;
-mmAllocAtAddr_o002Reloc = 0xf0000000;
-mmAlloc_o002Reloc = 0xf0000000;
-mmFree_o002Reloc = 0xf0000000;
-mmGetDelay_o002Reloc = 0xf0000000;
-mmSetDelay_o002Reloc = 0xf0000000;
-overlay1GetEntryIndex_o002Reloc = 0xf0000000;
-
-/* overlay 2: overlay2Enable.c.o */
-func_overlay_002_F0000C90_o002Reloc = 0xf0000000;
-
-/* overlay 2: overlay2ContainsPoint.c.o */
-overlay2PointAngleDifferenceReloc = 0xf0000000;
-overlay2PointAngleReloc = 0xf0000000;
-
-/* overlay 2: overlay2QueryNode.c.o */
+/* overlay 2: overlay_002.c.o */
+Arctanf_o002Reloc = 0xf0000000;
 D_30 = 0x00000030;
 D_34 = 0x00000034;
+D_38 = 0x00000038;
 D_3C = 0x0000003c;
 D_40 = 0x00000040;
 D_44 = 0x00000044;
@@ -324,10 +284,21 @@ D_64 = 0x00000064;
 D_68 = 0x00000068;
 D_70 = 0x00000070;
 D_72 = 0x00000072;
-func_overlay_002_F0001364_o002Reloc = 0xf0000000;
-
-/* overlay 2: func_overlay_002_F0001A94_185888C.c.o */
-D_38 = 0x00000038;
+_bzero_o002Reloc = 0xf0000000;
+func_8000572C_o002Reloc = 0xf0000000;
+func_8000BCB0_o002Reloc = 0xf0000000;
+func_8002A910_o002Reloc = 0xf0000000;
+func_8002AA0C_o002Reloc = 0xf0000000;
+func_overlay_002_F0000C90_1857A88_o002Reloc = 0xf0000000;
+func_overlay_002_F0001364_185815C_o002Reloc = 0xf0000000;
+gOverlay2BoundaryAxis = 0x00000030;
+gOverlay2BoundaryCandidateCount = 0x00000028;
+gOverlay2BoundaryCandidates = 0x0000001c;
+gOverlay2BoundaryValue = 0x00000034;
+gOverlay2BuiltLineCount = 0x00000078;
+gOverlay2BuiltNodeCount = 0x00000074;
+gOverlay2LineCount = 0x00000020;
+gOverlay2Lines = 0x00000000;
 gOverlay2QueryBestReloc = 0x0000006c;
 gOverlay2QueryHitReloc = 0x00000060;
 gOverlay2QueryHitXReloc = 0x00000064;
@@ -340,24 +311,33 @@ gOverlay2QueryX0Reloc = 0x00000040;
 gOverlay2QueryX1Reloc = 0x00000048;
 gOverlay2QueryY0Reloc = 0x00000044;
 gOverlay2QueryY1Reloc = 0x0000004c;
+gOverlay2RegionCount = 0x00000024;
+gOverlay2Regions = 0x00000004;
+gOverlay2SelectedBoundary = 0x0000002c;
+gOverlay2TemporaryMode = 0x00000000;
+gOverlay2TemporaryRange = 0x00000008;
+joyGetButtons_o002Reloc = 0xf0000000;
+mathDiffAngle_o002Reloc = 0xf0000000;
+mmAllocAtAddr_o002Reloc = 0xf0000000;
+mmAlloc_o002Reloc = 0xf0000000;
+mmFree_o002Reloc = 0xf0000000;
+mmGetDelay_o002Reloc = 0xf0000000;
+mmSetDelay_o002Reloc = 0xf0000000;
+overlay1GetEntryIndex_o002Reloc = 0xf0000000;
 overlay1GetEntry_o002Reloc = 0xf0000000;
 overlay2ContainsPoint_o002Reloc = 0xf0000000;
 
-/* overlay 2: func_overlay_002_F0001DF8_1858BF0.c.o */
-func_8000572C_o002Reloc = 0xf0000000;
-func_8000BCB0_o002Reloc = 0xf0000000;
-joyGetButtons_o002Reloc = 0xf0000000;
-
-/* overlay 3: overlay3ContainsValue.c.o */
-gOverlay3Entries = 0x00000028;
-
-/* overlay 3: overlay3ResetObjects.c.o */
-func_80005750_o003Reloc = 0xf0000000;
-
-/* overlay 3: overlay3RunCachedModeAction.c.o */
+/* overlay 3: overlay_003.c.o */
 Arctanf_o003Reloc = 0xf0000000;
+func_8000572C_o003Reloc = 0xf0000000;
+func_80005750_o003Reloc = 0xf0000000;
+func_8000BD0C_o003Reloc = 0xf0000000;
 func_overlay_002_F0001A94_o003Reloc = 0xf0000000;
+gOverlay3Entries = 0x00000028;
 gOverlay3ModeChance = 0x00000000;
+gOverlay3Objects = 0x00000000;
+gOverlay3SearchMaxDistance = 0x00000000;
+gOverlay3TouchEntries = 0x00000028;
 mathDiffAngle_o003Reloc = 0xf0000000;
 mathRnd_o003Reloc = 0xf0000000;
 overlay1GetEntry_o003Reloc = 0xf0000000;
@@ -365,22 +345,8 @@ overlay36CallModeZero_o003Reloc = 0xf0000000;
 overlay36SpawnDirectional_o003Reloc = 0xf0000000;
 overlay36SpawnLinked7F_o003Reloc = 0xf0000000;
 overlay36TickState_o003Reloc = 0xf0000000;
-
-/* overlay 3: overlay3FindClosestObject.c.o */
-func_8000572C_o003Reloc = 0xf0000000;
-func_8000BD0C_o003Reloc = 0xf0000000;
-gOverlay3SearchMaxDistance = 0x00000000;
-overlay3ContainsValue_o003Reloc = 0xf0000000;
-
-/* overlay 3: overlay3SelectScoredObject.c.o */
-sqrtf_o003Reloc = 0xf0000000;
-
-/* overlay 3: overlay3SelectTarget.c.o */
-gOverlay3Objects = 0x00000000;
 overlay3TouchObject_o003Reloc = 0xf0000000;
-
-/* overlay 3: overlay3TouchObject.c.o */
-gOverlay3TouchEntries = 0x00000028;
+sqrtf_o003Reloc = 0xf0000000;
 
 /* overlay 4: overlay_004.c.o */
 func_80004590_o004Reloc = 0xf0000000;
@@ -396,6 +362,7 @@ func_overlay_036_F00007B0 = 0xf0000000;
 gOverlay4Groups = 0x00000000;
 gOverlay4InitStatus = 0x00000000;
 gOverlay4SearchMaxDistance = 0x00000010;
+sqrtf_o004Reloc = 0xf0000000;
 
 /* overlay 5: overlay_005.c.o */
 D_80078D60_o005Reloc = 0x00000000;
@@ -442,46 +409,24 @@ overlay5AllocPlayerReloc = 0xf0000000;
 overlay5AttachBankReloc = 0xf00002e4;
 
 /* overlay 7: overlay_007.c.o */
-D_8007C1A0_o007Reloc = 0x00000000;
-gOverlay7ActiveHead = 0x00000284;
-gOverlay7ActiveTail = 0x0000028c;
-gOverlay7Current = 0x00000280;
-gOverlay7FreeHead = 0x00000288;
-gOverlay7Selected = 0x00000290;
-overlay7Acquire = 0xf0000000;
-
-/* overlay 7: func_overlay_007_F0000324_185C1AC.c.o */
-D_290 = 0x00000290;
 D_2AA = 0x000002aa;
 D_8007BEF8_o007Reloc = 0x00000000;
 D_8007BEFC_o007Reloc = 0x00000000;
+D_8007C1A0_o007Reloc = 0x00000000;
 D_800C947C_o007Reloc = 0x00000000;
+D_800D3128_o007Reloc = 0x00000000;
 D_844 = 0x00000844;
 amSndPlayXYZ_o007Reloc = 0xf0000000;
-amSndSetXYZ_o007Reloc = 0xf0000000;
-func_80005750_o007Reloc = 0xf0000000;
-mathRnd_o007Reloc = 0xf0000000;
-overlay1DistanceFromCurrent_o007Reloc = 0xf0000000;
-overlay1DistanceFromSelected_o007Reloc = 0xf0000000;
-overlay7CommitSelection_o007Reloc = 0xf0000000;
-overlay7ReleaseRuntimeHandleReloc = 0xf0000000;
-overlay7RuntimeHandleReloc = 0x00000000;
-overlay7RuntimeLastObjectReloc = 0x000002ac;
-overlay7RuntimeModeReloc = 0x00000000;
-overlay7RuntimeTimerReloc = 0x00000294;
-overlay7RuntimeValuesReloc = 0x00000000;
-overlay7SetRuntimeModeReloc = 0xf0000000;
-overlay7StartRuntimeValueReloc = 0xf0000000;
-
-/* overlay 7: overlay_007_tail.c.o */
-D_800D3128_o007Reloc = 0x00000000;
 amSndPlay_o007Reloc = 0xf0000000;
+amSndSetXYZ_o007Reloc = 0xf0000000;
 amSndStopXYZ_o007Reloc = 0xf0000000;
 camGetMode_o007Reloc = 0xf0000000;
+func_80005750_o007Reloc = 0xf0000000;
 func_80028F54_o007Reloc = 0xf0000000;
 func_800291C4_o007Reloc = 0xf0000000;
 gOverlay7AlternateModes = 0x000004fc;
 gOverlay7CommitArgument = 0x00000004;
+gOverlay7Current = 0x00000280;
 gOverlay7DispatchData = 0x00000000;
 gOverlay7DispatchMap = 0x0000002c;
 gOverlay7DispatchModeReloc = 0x00000002;
@@ -489,14 +434,26 @@ gOverlay7DispatchObject = 0x00000000;
 gOverlay7DispatchOverride = 0x00000298;
 gOverlay7DispatchTypes = 0x0000000c;
 gOverlay7DispatchValues = 0x0000004c;
-gOverlay7ModeSwitchTableReloc = 0x00000004;
 gOverlay7PrimaryModes = 0x000002a4;
 gOverlay7ValuesEnd = 0x000002aa;
 levelGetBlurEffect_o007Reloc = 0xf0000000;
 levelGetNumber_o007Reloc = 0xf0000000;
+mathRnd_o007Reloc = 0xf0000000;
+overlay1DistanceFromCurrent_o007Reloc = 0xf0000000;
+overlay1DistanceFromSelected_o007Reloc = 0xf0000000;
 overlay59AppendValue_o007Reloc = 0xf0000000;
+overlay7Acquire = 0xf0000000;
+overlay7CommitSelection_o007Reloc = 0xf0000000;
 overlay7RecordCheckReloc = 0xf0000000;
+overlay7ReleaseRuntimeHandleReloc = 0xf0000000;
+overlay7RuntimeHandleReloc = 0x00000000;
+overlay7RuntimeLastObjectReloc = 0x000002ac;
+overlay7RuntimeModeReloc = 0x00000000;
+overlay7RuntimeTimerReloc = 0x00000294;
+overlay7RuntimeValuesReloc = 0x00000000;
 overlay7SetOwnerModeReloc = 0xf0000000;
+overlay7SetRuntimeModeReloc = 0xf0000000;
+overlay7StartRuntimeValueReloc = 0xf0000000;
 
 /* overlay 8: overlay_008.c.o */
 Arctanf_o008Reloc = 0xf0000000;
@@ -518,7 +475,6 @@ D_420 = 0x00000420;
 D_460 = 0x00000460;
 D_4A0 = 0x000004a0;
 D_4E0 = 0x000004e0;
-D_520 = 0x00000520;
 D_80078F80_o008Reloc = 0x00000000;
 D_8007BF04_o008Reloc = 0x00000000;
 D_8007BF08_o008Reloc = 0x00000000;
@@ -564,11 +520,9 @@ func_8001D41C_o008Reloc = 0xf0000000;
 func_8001D960_o008Reloc = 0xf0000000;
 func_8001DD70_o008Reloc = 0xf0000000;
 func_8001F14C_o008Reloc = 0xf0000000;
-func_8001F320_o008Reloc = 0xf0000000;
 func_80029274_o008Reloc = 0xf0000000;
 func_800299E8_o008Reloc = 0xf0000000;
 func_8002A204_o008Reloc = 0xf0000000;
-func_8002A878_o008Reloc = 0xf0000000;
 func_8002A8BC_o008Reloc = 0xf0000000;
 func_8002A8C0_o008Reloc = 0xf0000000;
 func_8003EDE0_o008Reloc = 0xf0000000;
@@ -596,6 +550,7 @@ gO8Value370 = 0x00000370;
 gO8Value3A4 = 0x000003a4;
 gO8Value3B0 = 0x000003b0;
 gOverlay8Buffer = 0x00000000;
+gOverlay8CommandBuffer = 0x00000000;
 gOverlay8P0058Constants = 0x000000b0;
 gOverlay8P1294Constants = 0x000000dc;
 gOverlay8P2640Constants = 0x000000dc;
@@ -607,6 +562,7 @@ gOverlay8Primary = 0x00000000;
 gOverlay8ScaleLowerReloc = 0x000001d0;
 gOverlay8ScaleUpperReloc = 0x000001d4;
 gOverlay8Secondary = 0x00000000;
+gOverlay8SelectorScales = 0x00000520;
 gOverlay8UpdateChannelConstants = 0x000000f8;
 gOverlay8UpdateDecayReloc = 0x000001b8;
 gOverlay8UpdateLowerReloc = 0x000001b0;
@@ -616,6 +572,19 @@ lightObject_o008Reloc = 0xf0000000;
 mathDiffAngle_o008Reloc = 0xf0000000;
 mathOneFloatYPR_o008Reloc = 0xf0000000;
 mathRnd_o008Reloc = 0xf0000000;
+o8Approach291CReloc = 0xf0000000;
+o8P0058AcquireReloc = 0xf0000000;
+o8P0058BounceReloc = 0xf0000000;
+o8P0058CreateReloc = 0xf0000000;
+o8P0058EffectReloc = 0xf0000000;
+o8P0058SampleReloc = 0xf0000000;
+o8P0058SpawnReloc = 0xf0000000;
+o8P1294IndexedReloc = 0xf0000000;
+o8P1294PhaseReloc = 0xf0000000;
+o8P34A0EffectReloc = 0xf0000000;
+o8P34A0RandomReloc = 0xf0000000;
+o8P34A0SetModeReloc = 0xf0000000;
+o8P34A0StateEffectReloc = 0xf0000000;
 o8Phase1EmitReloc = 0xf0000000;
 overlay17AdvanceChain_o008Reloc = 0xf0000000;
 overlay1DistanceFromCurrent_o008Reloc = 0xf0000000;
@@ -624,6 +593,8 @@ overlay20ReleaseEntry_o008Reloc = 0xf0000000;
 overlay34CreateRecord_o008Reloc = 0xf0000000;
 overlay7DispatchSelection_o008Reloc = 0xf0000000;
 overlay8CreateResourceReloc = 0xf0000000;
+overlay8EmitChannel = 0xf0000000;
+overlay8SampleChannel = 0xf0000000;
 partUpdateTriggers_o008Reloc = 0xf0000000;
 pointListRPY_o008Reloc = 0xf0000000;
 runlinkIsModuleLoaded_o008Reloc = 0xf0000000;
@@ -639,30 +610,30 @@ D_388 = 0x00000388;
 D_78 = 0x00000078;
 D_7C = 0x0000007c;
 D_800CB304_o009Reloc = 0x00000000;
+amSndPlayXYZ_o009Reloc = 0xf0000000;
+amSndSetPitchXYZ_o009Reloc = 0xf0000000;
+amSndSetXYZ_o009Reloc = 0xf0000000;
 amSndStopXYZ_o009Reloc = 0xf0000000;
 camGetMode_o009Reloc = 0xf0000000;
 camSetFOV_o009Reloc = 0xf0000000;
 controlFSUvels_o009Reloc = 0xf0000000;
 controlReadJoypad_o009Reloc = 0xf0000000;
+func_80008128_o009Reloc = 0xf0000000;
 func_8001357C_o009Reloc = 0xf0000000;
+func_8001398C_o009Reloc = 0xf0000000;
 func_8001D960_o009Reloc = 0xf0000000;
 func_8001DD70_o009Reloc = 0xf0000000;
 func_8002A8BC_o009Reloc = 0xf0000000;
+func_8002A8C0_o009Reloc = 0xf0000000;
 func_8005AF14_o009Reloc = 0xf0000000;
 gOverlay9PacketCursor = 0x00000000;
 lightObject_o009Reloc = 0xf0000000;
+mathDiffAngle_o009Reloc = 0xf0000000;
 mathOneFloatYPR_o009Reloc = 0xf0000000;
-overlay9AngleDifferenceReloc = 0xf0000000;
-overlay9CosineReloc = 0xf0000000;
-overlay9HeightQueryReloc = 0xf0000000;
-overlay9PlaySpatialReloc = 0xf0000000;
-overlay9RandomReloc = 0xf0000000;
-overlay9SetPitchReloc = 0xf0000000;
-overlay9SetSpatialReloc = 0xf0000000;
-overlay9TransformReloc = 0xf0000000;
+mathRnd_o009Reloc = 0xf0000000;
 partUpdateTriggers_o009Reloc = 0xf0000000;
 
-/* overlay 10: overlay10Initialize.c.o */
+/* overlay 10: overlay_010.c.o */
 D_800D60E0_o010Reloc = 0x00000000;
 D_800D60E4_o010Reloc = 0x00000000;
 D_800D60E8_o010Reloc = 0x00000000;
@@ -682,84 +653,9 @@ piRomLoadSection_o010Reloc = 0xf0000000;
 piRomLoad_o010Reloc = 0xf0000000;
 viGetCurrentSize_o010Reloc = 0xf0000000;
 
-/* overlay 11: overlay11Initialize.c.o */
-D_8007C1A0_o011Reloc = 0x00000000;
-gOverlay11Argument = 0x000001c4;
-gOverlay11Counter = 0x00000204;
-gOverlay11Initialized = 0x000001b4;
-gOverlay11Selection = 0x000001b8;
-gOverlay11SwitchTableReloc = 0x00000008;
-gOverlay11Timer = 0x00000200;
-overlay11DrawColorReloc = 0xf0000000;
-overlay11DrawModeReloc = 0xf0000000;
-overlay11GetStatusReloc = 0xf0000000;
-overlay11Overlay66SelectReloc = 0xf0000000;
-overlay11ResidentFloatReloc = 0xf0000000;
-overlay11ResidentModeReloc = 0xf0000000;
-
-/* overlay 11: func_overlay_011_F0000150_1868998.c.o */
-D_800D3140_o011Reloc = 0x00000000;
-D_800D3144_o011Reloc = 0x00000000;
-D_800D3148_o011Reloc = 0x00000000;
-amTuneSetFadeScaled_o011Reloc = 0xf0000000;
-camStandardOrtho_o011Reloc = 0xf0000000;
-func_80028F54_o011Reloc = 0xf0000000;
-func_800290A0_o011Reloc = 0xf0000000;
-func_800290AC_o011Reloc = 0xf0000000;
-func_800291D8_o011Reloc = 0xf0000000;
-func_8002A8C0_o011Reloc = 0xf0000000;
-gOverlay11Fade = 0x000001b0;
-gOverlay11GridPhases = 0x00000000;
-gOverlay11GridTriangles = 0x00000030;
-gOverlay11HighlightStep = 0x000001bc;
-gOverlay11InputDelay = 0x00000200;
-gOverlay11MenuBackgroundPoolReloc = 0x00000020;
-gOverlay11Mode = 0x000001c0;
-gOverlay11OptionAction = 0x000001c4;
-gOverlay11OptionDone = 0x00000204;
-gOverlay11OptionHighlight = 0x000001b8;
-gOverlay11PadIndex = 0x000001c4;
-joyGetPressed_o011Reloc = 0xf0000000;
-mathRnd_o011Reloc = 0xf0000000;
-overlay11ReleaseCurrentGroup_o011Reloc = 0xf0000000;
-overlay66Select_o011Reloc = 0xf0000000;
-texDPTextureX_o011Reloc = 0xf0000000;
-viGetCurrentSize_o011Reloc = 0xf0000000;
-
-/* overlay 11: overlay11CreateHandles.c.o */
-D_8007C0B8_o011Reloc = 0x00000000;
-gOverlay11DirectResource = 0x00000000;
-gOverlay11Handles = 0x000001f0;
-overlay11SetValue = 0xf0000000;
-overlay45CreateDescriptor_o011Reloc = 0xf0000000;
-
-/* overlay 11: overlay11InitializeFour.c.o */
-gOverlay11Created = 0x000001c8;
-gOverlay11CreatedActive = 0x000001bc;
-gOverlay11Format = 0x00000004;
-gOverlay11ResidentFlagsReloc = 0x00000000;
-overlay11FormatReloc = 0xf0000000;
-
-/* overlay 11: overlay11InitializeThreeA.c.o */
-gOverlay11Created0 = 0x000001c8;
-gOverlay11Created1 = 0x000001cc;
-gOverlay11Created2 = 0x000001d0;
-
-/* overlay 11: overlay11EnableHandles.c.o */
-gOverlay11ModeFinish = 0x000001c0;
-gOverlay11ModeStart = 0x000001c0;
-
-/* overlay 11: overlay11DisableHandles.c.o */
-gOverlay11Flag = 0x000001c4;
-
-/* overlay 11: overlay11UpdateSelection.c.o */
-D_800D3190_o011Reloc = 0x00000000;
-gOverlay11Handle2 = 0x000001f8;
-gOverlay11Handle3 = 0x000001fc;
-overlay11PlaySoundReloc = 0xf0000000;
-overlay11ReadInputReloc = 0xf0000000;
-
-/* overlay 11: overlay11UpdateMenu.c.o */
+/* overlay 11: overlay_011.c.o */
+D_0_reload_failure = 0x00000000;
+D_0_reload_success = 0x00000000;
 D_1B8 = 0x000001b8;
 D_1BC = 0x000001bc;
 D_1C4 = 0x000001c4;
@@ -770,281 +666,284 @@ D_8007BEFC_o011Reloc = 0x00000000;
 D_8007BF0C_o011Reloc = 0x00000000;
 D_8007BF1C_o011Reloc = 0x00000000;
 D_8007BF44_o011Reloc = 0x00000000;
+D_8007C0B8_o011Reloc = 0x00000000;
+D_8007C1A0_o011Reloc = 0x00000000;
+D_800D3140_o011Reloc = 0x00000000;
+D_800D3144_o011Reloc = 0x00000000;
+D_800D3148_o011Reloc = 0x00000000;
+D_800D3190_o011Reloc = 0x00000000;
 D_800D3194_o011Reloc = 0x00000000;
+D_INPUT = 0x00000000;
+D_lastMode = 0x00000000;
 D_menuBase = 0x00000000;
+D_menuCounterBase = 0x00000000;
+D_menuInputBase = 0x00000000;
 D_paramA = 0x00000000;
 D_paramB = 0x00000000;
 D_paramC = 0x00000000;
 D_paramD = 0x00000000;
 D_table = 0x00000000;
-overlay11Func2BF4Reloc = 0xf0000000;
-overlay11Func800006BCReloc = 0xf0000000;
-overlay11Func80005820Reloc = 0xf0000000;
-overlay11Func80028374Reloc = 0xf0000000;
-overlay11Func80028528Reloc = 0xf0000000;
-overlay11Func800291D8Reloc = 0xf0000000;
-overlay11Func8003A754Reloc = 0xf0000000;
-
-/* overlay 11: overlay11UpdateFiveOptionMenu.c.o */
-D_0_reload_failure = 0x00000000;
-D_0_reload_success = 0x00000000;
-D_lastMode = 0x00000000;
-gOverlay11FiveOptionSwitchTableReloc = 0x00000040;
-
-/* overlay 11: func_overlay_011_F0001E4C_186A694.c.o */
 amSndPlay_o011Reloc = 0xf0000000;
+amTuneSetFadeScaled_o011Reloc = 0xf0000000;
+amTuneSetFade_o011Reloc = 0xf0000000;
+camStandardOrtho_o011Reloc = 0xf0000000;
+fontUseFont_o011Reloc = 0xf0000000;
+func_800006BC_o011Reloc = 0xf0000000;
+func_80000F94_o011Reloc = 0xf0000000;
 func_80005820_o011Reloc = 0xf0000000;
+func_8002554C_o011Reloc = 0xf0000000;
+func_8002675C_o011Reloc = 0xf0000000;
+func_80028374_o011Reloc = 0xf0000000;
+func_80028528_o011Reloc = 0xf0000000;
+func_80028F54_o011Reloc = 0xf0000000;
+func_800290A0_o011Reloc = 0xf0000000;
+func_800290AC_o011Reloc = 0xf0000000;
+func_800291D8_o011Reloc = 0xf0000000;
+func_8002A8C0_o011Reloc = 0xf0000000;
+func_8003A754_o011Reloc = 0xf0000000;
+func_8004B0B8_o011Reloc = 0xf0000000;
+func_overlay_045_F0001BF4_188E04C_o011Reloc = 0xf0000000;
+func_overlay_066_F0000000 = 0xf0000000;
+gOverlay11Argument = 0x000001c4;
+gOverlay11Counter = 0x00000204;
+gOverlay11Created = 0x000001c8;
+gOverlay11Created0 = 0x000001c8;
+gOverlay11Created1 = 0x000001cc;
+gOverlay11Created2 = 0x000001d0;
+gOverlay11CreatedActive = 0x000001bc;
+gOverlay11DirectResource = 0x00000000;
+gOverlay11Fade = 0x000001b0;
+gOverlay11Flag = 0x000001c4;
+gOverlay11Format = 0x00000004;
 gOverlay11GameStateFlagReloc = 0x00000000;
+gOverlay11GridPhases = 0x00000000;
+gOverlay11GridTriangles = 0x00000030;
+gOverlay11GroupEnd3 = 0x000001d4;
+gOverlay11GroupEnd4 = 0x000001d8;
+gOverlay11GroupEnd6 = 0x000001e0;
+gOverlay11GroupHandles = 0x000001c8;
+gOverlay11GroupsActive = 0x000001b4;
+gOverlay11Handle2 = 0x000001f8;
+gOverlay11Handle3 = 0x000001fc;
+gOverlay11Handles = 0x000001f0;
+gOverlay11HighlightStep = 0x000001bc;
+gOverlay11Initialized = 0x000001b4;
+gOverlay11InputDelay = 0x00000200;
+gOverlay11Mode = 0x000001c0;
+gOverlay11ModeFinish = 0x000001c0;
+gOverlay11ModeStart = 0x000001c0;
+gOverlay11NextModeReloc = 0x00000000;
+gOverlay11OptionAction = 0x000001c4;
+gOverlay11OptionDone = 0x00000204;
 gOverlay11OptionHandles = 0x000001c8;
+gOverlay11OptionHighlight = 0x000001b8;
 gOverlay11OptionIndex = 0x000001bc;
-gOverlay11OptionSwitchTableReloc = 0x00000054;
+gOverlay11PadIndex = 0x000001c4;
+gOverlay11RodataBaseReloc = 0x00000008;
+gOverlay11Selection = 0x000001b8;
+gOverlay11Timer = 0x00000200;
+joyGetPressed_o011Reloc = 0xf0000000;
 levelGetNumber_o011Reloc = 0xf0000000;
 mainChangeCameras_o011Reloc = 0xf0000000;
 mainChangeLevel_o011Reloc = 0xf0000000;
-overlay45SetField22_o011Reloc = 0xf0000000;
-
-/* overlay 11: func_overlay_011_F00022E8_186AB30.c.o */
-gOverlay11ModeOptionSwitchTableReloc = 0x00000068;
-gOverlay11NextModeReloc = 0x00000000;
-
-/* overlay 11: overlay11ReleaseGroup4.c.o */
-gOverlay11GroupEnd4 = 0x000001d8;
-gOverlay11GroupHandles = 0x000001c8;
-gOverlay11GroupsActive = 0x000001b4;
+mathRnd_o011Reloc = 0xf0000000;
+overlay11ReleaseCurrentGroup_o011Reloc = 0xf0000000;
+overlay11SetValue = 0xf0000000;
+overlay45CreateDescriptor_o011Reloc = 0xf0000000;
 overlay45ReleaseDescriptor_o011Reloc = 0xf0000000;
-
-/* overlay 11: overlay11ReleaseGroup3A.c.o */
-gOverlay11GroupEnd3 = 0x000001d4;
-
-/* overlay 11: overlay11ReleaseGroup6A.c.o */
-gOverlay11GroupEnd6 = 0x000001e0;
-
-/* overlay 11: overlay11ReleaseCurrentGroup.c.o */
-gOverlay11ReleaseSwitchTableReloc = 0x0000007c;
+overlay45SetField22_o011Reloc = 0xf0000000;
+overlay66Select_o011Reloc = 0xf0000000;
+sprintf_o011Reloc = 0xf0000000;
+texDPTextureX_o011Reloc = 0xf0000000;
+viGetCurrentSize_o011Reloc = 0xf0000000;
 
 /* overlay 12: overlay_012.c.o */
+Arctanf_o012Reloc = 0xf0000000;
+camDoSpriteDirect_o012Reloc = 0xf0000000;
+func_800084C4_o012Reloc = 0xf0000000;
+func_8001291C_o012Reloc = 0xf0000000;
+func_80024938_o012Reloc = 0xf0000000;
+func_8002A8BC_o012Reloc = 0xf0000000;
+func_8002A8C0_o012Reloc = 0xf0000000;
 gOverlay12Count = 0x00000000;
+gOverlay12EffectColors = 0x00000064;
+gOverlay12EffectCount = 0x00000000;
+gOverlay12Effects = 0x00000020;
 gOverlay12Entries = 0x00000020;
 gOverlay12Flag1536 = 0x00001536;
+gOverlay12ParticleColors = 0x000000c4;
+gOverlay12ParticleCount = 0x00000004;
+gOverlay12Particles = 0x00001520;
+gOverlay12QuadTriangles = 0x00000040;
 gOverlay12Ready = 0x00000060;
+gOverlay12Resource0 = 0x00000008;
+gOverlay12Resource1 = 0x0000000c;
+gOverlay12Resource2 = 0x00000010;
+gOverlay12Resource3 = 0x00000014;
 gOverlay12Resource39 = 0x0000001c;
+gOverlay12Resource4 = 0x00000018;
+gOverlay12Resource5 = 0x0000001c;
 gOverlay12ResourceF2 = 0x0000000c;
 gOverlay12ResourceF3 = 0x00000008;
 gOverlay12ResourceF4 = 0x00000010;
 gOverlay12ResourceF5 = 0x00000014;
 gOverlay12ResourceF6 = 0x00000018;
-gOverlay12Selection = 0x00000004;
-gOverlay12Value1598 = 0x00001598;
-overlay12LoadReloc = 0xf0000000;
-
-/* overlay 12: func_overlay_012_F00000C4_186D344.c.o */
-D_1C = 0x0000001c;
-texFreeSprite_o012Reloc = 0xf0000000;
-texFreeTexture_o012Reloc = 0xf0000000;
-
-/* overlay 12: overlay_012_tail.c.o */
-D_20 = 0x00000020;
-
-/* overlay 12: func_overlay_012_F00002E4_186D564.c.o */
-D_1520 = 0x00001520;
-
-/* overlay 12: func_overlay_012_F00003A8_186D628.c.o */
-.rodata = 0x00000000;
-Arctanf_o012Reloc = 0xf0000000;
-func_8001291C_o012Reloc = 0xf0000000;
-func_8002A8BC_o012Reloc = 0xf0000000;
-func_8002A8C0_o012Reloc = 0xf0000000;
-gOverlay12EffectCount = 0x00000000;
-gOverlay12Effects = 0x00000020;
-gOverlay12ParticleCount = 0x00000004;
-gOverlay12Particles = 0x00001520;
-gOverlay12Resource5 = 0x0000001c;
-mathRnd_o012Reloc = 0xf0000000;
-sqrtf_o012Reloc = 0xf0000000;
-texAnimateSprite_o012Reloc = 0xf0000000;
-trackGetTrack_o012Reloc = 0xf0000000;
-
-/* overlay 12: func_overlay_012_F0000910_186DB90.c.o */
-camDoSpriteDirect_o012Reloc = 0xf0000000;
-func_800084C4_o012Reloc = 0xf0000000;
-func_80024938_o012Reloc = 0xf0000000;
-gOverlay12EffectColors = 0x00000064;
-gOverlay12F0910LiteralPoolReloc = 0x0000000c;
-gOverlay12ParticleColors = 0x000000c4;
-gOverlay12QuadTriangles = 0x00000040;
 gOverlay12Resources = 0x00000000;
+gOverlay12Selection = 0x00000004;
 gOverlay12TrianglesA = 0x00000000;
 gOverlay12TrianglesB = 0x00000020;
+gOverlay12Value1598 = 0x00001598;
+mathRnd_o012Reloc = 0xf0000000;
+overlay12LoadReloc = 0xf0000000;
 sprClearIA2ColOverride_o012Reloc = 0xf0000000;
 sprSetIA2ColOverride_o012Reloc = 0xf0000000;
+sqrtf_o012Reloc = 0xf0000000;
+texAnimateSprite_o012Reloc = 0xf0000000;
 texDPTextureX_o012Reloc = 0xf0000000;
+texFreeSprite_o012Reloc = 0xf0000000;
+texFreeTexture_o012Reloc = 0xf0000000;
+trackGetTrack_o012Reloc = 0xf0000000;
 
-/* overlay 13: overlay13Initialize.c.o */
+/* overlay 13: overlay_013.c.o */
+D_20 = 0x00000020;
+D_24 = 0x00000024;
+D_28 = 0x00000028;
+D_80000000 = 0x80000000;
+SetLinkSlot_o013Reloc = 0xf0000000;
+camDoSprite_o013Reloc = 0xf0000000;
+camGetPtr_o013Reloc = 0xf0000000;
 gOverlay13Active = 0x00001000;
+gOverlay13ActiveCount = 0x0000002c;
 gOverlay13Enabled = 0x0000002c;
+gOverlay13Gravity = 0x00000000;
 gOverlay13Output = 0x00000000;
 gOverlay13Records = 0x00000000;
 gOverlay13Resource0 = 0x00000020;
 gOverlay13Resource1 = 0x00000024;
 gOverlay13Resource2 = 0x00000028;
-texLoadSprite_o013Reloc = 0xf0000000;
-texLoadTexture_o013Reloc = 0xf0000000;
-
-/* overlay 13: overlay13Release.c.o */
-overlay13ReleaseReloc = 0xf0000000;
-
-/* overlay 13: overlay13ProcessRecord.c.o */
-SetLinkSlot_o013Reloc = 0xf0000000;
-gOverlay13ActiveCount = 0x0000002c;
-gOverlay13Gravity = 0x00000000;
-
-/* overlay 13: overlay13ProcessActive.c.o */
-overlay13UpdateRecord_o013Reloc = 0xf0000000;
-
-/* overlay 13: overlay13DrawRecord.c.o */
-D_28 = 0x00000028;
-D_80000000 = 0x80000000;
-camDoSprite_o013Reloc = 0xf0000000;
 levelGetLevel_o013Reloc = 0xf0000000;
+overlay13ReleaseReloc = 0xf0000000;
+overlay13Release_o013Reloc = 0xf0000000;
+overlay13UpdateRecord_o013Reloc = 0xf0000000;
 sprClearIA2ColOverride_o013Reloc = 0xf0000000;
 sprSetIA2ColOverride_o013Reloc = 0xf0000000;
 texDPTextureX_o013Reloc = 0xf0000000;
+texLoadSprite_o013Reloc = 0xf0000000;
+texLoadTexture_o013Reloc = 0xf0000000;
 
-/* overlay 13: overlay13DrawActive.c.o */
-camGetPtr_o013Reloc = 0xf0000000;
-
-/* overlay 13: overlay13Call.c.o */
-overlay13Release_o013Reloc = 0xf0000000;
-
-/* overlay 14: func_overlay_014_F0000000_186F8D8.c.o */
+/* overlay 14: overlay_014.c.o */
+D_128 = 0x00000128;
+D_A4 = 0x000000a4;
+D_E4 = 0x000000e4;
+D_EC = 0x000000ec;
+D_FC = 0x000000fc;
+controlSetPlayerSetup_o014Reloc = 0xf0000000;
+fontBackground_o014Reloc = 0xf0000000;
+fontColour_o014Reloc = 0xf0000000;
+fontPrintXY_o014Reloc = 0xf0000000;
+fontSetButtonMode_o014Reloc = 0xf0000000;
+fontUseFont_o014Reloc = 0xf0000000;
+frontDrawRectangles_o014Reloc = 0xf0000000;
+frontGetLanguage_o014Reloc = 0xf0000000;
+frontGetMode_o014Reloc = 0xf0000000;
+func_80005820_o014Reloc = 0xf0000000;
+func_8004D40C_o014Reloc = 0xf0000000;
+func_8004D5C0_o014Reloc = 0xf0000000;
+gOverlay14ActiveHandle = 0x00000108;
+gOverlay14Args2C = 0x0000002c;
+gOverlay14Args30 = 0x00000030;
+gOverlay14Args34 = 0x00000034;
 gOverlay14AssetF0 = 0x000000f0;
 gOverlay14CommandCountEC = 0x000000ec;
+gOverlay14CommandHeader = 0x000000fc;
+gOverlay14CommandHeaderBase = 0x00000000;
 gOverlay14Context10C = 0x0000010c;
 gOverlay14Current104 = 0x00000104;
+gOverlay14Cursor = 0x000000dc;
 gOverlay14CursorDC = 0x000000dc;
-gOverlay14Field114 = 0x00000114;
-gOverlay14Next108 = 0x00000108;
-gOverlay14OffsetsF4 = 0x000000f4;
-gOverlay14PendingModeD4 = 0x000000d4;
-gOverlay14PendingValueD0 = 0x000000d0;
-gOverlay14PointerE0 = 0x000000e0;
-gOverlay14ResultF8 = 0x000000f8;
-gOverlay14ResultFC = 0x000000fc;
-gOverlay14StateC0 = 0x000000c0;
-gOverlay14StateC4 = 0x000000c4;
-gOverlay14StateC8 = 0x000000c8;
-gOverlay14TransitionD8 = 0x000000d8;
-gOverlay14ValueCountE8 = 0x000000e8;
-gOverlay14ValueSlots28 = 0x00000028;
-gOverlay14ValueSlotsEnd128 = 0x00000128;
-mmFree_o014Reloc = 0xf0000000;
-overlay14InitializeReloc = 0xf0000000;
-
-/* overlay 14: func_overlay_014_F000013C_186FA14.c.o */
-frontGetLanguage_o014Reloc = 0xf0000000;
-func_overlay_014_F0000000_o014Reloc = 0xf0000000;
+gOverlay14CursorDCBase = 0x00000000;
+gOverlay14DataBase = 0x00000000;
+gOverlay14EnabledF8Base = 0x00000000;
+gOverlay14Entries = 0x000000fc;
 gOverlay14Field110 = 0x00000110;
-piRomLoad_o014Reloc = 0xf0000000;
-
-/* overlay 14: overlay14ApplyValues.c.o */
-D_128 = 0x00000128;
-D_C8 = 0x000000c8;
-D_EC = 0x000000ec;
-D_F8 = 0x000000f8;
-
-/* overlay 14: overlay14ResetMode.c.o */
-D_E4 = 0x000000e4;
-D_FC = 0x000000fc;
-gOverlay14ValueD8 = 0x000000d8;
-gOverlay14ValueDC = 0x000000dc;
-gOverlay14ValueE0 = 0x000000e0;
-gOverlay14ValueF8 = 0x000000f8;
-
-/* overlay 14: overlay14MoveCommandCursor.c.o */
-gOverlay14CommandHeader = 0x000000fc;
-
-/* overlay 14: overlay14CreateValue.c.o */
-gOverlay14SlotCountE8 = 0x000000e8;
-gOverlay14Slots28 = 0x00000028;
-
-/* overlay 14: overlay14LoadRelocatedValue.c.o */
-gOverlay14LoadJumpTableReloc = 0x00000038;
-overlay14AllocateReloc = 0xf0000000;
-overlay14LoadReloc = 0xf0000000;
-
-/* overlay 14: func_overlay_014_F00009F4_18702CC.c.o */
-D_A4 = 0x000000a4;
-gOverlay14State = 0x00000000;
-mmAlloc_o014Reloc = 0xf0000000;
-piRomLoadSection_o014Reloc = 0xf0000000;
-
-/* overlay 14: overlay14ResetFlags.c.o */
+gOverlay14Field114 = 0x00000114;
+gOverlay14Flag0 = 0x00000000;
+gOverlay14Flag10 = 0x00000000;
+gOverlay14Flag4 = 0x00000000;
+gOverlay14FlagC = 0x00000000;
 gOverlay14FlagC4 = 0x000000c4;
-gOverlay14FlagCC = 0x000000cc;
-
-/* overlay 14: overlay14GetFlagC8.c.o */
+gOverlay14FlagC4Base = 0x00000000;
 gOverlay14FlagC8 = 0x000000c8;
-
-/* overlay 14: overlay14ReleaseCurrent.c.o */
-gOverlay14ResourceD0 = 0x000000d0;
-gOverlay14ValueD4 = 0x000000d4;
-
-/* overlay 14: overlay14Reset.c.o */
-gOverlay14ResetCC = 0x000000cc;
-gOverlay14Timer1C = 0x0000001c;
-gOverlay14Timer20 = 0x00000020;
-
-/* overlay 14: overlay14PrepareInputState.c.o */
+gOverlay14FlagC8Base = 0x00000000;
+gOverlay14FlagCC = 0x000000cc;
+gOverlay14HandleE0 = 0x00000000;
 gOverlay14InputFlag0 = 0x00000000;
 gOverlay14InputFlag4 = 0x00000004;
 gOverlay14InputFlag8 = 0x00000008;
+gOverlay14ModeE4 = 0x00000000;
+gOverlay14ModeE4Base = 0x00000000;
+gOverlay14Next108 = 0x00000108;
+gOverlay14OffsetsF4 = 0x000000f4;
+gOverlay14Owner = 0x00000100;
+gOverlay14PendingModeD4 = 0x000000d4;
+gOverlay14PendingModeD4Base = 0x00000000;
+gOverlay14PendingValueD0 = 0x000000d0;
+gOverlay14PendingValueD0Base = 0x00000000;
+gOverlay14PointerE0 = 0x000000e0;
+gOverlay14PointerE0Base = 0x00000000;
 gOverlay14Pulse10 = 0x00000010;
 gOverlay14Pulse14 = 0x00000014;
 gOverlay14Pulse18 = 0x00000018;
 gOverlay14PulseC = 0x0000000c;
+gOverlay14QueuedCommands128 = 0x00000128;
+gOverlay14ResetCC = 0x000000cc;
+gOverlay14ResourceD0 = 0x000000d0;
+gOverlay14ResultF8 = 0x000000f8;
+gOverlay14ResultFC = 0x000000fc;
+gOverlay14ResultFCBase = 0x00000000;
+gOverlay14RodataBaseReloc = 0x00000038;
+gOverlay14SlotCountE8 = 0x000000e8;
+gOverlay14Slots28 = 0x00000028;
+gOverlay14State = 0x00000000;
+gOverlay14StateC0 = 0x000000c0;
+gOverlay14StateC4 = 0x000000c4;
+gOverlay14StateC8 = 0x000000c8;
+gOverlay14StateCC = 0x00000000;
+gOverlay14Timer1C = 0x0000001c;
+gOverlay14Timer20 = 0x00000020;
+gOverlay14Transition = 0x000000d8;
+gOverlay14TransitionD8 = 0x000000d8;
+gOverlay14TransitionD8Base = 0x00000000;
+gOverlay14TransitionValue = 0x000000c0;
+gOverlay14Value108 = 0x00000000;
+gOverlay14Value110 = 0x00000000;
+gOverlay14Value114 = 0x00000000;
+gOverlay14ValueC0 = 0x000000c0;
+gOverlay14ValueC0Base = 0x00000000;
+gOverlay14ValueCountE8 = 0x000000e8;
+gOverlay14ValueD4 = 0x000000d4;
+gOverlay14ValueD8 = 0x000000d8;
+gOverlay14ValueDC = 0x000000dc;
+gOverlay14ValueDCBase = 0x00000000;
+gOverlay14ValueE0 = 0x000000e0;
+gOverlay14ValueEC = 0x00000000;
+gOverlay14ValueF8 = 0x000000f8;
+gOverlay14ValueF8Base = 0x00000000;
+gOverlay14ValueSlots28 = 0x00000028;
+gOverlay14ValueSlotsEnd128 = 0x00000128;
 joyGetPressed_o014Reloc = 0xf0000000;
 joyGetStickX_o014Reloc = 0xf0000000;
 joyGetStickY_o014Reloc = 0xf0000000;
-
-/* overlay 14: overlay14AdvanceCommand.c.o */
-D_D8 = 0x000000d8;
-D_DC = 0x000000dc;
-
-/* overlay 14: overlay14DispatchCommand.c.o */
-gOverlay14ActiveHandle = 0x00000108;
-
-/* overlay 14: overlay14UpdateTransition.c.o */
-D_C0 = 0x000000c0;
-
-/* overlay 14: func_overlay_014_F00013F4_1870CCC.c.o */
-D_2C = 0x0000002c;
-
-/* overlay 14: func_overlay_014_F0001540_1870E18.c.o */
-gOverlay14Args34 = 0x00000034;
-gOverlay14DataBase = 0x00000000;
-gOverlay14Entries = 0x000000fc;
-gOverlay14ValueC0 = 0x000000c0;
+mainChangeLevel_o014Reloc = 0xf0000000;
+mainGetNextCharacter_o014Reloc = 0xf0000000;
+mmAlloc_o014Reloc = 0xf0000000;
+mmFree_o014Reloc = 0xf0000000;
 overlay14Dispatch = 0xf0000000;
 overlay14DrawPrimitive = 0xf0000000;
-
-/* overlay 14: func_overlay_014_F0001830_1871108.c.o */
-fontBackground_o014Reloc = 0xf0000000;
-fontColour_o014Reloc = 0xf0000000;
-fontPrintXY_o014Reloc = 0xf0000000;
-fontUseFont_o014Reloc = 0xf0000000;
-func_8004D40C_o014Reloc = 0xf0000000;
-func_8004D5C0_o014Reloc = 0xf0000000;
-gOverlay14DrawJumpTableReloc = 0x00000054;
-
-/* overlay 14: overlay14ReleaseOwner.c.o */
-gOverlay14Owner = 0x00000100;
-
-/* overlay 14: overlay14FinalizeActiveHandle.c.o */
-overlay14AcquireFirstReloc = 0xf0000000;
-overlay14AcquireSecondReloc = 0xf0000000;
-overlay14ApplyObjectPositionReloc = 0xf0000000;
-overlay14LookupObjectReloc = 0xf0000000;
-overlay14SubmitHandleReloc = 0xf0000000;
+overlay14InitializeReloc = 0xf0000000;
+overlay14ReleaseOwner_o014Reloc = 0xf0000000;
+piRomLoadSection_o014Reloc = 0xf0000000;
+piRomLoad_o014Reloc = 0xf0000000;
 
 /* overlay 15: overlay_015.c.o */
 camGetPtr_o015Reloc = 0xf0000000;
@@ -1079,67 +978,22 @@ gOverlay16Mode = 0x00000004;
 gOverlay16Phase = 0x00000008;
 mmAlloc_o016Reloc = 0xf0000000;
 mmFree_o016Reloc = 0xf0000000;
-overlay16BuildGradientReloc = 0xf0000000;
 
-/* overlay 17: overlay17CalculateEndpoints.c.o */
-pointListRPY_o017Reloc = 0xf0000000;
-sqrtf_o017Reloc = 0xf0000000;
-
-/* overlay 17: overlay17CreateChain.c.o */
+/* overlay 17: overlay_017.c.o */
 gOverlay17TemplateReloc = 0x00000000;
 mmAlloc_o017Reloc = 0xf0000000;
+overlay17ReleaseReloc = 0xf0000000;
+pointListRPY_o017Reloc = 0xf0000000;
+sqrtf_o017Reloc = 0xf0000000;
+texDPTextureX_o017Reloc = 0xf0000000;
 texLoadTexture_o017Reloc = 0xf0000000;
 
-/* overlay 17: overlay17ReleaseChain.c.o */
-overlay17ReleaseReloc = 0xf0000000;
-
-/* overlay 17: overlay17DrawStrip.c.o */
-texDPTextureX_o017Reloc = 0xf0000000;
-
-/* overlay 18: overlay18Load.c.o */
+/* overlay 18: overlay_018.c.o */
 D_8007A1B8_o018Reloc = 0x00000000;
+D_8007A1CC_o018Reloc = 0x00000000;
 D_8007A1D4_o018Reloc = 0x00000000;
 D_800CF510_o018Reloc = 0x00000000;
 D_800CF518_o018Reloc = 0x00000000;
-D_800CF5B8_o018Reloc = 0x00000000;
-animseqInit_o018Reloc = 0xf0000000;
-arithmeticFunction_o018Reloc = 0xf0000000;
-camlightInit_o018Reloc = 0xf0000000;
-diPrintfInit_o018Reloc = 0xf0000000;
-diRcpTraceInit_o018Reloc = 0xf0000000;
-fmvInit_o018Reloc = 0xf0000000;
-func_80002500_o018Reloc = 0xf0000000;
-func_80029104_o018Reloc = 0xf0000000;
-func_80029970_o018Reloc = 0xf0000000;
-func_8004A0F0_o018Reloc = 0xf0000000;
-func_8005A700_o018Reloc = 0xf0000000;
-func_overlay_031_F00002E8_o018Reloc = 0xf0000000;
-fxInit_o018Reloc = 0xf0000000;
-gOverlay18ExternalData = 0x00000000;
-gOverlay18LocalData80 = 0x00000080;
-initFront_o018Reloc = 0xf0000000;
-initWeather_o018Reloc = 0xf0000000;
-joyInit_o018Reloc = 0xf0000000;
-mainPreNMI_o018Reloc = 0xf0000000;
-modInitModels_o018Reloc = 0xf0000000;
-osSetTime_o018Reloc = 0xf0000000;
-overlay10Initialize_o018Reloc = 0xf0000000;
-overlay30Initialize_o018Reloc = 0xf0000000;
-overlay5InitializeAudio_o018Reloc = 0xf0000000;
-packInit_o018Reloc = 0xf0000000;
-runlinkFreeCode_o018Reloc = 0xf0000000;
-texInitTextures_o018Reloc = 0xf0000000;
-
-/* overlay 18: overlay18Initialize.c.o */
-D_8007A1CC_o018Reloc = 0x00000000;
-D_800CF5B0_o018Reloc = 0x00000000;
-D_800D18E0_o018Reloc = 0x00000000;
-func_80028EA0_o018Reloc = 0xf0000000;
-func_80028F3C_o018Reloc = 0xf0000000;
-levelGetCounts_o018Reloc = 0xf0000000;
-mmAlloc_o018Reloc = 0xf0000000;
-
-/* overlay 18: overlay18Reconfigure.c.o */
 D_800CF51C_o018Reloc = 0x00000000;
 D_800CF528_o018Reloc = 0x00000000;
 D_800CF530_o018Reloc = 0x00000000;
@@ -1150,7 +1004,27 @@ D_800CF58C_o018Reloc = 0x00000000;
 D_800CF598_o018Reloc = 0x00000000;
 D_800CF5A0_o018Reloc = 0x00000000;
 D_800CF5A4_o018Reloc = 0x00000000;
+D_800CF5B0_o018Reloc = 0x00000000;
+D_800CF5B8_o018Reloc = 0x00000000;
+D_800D18E0_o018Reloc = 0x00000000;
+animseqInit_o018Reloc = 0xf0000000;
+arithmeticFunction_o018Reloc = 0xf0000000;
+camlightInit_o018Reloc = 0xf0000000;
+diPrintfInit_o018Reloc = 0xf0000000;
+diRcpTraceInit_o018Reloc = 0xf0000000;
+fmvInit_o018Reloc = 0xf0000000;
+func_80002500_o018Reloc = 0xf0000000;
+func_80028EA0_o018Reloc = 0xf0000000;
+func_80028F3C_o018Reloc = 0xf0000000;
+func_80029104_o018Reloc = 0xf0000000;
+func_80029970_o018Reloc = 0xf0000000;
+func_8004A0F0_o018Reloc = 0xf0000000;
+func_8005A700_o018Reloc = 0xf0000000;
+func_overlay_031_F00002E8_o018Reloc = 0xf0000000;
+fxInit_o018Reloc = 0xf0000000;
 gOverlay18Buffers = 0x00000000;
+gOverlay18ExternalData = 0x00000000;
+gOverlay18LocalData80 = 0x00000080;
 gOverlay18Mode = 0x00000000;
 gOverlay18ModeScale10 = 0x00000020;
 gOverlay18ModeScale16 = 0x00000060;
@@ -1161,11 +1035,25 @@ gOverlay18Region64 = 0x00000000;
 gOverlay18Region64Slot0 = 0x00000000;
 gOverlay18Region8 = 0x00000000;
 gOverlay18Region8Slot0 = 0x00000000;
+initFront_o018Reloc = 0xf0000000;
+initWeather_o018Reloc = 0xf0000000;
+joyInit_o018Reloc = 0xf0000000;
+levelGetCounts_o018Reloc = 0xf0000000;
+mainPreNMI_o018Reloc = 0xf0000000;
 mmAllocAtAddr_o018Reloc = 0xf0000000;
+mmAlloc_o018Reloc = 0xf0000000;
 mmFree_o018Reloc = 0xf0000000;
 mmGetDelay_o018Reloc = 0xf0000000;
 mmSetDelay_o018Reloc = 0xf0000000;
+modInitModels_o018Reloc = 0xf0000000;
+osSetTime_o018Reloc = 0xf0000000;
+overlay10Initialize_o018Reloc = 0xf0000000;
 overlay18FinishReconfigureReloc = 0xf0000000;
+overlay30Initialize_o018Reloc = 0xf0000000;
+overlay5InitializeAudio_o018Reloc = 0xf0000000;
+packInit_o018Reloc = 0xf0000000;
+runlinkFreeCode_o018Reloc = 0xf0000000;
+texInitTextures_o018Reloc = 0xf0000000;
 
 /* overlay 19: overlay19BuildOutput.c.o */
 mmAlloc2_o019Reloc = 0xf0000000;
@@ -1316,6 +1204,9 @@ overlay37RecordMinimum_o026Reloc = 0xf0000000;
 partUpdateTriggers_o026Reloc = 0xf0000000;
 sqrtf_o026Reloc = 0xf0000000;
 trackMakePolylist_o026Reloc = 0xf0000000;
+
+/* overlay 26: func_overlay_026_F0000B18_187AF10.c.o */
+D_1C = 0x0000001c;
 
 /* overlay 26: overlay26HandleEffects.c.o */
 amSndPlayXYZ_o026Reloc = 0xf0000000;
@@ -1959,6 +1850,7 @@ overlay46SetModeReloc = 0xf0000000;
 D_8007BF44_o046Reloc = 0x00000000;
 D_8007BF48_o046Reloc = 0x00000000;
 D_800D3128_o046Reloc = 0x00000000;
+D_C0 = 0x000000c0;
 fontBackground_o046Reloc = 0xf0000000;
 fontUseFont_o046Reloc = 0xf0000000;
 func_80000F94_o046Reloc = 0xf0000000;
@@ -2005,6 +1897,7 @@ gOverlay46Value18 = 0x00000018;
 overlay46RandomSignedReloc = 0xf0000000;
 
 /* overlay 46: func_overlay_046_F0000874_188EC6C.c.o */
+D_2C = 0x0000002c;
 D_800D3140_o046Reloc = 0x00000000;
 D_800D3144_o046Reloc = 0x00000000;
 D_800D3148_o046Reloc = 0x00000000;
@@ -2368,6 +2261,7 @@ overlay56ReleaseResource_o052Reloc = 0xf0000000;
 
 /* overlay 53: overlay53Initialize.c.o */
 D_280 = 0x00000280;
+D_290 = 0x00000290;
 amTunePlay_o053Reloc = 0xf0000000;
 gOverlay53ConfigA = 0x00000000;
 gOverlay53ConfigB = 0x00000140;
@@ -2463,6 +2357,7 @@ frontGetScreenMode_o054Reloc = 0xf0000000;
 gOverlay54Offsets = 0x00000198;
 
 /* overlay 54: overlay54TailA.c.o */
+.rodata = 0x00000000;
 D_8007BEF4_o054Reloc = 0x00000000;
 D_8007C180_o054Reloc = 0x00000000;
 D_8007C1B0_o054Reloc = 0x00000000;
@@ -3119,6 +3014,8 @@ D_800D3140_o058Reloc = 0x00000000;
 D_800D3144_o058Reloc = 0x00000000;
 D_800D31B8_o058Reloc = 0x00000000;
 D_90 = 0x00000090;
+D_DC = 0x000000dc;
+D_F8 = 0x000000f8;
 D_o058_5CE0 = 0x000002c0;
 D_o058_5E50 = 0x00000000;
 amSndPlay_o058Reloc = 0xf0000000;
@@ -4468,7 +4365,6 @@ D_D04 = 0x00000d04;
 D_D18 = 0x00000d18;
 D_DA4 = 0x00000da4;
 D_E0 = 0x000000e0;
-D_INPUT = 0x00000000;
 D_o101ResetData340 = 0x00000340;
 amSndPlay_o101Reloc = 0xf0000000;
 amTunePlay_o101Reloc = 0xf0000000;
@@ -4724,64 +4620,17 @@ func_overlay_001_F0008048_1854428 = overlay1DistanceFromSelected;
 /* overlay 1: overlay_001_scaled.c.o */
 func_overlay_001_F00080BC_185449C = overlay1ScaledDistance;
 
-/* overlay 2: overlay2ValidateRegion.c.o */
-func_overlay_002_F0000000_1856DF8 = overlay2ValidateRegion;
-
-/* overlay 2: overlay2AppendLine.c.o */
-func_overlay_002_F00001BC_1856FB4 = overlay2AppendLine;
-
-/* overlay 2: overlay2ClassifyBoundary.c.o */
-func_overlay_002_F00002C4_18570BC = overlay2ClassifyBoundary;
-
-/* overlay 2: overlay2IntersectBoundary.c.o */
-func_overlay_002_F0000400_18571F8 = overlay2IntersectBoundary;
-
-/* overlay 2: overlay2ClipLines.c.o */
-func_overlay_002_F000049C_1857294 = overlay2ClipLines;
-
-/* overlay 2: overlay2ChooseBoundary.c.o */
-func_overlay_002_F00006E0_18574D8 = overlay2ChooseBoundary;
-
-/* overlay 2: overlay2SplitRegion.c.o */
-func_overlay_002_F0000B70_1857968 = overlay2SplitRegion;
-
-/* overlay 2: overlay2Enable.c.o */
+/* overlay 2: overlay_002.c.o */
 func_overlay_002_F000121C_1858014 = overlay2Enable;
-
-/* overlay 2: overlay2ContainsPoint.c.o */
 func_overlay_002_F000123C_1858034 = overlay2ContainsPoint;
-
-/* overlay 2: overlay2AdjacentIndices.c.o */
-func_overlay_002_F0001658_1858450 = overlay2AdjacentIndices;
-
-/* overlay 2: overlay2QueryNode.c.o */
-func_overlay_002_F00016A0_1858498 = overlay2QueryNode;
-
-/* overlay 2: overlay2CopyColor.c.o */
 func_overlay_002_F0002528_1859320 = overlay2CopyColor;
 
-/* overlay 3: overlay3ContainsValue.c.o */
+/* overlay 3: overlay_003.c.o */
 func_overlay_003_F0000000_1859D30 = overlay3ContainsValue;
-
-/* overlay 3: overlay3ResetObjects.c.o */
 func_overlay_003_F0000050_1859D80 = overlay3ResetObjects;
-
-/* overlay 3: overlay3RunCachedModeAction.c.o */
 func_overlay_003_F00000B8_1859DE8 = overlay3RunCachedModeAction;
-
-/* overlay 3: overlay3FindClosestObject.c.o */
-func_overlay_003_F000027C_1859FAC = overlay3FindClosestObject;
-
-/* overlay 3: overlay3SelectScoredObject.c.o */
-func_overlay_003_F00003B0_185A0E0 = overlay3SelectScoredObject;
-
-/* overlay 3: overlay3SelectTarget.c.o */
 func_overlay_003_F0000588_185A2B8 = overlay3SelectTarget;
-
-/* overlay 3: overlay3TouchObject.c.o */
 func_overlay_003_F00006D8_185A408 = overlay3TouchObject;
-
-/* overlay 3: overlay3UpdateTimedEntries.c.o */
 func_overlay_003_F0000760_185A490 = overlay3UpdateTimedEntries;
 
 /* overlay 4: overlay_004.c.o */
@@ -4791,31 +4640,11 @@ func_overlay_004_F00004D0_185AB48 = overlay4AttachObject;
 func_overlay_004_F000052C_185ABA4 = overlay4RemoveObject;
 func_overlay_004_F00005D0_185AC48 = overlay4UpdateGroupSpacing;
 func_overlay_004_F0000710_185AD88 = overlay4GroupCount;
-func_overlay_004_F0000734_185ADAC = overlay4FindCategory2Object;
 func_overlay_004_F00008F4_185AF6C = overlay4FindSearchPosition;
-
-/* overlay 5: alSeqFileNew.c.o */
-func_overlay_005_F0000000_185B428 = alSeqFileNew;
-
-/* overlay 5: alBnkfNew.c.o */
-func_overlay_005_F0000040_185B468 = alBnkfNew;
-
-/* overlay 5: _bnkfPatchBank.c.o */
-func_overlay_005_F00000D0_185B4F8 = _bnkfPatchBank;
-
-/* overlay 5: _bnkfPatchInst.c.o */
-func_overlay_005_F0000188_185B5B0 = _bnkfPatchInst;
-
-/* overlay 5: _bnkfPatchSound.c.o */
-func_overlay_005_F0000220_185B648 = _bnkfPatchSound;
-
-/* overlay 5: _bnkfPatchWaveTable.c.o */
-func_overlay_005_F0000278_185B6A0 = _bnkfPatchWaveTable;
 
 /* overlay 5: overlay_005.c.o */
 func_overlay_005_F00002E4_185B70C = overlay5InitSequence;
 func_overlay_005_F000031C_185B744 = overlay5InitializeAudio;
-func_overlay_005_F00006C0_185BAE8 = overlay5CreatePlayer;
 
 /* overlay 6: overlay_006.c.o */
 func_overlay_006_F0000000_185BE68 = overlay6Init;
@@ -4823,12 +4652,7 @@ func_overlay_006_F0000008_185BE70 = overlay6Empty;
 func_overlay_006_F0000010_185BE78 = overlay6Noop;
 
 /* overlay 7: overlay_007.c.o */
-func_overlay_007_F0000000_185BE88 = overlay7ReleaseEntry;
 func_overlay_007_F00000A8_185BF30 = overlay7AcquireEntry;
-func_overlay_007_F0000228_185C0B0 = overlay7CreateEntry;
-func_overlay_007_F0000298_185C120 = overlay7AppendEntry;
-
-/* overlay 7: overlay_007_tail.c.o */
 func_overlay_007_F0000894_185C71C = overlay7DispatchModes;
 func_overlay_007_F0000AA0_185C928 = overlay7UpdateOwnerMode;
 func_overlay_007_F0000CCC_185CB54 = overlay7DispatchSelection;
@@ -4846,173 +4670,29 @@ func_overlay_008_F00049B4_186270C = overlay8WriteCommand;
 func_overlay_008_F00049DC_1862734 = overlay8SetValue;
 func_overlay_008_F00049E8_1862740 = overlay8UpdateMotionOutput;
 
-/* overlay 9: overlay_009.c.o */
-func_overlay_009_F00010A4_186771C = overlay9Ignore;
-
-/* overlay 10: overlay10Initialize.c.o */
+/* overlay 10: overlay_010.c.o */
 func_overlay_010_F0000000_1868450 = overlay10Initialize;
 
-/* overlay 11: overlay11Initialize.c.o */
+/* overlay 11: overlay_011.c.o */
 func_overlay_011_F0000000_1868848 = overlay11Initialize;
-
-/* overlay 11: overlay11CreateHandles.c.o */
-func_overlay_011_F0000A18_1869260 = overlay11CreateHandles;
-
-/* overlay 11: overlay11InitializeFour.c.o */
-func_overlay_011_F0000AF4_186933C = overlay11InitializeFour;
-
-/* overlay 11: overlay11InitializeSixB.c.o */
-func_overlay_011_F0000C88_18694D0 = overlay11InitializeSixB;
-
-/* overlay 11: overlay11InitializeThreeA.c.o */
-func_overlay_011_F0000D70_18695B8 = overlay11InitializeThreeA;
-
-/* overlay 11: overlay11InitializeSixA.c.o */
-func_overlay_011_F0000DFC_1869644 = overlay11InitializeSixA;
-
-/* overlay 11: overlay11InitializeSixC.c.o */
-func_overlay_011_F0000EE4_186972C = overlay11InitializeSixC;
-
-/* overlay 11: overlay11InitializeThreeB.c.o */
-func_overlay_011_F0000FCC_1869814 = overlay11InitializeThreeB;
-
-/* overlay 11: overlay11EnableHandles.c.o */
-func_overlay_011_F0001058_18698A0 = overlay11EnableHandles;
-
-/* overlay 11: overlay11DisableHandles.c.o */
-func_overlay_011_F0001130_1869978 = overlay11DisableHandles;
-
-/* overlay 11: overlay11UpdateSelection.c.o */
-func_overlay_011_F00011D0_1869A18 = overlay11UpdateSelection;
-
-/* overlay 11: overlay11UpdateMenu.c.o */
-func_overlay_011_F0001398_1869BE0 = overlay11UpdateMenu;
-
-/* overlay 11: overlay11UpdateTwoOptionMenu.c.o */
-func_overlay_011_F000184C_186A094 = overlay11UpdateTwoOptionMenu;
-
-/* overlay 11: overlay11UpdateFiveOptionMenu.c.o */
-func_overlay_011_F0001A7C_186A2C4 = overlay11UpdateFiveOptionMenu;
-
-/* overlay 11: overlay11UpdateModeSix.c.o */
-func_overlay_011_F0002714_186AF5C = overlay11UpdateModeSix;
-
-/* overlay 11: overlay11ReleaseGroup4.c.o */
-func_overlay_011_F0002948_186B190 = overlay11ReleaseGroup4;
-
-/* overlay 11: overlay11ReleaseGroup3A.c.o */
-func_overlay_011_F00029AC_186B1F4 = overlay11ReleaseGroup3A;
-
-/* overlay 11: overlay11ReleaseGroup6A.c.o */
-func_overlay_011_F0002A10_186B258 = overlay11ReleaseGroup6A;
-
-/* overlay 11: overlay11ReleaseGroup6B.c.o */
-func_overlay_011_F0002A74_186B2BC = overlay11ReleaseGroup6B;
-
-/* overlay 11: overlay11ReleaseGroup6C.c.o */
-func_overlay_011_F0002AD8_186B320 = overlay11ReleaseGroup6C;
-
-/* overlay 11: overlay11ReleaseGroup3B.c.o */
-func_overlay_011_F0002B3C_186B384 = overlay11ReleaseGroup3B;
-
-/* overlay 11: overlay11ReleaseHandles.c.o */
-func_overlay_011_F0002BA0_186B3E8 = overlay11ReleaseHandles;
-
-/* overlay 11: overlay11ReleaseCurrentGroup.c.o */
 func_overlay_011_F0002BF4_186B43C = overlay11ReleaseCurrentGroup;
 
-/* overlay 12: overlay_012.c.o */
-func_overlay_012_F0000000_186D280 = overlay12Initialize;
-
-/* overlay 13: overlay13Initialize.c.o */
-func_overlay_013_F0000000_186EB18 = overlay13Initialize;
-
-/* overlay 13: overlay13Release.c.o */
+/* overlay 13: overlay_013.c.o */
 func_overlay_013_F0000124_186EC3C = overlay13Release;
-
-/* overlay 13: overlay13CreateRecord.c.o */
 func_overlay_013_F0000188_186ECA0 = overlay13CreateRecord;
-
-/* overlay 13: overlay13ProcessRecord.c.o */
 func_overlay_013_F0000284_186ED9C = overlay13UpdateRecord;
-
-/* overlay 13: overlay13ProcessActive.c.o */
 func_overlay_013_F0000508_186F020 = overlay13ProcessActive;
-
-/* overlay 13: overlay13DrawRecord.c.o */
-func_overlay_013_F0000580_186F098 = overlay13DrawRecord;
-
-/* overlay 13: overlay13DrawActive.c.o */
 func_overlay_013_F0000874_186F38C = overlay13DrawActive;
-
-/* overlay 13: overlay13Call.c.o */
 func_overlay_013_F0000B0C_186F624 = overlay13Call;
 
-/* overlay 14: overlay14ReturnOne.c.o */
-func_overlay_014_F000031C_186FBF4 = overlay14ReturnOne;
-
-/* overlay 14: overlay14ApplyValues.c.o */
-func_overlay_014_F0000328_186FC00 = overlay14ApplyValues;
-
-/* overlay 14: overlay14ResetMode.c.o */
-func_overlay_014_F0000498_186FD70 = overlay14ResetMode;
-
-/* overlay 14: overlay14MoveCommandCursor.c.o */
-func_overlay_014_F0000578_186FE50 = overlay14MoveCommandCursor;
-
-/* overlay 14: overlay14CreateValue.c.o */
-func_overlay_014_F00006FC_186FFD4 = overlay14CreateValue;
-
-/* overlay 14: overlay14LoadRelocatedValue.c.o */
-func_overlay_014_F000087C_1870154 = overlay14LoadRelocatedValue;
-
-/* overlay 14: overlay14ResetFlags.c.o */
+/* overlay 14: overlay_014.c.o */
 func_overlay_014_F0000ACC_18703A4 = overlay14ResetFlags;
-
-/* overlay 14: overlay14GetFlagC4.c.o */
 func_overlay_014_F0000AE0_18703B8 = overlay14GetFlagC4;
-
-/* overlay 14: overlay14GetFlagC8.c.o */
 func_overlay_014_F0000AEC_18703C4 = overlay14GetFlagC8;
-
-/* overlay 14: overlay14ReleaseCurrent.c.o */
 func_overlay_014_F0000AF8_18703D0 = overlay14ReleaseCurrent;
-
-/* overlay 14: overlay14GetFlagCC.c.o */
 func_overlay_014_F0000B34_187040C = overlay14GetFlagCC;
-
-/* overlay 14: overlay14Reset.c.o */
-func_overlay_014_F0000B40_1870418 = overlay14Reset;
-
-/* overlay 14: overlay14PrepareInputState.c.o */
-func_overlay_014_F0000B5C_1870434 = overlay14PrepareInputState;
-
-/* overlay 14: overlay14AdvanceCommand.c.o */
-func_overlay_014_F0000D68_1870640 = overlay14AdvanceCommand;
-
-/* overlay 14: overlay14StepCommand.c.o */
-func_overlay_014_F0000F64_187083C = overlay14StepCommand;
-
-/* overlay 14: overlay14ReturnOneCallbacks.c.o */
-func_overlay_014_F0001028_1870900 = overlay14ReturnOneCallbackA;
-func_overlay_014_F0001034_187090C = overlay14ReturnOneCallbackB;
-
-/* overlay 14: overlay14DispatchCommand.c.o */
-func_overlay_014_F0001040_1870918 = overlay14DispatchCommand;
-
-/* overlay 14: overlay14CallUpdate.c.o */
-func_overlay_014_F0001164_1870A3C = overlay14CallUpdate;
-
-/* overlay 14: overlay14UpdateTransition.c.o */
 func_overlay_014_F0001184_1870A5C = overlay14UpdateTransition;
-
-/* overlay 14: overlay14BuildRects.c.o */
-func_overlay_014_F00012D8_1870BB0 = overlay14BuildRects;
-
-/* overlay 14: overlay14ReleaseOwner.c.o */
 func_overlay_014_F0001B54_187142C = overlay14ReleaseOwner;
-
-/* overlay 14: overlay14FinalizeActiveHandle.c.o */
 func_overlay_014_F0001B7C_1871454 = overlay14FinalizeActiveHandle;
 
 /* overlay 15: overlay_015.c.o */
@@ -5030,37 +4710,19 @@ func_overlay_015_F0000B88_1872F20 = overlay15ClearValue7C;
 func_overlay_015_F0000B94_1872F2C = overlay15DrawRain;
 
 /* overlay 16: overlay_016.c.o */
-func_overlay_016_F0000000_1873498 = overlay16BuildGradient;
 func_overlay_016_F000008C_1873524 = overlay16InitializeBuffer;
 func_overlay_016_F00001A8_1873640 = overlay16ReleaseBuffer;
 func_overlay_016_F00001E0_1873678 = overlay16ApplyGradient;
 
-/* overlay 17: overlay17CalculateEndpoints.c.o */
-func_overlay_017_F0000000_18739B8 = overlay17CalculateEndpoints;
-
-/* overlay 17: overlay17CreateChain.c.o */
+/* overlay 17: overlay_017.c.o */
 func_overlay_017_F0000318_1873CD0 = overlay17CreateChain;
-
-/* overlay 17: overlay17ReleaseChain.c.o */
 func_overlay_017_F0000628_1873FE0 = overlay17ReleaseChain;
-
-/* overlay 17: overlay17AdvanceChain.c.o */
 func_overlay_017_F0000668_1874020 = overlay17AdvanceChain;
-
-/* overlay 17: overlay17DrawStrip.c.o */
 func_overlay_017_F00008B4_187426C = overlay17DrawStrip;
 
-/* overlay 18: overlay18Load.c.o */
+/* overlay 18: overlay_018.c.o */
 func_overlay_018_F0000000_18745B8 = overlay18Load;
-
-/* overlay 18: overlay18Initialize.c.o */
-func_overlay_018_F00001F4_18747AC = overlay18Initialize;
-
-/* overlay 18: overlay18Reconfigure.c.o */
 func_overlay_018_F000024C_1874804 = overlay18Reconfigure;
-
-/* overlay 18: overlay18InitializeBuffers.c.o */
-func_overlay_018_F00004F4_1874AAC = overlay18InitializeBuffers;
 
 /* overlay 19: overlay19Dispatch.c.o */
 func_overlay_019_F0000000_1875258 = overlay19Dispatch;

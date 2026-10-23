@@ -2,6 +2,7 @@
 #define OVERLAY_012_H
 
 #include "PR/ultratypes.h"
+#include "game/track.h"
 
 typedef struct Overlay12Entry {
     u8 pad00[0x4A];
@@ -77,11 +78,80 @@ extern s32 gOverlay12Value1598;
 extern s32 gOverlay12EffectCount;
 extern s32 gOverlay12ParticleCount;
 
+typedef struct Overlay12TrackHeight {
+    u8 pad00[0x24];
+    s16 height;
+} Overlay12TrackHeight;
+
+typedef struct Overlay12Gfx {
+    u32 w0;
+    u32 w1;
+} Overlay12Gfx;
+
+typedef struct Overlay12Vertex {
+    s16 x;
+    s16 y;
+    s16 z;
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
+} Overlay12Vertex;
+
+extern void *gOverlay12Resources[];
+extern s32 gOverlay12EffectColors[];
+extern s32 gOverlay12ParticleColors[];
+extern u8 gOverlay12QuadTriangles[];
+extern u8 gOverlay12TrianglesA[];
+extern u8 gOverlay12TrianglesB[];
+
 void *overlay12LoadReloc();
 extern void texFreeTexture(void *resource);
 extern void texFreeSprite(void *resource);
-extern s32 mathRnd(s32 first, s32 second);
+extern s32 mathRnd(s32 minimum, s32 maximum);
+extern s32 func_8001291C(f32 *previous, f32 *current,
+                         f32 *result, s32 mask, s32 flags);
+extern f32 sqrtf(f32 value);
+extern s16 Arctanf(f32 x, f32 y);
+extern f32 func_8002A8BC(s32 angle);
+extern f32 func_8002A8C0(s32 angle);
+extern s32 texAnimateSprite(void *entry, s32 *mode, s32 animationId,
+                            void *state, s32 updateRate);
+extern void texDPTextureX(Overlay12Gfx **displayList, void *resource,
+                          s32 mode, s32 flags);
+extern f32 func_80024938(f32 x, f32 y, f32 z);
+extern void func_800084C4(Overlay12Gfx **displayList,
+                          Overlay12Vertex **vertices, void *resource,
+                          void *base, Overlay12Effect *effect,
+                          f32 *previous, f32 scale, u32 primary,
+                          u32 secondary, s32 flags);
+extern void sprSetIA2ColOverride(u8 firstR, u8 firstG, u8 firstB,
+                                 u8 secondR, u8 secondG, u8 secondB);
+extern void camDoSpriteDirect(Overlay12Gfx **displayList, void **matrix,
+                              Overlay12Vertex **vertices, void *resource,
+                              s32 x, s32 y, s32 z, s32 arg7, f32 scale,
+                              f32 arg9, f32 frame, s32 mode,
+                              u8 alpha);
+extern void sprClearIA2ColOverride(void);
 
-void overlay12Initialize(void);
+#define O12_SHIFTL(value, shift, width) ((u32)(((u32)(value) & ((1U << (width)) - 1U)) << (shift)))
+#define O12_GFX_VERTEX(packet, addressA, addressB, count, first) { \
+    Overlay12Gfx *_g = (Overlay12Gfx *)(packet); \
+    _g->w0 = O12_SHIFTL(4, 24, 8) | \
+             O12_SHIFTL(((count) << 3) | ((u32)(addressA) & 6) | (first), 16, 8) | \
+             O12_SHIFTL(((count) << 3) + ((count) << 1) + 8, 0, 16); \
+    _g->w1 = (u32)(addressB); \
+}
+#define O12_GFX_POLYGON(packet, address, count, textured) { \
+    Overlay12Gfx *_g = (Overlay12Gfx *)(packet); \
+    _g->w0 = O12_SHIFTL((((count) - 1) << 4) | (textured), 16, 8) | \
+             O12_SHIFTL(5, 24, 8) | O12_SHIFTL((count) * 16, 0, 16); \
+    _g->w1 = (u32)(address); \
+}
+#define OVERLAY12_EMIT(cursor, first, second) { \
+    Overlay12Gfx *_g = (Overlay12Gfx *)((cursor)++); \
+    _g->w0 = (first); \
+    _g->w1 = (second); \
+}
 
 #endif

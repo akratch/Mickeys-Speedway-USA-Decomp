@@ -494,457 +494,14 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o002/func_overlay_002_F0000C90_1857A88.c.o",
-      "offset": 3216,
-      "overlay": 2,
-      "size": 1420,
-      "source": "src/overlays/o002/func_overlay_002_F0000C90_1857A88.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/func_overlay_002_F0001364_185815C.c.o",
-      "offset": 4964,
-      "overlay": 2,
-      "size": 756,
-      "source": "src/overlays/o002/func_overlay_002_F0001364_185815C.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/func_overlay_002_F0001A94_185888C.c.o",
-      "offset": 6804,
-      "overlay": 2,
-      "size": 868,
-      "source": "src/overlays/o002/func_overlay_002_F0001A94_185888C.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/func_overlay_002_F0001DF8_1858BF0.c.o",
-      "offset": 7672,
-      "overlay": 2,
-      "size": 1840,
-      "source": "src/overlays/o002/func_overlay_002_F0001DF8_1858BF0.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/overlay2AdjacentIndices.c.o",
-      "offset": 5720,
-      "overlay": 2,
-      "size": 72,
-      "source": "src/overlays/o002/overlay2AdjacentIndices.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/overlay2AppendLine.c.o",
-      "offset": 444,
-      "overlay": 2,
-      "size": 264,
-      "source": "src/overlays/o002/overlay2AppendLine.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/overlay2ClassifyBoundary.c.o",
-      "offset": 708,
-      "overlay": 2,
-      "size": 316,
-      "source": "src/overlays/o002/overlay2ClassifyBoundary.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/overlay2ClipLines.c.o",
-      "offset": 1180,
-      "overlay": 2,
-      "size": 580,
-      "source": "src/overlays/o002/overlay2ClipLines.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/overlay2ContainsPoint.c.o",
-      "offset": 4668,
-      "overlay": 2,
-      "size": 296,
-      "source": "src/overlays/o002/overlay2ContainsPoint.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/overlay2CopyColor.c.o",
-      "offset": 9512,
-      "overlay": 2,
-      "size": 32,
-      "source": "src/overlays/o002/overlay2CopyColor.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/overlay2Enable.c.o",
-      "offset": 4636,
-      "overlay": 2,
-      "size": 32,
-      "source": "src/overlays/o002/overlay2Enable.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/overlay2IntersectBoundary.c.o",
-      "offset": 1024,
-      "overlay": 2,
-      "size": 156,
-      "source": "src/overlays/o002/overlay2IntersectBoundary.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/overlay2QueryNode.c.o",
-      "offset": 5792,
-      "overlay": 2,
-      "size": 1012,
-      "source": "src/overlays/o002/overlay2QueryNode.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o002/overlay2ValidateRegion.c.o",
-      "offset": 0,
-      "overlay": 2,
-      "size": 444,
-      "source": "src/overlays/o002/overlay2ValidateRegion.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o003/overlay3ContainsValue.c.o",
-      "offset": 0,
-      "overlay": 3,
-      "size": 80,
-      "source": "src/overlays/o003/overlay3ContainsValue.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o003/overlay3FindClosestObject.c.o",
-      "offset": 636,
-      "overlay": 3,
-      "size": 308,
-      "source": "src/overlays/o003/overlay3FindClosestObject.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o003/overlay3ResetObjects.c.o",
-      "offset": 80,
-      "overlay": 3,
-      "size": 104,
-      "source": "src/overlays/o003/overlay3ResetObjects.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o003/overlay3RunCachedModeAction.c.o",
-      "offset": 184,
-      "overlay": 3,
-      "size": 452,
-      "source": "src/overlays/o003/overlay3RunCachedModeAction.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o003/overlay3SelectScoredObject.c.o",
-      "offset": 944,
-      "overlay": 3,
-      "size": 472,
-      "source": "src/overlays/o003/overlay3SelectScoredObject.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o003/overlay3SelectTarget.c.o",
-      "offset": 1416,
-      "overlay": 3,
-      "size": 336,
-      "source": "src/overlays/o003/overlay3SelectTarget.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o003/overlay3TouchObject.c.o",
-      "offset": 1752,
-      "overlay": 3,
-      "size": 136,
-      "source": "src/overlays/o003/overlay3TouchObject.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o003/overlay3UpdateTimedEntries.c.o",
-      "offset": 1888,
-      "overlay": 3,
-      "size": 100,
-      "source": "src/overlays/o003/overlay3UpdateTimedEntries.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o004/overlay_004.c.o",
-      "offset": 0,
-      "overlay": 4,
-      "size": 3244,
-      "source": "src/overlays/o004/overlay_004.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o005/_bnkfPatchBank.c.o",
-      "offset": 208,
-      "overlay": 5,
-      "size": 184,
-      "source": "src/overlays/o005/_bnkfPatchBank.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o005/_bnkfPatchInst.c.o",
-      "offset": 392,
-      "overlay": 5,
-      "size": 152,
-      "source": "src/overlays/o005/_bnkfPatchInst.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o005/_bnkfPatchSound.c.o",
-      "offset": 544,
-      "overlay": 5,
-      "size": 88,
-      "source": "src/overlays/o005/_bnkfPatchSound.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o005/_bnkfPatchWaveTable.c.o",
-      "offset": 632,
-      "overlay": 5,
-      "size": 108,
-      "source": "src/overlays/o005/_bnkfPatchWaveTable.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o005/overlay_005.c.o",
-      "offset": 740,
-      "overlay": 5,
-      "size": 1152,
-      "source": "src/overlays/o005/overlay_005.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o006/overlay_006.c.o",
-      "offset": 0,
-      "overlay": 6,
-      "size": 28,
-      "source": "src/overlays/o006/overlay_006.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o",
-      "offset": 804,
-      "overlay": 7,
-      "size": 1392,
-      "source": "src/overlays/o007/func_overlay_007_F0000324_185C1AC.c",
-      "tools": [
-        "trim_elf_section.py",
-        "externalize_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o007/overlay_007.c.o",
       "offset": 0,
       "overlay": 7,
-      "size": 804,
+      "size": 4024,
       "source": "src/overlays/o007/overlay_007.c",
       "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o007/overlay_007_tail.c.o",
-      "offset": 2196,
-      "overlay": 7,
-      "size": 1828,
-      "source": "src/overlays/o007/overlay_007_tail.c",
-      "tools": [
-        "rebind_elf_relocations.py",
         "filter_elf_relocations.py",
         "externalize_elf_section.py",
-        "trim_elf_section.py",
         "objcopy"
       ]
     },
@@ -959,7 +516,6 @@
       "size": 20776,
       "source": "src/overlays/o008/overlay_008.c",
       "tools": [
-        "trim_elf_section.py",
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
         "objcopy"
@@ -977,7 +533,6 @@
       "source": "src/overlays/o009/overlay_009.c",
       "tools": [
         "rebind_elf_relocations.py",
-        "trim_elf_section.py",
         "externalize_elf_section.py",
         "objcopy"
       ]
@@ -987,444 +542,13 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o011/func_overlay_011_F0000150_1868998.c.o",
-      "offset": 336,
-      "overlay": 11,
-      "size": 2248,
-      "source": "src/overlays/o011/func_overlay_011_F0000150_1868998.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "externalize_elf_section.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/func_overlay_011_F0001E4C_186A694.c.o",
-      "offset": 7756,
-      "overlay": 11,
-      "size": 1180,
-      "source": "src/overlays/o011/func_overlay_011_F0001E4C_186A694.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "externalize_elf_section.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/func_overlay_011_F00022E8_186AB30.c.o",
-      "offset": 8936,
-      "overlay": 11,
-      "size": 1068,
-      "source": "src/overlays/o011/func_overlay_011_F00022E8_186AB30.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "externalize_elf_section.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11CreateHandles.c.o",
-      "offset": 2584,
-      "overlay": 11,
-      "size": 220,
-      "source": "src/overlays/o011/overlay11CreateHandles.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11DisableHandles.c.o",
-      "offset": 4400,
-      "overlay": 11,
-      "size": 160,
-      "source": "src/overlays/o011/overlay11DisableHandles.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11EnableHandles.c.o",
-      "offset": 4184,
-      "overlay": 11,
-      "size": 216,
-      "source": "src/overlays/o011/overlay11EnableHandles.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11Initialize.c.o",
+      "object": "build/src/overlays/o011/overlay_011.c.o",
       "offset": 0,
       "overlay": 11,
-      "size": 336,
-      "source": "src/overlays/o011/overlay11Initialize.c",
+      "size": 11444,
+      "source": "src/overlays/o011/overlay_011.c",
       "tools": [
         "rebind_elf_relocations.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11InitializeFour.c.o",
-      "offset": 2804,
-      "overlay": 11,
-      "size": 404,
-      "source": "src/overlays/o011/overlay11InitializeFour.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11InitializeSixA.c.o",
-      "offset": 3580,
-      "overlay": 11,
-      "size": 232,
-      "source": "src/overlays/o011/overlay11InitializeSixA.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11InitializeSixB.c.o",
-      "offset": 3208,
-      "overlay": 11,
-      "size": 232,
-      "source": "src/overlays/o011/overlay11InitializeSixB.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11InitializeSixC.c.o",
-      "offset": 3812,
-      "overlay": 11,
-      "size": 232,
-      "source": "src/overlays/o011/overlay11InitializeSixC.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11InitializeThreeA.c.o",
-      "offset": 3440,
-      "overlay": 11,
-      "size": 140,
-      "source": "src/overlays/o011/overlay11InitializeThreeA.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11InitializeThreeB.c.o",
-      "offset": 4044,
-      "overlay": 11,
-      "size": 140,
-      "source": "src/overlays/o011/overlay11InitializeThreeB.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11ReleaseCurrentGroup.c.o",
-      "offset": 11252,
-      "overlay": 11,
-      "size": 192,
-      "source": "src/overlays/o011/overlay11ReleaseCurrentGroup.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11ReleaseGroup3A.c.o",
-      "offset": 10668,
-      "overlay": 11,
-      "size": 100,
-      "source": "src/overlays/o011/overlay11ReleaseGroup3A.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11ReleaseGroup3B.c.o",
-      "offset": 11068,
-      "overlay": 11,
-      "size": 100,
-      "source": "src/overlays/o011/overlay11ReleaseGroup3B.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11ReleaseGroup4.c.o",
-      "offset": 10568,
-      "overlay": 11,
-      "size": 100,
-      "source": "src/overlays/o011/overlay11ReleaseGroup4.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11ReleaseGroup6A.c.o",
-      "offset": 10768,
-      "overlay": 11,
-      "size": 100,
-      "source": "src/overlays/o011/overlay11ReleaseGroup6A.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11ReleaseGroup6B.c.o",
-      "offset": 10868,
-      "overlay": 11,
-      "size": 100,
-      "source": "src/overlays/o011/overlay11ReleaseGroup6B.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11ReleaseGroup6C.c.o",
-      "offset": 10968,
-      "overlay": 11,
-      "size": 100,
-      "source": "src/overlays/o011/overlay11ReleaseGroup6C.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11ReleaseHandles.c.o",
-      "offset": 11168,
-      "overlay": 11,
-      "size": 84,
-      "source": "src/overlays/o011/overlay11ReleaseHandles.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11UpdateFiveOptionMenu.c.o",
-      "offset": 6780,
-      "overlay": 11,
-      "size": 976,
-      "source": "src/overlays/o011/overlay11UpdateFiveOptionMenu.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11UpdateMenu.c.o",
-      "offset": 5016,
-      "overlay": 11,
-      "size": 1204,
-      "source": "src/overlays/o011/overlay11UpdateMenu.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11UpdateModeSix.c.o",
-      "offset": 10004,
-      "overlay": 11,
-      "size": 564,
-      "source": "src/overlays/o011/overlay11UpdateModeSix.c",
-      "tools": [
-        "filter_elf_relocations.py",
-        "rebind_elf_relocations.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11UpdateSelection.c.o",
-      "offset": 4560,
-      "overlay": 11,
-      "size": 456,
-      "source": "src/overlays/o011/overlay11UpdateSelection.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o011/overlay11UpdateTwoOptionMenu.c.o",
-      "offset": 6220,
-      "overlay": 11,
-      "size": 560,
-      "source": "src/overlays/o011/overlay11UpdateTwoOptionMenu.c",
-      "tools": [
-        "filter_elf_relocations.py",
-        "rebind_elf_relocations.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o012/func_overlay_012_F00000C4_186D344.c.o",
-      "offset": 196,
-      "overlay": 12,
-      "size": 240,
-      "source": "src/overlays/o012/func_overlay_012_F00000C4_186D344.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o012/func_overlay_012_F00002E4_186D564.c.o",
-      "offset": 740,
-      "overlay": 12,
-      "size": 196,
-      "source": "src/overlays/o012/func_overlay_012_F00002E4_186D564.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o012/func_overlay_012_F00003A8_186D628.c.o",
-      "offset": 936,
-      "overlay": 12,
-      "size": 1384,
-      "source": "src/overlays/o012/func_overlay_012_F00003A8_186D628.c",
-      "tools": [
-        "trim_elf_section.py",
-        "externalize_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o012/func_overlay_012_F0000910_186DB90.c.o",
-      "offset": 2320,
-      "overlay": 12,
-      "size": 2444,
-      "source": "src/overlays/o012/func_overlay_012_F0000910_186DB90.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "trim_elf_section.py",
         "externalize_elf_section.py",
         "objcopy"
       ]
@@ -1437,10 +561,10 @@
       "object": "build/src/overlays/o012/overlay_012.c.o",
       "offset": 0,
       "overlay": 12,
-      "size": 196,
+      "size": 4764,
       "source": "src/overlays/o012/overlay_012.c",
       "tools": [
-        "trim_elf_section.py"
+        "externalize_elf_section.py"
       ]
     },
     {
@@ -1448,540 +572,14 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o012/overlay_012_tail.c.o",
-      "offset": 436,
-      "overlay": 12,
-      "size": 304,
-      "source": "src/overlays/o012/overlay_012_tail.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o013/overlay13Call.c.o",
-      "offset": 2828,
-      "overlay": 13,
-      "size": 32,
-      "source": "src/overlays/o013/overlay13Call.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o013/overlay13CreateRecord.c.o",
-      "offset": 392,
-      "overlay": 13,
-      "size": 252,
-      "source": "src/overlays/o013/overlay13CreateRecord.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o013/overlay13DrawActive.c.o",
-      "offset": 2164,
-      "overlay": 13,
-      "size": 664,
-      "source": "src/overlays/o013/overlay13DrawActive.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o013/overlay13DrawRecord.c.o",
-      "offset": 1408,
-      "overlay": 13,
-      "size": 756,
-      "source": "src/overlays/o013/overlay13DrawRecord.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o013/overlay13Initialize.c.o",
-      "offset": 0,
-      "overlay": 13,
-      "size": 292,
-      "source": "src/overlays/o013/overlay13Initialize.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o013/overlay13ProcessActive.c.o",
-      "offset": 1288,
-      "overlay": 13,
-      "size": 120,
-      "source": "src/overlays/o013/overlay13ProcessActive.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o013/overlay13ProcessRecord.c.o",
-      "offset": 644,
-      "overlay": 13,
-      "size": 644,
-      "source": "src/overlays/o013/overlay13ProcessRecord.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o013/overlay13Release.c.o",
-      "offset": 292,
-      "overlay": 13,
-      "size": 100,
-      "source": "src/overlays/o013/overlay13Release.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/func_overlay_014_F0000000_186F8D8.c.o",
+      "object": "build/src/overlays/o014/overlay_014.c.o",
       "offset": 0,
       "overlay": 14,
-      "size": 316,
-      "source": "src/overlays/o014/func_overlay_014_F0000000_186F8D8.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/func_overlay_014_F000013C_186FA14.c.o",
-      "offset": 316,
-      "overlay": 14,
-      "size": 480,
-      "source": "src/overlays/o014/func_overlay_014_F000013C_186FA14.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/func_overlay_014_F00009F4_18702CC.c.o",
-      "offset": 2548,
-      "overlay": 14,
-      "size": 216,
-      "source": "src/overlays/o014/func_overlay_014_F00009F4_18702CC.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/func_overlay_014_F00013F4_1870CCC.c.o",
-      "offset": 5108,
-      "overlay": 14,
-      "size": 332,
-      "source": "src/overlays/o014/func_overlay_014_F00013F4_1870CCC.c",
-      "tools": [
-        "filter_elf_relocations.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/func_overlay_014_F0001540_1870E18.c.o",
-      "offset": 5440,
-      "overlay": 14,
-      "size": 752,
-      "source": "src/overlays/o014/func_overlay_014_F0001540_1870E18.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/func_overlay_014_F0001830_1871108.c.o",
-      "offset": 6192,
-      "overlay": 14,
-      "size": 804,
-      "source": "src/overlays/o014/func_overlay_014_F0001830_1871108.c",
+      "size": 7232,
+      "source": "src/overlays/o014/overlay_014.c",
       "tools": [
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14AdvanceCommand.c.o",
-      "offset": 3432,
-      "overlay": 14,
-      "size": 508,
-      "source": "src/overlays/o014/overlay14AdvanceCommand.c",
-      "tools": [
-        "filter_elf_relocations.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14ApplyValues.c.o",
-      "offset": 808,
-      "overlay": 14,
-      "size": 368,
-      "source": "src/overlays/o014/overlay14ApplyValues.c",
-      "tools": [
-        "filter_elf_relocations.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14BuildRects.c.o",
-      "offset": 4824,
-      "overlay": 14,
-      "size": 284,
-      "source": "src/overlays/o014/overlay14BuildRects.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14CallUpdate.c.o",
-      "offset": 4452,
-      "overlay": 14,
-      "size": 32,
-      "source": "src/overlays/o014/overlay14CallUpdate.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14CreateValue.c.o",
-      "offset": 1788,
-      "overlay": 14,
-      "size": 384,
-      "source": "src/overlays/o014/overlay14CreateValue.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14DispatchCommand.c.o",
-      "offset": 4160,
-      "overlay": 14,
-      "size": 292,
-      "source": "src/overlays/o014/overlay14DispatchCommand.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14FinalizeActiveHandle.c.o",
-      "offset": 7036,
-      "overlay": 14,
-      "size": 196,
-      "source": "src/overlays/o014/overlay14FinalizeActiveHandle.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14GetFlagC4.c.o",
-      "offset": 2784,
-      "overlay": 14,
-      "size": 12,
-      "source": "src/overlays/o014/overlay14GetFlagC4.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14GetFlagC8.c.o",
-      "offset": 2796,
-      "overlay": 14,
-      "size": 12,
-      "source": "src/overlays/o014/overlay14GetFlagC8.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14GetFlagCC.c.o",
-      "offset": 2868,
-      "overlay": 14,
-      "size": 12,
-      "source": "src/overlays/o014/overlay14GetFlagCC.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14LoadRelocatedValue.c.o",
-      "offset": 2172,
-      "overlay": 14,
-      "size": 376,
-      "source": "src/overlays/o014/overlay14LoadRelocatedValue.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "externalize_elf_section.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14MoveCommandCursor.c.o",
-      "offset": 1400,
-      "overlay": 14,
-      "size": 388,
-      "source": "src/overlays/o014/overlay14MoveCommandCursor.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14PrepareInputState.c.o",
-      "offset": 2908,
-      "overlay": 14,
-      "size": 524,
-      "source": "src/overlays/o014/overlay14PrepareInputState.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14ReleaseCurrent.c.o",
-      "offset": 2808,
-      "overlay": 14,
-      "size": 60,
-      "source": "src/overlays/o014/overlay14ReleaseCurrent.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14ReleaseOwner.c.o",
-      "offset": 6996,
-      "overlay": 14,
-      "size": 40,
-      "source": "src/overlays/o014/overlay14ReleaseOwner.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14Reset.c.o",
-      "offset": 2880,
-      "overlay": 14,
-      "size": 28,
-      "source": "src/overlays/o014/overlay14Reset.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14ResetFlags.c.o",
-      "offset": 2764,
-      "overlay": 14,
-      "size": 20,
-      "source": "src/overlays/o014/overlay14ResetFlags.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14ResetMode.c.o",
-      "offset": 1176,
-      "overlay": 14,
-      "size": 224,
-      "source": "src/overlays/o014/overlay14ResetMode.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14ReturnOne.c.o",
-      "offset": 796,
-      "overlay": 14,
-      "size": 12,
-      "source": "src/overlays/o014/overlay14ReturnOne.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14ReturnOneCallbacks.c.o",
-      "offset": 4136,
-      "overlay": 14,
-      "size": 24,
-      "source": "src/overlays/o014/overlay14ReturnOneCallbacks.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14StepCommand.c.o",
-      "offset": 3940,
-      "overlay": 14,
-      "size": 196,
-      "source": "src/overlays/o014/overlay14StepCommand.c",
-      "tools": [
-        "filter_elf_relocations.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o014/overlay14UpdateTransition.c.o",
-      "offset": 4484,
-      "overlay": 14,
-      "size": 340,
-      "source": "src/overlays/o014/overlay14UpdateTransition.c",
-      "tools": [
-        "filter_elf_relocations.py",
-        "rebind_elf_relocations.py",
-        "trim_elf_section.py",
         "objcopy"
       ]
     },
@@ -1999,149 +597,7 @@
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
         "filter_elf_relocations.py",
-        "trim_elf_section.py",
         "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o016/overlay_016.c.o",
-      "offset": 0,
-      "overlay": 16,
-      "size": 1060,
-      "source": "src/overlays/o016/overlay_016.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o017/overlay17AdvanceChain.c.o",
-      "offset": 1640,
-      "overlay": 17,
-      "size": 588,
-      "source": "src/overlays/o017/overlay17AdvanceChain.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o017/overlay17CalculateEndpoints.c.o",
-      "offset": 0,
-      "overlay": 17,
-      "size": 792,
-      "source": "src/overlays/o017/overlay17CalculateEndpoints.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o017/overlay17CreateChain.c.o",
-      "offset": 792,
-      "overlay": 17,
-      "size": 784,
-      "source": "src/overlays/o017/overlay17CreateChain.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o017/overlay17DrawStrip.c.o",
-      "offset": 2228,
-      "overlay": 17,
-      "size": 476,
-      "source": "src/overlays/o017/overlay17DrawStrip.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o017/overlay17ReleaseChain.c.o",
-      "offset": 1576,
-      "overlay": 17,
-      "size": 64,
-      "source": "src/overlays/o017/overlay17ReleaseChain.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o018/overlay18Initialize.c.o",
-      "offset": 500,
-      "overlay": 18,
-      "size": 88,
-      "source": "src/overlays/o018/overlay18Initialize.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o018/overlay18InitializeBuffers.c.o",
-      "offset": 1268,
-      "overlay": 18,
-      "size": 348,
-      "source": "src/overlays/o018/overlay18InitializeBuffers.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o018/overlay18Load.c.o",
-      "offset": 0,
-      "overlay": 18,
-      "size": 500,
-      "source": "src/overlays/o018/overlay18Load.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o018/overlay18Reconfigure.c.o",
-      "offset": 588,
-      "overlay": 18,
-      "size": 680,
-      "source": "src/overlays/o018/overlay18Reconfigure.c",
-      "tools": [
-        "trim_elf_section.py"
       ]
     },
     {
@@ -7478,12 +5934,69 @@
       "object": "build/src/overlays/o091/overlay_091.c.o",
       "offset": 0,
       "overlay": 91,
-      "size": 1396,
+      "size": 76,
       "source": "src/overlays/o091/overlay_091.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o091/overlay_091_mul.c.o",
+      "offset": 76,
+      "overlay": 91,
+      "size": 1320,
+      "source": "src/overlays/o091/overlay_091_mul.c",
       "tools": [
         "filter_elf_relocations.py",
         "trim_elf_section.py",
         "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o092/func_overlay_092_F0000308_18D6228.c.o",
+      "offset": 776,
+      "overlay": 92,
+      "size": 1832,
+      "source": "src/overlays/o092/func_overlay_092_F0000308_18D6228.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o092/overlay92FindNearestCourse.c.o",
+      "offset": 104,
+      "overlay": 92,
+      "size": 672,
+      "source": "src/overlays/o092/overlay92FindNearestCourse.c",
+      "tools": [
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o092/overlay92Init.c.o",
+      "offset": 0,
+      "overlay": 92,
+      "size": 104,
+      "source": "src/overlays/o092/overlay92Init.c",
+      "tools": [
+        "trim_elf_section.py"
       ]
     },
     {
@@ -7505,13 +6018,28 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o094/overlay_094.c.o",
-      "offset": 0,
+      "object": "build/src/overlays/o094/overlay94SetValue.c.o",
+      "offset": 1372,
       "overlay": 94,
-      "size": 1384,
-      "source": "src/overlays/o094/overlay_094.c",
+      "size": 12,
+      "source": "src/overlays/o094/overlay94SetValue.c",
       "tools": [
         "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o094/overlay94UpdateController.c.o",
+      "offset": 272,
+      "overlay": 94,
+      "size": 1100,
+      "source": "src/overlays/o094/overlay94UpdateController.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -7533,13 +6061,12 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o096/overlay_096.c.o",
-      "offset": 0,
+      "object": "build/src/overlays/o096/overlay96BuildVolume.c.o",
+      "offset": 248,
       "overlay": 96,
-      "size": 1748,
-      "source": "src/overlays/o096/overlay_096.c",
+      "size": 964,
+      "source": "src/overlays/o096/overlay96BuildVolume.c",
       "tools": [
-        "filter_elf_relocations.py",
         "trim_elf_section.py"
       ]
     },
@@ -7548,11 +6075,109 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o097/overlay_097.c.o",
+      "object": "build/src/overlays/o096/overlay96DrawObject.c.o",
+      "offset": 1480,
+      "overlay": 96,
+      "size": 268,
+      "source": "src/overlays/o096/overlay96DrawObject.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o096/overlay96TestBit.c.o",
+      "offset": 1404,
+      "overlay": 96,
+      "size": 76,
+      "source": "src/overlays/o096/overlay96TestBit.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o096/overlay96Unregister.c.o",
+      "offset": 112,
+      "overlay": 96,
+      "size": 136,
+      "source": "src/overlays/o096/overlay96Unregister.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o097/overlay97AssignState.c.o",
+      "offset": 1012,
+      "overlay": 97,
+      "size": 44,
+      "source": "src/overlays/o097/overlay97AssignState.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o097/overlay97CopyAngles.c.o",
+      "offset": 304,
+      "overlay": 97,
+      "size": 28,
+      "source": "src/overlays/o097/overlay97CopyAngles.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o097/overlay97CreateDescriptor.c.o",
+      "offset": 1056,
+      "overlay": 97,
+      "size": 232,
+      "source": "src/overlays/o097/overlay97CreateDescriptor.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o097/overlay97InitBounds.c.o",
+      "offset": 1864,
+      "overlay": 97,
+      "size": 508,
+      "source": "src/overlays/o097/overlay97InitBounds.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o097/overlay97InitDirection.c.o",
       "offset": 0,
       "overlay": 97,
-      "size": 2644,
-      "source": "src/overlays/o097/overlay_097.c",
+      "size": 304,
+      "source": "src/overlays/o097/overlay97InitDirection.c",
       "tools": [
         "trim_elf_section.py"
       ]
@@ -7562,11 +6187,95 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o098/overlay_098.c.o",
+      "object": "build/src/overlays/o097/overlay97InitPlane.c.o",
+      "offset": 2372,
+      "overlay": 97,
+      "size": 272,
+      "source": "src/overlays/o097/overlay97InitPlane.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o097/overlay97InitRadius.c.o",
+      "offset": 424,
+      "overlay": 97,
+      "size": 64,
+      "source": "src/overlays/o097/overlay97InitRadius.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o097/overlay97InitResource.c.o",
+      "offset": 488,
+      "overlay": 97,
+      "size": 388,
+      "source": "src/overlays/o097/overlay97InitResource.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o097/overlay97InitSelection.c.o",
+      "offset": 876,
+      "overlay": 97,
+      "size": 136,
+      "source": "src/overlays/o097/overlay97InitSelection.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o097/overlay97InitTransform.c.o",
+      "offset": 332,
+      "overlay": 97,
+      "size": 92,
+      "source": "src/overlays/o097/overlay97InitTransform.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o098/overlay98CheckObject.c.o",
+      "offset": 2120,
+      "overlay": 98,
+      "size": 444,
+      "source": "src/overlays/o098/overlay98CheckObject.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o098/overlay98CollectUniqueY.c.o",
       "offset": 0,
       "overlay": 98,
-      "size": 2564,
-      "source": "src/overlays/o098/overlay_098.c",
+      "size": 324,
+      "source": "src/overlays/o098/overlay98CollectUniqueY.c",
       "tools": [
         "trim_elf_section.py"
       ]
@@ -7576,13 +6285,40 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o099/overlay_099.c.o",
-      "offset": 0,
-      "overlay": 99,
-      "size": 4956,
-      "source": "src/overlays/o099/overlay_099.c",
+      "object": "build/src/overlays/o098/overlay98RenderReflections.c.o",
+      "offset": 564,
+      "overlay": 98,
+      "size": 1556,
+      "source": "src/overlays/o098/overlay98RenderReflections.c",
       "tools": [
-        "filter_elf_relocations.py",
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c.o",
+      "offset": 3548,
+      "overlay": 99,
+      "size": 1408,
+      "source": "src/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o099/overlay99ApplySegment.c.o",
+      "offset": 672,
+      "overlay": 99,
+      "size": 920,
+      "source": "src/overlays/o099/overlay99ApplySegment.c",
+      "tools": [
         "externalize_elf_section.py",
         "trim_elf_section.py"
       ]
@@ -7592,13 +6328,12 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o100/overlay_100.c.o",
-      "offset": 0,
-      "overlay": 100,
-      "size": 2380,
-      "source": "src/overlays/o100/overlay_100.c",
+      "object": "build/src/overlays/o099/overlay99BuildHeightGrid.c.o",
+      "offset": 1592,
+      "overlay": 99,
+      "size": 456,
+      "source": "src/overlays/o099/overlay99BuildHeightGrid.c",
       "tools": [
-        "filter_elf_relocations.py",
         "trim_elf_section.py"
       ]
     },
@@ -7607,17 +6342,1110 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o101/overlay_101.c.o",
+      "object": "build/src/overlays/o099/overlay99GetEntries.c.o",
       "offset": 0,
+      "overlay": 99,
+      "size": 12,
+      "source": "src/overlays/o099/overlay99GetEntries.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o099/overlay99InitializeEntries.c.o",
+      "offset": 100,
+      "overlay": 99,
+      "size": 440,
+      "source": "src/overlays/o099/overlay99InitializeEntries.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o099/overlay99ProjectVector.c.o",
+      "offset": 540,
+      "overlay": 99,
+      "size": 132,
+      "source": "src/overlays/o099/overlay99ProjectVector.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o099/overlay99ReleaseEntries.c.o",
+      "offset": 12,
+      "overlay": 99,
+      "size": 88,
+      "source": "src/overlays/o099/overlay99ReleaseEntries.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o099/overlay99RenderSegments.c.o",
+      "offset": 2980,
+      "overlay": 99,
+      "size": 568,
+      "source": "src/overlays/o099/overlay99RenderSegments.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o099/overlay99RenderSortedEntries.c.o",
+      "offset": 2048,
+      "overlay": 99,
+      "size": 932,
+      "source": "src/overlays/o099/overlay99RenderSortedEntries.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o100/overlay100ApplyToValue.c.o",
+      "offset": 1292,
+      "overlay": 100,
+      "size": 116,
+      "source": "src/overlays/o100/overlay100ApplyToValue.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o100/overlay100ApplyValue.c.o",
+      "offset": 792,
+      "overlay": 100,
+      "size": 116,
+      "source": "src/overlays/o100/overlay100ApplyValue.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o100/overlay100DrawMotion.c.o",
+      "offset": 1408,
+      "overlay": 100,
+      "size": 972,
+      "source": "src/overlays/o100/overlay100DrawMotion.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o100/overlay100InitializeMotion.c.o",
+      "offset": 0,
+      "overlay": 100,
+      "size": 532,
+      "source": "src/overlays/o100/overlay100InitializeMotion.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o100/overlay100ReleaseAll.c.o",
+      "offset": 532,
+      "overlay": 100,
+      "size": 100,
+      "source": "src/overlays/o100/overlay100ReleaseAll.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o100/overlay100RemoveEntry.c.o",
+      "offset": 632,
+      "overlay": 100,
+      "size": 160,
+      "source": "src/overlays/o100/overlay100RemoveEntry.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/func_overlay_101_F0002510_18DDD30.c.o",
+      "offset": 9488,
       "overlay": 101,
-      "size": 52952,
-      "source": "src/overlays/o101/overlay_101.c",
+      "size": 1172,
+      "source": "src/overlays/o101/func_overlay_101_F0002510_18DDD30.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/func_overlay_101_F0003A58_18DF278.c.o",
+      "offset": 14936,
+      "overlay": 101,
+      "size": 5844,
+      "source": "src/overlays/o101/func_overlay_101_F0003A58_18DF278.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/func_overlay_101_F000512C_18E094C.c.o",
+      "offset": 20780,
+      "overlay": 101,
+      "size": 1520,
+      "source": "src/overlays/o101/func_overlay_101_F000512C_18E094C.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/func_overlay_101_F000571C_18E0F3C.c.o",
+      "offset": 22300,
+      "overlay": 101,
+      "size": 1772,
+      "source": "src/overlays/o101/func_overlay_101_F000571C_18E0F3C.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/func_overlay_101_F0005E08_18E1628.c.o",
+      "offset": 24072,
+      "overlay": 101,
+      "size": 1520,
+      "source": "src/overlays/o101/func_overlay_101_F0005E08_18E1628.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/func_overlay_101_F00063F8_18E1C18.c.o",
+      "offset": 25592,
+      "overlay": 101,
+      "size": 1520,
+      "source": "src/overlays/o101/func_overlay_101_F00063F8_18E1C18.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/func_overlay_101_F00069E8_18E2208.c.o",
+      "offset": 27112,
+      "overlay": 101,
+      "size": 3852,
+      "source": "src/overlays/o101/func_overlay_101_F00069E8_18E2208.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/func_overlay_101_F00078F4_18E3114.c.o",
+      "offset": 30964,
+      "overlay": 101,
+      "size": 2100,
+      "source": "src/overlays/o101/func_overlay_101_F00078F4_18E3114.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/func_overlay_101_F0008128_18E3948.c.o",
+      "offset": 33064,
+      "overlay": 101,
+      "size": 2100,
+      "source": "src/overlays/o101/func_overlay_101_F0008128_18E3948.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/func_overlay_101_F000895C_18E417C.c.o",
+      "offset": 35164,
+      "overlay": 101,
+      "size": 2100,
+      "source": "src/overlays/o101/func_overlay_101_F000895C_18E417C.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/func_overlay_101_F0009190_18E49B0.c.o",
+      "offset": 37264,
+      "overlay": 101,
+      "size": 2100,
+      "source": "src/overlays/o101/func_overlay_101_F0009190_18E49B0.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ActivateSlot.c.o",
+      "offset": 1316,
+      "overlay": 101,
+      "size": 108,
+      "source": "src/overlays/o101/overlay101ActivateSlot.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101AdvanceSlot.c.o",
+      "offset": 1424,
+      "overlay": 101,
+      "size": 80,
+      "source": "src/overlays/o101/overlay101AdvanceSlot.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101AllocateEntry.c.o",
+      "offset": 180,
+      "overlay": 101,
+      "size": 84,
+      "source": "src/overlays/o101/overlay101AllocateEntry.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101BuildBorder.c.o",
+      "offset": 11712,
+      "overlay": 101,
+      "size": 316,
+      "source": "src/overlays/o101/overlay101BuildBorder.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101BuildFrame.c.o",
+      "offset": 11324,
+      "overlay": 101,
+      "size": 168,
+      "source": "src/overlays/o101/overlay101BuildFrame.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101BuildIntensityColors.c.o",
+      "offset": 11492,
+      "overlay": 101,
+      "size": 220,
+      "source": "src/overlays/o101/overlay101BuildIntensityColors.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101BuildPresentationD.c.o",
+      "offset": 41860,
+      "overlay": 101,
+      "size": 824,
+      "source": "src/overlays/o101/overlay101BuildPresentationD.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ByteLength.c.o",
+      "offset": 52904,
+      "overlay": 101,
+      "size": 48,
+      "source": "src/overlays/o101/overlay101ByteLength.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101Cleanup.c.o",
+      "offset": 52560,
+      "overlay": 101,
+      "size": 344,
+      "source": "src/overlays/o101/overlay101Cleanup.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101DispatchActive.c.o",
+      "offset": 6712,
+      "overlay": 101,
+      "size": 380,
+      "source": "src/overlays/o101/overlay101DispatchActive.c",
       "tools": [
         "rebind_elf_relocations.py",
         "filter_elf_relocations.py",
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101DispatchEvents.c.o",
+      "offset": 7120,
+      "overlay": 101,
+      "size": 944,
+      "source": "src/overlays/o101/overlay101DispatchEvents.c",
+      "tools": [
+        "rebind_elf_relocations.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101DrawChain.c.o",
+      "offset": 14052,
+      "overlay": 101,
+      "size": 304,
+      "source": "src/overlays/o101/overlay101DrawChain.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101DrawClock.c.o",
+      "offset": 13100,
+      "overlay": 101,
+      "size": 952,
+      "source": "src/overlays/o101/overlay101DrawClock.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101DrawElement.c.o",
+      "offset": 8784,
+      "overlay": 101,
+      "size": 704,
+      "source": "src/overlays/o101/overlay101DrawElement.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101DrawPanel.c.o",
+      "offset": 12028,
+      "overlay": 101,
+      "size": 1072,
+      "source": "src/overlays/o101/overlay101DrawPanel.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101DrawSlots.c.o",
+      "offset": 14744,
+      "overlay": 101,
+      "size": 192,
+      "source": "src/overlays/o101/overlay101DrawSlots.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101DrawTransformed.c.o",
+      "offset": 10660,
+      "overlay": 101,
+      "size": 664,
+      "source": "src/overlays/o101/overlay101DrawTransformed.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101FindEntry.c.o",
+      "offset": 264,
+      "overlay": 101,
+      "size": 92,
+      "source": "src/overlays/o101/overlay101FindEntry.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101GetBounds.c.o",
+      "offset": 8472,
+      "overlay": 101,
+      "size": 312,
+      "source": "src/overlays/o101/overlay101GetBounds.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101Initialize.c.o",
+      "offset": 0,
+      "overlay": 101,
+      "size": 180,
+      "source": "src/overlays/o101/overlay101Initialize.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101PromoteSlot.c.o",
+      "offset": 1504,
+      "overlay": 101,
+      "size": 136,
+      "source": "src/overlays/o101/overlay101PromoteSlot.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101Reset.c.o",
+      "offset": 7092,
+      "overlay": 101,
+      "size": 28,
+      "source": "src/overlays/o101/overlay101Reset.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ScheduleByte16.c.o",
+      "offset": 2168,
+      "overlay": 101,
+      "size": 208,
+      "source": "src/overlays/o101/overlay101ScheduleByte16.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ScheduleByte17.c.o",
+      "offset": 1800,
+      "overlay": 101,
+      "size": 208,
+      "source": "src/overlays/o101/overlay101ScheduleByte17.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ScheduleFrames.c.o",
+      "offset": 5928,
+      "overlay": 101,
+      "size": 320,
+      "source": "src/overlays/o101/overlay101ScheduleFrames.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ScheduleGlobalPair.c.o",
+      "offset": 6512,
+      "overlay": 101,
+      "size": 200,
+      "source": "src/overlays/o101/overlay101ScheduleGlobalPair.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ScheduleLinkedByte.c.o",
+      "offset": 4364,
+      "overlay": 101,
+      "size": 212,
+      "source": "src/overlays/o101/overlay101ScheduleLinkedByte.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ScheduleLinkedColor.c.o",
+      "offset": 5464,
+      "overlay": 101,
+      "size": 288,
+      "source": "src/overlays/o101/overlay101ScheduleLinkedColor.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ScheduleLinkedFloat.c.o",
+      "offset": 3456,
+      "overlay": 101,
+      "size": 212,
+      "source": "src/overlays/o101/overlay101ScheduleLinkedFloat.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ScheduleLinkedPair.c.o",
+      "offset": 2620,
+      "overlay": 101,
+      "size": 236,
+      "source": "src/overlays/o101/overlay101ScheduleLinkedPair.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ScheduleLinkedPair2.c.o",
+      "offset": 3100,
+      "overlay": 101,
+      "size": 236,
+      "source": "src/overlays/o101/overlay101ScheduleLinkedPair2.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ScheduleLinkedPair3.c.o",
+      "offset": 4820,
+      "overlay": 101,
+      "size": 236,
+      "source": "src/overlays/o101/overlay101ScheduleLinkedPair3.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101ScheduleLinkedScaled.c.o",
+      "offset": 3828,
+      "overlay": 101,
+      "size": 256,
+      "source": "src/overlays/o101/overlay101ScheduleLinkedScaled.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101SchedulePair.c.o",
+      "offset": 600,
+      "overlay": 101,
+      "size": 236,
+      "source": "src/overlays/o101/overlay101SchedulePair.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101SchedulePair12.c.o",
+      "offset": 1080,
+      "overlay": 101,
+      "size": 236,
+      "source": "src/overlays/o101/overlay101SchedulePair12.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101SetScissor.c.o",
+      "offset": 8064,
+      "overlay": 101,
+      "size": 408,
+      "source": "src/overlays/o101/overlay101SetScissor.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101TailAB4C.c.o",
+      "offset": 43852,
+      "overlay": 101,
+      "size": 2552,
+      "source": "src/overlays/o101/overlay101TailAB4C.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101TailB544.c.o",
+      "offset": 46404,
+      "overlay": 101,
+      "size": 1264,
+      "source": "src/overlays/o101/overlay101TailB544.c",
+      "tools": [
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101TailC144.c.o",
+      "offset": 49476,
+      "overlay": 101,
+      "size": 1444,
+      "source": "src/overlays/o101/overlay101TailC144.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101TailC6E8.c.o",
+      "offset": 50920,
+      "overlay": 101,
+      "size": 1268,
+      "source": "src/overlays/o101/overlay101TailC6E8.c",
+      "tools": [
+        "rebind_elf_relocations.py",
         "externalize_elf_section.py",
         "trim_elf_section.py",
         "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateByte16.c.o",
+      "offset": 2008,
+      "overlay": 101,
+      "size": 160,
+      "source": "src/overlays/o101/overlay101UpdateByte16.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateByte17.c.o",
+      "offset": 1640,
+      "overlay": 101,
+      "size": 160,
+      "source": "src/overlays/o101/overlay101UpdateByte17.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateByte18.c.o",
+      "offset": 4084,
+      "overlay": 101,
+      "size": 280,
+      "source": "src/overlays/o101/overlay101UpdateByte18.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateChains.c.o",
+      "offset": 14356,
+      "overlay": 101,
+      "size": 388,
+      "source": "src/overlays/o101/overlay101UpdateChains.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateColor.c.o",
+      "offset": 5056,
+      "overlay": 101,
+      "size": 408,
+      "source": "src/overlays/o101/overlay101UpdateColor.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateDelta16.c.o",
+      "offset": 3668,
+      "overlay": 101,
+      "size": 160,
+      "source": "src/overlays/o101/overlay101UpdateDelta16.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateEntry.c.o",
+      "offset": 356,
+      "overlay": 101,
+      "size": 244,
+      "source": "src/overlays/o101/overlay101UpdateEntry.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateEntry12.c.o",
+      "offset": 836,
+      "overlay": 101,
+      "size": 244,
+      "source": "src/overlays/o101/overlay101UpdateEntry12.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateEntry8.c.o",
+      "offset": 2376,
+      "overlay": 101,
+      "size": 244,
+      "source": "src/overlays/o101/overlay101UpdateEntry8.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateEntry8B.c.o",
+      "offset": 2856,
+      "overlay": 101,
+      "size": 244,
+      "source": "src/overlays/o101/overlay101UpdateEntry8B.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateEntry8C.c.o",
+      "offset": 4576,
+      "overlay": 101,
+      "size": 244,
+      "source": "src/overlays/o101/overlay101UpdateEntry8C.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateFloat12.c.o",
+      "offset": 3336,
+      "overlay": 101,
+      "size": 120,
+      "source": "src/overlays/o101/overlay101UpdateFloat12.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateFrames.c.o",
+      "offset": 5752,
+      "overlay": 101,
+      "size": 176,
+      "source": "src/overlays/o101/overlay101UpdateFrames.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdateGlobalPair.c.o",
+      "offset": 6248,
+      "overlay": 101,
+      "size": 264,
+      "source": "src/overlays/o101/overlay101UpdateGlobalPair.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o101/overlay101UpdatePresentation.c.o",
+      "offset": 52188,
+      "overlay": 101,
+      "size": 372,
+      "source": "src/overlays/o101/overlay101UpdatePresentation.c",
+      "tools": [
+        "trim_elf_section.py"
       ]
     },
     {
@@ -7681,10 +7509,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 527,
+      "metadata": 518,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 451664,
-    "objects_with_postprocess": 528
+    "matched_c_bytes_with_postprocess": 423752,
+    "objects_with_postprocess": 519
   }
 }

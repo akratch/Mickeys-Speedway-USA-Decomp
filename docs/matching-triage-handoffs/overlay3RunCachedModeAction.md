@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay3RunCachedModeAction:start -->
 ### `overlay3RunCachedModeAction` plateau handoff
 
-- source: `src/overlays/o003/overlay3RunCachedModeAction.c`
+- source: `src/overlays/o003/overlay_003.c`
 - score: 0/113 words, promoted
 - frame: 0x58
 - relocations: 15

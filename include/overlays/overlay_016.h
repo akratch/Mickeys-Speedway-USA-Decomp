@@ -41,9 +41,6 @@ extern s32 gOverlay16Phase;
 extern s32 gOverlay16Mode;
 
 extern void *mmAlloc(s32 size, s32 tag);
-extern void overlay16BuildGradientReloc(u8 *output, s32 red, s32 green,
-                                        s32 blue, s32 endRed, s32 endGreen,
-                                        s32 endBlue);
 extern void mmFree(void *buffer);
 
 #endif

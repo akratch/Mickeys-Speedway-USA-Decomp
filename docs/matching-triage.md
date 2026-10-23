@@ -242,7 +242,7 @@ routing facts from that sweep; the sweep's `summary.json` is the measurement.
 <!-- plateau-handoff:overlay2QueryNode:start -->
 ### `overlay2QueryNode` plateau handoff
 
-- source: `src/overlays/o002/overlay2QueryNode.c`
+- source: `src/overlays/o002/overlay_002.c`
 - score: 201/253 words
 - frame: 0x68
 - relocations: 51

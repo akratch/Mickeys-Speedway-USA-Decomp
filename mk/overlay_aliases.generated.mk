@@ -2,9 +2,6 @@
 # Source: config/normalizations/overlay-symbol-aliases.us.json
 # Pure objcopy --redefine-sym POSTPROCESS rules only.
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CreateChain.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_017_F0000318_1873CD0=overlay17CreateChain $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildPlanes.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym sqrtf=sqrtf_o019Reloc $@
 

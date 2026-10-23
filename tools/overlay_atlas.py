@@ -141,13 +141,10 @@ FIXED_DATA_RODATA_OWNERSHIP = {
     # emit the owner's compiler data, so trial projection must be function-
     # scoped rather than merely source-file-scoped.
     1: [(0x274, 0x294, "overlay_001_tail", ".rodata", "overlay1DispatchMode", True)],
-    7: [(0x934, 0x950, "overlay_007_tail", ".rodata", "overlay7DispatchModes")],
+    7: [(0x930, 0x950, "overlay_007", ".rodata", "overlay7DispatchModes")],
     8: [(0x27C, 0x2AC, "overlay_008", ".rodata", "func_overlay_008_F0004CF0_1862A48")],
     9: [(0x390, 0x3E0, "overlay_009", ".rodata", "func_overlay_009_F0000CE4_186735C", True)],
-    14: [
-        (0x158, 0x174, "overlay14LoadRelocatedValue", ".rodata", "overlay14LoadRelocatedValue", True),
-        (0x174, 0x190, "func_overlay_014_F0001830_1871108", ".rodata", "func_overlay_014_F0001830_1871108", True),
-    ],
+    14: [(0x158, 0x190, "overlay_014", ".rodata", "overlay14LoadRelocatedValue", True)],
     25: [(0x20, 0x40, "overlay_025", ".rodata", "overlay25UpdateEffect")],
     # The record/targeting update's five float literals, rodata-relative +0x0.
     29: [
@@ -287,11 +284,31 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
 # When a C owner's initialized input follows its text, IDO's measured .text
 # alignment can emit the intervening zero padding without a separate asm row.
 # Keep the row in the atlas so padding is never counted as executable C credit.
+#
+# A module folded into one translation unit (docs/OVERLAY_STRUCTURE_SPRINT.md
+# phase 2) needs no owned data for this: IDO pads the TU's own .text to the
+# 16-byte boundary the module's text size already ends on, so the C object
+# carries the pad and no trim is needed.
 COMPILER_TEXT_ALIGNMENT_PADDING = {
     22: "overlay_022_padding",
     45: "overlay_045_padding",
     15: "overlay_015_padding",
+    6: "overlay_006_padding",
+    16: "overlay_016_padding",
+    3: "overlay_003_padding",
+    13: "overlay_013_padding",
+    4: "overlay_004_padding",
+    9: "overlay_009_padding",
+    8: "overlay_008_padding",
+    5: "overlay_005_padding",
+    7: "overlay_007_padding",
+    12: "overlay_012_padding",
+    2: "overlay_002_tail",
+    11: "overlay_011_padding",
 }
+# Folded modules whose compiler padding is the tail of the one TU's .text
+# rather than an alignment gap before C-owned data.
+ONE_TU_TEXT_PADDING = {2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 16}
 
 # Overlay 47's final text address is already 8-byte aligned, but the ROM has
 # an explicit eight-byte gap before initialized data. Emit a bounded asm row
@@ -307,14 +324,7 @@ EXPLICIT_TEXT_PADDING = {
 
 TEXT_SUBSEGMENTS = {
     3: [
-        (0x000, "c", "overlay3ContainsValue"),
-        (0x050, "c", "overlay3ResetObjects"),
-        (0x0B8, "c", "overlay3RunCachedModeAction"),
-        (0x27C, "c", "overlay3FindClosestObject"),
-        (0x3B0, "c", "overlay3SelectScoredObject"),
-        (0x588, "c", "overlay3SelectTarget"),
-        (0x6D8, "c", "overlay3TouchObject"),
-        (0x760, "c", "overlay3UpdateTimedEntries"),
+        (0x000, "c", "overlay_003"),
         (0x7C4, "asm", "overlay_003_padding"),
     ],
     4: [
@@ -336,32 +346,11 @@ TEXT_SUBSEGMENTS = {
         (0x8114, "asm", "overlay_001_padding"),
     ],
     2: [
-        (0x0000, "c", "overlay2ValidateRegion"),
-        (0x01BC, "c", "overlay2AppendLine"),
-        (0x02C4, "c", "overlay2ClassifyBoundary"),
-        (0x0400, "c", "overlay2IntersectBoundary"),
-        (0x049C, "c", "overlay2ClipLines"),
-        (0x06E0, "c", "overlay2ChooseBoundary"),
-        (0x0B70, "c", "overlay2SplitRegion"),
-        (0x0C90, "c", "func_overlay_002_F0000C90_1857A88"),
-        (0x121C, "c", "overlay2Enable"),
-        (0x123C, "c", "overlay2ContainsPoint"),
-        (0x1364, "c", "func_overlay_002_F0001364_185815C"),
-        (0x1658, "c", "overlay2AdjacentIndices"),
-        (0x16A0, "c", "overlay2QueryNode"),
-        (0x1A94, "c", "func_overlay_002_F0001A94_185888C"),
-        (0x1DF8, "c", "func_overlay_002_F0001DF8_1858BF0"),
-        (0x2528, "c", "overlay2CopyColor"),
+        (0x000, "c", "overlay_002"),
         (0x2548, "asm", "overlay_002_tail"),
     ],
     5: [
-        (0x000, "c", "alSeqFileNew"),
-        (0x040, "c", "alBnkfNew"),
-        (0x0D0, "c", "_bnkfPatchBank"),
-        (0x188, "c", "_bnkfPatchInst"),
-        (0x220, "c", "_bnkfPatchSound"),
-        (0x278, "c", "_bnkfPatchWaveTable"),
-        (0x2E4, "c", "overlay_005"),
+        (0x000, "c", "overlay_005"),
         (0x764, "asm", "overlay_005_padding"),
     ],
     6: [
@@ -370,70 +359,29 @@ TEXT_SUBSEGMENTS = {
     ],
     7: [
         (0x000, "c", "overlay_007"),
-        (0x324, "c", "func_overlay_007_F0000324_185C1AC"),
-        (0x894, "c", "overlay_007_tail"),
         (0xFB8, "asm", "overlay_007_padding"),
     ],
     8: [
-        (0x0000, "c", "overlay_008"),
+        (0x000, "c", "overlay_008"),
         (0x5128, "asm", "overlay_008_padding"),
     ],
     9: [
-        (0x0000, "c", "overlay_009"),
+        (0x000, "c", "overlay_009"),
         (0x151C, "asm", "overlay_009_padding"),
     ],
     10: [
-        (0x000, "c", "overlay10Initialize"),
+        (0x000, "c", "overlay_010"),
     ],
     12: [
         (0x000, "c", "overlay_012"),
-        (0x0C4, "c", "func_overlay_012_F00000C4_186D344"),
-        (0x1B4, "c", "overlay_012_tail"),
-        (0x2E4, "c", "func_overlay_012_F00002E4_186D564"),
-        (0x3A8, "c", "func_overlay_012_F00003A8_186D628"),
-        (0x910, "c", "func_overlay_012_F0000910_186DB90"),
         (0x129C, "asm", "overlay_012_padding"),
     ],
     13: [
-        (0x000, "c", "overlay13Initialize"),
-        (0x124, "c", "overlay13Release"),
-        (0x188, "c", "overlay13CreateRecord"),
-        (0x284, "c", "overlay13ProcessRecord"),
-        (0x508, "c", "overlay13ProcessActive"),
-        (0x580, "c", "overlay13DrawRecord"),
-        (0x874, "c", "overlay13DrawActive"),
-        (0xB0C, "c", "overlay13Call"),
+        (0x000, "c", "overlay_013"),
         (0xB2C, "asm", "overlay_013_padding"),
     ],
     14: [
-        (0x000, "c", "func_overlay_014_F0000000_186F8D8"),
-        (0x13C, "c", "func_overlay_014_F000013C_186FA14"),
-        (0x31C, "c", "overlay14ReturnOne"),
-        (0x328, "c", "overlay14ApplyValues"),
-        (0x498, "c", "overlay14ResetMode"),
-        (0x578, "c", "overlay14MoveCommandCursor"),
-        (0x6FC, "c", "overlay14CreateValue"),
-        (0x87C, "c", "overlay14LoadRelocatedValue"),
-        (0x9F4, "c", "func_overlay_014_F00009F4_18702CC"),
-        (0xACC, "c", "overlay14ResetFlags"),
-        (0xAE0, "c", "overlay14GetFlagC4"),
-        (0xAEC, "c", "overlay14GetFlagC8"),
-        (0xAF8, "c", "overlay14ReleaseCurrent"),
-        (0xB34, "c", "overlay14GetFlagCC"),
-        (0xB40, "c", "overlay14Reset"),
-        (0xB5C, "c", "overlay14PrepareInputState"),
-        (0xD68, "c", "overlay14AdvanceCommand"),
-        (0xF64, "c", "overlay14StepCommand"),
-        (0x1028, "c", "overlay14ReturnOneCallbacks"),
-        (0x1040, "c", "overlay14DispatchCommand"),
-        (0x1164, "c", "overlay14CallUpdate"),
-        (0x1184, "c", "overlay14UpdateTransition"),
-        (0x12D8, "c", "overlay14BuildRects"),
-        (0x13F4, "c", "func_overlay_014_F00013F4_1870CCC"),
-        (0x1540, "c", "func_overlay_014_F0001540_1870E18"),
-        (0x1830, "c", "func_overlay_014_F0001830_1871108"),
-        (0x1B54, "c", "overlay14ReleaseOwner"),
-        (0x1B7C, "c", "overlay14FinalizeActiveHandle"),
+        (0x000, "c", "overlay_014"),
     ],
     15: [
         (0x000, "c", "overlay_015"),
@@ -444,10 +392,7 @@ TEXT_SUBSEGMENTS = {
         (0x424, "asm", "overlay_016_padding"),
     ],
     18: [
-        (0x000, "c", "overlay18Load"),
-        (0x1F4, "c", "overlay18Initialize"),
-        (0x24C, "c", "overlay18Reconfigure"),
-        (0x4F4, "c", "overlay18InitializeBuffers"),
+        (0x000, "c", "overlay_018"),
     ],
     19: [
         (0x000, "c", "overlay19Dispatch"),
@@ -894,11 +839,7 @@ TEXT_SUBSEGMENTS = {
         (0x94C, "asm", "overlay_100_padding"),
     ],
     17: [
-        (0x000, "c", "overlay17CalculateEndpoints"),
-        (0x318, "c", "overlay17CreateChain"),
-        (0x628, "c", "overlay17ReleaseChain"),
-        (0x668, "c", "overlay17AdvanceChain"),
-        (0x8B4, "c", "overlay17DrawStrip"),
+        (0x000, "c", "overlay_017"),
     ],
     55: [
         (0x000, "c", "overlay55Initialize"),
@@ -1003,32 +944,7 @@ TEXT_SUBSEGMENTS = {
         (0x574, "asm", "overlay_091_padding"),
     ],
     11: [
-        (0x000, "c", "overlay11Initialize"),
-        (0x150, "c", "func_overlay_011_F0000150_1868998"),
-        (0xA18, "c", "overlay11CreateHandles"),
-        (0xAF4, "c", "overlay11InitializeFour"),
-        (0xC88, "c", "overlay11InitializeSixB"),
-        (0xD70, "c", "overlay11InitializeThreeA"),
-        (0xDFC, "c", "overlay11InitializeSixA"),
-        (0xEE4, "c", "overlay11InitializeSixC"),
-        (0xFCC, "c", "overlay11InitializeThreeB"),
-        (0x1058, "c", "overlay11EnableHandles"),
-        (0x1130, "c", "overlay11DisableHandles"),
-        (0x11D0, "c", "overlay11UpdateSelection"),
-        (0x1398, "c", "overlay11UpdateMenu"),
-        (0x184C, "c", "overlay11UpdateTwoOptionMenu"),
-        (0x1A7C, "c", "overlay11UpdateFiveOptionMenu"),
-        (0x1E4C, "c", "func_overlay_011_F0001E4C_186A694"),
-        (0x22E8, "c", "func_overlay_011_F00022E8_186AB30"),
-        (0x2714, "c", "overlay11UpdateModeSix"),
-        (0x2948, "c", "overlay11ReleaseGroup4"),
-        (0x29AC, "c", "overlay11ReleaseGroup3A"),
-        (0x2A10, "c", "overlay11ReleaseGroup6A"),
-        (0x2A74, "c", "overlay11ReleaseGroup6B"),
-        (0x2AD8, "c", "overlay11ReleaseGroup6C"),
-        (0x2B3C, "c", "overlay11ReleaseGroup3B"),
-        (0x2BA0, "c", "overlay11ReleaseHandles"),
-        (0x2BF4, "c", "overlay11ReleaseCurrentGroup"),
+        (0x000, "c", "overlay_011"),
         (0x2CB4, "asm", "overlay_011_padding"),
     ],
     29: [
@@ -2175,7 +2091,7 @@ def render_yaml_block(
         for part in row["text_ownership"]:
             source_name = part["source"].rsplit("/", 1)[1]
             if source_name == compiler_padding:
-                if not owned_data:
+                if not owned_data and ov not in ONE_TU_TEXT_PADDING:
                     raise ValueError(
                         f"overlay {ov} compiler padding needs C-owned data"
                     )

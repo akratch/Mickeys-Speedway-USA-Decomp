@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay17DrawStrip:start -->
 ### `overlay17DrawStrip` plateau handoff
 
-- source: `src/overlays/o017/overlay17DrawStrip.c`
+- source: `src/overlays/o017/overlay_017.c`
 - score: 119/119 words
 - frame: 0x38
 - relocations: 1

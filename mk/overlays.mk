@@ -2551,8 +2551,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100DrawMotion.c.o: POSTPROCESS = \
 # +0x8 after overlay90Initialize's two words, which the shipped %hi/%lo pairs
 # encode). Rebind the sixteen references to a pool symbol and discard the
 # digest-checked duplicate; no instruction or compiler addend is edited
-# (overlay 86's metadata-only form). The seventeen resident callees go
-# through the generated surface entries.
+# (overlay 86's metadata-only form), until the data moves into C
+# (docs/OVERLAY_STRUCTURE_SPRINT.md phase 3). The seventeen resident callees
+# go through the generated surface entries. The module is one translation
+# unit: its .text is the module's 0xB20 bytes with the trailing pad, so no
+# trim.
 O90_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o090/overlay_090.c.o
 $(O90_OBJ): CFLAGS += -Wab,-r4300_mul
 $(O90_OBJ): \
@@ -2560,31 +2563,12 @@ $(O90_OBJ): \
 	$(TOOLS_DIR)/externalize_elf_section.py \
 	config/normalizations/func_overlay_090_F00000FC_18D4BF4.rebind.spec
 $(O90_OBJ): POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym amSndPlay=amSndPlay_o090Reloc \
-		--redefine-sym camGetMode=camGetMode_o090Reloc \
-		--redefine-sym amTunePlay=amTunePlay_o090Reloc \
-		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o090Reloc \
-		--redefine-sym amSndSetVolXYZ=amSndSetVolXYZ_o090Reloc \
-		--redefine-sym amSndSetPitchXYZ=amSndSetPitchXYZ_o090Reloc \
-		--redefine-sym amSndSetXYZ=amSndSetXYZ_o090Reloc \
-		--redefine-sym amSndStopXYZ=amSndStopXYZ_o090Reloc \
-		--redefine-sym func_80006EA0=func_80006EA0_o090Reloc \
-		--redefine-sym func_8000FAE0=func_8000FAE0_o090Reloc \
-		--redefine-sym func_8002A8BC=func_8002A8BC_o090Reloc \
-		--redefine-sym func_8002A8C0=func_8002A8C0_o090Reloc \
-		--redefine-sym func_8005ABA8=func_8005ABA8_o090Reloc \
-		--redefine-sym func_8005AD64=func_8005AD64_o090Reloc \
-		--redefine-sym levelGetLevel=levelGetLevel_o090Reloc \
-		--redefine-sym mathRnd=mathRnd_o090Reloc \
-		--redefine-sym pointListRPY=pointListRPY_o090Reloc \
-		--add-symbol gOverlay90StatePoolReloc=0x8,global $@ && \
+	$(OBJCOPY) --add-symbol gOverlay90StatePoolReloc=0x8,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/func_overlay_090_F00000FC_18D4BF4.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:c350971913605d505c513324a16e420965bd2f632cce4c770353b9c7fc954f99 && \
-	$(OBJCOPY) --remove-section .rel.rodata $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xB1C
+	$(OBJCOPY) --remove-section .rel.rodata $@
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3ResetObjects.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x68
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3ContainsValue.c.o: POSTPROCESS = \
@@ -3111,7 +3095,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100ApplyToValue.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay100DrawMotion.c.o
 OVERLAY_TRIMMED_OBJECTS += \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o090/overlay_090.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3ResetObjects.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3ContainsValue.c.o
 OVERLAY_TRIMMED_OBJECTS += \

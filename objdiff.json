@@ -1704,16 +1704,6 @@
       }
     },
     {
-      "name": "asm/overlays/o090/overlay_090_padding.s",
-      "target_path": "expected/build/asm/overlays/o090/overlay_090_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o090"
-        ]
-      }
-    },
-    {
       "name": "asm/overlays/o091/overlay_091_padding.s",
       "target_path": "expected/build/asm/overlays/o091/overlay_091_padding.s.o",
       "metadata": {

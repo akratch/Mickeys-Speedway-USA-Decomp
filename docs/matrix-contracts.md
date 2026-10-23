@@ -116,9 +116,13 @@ base. The earlier pointer eight bytes before its declared object is gone;
 whole-object bytes/identities and ROM remain exact. This closes that local
 backing error, not the model renderer's wider contracts.
 
-Overlay 56 still uses an f32-shaped type for both float scratch and packed
-output at the source pin above. Its value-domain repair is a separate packet;
-it does not establish graphics capacity, lifetime or the complete renderer API.
+Overlay 56's value-domain repair is integrated in `5b92f8e46`: three genuine
+`MtxF` scratch matrices feed a separate SDK `Mtx *` packed output, and the cursor
+cell is accessed as `Mtx **`. Raw/configured allocated bytes, all 94 ordered
+relocations, function geometry and ROM remain exact. The separate private
+graphics-pointer view, erased export declaration, related overlay 18 globals,
+frame capacity and alternate reset/free lifetime still need review. This repair
+does not establish the complete renderer API.
 
 These source debts and remaining graphics lifetime questions do not reopen the
 verified assembly's matching status. Future translation must preserve arithmetic

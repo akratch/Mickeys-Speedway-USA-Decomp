@@ -7,7 +7,7 @@ support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `95fc9071a`; the combined borrowing
+The source measurements here are pinned to `fe04346cf`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -16,7 +16,7 @@ not a promise that all overlay data or interfaces are finished.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 29,952 of 61,312 bytes have canonical projected C owners | 31,360 bytes remain. Another 840 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized storage | 30,160 of 61,312 bytes have canonical projected C owners | 31,152 bytes remain. Another 840 diagnostic/trial bytes earn no physical ownership credit. |
 | Initialized images | 34 of 87 data-bearing modules are fully projected to C; three are partial and 50 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 27 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
 | Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 8,398 records still borrow authority: 7,998 placeholder references, 395 blob-owned data records and five main-table entries. Layout borrowing remains explicit too. |
@@ -70,6 +70,13 @@ overlay 29 retains its explicitly recorded legacy return-width disagreement.
 The overlay 8/17 chain pointer and integer flags, the model stack-matrix backing,
 and the shared byte-buffer decompression API are repaired with exact output.
 Their wider record, graphics and resource-lifetime contracts remain separate.
+Overlay 56 now distinguishes float matrix scratch from its SDK packed-matrix
+cursor. Overlay 8 has another 208 initialized bytes of typed selector factors,
+record indices and flag tables. Its 192-byte constant scales still need proper
+interior read-only input placement; an exact compiler payload alone is not
+physical ownership. The runtime loader now uses seven real linker boundaries
+and representable address differences, including distinct header-end and
+module-base symbols. None of these repairs proves general source relayout.
 
 The shared PI declarations now distinguish RAM buffers from integer ROM offsets
 and indices. The physical directory view includes all copied words, preserving
@@ -89,7 +96,7 @@ the retail ID-67 boundary discrepancy documented in
    alias is not a substitute. A header-sized unowned reserve earns no C credit.
 3. **Recover initialized and BSS families.** Prioritize bounded tables, records,
    strings, geometry and callback families, not opaque copies of whole modules.
-   The largest canonical initialized deficits are overlay 8 (9,040 bytes),
+   The largest canonical initialized deficits are overlay 8 (8,832 bytes),
    overlay 7 (2,384), overlay 59 (1,936), overlay 48 (1,792), overlay 57 (1,632)
    and overlay 101 (896). Overlay 101's pointer table, remaining labels/formats
    and small control/compiler-pool tail, and overlay 8's mutable tables/pool

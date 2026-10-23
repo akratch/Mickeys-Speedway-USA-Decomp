@@ -160,7 +160,7 @@ extern s32 func_8002A910(f32 y, f32 x);
 extern s32 func_8002AA0C(s32 current, s32 target);
 extern s32 mathDiffAngle(s32 first, s32 second);
 extern void *mmAlloc(s32 size, s32 tag);
-extern void _bzero(void *memory, s32 size);
+extern void _bzero(void *memory, int size);
 extern s32 mmGetDelay(void);
 extern void mmSetDelay(s32 state);
 extern void mmFree(void *memory);

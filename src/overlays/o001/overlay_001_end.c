@@ -26,7 +26,7 @@ extern s32 D_1D88;
 extern s32 D_1D84;
 extern void *D_1BA4;
 
-extern void _bzero(void *address, s32 size);
+extern void _bzero(void *address, int size);
 extern Overlay1PoolRecord *func_overlay_001_F0007BDC_1853FBC(
     s16 x0, s16 y0, s16 x1, s16 y1);
 extern void overlay3TouchObject(s32 sound);

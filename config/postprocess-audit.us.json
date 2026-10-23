@@ -3530,138 +3530,16 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o043/func_overlay_043_F0000324_188A2F4.c.o",
-      "offset": 804,
+      "object": "build/src/overlays/o043/overlay_043.c.o",
+      "offset": 0,
       "overlay": 43,
-      "size": 2240,
-      "source": "src/overlays/o043/func_overlay_043_F0000324_188A2F4.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "externalize_elf_section.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o043/func_overlay_043_F0000BE4_188ABB4.c.o",
-      "offset": 3044,
-      "overlay": 43,
-      "size": 1220,
-      "source": "src/overlays/o043/func_overlay_043_F0000BE4_188ABB4.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o043/overlay43AllocateResources.c.o",
-      "offset": 4484,
-      "overlay": 43,
-      "size": 224,
-      "source": "src/overlays/o043/overlay43AllocateResources.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o043/overlay43ComputeMotion.c.o",
-      "offset": 4264,
-      "overlay": 43,
-      "size": 220,
-      "source": "src/overlays/o043/overlay43ComputeMotion.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "externalize_elf_section.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o043/overlay43FilterImage.c.o",
-      "offset": 4984,
-      "overlay": 43,
-      "size": 172,
-      "source": "src/overlays/o043/overlay43FilterImage.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o043/overlay43FlushPending.c.o",
-      "offset": 404,
-      "overlay": 43,
-      "size": 236,
-      "source": "src/overlays/o043/overlay43FlushPending.c",
+      "size": 5156,
+      "source": "src/overlays/o043/overlay_043.c",
       "tools": [
         "filter_elf_relocations.py",
         "rebind_elf_relocations.py",
-        "trim_elf_section.py",
+        "externalize_elf_section.py",
         "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o043/overlay43InitializeState.c.o",
-      "offset": 0,
-      "overlay": 43,
-      "size": 404,
-      "source": "src/overlays/o043/overlay43InitializeState.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o043/overlay43ReleaseResources.c.o",
-      "offset": 640,
-      "overlay": 43,
-      "size": 164,
-      "source": "src/overlays/o043/overlay43ReleaseResources.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o043/overlay43SubmitChildren.c.o",
-      "offset": 4708,
-      "overlay": 43,
-      "size": 276,
-      "source": "src/overlays/o043/overlay43SubmitChildren.c",
-      "tools": [
-        "trim_elf_section.py"
       ]
     },
     {
@@ -8025,10 +7903,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 553,
+      "metadata": 545,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 431140,
-    "objects_with_postprocess": 554
+    "objects_with_postprocess": 546
   }
 }

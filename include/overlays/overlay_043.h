@@ -1,5 +1,287 @@
+#ifndef OVERLAY_043_H
+#define OVERLAY_043_H
+
 #include "PR/ultratypes.h"
 
+typedef f32 MtxF[4][4];
+
+/* Called with a matrix by the projection builder and with the motion output
+ * block by the motion helper; unprototyped so both views pass a pointer. */
+extern void func_8002A82C();
+
+/* ---- overlay43InitializeState ---- */
+typedef struct Overlay43Command {
+    s16 type;
+    u8 mode;
+    u8 byte03;
+    s16 short04;
+    s16 width;
+    s16 height;
+    s16 short0A;
+    s16 short0C;
+    s16 scale;
+    s16 short10;
+    s16 short12;
+    void *data;
+    s16 short18;
+    u8 byte1A;
+    u8 byte1B;
+    u8 byte1C;
+    u8 byte1D;
+    u8 byte1E;
+    u8 byte1F;
+} Overlay43Command;
+
+typedef struct Overlay43State {
+    f32 x;
+    f32 y;
+    Overlay43Command *command;
+    s16 short0C;
+    s16 short0E;
+    u8 flags;
+    u8 byte11;
+    u8 byte12;
+    u8 byte13;
+    u8 pad14[0x0C];
+    u8 *bufferEnd;
+    u8 pad24[0x3C];
+    void **current;
+    void **parent;
+    u8 pad68[0x44];
+    f32 alpha;
+    u8 padB0[0x0A];
+    u8 enabled;
+} Overlay43State;
+
+typedef struct Overlay43Source {
+    f32 x;
+    f32 y;
+    u8 pad08[8];
+    u8 flags;
+    u8 byte11;
+    u8 byte12;
+    u8 pad13[9];
+    Overlay43State *state;
+} Overlay43Source;
+
+typedef struct Overlay43Parent {
+    u8 pad00[0x60];
+    s8 linkIndex;
+} Overlay43Parent;
+
+typedef struct Overlay43Input {
+    u8 pad00[0x3A];
+    s8 currentIndex;
+    u8 pad3B[5];
+    Overlay43Parent *parent;
+    u8 pad44[8];
+    Overlay43Source *source;
+    u8 pad50[0x18];
+    void ***entries;
+} Overlay43Input;
+
+extern u8 D_0[];
+
+/* ---- overlay43FlushPending ---- */
+typedef struct Overlay43PendingEntry {
+    u8 pad00[0x20];
+    s32 arg20;
+    u8 pad24[0x04];
+    s32 arg28;
+    u8 pad2C[0x04];
+    s32 arg30;
+    u8 pad34[0x85];
+    u8 pending;
+} Overlay43PendingEntry;
+
+typedef struct Overlay43PendingState {
+    u8 pad00[0xC8];
+    s8 pendingCount;
+} Overlay43PendingState;
+
+extern Overlay43PendingState D_C8;
+extern Overlay43PendingEntry *D_120[];
+extern u8 ext_4d258[];
+extern void func_8002E800(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+extern void osRecvMesg(void *queue, s32 *message, s32 flags);
+
+/* ---- overlay43ReleaseResources ---- */
+typedef struct Overlay43ResourceOwner {
+    u8 pad00[0x24];
+    void *resource24;
+    void *resource28;
+    void *resource2C;
+    u8 pad30[0x04];
+    void *resource34;
+    void *children[12];
+    void *resource68;
+    u8 pad6C[0x4C];
+    u8 childCount;
+} Overlay43ResourceOwner;
+
+extern void func_8002B768(void *resource);
+extern void func_80020184(void *resource);
+
+/* ---- func_overlay_043_F0000324_188A2F4 ---- */
+typedef struct Overlay43Node {
+    f32 x;
+    f32 y;
+    f32 z;
+    u8 pad0C[9];
+    u8 priority;
+    u8 pad16[0xA];
+} Overlay43Node;
+
+typedef struct Overlay43NodeSet {
+    u8 pad00[0xE];
+    s16 count;
+    Overlay43Node nodes[1];
+} Overlay43NodeSet;
+
+typedef struct Overlay43Record {
+    MtxF matrix;
+    Overlay43Node *node;
+    s32 alpha;
+} Overlay43Record;
+
+typedef struct Overlay43VertexBound {
+    u8 pad00[8];
+    f32 radius;
+} Overlay43VertexBound;
+
+typedef struct Overlay43ModelDefinition {
+    u8 pad00[0x2F];
+    u8 vertexCount;
+    u8 pad30[8];
+    Overlay43VertexBound *bounds;
+} Overlay43ModelDefinition;
+
+typedef struct Overlay43VertexPosition {
+    f32 x;
+    f32 y;
+    f32 z;
+} Overlay43VertexPosition;
+
+typedef struct Overlay43ModelInstance {
+    Overlay43ModelDefinition *definition;
+    u8 pad04[4];
+    s16 active;
+    u8 pad0A[0x3E];
+    Overlay43VertexPosition *positions;
+} Overlay43ModelInstance;
+
+typedef struct Overlay43ProjectState {
+    f32 scaleX;
+    f32 scaleY;
+    u8 pad08[9];
+    u8 maximumRecords;
+    u8 pad12[0x1E];
+    void *displayListEnd;
+    u8 pad34[0x2C];
+    Overlay43ModelInstance *model;
+    u8 pad64[8];
+    MtxF transform;
+    f32 fallbackScale;
+    f32 diameter;
+    s16 yaw;
+    s16 pitch;
+    u8 padB8;
+    u8 pending;
+    u8 boundsMode;
+} Overlay43ProjectState;
+
+typedef struct Overlay43Link {
+    u8 pad00[0x1C];
+    Overlay43ProjectState *state;
+} Overlay43Link;
+
+typedef struct Overlay43ScaleSource {
+    u8 pad00[0x5C];
+    f32 scale;
+} Overlay43ScaleSource;
+
+typedef struct Overlay43ProjectInput {
+    u8 pad00[8];
+    f32 scale;
+    f32 x;
+    f32 y;
+    f32 z;
+    u8 pad18[0x28];
+    Overlay43ScaleSource *scaleSource;
+    u8 pad44[8];
+    Overlay43Link *link;
+    Overlay43NodeSet *nodeSet;
+} Overlay43ProjectInput;
+
+typedef struct Overlay43Level {
+    u8 pad00[0xD8];
+    s16 yaw;
+    s16 pitch;
+    u8 padDC[6];
+    u8 priority;
+} Overlay43Level;
+
+typedef struct Overlay43Transform {
+    s16 yaw;
+    s16 pitch;
+    s16 roll;
+    s16 flags;
+    f32 scale;
+    f32 x;
+    f32 y;
+    f32 z;
+} Overlay43Transform;
+
+/*
+ * Overlay 43 ("clone.c"): build the per-node projection records for one
+ * clone and size its 64x64 image, then hand the records to the renderer.
+ *
+ * Matched from 494 masked words at -4 by rewriting the inherited m2c shape
+ * from the listing and the relocation records:
+ *  - the record array and the queue are their own array symbols (the queue
+ *    store is `symbol(index)`, not a base register), and the fallback's
+ *    alpha is a direct store to element 0 by its own name, which is the
+ *    word the old candidate was short;
+ *  - the fallback record is read back from records[0] into a local before
+ *    the identity call, so the copy that survives the call is a register
+ *    move; alpha is stored before the count;
+ *  - the yaw/pitch pair handed to the motion helper is an s16 array, so the
+ *    store to element 1 makes the state stores re-read element 0;
+ *  - priority is a local at all three helper calls and the vertex pointer
+ *    is a local taken before the radius, which fixes the argument and ring
+ *    draw order;
+ *  - two float locals carry several short roles each (node x, vertex
+ *    radius and diameter; node z, the blend fraction, the minimum x and
+ *    the tolerance test), which is what lands the five saved float
+ *    registers and the frame;
+ *  - the three transform angles are cleared roll first as separate
+ *    statements (a chained clear costs a frame cell);
+ *  - the TU builds with -Wab,-r4300_mul: the target keeps the radius
+ *    multiply out of the call's delay slot.
+ *
+ * PROVENANCE: no code adapted. Callee names are the tree's adopted names
+ * for the resident functions the relocation records select.
+ */
+extern s8 gO43QueueCountReloc;
+extern s32 D_8007A3C8;
+extern Overlay43Record gO43RecordsReloc[];
+extern Overlay43ProjectState *gO43QueueReloc[];
+extern Overlay43Record gO43FallbackReloc;
+#define gO43Records gO43RecordsReloc
+#define gO43QueueCount gO43QueueCountReloc
+#define gO43RenderPending D_8007A3C8
+#define gO43Fallback gO43FallbackReloc
+
+extern Overlay43Level *levelGetLevel(void);
+extern s16 Arctanf(f32 x, f32 y);
+extern f32 sqrtf(f32 value);
+extern s16 dAngle(s16 from, s16 to, f32 fraction);
+extern void func_8002AE10(Overlay43Transform *transform, MtxF matrix);
+extern void mtxf_mul(MtxF a, MtxF b, MtxF out);
+extern void mtxf_transform_point(MtxF matrix, f32 x, f32 y, f32 z,
+                                 f32 *outX, f32 *outY, f32 *outZ);
+
+/* ---- func_overlay_043_F0000BE4_188ABB4 ---- */
 /*
  * Overlay 43 ("clone.c"): render each queued clone into its own 64x64 8-bit
  * intensity image.  The two trace calls carry the source file name and the
@@ -30,7 +312,6 @@ typedef union {
     long long force_structure_alignment;
 } Gfx;
 
-typedef f32 MtxF[4][4];
 
 typedef struct {
     long m[4][4];
@@ -210,73 +491,104 @@ extern s8 gO43QueueCountReloc;
 #define gO43QueueCount gO43QueueCountReloc
 #define gO43Queue ((Overlay43RenderState **)(gO43BssBaseReloc + 0x120))
 
-void func_overlay_043_F0000BE4_188ABB4(Overlay43RenderInput *input,
-                                       Overlay43RenderEntry **entries,
-                                       s32 count) {
-    Gfx *dl;
-    Overlay43Model *model;
-    Mtx *mtx;
-    s32 i;
-    s32 alpha;
-    Overlay43VertexData *vertexData;
-    Overlay43RenderState *state;
-    MtxF matA;
-    MtxF matB;
-    Gfx *start;
-    s32 unused;
+/* ---- overlay43ComputeMotion ---- */
+typedef struct Overlay43RotationInput {
+    s16 pad00;
+    s16 angle;
+} Overlay43RotationInput;
 
-    state = input->link->state;
-    model = state->model;
-    vertexData = state->vertexData;
-    if (gO43QueueCount < 15) {
-        start = state->displayList;
-        mtx = state->matrixHeap;
-        dl = start;
-        diRcpTrace(start, gO43TraceFile0, 596);
-        rsp_segment(&dl, 0, 0);
-        rsp_segment(&dl, 1, state->framebuffer);
-        gDPSetCycleType(dl++, G_CYC_FILL);
-        gDPSetColorImage(dl++, G_IM_FMT_I, G_IM_SIZ_8b, 64,
-                         OS_K0_TO_PHYSICAL(state->framebuffer));
-        gDPSetFillColor(dl++, 0);
-        gDPSetScissor(dl++, G_SC_NON_INTERLACE, 0, 0, 64, 64);
-        gDPFillRectangle(dl++, 0, 0, 63, 63);
-        rcpInitDpNoSize(&dl);
-        gSPClearGeometryMode(dl++, 0x1F3204);
-        gSPTexture(dl++, 0, 0, 0, 0, 0);
-        gMoveWd(dl++, 0x02, 0, 0);
-        gSPViewport(dl++, OS_K0_TO_PHYSICAL(gO43Viewport));
-        gSPClipRatio(dl++, FRUSTRATIO_2);
-        gDPSetScissor(dl++, G_SC_NON_INTERLACE, 1, 1, 63, 63);
-        for (i = count - 1; i >= 0; i--) {
-            alpha = entries[i]->alpha;
-            gDPSetPrimColor(dl++, 0, 0, alpha, alpha, alpha, 255);
-            gDPSetEnvColor(dl++, alpha, alpha, alpha, 255);
-            mtxf_mul(state->transform, entries[i]->matrix, matA);
-            mtxf_mul(matA, gO43CloneMatrixB, matA);
-            mtxf_mul(matA, gO43CloneMatrixA, matB);
-            mtxf_to_mtx(matB, mtx);
-            gSPMatrix(dl++, OS_K0_TO_PHYSICAL(mtx), 0);
-            {
-                Gfx *_g = (Gfx *)(dl++);
-                _g->words.w0 = _SHIFTL(0xBF, 24, 8) |
-                    _SHIFTL(OS_K0_TO_PHYSICAL(model->parts[model->partIndex]),
-                            0, 24);
-                _g->words.w1 = OS_K0_TO_PHYSICAL(vertexData->vertices);
-            }
-            gDma0p(dl++, 0x02, OS_K0_TO_PHYSICAL(gO43VertexSourceReloc), 0x50);
-            gSPDisplayList(dl++, OS_K0_TO_PHYSICAL(state->modelDisplayList));
-            gImmp1(dl++, 0xBF, 0);
-            mtx++;
-        }
-        gMoveWd(dl++, 0x0A, 0, 0);
-        gDPFullSync(dl++);
-        gSPEndDisplayList(dl++);
-        diRcpTrace(dl, gO43TraceFile1, 675);
-        state->displayListEnd = dl;
-        state->pending = 1;
-        D_8007A3C8 = 1;
-        gO43Queue[gO43QueueCount] = state;
-        gO43QueueCount++;
-    }
-}
+typedef struct Overlay43MotionOutput {
+    f32 unk00;
+    u8 pad04[0x0C];
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+    u8 pad1C[0x0C];
+    f32 unk28;
+    u8 pad2C[0x18];
+    s32 owner;
+} Overlay43MotionOutput;
+
+typedef struct Vec3f {
+    f32 x;
+    f32 y;
+    f32 z;
+} Vec3f;
+
+extern void func_80029FE4(Overlay43RotationInput *input, Vec3f *direction);
+extern void func_8002A82C(Overlay43MotionOutput *output);
+
+/* ---- overlay43AllocateResources ---- */
+typedef struct Overlay43AllocInput {
+    u8 pad00[0x44];
+    s16 mode;
+} Overlay43AllocInput;
+
+typedef struct Overlay43Resources {
+    u8 pad00[0x20];
+    u8 *aligned;
+    void *primary;
+    void *secondary;
+    void *tertiary;
+} Overlay43Resources;
+
+extern void *mmAlloc(s32 size, s32 tag);
+extern void func_8002B768(void *pointer);
+
+/* ---- overlay43SubmitChildren ---- */
+typedef struct Overlay43Renderable {
+    u8 pad00[0x24];
+    void *drawData;
+} Overlay43Renderable;
+
+typedef struct Overlay43CountRecord {
+    u8 pad00[0x22];
+    s8 childCount;
+    s8 enabled;
+} Overlay43CountRecord;
+
+typedef struct Overlay43ChildRoot {
+    u8 pad00[0x40];
+    Overlay43CountRecord *counts;
+    u8 pad44[0x24];
+    Overlay43Renderable ***childRefs;
+} Overlay43ChildRoot;
+
+typedef struct Overlay43ChildContainer {
+    u8 pad00[0x04];
+    Overlay43ChildRoot *root;
+} Overlay43ChildContainer;
+
+typedef struct Overlay43Owner {
+    u8 pad00[0x40];
+    Overlay43CountRecord *gate;
+    s16 mode;
+    u8 pad46[0x16];
+    Overlay43ChildContainer *children;
+} Overlay43Owner;
+
+typedef struct Overlay43ChildState {
+    u8 pad00[0x34];
+    void *primarySlot;
+    void *childSlots[11];
+    Overlay43Renderable **primaryRef;
+    u8 pad68[0x50];
+    u8 childCount;
+} Overlay43ChildState;
+
+extern s32 makeModelGfx(
+    void **slot,
+    Overlay43Renderable *renderable,
+    s32 renderFlags,
+    s32 renderContext,
+    s32 arg4,
+    s32 alpha,
+    s32 enabled);
+
+/* ---- overlay43FilterImage ---- */
+typedef struct Overlay43Image {
+    u8 pad0[0x20];
+    u8 *pixels;
+} Overlay43Image;
+
+#endif

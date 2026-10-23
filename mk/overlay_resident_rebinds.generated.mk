@@ -982,28 +982,27 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o042/overlay_042.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym viGetCurrentSize=viGetCurrentSize_o042Reloc \
 	--redefine-sym viGetTrippleBuffer=viGetTrippleBuffer_o042Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000324_188A2F4.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007A3C8=D_8007A3C8_o043Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000BE4_188ABB4.c.o: SURFACE_REBIND = $(OBJCOPY) \
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay_043.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym Arctanf=Arctanf_o043Reloc \
 	--redefine-sym D_8007A3C8=D_8007A3C8_o043Reloc \
+	--redefine-sym dAngle=dAngle_o043Reloc \
 	--redefine-sym diRcpTrace=diRcpTrace_o043Reloc \
+	--redefine-sym func_80020184=func_80020184_o043Reloc \
+	--redefine-sym func_80029FE4=func_80029FE4_o043Reloc \
+	--redefine-sym func_8002A82C=func_8002A82C_o043Reloc \
+	--redefine-sym func_8002AE10=func_8002AE10_o043Reloc \
+	--redefine-sym func_8002B768=func_8002B768_o043Reloc \
+	--redefine-sym func_8002E800=func_8002E800_o043Reloc \
+	--redefine-sym levelGetLevel=levelGetLevel_o043Reloc \
+	--redefine-sym makeModelGfx=makeModelGfx_o043Reloc \
+	--redefine-sym mmAlloc=mmAlloc_o043Reloc \
 	--redefine-sym mtxf_mul=mtxf_mul_o043Reloc \
 	--redefine-sym mtxf_to_mtx=mtxf_to_mtx_o043Reloc \
+	--redefine-sym mtxf_transform_point=mtxf_transform_point_o043Reloc \
+	--redefine-sym osRecvMesg=osRecvMesg_o043Reloc \
 	--redefine-sym rcpInitDpNoSize=rcpInitDpNoSize_o043Reloc \
-	--redefine-sym rsp_segment=rsp_segment_o043Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43AllocateResources.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_043_F0000000_1889FD0=func_overlay_043_F0000000_o043Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43FlushPending.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_043_F0000000_1889FD0=func_overlay_043_F0000000_o043Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43ReleaseResources.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_043_F0000000_1889FD0=func_overlay_043_F0000000_o043Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43SubmitChildren.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym makeModelGfx=makeModelGfx_o043Reloc $@
+	--redefine-sym rsp_segment=rsp_segment_o043Reloc \
+	--redefine-sym sqrtf=sqrtf_o043Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay_044.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D76D0=D_800D76D0_o044Reloc \

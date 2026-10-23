@@ -8510,82 +8510,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x194",
-     "size": "0x194",
-     "type": "c",
-     "source": "overlays/o043/overlay43InitializeState",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x194",
-     "end_offset": "0x280",
-     "size": "0xEC",
-     "type": "c",
-     "source": "overlays/o043/overlay43FlushPending",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x280",
-     "end_offset": "0x324",
-     "size": "0xA4",
-     "type": "c",
-     "source": "overlays/o043/overlay43ReleaseResources",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x324",
-     "end_offset": "0xBE4",
-     "size": "0x8C0",
-     "type": "c",
-     "source": "overlays/o043/func_overlay_043_F0000324_188A2F4",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xBE4",
-     "end_offset": "0x10A8",
-     "size": "0x4C4",
-     "type": "c",
-     "source": "overlays/o043/func_overlay_043_F0000BE4_188ABB4",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x10A8",
-     "end_offset": "0x1184",
-     "size": "0xDC",
-     "type": "c",
-     "source": "overlays/o043/overlay43ComputeMotion",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1184",
-     "end_offset": "0x1264",
-     "size": "0xE0",
-     "type": "c",
-     "source": "overlays/o043/overlay43AllocateResources",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1264",
-     "end_offset": "0x1378",
-     "size": "0x114",
-     "type": "c",
-     "source": "overlays/o043/overlay43SubmitChildren",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x1378",
      "end_offset": "0x1424",
-     "size": "0xAC",
+     "size": "0x1424",
      "type": "c",
-     "source": "overlays/o043/overlay43FilterImage",
+     "source": "overlays/o043/overlay_043",
      "matched": true,
      "nonmatching": false
     },

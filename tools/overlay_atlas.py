@@ -123,7 +123,7 @@ DATA_RODATA_OWNERSHIP = {
     54: [(0x0, 0x2D0, "overlay_054")],
     # The whole data_rodata range: the compiled .data is 0x328 bytes padded to
     # the section's 16-byte alignment, which covers the zero tail.
-    52: [(0x0, 0x330, "overlay52Initialize")],
+    52: [(0x0, 0x330, "overlay_052")],
 }
 
 # Reviewed initialized subranges emitted by a C owner's non-.data section.
@@ -294,6 +294,7 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     37: "overlay_037_padding",
     39: "overlay_039_padding",
     40: "overlay_040_padding",
+    52: "overlay_052_padding",
     54: "overlay_054_padding",
     50: "overlay_050_padding",
     53: "overlay_053_padding",
@@ -309,8 +310,6 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
 # for that gap rather than letting the old row absorb the data block.
 EXPLICIT_TEXT_PADDING = {
     47: "overlay_047_padding",
-    # Overlay 52's text tail pads to 0x2130; overlay52Initialize's .data follows.
-    52: "overlay_052_padding",
 }
 
 TEXT_SUBSEGMENTS = {
@@ -932,11 +931,7 @@ TEXT_SUBSEGMENTS = {
         (0x8AC, "asm", "overlay_051_padding"),
     ],
     52: [
-        (0x000, "c", "overlay52Initialize"),
-        (0x4F0, "c", "overlay52PatchIndices"),
-        (0x540, "c", "overlay52CopyOffsetEntries"),
-        (0x63C, "c", "overlay52TailB"),
-        (0x2098, "c", "overlay52Cleanup"),
+        (0x000, "c", "overlay_052"),
         (0x2128, "asm", "overlay_052_padding"),
     ],
     53: [

@@ -9946,46 +9946,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x4F0",
-     "size": "0x4F0",
-     "type": "c",
-     "source": "overlays/o052/overlay52Initialize",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x4F0",
-     "end_offset": "0x540",
-     "size": "0x50",
-     "type": "c",
-     "source": "overlays/o052/overlay52PatchIndices",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x540",
-     "end_offset": "0x63C",
-     "size": "0xFC",
-     "type": "c",
-     "source": "overlays/o052/overlay52CopyOffsetEntries",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x63C",
-     "end_offset": "0x2098",
-     "size": "0x1A5C",
-     "type": "c",
-     "source": "overlays/o052/overlay52TailB",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2098",
      "end_offset": "0x2128",
-     "size": "0x90",
+     "size": "0x2128",
      "type": "c",
-     "source": "overlays/o052/overlay52Cleanup",
+     "source": "overlays/o052/overlay_052",
      "matched": true,
      "nonmatching": false
     },
@@ -10086,7 +10050,7 @@
      "end_offset": "0x330",
      "size": "0x330",
      "type": "c",
-     "source": "overlays/o052/overlay52Initialize"
+     "source": "overlays/o052/overlay_052"
     }
    ]
   },

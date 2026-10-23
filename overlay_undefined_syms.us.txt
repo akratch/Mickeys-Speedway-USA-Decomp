@@ -2256,74 +2256,64 @@ overlay59BuildList_o051Reloc = 0xf0000000;
 overlay59Interpolate_o051Reloc = 0xf0000000;
 texDPInit_o051Reloc = 0xf0000000;
 
-/* overlay 52: overlay52Initialize.c.o */
-D_800D3550_o052Reloc = 0x00000000;
-amTunePlay_o052Reloc = 0xf0000000;
-ext_resident_result = 0x00000000;
-ext_resident_word_190 = 0x00000190;
-fontUseFont_o052Reloc = 0xf0000000;
-frontGet2PlayerSplit_o052Reloc = 0xf0000000;
-frontGetScreenMode_o052Reloc = 0xf0000000;
-func_80028F54_o052Reloc = 0xf0000000;
-func_8003A5A0_o052Reloc = 0xf0000000;
-levelGetNumber_o052Reloc = 0xf0000000;
-loadFrontEndList_o052Reloc = 0xf0000000;
-overlay45CreateDescriptor_o052Reloc = 0xf0000000;
-overlay45SetMode_o052Reloc = 0xf0000000;
-overlay56LoadResource_o052Reloc = 0xf0000000;
-runlinkDownloadCode_o052Reloc = 0xf0000000;
-setupFrontEndList_o052Reloc = 0xf0000000;
-
-/* overlay 52: overlay52PatchIndices.c.o */
-D_800D31C8_o052Reloc = 0x00000000;
-
-/* overlay 52: overlay52CopyOffsetEntries.c.o */
-D_27C = 0x0000027c;
-func_overlay_052_F0000000_o052Reloc = 0xf0000000;
-
-/* overlay 52: overlay52TailB.c.o */
-D_8007C180_o052Reloc = 0x00000000;
-D_8007C1B0_o052Reloc = 0x00000000;
+/* overlay 52: overlay_052.c.o */
+D_8007C180 = 0x00000000;
+D_8007C1B0 = 0x00000000;
 D_800C947C_o052Reloc = 0x00000000;
 D_800D3140_o052Reloc = 0x00000000;
 D_800D3144_o052Reloc = 0x00000000;
+D_800D31C8_o052Reloc = 0x00000000;
+D_800D3550_o052Reloc = 0x00000000;
 amSndPlay_o052Reloc = 0xf0000000;
+amTunePlay_o052Reloc = 0xf0000000;
 amTuneSetFade_o052Reloc = 0xf0000000;
 camSetNo_o052Reloc = 0xf0000000;
 camSetScissor_o052Reloc = 0xf0000000;
 camStandardOrtho_o052Reloc = 0xf0000000;
-ext_o1_83e0_o052Reloc = 0x00000000;
+ext_o1_83e0 = 0x00000000;
+ext_resident_result = 0x00000000;
+ext_resident_word_190 = 0x00000190;
+fontUseFont_o052Reloc = 0xf0000000;
 freeFrontEndItem_o052Reloc = 0xf0000000;
+freeFrontEndList_o052Reloc = 0xf0000000;
 frontDrawObj_o052Reloc = 0xf0000000;
+frontGet2PlayerSplit_o052Reloc = 0xf0000000;
+frontGetScreenMode_o052Reloc = 0xf0000000;
 func_800016EC_o052Reloc = 0xf0000000;
 func_80005750_o052Reloc = 0xf0000000;
+func_80028F54_o052Reloc = 0xf0000000;
 func_800290A0_o052Reloc = 0xf0000000;
 func_8002F618_o052Reloc = 0xf0000000;
 func_80037414_o052Reloc = 0xf0000000;
 func_8003A590_o052Reloc = 0xf0000000;
+func_8003A5A0_o052Reloc = 0xf0000000;
 func_8003A7D0_o052Reloc = 0xf0000000;
+gOverlay52Offsets = 0x0000027c;
+gOverlay52Resource = 0x000004cc;
+gOverlay52Slots = 0x000004a8;
+gOverlay52Storage = 0x00000000;
 joyGetPressed_o052Reloc = 0xf0000000;
 levelGetLevel_o052Reloc = 0xf0000000;
+levelGetNumber_o052Reloc = 0xf0000000;
 loadFrontEndItem_o052Reloc = 0xf0000000;
+loadFrontEndList_o052Reloc = 0xf0000000;
 mainChangeCameras_o052Reloc = 0xf0000000;
 mainChangeLevel_o052Reloc = 0xf0000000;
 mainGetMode_o052Reloc = 0xf0000000;
+overlay45CreateDescriptor_o052Reloc = 0xf0000000;
 overlay45ReleaseDescriptor_o052Reloc = 0xf0000000;
+overlay45SetMode_o052Reloc = 0xf0000000;
+overlay56LoadResource_o052Reloc = 0xf0000000;
+overlay56ReleaseResource_o052Reloc = 0xf0000000;
 overlay56SplitTime_o052Reloc = 0xf0000000;
+runlinkDownloadCode_o052Reloc = 0xf0000000;
+setupFrontEndList_o052Reloc = 0xf0000000;
 sprSetTextureFilter_o052Reloc = 0xf0000000;
 texAnimateSprite_o052Reloc = 0xf0000000;
 texDPInit_o052Reloc = 0xf0000000;
 viGetCurrentSize_o052Reloc = 0xf0000000;
 
-/* overlay 52: overlay52Cleanup.c.o */
-freeFrontEndList_o052Reloc = 0xf0000000;
-gOverlay52Resource = 0x000004cc;
-gOverlay52Slots = 0x000004a8;
-gOverlay52Storage = 0x00000000;
-overlay56ReleaseResource_o052Reloc = 0xf0000000;
-
 /* overlay 53: overlay_053.c.o */
-D_8007C180 = 0x00000000;
 D_800C947C_o053Reloc = 0x00000000;
 D_800D3140_o053Reloc = 0x00000000;
 D_800D3144_o053Reloc = 0x00000000;
@@ -2334,7 +2324,6 @@ amTuneSetFade_o053Reloc = 0xf0000000;
 camSetNo_o053Reloc = 0xf0000000;
 camSetScissor_o053Reloc = 0xf0000000;
 camStandardOrtho_o053Reloc = 0xf0000000;
-ext_o1_83e0 = 0x00000000;
 freeFrontEndItem_o053Reloc = 0xf0000000;
 frontDrawObj_o053Reloc = 0xf0000000;
 frontGet2PlayerSplit_o053Reloc = 0xf0000000;
@@ -5556,13 +5545,7 @@ func_overlay_050_F0001BD0_1898540 = overlay50Cleanup;
 func_overlay_051_F0000000_1899900 = overlay51Initialize;
 func_overlay_051_F0000858_189A158 = overlay51ReleaseState;
 
-/* overlay 52: overlay52PatchIndices.c.o */
-func_overlay_052_F00004F0_189AB60 = overlay52PatchIndices;
-
-/* overlay 52: overlay52CopyOffsetEntries.c.o */
-func_overlay_052_F0000540_189ABB0 = overlay52CopyOffsetEntries;
-
-/* overlay 52: overlay52Cleanup.c.o */
+/* overlay 52: overlay_052.c.o */
 func_overlay_052_F0002098_189C708 = overlay52Cleanup;
 
 /* overlay 53: overlay_053.c.o */

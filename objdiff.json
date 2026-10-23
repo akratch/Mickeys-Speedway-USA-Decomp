@@ -13251,45 +13251,9 @@
       }
     },
     {
-      "name": "src/overlays/o052/overlay52Cleanup.c",
-      "target_path": "expected/build/src/overlays/o052/overlay52Cleanup.c.o",
-      "base_path": "build/src/overlays/o052/overlay52Cleanup.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o052"
-        ],
-        "source_path": "src/overlays/o052/overlay52Cleanup.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o052/overlay52CopyOffsetEntries.c",
-      "target_path": "expected/build/src/overlays/o052/overlay52CopyOffsetEntries.c.o",
-      "base_path": "build/src/overlays/o052/overlay52CopyOffsetEntries.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o052"
-        ],
-        "source_path": "src/overlays/o052/overlay52CopyOffsetEntries.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o052/overlay52Initialize.c",
-      "target_path": "expected/build/src/overlays/o052/overlay52Initialize.c.o",
-      "base_path": "build/src/overlays/o052/overlay52Initialize.c.o",
+      "name": "src/overlays/o052/overlay_052.c",
+      "target_path": "expected/build/src/overlays/o052/overlay_052.c.o",
+      "base_path": "build/src/overlays/o052/overlay_052.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -13300,43 +13264,7 @@
           "overlay",
           "overlay-o052"
         ],
-        "source_path": "src/overlays/o052/overlay52Initialize.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o052/overlay52PatchIndices.c",
-      "target_path": "expected/build/src/overlays/o052/overlay52PatchIndices.c.o",
-      "base_path": "build/src/overlays/o052/overlay52PatchIndices.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o052"
-        ],
-        "source_path": "src/overlays/o052/overlay52PatchIndices.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o052/overlay52TailB.c",
-      "target_path": "expected/build/src/overlays/o052/overlay52TailB.c.o",
-      "base_path": "build/src/overlays/o052/overlay52TailB.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o052"
-        ],
-        "source_path": "src/overlays/o052/overlay52TailB.c",
+        "source_path": "src/overlays/o052/overlay_052.c",
         "complete": true
       }
     },

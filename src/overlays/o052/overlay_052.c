@@ -1,112 +1,13 @@
-#include "PR/ultratypes.h"
-#include "game/menu.h"
-#include "game/gameVi.h"
-#include "overlays/overlay_045.h"
-#include "overlays/overlay_056.h"
+#include "overlays/overlay_052.h"
 
-typedef struct RcpTextureInfo RcpTextureInfo;
-
-/* Same 0x10-byte entry layout used by overlay52CopyOffsetEntries. */
-typedef struct Overlay52Entry {
-    RcpTextureInfo *resource;
-    RcpTextureInfo *alternate;
-    u32 value8;
-    s16 x;
-    s16 y;
-} Overlay52Entry;
-
-/* Partial racer layout, from this overlay's accesses and Mickey's vehicle code. */
-typedef struct Overlay52Racer {
-    s8 playerIndex;
-    u8 pad001[0x192 - 1];
-    u8 value192;
-    u8 pad193[7];
-    u8 item;
-    u8 itemCount;
-    s32 value19C;
-    u8 pad1A0[8];
-    u16 flags;
-    u8 pad1AA[0x383 - 0x1AA];
-    s8 lap;
-    u8 pad384;
-    u8 position;
-    u8 pad386[2];
-    u8 value388;
-    u8 pad389[0x3BA - 0x389];
-    s16 value3BA;
-    u8 pad3BC[0x400 - 0x3BC];
-    s32 time;
-    u8 pad404[0x454 - 0x404];
-    s16 timeDifference;
-    s16 timeDifferenceTimer;
-    u8 pad458[4];
-    u8 value45C;
-} Overlay52Racer;
-
-typedef struct Overlay52Object {
-    u8 pad00[0x64];
-    Overlay52Racer *racer;
-} Overlay52Object;
-
-typedef struct Overlay52Level {
-    u8 pad00[0x86];
-    s8 laps;
-} Overlay52Level;
-
-/* Same 0x20-byte record used by menu.c's MenuCurrentObject. */
-typedef struct MenuCurrentObject {
-    s16 unk0;
-    s16 unk2;
-    s16 unk4;
-    s16 index;
-    f32 unk8;
-    f32 unkC;
-    f32 unk10;
-    f32 unk14;
-    f32 unk18;
-    s8 pad1C[4];
-} MenuCurrentObject;
-
-extern MenuCommand *D_800D3140;
-extern void *D_800D3144;
-extern void *D_800D31C8[];
-extern MenuCurrentObject D_800D3550[];
-extern s16 D_8007C180[];
-extern s32 D_8007C1B0;
-extern s32 D_800C947C;
-extern s32 ext_o1_83e0;
-
-extern void camStandardOrtho(MenuCommand **, void **);
-extern Overlay52Object **func_80005750(s32 *);
-extern Overlay52Level *levelGetLevel(void);
-extern s32 texAnimateSprite(u8 *, s32 *, s32, f32 *, s32);
-extern u16 joyGetPressed(s32);
-extern void camSetNo(s32);
-extern void camSetScissor(MenuCommand **);
-extern void func_8002F618(MenuCommand **, Overlay52Entry *, s32, s32, u8, u8, u8, u8);
-extern void texDPInit(MenuCommand **);
-extern void sprSetTextureFilter(s32);
-extern void frontDrawObj(s32);
-extern void func_overlay_052_F0000540_189ABB0(Overlay52Entry *, Overlay52Entry *, s32, s32);
-extern s32 func_800290A0(void);
-extern s32 func_8003A7D0(Overlay52Object *);
-extern void amSndPlay(u16, void **);
-extern s32 mainGetMode(void);
-extern u8 *func_80028F54(void);
-extern void mainChangeCameras(s32);
-extern void func_800016EC(u8);
-extern void func_80037414(s32, f32, f32, s32, s32, s32, s32);
-extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
-extern void amTuneSetFade(f32, u8);
-
-/* Overlay 52 was one translation unit: the shipped code shares high halves
- * between data/bss sites the way as1 does only for objects defined in the
- * same TU (extern declarations of the same objects measure 1,598 words
- * off). So this TU defines overlay 52's .data and .bss at their recorded
- * offsets, laid out as overlay52Initialize.c does. That object owns the
- * bytes: mk/overlays.mk drops these copies at POSTPROCESS and rebinds the
- * sites to zero-valued bases, as overlay54TailA does. The 0x24C table is
- * split into the 2-entry arrays this function indexes. */
+/* Overlay 52's .data and .bss, in ROM order: this module is the byte owner
+ * of the .data (the atlas's whole initialized range). The shipped code
+ * shares high halves between data/bss sites the way as1 does only for
+ * objects defined in the same TU (extern declarations of the same objects
+ * measure 1,598 words off). The names are the section offsets; the 0x24C
+ * table is split into the 2-entry arrays the HUD indexes. The initializer's
+ * header state is the record pair at .bss +0x480 (it writes record 0's three
+ * words and record 1's first). */
 static s16 o52_data_0[18] = {
     2, 38, 39, 41, 42, 20, 21, 22, 23, 24, 25, 26, 30, 31, 40, 80, 100, -1,
 };
@@ -200,6 +101,141 @@ static s16 o52_bss_4C8[2];
 static Overlay45ResourceDescriptor *o52_bss_4CC;
 static s16 o52_bss_4D0;
 static s16 o52_bss_4D2;
+
+/* Module-private helpers (no ORT row): static, so their calls are JUMP
+ * records. The initializer hands them its tables unprototyped. */
+static void overlay52PatchIndices();
+static void overlay52CopyOffsetEntries();
+
+
+/* Independently reconstructed from Mickey-local evidence; no DKR/JFG donor. */
+/* The bounds stores keep the target's source-line grouping (as1 pairs
+ * statements by line); the 4A0 pair is one store per line. */
+void func_overlay_052_F0000000_189A670(void) {
+    s32 i;
+    u8 *state;
+    state = func_80028F54();
+    loadFrontEndList(o52_data_0);
+    setupFrontEndList(o52_data_24);
+    amTunePlay(4);
+    o52_bss_4A4 = 0x104;
+    runlinkDownloadCode(11);
+    overlay52PatchIndices(o52_data_30);
+    overlay52PatchIndices(o52_data_60);
+    overlay52PatchIndices(o52_data_180);
+    overlay52PatchIndices(o52_data_220);
+    overlay52PatchIndices(o52_data_80);
+    overlay52PatchIndices(o52_data_B0);
+    overlay52PatchIndices(o52_data_2F4);
+    for (i = 0; i < 2; i++) {
+        overlay52CopyOffsetEntries(o52_data_30, o52_bss_0[i], i, 0);
+        overlay52CopyOffsetEntries(o52_data_60, o52_bss_60[i], i, 0);
+        overlay52CopyOffsetEntries(o52_data_180, o52_bss_200[i], i, 3);
+        overlay52CopyOffsetEntries(o52_data_220, o52_bss_340[i], i, 4);
+        overlay52CopyOffsetEntries(o52_data_80, o52_bss_A0[i], i, 1);
+        overlay52CopyOffsetEntries(o52_data_B0, o52_bss_100[i], i, 2);
+    }
+    o52_bss_4B0 = -80.0f;
+    *(s16 *)((u8 *)D_800D3550 + 0x26) = 40;
+    *(f32 *)((u8 *)D_800D3550 + 0x28) = 1.0f;
+    overlay56LoadResource();
+    o52_bss_4A8[0] = -1;
+    o52_bss_4A8[1] = -1;
+    ext_resident_result = levelGetNumber();
+    for (i = 0; i < 9; i++) {
+        o52_bss_160[i].x = o52_data_E0[i].x;
+        o52_bss_160[i].y = o52_data_E0[i].y;
+        o52_bss_160[i].value8 = o52_data_E0[i].value8;
+    }
+    if (frontGet2PlayerSplit() != 0) {
+        o52_bss_4BC[0] = -0x500; o52_bss_4C0[0] = -0x140;
+        o52_bss_4BC[1] = 0x400; o52_bss_4C0[1] = -0x140;
+        o52_bss_4C4[0] = 0x3F0;
+        o52_bss_4C8[0] = 0x3C0;
+        o52_bss_4C4[1] = 0xCF0;
+        o52_bss_4C8[1] = 0x3C0;
+        o52_bss_4A0[0] = -0x420;
+        o52_bss_4A0[1] = 0x4E0;
+    } else if (frontGetScreenMode() & 1) {
+        o52_bss_4BC[0] = -0x500; o52_bss_4C0[0] = -0x140;
+        o52_bss_4BC[1] = -0x500; o52_bss_4C0[1] = -0x140;
+        o52_bss_4C4[0] = 0x830;
+        o52_bss_4C8[0] = 0x210;
+        o52_bss_4C4[1] = 0x830;
+        o52_bss_4C8[1] = 0x990;
+        o52_bss_4A0[0] = -0x280; o52_bss_4A0[1] = -0x280;
+    } else {
+        o52_bss_4BC[0] = -0x500; o52_bss_4C0[0] = -0x140;
+        o52_bss_4BC[1] = -0x500; o52_bss_4C0[1] = -0x140;
+        o52_bss_4C4[0] = 0x830;
+        o52_bss_4C8[0] = 0x2D0;
+        o52_bss_4C4[1] = 0x830;
+        o52_bss_4C8[1] = 0x990;
+        o52_bss_4A0[0] = -0x280; o52_bss_4A0[1] = -0x280;
+    }
+    o52_bss_480[0].value8 = 0;
+    o52_bss_4B4[0] = o52_bss_4BC[0]; o52_bss_4B4[1] = o52_bss_4BC[1];
+    o52_bss_4B8[0] = o52_bss_4C0[0]; o52_bss_4B8[1] = o52_bss_4C0[1];
+    o52_bss_480[0].resource = (RcpTextureInfo *)ext_resident_word_190;
+    o52_bss_480[0].alternate = 0;
+    o52_bss_480[1].resource = 0;
+    if (*state == 3) {
+        s32 handle;
+        fontUseFont(3);
+        handle = levelGetNumber();
+        handle = func_8003A5A0(handle);
+        o52_bss_4CC = overlay45CreateDescriptor((const char *)handle, 0xA0, 0x78, 0xC);
+        overlay45SetMode(o52_bss_4CC, 0);
+    } else {
+        o52_bss_4CC = 0;
+    }
+    o52_bss_4D2 = 0;
+    o52_bss_4D0 = 0;
+}
+
+/* This exact six-overlay Mickey family has no exact DKR v77/v80 or JFG donor. */
+static void overlay52PatchIndices(OverlayPatchIndexEntry *entry) {
+    while (entry->first != 0) {
+        entry->first = (s32) D_800D31C8[entry->first];
+        if (entry->second != 0) {
+            entry->second = (s32) D_800D31C8[entry->second];
+        }
+        entry++;
+    }
+}
+
+static void overlay52CopyOffsetEntries(Overlay52Entry *source,
+                                Overlay52Entry *destination, s32 selection,
+                                s32 index) {
+    s16 xOffset;
+    s16 yOffset;
+
+    index *= 4;
+    if (frontGet2PlayerSplit() != 0) {
+        index += 0x14;
+    } else if (frontGetScreenMode() & 1) {
+        index += 0x28;
+    }
+
+    if (selection == 0) {
+        xOffset = gOverlay52Offsets[index];
+        yOffset = gOverlay52Offsets[index + 1];
+    } else {
+        xOffset = gOverlay52Offsets[index + 2];
+        yOffset = gOverlay52Offsets[index + 3];
+    }
+
+    while (source->resource != 0) {
+        destination->resource = source->resource;
+        destination->alternate = source->alternate;
+        destination->x = source->x + xOffset;
+        destination->y = source->y + yOffset;
+        destination->value8 = source->value8;
+        source++;
+        destination++;
+    }
+    destination->resource = 0;
+}
 
 /* Reconstructed from Mickey's call/global relocation identities and field
  * accesses. Built with -Wab,-r4300_mul (mk/overlays.mk): the HUD height
@@ -363,7 +399,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
         }
         if (o52_data_240[player] != 0) {
             digits = o52_bss_A0[player];
-            func_overlay_052_F0000540_189ABB0(o52_data_80, digits, player, 1);
+            overlay52CopyOffsetEntries(o52_data_80, digits, player, 1);
             digits[0].value8 = (racer->value192 / 10) << 16;
             digits[1].value8 = (racer->value192 % 10) << 16;
             if (((s32)digits[0].value8 >> 16) == 1) {
@@ -405,7 +441,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 hundredths -= hundredths % 10;
                 hundredths += o52_data_31C;
             }
-            func_overlay_052_F0000540_189ABB0(o52_data_180, digits, player, 3);
+            overlay52CopyOffsetEntries(o52_data_180, digits, player, 3);
             o52_bss_200[player][0].value8 = (minutes / 10) << 16;
             o52_bss_200[player][1].value8 = (minutes % 10) << 16;
             o52_bss_200[player][3].value8 = (seconds / 10) << 16;
@@ -603,4 +639,27 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
         }
     }
     camSetNo(0);
+}
+
+/*
+ * DKR us.v77/us.v80 and JFG object scans found no exact donor. Their resource
+ * cleanup code shares only the generic release-and-clear pattern used here.
+ */
+void overlay52Cleanup(void) {
+    s32 *slot;
+    s32 *end;
+
+    freeFrontEndList(&gOverlay52Storage);
+    overlay56ReleaseResource();
+    if (gOverlay52Resource != NULL) {
+        overlay45ReleaseDescriptor(gOverlay52Resource);
+    }
+    slot = gOverlay52Slots; end = &gOverlay52Slots[2];
+    while (slot != end) {
+        if (*slot != -1) {
+            freeFrontEndItem(*slot);
+            *slot = -1;
+        }
+        slot++;
+    }
 }

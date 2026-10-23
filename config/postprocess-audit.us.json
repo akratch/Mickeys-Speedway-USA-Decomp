@@ -3958,75 +3958,13 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o052/overlay52Cleanup.c.o",
-      "offset": 8344,
-      "overlay": 52,
-      "size": 144,
-      "source": "src/overlays/o052/overlay52Cleanup.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o052/overlay52CopyOffsetEntries.c.o",
-      "offset": 1344,
-      "overlay": 52,
-      "size": 252,
-      "source": "src/overlays/o052/overlay52CopyOffsetEntries.c",
-      "tools": [
-        "trim_elf_section.py",
-        "rebind_elf_relocations.py",
-        "overlay52CopyOffsetEntries.sort.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o052/overlay52Initialize.c.o",
+      "object": "build/src/overlays/o052/overlay_052.c.o",
       "offset": 0,
       "overlay": 52,
-      "size": 1264,
-      "source": "src/overlays/o052/overlay52Initialize.c",
+      "size": 8488,
+      "source": "src/overlays/o052/overlay_052.c",
       "tools": [
         "rebind_elf_relocations.py",
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o052/overlay52PatchIndices.c.o",
-      "offset": 1264,
-      "overlay": 52,
-      "size": 80,
-      "source": "src/overlays/o052/overlay52PatchIndices.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o052/overlay52TailB.c.o",
-      "offset": 1596,
-      "overlay": 52,
-      "size": 6748,
-      "source": "src/overlays/o052/overlay52TailB.c",
-      "tools": [
-        "rebind_elf_relocations.py",
-        "trim_elf_section.py",
         "objcopy"
       ]
     },
@@ -8264,10 +8202,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 569,
+      "metadata": 565,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 431140,
-    "objects_with_postprocess": 570
+    "objects_with_postprocess": 566
   }
 }

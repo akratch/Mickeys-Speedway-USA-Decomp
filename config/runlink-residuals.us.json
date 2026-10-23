@@ -2,13 +2,13 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 8651},
+  "totals": {"differences": 0, "borrowed_records": 8640},
   "differences": {
   },
   "borrowed": {
     "bss-size": {
       "about": "header BSS size without a complete faithful linked source allocation, from the atlas (module)",
-      "count": 43,
+      "count": 42,
       "entries": [
         [1],
         [2],
@@ -46,7 +46,6 @@
         [63],
         [65],
         [66],
-        [75],
         [87],
         [92],
         [96],
@@ -87,7 +86,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1765,
+      "count": 1761,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1624,10 +1623,6 @@
         [73, "D_8", 2],
         [73, "D_80", 2],
         [73, "D_80000000", 2],
-        [75, "gOverlay75Scale", 2],
-        [75, "gOverlay75SlotFlags", 6],
-        [75, "gOverlay75ThresholdReloc", 2],
-        [75, "overlay75PlayEventReloc", 1],
         [79, "gOverlay79CounterReloc", 2],
         [79, "gOverlay79InitScaleReloc", 2],
         [83, "D_80000000", 2],

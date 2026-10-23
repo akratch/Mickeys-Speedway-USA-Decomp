@@ -1012,6 +1012,8 @@ MODULE_LINKED_OVERLAYS += 074
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o074/overlay_074.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 75 is one translation unit under the overlay flag set; its .text is
 # the module's 0x700 bytes, trailing pad included, so it needs no trim.
+# Its compiler literal pool and five slot flags supply initialized data and BSS.
+MODULE_LINKED_OVERLAYS += 075
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o075/overlay_075.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 77 directly owns its initialized state and compiler literal pool.
 # The whole-TU module link resolves their separate section-relative bases.

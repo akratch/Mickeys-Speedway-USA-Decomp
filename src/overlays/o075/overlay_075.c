@@ -2,6 +2,8 @@
 
 /* The target's floating-point multiply schedule requires -Wab,-r4300_mul. */
 
+s32 gOverlay75SlotFlags[5];
+
 void overlay75Init(Overlay75Object *object, Overlay75InitData *init, s32 skip) {
     Overlay75Header *header;
     register Overlay75Model *model;
@@ -12,7 +14,7 @@ void overlay75Init(Overlay75Object *object, Overlay75InitData *init, s32 skip) {
     header = object->header;
     object->angle = init->angle;
     state = object->state;
-    object->scale = (f32) init->scale * gOverlay75Scale * header->scale;
+    object->scale = (f32) init->scale * 0.05f * header->scale;
     object->display->xScale = header->xScale * object->scale;
     object->display->yScale = object->header->yScale * object->scale;
     display = object->display;
@@ -53,8 +55,6 @@ void overlay75Init(Overlay75Object *object, Overlay75InitData *init, s32 skip) {
 }
 
 /* DKR v77/v80 and JFG scans found no exact moving-object donor. */
-
-#define O75_FLOAT_BITS(value) (*(u32 *)&(value))
 
 typedef struct Overlay75UpdateLocals {
     s32 moved;
@@ -142,8 +142,8 @@ void overlay75UpdateMovingObject(Overlay75Object *object,
             } else {
                 locals.moved = 1;
             }
-            if (locals.previous < gOverlay75ThresholdReloc[1] &&
-                gOverlay75ThresholdReloc[1] <= object->transitionValue) {
+            if (locals.previous < 0.9f &&
+                0.9f <= object->transitionValue) {
                 if (object->status->alternateEvent != 0) {
                     locals.eventId = 0x1BC;
                 } else {
@@ -190,24 +190,19 @@ void overlay75UpdateMovingObject(Overlay75Object *object,
         locals.model->field08 = 0;
 
         if (locals.moved != 0 && state->effectHandle == 0) {
-            amSndPlayXYZ(0x1BA, O75_FLOAT_BITS(locals.position->x),
-                                       O75_FLOAT_BITS(locals.position->y),
-                                       O75_FLOAT_BITS(locals.position->z), 1,
-                                       &state->effectHandle);
+            amSndPlayXYZ(0x1BA, locals.position->x, locals.position->y,
+                          locals.position->z, 1, &state->effectHandle);
         } else if (locals.moved != 0 && state->effectHandle != 0) {
-            amSndSetXYZ(state->effectHandle,
-                          O75_FLOAT_BITS(locals.position->x),
-                          O75_FLOAT_BITS(locals.position->y),
-                          O75_FLOAT_BITS(locals.position->z));
+            amSndSetXYZ(state->effectHandle, locals.position->x,
+                          locals.position->y,
+                          locals.position->z);
         } else if (locals.moved == 0 && state->effectHandle != 0) {
             amSndStopXYZ(state->effectHandle);
         }
 
         if (locals.eventId != -1) {
-            overlay75PlayEventReloc(locals.eventId,
-                          O75_FLOAT_BITS(locals.position->x),
-                          O75_FLOAT_BITS(locals.position->y),
-                          O75_FLOAT_BITS(locals.position->z), 4, 0);
+            amSndPlayXYZ(locals.eventId, locals.position->x, locals.position->y,
+                          locals.position->z, 4, 0);
         }
         if (locals.completed != 0) {
             camScreenShake(locals.position->x,

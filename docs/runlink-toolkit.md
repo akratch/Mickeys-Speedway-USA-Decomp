@@ -203,7 +203,19 @@ module108, and removal of an unreferenced tail module. Removing either a target
 still referenced by overlay75 or overlay75 itself is refused with actual callers.
 Overlay75 actually calls the new module's offset-zero function and references
 its BSS export; both must have authentic raw and final SYMBOL identities.
-The resident relocation count remains 375; this is not a resident-growth test.
+The original five variants retain 375 resident overlay-call records. A sixth
+`resident-call` variant compiles a diagnostic copy of `src/main/spranim.c`,
+replacing the existing `animseqPlay()` call in the admitted parameter-one branch
+of `func_8001B798` with typed `overlay75MarkSlot(1)`. This yields 376 overlay-call
+records, not an increased instruction-call count. The entire resident TU retains
+its section geometry and every existing symbol home; all other functions retain
+their bytes. Fresh raw names pass through the existing metadata-only trap rename
+and authenticated sidecar. The new record is independently joined to the actual
+final call site, real trap and qualified source export. All prior 375 records
+retain their exact identities, sites and order. Ordinary resident replay explains
+the changed TU bytes; the main table grows by eight bytes and the existing
+boundary/loader checks prove downstream movement. Geometry changes refuse with a
+broader-layout prerequisite. This does not establish arbitrary resident growth.
 Before emitting wrappers, the driver rejects signed loader allocation overflow
 including RT1 and any relocation whose complete four-byte word escapes its body.
 
@@ -217,7 +229,7 @@ must match those hashes and cannot replace them. Toolchain snapshots are checked
 again when freshness validation ends. The final image is
 independently decoded and joined to raw source relocation identities, ordinary
 module payload/NOBITS layout and actual final symbols. Unselected payloads,
-VMAs and program symbols remain exact; the loader is independently relinked at
+VMAs and program symbols remain exact; selected resident code and the loader are independently relinked at
 its real VMA against the new boundary values. Header DMA excludes alignment
 padding. The diagnostic removes only the declared fill input and symbols, checks
 the script mapping by exact reversal, and emits a 32 MiB image with an FF tail
@@ -227,7 +239,7 @@ Canonical overlay75 source, IDs 1–107 and existing export-row identities stay
 unchanged. The diagnostic receipts retain the canonical catalog and its named
 borrowing, including the retained bootstrap. Data-only discovery is inventoried
 but not activated. This bounded source-complete pilot does not establish a
-source-only build, arbitrary module renumbering, resident growth or general
+source-only build, arbitrary module renumbering, arbitrary resident growth or general
 relayout. The canonical retail producer still requires raw equality with zero
 differences, and its final link still requires bootstrap equality.
 

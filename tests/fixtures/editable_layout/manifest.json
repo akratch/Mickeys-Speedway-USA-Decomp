@@ -30,5 +30,15 @@
     "resume": "layout108Resume"
   },
   "mutated_function": "overlay75Init",
-  "mutation_anchor": "    gOverlay75SlotFlags[state->slot] = 0;"
+  "mutation_anchor": "    gOverlay75SlotFlags[state->slot] = 0;",
+  "resident": {
+    "source": "src/main/spranim.c",
+    "object": "build/src/main/spranim.c.o",
+    "caller": "func_8001B798",
+    "previous": "animseqPlay",
+    "target": "overlay75MarkSlot",
+    "module": 75,
+    "anchor": "                            } else if (plane->parameter == 1) {\n                                animseqPlay();\n",
+    "replacement": "                            } else if (plane->parameter == 1) {\n                                overlay75MarkSlot(1);\n"
+  }
 }

@@ -66,7 +66,7 @@ def _require_symbol(value: Any, location: str) -> str:
     return value
 
 
-def load_manifest(path: Path) -> list[dict[str, Any]]:
+def load_manifest(path: Path, root: Path | None = None) -> list[dict[str, Any]]:
     """Load and fail-closed validate a version-one alias manifest."""
     try:
         document = json.loads(
@@ -137,6 +137,13 @@ def load_manifest(path: Path) -> list[dict[str, Any]]:
             )
         validated.append({"object": object_path, "aliases": validated_aliases})
 
+    root = REPO if root is None else root
+    for rule in validated:
+        source = root / "src" / rule["object"].removesuffix(".o")
+        if not source.is_file():
+            raise ManifestError(
+                f"alias owner no longer exists: src/{rule['object'].removesuffix('.o')}"
+            )
     return validated
 
 

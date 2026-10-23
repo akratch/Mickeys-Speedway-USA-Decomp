@@ -2,33 +2,6 @@
   "schema_version": 1,
   "rules": [
     {
-      "object": "overlays/o017/overlay17CreateChain.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_017_F0000318_1873CD0",
-          "to": "overlay17CreateChain"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o019/overlay19BuildPlanes.c.o",
-      "aliases": [
-        {
-          "from": "sqrtf",
-          "to": "sqrtf_o019Reloc"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o023/overlay23RenderEffect.c.o",
-      "aliases": [
-        {
-          "from": "overlay23CallReloc",
-          "to": "func_overlay_023_F0000000_1879210"
-        }
-      ]
-    },
-    {
       "object": "overlays/o065/overlay65UpdateParticles.c.o",
       "aliases": [
         {
@@ -72,15 +45,6 @@
         {
           "from": "addObjectLight",
           "to": "overlay83CreateLinkedReloc"
-        }
-      ]
-    },
-    {
-      "object": "overlays/o101/overlay101DrawPanel.c.o",
-      "aliases": [
-        {
-          "from": "func_overlay_101_F0002EFC_18DE71C",
-          "to": "overlay101DrawPanel"
         }
       ]
     }

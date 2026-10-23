@@ -8,6 +8,7 @@ import re
 import shlex
 import subprocess
 import time
+from types import SimpleNamespace
 
 import overlay_tables as ot
 import proof_provenance as pp
@@ -32,7 +33,60 @@ def symbols(elf):
                   for s in elf.symbols if s.type != rp.STT_FILE)
 
 
-def source_identities(raw, linked, canonical, exports, overlay):
+def canonical_bss_export(canonical, target, addend, rom, runtime_modules):
+    """Authenticate physical capacity and a real export, not C ownership.
+
+    Older host links placed serialized tables before BSS. The runtime discards
+    those tables, so a BSS address is always runtime body size plus its offset
+    inside the actual allocated NOBITS section, never its encoded name/VMA.
+    """
+    match = re.fullmatch(r"\.overlay_(\d{3})_bss", target.section)
+    if not match or rom is None or runtime_modules is None:
+        raise pp.MetadataProofError("BSS export lacks authenticated module geometry")
+    overlay = int(match.group(1))
+    module = runtime_modules.get(overlay)
+    if not module or module.get("overlay") != overlay:
+        raise pp.MetadataProofError("BSS export has no runtime module")
+    fields = ("text_size", "data_size", "reloc1_size", "reloc2_size", "bss_size", "rom_start", "rom_end")
+    if any(not isinstance(module.get(k), int) or module[k] < 0 for k in fields):
+        raise pp.MetadataProofError("invalid runtime BSS geometry")
+    ranges = ot.module_section_ranges(module)
+    prefix = ranges["reloc1"][0] - ranges["text"][0]
+    full_size = module["rom_end"] - module["rom_start"]
+    if (module["bss_size"] <= 0 or full_size != prefix + module["reloc1_size"] + module["reloc2_size"]
+            or module["rom_end"] > len(rom)):
+        raise pp.MetadataProofError("inconsistent runtime BSS bounds")
+    body_name = f".overlay_{overlay:03d}"
+    bodies = [s for s in canonical.sections if s["name"] == body_name]
+    outputs = [s for s in canonical.sections if s["name"] == target.section]
+    if len(bodies) != 1 or len(outputs) != 1:
+        raise pp.MetadataProofError("ambiguous or missing BSS/body section")
+    body, output = bodies[0], outputs[0]
+    if (body["type"] != 1 or not body["flags"] & 2 or body["addr"] != rp.OVERLAY_VMA
+            or body["size"] not in {prefix, full_size}
+            or canonical.bytes_of(body_name) != rom[module["rom_start"]:module["rom_start"] + body["size"]]):
+        raise pp.MetadataProofError("BSS export body differs from runtime module")
+    # Reuse the packer's strict physical output geometry. Its physical prefix
+    # may include the serialized tables; the identity below uses runtime prefix.
+    physical = SimpleNamespace(elf=canonical, module_info={overlay: {
+        "prefix": body["size"], "bss_vma": rp.OVERLAY_VMA + body["size"],
+        "linked_bss": module["bss_size"],
+    }})
+    if (rp.linked_bss_output(physical, overlay) is None or not output["size"]
+            or rp.OVERLAY_VMA + body["size"] + module["bss_size"] > 0x100000000):
+        raise pp.MetadataProofError("BSS export lacks faithful writable NOBITS capacity")
+    if (target.bind != rp.STB_GLOBAL or target.shndx != output["index"]
+            or target.type not in (rs.STT_NOTYPE, rs.STT_OBJECT)
+            or target.size < 0 or not output["addr"] <= target.value < output["addr"] + output["size"]
+            or target.value + max(target.size, 1) > output["addr"] + output["size"]):
+        raise pp.MetadataProofError("BSS export definition escapes its allocated section")
+    relative = target.value - output["addr"] + addend
+    if not 0 <= relative < output["size"]:
+        raise pp.MetadataProofError("BSS export addend escapes its allocated section")
+    return overlay, prefix + relative
+
+
+def source_identities(raw, linked, canonical, exports, overlay, *, rom=None, runtime_modules=None):
     """Resolve source operands without taking an identity from the shipped site."""
     bases = {".text": 0, ".data": linked.size(".text"),
              ".rodata": linked.size(".text") + linked.size(".data"),
@@ -60,6 +114,10 @@ def source_identities(raw, linked, canonical, exports, overlay):
                         raise pp.MetadataProofError("export address escapes resident storage")
                     kind, offset = layout.selector_of(target.value)
                     identity = (kind, offset + addend)
+                elif re.fullmatch(r"\.overlay_\d{3}_bss", target.section):
+                    if rel.type not in (rp.R_MIPS_32, rp.R_MIPS_HI16, rp.R_MIPS_LO16):
+                        raise pp.MetadataProofError("executable relocation targets non-executable BSS")
+                    identity = canonical_bss_export(canonical, target, addend, rom, runtime_modules)
                 else:
                     match = re.fullmatch(r"\.overlay_(\d{3})", target.section)
                     if not match:
@@ -141,13 +199,15 @@ def prove(root, resolution, context, records, target_elf, linked_name, input_sna
         raise pp.MetadataProofError("source-module link is not one whole translation unit")
     body = b"".join(reproduced.bytes_of(s) for s in (".text", ".data", ".rodata"))
     rom = (root / "baseroms/mickey.us.z64").read_bytes()
-    module = ot.build_modules(ot.read_headers(rom))[overlay - 1]
+    runtime_modules = {m["overlay"]: m for m in ot.build_modules(ot.read_headers(rom))}
+    module = runtime_modules[overlay]
     if (canonical.bytes_of(f".overlay_{overlay:03d}") != body
             or rom[module["rom_start"]:module["rom_start"] + len(body)] != body
             or len(body) != module["text_size"] + module["data_size"]
             or reproduced.size(".bss") != module["bss_size"]):
         raise pp.MetadataProofError("source module does not own the exact linked/retail body and BSS extent")
-    identities = source_identities(raw, reproduced, canonical, exports, overlay)
+    identities = source_identities(raw, reproduced, canonical, exports, overlay,
+                                   rom=rom, runtime_modules=runtime_modules)
     all_records = rs._target_runtime_records(rom, {"kind": "overlay", "overlay": overlay, "module": module}, 0, len(body))
     expected_identities = {(record.offset, record.rtype): record.identity for record in all_records}
     if identities != expected_identities or len(all_records) != len(identities):

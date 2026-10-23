@@ -53,6 +53,15 @@ records, exact initialized module bytes in both linked ELF and ROM, and exact
 BSS extent. Keep configured relocation count zero explicit; do not relabel a
 stripped object as retained compiler relocation evidence.
 
+A cross-overlay BSS export requires a unique global definition in actual
+nonempty allocated writable NOBITS storage, with the linked module bytes and
+section capacity authenticated against its runtime header. Translate the
+symbol's offset within that section onto the runtime text-plus-data prefix;
+an older host layout may place serialized tables before the BSS section.
+Neither an encoded symbol name nor an ABS assignment supplies that identity.
+An explicit physical loader reserve can support such an unsized export while
+its unknown contents remain borrowed; it earns no reconstructed C ownership.
+
 Existing function geometry, provenance and full-ROM gates still apply. No
 instruction bytes may be edited to obtain a match. The linker may perform its
 ordinary relocations on untouched compiler instructions. The initial selection

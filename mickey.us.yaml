@@ -1158,6 +1158,7 @@ segments:
       - [0x185449C, c, overlay_001_scaled]
       - [0x18544F4, asm, overlay_001_padding]
       - [0x1854500, bin, overlay_001_data_rodata]
+      - { type: bss, vram: 0xF00083E0, name: overlay_001_bss_reserve }
 
   - name: overlay_001_reloc1
     type: bin
@@ -2080,13 +2081,14 @@ segments:
     vram: 0xF0000000
     bss_size: 0x160
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o036
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18834B8, c, overlay_036]
-      - [0x1884C08, bin, overlay_036_data_rodata]
+      - [0x1884C08, .data, overlay_036]
+      - [0x1885008, .rodata, overlay_036]
 
   - name: overlay_036_reloc1
     type: bin

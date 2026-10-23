@@ -437,7 +437,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:2c21a6f383952f9246cda00fcc1f0456af3e324811b7ca17f018fd4c4f0658d9
 
-# Overlay 36 is one TU under the overlay flag set; no post-processing.
+# Overlay 36 owns its callback records, weight/state tables, private literals,
+# and postponed-read queue. Ordinary module linking preserves their section
+# bases and the exported same-module callback identities.
+MODULE_LINKED_OVERLAYS += 036
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay_036.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 27 directly owns its compact vertices, triangle/UV records,
 # coordinate state and compiler literal pool.

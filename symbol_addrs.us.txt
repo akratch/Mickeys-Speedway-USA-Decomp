@@ -3015,3 +3015,11 @@ D_800C99BC = 0x800C99BC; // tier-B ORT1758 export and overlay 35 references, uns
 // Overlay 30 import views: these labels do not claim resident allocations.
 D_800C94E4 = 0x800C94E4; // tier-B ORT row 1707 plus mapped resident BSS, word accesses between D_800C94E0 and D_800C94E8
 D_800C9464 = 0x800C9464; // tier-B ORT row 1715 plus mapped resident BSS, pointer-word accesses between D_800C9460 and D_800C9468
+
+// Tier B: ORT1476 and word accesses identify this overlay 1 BSS view.
+// The surrounding physical loader reserve remains unowned; no extent claimed.
+B_overlay_001_F00083E0 = 0xF00083E0; // segment:overlay_001 tier-B ORT1475 unsized physical BSS base export
+B_overlay_001_F00083E4 = 0xF00083E4; // segment:overlay_001 tier-B unsized runtime mode export at BSS plus four
+
+// Tier B: ORT1775 uses resident data selector FFD at data-base plus 12728.
+D_8007BF18 = 0x8007BF18; // tier-B overlay 36 mask references within retained resident data, unsized view

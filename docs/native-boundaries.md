@@ -96,7 +96,10 @@ the actual typed export. No generic varargs dispatcher contract is proved here.
 void *)` call and the separate `void func_80058FF0(ConvListEntry *, s32)` batch.
 The latter's list contains a matrix pointer and signed-halfword count; its caller
 flushes the batch before resetting its global count. The outer animation call
-borrows per-model matrices, hierarchy nodes and an optional interior asset view.
+borrows per-model matrices, hierarchy nodes and an optional patch stream.
+Its owner follows the actual object path: the type-1 player path supplies
+dynamic `ControlPlayer` state, despite the partial renderer view's `asset` name.
+It is not an animation-blob or ROM-descriptor extent.
 The [animation audit](animation-contracts.md) establishes its private readers'
 t-register inputs, the patcher's s0–s6 clobbers and the private return exit.
 `func_8005A6F0` is that exit, not an independently established public function.

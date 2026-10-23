@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 148, "borrowed_records": 8908},
+  "totals": {"differences": 148, "borrowed_records": 8870},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -256,7 +256,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1874,
+      "count": 1860,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -867,20 +867,6 @@
         [36, "overlay36ActionReloc", 2],
         [36, "overlay36ReleaseEntityReloc", 1],
         [39, "overlay39SendReloc", 2],
-        [40, "gO40TintBlueReloc", 2],
-        [40, "gO40TintDisplayListReloc", 2],
-        [40, "gO40TintGreenReloc", 2],
-        [40, "gOverlay40BlendCurrent", 4],
-        [40, "gOverlay40BlendDuration", 4],
-        [40, "gOverlay40BlendOutput", 4],
-        [40, "gOverlay40BlendTarget", 4],
-        [40, "gOverlay40BlendTimer", 4],
-        [40, "gOverlay40Value1", 2],
-        [40, "gOverlay40Value4", 2],
-        [40, "gOverlay40Value5", 2],
-        [40, "gOverlay40Value6", 2],
-        [40, "gOverlay40Value7", 2],
-        [40, "o40TintCallReloc", 2],
         [42, "gO42BufferIndexBaseReloc", 2],
         [42, "gO42ImageStateReloc", 2],
         [42, "gO42PublishedEndBaseReloc", 2],

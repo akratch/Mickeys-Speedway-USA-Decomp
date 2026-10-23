@@ -683,8 +683,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 37 directly owns its compact geometry, distance records and period.
 MODULE_LINKED_OVERLAYS += 037
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 40 is one translation unit at the overlay flag set; its .text carries
-# the trailing pad, so nothing is trimmed.
+# Overlay 40 directly owns the tint display-list setup and its alignment.
+MODULE_LINKED_OVERLAYS += 040
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay_040.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 42 is one translation unit at the overlay flag set; its .text is the
 # module's whole text, so nothing is trimmed.

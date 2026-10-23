@@ -1,5 +1,19 @@
 #include "overlays/overlay_040.h"
 
+#define O40_OTHER_MODE(high, low) \
+    {{_SHIFTL(G_RDPSETOTHERMODE, 24, 8) | (high), (low)}}
+
+Gfx gOverlay40TintDisplayList[] = {
+    gsDPPipeSync(),
+    gsSPClearGeometryMode(G_ZBUFFER | G_FOG),
+    gsDPSetCombineLERP(K4, K5, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE,
+                       K4, K5, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE),
+    O40_OTHER_MODE(G_TP_PERSP | G_TF_BILERP | G_TC_FILT |
+                   (15 << G_MDSFT_BLENDMASK),
+                   G_RM_CLD_SURF | G_RM_CLD_SURF2),
+    gsSPEndDisplayList(),
+};
+
 /*
  * Claims the first free slot (state -1) of the eight entries.
  *
@@ -230,25 +244,25 @@ void overlay40DrawEntries(void *displayList) {
 void overlay40SetValues(s32 value0, s32 value1, s32 value2, s32 value3,
                         s32 value4) {
     D_800D6C38 = value0;
-    gOverlay40Value1 = value1;
-    gOverlay40Value4 = value2;
-    gOverlay40Value5 = D_800D6C3E;
-    gOverlay40Value6 = value3;
-    gOverlay40Value7 = value4;
+    D_800D6C3A = value1;
+    D_800D6C3C = value2;
+    D_800D6C40 = D_800D6C3E;
+    D_800D6C42 = value3;
+    D_800D6C46 = value4;
     D_800D6C44 = value4;
 }
 
 void overlay40Interpolate(s32 amount) {
-    if (gOverlay40BlendTimer != 0) {
-        gOverlay40BlendOutput = gOverlay40BlendCurrent;
-        gOverlay40BlendTimer -= amount;
-        if (gOverlay40BlendTimer > 0) {
-            gOverlay40BlendOutput +=
-                ((gOverlay40BlendTarget - gOverlay40BlendCurrent) *
-                 gOverlay40BlendTimer) /
-                gOverlay40BlendDuration;
+    if (D_800D6C44 != 0) {
+        D_800D6C3E = D_800D6C42;
+        D_800D6C44 -= amount;
+        if (D_800D6C44 > 0) {
+            D_800D6C3E +=
+                ((D_800D6C40 - D_800D6C42) *
+                 D_800D6C44) /
+                D_800D6C46;
         } else {
-            gOverlay40BlendTimer = 0;
+            D_800D6C44 = 0;
         }
     }
 }
@@ -260,16 +274,16 @@ void overlay40DrawTintRectangle(Gfx **displayList) {
     s32 y;
 
     if (D_800D6C3E != 0) {
-        o40TintCallReloc(&x, &y, displayList);
+        viGetCurrentSize(&x, &y);
         inverse = 0xFF - D_800D6C3E;
         red = (D_800D6C38 * inverse) >> 8;
-        green = (gO40TintGreenReloc * inverse) >> 8;
-        blue = (gO40TintBlueReloc * inverse) >> 8;
-        gSPDisplayList((*displayList)++, gO40TintDisplayListReloc);
+        green = (D_800D6C3A * inverse) >> 8;
+        blue = (D_800D6C3C * inverse) >> 8;
+        gSPDisplayList((*displayList)++, gOverlay40TintDisplayList);
         gDPSetPrimColor((*displayList)++, 0, 0, red, green, blue,
                         D_800D6C3E);
         gDPFillRectangle((*displayList)++, 0, 0, x, y);
-        o40TintCallReloc(displayList);
+        texDPInit(displayList);
         gDPSetPrimColor((*displayList)++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
     }
 }
@@ -303,17 +317,17 @@ void overlay40FadeRecords(register s32 *enabled, Overlay40FadeContext *context,
     s32 groupRemaining;
     s32 vertexRemaining;
 
-    output = gOverlay40BlendCurrent;
-    timer = gOverlay40BlendTimer;
+    output = D_800D6C52;
+    timer = D_800D6C4C;
     if (timer != 0) {
         if (amount < timer) {
-            gOverlay40BlendTimer = timer - amount;
-            output += ((gOverlay40BlendTarget - gOverlay40BlendCurrent) *
-                      gOverlay40BlendTimer) / gOverlay40BlendDuration;
+            D_800D6C4C = timer - amount;
+            output += ((D_800D6C50 - D_800D6C52) *
+                      D_800D6C4C) / D_800D6C4E;
         } else {
-            gOverlay40BlendTimer = 0;
+            D_800D6C4C = 0;
         }
-        gOverlay40BlendOutput = output;
+        D_800D6C54 = output;
     }
 
     record = context->records;

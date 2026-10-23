@@ -657,6 +657,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o025/overlay_025.c.o: CFLAGS += -Wab,-r4300_mul
 # per byte: IDO's default unroll (factor 4) emits the shipped four-copy loop
 # body, which the former hand-unrolled spelling only matched with unrolling
 # disabled. Its .text carries the trailing pad, so nothing is trimmed.
+MODULE_LINKED_OVERLAYS += 039
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 37 is one translation unit at the overlay flag set (the effect
 # renderer's blend multiplies carry the R4300 FP-mul hazard nops). Its .text

@@ -691,13 +691,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay_038.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym sqrtf=sqrtf_o038Reloc \
 	--redefine-sym texDPTextureX=texDPTextureX_o038Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007A204=D_8007A204_o039Reloc \
-	--redefine-sym __osContLastCmd=__osContLastCmd_o039Reloc \
-	--redefine-sym __osSiGetAccess=__osSiGetAccess_o039Reloc \
-	--redefine-sym __osSiRawStartDma=__osSiRawStartDma_o039Reloc \
-	--redefine-sym __osSiRelAccess=__osSiRelAccess_o039Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay_040.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007D6B0=D_8007D6B0_o040Reloc \
 	--redefine-sym D_800D6B00=D_800D6B00_o040Reloc \

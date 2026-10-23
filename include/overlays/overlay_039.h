@@ -2,17 +2,14 @@
 #define OVERLAY_039_H
 
 #include "PR/ultratypes.h"
+#include "PR/os.h"
+#include "PRinternal/siint.h"
 
 /* Overlay 39: DKR v77/v80 and JFG object/source scans are negative for the
  * whole module. */
 
 extern u8 *D_8007A204;
 extern u8 __osContLastCmd;
-
-void __osSiGetAccess(void);
-void overlay39SendReloc(u8 *buffer, s32 size);
-void __osSiRawStartDma(s32 channel, u8 *buffer);
-void __osSiRelAccess(void);
 
 /* The resident caller, joy.c's arithmeticFunction, passes its SI message
  * queue to both; neither reads it. JFG's arithmeticFunction makes the same

@@ -1418,14 +1418,6 @@ mathRnd_o038Reloc = 0xf0000000;
 sqrtf_o038Reloc = 0xf0000000;
 texDPTextureX_o038Reloc = 0xf0000000;
 
-/* overlay 39: overlay_039.c.o */
-D_8007A204_o039Reloc = 0x00000000;
-__osContLastCmd_o039Reloc = 0x00000000;
-__osSiGetAccess_o039Reloc = 0xf0000000;
-__osSiRawStartDma_o039Reloc = 0xf0000000;
-__osSiRelAccess_o039Reloc = 0xf0000000;
-overlay39SendReloc = 0xf0000000;
-
 /* overlay 40: overlay_040.c.o */
 D_8007D6B0_o040Reloc = 0x00000000;
 D_800D6B00_o040Reloc = 0x00000000;
@@ -4111,9 +4103,9 @@ func_overlay_037_F00004F4_1885B14 = overlay37RecordMinimum;
 func_overlay_037_F0000544_1885B64 = overlay37RecordActive;
 
 /* overlay 39: overlay_039.c.o */
+func_overlay_039_F000011C_18867BC = overlay39Read;
 func_overlay_039_F0000000_18866A0 = overlay39Write;
 func_overlay_039_F00000C8_1886768 = overlay39Reset;
-func_overlay_039_F000011C_18867BC = overlay39Read;
 
 /* overlay 40: overlay_040.c.o */
 func_overlay_040_F0000000_18868B0 = overlay40AddEntry;

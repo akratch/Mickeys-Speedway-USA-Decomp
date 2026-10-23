@@ -23,33 +23,28 @@ void overlay72Init(Overlay72InitObject *object, Overlay72Config *config) {
 /* Overlay 72 +0x0B4. Fresh DKR v77/v80 and JFG scans are negative. */
 void overlay72Update(Overlay72QueryObject *object, s32 updateRate) {
     Overlay72Bounds *bounds = object->bounds;
-    Overlay72Candidate *results[6];
     s32 count;
+    Overlay72Candidate *results[8];
     register s32 index;
-    s32 keepGoing;
-    Overlay72Candidate **cursor;
-    Overlay72Candidate **resultBase = results - 3;
 
     count = func_8005776C(
         object->x,
         object->y,
         object->z,
-        bounds->queryType,
+        bounds->radius,
         1,
-        resultBase
+        results
     );
     if (count != 0) {
         index = count - 1;
-        cursor = &resultBase[index];
         do {
-            Overlay72Candidate *candidate = *cursor;
+            Overlay72Candidate *candidate = results[index];
             if (bounds->minimum < candidate->height &&
                 candidate->height < bounds->maximum) {
                 func_overlay_008_F0000F1C_185EC74(candidate, 0);
             }
-            keepGoing = index;
-            cursor--;
+            count = index;
             index--;
-        } while (keepGoing != 0);
+        } while (count != 0);
     }
 }

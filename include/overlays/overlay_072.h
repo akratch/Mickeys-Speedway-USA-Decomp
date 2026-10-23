@@ -42,7 +42,7 @@ typedef struct Overlay72Candidate {
 } Overlay72Candidate;
 
 typedef struct Overlay72Bounds {
-    s32 queryType;
+    f32 radius;
     f32 minimum;
     f32 maximum;
 } Overlay72Bounds;
@@ -58,8 +58,8 @@ typedef struct Overlay72QueryObject {
 
 extern const f32 gOverlay72ComponentScale;
 
-s32 func_8005776C(f32 x, f32 y, f32 z, s32 queryType,
-                        s32 includeInactive, Overlay72Candidate **results);
+s32 func_8005776C(f32 x, f32 y, f32 z, f32 radius,
+                        s32 useXZ, Overlay72Candidate **results);
 void func_overlay_008_F0000F1C_185EC74(Overlay72Candidate *candidate, s32 value);
 
 void overlay72Init(Overlay72InitObject *object, Overlay72Config *config);

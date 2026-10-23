@@ -2885,12 +2885,7 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18C4268, c, overlay65Initialize]
-      - [0x18C42E8, c, overlay65UpdateParticles]
-      - [0x18C4E28, c, overlay65Release]
-      - [0x18C4E58, c, overlay65ResetSlots]
-      - [0x18C4EA0, c, func_overlay_065_F0000C38_18C4EA0]
-      - [0x18C5C7C, c, overlay65SpawnRecord]
-      - [0x18C5E1C, asm, overlay_065_padding]
+      - [0x18C42E8, c, overlay_065]
       - [0x18C5E28, bin, overlay_065_data_rodata]
 
   - name: overlay_065_reloc1

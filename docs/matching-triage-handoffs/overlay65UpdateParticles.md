@@ -1,7 +1,7 @@
 <!-- plateau-handoff:overlay65UpdateParticles:start -->
 ### `overlay65UpdateParticles` plateau handoff
 
-- source: `src/overlays/o065/overlay65UpdateParticles.c`
+- source: `src/overlays/o065/overlay_065.c`
 - score: 0/720 words, promoted
 - frame: 0xF8
 - relocations: 64

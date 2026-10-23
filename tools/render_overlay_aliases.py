@@ -82,8 +82,8 @@ def load_manifest(path: Path, root: Path | None = None) -> list[dict[str, Any]]:
         raise ManifestError("schema_version must be the integer 1")
 
     rules = document["rules"]
-    if not isinstance(rules, list) or not rules:
-        raise ManifestError("rules must be a non-empty array")
+    if not isinstance(rules, list):
+        raise ManifestError("rules must be an array")
 
     validated: list[dict[str, Any]] = []
     targets: set[str] = set()

@@ -4,16 +4,16 @@
   "source": {
     "mickey_atlas": "config/overlays.us.json",
     "mickey_rom_available": true,
-    "jfg_root": "~/Desktop/dev/decomp-refs/jfg",
+    "jfg_root": "$JFG_ROOT",
     "jfg_root_available": true,
     "jfg_rom_available": true
   },
-  "method": "Weighted Jaccard over each overlay/module's multiset of NAMED resident-callee symbols (decoded from each side's own relocation-free `jal` sites -- runlink.h / JFG's tools/overlay_reloc.py; docs/overlay-graph.md sec 1), blended 0.55/0.25/0.12/0.08 with the prior size-ratio, function-count-ratio, and degree-shape terms. Falls back to the prior 0.5/0.3/0.2 metadata-only blend when neither side named a resident call for a given pair. No neighbour-identity subgraph matching -- overlay numbers are not comparable across the two games.",
+  "method": "Weighted Jaccard over each overlay/module's multiset of NAMED resident-callee symbols (resolved from each side's relocation tables -- runlink.h / JFG's tools/overlay_reloc.py; docs/overlay-graph.md sec 1), blended 0.55/0.25/0.12/0.08 with the prior size-ratio, function-count-ratio, and degree-shape terms. Falls back to the prior 0.5/0.3/0.2 metadata-only blend when neither side named a resident call for a given pair. No neighbour-identity subgraph matching -- overlay numbers are not comparable across the two games. Mickey function boundaries come from overlay-qualified compiled function symbols, including statics; atlas ownership rows describe translation units.",
   "totals": {
     "mickey_overlays": 107,
     "jfg_modules_available": 155,
-    "confident_matches": 3,
-    "mickey_overlays_with_named_resident_calls": 73,
+    "confident_matches": 12,
+    "mickey_overlays_with_named_resident_calls": 100,
     "jfg_modules_with_named_resident_calls": 151
   },
   "calibration": {
@@ -21,13 +21,17 @@
       "49": {
         "symbol": "refractOutput",
         "jfg_module": 2,
-        "score": 0.1326315789473684,
-        "rank_among_all_157": 108,
-        "top1_score": 0.35178571428571426,
-        "top1_module": 148,
+        "score": 0.11263157894736842,
+        "rank_among_all_157": 121,
+        "top1_score": 0.3310416666666666,
+        "top1_module": 132,
         "mickey_text_size": 896,
         "jfg_text_size": 2128,
-        "mickey_resident_named_calls": {},
+        "mickey_resident_named_calls": {
+          "joyGetButtons": 1,
+          "joyGetPressed": 1,
+          "mainChangeLevel": 1
+        },
         "jfg_resident_named_calls": {
           "viGetCurrentSize": 2,
           "mmAlloc": 1,
@@ -51,9 +55,9 @@
       "107": {
         "symbol": "osRamTest4_6105",
         "jfg_module": 156,
-        "score": 0.8500000000000001,
+        "score": 1.0,
         "rank_among_all_157": 1,
-        "top1_score": 0.8500000000000001,
+        "top1_score": 1.0,
         "top1_module": 156,
         "mickey_text_size": 48,
         "jfg_text_size": 48,
@@ -83,8 +87,8 @@
       "mickey_text_size": 33056,
       "mickey_data_size": 704,
       "mickey_bss_size": 7648,
-      "mickey_function_count": 77,
-      "mickey_matched_function_count": 74,
+      "mickey_function_count": 82,
+      "mickey_matched_function_count": 82,
       "out_degree": 8,
       "in_degree": 16,
       "mickey_resident_named_calls": {
@@ -94,34 +98,46 @@
         "sqrtf": 12,
         "GetRomlistInfo": 2,
         "mmFree": 6,
+        "mmAlloc": 3,
         "_bzero": 4,
         "SetLinkSlot": 1,
+        "amSndPlay": 1,
+        "levelGetNumber": 2,
+        "levelGetBlurEffect": 1,
+        "levelGetLevel": 2,
+        "controlPlayerReInit": 2,
+        "controlDisableJoypad": 1,
+        "controlFSUvels": 1,
         "mathOneFloatYPR": 1,
-        "Powerf": 3
+        "amSndStopXYZ": 2,
+        "amSndPlayXYZ": 2,
+        "amSndSetXYZ": 1,
+        "Powerf": 3,
+        "partUpdateTriggers": 1
       },
-      "mickey_resident_opaque_call_count": 97,
+      "mickey_resident_opaque_call_count": 78,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 11,
-          "score": 0.2223,
-          "jfg_text_size": 7264,
-          "jfg_function_count": 8,
-          "resident_named_jaccard": 0.324
-        },
-        {
           "jfg_module": 3,
-          "score": 0.207,
+          "score": 0.2025,
           "jfg_text_size": 96784,
           "jfg_function_count": 67,
-          "resident_named_jaccard": 0.009
+          "resident_named_jaccard": 0.012
+        },
+        {
+          "jfg_module": 11,
+          "score": 0.1908,
+          "jfg_text_size": 7264,
+          "jfg_function_count": 8,
+          "resident_named_jaccard": 0.269
         },
         {
           "jfg_module": 18,
-          "score": 0.1914,
+          "score": 0.1903,
           "jfg_text_size": 26224,
           "jfg_function_count": 22,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.002
         }
       ]
     },
@@ -130,39 +146,44 @@
       "mickey_text_size": 9552,
       "mickey_data_size": 176,
       "mickey_bss_size": 128,
-      "mickey_function_count": 17,
-      "mickey_matched_function_count": 13,
+      "mickey_function_count": 16,
+      "mickey_matched_function_count": 16,
       "out_degree": 1,
       "in_degree": 2,
       "mickey_resident_named_calls": {
         "Arctanf": 5,
         "mathDiffAngle": 4,
+        "mmAlloc": 4,
         "_bzero": 3,
-        "mmFree": 4
+        "mmGetDelay": 2,
+        "mmSetDelay": 4,
+        "mmFree": 4,
+        "mmAllocAtAddr": 1,
+        "joyGetButtons": 1
       },
-      "mickey_resident_opaque_call_count": 16,
+      "mickey_resident_opaque_call_count": 4,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 142,
+          "score": 0.3181,
+          "jfg_text_size": 5200,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.235
+        },
+        {
           "jfg_module": 135,
-          "score": 0.2986,
+          "score": 0.3056,
           "jfg_text_size": 10704,
           "jfg_function_count": 14,
-          "resident_named_jaccard": 0.01
+          "resident_named_jaccard": 0.011
         },
         {
           "jfg_module": 149,
-          "score": 0.2912,
+          "score": 0.2935,
           "jfg_text_size": 8608,
           "jfg_function_count": 7,
-          "resident_named_jaccard": 0.012
-        },
-        {
-          "jfg_module": 7,
-          "score": 0.2734,
-          "jfg_text_size": 10592,
-          "jfg_function_count": 11,
-          "resident_named_jaccard": 0.002
+          "resident_named_jaccard": 0.011
         }
       ]
     },
@@ -171,7 +192,7 @@
       "mickey_text_size": 2000,
       "mickey_data_size": 32,
       "mickey_bss_size": 2608,
-      "mickey_function_count": 9,
+      "mickey_function_count": 8,
       "mickey_matched_function_count": 8,
       "out_degree": 3,
       "in_degree": 1,
@@ -185,21 +206,21 @@
       "candidates": [
         {
           "jfg_module": 46,
-          "score": 0.3232,
+          "score": 0.3365,
           "jfg_text_size": 2384,
           "jfg_function_count": 8,
           "resident_named_jaccard": 0.0
         },
         {
           "jfg_module": 118,
-          "score": 0.2968,
+          "score": 0.3068,
           "jfg_text_size": 2304,
           "jfg_function_count": 6,
           "resident_named_jaccard": 0.0
         },
         {
           "jfg_module": 151,
-          "score": 0.2749,
+          "score": 0.2866,
           "jfg_text_size": 4064,
           "jfg_function_count": 7,
           "resident_named_jaccard": 0.016
@@ -211,7 +232,7 @@
       "mickey_text_size": 3248,
       "mickey_data_size": 32,
       "mickey_bss_size": 800,
-      "mickey_function_count": 9,
+      "mickey_function_count": 8,
       "mickey_matched_function_count": 8,
       "out_degree": 2,
       "in_degree": 2,
@@ -223,25 +244,25 @@
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 154,
-          "score": 0.2867,
-          "jfg_text_size": 6240,
-          "jfg_function_count": 9,
-          "resident_named_jaccard": 0.0
-        },
-        {
           "jfg_module": 46,
-          "score": 0.2801,
+          "score": 0.2934,
           "jfg_text_size": 2384,
           "jfg_function_count": 8,
           "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 29,
-          "score": 0.2773,
-          "jfg_text_size": 3984,
-          "jfg_function_count": 9,
-          "resident_named_jaccard": 0.008
+          "jfg_module": 151,
+          "score": 0.2828,
+          "jfg_text_size": 4064,
+          "jfg_function_count": 7,
+          "resident_named_jaccard": 0.0
+        },
+        {
+          "jfg_module": 118,
+          "score": 0.2803,
+          "jfg_text_size": 2304,
+          "jfg_function_count": 6,
+          "resident_named_jaccard": 0.0
         }
       ]
     },
@@ -250,15 +271,20 @@
       "mickey_text_size": 1904,
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
-      "mickey_function_count": 10,
+      "mickey_function_count": 9,
       "mickey_matched_function_count": 9,
       "out_degree": 0,
       "in_degree": 1,
       "mickey_resident_named_calls": {
         "n_alEvtqPostEvent": 1,
         "alHeapInit": 1,
+        "piRomLoad": 1,
+        "mmAlloc": 5,
+        "piRomLoadSection": 5,
+        "piRomGetSectionPtr": 2,
         "alHeapDBAlloc": 2,
         "gsSndpNew": 1,
+        "amSetMuteMode": 1,
         "mmFree": 1,
         "amVibratoInit": 1,
         "alSurround_OutputType": 1,
@@ -267,26 +293,55 @@
         "n_alCSPSetMessageQ": 1,
         "n_alCSPNew": 1
       },
-      "mickey_resident_opaque_call_count": 16,
-      "confident": false,
+      "mickey_resident_opaque_call_count": 2,
+      "confident": true,
       "candidates": [
         {
           "jfg_module": 25,
-          "score": 0.5732,
+          "score": 0.7427,
           "jfg_text_size": 2000,
           "jfg_function_count": 1,
-          "resident_named_jaccard": 0.431
+          "resident_named_jaccard": 0.737,
+          "name_proposals": [
+            {
+              "mickey_source": "overlay5InitializeAudio",
+              "mickey_offset": "0x31c",
+              "mickey_size": "0x3a4",
+              "jfg_name": "amInit",
+              "jfg_offset": "0x308",
+              "jfg_size": "0x4c8",
+              "resident_callee_jaccard": 0.617,
+              "shared_resident_callees": [
+                "alHeapDBAlloc",
+                "alHeapInit",
+                "alSurround_OutputType",
+                "alSurround_ReverbSetup",
+                "amSetMuteMode",
+                "amVibratoInit",
+                "gsSndpNew",
+                "mmAlloc",
+                "mmFree",
+                "n_alCSPSetMessageQ",
+                "osCreateMesgQueue",
+                "piRomGetSectionPtr",
+                "piRomLoad",
+                "piRomLoadSection"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            }
+          ]
         },
         {
           "jfg_module": 2,
-          "score": 0.3899,
+          "score": 0.3988,
           "jfg_text_size": 2128,
           "jfg_function_count": 6,
-          "resident_named_jaccard": 0.002
+          "resident_named_jaccard": 0.004
         },
         {
           "jfg_module": 29,
-          "score": 0.3102,
+          "score": 0.3222,
           "jfg_text_size": 3984,
           "jfg_function_count": 9,
           "resident_named_jaccard": 0.0
@@ -298,8 +353,8 @@
       "mickey_text_size": 32,
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
-      "mickey_function_count": 2,
-      "mickey_matched_function_count": 1,
+      "mickey_function_count": 3,
+      "mickey_matched_function_count": 3,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {},
@@ -308,21 +363,21 @@
       "candidates": [
         {
           "jfg_module": 156,
-          "score": 0.7667,
+          "score": 0.7167,
           "jfg_text_size": 48,
           "jfg_function_count": 1,
           "resident_named_jaccard": null
         },
         {
           "jfg_module": 144,
-          "score": 0.725,
+          "score": 0.675,
           "jfg_text_size": 16,
           "jfg_function_count": 1,
           "resident_named_jaccard": null
         },
         {
           "jfg_module": 60,
-          "score": 0.6,
+          "score": 0.55,
           "jfg_text_size": 16,
           "jfg_function_count": 1,
           "resident_named_jaccard": null
@@ -335,33 +390,41 @@
       "mickey_data_size": 2384,
       "mickey_bss_size": 688,
       "mickey_function_count": 11,
-      "mickey_matched_function_count": 9,
+      "mickey_matched_function_count": 11,
       "out_degree": 2,
       "in_degree": 7,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 18,
+      "mickey_resident_named_calls": {
+        "amSndSetXYZ": 1,
+        "amSndPlayXYZ": 1,
+        "levelGetNumber": 1,
+        "levelGetBlurEffect": 1,
+        "camGetMode": 1,
+        "amSndStopXYZ": 1,
+        "amSndPlay": 1
+      },
+      "mickey_resident_opaque_call_count": 11,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 19,
-          "score": 0.2642,
+          "score": 0.2749,
           "jfg_text_size": 4320,
           "jfg_function_count": 9,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 58,
-          "score": 0.2549,
-          "jfg_text_size": 4176,
-          "jfg_function_count": 7,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.02
         },
         {
           "jfg_module": 107,
-          "score": 0.2477,
+          "score": 0.2726,
           "jfg_text_size": 4224,
           "jfg_function_count": 6,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.045
+        },
+        {
+          "jfg_module": 58,
+          "score": 0.2561,
+          "jfg_text_size": 4176,
+          "jfg_function_count": 7,
+          "resident_named_jaccard": 0.002
         }
       ]
     },
@@ -371,41 +434,54 @@
       "mickey_data_size": 9520,
       "mickey_bss_size": 32,
       "mickey_function_count": 21,
-      "mickey_matched_function_count": 17,
+      "mickey_matched_function_count": 21,
       "out_degree": 5,
       "in_degree": 5,
       "mickey_resident_named_calls": {
+        "controlDisableJoypad": 1,
+        "controlReadJoypad": 1,
+        "controlFSUvels": 1,
         "mathOneFloatYPR": 1,
+        "controlSetRumble": 10,
+        "amSndStopXYZ": 7,
+        "amSndPlayXYZ": 6,
+        "lightObject": 1,
+        "partUpdateTriggers": 1,
+        "amSndSetXYZ": 2,
         "mathDiffAngle": 7,
         "sqrtf": 1,
         "Arctanf": 4,
         "Powerf": 10,
+        "wakeUpdateRipple": 1,
+        "dAngle": 6,
+        "camSetFOV": 1,
+        "camGetMode": 1,
         "runlinkIsModuleLoaded": 1,
         "pointListRPY": 1
       },
-      "mickey_resident_opaque_call_count": 84,
+      "mickey_resident_opaque_call_count": 45,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 18,
-          "score": 0.2716,
+          "score": 0.274,
           "jfg_text_size": 26224,
           "jfg_function_count": 22,
-          "resident_named_jaccard": 0.002
+          "resident_named_jaccard": 0.006
         },
         {
           "jfg_module": 67,
-          "score": 0.2533,
+          "score": 0.2555,
           "jfg_text_size": 17456,
           "jfg_function_count": 15,
-          "resident_named_jaccard": 0.039
+          "resident_named_jaccard": 0.043
         },
         {
           "jfg_module": 31,
-          "score": 0.2198,
+          "score": 0.227,
           "jfg_text_size": 15744,
           "jfg_function_count": 26,
-          "resident_named_jaccard": 0.001
+          "resident_named_jaccard": 0.014
         }
       ]
     },
@@ -419,31 +495,41 @@
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "controlReadJoypad": 1,
+        "controlFSUvels": 1,
         "mathOneFloatYPR": 1,
-        "mathDiffAngle": 4
+        "lightObject": 1,
+        "amSndStopXYZ": 1,
+        "amSndPlayXYZ": 2,
+        "partUpdateTriggers": 1,
+        "mathDiffAngle": 4,
+        "amSndSetXYZ": 1,
+        "amSndSetPitchXYZ": 1,
+        "camSetFOV": 1,
+        "camGetMode": 1
       },
-      "mickey_resident_opaque_call_count": 31,
+      "mickey_resident_opaque_call_count": 20,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 75,
-          "score": 0.3187,
+          "score": 0.3219,
           "jfg_text_size": 5088,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.028
+          "resident_named_jaccard": 0.034
+        },
+        {
+          "jfg_module": 28,
+          "score": 0.2891,
+          "jfg_text_size": 7088,
+          "jfg_function_count": 6,
+          "resident_named_jaccard": 0.031
         },
         {
           "jfg_module": 69,
           "score": 0.2786,
           "jfg_text_size": 7072,
           "jfg_function_count": 3,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 4,
-          "score": 0.2734,
-          "jfg_text_size": 5728,
-          "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -457,43 +543,56 @@
       "mickey_matched_function_count": 1,
       "out_degree": 1,
       "in_degree": 1,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 10,
+      "mickey_resident_named_calls": {
+        "viGetCurrentSize": 1,
+        "mmAlloc": 6,
+        "piRomLoad": 1,
+        "piRomLoadSection": 1,
+        "fontCreateDisplayList": 1
+      },
+      "mickey_resident_opaque_call_count": 0,
       "confident": true,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.7977,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null,
+          "jfg_module": 35,
+          "score": 0.9572,
+          "jfg_text_size": 704,
+          "jfg_function_count": 1,
+          "resident_named_jaccard": 1.0,
           "name_proposals": [
             {
               "mickey_source": "overlay10Initialize",
               "mickey_offset": "0x0",
               "mickey_size": "0x2b0",
-              "jfg_name": "BTSBGunTurret",
+              "jfg_name": "fontInit",
               "jfg_offset": "0x0",
-              "jfg_size": "0x60",
-              "size_ratio": 0.14,
-              "evidence_tier": "D",
-              "note": "rank-order position + size agreement only; not a byte or call-graph claim"
+              "jfg_size": "0x2c0",
+              "resident_callee_jaccard": 1.0,
+              "shared_resident_callees": [
+                "fontCreateDisplayList",
+                "mmAlloc",
+                "piRomLoad",
+                "piRomLoadSection",
+                "viGetCurrentSize"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
             }
           ]
         },
         {
-          "jfg_module": 156,
-          "score": 0.5674,
-          "jfg_text_size": 48,
+          "jfg_module": 34,
+          "score": 0.4246,
+          "jfg_text_size": 1104,
           "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 0.039
         },
         {
-          "jfg_module": 144,
-          "score": 0.5558,
-          "jfg_text_size": 16,
+          "jfg_module": 33,
+          "score": 0.4209,
+          "jfg_text_size": 1104,
           "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 0.105
         }
       ]
     },
@@ -502,37 +601,49 @@
       "mickey_text_size": 11456,
       "mickey_data_size": 688,
       "mickey_bss_size": 464,
-      "mickey_function_count": 27,
-      "mickey_matched_function_count": 25,
+      "mickey_function_count": 26,
+      "mickey_matched_function_count": 26,
       "out_degree": 2,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "amTuneSetFade": 1,
+        "fontUseFont": 1,
+        "fontColour": 1,
+        "viGetCurrentSize": 1,
+        "camStandardOrtho": 1,
+        "texDPTextureX": 1,
+        "joyGetPressed": 9,
         "amTuneSetFadeScaled": 7,
-        "sprintf": 2
+        "sprintf": 2,
+        "amSndPlay": 28,
+        "mainChangeLevel": 19,
+        "mainSetAnimGroup": 2,
+        "mainChangeCameras": 6,
+        "levelGetNumber": 3
       },
-      "mickey_resident_opaque_call_count": 104,
+      "mickey_resident_opaque_call_count": 31,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 136,
-          "score": 0.2647,
-          "jfg_text_size": 7600,
-          "jfg_function_count": 21,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 62,
+          "score": 0.313,
+          "jfg_text_size": 10176,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.154
         },
         {
           "jfg_module": 42,
-          "score": 0.263,
+          "score": 0.2877,
           "jfg_text_size": 11424,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.007
+          "resident_named_jaccard": 0.051
         },
         {
-          "jfg_module": 22,
-          "score": 0.2548,
-          "jfg_text_size": 12768,
-          "jfg_function_count": 12,
-          "resident_named_jaccard": 0.046
+          "jfg_module": 31,
+          "score": 0.269,
+          "jfg_text_size": 15744,
+          "jfg_function_count": 26,
+          "resident_named_jaccard": 0.062
         }
       ]
     },
@@ -541,37 +652,123 @@
       "mickey_text_size": 4768,
       "mickey_data_size": 336,
       "mickey_bss_size": 5536,
-      "mickey_function_count": 5,
-      "mickey_matched_function_count": 4,
+      "mickey_function_count": 6,
+      "mickey_matched_function_count": 6,
       "out_degree": 0,
       "in_degree": 1,
       "mickey_resident_named_calls": {
+        "texLoadTexture": 5,
+        "texLoadSprite": 1,
+        "texFreeTexture": 5,
+        "texFreeSprite": 1,
+        "trackGetTrack": 1,
         "sqrtf": 2,
-        "Arctanf": 2
+        "Arctanf": 2,
+        "texAnimateSprite": 2,
+        "texDPTextureX": 1,
+        "camGetProjZ": 1,
+        "sprSetIA2ColOverride": 2,
+        "camDoSpriteDirect": 2,
+        "sprClearIA2ColOverride": 2
       },
-      "mickey_resident_opaque_call_count": 35,
-      "confident": false,
+      "mickey_resident_opaque_call_count": 12,
+      "confident": true,
       "candidates": [
         {
-          "jfg_module": 101,
-          "score": 0.3446,
-          "jfg_text_size": 4160,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 8,
+          "score": 0.7106,
+          "jfg_text_size": 5728,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.73,
+          "name_proposals": [
+            {
+              "mickey_source": "func_overlay_012_F00000C4_186D344",
+              "mickey_offset": "0xc4",
+              "mickey_size": "0xf0",
+              "jfg_name": "bloodSpurtFreeLib",
+              "jfg_offset": "0xc4",
+              "jfg_size": "0x108",
+              "resident_callee_jaccard": 1.0,
+              "shared_resident_callees": [
+                "texFreeSprite",
+                "texFreeTexture"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "func_overlay_012_F0000910_186DB90",
+              "mickey_offset": "0x910",
+              "mickey_size": "0x98c",
+              "jfg_name": "bloodSpurtsDraw",
+              "jfg_offset": "0xab4",
+              "jfg_size": "0xbac",
+              "resident_callee_jaccard": 0.778,
+              "shared_resident_callees": [
+                "camDoSpriteDirect",
+                "camGetProjZ",
+                "sprClearIA2ColOverride",
+                "sprSetIA2ColOverride",
+                "sqrtf",
+                "texDPTextureX"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "func_overlay_012_F00003A8_186D628",
+              "mickey_offset": "0x3a8",
+              "mickey_size": "0x568",
+              "jfg_name": "bloodSpurtUpdateAll",
+              "jfg_offset": "0x40c",
+              "jfg_size": "0x6a8",
+              "resident_callee_jaccard": 0.539,
+              "shared_resident_callees": [
+                "Arctanf",
+                "sqrtf",
+                "texAnimateSprite",
+                "trackGetTrack"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay12Initialize",
+              "mickey_offset": "0x0",
+              "mickey_size": "0xc4",
+              "jfg_name": "bloodSpurtAdd",
+              "jfg_offset": "0x1cc",
+              "jfg_size": "0x168",
+              "size_ratio": 0.544,
+              "evidence_tier": "D",
+              "note": "rank-order position + size agreement only; not a byte or call-graph claim"
+            },
+            {
+              "mickey_source": "func_overlay_012_F00001B4_186D434",
+              "mickey_offset": "0x1b4",
+              "mickey_size": "0x130",
+              "jfg_name": "bloodHitSpriteAdd",
+              "jfg_offset": "0x334",
+              "jfg_size": "0xd8",
+              "size_ratio": 0.711,
+              "evidence_tier": "D",
+              "note": "rank-order position + size agreement only; not a byte or call-graph claim"
+            }
+          ]
+        },
+        {
+          "jfg_module": 1,
+          "score": 0.3695,
+          "jfg_text_size": 3120,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.223
         },
         {
           "jfg_module": 152,
-          "score": 0.3371,
+          "score": 0.3587,
           "jfg_text_size": 3776,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.064
-        },
-        {
-          "jfg_module": 8,
-          "score": 0.3368,
-          "jfg_text_size": 5728,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.014
+          "resident_named_jaccard": 0.139
         }
       ]
     },
@@ -580,36 +777,117 @@
       "mickey_text_size": 2864,
       "mickey_data_size": 64,
       "mickey_bss_size": 4112,
-      "mickey_function_count": 9,
+      "mickey_function_count": 8,
       "mickey_matched_function_count": 8,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
-        "SetLinkSlot": 1
+        "texLoadSprite": 2,
+        "texLoadTexture": 1,
+        "texFreeSprite": 2,
+        "texFreeTexture": 1,
+        "SetLinkSlot": 1,
+        "levelGetLevel": 1,
+        "sprSetIA2ColOverride": 1,
+        "camDoSprite": 2,
+        "sprClearIA2ColOverride": 1,
+        "texDPTextureX": 1,
+        "camGetPtr": 1
       },
-      "mickey_resident_opaque_call_count": 13,
-      "confident": false,
+      "mickey_resident_opaque_call_count": 0,
+      "confident": true,
       "candidates": [
         {
-          "jfg_module": 120,
-          "score": 0.3166,
-          "jfg_text_size": 2768,
-          "jfg_function_count": 7,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 1,
+          "score": 0.7157,
+          "jfg_text_size": 3120,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.77,
+          "name_proposals": [
+            {
+              "mickey_source": "overlay13Release",
+              "mickey_offset": "0x124",
+              "mickey_size": "0x64",
+              "jfg_name": "dropletFreeLib",
+              "jfg_offset": "0x120",
+              "jfg_size": "0x68",
+              "resident_callee_jaccard": 1.0,
+              "shared_resident_callees": [
+                "texFreeSprite",
+                "texFreeTexture"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay13DrawRecord",
+              "mickey_offset": "0x580",
+              "mickey_size": "0x2f4",
+              "jfg_name": "dropletUpdateAll",
+              "jfg_offset": "0x600",
+              "jfg_size": "0x378",
+              "resident_callee_jaccard": 1.0,
+              "shared_resident_callees": [
+                "camDoSprite",
+                "levelGetLevel",
+                "sprClearIA2ColOverride",
+                "sprSetIA2ColOverride",
+                "texDPTextureX"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay13DrawActive",
+              "mickey_offset": "0x874",
+              "mickey_size": "0x298",
+              "jfg_name": "dropletDrawAll",
+              "jfg_offset": "0x978",
+              "jfg_size": "0x2b8",
+              "resident_callee_jaccard": 1.0,
+              "shared_resident_callees": [
+                "camGetPtr"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay13Initialize",
+              "mickey_offset": "0x0",
+              "mickey_size": "0x124",
+              "jfg_name": "dropletAdd",
+              "jfg_offset": "0x188",
+              "jfg_size": "0x118",
+              "size_ratio": 0.959,
+              "evidence_tier": "D",
+              "note": "rank-order position + size agreement only; not a byte or call-graph claim"
+            },
+            {
+              "mickey_source": "overlay13CreateRecord",
+              "mickey_offset": "0x188",
+              "mickey_size": "0xfc",
+              "jfg_name": "dropletUpdate",
+              "jfg_offset": "0x2a0",
+              "jfg_size": "0x360",
+              "size_ratio": 0.292,
+              "evidence_tier": "D",
+              "note": "rank-order position + size agreement only; not a byte or call-graph claim"
+            }
+          ]
         },
         {
-          "jfg_module": 29,
-          "score": 0.3124,
-          "jfg_text_size": 3984,
-          "jfg_function_count": 9,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 131,
+          "score": 0.3563,
+          "jfg_text_size": 1984,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.122
         },
         {
-          "jfg_module": 49,
-          "score": 0.2884,
-          "jfg_text_size": 3024,
+          "jfg_module": 117,
+          "score": 0.3431,
+          "jfg_text_size": 2944,
           "jfg_function_count": 3,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.119
         }
       ]
     },
@@ -618,36 +896,52 @@
       "mickey_text_size": 7232,
       "mickey_data_size": 400,
       "mickey_bss_size": 432,
-      "mickey_function_count": 28,
-      "mickey_matched_function_count": 28,
+      "mickey_function_count": 29,
+      "mickey_matched_function_count": 29,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
         "mmFree": 3,
-        "controlSetPlayerSetup": 1
+        "piRomLoad": 2,
+        "frontGetLanguage": 2,
+        "mmAlloc": 2,
+        "piRomLoadSection": 2,
+        "joyGetPressed": 1,
+        "joyGetStickX": 1,
+        "joyGetStickY": 1,
+        "fontSetButtonMode": 2,
+        "frontDrawRectangles": 1,
+        "fontBackground": 5,
+        "fontColour": 6,
+        "fontPrintXY": 5,
+        "fontUseFont": 2,
+        "controlSetPlayerSetup": 1,
+        "mainGetNextCharacter": 1,
+        "frontGetMode": 1,
+        "mainChangeLevel": 1
       },
-      "mickey_resident_opaque_call_count": 41,
+      "mickey_resident_opaque_call_count": 6,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 6,
-          "score": 0.3075,
+          "score": 0.3046,
           "jfg_text_size": 6560,
           "jfg_function_count": 22,
-          "resident_named_jaccard": 0.004
+          "resident_named_jaccard": 0.005
+        },
+        {
+          "jfg_module": 75,
+          "score": 0.3009,
+          "jfg_text_size": 5088,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.115
         },
         {
           "jfg_module": 136,
-          "score": 0.2864,
+          "score": 0.2833,
           "jfg_text_size": 7600,
           "jfg_function_count": 21,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 28,
-          "score": 0.2457,
-          "jfg_text_size": 7088,
-          "jfg_function_count": 6,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -657,24 +951,28 @@
       "mickey_text_size": 3184,
       "mickey_data_size": 80,
       "mickey_bss_size": 160,
-      "mickey_function_count": 13,
+      "mickey_function_count": 12,
       "mickey_matched_function_count": 12,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
         "mmFree": 2,
+        "mmAlloc": 2,
         "starfieldFastMove": 2,
+        "viGetCurrentSize": 1,
+        "texDPInit": 1,
+        "camGetPtr": 2,
         "rainFastDraw": 1
       },
-      "mickey_resident_opaque_call_count": 13,
+      "mickey_resident_opaque_call_count": 7,
       "confident": true,
       "candidates": [
         {
           "jfg_module": 5,
-          "score": 0.7665,
+          "score": 0.8544,
           "jfg_text_size": 3344,
           "jfg_function_count": 12,
-          "resident_named_jaccard": 0.79,
+          "resident_named_jaccard": 0.933,
           "name_proposals": [
             {
               "mickey_source": "overlay15ReleaseResource",
@@ -705,6 +1003,21 @@
               "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
             },
             {
+              "mickey_source": "overlay15DrawScreenStars",
+              "mickey_offset": "0x500",
+              "mickey_size": "0x1a4",
+              "jfg_name": "starfieldDrawSP",
+              "jfg_offset": "0x50c",
+              "jfg_size": "0x1fc",
+              "resident_callee_jaccard": 1.0,
+              "shared_resident_callees": [
+                "texDPInit",
+                "viGetCurrentSize"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
               "mickey_source": "overlay15ReleaseResource10",
               "mickey_offset": "0x6b0",
               "mickey_size": "0x38",
@@ -725,8 +1038,9 @@
               "jfg_name": "rainMove",
               "jfg_offset": "0xa58",
               "jfg_size": "0x1a0",
-              "resident_callee_jaccard": 0.895,
+              "resident_callee_jaccard": 1.0,
               "shared_resident_callees": [
+                "camGetPtr",
                 "starfieldFastMove"
               ],
               "evidence_tier": "B",
@@ -739,9 +1053,38 @@
               "jfg_name": "rainDraw",
               "jfg_offset": "0xc10",
               "jfg_size": "0x100",
-              "resident_callee_jaccard": 0.895,
+              "resident_callee_jaccard": 1.0,
               "shared_resident_callees": [
+                "camGetPtr",
                 "rainFastDraw"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay15InitStarsAndPalette",
+              "mickey_offset": "0x4c",
+              "mickey_size": "0x3dc",
+              "jfg_name": "starfieldInit",
+              "jfg_offset": "0x4c",
+              "jfg_size": "0x3e8",
+              "resident_callee_jaccard": 0.268,
+              "shared_resident_callees": [
+                "mmAlloc"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay15InitStars",
+              "mickey_offset": "0x6e8",
+              "mickey_size": "0x2f8",
+              "jfg_name": "rainInit",
+              "jfg_offset": "0x74c",
+              "jfg_size": "0x30c",
+              "resident_callee_jaccard": 0.215,
+              "shared_resident_callees": [
+                "mmAlloc"
               ],
               "evidence_tier": "B",
               "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
@@ -758,28 +1101,6 @@
               "note": "rank-order position + size agreement only; not a byte or call-graph claim"
             },
             {
-              "mickey_source": "overlay15InitStarsAndPalette",
-              "mickey_offset": "0x4c",
-              "mickey_size": "0x3dc",
-              "jfg_name": "starfieldInit",
-              "jfg_offset": "0x4c",
-              "jfg_size": "0x3e8",
-              "size_ratio": 0.988,
-              "evidence_tier": "D",
-              "note": "rank-order position + size agreement only; not a byte or call-graph claim"
-            },
-            {
-              "mickey_source": "overlay15DrawScreenStars",
-              "mickey_offset": "0x500",
-              "mickey_size": "0x1a4",
-              "jfg_name": "starfieldDrawSP",
-              "jfg_offset": "0x50c",
-              "jfg_size": "0x1fc",
-              "size_ratio": 0.827,
-              "evidence_tier": "D",
-              "note": "rank-order position + size agreement only; not a byte or call-graph claim"
-            },
-            {
               "mickey_source": "overlay15GetResource10",
               "mickey_offset": "0x6a4",
               "mickey_size": "0xc",
@@ -787,17 +1108,6 @@
               "jfg_offset": "0x708",
               "jfg_size": "0x10",
               "size_ratio": 0.75,
-              "evidence_tier": "D",
-              "note": "rank-order position + size agreement only; not a byte or call-graph claim"
-            },
-            {
-              "mickey_source": "overlay15InitStars",
-              "mickey_offset": "0x6e8",
-              "mickey_size": "0x2f8",
-              "jfg_name": "rainInit",
-              "jfg_offset": "0x74c",
-              "jfg_size": "0x30c",
-              "size_ratio": 0.974,
               "evidence_tier": "D",
               "note": "rank-order position + size agreement only; not a byte or call-graph claim"
             },
@@ -827,16 +1137,16 @@
         },
         {
           "jfg_module": 49,
-          "score": 0.2975,
+          "score": 0.2998,
           "jfg_text_size": 3024,
           "jfg_function_count": 3,
           "resident_named_jaccard": 0.016
         },
         {
-          "jfg_module": 83,
-          "score": 0.275,
-          "jfg_text_size": 4608,
-          "jfg_function_count": 5,
+          "jfg_module": 29,
+          "score": 0.2799,
+          "jfg_text_size": 3984,
+          "jfg_function_count": 9,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -846,33 +1156,34 @@
       "mickey_text_size": 1072,
       "mickey_data_size": 16,
       "mickey_bss_size": 0,
-      "mickey_function_count": 5,
+      "mickey_function_count": 4,
       "mickey_matched_function_count": 4,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "mmAlloc": 1,
         "mmFree": 1
       },
-      "mickey_resident_opaque_call_count": 1,
+      "mickey_resident_opaque_call_count": 0,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 27,
-          "score": 0.4564,
+          "score": 0.5715,
           "jfg_text_size": 1088,
           "jfg_function_count": 2,
-          "resident_named_jaccard": 0.146
+          "resident_named_jaccard": 0.333
         },
         {
           "jfg_module": 20,
-          "score": 0.426,
+          "score": 0.45,
           "jfg_text_size": 1072,
           "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
         },
         {
           "jfg_module": 89,
-          "score": 0.3894,
+          "score": 0.4134,
           "jfg_text_size": 1120,
           "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
@@ -891,31 +1202,35 @@
       "mickey_resident_named_calls": {
         "pointListRPY": 2,
         "sqrtf": 1,
-        "mmFree": 1
+        "mmAlloc": 1,
+        "texLoadTexture": 1,
+        "texFreeTexture": 1,
+        "mmFree": 1,
+        "texDPTextureX": 1
       },
-      "mickey_resident_opaque_call_count": 4,
+      "mickey_resident_opaque_call_count": 0,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 44,
-          "score": 0.413,
-          "jfg_text_size": 2880,
+          "jfg_module": 1,
+          "score": 0.4429,
+          "jfg_text_size": 3120,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.002
+          "resident_named_jaccard": 0.103
         },
         {
-          "jfg_module": 23,
-          "score": 0.393,
-          "jfg_text_size": 1760,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 10,
+          "score": 0.4248,
+          "jfg_text_size": 1680,
+          "jfg_function_count": 6,
+          "resident_named_jaccard": 0.225
         },
         {
           "jfg_module": 64,
-          "score": 0.3869,
+          "score": 0.4197,
           "jfg_text_size": 3168,
           "jfg_function_count": 3,
-          "resident_named_jaccard": 0.085
+          "resident_named_jaccard": 0.145
         }
       ]
     },
@@ -929,18 +1244,86 @@
       "out_degree": 4,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "mainPreNMI": 16,
+        "runlinkFreeCode": 5,
+        "joyInit": 1,
+        "texInitTextures": 1,
+        "modInitModels": 1,
+        "arithmeticFunction": 1,
+        "diPrintfInit": 1,
+        "initWeather": 1,
+        "camlightInit": 1,
+        "packInit": 1,
+        "initFront": 1,
+        "animseqInit": 1,
+        "fxInit": 1,
+        "diRcpTraceInit": 1,
+        "fmvInit": 1,
         "osSetTime": 1,
-        "mmFree": 4
+        "levelGetCounts": 1,
+        "mmAlloc": 3,
+        "mmGetDelay": 1,
+        "mmSetDelay": 2,
+        "mmFree": 4,
+        "mmAllocAtAddr": 2
       },
-      "mickey_resident_opaque_call_count": 50,
-      "confident": false,
+      "mickey_resident_opaque_call_count": 7,
+      "confident": true,
       "candidates": [
         {
           "jfg_module": 36,
-          "score": 0.3902,
+          "score": 0.7063,
           "jfg_text_size": 1744,
           "jfg_function_count": 2,
-          "resident_named_jaccard": 0.017
+          "resident_named_jaccard": 0.592,
+          "name_proposals": [
+            {
+              "mickey_source": "overlay18Reconfigure",
+              "mickey_offset": "0x24c",
+              "mickey_size": "0x2a8",
+              "jfg_name": "listReallocate",
+              "jfg_offset": "0x2a8",
+              "jfg_size": "0x428",
+              "resident_callee_jaccard": 0.944,
+              "shared_resident_callees": [
+                "mmAllocAtAddr",
+                "mmFree",
+                "mmGetDelay",
+                "mmSetDelay"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay18Load",
+              "mickey_offset": "0x0",
+              "mickey_size": "0x1f4",
+              "jfg_name": "mainInitRlo",
+              "jfg_offset": "0x0",
+              "jfg_size": "0x2a8",
+              "resident_callee_jaccard": 0.554,
+              "shared_resident_callees": [
+                "animseqInit",
+                "arithmeticFunction",
+                "camlightInit",
+                "diPrintfInit",
+                "diRcpTraceInit",
+                "fmvInit",
+                "fxInit",
+                "initFront",
+                "initWeather",
+                "joyInit",
+                "mainPreNMI",
+                "modInitModels",
+                "osSetTime",
+                "packInit",
+                "runlinkFreeCode",
+                "texInitTextures"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            }
+          ]
         },
         {
           "jfg_module": 96,
@@ -963,37 +1346,41 @@
       "mickey_text_size": 4848,
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
-      "mickey_function_count": 8,
+      "mickey_function_count": 7,
       "mickey_matched_function_count": 7,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "mmAlloc2": 2,
         "mmFree": 3,
+        "mmGetDelay": 1,
+        "mmSetDelay": 2,
+        "mmAllocAtAddr": 1,
         "sqrtf": 2
       },
-      "mickey_resident_opaque_call_count": 6,
+      "mickey_resident_opaque_call_count": 0,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 27,
-          "score": 0.4007,
-          "jfg_text_size": 1088,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": 0.364
+          "jfg_module": 49,
+          "score": 0.5107,
+          "jfg_text_size": 3024,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.434
         },
         {
-          "jfg_module": 66,
-          "score": 0.3409,
-          "jfg_text_size": 2544,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.019
+          "jfg_module": 30,
+          "score": 0.5034,
+          "jfg_text_size": 6864,
+          "jfg_function_count": 1,
+          "resident_named_jaccard": 0.351
         },
         {
-          "jfg_module": 75,
-          "score": 0.34,
-          "jfg_text_size": 5088,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.006
+          "jfg_module": 121,
+          "score": 0.3798,
+          "jfg_text_size": 4144,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.144
         }
       ]
     },
@@ -1003,36 +1390,39 @@
       "mickey_data_size": 80,
       "mickey_bss_size": 1280,
       "mickey_function_count": 15,
-      "mickey_matched_function_count": 13,
+      "mickey_matched_function_count": 15,
       "out_degree": 0,
       "in_degree": 1,
       "mickey_resident_named_calls": {
         "mmFree": 7,
-        "sqrtf": 3
+        "mmAlloc": 3,
+        "trackGetTrack": 1,
+        "sqrtf": 3,
+        "texDPTextureX": 1
       },
-      "mickey_resident_opaque_call_count": 7,
+      "mickey_resident_opaque_call_count": 2,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 27,
-          "score": 0.3458,
-          "jfg_text_size": 1088,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": 0.457
+          "jfg_module": 5,
+          "score": 0.3078,
+          "jfg_text_size": 3344,
+          "jfg_function_count": 12,
+          "resident_named_jaccard": 0.036
         },
         {
           "jfg_module": 29,
-          "score": 0.3046,
+          "score": 0.304,
           "jfg_text_size": 3984,
           "jfg_function_count": 9,
-          "resident_named_jaccard": 0.014
+          "resident_named_jaccard": 0.013
         },
         {
-          "jfg_module": 5,
-          "score": 0.2981,
-          "jfg_text_size": 3344,
-          "jfg_function_count": 12,
-          "resident_named_jaccard": 0.018
+          "jfg_module": 95,
+          "score": 0.2711,
+          "jfg_text_size": 6192,
+          "jfg_function_count": 7,
+          "resident_named_jaccard": 0.034
         }
       ]
     },
@@ -1041,34 +1431,36 @@
       "mickey_text_size": 736,
       "mickey_data_size": 272,
       "mickey_bss_size": 0,
-      "mickey_function_count": 3,
+      "mickey_function_count": 2,
       "mickey_matched_function_count": 2,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 6,
+      "mickey_resident_named_calls": {
+        "camGetPtr": 1
+      },
+      "mickey_resident_opaque_call_count": 5,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.5098,
-          "jfg_text_size": 544,
+          "jfg_module": 88,
+          "score": 0.427,
+          "jfg_text_size": 752,
           "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 0.063
         },
         {
-          "jfg_module": 60,
-          "score": 0.4432,
-          "jfg_text_size": 16,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 93,
+          "score": 0.3871,
+          "jfg_text_size": 688,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 156,
-          "score": 0.4413,
-          "jfg_text_size": 48,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 27,
+          "score": 0.3507,
+          "jfg_text_size": 1088,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.0
         }
       ]
     },
@@ -1077,38 +1469,44 @@
       "mickey_text_size": 3744,
       "mickey_data_size": 96,
       "mickey_bss_size": 0,
-      "mickey_function_count": 5,
-      "mickey_matched_function_count": 3,
+      "mickey_function_count": 4,
+      "mickey_matched_function_count": 4,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
         "mathOneFloatRPY": 2,
+        "trackMakePolylist": 2,
+        "partUpdateTriggers": 4,
         "Arctanf": 2,
-        "sqrtf": 5
+        "sqrtf": 5,
+        "amSndStopXYZ": 1,
+        "amSndPlayXYZ": 3,
+        "amSndSetVolXYZ": 1,
+        "texAnimateSprite": 1
       },
-      "mickey_resident_opaque_call_count": 24,
+      "mickey_resident_opaque_call_count": 12,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 83,
-          "score": 0.4265,
+          "score": 0.4538,
           "jfg_text_size": 4608,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.019
+          "resident_named_jaccard": 0.112
         },
         {
-          "jfg_module": 91,
-          "score": 0.4001,
-          "jfg_text_size": 3872,
+          "jfg_module": 126,
+          "score": 0.4178,
+          "jfg_text_size": 4688,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.006
+        },
+        {
+          "jfg_module": 109,
+          "score": 0.4173,
+          "jfg_text_size": 2960,
           "jfg_function_count": 3,
-          "resident_named_jaccard": 0.023
-        },
-        {
-          "jfg_module": 76,
-          "score": 0.3991,
-          "jfg_text_size": 3344,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.019
+          "resident_named_jaccard": 0.081
         }
       ]
     },
@@ -1117,35 +1515,36 @@
       "mickey_text_size": 1392,
       "mickey_data_size": 16,
       "mickey_bss_size": 0,
-      "mickey_function_count": 5,
+      "mickey_function_count": 4,
       "mickey_matched_function_count": 4,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "texLoadSprite": 1,
         "Powerf": 1
       },
-      "mickey_resident_opaque_call_count": 8,
+      "mickey_resident_opaque_call_count": 7,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 114,
-          "score": 0.4155,
+          "score": 0.4395,
           "jfg_text_size": 1520,
           "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
         },
         {
           "jfg_module": 20,
-          "score": 0.3973,
+          "score": 0.4213,
           "jfg_text_size": 1072,
           "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 86,
-          "score": 0.3952,
-          "jfg_text_size": 1472,
-          "jfg_function_count": 3,
+          "jfg_module": 48,
+          "score": 0.4179,
+          "jfg_text_size": 1872,
+          "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -1155,32 +1554,36 @@
       "mickey_text_size": 1056,
       "mickey_data_size": 16,
       "mickey_bss_size": 0,
-      "mickey_function_count": 4,
+      "mickey_function_count": 3,
       "mickey_matched_function_count": 3,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 6,
+      "mickey_resident_named_calls": {
+        "texAnimateSprite": 1,
+        "amSndPlay": 1,
+        "camDoSprite": 1
+      },
+      "mickey_resident_opaque_call_count": 3,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 20,
-          "score": 0.4481,
-          "jfg_text_size": 1072,
-          "jfg_function_count": 4,
+          "jfg_module": 97,
+          "score": 0.4386,
+          "jfg_text_size": 960,
+          "jfg_function_count": 3,
           "resident_named_jaccard": 0.0
         },
         {
           "jfg_module": 114,
-          "score": 0.4118,
+          "score": 0.4285,
           "jfg_text_size": 1520,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.085
         },
         {
-          "jfg_module": 89,
-          "score": 0.4116,
-          "jfg_text_size": 1120,
+          "jfg_module": 20,
+          "score": 0.4181,
+          "jfg_text_size": 1072,
           "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
         }
@@ -1191,34 +1594,36 @@
       "mickey_text_size": 1552,
       "mickey_data_size": 64,
       "mickey_bss_size": 0,
-      "mickey_function_count": 4,
+      "mickey_function_count": 3,
       "mickey_matched_function_count": 3,
       "out_degree": 3,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 13,
+      "mickey_resident_named_calls": {
+        "trackMakePolylist": 1
+      },
+      "mickey_resident_opaque_call_count": 12,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.396,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "jfg_module": 92,
+          "score": 0.4675,
+          "jfg_text_size": 816,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.269
         },
         {
-          "jfg_module": 96,
-          "score": 0.3908,
-          "jfg_text_size": 1568,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 104,
+          "score": 0.4283,
+          "jfg_text_size": 1696,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.085
         },
         {
-          "jfg_module": 131,
-          "score": 0.3828,
-          "jfg_text_size": 1984,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 150,
+          "score": 0.3887,
+          "jfg_text_size": 768,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.238
         }
       ]
     },
@@ -1227,41 +1632,49 @@
       "mickey_text_size": 4976,
       "mickey_data_size": 32,
       "mickey_bss_size": 0,
-      "mickey_function_count": 4,
-      "mickey_matched_function_count": 3,
+      "mickey_function_count": 5,
+      "mickey_matched_function_count": 5,
       "out_degree": 1,
       "in_degree": 0,
       "mickey_resident_named_calls": {
         "mathOneFloatRPY": 1,
+        "trackMakePolylist": 2,
         "mathOneFloatPY": 5,
+        "partUpdateTriggers": 2,
         "sqrtf": 4,
         "Arctanf": 3,
         "mathDiffAngle": 1,
-        "Powerf": 2
+        "Powerf": 2,
+        "dAngle": 2,
+        "amSndPlayXYZ": 2,
+        "lightObject": 1,
+        "camPushModelMtx": 1,
+        "camRestoreModelMtx": 1,
+        "texDPInit": 1
       },
-      "mickey_resident_opaque_call_count": 35,
+      "mickey_resident_opaque_call_count": 23,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 83,
+          "score": 0.436,
+          "jfg_text_size": 4608,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.132
+        },
+        {
+          "jfg_module": 112,
+          "score": 0.4279,
+          "jfg_text_size": 5088,
+          "jfg_function_count": 6,
+          "resident_named_jaccard": 0.058
+        },
+        {
           "jfg_module": 127,
-          "score": 0.4173,
+          "score": 0.412,
           "jfg_text_size": 4432,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.051
-        },
-        {
-          "jfg_module": 113,
-          "score": 0.4107,
-          "jfg_text_size": 3264,
-          "jfg_function_count": 3,
-          "resident_named_jaccard": 0.134
-        },
-        {
-          "jfg_module": 96,
-          "score": 0.3933,
-          "jfg_text_size": 1568,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.053
+          "resident_named_jaccard": 0.085
         }
       ]
     },
@@ -1275,31 +1688,41 @@
       "out_degree": 0,
       "in_degree": 2,
       "mickey_resident_named_calls": {
-        "Powerf": 1
+        "texAnimateSprite": 1,
+        "Powerf": 1,
+        "amSndStopXYZ": 1,
+        "amSndPlayXYZ": 2,
+        "rumbleStart": 1,
+        "amSndSetXYZ": 2,
+        "amSndSetVolXYZ": 2,
+        "camGetPtr": 1,
+        "camPushModelMtx": 1,
+        "texDPTextureX": 2,
+        "camPopModelMtx": 1
       },
-      "mickey_resident_opaque_call_count": 18,
+      "mickey_resident_opaque_call_count": 4,
       "confident": false,
       "candidates": [
+        {
+          "jfg_module": 76,
+          "score": 0.4477,
+          "jfg_text_size": 3344,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.136
+        },
+        {
+          "jfg_module": 107,
+          "score": 0.381,
+          "jfg_text_size": 4224,
+          "jfg_function_count": 6,
+          "resident_named_jaccard": 0.15
+        },
         {
           "jfg_module": 44,
           "score": 0.3801,
           "jfg_text_size": 2880,
           "jfg_function_count": 5,
           "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 76,
-          "score": 0.373,
-          "jfg_text_size": 3344,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 77,
-          "score": 0.3605,
-          "jfg_text_size": 2112,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.043
         }
       ]
     },
@@ -1308,37 +1731,46 @@
       "mickey_text_size": 2032,
       "mickey_data_size": 304,
       "mickey_bss_size": 0,
-      "mickey_function_count": 6,
+      "mickey_function_count": 5,
       "mickey_matched_function_count": 5,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "resetColourCycle": 1,
+        "updateColourCycle": 1,
+        "amSndPlayXYZ": 1,
+        "amSndSetXYZ": 1,
+        "amSndSetVolXYZ": 1,
+        "camGetPtr": 1,
         "pointListRPY": 1,
-        "sqrtf": 1
+        "sqrtf": 1,
+        "camPushModelMtx": 1,
+        "texDPTextureX": 1,
+        "camPopModelMtx": 1
       },
-      "mickey_resident_opaque_call_count": 15,
+      "mickey_resident_opaque_call_count": 6,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 76,
-          "score": 0.3809,
+          "score": 0.4813,
           "jfg_text_size": 3344,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.03
-        },
-        {
-          "jfg_module": 131,
-          "score": 0.3776,
-          "jfg_text_size": 1984,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.036
+          "resident_named_jaccard": 0.177
         },
         {
           "jfg_module": 73,
-          "score": 0.3664,
+          "score": 0.3888,
           "jfg_text_size": 1888,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.015
+          "resident_named_jaccard": 0.027
+        },
+        {
+          "jfg_module": 131,
+          "score": 0.3874,
+          "jfg_text_size": 1984,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.025
         }
       ]
     },
@@ -1347,41 +1779,47 @@
       "mickey_text_size": 5840,
       "mickey_data_size": 32,
       "mickey_bss_size": 48,
-      "mickey_function_count": 12,
-      "mickey_matched_function_count": 10,
+      "mickey_function_count": 11,
+      "mickey_matched_function_count": 11,
       "out_degree": 2,
       "in_degree": 0,
       "mickey_resident_named_calls": {
         "sqrtf": 7,
         "splinePos": 3,
         "mathOneFloatRPY": 1,
+        "trackMakePolylist": 2,
+        "partUpdateTriggers": 2,
         "Arctanf": 4,
         "mathDiffAngle": 2,
-        "mathOneFloatPY": 5
+        "mathOneFloatPY": 5,
+        "amSndPlayXYZ": 1,
+        "camPushModelMtx": 1,
+        "camRestoreModelMtx": 1,
+        "texDPInit": 1
       },
-      "mickey_resident_opaque_call_count": 25,
+      "mickey_resident_opaque_call_count": 17,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 11,
-          "score": 0.3396,
+          "score": 0.3394,
           "jfg_text_size": 7264,
           "jfg_function_count": 8,
-          "resident_named_jaccard": 0.232
-        },
-        {
-          "jfg_module": 47,
-          "score": 0.2799,
-          "jfg_text_size": 9632,
-          "jfg_function_count": 12,
-          "resident_named_jaccard": 0.02
+          "resident_named_jaccard": 0.219
         },
         {
           "jfg_module": 122,
-          "score": 0.2715,
+          "score": 0.285,
           "jfg_text_size": 4272,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.034
+          "resident_named_jaccard": 0.05
+        },
+        {
+          "jfg_module": 112,
+          "score": 0.2849,
+          "jfg_text_size": 5088,
+          "jfg_function_count": 6,
+          "resident_named_jaccard": 0.035
         }
       ]
     },
@@ -1390,34 +1828,40 @@
       "mickey_text_size": 1088,
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
-      "mickey_function_count": 3,
+      "mickey_function_count": 2,
       "mickey_matched_function_count": 2,
       "out_degree": 0,
       "in_degree": 1,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 16,
+      "mickey_resident_named_calls": {
+        "lightDefaultObjectLight": 1,
+        "mmAllocRegion": 1,
+        "mmAlloc": 8,
+        "piRomLoad": 4,
+        "piRomGetFileSize": 1
+      },
+      "mickey_resident_opaque_call_count": 1,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.675,
-          "jfg_text_size": 544,
+          "jfg_module": 34,
+          "score": 0.6022,
+          "jfg_text_size": 1104,
+          "jfg_function_count": 1,
+          "resident_named_jaccard": 0.462
+        },
+        {
+          "jfg_module": 33,
+          "score": 0.4362,
+          "jfg_text_size": 1104,
+          "jfg_function_count": 1,
+          "resident_named_jaccard": 0.087
+        },
+        {
+          "jfg_module": 110,
+          "score": 0.4314,
+          "jfg_text_size": 896,
           "jfg_function_count": 2,
-          "resident_named_jaccard": null
-        },
-        {
-          "jfg_module": 156,
-          "score": 0.461,
-          "jfg_text_size": 48,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
-        },
-        {
-          "jfg_module": 144,
-          "score": 0.4537,
-          "jfg_text_size": 16,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 0.006
         }
       ]
     },
@@ -1426,38 +1870,44 @@
       "mickey_text_size": 3920,
       "mickey_data_size": 64,
       "mickey_bss_size": 0,
-      "mickey_function_count": 8,
+      "mickey_function_count": 7,
       "mickey_matched_function_count": 7,
       "out_degree": 0,
       "in_degree": 1,
       "mickey_resident_named_calls": {
+        "mmAlloc": 9,
+        "piRomLoad": 5,
         "initColourCycle": 1,
+        "updateColourCycle": 1,
         "reset_particles": 1,
+        "texLoadSprite": 1,
+        "texLoadTexture": 1,
+        "modLoadModel": 1,
         "mmFree": 1
       },
-      "mickey_resident_opaque_call_count": 21,
+      "mickey_resident_opaque_call_count": 3,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 26,
+          "score": 0.5575,
+          "jfg_text_size": 4080,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.329
+        },
+        {
           "jfg_module": 29,
-          "score": 0.4347,
+          "score": 0.4213,
           "jfg_text_size": 3984,
           "jfg_function_count": 9,
           "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 26,
-          "score": 0.3839,
-          "jfg_text_size": 4080,
-          "jfg_function_count": 3,
-          "resident_named_jaccard": 0.025
-        },
-        {
           "jfg_module": 81,
-          "score": 0.3792,
+          "score": 0.3965,
           "jfg_text_size": 3040,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.004
+          "resident_named_jaccard": 0.016
         }
       ]
     },
@@ -1502,39 +1952,49 @@
       "mickey_text_size": 1840,
       "mickey_data_size": 0,
       "mickey_bss_size": 18336,
-      "mickey_function_count": 7,
+      "mickey_function_count": 6,
       "mickey_matched_function_count": 6,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "viGetCurrentSize": 2,
+        "mmAlloc": 1,
         "osRecvMesg": 2,
         "mmFree": 1,
         "rsp_segment": 3,
+        "rcpInitSp": 1,
+        "rcpInitDpNoSize": 1,
+        "texDPInit": 1,
+        "camSetNo": 1,
+        "camSetView": 1,
+        "trackGetFog": 1,
+        "sprSetTextureFilter": 2,
+        "rcpFast3d": 1,
         "refractOutputAssembler": 1
       },
-      "mickey_resident_opaque_call_count": 12,
+      "mickey_resident_opaque_call_count": 0,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 2,
-          "score": 0.4193,
+          "score": 0.6109,
           "jfg_text_size": 2128,
           "jfg_function_count": 6,
-          "resident_named_jaccard": 0.192
-        },
-        {
-          "jfg_module": 66,
-          "score": 0.3015,
-          "jfg_text_size": 2544,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.51
         },
         {
           "jfg_module": 48,
-          "score": 0.2735,
+          "score": 0.3746,
           "jfg_text_size": 1872,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.004
+          "resident_named_jaccard": 0.167
+        },
+        {
+          "jfg_module": 66,
+          "score": 0.3154,
+          "jfg_text_size": 2544,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.005
         }
       ]
     },
@@ -1548,31 +2008,35 @@
       "out_degree": 0,
       "in_degree": 2,
       "mickey_resident_named_calls": {
+        "mmAlloc": 2,
+        "texLoadTexture": 1,
         "mathOneFloatPY": 1,
-        "mmFree": 2
+        "texFreeTexture": 1,
+        "mmFree": 2,
+        "camGetProjZ": 1
       },
-      "mickey_resident_opaque_call_count": 6,
+      "mickey_resident_opaque_call_count": 1,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 10,
-          "score": 0.3779,
+          "score": 0.6023,
           "jfg_text_size": 1680,
           "jfg_function_count": 6,
-          "resident_named_jaccard": 0.094
+          "resident_named_jaccard": 0.502
+        },
+        {
+          "jfg_module": 1,
+          "score": 0.374,
+          "jfg_text_size": 3120,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.084
         },
         {
           "jfg_module": 77,
           "score": 0.3738,
           "jfg_text_size": 2112,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 46,
-          "score": 0.365,
-          "jfg_text_size": 2384,
-          "jfg_function_count": 8,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -1582,39 +2046,56 @@
       "mickey_text_size": 5104,
       "mickey_data_size": 0,
       "mickey_bss_size": 16,
-      "mickey_function_count": 6,
-      "mickey_matched_function_count": 3,
+      "mickey_function_count": 5,
+      "mickey_matched_function_count": 5,
       "out_degree": 1,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "mmAlloc": 8,
+        "levelGetLevel": 1,
+        "mainGetNumberOfCameras": 1,
+        "camSetMode": 1,
+        "animseqLoadLevelData": 1,
+        "shadowInitBuffers": 1,
+        "shadowGenerate": 4,
+        "shadowChangeBuffer": 2,
+        "modelSetModelFlags": 2,
+        "texLoadTexture": 2,
+        "mainPreNMI": 7,
+        "piRomLoad": 1,
+        "piRomLoadSection": 1,
         "mmFree": 4,
         "align4": 1,
         "align16": 2,
+        "mmGetDelay": 1,
+        "mmSetDelay": 2,
+        "mmAllocAtAddr": 1,
+        "trackLightAllocate": 1,
         "sqrtf": 2
       },
-      "mickey_resident_opaque_call_count": 43,
+      "mickey_resident_opaque_call_count": 6,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 24,
+          "score": 0.3975,
+          "jfg_text_size": 6496,
+          "jfg_function_count": 1,
+          "resident_named_jaccard": 0.391
+        },
+        {
           "jfg_module": 112,
-          "score": 0.3254,
+          "score": 0.305,
           "jfg_text_size": 5088,
           "jfg_function_count": 6,
           "resident_named_jaccard": 0.001
         },
         {
-          "jfg_module": 127,
-          "score": 0.271,
-          "jfg_text_size": 4432,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.004
-        },
-        {
           "jfg_module": 75,
-          "score": 0.2666,
+          "score": 0.2856,
           "jfg_text_size": 5088,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.004
+          "resident_named_jaccard": 0.002
         }
       ]
     },
@@ -1624,15 +2105,19 @@
       "mickey_data_size": 1088,
       "mickey_bss_size": 352,
       "mickey_function_count": 22,
-      "mickey_matched_function_count": 21,
+      "mickey_matched_function_count": 22,
       "out_degree": 5,
       "in_degree": 3,
       "mickey_resident_named_calls": {
         "_bzero": 1,
+        "texAnimateSprite": 1,
+        "partUpdateTriggers": 1,
+        "amSndPlayXYZ": 8,
         "mathOneFloatPY": 1,
-        "mathOneFloatRPY": 4
+        "mathOneFloatRPY": 4,
+        "amSndStopXYZ": 6
       },
-      "mickey_resident_opaque_call_count": 36,
+      "mickey_resident_opaque_call_count": 20,
       "confident": false,
       "candidates": [
         {
@@ -1644,7 +2129,7 @@
         },
         {
           "jfg_module": 18,
-          "score": 0.2577,
+          "score": 0.2579,
           "jfg_text_size": 26224,
           "jfg_function_count": 22,
           "resident_named_jaccard": 0.0
@@ -1663,35 +2148,40 @@
       "mickey_text_size": 1376,
       "mickey_data_size": 240,
       "mickey_bss_size": 0,
-      "mickey_function_count": 6,
+      "mickey_function_count": 5,
       "mickey_matched_function_count": 5,
       "out_degree": 0,
       "in_degree": 2,
       "mickey_resident_named_calls": {
-        "pointListRPY": 1
+        "camGetPtr": 1,
+        "camGetNo": 1,
+        "pointListRPY": 1,
+        "camPushModelMtx": 1,
+        "texDPTextureX": 1,
+        "camPopModelMtx": 1
       },
-      "mickey_resident_opaque_call_count": 7,
+      "mickey_resident_opaque_call_count": 2,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 76,
+          "score": 0.4682,
+          "jfg_text_size": 3344,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.288
+        },
+        {
           "jfg_module": 23,
-          "score": 0.3988,
+          "score": 0.4188,
           "jfg_text_size": 1760,
           "jfg_function_count": 5,
           "resident_named_jaccard": 0.0
         },
         {
           "jfg_module": 39,
-          "score": 0.3921,
+          "score": 0.4121,
           "jfg_text_size": 1392,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 10,
-          "score": 0.3405,
-          "jfg_text_size": 1680,
-          "jfg_function_count": 6,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -1701,38 +2191,42 @@
       "mickey_text_size": 2032,
       "mickey_data_size": 160,
       "mickey_bss_size": 0,
-      "mickey_function_count": 4,
+      "mickey_function_count": 3,
       "mickey_matched_function_count": 3,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
         "mathOneFloatPY": 1,
+        "camPushModelMtx": 2,
+        "texDPTextureX": 2,
+        "camPopModelMtx": 2,
+        "camGetPtr": 1,
         "Arctanf": 2,
         "sqrtf": 1
       },
-      "mickey_resident_opaque_call_count": 14,
+      "mickey_resident_opaque_call_count": 7,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 131,
-          "score": 0.4204,
-          "jfg_text_size": 1984,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.02
+          "jfg_module": 76,
+          "score": 0.5325,
+          "jfg_text_size": 3344,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.396
         },
         {
           "jfg_module": 109,
-          "score": 0.4001,
+          "score": 0.4282,
           "jfg_text_size": 2960,
           "jfg_function_count": 3,
-          "resident_named_jaccard": 0.046
+          "resident_named_jaccard": 0.043
         },
         {
-          "jfg_module": 73,
-          "score": 0.3889,
-          "jfg_text_size": 1888,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 64,
+          "score": 0.3986,
+          "jfg_text_size": 3168,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.035
         }
       ]
     },
@@ -1742,7 +2236,7 @@
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
       "mickey_function_count": 3,
-      "mickey_matched_function_count": 2,
+      "mickey_matched_function_count": 3,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
@@ -1780,9 +2274,9 @@
               "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
             },
             {
-              "mickey_source": "overlay_039_tail",
+              "mickey_source": "overlay39Reset",
               "mickey_offset": "0xc8",
-              "mickey_size": "0xa0",
+              "mickey_size": "0x54",
               "jfg_name": "osCic6105StartGetData",
               "jfg_offset": "0xc8",
               "jfg_size": "0x54",
@@ -1795,6 +2289,17 @@
               ],
               "evidence_tier": "B",
               "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay39Read",
+              "mickey_offset": "0x11c",
+              "mickey_size": "0x4c",
+              "jfg_name": "osCic6105GetReadData",
+              "jfg_offset": "0x11c",
+              "jfg_size": "0x54",
+              "size_ratio": 0.905,
+              "evidence_tier": "D",
+              "note": "rank-order position + size agreement only; not a byte or call-graph claim"
             }
           ]
         },
@@ -1819,34 +2324,39 @@
       "mickey_text_size": 2096,
       "mickey_data_size": 48,
       "mickey_bss_size": 0,
-      "mickey_function_count": 10,
+      "mickey_function_count": 9,
       "mickey_matched_function_count": 9,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 4,
+      "mickey_resident_named_calls": {
+        "frontDrawRectangles": 1,
+        "camProjectPoint": 1,
+        "viGetCurrentSize": 1,
+        "texDPInit": 1
+      },
+      "mickey_resident_opaque_call_count": 0,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 156,
-          "score": 0.3607,
-          "jfg_text_size": 48,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 46,
+          "score": 0.5919,
+          "jfg_text_size": 2384,
+          "jfg_function_count": 8,
+          "resident_named_jaccard": 0.455
         },
         {
-          "jfg_module": 60,
-          "score": 0.3592,
-          "jfg_text_size": 16,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 77,
+          "score": 0.3698,
+          "jfg_text_size": 2112,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.026
         },
         {
-          "jfg_module": 144,
-          "score": 0.3569,
-          "jfg_text_size": 16,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 131,
+          "score": 0.361,
+          "jfg_text_size": 1984,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.0
         }
       ]
     },
@@ -1860,20 +2370,38 @@
       "out_degree": 2,
       "in_degree": 5,
       "mickey_resident_named_calls": {
+        "trackAddTextureScroll": 1,
+        "changeLightColour": 1,
+        "changeLightIntensity": 1,
+        "partUpdateTriggers": 2,
         "sqrtf": 3,
         "Arctanf": 4,
         "Powerf": 1,
-        "mathOneFloatPY": 1
+        "texAnimateSprite": 1,
+        "lightObject": 2,
+        "mathOneFloatPY": 1,
+        "fontUseFont": 1,
+        "fontBackground": 1,
+        "fontStringWidth": 1,
+        "fontColour": 2,
+        "fontPrintXY": 2
       },
-      "mickey_resident_opaque_call_count": 25,
+      "mickey_resident_opaque_call_count": 10,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 47,
+          "score": 0.4999,
+          "jfg_text_size": 9632,
+          "jfg_function_count": 12,
+          "resident_named_jaccard": 0.34
+        },
+        {
           "jfg_module": 106,
-          "score": 0.3512,
+          "score": 0.355,
           "jfg_text_size": 7472,
           "jfg_function_count": 7,
-          "resident_named_jaccard": 0.007
+          "resident_named_jaccard": 0.014
         },
         {
           "jfg_module": 12,
@@ -1881,13 +2409,6 @@
           "jfg_text_size": 6432,
           "jfg_function_count": 13,
           "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 47,
-          "score": 0.3303,
-          "jfg_text_size": 9632,
-          "jfg_function_count": 12,
-          "resident_named_jaccard": 0.031
         }
       ]
     },
@@ -1901,18 +2422,24 @@
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "mmAlloc": 2,
         "mmFree": 2,
-        "rsp_segment": 3
+        "viGetTrippleBuffer": 1,
+        "viGetCurrentSize": 1,
+        "rsp_segment": 3,
+        "rcpInitSp": 1,
+        "rcpInitDpNoSize": 1,
+        "rcpFast3d": 1
       },
-      "mickey_resident_opaque_call_count": 7,
+      "mickey_resident_opaque_call_count": 0,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 48,
-          "score": 0.3632,
+          "score": 0.5741,
           "jfg_text_size": 1872,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.009
+          "resident_named_jaccard": 0.393
         },
         {
           "jfg_module": 114,
@@ -1923,10 +2450,10 @@
         },
         {
           "jfg_module": 10,
-          "score": 0.3342,
+          "score": 0.3329,
           "jfg_text_size": 1680,
           "jfg_function_count": 6,
-          "resident_named_jaccard": 0.026
+          "resident_named_jaccard": 0.024
         }
       ]
     },
@@ -1936,43 +2463,50 @@
       "mickey_data_size": 256,
       "mickey_bss_size": 352,
       "mickey_function_count": 9,
-      "mickey_matched_function_count": 7,
+      "mickey_matched_function_count": 9,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "rcpFast3d": 1,
         "osRecvMesg": 1,
         "mmFree": 8,
+        "modFreeModel": 1,
+        "levelGetLevel": 1,
         "Arctanf": 4,
         "sqrtf": 2,
+        "dAngle": 4,
         "mtxf_mul": 5,
         "mtxf_transform_point": 1,
+        "diRcpTrace": 2,
         "rsp_segment": 2,
+        "rcpInitDpNoSize": 1,
         "mtxf_to_mtx": 1,
-        "mathOneFloatPY": 1
+        "mathOneFloatPY": 1,
+        "mmAlloc": 3
       },
-      "mickey_resident_opaque_call_count": 19,
+      "mickey_resident_opaque_call_count": 6,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 4,
-          "score": 0.327,
+          "score": 0.4047,
           "jfg_text_size": 5728,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.033
+          "resident_named_jaccard": 0.175
         },
         {
           "jfg_module": 75,
-          "score": 0.3067,
+          "score": 0.3064,
           "jfg_text_size": 5088,
           "jfg_function_count": 5,
           "resident_named_jaccard": 0.01
         },
         {
           "jfg_module": 80,
-          "score": 0.3,
+          "score": 0.2974,
           "jfg_text_size": 5264,
           "jfg_function_count": 2,
-          "resident_named_jaccard": 0.015
+          "resident_named_jaccard": 0.01
         }
       ]
     },
@@ -1981,33 +2515,97 @@
       "mickey_text_size": 2816,
       "mickey_data_size": 80,
       "mickey_bss_size": 0,
-      "mickey_function_count": 5,
-      "mickey_matched_function_count": 3,
+      "mickey_function_count": 4,
+      "mickey_matched_function_count": 4,
       "out_degree": 0,
       "in_degree": 1,
       "mickey_resident_named_calls": {
-        "mmFree": 1
+        "mmAlloc": 1,
+        "piRomLoadSection": 4,
+        "viFrameRateReset": 1,
+        "mmFree": 1,
+        "texDPInit": 1
       },
-      "mickey_resident_opaque_call_count": 7,
-      "confident": false,
+      "mickey_resident_opaque_call_count": 0,
+      "confident": true,
       "candidates": [
         {
-          "jfg_module": 81,
-          "score": 0.4313,
-          "jfg_text_size": 3040,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.005
-        },
-        {
           "jfg_module": 55,
-          "score": 0.4282,
+          "score": 0.9946,
           "jfg_text_size": 2944,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.014
+          "resident_named_jaccard": 1.0,
+          "name_proposals": [
+            {
+              "mickey_source": "overlay44CreateAnimationState",
+              "mickey_offset": "0x0",
+              "mickey_size": "0x224",
+              "jfg_name": "fmvStart",
+              "jfg_offset": "0x0",
+              "jfg_size": "0x22c",
+              "resident_callee_jaccard": 1.0,
+              "shared_resident_callees": [
+                "mmAlloc",
+                "piRomLoadSection",
+                "viFrameRateReset"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay44ReleaseHandles",
+              "mickey_offset": "0x224",
+              "mickey_size": "0x70",
+              "jfg_name": "fmvStop",
+              "jfg_offset": "0x22c",
+              "jfg_size": "0x74",
+              "resident_callee_jaccard": 1.0,
+              "shared_resident_callees": [
+                "mmFree"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay44UpdateFrameCache",
+              "mickey_offset": "0x294",
+              "mickey_size": "0x2ec",
+              "jfg_name": "fmvUpdate",
+              "jfg_offset": "0x2a0",
+              "jfg_size": "0x314",
+              "resident_callee_jaccard": 1.0,
+              "shared_resident_callees": [
+                "piRomLoadSection"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "func_overlay_044_F0000580_188BDE0",
+              "mickey_offset": "0x580",
+              "mickey_size": "0x574",
+              "jfg_name": "fmvDraw",
+              "jfg_offset": "0x5b4",
+              "jfg_size": "0x5cc",
+              "resident_callee_jaccard": 1.0,
+              "shared_resident_callees": [
+                "texDPInit"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            }
+          ]
+        },
+        {
+          "jfg_module": 81,
+          "score": 0.4096,
+          "jfg_text_size": 3040,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.01
         },
         {
           "jfg_module": 44,
-          "score": 0.4031,
+          "score": 0.3791,
           "jfg_text_size": 2880,
           "jfg_function_count": 5,
           "resident_named_jaccard": 0.0
@@ -2020,15 +2618,22 @@
       "mickey_data_size": 128,
       "mickey_bss_size": 16,
       "mickey_function_count": 11,
-      "mickey_matched_function_count": 9,
+      "mickey_matched_function_count": 11,
       "out_degree": 0,
       "in_degree": 11,
       "mickey_resident_named_calls": {
         "strlen": 1,
+        "mmAlloc": 1,
         "sprintf": 1,
-        "mmFree": 1
+        "mmFree": 1,
+        "fontStringWidth": 1,
+        "texDPInit": 2,
+        "fontUseFont": 1,
+        "camSetView": 1,
+        "camStandardOrtho": 1,
+        "fontColour": 1
       },
-      "mickey_resident_opaque_call_count": 35,
+      "mickey_resident_opaque_call_count": 27,
       "confident": false,
       "candidates": [
         {
@@ -2040,17 +2645,17 @@
         },
         {
           "jfg_module": 6,
-          "score": 0.2671,
+          "score": 0.2759,
           "jfg_text_size": 6560,
           "jfg_function_count": 22,
-          "resident_named_jaccard": 0.015
+          "resident_named_jaccard": 0.031
         },
         {
           "jfg_module": 5,
-          "score": 0.2652,
+          "score": 0.2716,
           "jfg_text_size": 3344,
           "jfg_function_count": 12,
-          "resident_named_jaccard": 0.006
+          "resident_named_jaccard": 0.018
         }
       ]
     },
@@ -2060,35 +2665,57 @@
       "mickey_data_size": 912,
       "mickey_bss_size": 10016,
       "mickey_function_count": 10,
-      "mickey_matched_function_count": 8,
+      "mickey_matched_function_count": 10,
       "out_degree": 3,
       "in_degree": 0,
       "mickey_resident_named_calls": {
-        "mmFree": 2
+        "loadFrontEndList": 2,
+        "amTunePlay": 1,
+        "amSndPlay": 4,
+        "mainChangeLevel": 1,
+        "mainSetAnimGroup": 1,
+        "mainTitlePageInit": 2,
+        "fontUseFont": 2,
+        "fontBackground": 2,
+        "fontColour": 3,
+        "freeFrontEndList": 2,
+        "mmFree": 2,
+        "frontRecallScreenMode": 1,
+        "frontSetScreenMode": 1,
+        "texDPInit": 2,
+        "camStandardOrtho": 1,
+        "fontPrintXY": 2,
+        "camDo2DSprite": 1,
+        "setupFrontEndList": 1,
+        "camSetView": 2,
+        "camStandardPersp": 1,
+        "frontDrawObj": 1,
+        "camDoSprite": 2,
+        "texDPTextureX": 1
       },
-      "mickey_resident_opaque_call_count": 76,
+      "mickey_resident_opaque_call_count": 40,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 12,
-          "score": 0.2914,
-          "jfg_text_size": 6432,
-          "jfg_function_count": 13,
-          "resident_named_jaccard": 0.001
+          "jfg_module": 40,
+          "score": 0.3042,
+          "jfg_text_size": 9424,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.146
         },
         {
           "jfg_module": 47,
-          "score": 0.2862,
+          "score": 0.3039,
           "jfg_text_size": 9632,
           "jfg_function_count": 12,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.032
         },
         {
-          "jfg_module": 19,
-          "score": 0.2605,
-          "jfg_text_size": 4320,
-          "jfg_function_count": 9,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 12,
+          "score": 0.3025,
+          "jfg_text_size": 6432,
+          "jfg_function_count": 13,
+          "resident_named_jaccard": 0.021
         }
       ]
     },
@@ -2097,39 +2724,63 @@
       "mickey_text_size": 11760,
       "mickey_data_size": 1440,
       "mickey_bss_size": 832,
-      "mickey_function_count": 5,
-      "mickey_matched_function_count": 2,
+      "mickey_function_count": 4,
+      "mickey_matched_function_count": 4,
       "out_degree": 1,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "loadFrontEndList": 1,
+        "setupFrontEndList": 1,
+        "fontUseFont": 2,
+        "fontColour": 2,
+        "joyResetMap": 1,
+        "frontGetMode": 1,
+        "animseqStartPath": 1,
+        "amSndPlay": 13,
+        "freeFrontEndList": 1,
+        "joyGetPressed": 3,
+        "amSndStop": 4,
+        "camProjectPoint": 1,
+        "partUpdateTriggers": 1,
+        "camGetFOV": 1,
+        "camSetFOV": 2,
+        "camSetView": 2,
+        "camStandardOrtho": 2,
+        "texDPTextureX": 1,
         "matrixTranslate": 1,
         "matrixScale": 1,
+        "camCopyOrthoMatrix": 1,
         "mtxf_mul": 1,
-        "mtxf_to_mtx": 1
+        "mtxf_to_mtx": 1,
+        "texDPInit": 1,
+        "camDo2DSprite": 2,
+        "fontPrintXY": 2,
+        "texAnimateTexSprite": 1,
+        "mainChangeLevel": 2
       },
-      "mickey_resident_opaque_call_count": 82,
+      "mickey_resident_opaque_call_count": 33,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 42,
-          "score": 0.3245,
+          "score": 0.3809,
           "jfg_text_size": 11424,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.059
         },
         {
-          "jfg_module": 61,
-          "score": 0.2987,
-          "jfg_text_size": 12192,
-          "jfg_function_count": 6,
-          "resident_named_jaccard": 0.005
+          "jfg_module": 40,
+          "score": 0.3739,
+          "jfg_text_size": 9424,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.171
         },
         {
-          "jfg_module": 53,
-          "score": 0.2899,
-          "jfg_text_size": 13280,
+          "jfg_module": 62,
+          "score": 0.3393,
+          "jfg_text_size": 10176,
           "jfg_function_count": 3,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.073
         }
       ]
     },
@@ -2138,33 +2789,40 @@
       "mickey_text_size": 1136,
       "mickey_data_size": 1792,
       "mickey_bss_size": 96,
-      "mickey_function_count": 5,
+      "mickey_function_count": 4,
       "mickey_matched_function_count": 4,
       "out_degree": 1,
       "in_degree": 3,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 9,
+      "mickey_resident_named_calls": {
+        "mainChangeLevel": 1,
+        "mainChangeCameras": 1,
+        "amTunePlay": 1,
+        "fontUseFont": 1,
+        "mainTitlePageInit": 1,
+        "amTuneSetFade": 1
+      },
+      "mickey_resident_opaque_call_count": 3,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.3731,
-          "jfg_text_size": 544,
+          "jfg_module": 59,
+          "score": 0.3495,
+          "jfg_text_size": 1392,
           "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 0.238
         },
         {
-          "jfg_module": 139,
-          "score": 0.2897,
-          "jfg_text_size": 992,
-          "jfg_function_count": 6,
+          "jfg_module": 72,
+          "score": 0.2838,
+          "jfg_text_size": 1152,
+          "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 39,
-          "score": 0.2688,
-          "jfg_text_size": 1392,
-          "jfg_function_count": 5,
+          "jfg_module": 116,
+          "score": 0.2715,
+          "jfg_text_size": 1280,
+          "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -2174,32 +2832,36 @@
       "mickey_text_size": 896,
       "mickey_data_size": 48,
       "mickey_bss_size": 16,
-      "mickey_function_count": 4,
+      "mickey_function_count": 3,
       "mickey_matched_function_count": 3,
       "out_degree": 2,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 8,
+      "mickey_resident_named_calls": {
+        "joyGetButtons": 1,
+        "joyGetPressed": 1,
+        "mainChangeLevel": 1
+      },
+      "mickey_resident_opaque_call_count": 5,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.3518,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
-        },
-        {
-          "jfg_module": 89,
-          "score": 0.3017,
-          "jfg_text_size": 1120,
-          "jfg_function_count": 4,
+          "jfg_module": 132,
+          "score": 0.331,
+          "jfg_text_size": 784,
+          "jfg_function_count": 3,
           "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 132,
-          "score": 0.301,
-          "jfg_text_size": 784,
+          "jfg_module": 153,
+          "score": 0.3223,
+          "jfg_text_size": 1104,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.0
+        },
+        {
+          "jfg_module": 92,
+          "score": 0.3155,
+          "jfg_text_size": 816,
           "jfg_function_count": 3,
           "resident_named_jaccard": 0.0
         }
@@ -2210,36 +2872,58 @@
       "mickey_text_size": 7792,
       "mickey_data_size": 896,
       "mickey_bss_size": 208,
-      "mickey_function_count": 6,
-      "mickey_matched_function_count": 4,
+      "mickey_function_count": 5,
+      "mickey_matched_function_count": 5,
       "out_degree": 4,
       "in_degree": 0,
       "mickey_resident_named_calls": {
-        "runlinkDownloadCode": 1
+        "loadFrontEndList": 1,
+        "setupFrontEndList": 1,
+        "amTunePlay": 1,
+        "runlinkDownloadCode": 1,
+        "levelGetNumber": 2,
+        "fontUseFont": 2,
+        "camStandardOrtho": 1,
+        "levelGetLevel": 1,
+        "texDPInit": 3,
+        "frontDrawObj": 3,
+        "freeFrontEndItem": 3,
+        "loadFrontEndItem": 1,
+        "texAnimateSprite": 1,
+        "amSndPlay": 2,
+        "joyGetPressed": 3,
+        "fontBackground": 1,
+        "fontColour": 1,
+        "fontPrintXY": 1,
+        "mainGetMode": 1,
+        "mainChangeLevel": 2,
+        "amTuneSetFade": 2,
+        "amSndStop": 1,
+        "freeFrontEndList": 1
       },
-      "mickey_resident_opaque_call_count": 63,
+      "mickey_resident_opaque_call_count": 28,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 28,
-          "score": 0.2815,
-          "jfg_text_size": 7088,
-          "jfg_function_count": 6,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 69,
-          "score": 0.2634,
-          "jfg_text_size": 7072,
-          "jfg_function_count": 3,
-          "resident_named_jaccard": 0.0
-        },
-        {
           "jfg_module": 40,
-          "score": 0.2634,
+          "score": 0.3415,
           "jfg_text_size": 9424,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.113
+        },
+        {
+          "jfg_module": 75,
+          "score": 0.3155,
+          "jfg_text_size": 5088,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.069
+        },
+        {
+          "jfg_module": 42,
+          "score": 0.3004,
+          "jfg_text_size": 11424,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.046
         }
       ]
     },
@@ -2248,35 +2932,49 @@
       "mickey_text_size": 2224,
       "mickey_data_size": 256,
       "mickey_bss_size": 16,
-      "mickey_function_count": 5,
-      "mickey_matched_function_count": 3,
+      "mickey_function_count": 4,
+      "mickey_matched_function_count": 4,
       "out_degree": 3,
       "in_degree": 0,
       "mickey_resident_named_calls": {
-        "runlinkDownloadCode": 1
+        "loadFrontEndList": 1,
+        "setupFrontEndList": 1,
+        "amTunePlay": 1,
+        "runlinkDownloadCode": 1,
+        "levelGetNumber": 1,
+        "camStandardOrtho": 1,
+        "levelGetLevel": 1,
+        "texDPInit": 2,
+        "frontDrawObj": 1,
+        "freeFrontEndItem": 3,
+        "loadFrontEndItem": 1,
+        "mainGetMode": 1,
+        "mainChangeLevel": 1,
+        "amTuneSetFade": 1,
+        "freeFrontEndList": 1
       },
-      "mickey_resident_opaque_call_count": 26,
+      "mickey_resident_opaque_call_count": 9,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 76,
-          "score": 0.2816,
-          "jfg_text_size": 3344,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 23,
-          "score": 0.2814,
-          "jfg_text_size": 1760,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
-        },
-        {
           "jfg_module": 57,
-          "score": 0.2772,
+          "score": 0.3017,
           "jfg_text_size": 2464,
           "jfg_function_count": 3,
+          "resident_named_jaccard": 0.012
+        },
+        {
+          "jfg_module": 40,
+          "score": 0.2954,
+          "jfg_text_size": 9424,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.056
+        },
+        {
+          "jfg_module": 102,
+          "score": 0.295,
+          "jfg_text_size": 2096,
+          "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -2286,37 +2984,61 @@
       "mickey_text_size": 8496,
       "mickey_data_size": 816,
       "mickey_bss_size": 1248,
-      "mickey_function_count": 6,
-      "mickey_matched_function_count": 4,
+      "mickey_function_count": 5,
+      "mickey_matched_function_count": 5,
       "out_degree": 3,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "loadFrontEndList": 1,
+        "setupFrontEndList": 1,
+        "amTunePlay": 1,
         "runlinkDownloadCode": 1,
-        "frontGetScreenMode": 3
+        "levelGetNumber": 2,
+        "frontGet2PlayerSplit": 3,
+        "frontGetScreenMode": 3,
+        "fontUseFont": 1,
+        "viGetCurrentSize": 1,
+        "camStandardOrtho": 1,
+        "texAnimateSprite": 2,
+        "levelGetLevel": 1,
+        "freeFrontEndItem": 3,
+        "loadFrontEndItem": 2,
+        "joyGetPressed": 6,
+        "camSetNo": 2,
+        "camSetScissor": 1,
+        "texDPInit": 3,
+        "sprSetTextureFilter": 2,
+        "frontDrawObj": 2,
+        "amSndPlay": 1,
+        "mainGetMode": 1,
+        "mainChangeCameras": 2,
+        "mainChangeLevel": 2,
+        "amTuneSetFade": 2,
+        "freeFrontEndList": 1
       },
-      "mickey_resident_opaque_call_count": 68,
+      "mickey_resident_opaque_call_count": 24,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 40,
-          "score": 0.2837,
+          "score": 0.3538,
           "jfg_text_size": 9424,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.098
         },
         {
-          "jfg_module": 47,
-          "score": 0.2748,
-          "jfg_text_size": 9632,
-          "jfg_function_count": 12,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 62,
+          "score": 0.3158,
+          "jfg_text_size": 10176,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.09
         },
         {
-          "jfg_module": 42,
-          "score": 0.2741,
-          "jfg_text_size": 11424,
+          "jfg_module": 37,
+          "score": 0.3158,
+          "jfg_text_size": 7856,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.072
         }
       ]
     },
@@ -2325,34 +3047,53 @@
       "mickey_text_size": 3248,
       "mickey_data_size": 304,
       "mickey_bss_size": 672,
-      "mickey_function_count": 6,
-      "mickey_matched_function_count": 4,
+      "mickey_function_count": 5,
+      "mickey_matched_function_count": 5,
       "out_degree": 2,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "loadFrontEndList": 1,
+        "setupFrontEndList": 1,
+        "amTunePlay": 1,
         "runlinkDownloadCode": 1,
-        "frontGetScreenMode": 2
+        "levelGetNumber": 1,
+        "frontGetScreenMode": 2,
+        "viGetCurrentSize": 1,
+        "camStandardOrtho": 2,
+        "levelGetLevel": 1,
+        "freeFrontEndItem": 3,
+        "loadFrontEndItem": 2,
+        "camSetNo": 2,
+        "camSetScissor": 1,
+        "texDPInit": 1,
+        "frontDrawObj": 1,
+        "frontGet2PlayerSplit": 1,
+        "mainGetMode": 1,
+        "mainChangeCameras": 1,
+        "mainChangeLevel": 1,
+        "amTuneSetFade": 1,
+        "freeFrontEndList": 1
       },
-      "mickey_resident_opaque_call_count": 34,
+      "mickey_resident_opaque_call_count": 10,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 146,
-          "score": 0.3402,
-          "jfg_text_size": 3360,
-          "jfg_function_count": 6,
-          "resident_named_jaccard": 0.0
-        },
-        {
           "jfg_module": 76,
-          "score": 0.3071,
+          "score": 0.3271,
           "jfg_text_size": 3344,
           "jfg_function_count": 5,
           "resident_named_jaccard": 0.0
         },
         {
+          "jfg_module": 146,
+          "score": 0.3202,
+          "jfg_text_size": 3360,
+          "jfg_function_count": 6,
+          "resident_named_jaccard": 0.0
+        },
+        {
           "jfg_module": 122,
-          "score": 0.2882,
+          "score": 0.3082,
           "jfg_text_size": 4272,
           "jfg_function_count": 5,
           "resident_named_jaccard": 0.0
@@ -2364,37 +3105,58 @@
       "mickey_text_size": 7920,
       "mickey_data_size": 736,
       "mickey_bss_size": 1648,
-      "mickey_function_count": 7,
-      "mickey_matched_function_count": 5,
+      "mickey_function_count": 6,
+      "mickey_matched_function_count": 6,
       "out_degree": 3,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "loadFrontEndList": 2,
+        "setupFrontEndList": 1,
+        "amTunePlay": 1,
         "runlinkDownloadCode": 1,
-        "frontGetScreenMode": 5
+        "levelGetNumber": 2,
+        "fontUseFont": 1,
+        "frontGetScreenMode": 5,
+        "camStandardOrtho": 1,
+        "texAnimateSprite": 2,
+        "viGetCurrentSize": 1,
+        "camSetNo": 2,
+        "camSetScissor": 1,
+        "levelGetLevel": 1,
+        "joyGetPressed": 3,
+        "texDPInit": 2,
+        "sprSetTextureFilter": 2,
+        "frontDrawObj": 2,
+        "amSndPlay": 1,
+        "mainGetMode": 1,
+        "mainChangeCameras": 2,
+        "mainChangeLevel": 2,
+        "amTuneSetFade": 2,
+        "freeFrontEndList": 2
       },
-      "mickey_resident_opaque_call_count": 58,
+      "mickey_resident_opaque_call_count": 24,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 47,
-          "score": 0.28,
-          "jfg_text_size": 9632,
-          "jfg_function_count": 12,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 40,
+          "score": 0.33,
+          "jfg_text_size": 9424,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.096
         },
         {
           "jfg_module": 37,
-          "score": 0.2758,
+          "score": 0.3141,
           "jfg_text_size": 7856,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.029
+          "resident_named_jaccard": 0.078
         },
         {
-          "jfg_module": 106,
-          "score": 0.2755,
-          "jfg_text_size": 7472,
-          "jfg_function_count": 7,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 62,
+          "score": 0.312,
+          "jfg_text_size": 10176,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.11
         }
       ]
     },
@@ -2403,37 +3165,53 @@
       "mickey_text_size": 3184,
       "mickey_data_size": 288,
       "mickey_bss_size": 784,
-      "mickey_function_count": 7,
-      "mickey_matched_function_count": 5,
+      "mickey_function_count": 6,
+      "mickey_matched_function_count": 6,
       "out_degree": 2,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "loadFrontEndList": 2,
+        "setupFrontEndList": 1,
+        "amTunePlay": 1,
         "runlinkDownloadCode": 1,
-        "frontGetScreenMode": 3
+        "levelGetNumber": 1,
+        "frontGetScreenMode": 3,
+        "camStandardOrtho": 2,
+        "viGetCurrentSize": 1,
+        "camSetNo": 2,
+        "camSetScissor": 1,
+        "levelGetLevel": 1,
+        "texDPInit": 2,
+        "frontDrawObj": 1,
+        "mainGetMode": 1,
+        "mainChangeCameras": 1,
+        "mainChangeLevel": 1,
+        "amTuneSetFade": 1,
+        "freeFrontEndList": 2
       },
-      "mickey_resident_opaque_call_count": 31,
+      "mickey_resident_opaque_call_count": 10,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 146,
-          "score": 0.3176,
+          "score": 0.3347,
           "jfg_text_size": 3360,
           "jfg_function_count": 6,
           "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 120,
-          "score": 0.3026,
-          "jfg_text_size": 2768,
-          "jfg_function_count": 7,
+          "jfg_module": 76,
+          "score": 0.3023,
+          "jfg_text_size": 3344,
+          "jfg_function_count": 5,
           "resident_named_jaccard": 0.0
         },
         {
           "jfg_module": 58,
-          "score": 0.2941,
+          "score": 0.2964,
           "jfg_text_size": 4176,
           "jfg_function_count": 7,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.035
         }
       ]
     },
@@ -2443,37 +3221,45 @@
       "mickey_data_size": 144,
       "mickey_bss_size": 16,
       "mickey_function_count": 8,
-      "mickey_matched_function_count": 6,
+      "mickey_matched_function_count": 8,
       "out_degree": 0,
       "in_degree": 9,
       "mickey_resident_named_calls": {
+        "viGetCurrentSize": 4,
+        "levelGetLevel": 2,
+        "texLoadTexture": 1,
+        "texFreeTexture": 1,
+        "camStandardOrtho": 1,
+        "frontGet2PlayerSplit": 1,
+        "texDPTextureX": 1,
         "matrixTranslate": 1,
+        "camCopyOrthoMatrix": 1,
         "mtxf_mul": 1,
         "mtxf_to_mtx": 1
       },
-      "mickey_resident_opaque_call_count": 23,
+      "mickey_resident_opaque_call_count": 11,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 5,
-          "score": 0.2778,
-          "jfg_text_size": 3344,
-          "jfg_function_count": 12,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 44,
-          "score": 0.2748,
-          "jfg_text_size": 2880,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
-        },
-        {
           "jfg_module": 1,
-          "score": 0.2689,
+          "score": 0.3089,
           "jfg_text_size": 3120,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.073
+        },
+        {
+          "jfg_module": 5,
+          "score": 0.2835,
+          "jfg_text_size": 3344,
+          "jfg_function_count": 12,
+          "resident_named_jaccard": 0.01
+        },
+        {
+          "jfg_module": 81,
+          "score": 0.2787,
+          "jfg_text_size": 3040,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.029
         }
       ]
     },
@@ -2482,37 +3268,66 @@
       "mickey_text_size": 27312,
       "mickey_data_size": 1632,
       "mickey_bss_size": 448,
-      "mickey_function_count": 23,
-      "mickey_matched_function_count": 18,
+      "mickey_function_count": 24,
+      "mickey_matched_function_count": 24,
       "out_degree": 6,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "fontUseFont": 3,
+        "fontColour": 7,
+        "loadFrontEndList": 1,
+        "setupFrontEndList": 1,
+        "animseqStartPath": 17,
         "initColourCycle": 1,
+        "joyResetMap": 1,
+        "frontGetMode": 2,
+        "updateColourCycle": 1,
+        "texAnimateTexSprite": 3,
+        "camSetView": 1,
+        "texDPTextureX": 4,
+        "freeFrontEndList": 1,
+        "trackSetFog": 1,
+        "amSndStop": 1,
+        "amSndPlay": 14,
+        "animseqStopPath": 13,
+        "mainTitlePageInit": 1,
+        "camSetNo": 2,
+        "camGetPtr": 2,
+        "mainChangeLevel": 10,
+        "frontDrawRectangles": 1,
+        "fontPrintXY": 9,
+        "joyCreateMap": 4,
+        "mainSetMode": 4,
+        "mainChangeCameras": 3,
+        "mainSetAnimGroup": 2,
+        "levelGetBlurEffect": 1,
+        "camStandardOrtho": 1,
+        "frontDrawObj": 1,
         "sprintf": 2
       },
-      "mickey_resident_opaque_call_count": 178,
+      "mickey_resident_opaque_call_count": 66,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 18,
-          "score": 0.3141,
+          "score": 0.3254,
           "jfg_text_size": 26224,
           "jfg_function_count": 22,
-          "resident_named_jaccard": 0.002
+          "resident_named_jaccard": 0.031
+        },
+        {
+          "jfg_module": 31,
+          "score": 0.265,
+          "jfg_text_size": 15744,
+          "jfg_function_count": 26,
+          "resident_named_jaccard": 0.046
         },
         {
           "jfg_module": 67,
-          "score": 0.2568,
+          "score": 0.2619,
           "jfg_text_size": 17456,
           "jfg_function_count": 15,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 17,
-          "score": 0.2458,
-          "jfg_text_size": 25152,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.015
         }
       ]
     },
@@ -2521,38 +3336,56 @@
       "mickey_text_size": 23072,
       "mickey_data_size": 1072,
       "mickey_bss_size": 256,
-      "mickey_function_count": 12,
-      "mickey_matched_function_count": 8,
+      "mickey_function_count": 11,
+      "mickey_matched_function_count": 11,
       "out_degree": 3,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "loadFrontEndList": 1,
+        "joyResetMap": 1,
         "initColourCycle": 1,
+        "freeFrontEndList": 1,
+        "amSndStop": 5,
+        "animseqStartPath": 6,
+        "amSndPlay": 46,
+        "animseqStopPath": 5,
+        "joyCreateMap": 5,
+        "mainChangeLevel": 13,
+        "mainChangeCameras": 2,
+        "camSetView": 1,
+        "updateColourCycle": 1,
+        "fontUseFont": 1,
+        "fontColour": 56,
+        "fontPrintXY": 60,
         "sprintf": 23,
-        "sqrtf": 1
+        "mainSetAnimGroup": 2,
+        "levelGetBlurEffect": 4,
+        "sqrtf": 1,
+        "texDPTextureX": 3
       },
-      "mickey_resident_opaque_call_count": 285,
+      "mickey_resident_opaque_call_count": 72,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 18,
+          "score": 0.2946,
+          "jfg_text_size": 26224,
+          "jfg_function_count": 22,
+          "resident_named_jaccard": 0.081
+        },
+        {
           "jfg_module": 67,
-          "score": 0.2966,
+          "score": 0.2909,
           "jfg_text_size": 17456,
           "jfg_function_count": 15,
-          "resident_named_jaccard": 0.001
+          "resident_named_jaccard": 0.005
         },
         {
           "jfg_module": 22,
-          "score": 0.2783,
+          "score": 0.2854,
           "jfg_text_size": 12768,
           "jfg_function_count": 12,
-          "resident_named_jaccard": 0.004
-        },
-        {
-          "jfg_module": 47,
-          "score": 0.272,
-          "jfg_text_size": 9632,
-          "jfg_function_count": 12,
-          "resident_named_jaccard": 0.002
+          "resident_named_jaccard": 0.035
         }
       ]
     },
@@ -2561,34 +3394,41 @@
       "mickey_text_size": 2592,
       "mickey_data_size": 1936,
       "mickey_bss_size": 272,
-      "mickey_function_count": 11,
+      "mickey_function_count": 10,
       "mickey_matched_function_count": 10,
       "out_degree": 0,
       "in_degree": 3,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 11,
+      "mickey_resident_named_calls": {
+        "texFreeTexture": 1,
+        "texLoadTexture": 2,
+        "fontUseFont": 1,
+        "fontBackground": 1,
+        "fontColour": 3,
+        "fontPrintXY": 3
+      },
+      "mickey_resident_opaque_call_count": 0,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 5,
-          "score": 0.2795,
-          "jfg_text_size": 3344,
-          "jfg_function_count": 12,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 59,
+          "score": 0.3396,
+          "jfg_text_size": 1392,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.284
         },
         {
           "jfg_module": 1,
-          "score": 0.2405,
+          "score": 0.2879,
           "jfg_text_size": 3120,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.076
         },
         {
-          "jfg_module": 19,
-          "score": 0.2364,
-          "jfg_text_size": 4320,
-          "jfg_function_count": 9,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 10,
+          "score": 0.2822,
+          "jfg_text_size": 1680,
+          "jfg_function_count": 6,
+          "resident_named_jaccard": 0.13
         }
       ]
     },
@@ -2597,40 +3437,77 @@
       "mickey_text_size": 13664,
       "mickey_data_size": 608,
       "mickey_bss_size": 96,
-      "mickey_function_count": 8,
-      "mickey_matched_function_count": 6,
+      "mickey_function_count": 7,
+      "mickey_matched_function_count": 7,
       "out_degree": 5,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "loadFrontEndList": 1,
         "frontGetScreenMode": 3,
+        "animseqStartPath": 3,
+        "frontSetLanguage": 1,
+        "frontSetStereoMode": 2,
+        "frontSetSfxVolume": 2,
+        "frontSetBgmVolume": 2,
+        "fontUseFont": 2,
+        "fontColour": 44,
+        "amSndPlay": 46,
+        "frontGetSfxVolume": 1,
         "sprintf": 7,
+        "fontPrintXY": 40,
+        "frontGet2PlayerSplit": 1,
+        "frontSet2PlayerSplit": 1,
+        "frontGetBgmVolume": 1,
+        "amTunePlay": 1,
+        "amTuneSetFade": 1,
+        "frontGetStereoMode": 1,
         "viDisplayingScreen0": 1,
+        "animseqStopPath": 3,
+        "viNoClear": 1,
+        "viChangeMode": 1,
+        "camSetFOV": 1,
+        "frontGetWideAdjust": 1,
         "frontSetWideAdjust": 1,
-        "initColourCycle": 1
+        "frontSetScreenMode": 1,
+        "levelGetBlurEffect": 1,
+        "fontBackground": 1,
+        "texDPInit": 2,
+        "camStandardPersp": 1,
+        "texDPTextureX": 2,
+        "rcpClearZBuffer": 1,
+        "texFreeSprite": 4,
+        "texLoadSprite": 1,
+        "camStandardOrtho": 1,
+        "camDo2DSprite": 1,
+        "texAnimateTexSprite": 1,
+        "mainChangeLevel": 1,
+        "freeFrontEndList": 1,
+        "initColourCycle": 1,
+        "updateColourCycle": 1
       },
-      "mickey_resident_opaque_call_count": 201,
+      "mickey_resident_opaque_call_count": 24,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 37,
+          "score": 0.3959,
+          "jfg_text_size": 7856,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.361
+        },
+        {
           "jfg_module": 42,
-          "score": 0.2869,
+          "score": 0.3178,
           "jfg_text_size": 11424,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.025
+          "resident_named_jaccard": 0.065
         },
         {
-          "jfg_module": 143,
-          "score": 0.2744,
-          "jfg_text_size": 11200,
-          "jfg_function_count": 8,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 22,
-          "score": 0.2697,
-          "jfg_text_size": 12768,
-          "jfg_function_count": 12,
-          "resident_named_jaccard": 0.004
+          "jfg_module": 62,
+          "score": 0.2945,
+          "jfg_text_size": 10176,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.096
         }
       ]
     },
@@ -2639,37 +3516,62 @@
       "mickey_text_size": 6800,
       "mickey_data_size": 672,
       "mickey_bss_size": 1504,
-      "mickey_function_count": 14,
-      "mickey_matched_function_count": 12,
+      "mickey_function_count": 13,
+      "mickey_matched_function_count": 13,
       "out_degree": 2,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "joyGetPressed": 2,
+        "joyGetStickX": 2,
+        "joyGetStickY": 2,
         "sprintf": 10,
         "frontDrawRectangle": 6,
-        "mmFree": 3
+        "fontColour": 3,
+        "fontPrintXY": 14,
+        "levelGetName": 1,
+        "fontUseFont": 2,
+        "fontBackground": 1,
+        "loadFrontEndList": 1,
+        "rumbleProcessing": 2,
+        "amSndPlay": 13,
+        "packDirectory": 1,
+        "packFreeSpace": 1,
+        "packDeleteFile": 1,
+        "mainTitlePageInit": 1,
+        "texAnimateTexSprite": 2,
+        "freeFrontEndList": 1,
+        "packDirectoryFree": 1,
+        "packOpen": 2,
+        "packOpenFile": 2,
+        "packFileSize": 2,
+        "mmAlloc": 3,
+        "packReadFile": 2,
+        "mmFree": 3,
+        "packClose": 2,
+        "packWriteFile": 1
       },
-      "mickey_resident_opaque_call_count": 67,
+      "mickey_resident_opaque_call_count": 2,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 12,
-          "score": 0.3297,
+          "score": 0.3406,
           "jfg_text_size": 6432,
           "jfg_function_count": 13,
-          "resident_named_jaccard": 0.001
-        },
-        {
-          "jfg_module": 6,
-          "score": 0.2921,
-          "jfg_text_size": 6560,
-          "jfg_function_count": 22,
-          "resident_named_jaccard": 0.111
+          "resident_named_jaccard": 0.005
         },
         {
           "jfg_module": 47,
-          "score": 0.2875,
+          "score": 0.3011,
           "jfg_text_size": 9632,
           "jfg_function_count": 12,
+          "resident_named_jaccard": 0.01
+        },
+        {
+          "jfg_module": 136,
+          "score": 0.2751,
+          "jfg_text_size": 7600,
+          "jfg_function_count": 21,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -2683,17 +3585,25 @@
       "mickey_matched_function_count": 3,
       "out_degree": 1,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 26,
+      "mickey_resident_named_calls": {
+        "loadFrontEndList": 1,
+        "fontUseFont": 2,
+        "fontColour": 2,
+        "texLoadSprite": 1,
+        "rcpSetScreenColour": 2,
+        "mainChangeLevel": 1,
+        "camStandardOrtho": 1,
+        "sprSetTextureFilter": 2,
+        "camDo2DSprite": 1,
+        "fontBackground": 1,
+        "fontPrintXY": 7,
+        "texAnimateTexSprite": 1,
+        "texFreeSprite": 1,
+        "freeFrontEndList": 1
+      },
+      "mickey_resident_opaque_call_count": 2,
       "confident": false,
       "candidates": [
-        {
-          "jfg_module": 148,
-          "score": 0.3934,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
-        },
         {
           "jfg_module": 104,
           "score": 0.3386,
@@ -2707,6 +3617,13 @@
           "jfg_text_size": 1424,
           "jfg_function_count": 2,
           "resident_named_jaccard": 0.0
+        },
+        {
+          "jfg_module": 99,
+          "score": 0.3269,
+          "jfg_text_size": 1744,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.0
         }
       ]
     },
@@ -2715,34 +3632,49 @@
       "mickey_text_size": 2352,
       "mickey_data_size": 352,
       "mickey_bss_size": 416,
-      "mickey_function_count": 5,
+      "mickey_function_count": 4,
       "mickey_matched_function_count": 4,
       "out_degree": 2,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 38,
+      "mickey_resident_named_calls": {
+        "amTunePlay": 1,
+        "loadFrontEndList": 1,
+        "fontUseFont": 2,
+        "fontColour": 3,
+        "joyEnable": 1,
+        "mainChangeLevel": 2,
+        "mainSetAnimGroup": 1,
+        "texAnimateTexSprite": 1,
+        "texDPInit": 1,
+        "camStandardOrtho": 1,
+        "camDo2DSprite": 2,
+        "freeFrontEndList": 1,
+        "joyGetPressed": 1,
+        "fontPrintXY": 2
+      },
+      "mickey_resident_opaque_call_count": 18,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 76,
-          "score": 0.3008,
-          "jfg_text_size": 3344,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 57,
+          "score": 0.319,
+          "jfg_text_size": 2464,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.039
         },
         {
-          "jfg_module": 146,
-          "score": 0.2843,
-          "jfg_text_size": 3360,
-          "jfg_function_count": 6,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 40,
+          "score": 0.3088,
+          "jfg_text_size": 9424,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.119
         },
         {
-          "jfg_module": 122,
-          "score": 0.2802,
-          "jfg_text_size": 4272,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 63,
+          "score": 0.303,
+          "jfg_text_size": 3168,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.08
         }
       ]
     },
@@ -2787,37 +3719,43 @@
       "mickey_text_size": 7104,
       "mickey_data_size": 544,
       "mickey_bss_size": 10640,
-      "mickey_function_count": 7,
-      "mickey_matched_function_count": 5,
+      "mickey_function_count": 6,
+      "mickey_matched_function_count": 6,
       "out_degree": 0,
       "in_degree": 1,
       "mickey_resident_named_calls": {
+        "texLoadTexture": 1,
+        "mmAlloc": 1,
+        "texDPTextureX": 2,
+        "camSetNo": 2,
+        "camSetView": 2,
         "pointListRPY": 1,
+        "texFreeTexture": 1,
         "mmFree": 1
       },
-      "mickey_resident_opaque_call_count": 37,
+      "mickey_resident_opaque_call_count": 28,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 8,
+          "score": 0.3075,
+          "jfg_text_size": 5728,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.044
+        },
+        {
           "jfg_module": 11,
-          "score": 0.3116,
+          "score": 0.2987,
           "jfg_text_size": 7264,
           "jfg_function_count": 8,
-          "resident_named_jaccard": 0.005
+          "resident_named_jaccard": 0.008
         },
         {
-          "jfg_module": 106,
-          "score": 0.2964,
-          "jfg_text_size": 7472,
-          "jfg_function_count": 7,
-          "resident_named_jaccard": 0.005
-        },
-        {
-          "jfg_module": 87,
-          "score": 0.2922,
-          "jfg_text_size": 4640,
-          "jfg_function_count": 7,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 10,
+          "score": 0.2982,
+          "jfg_text_size": 1680,
+          "jfg_function_count": 6,
+          "resident_named_jaccard": 0.184
         }
       ]
     },
@@ -2827,15 +3765,18 @@
       "mickey_data_size": 272,
       "mickey_bss_size": 16,
       "mickey_function_count": 4,
-      "mickey_matched_function_count": 3,
+      "mickey_matched_function_count": 4,
       "out_degree": 0,
       "in_degree": 1,
       "mickey_resident_named_calls": {
         "osInvalDCache": 1,
         "osWritebackDCacheAll": 1,
-        "rsp_segment": 5
+        "viGetVideoMode": 1,
+        "texDPInit": 2,
+        "rsp_segment": 5,
+        "viGetCurrentSize": 1
       },
-      "mickey_resident_opaque_call_count": 4,
+      "mickey_resident_opaque_call_count": 0,
       "confident": false,
       "candidates": [
         {
@@ -2866,34 +3807,52 @@
       "mickey_text_size": 336,
       "mickey_data_size": 176,
       "mickey_bss_size": 0,
-      "mickey_function_count": 2,
+      "mickey_function_count": 1,
       "mickey_matched_function_count": 1,
       "out_degree": 0,
       "in_degree": 1,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 1,
-      "confident": false,
+      "mickey_resident_named_calls": {
+        "frontDrawRectangles": 1
+      },
+      "mickey_resident_opaque_call_count": 0,
+      "confident": true,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.6794,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "jfg_module": 157,
+          "score": 0.9644,
+          "jfg_text_size": 384,
+          "jfg_function_count": 1,
+          "resident_named_jaccard": 1.0,
+          "name_proposals": [
+            {
+              "mickey_source": "overlay67BuildVertices",
+              "mickey_offset": "0x0",
+              "mickey_size": "0x14c",
+              "jfg_name": "fxDrawWindow",
+              "jfg_offset": "0x0",
+              "jfg_size": "0x180",
+              "resident_callee_jaccard": 1.0,
+              "shared_resident_callees": [
+                "frontDrawRectangles"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            }
+          ]
         },
         {
-          "jfg_module": 156,
-          "score": 0.4107,
-          "jfg_text_size": 48,
+          "jfg_module": 38,
+          "score": 0.3469,
+          "jfg_text_size": 240,
           "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 60,
-          "score": 0.3952,
-          "jfg_text_size": 16,
+          "jfg_module": 35,
+          "score": 0.3222,
+          "jfg_text_size": 704,
           "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 0.0
         }
       ]
     },
@@ -2903,37 +3862,42 @@
       "mickey_data_size": 64,
       "mickey_bss_size": 0,
       "mickey_function_count": 19,
-      "mickey_matched_function_count": 18,
+      "mickey_matched_function_count": 19,
       "out_degree": 0,
       "in_degree": 5,
       "mickey_resident_named_calls": {
+        "mmAlloc": 5,
         "mmFree": 6,
+        "levelGetNumber": 2,
         "Arctanf": 1,
-        "mathDiffAngle": 1
+        "mathDiffAngle": 1,
+        "camGetProjZ": 1,
+        "piRomLoadSection": 3,
+        "levelGetBlurEffect": 2
       },
-      "mickey_resident_opaque_call_count": 22,
+      "mickey_resident_opaque_call_count": 9,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 27,
-          "score": 0.4081,
-          "jfg_text_size": 1088,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": 0.46
+          "jfg_module": 55,
+          "score": 0.3696,
+          "jfg_text_size": 2944,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.214
         },
         {
           "jfg_module": 5,
-          "score": 0.3457,
+          "score": 0.3505,
           "jfg_text_size": 3344,
           "jfg_function_count": 12,
-          "resident_named_jaccard": 0.018
+          "resident_named_jaccard": 0.027
         },
         {
           "jfg_module": 6,
-          "score": 0.3359,
+          "score": 0.3379,
           "jfg_text_size": 6560,
           "jfg_function_count": 22,
-          "resident_named_jaccard": 0.005
+          "resident_named_jaccard": 0.008
         }
       ]
     },
@@ -2942,35 +3906,37 @@
       "mickey_text_size": 1808,
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
-      "mickey_function_count": 4,
+      "mickey_function_count": 3,
       "mickey_matched_function_count": 3,
       "out_degree": 1,
       "in_degree": 0,
       "mickey_resident_named_calls": {
-        "Arctanf": 1
+        "Arctanf": 1,
+        "camGetProjZ": 2,
+        "fxDrawCone": 1
       },
-      "mickey_resident_opaque_call_count": 8,
+      "mickey_resident_opaque_call_count": 5,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 66,
-          "score": 0.3738,
-          "jfg_text_size": 2544,
-          "jfg_function_count": 4,
+          "jfg_module": 104,
+          "score": 0.3798,
+          "jfg_text_size": 1696,
+          "jfg_function_count": 3,
           "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 96,
-          "score": 0.3709,
-          "jfg_text_size": 1568,
+          "jfg_module": 73,
+          "score": 0.3631,
+          "jfg_text_size": 1888,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.092
         },
         {
-          "jfg_module": 102,
-          "score": 0.3703,
-          "jfg_text_size": 2096,
-          "jfg_function_count": 4,
+          "jfg_module": 57,
+          "score": 0.3542,
+          "jfg_text_size": 2464,
+          "jfg_function_count": 3,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -2980,32 +3946,34 @@
       "mickey_text_size": 1840,
       "mickey_data_size": 192,
       "mickey_bss_size": 0,
-      "mickey_function_count": 4,
+      "mickey_function_count": 3,
       "mickey_matched_function_count": 3,
       "out_degree": 1,
       "in_degree": 1,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 17,
+      "mickey_resident_named_calls": {
+        "texAnimateSprite": 1
+      },
+      "mickey_resident_opaque_call_count": 16,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.5489,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
-        },
-        {
-          "jfg_module": 23,
-          "score": 0.3449,
-          "jfg_text_size": 1760,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 104,
+          "score": 0.388,
+          "jfg_text_size": 1696,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.072
         },
         {
           "jfg_module": 147,
-          "score": 0.3418,
+          "score": 0.3718,
           "jfg_text_size": 1456,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.0
+        },
+        {
+          "jfg_module": 57,
+          "score": 0.3679,
+          "jfg_text_size": 2464,
           "jfg_function_count": 3,
           "resident_named_jaccard": 0.0
         }
@@ -3016,37 +3984,40 @@
       "mickey_text_size": 2896,
       "mickey_data_size": 416,
       "mickey_bss_size": 0,
-      "mickey_function_count": 5,
+      "mickey_function_count": 4,
       "mickey_matched_function_count": 4,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
         "SetLinkSlot": 2,
-        "sqrtf": 1
+        "sqrtf": 1,
+        "camPushModelMtx": 1,
+        "texDPTextureX": 2,
+        "camPopModelMtx": 1
       },
-      "mickey_resident_opaque_call_count": 4,
+      "mickey_resident_opaque_call_count": 0,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 76,
-          "score": 0.4415,
+          "score": 0.5469,
           "jfg_text_size": 3344,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.015
+          "resident_named_jaccard": 0.25
         },
         {
-          "jfg_module": 44,
-          "score": 0.3886,
-          "jfg_text_size": 2880,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.002
+          "jfg_module": 64,
+          "score": 0.4032,
+          "jfg_text_size": 3168,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.028
         },
         {
-          "jfg_module": 75,
-          "score": 0.3859,
-          "jfg_text_size": 5088,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.003
+          "jfg_module": 66,
+          "score": 0.3961,
+          "jfg_text_size": 2544,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.043
         }
       ]
     },
@@ -3055,7 +4026,7 @@
       "mickey_text_size": 368,
       "mickey_data_size": 16,
       "mickey_bss_size": 0,
-      "mickey_function_count": 3,
+      "mickey_function_count": 2,
       "mickey_matched_function_count": 2,
       "out_degree": 1,
       "in_degree": 0,
@@ -3065,24 +4036,24 @@
       "candidates": [
         {
           "jfg_module": 148,
-          "score": 0.5941,
+          "score": 0.6941,
           "jfg_text_size": 544,
           "jfg_function_count": 2,
           "resident_named_jaccard": null
         },
         {
-          "jfg_module": 108,
-          "score": 0.3783,
-          "jfg_text_size": 544,
-          "jfg_function_count": 3,
-          "resident_named_jaccard": 0.0
-        },
-        {
           "jfg_module": 156,
-          "score": 0.3576,
+          "score": 0.4076,
           "jfg_text_size": 48,
           "jfg_function_count": 1,
           "resident_named_jaccard": null
+        },
+        {
+          "jfg_module": 128,
+          "score": 0.3903,
+          "jfg_text_size": 704,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.0
         }
       ]
     },
@@ -3091,37 +4062,83 @@
       "mickey_text_size": 3760,
       "mickey_data_size": 304,
       "mickey_bss_size": 0,
-      "mickey_function_count": 4,
-      "mickey_matched_function_count": 2,
+      "mickey_function_count": 3,
+      "mickey_matched_function_count": 3,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
         "Arctanf": 2,
-        "sqrtf": 1
+        "sqrtf": 1,
+        "camPushModelMtx": 1,
+        "texDPTextureX": 1,
+        "camPopModelMtx": 1
       },
-      "mickey_resident_opaque_call_count": 16,
-      "confident": false,
+      "mickey_resident_opaque_call_count": 13,
+      "confident": true,
       "candidates": [
         {
           "jfg_module": 76,
-          "score": 0.4128,
+          "score": 0.7005,
           "jfg_text_size": 3344,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.032
+          "resident_named_jaccard": 0.599,
+          "name_proposals": [
+            {
+              "mickey_source": "func_overlay_073_F0000D70_18CB830",
+              "mickey_offset": "0xd70",
+              "mickey_size": "0x138",
+              "jfg_name": "beamDraw",
+              "jfg_offset": "0xa34",
+              "jfg_size": "0x2dc",
+              "resident_callee_jaccard": 0.754,
+              "shared_resident_callees": [
+                "camPopModelMtx",
+                "camPushModelMtx",
+                "texDPTextureX"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "func_overlay_073_F0000190_18CAC50",
+              "mickey_offset": "0x190",
+              "mickey_size": "0xbe0",
+              "jfg_name": "beamControl",
+              "jfg_offset": "0x2a8",
+              "jfg_size": "0x6c4",
+              "resident_callee_jaccard": 0.179,
+              "shared_resident_callees": [
+                "sqrtf"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "func_overlay_073_F0000000_18CAAC0",
+              "mickey_offset": "0x0",
+              "mickey_size": "0x190",
+              "jfg_name": "beamInit",
+              "jfg_offset": "0x0",
+              "jfg_size": "0x2a8",
+              "size_ratio": 0.588,
+              "evidence_tier": "D",
+              "note": "rank-order position + size agreement only; not a byte or call-graph claim"
+            }
+          ]
         },
         {
-          "jfg_module": 4,
-          "score": 0.3991,
-          "jfg_text_size": 5728,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.004
+          "jfg_module": 64,
+          "score": 0.4352,
+          "jfg_text_size": 3168,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.021
         },
         {
-          "jfg_module": 101,
-          "score": 0.3949,
-          "jfg_text_size": 4160,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 91,
+          "score": 0.414,
+          "jfg_text_size": 3872,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.025
         }
       ]
     },
@@ -3130,34 +4147,36 @@
       "mickey_text_size": 592,
       "mickey_data_size": 16,
       "mickey_bss_size": 0,
-      "mickey_function_count": 3,
+      "mickey_function_count": 2,
       "mickey_matched_function_count": 2,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 5,
+      "mickey_resident_named_calls": {
+        "amSndPlay": 1
+      },
+      "mickey_resident_opaque_call_count": 4,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.5547,
-          "jfg_text_size": 544,
+          "jfg_module": 114,
+          "score": 0.5337,
+          "jfg_text_size": 1520,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.4
+        },
+        {
+          "jfg_module": 119,
+          "score": 0.436,
+          "jfg_text_size": 256,
           "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 0.104
         },
         {
-          "jfg_module": 156,
-          "score": 0.4453,
-          "jfg_text_size": 48,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
-        },
-        {
-          "jfg_module": 60,
-          "score": 0.4325,
-          "jfg_text_size": 16,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 74,
+          "score": 0.4066,
+          "jfg_text_size": 576,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.0
         }
       ]
     },
@@ -3166,33 +4185,40 @@
       "mickey_text_size": 1792,
       "mickey_data_size": 16,
       "mickey_bss_size": 32,
-      "mickey_function_count": 4,
+      "mickey_function_count": 3,
       "mickey_matched_function_count": 3,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 21,
+      "mickey_resident_named_calls": {
+        "lightObject": 1,
+        "amSndPlayXYZ": 2,
+        "amSndSetXYZ": 1,
+        "amSndStopXYZ": 1,
+        "camScreenShake": 1,
+        "partUpdateTriggers": 1
+      },
+      "mickey_resident_opaque_call_count": 14,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 48,
-          "score": 0.3822,
-          "jfg_text_size": 1872,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 114,
-          "score": 0.3685,
-          "jfg_text_size": 1520,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
-        },
-        {
           "jfg_module": 130,
-          "score": 0.3374,
+          "score": 0.3808,
           "jfg_text_size": 1504,
           "jfg_function_count": 3,
+          "resident_named_jaccard": 0.024
+        },
+        {
+          "jfg_module": 86,
+          "score": 0.3786,
+          "jfg_text_size": 1472,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.024
+        },
+        {
+          "jfg_module": 48,
+          "score": 0.3522,
+          "jfg_text_size": 1872,
+          "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -3202,33 +4228,35 @@
       "mickey_text_size": 288,
       "mickey_data_size": 16,
       "mickey_bss_size": 32,
-      "mickey_function_count": 2,
-      "mickey_matched_function_count": 1,
+      "mickey_function_count": 3,
+      "mickey_matched_function_count": 3,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 2,
+      "mickey_resident_named_calls": {
+        "amSndPlayXYZ": 1
+      },
+      "mickey_resident_opaque_call_count": 1,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.4324,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
-        },
-        {
-          "jfg_module": 156,
-          "score": 0.3917,
-          "jfg_text_size": 48,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
-        },
-        {
           "jfg_module": 119,
-          "score": 0.3736,
+          "score": 0.3336,
           "jfg_text_size": 256,
           "jfg_function_count": 2,
+          "resident_named_jaccard": 0.0
+        },
+        {
+          "jfg_module": 97,
+          "score": 0.3301,
+          "jfg_text_size": 960,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.055
+        },
+        {
+          "jfg_module": 100,
+          "score": 0.3104,
+          "jfg_text_size": 752,
+          "jfg_function_count": 3,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -3238,34 +4266,39 @@
       "mickey_text_size": 1072,
       "mickey_data_size": 48,
       "mickey_bss_size": 0,
-      "mickey_function_count": 3,
-      "mickey_matched_function_count": 3,
+      "mickey_function_count": 4,
+      "mickey_matched_function_count": 4,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 10,
+      "mickey_resident_named_calls": {
+        "texAnimateSprite": 1,
+        "amSndPlayXYZ": 1,
+        "amSndSetXYZ": 1,
+        "amSndStopXYZ": 2
+      },
+      "mickey_resident_opaque_call_count": 5,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.4519,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "jfg_module": 20,
+          "score": 0.4331,
+          "jfg_text_size": 1072,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.045
         },
         {
-          "jfg_module": 156,
-          "score": 0.4362,
-          "jfg_text_size": 48,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 89,
+          "score": 0.4238,
+          "jfg_text_size": 1120,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 60,
-          "score": 0.431,
-          "jfg_text_size": 16,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 97,
+          "score": 0.385,
+          "jfg_text_size": 960,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.036
         }
       ]
     },
@@ -3275,7 +4308,7 @@
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
       "mickey_function_count": 2,
-      "mickey_matched_function_count": 1,
+      "mickey_matched_function_count": 2,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {},
@@ -3311,38 +4344,45 @@
       "mickey_data_size": 96,
       "mickey_bss_size": 0,
       "mickey_function_count": 8,
-      "mickey_matched_function_count": 6,
+      "mickey_matched_function_count": 8,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
         "sqrtf": 6,
+        "amSndStopXYZ": 1,
+        "amSndPlayXYZ": 8,
         "Arctanf": 5,
         "Powerf": 3,
-        "mathOneFloatRPY": 2
+        "dAngle": 3,
+        "mathOneFloatRPY": 2,
+        "trackMakePolylist": 1,
+        "amSndSetXYZ": 1,
+        "partUpdateTriggers": 1,
+        "amSndPlay": 1
       },
-      "mickey_resident_opaque_call_count": 63,
+      "mickey_resident_opaque_call_count": 47,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 83,
-          "score": 0.4056,
+          "score": 0.4339,
           "jfg_text_size": 4608,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.051
+          "resident_named_jaccard": 0.103
         },
         {
           "jfg_module": 29,
-          "score": 0.3892,
+          "score": 0.4165,
           "jfg_text_size": 3984,
           "jfg_function_count": 9,
-          "resident_named_jaccard": 0.082
+          "resident_named_jaccard": 0.132
         },
         {
           "jfg_module": 28,
-          "score": 0.3821,
+          "score": 0.3999,
           "jfg_text_size": 7088,
           "jfg_function_count": 6,
-          "resident_named_jaccard": 0.003
+          "resident_named_jaccard": 0.036
         }
       ]
     },
@@ -3351,7 +4391,7 @@
       "mickey_text_size": 1008,
       "mickey_data_size": 48,
       "mickey_bss_size": 0,
-      "mickey_function_count": 3,
+      "mickey_function_count": 2,
       "mickey_matched_function_count": 2,
       "out_degree": 0,
       "in_degree": 0,
@@ -3362,25 +4402,25 @@
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 92,
-          "score": 0.4054,
-          "jfg_text_size": 816,
-          "jfg_function_count": 3,
+          "jfg_module": 88,
+          "score": 0.4109,
+          "jfg_text_size": 752,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.024
+        },
+        {
+          "jfg_module": 27,
+          "score": 0.3991,
+          "jfg_text_size": 1088,
+          "jfg_function_count": 2,
           "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 97,
-          "score": 0.4024,
-          "jfg_text_size": 960,
-          "jfg_function_count": 3,
+          "jfg_module": 123,
+          "score": 0.38,
+          "jfg_text_size": 1072,
+          "jfg_function_count": 2,
           "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 153,
-          "score": 0.3874,
-          "jfg_text_size": 1104,
-          "jfg_function_count": 3,
-          "resident_named_jaccard": 0.055
         }
       ]
     },
@@ -3390,26 +4430,29 @@
       "mickey_data_size": 32,
       "mickey_bss_size": 0,
       "mickey_function_count": 5,
-      "mickey_matched_function_count": 4,
+      "mickey_matched_function_count": 5,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 5,
+      "mickey_resident_named_calls": {
+        "amSndPlayXYZ": 2,
+        "partUpdateTriggers": 1
+      },
+      "mickey_resident_opaque_call_count": 2,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.4054,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "jfg_module": 20,
+          "score": 0.4986,
+          "jfg_text_size": 1072,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.236
         },
         {
-          "jfg_module": 156,
-          "score": 0.3992,
-          "jfg_text_size": 48,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 97,
+          "score": 0.4123,
+          "jfg_text_size": 960,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.102
         },
         {
           "jfg_module": 92,
@@ -3425,32 +4468,34 @@
       "mickey_text_size": 1232,
       "mickey_data_size": 160,
       "mickey_bss_size": 0,
-      "mickey_function_count": 4,
-      "mickey_matched_function_count": 3,
+      "mickey_function_count": 6,
+      "mickey_matched_function_count": 6,
       "out_degree": 0,
       "in_degree": 1,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 10,
+      "mickey_resident_named_calls": {
+        "amSndPlay": 4
+      },
+      "mickey_resident_opaque_call_count": 6,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.4854,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
-        },
-        {
-          "jfg_module": 89,
-          "score": 0.3486,
-          "jfg_text_size": 1120,
+          "jfg_module": 114,
+          "score": 0.3901,
+          "jfg_text_size": 1520,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.182
         },
         {
           "jfg_module": 39,
-          "score": 0.3465,
+          "score": 0.3505,
           "jfg_text_size": 1392,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.0
+        },
+        {
+          "jfg_module": 23,
+          "score": 0.3491,
+          "jfg_text_size": 1760,
           "jfg_function_count": 5,
           "resident_named_jaccard": 0.0
         }
@@ -3466,31 +4511,88 @@
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
-        "pointListRPY": 3
+        "pointListRPY": 3,
+        "changeLightIntensity": 1,
+        "mmAlloc": 1,
+        "addObjectLight": 1,
+        "sprSetIA2ColOverride": 1,
+        "camDoSprite": 1,
+        "sprClearIA2ColOverride": 1,
+        "camRestoreModelMtx": 1,
+        "texDPTextureX": 1
       },
-      "mickey_resident_opaque_call_count": 8,
-      "confident": false,
+      "mickey_resident_opaque_call_count": 0,
+      "confident": true,
       "candidates": [
         {
           "jfg_module": 64,
-          "score": 0.4322,
+          "score": 0.8127,
           "jfg_text_size": 3168,
           "jfg_function_count": 3,
-          "resident_named_jaccard": 0.131
+          "resident_named_jaccard": 0.823,
+          "name_proposals": [
+            {
+              "mickey_source": "overlay83BuildBatch",
+              "mickey_offset": "0x53c",
+              "mickey_size": "0x2a0",
+              "jfg_name": "lightShowInit",
+              "jfg_offset": "0x614",
+              "jfg_size": "0x2cc",
+              "resident_callee_jaccard": 1.0,
+              "shared_resident_callees": [
+                "addObjectLight",
+                "mmAlloc",
+                "pointListRPY"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay83Dispatch",
+              "mickey_offset": "0x984",
+              "mickey_size": "0x94",
+              "jfg_name": "lightShowControl",
+              "jfg_offset": "0x8e0",
+              "jfg_size": "0x230",
+              "resident_callee_jaccard": 0.929,
+              "shared_resident_callees": [
+                "camDoSprite",
+                "sprClearIA2ColOverride",
+                "sprSetIA2ColOverride"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay83SubmitAll",
+              "mickey_offset": "0xa18",
+              "mickey_size": "0x148",
+              "jfg_name": "lightShowDraw",
+              "jfg_offset": "0xb10",
+              "jfg_size": "0x150",
+              "resident_callee_jaccard": 0.677,
+              "shared_resident_callees": [
+                "camRestoreModelMtx",
+                "texDPTextureX"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            }
+          ]
         },
         {
-          "jfg_module": 76,
-          "score": 0.3589,
-          "jfg_text_size": 3344,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 117,
+          "score": 0.4291,
+          "jfg_text_size": 2944,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.21
         },
         {
-          "jfg_module": 44,
-          "score": 0.3553,
-          "jfg_text_size": 2880,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 131,
+          "score": 0.4092,
+          "jfg_text_size": 1984,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.206
         }
       ]
     },
@@ -3499,37 +4601,43 @@
       "mickey_text_size": 5056,
       "mickey_data_size": 32,
       "mickey_bss_size": 0,
-      "mickey_function_count": 23,
-      "mickey_matched_function_count": 21,
+      "mickey_function_count": 22,
+      "mickey_matched_function_count": 22,
       "out_degree": 1,
       "in_degree": 1,
       "mickey_resident_named_calls": {
         "Arctanf": 4,
-        "mathDiffAngle": 1
+        "amSndPlay": 3,
+        "mathDiffAngle": 1,
+        "camSetNo": 1,
+        "camGetPtr": 1,
+        "dAngle": 2,
+        "animseqStopPath": 3,
+        "animseqStartPath": 2
       },
-      "mickey_resident_opaque_call_count": 23,
+      "mickey_resident_opaque_call_count": 11,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 137,
-          "score": 0.3266,
+          "score": 0.33,
           "jfg_text_size": 5968,
           "jfg_function_count": 3,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.005
         },
         {
-          "jfg_module": 154,
-          "score": 0.3124,
-          "jfg_text_size": 6240,
+          "jfg_module": 29,
+          "score": 0.3183,
+          "jfg_text_size": 3984,
           "jfg_function_count": 9,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.067
         },
         {
           "jfg_module": 95,
-          "score": 0.3123,
+          "score": 0.3175,
           "jfg_text_size": 6192,
           "jfg_function_count": 7,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.006
         }
       ]
     },
@@ -3538,34 +4646,38 @@
       "mickey_text_size": 672,
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
-      "mickey_function_count": 3,
+      "mickey_function_count": 2,
       "mickey_matched_function_count": 2,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 8,
+      "mickey_resident_named_calls": {
+        "amSndPlayXYZ": 2,
+        "partAdjustScaling": 1,
+        "partUpdateTriggers": 3
+      },
+      "mickey_resident_opaque_call_count": 2,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.6524,
-          "jfg_text_size": 544,
+          "jfg_module": 123,
+          "score": 0.4034,
+          "jfg_text_size": 1072,
           "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 156,
-          "score": 0.5679,
-          "jfg_text_size": 48,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 88,
+          "score": 0.3844,
+          "jfg_text_size": 752,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.019
         },
         {
-          "jfg_module": 144,
-          "score": 0.556,
-          "jfg_text_size": 16,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 110,
+          "score": 0.3787,
+          "jfg_text_size": 896,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.0
         }
       ]
     },
@@ -3574,37 +4686,44 @@
       "mickey_text_size": 3792,
       "mickey_data_size": 160,
       "mickey_bss_size": 0,
-      "mickey_function_count": 7,
+      "mickey_function_count": 6,
       "mickey_matched_function_count": 6,
       "out_degree": 2,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "lightObject": 1,
         "pointListRPY": 2,
-        "mathOneFloatPY": 1
+        "amSndPlayXYZ": 3,
+        "amSndSetXYZ": 2,
+        "amSndStopXYZ": 3,
+        "controlPlayerReInit": 1,
+        "mathOneFloatPY": 1,
+        "amSndSetVolXYZ": 2,
+        "amSndSetPitchXYZ": 1
       },
-      "mickey_resident_opaque_call_count": 29,
+      "mickey_resident_opaque_call_count": 16,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 127,
-          "score": 0.3726,
-          "jfg_text_size": 4432,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.045
+          "jfg_module": 107,
+          "score": 0.4051,
+          "jfg_text_size": 4224,
+          "jfg_function_count": 6,
+          "resident_named_jaccard": 0.085
         },
         {
           "jfg_module": 122,
-          "score": 0.3642,
+          "score": 0.38,
           "jfg_text_size": 4272,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.003
         },
         {
-          "jfg_module": 120,
-          "score": 0.3587,
-          "jfg_text_size": 2768,
-          "jfg_function_count": 7,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 112,
+          "score": 0.3796,
+          "jfg_text_size": 5088,
+          "jfg_function_count": 6,
+          "resident_named_jaccard": 0.034
         }
       ]
     },
@@ -3613,38 +4732,41 @@
       "mickey_text_size": 2416,
       "mickey_data_size": 64,
       "mickey_bss_size": 16,
-      "mickey_function_count": 5,
-      "mickey_matched_function_count": 3,
+      "mickey_function_count": 4,
+      "mickey_matched_function_count": 4,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "amSndPlayXYZ": 1,
         "Arctanf": 2,
         "Powerf": 3,
-        "sqrtf": 1
+        "dAngle": 3,
+        "sqrtf": 1,
+        "amSndStopXYZ": 1
       },
-      "mickey_resident_opaque_call_count": 15,
+      "mickey_resident_opaque_call_count": 10,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 77,
-          "score": 0.3583,
-          "jfg_text_size": 2112,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.077
-        },
-        {
-          "jfg_module": 83,
-          "score": 0.3482,
-          "jfg_text_size": 4608,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.059
-        },
-        {
           "jfg_module": 131,
-          "score": 0.3411,
+          "score": 0.3651,
           "jfg_text_size": 1984,
           "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
+        },
+        {
+          "jfg_module": 91,
+          "score": 0.3629,
+          "jfg_text_size": 3872,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.118
+        },
+        {
+          "jfg_module": 109,
+          "score": 0.3342,
+          "jfg_text_size": 2960,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.062
         }
       ]
     },
@@ -3658,9 +4780,12 @@
       "out_degree": 1,
       "in_degree": 0,
       "mickey_resident_named_calls": {
-        "Arctanf": 1
+        "lightObject": 1,
+        "Arctanf": 1,
+        "camGetProjZ": 2,
+        "fxDrawCone": 1
       },
-      "mickey_resident_opaque_call_count": 11,
+      "mickey_resident_opaque_call_count": 7,
       "confident": false,
       "candidates": [
         {
@@ -3671,18 +4796,18 @@
           "resident_named_jaccard": 0.0
         },
         {
+          "jfg_module": 73,
+          "score": 0.3656,
+          "jfg_text_size": 1888,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.091
+        },
+        {
           "jfg_module": 57,
           "score": 0.3567,
           "jfg_text_size": 2464,
           "jfg_function_count": 3,
           "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 153,
-          "score": 0.3537,
-          "jfg_text_size": 1104,
-          "jfg_function_count": 3,
-          "resident_named_jaccard": 0.067
         }
       ]
     },
@@ -3691,34 +4816,40 @@
       "mickey_text_size": 2000,
       "mickey_data_size": 16,
       "mickey_bss_size": 0,
-      "mickey_function_count": 6,
+      "mickey_function_count": 5,
       "mickey_matched_function_count": 5,
       "out_degree": 1,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 18,
+      "mickey_resident_named_calls": {
+        "trackLightMove": 1,
+        "trackLightAdd": 1,
+        "addObjectLight": 1,
+        "changeLightIntensity": 2,
+        "trackLightColour": 2
+      },
+      "mickey_resident_opaque_call_count": 11,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 124,
+          "score": 0.5353,
+          "jfg_text_size": 2480,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.33
+        },
+        {
           "jfg_module": 102,
-          "score": 0.4043,
+          "score": 0.4203,
           "jfg_text_size": 2096,
           "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 148,
-          "score": 0.393,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
-        },
-        {
-          "jfg_module": 116,
-          "score": 0.365,
-          "jfg_text_size": 1280,
+          "jfg_module": 96,
+          "score": 0.3988,
+          "jfg_text_size": 1568,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.056
         }
       ]
     },
@@ -3728,13 +4859,22 @@
       "mickey_data_size": 64,
       "mickey_bss_size": 0,
       "mickey_function_count": 2,
-      "mickey_matched_function_count": 1,
+      "mickey_matched_function_count": 2,
       "out_degree": 1,
       "in_degree": 0,
       "mickey_resident_named_calls": {
-        "pointListRPY": 2
+        "pointListRPY": 2,
+        "amSndPlay": 4,
+        "camGetMode": 1,
+        "levelGetLevel": 1,
+        "amTunePlay": 2,
+        "amSndStopXYZ": 1,
+        "amSndPlayXYZ": 1,
+        "amSndSetXYZ": 1,
+        "amSndSetVolXYZ": 1,
+        "amSndSetPitchXYZ": 1
       },
-      "mickey_resident_opaque_call_count": 30,
+      "mickey_resident_opaque_call_count": 17,
       "confident": false,
       "candidates": [
         {
@@ -3746,17 +4886,17 @@
         },
         {
           "jfg_module": 124,
-          "score": 0.387,
+          "score": 0.3888,
           "jfg_text_size": 2480,
           "jfg_function_count": 2,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.003
         },
         {
           "jfg_module": 125,
-          "score": 0.3719,
+          "score": 0.3771,
           "jfg_text_size": 1424,
           "jfg_function_count": 2,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.01
         }
       ]
     },
@@ -3765,33 +4905,39 @@
       "mickey_text_size": 1408,
       "mickey_data_size": 32,
       "mickey_bss_size": 0,
-      "mickey_function_count": 4,
+      "mickey_function_count": 3,
       "mickey_matched_function_count": 3,
       "out_degree": 1,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 14,
+      "mickey_resident_named_calls": {
+        "amSndPlay": 4,
+        "viGetCurrentSize": 1,
+        "rcpClearZBuffer": 1,
+        "camStandardPersp": 1,
+        "camResetView": 1
+      },
+      "mickey_resident_opaque_call_count": 6,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.4716,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "jfg_module": 104,
+          "score": 0.4563,
+          "jfg_text_size": 1696,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.05
         },
         {
           "jfg_module": 96,
-          "score": 0.4372,
+          "score": 0.4072,
           "jfg_text_size": 1568,
           "jfg_function_count": 4,
           "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 116,
-          "score": 0.4074,
-          "jfg_text_size": 1280,
-          "jfg_function_count": 4,
+          "jfg_module": 147,
+          "score": 0.4059,
+          "jfg_text_size": 1456,
+          "jfg_function_count": 3,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -3802,28 +4948,29 @@
       "mickey_data_size": 16,
       "mickey_bss_size": 336,
       "mickey_function_count": 3,
-      "mickey_matched_function_count": 2,
+      "mickey_matched_function_count": 3,
       "out_degree": 2,
       "in_degree": 0,
       "mickey_resident_named_calls": {
         "sqrtf": 5,
         "mathDiffAngle": 2,
         "Arctanf": 6,
+        "levelGetNumber": 1,
         "_bcopy": 1
       },
-      "mickey_resident_opaque_call_count": 9,
+      "mickey_resident_opaque_call_count": 8,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 153,
-          "score": 0.3329,
+          "score": 0.3322,
           "jfg_text_size": 1104,
           "jfg_function_count": 3,
-          "resident_named_jaccard": 0.032
+          "resident_named_jaccard": 0.031
         },
         {
           "jfg_module": 113,
-          "score": 0.323,
+          "score": 0.3231,
           "jfg_text_size": 3264,
           "jfg_function_count": 3,
           "resident_named_jaccard": 0.058
@@ -3843,33 +4990,62 @@
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
       "mickey_function_count": 2,
-      "mickey_matched_function_count": 1,
+      "mickey_matched_function_count": 2,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 2,
-      "confident": false,
+      "mickey_resident_named_calls": {
+        "changeWeather": 1
+      },
+      "mickey_resident_opaque_call_count": 1,
+      "confident": true,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.6603,
-          "jfg_text_size": 544,
+          "jfg_module": 134,
+          "score": 0.9621,
+          "jfg_text_size": 240,
           "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 0.931,
+          "name_proposals": [
+            {
+              "mickey_source": "overlay93Update",
+              "mickey_offset": "0x1c",
+              "mickey_size": "0xd0",
+              "jfg_name": "weatherControl",
+              "jfg_offset": "0x20",
+              "jfg_size": "0xd0",
+              "resident_callee_jaccard": 0.931,
+              "shared_resident_callees": [
+                "changeWeather"
+              ],
+              "evidence_tier": "B",
+              "note": "both functions call the same named resident function(s) -- call-graph evidence, not shape"
+            },
+            {
+              "mickey_source": "overlay93Init",
+              "mickey_offset": "0x0",
+              "mickey_size": "0x1c",
+              "jfg_name": "weatherInit",
+              "jfg_offset": "0x0",
+              "jfg_size": "0x20",
+              "size_ratio": 0.875,
+              "evidence_tier": "D",
+              "note": "rank-order position + size agreement only; not a byte or call-graph claim"
+            }
+          ]
         },
         {
-          "jfg_module": 156,
-          "score": 0.65,
-          "jfg_text_size": 48,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 84,
+          "score": 0.4333,
+          "jfg_text_size": 208,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 144,
-          "score": 0.6167,
-          "jfg_text_size": 16,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 78,
+          "score": 0.425,
+          "jfg_text_size": 192,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.0
         }
       ]
     },
@@ -3878,37 +5054,40 @@
       "mickey_text_size": 1392,
       "mickey_data_size": 368,
       "mickey_bss_size": 0,
-      "mickey_function_count": 4,
+      "mickey_function_count": 3,
       "mickey_matched_function_count": 3,
       "out_degree": 0,
       "in_degree": 1,
       "mickey_resident_named_calls": {
+        "lightObject": 2,
         "Arctanf": 2,
-        "Powerf": 4
+        "joyGetButtons": 2,
+        "Powerf": 4,
+        "joyGetStickY": 1
       },
-      "mickey_resident_opaque_call_count": 12,
+      "mickey_resident_opaque_call_count": 7,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 39,
-          "score": 0.3834,
+          "score": 0.3594,
           "jfg_text_size": 1392,
           "jfg_function_count": 5,
           "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 23,
-          "score": 0.3608,
-          "jfg_text_size": 1760,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 130,
+          "score": 0.351,
+          "jfg_text_size": 1504,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.018
         },
         {
-          "jfg_module": 101,
-          "score": 0.3587,
-          "jfg_text_size": 4160,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 86,
+          "score": 0.3484,
+          "jfg_text_size": 1472,
+          "jfg_function_count": 3,
+          "resident_named_jaccard": 0.009
         }
       ]
     },
@@ -3917,34 +5096,42 @@
       "mickey_text_size": 480,
       "mickey_data_size": 16,
       "mickey_bss_size": 0,
-      "mickey_function_count": 3,
+      "mickey_function_count": 2,
       "mickey_matched_function_count": 2,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 9,
+      "mickey_resident_named_calls": {
+        "partUpdateTriggers": 1,
+        "rumbleStart": 1,
+        "camGetNo": 1,
+        "camStartShake": 1,
+        "amSndStop": 2,
+        "amSndPlay": 1,
+        "amSndSetVol": 1
+      },
+      "mickey_resident_opaque_call_count": 1,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 148,
-          "score": 0.5456,
-          "jfg_text_size": 544,
+          "jfg_module": 119,
+          "score": 0.3977,
+          "jfg_text_size": 256,
           "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 0.011
         },
         {
-          "jfg_module": 156,
-          "score": 0.45,
-          "jfg_text_size": 48,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 74,
+          "score": 0.3892,
+          "jfg_text_size": 576,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 60,
-          "score": 0.4341,
-          "jfg_text_size": 16,
-          "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "jfg_module": 27,
+          "score": 0.3801,
+          "jfg_text_size": 1088,
+          "jfg_function_count": 2,
+          "resident_named_jaccard": 0.0
         }
       ]
     },
@@ -3953,37 +5140,38 @@
       "mickey_text_size": 1760,
       "mickey_data_size": 192,
       "mickey_bss_size": 64,
-      "mickey_function_count": 7,
+      "mickey_function_count": 6,
       "mickey_matched_function_count": 6,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
         "pointListRPY": 1,
-        "sqrtf": 1
+        "sqrtf": 1,
+        "texDPTextureX": 1
       },
-      "mickey_resident_opaque_call_count": 1,
+      "mickey_resident_opaque_call_count": 0,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 76,
+          "score": 0.3388,
+          "jfg_text_size": 3344,
+          "jfg_function_count": 5,
+          "resident_named_jaccard": 0.117
+        },
+        {
           "jfg_module": 131,
-          "score": 0.3002,
+          "score": 0.3139,
           "jfg_text_size": 1984,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.036
+          "resident_named_jaccard": 0.04
         },
         {
           "jfg_module": 23,
-          "score": 0.2976,
+          "score": 0.3119,
           "jfg_text_size": 1760,
           "jfg_function_count": 5,
           "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 73,
-          "score": 0.2857,
-          "jfg_text_size": 1888,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.015
         }
       ]
     },
@@ -3992,36 +5180,41 @@
       "mickey_text_size": 2656,
       "mickey_data_size": 32,
       "mickey_bss_size": 0,
-      "mickey_function_count": 12,
+      "mickey_function_count": 11,
       "mickey_matched_function_count": 11,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
         "SetLinkSlot": 1,
+        "amSoundIsLooped": 1,
+        "amCreateAudioPoint": 2,
+        "trackGetTrack": 1,
+        "addRomdefLight": 1,
+        "camlightAdd": 1,
         "mathOneFloatRPY": 1
       },
-      "mickey_resident_opaque_call_count": 13,
+      "mickey_resident_opaque_call_count": 7,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 136,
+          "score": 0.4591,
+          "jfg_text_size": 7600,
+          "jfg_function_count": 21,
+          "resident_named_jaccard": 0.44
+        },
+        {
           "jfg_module": 113,
-          "score": 0.3644,
+          "score": 0.3528,
           "jfg_text_size": 3264,
           "jfg_function_count": 3,
-          "resident_named_jaccard": 0.05
+          "resident_named_jaccard": 0.024
         },
         {
           "jfg_module": 117,
-          "score": 0.3478,
+          "score": 0.3505,
           "jfg_text_size": 2944,
           "jfg_function_count": 3,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 5,
-          "score": 0.3468,
-          "jfg_text_size": 3344,
-          "jfg_function_count": 12,
           "resident_named_jaccard": 0.0
         }
       ]
@@ -4031,37 +5224,40 @@
       "mickey_text_size": 2576,
       "mickey_data_size": 32,
       "mickey_bss_size": 816,
-      "mickey_function_count": 5,
+      "mickey_function_count": 4,
       "mickey_matched_function_count": 4,
       "out_degree": 0,
       "in_degree": 1,
       "mickey_resident_named_calls": {
+        "camGetPtr": 1,
+        "camGetProjectionMtx": 1,
         "mtxf_to_mtx": 3,
-        "mtxf_mul": 3
+        "mtxf_mul": 3,
+        "texDPInit": 1
       },
-      "mickey_resident_opaque_call_count": 9,
+      "mickey_resident_opaque_call_count": 6,
       "confident": false,
       "candidates": [
         {
+          "jfg_module": 55,
+          "score": 0.3384,
+          "jfg_text_size": 2944,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.007
+        },
+        {
           "jfg_module": 81,
-          "score": 0.3372,
+          "score": 0.3132,
           "jfg_text_size": 3040,
           "jfg_function_count": 5,
           "resident_named_jaccard": 0.0
         },
         {
           "jfg_module": 77,
-          "score": 0.3242,
+          "score": 0.3045,
           "jfg_text_size": 2112,
           "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
-        },
-        {
-          "jfg_module": 44,
-          "score": 0.3192,
-          "jfg_text_size": 2880,
-          "jfg_function_count": 5,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.008
         }
       ]
     },
@@ -4071,37 +5267,44 @@
       "mickey_data_size": 192,
       "mickey_bss_size": 0,
       "mickey_function_count": 9,
-      "mickey_matched_function_count": 8,
+      "mickey_matched_function_count": 9,
       "out_degree": 0,
       "in_degree": 1,
       "mickey_resident_named_calls": {
+        "viFrameRateReset": 1,
         "sqrtf": 2,
+        "camGetProjZ": 1,
+        "camGetPtr": 1,
         "mtxf_transform_point": 1,
-        "Arctanf": 1
+        "viGetCurrentSize": 1,
+        "rcpClearZBuffer": 1,
+        "texDPInit": 2,
+        "Arctanf": 1,
+        "camStandardPersp": 1
       },
-      "mickey_resident_opaque_call_count": 18,
+      "mickey_resident_opaque_call_count": 10,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 29,
-          "score": 0.3945,
+          "score": 0.3921,
           "jfg_text_size": 3984,
           "jfg_function_count": 9,
-          "resident_named_jaccard": 0.02
+          "resident_named_jaccard": 0.015
         },
         {
-          "jfg_module": 11,
-          "score": 0.3448,
-          "jfg_text_size": 7264,
-          "jfg_function_count": 8,
-          "resident_named_jaccard": 0.009
+          "jfg_module": 55,
+          "score": 0.3879,
+          "jfg_text_size": 2944,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.167
         },
         {
           "jfg_module": 101,
-          "score": 0.3382,
+          "score": 0.348,
           "jfg_text_size": 4160,
           "jfg_function_count": 4,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.018
         }
       ]
     },
@@ -4110,37 +5313,40 @@
       "mickey_text_size": 2384,
       "mickey_data_size": 64,
       "mickey_bss_size": 64,
-      "mickey_function_count": 8,
+      "mickey_function_count": 7,
       "mickey_matched_function_count": 7,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
+        "mmAlloc": 1,
         "mathOneFloatPY": 1,
-        "mmFree": 1
+        "mmFree": 1,
+        "camGetPtr": 1,
+        "texDPInit": 1
       },
-      "mickey_resident_opaque_call_count": 9,
+      "mickey_resident_opaque_call_count": 6,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 131,
-          "score": 0.3175,
-          "jfg_text_size": 1984,
-          "jfg_function_count": 4,
-          "resident_named_jaccard": 0.02
-        },
-        {
           "jfg_module": 120,
-          "score": 0.3152,
+          "score": 0.3302,
           "jfg_text_size": 2768,
           "jfg_function_count": 7,
           "resident_named_jaccard": 0.0
         },
         {
-          "jfg_module": 46,
-          "score": 0.2919,
-          "jfg_text_size": 2384,
-          "jfg_function_count": 8,
-          "resident_named_jaccard": 0.0
+          "jfg_module": 131,
+          "score": 0.3269,
+          "jfg_text_size": 1984,
+          "jfg_function_count": 4,
+          "resident_named_jaccard": 0.021
+        },
+        {
+          "jfg_module": 10,
+          "score": 0.3099,
+          "jfg_text_size": 1680,
+          "jfg_function_count": 6,
+          "resident_named_jaccard": 0.115
         }
       ]
     },
@@ -4149,36 +5355,61 @@
       "mickey_text_size": 52960,
       "mickey_data_size": 23904,
       "mickey_bss_size": 4048,
-      "mickey_function_count": 63,
-      "mickey_matched_function_count": 60,
+      "mickey_function_count": 71,
+      "mickey_matched_function_count": 71,
       "out_degree": 0,
       "in_degree": 0,
       "mickey_resident_named_calls": {
-        "mmFree": 1
+        "mainChangeLevel": 2,
+        "amTuneSetFade": 1,
+        "mainTitlePageInit": 1,
+        "mainSetMode": 1,
+        "amSndPlay": 1,
+        "viGetCurrentSize": 3,
+        "fontUseFont": 2,
+        "fontBackground": 2,
+        "fontColour": 2,
+        "fontPrintXY": 2,
+        "texDPInit": 1,
+        "sprSetTextureFilter": 2,
+        "camDo2DSprite": 1,
+        "frontDrawRectangles": 3,
+        "camStandardOrtho": 2,
+        "texDPTextureX": 1,
+        "texAnimateSprite": 1,
+        "texLoadSprite": 71,
+        "levelGetNumber": 1,
+        "texLoadTexture": 3,
+        "amTunePlay": 1,
+        "joyGetPressed": 1,
+        "joyGetButtons": 1,
+        "texFreeTexture": 3,
+        "mmFree": 1,
+        "texFreeSprite": 1
       },
-      "mickey_resident_opaque_call_count": 144,
+      "mickey_resident_opaque_call_count": 34,
       "confident": false,
       "candidates": [
         {
           "jfg_module": 68,
-          "score": 0.2175,
+          "score": 0.2119,
           "jfg_text_size": 70560,
           "jfg_function_count": 36,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.004
         },
         {
           "jfg_module": 3,
-          "score": 0.2076,
+          "score": 0.2082,
           "jfg_text_size": 96784,
           "jfg_function_count": 67,
-          "resident_named_jaccard": 0.0
+          "resident_named_jaccard": 0.001
         },
         {
-          "jfg_module": 27,
-          "score": 0.1666,
-          "jfg_text_size": 1088,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": 0.146
+          "jfg_module": 31,
+          "score": 0.149,
+          "jfg_text_size": 15744,
+          "jfg_function_count": 26,
+          "resident_named_jaccard": 0.042
         }
       ]
     },
@@ -4187,34 +5418,36 @@
       "mickey_text_size": 112,
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
-      "mickey_function_count": 2,
+      "mickey_function_count": 1,
       "mickey_matched_function_count": 1,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 1,
+      "mickey_resident_named_calls": {
+        "romCopy": 1
+      },
+      "mickey_resident_opaque_call_count": 0,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 156,
-          "score": 0.7071,
-          "jfg_text_size": 48,
+          "jfg_module": 98,
+          "score": 1.0,
+          "jfg_text_size": 112,
           "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 1.0
         },
         {
-          "jfg_module": 144,
-          "score": 0.6357,
-          "jfg_text_size": 16,
+          "jfg_module": 71,
+          "score": 0.96,
+          "jfg_text_size": 112,
           "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 1.0
         },
         {
-          "jfg_module": 148,
-          "score": 0.6015,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "jfg_module": 111,
+          "score": 0.4222,
+          "jfg_text_size": 144,
+          "jfg_function_count": 1,
+          "resident_named_jaccard": 0.0
         }
       ]
     },
@@ -4223,34 +5456,36 @@
       "mickey_text_size": 112,
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
-      "mickey_function_count": 2,
+      "mickey_function_count": 1,
       "mickey_matched_function_count": 1,
       "out_degree": 0,
       "in_degree": 0,
-      "mickey_resident_named_calls": {},
-      "mickey_resident_opaque_call_count": 1,
+      "mickey_resident_named_calls": {
+        "romCopy": 1
+      },
+      "mickey_resident_opaque_call_count": 0,
       "confident": false,
       "candidates": [
         {
-          "jfg_module": 156,
-          "score": 0.7071,
-          "jfg_text_size": 48,
+          "jfg_module": 98,
+          "score": 1.0,
+          "jfg_text_size": 112,
           "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 1.0
         },
         {
-          "jfg_module": 144,
-          "score": 0.6357,
-          "jfg_text_size": 16,
+          "jfg_module": 71,
+          "score": 0.96,
+          "jfg_text_size": 112,
           "jfg_function_count": 1,
-          "resident_named_jaccard": null
+          "resident_named_jaccard": 1.0
         },
         {
-          "jfg_module": 148,
-          "score": 0.6015,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
-          "resident_named_jaccard": null
+          "jfg_module": 111,
+          "score": 0.4222,
+          "jfg_text_size": 144,
+          "jfg_function_count": 1,
+          "resident_named_jaccard": 0.0
         }
       ]
     },
@@ -4337,7 +5572,7 @@
       "mickey_text_size": 16,
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
-      "mickey_function_count": 2,
+      "mickey_function_count": 1,
       "mickey_matched_function_count": 1,
       "out_degree": 0,
       "in_degree": 0,
@@ -4347,21 +5582,21 @@
       "candidates": [
         {
           "jfg_module": 144,
-          "score": 0.85,
+          "score": 1.0,
           "jfg_text_size": 16,
           "jfg_function_count": 1,
           "resident_named_jaccard": null
         },
         {
           "jfg_module": 60,
-          "score": 0.725,
+          "score": 0.875,
           "jfg_text_size": 16,
           "jfg_function_count": 1,
           "resident_named_jaccard": null
         },
         {
           "jfg_module": 156,
-          "score": 0.6833,
+          "score": 0.8333,
           "jfg_text_size": 48,
           "jfg_function_count": 1,
           "resident_named_jaccard": null
@@ -4373,7 +5608,7 @@
       "mickey_text_size": 48,
       "mickey_data_size": 0,
       "mickey_bss_size": 0,
-      "mickey_function_count": 2,
+      "mickey_function_count": 1,
       "mickey_matched_function_count": 1,
       "out_degree": 0,
       "in_degree": 0,
@@ -4383,23 +5618,23 @@
       "candidates": [
         {
           "jfg_module": 156,
-          "score": 0.85,
+          "score": 1.0,
           "jfg_text_size": 48,
           "jfg_function_count": 1,
           "resident_named_jaccard": null
         },
         {
           "jfg_module": 144,
-          "score": 0.6833,
+          "score": 0.8333,
           "jfg_text_size": 16,
           "jfg_function_count": 1,
           "resident_named_jaccard": null
         },
         {
-          "jfg_module": 148,
-          "score": 0.5721,
-          "jfg_text_size": 544,
-          "jfg_function_count": 2,
+          "jfg_module": 60,
+          "score": 0.7083,
+          "jfg_text_size": 16,
+          "jfg_function_count": 1,
           "resident_named_jaccard": null
         }
       ]

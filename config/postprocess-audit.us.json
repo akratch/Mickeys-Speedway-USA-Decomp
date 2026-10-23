@@ -601,34 +601,6 @@
       ]
     },
     {
-      "c_owned": null,
-      "class": "metadata",
-      "matched_c": null,
-      "nonmatching": null,
-      "object": "build/src/overlays/o017/overlay17CreateChain.c.o",
-      "offset": null,
-      "overlay": 17,
-      "size": null,
-      "source": "src/overlays/o017/overlay17CreateChain.c",
-      "tools": [
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": null,
-      "class": "metadata",
-      "matched_c": null,
-      "nonmatching": null,
-      "object": "build/src/overlays/o019/overlay19BuildPlanes.c.o",
-      "offset": null,
-      "overlay": 19,
-      "size": null,
-      "source": "src/overlays/o019/overlay19BuildPlanes.c",
-      "tools": [
-        "objcopy"
-      ]
-    },
-    {
       "c_owned": true,
       "class": "metadata",
       "matched_c": true,
@@ -655,20 +627,6 @@
       "tools": [
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": null,
-      "class": "metadata",
-      "matched_c": null,
-      "nonmatching": null,
-      "object": "build/src/overlays/o023/overlay23RenderEffect.c.o",
-      "offset": null,
-      "overlay": 23,
-      "size": null,
-      "source": "src/overlays/o023/overlay23RenderEffect.c",
-      "tools": [
         "objcopy"
       ]
     },
@@ -2345,20 +2303,6 @@
       ]
     },
     {
-      "c_owned": null,
-      "class": "metadata",
-      "matched_c": null,
-      "nonmatching": null,
-      "object": "build/src/overlays/o101/overlay101DrawPanel.c.o",
-      "offset": null,
-      "overlay": 101,
-      "size": null,
-      "source": "src/overlays/o101/overlay101DrawPanel.c",
-      "tools": [
-        "objcopy"
-      ]
-    },
-    {
       "c_owned": true,
       "class": "metadata",
       "matched_c": true,
@@ -2437,10 +2381,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 164,
+      "metadata": 160,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 381988,
-    "objects_with_postprocess": 165
+    "objects_with_postprocess": 161
   }
 }

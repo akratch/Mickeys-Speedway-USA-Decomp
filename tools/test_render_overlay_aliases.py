@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 import render_overlay_aliases as renderer
 
@@ -35,7 +36,23 @@ class ManifestValidationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "aliases.json"
             path.write_text(json.dumps(document), encoding="utf-8")
-            return renderer.load_manifest(path)
+            if isinstance(document, dict) and isinstance(document.get("rules"), list):
+                for item in document["rules"]:
+                    if isinstance(item, dict) and isinstance(item.get("object"), str):
+                        source = Path(directory) / "src" / item["object"].removesuffix(".o")
+                        source.parent.mkdir(parents=True, exist_ok=True)
+                        source.touch()
+            return renderer.load_manifest(path, root=Path(directory))
+
+    def test_rejects_deleted_alias_owner(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "aliases.json"
+            path.write_text(json.dumps(manifest([
+                rule("overlays/o034/deleted.c.o", [("old", "new")])
+            ])))
+            with self.assertRaisesRegex(renderer.ManifestError, "alias owner no longer exists"):
+                renderer.load_manifest(path, root=root)
 
     def test_rejects_malformed_source_and_destination_symbols(self) -> None:
         for field, value in (("from", "bad=name"), ("to", "9bad")):
@@ -127,7 +144,10 @@ class RenderingTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            with contextlib.redirect_stdout(io.StringIO()):
+            source = root / "src/overlays/o034/example.c"
+            source.parent.mkdir(parents=True)
+            source.touch()
+            with mock.patch.object(renderer, "REPO", root), contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(
                     renderer.main([
                         "--manifest",

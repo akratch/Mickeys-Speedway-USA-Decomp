@@ -46,7 +46,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 DEFAULT_GATES=(verify cleanroom check-docs check-tooling)
-PROMOTION_GATES=(check-scoreboard check-overlay-syms check-objdiff-config check-nonmatching-builds check-promotion-proofs check-runlink-tables)
+PROMOTION_GATES=(check-scoreboard check-overlay-syms check-objdiff-config check-nonmatching-builds check-promotion-proofs check-runlink-tables check-overlay-graph)
 
 gates=()
 staged=0

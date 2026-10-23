@@ -109,6 +109,7 @@ class ResidentRebindSafetyTests(unittest.TestCase):
         declared = {"build/src/overlays/o040/example.c.o":
                     {"func_80000000": "func_80000000_o040Reloc"}}
         with mock.patch.object(rs, "resident_defined_names", return_value=set()), \
+                mock.patch.object(rs, "object_aliases", return_value=[]), \
                 mock.patch.object(
                     rs, "resident_call_aliases",
                     return_value=({"func_80000000": "func_80000000_o040Reloc"},
@@ -116,7 +117,7 @@ class ResidentRebindSafetyTests(unittest.TestCase):
                 mock.patch("subprocess.run",
                            side_effect=AssertionError("objcopy ran")):
             refusals, notes, plan = rs.plan_resident_rebinds(
-                objects, b"", {40: []}, [None] * 40, [],
+                objects, b"", {40: []}, [{"rom_start": 0}] * 40, [],
                 records_cache={40: []}, declared=declared)
 
         self.assertEqual(([], []), (refusals, notes))
@@ -192,6 +193,30 @@ class OverlayRealNameRebindTests(unittest.TestCase):
             [self.rec(0x110, "SYMBOL")], {"overlay45Create": {(45, "text")}})
         self.assertEqual({"overlay45Create": "overlay45Create_o014Reloc"}, renames)
         self.assertEqual([], refusals)
+
+    def test_cross_module_generated_linker_alias_is_planned(self):
+        caller = Path("build/src/overlays/o014/example.c.o")
+        callee = Path("build/src/overlays/o045/overlay_045.c.o")
+        generated = "func_overlay_045_F00001A0_188C620"
+        fake = FakeElf([("", 0, 0, 0, 0),
+                        (generated, 0, 0, 0x12, rs.SHN_UNDEF)],
+                       [(".text", 0x10, rs.R_MIPS_26, 1)])
+        fake.section = lambda _name: (1, None)
+        target = FakeElf([("friendly", 0, 0x20, 0x12, 1)], [])
+        target.section = fake.section
+        with mock.patch.object(rs, "Elf", side_effect=lambda obj: fake if obj == caller else target), \
+                mock.patch.object(rs, "resident_defined_names", return_value=set()), \
+                mock.patch.object(rs, "object_aliases", side_effect=lambda obj, *_args:
+                                  [(generated, "friendly")] if obj == callee else []), \
+                mock.patch.object(rs, "resident_call_aliases", return_value=({}, [], [])), \
+                mock.patch.object(rs, "tu_base", return_value=(0x100, 0x40)):
+            refused, _notes, plan = rs.plan_resident_rebinds(
+                [(14, caller), (45, callee)], b"", {14: [], 45: []},
+                [{"rom_start": 0}] * 45, [], records_cache={
+                    14: [self.rec(0x110, "SYMBOL")], 45: []})
+        self.assertEqual([], refused)
+        self.assertEqual({generated: "func_overlay_045_F00001A0_o014Reloc"},
+                         plan[caller.as_posix()])
 
     def test_cross_module_data_is_renamed(self):
         renames, _r = self.plan(

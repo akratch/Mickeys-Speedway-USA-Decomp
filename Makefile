@@ -574,6 +574,18 @@ check-runlink-kit: runlink-raw
 	$(HOST_PYTHON) $(TOOLS_DIR)/runlink check
 	$(HOST_PYTHON) $(TOOLS_DIR)/runlink parity
 
+# The structural JFG comparison uses compiled function boundaries, the ROM
+# relocation metadata and the local JFG reference build. Like runlink checks,
+# this is a local promotion check rather than a source-only CI check.
+.PHONY: check-overlay-graph overlay-graph
+check-overlay-graph:
+	@$(QUIET_ELF_BUILD)
+	$(HOST_PYTHON) $(TOOLS_DIR)/overlay_graph_match.py --check
+
+overlay-graph:
+	@$(QUIET_ELF_BUILD)
+	$(HOST_PYTHON) $(TOOLS_DIR)/overlay_graph_match.py --write
+
 # objdiff.json is derived from mickey.us.yaml, the overlay atlas and the split
 # tree (tools/objdiff_config.py), never hand-edited and never from build/.
 # `check-objdiff-config` fails on drift; it needs `gmake extract` but no
@@ -1619,7 +1631,8 @@ $(TARGET).elf: $(O_FILES) $(LD_SCRIPT) overlay_undefined_syms.$(VERSION).txt | $
 # venv; `setup` is what actually installs splat into it.
 $(SPLAT_STAMP): $(BASENAME).$(VERSION).yaml symbol_addrs.$(VERSION).txt \
                 config/overlays.$(VERSION).json $(TOOLS_DIR)/overlay_atlas.py \
-                $(TOOLS_DIR)/overlay_tables.py requirements.txt | $(ALL_DIRS) $(PYTHON)
+                $(TOOLS_DIR)/overlay_tables.py $(TOOLS_DIR)/executable_accounting.py \
+                config/nonexecutable-ranges.$(VERSION).json requirements.txt | $(ALL_DIRS) $(PYTHON)
 	$(HOST_PYTHON) $(TOOLS_DIR)/overlay_atlas.py --check
 	$(PYTHON) -m splat split $(BASENAME).$(VERSION).yaml
 	@$(MAKE) --no-print-directory prune-asm

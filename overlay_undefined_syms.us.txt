@@ -24,6 +24,7 @@ D_1D68 = 0x00001d68;
 D_1D6C = 0x00001d6c;
 D_1D9C = 0x00001d9c;
 D_1DA0 = 0x00001da0;
+func_overlay_001_F0000000_o001Reloc = 0xf0000000;
 gOverlay1ClosestDistanceLiteral = 0x000000ac;
 gOverlay1CycleLength = 0x00001d8c;
 gOverlay1End = 0x00001d5c;
@@ -1561,6 +1562,7 @@ func_8005ABA8_o041Reloc = 0xf0000000;
 func_8005AF14_o041Reloc = 0xf0000000;
 func_overlay_012_F00001B4_o041Reloc = 0xf0000000;
 func_overlay_041_F00002AC_18875E4_o041Reloc = 0xf0000000;
+func_overlay_067_F0000000_o041Reloc = 0xf0000000;
 lightObject_o041Reloc = 0xf0000000;
 mathOneFloatPY_o041Reloc = 0xf0000000;
 mathRnd_o041Reloc = 0xf0000000;
@@ -3340,6 +3342,7 @@ D_2978 = 0x00002978;
 D_297C = 0x0000297c;
 D_2980 = 0x00002980;
 D_2988 = 0x00002988;
+func_overlay_065_F0000000_o065Reloc = 0xf0000000;
 
 /* overlay 65: overlay65Release.c.o */
 gOverlay65Resource208 = 0x00000208;
@@ -3687,6 +3690,9 @@ partUpdateTriggers_o085Reloc = 0xf0000000;
 func_8005AF14_o086Reloc = 0xf0000000;
 lightObject_o086Reloc = 0xf0000000;
 
+/* overlay 86: overlay86ScaledVectorPosition.c.o */
+func_overlay_086_F0000000_o086Reloc = 0xf0000000;
+
 /* overlay 86: overlay86BuildTransform.c.o */
 func_8000FAE0_o086Reloc = 0xf0000000;
 gOverlay86Vectors = 0x00000000;
@@ -3748,6 +3754,9 @@ amSndStopXYZ_o087Reloc = 0xf0000000;
 
 /* overlay 87: overlay87HasNearby.c.o */
 func_80005750_o087Reloc = 0xf0000000;
+
+/* overlay 88: overlay88UpdateAnchor.c.o */
+func_overlay_088_F0000000_o088Reloc = 0xf0000000;
 
 /* overlay 88: overlay88DrawSortedGeometry.c.o */
 overlay88DrawConeReloc = 0xf0000000;

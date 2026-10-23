@@ -100,9 +100,18 @@ The `Powerf` arity discrepancy was resolved on 2026-10-23: `shadowGenerate`
 and `overlay23Update` now explicitly pass their incoming integer exponent,
 as consumed by Mickey's assembly. Both complete objects retain their text
 and ordered relocation identities.
+
+The angle-storage overrun in `shadowGenerate` was resolved on 2026-10-23.
+Its compiler-owned `ShadowGenerateAngle` now contains all three signed
+halfwords: horizontal angle, vertical angle and material. The material
+initializer is 128; two alignment bytes precede the separate float table.
+Member accesses replace the write beyond a two-element array and the cast
+of that array to the larger record. Complete linked code and data remain
+ROM-identical; both material relocations resolve to the same field.
+
 Smaller points a careful reviewer would raise:
-`shadowGenerate` writes index 2 of a two-element array. `D_8007CA60` is read at
-negative offsets, which suggests a missing table symbol. `vsprintf` and
+`D_8007CA60` is read at negative offsets, which suggests a missing table
+symbol. `vsprintf` and
 `func_8005BA40` carry stale comments calling them non-matching.
 `func_overlay_058_F000138C_18B0574` line 1349 tests the same global twice, which
 may be an original typo. Check it against the target before calling it a probe.

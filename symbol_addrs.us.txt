@@ -450,7 +450,7 @@ D_8007944C = 0x8007944C; // type:u8 size:0x4 tier-A compiler-owned main/shadows 
 D_80079450 = 0x80079450; // type:u8 size:0x4 tier-A compiler-owned main/shadows .data buffer state
 D_80079454 = 0x80079454; // type:u8 size:0x4 tier-A compiler-owned main/shadows .data buffer state
 D_80079458 = 0x80079458; // type:s32 size:0x4 tier-A compiler-owned main/shadows .data buffer state
-D_8007945C = 0x8007945C; // type:u16 size:0x4 tier-A compiler-owned main/shadows .data terminal pair
+D_8007945C = 0x8007945C; // type:s16 size:0x6 tier-A compiler-owned main/shadows three-field angle record
 
 // main/camlight and the opening of main/spranim -- PROVENANCE: descriptive
 // names borrowed from JFG's public src/camlight.c and src/spranim.c.  Each
@@ -3011,3 +3011,7 @@ D_800D6C46 = 0x800D6C46; // tier-B ORT export and overlay 40 references, unsized
 
 // Tier B: ORT data export used by overlay 35; unsized resident view only.
 D_800C99BC = 0x800C99BC; // tier-B ORT1758 export and overlay 35 references, unsized data view
+
+// Overlay 30 import views: these labels do not claim resident allocations.
+D_800C94E4 = 0x800C94E4; // tier-B ORT row 1707 plus mapped resident BSS, word accesses between D_800C94E0 and D_800C94E8
+D_800C9464 = 0x800C9464; // tier-B ORT row 1715 plus mapped resident BSS, pointer-word accesses between D_800C9460 and D_800C9468

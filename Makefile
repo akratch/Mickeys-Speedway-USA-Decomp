@@ -847,6 +847,10 @@ $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: CFLAGS += -Wab,-r4300_mul
 # that nop at the same instruction index without disturbing any of the
 # four functions this TU already matches (gmake verify still passes).
 $(BUILD_DIR)/$(SRC_DIR)/main/shadows.c.o: CFLAGS += -Wab,-r4300_mul
+# The terminal six-byte angle record and its two-byte alignment end at the
+# next float table. Discard only IDO's remaining input-section alignment.
+$(BUILD_DIR)/$(SRC_DIR)/main/shadows.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x54
 
 # Three more resident TUs on the same scheduler, kept on measurement rather
 # than on the signature alone.

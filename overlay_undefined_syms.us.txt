@@ -1122,6 +1122,23 @@ mathRnd_o023Reloc = 0xf0000000;
 overlay23CallReloc = 0xf0000000;
 texLoadSprite_o023Reloc = 0xf0000000;
 
+/* overlay 28: overlay_028.c.o */
+D_80000028 = 0x80000028;
+amSndPlayXYZ_o028Reloc = 0xf0000000;
+amSndSetVolXYZ_o028Reloc = 0xf0000000;
+amSndSetXYZ_o028Reloc = 0xf0000000;
+camGetPtr_o028Reloc = 0xf0000000;
+camPopModelMtx_o028Reloc = 0xf0000000;
+camPushModelMtx_o028Reloc = 0xf0000000;
+ext_o0_29e00 = 0xf0000000;
+func_80006EA0_o028Reloc = 0xf0000000;
+func_80009F08_o028Reloc = 0xf0000000;
+func_8002A8BC_o028Reloc = 0xf0000000;
+func_8002A8C0_o028Reloc = 0xf0000000;
+resetColourCycle_o028Reloc = 0xf0000000;
+sqrtf_o028Reloc = 0xf0000000;
+texDPTextureX_o028Reloc = 0xf0000000;
+
 /* overlay 29: overlay_029.c.o */
 Arctanf_o029Reloc = 0xf0000000;
 amSndPlayXYZ_o029Reloc = 0xf0000000;
@@ -1168,31 +1185,40 @@ sqrtf_o029Reloc = 0xf0000000;
 texDPInit_o029Reloc = 0xf0000000;
 trackMakePolylist_o029Reloc = 0xf0000000;
 
-/* overlay 30: overlay_030.c.o */
-D_800C9450_o030Reloc = 0x00000000;
-D_800C9454_o030Reloc = 0x00000000;
-D_800C9458_o030Reloc = 0x00000000;
-D_800C945C_o030Reloc = 0x00000000;
-D_800C9460_o030Reloc = 0x00000000;
-D_800C9468_o030Reloc = 0x00000000;
-D_800C946C_o030Reloc = 0x00000000;
-D_800C9488_o030Reloc = 0x00000000;
-D_800C948C_o030Reloc = 0x00000000;
-D_800C9494_o030Reloc = 0x00000000;
-D_800C94A0_o030Reloc = 0x00000000;
-D_800C94A4_o030Reloc = 0x00000000;
-D_800C94E0_o030Reloc = 0x00000000;
-D_800C94EC_o030Reloc = 0x00000000;
-D_800C94F4_o030Reloc = 0x00000000;
-D_800C9500_o030Reloc = 0x00000000;
-func_80004340_o030Reloc = 0xf0000000;
-gOverlay30PixelHeader = 0x00000000;
-gOverlay30SentinelIndex = 0x00000000;
-lightDefaultObjectLight_o030Reloc = 0xf0000000;
-mmAllocRegion_o030Reloc = 0xf0000000;
-mmAlloc_o030Reloc = 0xf0000000;
-piRomGetFileSize_o030Reloc = 0xf0000000;
-piRomLoad_o030Reloc = 0xf0000000;
+/* overlay 31: overlay_031.c.o */
+D_8007C884_o031Reloc = 0x00000000;
+D_8007C888_o031Reloc = 0x00000000;
+D_8007C88C_o031Reloc = 0x00000000;
+D_8007C890_o031Reloc = 0x00000000;
+D_8007C894_o031Reloc = 0x00000000;
+D_8007C898_o031Reloc = 0x00000000;
+D_8007C89C_o031Reloc = 0x00000000;
+D_8007C8AC_o031Reloc = 0x00000000;
+D_8007C8B0_o031Reloc = 0x00000000;
+D_8007C8B8_o031Reloc = 0x00000000;
+D_8007C8BC_o031Reloc = 0x00000000;
+D_8007C8C0_o031Reloc = 0x00000000;
+D_8007CA60_o031Reloc = 0x00000000;
+D_8007CA98_o031Reloc = 0x00000000;
+D_800D4120_o031Reloc = 0x00000000;
+func_800056A4_o031Reloc = 0xf0000000;
+func_8002A8BC_o031Reloc = 0xf0000000;
+func_8002A8C0_o031Reloc = 0xf0000000;
+func_overlay_031_F00004F8_187FA18Reloc = 0xf0000000;
+gOverlay31BehaviourAssets = 0x00000000;
+gOverlay31ParticleAssetCount = 0x00000000;
+gOverlay31ParticleAssets = 0x00000000;
+gOverlay31RectangleSourceA = 0x00000000;
+gOverlay31RectangleSourceB = 0x00000000;
+gOverlay31TriangleSourceA = 0x00000000;
+gOverlay31TriangleSourceB = 0x00000000;
+mmAlloc_o031Reloc = 0xf0000000;
+mmFree_o031Reloc = 0xf0000000;
+modLoadModel_o031Reloc = 0xf0000000;
+piRomLoad_o031Reloc = 0xf0000000;
+reset_particles_o031Reloc = 0xf0000000;
+texLoadSprite_o031Reloc = 0xf0000000;
+texLoadTexture_o031Reloc = 0xf0000000;
 
 /* overlay 33: overlay_033.c.o */
 D_1808 = 0x00001808;
@@ -1223,6 +1249,72 @@ sprSetTextureFilter_o033Reloc = 0xf0000000;
 texDPInit_o033Reloc = 0xf0000000;
 trackGetFog_o033Reloc = 0xf0000000;
 viGetCurrentSize_o033Reloc = 0xf0000000;
+
+/* overlay 34: overlay_034.c.o */
+func_800084C4_o034Reloc = 0xf0000000;
+func_80024938_o034Reloc = 0xf0000000;
+func_80029FE4_o034Reloc = 0xf0000000;
+func_8002B768_o034Reloc = 0xf0000000;
+func_overlay_034_F00002C8_1881470Reloc = 0xf0000000;
+func_overlay_034_F0000540_18816E8Reloc = 0xf0000000;
+gOverlay34ActiveCount = 0x0000000c;
+gOverlay34Count = 0x00000008;
+gOverlay34Pointers = 0x00000004;
+gOverlay34Records = 0x00000000;
+gOverlay34Value10 = 0x00000010;
+mmAlloc_o034Reloc = 0xf0000000;
+texFreeTexture_o034Reloc = 0xf0000000;
+texLoadTexture_o034Reloc = 0xf0000000;
+
+/* overlay 35: overlay_035.c.o */
+D_80079274_o035Reloc = 0x00000000;
+D_800792E8_o035Reloc = 0x00000000;
+D_800792EC_o035Reloc = 0x00000000;
+D_800792F0_o035Reloc = 0x00000000;
+D_800792F4_o035Reloc = 0x00000000;
+D_80079314_o035Reloc = 0x00000000;
+D_800C9544_o035Reloc = 0x00000000;
+D_800C9548_o035Reloc = 0x00000000;
+D_800C9560_o035Reloc = 0x00000000;
+D_800C9568_o035Reloc = 0x00000000;
+D_800C95A8_o035Reloc = 0x00000000;
+D_800C9D20_o035Reloc = 0x00000000;
+D_800C9D2C_o035Reloc = 0x00000000;
+D_800C9D30_o035Reloc = 0x00000000;
+D_800C9D34_o035Reloc = 0x00000000;
+D_800C9D38_o035Reloc = 0x00000000;
+D_800C9D3C_o035Reloc = 0x00000000;
+D_o35_model_table = 0x00000000;
+D_o35_paramB = 0x00000000;
+D_o35_reset1 = 0x00000000;
+D_o35_skip_collision_edges = 0x00000004;
+align16_o035Reloc = 0xf0000000;
+align4_o035Reloc = 0xf0000000;
+animseqLoadLevelData_o035Reloc = 0xf0000000;
+camSetMode_o035Reloc = 0xf0000000;
+func_80004C28_o035Reloc = 0xf0000000;
+func_80004FE0_o035Reloc = 0xf0000000;
+func_8000C540_o035Reloc = 0xf0000000;
+func_8002A244_o035Reloc = 0xf0000000;
+func_8004D7E0_o035Reloc = 0xf0000000;
+levelGetLevel_o035Reloc = 0xf0000000;
+mainGetNumberOfCameras_o035Reloc = 0xf0000000;
+mainPreNMI_o035Reloc = 0xf0000000;
+mmAllocAtAddr_o035Reloc = 0xf0000000;
+mmAlloc_o035Reloc = 0xf0000000;
+mmFree_o035Reloc = 0xf0000000;
+mmGetDelay_o035Reloc = 0xf0000000;
+mmSetDelay_o035Reloc = 0xf0000000;
+modelSetModelFlags_o035Reloc = 0xf0000000;
+overlay98CollectUniqueY_o035Reloc = 0xf0000000;
+piRomLoadSection_o035Reloc = 0xf0000000;
+piRomLoad_o035Reloc = 0xf0000000;
+shadowChangeBuffer_o035Reloc = 0xf0000000;
+shadowGenerate_o035Reloc = 0xf0000000;
+shadowInitBuffers_o035Reloc = 0xf0000000;
+sqrtf_o035Reloc = 0xf0000000;
+texLoadTexture_o035Reloc = 0xf0000000;
+trackLightAllocate_o035Reloc = 0xf0000000;
 
 /* overlay 36: overlay_036.c.o */
 D_80078F20_o036Reloc = 0x00000000;
@@ -1271,13 +1363,58 @@ overlay7CommitSelection_o036Reloc = 0xf0000000;
 partUpdateTriggers_o036Reloc = 0xf0000000;
 texAnimateSprite_o036Reloc = 0xf0000000;
 
-/* overlay 39: overlay_039.c.o */
-D_8007A204_o039Reloc = 0x00000000;
-__osContLastCmd_o039Reloc = 0x00000000;
-__osSiGetAccess_o039Reloc = 0xf0000000;
-__osSiRawStartDma_o039Reloc = 0xf0000000;
-__osSiRelAccess_o039Reloc = 0xf0000000;
-overlay39SendReloc = 0xf0000000;
+/* overlay 37: overlay_037.c.o */
+camGetPtr_o037Reloc = 0xf0000000;
+func_80006EA0_o037Reloc = 0xf0000000;
+func_80021964_o037Reloc = 0xf0000000;
+func_800244EC_o037Reloc = 0xf0000000;
+func_8002460C_o037Reloc = 0xf0000000;
+func_8002A250_o037Reloc = 0xf0000000;
+func_8002A8C0_o037Reloc = 0xf0000000;
+gOverlay37DisplayData = 0x80000000;
+gOverlay37DisplayData78 = 0x80000078;
+gOverlay37Period = 0x00000000;
+gOverlay37Records = 0x000000b8;
+texDPTextureX_o037Reloc = 0xf0000000;
+
+/* overlay 38: overlay_038.c.o */
+Arctanf_o038Reloc = 0xf0000000;
+camGetPtr_o038Reloc = 0xf0000000;
+camPopModelMtx_o038Reloc = 0xf0000000;
+camPushModelMtx_o038Reloc = 0xf0000000;
+func_80006EA0_o038Reloc = 0xf0000000;
+gO38ObjectTriangles = 0x80000028;
+gO38ObjectVertices = 0x80000000;
+gO38ParticleTriangles = 0x80000070;
+gO38ParticleVertices = 0x80000048;
+mathOneFloatPY_o038Reloc = 0xf0000000;
+mathRnd_o038Reloc = 0xf0000000;
+sqrtf_o038Reloc = 0xf0000000;
+texDPTextureX_o038Reloc = 0xf0000000;
+
+/* overlay 40: overlay_040.c.o */
+D_8007D6B0_o040Reloc = 0x00000000;
+D_800D6B00_o040Reloc = 0x00000000;
+D_800D6BF8_o040Reloc = 0x00000000;
+D_800D6C38_o040Reloc = 0x00000000;
+D_800D6C3E_o040Reloc = 0x00000000;
+D_800D6C44_o040Reloc = 0x00000000;
+camProjectPoint_o040Reloc = 0xf0000000;
+frontDrawRectangles_o040Reloc = 0xf0000000;
+gO40TintBlueReloc = 0x00000000;
+gO40TintDisplayListReloc = 0x00000000;
+gO40TintGreenReloc = 0x00000000;
+gOverlay40BlendCurrent = 0x00000000;
+gOverlay40BlendDuration = 0x00000000;
+gOverlay40BlendOutput = 0x00000000;
+gOverlay40BlendTarget = 0x00000000;
+gOverlay40BlendTimer = 0x00000000;
+gOverlay40Value1 = 0x00000000;
+gOverlay40Value4 = 0x00000000;
+gOverlay40Value5 = 0x00000000;
+gOverlay40Value6 = 0x00000000;
+gOverlay40Value7 = 0x00000000;
+o40TintCallReloc = 0xf0000000;
 
 /* overlay 41: overlay_041.c.o */
 D_8007C0B8_o041Reloc = 0x00000000;
@@ -3059,7 +3196,6 @@ texAnimateSprite_o070Reloc = 0xf0000000;
 
 /* overlay 71: overlay_071.c.o */
 D_80000008 = 0x80000008;
-D_80000028 = 0x80000028;
 D_800000D8 = 0x800000d8;
 D_80079274_o071Reloc = 0x00000000;
 SetLinkSlot_o071Reloc = 0xf0000000;
@@ -3893,8 +4029,8 @@ func_overlay_029_F00014C8_187E778 = overlay29DrawGroups;
 func_overlay_030_F0000000_187EEF8 = overlay30Initialize;
 
 /* overlay 31: overlay_031.c.o */
-func_overlay_031_F00006B0_187FBD0 = overlay31InitializeBuffers;
 func_overlay_031_F00004F8_187FA18 = overlay31BuildPalettes;
+func_overlay_031_F00006B0_187FBD0 = overlay31InitializeBuffers;
 
 /* overlay 33: overlay_033.c.o */
 func_overlay_033_F0000000_18807E8 = overlay33InitializeBuffers;
@@ -3905,14 +4041,14 @@ func_overlay_033_F000066C_1880E54 = overlay33PresentAndSwap;
 func_overlay_033_F0000708_1880EF0 = overlay33CallB;
 
 /* overlay 34: overlay_034.c.o */
-func_overlay_034_F00002C8_1881470 = overlay34RemoveRecord;
-func_overlay_034_F0000608_18817B0 = overlay34SortAndDraw;
 func_overlay_034_F0000000_18811A8 = overlay34InitStorage;
-func_overlay_034_F0000378_1881520 = overlay34ResetStorage;
-func_overlay_034_F0000540_18816E8 = overlay34InterpolateColor;
-func_overlay_034_F00000D4_188127C = overlay34CreateRecord;
-func_overlay_034_F000040C_18815B4 = overlay34UpdateRecords;
 func_overlay_034_F00000C8_1881270 = overlay34SetValue10;
+func_overlay_034_F00000D4_188127C = overlay34CreateRecord;
+func_overlay_034_F00002C8_1881470 = overlay34RemoveRecord;
+func_overlay_034_F0000378_1881520 = overlay34ResetStorage;
+func_overlay_034_F000040C_18815B4 = overlay34UpdateRecords;
+func_overlay_034_F0000540_18816E8 = overlay34InterpolateColor;
+func_overlay_034_F0000608_18817B0 = overlay34SortAndDraw;
 
 /* overlay 36: overlay_036.c.o */
 func_overlay_036_F0000000_18834B8 = overlay36InitObject;
@@ -3934,26 +4070,26 @@ func_overlay_036_F000150C_18849C4 = overlay36UpdatePeers;
 func_overlay_036_F0001688_1884B40 = overlay36SpawnFinalEffect;
 
 /* overlay 37: overlay_037.c.o */
-func_overlay_037_F000019C_18857BC = overlay37RenderEffect;
-func_overlay_037_F0000544_1885B64 = overlay37RecordActive;
-func_overlay_037_F00004F4_1885B14 = overlay37RecordMinimum;
 func_overlay_037_F0000000_1885620 = overlay37Init;
 func_overlay_037_F0000088_18856A8 = overlay37Update;
+func_overlay_037_F000019C_18857BC = overlay37RenderEffect;
+func_overlay_037_F00004F4_1885B14 = overlay37RecordMinimum;
+func_overlay_037_F0000544_1885B64 = overlay37RecordActive;
 
 /* overlay 39: overlay_039.c.o */
+func_overlay_039_F000011C_18867BC = overlay39Read;
 func_overlay_039_F0000000_18866A0 = overlay39Write;
 func_overlay_039_F00000C8_1886768 = overlay39Reset;
-func_overlay_039_F000011C_18867BC = overlay39Read;
 
 /* overlay 40: overlay_040.c.o */
+func_overlay_040_F0000000_18868B0 = overlay40AddEntry;
 func_overlay_040_F0000084_1886934 = overlay40RemoveEntry;
+func_overlay_040_F00000E8_1886998 = overlay40UpdateEntries;
+func_overlay_040_F00002E4_1886B94 = overlay40DrawEntries;
+func_overlay_040_F0000448_1886CF8 = overlay40SetValues;
+func_overlay_040_F0000490_1886D40 = overlay40Interpolate;
 func_overlay_040_F0000534_1886DE4 = overlay40DrawTintRectangle;
 func_overlay_040_F0000690_1886F40 = overlay40FadeRecords;
-func_overlay_040_F0000490_1886D40 = overlay40Interpolate;
-func_overlay_040_F0000448_1886CF8 = overlay40SetValues;
-func_overlay_040_F0000000_18868B0 = overlay40AddEntry;
-func_overlay_040_F00002E4_1886B94 = overlay40DrawEntries;
-func_overlay_040_F00000E8_1886998 = overlay40UpdateEntries;
 
 /* overlay 41: overlay_041.c.o */
 func_overlay_041_F000124C_1888584 = overlay41IsUnitScale;

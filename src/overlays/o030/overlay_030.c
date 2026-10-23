@@ -18,14 +18,14 @@ void overlay30Initialize(void) {
     D_800C94F4 = mmAlloc(0x20, 0x8B);
     D_800C9500 = mmAlloc(0x80, 0x8B);
 
-    D_800C94E0 = piRomLoad(0x2E);
-    gOverlay30SentinelIndex = (piRomGetFileSize(0x2E) >> 1) - 1;
-    while (D_800C94E0[gOverlay30SentinelIndex] == 0) {
-        gOverlay30SentinelIndex--;
+    D_800C94E0 = (s16 *) piRomLoad(0x2E);
+    D_800C94E4 = (piRomGetFileSize(0x2E) >> 1) - 1;
+    while (D_800C94E0[D_800C94E4] == 0) {
+        D_800C94E4--;
     }
 
     D_800C9450 = mmAlloc((D_800C9454 = 0x2000), 0x8F);
-    D_800C9458 = piRomLoad(0x2C);
+    D_800C9458 = (s32 *) piRomLoad(0x2C);
     D_800C945C = 0;
     while (D_800C9458[D_800C945C] != -1) {
         D_800C945C++;
@@ -39,14 +39,14 @@ void overlay30Initialize(void) {
     }
 
     D_800C9460 = piRomLoad(0x18);
-    gOverlay30PixelHeader = piRomLoad(0x19);
+    D_800C9464 = (s32 *) piRomLoad(0x19);
     D_800C9468 = 0;
-    while (gOverlay30PixelHeader[D_800C9468] != -1) {
+    while (D_800C9464[D_800C9468] != -1) {
         D_800C9468++;
     }
 
-    overlay30TransposePixels((u8 *)D_800C9460 + (gOverlay30PixelHeader[5] * 4),
-                             (gOverlay30PixelHeader[6] - gOverlay30PixelHeader[5]) * 4);
+    overlay30TransposePixels((u8 *)D_800C9460 + (D_800C9464[5] * 4),
+                             (D_800C9464[6] - D_800C9464[5]) * 4);
     D_800C9494 = mmAlloc(0x800, 0x8B);
     D_800C94A4 = mmAlloc(0x100, 0x8B);
     D_800C946C = 2.0f;

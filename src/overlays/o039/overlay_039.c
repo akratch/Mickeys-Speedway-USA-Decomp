@@ -28,7 +28,7 @@ void overlay39Write(u8 *source, struct OSMesgQueue_s *mq) {
     }
     __osSiGetAccess();
     __osContLastCmd = 0xFE;
-    overlay39SendReloc(buffer, 0x40);
+    osWritebackDCache(buffer, 0x40);
     __osSiRawStartDma(1, buffer);
     __osSiRelAccess();
 }
@@ -36,7 +36,7 @@ void overlay39Write(u8 *source, struct OSMesgQueue_s *mq) {
 void overlay39Reset(struct OSMesgQueue_s *mq) {
     __osSiGetAccess();
     __osContLastCmd = 0xFE;
-    overlay39SendReloc(D_8007A204, 0x40);
+    osInvalDCache(D_8007A204, 0x40);
     __osSiRawStartDma(0, D_8007A204);
     __osSiRelAccess();
 }

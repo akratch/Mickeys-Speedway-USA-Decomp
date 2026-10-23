@@ -3852,13 +3852,15 @@ segments:
     vram: 0xF0000000
     bss_size: 0xFD0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o101
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18DB820, c, overlay_101]
       - [0x18E8700, bin, overlay_101_data_rodata]
+      - [0x18E8930, .data, overlay101ClockData]
+      - [0x18E8A40, bin, overlay_101_data_rodata_340]
 
   - name: overlay_101_reloc1
     type: bin

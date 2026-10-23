@@ -109,7 +109,7 @@ DATA_RODATA_OWNERSHIP = {
     16: [(0x0, 0x10, "overlay_016")],
     22: [(0x0, 0x60, "overlay_022")],
     45: [(0x0, 0x80, "overlay_045")],
-    47: [(0x0, 0x5A0, "overlay47ReleaseResources")],
+    47: [(0x0, 0x560, "overlay_047")],
     # Offsets are relative to data_rodata. The source must already own a C text
     # row: its compiled .data is linked before any remaining raw initialized
     # tail, so no duplicate C subsegment is emitted at the section boundary.
@@ -259,6 +259,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     ],
     24: [(0x0, 0x10, "overlay_024", ".rodata")],
     64: [(0x0, 0x10, "overlay_064", ".data")],
+    47: [(0x560, 0x5A0, "overlay_047", ".rodata")],
 }
 DATA_ONLY_FIXED_DATA_SOURCES = {
     (8, "overlay8MotionConstants", ".data"),
@@ -329,13 +330,11 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
     68: "overlay_068_padding",
     58: "overlay_058_padding_b",
     61: "overlay_061_padding",
+    47: "overlay_047_padding",
 }
 
-# Overlay 47's final text address is already 8-byte aligned, but the ROM has
-# an explicit eight-byte gap before initialized data. Emit a bounded asm row
-# for that gap rather than letting the old row absorb the data block.
+# Reviewed gaps that require explicit padding rather than compiler alignment.
 EXPLICIT_TEXT_PADDING = {
-    47: "overlay_047_padding",
 }
 
 
@@ -492,10 +491,7 @@ TEXT_SUBSEGMENTS = {
         (0x1C1C, "asm", "overlay_045_padding"),
     ],
     47: [
-        (0x0000, "c", "func_overlay_047_F0000000_1890E18"),
-        (0x09D0, "c", "overlay47ReleaseResources"),
-        (0x0B30, "c", "func_overlay_047_F0000B30_1891948"),
-        (0x2D10, "c", "overlay47SpawnObject"),
+        (0x0000, "c", "overlay_047"),
         (0x2DE8, "asm", "overlay_047_padding"),
     ],
     49: [

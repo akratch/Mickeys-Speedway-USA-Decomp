@@ -1124,104 +1124,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045.c.o: POSTPROCESS = \
 		@config/normalizations/overlay_045.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:c52cb05fd2fed4ffaf80d0f50519a1b99d267a85960aeefe5e036df19162ad00
-# The selector table is the overlay-local +0x510 address already encoded in
-# retail, so retain that addend without a static-link relocation. The three
-# runtime calls use the extracted range's offset-zero carrier; their distinct
-# identities remain authoritative in overlay 47's shipped relocation tables.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47SpawnObject.c.o: \
-	$(TOOLS_DIR)/filter_elf_relocations.py \
-	$(TOOLS_DIR)/rebind_elf_relocations.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47SpawnObject.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x10:5:gOverlay47InitializedData 0x20:6:gOverlay47InitializedData && \
-	$(OBJCOPY) --redefine-sym \
-		func_8000590C=func_overlay_047_F0000000_1890E18 $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x94:func_80005768:func_overlay_047_F0000000_1890E18 \
-		0xB0:func_8005AD64:func_overlay_047_F0000000_1890E18 && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xD8
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47ReleaseResources.c.o: POSTPROCESS = \
-	$(OBJCOPY) \
-		--redefine-sym overlay45ReleaseDescriptor=overlay45ReleaseDescriptor_o047Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x160
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000B30_1891948.c.o: CFLAGS += -Wab,-r4300_mul
-# The function defines overlay 47's .data and .bss at their recorded offsets
-# and its .rodata four bytes into the overlay's; the retained overlay image
-# owns the bytes, so these copies are dropped and their sites rebound to base
-# placeholders. Resident and overlay 45 callees and resident data go through
-# the generated *_o047Reloc surface.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000B30_1891948.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	config/normalizations/func_overlay_047_F0000B30_1891948.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000B30_1891948.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay47B30DataBaseReloc=0x0,global \
-		--add-symbol gOverlay47B30BssBaseReloc=0x0,global \
-		--add-symbol gOverlay47B30RodataBaseReloc=0x4,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/func_overlay_047_F0000B30_1891948.rebind.spec && \
-	$(OBJCOPY) --remove-section=.data --remove-section=.bss \
-		--remove-section=.rodata --remove-section=.rel.rodata \
-		--remove-section=.gptab.data --remove-section=.gptab.bss $@ && \
-	$(OBJCOPY) \
-		--redefine-sym amSndPlay=amSndPlay_o047Reloc \
-		--redefine-sym amSndStop=amSndStop_o047Reloc \
-		--redefine-sym camGetFOV=camGetFOV_o047Reloc \
-		--redefine-sym camStandardOrtho=camStandardOrtho_o047Reloc \
-		--redefine-sym D_8007BF74=D_8007BF74_o047Reloc \
-		--redefine-sym D_8007C0B8=D_8007C0B8_o047Reloc \
-		--redefine-sym D_8007C1A0=D_8007C1A0_o047Reloc \
-		--redefine-sym D_800D3058=D_800D3058_o047Reloc \
-		--redefine-sym D_800D3140=D_800D3140_o047Reloc \
-		--redefine-sym D_800D3144=D_800D3144_o047Reloc \
-		--redefine-sym D_800D3148=D_800D3148_o047Reloc \
-		--redefine-sym D_800D3190=D_800D3190_o047Reloc \
-		--redefine-sym D_800D31C8=D_800D31C8_o047Reloc \
-		--redefine-sym fontColour=fontColour_o047Reloc \
-		--redefine-sym func_80006EA0=func_80006EA0_o047Reloc \
-		--redefine-sym func_8001398C=func_8001398C_o047Reloc \
-		--redefine-sym camSetFOV=camSetFOV_o047Reloc \
-		--redefine-sym camSetView=camSetView_o047Reloc \
-		--redefine-sym camDo2DSprite=camDo2DSprite_o047Reloc \
-		--redefine-sym camProjectPoint=camProjectPoint_o047Reloc \
-		--redefine-sym camCopyOrthoMatrix=camCopyOrthoMatrix_o047Reloc \
-		--redefine-sym func_8002A604=func_8002A604_o047Reloc \
-		--redefine-sym func_8002A82C=func_8002A82C_o047Reloc \
-		--redefine-sym func_8002FB34=func_8002FB34_o047Reloc \
-		--redefine-sym texDPInit=texDPInit_o047Reloc \
-		--redefine-sym texDPTextureX=texDPTextureX_o047Reloc \
-		--redefine-sym texAnimateTexSprite=texAnimateTexSprite_o047Reloc \
-		--redefine-sym fontUseFont=fontUseFont_o047Reloc \
-		--redefine-sym fontPrintXY=fontPrintXY_o047Reloc \
-		--redefine-sym func_8005ABA8=func_8005ABA8_o047Reloc \
-		--redefine-sym func_8005AD64=func_8005AD64_o047Reloc \
-		--redefine-sym joyGetPressed=joyGetPressed_o047Reloc \
-		--redefine-sym mainChangeLevel=mainChangeLevel_o047Reloc \
-		--redefine-sym mathRnd=mathRnd_o047Reloc \
-		--redefine-sym matrixScale=matrixScale_o047Reloc \
-		--redefine-sym matrixTranslate=matrixTranslate_o047Reloc \
-		--redefine-sym mtxf_mul=mtxf_mul_o047Reloc \
-		--redefine-sym mtxf_to_mtx=mtxf_to_mtx_o047Reloc \
-		--redefine-sym overlay45ConfigureLayout=overlay45ConfigureLayout_o047Reloc \
-		--redefine-sym overlay45ReadPair=overlay45ReadPair_o047Reloc \
-		--redefine-sym overlay45SetField22=overlay45SetField22_o047Reloc \
-		--redefine-sym partUpdateTriggers=partUpdateTriggers_o047Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x21E0
-# The function defines overlay 47's .data, .bss and its "OK" literal at their
-# recorded offsets; the retained overlay image owns the bytes, so these copies
-# are dropped and their sites rebound to zero-valued bases.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000000_1890E18.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	config/normalizations/func_overlay_047_F0000000_1890E18.rebind.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000000_1890E18.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay47DataBaseReloc=0x0,global \
-		--add-symbol gOverlay47BssBaseReloc=0x0,global \
-		--add-symbol gOverlay47RodataBaseReloc=0x0,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/func_overlay_047_F0000000_1890E18.rebind.spec && \
-	$(OBJCOPY) --remove-section=.data --remove-section=.bss \
-		--remove-section=.rodata \
-		--remove-section=.gptab.data --remove-section=.gptab.bss $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x9D0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o085/overlay_085.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x29C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o085/overlay_085.c.o: CFLAGS += -Wab,-r4300_mul
@@ -1580,10 +1482,7 @@ OVERLAY_TRIMMED_OBJECTS := \
 OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87InitializeObject.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/func_overlay_087_F0000128_18D3090.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000134_18CD0D4.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000000_1890E18.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47ReleaseResources.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47SpawnObject.c.o
+    $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000134_18CD0D4.c.o
 OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o085/overlay_085.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84InitState.c.o \
@@ -1625,3 +1524,7 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Release.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65ResetSlots.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/func_overlay_065_F0000C38_18C4EA0.c.o
+
+# Overlay 47 owns all source sections and links them at runtime section bases.
+MODULE_LINKED_OVERLAYS += 047
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay_047.c.o: CFLAGS += -Wab,-r4300_mul

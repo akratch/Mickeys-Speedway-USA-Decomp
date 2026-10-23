@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 148, "borrowed_records": 9040},
+  "totals": {"differences": 148, "borrowed_records": 9002},
   "differences": {
     "extra": {
       "about": "the objects produce a record the shipped table lacks",
@@ -180,7 +180,7 @@
   "borrowed": {
     "bss-size": {
       "about": "header BSS size with no C owner, from the atlas (module)",
-      "count": 40,
+      "count": 39,
       "entries": [
         [1],
         [2],
@@ -201,7 +201,6 @@
         [43],
         [45],
         [46],
-        [47],
         [49],
         [51],
         [53],
@@ -256,7 +255,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1918,
+      "count": 1903,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1033,21 +1032,6 @@
         [46, "overlay46RandomSignedReloc", 2],
         [46, "overlay46ReleaseIdsReloc", 2],
         [46, "overlay46SetModeReloc", 2],
-        [47, "D_0_entries", 10],
-        [47, "D_30C", 2],
-        [47, "D_314", 2],
-        [47, "D_318", 2],
-        [47, "D_31C", 2],
-        [47, "D_320", 2],
-        [47, "D_358", 2],
-        [47, "D_38C", 2],
-        [47, "D_3B4", 2],
-        [47, "D_D0", 2],
-        [47, "D_status0", 2],
-        [47, "D_status1", 2],
-        [47, "D_status2", 2],
-        [47, "D_status3", 2],
-        [47, "D_status4", 2],
         [48, "D_174", 2],
         [48, "D_274", 4],
         [48, "gOverlay48Finished", 4],
@@ -2180,7 +2164,7 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 49,
+      "count": 43,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -2206,12 +2190,6 @@
         [43, "overlay_043", ".rodata", "0x1520", 4],
         [45, "overlay_045", ".rodata", "0x1C94", 6],
         [46, "overlay_046", ".rodata", "0x1C9C", 14],
-        [47, "func_overlay_047_F0000000_1890E18", ".bss", "0x3390", 105],
-        [47, "func_overlay_047_F0000000_1890E18", ".data", "0x2DF0", 22],
-        [47, "func_overlay_047_F0000000_1890E18", ".rodata", "0x3350", 2],
-        [47, "func_overlay_047_F0000B30_1891948", ".bss", "0x3390", 96],
-        [47, "func_overlay_047_F0000B30_1891948", ".data", "0x2DF0", 80],
-        [47, "func_overlay_047_F0000B30_1891948", ".rodata", "0x3354", 14],
         [50, "overlay_050", ".bss", "0x21F0", 100],
         [50, "overlay_050", ".data", "0x1E70", 130],
         [50, "overlay_050", ".rodata", "0x21E4", 2],

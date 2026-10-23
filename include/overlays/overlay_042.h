@@ -3,37 +3,24 @@
 
 #include "PR/ultratypes.h"
 
-typedef struct Gfx {
-    struct {
-        u32 w0;
-        u32 w1;
-    } words;
-} Gfx;
+#include "n_audio/mbi.h"
 
-extern Gfx *gOverlay42Buffers[2];
-extern void *gOverlay42Buffer0;
-extern void *gOverlay42Buffer1;
-extern s32 gOverlay42Buffer2;
-extern s32 gOverlay42State0;
-extern s32 gOverlay42State1;
+extern Gfx *gOverlay42CommandBuffers[2];
+extern s32 gOverlay42BufferIndex;
+extern u8 gOverlay42ImageAlpha;
+extern Gfx *gOverlay42PublishedStart;
+extern Gfx *gOverlay42PublishedEnd;
+extern void *gOverlay42PublishedSource;
+
 extern s32 D_8007A20C;
 extern s32 D_8007A410;
-extern s32 gOverlay42BufferIndex;
-
-extern u8 gO42BufferIndexBaseReloc[];
-extern Gfx *gO42PublishedStartReloc;
 extern void *D_800D2FA4;
-extern u8 gO42PublishedSourceBaseReloc[];
 extern void *D_800D2FAC;
 extern u16 *D_800D2FA0;
-extern u8 gO42ImageStateReloc[];
-extern u8 gO42PublishedEndBaseReloc[];
 
-void overlay42PrepareReloc(void);
 void *mmAlloc(s32 size, s32 tag);
 void mmFree(void *allocation);
-void overlay42ResumeReloc(void);
-void rcpFast3d(void *buffer, void *value, s32 mode, s32 index);
+s32 rcpFast3d(u64 *dataStart, u64 *dataEnd, s32 taskType, void *framebuffer);
 s32 viGetTrippleBuffer();
 s32 viGetCurrentSize();
 s32 rsp_segment();

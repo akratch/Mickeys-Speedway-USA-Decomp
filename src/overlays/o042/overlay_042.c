@@ -9,8 +9,8 @@
 #define SHIFTL(v, s, w) ((u32)(((u32)(v) & ((0x01 << (w)) - 1)) << (s)))
 #define MIN2(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX2(a, b) (((a) > (b)) ? (a) : (b))
-#define TXL2WORDS(width) MAX2(1U, (((u32)(width) * 2U) / 8U))
-#define CALC_DXT(width) ((2048U + TXL2WORDS(width) - 1U) / TXL2WORDS(width))
+#define O42_TXL2WORDS(width) MAX2(1U, (((u32)(width) * 2U) / 8U))
+#define O42_CALC_DXT(width) ((2048U + O42_TXL2WORDS(width) - 1U) / O42_TXL2WORDS(width))
 
 /* Reconstructed historical-style display-list macros.  Keeping each macro's
  * block-local _g is intentional: that source topology drives the target's
@@ -67,7 +67,7 @@
     _g->words.w0 = 0xF3000000U; \
     _g->words.w1 = 0x07000000U | \
                    ((MIN2(((u32)(height) * (u32)(width)) - 1U, 0x7FFU) & 0xFFFU) << 12) | \
-                   (CALC_DXT(width) & 0xFFFU); \
+                   (O42_CALC_DXT(width) & 0xFFFU); \
 }
 
 #define LOAD_TEXTURE_BLOCK(pkt, source, width, height) { \
@@ -96,53 +96,41 @@
 #define setup_a_call rcpInitSp
 #define setup_b_call rcpInitDpNoSize
 
-#define gOverlay42BufferIndex (*(s32 *)(gO42BufferIndexBaseReloc + 8))
-#define gO42PublishedSourceReloc (*(void **)(gO42PublishedSourceBaseReloc + 8))
-#define gO42ImageAlphaReloc (gO42ImageStateReloc[12])
-#define gO42PublishedEndReloc (*(Gfx **)(gO42PublishedEndBaseReloc + 4))
-
-/* The shipped LOCAL relocations select this initialized block by section
- * base. The linker-proxy externs above remain the text relocation carriers. */
-typedef struct Overlay42InitializedData {
-    void *buffers[2];
-    s32 bufferIndex;
-    u8 imageAlpha;
-} Overlay42InitializedData;
-
-Overlay42InitializedData gOverlay42InitializedData = {
-    { 0, 0 },
-    0,
-    100,
-};
+Gfx *gOverlay42CommandBuffers[2] = { 0, 0 };
+s32 gOverlay42BufferIndex = 0;
+u8 gOverlay42ImageAlpha = 100;
+Gfx *gOverlay42PublishedStart;
+Gfx *gOverlay42PublishedEnd;
+void *gOverlay42PublishedSource;
 
 /* DKR thread3_main has the semantic double-display-list lifecycle, not this exact allocator sequence. */
 void overlay42Init(void) {
-    overlay42PrepareReloc();
-    gOverlay42Buffer0 = mmAlloc(0x2000, 0x87);
-    gOverlay42Buffer1 = mmAlloc(0x2000, 0x87);
-    gOverlay42Buffer2 = 0;
+    overlay42Release();
+    gOverlay42CommandBuffers[0] = mmAlloc(0x2000, 0x87);
+    gOverlay42CommandBuffers[1] = mmAlloc(0x2000, 0x87);
+    gOverlay42BufferIndex = 0;
     D_8007A20C = 1;
 }
 
 /* DKR thread3_main has the semantic double-display-list teardown, not an exact donor. */
 void overlay42Release(void) {
-    if (gOverlay42Buffers[0] != 0) {
-        mmFree(gOverlay42Buffers[0]);
+    if (gOverlay42CommandBuffers[0] != 0) {
+        mmFree(gOverlay42CommandBuffers[0]);
     }
-    if (gOverlay42Buffers[1] != 0) {
-        mmFree(gOverlay42Buffers[1]);
+    if (gOverlay42CommandBuffers[1] != 0) {
+        mmFree(gOverlay42CommandBuffers[1]);
     }
-    gOverlay42Buffers[0] = 0;
-    gOverlay42Buffers[1] = 0;
-    gOverlay42State0 = 0;
-    gOverlay42State1 = 0;
+    gOverlay42CommandBuffers[0] = 0;
+    gOverlay42CommandBuffers[1] = 0;
+    gOverlay42PublishedStart = 0;
+    gOverlay42PublishedEnd = 0;
     D_8007A20C = 0;
     D_8007A410 = 0;
 }
 
 /* Both local DKR v77/v80 trees are negative for this wrapper. */
 void overlay42Resume(void) {
-    overlay42ResumeReloc();
+    overlay42Release();
 }
 
 void overlay42DrawCapturedBuffer(void *callbackArgument) {
@@ -153,15 +141,15 @@ void overlay42DrawCapturedBuffer(void *callbackArgument) {
     s32 rows;
     Gfx *displayList;
 
-    gO42PublishedStartReloc = 0;
+    gOverlay42PublishedStart = 0;
     if (ready_call() == 0) {
         return;
     }
 
-    displayList = gOverlay42Buffers[gOverlay42BufferIndex];
+    displayList = gOverlay42CommandBuffers[gOverlay42BufferIndex];
     size_call(&width, &height);
-    gO42PublishedStartReloc = displayList;
-    gO42PublishedSourceReloc = D_800D2FA4;
+    gOverlay42PublishedStart = displayList;
+    gOverlay42PublishedSource = D_800D2FA4;
 
     segment_call(&displayList, 0, 0);
     segment_call(&displayList, 1, D_800D2FA4);
@@ -179,7 +167,7 @@ void overlay42DrawCapturedBuffer(void *callbackArgument) {
     CLEAR_GEOM(displayList++, 0x00001000U);
     SET_BLEND(displayList++, 0x64U);
     SET_PRIM(displayList++);
-    SET_ENV(displayList++, gO42ImageAlphaReloc);
+    SET_ENV(displayList++, gOverlay42ImageAlpha);
     PIPE_SYNC(displayList++);
     CLEAR_GEOM(displayList++, 0x00010001U);
     SET_GEOM(displayList++, 0x00000204U);
@@ -201,16 +189,15 @@ void overlay42DrawCapturedBuffer(void *callbackArgument) {
 
     FULL_SYNC(displayList++);
     END_DL(displayList++);
-    gO42PublishedEndReloc = displayList;
+    gOverlay42PublishedEnd = displayList;
 }
 
-#undef gOverlay42BufferIndex
 
 /* DKR video.c::fb_swap is a semantic index-toggle relative, not an exact donor. */
 void overlay42Present(void) {
-    if (gOverlay42Buffer0 != 0) {
+    if (gOverlay42PublishedStart != 0) {
         rcpFast3d(
-            gOverlay42Buffer0, gOverlay42Buffer1, 5, gOverlay42Buffer2);
+            (u64 *)gOverlay42PublishedStart, (u64 *)gOverlay42PublishedEnd, 5, gOverlay42PublishedSource);
         D_8007A410 = 1;
         gOverlay42BufferIndex ^= 1;
     }

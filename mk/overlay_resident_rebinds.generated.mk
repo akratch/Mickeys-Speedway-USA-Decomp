@@ -739,21 +739,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay_041.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym texAnimateSprite=texAnimateSprite_o041Reloc \
 	--redefine-sym trackAddTextureScroll=trackAddTextureScroll_o041Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o042/overlay_042.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_8007A20C=D_8007A20C_o042Reloc \
-	--redefine-sym D_8007A410=D_8007A410_o042Reloc \
-	--redefine-sym D_800D2FA0=D_800D2FA0_o042Reloc \
-	--redefine-sym D_800D2FA4=D_800D2FA4_o042Reloc \
-	--redefine-sym D_800D2FAC=D_800D2FAC_o042Reloc \
-	--redefine-sym mmAlloc=mmAlloc_o042Reloc \
-	--redefine-sym mmFree=mmFree_o042Reloc \
-	--redefine-sym rcpFast3d=rcpFast3d_o042Reloc \
-	--redefine-sym rcpInitDpNoSize=rcpInitDpNoSize_o042Reloc \
-	--redefine-sym rcpInitSp=rcpInitSp_o042Reloc \
-	--redefine-sym rsp_segment=rsp_segment_o042Reloc \
-	--redefine-sym viGetCurrentSize=viGetCurrentSize_o042Reloc \
-	--redefine-sym viGetTrippleBuffer=viGetTrippleBuffer_o042Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay_043.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o043Reloc \
 	--redefine-sym D_8007A3C8=D_8007A3C8_o043Reloc \
@@ -775,15 +760,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay_043.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym rcpInitDpNoSize=rcpInitDpNoSize_o043Reloc \
 	--redefine-sym rsp_segment=rsp_segment_o043Reloc \
 	--redefine-sym sqrtf=sqrtf_o043Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay_044.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D76D0=D_800D76D0_o044Reloc \
-	--redefine-sym D_800D76D8=D_800D76D8_o044Reloc \
-	--redefine-sym mmAlloc=mmAlloc_o044Reloc \
-	--redefine-sym mmFree=mmFree_o044Reloc \
-	--redefine-sym piRomLoadSection=piRomLoadSection_o044Reloc \
-	--redefine-sym texDPInit=texDPInit_o044Reloc \
-	--redefine-sym viFrameRateReset=viFrameRateReset_o044Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o045/overlay_045.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_800D60E0=D_800D60E0_o045Reloc \

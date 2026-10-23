@@ -1154,16 +1154,6 @@
       }
     },
     {
-      "name": "asm/overlays/o065/overlay_065_padding.s",
-      "target_path": "expected/build/asm/overlays/o065/overlay_065_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o065"
-        ]
-      }
-    },
-    {
       "name": "assets/76D10.bin",
       "target_path": "expected/build/assets/76D10.bin.o",
       "metadata": {

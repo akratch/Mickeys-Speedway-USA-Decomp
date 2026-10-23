@@ -1,5 +1,34 @@
 #include "overlays/overlay_044.h"
 
+/* Both lists interpolate the two cached frames, then modulate primitive color. */
+#define O44_FRAME_COMBINE() \
+    gsDPSetCombineLERP(TEXEL1, TEXEL0, ENVIRONMENT, TEXEL0, \
+                      TEXEL1, TEXEL0, ENVIRONMENT, TEXEL0, \
+                      COMBINED, 0, PRIMITIVE, 0, COMBINED, 0, PRIMITIVE, 0)
+/* The full RDP othermode command retains its four-bit blend-mask field. */
+#define O44_OTHER_MODE(filter, render, blend) {{ \
+    _SHIFTL(G_RDPSETOTHERMODE, 24, 8) | G_CYC_2CYCLE | (filter) | \
+    G_TC_FILT | _SHIFTL(15, G_MDSFT_BLENDMASK, 4), \
+    (render) | GBL_c1(G_BL_CLR_IN, G_BL_A_IN, G_BL_CLR_IN, G_BL_1MA) | (blend) }}
+
+const Gfx gOverlay44UnscaledState[5] = {
+    gsDPPipeSync(),
+    gsSPClearGeometryMode(G_FOG | G_ZBUFFER),
+    O44_FRAME_COMBINE(),
+    O44_OTHER_MODE(G_TF_POINT, FORCE_BL,
+                  GBL_c2(G_BL_CLR_IN, G_BL_0, G_BL_CLR_IN, G_BL_1)),
+    gsSPEndDisplayList()
+};
+const Gfx gOverlay44ScaledState[5] = {
+    gsDPPipeSync(),
+    gsSPClearGeometryMode(G_FOG | G_ZBUFFER),
+    O44_FRAME_COMBINE(),
+    O44_OTHER_MODE(G_TF_BILERP, AA_EN | IM_RD | ALPHA_CVG_SEL,
+                  GBL_c2(G_BL_CLR_IN, G_BL_A_IN, G_BL_CLR_MEM, G_BL_A_MEM)),
+    gsSPEndDisplayList()
+};
+
+
 /* Mickey-local reconstruction; no external donor body was used. */
 Overlay44AnimationState *overlay44CreateAnimationState(
     s32 sourceIndex, s32 value8, s32 valueA, s32 subtype, s32 flags) {
@@ -63,7 +92,7 @@ Overlay44AnimationState *overlay44CreateAnimationState(
 
         if ((state->handles[0] == 0) || (state->handles[1] == 0) ||
             (state->handles[2] == 0) || (state->handles[3] == 0)) {
-            overlay44ReleaseHandles_o044Reloc(state);
+            overlay44ReleaseHandles(state);
             state = 0;
         } else {
             s32 frameData;
@@ -256,9 +285,9 @@ void func_overlay_044_F0000580_188BDE0(Overlay44AnimationState *state,
     tex1 = state->handles[state->protectedSlot1];
     alpha = state->phase & 0xFF;
     if (scale == 1.0f) {
-        gSPDisplayList((*dl)++, D_0);
+        gSPDisplayList((*dl)++, gOverlay44UnscaledState);
     } else {
-        gSPDisplayList((*dl)++, D_28);
+        gSPDisplayList((*dl)++, gOverlay44ScaledState);
     }
     gDPSetPrimColor((*dl)++, 0, 0, state->subtype, state->subtype,
                     state->subtype, 255);

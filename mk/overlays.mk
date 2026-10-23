@@ -686,8 +686,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay_037.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 40 is one translation unit at the overlay flag set; its .text carries
 # the trailing pad, so nothing is trimmed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o040/overlay_040.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 42 is one translation unit at the overlay flag set; its .text is the
-# module's whole text, so nothing is trimmed.
+# Overlay 42 owns its command-buffer data and published-task BSS separately.
+# The source-module link preserves both section bases and exported release calls.
+MODULE_LINKED_OVERLAYS += 042
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o042/overlay_042.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 43 ("clone.c") is one translation unit at the overlay flag set (the
 # projection builder keeps the radius multiply out of the call's delay slot,
@@ -720,8 +721,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay_043.c.o: POSTPROCESS = \
 		@config/normalizations/overlay_043.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:7b3d5ee74adddfd3455dcdc8268465d8eef652d3915984a4b06ba99fd0692c37
-# Overlay 44 is one translation unit at the overlay flag set; its .text carries
-# the trailing pad, so nothing is trimmed.
+# Overlay 44 owns both immutable frame-render state lists. The source-module
+# link preserves their initialized section base and its exported release call.
+MODULE_LINKED_OVERLAYS += 044
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay_044.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 92 is one translation unit under the overlay flag set; its text
 # ends exactly at the module's text size, so no trim is needed, and its

@@ -37,7 +37,7 @@ and the readers fail with ``wb_compare failed with exit 2``.
 
 Passing results are cached in ``build/promotion-proof-census/cache.json``,
 keyed per function on its object's hash, the linked ELF's hash, the proof
-tools' source hashes and the tracked proof inputs (atlas, generated alias
+tools' source hashes, compiler/binutils content and the tracked proof inputs (atlas, generated alias
 surface, symbol table, Makefile fragments and both ROM images). Failures are never cached, so a
 warm run re-proves exactly the failing and the changed functions.
 The CLI checks build freshness even on a fully cached run. It also rejects
@@ -266,7 +266,9 @@ def promoted_functions(root: Path = REPO) -> list[Entry]:
 
 # ----------------------------------------------------------------- proof
 
-OWNER_TREES = ("mk", "config", "src", "include", "asm")
+# The toolchain trees match the binary dependencies pinned by fresh proofs'
+# permute_batch.sweep_tool_identity, including compiler backends and module ld.
+OWNER_TREES = ("mk", "config", "src", "include", "asm", "tools/ido", "tools/binutils")
 
 
 def proof_input_paths(root: Path) -> set[Path]:
@@ -304,7 +306,7 @@ def input_snapshot(entries: Iterable[Entry] = (), *, root: Path = REPO) -> dict:
 
     Unlike content hashes alone, ctime also detects a file rewritten with the
     same bytes while a proof might have read its partially written contents.
-    Enumerate source/assembly paths again at the end to detect added owners.
+    Enumerate source, assembly and toolchain paths again to detect additions.
     """
     paths = proof_input_paths(root)
     paths.update(root / name for name in (

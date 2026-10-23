@@ -1,4 +1,83 @@
 #include "overlays/overlay_036.h"
+#define O36_DIRECTION_MAX 3.4028234e38f
+
+static void func_overlay_036_F0000818_1883CD0(void *, s32);
+static void overlay36CallGlobal(void *, void *, s32, s32);
+static void overlay36SpawnAtPosition(void *, void *, s32, s32);
+static void func_overlay_036_F0000A60_1883F18(void *, void *, s32, s32);
+static void overlay36SpawnConditional(void *);
+
+void overlay36PrepareAndTick(void *);
+void overlay36SpawnLinked7F(void *);
+void overlay36SpawnDirectional(void *);
+void overlay36SpawnOffsetA9(void *);
+void overlay36TickState(void *);
+void overlay36UpdatePeers(void *);
+void overlay36SpawnFinalEffect(void *);
+void overlay36CallModeZero(void *);
+void overlay36CallModeOne(void *);
+
+#define O36_SCALE_DIVISOR 2.8f
+#define O36_SCALE_MULTIPLIER 0.6f
+#define O36_STRENGTH_MULTIPLIER 0.4f
+
+Overlay36QueueEntry gOverlay36QueueBase[16];
+Overlay36QueueEntry *gOverlay36QueueNext;
+s32 gOverlay36QueueCount;
+s32 gOverlay36Elapsed;
+Overlay36Entity *gOverlay36CurrentEntity;
+Overlay36State_UpdateInteractiveEntity *gOverlay36CurrentState;
+
+u8 gOverlay36Weights[14][10] = {
+    {0},
+    {0},
+    {10, 20, 40, 40, 40, 20, 20, 20, 10, 10},
+    {40, 50, 20, 20, 10, 0, 0, 0, 0, 0},
+    {20, 50, 40, 30, 30, 0, 0, 0, 0, 0},
+    {0, 10, 15, 20, 20, 0, 0, 0, 0, 0},
+    {50, 40, 20, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 10, 5, 20, 60, 60, 60, 40, 20},
+    {0, 0, 0, 0, 0, 0, 20, 40, 60, 60},
+    {15, 10, 10, 10, 10, 0, 0, 0, 0, 0},
+    {0, 10, 30, 30, 30, 10, 10, 10, 0, 0},
+    {40, 50, 20, 20, 10, 0, 0, 0, 0, 0},
+    {20, 50, 40, 30, 30, 0, 0, 0, 0, 0},
+    {50, 40, 20, 0, 0, 0, 0, 0, 0, 0},
+};
+
+u8 gOverlay36StateValues[14][2] = {
+    {0, 1}, {1, 1}, {2, 1}, {3, 1}, {4, 1}, {5, 1}, {6, 1},
+    {7, 1}, {8, 1}, {9, 1}, {2, 3}, {3, 3}, {4, 3}, {6, 3},
+};
+
+u8 gOverlay36AlternateStates[6] = {3, 3, 3, 4, 6, 7};
+
+#define O36_RECORD(kind, arg, flags, timer, normal, positive, fallback, negative, sound, linked, update, conditional, alpha) \
+    {kind, arg, flags, timer, normal, NULL, positive, fallback, negative, sound, 0, \
+     linked, update, conditional, {0}, 64.0f, -45.0f, 45.0f, {0}, alpha}
+#define O36_WEIGHTED(positive, fallback, negative, linked, update, conditional) \
+    O36_RECORD(0x86, 1, 1, func_overlay_036_F0000818_1883CD0, \
+               func_overlay_036_F0000A60_1883F18, positive, fallback, negative, 29, linked, update, conditional, 32)
+
+Overlay36Record gOverlay36Records[14] = {
+    O36_RECORD(0x1B, 20, 1, NULL, overlay36SpawnAtPosition, NULL, NULL, NULL, 0, 0, 0, 0, 32),
+    O36_RECORD(0x95, 1, 0, NULL, overlay36CallGlobal, NULL, NULL, NULL, 9, 0, 0, 0, 64),
+    O36_WEIGHTED(overlay36PrepareAndTick, overlay36PrepareAndTick, overlay36PrepareAndTick, 0, 0, 0),
+    O36_WEIGHTED(overlay36SpawnDirectional, overlay36SpawnDirectional, overlay36SpawnConditional, 0x1C0, 0x1C0, 0x20),
+    O36_WEIGHTED(overlay36SpawnLinked7F, overlay36SpawnLinked7F, NULL, 0x1C4, 0x1C4, 0x1C4),
+    O36_WEIGHTED(overlay36SpawnOffsetA9, overlay36SpawnOffsetA9, NULL, 0x1C3, 0x1C3, 0),
+    O36_WEIGHTED(overlay36CallModeOne, overlay36CallModeZero, overlay36CallModeZero, 0x1C1, 0x1C1, 0x1C1),
+    O36_WEIGHTED(NULL, overlay36TickState, overlay36TickState, 0, 0, 0),
+    O36_WEIGHTED(NULL, overlay36UpdatePeers, overlay36UpdatePeers, 0x1FB, 0x1FB, 0x1FB),
+    O36_WEIGHTED(overlay36SpawnFinalEffect, overlay36SpawnFinalEffect, overlay36SpawnFinalEffect, 0, 0, 0),
+    O36_WEIGHTED(overlay36PrepareAndTick, overlay36PrepareAndTick, overlay36PrepareAndTick, 0, 0, 0),
+    O36_WEIGHTED(overlay36SpawnDirectional, overlay36SpawnDirectional, overlay36SpawnConditional, 0x1C0, 0x1C0, 0x20),
+    O36_WEIGHTED(overlay36SpawnLinked7F, overlay36SpawnLinked7F, NULL, 0x1C4, 0x1C4, 0x1C4),
+    O36_WEIGHTED(overlay36CallModeOne, overlay36CallModeZero, overlay36CallModeZero, 0x1C1, 0x1C1, 0x1C1),
+};
+
+const char gOverlay36QueueWarning[] = "WARNING: MAX_POSTPONED_READS too small\n";
+
 
 /*
  * Overlay 36: one translation unit in ROM order (ADR 0006). The action
@@ -11,9 +90,9 @@
  * so they stay extern: IDO drops a static function nothing in the TU names.
  */
 
-static void overlay36QueueAction(s32 action, s32 param1, s32 param2,
-                                 s32 param3, s32 param4);
-static void overlay36SelectState(Overlay36SelectSource *source, s32 unused,
+static void overlay36QueueAction(Overlay1Object *object, s32 index, f32 *x,
+                                 f32 *y, f32 *z);
+static void overlay36SelectState(Overlay36SelectSource *source, void *unused,
                                  s32 selection, s32 limit);
 static void overlay36SpawnAndUpdate(Overlay36Object_SpawnAndUpdate *object,
                                     s32 count);
@@ -30,12 +109,12 @@ void overlay36InitObject(Overlay36Object *object, void *entry) {
     data->marker = -1;
 
     if (object->type == 0x86 || object->type == 0xEB) {
-        if (*resource == 1 || *(u16 *)&gOverlay36Mode == 0) {
+        if (*resource == 1 || D_8007BF18 == 0) {
             data->enabled = 1;
         } else {
             Overlay36Entry *entry;
             entry = *object->entry;
-            object->value = mathRnd_o036Reloc(0, entry->value, data);
+            object->value = mathRnd(0, entry->value);
         }
     }
     if (object->state != 0) {
@@ -44,13 +123,13 @@ void overlay36InitObject(Overlay36Object *object, void *entry) {
 }
 
 /* Fixed queue insertion is title-specific; no DKR/JFG donor exists. */
-static void overlay36QueueAction(s32 action, s32 param1, s32 param2, s32 param3, s32 param4) {
+static void overlay36QueueAction(Overlay1Object *object, s32 index, f32 *x, f32 *y, f32 *z) {
     if (gOverlay36QueueCount < 16) {
-        gOverlay36QueueNext->arg0 = action;
-        gOverlay36QueueNext->arg1 = param1;
-        gOverlay36QueueNext->arg2 = param2;
-        gOverlay36QueueNext->arg3 = param3;
-        gOverlay36QueueNext->arg4 = param4;
+        gOverlay36QueueNext->object = object;
+        gOverlay36QueueNext->index = index;
+        gOverlay36QueueNext->x = x;
+        gOverlay36QueueNext->y = y;
+        gOverlay36QueueNext->z = z;
         gOverlay36QueueNext++;
         gOverlay36QueueCount++;
     }
@@ -63,11 +142,11 @@ void overlay36FlushQueue(void) {
     count = gOverlay36QueueCount;
     while (count--) {
         gOverlay36QueueNext--;
-        overlay1ReadSelection(gOverlay36QueueNext->arg0,
-                                  gOverlay36QueueNext->arg1,
-                                  gOverlay36QueueNext->arg2,
-                                  gOverlay36QueueNext->arg3,
-                                  gOverlay36QueueNext->arg4);
+        overlay1ReadSelection(gOverlay36QueueNext->object,
+                                  gOverlay36QueueNext->index,
+                                  gOverlay36QueueNext->x,
+                                  gOverlay36QueueNext->y,
+                                  gOverlay36QueueNext->z);
     }
     gOverlay36QueueCount = 0;
     gOverlay36QueueNext = gOverlay36QueueBase;
@@ -121,7 +200,7 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
     f32 deltaY;
     s32 animation;
     s32 temp;
-    Overlay36Found *found[9];
+    HitCopyState *found[9];
     Overlay36FoundState *foundState;
     Overlay36Found *hit;
 
@@ -135,7 +214,7 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
         temp = state->countdownB;
         if (elapsed >= state->countdownB) {
             state->countdownB = 0;
-            func_80006EA0();
+            func_80006EA0(entity);
             return;
         }
         if (temp != 0xFF) {
@@ -207,8 +286,8 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
 
     if (state->usePosition7 != 0) {
         overlay36QueueAction(state->value0, state->positionMode8,
-                                    (s32)&entity->xC, (s32)&entity->y10,
-                                    (s32)&entity->z14);
+                                    &entity->xC, &entity->y10,
+                                    &entity->z14);
         return;
     }
 
@@ -229,9 +308,9 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
         D_80078F20 = 0;
     }
 
-    if (func_8005776C_o036Reloc(entity->xC, entity->y10, entity->z14,
+    if (func_8005776C(entity->xC, entity->y10, entity->z14,
                             record->queryRadius2C, 1, found) != 0) {
-        hit = found[0];
+        hit = (Overlay36Found *)found[0];
         deltaY = hit->y10 - entity->y10;
         if ((record->minimumY30 < deltaY) && (deltaY < record->maximumY34)) {
             /* The target reloads found[0] here instead of reusing hit's
@@ -263,7 +342,7 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
                 }
             }
             if ((state->countdownB == 0) && (state->timer4 == 0)) {
-                overlay36ReleaseEntityReloc(entity);
+                func_80006EA0(entity);
             }
         }
     }
@@ -283,11 +362,11 @@ Overlay36Spawned *overlay36SpawnTransient(
     desc.y = (s16)(s32)(position->y + 30.0f);
     desc.z = (s16)(s32)position->z;
 
-    spawned = func_8000590C(&desc, 1, world);
+    spawned = func_8000590C(&desc, 1);
     if (spawned != 0) {
         spawned->value3C = 0;
         state = spawned->state;
-        if (gOverlay36Mode == 3) {
+        if (B_overlay_001_F00083E4 == 3) {
             state->value4 = 0xF0;
         } else {
             state->value4 = 0x5A;
@@ -318,7 +397,7 @@ void overlay36InitVectorState(Overlay36VectorState *state, s16 kind,
     state->kind = kind;
     state->vector[0] = 0.0f;
     state->vector[1] = 0.0f;
-    mathOneFloatPY(state, state->vector);
+    mathOneFloatPY((s16 *)state, state->vector);
     state->nested->flags &= ~2;
 }
 
@@ -382,30 +461,29 @@ void overlay36InitVectorState(Overlay36VectorState *state, s16 kind,
  * 7, 0, 4, 3, 7, 3 -- only 9 is flat, which is the arithmetic's own prediction
  * rather than a search. */
 
-void func_overlay_036_F0000818_1883CD0(Overlay36Object_CheckNearbyHeight *object,
-                                       s32 remaining) {
+static void func_overlay_036_F0000818_1883CD0(void *object, s32 remaining) {
     f32 center;
     f32 low;
     f32 high;
     s32 i;
-    Overlay36Nearby *results[9];
+    HitCopyState *results[9];
     Overlay36State_CheckNearbyHeight *state;
     Overlay36Nearby *nearby;
 
-    state = object->state;
+    state = ((Overlay36Object_CheckNearbyHeight *)object)->state;
     if (state->active == 0) {
-        remaining = func_8005776C(object->x, object->y, object->z,
+        remaining = func_8005776C(((Overlay36Object_CheckNearbyHeight *)object)->x, ((Overlay36Object_CheckNearbyHeight *)object)->y, ((Overlay36Object_CheckNearbyHeight *)object)->z,
                                   64.0f, 1, results);
         if (remaining != 0) {
             high = 45.0f;
-            center = object->y;
+            center = ((Overlay36Object_CheckNearbyHeight *)object)->y;
             i = remaining - 1;
             low = center - 45.0f;
             high = low;
             low = center + 45.0f;
             if (remaining != 0) {
                 do {
-                    nearby = results[i];
+                    nearby = (Overlay36Nearby *)results[i];
                     center = nearby->y;
                     if ((center < high) || (low < center)) {
                         remaining--;
@@ -416,14 +494,14 @@ void func_overlay_036_F0000818_1883CD0(Overlay36Object_CheckNearbyHeight *object
         if (remaining != 0) {
             state->active = 1;
         } else {
-            object->flags &= ~0x400;
-    ((Overlay36WorldState *)gOverlay36WorldStateReloc[0x54])->changed = 1;
+            ((Overlay36Object_CheckNearbyHeight *)object)->flags &= ~0x400;
+    gOverlay36CurrentState->alphaA = 1;
         }
     }
 }
 
 /* Mickey state-table selection has no exact DKR v77/v80 or JFG donor. */
-static void overlay36SelectState(Overlay36SelectSource *source, s32 unused,
+static void overlay36SelectState(Overlay36SelectSource *source, void *unused,
                           s32 selection, s32 limit) {
     Overlay36SelectObject *object;
     u8 *values;
@@ -434,8 +512,8 @@ static void overlay36SelectState(Overlay36SelectSource *source, s32 unused,
             object->countdown++;
         }
     } else {
-        object->data = &gOverlay36StateData[selection * 60];
-        values = &gOverlay36StateValues[selection * 2];
+        object->data = &gOverlay36Records[selection];
+        values = gOverlay36StateValues[selection];
         object->state = values[0];
         object->countdown = values[1];
         object->timer = 120;
@@ -444,13 +522,12 @@ static void overlay36SelectState(Overlay36SelectSource *source, s32 unused,
 
 /* Pinned DKR v77/v80 and JFG object scans found no exact donor. */
 
-void overlay36CallGlobal(s32 param, s32 unused1, s32 unused2, s32 unused3) {
-    overlay4AttachObject(param, gOverlay36CallTarget);
+static void overlay36CallGlobal(void *param, void *unused1, s32 unused2, s32 unused3) {
+    overlay4AttachObject(param, (Overlay4GroupObject *)gOverlay36CurrentEntity);
 }
 
 /* Mickey-local reconstruction; the pinned DKR v77/v80 and JFG scans are negative. */
-void overlay36SpawnAtPosition(Overlay36PositionObject *object, s32 unused1,
-                              s32 unused2, s32 unused3) {
+static void overlay36SpawnAtPosition(void *object, void *unused1, s32 unused2, s32 unused3) {
     Overlay36SpawnRequest request;
     Overlay36SpawnedObject *spawned;
 
@@ -459,12 +536,12 @@ void overlay36SpawnAtPosition(Overlay36PositionObject *object, s32 unused1,
     } else {
         request.kind = 0x90;
     }
-    request.x = object->x;
-    request.y = object->y;
-    request.z = object->z;
+    request.x = ((Overlay36PositionObject *)object)->x;
+    request.y = ((Overlay36PositionObject *)object)->y;
+    request.z = ((Overlay36PositionObject *)object)->z;
     request.count = 1;
     request.owner = object;
-    spawned = func_8000590C(&request, 1, object);
+    spawned = func_8000590C(&request, 1);
     if (spawned != 0) {
         spawned->state = 0;
     }
@@ -476,9 +553,7 @@ void overlay36SpawnAtPosition(Overlay36PositionObject *object, s32 unused1,
  * branch); the blend is written weight-term first; and both walks are
  * `i = 14; while (i--)`, whose guard block orders the preheader as shipped.
  * `i` is declared ahead of `position` for the position home. */
-void func_overlay_036_F0000A60_1883F18(Overlay36Object_ChooseWeightedState *object, s32 argument,
-                                       volatile s32 unused2,
-                                       volatile s32 unused3) {
+static void func_overlay_036_F0000A60_1883F18(void *object, void *argument, s32 unused2, s32 unused3) {
     Overlay36Inner *inner;
     s32 total;
     s32 state;
@@ -487,16 +562,16 @@ void func_overlay_036_F0000A60_1883F18(Overlay36Object_ChooseWeightedState *obje
     f32 value;
     f32 blend;
 
-    inner = object->inner;
+    inner = ((Overlay36Object_ChooseWeightedState *)object)->inner;
     total = 0;
     if (inner->countdown == 0) {
-        if (gOverlay36Mode == 3) {
-            state = gOverlay36AltTable.values[mathRnd(0, 5)];
+        if (B_overlay_001_F00083E4 == 3) {
+            state = gOverlay36AlternateStates[mathRnd(0, 5)];
         } else {
             value = ((overlay1DistanceFromCurrent(object) /
-                      gOverlay36ScaleDivisor.value) *
-                         gOverlay36ScaleMultiplier.value) +
-                    ((f32)inner->strength * gOverlay36StrengthMultiplier.value);
+                      O36_SCALE_DIVISOR) *
+                         O36_SCALE_MULTIPLIER) +
+                    ((f32)inner->strength * O36_STRENGTH_MULTIPLIER);
 
             if (D_8007BF0C != 0) {
                 Overlay36Choice *choice;
@@ -519,17 +594,17 @@ void func_overlay_036_F0000A60_1883F18(Overlay36Object_ChooseWeightedState *obje
 
             i = 14;
             while (i--) {
-                if (gOverlay36EnabledMask & (1 << i)) {
+                if (D_8007BF18 & (1 << i)) {
                     state = i;
                     total += gOverlay36Weights[i][position];
                 }
             }
 
             if (total >= 2) {
-                state = mathRnd(1, total, state, position);
+                state = mathRnd(1, total);
                 i = 14;
                 while (i--) {
-                    if (gOverlay36EnabledMask & (1 << i)) {
+                    if (D_8007BF18 & (1 << i)) {
                         state -= gOverlay36Weights[i][position];
                         if (state <= 0) {
                             state = i;
@@ -546,20 +621,20 @@ void func_overlay_036_F0000A60_1883F18(Overlay36Object_ChooseWeightedState *obje
         overlay36SelectState((Overlay36SelectSource *)object, argument, state, 1);
     }
 
-    if (gOverlay36Mode == 3) {
-        gOverlay36NodeA.node->value4 = 0xF0;
+    if (B_overlay_001_F00083E4 == 3) {
+        gOverlay36CurrentState->timer4 = 0xF0;
     } else {
-        gOverlay36NodeA.node->value4 = 0x3C;
+        gOverlay36CurrentState->timer4 = 0x3C;
     }
-    gOverlay36NodeB.node->flags6 |= 0x400;
+    gOverlay36CurrentEntity->flags6 |= 0x400;
 }
 
 /* Title-specific countdown/action dispatch; no DKR v77/v80 or JFG donor. */
-void overlay36PrepareAndTick(Overlay36PrepareSource *source) {
+void overlay36PrepareAndTick(void *source) {
     Overlay36PrepareObject *object;
 
-    overlay36ActionReloc(source, 1);
-    object = source->object;
+    func_overlay_008_F0000F1C_185EC74((Overlay8ActivationOwner *)source, 1);
+    object = ((Overlay36PrepareSource *)source)->object;
     object->countdown--;
     if (object->countdown == 0) {
         object->state = 255;
@@ -567,32 +642,32 @@ void overlay36PrepareAndTick(Overlay36PrepareSource *source) {
     }
     if (!(object->flags & 1)) {
         if (object->kind != 6 && object->kind != 7 && object->kind != 8) {
-            overlay36ActionReloc(6);
+            overlay7CommitSelection(6);
         }
     }
 }
 
-void overlay36SpawnLinked7F(Overlay36Object_SpawnLinked7F *object) {
+void overlay36SpawnLinked7F(void *object) {
     Overlay36State_SpawnLinked7F *state;
     Overlay36Locals0D8C locals;
     s32 actionKind;
     Overlay36SpawnedObject_SpawnLinked7F *spawned;
 
-    state = object->state;
+    state = ((Overlay36Object_SpawnLinked7F *)object)->state;
     locals.offset[0] = 0.0f;
     locals.offset[1] = 16.0f;
     locals.offset[2] = 14.0f;
     mathOneFloatRPY(object, locals.offset);
     locals.request.kind = 0x7F;
-    locals.request.x = (s16)(locals.offset[0] + object->x);
-    locals.request.y = (s16)(locals.offset[1] + object->y);
-    locals.request.z = (s16)(locals.offset[2] + object->z);
-    locals.request.id0 = object->id0;
-    locals.request.id2 = object->id2;
-    locals.request.id4 = object->id4;
+    locals.request.x = (s16)(locals.offset[0] + ((Overlay36Object_SpawnLinked7F *)object)->x);
+    locals.request.y = (s16)(locals.offset[1] + ((Overlay36Object_SpawnLinked7F *)object)->y);
+    locals.request.z = (s16)(locals.offset[2] + ((Overlay36Object_SpawnLinked7F *)object)->z);
+    locals.request.id0 = ((Overlay36Object_SpawnLinked7F *)object)->id0;
+    locals.request.id2 = ((Overlay36Object_SpawnLinked7F *)object)->id2;
+    locals.request.id4 = ((Overlay36Object_SpawnLinked7F *)object)->id4;
     locals.request.owner = object;
     locals.request.directionalObject = overlay1FindDirectionalObject(
-        object, 3, 5, 0.707f, gOverlay36RodataBaseReloc[13]);
+        object, 3, 5, 0.707f, O36_DIRECTION_MAX);
     actionKind = state->action->kind;
     spawned = func_8000590C(&locals.request, 1);
     if (spawned != 0) {
@@ -605,8 +680,8 @@ void overlay36SpawnLinked7F(Overlay36Object_SpawnLinked7F *object) {
         if (state->resource != 0) {
             amSndStopXYZ(state->resource);
         }
-        amSndPlayXYZ((u16)actionKind, object->x,
-                                     object->y, object->z, 4,
+        amSndPlayXYZ((u16)actionKind, ((Overlay36Object_SpawnLinked7F *)object)->x,
+                                     ((Overlay36Object_SpawnLinked7F *)object)->y, ((Overlay36Object_SpawnLinked7F *)object)->z, 4,
                                      &state->resource);
     }
     state->countdown--;
@@ -616,21 +691,21 @@ void overlay36SpawnLinked7F(Overlay36Object_SpawnLinked7F *object) {
     }
 }
 
-void overlay36SpawnDirectional(Overlay36Object_SpawnDirectional *object) {
+void overlay36SpawnDirectional(void *object) {
     Overlay36State_SpawnDirectional *state;
     Overlay36SpawnedObject_SpawnDirectional *spawned;
     Overlay36SpawnDataF20 data;
     s32 actionKind;
 
-    state = object->state;
+    state = ((Overlay36Object_SpawnDirectional *)object)->state;
     data.offset[0] = 0.0f;
     data.offset[1] = 16.0f;
     data.offset[2] = 14.0f;
     mathOneFloatRPY(object, data.offset);
     data.request.kind = 0x9F;
-    data.request.x = (s16)(data.offset[0] + object->x);
-    data.request.y = (s16)(data.offset[1] + object->y);
-    data.request.z = (s16)(data.offset[2] + object->z);
+    data.request.x = (s16)(data.offset[0] + ((Overlay36Object_SpawnDirectional *)object)->x);
+    data.request.y = (s16)(data.offset[1] + ((Overlay36Object_SpawnDirectional *)object)->y);
+    data.request.z = (s16)(data.offset[2] + ((Overlay36Object_SpawnDirectional *)object)->z);
     data.request.count = 0;
     data.request.link = 0x21;
     data.request.value = -45.0f;
@@ -647,8 +722,8 @@ void overlay36SpawnDirectional(Overlay36Object_SpawnDirectional *object) {
         if (state->resource != 0) {
             amSndStopXYZ(state->resource);
         }
-        amSndPlayXYZ((u16)actionKind, object->x, object->y,
-                                     object->z, 4, &state->resource);
+        amSndPlayXYZ((u16)actionKind, ((Overlay36Object_SpawnDirectional *)object)->x, ((Overlay36Object_SpawnDirectional *)object)->y,
+                                     ((Overlay36Object_SpawnDirectional *)object)->z, 4, &state->resource);
     }
     state->countdown--;
     if (state->countdown == 0) {
@@ -657,13 +732,13 @@ void overlay36SpawnDirectional(Overlay36Object_SpawnDirectional *object) {
     }
 }
 
-void overlay36SpawnConditional(Overlay36Object_SpawnConditional *object) {
+static void overlay36SpawnConditional(void *object) {
     Overlay36State_SpawnConditional *state;
     Overlay36SpawnedObject_SpawnConditional *spawned;
     Overlay36SpawnDataF20 data;
     s32 actionKind;
 
-    state = object->state;
+    state = ((Overlay36Object_SpawnConditional *)object)->state;
     data.offset[0] = 0.0f;
     data.offset[1] = 16.0f;
     if (state->direction <= 0.0f) {
@@ -675,9 +750,9 @@ void overlay36SpawnConditional(Overlay36Object_SpawnConditional *object) {
     }
     mathOneFloatRPY(object, data.offset);
     data.request.kind = 0x9F;
-    data.request.x = (s16)(data.offset[0] + object->x);
-    data.request.y = (s16)(data.offset[1] + object->y);
-    data.request.z = (s16)(data.offset[2] + object->z);
+    data.request.x = (s16)(data.offset[0] + ((Overlay36Object_SpawnConditional *)object)->x);
+    data.request.y = (s16)(data.offset[1] + ((Overlay36Object_SpawnConditional *)object)->y);
+    data.request.z = (s16)(data.offset[2] + ((Overlay36Object_SpawnConditional *)object)->z);
     data.request.count = 2;
     data.request.link = 0;
     data.request.owner = (void *)object;
@@ -693,8 +768,8 @@ void overlay36SpawnConditional(Overlay36Object_SpawnConditional *object) {
         if (state->resource != 0) {
             amSndStopXYZ(state->resource);
         }
-        amSndPlayXYZ((u16)actionKind, object->x, object->y,
-                                     object->z, 4, &state->resource);
+        amSndPlayXYZ((u16)actionKind, ((Overlay36Object_SpawnConditional *)object)->x, ((Overlay36Object_SpawnConditional *)object)->y,
+                                     ((Overlay36Object_SpawnConditional *)object)->z, 4, &state->resource);
     }
     state->countdown--;
     if (state->countdown == 0) {
@@ -703,22 +778,22 @@ void overlay36SpawnConditional(Overlay36Object_SpawnConditional *object) {
     }
 }
 
-void overlay36SpawnOffsetA9(Overlay36Object_SpawnOffsetA9 *object) {
+void overlay36SpawnOffsetA9(void *object) {
     Overlay36SpawnedObject_SpawnOffsetA9 *spawned;
     Overlay36State_SpawnOffsetA9 *state;
     Overlay36Locals1214 locals;
 
-    state = object->state;
+    state = ((Overlay36Object_SpawnOffsetA9 *)object)->state;
     locals.offset[0] = 0.0f;
     locals.offset[1] = 25.0f;
     locals.offset[2] = 14.0f;
     mathOneFloatRPY(object, locals.offset);
     locals.request.kind = 0xA9;
-    locals.request.x = (s16)(locals.offset[0] + object->x);
-    locals.request.y = (s16)(locals.offset[1] + object->y);
-    locals.request.z = (s16)(locals.offset[2] + object->z);
-    locals.request.id0 = object->id0;
-    locals.request.id2 = object->id2;
+    locals.request.x = (s16)(locals.offset[0] + ((Overlay36Object_SpawnOffsetA9 *)object)->x);
+    locals.request.y = (s16)(locals.offset[1] + ((Overlay36Object_SpawnOffsetA9 *)object)->y);
+    locals.request.z = (s16)(locals.offset[2] + ((Overlay36Object_SpawnOffsetA9 *)object)->z);
+    locals.request.id0 = ((Overlay36Object_SpawnOffsetA9 *)object)->id0;
+    locals.request.id2 = ((Overlay36Object_SpawnOffsetA9 *)object)->id2;
     locals.request.owner = object;
     locals.actionKind = state->action->kind;
     spawned = func_8000590C(&locals.request, 1);
@@ -732,8 +807,8 @@ void overlay36SpawnOffsetA9(Overlay36Object_SpawnOffsetA9 *object) {
         if (state->resource != 0) {
             amSndStopXYZ(state->resource);
         }
-        amSndPlayXYZ((u16)locals.actionKind, object->x,
-                                     object->y, object->z, 4,
+        amSndPlayXYZ((u16)locals.actionKind, ((Overlay36Object_SpawnOffsetA9 *)object)->x,
+                                     ((Overlay36Object_SpawnOffsetA9 *)object)->y, ((Overlay36Object_SpawnOffsetA9 *)object)->z, 4,
                                      &state->resource);
     }
     state->countdown--;
@@ -781,10 +856,10 @@ void overlay36CallModeZero(void *object) { overlay36SpawnAndUpdate(object, 0); }
 void overlay36CallModeOne(void *object) { overlay36SpawnAndUpdate(object, 1); }
 
 /* State countdown semantics are title-specific; no DKR/JFG donor exists. */
-void overlay36TickState(Overlay36TickSource *source) {
+void overlay36TickState(void *source) {
     Overlay36TickObject *object;
 
-    object = source->object;
+    object = ((Overlay36TickSource *)source)->object;
     object->timer = 600;
     object->countdown--;
     if (object->countdown == 0) {
@@ -834,14 +909,14 @@ struct Overlay36SpawnedObject_UpdatePeers {
     s32 state;
 };
 
-void overlay36UpdatePeers(Overlay36Object_UpdatePeers *object) {
+void overlay36UpdatePeers(void *object) {
     Overlay36Object_UpdatePeers *peer;
     Overlay36SpawnRequest_UpdatePeers request;
     Overlay36State_UpdatePeers *peerState;
     Overlay36State_UpdatePeers *state;
     s32 index;
 
-    state = object->state;
+    state = ((Overlay36Object_UpdatePeers *)object)->state;
     index = 0;
     while ((peer = func_80005820(index++)) != 0) {
         if (peer != object) {
@@ -865,8 +940,8 @@ void overlay36UpdatePeers(Overlay36Object_UpdatePeers *object) {
         if (state->resource != 0) {
             amSndStopXYZ(state->resource);
         }
-        amSndPlayXYZ(state->action->kind, object->x, object->y,
-                                     object->z, 4, &state->resource);
+        amSndPlayXYZ(state->action->kind, ((Overlay36Object_UpdatePeers *)object)->x, ((Overlay36Object_UpdatePeers *)object)->y,
+                                     ((Overlay36Object_UpdatePeers *)object)->z, 4, &state->resource);
     }
 
     state->countdown--;
@@ -876,24 +951,24 @@ void overlay36UpdatePeers(Overlay36Object_UpdatePeers *object) {
     }
 }
 
-void overlay36SpawnFinalEffect(Overlay36EffectSource *source) {
+void overlay36SpawnFinalEffect(void *source) {
     Overlay36SpawnRequest_SpawnFinalEffect request;
     register Overlay36EffectState *state;
 
-    state = source->effectState;
+    state = ((Overlay36EffectSource *)source)->effectState;
     if (D_8007BF0C != 0) {
         request.effectType = 0xED;
     } else {
         request.effectType = 0x90;
     }
-    request.x = (s16)source->x;
-    request.y = (s16)source->y;
-    request.z = (s16)source->z;
+    request.x = (s16)((Overlay36EffectSource *)source)->x;
+    request.y = (s16)((Overlay36EffectSource *)source)->y;
+    request.z = (s16)((Overlay36EffectSource *)source)->z;
     request.mode = 3;
     request.source = source;
     request.effectState = state;
 
-    source = (Overlay36EffectSource *)func_8000590C(&request, 1, source);
+    source = (Overlay36EffectSource *)func_8000590C(&request, 1);
     state = request.effectState;
     if (source != NULL) {
         ((Overlay36SpawnedObject_SpawnFinalEffect *)source)->owner = 0;

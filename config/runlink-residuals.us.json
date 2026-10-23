@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 137, "borrowed_records": 8699},
+  "totals": {"differences": 137, "borrowed_records": 8575},
   "differences": {
     "pool-layout": {
       "about": "an object's own literal or static data sits at a different offset",
@@ -157,7 +157,7 @@
   "borrowed": {
     "bss-size": {
       "about": "header BSS size without a complete faithful linked source allocation, from the atlas (module)",
-      "count": 43,
+      "count": 42,
       "entries": [
         [1],
         [2],
@@ -174,7 +174,6 @@
         [20],
         [29],
         [33],
-        [36],
         [43],
         [45],
         [46],
@@ -206,11 +205,10 @@
     },
     "hybrid-data": {
       "about": "data-site record in blob-owned data, taken from the shipped table (module, site)",
-      "count": 452,
+      "count": 395,
       "modules": {
         "1": ["0x81AC", "0x81B0", "0x81B4", "0x81BC", "0x81C0", "0x81C4", "0x81CC", "0x81D0", "0x81D4", "0x81EC", "0x81F4", "0x81F8", "0x8200", "0x8204", "0x8210", "0x8218", "0x821C"],
         "8": ["0x5400", "0x5404", "0x5408", "0x540C", "0x5410", "0x5414", "0x5418", "0x541C", "0x5420", "0x5424", "0x5428", "0x542C", "0x5430", "0x5434", "0x5438", "0x543C", "0x71F0", "0x71F4", "0x71F8", "0x71FC", "0x7200", "0x7204", "0x7208", "0x720C", "0x7210", "0x7214", "0x7218", "0x721C", "0x7220", "0x7224", "0x7228", "0x722C", "0x7230", "0x7234", "0x7238", "0x723C"],
-        "36": ["0x1808", "0x1844", "0x187C", "0x1880", "0x1888", "0x188C", "0x1890", "0x18B8", "0x18BC", "0x18C4", "0x18C8", "0x18CC", "0x18F4", "0x18F8", "0x1900", "0x1904", "0x1930", "0x1934", "0x193C", "0x1940", "0x196C", "0x1970", "0x1978", "0x197C", "0x1980", "0x19A8", "0x19AC", "0x19B8", "0x19BC", "0x19E4", "0x19E8", "0x19F4", "0x19F8", "0x1A20", "0x1A24", "0x1A2C", "0x1A30", "0x1A34", "0x1A5C", "0x1A60", "0x1A68", "0x1A6C", "0x1A70", "0x1A98", "0x1A9C", "0x1AA4", "0x1AA8", "0x1AAC", "0x1AD4", "0x1AD8", "0x1AE0", "0x1AE4", "0x1B10", "0x1B14", "0x1B1C", "0x1B20", "0x1B24"],
         "46": ["0x1AE0"],
         "48": ["0x470", "0x474", "0x478", "0x47C", "0x480", "0x484", "0x488", "0x48C", "0x490", "0x494", "0x498", "0x49C", "0x4A0", "0x4A4", "0x4A8", "0x4AC", "0x4B0", "0x4B4", "0x4B8", "0x4BC", "0x4C0", "0x4C4", "0x4C8", "0x4CC", "0x4D0", "0x4D4", "0x4D8", "0x4DC", "0x4E0", "0x4E4", "0x4E8", "0x4EC", "0x4F0", "0x4F4", "0x4F8", "0x4FC", "0x500", "0x504", "0x508", "0x50C", "0x510", "0x514", "0x518", "0x51C", "0x520", "0x524", "0x528", "0x52C", "0x530", "0x534", "0x538", "0x53C", "0x540", "0x544", "0x548", "0x54C", "0x550", "0x554", "0x558", "0x55C", "0x560", "0x564", "0x568", "0x56C", "0x570", "0x574", "0x578", "0x57C", "0x580", "0x584", "0x588", "0x58C", "0x590", "0x594", "0x598", "0x59C", "0x5A0", "0x5A4", "0x5A8", "0x5AC", "0x5B0", "0x5B4", "0x5B8", "0x5BC", "0x5C0", "0x5C4", "0x5C8", "0x5CC", "0x5D0", "0x5D4", "0x5D8", "0x5DC"],
         "57": ["0x6FC0", "0x6FC4", "0x6FC8", "0x6FCC", "0x6FD0", "0x6FD4"],
@@ -236,7 +234,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1789,
+      "count": 1766,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -813,29 +811,6 @@
         [33, "gOverlay33Handle", 4],
         [33, "gOverlay33Initialized", 4],
         [33, "overlay33CallReloc", 2],
-        [36, "gOverlay36AltTable", 2],
-        [36, "gOverlay36CallTarget", 2],
-        [36, "gOverlay36CurrentEntity", 2],
-        [36, "gOverlay36CurrentState", 2],
-        [36, "gOverlay36Elapsed", 2],
-        [36, "gOverlay36EnabledMask", 4],
-        [36, "gOverlay36Mode", 8],
-        [36, "gOverlay36NodeA", 4],
-        [36, "gOverlay36NodeB", 2],
-        [36, "gOverlay36QueueBase", 2],
-        [36, "gOverlay36QueueCount", 6],
-        [36, "gOverlay36QueueNext", 6],
-        [36, "gOverlay36Records", 4],
-        [36, "gOverlay36RodataBaseReloc", 2],
-        [36, "gOverlay36ScaleDivisor", 2],
-        [36, "gOverlay36ScaleMultiplier", 2],
-        [36, "gOverlay36StateData", 2],
-        [36, "gOverlay36StateValues", 2],
-        [36, "gOverlay36StrengthMultiplier", 2],
-        [36, "gOverlay36Weights", 4],
-        [36, "gOverlay36WorldStateReloc", 2],
-        [36, "overlay36ActionReloc", 2],
-        [36, "overlay36ReleaseEntityReloc", 1],
         [43, "D_0", 2],
         [43, "D_120", 2],
         [43, "D_C8", 6],
@@ -2071,7 +2046,7 @@
     },
     "rodata-base": {
       "about": "module rodata base the objects do not determine (module)",
-      "count": 32,
+      "count": 31,
       "entries": [
         [1],
         [2],
@@ -2082,7 +2057,6 @@
         [14],
         [20],
         [22],
-        [36],
         [43],
         [45],
         [46],

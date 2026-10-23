@@ -3,6 +3,11 @@
 
 #include "ultra64.h"
 
+typedef struct Overlay1Object Overlay1Object;
+typedef struct Overlay4GroupObject Overlay4GroupObject;
+typedef struct Overlay8ActivationOwner Overlay8ActivationOwner;
+typedef struct HitCopyState HitCopyState;
+
 /* Every function reads the module's objects and states through its own
  * view; where two per-function views share a name but not a layout, the
  * later one carries its function's suffix rather than being merged. */
@@ -40,15 +45,15 @@ typedef struct Overlay36Object {
 } Overlay36Object;
 
 typedef struct Overlay36QueueEntry {
-    s32 arg0;
-    s32 arg1;
-    s32 arg2;
-    s32 arg3;
-    s32 arg4;
+    Overlay1Object *object;
+    s32 index;
+    f32 *x;
+    f32 *y;
+    f32 *z;
 } Overlay36QueueEntry;
 
 typedef struct Overlay36State_UpdateInteractiveEntity {
-    s32 value0;
+    Overlay1Object *value0;
     u16 timer4;
     u8 flags6;
     u8 usePosition7;
@@ -62,13 +67,18 @@ typedef struct Overlay36Record {
     s16 kind0;
     u8 callbackArg2;
     u8 flags3;
-    void (*timerCallback4)(Overlay36Entity *, s32);
-    void (*normalCallback8)(Overlay36Found *, Overlay36Entity *, s32, u8);
+    void (*timerCallback4)(void *, s32);
+    void (*normalCallback8)(void *, void *, s32, s32);
     void (*alternateCallbackC)(Overlay36Found *, Overlay36Entity *);
-    u8 pad10[0xC];
+    void (*positiveCallback10)(void *);
+    void (*fallbackCallback14)(void *);
+    void (*negativeCallback18)(void *);
     u16 normalEffect1C;
     u16 alternateEffect1E;
-    u8 pad20[0xC];
+    u16 linkedSound20;
+    u16 updateSound22;
+    u16 conditionalSound24;
+    u8 reserved26[6];
     f32 queryRadius2C;
     f32 minimumY30;
     f32 maximumY34;
@@ -477,55 +487,36 @@ extern u8 *func_80028F54(void);
 extern s32 gOverlay36QueueCount;
 extern Overlay36QueueEntry *gOverlay36QueueNext;
 extern Overlay36QueueEntry gOverlay36QueueBase[];
-extern void overlay1ReadSelection();
+extern void overlay1ReadSelection(Overlay1Object *, s32, f32 *, f32 *, f32 *);
 extern Overlay36Record gOverlay36Records[];
 extern u8 D_8007BF0C;
 extern s32 gOverlay36Elapsed;
 extern Overlay36Entity *gOverlay36CurrentEntity;
 extern Overlay36State_UpdateInteractiveEntity *gOverlay36CurrentState;
-extern s32 D_80078F20;
-extern void func_80006EA0(void);
+extern Overlay1Object *D_80078F20;
+extern void func_80006EA0(void *);
 extern void partUpdateTriggers(Overlay36Entity *entity, s32 elapsed);
-extern void overlay36ReleaseEntityReloc(Overlay36Entity *entity);
 extern void texAnimateSprite(void *resource, s32 *mode, s32 count, void *angles, s32 elapsed);
-extern void mathOneFloatPY(Overlay36VectorState *state, f32 *vector);
-extern s32 func_8005776C(f32, f32, f32, f32, s32, Overlay36Nearby **);
-extern u8 *gOverlay36WorldStateReloc[];
-extern u8 gOverlay36StateValues[];
-extern u8 gOverlay36StateData[];
-extern void overlay4AttachObject();
-extern void *gOverlay36CallTarget;
-extern u16 gOverlay36EnabledMask;
+extern void mathOneFloatPY(s16 *angles, f32 *vector);
+extern s32 func_8005776C(f32, f32, f32, f32, s32, HitCopyState **);
+extern u8 gOverlay36StateValues[14][2];
+extern u8 gOverlay36AlternateStates[6];
+extern void overlay4AttachObject(Overlay4GroupObject *, Overlay4GroupObject *);
 extern u8 gOverlay36Weights[14][10];
-extern Overlay36AltTable gOverlay36AltTable;
-extern Overlay36ScaleDivisorData gOverlay36ScaleDivisor;
-extern Overlay36ScaleMultiplierData gOverlay36ScaleMultiplier;
-extern Overlay36StrengthMultiplierData gOverlay36StrengthMultiplier;
-extern Overlay36NodeDataA gOverlay36NodeA;
-extern Overlay36NodeDataB gOverlay36NodeB;
-extern u32 mathRnd();
-extern f32 overlay1DistanceFromCurrent(Overlay36Object_ChooseWeightedState *object);
+extern s32 mathRnd(s32 minimum, s32 maximum);
+extern f32 overlay1DistanceFromCurrent(void *object);
 extern Overlay36Choice *func_80028F60(s8 selector, s32 argument);
-extern void overlay36ActionReloc();
-extern f32 gOverlay36RodataBaseReloc[];
 extern void *overlay1FindDirectionalObject(Overlay36Object_SpawnLinked7F *object, s32 first, s32 second, f32 cosine, f32 maximum);
 extern void amSndStopXYZ(void *resource);
 extern void overlay7CommitSelection(s32 value);
+extern void func_overlay_008_F0000F1C_185EC74(Overlay8ActivationOwner *, s32);
 extern void *func_80005820(s32 index);
 extern s32 overlay27Activate(void *resource);
-extern s32 gOverlay36Mode;
+extern s32 B_overlay_001_F00083E4;
+extern u16 D_8007BF18;
 extern void amSndPlayXYZ(u16 kind, f32 x, f32 y, f32 z, s32 mode, void *resource);
-/* The spawner is called with each caller's own request record (two or three
- * arguments, none floating-point), so it has no prototype. */
-extern void *func_8000590C();
+/* The spawner receives each caller's request view through its packet pointer. */
+extern void *func_8000590C(void *packet, s32 spawnFlags);
 extern void mathOneFloatRPY(void *object, f32 *offset);
-/* Two resident calls named by their shipped identities through the
- * surface's <name>_o036Reloc aliases; each caller's view of the callee
- * differs from the module's other uses (the initializer reads mathRnd as
- * s32, the entity update queries with its own result record). Both were
- * one placeholder, overlay36QueryReloc, before. */
-extern s32 mathRnd_o036Reloc(s32 index, s16 value, Overlay36Data *data);
-extern s32 func_8005776C_o036Reloc(f32 x, f32 y, f32 z, f32 radius, s32 one,
-                                   Overlay36Found **found);
 
 #endif

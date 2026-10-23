@@ -915,13 +915,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay_046.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym texDPInit=texDPInit_o046Reloc \
 	--redefine-sym texDPTextureX=texDPTextureX_o046Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47ReleaseResources.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym freeFrontEndList=freeFrontEndList_o047Reloc \
-	--redefine-sym func_80006EA0=func_80006EA0_o047Reloc $@
-
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47SpawnObject.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym func_overlay_047_F0000000_1890E18=func_overlay_047_F0000000_o047Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay_048.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym amTunePlay=amTunePlay_o048Reloc \
 	--redefine-sym amTuneSetFade=amTuneSetFade_o048Reloc \

@@ -1248,6 +1248,20 @@ bytes and disassembly never belong here.
   hand-unrolled candidate; `while` and `do` with an explicit `n > 0` guard
   are not interchangeable with `for` here (they added eight words at delta
   0). Evidence: the resident mode-record rank copy in `src/main/objects.c`.
+- A fixed-trip flag loop can recover the original unrolled stores without
+  inventing separate identities for one status byte. In a controlled full-TU
+  rebuild, spelling four conditional updates directly with one authenticated
+  status object let IDO combine operations and changed the target sequence;
+  a natural four-iteration loop over the bounded player array, setting
+  `status |= 1 << i` when that player is ready, reproduced the existing bytes
+  and relocation identities after default unrolling. The paired builds prove
+  source-shape sensitivity; the responsible optimizer pass is inferred from
+  the unrolled output. First prove every old alias names the same object, and
+  preserve iteration order, signedness, byte width, and each intermediate
+  update. This lever does not justify merging unrelated addresses or changing
+  volatile accesses. Evidence: the source-module consolidation recorded in
+  the [overlay 47 handoff](matching-triage-handoffs/func_overlay_047_F0000000_1890E18.md).
+
 - **A byte copied onto a signed field is a signed load.** At delta 0, ten
   structural words on an otherwise exact copy loop were an unsigned source
   field against the target's signed load. Declaring the source `s8` closed

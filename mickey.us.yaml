@@ -2376,15 +2376,13 @@ segments:
     vram: 0xF0000000
     bss_size: 0x340
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o047
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x1890E18, c, func_overlay_047_F0000000_1890E18]
-      - [0x18917E8, c, overlay47ReleaseResources]
-      - [0x1891948, c, func_overlay_047_F0000B30_1891948]
-      - [0x1893B28, c, overlay47SpawnObject]
+      - [0x1890E18, c, overlay_047]
+      - [0x1894168, .rodata, overlay_047]
 
   - name: overlay_047_reloc1
     type: bin

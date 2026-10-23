@@ -2986,3 +2986,9 @@ D_80081894 = 0x80081894; // type:f32 size:0x4 force_not_migration:True tier-D ch
 D_80081898 = 0x80081898; // type:f32 size:0x4 force_not_migration:True tier-D charControl scalar ownership
 
 func_8001B798 = 0x8001B798; // type:func size:0x2BC ROM 0x1C398 tier-A src/main/spranim.c.o -O2 -mips2 -32 matched C, 175 stock words, 9 exact relocation identities, reviewed inert allocation aids in cleanup queue
+
+// Overlay 47's resident identities come from declared runlink ORT exports.
+// Typed accesses establish views; allocation extents remain unclaimed.
+D_800D3058 = 0x800D3058; // tier-B ORT row 1827 plus resident BSS base, four 0x34-byte player views in overlay 47
+D_8007BF68 = 0x8007BF68; // type:u8 tier-B ORT row 1828 plus resident data base, byte accesses in overlay 47
+D_8007BF74 = 0x8007BF74; // type:u8 tier-B ORT row 1644 plus resident data base, byte accesses in overlay 47

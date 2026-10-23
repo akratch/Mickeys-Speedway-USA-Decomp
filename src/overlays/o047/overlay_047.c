@@ -1,138 +1,186 @@
-/* Overlay 47's controller-select screen update. Matched 2026-10-09 (lanes
- * d-o047 through x-047); see docs/matching-triage-handoffs for the history.
- * The closing edits were the if/else on player->active, the label column as
- * its own local, and the main loop's player step as the body's last statement. */
-#include "PR/ultratypes.h"
-#include "n_audio/mbi.h"
-#include "game/math.h"
-#include "game/models.h"
-#include "overlays/overlay_045.h"
+#include "overlays/overlay_047.h"
 
-typedef struct Overlay47TextureScroll {
-    u8 pad00[8];
-    s16 a, b, c, d;
-} Overlay47TextureScroll;
-
-/* Field widths shared with overlay47SpawnObject and the resident animation
- * and object consumers; names beyond those consumers remain structural. */
-typedef struct Overlay47Actor {
-    s16 rotation;
-    u8 pad02[0xA];
-    f32 x, y, z;
-    u8 pad18[0x10];
-    f32 frameValue;
-    u8 pad2C[0xF];
-    u8 frame;
-    u8 pad3C[0xA];
-    s16 kind;
-    u8 pad48[0x1C];
-    Overlay47TextureScroll *scroll;
-    void *animationStates;
-    u8 pad6C[0x14];
-    s32 trigger;
-} Overlay47Actor;
-
-typedef struct Overlay47Player {
-    f32 x, y, z;
-    f32 targetX, targetY, targetZ;
-    f32 screenX, screenY;
-    s16 rotation, targetRotation;
-    Overlay47Actor *actor;
-    s16 selector;
-    s8 ready, active, leaving;
-    u8 pad2D;
-    s16 idleTimer;
-    void *sound;
-} Overlay47Player;
-
-typedef struct Overlay47Position {
-    f32 x, y, z;
-    s16 rotation;
-    u8 pad0E[2];
-} Overlay47Position;
-
-typedef struct Overlay47Icon {
-    s16 rotationX, rotationY, rotationZ;
-    u16 flags;
-    f32 scale, x, y, z;
-    u8 pad18[0x10];
-    f32 selector;
-} Overlay47Icon;
-
-typedef struct Overlay47TextureNode {
-    void *texture;
-    void *alternate;
-    u32 packedOffset;
-    s16 x, y;
-} Overlay47TextureNode;
-
-typedef struct Overlay47Command {
-    u32 w0, w1;
-} Overlay47Command;
-
-extern Overlay47Player D_800D3058[4];
-extern s8 D_800D3190[4];
-extern s32 D_8007C1A0;
-extern u8 D_8007BF74;
-extern char **D_8007C0B8;
-extern Overlay47Command *D_800D3140;
-extern Mtx *D_800D3144;
-extern void *D_800D3148;
-extern void *D_800D31C8[];
-/* Overlay 47's .data and .bss as TU statics at their recorded offsets, in the
- * layout func_overlay_047_F0000000_1890E18 defines (Tier D, from the LOCAL
- * relocation addends). mk/overlays.mk drops these sections at POSTPROCESS and
- * rebinds their sites, as that TU's rule does. The blend value
- * and its speed (+0x540/+0x544) are two statics: the target forms each address
- * in its own register at the tail (2026-10-08). The colour table is s32 and the
- * colour blocks read it per channel with no `colour` local, so the packet's
- * cursor store blocks uopt's forward and the channels are symbol webs as
- * shipped; the blend reassigns the channels (lane j-9, 2026-10-08). */
-static u8 ov47Data_0[0x8C] = { 0 };
-static u8 ov47Data_8C[0x8C] = { 0 };
-static u8 ov47Data_118[0x80] = { 0 };
-static u8 ov47Data_198[0x28] = { 0 };
-static u8 ov47Data_1C0[0x68] = { 0 };
-static u8 ov47Data_228[0x40] = { 0 };
-static u8 ov47Data_268[0x40] = { 0 };
-static Overlay47Command ov47Data_2A8[11] = { 0 };
-static Overlay47Command ov47Data_300[11] = { 0 };
-static s16 D_358[12] = { 0 };
-static s16 D_370[2] = { 0 };
-static s16 D_374[12] = { 0 };
-static void *D_38C[10] = { 0 };
-static u8 sO47Data3B4[0x14] = { 0 };
-/* Both arms read the 3CC table at row (count - 1): the ready arm's held
- * base and -4 displacement and the unready arm's folded 0x3C8 address are
- * the same expression (lane n-1, 2026-10-08). */
-static s8 ov47Data_3C8[1][4] = { 0 };
-static s8 ov47Data_3CC[4][4] = { 0 };
-static s32 ov47Data_3DC[5] = { 0 };
-static f32 ov47Data_3F0[5] = { 0 };
-static f32 D_404[15] = { 0 };
-static s8 D_440[12] = { 0 };
-static s8 D_44C[12] = { 0 };
-static s8 D_458[12] = { 0 };
-static s8 D_464[12] = { 0 };
-static u8 sO47Data470[4] = { 0 };
-static s8 ov47Data_474[12] = { 0 };
-static s8 ov47Data_480[12] = { 0 };
-static u16 ov47Data_48C[10] = { 0 };
-static u16 ov47Data_4A0[10] = { 0 };
-static u16 ov47Data_4B4[10] = { 0 };
-static s8 ov47Data_4C8[10][4] = { 0 };
-static Overlay47TextureNode ov47Data_4F0 = { 0 };
-static u8 sO47Data500[0x10] = { 0 };
-static s16 ov47Data_510[10] = { 0 };
-static s8 ov47Data_524[12] = { 0 };
-static s32 ov47Data_530[4] = { 0 };
-static f32 ov47Data_540 = 0;
-static f32 ov47Data_544 = 0;
-static s32 ov47Data_548 = 0;
-static f32 ov47Data_54C = 0;
+/* The module owns its initialized tables, compiler pool and 0x340-byte BSS.
+ * The flag loop in the release routine is unrolled by IDO; it uses one
+ * resident status byte, replacing the earlier same-address extern aliases.
+ */
+/* Initialized values retained from the existing C owner; fields follow their consumers. */
+static Overlay47Vertex gOverlay47InitializedData[14] = {
+    { -23, -23, 0, 255, 255, 255, 255 },
+    { -11, -23, 0, 255, 255, 255, 255 },
+    { -23, -20, 0, 255, 255, 255, 255 },
+    { -20, -20, 0, 255, 255, 255, 255 },
+    { -11, -20, 0, 255, 255, 255, 255 },
+    { -23, -11, 0, 255, 255, 255, 255 },
+    { -20, -11, 0, 255, 255, 255, 255 },
+    { 23, -23, 0, 255, 255, 255, 255 },
+    { 11, -23, 0, 255, 255, 255, 255 },
+    { 23, -20, 0, 255, 255, 255, 255 },
+    { 20, -20, 0, 255, 255, 255, 255 },
+    { 11, -20, 0, 255, 255, 255, 255 },
+    { 23, -11, 0, 255, 255, 255, 255 },
+    { 20, -11, 0, 255, 255, 255, 255 },
+};
+static Overlay47Vertex ov47Data_8C[14] = {
+    { -23, 23, 0, 255, 255, 255, 255 },
+    { -11, 23, 0, 255, 255, 255, 255 },
+    { -23, 20, 0, 255, 255, 255, 255 },
+    { -20, 20, 0, 255, 255, 255, 255 },
+    { -11, 20, 0, 255, 255, 255, 255 },
+    { -23, 11, 0, 255, 255, 255, 255 },
+    { -20, 11, 0, 255, 255, 255, 255 },
+    { 23, 23, 0, 255, 255, 255, 255 },
+    { 11, 23, 0, 255, 255, 255, 255 },
+    { 23, 20, 0, 255, 255, 255, 255 },
+    { 20, 20, 0, 255, 255, 255, 255 },
+    { 11, 20, 0, 255, 255, 255, 255 },
+    { 23, 11, 0, 255, 255, 255, 255 },
+    { 20, 11, 0, 255, 255, 255, 255 },
+};
+static Overlay47Triangle ov47Data_118[8] = {
+    { 64, 0, 1, 2, 0, 0, 0, 0, 0, 0 },
+    { 64, 1, 4, 2, 0, 0, 0, 0, 0, 0 },
+    { 64, 2, 3, 5, 0, 0, 0, 0, 0, 0 },
+    { 64, 3, 6, 5, 0, 0, 0, 0, 0, 0 },
+    { 64, 8, 7, 9, 0, 0, 0, 0, 0, 0 },
+    { 64, 8, 9, 11, 0, 0, 0, 0, 0, 0 },
+    { 64, 10, 9, 12, 0, 0, 0, 0, 0, 0 },
+    { 64, 10, 12, 13, 0, 0, 0, 0, 0, 0 },
+};
+static Overlay47Vertex ov47Data_198[4] = {
+    { -21, -20, 0, 255, 255, 255, 255 },
+    { 21, -20, 0, 255, 255, 255, 255 },
+    { -21, 20, 0, 255, 255, 255, 255 },
+    { 21, 20, 0, 255, 255, 255, 255 },
+};
+static Overlay47Triangle ov47Data_1C0[2] = {
+    { 64, 0, 1, 2, 0, 0, 0, 0, 0, 0 },
+    { 64, 1, 3, 2, 0, 0, 0, 0, 0, 0 },
+};
+static s16 sUnreferencedGeometry[36] = {
+    -8, -24, 0, -1, -1, -8, -24, 0, -1, -1, -8, -32,
+    0, -1, -1, -8, -32, 0, -1, -1, 16384, 258, 0, 0,
+    512, 0, 0, 512, 16385, 770, 512, 0, 512, 512, 0, 512
+};
+static Overlay47VertexSet6 ov47Data_228 = { {
+    { -160, -40, 0, 0, 0, 0, 0 },
+    { 160, -40, 0, 0, 0, 0, 0 },
+    { -160, -48, 0, 0, 0, 0, 92 },
+    { 160, -48, 0, 0, 0, 0, 92 },
+    { -160, -120, 0, 0, 0, 0, 92 },
+    { 160, -120, 0, 0, 0, 0, 92 },
+}, { 0 } };
+static Overlay47Triangle ov47Data_268[4] = {
+    { 64, 0, 1, 2, 0, 0, 0, 0, 0, 0 },
+    { 64, 1, 3, 2, 0, 0, 0, 0, 0, 0 },
+    { 64, 2, 3, 4, 0, 0, 0, 0, 0, 0 },
+    { 64, 3, 5, 4, 0, 0, 0, 0, 0, 0 },
+};
+static Overlay47Command ov47Data_2A8[11] = {
+    { 0xe7000000, 0x0 },
+    { 0xba001402, 0x0 },
+    { 0xba001001, 0x0 },
+    { 0xba000e02, 0x0 },
+    { 0xba001102, 0x0 },
+    { 0xba001301, 0x0 },
+    { 0xba000c02, 0x2000 },
+    { 0xba000903, 0xc00 },
+    { 0xb9000002, 0x0 },
+    { 0xb900031d, 0x442048 },
+    { 0xb8000000, 0x0 },
+};
+static Overlay47Command ov47Data_300[11] = {
+    { 0xe7000000, 0x0 },
+    { 0xba001402, 0x0 },
+    { 0xba001001, 0x0 },
+    { 0xba000e02, 0x0 },
+    { 0xba001102, 0x0 },
+    { 0xba001301, 0x0 },
+    { 0xba000c02, 0x2000 },
+    { 0xba000903, 0xc00 },
+    { 0xb9000002, 0x0 },
+    { 0xb900031d, 0x5041c8 },
+    { 0xb8000000, 0x0 },
+};
+static s16 D_358[12] = {
+    3, 4, 5, 11, 124, 12, 13, 14, 15, 16, -1, 0
+};
+static s16 D_370[2] = {
+    6, -1
+};
+static s16 D_374[12] = {
+    64, 68, 136, 137, 66, 67, 175, 176, 177, 178, -1, 0
+};
+static void * D_38C[10] = { NULL };
+static s16 sScreenPositions[6][2] = {
+    { 76, 131 },
+    { 140, 131 },
+    { 204, 131 },
+    { 76, 179 },
+    { 140, 179 },
+    { 204, 179 },
+};
+static s8 ov47Data_3CC[4][4] = {
+    { 3, -1, -1, -1 },
+    { 2, 4, -1, -1 },
+    { 1, 3, 5, -1 },
+    { 0, 2, 4, 6 },
+};
+static s32 ov47Data_3DC[5] = { 0xff0000ff, 0xffff, 0xff00ff, 0xffff00ff, 0xa0a000 };
+static f32 ov47Data_3F0[6] = { 0.0105F, 0.0065F, 0.015F, 0.0105F, 0.0105F, 0.022F };
+static f32 sIconScales[10] = { 1.16F, 1.16F, 1.16F, 1.16F, 1.16F, 1.16F, 1.0F, 0.9F, 0.8F, 0.7F };
+static s8 sLayoutPrefix[20] = { 16, 0, -8, 0, 12, 0, -16, 0, 4, 0, -12, 0, 16, 0, -8, 0, 12, 0, -16, 0 };
+static s8 sIconStartX[10] = { -100, -100, -100, -100, -100, -100, -106, -106, -109, -112 };
+static s8 sIconStepX[10] = { 40, 40, 40, 40, 40, 40, 35, 30, 27, 25 };
+static s8 sIconStartY[10] = { -74, -74, -74, -74, -74, -74, -71, -68, -67, -64 };
+static s8 sIconStepY[10] = { 0, 0, 0, 0, 0, 0, -10, -15, -18, -23 };
+static s8 ov47Data_474[12] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+static s8 ov47Data_480[12] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+static u16 ov47Data_48C[10] = {
+    83, 148, 201, 498, 364, 430, 778, 682, 770, 602
+};
+static u16 ov47Data_4A0[10] = {
+    85, 149, 202, 499, 365, 432, 779, 775, 784, 603
+};
+static u16 ov47Data_4B4[10] = {
+    86, 150, 203, 500, 366, 433, 728, 683, 771, 604
+};
+static s8 ov47Data_4C8[10][4] = {
+    { 3, 3, 3, 3 },
+    { 2, 4, 4, 2 },
+    { 3, 3, 3, 3 },
+    { 2, 4, 4, 2 },
+    { 4, 2, 2, 4 },
+    { 4, 2, 2, 4 },
+    { 3, 3, 2, 4 },
+    { 2, 4, 5, 2 },
+    { 2, 5, 4, 3 },
+    { 5, 1, 1, 5 },
+};
+/* The renderer walks nodes until the null-texture terminator. */
+static Overlay47TextureNode sTextureNodes[2] = {
+    { NULL, NULL, 0, 0, 0 },
+    { NULL, NULL, 0, 0, 0 },
+};
+static s16 ov47Data_510[10] = {
+    64, 68, 136, 137, 66, 67, 175, 176, 177, 178
+};
+static s8 ov47Data_524[12] = {
+    0, 3, 4, 5, 1, 2, 6, 7, 8, 9, 0, 0
+};
+static s32 ov47Data_530[4] = {
+    -35, -36, 3, 2
+};
+static f32 ov47Data_540 = 0.0F;
+static f32 ov47Data_544 = 0.04F;
+static s32 ov47Data_548 = 13;
+static f32 ov47Data_54C = 0.0F;
 static s32 ov47Data_550 = 0;
-static s32 ov47Data_554 = 0;
-static u8 sO47Data558[8] = { 0 };
+static s32 ov47Data_554 = 4;
 
 static s8 ov47Bss_0;
 static Overlay47Icon ov47Bss_8[10];
@@ -152,43 +200,10 @@ static Overlay45ResourceDescriptor *ov47Bss_320;
 static s32 ov47Bss_324;
 static s32 ov47Bss_328[4];
 static s32 ov47Bss_338;
-static s32 ov47Bss_33C;
 
-extern u16 joyGetPressed(s32 player);
-extern void amSndPlay(u16 soundId, void **handle);
-extern void amSndStop(void *handle);
-extern void func_80006EA0(void *object);
-extern void func_8005AD64(void *object, s32 frame, s32 index, f32 value);
-extern s32 func_8005ABA8(void *object, f32 speed, f32 updateRate);
-extern s32 camProjectPoint(f32 x, f32 y, f32 z, f32 *screenX, f32 *screenY, u8 mode);
-extern s32 func_8001398C(f32 x, f32 z, s32 flags, f32 ***height);
-extern s32 mathRnd(s32 minimum, s32 maximum);
-extern void partUpdateTriggers(void *object, s32 updateRate);
-extern f32 camGetFOV(void);
-extern void camSetFOV(f32 fov, s32 force);
-extern void camSetView(Overlay47Command **commands, Mtx **matrices);
-extern void camStandardOrtho(Overlay47Command **commands, Mtx **matrices);
-extern void texDPTextureX(Overlay47Command **commands, void *texture, s32 flags, s32 offset);
-extern void texDPInit(Overlay47Command **commands);
-extern void func_8002FB34(Overlay47Command **commands, Overlay47TextureNode *textures,
-                        f32 x, f32 y, f32 scaleX, f32 scaleY, s32 mode, s32 flags);
-extern void func_8002A82C(MtxF matrix);
-extern void matrixTranslate(f32 x, f32 y, f32 z, MtxF matrix);
-extern void matrixScale(f32 x, f32 y, f32 z, MtxF matrix);
-extern void func_8002A604(s16 rotation, MtxF matrix);
-extern void camCopyOrthoMatrix(MtxF matrix);
-extern void mtxf_mul(MtxF lhs, MtxF rhs, MtxF dest);
-extern void mtxf_to_mtx(MtxF source, Mtx *dest);
-extern void camDo2DSprite(Overlay47Command **commands, Mtx **matrices, void **vertices,
-                        void *transform, void *sprite, s32 flags, u8 alpha);
-extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha, s32 blend);
-extern void fontUseFont(s32 font);
-extern void fontPrintXY(Overlay47Command **commands, s32 x, s32 y, char *text, s32 flags);
-extern void texAnimateTexSprite(void *texture, s32 *state, s32 speed, f32 *frame, s32 updateRate);
-extern void mainChangeLevel(s32 level, s32 character, s32 animGroup, s32 mode, s32 arg4, s32 arg5);
-extern void func_overlay_047_F0002D10_1893B28(Overlay47Player *player);
 
-/* Same command fields used by the existing frontend and RCP TUs. */
+static void func_overlay_047_F0002D10_1893B28(Overlay47Player *player);
+
 #define O47_COMMAND(a, b) { \
     Overlay47Command *command = D_800D3140++; \
     command->w0 = (u32)(a); \
@@ -200,6 +215,242 @@ extern void func_overlay_047_F0002D10_1893B28(Overlay47Player *player);
 #define O47_RECTANGLE(x, y) \
     O47_COMMAND(0xF6000000 | ((((x) + 6) & 0x3FF) << 14) | ((((y) + 6) & 0x3FF) << 2), \
                 (((x) & 0x3FF) << 14) | (((y) & 0x3FF) << 2))
+
+void func_overlay_047_F0000000_1890E18(void) {
+    Overlay47SpawnPacket packet;
+    Overlay47PathObject *pathObject;
+    Overlay47PathNode *node;
+    s32 i;
+    s32 j;
+    s32 x;
+    s32 y;
+    s32 yStep;
+    Overlay47Player *entry;
+    Overlay47Icon *choice;
+
+    loadFrontEndList(D_358);
+    setupFrontEndList(D_370);
+    fontUseFont(3);
+    fontColour(0xFF, 0xFF, 0xFF, 0, 0xFF);
+    ov47Bss_30C = overlay45CreateDescriptor(D_8007C0B8[98], 0xA0, 0x18, 4);
+    ov47Bss_314 = overlay45CreateDescriptor("OK", 0xA0, 0x110, 4);
+    ov47Bss_318 = overlay45CreateDescriptor(D_8007C0B8[99], 0xA0, -0x28, 4);
+    ov47Bss_31C = overlay45CreateDescriptor(D_8007C0B8[22], 0x78, 0x104, 4);
+    ov47Bss_320 = overlay45CreateDescriptor(D_8007C0B8[23], 0xC8, 0x104, 4);
+    joyResetMap();
+
+    packet.type = 0xE;
+    packet.x = 0;
+    packet.y = 0;
+    packet.z = 0;
+    packet.state = 0;
+    packet.byte0B = 0x4B;
+    packet.byte0A = 0;
+    i = 0;
+    while (D_374[i] != -1) {
+        packet.selector = D_374[i];
+        D_38C[i] = func_8000590C(&packet, 0);
+        i++;
+    }
+
+    for (i = 0; i < 4; i++) {
+        ov47Bss_1C0[i].alternate = 0;
+        ov47Bss_1C0[i].packedOffset = 0;
+        ov47Bss_1C0[i].y = 0x96;
+    }
+    ov47Bss_1C0[4].texture = 0;
+    ov47Bss_1C0[4].alternate = 0;
+
+    pathObject = func_800508B4(0x48);
+    if (pathObject != NULL) {
+        node = pathObject->path;
+        for (i = 0; i < 7; i++) {
+            ov47Bss_210[i].x = node->x;
+            ov47Bss_210[i].y = node->y;
+            ov47Bss_210[i].z = node->z;
+            ov47Bss_210[i].rotation = node->selector;
+            node = node->next;
+        }
+    }
+
+    pathObject = func_800508B4(0x52);
+    if (pathObject != NULL) {
+        node = pathObject->path;
+        for (i = 0; i < 7; i++) {
+            ov47Bss_280[i].x = node->x;
+            ov47Bss_280[i].y = node->y;
+            ov47Bss_280[i].z = node->z;
+            ov47Bss_280[i].rotation = node->selector;
+            node = node->next;
+        }
+    }
+
+    pathObject = func_800508B4(0x49);
+    if (pathObject != NULL) {
+        node = pathObject->path;
+        ov47Bss_2F0.x = node->x;
+        ov47Bss_2F0.y = node->y;
+        ov47Bss_2F0.z = node->z;
+        ov47Bss_2F0.rotation = node->selector;
+    }
+
+    for (i = 0; i < 4; i++) {
+        D_800D3058[i].actor = NULL;
+        D_800D3058[i].sound = 0;
+        D_800D3058[i].x = ov47Bss_2F0.x;
+        D_800D3058[i].y = ov47Bss_2F0.y;
+        D_800D3058[i].z = ov47Bss_2F0.z;
+        D_800D3058[i].rotation = ov47Bss_2F0.rotation;
+        D_800D3058[i].ready = 0;
+        D_800D3058[i].leaving = 0;
+    }
+
+    for (i = 0; i < 10; i++) {
+        ov47Bss_300[i] = 0;
+    }
+
+    for (i = 0; i < 6; i++) {
+        ov47Bss_8[i].selector = i;
+    }
+
+    ov47Bss_0 = 6;
+    if (D_800D3128.unlocked) {
+        ov47Bss_300[6] = 0;
+        ov47Bss_8[ov47Bss_0].selector = 6.0f;
+        ov47Bss_0++;
+    } else {
+        ov47Bss_300[6] = 1;
+    }
+
+    if (((D_800D3128.configuration[0] & 7) >= 3) &&
+        ((D_800D3128.configuration[1] & 7) >= 3) &&
+        ((D_800D3128.configuration[2] & 7) >= 3)) {
+        ov47Bss_300[7] = 0;
+        ov47Bss_8[ov47Bss_0].selector = 7.0f;
+        ov47Bss_0++;
+    } else {
+        ov47Bss_300[7] = 1;
+    }
+
+    if ((((D_800D3128.configuration[0] & 0x38) >> 3) >= 3) &&
+        (((D_800D3128.configuration[1] & 0x38) >> 3) >= 3) &&
+        (((D_800D3128.configuration[2] & 0x38) >> 3) >= 3)) {
+        ov47Bss_300[8] = 0;
+        ov47Bss_8[ov47Bss_0].selector = 8.0f;
+        ov47Bss_0++;
+    } else {
+        ov47Bss_300[8] = 1;
+    }
+
+    if ((((D_800D3128.configuration[0] & 0x1C0) >> 6) == 4) &&
+        (((D_800D3128.configuration[1] & 0x1C0) >> 6) == 4) &&
+        (((D_800D3128.configuration[2] & 0x1C0) >> 6) == 4) &&
+        (((D_800D3128.configuration[3] & 0x1C0) >> 6) == 4) &&
+        (((D_800D3128.field10 & 0x1C0) >> 6) == 4)) {
+        ov47Bss_300[9] = 0;
+        ov47Bss_8[ov47Bss_0].selector = 9.0f;
+        ov47Bss_0++;
+    } else {
+        ov47Bss_300[9] = 1;
+    }
+
+    if (frontGetMode() == 9) {
+        D_8007C1A0 = 1;
+        ov47Bss_30A = 1;
+        for (i = 0; i < 4; i++) {
+            D_800D3058[i].selector = 0;
+            D_800D3058[i].active = 0;
+        }
+        func_8003A754();
+        D_800D3058[0].active = 1;
+        ov47Bss_300[0] = 1;
+        D_8007BF68 = 1;
+    } else {
+        ov47Bss_30A = D_8007C1A0;
+        for (i = 0; i < 4; i++) {
+            if (D_800D3058[i].active != 0) {
+                ov47Bss_300[D_800D3058[i].selector] = 1;
+            }
+        }
+    }
+
+    animseqStartPath(0x4A);
+    pathObject = func_800508B4(0x4A);
+    if (pathObject != NULL) {
+        pathObject->flags |= 2;
+    }
+    amSndPlay(0x19, NULL);
+
+    for (i = 0; i < 4; i++) {
+        D_800D3058[i].ready = 0;
+    }
+    ov47Bss_310 = 0;
+    ov47Bss_324 = 0;
+    sTextureNodes[0].texture = D_800D31C8[4];
+
+    x = sIconStartX[ov47Bss_0 - 1];
+    y = sIconStartY[ov47Bss_0 - 1];
+    yStep = sIconStepY[ov47Bss_0 - 1];
+    for (i = 0; i < 10; i++) {
+        ov47Bss_8[i].z = 0.0f;
+        ov47Bss_8[i].rotationX = 0;
+        ov47Bss_8[i].x = x;
+        ov47Bss_8[i].rotationY = 0;
+        ov47Bss_8[i].rotationZ = 0;
+        ov47Bss_8[i].scale = sIconScales[ov47Bss_0 - 1];
+        x += sIconStepX[ov47Bss_0 - 1];
+        ov47Bss_8[i].y = y;
+        y += yStep;
+        yStep = -yStep;
+    }
+
+    entry = D_800D3058;
+    for (i = 0; i < 4; i++, entry++) {
+        for (choice = ov47Bss_8, j = 0; j < ov47Bss_0; j++, choice++) {
+            /* `(*p).f`, not `p->f`: the arrow form swaps the c.eq.s operands. */
+            if (((*choice).selector == (*entry).selector) && ((*entry).active != 0)) {
+                ov47Bss_328[i] = ((s32)choice->x + 0xA0) << 4;
+            }
+        }
+    }
+    ov47Bss_338 = 0;
+}
+
+void func_overlay_047_F00009D0_18917E8(void) {
+    Overlay47Player *entry;
+    void **slot;
+    s32 i;
+
+    overlay45ReleaseDescriptor(ov47Bss_30C);
+    overlay45ReleaseDescriptor(ov47Bss_314);
+    overlay45ReleaseDescriptor(ov47Bss_318);
+    overlay45ReleaseDescriptor(ov47Bss_31C);
+    overlay45ReleaseDescriptor(ov47Bss_320);
+
+    entry = D_800D3058; do {
+        if (entry->actor != NULL) {
+            func_80006EA0(entry->actor);
+            entry->actor = NULL;
+        }
+        entry++;
+    } while (entry < &D_800D3058[4]);
+
+    slot = D_38C; do {
+        if (*slot != NULL) {
+            func_80006EA0(*slot);
+            *slot = NULL;
+        }
+        slot++;
+    } while (slot < &D_38C[10]);
+
+    freeFrontEndList((s16 *) D_358);
+    D_800D31B0 = 0;
+    for (i = 0; i < 4; i++) {
+        if (D_800D3058[i].ready != 0) {
+            D_800D31B0 |= 1 << i;
+        }
+    }
+}
 
 void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     s32 j;
@@ -545,7 +796,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     camStandardOrtho(&D_800D3140, &D_800D3144);
     texDPTextureX(&D_800D3140, NULL, 16, 0);
     O47_COMMAND(0xFA000000, -1);
-    O47_VERTICES(ov47Data_228, 6);
+    O47_VERTICES(ov47Data_228.vertices, 6);
     O47_COMMAND(0x05300040, O47_PHYSICAL(ov47Data_268));
     O47_COMMAND(0xE7000000, 0);
     if (allReady && ov47Bss_338) {
@@ -624,7 +875,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             blue = blue + (255 - blue) * ov47Data_540;
             O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
             O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
-            O47_VERTICES(ov47Data_0, 14);
+            O47_VERTICES(gOverlay47InitializedData, 14);
             O47_COMMAND(0x05710080, O47_PHYSICAL(ov47Data_118));
             O47_VERTICES(ov47Data_8C, 14);
             O47_COMMAND(0x05710080, O47_PHYSICAL(ov47Data_118));
@@ -712,9 +963,9 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         }
     }
     overlay45ReadPair((Overlay45PairOwner *)ov47Bss_314, &x, &y, 0);
-    func_8002FB34(&D_800D3140, &ov47Data_4F0, (f32)(x - 32), (f32)(y - 6), 1.0f, 1.0f, -2, 3);
-    texAnimateTexSprite(ov47Data_4F0.texture, &ov47Data_548, 2, &ov47Data_54C, updateRate);
-    ov47Data_4F0.packedOffset = (s32)(ov47Data_54C * 65536.0f);
+    func_8002FB34(&D_800D3140, &sTextureNodes[0], (f32)(x - 32), (f32)(y - 6), 1.0f, 1.0f, -2, 3);
+    texAnimateTexSprite(sTextureNodes[0].texture, &ov47Data_548, 2, &ov47Data_54C, updateRate);
+    sTextureNodes[0].packedOffset = (s32)(ov47Data_54C * 65536.0f);
     if (start) {
         mainChangeLevel(12, 0, 0, 10, 1, 0);
         ov47Bss_324 = 1;
@@ -738,5 +989,25 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     if (ov47Bss_30B) {
         if (ov47Bss_310 != NULL) amSndStop(ov47Bss_310);
         amSndPlay(15, &ov47Bss_310);
+    }
+}
+
+static void func_overlay_047_F0002D10_1893B28(Overlay47Player *object) {
+    Overlay47SpawnPacket packet;
+
+    packet.selector = ov47Data_510[object->selector];
+    packet.type = 0xE;
+    packet.x = (s16)object->x;
+    packet.y = (s16)object->y;
+    packet.z = (s16)object->z;
+    packet.state = (s8)object->rotation;
+    packet.byte0B = 0x4B;
+    packet.byte0A = 0;
+    object->actor = func_8000590C(&packet, 1);
+    if (object->actor != NULL) {
+        func_80005768(object->actor);
+        object->actor->field3C = 0;
+        func_8005AD64(object->actor, 1, -1, 0.0f);
+        object->actor->rotation = object->rotation;
     }
 }

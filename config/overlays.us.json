@@ -7415,37 +7415,10 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x9D0",
-     "size": "0x9D0",
-     "type": "c",
-     "source": "overlays/o047/func_overlay_047_F0000000_1890E18",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x9D0",
-     "end_offset": "0xB30",
-     "size": "0x160",
-     "type": "c",
-     "source": "overlays/o047/overlay47ReleaseResources",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xB30",
-     "end_offset": "0x2D10",
-     "size": "0x21E0",
-     "type": "c",
-     "source": "overlays/o047/func_overlay_047_F0000B30_1891948",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2D10",
      "end_offset": "0x2DE8",
-     "size": "0xD8",
+     "size": "0x2DE8",
      "type": "c",
-     "source": "overlays/o047/overlay47SpawnObject",
+     "source": "overlays/o047/overlay_047",
      "matched": true,
      "nonmatching": false
     },
@@ -7536,10 +7509,19 @@
    "data_rodata_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x5A0",
-     "size": "0x5A0",
+     "end_offset": "0x560",
+     "size": "0x560",
      "type": "c",
-     "source": "overlays/o047/overlay47ReleaseResources"
+     "source": "overlays/o047/overlay_047"
+    },
+    {
+     "offset": "0x560",
+     "end_offset": "0x5A0",
+     "size": "0x40",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o047/overlay_047",
+     "canonical": true
     }
    ]
   },

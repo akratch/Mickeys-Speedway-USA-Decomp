@@ -106,6 +106,7 @@ EXACT_DONOR_OVERLAYS = {
 # deliberately explicit so the manifest, splat YAML, and progress metric share
 # one collision-free `(overlay, offset)` source of truth.
 DATA_RODATA_OWNERSHIP = {
+    72: [(0x0, 0x10, "overlay_072")],
     22: [(0x0, 0x60, "overlay_022")],
     45: [(0x0, 0x80, "overlay_045")],
     47: [(0x0, 0x5A0, "overlay47ReleaseResources")],

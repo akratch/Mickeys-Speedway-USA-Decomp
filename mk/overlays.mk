@@ -1167,6 +1167,8 @@ MODULE_LINKED_OVERLAYS += 077
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 81 is one translation unit under the overlay flag set; its .text
 # is the module's whole text, trailing pad included, so it needs no trim.
+# The private mask and compiler literal pool are owned by the whole module.
+MODULE_LINKED_OVERLAYS += 081
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o081/overlay_081.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 82 is one translation unit under the overlay flag set. Its
 # six-element initializer clear matches at the default unroll setting, as do

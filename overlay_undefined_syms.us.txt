@@ -3476,14 +3476,6 @@ gOverlay80MagnitudeScale = 0x00000004;
 gOverlay80Scale0 = 0x00000000;
 sqrtf_o080Reloc = 0xf0000000;
 
-/* overlay 81: overlay_081.c.o */
-amSndPlayXYZ_o081Reloc = 0xf0000000;
-func_80005750_o081Reloc = 0xf0000000;
-gOverlay81Mask = 0x00000000;
-gOverlay81Scale = 0x00000000;
-mathRnd_o081Reloc = 0xf0000000;
-partUpdateTriggers_o081Reloc = 0xf0000000;
-
 /* overlay 82: overlay_082.c.o */
 D_800D31B8_o082Reloc = 0x00000000;
 D_800D31BC_o082Reloc = 0x00000000;
@@ -4503,11 +4495,11 @@ func_overlay_080_F0000000_18CE8C8 = overlay80InitializeContact;
 func_overlay_080_F000011C_18CE9E4 = overlay80UpdateContact;
 
 /* overlay 81: overlay_081.c.o */
-func_overlay_081_F0000000_18CEDA8 = overlay81Init;
-func_overlay_081_F00000CC_18CEE74 = overlay81Update;
-func_overlay_081_F0000220_18CEFC8 = overlay81SetMaskBit;
-func_overlay_081_F0000240_18CEFE8 = overlay81InitState;
 func_overlay_081_F0000274_18CF01C = overlay81CheckNearby;
+func_overlay_081_F0000000_18CEDA8 = overlay81Init;
+func_overlay_081_F0000220_18CEFC8 = overlay81SetMaskBit;
+func_overlay_081_F00000CC_18CEE74 = overlay81Update;
+func_overlay_081_F0000240_18CEFE8 = overlay81InitState;
 
 /* overlay 82: overlay_082.c.o */
 func_overlay_082_F0000000_18CF180 = overlay82Init;

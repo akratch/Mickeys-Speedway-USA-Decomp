@@ -53,17 +53,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/func_overlay_066_F00004E0_18C6948.c.o: POS
 	$(OBJCOPY) --redefine-sym viGetCurrentSize=viGetCurrentSize_o066Reloc $@ && \
 	$(OBJCOPY) --redefine-sym viGetVideoMode=viGetVideoMode_o066Reloc $@
 
-# Rare's audio-bank patcher is an -O3 object in DKR and Mickey. Mickey keeps
-# six source boundaries that preserve calls the whole-file DKR build inlines;
-# the grouped consolidation probe reversed their emitted order as well.
-OVERLAY5_O3_TUS := alSeqFileNew alBnkfNew _bnkfPatchBank _bnkfPatchInst \
-                   _bnkfPatchSound _bnkfPatchWaveTable
-OVERLAY5_O3_OBJECTS := $(addprefix $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/, \
-                       $(addsuffix .c.o,$(OVERLAY5_O3_TUS)))
-$(OVERLAY5_O3_OBJECTS): $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/%.c.o: \
-                        $(SRC_DIR)/overlays/o005/%.c $(H_FILES) | $(ALL_DIRS) $(SPLAT_STAMP)
-	$(CC) -c $(CFLAGS) -O3 -mips2 -32 -o $@ $<
-	$(RUN_POSTPROCESS)
 
 # IDO aligns standalone .text sections to 16 bytes, while these reviewed
 # overlay functions continue at four-byte boundaries inside a larger module.
@@ -80,36 +69,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o106/overlay_106.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o107/overlay_107.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x28
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o005/_bnkfPatchBank.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xB8
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o005/_bnkfPatchInst.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x98
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o005/_bnkfPatchSound.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x58
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o005/_bnkfPatchWaveTable.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6C
 
-# overlay5InitializeAudio reaches the resident segment through the overlay's
-# own relocation table; rebind each resident call to the module-local alias
-# `gmake overlay-syms` mints for it, exactly as the other overlays do.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o005/overlay_005.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym alHeapDBAlloc=alHeapDBAlloc_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym alHeapInit=alHeapInit_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym alSurround_OutputType=alSurround_OutputType_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym alSurround_ReverbSetup=alSurround_ReverbSetup_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym amSetMuteMode=amSetMuteMode_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym func_80001740=func_80001740_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym func_80001BA0=func_80001BA0_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym func_800039F0=func_800039F0_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym mmAlloc=mmAlloc_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym func_8002B768=func_8002B768_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym func_8002E148=func_8002E148_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym func_8002E2E0=func_8002E2E0_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym func_8002E35C=func_8002E35C_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym gsSndpNew=gsSndpNew_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym n_alCSPSetMessageQ=n_alCSPSetMessageQ_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym osCreateMesgQueue=osCreateMesgQueue_o005Reloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x480
 include mk/overlay_061.mk
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x324
@@ -2062,6 +2022,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay_003.c.o: ASM_PROCESSOR += --force
 # Overlay 13 is one translation unit at the overlay flag set; --force keeps static names.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay_013.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay_013.c.o: ASM_PROCESSOR += --force
+# Overlay 5 is one translation unit at the overlay flag set. The libaudio bank
+# patcher, six -O3 objects before the fold (DKR builds it at -O3), compiles to
+# the same bytes at -O2 as static functions: -O2 does not inline them. --force
+# keeps the static names.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o005/overlay_005.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o005/overlay_005.c.o: ASM_PROCESSOR += --force
 # Overlay 16 is one translation unit at the overlay flag set; its .text
 # carries the module's trailing pad, so nothing is trimmed. --force runs
 # asm-processor's static-symbol pass on this GLOBAL_ASM-free file, so the

@@ -4966,28 +4966,9 @@ func_overlay_004_F00005D0_185AC48 = overlay4UpdateGroupSpacing;
 func_overlay_004_F0000710_185AD88 = overlay4GroupCount;
 func_overlay_004_F00008F4_185AF6C = overlay4FindSearchPosition;
 
-/* overlay 5: alSeqFileNew.c.o */
-func_overlay_005_F0000000_185B428 = alSeqFileNew;
-
-/* overlay 5: alBnkfNew.c.o */
-func_overlay_005_F0000040_185B468 = alBnkfNew;
-
-/* overlay 5: _bnkfPatchBank.c.o */
-func_overlay_005_F00000D0_185B4F8 = _bnkfPatchBank;
-
-/* overlay 5: _bnkfPatchInst.c.o */
-func_overlay_005_F0000188_185B5B0 = _bnkfPatchInst;
-
-/* overlay 5: _bnkfPatchSound.c.o */
-func_overlay_005_F0000220_185B648 = _bnkfPatchSound;
-
-/* overlay 5: _bnkfPatchWaveTable.c.o */
-func_overlay_005_F0000278_185B6A0 = _bnkfPatchWaveTable;
-
 /* overlay 5: overlay_005.c.o */
 func_overlay_005_F00002E4_185B70C = overlay5InitSequence;
 func_overlay_005_F000031C_185B744 = overlay5InitializeAudio;
-func_overlay_005_F00006C0_185BAE8 = overlay5CreatePlayer;
 
 /* overlay 6: overlay_006.c.o */
 func_overlay_006_F0000000_185BE68 = overlay6Init;

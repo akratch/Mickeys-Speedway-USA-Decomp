@@ -694,77 +694,6 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
-      "object": "build/src/overlays/o005/_bnkfPatchBank.c.o",
-      "offset": 208,
-      "overlay": 5,
-      "size": 184,
-      "source": "src/overlays/o005/_bnkfPatchBank.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o005/_bnkfPatchInst.c.o",
-      "offset": 392,
-      "overlay": 5,
-      "size": 152,
-      "source": "src/overlays/o005/_bnkfPatchInst.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o005/_bnkfPatchSound.c.o",
-      "offset": 544,
-      "overlay": 5,
-      "size": 88,
-      "source": "src/overlays/o005/_bnkfPatchSound.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o005/_bnkfPatchWaveTable.c.o",
-      "offset": 632,
-      "overlay": 5,
-      "size": 108,
-      "source": "src/overlays/o005/_bnkfPatchWaveTable.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o005/overlay_005.c.o",
-      "offset": 740,
-      "overlay": 5,
-      "size": 1152,
-      "source": "src/overlays/o005/overlay_005.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
       "object": "build/src/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o",
       "offset": 804,
       "overlay": 7,
@@ -8655,10 +8584,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 596,
+      "metadata": 591,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 433524,
-    "objects_with_postprocess": 597
+    "matched_c_bytes_with_postprocess": 431840,
+    "objects_with_postprocess": 592
   }
 }

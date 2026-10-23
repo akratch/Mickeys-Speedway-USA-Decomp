@@ -586,11 +586,11 @@ from synthetic ELF symbols:
 | 107 | `0x000`–`0x028` | 40 | exact named JFG `osRamTest4_6105` donor; eight padding bytes excluded |
 | **total** | | **2,000** | matched C only; no generated-assembly or padding credit |
 
-Overlay 5 is compiled at `-O3 -mips2 -32`. DKR established both the shared
-audio-bank source family and that optimisation level, but Mickey retains calls
-that DKR's whole `bnkf.c` translation unit inlines. The six measured Mickey
-source boundaries preserve those calls. The other adopted overlay translation
-units use `-O2 -mips2 -32`. Where a source boundary is not 16-byte aligned,
+Overlay 5's audio-bank patcher shares DKR's `bnkf.c` source family. DKR builds
+it at `-O3`, which inlines calls Mickey retains; it was six `-O3` objects here
+until the module was folded into one translation unit, where the six routines
+are static functions at the overlay flag set and `-O2`, which does not inline,
+keeps the calls. Overlay translation units use `-O2 -mips2 -32`. Where a source boundary is not 16-byte aligned,
 `tools/trim_elf_section.py` removes only IDO's zero object padding and refuses
 to discard a nonzero byte.
 

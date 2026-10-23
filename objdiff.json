@@ -1164,16 +1164,6 @@
       }
     },
     {
-      "name": "asm/overlays/o005/overlay_005_padding.s",
-      "target_path": "expected/build/asm/overlays/o005/overlay_005_padding.s.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o005"
-        ]
-      }
-    },
-    {
       "name": "asm/overlays/o007/overlay_007_padding.s",
       "target_path": "expected/build/asm/overlays/o007/overlay_007_padding.s.o",
       "metadata": {
@@ -8879,121 +8869,13 @@
       }
     },
     {
-      "name": "src/overlays/o005/_bnkfPatchBank.c",
-      "target_path": "expected/build/src/overlays/o005/_bnkfPatchBank.c.o",
-      "base_path": "build/src/overlays/o005/_bnkfPatchBank.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O3 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o005"
-        ],
-        "source_path": "src/overlays/o005/_bnkfPatchBank.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o005/_bnkfPatchInst.c",
-      "target_path": "expected/build/src/overlays/o005/_bnkfPatchInst.c.o",
-      "base_path": "build/src/overlays/o005/_bnkfPatchInst.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O3 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o005"
-        ],
-        "source_path": "src/overlays/o005/_bnkfPatchInst.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o005/_bnkfPatchSound.c",
-      "target_path": "expected/build/src/overlays/o005/_bnkfPatchSound.c.o",
-      "base_path": "build/src/overlays/o005/_bnkfPatchSound.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O3 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o005"
-        ],
-        "source_path": "src/overlays/o005/_bnkfPatchSound.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o005/_bnkfPatchWaveTable.c",
-      "target_path": "expected/build/src/overlays/o005/_bnkfPatchWaveTable.c.o",
-      "base_path": "build/src/overlays/o005/_bnkfPatchWaveTable.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O3 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o005"
-        ],
-        "source_path": "src/overlays/o005/_bnkfPatchWaveTable.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o005/alBnkfNew.c",
-      "target_path": "expected/build/src/overlays/o005/alBnkfNew.c.o",
-      "base_path": "build/src/overlays/o005/alBnkfNew.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O3 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o005"
-        ],
-        "source_path": "src/overlays/o005/alBnkfNew.c",
-        "complete": true
-      }
-    },
-    {
-      "name": "src/overlays/o005/alSeqFileNew.c",
-      "target_path": "expected/build/src/overlays/o005/alSeqFileNew.c.o",
-      "base_path": "build/src/overlays/o005/alSeqFileNew.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O3 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o005"
-        ],
-        "source_path": "src/overlays/o005/alSeqFileNew.c",
-        "complete": true
-      }
-    },
-    {
       "name": "src/overlays/o005/overlay_005.c",
       "target_path": "expected/build/src/overlays/o005/overlay_005.c.o",
       "base_path": "build/src/overlays/o005/overlay_005.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -Wab,-r4300_mul -O2 -mips2 -32"
       },
       "metadata": {
         "progress_categories": [

@@ -1644,62 +1644,8 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x40",
-     "size": "0x40",
-     "type": "c",
-     "source": "overlays/o005/alSeqFileNew",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x40",
-     "end_offset": "0xD0",
-     "size": "0x90",
-     "type": "c",
-     "source": "overlays/o005/alBnkfNew",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0xD0",
-     "end_offset": "0x188",
-     "size": "0xB8",
-     "type": "c",
-     "source": "overlays/o005/_bnkfPatchBank",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x188",
-     "end_offset": "0x220",
-     "size": "0x98",
-     "type": "c",
-     "source": "overlays/o005/_bnkfPatchInst",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x220",
-     "end_offset": "0x278",
-     "size": "0x58",
-     "type": "c",
-     "source": "overlays/o005/_bnkfPatchSound",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x278",
-     "end_offset": "0x2E4",
-     "size": "0x6C",
-     "type": "c",
-     "source": "overlays/o005/_bnkfPatchWaveTable",
-     "matched": true,
-     "nonmatching": false
-    },
-    {
-     "offset": "0x2E4",
      "end_offset": "0x764",
-     "size": "0x480",
+     "size": "0x764",
      "type": "c",
      "source": "overlays/o005/overlay_005",
      "matched": true,

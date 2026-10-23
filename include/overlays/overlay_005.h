@@ -225,14 +225,7 @@ extern void n_alCSPNew(void *player,
                                     Overlay5PlayerConfig *config);
 extern void overlay5AttachBankReloc(void *player, void *bank);
 
-void alSeqFileNew(ALSeqFile *file, u8 *base);
-void alBnkfNew(ALBankFile *file, u8 *table);
-void _bnkfPatchBank(ALBank *bank, s32 offset, s32 table);
-void _bnkfPatchInst(ALInstrument *inst, s32 offset, s32 table);
-void _bnkfPatchSound(ALSound *sound, s32 offset, s32 table);
-void _bnkfPatchWaveTable(ALWaveTable *wave, s32 offset, s32 table);
 void overlay5InitSequence(void *owner, s32 value);
 void overlay5InitializeAudio(void *context);
-void *overlay5CreatePlayer(s32 arg0, s32 arg1);
 
 #endif

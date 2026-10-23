@@ -1236,14 +1236,7 @@ segments:
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
-      - [0x185B428, c, alSeqFileNew]
-      - [0x185B468, c, alBnkfNew]
-      - [0x185B4F8, c, _bnkfPatchBank]
-      - [0x185B5B0, c, _bnkfPatchInst]
-      - [0x185B648, c, _bnkfPatchSound]
-      - [0x185B6A0, c, _bnkfPatchWaveTable]
-      - [0x185B70C, c, overlay_005]
-      - [0x185BB8C, asm, overlay_005_padding]
+      - [0x185B428, c, overlay_005]
       - [0x185BB98, bin, overlay_005_reloc1]
       - [0x185BE18, bin, overlay_005_reloc2]
 

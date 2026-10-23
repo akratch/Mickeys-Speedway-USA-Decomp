@@ -504,7 +504,51 @@ def sha256_file(path: pathlib.Path) -> str:
 _LOADED_METADATA_PROOF = sha256_file(pathlib.Path(__file__))
 
 
+def producer_link_context(root, linked, map_path):
+    """Bind producer inputs without requiring the final metadata output yet."""
+    pairs = {
+        (metadata_link.BOOT_ELF, metadata_link.BOOT_MAP): False,
+        ("build/mickey.us.elf", "build/mickey.us.map"): True,
+    }
+    pair = (linked.relative_to(root).as_posix(), map_path.relative_to(root).as_posix())
+    if pair not in pairs:
+        raise MetadataProofError("producer capture requires the actual bootstrap/final ELF-map pair")
+    final = pairs[pair]
+    try:
+        command = metadata_link.link_command(root, final=final)
+    except (metadata_link.MetadataLinkError, OSError, ValueError) as error:
+        raise MetadataProofError("unbound metadata producer input link: " + str(error)) from error
+    files = [pair[0], pair[1], metadata_link.FINAL_LOG if final else metadata_link.BOOT_LOG,
+             "mickey.us.ld", "tools/link_diagnose.sh", "tools/run_logged.py",
+             "tools/binutils/mips64-elf-ld", "undefined_funcs_auto.us.txt",
+             "undefined_syms_auto.us.txt", "libultra_undefined_syms.us.txt",
+             "overlay_undefined_syms.us.txt"]
+    if final:
+        files.append(metadata_link.FINAL_SCRIPT)
+    return {"role": "metadata-producer-input", "command": command,
+            "inputs": {name: sha256_file(root / name) for name in files}}
+
+
 def capture_configured_raw(root, source, configured, linked, postprocess, *, module_link=False):
+    """Promotion capture always requires the current generated-final proof."""
+    return _capture_configured_raw(root, source, configured, linked, postprocess,
+                                   module_link=module_link)
+
+
+def capture_data_module_producer_raw(root, source, configured, linked, map_path):
+    """Fresh producer capture, distinct from and inadmissible as promotion proof."""
+    return _capture_configured_raw(root, source, configured, linked, "", module_link=True,
+                                   producer_map=map_path)
+
+
+def capture_data_provider_raw(root, source, configured, linked, map_path):
+    """Fresh ordinary-provider C using the same bound producer capture lifecycle."""
+    return _capture_configured_raw(root, source, configured, linked, "", producer_map=map_path,
+                                   ordinary_provider=True)
+
+
+def _capture_configured_raw(root, source, configured, linked, postprocess, *,
+                            module_link=False, producer_map=None, ordinary_provider=False):
     """Fresh reproduction only: never authenticate an externally supplied raw object."""
     import permute_batch as batch
     import sweep_receipts as receipts
@@ -524,7 +568,8 @@ def capture_configured_raw(root, source, configured, linked, postprocess, *, mod
         # run as their own recipe line after POSTPROCESS; replay them too, in that order.
         rebinds = [line.strip() for line in output if target in line and "--redefine-sym" in line
                    and "tools/filter_elf_relocations.py" not in line and "tools/ido/cc" not in line]
-        if len(compilers) != 1 or len(metadata) != 1 or len(rebinds) > (0 if module_link else 1):
+        if (len(compilers) != 1 or len(metadata) != (0 if ordinary_provider else 1)
+                or len(rebinds) > (0 if module_link or ordinary_provider else 1)):
             raise MetadataProofError("ambiguous expanded compiler/metadata recipe")
         # An overlay object gets its static functions' symbols right after the
         # compile (tools/static_symbols.py): part of the raw object, not of the
@@ -533,6 +578,11 @@ def capture_configured_raw(root, source, configured, linked, postprocess, *, mod
                            if target in line and "tools/static_symbols.py" in line]
         if len(static_lines) > 1:
             raise MetadataProofError("ambiguous static-symbol recipe")
+        if ordinary_provider:
+            allowed = set(compilers + static_lines)
+            if any(target in line and line.strip() not in allowed for line in output):
+                raise MetadataProofError("ordinary provider has an unsupported metadata recipe")
+            return compilers[0], "", ""
         return compilers[0], metadata[0], (rebinds[0] if rebinds else "")
     command, expanded_postprocess, surface_rebind = recipe()
     args = batch.compiler_arguments(command, source.relative_to(root).as_posix(), target)
@@ -541,7 +591,7 @@ def capture_configured_raw(root, source, configured, linked, postprocess, *, mod
     dependency_args = args + (("-I", str(source.parent)) if wrapped else ())
     if words.count("-o") != 1:
         raise MetadataProofError("ambiguous configured output argument")
-    plan = [] if module_link else metadata_filter_plan(expanded_postprocess, target, root)
+    plan = [] if module_link or ordinary_provider else metadata_filter_plan(expanded_postprocess, target, root)
     if surface_rebind:
         plan = plan + metadata_filter_plan(surface_rebind, target, root)
     def context():
@@ -563,7 +613,8 @@ def capture_configured_raw(root, source, configured, linked, postprocess, *, mod
                   "target_inputs": {name: sha256_file(root / name) for name in
                     ("baseroms/mickey.us.z64", "config/overlays.us.json",
                      "overlay_undefined_syms.us.txt", "symbol_addrs.us.txt")},
-                  "generated_metadata": generated_metadata_context(root),
+                  "generated_metadata": (generated_metadata_context(root) if producer_map is None
+                                         else producer_link_context(root, linked, producer_map)),
                   "filter_specs": filter_spec_files(expanded_postprocess, root),
                   "metadata_tools": {name: sha256_file(root / name) for name in
                     ("tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
@@ -590,7 +641,9 @@ def capture_configured_raw(root, source, configured, linked, postprocess, *, mod
         inputs["assembly"] = assembly
         return inputs
     before = context()
-    parent = root / ("build/source-module-link-proof" if module_link else "build/metadata-filter-proof")
+    parent = root / ("build/data-provider-proof" if ordinary_provider else
+                     "build/data-module-producer-proof" if producer_map is not None else
+                     "build/source-module-link-proof" if module_link else "build/metadata-filter-proof")
     parent.mkdir(parents=True, exist_ok=True)
     directory = pathlib.Path(tempfile.mkdtemp(prefix="capture-", dir=parent))
     raw = directory / "raw.o"
@@ -610,7 +663,9 @@ def capture_configured_raw(root, source, configured, linked, postprocess, *, mod
             raise MetadataProofError(f"static-symbol pass failed: {error}") from error
     if before != context():
         raise MetadataProofError("source, input, recipe, object or tool changed during raw proof")
-    receipt = {"schema": ("mickey-source-module-link-proof-v1" if module_link
+    receipt = {"schema": ("mickey-data-provider-capture-v1" if ordinary_provider
+                          else "mickey-data-module-producer-capture-v1" if producer_map is not None
+                          else "mickey-source-module-link-proof-v1" if module_link
                           else "mickey-declared-metadata-proof-v1"), "inputs": before,
                "raw_object": raw.relative_to(root).as_posix(), "raw_sha256": sha256_file(raw),
                "configured_sha256": sha256_file(configured),

@@ -727,6 +727,182 @@ class LinkedBssTests(unittest.TestCase):
                 self.assertEqual(borrowed["placement"], [[1, "a", ".bss", "0x58", 1]])
 
 
+class DataOnlyImportGuardTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.paths = {"build": self.root / "build", "raw": self.root / "raw"}
+        self.source = "overlays/o001/pointers"
+        self.provider = "overlays/o001/values"
+        for source in (self.source, self.provider):
+            path = self.root / "src" / (source + ".c")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("/* synthetic C input */\n")
+        self.row = dict(type="c", canonical=True, section=".data", source=self.source,
+                        offset="0x0", size="0x8", end_offset="0x8")
+        provider_row = dict(type="c", canonical=True, section=".data", source=self.provider,
+                            offset="0x8", size="0x8", end_offset="0x10")
+        self.exports = rp.OrtNames(["first", "second"], {})
+        self.provider_compile = mock.patch.object(rp, "reproduce_data_provider",
+            side_effect=lambda world, source: rp.Elf(world.paths["raw"] / "src" / (source + ".c.o")))
+        self.provider_mock = self.provider_compile.start()
+        self.addCleanup(self.provider_compile.stop)
+        self.provider_bytes = struct.pack(">ff", 1.0, 2.0)
+        self.write(self.paths["raw"] / "src" / (self.provider + ".c.o"), self.provider_object())
+        self.write(self.paths["build"] / "src" / (self.provider + ".c.o"), self.provider_object())
+        configured = ObjBuilder().section(".data", bytes(8)).sym(
+            "pointers", 0, 8, GLOBAL, OBJECT, ".data")
+        self.write(self.paths["build"] / "src" / (self.source + ".c.o"), configured)
+        linked = (ObjBuilder().section(".overlay_001", bytes(24) + self.provider_bytes,
+                                      addr=rp.OVERLAY_VMA)
+                  .sym("first", rp.OVERLAY_VMA + 24, 4, GLOBAL, OBJECT, ".overlay_001")
+                  .sym("second", rp.OVERLAY_VMA + 28, 4, GLOBAL, OBJECT, ".overlay_001"))
+        for name, value in (("main_TEXT_START", 0x80000400), ("runlinkCodeEnd", 0x80001000),
+                            ("main_BSS_START", 0x80002000), ("main_BSS_END", 0x80003000)):
+            linked.sym(name, value, 0, GLOBAL, NOTYPE, "ABS")
+        self.linked = rp.Elf("linked", linked.build())
+        items = [rp.MapInput(".overlay_001", ".data", rp.OVERLAY_VMA + 16, 8,
+                             "build/src/" + self.source + ".c.o"),
+                 rp.MapInput(".overlay_001", ".data", rp.OVERLAY_VMA + 24, 8,
+                             "build/src/" + self.provider + ".c.o")]
+        expected = {(16 + 4 * i, R32): dict(op=rp.OP_SYMBOL, symbol_index=i,
+                    full=("ov", 1, 24 + 4 * i), table=2) for i in range(2)}
+        self.world = SimpleNamespace(paths=self.paths, elf=self.linked, map=items,
+            module_info={1: dict(text_size=16, inputs=items)},
+            amods={1: dict(data_rodata_ownership=[self.row, provider_row])},
+            by_name={s.name: [s] for s in self.linked.symbols if s.name},
+            expected_cache=lambda _ov: expected)
+
+    def provider_object(self):
+        return (ObjBuilder().section(".data", self.provider_bytes)
+                .sym("first", 0, 4, GLOBAL, OBJECT, ".data")
+                .sym("second", 4, 4, GLOBAL, OBJECT, ".data"))
+
+    def write(self, path, builder):
+        data = bytearray(builder.build())
+        elf = rp.Elf("fixture", data)
+        shoff = struct.unpack_from(">I", data, 0x20)[0]
+        for section in elf.sections:
+            if section["name"] == ".data":
+                struct.pack_into(">I", data, shoff + section["index"] * 40 + 8, 3)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        return rp.Elf(path)
+
+    def raw(self, swapped=False, local=False):
+        builder = (ObjBuilder().section(".data", bytes(8))
+                   .sym("first").sym("second"))
+        names = ["second", "first"] if swapped else ["first", "second"]
+        for i, name in enumerate(names):
+            builder.rel(".data", i * 4, R32, ("section", ".data") if local else name)
+        return self.write(self.paths["raw"] / "src" / (self.source + ".c.o"), builder)
+
+    def test_complete_pointer_input_uses_qualified_raw_definitions(self):
+        self.assertEqual(rp.validate_data_imports(
+            self.world, self.exports, 1, self.row, self.source, self.raw()), 2)
+
+    def test_authenticated_data_sources_and_providers_enter_metadata_dependencies(self):
+        rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, self.raw())
+        self.world.objects = lambda _ov: []
+        self.world.paths.update({name: self.root / name for name in
+                                 ("atlas", "ort", "residuals", "rom", "elf", "map")})
+        inputs = rp.metadata_input_paths(self.world.paths, self.world)
+        for source in (self.source, self.provider):
+            self.assertIn(self.paths["raw"] / "src" / (source + ".c.o"), inputs)
+            self.assertIn(self.root / "src" / (source + ".c"), inputs)
+
+    def test_swapped_same_width_targets_are_refused_despite_equal_zero_payload(self):
+        correct, swapped = self.raw(), self.raw(swapped=True)
+        self.assertEqual(correct.bytes_of(".data"), swapped.bytes_of(".data"))
+        with self.assertRaisesRegex(rp.PackError, "source/runtime identity mismatch"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, swapped)
+
+    def test_missing_actual_provider_definition_is_refused(self):
+        self.world.by_name.pop("first")
+        with self.assertRaisesRegex((rp.PackError, RuntimeError), "canonical definition"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, self.raw())
+
+    def test_stale_provider_raw_bytes_and_duplicate_map_input_are_refused(self):
+        self.provider_bytes = struct.pack(">ff", 9.0, 2.0)
+        self.write(self.paths["raw"] / "src" / (self.provider + ".c.o"), self.provider_object())
+        with self.assertRaisesRegex(rp.PackError, "raw/configured initialized bytes differ"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, self.raw())
+        self.world.map.append(self.world.map[0])
+        with self.assertRaisesRegex(rp.PackError, "duplicate final source input"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, self.raw())
+
+    def test_distinct_export_names_share_one_bound_provider_compile(self):
+        self.assertEqual(rp.validate_data_imports(
+            self.world, self.exports, 1, self.row, self.source, self.raw()), 2)
+        self.provider_mock.assert_called_once_with(self.world, self.provider)
+
+    def test_changed_provider_source_with_old_objects_is_freshly_compiled_and_refused(self):
+        import proof_provenance as provenance
+        self.provider_compile.stop()
+        self.world.paths.update(elf=self.root / "linked.elf", map=self.root / "linked.map")
+        source = self.root / "src" / (self.provider + ".c")
+        source.write_text("float renamed = 1.0f, second = 2.0f;\n")
+        fresh = self.write(self.root / "fresh-provider.o", ObjBuilder().section(
+            ".data", self.provider_bytes).sym("renamed", 0, 4, GLOBAL, OBJECT, ".data").sym(
+                "second", 4, 4, GLOBAL, OBJECT, ".data"))
+        def capture(_root, current_source, *_arguments):
+            self.assertEqual(current_source.read_text(), source.read_text())
+            return fresh.path, [], {}, lambda: {}
+        with mock.patch.object(provenance, "capture_data_provider_raw", side_effect=capture) as compiler:
+            with self.assertRaisesRegex(rp.PackError, "stale ordinary raw"):
+                rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, self.raw())
+            compiler.assert_called_once()
+
+    def test_fresh_compile_refuses_stale_raw_targets_with_identical_pointer_bytes(self):
+        ordinary = self.raw()
+        fresh = self.raw(swapped=True)
+        self.assertEqual(ordinary.bytes_of(".data"), fresh.bytes_of(".data"))
+        rp.validate_fresh_data_input(ordinary, ordinary)
+        with self.assertRaisesRegex(rp.PackError, "stale ordinary raw"):
+            rp.validate_fresh_data_input(ordinary, fresh)
+
+    def test_assembly_fallback_is_not_a_genuine_data_c_input(self):
+        (self.root / "src" / (self.source + ".c")).write_text(
+            '#pragma GLOBAL_ASM("ignored.s")\n')
+        with self.assertRaisesRegex(rp.PackError, "assembly fallback"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, self.raw())
+
+    def test_same_input_local_case_is_not_silently_accepted(self):
+        with self.assertRaisesRegex(rp.PackError, "unsupported LOCAL/group/import"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source,
+                                     self.raw(local=True))
+
+
+class HeldDataCaptureTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.world = SimpleNamespace(paths={"build": self.root / "build"})
+
+    def receipt(self, dependency):
+        return {"inputs": {"source": "source-hash", "configured": "object-hash",
+            "dependencies": {"include/shared.h": dependency},
+            "generated_metadata": {"inputs": {}}, "wrapper_source_directory": "early-tree"}}
+
+    def test_later_capture_cannot_overwrite_a_conflicting_held_dependency(self):
+        early = self.receipt("early-hash")
+        rp.hold_data_capture(self.world, "overlays/o001/first", early, lambda: early["inputs"])
+        later = self.receipt("later-hash")
+        with self.assertRaisesRegex(rp.PackError, "conflicting held"):
+            rp.hold_data_capture(self.world, "overlays/o001/second", later, lambda: later["inputs"])
+        self.assertEqual(self.world.data_import_inputs[self.root / "include/shared.h"], "early-hash")
+
+    def test_end_of_guard_rechecks_earlier_context_even_when_latest_context_is_valid(self):
+        early, later = self.receipt("same-hash"), self.receipt("same-hash")
+        rp.hold_data_capture(self.world, "overlays/o001/first", early, lambda: early["inputs"])
+        rp.hold_data_capture(self.world, "overlays/o001/second", later, lambda: later["inputs"])
+        early["inputs"]["wrapper_source_directory"] = "changed-after-validation"
+        with self.assertRaisesRegex(rp.PackError, "held data-only capture context changed"):
+            rp.check_data_import_holds(self.world)
+
+
 class UnitTests(unittest.TestCase):
     def test_in_place_addends_pair_hi_with_the_next_lo_and_reuse_it(self):
         b = (ObjBuilder().section(".text", words(lui(1), addiu(0x8000), addiu(4), jal(3), 0x12345678))

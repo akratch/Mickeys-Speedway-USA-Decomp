@@ -1498,7 +1498,331 @@ class Packed:
     relocs: dict = None
 
 
+def projected_data_rows(module):
+    """Default YAML ownership: leading C data or explicit canonical fixed rows."""
+    end = 0
+    for row in module.get("data_rodata_ownership", []):
+        normal = row.get("type") == "c" and not row.get("externalized")
+        leading = (normal and "section" not in row and "trial_function" not in row
+                   and int(row["offset"], 16) == end)
+        fixed = (normal and row.get("canonical") is True
+                 and row.get("section") in (".data", ".rodata"))
+        if leading:
+            end = int(row["end_offset"], 16)
+        if leading or fixed:
+            yield row
+
+
+def hold_data_import_inputs(world, inputs):
+    """Merge held observations without ever blessing a newer conflicting digest."""
+    snapshot = getattr(world, "data_import_inputs", {})
+    for path, digest in inputs.items():
+        if path in snapshot and snapshot[path] != digest:
+            raise PackError(f"conflicting held data-only input: {path}")
+        snapshot[path] = digest
+    world.data_import_inputs = snapshot
+
+
+def remember_data_import_inputs(world, source):
+    root = world.paths["build"].parent
+    files = (world.paths["raw"] / "src" / (source + ".c.o"),
+             world.paths["build"] / "src" / (source + ".c.o"),
+             root / "src" / (source + ".c"))
+    hold_data_import_inputs(world, {path: hashlib.sha256(path.read_bytes()).hexdigest()
+                                    for path in files})
+
+
+def hold_data_capture(world, source, receipt, context):
+    """Keep every receipt's original context until the complete guard finishes."""
+    import copy
+    root = world.paths["build"].parent
+    expected = copy.deepcopy(receipt["inputs"])
+    held = getattr(world, "data_import_contexts", [])
+    held.append((expected, context))
+    world.data_import_contexts = held
+    for group in ("dependencies", "makefiles", "module_link_inputs", "metadata_tools"):
+        hold_data_import_inputs(world, {root / name: digest
+                                        for name, digest in expected.get(group, {}).items()})
+    hold_data_import_inputs(world, {
+        root / "src" / (source + ".c"): expected["source"],
+        world.paths["build"] / "src" / (source + ".c.o"): expected["configured"],
+    })
+    hold_data_import_inputs(world, {root / name: digest for name, digest
+                                    in expected["generated_metadata"]["inputs"].items()})
+
+
+def check_data_import_holds(world):
+    for expected, context in getattr(world, "data_import_contexts", []):
+        if expected != context():
+            raise PackError("held data-only capture context changed after validation")
+    for path, digest in getattr(world, "data_import_inputs", {}).items():
+        if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+            raise PackError(f"held data-only input changed after validation: {path}")
+
+
+def data_import_input(world, ov, row, source, raw):
+    """Authenticate one complete data input; no inferred placement or tail trim."""
+    import proof_provenance as provenance
+    remember_data_import_inputs(world, source)
+    source_path = world.paths["build"].parent / "src" / (source + ".c")
+    if provenance._all_pragmas(source_path.read_text()):
+        raise PackError(f"data-only input contains an assembly fallback: {source}")
+    configured = Elf(world.paths["build"] / "src" / (source + ".c.o"))
+    size = raw.size(".data")
+    def require(test, why):
+        if not test:
+            raise PackError(f"data-only module {source}: {why}")
+    require(row.get("section", ".data") == ".data" and size > 0
+            and size == int(row["size"], 16), "not one complete canonical .data input")
+    for obj in (raw, configured):
+        require(all(obj.size(s) == 0 for s in (".text", ".rodata", ".bss")),
+                "mixed runtime sections are unsupported")
+        require(not any(s.shndx == SHN_COMMON and s.size for s in obj.symbols),
+                "COMMON allocation is unsupported")
+        require(not any(s["size"] and s["flags"] & 2
+                        and s["name"] not in (".data", ".reginfo", ".MIPS.abiflags")
+                        for s in obj.sections), "unexpected allocated section")
+        sec = obj.section(".data")
+        require(sec and sec["type"] == 1 and sec["flags"] & 3 == 3
+                and not sec["flags"] & 4 and sec["size"] == size, "invalid data storage")
+    require(raw.bytes_of(".data") == configured.bytes_of(".data"),
+            "raw/configured initialized bytes differ")
+    items = [mi for mi in world.map if mi.file == f"build/src/{source}.c.o"
+             and mi.insec == ".data" and mi.size]
+    require(len(items) == 1, "missing or duplicate final source input")
+    item = items[0]
+    start = item.addr - OVERLAY_VMA
+    require(item.outsec == f".overlay_{ov:03d}" and item.size == size
+            and start == world.module_info[ov]["text_size"] + int(row["offset"], 16),
+            "source row/final input geometry differs")
+    require(not any(mi is not item and mi.size and mi.addr < item.addr + size
+                    and item.addr < mi.addr + mi.size
+                    for mi in world.module_info[ov]["inputs"]), "overlapping final contributor")
+    require(world.elf.bytes_of(f".overlay_{ov:03d}")[start:start + size]
+            == configured.bytes_of(".data"), "final initialized input bytes differ")
+    return configured, start
+
+
+def reproduce_data_provider(world, source):
+    """Fresh ordinary-provider compile, sharing the producer capture machinery."""
+    import proof_provenance as provenance
+    root = world.paths["build"].parent
+    configured = world.paths["build"] / "src" / (source + ".c.o")
+    raw, _plan, receipt, context = provenance.capture_data_provider_raw(
+        root, root / "src" / (source + ".c"), configured,
+        world.paths["elf"], world.paths["map"])
+    fresh = Elf(raw)
+    validate_fresh_data_input(Elf(world.paths["raw"] / "src" / (source + ".c.o")), fresh)
+    validate_fresh_data_input(Elf(configured), fresh)
+    hold_data_capture(world, source, receipt, context)
+    receipts = getattr(world, "data_import_provider_receipts", {})
+    receipts[source] = receipt
+    world.data_import_provider_receipts = receipts
+    if receipt["inputs"] != context():
+        raise PackError("provider source/context changed during fresh compilation")
+    return fresh
+
+
+def data_import_definition(world, name):
+    """A real raw C definition and unique map input, never an encoded address."""
+    choices = [s for s in world.by_name.get(name, ()) if s.bind == STB_GLOBAL
+               and s.type == 1 and s.size > 0 and s.shndx not in (SHN_ABS, SHN_UNDEF)]
+    if len(choices) != 1:
+        raise PackError(f"data-only import has no unique sized canonical definition: {name}")
+    symbol = choices[0]
+    match = re.fullmatch(r"\.overlay_(\d{3})", symbol.section)
+    if not match:
+        raise PackError(f"data-only import target is not initialized overlay C data: {name}")
+    ov = int(match.group(1))
+    hits = []
+    for row in projected_data_rows(world.amods[ov]):
+        source = row["source"]
+        for item in world.module_info[ov]["inputs"]:
+            if (item.file == f"build/src/{source}.c.o" and item.insec == ".data"
+                    and item.addr <= symbol.value
+                    and symbol.value + symbol.size <= item.addr + item.size):
+                hits.append((row, source))
+    if len(hits) != 1:
+        raise PackError(f"data-only import target lacks a unique canonical source input: {name}")
+    row, source = hits[0]
+    raw = Elf(world.paths["raw"] / "src" / (source + ".c.o"))
+    _configured, start = data_import_input(world, ov, row, source, raw)
+    if any(raw.rels(s) for s in (".text", ".data", ".rodata")):
+        raise PackError(f"data-only import provider has unsupported relocations: {name}")
+    providers = getattr(world, "data_import_providers", {})
+    if source not in providers:
+        providers[source] = reproduce_data_provider(world, source)
+    world.data_import_providers = providers
+    fresh = providers[source]
+    definitions = [s for s in fresh.symbols if s.name == name and s.section == ".data"
+                   and s.bind == STB_GLOBAL and s.type == 1 and s.size > 0]
+    if len(definitions) != 1:
+        raise PackError(f"data-only import is not defined by its raw C input: {name}")
+    own = definitions[0]
+    if (own.size != symbol.size or own.value + start != symbol.value - OVERLAY_VMA
+            or own.value < 0 or own.value + own.size > raw.size(".data")):
+        raise PackError(f"data-only raw definition/final geometry differs: {name}")
+    return ov, start + own.value
+
+
+def validate_data_imports(world, exports, ov, row, source, raw):
+    """Only complete zero-addend ORT pointer inputs; LOCAL/group cases refuse."""
+    import source_module_link_proof as proof
+    configured, start = data_import_input(world, ov, row, source, raw)
+    rels = raw.rels(".data")
+    if (len(rels) * 4 != raw.size(".data")
+            or raw.bytes_of(".data") != bytes(raw.size(".data"))
+            or any(configured.rels(s) for s in (".text", ".data", ".rodata"))):
+        raise PackError(f"data-only module {source}: not a complete pure ORT pointer input")
+    identities = proof.source_identities(raw, configured, world.elf, exports, ov)
+    expected = {key: value for key, value in world.expected_cache(ov).items()
+                if start <= key[0] < start + raw.size(".data")}
+    if len(expected) != len(rels):
+        raise PackError(f"data-only module {source}: missing or extra runtime records")
+    for index, rel in enumerate(rels):
+        if (rel.offset != index * 4 or rel.type != R_MIPS_32
+                or rel.sym.shndx != SHN_UNDEF or rel.sym.name not in exports.by_name):
+            raise PackError(f"data-only module {source}: unsupported LOCAL/group/import relocation")
+        target = data_import_definition(world, rel.sym.name)
+        record = expected.get((start + rel.offset, rel.type))
+        if (identities[(rel.offset, rel.type)] != target or record is None
+                or record["op"] != OP_SYMBOL
+                or record["symbol_index"] != exports.by_name[rel.sym.name]
+                or record["full"] != ("ov", *target)
+                or record["table"] != (2 if target[0] == ov else 1)):
+            raise PackError(f"data-only source/runtime identity mismatch: {source}+{rel.offset:#x}")
+    return len(rels)
+
+
+def validate_fresh_data_input(ordinary_raw, fresh):
+    """Zero payloads do not excuse a stale raw symbol/relocation surface."""
+    import source_module_link_proof as proof
+    def relocations(obj):
+        return [(section, rel.offset, rel.type, rel.sym.name, rel.sym.value,
+                 rel.sym.size, rel.sym.bind, rel.sym.type, rel.sym.section)
+                for section in (".text", ".data", ".rodata") for rel in obj.rels(section)]
+    if (proof.allocated(ordinary_raw) != proof.allocated(fresh)
+            or proof.symbols(ordinary_raw) != proof.symbols(fresh)
+            or relocations(ordinary_raw) != relocations(fresh)):
+        raise PackError("stale ordinary raw data-only source evidence")
+
+
+def reproduce_data_import(world, source):
+    """Reuse fresh compiler/context capture; replay the unchanged ordinary helper."""
+    import shlex
+    import subprocess
+    import proof_provenance as provenance
+    import source_module_link_proof as proof
+    root = world.paths["build"].parent
+    configured = world.paths["build"] / "src" / (source + ".c.o")
+    raw, _plan, receipt, context = provenance.capture_data_module_producer_raw(
+        root, root / "src" / (source + ".c"), configured, world.paths["elf"], world.paths["map"])
+    words = shlex.split(receipt["inputs"]["module_link"])
+    target = configured.relative_to(root).as_posix()
+    if (words.count(target) != 1 or "--output" in words
+            or len(words) < 2 or words[1] != "tools/link_overlay_module.py"):
+        raise PackError("ambiguous data-only source-module recipe")
+    flags = {"--ort": "config/runlink-ort.us.txt", "--ld": "tools/binutils/mips64-elf-ld",
+             "--objcopy": "tools/binutils/mips64-elf-objcopy"}
+    for flag, value in flags.items():
+        if words.count(flag) != 1 or words[words.index(flag) + 1] != value:
+            raise PackError("data-only module recipe uses unbound tools or exports")
+    directory = root / receipt["directory"] / "module"
+    if words.count("--directory") != 1:
+        raise PackError("ambiguous data-only artifact directory")
+    words[words.index("--directory") + 1] = str(directory)
+    words[words.index(target)] = str(raw)
+    replayed = raw.with_name("module-replayed.o")
+    words += ["--output", str(replayed)]
+    result = subprocess.run(words, cwd=root, text=True, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, timeout=120)
+    if result.returncode:
+        raise PackError("data-only ordinary module link failed: " + result.stdout.strip())
+    link = json.loads((directory / "receipt.json").read_text())
+    checks = {"compiler.o": "compiler_sha256", "module.elf": "linked_sha256",
+              "bindings.o": "prepared_sha256", "module.ld": "script_sha256",
+              "localized.elf": "localized_sha256"}
+    if (link.get("schema") != "mickey-source-module-link-v1"
+            or link.get("container_conversion") != "zero-based-exec-to-rel-header-only"
+            or link.get("compiler_sha256") != provenance.sha256_file(raw)
+            or link.get("configured_sha256") != provenance.sha256_file(replayed)
+            or any(link.get(field) != provenance.sha256_file(directory / name)
+                   for name, field in checks.items())):
+        raise PackError("data-only ordinary helper receipt does not bind its products")
+    actual, reproduced = Elf(configured), Elf(replayed)
+    ordinary_raw = Elf(world.paths["raw"] / "src" / (source + ".c.o"))
+    fresh = Elf(raw)
+    validate_fresh_data_input(ordinary_raw, fresh)
+    if (proof.allocated(actual) != proof.allocated(reproduced)
+            or proof.symbols(actual) != proof.symbols(reproduced)):
+        raise PackError("fresh data-only source link differs from configured bytes or symbols")
+    if receipt["inputs"] != context():
+        raise PackError("data-only source/context changed during reproduction")
+    return Elf(raw), receipt, context
+
+
+def guard_data_module_imports(world, exports):
+    """Durably check selected data inputs without claiming packer production."""
+    import postprocess_audit as audit
+    import proof_provenance as provenance
+    import source_module_link_proof as proof
+    root = world.paths["build"].parent
+    if not (root / "Makefile").is_file():
+        return  # synthetic trees without a configured backend have no selected inputs
+    metadata_implementations()
+    if (world.elf.data != world.paths["elf"].read_bytes()
+            or world.map != parse_map(world.paths["map"])):
+        raise PackError("parsed data-only World ELF/map no longer match the supplied inputs")
+    world.data_import_inputs = {}
+    world.data_import_contexts = []
+    world.data_import_providers = {}
+    world.data_import_provider_receipts = {}
+    import permute_batch as batch
+    files = {root / name for name in ("Makefile", "tools/proof_provenance.py",
+             "tools/source_module_link_proof.py", "tools/postprocess_audit.py",
+             "tools/static_symbols.py", ".venv/bin/python")}
+    files.update((root / "mk").rglob("*.mk"))
+    for directory in ("tools/ido", "tools/binutils"):
+        files.update(path for path in (root / directory).rglob("*") if path.is_file())
+    files.update((root / "tools/asm-processor").rglob("*.py"))
+    hold_data_import_inputs(world, {path: hashlib.sha256(path.read_bytes()).hexdigest()
+                                    for path in files})
+    hold_data_import_inputs(world, {path: digest for path, digest
+                                    in batch._LOADED_IMPLEMENTATIONS.values()})
+    dump = audit.run_make_database()
+    outputs = []
+    try:
+        for ov, module in world.amods.items():
+            text = {r["source"] for r in module["text_ownership"] if r["type"] == "c"}
+            sources = {r["source"] for r in module.get("data_rodata_ownership", [])
+                       if r.get("type") == "c"} - text
+            for source in sorted(sources):
+                if not proof.selected(f"build/src/{source}.c.o", dump):
+                    continue
+                rows = [r for r in projected_data_rows(module) if r["source"] == source]
+                if len(rows) != 1:
+                    raise PackError(f"data-only module lacks one canonical input: {source}")
+                raw, receipt, context = reproduce_data_import(world, source)
+                hold_data_capture(world, source, receipt, context)
+                validate_data_imports(world, exports, ov, rows[0], source, raw)
+                outputs.append((raw, receipt))
+        check_data_import_holds(world)
+        for receipt in world.data_import_provider_receipts.values():
+            receipt["allocated_symbols_ordered_relocations_exact"] = True
+            (root / receipt["directory"] / "proof.json").write_text(
+                json.dumps(receipt, sort_keys=True, indent=2))
+        for raw, receipt in outputs:
+            receipt.update(data_only_runtime_imports=raw.size(".data") // 4,
+                provider_inputs={os.path.relpath(path, root): digest
+                                 for path, digest in world.data_import_inputs.items()})
+            (root / receipt["directory"] / "proof.json").write_text(
+                json.dumps(receipt, sort_keys=True, indent=2))
+    except (OSError, ValueError, provenance.MetadataProofError) as error:
+        raise PackError(f"data-only module proof refused: {error}") from error
+
+
 def pack_all(world, ort):
+    guard_data_module_imports(world, ort)
     resolver = Resolver(world, ort)
     relocs = {}
     for ov in sorted(world.amods):
@@ -2018,6 +2342,7 @@ def metadata_input_paths(paths, world):
         sidecar = Path(str(path) + ".trapsites")
         if mi.insec == ".text" and mi.file.endswith(".c.o") and sidecar.exists():
             inputs.add(sidecar)
+    inputs.update(getattr(world, "data_import_inputs", {}))
     return inputs
 
 
@@ -2058,6 +2383,7 @@ def emit_metadata(args):
     # Discover inputs, then reload them after the initial snapshot. The probe's
     # cached ELF objects must not stand in for the bytes bound by that snapshot.
     probe = World(paths)
+    guard_data_module_imports(probe, OrtNames.load(paths["ort"]))
     inputs = metadata_input_paths(paths, probe)
     before = metadata_digests(inputs, root)
     implementation = metadata_implementations()

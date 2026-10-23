@@ -16,7 +16,10 @@
 
 typedef struct AssetLookupTable {
     u32 fileCount;
-    u32 offsets[1];
+    /* The copied US directory occupies 0x120 bytes: the header, 68
+     * offset/end words and three zero alignment words. Keep the physical
+     * tail in this view, including the retail guard's admitted edge index. */
+    u32 offsets[71];
 } AssetLookupTable;
 
 extern AssetLookupTable *D_800D2470;

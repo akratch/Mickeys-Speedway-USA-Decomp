@@ -93,7 +93,7 @@ void overlay77Update(Overlay77Object *object, volatile s32 updateRate) {
         {
             deltaX = object->velocityX * moveX;
             moveZ = object->velocityZ * moveX;
-            if (overlay77MoveReloc(object, deltaX, deltaY, moveZ)) {
+            if (func_80008128(object, deltaX, deltaY, moveZ)) {
                 gOverlay77Handle--;
             }
         }
@@ -103,7 +103,7 @@ void overlay77Update(Overlay77Object *object, volatile s32 updateRate) {
         deltaX = state->targetX - object->x.value;
         deltaY = state->targetYCopy - object->y.value;
         moveZ = state->targetZ - object->z.value;
-        overlay77OrientReloc(object, deltaX, deltaY, moveZ);
+        func_80008128(object, deltaX, deltaY, moveZ);
         object->flags |= 0x400;
         if (gOverlay77CallbackArgument != 0) {
             amSndStopXYZ(gOverlay77CallbackArgument);

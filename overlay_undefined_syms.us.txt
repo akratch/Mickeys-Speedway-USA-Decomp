@@ -3506,21 +3506,6 @@ gOverlay76NextIndex = 0x00000000;
 gOverlay76Status = 0x00000000;
 mathRnd_o076Reloc = 0xf0000000;
 
-/* overlay 77: overlay_077.c.o */
-amSndPlayXYZ_o077Reloc = 0xf0000000;
-amSndSetXYZ_o077Reloc = 0xf0000000;
-amSndStopXYZ_o077Reloc = 0xf0000000;
-func_8002A8BC_o077Reloc = 0xf0000000;
-func_8002A8C0_o077Reloc = 0xf0000000;
-gOverlay77CallbackArgument = 0x0000000c;
-gOverlay77Handle = 0x00000000;
-gOverlay77Selection = 0x00000008;
-gOverlay77Sequence = 0x00000004;
-mathRnd_o077Reloc = 0xf0000000;
-overlay77MoveReloc = 0xf0000000;
-overlay77OrientReloc = 0xf0000000;
-texAnimateSprite_o077Reloc = 0xf0000000;
-
 /* overlay 78: overlay_078.c.o */
 func_8005ABA8_o078Reloc = 0xf0000000;
 func_8005AD64_o078Reloc = 0xf0000000;
@@ -4596,8 +4581,8 @@ func_overlay_076_F00000D0_18CC840 = overlay76TriggerRandom;
 
 /* overlay 77: overlay_077.c.o */
 func_overlay_077_F0000000_18CC910 = overlay77Init;
-func_overlay_077_F0000130_18CCA40 = overlay77Update;
 func_overlay_077_F00003B8_18CCCC8 = overlay77EnsureSelection;
+func_overlay_077_F0000130_18CCA40 = overlay77Update;
 func_overlay_077_F0000400_18CCD10 = overlay77RunCallback;
 
 /* overlay 78: overlay_078.c.o */

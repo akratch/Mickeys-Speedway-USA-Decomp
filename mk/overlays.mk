@@ -159,28 +159,14 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay_059.c.o: POSTPROCESS = \
 # are deliberately unprototyped (overlay_068.h).
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay_068.c.o: CFLAGS += -Wab,-r4300_mul -woff 835
 
-# IDO aligns standalone .text sections to 16 bytes, while these reviewed
-# overlay functions continue at four-byte boundaries inside a larger module.
-# The trimmer only reduces the ELF section header and refuses nonzero tails.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o076/overlay_076.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x114
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o078/overlay_078.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA8
+# These single-file modules retain IDO's trailing .text alignment.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o102/overlay_102.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o102/overlay_102.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o103/overlay_103.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o103/overlay_103.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6C
 # Overlays 104 and 105 are single-file modules whose text needs no trim.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o104/overlay_104.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o105/overlay_105.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o106/overlay_106.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o106/overlay_106.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o107/overlay_107.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o107/overlay_107.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x28
 
 # Overlay 7 is one translation unit at the overlay flag set and owns its pad;
 # its resident calls go through the generated surface rebinds. What remains is
@@ -499,9 +485,8 @@ $(O8_OBJ): POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:cb542eb96174af8e212c2049a1ab797e4bdd93850668aeb935a4771504af5aca
 
-# Overlay 9 is one translation unit at the overlay flag set; it owns its pad,
-# What remains below is data
-# externalization, kept until the module's initialized data is C-owned
+# Overlay 9 is one translation unit at the overlay flag set and owns its pad.
+# Data externalization remains until the module's initialized data is C-owned
 # (docs/OVERLAY_STRUCTURE_SPRINT.md phase 3): func_overlay_009_F0000000_1866678
 # defines the parameter block in this object's .data at its recorded offset
 # (+0x2D0) only so as1 shares one high half between two stores; the retained
@@ -551,14 +536,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay_041.c.o: POSTPROCESS = \
 	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 53 is one translation unit at the overlay flag set (the HUD easing
 # needs -Wab,-r4300_mul); its .text carries the trailing pad, so nothing is
-# trimmed. Resident and cross-overlay references go through
-# the generated relocation surface.
+# trimmed. Resident and cross-overlay references use the generated surface.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay_053.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 54 is one translation unit at the overlay flag set (with it IDO
 # emits the HUD height easing as the shipped rotated branch-likely loop); its
 # .text carries the trailing pad, so nothing is trimmed. The module owns its
-# .data (the atlas's data_rodata +0x0..+0x2D0) and
-# .bss; the shipped words that address them are section-relative, so every
+# .data (the atlas's data_rodata +0x0..+0x2D0) and .bss. Their shipped address
+# words are section-relative, so every
 # site is rebound to a zero-valued base. Its 0.66f pool duplicates the
 # retained rodata at +0x2D0 and is asserted by digest until phase 3 gives the
 # module its rodata too. No instruction is edited.
@@ -771,17 +755,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86ScaledVectorPosition.c.o: POSTPRO
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86BuildTransform.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x18C
-# Overlay 94 is one translation unit under the overlay flag set. The trim
-# keeps the trailing pad in its own atlas row; resident callees go through
-# the generated surface renames.
+# Overlay 94 is one translation unit under the overlay flag set. Its .text
+# includes the trailing pad; resident callees use the generated surface renames.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x568
-OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o
 # Overlay 101 is one translation unit under the overlay flag set (-woff 835
 # silences the unused-label warnings the switch bodies raise; it is not a
-# codegen flag). Three POSTPROCESS steps keep a mechanical reason until the
-# packer owns the overlay link and phase 3 gives the module's rodata a C owner:
+# codegen flag). POSTPROCESS remains until the packer owns the overlay link
+# and phase 3 gives the module's rodata a C owner:
 # - 132 calls to exported functions of this module are SYMBOL records whose
 #   shipped jal field is zero; the static link would resolve them, so their
 #   relocations are filtered (overlay_101.filter.spec, checked site by site
@@ -793,7 +773,6 @@ OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o
 #   stay in the retained data blob. Its 16 text HI/LO pairs are rebound to an
 #   absolute +0xE0C anchor (no instruction word changes), the payload is
 #   asserted by digest and dropped, with its now-orphaned table relocations.
-# - The trim keeps the trailing pad in its own atlas row.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o: CFLAGS += -Wab,-r4300_mul -woff 835
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
@@ -809,9 +788,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o: POSTPROCESS = \
 		@config/normalizations/overlay_101.filter.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:8a8fd1a2dc784d558ac66b908e977fc3581d6aeabdc409d536cd287716dd511f && \
-	$(OBJCOPY) --remove-section .rel.rodata $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xCED8
-OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o
+	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 21 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay_021.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 30 is one TU under the overlay flag set; no post-processing.
@@ -950,8 +927,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o077/overlay_077_tail.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x78
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o081/overlay_081.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x34C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o081/overlay_081.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o082/overlay_082.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x40
@@ -1001,46 +976,32 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o089/overlay89UpdateStateAndParticles.c.o: CFLA
 # ends exactly at the module's text size, so no trim is needed, and its
 # resident and cross-module callees go through the generated surface renames.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay_092.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o093/overlay_093.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xEC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o093/overlay_093.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o095/overlay_095.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o095/overlay_095.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1D8
-# Overlay 97 is one translation unit under the overlay flag set. The trim
-# keeps the trailing pad in its own atlas row.
+# Overlay 97 is one translation unit under the overlay flag set; its .text
+# includes the trailing pad.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay_097.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay_097.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA54
-OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o097/overlay_097.c.o
 # Overlay 96 is one translation unit under the overlay flag set. Its call to
 # the exported overlay96Register is a SYMBOL record whose shipped word holds
 # a zero addend, so that relocation is filtered until the packer owns the
-# overlay link. The trim keeps the trailing pad in its own atlas row.
+# overlay link. Its .text includes the trailing pad.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay_096.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay_096.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x474:4:overlay96Register && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6D4
-OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o096/overlay_096.c.o
-# Overlay 98 is one translation unit under the overlay flag set.
-# The trim keeps the trailing pad in its own atlas row.
+		0x474:4:overlay96Register
+# Overlay 98 is one translation unit under the overlay flag set; its .text
+# includes the trailing pad.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay_098.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay_098.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA04
-OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o098/overlay_098.c.o
 # Overlay 100 is one translation unit under the overlay flag set. Its four
 # calls to exported functions of the same module are SYMBOL records, whose
 # shipped words hold the addend (zero) rather than the callee's address; the
 # static link would resolve them, so the relocations are filtered until the
-# packer owns the overlay link. The trim keeps the trailing pad in its row.
+# packer owns the overlay link. Its .text includes the trailing pad.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay_100.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay_100.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		0x24c:4:overlay100RemoveEntry 0x35c:4:overlay100UpdateMotion \
-		0x3c8:4:overlay100RemoveEntry 0x550:4:overlay100DrawMotion && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x94C
-OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o100/overlay_100.c.o
+		0x3c8:4:overlay100RemoveEntry 0x550:4:overlay100DrawMotion
 # IDO emits the three independent loop initializers in the opposite legal
 # order. Assert that exact output before restoring the shipped schedule.
 # The source is exact except for one complete stack-home lifetime. Preserve the
@@ -1204,8 +1165,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000000_1890E18.c.o: POS
 		--remove-section=.rodata \
 		--remove-section=.gptab.data --remove-section=.gptab.bss $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x9D0
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o085/overlay_085.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x29C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o085/overlay_085.c.o: CFLAGS += -Wab,-r4300_mul
 # NON_MATCHING/GLOBAL_ASM per docs/acceleration-survey.md sec.13.2: this
 # object's instructions used to be reached by rewriting three fields after
@@ -1295,10 +1254,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: POSTPROCESS = \
 		sha256:0d02c190457cd94e2b33b9a8fe45a73687e90716f4b71bf32203ccd7723733d6
 # Overlay 2 is one translation unit at the overlay flag set.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay_002.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 11 is one translation unit at the overlay flag set and owns its pad;
-# Resident and cross-overlay calls go through the generated surface rebinds.
-# What remains
-# is rodata ownership, kept until phase 3: the TU's merged .rodata (six switch
+# Overlay 11 is one translation unit at the overlay flag set and owns its pad.
+# Resident and cross-overlay calls use the generated surface rebinds. Rodata
+# ownership remains until phase 3: the TU's merged .rodata (six switch
 # tables and the background's two 0.05f literals) is the retained data at
 # data_rodata +0x218, and the shipped LOCAL records' rodata addends run from a
 # base eight bytes before it, so its 16 references are rebound to a base
@@ -1373,7 +1331,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83Dispatch.c.o: POSTPROCESS = \
 # a C owner the pool is asserted by digest and externalized; no instruction
 # is edited. The call to the exported overlay99RenderSegments is a SYMBOL
 # record whose shipped word holds a zero addend, so that relocation is
-# filtered. The trim keeps the trailing pad in its own atlas row.
+# filtered. Its .text includes the trailing pad.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay_099.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay_099.c.o: \
 	$(TOOLS_DIR)/externalize_elf_section.py
@@ -1381,9 +1339,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay_099.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		0x1324:4:overlay99RenderSegments && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:15fbd0fd7f255861ebff752dc2b8e418edd9110dfe29426ed775e3dc124c3f17 && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x135C
-OVERLAY_TRIMMED_OBJECTS += $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay_099.c.o
+		sha256:15fbd0fd7f255861ebff752dc2b8e418edd9110dfe29426ed775e3dc124c3f17
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87ReleaseCurrent.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87HasNearby.c.o: POSTPROCESS = \
@@ -1416,8 +1372,8 @@ include mk/overlay_052.mk
 # gives the module's initialized data and rodata a C owner, the object's own
 # .rodata is dropped (the shipped blob supplies it) and the relocations that
 # name blob data, rodata, or a callee reached through the runtime table are
-# filtered so the linker leaves the compiler's stored words alone. The trim
-# keeps the trailing pad in its own atlas row.
+# filtered so the linker leaves the compiler's stored words alone. Its .text
+# includes the trailing pad.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
@@ -1430,8 +1386,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: POSTPROCESS = \
 		0x344:4:func_overlay_007_F0000DBC_185CC44 0x34c:5:overlay91GlobalB \
 		0x354:6:overlay91GlobalB 0x3ac:4:func_80006EA0 \
 		0x3f0:4:func_8002A8BC && \
-	$(OBJCOPY) --remove-section=.rodata $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x574
+	$(OBJCOPY) --remove-section=.rodata $@
 
 # Both functions are exact C. The state machine's nop between its paired
 # owner->x products is the VR4300 multiply workaround. Its compiler pool --
@@ -1472,8 +1427,7 @@ $(O90_OBJ): POSTPROCESS = \
 		@config/normalizations/func_overlay_090_F00000FC_18D4BF4.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:c350971913605d505c513324a16e420965bd2f632cce4c770353b9c7fc954f99 && \
-	$(OBJCOPY) --remove-section .rel.rodata $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xB1C
+	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 48 is one translation unit at the overlay flag set; its .text carries
 # the trailing pad, so nothing is trimmed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay_048.c.o: CFLAGS += -Wab,-r4300_mul
@@ -1526,12 +1480,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay_026.c.o: POSTPROCESS = \
 		sha256:65b37d85616c58b2a7b1db845df735b73a82241585f505fda670a9739bdeea4b
 
 OVERLAY_TRIMMED_OBJECTS := \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o076/overlay_076.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o078/overlay_078.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o102/overlay_102.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o103/overlay_103.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o106/overlay_106.c.o \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o107/overlay_107.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_build.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_head.c.o \
@@ -1551,7 +1499,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47ReleaseResources.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47SpawnObject.c.o
 OVERLAY_TRIMMED_OBJECTS += \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o085/overlay_085.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84InitState.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84InitializeAndUpdate.c.o \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/func_overlay_084_F0000314_18D07F4.c.o \
@@ -1579,10 +1526,6 @@ OVERLAY_TRIMMED_OBJECTS += \
     $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87HasNearby.c.o
 OVERLAY_TRIMMED_OBJECTS += \
     $(O22_UPDATE_OBJECT_OBJ)
-OVERLAY_TRIMMED_OBJECTS += \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o
-OVERLAY_TRIMMED_OBJECTS += \
-    $(BUILD_DIR)/$(SRC_DIR)/overlays/o090/overlay_090.c.o
 
 $(OVERLAY_TRIMMED_OBJECTS): $(TOOLS_DIR)/trim_elf_section.py
 OVERLAY_TRIMMED_OBJECTS += \

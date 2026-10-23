@@ -139,13 +139,15 @@ class CensusTests(unittest.TestCase):
             rom.write_bytes(b"synthetic changed")
             self.assertNotEqual(before, census.proof_environment_digest(root))
 
-    def test_source_and_recipe_changes_invalidate_warm_cache(self):
+    def test_source_recipe_and_toolchain_changes_invalidate_warm_cache(self):
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
             cache = root / "cache.json"
             entries = ENTRIES[:1]
             for name in ("src/owner.inc", "include/owner.h", "config/normalizations/owner.mk",
-                         "config/normalizations/owner.filter.spec", "mickey.us.yaml"):
+                         "config/normalizations/owner.filter.spec", "mickey.us.yaml",
+                         "tools/ido/cc", "tools/ido/cfe",
+                         "tools/binutils/mips64-elf-ld", "tools/binutils/mips64-elf-objcopy"):
                 path = root / name
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("synthetic original\n")

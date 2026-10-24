@@ -1354,9 +1354,7 @@ segments:
       - [0x1864F48, .data, overlay8TuningTables]
       - [0x1864F98, .data, overlay8ParameterTables]
       - [0x1865108, .data, overlay8SurfaceNames]
-      - [0x18651B8, bin, overlay_008_data_rodata_2330]
-      - [0x1865200, .data, overlay8MotionConstants]
-      - [0x18652A0, bin, overlay_008_data_rodata_2418]
+      - [0x18651B8, .rodata, overlay_008]
 
   - name: overlay_008_reloc1
     type: bin

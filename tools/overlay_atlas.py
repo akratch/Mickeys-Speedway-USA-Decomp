@@ -152,7 +152,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
     # emit the owner's compiler data, so trial projection must be function-
     # scoped rather than merely source-file-scoped.
     1: [(0x274, 0x294, "overlay_001_tail", ".rodata", "overlay1DispatchMode", True)],
-    8: [(0x27C, 0x2AC, "overlay_008", ".rodata", "func_overlay_008_F0004CF0_1862A48")],
     9: [(0x390, 0x3E0, "overlay_009", ".rodata", "func_overlay_009_F0000CE4_186735C", True)],
     14: [(0x158, 0x190, "overlay_014", ".rodata", "overlay14LoadRelocatedValue", True)],
     # The record/targeting update's five float literals, rodata-relative +0x0.
@@ -303,7 +302,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
         (0x20C0, 0x2110, "overlay8TuningTables", ".data"),
         (0x2110, 0x2280, "overlay8ParameterTables", ".data"),
         (0x2280, 0x2330, "overlay8SurfaceNames", ".data"),
-        (0x2378, 0x2418, "overlay8MotionConstants", ".data"),
+        (0x2330, 0x2530, "overlay_008", ".rodata"),
     ],
     9: [(0x2D0, 0x300, "overlay9ParameterState", ".data"),
         (0x300, 0x390, "overlay9CameraTables", ".data")],
@@ -381,7 +380,6 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
     (101, "overlay101ClockData", ".data"),
     (101, "overlay101EventStreams", ".data"),
     (8, "overlay8SelectorFlags", ".data"),
-    (8, "overlay8MotionConstants", ".data"),
     (8, "overlay8EffectTables", ".data"),
     (8, "overlay8SelectorTables", ".data"),
     (8, "overlay8MotionScales", ".rodata"),

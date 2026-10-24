@@ -1198,6 +1198,6 @@ u8 *func_8004D40C(s32 font, char *text, s32 maxWidth, u8 **lineStart, s32 *outWi
   }
   return text;
 }
-u8 func_8004D5C0(s32 font) {
+s32 func_8004D5C0(s32 font) {
     return D_800D60E4[font].height;
 }

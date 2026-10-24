@@ -220,9 +220,7 @@ extern s32 frontGetLanguage(void);
 extern u16 joyGetPressed(s32 player);
 extern s8 joyGetStickX(s32 player);
 extern s8 joyGetStickY(s32 player);
-/* The resident definition (main/font.c) returns u8; the module calls it as
- * returning int, as an undeclared call would. As u8 the zero-extension
- * becomes a second web copied out of v0 (one extra move, frame +8). */
+/* The height API returns its stored unsigned byte as a word (0..255). */
 extern s32 func_8004D5C0(s32 font);
 extern void fontSetButtonMode(s32 active);
 extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);
@@ -241,10 +239,6 @@ extern s32 mainGetNextCharacter(void);
 extern u8 frontGetMode(void);
 extern void mainChangeLevel(s32 nextLevel, s32 nextCharacter, s32 nextAnimGroup,
                             s32 nextCamera, s32 fadeOut, s32 flags);
-/* Unprototyped placeholders for SYMBOL calls whose callees the module's
- * relocation records name (offset-zero stored addend). */
-extern s32 overlay14Dispatch();
-
 /*
  * ResetMode's call to the exported overlay14ReleaseOwner is a SYMBOL
  * relocation record: the shipped word stores the 0xF0000000 addend, not the

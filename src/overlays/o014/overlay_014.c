@@ -818,8 +818,8 @@ static void func_overlay_014_F00013F4_1870CCC(Gfx **context) {
  * occupies the call's block; docs/lastmile-region-boundary.md). The calls
  * whose results this body never reads now use the genuine void font-state
  * providers. Text draws and next-line queries use their actual cursor/text
- * contracts; the spacing query retains `overlay14Dispatch` while its narrow
- * return contract remains open. Runtime targets are independently authenticated.
+ * contracts; the spacing query uses the word-valued height API.
+ * Runtime targets are independently authenticated.
  * The outer while and the generated entry stride (no declared offset carrier)
  * are the previous lanes' work and stay load-bearing. */
 static void func_overlay_014_F0001540_1870E18(Gfx **context) {
@@ -837,7 +837,7 @@ static void func_overlay_014_F0001540_1870E18(Gfx **context) {
     overlay14BuildRects(context, (const Overlay14PackedRect *)&gOverlay14DataBase, 0x5C, 0x14, 0xD0, 0x58,
                         (gOverlay14ValueC0 * 0xA0) >> 8);
     index = 0;
-    cellWidth = overlay14Dispatch(2);
+    cellWidth = func_8004D5C0(2);
     remaining = (0x58 / cellWidth) - 1;
     fontUseFont(2);
     fontBackground(0, 0, 0, 0);
@@ -880,8 +880,8 @@ static void func_overlay_014_F0001540_1870E18(Gfx **context) {
  * asm/nonmatchings/overlays/o7/overlay_7/func_overlay_7_007023D4_1EFD4FC.s;
  * body reconstructed from Mickey evidence. */
 /* Matched 2026-09-23 (lane A2-ov), 201/201 words at frame 0x90, unforced.
- * The int-returning declaration of func_8004D5C0 closed size and frame
- * (Track B, lane B-ovsmall). The last five words were case 7's schedule:
+ * The word-valued height getter matches the module's integer consumers.
+ * The last five words were case 7's schedule:
  * the ROM loads the four colour bytes at +1..+5 and puts the stream
  * increment in the call's delay slot. as1 breaks a tie between the
  * increment and the loads on source line number (L59), and the increment

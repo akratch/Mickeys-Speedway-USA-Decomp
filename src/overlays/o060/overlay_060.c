@@ -159,7 +159,7 @@ void func_overlay_060_F0000000_18B9DD8(void) {
     if (object != 0) {
         object->flags |= 2;
     }
-    gOverlay60Bss174 = 0;
+    o60CharacterSprite_o060Reloc = 0;
 }
 
 /* Tier B: the call sites and runtime relocation records identify these
@@ -271,12 +271,12 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
             }
         }
     }
-    if (gOverlay60Data160 != 0) {
+    if (o60SettingsPending_o060Reloc != 0) {
         frontSetLanguage(D_800D3128_o060Reloc.bits.language);
         frontSetStereoMode(D_800D3128_o060Reloc.bits.stereoMode);
         frontSetSfxVolume(D_800D3128_o060Reloc.sfxVolume);
         frontSetBgmVolume(D_800D3128_o060Reloc.bgmVolume);
-        gOverlay60Data160 = 0;
+        o60SettingsPending_o060Reloc = 0;
     }
     if (gOverlay60Data0A8 != NULL &&
         overlay41IsUnitScale(o60MenuPathIndex_o060Reloc) != 0) {
@@ -290,12 +290,12 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
         if (o60ActivePanel_o060Reloc == -1 &&
             overlay82IsActive(gOverlay60Data0A8) != 0) {
             o60ActivePanel_o060Reloc = panel;
-            gOverlay60Data14C = 0;
+            o60SubmenuState_o060Reloc = 0;
             o60PanelSelection_o060Reloc = 0;
             o60PanelScroll_o060Reloc = 0;
-            gOverlay60Data150 = 0;
-            gOverlay60Data154 = 1;
-            gOverlay60Data158 = 0;
+            o60PanelValue_o060Reloc = 0;
+            o60PanelPhase_o060Reloc = 1;
+            o60VideoTransition_o060Reloc = 0;
         }
         if (overlay82IsActive(gOverlay60Data0A8) != 0 &&
             panel == o60ActivePanel_o060Reloc) {
@@ -324,9 +324,9 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
         if (o60PanelOpacity_o060Reloc != 0) {
             switch (o60ActivePanel_o060Reloc) {
             case 0:
-                if (gOverlay60Data134 == NULL) {
-                    amSndPlay(gOverlay60Data138[mathRnd(0, 9)],
-                              &gOverlay60Data134);
+                if (o60PreviewSound_o060Reloc == NULL) {
+                    amSndPlay(o60PreviewSoundIds_o060Reloc[mathRnd(0, 9)],
+                              &o60PreviewSound_o060Reloc);
                 }
                 spare = frontGetSfxVolume();
                 frontSetSfxVolume(func_overlay_060_F0002F54_18BCD2C(
@@ -435,12 +435,12 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 frontSetBgmVolume(func_overlay_060_F0002F54_18BCD2C(
                     0x5F, 0xB9, 0x64, 0x28, spare, o60PanelOpacity_o060Reloc, ticks));
                 if (D_8007BF1C_o060Reloc & 0x80) {
-                    previewMode = gOverlay60Data150;
+                    previewMode = o60PanelValue_o060Reloc;
                     if (previewMode > 0) {
-                        gOverlay60Data150 = previewMode - ticks;
-                        if (gOverlay60Data150 <= 0) {
-                            gOverlay60Data150 = 0;
-                            amTunePlay(((u8 *)&gOverlay60Data15C)[3]);
+                        o60PanelValue_o060Reloc = previewMode - ticks;
+                        if (o60PanelValue_o060Reloc <= 0) {
+                            o60PanelValue_o060Reloc = 0;
+                            amTunePlay(((u8 *)&o60PreviewTune_o060Reloc)[3]);
                         }
                     }
                     if (overlay82IsActive(gOverlay60Data0A8) != 0) {
@@ -451,11 +451,11 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             o60PanelSelection_o060Reloc++;
                             amSndPlay(0xF, NULL);
                         } else if (D_800D31B8_o060Reloc & 0x9000) {
-                            if (gOverlay60Data150 == 0) {
+                            if (o60PanelValue_o060Reloc == 0) {
                                 amTuneSetFade(0.5f, 0);
-                                gOverlay60Data150 = 0x1E;
+                                o60PanelValue_o060Reloc = 0x1E;
                             }
-                            gOverlay60Data15C = o60PanelSelection_o060Reloc + 1;
+                            o60PreviewTune_o060Reloc = o60PanelSelection_o060Reloc + 1;
                             amSndPlay(0xC, NULL);
                         }
                     }
@@ -499,15 +499,15 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 break;
             case 6:
                 screenMode = frontGetScreenMode();
-                if (gOverlay60Data158 == 0 &&
+                if (o60VideoTransition_o060Reloc == 0 &&
                     overlay82IsActive(gOverlay60Data0A8) != 0 &&
                     D_800D31BC_o060Reloc != 0) {
                     overlay82Disable(gOverlay60Data0A8);
-                    gOverlay60Data158 = 1;
+                    o60VideoTransition_o060Reloc = 1;
                     amSndPlay(0xF, NULL);
                 }
-                if (gOverlay60Data158 != 0) {
-                    if (gOverlay60Data158 == 1) {
+                if (o60VideoTransition_o060Reloc != 0) {
+                    if (o60VideoTransition_o060Reloc == 1) {
                         if (viDisplayingScreen0() == 0) {
                             projection = func_8002468C();
                             animseqStopPath(((u8 *)&o60MenuPathIndex_o060Reloc)[3]);
@@ -536,7 +536,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                                 }
                                 (*projection)[0][0] /= 0.75f;
                             }
-                            gOverlay60Data158 = 2;
+                            o60VideoTransition_o060Reloc = 2;
                         }
                     } else {
                         if (screenMode == 0) {
@@ -548,7 +548,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         D_800D2FC0_o060Reloc = 1;
                         viChangeMode(screenMode);
                         camSetFOV(60.0f, 1);
-                        gOverlay60Data158 = 0;
+                        o60VideoTransition_o060Reloc = 0;
                         overlay82Enable(gOverlay60Data0A8);
                     }
                 }
@@ -579,13 +579,13 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 break;
             case 7:
                 showArrows = 0;
-                if (gOverlay60Data14C == 0) {
+                if (o60SubmenuState_o060Reloc == 0) {
                     overlay82Enable(gOverlay60Data0A8);
-                    if (gOverlay60Data154 == 0 &&
+                    if (o60PanelPhase_o060Reloc == 0 &&
                         overlay82IsActive(gOverlay60Data0A8) != 0) {
                         if (D_800D31B8_o060Reloc & 0x9000) {
-                            gOverlay60Data14C = 1;
-                            gOverlay60Data150 = 0;
+                            o60SubmenuState_o060Reloc = 1;
+                            o60PanelValue_o060Reloc = 0;
                             overlay82Disable(gOverlay60Data0A8);
                             amSndPlay(0xC, NULL);
                         } else if (D_800D31BE_o060Reloc > 0 && o60PanelSelection_o060Reloc > 0) {
@@ -604,7 +604,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             }
                         }
                     }
-                    gOverlay60Data154 = 0;
+                    o60PanelPhase_o060Reloc = 0;
                     o60MenuText_o060Reloc[7] = O60_TEXT(0x278);
                     if (o60PanelSelection_o060Reloc == 0) {
                         fontColour(0x80, 0xFF, 0x80, 0xFF, o60PanelOpacity_o060Reloc);
@@ -635,7 +635,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 } else {
                     switch (o60PanelSelection_o060Reloc) {
                     case 0:
-                        previewMode = gOverlay60Data150;
+                        previewMode = o60PanelValue_o060Reloc;
                         o60MenuText_o060Reloc[7] = D_8007C0B8_o060Reloc[D_8007C11C_o060Reloc[previewMode]];
                         if (((D_800D3128_o060Reloc.progress[0] & 0x1C0) >> 6) >= 3 &&
                             ((D_800D3128_o060Reloc.progress[1] & 0x1C0) >> 6) >= 3 &&
@@ -653,23 +653,23 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             limit = 0xC;
                         }
                         if (D_800D31B8_o060Reloc & 0x4000) {
-                            gOverlay60Data14C = 0;
+                            o60SubmenuState_o060Reloc = 0;
                             amSndPlay(0xD, NULL);
                         } else if (D_800D31BC_o060Reloc < 0) {
-                            gOverlay60Data150 = previewMode - 1;
-                            if (gOverlay60Data150 < 0) {
-                                gOverlay60Data150 = limit - 1;
+                            o60PanelValue_o060Reloc = previewMode - 1;
+                            if (o60PanelValue_o060Reloc < 0) {
+                                o60PanelValue_o060Reloc = limit - 1;
                             }
                             amSndPlay(0xF, NULL);
                         } else if (D_800D31BC_o060Reloc > 0) {
-                            gOverlay60Data150 = previewMode + 1;
-                            if (gOverlay60Data150 >= limit) {
-                                gOverlay60Data150 = 0;
+                            o60PanelValue_o060Reloc = previewMode + 1;
+                            if (o60PanelValue_o060Reloc >= limit) {
+                                o60PanelValue_o060Reloc = 0;
                             }
                             amSndPlay(0xF, NULL);
                         }
                         slots = func_800291C4();
-                        i = levelGetBlurEffect(D_8007C0E8_o060Reloc[gOverlay60Data150]);
+                        i = levelGetBlurEffect(D_8007C0E8_o060Reloc[o60PanelValue_o060Reloc]);
                         slot = (SavesSlot *)((u8 *)slots + i * 32);
                         fontUseFont(2);
                         fontBackground(0, 0, 0, 0);
@@ -677,7 +677,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x7A, O60_TEXT(0xD0), 4);
                         fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xBA, O60_TEXT(0xD4), 4);
                         if (overlay68CheckKind(
-                                D_8007C0E8_o060Reloc[gOverlay60Data150]) != 0) {
+                                D_8007C0E8_o060Reloc[o60PanelValue_o060Reloc]) != 0) {
                             /* 0.67f is a literal: its HI16/LO16 pair is a LOCAL record
                              * against the module's rodata, ahead of the texture
                              * address in the shipped table. */
@@ -716,7 +716,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     case 1:
                         texDPInit(&D_800D3140_o060Reloc);
                         camStandardPersp(&D_800D3140_o060Reloc, &D_800D3144_o060Reloc);
-                        previewMode = gOverlay60Data150;
+                        previewMode = o60PanelValue_o060Reloc;
                         o60MenuText_o060Reloc[7] = D_8007C0B8_o060Reloc[0x220 / 4 + previewMode];
                         if (((D_800D3128_o060Reloc.progress[0] & 0x1C0) >> 6) >= 3 &&
                             ((D_800D3128_o060Reloc.progress[1] & 0x1C0) >> 6) >= 3 &&
@@ -730,23 +730,23 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             limit = 3;
                         }
                         if (D_800D31B8_o060Reloc & 0x4000) {
-                            gOverlay60Data14C = 0;
+                            o60SubmenuState_o060Reloc = 0;
                             amSndPlay(0xD, NULL);
                         } else if (D_800D31BC_o060Reloc < 0) {
-                            gOverlay60Data150 = previewMode - 1;
-                            if (gOverlay60Data150 < 0) {
-                                gOverlay60Data150 = limit - 1;
+                            o60PanelValue_o060Reloc = previewMode - 1;
+                            if (o60PanelValue_o060Reloc < 0) {
+                                o60PanelValue_o060Reloc = limit - 1;
                             }
                             amSndPlay(0xF, NULL);
                         } else if (D_800D31BC_o060Reloc > 0) {
-                            gOverlay60Data150 = previewMode + 1;
-                            if (gOverlay60Data150 >= limit) {
-                                gOverlay60Data150 = 0;
+                            o60PanelValue_o060Reloc = previewMode + 1;
+                            if (o60PanelValue_o060Reloc >= limit) {
+                                o60PanelValue_o060Reloc = 0;
                             }
                             amSndPlay(0xF, NULL);
                         }
-                        previewMode = gOverlay60Data150;
-                        gOverlay60Data130 = previewMode;
+                        previewMode = o60PanelValue_o060Reloc;
+                        o60PreviewMode_o060Reloc = previewMode;
                         fontColour(0, 0xFF, 0, 0xFF, o60PanelOpacity_o060Reloc);
                         fontPrintXY(&D_800D3140_o060Reloc, 0x3C, 0x8C, O60_TEXT(0x234), 8);
                         fontColour(0xFF, 0, 0, 0xFF, o60PanelOpacity_o060Reloc);
@@ -783,16 +783,16 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         texDPInit(&D_800D3140_o060Reloc);
                         rcpClearZBuffer(&D_800D3140_o060Reloc, 0x140, 0xF0, 0x8C, 0x64, 0xD7, 0xC8);
                         for (i = 0; i < 4; i++) {
-                            previewMode = gOverlay60Data150;
+                            previewMode = o60PanelValue_o060Reloc;
                             if (previewMode != gOverlay60Data0C8[i]->unk3A) {
                                 gOverlay60Data0C8[i]->unk3A = previewMode;
                                 func_8005AD64(gOverlay60Data0C8[i], 0, 0, 0.0f);
                             }
-                            previewMode = gOverlay60Data150;
+                            previewMode = o60PanelValue_o060Reloc;
                             gOverlay60Data0C8[i]->unk8 = gOverlay60Data0F8[previewMode];
-                            model = (MenuSpawnInner *)(gOverlay60Data0C8[i])->unk68[gOverlay60Data150];
+                            model = (MenuSpawnInner *)(gOverlay60Data0C8[i])->unk68[o60PanelValue_o060Reloc];
                             model->mode = ticks;
-                            spare = ((u32)(D_800D3128_o060Reloc.progress[gOverlay60Data150] & gOverlay60Data10C[i]) >> gOverlay60Data11C[i]);
+                            spare = ((u32)(D_800D3128_o060Reloc.progress[o60PanelValue_o060Reloc] & gOverlay60Data10C[i]) >> gOverlay60Data11C[i]);
                             modSetTextureFrame(model, 0, gOverlay60Data12C[spare - 1] * 256);
                             func_8005ABA8(gOverlay60Data0C8[i], 0.003f, ticks);
                             if (spare != 0) {
@@ -806,10 +806,10 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     case 2:
                         o60MenuText_o060Reloc[7] = O60_TEXT(0x27C);
                         if (D_800D31B8_o060Reloc & 0x4000) {
-                            gOverlay60Data14C = 0;
+                            o60SubmenuState_o060Reloc = 0;
                             amSndPlay(0xD, NULL);
                         } else if (D_800D31BC_o060Reloc < 0) {
-                            previewMode = gOverlay60Data150;
+                            previewMode = o60PanelValue_o060Reloc;
                             i = previewMode;
                             do {
                                 i--;
@@ -818,15 +818,15 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                                 }
                             } while (!(D_800D3128_o060Reloc.unlocked & (1 << i)));
                             if (i != previewMode) {
-                                gOverlay60Data150 = i;
-                                if (gOverlay60Data174 != NULL) {
-                                    texFreeSprite(gOverlay60Data174);
-                                    gOverlay60Data174 = NULL;
+                                o60PanelValue_o060Reloc = i;
+                                if (o60CharacterSprite_o060Reloc != NULL) {
+                                    texFreeSprite(o60CharacterSprite_o060Reloc);
+                                    o60CharacterSprite_o060Reloc = NULL;
                                 }
                                 amSndPlay(0xF, NULL);
                             }
                         } else if (D_800D31BC_o060Reloc > 0) {
-                            previewMode = gOverlay60Data150;
+                            previewMode = o60PanelValue_o060Reloc;
                             i = previewMode;
                             do {
                                 i++;
@@ -835,28 +835,28 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                                 }
                             } while (!(D_800D3128_o060Reloc.unlocked & (1 << i)));
                             if (i != previewMode) {
-                                gOverlay60Data150 = i;
-                                if (gOverlay60Data174 != NULL) {
-                                    texFreeSprite(gOverlay60Data174);
-                                    gOverlay60Data174 = NULL;
+                                o60PanelValue_o060Reloc = i;
+                                if (o60CharacterSprite_o060Reloc != NULL) {
+                                    texFreeSprite(o60CharacterSprite_o060Reloc);
+                                    o60CharacterSprite_o060Reloc = NULL;
                                 }
                                 amSndPlay(0xF, NULL);
                             }
                         }
-                        if (gOverlay60Data14C != 0 && gOverlay60Data174 == NULL) {
-                            gOverlay60Data174 = texLoadSprite(
-                                gOverlay60Data168[gOverlay60Data150], 0);
+                        if (o60SubmenuState_o060Reloc != 0 && o60CharacterSprite_o060Reloc == NULL) {
+                            o60CharacterSprite_o060Reloc = texLoadSprite(
+                                o60CharacterSpriteIds_o060Reloc[o60PanelValue_o060Reloc], 0);
                         }
-                        if (gOverlay60Data174 != NULL) {
+                        if (o60CharacterSprite_o060Reloc != NULL) {
                             camStandardOrtho(&D_800D3140_o060Reloc, &D_800D3144_o060Reloc);
                             gDPPipeSync(D_800D3140_o060Reloc++);
                             gDPSetPrimColor(D_800D3140_o060Reloc++, 0, 0, 255, 255, 255, 255);
                             gDPSetEnvColor(D_800D3140_o060Reloc++, 255, 255, 255, 0);
                             camDo2DSprite(&D_800D3140_o060Reloc, &D_800D3144_o060Reloc, &D_800D3148_o060Reloc,
-                                gOverlay60Data178, gOverlay60Data174, 0, 0xFF);
-                            if (gOverlay60Data14C == 0) {
-                                texFreeSprite(gOverlay60Data174);
-                                gOverlay60Data174 = NULL;
+                                gOverlay60Data178, o60CharacterSprite_o060Reloc, 0, 0xFF);
+                            if (o60SubmenuState_o060Reloc == 0) {
+                                texFreeSprite(o60CharacterSprite_o060Reloc);
+                                o60CharacterSprite_o060Reloc = NULL;
                             }
                         }
                         for (i = 0; i < 6; i++) {
@@ -869,37 +869,37 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                     case 3:
                         o60MenuText_o060Reloc[7] = O60_TEXT(0x28C);
                         if (D_800D31B8_o060Reloc & 0x9000) {
-                            if (gOverlay60Data150 != 0) {
-                                gOverlay60Data14C = 0;
-                                gOverlay60Data160 = 1;
+                            if (o60PanelValue_o060Reloc != 0) {
+                                o60SubmenuState_o060Reloc = 0;
+                                o60SettingsPending_o060Reloc = 1;
                                 overlay60ReassignChoiceSlots();
                                 D_8007BF1C_o060Reloc = 0;
                                 func_80029198();
                                 amSndPlay(0xC, NULL);
                             } else {
-                                gOverlay60Data14C = 0;
+                                o60SubmenuState_o060Reloc = 0;
                                 amSndPlay(0xD, NULL);
                             }
                         } else if (D_800D31B8_o060Reloc & 0x4000) {
-                            gOverlay60Data14C = 0;
+                            o60SubmenuState_o060Reloc = 0;
                             amSndPlay(0xD, NULL);
-                        } else if (D_800D31BC_o060Reloc < 0 && gOverlay60Data150 == 0) {
-                            gOverlay60Data150 = 1;
+                        } else if (D_800D31BC_o060Reloc < 0 && o60PanelValue_o060Reloc == 0) {
+                            o60PanelValue_o060Reloc = 1;
                             amSndPlay(0xF, NULL);
-                        } else if (D_800D31BC_o060Reloc > 0 && gOverlay60Data150 != 0) {
-                            gOverlay60Data150 = 0;
+                        } else if (D_800D31BC_o060Reloc > 0 && o60PanelValue_o060Reloc != 0) {
+                            o60PanelValue_o060Reloc = 0;
                             amSndPlay(0xF, NULL);
                         }
                         fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x8F, O60_TEXT(0x290), 0xC);
                         fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x99, O60_TEXT(0x294), 0xC);
                         fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xAD, O60_TEXT(0x54), 0xC);
-                        if (gOverlay60Data150 != 0) {
+                        if (o60PanelValue_o060Reloc != 0) {
                             fontColour(0x80, 0xFF, 0x80, 0xFF, o60PanelOpacity_o060Reloc);
                         } else {
                             fontColour(0, 0xD0, 0, 0xFF, o60PanelOpacity_o060Reloc);
                         }
                         fontPrintXY(&D_800D3140_o060Reloc, 0x71, 0xBC, O60_TEXT(0x58), 0xC);
-                        if (gOverlay60Data150 == 0) {
+                        if (o60PanelValue_o060Reloc == 0) {
                             fontColour(0x80, 0xFF, 0x80, 0xFF, o60PanelOpacity_o060Reloc);
                         } else {
                             fontColour(0, 0xD0, 0, 0xFF, o60PanelOpacity_o060Reloc);
@@ -1017,8 +1017,8 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
             }
         }
         if ((D_800D31B8_o060Reloc & 0x4000) && o60ActivePanel_o060Reloc == -1 &&
-            gOverlay60Data164 == 0) {
-            gOverlay60Data164 = 1;
+            o60ExitRequested_o060Reloc == 0) {
+            o60ExitRequested_o060Reloc = 1;
             if (D_8007BF1C_o060Reloc & 0x40) {
                 D_8007BF1C_o060Reloc &= ~0x40;
                 overlay48Initialize();
@@ -1047,9 +1047,9 @@ void overlay60ReleaseResources(void) {
         resource++;
     } while (resource != end);
 
-    if (gOverlay60OptionalResource != NULL) {
-        overlay60ReleaseReloc(gOverlay60OptionalResource);
-        gOverlay60OptionalResource = NULL;
+    if (o60CharacterSprite_o060Reloc != NULL) {
+        overlay60ReleaseReloc(o60CharacterSprite_o060Reloc);
+        o60CharacterSprite_o060Reloc = NULL;
     }
     overlay60ReleaseReloc(&gOverlay60PrimaryResource);
     func_8002917C();

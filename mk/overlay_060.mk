@@ -14,3 +14,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60MenuResources.c.o: private PLAIN_
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60MenuResources.c.o: private PLAIN_DATA_RUNTIME_ROLE = data
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60PreviewTables.c.o: private PLAIN_DATA_PROOF = 1
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60PreviewTables.c.o: private PLAIN_DATA_RUNTIME_ROLE = data
+
+# Complete real control input. Derive the end from actual sized objects and
+# discard only its independently proved eight-byte compiler alignment suffix.
+O60_CONTROL_STATE := $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60ControlState.c.o
+$(O60_CONTROL_STATE): $(TOOLS_DIR)/trim_elf_section.py
+$(O60_CONTROL_STATE): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x48 --compiler-end-padding
+$(O60_CONTROL_STATE): private PLAIN_DATA_PROOF = 1
+$(O60_CONTROL_STATE): private PLAIN_DATA_RUNTIME_ROLE = data

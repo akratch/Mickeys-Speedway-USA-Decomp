@@ -2668,13 +2668,17 @@ segments:
     vram: 0xF0000000
     bss_size: 0x1C0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o057
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18A3BF8, c, overlay_057]
       - [0x18AA6A8, bin, overlay_057_data_rodata]
+      - [0x18AAA70, .data, overlay57MenuTables]
+      - [0x18AAB60, bin, overlay_057_data_rodata_4b8]
+      - {start: 0x18AABE8, type: .rodata, name: overlay57MenuLabels, linker_section_order: .data}
+      - [0x18AAC28, bin, overlay_057_data_rodata_580]
 
   - name: overlay_057_reloc1
     type: bin

@@ -125,6 +125,17 @@ Missing or conflicting held providers fail instead of falling back to name
 decoding. Other ORT rows and general name resolution retain their existing
 compatibility behavior until separately proved.
 
+A generated function proxy can use its exact suffix-free global definition
+without decoding coordinates from that spelling. Require a unique sized
+STT_FUNC in actual allocated executable raw text, a bounded extent, its unique
+source-text map contribution and a matching sized global function in that
+module's linked output. Ambiguous, nonfunction or stale geometry fails instead
+of falling back. Genuinely absent definitions retain the visibly distinct
+`generated-proxy` compatibility route; the initial closure changes nine records
+to `source-function-proxy` and leaves seventeen on compatibility authority.
+This establishes target identity, not fresh source-compilation acceptance or
+new matching credit; ordinary builds and existing function proofs still apply.
+
 Producer capture pins its actual bootstrap/final ELF-map pair and ordinary
 link command, source, headers, recipe and tools before and after reproduction.
 It cannot require the generated final-metadata output it is producing. Its

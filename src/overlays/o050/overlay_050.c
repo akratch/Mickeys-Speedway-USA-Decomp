@@ -493,12 +493,12 @@ racer->laps != level->laps
 /* DKR v77/v80 and JFG contain no exact donor for this resource teardown. */
 void overlay50Cleanup(void) {
     if (gOverlay50ResourceA != NULL) {
-        overlay50ReleaseResourceReloc(gOverlay50ResourceA);
+        amSndStop_o050Reloc(gOverlay50ResourceA);
     }
     freeFrontEndList(&gOverlay50Storage);
     overlay56ReleaseResource();
     if (gOverlay50ResourceB != NULL) {
-        overlay50ReleaseResourceReloc(gOverlay50ResourceB);
+        overlay45ReleaseDescriptor_o050Reloc(gOverlay50ResourceB);
     }
     if (gOverlay50Slot != -1) {
         freeFrontEndItem(gOverlay50Slot);

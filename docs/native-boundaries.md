@@ -129,15 +129,32 @@ or shared C prototype closure.
 
 ## Data, numerical and lifetime assumptions by family
 
-- **Numeric/angle utilities:** [math.h](../include/game/math.h) now supplies
-  shared full-word angle/trig declarations to 58 of 59 canonical consumers.
-  `Arctanf` returns a zero-extended 16-bit turn in an `s32`; signed-angle
-  reinterpretation belongs to the caller. Overlay 29 retains its explicitly
-  recorded legacy `s16` disagreement. This does not complete the shared API or
-  all private assembly contracts. Angle wrapping, RNG state/order, float
-  rounding/denormals, trapping arithmetic and fixed conversion cannot be inferred
-  from the common names. Some small math-util entries have no typed C declaration
-  in this inventory; their function role remains open.
+- **Numeric/angle utilities:** [math.h](../include/game/math.h) supplies the
+  common full-word angle/trig declarations. `Arctanf` takes two single-precision
+  inputs in f12/f14 and normally returns a zero-extended 16-bit turn in v0;
+  signed-angle reinterpretation belongs to the caller. It is a leaf without
+  stack or memory stores, changes the input FP registers, and does not call
+  the neighboring trig pair. Overlay 29 retains its recorded four-call legacy
+  `s16` disagreement: the genuine immediate-word/saved-halfword repair remains
+  blocked by the proved frame/home allocation difference. No new type closure
+  follows from naming its already-compatible aliases.
+
+  The actual ratio lookup multiplies by 2048, converts with ambient FP rounding,
+  masks the converted word to an even byte offset and reads a signed halfword.
+  For an ordinary ordered finite path without denormal or conversion-fault
+  behavior, sign/ratio
+  selection keeps that offset at most `0x800`, ending the read at `0x802` within
+  the measured `0x808` retained named span. That span is not an original C array
+  capacity. The mask alone permits a read end of `0x1000`; NaN, infinity,
+  denormal, conversion-fault and altered FP-state behavior are not established
+  by the finite-path bound. There is no range/fault test after conversion.
+  Thread creation initializes the named FS/EV/round-nearest settings, but the
+  provider does not save or set FCSR, and that initialization is not a proved
+  live-mode invariant for every caller. Preserve these exceptional-domain gaps;
+  a mathematical name does not authorize host libm substitution. The separate
+  [matrix contract](matrix-contracts.md) retains the trig pair's private
+  preservation requirements. RNG state/order and other small math entries
+  still need their own contracts.
 - **Track/shadows:** [track.c](../src/main/track.c#L439) and
   [shadows.c](../src/main/shadows.c#L130) provide partial local shapes
   for masks, query/output records and projection helpers. `trackMakePolylist`
@@ -188,9 +205,9 @@ or shared C prototype closure.
 
 | Packet / initial owned anchor | Deliverable and stopping boundary |
 |---|---|
-| Angle and FP ABI: `Arctanf`, then its trig pair | Authenticate input/result widths, low-word/wrap rules and clobbers from Mickey; reconcile the conflicting caller declarations. Record FP-state dependencies. Stop before shared-header edits until that evidence supports one contract. |
+| Angle and FP ABI: `Arctanf`, then its trig pair | Normal return/clobber and conditional finite-table bounds are authenticated. Keep overlay29's genuine value/frame blocker separate from exceptional-input, FP-mode and fault behavior; no new cast/union sweep or host-libm replacement is justified. |
 | Matrix follow-up | The [matrix contract](matrix-contracts.md) settles multiplication aliasing, private trig preservation and the fixed converter's format/rounding/fault boundary. The local stack-matrix and overlay 56 repairs are integrated. Next prove caller-wide numeric ranges, overlay 98's typed float/fixed backing, complete thread/FP-context coverage and graphics completion lifetime. |
-| Inflater follow-up | Core dialect, continuation and shared-state lifetime are audited in the [contract](inflater-contract.md). Derive lookahead bounds, resolve fixed-handler incoming memory and measure per-record output/workspace/overlap limits privately. Establish byte-4 meaning from producer evidence; stop before decoder implementation. |
+| Inflater follow-up | Core dialect, continuation and shared-state lifetime are audited in the [contract](inflater-contract.md). A conditional normal-completion lookahead bound is established; resolve fixed-handler incoming memory and measure per-record output/workspace/overlap limits privately, accounting for pending loads in the stored-block unroll. Establish byte-4 meaning from producer evidence; stop before decoder implementation. |
 | Animation outer/private cluster | Map live-in/out registers and writable record intervals at `func_800591B0`, including its private t/s-register helpers and exit. Keep the converter batch separate until its matrix mutation/format is proved. |
 | Render resource anchor: `rainFastDraw` plus its sole inspected overlay15 call family | Recover exact pixel/position/color formats, count/bounds/clipping and stack FP words. Then schedule snow/lighting/output independently rather than porting twelve labels as one renderer. |
 | Geometry anchor: `getXZCompareMask` | Resolve integer-coordinate conversion, box schema, mask bits, scratch writes and lifetimes against the existing float-expression callers; expand to other track/shadow helpers only with new evidence. |

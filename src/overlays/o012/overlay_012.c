@@ -1,5 +1,24 @@
 #include "overlays/overlay_012.h"
 
+/* Tier B: module-lifetime counts, six distinct CPU resource-pointer cells,
+ * 64 effect records, 5 particle records and the update parity word. The
+ * constructors and updater independently bound the two real pools. Typed
+ * pointer cells agree with the actual texture/sprite load/free providers.
+ * IDO supplies the four terminal alignment bytes; no source padding object.
+ * Private imports preserve loader operands. The legacy computed resource
+ * view and broader native/caller lifetime contracts remain open. */
+s32 o12EffectCount;
+s32 o12ParticleCount;
+struct TextureHeader *o12TextureF3;
+struct TextureHeader *o12TextureF2;
+struct TextureHeader *o12TextureF4;
+struct TextureHeader *o12TextureF5;
+struct TextureHeader *o12TextureF6;
+struct Sprite *o12Sprite39;
+Overlay12Effect gOverlay12Effects[64];
+Overlay12Particle gOverlay12Particles[5];
+s32 o12UpdateParity;
+
 /*
  * Overlay 12: impact effects and particles. One translation unit;
  * overlay12Initialize is unexported and static.
@@ -10,55 +29,55 @@
 /* DKR v77/v80 and JFG contain no exact donor for this resource initializer. */
 static void overlay12Initialize(void) {
     s32 i;
-    Overlay12Entry *entry;
+    Overlay12Effect *entry;
 
-    gOverlay12ResourceF3 = texLoadTexture(0xF3);
-    gOverlay12ResourceF2 = texLoadTexture(0xF2);
-    gOverlay12ResourceF4 = texLoadTexture(0xF4);
-    gOverlay12ResourceF5 = texLoadTexture(0xF5);
-    gOverlay12ResourceF6 = texLoadTexture(0xF6);
-    gOverlay12Resource39 = texLoadSprite(0x39, 1);
+    o12TextureF3_o012Reloc = texLoadTexture(0xF3);
+    o12TextureF2_o012Reloc = texLoadTexture(0xF2);
+    o12TextureF4_o012Reloc = texLoadTexture(0xF4);
+    o12TextureF5_o012Reloc = texLoadTexture(0xF5);
+    o12TextureF6_o012Reloc = texLoadTexture(0xF6);
+    o12Sprite39_o012Reloc = texLoadSprite(0x39, 1);
 
-    for (i = 0, entry = gOverlay12Entries; i < 64; i++, entry++) {
+    for (i = 0, entry = gOverlay12Effects_o012Reloc; i < 64; i++, entry++) {
         entry->active = 0;
     }
 
-    gOverlay12Flag1536 = 0;
+    gOverlay12Particles_o012Reloc[0].active = 0;
     gOverlay12Ready = 1;
-    gOverlay12Count = 0;
-    gOverlay12Selection = 0;
+    o12EffectCount_o012Reloc = 0;
+    o12ParticleCount_o012Reloc = 0;
     /* The zero goes through the loop counter: a literal store loads it in a
      * different order (4 words). */
     i = 0;
-    gOverlay12Value1598 = i;
+    o12UpdateParity_o012Reloc = i;
 }
 
 /* Pinned DKR v77/v80 and JFG object scans found no exact donor for this release path. */
 void func_overlay_012_F00000C4_186D344(void) {
     s32 i;
-    Overlay12Entry *entry;
+    Overlay12Effect *entry;
 
     if (gOverlay12Ready != 0) {
-        if (gOverlay12Resource0 != 0) {
-            texFreeTexture(gOverlay12Resource0);
+        if (o12TextureF3_o012Reloc != 0) {
+            texFreeTexture(o12TextureF3_o012Reloc);
         }
-        if (gOverlay12Resource1 != 0) {
-            texFreeTexture(gOverlay12Resource1);
+        if (o12TextureF2_o012Reloc != 0) {
+            texFreeTexture(o12TextureF2_o012Reloc);
         }
-        if (gOverlay12Resource2 != 0) {
-            texFreeTexture(gOverlay12Resource2);
+        if (o12TextureF4_o012Reloc != 0) {
+            texFreeTexture(o12TextureF4_o012Reloc);
         }
-        if (gOverlay12Resource3 != 0) {
-            texFreeTexture(gOverlay12Resource3);
+        if (o12TextureF5_o012Reloc != 0) {
+            texFreeTexture(o12TextureF5_o012Reloc);
         }
-        if (gOverlay12Resource4 != 0) {
-            texFreeTexture(gOverlay12Resource4);
+        if (o12TextureF6_o012Reloc != 0) {
+            texFreeTexture(o12TextureF6_o012Reloc);
         }
-        if (gOverlay12Resource5 != 0) {
-            texFreeSprite(gOverlay12Resource5);
+        if (o12Sprite39_o012Reloc != 0) {
+            texFreeSprite(o12Sprite39_o012Reloc);
         }
 
-        entry = gOverlay12Entries;
+        entry = gOverlay12Effects_o012Reloc;
         i = 0;
         while (1) {
             i++;
@@ -73,12 +92,12 @@ void func_overlay_012_F00000C4_186D344(void) {
          * docs/cleanup-queue.md. */
         if (!i) {
         }
-        gOverlay12Flag1536 = 0;
+        gOverlay12Particles_o012Reloc[0].active = 0;
     }
 
     gOverlay12Ready = 0;
-    gOverlay12Count = 0;
-    gOverlay12Selection = 0;
+    o12EffectCount_o012Reloc = 0;
+    o12ParticleCount_o012Reloc = 0;
 }
 
 /* Overlay 12, ADR 0006 consolidation: default-O2 tail. */
@@ -91,8 +110,8 @@ void func_overlay_012_F00001B4_186D434(f32 x, f32 y, f32 z, f32 x2, f32 y2,
     if (gOverlay12Ready == 0) {
         overlay12Initialize();
     }
-    if (gOverlay12EffectCount < 64) {
-        effect = gOverlay12Effects;
+    if (o12EffectCount_o012Reloc < 64) {
+        effect = gOverlay12Effects_o012Reloc;
         for (i = 0; i < 64; i++, effect++) {
             if (effect->active == 0) {
                 break;
@@ -117,7 +136,7 @@ void func_overlay_012_F00001B4_186D434(f32 x, f32 y, f32 z, f32 x2, f32 y2,
             effect->scaleY = scale << 5;
             effect->type = type;
             effect->kind2 = mathRnd(0, 2);
-            gOverlay12EffectCount++;
+            o12EffectCount_o012Reloc++;
         }
     }
 }
@@ -131,8 +150,8 @@ void func_overlay_012_F00002E4_186D564(f32 x, f32 y, f32 z, s32 type,
     if (gOverlay12Ready == 0) {
         overlay12Initialize();
     }
-    if (gOverlay12ParticleCount < 5) {
-        particle = gOverlay12Particles;
+    if (o12ParticleCount_o012Reloc < 5) {
+        particle = gOverlay12Particles_o012Reloc;
         for (i = 0; i < 5; i++, particle++) {
             if (particle->active == 0) {
                 break;
@@ -146,7 +165,7 @@ void func_overlay_012_F00002E4_186D564(f32 x, f32 y, f32 z, s32 type,
             particle->variant = variant;
             particle->active = 1;
             particle->velocity = 0.0f;
-            gOverlay12ParticleCount++;
+            o12ParticleCount_o012Reloc++;
         }
     }
 }
@@ -199,20 +218,20 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
 
     track = (Overlay12TrackHeight *)trackGetTrack();
     minimumHeight = (f32)track->height - 1000.0f;
-    for (i = 0, effect = gOverlay12Effects; i < 64; i++, effect++) {
+    for (i = 0, effect = gOverlay12Effects_o012Reloc; i < 64; i++, effect++) {
         switch (effect->active) {
         case 1:
             effect->y0 += (effect->y2 * updateRateF) +
                           (-0.05f * updateRateF * updateRateF);
             if (effect->y0 < minimumHeight) {
                 effect->active = 0;
-                gOverlay12EffectCount--;
+                o12EffectCount_o012Reloc--;
             } else {
                 effect->x0 += effect->x2 * updateRateF;
                 effect->z0 += effect->z2 * updateRateF;
                 effect->y2 += -0.1f * updateRateF;
-                if ((((i & 1) != 0) && (gOverlay12Value1598 != 0)) ||
-                    (((i & 1) == 0) && (gOverlay12Value1598 == 0))) {
+                if ((((i & 1) != 0) && (o12UpdateParity_o012Reloc != 0)) ||
+                    (((i & 1) == 0) && (o12UpdateParity_o012Reloc == 0))) {
                     if (func_8001291C(&effect->x1, &effect->x0, collision,
                                       0x10000, 0) != 0) {
                         effect->collisionX = collision[4];
@@ -279,7 +298,7 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
             break;
         case 2:
             effect->scaleX += (effect->scaleY - effect->scaleX) >> 1;
-            if (texAnimateSprite(gOverlay12Resource5, &mode, 12,
+            if (texAnimateSprite(o12Sprite39_o012Reloc, &mode, 12,
                               &effect->zero, updateRate) != 0) {
                 effect->active = 3;
             }
@@ -288,21 +307,21 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
             effect->lifetime -= updateRate;
             if (effect->lifetime < 0) {
                 effect->active = 0;
-                gOverlay12EffectCount--;
+                o12EffectCount_o012Reloc--;
             }
             break;
         }
     }
 
-    gOverlay12Value1598 ^= 1;
+    o12UpdateParity_o012Reloc ^= 1;
     mode = 1;
-    for (i = 0, particle = gOverlay12Particles; i < 5; i++, particle++) {
+    for (i = 0, particle = gOverlay12Particles_o012Reloc; i < 5; i++, particle++) {
         active = particle->active;
         if ((active == 0) == FALSE) {
-            if (texAnimateSprite(gOverlay12Resource5, &mode, 15,
+            if (texAnimateSprite(o12Sprite39_o012Reloc, &mode, 15,
                               &particle->velocity, updateRate) != 0) {
                 particle->active = 0;
-                gOverlay12ParticleCount--;
+                o12ParticleCount_o012Reloc--;
             }
         }
     }
@@ -364,7 +383,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     matrix = *matrixPtr;
     vertices = *verticesPtr;
     unused = 0;
-    for (i = 0, effect = gOverlay12Effects; i < 64; i++, effect++) {
+    for (i = 0, effect = gOverlay12Effects_o012Reloc; i < 64; i++, effect++) {
         if (effect->active != 0) {
             intensity = effect->scaleX;
             component = ((intensity * 255) >> 5) & 0xFF00;
@@ -473,7 +492,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             alpha = ((intensity * 255) >> 13) & 0xFF;
             sprSetIA2ColOverride(alpha, alpha, alpha, red, green, blue);
             camDoSpriteDirect(&displayList, &matrix, &vertices,
-                          gOverlay12Resource5,
+                          o12Sprite39_o012Reloc,
                           (s32)effect->x0, (s32)effect->y0, (s32)effect->z0,
                           0, effect->value * 1.8f,
                           1.0f, effect->zero, 14, 255);
@@ -482,7 +501,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
         }
     }
 
-    for (i = 0, particle = gOverlay12Particles; i < 5; i++, particle++) {
+    for (i = 0, particle = gOverlay12Particles_o012Reloc; i < 5; i++, particle++) {
         if (particle->active != 0) {
             color = &gOverlay12ParticleColors[particle->variant * 3];
             intensity = particle->type;
@@ -492,7 +511,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             alpha = ((intensity * 255) >> 8) & 0xFF;
             sprSetIA2ColOverride(alpha, alpha, alpha, red, green, blue);
             camDoSpriteDirect(&displayList, &matrix, &vertices,
-                          gOverlay12Resource5,
+                          o12Sprite39_o012Reloc,
                           (s32)particle->x, (s32)particle->y, (s32)particle->z,
                           0, 4.0f, 1.0f, particle->velocity, 14, 255);
         }

@@ -6,6 +6,7 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -128,6 +129,32 @@ class ManifestValidationTests(unittest.TestCase):
 
 
 class RenderingTests(unittest.TestCase):
+    def test_identical_write_preserves_recipe_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "aliases.mk"
+            renderer.write_atomic(output, "same\n")
+            output.chmod(0o640)
+            os.utime(output, ns=(1_500_000_000_000_000_000,) * 2)
+            before = output.stat()
+
+            renderer.write_atomic(output, "same\n")
+
+            after = output.stat()
+            self.assertEqual(after.st_mtime_ns, before.st_mtime_ns)
+            self.assertEqual(after.st_ino, before.st_ino)
+            self.assertEqual(after.st_mode, before.st_mode)
+
+            renderer.write_atomic(output, "changed\n")
+            self.assertEqual(output.read_bytes(), b"changed\n")
+            self.assertEqual(output.stat().st_mode, before.st_mode)
+
+    def test_write_normalizes_existing_crlf_bytes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "aliases.mk"
+            output.write_bytes(b"same\r\n")
+            renderer.write_atomic(output, "same\n")
+            self.assertEqual(output.read_bytes(), b"same\n")
+
     def test_rendering_is_canonical_regardless_of_manifest_order(self) -> None:
         rules = [
             rule("overlays/o058/zeta.c.o", [("sourceZ", "destinationZ")]),

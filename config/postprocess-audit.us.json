@@ -944,6 +944,34 @@
       ]
     },
     {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
+      "object": "build/src/overlays/o060/overlay60ControlState.c.o",
+      "offset": null,
+      "overlay": 60,
+      "size": null,
+      "source": "src/overlays/o060/overlay60ControlState.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
+      "object": "build/src/overlays/o060/overlay60RecordPositions.c.o",
+      "offset": null,
+      "overlay": 60,
+      "size": null,
+      "source": "src/overlays/o060/overlay60RecordPositions.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
       "c_owned": true,
       "class": "metadata",
       "matched_c": true,
@@ -1188,9 +1216,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 79
+      "metadata": 81
     },
     "matched_c_bytes_with_postprocess": 323384,
-    "objects_with_postprocess": 79
+    "objects_with_postprocess": 81
   }
 }

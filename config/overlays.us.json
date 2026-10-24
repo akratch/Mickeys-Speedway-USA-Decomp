@@ -25,8 +25,8 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 50752,
-  "diagnostic_data_rodata_bytes": 416,
+  "owned_data_rodata_bytes": 50992,
+  "diagnostic_data_rodata_bytes": 336,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -2418,16 +2418,6 @@
    },
    "data_rodata_ownership": [
     {
-     "offset": "0x390",
-     "end_offset": "0x3E0",
-     "size": "0x50",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o009/overlay_009",
-     "trial_function": "func_overlay_009_F0000CE4_186735C",
-     "externalized": true
-    },
-    {
      "offset": "0x2D0",
      "end_offset": "0x300",
      "size": "0x30",
@@ -2443,6 +2433,15 @@
      "type": "c",
      "section": ".data",
      "source": "overlays/o009/overlay9CameraTables",
+     "canonical": true
+    },
+    {
+     "offset": "0x390",
+     "end_offset": "0x3E4",
+     "size": "0x54",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o009/overlay_009",
      "canonical": true
     }
    ]
@@ -9417,6 +9416,15 @@
      "canonical": true
     },
     {
+     "offset": "0x510",
+     "end_offset": "0x540",
+     "size": "0x30",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o057/overlay57ResultLayout",
+     "canonical": true
+    },
+    {
      "offset": "0x540",
      "end_offset": "0x580",
      "size": "0x40",
@@ -9989,6 +9997,24 @@
      "type": "c",
      "section": ".data",
      "source": "overlays/o060/overlay60PreviewTables",
+     "canonical": true
+    },
+    {
+     "offset": "0x130",
+     "end_offset": "0x178",
+     "size": "0x48",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o060/overlay60ControlState",
+     "canonical": true
+    },
+    {
+     "offset": "0x1B4",
+     "end_offset": "0x1D8",
+     "size": "0x24",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o060/overlay60RecordPositions",
      "canonical": true
     },
     {

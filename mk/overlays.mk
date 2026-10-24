@@ -76,17 +76,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o067/overlay_067.c.o: CFLAGS += -Wab,-r4300_mul
 # alignment emits the module's trailing pad itself, so no trim.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o072/overlay_072.c.o: CFLAGS += -Wab,-r4300_mul
 include mk/overlay_065.mk
-# The typed source owns O64's complete procedural texture generator.
-# Overlay 64: one module TU under the overlay flag set; its .text is the
-# module's whole 0x690 bytes and resident references are renamed by the
-# generated surface rebinds. Kept, for a mechanical reason: the TU defines the
-# module's 16-byte .data (the two function statics), whose eighteen HI16/LO16
-# sites the runtime tables relocate from the data base. The section symbol
-# becomes an absolute zero, payload kept, so each site stores only its field
-# displacement; the payload is asserted by digest. No instruction is edited.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay_064.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .data \
-		sha256:374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb keep
+# Overlay 64 owns its complete generator and two initialized function statics.
+# Ordinary section-relative linking supplies every runtime operand directly.
+MODULE_LINKED_OVERLAYS += 064
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay_064.c.o: CFLAGS += -Wab,-r4300_mul -woff 835
 include mk/overlay_070.mk
 include mk/overlay_060.mk

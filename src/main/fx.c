@@ -2042,7 +2042,7 @@ void func_8004ACC4(void) {
         D_800D60D0[i] = (s32) TrapDanglingJump == (s32) D_8007D47C[i];
     }
 }
-s32 fxGenerateTextures(void) {
+void fxGenerateTextures(void) {
     FxTextureCallback callback;
     s32 index;
 
@@ -2072,7 +2072,7 @@ void fxCpuTextureRequired(s32 index, FxConeTextureInfo *texture) {
 
     index--;
     D_800D60A8 |= 1 << index;
-    D_800D6098[index] = (s32)texture;
+    D_800D6098[index] = texture;
     if (D_800D60B0[index] == 0) {
         first = mmAlloc(texture->width * texture->height, 0x87);
         D_800D60B0[index] = first;

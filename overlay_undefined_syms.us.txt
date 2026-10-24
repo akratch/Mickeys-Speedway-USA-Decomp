@@ -2807,11 +2807,6 @@ overlay63ReleaseReloc = 0xf0000000;
 texAnimateTexSprite_o063Reloc = 0xf0000000;
 texDPInit_o063Reloc = 0xf0000000;
 
-/* overlay 64: overlay_064.c.o */
-D_800D60B0_o064Reloc = 0x00000000;
-D_800D60C0_o064Reloc = 0x00000000;
-mathRnd_o064Reloc = 0xf0000000;
-
 /* overlay 65: overlay65Initialize.c.o */
 gOverlay65Buffers = 0x00002980;
 gOverlay65Handle = 0x00000208;

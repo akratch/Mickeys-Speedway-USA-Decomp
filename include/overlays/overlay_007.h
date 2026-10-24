@@ -114,7 +114,7 @@ extern s32 D_8007C1A0;
 extern s32 D_8;
 /* Runtime SYMBOL ORT 1579 resolves this proxy to resident BSS D_800D3128. */
 extern u32 D_800D3128;
-extern u16 gOverlay7DispatchOverride[32];
+extern u16 gOverlay7DispatchOverride[10];
 extern u16 gOverlay7DispatchValues[][30];
 extern u8 gOverlay7DispatchTypes[];
 extern s8 gOverlay7DispatchMap[];

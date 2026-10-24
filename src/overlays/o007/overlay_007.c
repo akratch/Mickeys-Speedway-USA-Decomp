@@ -5,13 +5,19 @@
  * unit; ReleaseEntry, CreateEntry and AppendEntry are unexported and static.
  */
 
-/* Overlay 7's local BSS through +0x2a0; the final 0x10 remains atlas-owned. */
+/* Tier B: these private objects supply the complete 0x2B0-byte physical
+ * BSS allocation. The existing external current/timer/countdown/last-object
+ * views remain separate until their identity and pointer-view contracts are
+ * reconciled; no additional relocation filtering is used here. */
 static Overlay7Entry gOverlay7EntryStorage[32];
-static s32 gOverlay7Reserved280;
+static Overlay7Entry *sOverlay7CurrentEntryStorage;
 static Overlay7Entry *gOverlay7ActiveHead;
 static Overlay7Entry *gOverlay7FreeHead;
 static Overlay7Entry *gOverlay7ActiveTail;
 static Overlay7Entry *gOverlay7Selected;
+static s32 sOverlay7RuntimeTimerStorage;
+static u16 sOverlay7CountdownStorage[10];
+static Overlay7RuntimeObject *sOverlay7LastObjectStorage;
 
 static void overlay7ReleaseEntry(Overlay7Entry *entry) {
     Overlay7Entry *previous;

@@ -106,7 +106,9 @@ typedef struct O50Level {
 
 void camStandardOrtho_o050Reloc(void **, void **); /* 0:+0x22600 */
 
-void overlay45ReleaseDescriptor_o050Reloc(void *); /* 45:+0x270 */
+struct Overlay45ResourceDescriptor;
+void overlay45ReleaseDescriptor_o050Reloc(
+    struct Overlay45ResourceDescriptor *descriptor); /* 45:+0x270 */
 
 void overlay56SplitTime_o050Reloc(s32, s32 *, s32 *, s32 *); /* 56:+0xB8 */
 
@@ -194,7 +196,9 @@ extern u8 gOverlay50Storage;
 
 extern s8 gOverlay50Slot;
 
-extern void overlay50ReleaseResourceReloc(void *resource);
+/* Tier B: the cleanup's first call is the resident sound-handle stop,
+ * while its second releases an overlay45 descriptor. */
+void amSndStop_o050Reloc(void *sound);
 
 extern void freeFrontEndList(void *storage);
 

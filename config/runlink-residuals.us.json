@@ -4,7 +4,7 @@
  "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
  "totals": {
   "differences": 0,
-  "borrowed_records": 7947
+  "borrowed_records": 7429
  },
  "differences": {},
  "borrowed": {
@@ -297,7 +297,7 @@
   },
   "placeholder": {
    "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-   "count": 1696,
+   "count": 1621,
    "entries": [
     [
      1,
@@ -4011,21 +4011,6 @@
     ],
     [
      57,
-     "D_130",
-     4
-    ],
-    [
-     57,
-     "D_134",
-     32
-    ],
-    [
-     57,
-     "D_138",
-     30
-    ],
-    [
-     57,
      "D_148",
      2
     ],
@@ -4048,71 +4033,6 @@
      57,
      "D_504",
      2
-    ],
-    [
-     57,
-     "O57_D_104",
-     10
-    ],
-    [
-     57,
-     "O57_D_114",
-     4
-    ],
-    [
-     57,
-     "O57_D_118",
-     4
-    ],
-    [
-     57,
-     "O57_D_128",
-     8
-    ],
-    [
-     57,
-     "O57_D_13C",
-     4
-    ],
-    [
-     57,
-     "O57_D_140",
-     4
-    ],
-    [
-     57,
-     "O57_D_160",
-     18
-    ],
-    [
-     57,
-     "O57_D_164",
-     8
-    ],
-    [
-     57,
-     "O57_D_184",
-     4
-    ],
-    [
-     57,
-     "O57_D_188",
-     2
-    ],
-    [
-     57,
-     "O57_D_194",
-     6
-    ],
-    [
-     57,
-     "O57_D_198",
-     4
-    ],
-    [
-     57,
-     "O57_D_19C",
-     4
     ],
     [
      57,
@@ -4227,11 +4147,6 @@
     [
      57,
      "O57_renderData23C",
-     2
-    ],
-    [
-     57,
-     "gO57Active144Reloc",
      2
     ],
     [
@@ -4401,11 +4316,6 @@
     ],
     [
      57,
-     "gO57Draw32A0Envelope124",
-     4
-    ],
-    [
-     57,
      "gO57Draw32A0Local08",
      2
     ],
@@ -4436,27 +4346,12 @@
     ],
     [
      57,
-     "gO57Draw32A0Selection1A0",
-     6
-    ],
-    [
-     57,
      "gO57Draw32A0Shifts3D8",
      2
     ],
     [
      57,
-     "gO57Draw32A0State118",
-     2
-    ],
-    [
-     57,
      "gO57Draw32A0StripeReloc",
-     2
-    ],
-    [
-     57,
-     "gO57Draw32A0TableMode18C",
      2
     ],
     [
@@ -4491,32 +4386,7 @@
     ],
     [
      57,
-     "gO57Ease28B4State118",
-     2
-    ],
-    [
-     57,
-     "gO57Ease28B4State144",
-     2
-    ],
-    [
-     57,
      "gO57Ease28B4State180",
-     2
-    ],
-    [
-     57,
-     "gO57GridAlpha13C",
-     6
-    ],
-    [
-     57,
-     "gO57GridMode184",
-     4
-    ],
-    [
-     57,
-     "gO57GridRecord160",
      2
     ],
     [
@@ -4528,16 +4398,6 @@
      57,
      "gO57Ids134Reloc",
      8
-    ],
-    [
-     57,
-     "gO57MenuSelectionCountReloc",
-     2
-    ],
-    [
-     57,
-     "gO57MiddleAlpha",
-     12
     ],
     [
      57,
@@ -4616,16 +4476,6 @@
     ],
     [
      57,
-     "gO57MiddleFade",
-     18
-    ],
-    [
-     57,
-     "gO57MiddleFadeDelay",
-     16
-    ],
-    [
-     57,
      "gO57MiddleInfo",
      2
     ],
@@ -4637,21 +4487,6 @@
     [
      57,
      "gO57MiddleLabels",
-     2
-    ],
-    [
-     57,
-     "gO57MiddleMode",
-     2
-    ],
-    [
-     57,
-     "gO57MiddleMoving",
-     12
-    ],
-    [
-     57,
-     "gO57MiddleNextMode",
      2
     ],
     [
@@ -4681,33 +4516,8 @@
     ],
     [
      57,
-     "gO57MiddlePreviousAlpha",
-     12
-    ],
-    [
-     57,
-     "gO57MiddlePreviousSelection",
-     12
-    ],
-    [
-     57,
      "gO57MiddleResultFormat",
      2
-    ],
-    [
-     57,
-     "gO57MiddleSelection",
-     48
-    ],
-    [
-     57,
-     "gO57MiddleState188",
-     2
-    ],
-    [
-     57,
-     "gO57MiddleState194",
-     8
     ],
     [
      57,
@@ -4718,21 +4528,6 @@
      57,
      "gO57MiddleTransition",
      20
-    ],
-    [
-     57,
-     "gO57MiddleUnlocked198",
-     2
-    ],
-    [
-     57,
-     "gO57MiddleUnlocked19C",
-     2
-    ],
-    [
-     57,
-     "gO57Mode11CReloc",
-     4
     ],
     [
      57,
@@ -4747,11 +4542,6 @@
     [
      57,
      "gO57ModeChoicesEnd",
-     2
-    ],
-    [
-     57,
-     "gO57ModeCountdown120",
      2
     ],
     [
@@ -4846,11 +4636,6 @@
     ],
     [
      57,
-     "gO57ModeTimer114",
-     18
-    ],
-    [
-     57,
      "gO57ModeValueTable",
      2
     ],
@@ -4858,11 +4643,6 @@
      57,
      "gO57NodeValues17CReloc",
      4
-    ],
-    [
-     57,
-     "gO57Pending104Reloc",
-     2
     ],
     [
      57,
@@ -4887,11 +4667,6 @@
     [
      57,
      "gO57Runtime1B8Reloc",
-     2
-    ],
-    [
-     57,
-     "gO57SelectionActive144Reloc",
      2
     ],
     [
@@ -4926,42 +4701,12 @@
     ],
     [
      57,
-     "gO57SelectionMode11CReloc",
-     2
-    ],
-    [
-     57,
-     "gO57SelectionPending104Reloc",
-     2
-    ],
-    [
-     57,
-     "gO57SelectionPrevious108Reloc",
-     2
-    ],
-    [
-     57,
      "gO57SelectionPrimary4E8Reloc",
      2
     ],
     [
      57,
      "gO57SelectionSecondary4ECReloc",
-     4
-    ],
-    [
-     57,
-     "gO57SelectionState118Reloc",
-     4
-    ],
-    [
-     57,
-     "gO57SelectionTimer120Reloc",
-     2
-    ],
-    [
-     57,
-     "gO57SelectionValue10CReloc",
      4
     ],
     [
@@ -4988,11 +4733,6 @@
      57,
      "gO57SpecialModeReloc",
      8
-    ],
-    [
-     57,
-     "gO57State118Reloc",
-     10
     ],
     [
      57,
@@ -5026,43 +4766,8 @@
     ],
     [
      57,
-     "gO57Tail2C28Timer118",
-     2
-    ],
-    [
-     57,
      "gO57UnlockTable",
      4
-    ],
-    [
-     57,
-     "gO57Value110Reloc",
-     2
-    ],
-    [
-     57,
-     "gO57Value124Reloc",
-     2
-    ],
-    [
-     57,
-     "gO57Value128Reloc",
-     2
-    ],
-    [
-     57,
-     "gO57Value12CReloc",
-     2
-    ],
-    [
-     57,
-     "gO57Value138Reloc",
-     2
-    ],
-    [
-     57,
-     "gO57Value13CReloc",
-     2
     ],
     [
      57,
@@ -5072,41 +4777,6 @@
     [
      57,
      "gO57Value14CReloc",
-     2
-    ],
-    [
-     57,
-     "gO57Value160Reloc",
-     2
-    ],
-    [
-     57,
-     "gO57Value164Reloc",
-     2
-    ],
-    [
-     57,
-     "gO57Value188Reloc",
-     2
-    ],
-    [
-     57,
-     "gO57Value18CReloc",
-     2
-    ],
-    [
-     57,
-     "gO57Value190Reloc",
-     4
-    ],
-    [
-     57,
-     "gO57Value198Reloc",
-     2
-    ],
-    [
-     57,
-     "gO57Value19CReloc",
      2
     ],
     [
@@ -5176,16 +4846,6 @@
     ],
     [
      57,
-     "gOverlay57LayoutBusy",
-     12
-    ],
-    [
-     57,
-     "gOverlay57LayoutValue",
-     8
-    ],
-    [
-     57,
      "gOverlay57Layouts",
      8
     ],
@@ -5216,11 +4876,6 @@
     ],
     [
      57,
-     "gOverlay57Mode10C",
-     8
-    ],
-    [
-     57,
      "gOverlay57NodeArguments",
      2
     ],
@@ -5238,16 +4893,6 @@
      57,
      "gOverlay57ObjectReady",
      2
-    ],
-    [
-     57,
-     "gOverlay57PreviousLayoutValue",
-     8
-    ],
-    [
-     57,
-     "gOverlay57PreviousSelection",
-     8
     ],
     [
      57,
@@ -5356,28 +5001,13 @@
     ],
     [
      57,
-     "gOverlay57Selection",
-     26
-    ],
-    [
-     57,
      "gOverlay57Selection100",
      16
     ],
     [
      57,
-     "gOverlay57Selection108",
-     8
-    ],
-    [
-     57,
      "gOverlay57StartLinks",
      4
-    ],
-    [
-     57,
-     "gOverlay57State",
-     26
     ],
     [
      57,
@@ -5403,11 +5033,6 @@
      57,
      "gOverlay57TableLabels",
      4
-    ],
-    [
-     57,
-     "gOverlay57TableMode",
-     2
     ],
     [
      57,

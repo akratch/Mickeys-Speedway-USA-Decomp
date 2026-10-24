@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 48224,
+  "owned_data_rodata_bytes": 48464,
   "diagnostic_data_rodata_bytes": 508,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -9565,12 +9565,39 @@
      "canonical": true
     },
     {
+     "offset": "0x278",
+     "end_offset": "0x2A8",
+     "size": "0x30",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o058/overlay58RankTextLayout",
+     "canonical": true
+    },
+    {
+     "offset": "0x2B0",
+     "end_offset": "0x2D0",
+     "size": "0x20",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o058/overlay58TransitionState",
+     "canonical": true
+    },
+    {
      "offset": "0x2D0",
-     "end_offset": "0x310",
-     "size": "0x40",
+     "end_offset": "0x390",
+     "size": "0xC0",
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o058/overlay58TextLabels",
+     "canonical": true
+    },
+    {
+     "offset": "0x398",
+     "end_offset": "0x3B8",
+     "size": "0x20",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o058/overlay58SavedRecordFormats",
      "canonical": true
     }
    ]

@@ -466,6 +466,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay_020.c.o: SURFACE_REBIND = $(OBJCOP
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay_021.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym camGetPtr=camGetPtr_o021Reloc \
+	--redefine-sym func_8002A8BC=func_8002A8BC_o021Reloc \
 	--redefine-sym func_8002A8C0=func_8002A8C0_o021Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o022/overlay_022.c.o: SURFACE_REBIND = $(OBJCOPY) \

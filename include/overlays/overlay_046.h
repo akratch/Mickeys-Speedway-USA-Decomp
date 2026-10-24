@@ -46,7 +46,7 @@ extern Overlay46Resource *gOverlay46Resource184;
 
 extern void *gOverlay46Value1E4;
 
-extern void overlay46ReleaseIdsReloc(s16 *ids);
+extern void loadFrontEndList(s16 *assetGroup);
 
 extern void *func_80036DD0(s32 kind);
 
@@ -59,7 +59,9 @@ extern void func_80037414(s32 arg0, f32 arg1, f32 arg2, s32 arg3,
 extern Overlay46Resource *func_8000590C(
     Overlay46Descriptor *descriptor, s32 arg1);
 
-extern void overlay46SetModeReloc(s32 mode);
+extern void amTunePlay(u8 sequenceId);
+
+extern void frontSetScreenMode(s32 screenMode);
 
 extern void func_800015F8(void);
 
@@ -232,8 +234,6 @@ extern Overlay46Particle gOverlay46Particles20[];
 
 extern Overlay46ParticleConfig gOverlay46Configs1C8[];
 
-extern f32 overlay46RandomSignedReloc(s32 magnitude);
-
 extern s32 func_800299E8(s32 minimum, s32 maximum);
 
 typedef struct Overlay46Particle_F0000874_188 {
@@ -300,13 +300,13 @@ extern s32 gOverlay46Enabled;
 
 extern s32 gOverlay46Limit;
 
-extern u8 gOverlay46StateA[];
+extern s16 gOverlay46StateA[];
 
-extern u8 gOverlay46StateB[];
+extern s16 gOverlay46StateB[];
 
 extern s16 gOverlay46Selection;
 
-extern void overlay46InitResourceReloc(void *state);
+extern void setupFrontEndList(s16 *objectGroup);
 
 
 extern u8 gOverlay46DisplayState[];
@@ -326,9 +326,9 @@ extern void frontDrawObj(s32 index);
 
 /* Generic submission wrapper only; no exact DKR donor. */
 
-extern unsigned char gOverlay46SubmitBlock[];
+extern s16 gOverlay46SubmitBlock[];
 
-extern void freeFrontEndList(void *block);
+extern void freeFrontEndList(s16 *assetGroup);
 
 typedef struct Overlay46State {
     f32 x;

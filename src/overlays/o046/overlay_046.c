@@ -13,7 +13,7 @@ void overlay46InitializeState(void) {
     Overlay46Descriptor descriptor;
     Overlay46Resource *resource;
 
-    overlay46ReleaseIdsReloc(gOverlay46Ids);
+    loadFrontEndList(gOverlay46Ids);
     gOverlay46Value2C = gOverlay46Value1E4;
     gOverlay46Resource4C = func_80036DD0(2);
     gOverlay46Resource50 = func_80036DD0(0);
@@ -37,7 +37,7 @@ void overlay46InitializeState(void) {
              func_8000590C(&descriptor, 0)) != NULL) {
         resource->value3C = 0;
     }
-    overlay46SetModeReloc(1);
+    amTunePlay(1);
     func_800015F8();
 }
 
@@ -178,7 +178,7 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
 void overlay46ReleaseState(void) {
     Overlay46Resource_ReleaseState *resource;
 
-    overlay46ReleaseIdsReloc(gOverlay46Data.resourceIds);
+    freeFrontEndList(gOverlay46Data.resourceIds);
     overlay44ReleaseHandles(gOverlay46Data.group54);
 
     if (gOverlay46Data.resource50 != NULL) {
@@ -193,7 +193,7 @@ void overlay46ReleaseState(void) {
         func_80006EA0(gOverlay46Data.resource184);
     }
 
-    overlay46SetModeReloc(frontRecallScreenMode());
+    frontSetScreenMode(frontRecallScreenMode());
 }
 
 /* Pinned DKR v77/v80 and JFG object scans found no exact donor. */
@@ -229,9 +229,9 @@ void overlay46InitializeParticles(void) {
         particle->angle18 = mathRnd(0, 0x8000);
         particle->angle1A = mathRnd(0x600, 0xA00);
         particle->positionX1C =
-            overlay46RandomSignedReloc(magnitude) * 400.0f +
+            func_8002A8C0(magnitude) * 400.0f +
             particle->baseX0C;
-        offsetY = overlay46RandomSignedReloc(magnitude) * 400.0f;
+        offsetY = func_8002A8BC(magnitude) * 400.0f;
         baseY = particle->baseY10;
         particle->value28 = 0.0f;
         particle->positionY20 = offsetY + baseY;
@@ -471,8 +471,8 @@ static s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
 void overlay46InitState(void) {
     gOverlay46Enabled = 1;
     gOverlay46Limit = 0x5A;
-    overlay46InitResourceReloc(gOverlay46StateA);
-    overlay46InitResourceReloc(gOverlay46StateB);
+    loadFrontEndList(gOverlay46StateA);
+    setupFrontEndList(gOverlay46StateB);
     overlay46InitializeBuffers();
     gOverlay46Selection = 0;
 }

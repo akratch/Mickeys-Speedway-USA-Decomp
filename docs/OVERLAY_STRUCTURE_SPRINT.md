@@ -7,7 +7,7 @@ support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `63766b331`; the combined borrowing
+The source measurements here are pinned to `c4a4647bb`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -16,16 +16,26 @@ not a promise that all overlay data or interfaces are finished.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 41,792 of 61,312 bytes have canonical projected C owners | 19,520 bytes remain. Another 840 diagnostic/trial bytes earn no physical ownership credit. |
-| Initialized images | 34 of 87 data-bearing modules are fully projected to C; seven are partial and 46 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
-| Source-module linking | 27 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 8,338 records still borrow authority: 7,998 placeholder references, 335 blob-owned data records and five main-table entries. Layout borrowing remains explicit too. |
-| BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 41 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
+| Initialized storage | 44,736 of 61,312 bytes have canonical projected C owners | 16,576 bytes remain. Another 840 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized images | 35 of 87 data-bearing modules are fully projected to C; ten are partial and 42 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
+| Source-module linking | 28 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 8,214 records still borrow authority: 7,966 placeholder references, 243 blob-owned data records and five main-table entries. Layout borrowing remains explicit too. |
+| BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 40 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
 
 Source independence also requires reviewing encoded-coordinate names,
 retained target storage and borrowed placements within object-produced records.
 The direct borrowing counter alone does not measure those dependencies.
+
+Actual held resident function definitions now supply identity for 886 module
+call records and 282 ORT rows, including disclosed C and assembly providers.
+Nine earlier function-proxy records likewise use actual input definitions;
+seventeen retain explicit compatibility authority. These routes preserve all
+identities and bytes; they are distinct from fresh source-compilation acceptance.
+A separate source scan at `d48075976` found 36 per-input zero-addend call aliases
+used across 150 sites with different runtime providers. Those aliases need actual
+provider names and compatible contracts; matching output does not close that
+source-quality debt. The 51-entry natural-C cleanup queue remains open too.
 
 All executable counts exclude new credit for padding or data. A compiler pool
 that matches a retained slice does not acquire physical ownership while another
@@ -90,16 +100,37 @@ remaining pool overlap stay open.
 Overlay 7 now owns both ten-by-ten mode grids: 1,000 field bytes plus 200 bytes
 of ordinary per-record tail alignment. Its unused explicit padding member was
 removed; the main object's bytes, symbols and relocation identities stay exact.
-Overlay 48 now owns its 92 credit labels, complete 48-command stream, five
-initial values and music-transition scalar: 1,408 initialized bytes. Its pointer
-directory and terminal alignment remain separate, as do its BSS and legacy
-source views. Overlay 57 has 240 bytes of typed option masks, shifts, spawn
-positions and mutable rectangles, plus 64 bytes of read-only labels with a
-confirmed read-only font path. Overlay 59 owns its forty 36-byte frame records;
+Overlay 48 is now a complete ordinary source-module link: its 93-entry caption
+directory, 92 labels, command stream, five initial seeds and compiler literal
+produce all 1,792 initialized bytes. Five real descriptor entries and their
+controls produce the 96-byte BSS extent with ordinary alignment. All 147 runtime
+identities and four strict function proofs pass. Distinct setup calls use their
+actual resident providers. Its resident byte export has an authenticated label
+within retained resident data; that label does not establish resident C ownership.
+This retires 122 borrowed records and its BSS-size/read-only-base fallbacks.
+
+Overlay 57 now owns 528 initialized bytes of typed option masks, shifts, spawn
+positions, mutable rectangles, bounded sprite lists, scalar controls and labels.
+Overlay 9 has 192 bytes of parameter and camera storage; overlay 58 has 208 bytes
+of result assets, badge nodes, layout and labels. Their wider caller and
+source-type contracts remain open. Overlay 50 owns 736 initialized bytes of
+cache-index/texture nodes, nine actual time templates, HUD controls, sound-handle
+state and pixel advances, including ten ordinary alignment bytes. Its two cleanup
+calls now name the separate sound-stop and descriptor-release providers; 160
+initialized bytes and its BSS contract remain open.
+
+Overlay 46 owns 656 initialized bytes of genuine asset/state, entry/transform
+and trail geometry. Fifteen actual C objects now also supply its entire
+10,016-byte BSS allocation, retained in the configured object and the unique
+final writable NOBITS input. Unknown initialized regions still total 256 bytes,
+so its header allocation remains a listed fallback. The new storage names do
+not unify its legacy root, particle, spark/group or placeholder views.
+
+Overlay 59 owns its forty 36-byte frame records;
 their forty genuine LOCAL references now produce runtime records directly.
 The data-only producer publishes inputs atomically after fresh source/helper/
-provider/map checks. Together these two producer cases retire sixty hybrid
-records; remaining inputs and their identity/layout borrowing stay explicit.
+provider/map checks. Together the overlay 8 and 59 data-only producers retire
+sixty hybrid records; remaining inputs and their identity/layout borrowing stay explicit.
 
 Overlay 101 now owns all 113 label targets; its pointer-table prefix and
 768 bytes of initialized storage remain unowned. Local block-clear declarations
@@ -127,9 +158,9 @@ the retail ID-67 boundary discrepancy documented in
    alias is not a substitute. A header-sized unowned reserve earns no C credit.
 3. **Recover initialized and BSS families.** Prioritize bounded tables, records,
    strings, geometry and callback families, not opaque copies of whole modules.
-   The largest canonical initialized deficits are overlay 8 (1,680 bytes),
-   overlay 57 (1,328), overlay 7 (1,184), overlay 58 (1,072), overlay 9 (1,040)
-   and overlay 46 (912). Overlay 101's 768-byte remainder includes its pointer table, remaining formats
+   The largest canonical initialized deficits are overlay 7 (1,184 bytes),
+   overlay 8 (1,136), overlay 57 (1,104), overlay 58 (864), overlay 9 (848)
+   and overlay 101 (768). Overlay 101's 768-byte remainder includes its pointer table, remaining formats
    and small control/compiler-pool tail, and overlay 8's mutable tables/pool
    overlap, need separate owned packets. Unreferenced format strings are actual
    objects, not alignment to be counted away. Asset payloads require an explicit generated binding/format strategy,

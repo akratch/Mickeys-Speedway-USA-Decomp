@@ -18,7 +18,9 @@
 
 typedef struct RcpTextureInfo RcpTextureInfo;
 
-/* Same 0x10-byte entry layout used by overlay52CopyOffsetEntries. */
+/* Tier B: the renderer/copier consume 16-byte nodes terminated by a null
+ * first word. Initial cache indices become CPU texture pointers; the legacy
+ * pointer initializers/integer patcher view are not native type closure. */
 typedef struct Overlay52Entry {
     RcpTextureInfo *resource;
     RcpTextureInfo *alternate;
@@ -81,12 +83,13 @@ typedef struct MenuCurrentObject {
 
 extern MenuCommand *D_800D3140;
 extern void *D_800D3144;
-extern void *D_800D31C8[];
+struct MenuFrontObject;
+extern struct MenuFrontObject *D_800D31C8[];
 extern MenuCurrentObject D_800D3550[];
 extern s16 D_8007C180[];
 extern s32 D_8007C1B0;
 extern s32 D_800C947C;
-extern s32 ext_o1_83e0;
+extern s32 B_overlay_001_F00083E0;
 
 extern void camStandardOrtho(MenuCommand **, void **);
 extern Overlay52Object **func_80005750(s32 *);
@@ -112,8 +115,7 @@ extern void amTuneSetFade(f32, u8);
 
 
 extern u8 *func_80028F54(void);
-extern s32 ext_resident_word_190;
-extern s16 ext_resident_result;
+extern s16 D_800D304E;
 extern void amTunePlay(s32);
 extern void runlinkDownloadCode(s32);
 extern void overlay56LoadResource(void);
@@ -121,13 +123,9 @@ extern s32 levelGetNumber(void);
 extern void fontUseFont(s32);
 extern s32 func_8003A5A0(s32);
 
-extern u8 gOverlay52Storage;
-extern void *gOverlay52Resource;
-extern s32 gOverlay52Slots[2];
 
 extern void overlay56ReleaseResource(void);
 extern void freeFrontEndItem(s32 slot);
 
-extern s16 gOverlay52Offsets[];
 
 #endif

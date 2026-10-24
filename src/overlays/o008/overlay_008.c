@@ -278,33 +278,33 @@ void func_overlay_008_F0000894_185E5EC(O8Owner *owner, O8State *state,
     }
 
     effect = -1;
-    if ((state->active181 != 0) && (owner->position28 <= 0.2f)) {
+    if ((state->prefix.impulseActive != 0) && (owner->position28 <= 0.2f)) {
         if (owner->mode3B == 0x14) effect = 0;
         else if (owner->mode3B == 0x13) effect = 1;
         else if (owner->mode3B == 0x15) effect = 2;
         if (effect != -1) {
-            f32 scale = state->value84 * update;
-            sideA = state->vector74 * scale;
-            sideB = state->vector78 * scale;
-            z = state->vector7C * scale;
+            f32 scale = state->prefix.impulseVelocity * update;
+            sideA = state->prefix.impulseX * scale;
+            sideB = state->prefix.impulseY * scale;
+            z = state->prefix.impulseZ * scale;
             angleA = 0x1200;
             angleB = 0x1c00;
         }
         ext_o0_1eed0_target(state, 0x4b, 0.15f);
     }
 
-    if ((state->lateral4 < -3.25f) && (effect == -1)) {
-        if ((state->mode34A & 3) == 3) {
+    if ((state->prefix.forwardVelocity < -3.25f) && (effect == -1)) {
+        if ((state->prefix.mode34A & 3) == 3) {
             effect = 1;
             y = 0.0f;
-            x = 4.0f - state->lateral4 * 0.05f;
-        } else if (state->mode34A & 5) {
+            x = 4.0f - state->prefix.forwardVelocity * 0.05f;
+        } else if (state->prefix.mode34A & 5) {
             effect = 0;
-            y = 4.0f - state->lateral4 * 0.05f;
+            y = 4.0f - state->prefix.forwardVelocity * 0.05f;
             x = 0.0f;
-        } else if (state->mode34A & 0xa) {
+        } else if (state->prefix.mode34A & 0xa) {
             effect = 2;
-            y = state->lateral4 * 0.05f + -4.0f;
+            y = state->prefix.forwardVelocity * 0.05f + -4.0f;
             x = 0.0f;
         }
         if (effect != -1) {
@@ -322,46 +322,46 @@ void func_overlay_008_F0000894_185E5EC(O8Owner *owner, O8State *state,
         func_overlay_008_F0002640_1860398((O8P2640Anchor *)owner, (O8P2640Config *)state,
                                           effect, angleA, angleB,
                                           sideA, sideB, z, 2);
-        state->timer3B3 = 0x64;
+        state->prefix.timer3B3 = 0x64;
     }
 
     ext_o8_3278(owner, state, updateRate);
     func_8001D960(owner, state, 0, 0, updateRate);
     ext_o0_1d510(owner, state, updateRate);
-    if ((state->active181 != 0) &&
-        (((state->mode34A != 0) && (state->value84 == state->value80)) ||
+    if ((state->prefix.impulseActive != 0) &&
+        (((state->prefix.mode34A != 0) && (state->prefix.impulseVelocity == state->prefix.impulseInitial)) ||
          (owner->peer48->gate63 != 0))) {
-        if (state->resourceB8 != 0) amSndStopXYZ(state->resourceB8);
+        if (state->prefix.resourceB8 != 0) amSndStopXYZ(state->prefix.resourceB8);
         ext_o0_2b90(7, owner->valueC, owner->value10, owner->value14, 4,
-                    &state->resourceB8);
+                    &state->prefix.resourceB8);
         ext_o7_ccc(owner, 0x12);
     }
-    ext_o8_3018(owner, state, state->value70, updateRate);
+    overlay8UpdateChannels_o008Reloc(owner, &state->prefix, state->prefix.outputScale, updateRate);
 
-    if ((state->condition172 != 0) && (state->lateral4 < -2.0f)) {
+    if ((state->prefix.condition172 != 0) && (state->prefix.forwardVelocity < -2.0f)) {
         owner->flags80 &= ~0x33;
         owner->flags80 |= gO8Value370;
         owner->flags80 |= gO8Value3B0;
-    } else if (((state->condition2 != 0) || (state->conditionD4 != 0)) &&
-               ((state->lateral4 < -1.2f) ||
-                (state->lateral4 > 1.2f))) {
+    } else if (((state->prefix.inSurface != 0) || (state->prefix.linkedObject != 0)) &&
+               ((state->prefix.forwardVelocity < -1.2f) ||
+                (state->prefix.forwardVelocity > 1.2f))) {
         owner->flags80 &= ~0x33;
         owner->flags80 |= gO8Value364;
         owner->flags80 |= gO8Value3A4;
-    } else if (state->lateral4 < -5.0f) {
-        owner->flags80 |= gO8Table360[state->selector322 & 0xf];
-        owner->flags80 |= gO8Table3A0[state->selector323 & 0xf];
+    } else if (state->prefix.forwardVelocity < -5.0f) {
+        owner->flags80 |= gO8Table360[state->prefix.selectors[2] & 0xf];
+        owner->flags80 |= gO8Table3A0[state->prefix.selectors[3] & 0xf];
     }
 
     if (owner->flags80 & 0x10) owner->flags80 &= ~1;
     if (owner->flags80 & 0x20) owner->flags80 &= ~2;
-    if (state->angle106 >= 0x1b)
-        func_8003EDE0((f32)((0x5a - (s32)state->angle106) << 2));
+    if (state->prefix.angle106 >= 0x1b)
+        func_8003EDE0((f32)((0x5a - (s32)state->prefix.angle106) << 2));
     partUpdateTriggers(owner, updateRate);
-    if (state->resource134 != 0) overlay17AdvanceChain(state->resource134, gO8Pointer14);
-    if (state->resource138 != 0) overlay17AdvanceChain(state->resource138, gO8Pointer18);
-    if (state->resourceC4 != 0)
-        ext_o0_2d70(state->resourceC4, owner->valueC, owner->value10,
+    if (state->prefix.resource134 != 0) overlay17AdvanceChain(state->prefix.resource134, gO8Pointer14);
+    if (state->prefix.resource138 != 0) overlay17AdvanceChain(state->prefix.resource138, gO8Pointer18);
+    if (state->prefix.resourceC4 != 0)
+        ext_o0_2d70(state->prefix.resourceC4, owner->valueC, owner->value10,
                     owner->value14);
 }
 
@@ -1399,7 +1399,7 @@ void func_overlay_008_F0002EC0_1860C18(register Overlay8UpdateOwner *owner,
  * against the overlay's retained literal pool through an ABS section symbol;
  * no instruction word is changed after compilation. */
 void overlay8UpdateChannels(void *unused, Overlay8ChannelState *state,
-                            f32 gate, void *sampleState) {
+                            f32 gate, s32 updateRate) {
     f32 factor;
     f32 maximumFactor;
     f32 sample;
@@ -1423,7 +1423,7 @@ void overlay8UpdateChannels(void *unused, Overlay8ChannelState *state,
                     state->modes[i] = 0;
                 }
             } else {
-                if (state->selectorMode == 1) {
+                if (state->collisionMode == 1) {
                     selectorIndex = 0;
                 } else {
                     selectorIndex = i;
@@ -1431,14 +1431,14 @@ void overlay8UpdateChannels(void *unused, Overlay8ChannelState *state,
                 factor = selectorScales[
                     state->selectors[selectorIndex] & 0xF];
                 *(volatile f32 *) &state->values[i] =
-                    gOverlay8PhaseScales[state->phases[i]] * state->position;
+                    gOverlay8PhaseScales[state->phases[i]] * state->forwardVelocity;
                 state->values[i] *= factor;
                 if (maximumFactor < factor) {
                     maximumFactor = factor;
                 }
             }
         } else {
-            sample = overlay8SampleChannel(0.95f, sampleState);
+            sample = Powerf(0.95f, updateRate);
             state->values[i] +=
                 (-4.0f - state->values[i]) * (1.0f - sample);
             state->modes[i] = 1;
@@ -1448,7 +1448,7 @@ void overlay8UpdateChannels(void *unused, Overlay8ChannelState *state,
     }
 
     if (0.05f <= maximumFactor) {
-        position = state->position;
+        position = state->forwardVelocity;
         if ((position < -4.5f) || (position > 4.5f)) {
             overlay8EmitChannel(state, 0x28, 0.15f);
         }

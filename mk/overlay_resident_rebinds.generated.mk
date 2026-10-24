@@ -77,7 +77,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: SURFACE_REBIND = $(O
 	--redefine-sym overlay36SpawnTransient=overlay36SpawnTransient_o001Reloc \
 	--redefine-sym overlay3SelectTarget=overlay3SelectTarget_o001Reloc \
 	--redefine-sym overlay4FindSearchPosition=overlay4FindSearchPosition_o001Reloc \
-	--redefine-sym overlay7DispatchSelection=overlay7DispatchSelection_o001Reloc $@
+	--redefine-sym overlay7DispatchSelection=overlay7DispatchSelection_o001Reloc \
+	--redefine-sym overlay8UpdateChannels=overlay8UpdateChannels_o001Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay_002.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o002Reloc \

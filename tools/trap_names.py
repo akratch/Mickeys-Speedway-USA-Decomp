@@ -346,6 +346,10 @@ def table_sites(rom: bytes) -> dict[int, dict]:
     ort = ot.read_rom_table(rom)
     sites = {}
     for entry in entries:
+        # DATA/R32 offsets use a different base. A coincident trap call at
+        # text_base+offset must never turn a callback record into a call.
+        if entry["flags"] >> 4 != R_MIPS_26:
+            continue
         vram = ot.RESIDENT_VRAM_BASE + entry["call_site_offset"]
         rom_offset = vram - ot.VRAM_ROM_DELTA
         if not 0 <= rom_offset <= len(rom) - 4:

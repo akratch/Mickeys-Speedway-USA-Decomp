@@ -368,6 +368,18 @@ class LinkedInputTests(unittest.TestCase):
         self.assertEqual(tn.table_sites(bytes(rom)), {
             ot.RESIDENT_VRAM_BASE + 0x100: {"record": 0, "ort": 7, "overlay": 5, "offset": 0x10}})
 
+    def test_data_offset_cannot_be_interpreted_from_the_text_base(self):
+        rom = bytearray(ot.ROM_TABLE_BASE + 4 * ot.ROM_TABLE_COUNT)
+        struct.pack_into(">I", rom, ot.RELOC_TABLE_BASE, 1)
+        struct.pack_into(">II", rom, ot.RELOC_TABLE_BASE + 4,
+                         7, (0x100 << 8) | 0x23)  # DATA/R32, not a call.
+        # A real text call at this unrelated text-relative address says
+        # nothing about the callback at data_base+0x100.
+        offset = ot.RESIDENT_VRAM_BASE + 0x100 - ot.VRAM_ROM_DELTA
+        struct.pack_into(">I", rom, offset, ot.TRAP_DANGLING_JUMP_WORD)
+        struct.pack_into(">I", rom, ot.ROM_TABLE_BASE + 4 * 7, (5 << 20) | 0x10)
+        self.assertEqual(tn.table_sites(bytes(rom)), {})
+
 
 class ProveTests(unittest.TestCase):
     OBJ = "build/src/main/unit.c.o"

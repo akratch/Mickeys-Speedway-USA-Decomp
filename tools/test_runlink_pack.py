@@ -1039,6 +1039,67 @@ class DataOnlyProducerDiscoveryTests(unittest.TestCase):
             rp.collect_relocs(self.world, resolver, self.obj)
         resolver.resolve_name.assert_not_called()
 
+    def held_ort_resolver(self, *, missing=False, conflicting=False):
+        name = "D_overlay_001_F0001234_00000000"
+        builder = ObjBuilder().section(".data", bytes(4)).sym(name).rel(".data", 0, R32, name)
+        self.obj.elf = rp.Elf("authenticated-capture", builder.build())
+        self.obj.data_imports = {} if missing else {name: (1, 0x48)}
+        self.exports = rp.OrtNames([name], {})
+        self.paths["ort"].write_text(self.exports.render())
+        objects = [self.obj]
+        if conflicting:
+            objects.append(rp.ObjRef(1, self.obj.path, "overlays/o001/other", 0, 0,
+                "c", self.obj.elf, self.obj.placement, {name: (1, 0x4C)}))
+        with mock.patch.object(rp, "_guard_data_module_imports", return_value={1: objects}):
+            rp.guard_data_module_imports(self.world, self.exports)
+        return name, rp.Resolver(self.world, self.exports)
+
+    def test_ort_held_provider_bypasses_coordinate_spelling_without_reordering_name_resolution(self):
+        name, resolver = self.held_ort_resolver()
+        self.assertEqual(resolver.ort_identity(0), ("ov", 1, 0x48))
+        self.assertEqual(resolver.rows_by_ident()[("ov", 1, 0x48)], [0])
+        # General name resolution deliberately keeps its compatibility behavior.
+        self.assertEqual(resolver.resolve_name(name).route, "generated-name")
+        self.assertEqual(resolver.name_identity(name), ("ov", 1, 0x1234))
+
+    def test_ort_missing_or_conflicting_held_provider_never_uses_spelling(self):
+        for arguments, message in (({"missing": True}, "lacks its held provider"),
+                                   ({"conflicting": True}, "ambiguous held provider")):
+            with self.subTest(arguments=arguments):
+                _name, resolver = self.held_ort_resolver(**arguments)
+                with self.assertRaisesRegex(rp.PackError, message):
+                    resolver.ort_identity(0)
+
+    def test_revalidated_inventory_refreshes_ort_grouping_and_cached_definition_before_return(self):
+        _name, resolver = self.held_ort_resolver()
+        self.assertEqual(resolver.ort_identity(0), ("ov", 1, 0x48))
+        resolver.rows_by_ident()
+        old_target = resolver.resolve_name("b_exported", 1)
+        self.obj.data_imports = {_name: (1, 0x4C)}
+        with mock.patch.object(rp, "_guard_data_module_imports", return_value={1: [self.obj]}):
+            rp.guard_data_module_imports(self.world, self.exports)
+        # No ORT call may be needed to invalidate a stale Target/ObjRef cache.
+        new_target = resolver.resolve_name("b_exported", 1)
+        self.assertIsNot(new_target.obj, old_target.obj)
+        self.assertEqual(resolver.ort_identity(0), ("ov", 1, 0x4C))
+        self.assertNotIn(("ov", 1, 0x48), resolver.rows_by_ident())
+        self.assertEqual(resolver.rows_by_ident()[("ov", 1, 0x4C)], [0])
+
+    def test_failed_revalidation_refuses_all_previous_namespace_cache_paths(self):
+        _name, resolver = self.held_ort_resolver()
+        resolver.ort_identity(0)
+        resolver.rows_by_ident()
+        resolver.resolve_name("b_exported", 1)
+        resolver.name_of(("ov", 1, 0x48))
+        with mock.patch.object(rp, "_guard_data_module_imports", side_effect=rp.PackError("stale provider")):
+            with self.assertRaisesRegex(rp.PackError, "stale provider"):
+                rp.guard_data_module_imports(self.world, self.exports)
+        for call in (lambda: resolver.ort_identity(0), resolver.rows_by_ident,
+                     lambda: resolver.resolve_name("b_exported", 1),
+                     lambda: resolver.name_of(("ov", 1, 0x48))):
+            with self.assertRaisesRegex(rp.PackError, "ORT provider inventory is unavailable"):
+                call()
+
 
 class HeldDataCaptureTests(unittest.TestCase):
     def setUp(self):

@@ -823,15 +823,50 @@ class Resolver:
         self.ort = ort
         self.layout = world.layout
         self._ort_ident = None
+        self._ort_inventory = object()
+        self._held_ort_targets = {}
         self._name_cache = {}
+
+    def _sync_provider_inventory(self):
+        """Namespace caches cannot outlive their atomically held providers."""
+        if getattr(self.w, "_guarded_data_objects", False) is None:
+            raise PackError("ORT provider inventory is unavailable or being revalidated")
+        if self.w.need_raw:
+            self.w.defs()  # existing lazy discovery completes before any cached return
+        inventory = getattr(self.w, "_guarded_data_objects", None)
+        if self._ort_inventory is inventory:
+            return
+        targets = {}
+        for objects in (inventory or {}).values():
+            for obj in objects:
+                for rel in obj.elf.rels(".data"):
+                    if rel.type != R_MIPS_32 or rel.sym.shndx != SHN_UNDEF:
+                        continue
+                    name = rel.sym.name
+                    if (name not in self.ort.by_name or obj.data_imports is None
+                            or name not in obj.data_imports):
+                        raise PackError(f"ORT lacks its held provider identity: {name}")
+                    ident = ("ov", *obj.data_imports[name])
+                    if name in targets and targets[name] != ident:
+                        raise PackError(f"ORT has ambiguous held provider identities: {name}")
+                    targets[name] = ident
+        self._ort_ident = None
+        self._name_cache.clear()
+        if hasattr(self, "_rbi"):
+            del self._rbi
+        self._held_ort_targets = targets
+        self._ort_inventory = inventory
 
     # name -> identity for the ORT rows (the packer's ORT)
     def ort_identity(self, row):
+        self._sync_provider_inventory()
         if self._ort_ident is None:
-            self._ort_ident = [self.name_identity(n) for n in self.ort.rows]
+            self._ort_ident = [(self._held_ort_targets[n] if n in self._held_ort_targets
+                                else self.name_identity(n)) for n in self.ort.rows]
         return self._ort_ident[row]
 
     def rows_by_ident(self):
+        self._sync_provider_inventory()
         if not hasattr(self, "_rbi"):
             d = collections.defaultdict(list)
             for i in range(len(self.ort.rows)):
@@ -857,6 +892,7 @@ class Resolver:
         return None
 
     def resolve_name(self, name, from_ov=None):
+        self._sync_provider_inventory()
         key = (name, from_ov)
         if key in self._name_cache:
             return self._name_cache[key]
@@ -913,6 +949,7 @@ class Resolver:
 
     def name_of(self, ident):
         """A readable name for an identity: an ORT row's, a symbol's, or generated."""
+        self._sync_provider_inventory()
         if ident is None:
             return "?"
         if ident in self._name_cache:

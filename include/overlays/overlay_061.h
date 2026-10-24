@@ -51,15 +51,24 @@ typedef struct Overlay61RecordHeader {
     s16 fieldC;
 } Overlay61RecordHeader;
 
-extern s32 gOverlay61RepeatXReloc;
-extern s32 gOverlay61RepeatYReloc;
+/* Actual primitive owners through the existing overlay host namespace. */
+extern s32 o61RepeatX_o061Reloc;
+extern s32 o61RepeatY_o061Reloc;
+extern s32 o61EntryCount_o061Reloc;
+extern s32 o61SelectedEntry_o061Reloc;
+extern s16 o61ResourceIds_o061Reloc[4];
+extern s32 o61State_o061Reloc;
+extern s32 o61Error_o061Reloc;
+extern s32 o61ErrorNextState_o061Reloc;
+extern s32 o61ErrorBackState_o061Reloc;
+extern u32 o61DirectorySizes_o061Reloc[16];
+extern u8 o61DirectoryTypes_o061Reloc[16];
+extern u32 o61FreeBytes_o061Reloc;
+
 extern s32 joyGetPressed(s32 controller);
 extern s32 joyGetStickX(s32 controller);
 extern s32 joyGetStickY(s32 controller);
-extern s32 gOverlay61Counter98;
-extern s32 gOverlay61Counter9C;
 extern s32 gOverlay61CounterA0;
-extern s32 gOverlay61EntryCountReloc;
 extern Overlay61Entry gOverlay61EntriesReloc[];
 extern u8 gOverlay61Text0Reloc[];
 extern u8 gOverlay61Text1Reloc[];
@@ -78,8 +87,6 @@ extern void fontColour(s32, s32, s32, s32, s32);
 extern void frontDrawRectangle(s32, s32, s32, s32, s32, u32);
 extern void fontPrintXY(s32, s32, s32, void *, s32);
 extern void *levelGetName(s8);
-extern s32 gOverlay61ItemCountReloc;
-extern s32 gOverlay61SelectedIndexReloc;
 extern s32 gOverlay61TopIndexReloc;
 extern u8 gOverlay61ItemsReloc[];
 extern u8 gOverlay61UpLabelReloc[];
@@ -87,7 +94,6 @@ extern u8 gOverlay61DownLabelReloc[];
 /* Called with one and with two arguments. */
 extern void fontUseFont();
 extern void fontBackground(s32, s32, s32, s32);
-extern s16 gOverlay61SetupData[];
 extern u8 gOverlay61RecordD0[];
 extern u8 gOverlay61RecordDC[];
 extern u8 gOverlay61RecordE8[];
@@ -116,10 +122,6 @@ extern Overlay45ResourceDescriptor *gOverlay61Handle84;
 extern Overlay45ResourceDescriptor *gOverlay61Handle88;
 extern s32 gOverlay61Config08;
 extern s32 gOverlay61Config30;
-extern s32 gOverlay61StateA4;
-extern s32 gOverlay61StateA8;
-extern s32 gOverlay61StateAC;
-extern s32 gOverlay61StateB0;
 extern s32 D_800D31C8[];
 extern void loadFrontEndList(s16 *data);
 extern Overlay45ResourceDescriptor *overlay61CreateDescriptorReloc(
@@ -132,17 +134,8 @@ extern f32 gOverlay61Time0;
 extern Overlay61Sprite gOverlay61Sprite1;
 extern s32 gOverlay61Animation1;
 extern f32 gOverlay61Time1;
-extern u32 gOverlay61FreeSpace;
-extern s32 gOverlay61EntryCount;
-extern s32 gOverlay61Selection;
-extern s32 gOverlay61State;
-extern s32 gOverlay61Error;
-extern s32 gOverlay61ErrorNext;
-extern s32 gOverlay61ErrorBack;
 extern char *gOverlay61DirNames[16];
 extern char *gOverlay61DirExts[16];
-extern u32 gOverlay61DirSizes[16];
-extern u8 gOverlay61DirTypes[16];
 extern Overlay61ListEntry gOverlay61Entries[];
 extern char gOverlay61NewFileName[];
 extern char gOverlay61GhostLabel[];
@@ -161,7 +154,6 @@ extern void texAnimateTexSprite(void *texture, s32 *animation, s32 mode, f32 *ti
                           s32 updateRate);
 extern void func_8002F618(void **commands, void *texture, s32 x, s32 y,
                           u8 red, u8 green, u8 blue, u8 alpha);
-extern s16 gOverlay61ResourceBaseReloc[];
 extern void *gOverlay61Resource58Reloc;
 extern void *gOverlay61Resource5CReloc;
 extern void *gOverlay61Resource60Reloc;
@@ -192,7 +184,6 @@ extern s32 packWriteFile(
 extern u8 gOverlay61RecordFormatReloc[];
 extern u8 gOverlay61RecordPathReloc[];
 extern char *gOverlay61FileNames[];
-extern u8 gOverlay61FileStatus[];
 
 /* This module's exports (ORT rows). */
 void overlay61InitResources(void);

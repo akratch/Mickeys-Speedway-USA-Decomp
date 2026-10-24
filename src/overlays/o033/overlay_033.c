@@ -132,7 +132,7 @@ void overlay33InitializeBuffers(void) {
             }
             gOverlay33Initialized[0x3790] = 1;
         } else {
-            func_overlay_033_F0000144_188092CReloc();
+            overlay33ReleaseGlobal_o033Reloc();
         }
     }
 }
@@ -229,7 +229,7 @@ void overlay33BuildDisplayList(void) {
 void overlay33PresentAndSwap(void) {
     s32 index;
 
-    func_overlay_033_F000019C_1880984Reloc();
+    overlay33BuildDisplayList_o033Reloc();
     index = D_800D1C38;
     rcpFast3d((u64 *)&((u8 (*)[0xC00])D_8)[index][0],
               (u64 *)gOverlay33DisplayLists[index], 4,

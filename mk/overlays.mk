@@ -486,6 +486,14 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay_041.c.o: POSTPROCESS = \
 # needs -Wab,-r4300_mul); its .text carries the trailing pad, so nothing is
 # trimmed. Resident and cross-overlay references use the generated surface.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay_053.c.o: CFLAGS += -Wab,-r4300_mul
+# Complete mutable HUD inputs; legacy main imports remain separately resolved.
+O53_HUD_TEMPLATES := $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53HudTemplates.c.o
+O53_HUD_CONTROLS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53HudControls.c.o
+$(O53_HUD_TEMPLATES) $(O53_HUD_CONTROLS): private PLAIN_DATA_PROOF = 1
+$(O53_HUD_TEMPLATES) $(O53_HUD_CONTROLS): private PLAIN_DATA_RUNTIME_ROLE = data
+# The last actual alpha array ends at60; only four compiler zero bytes drop.
+$(O53_HUD_CONTROLS): $(TOOLS_DIR)/trim_elf_section.py
+$(O53_HUD_CONTROLS): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x3C --compiler-end-padding
 # Overlay 54 is one translation unit at the overlay flag set (with it IDO
 # emits the HUD height easing as the shipped rotated branch-likely loop); its
 # .text carries the trailing pad, so nothing is trimmed. The module owns its

@@ -2124,7 +2124,6 @@ gOverlay57Resource074 = 0x00000074;
 gOverlay57Resource078 = 0x00000078;
 gOverlay57Resource0F8 = 0x000000f8;
 gOverlay57Resource0FC = 0x000000fc;
-gOverlay57RodataReloc = 0x0000006c;
 gOverlay57Selection = 0x00000160;
 gOverlay57Selection100 = 0x00000100;
 gOverlay57Selection108 = 0x00000108;

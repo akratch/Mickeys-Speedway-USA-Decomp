@@ -7,11 +7,11 @@
 # callees are deliberately unprototyped (overlay_057.h). Two steps stay, both
 # for a mechanical reason:
 #
-# - .rodata: the initializer's and the dispatch's switch tables and the grid
-#   draw's two blend literals between them are still owned by the raw data
-#   blob at data_rodata +0x5AC (phase 3), so the section is asserted by digest
-#   and its four %hi/%lo pairs bound to a pool symbol at the shipped rodata-relative 0x6C;
-#   the tables' own text relocations go with it.
+# - .rodata: retain the initializer's fifteen-entry switch table, two blend
+#   literals and the dispatch's twenty-one-entry table at data +0x5AC..+0x644.
+#   Source-proved compiler end alignment removes only the final eight bytes.
+#   The original section supplies the loader's rodata-relative 0x6C anchor;
+#   the runtime table owns the thirty-six R32 records on its text targets.
 # - .bss: the TU defines the module's BSS block (overlay_057.c), so every
 #   access is a section-relative record whose addend is already the offset the
 #   shipped word carries. Overlay 57's runtime table owns those 73 HI16/LO16
@@ -19,16 +19,13 @@
 #   asserted one by one. No instruction word is edited.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay_057.c.o: CFLAGS += -Wab,-r4300_mul -woff 835
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay_057.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/trim_elf_section.py \
 	$(TOOLS_DIR)/externalize_elf_section.py \
 	$(TOOLS_DIR)/filter_elf_relocations.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay_057.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay57RodataReloc=0x6C,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x578:.rodata:gOverlay57RodataReloc 0x580:.rodata:gOverlay57RodataReloc 0x10AC:.rodata:gOverlay57RodataReloc 0x10C0:.rodata:gOverlay57RodataReloc \
-		0x1128:.rodata:gOverlay57RodataReloc 0x1154:.rodata:gOverlay57RodataReloc 0x1B18:.rodata:gOverlay57RodataReloc 0x1B20:.rodata:gOverlay57RodataReloc && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x98 --compiler-end-padding && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:6c9d41212841e67ae005670bb37e90e37a8bca7f188c3980fff0c999c4e69a52 && \
+		sha256:37586b7bbc15e9a7597ad11751411fbfea75cdc79761005a9446ee88296cb78b 0x6C keep && \
 	$(OBJCOPY) --remove-section=.rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		0x1AE8:5:.bss 0x1AEC:6:.bss 0x1E84:5:.bss 0x1E90:6:.bss \
@@ -50,3 +47,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay_057.c.o: POSTPROCESS = \
 		0x4D74:6:.bss 0x4D9C:5:.bss 0x4DA8:6:.bss 0x4DB4:5:.bss \
 		0x4DBC:6:.bss 0x4DB8:5:.bss 0x4DC0:6:.bss 0x6478:5:.bss \
 		0x647C:6:.bss
+
+# Independently bounded mutable state objects. The unknown intervening word
+# remains retained data; only source-proved compiler end alignment is removed.
+O57_SELECTION_FLAG := $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57SelectionFlag.c.o
+O57_TRANSITION_STATE := $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57TransitionState.c.o
+$(O57_SELECTION_FLAG) $(O57_TRANSITION_STATE): $(TOOLS_DIR)/trim_elf_section.py
+$(O57_SELECTION_FLAG): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x4 --compiler-end-padding
+$(O57_TRANSITION_STATE): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x18 --compiler-end-padding
+$(O57_SELECTION_FLAG) $(O57_TRANSITION_STATE): private PLAIN_DATA_PROOF = 1
+$(O57_SELECTION_FLAG) $(O57_TRANSITION_STATE): private PLAIN_DATA_RUNTIME_ROLE = data

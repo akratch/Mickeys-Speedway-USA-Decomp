@@ -1,1854 +1,9109 @@
 {
-  "schema": 1,
-  "generated_by": "tools/runlink_pack.py compare --write-residuals",
-  "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 7988},
-  "differences": {
+ "schema": 1,
+ "generated_by": "tools/runlink_pack.py compare --write-residuals",
+ "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
+ "totals": {
+  "differences": 0,
+  "borrowed_records": 7949
+ },
+ "differences": {},
+ "borrowed": {
+  "bss-size": {
+   "about": "header BSS size without a complete faithful linked source allocation, from the atlas (module)",
+   "count": 39,
+   "entries": [
+    [
+     1
+    ],
+    [
+     2
+    ],
+    [
+     4
+    ],
+    [
+     7
+    ],
+    [
+     8
+    ],
+    [
+     9
+    ],
+    [
+     11
+    ],
+    [
+     12
+    ],
+    [
+     13
+    ],
+    [
+     14
+    ],
+    [
+     15
+    ],
+    [
+     20
+    ],
+    [
+     29
+    ],
+    [
+     33
+    ],
+    [
+     43
+    ],
+    [
+     45
+    ],
+    [
+     46
+    ],
+    [
+     49
+    ],
+    [
+     50
+    ],
+    [
+     51
+    ],
+    [
+     53
+    ],
+    [
+     54
+    ],
+    [
+     55
+    ],
+    [
+     56
+    ],
+    [
+     57
+    ],
+    [
+     58
+    ],
+    [
+     59
+    ],
+    [
+     60
+    ],
+    [
+     61
+    ],
+    [
+     62
+    ],
+    [
+     63
+    ],
+    [
+     65
+    ],
+    [
+     66
+    ],
+    [
+     87
+    ],
+    [
+     92
+    ],
+    [
+     96
+    ],
+    [
+     98
+    ],
+    [
+     100
+    ],
+    [
+     101
+    ]
+   ]
   },
-  "borrowed": {
-    "bss-size": {
-      "about": "header BSS size without a complete faithful linked source allocation, from the atlas (module)",
-      "count": 40,
-      "entries": [
-        [1],
-        [2],
-        [3],
-        [4],
-        [7],
-        [8],
-        [9],
-        [11],
-        [12],
-        [13],
-        [14],
-        [15],
-        [20],
-        [29],
-        [33],
-        [43],
-        [45],
-        [46],
-        [49],
-        [50],
-        [51],
-        [53],
-        [54],
-        [55],
-        [56],
-        [57],
-        [58],
-        [59],
-        [60],
-        [61],
-        [62],
-        [63],
-        [65],
-        [66],
-        [87],
-        [92],
-        [96],
-        [98],
-        [100],
-        [101]
-      ]
-    },
-    "hybrid-data": {
-      "about": "data-site record in blob-owned data, taken from the shipped table (module, site)",
-      "count": 114,
-      "modules": {
-        "1": ["0x81AC", "0x81B0", "0x81B4", "0x81BC", "0x81C0", "0x81C4", "0x81CC", "0x81D0", "0x81D4", "0x81EC", "0x81F4", "0x81F8", "0x8200", "0x8204", "0x8210", "0x8218", "0x821C"],
-        "46": ["0x1AE0"],
-        "57": ["0x6FC0", "0x6FC4", "0x6FC8", "0x6FCC", "0x6FD0", "0x6FD4"],
-        "58": ["0x5C5C", "0x5C60", "0x5C64", "0x5C98", "0x5C9C", "0x5CA0", "0x5CA4", "0x5CA8", "0x5CAC"],
-        "59": ["0xFC4", "0xFCC", "0xFD4", "0xFDC", "0xFE4", "0xFEC", "0xFF4", "0xFFC", "0x1004", "0x100C", "0x1014", "0x101C", "0x1024", "0x102C", "0x1034", "0x103C", "0x1044", "0x104C", "0x1054", "0x105C", "0x1064", "0x106C", "0x1074", "0x107C", "0x1084", "0x108C", "0x1094", "0x109C", "0x10A4", "0x10AC", "0x10B4", "0x10BC", "0x10C4", "0x10CC", "0x10D4", "0x10DC", "0x10E4", "0x10EC", "0x10F4", "0x10FC", "0x1128", "0x112C", "0x1130", "0x1134", "0x1138", "0x113C", "0x1140", "0x1144", "0x1148", "0x114C", "0x1150", "0x1154", "0x1158", "0x115C", "0x1160", "0x1164"],
-        "60": ["0x3704", "0x3708", "0x370C", "0x3710"],
-        "61": ["0x1B50", "0x1B54", "0x1B58", "0x1B5C", "0x1B60", "0x1B64", "0x1B68", "0x1B6C", "0x1B70", "0x1B74"],
-        "67": ["0x1F4"],
-        "70": ["0x75C", "0x760", "0x764", "0x768", "0x76C", "0x770", "0x774", "0x778", "0x77C", "0x780"]
-      }
-    },
-    "placeholder": {
-      "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1703,
-      "entries": [
-        [1, "D_0", 8],
-        [1, "D_0208", 4],
-        [1, "D_020C", 4],
-        [1, "D_0210", 4],
-        [1, "D_0214", 4],
-        [1, "D_1BA0", 4],
-        [1, "D_1BA4", 8],
-        [1, "D_1BA8", 8],
-        [1, "D_1D58", 14],
-        [1, "D_1D5C", 2],
-        [1, "D_1D60", 18],
-        [1, "D_1D64", 30],
-        [1, "D_1D68", 34],
-        [1, "D_1D6C", 16],
-        [1, "D_1D70", 2],
-        [1, "D_1D74", 2],
-        [1, "D_1D78", 4],
-        [1, "D_1D7C", 2],
-        [1, "D_1D80", 4],
-        [1, "D_1D84", 4],
-        [1, "D_1D88", 6],
-        [1, "D_1D8C", 24],
-        [1, "D_1D90", 2],
-        [1, "D_1D94", 6],
-        [1, "D_1D98", 4],
-        [1, "D_1D9C", 64],
-        [1, "D_1DA0", 102],
-        [1, "D_1DA0_State", 2],
-        [1, "D_1DA0_array", 28],
-        [1, "D_1DA8", 2],
-        [1, "D_1DAC", 8],
-        [1, "D_1DB0", 8],
-        [1, "D_1DB4", 8],
-        [1, "D_1DB8", 8],
-        [1, "D_1DBC", 2],
-        [1, "D_1DC0", 6],
-        [1, "D_1DC8", 6],
-        [1, "D_1DD0", 4],
-        [1, "D_208", 2],
-        [1, "D_20C", 6],
-        [1, "D_210", 4],
-        [1, "D_214", 2],
-        [1, "D_218", 4],
-        [1, "D_220", 8],
-        [1, "D_4", 10],
-        [1, "D_6C", 6],
-        [1, "D_8", 2],
-        [1, "D_83E4", 2],
-        [1, "D_B4", 2],
-        [1, "D_B8", 2],
-        [1, "G_o1_83e0", 14],
-        [1, "G_o1_83e4", 8],
-        [1, "LOCAL_BSS_1D78", 2],
-        [1, "gO1Finishers", 8],
-        [1, "gO1PhysicsActions", 4],
-        [1, "gO1PhysicsPaths", 6],
-        [1, "gO1RankOrder", 12],
-        [1, "gO1RankTime", 2],
-        [1, "gO1RankWeights", 10],
-        [1, "gOverlay1BuildGate", 4],
-        [1, "gOverlay1BuildStateReloc", 2],
-        [1, "gOverlay1CallbackDescriptor", 2],
-        [1, "gOverlay1CallbackStepFloat", 2],
-        [1, "gOverlay1CountdownAmount", 2],
-        [1, "gOverlay1CountdownObject", 2],
-        [1, "gOverlay1CountdownResource", 2],
-        [1, "gOverlay1CycleLength", 2],
-        [1, "gOverlay1Data", 2],
-        [1, "gOverlay1DistanceObject", 4],
-        [1, "gOverlay1DistanceScale", 2],
-        [1, "gOverlay1End", 4],
-        [1, "gOverlay1Entries", 4],
-        [1, "gOverlay1EntryCount", 8],
-        [1, "gOverlay1Mode", 14],
-        [1, "gOverlay1ModeCallbacks", 2],
-        [1, "gOverlay1ModeMasks", 2],
-        [1, "gOverlay1ModeObject", 6],
-        [1, "gOverlay1ModeResource", 4],
-        [1, "gOverlay1ModeSource", 4],
-        [1, "gOverlay1NextAngleLimit", 2],
-        [1, "gOverlay1ObjectMappingTable", 2],
-        [1, "gOverlay1PoolExhausted", 4],
-        [1, "gOverlay1Position", 4],
-        [1, "gOverlay1PreviousAngleLimit", 2],
-        [1, "gOverlay1ReleaseFinal", 2],
-        [1, "gOverlay1ReleaseRecordCount", 2],
-        [1, "gOverlay1ReleaseRecords", 6],
-        [1, "gOverlay1ReleaseSecondary", 2],
-        [1, "gOverlay1SampleState", 4],
-        [1, "gOverlay1ScanLimit", 2],
-        [1, "gOverlay1SegmentSize", 2],
-        [1, "gOverlay1SelectedIndex", 2],
-        [1, "gOverlay1Start", 14],
-        [1, "gOverlay1SubmitArg2", 4],
-        [1, "gOverlay1SubmitArg3", 4],
-        [1, "gOverlay1SubmitArg4", 4],
-        [1, "gOverlay1SubmitArg5", 4],
-        [1, "gOverlay1TimerState", 6],
-        [1, "gOverlay1TimerStep", 26],
-        [1, "gOverlay1TransientScale", 2],
-        [1, "gOverlay1TransientThreshold", 2],
-        [1, "gOverlay1TransientVelocityY", 2],
-        [1, "gOverlay1ValueCache", 2],
-        [1, "overlay1AimedScaleReloc", 2],
-        [1, "overlay1AimedThresholdReloc", 2],
-        [1, "overlay1AimedTrigReloc", 2],
-        [1, "overlay1AimedVelocityYReloc", 2],
-        [1, "overlay1AllocateRecordReloc", 1],
-        [1, "overlay1AnchorX", 8],
-        [1, "overlay1AnchorY", 10],
-        [1, "overlay1BuildActivateReloc", 1],
-        [1, "overlay1CountdownReloc", 1],
-        [1, "overlay1EvaluateCurve", 4],
-        [1, "overlay1GetGaugeObjects", 2],
-        [1, "overlay1GetGaugeObjectsRaw", 1],
-        [1, "overlay1GetObjectList", 1],
-        [1, "overlay1GetObjectListReloc", 1],
-        [1, "overlay1InitTimedStateReloc", 1],
-        [1, "overlay1ModeSoundReloc", 2],
-        [1, "overlay1NextPointerReloc", 4],
-        [1, "overlay1PathEntryReloc", 1],
-        [1, "overlay1ReadSelectionReloc", 1],
-        [1, "overlay1ResetReloc", 1],
-        [1, "overlay1SolveAngleCandidatesReloc", 1],
-        [1, "overlay1TransientCallReloc", 3],
-        [2, "D_30", 2],
-        [2, "D_34", 2],
-        [2, "D_38", 2],
-        [2, "D_3C", 2],
-        [2, "D_40", 2],
-        [2, "D_44", 2],
-        [2, "D_48", 2],
-        [2, "D_4C", 2],
-        [2, "D_50", 2],
-        [2, "D_54", 2],
-        [2, "D_58", 2],
-        [2, "D_5C", 2],
-        [2, "D_60", 8],
-        [2, "D_64", 2],
-        [2, "D_68", 2],
-        [2, "D_6C", 2],
-        [2, "D_70", 2],
-        [2, "D_72", 4],
-        [2, "gOverlay2BoundaryAxis", 14],
-        [2, "gOverlay2BoundaryCandidateCount", 2],
-        [2, "gOverlay2BoundaryCandidates", 16],
-        [2, "gOverlay2BoundaryValue", 21],
-        [2, "gOverlay2BuiltLineCount", 2],
-        [2, "gOverlay2BuiltNodeCount", 2],
-        [2, "gOverlay2LineCount", 18],
-        [2, "gOverlay2Lines", 22],
-        [2, "gOverlay2QueryBestReloc", 4],
-        [2, "gOverlay2QueryHitReloc", 2],
-        [2, "gOverlay2QueryHitXReloc", 6],
-        [2, "gOverlay2QueryHitYReloc", 8],
-        [2, "gOverlay2QueryIndexReloc", 2],
-        [2, "gOverlay2QueryLimitReloc", 2],
-        [2, "gOverlay2QueryLinesReloc", 2],
-        [2, "gOverlay2QueryResultReloc", 2],
-        [2, "gOverlay2QueryX0Reloc", 8],
-        [2, "gOverlay2QueryX1Reloc", 2],
-        [2, "gOverlay2QueryY0Reloc", 8],
-        [2, "gOverlay2QueryY1Reloc", 2],
-        [2, "gOverlay2RegionCount", 14],
-        [2, "gOverlay2Regions", 4],
-        [2, "gOverlay2SelectedBoundary", 4],
-        [2, "gOverlay2TemporaryMode", 4],
-        [2, "gOverlay2TemporaryRange", 8],
-        [3, "gOverlay3Entries", 4],
-        [3, "gOverlay3Objects", 6],
-        [3, "gOverlay3TouchEntries", 2],
-        [4, "gOverlay4Groups", 8],
-        [4, "gOverlay4InitStatus", 2],
-        [4, "gOverlay4SearchMaxDistance", 2],
-        [5, "gOverlay5AudioHeap", 2],
-        [5, "gOverlay5AudioState", 2],
-        [5, "gOverlay5HeapMemory", 2],
-        [5, "gOverlay5HeapState", 8],
-        [5, "gOverlay5MessageBuffer", 2],
-        [5, "gOverlay5OwnerSoundState", 2],
-        [5, "gOverlay5Span1ScaleValue", 2],
-        [5, "gOverlay5Span1Size", 4],
-        [5, "gOverlay5Span2", 2],
-        [5, "overlay5AllocPlayerReloc", 1],
-        [5, "overlay5AttachBankReloc", 1],
-        [7, "D_2AA", 2],
-        [7, "D_8", 10],
-        [7, "D_844", 2],
-        [7, "gOverlay7AlternateModes", 2],
-        [7, "gOverlay7CommitArgument", 4],
-        [7, "gOverlay7Current", 6],
-        [7, "gOverlay7DispatchData", 4],
-        [7, "gOverlay7DispatchMap", 2],
-        [7, "gOverlay7DispatchModeReloc", 2],
-        [7, "gOverlay7DispatchObject", 2],
-        [7, "gOverlay7DispatchOverride", 2],
-        [7, "gOverlay7DispatchTypes", 2],
-        [7, "gOverlay7DispatchValues", 2],
-        [7, "gOverlay7PrimaryModes", 2],
-        [7, "gOverlay7ValuesEnd", 2],
-        [7, "overlay7Acquire", 2],
-        [7, "overlay7RecordCheckReloc", 4],
-        [7, "overlay7ReleaseRuntimeHandleReloc", 1],
-        [7, "overlay7RuntimeHandleReloc", 6],
-        [7, "overlay7RuntimeLastObjectReloc", 4],
-        [7, "overlay7RuntimeTimerReloc", 6],
-        [7, "overlay7RuntimeValuesReloc", 2],
-        [7, "overlay7SetOwnerModeReloc", 5],
-        [7, "overlay7SetRuntimeModeReloc", 3],
-        [7, "overlay7StartRuntimeValueReloc", 1],
-        [8, "D_0", 4],
-        [8, "D_10", 16],
-        [8, "D_14", 4],
-        [8, "D_18", 4],
-        [8, "D_2110", 2],
-        [8, "D_2188", 2],
-        [8, "D_21C8", 2],
-        [8, "D_2208", 2],
-        [8, "D_2210", 2],
-        [8, "D_2220", 2],
-        [8, "D_2230", 2],
-        [8, "D_310", 2],
-        [8, "D_350", 2],
-        [8, "D_3E0", 2],
-        [8, "D_4", 4],
-        [8, "D_420", 2],
-        [8, "D_460", 2],
-        [8, "D_4A0", 2],
-        [8, "D_4E0", 4],
-        [8, "D_8", 14],
-        [8, "D_C", 16],
-        [8, "O8P2640_call_26FC", 1],
-        [8, "O8P2640_call_2708", 1],
-        [8, "O8P291C_call_cos", 3],
-        [8, "O8P291C_call_sin", 3],
-        [8, "ext_o0_1d510", 1],
-        [8, "ext_o0_1eed0_target", 2],
-        [8, "ext_o0_2a46c", 1],
-        [8, "ext_o0_2a470", 1],
-        [8, "ext_o0_2b90", 1],
-        [8, "ext_o0_2d70", 1],
-        [8, "ext_o7_ccc", 1],
-        [8, "ext_o8_3278", 1],
-        [8, "ext_o8_3368", 1],
-        [8, "gO8Pointer14", 2],
-        [8, "gO8Pointer18", 2],
-        [8, "gO8Table360", 2],
-        [8, "gO8Table3A0", 2],
-        [8, "gO8Value364", 2],
-        [8, "gO8Value370", 2],
-        [8, "gO8Value3A4", 2],
-        [8, "gO8Value3B0", 2],
-        [8, "gOverlay8Buffer", 12],
-        [8, "gOverlay8CommandBuffer", 10],
-        [8, "gOverlay8PhaseScales", 2],
-        [8, "gOverlay8Primary", 2],
-        [8, "gOverlay8Secondary", 2],
-        [8, "gOverlay8SelectorScales", 2],
-        [8, "gOverlay8Value", 6],
-        [8, "o8Approach291CReloc", 3],
-        [8, "o8P0058AcquireReloc", 1],
-        [8, "o8P0058BounceReloc", 1],
-        [8, "o8P0058CreateReloc", 1],
-        [8, "o8P0058EffectReloc", 1],
-        [8, "o8P0058SampleReloc", 1],
-        [8, "o8P0058SpawnReloc", 1],
-        [8, "o8P1294IndexedReloc", 1],
-        [8, "o8P1294PhaseReloc", 1],
-        [8, "o8P34A0EffectReloc", 1],
-        [8, "o8P34A0RandomReloc", 2],
-        [8, "o8P34A0SetModeReloc", 1],
-        [8, "o8P34A0StateEffectReloc", 1],
-        [8, "o8Phase1EmitReloc", 1],
-        [8, "overlay8CreateResourceReloc", 1],
-        [8, "overlay8EmitChannel", 1],
-        [9, "D_0", 2],
-        [9, "D_2D0", 2],
-        [9, "D_300", 2],
-        [9, "D_340", 2],
-        [9, "D_380", 2],
-        [9, "D_388", 4],
-        [9, "D_54", 2],
-        [9, "D_58", 2],
-        [9, "D_70", 2],
-        [9, "D_78", 2],
-        [9, "D_7C", 2],
-        [9, "gOverlay9PacketCursor", 4],
-        [11, "D_0", 6],
-        [11, "D_0_reload_failure", 6],
-        [11, "D_0_reload_success", 6],
-        [11, "D_1B8", 4],
-        [11, "D_1BC", 26],
-        [11, "D_1C4", 22],
-        [11, "D_1CC", 8],
-        [11, "D_204", 16],
-        [11, "D_INPUT", 16],
-        [11, "D_lastMode", 4],
-        [11, "D_menuBase", 12],
-        [11, "D_menuCounterBase", 8],
-        [11, "D_menuInputBase", 8],
-        [11, "D_paramA", 4],
-        [11, "D_paramB", 4],
-        [11, "D_paramC", 4],
-        [11, "D_paramD", 4],
-        [11, "D_table", 4],
-        [11, "gOverlay11Counter", 2],
-        [11, "gOverlay11Created", 12],
-        [11, "gOverlay11Created0", 4],
-        [11, "gOverlay11Created1", 4],
-        [11, "gOverlay11Created2", 4],
-        [11, "gOverlay11CreatedActive", 12],
-        [11, "gOverlay11DirectResource", 2],
-        [11, "gOverlay11Fade", 13],
-        [11, "gOverlay11Flag", 2],
-        [11, "gOverlay11Format", 2],
-        [11, "gOverlay11GameStateFlagReloc", 2],
-        [11, "gOverlay11GridPhases", 6],
-        [11, "gOverlay11GridTriangles", 2],
-        [11, "gOverlay11GroupEnd3", 4],
-        [11, "gOverlay11GroupEnd4", 2],
-        [11, "gOverlay11GroupEnd6", 6],
-        [11, "gOverlay11GroupHandles", 12],
-        [11, "gOverlay11GroupsActive", 26],
-        [11, "gOverlay11Handle2", 4],
-        [11, "gOverlay11Handle3", 4],
-        [11, "gOverlay11Handles", 8],
-        [11, "gOverlay11HighlightStep", 2],
-        [11, "gOverlay11Initialized", 4],
-        [11, "gOverlay11InputDelay", 2],
-        [11, "gOverlay11ModeFinish", 2],
-        [11, "gOverlay11ModeStart", 2],
-        [11, "gOverlay11NextModeReloc", 2],
-        [11, "gOverlay11OptionAction", 10],
-        [11, "gOverlay11OptionDone", 22],
-        [11, "gOverlay11OptionHandles", 4],
-        [11, "gOverlay11OptionHighlight", 6],
-        [11, "gOverlay11OptionIndex", 16],
-        [11, "gOverlay11PadIndex", 22],
-        [11, "gOverlay11Selection", 6],
-        [11, "gOverlay11Timer", 2],
-        [12, "gOverlay12Count", 4],
-        [12, "gOverlay12EffectColors", 4],
-        [12, "gOverlay12EffectCount", 6],
-        [12, "gOverlay12Effects", 6],
-        [12, "gOverlay12Entries", 4],
-        [12, "gOverlay12Flag1536", 4],
-        [12, "gOverlay12ParticleColors", 2],
-        [12, "gOverlay12ParticleCount", 4],
-        [12, "gOverlay12Particles", 6],
-        [12, "gOverlay12QuadTriangles", 2],
-        [12, "gOverlay12Ready", 10],
-        [12, "gOverlay12Resource0", 2],
-        [12, "gOverlay12Resource1", 2],
-        [12, "gOverlay12Resource2", 2],
-        [12, "gOverlay12Resource3", 2],
-        [12, "gOverlay12Resource39", 2],
-        [12, "gOverlay12Resource4", 2],
-        [12, "gOverlay12Resource5", 8],
-        [12, "gOverlay12ResourceF2", 2],
-        [12, "gOverlay12ResourceF3", 2],
-        [12, "gOverlay12ResourceF4", 2],
-        [12, "gOverlay12ResourceF5", 2],
-        [12, "gOverlay12ResourceF6", 2],
-        [12, "gOverlay12Resources", 4],
-        [12, "gOverlay12Selection", 4],
-        [12, "gOverlay12TrianglesA", 2],
-        [12, "gOverlay12TrianglesB", 2],
-        [12, "gOverlay12Value1598", 4],
-        [12, "overlay12LoadReloc", 6],
-        [13, "D_20", 4],
-        [13, "D_24", 2],
-        [13, "D_28", 2],
-        [13, "D_4", 2],
-        [13, "D_80000000", 2],
-        [13, "gOverlay13Active", 8],
-        [13, "gOverlay13ActiveCount", 2],
-        [13, "gOverlay13Enabled", 8],
-        [13, "gOverlay13Gravity", 2],
-        [13, "gOverlay13Output", 2],
-        [13, "gOverlay13Records", 10],
-        [13, "gOverlay13Resource0", 4],
-        [13, "gOverlay13Resource1", 4],
-        [13, "gOverlay13Resource2", 4],
-        [13, "overlay13ReleaseReloc", 3],
-        [14, "D_128", 2],
-        [14, "D_A4", 2],
-        [14, "D_B4", 2],
-        [14, "D_E4", 2],
-        [14, "D_EC", 2],
-        [14, "D_FC", 2],
-        [14, "gOverlay14ActiveHandle", 8],
-        [14, "gOverlay14Args2C", 2],
-        [14, "gOverlay14Args30", 2],
-        [14, "gOverlay14Args34", 2],
-        [14, "gOverlay14AssetF0", 6],
-        [14, "gOverlay14CommandCountEC", 8],
-        [14, "gOverlay14CommandHeader", 4],
-        [14, "gOverlay14CommandHeaderBase", 6],
-        [14, "gOverlay14Context10C", 4],
-        [14, "gOverlay14Current104", 2],
-        [14, "gOverlay14Cursor", 6],
-        [14, "gOverlay14CursorDC", 2],
-        [14, "gOverlay14CursorDCBase", 2],
-        [14, "gOverlay14DataBase", 4],
-        [14, "gOverlay14EnabledF8Base", 2],
-        [14, "gOverlay14Entries", 8],
-        [14, "gOverlay14Field110", 2],
-        [14, "gOverlay14Field114", 4],
-        [14, "gOverlay14Flag0", 6],
-        [14, "gOverlay14Flag10", 2],
-        [14, "gOverlay14Flag4", 6],
-        [14, "gOverlay14FlagC", 2],
-        [14, "gOverlay14FlagC4", 6],
-        [14, "gOverlay14FlagC4Base", 2],
-        [14, "gOverlay14FlagC8", 6],
-        [14, "gOverlay14FlagC8Base", 4],
-        [14, "gOverlay14FlagCC", 4],
-        [14, "gOverlay14HandleE0", 4],
-        [14, "gOverlay14ModeE4", 8],
-        [14, "gOverlay14ModeE4Base", 4],
-        [14, "gOverlay14Next108", 2],
-        [14, "gOverlay14OffsetsF4", 8],
-        [14, "gOverlay14Owner", 2],
-        [14, "gOverlay14PendingModeD4", 2],
-        [14, "gOverlay14PendingModeD4Base", 4],
-        [14, "gOverlay14PendingValueD0", 2],
-        [14, "gOverlay14PendingValueD0Base", 4],
-        [14, "gOverlay14PointerE0", 2],
-        [14, "gOverlay14PointerE0Base", 6],
-        [14, "gOverlay14QueuedCommands128", 2],
-        [14, "gOverlay14ResetCC", 2],
-        [14, "gOverlay14ResourceD0", 2],
-        [14, "gOverlay14ResultF8", 4],
-        [14, "gOverlay14ResultFC", 2],
-        [14, "gOverlay14ResultFCBase", 4],
-        [14, "gOverlay14SlotCountE8", 2],
-        [14, "gOverlay14Slots28", 10],
-        [14, "gOverlay14State", 2],
-        [14, "gOverlay14StateC0", 2],
-        [14, "gOverlay14StateC4", 4],
-        [14, "gOverlay14StateC8", 4],
-        [14, "gOverlay14StateCC", 2],
-        [14, "gOverlay14Transition", 2],
-        [14, "gOverlay14TransitionD8", 2],
-        [14, "gOverlay14TransitionD8Base", 6],
-        [14, "gOverlay14TransitionValue", 6],
-        [14, "gOverlay14Value108", 2],
-        [14, "gOverlay14Value110", 2],
-        [14, "gOverlay14Value114", 4],
-        [14, "gOverlay14ValueC0", 6],
-        [14, "gOverlay14ValueC0Base", 4],
-        [14, "gOverlay14ValueCountE8", 2],
-        [14, "gOverlay14ValueD4", 2],
-        [14, "gOverlay14ValueD8", 2],
-        [14, "gOverlay14ValueDC", 2],
-        [14, "gOverlay14ValueDCBase", 4],
-        [14, "gOverlay14ValueE0", 2],
-        [14, "gOverlay14ValueEC", 6],
-        [14, "gOverlay14ValueF8", 2],
-        [14, "gOverlay14ValueF8Base", 2],
-        [14, "gOverlay14ValueSlots28", 2],
-        [14, "gOverlay14ValueSlotsEnd128", 2],
-        [14, "overlay14Dispatch", 2],
-        [14, "overlay14DrawPrimitive", 12],
-        [14, "overlay14InitializeReloc", 2],
-        [15, "gOverlay15InitBounds", 2],
-        [15, "gOverlay15MovingStarCount", 6],
-        [15, "gOverlay15MovingStars", 4],
-        [15, "gOverlay15RainCapacity", 2],
-        [15, "gOverlay15RainColors", 2],
-        [15, "gOverlay15RainEnabled", 2],
-        [15, "gOverlay15RainPositions", 4],
-        [15, "gOverlay15Resource10", 6],
-        [15, "gOverlay15Resource4", 6],
-        [15, "gOverlay15Resource48", 2],
-        [15, "gOverlay15StarCount", 6],
-        [15, "gOverlay15StarPalette", 4],
-        [15, "gOverlay15StarSetup", 2],
-        [15, "gOverlay15Stars", 4],
-        [15, "gOverlay15StarsWord", 2],
-        [15, "gOverlay15Value7C", 2],
-        [15, "gOverlay15ValueC", 2],
-        [17, "gOverlay17TemplateReloc", 4],
-        [17, "overlay17ReleaseReloc", 2],
-        [18, "gOverlay18Buffers", 4],
-        [18, "gOverlay18ExternalData", 2],
-        [18, "gOverlay18LocalData80", 2],
-        [18, "gOverlay18Mode", 4],
-        [18, "gOverlay18ModeScale10", 8],
-        [18, "gOverlay18ModeScale16", 6],
-        [18, "gOverlay18ModeScale64", 8],
-        [18, "gOverlay18ModeScale8", 8],
-        [18, "gOverlay18Region16Slot0", 2],
-        [18, "gOverlay18Region64", 4],
-        [18, "gOverlay18Region64Slot0", 2],
-        [18, "gOverlay18Region8", 4],
-        [18, "gOverlay18Region8Slot0", 2],
-        [18, "overlay18FinishReconfigureReloc", 1],
-        [20, "D_0", 2],
-        [20, "gOverlay20ActiveBits", 4],
-        [20, "gOverlay20Entries", 10],
-        [20, "gOverlay20EntryCount", 8],
-        [20, "gOverlay20MarkerEnd", 2],
-        [20, "gOverlay20Pool", 2],
-        [20, "gOverlay20Scale", 2],
-        [20, "gOverlay20TailXLimit", 2],
-        [20, "gOverlay20TailYLimit", 2],
-        [21, "gOverlay21ObjectCount", 8],
-        [21, "gOverlay21Objects", 4],
-        [22, "D_0", 2],
-        [22, "gOverlay22DistanceReloc", 2],
-        [23, "overlay23CallReloc", 2],
-        [29, "gOverlay29Base0", 4],
-        [29, "gOverlay29Base1", 8],
-        [29, "gOverlay29Base2", 6],
-        [29, "gOverlay29Base3", 4],
-        [29, "gOverlay29Current", 4],
-        [29, "gOverlay29MinimumYReloc", 2],
-        [29, "gOverlay29Node0", 2],
-        [29, "gOverlay29Node4", 2],
-        [29, "gOverlay29Node8", 4],
-        [29, "gOverlay29NodeC", 2],
-        [29, "gOverlay29PointA", 4],
-        [29, "gOverlay29PointB", 2],
-        [29, "gOverlay29Selected0", 6],
-        [29, "gOverlay29Selected1", 6],
-        [29, "gOverlay29Selected2", 6],
-        [29, "gOverlay29Selected3", 6],
-        [29, "gOverlay29Value0", 4],
-        [29, "gOverlay29Value1", 4],
-        [29, "gOverlay29Value2", 4],
-        [29, "gOverlay29Value3", 4],
-        [29, "overlay29AdvanceReloc", 4],
-        [29, "overlay29AngleReloc", 1],
-        [29, "overlay29CreateReloc", 5],
-        [33, "D_1808", 2],
-        [33, "D_8", 4],
-        [33, "gOverlay33ActiveBuffer", 4],
-        [33, "gOverlay33Allocation", 2],
-        [33, "gOverlay33DisplayLists", 4],
-        [33, "gOverlay33Handle", 4],
-        [33, "gOverlay33Initialized", 4],
-        [33, "overlay33CallReloc", 2],
-        [43, "D_0", 2],
-        [43, "D_120", 2],
-        [43, "D_C8", 6],
-        [43, "ext_4d258", 2],
-        [43, "gO43BssBaseReloc", 2],
-        [43, "gO43DataBaseReloc", 6],
-        [43, "gO43FallbackReloc", 2],
-        [43, "gO43QueueCountReloc", 6],
-        [43, "gO43QueueReloc", 2],
-        [43, "gO43RecordsReloc", 12],
-        [43, "gO43RodataBaseReloc", 4],
-        [43, "gO43VertexSourceReloc", 2],
-        [45, "gOverlay45AdvanceTables", 2],
-        [45, "gOverlay45ControlStream", 2],
-        [45, "gOverlay45Defaults", 4],
-        [45, "gOverlay45Metrics", 2],
-        [45, "gOverlay45MetricsIndex", 6],
-        [45, "gOverlay45ResourceHead", 10],
-        [45, "gOverlay45TightAdvance", 2],
-        [45, "overlay45AllocReloc", 1],
-        [45, "overlay45BuildControlStream", 1],
-        [45, "overlay45ConfigureReloc", 1],
-        [45, "overlay45FormatReloc", 1],
-        [45, "overlay45FreeReloc", 1],
-        [45, "overlay45GetGlyph", 1],
-        [45, "overlay45MeasureStream", 1],
-        [45, "overlay45RandomRangeReloc", 9],
-        [45, "overlay45RandomRangeStoredReloc", 4],
-        [45, "overlay45StringLengthReloc", 1],
-        [46, "D_10", 10],
-        [46, "D_120", 2],
-        [46, "D_14", 10],
-        [46, "D_1450", 4],
-        [46, "D_1458", 10],
-        [46, "D_18", 10],
-        [46, "D_194", 2],
-        [46, "D_19C", 2],
-        [46, "D_20", 6],
-        [46, "D_230", 4],
-        [46, "D_2718", 6],
-        [46, "D_2C", 2],
-        [46, "D_494", 4],
-        [46, "D_498", 4],
-        [46, "D_5C", 2],
-        [46, "D_60", 2],
-        [46, "D_C", 6],
-        [46, "D_C0", 2],
-        [46, "gDisplayListHead", 2],
-        [46, "gDisplayListHeadB", 2],
-        [46, "gOverlay46BufferEnd", 2],
-        [46, "gOverlay46BufferSlots", 2],
-        [46, "gOverlay46BufferSlotsEnd", 2],
-        [46, "gOverlay46ColorEntries", 2],
-        [46, "gOverlay46Configs1C8", 2],
-        [46, "gOverlay46Data", 10],
-        [46, "gOverlay46DisplayOutput", 2],
-        [46, "gOverlay46DisplayState", 4],
-        [46, "gOverlay46Enabled", 2],
-        [46, "gOverlay46ExpectedName180", 2],
-        [46, "gOverlay46FadeOutput", 4],
-        [46, "gOverlay46Group54", 2],
-        [46, "gOverlay46Group54Render", 2],
-        [46, "gOverlay46Group54Update", 4],
-        [46, "gOverlay46Ids", 2],
-        [46, "gOverlay46InitialValue", 2],
-        [46, "gOverlay46InitialW", 2],
-        [46, "gOverlay46InitialX", 2],
-        [46, "gOverlay46InitialY", 2],
-        [46, "gOverlay46Limit", 2],
-        [46, "gOverlay46Mode58", 18],
-        [46, "gOverlay46MotionTarget", 2],
-        [46, "gOverlay46Particles20", 2],
-        [46, "gOverlay46Resource184", 2],
-        [46, "gOverlay46Resource4C", 4],
-        [46, "gOverlay46Resource50", 4],
-        [46, "gOverlay46Selection", 4],
-        [46, "gOverlay46State", 2],
-        [46, "gOverlay46StateA", 2],
-        [46, "gOverlay46StateB", 2],
-        [46, "gOverlay46StateC", 2],
-        [46, "gOverlay46StateStorage", 2],
-        [46, "gOverlay46SubmitBlock", 2],
-        [46, "gOverlay46Timer5C", 26],
-        [46, "gOverlay46Value", 2],
-        [46, "gOverlay46Value0", 8],
-        [46, "gOverlay46Value10", 2],
-        [46, "gOverlay46Value14", 2],
-        [46, "gOverlay46Value18", 2],
-        [46, "gOverlay46Value1E4", 2],
-        [46, "gOverlay46Value2C", 2],
-        [46, "gOverlay46Value4", 10],
-        [46, "gOverlay46Value8", 12],
-        [49, "gOverlay49Finished", 4],
-        [49, "gOverlay49InputEnabled", 6],
-        [49, "gOverlay49Masks", 2],
-        [49, "gOverlay49Modes", 2],
-        [49, "gOverlay49Result", 6],
-        [49, "gOverlay49Shifts", 2],
-        [49, "gOverlay49Timer", 4],
-        [50, "gOverlay50GlyphOffsets", 2],
-        [50, "gOverlay50GlyphWord0", 2],
-        [50, "gOverlay50GlyphWord1", 2],
-        [50, "gOverlay50ResourceA", 2],
-        [50, "gOverlay50ResourceB", 2],
-        [50, "gOverlay50Slot", 4],
-        [50, "gOverlay50Storage", 2],
-        [50, "o50ForwardScale", 2],
-        [50, "o50Overlay1StateReloc", 4],
-        [50, "o50ReverseScale", 2],
-        [50, "o50SpeedText", 2],
-        [51, "ext_o1_83e0_o051Reloc", 2],
-        [51, "gOverlay51BlinkCounter", 2],
-        [51, "gOverlay51ClockGlyphs", 4],
-        [51, "gOverlay51Handle", 2],
-        [51, "gOverlay51HudHeight", 8],
-        [51, "gOverlay51Item", 20],
-        [51, "gOverlay51ItemAlpha", 6],
-        [51, "gOverlay51Resource0", 4],
-        [51, "gOverlay51Resource18", 2],
-        [51, "gOverlay51TimeGlyphs", 4],
-        [51, "gOverlay51TransitionDone", 4],
-        [51, "overlay51CreateReloc", 6],
-        [52, "ext_o1_83e0", 4],
-        [52, "ext_resident_result", 2],
-        [52, "ext_resident_word_190", 2],
-        [52, "gOverlay52Offsets", 4],
-        [52, "gOverlay52Resource", 2],
-        [52, "gOverlay52Slots", 4],
-        [52, "gOverlay52Storage", 2],
-        [53, "ext_o1_83e0", 2],
-        [53, "gOverlay53BlinkCounter", 8],
-        [53, "gOverlay53ClockDigits", 2],
-        [53, "gOverlay53ClockSplitX", 2],
-        [53, "gOverlay53ConfigA", 2],
-        [53, "gOverlay53ConfigB", 2],
-        [53, "gOverlay53GlobalHandleReloc", 2],
-        [53, "gOverlay53Handle0", 2],
-        [53, "gOverlay53HandleEnd", 2],
-        [53, "gOverlay53Handles288", 2],
-        [53, "gOverlay53Height290", 2],
-        [53, "gOverlay53HudHeight", 6],
-        [53, "gOverlay53HudRowY", 4],
-        [53, "gOverlay53IconAlpha", 6],
-        [53, "gOverlay53IconSplitX", 2],
-        [53, "gOverlay53ItemSplitX", 2],
-        [53, "gOverlay53Items", 10],
-        [53, "gOverlay53Offsets", 4],
-        [53, "gOverlay53PatchTableA", 2],
-        [53, "gOverlay53PatchTableB", 2],
-        [53, "gOverlay53Resource0", 2],
-        [53, "gOverlay53Resource14", 2],
-        [53, "gOverlay53ResourceA", 2],
-        [53, "gOverlay53TimeDigits", 2],
-        [53, "gOverlay53TimeTemplate", 2],
-        [53, "gOverlay53TransitionDone", 4],
-        [53, "gOverlay53Value280", 2],
-        [53, "overlay53ReleaseReloc", 3],
-        [54, "gOverlay54Current", 2],
-        [54, "gOverlay54Data00", 2],
-        [54, "gOverlay54ExternalResource", 2],
-        [54, "gOverlay54ExternalWord", 2],
-        [54, "gOverlay54Offsets", 8],
-        [54, "gOverlay54ResourceA", 2],
-        [54, "gOverlay54ResourceB", 2],
-        [54, "o001_data_83E0_o054Reloc", 4],
-        [54, "o54CreateObject", 1],
-        [54, "o54LoadResource", 3],
-        [54, "overlay54ReleaseReloc", 4],
-        [55, "ext_o1_83e0", 2],
-        [55, "gOverlay55BlinkCounter", 4],
-        [55, "gOverlay55ClockDigits", 2],
-        [55, "gOverlay55ExternalSetupTarget", 2],
-        [55, "gOverlay55HudHeight", 6],
-        [55, "gOverlay55IconAlpha", 2],
-        [55, "gOverlay55Items", 2],
-        [55, "gOverlay55Offsets", 8],
-        [55, "gOverlay55RecordsA", 2],
-        [55, "gOverlay55RecordsB", 2],
-        [55, "gOverlay55ResourceA", 2],
-        [55, "gOverlay55ResourceB", 2],
-        [55, "gOverlay55Result", 2],
-        [55, "gOverlay55SetupBase", 2],
-        [55, "gOverlay55SetupSecondary", 2],
-        [55, "gOverlay55SourceB", 2],
-        [55, "gOverlay55SourceBase", 2],
-        [55, "gOverlay55StateValue", 2],
-        [55, "gOverlay55StateWord", 2],
-        [55, "gOverlay55Status", 2],
-        [55, "gOverlay55TimeDigits", 2],
-        [55, "gOverlay55TimeTemplate", 10],
-        [55, "gOverlay55TransitionDone", 4],
-        [56, "D_78", 4],
-        [56, "D_80000004", 2],
-        [56, "D_80000030", 2],
-        [56, "D_84", 2],
-        [56, "gOverlay56Colors", 2],
-        [56, "gOverlay56Data", 4],
-        [56, "gOverlay56Mode", 2],
-        [56, "gOverlay56Resource", 14],
-        [56, "gOverlay56ResourceState", 6],
-        [56, "overlay56GetContextReloc", 1],
-        [56, "overlay56GetDimensionsReloc", 2],
-        [56, "overlay56LoadResourceReloc", 1],
-        [56, "overlay56ReleaseResourceReloc", 1],
-        [57, "D_130", 4],
-        [57, "D_134", 32],
-        [57, "D_138", 30],
-        [57, "D_148", 2],
-        [57, "D_4D4", 2],
-        [57, "D_4E4", 10],
-        [57, "D_500", 2],
-        [57, "D_504", 2],
-        [57, "O57_D_104", 10],
-        [57, "O57_D_114", 4],
-        [57, "O57_D_118", 4],
-        [57, "O57_D_128", 8],
-        [57, "O57_D_13C", 4],
-        [57, "O57_D_140", 4],
-        [57, "O57_D_160", 18],
-        [57, "O57_D_164", 8],
-        [57, "O57_D_184", 4],
-        [57, "O57_D_188", 2],
-        [57, "O57_D_194", 6],
-        [57, "O57_D_198", 4],
-        [57, "O57_D_19C", 4],
-        [57, "O57_D_1A8", 2],
-        [57, "O57_D_224", 2],
-        [57, "O57_D_244", 2],
-        [57, "O57_D_264", 2],
-        [57, "O57_D_4CC", 4],
-        [57, "O57_call_0DA4", 1],
-        [57, "O57_channelData4D0", 2],
-        [57, "O57_channelData4D8", 2],
-        [57, "O57_channelValue4DC", 4],
-        [57, "O57_channelValue4E0", 4],
-        [57, "O57_config0954", 2],
-        [57, "O57_labels390", 2],
-        [57, "O57_labels39CEnd", 2],
-        [57, "O57_labels39CStart", 2],
-        [57, "O57_labels3A0End", 2],
-        [57, "O57_labels3A0Start", 2],
-        [57, "O57_labels3A4", 2],
-        [57, "O57_nibbleFlags0954", 2],
-        [57, "O57_node30Flags0954", 2],
-        [57, "O57_queryObject0954", 2],
-        [57, "O57_renderChannel1FC", 2],
-        [57, "O57_renderData21C", 2],
-        [57, "O57_renderData23C", 2],
-        [57, "gO57Active144Reloc", 2],
-        [57, "gO57ChoiceDirtyReloc", 2],
-        [57, "gO57ChoiceMaskReferenceReloc", 4],
-        [57, "gO57ChoiceMaskReloc", 2],
-        [57, "gO57ChoicePublishedReloc", 6],
-        [57, "gO57ChoiceSourceReloc", 4],
-        [57, "gO57ChoicesReloc", 2],
-        [57, "gO57ColourCycle1A8Reloc", 2],
-        [57, "gO57CourseTable", 4],
-        [57, "gO57Current100Reloc", 2],
-        [57, "gO57Descriptor00PrepareReloc", 2],
-        [57, "gO57Descriptor00Reloc", 2],
-        [57, "gO57Descriptor6CPrepareReloc", 2],
-        [57, "gO57Descriptor6CReloc", 2],
-        [57, "gO57Descriptor70PrepareReloc", 2],
-        [57, "gO57Descriptor70Reloc", 2],
-        [57, "gO57Descriptor74PrepareReloc", 2],
-        [57, "gO57Descriptor74Reloc", 2],
-        [57, "gO57Descriptor78PrepareReloc", 2],
-        [57, "gO57Descriptor78Reloc", 2],
-        [57, "gO57DescriptorF8PrepareReloc", 2],
-        [57, "gO57DescriptorF8Reloc", 2],
-        [57, "gO57DescriptorFCReloc", 2],
-        [57, "gO57DescriptorIndices130Reloc", 2],
-        [57, "gO57DescriptorIndicesD8Reloc", 2],
-        [57, "gO57DescriptorIndicesECReloc", 2],
-        [57, "gO57DescriptorList130Reloc", 2],
-        [57, "gO57DescriptorList80Reloc", 2],
-        [57, "gO57Descriptors08Reloc", 4],
-        [57, "gO57Descriptors30Reloc", 4],
-        [57, "gO57Descriptors58Reloc", 4],
-        [57, "gO57Descriptors80Reloc", 4],
-        [57, "gO57DescriptorsE0Reloc", 4],
-        [57, "gO57Draw32A0Available4CC", 2],
-        [57, "gO57Draw32A0Envelope124", 4],
-        [57, "gO57Draw32A0Local08", 2],
-        [57, "gO57Draw32A0Local18", 2],
-        [57, "gO57Draw32A0Local28", 2],
-        [57, "gO57Draw32A0Masks3C8", 2],
-        [57, "gO57Draw32A0Records3F8", 2],
-        [57, "gO57Draw32A0Records458", 2],
-        [57, "gO57Draw32A0Selection1A0", 6],
-        [57, "gO57Draw32A0Shifts3D8", 2],
-        [57, "gO57Draw32A0State118", 2],
-        [57, "gO57Draw32A0StripeReloc", 2],
-        [57, "gO57Draw32A0TableMode18C", 2],
-        [57, "gO57Draw32A0WordTable4B8", 2],
-        [57, "gO57Draw32A0Work34C", 2],
-        [57, "gO57Ease28B4Id183", 4],
-        [57, "gO57Ease28B4Latch50C", 8],
-        [57, "gO57Ease28B4Record21C", 4],
-        [57, "gO57Ease28B4Record23C", 4],
-        [57, "gO57Ease28B4State118", 2],
-        [57, "gO57Ease28B4State144", 2],
-        [57, "gO57Ease28B4State180", 2],
-        [57, "gO57GridAlpha13C", 6],
-        [57, "gO57GridMode184", 4],
-        [57, "gO57GridRecord160", 2],
-        [57, "gO57GridTriangles", 8],
-        [57, "gO57Ids134Reloc", 8],
-        [57, "gO57MenuSelectionCountReloc", 2],
-        [57, "gO57MiddleAlpha", 12],
-        [57, "gO57MiddleBadge", 2],
-        [57, "gO57MiddleCanLeave", 2],
-        [57, "gO57MiddleCaption", 2],
-        [57, "gO57MiddleCharacterIds", 2],
-        [57, "gO57MiddleChoices", 8],
-        [57, "gO57MiddleColumns", 4],
-        [57, "gO57MiddleData31B4", 4],
-        [57, "gO57MiddleData31B8", 2],
-        [57, "gO57MiddleData31E8", 4],
-        [57, "gO57MiddleData31EC", 4],
-        [57, "gO57MiddleData31F0", 4],
-        [57, "gO57MiddleData31F4", 4],
-        [57, "gO57MiddleData3208", 4],
-        [57, "gO57MiddleData3214", 2],
-        [57, "gO57MiddleEmptyFormat", 2],
-        [57, "gO57MiddleFade", 18],
-        [57, "gO57MiddleFadeDelay", 16],
-        [57, "gO57MiddleInfo", 2],
-        [57, "gO57MiddleItems", 12],
-        [57, "gO57MiddleLabels", 2],
-        [57, "gO57MiddleMode", 2],
-        [57, "gO57MiddleMoving", 12],
-        [57, "gO57MiddleNextMode", 2],
-        [57, "gO57MiddleOutput", 2],
-        [57, "gO57MiddlePanelPosition", 12],
-        [57, "gO57MiddlePathId", 2],
-        [57, "gO57MiddlePathIndices", 2],
-        [57, "gO57MiddlePathList", 4],
-        [57, "gO57MiddlePreviousAlpha", 12],
-        [57, "gO57MiddlePreviousSelection", 12],
-        [57, "gO57MiddleResultFormat", 2],
-        [57, "gO57MiddleSelection", 48],
-        [57, "gO57MiddleState188", 2],
-        [57, "gO57MiddleState194", 8],
-        [57, "gO57MiddleStopList", 4],
-        [57, "gO57MiddleTransition", 20],
-        [57, "gO57MiddleUnlocked198", 2],
-        [57, "gO57MiddleUnlocked19C", 2],
-        [57, "gO57Mode11CReloc", 4],
-        [57, "gO57ModeChoice4F8", 4],
-        [57, "gO57ModeChoices", 4],
-        [57, "gO57ModeChoicesEnd", 2],
-        [57, "gO57ModeCountdown120", 2],
-        [57, "gO57ModeExternalByte", 2],
-        [57, "gO57ModeFinalArg1", 2],
-        [57, "gO57ModeGate50C", 4],
-        [57, "gO57ModeObject180Reloc", 6],
-        [57, "gO57ModeOutputs", 2],
-        [57, "gO57ModePrimaryIds", 8],
-        [57, "gO57ModePrimaryIds134", 4],
-        [57, "gO57ModePrimaryValues", 4],
-        [57, "gO57ModeSecondaryIds", 8],
-        [57, "gO57ModeSecondaryIds1A0", 4],
-        [57, "gO57ModeSetup21C", 8],
-        [57, "gO57ModeShortValue", 2],
-        [57, "gO57ModeState118BaseReloc", 14],
-        [57, "gO57ModeState11CBaseReloc", 2],
-        [57, "gO57ModeState144BaseReloc", 2],
-        [57, "gO57ModeState160BaseReloc", 8],
-        [57, "gO57ModeState164BaseReloc", 8],
-        [57, "gO57ModeState184BaseReloc", 8],
-        [57, "gO57ModeTimer114", 18],
-        [57, "gO57ModeValueTable", 2],
-        [57, "gO57NodeValues17CReloc", 4],
-        [57, "gO57Pending104Reloc", 2],
-        [57, "gO57Previous108Reloc", 2],
-        [57, "gO57ResidentCurrentReloc", 2],
-        [57, "gO57ResidentFlags10Reloc", 2],
-        [57, "gO57Rows27CReloc", 8],
-        [57, "gO57Runtime1B8Reloc", 2],
-        [57, "gO57SelectionActive144Reloc", 2],
-        [57, "gO57SelectionChanging4F0Reloc", 6],
-        [57, "gO57SelectionCurrent100Reloc", 2],
-        [57, "gO57SelectionDistance50CReloc", 4],
-        [57, "gO57SelectionIds134Reloc", 12],
-        [57, "gO57SelectionList30Reloc", 4],
-        [57, "gO57SelectionList8Reloc", 4],
-        [57, "gO57SelectionMode11CReloc", 2],
-        [57, "gO57SelectionPending104Reloc", 2],
-        [57, "gO57SelectionPrevious108Reloc", 2],
-        [57, "gO57SelectionPrimary4E8Reloc", 2],
-        [57, "gO57SelectionSecondary4ECReloc", 4],
-        [57, "gO57SelectionState118Reloc", 4],
-        [57, "gO57SelectionTimer120Reloc", 2],
-        [57, "gO57SelectionValue10CReloc", 4],
-        [57, "gO57SelectionValues158Reloc", 2],
-        [57, "gO57SelectionValues17CReloc", 4],
-        [57, "gO57SpawnPairs3E8Reloc", 2],
-        [57, "gO57Spawned150Reloc", 2],
-        [57, "gO57SpecialModeReloc", 8],
-        [57, "gO57State118Reloc", 10],
-        [57, "gO57Tail2C28Completion50C", 2],
-        [57, "gO57Tail2C28DistanceLimit104", 2],
-        [57, "gO57Tail2C28QueryWord180", 2],
-        [57, "gO57Tail2C28Record21C", 4],
-        [57, "gO57Tail2C28Record23C", 4],
-        [57, "gO57Tail2C28Reference14C", 2],
-        [57, "gO57Tail2C28Timer118", 2],
-        [57, "gO57UnlockTable", 4],
-        [57, "gO57Value110Reloc", 2],
-        [57, "gO57Value124Reloc", 2],
-        [57, "gO57Value128Reloc", 2],
-        [57, "gO57Value12CReloc", 2],
-        [57, "gO57Value138Reloc", 2],
-        [57, "gO57Value13CReloc", 2],
-        [57, "gO57Value148Reloc", 2],
-        [57, "gO57Value14CReloc", 2],
-        [57, "gO57Value160Reloc", 2],
-        [57, "gO57Value164Reloc", 2],
-        [57, "gO57Value188Reloc", 2],
-        [57, "gO57Value18CReloc", 2],
-        [57, "gO57Value190Reloc", 4],
-        [57, "gO57Value198Reloc", 2],
-        [57, "gO57Value19CReloc", 2],
-        [57, "gO57Value1FCReloc", 2],
-        [57, "gO57Value21CReloc", 2],
-        [57, "gO57Value23CReloc", 2],
-        [57, "gO57Value25CReloc", 2],
-        [57, "gO57Value32CReloc", 2],
-        [57, "gO57Value34CReloc", 2],
-        [57, "gO57Value50CReloc", 2],
-        [57, "gOverlay57Byte3D1CReloc", 2],
-        [57, "gOverlay57Byte3EF4Reloc", 2],
-        [57, "gOverlay57ControllerMap", 4],
-        [57, "gOverlay57Delay", 12],
-        [57, "gOverlay57DistanceLimit", 2],
-        [57, "gOverlay57DistanceState", 32],
-        [57, "gOverlay57LayoutBusy", 12],
-        [57, "gOverlay57LayoutValue", 8],
-        [57, "gOverlay57Layouts", 8],
-        [57, "gOverlay57LevelBySelection", 2],
-        [57, "gOverlay57MenuEntries", 6],
-        [57, "gOverlay57MenuHalf", 6],
-        [57, "gOverlay57MenuSources", 14],
-        [57, "gOverlay57MirrorFlag", 4],
-        [57, "gOverlay57Mode10C", 8],
-        [57, "gOverlay57NodeArguments", 2],
-        [57, "gOverlay57Object100", 2],
-        [57, "gOverlay57ObjectId", 16],
-        [57, "gOverlay57ObjectReady", 2],
-        [57, "gOverlay57PreviousLayoutValue", 8],
-        [57, "gOverlay57PreviousSelection", 8],
-        [57, "gOverlay57PublishedIndex3A28Reloc", 2],
-        [57, "gOverlay57Range008End", 2],
-        [57, "gOverlay57Range008Start", 22],
-        [57, "gOverlay57Range030End", 2],
-        [57, "gOverlay57Range030Start", 14],
-        [57, "gOverlay57Range058End", 2],
-        [57, "gOverlay57Range058Start", 6],
-        [57, "gOverlay57Range080End", 2],
-        [57, "gOverlay57Range080Start", 18],
-        [57, "gOverlay57Range0E0End", 2],
-        [57, "gOverlay57Range0E0Start", 10],
-        [57, "gOverlay57Range150End", 2],
-        [57, "gOverlay57Range150Start", 2],
-        [57, "gOverlay57Reference", 2],
-        [57, "gOverlay57Resource000", 6],
-        [57, "gOverlay57Resource06C", 12],
-        [57, "gOverlay57Resource070", 12],
-        [57, "gOverlay57Resource074", 12],
-        [57, "gOverlay57Resource078", 12],
-        [57, "gOverlay57Resource0F8", 6],
-        [57, "gOverlay57Resource0FC", 10],
-        [57, "gOverlay57Selection", 26],
-        [57, "gOverlay57Selection100", 16],
-        [57, "gOverlay57Selection108", 8],
-        [57, "gOverlay57StartLinks", 4],
-        [57, "gOverlay57State", 26],
-        [57, "gOverlay57StopLinks", 4],
-        [57, "gOverlay57TableA", 2],
-        [57, "gOverlay57TableB", 2],
-        [57, "gOverlay57TableIndex", 14],
-        [57, "gOverlay57TableLabels", 4],
-        [57, "gOverlay57TableMode", 2],
-        [57, "gOverlay57Threshold38D8Reloc", 2],
-        [57, "gOverlay57Threshold3970Reloc", 2],
-        [57, "gOverlay57Transition", 4],
-        [57, "gOverlay57UpdateFlags", 2],
-        [57, "gOverlay57UpdateIndex", 2],
-        [57, "gOverlay57UpdateMasks", 2],
-        [57, "gOverlay57UpdateScale", 2],
-        [57, "gOverlay57UpdateSelection", 6],
-        [57, "gOverlay57UpdateShifts", 2],
-        [57, "gOverlay57UpdateValues", 2],
-        [57, "o57Ease28B4LookupSecondaryReloc", 1],
-        [57, "o57ModeOpaqueVoidCallReloc", 17],
-        [57, "o57PrepareDescriptorListReloc", 2],
-        [57, "overlay57AdvanceReloc", 1],
-        [57, "overlay57Call36F4Reloc", 1],
-        [57, "overlay57ReleaseDescriptorReloc", 1],
-        [57, "overlay57TailFindObjectReloc", 1],
-        [57, "overlay57TailPrepareObjectReloc", 1],
-        [57, "overlay57TailQueryChoiceReloc", 1],
-        [57, "overlay57TailQueryModeReloc", 1],
-        [57, "overlay57TailStartObjectReloc", 1],
-        [58, "D_1A0", 4],
-        [58, "D_2A8", 2],
-        [58, "D_2B0", 4],
-        [58, "D_2B4", 4],
-        [58, "D_2BC", 10],
-        [58, "D_2C0", 7],
-        [58, "D_30", 18],
-        [58, "D_34", 12],
-        [58, "D_38", 2],
-        [58, "D_44", 12],
-        [58, "D_48", 4],
-        [58, "D_4C", 2],
-        [58, "D_50", 4],
-        [58, "D_54", 4],
-        [58, "D_58", 2],
-        [58, "D_5C", 2],
-        [58, "D_60", 2],
-        [58, "D_68", 12],
-        [58, "D_6C", 6],
-        [58, "D_70", 2],
-        [58, "D_80000058", 2],
-        [58, "D_80000078", 2],
-        [58, "D_80000098", 2],
-        [58, "D_90", 4],
-        [58, "D_B8", 2],
-        [58, "D_DC", 4],
-        [58, "D_F8", 6],
-        [58, "D_o058_5AE8", 2],
-        [58, "D_o058_5B28", 4],
-        [58, "D_o058_5B40", 2],
-        [58, "D_o058_5B60", 2],
-        [58, "D_o058_5B80", 2],
-        [58, "D_o058_5BA0", 6],
-        [58, "D_o058_5C5C", 8],
-        [58, "D_o058_5C68", 2],
-        [58, "D_o058_5C74", 2],
-        [58, "D_o058_5C80", 8],
-        [58, "D_o058_5C8C", 4],
-        [58, "D_o058_5C98", 10],
-        [58, "D_o058_5CB0", 8],
-        [58, "D_o058_5CD8", 4],
-        [58, "D_o058_5CE0", 4],
-        [58, "D_o058_5D2C", 2],
-        [58, "D_o058_5D30", 2],
-        [58, "D_o058_5D34", 2],
-        [58, "D_o058_5D38", 2],
-        [58, "D_o058_5D3C", 2],
-        [58, "D_o058_5D44", 2],
-        [58, "D_o058_5D48", 2],
-        [58, "D_o058_5D50", 2],
-        [58, "D_o058_5D54", 2],
-        [58, "D_o058_5D5C", 2],
-        [58, "D_o058_5D60", 2],
-        [58, "D_o058_5D64", 2],
-        [58, "D_o058_5D68", 2],
-        [58, "D_o058_5D6C", 2],
-        [58, "D_o058_5D70", 2],
-        [58, "D_o058_5D74", 2],
-        [58, "D_o058_5D78", 2],
-        [58, "D_o058_5D7C", 2],
-        [58, "D_o058_5D84", 2],
-        [58, "D_o058_5D88", 2],
-        [58, "D_o058_5D90", 2],
-        [58, "D_o058_5D94", 2],
-        [58, "D_o058_5D98", 2],
-        [58, "D_o058_5DA0", 2],
-        [58, "D_o058_5DA4", 2],
-        [58, "D_o058_5DAC", 2],
-        [58, "D_o058_5DB0", 2],
-        [58, "D_o058_5DB4", 2],
-        [58, "D_o058_5DB8", 2],
-        [58, "D_o058_5DC4", 2],
-        [58, "D_o058_5E50", 22],
-        [58, "D_o058_5E68", 6],
-        [58, "D_o058_5E78", 10],
-        [58, "D_o058_5E7C", 10],
-        [58, "D_o058_5E80", 8],
-        [58, "D_o058_5E84", 6],
-        [58, "D_o058_5E88", 6],
-        [58, "D_o058_5E8C", 10],
-        [58, "D_o058_5E90", 16],
-        [58, "D_o058_5E94", 26],
-        [58, "D_o058_5E98", 68],
-        [58, "D_o058_5E9C", 80],
-        [58, "D_o058_5EA0", 88],
-        [58, "D_o058_5EA4", 16],
-        [58, "D_o058_5EA8", 51],
-        [58, "D_o058_5EAC", 12],
-        [58, "D_o058_5EB0", 18],
-        [58, "D_o058_5EB4", 4],
-        [58, "D_o058_5EBC", 2],
-        [58, "D_o058_5EC0", 2],
-        [58, "D_o058_5EC4", 6],
-        [58, "D_o058_5EC8", 18],
-        [58, "D_o058_5EE0", 16],
-        [58, "D_o058_5EF8", 12],
-        [58, "D_o058_5F10", 6],
-        [58, "D_o058_5F28", 8],
-        [58, "D_o058_5F2C", 14],
-        [58, "D_o058_5F30", 4],
-        [58, "D_o058_5F38", 48],
-        [58, "D_o058_5F48", 6],
-        [58, "gOverlay58CameraGateReloc", 2],
-        [58, "gOverlay58FloorChoice", 2],
-        [58, "gOverlay58InlineResource", 2],
-        [58, "gOverlay58InsertChoice", 2],
-        [58, "gOverlay58LevelReloc", 4],
-        [58, "gOverlay58OptionalResource", 2],
-        [58, "gOverlay58PrimaryOrderIndex", 2],
-        [58, "gOverlay58RankSetIdReloc", 2],
-        [58, "gOverlay58ResourceId", 2],
-        [58, "gOverlay58ResourceReady", 2],
-        [58, "gOverlay58ResourceState", 6],
-        [58, "gOverlay58SelectionTableReloc", 8],
-        [58, "gOverlay58TrackReloc", 4],
-        [58, "gOverlay58TransitionModeReloc", 4],
-        [58, "gOverlay58UnlockTableReloc", 2],
-        [58, "gOverlay58VehicleReloc", 4],
-        [58, "overlay58ReleaseReloc", 2],
-        [59, "gOverlay59DescriptorTables", 2],
-        [59, "gOverlay59Entries", 16],
-        [59, "gOverlay59EntriesEnd", 4],
-        [59, "gOverlay59EntriesOneEnd", 2],
-        [59, "gOverlay59Styles", 2],
-        [59, "gOverlay59TableInfo", 2],
-        [59, "gOverlay59ValueTables", 2],
-        [59, "overlay59ReleaseReloc", 1],
-        [60, "D_800000B0", 2],
-        [60, "D_800D3058Pass2End_o060Reloc", 2],
-        [60, "D_800D3058Pass2_o060Reloc", 2],
-        [60, "gOverlay60Bss00", 2],
-        [60, "gOverlay60Bss174", 2],
-        [60, "gOverlay60Bss20", 2],
-        [60, "gOverlay60Bss40", 2],
-        [60, "gOverlay60Bss60", 2],
-        [60, "gOverlay60Bss80", 2],
-        [60, "gOverlay60CoordE8", 2],
-        [60, "gOverlay60CoordEA", 2],
-        [60, "gOverlay60CoordEC", 2],
-        [60, "gOverlay60CoordEE", 2],
-        [60, "gOverlay60CoordF0", 2],
-        [60, "gOverlay60CoordF2", 2],
-        [60, "gOverlay60CoordF4", 2],
-        [60, "gOverlay60CoordF6", 2],
-        [60, "gOverlay60CoordsD8", 2],
-        [60, "gOverlay60Data00", 2],
-        [60, "gOverlay60Data020", 2],
-        [60, "gOverlay60Data040", 2],
-        [60, "gOverlay60Data060", 4],
-        [60, "gOverlay60Data080", 2],
-        [60, "gOverlay60Data0A0", 2],
-        [60, "gOverlay60Data0A4", 2],
-        [60, "gOverlay60Data0A8", 2],
-        [60, "gOverlay60Data0B0", 2],
-        [60, "gOverlay60Data0C0", 4],
-        [60, "gOverlay60Data0C4", 4],
-        [60, "gOverlay60Data0C8", 34],
-        [60, "gOverlay60Data0D8", 16],
-        [60, "gOverlay60Data0E8", 16],
-        [60, "gOverlay60Data0F8", 2],
-        [60, "gOverlay60Data10C", 2],
-        [60, "gOverlay60Data11C", 4],
-        [60, "gOverlay60Data12C", 4],
-        [60, "gOverlay60Data130", 2],
-        [60, "gOverlay60Data134", 2],
-        [60, "gOverlay60Data138", 2],
-        [60, "gOverlay60Data14C", 4],
-        [60, "gOverlay60Data150", 4],
-        [60, "gOverlay60Data154", 6],
-        [60, "gOverlay60Data158", 4],
-        [60, "gOverlay60Data15C", 4],
-        [60, "gOverlay60Data160", 2],
-        [60, "gOverlay60Data164", 2],
-        [60, "gOverlay60Data168", 2],
-        [60, "gOverlay60Data174", 6],
-        [60, "gOverlay60Data178", 2],
-        [60, "gOverlay60Data1A4", 4],
-        [60, "gOverlay60Data1B4", 8],
-        [60, "gOverlay60Data1D0", 2],
-        [60, "gOverlay60Data1F0", 2],
-        [60, "gOverlay60Data1F8", 2],
-        [60, "gOverlay60Data200", 2],
-        [60, "gOverlay60Data20C", 2],
-        [60, "gOverlay60Data220", 2],
-        [60, "gOverlay60Data228", 2],
-        [60, "gOverlay60Data260", 12],
-        [60, "gOverlay60Data28", 2],
-        [60, "gOverlay60Data288", 2],
-        [60, "gOverlay60Data298", 8],
-        [60, "gOverlay60Data2A0", 4],
-        [60, "gOverlay60Data2A4", 106],
-        [60, "gOverlay60Data2A8", 14],
-        [60, "gOverlay60Data2AC", 12],
-        [60, "gOverlay60Data2B0", 4],
-        [60, "gOverlay60Data2B4", 4],
-        [60, "gOverlay60Data2B8", 2],
-        [60, "gOverlay60Data38", 2],
-        [60, "gOverlay60Data40", 2],
-        [60, "gOverlay60Data44", 2],
-        [60, "gOverlay60Data48", 2],
-        [60, "gOverlay60Data4C", 2],
-        [60, "gOverlay60Data58", 4],
-        [60, "gOverlay60LocalDataReloc", 2],
-        [60, "gOverlay60ObjectC8", 6],
-        [60, "gOverlay60ObjectCC", 2],
-        [60, "gOverlay60ObjectCCY", 2],
-        [60, "gOverlay60ObjectD0", 2],
-        [60, "gOverlay60ObjectD0Y", 2],
-        [60, "gOverlay60ObjectD4", 2],
-        [60, "gOverlay60ObjectD4Y", 2],
-        [60, "gOverlay60OptionalResource", 2],
-        [60, "gOverlay60PrimaryResource", 2],
-        [60, "gOverlay60Resources", 2],
-        [60, "gOverlay60ResourcesEnd", 2],
-        [60, "overlay60ReleaseReloc", 3],
-        [61, "gOverlay61Animation0", 2],
-        [61, "gOverlay61Animation1", 2],
-        [61, "gOverlay61Config08", 2],
-        [61, "gOverlay61Config30", 2],
-        [61, "gOverlay61Counter98", 2],
-        [61, "gOverlay61Counter9C", 2],
-        [61, "gOverlay61CounterA0", 2],
-        [61, "gOverlay61DirExts", 6],
-        [61, "gOverlay61DirNames", 6],
-        [61, "gOverlay61DirSizes", 6],
-        [61, "gOverlay61DirTypes", 4],
-        [61, "gOverlay61DownLabelReloc", 2],
-        [61, "gOverlay61Entries", 6],
-        [61, "gOverlay61EntriesReloc", 2],
-        [61, "gOverlay61EntryCount", 6],
-        [61, "gOverlay61EntryCountReloc", 2],
-        [61, "gOverlay61Error", 10],
-        [61, "gOverlay61ErrorBack", 10],
-        [61, "gOverlay61ErrorNext", 10],
-        [61, "gOverlay61FileNames", 2],
-        [61, "gOverlay61FileStatus", 2],
-        [61, "gOverlay61Format58Reloc", 2],
-        [61, "gOverlay61Format64Reloc", 2],
-        [61, "gOverlay61Format70Reloc", 2],
-        [61, "gOverlay61Format78Reloc", 2],
-        [61, "gOverlay61Format90Reloc", 2],
-        [61, "gOverlay61Format9CReloc", 2],
-        [61, "gOverlay61FormatA8Reloc", 2],
-        [61, "gOverlay61FormatBCReloc", 2],
-        [61, "gOverlay61FreeLabel", 2],
-        [61, "gOverlay61FreeSpace", 2],
-        [61, "gOverlay61GhostLabel", 2],
-        [61, "gOverlay61Handle58", 4],
-        [61, "gOverlay61Handle5C", 6],
-        [61, "gOverlay61Handle60", 6],
-        [61, "gOverlay61Handle64", 6],
-        [61, "gOverlay61Handle68", 6],
-        [61, "gOverlay61Handle6C", 6],
-        [61, "gOverlay61Handle70", 6],
-        [61, "gOverlay61Handle74", 6],
-        [61, "gOverlay61Handle78", 4],
-        [61, "gOverlay61Handle7C", 10],
-        [61, "gOverlay61Handle80", 6],
-        [61, "gOverlay61Handle84", 6],
-        [61, "gOverlay61Handle88", 4],
-        [61, "gOverlay61ItemCountReloc", 2],
-        [61, "gOverlay61ItemsReloc", 2],
-        [61, "gOverlay61LabelB0Reloc", 2],
-        [61, "gOverlay61NamesReloc", 2],
-        [61, "gOverlay61NewFileName", 2],
-        [61, "gOverlay61Record100", 2],
-        [61, "gOverlay61Record10C", 2],
-        [61, "gOverlay61Record114", 2],
-        [61, "gOverlay61Record120", 2],
-        [61, "gOverlay61Record12C", 2],
-        [61, "gOverlay61Record130", 2],
-        [61, "gOverlay61Record134", 2],
-        [61, "gOverlay61Record13C", 2],
-        [61, "gOverlay61Record144", 2],
-        [61, "gOverlay61RecordD0", 2],
-        [61, "gOverlay61RecordDC", 2],
-        [61, "gOverlay61RecordE8", 2],
-        [61, "gOverlay61RecordF4", 2],
-        [61, "gOverlay61RecordFormatReloc", 2],
-        [61, "gOverlay61RecordPathReloc", 2],
-        [61, "gOverlay61RepeatXReloc", 6],
-        [61, "gOverlay61RepeatYReloc", 6],
-        [61, "gOverlay61Resource58Reloc", 2],
-        [61, "gOverlay61Resource5CReloc", 2],
-        [61, "gOverlay61Resource60Reloc", 2],
-        [61, "gOverlay61Resource64Reloc", 2],
-        [61, "gOverlay61Resource68Reloc", 2],
-        [61, "gOverlay61Resource6CReloc", 2],
-        [61, "gOverlay61Resource70Reloc", 2],
-        [61, "gOverlay61Resource74Reloc", 2],
-        [61, "gOverlay61Resource78Reloc", 2],
-        [61, "gOverlay61Resource7CReloc", 2],
-        [61, "gOverlay61Resource80Reloc", 2],
-        [61, "gOverlay61Resource84Reloc", 2],
-        [61, "gOverlay61Resource88Reloc", 2],
-        [61, "gOverlay61ResourceBaseReloc", 2],
-        [61, "gOverlay61SavePathReloc", 2],
-        [61, "gOverlay61SelectedIndexReloc", 2],
-        [61, "gOverlay61Selection", 10],
-        [61, "gOverlay61SetupData", 2],
-        [61, "gOverlay61Sprite0", 2],
-        [61, "gOverlay61Sprite1", 6],
-        [61, "gOverlay61State", 32],
-        [61, "gOverlay61StateA4", 2],
-        [61, "gOverlay61StateA8", 2],
-        [61, "gOverlay61StateAC", 2],
-        [61, "gOverlay61StateB0", 2],
-        [61, "gOverlay61Text0Reloc", 2],
-        [61, "gOverlay61Text1Reloc", 2],
-        [61, "gOverlay61Time0", 4],
-        [61, "gOverlay61Time1", 4],
-        [61, "gOverlay61TopIndexReloc", 8],
-        [61, "gOverlay61UpLabelReloc", 2],
-        [61, "overlay61CreateDescriptorReloc", 13],
-        [62, "gOverlay62CommitContextReloc", 2],
-        [62, "gOverlay62FirstItemReloc", 2],
-        [62, "gOverlay62Float0", 4],
-        [62, "gOverlay62Handle14", 4],
-        [62, "gOverlay62Handle18", 4],
-        [62, "gOverlay62InlineResource", 2],
-        [62, "gOverlay62PulseReloc", 2],
-        [62, "gOverlay62Resource14", 2],
-        [62, "gOverlay62Resource18", 2],
-        [62, "gOverlay62State", 12],
-        [62, "gOverlay62Value10", 2],
-        [62, "gOverlay62Value4", 2],
-        [62, "gOverlay62Value4Initial", 2],
-        [62, "gOverlay62Value8", 4],
-        [62, "gOverlay62ValueC", 6],
-        [62, "gOverlay62Values", 4],
-        [62, "overlay62ReleaseReloc", 3],
-        [63, "gO63ActiveState", 6],
-        [63, "gO63Chain", 2],
-        [63, "gO63ChainReload", 2],
-        [63, "gO63Configs", 2],
-        [63, "gO63CreateResource", 2],
-        [63, "gO63ExternalByteReloc", 2],
-        [63, "gO63ExternalStateAReloc", 2],
-        [63, "gO63ExternalStateBReloc", 2],
-        [63, "gO63ExternalTimerReloc", 6],
-        [63, "gO63Fade", 6],
-        [63, "gO63FadeDirection", 2],
-        [63, "gO63FadeTimer", 2],
-        [63, "gO63InitResource", 2],
-        [63, "gO63Local2C", 2],
-        [63, "gO63Local30", 2],
-        [63, "gO63LocalFloat", 2],
-        [63, "gO63LocalResource", 2],
-        [63, "gO63LocalWord", 2],
-        [63, "gO63ObjectFloat", 2],
-        [63, "gO63Opacity", 4],
-        [63, "gO63OpacityContextReloc", 2],
-        [63, "gO63Particles", 2],
-        [63, "gO63PendingStart", 2],
-        [63, "gO63PendingState", 4],
-        [63, "gO63SavedTableWord", 2],
-        [63, "gO63Sequence", 2],
-        [63, "gO63SequenceIndex", 4],
-        [63, "gO63SequenceStart", 2],
-        [63, "gO63State18C", 2],
-        [63, "gO63State190", 2],
-        [63, "gO63State194", 2],
-        [63, "gO63State198", 2],
-        [63, "gO63State19C", 2],
-        [63, "gO63Timer", 4],
-        [63, "gO63TransitionEnabled", 2],
-        [63, "gO63TriggerTimer", 2],
-        [63, "gO63Triggered", 2],
-        [63, "gOverlay63Block", 2],
-        [63, "gOverlay63Resource", 2],
-        [63, "o63SetStateReloc", 2],
-        [63, "overlay63ReleaseReloc", 2],
-        [65, "D_0", 12],
-        [65, "D_1900", 4],
-        [65, "D_1908", 2],
-        [65, "D_1C0", 4],
-        [65, "D_1D8", 2],
-        [65, "D_208", 2],
-        [65, "D_20C", 4],
-        [65, "D_210", 2],
-        [65, "D_214", 2],
-        [65, "D_218", 2],
-        [65, "D_21C", 2],
-        [65, "D_2970", 4],
-        [65, "D_2974", 4],
-        [65, "D_2978", 8],
-        [65, "D_297C", 8],
-        [65, "D_2980", 2],
-        [65, "D_2988", 4],
-        [65, "D_80000000", 4],
-        [65, "D_800000C0", 2],
-        [65, "gOverlay65Buffers", 2],
-        [65, "gOverlay65Handle", 2],
-        [65, "gOverlay65InitFlag0", 2],
-        [65, "gOverlay65InitFlag1", 2],
-        [65, "gOverlay65Records", 2],
-        [65, "gOverlay65RecordsEnd", 2],
-        [65, "gOverlay65Resource208", 2],
-        [65, "gOverlay65Resource2980", 2],
-        [66, "D_0", 4],
-        [66, "D_50", 2],
-        [66, "D_88", 4],
-        [66, "gOverlay66BssControl", 4],
-        [66, "gOverlay66Current", 4],
-        [66, "gOverlay66Flag", 6],
-        [66, "gOverlay66Timer", 6],
-        [67, "gOverlay67PointSets", 2],
-        [68, "gOverlay68Entry", 6],
-        [68, "gOverlay68KindMap", 4],
-        [68, "gOverlay68KindMapInitial", 2],
-        [68, "gOverlay68KindMapLoop", 2],
-        [68, "gOverlay68Secondary", 4],
-        [68, "gOverlay68SecondaryEntry", 12],
-        [68, "gOverlay68TimerEntry", 2],
-        [68, "gOverlay68Types", 2],
-        [70, "gOverlay70AngleReloc", 2],
-        [70, "gOverlay70FloatTableReloc", 2],
-        [70, "gOverlay70HeightTableReloc", 2],
-        [70, "gOverlay70PairTableReloc", 2],
-        [70, "gOverlay70SharedCounterReloc", 8],
-        [70, "gOverlay70VerticalStepReloc", 2],
-        [71, "D_80000008", 2],
-        [71, "D_80000028", 2],
-        [71, "D_800000D8", 2],
-        [71, "gOverlay71InitialResourceReloc", 4],
-        [71, "gOverlay71Offset", 2],
-        [71, "gOverlay71PrimaryCoordinates", 2],
-        [71, "gOverlay71PrimaryRecords", 2],
-        [71, "gOverlay71Scale0", 2],
-        [71, "gOverlay71Scale1", 2],
-        [71, "gOverlay71SecondaryCoordinates", 2],
-        [71, "gOverlay71SecondaryRecords", 2],
-        [73, "D_0", 2],
-        [73, "D_4", 2],
-        [73, "D_8", 2],
-        [73, "D_80", 2],
-        [73, "D_80000000", 2],
-        [79, "gOverlay79CounterReloc", 2],
-        [79, "gOverlay79InitScaleReloc", 2],
-        [83, "D_80000000", 2],
-        [83, "gOverlay83ScaleReloc", 2],
-        [83, "overlay83SubmitSetupReloc", 2],
-        [84, "gOverlay84BlendStep", 2],
-        [84, "gOverlay84Object", 34],
-        [84, "gOverlay84ObjectWrite", 2],
-        [84, "overlay84GetResource", 6],
-        [84, "overlay84ReleaseResource", 4],
-        [86, "gOverlay86Vectors", 4],
-        [87, "gOverlay87ApproachFactor", 2],
-        [87, "gOverlay87Current", 4],
-        [87, "gOverlay87Gravity", 2],
-        [87, "gOverlay87InitScaleReloc", 2],
-        [87, "gOverlay87NegativeAcceleration", 2],
-        [87, "gOverlay87NegativeDivisor", 2],
-        [87, "gOverlay87PositiveAcceleration", 2],
-        [87, "gOverlay87PositiveDivisor", 2],
-        [87, "gOverlay87StraightFactor", 2],
-        [87, "gOverlay87TurnFactor", 2],
-        [87, "gOverlay87UpdateTable", 2],
-        [90, "gOverlay90Value1C", 2],
-        [90, "gOverlay90Value20", 2],
-        [92, "D_0", 2],
-        [92, "D_8", 2],
-        [92, "D_C", 2],
-        [92, "gOverlay92DistanceParameters", 4],
-        [94, "gO94Const0", 2],
-        [94, "gO94Const10", 2],
-        [94, "gO94Const14", 2],
-        [94, "gO94Const18", 2],
-        [94, "gO94Const1C", 2],
-        [94, "gO94Const20", 2],
-        [94, "gO94Const24", 2],
-        [94, "gO94Const4", 2],
-        [94, "gO94Const8", 2],
-        [94, "gO94ConstC", 2],
-        [94, "gO94Value", 4],
-        [94, "gOverlay94Value", 2],
-        [96, "D_80000000", 2],
-        [96, "gO96EntriesReloc", 10],
-        [96, "gO96FaceDefinitionsReloc", 2],
-        [98, "gO98Contexts", 6],
-        [98, "gO98SpecialVertices", 2],
-        [98, "gO98Toggle", 8],
-        [98, "gOverlay98AcceptedCount", 8],
-        [98, "gOverlay98AcceptedEntries", 4],
-        [98, "overlay98UniqueCountReloc", 4],
-        [98, "overlay98UniqueYReloc", 8],
-        [99, "gO99TrianglesReloc", 2],
-        [99, "gOverlay99Arg4", 4],
-        [99, "gOverlay99Arg5", 4],
-        [99, "gOverlay99Entries", 4],
-        [99, "gOverlay99GridHeight", 8],
-        [99, "gOverlay99GridWidth", 8],
-        [99, "gOverlay99HeightMinusOne", 4],
-        [99, "gOverlay99IntensityScale", 2],
-        [99, "gOverlay99SegmentCount", 6],
-        [99, "gOverlay99Segments", 4],
-        [99, "gOverlay99Storage", 4],
-        [99, "gOverlay99TransformZ", 2],
-        [99, "gOverlay99WidthMinusOne", 4],
-        [100, "gOverlay100Entries", 10],
-        [100, "gOverlay100EntriesReloc", 2],
-        [100, "gOverlay100GravityReloc", 2],
-        [100, "gOverlay100SegmentReloc", 2],
-        [100, "gOverlay100VelocityScaleReloc", 2],
-        [101, "D_10EC", 2],
-        [101, "D_118", 2],
-        [101, "D_134", 2],
-        [101, "D_1514", 2],
-        [101, "D_1920", 2],
-        [101, "D_1C", 22],
-        [101, "D_1C0", 44],
-        [101, "D_1C4", 44],
-        [101, "D_1C8", 12],
-        [101, "D_1CC", 20],
-        [101, "D_1D0", 22],
-        [101, "D_1D2C", 2],
-        [101, "D_1F4", 2],
-        [101, "D_200", 12],
-        [101, "D_218", 2],
-        [101, "D_220", 4],
-        [101, "D_224", 2],
-        [101, "D_228", 36],
-        [101, "D_230", 2],
-        [101, "D_2608", 2],
-        [101, "D_278", 2],
-        [101, "D_2934", 2],
-        [101, "D_2C60", 2],
-        [101, "D_2F8C", 2],
-        [101, "D_338", 2],
-        [101, "D_33C", 2],
-        [101, "D_38", 22],
-        [101, "D_4358", 2],
-        [101, "D_54", 12],
-        [101, "D_800002D8", 2],
-        [101, "D_8C", 4],
-        [101, "D_A8", 4],
-        [101, "D_C4", 2],
-        [101, "D_C64", 2],
-        [101, "D_C78", 2],
-        [101, "D_C8C", 2],
-        [101, "D_CA0", 2],
-        [101, "D_CB4", 2],
-        [101, "D_CC8", 2],
-        [101, "D_CDC", 2],
-        [101, "D_CE0", 2],
-        [101, "D_CF0", 2],
-        [101, "D_D04", 2],
-        [101, "D_D18", 2],
-        [101, "D_DA4", 2],
-        [101, "D_E0", 2],
-        [101, "D_FC", 2],
-        [101, "D_INPUT", 72],
-        [101, "D_o101ResetData340", 2],
-        [101, "gO101PresAAssetD2C", 2],
-        [101, "gO101PresAFinalObject32B8", 2],
-        [101, "gO101PresAInputs", 6],
-        [101, "gO101PresANode20Count", 4],
-        [101, "gO101PresANode24Count", 4],
-        [101, "gO101PresANode32Count", 4],
-        [101, "gO101PresANodes20", 4],
-        [101, "gO101PresAOrderCount", 4],
-        [101, "gO101PresAOrderSlots", 4],
-        [101, "gO101PresBAssetD40", 2],
-        [101, "gO101PresBFinalObject34E8", 2],
-        [101, "gO101PresBInputs", 6],
-        [101, "gO101PresBNode20Count", 4],
-        [101, "gO101PresBNode24Count", 4],
-        [101, "gO101PresBNode32Count", 4],
-        [101, "gO101PresBNodes20", 4],
-        [101, "gO101PresBOrderCount", 4],
-        [101, "gO101PresBOrderSlots", 4],
-        [101, "gO101PresCAssetD54", 2],
-        [101, "gO101PresCFinalObject3718", 2],
-        [101, "gO101PresCInputs", 6],
-        [101, "gO101PresCNode20Count", 4],
-        [101, "gO101PresCNode24Count", 4],
-        [101, "gO101PresCNode32Count", 4],
-        [101, "gO101PresCNodes20", 4],
-        [101, "gO101PresCOrderCount", 4],
-        [101, "gO101PresCOrderSlots", 4],
-        [101, "gO101PresDAssetD68", 2],
-        [101, "gO101PresDFinalObject3948", 2],
-        [101, "gO101PresDInputs", 6],
-        [101, "gO101PresDNode20Count", 4],
-        [101, "gO101PresDNode24Count", 4],
-        [101, "gO101PresDNode32Count", 4],
-        [101, "gO101PresDNodes20", 4],
-        [101, "gO101PresDOrderCount", 4],
-        [101, "gO101PresDOrderSlots", 4],
-        [101, "gO101TailAB4CAssetD90", 2],
-        [101, "gO101TailAB4CFinalObject3F14", 2],
-        [101, "gO101TailAB4CInputs", 2],
-        [101, "gO101TailAB4CNode24Count", 2],
-        [101, "gO101TailAB4CNode32Count", 2],
-        [101, "gO101TailAB4COrderCount", 4],
-        [101, "gO101TailAB4COrderSlots", 4],
-        [101, "gO101TailAssetD7C", 2],
-        [101, "gO101TailBA34AssetDB8", 2],
-        [101, "gO101TailBA34FinalObject4630", 2],
-        [101, "gO101TailBA34Inputs", 2],
-        [101, "gO101TailBA34Node24Count", 2],
-        [101, "gO101TailBA34Node32Count", 2],
-        [101, "gO101TailBA34OrderCountCall0", 2],
-        [101, "gO101TailBA34OrderCountCall1", 6],
-        [101, "gO101TailBA34OrderSlots", 6],
-        [101, "gO101TailC144AssetDCC", 2],
-        [101, "gO101TailC144FinalObject4A90", 2],
-        [101, "gO101TailC144Inputs", 2],
-        [101, "gO101TailC144Node24Count", 2],
-        [101, "gO101TailC144Node32Count", 4],
-        [101, "gO101TailC144OrderCount", 4],
-        [101, "gO101TailC144OrderSlots", 4],
-        [101, "gO101TailC6E8Handle1D4", 2],
-        [101, "gO101TailC6E8Handle1F4", 2],
-        [101, "gO101TailC6E8Handle338", 2],
-        [101, "gO101TailC6E8Handle33C", 2],
-        [101, "gO101TailC6E8Node20Count", 4],
-        [101, "gO101TailC6E8Node32Count", 6],
-        [101, "gO101TailC6E8Nodes20", 4],
-        [101, "gO101TailC6E8OrderCount", 2],
-        [101, "gO101TailC6E8OrderSlots", 2],
-        [101, "gO101TailC6E8PresentationActive", 2],
-        [101, "gO101TailC6E8PresentationDone", 2],
-        [101, "gO101TailFinalObject3B78", 2],
-        [101, "gO101TailInputs", 4],
-        [101, "gO101TailNode24Count", 6],
-        [101, "gO101TailNode32Count", 2],
-        [101, "gO101TailOrderCount", 4],
-        [101, "gO101TailOrderSlots", 4],
-        [101, "gOverlay101ConfigValue", 2],
-        [101, "gOverlay101CurrentConfig", 2],
-        [101, "gOverlay101CurrentResource", 2],
-        [101, "gOverlay101EntryCount", 32],
-        [101, "gOverlay101Handle1D4", 4],
-        [101, "gOverlay101Handle1F4", 2],
-        [101, "gOverlay101Handle33C", 2],
-        [101, "gOverlay101InputMode", 2],
-        [101, "gOverlay101OrderCount", 50],
-        [101, "gOverlay101PresentationActive", 2],
-        [101, "gOverlay101PresentationDone", 10],
-        [101, "gOverlay101PresentationTimer", 4],
-        [101, "gOverlay101Ready", 2],
-        [101, "gOverlay101RenderFlags", 2],
-        [101, "gOverlay101Resource20Count", 24],
-        [101, "gOverlay101Resource32Count", 8],
-        [101, "gOverlay101Time214", 2],
-        [101, "gOverlay101Time338", 2],
-        [101, "gOverlay101Value220", 2],
-        [101, "gOverlay101Value224", 2],
-        [101, "gOverlay101Value228", 2],
-        [101, "overlay101ReadInputReloc", 2],
-        [101, "overlay101ReleaseReloc", 5],
-        [101, "overlay101SetScaleReloc", 1],
-        [101, "overlay101SubmitLinkedPairReloc", 7]
-      ]
-    },
-    "placement": {
-      "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 32,
-      "entries": [
-        [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
-        [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
-        [1, "overlay_001", ".rodata", "0x82DC", 4],
-        [1, "overlay_001_head", ".rodata", "0x82EC", 14],
-        [1, "overlay_001_tail", ".rodata", "0x8318", 66],
-        [9, "overlay_009", ".data", "0x1520", 35],
-        [9, "overlay_009", ".rodata", "0x18B0", 42],
-        [11, "overlay_011", ".rodata", "0x2ED8", 16],
-        [12, "overlay_012", ".rodata", "0x13D0", 10],
-        [14, "overlay_014", ".rodata", "0x1D98", 4],
-        [15, "overlay_015", ".rodata", "0xCB0", 2],
-        [22, "overlay_022", ".rodata", "0xEE4", 6],
-        [29, "overlay_029", ".rodata", "0x16D0", 10],
-        [41, "overlay_041", ".rodata", "0x1DE0", 38],
-        [43, "overlay_043", ".rodata", "0x1520", 4],
-        [45, "overlay_045", ".rodata", "0x1C94", 6],
-        [46, "overlay_046", ".rodata", "0x1C9C", 14],
-        [50, "overlay_050", ".bss", "0x21F0", 100],
-        [50, "overlay_050", ".data", "0x1E70", 130],
-        [50, "overlay_050", ".rodata", "0x21E4", 2],
-        [54, "overlay_054", ".rodata", "0x21C0", 2],
-        [55, "overlay_055", ".rodata", "0xD80", 2],
-        [57, "overlay_057", ".rodata", "0x705C", 8],
-        [58, "overlay_058", ".rodata", "0x5DF4", 6],
-        [59, "overlay_059", ".rodata", "0x1188", 4],
-        [60, "overlay_060", ".rodata", "0x3790", 4],
-        [61, "overlay_061", ".rodata", "0x1D08", 2],
-        [73, "overlay_073", ".rodata", "0xF8C", 30],
-        [79, "overlay_079", ".rodata", "0x1504", 30],
-        [86, "overlay_086", ".rodata", "0xF50", 6],
-        [90, "overlay_090", ".rodata", "0xB28", 16],
-        [99, "overlay_099", ".rodata", "0x1410", 2]
-      ]
-    },
-    "rodata-base": {
-      "about": "module rodata base the objects do not determine (module)",
-      "count": 30,
-      "entries": [
-        [1],
-        [2],
-        [3],
-        [8],
-        [11],
-        [13],
-        [14],
-        [20],
-        [22],
-        [43],
-        [45],
-        [46],
-        [50],
-        [57],
-        [58],
-        [59],
-        [60],
-        [61],
-        [62],
-        [63],
-        [70],
-        [71],
-        [73],
-        [79],
-        [83],
-        [84],
-        [87],
-        [94],
-        [100],
-        [101]
-      ]
-    }
+  "hybrid-data": {
+   "about": "data-site record in blob-owned data, taken from the shipped table (module, site)",
+   "count": 114,
+   "modules": {
+    "1": [
+     "0x81AC",
+     "0x81B0",
+     "0x81B4",
+     "0x81BC",
+     "0x81C0",
+     "0x81C4",
+     "0x81CC",
+     "0x81D0",
+     "0x81D4",
+     "0x81EC",
+     "0x81F4",
+     "0x81F8",
+     "0x8200",
+     "0x8204",
+     "0x8210",
+     "0x8218",
+     "0x821C"
+    ],
+    "46": [
+     "0x1AE0"
+    ],
+    "57": [
+     "0x6FC0",
+     "0x6FC4",
+     "0x6FC8",
+     "0x6FCC",
+     "0x6FD0",
+     "0x6FD4"
+    ],
+    "58": [
+     "0x5C5C",
+     "0x5C60",
+     "0x5C64",
+     "0x5C98",
+     "0x5C9C",
+     "0x5CA0",
+     "0x5CA4",
+     "0x5CA8",
+     "0x5CAC"
+    ],
+    "59": [
+     "0xFC4",
+     "0xFCC",
+     "0xFD4",
+     "0xFDC",
+     "0xFE4",
+     "0xFEC",
+     "0xFF4",
+     "0xFFC",
+     "0x1004",
+     "0x100C",
+     "0x1014",
+     "0x101C",
+     "0x1024",
+     "0x102C",
+     "0x1034",
+     "0x103C",
+     "0x1044",
+     "0x104C",
+     "0x1054",
+     "0x105C",
+     "0x1064",
+     "0x106C",
+     "0x1074",
+     "0x107C",
+     "0x1084",
+     "0x108C",
+     "0x1094",
+     "0x109C",
+     "0x10A4",
+     "0x10AC",
+     "0x10B4",
+     "0x10BC",
+     "0x10C4",
+     "0x10CC",
+     "0x10D4",
+     "0x10DC",
+     "0x10E4",
+     "0x10EC",
+     "0x10F4",
+     "0x10FC",
+     "0x1128",
+     "0x112C",
+     "0x1130",
+     "0x1134",
+     "0x1138",
+     "0x113C",
+     "0x1140",
+     "0x1144",
+     "0x1148",
+     "0x114C",
+     "0x1150",
+     "0x1154",
+     "0x1158",
+     "0x115C",
+     "0x1160",
+     "0x1164"
+    ],
+    "60": [
+     "0x3704",
+     "0x3708",
+     "0x370C",
+     "0x3710"
+    ],
+    "61": [
+     "0x1B50",
+     "0x1B54",
+     "0x1B58",
+     "0x1B5C",
+     "0x1B60",
+     "0x1B64",
+     "0x1B68",
+     "0x1B6C",
+     "0x1B70",
+     "0x1B74"
+    ],
+    "67": [
+     "0x1F4"
+    ],
+    "70": [
+     "0x75C",
+     "0x760",
+     "0x764",
+     "0x768",
+     "0x76C",
+     "0x770",
+     "0x774",
+     "0x778",
+     "0x77C",
+     "0x780"
+    ]
+   }
+  },
+  "main-placeholder": {
+   "about": "main-table entry whose target the resident source does not name (site, op, type)",
+   "count": 4,
+   "entries": [
+    [
+     "0x4F820",
+     "SYMBOL",
+     "R_MIPS_HI16"
+    ],
+    [
+     "0x4F82C",
+     "SYMBOL",
+     "R_MIPS_LO16"
+    ],
+    [
+     "0x4FAD4",
+     "SYMBOL",
+     "R_MIPS_HI16"
+    ],
+    [
+     "0x4FAD8",
+     "SYMBOL",
+     "R_MIPS_LO16"
+    ]
+   ]
+  },
+  "placeholder": {
+   "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
+   "count": 1697,
+   "entries": [
+    [
+     1,
+     "D_0",
+     8
+    ],
+    [
+     1,
+     "D_0208",
+     4
+    ],
+    [
+     1,
+     "D_020C",
+     4
+    ],
+    [
+     1,
+     "D_0210",
+     4
+    ],
+    [
+     1,
+     "D_0214",
+     4
+    ],
+    [
+     1,
+     "D_1BA0",
+     4
+    ],
+    [
+     1,
+     "D_1BA4",
+     8
+    ],
+    [
+     1,
+     "D_1BA8",
+     8
+    ],
+    [
+     1,
+     "D_1D58",
+     14
+    ],
+    [
+     1,
+     "D_1D5C",
+     2
+    ],
+    [
+     1,
+     "D_1D60",
+     18
+    ],
+    [
+     1,
+     "D_1D64",
+     30
+    ],
+    [
+     1,
+     "D_1D68",
+     34
+    ],
+    [
+     1,
+     "D_1D6C",
+     16
+    ],
+    [
+     1,
+     "D_1D70",
+     2
+    ],
+    [
+     1,
+     "D_1D74",
+     2
+    ],
+    [
+     1,
+     "D_1D78",
+     4
+    ],
+    [
+     1,
+     "D_1D7C",
+     2
+    ],
+    [
+     1,
+     "D_1D80",
+     4
+    ],
+    [
+     1,
+     "D_1D84",
+     4
+    ],
+    [
+     1,
+     "D_1D88",
+     6
+    ],
+    [
+     1,
+     "D_1D8C",
+     24
+    ],
+    [
+     1,
+     "D_1D90",
+     2
+    ],
+    [
+     1,
+     "D_1D94",
+     6
+    ],
+    [
+     1,
+     "D_1D98",
+     4
+    ],
+    [
+     1,
+     "D_1D9C",
+     64
+    ],
+    [
+     1,
+     "D_1DA0",
+     102
+    ],
+    [
+     1,
+     "D_1DA0_State",
+     2
+    ],
+    [
+     1,
+     "D_1DA0_array",
+     28
+    ],
+    [
+     1,
+     "D_1DA8",
+     2
+    ],
+    [
+     1,
+     "D_1DAC",
+     8
+    ],
+    [
+     1,
+     "D_1DB0",
+     8
+    ],
+    [
+     1,
+     "D_1DB4",
+     8
+    ],
+    [
+     1,
+     "D_1DB8",
+     8
+    ],
+    [
+     1,
+     "D_1DBC",
+     2
+    ],
+    [
+     1,
+     "D_1DC0",
+     6
+    ],
+    [
+     1,
+     "D_1DC8",
+     6
+    ],
+    [
+     1,
+     "D_1DD0",
+     4
+    ],
+    [
+     1,
+     "D_208",
+     2
+    ],
+    [
+     1,
+     "D_20C",
+     6
+    ],
+    [
+     1,
+     "D_210",
+     4
+    ],
+    [
+     1,
+     "D_214",
+     2
+    ],
+    [
+     1,
+     "D_218",
+     4
+    ],
+    [
+     1,
+     "D_220",
+     8
+    ],
+    [
+     1,
+     "D_4",
+     10
+    ],
+    [
+     1,
+     "D_6C",
+     6
+    ],
+    [
+     1,
+     "D_8",
+     2
+    ],
+    [
+     1,
+     "D_83E4",
+     2
+    ],
+    [
+     1,
+     "D_B4",
+     2
+    ],
+    [
+     1,
+     "D_B8",
+     2
+    ],
+    [
+     1,
+     "G_o1_83e0",
+     14
+    ],
+    [
+     1,
+     "G_o1_83e4",
+     8
+    ],
+    [
+     1,
+     "LOCAL_BSS_1D78",
+     2
+    ],
+    [
+     1,
+     "gO1Finishers",
+     8
+    ],
+    [
+     1,
+     "gO1PhysicsActions",
+     4
+    ],
+    [
+     1,
+     "gO1PhysicsPaths",
+     6
+    ],
+    [
+     1,
+     "gO1RankOrder",
+     12
+    ],
+    [
+     1,
+     "gO1RankTime",
+     2
+    ],
+    [
+     1,
+     "gO1RankWeights",
+     10
+    ],
+    [
+     1,
+     "gOverlay1BuildGate",
+     4
+    ],
+    [
+     1,
+     "gOverlay1BuildStateReloc",
+     2
+    ],
+    [
+     1,
+     "gOverlay1CallbackDescriptor",
+     2
+    ],
+    [
+     1,
+     "gOverlay1CallbackStepFloat",
+     2
+    ],
+    [
+     1,
+     "gOverlay1CountdownAmount",
+     2
+    ],
+    [
+     1,
+     "gOverlay1CountdownObject",
+     2
+    ],
+    [
+     1,
+     "gOverlay1CountdownResource",
+     2
+    ],
+    [
+     1,
+     "gOverlay1CycleLength",
+     2
+    ],
+    [
+     1,
+     "gOverlay1Data",
+     2
+    ],
+    [
+     1,
+     "gOverlay1DistanceObject",
+     4
+    ],
+    [
+     1,
+     "gOverlay1DistanceScale",
+     2
+    ],
+    [
+     1,
+     "gOverlay1End",
+     4
+    ],
+    [
+     1,
+     "gOverlay1Entries",
+     4
+    ],
+    [
+     1,
+     "gOverlay1EntryCount",
+     8
+    ],
+    [
+     1,
+     "gOverlay1Mode",
+     14
+    ],
+    [
+     1,
+     "gOverlay1ModeCallbacks",
+     2
+    ],
+    [
+     1,
+     "gOverlay1ModeMasks",
+     2
+    ],
+    [
+     1,
+     "gOverlay1ModeObject",
+     6
+    ],
+    [
+     1,
+     "gOverlay1ModeResource",
+     4
+    ],
+    [
+     1,
+     "gOverlay1ModeSource",
+     4
+    ],
+    [
+     1,
+     "gOverlay1NextAngleLimit",
+     2
+    ],
+    [
+     1,
+     "gOverlay1ObjectMappingTable",
+     2
+    ],
+    [
+     1,
+     "gOverlay1PoolExhausted",
+     4
+    ],
+    [
+     1,
+     "gOverlay1Position",
+     4
+    ],
+    [
+     1,
+     "gOverlay1PreviousAngleLimit",
+     2
+    ],
+    [
+     1,
+     "gOverlay1ReleaseFinal",
+     2
+    ],
+    [
+     1,
+     "gOverlay1ReleaseRecordCount",
+     2
+    ],
+    [
+     1,
+     "gOverlay1ReleaseRecords",
+     6
+    ],
+    [
+     1,
+     "gOverlay1ReleaseSecondary",
+     2
+    ],
+    [
+     1,
+     "gOverlay1SampleState",
+     4
+    ],
+    [
+     1,
+     "gOverlay1ScanLimit",
+     2
+    ],
+    [
+     1,
+     "gOverlay1SegmentSize",
+     2
+    ],
+    [
+     1,
+     "gOverlay1SelectedIndex",
+     2
+    ],
+    [
+     1,
+     "gOverlay1Start",
+     14
+    ],
+    [
+     1,
+     "gOverlay1SubmitArg2",
+     4
+    ],
+    [
+     1,
+     "gOverlay1SubmitArg3",
+     4
+    ],
+    [
+     1,
+     "gOverlay1SubmitArg4",
+     4
+    ],
+    [
+     1,
+     "gOverlay1SubmitArg5",
+     4
+    ],
+    [
+     1,
+     "gOverlay1TimerState",
+     6
+    ],
+    [
+     1,
+     "gOverlay1TimerStep",
+     26
+    ],
+    [
+     1,
+     "gOverlay1TransientScale",
+     2
+    ],
+    [
+     1,
+     "gOverlay1TransientThreshold",
+     2
+    ],
+    [
+     1,
+     "gOverlay1TransientVelocityY",
+     2
+    ],
+    [
+     1,
+     "gOverlay1ValueCache",
+     2
+    ],
+    [
+     1,
+     "overlay1AimedScaleReloc",
+     2
+    ],
+    [
+     1,
+     "overlay1AimedThresholdReloc",
+     2
+    ],
+    [
+     1,
+     "overlay1AimedTrigReloc",
+     2
+    ],
+    [
+     1,
+     "overlay1AimedVelocityYReloc",
+     2
+    ],
+    [
+     1,
+     "overlay1AllocateRecordReloc",
+     1
+    ],
+    [
+     1,
+     "overlay1AnchorX",
+     8
+    ],
+    [
+     1,
+     "overlay1AnchorY",
+     10
+    ],
+    [
+     1,
+     "overlay1BuildActivateReloc",
+     1
+    ],
+    [
+     1,
+     "overlay1CountdownReloc",
+     1
+    ],
+    [
+     1,
+     "overlay1EvaluateCurve",
+     4
+    ],
+    [
+     1,
+     "overlay1GetGaugeObjects",
+     2
+    ],
+    [
+     1,
+     "overlay1GetGaugeObjectsRaw",
+     1
+    ],
+    [
+     1,
+     "overlay1GetObjectList",
+     1
+    ],
+    [
+     1,
+     "overlay1GetObjectListReloc",
+     1
+    ],
+    [
+     1,
+     "overlay1InitTimedStateReloc",
+     1
+    ],
+    [
+     1,
+     "overlay1ModeSoundReloc",
+     2
+    ],
+    [
+     1,
+     "overlay1NextPointerReloc",
+     4
+    ],
+    [
+     1,
+     "overlay1PathEntryReloc",
+     1
+    ],
+    [
+     1,
+     "overlay1ReadSelectionReloc",
+     1
+    ],
+    [
+     1,
+     "overlay1ResetReloc",
+     1
+    ],
+    [
+     1,
+     "overlay1SolveAngleCandidatesReloc",
+     1
+    ],
+    [
+     1,
+     "overlay1TransientCallReloc",
+     3
+    ],
+    [
+     2,
+     "D_30",
+     2
+    ],
+    [
+     2,
+     "D_34",
+     2
+    ],
+    [
+     2,
+     "D_38",
+     2
+    ],
+    [
+     2,
+     "D_3C",
+     2
+    ],
+    [
+     2,
+     "D_40",
+     2
+    ],
+    [
+     2,
+     "D_44",
+     2
+    ],
+    [
+     2,
+     "D_48",
+     2
+    ],
+    [
+     2,
+     "D_4C",
+     2
+    ],
+    [
+     2,
+     "D_50",
+     2
+    ],
+    [
+     2,
+     "D_54",
+     2
+    ],
+    [
+     2,
+     "D_58",
+     2
+    ],
+    [
+     2,
+     "D_5C",
+     2
+    ],
+    [
+     2,
+     "D_60",
+     8
+    ],
+    [
+     2,
+     "D_64",
+     2
+    ],
+    [
+     2,
+     "D_68",
+     2
+    ],
+    [
+     2,
+     "D_6C",
+     2
+    ],
+    [
+     2,
+     "D_70",
+     2
+    ],
+    [
+     2,
+     "D_72",
+     4
+    ],
+    [
+     2,
+     "gOverlay2BoundaryAxis",
+     14
+    ],
+    [
+     2,
+     "gOverlay2BoundaryCandidateCount",
+     2
+    ],
+    [
+     2,
+     "gOverlay2BoundaryCandidates",
+     16
+    ],
+    [
+     2,
+     "gOverlay2BoundaryValue",
+     21
+    ],
+    [
+     2,
+     "gOverlay2BuiltLineCount",
+     2
+    ],
+    [
+     2,
+     "gOverlay2BuiltNodeCount",
+     2
+    ],
+    [
+     2,
+     "gOverlay2LineCount",
+     18
+    ],
+    [
+     2,
+     "gOverlay2Lines",
+     22
+    ],
+    [
+     2,
+     "gOverlay2QueryBestReloc",
+     4
+    ],
+    [
+     2,
+     "gOverlay2QueryHitReloc",
+     2
+    ],
+    [
+     2,
+     "gOverlay2QueryHitXReloc",
+     6
+    ],
+    [
+     2,
+     "gOverlay2QueryHitYReloc",
+     8
+    ],
+    [
+     2,
+     "gOverlay2QueryIndexReloc",
+     2
+    ],
+    [
+     2,
+     "gOverlay2QueryLimitReloc",
+     2
+    ],
+    [
+     2,
+     "gOverlay2QueryLinesReloc",
+     2
+    ],
+    [
+     2,
+     "gOverlay2QueryResultReloc",
+     2
+    ],
+    [
+     2,
+     "gOverlay2QueryX0Reloc",
+     8
+    ],
+    [
+     2,
+     "gOverlay2QueryX1Reloc",
+     2
+    ],
+    [
+     2,
+     "gOverlay2QueryY0Reloc",
+     8
+    ],
+    [
+     2,
+     "gOverlay2QueryY1Reloc",
+     2
+    ],
+    [
+     2,
+     "gOverlay2RegionCount",
+     14
+    ],
+    [
+     2,
+     "gOverlay2Regions",
+     4
+    ],
+    [
+     2,
+     "gOverlay2SelectedBoundary",
+     4
+    ],
+    [
+     2,
+     "gOverlay2TemporaryMode",
+     4
+    ],
+    [
+     2,
+     "gOverlay2TemporaryRange",
+     8
+    ],
+    [
+     4,
+     "gOverlay4Groups",
+     8
+    ],
+    [
+     4,
+     "gOverlay4InitStatus",
+     2
+    ],
+    [
+     4,
+     "gOverlay4SearchMaxDistance",
+     2
+    ],
+    [
+     5,
+     "gOverlay5AudioHeap",
+     2
+    ],
+    [
+     5,
+     "gOverlay5AudioState",
+     2
+    ],
+    [
+     5,
+     "gOverlay5HeapMemory",
+     2
+    ],
+    [
+     5,
+     "gOverlay5HeapState",
+     8
+    ],
+    [
+     5,
+     "gOverlay5MessageBuffer",
+     2
+    ],
+    [
+     5,
+     "gOverlay5OwnerSoundState",
+     2
+    ],
+    [
+     5,
+     "gOverlay5Span1ScaleValue",
+     2
+    ],
+    [
+     5,
+     "gOverlay5Span1Size",
+     4
+    ],
+    [
+     5,
+     "gOverlay5Span2",
+     2
+    ],
+    [
+     5,
+     "overlay5AllocPlayerReloc",
+     1
+    ],
+    [
+     5,
+     "overlay5AttachBankReloc",
+     1
+    ],
+    [
+     7,
+     "D_2AA",
+     2
+    ],
+    [
+     7,
+     "D_8",
+     10
+    ],
+    [
+     7,
+     "D_844",
+     2
+    ],
+    [
+     7,
+     "gOverlay7AlternateModes",
+     2
+    ],
+    [
+     7,
+     "gOverlay7CommitArgument",
+     4
+    ],
+    [
+     7,
+     "gOverlay7Current",
+     6
+    ],
+    [
+     7,
+     "gOverlay7DispatchData",
+     4
+    ],
+    [
+     7,
+     "gOverlay7DispatchMap",
+     2
+    ],
+    [
+     7,
+     "gOverlay7DispatchModeReloc",
+     2
+    ],
+    [
+     7,
+     "gOverlay7DispatchObject",
+     2
+    ],
+    [
+     7,
+     "gOverlay7DispatchOverride",
+     2
+    ],
+    [
+     7,
+     "gOverlay7DispatchTypes",
+     2
+    ],
+    [
+     7,
+     "gOverlay7DispatchValues",
+     2
+    ],
+    [
+     7,
+     "gOverlay7PrimaryModes",
+     2
+    ],
+    [
+     7,
+     "gOverlay7ValuesEnd",
+     2
+    ],
+    [
+     7,
+     "overlay7Acquire",
+     2
+    ],
+    [
+     7,
+     "overlay7RecordCheckReloc",
+     4
+    ],
+    [
+     7,
+     "overlay7ReleaseRuntimeHandleReloc",
+     1
+    ],
+    [
+     7,
+     "overlay7RuntimeHandleReloc",
+     6
+    ],
+    [
+     7,
+     "overlay7RuntimeLastObjectReloc",
+     4
+    ],
+    [
+     7,
+     "overlay7RuntimeTimerReloc",
+     6
+    ],
+    [
+     7,
+     "overlay7RuntimeValuesReloc",
+     2
+    ],
+    [
+     7,
+     "overlay7SetOwnerModeReloc",
+     5
+    ],
+    [
+     7,
+     "overlay7SetRuntimeModeReloc",
+     3
+    ],
+    [
+     7,
+     "overlay7StartRuntimeValueReloc",
+     1
+    ],
+    [
+     8,
+     "D_0",
+     4
+    ],
+    [
+     8,
+     "D_10",
+     16
+    ],
+    [
+     8,
+     "D_14",
+     4
+    ],
+    [
+     8,
+     "D_18",
+     4
+    ],
+    [
+     8,
+     "D_2110",
+     2
+    ],
+    [
+     8,
+     "D_2188",
+     2
+    ],
+    [
+     8,
+     "D_21C8",
+     2
+    ],
+    [
+     8,
+     "D_2208",
+     2
+    ],
+    [
+     8,
+     "D_2210",
+     2
+    ],
+    [
+     8,
+     "D_2220",
+     2
+    ],
+    [
+     8,
+     "D_2230",
+     2
+    ],
+    [
+     8,
+     "D_310",
+     2
+    ],
+    [
+     8,
+     "D_350",
+     2
+    ],
+    [
+     8,
+     "D_3E0",
+     2
+    ],
+    [
+     8,
+     "D_4",
+     4
+    ],
+    [
+     8,
+     "D_420",
+     2
+    ],
+    [
+     8,
+     "D_460",
+     2
+    ],
+    [
+     8,
+     "D_4A0",
+     2
+    ],
+    [
+     8,
+     "D_4E0",
+     4
+    ],
+    [
+     8,
+     "D_8",
+     14
+    ],
+    [
+     8,
+     "D_C",
+     16
+    ],
+    [
+     8,
+     "O8P2640_call_26FC",
+     1
+    ],
+    [
+     8,
+     "O8P2640_call_2708",
+     1
+    ],
+    [
+     8,
+     "O8P291C_call_cos",
+     3
+    ],
+    [
+     8,
+     "O8P291C_call_sin",
+     3
+    ],
+    [
+     8,
+     "ext_o0_1d510",
+     1
+    ],
+    [
+     8,
+     "ext_o0_1eed0_target",
+     2
+    ],
+    [
+     8,
+     "ext_o0_2a46c",
+     1
+    ],
+    [
+     8,
+     "ext_o0_2a470",
+     1
+    ],
+    [
+     8,
+     "ext_o0_2b90",
+     1
+    ],
+    [
+     8,
+     "ext_o0_2d70",
+     1
+    ],
+    [
+     8,
+     "ext_o7_ccc",
+     1
+    ],
+    [
+     8,
+     "ext_o8_3278",
+     1
+    ],
+    [
+     8,
+     "ext_o8_3368",
+     1
+    ],
+    [
+     8,
+     "gO8Pointer14",
+     2
+    ],
+    [
+     8,
+     "gO8Pointer18",
+     2
+    ],
+    [
+     8,
+     "gO8Table360",
+     2
+    ],
+    [
+     8,
+     "gO8Table3A0",
+     2
+    ],
+    [
+     8,
+     "gO8Value364",
+     2
+    ],
+    [
+     8,
+     "gO8Value370",
+     2
+    ],
+    [
+     8,
+     "gO8Value3A4",
+     2
+    ],
+    [
+     8,
+     "gO8Value3B0",
+     2
+    ],
+    [
+     8,
+     "gOverlay8Buffer",
+     12
+    ],
+    [
+     8,
+     "gOverlay8CommandBuffer",
+     10
+    ],
+    [
+     8,
+     "gOverlay8PhaseScales",
+     2
+    ],
+    [
+     8,
+     "gOverlay8Primary",
+     2
+    ],
+    [
+     8,
+     "gOverlay8Secondary",
+     2
+    ],
+    [
+     8,
+     "gOverlay8SelectorScales",
+     2
+    ],
+    [
+     8,
+     "gOverlay8Value",
+     6
+    ],
+    [
+     8,
+     "o8Approach291CReloc",
+     3
+    ],
+    [
+     8,
+     "o8P0058AcquireReloc",
+     1
+    ],
+    [
+     8,
+     "o8P0058BounceReloc",
+     1
+    ],
+    [
+     8,
+     "o8P0058CreateReloc",
+     1
+    ],
+    [
+     8,
+     "o8P0058EffectReloc",
+     1
+    ],
+    [
+     8,
+     "o8P0058SampleReloc",
+     1
+    ],
+    [
+     8,
+     "o8P0058SpawnReloc",
+     1
+    ],
+    [
+     8,
+     "o8P1294IndexedReloc",
+     1
+    ],
+    [
+     8,
+     "o8P1294PhaseReloc",
+     1
+    ],
+    [
+     8,
+     "o8P34A0EffectReloc",
+     1
+    ],
+    [
+     8,
+     "o8P34A0RandomReloc",
+     2
+    ],
+    [
+     8,
+     "o8P34A0SetModeReloc",
+     1
+    ],
+    [
+     8,
+     "o8P34A0StateEffectReloc",
+     1
+    ],
+    [
+     8,
+     "o8Phase1EmitReloc",
+     1
+    ],
+    [
+     8,
+     "overlay8CreateResourceReloc",
+     1
+    ],
+    [
+     8,
+     "overlay8EmitChannel",
+     1
+    ],
+    [
+     9,
+     "D_0",
+     2
+    ],
+    [
+     9,
+     "D_2D0",
+     2
+    ],
+    [
+     9,
+     "D_300",
+     2
+    ],
+    [
+     9,
+     "D_340",
+     2
+    ],
+    [
+     9,
+     "D_380",
+     2
+    ],
+    [
+     9,
+     "D_388",
+     4
+    ],
+    [
+     9,
+     "D_54",
+     2
+    ],
+    [
+     9,
+     "D_58",
+     2
+    ],
+    [
+     9,
+     "D_70",
+     2
+    ],
+    [
+     9,
+     "D_78",
+     2
+    ],
+    [
+     9,
+     "D_7C",
+     2
+    ],
+    [
+     9,
+     "gOverlay9PacketCursor",
+     4
+    ],
+    [
+     11,
+     "D_0",
+     6
+    ],
+    [
+     11,
+     "D_0_reload_failure",
+     6
+    ],
+    [
+     11,
+     "D_0_reload_success",
+     6
+    ],
+    [
+     11,
+     "D_1B8",
+     4
+    ],
+    [
+     11,
+     "D_1BC",
+     26
+    ],
+    [
+     11,
+     "D_1C4",
+     22
+    ],
+    [
+     11,
+     "D_1CC",
+     8
+    ],
+    [
+     11,
+     "D_204",
+     16
+    ],
+    [
+     11,
+     "D_INPUT",
+     16
+    ],
+    [
+     11,
+     "D_lastMode",
+     4
+    ],
+    [
+     11,
+     "D_menuBase",
+     12
+    ],
+    [
+     11,
+     "D_menuCounterBase",
+     8
+    ],
+    [
+     11,
+     "D_menuInputBase",
+     8
+    ],
+    [
+     11,
+     "D_paramA",
+     4
+    ],
+    [
+     11,
+     "D_paramB",
+     4
+    ],
+    [
+     11,
+     "D_paramC",
+     4
+    ],
+    [
+     11,
+     "D_paramD",
+     4
+    ],
+    [
+     11,
+     "D_table",
+     4
+    ],
+    [
+     11,
+     "gOverlay11Counter",
+     2
+    ],
+    [
+     11,
+     "gOverlay11Created",
+     12
+    ],
+    [
+     11,
+     "gOverlay11Created0",
+     4
+    ],
+    [
+     11,
+     "gOverlay11Created1",
+     4
+    ],
+    [
+     11,
+     "gOverlay11Created2",
+     4
+    ],
+    [
+     11,
+     "gOverlay11CreatedActive",
+     12
+    ],
+    [
+     11,
+     "gOverlay11DirectResource",
+     2
+    ],
+    [
+     11,
+     "gOverlay11Fade",
+     13
+    ],
+    [
+     11,
+     "gOverlay11Flag",
+     2
+    ],
+    [
+     11,
+     "gOverlay11Format",
+     2
+    ],
+    [
+     11,
+     "gOverlay11GameStateFlagReloc",
+     2
+    ],
+    [
+     11,
+     "gOverlay11GridPhases",
+     6
+    ],
+    [
+     11,
+     "gOverlay11GridTriangles",
+     2
+    ],
+    [
+     11,
+     "gOverlay11GroupEnd3",
+     4
+    ],
+    [
+     11,
+     "gOverlay11GroupEnd4",
+     2
+    ],
+    [
+     11,
+     "gOverlay11GroupEnd6",
+     6
+    ],
+    [
+     11,
+     "gOverlay11GroupHandles",
+     12
+    ],
+    [
+     11,
+     "gOverlay11GroupsActive",
+     26
+    ],
+    [
+     11,
+     "gOverlay11Handle2",
+     4
+    ],
+    [
+     11,
+     "gOverlay11Handle3",
+     4
+    ],
+    [
+     11,
+     "gOverlay11Handles",
+     8
+    ],
+    [
+     11,
+     "gOverlay11HighlightStep",
+     2
+    ],
+    [
+     11,
+     "gOverlay11Initialized",
+     4
+    ],
+    [
+     11,
+     "gOverlay11InputDelay",
+     2
+    ],
+    [
+     11,
+     "gOverlay11ModeFinish",
+     2
+    ],
+    [
+     11,
+     "gOverlay11ModeStart",
+     2
+    ],
+    [
+     11,
+     "gOverlay11NextModeReloc",
+     2
+    ],
+    [
+     11,
+     "gOverlay11OptionAction",
+     10
+    ],
+    [
+     11,
+     "gOverlay11OptionDone",
+     22
+    ],
+    [
+     11,
+     "gOverlay11OptionHandles",
+     4
+    ],
+    [
+     11,
+     "gOverlay11OptionHighlight",
+     6
+    ],
+    [
+     11,
+     "gOverlay11OptionIndex",
+     16
+    ],
+    [
+     11,
+     "gOverlay11PadIndex",
+     22
+    ],
+    [
+     11,
+     "gOverlay11Selection",
+     6
+    ],
+    [
+     11,
+     "gOverlay11Timer",
+     2
+    ],
+    [
+     12,
+     "gOverlay12Count",
+     4
+    ],
+    [
+     12,
+     "gOverlay12EffectColors",
+     4
+    ],
+    [
+     12,
+     "gOverlay12EffectCount",
+     6
+    ],
+    [
+     12,
+     "gOverlay12Effects",
+     6
+    ],
+    [
+     12,
+     "gOverlay12Entries",
+     4
+    ],
+    [
+     12,
+     "gOverlay12Flag1536",
+     4
+    ],
+    [
+     12,
+     "gOverlay12ParticleColors",
+     2
+    ],
+    [
+     12,
+     "gOverlay12ParticleCount",
+     4
+    ],
+    [
+     12,
+     "gOverlay12Particles",
+     6
+    ],
+    [
+     12,
+     "gOverlay12QuadTriangles",
+     2
+    ],
+    [
+     12,
+     "gOverlay12Ready",
+     10
+    ],
+    [
+     12,
+     "gOverlay12Resource0",
+     2
+    ],
+    [
+     12,
+     "gOverlay12Resource1",
+     2
+    ],
+    [
+     12,
+     "gOverlay12Resource2",
+     2
+    ],
+    [
+     12,
+     "gOverlay12Resource3",
+     2
+    ],
+    [
+     12,
+     "gOverlay12Resource39",
+     2
+    ],
+    [
+     12,
+     "gOverlay12Resource4",
+     2
+    ],
+    [
+     12,
+     "gOverlay12Resource5",
+     8
+    ],
+    [
+     12,
+     "gOverlay12ResourceF2",
+     2
+    ],
+    [
+     12,
+     "gOverlay12ResourceF3",
+     2
+    ],
+    [
+     12,
+     "gOverlay12ResourceF4",
+     2
+    ],
+    [
+     12,
+     "gOverlay12ResourceF5",
+     2
+    ],
+    [
+     12,
+     "gOverlay12ResourceF6",
+     2
+    ],
+    [
+     12,
+     "gOverlay12Resources",
+     4
+    ],
+    [
+     12,
+     "gOverlay12Selection",
+     4
+    ],
+    [
+     12,
+     "gOverlay12TrianglesA",
+     2
+    ],
+    [
+     12,
+     "gOverlay12TrianglesB",
+     2
+    ],
+    [
+     12,
+     "gOverlay12Value1598",
+     4
+    ],
+    [
+     12,
+     "overlay12LoadReloc",
+     6
+    ],
+    [
+     13,
+     "D_20",
+     4
+    ],
+    [
+     13,
+     "D_24",
+     2
+    ],
+    [
+     13,
+     "D_28",
+     2
+    ],
+    [
+     13,
+     "D_4",
+     2
+    ],
+    [
+     13,
+     "D_80000000",
+     2
+    ],
+    [
+     13,
+     "gOverlay13Active",
+     8
+    ],
+    [
+     13,
+     "gOverlay13ActiveCount",
+     2
+    ],
+    [
+     13,
+     "gOverlay13Enabled",
+     8
+    ],
+    [
+     13,
+     "gOverlay13Gravity",
+     2
+    ],
+    [
+     13,
+     "gOverlay13Output",
+     2
+    ],
+    [
+     13,
+     "gOverlay13Records",
+     10
+    ],
+    [
+     13,
+     "gOverlay13Resource0",
+     4
+    ],
+    [
+     13,
+     "gOverlay13Resource1",
+     4
+    ],
+    [
+     13,
+     "gOverlay13Resource2",
+     4
+    ],
+    [
+     13,
+     "overlay13ReleaseReloc",
+     3
+    ],
+    [
+     14,
+     "D_128",
+     2
+    ],
+    [
+     14,
+     "D_A4",
+     2
+    ],
+    [
+     14,
+     "D_B4",
+     2
+    ],
+    [
+     14,
+     "D_E4",
+     2
+    ],
+    [
+     14,
+     "D_EC",
+     2
+    ],
+    [
+     14,
+     "D_FC",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ActiveHandle",
+     8
+    ],
+    [
+     14,
+     "gOverlay14Args2C",
+     2
+    ],
+    [
+     14,
+     "gOverlay14Args30",
+     2
+    ],
+    [
+     14,
+     "gOverlay14Args34",
+     2
+    ],
+    [
+     14,
+     "gOverlay14AssetF0",
+     6
+    ],
+    [
+     14,
+     "gOverlay14CommandCountEC",
+     8
+    ],
+    [
+     14,
+     "gOverlay14CommandHeader",
+     4
+    ],
+    [
+     14,
+     "gOverlay14CommandHeaderBase",
+     6
+    ],
+    [
+     14,
+     "gOverlay14Context10C",
+     4
+    ],
+    [
+     14,
+     "gOverlay14Current104",
+     2
+    ],
+    [
+     14,
+     "gOverlay14Cursor",
+     6
+    ],
+    [
+     14,
+     "gOverlay14CursorDC",
+     2
+    ],
+    [
+     14,
+     "gOverlay14CursorDCBase",
+     2
+    ],
+    [
+     14,
+     "gOverlay14DataBase",
+     4
+    ],
+    [
+     14,
+     "gOverlay14EnabledF8Base",
+     2
+    ],
+    [
+     14,
+     "gOverlay14Entries",
+     8
+    ],
+    [
+     14,
+     "gOverlay14Field110",
+     2
+    ],
+    [
+     14,
+     "gOverlay14Field114",
+     4
+    ],
+    [
+     14,
+     "gOverlay14Flag0",
+     6
+    ],
+    [
+     14,
+     "gOverlay14Flag10",
+     2
+    ],
+    [
+     14,
+     "gOverlay14Flag4",
+     6
+    ],
+    [
+     14,
+     "gOverlay14FlagC",
+     2
+    ],
+    [
+     14,
+     "gOverlay14FlagC4",
+     6
+    ],
+    [
+     14,
+     "gOverlay14FlagC4Base",
+     2
+    ],
+    [
+     14,
+     "gOverlay14FlagC8",
+     6
+    ],
+    [
+     14,
+     "gOverlay14FlagC8Base",
+     4
+    ],
+    [
+     14,
+     "gOverlay14FlagCC",
+     4
+    ],
+    [
+     14,
+     "gOverlay14HandleE0",
+     4
+    ],
+    [
+     14,
+     "gOverlay14ModeE4",
+     8
+    ],
+    [
+     14,
+     "gOverlay14ModeE4Base",
+     4
+    ],
+    [
+     14,
+     "gOverlay14Next108",
+     2
+    ],
+    [
+     14,
+     "gOverlay14OffsetsF4",
+     8
+    ],
+    [
+     14,
+     "gOverlay14Owner",
+     2
+    ],
+    [
+     14,
+     "gOverlay14PendingModeD4",
+     2
+    ],
+    [
+     14,
+     "gOverlay14PendingModeD4Base",
+     4
+    ],
+    [
+     14,
+     "gOverlay14PendingValueD0",
+     2
+    ],
+    [
+     14,
+     "gOverlay14PendingValueD0Base",
+     4
+    ],
+    [
+     14,
+     "gOverlay14PointerE0",
+     2
+    ],
+    [
+     14,
+     "gOverlay14PointerE0Base",
+     6
+    ],
+    [
+     14,
+     "gOverlay14QueuedCommands128",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ResetCC",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ResourceD0",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ResultF8",
+     4
+    ],
+    [
+     14,
+     "gOverlay14ResultFC",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ResultFCBase",
+     4
+    ],
+    [
+     14,
+     "gOverlay14SlotCountE8",
+     2
+    ],
+    [
+     14,
+     "gOverlay14Slots28",
+     10
+    ],
+    [
+     14,
+     "gOverlay14State",
+     2
+    ],
+    [
+     14,
+     "gOverlay14StateC0",
+     2
+    ],
+    [
+     14,
+     "gOverlay14StateC4",
+     4
+    ],
+    [
+     14,
+     "gOverlay14StateC8",
+     4
+    ],
+    [
+     14,
+     "gOverlay14StateCC",
+     2
+    ],
+    [
+     14,
+     "gOverlay14Transition",
+     2
+    ],
+    [
+     14,
+     "gOverlay14TransitionD8",
+     2
+    ],
+    [
+     14,
+     "gOverlay14TransitionD8Base",
+     6
+    ],
+    [
+     14,
+     "gOverlay14TransitionValue",
+     6
+    ],
+    [
+     14,
+     "gOverlay14Value108",
+     2
+    ],
+    [
+     14,
+     "gOverlay14Value110",
+     2
+    ],
+    [
+     14,
+     "gOverlay14Value114",
+     4
+    ],
+    [
+     14,
+     "gOverlay14ValueC0",
+     6
+    ],
+    [
+     14,
+     "gOverlay14ValueC0Base",
+     4
+    ],
+    [
+     14,
+     "gOverlay14ValueCountE8",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ValueD4",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ValueD8",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ValueDC",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ValueDCBase",
+     4
+    ],
+    [
+     14,
+     "gOverlay14ValueE0",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ValueEC",
+     6
+    ],
+    [
+     14,
+     "gOverlay14ValueF8",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ValueF8Base",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ValueSlots28",
+     2
+    ],
+    [
+     14,
+     "gOverlay14ValueSlotsEnd128",
+     2
+    ],
+    [
+     14,
+     "overlay14InitializeReloc",
+     2
+    ],
+    [
+     15,
+     "gOverlay15InitBounds",
+     2
+    ],
+    [
+     15,
+     "gOverlay15MovingStarCount",
+     6
+    ],
+    [
+     15,
+     "gOverlay15MovingStars",
+     4
+    ],
+    [
+     15,
+     "gOverlay15RainCapacity",
+     2
+    ],
+    [
+     15,
+     "gOverlay15RainColors",
+     2
+    ],
+    [
+     15,
+     "gOverlay15RainEnabled",
+     2
+    ],
+    [
+     15,
+     "gOverlay15RainPositions",
+     4
+    ],
+    [
+     15,
+     "gOverlay15Resource10",
+     6
+    ],
+    [
+     15,
+     "gOverlay15Resource4",
+     6
+    ],
+    [
+     15,
+     "gOverlay15Resource48",
+     2
+    ],
+    [
+     15,
+     "gOverlay15StarCount",
+     6
+    ],
+    [
+     15,
+     "gOverlay15StarPalette",
+     4
+    ],
+    [
+     15,
+     "gOverlay15StarSetup",
+     2
+    ],
+    [
+     15,
+     "gOverlay15Stars",
+     4
+    ],
+    [
+     15,
+     "gOverlay15StarsWord",
+     2
+    ],
+    [
+     15,
+     "gOverlay15Value7C",
+     2
+    ],
+    [
+     15,
+     "gOverlay15ValueC",
+     2
+    ],
+    [
+     17,
+     "gOverlay17TemplateReloc",
+     4
+    ],
+    [
+     17,
+     "overlay17ReleaseReloc",
+     2
+    ],
+    [
+     18,
+     "gOverlay18Buffers",
+     4
+    ],
+    [
+     18,
+     "gOverlay18ExternalData",
+     2
+    ],
+    [
+     18,
+     "gOverlay18LocalData80",
+     2
+    ],
+    [
+     18,
+     "gOverlay18Mode",
+     4
+    ],
+    [
+     18,
+     "gOverlay18ModeScale10",
+     8
+    ],
+    [
+     18,
+     "gOverlay18ModeScale16",
+     6
+    ],
+    [
+     18,
+     "gOverlay18ModeScale64",
+     8
+    ],
+    [
+     18,
+     "gOverlay18ModeScale8",
+     8
+    ],
+    [
+     18,
+     "gOverlay18Region16Slot0",
+     2
+    ],
+    [
+     18,
+     "gOverlay18Region64",
+     4
+    ],
+    [
+     18,
+     "gOverlay18Region64Slot0",
+     2
+    ],
+    [
+     18,
+     "gOverlay18Region8",
+     4
+    ],
+    [
+     18,
+     "gOverlay18Region8Slot0",
+     2
+    ],
+    [
+     18,
+     "overlay18FinishReconfigureReloc",
+     1
+    ],
+    [
+     20,
+     "D_0",
+     2
+    ],
+    [
+     20,
+     "gOverlay20ActiveBits",
+     4
+    ],
+    [
+     20,
+     "gOverlay20Entries",
+     10
+    ],
+    [
+     20,
+     "gOverlay20EntryCount",
+     8
+    ],
+    [
+     20,
+     "gOverlay20MarkerEnd",
+     2
+    ],
+    [
+     20,
+     "gOverlay20Pool",
+     2
+    ],
+    [
+     20,
+     "gOverlay20Scale",
+     2
+    ],
+    [
+     20,
+     "gOverlay20TailXLimit",
+     2
+    ],
+    [
+     20,
+     "gOverlay20TailYLimit",
+     2
+    ],
+    [
+     21,
+     "gOverlay21ObjectCount",
+     8
+    ],
+    [
+     21,
+     "gOverlay21Objects",
+     4
+    ],
+    [
+     22,
+     "D_0",
+     2
+    ],
+    [
+     22,
+     "gOverlay22DistanceReloc",
+     2
+    ],
+    [
+     23,
+     "overlay23CallReloc",
+     2
+    ],
+    [
+     29,
+     "gOverlay29Base0",
+     4
+    ],
+    [
+     29,
+     "gOverlay29Base1",
+     8
+    ],
+    [
+     29,
+     "gOverlay29Base2",
+     6
+    ],
+    [
+     29,
+     "gOverlay29Base3",
+     4
+    ],
+    [
+     29,
+     "gOverlay29Current",
+     4
+    ],
+    [
+     29,
+     "gOverlay29MinimumYReloc",
+     2
+    ],
+    [
+     29,
+     "gOverlay29Node0",
+     2
+    ],
+    [
+     29,
+     "gOverlay29Node4",
+     2
+    ],
+    [
+     29,
+     "gOverlay29Node8",
+     4
+    ],
+    [
+     29,
+     "gOverlay29NodeC",
+     2
+    ],
+    [
+     29,
+     "gOverlay29PointA",
+     4
+    ],
+    [
+     29,
+     "gOverlay29PointB",
+     2
+    ],
+    [
+     29,
+     "gOverlay29Selected0",
+     6
+    ],
+    [
+     29,
+     "gOverlay29Selected1",
+     6
+    ],
+    [
+     29,
+     "gOverlay29Selected2",
+     6
+    ],
+    [
+     29,
+     "gOverlay29Selected3",
+     6
+    ],
+    [
+     29,
+     "gOverlay29Value0",
+     4
+    ],
+    [
+     29,
+     "gOverlay29Value1",
+     4
+    ],
+    [
+     29,
+     "gOverlay29Value2",
+     4
+    ],
+    [
+     29,
+     "gOverlay29Value3",
+     4
+    ],
+    [
+     29,
+     "overlay29AdvanceReloc",
+     4
+    ],
+    [
+     29,
+     "overlay29AngleReloc",
+     1
+    ],
+    [
+     29,
+     "overlay29CreateReloc",
+     5
+    ],
+    [
+     33,
+     "D_1808",
+     2
+    ],
+    [
+     33,
+     "D_8",
+     4
+    ],
+    [
+     33,
+     "gOverlay33ActiveBuffer",
+     4
+    ],
+    [
+     33,
+     "gOverlay33Allocation",
+     2
+    ],
+    [
+     33,
+     "gOverlay33DisplayLists",
+     4
+    ],
+    [
+     33,
+     "gOverlay33Handle",
+     4
+    ],
+    [
+     33,
+     "gOverlay33Initialized",
+     4
+    ],
+    [
+     33,
+     "overlay33CallReloc",
+     2
+    ],
+    [
+     43,
+     "D_0",
+     2
+    ],
+    [
+     43,
+     "D_120",
+     2
+    ],
+    [
+     43,
+     "D_C8",
+     6
+    ],
+    [
+     43,
+     "ext_4d258",
+     2
+    ],
+    [
+     43,
+     "gO43BssBaseReloc",
+     2
+    ],
+    [
+     43,
+     "gO43DataBaseReloc",
+     6
+    ],
+    [
+     43,
+     "gO43FallbackReloc",
+     2
+    ],
+    [
+     43,
+     "gO43QueueCountReloc",
+     6
+    ],
+    [
+     43,
+     "gO43QueueReloc",
+     2
+    ],
+    [
+     43,
+     "gO43RecordsReloc",
+     12
+    ],
+    [
+     43,
+     "gO43RodataBaseReloc",
+     4
+    ],
+    [
+     43,
+     "gO43VertexSourceReloc",
+     2
+    ],
+    [
+     45,
+     "gOverlay45AdvanceTables",
+     2
+    ],
+    [
+     45,
+     "gOverlay45ControlStream",
+     2
+    ],
+    [
+     45,
+     "gOverlay45Defaults",
+     4
+    ],
+    [
+     45,
+     "gOverlay45Metrics",
+     2
+    ],
+    [
+     45,
+     "gOverlay45MetricsIndex",
+     6
+    ],
+    [
+     45,
+     "gOverlay45ResourceHead",
+     10
+    ],
+    [
+     45,
+     "gOverlay45TightAdvance",
+     2
+    ],
+    [
+     45,
+     "overlay45AllocReloc",
+     1
+    ],
+    [
+     45,
+     "overlay45BuildControlStream",
+     1
+    ],
+    [
+     45,
+     "overlay45ConfigureReloc",
+     1
+    ],
+    [
+     45,
+     "overlay45FormatReloc",
+     1
+    ],
+    [
+     45,
+     "overlay45FreeReloc",
+     1
+    ],
+    [
+     45,
+     "overlay45GetGlyph",
+     1
+    ],
+    [
+     45,
+     "overlay45MeasureStream",
+     1
+    ],
+    [
+     45,
+     "overlay45RandomRangeReloc",
+     9
+    ],
+    [
+     45,
+     "overlay45RandomRangeStoredReloc",
+     4
+    ],
+    [
+     45,
+     "overlay45StringLengthReloc",
+     1
+    ],
+    [
+     46,
+     "D_10",
+     10
+    ],
+    [
+     46,
+     "D_120",
+     2
+    ],
+    [
+     46,
+     "D_14",
+     10
+    ],
+    [
+     46,
+     "D_1450",
+     4
+    ],
+    [
+     46,
+     "D_1458",
+     10
+    ],
+    [
+     46,
+     "D_18",
+     10
+    ],
+    [
+     46,
+     "D_194",
+     2
+    ],
+    [
+     46,
+     "D_19C",
+     2
+    ],
+    [
+     46,
+     "D_20",
+     6
+    ],
+    [
+     46,
+     "D_230",
+     4
+    ],
+    [
+     46,
+     "D_2718",
+     6
+    ],
+    [
+     46,
+     "D_2C",
+     2
+    ],
+    [
+     46,
+     "D_494",
+     4
+    ],
+    [
+     46,
+     "D_498",
+     4
+    ],
+    [
+     46,
+     "D_5C",
+     2
+    ],
+    [
+     46,
+     "D_60",
+     2
+    ],
+    [
+     46,
+     "D_C",
+     6
+    ],
+    [
+     46,
+     "D_C0",
+     2
+    ],
+    [
+     46,
+     "gDisplayListHead",
+     2
+    ],
+    [
+     46,
+     "gDisplayListHeadB",
+     2
+    ],
+    [
+     46,
+     "gOverlay46BufferEnd",
+     2
+    ],
+    [
+     46,
+     "gOverlay46BufferSlots",
+     2
+    ],
+    [
+     46,
+     "gOverlay46BufferSlotsEnd",
+     2
+    ],
+    [
+     46,
+     "gOverlay46ColorEntries",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Configs1C8",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Data",
+     10
+    ],
+    [
+     46,
+     "gOverlay46DisplayOutput",
+     2
+    ],
+    [
+     46,
+     "gOverlay46DisplayState",
+     4
+    ],
+    [
+     46,
+     "gOverlay46Enabled",
+     2
+    ],
+    [
+     46,
+     "gOverlay46ExpectedName180",
+     2
+    ],
+    [
+     46,
+     "gOverlay46FadeOutput",
+     4
+    ],
+    [
+     46,
+     "gOverlay46Group54",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Group54Render",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Group54Update",
+     4
+    ],
+    [
+     46,
+     "gOverlay46Ids",
+     2
+    ],
+    [
+     46,
+     "gOverlay46InitialValue",
+     2
+    ],
+    [
+     46,
+     "gOverlay46InitialW",
+     2
+    ],
+    [
+     46,
+     "gOverlay46InitialX",
+     2
+    ],
+    [
+     46,
+     "gOverlay46InitialY",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Limit",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Mode58",
+     18
+    ],
+    [
+     46,
+     "gOverlay46MotionTarget",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Particles20",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Resource184",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Resource4C",
+     4
+    ],
+    [
+     46,
+     "gOverlay46Resource50",
+     4
+    ],
+    [
+     46,
+     "gOverlay46Selection",
+     4
+    ],
+    [
+     46,
+     "gOverlay46State",
+     2
+    ],
+    [
+     46,
+     "gOverlay46StateA",
+     2
+    ],
+    [
+     46,
+     "gOverlay46StateB",
+     2
+    ],
+    [
+     46,
+     "gOverlay46StateC",
+     2
+    ],
+    [
+     46,
+     "gOverlay46StateStorage",
+     2
+    ],
+    [
+     46,
+     "gOverlay46SubmitBlock",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Timer5C",
+     26
+    ],
+    [
+     46,
+     "gOverlay46Value",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Value0",
+     8
+    ],
+    [
+     46,
+     "gOverlay46Value10",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Value14",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Value18",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Value1E4",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Value2C",
+     2
+    ],
+    [
+     46,
+     "gOverlay46Value4",
+     10
+    ],
+    [
+     46,
+     "gOverlay46Value8",
+     12
+    ],
+    [
+     49,
+     "gOverlay49Finished",
+     4
+    ],
+    [
+     49,
+     "gOverlay49InputEnabled",
+     6
+    ],
+    [
+     49,
+     "gOverlay49Masks",
+     2
+    ],
+    [
+     49,
+     "gOverlay49Modes",
+     2
+    ],
+    [
+     49,
+     "gOverlay49Result",
+     6
+    ],
+    [
+     49,
+     "gOverlay49Shifts",
+     2
+    ],
+    [
+     49,
+     "gOverlay49Timer",
+     4
+    ],
+    [
+     50,
+     "gOverlay50GlyphOffsets",
+     2
+    ],
+    [
+     50,
+     "gOverlay50GlyphWord0",
+     2
+    ],
+    [
+     50,
+     "gOverlay50GlyphWord1",
+     2
+    ],
+    [
+     50,
+     "gOverlay50ResourceA",
+     2
+    ],
+    [
+     50,
+     "gOverlay50ResourceB",
+     2
+    ],
+    [
+     50,
+     "gOverlay50Slot",
+     4
+    ],
+    [
+     50,
+     "gOverlay50Storage",
+     2
+    ],
+    [
+     50,
+     "o50ForwardScale",
+     2
+    ],
+    [
+     50,
+     "o50Overlay1StateReloc",
+     4
+    ],
+    [
+     50,
+     "o50ReverseScale",
+     2
+    ],
+    [
+     50,
+     "o50SpeedText",
+     2
+    ],
+    [
+     51,
+     "ext_o1_83e0_o051Reloc",
+     2
+    ],
+    [
+     51,
+     "gOverlay51BlinkCounter",
+     2
+    ],
+    [
+     51,
+     "gOverlay51ClockGlyphs",
+     4
+    ],
+    [
+     51,
+     "gOverlay51Handle",
+     2
+    ],
+    [
+     51,
+     "gOverlay51HudHeight",
+     8
+    ],
+    [
+     51,
+     "gOverlay51Item",
+     20
+    ],
+    [
+     51,
+     "gOverlay51ItemAlpha",
+     6
+    ],
+    [
+     51,
+     "gOverlay51Resource0",
+     4
+    ],
+    [
+     51,
+     "gOverlay51Resource18",
+     2
+    ],
+    [
+     51,
+     "gOverlay51TimeGlyphs",
+     4
+    ],
+    [
+     51,
+     "gOverlay51TransitionDone",
+     4
+    ],
+    [
+     51,
+     "overlay51CreateReloc",
+     6
+    ],
+    [
+     52,
+     "ext_o1_83e0",
+     4
+    ],
+    [
+     52,
+     "ext_resident_result",
+     2
+    ],
+    [
+     52,
+     "ext_resident_word_190",
+     2
+    ],
+    [
+     52,
+     "gOverlay52Offsets",
+     4
+    ],
+    [
+     52,
+     "gOverlay52Resource",
+     2
+    ],
+    [
+     52,
+     "gOverlay52Slots",
+     4
+    ],
+    [
+     52,
+     "gOverlay52Storage",
+     2
+    ],
+    [
+     53,
+     "ext_o1_83e0",
+     2
+    ],
+    [
+     53,
+     "gOverlay53BlinkCounter",
+     8
+    ],
+    [
+     53,
+     "gOverlay53ClockDigits",
+     2
+    ],
+    [
+     53,
+     "gOverlay53ClockSplitX",
+     2
+    ],
+    [
+     53,
+     "gOverlay53ConfigA",
+     2
+    ],
+    [
+     53,
+     "gOverlay53ConfigB",
+     2
+    ],
+    [
+     53,
+     "gOverlay53GlobalHandleReloc",
+     2
+    ],
+    [
+     53,
+     "gOverlay53Handle0",
+     2
+    ],
+    [
+     53,
+     "gOverlay53HandleEnd",
+     2
+    ],
+    [
+     53,
+     "gOverlay53Handles288",
+     2
+    ],
+    [
+     53,
+     "gOverlay53Height290",
+     2
+    ],
+    [
+     53,
+     "gOverlay53HudHeight",
+     6
+    ],
+    [
+     53,
+     "gOverlay53HudRowY",
+     4
+    ],
+    [
+     53,
+     "gOverlay53IconAlpha",
+     6
+    ],
+    [
+     53,
+     "gOverlay53IconSplitX",
+     2
+    ],
+    [
+     53,
+     "gOverlay53ItemSplitX",
+     2
+    ],
+    [
+     53,
+     "gOverlay53Items",
+     10
+    ],
+    [
+     53,
+     "gOverlay53Offsets",
+     4
+    ],
+    [
+     53,
+     "gOverlay53PatchTableA",
+     2
+    ],
+    [
+     53,
+     "gOverlay53PatchTableB",
+     2
+    ],
+    [
+     53,
+     "gOverlay53Resource0",
+     2
+    ],
+    [
+     53,
+     "gOverlay53Resource14",
+     2
+    ],
+    [
+     53,
+     "gOverlay53ResourceA",
+     2
+    ],
+    [
+     53,
+     "gOverlay53TimeDigits",
+     2
+    ],
+    [
+     53,
+     "gOverlay53TimeTemplate",
+     2
+    ],
+    [
+     53,
+     "gOverlay53TransitionDone",
+     4
+    ],
+    [
+     53,
+     "gOverlay53Value280",
+     2
+    ],
+    [
+     53,
+     "overlay53ReleaseReloc",
+     3
+    ],
+    [
+     54,
+     "gOverlay54Current",
+     2
+    ],
+    [
+     54,
+     "gOverlay54Data00",
+     2
+    ],
+    [
+     54,
+     "gOverlay54ExternalResource",
+     2
+    ],
+    [
+     54,
+     "gOverlay54ExternalWord",
+     2
+    ],
+    [
+     54,
+     "gOverlay54Offsets",
+     8
+    ],
+    [
+     54,
+     "gOverlay54ResourceA",
+     2
+    ],
+    [
+     54,
+     "gOverlay54ResourceB",
+     2
+    ],
+    [
+     54,
+     "o001_data_83E0_o054Reloc",
+     4
+    ],
+    [
+     54,
+     "o54CreateObject",
+     1
+    ],
+    [
+     54,
+     "o54LoadResource",
+     3
+    ],
+    [
+     54,
+     "overlay54ReleaseReloc",
+     4
+    ],
+    [
+     55,
+     "ext_o1_83e0",
+     2
+    ],
+    [
+     55,
+     "gOverlay55BlinkCounter",
+     4
+    ],
+    [
+     55,
+     "gOverlay55ClockDigits",
+     2
+    ],
+    [
+     55,
+     "gOverlay55ExternalSetupTarget",
+     2
+    ],
+    [
+     55,
+     "gOverlay55HudHeight",
+     6
+    ],
+    [
+     55,
+     "gOverlay55IconAlpha",
+     2
+    ],
+    [
+     55,
+     "gOverlay55Items",
+     2
+    ],
+    [
+     55,
+     "gOverlay55Offsets",
+     8
+    ],
+    [
+     55,
+     "gOverlay55RecordsA",
+     2
+    ],
+    [
+     55,
+     "gOverlay55RecordsB",
+     2
+    ],
+    [
+     55,
+     "gOverlay55ResourceA",
+     2
+    ],
+    [
+     55,
+     "gOverlay55ResourceB",
+     2
+    ],
+    [
+     55,
+     "gOverlay55Result",
+     2
+    ],
+    [
+     55,
+     "gOverlay55SetupBase",
+     2
+    ],
+    [
+     55,
+     "gOverlay55SetupSecondary",
+     2
+    ],
+    [
+     55,
+     "gOverlay55SourceB",
+     2
+    ],
+    [
+     55,
+     "gOverlay55SourceBase",
+     2
+    ],
+    [
+     55,
+     "gOverlay55StateValue",
+     2
+    ],
+    [
+     55,
+     "gOverlay55StateWord",
+     2
+    ],
+    [
+     55,
+     "gOverlay55Status",
+     2
+    ],
+    [
+     55,
+     "gOverlay55TimeDigits",
+     2
+    ],
+    [
+     55,
+     "gOverlay55TimeTemplate",
+     10
+    ],
+    [
+     55,
+     "gOverlay55TransitionDone",
+     4
+    ],
+    [
+     56,
+     "D_78",
+     4
+    ],
+    [
+     56,
+     "D_80000004",
+     2
+    ],
+    [
+     56,
+     "D_80000030",
+     2
+    ],
+    [
+     56,
+     "D_84",
+     2
+    ],
+    [
+     56,
+     "gOverlay56Colors",
+     2
+    ],
+    [
+     56,
+     "gOverlay56Data",
+     4
+    ],
+    [
+     56,
+     "gOverlay56Mode",
+     2
+    ],
+    [
+     56,
+     "gOverlay56Resource",
+     14
+    ],
+    [
+     56,
+     "gOverlay56ResourceState",
+     6
+    ],
+    [
+     56,
+     "overlay56GetContextReloc",
+     1
+    ],
+    [
+     56,
+     "overlay56GetDimensionsReloc",
+     2
+    ],
+    [
+     56,
+     "overlay56LoadResourceReloc",
+     1
+    ],
+    [
+     56,
+     "overlay56ReleaseResourceReloc",
+     1
+    ],
+    [
+     57,
+     "D_130",
+     4
+    ],
+    [
+     57,
+     "D_134",
+     32
+    ],
+    [
+     57,
+     "D_138",
+     30
+    ],
+    [
+     57,
+     "D_148",
+     2
+    ],
+    [
+     57,
+     "D_4D4",
+     2
+    ],
+    [
+     57,
+     "D_4E4",
+     10
+    ],
+    [
+     57,
+     "D_500",
+     2
+    ],
+    [
+     57,
+     "D_504",
+     2
+    ],
+    [
+     57,
+     "O57_D_104",
+     10
+    ],
+    [
+     57,
+     "O57_D_114",
+     4
+    ],
+    [
+     57,
+     "O57_D_118",
+     4
+    ],
+    [
+     57,
+     "O57_D_128",
+     8
+    ],
+    [
+     57,
+     "O57_D_13C",
+     4
+    ],
+    [
+     57,
+     "O57_D_140",
+     4
+    ],
+    [
+     57,
+     "O57_D_160",
+     18
+    ],
+    [
+     57,
+     "O57_D_164",
+     8
+    ],
+    [
+     57,
+     "O57_D_184",
+     4
+    ],
+    [
+     57,
+     "O57_D_188",
+     2
+    ],
+    [
+     57,
+     "O57_D_194",
+     6
+    ],
+    [
+     57,
+     "O57_D_198",
+     4
+    ],
+    [
+     57,
+     "O57_D_19C",
+     4
+    ],
+    [
+     57,
+     "O57_D_1A8",
+     2
+    ],
+    [
+     57,
+     "O57_D_224",
+     2
+    ],
+    [
+     57,
+     "O57_D_244",
+     2
+    ],
+    [
+     57,
+     "O57_D_264",
+     2
+    ],
+    [
+     57,
+     "O57_D_4CC",
+     4
+    ],
+    [
+     57,
+     "O57_call_0DA4",
+     1
+    ],
+    [
+     57,
+     "O57_channelData4D0",
+     2
+    ],
+    [
+     57,
+     "O57_channelData4D8",
+     2
+    ],
+    [
+     57,
+     "O57_channelValue4DC",
+     4
+    ],
+    [
+     57,
+     "O57_channelValue4E0",
+     4
+    ],
+    [
+     57,
+     "O57_config0954",
+     2
+    ],
+    [
+     57,
+     "O57_labels390",
+     2
+    ],
+    [
+     57,
+     "O57_labels39CEnd",
+     2
+    ],
+    [
+     57,
+     "O57_labels39CStart",
+     2
+    ],
+    [
+     57,
+     "O57_labels3A0End",
+     2
+    ],
+    [
+     57,
+     "O57_labels3A0Start",
+     2
+    ],
+    [
+     57,
+     "O57_labels3A4",
+     2
+    ],
+    [
+     57,
+     "O57_nibbleFlags0954",
+     2
+    ],
+    [
+     57,
+     "O57_node30Flags0954",
+     2
+    ],
+    [
+     57,
+     "O57_queryObject0954",
+     2
+    ],
+    [
+     57,
+     "O57_renderChannel1FC",
+     2
+    ],
+    [
+     57,
+     "O57_renderData21C",
+     2
+    ],
+    [
+     57,
+     "O57_renderData23C",
+     2
+    ],
+    [
+     57,
+     "gO57Active144Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57ChoiceDirtyReloc",
+     2
+    ],
+    [
+     57,
+     "gO57ChoiceMaskReferenceReloc",
+     4
+    ],
+    [
+     57,
+     "gO57ChoiceMaskReloc",
+     2
+    ],
+    [
+     57,
+     "gO57ChoicePublishedReloc",
+     6
+    ],
+    [
+     57,
+     "gO57ChoiceSourceReloc",
+     4
+    ],
+    [
+     57,
+     "gO57ChoicesReloc",
+     2
+    ],
+    [
+     57,
+     "gO57ColourCycle1A8Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57CourseTable",
+     4
+    ],
+    [
+     57,
+     "gO57Current100Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Descriptor00PrepareReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Descriptor00Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Descriptor6CPrepareReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Descriptor6CReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Descriptor70PrepareReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Descriptor70Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Descriptor74PrepareReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Descriptor74Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Descriptor78PrepareReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Descriptor78Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57DescriptorF8PrepareReloc",
+     2
+    ],
+    [
+     57,
+     "gO57DescriptorF8Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57DescriptorFCReloc",
+     2
+    ],
+    [
+     57,
+     "gO57DescriptorIndices130Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57DescriptorIndicesD8Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57DescriptorIndicesECReloc",
+     2
+    ],
+    [
+     57,
+     "gO57DescriptorList130Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57DescriptorList80Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Descriptors08Reloc",
+     4
+    ],
+    [
+     57,
+     "gO57Descriptors30Reloc",
+     4
+    ],
+    [
+     57,
+     "gO57Descriptors58Reloc",
+     4
+    ],
+    [
+     57,
+     "gO57Descriptors80Reloc",
+     4
+    ],
+    [
+     57,
+     "gO57DescriptorsE0Reloc",
+     4
+    ],
+    [
+     57,
+     "gO57Draw32A0Available4CC",
+     2
+    ],
+    [
+     57,
+     "gO57Draw32A0Envelope124",
+     4
+    ],
+    [
+     57,
+     "gO57Draw32A0Local08",
+     2
+    ],
+    [
+     57,
+     "gO57Draw32A0Local18",
+     2
+    ],
+    [
+     57,
+     "gO57Draw32A0Local28",
+     2
+    ],
+    [
+     57,
+     "gO57Draw32A0Masks3C8",
+     2
+    ],
+    [
+     57,
+     "gO57Draw32A0Records3F8",
+     2
+    ],
+    [
+     57,
+     "gO57Draw32A0Records458",
+     2
+    ],
+    [
+     57,
+     "gO57Draw32A0Selection1A0",
+     6
+    ],
+    [
+     57,
+     "gO57Draw32A0Shifts3D8",
+     2
+    ],
+    [
+     57,
+     "gO57Draw32A0State118",
+     2
+    ],
+    [
+     57,
+     "gO57Draw32A0StripeReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Draw32A0TableMode18C",
+     2
+    ],
+    [
+     57,
+     "gO57Draw32A0WordTable4B8",
+     2
+    ],
+    [
+     57,
+     "gO57Draw32A0Work34C",
+     2
+    ],
+    [
+     57,
+     "gO57Ease28B4Id183",
+     4
+    ],
+    [
+     57,
+     "gO57Ease28B4Latch50C",
+     8
+    ],
+    [
+     57,
+     "gO57Ease28B4Record21C",
+     4
+    ],
+    [
+     57,
+     "gO57Ease28B4Record23C",
+     4
+    ],
+    [
+     57,
+     "gO57Ease28B4State118",
+     2
+    ],
+    [
+     57,
+     "gO57Ease28B4State144",
+     2
+    ],
+    [
+     57,
+     "gO57Ease28B4State180",
+     2
+    ],
+    [
+     57,
+     "gO57GridAlpha13C",
+     6
+    ],
+    [
+     57,
+     "gO57GridMode184",
+     4
+    ],
+    [
+     57,
+     "gO57GridRecord160",
+     2
+    ],
+    [
+     57,
+     "gO57GridTriangles",
+     8
+    ],
+    [
+     57,
+     "gO57Ids134Reloc",
+     8
+    ],
+    [
+     57,
+     "gO57MenuSelectionCountReloc",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleAlpha",
+     12
+    ],
+    [
+     57,
+     "gO57MiddleBadge",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleCanLeave",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleCaption",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleCharacterIds",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleChoices",
+     8
+    ],
+    [
+     57,
+     "gO57MiddleColumns",
+     4
+    ],
+    [
+     57,
+     "gO57MiddleData31B4",
+     4
+    ],
+    [
+     57,
+     "gO57MiddleData31B8",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleData31E8",
+     4
+    ],
+    [
+     57,
+     "gO57MiddleData31EC",
+     4
+    ],
+    [
+     57,
+     "gO57MiddleData31F0",
+     4
+    ],
+    [
+     57,
+     "gO57MiddleData31F4",
+     4
+    ],
+    [
+     57,
+     "gO57MiddleData3208",
+     4
+    ],
+    [
+     57,
+     "gO57MiddleData3214",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleEmptyFormat",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleFade",
+     18
+    ],
+    [
+     57,
+     "gO57MiddleFadeDelay",
+     16
+    ],
+    [
+     57,
+     "gO57MiddleInfo",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleItems",
+     12
+    ],
+    [
+     57,
+     "gO57MiddleLabels",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleMode",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleMoving",
+     12
+    ],
+    [
+     57,
+     "gO57MiddleNextMode",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleOutput",
+     2
+    ],
+    [
+     57,
+     "gO57MiddlePanelPosition",
+     12
+    ],
+    [
+     57,
+     "gO57MiddlePathId",
+     2
+    ],
+    [
+     57,
+     "gO57MiddlePathIndices",
+     2
+    ],
+    [
+     57,
+     "gO57MiddlePathList",
+     4
+    ],
+    [
+     57,
+     "gO57MiddlePreviousAlpha",
+     12
+    ],
+    [
+     57,
+     "gO57MiddlePreviousSelection",
+     12
+    ],
+    [
+     57,
+     "gO57MiddleResultFormat",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleSelection",
+     48
+    ],
+    [
+     57,
+     "gO57MiddleState188",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleState194",
+     8
+    ],
+    [
+     57,
+     "gO57MiddleStopList",
+     4
+    ],
+    [
+     57,
+     "gO57MiddleTransition",
+     20
+    ],
+    [
+     57,
+     "gO57MiddleUnlocked198",
+     2
+    ],
+    [
+     57,
+     "gO57MiddleUnlocked19C",
+     2
+    ],
+    [
+     57,
+     "gO57Mode11CReloc",
+     4
+    ],
+    [
+     57,
+     "gO57ModeChoice4F8",
+     4
+    ],
+    [
+     57,
+     "gO57ModeChoices",
+     4
+    ],
+    [
+     57,
+     "gO57ModeChoicesEnd",
+     2
+    ],
+    [
+     57,
+     "gO57ModeCountdown120",
+     2
+    ],
+    [
+     57,
+     "gO57ModeExternalByte",
+     2
+    ],
+    [
+     57,
+     "gO57ModeFinalArg1",
+     2
+    ],
+    [
+     57,
+     "gO57ModeGate50C",
+     4
+    ],
+    [
+     57,
+     "gO57ModeObject180Reloc",
+     6
+    ],
+    [
+     57,
+     "gO57ModeOutputs",
+     2
+    ],
+    [
+     57,
+     "gO57ModePrimaryIds",
+     8
+    ],
+    [
+     57,
+     "gO57ModePrimaryIds134",
+     4
+    ],
+    [
+     57,
+     "gO57ModePrimaryValues",
+     4
+    ],
+    [
+     57,
+     "gO57ModeSecondaryIds",
+     8
+    ],
+    [
+     57,
+     "gO57ModeSecondaryIds1A0",
+     4
+    ],
+    [
+     57,
+     "gO57ModeSetup21C",
+     8
+    ],
+    [
+     57,
+     "gO57ModeShortValue",
+     2
+    ],
+    [
+     57,
+     "gO57ModeState118BaseReloc",
+     14
+    ],
+    [
+     57,
+     "gO57ModeState11CBaseReloc",
+     2
+    ],
+    [
+     57,
+     "gO57ModeState144BaseReloc",
+     2
+    ],
+    [
+     57,
+     "gO57ModeState160BaseReloc",
+     8
+    ],
+    [
+     57,
+     "gO57ModeState164BaseReloc",
+     8
+    ],
+    [
+     57,
+     "gO57ModeState184BaseReloc",
+     8
+    ],
+    [
+     57,
+     "gO57ModeTimer114",
+     18
+    ],
+    [
+     57,
+     "gO57ModeValueTable",
+     2
+    ],
+    [
+     57,
+     "gO57NodeValues17CReloc",
+     4
+    ],
+    [
+     57,
+     "gO57Pending104Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Previous108Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57ResidentCurrentReloc",
+     2
+    ],
+    [
+     57,
+     "gO57ResidentFlags10Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Rows27CReloc",
+     8
+    ],
+    [
+     57,
+     "gO57Runtime1B8Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57SelectionActive144Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57SelectionChanging4F0Reloc",
+     6
+    ],
+    [
+     57,
+     "gO57SelectionCurrent100Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57SelectionDistance50CReloc",
+     4
+    ],
+    [
+     57,
+     "gO57SelectionIds134Reloc",
+     12
+    ],
+    [
+     57,
+     "gO57SelectionList30Reloc",
+     4
+    ],
+    [
+     57,
+     "gO57SelectionList8Reloc",
+     4
+    ],
+    [
+     57,
+     "gO57SelectionMode11CReloc",
+     2
+    ],
+    [
+     57,
+     "gO57SelectionPending104Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57SelectionPrevious108Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57SelectionPrimary4E8Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57SelectionSecondary4ECReloc",
+     4
+    ],
+    [
+     57,
+     "gO57SelectionState118Reloc",
+     4
+    ],
+    [
+     57,
+     "gO57SelectionTimer120Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57SelectionValue10CReloc",
+     4
+    ],
+    [
+     57,
+     "gO57SelectionValues158Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57SelectionValues17CReloc",
+     4
+    ],
+    [
+     57,
+     "gO57SpawnPairs3E8Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Spawned150Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57SpecialModeReloc",
+     8
+    ],
+    [
+     57,
+     "gO57State118Reloc",
+     10
+    ],
+    [
+     57,
+     "gO57Tail2C28Completion50C",
+     2
+    ],
+    [
+     57,
+     "gO57Tail2C28DistanceLimit104",
+     2
+    ],
+    [
+     57,
+     "gO57Tail2C28QueryWord180",
+     2
+    ],
+    [
+     57,
+     "gO57Tail2C28Record21C",
+     4
+    ],
+    [
+     57,
+     "gO57Tail2C28Record23C",
+     4
+    ],
+    [
+     57,
+     "gO57Tail2C28Reference14C",
+     2
+    ],
+    [
+     57,
+     "gO57Tail2C28Timer118",
+     2
+    ],
+    [
+     57,
+     "gO57UnlockTable",
+     4
+    ],
+    [
+     57,
+     "gO57Value110Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value124Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value128Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value12CReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value138Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value13CReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value148Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value14CReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value160Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value164Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value188Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value18CReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value190Reloc",
+     4
+    ],
+    [
+     57,
+     "gO57Value198Reloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value19CReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value1FCReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value21CReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value23CReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value25CReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value32CReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value34CReloc",
+     2
+    ],
+    [
+     57,
+     "gO57Value50CReloc",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Byte3D1CReloc",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Byte3EF4Reloc",
+     2
+    ],
+    [
+     57,
+     "gOverlay57ControllerMap",
+     4
+    ],
+    [
+     57,
+     "gOverlay57Delay",
+     12
+    ],
+    [
+     57,
+     "gOverlay57DistanceLimit",
+     2
+    ],
+    [
+     57,
+     "gOverlay57DistanceState",
+     32
+    ],
+    [
+     57,
+     "gOverlay57LayoutBusy",
+     12
+    ],
+    [
+     57,
+     "gOverlay57LayoutValue",
+     8
+    ],
+    [
+     57,
+     "gOverlay57Layouts",
+     8
+    ],
+    [
+     57,
+     "gOverlay57LevelBySelection",
+     2
+    ],
+    [
+     57,
+     "gOverlay57MenuEntries",
+     6
+    ],
+    [
+     57,
+     "gOverlay57MenuHalf",
+     6
+    ],
+    [
+     57,
+     "gOverlay57MenuSources",
+     14
+    ],
+    [
+     57,
+     "gOverlay57MirrorFlag",
+     4
+    ],
+    [
+     57,
+     "gOverlay57Mode10C",
+     8
+    ],
+    [
+     57,
+     "gOverlay57NodeArguments",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Object100",
+     2
+    ],
+    [
+     57,
+     "gOverlay57ObjectId",
+     16
+    ],
+    [
+     57,
+     "gOverlay57ObjectReady",
+     2
+    ],
+    [
+     57,
+     "gOverlay57PreviousLayoutValue",
+     8
+    ],
+    [
+     57,
+     "gOverlay57PreviousSelection",
+     8
+    ],
+    [
+     57,
+     "gOverlay57PublishedIndex3A28Reloc",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Range008End",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Range008Start",
+     22
+    ],
+    [
+     57,
+     "gOverlay57Range030End",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Range030Start",
+     14
+    ],
+    [
+     57,
+     "gOverlay57Range058End",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Range058Start",
+     6
+    ],
+    [
+     57,
+     "gOverlay57Range080End",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Range080Start",
+     18
+    ],
+    [
+     57,
+     "gOverlay57Range0E0End",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Range0E0Start",
+     10
+    ],
+    [
+     57,
+     "gOverlay57Range150End",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Range150Start",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Reference",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Resource000",
+     6
+    ],
+    [
+     57,
+     "gOverlay57Resource06C",
+     12
+    ],
+    [
+     57,
+     "gOverlay57Resource070",
+     12
+    ],
+    [
+     57,
+     "gOverlay57Resource074",
+     12
+    ],
+    [
+     57,
+     "gOverlay57Resource078",
+     12
+    ],
+    [
+     57,
+     "gOverlay57Resource0F8",
+     6
+    ],
+    [
+     57,
+     "gOverlay57Resource0FC",
+     10
+    ],
+    [
+     57,
+     "gOverlay57Selection",
+     26
+    ],
+    [
+     57,
+     "gOverlay57Selection100",
+     16
+    ],
+    [
+     57,
+     "gOverlay57Selection108",
+     8
+    ],
+    [
+     57,
+     "gOverlay57StartLinks",
+     4
+    ],
+    [
+     57,
+     "gOverlay57State",
+     26
+    ],
+    [
+     57,
+     "gOverlay57StopLinks",
+     4
+    ],
+    [
+     57,
+     "gOverlay57TableA",
+     2
+    ],
+    [
+     57,
+     "gOverlay57TableB",
+     2
+    ],
+    [
+     57,
+     "gOverlay57TableIndex",
+     14
+    ],
+    [
+     57,
+     "gOverlay57TableLabels",
+     4
+    ],
+    [
+     57,
+     "gOverlay57TableMode",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Threshold38D8Reloc",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Threshold3970Reloc",
+     2
+    ],
+    [
+     57,
+     "gOverlay57Transition",
+     4
+    ],
+    [
+     57,
+     "gOverlay57UpdateFlags",
+     2
+    ],
+    [
+     57,
+     "gOverlay57UpdateIndex",
+     2
+    ],
+    [
+     57,
+     "gOverlay57UpdateMasks",
+     2
+    ],
+    [
+     57,
+     "gOverlay57UpdateScale",
+     2
+    ],
+    [
+     57,
+     "gOverlay57UpdateSelection",
+     6
+    ],
+    [
+     57,
+     "gOverlay57UpdateShifts",
+     2
+    ],
+    [
+     57,
+     "gOverlay57UpdateValues",
+     2
+    ],
+    [
+     57,
+     "o57Ease28B4LookupSecondaryReloc",
+     1
+    ],
+    [
+     57,
+     "o57PrepareDescriptorListReloc",
+     2
+    ],
+    [
+     57,
+     "overlay57AdvanceReloc",
+     1
+    ],
+    [
+     57,
+     "overlay57Call36F4Reloc",
+     1
+    ],
+    [
+     57,
+     "overlay57ReleaseDescriptorReloc",
+     1
+    ],
+    [
+     57,
+     "overlay57TailFindObjectReloc",
+     1
+    ],
+    [
+     57,
+     "overlay57TailPrepareObjectReloc",
+     1
+    ],
+    [
+     57,
+     "overlay57TailQueryChoiceReloc",
+     1
+    ],
+    [
+     57,
+     "overlay57TailQueryModeReloc",
+     1
+    ],
+    [
+     57,
+     "overlay57TailStartObjectReloc",
+     1
+    ],
+    [
+     58,
+     "D_1A0",
+     4
+    ],
+    [
+     58,
+     "D_2A8",
+     2
+    ],
+    [
+     58,
+     "D_2B0",
+     4
+    ],
+    [
+     58,
+     "D_2B4",
+     4
+    ],
+    [
+     58,
+     "D_2BC",
+     10
+    ],
+    [
+     58,
+     "D_2C0",
+     7
+    ],
+    [
+     58,
+     "D_30",
+     18
+    ],
+    [
+     58,
+     "D_34",
+     12
+    ],
+    [
+     58,
+     "D_38",
+     2
+    ],
+    [
+     58,
+     "D_44",
+     12
+    ],
+    [
+     58,
+     "D_48",
+     4
+    ],
+    [
+     58,
+     "D_4C",
+     2
+    ],
+    [
+     58,
+     "D_50",
+     4
+    ],
+    [
+     58,
+     "D_54",
+     4
+    ],
+    [
+     58,
+     "D_58",
+     2
+    ],
+    [
+     58,
+     "D_5C",
+     2
+    ],
+    [
+     58,
+     "D_60",
+     2
+    ],
+    [
+     58,
+     "D_68",
+     12
+    ],
+    [
+     58,
+     "D_6C",
+     6
+    ],
+    [
+     58,
+     "D_70",
+     2
+    ],
+    [
+     58,
+     "D_80000058",
+     2
+    ],
+    [
+     58,
+     "D_80000078",
+     2
+    ],
+    [
+     58,
+     "D_80000098",
+     2
+    ],
+    [
+     58,
+     "D_90",
+     4
+    ],
+    [
+     58,
+     "D_B8",
+     2
+    ],
+    [
+     58,
+     "D_DC",
+     4
+    ],
+    [
+     58,
+     "D_F8",
+     6
+    ],
+    [
+     58,
+     "D_o058_5AE8",
+     2
+    ],
+    [
+     58,
+     "D_o058_5B28",
+     4
+    ],
+    [
+     58,
+     "D_o058_5B40",
+     2
+    ],
+    [
+     58,
+     "D_o058_5B60",
+     2
+    ],
+    [
+     58,
+     "D_o058_5B80",
+     2
+    ],
+    [
+     58,
+     "D_o058_5BA0",
+     6
+    ],
+    [
+     58,
+     "D_o058_5C5C",
+     8
+    ],
+    [
+     58,
+     "D_o058_5C68",
+     2
+    ],
+    [
+     58,
+     "D_o058_5C74",
+     2
+    ],
+    [
+     58,
+     "D_o058_5C80",
+     8
+    ],
+    [
+     58,
+     "D_o058_5C8C",
+     4
+    ],
+    [
+     58,
+     "D_o058_5C98",
+     10
+    ],
+    [
+     58,
+     "D_o058_5CB0",
+     8
+    ],
+    [
+     58,
+     "D_o058_5CD8",
+     4
+    ],
+    [
+     58,
+     "D_o058_5CE0",
+     4
+    ],
+    [
+     58,
+     "D_o058_5D2C",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D30",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D34",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D38",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D3C",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D44",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D48",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D50",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D54",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D5C",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D60",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D64",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D68",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D6C",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D70",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D74",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D78",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D7C",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D84",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D88",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D90",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D94",
+     2
+    ],
+    [
+     58,
+     "D_o058_5D98",
+     2
+    ],
+    [
+     58,
+     "D_o058_5DA0",
+     2
+    ],
+    [
+     58,
+     "D_o058_5DA4",
+     2
+    ],
+    [
+     58,
+     "D_o058_5DAC",
+     2
+    ],
+    [
+     58,
+     "D_o058_5DB0",
+     2
+    ],
+    [
+     58,
+     "D_o058_5DB4",
+     2
+    ],
+    [
+     58,
+     "D_o058_5DB8",
+     2
+    ],
+    [
+     58,
+     "D_o058_5DC4",
+     2
+    ],
+    [
+     58,
+     "D_o058_5E50",
+     22
+    ],
+    [
+     58,
+     "D_o058_5E68",
+     6
+    ],
+    [
+     58,
+     "D_o058_5E78",
+     10
+    ],
+    [
+     58,
+     "D_o058_5E7C",
+     10
+    ],
+    [
+     58,
+     "D_o058_5E80",
+     8
+    ],
+    [
+     58,
+     "D_o058_5E84",
+     6
+    ],
+    [
+     58,
+     "D_o058_5E88",
+     6
+    ],
+    [
+     58,
+     "D_o058_5E8C",
+     10
+    ],
+    [
+     58,
+     "D_o058_5E90",
+     16
+    ],
+    [
+     58,
+     "D_o058_5E94",
+     26
+    ],
+    [
+     58,
+     "D_o058_5E98",
+     68
+    ],
+    [
+     58,
+     "D_o058_5E9C",
+     80
+    ],
+    [
+     58,
+     "D_o058_5EA0",
+     88
+    ],
+    [
+     58,
+     "D_o058_5EA4",
+     16
+    ],
+    [
+     58,
+     "D_o058_5EA8",
+     51
+    ],
+    [
+     58,
+     "D_o058_5EAC",
+     12
+    ],
+    [
+     58,
+     "D_o058_5EB0",
+     18
+    ],
+    [
+     58,
+     "D_o058_5EB4",
+     4
+    ],
+    [
+     58,
+     "D_o058_5EBC",
+     2
+    ],
+    [
+     58,
+     "D_o058_5EC0",
+     2
+    ],
+    [
+     58,
+     "D_o058_5EC4",
+     6
+    ],
+    [
+     58,
+     "D_o058_5EC8",
+     18
+    ],
+    [
+     58,
+     "D_o058_5EE0",
+     16
+    ],
+    [
+     58,
+     "D_o058_5EF8",
+     12
+    ],
+    [
+     58,
+     "D_o058_5F10",
+     6
+    ],
+    [
+     58,
+     "D_o058_5F28",
+     8
+    ],
+    [
+     58,
+     "D_o058_5F2C",
+     14
+    ],
+    [
+     58,
+     "D_o058_5F30",
+     4
+    ],
+    [
+     58,
+     "D_o058_5F38",
+     48
+    ],
+    [
+     58,
+     "D_o058_5F48",
+     6
+    ],
+    [
+     58,
+     "gOverlay58CameraGateReloc",
+     2
+    ],
+    [
+     58,
+     "gOverlay58FloorChoice",
+     2
+    ],
+    [
+     58,
+     "gOverlay58InlineResource",
+     2
+    ],
+    [
+     58,
+     "gOverlay58InsertChoice",
+     2
+    ],
+    [
+     58,
+     "gOverlay58LevelReloc",
+     4
+    ],
+    [
+     58,
+     "gOverlay58OptionalResource",
+     2
+    ],
+    [
+     58,
+     "gOverlay58PrimaryOrderIndex",
+     2
+    ],
+    [
+     58,
+     "gOverlay58RankSetIdReloc",
+     2
+    ],
+    [
+     58,
+     "gOverlay58ResourceId",
+     2
+    ],
+    [
+     58,
+     "gOverlay58ResourceReady",
+     2
+    ],
+    [
+     58,
+     "gOverlay58ResourceState",
+     6
+    ],
+    [
+     58,
+     "gOverlay58SelectionTableReloc",
+     8
+    ],
+    [
+     58,
+     "gOverlay58TrackReloc",
+     4
+    ],
+    [
+     58,
+     "gOverlay58TransitionModeReloc",
+     4
+    ],
+    [
+     58,
+     "gOverlay58UnlockTableReloc",
+     2
+    ],
+    [
+     58,
+     "gOverlay58VehicleReloc",
+     4
+    ],
+    [
+     58,
+     "overlay58ReleaseReloc",
+     2
+    ],
+    [
+     59,
+     "gOverlay59DescriptorTables",
+     2
+    ],
+    [
+     59,
+     "gOverlay59Entries",
+     16
+    ],
+    [
+     59,
+     "gOverlay59EntriesEnd",
+     4
+    ],
+    [
+     59,
+     "gOverlay59EntriesOneEnd",
+     2
+    ],
+    [
+     59,
+     "gOverlay59Styles",
+     2
+    ],
+    [
+     59,
+     "gOverlay59TableInfo",
+     2
+    ],
+    [
+     59,
+     "gOverlay59ValueTables",
+     2
+    ],
+    [
+     59,
+     "overlay59ReleaseReloc",
+     1
+    ],
+    [
+     60,
+     "D_800000B0",
+     2
+    ],
+    [
+     60,
+     "D_800D3058Pass2End_o060Reloc",
+     2
+    ],
+    [
+     60,
+     "D_800D3058Pass2_o060Reloc",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Bss00",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Bss174",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Bss20",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Bss40",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Bss60",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Bss80",
+     2
+    ],
+    [
+     60,
+     "gOverlay60CoordE8",
+     2
+    ],
+    [
+     60,
+     "gOverlay60CoordEA",
+     2
+    ],
+    [
+     60,
+     "gOverlay60CoordEC",
+     2
+    ],
+    [
+     60,
+     "gOverlay60CoordEE",
+     2
+    ],
+    [
+     60,
+     "gOverlay60CoordF0",
+     2
+    ],
+    [
+     60,
+     "gOverlay60CoordF2",
+     2
+    ],
+    [
+     60,
+     "gOverlay60CoordF4",
+     2
+    ],
+    [
+     60,
+     "gOverlay60CoordF6",
+     2
+    ],
+    [
+     60,
+     "gOverlay60CoordsD8",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data00",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data020",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data040",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data060",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data080",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data0A0",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data0A4",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data0A8",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data0B0",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data0C0",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data0C4",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data0C8",
+     34
+    ],
+    [
+     60,
+     "gOverlay60Data0D8",
+     16
+    ],
+    [
+     60,
+     "gOverlay60Data0E8",
+     16
+    ],
+    [
+     60,
+     "gOverlay60Data0F8",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data10C",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data11C",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data12C",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data130",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data134",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data138",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data14C",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data150",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data154",
+     6
+    ],
+    [
+     60,
+     "gOverlay60Data158",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data15C",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data160",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data164",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data168",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data174",
+     6
+    ],
+    [
+     60,
+     "gOverlay60Data178",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data1A4",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data1B4",
+     8
+    ],
+    [
+     60,
+     "gOverlay60Data1D0",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data1F0",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data1F8",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data200",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data20C",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data220",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data228",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data260",
+     12
+    ],
+    [
+     60,
+     "gOverlay60Data28",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data288",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data298",
+     8
+    ],
+    [
+     60,
+     "gOverlay60Data2A0",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data2A4",
+     106
+    ],
+    [
+     60,
+     "gOverlay60Data2A8",
+     14
+    ],
+    [
+     60,
+     "gOverlay60Data2AC",
+     12
+    ],
+    [
+     60,
+     "gOverlay60Data2B0",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data2B4",
+     4
+    ],
+    [
+     60,
+     "gOverlay60Data2B8",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data38",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data40",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data44",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data48",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data4C",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Data58",
+     4
+    ],
+    [
+     60,
+     "gOverlay60LocalDataReloc",
+     2
+    ],
+    [
+     60,
+     "gOverlay60ObjectC8",
+     6
+    ],
+    [
+     60,
+     "gOverlay60ObjectCC",
+     2
+    ],
+    [
+     60,
+     "gOverlay60ObjectCCY",
+     2
+    ],
+    [
+     60,
+     "gOverlay60ObjectD0",
+     2
+    ],
+    [
+     60,
+     "gOverlay60ObjectD0Y",
+     2
+    ],
+    [
+     60,
+     "gOverlay60ObjectD4",
+     2
+    ],
+    [
+     60,
+     "gOverlay60ObjectD4Y",
+     2
+    ],
+    [
+     60,
+     "gOverlay60OptionalResource",
+     2
+    ],
+    [
+     60,
+     "gOverlay60PrimaryResource",
+     2
+    ],
+    [
+     60,
+     "gOverlay60Resources",
+     2
+    ],
+    [
+     60,
+     "gOverlay60ResourcesEnd",
+     2
+    ],
+    [
+     60,
+     "overlay60ReleaseReloc",
+     3
+    ],
+    [
+     61,
+     "gOverlay61Animation0",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Animation1",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Config08",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Config30",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Counter98",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Counter9C",
+     2
+    ],
+    [
+     61,
+     "gOverlay61CounterA0",
+     2
+    ],
+    [
+     61,
+     "gOverlay61DirExts",
+     6
+    ],
+    [
+     61,
+     "gOverlay61DirNames",
+     6
+    ],
+    [
+     61,
+     "gOverlay61DirSizes",
+     6
+    ],
+    [
+     61,
+     "gOverlay61DirTypes",
+     4
+    ],
+    [
+     61,
+     "gOverlay61DownLabelReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Entries",
+     6
+    ],
+    [
+     61,
+     "gOverlay61EntriesReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61EntryCount",
+     6
+    ],
+    [
+     61,
+     "gOverlay61EntryCountReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Error",
+     10
+    ],
+    [
+     61,
+     "gOverlay61ErrorBack",
+     10
+    ],
+    [
+     61,
+     "gOverlay61ErrorNext",
+     10
+    ],
+    [
+     61,
+     "gOverlay61FileNames",
+     2
+    ],
+    [
+     61,
+     "gOverlay61FileStatus",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Format58Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Format64Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Format70Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Format78Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Format90Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Format9CReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61FormatA8Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61FormatBCReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61FreeLabel",
+     2
+    ],
+    [
+     61,
+     "gOverlay61FreeSpace",
+     2
+    ],
+    [
+     61,
+     "gOverlay61GhostLabel",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Handle58",
+     4
+    ],
+    [
+     61,
+     "gOverlay61Handle5C",
+     6
+    ],
+    [
+     61,
+     "gOverlay61Handle60",
+     6
+    ],
+    [
+     61,
+     "gOverlay61Handle64",
+     6
+    ],
+    [
+     61,
+     "gOverlay61Handle68",
+     6
+    ],
+    [
+     61,
+     "gOverlay61Handle6C",
+     6
+    ],
+    [
+     61,
+     "gOverlay61Handle70",
+     6
+    ],
+    [
+     61,
+     "gOverlay61Handle74",
+     6
+    ],
+    [
+     61,
+     "gOverlay61Handle78",
+     4
+    ],
+    [
+     61,
+     "gOverlay61Handle7C",
+     10
+    ],
+    [
+     61,
+     "gOverlay61Handle80",
+     6
+    ],
+    [
+     61,
+     "gOverlay61Handle84",
+     6
+    ],
+    [
+     61,
+     "gOverlay61Handle88",
+     4
+    ],
+    [
+     61,
+     "gOverlay61ItemCountReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61ItemsReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61LabelB0Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61NamesReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61NewFileName",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Record100",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Record10C",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Record114",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Record120",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Record12C",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Record130",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Record134",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Record13C",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Record144",
+     2
+    ],
+    [
+     61,
+     "gOverlay61RecordD0",
+     2
+    ],
+    [
+     61,
+     "gOverlay61RecordDC",
+     2
+    ],
+    [
+     61,
+     "gOverlay61RecordE8",
+     2
+    ],
+    [
+     61,
+     "gOverlay61RecordF4",
+     2
+    ],
+    [
+     61,
+     "gOverlay61RecordFormatReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61RecordPathReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61RepeatXReloc",
+     6
+    ],
+    [
+     61,
+     "gOverlay61RepeatYReloc",
+     6
+    ],
+    [
+     61,
+     "gOverlay61Resource58Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Resource5CReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Resource60Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Resource64Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Resource68Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Resource6CReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Resource70Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Resource74Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Resource78Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Resource7CReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Resource80Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Resource84Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Resource88Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61ResourceBaseReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61SavePathReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61SelectedIndexReloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Selection",
+     10
+    ],
+    [
+     61,
+     "gOverlay61SetupData",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Sprite0",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Sprite1",
+     6
+    ],
+    [
+     61,
+     "gOverlay61State",
+     32
+    ],
+    [
+     61,
+     "gOverlay61StateA4",
+     2
+    ],
+    [
+     61,
+     "gOverlay61StateA8",
+     2
+    ],
+    [
+     61,
+     "gOverlay61StateAC",
+     2
+    ],
+    [
+     61,
+     "gOverlay61StateB0",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Text0Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Text1Reloc",
+     2
+    ],
+    [
+     61,
+     "gOverlay61Time0",
+     4
+    ],
+    [
+     61,
+     "gOverlay61Time1",
+     4
+    ],
+    [
+     61,
+     "gOverlay61TopIndexReloc",
+     8
+    ],
+    [
+     61,
+     "gOverlay61UpLabelReloc",
+     2
+    ],
+    [
+     61,
+     "overlay61CreateDescriptorReloc",
+     13
+    ],
+    [
+     62,
+     "gOverlay62CommitContextReloc",
+     2
+    ],
+    [
+     62,
+     "gOverlay62FirstItemReloc",
+     2
+    ],
+    [
+     62,
+     "gOverlay62Float0",
+     4
+    ],
+    [
+     62,
+     "gOverlay62Handle14",
+     4
+    ],
+    [
+     62,
+     "gOverlay62Handle18",
+     4
+    ],
+    [
+     62,
+     "gOverlay62InlineResource",
+     2
+    ],
+    [
+     62,
+     "gOverlay62PulseReloc",
+     2
+    ],
+    [
+     62,
+     "gOverlay62Resource14",
+     2
+    ],
+    [
+     62,
+     "gOverlay62Resource18",
+     2
+    ],
+    [
+     62,
+     "gOverlay62State",
+     12
+    ],
+    [
+     62,
+     "gOverlay62Value10",
+     2
+    ],
+    [
+     62,
+     "gOverlay62Value4",
+     2
+    ],
+    [
+     62,
+     "gOverlay62Value4Initial",
+     2
+    ],
+    [
+     62,
+     "gOverlay62Value8",
+     4
+    ],
+    [
+     62,
+     "gOverlay62ValueC",
+     6
+    ],
+    [
+     62,
+     "gOverlay62Values",
+     4
+    ],
+    [
+     62,
+     "overlay62ReleaseReloc",
+     3
+    ],
+    [
+     63,
+     "gO63ActiveState",
+     6
+    ],
+    [
+     63,
+     "gO63Chain",
+     2
+    ],
+    [
+     63,
+     "gO63ChainReload",
+     2
+    ],
+    [
+     63,
+     "gO63Configs",
+     2
+    ],
+    [
+     63,
+     "gO63CreateResource",
+     2
+    ],
+    [
+     63,
+     "gO63ExternalByteReloc",
+     2
+    ],
+    [
+     63,
+     "gO63ExternalStateAReloc",
+     2
+    ],
+    [
+     63,
+     "gO63ExternalStateBReloc",
+     2
+    ],
+    [
+     63,
+     "gO63ExternalTimerReloc",
+     6
+    ],
+    [
+     63,
+     "gO63Fade",
+     6
+    ],
+    [
+     63,
+     "gO63FadeDirection",
+     2
+    ],
+    [
+     63,
+     "gO63FadeTimer",
+     2
+    ],
+    [
+     63,
+     "gO63InitResource",
+     2
+    ],
+    [
+     63,
+     "gO63Local2C",
+     2
+    ],
+    [
+     63,
+     "gO63Local30",
+     2
+    ],
+    [
+     63,
+     "gO63LocalFloat",
+     2
+    ],
+    [
+     63,
+     "gO63LocalResource",
+     2
+    ],
+    [
+     63,
+     "gO63LocalWord",
+     2
+    ],
+    [
+     63,
+     "gO63ObjectFloat",
+     2
+    ],
+    [
+     63,
+     "gO63Opacity",
+     4
+    ],
+    [
+     63,
+     "gO63OpacityContextReloc",
+     2
+    ],
+    [
+     63,
+     "gO63Particles",
+     2
+    ],
+    [
+     63,
+     "gO63PendingStart",
+     2
+    ],
+    [
+     63,
+     "gO63PendingState",
+     4
+    ],
+    [
+     63,
+     "gO63SavedTableWord",
+     2
+    ],
+    [
+     63,
+     "gO63Sequence",
+     2
+    ],
+    [
+     63,
+     "gO63SequenceIndex",
+     4
+    ],
+    [
+     63,
+     "gO63SequenceStart",
+     2
+    ],
+    [
+     63,
+     "gO63State18C",
+     2
+    ],
+    [
+     63,
+     "gO63State190",
+     2
+    ],
+    [
+     63,
+     "gO63State194",
+     2
+    ],
+    [
+     63,
+     "gO63State198",
+     2
+    ],
+    [
+     63,
+     "gO63State19C",
+     2
+    ],
+    [
+     63,
+     "gO63Timer",
+     4
+    ],
+    [
+     63,
+     "gO63TransitionEnabled",
+     2
+    ],
+    [
+     63,
+     "gO63TriggerTimer",
+     2
+    ],
+    [
+     63,
+     "gO63Triggered",
+     2
+    ],
+    [
+     63,
+     "gOverlay63Block",
+     2
+    ],
+    [
+     63,
+     "gOverlay63Resource",
+     2
+    ],
+    [
+     63,
+     "o63SetStateReloc",
+     2
+    ],
+    [
+     63,
+     "overlay63ReleaseReloc",
+     2
+    ],
+    [
+     65,
+     "D_0",
+     12
+    ],
+    [
+     65,
+     "D_1900",
+     4
+    ],
+    [
+     65,
+     "D_1908",
+     2
+    ],
+    [
+     65,
+     "D_1C0",
+     4
+    ],
+    [
+     65,
+     "D_1D8",
+     2
+    ],
+    [
+     65,
+     "D_208",
+     2
+    ],
+    [
+     65,
+     "D_20C",
+     4
+    ],
+    [
+     65,
+     "D_210",
+     2
+    ],
+    [
+     65,
+     "D_214",
+     2
+    ],
+    [
+     65,
+     "D_218",
+     2
+    ],
+    [
+     65,
+     "D_21C",
+     2
+    ],
+    [
+     65,
+     "D_2970",
+     4
+    ],
+    [
+     65,
+     "D_2974",
+     4
+    ],
+    [
+     65,
+     "D_2978",
+     8
+    ],
+    [
+     65,
+     "D_297C",
+     8
+    ],
+    [
+     65,
+     "D_2980",
+     2
+    ],
+    [
+     65,
+     "D_2988",
+     4
+    ],
+    [
+     65,
+     "D_80000000",
+     4
+    ],
+    [
+     65,
+     "D_800000C0",
+     2
+    ],
+    [
+     65,
+     "gOverlay65Buffers",
+     2
+    ],
+    [
+     65,
+     "gOverlay65Handle",
+     2
+    ],
+    [
+     65,
+     "gOverlay65InitFlag0",
+     2
+    ],
+    [
+     65,
+     "gOverlay65InitFlag1",
+     2
+    ],
+    [
+     65,
+     "gOverlay65Records",
+     2
+    ],
+    [
+     65,
+     "gOverlay65RecordsEnd",
+     2
+    ],
+    [
+     65,
+     "gOverlay65Resource208",
+     2
+    ],
+    [
+     65,
+     "gOverlay65Resource2980",
+     2
+    ],
+    [
+     66,
+     "D_0",
+     4
+    ],
+    [
+     66,
+     "D_50",
+     2
+    ],
+    [
+     66,
+     "D_88",
+     4
+    ],
+    [
+     66,
+     "gOverlay66BssControl",
+     4
+    ],
+    [
+     66,
+     "gOverlay66Current",
+     4
+    ],
+    [
+     66,
+     "gOverlay66Flag",
+     6
+    ],
+    [
+     66,
+     "gOverlay66Timer",
+     6
+    ],
+    [
+     67,
+     "gOverlay67PointSets",
+     2
+    ],
+    [
+     68,
+     "gOverlay68Entry",
+     6
+    ],
+    [
+     68,
+     "gOverlay68KindMap",
+     4
+    ],
+    [
+     68,
+     "gOverlay68KindMapInitial",
+     2
+    ],
+    [
+     68,
+     "gOverlay68KindMapLoop",
+     2
+    ],
+    [
+     68,
+     "gOverlay68Secondary",
+     4
+    ],
+    [
+     68,
+     "gOverlay68SecondaryEntry",
+     12
+    ],
+    [
+     68,
+     "gOverlay68TimerEntry",
+     2
+    ],
+    [
+     68,
+     "gOverlay68Types",
+     2
+    ],
+    [
+     70,
+     "gOverlay70AngleReloc",
+     2
+    ],
+    [
+     70,
+     "gOverlay70FloatTableReloc",
+     2
+    ],
+    [
+     70,
+     "gOverlay70HeightTableReloc",
+     2
+    ],
+    [
+     70,
+     "gOverlay70PairTableReloc",
+     2
+    ],
+    [
+     70,
+     "gOverlay70SharedCounterReloc",
+     8
+    ],
+    [
+     70,
+     "gOverlay70VerticalStepReloc",
+     2
+    ],
+    [
+     71,
+     "D_80000008",
+     2
+    ],
+    [
+     71,
+     "D_80000028",
+     2
+    ],
+    [
+     71,
+     "D_800000D8",
+     2
+    ],
+    [
+     71,
+     "gOverlay71InitialResourceReloc",
+     4
+    ],
+    [
+     71,
+     "gOverlay71Offset",
+     2
+    ],
+    [
+     71,
+     "gOverlay71PrimaryCoordinates",
+     2
+    ],
+    [
+     71,
+     "gOverlay71PrimaryRecords",
+     2
+    ],
+    [
+     71,
+     "gOverlay71Scale0",
+     2
+    ],
+    [
+     71,
+     "gOverlay71Scale1",
+     2
+    ],
+    [
+     71,
+     "gOverlay71SecondaryCoordinates",
+     2
+    ],
+    [
+     71,
+     "gOverlay71SecondaryRecords",
+     2
+    ],
+    [
+     73,
+     "D_0",
+     2
+    ],
+    [
+     73,
+     "D_4",
+     2
+    ],
+    [
+     73,
+     "D_8",
+     2
+    ],
+    [
+     73,
+     "D_80",
+     2
+    ],
+    [
+     73,
+     "D_80000000",
+     2
+    ],
+    [
+     79,
+     "gOverlay79CounterReloc",
+     2
+    ],
+    [
+     79,
+     "gOverlay79InitScaleReloc",
+     2
+    ],
+    [
+     83,
+     "D_80000000",
+     2
+    ],
+    [
+     83,
+     "gOverlay83ScaleReloc",
+     2
+    ],
+    [
+     83,
+     "overlay83SubmitSetupReloc",
+     2
+    ],
+    [
+     84,
+     "gOverlay84BlendStep",
+     2
+    ],
+    [
+     84,
+     "gOverlay84Object",
+     34
+    ],
+    [
+     84,
+     "gOverlay84ObjectWrite",
+     2
+    ],
+    [
+     84,
+     "overlay84GetResource",
+     6
+    ],
+    [
+     84,
+     "overlay84ReleaseResource",
+     4
+    ],
+    [
+     86,
+     "gOverlay86Vectors",
+     4
+    ],
+    [
+     87,
+     "gOverlay87ApproachFactor",
+     2
+    ],
+    [
+     87,
+     "gOverlay87Current",
+     4
+    ],
+    [
+     87,
+     "gOverlay87Gravity",
+     2
+    ],
+    [
+     87,
+     "gOverlay87InitScaleReloc",
+     2
+    ],
+    [
+     87,
+     "gOverlay87NegativeAcceleration",
+     2
+    ],
+    [
+     87,
+     "gOverlay87NegativeDivisor",
+     2
+    ],
+    [
+     87,
+     "gOverlay87PositiveAcceleration",
+     2
+    ],
+    [
+     87,
+     "gOverlay87PositiveDivisor",
+     2
+    ],
+    [
+     87,
+     "gOverlay87StraightFactor",
+     2
+    ],
+    [
+     87,
+     "gOverlay87TurnFactor",
+     2
+    ],
+    [
+     87,
+     "gOverlay87UpdateTable",
+     2
+    ],
+    [
+     90,
+     "gOverlay90Value1C",
+     2
+    ],
+    [
+     90,
+     "gOverlay90Value20",
+     2
+    ],
+    [
+     92,
+     "D_0",
+     2
+    ],
+    [
+     92,
+     "D_8",
+     2
+    ],
+    [
+     92,
+     "D_C",
+     2
+    ],
+    [
+     92,
+     "gOverlay92DistanceParameters",
+     4
+    ],
+    [
+     94,
+     "gO94Const0",
+     2
+    ],
+    [
+     94,
+     "gO94Const10",
+     2
+    ],
+    [
+     94,
+     "gO94Const14",
+     2
+    ],
+    [
+     94,
+     "gO94Const18",
+     2
+    ],
+    [
+     94,
+     "gO94Const1C",
+     2
+    ],
+    [
+     94,
+     "gO94Const20",
+     2
+    ],
+    [
+     94,
+     "gO94Const24",
+     2
+    ],
+    [
+     94,
+     "gO94Const4",
+     2
+    ],
+    [
+     94,
+     "gO94Const8",
+     2
+    ],
+    [
+     94,
+     "gO94ConstC",
+     2
+    ],
+    [
+     94,
+     "gO94Value",
+     4
+    ],
+    [
+     94,
+     "gOverlay94Value",
+     2
+    ],
+    [
+     96,
+     "D_80000000",
+     2
+    ],
+    [
+     96,
+     "gO96EntriesReloc",
+     10
+    ],
+    [
+     96,
+     "gO96FaceDefinitionsReloc",
+     2
+    ],
+    [
+     98,
+     "gO98Contexts",
+     6
+    ],
+    [
+     98,
+     "gO98SpecialVertices",
+     2
+    ],
+    [
+     98,
+     "gO98Toggle",
+     8
+    ],
+    [
+     98,
+     "gOverlay98AcceptedCount",
+     8
+    ],
+    [
+     98,
+     "gOverlay98AcceptedEntries",
+     4
+    ],
+    [
+     98,
+     "overlay98UniqueCountReloc",
+     4
+    ],
+    [
+     98,
+     "overlay98UniqueYReloc",
+     8
+    ],
+    [
+     99,
+     "gO99TrianglesReloc",
+     2
+    ],
+    [
+     99,
+     "gOverlay99Arg4",
+     4
+    ],
+    [
+     99,
+     "gOverlay99Arg5",
+     4
+    ],
+    [
+     99,
+     "gOverlay99Entries",
+     4
+    ],
+    [
+     99,
+     "gOverlay99GridHeight",
+     8
+    ],
+    [
+     99,
+     "gOverlay99GridWidth",
+     8
+    ],
+    [
+     99,
+     "gOverlay99HeightMinusOne",
+     4
+    ],
+    [
+     99,
+     "gOverlay99IntensityScale",
+     2
+    ],
+    [
+     99,
+     "gOverlay99SegmentCount",
+     6
+    ],
+    [
+     99,
+     "gOverlay99Segments",
+     4
+    ],
+    [
+     99,
+     "gOverlay99Storage",
+     4
+    ],
+    [
+     99,
+     "gOverlay99TransformZ",
+     2
+    ],
+    [
+     99,
+     "gOverlay99WidthMinusOne",
+     4
+    ],
+    [
+     100,
+     "gOverlay100Entries",
+     10
+    ],
+    [
+     100,
+     "gOverlay100EntriesReloc",
+     2
+    ],
+    [
+     100,
+     "gOverlay100GravityReloc",
+     2
+    ],
+    [
+     100,
+     "gOverlay100SegmentReloc",
+     2
+    ],
+    [
+     100,
+     "gOverlay100VelocityScaleReloc",
+     2
+    ],
+    [
+     101,
+     "D_10EC",
+     2
+    ],
+    [
+     101,
+     "D_118",
+     2
+    ],
+    [
+     101,
+     "D_134",
+     2
+    ],
+    [
+     101,
+     "D_1514",
+     2
+    ],
+    [
+     101,
+     "D_1920",
+     2
+    ],
+    [
+     101,
+     "D_1C",
+     22
+    ],
+    [
+     101,
+     "D_1C0",
+     44
+    ],
+    [
+     101,
+     "D_1C4",
+     44
+    ],
+    [
+     101,
+     "D_1C8",
+     12
+    ],
+    [
+     101,
+     "D_1CC",
+     20
+    ],
+    [
+     101,
+     "D_1D0",
+     22
+    ],
+    [
+     101,
+     "D_1D2C",
+     2
+    ],
+    [
+     101,
+     "D_1F4",
+     2
+    ],
+    [
+     101,
+     "D_200",
+     12
+    ],
+    [
+     101,
+     "D_218",
+     2
+    ],
+    [
+     101,
+     "D_220",
+     4
+    ],
+    [
+     101,
+     "D_224",
+     2
+    ],
+    [
+     101,
+     "D_228",
+     36
+    ],
+    [
+     101,
+     "D_230",
+     2
+    ],
+    [
+     101,
+     "D_2608",
+     2
+    ],
+    [
+     101,
+     "D_278",
+     2
+    ],
+    [
+     101,
+     "D_2934",
+     2
+    ],
+    [
+     101,
+     "D_2C60",
+     2
+    ],
+    [
+     101,
+     "D_2F8C",
+     2
+    ],
+    [
+     101,
+     "D_338",
+     2
+    ],
+    [
+     101,
+     "D_33C",
+     2
+    ],
+    [
+     101,
+     "D_38",
+     22
+    ],
+    [
+     101,
+     "D_4358",
+     2
+    ],
+    [
+     101,
+     "D_54",
+     12
+    ],
+    [
+     101,
+     "D_800002D8",
+     2
+    ],
+    [
+     101,
+     "D_8C",
+     4
+    ],
+    [
+     101,
+     "D_A8",
+     4
+    ],
+    [
+     101,
+     "D_C4",
+     2
+    ],
+    [
+     101,
+     "D_C64",
+     2
+    ],
+    [
+     101,
+     "D_C78",
+     2
+    ],
+    [
+     101,
+     "D_C8C",
+     2
+    ],
+    [
+     101,
+     "D_CA0",
+     2
+    ],
+    [
+     101,
+     "D_CB4",
+     2
+    ],
+    [
+     101,
+     "D_CC8",
+     2
+    ],
+    [
+     101,
+     "D_CDC",
+     2
+    ],
+    [
+     101,
+     "D_CE0",
+     2
+    ],
+    [
+     101,
+     "D_CF0",
+     2
+    ],
+    [
+     101,
+     "D_D04",
+     2
+    ],
+    [
+     101,
+     "D_D18",
+     2
+    ],
+    [
+     101,
+     "D_DA4",
+     2
+    ],
+    [
+     101,
+     "D_E0",
+     2
+    ],
+    [
+     101,
+     "D_FC",
+     2
+    ],
+    [
+     101,
+     "D_INPUT",
+     72
+    ],
+    [
+     101,
+     "D_o101ResetData340",
+     2
+    ],
+    [
+     101,
+     "gO101PresAAssetD2C",
+     2
+    ],
+    [
+     101,
+     "gO101PresAFinalObject32B8",
+     2
+    ],
+    [
+     101,
+     "gO101PresAInputs",
+     6
+    ],
+    [
+     101,
+     "gO101PresANode20Count",
+     4
+    ],
+    [
+     101,
+     "gO101PresANode24Count",
+     4
+    ],
+    [
+     101,
+     "gO101PresANode32Count",
+     4
+    ],
+    [
+     101,
+     "gO101PresANodes20",
+     4
+    ],
+    [
+     101,
+     "gO101PresAOrderCount",
+     4
+    ],
+    [
+     101,
+     "gO101PresAOrderSlots",
+     4
+    ],
+    [
+     101,
+     "gO101PresBAssetD40",
+     2
+    ],
+    [
+     101,
+     "gO101PresBFinalObject34E8",
+     2
+    ],
+    [
+     101,
+     "gO101PresBInputs",
+     6
+    ],
+    [
+     101,
+     "gO101PresBNode20Count",
+     4
+    ],
+    [
+     101,
+     "gO101PresBNode24Count",
+     4
+    ],
+    [
+     101,
+     "gO101PresBNode32Count",
+     4
+    ],
+    [
+     101,
+     "gO101PresBNodes20",
+     4
+    ],
+    [
+     101,
+     "gO101PresBOrderCount",
+     4
+    ],
+    [
+     101,
+     "gO101PresBOrderSlots",
+     4
+    ],
+    [
+     101,
+     "gO101PresCAssetD54",
+     2
+    ],
+    [
+     101,
+     "gO101PresCFinalObject3718",
+     2
+    ],
+    [
+     101,
+     "gO101PresCInputs",
+     6
+    ],
+    [
+     101,
+     "gO101PresCNode20Count",
+     4
+    ],
+    [
+     101,
+     "gO101PresCNode24Count",
+     4
+    ],
+    [
+     101,
+     "gO101PresCNode32Count",
+     4
+    ],
+    [
+     101,
+     "gO101PresCNodes20",
+     4
+    ],
+    [
+     101,
+     "gO101PresCOrderCount",
+     4
+    ],
+    [
+     101,
+     "gO101PresCOrderSlots",
+     4
+    ],
+    [
+     101,
+     "gO101PresDAssetD68",
+     2
+    ],
+    [
+     101,
+     "gO101PresDFinalObject3948",
+     2
+    ],
+    [
+     101,
+     "gO101PresDInputs",
+     6
+    ],
+    [
+     101,
+     "gO101PresDNode20Count",
+     4
+    ],
+    [
+     101,
+     "gO101PresDNode24Count",
+     4
+    ],
+    [
+     101,
+     "gO101PresDNode32Count",
+     4
+    ],
+    [
+     101,
+     "gO101PresDNodes20",
+     4
+    ],
+    [
+     101,
+     "gO101PresDOrderCount",
+     4
+    ],
+    [
+     101,
+     "gO101PresDOrderSlots",
+     4
+    ],
+    [
+     101,
+     "gO101TailAB4CAssetD90",
+     2
+    ],
+    [
+     101,
+     "gO101TailAB4CFinalObject3F14",
+     2
+    ],
+    [
+     101,
+     "gO101TailAB4CInputs",
+     2
+    ],
+    [
+     101,
+     "gO101TailAB4CNode24Count",
+     2
+    ],
+    [
+     101,
+     "gO101TailAB4CNode32Count",
+     2
+    ],
+    [
+     101,
+     "gO101TailAB4COrderCount",
+     4
+    ],
+    [
+     101,
+     "gO101TailAB4COrderSlots",
+     4
+    ],
+    [
+     101,
+     "gO101TailAssetD7C",
+     2
+    ],
+    [
+     101,
+     "gO101TailBA34AssetDB8",
+     2
+    ],
+    [
+     101,
+     "gO101TailBA34FinalObject4630",
+     2
+    ],
+    [
+     101,
+     "gO101TailBA34Inputs",
+     2
+    ],
+    [
+     101,
+     "gO101TailBA34Node24Count",
+     2
+    ],
+    [
+     101,
+     "gO101TailBA34Node32Count",
+     2
+    ],
+    [
+     101,
+     "gO101TailBA34OrderCountCall0",
+     2
+    ],
+    [
+     101,
+     "gO101TailBA34OrderCountCall1",
+     6
+    ],
+    [
+     101,
+     "gO101TailBA34OrderSlots",
+     6
+    ],
+    [
+     101,
+     "gO101TailC144AssetDCC",
+     2
+    ],
+    [
+     101,
+     "gO101TailC144FinalObject4A90",
+     2
+    ],
+    [
+     101,
+     "gO101TailC144Inputs",
+     2
+    ],
+    [
+     101,
+     "gO101TailC144Node24Count",
+     2
+    ],
+    [
+     101,
+     "gO101TailC144Node32Count",
+     4
+    ],
+    [
+     101,
+     "gO101TailC144OrderCount",
+     4
+    ],
+    [
+     101,
+     "gO101TailC144OrderSlots",
+     4
+    ],
+    [
+     101,
+     "gO101TailC6E8Handle1D4",
+     2
+    ],
+    [
+     101,
+     "gO101TailC6E8Handle1F4",
+     2
+    ],
+    [
+     101,
+     "gO101TailC6E8Handle338",
+     2
+    ],
+    [
+     101,
+     "gO101TailC6E8Handle33C",
+     2
+    ],
+    [
+     101,
+     "gO101TailC6E8Node20Count",
+     4
+    ],
+    [
+     101,
+     "gO101TailC6E8Node32Count",
+     6
+    ],
+    [
+     101,
+     "gO101TailC6E8Nodes20",
+     4
+    ],
+    [
+     101,
+     "gO101TailC6E8OrderCount",
+     2
+    ],
+    [
+     101,
+     "gO101TailC6E8OrderSlots",
+     2
+    ],
+    [
+     101,
+     "gO101TailC6E8PresentationActive",
+     2
+    ],
+    [
+     101,
+     "gO101TailC6E8PresentationDone",
+     2
+    ],
+    [
+     101,
+     "gO101TailFinalObject3B78",
+     2
+    ],
+    [
+     101,
+     "gO101TailInputs",
+     4
+    ],
+    [
+     101,
+     "gO101TailNode24Count",
+     6
+    ],
+    [
+     101,
+     "gO101TailNode32Count",
+     2
+    ],
+    [
+     101,
+     "gO101TailOrderCount",
+     4
+    ],
+    [
+     101,
+     "gO101TailOrderSlots",
+     4
+    ],
+    [
+     101,
+     "gOverlay101ConfigValue",
+     2
+    ],
+    [
+     101,
+     "gOverlay101CurrentConfig",
+     2
+    ],
+    [
+     101,
+     "gOverlay101CurrentResource",
+     2
+    ],
+    [
+     101,
+     "gOverlay101EntryCount",
+     32
+    ],
+    [
+     101,
+     "gOverlay101Handle1D4",
+     4
+    ],
+    [
+     101,
+     "gOverlay101Handle1F4",
+     2
+    ],
+    [
+     101,
+     "gOverlay101Handle33C",
+     2
+    ],
+    [
+     101,
+     "gOverlay101InputMode",
+     2
+    ],
+    [
+     101,
+     "gOverlay101OrderCount",
+     50
+    ],
+    [
+     101,
+     "gOverlay101PresentationActive",
+     2
+    ],
+    [
+     101,
+     "gOverlay101PresentationDone",
+     10
+    ],
+    [
+     101,
+     "gOverlay101PresentationTimer",
+     4
+    ],
+    [
+     101,
+     "gOverlay101Ready",
+     2
+    ],
+    [
+     101,
+     "gOverlay101RenderFlags",
+     2
+    ],
+    [
+     101,
+     "gOverlay101Resource20Count",
+     24
+    ],
+    [
+     101,
+     "gOverlay101Resource32Count",
+     8
+    ],
+    [
+     101,
+     "gOverlay101Time214",
+     2
+    ],
+    [
+     101,
+     "gOverlay101Time338",
+     2
+    ],
+    [
+     101,
+     "gOverlay101Value220",
+     2
+    ],
+    [
+     101,
+     "gOverlay101Value224",
+     2
+    ],
+    [
+     101,
+     "gOverlay101Value228",
+     2
+    ],
+    [
+     101,
+     "overlay101ReadInputReloc",
+     2
+    ],
+    [
+     101,
+     "overlay101ReleaseReloc",
+     5
+    ],
+    [
+     101,
+     "overlay101SetScaleReloc",
+     1
+    ],
+    [
+     101,
+     "overlay101SubmitLinkedPairReloc",
+     7
+    ]
+   ]
+  },
+  "placement": {
+   "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
+   "count": 31,
+   "entries": [
+    [
+     1,
+     "func_overlay_001_F0001D78_184E158",
+     ".rodata",
+     "0x8308",
+     2
+    ],
+    [
+     1,
+     "func_overlay_001_F0003258_184F638",
+     ".rodata",
+     "0x8314",
+     2
+    ],
+    [
+     1,
+     "overlay_001",
+     ".rodata",
+     "0x82DC",
+     4
+    ],
+    [
+     1,
+     "overlay_001_head",
+     ".rodata",
+     "0x82EC",
+     14
+    ],
+    [
+     1,
+     "overlay_001_tail",
+     ".rodata",
+     "0x8318",
+     66
+    ],
+    [
+     9,
+     "overlay_009",
+     ".data",
+     "0x1520",
+     35
+    ],
+    [
+     9,
+     "overlay_009",
+     ".rodata",
+     "0x18B0",
+     42
+    ],
+    [
+     11,
+     "overlay_011",
+     ".rodata",
+     "0x2ED8",
+     16
+    ],
+    [
+     12,
+     "overlay_012",
+     ".rodata",
+     "0x13D0",
+     10
+    ],
+    [
+     14,
+     "overlay_014",
+     ".rodata",
+     "0x1D98",
+     4
+    ],
+    [
+     15,
+     "overlay_015",
+     ".rodata",
+     "0xCB0",
+     2
+    ],
+    [
+     22,
+     "overlay_022",
+     ".rodata",
+     "0xEE4",
+     6
+    ],
+    [
+     29,
+     "overlay_029",
+     ".rodata",
+     "0x16D0",
+     10
+    ],
+    [
+     41,
+     "overlay_041",
+     ".rodata",
+     "0x1DE0",
+     38
+    ],
+    [
+     43,
+     "overlay_043",
+     ".rodata",
+     "0x1520",
+     4
+    ],
+    [
+     45,
+     "overlay_045",
+     ".rodata",
+     "0x1C94",
+     6
+    ],
+    [
+     46,
+     "overlay_046",
+     ".rodata",
+     "0x1C9C",
+     14
+    ],
+    [
+     50,
+     "overlay_050",
+     ".bss",
+     "0x21F0",
+     100
+    ],
+    [
+     50,
+     "overlay_050",
+     ".data",
+     "0x1E70",
+     130
+    ],
+    [
+     50,
+     "overlay_050",
+     ".rodata",
+     "0x21E4",
+     2
+    ],
+    [
+     54,
+     "overlay_054",
+     ".rodata",
+     "0x21C0",
+     2
+    ],
+    [
+     55,
+     "overlay_055",
+     ".rodata",
+     "0xD80",
+     2
+    ],
+    [
+     58,
+     "overlay_058",
+     ".rodata",
+     "0x5DF4",
+     6
+    ],
+    [
+     59,
+     "overlay_059",
+     ".rodata",
+     "0x1188",
+     4
+    ],
+    [
+     60,
+     "overlay_060",
+     ".rodata",
+     "0x3790",
+     4
+    ],
+    [
+     61,
+     "overlay_061",
+     ".rodata",
+     "0x1D08",
+     2
+    ],
+    [
+     73,
+     "overlay_073",
+     ".rodata",
+     "0xF8C",
+     30
+    ],
+    [
+     79,
+     "overlay_079",
+     ".rodata",
+     "0x1504",
+     30
+    ],
+    [
+     86,
+     "overlay_086",
+     ".rodata",
+     "0xF50",
+     6
+    ],
+    [
+     90,
+     "overlay_090",
+     ".rodata",
+     "0xB28",
+     16
+    ],
+    [
+     99,
+     "overlay_099",
+     ".rodata",
+     "0x1410",
+     2
+    ]
+   ]
+  },
+  "rodata-base": {
+   "about": "module rodata base the objects do not determine (module)",
+   "count": 30,
+   "entries": [
+    [
+     1
+    ],
+    [
+     2
+    ],
+    [
+     3
+    ],
+    [
+     8
+    ],
+    [
+     11
+    ],
+    [
+     13
+    ],
+    [
+     14
+    ],
+    [
+     20
+    ],
+    [
+     22
+    ],
+    [
+     43
+    ],
+    [
+     45
+    ],
+    [
+     46
+    ],
+    [
+     50
+    ],
+    [
+     57
+    ],
+    [
+     58
+    ],
+    [
+     59
+    ],
+    [
+     60
+    ],
+    [
+     61
+    ],
+    [
+     62
+    ],
+    [
+     63
+    ],
+    [
+     70
+    ],
+    [
+     71
+    ],
+    [
+     73
+    ],
+    [
+     79
+    ],
+    [
+     83
+    ],
+    [
+     84
+    ],
+    [
+     87
+    ],
+    [
+     94
+    ],
+    [
+     100
+    ],
+    [
+     101
+    ]
+   ]
   }
+ }
 }

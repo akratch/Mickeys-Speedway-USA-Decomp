@@ -783,6 +783,34 @@
       ]
     },
     {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
+      "object": "build/src/overlays/o057/overlay57SelectionFlag.c.o",
+      "offset": null,
+      "overlay": 57,
+      "size": null,
+      "source": "src/overlays/o057/overlay57SelectionFlag.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
+      "object": "build/src/overlays/o057/overlay57TransitionState.c.o",
+      "offset": null,
+      "overlay": 57,
+      "size": null,
+      "source": "src/overlays/o057/overlay57TransitionState.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
       "c_owned": true,
       "class": "metadata",
       "matched_c": true,
@@ -793,7 +821,7 @@
       "size": 27312,
       "source": "src/overlays/o057/overlay_057.c",
       "tools": [
-        "rebind_elf_relocations.py",
+        "trim_elf_section.py",
         "externalize_elf_section.py",
         "filter_elf_relocations.py",
         "objcopy"
@@ -1078,9 +1106,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 71
+      "metadata": 73
     },
     "matched_c_bytes_with_postprocess": 323384,
-    "objects_with_postprocess": 71
+    "objects_with_postprocess": 73
   }
 }

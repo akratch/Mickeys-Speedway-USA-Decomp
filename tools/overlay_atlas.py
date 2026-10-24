@@ -178,18 +178,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
-    57: [
-        # The module TU's .rodata: the initializer's mode switch table, then
-        # the dispatch's, rodata-relative +0x6C through +0x104.
-        (
-            0x5AC,
-            0x644,
-            "overlay_057",
-            ".rodata",
-            "func_overlay_057_F0000000_18A3BF8",
-            True,
-        )
-    ],
     59: [(0x76C, 0x78C, "overlay_059", ".rodata", "overlay59Advance", True)],
     # The 9-entry menu switch table, rodata-relative +0x188.
     61: [
@@ -267,11 +255,16 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     48: [(0x280, 0x700, "overlay_048", ".rodata")],
     59: [(0x0, 0x5A0, "overlay59Frames", ".data")],
     57: [
+        (0x0, 0x80, "overlay57GridTriangles", ".data"),
         (0x1FC, 0x27C, "overlay57PanelSprites", ".data"),
         (0x32C, 0x36C, "overlay57DetailSprites", ".data"),
         (0x3C8, 0x4B8, "overlay57MenuTables", ".data"),
         (0x4D0, 0x4F0, "overlay57AnimationState", ".data"),
+        (0x4F0, 0x4F4, "overlay57SelectionFlag", ".data"),
+        (0x4F8, 0x510, "overlay57TransitionState", ".data"),
         (0x540, 0x580, "overlay57MenuLabels", ".rodata"),
+        (0x5AC, 0x644, "overlay_057", ".rodata"),
+        (0x644, 0x654, "overlay57ResponseParameters", ".data"),
     ],
     7: [(0x4C, 0x92C, "overlay7DispatchTables", ".data"),
         (0x930, 0x950, "overlay_007", ".rodata")],
@@ -363,11 +356,15 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
     (50, "overlay50ItemState", ".data"),
     (50, "overlay50ControlTail", ".data"),
     (59, "overlay59Frames", ".data"),
+    (57, "overlay57GridTriangles", ".data"),
     (57, "overlay57PanelSprites", ".data"),
     (57, "overlay57DetailSprites", ".data"),
     (57, "overlay57AnimationState", ".data"),
+    (57, "overlay57SelectionFlag", ".data"),
+    (57, "overlay57TransitionState", ".data"),
     (57, "overlay57MenuTables", ".data"),
     (57, "overlay57MenuLabels", ".rodata"),
+    (57, "overlay57ResponseParameters", ".data"),
     (7, "overlay7DispatchTables", ".data"),
     (101, "overlay101Labels", ".data"),
     (101, "overlay101WindowLabels", ".data"),

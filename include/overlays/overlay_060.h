@@ -251,8 +251,8 @@ extern struct Sprite *o60CharacterSprite_o060Reloc;
 
 extern u8 gOverlay60Data178[];
 extern char *gOverlay60Data1A4[];
-extern s16 gOverlay60Data1B4[];
-extern s16 gOverlay60Data1D0[];
+extern s16 o60RecordColumns_o060Reloc[13];
+extern s16 o60RecordRows_o060Reloc[4];
 extern const char o60ControlLabelFormat_o060Reloc[];
 extern const char o60ControlValueFormat_o060Reloc[];
 extern const char o60EmptyRecordFormat_o060Reloc[];

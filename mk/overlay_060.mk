@@ -22,3 +22,10 @@ $(O60_CONTROL_STATE): $(TOOLS_DIR)/trim_elf_section.py
 $(O60_CONTROL_STATE): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x48 --compiler-end-padding
 $(O60_CONTROL_STATE): private PLAIN_DATA_PROOF = 1
 $(O60_CONTROL_STATE): private PLAIN_DATA_RUNTIME_ROLE = data
+
+# Thirteen columns and four rows, with only compiler end alignment removed.
+O60_RECORD_POSITIONS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60RecordPositions.c.o
+$(O60_RECORD_POSITIONS): $(TOOLS_DIR)/trim_elf_section.py
+$(O60_RECORD_POSITIONS): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x24 --compiler-end-padding
+$(O60_RECORD_POSITIONS): private PLAIN_DATA_PROOF = 1
+$(O60_RECORD_POSITIONS): private PLAIN_DATA_RUNTIME_ROLE = data

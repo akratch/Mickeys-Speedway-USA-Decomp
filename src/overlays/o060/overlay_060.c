@@ -700,15 +700,15 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                                 icon = record->character + 0x51;
                             }
                             gOverlay60Data060.texture = D_800D31C8_o060Reloc[icon];
-                            fontPrintXY(&D_800D3140_o060Reloc, gOverlay60Data1B4[0],
-                                gOverlay60Data1D0[row], gOverlay60Data1A4[row], 0xC);
+                            fontPrintXY(&D_800D3140_o060Reloc, o60RecordColumns_o060Reloc[0],
+                                o60RecordRows_o060Reloc[row], gOverlay60Data1A4[row], 0xC);
                             func_8002FB34(&D_800D3140_o060Reloc, &gOverlay60Data060,
-                                gOverlay60Data1B4[1], gOverlay60Data1D0[row], 0.5f, 0.5f, -1, 0);
+                                o60RecordColumns_o060Reloc[1], o60RecordRows_o060Reloc[row], 0.5f, 0.5f, -1, 0);
                             for (count = 0; count < 11; count++) {
                                 glyph[0] = text[count];
                                 glyph[1] = '\0';
-                                fontPrintXY(&D_800D3140_o060Reloc, gOverlay60Data1B4[count + 2],
-                                    gOverlay60Data1D0[row], glyph, 0xC);
+                                fontPrintXY(&D_800D3140_o060Reloc, o60RecordColumns_o060Reloc[count + 2],
+                                    o60RecordRows_o060Reloc[row], glyph, 0xC);
                             }
                         }
                         showArrows = 1;

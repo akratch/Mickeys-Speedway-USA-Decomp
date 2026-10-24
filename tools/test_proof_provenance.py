@@ -388,6 +388,16 @@ class ProducerCaptureLifecycleTests(unittest.TestCase):
         with self.assertRaises(provenance.MetadataProofError):
             provenance.local_ro_mixed_group("helper --local-ro-mixed-provider-group "+a+" "+b+" build/src/overlays/o057/extra.c.o",root)
 
+    def test_source_objects_require_the_explicit_mixed_storage_case(self):
+        root=pathlib.Path("/synthetic")
+        group="--local-ro-mixed-provider-group build/src/overlays/o057/menu.c.o build/src/overlays/o057/literals.c.o"
+        self.assertTrue(provenance.local_data_objects("helper --local-data-objects "+group,root))
+        self.assertFalse(provenance.local_data_objects("helper "+group,root))
+        for command in ("helper --local-data-objects", "helper --local-data-objects --local-data-objects "+group,
+                        "helper --local-data-aggregate --local-data-objects "+group):
+            with self.subTest(command=command),self.assertRaises(provenance.MetadataProofError):
+                provenance.local_data_objects(command,root)
+
     def test_capture_roles_are_explicit_and_promotion_keeps_the_strict_default(self):
         arguments = [pathlib.Path("root") / name for name in
                      (".", "source.c", "configured.o", "build/mickey.us.elf")]

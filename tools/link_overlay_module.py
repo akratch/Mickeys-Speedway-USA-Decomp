@@ -87,6 +87,38 @@ def local_aggregate_shape(elf):
                 compiler_object_end=end, reviewed_logical_c_extent=elf.size(".data"))
 
 
+def local_objects_shape(elf):
+    """Two genuine adjacent source objects, with only proved section alignment."""
+    local_provider_section(elf)
+    owners = sorted((symbol for symbol in elf.symbols if symbol.section == ".data"
+        and symbol.bind == rp.STB_GLOBAL and symbol.type == 1 and symbol.size > 0),
+        key=lambda symbol: symbol.value)
+    allocated = {section["name"] for section in elf.sections if section["flags"] & 2 and section["size"]}
+    if (len(owners) != 2 or owners[0].value != 0
+            or owners[0].value + owners[0].size != owners[1].value
+            or owners[0].size % 4
+            or any(symbol.section in allocated and symbol.type not in (3, 4)
+                   and symbol.index not in {owner.index for owner in owners} for symbol in elf.symbols)):
+        raise LinkError("LOCAL objects require two adjacent genuine GLOBAL definitions")
+    rels = elf.rels(".data")
+    if [rel.offset for rel in rels] != list(range(0, owners[0].size, 4)):
+        raise LinkError("LOCAL pointer object lacks its complete original R32 set")
+    for rel, addend in zip(rels, rp.in_place_addends(elf, ".data", rels)):
+        if (rel.type != rp.R_MIPS_32 or rel.sym.shndx != rp.SHN_UNDEF
+                or rel.sym.bind != rp.STB_GLOBAL or rel.sym.type != 1
+                or rel.sym.value or rel.sym.size or addend):
+            raise LinkError("LOCAL pointer object has unsupported source operands")
+    import trim_elf_section as trim
+    try:
+        end = trim.sized_object_end(elf, ".data")
+    except ValueError as error:
+        raise LinkError("LOCAL objects compiler end refused: " + str(error)) from error
+    if end != owners[1].value + owners[1].size:
+        raise LinkError("LOCAL objects do not explain the compiler end")
+    return dict(objects=[dict(name=owner.name, offset=owner.value, size=owner.size) for owner in owners],
+                compiler_object_end=end, input_allocation=elf.size(".data"))
+
+
 def local_data_bindings(elf, provider, exports, *, aggregate=False):
     """Names bind to real bases; explicit mixed input preserves scalar bytes."""
     if local_provider_section(elf) != ".data":
@@ -121,12 +153,12 @@ def local_data_bindings(elf, provider, exports, *, aggregate=False):
     return bindings
 
 
-def grouped_local_bindings(elf, providers, exports, directory, ld, commands, *, mixed=False):
+def grouped_local_bindings(elf, providers, exports, directory, ld, commands, *, mixed=False, objects=False):
     """Ordinary whole-input link; mixed storage is an explicit separate case."""
     if len(providers) < 2 or len({p.path for p in providers}) != len(providers):
         raise LinkError("LOCAL group requires distinct ordered providers")
     if mixed:
-        local_aggregate_shape(elf)
+        (local_objects_shape if objects else local_aggregate_shape)(elf)
         local_provider_section(elf)
         sections = [local_provider_section(p, readonly=True) for p in providers]
         if sections != [".rodata", ".data"]:
@@ -270,7 +302,7 @@ def relocatable_container(linked, output):
             raise LinkError("container conversion changed linked section payload")
 
 
-def link(raw, output, exports, directory, *, ld, objcopy, rebind, local_ro_origin=None, local_ro_group=None, local_data_aggregate=False, local_ro_mixed_group=None):
+def link(raw, output, exports, directory, *, ld, objcopy, rebind, local_ro_origin=None, local_ro_group=None, local_data_aggregate=False, local_ro_mixed_group=None, local_data_objects=False):
     raw, output, directory = Path(raw).resolve(), Path(output).resolve(), Path(directory).resolve()
     original = raw.read_bytes()
     directory.mkdir(parents=True, exist_ok=True)
@@ -278,6 +310,8 @@ def link(raw, output, exports, directory, *, ld, objcopy, rebind, local_ro_origi
     preserved.write_bytes(original)
     prepared = directory / "bindings.o"
     commands = []
+    if local_data_objects and (not local_ro_mixed_group or local_data_aggregate):
+        raise LinkError("LOCAL objects require the explicit mixed provider group")
     if sum(bool(x) for x in (local_ro_origin, local_ro_group, local_ro_mixed_group)) > 1:
         raise LinkError("conflicting LOCAL provider profiles")
     if local_data_aggregate and (not local_ro_origin or local_ro_group or local_ro_mixed_group):
@@ -290,7 +324,7 @@ def link(raw, output, exports, directory, *, ld, objcopy, rebind, local_ro_origi
     group = None
     if providers:
         local_bindings, group = grouped_local_bindings(rp.Elf(preserved), providers, exports,
-                                                       directory, ld, commands, mixed=bool(local_ro_mixed_group))
+                                                       directory, ld, commands, mixed=bool(local_ro_mixed_group), objects=local_data_objects)
     external, retarget = prepare(preserved, prepared, exports, objcopy, rebind, commands,
                                  local_bindings)
     imports = set(external) | set(local_bindings)
@@ -368,8 +402,12 @@ SECTIONS {{
             "linked_sha256": hashlib.sha256(group.data).hexdigest(),
             "script_sha256": hashlib.sha256((directory / "providers.ld").read_bytes()).hexdigest()}
     if local_ro_mixed_group:
-        receipt["local_data_group"].update(profile="mixed-storage-v1",
-            aggregate=local_aggregate_shape(rp.Elf(preserved)))
+        if local_data_objects:
+            receipt["local_data_group"].update(profile="mixed-storage-objects-v1",
+                objects=local_objects_shape(rp.Elf(preserved)))
+        else:
+            receipt["local_data_group"].update(profile="mixed-storage-v1",
+                aggregate=local_aggregate_shape(rp.Elf(preserved)))
         for item, obj in zip(receipt["local_data_group"]["inputs"], providers):
             section = local_provider_section(obj, readonly=True)
             item.update(input_section=section, input_size=obj.size(section))
@@ -386,6 +424,7 @@ def main():
     parser.add_argument("--ld", type=Path, default=Path("tools/binutils/mips64-elf-ld"))
     parser.add_argument("--objcopy", type=Path, default=Path("tools/binutils/mips64-elf-objcopy"))
     parser.add_argument("--local-data-aggregate", action="store_true")
+    parser.add_argument("--local-data-objects", action="store_true")
     parser.add_argument("--local-ro-origin-object", type=Path)
     parser.add_argument("--local-ro-provider-group", nargs="+")
     parser.add_argument("--local-ro-mixed-provider-group", nargs="+")
@@ -396,7 +435,7 @@ def main():
                        ld=args.ld, objcopy=args.objcopy,
                        rebind=Path(__file__).with_name("rebind_elf_relocations.py"),
                        local_ro_origin=args.local_ro_origin_object, local_ro_group=args.local_ro_provider_group,
-                       local_data_aggregate=args.local_data_aggregate, local_ro_mixed_group=args.local_ro_mixed_provider_group)
+                       local_data_aggregate=args.local_data_aggregate, local_ro_mixed_group=args.local_ro_mixed_provider_group, local_data_objects=args.local_data_objects)
     except (LinkError, rp.PackError, OSError, ValueError, struct.error) as error:
         parser.exit(1, f"module link refused: {error}\n")
     print(f"source module link: {sum(receipt['sections'][s]['size'] for s in SECTIONS[:-1])} initialized bytes, "

@@ -1313,25 +1313,27 @@ class DataOnlyImportGuardTests(unittest.TestCase):
                             rp.validate_data_imports(self.world,self.exports,1,self.row,self.source,raw)
 
     def test_mixed_group_stale_provider_after_success_clears_publication_and_recovers(self):
-        raw,_expected=self.mixed_storage_inputs()
-        provider=self.paths["raw"]/"src/overlays/o001/tail.c.o";original=provider.read_bytes()
-        declarations=self.world._plain_data_declarations
-        def validate(world,_ort):
-            world._plain_data_declarations=declarations
-            world.data_import_inputs={};world.data_import_contexts=[];world.data_import_providers={}
-            rp.validate_data_imports(world,self.exports,1,self.row,self.source,raw)
-            rp.check_data_import_holds(world)
-            return {1:[rp.ObjRef(1,raw.path,self.source,0,0,"c",raw,{".data":(20,"link")},raw.data_local_identities)]}
-        with mock.patch.object(rp,"_guard_data_module_imports",side_effect=validate):
-            rp.guard_data_module_imports(self.world,self.exports)
-            first=self.world._guarded_data_objects[1][0]
-            self.write(provider,ObjBuilder().section(".data",b"bad\0yyyy").sym("second",0,0,GLOBAL,OBJECT,".data"))
-            with self.assertRaises(rp.PackError):rp.guard_data_module_imports(self.world,self.exports)
-            self.assertIsNone(self.world._guarded_data_objects);self.assertIsNone(self.world._objects);self.assertIsNone(self.world._defs)
-            self.assertEqual(self.world._plain_data_declarations,({},{},{}))
-            provider.write_bytes(original)
-            rp.guard_data_module_imports(self.world,self.exports)
-            self.assertIsNot(self.world._guarded_data_objects[1][0],first)
+        for family in ("root","objects"):
+            self.setUp()
+            raw,_expected=(self.two_object_inputs() if family=="objects" else self.mixed_storage_inputs())
+            provider=self.paths["raw"]/"src/overlays/o001/tail.c.o";original=provider.read_bytes()
+            declarations=self.world._plain_data_declarations
+            def validate(world,_ort):
+                world._plain_data_declarations=declarations
+                world.data_import_inputs={};world.data_import_contexts=[];world.data_import_providers={}
+                rp.validate_data_imports(world,self.exports,1,self.row,self.source,raw)
+                rp.check_data_import_holds(world)
+                return {1:[rp.ObjRef(1,raw.path,self.source,0,0,"c",raw,{".data":(20,"link")},raw.data_local_identities)]}
+            with mock.patch.object(rp,"_guard_data_module_imports",side_effect=validate):
+                rp.guard_data_module_imports(self.world,self.exports)
+                first=self.world._guarded_data_objects[1][0]
+                self.write(provider,ObjBuilder().section(".data",b"bad\0yyyy").sym("second",0,0,GLOBAL,OBJECT,".data"))
+                with self.assertRaises(rp.PackError):rp.guard_data_module_imports(self.world,self.exports)
+                self.assertIsNone(self.world._guarded_data_objects);self.assertIsNone(self.world._objects);self.assertIsNone(self.world._defs)
+                self.assertEqual(self.world._plain_data_declarations,({},{},{}))
+                provider.write_bytes(original)
+                rp.guard_data_module_imports(self.world,self.exports)
+                self.assertIsNot(self.world._guarded_data_objects[1][0],first)
 
     def test_mixed_loaded_provider_is_bound_before_interpreting_and_held_afterward(self):
         path=self.paths["raw"]/"src"/(self.provider+".c.o")
@@ -1346,6 +1348,57 @@ class DataOnlyImportGuardTests(unittest.TestCase):
                 rp.load_mixed_group_provider(self.world,name,hashlib.sha256(changed).hexdigest())
         with self.assertRaisesRegex(rp.PackError,"held data-only input changed"):
             rp.check_data_import_holds(self.world)
+
+    def two_object_inputs(self, missing=False):
+        import link_overlay_module as link
+        raw,expected=self.mixed_storage_inputs(missing=missing)
+        producer=(ObjBuilder().section(".data",words(0,0,37,0))
+            .sym("pointers",0,8,GLOBAL,OBJECT,".data").sym("columns",8,4,GLOBAL,OBJECT,".data")
+            .sym("first",type=OBJECT).sym("second",type=OBJECT))
+        if not missing:producer.rel(".data",0,R32,"first")
+        producer.rel(".data",4,R32,"second")
+        raw=self.write(raw.path,producer)
+        self.write(self.paths["build"]/"src"/(self.source+".c.o"),
+            ObjBuilder().section(".data",words(0,8,37,0)).sym("pointers",0,8,GLOBAL,OBJECT,".data")
+                .sym("columns",8,4,GLOBAL,OBJECT,".data"))
+        self.row.update(size="0x10",end_offset="0x14")
+        rows=self.world.amods[1]["data_rodata_ownership"]
+        for row in rows[1:]:
+            row["offset"]=hex(int(row["offset"],16)+4);row["end_offset"]=hex(int(row["end_offset"],16)+4)
+        self.world.map=[rp.MapInput(item.outsec,item.insec,item.addr+(4 if index else 0),16 if index==0 else item.size,item.file)
+                        for index,item in enumerate(self.world.map)]
+        self.world.module_info[1]["inputs"]=self.world.map
+        self.paths["map"].write_text("Linker script and memory map\n.overlay_001\n"+"".join(
+            " %s 0x%x 0x%x %s\n"%(item.insec,item.addr,item.size,item.file) for item in self.world.map))
+        expected={(20+4*i,R32):dict(op=rp.OP_LOCAL,symbol_index=36,full=("ov",1,target),table=2,position=i)
+                  for i,target in enumerate((36,44))}
+        self.world.expected_cache=lambda _ov:expected
+        old=self.world.elf;body=old.bytes_of(".overlay_001")
+        linked=ObjBuilder().section(".overlay_001",body[:20]+words(0,8,37,0)+body[32:],addr=rp.OVERLAY_VMA)
+        for symbol in old.symbols:
+            if symbol.name and symbol.name!="aggregate" and symbol.type!=3:
+                linked.sym(symbol.name,symbol.value+(4 if symbol.name in ("first","second") else 0),symbol.size,symbol.bind,symbol.type,symbol.section)
+        linked.sym("pointers",rp.OVERLAY_VMA+20,8,GLOBAL,OBJECT,".overlay_001")
+        linked.sym("columns",rp.OVERLAY_VMA+28,4,GLOBAL,OBJECT,".overlay_001")
+        self.world.elf=rp.Elf("linked",linked.build());self.world.by_name={s.name:[s] for s in self.world.elf.symbols if s.name}
+        raw.local_ro_providers=("build/src/"+self.provider+".c.o","build/src/overlays/o001/tail.c.o")
+        raw.local_ro_provider=raw.local_ro_providers[0];raw.local_ro_mixed_group=True
+        raw.local_ro_objects=link.local_objects_shape(raw) if not missing else link.local_objects_shape(self.write(self.root/"complete.o",
+            ObjBuilder().section(".data",words(0,0,37,0)).sym("pointers",0,8,GLOBAL,OBJECT,".data")
+            .sym("columns",8,4,GLOBAL,OBJECT,".data").sym("first",type=OBJECT).sym("second",type=OBJECT)
+            .rel(".data",0,R32,"first").rel(".data",4,R32,"second")))
+        return raw,expected
+
+    def test_two_source_objects_use_each_actual_final_definition_and_refuse_missing_pointer(self):
+        raw,_expected=self.two_object_inputs()
+        self.assertEqual(rp.validate_data_imports(self.world,self.exports,1,self.row,self.source,raw),2)
+        self.assertEqual(raw.data_local_identities,{"first":(1,36),"second":(1,44)})
+        for case in ("null","definition"):
+            with self.subTest(case=case):
+                self.setUp();raw,_expected=self.two_object_inputs(missing=case=="null")
+                if case=="definition":self.world.by_name["columns"]*=2
+                with self.assertRaises(rp.PackError):
+                    rp.validate_data_imports(self.world,self.exports,1,self.row,self.source,raw)
 
     def plain_row(self):
         return self.world.amods[1]["data_rodata_ownership"][1]

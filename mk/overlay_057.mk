@@ -95,3 +95,13 @@ $(O57_CHARACTER_ORDER): $(TOOLS_DIR)/trim_elf_section.py
 $(O57_CHARACTER_ORDER): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x14 --compiler-end-padding
 $(O57_CHARACTER_ORDER): private PLAIN_DATA_PROOF = 1
 $(O57_CHARACTER_ORDER): private PLAIN_DATA_RUNTIME_ROLE = data
+
+# Two genuine source objects retain all48 compiler bytes: pointer24, columns22
+# and independently proved two-byte section alignment. Providers retain their
+# real readonly storage and declared literal effective extent/runtime origin.
+MODULE_LINKED_DATA_SOURCES += overlays/o057/overlay57ResultLayout
+O57_RESULT_LAYOUT := $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57ResultLayout.c.o
+O57_RESULT_LAYOUT_PROVIDERS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57MenuLabels.c.o $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57ResultLabels.c.o
+$(O57_RESULT_LAYOUT): $(O57_RESULT_LAYOUT_PROVIDERS)
+$(O57_RESULT_LAYOUT): private LOCAL_DATA_OBJECTS = 1
+$(O57_RESULT_LAYOUT): private LOCAL_RO_MIXED_PROVIDER_GROUP = $(O57_RESULT_LAYOUT_PROVIDERS)

@@ -927,6 +927,17 @@ def local_ro_mixed_group(command, root):
     return mixed
 
 
+def local_data_objects(command, root):
+    import shlex
+    words = shlex.split(command)
+    flag = "--local-data-objects"
+    selected = flag in words
+    if selected and (words.count(flag) != 1 or "--local-data-aggregate" in words
+                     or not local_ro_mixed_group(command, root)):
+        raise MetadataProofError("LOCAL objects need one explicit mixed provider group")
+    return selected
+
+
 def capture_data_module_producer_raw(root, source, configured, linked, map_path):
     """Fresh producer capture, distinct from and inadmissible as promotion proof."""
     return _capture_configured_raw(root, source, configured, linked, "", module_link=True,
@@ -1031,6 +1042,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             inputs["metadata_tools"].update(literal_profile_inputs(root))
             inputs["metadata_tools"].update(literal_frontend_inputs(root, command))
         if module_link:
+            local_data_objects(expanded_postprocess, root)
             inputs["module_link"] = expanded_postprocess
             inputs["module_link_inputs"] = {name: sha256_file(root / name) for name in (
                 "config/runlink-ort.us.txt", "tools/link_overlay_module.py", "tools/runlink_pack.py",

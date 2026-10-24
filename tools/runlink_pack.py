@@ -2225,11 +2225,12 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
     import source_module_link_proof as proof
     grouped = getattr(raw, "local_ro_providers", None)
     aggregate = getattr(raw, "local_ro_aggregate", None)
+    objects = getattr(raw, "local_ro_objects", None)
     provider_sources = [name.removeprefix("build/src/").removesuffix(".c.o")
                         for name in (grouped or (raw.local_ro_provider,))]
     mixed = getattr(raw, "local_ro_mixed_group", False)
     if mixed:
-        if not grouped or len(grouped) != 2 or not aggregate:
+        if not grouped or len(grouped) != 2 or not (aggregate or objects):
             raise PackError("mixed LOCAL group lacks its declared complete providers")
         roles, origins, sections = getattr(world, "_plain_data_declarations", ({}, {}, {}))
         member = grouped[1]
@@ -2241,7 +2242,20 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
             {member: origins[member]}, {member: sections[member]})[member]
     configured, start = data_import_input(world, ov, row, source, raw, linked_local=True)
     rels = raw.rels(".data")
-    if grouped or aggregate:
+    if objects:
+        import link_overlay_module as module_link
+        try:
+            if module_link.local_objects_shape(raw) != objects:
+                raise module_link.LinkError("source object shape differs from receipt")
+        except module_link.LinkError as error:
+            raise PackError("LOCAL source objects refused: " + str(error)) from error
+        for owner in objects["objects"]:
+            final = world.by_name.get(owner["name"], ())
+            if (len(final) != 1 or final[0].bind != STB_GLOBAL or final[0].type != 1
+                    or final[0].section != f".overlay_{ov:03d}" or final[0].size != owner["size"]
+                    or final[0].value != OVERLAY_VMA + start + owner["offset"]):
+                raise PackError("LOCAL source object lacks its unique actual final definition")
+    elif grouped or aggregate:
         owners = [s for s in raw.symbols if s.section == ".data" and s.bind == STB_GLOBAL
                   and s.type == 1 and s.size]
         if aggregate:
@@ -2271,7 +2285,7 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
             raise PackError("unsupported cross-input LOCAL data import")
         offsets.append(rel.offset)
         target = data_import_definition(world, rel.sym.name, base_only=True,
-                                        provider_source=None if grouped else provider_sources[0], readonly_provider=bool(aggregate))
+                                        provider_source=None if grouped else provider_sources[0], readonly_provider=bool(aggregate or objects))
         if target[0] != ov:
             raise PackError("LOCAL data provider escapes its module")
         targets[rel.sym.name] = target
@@ -2286,8 +2300,8 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
         if len(rows) != 1:
             raise PackError("LOCAL provider lacks one canonical input")
         ordinary = Elf(world.paths["raw"] / "src" / (provider_source + ".c.o"))
-        storage = rows[0].get("section", ".data") if aggregate else ".data"
-        if aggregate:
+        storage = rows[0].get("section", ".data") if (aggregate or objects) else ".data"
+        if aggregate or objects:
             import link_overlay_module as module_link
             try:
                 if module_link.local_provider_section(ordinary, readonly=True) != storage:
@@ -2466,7 +2480,8 @@ def reproduce_data_import(world, source):
         if mixed:
             import link_overlay_module as module_link
             try:
-                shape = module_link.local_aggregate_shape(fresh)
+                object_mode = provenance.local_data_objects(receipt["inputs"]["module_link"], root)
+                shape = (module_link.local_objects_shape if object_mode else module_link.local_aggregate_shape)(fresh)
                 sections = [module_link.local_provider_section(provider, readonly=True)
                             for provider in loaded_providers]
             except module_link.LinkError as error:
@@ -2475,11 +2490,17 @@ def reproduce_data_import(world, source):
                 raise PackError("mixed LOCAL group storage order differs")
             for item, provider, section in zip(expected_inputs, loaded_providers, sections):
                 item.update(input_section=section, input_size=provider.size(section))
-            if group is None or group.get("profile") != "mixed-storage-v1" or group.get("aggregate") != shape:
-                raise PackError("mixed LOCAL group lacks its actual root/storage receipt")
-            fresh.local_ro_aggregate = shape
+            profile = "mixed-storage-objects-v1" if object_mode else "mixed-storage-v1"
+            shape_key = "objects" if object_mode else "aggregate"
+            if (group is None or group.get("profile") != profile or group.get(shape_key) != shape
+                    or ("aggregate" if object_mode else "objects") in group):
+                raise PackError("mixed LOCAL group lacks its actual source/storage receipt")
+            if object_mode:
+                fresh.local_ro_objects = shape
+            else:
+                fresh.local_ro_aggregate = shape
             fresh.local_ro_mixed_group = True
-        elif group and ("profile" in group or "aggregate" in group):
+        elif group and ("profile" in group or "aggregate" in group or "objects" in group):
             raise PackError("undeclared mixed LOCAL group profile")
         if (declared or not group or group.get("inputs") != expected_inputs
                 or group.get("runtime_role") != ".rodata" or group.get("origin") != "first-input-start"

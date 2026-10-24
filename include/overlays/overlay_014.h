@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/pi.h"
+#include "game/menu.h"
 
 /* A loaded value keyed by id; the module keeps 32 of them. */
 typedef struct Overlay14ValueSlot {
@@ -94,13 +95,7 @@ typedef struct Overlay14PackedRect {
     s8 intensity;
 } Overlay14PackedRect;
 
-typedef struct Overlay14RenderRect {
-    s16 x0;
-    s16 y0;
-    s16 x1;
-    s16 y1;
-    s32 intensity;
-} Overlay14RenderRect;
+typedef MenuRectangle Overlay14RenderRect;
 
 typedef struct Overlay14Entry {
     s16 count;
@@ -209,9 +204,9 @@ extern s32 gOverlay14FlagC4Base[];
 extern s32 gOverlay14FlagC8Base[];
 extern s32 gOverlay14ModeE4Base[];
 extern s32 gOverlay14EnabledF8Base[];
-extern s32 gOverlay14Args2C;
-extern s32 gOverlay14Args30;
-extern s32 gOverlay14Args34;
+extern char gOverlay14Args2C[];
+extern char gOverlay14Args30[];
+extern char gOverlay14Args34[];
 extern s32 gOverlay14DataBase;
 extern Overlay14Entry *gOverlay14Entries;
 extern Overlay14Owner *gOverlay14Owner;
@@ -236,9 +231,9 @@ extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha,
 extern void fontUseFont(s32 font);
 extern u8 *func_8004D40C(s32 font, char *text, s32 maxWidth,
                          u8 **lineStart, s32 *outWidth);
-extern void fontPrintXY(void *displayList, s32 x, s32 y, char *text,
+extern void fontPrintXY(Gfx **displayList, s32 x, s32 y, char *text,
                         s32 alignmentFlags);
-extern void frontDrawRectangles(void *context, s32 count,
+extern void frontDrawRectangles(Gfx **context, s32 count,
                                 Overlay14RenderRect *rects, s32 flags);
 extern Overlay14Object *func_80005820(s32 index);
 extern void controlSetPlayerSetup(s16 x, s16 y, s16 z, s16 angle);
@@ -249,7 +244,6 @@ extern void mainChangeLevel(s32 nextLevel, s32 nextCharacter, s32 nextAnimGroup,
 /* Unprototyped placeholders for SYMBOL calls whose callees the module's
  * relocation records name (offset-zero stored addend). */
 extern s32 overlay14Dispatch();
-extern void overlay14DrawPrimitive();
 
 /*
  * ResetMode's call to the exported overlay14ReleaseOwner is a SYMBOL

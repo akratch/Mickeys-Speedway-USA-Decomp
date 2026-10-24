@@ -6,6 +6,14 @@
 
 typedef Gfx MenuCommand;
 
+typedef struct MenuRectangle {
+    s16 left;
+    s16 top;
+    s16 right;
+    s16 bottom;
+    u32 colour;
+} MenuRectangle;
+
 struct MainVertex;
 struct MainTriangle;
 

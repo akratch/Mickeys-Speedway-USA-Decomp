@@ -909,7 +909,6 @@ mainGetNextCharacter_o014Reloc = 0xf0000000;
 mmAlloc_o014Reloc = 0xf0000000;
 mmFree_o014Reloc = 0xf0000000;
 overlay14Dispatch = 0xf0000000;
-overlay14DrawPrimitive = 0xf0000000;
 overlay14InitializeReloc = 0xf0000000;
 overlay14ReleaseOwner_o014Reloc = 0xf0000000;
 piRomLoadSection_o014Reloc = 0xf0000000;

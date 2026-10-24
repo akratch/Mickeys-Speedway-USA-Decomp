@@ -115,16 +115,21 @@ typedef struct Overlay1ModeObject {
 
 extern void *gOverlay1ModeSource;
 extern Overlay1ModeObject *gOverlay1ModeObject;
-extern s32 overlay1ReadModeReloc(void *source);
+/* Overlay 4 owns these distinct tagged views. The real callable contracts
+ * do not unify the opaque source object's underlying layout/effective type. */
+struct Overlay4GroupObject;
+struct Overlay4ChainObject;
+extern s32 overlay4GroupCount(struct Overlay4GroupObject *source);
+extern void overlay4UpdateGroupSpacing(struct Overlay4ChainObject *source);
 
 /* DKR v77/v80 and JFG have no exact donor for this mode refresh wrapper. */
 void overlay1RefreshMode(s32 unused0, s32 unused1, s32 unused2) {
-    if (overlay1ReadModeReloc(gOverlay1ModeSource) >= 3) {
+    if (overlay4GroupCount(gOverlay1ModeSource) >= 3) {
         gOverlay1ModeObject->mode = 2;
     } else {
         gOverlay1ModeObject->mode = 1;
     }
-    overlay1ReadModeReloc(gOverlay1ModeSource);
+    overlay4UpdateGroupSpacing(gOverlay1ModeSource);
 }
 
 /* ---- overlay1CallGlobal ---- */

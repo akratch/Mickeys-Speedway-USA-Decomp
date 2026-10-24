@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 8133},
+  "totals": {"differences": 0, "borrowed_records": 8179},
   "differences": {
   },
   "borrowed": {
@@ -81,7 +81,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1708,
+      "count": 1711,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -204,7 +204,6 @@
         [1, "overlay1ModeSoundReloc", 2],
         [1, "overlay1NextPointerReloc", 4],
         [1, "overlay1PathEntryReloc", 1],
-        [1, "overlay1ReadModeReloc", 2],
         [1, "overlay1ReadSelectionReloc", 1],
         [1, "overlay1ResetReloc", 1],
         [1, "overlay1SolveAngleCandidatesReloc", 1],
@@ -253,7 +252,9 @@
         [2, "gOverlay2TemporaryMode", 4],
         [2, "gOverlay2TemporaryRange", 8],
         [3, "gOverlay3Entries", 4],
+        [3, "gOverlay3ModeChance", 4],
         [3, "gOverlay3Objects", 6],
+        [3, "gOverlay3SearchMaxDistance", 2],
         [3, "gOverlay3TouchEntries", 2],
         [4, "gOverlay4Groups", 8],
         [4, "gOverlay4InitStatus", 2],
@@ -389,6 +390,7 @@
         [11, "D_paramC", 4],
         [11, "D_paramD", 4],
         [11, "D_table", 4],
+        [11, "gOverlay11Argument", 20],
         [11, "gOverlay11Counter", 2],
         [11, "gOverlay11Created", 12],
         [11, "gOverlay11Created0", 4],
@@ -413,6 +415,7 @@
         [11, "gOverlay11HighlightStep", 2],
         [11, "gOverlay11Initialized", 4],
         [11, "gOverlay11InputDelay", 2],
+        [11, "gOverlay11Mode", 22],
         [11, "gOverlay11ModeFinish", 2],
         [11, "gOverlay11ModeStart", 2],
         [11, "gOverlay11NextModeReloc", 2],
@@ -1795,13 +1798,14 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 33,
+      "count": 34,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
         [1, "overlay_001", ".rodata", "0x82DC", 4],
         [1, "overlay_001_head", ".rodata", "0x82EC", 14],
         [1, "overlay_001_tail", ".rodata", "0x8318", 66],
+        [8, "overlay_008", ".rodata", "0x7460", 244],
         [9, "overlay_009", ".data", "0x1520", 35],
         [9, "overlay_009", ".rodata", "0x18B0", 42],
         [11, "overlay_011", ".rodata", "0x2ED8", 16],

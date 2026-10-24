@@ -221,6 +221,8 @@ FIXED_DATA_RODATA_OWNERSHIP = {
 CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     60: [(0x0, 0xB0, "overlay60MenuResources", ".data"),
          (0xC0, 0x130, "overlay60PreviewTables", ".data"),
+         (0x130, 0x178, "overlay60ControlState", ".data"),
+         (0x1B4, 0x1D8, "overlay60RecordPositions", ".data"),
          (0x1E0, 0x260, "overlay_060", ".rodata")],
     14: [(0x0, 0x120, "overlay14InitialState", ".data"),
          (0x120, 0x190, "overlay_014", ".rodata")],
@@ -343,6 +345,8 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
 DATA_ONLY_FIXED_DATA_SOURCES = {
     (60, "overlay60MenuResources", ".data"),
     (60, "overlay60PreviewTables", ".data"),
+    (60, "overlay60ControlState", ".data"),
+    (60, "overlay60RecordPositions", ".data"),
     (14, "overlay14InitialState", ".data"),
     (3, "overlay3ModeChances", ".data"),
     (3, "overlay3SearchData", ".data"),

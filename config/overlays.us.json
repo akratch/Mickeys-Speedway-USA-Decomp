@@ -25,8 +25,8 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 49876,
-  "diagnostic_data_rodata_bytes": 336,
+  "owned_data_rodata_bytes": 50296,
+  "diagnostic_data_rodata_bytes": 416,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -2418,6 +2418,16 @@
    },
    "data_rodata_ownership": [
     {
+     "offset": "0x390",
+     "end_offset": "0x3E0",
+     "size": "0x50",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o009/overlay_009",
+     "trial_function": "func_overlay_009_F0000CE4_186735C",
+     "externalized": true
+    },
+    {
      "offset": "0x2D0",
      "end_offset": "0x300",
      "size": "0x30",
@@ -2433,15 +2443,6 @@
      "type": "c",
      "section": ".data",
      "source": "overlays/o009/overlay9CameraTables",
-     "canonical": true
-    },
-    {
-     "offset": "0x390",
-     "end_offset": "0x3E4",
-     "size": "0x54",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o009/overlay_009",
      "canonical": true
     }
    ]
@@ -9344,15 +9345,6 @@
      "canonical": true
     },
     {
-     "offset": "0x36C",
-     "end_offset": "0x380",
-     "size": "0x14",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57CharacterOrder",
-     "canonical": true
-    },
-    {
      "offset": "0x390",
      "end_offset": "0x3A4",
      "size": "0x14",
@@ -9970,7 +9962,54 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 101
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0xB0",
+     "size": "0xB0",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o060/overlay60MenuResources",
+     "canonical": true
+    },
+    {
+     "offset": "0xC0",
+     "end_offset": "0x130",
+     "size": "0x70",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o060/overlay60PreviewTables",
+     "canonical": true
+    },
+    {
+     "offset": "0x130",
+     "end_offset": "0x178",
+     "size": "0x48",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o060/overlay60ControlState",
+     "canonical": true
+    },
+    {
+     "offset": "0x1B4",
+     "end_offset": "0x1D8",
+     "size": "0x24",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o060/overlay60RecordPositions",
+     "canonical": true
+    },
+    {
+     "offset": "0x1E0",
+     "end_offset": "0x260",
+     "size": "0x80",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o060/overlay_060",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 61,

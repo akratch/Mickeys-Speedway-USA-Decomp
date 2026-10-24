@@ -2834,7 +2834,10 @@ segments:
       - [0x18BD338, .data, overlay60MenuResources]
       - [0x18BD3E8, bin, overlay_060_data_rodata]
       - [0x18BD3F8, .data, overlay60PreviewTables]
-      - [0x18BD468, bin, overlay_060_data_rodata_130]
+      - [0x18BD468, .data, overlay60ControlState]
+      - [0x18BD4B0, bin, overlay_060_data_rodata_178]
+      - [0x18BD4EC, .data, overlay60RecordPositions]
+      - [0x18BD510, bin, overlay_060_data_rodata_1d8]
       - [0x18BD518, .rodata, overlay_060]
 
   - name: overlay_060_reloc1

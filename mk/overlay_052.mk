@@ -3,6 +3,4 @@
 # ordinary module linking resolves real local storage and canonical ORT imports.
 MODULE_LINKED_OVERLAYS += 052
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay_052.c.o: CFLAGS += -Wab,-r4300_mul
-# The forced pass still exposes the initialized static-data symbols. The
-# common metadata step restores procedures and BSS, but not those DATA labels.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay_052.c.o: ASM_PROCESSOR += --force
+# The common compiler-metadata step restores static procedures, BSS and DATA.

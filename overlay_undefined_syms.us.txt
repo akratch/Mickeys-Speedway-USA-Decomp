@@ -862,7 +862,6 @@ o14TextHasMore_o014Reloc = 0x000000e0;
 o14Transition_o014Reloc = 0x000000d8;
 o14ValueCount_o014Reloc = 0x000000e8;
 o14WindowRects_o014Reloc = 0x00000000;
-overlay14InitializeReloc = 0xf0000000;
 overlay14ReleaseOwner_o014Reloc = 0xf0000000;
 piRomLoadSection_o014Reloc = 0xf0000000;
 piRomLoad_o014Reloc = 0xf0000000;

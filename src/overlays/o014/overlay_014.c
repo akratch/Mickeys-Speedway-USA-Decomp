@@ -46,7 +46,7 @@ static s32 func_overlay_014_F0001830_1871108(Gfx **context, u8 *stream, s32 skip
 void func_overlay_014_F0000000_186F8D8(void) {
     Overlay14ValueSlot *slot;
     s32 invalid;
-    overlay14InitializeReloc();
+    overlay14ReleaseOwner_o014Reloc();
     invalid = -1;
     o14Current_o014Reloc = invalid; o14Next_o014Reloc = invalid;
     o14Context_o014Reloc = 0; o14RuleField114_o014Reloc = 0;
@@ -745,7 +745,7 @@ void overlay14UpdateTransition(void *context, s32 step) {
         o14Opacity_o014Reloc -= step * 0x10;
         if (o14Opacity_o014Reloc <= 0) {
             if (o14State_o014Reloc == 0) {
-                overlay14InitializeReloc();
+                func_overlay_014_F0000000_186F8D8();
             } else {
                 o14Opacity_o014Reloc = 0;
             }

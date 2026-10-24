@@ -8214,6 +8214,23 @@
       }
     },
     {
+      "name": "src/overlays/o012/overlay12TriangleData.c",
+      "target_path": "expected/build/src/overlays/o012/overlay12TriangleData.c.o",
+      "base_path": "build/src/overlays/o012/overlay12TriangleData.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o012"
+        ],
+        "source_path": "src/overlays/o012/overlay12TriangleData.c"
+      }
+    },
+    {
       "name": "src/overlays/o012/overlay_012.c",
       "target_path": "expected/build/src/overlays/o012/overlay_012.c.o",
       "base_path": "build/src/overlays/o012/overlay_012.c.o",

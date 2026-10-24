@@ -776,18 +776,22 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay_013.c.o: CFLAGS += -Wab,-r4300_mul
 # patcher, six -O3 objects before the fold (DKR builds it at -O3), compiles to
 # the same bytes at -O2 as static functions: -O2 does not inline them.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/overlay_005.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 12 is one translation unit at the overlay flag set and owns its pad;
-# The resident calls go through
-# the generated surface rebinds. What remains is rodata ownership, kept until
-# phase 3: the TU's five float literals are the retained data at data_rodata
-# +0x130, in the order the shipped rodata-relative LOCAL records expect, so the
-# pool is asserted by digest and anchored at zero.
+# Overlay 12 retains its exact compiler literals as one unique source input.
+# The existing zero anchor preserves loader operands; physical ownership does
+# not resolve the legacy imports or establish ordinary whole-module linking.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: \
 	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:0d02c190457cd94e2b33b9a8fe45a73687e90716f4b71bf32203ccd7723733d6
+		sha256:0d02c190457cd94e2b33b9a8fe45a73687e90716f4b71bf32203ccd7723733d6 keep
+# Three actual two-triangle lists and the ready word end at100 bytes.
+# The complete source's twelve-byte compiler suffix is independently derived.
+O12_TRIANGLE_DATA := $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay12TriangleData.c.o
+$(O12_TRIANGLE_DATA): $(TOOLS_DIR)/trim_elf_section.py
+$(O12_TRIANGLE_DATA): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x64 --compiler-end-padding
+$(O12_TRIANGLE_DATA): private PLAIN_DATA_PROOF = 1
+$(O12_TRIANGLE_DATA): private PLAIN_DATA_RUNTIME_ROLE = data
 # Overlay 2 is one translation unit at the overlay flag set.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay_002.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 11 is one translation unit at the overlay flag set and owns its pad.

@@ -32,45 +32,45 @@ static void overlay61UpdateInput(s32 *xDirection, s32 *yDirection, s32 *confirm,
 
     input = joyGetStickX(0);
     if (input >= 31) {
-        if (gOverlay61RepeatXReloc > 0) {
-            gOverlay61RepeatXReloc--;
+        if (o61RepeatX_o061Reloc > 0) {
+            o61RepeatX_o061Reloc--;
             *xDirection = 0;
         } else {
-            gOverlay61RepeatXReloc = 10;
+            o61RepeatX_o061Reloc = 10;
             *xDirection = 1;
         }
     } else if (joyGetStickX(0) < -30) {
-        if (gOverlay61RepeatXReloc < 0) {
-            gOverlay61RepeatXReloc++;
+        if (o61RepeatX_o061Reloc < 0) {
+            o61RepeatX_o061Reloc++;
             *xDirection = 0;
         } else {
-            gOverlay61RepeatXReloc = -10;
+            o61RepeatX_o061Reloc = -10;
             *xDirection = -1;
         }
     } else {
-        gOverlay61RepeatXReloc = 0;
+        o61RepeatX_o061Reloc = 0;
         *xDirection = 0;
     }
 
     input = joyGetStickY(0);
     if (input >= 31) {
-        if (gOverlay61RepeatYReloc > 0) {
-            gOverlay61RepeatYReloc--;
+        if (o61RepeatY_o061Reloc > 0) {
+            o61RepeatY_o061Reloc--;
             *yDirection = 0;
         } else {
-            gOverlay61RepeatYReloc = 10;
+            o61RepeatY_o061Reloc = 10;
             *yDirection = 1;
         }
     } else if (joyGetStickY(0) < -30) {
-        if (gOverlay61RepeatYReloc < 0) {
-            gOverlay61RepeatYReloc++;
+        if (o61RepeatY_o061Reloc < 0) {
+            o61RepeatY_o061Reloc++;
             *yDirection = 0;
         } else {
-            gOverlay61RepeatYReloc = -10;
+            o61RepeatY_o061Reloc = -10;
             *yDirection = -1;
         }
     } else {
-        gOverlay61RepeatYReloc = 0;
+        o61RepeatY_o061Reloc = 0;
         *yDirection = 0;
     }
 }
@@ -80,8 +80,8 @@ static void overlay61UpdateInput(s32 *xDirection, s32 *yDirection, s32 *confirm,
  * +0x98/+0x9C/+0xA0 zeroing helper were negative.
  */
 static void overlay61ResetCounters(void) {
-    gOverlay61Counter98 = 0;
-    gOverlay61Counter9C = 0;
+    o61EntryCount_o061Reloc = 0;
+    o61SelectedEntry_o061Reloc = 0;
     gOverlay61CounterA0 = 0;
 }
 
@@ -92,8 +92,8 @@ static void overlay61AddEntry(s32 value0, s32 value1, s32 text0Id, s32 text1Id, 
     s32 hundredths;
     Overlay61Entry *entry;
 
-    if (gOverlay61EntryCountReloc < 20) {
-        entry = &gOverlay61EntriesReloc[gOverlay61EntryCountReloc++];
+    if (o61EntryCount_o061Reloc < 20) {
+        entry = &gOverlay61EntriesReloc[o61EntryCount_o061Reloc++];
 
         if (totalTime != -1) {
             hours = totalTime / 3600;
@@ -207,11 +207,11 @@ static void overlay61DrawList(s32 context) {
     s32 y;
     s32 remaining;
 
-    if (gOverlay61SelectedIndexReloc < gOverlay61TopIndexReloc) {
-        gOverlay61TopIndexReloc = gOverlay61SelectedIndexReloc;
-    } else if (gOverlay61SelectedIndexReloc >=
+    if (o61SelectedEntry_o061Reloc < gOverlay61TopIndexReloc) {
+        gOverlay61TopIndexReloc = o61SelectedEntry_o061Reloc;
+    } else if (o61SelectedEntry_o061Reloc >=
                gOverlay61TopIndexReloc + 7) {
-        gOverlay61TopIndexReloc = gOverlay61SelectedIndexReloc - 6;
+        gOverlay61TopIndexReloc = o61SelectedEntry_o061Reloc - 6;
     }
 
     fontUseFont(2, &gOverlay61TopIndexReloc);
@@ -220,12 +220,12 @@ static void overlay61DrawList(s32 context) {
     index = gOverlay61TopIndexReloc;
     y = 0x32;
     /* IDO schedules both relocated bases before the counter on this line. */
-    remaining = 6; do { if (index >= gOverlay61ItemCountReloc) {
+    remaining = 6; do { if (index >= o61EntryCount_o061Reloc) {
         overlay61DrawEntry(context, y, 0, 0);
         } else {
             overlay61DrawEntry(
                 context, y, &gOverlay61ItemsReloc[index << 6],
-                index++ == gOverlay61SelectedIndexReloc);
+                index++ == o61SelectedEntry_o061Reloc);
         }
         y += 0x18;
     } while (remaining--);
@@ -235,7 +235,7 @@ static void overlay61DrawList(s32 context) {
         fontPrintXY(
             context, 0xA0, 0x28, gOverlay61UpLabelReloc, 4);
     }
-    if (gOverlay61TopIndexReloc + 7 < gOverlay61ItemCountReloc) {
+    if (gOverlay61TopIndexReloc + 7 < o61EntryCount_o061Reloc) {
         fontPrintXY(
             context, 0xA0, 0xD8, gOverlay61DownLabelReloc, 4);
     }
@@ -249,7 +249,7 @@ static void overlay61DrawList(s32 context) {
  * basis.
  */
 void overlay61InitResources(void) {
-    loadFrontEndList(gOverlay61SetupData);
+    loadFrontEndList(o61ResourceIds_o061Reloc);
     fontUseFont(3);
     gOverlay61Handle58 = (Overlay45ResourceDescriptor *)overlay61CreateDescriptorReloc(gOverlay61RecordD0, 0xA0, 0xE, 4);
     gOverlay61Handle5C = (Overlay45ResourceDescriptor *)overlay61CreateDescriptorReloc(gOverlay61RecordDC, 0xA0, 0xB0, 4);
@@ -266,10 +266,10 @@ void overlay61InitResources(void) {
     gOverlay61Handle88 = (Overlay45ResourceDescriptor *)overlay61CreateDescriptorReloc(gOverlay61Record144, 0xA0, 0xB0, 4);
     gOverlay61Config08 = D_800D31C8[4];
     gOverlay61Config30 = D_800D31C8[5];
-    gOverlay61StateA4 = 2;
-    gOverlay61StateA8 = 0;
-    gOverlay61StateAC = 2;
-    gOverlay61StateB0 = 7;
+    o61State_o061Reloc = 2;
+    o61Error_o061Reloc = 0;
+    o61ErrorNextState_o061Reloc = 2;
+    o61ErrorBackState_o061Reloc = 7;
     rumbleProcessing(0, 2);
 }
 
@@ -316,11 +316,11 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
     overlay45SetMode(gOverlay61Handle84, 0);
     overlay45SetMode(gOverlay61Handle88, 0);
 
-    switch (gOverlay61State) {
+    switch (o61State_o061Reloc) {
     case 0:
-        if (gOverlay61Error == 1 || gOverlay61Error == 8) {
+        if (o61Error_o061Reloc == 1 || o61Error_o061Reloc == 8) {
             overlay45SetMode(gOverlay61Handle6C, 0xFF);
-        } else if (gOverlay61Error == 4) {
+        } else if (o61Error_o061Reloc == 4) {
             overlay45SetMode(gOverlay61Handle74, 0xFF);
         } else {
             overlay45SetMode(gOverlay61Handle70, 0xFF);
@@ -330,10 +330,10 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         alpha0 = 0xFF;
         alpha1 = 0xFF;
         if (confirm) {
-            gOverlay61State = gOverlay61ErrorNext;
+            o61State_o061Reloc = o61ErrorNextState_o061Reloc;
             amSndPlay(0xC, NULL);
         } else if (cancel) {
-            gOverlay61State = gOverlay61ErrorBack;
+            o61State_o061Reloc = o61ErrorBackState_o061Reloc;
             amSndPlay(0xD, NULL);
         }
         break;
@@ -342,39 +342,39 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         alpha0 = 0xFF;
         alpha1 = 0xFF;
         if (confirm || cancel) {
-            gOverlay61State = 2;
+            o61State_o061Reloc = 2;
             amSndPlay(0xC, NULL);
         }
         break;
     case 2:
         result = packDirectory(0, 16, gOverlay61DirNames, gOverlay61DirExts,
-                               gOverlay61DirSizes, gOverlay61DirTypes);
+                               o61DirectorySizes_o061Reloc, o61DirectoryTypes_o061Reloc);
         if (result) {
-            gOverlay61State = 0;
-            gOverlay61Error = result;
-            gOverlay61ErrorNext = 2;
-            gOverlay61ErrorBack = 7;
+            o61State_o061Reloc = 0;
+            o61Error_o061Reloc = result;
+            o61ErrorNextState_o061Reloc = 2;
+            o61ErrorBackState_o061Reloc = 7;
             break;
         }
         overlay61ResetCounters();
-        type = gOverlay61DirTypes;
+        type = o61DirectoryTypes_o061Reloc;
         for (i = 0; i < 16; i++) {
             if (*type == 0 && D_8007A1F4 != NULL) {
                 if (overlay61ReadCharacter(0, (s32)gOverlay61DirExts[i],
                                            &character, &course, &time) == 0) {
                     overlay61AddEntry(4, i, (s32)gOverlay61DirNames[i],
                                       (s32)gOverlay61DirExts[i],
-                                      gOverlay61DirSizes[i], character,
+                                      o61DirectorySizes_o061Reloc[i], character,
                                       course, time);
                 } else {
                     overlay61AddEntry(6, i, (s32)gOverlay61DirNames[i],
                                       (s32)gOverlay61DirExts[i],
-                                      gOverlay61DirSizes[i], 0, 0, 0);
+                                      o61DirectorySizes_o061Reloc[i], 0, 0, 0);
                 }
             } else if (*type != 0xFF) {
                 overlay61AddEntry(6, i, (s32)gOverlay61DirNames[i],
                                   (s32)gOverlay61DirExts[i],
-                                  gOverlay61DirSizes[i], 0, 0, 0);
+                                  o61DirectorySizes_o061Reloc[i], 0, 0, 0);
             }
             type++;
         }
@@ -388,28 +388,28 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
                               D_8007A1F4->course,
                               D_8007A1F4->time);
         }
-        packFreeSpace(0, &gOverlay61FreeSpace, NULL);
+        packFreeSpace(0, &o61FreeBytes_o061Reloc, NULL);
         overlay61AddEntry(7, 0, (s32)gOverlay61FreeLabel, 0,
-                          gOverlay61FreeSpace, 0, 0, 0);
-        gOverlay61State = 3;
+                          o61FreeBytes_o061Reloc, 0, 0, 0);
+        o61State_o061Reloc = 3;
         break;
     case 3:
         if (cancel) {
-            gOverlay61State = 7;
+            o61State_o061Reloc = 7;
             amSndPlay(0xD, NULL);
         } else if (confirm) {
-            gOverlay61State = gOverlay61Entries[gOverlay61Selection].nextState;
+            o61State_o061Reloc = gOverlay61Entries[o61SelectedEntry_o061Reloc].nextState;
             amSndPlay(0xC, NULL);
         } else if (y > 0) {
-            gOverlay61Selection--;
-            if (gOverlay61Selection < 0) {
-                gOverlay61Selection = gOverlay61EntryCount - 1;
+            o61SelectedEntry_o061Reloc--;
+            if (o61SelectedEntry_o061Reloc < 0) {
+                o61SelectedEntry_o061Reloc = o61EntryCount_o061Reloc - 1;
             }
             amSndPlay(0xF, NULL);
         } else if (y < 0) {
-            gOverlay61Selection++;
-            if (gOverlay61Selection >= gOverlay61EntryCount) {
-                gOverlay61Selection = 0;
+            o61SelectedEntry_o061Reloc++;
+            if (o61SelectedEntry_o061Reloc >= o61EntryCount_o061Reloc) {
+                o61SelectedEntry_o061Reloc = 0;
             }
             amSndPlay(0xF, NULL);
         }
@@ -421,20 +421,20 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         alpha0 = 0xFF;
         alpha1 = 0xFF;
         if (cancel) {
-            gOverlay61State = 6;
+            o61State_o061Reloc = 6;
             amSndPlay(0xD, NULL);
         } else if (confirm) {
             amSndPlay(0xC, NULL);
             result = func_overlay_061_F0001648_18C0A10(
                 D_8007A1F4, 0,
-                gOverlay61Entries[gOverlay61Selection].note);
+                gOverlay61Entries[o61SelectedEntry_o061Reloc].note);
             if (result) {
-                gOverlay61State = 0;
-                gOverlay61Error = result;
-                gOverlay61ErrorNext = 4;
-                gOverlay61ErrorBack = 2;
+                o61State_o061Reloc = 0;
+                o61Error_o061Reloc = result;
+                o61ErrorNextState_o061Reloc = 4;
+                o61ErrorBackState_o061Reloc = 2;
             } else {
-                gOverlay61State = 1;
+                o61State_o061Reloc = 1;
             }
         }
         break;
@@ -445,7 +445,7 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         alpha0 = 0xFF;
         alpha1 = 0xFF;
         if (cancel) {
-            gOverlay61State = 2;
+            o61State_o061Reloc = 2;
             amSndPlay(0xD, NULL);
         } else if (confirm) {
             amSndPlay(0xC, NULL);
@@ -453,12 +453,12 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
             result = overlay61WriteCharacter((s32 *)D_8007A1F4, 0,
                                              (s32)gOverlay61NewFileName);
             if (result) {
-                gOverlay61State = 0;
-                gOverlay61Error = result;
-                gOverlay61ErrorNext = 5;
-                gOverlay61ErrorBack = 2;
+                o61State_o061Reloc = 0;
+                o61Error_o061Reloc = result;
+                o61ErrorNextState_o061Reloc = 5;
+                o61ErrorBackState_o061Reloc = 2;
             } else {
-                gOverlay61State = 1;
+                o61State_o061Reloc = 1;
             }
         }
         break;
@@ -469,30 +469,30 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         alpha0 = 0xFF;
         alpha1 = 0xFF;
         if (cancel) {
-            gOverlay61State = 2;
+            o61State_o061Reloc = 2;
             amSndPlay(0xD, NULL);
         } else if (confirm) {
             amSndPlay(0xC, NULL);
-            result = packDeleteFile(0, gOverlay61Entries[gOverlay61Selection].slot);
+            result = packDeleteFile(0, gOverlay61Entries[o61SelectedEntry_o061Reloc].slot);
             if (result) {
-                gOverlay61State = 0;
-                gOverlay61Error = result;
-                gOverlay61ErrorNext = 6;
-                gOverlay61ErrorBack = 2;
+                o61State_o061Reloc = 0;
+                o61Error_o061Reloc = result;
+                o61ErrorNextState_o061Reloc = 6;
+                o61ErrorBackState_o061Reloc = 2;
             } else {
-                gOverlay61State = 1;
+                o61State_o061Reloc = 1;
             }
         }
         break;
     case 7:
         mainTitlePageInit(0);
-        gOverlay61State = 8;
+        o61State_o061Reloc = 8;
         break;
     case 8:
         break;
     }
 
-    if (gOverlay61EntryCount > 0) {
+    if (o61EntryCount_o061Reloc > 0) {
         overlay61DrawList((s32)&D_800D3140);
     }
     texAnimateTexSprite(gOverlay61Sprite0.texture, &gOverlay61Animation0, 2,
@@ -512,7 +512,7 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
 }
 
 void overlay61ReleaseResources(void) {
-    freeFrontEndList(gOverlay61ResourceBaseReloc);
+    freeFrontEndList(o61ResourceIds_o061Reloc);
     overlay45ReleaseDescriptor(gOverlay61Resource58Reloc);
     overlay45ReleaseDescriptor(gOverlay61Resource5CReloc);
     overlay45ReleaseDescriptor(gOverlay61Resource60Reloc);
@@ -670,7 +670,7 @@ static void overlay61ChooseFileExtension(char *output) {
     }
 
     for (i = 0; i < 16; i++) {
-        if (gOverlay61FileStatus[i] == 0) {
+        if (o61DirectoryTypes_o061Reloc[i] == 0) {
             if ((gOverlay61FileNames[i][0] >= 'A') &&
                 (gOverlay61FileNames[i][0] <= 'Z')) {
                 used[gOverlay61FileNames[i][0] - 'A'] = 1;

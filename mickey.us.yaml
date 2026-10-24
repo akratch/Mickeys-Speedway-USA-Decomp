@@ -3928,7 +3928,8 @@ segments:
       - [0x18ED550, .data, overlay101Labels]
       - [0x18EE170, .data, overlay101LabelTail]
       - [0x18EE1F0, .data, overlay101WindowLabels]
-      - [0x18EE330, bin, overlay_101_data_rodata]
+      - [0x18EE330, .data, overlay101TailConstants]
+      - {start: 0x18EE35C, type: .rodata, name: overlay_101, linker_section_order: .data}
 
   - name: overlay_101_reloc1
     type: bin

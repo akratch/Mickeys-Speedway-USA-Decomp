@@ -533,7 +533,7 @@ void overlay101ScheduleLinkedScaled(s32 index, s32 key, f32 value, f32 seconds,
                 entry->output = slot;
                 entry->type = 11;
                 entry->start = slot->value;
-                entry->end = value * gOverlay101TimedScale;
+                entry->end = value * gOverlay101TimedScale_o101Reloc;
                 entry->elapsed = 0;
                 entry->duration = duration;
                 if (submitValue > 0) {
@@ -541,7 +541,7 @@ void overlay101ScheduleLinkedScaled(s32 index, s32 key, f32 value, f32 seconds,
                 }
             }
         } else {
-            slot->value = value * gOverlay101ImmediateScale;
+            slot->value = value * gOverlay101ImmediateScale_o101Reloc;
         }
     }
 }
@@ -3796,7 +3796,7 @@ void func_overlay_101_F000C6E8_18E7F08(void) {
         }
 
         if (gO101TailC6E8PresentationActive != 0) {
-            D_0.kind = 2; D_0.x = -0x20; D_0.y = -0x18; D_0.width = 0x180; D_0.height = 0x120; D_0.asset = &gO101TailC6E8AssetDF0; D_0.color0 = 0xFF; D_0.color1 = 0xFF; D_0.value0A = 0; D_0.value0C = 0; D_0.chainType = 0; D_0.chain = NULL; gO101TailC6E8OrderSlots[gO101TailC6E8OrderCount] = &D_0; gO101TailC6E8OrderCount = gO101TailC6E8OrderCount + 1;
+            D_0.kind = 2; D_0.x = -0x20; D_0.y = -0x18; D_0.width = 0x180; D_0.height = 0x120; D_0.asset = gO101TailC6E8AssetDF0_o101Reloc; D_0.color0 = 0xFF; D_0.color1 = 0xFF; D_0.value0A = 0; D_0.value0C = 0; D_0.chainType = 0; D_0.chain = NULL; gO101TailC6E8OrderSlots[gO101TailC6E8OrderCount] = &D_0; gO101TailC6E8OrderCount = gO101TailC6E8OrderCount + 1;
 
             D_340[gO101TailC6E8Node32Count].m11.x = 0x35; D_340[gO101TailC6E8Node32Count].m11.y = 0xE0; D_340[gO101TailC6E8Node32Count].m11.value10 = 0; D_340[gO101TailC6E8Node32Count].m11.color0 = 0xFF; D_340[gO101TailC6E8Node32Count].m11.color1 = 0; D_340[gO101TailC6E8Node32Count].m11.value18 = 0; D_340[gO101TailC6E8Node32Count].m11.scale = 1.0f; D_340[gO101TailC6E8Node32Count].m11.value14 = 0.0f; D_340[gO101TailC6E8Node32Count].m11.handle = texLoadSprite(0x8F, NULL); D_340[gO101TailC6E8Node32Count].m11.previousType = D_0.chainType; D_340[gO101TailC6E8Node32Count].m11.previous = D_0.chain; D_0.chainType = 2; D_0.chain = &D_340[gO101TailC6E8Node32Count].m11; gO101TailC6E8Node32Count = gO101TailC6E8Node32Count + 1;
 

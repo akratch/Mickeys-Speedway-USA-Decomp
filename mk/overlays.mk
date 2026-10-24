@@ -579,37 +579,24 @@ include config/normalizations/overlay22Epoch12.mk
 # Overlay 94 is one translation unit under the overlay flag set. Its .text
 # includes the trailing pad; resident callees use the generated surface renames.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 101 is one translation unit under the overlay flag set (-woff 835
-# silences the unused-label warnings the switch bodies raise; it is not a
-# codegen flag). POSTPROCESS remains until the packer owns the overlay link
-# and phase 3 gives the module's rodata a C owner:
-# - 132 calls to exported functions of this module are SYMBOL records whose
-#   shipped jal field is zero; the static link would resolve them, so their
-#   relocations are filtered (overlay_101.filter.spec, checked site by site
-#   against the shipped records). Calls to unexported callees are JUMP records
-#   and link as compiled.
-# - The object's .rodata is the shipped pool tail at rodata +0xE0C..+0xF10
-#   (both switch tables, the clock and builder literals, the selector table).
-#   All payload bytes match; its 12 trailing compiler-alignment bytes are zero.
-#   The bytes stay retained. Its 16 text HI/LO pairs are rebound to an
-#   absolute +0xE0C anchor (no instruction word changes), the payload is
-#   asserted by digest and dropped, with its now-orphaned table relocations.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o: CFLAGS += -Wab,-r4300_mul -woff 835
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	$(TOOLS_DIR)/filter_elf_relocations.py \
-	$(TOOLS_DIR)/externalize_elf_section.py \
-	config/normalizations/overlay_101.rodata.rebind.spec \
-	config/normalizations/overlay_101.filter.spec
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol overlay101RodataE0C=0xE0C,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay_101.rodata.rebind.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		@config/normalizations/overlay_101.filter.spec && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:cf2288cf839e4bf2dc1210508145352a794e74096da468ba9f85e32cd7f3e0e8 && \
+# Overlay101 retains all ordinary source instructions and its three compiler
+# switch tables. Only source-proved zero end alignment is removed. Runtime
+# section bindings and exported calls remain metadata-only operations.
+O101_MAIN := $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay_101.c.o
+O101_TAIL := $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailConstants.c.o
+$(O101_MAIN): CFLAGS += -Wab,-r4300_mul -woff 835
+$(O101_MAIN): $(TOOLS_DIR)/trim_elf_section.py $(TOOLS_DIR)/externalize_elf_section.py $(TOOLS_DIR)/filter_elf_relocations.py config/normalizations/overlay_101.filter.spec
+$(O101_MAIN): POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x104 --compiler-end-padding && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text @config/normalizations/overlay_101.filter.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata sha256:e5ff3af6dc806907602f46f91f31f6a91ba210aa5ed124fcf6084e49682d9c5a 0xE0C keep && \
 	$(OBJCOPY) --remove-section .rel.rodata $@
+$(O101_TAIL): $(TOOLS_DIR)/trim_elf_section.py
+$(O101_TAIL): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x2C --compiler-end-padding
+$(O101_TAIL): private PLAIN_DATA_PROOF = 1
+$(O101_TAIL): private PLAIN_DATA_RUNTIME_ROLE = ro-member
+$(O101_TAIL): private PLAIN_DATA_RO_ORIGIN_OBJECT = build/src/overlays/o101/overlay101Labels.c.o
+
 # Overlay 21 is one TU under the overlay flag set; no post-processing.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o021/overlay_021.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 30 has no initialized storage or BSS; all imports name runtime exports.

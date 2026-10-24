@@ -1516,7 +1516,6 @@
         [1, "overlay_001_head", ".rodata", "0x82EC", 14],
         [1, "overlay_001_tail", ".rodata", "0x8318", 66],
         [9, "overlay_009", ".data", "0x1520", 35],
-        [9, "overlay_009", ".rodata", "0x18B0", 42],
         [11, "overlay_011", ".rodata", "0x2ED8", 16],
         [12, "overlay_012", ".rodata", "0x13D0", 10],
         [15, "overlay_015", ".rodata", "0xCB0", 2],

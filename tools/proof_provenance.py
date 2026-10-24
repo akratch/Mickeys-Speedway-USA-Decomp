@@ -946,7 +946,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             deadline, check=True).stdout.replace("\\\n", " ").splitlines()
         compilers = [line.strip() for line in output if target in line and "tools/ido/cc" in line]
         helper = ("tools/link_overlay_module.py" if module_link else
-                  "tools/trim_elf_section.py" if ordinary_provider else "tools/filter_elf_relocations.py")
+                  "tools/trim_elf_section.py" if ordinary_provider or producer_map is not None
+                  else "tools/filter_elf_relocations.py")
         metadata = [line.strip() for line in output if target in line and helper in line]
         # The generated resident-call renames (mk/overlay_resident_rebinds.generated.mk)
         # run as their own recipe line after POSTPROCESS; replay them too, in that order.

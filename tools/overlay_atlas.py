@@ -152,7 +152,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
     # emit the owner's compiler data, so trial projection must be function-
     # scoped rather than merely source-file-scoped.
     1: [(0x274, 0x294, "overlay_001_tail", ".rodata", "overlay1DispatchMode", True)],
-    9: [(0x390, 0x3E0, "overlay_009", ".rodata", "func_overlay_009_F0000CE4_186735C", True)],
     # The record/targeting update's five float literals, rodata-relative +0x0.
     29: [
         (
@@ -298,7 +297,8 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
         (0x2330, 0x2530, "overlay_008", ".rodata"),
     ],
     9: [(0x2D0, 0x300, "overlay9ParameterState", ".data"),
-        (0x300, 0x390, "overlay9CameraTables", ".data")],
+        (0x300, 0x390, "overlay9CameraTables", ".data"),
+        (0x390, 0x3E4, "overlay_009", ".rodata")],
     24: [(0x0, 0x10, "overlay_024", ".rodata")],
     25: [
         (0x0, 0x20, "overlay_025", ".data"),

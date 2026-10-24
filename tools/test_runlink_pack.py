@@ -1208,6 +1208,31 @@ class DataOnlyProducerDiscoveryTests(unittest.TestCase):
         self.assertEqual(resolver.resolve_name(name).route, "generated-name")
         self.assertEqual(resolver.name_identity(name), ("ov", 1, 0x1234))
 
+    def test_nonort_local_inputs_do_not_enter_the_held_ort_namespace(self):
+        name, resolver = self.held_ort_resolver()
+        local_name = "D_overlay_001_F0007777_00000000"
+        elf = rp.Elf("local", ObjBuilder().section(".data", bytes(4)).sym(local_name)
+            .rel(".data", 0, R32, local_name).build())
+        elf.local_ro_provider = "build/src/overlays/o001/labels.c.o"
+        elf.data_local_identities = {local_name: (1, 0x80)}
+        obj = rp.ObjRef(1, Path("raw/local.o"), "overlays/o001/local", 0, 0, "c", elf,
+                       {".data": (0x60, "link")}, {local_name: (1, 0x80)})
+        self.world._guarded_data_objects[1].append(obj)
+        self.assertEqual(resolver.ort_identity(0), ("ov", 1, 0x48))
+        self.assertEqual(set(resolver._held_ort_targets), {name})
+        self.assertEqual(rp.collect_relocs(self.world, resolver, obj)[0].target.ident,
+                         ("ov", 1, 0x80))
+
+    def test_old_ort_membership_loss_never_turns_into_a_local_or_spelling_route(self):
+        name, resolver = self.held_ort_resolver()
+        self.assertEqual(resolver.ort_identity(0), ("ov", 1, 0x48))
+        resolver.ort.by_name.pop(name)
+        self.world._guarded_data_objects = dict(self.world._guarded_data_objects)
+        with self.assertRaisesRegex(rp.PackError, "lacks its held provider"):
+            resolver.ort_identity(0)
+        with self.assertRaisesRegex(rp.PackError, "lacks its held provider"):
+            resolver.resolve_name(name)
+
     def test_ort_missing_or_conflicting_held_provider_never_uses_spelling(self):
         for arguments, message in (({"missing": True}, "lacks its held provider"),
                                    ({"conflicting": True}, "ambiguous held provider")):

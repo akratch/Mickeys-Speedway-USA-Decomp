@@ -394,6 +394,12 @@ O8_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o
 MODULE_LINKED_DATA_SOURCES += overlays/o008/overlay8TuningTables
 # Complete frame aggregate; same-input LOCAL pointers are checked independently.
 MODULE_LINKED_DATA_SOURCES += overlays/o059/overlay59Frames
+# One complete pointer input targets actual bases in the writable name input;
+# its declared runtime RO origin is independent of the ELF section spelling.
+MODULE_LINKED_DATA_SOURCES += overlays/o008/overlay8SurfaceNameTable
+O8_SURFACE_TABLE := $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay8SurfaceNameTable.c.o
+$(O8_SURFACE_TABLE): $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay8SurfaceNames.c.o
+$(O8_SURFACE_TABLE): private LOCAL_RO_ORIGIN_OBJECT = $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay8SurfaceNames.c.o
 
 # Mickey's LOCAL records distinguish the rodata base from data/BSS. Restoring
 # the intervening scalar literals makes the compiler's complete 512-byte float
@@ -1101,10 +1107,11 @@ ifeq ($(NON_MATCHING)$(RUNLINK_RAW),00)
 # A reviewed data-only registry expands to independent per-source module links.
 MODULE_LINK_DATA_OBJECTS = $(addprefix $(BUILD_DIR)/$(SRC_DIR)/,$(addsuffix .c.o,$(MODULE_LINKED_DATA_SOURCES)))
 $(MODULE_LINK_DATA_OBJECTS): $(TOOLS_DIR)/link_overlay_module.py $(TOOLS_DIR)/runlink_pack.py $(TOOLS_DIR)/rebind_elf_relocations.py config/runlink-ort.$(VERSION).txt Makefile mk/overlays.mk $(LD) $(OBJCOPY)
-$(MODULE_LINK_DATA_OBJECTS): MODULE_LINK = $(HOST_PYTHON) $(TOOLS_DIR)/link_overlay_module.py $@ \
+$(MODULE_LINK_DATA_OBJECTS): private MODULE_LINK = $(HOST_PYTHON) $(TOOLS_DIR)/link_overlay_module.py $@ \
 	--directory $(BUILD_DIR)/modules/$(notdir $(patsubst %/,%,$(dir $@)))/$(patsubst %.c.o,%,$(notdir $@)) \
-	--ort config/runlink-ort.$(VERSION).txt --ld $(LD) --objcopy $(OBJCOPY)
-$(MODULE_LINK_DATA_OBJECTS): RUN_POSTPROCESS = @:
-$(MODULE_LINK_DATA_OBJECTS): RUN_SURFACE_REBIND = @:
+	--ort config/runlink-ort.$(VERSION).txt --ld $(LD) --objcopy $(OBJCOPY) \
+	$(if $(LOCAL_RO_ORIGIN_OBJECT),--local-ro-origin-object $(LOCAL_RO_ORIGIN_OBJECT))
+$(MODULE_LINK_DATA_OBJECTS): private RUN_POSTPROCESS = @:
+$(MODULE_LINK_DATA_OBJECTS): private RUN_SURFACE_REBIND = @:
 
 endif

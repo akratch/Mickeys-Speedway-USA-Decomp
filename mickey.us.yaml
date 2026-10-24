@@ -1346,6 +1346,7 @@ segments:
     subsegments:
       - [0x185DD58, c, overlay_008]
       - [0x1862E88, bin, overlay_008_data_rodata]
+      - [0x1863158, .data, overlay8SurfaceNameTable]
       - [0x1863198, .data, overlay8SelectorTables]
       - [0x18631E8, .data, overlay8SelectorFlags]
       - [0x1863268, .data, overlay8EffectTables]

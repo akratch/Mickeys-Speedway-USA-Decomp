@@ -847,8 +847,14 @@ class Resolver:
                     if rel.type != R_MIPS_32 or rel.sym.shndx != SHN_UNDEF:
                         continue
                     name = rel.sym.name
-                    if (name not in self.ort.by_name or obj.data_imports is None
-                            or name not in obj.data_imports):
+                    if name not in self.ort.by_name:
+                        local = getattr(obj.elf, "data_local_identities", None)
+                        if (getattr(obj.elf, "local_ro_provider", None) and local is not None
+                                and name in local and obj.data_imports is not None
+                                and obj.data_imports.get(name) == local[name]):
+                            continue  # This proven LOCAL identity belongs only to its input.
+                        raise PackError(f"ORT lacks its held provider identity: {name}")
+                    if obj.data_imports is None or name not in obj.data_imports:
                         raise PackError(f"ORT lacks its held provider identity: {name}")
                     ident = ("ov", *obj.data_imports[name])
                     if name in targets and targets[name] != ident:

@@ -19,6 +19,7 @@
 #include "n_audio/mbi.h"
 #include "PR/os_internal.h"
 #include "game/overlay_exports.h"
+#include "game/reflection.h"
 
 typedef struct TrackRotation {
     s16 x;

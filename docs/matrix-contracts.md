@@ -124,6 +124,15 @@ graphics-pointer view, erased export declaration, related overlay 18 globals,
 frame capacity and alternate reset/free lifetime still need review. This repair
 does not establish the complete renderer API.
 
+Overlay 98's reflection renderer now uses genuine `MtxF` locals and camera
+projection input, separate SDK `Mtx` context views and a typed fixed-matrix
+cursor. The [typed export](../include/game/reflection.h) agrees with its actual
+track caller; one cursor step remains one 64-byte record. The two context slots
+are views of retained module BSS, not newly C-owned allocation. This source
+repair preserves target bytes and identities, but does not close the resident
+object renderer's incompatible legacy object/opaque SDK views, overlay 18's
+related cursor views, numeric preconditions or graphics completion lifetime.
+
 These source debts and remaining graphics lifetime questions do not reopen the
 verified assembly's matching status. Future translation must preserve arithmetic
 grouping, alias limits, input capture, FP environment and the private trig calls.

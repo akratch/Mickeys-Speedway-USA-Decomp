@@ -2,6 +2,8 @@
 #define OVERLAY_098_H
 
 #include "PR/ultratypes.h"
+#include "game/math.h"
+#include "game/reflection.h"
 typedef struct Overlay98Vertex {
     u8 reserved0[2];
     s16 y;
@@ -48,10 +50,6 @@ extern u8 *camGetPtr(void);
 
 extern s32 gOverlay98AcceptedCount;
 
-typedef struct Gfx { u32 w0, w1; } Gfx;
-
-typedef struct O98Mtx { u8 bytes[0x40]; } O98Mtx;
-
 typedef struct O98ModelData {
     u8 pad00[0x11];
     u8 special;
@@ -91,8 +89,6 @@ typedef struct O98Object {
 
 typedef struct O98VisibleEntry { O98Object *object; f32 referenceY; } O98VisibleEntry;
 
-typedef struct O98Context { u8 bytes[0x40]; } O98Context;
-
 typedef struct O98Transform {
     s16 rot0, rot2, rot4;
     u16 pad06;
@@ -100,23 +96,25 @@ typedef struct O98Transform {
     f32 x, y, z;
 } O98Transform;
 
-extern void *camGetProjectionMtx(void);
+extern MtxF *camGetProjectionMtx(void);
 
-extern void mtxf_to_mtx(void *, void *);
+extern void mtxf_to_mtx(MtxF source, Mtx *destination);
 
-extern void func_8002AA50(O98Transform *, O98Mtx *);
+extern void func_8002AA50(O98Transform *, MtxF destination);
 
-extern void mtxf_mul(O98Mtx *, void *, O98Mtx *);
+extern void mtxf_mul(MtxF left, MtxF right, MtxF destination);
 
-extern void func_8002AC84(O98Transform *, O98Mtx *);
+extern void func_8002AC84(O98Transform *, MtxF destination);
 
-extern void func_80009E78(Gfx **, u8 **, void *, O98Object *);
+/* The resident object-view contract remains a separate legacy debt. */
+extern void func_80009E78(Gfx **, Mtx **, struct TrackVertex **, O98Object *);
 
 extern void texDPInit(Gfx **);
 
 extern s32 gO98Toggle;
 
-extern O98Context gO98Contexts[2];
+/* Packed fixed output in the existing retained module BSS, not C-owned here. */
+extern Mtx gO98Contexts[2];
 
 extern O98VisibleEntry gOverlay98AcceptedEntries[0x50];
 

@@ -121,19 +121,20 @@ void overlay98CollectAccepted(s32 count, O98Object **objects) {
  * object->stateTable[object->stateIndex + 0x1E] at each use (the local
  * held one more frame cell than the target declares, which put the
  * cursor temporary at +0x58 instead of +0x5C). Matched. */
-#define O98_PACKET(word0, word1) gfx = *dl; *dl = gfx + 1; gfx->w0 = (word0); gfx->w1 = (word1)
+#define O98_PACKET(word0, word1) gfx = *dl; *dl = gfx + 1; gfx->words.w0 = (word0); gfx->words.w1 = (word1)
 
-void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
+void overlay98RenderReflections(Gfx **dl, Mtx **matrixHeap,
+                                struct TrackVertex **vertices) {
     O98Object *object;
     O98Node *node;
     O98Node *node2;
     O98ModelData *model;
     Gfx *gfx;
     u32 modelDisplayList;
-    void *savedDisplayList;
-    O98Mtx matrixC;
-    O98Mtx matrixB;
-    O98Mtx matrixA;
+    MtxF *projection;
+    MtxF matrixC;
+    MtxF matrixB;
+    MtxF matrixA;
     f32 referenceY;
     f32 distance;
     f32 oldY;
@@ -160,8 +161,8 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
     O98ModelData *pick;
 
     gO98Toggle ^= 1;
-    savedDisplayList = camGetProjectionMtx();
-    mtxf_to_mtx(savedDisplayList, &gO98Contexts[gO98Toggle]);
+    projection = camGetProjectionMtx();
+    mtxf_to_mtx(*projection, &gO98Contexts[gO98Toggle]);
 
     O98_PACKET(0xB7000000, 0x1000);
     emittedReflection = 0;
@@ -202,11 +203,11 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
                     transform.rot4 = object->rotZ;
                     transform.rot2 = object->rotY;
                     transform.rot0 = object->rotX + 0x8000;
-                    func_8002AA50(&transform, &matrixB);
-                    mtxf_mul(&matrixB, savedDisplayList, &matrixA);
-                    mtxf_to_mtx(&matrixA, *matrixHeap);
+                    func_8002AA50(&transform, matrixB);
+                    mtxf_mul(matrixB, *projection, matrixA);
+                    mtxf_to_mtx(matrixA, *matrixHeap);
                     O98_PACKET(0x01010040, (u32)*matrixHeap + 0x80000000);
-                    *matrixHeap += 0x40;
+                    (*matrixHeap)++;
                     drewObject = 1;
                 } else if (node->useAlternate == 0) {
                     inverse.x = -object->x;
@@ -216,7 +217,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
                     inverse.rot4 = -object->rotZ;
                     inverse.rot2 = -object->rotY;
                     inverse.rot0 = -object->rotX;
-                    emittedReflection = 1; func_8002AC84(&inverse, &matrixC);
+                    emittedReflection = 1; func_8002AC84(&inverse, matrixC);
                     transform.x = object->x;
                     transform.y = referenceY - distance;
                     transform.z = object->z;
@@ -224,12 +225,12 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
                     transform.rot4 = object->rotZ;
                     transform.rot2 = object->rotY;
                     transform.rot0 = object->rotX + 0x8000;
-                    func_8002AA50(&transform, &matrixB);
-                    mtxf_mul(&matrixC, &matrixB, &matrixA);
-                    mtxf_mul(&matrixA, savedDisplayList, &matrixA);
-                    mtxf_to_mtx(&matrixA, *matrixHeap);
+                    func_8002AA50(&transform, matrixB);
+                    mtxf_mul(matrixC, matrixB, matrixA);
+                    mtxf_mul(matrixA, *projection, matrixA);
+                    mtxf_to_mtx(matrixA, *matrixHeap);
                     O98_PACKET(0x01000040, (u32)*matrixHeap + 0x80000000);
-                    *matrixHeap += 0x40;
+                    (*matrixHeap)++;
                     drewObject = 1;
                 }
                 if (drewObject) {
@@ -237,7 +238,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, void *vertices) {
                     O98_PACKET((((u32)node->partsA[node->partIndex] + 0x80000000) & 0xFFFFFF) | 0xBF000000, (u32)node2->vertexData + 0x80000000);
                     /* Two zero-cost blocks: they carry specialModel and
                      * modelDisplayList across the next save divisor (5.0 to
-                     * 4.29), so &matrixA takes s7, specialModel s8 and the
+                     * 4.29), so matrixA takes s7, specialModel s8 and the
                      * display-list pointer spills to its home as shipped.
                      * A stand-in for whatever block structure the original
                      * has here; see the shard. */

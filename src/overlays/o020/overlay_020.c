@@ -10,17 +10,17 @@
  * child buffers and then the node itself. */
 void overlay20ReleaseTree(Overlay20TreeNode *node) {
     if (node != NULL) {
-        if (node->child0 != NULL) {
-            mmFree(node->child0);
-            node->child0 = NULL;
+        if (node->prefix.buffers[0] != NULL) {
+            mmFree(node->prefix.buffers[0]);
+            node->prefix.buffers[0] = NULL;
         }
-        if (node->child1 != NULL) {
-            mmFree(node->child1);
-            node->child1 = NULL;
+        if (node->prefix.buffers[1] != NULL) {
+            mmFree(node->prefix.buffers[1]);
+            node->prefix.buffers[1] = NULL;
         }
-        if (node->child2 != NULL) {
-            mmFree(node->child2);
-            node->child2 = NULL;
+        if (node->triangles != NULL) {
+            mmFree(node->triangles);
+            node->triangles = NULL;
         }
         mmFree(node);
     }
@@ -36,42 +36,42 @@ void overlay20ReleaseHandle(Overlay20State *state) {
 
 Overlay20Resource *overlay20ConfigureResource(
     Overlay20Resource *resource, s32 x, s32 y, s32 width, s32 height,
-    s32 stepX, s32 columns, s32 rows, void *owner, s32 value0E,
+    s32 stepX, s32 columns, s32 rows, Overlay20InitTexture *owner, s32 value0E,
     s32 value10, s32 start, s32 current, s32 end, s32 scaleDivisor) {
     if (resource == 0) {
         resource = mmAlloc(0x30, 0x87);
         if (resource != 0) {
-            resource->buffers[0] = 0;
-            resource->buffers[1] = 0;
-            resource->buffers[2] = 0;
+            resource->prefix.prefix.buffers[0] = 0;
+            resource->prefix.prefix.buffers[1] = 0;
+            resource->prefix.triangles = 0;
         }
-    } else if ((columns != resource->columns) || (rows != resource->rows)) {
-        mmFree(resource->buffers[0]);
-        mmFree(resource->buffers[1]);
-        mmFree(resource->buffers[2]);
-        resource->buffers[0] = 0;
-        resource->buffers[1] = 0;
-        resource->buffers[2] = 0;
+    } else if ((columns != resource->prefix.prefix.columns) || (rows != resource->prefix.prefix.rows)) {
+        mmFree(resource->prefix.prefix.buffers[0]);
+        mmFree(resource->prefix.prefix.buffers[1]);
+        mmFree(resource->prefix.triangles);
+        resource->prefix.prefix.buffers[0] = 0;
+        resource->prefix.prefix.buffers[1] = 0;
+        resource->prefix.triangles = 0;
     }
 
     if (resource != 0) {
-        resource->x = x;
-        resource->y = y;
-        resource->width = width;
-        resource->height = height;
-        resource->stepX = stepX;
-        resource->columns = columns;
-        resource->rows = rows;
-        resource->value0E = value0E;
-        resource->value10 = value10;
-        resource->current = current;
-        resource->start = (f32)(current - start);
-        resource->end = (f32)(end - current);
-        resource->scale = 1.0f;
+        resource->prefix.prefix.minX = x;
+        resource->prefix.prefix.baseValue = y;
+        resource->prefix.prefix.minY = width;
+        resource->prefix.prefix.width = height;
+        resource->prefix.prefix.height = stepX;
+        resource->prefix.prefix.columns = columns;
+        resource->prefix.prefix.rows = rows;
+        resource->prefix.prefix.textureScaleX = value0E;
+        resource->prefix.prefix.textureScaleY = value10;
+        resource->prefix.prefix.baseColor = current;
+        resource->prefix.prefix.negativeScale = (f32)(current - start);
+        resource->prefix.prefix.positiveScale = (f32)(end - current);
+        resource->prefix.prefix.displacementScale = 1.0f;
         if (scaleDivisor > 0) {
-            resource->scale /= (f32)scaleDivisor;
+            resource->prefix.prefix.displacementScale /= (f32)scaleDivisor;
         }
-        resource->owner = owner;
+        resource->texture = owner;
         resource = func_overlay_020_F000038C_1876964Reloc(resource);
     }
     return resource;
@@ -116,7 +116,7 @@ void overlay20UpdateObjectResource(Overlay20Object *object,
         owner = *object->fallbackEntry;
     }
 
-    object->resource = func_overlay_020_F00000A8_1876680Reloc(
+    object->resource = overlay20ConfigureResource_o020Reloc(
         object->resource, baseX, objectY, baseY, width, height,
         config->columns, config->rows, owner, config->value0E,
         config->value0F, config->start, config->current, config->end,
@@ -156,19 +156,19 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
     s32 v0;
     s32 v1;
 
-    size = (grid->columns + 1) * (grid->rows + 1) * sizeof(Overlay20InitVertex);
+    size = (grid->prefix.prefix.columns + 1) * (grid->prefix.prefix.rows + 1) * sizeof(Overlay20InitVertex);
     texture = grid->texture;
     for (i = 0; i < 2; i++) {
-        if (grid->buffers[i] == NULL) {
-            grid->buffers[i] = mmAlloc(size, 0x87);
+        if (grid->prefix.prefix.buffers[i] == NULL) {
+            grid->prefix.prefix.buffers[i] = mmAlloc(size, 0x87);
         }
-        vertex = grid->buffers[i];
+        vertex = grid->prefix.prefix.buffers[i];
         if (vertex != NULL) {
-            for (row = 0; row <= grid->rows; row++) {
-                for (col = 0; col <= grid->columns; col++) {
-                    vertex->x = grid->minX + (col * grid->width) / grid->columns;
-                    vertex->value = grid->baseValue;
-                    vertex->y = grid->minY + (row * grid->height) / grid->rows;
+            for (row = 0; row <= grid->prefix.prefix.rows; row++) {
+                for (col = 0; col <= grid->prefix.prefix.columns; col++) {
+                    vertex->x = grid->prefix.prefix.minX + (col * grid->prefix.prefix.width) / grid->prefix.prefix.columns;
+                    vertex->value = grid->prefix.prefix.baseValue;
+                    vertex->y = grid->prefix.prefix.minY + (row * grid->prefix.prefix.height) / grid->prefix.prefix.rows;
                     vertex->red = 0xFF;
                     vertex->green = 0xFF;
                     vertex->blue = 0xFF;
@@ -179,21 +179,21 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
         }
     }
 
-    size = grid->columns * grid->rows * 2 * sizeof(Overlay20Triangle);
-    if (grid->triangles == NULL) {
-        grid->triangles = mmAlloc(size, 0x87);
+    size = grid->prefix.prefix.columns * grid->prefix.prefix.rows * 2 * sizeof(Overlay20Triangle);
+    if (grid->prefix.triangles == NULL) {
+        grid->prefix.triangles = mmAlloc(size, 0x87);
     }
-    tri = grid->triangles;
+    tri = grid->prefix.triangles;
     if (tri != NULL) {
-        for (row = 0; row < grid->rows; row++) {
-            for (col = 0; col < grid->columns; col++) {
-                u0 = ((grid->textureScaleX * col * texture->width) << 5) / grid->columns;
-                u1 = (((col + 1) * grid->textureScaleX * texture->width) << 5) / grid->columns;
-                v0 = ((grid->textureScaleY * row * texture->height) << 5) / grid->rows;
+        for (row = 0; row < grid->prefix.prefix.rows; row++) {
+            for (col = 0; col < grid->prefix.prefix.columns; col++) {
+                u0 = ((grid->prefix.prefix.textureScaleX * col * texture->width) << 5) / grid->prefix.prefix.columns;
+                u1 = (((col + 1) * grid->prefix.prefix.textureScaleX * texture->width) << 5) / grid->prefix.prefix.columns;
+                v0 = ((grid->prefix.prefix.textureScaleY * row * texture->height) << 5) / grid->prefix.prefix.rows;
                 i = col & 7;
                 next = i + 9;
                 far = (col & 7) + 10;
-                v1 = (((row + 1) * grid->textureScaleY * texture->height) << 5) / grid->rows;
+                v1 = (((row + 1) * grid->prefix.prefix.textureScaleY * texture->height) << 5) / grid->prefix.prefix.rows;
                 tri[0].flags = 0x40;
                 tri[0].vi0 = i;
                 tri[0].vi1 = i + 1;
@@ -220,9 +220,9 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
         }
     }
 
-    grid->bufferIndex = 1;
-    if (grid->buffers[0] == NULL || grid->buffers[1] == NULL || grid->triangles == NULL) {
-        func_overlay_020_F0000000_18765D8Reloc(grid);
+    grid->prefix.prefix.bufferIndex = 1;
+    if (grid->prefix.prefix.buffers[0] == NULL || grid->prefix.prefix.buffers[1] == NULL || grid->prefix.triangles == NULL) {
+        overlay20ReleaseTree_o020Reloc(&grid->prefix);
         grid = NULL;
     }
     return grid;
@@ -271,14 +271,14 @@ void overlay20BuildTileCommands(Overlay20Command **commands,
     s32 chunkCount;
     s32 *writeCursor;
     s32 *readCursor;
-    s32 textureOffset;
+    u32 textureOffset;
     s32 chunks[7];
-    s32 outputOffset;
+    u32 outputOffset;
     s32 chunkWidth;
     s32 doubledWidth;
 
-    texDPTextureX(commands, source->resource, arg2, 0);
-    width = source->width;
+    texDPTextureX(commands, source->texture, arg2, 0);
+    width = source->prefix.prefix.columns;
     chunkCount = 0;
     writeCursor = chunks;
     if (width != 0) {
@@ -297,9 +297,10 @@ void overlay20BuildTileCommands(Overlay20Command **commands,
         } while (width != 0);
     }
 
-    textureOffset = source->textureOffsets[source->variant];
-    remainingRows = source->rows;
-    outputOffset = source->outputOffset;
+    /* N64 GPU commands encode 32-bit KSEG0 pointers as unsigned addresses. */
+    textureOffset = (u32)source->prefix.prefix.buffers[source->prefix.prefix.bufferIndex];
+    remainingRows = source->prefix.prefix.rows;
+    outputOffset = (u32)source->prefix.triangles;
     while (remainingRows--) {
         width = 0;
         if (chunkCount > 0) {
@@ -307,17 +308,17 @@ void overlay20BuildTileCommands(Overlay20Command **commands,
             do {
                 chunkWidth = *readCursor;
                 OVERLAY20_VERTEX((*commands)++,
-                                 textureOffset + (s32)0x80000000,
+                                 textureOffset + 0x80000000u,
                                  chunkWidth + 1, 0);
                 width++;
                 readCursor++;
                 OVERLAY20_VERTEX(
                     (*commands)++,
-                    textureOffset + source->width * 10 + (s32)0x8000000A,
+                    textureOffset + source->prefix.prefix.columns * 10 + 0x8000000Au,
                     chunkWidth + 1, 0x1200);
                 doubledWidth = chunkWidth << 1;
                 OVERLAY20_POLYGON((*commands)++,
-                                  outputOffset + (s32)0x80000000,
+                                  outputOffset + 0x80000000u,
                                   doubledWidth, 1);
                 textureOffset += chunkWidth * 10;
                 outputOffset += doubledWidth << 4;
@@ -342,7 +343,7 @@ void overlay20BuildTileCommands(Overlay20Command **commands,
 
 /* DKR v77/v80 and JFG have generic GBI relatives, but no exact donor. */
 void overlay20DrawResource(Overlay20Gfx **gfxP, Overlay20Object *object) {
-    void *resource;
+    Overlay20TileSource *resource;
     s32 mode;
 
     resource = object->resource;
@@ -352,7 +353,7 @@ void overlay20DrawResource(Overlay20Gfx **gfxP, Overlay20Object *object) {
             OVERLAY20_SET_PRIM_COLOR((*gfxP)++, object->alpha);
             mode = 14;
         }
-        func_overlay_020_F00007C4_1876D9CReloc(gfxP, resource, mode);
+        overlay20BuildTileCommands_o020Reloc(gfxP, resource, mode);
         OVERLAY20_SET_PRIM_COLOR((*gfxP)++, 255);
     }
 }
@@ -369,7 +370,7 @@ void overlay20DrawResource(Overlay20Gfx **gfxP, Overlay20Object *object) {
  */
 void overlay20UpdateGrid(Overlay20Grid *grid) {
     Overlay20Entry *entry;
-    Overlay20Vertex *vertex;
+    Overlay20InitVertex *vertex;
     s32 minX;
     s32 minY;
     s32 maxX;
@@ -406,7 +407,7 @@ void overlay20UpdateGrid(Overlay20Grid *grid) {
     }
 
     vertex = grid->buffers[grid->bufferIndex];
-    i = (grid->columnsMinusOne + 1) * (grid->rowsMinusOne + 1);
+    i = (grid->columns + 1) * (grid->rows + 1);
     if (overlapCount == 0) {
         while (i--) {
             vertex->value = grid->baseValue;
@@ -520,7 +521,7 @@ Overlay20Entry *overlay20ConfigureEntry(Overlay20Entry *entry, f32 x, f32 y,
 
 /* Exact at +0xF78; DKR v77/v80 and JFG have no exact donor for this wrapper. */
 void overlay20CreateEntry(Overlay20Owner *owner, Overlay20EntryConfig *config) {
-    owner->entry = func_overlay_020_F0000E28_1877400Reloc(
+    owner->entry = overlay20ConfigureEntry_o020Reloc(
         owner->entry, owner->x, owner->z, (f32)config->heading, config->mode,
         (f32)config->scale * gOverlay20Scale, (f32)config->value0,
         (f32)config->value1);

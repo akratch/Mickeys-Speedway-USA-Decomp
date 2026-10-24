@@ -135,7 +135,9 @@ void overlay18Reconfigure(s32 mode);
 void overlay19Dispatch(void *object);
 
 /* overlay 20 */
-void overlay20ReleaseTree(void *node);
+/* The maintained destructor view has a bounded grid prefix and triangles. */
+struct Overlay20TreeNode;
+void overlay20ReleaseTree(struct Overlay20TreeNode *node);
 void overlay20ReleaseHandle(void *state);
 void overlay20UpdateObjectResource(void *object, void *config);
 void overlay20DrawResource(void *gfxP, void *object);

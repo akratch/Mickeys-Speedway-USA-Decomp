@@ -4,36 +4,10 @@
 #include "ultra64.h"
 #include "game/math.h"
 
-typedef struct Overlay20TreeNode {
-    u8 pad00[0x20];
-    struct Overlay20TreeNode *child0;
-    struct Overlay20TreeNode *child1;
-    struct Overlay20TreeNode *child2;
-} Overlay20TreeNode;
-
 typedef struct Overlay20State {
     u8 pad00[0x84];
     s32 handle;
 } Overlay20State;
-
-typedef struct Overlay20Resource {
-    s16 x;
-    s16 y;
-    s16 width;
-    s16 height;
-    s16 stepX;
-    s16 columns;
-    s16 rows;
-    s16 value0E;
-    s16 value10;
-    u8 pad12;
-    s8 current;
-    f32 start;
-    f32 end;
-    f32 scale;
-    void *buffers[3];
-    void *owner;
-} Overlay20Resource;
 
 typedef struct Overlay20LookupResult {
     s16 x0;
@@ -85,7 +59,7 @@ typedef struct Overlay20Object {
     u8 pad3A[0x2E];
     void **fallbackEntry;
     u8 pad6C[0x18];
-    void *resource;
+    struct Overlay20InitGrid *resource;
 } Overlay20Object;
 
 typedef struct Overlay20InitVertex {
@@ -119,7 +93,7 @@ typedef struct Overlay20InitTexture {
     u16 height;
 } Overlay20InitTexture;
 
-typedef struct Overlay20InitGrid {
+typedef struct Overlay20Grid {
     s16 minX;
     s16 baseValue;
     s16 minY;
@@ -135,26 +109,27 @@ typedef struct Overlay20InitGrid {
     f32 positiveScale;
     f32 displacementScale;
     Overlay20InitVertex *buffers[2];
+} Overlay20Grid;
+
+/* Genuine nested views: the updater needs the grid prefix, the destructor
+ * also owns triangles, and the allocator adds its texture reference. */
+typedef struct Overlay20TreeNode {
+    Overlay20Grid prefix;
     Overlay20Triangle *triangles;
+} Overlay20TreeNode;
+
+typedef struct Overlay20InitGrid {
+    Overlay20TreeNode prefix;
     Overlay20InitTexture *texture;
 } Overlay20InitGrid;
+
+typedef Overlay20InitGrid Overlay20Resource;
+typedef Overlay20InitGrid Overlay20TileSource;
 
 typedef struct Overlay20Command {
     u32 w0;
     u32 w1;
 } Overlay20Command;
-
-typedef struct Overlay20TileSource {
-    u8 pad00[0xA];
-    s16 width;
-    s16 rows;
-    u8 pad0E[4];
-    u8 variant;
-    u8 pad13[0xD];
-    s32 textureOffsets[2];
-    s32 outputOffset;
-    void *resource;
-} Overlay20TileSource;
 
 typedef struct Overlay20Entry {
     f32 x;
@@ -181,23 +156,6 @@ typedef struct Overlay20Vertex {
     u8 pad9;
 } Overlay20Vertex;
 
-typedef struct Overlay20Grid {
-    s16 minX;
-    s16 baseValue;
-    s16 minY;
-    s16 width;
-    s16 height;
-    s16 columnsMinusOne;
-    s16 rowsMinusOne;
-    u8 pad0E[4];
-    u8 bufferIndex;
-    u8 baseColor;
-    f32 negativeScale;
-    f32 positiveScale;
-    f32 displacementScale;
-    Overlay20Vertex *buffers[2];
-} Overlay20Grid;
-
 typedef struct Overlay20ReleaseOwner {
     u8 pad0[0x84];
     s32 entry;
@@ -217,11 +175,11 @@ typedef struct Overlay20Data {
 
 typedef struct Overlay20Owner {
     u8 pad0[0xC];
-    s32 x;
+    f32 x;
     u8 pad10[4];
-    s32 z;
+    f32 z;
     u8 pad18[0x6C];
-    void *entry;
+    Overlay20Entry *entry;
 } Overlay20Owner;
 
 typedef struct Overlay20EntryConfig {
@@ -276,19 +234,21 @@ extern f32 gOverlay20Scale;
 extern f32 gOverlay20TailXLimit;
 extern f32 gOverlay20TailYLimit;
 
-/* SYMBOL calls into the module's own exports store zero, so the C names the
- * surface's <generated>Reloc proxies, each with its caller's own view of the
- * callee: the tree release (from the handle release and the grid init),
- * the resource configurator, the grid init, the tile builder, the grid
- * update (from the entry release) and the entry configurator. */
+/* Typed SYMBOL aliases preserve same-module runtime export calls.  The init
+ * alias already has an authenticated sized function definition. */
+extern void overlay20ReleaseTree_o020Reloc(Overlay20TreeNode *node);
+extern Overlay20Resource *overlay20ConfigureResource_o020Reloc(
+    Overlay20Resource *, s32, s32, s32, s32, s32, s32, s32,
+    Overlay20InitTexture *, s32, s32, s32, s32, s32, s32);
+extern Overlay20InitGrid *func_overlay_020_F000038C_1876964Reloc(Overlay20InitGrid *grid);
+extern void overlay20BuildTileCommands_o020Reloc(Overlay20Gfx **gfxP,
+                                               Overlay20TileSource *source, s32 mode);
+/* Remaining ABI debt: the two integer guard views still use their original
+ * proxy contracts.  Typed pointer views change their compiler register shape. */
 extern void func_overlay_020_F0000000_18765D8Reloc();
-extern void *func_overlay_020_F00000A8_1876680Reloc();
-extern void *func_overlay_020_F000038C_1876964Reloc(void *grid);
-extern void func_overlay_020_F00007C4_1876D9CReloc(Overlay20Gfx **gfxP,
-                                                   void *resource, s32 mode);
 extern void func_overlay_020_F0000A68_1877040Reloc(void *grid);
-extern void *func_overlay_020_F0000E28_1877400Reloc(void *, s32, s32, f32, s32,
-                                                    f32, f32, f32);
+extern Overlay20Entry *overlay20ConfigureEntry_o020Reloc(
+    Overlay20Entry *, f32, f32, f32, s32, f32, f32, f32);
 
 extern void *mmAlloc(s32 size, u32 colourTag);
 extern void mmFree(void *data);

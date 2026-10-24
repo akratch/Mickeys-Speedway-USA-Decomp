@@ -166,7 +166,6 @@ extern Overlay14PackedRect o14WindowRects_o014Reloc[18];
 extern Overlay14Entry *gOverlay14Entries;
 extern Overlay14Owner *o14Owner_o014Reloc;
 
-extern void overlay14InitializeReloc(void);
 extern void mmFree(void *ptr);
 extern void *mmAlloc(s32 size, u32 colourTag);
 extern u32 *piRomLoad_o014Reloc(u32 resourceId);

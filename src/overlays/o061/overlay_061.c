@@ -701,3 +701,51 @@ u32 o61DirectorySizes[16];
 u8 o61DirectoryTypes[16];
 Overlay61Entry o61MenuEntries[20];
 char o61NewFileExtension[2];
+
+/* Tier B/C: these real literals are read by the font conversion/copy path,
+ * descriptor allocation/copy, sprintf formats, or pak filename conversion.
+ * The complete current consumer chains do not write or retain their inputs.
+ * Tier D: original const declarations remain inferred. Legacy mutable alias
+ * views and callable/pointer-integer ABI debt are not unified by this owner.
+ * Their natural RO context also supplies the following compiler switch table. */
+const char o61MickeyName[] = "Mickey";
+const char o61MinnieName[] = "Minnie";
+const char o61DonaldName[] = "Donald";
+const char o61DaisyName[] = "Daisy";
+const char o61GoofyName[] = "Goofy";
+const char o61PeteName[] = "Pete";
+const char o61HueyName[] = "Huey";
+const char o61DueyName[] = "Duey";
+const char o61LouieName[] = "Louie";
+const char o61LudwigName[] = "Ludwig";
+const char o61CopyNameFormat[] = "%s";
+const char o61CopyExtensionFormat[] = "%s";
+const char o61GhostSlotFormat[] = "Slot : %d";
+const char o61GhostSizeFormat[] = "Size : %d";
+const char o61GhostNameFormat[] = "%s.%s";
+const char o61GhostTimeFormat[] = "Time: %02d:%02d.%02d\n";
+const char o61OtherSlotFormat[] = "Slot : %d";
+const char o61OtherSizeFormat[] = "Size : %d";
+const char o61OtherNameFormat[] = "%s.%s";
+const char o61PakFreeLabel[] = "Pak Free :";
+const char o61FreeByteFormat[] = "%d";
+const char o61MoreAboveLabel[] = "MORE";
+const char o61MoreBelowLabel[] = "MORE";
+const char o61PakPageLabel[] = "PAK PAGE";
+const char o61LoadGhostLabel[] = "LOAD GHOST";
+const char o61SaveGhostLabel[] = "SAVE GHOST";
+const char o61EraseFileLabel[] = "ERASE FILE";
+const char o61TaskDoneLabel[] = "TASK DONE";
+const char o61NoPakLabel[] = "NO PAK";
+const char o61PakErrorLabel[] = "PAK ERROR";
+const char o61PakFullLabel[] = "PAK FULL";
+const char o61YesLabel[] = "YES";
+const char o61NoLabel[] = "NO";
+const char o61RetryLabel[] = "RETRY";
+const char o61AbortLabel[] = "ABORT";
+const char o61SaveToSgLabel[] = "SAVE TO SG";
+const char o61NewGhostName[] = "SAVE GHOST";
+const char o61ExitLabel[] = "EXIT";
+const char o61LoadGhostPath[] = "MSU-GHOST";
+const char o61WriteGhostFormat[] = "MSU-GHOST";
+const char o61ReadGhostPath[] = "MSU-GHOST";

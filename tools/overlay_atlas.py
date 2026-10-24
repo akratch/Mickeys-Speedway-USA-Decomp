@@ -179,17 +179,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         )
     ],
     59: [(0x76C, 0x78C, "overlay_059", ".rodata", "overlay59Advance", True)],
-    # The 9-entry menu switch table, rodata-relative +0x188.
-    61: [
-        (
-            0x278,
-            0x29C,
-            "overlay_061",
-            ".rodata",
-            "func_overlay_061_F0000B84_18BFF4C",
-            True,
-        )
-    ],
     # The updater's five-entry mode-switch table and float literals,
     # rodata-relative +0xC (data_rodata +0xDC), which the shipped %hi/%lo
     # pairs encode.
@@ -258,11 +247,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     48: [(0x280, 0x700, "overlay_048", ".rodata")],
     59: [(0x0, 0x5A0, "overlay59Frames", ".data")],
     61: [(0x0, 0xB4, "overlay61InitialState", ".data"),
-         (0xF0, 0x140, "overlay61CharacterNames", ".data"),
-         (0x140, 0x180, "overlay61GhostFormats", ".data"),
-         (0x180, 0x1C0, "overlay61DirectoryFormats", ".data"),
-         (0x1C0, 0x240, "overlay61MenuLabels", ".data"),
-         (0x240, 0x260, "overlay61FileNames", ".data")],
+         (0xF0, 0x2A0, "overlay_061", ".rodata")],
     57: [
         (0x0, 0x80, "overlay57GridTriangles", ".data"),
         (0x80, 0x100, "overlay57DisplayResources", ".data"),
@@ -371,11 +356,6 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
     (50, "overlay50ControlTail", ".data"),
     (59, "overlay59Frames", ".data"),
     (61, "overlay61InitialState", ".data"),
-    (61, "overlay61CharacterNames", ".data"),
-    (61, "overlay61GhostFormats", ".data"),
-    (61, "overlay61DirectoryFormats", ".data"),
-    (61, "overlay61MenuLabels", ".data"),
-    (61, "overlay61FileNames", ".data"),
     (57, "overlay57GridTriangles", ".data"),
     (57, "overlay57DisplayResources", ".data"),
     (57, "overlay57PathResources", ".data"),

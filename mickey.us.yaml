@@ -2855,12 +2855,7 @@ segments:
       - [0x18BF3C8, c, overlay_061]
       - [0x18C0E58, .data, overlay61InitialState]
       - [0x18C0F0C, bin, overlay_061_data_rodata]
-      - [0x18C0F48, .data, overlay61CharacterNames]
-      - [0x18C0F98, .data, overlay61GhostFormats]
-      - [0x18C0FD8, .data, overlay61DirectoryFormats]
-      - [0x18C1018, .data, overlay61MenuLabels]
-      - [0x18C1098, .data, overlay61FileNames]
-      - [0x18C10B8, bin, overlay_061_data_rodata_260]
+      - [0x18C0F48, .rodata, overlay_061]
 
   - name: overlay_061_reloc1
     type: bin

@@ -90,7 +90,10 @@ extern f32 sqrtf(f32 value);
 extern void *mmAlloc(s32 size, u32 colourTag);
 struct TextureHeader;
 extern struct TextureHeader *texLoadTexture(s32 textureId);
-extern void overlay17ReleaseReloc(void *resource);
+/* Tier B: the nested texture and its heap owner have distinct actual
+ * release providers. Partial Resource/Material views remain separate debt. */
+extern void texFreeTexture(struct TextureHeader *texture);
+extern void mmFree(void *allocation);
 extern void texDPTextureX(Overlay17Gfx **, void *, s32, s32);
 
 #endif

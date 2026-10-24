@@ -76,7 +76,9 @@ units through `campaign/unchain` and publish with `tools/land.sh`.
 The fold batches, including overlays 73–90 and normalization of 91–107, are
 integrated. Overlays 47 and 82 no longer have the old per-function split. Module
 end padding is derived, static procedure symbols are restored from compiler
-metadata, and the obsolete `--force` steps are gone. Imported zero bindings have
+metadata. Overlay 52 still uses `--force` to expose initialized static-data
+symbols; its removal needs equivalent DATA metadata restoration. Imported zero
+bindings have
 private names, preventing them from impersonating real function definitions.
 Compiler-recorded file-scope BSS anchors restore identities without inventing
 allocation sizes. Generated aliases and the overlay graph have freshness gates.

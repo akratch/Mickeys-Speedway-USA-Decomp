@@ -9,15 +9,14 @@
 # buffer initializer's two loops and the trail drawer's loops and changes
 # nothing else; the shipped loops are plain counted loops, so no spelling
 # reaches them under the default unroll. The .text carries the trailing pad,
-# so nothing is trimmed. --force runs asm-processor's static-symbol pass so
-# the three static helpers keep local names. The compiler's .rodata is
+# so nothing is trimmed. The common static-symbol step preserves the three
+# helpers' local names from compiler metadata. The compiler's .rodata is
 # byte-identical to the retained rodata from +0xC (the particle spacing is the
 # 0.025f literal it is, not an extern of that pool word): its sites are
 # rebound to a base valued 0xC and the copy is dropped after its digest
 # agrees, with the switch table's relocations. No instruction is edited.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay_046.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay_046.c.o: OPT_FLAGS := -O2 -Wo,-loopunroll,0
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay_046.c.o: ASM_PROCESSOR += --force
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay_046.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
 	$(TOOLS_DIR)/externalize_elf_section.py \

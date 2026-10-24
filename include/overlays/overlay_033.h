@@ -41,10 +41,10 @@ extern u8 D_1808[];
 
 /* SYMBOL calls whose shipped word is zero: the wrappers' callee, and the
  * module's own release (+0x144) and list builder (+0x19C), which the C
- * reaches through the surface's <generated>Reloc proxies. */
+ * reaches through typed, per-module aliases of the actual named exports. */
 extern void overlay33CallReloc(void);
-extern void func_overlay_033_F0000144_188092CReloc(void);
-extern void func_overlay_033_F000019C_1880984Reloc(void);
+extern void overlay33ReleaseGlobal_o033Reloc(void);
+extern void overlay33BuildDisplayList_o033Reloc(void);
 
 extern void viGetCurrentSize(s32 *width, s32 *height);
 extern s32 mmAlloc(s32 size, s32 tag);

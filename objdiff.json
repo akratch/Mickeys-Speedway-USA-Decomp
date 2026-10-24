@@ -839,6 +839,16 @@
       }
     },
     {
+      "name": "asm/data/overlays/o033/overlay_033_bss_reserve.bss.s",
+      "target_path": "expected/build/asm/data/overlays/o033/overlay_033_bss_reserve.bss.s.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o033"
+        ]
+      }
+    },
+    {
       "name": "asm/entrypoint.s",
       "target_path": "expected/build/asm/entrypoint.s.o",
       "metadata": {

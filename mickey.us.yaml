@@ -2030,6 +2030,7 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18807E8, c, overlay_033]
+      - { type: bss, vram: 0xF0000730, name: overlay_033_bss_reserve }
 
   - name: overlay_033_reloc1
     type: bin

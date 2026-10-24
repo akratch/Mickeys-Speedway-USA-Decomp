@@ -3,10 +3,10 @@
 
 Sources of truth, none of them the build/ tree:
 
-  * mickey.us.yaml            -- every `c` subsegment is a translation unit
-    (src/<dir>/<name>.c); every `asm`/`bin` subsegment names its object.
+  * mickey.us.yaml            -- C/text and named .data/.rodata/.bss owners
+    name translation units; same-name asm/hasm companions remain assembly.
   * config/overlays.us.json   -- the overlay atlas: each module's
-    text_ownership lists the C and asm sources that make up its .text.
+    text_ownership plus projected physical data_rodata_ownership name sources.
   * the split output on disk  -- asm/**/*.s and assets/**/*.bin, discovered
     exactly as the Makefile's S_FILES/BIN_DIRS wildcards discover them
     (splat auto-names its data/rodata files, so the yaml cannot list them).
@@ -22,7 +22,8 @@ Units that are C get a base_path (what the build produces) and a target_path
 assets/*.bin) carry no base_path, so objdiff has nothing to score them
 against and does not count them as decompiled; they still list the target so
 their symbols appear in the project. `metadata.complete` is true only for a C
-unit with no `#pragma GLOBAL_ASM`.
+text owner with no `#pragma GLOBAL_ASM`. Data-only C has a source, base and
+compiler flags, but no executable-complete claim.
 
     tools/objdiff_config.py               # write objdiff.json
     tools/objdiff_config.py --check       # reject drift or unplaced split files
@@ -66,44 +67,71 @@ def load_yaml(path):
         return yaml.safe_load(f)
 
 
-def yaml_units(y):
-    """(type, name, dir) for every named c/asm/hasm/bin subsegment."""
+def yaml_units(y, include_data=True):
+    """Physical named source owners, following Splat's dotted-section rules."""
     out = []
     for seg in y.get("segments", []):
         if not isinstance(seg, dict):
             continue
         d = seg.get("dir", "") or ""
+        subs = []
         for sub in seg.get("subsegments", []) or []:
             if isinstance(sub, dict):
                 typ, name = sub.get("type"), sub.get("name")
             else:
                 typ = sub[1] if len(sub) > 1 else None
                 name = sub[2] if len(sub) > 2 else None
-            if typ in ("c", "asm", "hasm", "bin") and isinstance(name, str):
+            if isinstance(name, str):
+                subs.append((typ, name, sub))
+        # Splat assigns siblings after collecting every text subsegment, so
+        # dotted data may precede its C/assembly companion in ROM order.
+        siblings = {name: typ for typ, name, _ in subs
+                    if typ in ("c", "asm", "hasm")}
+        for typ, name, sub in subs:
+            if typ in ("c", "asm", "hasm", "bin"):
                 out.append((typ, name, d))
+            elif include_data and typ in (".data", ".rodata", ".bss"):
+                if isinstance(sub, dict) and sub.get("linker_entry") is False:
+                    continue
+                # Without a text sibling Splat selects an implied C object;
+                # source-file existence must not silently turn it into ASM.
+                out.append((siblings.get(name, "c"), name, d))
     return out
 
 
-def yaml_paths(y):
-    """Relative source paths the yaml declares, as {path: type}."""
+def yaml_paths(y, include_data=True):
+    """Relative physical source paths the yaml declares, as {path: type}."""
     opt = y.get("options", {})
     src, asm, assets = (opt.get("src_path", "src"), opt.get("asm_path", "asm"),
                         opt.get("asset_path", "assets"))
     res = {}
-    for typ, name, d in yaml_units(y):
+    for typ, name, d in yaml_units(y, include_data=include_data):
         pre, ext = {"c": (src, ".c"), "asm": (asm, ".s"), "hasm": (asm, ".s"),
                     "bin": (assets, ".bin")}[typ]
         res[os.path.join(pre, d, name + ext).replace(os.sep, "/")] = typ
     return res
 
 
-def atlas_paths(atlas):
-    """{path: type} for every source in every module's text_ownership."""
+def atlas_paths(atlas, include_data=True):
+    """Text sources plus canonically projected physical initialized owners."""
     res = {}
     for mod in atlas.get("modules", []):
         for t in mod.get("text_ownership", []):
             pre, ext = ("src", ".c") if t["type"] == "c" else ("asm", ".s")
             res[f"{pre}/{t['source']}{ext}"] = t["type"]
+        if not include_data:
+            continue
+        leading_end = 0
+        for t in mod.get("data_rodata_ownership", []):
+            normal = t.get("type") == "c" and not t.get("externalized")
+            leading = (normal and "section" not in t and "trial_function" not in t
+                       and int(t["offset"], 16) == leading_end)
+            fixed = (normal and t.get("canonical") is True
+                     and t.get("section") in (".data", ".rodata"))
+            if leading:
+                leading_end = int(t["end_offset"], 16)
+            if leading or fixed:
+                res[f"src/{t['source']}.c"] = "c"
     return res
 
 
@@ -162,11 +190,21 @@ def collect(root, y, atlas):
     problems = []
     c = {p for p, t in declared.items() if t == "c"}
     c_atlas = {p for p, t in atl.items() if t == "c"}
-    # The atlas covers overlays only; the yaml must agree with it there.
+    # Preserve text-role agreement as well as the expanded physical source
+    # inventory: a data row must not conceal an omitted C text declaration.
+    c_text = {p for p, t in yaml_paths(y, include_data=False).items()
+              if t == "c" and OVERLAY_RE.search(p)}
+    atlas_text = {p for p, t in atlas_paths(atlas, include_data=False).items()
+                  if t == "c"} if atlas else set()
+    for p in sorted(atlas_text - c_text):
+        problems.append(f"atlas names C text owner {p} but the yaml has no such c subsegment")
+    for p in sorted(c_text - atlas_text):
+        problems.append(f"yaml names C text owner {p} but the atlas does not own its text")
+    # The atlas covers overlays only; resident data owners come from YAML.
     c_yaml_ov = {p for p in c if OVERLAY_RE.search(p)}
-    for p in sorted(c_atlas - c_yaml_ov):
-        problems.append(f"atlas names {p} but the yaml has no such c subsegment")
-    for p in sorted(c_yaml_ov - c_atlas):
+    for p in sorted((c_atlas - c_yaml_ov) - atlas_text):
+        problems.append(f"atlas names {p} but the yaml has no such C source owner")
+    for p in sorted((c_yaml_ov - c_atlas) - c_text):
         problems.append(f"yaml names {p} but the atlas does not own it")
     c |= c_atlas
     for p in sorted(c):
@@ -235,6 +273,10 @@ def build_config(root, base_dir="build", flags=None, make="gmake", apply_exclude
     atlas_file = root / "config" / "overlays.us.json"
     atlas = json.loads(atlas_file.read_text()) if atlas_file.is_file() else None
     c_src, others, orphans, problems = collect(root, y, atlas)
+    text_c = {p for p, t in yaml_paths(y, include_data=False).items() if t == "c"}
+    if atlas:
+        text_c.update(p for p, t in atlas_paths(atlas, include_data=False).items()
+                      if t == "c")
     if flags is None:
         flags = compile_flags(root, c_src, make)
     excludes = load_excludes(root) if apply_excludes else set()
@@ -253,7 +295,8 @@ def build_config(root, base_dir="build", flags=None, make="gmake", apply_exclude
             unit["base_path"] = f"{base_dir}/{rel}"
             meta["source_path"] = path
             text = (root / path).read_text(errors="replace") if (root / path).is_file() else ""
-            meta["complete"] = not GLOBAL_ASM_RE.search(text)
+            if path in text_c:
+                meta["complete"] = not GLOBAL_ASM_RE.search(text)
             if path in flags:
                 unit["scratch"] = {"platform": "n64", "compiler": SCRATCH_COMPILER,
                                    "c_flags": flags[path]}

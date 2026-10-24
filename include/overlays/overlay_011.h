@@ -166,13 +166,20 @@ extern void func_8004B0B8(s32 red, s32 green, s32 blue, s32 alpha,
                           s32 intensity);
 extern void *overlay45CreateDescriptor(void *resource, s32 x, s32 y, s32 mode);
 extern void overlay45ReleaseDescriptor(void *handle);
-extern void overlay45SetField22(void *handle, s32 value);
-extern void overlay11SetValue(void *handle, s32 value);
+/* Overlay 45 owns this tagged descriptor; setters require its real pointer
+ * contract without importing a private layout into this overlay. */
+struct Overlay45ResourceDescriptor;
+extern void overlay45SetMode(struct Overlay45ResourceDescriptor *descriptor,
+                             s32 mode);
+extern void overlay45SetField22(struct Overlay45ResourceDescriptor *descriptor,
+                                s32 value);
 extern s32 sprintf(char *buffer, const char *format, ...);
 extern void func_80000F94(s32 soundId, void *handle);
 extern u32 func_8002554C(s32 controller);
-/* Overlay 45's +0x1BF4, a SYMBOL call through this module's surface proxy. */
-extern void func_overlay_045_F0001BF4_188E04C_o011Reloc(void *handle, s32 value);
+/* Overlay 45's +0x1BF4 is overlay45SetField22, with the same real contract.
+ * This already-qualified import keeps its existing surface name. */
+extern void func_overlay_045_F0001BF4_188E04C_o011Reloc(
+    struct Overlay45ResourceDescriptor *descriptor, s32 value);
 extern void func_overlay_066_F0000000(void *arg0);
 extern Overlay11Object *func_80005820(s32 controller);
 extern void func_80028374(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4,

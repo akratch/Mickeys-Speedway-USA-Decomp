@@ -312,6 +312,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay_011.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym overlay45CreateDescriptor=overlay45CreateDescriptor_o011Reloc \
 	--redefine-sym overlay45ReleaseDescriptor=overlay45ReleaseDescriptor_o011Reloc \
 	--redefine-sym overlay45SetField22=overlay45SetField22_o011Reloc \
+	--redefine-sym overlay45SetMode=overlay45SetMode_o011Reloc \
 	--redefine-sym overlay66Select=overlay66Select_o011Reloc \
 	--redefine-sym sprintf=sprintf_o011Reloc $@
 

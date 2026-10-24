@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 8213},
+  "totals": {"differences": 0, "borrowed_records": 8188},
   "differences": {
   },
   "borrowed": {
@@ -71,8 +71,9 @@
     },
     "main-placeholder": {
       "about": "main-table entry whose target the resident source does not name (site, op, type)",
-      "count": 4,
+      "count": 5,
       "entries": [
+        ["0x471C", "DATA", "R_MIPS_32"],
         ["0x4F820", "SYMBOL", "R_MIPS_HI16"],
         ["0x4F82C", "SYMBOL", "R_MIPS_LO16"],
         ["0x4FAD4", "SYMBOL", "R_MIPS_HI16"],
@@ -81,7 +82,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1721,
+      "count": 1716,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -432,7 +433,6 @@
         [11, "gOverlay11PadIndex", 22],
         [11, "gOverlay11Selection", 6],
         [11, "gOverlay11Timer", 2],
-        [11, "overlay11SetValue", 18],
         [12, "gOverlay12Count", 4],
         [12, "gOverlay12EffectColors", 4],
         [12, "gOverlay12EffectCount", 6],
@@ -729,10 +729,6 @@
         [46, "gOverlay46Value2C", 2],
         [46, "gOverlay46Value4", 10],
         [46, "gOverlay46Value8", 12],
-        [46, "overlay46InitResourceReloc", 2],
-        [46, "overlay46RandomSignedReloc", 2],
-        [46, "overlay46ReleaseIdsReloc", 2],
-        [46, "overlay46SetModeReloc", 2],
         [49, "gOverlay49Finished", 4],
         [49, "gOverlay49InputEnabled", 6],
         [49, "gOverlay49Masks", 2],

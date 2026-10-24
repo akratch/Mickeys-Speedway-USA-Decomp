@@ -1413,61 +1413,27 @@ static void overlay57UpdateSelection(s32 updateRate) {
 
 #define O57_S32(offset) O57_JOIN(D_, offset)
 
-#define overlay57Call3AA4Reloc o57ModeOpaqueVoidCallReloc
-
-#define overlay57Call3AE0Reloc o57ModeOpaqueVoidCallReloc
-
-#define overlay57Call3B4CReloc o57ModeOpaqueVoidCallReloc
-
 #define overlay57Call3BC4Reloc overlay84GetCurrent
-
-#define overlay57Call3BECReloc o57ModeOpaqueVoidCallReloc
-
-#define overlay57Call3BF8Reloc o57ModeOpaqueVoidCallReloc
 
 #define overlay57Call3C08Reloc overlay84GetCurrent
 
-#define overlay57Call3C4CReloc o57ModeOpaqueVoidCallReloc
-
 #define overlay57Call3C5CReloc overlay84GetCurrent
-
-#define overlay57Call3C84Reloc o57ModeOpaqueVoidCallReloc
 
 #define overlay57Call3C94Reloc overlay84GetCurrent
 
-#define overlay57Call3CDCReloc o57ModeOpaqueVoidCallReloc
-
 #define overlay57Call3D08Reloc overlay84GetCurrent
-
-#define overlay57Call3D24Reloc o57ModeOpaqueVoidCallReloc
 
 #define overlay57Call3D34Reloc func_800508B4
 
-#define overlay57Call3DC4Reloc o57ModeOpaqueVoidCallReloc
-
 #define overlay57Call3DD4Reloc overlay84GetCurrent
-
-#define overlay57Call3DFCReloc o57ModeOpaqueVoidCallReloc
-
-#define overlay57Call3E08Reloc o57ModeOpaqueVoidCallReloc
 
 #define overlay57Call3E18Reloc overlay84GetCurrent
 
-#define overlay57Call3E5CReloc o57ModeOpaqueVoidCallReloc
-
 #define overlay57Call3E6CReloc overlay84GetCurrent
-
-#define overlay57Call3EB4Reloc o57ModeOpaqueVoidCallReloc
 
 #define overlay57Call3EE0Reloc overlay84GetCurrent
 
-#define overlay57Call3EFCReloc o57ModeOpaqueVoidCallReloc
-
 #define overlay57Call3F0CReloc func_800508B4
-
-#define overlay57Call3FA4Reloc o57ModeOpaqueVoidCallReloc
-
-#define overlay57Call3FB8Reloc o57ModeOpaqueVoidCallReloc
 
 /* Matched 2026-10-01 by discarding the inherited shape, not by allocator
  * work.  The 5-word plateau was recorded as a floor of 2; that floor belonged
@@ -1510,14 +1476,14 @@ static void overlay57UpdateModeState(s32 updateRate) {
             list = gO57ModePrimaryIds134;
             while (*list != -1) {
                 id = (u8)*list;
-                overlay57Call3AA4Reloc(id);
+                animseqStopPath(id);
                 list++;
             }
 
             list = gO57ModeSecondaryIds1A0;
             while (*list != -1) {
                 id = (u8)*list;
-                overlay57Call3AE0Reloc(id);
+                animseqStartPath(id);
                 overlay57SetNodeValue(*list, 1, 0.0079f);
                 list++;
             }
@@ -1529,7 +1495,7 @@ static void overlay57UpdateModeState(s32 updateRate) {
     }
 
     if ((gO57ModeTimer114 >= 31) && ((gO57ModeTimer114 - updateRate) < 31)) {
-        overlay57Call3B4CReloc(0x10, 0);
+        amSndPlay(0x10, 0);
     }
     gO57ModeTimer114 -= updateRate;
 
@@ -1546,27 +1512,27 @@ static void overlay57UpdateModeState(s32 updateRate) {
 
     if (D_8007C1A0 == 1) {
         if (overlay57Call3BC4Reloc() == 8) {
-            overlay57Call3BECReloc(0x2A, 0, 0, 0xE, 1, 0);
+            mainChangeLevel(0x2A, 0, 0, 0xE, 1, 0);
             gO57ModeGate50C = 1;
-            overlay57Call3BF8Reloc();
+            overlay84Mark();
         } else if (overlay57Call3C08Reloc() == 5) {
             O57_S32(0x118) = 9;
             O57_S32(0x164) = 0;
             O57_S32(0x160) = 0;
             O57_S32(0x184) = 0x2F;
             gO57ModeTimer114 = 0xB4;
-            overlay57Call3C4CReloc(1);
+            overlay84LoadCurrent(1);
         } else if (overlay57Call3C5CReloc() == 6) {
             O57_S32(0x118) = 12;
             gO57ModeTimer114 = 0xB4;
-            overlay57Call3C84Reloc(2);
+            overlay84LoadCurrent(2);
         } else if (overlay57Call3C94Reloc() == 7) {
             O57_S32(0x118) = 21;
             O57_S32(0x160) = 0;
             O57_S32(0x164) = 0;
             O57_S32(0x184) = 0x4B;
             gO57ModeTimer114 = 0xB4;
-            overlay57Call3CDCReloc(1);
+            overlay84LoadCurrent(1);
         } else {
             Overlay57LookupResult *result;
             Overlay57SelectionChild *child;
@@ -1578,7 +1544,7 @@ static void overlay57UpdateModeState(s32 updateRate) {
             gO57ModeSetup21C.vertical = 0xBE;
             gO57ModeChoice4F8 = overlay57Call3D08Reloc();
             gOverlay57Byte3D1CReloc = gO57ModeChoice4F8;
-            overlay57Call3D24Reloc(0x4D);
+            animseqStopPath(0x4D);
             overlay57UpdateNode();
             result = overlay57Call3D34Reloc(0x4C);
             if (result != 0) {
@@ -1605,27 +1571,27 @@ static void overlay57UpdateModeState(s32 updateRate) {
                     }
                 }
             }
-            overlay57Call3DC4Reloc(3);
+            overlay84LoadCurrent(3);
         }
     } else {
         if (overlay57Call3DD4Reloc() == 8) {
-            overlay57Call3DFCReloc(0x2A, 0, 0, 0xE, 1, 0);
+            mainChangeLevel(0x2A, 0, 0, 0xE, 1, 0);
             gO57ModeGate50C = 1;
-            overlay57Call3E08Reloc();
+            overlay84Mark();
         } else if (overlay57Call3E18Reloc() == 5) {
             O57_S32(0x118) = 9;
             O57_S32(0x164) = 0;
             O57_S32(0x160) = 0;
             O57_S32(0x184) = 0x2F;
             gO57ModeTimer114 = 0xB4;
-            overlay57Call3E5CReloc(1);
+            overlay84LoadCurrent(1);
         } else if (overlay57Call3E6CReloc() == 6) {
             O57_S32(0x118) = 21;
             O57_S32(0x160) = 0;
             O57_S32(0x164) = 0;
             O57_S32(0x184) = 0x4B;
             gO57ModeTimer114 = 0xB4;
-            overlay57Call3EB4Reloc(1);
+            overlay84LoadCurrent(1);
         } else {
             Overlay57LookupResult *result;
             Overlay57SelectionChild *child;
@@ -1637,7 +1603,7 @@ static void overlay57UpdateModeState(s32 updateRate) {
             gO57ModeSetup21C.vertical = 0xBE;
             gO57ModeChoice4F8 = overlay57Call3EE0Reloc();
             gOverlay57Byte3EF4Reloc = gO57ModeChoice4F8;
-            overlay57Call3EFCReloc(0x4D);
+            animseqStopPath(0x4D);
             overlay57UpdateNode();
             result = overlay57Call3F0CReloc(0x4C);
             if (result != 0) {
@@ -1665,12 +1631,12 @@ static void overlay57UpdateModeState(s32 updateRate) {
                 }
                 overlay57ApplyTable();
             }
-            overlay57Call3FA4Reloc(3);
+            overlay84LoadCurrent(3);
         }
     }
 
     if (savedEligible != 0) {
-        overlay57Call3FB8Reloc();
+        overlay84ResetCurrent();
     }
 }
 

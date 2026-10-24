@@ -1,5 +1,14 @@
 #include "overlays/overlay_013.h"
 
+/* Tier B: actual module-lifetime storage. Initialization, creation and
+ * active walks independently visit 32 records of the existing 128-byte
+ * layout, followed by one active word. IDO supplies terminal alignment;
+ * no source reserve or padding object is present. The record's unknown
+ * byte regions, graphics views and caller/lifetime bounds remain open.
+ * Private imports preserve the current loader operand representation. */
+Overlay13Record gOverlay13Records[32];
+s32 gOverlay13Active;
+
 /*
  * Overlay 13: a pool of falling, fading sprites. One translation unit;
  * overlay13Initialize and overlay13DrawRecord are unexported and static.
@@ -19,7 +28,7 @@ static void overlay13Initialize(void) {
     gOverlay13Resource1 = texLoadSprite(0x2D, 0);
     gOverlay13Resource2 = texLoadTexture(0x6A);
 
-    record = (u8 *)gOverlay13Records;
+    record = (u8 *)gOverlay13Records_o013Reloc;
     recordIndex = 0;
     do {
         record[6] = 0;
@@ -61,7 +70,7 @@ static void overlay13Initialize(void) {
         *(s16 *)(gOverlay13Output + 0x1A) = height;
         *(s16 *)(gOverlay13Output + 0x1E) = height;
     }
-    gOverlay13Active = 1;
+    gOverlay13Active_o013Reloc = 1;
 }
 
 /* DKR v77/v80 and JFG contain only generic null-guarded release patterns. */
@@ -80,7 +89,7 @@ void overlay13Release(void) {
     if (resource != NULL) {
         overlay13ReleaseReloc(resource);
     }
-    gOverlay13Active = 0;
+    gOverlay13Active_o013Reloc = 0;
 }
 
 /* Pinned donors contain no hit in this ownership unit. */
@@ -90,11 +99,11 @@ Overlay13Record *overlay13CreateRecord(
     Overlay13Record *record;
     s32 i;
 
-    if (gOverlay13Active == 0) {
+    if (gOverlay13Active_o013Reloc == 0) {
         overlay13Initialize();
     }
 
-    record = gOverlay13Records;
+    record = gOverlay13Records_o013Reloc;
     i = 0;
     if (gOverlay13Enabled >= 0x20) {
         return 0;
@@ -228,7 +237,7 @@ void overlay13ProcessActive(s32 arg) {
     Overlay13Record *record;
 
     if (gOverlay13Enabled != 0) {
-        record = gOverlay13Records;
+        record = gOverlay13Records_o013Reloc;
         for (i = 0; i < 32; i++, record++) {
             if (record->state != 0) {
                 overlay13UpdateRecord_o013Reloc(record, arg);
@@ -311,10 +320,10 @@ void overlay13DrawActive(void *commands, void *mtx, void *vertices) {
     Overlay13Record *record;
 
     temporaryDistance = 0.0f;
-    if (gOverlay13Active != 0 && gOverlay13Enabled != 0) {
+    if (gOverlay13Active_o013Reloc != 0 && gOverlay13Enabled != 0) {
         view = camGetPtr();
         if (1) {
-            record = gOverlay13Records;
+            record = gOverlay13Records_o013Reloc;
             i = 0;
             count = 0;
             do {
@@ -356,7 +365,7 @@ void overlay13DrawActive(void *commands, void *mtx, void *vertices) {
             } while (done == 0);
         }
         for (i = 0; i < count; i++) {
-            overlay13DrawRecord(&gOverlay13Records[indices[i]], commands, mtx, vertices);
+            overlay13DrawRecord(&gOverlay13Records_o013Reloc[indices[i]], commands, mtx, vertices);
         }
     }
 }

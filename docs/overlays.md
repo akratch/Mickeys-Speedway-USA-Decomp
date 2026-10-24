@@ -2674,56 +2674,79 @@ measured draw differences, controls, semantic limits and promotion evidence.
 
 ### Opt-in source-selected edited build
 
-`gmake edited-runlink` builds the current complete overlay75 through a separate
-`build/edited-runlink` graph. It freshly compiles its C, restores ordinary static
-symbol metadata, links the four module sections at independent zero bases, and
-derives runtime records from the original relocation order and stored addends.
-The final ordinary link consumes the actual module ELF sections and individual
-generated metadata wrappers. It does not consume a whole-module program blob.
-This path is explicitly nonmatching; the default retail producer still requires
-zero differences and exact bootstrap/final equality.
+`gmake edited-runlink EDITED_MODULES=34` builds declared complete overlay34 through
+`build/edited-runlink`. `EDITED_MODULES=34,75` selects both existing modules;
+without an override the selection comes from `default_selected` in
+`config/runlink-edited.us.json`. The declaration catalog names each module's
+current C source, export names/rows/kinds and init/resume names or null. It carries
+no target offsets, section sizes, ROM homes or BSS capacity claims. Only sources
+in their proper module directory with an actual registered ordinary complete-module
+Make recipe are admitted. Missing, duplicate, wrong-kind or undeclared actual
+export definitions fail; selected old metadata cannot supply them.
 
-The initial deliberate declaration is
-`tests/fixtures/editable_layout/manifest.json`: source/module identity, stable
-export names and rows, and entry names. The selected build admits only complete75
-and the controlled tail108. Its generated declaration also distinguishes actual
-function and object exports; offsets, section sizes, BSS capacity and relocation
-sites are derived from the fresh compiler and ordinary linker, never declared.
-`EDITED_VARIANT=peer` exercises genuine existing-function, data, BSS, export and
-peer growth using the existing C fixtures. `EDITED_VARIANT=unreferenced` removes an
-unreferenced108, prunes its declarations and freshly rebuilds the surviving source.
-Live references prevent removal and identify the actual caller. These variants
-are build diagnostics, not game execution or an editable native port.
+Each selected C input is freshly compiled with its actual per-source Make flags,
+standard static-symbol metadata is restored, and the existing ordinary module
+linker links its four sections at independent zero bases. Runtime records derive
+from original relocation order and stored addends. The final ordinary link consumes
+actual module ELF sections and individual generated metadata wrappers. This
+separate edited path is explicitly nonmatching; default retail production still
+requires zero differences and exact bootstrap/final equality.
 
-Resident/provider input production uses the existing ordinary Make recipes with
-an input-only Splat linker projection. That projection initializes only the
-resident configuration for its provider script, reads no target ROM or symbol/
-relocation files, and requires no full extraction stamp or bootstrap. The final
-outside script omits old selected configuration before segment initialization;
-a fresh selected linker fragment is generated separately. Source/CPP, recipes,
-tools, actual loaded object/map bytes and publication snapshots are held. A warm
-invocation accepts only a current validated receipt; missing or changed inputs
-rebuild in a new preserved run, and stale outputs cannot acquire fresh proof by
-being rehashed. `EDITED_OUT` selects a separate output directory below
-`build/edited-runlink`. `EDITED_OUTSIDE_ROM` can select an explicit outside
-compatibility image; omitted selected header/ORT cells and body/record ranges
-are not interpreted. Current source75 is reconstructed independently of them.
+`EDITED_DECLARATIONS` can name another safe repository-relative declaration file
+using schema `mickey-edited-source-modules-v1`: `default_selected`, plus `modules`
+with `module`, `source`, `exports:[{name,row,kind}]` and
+`entries:{init,resume}`. Kinds are function/object. Registry row/name agreement,
+unique source ownership, actual linked definitions and complete recipes are
+checked; a declaration cannot authorize an arbitrary stripped object. New
+selected sources still need an accepted complete source/module proof.
+
+The existing75/108 diagnostics remain available with `EDITED_MODULES=75` and
+`EDITED_VARIANT=peer` or `unreferenced`. The existing diagnostic driver owns their
+genuine function/data/BSS/export growth fixtures and controlled peer removal.
+Production current-source selection has no fixed75 path replacement or known-row
+address binding. Live references prevent removal and identify actual callers.
+These are build diagnostics, not game execution or native-port implementations.
+
+Resident/provider input production uses ordinary Make recipes with an input-only
+Splat linker projection, reading no ROM/symbol/relocation inputs or full extraction
+stamp/bootstrap. The production dependency list is derived from the current
+catalog and selected IDs every invocation. Selection changes therefore rebuild
+newly outside missing objects rather than reusing a previous selection's excluded
+set. Source, extracted inputs, recipes, tools and loaded outputs are held across
+that production. The resident-only setup itself is selected-independent.
+
+Final outside initialization omits every selected code/RT configuration before
+segment initialization. Standard fresh fragments are emitted separately from
+actual declarations/sections and inserted by module identity, supporting
+noncontiguous selected slots. Empty source BSS creates no reserve: the proof
+accepts actual absence or the observed zero-storage ordinary linker descriptor;
+positive BSS remains allocated writable NOBITS. Metadata-only script mapping/fill
+removal must reverse exactly, and final bytes/maps/decoded identities/exports and
+resident loader replay are checked.
+
+A warm call accepts only a current validated receipt. Its request binds normalized
+declaration path/content, selected IDs, outside-image path, config and variant
+before lookup. Source/CPP, recipe/binary/project-wrapper, provider/map and loaded
+encoder/Splat identities remain held through marker-last publication. Missing or
+changed inputs rebuild in preserved runs; later hashes cannot bless changed
+outputs. `EDITED_OUT` stays below `build/edited-runlink` and
+`EDITED_OUTSIDE_ROM` can name explicit outside compatibility input. Declared
+selected header/ORT cells and body/record ranges are excluded before interpretation.
 
 This is selected-module input independence, not whole-image source independence.
-All unselected module payloads, headers, records and ORT identities remain named
-retained compatibility authority, as do resident homes and extracted resident
-ASM/assets. The receipt reports that complete outside record borrowing separately
-from the canonical packer's direct residual ledger. Generated metadata input
-counts describe the final link and do not erase this borrowing. Outside objects
-and extracted files must still be available; the input-only projection is not a
-new asset extractor. Source75 may grow in edited mode; a retail-exact control is
-an acceptance observation, not an allow-difference option on the retail target.
+All unselected payloads, headers, records and ORT identities remain named retained
+compatibility authority, as do resident homes and extracted ASM/assets. Receipts
+report that outside borrowing separately from the canonical direct residual
+ledger. Generated metadata input counts do not erase borrowing or award matching/
+data credit. Existing extraction supplies outside files; this is not a new asset
+extractor. Retail exactness is an observed control for the edited path and remains
+a mandatory guard on the default retail target.
 
-The stronger selected identity route accepts allocated, uniquely qualified sized
-function/object definitions and authenticated ordinary allocations, including
-actual peer BSS. Resident imports are currently sized allocated functions only.
-ABS and encoded-coordinate spellings are not authority. Unsized objects, unknown
-allocated program sections, unsupported relocations, unproved section operands,
-one-past/end operands and resident DATA/BSS imports refuse. The narrow compiler
-float-pool case proves the actual full-width load. Broader module layouts, new
-resident geometry and final zero-borrowing completion remain separate work.
+The selected identity route accepts uniquely qualified allocated sized function/
+object definitions and authenticated ordinary allocations. Resident imports are
+currently sized allocated functions only. ABS and encoded-coordinate spellings
+are not authority. Unsized objects, unknown allocated program sections, unsupported
+relocations, unproved section operands, one-past/end operands and resident DATA/BSS
+imports refuse. The narrow compiler float-pool case proves the actual complete
+load. Broader layouts/resident growth and whole-image zero-borrowing/native/API
+completion remain separate work.

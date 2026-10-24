@@ -1,0 +1,83 @@
+{
+  "schema": "mickey-edited-source-modules-v1",
+  "default_selected": [
+    75
+  ],
+  "modules": [
+    {
+      "module": 34,
+      "source": "src/overlays/o034/overlay_034.c",
+      "exports": [
+        {
+          "name": "overlay34UpdateRecords",
+          "row": 1304,
+          "kind": "function"
+        },
+        {
+          "name": "overlay34SortAndDraw",
+          "row": 1321,
+          "kind": "function"
+        },
+        {
+          "name": "overlay34InitStorage",
+          "row": 1352,
+          "kind": "function"
+        },
+        {
+          "name": "overlay34ResetStorage",
+          "row": 1379,
+          "kind": "function"
+        },
+        {
+          "name": "overlay34CreateRecord",
+          "row": 1609,
+          "kind": "function"
+        },
+        {
+          "name": "overlay34SetValue10",
+          "row": 1753,
+          "kind": "function"
+        },
+        {
+          "name": "overlay34RemoveRecord",
+          "row": 1754,
+          "kind": "function"
+        },
+        {
+          "name": "overlay34InterpolateColor",
+          "row": 1755,
+          "kind": "function"
+        }
+      ],
+      "entries": {
+        "init": null,
+        "resume": null
+      }
+    },
+    {
+      "module": 75,
+      "source": "src/overlays/o075/overlay_075.c",
+      "exports": [
+        {
+          "name": "overlay75Init",
+          "row": 1232,
+          "kind": "function"
+        },
+        {
+          "name": "overlay75UpdateMovingObject",
+          "row": 1280,
+          "kind": "function"
+        },
+        {
+          "name": "overlay75MarkSlot",
+          "row": 1331,
+          "kind": "function"
+        }
+      ],
+      "entries": {
+        "init": null,
+        "resume": null
+      }
+    }
+  ]
+}

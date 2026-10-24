@@ -1645,6 +1645,19 @@ $(MODULE_LINK_OBJECTS): RUN_POSTPROCESS = @:
 $(MODULE_LINK_OBJECTS): RUN_SURFACE_REBIND = @:
 endif
 
+# Explicit edited-source profile, enabled only by the validated edited driver.
+# New tail source uses the ordinary compiler/static-symbol/module-link recipe;
+# no retail object or declaration is added by this opt-in profile.
+ifneq ($(EDITED_COMPLETE_SOURCE),)
+EDITED_COMPLETE_OBJECT := $(BUILD_DIR)/$(EDITED_COMPLETE_SOURCE).o
+$(EDITED_COMPLETE_OBJECT): CFLAGS += -Wab,-r4300_mul
+$(EDITED_COMPLETE_OBJECT): MODULE_LINK = $(HOST_PYTHON) $(TOOLS_DIR)/link_overlay_module.py $@ \
+	--directory $(BUILD_DIR)/modules/$(notdir $(patsubst %/,%,$(dir $@))) \
+	--ort config/runlink-ort.$(VERSION).txt --ld $(LD) --objcopy $(OBJCOPY)
+$(EDITED_COMPLETE_OBJECT): RUN_POSTPROCESS = @:
+$(EDITED_COMPLETE_OBJECT): RUN_SURFACE_REBIND = @:
+endif
+
 # One final link builds the complete ROM image. For overlays the dependency
 # flow is:
 #

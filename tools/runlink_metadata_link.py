@@ -450,13 +450,18 @@ def edited_catalog(root, path, exports, selection=None):
     payload = path.read_bytes()
     document = json.loads(payload, object_pairs_hook=unique)
     require(isinstance(document, dict) and set(document) == {'schema', 'default_selected', 'modules'}
-            and document['schema'] == 'mickey-edited-source-modules-v1', 'unsupported edited declaration schema')
+            and document['schema'] in ('mickey-edited-source-modules-v1', 'mickey-edited-source-modules-v2'),
+            'unsupported edited declaration schema')
+    extended = document['schema'].endswith('-v2')
     profiles, names, rows = {}, set(), set()
     require(isinstance(document['modules'], list), 'module declarations must be a list')
     for item in document['modules']:
-        require(isinstance(item, dict) and set(item) == {'module', 'source', 'exports', 'entries'},
+        require(isinstance(item, dict) and set(item) == ({'module', 'source', 'exports', 'entries', 'build'}
+                if extended else {'module', 'source', 'exports', 'entries'}),
                 'unknown/incomplete module declaration')
         number, source = item['module'], item['source']
+        build = item.get('build', 'registered')
+        require(build in ('registered', 'complete-overlay'), 'unsupported edited compiler profile')
         require(type(number) is int and 0 < number < 0xffc and number not in profiles, 'duplicate/reserved module identity')
         require(isinstance(source, str), 'invalid source declaration')
         relative = safe_relative(source)
@@ -475,25 +480,58 @@ def edited_catalog(root, path, exports, selection=None):
             require(isinstance(owner, dict) and set(owner) == {'name', 'row', 'kind'}, 'invalid export declaration fields')
             name, row, kind = owner['name'], owner['row'], owner['kind']
             require(isinstance(name, str) and re.fullmatch(r'[A-Za-z_]\w*', name)
-                    and type(row) is int and 0 <= row < len(exports.rows)
-                    and exports.by_name.get(name) == row and name not in names and row not in rows,
+                    and type(row) is int and row >= 0
+                    and (exports.by_name.get(name) == row if row < len(exports.rows)
+                         else extended and name not in exports.by_name)
+                    and name not in names and row not in rows,
                     'duplicate/wrong symbolic export name/row')
             require(kind in ('function', 'object'), 'unsupported export kind')
             names.add(name); rows.add(row); declared.append(name); kinds[name] = kind; declared_rows[name] = row
         profiles[number] = {'source': source, 'exports': declared, 'kinds': kinds,
-                            'rows': declared_rows, 'entries': item['entries']}
+                            'rows': declared_rows, 'entries': item['entries'], 'build': build}
     ids = document['default_selected'] if selection is None else selection
     require(isinstance(ids, list) and ids and all(type(number) is int and number in profiles for number in ids)
             and len(set(ids)) == len(ids), 'invalid/undeclared selected module identities')
+    appended = sorted(row for number in ids for row in profiles[number]['rows'].values()
+                      if row >= len(exports.rows))
+    require(appended == list(range(len(exports.rows), len(exports.rows) + len(appended))),
+            'new export declarations must be a contiguous row suffix')
     require(path.read_bytes() == payload, 'declaration changed while parsing')
     return {number: profiles[number] for number in sorted(ids)}, hashlib.sha256(payload).hexdigest()
 
 
-def edited_recipe(root, source):
+def edited_source_exports(selected, original, module_count):
+    """Keep compatibility ABI rows fixed; author only a dense source tail."""
+    require = rp.edited_require
+    tail_ids = sorted(number for number in selected if number > module_count)
+    require(tail_ids == list(range(module_count + 1, module_count + 1 + len(tail_ids))),
+            'new modules must form a dense tail after compatibility modules')
+    require(all(selected[number]['build'] == 'complete-overlay' for number in tail_ids),
+            'new tail module requires explicit complete-overlay compiler profile')
+    rows = list(original.rows)
+    appended = sorted((row, name) for declaration in selected.values()
+                      for name, row in declaration['rows'].items() if row >= len(rows))
+    require([row for row, name in appended] == list(range(len(rows), len(rows) + len(appended))),
+            'new export declarations must be a contiguous row suffix')
+    rows.extend(name for row, name in appended)
+    return rp.OrtNames(rows, dict(original.entries))
+
+
+def edited_validate_imports(raw, exports, label):
+    """Name a genuine current caller when a declared target was removed."""
+    for section in ('.text', '.data', '.rodata'):
+        for rel in raw.rels(section):
+            if rel.sym.shndx == rp.SHN_UNDEF and rel.sym.name not in exports.by_name:
+                caller = rp.edited_caller({'raw': raw}, section, rel.offset)
+                raise MetadataLinkError(label + ' ' + caller + ': undeclared/removed target ' + rel.sym.name)
+
+
+def edited_recipe(root, source, profile='registered'):
     """Authenticate the existing complete-module recipe, not an arbitrary object."""
     target = 'build/' + source + '.o'
     expanded = subprocess.check_output(['gmake', '--no-print-directory', '-n',
-        '--assume-old=build/.splat-stamp', '-W', source, target], cwd=root, text=True)
+        '--assume-old=build/.splat-stamp', '-W', source, target,
+        *(['EDITED_COMPLETE_SOURCE=' + source] if profile == 'complete-overlay' else [])], cwd=root, text=True)
     lines = expanded.replace('\\\n', ' ').splitlines()
     compiler = [line for line in lines if 'tools/ido/cc' in line and target in line]
     links = [shlex.split(line) for line in lines if 'tools/link_overlay_module.py' in line]
@@ -571,6 +609,7 @@ def edited_compile(root, directory, label, text, exports, args, commands):
         rp.edited_require([(r.offset, r.type) for r in old] == [(r.offset, r.type) for r in new]
                           and rp.in_place_addends(compiler, section, old)
                           == rp.in_place_addends(prepared, section, new), 'static-symbol step changed original records')
+    edited_validate_imports(prepared, exports, label)
     linked = directory / (label + '-linked.o')
     receipt = module_link.link(raw, linked, exports, directory / (label + '-module'),
         ld=root / 'tools/binutils/mips64-elf-ld', objcopy=root / 'tools/binutils/mips64-elf-objcopy',
@@ -763,10 +802,11 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
     if outside_rom is not None:
         from dataclasses import replace
         cfg = replace(cfg, rom=root / safe_relative(outside_rom))
+    declared_exports = edited_source_exports(selected, exports0, cfg.module_count)
     arguments, recipes = {}, {}
     for number, declaration in selected.items():
-        arguments[number], recipes[number] = edited_recipe(root, declaration['source'])
-    selected, exports, overrides, diagnostic = pilot.edited_fixture_inputs(root, selected, exports0, variant)
+        arguments[number], recipes[number] = edited_recipe(root, declaration['source'], declaration['build'])
+    selected, exports, overrides, diagnostic = pilot.edited_fixture_inputs(root, selected, declared_exports, variant)
     for number in selected:
         if number not in arguments:
             arguments[number] = arguments[diagnostic['module']]

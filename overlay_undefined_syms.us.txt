@@ -783,12 +783,13 @@ gOverlay13Resource0 = 0x00000020;
 gOverlay13Resource1 = 0x00000024;
 gOverlay13Resource2 = 0x00000028;
 levelGetLevel_o013Reloc = 0xf0000000;
-overlay13ReleaseReloc = 0xf0000000;
 overlay13Release_o013Reloc = 0xf0000000;
 overlay13UpdateRecord_o013Reloc = 0xf0000000;
 sprClearIA2ColOverride_o013Reloc = 0xf0000000;
 sprSetIA2ColOverride_o013Reloc = 0xf0000000;
 texDPTextureX_o013Reloc = 0xf0000000;
+texFreeSprite_o013Reloc = 0xf0000000;
+texFreeTexture_o013Reloc = 0xf0000000;
 texLoadSprite_o013Reloc = 0xf0000000;
 texLoadTexture_o013Reloc = 0xf0000000;
 

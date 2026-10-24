@@ -65,3 +65,4 @@ the ordinary way (a commit, a campaign entry), not by leaving the ADR
 | [0019](0019-preserve-retail-loop-defect.md) | Preserve the authenticated overlay 45 retail loop defect |
 | [0020](0020-maintaining-exact-source.md) | Maintenance of already-exact source |
 | [0021](0021-source-module-linking.md) | Source modules linked with runtime section-relative addresses |
+| [0022](0022-cross-input-local-data.md) | Bounded cross-input LOCAL data references |

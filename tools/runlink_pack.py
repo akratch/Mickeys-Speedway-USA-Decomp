@@ -847,8 +847,14 @@ class Resolver:
                     if rel.type != R_MIPS_32 or rel.sym.shndx != SHN_UNDEF:
                         continue
                     name = rel.sym.name
-                    if (name not in self.ort.by_name or obj.data_imports is None
-                            or name not in obj.data_imports):
+                    if name not in self.ort.by_name:
+                        local = getattr(obj.elf, "data_local_identities", None)
+                        if (getattr(obj.elf, "local_ro_provider", None) and local is not None
+                                and name in local and obj.data_imports is not None
+                                and obj.data_imports.get(name) == local[name]):
+                            continue  # This proven LOCAL identity belongs only to its input.
+                        raise PackError(f"ORT lacks its held provider identity: {name}")
+                    if obj.data_imports is None or name not in obj.data_imports:
                         raise PackError(f"ORT lacks its held provider identity: {name}")
                     ident = ("ov", *obj.data_imports[name])
                     if name in targets and targets[name] != ident:
@@ -1802,7 +1808,7 @@ def check_data_import_holds(world):
             raise PackError(f"held data-only input changed after validation: {path}")
 
 
-def data_import_input(world, ov, row, source, raw):
+def data_import_input(world, ov, row, source, raw, *, linked_local=False):
     """Authenticate one complete data input; no inferred placement or tail trim."""
     import proof_provenance as provenance
     remember_data_import_inputs(world, source)
@@ -1810,6 +1816,10 @@ def data_import_input(world, ov, row, source, raw):
     if provenance._all_pragmas(source_path.read_text()):
         raise PackError(f"data-only input contains an assembly fallback: {source}")
     configured = Elf(world.paths["build"] / "src" / (source + ".c.o"))
+    hold_data_import_inputs(world, {configured.path: hashlib.sha256(configured.data).hexdigest()})
+    ordinary_path = world.paths["raw"] / "src" / (source + ".c.o")
+    if raw.path == ordinary_path:
+        hold_data_import_inputs(world, {ordinary_path: hashlib.sha256(raw.data).hexdigest()})
     size = raw.size(".data")
     def require(test, why):
         if not test:
@@ -1827,7 +1837,7 @@ def data_import_input(world, ov, row, source, raw):
         sec = obj.section(".data")
         require(sec and sec["type"] == 1 and sec["flags"] & 3 == 3
                 and not sec["flags"] & 4 and sec["size"] == size, "invalid data storage")
-    require(raw.bytes_of(".data") == configured.bytes_of(".data"),
+    require(linked_local or raw.bytes_of(".data") == configured.bytes_of(".data"),
             "raw/configured initialized bytes differ")
     items = [mi for mi in world.map if mi.file == f"build/src/{source}.c.o"
              and mi.insec == ".data" and mi.size]
@@ -1865,10 +1875,11 @@ def reproduce_data_provider(world, source):
     return fresh
 
 
-def data_import_definition(world, name):
+def data_import_definition(world, name, *, base_only=False, provider_source=None):
     """A real raw C definition and unique map input, never an encoded address."""
     choices = [s for s in world.by_name.get(name, ()) if s.bind == STB_GLOBAL
-               and s.type == 1 and s.size > 0 and s.shndx not in (SHN_ABS, SHN_UNDEF)]
+               and s.type == 1 and (base_only or s.size > 0)
+               and s.shndx not in (SHN_ABS, SHN_UNDEF)]
     if len(choices) != 1:
         raise PackError(f"data-only import has no unique sized canonical definition: {name}")
     symbol = choices[0]
@@ -1881,12 +1892,14 @@ def data_import_definition(world, name):
         source = row["source"]
         for item in world.module_info[ov]["inputs"]:
             if (item.file == f"build/src/{source}.c.o" and item.insec == ".data"
-                    and item.addr <= symbol.value
+                    and item.addr <= symbol.value < item.addr + item.size
                     and symbol.value + symbol.size <= item.addr + item.size):
                 hits.append((row, source))
     if len(hits) != 1:
         raise PackError(f"data-only import target lacks a unique canonical source input: {name}")
     row, source = hits[0]
+    if provider_source is not None and source != provider_source:
+        raise PackError(f"LOCAL data target is not in its declared provider: {name}")
     raw = Elf(world.paths["raw"] / "src" / (source + ".c.o"))
     _configured, start = data_import_input(world, ov, row, source, raw)
     if any(raw.rels(s) for s in (".text", ".data", ".rodata")):
@@ -1897,12 +1910,12 @@ def data_import_definition(world, name):
     world.data_import_providers = providers
     fresh = providers[source]
     definitions = [s for s in fresh.symbols if s.name == name and s.section == ".data"
-                   and s.bind == STB_GLOBAL and s.type == 1 and s.size > 0]
+                   and s.bind == STB_GLOBAL and s.type == 1 and (base_only or s.size > 0)]
     if len(definitions) != 1:
         raise PackError(f"data-only import is not defined by its raw C input: {name}")
     own = definitions[0]
     if (own.size != symbol.size or own.value + start != symbol.value - OVERLAY_VMA
-            or own.value < 0 or own.value + own.size > raw.size(".data")):
+            or own.value < 0 or own.value + max(1, own.size) > raw.size(".data")):
         raise PackError(f"data-only raw definition/final geometry differs: {name}")
     return ov, start + own.value
 
@@ -1954,9 +1967,60 @@ def validate_data_local_prefix(world, ov, row, source, raw, start):
     return len(rels)
 
 
+def validate_cross_input_local(world, exports, ov, row, source, raw):
+    """A complete pointer input names actual bases in one runtime RO origin."""
+    import source_module_link_proof as proof
+    provider_source = raw.local_ro_provider.removeprefix("build/src/").removesuffix(".c.o")
+    configured, start = data_import_input(world, ov, row, source, raw, linked_local=True)
+    rels = raw.rels(".data")
+    if (not rels or len(rels) * 4 != raw.size(".data")
+            or raw.bytes_of(".data") != bytes(raw.size(".data"))
+            or any(configured.rels(s) for s in (".text", ".data", ".rodata"))):
+        raise PackError("LOCAL data is not a complete zero-addend pointer input")
+    targets = {}
+    for index, rel in enumerate(rels):
+        if (rel.offset != index * 4 or rel.type != R_MIPS_32
+                or rel.sym.shndx != SHN_UNDEF or rel.sym.bind != STB_GLOBAL
+                or rel.sym.name in exports.by_name):
+            raise PackError("unsupported cross-input LOCAL data import")
+        target = data_import_definition(world, rel.sym.name, base_only=True,
+                                        provider_source=provider_source)
+        if target[0] != ov:
+            raise PackError("LOCAL data provider escapes its module")
+        targets[rel.sym.name] = target
+    provider = world.data_import_providers[provider_source]
+    if any(provider.size(s) for s in (".text", ".rodata", ".bss")):
+        raise PackError("LOCAL data provider is not a complete data-only input")
+    inputs = [x for x in world.module_info[ov]["inputs"]
+              if x.file == f"build/src/{provider_source}.c.o" and x.insec == ".data" and x.size]
+    if len(inputs) != 1:
+        raise PackError("LOCAL data provider lacks its unique origin input")
+    origin = inputs[0].addr - OVERLAY_VMA
+    identities = proof.source_identities(raw, configured, world.elf, exports, ov,
+                                         local_data_identities=targets)
+    expected = {k: v for k, v in world.expected_cache(ov).items()
+                if start <= k[0] < start + raw.size(".data")}
+    if (set(expected) != {(start + r.offset, r.type) for r in rels}
+            or [start + r.offset for r in rels] !=
+               [k[0] for k in sorted(expected, key=lambda k: expected[k]["position"])]):
+        raise PackError("LOCAL data runtime count/order differs")
+    for rel in rels:
+        target = targets[rel.sym.name]
+        record = expected[(start + rel.offset, rel.type)]
+        if (identities[(rel.offset, rel.type)] != target
+                or u32(configured.bytes_of(".data"), rel.offset) != target[1] - origin
+                or record["op"] != OP_LOCAL or record["table"] != 2
+                or record["symbol_index"] != origin or record["full"] != ("ov", *target)):
+            raise PackError("LOCAL data source/provider/runtime identity differs")
+    raw.data_local_identities = targets
+    return len(rels)
+
+
 def validate_data_imports(world, exports, ov, row, source, raw):
     """Complete ORT pointer inputs or a bounded same-owner LOCAL data prefix."""
     import source_module_link_proof as proof
+    if getattr(raw, "local_ro_provider", None):
+        return validate_cross_input_local(world, exports, ov, row, source, raw)
     configured, start = data_import_input(world, ov, row, source, raw)
     rels = raw.rels(".data")
     if any(configured.rels(s) for s in (".text", ".data", ".rodata")):
@@ -2050,7 +2114,18 @@ def reproduce_data_import(world, source):
         raise PackError("fresh data-only source link differs from configured bytes or symbols")
     if receipt["inputs"] != context():
         raise PackError("data-only source/context changed during reproduction")
-    return Elf(raw), receipt, context
+    provider_input = provenance.local_ro_provider_input(receipt["inputs"]["module_link"], root)
+    declared = link.get("local_data_provider")
+    if provider_input:
+        provider = root / provider_input
+        if (not declared or declared.get("input") != str(provider.resolve())
+                or declared.get("input_sha256") != provenance.sha256_file(provider)
+                or declared.get("runtime_role") != ".rodata" or declared.get("origin") != "input-start"):
+            raise PackError("ordinary LOCAL data link lacks its bound provider declaration")
+        fresh.local_ro_provider = provider_input
+    elif declared:
+        raise PackError("undeclared LOCAL provider in ordinary module receipt")
+    return fresh, receipt, context
 
 
 def guard_data_module_imports(world, exports):
@@ -2112,8 +2187,10 @@ def _guard_data_module_imports(world, exports):
                 raw, receipt, context = reproduce_data_import(world, source)
                 hold_data_capture(world, source, receipt, context)
                 validate_data_imports(world, exports, ov, rows[0], source, raw)
-                targets = {rel.sym.name: data_import_definition(world, rel.sym.name)
-                           for rel in raw.rels(".data") if rel.sym.shndx == SHN_UNDEF}
+                targets = getattr(raw, "data_local_identities", None)
+                if targets is None:
+                    targets = {rel.sym.name: data_import_definition(world, rel.sym.name)
+                               for rel in raw.rels(".data") if rel.sym.shndx == SHN_UNDEF}
                 start = world.module_info[ov]["text_size"] + int(rows[0]["offset"], 16)
                 path = world.paths["raw"] / "src" / (source + ".c.o")
                 admitted[ov].append(ObjRef(ov, path, source, 0, 0, "c", raw,

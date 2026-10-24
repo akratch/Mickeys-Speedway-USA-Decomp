@@ -1035,6 +1035,73 @@ class DataOnlyImportGuardTests(unittest.TestCase):
             rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
 
 
+    def local_inputs(self):
+        self.exports = rp.OrtNames([], {})
+        self.row.update(offset="0x4", end_offset="0xC")
+        provider_row = self.world.amods[1]["data_rodata_ownership"][1]
+        provider_row.update(offset="0xC", end_offset="0x14")
+        for index, item in enumerate(self.world.map):
+            self.world.map[index] = rp.MapInput(item.outsec, item.insec, item.addr + 4,
+                                               item.size, item.file)
+        self.provider_bytes = b"one\0two\0"
+        provider = ObjBuilder().section(".data", self.provider_bytes).sym(
+            "first", 0, 0, GLOBAL, OBJECT, ".data").sym("second", 4, 0, GLOBAL, OBJECT, ".data")
+        for group in ("raw", "build"):
+            self.write(self.paths[group] / "src" / (self.provider + ".c.o"), provider)
+        configured = struct.pack(">II", 0, 4)
+        self.write(self.paths["build"] / "src" / (self.source + ".c.o"),
+                   ObjBuilder().section(".data", configured))
+        linked = ObjBuilder().section(".overlay_001", bytes(20) + configured + self.provider_bytes,
+                                      addr=rp.OVERLAY_VMA)
+        for symbol in self.linked.symbols:
+            if symbol.name.startswith("main_") or symbol.name == "runlinkCodeEnd":
+                linked.sym(symbol.name, symbol.value, 0, GLOBAL, NOTYPE, "ABS")
+        linked.sym("first", rp.OVERLAY_VMA + 28, 0, GLOBAL, OBJECT, ".overlay_001")
+        linked.sym("second", rp.OVERLAY_VMA + 32, 0, GLOBAL, OBJECT, ".overlay_001")
+        self.world.elf = rp.Elf("linked", linked.build())
+        self.world.by_name = {x.name: [x] for x in self.world.elf.symbols if x.name}
+        expected = {(20 + i * 4, R32): dict(op=rp.OP_LOCAL, symbol_index=28,
+            full=("ov", 1, 28 + i * 4), table=2, position=i) for i in range(2)}
+        self.world.expected_cache = lambda _ov: expected
+        raw = self.raw()
+        raw.local_ro_provider = "build/src/" + self.provider + ".c.o"
+        return raw, expected
+
+    def test_cross_input_named_bases_use_actual_provider_not_data_section_spelling(self):
+        raw, _expected = self.local_inputs()
+        self.assertEqual(rp.validate_data_imports(
+            self.world, self.exports, 1, self.row, self.source, raw), 2)
+        self.assertEqual(raw.data_local_identities, {"first": (1, 28), "second": (1, 32)})
+        rp.check_data_import_holds(self.world)
+        provider = self.root / "src" / (self.provider + ".c")
+        provider.write_text("changed after successful validation\n")
+        with self.assertRaisesRegex(rp.PackError, "held data-only input changed"):
+            rp.check_data_import_holds(self.world)
+
+    def test_cross_input_missing_zero_word_role_provider_and_addend_refuse(self):
+        for case in ("null", "role", "provider", "addend"):
+            with self.subTest(case=case):
+                self.setUp()
+                raw, expected = self.local_inputs()
+                if case == "null":
+                    old = raw.bytes_of(".data")
+                    raw = self.write(self.root / "null.o", ObjBuilder().section(".data", bytes(8))
+                        .sym("second").rel(".data", 4, R32, "second"))
+                    raw.local_ro_provider = "build/src/" + self.provider + ".c.o"
+                    self.assertEqual(old, raw.bytes_of(".data"))
+                elif case == "role":
+                    expected[(20, R32)]["symbol_index"] = 16
+                elif case == "provider":
+                    raw.local_ro_provider = "build/src/overlays/o001/wrong.c.o"
+                else:
+                    raw = self.write(self.root / "addend.o", ObjBuilder().section(".data", words(1, 0))
+                        .sym("first").sym("second").rel(".data", 0, R32, "first")
+                        .rel(".data", 4, R32, "second"))
+                    raw.local_ro_provider = "build/src/" + self.provider + ".c.o"
+                with self.assertRaises(rp.PackError):
+                    rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+
+
 class DataOnlyProducerDiscoveryTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -1140,6 +1207,31 @@ class DataOnlyProducerDiscoveryTests(unittest.TestCase):
         # General name resolution deliberately keeps its compatibility behavior.
         self.assertEqual(resolver.resolve_name(name).route, "generated-name")
         self.assertEqual(resolver.name_identity(name), ("ov", 1, 0x1234))
+
+    def test_nonort_local_inputs_do_not_enter_the_held_ort_namespace(self):
+        name, resolver = self.held_ort_resolver()
+        local_name = "D_overlay_001_F0007777_00000000"
+        elf = rp.Elf("local", ObjBuilder().section(".data", bytes(4)).sym(local_name)
+            .rel(".data", 0, R32, local_name).build())
+        elf.local_ro_provider = "build/src/overlays/o001/labels.c.o"
+        elf.data_local_identities = {local_name: (1, 0x80)}
+        obj = rp.ObjRef(1, Path("raw/local.o"), "overlays/o001/local", 0, 0, "c", elf,
+                       {".data": (0x60, "link")}, {local_name: (1, 0x80)})
+        self.world._guarded_data_objects[1].append(obj)
+        self.assertEqual(resolver.ort_identity(0), ("ov", 1, 0x48))
+        self.assertEqual(set(resolver._held_ort_targets), {name})
+        self.assertEqual(rp.collect_relocs(self.world, resolver, obj)[0].target.ident,
+                         ("ov", 1, 0x80))
+
+    def test_old_ort_membership_loss_never_turns_into_a_local_or_spelling_route(self):
+        name, resolver = self.held_ort_resolver()
+        self.assertEqual(resolver.ort_identity(0), ("ov", 1, 0x48))
+        resolver.ort.by_name.pop(name)
+        self.world._guarded_data_objects = dict(self.world._guarded_data_objects)
+        with self.assertRaisesRegex(rp.PackError, "lacks its held provider"):
+            resolver.ort_identity(0)
+        with self.assertRaisesRegex(rp.PackError, "lacks its held provider"):
+            resolver.resolve_name(name)
 
     def test_ort_missing_or_conflicting_held_provider_never_uses_spelling(self):
         for arguments, message in (({"missing": True}, "lacks its held provider"),

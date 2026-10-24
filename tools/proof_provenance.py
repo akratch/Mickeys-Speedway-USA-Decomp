@@ -535,6 +535,24 @@ def capture_configured_raw(root, source, configured, linked, postprocess, *, mod
                                    module_link=module_link)
 
 
+def local_ro_provider_input(command, root):
+    """One stable ordinary provider object explicitly declares a runtime origin."""
+    import shlex
+    words = shlex.split(command)
+    flag = "--local-ro-origin-object"
+    if flag not in words:
+        return None
+    if words.count(flag) != 1 or words.index(flag) + 1 >= len(words):
+        raise MetadataProofError("ambiguous LOCAL data provider declaration")
+    name = words[words.index(flag) + 1]
+    path = pathlib.Path(name)
+    if (path.is_absolute() or ".." in path.parts
+            or not re.fullmatch(r"build/src/overlays/o[0-9]{3}/[^/]+\.c\.o", name)
+            or (root / path).resolve().parent != (root / path.parent).resolve()):
+        raise MetadataProofError("LOCAL data provider is not a stable ordinary source object")
+    return name
+
+
 def capture_data_module_producer_raw(root, source, configured, linked, map_path):
     """Fresh producer capture, distinct from and inadmissible as promotion proof."""
     return _capture_configured_raw(root, source, configured, linked, "", module_link=True,
@@ -625,6 +643,9 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             inputs["module_link_inputs"] = {name: sha256_file(root / name) for name in (
                 "config/runlink-ort.us.txt", "tools/link_overlay_module.py", "tools/runlink_pack.py",
                 "tools/rebind_elf_relocations.py", "tools/binutils/mips64-elf-ld")}
+            provider = local_ro_provider_input(expanded_postprocess, root)
+            if provider:
+                inputs["module_link_inputs"][provider] = sha256_file(root / provider)
         if static_lines:
             inputs["static_symbols"] = {"command": static_lines[0], "tool": sha256_file(
                 root / "tools/static_symbols.py")}

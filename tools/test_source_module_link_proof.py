@@ -8,7 +8,7 @@ import unittest
 import proof_provenance as pp
 import runlink_pack as rp
 import source_module_link_proof as proof
-from test_link_overlay_module import fixture
+from test_link_overlay_module import fixture, local_fixture
 from runlink.synth import ElfBuilder, GLOBAL, OBJECT, NOTYPE, words
 import struct
 
@@ -37,6 +37,18 @@ class SourceIdentityTests(unittest.TestCase):
             self.assertEqual({(0, 4): (0, 0xB0), (4, 4): (1, 12), (8, 4): (1, 16),
                               (20, 5): (1, 48), (24, 6): (1, 48),
                               (32, 2): (1, 16), (36, 2): (1, 12)}, actual)
+
+    def test_local_data_requires_explicit_authenticated_map_and_zero_addends(self):
+        raw = rp.Elf("raw", local_fixture())
+        exports = rp.OrtNames([], {})
+        with self.assertRaises(pp.MetadataProofError):
+            proof.source_identities(raw, raw, canonical(), exports, 1)
+        identities = {"first": (1, 0x80), "second": (1, 0x84)}
+        self.assertEqual(proof.source_identities(raw, raw, canonical(), exports, 1,
+            local_data_identities=identities), {(0, 2): (1, 0x80), (4, 2): (1, 0x84)})
+        with self.assertRaises(pp.MetadataProofError):
+            proof.source_identities(rp.Elf("addend", local_fixture(addend=1)), raw,
+                canonical(), exports, 1, local_data_identities=identities)
 
     def test_missing_or_shadowed_canonical_export_is_refused(self):
         cases = [[], [("external", 0, "ABS")],

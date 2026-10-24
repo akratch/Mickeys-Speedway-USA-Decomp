@@ -290,7 +290,7 @@ void func_overlay_008_F0000894_185E5EC(O8Owner *owner, O8State *state,
             angleA = 0x1200;
             angleB = 0x1c00;
         }
-        ext_o0_1eed0_target(state, 0x4b, 0x3e19999a);
+        ext_o0_1eed0_target(state, 0x4b, 0.15f);
     }
 
     if ((state->lateral4 < -3.25f) && (effect == -1)) {
@@ -315,7 +315,7 @@ void func_overlay_008_F0000894_185E5EC(O8Owner *owner, O8State *state,
             sideA = y * sine + x * cosine;
             sideB = 0.0f;
             z = x * sine - y * cosine;
-            ext_o0_1eed0_target(state, 0x28, 0x3e19999a);
+            ext_o0_1eed0_target(state, 0x28, 0.15f);
         }
     }
     if (effect != -1) {

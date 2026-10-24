@@ -688,7 +688,7 @@ extern s32 gO8Table360[], gO8Table3A0[];
 
 extern s32 gO8Value364, gO8Value3A4, gO8Value370, gO8Value3B0;
 
-extern void ext_o0_1eed0_target(O8State *, s32, u32);
+extern void ext_o0_1eed0_target(O8State *, s32, f32);
 
 extern f32 ext_o0_2a46c(s16);
 

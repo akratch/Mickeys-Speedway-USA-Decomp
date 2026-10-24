@@ -250,10 +250,10 @@ static void overlay11CreateHandles(void) {
                                                 120, 120, 4);
     gOverlay11Handles[3] = overlay45CreateDescriptor(D_8007C0B8->resource5C,
                                                 200, 120, 4);
-    overlay11SetValue(gOverlay11Handles[0], 0);
-    overlay11SetValue(gOverlay11Handles[1], 0);
-    overlay11SetValue(gOverlay11Handles[2], 0);
-    overlay11SetValue(gOverlay11Handles[3], 0);
+    overlay45SetMode(gOverlay11Handles[0], 0);
+    overlay45SetMode(gOverlay11Handles[1], 0);
+    overlay45SetMode(gOverlay11Handles[2], 0);
+    overlay45SetMode(gOverlay11Handles[3], 0);
     gOverlay11Mode = 3;
 }
 
@@ -355,17 +355,17 @@ static void overlay11EnableHandles(s32 count) {
     s32 i;
 
     gOverlay11ModeStart = 1;
-    overlay11SetValue(gOverlay11Handles[0], 0xFF);
-    overlay11SetValue(gOverlay11Handles[1], 0xFF);
-    overlay11SetValue(gOverlay11Handles[3], 0xFF);
-    overlay11SetValue(gOverlay11Handles[2], 0xFF);
-    overlay11SetValue(gOverlay11Handles[0], 0);
-    overlay11SetValue(gOverlay11Handles[1], 0);
-    overlay11SetValue(gOverlay11Handles[3], 0);
-    overlay11SetValue(gOverlay11Handles[2], 0);
+    overlay45SetMode(gOverlay11Handles[0], 0xFF);
+    overlay45SetMode(gOverlay11Handles[1], 0xFF);
+    overlay45SetMode(gOverlay11Handles[3], 0xFF);
+    overlay45SetMode(gOverlay11Handles[2], 0xFF);
+    overlay45SetField22(gOverlay11Handles[0], 0);
+    overlay45SetField22(gOverlay11Handles[1], 0);
+    overlay45SetField22(gOverlay11Handles[3], 0);
+    overlay45SetField22(gOverlay11Handles[2], 0);
     gOverlay11ModeFinish = 3;
     for (i = 0; i < count; i++) {
-        overlay11SetValue(gOverlay11Created[i], 0);
+        overlay45SetMode(gOverlay11Created[i], 0);
     }
 }
 
@@ -375,12 +375,12 @@ static void overlay11DisableHandles(s32 count) {
 
     gOverlay11Flag = 0;
     gOverlay11Mode = 0;
-    overlay11SetValue(gOverlay11Handles[0], 0);
-    overlay11SetValue(gOverlay11Handles[1], 0);
-    overlay11SetValue(gOverlay11Handles[3], 0);
-    overlay11SetValue(gOverlay11Handles[2], 0);
+    overlay45SetMode(gOverlay11Handles[0], 0);
+    overlay45SetMode(gOverlay11Handles[1], 0);
+    overlay45SetMode(gOverlay11Handles[3], 0);
+    overlay45SetMode(gOverlay11Handles[2], 0);
     for (i = 0; i < count; i++) {
-        overlay11SetValue(gOverlay11Created[i], 0xFF);
+        overlay45SetMode(gOverlay11Created[i], 0xFF);
     }
 }
 

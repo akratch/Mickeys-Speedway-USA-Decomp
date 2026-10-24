@@ -701,3 +701,23 @@ static void func_overlay_046_F0001228_188F620(s32 updateRate) {
         }
     }
 }
+
+/* Tier B: actual constructor/update loops and qualified runtime ranges
+ * authenticate these storage capacities. Tier D: these are bounded storage
+ * views, not recovered original declarations. Existing particle, root and
+ * spark/group consumer views remain separate source-type debt. */
+s32 gOverlay46StorageValue0;
+s32 gOverlay46StorageValue4;
+s32 gOverlay46StorageValue8;
+s32 gOverlay46StorageStateC;
+s32 gOverlay46StorageValue10;
+s32 gOverlay46StorageValue14;
+s32 gOverlay46StorageValue18;
+Overlay46Particle gOverlay46StorageParticles[19];
+s16 gOverlay46StorageCountdown;
+s16 gOverlay46StorageSelection;
+Overlay46TrailVertex gOverlay46StorageVertices[400];
+Overlay46Emitter gOverlay46StorageEmitter;
+Overlay46Emitter *gOverlay46StorageEmitterPointer;
+Overlay46Spark gOverlay46StorageSparks[200];
+s16 gOverlay46StorageAlpha;

@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/math.h"
+#include "game/fx_texture_image.h"
 
 /*
  * PROVENANCE: the cone and wake role names follow Jet Force Gemini's public
@@ -10,11 +11,7 @@
  * offsets, and aggregate boundaries below are reconstructed from Mickey's
  * target loads, stores, and relocations.
  */
-typedef struct FxConeTextureInfo {
-    u8 pad0[6];
-    u16 width;
-    u16 height;
-} FxConeTextureInfo;
+typedef FxTextureImage FxConeTextureInfo;
 
 typedef struct FxConeVertex {
     u8 pad0;
@@ -151,7 +148,7 @@ typedef struct FxGfx {
     u32 w1;
 } FxGfx;
 
-typedef void (*FxTextureCallback)(s32 index, s32 value, s32 arg2);
+typedef void (*FxTextureCallback)(s32 index, FxTextureImage *image, s32 initialize);
 
 extern void texFreeTexture(void *texture);
 extern void runlinkEnsureJumpIsValid(s32 callback);
@@ -165,8 +162,7 @@ extern s32 D_800D6038[2];
 extern s32 D_800D6040;
 extern FxSpdRecord D_800D5FF8[2][4];
 extern FxTextureCallback D_8007D47C[4];
-extern FxTextureCallback D_8007D488;
-extern s32 D_800D6098[4];
+extern FxTextureImage *D_800D6098[4];
 extern s32 D_800D60A8;
 extern void *D_800D60B0[4];
 extern void *D_800D60BC;

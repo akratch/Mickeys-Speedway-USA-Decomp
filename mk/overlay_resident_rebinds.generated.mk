@@ -1177,11 +1177,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay_063.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym texAnimateTexSprite=texAnimateTexSprite_o063Reloc \
 	--redefine-sym texDPInit=texDPInit_o063Reloc $@
 
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o064/overlay_064.c.o: SURFACE_REBIND = $(OBJCOPY) \
-	--redefine-sym D_800D60B0=D_800D60B0_o064Reloc \
-	--redefine-sym D_800D60C0=D_800D60C0_o064Reloc \
-	--redefine-sym mathRnd=mathRnd_o064Reloc $@
-
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Initialize.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym mmAlloc=mmAlloc_o065Reloc \
 	--redefine-sym texLoadTexture=texLoadTexture_o065Reloc $@

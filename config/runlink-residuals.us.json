@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 8204},
+  "totals": {"differences": 0, "borrowed_records": 8213},
   "differences": {
   },
   "borrowed": {
@@ -71,9 +71,8 @@
     },
     "main-placeholder": {
       "about": "main-table entry whose target the resident source does not name (site, op, type)",
-      "count": 5,
+      "count": 4,
       "entries": [
-        ["0x471C", "DATA", "R_MIPS_32"],
         ["0x4F820", "SYMBOL", "R_MIPS_HI16"],
         ["0x4F82C", "SYMBOL", "R_MIPS_LO16"],
         ["0x4FAD4", "SYMBOL", "R_MIPS_HI16"],
@@ -82,7 +81,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1715,
+      "count": 1721,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -331,6 +330,7 @@
         [8, "ext_o0_2b90", 1],
         [8, "ext_o0_2d70", 1],
         [8, "ext_o7_ccc", 1],
+        [8, "ext_o8_3018", 1],
         [8, "ext_o8_3278", 1],
         [8, "ext_o8_3368", 1],
         [8, "gO8Pointer14", 2],
@@ -364,6 +364,7 @@
         [8, "o8Phase1EmitReloc", 1],
         [8, "overlay8CreateResourceReloc", 1],
         [8, "overlay8EmitChannel", 1],
+        [8, "overlay8SampleChannel", 1],
         [9, "D_0", 2],
         [9, "D_2D0", 2],
         [9, "D_300", 2],
@@ -728,6 +729,10 @@
         [46, "gOverlay46Value2C", 2],
         [46, "gOverlay46Value4", 10],
         [46, "gOverlay46Value8", 12],
+        [46, "overlay46InitResourceReloc", 2],
+        [46, "overlay46RandomSignedReloc", 2],
+        [46, "overlay46ReleaseIdsReloc", 2],
+        [46, "overlay46SetModeReloc", 2],
         [49, "gOverlay49Finished", 4],
         [49, "gOverlay49InputEnabled", 6],
         [49, "gOverlay49Masks", 2],

@@ -70,7 +70,7 @@ def build_elf(symbols, relocations, *, text=b"\0" * 0x40, data=b"\0" * 8,
     headers = [(0,) * 10]
     for name in order[1:]:
         if name in payload:
-            content, kind, flags, link, info, entsize = payload[name], 1, 6, 0, 0, 0
+            content, kind, flags, link, info, entsize = payload[name], 1, (3 if name == ".data" else 6), 0, 0, 0
         elif name.startswith(".rel"):
             content, kind, flags = rels[name[4:]], 9, 0
             link, info, entsize = index[".symtab"], index[name[4:]], 8
@@ -184,12 +184,65 @@ class RenameTests(unittest.TestCase):
                         [(".text", 0x4, R_MIPS_26, "runlinkDownloadCode")])
         tn.rename_object(obj, set())
 
-    def test_refuses_a_listed_name_used_by_anything_but_a_text_jal(self):
-        for section, rtype in ((".text", R_MIPS_HI16), (".data", R_MIPS_32)):
+    def test_refuses_unsupported_overlay_reference_kinds(self):
+        for section, rtype in ((".text", R_MIPS_HI16), (".data", R_MIPS_26)):
             obj = build_elf([CALLER, ("overlay5Spawn", 0, 1, 0, "UND")],
                             [(section, 0x4, rtype, "overlay5Spawn")])
-            with self.assertRaisesRegex(tn.TrapError, "only a .text jal call site can trap"):
+            with self.assertRaisesRegex(tn.TrapError, "only a .text jal or .data R32 callback"):
                 tn.rename_object(obj, {"overlay5Spawn"})
+
+    def test_named_callback_changes_only_symbol_metadata(self):
+        import runlink_pack as rp
+        obj = build_elf([("callbacks", 0, 1, 1, ".data"),
+                         ("overlay5Spawn", 0, 1, 0, "UND")],
+                        [(".data", 4, R_MIPS_32, "overlay5Spawn")], data=b"\0" * 16)
+        renamed, record = tn.rename_object(obj, {"overlay5Spawn"})
+        self.assertEqual(record["format"], 2)
+        self.assertEqual(record["data_sites"], [{"offset": 4, "name": "overlay5Spawn"}])
+        self.assertEqual(record["data_literal"], [])
+        self.assertEqual(tn._section_bytes(renamed, tn._sections(renamed), ".data"), b"\0" * 16)
+        self.assertEqual([r[:3] for r in relocations_of(obj)], [r[:3] for r in relocations_of(renamed)])
+        self.assertEqual(rp.resident_data_callees(rp.Elf("fixture", data=renamed), record), {4: "overlay5Spawn"})
+
+    def test_callback_refuses_nonzero_unaligned_outside_and_duplicate_sites(self):
+        for offset, payload in ((2, b"\0" * 8), (8, b"\0" * 8),
+                                (4, b"\0" * 7 + b"\1")):
+            obj = build_elf([("overlay5Spawn", 0, 1, 0, "UND")],
+                            [(".data", offset, R_MIPS_32, "overlay5Spawn")], data=payload)
+            with self.assertRaisesRegex(tn.TrapError, "bounded zero-addend"):
+                tn.rename_object(obj, {"overlay5Spawn"})
+        obj = build_elf([("overlay5Spawn", 0, 1, 0, "UND")],
+                        [(".data", 4, R_MIPS_32, "overlay5Spawn")] * 2)
+        with self.assertRaisesRegex(tn.TrapError, "invalid named callback"):
+            tn.rename_object(obj, {"overlay5Spawn"})
+
+    def test_callback_rerun_keeps_identity_but_recompile_cannot_reuse_it(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            obj = Path(scratch) / "unit.c.o"
+            listing = Path(scratch) / "list.txt"
+            listing.write_text("overlay5Spawn\noverlay6Spawn\n")
+            def compiled(name):
+                return build_elf([("callbacks", 0, 1, 1, ".data"), (name, 0, 1, 0, "UND")],
+                                 [(".data", 0, R_MIPS_32, name)])
+            obj.write_bytes(compiled("overlay5Spawn"))
+            self.assertEqual(tn.main(["rename", str(obj), str(listing)]), 0)
+            sidecar = Path(str(obj) + tn.SIDECAR_SUFFIX)
+            first = sidecar.read_bytes()
+            self.assertEqual(tn.main(["rename", str(obj), str(listing)]), 0)
+            self.assertEqual(sidecar.read_bytes(), first)
+            # All four variants have the same zero .data payload. A changed
+            # callee, literal trap or NULL must not inherit the first name.
+            obj.write_bytes(compiled("overlay6Spawn"))
+            self.assertEqual(tn.main(["rename", str(obj), str(listing)]), 0)
+            self.assertEqual(json.loads(sidecar.read_text())["data_sites"],
+                             [{"offset": 0, "name": "overlay6Spawn"}])
+            obj.write_bytes(compiled(tn.TRAP))
+            self.assertEqual(tn.main(["rename", str(obj), str(listing)]), 0)
+            literal = json.loads(sidecar.read_text())
+            self.assertEqual((literal["data_sites"], literal["data_literal"]), ([], [0]))
+            obj.write_bytes(build_elf([("callbacks", 0, 1, 1, ".data")], []))
+            self.assertEqual(tn.main(["rename", str(obj), str(listing)]), 0)
+            self.assertFalse(json.loads(sidecar.read_text()).get("data_sites"))
 
     def test_command_writes_sidecar_and_a_second_run_keeps_it(self):
         with tempfile.TemporaryDirectory() as scratch:
@@ -315,6 +368,18 @@ class LinkedInputTests(unittest.TestCase):
         self.assertEqual(tn.table_sites(bytes(rom)), {
             ot.RESIDENT_VRAM_BASE + 0x100: {"record": 0, "ort": 7, "overlay": 5, "offset": 0x10}})
 
+    def test_data_offset_cannot_be_interpreted_from_the_text_base(self):
+        rom = bytearray(ot.ROM_TABLE_BASE + 4 * ot.ROM_TABLE_COUNT)
+        struct.pack_into(">I", rom, ot.RELOC_TABLE_BASE, 1)
+        struct.pack_into(">II", rom, ot.RELOC_TABLE_BASE + 4,
+                         7, (0x100 << 8) | 0x23)  # DATA/R32, not a call.
+        # A real text call at this unrelated text-relative address says
+        # nothing about the callback at data_base+0x100.
+        offset = ot.RESIDENT_VRAM_BASE + 0x100 - ot.VRAM_ROM_DELTA
+        struct.pack_into(">I", rom, offset, ot.TRAP_DANGLING_JUMP_WORD)
+        struct.pack_into(">I", rom, ot.ROM_TABLE_BASE + 4 * 7, (5 << 20) | 0x10)
+        self.assertEqual(tn.table_sites(bytes(rom)), {})
+
 
 class ProveTests(unittest.TestCase):
     OBJ = "build/src/main/unit.c.o"
@@ -388,6 +453,43 @@ class ProveTests(unittest.TestCase):
         errors, _stats = tn.prove(**values)
         self.assertEqual(errors, ["main-table record 1: atlas resident_inbound disagrees "
                                   "with the shipped ORT row"])
+
+
+class DataProofTests(unittest.TestCase):
+    def inputs(self):
+        obj = "build/src/main/callbacks.c.o"
+        return dict(sites={0x80002000: {"record": 4, "overlay": 5, "offset": 0x10}},
+                    functions={(5, 0x10): ["overlay5Spawn"]},
+                    bases={obj: (0x80002000, 16)},
+                    sidecars={obj: {"data_sites": [{"offset": 0, "name": "overlay5Spawn"}],
+                                    "data_literal": []}})
+
+    def test_named_callback_and_assembly_ownership(self):
+        values = self.inputs()
+        errors, stats = tn.prove_data(**values)
+        self.assertEqual(errors, [])
+        self.assertEqual(stats, {"named": 1, "sites": 1, "assembly": 0})
+        values["bases"] = {"build/asm/data/callbacks.s.o": (0x80002000, 16)}
+        values["sidecars"] = {}
+        self.assertEqual(tn.prove_data(**values), ([], {"named": 0, "sites": 1, "assembly": 1}))
+
+    def test_wrong_callee_literal_missing_and_stale_receipts_refuse(self):
+        for mutation, expected in (("callee", "disagrees"), ("literal", "literally"),
+                                   ("missing", "lacks a fresh"), ("stale", "stale callback")):
+            with self.subTest(mutation=mutation):
+                values = self.inputs()
+                record = next(iter(values["sidecars"].values()))
+                if mutation == "callee":
+                    record["data_sites"][0]["name"] = "overlay6Spawn"
+                elif mutation == "literal":
+                    record["data_sites"] = []
+                    record["data_literal"] = [0]
+                elif mutation == "missing":
+                    values["sidecars"] = {}
+                else:
+                    record["_data_error"] = "stale callback .trapsites sidecar"
+                errors, _stats = tn.prove_data(**values)
+                self.assertTrue(any(expected in error for error in errors), errors)
 
 
 if __name__ == "__main__":

@@ -94,7 +94,7 @@
  * retained for exact allocation; cleaner forms remain in docs/cleanup-queue.md.
  */
 
-void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
+void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, s32 unused)
 {
     s32 k;
     u8 select;

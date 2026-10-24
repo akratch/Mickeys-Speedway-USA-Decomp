@@ -37,14 +37,28 @@ reference to a name in `config/overlay_funcs_to_trap.us.txt` to
 relocation offsets and types, and the linked ROM are what a literal
 `TrapDanglingJump(...)` call produced. The rename refuses a listed name the
 object defines, a listed name referenced by anything but a `.text`
-`R_MIPS_26`, and an undefined name spelled like an overlay export
+`R_MIPS_26` call or a zero-addend `.data` `R_MIPS_32` callback, and an undefined name spelled like an overlay export
 (`func_overlay_NNN_...`, `overlayN...`) that the list lacks.
 
 The list is generated, never edited: `gmake trap-names` follows every
 main-table record whose call-site word is the trap `jal` through its ORT row to
 (overlay, offset), and from there to the function the linked ELF defines at
 that offset, taking its friendly name when it has exactly one and its canonical
-`func_overlay_NNN_...` name otherwise. The 370 sites reach 313 exports. Once the
+`func_overlay_NNN_...` name otherwise. The 370 call sites reach 313 exports;
+one resident data callback names an additional export, for 314 listed names.
+The callback belongs to the typed four-slot texture callback array in
+`src/main/fxTextureCallbacks.c`. Its actual overlay 64 function shares the
+resident caller's image-pointer and signed-word argument contract. Ordinary
+linking supplies the trap pointer; no initializer word is patched.
+
+Callback sidecars bind the entire configured object, its data payload and its
+exact bounded R32 inventory. Zero bytes alone cannot distinguish a function
+pointer from an unrelocated NULL. The packer requires a unique actual sized
+source-function definition and matching ORT export, rather than interpreting
+coordinates in its name. Missing, stale or literal-trap C callback receipts
+fail; retained assembly callbacks remain explicitly borrowed.
+
+Once the
 ROM hash matches, `gmake verify` runs `tools/trap_names.py check`, which
 requires four things: the name the C used at each site, read from the
 `.trapsites` sidecar the rename writes beside the object, is a function that
@@ -53,7 +67,7 @@ list equals what the tables generate; and the atlas's `resident_inbound` row
 agrees with the ROM. A swapped callee leaves the ROM hash unchanged, and this
 check is the gate that fails on it.
 
-312 of the 313 declarations are prototypes, each the overlay definition's
+312 of the 313 resident-call declarations are prototypes, each the overlay definition's
 own with overlay-private or untyped pointer types spelled `void *`. One is an
 old-style declaration,
 `T name();`, tagged `[arity]`: `func_overlay_029_F00010C4_187E374` reads a0
@@ -426,7 +440,8 @@ reproduces them.
   - every resident `HI16`/`LO16` to the unresolved-symbol sentinel
     `D_800D2DC4`, excluding the runtime itself (`runlink.c`);
   - then each `R_MIPS_32` to `TrapDanglingJump` in resident data, as a `DATA`
-    entry relative to the data base.
+    entry relative to the data base, named by its checked callback sidecar
+    when C owns the initializer.
 
   Address-of references to `TrapDanglingJump` are the runtime's own and are
   excluded. The sentinel pairs therefore fall between the trap calls in

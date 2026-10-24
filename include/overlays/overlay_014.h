@@ -156,7 +156,7 @@ extern Overlay14QueuedCommand gOverlay14CommandQueue_o014Reloc[16];
 extern s32 gOverlay14SlotCountE8;
 extern s32 o14Opacity_o014Reloc, o14Active_o014Reloc, o14State_o014Reloc;
 extern s32 o14PendingValue_o014Reloc, o14PendingMode_o014Reloc;
-extern s32 o14Transition_o014Reloc, o14Cursor_o014Reloc, o14CommandAddress_o014Reloc;
+extern s32 o14Transition_o014Reloc, o14Cursor_o014Reloc, o14TextHasMore_o014Reloc;
 extern s32 o14ValueCount_o014Reloc, o14CommandCount_o014Reloc;
 extern Overlay14RuleGroup *o14RuleGroups_o014Reloc;
 extern u32 *o14Ranges_o014Reloc;

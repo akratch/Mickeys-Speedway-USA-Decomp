@@ -51,7 +51,7 @@ void func_overlay_014_F0000000_186F8D8(void) {
     o14Opacity_o014Reloc = 0; o14Active_o014Reloc = 0; o14State_o014Reloc = 0;
     invalid = -1;
     o14PendingValue_o014Reloc = invalid; o14PendingMode_o014Reloc = invalid;
-    o14Transition_o014Reloc = 0; o14Cursor_o014Reloc = 0; o14CommandAddress_o014Reloc = 0;
+    o14Transition_o014Reloc = 0; o14Cursor_o014Reloc = 0; o14TextHasMore_o014Reloc = 0;
     o14RuleGroups_o014Reloc = 0; o14Ranges_o014Reloc = 0;
     o14ResultAddress_o014Reloc = 0; o14SelectionAddress_o014Reloc = 0;
 }

@@ -67,3 +67,4 @@ the ordinary way (a commit, a campaign entry), not by leaving the ADR
 | [0021](0021-source-module-linking.md) | Source modules linked with runtime section-relative addresses |
 | [0022](0022-cross-input-local-data.md) | Bounded cross-input LOCAL data references |
 | [0023](0023-grouped-local-data-prefix.md) | Complete mixed data prefixes with ordered LOCAL providers |
+| [0024](0024-ordinary-data-producer-inventory.md) | Authenticate complete ordinary data inputs in producer inventory |

@@ -458,6 +458,33 @@ class SyntheticTreeTests(unittest.TestCase):
         ort = rp.OrtNames.load(paths["ort"])
         return world, rp.pack_all(world, ort)
 
+    def test_plain_writable_data_runtime_role_uses_actual_source_origin(self):
+        world, _packed = self.pack()
+        world.shipped.rodata_base = lambda ov: 0x48
+        provider = rp.ObjRef(1, Path("raw/values.c.o"), "overlays/o001/values", 0, 0, "c",
+            rp.Elf("values", ObjBuilder().section(".data", bytes(8)).build()),
+            {".data": (0x48, "link")}, {}, "ro-origin")
+        objects = world.objects(1) + [provider]
+        world.objects = lambda ov: objects if ov == 1 else []
+        target = rp.Target("section", "value", "overlay-definition", obj=provider,
+                           secname=".data", value=4, named=True)
+        rel = rp.CReloc(objects[0], ".text", 0, HI16, None, 0, target)
+        resolver = SimpleNamespace(target_base=lambda t: ("ov", 1, 0x4C),
+            export_row=lambda t, base: None, ort=SimpleNamespace(entries={}))
+        for role, expected in (("ro-origin", 0x48), ("data", 0x40)):
+            provider.runtime_role = role
+            module = rp.pack_module(world, resolver, 1, [rel])
+            self.assertEqual(module.table2[0].symidx, expected)
+            self.assertEqual(module.table2[0].full, ("ov", 1, 0x4C))
+            self.assertEqual(module.borrowed["rodata-base"], [[1]])
+        provider.runtime_role = "ro-origin"
+        with self.assertRaisesRegex(rp.PackError, "duplicate ordinary data RO"):
+            rp.validate_plain_roles({1: [provider, provider]})
+        other = rp.ObjRef(1, provider.path, "overlays/o001/other", 0, 0, "c", provider.elf,
+                          {".data": (0x48, "link")}, {}, "data")
+        with self.assertRaisesRegex(rp.PackError, "DATA conflicts"):
+            rp.validate_plain_roles({1: [provider, other]})
+
     def test_ort_names_follow_symbols_and_number_duplicates(self):
         world, packed = self.pack()
         rows = rp.OrtNames.load(self.tree.root / "config/runlink-ort.us.txt").rows
@@ -1177,6 +1204,92 @@ class DataOnlyImportGuardTests(unittest.TestCase):
                     rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
 
 
+    def plain_row(self):
+        return self.world.amods[1]["data_rodata_ownership"][1]
+
+    def test_plain_complete_input_captures_once_and_accepts_unsized_anchor_only(self):
+        builder = (ObjBuilder().section(".data", self.provider_bytes)
+                   .sym("first", 0, 0, GLOBAL, OBJECT, ".data")
+                   .sym("second", 4, 4, GLOBAL, OBJECT, ".data"))
+        for group in ("raw", "build"):
+            self.write(self.paths[group] / "src" / (self.provider + ".c.o"), builder)
+        linked = (ObjBuilder().section(".overlay_001", bytes(24) + self.provider_bytes,
+                                      addr=rp.OVERLAY_VMA)
+                  .sym("first", rp.OVERLAY_VMA + 24, 0, GLOBAL, OBJECT, ".overlay_001")
+                  .sym("second", rp.OVERLAY_VMA + 28, 4, GLOBAL, OBJECT, ".overlay_001"))
+        self.world.elf = rp.Elf("linked", linked.build())
+        self.world.by_name = {sym.name: [sym] for sym in self.world.elf.symbols if sym.name}
+        raw, start = rp.validate_plain_data(self.world, 1, self.plain_row(), self.provider)
+        self.assertEqual(start, 24)
+        self.assertEqual(next(sym.size for sym in raw.symbols if sym.name == "first"), 0)
+        self.provider_mock.assert_called_once_with(self.world, self.provider)
+
+    def test_plain_same_payload_stale_symbol_geometry_is_freshly_refused(self):
+        import proof_provenance as provenance
+        self.provider_compile.stop()
+        self.world.paths.update(elf=self.root / "linked.elf", map=self.root / "linked.map")
+        fresh = self.write(self.root / "fresh.o", ObjBuilder().section(".data", self.provider_bytes)
+            .sym("first", 4, 4, GLOBAL, OBJECT, ".data")
+            .sym("second", 0, 4, GLOBAL, OBJECT, ".data"))
+        with mock.patch.object(provenance, "capture_data_provider_raw",
+                return_value=(fresh.path, [], {}, lambda: {})) as compiler:
+            with self.assertRaisesRegex(rp.PackError, "stale ordinary raw"):
+                rp.validate_plain_data(self.world, 1, self.plain_row(), self.provider)
+            compiler.assert_called_once()
+
+    def test_plain_actual_map_start_drift_is_refused(self):
+        item = self.world.map[-1]
+        self.world.map[-1] = rp.MapInput(item.outsec, item.insec, item.addr + 4, item.size, item.file)
+        with self.assertRaisesRegex(rp.PackError, "source row/final input geometry differs"):
+            rp.validate_plain_data(self.world, 1, self.plain_row(), self.provider)
+
+    def test_plain_source_is_held_and_changed_source_cannot_reuse_warm_provider(self):
+        rp.validate_plain_data(self.world, 1, self.plain_row(), self.provider)
+        source = self.root / "src" / (self.provider + ".c")
+        source.write_text("/* changed with identical configured payload */\n")
+        with self.assertRaisesRegex(rp.PackError, "held data-only input changed"):
+            rp.check_data_import_holds(self.world)
+        with self.assertRaisesRegex(rp.PackError, "conflicting held"):
+            rp.validate_plain_data(self.world, 1, self.plain_row(), self.provider)
+        self.provider_mock.assert_called_once()
+        self.world.data_import_inputs = {}
+        self.world.data_import_providers = {}
+        rp.validate_plain_data(self.world, 1, self.plain_row(), self.provider)
+        self.assertEqual(self.provider_mock.call_count, 2)
+
+    def test_plain_relocations_duplicate_map_and_assembly_are_refused(self):
+        for case in ("relocation", "bss", "common", "unnamed", "duplicate-map", "inline-asm", "global-asm"):
+            with self.subTest(case=case):
+                if case == "relocation":
+                    path = self.paths["raw"] / "src" / (self.provider + ".c.o")
+                    original = path.read_bytes()
+                    self.write(path, self.provider_object().rel(".data", 0, R32, "first"))
+                elif case in ("bss", "common", "unnamed"):
+                    path = self.paths["raw"] / "src" / (self.provider + ".c.o")
+                    original = path.read_bytes()
+                    builder = (ObjBuilder().section(".data", self.provider_bytes)
+                               if case == "unnamed" else self.provider_object())
+                    if case == "bss":
+                        builder.section(".bss", nobits=4)
+                    elif case == "common":
+                        builder.sym("reserve", 4, 4, GLOBAL, OBJECT, "COMMON")
+                    self.write(path, builder)
+                elif case == "duplicate-map":
+                    self.world.map.append(self.world.map[-1])
+                else:
+                    path = self.root / "src" / (self.provider + ".c")
+                    original = path.read_bytes()
+                    path.write_text('asm("x");' if case == "inline-asm" else '#pragma GLOBAL_ASM("x.s")')
+                self.world.data_import_inputs = {}
+                with self.assertRaises(rp.PackError):
+                    rp.validate_plain_data(self.world, 1, self.plain_row(), self.provider)
+                if case == "duplicate-map":
+                    self.world.map.pop()
+                else:
+                    path.write_bytes(original)
+
+
+
 class DataOnlyProducerDiscoveryTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -1199,6 +1312,54 @@ class DataOnlyProducerDiscoveryTests(unittest.TestCase):
         self.obj = rp.ObjRef(1, path, self.source, 0, 0, "c",
             rp.Elf("fresh-authenticated-capture", builder.build()),
             {".data": (0x48, "link")}, {"b_exported": (1, 0x20)})
+
+    def test_all_explicit_plain_selections_must_be_consumed(self):
+        import postprocess_audit as audit
+        for name in ("tools/proof_provenance.py", "tools/source_module_link_proof.py",
+                     "tools/postprocess_audit.py", "tools/static_symbols.py", ".venv/bin/python"):
+            path = self.tree.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("fixture")
+        marker = ("build/src/overlays/o001/unowned.c.o: PLAIN_DATA_PROOF = 1\n"
+                  "build/src/overlays/o001/unowned.c.o: PLAIN_DATA_RUNTIME_ROLE = data\n")
+        with mock.patch.object(audit, "run_make_database", return_value=marker):
+            for _attempt in range(2):
+                with self.assertRaisesRegex(rp.PackError, "selection lacks one canonical"):
+                    rp.guard_data_module_imports(self.world, self.exports)
+                self.assertIsNone(self.world._guarded_data_objects)
+                self.assertIsNone(self.world._objects)
+                self.assertIsNone(self.world._defs)
+
+    def test_changed_held_plain_role_clears_inventory_and_retry_is_fresh(self):
+        import postprocess_audit as audit
+        for name in ("tools/proof_provenance.py", "tools/source_module_link_proof.py",
+                     "tools/postprocess_audit.py", "tools/static_symbols.py", ".venv/bin/python"):
+            path = self.tree.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("fixture")
+        self.world.amods[1]["data_rodata_ownership"].append(dict(type="c", canonical=True,
+            section=".data", source=self.source, offset="0x8", size="0x8", end_offset="0x10"))
+        target = "build/src/" + self.source + ".c.o"
+        map_path = self.world.paths["map"]
+        map_path.write_text(map_path.read_text() + " .data 0xf0000048 0x8 " + target + "\n")
+        self.world.map = rp.parse_map(map_path)
+        marker = target + ": PLAIN_DATA_PROOF = 1\n"
+        original = marker + target + ": PLAIN_DATA_RUNTIME_ROLE = data\n"
+        changed = marker + target + ": PLAIN_DATA_RUNTIME_ROLE = ro-origin\n"
+        directory = self.tree.root / "build/plain-capture"
+        directory.mkdir(parents=True, exist_ok=True)
+        def reproduce(world, *_args):
+            world.data_import_provider_receipts[self.source] = {"directory": "build/plain-capture"}
+            return self.obj.elf, 0x48
+        with mock.patch.object(audit, "run_make_database", side_effect=[original, changed, original, original]), \
+                mock.patch.object(rp, "validate_plain_data", side_effect=reproduce) as compiler:
+            with self.assertRaisesRegex(rp.PackError, "held data-only capture context changed"):
+                rp.guard_data_module_imports(self.world, self.exports)
+            self.assertIsNone(self.world._guarded_data_objects)
+            self.assertIsNone(self.world._objects)
+            rp.guard_data_module_imports(self.world, self.exports)
+            self.assertEqual(self.world._guarded_data_objects[1][0].runtime_role, "data")
+            self.assertEqual(compiler.call_count, 2)
 
     def test_objects_before_pack_discover_only_published_inputs_with_current_exports(self):
         with mock.patch.object(rp, "_guard_data_module_imports", return_value={1: [self.obj]}) as guard:
@@ -1623,6 +1784,21 @@ class HeldDataCaptureTests(unittest.TestCase):
 
 
 class UnitTests(unittest.TestCase):
+    def test_plain_selection_requires_one_explicit_compatible_role(self):
+        target = "build/src/overlays/o001/values.c.o"
+        selected = target + ": PLAIN_DATA_PROOF = 1\n"
+        role = target + ": PLAIN_DATA_RUNTIME_ROLE = data\n"
+        self.assertEqual(rp.plain_data_targets(selected + role), {target: "data"})
+        # Recursive Make databases repeat identical resolved target variables.
+        self.assertEqual(rp.plain_data_targets((selected + role) * 2), {target: "data"})
+        self.assertEqual(rp.plain_data_targets(target + ": MODULE_LINK = helper\n"), {})
+        for marker in (selected, role, selected + role + target + ": PLAIN_DATA_RUNTIME_ROLE = ro-origin\n",
+                       selected.replace(" = 1", " = yes") + role,
+                       "build/asm/values.s.o: PLAIN_DATA_PROOF = 1\n"):
+            with self.assertRaises(rp.PackError):
+                rp.plain_data_targets(marker)
+
+
     def test_in_place_addends_pair_hi_with_the_next_lo_and_reuse_it(self):
         b = (ObjBuilder().section(".text", words(lui(1), addiu(0x8000), addiu(4), jal(3), 0x12345678))
              .sym("x").rel(".text", 0, HI16, "x").rel(".text", 4, LO16, "x").rel(".text", 8, LO16, "x")

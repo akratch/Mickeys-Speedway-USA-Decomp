@@ -1417,26 +1417,6 @@
       }
     },
     {
-      "name": "assets/overlays/o008/overlay_008_data_rodata_2330.bin",
-      "target_path": "expected/build/assets/overlays/o008/overlay_008_data_rodata_2330.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o008"
-        ]
-      }
-    },
-    {
-      "name": "assets/overlays/o008/overlay_008_data_rodata_2418.bin",
-      "target_path": "expected/build/assets/overlays/o008/overlay_008_data_rodata_2418.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o008"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o008/overlay_008_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o008/overlay_008_reloc1.bin.o",
       "metadata": {
@@ -7935,23 +7915,6 @@
           "overlay-o008"
         ],
         "source_path": "src/overlays/o008/overlay8EffectTables.c"
-      }
-    },
-    {
-      "name": "src/overlays/o008/overlay8MotionConstants.c",
-      "target_path": "expected/build/src/overlays/o008/overlay8MotionConstants.c.o",
-      "base_path": "build/src/overlays/o008/overlay8MotionConstants.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o008"
-        ],
-        "source_path": "src/overlays/o008/overlay8MotionConstants.c"
       }
     },
     {

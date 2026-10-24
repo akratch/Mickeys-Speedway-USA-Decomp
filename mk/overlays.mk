@@ -397,7 +397,7 @@ MODULE_LINKED_DATA_SOURCES += overlays/o059/overlay59Frames
 
 # Mickey's LOCAL records distinguish the rodata base from data/BSS. Restoring
 # the intervening scalar literals makes the compiler's complete 512-byte float
-# pool identical to retained rodata +0xB0..+0x2B0. One section anchor replaces
+# pool identical to rodata +0xB0..+0x2B0. One section anchor replaces
 # the former seven per-function bindings; no stored addend is edited.
 # gOverlay8CommandBuffer remains a second header name for gOverlay8Buffer
 # (the +0x34A0 update's second address build).
@@ -407,12 +407,12 @@ MODULE_LINKED_DATA_SOURCES += overlays/o059/overlay59Frames
 # default -O2 unroller expands exactly as shipped, which the flag forbade.
 # Overlay 8 is one translation unit at the overlay flag set and owns its pad;
 # Its remaining calls/data names use the generated surface. The complete
-# compiler float pool is guarded and externalized onto its retained slice;
-# the rest of the initialized image remains separate phase-3 work.
+# compiler float pool is its sole physical producer, guarded and retained
+# with the existing absolute anchor. The initialized prefix remains phase-3 work.
 $(O8_OBJ): CFLAGS += -Wab,-r4300_mul
 $(O8_OBJ): POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:7624884a94483694a30029849c2e893068ed2d27134576687d72ef03019418f7 0xB0
+		sha256:7624884a94483694a30029849c2e893068ed2d27134576687d72ef03019418f7 0xB0 keep
 
 # Overlay 9 is one translation unit at the overlay flag set and owns its pad.
 # Data externalization remains until the module's initialized data is C-owned

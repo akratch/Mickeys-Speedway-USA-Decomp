@@ -953,7 +953,6 @@
       "size": 13660,
       "source": "src/overlays/o060/overlay_060.c",
       "tools": [
-        "rebind_elf_relocations.py",
         "externalize_elf_section.py",
         "objcopy"
       ]

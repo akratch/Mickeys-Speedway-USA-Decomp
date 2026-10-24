@@ -88,10 +88,16 @@ typedef struct O57Pair {
     s16 second;
 } O57Pair;
 
-typedef struct O57Row {
-    s32 value;
-    u8 pad04[0xC];
-} O57Row;
+/* Tier B: actual texture renderer node fields; Tier D: this recovered
+ * ten-node writable view does not establish an eleventh sentinel. */
+typedef struct RcpTextureInfo RcpTextureInfo;
+typedef struct RcpTextureNode {
+    RcpTextureInfo *texture;
+    RcpTextureInfo *alternate;
+    u32 packedOffset;
+    s16 x;
+    s16 y;
+} RcpTextureNode;
 
 typedef struct O57Config0954 {
     u8 pad00[8];
@@ -451,7 +457,7 @@ extern s32 gO57Value23CReloc;
 extern s32 gO57Value25CReloc;
 extern s32 gO57Value32CReloc;
 extern s32 gO57Value34CReloc;
-extern O57Row gO57Rows27CReloc[10];
+extern RcpTextureNode gO57Rows27CReloc[10];
 
 extern s32 gO57Ids134Reloc[];
 

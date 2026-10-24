@@ -1,0 +1,6 @@
+// Tier B: two resident data-address pairs target the actual allocated O33
+// workspace export. Addresses select source relocations; no instruction payload.
+rom:0x50870 symbol:B_overlay_033_F0003EC8 reloc:MIPS_HI16 addend:0
+rom:0x5087C symbol:B_overlay_033_F0003EC8 reloc:MIPS_LO16 addend:0
+rom:0x50B24 symbol:B_overlay_033_F0003EC8 reloc:MIPS_HI16 addend:0
+rom:0x50B28 symbol:B_overlay_033_F0003EC8 reloc:MIPS_LO16 addend:0

@@ -63,6 +63,7 @@ options:
   asset_path: assets
 
   symbol_addrs_path: symbol_addrs.us.txt
+  reloc_addrs_path: reloc_addrs.us.txt
   undefined_funcs_auto_path: undefined_funcs_auto.us.txt
   undefined_syms_auto_path: undefined_syms_auto.us.txt
   symbol_name_format: $VRAM

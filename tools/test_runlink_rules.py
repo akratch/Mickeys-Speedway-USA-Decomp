@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import sys
 import unittest
+from unittest import mock
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -208,6 +210,35 @@ class CensusTests(unittest.TestCase):
         self.assertEqual(c["module records"], 5)
         self.assertEqual(c["ORT rows no SYMBOL/JUMP/main record names"], 1)
 
+
+
+class PairedAddressAdapterTests(unittest.TestCase):
+    def test_named_data_refs_keep_independent_rule_encoding_and_refuse_missing_receipt(self):
+        import runlink_pack as rp
+        import trap_names as trap
+        from test_trap_names import PairedAddressTests
+        raw = PairedAddressTests().original()
+        configured, _ = trap.rename_addresses(raw, "workspace")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            obj = root / "build/asm/main/owner.s.o"
+            obj.parent.mkdir(parents=True)
+            obj.write_bytes(configured)
+            elf = rp.Elf(obj)
+            mi = rp.MapInput(".main", ".text", 0x80000450, elf.size(".text"), "build/asm/main/owner.s.o")
+            world = SimpleNamespace(paths={"build": root/"build"}, map=[mi],
+                layout=SimpleNamespace(text=0x80000450, data=0x80001000),
+                _address_targets={mi.file: "workspace"})
+            resolver = SimpleNamespace(ort=rp.OrtNames(["workspace"], {}))
+            cfg = SimpleNamespace(trap_symbol="trap")
+            with mock.patch.object(rp, "resident_address_names", return_value={0:"workspace",12:"workspace",16:"workspace",20:"workspace"}), \
+                 mock.patch.object(rp, "address_export_row", return_value=0):
+                refs = msu.main_refs(rp, world, resolver, cfg, SimpleNamespace(main=[]))
+            self.assertEqual([(r.site-mi.addr,r.row,r.name) for r in refs],
+                [(0,0,"workspace"),(12,0,"workspace"),(16,0,"workspace"),(20,0,"workspace")])
+            with mock.patch.object(rp, "resident_address_names", side_effect=rp.PackError("missing receipt")):
+                with self.assertRaisesRegex(rp.PackError, "missing receipt"):
+                    msu.main_refs(rp, world, resolver, cfg, SimpleNamespace(main=[]))
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,16 +2,17 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 7943},
+  "totals": {"differences": 0, "borrowed_records": 7988},
   "differences": {
   },
   "borrowed": {
     "bss-size": {
       "about": "header BSS size without a complete faithful linked source allocation, from the atlas (module)",
-      "count": 39,
+      "count": 40,
       "entries": [
         [1],
         [2],
+        [3],
         [4],
         [7],
         [8],
@@ -66,19 +67,9 @@
         "70": ["0x75C", "0x760", "0x764", "0x768", "0x76C", "0x770", "0x774", "0x778", "0x77C", "0x780"]
       }
     },
-    "main-placeholder": {
-      "about": "main-table entry whose target the resident source does not name (site, op, type)",
-      "count": 4,
-      "entries": [
-        ["0x4F820", "SYMBOL", "R_MIPS_HI16"],
-        ["0x4F82C", "SYMBOL", "R_MIPS_LO16"],
-        ["0x4FAD4", "SYMBOL", "R_MIPS_HI16"],
-        ["0x4FAD8", "SYMBOL", "R_MIPS_LO16"]
-      ]
-    },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1696,
+      "count": 1703,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -248,6 +239,9 @@
         [2, "gOverlay2SelectedBoundary", 4],
         [2, "gOverlay2TemporaryMode", 4],
         [2, "gOverlay2TemporaryRange", 8],
+        [3, "gOverlay3Entries", 4],
+        [3, "gOverlay3Objects", 6],
+        [3, "gOverlay3TouchEntries", 2],
         [4, "gOverlay4Groups", 8],
         [4, "gOverlay4InitStatus", 2],
         [4, "gOverlay4SearchMaxDistance", 2],
@@ -445,6 +439,7 @@
         [12, "gOverlay12TrianglesA", 2],
         [12, "gOverlay12TrianglesB", 2],
         [12, "gOverlay12Value1598", 4],
+        [12, "overlay12LoadReloc", 6],
         [13, "D_20", 4],
         [13, "D_24", 2],
         [13, "D_28", 2],
@@ -538,6 +533,8 @@
         [14, "gOverlay14ValueF8Base", 2],
         [14, "gOverlay14ValueSlots28", 2],
         [14, "gOverlay14ValueSlotsEnd128", 2],
+        [14, "overlay14Dispatch", 2],
+        [14, "overlay14DrawPrimitive", 12],
         [14, "overlay14InitializeReloc", 2],
         [15, "gOverlay15InitBounds", 2],
         [15, "gOverlay15MovingStarCount", 6],
@@ -1112,6 +1109,7 @@
         [57, "gOverlay57UpdateShifts", 2],
         [57, "gOverlay57UpdateValues", 2],
         [57, "o57Ease28B4LookupSecondaryReloc", 1],
+        [57, "o57ModeOpaqueVoidCallReloc", 17],
         [57, "o57PrepareDescriptorListReloc", 2],
         [57, "overlay57AdvanceReloc", 1],
         [57, "overlay57Call36F4Reloc", 1],

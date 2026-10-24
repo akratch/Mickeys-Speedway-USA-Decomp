@@ -492,5 +492,37 @@ class DataProofTests(unittest.TestCase):
                 self.assertTrue(any(expected in error for error in errors), errors)
 
 
+class PairedAddressTests(unittest.TestCase):
+    def original(self, *, missing=False, clobber=False, wrong_addend=False):
+        text=struct.pack(">8I",0x3C0C0000,0x3C0C0000 if clobber else 0x3C0A0000,
+            0x34210000,0x258C0001 if wrong_addend else 0x258C0000,
+            0x3C0D0000,0x25AD0000,0,0)
+        rels=[(".text",0,5,"workspace"),(".text",4,5,"other"),
+              (".text",8,6,"other"),(".text",16,5,"workspace"),(".text",20,6,"workspace")]
+        if not missing:rels.insert(3,(".text",12,6,"workspace"))
+        return build_elf([("workspace",0,1,0,"UND"),("other",0,1,0,"UND")],rels,text=text)
+
+    def test_nonadjacent_data_pairs_change_only_names_and_bind_all_relocations(self):
+        original=self.original();configured,record=tn.rename_addresses(original,"workspace")
+        record.update(source="asm/main/example.s",source_sha256="fixture")
+        self.assertEqual(tn._section_bytes(original,tn._sections(original),".text"),
+                         tn._section_bytes(configured,tn._sections(configured),".text"))
+        self.assertEqual({0:"workspace",12:"workspace",16:"workspace",20:"workspace"},
+                         tn.validate_addresses(configured,original,record))
+        self.assertEqual(6,len(record["relocations"]))
+        self.assertEqual([0,16],[p["hi"] for p in record["pairs"]])
+        self.assertNotIn("workspace",names_of(configured))
+        self.assertIn(tn.ADDRESS_SENTINEL,names_of(configured))
+
+    def test_same_payload_wrong_name_missing_half_addend_and_clobber_refuse(self):
+        original=self.original();configured,record=tn.rename_addresses(original,"workspace")
+        record.update(source="asm/main/example.s",source_sha256="fixture")
+        record["pairs"][0]["name"]="other"
+        with self.assertRaises(tn.TrapError):tn.validate_addresses(configured,original,record)
+        for flags in ({"missing":True},{"clobber":True},{"wrong_addend":True}):
+            with self.subTest(flags=flags),self.assertRaises(tn.TrapError):
+                tn.rename_addresses(self.original(**flags),"workspace")
+
+
 if __name__ == "__main__":
     unittest.main()

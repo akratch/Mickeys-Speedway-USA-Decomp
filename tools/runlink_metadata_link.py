@@ -122,7 +122,7 @@ def validate_manifest(root):
     for name, sha in manifest["implementation"].items():
         if digest(root / safe_relative(name)) != sha:
             raise MetadataLinkError(f"changed metadata producer: {name}")
-    if set(manifest["implementation"]) != {"tools/runlink_pack.py", "tools/overlay_tables.py"}:
+    if set(manifest["implementation"]) != {"tools/runlink_pack.py", "tools/overlay_tables.py", "tools/trap_names.py"}:
         raise MetadataLinkError("unbound metadata producer implementation")
     if manifest["implementation"] != implementations:
         raise MetadataLinkError("metadata producer differs from the loaded implementation")
@@ -170,7 +170,7 @@ def wrapper(root, name):
 
 def context_paths(root):
     return [BOOT_ELF, BOOT_MAP, BOOT_LOG, "mickey.us.ld", "Makefile", MANIFEST,
-            "tools/runlink_metadata_link.py", "tools/runlink_pack.py", "tools/overlay_tables.py",
+            "tools/runlink_metadata_link.py", "tools/runlink_pack.py", "tools/overlay_tables.py", "tools/trap_names.py",
             "tools/link_diagnose.sh", "tools/run_logged.py",
             "tools/binutils/mips64-elf-ld", "tools/binutils/mips64-elf-objcopy",
             *[p.name for p in (root / "undefined_funcs_auto.us.txt", root / "undefined_syms_auto.us.txt",

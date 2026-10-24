@@ -150,6 +150,10 @@ def main_refs(rp, world, resolver, cfg, shipped):
         elf = rp.Elf(path)
         rels = elf.rels(mi.insec)
         sidecar = {}
+        addresses = {}
+        export = getattr(world,"_address_targets",{}).get(mi.file)
+        if export and mi.insec == ".text":
+            addresses = rp.resident_address_names(world,mi,path,elf,export)
         if rels and mi.insec == ".text" and mi.file.endswith(".c.o"):
             sc = Path(str(path) + ".trapsites")
             if sc.exists():
@@ -170,7 +174,12 @@ def main_refs(rp, world, resolver, cfg, shipped):
                 m = rules.MainRef(addr, r.type, False, row, callee or name, mi.file)
             elif (mi.insec == ".text" and r.type in (codec.R_MIPS_HI16, codec.R_MIPS_LO16)
                   and name == rp.SENTINEL and mi.file not in rp.RUNTIME_OBJECTS):
-                m = rules.MainRef(addr, r.type, False, None, name, mi.file, "placeholder")
+                if r.offset in addresses:
+                    source_name=addresses[r.offset]
+                    row=rp.address_export_row(world,resolver.ort,source_name)
+                    m=rules.MainRef(addr,r.type,False,row,source_name,mi.file)
+                else:
+                    m = rules.MainRef(addr, r.type, False, None, name, mi.file, "placeholder")
             elif mi.insec == ".data" and r.type == codec.R_MIPS_32 and name == cfg.trap_symbol:
                 m = rules.MainRef(addr, r.type, True, None, name, mi.file, "placeholder")
             else:

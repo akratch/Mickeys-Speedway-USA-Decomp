@@ -745,8 +745,12 @@ $(CRC): $(TOOLS_DIR)/n64crc.c
 # correctness mechanism is the two-phase recursive `make` in `all`/`verify`)
 # -- but it's a harmless, cheap safety net for anyone building a specific
 # .o/.elf target directly instead of going through `all`/`verify`.
+# The selected HASM import is a paired data address, not a callable trap.
+$(BUILD_DIR)/asm/main/refractOutputAssembler.s.o: private ASM_ADDRESS_EXPORT = B_overlay_033_F0003EC8
+$(BUILD_DIR)/asm/main/refractOutputAssembler.s.o: $(TOOLS_DIR)/trap_names.py
 $(BUILD_DIR)/%.s.o: %.s | $(ALL_DIRS) $(SPLAT_STAMP)
 	$(AS) $(ASFLAGS) -o $@ $<
+	$(if $(ASM_ADDRESS_EXPORT),$(HOST_PYTHON) $(TOOLS_DIR)/trap_names.py addresses $@ $(ASM_ADDRESS_EXPORT) $<)
 
 $(BUILD_DIR)/%.bin.o: %.bin | $(ALL_DIRS) $(SPLAT_STAMP)
 	$(OBJCOPY) -I binary -O elf32-bigmips -B mips $< $@
@@ -1692,7 +1696,7 @@ endif
 #
 # Order-only prereq on $(PYTHON) so the split never runs against a nonexistent
 # venv; `setup` is what actually installs splat into it.
-$(SPLAT_STAMP): $(BASENAME).$(VERSION).yaml symbol_addrs.$(VERSION).txt \
+$(SPLAT_STAMP): $(BASENAME).$(VERSION).yaml symbol_addrs.$(VERSION).txt reloc_addrs.$(VERSION).txt \
                 config/overlays.$(VERSION).json $(TOOLS_DIR)/overlay_atlas.py \
                 $(TOOLS_DIR)/overlay_tables.py $(TOOLS_DIR)/executable_accounting.py \
                 config/nonexecutable-ranges.$(VERSION).json requirements.txt | $(ALL_DIRS) $(PYTHON)

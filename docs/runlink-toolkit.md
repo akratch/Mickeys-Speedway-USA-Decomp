@@ -145,6 +145,21 @@ pass fresh compiler/helper/provider/map authentication before producer discovery
 other named borrowing remains explicit. This remains hybrid generation, with
 no source-only or relayout claim.
 
+Explicitly selected resident assembly data-address pairs use a separate
+`.addresssites` receipt and preserved `.address-original.o`. Splat's declared
+relocations reconstruct the original symbolic HI/LO operands; the names-only
+hook changes their undefined symbol name for the ordinary retail link. It
+preserves all text bytes and the complete ordered relocation inventory. The
+packer and MSU kit independently construct main references from the validated
+original names, then select ORT rows by a unique actual canonical/source NOBITS
+export and map geometry. They do not obtain those identities from retained
+main-table sites. Initially supported nonadjacent pairs permit only intervening
+LUI/ORI writes to other registers, and require zero-addend LUI/ADDIU pairs.
+Missing halves, source/receipt/provider changes, ambiguous definitions, ABS
+exports and inconsistent maps refuse the selected route. Allocated unknown
+workspace storage remains borrowed; an unsized export does not prove capacity,
+C ownership, lifetime safety or native portability.
+
 An authority audit pinned to commit `0bdc9452af3dda5a91703dd94e56f6dc38e2e830`
 found 3,636 of 10,209 module records labelled object-produced still resolved
 through encoded-name coordinates. Separately, 739 section-target records

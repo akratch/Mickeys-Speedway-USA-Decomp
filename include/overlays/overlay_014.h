@@ -33,13 +33,6 @@ typedef struct Overlay14QueuedCommand {
     s32 result;
 } Overlay14QueuedCommand;
 
-/* The pending-command record ResetMode replays (the queue's other view). */
-typedef struct Overlay14PendingCommand {
-    s16 pad0;
-    s16 type;
-    s32 value;
-} Overlay14PendingCommand;
-
 /* The menu command list: a header, then 16-byte entries. */
 typedef struct Overlay14SelectionList {
     s16 count;
@@ -143,8 +136,23 @@ OVERLAY14_REF(O14Value110Ref, 0x110);
 OVERLAY14_REF(O14Value114Ref, 0x114);
 #undef OVERLAY14_REF
 
-extern Overlay14ValueSlot gOverlay14ValueSlots28[], gOverlay14ValueSlotsEnd128[];
-extern Overlay14ValueSlot gOverlay14Slots28[32];
+/* Real BSS definitions use typed private loader operand imports. */
+extern s32 gOverlay14InputFlag0_o014Reloc;
+extern s32 gOverlay14InputFlag4_o014Reloc;
+extern s32 gOverlay14InputFlag8_o014Reloc;
+extern s32 gOverlay14PulseC_o014Reloc;
+extern s32 gOverlay14Pulse10_o014Reloc;
+extern s32 gOverlay14Pulse14_o014Reloc;
+extern s32 gOverlay14Pulse18_o014Reloc;
+extern s32 gOverlay14Timer1C_o014Reloc;
+extern s32 gOverlay14Timer20_o014Reloc;
+extern Overlay14ValueSlot gOverlay14ValueSlots_o014Reloc[32];
+/* Legacy one-past boundary operand only: no separate slot allocation.
+ * The genuine cache+32 expression changes the stock initializer shape.
+ * This binding remains explicitly borrowed until that context is resolved. */
+extern Overlay14ValueSlot gOverlay14ValueSlotsEnd128[];
+extern Overlay14QueuedCommand gOverlay14CommandQueue_o014Reloc[16];
+
 extern s32 gOverlay14SlotCountE8;
 extern s32 gOverlay14StateC0, gOverlay14StateC4, gOverlay14StateC8;
 extern s32 gOverlay14PendingValueD0, gOverlay14PendingModeD4;
@@ -171,8 +179,6 @@ extern O14ValueC0Ref gOverlay14ValueC0Base;
 extern O14ValueDCRef gOverlay14ValueDCBase;
 extern O14HandleE0Ref gOverlay14HandleE0;
 extern O14ValueF8Ref gOverlay14ValueF8Base;
-extern Overlay14QueuedCommand gOverlay14QueuedCommands128[];
-extern Overlay14PendingCommand D_128[];
 extern s32 D_EC;
 extern s32 D_E4;
 extern s32 D_FC;
@@ -193,10 +199,6 @@ extern s32 gOverlay14ValueD4;
 extern s32 gOverlay14ResetCC;
 extern s32 gOverlay14Transition;
 extern s32 gOverlay14Cursor;
-extern s32 gOverlay14Flag0[];
-extern s32 gOverlay14Flag4[];
-extern s32 gOverlay14FlagC[];
-extern s32 gOverlay14Flag10[];
 extern Overlay14SelectionList *gOverlay14CommandHeaderBase[];
 extern s32 gOverlay14ActiveHandle;
 extern s32 gOverlay14TransitionValue[];

@@ -71,8 +71,9 @@ compiler objects remain the packer's relocation authority during this staged
 transition, and remaining borrowed layout or table residuals stay explicit.
 
 A separately selected complete data-only input can use the same linker for
-its declared ORT imports. The overlay 8 tuning-pointer tables are this narrow
-case: no instruction or BSS payload, one complete genuine initialized input,
+its declared ORT imports or the bounded same-owner LOCAL prefix below. The
+overlay 8 tuning-pointer tables establish the ORT case: no instruction or BSS
+payload, one complete genuine initialized input,
 and a separate artifact directory for that source. Require fresh untouched
 compiler output, the ordinary helper receipt, a unique final-map contribution,
 and runtime identities independently anchored to current source-owned export
@@ -83,12 +84,24 @@ the complete main-module promotion guard or authorize incomplete-body padding,
 section trimming or handwritten relocation-site bindings. Data-only inputs
 remain outside the packer's current producer discovery, so source-only metadata
 borrowing remains explicit until that separate producer capability is proved.
+
+A complete data-only aggregate at the module's initialized-data prefix may
+also retain same-input LOCAL R32 references. Require one sized global object
+owning the entire input, bounded addends to that same definition, a unique
+matching final definition and map contribution, and the actual runtime data
+base derived from current module geometry. Independently compare every source
+site, type, order and target with the LOCAL runtime records. Missing a pointer
+relocation must fail even when replacing its zero-offset target with NULL
+leaves all configured bytes unchanged. Other section groups and cross-input
+LOCAL targets remain unsupported; fresh capture and ordinary helper replay
+still apply to the complete input.
 The packer's supported-case guard nevertheless freshly compiles and replays
-selected pure ORT-pointer inputs, authenticates their C providers and unique
-map contributions, and refuses any source/runtime identity disagreement.
+selected pure ORT-pointer inputs and bounded same-owner LOCAL prefixes,
+authenticates their C definitions and unique map contributions, and refuses
+any source/runtime identity disagreement.
 Warm metadata dependencies include those raw/source/provider/header/tool inputs,
-so unchanged zero pointer operands cannot hide a changed source target. LOCAL,
-grouped and implicit-literal inputs remain unsupported by this guard.
+so unchanged zero pointer operands cannot hide a changed source target. Other
+LOCAL, grouped and implicit-literal inputs remain unsupported by this guard.
 
 Producer capture pins its actual bootstrap/final ELF-map pair and ordinary
 link command, source, headers, recipe and tools before and after reproduction.

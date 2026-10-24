@@ -201,5 +201,52 @@ class ObjectTextFunctionsTests(unittest.TestCase):
             pa.object_text_functions(self.path)
 
 
+class CompilerEndPaddingTests(unittest.TestCase):
+    def object(self, *, data=False, missing=False, width=False, nonzero=False):
+        from runlink.synth import ElfBuilder, GLOBAL, FUNC, words
+        import runlink_pack as rp
+        if data:
+            builder = ElfBuilder().section(".data", bytes(48)).sym("text", 0, 0, GLOBAL, 1, ".data")
+            builder.sym("lastFloat", 40, 4, GLOBAL, 1, ".data")
+        else:
+            builder = ElfBuilder().section(".text", words(0x2D010002, 0x10200006,
+                0x00084880, 0x3C010000, 0x00290821, 0xDC390000 if width else 0x8C390000,
+                0x03200008, 0)).section(".rodata", words(24,28,1 if nonzero else 0,0))
+            builder.sym("function", 0, 32, GLOBAL, FUNC, ".text")
+            builder.rel(".text",12,rp.R_MIPS_HI16,("section",".rodata"))
+            builder.rel(".text",20,rp.R_MIPS_LO16,("section",".rodata"))
+            if not missing: builder.rel(".rodata",0,rp.R_MIPS_32,("section",".text"))
+            builder.rel(".rodata",4,rp.R_MIPS_32,("section",".text"))
+        payload=bytearray(builder.build());elf=rp.Elf("fixture",payload)
+        for section in elf.sections:
+            if section["name"] in (".data", ".rodata"):
+                struct.pack_into(">I",payload,struct.unpack_from(">I",payload,32)[0]+section["index"]*40+8,3 if section["name"]==".data" else 2)
+        return rp.Elf("fixture",payload)
+
+    def test_real_sized_end_and_complete_bounded_table_derive_padding(self):
+        import trim_elf_section as trim
+        self.assertEqual(44,trim.compiler_end(self.object(data=True),".data"))
+        self.assertEqual(8,trim.compiler_end(self.object(),".rodata"))
+
+    def test_effective_view_retains_original_and_requires_explicit_profile(self):
+        import runlink_pack as rp
+        raw=self.object(data=True);data=bytearray(raw.data)
+        struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+raw.section(".data")["index"]*40+20,44)
+        configured=rp.Elf("configured",data)
+        with self.assertRaises(rp.PackError): rp.effective_compiler_object(raw,configured)
+        view=rp.effective_compiler_object(raw,configured,{".data":44})
+        self.assertIs(view.compiler_original,raw)
+        self.assertEqual((raw.size(".data"),view.size(".data")),(48,44))
+        self.assertEqual(view.symbols,raw.symbols)
+        self.assertEqual(view.compiler_original.data,raw.data)
+
+    def test_lost_relocation_wide_read_nonzero_and_executable_refuse(self):
+        import trim_elf_section as trim
+        for kwargs in ({"missing":True},{"width":True},{"nonzero":True}):
+            with self.subTest(kwargs=kwargs),self.assertRaises(ValueError):
+                trim.compiler_end(self.object(**kwargs),".rodata")
+        with self.assertRaises(ValueError): trim.compiler_end(self.object(),".text")
+
+
 if __name__ == "__main__":
     unittest.main()

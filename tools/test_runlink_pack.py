@@ -471,7 +471,8 @@ class SyntheticTreeTests(unittest.TestCase):
         rel = rp.CReloc(objects[0], ".text", 0, HI16, None, 0, target)
         resolver = SimpleNamespace(target_base=lambda t: ("ov", 1, 0x4C),
             export_row=lambda t, base: None, ort=SimpleNamespace(entries={}))
-        for role, expected in (("ro-origin", 0x48), ("data", 0x40)):
+        provider.runtime_origin = 0x44
+        for role, expected in (("ro-origin", 0x48), ("data", 0x40), ("ro-member", 0x44)):
             provider.runtime_role = role
             module = rp.pack_module(world, resolver, 1, [rel])
             self.assertEqual(module.table2[0].symidx, expected)
@@ -954,7 +955,7 @@ class DataOnlyImportGuardTests(unittest.TestCase):
                 "second", 4, 4, GLOBAL, OBJECT, ".data"))
         def capture(_root, current_source, *_arguments):
             self.assertEqual(current_source.read_text(), source.read_text())
-            return fresh.path, [], {}, lambda: {}
+            return fresh.path, [], {"raw_sha256": rp.hashlib.sha256(fresh.data).hexdigest()}, lambda: {}
         with mock.patch.object(provenance, "capture_data_provider_raw", side_effect=capture) as compiler:
             with self.assertRaisesRegex(rp.PackError, "stale ordinary raw"):
                 rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, self.raw())
@@ -1224,6 +1225,18 @@ class DataOnlyImportGuardTests(unittest.TestCase):
         self.assertEqual(next(sym.size for sym in raw.symbols if sym.name == "first"), 0)
         self.provider_mock.assert_called_once_with(self.world, self.provider)
 
+    def test_plain_loaded_configured_bytes_must_match_the_bound_receipt(self):
+        import proof_provenance as provenance
+        self.provider_compile.stop()
+        self.world.paths.update(elf=self.root/"linked.elf",map=self.root/"linked.map")
+        fresh=self.write(self.root/"fresh.o",self.provider_object())
+        receipt={"raw_sha256":rp.hashlib.sha256(fresh.data).hexdigest(),
+                 "configured_sha256":"0"*64,"inputs":{"configured":"0"*64}}
+        with mock.patch.object(provenance,"capture_data_provider_raw",
+                return_value=(fresh.path,[],receipt,lambda:receipt["inputs"])):
+            with self.assertRaisesRegex(rp.PackError,"configured receipt"):
+                rp.validate_plain_data(self.world,1,self.plain_row(),self.provider)
+
     def test_plain_same_payload_stale_symbol_geometry_is_freshly_refused(self):
         import proof_provenance as provenance
         self.provider_compile.stop()
@@ -1232,7 +1245,7 @@ class DataOnlyImportGuardTests(unittest.TestCase):
             .sym("first", 4, 4, GLOBAL, OBJECT, ".data")
             .sym("second", 0, 4, GLOBAL, OBJECT, ".data"))
         with mock.patch.object(provenance, "capture_data_provider_raw",
-                return_value=(fresh.path, [], {}, lambda: {})) as compiler:
+                return_value=(fresh.path, [], {"raw_sha256": rp.hashlib.sha256(fresh.data).hexdigest()}, lambda: {})) as compiler:
             with self.assertRaisesRegex(rp.PackError, "stale ordinary raw"):
                 rp.validate_plain_data(self.world, 1, self.plain_row(), self.provider)
             compiler.assert_called_once()
@@ -1798,6 +1811,24 @@ class UnitTests(unittest.TestCase):
             with self.assertRaises(rp.PackError):
                 rp.plain_data_targets(marker)
 
+
+    def test_ro_member_context_uses_actual_origin_and_rejects_missing_foreign_and_changed_maps(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/"map"
+            origin="build/src/overlays/o001/labels.c.o"
+            target="build/src/overlays/o001/tail.c.o"
+            text=" .data 0xf0000040 0x10 "+origin+"\n .data 0xf0000050 0x10 "+target+"\n"
+            # Map parser associates input lines with their actual output section.
+            path.write_text("Linker script and memory map\n\n.overlay_001 0xf0000000 0x60\n"+text)
+            world=SimpleNamespace(paths={"map":path},module_info={1:{"text_size":32}})
+            roles={target:"ro-member"};origins={target:origin}
+            context=rp.plain_data_role_context(world,roles,origins)
+            self.assertEqual(context[target]["origin"],64)
+            with self.assertRaises(rp.PackError): rp.plain_data_role_context(world,roles,{})
+            path.write_text("Linker script and memory map\n\n.overlay_002 0xf0000000 0x50\n"+text.splitlines()[0]+"\n.overlay_001 0xf0000000 0x60\n"+text.splitlines()[1]+"\n")
+            with self.assertRaises(rp.PackError): rp.plain_data_role_context(world,roles,origins)
+            path.write_text("Linker script and memory map\n\n.overlay_001 0xf0000000 0x60\n"+text.replace("0040","003c"))
+            self.assertNotEqual(context,rp.plain_data_role_context(world,roles,origins))
 
     def test_in_place_addends_pair_hi_with_the_next_lo_and_reuse_it(self):
         b = (ObjBuilder().section(".text", words(lui(1), addiu(0x8000), addiu(4), jal(3), 0x12345678))

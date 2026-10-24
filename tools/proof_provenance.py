@@ -216,6 +216,9 @@ def metadata_filter_plan(command: str, target: str,
                         raise MetadataProofError("unsupported metadata helper")
                     saw_anchor = True
                 plan.append(("externalize", (words[3], words[4], anchor)))
+            elif (helper == "tools/trim_elf_section.py" and words[3] in (".data", ".rodata")
+                  and len(words) == 6 and words[5] == "--compiler-end-padding"):
+                plan.append(("nonexec-end", (words[3], int(words[4], 0))))
             elif (helper == "tools/trim_elf_section.py" and words[3] == ".text"
                   and len(words) in (5, 6)):
                 plan.append(("trim", int(words[4], 0)))
@@ -576,6 +579,11 @@ def capture_data_module_producer_raw(root, source, configured, linked, map_path)
                                    producer_map=map_path)
 
 
+def capture_nonexec_producer_raw(root, source, configured, linked, map_path):
+    """Fresh original compiler output for a declared nonexec metadata recipe."""
+    return _capture_configured_raw(root, source, configured, linked, "", producer_map=map_path)
+
+
 def capture_data_provider_raw(root, source, configured, linked, map_path):
     """Fresh ordinary-provider C using the same bound producer capture lifecycle."""
     return _capture_configured_raw(root, source, configured, linked, "", producer_map=map_path,
@@ -597,13 +605,14 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             ["gmake", "--no-print-directory", "-n", "-W", source.relative_to(root).as_posix(), target],
             deadline, check=True).stdout.replace("\\\n", " ").splitlines()
         compilers = [line.strip() for line in output if target in line and "tools/ido/cc" in line]
-        helper = "tools/link_overlay_module.py" if module_link else "tools/filter_elf_relocations.py"
+        helper = ("tools/link_overlay_module.py" if module_link else
+                  "tools/trim_elf_section.py" if ordinary_provider else "tools/filter_elf_relocations.py")
         metadata = [line.strip() for line in output if target in line and helper in line]
         # The generated resident-call renames (mk/overlay_resident_rebinds.generated.mk)
         # run as their own recipe line after POSTPROCESS; replay them too, in that order.
         rebinds = [line.strip() for line in output if target in line and "--redefine-sym" in line
                    and "tools/filter_elf_relocations.py" not in line and "tools/ido/cc" not in line]
-        if (len(compilers) != 1 or len(metadata) != (0 if ordinary_provider else 1)
+        if (len(compilers) != 1 or (len(metadata) not in (0, 1) if ordinary_provider else len(metadata) != 1)
                 or len(rebinds) > (0 if module_link or ordinary_provider else 1)):
             raise MetadataProofError("ambiguous expanded compiler/metadata recipe")
         # An overlay object gets its static functions' symbols right after the
@@ -614,10 +623,14 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
         if len(static_lines) > 1:
             raise MetadataProofError("ambiguous static-symbol recipe")
         if ordinary_provider:
-            allowed = set(compilers + static_lines)
+            if metadata:
+                provider_plan = metadata_filter_plan(metadata[0], target, root)
+                if len(provider_plan) != 1 or provider_plan[0][0] != "nonexec-end":
+                    raise MetadataProofError("ordinary provider has an unsupported end profile")
+            allowed = set(compilers + static_lines + metadata)
             if any(target in line and line.strip() not in allowed for line in output):
                 raise MetadataProofError("ordinary provider has an unsupported metadata recipe")
-            return compilers[0], "", ""
+            return compilers[0], (metadata[0] if metadata else ""), ""
         return compilers[0], metadata[0], (rebinds[0] if rebinds else "")
     command, expanded_postprocess, surface_rebind = recipe()
     args = batch.compiler_arguments(command, source.relative_to(root).as_posix(), target)
@@ -626,7 +639,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
     dependency_args = args + (("-I", str(source.parent)) if wrapped else ())
     if words.count("-o") != 1:
         raise MetadataProofError("ambiguous configured output argument")
-    plan = [] if module_link or ordinary_provider else metadata_filter_plan(expanded_postprocess, target, root)
+    plan = ([] if module_link or not expanded_postprocess else
+            metadata_filter_plan(expanded_postprocess, target, root))
     if surface_rebind:
         plan = plan + metadata_filter_plan(surface_rebind, target, root)
     def context():

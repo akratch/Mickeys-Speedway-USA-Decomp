@@ -356,6 +356,14 @@ class ProducerCaptureLifecycleTests(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(provenance.MetadataProofError):
                 provenance.local_ro_provider_input("helper --local-ro-origin-object " + value, root)
 
+    def test_nonexec_end_profile_is_explicit_and_does_not_accept_generic_crop(self):
+        target="build/src/overlays/o101/tail.c.o"
+        command="python3 tools/trim_elf_section.py "+target+" .data 44"
+        with self.assertRaises(provenance.MetadataProofError):
+            provenance.metadata_filter_plan(command,target)
+        self.assertEqual([("nonexec-end",(".data",44))],provenance.metadata_filter_plan(
+            command+" --compiler-end-padding",target))
+
     def test_ordered_provider_group_uses_only_distinct_stable_real_input_paths(self):
         root = pathlib.Path("/synthetic")
         a, b = "build/src/overlays/o001/labels.c.o", "build/src/overlays/o001/tail.c.o"

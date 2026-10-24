@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 7998},
+  "totals": {"differences": 0, "borrowed_records": 7992},
   "differences": {
   },
   "borrowed": {
@@ -79,7 +79,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1706,
+      "count": 1703,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1742,7 +1742,6 @@
         [101, "gO101TailC144Node32Count", 4],
         [101, "gO101TailC144OrderCount", 4],
         [101, "gO101TailC144OrderSlots", 4],
-        [101, "gO101TailC6E8AssetDF0", 2],
         [101, "gO101TailC6E8Handle1D4", 2],
         [101, "gO101TailC6E8Handle1F4", 2],
         [101, "gO101TailC6E8Handle338", 2],
@@ -1767,7 +1766,6 @@
         [101, "gOverlay101Handle1D4", 4],
         [101, "gOverlay101Handle1F4", 2],
         [101, "gOverlay101Handle33C", 2],
-        [101, "gOverlay101ImmediateScale", 2],
         [101, "gOverlay101InputMode", 2],
         [101, "gOverlay101OrderCount", 50],
         [101, "gOverlay101PresentationActive", 2],
@@ -1779,7 +1777,6 @@
         [101, "gOverlay101Resource32Count", 8],
         [101, "gOverlay101Time214", 2],
         [101, "gOverlay101Time338", 2],
-        [101, "gOverlay101TimedScale", 2],
         [101, "gOverlay101Value220", 2],
         [101, "gOverlay101Value224", 2],
         [101, "gOverlay101Value228", 2],
@@ -1791,7 +1788,7 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 33,
+      "count": 32,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -1824,8 +1821,7 @@
         [79, "overlay_079", ".rodata", "0x1504", 30],
         [86, "overlay_086", ".rodata", "0xF50", 6],
         [90, "overlay_090", ".rodata", "0xB28", 16],
-        [99, "overlay_099", ".rodata", "0x1410", 2],
-        [101, "overlay_101", ".rodata", "0x12B3C", 16]
+        [99, "overlay_099", ".rodata", "0x1410", 2]
       ]
     },
     "rodata-base": {

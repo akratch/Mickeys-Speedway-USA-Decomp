@@ -1941,9 +1941,9 @@ extern void amSndPlay(s32 soundId, s32 arg1);
 
 extern s32 gOverlay101OrderCount;
 
-extern f32 gOverlay101TimedScale;
+extern f32 gOverlay101TimedScale_o101Reloc;
 
-extern f32 gOverlay101ImmediateScale;
+extern f32 gOverlay101ImmediateScale_o101Reloc;
 
 extern s32 gOverlay101GlobalX;
 
@@ -2269,7 +2269,7 @@ extern s32 gO101TailC6E8Node20Count;
 
 extern O101TailC6E8Node20 gO101TailC6E8Nodes20[];
 
-extern u8 gO101TailC6E8AssetDF0;
+extern u8 gO101TailC6E8AssetDF0_o101Reloc[12];
 
 extern RcpTextureNode gO101TailC6E8Handle1D4[2];
 

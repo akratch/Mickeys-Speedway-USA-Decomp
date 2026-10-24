@@ -237,18 +237,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
-    # The 25-entry selector switch table, rodata-relative +0xEAC; it ends the
-    # module's initialized data.
-    101: [
-        (
-            0x5CFC,
-            0x5D60,
-            "overlay_101",
-            ".rodata",
-            "func_overlay_101_F000C6E8_18E7F08",
-            True,
-        )
-    ],
 }
 
 # Permanent interior initialized-storage owners. These rows participate in
@@ -293,7 +281,9 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
           (0x340, 0x4E50, "overlay101EventStreams", ".data"),
           (0x4E50, 0x5A70, "overlay101Labels", ".data"),
           (0x5A70, 0x5AF0, "overlay101LabelTail", ".data"),
-          (0x5AF0, 0x5C30, "overlay101WindowLabels", ".data")],
+          (0x5AF0, 0x5C30, "overlay101WindowLabels", ".data"),
+          (0x5C30, 0x5C5C, "overlay101TailConstants", ".data"),
+          (0x5C5C, 0x5D60, "overlay_101", ".rodata")],
     75: [(0x0, 0x10, "overlay_075", ".rodata")],
     44: [(0x0, 0x50, "overlay_044", ".rodata")],
     8: [
@@ -383,6 +373,7 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
     (101, "overlay101WindowLabels", ".data"),
     (101, "overlay101State", ".data"),
     (101, "overlay101Prefix", ".data"),
+    (101, "overlay101TailConstants", ".data"),
     (101, "overlay101LabelTail", ".data"),
     (101, "overlay101ClockData", ".data"),
     (101, "overlay101EventStreams", ".data"),
@@ -1965,6 +1956,11 @@ def render_yaml_block(
                         or int(part["end_offset"], 16) != readonly_tail_start):
                     break
                 readonly_tail_start = int(part["offset"], 16)
+            # Splat aligns DATA_END before its normal RO group. A suffix
+            # whose required start is not aligned must retain physical input
+            # ordering, even though the actual selected section stays .rodata.
+            if readonly_tail_start % 8:
+                readonly_tail_start = data_size
             cursor = owned_end
             for part in ordered_fixed:
                 fixed_start = int(part["offset"], 16)

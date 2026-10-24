@@ -6,6 +6,9 @@
  * Tier D: names describe the visible labels, not original source spelling.
  * Existing proxy pointer bindings remain separate from these physical owners. */
 
+/* Five initial entry seeds, consumed by the bounded initialization loop. */
+s16 o48InitialEntrySeeds[5] = {40, 80, 120, 160, 200};
+
 char o48CreditBlankBeforeCredits[] = " ";
 char o48CreditCredits[] = "CREDITS";
 char o48CreditDevelopmentTeam[] = "DEVELOPMENT TEAM";
@@ -98,3 +101,6 @@ char o48CreditCStamper[] = "C. STAMPER";
 char o48CreditTStamper[] = "T. STAMPER";
 char o48CreditHYamauchi[] = "H. YAMAUCHI";
 char o48CreditBlankAfterCredits[] = " ";
+
+/* Tier B: the final script operation passes this float to amTuneSetFade. */
+f32 o48MusicTransitionValue = 0.45f;

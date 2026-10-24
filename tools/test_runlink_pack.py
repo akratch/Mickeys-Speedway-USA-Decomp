@@ -1129,6 +1129,65 @@ class DataOnlyImportGuardTests(unittest.TestCase):
                 with self.assertRaises(rp.PackError):
                     rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
 
+    def readonly_aggregate_inputs(self, missing=False):
+        import link_overlay_module as link
+        from test_link_overlay_module import aggregate_fixture, readonly_fixture
+        self.local_inputs()
+        self.row.update(size="0x10",end_offset="0x14")
+        provider_row=self.world.amods[1]["data_rodata_ownership"][1]
+        provider_row.update(section=".rodata",offset="0x14",end_offset="0x1C")
+        for group in ("raw","build"):
+            path=self.paths[group]/"src"/(self.provider+".c.o")
+            path.write_bytes(readonly_fixture())
+        raw_path=self.paths["raw"]/"src"/(self.source+".c.o")
+        raw_path.write_bytes(aggregate_fixture(missing=missing))
+        raw=rp.Elf(raw_path)
+        configured=words(0,4,37,0)
+        self.write(self.paths["build"]/"src"/(self.source+".c.o"),
+            ObjBuilder().section(".data",configured).sym("aggregate",0,15,GLOBAL,OBJECT,".data"))
+        linked=ObjBuilder().section(".overlay_001",bytes(20)+configured+self.provider_bytes,addr=rp.OVERLAY_VMA)
+        for symbol in self.linked.symbols:
+            if symbol.name.startswith("main_") or symbol.name=="runlinkCodeEnd":
+                linked.sym(symbol.name,symbol.value,0,GLOBAL,NOTYPE,"ABS")
+        linked.sym("aggregate",rp.OVERLAY_VMA+20,15,GLOBAL,OBJECT,".overlay_001")
+        linked.sym("first",rp.OVERLAY_VMA+36,0,GLOBAL,OBJECT,".overlay_001")
+        linked.sym("second",rp.OVERLAY_VMA+40,0,GLOBAL,OBJECT,".overlay_001")
+        self.world.elf=rp.Elf("linked",linked.build())
+        self.world.by_name={s.name:[s] for s in self.world.elf.symbols if s.name}
+        self.world.map[:]=[rp.MapInput(".overlay_001",".data",rp.OVERLAY_VMA+20,16,"build/src/"+self.source+".c.o"),
+                          rp.MapInput(".overlay_001",".rodata",rp.OVERLAY_VMA+36,8,"build/src/"+self.provider+".c.o")]
+        expected={(20+4*i,R32):dict(op=rp.OP_LOCAL,symbol_index=36,full=("ov",1,36+4*i),table=2,position=i) for i in range(2)}
+        self.world.expected_cache=lambda _ov:expected
+        raw.local_ro_provider="build/src/"+self.provider+".c.o"
+        raw.local_ro_aggregate=link.local_aggregate_shape(raw)
+        return raw,expected
+
+    def test_readonly_aggregate_actual_provider_and_root_spans_are_separate(self):
+        raw,_expected=self.readonly_aggregate_inputs()
+        self.assertEqual(rp.validate_data_imports(self.world,self.exports,1,self.row,self.source,raw),2)
+        self.assertEqual(raw.local_ro_aggregate["root_symbol_extent"],15)
+        self.assertEqual(raw.local_ro_aggregate["input_allocation"],16)
+        self.assertEqual(raw.data_local_identities,{"first":(1,36),"second":(1,40)})
+        rp.check_data_import_holds(self.world)
+
+    def test_readonly_aggregate_lost_zero_word_role_map_and_same_bytes_target_refuse(self):
+        for case in ("null","role","map","target"):
+            with self.subTest(case=case):
+                self.setUp();raw,expected=self.readonly_aggregate_inputs(missing=case=="null")
+                if case=="null":
+                    from test_link_overlay_module import aggregate_fixture
+                    self.assertEqual(raw.bytes_of(".data"),rp.Elf("original",aggregate_fixture()).bytes_of(".data"))
+                elif case=="role":expected[(20,R32)]["symbol_index"]=16
+                elif case=="map":self.world.map.append(self.world.map[-1])
+                else:
+                    rels=raw.rels(".data")
+                    with mock.patch.object(raw,"rels",side_effect=lambda section:[rp.Rel(0,R32,rels[1].sym),rp.Rel(4,R32,rels[0].sym)] if section==".data" else []):
+                        with self.assertRaises(rp.PackError):
+                            rp.validate_data_imports(self.world,self.exports,1,self.row,self.source,raw)
+                    continue
+                with self.assertRaises(rp.PackError):
+                    rp.validate_data_imports(self.world,self.exports,1,self.row,self.source,raw)
+
     def grouped_inputs(self, missing_first=False):
         self.local_inputs()
         other = "overlays/o001/tail"

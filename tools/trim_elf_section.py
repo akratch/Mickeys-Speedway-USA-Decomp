@@ -47,13 +47,7 @@ def _table_bound(elf, text, load_offset):
     return rp.u32(text, guard_offset), rp.u32(text, branch_offset), branch_offset
 
 
-def compiler_end(elf, section):
-    """Derive a bounded compiler-only suffix from actual objects or pool reads.
-
-    Supported RO reads are fixed f32 loads and the observed ordinary MIPS
-    unsigned-bound/scale/word-load jump-table sequence. Unknown forms refuse.
-    """
-    import runlink_pack as rp
+def _compiler_storage(elf, section):
     if hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest() != _LOADED_COMPILER_END:
         raise ValueError("loaded compiler-end helper changed")
     sec = elf.section(section)
@@ -69,6 +63,33 @@ def compiler_end(elf, section):
             raise ValueError("compiler end has an out-of-bounds object")
         if symbol.size:
             ends.append(symbol.value + symbol.size)
+    return sec, objects, ends
+
+
+def _zero_compiler_suffix(elf, section, sec, objects, ends):
+    if not ends:
+        raise ValueError("compiler end lacks actual sized objects or reads")
+    end = max(ends)
+    if (not 0 < sec["size"]-end < 16 or (end+15)//16*16 != sec["size"]
+            or any(elf.bytes_of(section)[end:])
+            or any(s.value >= end or s.value+s.size > end for s in objects)):
+        raise ValueError("section suffix is not proved zero compiler end alignment")
+    return end
+
+
+def sized_object_end(elf, section):
+    """Derive only the sized-object/zero-alignment boundary, without trimming.
+
+    This does not authenticate outgoing references. A caller admitting them
+    must separately prove every original relocation inside the object span.
+    """
+    return _zero_compiler_suffix(elf, section, *_compiler_storage(elf, section))
+
+
+def compiler_end(elf, section):
+    """Derive the existing bounded DATA or proved compiler-pool end."""
+    import runlink_pack as rp
+    sec, objects, ends = _compiler_storage(elf, section)
     incoming = []
     for source in elf.sections:
         rels = elf.rels(source["name"])
@@ -143,12 +164,7 @@ def compiler_end(elf, section):
         if not ends or covered != set(range(max(ends))) or any(
                 not set(range(site,site+4)) <= covered for site in cells):
             raise ValueError("compiler-pool extent has unexplained reads or cells")
-    end = max(ends)
-    if (not 0 < sec["size"]-end < 16 or (end+15)//16*16 != sec["size"]
-            or any(elf.bytes_of(section)[end:])
-            or any(s.value >= end or s.value+s.size > end for s in objects)):
-        raise ValueError("section suffix is not proved zero compiler end alignment")
-    return end
+    return _zero_compiler_suffix(elf, section, sec, objects, ends)
 
 
 def main():

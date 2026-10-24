@@ -69,3 +69,4 @@ the ordinary way (a commit, a campaign entry), not by leaving the ADR
 | [0023](0023-grouped-local-data-prefix.md) | Complete mixed data prefixes with ordered LOCAL providers |
 | [0024](0024-ordinary-data-producer-inventory.md) | Authenticate complete ordinary data inputs in producer inventory |
 | [0025](0025-proved-nonexecutable-compiler-end-padding.md) | Source-proved nonexecutable compiler end padding |
+| [0026](0026-readonly-local-aggregate.md) | One mixed aggregate with an actual read-only LOCAL provider |

@@ -2003,7 +2003,7 @@ def effective_compiler_object(raw, configured, allowed=None):
     return view
 
 
-def data_import_input(world, ov, row, source, raw, *, linked_local=False):
+def data_import_input(world, ov, row, source, raw, *, linked_local=False, storage=".data"):
     """Authenticate one complete data input; no inferred placement or tail trim."""
     import proof_provenance as provenance
     remember_data_import_inputs(world, source)
@@ -2016,27 +2016,27 @@ def data_import_input(world, ov, row, source, raw, *, linked_local=False):
     if raw.path == ordinary_path:
         hold_data_import_inputs(world, {ordinary_path: hashlib.sha256(getattr(raw, "compiler_original", raw).data).hexdigest()})
     raw = effective_compiler_object(raw, configured, getattr(world, "_end_padding_plans", {}).get(f"build/src/{source}.c.o"))
-    size = raw.size(".data")
+    size = raw.size(storage)
     def require(test, why):
         if not test:
             raise PackError(f"data-only module {source}: {why}")
-    require(row.get("section", ".data") == ".data" and size > 0
-            and size == int(row["size"], 16), "not one complete canonical .data input")
+    require(storage in (".data", ".rodata") and row.get("section", ".data") == storage and size > 0
+            and size == int(row["size"], 16), "not one complete canonical initialized input")
     for obj in (raw, configured):
-        require(all(obj.size(s) == 0 for s in (".text", ".rodata", ".bss")),
+        require(all(obj.size(s) == 0 for s in (".text", ".data", ".rodata", ".bss") if s != storage),
                 "mixed runtime sections are unsupported")
         require(not any(s.shndx == SHN_COMMON and s.size for s in obj.symbols),
                 "COMMON allocation is unsupported")
         require(not any(s["size"] and s["flags"] & 2
-                        and s["name"] not in (".data", ".reginfo", ".MIPS.abiflags")
+                        and s["name"] not in (storage, ".reginfo", ".MIPS.abiflags")
                         for s in obj.sections), "unexpected allocated section")
-        sec = obj.section(".data")
-        require(sec and sec["type"] == 1 and sec["flags"] & 3 == 3
+        sec = obj.section(storage)
+        require(sec and sec["type"] == 1 and sec["flags"] & 3 == (2 if storage == ".rodata" else 3)
                 and not sec["flags"] & 4 and sec["size"] == size, "invalid data storage")
-    require(linked_local or raw.bytes_of(".data") == configured.bytes_of(".data"),
+    require(linked_local or raw.bytes_of(storage) == configured.bytes_of(storage),
             "raw/configured initialized bytes differ")
     items = [mi for mi in world.map if mi.file == f"build/src/{source}.c.o"
-             and mi.insec == ".data" and mi.size]
+             and mi.insec == storage and mi.size]
     require(len(items) == 1, "missing or duplicate final source input")
     item = items[0]
     start = item.addr - OVERLAY_VMA
@@ -2047,7 +2047,7 @@ def data_import_input(world, ov, row, source, raw, *, linked_local=False):
                     and item.addr < mi.addr + mi.size
                     for mi in world.module_info[ov]["inputs"]), "overlapping final contributor")
     require(world.elf.bytes_of(f".overlay_{ov:03d}")[start:start + size]
-            == configured.bytes_of(".data"), "final initialized input bytes differ")
+            == configured.bytes_of(storage), "final initialized input bytes differ")
     return configured, start
 
 
@@ -2087,7 +2087,7 @@ def reproduce_data_provider(world, source):
     return fresh
 
 
-def data_import_definition(world, name, *, base_only=False, provider_source=None):
+def data_import_definition(world, name, *, base_only=False, provider_source=None, readonly_provider=False):
     """A real raw C definition and unique map input, never an encoded address."""
     choices = [s for s in world.by_name.get(name, ()) if s.bind == STB_GLOBAL
                and s.type == 1 and (base_only or s.size > 0)
@@ -2103,17 +2103,18 @@ def data_import_definition(world, name, *, base_only=False, provider_source=None
     for row in projected_data_rows(world.amods[ov]):
         source = row["source"]
         for item in world.module_info[ov]["inputs"]:
-            if (item.file == f"build/src/{source}.c.o" and item.insec == ".data"
+            if (item.file == f"build/src/{source}.c.o" and item.insec in ((".data", ".rodata") if readonly_provider else (".data",))
+                    and item.insec == row.get("section", ".data")
                     and item.addr <= symbol.value < item.addr + item.size
                     and symbol.value + symbol.size <= item.addr + item.size):
-                hits.append((row, source))
+                hits.append((row, source, item.insec))
     if len(hits) != 1:
         raise PackError(f"data-only import target lacks a unique canonical source input: {name}")
-    row, source = hits[0]
+    row, source, storage = hits[0]
     if provider_source is not None and source != provider_source:
         raise PackError(f"LOCAL data target is not in its declared provider: {name}")
     raw = Elf(world.paths["raw"] / "src" / (source + ".c.o"))
-    _configured, start = data_import_input(world, ov, row, source, raw)
+    _configured, start = data_import_input(world, ov, row, source, raw, storage=storage)
     if any(raw.rels(s) for s in (".text", ".data", ".rodata")):
         raise PackError(f"data-only import provider has unsupported relocations: {name}")
     providers = getattr(world, "data_import_providers", {})
@@ -2121,13 +2122,13 @@ def data_import_definition(world, name, *, base_only=False, provider_source=None
         providers[source] = reproduce_data_provider(world, source)
     world.data_import_providers = providers
     fresh = providers[source]
-    definitions = [s for s in fresh.symbols if s.name == name and s.section == ".data"
+    definitions = [s for s in fresh.symbols if s.name == name and s.section == storage
                    and s.bind == STB_GLOBAL and s.type == 1 and (base_only or s.size > 0)]
     if len(definitions) != 1:
         raise PackError(f"data-only import is not defined by its raw C input: {name}")
     own = definitions[0]
     if (own.size != symbol.size or own.value + start != symbol.value - OVERLAY_VMA
-            or own.value < 0 or own.value + max(1, own.size) > raw.size(".data")):
+            or own.value < 0 or own.value + max(1, own.size) > raw.size(storage)):
         raise PackError(f"data-only raw definition/final geometry differs: {name}")
     return ov, start + own.value
 
@@ -2183,34 +2184,42 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
     """A complete pointer input names actual bases in one runtime RO origin."""
     import source_module_link_proof as proof
     grouped = getattr(raw, "local_ro_providers", None)
+    aggregate = getattr(raw, "local_ro_aggregate", None)
     provider_sources = [name.removeprefix("build/src/").removesuffix(".c.o")
                         for name in (grouped or (raw.local_ro_provider,))]
     configured, start = data_import_input(world, ov, row, source, raw, linked_local=True)
     rels = raw.rels(".data")
-    if grouped:
+    if grouped or aggregate:
         owners = [s for s in raw.symbols if s.section == ".data" and s.bind == STB_GLOBAL
                   and s.type == 1 and s.size]
+        if aggregate:
+            import link_overlay_module as module_link
+            try:
+                if module_link.local_aggregate_shape(raw) != aggregate:
+                    raise ValueError("aggregate receipt shape differs")
+            except (ValueError, module_link.LinkError) as error:
+                raise PackError("LOCAL aggregate shape refused: " + str(error)) from error
         final = world.by_name.get(owners[0].name, ()) if len(owners) == 1 else ()
-        if (len(owners) != 1 or owners[0].value != 0 or owners[0].size != raw.size(".data")
+        if (len(owners) != 1 or owners[0].value != 0 or (not aggregate and owners[0].size != raw.size(".data"))
                 or len(final) != 1 or final[0].bind != STB_GLOBAL or final[0].type != 1
                 or final[0].section != f".overlay_{ov:03d}" or final[0].size != owners[0].size
                 or final[0].value != OVERLAY_VMA + start):
             raise PackError("grouped LOCAL data lacks its complete raw/final aggregate")
-    if (not rels or (not grouped and (len(rels) * 4 != raw.size(".data")
+    if (not rels or (not (grouped or aggregate) and (len(rels) * 4 != raw.size(".data")
             or raw.bytes_of(".data") != bytes(raw.size(".data"))))
             or any(configured.rels(s) for s in (".text", ".data", ".rodata"))):
         raise PackError("LOCAL data is not a complete zero-addend pointer input")
     targets = {}
     offsets = []
     for index, (rel, addend) in enumerate(zip(rels, in_place_addends(raw, ".data", rels))):
-        if ((not grouped and rel.offset != index * 4) or rel.offset % 4
+        if ((not (grouped or aggregate) and rel.offset != index * 4) or rel.offset % 4
                 or not 0 <= rel.offset <= raw.size(".data") - 4 or addend != 0
                 or rel.type != R_MIPS_32 or rel.sym.shndx != SHN_UNDEF
                 or rel.sym.bind != STB_GLOBAL or rel.sym.name in exports.by_name):
             raise PackError("unsupported cross-input LOCAL data import")
         offsets.append(rel.offset)
         target = data_import_definition(world, rel.sym.name, base_only=True,
-                                        provider_source=None if grouped else provider_sources[0])
+                                        provider_source=None if grouped else provider_sources[0], readonly_provider=bool(aggregate))
         if target[0] != ov:
             raise PackError("LOCAL data provider escapes its module")
         targets[rel.sym.name] = target
@@ -2225,7 +2234,15 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
         if len(rows) != 1:
             raise PackError("LOCAL provider lacks one canonical input")
         ordinary = Elf(world.paths["raw"] / "src" / (provider_source + ".c.o"))
-        _provider_configured, provider_start = data_import_input(world, ov, rows[0], provider_source, ordinary)
+        storage = rows[0].get("section", ".data") if aggregate else ".data"
+        if aggregate:
+            import link_overlay_module as module_link
+            try:
+                if module_link.local_provider_section(ordinary, readonly=True) != storage:
+                    raise ValueError("provider storage/row differs")
+            except (ValueError, module_link.LinkError) as error:
+                raise PackError("LOCAL readonly provider refused: " + str(error)) from error
+        _provider_configured, provider_start = data_import_input(world, ov, rows[0], provider_source, ordinary, storage=storage)
         providers = getattr(world, "data_import_providers", {})
         if provider_source not in providers:
             providers[provider_source] = reproduce_data_provider(world, provider_source)
@@ -2237,10 +2254,10 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
             origin = provider_start
         elif grouped and provider_start != end:
             raise PackError("LOCAL provider group is not contiguous in declared order")
-        end = provider_start + provider.size(".data")
+        end = provider_start + provider.size(storage)
         allowed.update((ov, provider_start + symbol.value) for symbol in provider.symbols
-                       if symbol.section == ".data" and symbol.bind == STB_GLOBAL and symbol.type == 1
-                       and 0 <= symbol.value < provider.size(".data"))
+                       if symbol.section == storage and symbol.bind == STB_GLOBAL and symbol.type == 1
+                       and 0 <= symbol.value < provider.size(storage))
     if any(target not in allowed for target in targets.values()):
         raise PackError("LOCAL target is outside its declared provider group")
     identities = proof.source_identities(raw, configured, world.elf, exports, ov,
@@ -2383,6 +2400,18 @@ def reproduce_data_import(world, source):
                 or declared.get("runtime_role") != ".rodata" or declared.get("origin") != "input-start"):
             raise PackError("ordinary LOCAL data link lacks its bound provider declaration")
         fresh.local_ro_provider = provider_input
+        if provenance.local_data_aggregate(receipt["inputs"]["module_link"], root):
+            import link_overlay_module as module_link
+            try:
+                shape = module_link.local_aggregate_shape(fresh)
+                storage = module_link.local_provider_section(Elf(provider), readonly=True)
+            except module_link.LinkError as error:
+                raise PackError("mixed LOCAL declaration refused: " + str(error)) from error
+            if declared.get("aggregate") != shape or declared.get("input_section") != storage:
+                raise PackError("mixed LOCAL receipt root/storage differs")
+            fresh.local_ro_aggregate = shape
+        elif "aggregate" in declared or "input_section" in declared:
+            raise PackError("undeclared mixed LOCAL profile")
     elif declared or group:
         raise PackError("undeclared LOCAL provider in ordinary module receipt")
     return fresh, receipt, context

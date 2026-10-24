@@ -84,15 +84,18 @@ include mk/overlay_070.mk
 include mk/overlay_060.mk
 include mk/overlay_057.mk
 include mk/overlay_058.mk
-# Overlay 55: one module TU under the overlay flag set; its .text is the
-# module's full 0xC70 bytes, trailing pad included, so no trim. Kept until
-# phase 3 (data into C): the TU's .rodata is the 0.66f icon-scale pool, whose
-# bytes the raw data_rodata blob still owns at +0x110, so the section is
-# asserted by digest and its one hi/lo pair anchored at the rodata base.
+# Overlay 55: unchanged one-TU text and flags. Keep its exact 0.66f pool
+# (one scalar plus ordinary compiler alignment) as the unique RO owner;
+# the existing zero anchor retains the section-relative operand model.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay_055.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay_055.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:d131bb7de7509c98fc3533790f960348a16e2e461e7d1f5ffff1cd58ae2243e0
+		sha256:d131bb7de7509c98fc3533790f960348a16e2e461e7d1f5ffff1cd58ae2243e0 keep
+
+# Genuine mutable HUD resource lists, nodes and offsets, complete input.
+O55_HUD_TEMPLATES := $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55HudTemplates.c.o
+$(O55_HUD_TEMPLATES): private PLAIN_DATA_PROOF = 1
+$(O55_HUD_TEMPLATES): private PLAIN_DATA_RUNTIME_ROLE = data
 # Overlay 66: one module TU under the overlay flag set; its .text is the
 # module's whole text, so no trim, and resident calls are renamed by the
 # generated surface rebinds.

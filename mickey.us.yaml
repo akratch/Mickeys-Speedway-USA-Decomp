@@ -2478,13 +2478,21 @@ segments:
     vram: 0xF0000000
     bss_size: 0xD0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o050
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1896970, c, overlay_050]
       - [0x18987E0, bin, overlay_050_data_rodata]
+      - [0x189884C, .data, overlay50GlyphLists]
+      - [0x18989FC, bin, overlay_050_data_rodata_21c]
+      - [0x1898A00, .data, overlay50LapTemplate]
+      - [0x1898A90, bin, overlay_050_data_rodata_2b0]
+      - [0x1898AA0, .data, overlay50HudSprites]
+      - [0x1898B00, bin, overlay_050_data_rodata_320]
+      - [0x1898B08, .data, overlay50ItemState]
+      - [0x1898B18, bin, overlay_050_data_rodata_338]
 
   - name: overlay_050_reloc1
     type: bin

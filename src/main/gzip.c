@@ -124,7 +124,7 @@ u8 *func_8004D7E0(u8 *compressed, u8 *output) {
  * authoritative; the donor body is only the clean-room starting point. */
 /* Spelling the table address as index-plus-base selects retail's temporary
  * evaluation order. All 390 instructions, the frame, and relocations match. */
-void func_8004D840(u32 *b, u32 n, u32 s, u16 *d, u16 *e,
+void func_8004D840(u32 *b, u32 n, u32 s, u16 *d, u8 *e,
                    MickeyHuft **t, s32 *m) {
     u32 a;
     u32 c[BMAX + 1];
@@ -256,7 +256,7 @@ void func_8004D840(u32 *b, u32 n, u32 s, u16 *d, u16 *e,
                 r.v.n = *p;
                 p++;
             } else {
-                r.e = ((u8 *) e)[*p - s];
+                r.e = e[*p - s];
                 r.v.n = d[*p++ - s];
             }
 

@@ -43,8 +43,12 @@ policy cannot be inferred from the normal format path.
 The table entry is eight target bytes: operation at +0, consumed-bit count at
 +1, and a union at +4 holding a 16-bit value or 32-bit pointer. Target pointer
 width, structure layout and big-endian table fields are separate from the
-stream's byte/bit order. The C builder's extras argument is declared `u16 *`
-but accessed as a byte vector through `(u8 *)e`; that declaration remains debt.
+stream's byte/bit order. The C builder's extras argument is a `u8 *` byte
+vector; its separate base-value argument is a `u16 *` halfword vector. The
+fixed and dynamic handlers pass those two distinct table roles. The initial
+code-length-tree call supplies null for both and keeps its valid code indices
+below the threshold that accesses them. These types describe access width,
+not input validation or a universal table-capacity guarantee.
 
 | State | Lifetime and constraint |
 |---|---|
@@ -114,9 +118,10 @@ Before choosing a native decoder, settle these bounded questions:
   minimum overlap frontier per record. Metadata checks alone establish none of
   these dynamic properties.
 - Trace producer evidence before assigning byte 4 a meaning.
-- Reconcile wrapper declarations: its provider returns `u8 *` and takes byte
-  pointers, while some callers declare `void(void *, void *)`. Observed callers
-  ignore the result; that does not make the declarations compatible.
+- Preserve the unified wrapper declaration in
+  [gzip.h](../include/game/gzip.h): `u8 *(u8 *, u8 *)`. The PI, model, screen,
+  texture and overlay-35 callers now include that header. They ignore its
+  returned output pointer; buffer capacity and lifetime remain caller duties.
 
 These are format, ABI and lifetime tasks. They do not require a new decoder,
 game execution, another matching census or a general test framework.

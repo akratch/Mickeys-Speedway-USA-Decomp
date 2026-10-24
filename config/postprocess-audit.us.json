@@ -786,6 +786,20 @@
       "class": "metadata",
       "matched_c": null,
       "nonmatching": null,
+      "object": "build/src/overlays/o057/overlay57CharacterOrder.c.o",
+      "offset": null,
+      "overlay": 57,
+      "size": null,
+      "source": "src/overlays/o057/overlay57CharacterOrder.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
       "object": "build/src/overlays/o057/overlay57DetailColours.c.o",
       "offset": null,
       "overlay": 57,
@@ -1174,9 +1188,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 78
+      "metadata": 79
     },
     "matched_c_bytes_with_postprocess": 323384,
-    "objects_with_postprocess": 78
+    "objects_with_postprocess": 79
   }
 }

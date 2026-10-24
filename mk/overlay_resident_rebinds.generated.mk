@@ -82,7 +82,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: SURFACE_REBIND = $(O
 	--redefine-sym overlay8GetIndexed=overlay8GetIndexed_o001Reloc \
 	--redefine-sym overlay8SetBuffer=overlay8SetBuffer_o001Reloc \
 	--redefine-sym overlay8SetValue=overlay8SetValue_o001Reloc \
-	--redefine-sym overlay8UpdateChannels=overlay8UpdateChannels_o001Reloc $@
+	--redefine-sym overlay8UpdateChannels=overlay8UpdateChannels_o001Reloc \
+	--redefine-sym overlay8WriteCommand=overlay8WriteCommand_o001Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay_002.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym Arctanf=Arctanf_o002Reloc \

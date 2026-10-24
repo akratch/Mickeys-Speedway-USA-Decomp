@@ -773,7 +773,7 @@ s32 func_8001DD70(void *object, void *state, f32 update);
 s32 func_80008128(void *object, f32 x, f32 y, f32 z);
 void overlay8SetBuffer(void *state);
 f32 func_overlay_008_F00034A0_18611F8Reloc(void *object, void *state, f32 limit, f32 update);
-void func_overlay_008_F00049B4_186270CReloc(void *unused);
+void overlay8WriteCommand(void * volatile unused);
 void func_8001D41C(void *object, void *state, s32 update);
 void func_overlay_008_F0003278_1860FD0Reloc(void *object, void *state, s32 update);
 void func_8001D960(void *object, void *state, s32 mode, s32 kind, s32 update);
@@ -1320,7 +1320,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
         }
         overlay8SetBuffer(state);
         state->outputScale = func_overlay_008_F00034A0_18611F8Reloc(object, state, limit, D_4);
-        func_overlay_008_F00049B4_186270CReloc(state);
+        overlay8WriteCommand(state);
         func_8001D41C(object, state, gOverlay1TimerStep);
         for (index = 2, action = &gO1PhysicsActions[2]; index != 6; index++, action++) {
             if (index != state->actionMode) {

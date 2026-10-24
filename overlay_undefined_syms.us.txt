@@ -189,7 +189,6 @@ func_overlay_008_F0001000_185ED58Reloc = 0xf0000000;
 func_overlay_008_F0002EC0_1860C18Reloc = 0xf0000000;
 func_overlay_008_F0003278_1860FD0Reloc = 0xf0000000;
 func_overlay_008_F00034A0_18611F8Reloc = 0xf0000000;
-func_overlay_008_F00049B4_186270CReloc = 0xf0000000;
 gO1PhysicsActions = 0x000000bc;
 gO1PhysicsPaths = 0x0000007c;
 gOverlay1CallbackDescriptor = 0x000000bc;
@@ -253,6 +252,7 @@ overlay8GetIndexed_o001Reloc = 0xf0000000;
 overlay8SetBuffer_o001Reloc = 0xf0000000;
 overlay8SetValue_o001Reloc = 0xf0000000;
 overlay8UpdateChannels_o001Reloc = 0xf0000000;
+overlay8WriteCommand_o001Reloc = 0xf0000000;
 
 /* overlay 1: overlay_001_end.c.o */
 gOverlay1DistanceObject = 0x00001d98;

@@ -814,6 +814,9 @@ extern void controlReadJoypad(O8P0058State *state, s32 mode);
 
 /* The getter reads only the signed character at input byte 1. */
 Overlay8TuningRecord *overlay8GetIndexed(const void *object);
+/* The command entry receives an opaque caller state pointer. Volatility is
+ * on the unused parameter object; its original qualification stays inferred. */
+void overlay8WriteCommand(void * volatile unused);
 extern Overlay8TuningRecord *o8P0058AcquireReloc(const void *object);
 
 /* Resident +0x5A914, the same mode setter o8P34A0SetModeReloc calls. */

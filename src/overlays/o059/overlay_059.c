@@ -1,5 +1,15 @@
 #include "overlays/overlay_059.h"
 
+/* Tier B/C: the six readonly font labels referenced by the style pointers.
+ * Natural NUL bounds; original declaration/qualification remains inferred. */
+const u8 o59StyleText0[] = "1a";
+const u8 o59StyleText1[] = "2b";
+const u8 o59StyleText2[] = "3c";
+const u8 o59StyleText3[] = "4d";
+const u8 o59StyleText4[] = "5d";
+const u8 o59StyleText5[] = "6d";
+
+
 /* Module-private functions: no ORT row, so their callers use JUMP
  * records. */
 static void overlay59Release(Overlay59State *state);
@@ -495,3 +505,10 @@ void overlay59DrawFrame(s32 displayList, s32 index, s32 x, s32 y) {
         }
     }
 }
+
+/* Tier B/D: reset/release walk four real 68-byte entries. The existing
+ * imported views remain separate; this defines storage, not native type closure. */
+Overlay59Entry o59EntryStorage[4];
+#ifdef TARGET_N64
+typedef char O59EntryStorageSize[(sizeof(o59EntryStorage) == 272) ? 1 : -1];
+#endif

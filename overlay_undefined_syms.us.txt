@@ -2582,7 +2582,6 @@ gOverlay61Resource80Reloc = 0x00000080;
 gOverlay61Resource84Reloc = 0x00000084;
 gOverlay61Resource88Reloc = 0x00000088;
 gOverlay61ResourceBaseReloc = 0x00000000;
-gOverlay61RodataReloc = 0x00000188;
 gOverlay61SavePathReloc = 0x00000164;
 gOverlay61SelectedIndexReloc = 0x0000009c;
 gOverlay61Selection = 0x0000009c;

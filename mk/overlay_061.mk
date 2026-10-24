@@ -1,22 +1,13 @@
-# Overlay 61 rules, split out of mk/overlays.mk on 2026-10-07 to keep it under
-# the clean-room 256 KiB tracked-file limit.
-#
-# One module TU under the overlay flag set; its .text is the module's full
-# 0x1A90 bytes, trailing pad included, so no trim, and resident calls are
-# renamed by the generated surface rebinds. -woff 835: four resident callees
-# are deliberately unprototyped (overlay_061.h). Kept until phase 3: the
-# TU's .rodata (the pak menu's nine-entry switch table) is still owned by the
-# raw data blob, so the section is asserted by digest and its %hi/%lo pair
-# bound to a pool symbol at the shipped rodata-relative 0x188; the table's own text
-# relocations go with it.
+# Overlay 61's real readonly literal context precedes its nine-case table.
+# The untouched compiler emits the full runtime RO image. The actual section
+# retains its zero-based runtime role; no synthetic offset or site rebind.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay_061.c.o: CFLAGS += -Wab,-r4300_mul -woff 835
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay_061.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	$(TOOLS_DIR)/externalize_elf_section.py
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay_061.c.o: $(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay_061.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay61RodataReloc=0x188,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0xC9C:.rodata:gOverlay61RodataReloc 0xCA4:.rodata:gOverlay61RodataReloc && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:7d32dd8918ee69dd189577037beffda3b905ceda99ea1e8fadd03d362f556145 && \
+		sha256:f7ab29af1991287fb508602d2159cb760cb5cae96f81770821eaae8e0d42d0eb 0 keep && \
 	$(OBJCOPY) --remove-section=.rel.rodata $@
+
+O61_INITIAL_STATE := $(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61InitialState.c.o
+$(O61_INITIAL_STATE): private PLAIN_DATA_PROOF = 1
+$(O61_INITIAL_STATE): private PLAIN_DATA_RUNTIME_ROLE = data

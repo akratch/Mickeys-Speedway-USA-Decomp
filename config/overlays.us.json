@@ -25,8 +25,8 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 49104,
-  "diagnostic_data_rodata_bytes": 508,
+  "owned_data_rodata_bytes": 50752,
+  "diagnostic_data_rodata_bytes": 416,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -3076,22 +3076,21 @@
    },
    "data_rodata_ownership": [
     {
-     "offset": "0x158",
-     "end_offset": "0x190",
-     "size": "0x38",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o014/overlay_014",
-     "trial_function": "overlay14LoadRelocatedValue",
-     "externalized": true
-    },
-    {
      "offset": "0x0",
      "end_offset": "0x120",
      "size": "0x120",
      "type": "c",
      "section": ".data",
      "source": "overlays/o014/overlay14InitialState",
+     "canonical": true
+    },
+    {
+     "offset": "0x120",
+     "end_offset": "0x190",
+     "size": "0x70",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o014/overlay_014",
      "canonical": true
     }
    ]
@@ -9418,15 +9417,6 @@
      "canonical": true
     },
     {
-     "offset": "0x510",
-     "end_offset": "0x540",
-     "size": "0x30",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57ResultLayout",
-     "canonical": true
-    },
-    {
      "offset": "0x540",
      "end_offset": "0x580",
      "size": "0x40",
@@ -9981,7 +9971,36 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 101
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0xB0",
+     "size": "0xB0",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o060/overlay60MenuResources",
+     "canonical": true
+    },
+    {
+     "offset": "0xC0",
+     "end_offset": "0x130",
+     "size": "0x70",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o060/overlay60PreviewTables",
+     "canonical": true
+    },
+    {
+     "offset": "0x1E0",
+     "end_offset": "0x260",
+     "size": "0x80",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o060/overlay_060",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 61,
@@ -10096,14 +10115,22 @@
    },
    "data_rodata_ownership": [
     {
-     "offset": "0x278",
-     "end_offset": "0x29C",
-     "size": "0x24",
+     "offset": "0x0",
+     "end_offset": "0xC0",
+     "size": "0xC0",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o061/overlay61InitialState",
+     "canonical": true
+    },
+    {
+     "offset": "0xF0",
+     "end_offset": "0x2A0",
+     "size": "0x1B0",
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o061/overlay_061",
-     "trial_function": "func_overlay_061_F0000B84_18BFF4C",
-     "externalized": true
+     "canonical": true
     }
    ]
   },
@@ -10560,7 +10587,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 105
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x220",
+     "size": "0x220",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o065/overlay65EffectData",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 66,

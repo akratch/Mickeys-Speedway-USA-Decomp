@@ -12,3 +12,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay_065.c.o: \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay_065.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		0x19E0:5:D_0 0x19F8:6:D_0
+
+# Complete initialized effect data from actual typed triangle/color/point
+# records and mutable resource/state cells. No instruction normalization.
+O65_EFFECT_DATA := $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65EffectData.c.o
+$(O65_EFFECT_DATA): private PLAIN_DATA_PROOF = 1
+$(O65_EFFECT_DATA): private PLAIN_DATA_RUNTIME_ROLE = data

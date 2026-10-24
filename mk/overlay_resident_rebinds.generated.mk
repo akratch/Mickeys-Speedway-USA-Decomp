@@ -340,6 +340,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/overlay_012.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym texDPTextureX=texDPTextureX_o012Reloc \
 	--redefine-sym texFreeSprite=texFreeSprite_o012Reloc \
 	--redefine-sym texFreeTexture=texFreeTexture_o012Reloc \
+	--redefine-sym texLoadSprite=texLoadSprite_o012Reloc \
+	--redefine-sym texLoadTexture=texLoadTexture_o012Reloc \
 	--redefine-sym trackGetTrack=trackGetTrack_o012Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay_013.c.o: SURFACE_REBIND = $(OBJCOPY) \

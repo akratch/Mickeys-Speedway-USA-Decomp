@@ -764,7 +764,6 @@ gOverlay12TrianglesA = 0x00000000;
 gOverlay12TrianglesB = 0x00000020;
 gOverlay12Value1598 = 0x00001598;
 mathRnd_o012Reloc = 0xf0000000;
-overlay12LoadReloc = 0xf0000000;
 sprClearIA2ColOverride_o012Reloc = 0xf0000000;
 sprSetIA2ColOverride_o012Reloc = 0xf0000000;
 sqrtf_o012Reloc = 0xf0000000;
@@ -772,6 +771,8 @@ texAnimateSprite_o012Reloc = 0xf0000000;
 texDPTextureX_o012Reloc = 0xf0000000;
 texFreeSprite_o012Reloc = 0xf0000000;
 texFreeTexture_o012Reloc = 0xf0000000;
+texLoadSprite_o012Reloc = 0xf0000000;
+texLoadTexture_o012Reloc = 0xf0000000;
 trackGetTrack_o012Reloc = 0xf0000000;
 
 /* overlay 13: overlay_013.c.o */

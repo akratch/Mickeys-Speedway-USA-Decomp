@@ -145,6 +145,20 @@ pass fresh compiler/helper/provider/map authentication before producer discovery
 other named borrowing remains explicit. This remains hybrid generation, with
 no source-only or relayout claim.
 
+An authority audit pinned to commit `0bdc9452af3dda5a91703dd94e56f6dc38e2e830`
+found 3,636 of 10,209 module records labelled object-produced still resolved
+through encoded-name coordinates. Separately, 739 section-target records
+landed in retained blobs, and 879 raw-target incidences used already-listed
+borrowed placement; 735 incidences overlap those last two groups. Four of the
+blob references instead used a noncanonical trial-pool Atlas row, outside the
+named placement borrowing. These are pinned audit counts, not live progress
+metrics or additional residuals to add to the then-current 8,338 borrowed
+records. An object-produced label or a zero borrowing total alone therefore
+does not establish independent source authority: declaration/provider-backed
+identities and actual source-linked storage placement must also be closed.
+Existing exact matching proofs are unchanged, and no per-site audit ledger is
+published here.
+
 Inputs are snapshotted before a fresh pack and checked again before publication.
 Files are staged first; publication invalidates the old completion marker,
 replaces payloads, rechecks inputs, and writes `manifest.json` last. A later

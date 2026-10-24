@@ -116,6 +116,15 @@ producers are overlay 8's twenty ORT pointers and overlay 59's forty same-owner
 LOCAL pointers; their sixty records replace hybrid borrowing without changing
 the remaining borrowing or claiming complete source-only generation.
 
+ORT identities for those admitted undefined R32 imports also use their held
+actual provider identities. Numeric coordinates in their names are not the
+authority. Namespace caches follow the published inventory's lifetime:
+successful revalidation invalidates cached identities, row groups and resolved
+targets; failed or in-progress validation cannot return old cached authority.
+Missing or conflicting held providers fail instead of falling back to name
+decoding. Other ORT rows and general name resolution retain their existing
+compatibility behavior until separately proved.
+
 Producer capture pins its actual bootstrap/final ELF-map pair and ordinary
 link command, source, headers, recipe and tools before and after reproduction.
 It cannot require the generated final-metadata output it is producing. Its

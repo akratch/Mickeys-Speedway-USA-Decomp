@@ -38,3 +38,26 @@ source/relocation/ROM acceptance rules apply.
 - **Limits:** this observation is specific to the configured compiler and
   assembler. It does not excuse an actual overflow, permit pool patches or
   establish identical behavior in another compiler.
+
+### An unused variadic tail can change the provider prologue
+
+- **Symptom:** adding an unused trailing ellipsis makes a provider larger even
+  though its body never calls `va_start` or `va_arg`.
+- **Mechanism:** a controlled stock IDO compile at `-O2 -mips2 -32` kept a
+  fixed pointer, integer and float prefix and the forwarding body unchanged.
+  The ellipsis introduced argument-home stores and a larger frame. Compiler
+  end alignment absorbed the growth, so the whole TU's text size stayed equal
+  while the true function size and relocation positions changed.
+- **Lever:** establish which arguments the actual provider consumes before
+  choosing a callable contract. An ignored extra argument is not an output,
+  and a variadic declaration is not automatically a free arity repair.
+  Compile the provider definition as well as its callers; compare function
+  geometry, ordered relocation identities and linked bytes. If the prologue
+  differs, retain the measured ABI debt rather than compensate with inert
+  locals or invented parameter roles.
+- **Limits:** this is a measured signature/body in the pinned toolchain, not a
+  rule for every variadic function or compiler mode. It does not recover the
+  original declaration, make incompatible pointer views safe or justify
+  moving fixed arguments into a variadic tail. Full-TU size alone is not a
+  matching proof. A different compiler mode needs independent target evidence
+  and the ordinary flag-impact review.

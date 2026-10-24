@@ -21,6 +21,32 @@ import postprocess_guard as guard
 _LOADED_COMPILER_END = hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest()
 
 
+def _stack_word_store(word):
+    return word >> 26 == 43 and (word >> 21) & 31 == 29 and word & 3 == 0
+
+
+def _table_bound(elf, text, load_offset):
+    """Locate an unchanged bounds test across only non-clobbering stack saves."""
+    import runlink_pack as rp
+    owners = [s for s in elf.symbols if s.section == ".text"
+              and s.type == rp.STT_FUNC and s.size
+              and s.value <= load_offset < s.value + s.size]
+    if len(owners) != 1:
+        raise ValueError("compiler table load lacks its unique actual function")
+    start = owners[0].value
+    branch_offset = load_offset - 16
+    # The index shift is either the branch delay slot, or follows a stack
+    # save in that slot. Stores cannot change the condition or index registers.
+    if _stack_word_store(rp.u32(text, branch_offset)):
+        branch_offset -= 4
+    guard_offset = branch_offset - 4
+    while guard_offset >= start and _stack_word_store(rp.u32(text, guard_offset)):
+        guard_offset -= 4
+    if guard_offset < start:
+        raise ValueError("compiler table bounds cross their actual function")
+    return rp.u32(text, guard_offset), rp.u32(text, branch_offset), branch_offset
+
+
 def compiler_end(elf, section):
     """Derive a bounded compiler-only suffix from actual objects or pool reads.
 
@@ -87,8 +113,7 @@ def compiler_end(elf, section):
             if word >> 26 == 49:
                 end = base + 4
             elif word >> 26 == 35:
-                guard = rp.u32(text, rel.offset-20)
-                branch = rp.u32(text, rel.offset-16)
+                guard, branch, branch_offset = _table_bound(elf, text, rel.offset)
                 shift = rp.u32(text, rel.offset-12)
                 high = rp.u32(text, rel.offset-8)
                 add = rp.u32(text, rel.offset-4)
@@ -97,7 +122,7 @@ def compiler_end(elf, section):
                 if displacement & 32768: displacement -= 65536
                 if (guard >> 26 != 11 or (guard >> 16)&31 != 1 or count == 0
                         or branch >> 26 != 4 or (branch >> 21)&31 != 1 or (branch >> 16)&31
-                        or rel.offset-12+displacement*4 <= rel.offset+4
+                        or branch_offset+4+displacement*4 <= rel.offset+4
                         or shift >> 26 or shift & 63 or (shift >> 6)&31 != 2
                         or (shift >> 16)&31 != index or high >> 26 != 15
                         or (high >> 16)&31 != 1 or add >> 26 or add & 63 != 33

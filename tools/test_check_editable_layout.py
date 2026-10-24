@@ -79,6 +79,39 @@ class LayoutTests(unittest.TestCase):
         with self.assertRaisesRegex(pilot.PilotError,"lacks a raw name"):
             pilot.resident_main_delta(old,[old[0],replace(witness,provenance="placeholder"),old[1]],104,"sourceOverlay")
 
+    @unittest.skipUnless((pilot.ROOT/"tools/binutils/mips64-elf-ld").is_file(),
+                         "MIPS linker unavailable")
+    def test_resident_replay_links_its_actual_data_definition(self):
+        from runlink.synth import ElfBuilder, GLOBAL, OBJECT, words
+
+        build=pilot.ROOT/"build";build.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=build) as name:
+            directory=Path(name);root=pilot.ROOT
+            path=directory/"resident.o";relative=path.relative_to(root).as_posix()
+            builder=ElfBuilder().section(".text",words((15<<26)|(8<<16),
+                (35<<26)|(8<<21)|(2<<16))).section(".data",words(7))
+            builder.sym("threshold",0,4,GLOBAL,OBJECT,".data")
+            builder.rel(".text",0,codec.R_MIPS_HI16,"threshold")
+            builder.rel(".text",4,codec.R_MIPS_LO16,"threshold")
+            path.write_bytes(builder.build())
+            script=directory/"reference.ld"
+            script.write_text('SECTIONS { .main 0x80001000 : { '+relative
+                +'(.text) . = ALIGN(16); '+relative+'(.data) } /DISCARD/ : { *(*) } }\n')
+            commands=[];reference=directory/"reference.elf";mapping=directory/"reference.map"
+            pilot.run(root,["tools/binutils/mips64-elf-ld","-e","0","-T",
+                script.relative_to(root),"-Map",mapping.relative_to(root),"-o",
+                reference.relative_to(root)],directory/"reference.log",commands)
+            elf=pilot.rp.Elf(reference);inputs=pilot.rp.parse_map(mapping)
+            offset,size,_snapshot=pilot.resident_replay(root,directory,elf,inputs,
+                commands,relative,pilot.sha(path),"replay")
+            self.assertEqual((offset,size),(0,8))
+            linked=pilot.rp.Elf(directory/"replay.elf")
+            self.assertEqual(linked.bytes_of(".data"),words(7))
+            with self.assertRaisesRegex(pilot.PilotError,"unique complete mapped input"):
+                pilot.resident_replay(root,directory,elf,
+                    [item for item in inputs if item.insec!=".data"],commands,
+                    relative,pilot.sha(path),"missing-data")
+
     def test_removal_reports_actual_caller_and_allows_unreferenced_tail(self):
         tables=codec.Tables([], [codec.OrtRow(2,0)],
             [replace(self.module,table1=[codec.Record(0,0,4,0)]),replace(self.module,number=2)])

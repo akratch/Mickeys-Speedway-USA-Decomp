@@ -3137,13 +3137,14 @@ segments:
     vram: 0xF0000000
     bss_size: 0x0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o071
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18C9B20, c, overlay_071]
-      - [0x18CA670, bin, overlay_071_data_rodata]
+      - [0x18CA670, .data, overlay71EffectData]
+      - [0x18CA800, .data, overlay71Scales]
 
   - name: overlay_071_reloc1
     type: bin

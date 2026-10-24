@@ -104,6 +104,14 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o066/overlay_066.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay_069.c.o: \
 	$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.inc.c
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay_069.c.o: CFLAGS += -Wab,-r4300_mul
+# Complete ordinary storage inputs: runtime RO origin is the scale input's
+# actual map start, independent of IDO's writable .data section spelling.
+O71_EFFECT_DATA := $(BUILD_DIR)/$(SRC_DIR)/overlays/o071/overlay71EffectData.c.o
+O71_SCALES := $(BUILD_DIR)/$(SRC_DIR)/overlays/o071/overlay71Scales.c.o
+$(O71_EFFECT_DATA) $(O71_SCALES): private PLAIN_DATA_PROOF = 1
+$(O71_EFFECT_DATA): private PLAIN_DATA_RUNTIME_ROLE = data
+$(O71_SCALES): private PLAIN_DATA_RUNTIME_ROLE = ro-origin
+
 # Overlay 71: one module TU under the overlay flag set; its .text is the
 # module's full 0xB50 bytes, trailing pad included, so no trim, and resident
 # calls are renamed by the generated surface rebinds. Kept, for a mechanical

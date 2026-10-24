@@ -542,7 +542,7 @@ void overlay97InitPlane(void *object, void *init);
 
 /* overlay 98 */
 void overlay98CollectAccepted(s32 count, void *objects);
-void overlay98RenderReflections(void *dl, void *matrixHeap, void *vertices);
+/* Typed reflection cursor API: game/reflection.h. */
 
 /* overlay 99 */
 void overlay99ReleaseEntries(void);

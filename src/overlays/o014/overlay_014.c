@@ -796,8 +796,8 @@ static void func_overlay_014_F00013F4_1870CCC(s32 context) {
     gOverlay14HandleE0.value =
         func_overlay_014_F0001830_1871108(context, (u8 *)gOverlay14ValueF8Base.value,
                               gOverlay14ValueDCBase.value);
-    overlay14DrawPrimitive(0, 0, 0, 0);
-    overlay14DrawPrimitive(0xFF, 0xC0, 0, 0xFF,
+    fontBackground(0, 0, 0, 0);
+    fontColour(0xFF, 0xC0, 0, 0xFF,
                            (gOverlay14ValueC0Base.value * 0xFF) >> 8);
     if (gOverlay14ValueDCBase.value != 0) {
         overlay14DrawPrimitive(context, 0xC4, 0x14, &gOverlay14Args2C, 0xC);
@@ -816,10 +816,10 @@ static void func_overlay_014_F00013F4_1870CCC(s32 context) {
  * in its blocks: the only v0 values there were the unused results of the two
  * dispatch calls before the loop head (a call's result is a v0 web that
  * occupies the call's block; docs/lastmile-region-boundary.md). The calls
- * whose results this body never reads are declared through the void
- * `overlay14DrawPrimitive` surface the sibling TU already uses for the same
- * shapes, and the two value-returning calls keep `overlay14Dispatch`; the
- * ROM cannot distinguish them, every one is the same runtime-table call.
+ * whose results this body never reads now use the genuine void font-state
+ * providers. Four text draws retain `overlay14DrawPrimitive` pending their
+ * cursor/text contract recovery; spacing and next-line queries still use
+ * `overlay14Dispatch`. Their runtime targets are distinct and authenticated.
  * The outer while and the generated entry stride (no declared offset carrier)
  * are the previous lanes' work and stay load-bearing. */
 static void func_overlay_014_F0001540_1870E18(s32 context) {
@@ -839,8 +839,8 @@ static void func_overlay_014_F0001540_1870E18(s32 context) {
     index = 0;
     cellWidth = overlay14Dispatch(2);
     remaining = (0x58 / cellWidth) - 1;
-    overlay14DrawPrimitive(2);
-    overlay14DrawPrimitive(0, 0, 0, 0);
+    fontUseFont(2);
+    fontBackground(0, 0, 0, 0);
     y = ((0x58 - (remaining * cellWidth)) >> 1) + 0x14;
     opacity = (gOverlay14ValueC0 * 0xFF) >> 8;
     while ((index < gOverlay14Entries->count) && (remaining > 0)) {
@@ -848,9 +848,9 @@ static void func_overlay_014_F0001540_1870E18(s32 context) {
 
         first = 1; x = 0x60;
         if (index == gOverlay14Entries->selected)
-            overlay14DrawPrimitive(0xFF, 0xFF, 0xFF, 0xFF, opacity);
+            fontColour(0xFF, 0xFF, 0xFF, 0xFF, opacity);
         else
-            overlay14DrawPrimitive(0, 0xC0, 0xC0, 0xFF, opacity);
+            fontColour(0, 0xC0, 0xC0, 0xFF, opacity);
         cursor = gOverlay14Entries[index].text;
         if (overlay14ReturnOneCallbackA(
                 gOverlay14Entries[index].kind) == 0) cursor = 0;
@@ -870,8 +870,8 @@ static void func_overlay_014_F0001540_1870E18(s32 context) {
 
 
     }
-    overlay14DrawPrimitive(0, 0, 0, 0);
-    overlay14DrawPrimitive(0xFF, 0xC0, 0, 0xFF, opacity);
+    fontBackground(0, 0, 0, 0);
+    fontColour(0xFF, 0xC0, 0, 0xFF, opacity);
     if ((index < gOverlay14Entries->count) || (cursor != 0))
         overlay14DrawPrimitive(context, 0xC4, 0x6C, &gOverlay14Args34, 0xC);
 }

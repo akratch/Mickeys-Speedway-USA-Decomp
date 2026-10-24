@@ -5,13 +5,6 @@
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Initialize.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x80
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Initialize.c.o: OPT_FLAGS := -O2 -Wo,-loopunroll,0
-# Preserve the two existing asserted exclusions for the spawn function's
-# zero-base pool address. Storage ownership/module packing is separate work.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay_065.c.o: \
-	$(TOOLS_DIR)/filter_elf_relocations.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay_065.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x19E0:5:D_0 0x19F8:6:D_0
 
 # Complete initialized effect data from actual typed triangle/color/point
 # records and mutable resource/state cells. No instruction normalization.

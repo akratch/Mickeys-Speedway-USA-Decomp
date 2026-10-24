@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 45840,
+  "owned_data_rodata_bytes": 46304,
   "diagnostic_data_rodata_bytes": 808,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -2642,7 +2642,36 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 100
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x30",
+     "end_offset": "0x1B0",
+     "size": "0x180",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o011/overlay11BackgroundTriangles",
+     "canonical": true
+    },
+    {
+     "offset": "0x1B0",
+     "end_offset": "0x1E0",
+     "size": "0x30",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o011/overlay11MenuControls",
+     "canonical": true
+    },
+    {
+     "offset": "0x1F0",
+     "end_offset": "0x210",
+     "size": "0x20",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o011/overlay11BaseHandles",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 12,

@@ -665,7 +665,7 @@ extern s32 gO57MiddleStopList[], gO57MiddlePathIndices[], gO57MiddlePathList[];
 extern O57MiddleOutput *gO57MiddleOutput;
 extern s32 gO57MiddlePanelPosition, gO57MiddleTransition, gO57MiddleCanLeave;
 extern s16 gO57MiddleColumns[];
-extern char gO57MiddleEmptyFormat[], gO57MiddleResultFormat[];
+extern char o57EmptyTimeFormat_o057Reloc[], o57SplitTimeFormat_o057Reloc[];
 extern O57MiddleTextureNode gO57MiddleCaption[], gO57MiddleBadge[];
 extern char *gO57MiddleLabels[];
 extern s16 gO57MiddleCharacterIds[];

@@ -2309,7 +2309,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                 overlay56SplitTime(
                     renderItems[i].type, &stack80, &stack7C, &stack78);
                 if (renderItems[i].type == 0) {
-                    func_800429A4(renderState, gO57MiddleEmptyFormat);
+                    func_800429A4(renderState, o57EmptyTimeFormat_o057Reloc);
                     valueA = 0x4A;
                 } else {
                     valueB = func_8003A700(
@@ -2317,7 +2317,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     valueC = func_8003A700(
                                  renderItems[i].value05) & 0xFF;
                     func_800429A4(
-                        renderState, gO57MiddleResultFormat, valueB, valueC,
+                        renderState, o57SplitTimeFormat_o057Reloc, valueB, valueC,
                         func_8003A700(
                             renderItems[i].value06),
                         stack80, stack7C, stack78);

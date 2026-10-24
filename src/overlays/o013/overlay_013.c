@@ -79,15 +79,15 @@ void overlay13Release(void) {
 
     resource = gOverlay13Resource0;
     if (resource != NULL) {
-        overlay13ReleaseReloc(resource);
+        texFreeSprite(resource);
     }
     resource = gOverlay13Resource1;
     if (resource != NULL) {
-        overlay13ReleaseReloc(resource);
+        texFreeSprite(resource);
     }
     resource = gOverlay13Resource2;
     if (resource != NULL) {
-        overlay13ReleaseReloc(resource);
+        texFreeTexture(resource);
     }
     gOverlay13Active_o013Reloc = 0;
 }

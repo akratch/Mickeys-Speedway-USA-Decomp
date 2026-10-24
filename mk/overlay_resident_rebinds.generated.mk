@@ -352,6 +352,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay_013.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym sprClearIA2ColOverride=sprClearIA2ColOverride_o013Reloc \
 	--redefine-sym sprSetIA2ColOverride=sprSetIA2ColOverride_o013Reloc \
 	--redefine-sym texDPTextureX=texDPTextureX_o013Reloc \
+	--redefine-sym texFreeSprite=texFreeSprite_o013Reloc \
+	--redefine-sym texFreeTexture=texFreeTexture_o013Reloc \
 	--redefine-sym texLoadSprite=texLoadSprite_o013Reloc \
 	--redefine-sym texLoadTexture=texLoadTexture_o013Reloc $@
 

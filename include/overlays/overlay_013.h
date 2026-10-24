@@ -51,7 +51,8 @@ typedef struct Overlay13Resource {
 
 extern void *gOverlay13Resource0;
 extern void *gOverlay13Resource1;
-extern Overlay13Resource *gOverlay13Resource2;
+/* Loaded texture handle; Overlay13Resource retains a partial dimension view. */
+extern void *gOverlay13Resource2;
 extern s32 gOverlay13Enabled;
 extern s32 gOverlay13Active_o013Reloc;
 extern s32 gOverlay13ActiveCount;
@@ -66,9 +67,12 @@ extern void *D_28;
 extern f32 D_4;
 extern u8 D_80000000[];
 
-extern void *texLoadSprite(s32 assetId, s32 arg1);
-extern void *texLoadTexture(s32 resourceId);
-extern void overlay13ReleaseReloc(void *resource);
+struct Sprite;
+struct TextureHeader;
+extern struct Sprite *texLoadSprite(s32 assetId, s32 arg1);
+extern struct TextureHeader *texLoadTexture(s32 resourceId);
+extern void texFreeSprite(struct Sprite *resource);
+extern void texFreeTexture(struct TextureHeader *resource);
 extern void SetLinkSlot(s32, u16, u16);
 extern Overlay13RenderState *levelGetLevel(void);
 extern void sprSetIA2ColOverride(u8, u8, u8, u8, u8, u8);

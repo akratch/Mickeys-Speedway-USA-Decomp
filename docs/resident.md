@@ -2572,6 +2572,18 @@ callback is overlay 15's `overlay15DrawRain`, renamed back to the target
 `TrapDanglingJump` symbol in ELF metadata without changing an instruction word
 (docs/overlays.md §5.1).
 
+The query stub `func_8002905C` has a separate open callable-contract mismatch:
+its current provider has one formal parameter, while two `spranim.c` calls and
+two overlay 89 rule calls declare and pass a byte-derived query plus an actual
+state/rule pointer. The provider ignores the second incoming word and overwrites
+that argument register before forwarding to `func_8002904C`. A first natural
+correction to two formals preserved both caller objects but added two parameter
+home stores: the provider grew from 40 to 48 bytes, first differing at +4, with
+its 24-byte frame unchanged. That nonexact candidate was restored, not promoted.
+The exact source and existing callers remain; compatible C declarations and
+native boundary treatment are still required. This stub does not authenticate
+the nearby event-labelled data schema.
+
 Two ABI/name exceptions remain explicit. Mickey's `mainGameWindowChanging`
 returns a 32-bit word, not JFG's declared `s16`; the JFG signature changed the
 load and was rejected. `mainGetMode` is a tier-D paired-getter name correcting

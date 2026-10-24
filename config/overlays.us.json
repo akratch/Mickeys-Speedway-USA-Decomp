@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 43248,
+  "owned_data_rodata_bytes": 44304,
   "diagnostic_data_rodata_bytes": 840,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -2406,6 +2406,24 @@
      "source": "overlays/o009/overlay_009",
      "trial_function": "func_overlay_009_F0000CE4_186735C",
      "externalized": true
+    },
+    {
+     "offset": "0x2D0",
+     "end_offset": "0x300",
+     "size": "0x30",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o009/overlay9ParameterState",
+     "canonical": true
+    },
+    {
+     "offset": "0x300",
+     "end_offset": "0x390",
+     "size": "0x90",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o009/overlay9CameraTables",
+     "canonical": true
     }
    ]
   },
@@ -7605,7 +7623,45 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 88
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x60",
+     "size": "0x60",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o046/overlay46InitialState",
+     "canonical": true
+    },
+    {
+     "offset": "0x60",
+     "end_offset": "0x180",
+     "size": "0x120",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o046/overlay46EntryTables",
+     "canonical": true
+    },
+    {
+     "offset": "0x184",
+     "end_offset": "0x194",
+     "size": "0x10",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o046/overlay46InitialTransform",
+     "canonical": true
+    },
+    {
+     "offset": "0x230",
+     "end_offset": "0x330",
+     "size": "0x100",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o046/overlay46TrailTriangles",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 47,
@@ -9371,6 +9427,42 @@
      "source": "overlays/o058/overlay_058",
      "trial_function": "func_overlay_058_F00005FC_18AF7E4",
      "externalized": true
+    },
+    {
+     "offset": "0xC8",
+     "end_offset": "0x108",
+     "size": "0x40",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o058/overlay58Assets",
+     "canonical": true
+    },
+    {
+     "offset": "0x180",
+     "end_offset": "0x1A0",
+     "size": "0x20",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o058/overlay58BadgeSprites",
+     "canonical": true
+    },
+    {
+     "offset": "0x248",
+     "end_offset": "0x278",
+     "size": "0x30",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o058/overlay58LayoutTables",
+     "canonical": true
+    },
+    {
+     "offset": "0x2D0",
+     "end_offset": "0x310",
+     "size": "0x40",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o058/overlay58TextLabels",
+     "canonical": true
     }
    ]
   },

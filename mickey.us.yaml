@@ -2363,13 +2363,19 @@ segments:
     vram: 0xF0000000
     bss_size: 0x2720
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o046
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x188E3F8, c, overlay_046]
-      - [0x188FD58, bin, overlay_046_data_rodata]
+      - [0x188FD58, .data, overlay46InitialState]
+      - [0x188FDB8, .data, overlay46EntryTables]
+      - [0x188FED8, bin, overlay_046_data_rodata]
+      - [0x188FEDC, .data, overlay46InitialTransform]
+      - [0x188FEEC, bin, overlay_046_data_rodata_194]
+      - [0x188FF88, .data, overlay46TrailTriangles]
+      - [0x1890088, bin, overlay_046_data_rodata_330]
 
   - name: overlay_046_reloc1
     type: bin

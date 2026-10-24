@@ -136,6 +136,22 @@ to `source-function-proxy` and leaves seventeen on compatibility authority.
 This establishes target identity, not fresh source-compilation acceptance or
 new matching credit; ordinary builds and existing function proofs still apply.
 
+Resident generated names can likewise use an actual current qualified function
+before coordinate decoding. Require a unique GLOBAL sized STT_FUNC in a real
+resident source C/assembly executable text input, a bounded word-aligned extent,
+zero-based relocatable text, its unique nonoverlapping map contribution and a
+matching canonical executable function with the same home and size. Derive the
+home from that input definition and placement, never from numeric name fields.
+A present qualified function with missing, ambiguous or stale input ownership
+fails. Data, BSS, ABS, unsized and genuinely absent qualified definitions retain
+their explicit compatibility routes; this does not establish their ownership.
+The input index follows the existing provider inventory epoch. Actual loaded
+resident object, canonical ELF and map bytes join the existing held-input
+snapshot, including conflicting rereads and an end-of-pack hold check. These
+paths are already metadata dependencies. This establishes compiled definition
+identity, including assembly providers, not new source-compilation acceptance,
+matching credit or zero-oracle authority.
+
 Producer capture pins its actual bootstrap/final ELF-map pair and ordinary
 link command, source, headers, recipe and tools before and after reproduction.
 It cannot require the generated final-metadata output it is producing. Its

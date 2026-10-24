@@ -314,7 +314,7 @@ class MapInput:
     file: str
 
 
-def parse_map(path):
+def parse_map(path, data=None):
     """Every placed input section: (output section, input section, address, size, file)."""
     out = []
     started = False
@@ -324,7 +324,9 @@ def parse_map(path):
     one = re.compile(r"^ (\.\S+)\s+0x([0-9a-fA-F]+)\s+0x([0-9a-fA-F]+)\s+(\S+)\s*$")
     name_only = re.compile(r"^ (\.\S+)\s*$")
     cont = re.compile(r"^\s+0x([0-9a-fA-F]+)\s+0x([0-9a-fA-F]+)\s+(\S+)\s*$")
-    for line in Path(path).read_text(errors="replace").splitlines():
+    if data is None:
+        data = Path(path).read_bytes()
+    for line in data.decode(errors="replace").splitlines():
         if not started:
             started = line.startswith("Linker script and memory map")
             continue
@@ -591,7 +593,8 @@ class World:
             if s.name and s.type not in (STT_SECTION, STT_FILE):
                 self.by_name[s.name].append(s)
         self.layout = ResidentLayout.from_elf(self.by_name)
-        self.map = parse_map(paths["map"])
+        self.map_data = paths["map"].read_bytes()
+        self.map = parse_map(paths["map"], self.map_data)
         self.module_info = {}
         self._linked_layout()
         self.need_raw = need_raw
@@ -825,6 +828,7 @@ class Resolver:
         self._ort_ident = None
         self._ort_inventory = object()
         self._held_ort_targets = {}
+        self._resident_functions = None
         self._name_cache = {}
 
     def _sync_provider_inventory(self):
@@ -851,6 +855,7 @@ class Resolver:
                         raise PackError(f"ORT has ambiguous held provider identities: {name}")
                     targets[name] = ident
         self._ort_ident = None
+        self._resident_functions = None
         self._name_cache.clear()
         if hasattr(self, "_rbi"):
             del self._rbi
@@ -911,6 +916,10 @@ class Resolver:
                     o, s = pick[0]
                     return Target("section", name, "overlay-definition", obj=o,
                                   secname=s.section, value=s.value, named=True)
+        if RES_AUTO_RE.fullmatch(name):
+            ident = self._resident_function_identity(name)
+            if ident is not None:
+                return Target("ident", name, "source-resident-function", ident=ident, named=True)
         ident = parse_generated(name, self.layout)
         if ident:
             return Target("ident", name, "generated-name", ident=ident, named=True)
@@ -942,6 +951,69 @@ class Resolver:
             if ident and not LINKER_NAME_RE.search(name):
                 return Target("ident", name, "linked-overlay", ident=ident, named=True)
         return Target("placeholder", name, "placeholder")
+
+    def _resident_function_identity(self, name):
+        """Qualified current function ownership, independent of encoded spelling."""
+        final = [s for s in self.w.by_name.get(name, ())
+                 if s.bind == STB_GLOBAL and s.shndx != SHN_UNDEF]
+        qualified = [s for s in final if s.type == STT_FUNC and s.size > 0
+                     and s.section in (".main", ".entry")]
+        if not qualified:
+            return None  # Data, ABS, boundaries and missing definitions stay compatibility.
+        if len(final) != 1:
+            raise PackError(f"ambiguous resident function definition: {name}")
+        if self._resident_functions is None:
+            hold_data_import_inputs(self.w, {
+                self.w.paths["elf"]: hashlib.sha256(self.w.elf.data).hexdigest(),
+                self.w.paths["map"]: hashlib.sha256(self.w.map_data).hexdigest()})
+            definitions = collections.defaultdict(list)
+            loaded = {}
+            for mi in self.w.map:
+                if (mi.outsec not in (".main", ".entry") or mi.insec != ".text"
+                        or not mi.size or not mi.file.endswith(".o")):
+                    continue
+                path = self.w.paths["build"].parent / mi.file
+                if path not in loaded:
+                    loaded[path] = Elf(path)
+                    hold_data_import_inputs(self.w, {
+                        path: hashlib.sha256(loaded[path].data).hexdigest()})
+                elf = loaded[path]
+                for symbol in elf.symbols:
+                    if (symbol.name and symbol.bind == STB_GLOBAL
+                            and symbol.shndx not in (SHN_UNDEF, SHN_ABS, SHN_COMMON)
+                            and symbol.section == ".text"):
+                        definitions[symbol.name].append((mi, elf, symbol))
+            self._resident_functions = definitions  # Never expose a partial index.
+        choices = self._resident_functions.get(name, ())
+        if len(choices) != 1:
+            raise PackError(f"resident function lacks a unique source input: {name}")
+        mi, elf, symbol = choices[0]
+        raw = elf.section(".text")
+        source = ((mi.file.startswith("build/src/") and mi.file.endswith(".c.o"))
+                  or (mi.file.startswith("build/asm/") and mi.file.endswith(".s.o")))
+        if (not source or int.from_bytes(elf.data[16:18], "big") != 1
+                or not raw or raw["type"] != 1 or raw["flags"] & 6 != 6 or raw["addr"] != 0
+                or symbol.type != STT_FUNC or symbol.size <= 0 or symbol.value < 0
+                or symbol.value % 4 or symbol.size % 4
+                or symbol.value + symbol.size > raw["size"]
+                or len(elf.bytes_of(".text")) != raw["size"]):
+            raise PackError(f"resident function lacks a bounded real source function: {name}")
+        canonical = final[0]
+        section = self.w.elf.section(canonical.section)
+        if (not section or section["type"] != 1 or section["flags"] & 6 != 6
+                or canonical.value < section["addr"]
+                or canonical.value + canonical.size > section["addr"] + section["size"]
+                or mi.addr % 4 or canonical.value % 4
+                or symbol.value + symbol.size > mi.size or canonical.section != mi.outsec
+                or canonical.value != mi.addr + symbol.value or canonical.size != symbol.size
+                or not self.layout.contains(canonical.value)
+                or not self.layout.contains(canonical.value + symbol.size - 1)):
+            raise PackError(f"resident function source/final input geometry differs: {name}")
+        start, end = canonical.value, canonical.value + symbol.size
+        if any(other is not mi and other.outsec == mi.outsec and other.size
+               and other.addr < end and start < other.addr + other.size for other in self.w.map):
+            raise PackError(f"resident function has overlapping final input ownership: {name}")
+        return ("res", mi.addr + symbol.value)
 
     def _function_proxy_definition(self, name):
         """An exact-name function witness; no coordinates come from its spelling."""
@@ -1524,6 +1596,7 @@ def pack_main(world, resolver):
         if not path.exists() or not mi.file.endswith(".o"):
             continue
         elf = Elf(path)
+        hold_data_import_inputs(world, {path: hashlib.sha256(elf.data).hexdigest()})
         rels = elf.rels(mi.insec)
         if not rels:
             continue
@@ -2023,6 +2096,7 @@ def pack_all(world, ort):
         else:
             sel, off = ident[1], ident[2]
         ort_words.append((sel << 20) | (off & 0xFFFFF))
+    check_data_import_holds(world)
     return Packed(modules, main, ort_words, dict(borrowed), problems, resolver, relocs)
 
 

@@ -153,7 +153,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
     # scoped rather than merely source-file-scoped.
     1: [(0x274, 0x294, "overlay_001_tail", ".rodata", "overlay1DispatchMode", True)],
     9: [(0x390, 0x3E0, "overlay_009", ".rodata", "func_overlay_009_F0000CE4_186735C", True)],
-    14: [(0x158, 0x190, "overlay_014", ".rodata", "overlay14LoadRelocatedValue", True)],
     # The record/targeting update's five float literals, rodata-relative +0x0.
     29: [
         (
@@ -232,7 +231,8 @@ FIXED_DATA_RODATA_OWNERSHIP = {
 # The exact data-only source allowlist keeps physical ownership independent
 # from executable text ownership and matching credit.
 CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
-    14: [(0x0, 0x120, "overlay14InitialState", ".data")],
+    14: [(0x0, 0x120, "overlay14InitialState", ".data"),
+         (0x120, 0x190, "overlay_014", ".rodata")],
     3: [(0x0, 0x10, "overlay3ModeChances", ".data"),
         (0x10, 0x20, "overlay3SearchData", ".data")],
     11: [(0x30, 0x1B0, "overlay11BackgroundTriangles", ".data"),

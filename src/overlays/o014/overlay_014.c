@@ -1,5 +1,17 @@
 #include "overlays/overlay_014.h"
 
+/* Tier C: this retained diagnostic names the hint-text table-full condition.
+ * Tier D: its original declaration and source-retention intent are unknown;
+ * no diagnostic call or other use is invented for the unreferenced message. */
+const char o14HinttextTableFull[] = "Hinttext load failed - load table is full!\n";
+/* Tier B: the three label inputs are read by fontPrintXY's conversion into
+ * separate scratch. The casts at that legacy char* API remove const only for
+ * this audited read-only boundary; the shared API is not closed here. */
+const char o14ScrollUpLabel[] = "~";
+const char o14ScrollDownLabel[] = "$";
+const char o14SelectionMoreLabel[] = "$";
+
+
 /*
  * Overlay 14: the scripted front-end menu (command lists, value slots and
  * their rule groups). One translation unit; the module's ten exports keep
@@ -810,13 +822,13 @@ static void func_overlay_014_F00013F4_1870CCC(Gfx **context) {
     fontColour(0xFF, 0xC0, 0, 0xFF,
                            (gOverlay14ValueC0Base.value * 0xFF) >> 8);
     if (gOverlay14ValueDCBase.value != 0) {
-        fontPrintXY(context, 0xC4, 0x14, gOverlay14Args2C, 0xC);
+        fontPrintXY(context, 0xC4, 0x14, (char *)o14ScrollUpLabel_o014Reloc, 0xC);
     }
     if ((gOverlay14HandleE0.value != 0) ||
         ((mode = gOverlay14ModeE4.value, mode == 4) &&
          (gOverlay14ValueEC.value >= 2)) ||
         ((mode == 3) && (gOverlay14Value114.value != 0))) {
-        fontPrintXY(context, 0xC4, 0x6C, gOverlay14Args30, 0xC);
+        fontPrintXY(context, 0xC4, 0x6C, (char *)o14ScrollDownLabel_o014Reloc, 0xC);
     }
 }
 
@@ -883,7 +895,7 @@ static void func_overlay_014_F0001540_1870E18(Gfx **context) {
     fontBackground(0, 0, 0, 0);
     fontColour(0xFF, 0xC0, 0, 0xFF, opacity);
     if ((index < gOverlay14Entries->count) || (cursor != 0))
-        fontPrintXY(context, 0xC4, 0x6C, gOverlay14Args34, 0xC);
+        fontPrintXY(context, 0xC4, 0x6C, (char *)o14SelectionMoreLabel_o014Reloc, 0xC);
 }
 
 /* PROVENANCE: structure cross-checked against JFG

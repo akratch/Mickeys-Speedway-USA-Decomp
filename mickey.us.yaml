@@ -1529,7 +1529,7 @@ segments:
     subsegments:
       - [0x186F8D8, c, overlay_014]
       - [0x1871518, .data, overlay14InitialState]
-      - [0x1871638, bin, overlay_014_data_rodata]
+      - [0x1871638, .rodata, overlay_014]
 
   - name: overlay_014_reloc1
     type: bin

@@ -131,6 +131,7 @@ class Ref:
     verbatim_table: int = 0
     provenance: str = "object"   # object | placeholder | hybrid-data | oracle
     problem: str = ""            # set when the front end could not place or resolve it
+    runtime_local_base: int | None = None  # authenticated loader role, independent of ELF section
 
 
 @dataclass
@@ -214,8 +215,13 @@ def build_module(number, refs, header, image, rodata_base=None, extra_data=(),
             elif r.type == R_MIPS_26:
                 op, idx = OP_JUMP, 0
             else:
-                kind = r.target_section or section_of_offset(r.base[2], text, data, rodata_base)
-                op, idx = OP_LOCAL, bases[kind]
+                if r.runtime_local_base is not None:
+                    if not 0 <= r.runtime_local_base <= text + data:
+                        raise ValueError("resolved runtime LOCAL base is outside the initialized module")
+                    op, idx = OP_LOCAL, r.runtime_local_base
+                else:
+                    kind = r.target_section or section_of_offset(r.base[2], text, data, rodata_base)
+                    op, idx = OP_LOCAL, bases[kind]
             g = Gen(2, Record(idx, r.site, r.type, op), r.full, r.name, r.provenance, r.route, r.obj)
         else:
             if r.row is None:

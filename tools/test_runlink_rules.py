@@ -10,6 +10,7 @@ from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from runlink import census, compare, rules  # noqa: E402
+from runlink.adapters import msu  # noqa: E402
 from runlink.codec import (OP_DATA, OP_JUMP, OP_LOCAL, OP_SYMBOL, R_MIPS_26, R_MIPS_32,  # noqa: E402
                            R_MIPS_HI16, R_MIPS_LO16, Header, Module, OrtRow, Record, Tables)
 
@@ -45,6 +46,47 @@ class RulesTests(unittest.TestCase):
     def build(self, refs=None):
         hdr = Header(0, 0, TEXT, DATA, 0x10, 0, 0, -1, -1)
         return rules.build_module(1, refs or module_refs(), hdr, b"\0" * (TEXT + DATA), rodata_base=0x50)
+
+    def test_authenticated_runtime_base_is_independent_of_compiler_and_global_ro(self):
+        refs = [ref(".text", 0x08, R_MIPS_HI16, ("ov", 1, 0x58),
+                    tsec=".data", runtime_local_base=0x50),
+                ref(".text", 0x0C, R_MIPS_LO16, ("ov", 1, 0x58),
+                    tsec=".data", runtime_local_base=0x50)]
+        hdr = Header(0, 0, TEXT, DATA, 0x10, 0, 0, -1, -1)
+        result = rules.build_module(1, refs, hdr, bytes(TEXT + DATA), rodata_base=0x54)
+        self.assertEqual([g.rec.symidx for g in result.table2], [0x50, 0x50])
+        self.assertEqual([g.full for g in result.table2], [("ov", 1, 0x58)] * 2)
+        for item in refs:
+            item.runtime_local_base = 0
+        zero = self.build(refs)
+        self.assertEqual([g.rec.symidx for g in zero.table2], [0, 0])
+        self.assertEqual(zero.notes, [])
+        exported = ref(".text", 0x08, R_MIPS_32, ("ov", 1, 0x58), row=7,
+                       tsec=".data", runtime_local_base=TEXT + DATA + 1)
+        self.assertEqual(self.build([exported]).table2[0].rec.symidx, 7)
+        refs[0].runtime_local_base = TEXT + DATA + 1
+        with self.assertRaisesRegex(ValueError, "outside"):
+            self.build(refs)
+
+    def test_msu_adapter_preserves_source_runtime_roles_and_origins(self):
+        obj = SimpleNamespace(module=1, runtime_role="data", runtime_origin=0x50,
+                              placement={".data": (0x58, "link")})
+        target = SimpleNamespace(kind="section", obj=obj, secname=".data")
+        rp = SimpleNamespace(section_offset=lambda item, section: item.placement[section][0])
+        self.assertEqual(msu.runtime_local_base(rp, target, 1, TEXT), TEXT)
+        obj.runtime_role = "ro-origin"
+        self.assertEqual(msu.runtime_local_base(rp, target, 1, TEXT), 0x58)
+        obj.runtime_role = "ro-member"
+        self.assertEqual(msu.runtime_local_base(rp, target, 1, TEXT), 0x50)
+        self.assertIsNone(msu.runtime_local_base(rp, target, 2, TEXT))
+        obj.runtime_origin = None
+        with self.assertRaisesRegex(ValueError, "lacks"):
+            msu.runtime_local_base(rp, target, 1, TEXT)
+        obj.runtime_role = "unexpected"
+        with self.assertRaisesRegex(ValueError, "unsupported"):
+            msu.runtime_local_base(rp, target, 1, TEXT)
+        obj.runtime_role = None
+        self.assertIsNone(msu.runtime_local_base(rp, target, 1, TEXT))
 
     def test_split_order_and_operation(self):
         m = self.build()

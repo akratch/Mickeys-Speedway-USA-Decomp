@@ -42,6 +42,28 @@ def world_for(cfg):
     return rp, world, ort
 
 
+def runtime_local_base(rp, target, module, text):
+    """Carry a proved loader role without reclassifying writable compiler data."""
+    if target.kind != "section" or target.obj.module != module:
+        return None
+    role = getattr(target.obj, "runtime_role", None)
+    if role is None:
+        return None
+    if target.secname != ".data":
+        raise ValueError("ordinary runtime role targets a non-data section")
+    if role == "data":
+        return text
+    if role == "ro-origin":
+        origin = rp.section_offset(target.obj, ".data")
+    elif role == "ro-member":
+        origin = getattr(target.obj, "runtime_origin", None)
+    else:
+        raise ValueError("unsupported authenticated runtime role")
+    if origin is None:
+        raise ValueError("authenticated runtime RO role lacks its origin")
+    return origin
+
+
 def refs_for_module(rp, world, resolver, ov, relocs, expected, rodata_base):
     """Kit Refs for one module, plus the hybrid-data Gens (shipped records for blob-owned data)."""
     info = world.module_info[ov]
@@ -76,7 +98,8 @@ def refs_for_module(rp, world, resolver, ov, relocs, expected, rodata_base):
         name = t.name if t.named else resolver.name_of(full)
         tsec = t.secname if t.kind == "section" else ""
         refs.append(rules.Ref(sec, site, c.type, base=base, full=full, row=row, target_section=tsec,
-                              name=name, obj=c.obj.label, route=t.route))
+                              name=name, obj=c.obj.label, route=t.route,
+                              runtime_local_base=runtime_local_base(rp, t, ov, ts)))
     produced = {(r.site, r.type) for r in refs if r.site is not None and not r.problem}
     owned = []
     for o in world.objects(ov):

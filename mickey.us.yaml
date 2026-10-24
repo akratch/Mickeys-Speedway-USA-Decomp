@@ -1212,13 +1212,14 @@ segments:
     vram: 0xF0000000
     bss_size: 0xA30
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o003
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1859D30, c, overlay_003]
-      - [0x185A500, bin, overlay_003_data_rodata]
+      - [0x185A500, .data, overlay3ModeChances]
+      - [0x185A510, .data, overlay3SearchData]
 
   - name: overlay_003_reloc1
     type: bin

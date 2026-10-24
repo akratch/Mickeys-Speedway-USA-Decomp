@@ -72,7 +72,7 @@ s32 overlay3RunCachedModeAction(Overlay3Object *anchor, Overlay3State *control) 
         case 3:
             if (valid) {
                 random = mathRnd(1, 100);
-                if (gOverlay3ModeChance[control->group] < random) {
+                if (gOverlay3ModeChance_o003Reloc[control->group] < random) {
                     overlay36SpawnDirectional(anchor);
                 }
             }
@@ -80,7 +80,7 @@ s32 overlay3RunCachedModeAction(Overlay3Object *anchor, Overlay3State *control) 
         case 4:
             if (valid) {
                 random = mathRnd(1, 100);
-                if (gOverlay3ModeChance[control->group] < random) {
+                if (gOverlay3ModeChance_o003Reloc[control->group] < random) {
                     overlay36SpawnLinked7F(anchor);
                 }
             }
@@ -115,7 +115,7 @@ static Overlay3Object *overlay3FindClosestObject(Overlay3Object *anchor, Overlay
   Overlay3State *state;
   s32 index;
   objects = func_8000572C(&start, &end);
-  bestDistance = gOverlay3SearchMaxDistance[3];
+  bestDistance = gOverlay3SearchMaxDistance_o003Reloc;
   best = 0;
   index = start;
   if (start < end)

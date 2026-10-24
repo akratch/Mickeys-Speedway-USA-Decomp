@@ -2125,7 +2125,7 @@ void overlay8SetBuffer(void *base) {
     gOverlay8Buffer = (s16 *)((u8 *)base + 0x1B8);
 }
 
-void overlay8WriteCommand(volatile s32 unused) {
+void overlay8WriteCommand(void * volatile unused) {
     *gOverlay8Buffer = 0x2000;
     gOverlay8Buffer++;
 }

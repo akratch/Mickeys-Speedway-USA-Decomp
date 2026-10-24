@@ -1124,3 +1124,10 @@ $(MODULE_LINK_DATA_OBJECTS): private RUN_POSTPROCESS = @:
 $(MODULE_LINK_DATA_OBJECTS): private RUN_SURFACE_REBIND = @:
 
 endif
+
+# Proof-only admission of complete ordinary writable C inputs. Their compiler,
+# static-symbol and link recipes are unchanged; no module linker is selected.
+PLAIN_DATA_PROOF_SOURCES := overlays/o003/overlay3ModeChances overlays/o003/overlay3SearchData
+$(addprefix $(BUILD_DIR)/$(SRC_DIR)/,$(addsuffix .c.o,$(PLAIN_DATA_PROOF_SOURCES))): private PLAIN_DATA_PROOF = 1
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3ModeChances.c.o: private PLAIN_DATA_RUNTIME_ROLE = data
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay3SearchData.c.o: private PLAIN_DATA_RUNTIME_ROLE = ro-origin

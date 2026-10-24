@@ -744,6 +744,7 @@ class ObjRef:
     elf: Elf
     placement: dict = field(default_factory=dict)   # section -> (module offset, provenance)
     data_imports: dict | None = None  # authenticated input only: name -> actual provider identity
+    runtime_role: str | None = None  # selected ordinary input: data or ro-origin
 
     @property
     def label(self):
@@ -1504,8 +1505,18 @@ def pack_module(world, resolver, ov, relocs):
                 elif c.type == R_MIPS_26:
                     rec = Record(2, OP_JUMP, 0, site, c.type, full, name)
                 else:
-                    kind = t.secname if t.kind == "section" else kind_of_offset(base[2])
-                    rec = Record(2, OP_LOCAL, local_base(kind), site, c.type, full, name)
+                    if t.kind == "section" and t.obj.runtime_role is not None:
+                        # Writable compiler storage is independent of the loader's
+                        # DATA/RO partition. The selected source input declares its
+                        # role; its real map start supplies the RO origin.
+                        if t.secname != ".data":
+                            raise PackError("ordinary runtime role targets a non-data section")
+                        runtime_base = (section_offset(t.obj, ".data")
+                                        if t.obj.runtime_role == "ro-origin" else ts)
+                    else:
+                        kind = t.secname if t.kind == "section" else kind_of_offset(base[2])
+                        runtime_base = local_base(kind)
+                    rec = Record(2, OP_LOCAL, runtime_base, site, c.type, full, name)
             else:
                 if row is None:
                     unresolved.append((c, "unexported-target"))
@@ -2176,6 +2187,95 @@ def reproduce_data_import(world, source):
     return fresh, receipt, context
 
 
+
+def plain_data_targets(make_dump):
+    """Explicit proof-only selections and roles; neither changes a build recipe."""
+    selected, roles = set(), {}
+    for target, role in re.findall(r"^(\S+): PLAIN_DATA_PROOF = (.*)$", make_dump, re.M):
+        if (role.strip() != "1" or not re.fullmatch(
+                r"build/src/overlays/o[0-9]{3}/[^/]+\.c\.o", target)):
+            raise PackError(f"invalid ordinary data proof selection: {target}")
+        selected.add(target)
+    for target, role in re.findall(r"^(\S+): PLAIN_DATA_RUNTIME_ROLE = (.*)$", make_dump, re.M):
+        role = role.strip()
+        if role not in ("data", "ro-origin") or (target in roles and roles[target] != role):
+            raise PackError(f"invalid or duplicate ordinary data runtime role: {target}")
+        roles[target] = role
+    if selected != set(roles):
+        raise PackError("ordinary data proof requires exactly one runtime role per selection")
+    return roles
+
+
+
+def plain_data_role_context(world, roles):
+    """Bind declared roles to actual map starts, keeping compiler sections intact."""
+    inputs = parse_map(world.paths["map"])
+    observed = {}
+    for target, role in roles.items():
+        items = [item for item in inputs if item.file == target
+                 and item.insec == ".data" and item.size]
+        if len(items) != 1 or not re.fullmatch(r"\.overlay_[0-9]{3}", items[0].outsec):
+            raise PackError(f"ordinary runtime role lacks its unique actual data input: {target}")
+        item = items[0]
+        ov = int(item.outsec.rsplit("_", 1)[1])
+        start = item.addr - OVERLAY_VMA
+        observed[target] = {"role": role, "input_start": start, "size": item.size,
+            "origin": start if role == "ro-origin" else world.module_info[ov]["text_size"]}
+    return observed
+
+
+def validate_plain_roles(admitted):
+    """A declared runtime RO origin is unique and follows all selected DATA."""
+    for ov, objects in admitted.items():
+        origins = [obj for obj in objects if obj.runtime_role == "ro-origin"]
+        if len(origins) > 1:
+            raise PackError(f"overlay {ov}: duplicate ordinary data RO origins")
+        if origins:
+            origin = section_offset(origins[0], ".data")
+            if any(obj.runtime_role == "data"
+                   and section_offset(obj, ".data") + obj.elf.size(".data") > origin
+                   for obj in objects):
+                raise PackError(f"overlay {ov}: ordinary DATA conflicts with its RO origin")
+
+
+def validate_plain_data(world, ov, row, source):
+    """Authenticate a complete ordinary C input, without a module-link surrogate."""
+    import proof_provenance as provenance
+    path = world.paths["raw"] / "src" / (source + ".c.o")
+    ordinary = Elf(path)
+    configured, start = data_import_input(world, ov, row, source, ordinary)
+    text = (world.paths["build"].parent / "src" / (source + ".c")).read_text()
+    if re.search(r"\b(?:asm|__asm|__asm__)\b", provenance._mask_c(text)):
+        raise PackError(f"ordinary data input contains inline assembly: {source}")
+    for obj in (ordinary, configured):
+        if int.from_bytes(obj.data[16:18], "big") != 1:
+            raise PackError(f"ordinary data input is not relocatable C: {source}")
+        if any(obj.rels(section["name"]) for section in obj.sections):
+            raise PackError(f"ordinary data input has relocations: {source}")
+        if any(sym.name and sym.bind in (STB_GLOBAL, STB_WEAK)
+               and sym.type not in (STT_SECTION, STT_FILE)
+               and (sym.bind != STB_GLOBAL or sym.type != 1 or sym.section != ".data")
+               for sym in obj.symbols):
+            raise PackError(f"ordinary data input has non-object/import definitions: {source}")
+    definitions = [sym for sym in ordinary.symbols
+                   if sym.name and sym.bind == STB_GLOBAL and sym.type == 1
+                   and sym.section == ".data"]
+    if not definitions or len({sym.name for sym in definitions}) != len(definitions):
+        raise PackError(f"ordinary data input lacks unique named objects: {source}")
+    providers = getattr(world, "data_import_providers", {})
+    if source not in providers:
+        providers[source] = reproduce_data_provider(world, source)
+    world.data_import_providers = providers
+    for symbol in definitions:
+        # IDO can give a genuine char[] definition size zero. This proves its
+        # base, never a fabricated extent; the complete input is proved above.
+        target = data_import_definition(world, symbol.name, base_only=True,
+                                        provider_source=source)
+        if target != (ov, start + symbol.value):
+            raise PackError(f"ordinary data definition moved: {symbol.name}")
+    return providers[source], start
+
+
 def guard_data_module_imports(world, exports):
     """Revalidate atomically before publishing complete data-only producers."""
     if getattr(world, "_data_guard_active", False):
@@ -2220,6 +2320,8 @@ def _guard_data_module_imports(world, exports):
                                     in batch._LOADED_IMPLEMENTATIONS.values()})
     dump = audit.run_make_database()
     outputs = []
+    plain_targets = plain_data_targets(dump)
+    remaining_plain = set(plain_targets)
     admitted = collections.defaultdict(list)
     try:
         for ov, module in world.amods.items():
@@ -2227,11 +2329,27 @@ def _guard_data_module_imports(world, exports):
             sources = {r["source"] for r in module.get("data_rodata_ownership", [])
                        if r.get("type") == "c"} - text
             for source in sorted(sources):
-                if not proof.selected(f"build/src/{source}.c.o", dump):
+                target = f"build/src/{source}.c.o"
+                plain = target in plain_targets
+                linked = proof.selected(target, dump)
+                if plain and linked:
+                    raise PackError(f"ordinary data proof also selects module linking: {source}")
+                if not plain and not linked:
                     continue
                 rows = [r for r in projected_data_rows(module) if r["source"] == source]
                 if len(rows) != 1:
                     raise PackError(f"data-only module lacks one canonical input: {source}")
+                if plain:
+                    raw, start = validate_plain_data(world, ov, rows[0], source)
+                    path = world.paths["raw"] / "src" / (source + ".c.o")
+                    admitted[ov].append(ObjRef(ov, path, source, 0, 0, "c", raw,
+                        {".data": (start, "link")}, {}, plain_targets[target]))
+                    receipt = world.data_import_provider_receipts[source]
+                    receipt["ordinary_data_runtime"] = {"role": plain_targets[target],
+                        "input_start": start, "origin": (start if plain_targets[target] == "ro-origin"
+                                                        else world.module_info[ov]["text_size"])}
+                    remaining_plain.remove(target)
+                    continue
                 raw, receipt, context = reproduce_data_import(world, source)
                 hold_data_capture(world, source, receipt, context)
                 validate_data_imports(world, exports, ov, rows[0], source, raw)
@@ -2244,6 +2362,13 @@ def _guard_data_module_imports(world, exports):
                 admitted[ov].append(ObjRef(ov, path, source, 0, 0, "c", raw,
                     {".data": (start, "link")}, targets))
                 outputs.append((raw, receipt))
+        if remaining_plain:
+            raise PackError("ordinary data proof selection lacks one canonical data input: "
+                            + ", ".join(sorted(remaining_plain)))
+        validate_plain_roles(admitted)
+        if plain_targets:
+            world.data_import_contexts.append((plain_data_role_context(world, plain_targets),
+                lambda: plain_data_role_context(world, plain_data_targets(audit.run_make_database()))))
         check_data_import_holds(world)
         for receipt in world.data_import_provider_receipts.values():
             receipt["allocated_symbols_ordered_relocations_exact"] = True

@@ -7,7 +7,7 @@ support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `91e1386c9`; the combined borrowing
+The source measurements here are pinned to `e63a5a178`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -16,7 +16,7 @@ not a promise that all overlay data or interfaces are finished.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 38,560 of 61,312 bytes have canonical projected C owners | 22,752 bytes remain. Another 840 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized storage | 38,640 of 61,312 bytes have canonical projected C owners | 22,672 bytes remain. Another 840 diagnostic/trial bytes earn no physical ownership credit. |
 | Initialized images | 34 of 87 data-bearing modules are fully projected to C; four are partial and 49 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 27 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
 | Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 8,398 records still borrow authority: 7,998 placeholder references, 395 blob-owned data records and five main-table entries. Layout borrowing remains explicit too. |
@@ -77,7 +77,11 @@ interior read-only input placement. Its six tuning-getter call sites now share
 one bounded 344-byte record type; all 19 affected objects remain exact. Twenty
 actual mutable C records now supply all 6,880 bytes of that family, with genuine
 sized definitions and exact raw, configured, linked and retail storage. Their
-two pointer tables and geometric/runtime index safety remain separate work.
+two pointer tables now supply another 80 bytes through genuine C references.
+A durable guard authenticates their raw import identities and fresh provider
+objects, including a target-swap refusal when configured bytes would be equal.
+This validates source intent without retiring the producer's existing borrowed
+records. Geometric/runtime index safety and the remaining pool overlap stay open.
 Overlay 7 now owns both ten-by-ten mode grids: 1,000 field bytes plus 200 bytes
 of ordinary per-record tail alignment. Its unused explicit padding member was
 removed; the main object's bytes, symbols and relocation identities stay exact.
@@ -106,7 +110,7 @@ the retail ID-67 boundary discrepancy documented in
 3. **Recover initialized and BSS families.** Prioritize bounded tables, records,
    strings, geometry and callback families, not opaque copies of whole modules.
    The largest canonical initialized deficits are overlay 59 (1,936 bytes),
-   overlay 48 (1,792), overlay 8 (1,760), overlay 57 (1,632), overlay 7 (1,184)
+   overlay 48 (1,792), overlay 8 (1,680), overlay 57 (1,632), overlay 7 (1,184)
    and overlay 58 (1,072). Overlay 101's 768-byte remainder includes its pointer table, remaining formats
    and small control/compiler-pool tail, and overlay 8's mutable tables/pool
    overlap, need separate owned packets. Unreferenced format strings are actual
@@ -140,9 +144,13 @@ the retail ID-67 boundary discrepancy documented in
    [runlink kit](runlink-toolkit.md) and its MSU parity. The documented
    [JFG snapshot and six-site extraction pilot](runlink-jfg.md) have now been
    reproduced in isolation, including exact ROM and historical residual reports.
-   Next prove actual definitions/section ownership and a bounded complete-module
-   generation/relayout example. A decoder round trip or symbolic extraction is
-   not a self-hosting source linker. Donor
+   A complete symbolic-source module now regenerates its baseline and a live
+   data edit relays through ordinary final linking, growing its ROM payload by
+   24 bytes while all unselected module images remain exact. This bounded
+   demonstration retains the other modules and global registry/name authority.
+   Next own real initialized data/BSS and its full relocation surface in a
+   complete module. Whole-game source independence and general editability
+   remain open. Donor
    reference pins and their checkout drift are separate from that demonstration;
    a digest refresh is not a new donor result.
 

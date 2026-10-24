@@ -24,13 +24,6 @@ typedef struct Overlay61Entry {
     s32 field3C;
 } Overlay61Entry;
 
-typedef struct Overlay61Sprite {
-    /* 0x00 */ void *texture;
-    /* 0x04 */ s32 unk04;
-    /* 0x08 */ s32 frame;
-    /* 0x0C */ u8 pad0C[0x14];
-} Overlay61Sprite;
-
 typedef struct Overlay61GhostEntry {
     /* 0x00 */ s32 active;
     /* 0x04 */ s8 character;
@@ -48,97 +41,67 @@ typedef struct Overlay61RecordHeader {
     s16 fieldC;
 } Overlay61RecordHeader;
 
-/* Actual primitive owners through the existing overlay host namespace. */
-extern s32 o61RepeatX_o061Reloc;
-extern s32 o61RepeatY_o061Reloc;
-extern s32 o61EntryCount_o061Reloc;
-extern s32 o61SelectedEntry_o061Reloc;
-extern s16 o61ResourceIds_o061Reloc[4];
-extern s32 o61State_o061Reloc;
-extern s32 o61Error_o061Reloc;
-extern s32 o61ErrorNextState_o061Reloc;
-extern s32 o61ErrorBackState_o061Reloc;
-/* packDirectory lends mutable cache slices (18-byte names/6-byte extensions).
- * Use only after success; replacement/free invalidates pointees without
- * clearing these module-owned slots. Pointer-integer consumer ABI stays open. */
-extern char *o61DirectoryNames_o061Reloc[16];
-extern char *o61DirectoryExtensions_o061Reloc[16];
-extern u32 o61DirectorySizes_o061Reloc[16];
-extern u8 o61DirectoryTypes_o061Reloc[16];
-extern u32 o61FreeBytes_o061Reloc;
+
+/* Current source-owned literals, in their authenticated declaration order. */
+extern const char o61MickeyName[];
+extern const char o61MinnieName[];
+extern const char o61DonaldName[];
+extern const char o61DaisyName[];
+extern const char o61GoofyName[];
+extern const char o61PeteName[];
+extern const char o61HueyName[];
+extern const char o61DueyName[];
+extern const char o61LouieName[];
+extern const char o61LudwigName[];
+extern const char o61CopyNameFormat[];
+extern const char o61CopyExtensionFormat[];
+extern const char o61GhostSlotFormat[];
+extern const char o61GhostSizeFormat[];
+extern const char o61GhostNameFormat[];
+extern const char o61GhostTimeFormat[];
+extern const char o61OtherSlotFormat[];
+extern const char o61OtherSizeFormat[];
+extern const char o61OtherNameFormat[];
+extern const char o61PakFreeLabel[];
+extern const char o61FreeByteFormat[];
+extern const char o61MoreAboveLabel[];
+extern const char o61MoreBelowLabel[];
+extern const char o61PakPageLabel[];
+extern const char o61LoadGhostLabel[];
+extern const char o61SaveGhostLabel[];
+extern const char o61EraseFileLabel[];
+extern const char o61TaskDoneLabel[];
+extern const char o61NoPakLabel[];
+extern const char o61PakErrorLabel[];
+extern const char o61PakFullLabel[];
+extern const char o61YesLabel[];
+extern const char o61NoLabel[];
+extern const char o61RetryLabel[];
+extern const char o61AbortLabel[];
+extern const char o61SaveToSgLabel[];
+extern const char o61NewGhostName[];
+extern const char o61ExitLabel[];
+extern const char o61LoadGhostPath[];
+extern const char o61WriteGhostFormat[];
+extern const char o61ReadGhostPath[];
 
 extern s32 joyGetPressed(s32 controller);
 extern s32 joyGetStickX(s32 controller);
 extern s32 joyGetStickY(s32 controller);
-extern s32 gOverlay61CounterA0;
-/* The real 20-entry owner; string subobject and I/O ABI debts remain open. */
-extern Overlay61Entry o61MenuEntries_o061Reloc[20];
-extern const char gOverlay61Text0Reloc[];
-extern const char gOverlay61Text1Reloc[];
 extern s32 sprintf(char *buffer, const char *format, ...);
-extern const char gOverlay61Format58Reloc[];
-extern const char gOverlay61Format64Reloc[];
-extern const char gOverlay61Format70Reloc[];
-extern const char gOverlay61Format78Reloc[];
-extern const char gOverlay61Format90Reloc[];
-extern const char gOverlay61Format9CReloc[];
-extern const char gOverlay61FormatA8Reloc[];
-extern u8 gOverlay61LabelB0Reloc[];
-extern const char gOverlay61FormatBCReloc[];
-extern void *gOverlay61NamesReloc[];
 extern void fontColour(s32, s32, s32, s32, s32);
 extern void frontDrawRectangle(s32, s32, s32, s32, s32, u32);
 extern void fontPrintXY(s32, s32, s32, void *, s32);
 extern void *levelGetName(s8);
-extern s32 gOverlay61TopIndexReloc;
-extern u8 gOverlay61UpLabelReloc[];
-extern u8 gOverlay61DownLabelReloc[];
 /* Called with one and with two arguments. */
 extern void fontUseFont();
 extern void fontBackground(s32, s32, s32, s32);
-extern u8 gOverlay61RecordD0[];
-extern u8 gOverlay61RecordDC[];
-extern u8 gOverlay61RecordE8[];
-extern u8 gOverlay61RecordF4[];
-extern u8 gOverlay61Record100[];
-extern u8 gOverlay61Record10C[];
-extern u8 gOverlay61Record114[];
-extern u8 gOverlay61Record120[];
-extern u8 gOverlay61Record12C[];
-extern u8 gOverlay61Record130[];
-extern u8 gOverlay61Record134[];
-extern u8 gOverlay61Record13C[];
-extern u8 gOverlay61Record144[];
-extern Overlay45ResourceDescriptor *gOverlay61Handle58;
-extern Overlay45ResourceDescriptor *gOverlay61Handle5C;
-extern Overlay45ResourceDescriptor *gOverlay61Handle60;
-extern Overlay45ResourceDescriptor *gOverlay61Handle64;
-extern Overlay45ResourceDescriptor *gOverlay61Handle68;
-extern Overlay45ResourceDescriptor *gOverlay61Handle6C;
-extern Overlay45ResourceDescriptor *gOverlay61Handle70;
-extern Overlay45ResourceDescriptor *gOverlay61Handle74;
-extern Overlay45ResourceDescriptor *gOverlay61Handle78;
-extern Overlay45ResourceDescriptor *gOverlay61Handle7C;
-extern Overlay45ResourceDescriptor *gOverlay61Handle80;
-extern Overlay45ResourceDescriptor *gOverlay61Handle84;
-extern Overlay45ResourceDescriptor *gOverlay61Handle88;
-extern s32 gOverlay61Config08;
-extern s32 gOverlay61Config30;
-extern s32 D_800D31C8[];
+/* Real resident pointer-bank footprint; resident storage/native ownership remains open. */
+struct MenuFrontObject;
+extern struct MenuFrontObject *D_800D31C8[];
 extern void loadFrontEndList(s16 *data);
-extern Overlay45ResourceDescriptor *overlay61CreateDescriptorReloc(
-    void *data, s32 width, s32 height, s32 flags);
 /* Called with one and with two arguments. */
 extern void rumbleProcessing();
-extern Overlay61Sprite gOverlay61Sprite0;
-extern s32 gOverlay61Animation0;
-extern f32 gOverlay61Time0;
-extern Overlay61Sprite gOverlay61Sprite1;
-extern s32 gOverlay61Animation1;
-extern f32 gOverlay61Time1;
-extern char gOverlay61NewFileName[];
-extern char gOverlay61GhostLabel[];
-extern char gOverlay61FreeLabel[];
 extern Overlay61GhostEntry *D_8007A1F4;
 extern void *D_800D3140;
 extern void overlay45SetMode(Overlay45ResourceDescriptor *descriptor,
@@ -153,22 +116,8 @@ extern void texAnimateTexSprite(void *texture, s32 *animation, s32 mode, f32 *ti
                           s32 updateRate);
 extern void func_8002F618(void **commands, void *texture, s32 x, s32 y,
                           u8 red, u8 green, u8 blue, u8 alpha);
-extern void *gOverlay61Resource58Reloc;
-extern void *gOverlay61Resource5CReloc;
-extern void *gOverlay61Resource60Reloc;
-extern void *gOverlay61Resource64Reloc;
-extern void *gOverlay61Resource68Reloc;
-extern void *gOverlay61Resource6CReloc;
-extern void *gOverlay61Resource70Reloc;
-extern void *gOverlay61Resource74Reloc;
-extern void *gOverlay61Resource78Reloc;
-extern void *gOverlay61Resource7CReloc;
-extern void *gOverlay61Resource80Reloc;
-extern void *gOverlay61Resource84Reloc;
-extern void *gOverlay61Resource88Reloc;
 extern void freeFrontEndList(s16 *);
 extern void packDirectoryFree(void);
-extern u8 gOverlay61SavePathReloc[];
 /* Called with and without the device argument. */
 extern s32 packOpen();
 extern s32 packOpenFile(s32 device, char *name, char *extension, s32 *fileNumber);
@@ -180,8 +129,6 @@ extern void mmFree(void *);
 extern void packClose(s32);
 extern s32 packWriteFile(
     s32 device, s32 fileNumber, char *name, char *extension, u8 *data, s32 size);
-extern u8 gOverlay61RecordFormatReloc[];
-extern u8 gOverlay61RecordPathReloc[];
 
 /* This module's exports (ORT rows). */
 void overlay61InitResources(void);

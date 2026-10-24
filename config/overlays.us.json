@@ -25,8 +25,8 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 50992,
-  "diagnostic_data_rodata_bytes": 336,
+  "owned_data_rodata_bytes": 49136,
+  "diagnostic_data_rodata_bytes": 472,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -2418,6 +2418,16 @@
    },
    "data_rodata_ownership": [
     {
+     "offset": "0x390",
+     "end_offset": "0x3E0",
+     "size": "0x50",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o009/overlay_009",
+     "trial_function": "func_overlay_009_F0000CE4_186735C",
+     "externalized": true
+    },
+    {
      "offset": "0x2D0",
      "end_offset": "0x300",
      "size": "0x30",
@@ -2433,15 +2443,6 @@
      "type": "c",
      "section": ".data",
      "source": "overlays/o009/overlay9CameraTables",
-     "canonical": true
-    },
-    {
-     "offset": "0x390",
-     "end_offset": "0x3E4",
-     "size": "0x54",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o009/overlay_009",
      "canonical": true
     }
    ]
@@ -3075,22 +3076,14 @@
    },
    "data_rodata_ownership": [
     {
-     "offset": "0x0",
-     "end_offset": "0x120",
-     "size": "0x120",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o014/overlay14InitialState",
-     "canonical": true
-    },
-    {
-     "offset": "0x120",
+     "offset": "0x158",
      "end_offset": "0x190",
-     "size": "0x70",
+     "size": "0x38",
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o014/overlay_014",
-     "canonical": true
+     "trial_function": "overlay14LoadRelocatedValue",
+     "externalized": true
     }
    ]
   },
@@ -9326,57 +9319,12 @@
      "canonical": true
     },
     {
-     "offset": "0x27C",
-     "end_offset": "0x31C",
-     "size": "0xA0",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57TextureRows",
-     "canonical": true
-    },
-    {
      "offset": "0x32C",
      "end_offset": "0x36C",
      "size": "0x40",
      "type": "c",
      "section": ".data",
      "source": "overlays/o057/overlay57DetailSprites",
-     "canonical": true
-    },
-    {
-     "offset": "0x36C",
-     "end_offset": "0x380",
-     "size": "0x14",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57CharacterOrder",
-     "canonical": true
-    },
-    {
-     "offset": "0x390",
-     "end_offset": "0x3A4",
-     "size": "0x14",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57UnlockLabels",
-     "canonical": true
-    },
-    {
-     "offset": "0x3A4",
-     "end_offset": "0x3C8",
-     "size": "0x24",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57ModeTables",
-     "canonical": true
-    },
-    {
-     "offset": "0x4B8",
-     "end_offset": "0x4D0",
-     "size": "0x18",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57DetailColours",
      "canonical": true
     },
     {
@@ -9416,30 +9364,12 @@
      "canonical": true
     },
     {
-     "offset": "0x510",
-     "end_offset": "0x540",
-     "size": "0x30",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57ResultLayout",
-     "canonical": true
-    },
-    {
      "offset": "0x540",
      "end_offset": "0x580",
      "size": "0x40",
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o057/overlay57MenuLabels",
-     "canonical": true
-    },
-    {
-     "offset": "0x580",
-     "end_offset": "0x5AC",
-     "size": "0x2C",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57ResultLabels",
      "canonical": true
     },
     {
@@ -9979,54 +9909,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 101
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x0",
-     "end_offset": "0xB0",
-     "size": "0xB0",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o060/overlay60MenuResources",
-     "canonical": true
-    },
-    {
-     "offset": "0xC0",
-     "end_offset": "0x130",
-     "size": "0x70",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o060/overlay60PreviewTables",
-     "canonical": true
-    },
-    {
-     "offset": "0x130",
-     "end_offset": "0x178",
-     "size": "0x48",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o060/overlay60ControlState",
-     "canonical": true
-    },
-    {
-     "offset": "0x1B4",
-     "end_offset": "0x1D8",
-     "size": "0x24",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o060/overlay60RecordPositions",
-     "canonical": true
-    },
-    {
-     "offset": "0x1E0",
-     "end_offset": "0x260",
-     "size": "0x80",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o060/overlay_060",
-     "canonical": true
-    }
-   ]
+   }
   },
   {
    "overlay": 61,
@@ -10142,11 +10025,11 @@
    "data_rodata_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0xC0",
-     "size": "0xC0",
+     "end_offset": "0xF0",
+     "size": "0xF0",
      "type": "c",
      "section": ".data",
-     "source": "overlays/o061/overlay61InitialState",
+     "source": "overlays/o061/overlay_061",
      "canonical": true
     },
     {
@@ -10613,18 +10496,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 105
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x0",
-     "end_offset": "0x220",
-     "size": "0x220",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o065/overlay65EffectData",
-     "canonical": true
-    }
-   ]
+   }
   },
   {
    "overlay": 66,

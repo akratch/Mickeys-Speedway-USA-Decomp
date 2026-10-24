@@ -27,7 +27,13 @@
       "layout108State"
     ],
     "init": "layout108Init",
-    "resume": "layout108Resume"
+    "resume": "layout108Resume",
+    "export_kinds": {
+      "layout108Init": "function",
+      "layout108Resume": "function",
+      "layout108Step": "function",
+      "layout108State": "object"
+    }
   },
   "mutated_function": "overlay75Init",
   "mutation_anchor": "    gOverlay75SlotFlags[state->slot] = 0;",

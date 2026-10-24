@@ -1766,9 +1766,11 @@ check-editable-layout: runlink-raw $(TARGET).elf $(CRC) tools/check_editable_lay
 	$(PYTHON) tools/check_editable_layout.py
 
 # Explicit source-selected edited build; canonical retail guards stay unchanged.
+EDITED_DECLARATIONS ?= config/runlink-edited.us.json
+EDITED_MODULES ?=
 EDITED_VARIANT ?= control
 EDITED_OUT ?= build/edited-runlink
 EDITED_OUTSIDE_ROM ?= baseroms/mickey.us.z64
 .PHONY: edited-runlink
 edited-runlink: $(PYTHON) $(CRC)
-	$(PYTHON) tools/runlink_metadata_link.py edited --variant $(EDITED_VARIANT) --out $(EDITED_OUT) --outside-rom $(EDITED_OUTSIDE_ROM)
+	$(PYTHON) tools/runlink_metadata_link.py edited --declarations $(EDITED_DECLARATIONS) $(if $(EDITED_MODULES),--modules $(EDITED_MODULES)) --variant $(EDITED_VARIANT) --out $(EDITED_OUT) --outside-rom $(EDITED_OUTSIDE_ROM)

@@ -129,6 +129,75 @@ def removed_targets(tables, removed, names, callers=None):
                     failures.append(f"module {m.number} {callers.get((m.number,r.site,r.type), 'input')} site+{r.site:#x} -> {names[r.symidx]}")
     require(not failures, "referenced module removal: " + "; ".join(failures))
 
+def edited_fixture_declaration(spec, exports):
+    """The admitted initial source/API profile; no address is inferred here."""
+    require = rp.edited_require
+    require(spec.get('schema') == 'mickey-editable-layout-pilot-v1'
+            and spec.get('module') == 75 and spec.get('source') == 'src/overlays/o075/overlay_075.c'
+            and spec.get('mutated_function') == 'overlay75Init'
+            and spec.get('new_export') == 'layout75Step', 'unsupported edited source declaration profile')
+    # Complete deliberate original export ownership is part of this admitted
+    # source API, not an address/name-coordinate decoder in the generic adapter.
+    required = {'overlay75Init', 'overlay75UpdateMovingObject', 'overlay75MarkSlot'}
+    rows, names = set(), set()
+    for declaration in spec.get('existing_exports', ()):
+        require(set(declaration) == {'name', 'row'} and type(declaration['row']) is int,
+                'malformed selected export name/row declaration')
+        row, name = declaration['row'], declaration['name']
+        require(name not in names and row not in rows and exports.by_name.get(name) == row,
+                'duplicate or wrong selected export name/row')
+        rows.add(row)
+        names.add(name)
+    require(names == required, 'incomplete supported original75 export ownership')
+    peer = spec.get('peer', {})
+    require(peer.get('module') == 108 and peer.get('source') == 'tests/fixtures/editable_layout/peer.c'
+            and peer.get('exports') == ['layout108Init', 'layout108Resume', 'layout108Step', 'layout108State']
+            and peer.get('init') == 'layout108Init' and peer.get('resume') == 'layout108Resume',
+            'unsupported edited tail source/entry/export profile')
+
+
+
+
+def edited_fixture_inputs(root, selected, exports0, variant):
+    """Approved existing75/108 diagnostics; production control uses declarations."""
+    import copy
+    selected = copy.deepcopy(selected)
+    exports = rp.OrtNames(list(exports0.rows), dict(exports0.entries))
+    for number, declaration in selected.items():
+        for role, name in declaration['entries'].items():
+            if name is None:
+                exports.entries.pop((number, role), None)
+            else:
+                exports.entries[(number, role)] = name
+    if variant == 'control':
+        return selected, exports, {}, {}
+    spec = json.loads((root / FIXTURE / 'manifest.json').read_text())
+    edited_fixture_declaration(spec, exports0)
+    number, peer = spec['module'], spec['peer']['module']
+    require(set(selected) == {number} and selected[number]['source'] == spec['source'],
+            'fixture variants require their declared source selection')
+    exports = rp.OrtNames(exports.rows + [spec['new_export']] + spec['peer']['exports'], exports.entries)
+    selected[number]['exports'].append(spec['new_export'])
+    selected[number]['kinds'][spec['new_export']] = 'function'
+    selected[peer] = {'source': spec['peer']['source'], 'exports': spec['peer']['exports'],
+                      'kinds': dict(spec['peer']['export_kinds']),
+                      'entries': {'init': spec['peer']['init'], 'resume': spec['peer']['resume']}}
+    exports.entries.update({(peer, role): name for role, name in selected[peer]['entries'].items()})
+    text = (root / spec['source']).read_text()
+    anchor = '\n' + spec['mutation_anchor'] + '\n'
+    require(text.count(anchor) == 1, 'source mutation anchor changed')
+    use_peer = variant == 'peer'
+    declarations = 's32 layout75Step(s32 value);\n' + ('s32 layout75UsePeer(s32 value);\n' if use_peer else '')
+    call = 'layout75Step((s32) state->slot)' + (' + layout75UsePeer((s32) state->slot)' if use_peer else '')
+    text = text.replace('#include "overlays/overlay_075.h"\n', '#include "overlays/overlay_075.h"\n' + declarations, 1)
+    text = text.replace(anchor, anchor.rstrip('\n') + '\n    gOverlay75SlotFlags[state->slot] += ' + call + ';\n')
+    text += '\n' + (root / FIXTURE / 'growth.c').read_text()
+    if use_peer:
+        text += '\n' + (root / FIXTURE / 'peer-use.c').read_text()
+    return selected, exports, {number: text}, {'module': number, 'peer': peer,
+        'peer_export_count': len(spec['peer']['exports']), 'caller': 'layout75UsePeer', 'init': spec['peer']['init']}
+
+
 def compiler(root,source="src/overlays/o075/overlay_075.c"):
     target = "build/"+source+".o"
     expanded = subprocess.check_output(["gmake", "-n", "-W", source, target], cwd=root, text=True).replace("\\\n", " ")

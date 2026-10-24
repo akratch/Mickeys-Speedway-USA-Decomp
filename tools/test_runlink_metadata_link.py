@@ -162,6 +162,68 @@ class MetadataLinkTests(unittest.TestCase):
 
 
 class EditedReceiptTests(unittest.TestCase):
+    def test_explicit_catalog_validates_owner_rows_source_kind_and_selection(self):
+        import copy
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for number in (34, 75):
+                source = root / f'src/overlays/o{number:03d}/unit.c'
+                source.parent.mkdir(parents=True); source.write_text('void entry(void) {}\n')
+            exports = link.rp.OrtNames(['entry34', 'entry75'], {})
+            document = {'schema': 'mickey-edited-source-modules-v1', 'default_selected': [75],
+                'modules': [{'module': n, 'source': f'src/overlays/o{n:03d}/unit.c',
+                             'exports': [{'name': 'entry'+str(n), 'row': i, 'kind': 'function'}],
+                             'entries': {'init': None, 'resume': None}} for i, n in enumerate((34, 75))]}
+            path = root / 'catalog.json'; path.write_text(json.dumps(document))
+            self.assertEqual(set(link.edited_catalog(root, path, exports, [34, 75])[0]), {34, 75})
+            self.assertEqual(set(link.edited_catalog(root, path, exports)[0]), {75})
+            for kind in ('row', 'duplicate', 'kind', 'source', 'field'):
+                changed = copy.deepcopy(document)
+                if kind == 'row': changed['modules'][0]['exports'][0]['row'] = 1
+                elif kind == 'duplicate': changed['modules'].append(changed['modules'][0])
+                elif kind == 'kind': changed['modules'][0]['exports'][0]['kind'] = 'opaque'
+                elif kind == 'source': changed['modules'][0]['source'] = 'src/overlays/o075/unit.c'
+                else: changed['modules'][0]['bss_size'] = 0
+                path.write_text(json.dumps(changed))
+                with self.subTest(kind=kind), self.assertRaises(link.rp.PackError):
+                    link.edited_catalog(root, path, exports, [34])
+            path.write_text(json.dumps(document))
+            for selected in ([34, 34], [108], []):
+                with self.subTest(selected=selected), self.assertRaises(link.rp.PackError):
+                    link.edited_catalog(root, path, exports, selected)
+
+    def test_current_outside_program_closure_omits_metadata_and_fill(self):
+        source = ('  build/src/overlays/o034/unit.c.o(.text);\n'
+                  '  build/assets/overlays/o034/overlay_034_reloc1.bin.o(.data);\n'
+                  '  build/assets/main_reloc_table.bin.o(.data);\n'
+                  '  build/assets/rom_fill.bin.o(.data);\n'
+                  '  build/assets/opaque.bin.o(.data);\n')
+        self.assertEqual(link.edited_program_selectors(source),
+                         ['build/assets/opaque.bin.o', 'build/src/overlays/o034/unit.c.o'])
+
+    def test_complete_source_recipe_is_required(self):
+        source = 'src/overlays/o034/unit.c'; target = 'build/'+source+'.o'
+        compile_line = f'wrapper tools/ido/cc -- as -- -c -o {target} {source}\n'
+        complete = compile_line + f'python3 tools/link_overlay_module.py {target} --directory build/module\n'
+        with mock.patch.object(link.subprocess, 'check_output', return_value=complete):
+            self.assertEqual(link.edited_recipe(Path('.'), source)[0][-1], source)
+        for command in (compile_line, complete + complete):
+            with mock.patch.object(link.subprocess, 'check_output', return_value=command):
+                with self.assertRaisesRegex(link.rp.PackError, 'complete-module'):
+                    link.edited_recipe(Path('.'), source)
+
+    def test_actual_zero_storage_write_only_descriptor_needs_no_nobits_reserve(self):
+        descriptor = {'type': 1, 'flags': 1, 'size': 0, 'align': 1, 'addr': 2336}
+        self.assertTrue(link.edited_bss_valid(None, 0, 2336))
+        self.assertTrue(link.edited_bss_valid(descriptor, 0, 2336))
+        self.assertFalse(link.edited_bss_valid(descriptor, 1, 2336))
+        self.assertFalse(link.edited_bss_valid({**descriptor, 'flags': 3}, 0, 2336))
+        self.assertFalse(link.edited_bss_valid({**descriptor, 'flags': 5}, 0, 2336))
+        self.assertFalse(link.edited_bss_valid({**descriptor, 'size': 4}, 0, 2336))
+        self.assertFalse(link.edited_bss_valid({**descriptor, 'addr': 2340}, 0, 2336))
+        allocated = {'type': link.rp.SHT_NOBITS, 'flags': 3, 'size': 32, 'align': 16, 'addr': 2336}
+        self.assertTrue(link.edited_bss_valid(allocated, 32, 2336))
+
     def test_edited_output_cannot_alias_source_or_another_directory(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -188,7 +250,8 @@ class EditedReceiptTests(unittest.TestCase):
         import copy
         spec = json.loads((link.REPO / 'tests/fixtures/editable_layout/manifest.json').read_text())
         exports = link.rp.OrtNames.load(link.REPO / 'config/runlink-ort.us.txt')
-        link.edited_declaration(spec, exports)
+        import check_editable_layout as pilot
+        pilot.edited_fixture_declaration(spec, exports)
         for kind in ('row', 'duplicate', 'missing', 'schema', 'source', 'function'):
             changed = copy.deepcopy(spec)
             if kind == 'row': changed['existing_exports'][0]['row'] += 1
@@ -198,7 +261,7 @@ class EditedReceiptTests(unittest.TestCase):
             elif kind == 'source': changed['source'] = 'src/other.c'
             else: changed['mutated_function'] = 'other'
             with self.subTest(kind=kind), self.assertRaises(link.rp.PackError):
-                link.edited_declaration(changed, exports)
+                pilot.edited_fixture_declaration(changed, exports)
 
     def test_preloaded_linker_projection_code_cannot_acquire_a_first_call_pin(self):
         import sys
@@ -218,11 +281,12 @@ class EditedReceiptTests(unittest.TestCase):
             provider = root / 'provider.o'; provider.write_bytes(b'actual input')
             output = directory / 'final.bin'; output.write_bytes(b'validated')
             expected = pilot.artifact_hashes(directory)
-            request = {'outside_rom': 'first.z64'}
-            receipt = {'schema': 'mickey-edited-source-build-v1', 'variant': 'control', 'request': request,
+            request = {'outside_rom': 'first.z64', 'selected_modules': [75], 'declaration_sha256': 'catalogA'}
+            receipt = {'schema': 'mickey-edited-source-build-v2', 'variant': 'control', 'request': request,
                        'artifacts': expected, 'inputs': {'provider.o': link.digest(provider)},
                        'provider_holds': {}, 'toolchain': {}, 'projection_toolchain': {},
-                       'resident_source_context': {}, 'source_cpp': {}, 'arguments': []}
+                       'resident_source_context': {}, 'outside_selectors': [],
+                       'outside_input_context': {'files': {}, 'assembly': {}}, 'source_cpp': {}, 'arguments': {}}
             payload = link.json_bytes(receipt); (directory / 'receipt.json').write_bytes(payload)
             (parent / 'control-current.json').write_bytes(link.json_bytes({'path': 'build/edited-runlink/control-one',
                 'receipt_sha256': hashlib.sha256(payload).hexdigest()}))
@@ -232,6 +296,8 @@ class EditedReceiptTests(unittest.TestCase):
                 self.assertEqual(link.edited_current(root, parent, 'control', request), receipt)
                 (root / 'second.z64').write_bytes(b'different valid outside request')
                 self.assertIsNone(link.edited_current(root, parent, 'control', {'outside_rom': 'second.z64'}))
+                self.assertIsNone(link.edited_current(root, parent, 'control', {**request, 'selected_modules': [34]}))
+                self.assertIsNone(link.edited_current(root, parent, 'control', {**request, 'declaration_sha256': 'catalogB'}))
                 provider.write_bytes(b'changed')
                 self.assertIsNone(link.edited_current(root, parent, 'control', request))
                 provider.unlink()

@@ -18,7 +18,8 @@ the ELF MIPS relocation number (2 R_MIPS_32, 4 R_MIPS_26, 5 HI16, 6 LO16);
 ``op`` is Rare's operation (0 SYMBOL, 1 LOCAL, 2 JUMP, 3 DATA).
 
 Every function here is a pure transformation between bytes and the
-dataclasses below; nothing reads paths except :func:`read_rom`.
+dataclasses below. ROM path I/O is confined to :func:`read_rom`; the module
+also fingerprints its own source at import for loaded-code provenance.
 """
 
 from __future__ import annotations

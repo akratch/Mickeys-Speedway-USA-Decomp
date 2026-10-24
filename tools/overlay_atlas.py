@@ -258,6 +258,9 @@ FIXED_DATA_RODATA_OWNERSHIP = {
 # The exact data-only source allowlist keeps physical ownership independent
 # from executable text ownership and matching credit.
 CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
+    11: [(0x30, 0x1B0, "overlay11BackgroundTriangles", ".data"),
+         (0x1B0, 0x1E0, "overlay11MenuControls", ".data"),
+         (0x1F0, 0x210, "overlay11BaseHandles", ".data")],
     58: [
         (0xC8, 0x108, "overlay58Assets", ".data"),
         (0x180, 0x1A0, "overlay58BadgeSprites", ".data"),
@@ -347,6 +350,9 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     82: [(0x0, 0xA0, "overlay_082", ".rodata")],
 }
 DATA_ONLY_FIXED_DATA_SOURCES = {
+    (11, "overlay11BackgroundTriangles", ".data"),
+    (11, "overlay11MenuControls", ".data"),
+    (11, "overlay11BaseHandles", ".data"),
     (9, "overlay9ParameterState", ".data"),
     (9, "overlay9CameraTables", ".data"),
     (58, "overlay58Assets", ".data"),

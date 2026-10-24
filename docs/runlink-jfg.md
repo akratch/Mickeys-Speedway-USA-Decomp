@@ -6,8 +6,9 @@ JFG US: how the shipped tables decode, which of the generation rules found on
 Mickey's Speedway USA (MSU) hold for them, how much of the tables JFG's own
 pinned build regenerates, and what blocks the rest. These are historical
 snapshot measurements, not claims about current upstream JFG. Each number is marked
-**verified** (computed by the kit, re-runnable with the commands in the last
-section) or **inferred** (an interpretation of verified numbers).
+**verified** (computed by the kit or the build proofs described below) or
+**inferred** (an interpretation of verified numbers). Kit commands are in
+section 5; the selected-module reproduction procedure is in section 7.
 
 ## Inputs
 
@@ -383,5 +384,135 @@ order establishes the original compiler's relocation emission order.
 5. **Demonstrate independence and editability separately.** Reprove original
    bytes and every relocation identity with explicit remaining borrowing,
    then prove layout/table regeneration after a deliberate bounded source
-   edit. No result in this report establishes that final source-only or
-   generically editable pipeline.
+   edit. Section 7 now demonstrates this for one complete symbolic module;
+   the whole-game source-only and generic pipeline remain separate goals.
+
+## 7. Complete symbolic-module generation and relayout (verified)
+
+A separate private copy at the same full JFG commit and kit pin in the
+reproduction section completed this continuation for module 79. The snapshot
+has GLOBAL_ASM wrappers in its 155 non-empty overlay source directories; this
+pilot is a **complete symbolic-assembly module**, not an existing C decomp.
+Source attribution is the published JFG snapshot's
+`src/overlays/o79/overlay_79.c`, `src/hit.c`, `include/structs.h` and
+`src/runLink.c`. Extracted assembly, objects, payloads and diagnostic scripts
+remain private; no JFG implementation was imported into MSU.
+
+The module's two real functions are `buoyInit` and `buoyControl`. Its one
+external call was bootstrapped to the actual resident `hitInitObjectHit`
+definition, authenticated against ORT row 168. The producer ELF retains a
+named undefined import. The two declared exports use their existing registry
+rows, 1359 and 1472; their current definitions supply offsets and sizes.
+Generation uses those bindings and ordered ELF relocations, not a lookup of
+the shipped record at each selected site. The original selected bytes and
+tables serve only as subsequent baseline comparisons.
+
+| Current-source result | Baseline | Deliberate edit |
+|---|---:|---:|
+| Text | 144 bytes | 144 bytes |
+| Semantic initialized data | 0 | 4 bytes |
+| Real eight-byte format alignment after data | 0 | 4 bytes |
+| Header data extent / BSS | 0 / 0 | 8 / 0 bytes |
+| Runtime table 1 / table 2 | 8 / 0 bytes | 8 / 16 bytes |
+| Complete module ROM payload | 152 bytes | 176 bytes |
+
+Fresh assembly and module linking regenerate the complete baseline image,
+header, table and both exports exactly. An ordinary final ROM link then
+reproduces all 32 MiB, SHA1
+`493ced9008dbe932d6e91179b68e8630cf23a023`.
+
+The actual controller adds signed update-rate converted to float times an
+explicit 8.0f coefficient to the object's float animation field. The deliberate
+source edit replaces that immediate coefficient with a genuinely read,
+module-owned float initialized to 12.0f. Both functions retain their ABI,
+control flow and extents; the initializer's bytes remain unchanged. Two
+controller instruction slots change, and current ELF relocations produce a
+LOCAL HI16/LO16 pair into the new data section. GNU as emits four data bytes;
+the module linker supplies four separately accounted alignment bytes under
+the original eight-byte layout rule. There is no stub, unused datum,
+instruction padding, export-order change or post-assembly instruction edit.
+
+The payload grows by 24 bytes. All 156 unselected modules retain their entire
+images and both tables exactly at regenerated positions. Later module ROM
+offsets and both name-table locations advance by 24; name payloads and the
+ORT remain unchanged. Ordinary resident relinking changes four existing LO16
+sites in `GetSymbolName` and `runlinkInitialise`, all against moved name-table
+boundary symbols. No other resident bytes change. The final fill preserves
+the original 96-byte zero prefix followed by fill bytes and contracts by 24
+to keep the cartridge at 32 MiB. Standard `n64crc` changes checksum-header
+bytes only after objcopy. The intentionally edited ROM has SHA1
+`ca357d4e64635c025dcefdf546ec1f9d8777b9c2`.
+
+### Reproduction procedure and inputs
+
+Use an independent private checkout at
+`efd5abb1c79636e297b831f7c2d5bf47eac39c0c`, the legally local ROM and unchanged
+ordinary build inputs from the reproduction above, and the public kit at
+`236df8b8a1dbd6005264228b523aa09b95181bb6`. The same GNU Binutils override and
+asm-processor prelude pin apply. The following are procedure templates:
+`<jfg>` and `<pilot>` are private directories, and the source/link scripts are
+locally authored inputs, not additional files shipped by this kit.
+
+1. Preserve the baseline. Combine both complete extracted module-79
+   functions into a private symbolic source, correcting only the authenticated
+   import operand for the baseline. Declare the real functions and their
+   extents. For the second source, introduce the live float datum and its
+   symbolic load; preserve both functions' other operations and order.
+2. Assemble with the actual toolchain/prelude, then ordinarily link a
+   relocatable module with text, data and BSS each based at zero. Its linker
+   script collects the corresponding real input sections and aligns their
+   ends to eight bytes, exactly as the original final module layout does:
+
+   ```sh
+   <jfg>/tools/binutils/mips64-elf-as -march=vr4300 -32 -G0 \
+       -I <jfg>/include <jfg>/tools/asm-processor/prelude.inc \
+       <pilot>/module79.s -o <pilot>/producer.o
+   <jfg>/tools/binutils/mips64-elf-ld -EB -m elf32ebmip -r \
+       -T <pilot>/module.ld -o <pilot>/module.elf <pilot>/producer.o
+   ```
+
+3. Read `runlink.elf.Elf` sections, definitions and `rels()` in their actual
+   order. Construct `codec.Header` from current section extents and declared
+   entry points (none here). Construct `rules.Ref` values using the qualified
+   current source targets and authenticated import/export rows. Call
+   `rules.build_module`; require no unresolved references or pairing notes.
+   All addends are zero in this bounded example. This does not demonstrate
+   other addend forms, data-site ordering or BSS-reference handling.
+4. Form the selected `codec.Module` from current section bytes and generated
+   records. Replace only it in the compatibility catalog, derive its two
+   `codec.OrtRow` values from current exported definitions, then call
+   `codec.layout_modules`, `encode_modules` and `encode_ort`. Compare the
+   complete baseline selected image, records, header and exports independently
+   against the original. The edited build must use its own current outputs.
+5. Pack untouched current ELF section bytes and generated runtime tables as
+   final-link inputs, retaining genuine labels at the current exported
+   function boundaries and the data object's actual boundary. Runtime
+   imports stay in generated runtime records; do not globally bind the
+   packed call operands to resident addresses. In a private copy of
+   `ver/jfg.us.ld`, select these new module text/data/table inputs and
+   generated catalog/ORT inputs. Preserve every unselected input. Relink
+   through the original undefined-symbol scripts and real resident objects;
+   the linker must resolve the moved name-table boundary references itself.
+6. Derive terminal fill through the fixed cartridge end, preserving its real
+   boundary prefix, and reject insufficient capacity. Use the original
+   objcopy, `tools/CopyRom.py` and `tools/n64crc` steps. Require full baseline
+   ROM equality, exact current selected bytes/tables, unchanged unselected
+   payloads at their new positions, and unchanged name payloads. Check all
+   resident differences against actual boundary relocations and require
+   checksum-header-only mutation after objcopy.
+
+The loader's current `runlinkDownloadCode`, `ProcessRelocationEntry` and
+`runlinkInitialise` support the represented data extent, paired LOCAL
+references, secondary-table placement and cumulative ROM offsets. No module
+or export was added. This establishes static format/link consistency;
+allocation availability and behavior in the game were not executed.
+
+The other 156 modules, resident ownership, global registry identities and
+name ordering remain borrowed compatibility inputs. The result demonstrates
+one complete current symbolic module and one live relayout, not whole-game
+source independence or generic editability. Module 1's six-site pilot still
+has undefined targets and no established storage ownership. The next source
+packet should own real initialized data/BSS and its relocation surface in a
+complete module, with authentic section and export definitions; general
+adapters should follow that evidence rather than assume this small module
+settles the unresolved surfaces in sections 3 and 4.

@@ -19,3 +19,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay_060.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:25e7eb532a0f47e402a7998bc5f3f404eb09f41912d87d8712eea3d83ec30b75 && \
 	$(OBJCOPY) --remove-section=.rel.rodata $@
+
+# Complete ordinary C leaves: genuine resource/preview objects, no imports.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60MenuResources.c.o: private PLAIN_DATA_PROOF = 1
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60MenuResources.c.o: private PLAIN_DATA_RUNTIME_ROLE = data
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60PreviewTables.c.o: private PLAIN_DATA_PROOF = 1
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60PreviewTables.c.o: private PLAIN_DATA_RUNTIME_ROLE = data

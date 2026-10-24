@@ -127,24 +127,23 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay_062.c.o: CFLAGS += -Wab,-r4300_mul
 # second read of the chain head goes through the weak alias gO63ChainReload,
 # which the generated surface values with the chain's own stored address.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay_063.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 59: one module TU under the overlay flag set; its .text is the
-# module's full 0xA20 bytes, trailing pad included, so no trim, and resident
-# calls are renamed by the generated surface rebinds. Kept until phase 3: the
-# TU's .rodata (the advance step's 0.15f factor and six-entry switch table)
-# is still owned by the raw data blob at +0x768, so the section is asserted
-# by digest and its two %hi/%lo pairs bound to a pool symbol at the module-relative 0x18
-# the shipped text encodes; the table's own text relocations go with it.
+# Overlay 59's six genuine font labels supply the complete readonly context
+# before its 0.15f literal and six-case table. Retain the whole natural RO
+# input at its zero-origin runtime role; the old synthetic pool alias is gone.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay_059.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay_059.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	$(TOOLS_DIR)/externalize_elf_section.py
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay_059.c.o: $(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay_059.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay59RodataReloc=0x18,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x39C:.rodata:gOverlay59RodataReloc 0x3C0:.rodata:gOverlay59RodataReloc 0x3F0:.rodata:gOverlay59RodataReloc 0x3F8:.rodata:gOverlay59RodataReloc && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:614e19769956f461b87337c69ff451b22c7a557d16267e7b597407dfa11aa0a0 && \
+		sha256:e777385cbb4081b989577aa22ab36171dadf64e9c1fa74b9aa8d537a29d36ed6 0 keep && \
 	$(OBJCOPY) --remove-section=.rel.rodata $@
+
+# Ten genuine four-byte selection rows. Only stock compiler end alignment
+# follows the actual sized 40-byte object; pointer tables remain retained.
+O59_SELECTOR_VALUES := $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59SelectorValues.c.o
+$(O59_SELECTOR_VALUES): $(TOOLS_DIR)/trim_elf_section.py
+$(O59_SELECTOR_VALUES): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x28 --compiler-end-padding
+$(O59_SELECTOR_VALUES): private PLAIN_DATA_PROOF = 1
+$(O59_SELECTOR_VALUES): private PLAIN_DATA_RUNTIME_ROLE = data
 # Overlay 68: one module TU under the overlay flag set; its .text is the
 # module's full 0x15B0 bytes, trailing pad included, so no trim, and resident
 # calls are renamed by the generated surface rebinds. -woff 835: two calls

@@ -742,6 +742,21 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
+      "object": "build/src/overlays/o052/overlay_052.c.o",
+      "offset": 0,
+      "overlay": 52,
+      "size": 8488,
+      "source": "src/overlays/o052/overlay_052.c",
+      "tools": [
+        "rebind_elf_relocations.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o054/overlay_054.c.o",
       "offset": 0,
       "overlay": 54,
@@ -913,6 +928,20 @@
       ]
     },
     {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
+      "object": "build/src/overlays/o059/overlay59SelectorValues.c.o",
+      "offset": null,
+      "overlay": 59,
+      "size": null,
+      "source": "src/overlays/o059/overlay59SelectorValues.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
       "c_owned": true,
       "class": "metadata",
       "matched_c": true,
@@ -923,7 +952,6 @@
       "size": 2588,
       "source": "src/overlays/o059/overlay_059.c",
       "tools": [
-        "rebind_elf_relocations.py",
         "externalize_elf_section.py",
         "objcopy"
       ]
@@ -976,6 +1004,21 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
+      "object": "build/src/overlays/o061/overlay_061.c.o",
+      "offset": 0,
+      "overlay": 61,
+      "size": 6788,
+      "source": "src/overlays/o061/overlay_061.c",
+      "tools": [
+        "externalize_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o065/overlay65Initialize.c.o",
       "offset": 0,
       "overlay": 65,
@@ -983,6 +1026,20 @@
       "source": "src/overlays/o065/overlay65Initialize.c",
       "tools": [
         "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o065/overlay_065.c.o",
+      "offset": 128,
+      "overlay": 65,
+      "size": 6964,
+      "source": "src/overlays/o065/overlay_065.c",
+      "tools": [
+        "filter_elf_relocations.py"
       ]
     },
     {
@@ -1172,9 +1229,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 78
+      "metadata": 82
     },
-    "matched_c_bytes_with_postprocess": 301144,
-    "objects_with_postprocess": 78
+    "matched_c_bytes_with_postprocess": 323384,
+    "objects_with_postprocess": 82
   }
 }

@@ -2223,7 +2223,6 @@ gOverlay59DescriptorTables = 0x00000000;
 gOverlay59Entries = 0x00000000;
 gOverlay59EntriesEnd = 0x00000110;
 gOverlay59EntriesOneEnd = 0x00000044;
-gOverlay59RodataReloc = 0x00000018;
 gOverlay59Styles = 0x00000730;
 gOverlay59TableInfo = 0x000005a0;
 gOverlay59ValueTables = 0x00000708;

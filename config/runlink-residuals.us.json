@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 7010},
+  "totals": {"differences": 0, "borrowed_records": 6996},
   "differences": {
   },
   "borrowed": {
@@ -68,7 +68,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1598,
+      "count": 1595,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1256,12 +1256,9 @@
         [61, "gOverlay61Config08", 2],
         [61, "gOverlay61Config30", 2],
         [61, "gOverlay61CounterA0", 2],
-        [61, "gOverlay61DirExts", 6],
-        [61, "gOverlay61DirNames", 6],
         [61, "gOverlay61DownLabelReloc", 2],
         [61, "gOverlay61Entries", 6],
         [61, "gOverlay61EntriesReloc", 2],
-        [61, "gOverlay61FileNames", 2],
         [61, "gOverlay61Format58Reloc", 2],
         [61, "gOverlay61Format64Reloc", 2],
         [61, "gOverlay61Format70Reloc", 2],

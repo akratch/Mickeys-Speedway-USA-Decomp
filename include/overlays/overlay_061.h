@@ -61,6 +61,11 @@ extern s32 o61State_o061Reloc;
 extern s32 o61Error_o061Reloc;
 extern s32 o61ErrorNextState_o061Reloc;
 extern s32 o61ErrorBackState_o061Reloc;
+/* packDirectory lends mutable cache slices (18-byte names/6-byte extensions).
+ * Use only after success; replacement/free invalidates pointees without
+ * clearing these module-owned slots. Pointer-integer consumer ABI stays open. */
+extern char *o61DirectoryNames_o061Reloc[16];
+extern char *o61DirectoryExtensions_o061Reloc[16];
 extern u32 o61DirectorySizes_o061Reloc[16];
 extern u8 o61DirectoryTypes_o061Reloc[16];
 extern u32 o61FreeBytes_o061Reloc;
@@ -134,8 +139,6 @@ extern f32 gOverlay61Time0;
 extern Overlay61Sprite gOverlay61Sprite1;
 extern s32 gOverlay61Animation1;
 extern f32 gOverlay61Time1;
-extern char *gOverlay61DirNames[16];
-extern char *gOverlay61DirExts[16];
 extern Overlay61ListEntry gOverlay61Entries[];
 extern char gOverlay61NewFileName[];
 extern char gOverlay61GhostLabel[];
@@ -183,7 +186,6 @@ extern s32 packWriteFile(
     s32 arg0, s32 arg1, void *format, s32 arg3, void *data, s32 size);
 extern u8 gOverlay61RecordFormatReloc[];
 extern u8 gOverlay61RecordPathReloc[];
-extern char *gOverlay61FileNames[];
 
 /* This module's exports (ORT rows). */
 void overlay61InitResources(void);

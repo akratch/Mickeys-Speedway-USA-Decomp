@@ -259,11 +259,6 @@ typedef struct Overlay57SelectionResult {
     Overlay57SelectionChild *child;
 } Overlay57SelectionResult;
 
-typedef union Overlay57LocalWord {
-    s32 word;
-    f32 value;
-} Overlay57LocalWord;
-
 typedef struct Overlay57MarkedEntry {
     s16 value00;
     u8 reserved02[2];
@@ -423,7 +418,7 @@ typedef struct Overlay57Node {
 } Overlay57Node;
 
 extern void *gO57Current100Reloc;
-extern s32 gO57Pending104Reloc;
+
 extern void *gO57Previous108Reloc;
 extern void *gO57Runtime1B8Reloc;
 extern void *gO57ResidentCurrentReloc;
@@ -457,22 +452,16 @@ extern s32 gO57Value25CReloc;
 extern s32 gO57Value32CReloc;
 extern s32 gO57Value34CReloc;
 extern O57Row gO57Rows27CReloc[10];
-extern s32 gO57Mode11CReloc;
-extern s32 gO57Value128Reloc;
-extern s32 gO57Value12CReloc;
+
 extern s32 gO57Ids134Reloc[];
-extern s32 gO57Value138Reloc;
-extern s32 D_134;
-extern s32 gO57Value13CReloc;
-extern s32 gO57Active144Reloc;
+
 extern s32 gO57Value148Reloc;
 extern s32 gO57Value14CReloc;
-extern s32 gO57Value160Reloc;
-extern s32 gO57Value164Reloc;
+
 extern s32 gO57Value50CReloc;
 extern s32 gO57NodeValues17CReloc[];
 extern s16 gO57ColourCycle1A8Reloc;
-extern s32 gO57State118Reloc;
+
 extern O57ModeObject gO57ModeObject180Reloc;
 extern s32 gO57SpecialModeReloc;
 extern u8 D_800D31B0;
@@ -482,14 +471,9 @@ extern u8 gO57ChoiceMaskReferenceReloc;
 extern u8 gO57ChoiceSourceReloc;
 extern s32 gO57ChoiceDirtyReloc;
 extern u8 gO57ChoicePublishedReloc;
-extern s32 gO57Value188Reloc;
-extern s32 gO57Value18CReloc;
-extern s32 gO57Value190Reloc;
+
 extern u16 gO57ResidentFlags10Reloc;
-extern s32 gO57Value198Reloc;
-extern s32 gO57Value19CReloc;
-extern f32 gO57Value110Reloc;
-extern s32 gO57Value124Reloc;
+
 extern O57Pair gO57SpawnPairs3E8Reloc[4];
 extern O57Thing *gO57Spawned150Reloc[4];
 extern void *func_80028F54(void);
@@ -506,19 +490,7 @@ extern Overlay45ResourceDescriptor *overlay45CreateDescriptor_o057Reloc(
 extern void overlay45SetMode_o057Reloc(Overlay45ResourceDescriptor *descriptor,
                                        s32 mode);
 extern u8 O57_D_1A8;
-extern s32 O57_D_104;
-extern s32 O57_D_114;
-extern s32 O57_D_118;
-extern s32 O57_D_128;
-extern s32 O57_D_13C;
-extern s32 O57_D_140;
-extern s32 O57_D_160;
-extern s32 O57_D_164;
-extern s32 O57_D_184;
-extern s32 O57_D_188;
-extern s32 O57_D_194;
-extern s32 O57_D_198;
-extern s32 O57_D_19C;
+
 extern s32 O57_D_224;
 extern s32 O57_D_244;
 extern s32 O57_D_264;
@@ -548,9 +520,7 @@ extern void overlay84SetBit(s32 notification);
 extern O57Lookup0954 *O57_call_0DA4(s32 id);
 extern O57GridVertex *D_800D3148;
 extern u8 gOverlay57TableIndex;
-extern s32 gO57GridMode184;
-extern s32 gO57GridRecord160;
-extern s32 gO57GridAlpha13C;
+
 extern u8 D_4D4[];
 extern f32 D_4E4;
 extern u8 gO57GridTriangles[];
@@ -563,11 +533,7 @@ extern s16 gOverlay57Object100[];
 extern void func_80006EA0(void *resource);
 extern void freeFrontEndList(s16 *assetGroup);
 extern s32 gOverlay57Selection100;
-extern s32 gOverlay57Selection108;
-extern s32 gOverlay57Mode10C;
-extern s32 gOverlay57State;
-extern s32 D_130;
-extern s32 D_138;
+
 extern void *D_148;
 extern s32 gOverlay57UpdateSelection;
 extern s32 D_500;
@@ -577,8 +543,7 @@ extern void trackSetFog(s32 fogIndex, s16 near, s16 far, s16 targetNear,
 extern void amSndStop(void *handle);
 extern O57Ease28B4Point gO57Ease28B4Record21C;
 extern O57Ease28B4Point gO57Ease28B4Record23C;
-extern s32 gO57Ease28B4State144;
-extern s32 gO57Ease28B4State118;
+
 extern s32 gO57Ease28B4State180;
 extern u8 gO57Ease28B4Id183;
 extern s32 gO57Ease28B4Latch50C;
@@ -590,7 +555,7 @@ extern O57Tail2C28Smooth gO57Tail2C28Record23C;
 extern O57Tail2C28Position *gO57Tail2C28Reference14C;
 extern f32 gO57Tail2C28DistanceLimit104;
 extern s32 gO57Tail2C28QueryWord180;
-extern s32 gO57Tail2C28Timer118;
+
 extern s32 gO57Tail2C28Completion50C;
 extern void camSetNo(s32 value);
 extern void *overlay41IsUnitScale(s32 value);
@@ -602,10 +567,7 @@ extern s32 gOverlay57Delay;
 extern Overlay57Transition gOverlay57Transition;
 extern void modSetTextureFrame(void *item, s32 value, s32 scaled);
 extern s32 gO57Draw32A0Available4CC;
-extern s32 gO57Draw32A0Selection1A0;
-extern s32 gO57Draw32A0State118;
-extern s32 gO57Draw32A0Envelope124;
-extern s32 gO57Draw32A0TableMode18C[];
+
 extern u32 gO57Draw32A0WordTable4B8[];
 extern Overlay57Draw32A0Record gO57Draw32A0Records3F8[];
 extern Overlay57Draw32A0Record gO57Draw32A0Records458[];
@@ -622,14 +584,9 @@ extern void frontDrawRectangles(void *anchor, s32 count,
 extern s32 gO57SelectionList8Reloc[];
 extern s32 gO57SelectionList30Reloc[];
 extern s32 gO57SelectionCurrent100Reloc[];
-extern s32 gO57SelectionPending104Reloc;
-extern s32 gO57SelectionPrevious108Reloc;
-extern Overlay57LocalWord gO57SelectionValue10CReloc;
-extern s32 gO57SelectionState118Reloc;
-extern s32 gO57SelectionMode11CReloc;
-extern s32 gO57SelectionTimer120Reloc;
+
 extern s32 gO57SelectionIds134Reloc[];
-extern s32 gO57SelectionActive144Reloc;
+
 extern s32 gO57SelectionValues158Reloc[];
 extern s32 gO57SelectionValues17CReloc[];
 extern s32 gO57SelectionPrimary4E8Reloc;
@@ -645,8 +602,7 @@ extern s32 overlay84GetEnabledCurrent(void);
 extern void overlay84LoadCurrent(s32 argument);
 extern u8 gOverlay57Byte3D1CReloc;
 extern u8 gOverlay57Byte3EF4Reloc;
-extern s32 gO57ModeCountdown120;
-extern s32 gO57ModeTimer114;
+
 extern s32 gO57ModeState144BaseReloc[];
 extern s32 gO57ModeState11CBaseReloc[];
 extern s32 gO57ModeState118BaseReloc[];
@@ -672,8 +628,7 @@ extern s32 gO57ModePrimaryValues[];
 extern u8 gO57ModeExternalByte;
 extern u8 gO57ModeFinalArg1[];
 extern void overlay84ClearMode(void);
-extern s32 gO57MenuSelectionCountReloc;
-extern s32 gOverlay57LayoutBusy;
+
 extern Overlay57MenuEntry *gOverlay57MenuEntries;
 extern u16 gOverlay57MenuHalf;
 extern u16 gO57MiddleData31B4;
@@ -698,12 +653,7 @@ extern O57MiddleChoice gO57MiddleChoices[];
 extern u16 gO57MiddleData31B4, gO57MiddleData31B8;
 extern u8 gO57MiddleData3208, gO57MiddleData3214;
 extern void *gO57MiddleItems[];
-extern s32 gO57MiddleAlpha, gO57MiddlePreviousAlpha;
-extern s32 gO57MiddleMode, gO57MiddleNextMode, gO57MiddleMoving;
-extern s32 gO57MiddleFade, gO57MiddleFadeDelay;
-extern s32 gO57MiddleSelection, gO57MiddlePreviousSelection;
-extern s32 gO57MiddleState188, gO57MiddleState194;
-extern s32 gO57MiddleUnlocked198, gO57MiddleUnlocked19C;
+
 extern O57MiddleInfo gO57MiddleInfo;
 extern s32 gO57MiddleStopList[], gO57MiddlePathIndices[], gO57MiddlePathList[];
 extern O57MiddleOutput *gO57MiddleOutput;
@@ -733,10 +683,7 @@ extern void func_80050688(u8 path);
 extern void func_80050704(u8 path);
 extern void overlay56SplitTime(s32 time, s32 *first, s32 *second, s32 *third);
 extern s32 overlay68CheckKind(s32 course);
-extern s32 gOverlay57Selection;
-extern s32 gOverlay57PreviousSelection;
-extern s32 gOverlay57LayoutValue;
-extern s32 gOverlay57PreviousLayoutValue;
+
 extern s32 gOverlay57ObjectReady;
 extern Overlay45ResourceDescriptor *gOverlay57Layouts[];
 extern s32 gOverlay57StartLinks[];
@@ -744,7 +691,7 @@ extern s32 gOverlay57StopLinks[];
 extern s32 gOverlay57NodeArguments[];
 extern s16 gOverlay57LevelBySelection[];
 extern s16 D_800D31BC;
-extern s32 gOverlay57TableMode;
+
 extern s8 gOverlay57TableLabels[5];
 extern s8 gOverlay57TableA[][5];
 extern s8 gOverlay57TableB[][5];
@@ -814,6 +761,36 @@ extern Overlay45ResourceDescriptor *gOverlay57Range080Start[];
 extern Overlay45ResourceDescriptor *gOverlay57Range080End[];
 extern Overlay45ResourceDescriptor *gOverlay57Range0E0Start[];
 extern Overlay45ResourceDescriptor *gOverlay57Range0E0End[];
+
+/* Qualified references to the actual private storage owners. */
+extern s32 gOverlay57Countdown_o057Reloc;
+extern s32 gOverlay57ModeFlag_o057Reloc;
+extern s32 gOverlay57ObjectStatus_o057Reloc;
+extern s32 gOverlay57SetupDelay_o057Reloc;
+extern s32 gOverlay57SetupStatus_o057Reloc;
+extern s32 gOverlay57Timer_o057Reloc;
+extern s32 gOverlay57TriggerLatched_o057Reloc;
+extern s32 o57DetailEnvelope_o057Reloc;
+extern s32 o57DetailLayoutMode_o057Reloc;
+extern s32 o57DetailSelection_o057Reloc;
+extern s32 o57FirstUnlocked_o057Reloc;
+extern s32 o57FogFar_o057Reloc;
+extern s32 o57FogNear_o057Reloc;
+extern s32 o57GridObjectId_o057Reloc;
+extern f32 o57InitialPosition_o057Reloc;
+extern s32 o57LayoutMoving_o057Reloc;
+extern s32 o57LayoutValue_o057Reloc;
+extern s32 o57PreviousEntry_o057Reloc;
+extern s32 o57PreviousLayoutValue_o057Reloc;
+extern s32 o57PreviousSelection_o057Reloc;
+extern s32 o57SecondUnlocked_o057Reloc;
+extern s32 o57SelectedEntry_o057Reloc;
+extern s32 o57SelectionCount_o057Reloc;
+extern s32 o57SelectionCountdown_o057Reloc;
+extern f32 o57SelectionThreshold_o057Reloc;
+extern s32 o57State_o057Reloc;
+extern s32 o57VerticalOffset_o057Reloc;
+extern s32 o57ZeroedState_o057Reloc;
 
 /* This module's exports (ORT rows). */
 void func_overlay_057_F0000000_18A3BF8(void);

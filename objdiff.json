@@ -2906,6 +2906,16 @@
       }
     },
     {
+      "name": "assets/overlays/o061/overlay_061_data_rodata_260.bin",
+      "target_path": "expected/build/assets/overlays/o061/overlay_061_data_rodata_260.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o061"
+        ]
+      }
+    },
+    {
       "name": "assets/overlays/o061/overlay_061_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o061/overlay_061_reloc1.bin.o",
       "metadata": {
@@ -9591,6 +9601,108 @@
         ],
         "source_path": "src/overlays/o060/overlay_060.c",
         "complete": true
+      }
+    },
+    {
+      "name": "src/overlays/o061/overlay61CharacterNames.c",
+      "target_path": "expected/build/src/overlays/o061/overlay61CharacterNames.c.o",
+      "base_path": "build/src/overlays/o061/overlay61CharacterNames.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o061"
+        ],
+        "source_path": "src/overlays/o061/overlay61CharacterNames.c"
+      }
+    },
+    {
+      "name": "src/overlays/o061/overlay61DirectoryFormats.c",
+      "target_path": "expected/build/src/overlays/o061/overlay61DirectoryFormats.c.o",
+      "base_path": "build/src/overlays/o061/overlay61DirectoryFormats.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o061"
+        ],
+        "source_path": "src/overlays/o061/overlay61DirectoryFormats.c"
+      }
+    },
+    {
+      "name": "src/overlays/o061/overlay61FileNames.c",
+      "target_path": "expected/build/src/overlays/o061/overlay61FileNames.c.o",
+      "base_path": "build/src/overlays/o061/overlay61FileNames.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o061"
+        ],
+        "source_path": "src/overlays/o061/overlay61FileNames.c"
+      }
+    },
+    {
+      "name": "src/overlays/o061/overlay61GhostFormats.c",
+      "target_path": "expected/build/src/overlays/o061/overlay61GhostFormats.c.o",
+      "base_path": "build/src/overlays/o061/overlay61GhostFormats.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o061"
+        ],
+        "source_path": "src/overlays/o061/overlay61GhostFormats.c"
+      }
+    },
+    {
+      "name": "src/overlays/o061/overlay61InitialState.c",
+      "target_path": "expected/build/src/overlays/o061/overlay61InitialState.c.o",
+      "base_path": "build/src/overlays/o061/overlay61InitialState.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o061"
+        ],
+        "source_path": "src/overlays/o061/overlay61InitialState.c"
+      }
+    },
+    {
+      "name": "src/overlays/o061/overlay61MenuLabels.c",
+      "target_path": "expected/build/src/overlays/o061/overlay61MenuLabels.c.o",
+      "base_path": "build/src/overlays/o061/overlay61MenuLabels.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o061"
+        ],
+        "source_path": "src/overlays/o061/overlay61MenuLabels.c"
       }
     },
     {

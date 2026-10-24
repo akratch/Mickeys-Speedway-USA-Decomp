@@ -689,3 +689,15 @@ static void overlay61ChooseFileExtension(char *output) {
 static s32 overlay61RecordSize(Overlay61RecordHeader *record) {
     return (record->fieldA * 10) + 0x10;
 }
+
+/* Tier B: packDirectory receives capacity16 for each output and fills the
+ * unused slots through that capacity. The menu inserts at most20 real64-byte
+ * entries. Extension selection writes exactly a letter and its terminator.
+ * Tier D: original declarations/names remain inferred. Alternate legacy
+ * list/note views and the shared directory allocation lifetime remain open. */
+char *o61DirectoryNames[16];
+char *o61DirectoryExtensions[16];
+u32 o61DirectorySizes[16];
+u8 o61DirectoryTypes[16];
+Overlay61Entry o61MenuEntries[20];
+char o61NewFileExtension[2];

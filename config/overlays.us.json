@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 48464,
+  "owned_data_rodata_bytes": 49012,
   "diagnostic_data_rodata_bytes": 508,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -10032,6 +10032,60 @@
      "source": "overlays/o061/overlay_061",
      "trial_function": "func_overlay_061_F0000B84_18BFF4C",
      "externalized": true
+    },
+    {
+     "offset": "0x0",
+     "end_offset": "0xB4",
+     "size": "0xB4",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o061/overlay61InitialState",
+     "canonical": true
+    },
+    {
+     "offset": "0xF0",
+     "end_offset": "0x140",
+     "size": "0x50",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o061/overlay61CharacterNames",
+     "canonical": true
+    },
+    {
+     "offset": "0x140",
+     "end_offset": "0x180",
+     "size": "0x40",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o061/overlay61GhostFormats",
+     "canonical": true
+    },
+    {
+     "offset": "0x180",
+     "end_offset": "0x1C0",
+     "size": "0x40",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o061/overlay61DirectoryFormats",
+     "canonical": true
+    },
+    {
+     "offset": "0x1C0",
+     "end_offset": "0x240",
+     "size": "0x80",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o061/overlay61MenuLabels",
+     "canonical": true
+    },
+    {
+     "offset": "0x240",
+     "end_offset": "0x260",
+     "size": "0x20",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o061/overlay61FileNames",
+     "canonical": true
     }
    ]
   },

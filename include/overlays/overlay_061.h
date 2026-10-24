@@ -87,7 +87,7 @@ extern u8 gOverlay61DownLabelReloc[];
 /* Called with one and with two arguments. */
 extern void fontUseFont();
 extern void fontBackground(s32, s32, s32, s32);
-extern u8 gOverlay61SetupData[];
+extern s16 gOverlay61SetupData[];
 extern u8 gOverlay61RecordD0[];
 extern u8 gOverlay61RecordDC[];
 extern u8 gOverlay61RecordE8[];
@@ -121,7 +121,7 @@ extern s32 gOverlay61StateA8;
 extern s32 gOverlay61StateAC;
 extern s32 gOverlay61StateB0;
 extern s32 D_800D31C8[];
-extern void loadFrontEndList(void *data);
+extern void loadFrontEndList(s16 *data);
 extern Overlay45ResourceDescriptor *overlay61CreateDescriptorReloc(
     void *data, s32 width, s32 height, s32 flags);
 /* Called with one and with two arguments. */
@@ -161,7 +161,7 @@ extern void texAnimateTexSprite(void *texture, s32 *animation, s32 mode, f32 *ti
                           s32 updateRate);
 extern void func_8002F618(void **commands, void *texture, s32 x, s32 y,
                           u8 red, u8 green, u8 blue, u8 alpha);
-extern u8 gOverlay61ResourceBaseReloc[];
+extern s16 gOverlay61ResourceBaseReloc[];
 extern void *gOverlay61Resource58Reloc;
 extern void *gOverlay61Resource5CReloc;
 extern void *gOverlay61Resource60Reloc;
@@ -175,7 +175,7 @@ extern void *gOverlay61Resource7CReloc;
 extern void *gOverlay61Resource80Reloc;
 extern void *gOverlay61Resource84Reloc;
 extern void *gOverlay61Resource88Reloc;
-extern void freeFrontEndList(void *);
+extern void freeFrontEndList(s16 *);
 extern void packDirectoryFree(void);
 extern u8 gOverlay61SavePathReloc[];
 /* Called with and without the device argument. */

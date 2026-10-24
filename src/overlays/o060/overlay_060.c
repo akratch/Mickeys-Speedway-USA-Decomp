@@ -1,5 +1,23 @@
 #include "overlays/overlay_060.h"
 
+/* Tier B: the four rank labels reach fontPrintXY, whose converter reads
+ * them into separate scratch; all six formats are read-only sprintf inputs.
+ * Actual immutable backing is separate from the existing qualified imports
+ * used by the host link. The retained pointer table still has its legacy
+ * char* view and is not source-owned here.
+ * Tier D: original declarations/names and source retention remain inferred.
+ * The compiler supplies ordinary string and final section alignment. */
+const char o60FirstPlaceLabel[] = "1st";
+const char o60SecondPlaceLabel[] = "2nd";
+const char o60ThirdPlaceLabel[] = "3rd";
+const char o60EmptyPlaceLabel[] = " ";
+const char o60ControlLabelFormat[] = "%s %s";
+const char o60ControlValueFormat[] = "%s %s";
+const char o60EmptyRecordFormat[] = "-----:--.--";
+const char o60RecordFormat[] = "%c%c%c%2d:%02d.%02d";
+const char o60StereoLabelFormat[] = "%s %s";
+const char o60StereoValueFormat[] = "%s %s";
+
 /* Module-private functions: no ORT row, so their callers use JUMP
  * records. */
 static s32 func_overlay_060_F0002F54_18BCD2C(s32 left, s32 bottom, s32 width, s32 height, s32 progress, s32 alpha, s32 ticks);
@@ -325,7 +343,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 } else {
                     fontColour(0, 0xBE, 0, 0xFF, gOverlay60Data2A4);
                 }
-                sprintf(text, gOverlay60Data1F0, O60_TEXT(0x254),
+                sprintf(text, o60ControlLabelFormat_o060Reloc, O60_TEXT(0x254),
                         gOverlay60Data298[D_800D3128_o060Reloc.bits.field9]);
                 fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x96, text, 0xC);
                 if (gOverlay60Data2B0 == 1) {
@@ -338,7 +356,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 } else {
                     fontColour(0, 0xBE, 0, 0xFF, gOverlay60Data2A4);
                 }
-                sprintf(text, gOverlay60Data1F8, O60_TEXT(0x258),
+                sprintf(text, o60ControlValueFormat_o060Reloc, O60_TEXT(0x258),
                         gOverlay60Data298[D_800D3128_o060Reloc.bits.field8]);
                 fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xAA, text, 0xC);
                 break;
@@ -654,12 +672,12 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             overlay56SplitTime(record->time,
                                 &minutes, &seconds, &hundredths);
                             if (record->time == 0) {
-                                sprintf(text, gOverlay60Data200);
+                                sprintf(text, o60EmptyRecordFormat_o060Reloc);
                                 icon = 0x4A;
                             } else {
                                 initial0 = func_8003A700(record->initials[0]) & 0xFF;
                                 initial1 = func_8003A700(record->initials[1]) & 0xFF;
-                                sprintf(text, gOverlay60Data20C, initial0, initial1,
+                                sprintf(text, o60RecordFormat_o060Reloc, initial0, initial1,
                                     func_8003A700(record->initials[2]),
                                     minutes, seconds, hundredths);
                                 icon = record->character + 0x51;
@@ -918,7 +936,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 } else {
                     fontColour(0, 0xBE, 0, 0xFF, gOverlay60Data2A4);
                 }
-                sprintf(text, gOverlay60Data220, O60_TEXT(0x1D4),
+                sprintf(text, o60StereoLabelFormat_o060Reloc, O60_TEXT(0x1D4),
                     gOverlay60Data298[D_800D3128_o060Reloc.bits.field20]);
                 fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0x96, text, 0xC);
                 if (gOverlay60Data2B0 == 1) {
@@ -931,7 +949,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                 } else {
                     fontColour(0, 0xBE, 0, 0xFF, gOverlay60Data2A4);
                 }
-                sprintf(text, gOverlay60Data228, O60_TEXT(0x1D8),
+                sprintf(text, o60StereoValueFormat_o060Reloc, O60_TEXT(0x1D8),
                     gOverlay60Data298[D_800D3128_o060Reloc.bits.field19]);
                 fontPrintXY(&D_800D3140_o060Reloc, 0x91, 0xAA, text, 0xC);
                 break;

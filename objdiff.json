@@ -2846,6 +2846,16 @@
       }
     },
     {
+      "name": "assets/overlays/o060/overlay_060_data_rodata_130.bin",
+      "target_path": "expected/build/assets/overlays/o060/overlay_060_data_rodata_130.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o060"
+        ]
+      }
+    },
+    {
       "name": "assets/overlays/o060/overlay_060_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o060/overlay_060_reloc1.bin.o",
       "metadata": {
@@ -9662,6 +9672,40 @@
         ],
         "source_path": "src/overlays/o059/overlay_059.c",
         "complete": true
+      }
+    },
+    {
+      "name": "src/overlays/o060/overlay60MenuResources.c",
+      "target_path": "expected/build/src/overlays/o060/overlay60MenuResources.c.o",
+      "base_path": "build/src/overlays/o060/overlay60MenuResources.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o060"
+        ],
+        "source_path": "src/overlays/o060/overlay60MenuResources.c"
+      }
+    },
+    {
+      "name": "src/overlays/o060/overlay60PreviewTables.c",
+      "target_path": "expected/build/src/overlays/o060/overlay60PreviewTables.c.o",
+      "base_path": "build/src/overlays/o060/overlay60PreviewTables.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o060"
+        ],
+        "source_path": "src/overlays/o060/overlay60PreviewTables.c"
       }
     },
     {

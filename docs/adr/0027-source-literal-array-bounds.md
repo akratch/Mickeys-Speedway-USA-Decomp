@@ -59,8 +59,16 @@ provenance/metadata path. Preserve all prior profiles/default refusals.
 - Full source adoption additionally needs fresh source/helper reproduction,
   independent unique current map/wholepayload/runtime proof and truthful role
   declaration. Ordinary compiler section spelling does not choose runtimeLOCAL
-  role. O57 specifically needs a separate authenticated readonly-origin case
-  for its existing MenuLabels.RO64 before canonical ro-member adoption.
+  role. An initially literal-array `ro-member` may explicitly declare
+  `PLAIN_DATA_RO_ORIGIN_SECTION = .rodata` with its one
+  `PLAIN_DATA_RO_ORIGIN_OBJECT`. This admits only a fresh complete projected
+  readonly C origin with genuine GLOBAL object base zero, unchanged original
+  symbols, unique same-module map, and origin end exactly at member start.
+  Authenticate every real definition through the existing full provider proof;
+  hold its source/recipe/raw/configured/map context through atomic publication
+  and warm revalidation. Missing or stale origin/role refuses. The default DATA
+  origin and all other profiles remain strict. This helper permits no O57
+  source adoption by itself; that requires the updated integrated source state.
 
 ## Limits
 

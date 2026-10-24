@@ -113,6 +113,7 @@ EXACT_DONOR_OVERLAYS = {
 # deliberately explicit so the manifest, splat YAML, and progress metric share
 # one collision-free `(overlay, offset)` source of truth.
 DATA_RODATA_OWNERSHIP = {
+    48: [(0x0, 0x280, "overlay_048")],
     89: [(0x0, 0x10, "overlay_089")],
     16: [(0x0, 0x10, "overlay_016")],
     23: [(0x0, 0x10, "overlay_023")],
@@ -257,8 +258,7 @@ FIXED_DATA_RODATA_OWNERSHIP = {
 # The exact data-only source allowlist keeps physical ownership independent
 # from executable text ownership and matching credit.
 CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
-    48: [(0x174, 0x274, "overlay48CreditScript", ".data"),
-         (0x274, 0x6F4, "overlay48CreditText", ".data")],
+    48: [(0x280, 0x700, "overlay_048", ".rodata")],
     59: [(0x0, 0x5A0, "overlay59Frames", ".data")],
     57: [
         (0x1FC, 0x27C, "overlay57PanelSprites", ".data"),
@@ -329,8 +329,6 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     82: [(0x0, 0xA0, "overlay_082", ".rodata")],
 }
 DATA_ONLY_FIXED_DATA_SOURCES = {
-    (48, "overlay48CreditScript", ".data"),
-    (48, "overlay48CreditText", ".data"),
     (59, "overlay59Frames", ".data"),
     (57, "overlay57PanelSprites", ".data"),
     (57, "overlay57DetailSprites", ".data"),

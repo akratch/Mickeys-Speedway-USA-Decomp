@@ -2318,26 +2318,6 @@
       }
     },
     {
-      "name": "assets/overlays/o048/overlay_048_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o048/overlay_048_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o048"
-        ]
-      }
-    },
-    {
-      "name": "assets/overlays/o048/overlay_048_data_rodata_6f4.bin",
-      "target_path": "expected/build/assets/overlays/o048/overlay_048_data_rodata_6f4.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o048"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o048/overlay_048_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o048/overlay_048_reloc1.bin.o",
       "metadata": {
@@ -2598,8 +2578,38 @@
       }
     },
     {
+      "name": "assets/overlays/o057/overlay_057_data_rodata_27c.bin",
+      "target_path": "expected/build/assets/overlays/o057/overlay_057_data_rodata_27c.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o057"
+        ]
+      }
+    },
+    {
+      "name": "assets/overlays/o057/overlay_057_data_rodata_36c.bin",
+      "target_path": "expected/build/assets/overlays/o057/overlay_057_data_rodata_36c.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o057"
+        ]
+      }
+    },
+    {
       "name": "assets/overlays/o057/overlay_057_data_rodata_4b8.bin",
       "target_path": "expected/build/assets/overlays/o057/overlay_057_data_rodata_4b8.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o057"
+        ]
+      }
+    },
+    {
+      "name": "assets/overlays/o057/overlay_057_data_rodata_4f0.bin",
+      "target_path": "expected/build/assets/overlays/o057/overlay_057_data_rodata_4f0.bin.o",
       "metadata": {
         "progress_categories": [
           "overlay",

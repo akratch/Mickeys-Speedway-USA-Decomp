@@ -1382,35 +1382,11 @@ overlay99InitializeEntries_o046Reloc = 0xf0000000;
 texDPInit_o046Reloc = 0xf0000000;
 texDPTextureX_o046Reloc = 0xf0000000;
 
-/* overlay 48: overlay_048.c.o */
-D_174 = 0x00000174;
-D_274 = 0x00000274;
-amTunePlay_o048Reloc = 0xf0000000;
-amTuneSetFade_o048Reloc = 0xf0000000;
-fontUseFont_o048Reloc = 0xf0000000;
-func_800015F8_o048Reloc = 0xf0000000;
-func_80001608_o048Reloc = 0xf0000000;
-gOverlay48Entries = 0x00000000;
-gOverlay48Finished = 0x0000005a;
-gOverlay48ResourceIndex = 0x00000058;
-gOverlay48ResourceTable = 0x00000000;
-gOverlay48Script = 0x00000054;
-gOverlay48ScriptIndex = 0x00000058;
-gOverlay48State = 0x00000000;
-gOverlay48Timer = 0x00000050;
-gOverlay48TransitionValue = 0x00000470;
-mainChangeCameras_o048Reloc = 0xf0000000;
-mainTitlePageInit_o048Reloc = 0xf0000000;
-overlay45CreateDescriptor_o048Reloc = 0xf0000000;
-overlay45ReleaseDescriptor_o048Reloc = 0xf0000000;
-overlay45SetMode_o048Reloc = 0xf0000000;
-overlay48ConfigureReloc = 0xf0000000;
-
 /* overlay 49: overlay_049.c.o */
 D_8007BF04_o049Reloc = 0x00000000;
 D_8007BF08_o049Reloc = 0x00000000;
 D_8007BF0C_o049Reloc = 0x00000000;
-D_8007BF60 = 0x00000000;
+D_8007BF60_o049Reloc = 0x00000000;
 D_800D3128_o049Reloc = 0x00000000;
 D_800D3140_o049Reloc = 0x00000000;
 D_800D3144_o049Reloc = 0x00000000;
@@ -3319,6 +3295,7 @@ D_540 = 0x00000540;
 D_800002D8 = 0x800002d8;
 D_8007BF3C_o101Reloc = 0x00000000;
 D_8007BF44_o101Reloc = 0x00000000;
+D_8007BF60_o101Reloc = 0x00000000;
 D_800D3128_o101Reloc = 0x00000000;
 D_8C = 0x0000008c;
 D_A8 = 0x000000a8;
@@ -3847,10 +3824,10 @@ func_overlay_046_F0000FD0_188F3C8 = overlay46UpdateTransition;
 func_overlay_046_F000112C_188F524 = overlay46Submit;
 
 /* overlay 48: overlay_048.c.o */
-func_overlay_048_F0000000_1895408 = overlay48Initialize;
-func_overlay_048_F0000060_1895468 = overlay48InitializeState;
 func_overlay_048_F0000144_189554C = overlay48UpdateState;
 func_overlay_048_F000040C_1895814 = overlay48ReleaseAll;
+func_overlay_048_F0000060_1895468 = overlay48InitializeState;
+func_overlay_048_F0000000_1895408 = overlay48Initialize;
 
 /* overlay 49: overlay_049.c.o */
 func_overlay_049_F0000000_1896410 = overlay49Initialize;

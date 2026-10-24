@@ -879,6 +879,8 @@ MODULE_LINKED_OVERLAYS += 091
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 48 is one translation unit at the overlay flag set; its .text carries
 # the trailing pad, so nothing is trimmed.
+# Complete credit script, directory, compiler labels/literal and actual BSS.
+MODULE_LINKED_OVERLAYS += 048
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay_048.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 49 is one translation unit at the overlay flag set; its .text carries
 # the trailing pad, so nothing is trimmed. Its resident and cross-overlay

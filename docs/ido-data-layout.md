@@ -64,3 +64,24 @@ ownership remain independent requirements.
   byte identity does not establish direct host binding: metadata-only
   externalization can leave neutral zero-symbol references that require separate
   raw-identity and real linked/runtime proofs.
+
+### First declarations can change BSS order without changing its size
+
+- **Symptom:** text, initialized bytes, function geometry and total BSS size
+  agree, but references to genuine BSS objects resolve to different offsets.
+- **Mechanism:** a controlled IDO 5.3 experiment at the production `-O2 -mips2
+  -32 -G0 -Xcpluscomm -non_shared -Wab,-r4300_mul` settings introduced direct
+  references to arrays declared before their trailing definitions. Those arrays
+  moved ahead of the other BSS objects. Placing all genuine BSS definitions in
+  authenticated first-declaration order before their consumers, and removing
+  redundant private externs, restored every object offset and reference target
+  without changing text, initialized storage or the total BSS allocation.
+- **Lever:** inspect the preprocessed declaration order, including headers,
+  rather than only the order of definitions at the end of the source. Recover
+  the real objects, types and extents first. Compare each BSS symbol's offset
+  and size, then resolve every affected reference against its actual definition.
+- **Limits:** this is a measured array/declaration case, not a universal BSS
+  sorting rule. Exact size or executable bytes alone cannot prove object
+  identity. Do not invent declarations, reserves or padding to force an order.
+  A raw-object storage experiment does not establish a complete module link,
+  runtime binding, header authority or native ABI compatibility.

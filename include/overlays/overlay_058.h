@@ -68,10 +68,6 @@ typedef struct Overlay58Status {
     u8 value4;
 } Overlay58Status;
 
-typedef struct Overlay58OrderEntry {
-    u8 mode;
-} Overlay58OrderEntry;
-
 typedef struct Overlay58Vec3f {
     f32 x;
     f32 y;
@@ -99,14 +95,6 @@ typedef struct Overlay58Gfx {
     u32 w0;
     u32 w1;
 } Overlay58Gfx;
-
-typedef union Overlay58PathSelection {
-    s32 value;
-    struct {
-        u8 pad00[3];
-        u8 path;
-    } bytes;
-} Overlay58PathSelection;
 
 typedef struct Overlay58Options {
     u32 flags;
@@ -208,41 +196,10 @@ extern RcpTextureNode D_o058_5B40[];
 extern RcpTextureNode D_o058_5B60[];
 extern RcpTextureNode D_o058_5B80[];
 extern RcpTextureNode D_o058_5BA0[];
-extern char *D_o058_5E68[4];
-extern s32 D_o058_5E78;
-extern s32 D_o058_5E7C;
-extern s32 D_o058_5E80;
-extern s32 D_o058_5EBC;
-extern s32 D_o058_5EC4;
-extern Overlay58RaceEntry *D_o058_5EC8[6];
-extern Overlay58RaceEntry *D_o058_5EE0[6];
-extern s32 D_o058_5EF8[6];
-extern s32 D_o058_5F10[6];
-extern s32 D_o058_5F28;
-extern s32 D_o058_5F2C;
-extern s32 D_o058_5F30;
-extern ColourCycle D_o058_5F38;
-extern s8 D_o058_5F48[4];
 extern u8 gOverlay58InlineResource[];
 extern void *gOverlay58OptionalResource;
 extern void overlay58ReleaseReloc(void *resource);
-extern s32 D_30;
-extern Overlay58PathSelection D_34;
-extern s32 D_38;
-extern s32 D_44;
-extern s32 D_48;
-extern s32 D_4C;
-extern s32 D_50;
-extern s32 D_54;
-extern s32 D_58;
-extern s32 D_5C;
-extern s32 D_60;
-extern s32 D_68;
-extern s32 D_6C;
-extern s32 D_70;
-extern Overlay58OrderEntry *D_90[];
 extern s16 D_B8[];
-extern s8 D_F8[];
 extern s16 D_1A0[];
 extern u8 D_2A8[];
 extern s32 D_2B0;
@@ -251,11 +208,9 @@ extern s32 D_2B4;
 extern void *D_2BC;
 extern f32 D_2C0;
 extern f32 D_o058_5CE0;
-extern s32 D_DC;
 extern u8 D_8007BF0C;
 extern s16 gOverlay58SelectionTableReloc[][4];
 extern s16 gOverlay58UnlockTableReloc[][4];
-extern s32 D_o058_5E50[6];
 /* Resident option and status words: read as an array by the packed-status
  * pass and through Overlay58Options/Overlay58Resource elsewhere. */
 extern u16 D_800D3128[];
@@ -310,7 +265,6 @@ extern s16 D_800D31BC_o058Reloc;
 extern s16 D_800D31BE_o058Reloc;
 extern u8 D_800D31C4_o058Reloc[4];
 extern s16 D_8007C0C0_o058Reloc[4][4];
-extern Overlay58AnimationState D_o058_5E84;
 extern char *D_o058_5C5C[3];
 extern s16 D_o058_5C68[6];
 extern s16 D_o058_5C74[6];
@@ -355,19 +309,6 @@ extern char D_o058_5DB0[];
 extern char D_o058_5DB4[];
 extern char D_o058_5DB8[];
 extern char D_o058_5DC4[];
-extern s32 D_o058_5E88;
-extern s32 D_o058_5E8C;
-extern s32 D_o058_5E90;
-extern s32 D_o058_5E94;
-extern s32 D_o058_5E98;
-extern s32 D_o058_5E9C;
-extern s32 D_o058_5EA0;
-extern s32 D_o058_5EA4;
-extern s32 D_o058_5EA8;
-extern s32 D_o058_5EAC;
-extern s32 D_o058_5EB0;
-extern s32 D_o058_5EB4;
-extern s32 D_o058_5EC0;
 extern Overlay58Vertex *D_800D3148;
 extern u8 D_80000058[];
 extern f32 sqrtf(f32 value);
@@ -376,16 +317,45 @@ extern void *D_800D31C8[];
 extern u8 D_80000078[];
 extern u8 D_80000098[];
 extern s16 gOverlay58RankSetIdReloc;
-extern s32 gOverlay58FloorChoice;
-extern s32 gOverlay58InsertChoice;
 extern void *D_8007A1FC;
 extern s16 gOverlay58ResourceId;
 extern s32 gOverlay58ResourceState;
-extern s32 gOverlay58ResourceReady;
 extern void *overlay68CheckKind(s16 id);
-extern s32 gOverlay58PrimaryOrderIndex;
 extern u8 D_8007BF04;
 extern u8 D_8007BF08;
+
+/* Actual BSS backing definitions use typed private operand imports. */
+extern s32 o58ScoreDeltas_o058Reloc[6];
+extern char *o58HeadingText_o058Reloc[4];
+extern s32 o58SelectedAlphabetRow_o058Reloc;
+extern s32 o58SelectedAlphabetColumn_o058Reloc;
+extern s32 o58PathState_o058Reloc;
+extern Overlay58AnimationState o58Animation_o058Reloc;
+extern s32 o58PathDelay_o058Reloc;
+extern s32 gOverlay58FloorChoice_o058Reloc;
+extern s32 gOverlay58InsertChoice_o058Reloc;
+extern s32 o58ScreenState_o058Reloc;
+extern s32 o58PrimaryX_o058Reloc;
+extern s32 o58RankX_o058Reloc;
+extern s32 o58ScoreX_o058Reloc;
+extern s32 o58HeadingX_o058Reloc;
+extern s32 o58SlideX_o058Reloc;
+extern s32 o58RowsY_o058Reloc;
+extern s32 o58NextScreen_o058Reloc;
+extern s32 o58ScoreTickDelay_o058Reloc;
+extern s32 o58PathAlpha_o058Reloc;
+extern s32 o58ActiveState_o058Reloc;
+extern s32 o58PathFinished_o058Reloc;
+extern s32 gOverlay58PrimaryOrderIndex_o058Reloc;
+extern Overlay58RaceEntry *o58TimeOrder_o058Reloc[6];
+extern Overlay58RaceEntry *o58RankOrder_o058Reloc[6];
+extern s32 o58TimeTies_o058Reloc[6];
+extern s32 o58RankTies_o058Reloc[6];
+extern s32 o58MenuChoice_o058Reloc;
+extern s32 o58PathPending_o058Reloc;
+extern s32 gOverlay58ResourceReady_o058Reloc;
+extern ColourCycle o58Highlight_o058Reloc;
+extern s8 o58ActivePlayers_o058Reloc[4];
 
 /* This module's exports (ORT rows). */
 void func_overlay_058_F0000000_18AF1E8(void);

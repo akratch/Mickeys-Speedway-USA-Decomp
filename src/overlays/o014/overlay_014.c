@@ -36,24 +36,24 @@ void func_overlay_014_F0000000_186F8D8(void) {
     s32 invalid;
     overlay14InitializeReloc();
     invalid = -1;
-    gOverlay14Current104 = invalid; gOverlay14Next108 = invalid;
-    gOverlay14Context10C = 0; gOverlay14Field114 = 0;
-    if (gOverlay14AssetF0) mmFree(gOverlay14AssetF0);
-    if (gOverlay14OffsetsF4) mmFree(gOverlay14OffsetsF4);
+    o14Current_o014Reloc = invalid; o14Next_o014Reloc = invalid;
+    o14Context_o014Reloc = 0; o14RuleField114_o014Reloc = 0;
+    if (o14RuleGroups_o014Reloc) mmFree(o14RuleGroups_o014Reloc);
+    if (o14Ranges_o014Reloc) mmFree(o14Ranges_o014Reloc);
     slot = gOverlay14ValueSlots_o014Reloc; do {
-        if ((gOverlay14ValueCountE8 != 0) && slot->value) mmFree(slot->value);
+        if ((o14ValueCount_o014Reloc != 0) && slot->value) mmFree(slot->value);
         slot++;
         slot[-1].value = 0;
         slot[-1].key = invalid;
     } while (slot != gOverlay14ValueSlotsEnd128);
-    gOverlay14ValueCountE8 = 0;
-    gOverlay14CommandCountEC = 0;
-    gOverlay14StateC0 = 0; gOverlay14StateC4 = 0; gOverlay14StateC8 = 0;
+    o14ValueCount_o014Reloc = 0;
+    o14CommandCount_o014Reloc = 0;
+    o14Opacity_o014Reloc = 0; o14Active_o014Reloc = 0; o14State_o014Reloc = 0;
     invalid = -1;
-    gOverlay14PendingValueD0 = invalid; gOverlay14PendingModeD4 = invalid;
-    gOverlay14TransitionD8 = 0; gOverlay14CursorDC = 0; gOverlay14PointerE0 = 0;
-    gOverlay14AssetF0 = 0; gOverlay14OffsetsF4 = 0;
-    gOverlay14ResultF8 = 0; gOverlay14ResultFC = 0;
+    o14PendingValue_o014Reloc = invalid; o14PendingMode_o014Reloc = invalid;
+    o14Transition_o014Reloc = 0; o14Cursor_o014Reloc = 0; o14CommandAddress_o014Reloc = 0;
+    o14RuleGroups_o014Reloc = 0; o14Ranges_o014Reloc = 0;
+    o14ResultAddress_o014Reloc = 0; o14SelectionAddress_o014Reloc = 0;
 }
 
 /* Rewritten from the listing on 2026-10-02 (the inherited candidate was 29
@@ -75,8 +75,8 @@ void func_overlay_014_F000013C_186FA14(s32 group, s32 context) {
     if (group < 0 || group >= 0) {
         return;
     }
-    gOverlay14Context10C = context;
-    gOverlay14AssetF0 = (Overlay14RuleGroup *) piRomLoad_o014Reloc(8);
+    o14Context_o014Reloc = context;
+    o14RuleGroups_o014Reloc = (Overlay14RuleGroup *) piRomLoad_o014Reloc(8);
     switch (frontGetLanguage_o014Reloc()) {
         case 1: size = 0xB; break;
         case 2: size = 0xD; break;
@@ -84,8 +84,8 @@ void func_overlay_014_F000013C_186FA14(s32 group, s32 context) {
         case 5: size = 0x11; break;
         default: size = 9; break;
     }
-    gOverlay14OffsetsF4 = piRomLoad_o014Reloc(size);
-    entry = gOverlay14AssetF0;
+    o14Ranges_o014Reloc = piRomLoad_o014Reloc(size);
+    entry = o14RuleGroups_o014Reloc;
     right = group--;
     if (right != 0) {
         do {
@@ -121,10 +121,10 @@ void func_overlay_014_F000013C_186FA14(s32 group, s32 context) {
             right = count--;
         } while (right != 0);
     }
-    gOverlay14Field110 = rule->field110;
-    gOverlay14Field114 = rule->field114;
+    o14RuleField110_o014Reloc = rule->field110;
+    o14RuleField114_o014Reloc = rule->field114;
     if (overlay14ApplyValues(rule->value, 3) != 0) {
-        gOverlay14StateC4 = 1;
+        o14Active_o014Reloc = 1;
     }
     overlay14Reset();
 }
@@ -140,7 +140,7 @@ static s32 overlay14ApplyValues(s32 value, s32 mode) {
     Overlay14QueuedCommand *command;
 
     result = 0;
-    if (gOverlay14StateC8 != 0) {
+    if (o14State_o014Reloc != 0) {
         gOverlay14PendingValueD0Base.value = value;
         gOverlay14PendingModeD4Base.value = mode;
         return 0;
@@ -148,10 +148,10 @@ static s32 overlay14ApplyValues(s32 value, s32 mode) {
 
     gOverlay14PendingValueD0Base.value = -1;
     gOverlay14PendingModeD4Base.value = -1;
-    if (gOverlay14CommandCountEC < 0x10) {
+    if (o14CommandCount_o014Reloc < 0x10) {
         if (mode == 2) {
             gOverlay14Value108.value = value;
-            gOverlay14StateC8 = 2;
+            o14State_o014Reloc = 2;
         } else if (mode == 1) {
             gOverlay14ResultFCBase.value = overlay14CreateValue(value, 1);
             if (overlay14MoveCommandCursor(0) != 0) {
@@ -159,21 +159,21 @@ static s32 overlay14ApplyValues(s32 value, s32 mode) {
                 result = gOverlay14ResultFCBase.value;
             }
         } else {
-            gOverlay14ResultF8 = overlay14CreateValue(value, 4);
+            o14ResultAddress_o014Reloc = overlay14CreateValue(value, 4);
             gOverlay14TransitionD8Base.value = 0;
             gOverlay14CursorDCBase.value = 0;
             gOverlay14PointerE0Base.value = 0;
             gOverlay14ModeE4.value = mode;
-            result = gOverlay14ResultF8;
+            result = o14ResultAddress_o014Reloc;
         }
 
         if (result != 0) {
-            index = gOverlay14CommandCountEC;
+            index = o14CommandCount_o014Reloc;
             command = &gOverlay14CommandQueue_o014Reloc[index];
             command->value = value;
             command->mode = mode;
             command->result = result;
-            gOverlay14CommandCountEC = index + 1;
+            o14CommandCount_o014Reloc = index + 1;
         }
     }
     return result;
@@ -355,8 +355,8 @@ static void *overlay14LoadRelocatedValue(s32 index, s32 source) {
     u8 *cursor;
     u32 value;
 
-    start = gOverlay14OffsetsF4[index];
-    size = gOverlay14OffsetsF4[index + 1] - start;
+    start = o14Ranges_o014Reloc[index];
+    size = o14Ranges_o014Reloc[index + 1] - start;
     buffer = mmAlloc(size, 0x85);
     if (buffer != NULL) {
         piRomLoadSection(source, buffer, start, size);
@@ -458,7 +458,7 @@ static Overlay14Asset *func_overlay_014_F00009F4_18702CC(s32 index, s32 context)
 
 void overlay14ResetFlags(void) {
     gOverlay14FlagC4 = 0;
-    gOverlay14FlagCC = 0;
+    o14ExitRequested_o014Reloc = 0;
 }
 
 s32 overlay14GetFlagC4(void) {
@@ -478,7 +478,7 @@ void overlay14ReleaseCurrent(void) {
 }
 
 s32 overlay14GetFlagCC(void) {
-    return gOverlay14FlagCC;
+    return o14ExitRequested_o014Reloc;
 }
 
 /* The input state's BSS words, defined before their first mention: IDO lays
@@ -998,10 +998,10 @@ static s32 func_overlay_014_F0001830_1871108(Gfx **context, u8 *stream, s32 skip
 void overlay14ReleaseOwner(void) {
     Overlay14Owner *owner;
 
-    owner = gOverlay14Owner;
+    owner = o14Owner_o014Reloc;
     if (owner != NULL) {
         owner->released = 1;
-        gOverlay14Owner = NULL;
+        o14Owner_o014Reloc = NULL;
     }
 }
 

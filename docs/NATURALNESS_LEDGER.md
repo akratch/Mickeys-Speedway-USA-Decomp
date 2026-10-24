@@ -6,6 +6,14 @@ No C was changed. This is a list to clean against before any completion claim.
 Its companion is `docs/cleanup-queue.md`, which records forms already known to
 be inert. This ledger also covers what that queue misses.
 
+This is a historical source census, not current progress authority. File paths,
+line numbers and site totals below have not been regenerated after the overlay
+folds and subsequent source repairs. At `580f4374a`, all 51 names in the separate
+cleanup queue resolve to unique current C definitions. That definition census
+does not establish that their recorded forms were removed or that the wider
+findings here are still present. Recheck each current owner and actual source
+form before assigning cleanup or reporting closure.
+
 Severity: **A**, a reviewer would call it a fake match (semantically inert code
 whose only job is to steer codegen). **B**, unnatural but defensible (carriers,
 `goto`, `volatile`, pads beyond one, offsets cast through `u8 *`). **C**,

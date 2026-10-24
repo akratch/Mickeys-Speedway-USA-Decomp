@@ -1102,7 +1102,9 @@ $(MODULE_LINK_DATA_OBJECTS): private MODULE_LINK = $(HOST_PYTHON) $(TOOLS_DIR)/l
 	--ort config/runlink-ort.$(VERSION).txt --ld $(LD) --objcopy $(OBJCOPY) \
 	$(if $(LOCAL_RO_ORIGIN_OBJECT),--local-ro-origin-object $(LOCAL_RO_ORIGIN_OBJECT)) \
 	$(if $(LOCAL_RO_PROVIDER_GROUP),--local-ro-provider-group $(LOCAL_RO_PROVIDER_GROUP)) \
-	$(if $(LOCAL_DATA_AGGREGATE),--local-data-aggregate)
+	$(if $(LOCAL_DATA_AGGREGATE),--local-data-aggregate) \
+	$(if $(LOCAL_DATA_OBJECTS),--local-data-objects) \
+	$(if $(LOCAL_RO_MIXED_PROVIDER_GROUP),--local-ro-mixed-provider-group $(LOCAL_RO_MIXED_PROVIDER_GROUP))
 $(MODULE_LINK_DATA_OBJECTS): private RUN_POSTPROCESS = @:
 $(MODULE_LINK_DATA_OBJECTS): private RUN_SURFACE_REBIND = @:
 

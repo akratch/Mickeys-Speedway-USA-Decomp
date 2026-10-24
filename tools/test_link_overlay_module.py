@@ -70,6 +70,18 @@ def aggregate_fixture(*, missing=False, tail=0, root_size=15, extra=False):
     return bytes(data)
 
 
+def objects_fixture(*, missing=False, extra=False, overlap=False, tail=0):
+    obj=ElfBuilder().section(".data",words(0,0,37,tail))
+    obj.sym("pointers",0,8,GLOBAL,1,".data").sym("columns",4 if overlap else 8,4,GLOBAL,1,".data")
+    obj.sym("first",type=1).sym("second",type=1)
+    if not missing:obj.rel(".data",0,rp.R_MIPS_32,"first")
+    obj.rel(".data",4,rp.R_MIPS_32,"second")
+    if extra:obj.sym("",4,0,LOCAL,1,".data")
+    data=bytearray(obj.build());elf=rp.Elf("fixture",data)
+    struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+elf.section(".data")["index"]*40+8,3)
+    return bytes(data)
+
+
 def readonly_fixture():
     obj=ElfBuilder().section(".rodata",b"one\0two\0")
     obj.sym("first",0,0,GLOBAL,1,".rodata").sym("second",4,0,GLOBAL,1,".rodata")
@@ -104,6 +116,64 @@ class BindingTests(unittest.TestCase):
         struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+elf.section(".rodata")["index"]*40+8,3)
         with self.assertRaises(tool.LinkError):
             tool.local_data_bindings(rp.Elf("raw",aggregate_fixture()),rp.Elf("bad",data),rp.OrtNames([],{}),aggregate=True)
+
+    @unittest.skipUnless(LD.is_file() and OBJCOPY.is_file(), "needs MIPS binutils")
+    def test_explicit_mixed_group_retains_root_and_resolves_actual_storage(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); raw=root/"raw.o"; a=root/"a.o"; b=root/"b.o"; output=root/"out.o"
+            raw.write_bytes(aggregate_fixture())
+            def storage(name, payload, symbol):
+                obj=ElfBuilder().section(name,payload).sym(symbol,0,0,GLOBAL,1,name)
+                data=bytearray(obj.build()); elf=rp.Elf("fixture",data)
+                struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+elf.section(name)["index"]*40+8,2 if name==".rodata" else 3)
+                return bytes(data)
+            a.write_bytes(storage(".rodata",b"one\0"+bytes(12),"first"))
+            b.write_bytes(storage(".data",b"two\0"+bytes(12),"second"))
+            receipt=tool.link(raw,output,rp.OrtNames([],{}),root/"module",ld=LD,objcopy=OBJCOPY,
+                rebind=ROOT/"tools/rebind_elf_relocations.py",local_ro_mixed_group=[a,b])
+            self.assertEqual(rp.Elf(output).bytes_of(".data"),words(0,16,37,0))
+            self.assertEqual(next(s.size for s in rp.Elf(output).symbols if s.name=="aggregate"),15)
+            group=receipt["local_data_group"]
+            self.assertEqual(group["profile"],"mixed-storage-v1")
+            self.assertEqual([x["input_section"] for x in group["inputs"]],[".rodata",".data"])
+            self.assertEqual(raw.read_bytes(),aggregate_fixture())
+            with self.assertRaises(tool.LinkError):
+                tool.link(raw,output,rp.OrtNames([],{}),root/"wrong",ld=LD,objcopy=OBJCOPY,
+                    rebind=ROOT/"tools/rebind_elf_relocations.py",local_ro_mixed_group=[b,a])
+            b.write_bytes(storage(".data",b"two\0yyyy","wrong"))
+            with self.assertRaisesRegex(tool.LinkError,"unique actual named base"):
+                tool.link(raw,output,rp.OrtNames([],{}),root/"missing",ld=LD,objcopy=OBJCOPY,
+                    rebind=ROOT/"tools/rebind_elf_relocations.py",local_ro_mixed_group=[a,b])
+
+    @unittest.skipUnless(LD.is_file() and OBJCOPY.is_file(), "needs MIPS binutils")
+    def test_two_real_objects_need_explicit_profile_and_keep_actual_extents(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);raw=root/"raw.o";a=root/"a.o";b=root/"b.o";output=root/"out.o"
+            raw.write_bytes(objects_fixture())
+            for path,section,name in ((a,".rodata","first"),(b,".data","second")):
+                obj=ElfBuilder().section(section,bytes(16)).sym(name,0,0,GLOBAL,1,section)
+                data=bytearray(obj.build());elf=rp.Elf("fixture",data)
+                struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+elf.section(section)["index"]*40+8,2 if section==".rodata" else 3)
+                path.write_bytes(data)
+            with self.assertRaises(tool.LinkError):
+                tool.local_aggregate_shape(rp.Elf(raw))
+            receipt=tool.link(raw,output,rp.OrtNames([],{}),root/"module",ld=LD,objcopy=OBJCOPY,
+                rebind=ROOT/"tools/rebind_elf_relocations.py",local_ro_mixed_group=[a,b],local_data_objects=True)
+            self.assertEqual(rp.Elf(output).bytes_of(".data"),words(0,16,37,0))
+            shape=receipt["local_data_group"]["objects"]
+            self.assertEqual(shape["compiler_object_end"],12)
+            self.assertEqual([(x["offset"],x["size"]) for x in shape["objects"]],[(0,8),(8,4)])
+            self.assertEqual(shape["input_allocation"],16)
+            self.assertEqual(raw.read_bytes(),objects_fixture())
+
+    def test_two_object_missing_zero_record_unnamed_extra_overlap_and_suffix_refuse(self):
+        for kwargs in ({"missing":True},{"extra":True},{"overlap":True},{"tail":1}):
+            with self.subTest(kwargs=kwargs),self.assertRaises(tool.LinkError):
+                tool.local_objects_shape(rp.Elf("bad",objects_fixture(**kwargs)))
+        with self.assertRaisesRegex(tool.LinkError,"two adjacent genuine GLOBAL definitions"):
+            tool.local_objects_shape(rp.Elf("unnamed-inside-owner",objects_fixture(extra=True)))
+        good=rp.Elf("good",objects_fixture());missing=rp.Elf("missing",objects_fixture(missing=True))
+        self.assertEqual(good.bytes_of(".data"),missing.bytes_of(".data"))
 
     def test_unknown_external_is_refused_without_editing_input(self):
         with tempfile.TemporaryDirectory() as directory:

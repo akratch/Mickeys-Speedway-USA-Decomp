@@ -2729,7 +2729,7 @@ segments:
       - [0x18AAB98, .data, overlay57SelectionFlag]
       - [0x18AAB9C, bin, overlay_057_data_rodata_4f4]
       - [0x18AABA0, .data, overlay57TransitionState]
-      - [0x18AABB8, bin, overlay_057_data_rodata_510]
+      - [0x18AABB8, .data, overlay57ResultLayout]
       - {start: 0x18AABE8, type: .rodata, name: overlay57MenuLabels, linker_section_order: .data}
       - [0x18AAC28, .data, overlay57ResultLabels]
       - {start: 0x18AAC54, type: .rodata, name: overlay_057, linker_section_order: .data}

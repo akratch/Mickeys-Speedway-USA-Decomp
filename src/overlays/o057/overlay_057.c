@@ -2324,9 +2324,12 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     valueA = renderItems[i].value07 + 0x51;
                 }
                 if (i < 3) {
+                    /* The legacy font input is read-only: it is copied into
+                     * separate scratch before rendering. Keep the const view
+                     * of the table and make this boundary conversion explicit. */
                     fontPrintXY(
                         &D_800D3140, panelX + 0x2E, row,
-                        gO57MiddleLabels[i], 0);
+                        (char *)o57ResultLabelPointers_o057Reloc[i], 0);
                 }
                 textureNodes[0].texture = D_800D31C8[valueA];
                 textureNodes[0].alternate = NULL;
@@ -2341,7 +2344,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     stackB0[0] = renderState[index];
                     stackB0[1] = 0;
                     fontPrintXY(
-                        &D_800D3140, gO57MiddleColumns[index] + panelX, row, stackB0, 0);
+                        &D_800D3140, o57ResultColumns_o057Reloc[index] + panelX, row, stackB0, 0);
                 }
                 if (i == 2) {
                     row += 0x1B;

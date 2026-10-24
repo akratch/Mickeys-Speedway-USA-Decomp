@@ -891,7 +891,7 @@ def local_data_aggregate(command, root):
     flag = "--local-data-aggregate"
     if flag not in words:
         return False
-    if words.count(flag) != 1 or "--local-ro-provider-group" in words or not local_ro_provider_input(command, root):
+    if words.count(flag) != 1 or any(flag in words for flag in ("--local-ro-provider-group", "--local-ro-mixed-provider-group")) or not local_ro_provider_input(command, root):
         raise MetadataProofError("mixed LOCAL aggregate needs one explicit provider")
     return True
 
@@ -900,17 +900,42 @@ def local_ro_provider_inputs(command, root):
     """Distinct explicit ordered ordinary paths; never a generated group C path."""
     import shlex
     words = shlex.split(command)
-    flag = "--local-ro-provider-group"
+    group_flags = [flag for flag in ("--local-ro-provider-group", "--local-ro-mixed-provider-group") if flag in words]
+    if len(group_flags) > 1:
+        raise MetadataProofError("conflicting LOCAL provider profiles")
+    flag = group_flags[0] if group_flags else "--local-ro-provider-group"
     if flag not in words:
         one = local_ro_provider_input(command, root)
         return (one,) if one else ()
-    if words.count(flag) != 1 or "--local-ro-origin-object" in words:
+    if (words.count(flag) != 1 or "--local-ro-origin-object" in words
+            or "--local-data-aggregate" in words):
         raise MetadataProofError("conflicting LOCAL provider profiles")
     names = words[words.index(flag) + 1:]
     if len(names) < 2 or len(set(names)) != len(names) or any(n.startswith("--") for n in names):
         raise MetadataProofError("ambiguous ordered LOCAL provider group")
     return tuple(local_ro_provider_input("helper --local-ro-origin-object " + name, root)
                  for name in names)
+
+
+def local_ro_mixed_group(command, root):
+    import shlex
+    mixed = "--local-ro-mixed-provider-group" in shlex.split(command)
+    if mixed:
+        names = local_ro_provider_inputs(command, root)
+        if len(names) != 2:
+            raise MetadataProofError("mixed LOCAL group requires exactly two complete providers")
+    return mixed
+
+
+def local_data_objects(command, root):
+    import shlex
+    words = shlex.split(command)
+    flag = "--local-data-objects"
+    selected = flag in words
+    if selected and (words.count(flag) != 1 or "--local-data-aggregate" in words
+                     or not local_ro_mixed_group(command, root)):
+        raise MetadataProofError("LOCAL objects need one explicit mixed provider group")
+    return selected
 
 
 def capture_data_module_producer_raw(root, source, configured, linked, map_path):
@@ -1018,6 +1043,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             inputs["metadata_tools"].update(literal_profile_inputs(root))
             inputs["metadata_tools"].update(literal_frontend_inputs(root, command))
         if module_link:
+            local_data_objects(expanded_postprocess, root)
             inputs["module_link"] = expanded_postprocess
             inputs["module_link_inputs"] = {name: sha256_file(root / name) for name in (
                 "config/runlink-ort.us.txt", "tools/link_overlay_module.py", "tools/runlink_pack.py",

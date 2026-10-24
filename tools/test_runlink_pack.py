@@ -1101,6 +1101,81 @@ class DataOnlyImportGuardTests(unittest.TestCase):
                 with self.assertRaises(rp.PackError):
                     rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
 
+    def grouped_inputs(self, missing_first=False):
+        self.local_inputs()
+        other = "overlays/o001/tail"
+        path = self.root / "src" / (other + ".c")
+        path.write_text("/* genuine synthetic provider source */\n")
+        self.row.update(size="0xC", end_offset="0x10")
+        rows = self.world.amods[1]["data_rodata_ownership"]
+        rows[1].update(offset="0x10", end_offset="0x18")
+        rows.append(dict(type="c", canonical=True, section=".data", source=other,
+                         offset="0x18", size="0x8", end_offset="0x20"))
+        for group in ("raw", "build"):
+            self.write(self.paths[group] / "src" / (self.provider + ".c.o"),
+                ObjBuilder().section(".data", b"one\0xxxx")
+                .sym("first", 0, 0, GLOBAL, OBJECT, ".data"))
+            self.write(self.paths[group] / "src" / (other + ".c.o"),
+                ObjBuilder().section(".data", b"two\0yyyy")
+                .sym("second", 0, 0, GLOBAL, OBJECT, ".data"))
+        raw_builder = (ObjBuilder().section(".data", words(0, 0, 37))
+            .sym("aggregate", 0, 12, GLOBAL, OBJECT, ".data").sym("first").sym("second"))
+        if not missing_first:
+            raw_builder.rel(".data", 0, R32, "first")
+        raw_builder.rel(".data", 4, R32, "second")
+        raw = self.write(self.paths["raw"] / "src" / (self.source + ".c.o"), raw_builder)
+        self.write(self.paths["build"] / "src" / (self.source + ".c.o"),
+            ObjBuilder().section(".data", words(0, 8, 37))
+            .sym("aggregate", 0, 12, GLOBAL, OBJECT, ".data"))
+        old = self.world.elf
+        linked = ObjBuilder().section(".overlay_001", bytes(20) + words(0, 8, 37)
+            + b"one\0xxxxtwo\0yyyy", addr=rp.OVERLAY_VMA)
+        for symbol in old.symbols:
+            if symbol.name.startswith("main_") or symbol.name == "runlinkCodeEnd":
+                linked.sym(symbol.name, symbol.value, 0, GLOBAL, NOTYPE, "ABS")
+        linked.sym("aggregate", rp.OVERLAY_VMA + 20, 12, GLOBAL, OBJECT, ".overlay_001")
+        linked.sym("first", rp.OVERLAY_VMA + 32, 0, GLOBAL, OBJECT, ".overlay_001")
+        linked.sym("second", rp.OVERLAY_VMA + 40, 0, GLOBAL, OBJECT, ".overlay_001")
+        self.world.elf = rp.Elf("linked", linked.build())
+        self.world.by_name = {s.name: [s] for s in self.world.elf.symbols if s.name}
+        self.world.map = [rp.MapInput(".overlay_001", ".data", rp.OVERLAY_VMA + start, size,
+            "build/src/" + source + ".c.o") for start, size, source in
+            ((20, 12, self.source), (32, 8, self.provider), (40, 8, other))]
+        self.world.module_info[1]["inputs"] = self.world.map
+        expected = {(20 + i * 4, R32): dict(op=rp.OP_LOCAL, symbol_index=32,
+            full=("ov", 1, target), table=2, position=i) for i, target in enumerate((32, 40))}
+        self.world.expected_cache = lambda _ov: expected
+        raw.local_ro_providers = tuple("build/src/" + source + ".c.o" for source in (self.provider, other))
+        raw.local_ro_provider = raw.local_ro_providers[0]
+        return raw, expected
+
+    def test_grouped_mixed_aggregate_uses_both_real_providers_and_keeps_scalars(self):
+        raw, _expected = self.grouped_inputs()
+        self.assertEqual(2, rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw))
+        self.assertEqual({"first": (1, 32), "second": (1, 40)}, raw.data_local_identities)
+        self.assertEqual(37, rp.u32(raw.bytes_of(".data"), 8))
+        rp.check_data_import_holds(self.world)
+        provider = self.paths["raw"] / "src/overlays/o001/tail.c.o"
+        provider.write_bytes(provider.read_bytes() + b"changed")
+        with self.assertRaisesRegex(rp.PackError, "held data-only input changed"):
+            rp.check_data_import_holds(self.world)
+
+    def test_grouped_missing_zero_pointer_wrong_order_role_and_owner_refuse(self):
+        for case in ("null", "order", "role", "owner"):
+            with self.subTest(case=case):
+                self.setUp()
+                raw, expected = self.grouped_inputs(missing_first=case == "null")
+                self.assertEqual(words(0, 8, 37), rp.Elf(self.paths["build"] / "src" /
+                    (self.source + ".c.o")).bytes_of(".data"))
+                if case == "order":
+                    raw.local_ro_providers = tuple(reversed(raw.local_ro_providers))
+                elif case == "role":
+                    expected[(20, R32)]["symbol_index"] = 16
+                elif case == "owner":
+                    self.world.by_name["aggregate"] = []
+                with self.assertRaises(rp.PackError):
+                    rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+
 
 class DataOnlyProducerDiscoveryTests(unittest.TestCase):
     def setUp(self):

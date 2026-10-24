@@ -553,6 +553,23 @@ def local_ro_provider_input(command, root):
     return name
 
 
+def local_ro_provider_inputs(command, root):
+    """Distinct explicit ordered ordinary paths; never a generated group C path."""
+    import shlex
+    words = shlex.split(command)
+    flag = "--local-ro-provider-group"
+    if flag not in words:
+        one = local_ro_provider_input(command, root)
+        return (one,) if one else ()
+    if words.count(flag) != 1 or "--local-ro-origin-object" in words:
+        raise MetadataProofError("conflicting LOCAL provider profiles")
+    names = words[words.index(flag) + 1:]
+    if len(names) < 2 or len(set(names)) != len(names) or any(n.startswith("--") for n in names):
+        raise MetadataProofError("ambiguous ordered LOCAL provider group")
+    return tuple(local_ro_provider_input("helper --local-ro-origin-object " + name, root)
+                 for name in names)
+
+
 def capture_data_module_producer_raw(root, source, configured, linked, map_path):
     """Fresh producer capture, distinct from and inadmissible as promotion proof."""
     return _capture_configured_raw(root, source, configured, linked, "", module_link=True,
@@ -643,8 +660,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             inputs["module_link_inputs"] = {name: sha256_file(root / name) for name in (
                 "config/runlink-ort.us.txt", "tools/link_overlay_module.py", "tools/runlink_pack.py",
                 "tools/rebind_elf_relocations.py", "tools/binutils/mips64-elf-ld")}
-            provider = local_ro_provider_input(expanded_postprocess, root)
-            if provider:
+            for provider in local_ro_provider_inputs(expanded_postprocess, root):
                 inputs["module_link_inputs"][provider] = sha256_file(root / provider)
         if static_lines:
             inputs["static_symbols"] = {"command": static_lines[0], "tool": sha256_file(

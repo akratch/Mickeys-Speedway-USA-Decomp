@@ -28,6 +28,7 @@ import struct
 import sys
 import tempfile
 import time
+import uuid
 from typing import Iterable, Sequence
 
 import runlink_metadata_link as metadata_link
@@ -50,6 +51,37 @@ def literal_profile_inputs(root):
 
 
 _LITERAL_PARSER_PIN = None
+
+
+def _literal_declarations(source):
+    """Close the owner syntax before the frontend can read any assembly input."""
+    import candidate_context as lexical
+    try:
+        lexical.identity()
+    except (RuntimeError, OSError, ValueError) as error:
+        raise MetadataProofError("loaded literal lexical helper changed") from error
+    if len(source) > lexical.MAX_SOURCE_BYTES or b"\\\n" in source or b"??" in source:
+        raise MetadataProofError("unsupported literal source size/splicing/trigraphs")
+    text = lexical._strip_comments(source.decode("utf-8"))
+    include = re.compile(r'\s*#\s*include\s*(?:"(?P<quoted>[^"\n]+)"|<(?P<angle>[^>\n]+)>)\s*\n')
+    while match := include.match(text):
+        name = match["quoted"] or match["angle"]
+        if pathlib.PurePosixPath(name).is_absolute() or ".." in pathlib.PurePosixPath(name).parts or "\\" in name:
+            raise MetadataProofError("unsupported literal root include path")
+        text = text[match.end():]
+    declaration = re.compile(r'\s*(?P<const>const\s+)?char\s+(?P<name>[A-Za-z_][A-Za-z_0-9]*)\s*\[\s*\]\s*=\s*"(?P<literal>[\x20-\x21\x23-\x5B\x5D-\x7E]*)"\s*;')
+    rows = []
+    while text.strip():
+        match = declaration.match(text)
+        if not match:
+            raise MetadataProofError("not complete plain ASCII literal-array declarations")
+        rows.append(dict(name=match["name"], const=bool(match["const"]), literal=match["literal"]))
+        text = text[match.end():]
+    if (not rows or len(rows) > lexical.MAX_DECLARATIONS
+            or len({row["name"] for row in rows}) != len(rows)
+            or len({row["const"] for row in rows}) != 1):
+        raise MetadataProofError("mixed/duplicate/empty literal definitions")
+    return rows
 
 
 def literal_array_facts(source, cpp, root):
@@ -79,24 +111,9 @@ def literal_array_facts(source, cpp, root):
         raise MetadataProofError("literal parser changed during loading")
     if _LITERAL_PARSER_PIN is None:
         _LITERAL_PARSER_PIN = before
-    if max(len(source), len(cpp)) > lexical.MAX_SOURCE_BYTES or b"\\\n" in source or b"??" in source:
-        raise MetadataProofError("unsupported literal source size/splicing/trigraphs")
-    text = lexical._strip_comments(source.decode("utf-8"))
-    include = re.compile(r'\s*#\s*include\s*(?:"[^"\n]+"|<[^>\n]+>)\s*\n')
-    while match := include.match(text):
-        text = text[match.end():]
-    declaration = re.compile(r'\s*(?P<const>const\s+)?char\s+(?P<name>[A-Za-z_][A-Za-z_0-9]*)\s*\[\s*\]\s*=\s*"(?P<literal>[\x20-\x21\x23-\x5B\x5D-\x7E]*)"\s*;')
-    rows = []
-    while text.strip():
-        match = declaration.match(text)
-        if not match:
-            raise MetadataProofError("not complete plain ASCII literal-array declarations")
-        rows.append(dict(name=match["name"], const=bool(match["const"]), literal=match["literal"]))
-        text = text[match.end():]
-    if (not rows or len(rows) > lexical.MAX_DECLARATIONS
-            or len({row["name"] for row in rows}) != len(rows)
-            or len({row["const"] for row in rows}) != 1):
-        raise MetadataProofError("mixed/duplicate/empty literal definitions")
+    if len(cpp) > lexical.MAX_SOURCE_BYTES:
+        raise MetadataProofError("literal CPP exceeds the source proof bound")
+    rows = _literal_declarations(source)
     try:
         ast = c_parser.CParser().parse(cpp.decode("utf-8"))
     except Exception as error:
@@ -191,9 +208,81 @@ def _literal_flags(command, source):
     return flags
 
 
-def prove_literal_arrays(elf, source, root, *, compiler_command=None):
-    """Capture source/CPP/raw observations without inventing ELF extents."""
+def literal_frontend_inputs(root, command):
+    words = shlex.split(command)
+    if len(words) < 2 or words[1] != "tools/asm-processor/build.py":
+        return {}
+    if words[:4] != [".venv/bin/python", "tools/asm-processor/build.py", "tools/ido/cc", "--"]:
+        raise MetadataProofError("unsupported literal wrapper invocation")
+    root = pathlib.Path(root)
+    paths = [root/".venv/bin/python", *sorted((root/"tools/asm-processor").rglob("*.py"))]
+    if not (root/"tools/asm-processor/asm_processor.py").is_file():
+        raise MetadataProofError("literal wrapper frontend is missing")
+    return {path.relative_to(root).as_posix(): sha256_file(path) for path in paths}
+
+
+def _literal_preparation_current(prepared, root):
     import permute_batch as batch
+    if batch.checked_tool_identity() != prepared["dependency_tools"]:
+        raise MetadataProofError("literal dependency machinery changed")
+    expected = prepared["inputs"] | prepared["dependencies"]
+    if any(sha256_file(pathlib.Path(root)/name) != digest for name, digest in expected.items()):
+        raise MetadataProofError("literal frontend source/tool/header context changed")
+    return expected
+
+
+def prepare_literal_input(source, root, command):
+    """Replay the existing wrapper frontend and discover its actual headers."""
+    import permute_batch as batch
+    root, source = pathlib.Path(root), pathlib.Path(source)
+    dependency_tools = batch.checked_tool_identity()
+    relative = source.relative_to(root).as_posix()
+    flags = _literal_flags(command, relative)
+    tools = literal_profile_inputs(root) | literal_frontend_inputs(root, command)
+    for path in (pathlib.Path(batch.__file__), pathlib.Path(batch.sweep_receipts.__file__)):
+        if path.is_relative_to(root):
+            tools[path.relative_to(root).as_posix()] = sha256_file(path)
+    tools[relative] = sha256_file(source)
+    loaded = source.read_bytes()
+    if hashlib.sha256(loaded).hexdigest() != tools[relative]:
+        raise MetadataProofError("literal source changed before frontend")
+    _literal_declarations(loaded)
+    wrapped = len(shlex.split(command)) > 1 and shlex.split(command)[1] == "tools/asm-processor/build.py"
+    frontend = None
+    compiler_input = loaded
+    if wrapped:
+        # These are exactly build.py's frontend options and final -I ordering.
+        options = [x for x in flags if x in {"-g3", "-g", "-O0", "-O1", "-O2", "-framepointer", "-KPIC"}]
+        if "-mips2" not in flags:
+            options.append("-mips1")
+        frontend = [".venv/bin/python", "tools/asm-processor/asm_processor.py", *options, relative]
+        result = subprocess.run(frontend, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                timeout=120, check=False)
+        if result.returncode:
+            raise MetadataProofError("literal wrapper frontend failed")
+        compiler_input = result.stdout
+        flags = flags + ["-I", str(source.resolve().parent)]
+        # The trusted derivative is only a dependency-discovery input. Like
+        # the real wrapper input, its otherwise empty directory cannot shadow
+        # normal root include names. It is never a manifest/build dependency.
+        (root/"build").mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix="literal-deps-", dir=root/"build") as directory:
+            dependency_source = pathlib.Path(directory)/("preprocessed_"+uuid.uuid4().hex+source.suffix)
+            dependency_source.write_bytes(compiler_input)
+            dependencies = batch.source_dependencies(dependency_source, tuple(flags))
+    else:
+        dependencies = batch.source_dependencies(source, tuple(flags))
+    if any(name.startswith("missing:") for name in dependencies):
+        raise MetadataProofError("literal include closure has missing inputs")
+    prepared = dict(source=relative, source_bytes=loaded, compiler_input=compiler_input,
+                    wrapped=wrapped, flags=flags, frontend_command=frontend,
+                    inputs=tools, dependencies=dependencies, dependency_tools=dependency_tools)
+    _literal_preparation_current(prepared, root)
+    return prepared
+
+
+def prove_literal_arrays(elf, source, root, *, compiler_command=None, prepared=None):
+    """Capture source/actual compiler-input/CPP/raw observations and holds."""
     root, source = pathlib.Path(root), pathlib.Path(source)
     relative = source.relative_to(root).as_posix()
     supplied = compiler_command is not None
@@ -201,16 +290,13 @@ def prove_literal_arrays(elf, source, root, *, compiler_command=None):
         compiler_command, _flags, error = _discover_compile_command(root, source, non_matching=False)
         if error:
             raise MetadataProofError("literal compiler discovery failed: " + error)
-    flags = _literal_flags(compiler_command, relative)
+    prepared = prepare_literal_input(source, root, compiler_command) if prepared is None else prepared
+    if prepared["source"] != relative:
+        raise MetadataProofError("literal preparation belongs to another source")
     def context():
         if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF:
             raise MetadataProofError("loaded literal proof helper changed")
-        result = literal_profile_inputs(root)
-        dependencies = batch.source_dependencies(source, tuple(flags))
-        if any(name.startswith("missing:") for name in dependencies):
-            raise MetadataProofError("literal include closure has missing inputs")
-        result.update(dependencies)
-        result[relative] = sha256_file(source)
+        result = dict(_literal_preparation_current(prepared, root))
         result.update({p.relative_to(root).as_posix(): sha256_file(p)
                        for p in [root/"Makefile", *sorted((root/"mk").glob("**/*.mk"))]})
         result.update({p.relative_to(root).as_posix(): sha256_file(p)
@@ -221,11 +307,17 @@ def prove_literal_arrays(elf, source, root, *, compiler_command=None):
                 raise MetadataProofError("literal CPP recipe changed")
         return result
     before = context()
-    source_bytes = source.read_bytes()
-    if hashlib.sha256(source_bytes).hexdigest() != before.get(relative):
-        raise MetadataProofError("loaded literal source differs from its snapshot")
-    result = subprocess.run(["tools/ido/cc", "-E", *flags, relative], cwd=root,
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120, check=False)
+    source_bytes = prepared["source_bytes"]
+    with tempfile.TemporaryDirectory(prefix="literal-cpp-") as directory:
+        if prepared["wrapped"]:
+            cpp_input = pathlib.Path(directory)/("preprocessed_"+uuid.uuid4().hex+source.suffix)
+            cpp_input.write_bytes(prepared["compiler_input"])
+            argument = str(cpp_input)
+        else:
+            argument = relative
+        cpp_command = ["tools/ido/cc", "-E", *prepared["flags"], argument]
+        result = subprocess.run(cpp_command, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                timeout=120, check=False)
     if result.returncode:
         raise MetadataProofError("literal configured CPP failed")
     cpp = result.stdout
@@ -236,9 +328,10 @@ def prove_literal_arrays(elf, source, root, *, compiler_command=None):
     return dict(schema="mickey-literal-array-end-v1", section=section, end=end,
                 input_size=elf.size(section), arrays=bounds, source_facts=rows,
                 source_sha256=hashlib.sha256(source_bytes).hexdigest(),
+                compiler_input_sha256=hashlib.sha256(prepared["compiler_input"]).hexdigest(),
+                frontend_command=prepared["frontend_command"],
                 cpp_sha256=hashlib.sha256(cpp).hexdigest(), cpp_text=cpp.decode("utf-8"),
-                source=relative, compiler_command=compiler_command,
-                preprocessor_command=["tools/ido/cc", "-E", *flags, relative],
+                source=relative, compiler_command=compiler_command, preprocessor_command=cpp_command,
                 raw_sha256=hashlib.sha256(elf.data).hexdigest(),
                 raw_surface=literal_surface(elf), inputs=before)
 
@@ -890,6 +983,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             metadata_filter_plan(expanded_postprocess, target, root))
     if surface_rebind:
         plan = plan + metadata_filter_plan(surface_rebind, target, root)
+    literal_prepared = (prepare_literal_input(source, root, command)
+                        if any(operation == "literal-end" for operation, arguments in plan) else None)
     def context():
         batch.checked_tool_identity()
         if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF:
@@ -898,7 +993,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             raise MetadataProofError("configured compiler recipe changed during raw proof")
         inputs = {"source": sha256_file(source), "configured": sha256_file(configured),
                   "linked": sha256_file(linked), "command": command, "postprocess": expanded_postprocess, "surface_rebind": surface_rebind,
-                  "dependencies": batch.source_dependencies(source, dependency_args, deadline),
+                  "dependencies": (dict(literal_prepared["dependencies"]) if literal_prepared else
+                                   batch.source_dependencies(source, dependency_args, deadline)),
                   "wrapper_source_directory": receipts.tree_digest(source.parent) if wrapped else None,
                   "include_tree": receipts.tree_digest(root / "include"),
                   "tools": batch.sweep_tool_identity(),
@@ -916,8 +1012,10 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                     ("tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
                      "tools/rebind_elf_relocations.py", "tools/externalize_elf_section.py",
                      "tools/postprocess_guard.py", "tools/binutils/mips64-elf-objcopy")}}
-        if any(operation == "literal-end" for operation, arguments in plan):
+        if literal_prepared:
+            _literal_preparation_current(literal_prepared, root)
             inputs["metadata_tools"].update(literal_profile_inputs(root))
+            inputs["metadata_tools"].update(literal_frontend_inputs(root, command))
         if module_link:
             inputs["module_link"] = expanded_postprocess
             inputs["module_link_inputs"] = {name: sha256_file(root / name) for name in (
@@ -970,7 +1068,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             if source_name != source.relative_to(root).as_posix():
                 raise MetadataProofError("literal profile/source capture differs")
             import runlink_pack as rp
-            literal = prove_literal_arrays(rp.Elf(raw), source, root, compiler_command=command)
+            literal = prove_literal_arrays(rp.Elf(raw), source, root, compiler_command=command, prepared=literal_prepared)
             if literal["section"] != section or literal["end"] != size:
                 raise MetadataProofError("literal recipe differs from source-derived end")
             literal_arrays[section] = literal

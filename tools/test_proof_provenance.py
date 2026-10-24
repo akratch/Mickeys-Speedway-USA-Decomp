@@ -487,6 +487,44 @@ class LiteralArrayEndTests(unittest.TestCase):
                 self.assertEqual(result.returncode,0,result.stderr+result.stdout)
                 self.assertIn("preloaded" if module=="parser" else "lexical",result.stdout)
 
+    def test_wrapped_quoted_header_shadow_matches_compiler_and_holds_chosen_input(self):
+        import runlink_pack as rp
+        import subprocess, shlex
+        root = pathlib.Path(provenance.__file__).resolve().parent.parent
+        if not (root/"tools/ido/cc").is_file() or not (root/".venv/bin/python").is_file():
+            self.skipTest("actual IDO/wrapper unavailable")
+        (root/"build").mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix="literal-shadow-",dir=root/"build") as directory:
+            base=pathlib.Path(directory);local=base/"source";global_=base/"include"
+            local.mkdir();global_.mkdir()
+            source=local/"probe.c";source.write_text('#include "choice.h"\nchar label[]="ok";\n')
+            template="typedef {type} chosen; typedef char Check[(sizeof(chosen)==EXPECTED_WIDTH)?1:-1];\n"
+            (local/"choice.h").write_text(template.format(type="short"))
+            chosen=global_/"choice.h";chosen.write_text(template.format(type="int"))
+            records=[]
+            for wrapped,width,expected in ((True,4,"int"),(False,2,"short")):
+                output=base/("wrapped.o" if wrapped else "bare.o")
+                command=([".venv/bin/python","tools/asm-processor/build.py","tools/ido/cc","--",
+                          "tools/binutils/mips64-elf-as","--"] if wrapped else ["tools/ido/cc"])
+                command += ["-c","-G","0","-non_shared","-mips2","-O2","-32","-nostdinc",
+                            "-I",str(global_),"-DEXPECTED_WIDTH="+str(width),"-o",str(output),
+                            source.relative_to(root).as_posix()]
+                result=subprocess.run(command,cwd=root,capture_output=True)
+                self.assertEqual(result.returncode,0,result.stderr.decode(errors="replace"))
+                record=provenance.prove_literal_arrays(rp.Elf(output),source,root,
+                                                       compiler_command=shlex.join(command))
+                self.assertIn("typedef "+expected+" chosen",record["cpp_text"])
+                selected=(chosen if wrapped else local/"choice.h").relative_to(root).as_posix()
+                rejected=(local/"choice.h" if wrapped else chosen).relative_to(root).as_posix()
+                self.assertIn(selected,record["inputs"])
+                self.assertNotIn(rejected,record["inputs"])
+                self.assertEqual(record["end"],3)
+                records.append((rp.Elf(output),record))
+            chosen.write_text(chosen.read_text()+"/* selected header changed */\n")
+            with self.assertRaises(provenance.MetadataProofError):
+                provenance.validate_literal_proof(*records[0],root)
+            self.assertEqual(provenance.validate_literal_proof(*records[1],root),3)
+
     def test_cpp_boundary_source_raw_and_parser_mutations_refuse(self):
         import runlink_pack as rp
         from types import SimpleNamespace

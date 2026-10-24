@@ -31,7 +31,13 @@ provenance/metadata path. Preserve all prior profiles/default refusals.
   Leading literal includes are held and independently preprocessed; effective
   C may add only nonallocating typedef context, with exactly the same arrays.
 - Reuse the existing configured compiler/preprocessor, existing vendored C
-  parser and source/context machinery. Bind actual loaded source/CPP/raw bytes
+  parser and source/context machinery. For the configured asm-processor wrapper,
+  replay its actual frontend transformation and compiler include order: the
+  otherwise empty temporary input directory, declared include directories, then
+  the original source directory. Discover and hold the chosen header closure
+  from that transformed input before compilation/proof snapshots. Bare IDO
+  retains its original source-directory lookup. Hold the frontend/interpreter
+  sources as well as the existing parser/tool closure. Bind actual loaded source/CPP/raw bytes
   and parser/tool/header/recipe dependencies before and after parsing. The
   profile owns the vendored parser's first loading: an already-loaded namespace
   without its profile loading identity refuses. The existing lexical helper's

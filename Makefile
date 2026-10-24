@@ -787,7 +787,8 @@ $(BUILD_DIR)/%.c.o: %.c $(H_FILES) $(TOOLS_DIR)/normalize_elf_instructions.py $(
 # undefined reference to an export the trap list names. Only symbol names
 # change.
 # It refuses a listed name the object defines, a listed name used by anything
-# but a .text jal, and an undefined overlay-export name the list lacks, and it
+# but a .text jal or zero-addend .data R32 callback, and an undefined
+# overlay-export name the list lacks, and it
 # writes $@.trapsites, from which `gmake verify` proves that each site's C
 # callee is the export its table row targets. docs/overlays.md section 5.1.
 TRAP_NAMES_LIST := config/overlay_funcs_to_trap.$(VERSION).txt
@@ -795,7 +796,7 @@ TRAP_RENAME = @:
 $(BUILD_DIR)/$(SRC_DIR)/main/%.c.o: TRAP_RENAME = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trap_names.py rename $@ $(TRAP_NAMES_LIST)
 $(filter $(BUILD_DIR)/$(SRC_DIR)/main/%,$(O_FILES)): $(TRAP_NAMES_LIST) \
-	$(TOOLS_DIR)/trap_names.py
+	$(TOOLS_DIR)/trap_names.py $(TOOLS_DIR)/runlink_pack.py
 
 # The DKR-exact rmonprintf source has no GLOBAL_ASM. Sending it through
 # asm-processor changes IDO's line metadata and produces a seven-word schedule

@@ -162,7 +162,6 @@ extern s32 D_800D6038[2];
 extern s32 D_800D6040;
 extern FxSpdRecord D_800D5FF8[2][4];
 extern FxTextureCallback D_8007D47C[4];
-extern FxTextureCallback D_8007D488;
 extern FxTextureImage *D_800D6098[4];
 extern s32 D_800D60A8;
 extern void *D_800D60B0[4];

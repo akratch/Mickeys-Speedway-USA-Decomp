@@ -490,6 +490,85 @@ class SyntheticTreeTests(unittest.TestCase):
         self.assertEqual(b["bss-size"], [[1]])
         self.assertNotIn("rodata-base", b)
 
+    def callback(self, name="b_exported"):
+        import trap_names as tn
+        path = self.tree.p("build/src/main/callbacks.c.o")
+        blob = bytearray((ObjBuilder().section(".data", words(0, 0))
+                          .sym("callbacks", 0, 8, GLOBAL, OBJECT, ".data")
+                          .sym(name).rel(".data", 0, R32, name)).build())
+        elf = rp.Elf(path, data=bytes(blob))
+        # The fixture builder defaults to executable sections. A resident
+        # callback really lives in writable, nonexecutable data.
+        header = rp.u32(blob, 32) + 40 * elf.section(".data")["index"]
+        struct.pack_into(">I", blob, header + 8, 3)
+        renamed, receipt = tn.rename_object(bytes(blob), {name})
+        path.write_bytes(renamed)
+        Path(str(path) + ".trapsites").write_text(json.dumps(receipt))
+        map_path = self.tree.p("build/mickey.us.map")
+        map_path.write_text(map_path.read_text().replace("build/asm/data/d.data.s.o",
+                                                       "build/src/main/callbacks.c.o"))
+        return path
+
+    def test_named_resident_callback_uses_real_definition_and_retires_only_r32_borrow(self):
+        self.callback()
+        world, packed = self.pack()
+        self.assertEqual(rp.compare_all(packed, world), [])
+        data = [e for e in packed.main if e.op == rp.OP_DATA]
+        self.assertEqual([(e.row, e.name, e.provenance) for e in data], [(2, "b_exported", "object")])
+        self.assertEqual(sorted(e[2] for e in packed.borrowed["main-placeholder"]),
+                         ["R_MIPS_HI16", "R_MIPS_LO16"])
+        path = self.tree.root / "build/src/main/callbacks.c.o.trapsites"
+        self.assertIn(path.resolve(), rp.metadata_input_paths(world.paths, world))
+
+    def test_resident_callback_refuses_missing_stale_and_spelling_only_identity(self):
+        path = self.callback()
+        sidecar = Path(str(path) + ".trapsites")
+        saved = sidecar.read_bytes()
+        sidecar.unlink()
+        with self.assertRaisesRegex(rp.PackError, "lacks a fresh named sidecar"):
+            self.pack()
+        sidecar.write_bytes(saved)
+        original = path.read_bytes()
+        path.write_bytes(original + b"changed")
+        with self.assertRaisesRegex(rp.PackError, "stale callback"):
+            self.pack()
+        # A generated spelling encodes the right coordinates but has no raw
+        # definition. Callback identity must not fall back to those digits.
+        self.callback("func_overlay_001_F0000020_BAD")
+        with self.assertRaisesRegex(rp.PackError, "lacks an actual source function"):
+            self.pack()
+
+    def test_callback_target_change_is_visible_even_with_identical_raw_data(self):
+        self.callback()
+        world, _packed = self.pack()
+        ort = rp.OrtNames.load(world.paths["ort"])
+        self.callback("b_static")
+        fresh = rp.World(world.paths)
+        rows = list(ort.rows)
+        rows[5] = "b_static"  # Deliberately export a second actual provider.
+        exports = rp.OrtNames(rows, ort.entries)
+        entries, _borrowed, problems = rp.pack_main(fresh, rp.Resolver(fresh, exports))
+        self.assertEqual(problems, [])
+        self.assertEqual([(e.row, e.name) for e in entries if e.op == rp.OP_DATA], [(5, "b_static")])
+
+    def test_callback_null_rebuild_cannot_keep_an_old_receipt(self):
+        path = self.callback()
+        original = rp.Elf(path)
+        blob = bytearray(path.read_bytes())
+        # Removing R32 leaves the all-zero .data payload untouched.
+        relsec = original.section(".rel.data")
+        struct.pack_into(">I", blob, rp.u32(blob, 32) + relsec["index"] * 40 + 20, 0)
+        path.write_bytes(blob)
+        with self.assertRaisesRegex(rp.PackError, "stale callback"):
+            self.pack()
+        sidecar = Path(str(path) + ".trapsites")
+        receipt = json.loads(sidecar.read_text())
+        receipt["object_sha256"] = hashlib.sha256(blob).hexdigest()
+        sidecar.write_text(json.dumps(receipt))
+        with self.assertRaisesRegex(rp.PackError, "relocation inventory differs"):
+            self.pack()
+
+
     def test_compare_is_clean_and_region_is_identical(self):
         world, packed = self.pack()
         self.assertEqual(rp.compare_all(packed, world), [])

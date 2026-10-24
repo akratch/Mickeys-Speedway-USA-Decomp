@@ -827,6 +827,10 @@ segments:
       # section to 16 bytes: fx.c.o's whole section, so no trim.
       - [0x7DF70, .data, main/fx]
       - [0x7DF80, data]
+      # Four typed texture callbacks. Ordinary relocation binds the first to
+      # the trap; its source name supplies the main DATA record's export.
+      - [0x7E07C, .data, main/fxTextureCallbacks]
+      - [0x7E08C, data]
       # n_csplayer's 127-entry timing table followed by its zero flag. The
       # 0x200-byte object section and first address are fixed by the compiled
       # candidate and Mickey's own relocations.

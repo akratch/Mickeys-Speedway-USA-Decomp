@@ -1577,6 +1577,51 @@ class MainEntry:
                            ((self.offset & 0xFFFFFF) << 8) | (self.type << 4) | self.op)
 
 
+def resident_data_callees(elf, record):
+    """Authenticate named callback initializers against the configured object.
+
+    Renaming changes only ELF symbol names. Zero .data operands alone cannot
+    distinguish a callback from NULL, so bind the complete object and require
+    the same bounded, zero-addend R32 relocations as the source-side receipt.
+    """
+    if (record.get("format") != 2
+            or record.get("object_sha256") != hashlib.sha256(elf.data).hexdigest()
+            or record.get("data_sha256") != hashlib.sha256(elf.bytes_of(".data")).hexdigest()):
+        raise PackError("stale callback .trapsites sidecar (rebuild the object)")
+    section = elf.section(".data")
+    if (not section or section["type"] != 1 or section["flags"] & 3 != 3
+            or section["flags"] & 4 or section["addr"] != 0):
+        raise PackError("callback initializer lacks ordinary writable .data")
+    sites = record.get("data_sites")
+    literal = record.get("data_literal")
+    if not isinstance(sites, list) or not isinstance(literal, list):
+        raise PackError("invalid callback .trapsites inventory")
+    names = {}
+    for row in sites:
+        if (not isinstance(row, dict) or set(row) != {"offset", "name"}
+                or type(row["offset"]) is not int or not isinstance(row["name"], str)
+                or not re.fullmatch(r"[A-Za-z_]\w*", row["name"]) or row["name"] == TRAP
+                or row["offset"] in names):
+            raise PackError("invalid named callback .trapsites entry")
+        names[row["offset"]] = row["name"]
+    if (any(type(offset) is not int for offset in literal)
+            or len(set(literal)) != len(literal) or set(literal) & set(names)):
+        raise PackError("invalid literal callback .trapsites entry")
+    actual = []
+    for rel in elf.rels(".data"):
+        if rel.sym.name != TRAP:
+            continue
+        if (rel.type != R_MIPS_32 or rel.sym.shndx != SHN_UNDEF
+                or rel.offset < 0 or rel.offset % 4 or rel.offset + 4 > section["size"]
+                or u32(elf.bytes_of(".data"), rel.offset) != 0):
+            raise PackError("callback initializer requires a bounded zero-addend .data R32")
+        actual.append(rel.offset)
+    if (len(actual) != len(set(actual))
+            or set(actual) != set(names) | set(literal)):
+        raise PackError("callback .trapsites relocation inventory differs")
+    return names
+
+
 def pack_main(world, resolver):
     layout = world.layout
     text_entries, data_entries, borrowed, problems = [], [], collections.defaultdict(list), []
@@ -1598,16 +1643,31 @@ def pack_main(world, resolver):
         elf = Elf(path)
         hold_data_import_inputs(world, {path: hashlib.sha256(elf.data).hexdigest()})
         rels = elf.rels(mi.insec)
-        if not rels:
+        if not rels and not mi.file.endswith(".c.o"):
             continue
         sidecar = {}
-        if mi.insec == ".text" and mi.file.endswith(".c.o"):
+        if mi.file.endswith(".c.o"):
             sc = Path(str(path) + ".trapsites")
             if sc.exists():
-                rec = json.loads(sc.read_text())
-                if rec.get("text_sha256") != hashlib.sha256(elf.bytes_of(".text")).hexdigest():
-                    problems.append(f"{mi.file}: stale .trapsites sidecar (rebuild the object)")
-                sidecar = {s["offset"]: s["name"] for s in rec.get("sites", [])}
+                payload = sc.read_bytes()
+                hold_data_import_inputs(world, {sc: hashlib.sha256(payload).hexdigest()})
+                rec = json.loads(payload)
+                if mi.insec == ".text":
+                    if rec.get("text_sha256") != hashlib.sha256(elf.bytes_of(".text")).hexdigest():
+                        problems.append(f"{mi.file}: stale .trapsites sidecar (rebuild the object)")
+                    sidecar = {s["offset"]: s["name"] for s in rec.get("sites", [])}
+                elif rec.get("data_sites") or rec.get("data_literal"):
+                    sidecar = resident_data_callees(elf, rec)
+                    if (not mi.file.startswith("build/src/main/")
+                            or mi.size != elf.size(".data")):
+                        raise PackError(f"{mi.file}: callback lacks a complete resident source input")
+                    for offset in sidecar:
+                        site = mi.addr + offset
+                        owners = [other for other in resident_in
+                                  if other.addr < site + 4 and site < other.addr + other.size]
+                        if (len(owners) != 1 or owners[0] is not mi
+                                or not layout.data <= site <= layout.bss - 4):
+                            raise PackError(f"{mi.file}: callback lacks unique resident data ownership")
         for r in rels:
             name = r.sym.name
             addr = mi.addr + r.offset
@@ -1634,8 +1694,24 @@ def pack_main(world, resolver):
                 text_entries.append(MainEntry(-1, addr - layout.text, r.type, OP_SYMBOL, addr,
                                               SENTINEL, "placeholder", mi.file))
             elif mi.insec == ".data" and r.type == R_MIPS_32 and name == TRAP:
-                data_entries.append(MainEntry(-1, addr - layout.data, r.type, OP_DATA, addr,
-                                              TRAP, "placeholder", mi.file))
+                callee = sidecar.get(r.offset)
+                ent = MainEntry(-1, addr - layout.data, r.type, OP_DATA, addr,
+                                callee or TRAP, "placeholder", mi.file)
+                if callee is not None:
+                    definition = resolver._function_proxy_definition(callee)
+                    if definition is None:
+                        raise PackError(f"resident callback lacks an actual source function: {callee}")
+                    obj, symbol = definition
+                    ident = ("ov", obj.module, obj.text_offset + symbol.value)
+                    target = Target("section", callee, "source-callback", obj=obj,
+                                    secname=".text", value=symbol.value, named=True)
+                    row = resolver.export_row(target, ident)
+                    if row is None:
+                        raise PackError(f"resident callback has no matching ORT export: {callee}")
+                    ent.row, ent.provenance = row, "object"
+                elif mi.file.endswith(".c.o"):
+                    raise PackError(f"{mi.file}+{hexs(r.offset)}: resident C callback lacks a fresh named sidecar")
+                data_entries.append(ent)
         if mi.insec == ".text":
             seen.add(mi.file)
     entries = text_entries + data_entries
@@ -2579,7 +2655,7 @@ def metadata_input_paths(paths, world):
             raise PackError(f"metadata resident input is missing: {path}")
         inputs.add(path)
         sidecar = Path(str(path) + ".trapsites")
-        if mi.insec == ".text" and mi.file.endswith(".c.o") and sidecar.exists():
+        if mi.file.endswith(".c.o") and sidecar.exists():
             inputs.add(sidecar)
     inputs.update(getattr(world, "data_import_inputs", {}))
     return inputs

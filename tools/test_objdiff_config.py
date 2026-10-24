@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """tools/objdiff_config.py against a synthetic project tree (no build, no ROM)."""
+import io
 import json
 import pathlib
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import objdiff_config as oc  # noqa: E402
@@ -145,6 +147,31 @@ class ObjdiffConfigTests(unittest.TestCase):
                                            + "        build/assets/overlays/o001/ov1_reloc1.bin.o(.data);\n")
         self.assertEqual(oc.split_orphans(root), [])
         self.assertEqual(oc.main(["--root", str(root), "--orphans"]), 0)
+
+    def test_check_rejects_regenerated_orphan_split(self):
+        root, _, _, _, _ = self.build()
+        placed = oc.disk_objects(root, oc.load_yaml(root / "mickey.us.yaml"))
+        (root / "mickey.us.ld").write_text("".join(
+            f"        build/{p}.o(.data);\n" for p in placed))
+        args = ["--root", str(root)]
+        with mock.patch.object(oc, "compile_flags", return_value=FLAGS), \
+                mock.patch("sys.stdout", new_callable=io.StringIO), \
+                mock.patch("sys.stderr", new_callable=io.StringIO) as diagnostics:
+            self.assertEqual(oc.main(args), 0)
+            self.assertEqual(oc.main(args + ["--check"]), 0)
+            stale = "assets/overlays/o001/obsolete.bin"
+            (root / stale).write_bytes(b"")
+            self.assertEqual(oc.main(args), 0)
+            config = json.loads((root / "objdiff.json").read_text())
+            self.assertIn(stale, [u["name"] for u in config["units"]])
+            self.assertEqual(oc.split_orphans(root), [stale])
+            diagnostics.seek(0)
+            diagnostics.truncate()
+            self.assertEqual(oc.main(args + ["--check"]), 1)
+            self.assertIn("orphaned split file " + stale, diagnostics.getvalue())
+            self.assertIn("mickey.us.ld never places", diagnostics.getvalue())
+            self.assertNotIn("objdiff.json is stale", diagnostics.getvalue())
+            self.assertEqual(oc.main(args + ["--orphans"]), 1)
 
     def test_no_linker_script_means_no_orphan_claim(self):
         root, _, _, _, _ = self.build()

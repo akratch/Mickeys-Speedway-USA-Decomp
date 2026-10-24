@@ -106,9 +106,12 @@ extern u8 gOverlay12QuadTriangles[];
 extern u8 gOverlay12TrianglesA[];
 extern u8 gOverlay12TrianglesB[];
 
-void *overlay12LoadReloc();
-extern void texFreeTexture(void *resource);
-extern void texFreeSprite(void *resource);
+struct TextureHeader;
+struct Sprite;
+extern struct TextureHeader *texLoadTexture(s32 textureId);
+extern struct Sprite *texLoadSprite(s32 spriteId, s32 flags);
+extern void texFreeTexture(struct TextureHeader *resource);
+extern void texFreeSprite(struct Sprite *resource);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern s32 func_8001291C(f32 *previous, f32 *current,
                          f32 *result, s32 mask, s32 flags);

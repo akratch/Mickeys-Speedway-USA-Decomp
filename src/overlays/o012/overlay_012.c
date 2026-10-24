@@ -12,12 +12,12 @@ static void overlay12Initialize(void) {
     s32 i;
     Overlay12Entry *entry;
 
-    gOverlay12ResourceF3 = overlay12LoadReloc(0xF3);
-    gOverlay12ResourceF2 = overlay12LoadReloc(0xF2);
-    gOverlay12ResourceF4 = overlay12LoadReloc(0xF4);
-    gOverlay12ResourceF5 = overlay12LoadReloc(0xF5);
-    gOverlay12ResourceF6 = overlay12LoadReloc(0xF6);
-    gOverlay12Resource39 = overlay12LoadReloc(0x39, 1);
+    gOverlay12ResourceF3 = texLoadTexture(0xF3);
+    gOverlay12ResourceF2 = texLoadTexture(0xF2);
+    gOverlay12ResourceF4 = texLoadTexture(0xF4);
+    gOverlay12ResourceF5 = texLoadTexture(0xF5);
+    gOverlay12ResourceF6 = texLoadTexture(0xF6);
+    gOverlay12Resource39 = texLoadSprite(0x39, 1);
 
     for (i = 0, entry = gOverlay12Entries; i < 64; i++, entry++) {
         entry->active = 0;

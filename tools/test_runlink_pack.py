@@ -1035,6 +1035,73 @@ class DataOnlyImportGuardTests(unittest.TestCase):
             rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
 
 
+    def local_inputs(self):
+        self.exports = rp.OrtNames([], {})
+        self.row.update(offset="0x4", end_offset="0xC")
+        provider_row = self.world.amods[1]["data_rodata_ownership"][1]
+        provider_row.update(offset="0xC", end_offset="0x14")
+        for index, item in enumerate(self.world.map):
+            self.world.map[index] = rp.MapInput(item.outsec, item.insec, item.addr + 4,
+                                               item.size, item.file)
+        self.provider_bytes = b"one\0two\0"
+        provider = ObjBuilder().section(".data", self.provider_bytes).sym(
+            "first", 0, 0, GLOBAL, OBJECT, ".data").sym("second", 4, 0, GLOBAL, OBJECT, ".data")
+        for group in ("raw", "build"):
+            self.write(self.paths[group] / "src" / (self.provider + ".c.o"), provider)
+        configured = struct.pack(">II", 0, 4)
+        self.write(self.paths["build"] / "src" / (self.source + ".c.o"),
+                   ObjBuilder().section(".data", configured))
+        linked = ObjBuilder().section(".overlay_001", bytes(20) + configured + self.provider_bytes,
+                                      addr=rp.OVERLAY_VMA)
+        for symbol in self.linked.symbols:
+            if symbol.name.startswith("main_") or symbol.name == "runlinkCodeEnd":
+                linked.sym(symbol.name, symbol.value, 0, GLOBAL, NOTYPE, "ABS")
+        linked.sym("first", rp.OVERLAY_VMA + 28, 0, GLOBAL, OBJECT, ".overlay_001")
+        linked.sym("second", rp.OVERLAY_VMA + 32, 0, GLOBAL, OBJECT, ".overlay_001")
+        self.world.elf = rp.Elf("linked", linked.build())
+        self.world.by_name = {x.name: [x] for x in self.world.elf.symbols if x.name}
+        expected = {(20 + i * 4, R32): dict(op=rp.OP_LOCAL, symbol_index=28,
+            full=("ov", 1, 28 + i * 4), table=2, position=i) for i in range(2)}
+        self.world.expected_cache = lambda _ov: expected
+        raw = self.raw()
+        raw.local_ro_provider = "build/src/" + self.provider + ".c.o"
+        return raw, expected
+
+    def test_cross_input_named_bases_use_actual_provider_not_data_section_spelling(self):
+        raw, _expected = self.local_inputs()
+        self.assertEqual(rp.validate_data_imports(
+            self.world, self.exports, 1, self.row, self.source, raw), 2)
+        self.assertEqual(raw.data_local_identities, {"first": (1, 28), "second": (1, 32)})
+        rp.check_data_import_holds(self.world)
+        provider = self.root / "src" / (self.provider + ".c")
+        provider.write_text("changed after successful validation\n")
+        with self.assertRaisesRegex(rp.PackError, "held data-only input changed"):
+            rp.check_data_import_holds(self.world)
+
+    def test_cross_input_missing_zero_word_role_provider_and_addend_refuse(self):
+        for case in ("null", "role", "provider", "addend"):
+            with self.subTest(case=case):
+                self.setUp()
+                raw, expected = self.local_inputs()
+                if case == "null":
+                    old = raw.bytes_of(".data")
+                    raw = self.write(self.root / "null.o", ObjBuilder().section(".data", bytes(8))
+                        .sym("second").rel(".data", 4, R32, "second"))
+                    raw.local_ro_provider = "build/src/" + self.provider + ".c.o"
+                    self.assertEqual(old, raw.bytes_of(".data"))
+                elif case == "role":
+                    expected[(20, R32)]["symbol_index"] = 16
+                elif case == "provider":
+                    raw.local_ro_provider = "build/src/overlays/o001/wrong.c.o"
+                else:
+                    raw = self.write(self.root / "addend.o", ObjBuilder().section(".data", words(1, 0))
+                        .sym("first").sym("second").rel(".data", 0, R32, "first")
+                        .rel(".data", 4, R32, "second"))
+                    raw.local_ro_provider = "build/src/" + self.provider + ".c.o"
+                with self.assertRaises(rp.PackError):
+                    rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+
+
 class DataOnlyProducerDiscoveryTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

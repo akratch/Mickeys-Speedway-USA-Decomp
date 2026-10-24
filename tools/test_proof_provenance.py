@@ -348,6 +348,14 @@ class ProducerCaptureLifecycleTests(unittest.TestCase):
                     provenance.producer_link_context(root, root / metadata.BOOT_ELF,
                                                      root / "build/mickey.us.map")
 
+    def test_local_provider_declaration_is_one_stable_ordinary_object(self):
+        root = pathlib.Path("/synthetic")
+        name = "build/src/overlays/o001/labels.c.o"
+        self.assertEqual(provenance.local_ro_provider_input("helper --local-ro-origin-object " + name, root), name)
+        for value in ("/tmp/provider.o", "build/src/overlays/o001/../labels.c.o", "build/fresh/provider.o"):
+            with self.subTest(value=value), self.assertRaises(provenance.MetadataProofError):
+                provenance.local_ro_provider_input("helper --local-ro-origin-object " + value, root)
+
     def test_capture_roles_are_explicit_and_promotion_keeps_the_strict_default(self):
         arguments = [pathlib.Path("root") / name for name in
                      (".", "source.c", "configured.o", "build/mickey.us.elf")]

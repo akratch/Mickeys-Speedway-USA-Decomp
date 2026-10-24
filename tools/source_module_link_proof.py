@@ -86,7 +86,8 @@ def canonical_bss_export(canonical, target, addend, rom, runtime_modules):
     return overlay, prefix + relative
 
 
-def source_identities(raw, linked, canonical, exports, overlay, *, rom=None, runtime_modules=None):
+def source_identities(raw, linked, canonical, exports, overlay, *, rom=None, runtime_modules=None,
+                      local_data_identities=None):
     """Resolve source operands without taking an identity from the shipped site."""
     bases = {".text": 0, ".data": linked.size(".text"),
              ".rodata": linked.size(".text") + linked.size(".data"),
@@ -104,7 +105,17 @@ def source_identities(raw, linked, canonical, exports, overlay, *, rom=None, run
             symbol = rel.sym
             if symbol.shndx == rp.SHN_UNDEF:
                 if symbol.name not in exports.by_name:
-                    raise pp.MetadataProofError("module reference has no declared runtime export")
+                    if (local_data_identities is None or symbol.name not in local_data_identities
+                            or section != ".data" or rel.type != rp.R_MIPS_32 or addend != 0):
+                        raise pp.MetadataProofError("module reference has no declared runtime export")
+                    identity = local_data_identities[symbol.name]
+                    if identity[0] != overlay:
+                        raise pp.MetadataProofError("LOCAL data import escapes its module")
+                    key = (bases[section] + rel.offset, rel.type)
+                    if key in result:
+                        raise pp.MetadataProofError("duplicate source-module relocation site")
+                    result[key] = identity
+                    continue
                 choices = by_name.get(symbol.name, [])
                 if len(choices) != 1:
                     raise pp.MetadataProofError(f"runtime export has no unique canonical definition: {symbol.name}")

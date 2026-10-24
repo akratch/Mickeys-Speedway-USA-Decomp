@@ -80,9 +80,9 @@ OVERLAY_RAM_CLASS = "overlay_modules"
 
 # Physical loader capacity only, never reconstructed C ownership. Splat's
 # automatic .bss inputs reserve nothing when every C object has empty BSS.
-# The explicit unowned segment materializes module 1's authenticated capacity;
+# Explicit unowned segments materialize authenticated loader capacity;
 # remove or split it when actual source-owned storage replaces that reserve.
-UNOWNED_BSS_RESERVE_OVERLAYS = frozenset({1})
+UNOWNED_BSS_RESERVE_OVERLAYS = frozenset({1, 33})
 
 # The ladder exercises successively harder format cases before the generated
 # split is treated as settled.  These are campaign choices, not inferred names.

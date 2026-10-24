@@ -3022,5 +3022,12 @@ D_800C9464 = 0x800C9464; // tier-B ORT row 1715 plus mapped resident BSS, pointe
 B_overlay_001_F00083E0 = 0xF00083E0; // segment:overlay_001 tier-B ORT1475 unsized physical BSS base export
 B_overlay_001_F00083E4 = 0xF00083E4; // segment:overlay_001 tier-B unsized runtime mode export at BSS plus four
 
+// Tier B: ORT1448 and the accepted resident refractOutputAssembler's two
+// address pairs identify this word-stream workspace inside module 33's real
+// loader reserve. Retain the qualified registry spelling; original name,
+// declaration and workspace extent are unknown. This is an unsized export,
+// not C ownership of the reserve or a capacity inferred from its remainder.
+B_overlay_033_F0003EC8 = 0xF0003EC8; // segment:overlay_033 size:0 tier-B unsized physical BSS workspace export
+
 // Tier B: ORT1775 uses resident data selector FFD at data-base plus 12728.
 D_8007BF18 = 0x8007BF18; // tier-B overlay 36 mask references within retained resident data, unsized view

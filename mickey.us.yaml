@@ -2502,6 +2502,8 @@ segments:
       - [0x1898B00, bin, overlay_050_data_rodata_320]
       - [0x1898B08, .data, overlay50ItemState]
       - [0x1898B18, bin, overlay_050_data_rodata_338]
+      - [0x1898B1C, .data, overlay50ControlTail]
+      - [0x1898B4C, bin, overlay_050_data_rodata_36c]
 
   - name: overlay_050_reloc1
     type: bin

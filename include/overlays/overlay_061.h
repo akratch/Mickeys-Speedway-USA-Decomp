@@ -7,6 +7,10 @@
 
 /* Overlay 61: the controller-pak ghost save menu. */
 
+/* Tier B/D: current ownership/accesses establish this 64-byte view; the
+ * original declaration is inferred. Formatting may cross text1[4] into field3C.
+ * Sentinel-time initialization, failed read allocations and formatter-state
+ * assumptions remain source/native debt. */
 typedef struct Overlay61Entry {
     s16 kind;
     u8 field2;
@@ -34,13 +38,6 @@ typedef struct Overlay61GhostEntry {
     /* 0x06 */ s16 course;
     /* 0x08 */ s16 time;
 } Overlay61GhostEntry;
-
-typedef struct Overlay61ListEntry {
-    /* 0x00 */ s16 nextState;
-    /* 0x02 */ u8 slot;
-    /* 0x03 */ u8 pad03[0x35];
-    /* 0x38 */ u8 note[8];
-} Overlay61ListEntry;
 
 typedef struct Overlay61RecordHeader {
     u32 magic;
@@ -74,26 +71,26 @@ extern s32 joyGetPressed(s32 controller);
 extern s32 joyGetStickX(s32 controller);
 extern s32 joyGetStickY(s32 controller);
 extern s32 gOverlay61CounterA0;
-extern Overlay61Entry gOverlay61EntriesReloc[];
-extern u8 gOverlay61Text0Reloc[];
-extern u8 gOverlay61Text1Reloc[];
-extern s32 sprintf(u8 *, u8 *, ...);
-extern u8 gOverlay61Format58Reloc[];
-extern u8 gOverlay61Format64Reloc[];
-extern u8 gOverlay61Format70Reloc[];
-extern u8 gOverlay61Format78Reloc[];
-extern u8 gOverlay61Format90Reloc[];
-extern u8 gOverlay61Format9CReloc[];
-extern u8 gOverlay61FormatA8Reloc[];
+/* The real 20-entry owner; string subobject and I/O ABI debts remain open. */
+extern Overlay61Entry o61MenuEntries_o061Reloc[20];
+extern const char gOverlay61Text0Reloc[];
+extern const char gOverlay61Text1Reloc[];
+extern s32 sprintf(char *buffer, const char *format, ...);
+extern const char gOverlay61Format58Reloc[];
+extern const char gOverlay61Format64Reloc[];
+extern const char gOverlay61Format70Reloc[];
+extern const char gOverlay61Format78Reloc[];
+extern const char gOverlay61Format90Reloc[];
+extern const char gOverlay61Format9CReloc[];
+extern const char gOverlay61FormatA8Reloc[];
 extern u8 gOverlay61LabelB0Reloc[];
-extern u8 gOverlay61FormatBCReloc[];
+extern const char gOverlay61FormatBCReloc[];
 extern void *gOverlay61NamesReloc[];
 extern void fontColour(s32, s32, s32, s32, s32);
 extern void frontDrawRectangle(s32, s32, s32, s32, s32, u32);
 extern void fontPrintXY(s32, s32, s32, void *, s32);
 extern void *levelGetName(s8);
 extern s32 gOverlay61TopIndexReloc;
-extern u8 gOverlay61ItemsReloc[];
 extern u8 gOverlay61UpLabelReloc[];
 extern u8 gOverlay61DownLabelReloc[];
 /* Called with one and with two arguments. */
@@ -139,7 +136,6 @@ extern f32 gOverlay61Time0;
 extern Overlay61Sprite gOverlay61Sprite1;
 extern s32 gOverlay61Animation1;
 extern f32 gOverlay61Time1;
-extern Overlay61ListEntry gOverlay61Entries[];
 extern char gOverlay61NewFileName[];
 extern char gOverlay61GhostLabel[];
 extern char gOverlay61FreeLabel[];
@@ -175,15 +171,15 @@ extern void packDirectoryFree(void);
 extern u8 gOverlay61SavePathReloc[];
 /* Called with and without the device argument. */
 extern s32 packOpen();
-extern s32 packOpenFile(s32 device, void *path, s32 *arg2, void **handle);
-extern s32 packFileSize(s32, void *, s32 *);
+extern s32 packOpenFile(s32 device, char *name, char *extension, s32 *fileNumber);
+extern s32 packFileSize(s32 device, s32 fileNumber, s32 *size);
 extern void *mmAlloc(s32 size, s32 tag);
-extern s32 packReadFile(s32, void *, void *, s32);
+extern s32 packReadFile(s32 device, s32 fileNumber, u8 *data, s32 size);
 extern s32 overlay68PayloadLimit(s32);
 extern void mmFree(void *);
 extern void packClose(s32);
 extern s32 packWriteFile(
-    s32 arg0, s32 arg1, void *format, s32 arg3, void *data, s32 size);
+    s32 device, s32 fileNumber, char *name, char *extension, u8 *data, s32 size);
 extern u8 gOverlay61RecordFormatReloc[];
 extern u8 gOverlay61RecordPathReloc[];
 

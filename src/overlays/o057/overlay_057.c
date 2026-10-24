@@ -176,7 +176,7 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     gO57Value32CReloc = ((O57SeedData *)D_800D31C8)->value1EC;
     gO57Value34CReloc = ((O57SeedData *)D_800D31C8)->value1F4;
     for (i = 0; i < 10; i++) {
-        gO57Rows27CReloc[i].value = ((O57SeedData *)D_800D31C8)->value1C;
+        gO57Rows27CReloc[i].texture = D_800D31C8[7];
     }
 
     o57State_o057Reloc = 0;

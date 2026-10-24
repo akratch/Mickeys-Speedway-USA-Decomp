@@ -65,3 +65,15 @@ $(O57_PATH_RESOURCES): $(TOOLS_DIR)/trim_elf_section.py
 $(O57_PATH_RESOURCES): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0xFC --compiler-end-padding
 $(O57_PATH_RESOURCES): private PLAIN_DATA_PROOF = 1
 $(O57_PATH_RESOURCES): private PLAIN_DATA_RUNTIME_ROLE = data
+
+# Genuine sized selector/colour inputs: retain their complete object ranges
+# and remove only independently derived compiler end alignment.
+O57_DETAIL_COLOURS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57DetailColours.c.o
+O57_UNLOCK_LABELS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57UnlockLabels.c.o
+O57_MODE_TABLES := $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57ModeTables.c.o
+$(O57_DETAIL_COLOURS) $(O57_UNLOCK_LABELS) $(O57_MODE_TABLES): $(TOOLS_DIR)/trim_elf_section.py
+$(O57_DETAIL_COLOURS): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x18 --compiler-end-padding
+$(O57_UNLOCK_LABELS): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x14 --compiler-end-padding
+$(O57_MODE_TABLES): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x24 --compiler-end-padding
+$(O57_DETAIL_COLOURS) $(O57_UNLOCK_LABELS) $(O57_MODE_TABLES): private PLAIN_DATA_PROOF = 1
+$(O57_DETAIL_COLOURS) $(O57_UNLOCK_LABELS) $(O57_MODE_TABLES): private PLAIN_DATA_RUNTIME_ROLE = data

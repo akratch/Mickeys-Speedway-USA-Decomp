@@ -787,6 +787,34 @@
       "class": "metadata",
       "matched_c": null,
       "nonmatching": null,
+      "object": "build/src/overlays/o057/overlay57DetailColours.c.o",
+      "offset": null,
+      "overlay": 57,
+      "size": null,
+      "source": "src/overlays/o057/overlay57DetailColours.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
+      "object": "build/src/overlays/o057/overlay57ModeTables.c.o",
+      "offset": null,
+      "overlay": 57,
+      "size": null,
+      "source": "src/overlays/o057/overlay57ModeTables.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
       "object": "build/src/overlays/o057/overlay57PathResources.c.o",
       "offset": null,
       "overlay": 57,
@@ -820,6 +848,20 @@
       "overlay": 57,
       "size": null,
       "source": "src/overlays/o057/overlay57TransitionState.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
+      "object": "build/src/overlays/o057/overlay57UnlockLabels.c.o",
+      "offset": null,
+      "overlay": 57,
+      "size": null,
+      "source": "src/overlays/o057/overlay57UnlockLabels.c",
       "tools": [
         "trim_elf_section.py"
       ]
@@ -1120,9 +1162,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 74
+      "metadata": 77
     },
     "matched_c_bytes_with_postprocess": 323384,
-    "objects_with_postprocess": 74
+    "objects_with_postprocess": 77
   }
 }

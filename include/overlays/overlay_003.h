@@ -50,8 +50,10 @@ typedef struct Overlay3Entry {
 extern Overlay3Entry gOverlay3Entries[][32];
 extern Overlay3Entry gOverlay3TouchEntries[][32];
 extern Overlay3Object *gOverlay3Objects[];
-extern u8 gOverlay3ModeChance[];
-extern f32 gOverlay3SearchMaxDistance[];
+/* Per-consumer stored operands; the actual C data definitions keep their
+ * unsuffixed names and final module identities. */
+extern u8 gOverlay3ModeChance_o003Reloc[10];
+extern f32 gOverlay3SearchMaxDistance_o003Reloc;
 
 extern Overlay3Object **func_80005750(s32 *count);
 extern Overlay3Object **func_8000572C(s32 *start, s32 *end);

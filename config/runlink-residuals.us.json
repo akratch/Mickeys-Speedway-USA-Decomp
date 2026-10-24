@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 7992},
+  "totals": {"differences": 0, "borrowed_records": 7988},
   "differences": {
   },
   "borrowed": {
@@ -66,16 +66,6 @@
         "67": ["0x1F4"],
         "70": ["0x75C", "0x760", "0x764", "0x768", "0x76C", "0x770", "0x774", "0x778", "0x77C", "0x780"]
       }
-    },
-    "main-placeholder": {
-      "about": "main-table entry whose target the resident source does not name (site, op, type)",
-      "count": 4,
-      "entries": [
-        ["0x4F820", "SYMBOL", "R_MIPS_HI16"],
-        ["0x4F82C", "SYMBOL", "R_MIPS_LO16"],
-        ["0x4FAD4", "SYMBOL", "R_MIPS_HI16"],
-        ["0x4FAD8", "SYMBOL", "R_MIPS_LO16"]
-      ]
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",

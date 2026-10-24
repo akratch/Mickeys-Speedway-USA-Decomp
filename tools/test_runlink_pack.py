@@ -1883,5 +1883,86 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(r.encode(), struct.pack(">II", 7, (0x1234 << 8) | 0x42))
 
 
+
+class SourceBssAddressTests(unittest.TestCase):
+    def setUp(self):
+        from test_source_module_link_proof import CrossOverlayBssTests
+        self.fixture = CrossOverlayBssTests()
+        self.fixture.setUp()
+        self.addCleanup(self.fixture.doCleanups)
+
+    def world(self, **kwargs):
+        from runlink.synth import ElfBuilder
+        _, linked, ort = self.fixture.inputs(**kwargs)
+        root = self.fixture.root
+        path = root / "build/asm/data/overlays/o002/reserve.bss.s.o"
+        path.parent.mkdir(parents=True)
+        path.write_bytes(ElfBuilder().section(".bss", nobits=16)
+                         .sym("external", 4, 0, GLOBAL, OBJECT, ".bss").build())
+        source = root / "asm/data/overlays/o002/reserve.bss.s"
+        source.parent.mkdir(parents=True)
+        source.write_text(".section .bss\n.globl external\n.space 4\nexternal:\n.space 12\n")
+        map_path = root / "canonical.map"
+        map_path.write_bytes(b"fixture map")
+        world = SimpleNamespace(paths={"build": root / "build", "elf": linked.path,
+                                      "map": map_path}, elf=linked, by_name=collections.defaultdict(list),
+                                map_data=map_path.read_bytes(),
+                                map=[rp.MapInput(".overlay_002_bss", ".bss", rp.OVERLAY_VMA+32,
+                                                 16, str(path.relative_to(root)))],
+                                shipped=SimpleNamespace(rom=self.fixture.rom, modules=self.fixture.modules))
+        for symbol in linked.symbols:
+            world.by_name[symbol.name].append(symbol)
+        return world, ort, path
+
+    def test_actual_definition_not_encoded_name_and_held_provider(self):
+        world, ort, path = self.world()
+        self.assertEqual(rp.source_bss_identity(world, "external"), (2, 36))
+        self.assertEqual(rp.address_export_row(world, ort, "external"), 0)
+        rp.check_data_import_holds(world)
+        path.write_bytes(path.read_bytes()+b"changed")
+        with self.assertRaisesRegex(rp.PackError, "held.*changed"):
+            rp.check_data_import_holds(world)
+
+    def test_selected_receipt_missing_or_changed_source_refuses(self):
+        import trap_names as trap
+        from test_trap_names import PairedAddressTests
+        world, _, _ = self.world()
+        root = self.fixture.root
+        path = root / "build/asm/main/owner.s.o"
+        path.parent.mkdir(parents=True)
+        source = root / "asm/main/owner.s"
+        source.parent.mkdir(parents=True)
+        source.write_bytes(b"fixture source")
+        original = PairedAddressTests().original()
+        configured, record = trap.rename_addresses(original, "workspace")
+        path.write_bytes(configured)
+        record.update(source="asm/main/owner.s", source_sha256=hashlib.sha256(source.read_bytes()).hexdigest())
+        Path(str(path)+trap.ADDRESS_RAW_SUFFIX).write_bytes(original)
+        receipt = Path(str(path)+trap.ADDRESS_SUFFIX)
+        receipt.write_text(json.dumps(record))
+        elf = rp.Elf(path)
+        item = rp.MapInput(".main", ".text", 0x80000450, elf.size(".text"), "build/asm/main/owner.s.o")
+        self.assertEqual(set(rp.resident_address_names(world,item,path,elf,"workspace")), {0,12,16,20})
+        source.write_bytes(b"changed")
+        with self.assertRaisesRegex(rp.PackError,"stale paired-address source"):
+            rp.resident_address_names(world,item,path,elf,"workspace")
+        receipt.unlink()
+        with self.assertRaises(rp.PackError):
+            rp.resident_address_names(world,item,path,elf,"workspace")
+
+    def test_abs_missing_ambiguous_and_wrong_map_refuse(self):
+        for options in ({"symbol_section": "ABS"}, {"missing": True}, {"duplicate": True}):
+            with self.subTest(options=options):
+                world, _, _ = self.world(**options)
+                with self.assertRaises(rp.PackError):
+                    rp.source_bss_identity(world, "external")
+                self.fixture.doCleanups()
+                self.fixture.setUp()
+        world, _, _ = self.world()
+        mi = world.map[0]
+        world.map[0] = rp.MapInput(mi.outsec, mi.insec, mi.addr+4, mi.size, mi.file)
+        with self.assertRaises(rp.PackError):
+            rp.source_bss_identity(world, "external")
+
 if __name__ == "__main__":
     unittest.main()

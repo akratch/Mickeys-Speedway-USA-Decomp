@@ -83,10 +83,12 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "tools"))
 import overlay_tables as ot  # noqa: E402
+import trap_names as trap_source  # noqa: E402
 
 _LOADED_IMPLEMENTATIONS = {
     "tools/runlink_pack.py": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
     "tools/overlay_tables.py": hashlib.sha256(Path(ot.__file__).read_bytes()).hexdigest(),
+    "tools/trap_names.py": hashlib.sha256(Path(trap_source.__file__).read_bytes()).hexdigest(),
 }
 
 VERSION = "us"
@@ -1649,6 +1651,97 @@ def resident_data_callees(elf, record):
     return names
 
 
+def address_targets(dump):
+    return dict(re.findall(r"^(build/asm/main/[^/]+\.s\.o): ASM_ADDRESS_EXPORT = ([A-Za-z_]\w*)$",dump,re.M))
+
+
+def resident_address_names(world, item, path, elf, export):
+    """Validate names from the original assembled input; no retail-site lookup."""
+    import trap_names as trap
+    raw_path = Path(str(path)+trap.ADDRESS_RAW_SUFFIX)
+    receipt_path = Path(str(path)+trap.ADDRESS_SUFFIX)
+    try:
+        raw_bytes,receipt_bytes = raw_path.read_bytes(),receipt_path.read_bytes()
+        receipt = json.loads(receipt_bytes)
+        source_name = item.file.removeprefix("build/").removesuffix(".o")
+        if (receipt.get("export") != export or receipt.get("source") != source_name
+                or not re.fullmatch(r"asm/main/[^/]+\.s",source_name)
+                or item.outsec != ".main" or item.insec != ".text"
+                or item.size != elf.size(".text")):
+            raise PackError("paired-address receipt lacks its complete selected ASM owner")
+        source = world.paths["build"].parent/source_name
+        source_bytes = source.read_bytes()
+        if hashlib.sha256(source_bytes).hexdigest() != receipt.get("source_sha256"):
+            raise PackError("stale paired-address source receipt")
+        names = trap.validate_addresses(elf.data,raw_bytes,receipt)
+    except (OSError,ValueError,struct.error,trap.TrapError) as error:
+        raise PackError("paired-address proof refused: "+str(error)) from error
+    hold_data_import_inputs(world,{path:hashlib.sha256(elf.data).hexdigest(),raw_path:hashlib.sha256(raw_bytes).hexdigest(),
+        receipt_path:hashlib.sha256(receipt_bytes).hexdigest(),source:hashlib.sha256(source_bytes).hexdigest(),
+        world.paths["elf"]:hashlib.sha256(world.elf.data).hexdigest(),
+        world.paths["map"]:hashlib.sha256(world.map_data).hexdigest()})
+    return names
+
+
+def source_bss_identity(world, name):
+    """Unique actual NOBITS source definition, independent of name spelling."""
+    import source_module_link_proof as proof
+    import proof_provenance as provenance
+    choices = [s for s in world.by_name.get(name,()) if s.bind == STB_GLOBAL and s.shndx != SHN_UNDEF]
+    if len(choices) != 1:
+        raise PackError("data address lacks one actual canonical export: "+name)
+    symbol = choices[0]
+    match = re.fullmatch(r"\.overlay_(\d{3})_bss",symbol.section)
+    if not match:
+        raise PackError("data address is not an allocated overlay NOBITS export")
+    ov = int(match.group(1))
+    try:
+        identity = proof.canonical_bss_export(world.elf,symbol,0,world.shipped.rom,world.shipped.modules)
+    except provenance.MetadataProofError as error:
+        raise PackError("data address BSS geometry refused: "+str(error)) from error
+    inputs = [i for i in world.map if i.outsec == symbol.section and i.insec == ".bss"
+              and i.size and i.addr <= symbol.value < i.addr+i.size]
+    if len(inputs) != 1:
+        raise PackError("data address lacks a unique NOBITS source input")
+    item = inputs[0]
+    if not re.fullmatch(r"build/asm/(?:data/)?overlays/o\d{3}/[^/]+\.s\.o",item.file):
+        raise PackError("data address provider is not an actual source NOBITS object")
+    root=world.paths["build"].parent
+    path=root/item.file;raw=Elf(path)
+    section=raw.section(".bss")
+    definitions=[s for s in raw.symbols if s.name == name and s.bind == STB_GLOBAL]
+    if (struct.unpack_from(">HH",raw.data,16)!=(1,8)
+            or not section or section["type"] != SHT_NOBITS or section["flags"]&3 !=3
+            or section["flags"]&4 or section["addr"] !=0 or section["size"] !=item.size
+            or len(definitions)!=1 or definitions[0].section != ".bss"
+            or definitions[0].type not in (0,1) or definitions[0].size !=symbol.size
+            or not 0 <= definitions[0].value < item.size
+            or definitions[0].value+max(1,definitions[0].size)>item.size
+            or item.addr+definitions[0].value !=symbol.value
+            or any(raw.size(s) for s in (".text",".data",".rodata"))
+            or any(raw.rels(s["name"]) for s in raw.sections)):
+        raise PackError("data address raw source/final NOBITS definition differs")
+    source=root/item.file.removeprefix("build/").removesuffix(".o")
+    payload=source.read_bytes()
+    hold_data_import_inputs(world,{path:hashlib.sha256(raw.data).hexdigest(),
+        source:hashlib.sha256(payload).hexdigest(),world.paths["elf"]:hashlib.sha256(world.elf.data).hexdigest(),
+        world.paths["map"]:hashlib.sha256(world.map_data).hexdigest()})
+    return identity
+
+
+def address_export_row(world, ort, name):
+    identity=source_bss_identity(world,name)
+    target=next(s for s in world.by_name[name] if s.bind==STB_GLOBAL and s.shndx!=SHN_UNDEF)
+    rows=[]
+    for row,export in enumerate(ort.rows):
+        choices=[s for s in world.by_name.get(export,()) if s.bind==STB_GLOBAL and s.shndx!=SHN_UNDEF]
+        if len(choices)==1 and choices[0].section==target.section and choices[0].value==target.value:
+            if source_bss_identity(world,export)==identity:rows.append(row)
+    if len(rows)!=1:
+        raise PackError("data address lacks its unique identity-selected ORT row")
+    return rows[0]
+
+
 def pack_main(world, resolver):
     layout = world.layout
     text_entries, data_entries, borrowed, problems = [], [], collections.defaultdict(list), []
@@ -1673,6 +1766,10 @@ def pack_main(world, resolver):
         if not rels and not mi.file.endswith(".c.o"):
             continue
         sidecar = {}
+        address_names = {}
+        address_export = getattr(world,"_address_targets",{}).get(mi.file)
+        if address_export and mi.insec == ".text":
+            address_names = resident_address_names(world,mi,path,elf,address_export)
         if mi.file.endswith(".c.o"):
             sc = Path(str(path) + ".trapsites")
             if sc.exists():
@@ -1718,8 +1815,14 @@ def pack_main(world, resolver):
                 text_entries.append(ent)
             elif (mi.insec == ".text" and r.type in (R_MIPS_HI16, R_MIPS_LO16) and name == SENTINEL
                   and mi.file not in RUNTIME_OBJECTS):
-                text_entries.append(MainEntry(-1, addr - layout.text, r.type, OP_SYMBOL, addr,
-                                              SENTINEL, "placeholder", mi.file))
+                if r.offset in address_names:
+                    source_name=address_names[r.offset]
+                    row=address_export_row(world,resolver.ort,source_name)
+                    text_entries.append(MainEntry(row,addr-layout.text,r.type,OP_SYMBOL,addr,
+                                                  source_name,"object",mi.file))
+                else:
+                    text_entries.append(MainEntry(-1, addr - layout.text, r.type, OP_SYMBOL, addr,
+                                                  SENTINEL, "placeholder", mi.file))
             elif mi.insec == ".data" and r.type == R_MIPS_32 and name == TRAP:
                 callee = sidecar.get(r.offset)
                 ent = MainEntry(-1, addr - layout.data, r.type, OP_DATA, addr,
@@ -2445,6 +2548,7 @@ def _guard_data_module_imports(world, exports):
     hold_data_import_inputs(world, {path: digest for path, digest
                                     in batch._LOADED_IMPLEMENTATIONS.values()})
     dump = audit.run_make_database()
+    world._address_targets = address_targets(dump)
     world._end_padding_plans = {target: dict(arguments for operation, arguments in
         provenance.metadata_filter_plan(command, target, root) if operation == "nonexec-end")
         for target, command in audit.postprocess_commands(dump).items() if "--compiler-end-padding" in command}
@@ -3052,6 +3156,11 @@ def metadata_input_paths(paths, world):
         if not path.is_file():
             raise PackError(f"metadata resident input is missing: {path}")
         inputs.add(path)
+        export = getattr(world, "_address_targets", {}).get(mi.file)
+        if export and mi.insec == ".text":
+            names = resident_address_names(world, mi, path, Elf(path), export)
+            for name in set(names.values()):
+                source_bss_identity(world, name)
         sidecar = Path(str(path) + ".trapsites")
         if mi.file.endswith(".c.o") and sidecar.exists():
             inputs.add(sidecar)

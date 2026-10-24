@@ -280,6 +280,128 @@ def rename_object(data: bytes, names: set[str]) -> tuple[bytes, dict]:
     return bytes(out), record
 
 
+ADDRESS_SUFFIX = ".addresssites"
+ADDRESS_RAW_SUFFIX = ".address-original.o"
+ADDRESS_SENTINEL = "D_800D2DC4"
+
+
+def address_pairs(data, export):
+    """Actual zero-addend data-address pairs; never JAL/callback proxies."""
+    if struct.unpack_from(">HH", data, 16) != (1, 8):
+        raise TrapError("address input must be relocatable MIPS")
+    if not isinstance(export,str) or not re.fullmatch(r"[A-Za-z_]\w*",export):
+        raise TrapError("invalid paired data export name")
+    sections = _sections(data)
+    text_headers=[h for name,h in sections if name==".text"]
+    if (len(text_headers)!=1 or text_headers[0][1]!=1 or text_headers[0][2]&6!=6
+            or text_headers[0][3] or any(h[1]==SHT_RELA and h[5] for name,h in sections)):
+        raise TrapError("paired data input lacks ordinary executable REL text")
+    table = _single_symtab(sections)
+    symbols = _symbols(data, sections, table)
+    targets = [s for s in symbols if s["name"] == export]
+    if (len(targets) != 1 or targets[0]["shndx"] != 0 or targets[0]["bind"] != STB_GLOBAL
+            or targets[0]["value"] or targets[0]["size"] or export == ADDRESS_SENTINEL):
+        raise TrapError("address input lacks its unique undefined named export")
+    if any(s["name"] == ADDRESS_SENTINEL and s["shndx"] for s in symbols):
+        raise TrapError("address input defines the unresolved data sentinel")
+    rows = list(_relocations(data, sections, table))
+    if any(not 0<=index<len(symbols) for section,offset,kind,index in rows):
+        raise TrapError("invalid paired data relocation symbol")
+    refs = [(section, offset, kind, index) for section, offset, kind, index in rows
+            if index == targets[0]["index"]]
+    text = _section_bytes(data, sections, ".text")
+    if not refs or len(refs) % 2:
+        raise TrapError("address input has a missing HI/LO half")
+    pairs = []
+    for hi, lo in zip(refs[::2], refs[1::2]):
+        if (hi[0] != ".text" or lo[0] != ".text" or hi[2] != 5 or lo[2] != 6
+                or hi[1] % 4 or lo[1] % 4 or not 0 <= hi[1] < lo[1] <= len(text)-4):
+            raise TrapError("address input has invalid paired relocation geometry")
+        high, low = (struct.unpack_from(">I", text, row[1])[0] for row in (hi,lo))
+        register = (high >> 16)&31
+        if (high >> 26 != 15 or not register or low >> 26 != 9
+                or (low >> 21)&31 != register or (low >> 16)&31 != register
+                or high & 65535 or low & 65535):
+            raise TrapError("address pair is not a zero-addend LUI/ADDIU materialization")
+        for offset in range(hi[1]+4,lo[1],4):
+            word = struct.unpack_from(">I",text,offset)[0]
+            # Initial bounded form: unrelated LUI/ORI between the halves.
+            if word >> 26 not in (13,15) or (word >> 16)&31 == register:
+                raise TrapError("unsupported or clobbered nonadjacent address pair")
+        pairs.append({"hi":hi[1],"lo":lo[1],"name":export})
+    inventory = [[section,offset,kind,symbols[index]["name"],symbols[index]["value"],
+                  symbols[index]["size"],symbols[index]["bind"],symbols[index]["shndx"]]
+                 for section,offset,kind,index in rows]
+    return sections, symbols, targets[0], inventory, pairs
+
+
+def rename_addresses(data, export):
+    sections,symbols,target,inventory,pairs = address_pairs(data,export)
+    table = _single_symtab(sections)
+    out = bytearray(data)
+    string_index = sections[table][1][6]
+    strings = _strings(data,sections[string_index][1])
+    needle = ADDRESS_SENTINEL.encode()+b"\0"
+    found = strings.find(b"\0"+needle)
+    if found >= 0:
+        at = found+1
+    else:
+        start = (len(out)+3)&~3
+        out.extend(bytes(start-len(out)))
+        at = len(strings)
+        out.extend(strings+needle)
+        shoff = struct.unpack_from(">I",data,32)[0]
+        entry = struct.unpack_from(">H",data,46)[0]
+        struct.pack_into(">II",out,shoff+string_index*entry+16,start,len(strings)+len(needle))
+    struct.pack_into(">I",out,target["entry"],at)
+    record = dict(format="mickey-paired-data-address-v1",export=export,
+        original_sha256=hashlib.sha256(data).hexdigest(),object_sha256=hashlib.sha256(out).hexdigest(),
+        text_sha256=hashlib.sha256(_section_bytes(data,sections,".text")).hexdigest(),
+        relocations=inventory,pairs=pairs)
+    return bytes(out),record
+
+
+def validate_addresses(configured, original, record):
+    expected,core = rename_addresses(original,record.get("export",""))
+    if configured != expected or any(record.get(k) != value for k,value in core.items()):
+        raise TrapError("stale or changed paired-address object/receipt")
+    if set(record) != set(core)|{"source","source_sha256"}:
+        raise TrapError("invalid paired-address receipt fields")
+    return {offset:pair["name"] for pair in core["pairs"] for offset in (pair["hi"],pair["lo"])}
+
+
+def command_addresses(args):
+    obj,source = Path(args.object),Path(args.source)
+    raw,sidecar = Path(str(obj)+ADDRESS_RAW_SUFFIX),Path(str(obj)+ADDRESS_SUFFIX)
+    try:
+        relative = source.resolve().relative_to(REPO.resolve()).as_posix()
+        if (not re.fullmatch(r"asm/main/[^/]+\.s",relative)
+                or obj.resolve() != (REPO/"build"/(relative+".o")).resolve()):
+            raise TrapError("paired address requires its actual resident ASM source/object")
+        source_bytes = source.read_bytes()
+        original = obj.read_bytes()
+        if raw.exists() and sidecar.exists():
+            old = json.loads(sidecar.read_text())
+            try:
+                validate_addresses(original,raw.read_bytes(),old)
+                if (old["export"] == args.export and old["source"] == relative
+                        and old["source_sha256"] == hashlib.sha256(source_bytes).hexdigest()):
+                    return 0
+            except TrapError:
+                pass
+        configured,record = rename_addresses(original,args.export)
+        record.update(source=relative,source_sha256=hashlib.sha256(source_bytes).hexdigest())
+        if source.read_bytes() != source_bytes or obj.read_bytes() != original:
+            raise TrapError("address source/object changed during naming")
+        _atomic_write(raw,original)
+        _atomic_write(obj,configured)
+        _atomic_write(sidecar,(json.dumps(record,indent=1,sort_keys=True)+"\n").encode())
+    except (OSError,ValueError,struct.error,TrapError) as error:
+        print(f"paired address rename refused: {error}",file=sys.stderr)
+        return 1
+    return 0
+
+
 def _atomic_write(path: Path, payload: bytes) -> None:
     """Replace `path`, keeping its mode (mkstemp's 0600 otherwise sticks)."""
     try:
@@ -630,6 +752,37 @@ def command_generate(args) -> int:
     return 0
 
 
+def check_addresses(args):
+    """Compare selected source-derived data identities with runtime records."""
+    import runlink_pack as rp
+    import postprocess_audit as audit
+    paths={key:REPO/value for key,value in rp.DEFAULTS.items()}
+    paths.update(elf=Path(args.elf),map=Path(args.map),rom=Path(args.rom),atlas=Path(args.atlas))
+    world=rp.World(paths,need_raw=False)
+    ort=rp.OrtNames.load(paths["ort"])
+    targets=rp.address_targets(audit.run_make_database())
+    count=0
+    for target,export in targets.items():
+        inputs=[i for i in world.map if i.file==target and i.insec==".text" and i.size]
+        if len(inputs)!=1:
+            raise TrapError("paired-address source lacks a unique resident map input")
+        item=inputs[0];path=REPO/target
+        names=rp.resident_address_names(world,item,path,rp.Elf(path),export)
+        row=rp.address_export_row(world,ort,export)
+        expected={world.layout.text+e["call_site_offset"]:e for e in world.shipped.main
+                  if e["rom_table_index"]==row and (e["flags"]>>4) in (5,6)
+                  and item.addr <= world.layout.text+e["call_site_offset"] < item.addr+item.size}
+        if set(expected)!={item.addr+offset for offset in names}:
+            raise TrapError("paired-address source/runtime record inventory differs")
+        for offset,name in names.items():
+            record=expected[item.addr+offset]
+            if record["flags"]&15 != rp.OP_SYMBOL or rp.address_export_row(world,ort,name)!=row:
+                raise TrapError("paired-address runtime target differs")
+            count+=1
+    rp.check_data_import_holds(world)
+    return count
+
+
 def command_check(args) -> int:
     rom, elf = Path(args.rom).read_bytes(), Path(args.elf).read_bytes()
     bases = resident_text_bases(Path(args.map).read_text())
@@ -644,7 +797,8 @@ def command_check(args) -> int:
                               atlas_inbound(Path(args.atlas)), data_names)
         data_errors, data_stats = prove_data(data_sites, functions, data_bases, sidecars)
         errors.extend(data_errors)
-    except TrapError as error:
+        address_count=check_addresses(args)
+    except (TrapError, OSError, ValueError, RuntimeError) as error:
         errors, stats = [str(error)], {}
     if errors:
         for error in errors[:40]:
@@ -657,6 +811,7 @@ def command_check(args) -> int:
           f"{stats['objects']} objects, {stats['assembly']} in assembly)")
     print(f"OK  callback names: {data_stats['named']}/{data_stats['sites']} resident data callbacks "
           f"name their actual ORT target ({data_stats['assembly']} in assembly)")
+    print(f"OK  paired data addresses: {address_count} named source HI/LO records")
     return 0
 
 
@@ -666,6 +821,10 @@ def main(argv=None) -> int:
     rename = sub.add_parser("rename", help="POSTPROCESS a resident object")
     rename.add_argument("object")
     rename.add_argument("list")
+    addresses = sub.add_parser("addresses", help="name-only paired resident data imports")
+    addresses.add_argument("object")
+    addresses.add_argument("export")
+    addresses.add_argument("source")
     for name in ("generate", "check"):
         command = sub.add_parser(name)
         command.add_argument("--list", default=str(DEFAULT_LIST))
@@ -679,7 +838,7 @@ def main(argv=None) -> int:
             command.add_argument("--map", default=str(DEFAULT_MAP))
             command.add_argument("--atlas", default=str(DEFAULT_ATLAS))
     args = parser.parse_args(argv)
-    return {"rename": command_rename, "generate": command_generate,
+    return {"rename": command_rename, "addresses": command_addresses, "generate": command_generate,
             "check": command_check}[args.command](args)
 
 

@@ -65,7 +65,7 @@ class MetadataLinkTests(unittest.TestCase):
     def manifest(self):
         for name in (link.BOOT_ELF, link.BOOT_MAP):
             p=self.root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(b'fixture')
-        for name in ('tools/runlink_pack.py', 'tools/overlay_tables.py', 'tools/runlink_metadata_link.py'):
+        for name in ('tools/runlink_pack.py', 'tools/overlay_tables.py', 'tools/trap_names.py', 'tools/runlink_metadata_link.py'):
             p=self.root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes((link.REPO/name).read_bytes())
         files={}
         for name in self.names:
@@ -77,7 +77,7 @@ class MetadataLinkTests(unittest.TestCase):
         return {'schema':'mickey-generated-metadata-v1',
                 'proof':{'raw_equal':True,'raw_differing_bytes':0,'differences':0,'source_only':False,'relayout':False},
                 'inputs':{name:{'size':7,'sha256':link.digest(self.root/name)} for name in (link.BOOT_ELF,link.BOOT_MAP)},
-                'implementation':{name:link.digest(self.root/name) for name in ('tools/runlink_pack.py','tools/overlay_tables.py')},
+                'implementation':{name:link.digest(self.root/name) for name in ('tools/runlink_pack.py','tools/overlay_tables.py','tools/trap_names.py')},
                 'files':files,'metadata_files':len(files),
                 'borrowing':{'path':'borrowing.json','sha256':link.digest(ledger),'borrowed_records':1,'entries_by_kind':{'placeholder':1}}}
 

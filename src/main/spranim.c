@@ -245,7 +245,20 @@ typedef struct SpranimEffectState {
     s16 active;
 } SpranimEffectState;
 
-extern u8 D_800794B0[];
+/* Tier B: effectboxControl guards one four-byte row and reads two
+ * unsigned query/expected-result pairs; 0xFF disables each query. Names
+ * describe that reader. The original declaration and selector meanings
+ * remain unknown. The complete compiler input supplies its own alignment. */
+typedef struct SpranimEffectPredicate {
+    u8 firstQuery;
+    u8 firstExpected;
+    u8 secondQuery;
+    u8 secondExpected;
+} SpranimEffectPredicate;
+
+SpranimEffectPredicate D_800794B0[1] = {
+    {0xFF, 0, 0xFF, 0},
+};
 extern s32 func_8002905C(u8 type, void *state);
 
 void effectboxControl(SpranimEffectBox *arg0, s32 arg1) {
@@ -253,18 +266,18 @@ void effectboxControl(SpranimEffectBox *arg0, s32 arg1) {
     s32 i;
     SpranimB798Target *hit;
     void *st;
-    u8 *entry;
+    SpranimEffectPredicate *entry;
     SpranimB798Target *hits[9];
     SpranimEffectState *state;
     void *object;
 
     state = arg0->state64;
     if ((state->planeIndex >= 0) && (state->planeIndex < 1)) {
-        entry = &D_800794B0[state->planeIndex * 4];
-        if (entry[0] != 0xFF && func_8002905C(entry[0], state) != entry[1]) {
+        entry = &D_800794B0[state->planeIndex];
+        if (entry->firstQuery != 0xFF && func_8002905C(entry->firstQuery, state) != entry->firstExpected) {
             return;
         }
-        if (entry[2] != 0xFF && func_8002905C(entry[2], state) != entry[3]) {
+        if (entry->secondQuery != 0xFF && func_8002905C(entry->secondQuery, state) != entry->secondExpected) {
             return;
         }
     }

@@ -956,6 +956,90 @@ class DataOnlyImportGuardTests(unittest.TestCase):
             rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
 
 
+class DataOnlyProducerDiscoveryTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.tree = Tree(Path(self.temp.name))
+        self.assertEqual(run(self.tree.args("ort", "--write"))[0], 0)
+        self.paths = rp.resolve_paths(type("Args", (), {
+            "root": str(self.tree.root), **{key: None for key in rp.DEFAULTS}})())
+        # A configured backend makes lazy discovery read the actual ORT input.
+        self.tree.p("Makefile").write_text("all:\n\t@:\n")
+        self.world = rp.World(self.paths)
+        self.exports = rp.OrtNames.load(self.paths["ort"])
+        self.source = "overlays/o001/pointers"
+        builder = (ObjBuilder().section(".data", bytes(8))
+                   .sym("pointers", 0, 8, GLOBAL, OBJECT, ".data")
+                   .sym("b_exported").rel(".data", 0, R32, "b_exported")
+                   .rel(".data", 4, R32, "b_exported"))
+        path = self.tree.p("build/runlink_raw/src/" + self.source + ".c.o")
+        path.write_bytes(builder.build())
+        self.obj = rp.ObjRef(1, path, self.source, 0, 0, "c",
+            rp.Elf("fresh-authenticated-capture", builder.build()),
+            {".data": (0x48, "link")}, {"b_exported": (1, 0x20)})
+
+    def test_objects_before_pack_discover_only_published_inputs_with_current_exports(self):
+        with mock.patch.object(rp, "_guard_data_module_imports", return_value={1: [self.obj]}) as guard:
+            objects = self.world.objects(1)
+            self.assertIn(self.obj, objects)
+            self.assertEqual(guard.call_args.args[1].rows, self.exports.rows)
+            self.assertIn((self.obj, next(s for s in self.obj.elf.symbols
+                                         if s.name == "pointers")), self.world.defs()["pointers"])
+            self.assertIn(self.obj.path, rp.metadata_input_paths(self.paths, self.world))
+            self.assertNotEqual(self.obj.path, self.obj.elf.path)
+            rp.pack_all(self.world, self.exports)
+            self.assertEqual(guard.call_count, 2)
+            self.assertIs(guard.call_args.args[1], self.exports)
+
+    def test_failed_warm_revalidation_clears_previous_objects_and_definitions(self):
+        failure = rp.PackError("changed source or provider")
+        with mock.patch.object(rp, "_guard_data_module_imports",
+                side_effect=[{1: [self.obj]}, failure, failure]):
+            self.assertIn(self.obj, self.world.objects(1))
+            self.world.defs()
+            with self.assertRaisesRegex(rp.PackError, "changed source or provider"):
+                rp.guard_data_module_imports(self.world, self.exports)
+            self.assertIsNone(self.world._guarded_data_objects)
+            self.assertIsNone(self.world._objects)
+            self.assertIsNone(self.world._defs)
+            with self.assertRaisesRegex(rp.PackError, "changed source or provider"):
+                self.world.objects(1)
+
+    def test_recursion_cannot_expose_a_half_built_inventory(self):
+        with mock.patch.object(rp, "_guard_data_module_imports",
+                side_effect=lambda world, _exports: world.objects(1)):
+            with self.assertRaisesRegex(rp.PackError, "recursive data-only producer"):
+                self.world.objects(1)
+        self.assertFalse(self.world._data_guard_active)
+        self.assertIsNone(self.world._guarded_data_objects)
+        self.assertIsNone(self.world._objects)
+
+    def test_missing_text_input_never_leaves_a_partial_inventory_on_retry(self):
+        (self.paths["raw"] / "src/overlays/o001/a.c.o").unlink()
+        with mock.patch.object(rp, "_guard_data_module_imports", return_value={1: [self.obj]}):
+            for _attempt in range(2):
+                with self.assertRaisesRegex(rp.PackError, "raw object.*missing"):
+                    self.world.objects(1)
+                self.assertIsNone(self.world._objects)
+                self.assertIsNone(self.world._defs)
+
+    def test_generated_looking_import_uses_provider_identity_and_never_spelling_fallback(self):
+        name = "D_overlay_001_F0001234_00000000"
+        builder = ObjBuilder().section(".data", bytes(4)).sym(name).rel(".data", 0, R32, name)
+        self.obj.elf = rp.Elf("authenticated-capture", builder.build())
+        self.obj.data_imports = {name: (1, 0x48)}
+        resolver = mock.Mock()
+        reference = rp.collect_relocs(self.world, resolver, self.obj)[0]
+        self.assertEqual(reference.target.ident, ("ov", 1, 0x48))
+        self.assertEqual(reference.target.route, "data-source-export")
+        resolver.resolve_name.assert_not_called()
+        self.obj.data_imports = {}
+        with self.assertRaisesRegex(rp.PackError, "lacks its actual import identity"):
+            rp.collect_relocs(self.world, resolver, self.obj)
+        resolver.resolve_name.assert_not_called()
+
+
 class HeldDataCaptureTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

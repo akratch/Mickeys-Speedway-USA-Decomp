@@ -1347,7 +1347,9 @@ segments:
       - {start: 0x18633A8, type: .rodata, name: overlay8MotionScales, linker_section_order: .data}
       - [0x1863468, .data, overlay8TuningRecords]
       - [0x1864F48, .data, overlay8TuningTables]
-      - [0x1864F98, bin, overlay_008_data_rodata_2110]
+      - [0x1864F98, .data, overlay8ParameterTables]
+      - [0x1865108, .data, overlay8SurfaceNames]
+      - [0x18651B8, bin, overlay_008_data_rodata_2330]
       - [0x1865200, .data, overlay8MotionConstants]
       - [0x18652A0, bin, overlay_008_data_rodata_2418]
 

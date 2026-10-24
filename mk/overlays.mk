@@ -434,19 +434,22 @@ $(O8_OBJ): POSTPROCESS = \
 # defines the parameter block in this object's .data at its recorded offset
 # (+0x2D0) only so as1 shares one high half between two stores; the retained
 # overlay image owns the bytes, so the copy is dropped and its 35 sites are
-# rebound to a zero-valued base. The TU's literal pool duplicates the retained
-# overlay rodata and is asserted by digest.
+# rebound to a zero-valued base. The TU owns its 84-byte compiler literal
+# pool; the remaining readonly scalars stay separate. Actual loads prove the
+# end before twelve bytes of compiler-only section alignment.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/trim_elf_section.py \
 	config/normalizations/func_overlay_009_F0000000_1866678.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 	$(OBJCOPY) --add-symbol gOverlay9DataBaseReloc=0x0,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/func_overlay_009_F0000000_1866678.rebind.spec && \
 	$(OBJCOPY) --remove-section=.data --remove-section=.gptab.data $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x54 --compiler-end-padding && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:2c21a6f383952f9246cda00fcc1f0456af3e324811b7ca17f018fd4c4f0658d9
+		sha256:11187ab836764385f6a30e2f0fb3b4647a356a77e4eda9a7ac1915167c22bffa 0 keep
 
 # Overlay 36 owns its callback records, weight/state tables, private literals,
 # and postponed-read queue. Ordinary module linking preserves their section

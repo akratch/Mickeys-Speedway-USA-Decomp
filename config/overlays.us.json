@@ -25,8 +25,8 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 49792,
-  "diagnostic_data_rodata_bytes": 416,
+  "owned_data_rodata_bytes": 49876,
+  "diagnostic_data_rodata_bytes": 336,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -2418,16 +2418,6 @@
    },
    "data_rodata_ownership": [
     {
-     "offset": "0x390",
-     "end_offset": "0x3E0",
-     "size": "0x50",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o009/overlay_009",
-     "trial_function": "func_overlay_009_F0000CE4_186735C",
-     "externalized": true
-    },
-    {
      "offset": "0x2D0",
      "end_offset": "0x300",
      "size": "0x30",
@@ -2443,6 +2433,15 @@
      "type": "c",
      "section": ".data",
      "source": "overlays/o009/overlay9CameraTables",
+     "canonical": true
+    },
+    {
+     "offset": "0x390",
+     "end_offset": "0x3E4",
+     "size": "0x54",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o009/overlay_009",
      "canonical": true
     }
    ]

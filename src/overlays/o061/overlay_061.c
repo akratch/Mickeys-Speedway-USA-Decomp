@@ -93,7 +93,7 @@ static void overlay61AddEntry(s32 value0, s32 value1, s32 text0Id, s32 text1Id, 
     Overlay61Entry *entry;
 
     if (o61EntryCount_o061Reloc < 20) {
-        entry = &gOverlay61EntriesReloc[o61EntryCount_o061Reloc++];
+        entry = &o61MenuEntries_o061Reloc[o61EntryCount_o061Reloc++];
 
         if (totalTime != -1) {
             hours = totalTime / 3600;
@@ -224,7 +224,7 @@ static void overlay61DrawList(s32 context) {
         overlay61DrawEntry(context, y, 0, 0);
         } else {
             overlay61DrawEntry(
-                context, y, &gOverlay61ItemsReloc[index << 6],
+                context, y, &o61MenuEntries_o061Reloc[index],
                 index++ == o61SelectedEntry_o061Reloc);
         }
         y += 0x18;
@@ -398,7 +398,7 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
             o61State_o061Reloc = 7;
             amSndPlay(0xD, NULL);
         } else if (confirm) {
-            o61State_o061Reloc = gOverlay61Entries[o61SelectedEntry_o061Reloc].nextState;
+            o61State_o061Reloc = o61MenuEntries_o061Reloc[o61SelectedEntry_o061Reloc].kind;
             amSndPlay(0xC, NULL);
         } else if (y > 0) {
             o61SelectedEntry_o061Reloc--;
@@ -427,7 +427,7 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
             amSndPlay(0xC, NULL);
             result = func_overlay_061_F0001648_18C0A10(
                 D_8007A1F4, 0,
-                gOverlay61Entries[o61SelectedEntry_o061Reloc].note);
+                o61MenuEntries_o061Reloc[o61SelectedEntry_o061Reloc].text1);
             if (result) {
                 o61State_o061Reloc = 0;
                 o61Error_o061Reloc = result;
@@ -473,7 +473,7 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
             amSndPlay(0xD, NULL);
         } else if (confirm) {
             amSndPlay(0xC, NULL);
-            result = packDeleteFile(0, gOverlay61Entries[o61SelectedEntry_o061Reloc].slot);
+            result = packDeleteFile(0, o61MenuEntries_o061Reloc[o61SelectedEntry_o061Reloc].field2);
             if (result) {
                 o61State_o061Reloc = 0;
                 o61Error_o061Reloc = result;

@@ -56,7 +56,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_head.c.o: SURFACE_REBIND = $(O
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_middle.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym func_80005750=func_80005750_o001Reloc \
 	--redefine-sym func_8003A7D0=func_8003A7D0_o001Reloc \
-	--redefine-sym overlay3UpdateTimedEntries=overlay3UpdateTimedEntries_o001Reloc $@
+	--redefine-sym overlay3UpdateTimedEntries=overlay3UpdateTimedEntries_o001Reloc \
+	--redefine-sym overlay4GroupCount=overlay4GroupCount_o001Reloc \
+	--redefine-sym overlay4UpdateGroupSpacing=overlay4UpdateGroupSpacing_o001Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007BF04=D_8007BF04_o001Reloc \

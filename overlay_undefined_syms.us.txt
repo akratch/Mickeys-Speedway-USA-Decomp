@@ -129,8 +129,9 @@ gOverlay1PreviousAngleLimit = 0x000000e0;
 gOverlay1SubmitArg4 = 0x00001d94;
 overlay1GetGaugeObjects = 0xf0000000;
 overlay1GetGaugeObjectsRaw = 0xf0000000;
-overlay1ReadModeReloc = 0xf0000000;
 overlay3UpdateTimedEntries_o001Reloc = 0xf0000000;
+overlay4GroupCount_o001Reloc = 0xf0000000;
+overlay4UpdateGroupSpacing_o001Reloc = 0xf0000000;
 
 /* overlay 1: func_overlay_001_F0002B4C_184EF2C.c.o */
 D_1BA8 = 0x00001ba8;

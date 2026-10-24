@@ -132,17 +132,83 @@ There is real larger backing in some consumers: the two
 [the scheduler](../include/game/sched_internal.h#L40) explicitly reserves
 `threadAndPad[0x230]`. That does not prove every thread allocation.
 
-The [VI manager](../src/libultra/vimgr.c#L18) owns a short `OSThread` followed
-by its stack. Existing compiler debug anchors place the thread at BSS offset
-zero and the stack at `0x1B0`; a `0x230` FP-active image reaches into that
-adjacent region. A blanket no-FP lifetime is not established: its main loop
-calls [__osViSwapContext](../src/libultra/viswapcontext.c#L38), whose conditional
-Y-scale update uses FP. VI creation passes ID zero, so its initial mode is FR1;
-the FR0 undefined case cannot dismiss this capacity question. Whether the FP
-path executes, the complete backing and simultaneous stack live intervals, and
-a genuine source view must be reconciled before a repair. This audit proves a capacity/view gap, not live corruption or a lawful
-alias. Enlarging the shared type would change an actual owned BSS layout and
-is not authorized by the byte-exact creator alone.
+### VI backing and live stack
+
+The [VI manager](../src/libultra/vimgr.c#L18) has a measured `0x320`-byte
+compiler BSS section. Its debug anchors, C declarations and the next owned
+BSS section agree on this layout. Intervals below are relative to `viThread`
+and exclude their upper endpoint:
+
+| Interval | Actual owner |
+|---|---|
+| `0x000..0x1AC` | Declared short `OSThread`; four alignment bytes follow. |
+| `0x1B0..0x2B0` | The real 256-byte `viThreadStack`, aligned to 16 bytes. |
+| `0x2B0..0x2C8` | VI event queue. |
+| `0x2C8..0x2DC` | Five target message cells; four alignment bytes follow. |
+| `0x2E0..0x2F8`, `0x2F8..0x310` | Retrace and counter message records. |
+| `0x310..0x312` | Function-static retrace counter; terminal section padding follows. |
+
+These are separate source objects. Being inside the same NOBITS section does
+not allocate a larger thread object. The next owner is
+[SP-task scratch](../src/libultra/sptask.c#L21); queue, message and counter
+storage are already used by [VI creation and the loop](../src/libultra/vimgr.c#L45),
+not spare thread capacity. The thread also enters the active/run/message
+queues through the ordinary scheduler. The diagnostic
+[thread dump](../src/main/diCpu.c#L234) already reads a `0x230`-byte image;
+that consumer does not establish ownership of extra storage.
+
+Creation supplies stack top `thread + 0x2B0`; `osCreateThread` reserves 16
+bytes, so the initial SP is `thread + 0x2A0`. The actual `viMgrMain` frame
+is `0x50` bytes, leaving its loop SP at `+0x250`. Read-only inspection of the
+unchanged ROM-exact providers gives these conditional call intervals:
+
+| Call path from the VI loop | SP relative to thread base |
+|---|---:|
+| Blocking receive | `0x228` |
+| Retrace swap | `0x208` |
+| Swap's virtual-to-physical helper | `0x1F0` |
+| Retrace's nonblocking send, then an awakened thread's start | `0x218`, then `0x1F0` |
+| Timer handler, its nonblocking send, then thread start | `0x228`, `0x1F0`, then `0x1C8` |
+
+The deepest inspected normal chain remains within the declared stack. This
+is not a general stack-capacity proof for arbitrary callbacks or exception
+hooks. More importantly, the overlapping first `0x80` stack bytes are not
+all dead capacity: the swap frame has live saved `s0`, `s1`, `s2` and return
+address words at `+0x220..+0x230`, exactly inside FP slots 30 and 31. Deeper
+message/start paths also place live frames inside the conditional image.
+Moving the declared stack bottom to `+0x230` while retaining its top would
+exclude real compiled frame accesses.
+
+The conditional kernel behavior must remain separate from that measured
+layout. ID zero starts VI in FR1 with FP-used clear. Interrupt save and
+voluntary yield skip FP transfers while that flag is clear. The normal VI
+call graph's observed CPU-FP block is the Y-scale conversion in
+[__osViSwapContext](../src/libultra/viswapcontext.c#L38), guarded by state bit
+`0x4`. On first use, the lazy coprocessor path sets FP-used and dispatch
+**reads** the full FP image before retrying; it does not itself prove that a
+save overwrites a live stack value. Once FP-used is set, full exception saves
+write the full image, and yield writes `+0x1D0..+0x230`. At the ordinary
+blocking-receive suspension, the receive frame's saved integer words are
+above `+0x230`; the overlap there includes unused argument-home space. That
+does not establish safety at an interrupt inside another active frame.
+
+[VI initialization](../src/libultra/vi.c#L22), mode changes, black/buffer
+updates and the other inspected context writers do not set state bit `0x4`.
+Initialization's swap also runs on the creator's stack before VI is started.
+A whole-lifetime exclusion through every alias, context-pointer escape and
+optional interrupt hook is still unproved. No particular FP-active save or
+changed stack value was observed; no game or emulator was executed. Conversely,
+a shared physical range, a first-use restore, or equal bits at one point does
+not prove a harmless lifetime alias.
+
+There is therefore no authenticated disjoint full-context/stack partition at
+the existing addresses. Enlarging the shared type moves real allocations;
+a union or reduced stack would conceal the unresolved simultaneous-use
+contract. The next bounded prerequisite is to close the VI state-bit and
+FP-used writer/escape paths, including optional hooks, or document the actual
+overlapping target-memory contract with equivalent evidence. This audit
+supports neither an allocation repair nor an unconditional corruption or
+safety claim.
 
 ## Queues, events and lifetime
 
@@ -236,8 +302,10 @@ longer running, queued, active or referenced by another subsystem.
 ## Next prerequisites
 
 1. Reconcile the full conditional context image with actual thread/backing and
-   stack ownership, starting with VI and the real FR-clearing audio caller.
-   Prove an exact natural C view before changing shared declarations or BSS.
+   stack ownership. VI now has a measured live-frame overlap; close its
+   state-bit/FP-used writer and escape paths before proposing a storage view.
+   Keep the real FR-clearing audio caller separate. Prove an exact natural C
+   view before changing shared declarations or BSS.
 2. Close the FR0 odd-transfer case with authoritative implementation evidence
    or a proved excluding precondition. FR1 register selection is documented;
    FCSR behavior and the actual source lifetime still need preservation proof.

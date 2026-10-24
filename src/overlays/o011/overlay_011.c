@@ -37,7 +37,7 @@ void overlay11Initialize(s32 argument) {
 
     func_800290AC(1);
     amTuneSetFade(0.5f, 0);
-    gOverlay11Argument = argument;
+    gOverlay11StoragePadIndex_o011Reloc = argument;
     gOverlay11Timer = 30;
     gOverlay11Counter = 0;
     gOverlay11Selection = 0;
@@ -68,7 +68,7 @@ void overlay11Initialize(s32 argument) {
             overlay11InitializeThreeB();
             break;
         }
-        gOverlay11Argument = 0;
+        gOverlay11StorageAction_o011Reloc = 0;
         overlay11CreateHandles();
         gOverlay11Initialized = 1;
     }
@@ -180,7 +180,7 @@ void func_overlay_011_F0000150_1868998(Overlay11Gfx **displayList, void **matrix
     }
 
     if ((gOverlay11InputDelay == 0) && (gOverlay11OptionDone == 0)) {
-        if ((gOverlay11Mode == 0) && (gOverlay11OptionAction == 0) &&
+        if ((gOverlay11StorageDataMode_o011Reloc == 0) && (gOverlay11OptionAction == 0) &&
             (joyGetPressed_o011Reloc(gOverlay11PadIndex) & 0x5000)) {
             overlay66Select(0);
             func_800290AC_o011Reloc(0);
@@ -197,7 +197,7 @@ void func_overlay_011_F0000150_1868998(Overlay11Gfx **displayList, void **matrix
                 gOverlay11OptionHighlight = -gOverlay11OptionHighlight;
                 gOverlay11HighlightStep = -gOverlay11HighlightStep;
             }
-            if (gOverlay11Mode != 0) {
+            if (gOverlay11StorageDataMode_o011Reloc != 0) {
                 overlay11UpdateSelection(updateRate);
             } else {
                 switch (func_80028F54_o011Reloc()->mode) {
@@ -254,7 +254,7 @@ static void overlay11CreateHandles(void) {
     overlay45SetMode(gOverlay11Handles[1], 0);
     overlay45SetMode(gOverlay11Handles[2], 0);
     overlay45SetMode(gOverlay11Handles[3], 0);
-    gOverlay11Mode = 3;
+    gOverlay11StorageHandleMode_o011Reloc = 3;
 }
 
 /* DKR v77/v80 and JFG contain no matching Overlay 11 initializer donor. */
@@ -374,7 +374,7 @@ static void overlay11DisableHandles(s32 count) {
     s32 i;
 
     gOverlay11Flag = 0;
-    gOverlay11Mode = 0;
+    gOverlay11StorageDataMode_o011Reloc = 0;
     overlay45SetMode(gOverlay11Handles[0], 0);
     overlay45SetMode(gOverlay11Handles[1], 0);
     overlay45SetMode(gOverlay11Handles[3], 0);
@@ -389,27 +389,27 @@ static void overlay11UpdateSelection(s32 updateRate) {
     s8 direction;
     s32 mode;
 
-    direction = D_800D3190[gOverlay11Argument];
+    direction = D_800D3190[gOverlay11StoragePadIndex_o011Reloc];
     if (direction < -32) {
-        if (gOverlay11Mode == 3) {
-            gOverlay11Mode--;
+        if (gOverlay11StorageHandleMode_o011Reloc == 3) {
+            gOverlay11StorageHandleMode_o011Reloc--;
             func_80000F94(0x32C, 0);
-            direction = D_800D3190[gOverlay11Argument];
+            direction = D_800D3190[gOverlay11StoragePadIndex_o011Reloc];
         } else {
             func_80000F94(0x32D, 0);
-            direction = D_800D3190[gOverlay11Argument];
+            direction = D_800D3190[gOverlay11StoragePadIndex_o011Reloc];
         }
     }
     if (direction >= 33) {
-        if (gOverlay11Mode == 2) {
-            gOverlay11Mode++;
+        if (gOverlay11StorageHandleMode_o011Reloc == 2) {
+            gOverlay11StorageHandleMode_o011Reloc++;
             func_80000F94(0x32C, 0);
         } else {
             func_80000F94(0x32D, 0);
         }
     }
 
-    mode = gOverlay11Mode;
+    mode = gOverlay11StorageHandleMode_o011Reloc;
     if (mode == 2) {
         func_overlay_045_F0001BF4_188E04C_o011Reloc(gOverlay11Handle2,
                                           gOverlay11Selection);
@@ -420,21 +420,21 @@ static void overlay11UpdateSelection(s32 updateRate) {
                                           gOverlay11Selection);
     }
 
-    if (func_8002554C(gOverlay11Argument) & 0x4000) {
-        gOverlay11Mode = 0;
-        gOverlay11Argument = -1;
+    if (func_8002554C(gOverlay11StoragePadIndex_o011Reloc) & 0x4000) {
+        gOverlay11StorageDataMode_o011Reloc = 0;
+        gOverlay11StorageAction_o011Reloc = -1;
         return;
     }
-    if (func_8002554C(gOverlay11Argument) & 0x8000) {
-        mode = gOverlay11Mode;
+    if (func_8002554C(gOverlay11StoragePadIndex_o011Reloc) & 0x8000) {
+        mode = gOverlay11StorageHandleMode_o011Reloc;
         if (mode == 2) {
-            gOverlay11Mode = 0;
-            gOverlay11Argument = 1;
+            gOverlay11StorageDataMode_o011Reloc = 0;
+            gOverlay11StorageAction_o011Reloc = 1;
             return;
         }
         if (mode == 3) {
-            gOverlay11Mode = 0;
-            gOverlay11Argument = -1;
+            gOverlay11StorageDataMode_o011Reloc = 0;
+            gOverlay11StorageAction_o011Reloc = -1;
         }
     }
 }
@@ -1253,7 +1253,7 @@ void overlay11ReleaseCurrentGroup(void) {
  * halfword phases. Qualified readers identify the three following words:
  * selected option/created-active state, handle mode and controller index.
  * Tier D: bounded storage views, not recovered original declarations.
- * Legacy data-vs-BSS aliases and reader/prototype debts remain unchanged. */
+ * Other legacy aliases and reader/prototype debts remain open. */
 s16 gOverlay11StoragePhases[13][17];
 s32 gOverlay11StorageOptionIndex;
 s32 gOverlay11StorageHandleMode;

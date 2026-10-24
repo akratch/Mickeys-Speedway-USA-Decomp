@@ -1178,6 +1178,175 @@ class FunctionProxyAuthorityTests(unittest.TestCase):
         self.assertEqual(resolver.target_base(target), ("ov", 99, 0x1234))
 
 
+class ResidentFunctionAuthorityTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.name = "func_80000900"  # Deliberately disagrees with the actual definition.
+
+    def provider(self, *, source="build/src/main/provider.c.o", outsec=".main",
+                 raw_type=FUNC, raw_size=4, raw_value=4, raw_addr=0,
+                 final_type=FUNC, final_size=4, final_value=TB + 0x24, final_section=None,
+                 map_size=8, map_addr=TB + 0x20):
+        self.path = self.root / source
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_bytes(ObjBuilder().section(".text", words(0, 0), addr=raw_addr).sym(
+            self.name, raw_value, raw_size, GLOBAL, raw_type, ".text").build())
+        final = rp.Elf("final", ObjBuilder().section(outsec, bytes(0x100), addr=TB).sym(
+            self.name, final_value, final_size, GLOBAL, final_type,
+            outsec if final_section is None else final_section).build())
+        final_path, map_path = self.root / "build/final.elf", self.root / "build/final.map"
+        final_path.write_bytes(final.data)
+        map_path.write_text("Linker script and memory map\n"
+                            f"{outsec} 0x{TB:X} 0x100\n"
+                            f" .text 0x{map_addr:X} 0x{map_size:X} {source}\n")
+        self.item, = rp.parse_map(map_path)
+        self.world = SimpleNamespace(need_raw=True, defs=lambda: {}, _guarded_data_objects={},
+            paths={"build": self.root / "build", "elf": final_path, "map": map_path},
+            map_data=map_path.read_bytes(), map=[self.item], elf=final,
+            layout=rp.ResidentLayout(TB, DB, BB, BE),
+            by_name={self.name: [s for s in final.symbols if s.name == self.name]})
+        return rp.Resolver(self.world, rp.OrtNames([self.name], {}))
+
+    def test_real_c_and_asm_definitions_precede_coordinates_and_aliases(self):
+        for source, outsec in (("build/src/main/provider.c.o", ".main"),
+                               ("build/asm/main/provider.s.o", ".entry")):
+            with self.subTest(source=source):
+                resolver = self.provider(source=source, outsec=outsec)
+                target = resolver.resolve_name(self.name)
+                self.assertEqual(target.route, "source-resident-function")
+                self.assertEqual(target.ident, ("res", TB + 0x24))
+                self.assertEqual(resolver.ort_identity(0), target.ident)
+                alias = resolver.resolve_name(self.name + "_o001Reloc")
+                self.assertEqual(alias.route, "surface-alias:source-resident-function")
+                self.assertEqual(alias.ident, target.ident)
+                self.assertEqual(self.world.data_import_inputs[self.path],
+                                 hashlib.sha256(self.path.read_bytes()).hexdigest())
+
+    def test_nonfunction_abs_unsized_or_absent_canonical_stays_compatibility(self):
+        for arguments in ({"final_type": OBJECT}, {"final_size": 0}, {"final_section": "ABS"}):
+            with self.subTest(arguments=arguments):
+                resolver = self.provider(**arguments)
+                self.assertEqual(resolver.resolve_name(self.name).route, "generated-name")
+        resolver = self.provider()
+        self.world.by_name.clear()
+        self.assertEqual(resolver.resolve_name(self.name).route, "generated-name")
+
+    def test_present_invalid_provider_refuses_instead_of_coordinates(self):
+        for arguments in ({"raw_type": OBJECT}, {"raw_size": 0}, {"raw_size": 8},
+                          {"raw_value": 5, "raw_size": 1, "final_size": 1,
+                           "final_value": TB + 0x25}, {"raw_addr": 4},
+                          {"source": "build/assets/blob.o"}):
+            with self.subTest(arguments=arguments):
+                resolver = self.provider(**arguments)
+                with self.assertRaisesRegex(rp.PackError, "bounded real source function"):
+                    resolver.resolve_name(self.name)
+
+    def test_nonrelocatable_or_nonexecutable_provider_refuses(self):
+        for field in ("elf_type", "flags"):
+            resolver = self.provider()
+            data = bytearray(self.path.read_bytes())
+            if field == "elf_type":
+                struct.pack_into(">H", data, 16, 2)
+            else:
+                struct.pack_into(">I", data, rp.u32(data, 32) + 40 + 8, 2)
+            self.path.write_bytes(data)
+            with self.assertRaisesRegex(rp.PackError, "bounded real source function"):
+                resolver.resolve_name(self.name)
+
+    def test_missing_or_ambiguous_source_and_canonical_definitions_refuse(self):
+        resolver = self.provider()
+        self.world.map.clear()
+        with self.assertRaisesRegex(rp.PackError, "unique source input"):
+            resolver.resolve_name(self.name)
+        resolver = self.provider()
+        self.world.map *= 2
+        with self.assertRaisesRegex(rp.PackError, "unique source input"):
+            resolver.resolve_name(self.name)
+        resolver = self.provider()
+        other = self.root / "build/src/main/other.c.o"
+        other.write_bytes(self.path.read_bytes())
+        self.world.map.append(rp.MapInput(".main", ".text", TB + 0x40, 8,
+                                          "build/src/main/other.c.o"))
+        with self.assertRaisesRegex(rp.PackError, "unique source input"):
+            resolver.resolve_name(self.name)
+        resolver = self.provider()
+        self.world.by_name[self.name] *= 2
+        with self.assertRaisesRegex(rp.PackError, "ambiguous resident function"):
+            resolver.resolve_name(self.name)
+
+    def test_stale_map_final_extent_and_overlapping_ownership_refuse(self):
+        for arguments in ({"final_size": 8}, {"final_value": TB + 0x28}, {"map_size": 4},
+                          {"map_addr": TB + 0x21, "final_value": TB + 0x25}):
+            with self.subTest(arguments=arguments):
+                resolver = self.provider(**arguments)
+                with self.assertRaisesRegex(rp.PackError, "source/final input geometry"):
+                    resolver.resolve_name(self.name)
+        resolver = self.provider()
+        self.world.map.append(rp.MapInput(".main", ".data", TB + 0x24, 4, "build/other.o"))
+        with self.assertRaisesRegex(rp.PackError, "overlapping final input"):
+            resolver.resolve_name(self.name)
+
+    def test_revalidation_refreshes_index_names_ort_groups_and_failure_refuses(self):
+        resolver = self.provider()
+        resolver.resolve_name(self.name)
+        resolver.ort_identity(0)
+        resolver.rows_by_ident()
+        previous = self.world
+        self.provider(map_addr=TB + 0x30, final_value=TB + 0x34)
+        previous.__dict__.update(self.world.__dict__)
+        self.world = previous
+        self.world.data_import_inputs = {}  # successful guard starts fresh holds
+        self.world._guarded_data_objects = {}
+        self.assertEqual(resolver.resolve_name(self.name).ident, ("res", TB + 0x34))
+        self.assertEqual(resolver.ort_identity(0), ("res", TB + 0x34))
+        self.assertNotIn(("res", TB + 0x24), resolver.rows_by_ident())
+        self.world._guarded_data_objects = None
+        for call in (lambda: resolver.resolve_name(self.name), lambda: resolver.ort_identity(0),
+                     resolver.rows_by_ident):
+            with self.assertRaisesRegex(rp.PackError, "inventory is unavailable"):
+                call()
+
+    def test_pack_main_reread_conflict_and_end_hold_refuse_mutation(self):
+        resolver = self.provider()
+        resolver.resolve_name(self.name)
+        self.world.shipped = SimpleNamespace(main=[])
+        original = self.path.read_bytes()
+        self.path.write_bytes(original + b"changed")
+        with self.assertRaisesRegex(rp.PackError, "conflicting held"):
+            rp.pack_main(self.world, resolver)
+        with self.assertRaisesRegex(rp.PackError, "held data-only input changed"):
+            rp.check_data_import_holds(self.world)
+        self.path.write_bytes(original)
+        rp.check_data_import_holds(self.world)
+
+    def test_final_pack_checks_observations_after_last_resolution(self):
+        Tree(self.root)
+        paths = {key: self.root / value for key, value in rp.DEFAULTS.items()}
+        world = rp.World(paths)
+        exports = rp.generate_ort(world)
+        original = rp.pack_main
+        def changed_after_read(*arguments):
+            result = original(*arguments)
+            path = self.root / "build/src/main/r.c.o"
+            path.write_bytes(path.read_bytes() + b"changed after parsing")
+            return result
+        with mock.patch.object(rp, "pack_main", side_effect=changed_after_read):
+            with self.assertRaisesRegex(rp.PackError, "held data-only input changed"):
+                rp.pack_all(world, exports)
+
+    def test_loaded_final_and_map_are_held_not_rehashed_as_new_authority(self):
+        for key in ("elf", "map"):
+            with self.subTest(key=key):
+                resolver = self.provider()
+                path = self.world.paths[key]
+                path.write_bytes(path.read_bytes() + b"changed after World parsing")
+                resolver.resolve_name(self.name)
+                with self.assertRaisesRegex(rp.PackError, "held data-only input changed"):
+                    rp.check_data_import_holds(self.world)
+
+
 class HeldDataCaptureTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

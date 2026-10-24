@@ -2,6 +2,7 @@
 #define OVERLAY_048_H
 
 #include "ultra64.h"
+#include "overlays/overlay_045.h"
 
 /*
  * Overlay 48: one translation unit (ADR 0006), a scripted title sequence:
@@ -11,7 +12,7 @@
  */
 
 typedef struct Overlay48Entry {
-    s32 handle;
+    Overlay45ResourceDescriptor *handle;
     s16 lifetime;
     u8 pad06[2];
     s16 seed;
@@ -21,39 +22,28 @@ typedef struct Overlay48Entry {
     u8 pad0E[2];
 } Overlay48Entry;
 
-typedef struct Overlay48InitialSeeds {
-    s16 values[5];
-    u8 pad0A[0x26A];
-    s16 initial;
-} Overlay48InitialSeeds;
+/* Five live descriptor records precede the timer, script pointer and two
+ * halfword controls. Compiler end alignment completes the BSS extent. */
+extern Overlay48Entry gOverlay48Entries[5];
 
-/* Overlay 48's BSS is one six-record owner: a header at +0x0 followed by
- * five runtime entries at +0x10..+0x5F. Historical D_* aliases and the
- * indexed timer/script tail resolve within this block at load time. */
-extern Overlay48Entry gOverlay48Entries[6];
-
-extern u8 gOverlay48State;
-extern Overlay48InitialSeeds D_274;
-extern s16 D_174[];
+extern u8 D_8007BF60;
+extern s16 o48InitialEntrySeeds[5];
+extern s16 gOverlay48CreditCommands[128];
 extern s16 gOverlay48Timer;
 extern s16 *gOverlay48Script;
-extern s16 gOverlay48ScriptIndex;
 extern s16 gOverlay48ResourceIndex;
 extern s16 gOverlay48Finished;
-extern s32 gOverlay48ResourceTable[];
-extern f32 gOverlay48TransitionValue;
+extern const char *gOverlay48ResourceTable[93];
 
-extern void overlay48ConfigureReloc();
+extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
+extern void func_80028DE4(s32, s32, s32, s32, s32, s32);
 extern void mainChangeCameras(s32 mode);
 extern void amTunePlay(u8 sequenceId);
 extern void func_800015F8(void);
 extern void fontUseFont(s32 mode);
-extern void overlay45ReleaseDescriptor(s32 handle);
-extern void overlay45SetMode(s32 handle, s16 value);
-extern s32 overlay45CreateDescriptor(s32 resource, s32 value, s16 seed, s32 kind);
 extern void mainTitlePageInit(s32 mode);
 extern void func_80001608(void);
-extern void amTuneSetFade(f32 value, s32 mode);
+extern void amTuneSetFade(f32 value, u8 volume);
 
 void overlay48Initialize(void);
 void overlay48InitializeState(void);

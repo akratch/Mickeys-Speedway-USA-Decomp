@@ -1692,7 +1692,7 @@ static void overlay57HandleModeInput(s32 updateRate) {
         amSndPlay(12, 0);
 
         gO57ModeOutputs[0].value =
-            (s8) gO57ModeValueTable[gO57ModeChoices[0].tableIndex];
+            (s8) o57CharacterOrder_o057Reloc[gO57ModeChoices[0].tableIndex];
         gO57ModeOutputs[0].mode = 2;
         D_8007BEF8 = 1;
         D_8007BEFC = 0;
@@ -1706,7 +1706,7 @@ static void overlay57HandleModeInput(s32 updateRate) {
             enabled[i] = gO57ModeChoices[i].enabled;
             if (gO57ModeChoices[i].enabled != 0) {
                 gO57ModeOutputs[outputIndex].value =
-                    (s8) gO57ModeValueTable[
+                    (s8) o57CharacterOrder_o057Reloc[
                         gO57ModeChoices[i].tableIndex];
                 outputIndex++;
             }
@@ -1716,7 +1716,7 @@ static void overlay57HandleModeInput(s32 updateRate) {
         joyCreateMap(enabled);
         mainSetMode(0);
         mainChangeLevel(0x1E,
-                               gO57ModeValueTable[
+                               o57CharacterOrder_o057Reloc[
                                    gO57ModeChoices[0].tableIndex],
                                0, 5, 1, 0);
         gOverlay57DistanceState = 1;
@@ -1862,8 +1862,8 @@ static void func_overlay_057_F0004460_18A8058(s32 updateRate) {
             playerOrder[index] = gOverlay57MenuSources[index].active;
             if (gOverlay57MenuSources[index].active != 0) {
                 gOverlay57MenuEntries[i].controller =
-                    gOverlay57ControllerMap[gOverlay57MenuSources[index].index];
-                activePlayers[gOverlay57ControllerMap[gOverlay57MenuSources[index].index]] = 0;
+                    o57CharacterOrder_o057Reloc[gOverlay57MenuSources[index].index];
+                activePlayers[o57CharacterOrder_o057Reloc[gOverlay57MenuSources[index].index]] = 0;
                 i++;
             }
         }
@@ -1906,7 +1906,7 @@ static void func_overlay_057_F0004460_18A8058(s32 updateRate) {
 
         if (D_8007BF44 > 0) {
             gO57MiddleData31E8 = gO57CourseTable[gOverlay57MenuEntries[0].mode][gOverlay57MenuEntries[0].variant];
-            gO57MiddleData31EC = gOverlay57ControllerMap[gOverlay57MenuSources[0].index];
+            gO57MiddleData31EC = o57CharacterOrder_o057Reloc[gOverlay57MenuSources[0].index];
             gO57MiddleData31F0 = 5;
             gO57MiddleData31F4 = 0;
             mainChangeLevel(0x12, 0, 0, 0xF, 1, 0);
@@ -1914,7 +1914,7 @@ static void func_overlay_057_F0004460_18A8058(s32 updateRate) {
         } else {
             mainSetMode(0);
             mainChangeLevel(gO57CourseTable[gOverlay57MenuEntries[0].mode][gOverlay57MenuEntries[0].variant],
-                            gOverlay57ControllerMap[gOverlay57MenuSources[0].index], 0, 5, 1, 0);
+                            o57CharacterOrder_o057Reloc[gOverlay57MenuSources[0].index], 0, 5, 1, 0);
         }
         gOverlay57DistanceState = 1;
         overlay84Mark();
@@ -2382,8 +2382,8 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     sourceState[index] = rank;
                     if (rank != 0) {
                         gO57MiddleOutput[i].controller =
-                            gO57MiddleCharacterIds[gO57MiddleChoices[index].tableIndex];
-                        activePlayers[gO57MiddleCharacterIds[gO57MiddleChoices[index].tableIndex]] = 0;
+                            o57CharacterOrder_o057Reloc[gO57MiddleChoices[index].tableIndex];
+                        activePlayers[o57CharacterOrder_o057Reloc[gO57MiddleChoices[index].tableIndex]] = 0;
                         i++;
                     }
                 }
@@ -2424,7 +2424,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                 D_8007BF08 = 0;
                 if (D_8007BF44 > 0) {
                     gO57MiddleData31E8 = D_8007C0E8[o57SelectedEntry_o057Reloc];
-                    gO57MiddleData31EC = gO57MiddleCharacterIds[gO57MiddleChoices[0].tableIndex];
+                    gO57MiddleData31EC = o57CharacterOrder_o057Reloc[gO57MiddleChoices[0].tableIndex];
                     gO57MiddleData31F0 = 5;
                     gO57MiddleData31F4 = 0;
                     func_80028374(0x12, 0, 0, 0xF, 1, 0);
@@ -2432,7 +2432,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                 } else {
                     func_80028374(
                         D_8007C0E8[o57SelectedEntry_o057Reloc],
-                        gO57MiddleCharacterIds[gO57MiddleChoices[0].tableIndex],
+                        o57CharacterOrder_o057Reloc[gO57MiddleChoices[0].tableIndex],
                         0, 5, 1, 0);
                 }
                 gO57MiddleTransition = 1;
@@ -2558,8 +2558,8 @@ static void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
             playerOrder[index] = rank;
             if (rank != 0) {
                 gOverlay57MenuEntries[i].controller =
-                    gOverlay57ControllerMap[gOverlay57MenuSources[index].index];
-                activePlayers[gOverlay57ControllerMap[gOverlay57MenuSources[index].index]] = 0;
+                    o57CharacterOrder_o057Reloc[gOverlay57MenuSources[index].index];
+                activePlayers[o57CharacterOrder_o057Reloc[gOverlay57MenuSources[index].index]] = 0;
                 i++;
             }
         }
@@ -2593,7 +2593,7 @@ static void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
         gOverlay57MenuHalf = 0x3FC;
         D_8007BF08 = 0;
         mainChangeLevel(gOverlay57LevelBySelection[o57SelectedEntry_o057Reloc],
-                        gOverlay57ControllerMap[gOverlay57MenuSources[0].index],
+                        o57CharacterOrder_o057Reloc[gOverlay57MenuSources[0].index],
                         0, 5, 1, 0);
         gOverlay57DistanceState = 1;
         overlay84Mark();

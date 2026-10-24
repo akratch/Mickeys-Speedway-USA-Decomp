@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 6501},
+  "totals": {"differences": 0, "borrowed_records": 6493},
   "differences": {
   },
   "borrowed": {
@@ -68,7 +68,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1511,
+      "count": 1508,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -836,7 +836,6 @@
         [57, "gO57MiddleBadge", 2],
         [57, "gO57MiddleCanLeave", 2],
         [57, "gO57MiddleCaption", 2],
-        [57, "gO57MiddleCharacterIds", 2],
         [57, "gO57MiddleChoices", 8],
         [57, "gO57MiddleColumns", 4],
         [57, "gO57MiddleData31B4", 4],
@@ -878,7 +877,6 @@
         [57, "gO57ModeState160BaseReloc", 8],
         [57, "gO57ModeState164BaseReloc", 8],
         [57, "gO57ModeState184BaseReloc", 8],
-        [57, "gO57ModeValueTable", 2],
         [57, "gO57NodeValues17CReloc", 4],
         [57, "gO57Previous108Reloc", 2],
         [57, "gO57ResidentCurrentReloc", 2],
@@ -916,7 +914,6 @@
         [57, "gO57Value50CReloc", 2],
         [57, "gOverlay57Byte3D1CReloc", 2],
         [57, "gOverlay57Byte3EF4Reloc", 2],
-        [57, "gOverlay57ControllerMap", 4],
         [57, "gOverlay57Delay", 12],
         [57, "gOverlay57DistanceLimit", 2],
         [57, "gOverlay57DistanceState", 32],

@@ -24,6 +24,7 @@ import pathlib
 import re
 import shlex
 import subprocess
+import struct
 import sys
 import tempfile
 import time
@@ -34,6 +35,233 @@ import runlink_metadata_link as metadata_link
 
 class MetadataProofError(RuntimeError):
     """Declared metadata steps do not explain the configured object."""
+
+
+def literal_profile_inputs(root):
+    """Stable existing parser/helper sources, declared before proof snapshots."""
+    root = pathlib.Path(root)
+    names = ["tools/proof_provenance.py", "tools/trim_elf_section.py", "tools/candidate_context.py"]
+    package = root / "tools/permuter/perm_pycparser"
+    files = sorted(package.rglob("*.py"))
+    if not files or not (package / "c_parser.py").is_file():
+        raise MetadataProofError("literal profile requires the existing vendored parser")
+    return {name: sha256_file(root / name) for name in names} | {
+        path.relative_to(root).as_posix(): sha256_file(path) for path in files}
+
+
+_LITERAL_PARSER_PIN = None
+
+
+def literal_array_facts(source, cpp, root):
+    """Closed source syntax, corroborated by the existing effective-C parser."""
+    global _LITERAL_PARSER_PIN
+    import candidate_context as lexical
+    before = literal_profile_inputs(root)
+    try:
+        lexical_identity = lexical.identity()
+    except (RuntimeError, OSError, ValueError) as error:
+        raise MetadataProofError("loaded literal lexical helper changed") from error
+    if lexical_identity["comparator_sha256"] != before["tools/candidate_context.py"]:
+        raise MetadataProofError("literal lexical input differs from loaded helper")
+    if _LITERAL_PARSER_PIN is None and any(name == "perm_pycparser" or name.startswith("perm_pycparser.")
+                                           for name in sys.modules):
+        raise MetadataProofError("preloaded literal parser lacks a bound loading identity")
+    if _LITERAL_PARSER_PIN is not None and before != _LITERAL_PARSER_PIN:
+        raise MetadataProofError("loaded literal parser/helper sources changed")
+    package = pathlib.Path(root) / "tools/permuter"
+    existing = sys.modules.get("perm_pycparser")
+    if existing and pathlib.Path(existing.__file__).resolve().parent != (package / "perm_pycparser").resolve():
+        raise MetadataProofError("literal parser namespace differs from the declared tool")
+    if str(package) not in sys.path:
+        sys.path.insert(0, str(package))
+    from perm_pycparser import c_ast, c_parser
+    if before != literal_profile_inputs(root):
+        raise MetadataProofError("literal parser changed during loading")
+    if _LITERAL_PARSER_PIN is None:
+        _LITERAL_PARSER_PIN = before
+    if max(len(source), len(cpp)) > lexical.MAX_SOURCE_BYTES or b"\\\n" in source or b"??" in source:
+        raise MetadataProofError("unsupported literal source size/splicing/trigraphs")
+    text = lexical._strip_comments(source.decode("utf-8"))
+    include = re.compile(r'\s*#\s*include\s*(?:"[^"\n]+"|<[^>\n]+>)\s*\n')
+    while match := include.match(text):
+        text = text[match.end():]
+    declaration = re.compile(r'\s*(?P<const>const\s+)?char\s+(?P<name>[A-Za-z_][A-Za-z_0-9]*)\s*\[\s*\]\s*=\s*"(?P<literal>[\x20-\x21\x23-\x5B\x5D-\x7E]*)"\s*;')
+    rows = []
+    while text.strip():
+        match = declaration.match(text)
+        if not match:
+            raise MetadataProofError("not complete plain ASCII literal-array declarations")
+        rows.append(dict(name=match["name"], const=bool(match["const"]), literal=match["literal"]))
+        text = text[match.end():]
+    if (not rows or len(rows) > lexical.MAX_DECLARATIONS
+            or len({row["name"] for row in rows}) != len(rows)
+            or len({row["const"] for row in rows}) != 1):
+        raise MetadataProofError("mixed/duplicate/empty literal definitions")
+    try:
+        ast = c_parser.CParser().parse(cpp.decode("utf-8"))
+    except Exception as error:
+        raise MetadataProofError("effective literal C cannot be parsed") from error
+    actual = []
+    for node in ast.ext:
+        if isinstance(node, c_ast.Typedef):
+            continue
+        if (not isinstance(node, c_ast.Decl) or node.storage or node.funcspec or node.bitsize
+                or not isinstance(node.type, c_ast.ArrayDecl) or node.type.dim is not None or node.type.dim_quals
+                or not isinstance(node.type.type, c_ast.TypeDecl)
+                or not isinstance(node.type.type.type, c_ast.IdentifierType)
+                or node.type.type.type.names != ["char"]
+                or node.type.type.quals not in ([], ["const"])
+                or not isinstance(node.init, c_ast.Constant) or node.init.type != "string"):
+            raise MetadataProofError("unsupported effective literal declaration")
+        actual.append((node.name, node.type.type.quals == ["const"], node.init.value))
+    if actual != [(row["name"], row["const"], '"' + row["literal"] + '"') for row in rows]:
+        raise MetadataProofError("source/effective literal declaration disagreement")
+    if before != literal_profile_inputs(root):
+        raise MetadataProofError("literal parser/helper changed during parsing")
+    try:
+        if lexical.identity() != lexical_identity:
+            raise RuntimeError("lexical identity differs")
+    except (RuntimeError, OSError, ValueError) as error:
+        raise MetadataProofError("loaded literal lexical helper changed during parsing") from error
+    return rows
+
+
+def literal_raw_end(elf, rows):
+    """Actual unsized definitions bind exact C bytes, including every NUL."""
+    import runlink_pack as rp
+    section = ".rodata" if rows[0]["const"] else ".data"
+    sec = elf.section(section)
+    if (struct.unpack_from(">HH", elf.data, 16) != (1, 8) or not sec
+            or sec["type"] != 1 or sec["addr"] or sec["align"] != 16
+            or sec["flags"] & 3 != (2 if section == ".rodata" else 3) or sec["flags"] & 4
+            or any(s["size"] and s["flags"] & 2 and s["name"] not in
+                   (section, ".reginfo", ".MIPS.abiflags") for s in elf.sections)
+            or any(elf.rels(s["name"]) for s in elf.sections)
+            or any(s.shndx == rp.SHN_COMMON for s in elf.symbols)):
+        raise MetadataProofError("literal end requires complete ordinary nonexec storage")
+    definitions = [s for s in elf.symbols if s.section == section and s.type != 3]
+    allocated = {s["name"] for s in elf.sections if s["flags"] & 2 and s["size"]}
+    if (len(definitions) != len(rows) or len({s.name for s in definitions}) != len(rows)
+            or any(s.name and s.section in allocated and s.section != section and s.type not in (3, 4)
+                   for s in elf.symbols)):
+        raise MetadataProofError("literal actual definition set differs")
+    by_name = {s.name: s for s in definitions}
+    payload = elf.bytes_of(section)
+    bounds = []
+    for row in rows:
+        symbol = by_name.get(row["name"])
+        data = row["literal"].encode("ascii") + b"\0"
+        if (symbol is None or symbol.bind != rp.STB_GLOBAL or symbol.type != 1 or symbol.size != 0
+                or not 0 <= symbol.value <= len(payload)-len(data)
+                or payload[symbol.value:symbol.value+len(data)] != data):
+            raise MetadataProofError("literal actual definition or complete bytes differ")
+        bounds.append([symbol.name, symbol.value, len(data), symbol.size])
+    if bounds[0][1] or any(a[1]+a[2] > b[1] for a, b in zip(bounds, bounds[1:])):
+        raise MetadataProofError("literal definitions overlap or differ in order")
+    end = max(value+size for name, value, size, reported in bounds)
+    import trim_elf_section as trim
+    trim._compiler_storage(elf, section)  # validates the loaded shared helper too
+    trim._zero_compiler_suffix(elf, section, sec, definitions, [end])
+    return section, end, bounds
+
+
+def literal_surface(elf):
+    import source_module_link_proof as proof
+    surface = (proof.allocated(elf), proof.symbols(elf),
+               [(s["name"], r.offset, r.type, r.sym.name) for s in elf.sections for r in elf.rels(s["name"])])
+    return hashlib.sha256(repr(surface).encode()).hexdigest()
+
+
+def _literal_flags(command, source):
+    words = shlex.split(command)
+    if "tools/ido/cc" not in words or words.count("-o") != 1 or words[-1] != source:
+        raise MetadataProofError("literal CPP requires its actual IDO source command")
+    if "--" in words:
+        words = words[words.index("--", words.index("--")+1)+1:]
+    else:
+        words = words[words.index("tools/ido/cc")+1:]
+    flags = []; skip = False
+    for word in words:
+        if skip:
+            skip = False; continue
+        if word == "-o":
+            skip = True
+        elif word not in ("-c", source):
+            flags.append(word)
+    return flags
+
+
+def prove_literal_arrays(elf, source, root, *, compiler_command=None):
+    """Capture source/CPP/raw observations without inventing ELF extents."""
+    import permute_batch as batch
+    root, source = pathlib.Path(root), pathlib.Path(source)
+    relative = source.relative_to(root).as_posix()
+    supplied = compiler_command is not None
+    if not supplied:
+        compiler_command, _flags, error = _discover_compile_command(root, source, non_matching=False)
+        if error:
+            raise MetadataProofError("literal compiler discovery failed: " + error)
+    flags = _literal_flags(compiler_command, relative)
+    def context():
+        if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF:
+            raise MetadataProofError("loaded literal proof helper changed")
+        result = literal_profile_inputs(root)
+        dependencies = batch.source_dependencies(source, tuple(flags))
+        if any(name.startswith("missing:") for name in dependencies):
+            raise MetadataProofError("literal include closure has missing inputs")
+        result.update(dependencies)
+        result[relative] = sha256_file(source)
+        result.update({p.relative_to(root).as_posix(): sha256_file(p)
+                       for p in [root/"Makefile", *sorted((root/"mk").glob("**/*.mk"))]})
+        result.update({p.relative_to(root).as_posix(): sha256_file(p)
+                       for p in (root/"tools/ido").rglob("*") if p.is_file()})
+        if not supplied:
+            current, _flags, error = _discover_compile_command(root, source, non_matching=False)
+            if error or current != compiler_command:
+                raise MetadataProofError("literal CPP recipe changed")
+        return result
+    before = context()
+    source_bytes = source.read_bytes()
+    if hashlib.sha256(source_bytes).hexdigest() != before.get(relative):
+        raise MetadataProofError("loaded literal source differs from its snapshot")
+    result = subprocess.run(["tools/ido/cc", "-E", *flags, relative], cwd=root,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120, check=False)
+    if result.returncode:
+        raise MetadataProofError("literal configured CPP failed")
+    cpp = result.stdout
+    rows = literal_array_facts(source_bytes, cpp, root)
+    section, end, bounds = literal_raw_end(elf, rows)
+    if before != context() or (elf.path.is_file() and elf.path.read_bytes() != elf.data):
+        raise MetadataProofError("literal source/CPP/raw/tool context changed during proof")
+    return dict(schema="mickey-literal-array-end-v1", section=section, end=end,
+                input_size=elf.size(section), arrays=bounds, source_facts=rows,
+                source_sha256=hashlib.sha256(source_bytes).hexdigest(),
+                cpp_sha256=hashlib.sha256(cpp).hexdigest(), cpp_text=cpp.decode("utf-8"),
+                source=relative, compiler_command=compiler_command,
+                preprocessor_command=["tools/ido/cc", "-E", *flags, relative],
+                raw_sha256=hashlib.sha256(elf.data).hexdigest(),
+                raw_surface=literal_surface(elf), inputs=before)
+
+
+def validate_literal_proof(elf, record, root):
+    """Revalidate an internally generated fresh proof and loaded raw surface."""
+    root = pathlib.Path(root)
+    def current():
+        return {name: sha256_file(root/name) for name in record["inputs"]}
+    if (record.get("schema") != "mickey-literal-array-end-v1" or literal_surface(elf) != record.get("raw_surface")
+            or current() != record["inputs"]):
+        raise MetadataProofError("stale literal source/raw/tool proof")
+    source = (root/record["source"]).read_bytes()
+    cpp = record["cpp_text"].encode("utf-8")
+    if (hashlib.sha256(source).hexdigest() != record["source_sha256"]
+            or hashlib.sha256(cpp).hexdigest() != record["cpp_sha256"]
+            or literal_array_facts(source, cpp, root) != record["source_facts"]):
+        raise MetadataProofError("loaded literal source/CPP facts differ")
+    section, end, bounds = literal_raw_end(elf, record["source_facts"])
+    if (section != record["section"] or end != record["end"] or bounds != record["arrays"]
+            or elf.size(section) != record["input_size"] or current() != record["inputs"]):
+        raise MetadataProofError("literal proof extent/definitions/context differ")
+    return end
 
 
 def generated_metadata_context(root):
@@ -216,6 +444,13 @@ def metadata_filter_plan(command: str, target: str,
                         raise MetadataProofError("unsupported metadata helper")
                     saw_anchor = True
                 plan.append(("externalize", (words[3], words[4], anchor)))
+            elif (helper == "tools/trim_elf_section.py" and words[3] in (".data", ".rodata")
+                  and len(words) == 7 and words[5] == "--literal-array-end"):
+                source = words[6]
+                if (not re.fullmatch(r"src/[A-Za-z_0-9/]+\.c", source)
+                        or target != "build/"+source+".o"):
+                    raise MetadataProofError("literal profile lacks its actual configured source")
+                plan.append(("literal-end", (words[3], int(words[4], 0), source)))
             elif (helper == "tools/trim_elf_section.py" and words[3] in (".data", ".rodata")
                   and len(words) == 6 and words[5] == "--compiler-end-padding"):
                 plan.append(("nonexec-end", (words[3], int(words[4], 0))))
@@ -637,7 +872,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
         if ordinary_provider:
             if metadata:
                 provider_plan = metadata_filter_plan(metadata[0], target, root)
-                if len(provider_plan) != 1 or provider_plan[0][0] != "nonexec-end":
+                if len(provider_plan) != 1 or provider_plan[0][0] not in ("nonexec-end", "literal-end"):
                     raise MetadataProofError("ordinary provider has an unsupported end profile")
             allowed = set(compilers + static_lines + metadata)
             if any(target in line and line.strip() not in allowed for line in output):
@@ -681,6 +916,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                     ("tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
                      "tools/rebind_elf_relocations.py", "tools/externalize_elf_section.py",
                      "tools/postprocess_guard.py", "tools/binutils/mips64-elf-objcopy")}}
+        if any(operation == "literal-end" for operation, arguments in plan):
+            inputs["metadata_tools"].update(literal_profile_inputs(root))
         if module_link:
             inputs["module_link"] = expanded_postprocess
             inputs["module_link_inputs"] = {name: sha256_file(root / name) for name in (
@@ -726,6 +963,19 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             raise MetadataProofError(f"static-symbol pass failed: {error}") from error
     if before != context():
         raise MetadataProofError("source, input, recipe, object or tool changed during raw proof")
+    literal_arrays = {}
+    for operation, arguments in plan:
+        if operation == "literal-end":
+            section, size, source_name = arguments
+            if source_name != source.relative_to(root).as_posix():
+                raise MetadataProofError("literal profile/source capture differs")
+            import runlink_pack as rp
+            literal = prove_literal_arrays(rp.Elf(raw), source, root, compiler_command=command)
+            if literal["section"] != section or literal["end"] != size:
+                raise MetadataProofError("literal recipe differs from source-derived end")
+            literal_arrays[section] = literal
+    if before != context():
+        raise MetadataProofError("literal capture context changed during source proof")
     receipt = {"schema": ("mickey-data-provider-capture-v1" if ordinary_provider
                           else "mickey-data-module-producer-capture-v1" if producer_map is not None
                           else "mickey-source-module-link-proof-v1" if module_link
@@ -733,6 +983,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                "raw_object": raw.relative_to(root).as_posix(), "raw_sha256": sha256_file(raw),
                "configured_sha256": sha256_file(configured),
                "linked_sha256": sha256_file(linked), "directory": directory.relative_to(root).as_posix()}
+    if literal_arrays:
+        receipt["literal_arrays"] = literal_arrays
     return raw, plan, receipt, context
 
 

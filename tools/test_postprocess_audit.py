@@ -253,6 +253,29 @@ class CompilerEndPaddingTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             trim.sized_object_end(rp.Elf("bad",aggregate_fixture(tail=1)),".data")
 
+    def test_literal_cli_requires_explicit_source_profile_and_changes_only_section_size(self):
+        import trim_elf_section as trim
+        import proof_provenance as provenance
+        import runlink_pack as rp
+        from test_proof_provenance import LiteralArrayEndTests
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/"raw.o";original=LiteralArrayEndTests.raw().data;path.write_bytes(original)
+            record={"section":".data","end":7}
+            with patch.object(sys,"argv",["trim_elf_section.py",str(path),".data","7","--literal-array-end","src/strings.c"]), \
+                 patch.object(provenance,"prove_literal_arrays",return_value=record), \
+                 patch.object(provenance,"validate_literal_proof",return_value=7):
+                trim.main()
+            actual=bytearray(path.read_bytes());elf=rp.Elf("trimmed",actual)
+            self.assertEqual(elf.size(".data"),7)
+            struct.pack_into(">I",actual,struct.unpack_from(">I",actual,32)[0]+elf.section(".data")["index"]*40+20,16)
+            self.assertEqual(bytes(actual),original)
+            path.write_bytes(original)
+            with patch.object(sys,"argv",["trim_elf_section.py",str(path),".text","7","--literal-array-end","src/strings.c"]), \
+                 patch.object(provenance,"prove_literal_arrays",return_value=record), \
+                 self.assertRaises(SystemExit):
+                trim.main()
+            self.assertEqual(path.read_bytes(),original)
+
     def test_lost_relocation_wide_read_nonzero_and_executable_refuse(self):
         import trim_elf_section as trim
         for kwargs in ({"missing":True},{"width":True},{"nonzero":True}):

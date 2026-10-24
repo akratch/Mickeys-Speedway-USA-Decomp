@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import pathlib
 import tempfile
+import sys
 import unittest
 from unittest import mock
 
@@ -402,6 +403,115 @@ class MixedLocalDeclarationTests(unittest.TestCase):
                         "helper --local-data-aggregate --local-ro-provider-group "+name):
             with self.assertRaises(provenance.MetadataProofError):
                 provenance.local_data_aggregate(command,root)
+
+
+class LiteralArrayEndTests(unittest.TestCase):
+    SOURCE = b'char first[] = "x";\nchar second[] = "yz";\n'
+
+    @staticmethod
+    def raw(*, tail=0, size=0, bad_type=False):
+        import runlink_pack as rp
+        from runlink.synth import ElfBuilder
+        import struct
+        data = bytearray(ElfBuilder().section(".data", b"x\0\0\0yz\0"+bytes(8)+bytes([tail]))
+            .sym("first",0,size,1,2 if bad_type else 1,".data")
+            .sym("second",4,0,1,1,".data").build())
+        obj = rp.Elf("literal", data)
+        struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+obj.section(".data")["index"]*40+8,3)
+        return rp.Elf("literal", data)
+
+    def test_closed_source_cpp_and_actual_unsized_arrays_derive_end(self):
+        root = pathlib.Path(provenance.__file__).resolve().parent.parent
+        rows = provenance.literal_array_facts(self.SOURCE,self.SOURCE,root)
+        raw = self.raw()
+        section,end,bounds = provenance.literal_raw_end(raw,rows)
+        self.assertEqual((section,end),(".data",7))
+        self.assertEqual(bounds,[["first",0,2,0],["second",4,3,0]])
+        import trim_elf_section as trim
+        with self.assertRaises(ValueError):trim.compiler_end(raw,".data")
+
+    def test_unsupported_source_and_effective_cpp_fail_closed(self):
+        root = pathlib.Path(provenance.__file__).resolve().parent.parent
+        cases = [self.SOURCE+b'float carrier = 1.0f;',self.SOURCE.replace(b'"x"',b'"x" "y"'),
+                 self.SOURCE.replace(b'"x"',b'L"x"'),self.SOURCE.replace(b'"x"',b'"x\\0"'),
+                 self.SOURCE.replace(b'first[]',b'first[2]'),b'#define X "x"\nchar first[] = X;',
+                 self.SOURCE.replace(b'char first',b'char *first')]
+        for source in cases:
+            with self.subTest(source=source),self.assertRaises(provenance.MetadataProofError):
+                provenance.literal_array_facts(source,self.SOURCE,root)
+        with self.assertRaises(provenance.MetadataProofError):
+            provenance.literal_array_facts(self.SOURCE,self.SOURCE.replace(b'char',b'unsigned char'),root)
+
+    def test_actual_symbol_or_nonzero_tail_changes_refuse(self):
+        root = pathlib.Path(provenance.__file__).resolve().parent.parent
+        rows = provenance.literal_array_facts(self.SOURCE,self.SOURCE,root)
+        for options in ({"tail":1},{"size":2},{"bad_type":True}):
+            with self.subTest(options=options),self.assertRaises((provenance.MetadataProofError,ValueError)):
+                provenance.literal_raw_end(self.raw(**options),rows)
+
+    def test_literal_plan_keeps_source_identity_and_explicit_mode(self):
+        target="build/src/overlays/o057/strings.c.o"
+        command="python3 tools/trim_elf_section.py "+target+" .data 7 --literal-array-end "
+        self.assertEqual(provenance.metadata_filter_plan(command+"src/overlays/o057/strings.c",target),
+                         [("literal-end",(".data",7,"src/overlays/o057/strings.c"))])
+        for source in ("src/other.c","/tmp/source.c","src/../source.c"):
+            with self.assertRaises(provenance.MetadataProofError):
+                provenance.metadata_filter_plan(command+source,target)
+
+    def test_preloaded_parser_or_lexical_then_first_call_disk_mutation_refuses(self):
+        import shutil,subprocess,json
+        canonical=pathlib.Path(provenance.__file__).resolve().parent.parent
+        for module in ("parser","lexical"):
+            with self.subTest(module=module),tempfile.TemporaryDirectory() as directory:
+                root=pathlib.Path(directory);tools=root/"tools";tools.mkdir()
+                for name in ("proof_provenance.py","trim_elf_section.py","candidate_context.py"):
+                    shutil.copy2(canonical/"tools"/name,tools/name)
+                shutil.copytree(canonical/"tools/permuter/perm_pycparser",tools/"permuter/perm_pycparser",
+                                ignore=shutil.ignore_patterns("__pycache__","*.pyc"))
+                script = "\n".join([
+                    "import sys, pathlib, hashlib",
+                    "sys.path.insert(0,"+repr(str(canonical/"tools"))+")",
+                    "import proof_provenance as proof",
+                    "root=pathlib.Path("+repr(str(root))+")",
+                    "sys.path.insert(0,str(root/'tools'))",
+                    "sys.path.insert(0,str(root/'tools/permuter'))",
+                    ("import perm_pycparser.c_parser" if module=="parser" else "import candidate_context"),
+                    "path=root/"+repr("tools/permuter/perm_pycparser/c_parser.py" if module=="parser" else "tools/candidate_context.py"),
+                    "before=path.read_bytes(); path.write_bytes(before+b'\\n# changed after loading\\n')",
+                    "assert path.read_bytes()!=before",
+                    "try: proof.literal_array_facts(b'char label[]=\"x\";',b'char label[]=\"x\";',root)",
+                    "except proof.MetadataProofError as error: print(error)",
+                    "else: raise SystemExit('accepted changed preloaded code')",
+                ])
+                result=subprocess.run([sys.executable,"-c",script],capture_output=True,text=True)
+                self.assertEqual(result.returncode,0,result.stderr+result.stdout)
+                self.assertIn("preloaded" if module=="parser" else "lexical",result.stdout)
+
+    def test_cpp_boundary_source_raw_and_parser_mutations_refuse(self):
+        import runlink_pack as rp
+        from types import SimpleNamespace
+        import hashlib
+        canonical = pathlib.Path(provenance.__file__).resolve().parent.parent
+        for mutation in ("source","raw","parser"):
+            with self.subTest(mutation=mutation),tempfile.TemporaryDirectory() as directory:
+                root=pathlib.Path(directory);(root/"src").mkdir();(root/"tools/ido").mkdir(parents=True)
+                source=root/"src/strings.c";source.write_bytes(self.SOURCE)
+                (root/"Makefile").write_text("fixture\n");(root/"tools/ido/cc").write_bytes(b"compiler")
+                rawpath=root/"raw.o";rawpath.write_bytes(self.raw().data);raw=rp.Elf(rawpath)
+                parser=root/"parser.py";parser.write_bytes(b"parser")
+                def tool_inputs(_root):return {"parser.py":hashlib.sha256(parser.read_bytes()).hexdigest()}
+                def cpp(*args,**kwargs):
+                    path={"source":source,"raw":rawpath,"parser":parser}[mutation]
+                    path.write_bytes(path.read_bytes()+b"changed")
+                    return SimpleNamespace(returncode=0,stdout=self.SOURCE,stderr=b"")
+                rows=[dict(name="first",const=False,literal="x"),dict(name="second",const=False,literal="yz")]
+                with mock.patch.object(provenance,"literal_profile_inputs",side_effect=tool_inputs), \
+                     mock.patch.object(provenance,"literal_array_facts",return_value=rows), \
+                     mock.patch("permute_batch.source_dependencies",return_value={}), \
+                     mock.patch.object(provenance.subprocess,"run",side_effect=cpp):
+                    with self.assertRaises(provenance.MetadataProofError):
+                        provenance.prove_literal_arrays(raw,source,root,
+                          compiler_command="tools/ido/cc -c -nostdinc -o raw.o src/strings.c")
 
 if __name__ == "__main__":
     unittest.main()

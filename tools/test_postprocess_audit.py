@@ -247,6 +247,52 @@ class CompilerEndPaddingTests(unittest.TestCase):
                 trim.compiler_end(self.object(**kwargs),".rodata")
         with self.assertRaises(ValueError): trim.compiler_end(self.object(),".text")
 
+    def scheduled_object(self, *, clobber=None, delay_base=29, function_start=0):
+        from runlink.synth import ElfBuilder, GLOBAL, FUNC, words
+        import runlink_pack as rp
+
+        def store(register, offset, base=29):
+            return (43 << 26) | (base << 21) | (register << 16) | offset
+
+        instructions = [
+            (11 << 26) | (8 << 21) | (1 << 16) | 2,
+            store(31, 44), store(16, 40),
+            (4 << 26) | (1 << 21) | 8,
+            store(4, 56, delay_base),
+            (8 << 16) | (9 << 11) | (2 << 6),
+            (15 << 26) | (1 << 16),
+            (1 << 21) | (9 << 16) | (1 << 11) | 33,
+            (35 << 26) | (1 << 21) | (25 << 16),
+            (25 << 21) | 8, 0, 0,
+        ]
+        if clobber is not None:
+            offset, register = clobber
+            instructions[offset // 4] = ((9 << 26) | (register << 21)
+                                         | (register << 16) | 1)
+        builder = ElfBuilder().section(".text", words(*instructions))
+        builder.section(".rodata", words(40, 44, 0, 0))
+        builder.sym("function", function_start, 48-function_start, GLOBAL, FUNC, ".text")
+        builder.rel(".text", 24, rp.R_MIPS_HI16, ("section", ".rodata"))
+        builder.rel(".text", 32, rp.R_MIPS_LO16, ("section", ".rodata"))
+        for site in (0, 4):
+            builder.rel(".rodata", site, rp.R_MIPS_32, ("section", ".text"))
+        payload = bytearray(builder.build())
+        elf = rp.Elf("scheduled", payload)
+        header = struct.unpack_from(">I", payload, 32)[0] + elf.section(".rodata")["index"] * 40
+        struct.pack_into(">I", payload, header + 8, 2)
+        return rp.Elf("scheduled", payload)
+
+    def test_stack_saves_preserve_the_actual_guard_and_index(self):
+        import trim_elf_section as trim
+        self.assertEqual(8, trim.compiler_end(self.scheduled_object(), ".rodata"))
+
+    def test_scheduled_bounds_reject_clobbers_foreign_stores_and_foreign_guard(self):
+        import trim_elf_section as trim
+        for changes in ({"clobber": (4, 1)}, {"clobber": (8, 8)},
+                        {"delay_base": 28}, {"function_start": 4}):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                trim.compiler_end(self.scheduled_object(**changes), ".rodata")
+
 
 if __name__ == "__main__":
     unittest.main()

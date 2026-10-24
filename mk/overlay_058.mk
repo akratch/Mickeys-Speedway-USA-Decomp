@@ -21,3 +21,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay_058.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:3dbf1ba8a2f53fbf224e3e1c3b43aca87ad4e03ba1a51538cbd7e818f0d158be && \
 	$(OBJCOPY) --remove-section=.rel.rodata $@
+
+# Complete ordinary mutable transition input; compiler output is unmodified.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58TransitionState.c.o: private PLAIN_DATA_PROOF = 1
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58TransitionState.c.o: private PLAIN_DATA_RUNTIME_ROLE = data

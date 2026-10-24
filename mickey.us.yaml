@@ -2755,8 +2755,11 @@ segments:
       - [0x18B4DA8, bin, overlay_058_data_rodata_1a0]
       - [0x18B4E50, .data, overlay58LayoutTables]
       - [0x18B4E80, bin, overlay_058_data_rodata_278]
+      - [0x18B4EB8, .data, overlay58TransitionState]
       - {start: 0x18B4ED8, type: .rodata, name: overlay58TextLabels, linker_section_order: .data}
-      - [0x18B4F18, bin, overlay_058_data_rodata_310]
+      - [0x18B4F98, bin, overlay_058_data_rodata_390]
+      - {start: 0x18B4FA0, type: .rodata, name: overlay58SavedRecordFormats, linker_section_order: .data}
+      - [0x18B4FC0, bin, overlay_058_data_rodata_3b8]
 
   - name: overlay_058_reloc1
     type: bin

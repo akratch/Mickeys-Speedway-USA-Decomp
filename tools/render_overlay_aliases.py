@@ -179,7 +179,9 @@ def render_makefile(rules: list[dict[str, Any]]) -> str:
 
 
 def write_atomic(path: Path, content: str) -> None:
-    """Replace the generated include atomically while preserving its mode."""
+    """Leave identical recipes untouched; atomically replace changed output."""
+    if path.exists() and path.read_bytes() == content.encode("utf-8"):
+        return
     path.parent.mkdir(parents=True, exist_ok=True)
     mode = stat.S_IMODE(path.stat().st_mode) if path.exists() else 0o644
     descriptor, temporary_name = tempfile.mkstemp(

@@ -743,19 +743,21 @@ typedef struct O1PhysicsActionMode {
 extern O1PhysicsPathMode gO1PhysicsPaths[4];
 extern O1PhysicsActionMode gO1PhysicsActions[6];
 
-/* Call identities come from the shipped overlay relocation table. Every
- * cross-overlay callee is a *Reloc placeholder: the shipped words store 0. */
+/* Call identities come from the shipped overlay relocation table. Friendly
+ * imports use generated per-input rebinds; cross-overlay stored addends stay
+ * zero, including the legacy placeholders retained below. */
 s32 func_overlay_001_F00004B4_184C894(void *object);
 s32 func_overlay_001_F0007D6C_185414C(s16, s16, s16, s16,
                                      s16 *, s16 *, void *);
-Overlay8TuningRecord *func_overlay_008_F0000008_185DD60Reloc(const void *state);
+Overlay8TuningRecord *overlay8GetIndexed(const void *state);
 void func_8001F25C(void *state, s32 disabled);
-void func_overlay_008_F00049DC_1862734Reloc(s32 value);
+void overlay8SetValue(s32 value);
 void func_8001D910(void *object, void *state);
 void func_80029F2C(s16 *angles, f32 *vector);
 u32 func_8001357C(f32 x, f32 z, f32 *height, s32 flags, void *surfaces);
 void func_8001F14C(void *object, void *state);
-s32 func_overlay_002_F000123C_1858034Reloc(f32 x, f32 z, void *region);
+struct Overlay2Shape;
+s32 overlay2ContainsPoint(f32 x, f32 z, struct Overlay2Shape *region);
 s32 func_8002A910(f32 x, f32 z);
 s32 func_8002AA0C(s16 first, s16 second);
 void func_overlay_007_F0000EDC_185CD64Reloc(void);
@@ -769,7 +771,7 @@ f32 func_8002A878(f32 base, s32 exponent);
 s32 func_8001E5C4(void *object, void *state, f32 update);
 s32 func_8001DD70(void *object, void *state, f32 update);
 s32 func_80008128(void *object, f32 x, f32 y, f32 z);
-void func_overlay_008_F00049A4_18626FCReloc(void *state);
+void overlay8SetBuffer(void *state);
 f32 func_overlay_008_F00034A0_18611F8Reloc(void *object, void *state, f32 limit, f32 update);
 void func_overlay_008_F00049B4_186270CReloc(void *unused);
 void func_8001D41C(void *object, void *state, s32 update);
@@ -846,7 +848,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
 
     state = object->state;
     if (func_overlay_001_F00004B4_184C894(object) != 0) {
-        tuning = func_overlay_008_F0000008_185DD60Reloc(state);
+        tuning = overlay8GetIndexed(state);
         D_800CB304 = tuning->gravity;
         if (gOverlay1Mode == 1) {
             if ((D_800C947C == 0) && (state->joypadDisabled == 0) && (state->spinTimer == 0) && !(state->flags1A8 & 8)) {
@@ -873,7 +875,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
         gOverlay1TimerStep = updateRate;
         D_4 = (f32) updateRate;
         speed = -state->forwardVelocity;
-        func_overlay_008_F00049DC_1862734Reloc(NULL);
+        overlay8SetValue(0);
         object->flags80 = 0;
         state->controlXjoy = 0;
         state->controlYjoy = 0;
@@ -943,12 +945,12 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
         gO1PhysicsPaths[state->pathMode].position(&targetX, &targetZ);
         if (D_1BA4 != NULL) {
 
-            if (func_overlay_002_F000123C_1858034Reloc(((O1PhysicsObject *)D_1D9C)->x, ((O1PhysicsObject *)D_1D9C)->z, D_1BA4) != NULL) {
+            if (overlay2ContainsPoint(((O1PhysicsObject *)D_1D9C)->x, ((O1PhysicsObject *)D_1D9C)->z, D_1BA4) != 0) {
 
                 ((O1PhysicsState *)D_1DA0)->pathStartX = ((O1PhysicsObject *)D_1D9C)->x;
                 ((O1PhysicsState *)D_1DA0)->pathStartZ = ((O1PhysicsObject *)D_1D9C)->z;
             }
-            if (func_overlay_002_F000123C_1858034Reloc(targetX, targetZ, D_1BA4) != NULL) {
+            if (overlay2ContainsPoint(targetX, targetZ, D_1BA4) != 0) {
                 ((O1PhysicsState *)D_1DA0)->pathEndX = targetX;
                 ((O1PhysicsState *)D_1DA0)->pathEndZ = targetZ;
             }
@@ -1107,7 +1109,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
             state->field100 = 0;
             if (keys & 0x4000) {
                 if (state->forwardVelocity < -5.0f) {
-                    func_overlay_008_F00049DC_1862734Reloc(1);
+                    overlay8SetValue(1);
                 }
                 if (state->forwardVelocity < 0.0f) {
                     state->forwardVelocity += tuning->response[(s32) -state->forwardVelocity + O8_RESPONSE_BRAKING];
@@ -1316,7 +1318,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
             value = func_8002A878(0.825f, gOverlay1TimerStep);
             state->speedLimit = (work = state->speedLimit) + ((25.0f - work) * (1.0f - value));
         }
-        func_overlay_008_F00049A4_18626FCReloc(state);
+        overlay8SetBuffer(state);
         state->outputScale = func_overlay_008_F00034A0_18611F8Reloc(object, state, limit, D_4);
         func_overlay_008_F00049B4_186270CReloc(state);
         func_8001D41C(object, state, gOverlay1TimerStep);

@@ -25,7 +25,7 @@ their symbols appear in the project. `metadata.complete` is true only for a C
 unit with no `#pragma GLOBAL_ASM`.
 
     tools/objdiff_config.py               # write objdiff.json
-    tools/objdiff_config.py --check       # exit 1 if objdiff.json drifted
+    tools/objdiff_config.py --check       # reject drift or unplaced split files
     tools/objdiff_config.py --stdout      # print instead of writing
     tools/objdiff_config.py --apply-excludes --stdout   # what objdiff-cli is fed
     tools/objdiff_config.py --verify-built  # also require build/ objects exist
@@ -39,7 +39,7 @@ named nowhere in mickey.us.ld) is a leftover of an earlier extract -- a carve
 boundary moved, or an overlay's data split differently -- and still becomes a
 unit here, which is how a clean tree reads `objdiff.json is stale`. The fix is
 to delete the leftover, not to regenerate objdiff.json around it; `--orphans`
-names them and `--check` names them when it fails.
+names them; `--check` rejects them even if the JSON was regenerated around them.
 """
 import argparse
 import difflib
@@ -312,16 +312,19 @@ def main(argv=None):
         status = status or (1 if missing else 0)
     out = root / "objdiff.json"
     if a.check:
+        stale = split_orphans(root)
         cur = out.read_text() if out.is_file() else ""
         if cur != text:
             diff = list(difflib.unified_diff(cur.splitlines(), text.splitlines(),
                                              "objdiff.json (committed)",
                                              "objdiff.json (derived)", lineterm="", n=0))
             print("\n".join(diff[:40]), file=sys.stderr)
-            stale = split_orphans(root)
             print(f"objdiff-config: objdiff.json is stale ({len(diff)} diff lines); "
                   + ("the derived side includes the orphaned split file(s) below"
                      if stale else "run `gmake objdiff-config`"), file=sys.stderr)
+            print_orphans(stale, sys.stderr)
+            return 1
+        if stale:
             print_orphans(stale, sys.stderr)
             return 1
         print(f"objdiff.json up to date ({len(config['units'])} units"

@@ -469,19 +469,28 @@ class CanonicalDataOnlyOwnershipTests(unittest.TestCase):
                 part["source"] = "overlays/o001/storageOnly"
                 part["canonical"] = True
                 module_row["sections"]["data_rodata"].update(
-                    size="0x294", end="0x1854794"
+                    size="0x298", end="0x1854798"
                 )
+                part.update(offset="0x278", end_offset="0x298")
                 if split_tail:
                     second = dict(part, source="overlays/o001/nextStorage",
-                                  offset="0x284", size="0x10")
-                    part.update(end_offset="0x284", size="0x10")
+                                  offset="0x288", size="0x10")
+                    part.update(end_offset="0x288", size="0x10")
                     module_row["data_rodata_ownership"].append(second)
                 block = overlay_atlas.render_yaml_block({"modules": [module_row]})
-                self.assertIn("- [0x1854774, .rodata, storageOnly]", block)
+                self.assertIn("- [0x1854778, .rodata, storageOnly]", block)
                 if split_tail:
-                    self.assertIn("- [0x1854784, .rodata, nextStorage]", block)
+                    self.assertIn("- [0x1854788, .rodata, nextStorage]", block)
                 self.assertNotIn("linker_section_order", block)
-                self.assertNotIn("overlay_001_data_rodata_294", block)
+                self.assertNotIn("overlay_001_data_rodata_298", block)
+
+    def test_unaligned_readonly_tail_preserves_real_section_in_data_order(self):
+        module_row = trial_module()
+        part = module_row["data_rodata_ownership"][0]
+        part.update(source="overlays/o001/storageOnly", canonical=True)
+        module_row["sections"]["data_rodata"].update(size="0x294", end="0x1854794")
+        block = overlay_atlas.render_yaml_block({"modules": [module_row]})
+        self.assertIn("type: .rodata, name: storageOnly, linker_section_order: .data}", block)
 
     def test_canonical_owner_overlap_with_trial_owner_fails_closed(self):
         module_row = trial_module()

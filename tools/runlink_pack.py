@@ -691,8 +691,15 @@ class World:
                 if not p.exists():
                     missing.append(p)
                     continue
+                compiler = Elf(p)
+                target = f"build/src/{row["source"]}.c.o"
+                if row["type"] == "c" and target in getattr(self, "_end_padding_plans", {}):
+                    proved = getattr(self, "_end_proved_objects", {}).get(row["source"])
+                    if proved is None:
+                        raise PackError("compiler-end source inventory is unavailable")
+                    compiler = proved
                 lst.append(ObjRef(ov, p, row["source"], int(row["offset"], 16),
-                                  int(row["size"], 16), row["type"], Elf(p)))
+                                  int(row["size"], 16), row["type"], compiler))
             lst.extend(admitted.get(ov, ()))
             objects[ov] = lst
         if missing:
@@ -744,7 +751,8 @@ class ObjRef:
     elf: Elf
     placement: dict = field(default_factory=dict)   # section -> (module offset, provenance)
     data_imports: dict | None = None  # authenticated input only: name -> actual provider identity
-    runtime_role: str | None = None  # selected ordinary input: data or ro-origin
+    runtime_role: str | None = None  # selected ordinary input: data, ro-origin, ro-member
+    runtime_origin: int | None = None  # held actual same-module origin input
 
     @property
     def label(self):
@@ -1511,8 +1519,10 @@ def pack_module(world, resolver, ov, relocs):
                         # role; its real map start supplies the RO origin.
                         if t.secname != ".data":
                             raise PackError("ordinary runtime role targets a non-data section")
-                        runtime_base = (section_offset(t.obj, ".data")
-                                        if t.obj.runtime_role == "ro-origin" else ts)
+                        runtime_base = (t.obj.runtime_origin if t.obj.runtime_role == "ro-member" else
+                                        section_offset(t.obj, ".data") if t.obj.runtime_role == "ro-origin" else ts)
+                        if runtime_base is None:
+                            raise PackError("RO member has no authenticated origin")
                     else:
                         kind = t.secname if t.kind == "section" else kind_of_offset(base[2])
                         runtime_base = local_base(kind)
@@ -1819,6 +1829,77 @@ def check_data_import_holds(world):
             raise PackError(f"held data-only input changed after validation: {path}")
 
 
+def reproduce_compiler_end(world, source):
+    """Bind original code/pool records and exact ordinary metadata replay."""
+    import proof_provenance as provenance
+    import time
+    root = world.paths["build"].parent
+    configured = world.paths["build"] / "src" / (source + ".c.o")
+    source_path = root / "src" / (source + ".c")
+    if provenance._all_pragmas(source_path.read_text()):
+        raise PackError("compiler-end source has an assembly fallback")
+    raw, plan, receipt, context = provenance.capture_nonexec_producer_raw(
+        root, source_path, configured, world.paths["elf"], world.paths["map"])
+    original = Elf(raw)
+    ordinary = world.paths["raw"] / "src" / (source + ".c.o")
+    loaded_ordinary = Elf(ordinary)
+    validate_fresh_data_input(loaded_ordinary, original)
+    if hashlib.sha256(original.data).hexdigest() != receipt["raw_sha256"]:
+        raise PackError("loaded compiler-end object differs from its compiler receipt")
+    hold_data_import_inputs(world, {ordinary: hashlib.sha256(loaded_ordinary.data).hexdigest()})
+    target = f"build/src/{source}.c.o"
+    command = receipt["inputs"]["postprocess"]
+    if receipt["inputs"]["surface_rebind"]:
+        command += " && " + receipt["inputs"]["surface_rebind"]
+    replay = raw.with_name("metadata-replay.o")
+    provenance.replay_metadata(raw, command, target, replay, root, skip_filters=False,
+                               deadline=time.monotonic()+120, plan=plan)
+    loaded_configured = Elf(configured)
+    configured_digest = hashlib.sha256(loaded_configured.data).hexdigest()
+    if configured_digest != receipt["configured_sha256"] or configured_digest != receipt["inputs"]["configured"]:
+        raise PackError("loaded compiler-end configured object differs from its receipt")
+    hold_data_import_inputs(world, {configured: configured_digest})
+    validate_fresh_data_input(loaded_configured, Elf(replay))
+    allowed = dict(arguments for operation, arguments in plan if operation == "nonexec-end")
+    if not allowed:
+        raise PackError("compiler-end source lacks its explicit normalization")
+    view = effective_compiler_object(original, loaded_configured, allowed)
+    if getattr(view, "effective_extents", {}) != allowed:
+        raise PackError("compiler-end recipe and effective source sections differ")
+    hold_data_capture(world, source, receipt, context)
+    if receipt["inputs"] != context() or provenance.sha256_file(raw) != receipt["raw_sha256"]:
+        raise PackError("compiler-end source/context or raw object changed during replay")
+    receipt["effective_sections"] = {"original_sha256": hashlib.sha256(original.data).hexdigest(),
+        "extents": view.effective_extents, "replayed_sha256": provenance.sha256_file(replay)}
+    world._compiler_end_receipts[source] = receipt
+    return view
+
+
+def effective_compiler_object(raw, configured, allowed=None):
+    """Explicit semantic view; original compiler bytes/records remain attached."""
+    import trim_elf_section as trim
+    data = bytearray(raw.data)
+    extents = {}
+    for section in (".data", ".rodata"):
+        size = configured.size(section)
+        if size and size < raw.size(section):
+            try:
+                end = trim.compiler_end(raw, section)
+            except (ValueError, struct.error) as error:
+                raise PackError("unproved compiler end: " + str(error)) from error
+            if end != size or (allowed or {}).get(section) != end:
+                raise PackError("configured section lacks its declared proved compiler end")
+            shoff = struct.unpack_from(">I", data, 32)[0]
+            struct.pack_into(">I", data, shoff + raw.section(section)["index"]*40 + 20, end)
+            extents[section] = end
+    if not extents:
+        return raw
+    view = Elf(raw.path, bytes(data))
+    view.compiler_original = raw
+    view.effective_extents = extents
+    return view
+
+
 def data_import_input(world, ov, row, source, raw, *, linked_local=False):
     """Authenticate one complete data input; no inferred placement or tail trim."""
     import proof_provenance as provenance
@@ -1830,7 +1911,8 @@ def data_import_input(world, ov, row, source, raw, *, linked_local=False):
     hold_data_import_inputs(world, {configured.path: hashlib.sha256(configured.data).hexdigest()})
     ordinary_path = world.paths["raw"] / "src" / (source + ".c.o")
     if raw.path == ordinary_path:
-        hold_data_import_inputs(world, {ordinary_path: hashlib.sha256(raw.data).hexdigest()})
+        hold_data_import_inputs(world, {ordinary_path: hashlib.sha256(getattr(raw, "compiler_original", raw).data).hexdigest()})
+    raw = effective_compiler_object(raw, configured, getattr(world, "_end_padding_plans", {}).get(f"build/src/{source}.c.o"))
     size = raw.size(".data")
     def require(test, why):
         if not test:
@@ -1871,18 +1953,34 @@ def reproduce_data_provider(world, source):
     import proof_provenance as provenance
     root = world.paths["build"].parent
     configured = world.paths["build"] / "src" / (source + ".c.o")
-    raw, _plan, receipt, context = provenance.capture_data_provider_raw(
+    raw, plan, receipt, context = provenance.capture_data_provider_raw(
         root, root / "src" / (source + ".c"), configured,
         world.paths["elf"], world.paths["map"])
     fresh = Elf(raw)
+    if hashlib.sha256(fresh.data).hexdigest() != receipt["raw_sha256"]:
+        raise PackError("loaded ordinary provider differs from its compiler receipt")
     validate_fresh_data_input(Elf(world.paths["raw"] / "src" / (source + ".c.o")), fresh)
-    validate_fresh_data_input(Elf(configured), fresh)
+    original = fresh
+    loaded_configured = Elf(configured)
+    configured_digest = hashlib.sha256(loaded_configured.data).hexdigest()
+    if configured_digest != receipt["configured_sha256"] or configured_digest != receipt["inputs"]["configured"]:
+        raise PackError("loaded ordinary provider differs from its configured receipt")
+    hold_data_import_inputs(world, {configured: configured_digest})
+    fresh = effective_compiler_object(fresh, loaded_configured, dict(arguments for operation, arguments in plan if operation == "nonexec-end"))
+    if getattr(fresh, "effective_extents", None):
+        if plan != [("nonexec-end", (".data", fresh.size(".data")))]:
+            raise PackError("effective ordinary provider lacks its declared compiler-end recipe")
+        receipt["effective_sections"] = {"original_sha256": hashlib.sha256(original.data).hexdigest(),
+                                         "extents": fresh.effective_extents}
+    elif plan:
+        raise PackError("unexpected ordinary provider metadata profile")
+    validate_fresh_data_input(loaded_configured, fresh)
     hold_data_capture(world, source, receipt, context)
     receipts = getattr(world, "data_import_provider_receipts", {})
     receipts[source] = receipt
     world.data_import_provider_receipts = receipts
-    if receipt["inputs"] != context():
-        raise PackError("provider source/context changed during fresh compilation")
+    if receipt["inputs"] != context() or provenance.sha256_file(raw) != receipt["raw_sha256"]:
+        raise PackError("provider source/context or original object changed during fresh compilation")
     return fresh
 
 
@@ -2198,7 +2296,7 @@ def plain_data_targets(make_dump):
         selected.add(target)
     for target, role in re.findall(r"^(\S+): PLAIN_DATA_RUNTIME_ROLE = (.*)$", make_dump, re.M):
         role = role.strip()
-        if role not in ("data", "ro-origin") or (target in roles and roles[target] != role):
+        if role not in ("data", "ro-origin", "ro-member") or (target in roles and roles[target] != role):
             raise PackError(f"invalid or duplicate ordinary data runtime role: {target}")
         roles[target] = role
     if selected != set(roles):
@@ -2207,9 +2305,23 @@ def plain_data_targets(make_dump):
 
 
 
-def plain_data_role_context(world, roles):
+def plain_data_origins(dump):
+    origins = {}
+    for target, origin in re.findall(r"^(\S+): PLAIN_DATA_RO_ORIGIN_OBJECT = (.*)$", dump, re.M):
+        origin = origin.strip()
+        if (not re.fullmatch(r"build/src/overlays/o[0-9]{3}/[^/]+\.c\.o", origin)
+                or ".." in Path(origin).parts or (target in origins and origins[target] != origin)):
+            raise PackError("invalid ordinary RO member origin declaration")
+        origins[target] = origin
+    return origins
+
+
+def plain_data_role_context(world, roles, origins=None):
     """Bind declared roles to actual map starts, keeping compiler sections intact."""
     inputs = parse_map(world.paths["map"])
+    origins = origins or {}
+    if set(origins) != {target for target, role in roles.items() if role == "ro-member"}:
+        raise PackError("RO member requires exactly one declared origin input")
     observed = {}
     for target, role in roles.items():
         items = [item for item in inputs if item.file == target
@@ -2219,9 +2331,21 @@ def plain_data_role_context(world, roles):
         item = items[0]
         ov = int(item.outsec.rsplit("_", 1)[1])
         start = item.addr - OVERLAY_VMA
+        origin = start if role == "ro-origin" else world.module_info[ov]["text_size"]
+        if role == "ro-member":
+            choices = [i for i in inputs if i.file == origins[target] and i.insec == ".data" and i.size]
+            if len(choices) != 1 or choices[0].outsec != item.outsec or choices[0].addr > item.addr:
+                raise PackError("RO member lacks its bounded same-module origin")
+            origin = choices[0].addr - OVERLAY_VMA
         observed[target] = {"role": role, "input_start": start, "size": item.size,
-            "origin": start if role == "ro-origin" else world.module_info[ov]["text_size"]}
+            "origin": origin}
     return observed
+
+
+def refresh_plain_role_context(world):
+    import postprocess_audit as audit
+    dump = audit.run_make_database()
+    return plain_data_role_context(world, plain_data_targets(dump), plain_data_origins(dump))
 
 
 def validate_plain_roles(admitted):
@@ -2242,7 +2366,7 @@ def validate_plain_data(world, ov, row, source):
     """Authenticate a complete ordinary C input, without a module-link surrogate."""
     import proof_provenance as provenance
     path = world.paths["raw"] / "src" / (source + ".c.o")
-    ordinary = Elf(path)
+    ordinary = effective_compiler_object(Elf(path), Elf(world.paths["build"] / "src" / (source + ".c.o")), getattr(world, "_end_padding_plans", {}).get(f"build/src/{source}.c.o"))
     configured, start = data_import_input(world, ov, row, source, ordinary)
     text = (world.paths["build"].parent / "src" / (source + ".c")).read_text()
     if re.search(r"\b(?:asm|__asm|__asm__)\b", provenance._mask_c(text)):
@@ -2306,6 +2430,8 @@ def _guard_data_module_imports(world, exports):
     world.data_import_contexts = []
     world.data_import_providers = {}
     world.data_import_provider_receipts = {}
+    world._end_proved_objects = {}
+    world._compiler_end_receipts = {}
     import permute_batch as batch
     files = {root / name for name in ("Makefile", "tools/proof_provenance.py",
              "tools/source_module_link_proof.py", "tools/postprocess_audit.py",
@@ -2319,8 +2445,13 @@ def _guard_data_module_imports(world, exports):
     hold_data_import_inputs(world, {path: digest for path, digest
                                     in batch._LOADED_IMPLEMENTATIONS.values()})
     dump = audit.run_make_database()
+    world._end_padding_plans = {target: dict(arguments for operation, arguments in
+        provenance.metadata_filter_plan(command, target, root) if operation == "nonexec-end")
+        for target, command in audit.postprocess_commands(dump).items() if "--compiler-end-padding" in command}
     outputs = []
     plain_targets = plain_data_targets(dump)
+    member_origins = plain_data_origins(dump)
+    role_context = {}
     remaining_plain = set(plain_targets)
     admitted = collections.defaultdict(list)
     try:
@@ -2341,13 +2472,25 @@ def _guard_data_module_imports(world, exports):
                     raise PackError(f"data-only module lacks one canonical input: {source}")
                 if plain:
                     raw, start = validate_plain_data(world, ov, rows[0], source)
+                    role_context[target] = plain_data_role_context(world, {target: plain_targets[target]},
+                        {target: member_origins[target]} if target in member_origins else {})[target]
                     path = world.paths["raw"] / "src" / (source + ".c.o")
                     admitted[ov].append(ObjRef(ov, path, source, 0, 0, "c", raw,
-                        {".data": (start, "link")}, {}, plain_targets[target]))
+                        {".data": (start, "link")}, {}, plain_targets[target], role_context[target]["origin"]))
                     receipt = world.data_import_provider_receipts[source]
                     receipt["ordinary_data_runtime"] = {"role": plain_targets[target],
-                        "input_start": start, "origin": (start if plain_targets[target] == "ro-origin"
-                                                        else world.module_info[ov]["text_size"])}
+                        "input_start": start, "origin": role_context[target]["origin"]}
+                    if target in member_origins:
+                        origin_source = member_origins[target].removeprefix("build/src/").removesuffix(".c.o")
+                        origin_rows = [r for r in projected_data_rows(module) if r["source"] == origin_source]
+                        if len(origin_rows) != 1:
+                            raise PackError("RO member origin lacks one canonical C owner")
+                        origin_raw = Elf(world.paths["raw"] / "src" / (origin_source + ".c.o"))
+                        _cfg, origin_start = data_import_input(world, ov, origin_rows[0], origin_source, origin_raw)
+                        if origin_start != role_context[target]["origin"]:
+                            raise PackError("RO member origin geometry changed")
+                        if origin_source not in world.data_import_providers:
+                            world.data_import_providers[origin_source] = reproduce_data_provider(world, origin_source)
                     remaining_plain.remove(target)
                     continue
                 raw, receipt, context = reproduce_data_import(world, source)
@@ -2362,15 +2505,20 @@ def _guard_data_module_imports(world, exports):
                 admitted[ov].append(ObjRef(ov, path, source, 0, 0, "c", raw,
                     {".data": (start, "link")}, targets))
                 outputs.append((raw, receipt))
+        for ov, module in world.amods.items():
+            for row in module["text_ownership"]:
+                source = row["source"]
+                if row["type"] == "c" and f"build/src/{source}.c.o" in world._end_padding_plans:
+                    world._end_proved_objects[source] = reproduce_compiler_end(world, source)
         if remaining_plain:
             raise PackError("ordinary data proof selection lacks one canonical data input: "
                             + ", ".join(sorted(remaining_plain)))
         validate_plain_roles(admitted)
         if plain_targets:
-            world.data_import_contexts.append((plain_data_role_context(world, plain_targets),
-                lambda: plain_data_role_context(world, plain_data_targets(audit.run_make_database()))))
+            world.data_import_contexts.append((plain_data_role_context(world, plain_targets, member_origins),
+                lambda: refresh_plain_role_context(world)))
         check_data_import_holds(world)
-        for receipt in world.data_import_provider_receipts.values():
+        for receipt in list(world.data_import_provider_receipts.values()) + list(world._compiler_end_receipts.values()):
             receipt["allocated_symbols_ordered_relocations_exact"] = True
             (root / receipt["directory"] / "proof.json").write_text(
                 json.dumps(receipt, sort_keys=True, indent=2))

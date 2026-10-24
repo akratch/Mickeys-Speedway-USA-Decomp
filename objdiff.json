@@ -3826,16 +3826,6 @@
       }
     },
     {
-      "name": "assets/overlays/o101/overlay_101_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o101/overlay_101_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o101"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o101/overlay_101_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o101/overlay_101_reloc1.bin.o",
       "metadata": {
@@ -10258,6 +10248,23 @@
           "overlay-o101"
         ],
         "source_path": "src/overlays/o101/overlay101State.c"
+      }
+    },
+    {
+      "name": "src/overlays/o101/overlay101TailConstants.c",
+      "target_path": "expected/build/src/overlays/o101/overlay101TailConstants.c.o",
+      "base_path": "build/src/overlays/o101/overlay101TailConstants.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o101"
+        ],
+        "source_path": "src/overlays/o101/overlay101TailConstants.c"
       }
     },
     {

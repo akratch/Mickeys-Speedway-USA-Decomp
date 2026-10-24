@@ -1284,6 +1284,52 @@ class DataOnlyImportGuardTests(unittest.TestCase):
         self.assertEqual(next(sym.size for sym in raw.symbols if sym.name == "first"), 0)
         self.provider_mock.assert_called_once_with(self.world, self.provider)
 
+    def readonly_origin(self, *, first=0, writable=False, address=0):
+        builder=(ObjBuilder().section(".rodata",self.provider_bytes)
+                 .sym("first",first,0,GLOBAL,OBJECT,".rodata")
+                 .sym("second",4,0,GLOBAL,OBJECT,".rodata"))
+        for group in ("raw","build"):
+            path=self.paths[group]/"src"/(self.provider+".c.o")
+            data=bytearray(builder.build())
+            sec=rp.Elf("probe",data).section(".rodata")
+            struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+sec["index"]*40+8,3 if writable else 2)
+            struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+sec["index"]*40+12,address)
+            path.write_bytes(data)
+        item=self.world.map[-1]
+        self.world.map[-1]=rp.MapInput(item.outsec,".rodata",item.addr,item.size,item.file)
+        row=self.plain_row();row["section"]=".rodata"
+        linked=(ObjBuilder().section(".overlay_001",bytes(24)+self.provider_bytes,addr=rp.OVERLAY_VMA)
+                .sym("first",rp.OVERLAY_VMA+24+first,0,GLOBAL,OBJECT,".overlay_001")
+                .sym("second",rp.OVERLAY_VMA+28,0,GLOBAL,OBJECT,".overlay_001"))
+        self.world.elf=rp.Elf("linked",linked.build())
+        self.world.by_name={sym.name:[sym] for sym in self.world.elf.symbols if sym.name}
+        return row
+
+    def test_readonly_origin_preserves_unsized_definitions_and_holds_provider(self):
+        row=self.readonly_origin()
+        raw,start=rp.validate_plain_data(self.world,1,row,self.provider,storage=".rodata")
+        self.assertEqual(start,24)
+        self.assertEqual([s.size for s in raw.symbols if s.name in ("first","second")],[0,0])
+        self.provider_mock.assert_called_once()
+        source=self.root/"src"/(self.provider+".c")
+        source.write_text("/* changed readonly provider */\n")
+        with self.assertRaisesRegex(rp.PackError,"held data-only input changed"):
+            rp.check_data_import_holds(self.world)
+        with self.assertRaisesRegex(rp.PackError,"conflicting held"):
+            rp.validate_plain_data(self.world,1,row,self.provider,storage=".rodata")
+
+    def test_readonly_origin_wrong_flags_first_base_and_abs_definition_refuse(self):
+        for case in ("writable","first-base","raw-base","abs"):
+            with self.subTest(case=case):
+                self.world.data_import_inputs={};self.world.data_import_providers={}
+                row=self.readonly_origin(first=1 if case=="first-base" else 0,writable=case=="writable",
+                                         address=4 if case=="raw-base" else 0)
+                if case=="abs":
+                    sym=rp.Elf("abs",ObjBuilder().sym("first",24,0,GLOBAL,OBJECT,"ABS").build()).symbols[-1]
+                    self.world.by_name["first"]=[sym]
+                with self.assertRaises(rp.PackError):
+                    rp.validate_plain_data(self.world,1,row,self.provider,storage=".rodata")
+
     def test_plain_loaded_configured_bytes_must_match_the_bound_receipt(self):
         import proof_provenance as provenance
         self.provider_compile.stop()
@@ -1432,6 +1478,45 @@ class DataOnlyProducerDiscoveryTests(unittest.TestCase):
             rp.guard_data_module_imports(self.world, self.exports)
             self.assertEqual(self.world._guarded_data_objects[1][0].runtime_role, "data")
             self.assertEqual(compiler.call_count, 2)
+
+    def test_readonly_member_warm_section_loss_refuses_and_retry_publishes_fresh_inventory(self):
+        import postprocess_audit as audit
+        import proof_provenance as provenance
+        for name in ("tools/proof_provenance.py","tools/source_module_link_proof.py",
+                     "tools/postprocess_audit.py","tools/link_overlay_module.py","tools/static_symbols.py",".venv/bin/python"):
+            path=self.tree.root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text("fixture")
+        origin="overlays/o001/origin";origin_target="build/src/"+origin+".c.o"
+        target="build/src/"+self.source+".c.o"
+        for source,offset,storage in ((origin,0,".rodata"),(self.source,8,".data")):
+            self.world.amods[1]["data_rodata_ownership"].append(dict(type="c",canonical=True,
+                section=storage,source=source,offset=hex(offset),size="0x8",end_offset=hex(offset+8)))
+        path=self.world.paths["map"]
+        path.write_text(path.read_text()+" .rodata 0xf0000040 0x8 "+origin_target+"\n .data 0xf0000048 0x8 "+target+"\n")
+        self.world.map=rp.parse_map(path)
+        marker=(target+": PLAIN_DATA_PROOF = 1\n"+target+": PLAIN_DATA_RUNTIME_ROLE = ro-member\n"+
+                target+": PLAIN_DATA_RO_ORIGIN_OBJECT = "+origin_target+"\n"+
+                target+": PLAIN_DATA_RO_ORIGIN_SECTION = .rodata\n"+
+                target+": POSTPROCESS = python3 tools/trim_elf_section.py "+target+
+                " .data 8 --literal-array-end src/"+self.source+".c\n")
+        changed=marker.replace("PLAIN_DATA_RO_ORIGIN_SECTION = .rodata\n", "PLAIN_DATA_RO_ORIGIN_SECTION = .data\n")
+        readonly=rp.Elf("origin",ObjBuilder().section(".rodata",bytes(8)).build())
+        def validate(world,_ov,_row,source,**keywords):
+            directory="build/capture-"+source.rsplit("/",1)[1]
+            (self.tree.root/directory).mkdir(parents=True,exist_ok=True)
+            world.data_import_provider_receipts[source]={"directory":directory}
+            self.assertEqual(keywords,{"storage":".rodata"} if source==origin else {})
+            return (readonly,0x40) if source==origin else (self.obj.elf,0x48)
+        with mock.patch.object(audit,"run_make_database",side_effect=[marker,marker,changed,marker,marker]),                 mock.patch.object(provenance,"literal_profile_inputs",return_value={}),                 mock.patch.object(rp,"validate_plain_data",side_effect=validate) as fresh:
+            rp.guard_data_module_imports(self.world,self.exports)
+            first=self.world._guarded_data_objects[1][0]
+            self.assertEqual((first.runtime_role,first.runtime_origin),("ro-member",0x40))
+            with self.assertRaisesRegex(rp.PackError,"origin section"):
+                rp.guard_data_module_imports(self.world,self.exports)
+            self.assertIsNone(self.world._guarded_data_objects);self.assertIsNone(self.world._objects)
+            self.assertIsNone(self.world._defs)
+            rp.guard_data_module_imports(self.world,self.exports)
+            self.assertIsNot(self.world._guarded_data_objects[1][0],first)
+            self.assertEqual(fresh.call_count,4)
 
     def test_literal_parser_inputs_are_held_before_initial_metadata_snapshot(self):
         import postprocess_audit as audit
@@ -1905,6 +1990,53 @@ class UnitTests(unittest.TestCase):
             with self.assertRaises(rp.PackError): rp.plain_data_role_context(world,roles,origins)
             path.write_text("Linker script and memory map\n\n.overlay_001 0xf0000000 0x60\n"+text.replace("0040","003c"))
             self.assertNotEqual(context,rp.plain_data_role_context(world,roles,origins))
+
+    def test_readonly_provider_helper_loaded_source_identity_is_bound_before_lazy_use(self):
+        actual=Path.read_bytes
+        def changed(path):
+            data=actual(path)
+            return data+b"# changed helper" if path==rp.REPO/"tools/link_overlay_module.py" else data
+        with mock.patch.object(Path,"read_bytes",changed):
+            with self.assertRaisesRegex(rp.PackError,"link_overlay_module"):
+                rp.readonly_provider_identity()
+
+    def test_explicit_readonly_origin_requires_literal_member_and_exact_same_module_contiguity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/"map"
+            origin="build/src/overlays/o001/labels.c.o";target="build/src/overlays/o001/tail.c.o"
+            header="Linker script and memory map\n\n.overlay_001 0xf0000000 0x90\n"
+            text=" .rodata 0xf0000040 0x40 "+origin+"\n .data 0xf0000080 0xc "+target+"\n"
+            path.write_text(header+text)
+            world=SimpleNamespace(paths={"map":path},module_info={1:{"text_size":32},2:{"text_size":32}},
+                                  _literal_array_plans={target:[("literal-end",(".data",12,"source"))]})
+            roles={target:"ro-member"};origins={target:origin};sections={target:".rodata"}
+            declaration=target+": PLAIN_DATA_RO_ORIGIN_SECTION = .rodata\n"
+            self.assertEqual(rp.plain_data_origin_sections(declaration*2),sections)
+            context=rp.plain_data_role_context(world,roles,origins,sections)[target]
+            self.assertEqual((context["origin"],context["origin_size"]),(64,64))
+            from runlink.adapters import msu
+            from runlink import rules, codec
+            obj=SimpleNamespace(module=1,runtime_role="ro-member",runtime_origin=context["origin"])
+            target_view=SimpleNamespace(kind="section",obj=obj,secname=".data")
+            base=msu.runtime_local_base(rp,target_view,1,32)
+            refs=[rules.Ref(".text",0,HI16,base=("ov",1,0x84),full=("ov",1,0x84),
+                            target_section=".data",runtime_local_base=base)]
+            replay=rules.build_module(1,refs,codec.Header(0,0,32,108,0,0,0,-1,-1),bytes(140),rodata_base=96)
+            self.assertEqual((replay.table2[0].rec.symidx,replay.table2[0].full),(64,("ov",1,0x84)))
+            for case in ("default","not-literal","no-origin","wrong-role","unknown-section","gap","foreign","duplicate"):
+                with self.subTest(case=case):
+                    path.write_text(header+text);world._literal_array_plans={target:[]}
+                    r,o,q=dict(roles),dict(origins),dict(sections)
+                    if case=="default":q={}
+                    elif case=="not-literal":world._literal_array_plans={}
+                    elif case=="no-origin":o={}
+                    elif case=="wrong-role":r[target]="data"
+                    elif case=="unknown-section":q[target]=".data"
+                    elif case=="gap":path.write_text(header+text.replace("0080","0084"))
+                    elif case=="foreign":path.write_text(header+text.splitlines()[0]+"\n.overlay_002 0xf0000000 0x90\n"+text.splitlines()[1]+"\n")
+                    elif case=="duplicate":path.write_text(header+text+text.splitlines()[0]+"\n")
+                    with self.assertRaises(rp.PackError):rp.plain_data_role_context(world,r,o,q)
+            with self.assertRaises(rp.PackError):rp.plain_data_origin_sections(declaration.replace(".rodata",".data"))
 
     def test_in_place_addends_pair_hi_with_the_next_lo_and_reuse_it(self):
         b = (ObjBuilder().section(".text", words(lui(1), addiu(0x8000), addiu(4), jal(3), 0x12345678))

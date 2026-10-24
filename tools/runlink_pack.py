@@ -91,6 +91,18 @@ _LOADED_IMPLEMENTATIONS = {
     "tools/trap_names.py": hashlib.sha256(Path(trap_source.__file__).read_bytes()).hexdigest(),
 }
 
+# The provider helper imports us: pin before any later lazy import, without
+# changing the existing fixed metadata-producer implementation schema.
+_LOADED_READONLY_PROVIDER = hashlib.sha256((REPO / "tools/link_overlay_module.py").read_bytes()).hexdigest()
+
+
+def readonly_provider_identity():
+    path = REPO / "tools/link_overlay_module.py"
+    if hashlib.sha256(path.read_bytes()).hexdigest() != _LOADED_READONLY_PROVIDER:
+        raise PackError("loaded readonly provider helper changed: link_overlay_module.py")
+    return path, _LOADED_READONLY_PROVIDER
+
+
 VERSION = "us"
 
 # ---------------------------------------------------------------------------
@@ -2476,10 +2488,26 @@ def plain_data_origins(dump):
     return origins
 
 
-def plain_data_role_context(world, roles, origins=None):
+def plain_data_origin_sections(dump):
+    """Only explicit readonly origin admission; DATA remains the old default."""
+    sections = {}
+    for target, section in re.findall(r"^(\S+): PLAIN_DATA_RO_ORIGIN_SECTION = (.*)$", dump, re.M):
+        if section.strip() != ".rodata":
+            raise PackError("unsupported ordinary RO origin section declaration")
+        sections[target] = ".rodata"
+    return sections
+
+
+def plain_data_role_context(world, roles, origins=None, origin_sections=None):
     """Bind declared roles to actual map starts, keeping compiler sections intact."""
     inputs = parse_map(world.paths["map"])
     origins = origins or {}
+    origin_sections = origin_sections or {}
+    if (set(origin_sections) - set(origins)
+            or any(roles.get(target) != "ro-member" or section != ".rodata"
+                   or target not in getattr(world, "_literal_array_plans", {})
+                   for target, section in origin_sections.items())):
+        raise PackError("readonly RO origin requires one literal-array ro-member")
     if set(origins) != {target for target, role in roles.items() if role == "ro-member"}:
         raise PackError("RO member requires exactly one declared origin input")
     observed = {}
@@ -2493,19 +2521,26 @@ def plain_data_role_context(world, roles, origins=None):
         start = item.addr - OVERLAY_VMA
         origin = start if role == "ro-origin" else world.module_info[ov]["text_size"]
         if role == "ro-member":
-            choices = [i for i in inputs if i.file == origins[target] and i.insec == ".data" and i.size]
+            storage = origin_sections.get(target, ".data")
+            choices = [i for i in inputs if i.file == origins[target] and i.insec == storage and i.size]
             if len(choices) != 1 or choices[0].outsec != item.outsec or choices[0].addr > item.addr:
                 raise PackError("RO member lacks its bounded same-module origin")
+            if storage == ".rodata" and choices[0].addr + choices[0].size != item.addr:
+                raise PackError("readonly RO origin must immediately precede its literal member")
             origin = choices[0].addr - OVERLAY_VMA
         observed[target] = {"role": role, "input_start": start, "size": item.size,
             "origin": origin}
+        if target in origin_sections:
+            observed[target].update(origin_section=storage, origin_size=choices[0].size,
+                                    origin_input=origins[target])
     return observed
 
 
 def refresh_plain_role_context(world):
     import postprocess_audit as audit
     dump = audit.run_make_database()
-    return plain_data_role_context(world, plain_data_targets(dump), plain_data_origins(dump))
+    return plain_data_role_context(world, plain_data_targets(dump), plain_data_origins(dump),
+                                   plain_data_origin_sections(dump))
 
 
 def validate_plain_roles(admitted):
@@ -2522,12 +2557,24 @@ def validate_plain_roles(admitted):
                 raise PackError(f"overlay {ov}: ordinary DATA conflicts with its RO origin")
 
 
-def validate_plain_data(world, ov, row, source):
+def validate_plain_data(world, ov, row, source, *, storage=".data"):
     """Authenticate a complete ordinary C input, without a module-link surrogate."""
     import proof_provenance as provenance
     path = world.paths["raw"] / "src" / (source + ".c.o")
     ordinary = Elf(path)
-    configured, start = data_import_input(world, ov, row, source, ordinary)
+    if storage == ".rodata":
+        helper, held = readonly_provider_identity()
+        import link_overlay_module as module_link
+        if Path(module_link.__file__).resolve() != helper.resolve():
+            raise PackError("readonly provider helper namespace differs")
+        readonly_provider_identity()
+        hold_data_import_inputs(world, {helper: held})
+        try:
+            if module_link.local_provider_section(ordinary, readonly=True) != storage:
+                raise module_link.LinkError("origin is not readonly storage")
+        except module_link.LinkError as error:
+            raise PackError("readonly RO origin storage refused: " + str(error)) from error
+    configured, start = data_import_input(world, ov, row, source, ordinary, storage=storage)
     provider = getattr(world, "data_import_providers", {}).get(source)
     ordinary = effective_compiler_object(ordinary, configured,
         getattr(world, "_end_padding_plans", {}).get(f"build/src/{source}.c.o"),
@@ -2542,14 +2589,16 @@ def validate_plain_data(world, ov, row, source):
             raise PackError(f"ordinary data input has relocations: {source}")
         if any(sym.name and sym.bind in (STB_GLOBAL, STB_WEAK)
                and sym.type not in (STT_SECTION, STT_FILE)
-               and (sym.bind != STB_GLOBAL or sym.type != 1 or sym.section != ".data")
+               and (sym.bind != STB_GLOBAL or sym.type != 1 or sym.section != storage)
                for sym in obj.symbols):
             raise PackError(f"ordinary data input has non-object/import definitions: {source}")
     definitions = [sym for sym in ordinary.symbols
                    if sym.name and sym.bind == STB_GLOBAL and sym.type == 1
-                   and sym.section == ".data"]
+                   and sym.section == storage]
     if not definitions or len({sym.name for sym in definitions}) != len(definitions):
         raise PackError(f"ordinary data input lacks unique named objects: {source}")
+    if storage == ".rodata" and min(symbol.value for symbol in definitions) != 0:
+        raise PackError("readonly RO origin lacks its actual first GLOBAL object at zero")
     providers = getattr(world, "data_import_providers", {})
     if source not in providers:
         providers[source] = reproduce_data_provider(world, source)
@@ -2558,7 +2607,7 @@ def validate_plain_data(world, ov, row, source):
         # IDO can give a genuine char[] definition size zero. This proves its
         # base, never a fabricated extent; the complete input is proved above.
         target = data_import_definition(world, symbol.name, base_only=True,
-                                        provider_source=source)
+                                        provider_source=source, readonly_provider=(storage == ".rodata"))
         if target != (ov, start + symbol.value):
             raise PackError(f"ordinary data definition moved: {symbol.name}")
     return providers[source], start
@@ -2624,6 +2673,13 @@ def _guard_data_module_imports(world, exports):
     outputs = []
     plain_targets = plain_data_targets(dump)
     member_origins = plain_data_origins(dump)
+    origin_sections = plain_data_origin_sections(dump)
+    if origin_sections:
+        helper = root / "tools/link_overlay_module.py"
+        hold_data_import_inputs(world, {helper: hashlib.sha256(helper.read_bytes()).hexdigest()})
+    if (set(origin_sections) - set(member_origins)
+            or any(plain_targets.get(target) != "ro-member" for target in origin_sections)):
+        raise PackError("readonly origin section requires exactly one ro-member origin")
     role_context = {}
     remaining_plain = set(plain_targets)
     admitted = collections.defaultdict(list)
@@ -2646,7 +2702,8 @@ def _guard_data_module_imports(world, exports):
                 if plain:
                     raw, start = validate_plain_data(world, ov, rows[0], source)
                     role_context[target] = plain_data_role_context(world, {target: plain_targets[target]},
-                        {target: member_origins[target]} if target in member_origins else {})[target]
+                        {target: member_origins[target]} if target in member_origins else {},
+                        {target: origin_sections[target]} if target in origin_sections else {})[target]
                     path = world.paths["raw"] / "src" / (source + ".c.o")
                     admitted[ov].append(ObjRef(ov, path, source, 0, 0, "c", raw,
                         {".data": (start, "link")}, {}, plain_targets[target], role_context[target]["origin"]))
@@ -2658,12 +2715,19 @@ def _guard_data_module_imports(world, exports):
                         origin_rows = [r for r in projected_data_rows(module) if r["source"] == origin_source]
                         if len(origin_rows) != 1:
                             raise PackError("RO member origin lacks one canonical C owner")
-                        origin_raw = Elf(world.paths["raw"] / "src" / (origin_source + ".c.o"))
-                        _cfg, origin_start = data_import_input(world, ov, origin_rows[0], origin_source, origin_raw)
+                        if target in origin_sections:
+                            _fresh, origin_start = validate_plain_data(world, ov, origin_rows[0], origin_source,
+                                                                       storage=".rodata")
+                            receipt["ordinary_data_runtime"].update(
+                                origin_section=".rodata", origin_source=origin_source,
+                                origin_size=_fresh.size(".rodata"))
+                        else:
+                            origin_raw = Elf(world.paths["raw"] / "src" / (origin_source + ".c.o"))
+                            _cfg, origin_start = data_import_input(world, ov, origin_rows[0], origin_source, origin_raw)
+                            if origin_source not in world.data_import_providers:
+                                world.data_import_providers[origin_source] = reproduce_data_provider(world, origin_source)
                         if origin_start != role_context[target]["origin"]:
                             raise PackError("RO member origin geometry changed")
-                        if origin_source not in world.data_import_providers:
-                            world.data_import_providers[origin_source] = reproduce_data_provider(world, origin_source)
                     remaining_plain.remove(target)
                     continue
                 raw, receipt, context = reproduce_data_import(world, source)
@@ -2688,7 +2752,7 @@ def _guard_data_module_imports(world, exports):
                             + ", ".join(sorted(remaining_plain)))
         validate_plain_roles(admitted)
         if plain_targets:
-            world.data_import_contexts.append((plain_data_role_context(world, plain_targets, member_origins),
+            world.data_import_contexts.append((plain_data_role_context(world, plain_targets, member_origins, origin_sections),
                 lambda: refresh_plain_role_context(world)))
         check_data_import_holds(world)
         for receipt in list(world.data_import_provider_receipts.values()) + list(world._compiler_end_receipts.values()):

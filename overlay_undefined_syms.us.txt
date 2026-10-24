@@ -1060,10 +1060,10 @@ trackGetTrack_o020Reloc = 0xf0000000;
 
 /* overlay 21: overlay_021.c.o */
 camGetPtr_o021Reloc = 0xf0000000;
+func_8002A8BC_o021Reloc = 0xf0000000;
 func_8002A8C0_o021Reloc = 0xf0000000;
 gOverlay21ObjectCount = 0x00000000;
 gOverlay21Objects = 0x00000004;
-overlay21CosReloc = 0xf0000000;
 
 /* overlay 22: overlay_022.c.o */
 Arctanf_o022Reloc = 0xf0000000;

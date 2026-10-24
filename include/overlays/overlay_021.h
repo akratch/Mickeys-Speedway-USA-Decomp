@@ -53,6 +53,5 @@ extern s32 gOverlay21ObjectCount;
 extern Overlay21Object *gOverlay21Objects[];
 
 Overlay21Position *camGetPtr(void);
-f32 overlay21CosReloc(s16 angle);
 
 #endif

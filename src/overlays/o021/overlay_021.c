@@ -19,10 +19,10 @@ void overlay21RegisterPlane(Overlay21Object *object, Overlay21Init *init) {
     plane = object->plane;
     plane->id = object->id;
     value = func_8002A8C0(object->angle0);
-    plane->normalX = overlay21CosReloc(object->angle1) * value;
-    plane->normalY = -overlay21CosReloc(object->angle1);
-    value = overlay21CosReloc(object->angle0);
-    plane->normalZ = overlay21CosReloc(object->angle1) * value;
+    plane->normalX = func_8002A8BC(object->angle1) * value;
+    plane->normalY = -func_8002A8C0(object->angle1);
+    value = func_8002A8BC(object->angle0);
+    plane->normalZ = func_8002A8BC(object->angle1) * value;
     plane->distance = -((plane->normalX * object->x) +
                         (plane->normalY * object->y) +
                         (plane->normalZ * object->z));

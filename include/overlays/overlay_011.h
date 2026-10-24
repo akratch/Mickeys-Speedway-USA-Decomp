@@ -68,9 +68,9 @@ typedef struct Overlay11Resources {
 
 /* Overlay-local storage, named by the relocation records' section and
  * addend. The pad index (bss +0x1C4) and the option action (data +0x1C4)
- * are different objects. Several readers were matched against their own
- * names for the same words; those names are kept. */
-extern s32 gOverlay11Argument, gOverlay11Timer, gOverlay11Counter;
+ * are different objects. Other unambiguous readers retain their existing names
+ * for these words. */
+extern s32 gOverlay11Timer, gOverlay11Counter;
 extern s16 gOverlay11Selection;
 extern s32 gOverlay11Initialized;
 extern s16 gOverlay11GridPhases[13][17];
@@ -78,7 +78,12 @@ extern u8 gOverlay11GridTriangles[];
 extern f32 gOverlay11Fade;
 extern s16 gOverlay11OptionHighlight;
 extern s16 gOverlay11HighlightStep;
-extern s32 gOverlay11Mode;
+/* Distinct real DATA/BSS owners keep separate consumer identities. Their
+ * per-input aliases preserve the module-local displacement representation. */
+extern s32 gOverlay11StorageDataMode_o011Reloc;
+extern s32 gOverlay11StorageAction_o011Reloc;
+extern s32 gOverlay11StorageHandleMode_o011Reloc;
+extern s32 gOverlay11StoragePadIndex_o011Reloc;
 extern s32 gOverlay11OptionAction;
 extern s32 gOverlay11PadIndex;
 extern s32 gOverlay11InputDelay;

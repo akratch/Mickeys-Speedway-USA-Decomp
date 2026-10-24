@@ -40,7 +40,7 @@ void func_overlay_014_F0000000_186F8D8(void) {
     gOverlay14Context10C = 0; gOverlay14Field114 = 0;
     if (gOverlay14AssetF0) mmFree(gOverlay14AssetF0);
     if (gOverlay14OffsetsF4) mmFree(gOverlay14OffsetsF4);
-    slot = gOverlay14ValueSlots28; do {
+    slot = gOverlay14ValueSlots_o014Reloc; do {
         if ((gOverlay14ValueCountE8 != 0) && slot->value) mmFree(slot->value);
         slot++;
         slot[-1].value = 0;
@@ -169,7 +169,7 @@ static s32 overlay14ApplyValues(s32 value, s32 mode) {
 
         if (result != 0) {
             index = gOverlay14CommandCountEC;
-            command = &gOverlay14QueuedCommands128[index];
+            command = &gOverlay14CommandQueue_o014Reloc[index];
             command->value = value;
             command->mode = mode;
             command->result = result;
@@ -200,21 +200,21 @@ static s32 overlay14ApplyValues(s32 value, s32 mode) {
  * closure, not instruction scheduling. The owned +0x498..+0x578 / ROM
  * 0x186FD70..0x186FE50 range has no padding or export and has five local inbound
  * JUMPs. */
-static void overlay14ResetMode(void) { Overlay14PendingCommand *command; do {
+static void overlay14ResetMode(void) { Overlay14QueuedCommand *command; do {
         if (D_EC <= 0) return;
         D_EC--;
         if (D_EC <= 0) return;
         overlay14ReleaseOwner_o014Reloc();
-        command = &D_128[D_EC - 1];
-        D_E4 = command->type;
-        if (command->type != 1) {
-            gOverlay14ValueF8 = command->value;
+        command = &gOverlay14CommandQueue_o014Reloc[D_EC - 1];
+        D_E4 = command->mode;
+        if (command->mode != 1) {
+            gOverlay14ValueF8 = command->result;
             gOverlay14ValueD8 = 0;
             gOverlay14ValueDC = 0;
             gOverlay14ValueE0 = 0;
             return;
         }
-        D_FC = command->value;
+        D_FC = command->result;
     } while (overlay14MoveCommandCursor(0) == 0);
 }
 
@@ -302,13 +302,13 @@ static void *overlay14CreateValue(s32 key, s32 alternate) {
     s32 kind;
 
     for (i = 0; i < 32; i++) {
-        if ((gOverlay14Slots28[i].value != 0) &&
-            (gOverlay14Slots28[i].key == key)) {
-            return gOverlay14Slots28[i].value;
+        if ((gOverlay14ValueSlots_o014Reloc[i].value != 0) &&
+            (gOverlay14ValueSlots_o014Reloc[i].key == key)) {
+            return gOverlay14ValueSlots_o014Reloc[i].value;
         }
     }
     i = 0;
-    while ((i < 32) && (gOverlay14Slots28[i].value != 0)) {
+    while ((i < 32) && (gOverlay14ValueSlots_o014Reloc[i].value != 0)) {
         i++;
     }
     if (i >= 32) {
@@ -332,16 +332,16 @@ static void *overlay14CreateValue(s32 key, s32 alternate) {
             break;
     }
     if (alternate != 1) {
-        gOverlay14Slots28[i].value = overlay14LoadRelocatedValue(key, kind);
+        gOverlay14ValueSlots_o014Reloc[i].value = overlay14LoadRelocatedValue(key, kind);
     } else {
-        gOverlay14Slots28[i].value =
+        gOverlay14ValueSlots_o014Reloc[i].value =
             func_overlay_014_F00009F4_18702CC(key, kind);
     }
-    if (gOverlay14Slots28[i].value != 0) {
-        gOverlay14Slots28[i].key = key;
+    if (gOverlay14ValueSlots_o014Reloc[i].value != 0) {
+        gOverlay14ValueSlots_o014Reloc[i].key = key;
         gOverlay14SlotCountE8++;
     }
-    return gOverlay14Slots28[i].value;
+    return gOverlay14ValueSlots_o014Reloc[i].value;
 }
 
 /* Tier A: linked ROM identity with untouched IDO instruction output.
@@ -493,13 +493,23 @@ s32 gOverlay14Pulse18;
 s32 gOverlay14Timer1C;
 s32 gOverlay14Timer20;
 
+/* Tier B: actual independently bounded cache and command backing. The
+ * cache clear/search walks establish 32 eight-byte key/pointer slots;
+ * the producer's count<16 guard and replay stride establish 16 commands.
+ * Existing input words keep their actual offsets. IDO supplies alignment
+ * before the cache and at section end; no padding or reserve object.
+ * The queued result is the existing target-width address/result carrier;
+ * broader DATA views, pointer-domain and lifetime contracts remain open. */
+Overlay14ValueSlot gOverlay14ValueSlots[32];
+Overlay14QueuedCommand gOverlay14CommandQueue[16];
+
 /*
  * Overlay 14 +0xB40. JFG proves the 0x1C-byte instruction sequence but names
  * it only with a generated placeholder, which is not promoted here.
  */
 static void overlay14Reset(void) {
-    gOverlay14Timer1C = 0;
-    gOverlay14Timer20 = 0;
+    gOverlay14Timer1C_o014Reloc = 0;
+    gOverlay14Timer20_o014Reloc = 0;
     gOverlay14ResetCC = 0;
 }
 
@@ -514,65 +524,65 @@ static void overlay14PrepareInputState(s32 step) {
     second = joyGetStickX(0);
     vertical = joyGetStickY(0);
 
-    gOverlay14InputFlag0 = first & 0x8000;
-    gOverlay14InputFlag4 = first & 0x4000;
-    gOverlay14InputFlag8 = first & 0x1000;
-    gOverlay14PulseC = 0;
-    gOverlay14Pulse10 = 0;
-    gOverlay14Pulse14 = 0;
-    gOverlay14Pulse18 = 0;
+    gOverlay14InputFlag0_o014Reloc = first & 0x8000;
+    gOverlay14InputFlag4_o014Reloc = first & 0x4000;
+    gOverlay14InputFlag8_o014Reloc = first & 0x1000;
+    gOverlay14PulseC_o014Reloc = 0;
+    gOverlay14Pulse10_o014Reloc = 0;
+    gOverlay14Pulse14_o014Reloc = 0;
+    gOverlay14Pulse18_o014Reloc = 0;
 
     if ((vertical >= -0x1E) && (vertical < 0x1F)) {
-        gOverlay14Timer20 = 0;
+        gOverlay14Timer20_o014Reloc = 0;
     } else if (vertical >= 0x1F) {
-        if (gOverlay14Timer20 > 0) {
-            gOverlay14Timer20 -= step;
-            if (gOverlay14Timer20 <= 0) {
-                gOverlay14Timer20 = 0xA;
-                gOverlay14PulseC = 1;
+        if (gOverlay14Timer20_o014Reloc > 0) {
+            gOverlay14Timer20_o014Reloc -= step;
+            if (gOverlay14Timer20_o014Reloc <= 0) {
+                gOverlay14Timer20_o014Reloc = 0xA;
+                gOverlay14PulseC_o014Reloc = 1;
             }
         } else {
-            gOverlay14Timer20 = 0x14;
-            gOverlay14PulseC = 1;
+            gOverlay14Timer20_o014Reloc = 0x14;
+            gOverlay14PulseC_o014Reloc = 1;
         }
     } else if (vertical < -0x1E) {
-        if (gOverlay14Timer20 < 0) {
-            gOverlay14Timer20 += step;
-            if (gOverlay14Timer20 >= 0) {
-                gOverlay14Timer20 = -0xA;
-                gOverlay14Pulse10 = 1;
+        if (gOverlay14Timer20_o014Reloc < 0) {
+            gOverlay14Timer20_o014Reloc += step;
+            if (gOverlay14Timer20_o014Reloc >= 0) {
+                gOverlay14Timer20_o014Reloc = -0xA;
+                gOverlay14Pulse10_o014Reloc = 1;
             }
         } else {
-            gOverlay14Timer20 = -0x14;
-            gOverlay14Pulse10 = 1;
+            gOverlay14Timer20_o014Reloc = -0x14;
+            gOverlay14Pulse10_o014Reloc = 1;
         }
     }
 
     if ((second >= -0x1D) && (second < -0x1E)) {
-        gOverlay14Timer1C = 0;
+        gOverlay14Timer1C_o014Reloc = 0;
         return;
     }
     if (second >= 0x1F) {
-        if (gOverlay14Timer1C > 0) {
-            gOverlay14Timer1C -= step;
-            if (gOverlay14Timer1C <= 0) {
-                gOverlay14Timer1C = 0xA;
-                gOverlay14Pulse18 = 1;
+        if (gOverlay14Timer1C_o014Reloc > 0) {
+            gOverlay14Timer1C_o014Reloc -= step;
+            if (gOverlay14Timer1C_o014Reloc <= 0) {
+                gOverlay14Timer1C_o014Reloc = 0xA;
+                gOverlay14Pulse18_o014Reloc = 1;
             }
         } else {
-            gOverlay14Timer1C = 0x14;
-            gOverlay14Pulse18 = 1;
+            gOverlay14Timer1C_o014Reloc = 0x14;
+            gOverlay14Pulse18_o014Reloc = 1;
         }
     } else if (second < -0x1E) {
-        if (gOverlay14Timer1C < 0) {
-            gOverlay14Timer1C += step;
-            if (gOverlay14Timer1C <= 0) {
-                gOverlay14Timer1C = -0xA;
-                gOverlay14Pulse14 = 1;
+        if (gOverlay14Timer1C_o014Reloc < 0) {
+            gOverlay14Timer1C_o014Reloc += step;
+            if (gOverlay14Timer1C_o014Reloc <= 0) {
+                gOverlay14Timer1C_o014Reloc = -0xA;
+                gOverlay14Pulse14_o014Reloc = 1;
             }
         } else {
-            gOverlay14Timer1C = -0x14;
-            gOverlay14Pulse14 = 1;
+            gOverlay14Timer1C_o014Reloc = -0x14;
+            gOverlay14Pulse14_o014Reloc = 1;
         }
     }
 }
@@ -591,16 +601,16 @@ static void overlay14AdvanceCommand(s32 context) {
             gOverlay14Transition -= 1;
             gOverlay14Cursor += 1;
         }
-    } else if ((gOverlay14PointerE0Base.value != 0) && (gOverlay14Flag0[0] != 0)) {
+    } else if ((gOverlay14PointerE0Base.value != 0) && (gOverlay14InputFlag0_o014Reloc != 0)) {
         gOverlay14TransitionD8Base.value = (0x58 / divisor) - 1;
     } else {
         limit = (0x58 / divisor) - 1;
-        if ((gOverlay14Cursor >= limit) && (gOverlay14Flag4[1] != 0)) {
+        if ((gOverlay14Cursor >= limit) && (gOverlay14InputFlag4_o014Reloc != 0)) {
             gOverlay14TransitionD8Base.value = -limit;
         }
     }
 
-    if ((gOverlay14PointerE0Base.value == 0) && (gOverlay14Flag0[0] != 0)) {
+    if ((gOverlay14PointerE0Base.value == 0) && (gOverlay14InputFlag0_o014Reloc != 0)) {
         if ((gOverlay14ModeE4.value == 4) && (gOverlay14ValueEC.value >= 2)) {
             overlay14ResetMode();
             return;
@@ -615,7 +625,7 @@ static void overlay14AdvanceCommand(s32 context) {
         gOverlay14StateCC.value = 1;
         return;
     }
-    if ((gOverlay14Flag4[1] != 0) && (gOverlay14ValueEC.value >= 2)) {
+    if ((gOverlay14InputFlag4_o014Reloc != 0) && (gOverlay14ValueEC.value >= 2)) {
         overlay14ResetMode();
     }
 }
@@ -623,19 +633,19 @@ static void overlay14AdvanceCommand(s32 context) {
 static void overlay14StepCommand(s32 context) {
     Overlay14SelectionList *command;
 
-    if (gOverlay14Flag4[1] != 0) {
+    if (gOverlay14InputFlag4_o014Reloc != 0) {
         overlay14ResetMode();
         return;
     }
-    if (gOverlay14Flag0[0] != 0) {
+    if (gOverlay14InputFlag0_o014Reloc != 0) {
         overlay14DispatchCommand();
         return;
     }
-    if ((gOverlay14FlagC[3] != 0) && (gOverlay14CommandHeaderBase[0x3F]->selected > 0)) {
+    if ((gOverlay14PulseC_o014Reloc != 0) && (gOverlay14CommandHeaderBase[0x3F]->selected > 0)) {
         overlay14MoveCommandCursor(-1);
         return;
     }
-    if (gOverlay14Flag10[4] != 0) {
+    if (gOverlay14Pulse10_o014Reloc != 0) {
         command = gOverlay14CommandHeaderBase[0x3F];
         if (command->selected < (command->count - 1)) {
             overlay14MoveCommandCursor(1);

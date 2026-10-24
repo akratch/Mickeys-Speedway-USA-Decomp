@@ -916,6 +916,12 @@ class Resolver:
             return Target("ident", name, "generated-name", ident=ident, named=True)
         # The surface's call proxy for one generated function: `<generated>Reloc`.
         if name.endswith("Reloc") and GEN_FUNC_RE.match(name[:-5]):
+            definition = self._function_proxy_definition(name[:-5])
+            if definition is not None:
+                obj, symbol = definition
+                return Target("section", name, "source-function-proxy", obj=obj,
+                              secname=".text", value=symbol.value, named=True)
+            # No declaration witness: explicitly retain the compatibility route.
             return Target("ident", name, "generated-proxy",
                           ident=parse_generated(name[:-5], self.layout), named=True)
         m = ALIAS_RE.match(name)
@@ -936,6 +942,42 @@ class Resolver:
             if ident and not LINKER_NAME_RE.search(name):
                 return Target("ident", name, "linked-overlay", ident=ident, named=True)
         return Target("placeholder", name, "placeholder")
+
+    def _function_proxy_definition(self, name):
+        """An exact-name function witness; no coordinates come from its spelling."""
+        choices = self.w.defs().get(name, []) if self.w.need_raw else []
+        if not choices:
+            return None
+        if len(choices) != 1:
+            raise PackError(f"ambiguous function proxy provider: {name}")
+        obj, symbol = choices[0]
+        raw = obj.elf.section(".text")
+        if (symbol.bind != STB_GLOBAL or symbol.type != STT_FUNC or symbol.section != ".text"
+                or not raw or raw["type"] != 1 or raw["flags"] & 6 != 6 or raw["addr"] != 0
+                or symbol.size <= 0 or symbol.value < 0
+                or symbol.value % 4 or symbol.size % 4
+                or symbol.value + symbol.size > raw["size"]
+                or len(obj.elf.bytes_of(".text")) != raw["size"]):
+            raise PackError(f"function proxy lacks a bounded real function: {name}")
+        proc = (f"build/src/{obj.source}.c.o" if obj.kind == "c"
+                else f"build/asm/{obj.source}.s.o")
+        info = self.w.module_info[obj.module]
+        inputs = [mi for mi in info["inputs"] if mi.file == proc and mi.insec == ".text" and mi.size]
+        final = [s for s in self.w.by_name.get(name, ())
+                 if s.bind == STB_GLOBAL and s.shndx != SHN_UNDEF]
+        if (len(inputs) != 1 or inputs[0].outsec != f".overlay_{obj.module:03d}"
+                or inputs[0].addr - OVERLAY_VMA != obj.text_offset
+                or symbol.value + symbol.size > inputs[0].size
+                or len(final) != 1 or final[0].type != STT_FUNC
+                or final[0].section != inputs[0].outsec
+                or final[0].value != inputs[0].addr + symbol.value
+                or final[0].size != symbol.size):
+            raise PackError(f"function proxy raw/final input geometry differs: {name}")
+        start, end = final[0].value, final[0].value + symbol.size
+        if any(mi is not inputs[0] and mi.size and mi.addr < end and start < mi.addr + mi.size
+               for mi in info["inputs"]):
+            raise PackError(f"function proxy has overlapping final input ownership: {name}")
+        return obj, symbol
 
     def export_row(self, t, base):
         """The ORT row a named target is exported through, or None."""

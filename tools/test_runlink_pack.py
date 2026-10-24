@@ -1101,6 +1101,83 @@ class DataOnlyProducerDiscoveryTests(unittest.TestCase):
                 call()
 
 
+class FunctionProxyAuthorityTests(unittest.TestCase):
+    def provider(self, *, raw_type=FUNC, raw_size=4, raw_bind=GLOBAL, raw_value=4, raw_addr=0,
+                 final_type=FUNC, final_size=4, final_value=None,
+                 final_section=".overlay_001", map_size=8, map_section=".overlay_001"):
+        self.name = "func_overlay_099_F0001234_00000000"
+        self.proxy = self.name + "Reloc"
+        raw = rp.Elf("raw/provider.o", ObjBuilder().section(".text", words(0, 0), addr=raw_addr).sym(
+            self.name, raw_value, raw_size, raw_bind, raw_type, ".text").build())
+        obj = rp.ObjRef(1, raw.path, "overlays/o001/provider", 0x20, 8, "c", raw)
+        symbol = next(s for s in raw.symbols if s.name == self.name)
+        final = rp.Elf("final", ObjBuilder().section(".overlay_001", bytes(0x30),
+            addr=rp.OVERLAY_VMA).sym(self.name,
+                rp.OVERLAY_VMA + 0x24 if final_value is None else final_value,
+                final_size, GLOBAL, final_type, final_section).build())
+        self.definitions = {self.name: [(obj, symbol)]}
+        item = rp.MapInput(map_section, ".text", rp.OVERLAY_VMA + 0x20, map_size,
+                           "build/src/overlays/o001/provider.c.o")
+        self.world = SimpleNamespace(need_raw=True,
+            layout=rp.ResidentLayout(TB, DB, BB, BE), defs=lambda: self.definitions,
+            _guarded_data_objects={}, module_info={1: {"inputs": [item]}},
+            by_name={self.name: [s for s in final.symbols if s.name == self.name]})
+        return rp.Resolver(self.world, rp.OrtNames([], {}))
+
+    def test_proxy_uses_actual_qualified_function_not_embedded_module_or_coordinates(self):
+        resolver = self.provider()
+        target = resolver.resolve_name(self.proxy)
+        self.assertEqual(target.route, "source-function-proxy")
+        self.assertEqual(resolver.target_base(target), ("ov", 1, 0x24))
+        self.assertEqual(target.obj.source, "overlays/o001/provider")
+
+    def test_present_invalid_function_never_falls_back_to_coordinates(self):
+        for arguments in ({"raw_type": OBJECT}, {"raw_size": 0}, {"raw_bind": 2},
+                          {"raw_size": 8},
+                          {"raw_value": 5, "raw_size": 1, "final_size": 1,
+                           "final_value": rp.OVERLAY_VMA + 0x25},
+                          {"raw_size": 1, "final_size": 1}, {"raw_addr": 4}):
+            with self.subTest(arguments=arguments):
+                resolver = self.provider(**arguments)
+                with self.assertRaisesRegex(rp.PackError, "bounded real function"):
+                    resolver.resolve_name(self.proxy)
+
+    def test_ambiguous_function_definitions_refuse(self):
+        resolver = self.provider()
+        self.definitions[self.name] *= 2
+        with self.assertRaisesRegex(rp.PackError, "ambiguous function proxy"):
+            resolver.resolve_name(self.proxy)
+
+    def test_stale_or_wrong_module_final_geometry_refuses(self):
+        for arguments in ({"final_size": 8}, {"final_value": rp.OVERLAY_VMA + 0x28},
+                          {"final_type": OBJECT}, {"final_section": "ABS"},
+                          {"map_size": 4}, {"map_section": ".overlay_002"}):
+            with self.subTest(arguments=arguments):
+                resolver = self.provider(**arguments)
+                with self.assertRaisesRegex(rp.PackError, "raw/final input geometry"):
+                    resolver.resolve_name(self.proxy)
+
+    def test_duplicate_or_overlapping_input_ownership_refuses(self):
+        resolver = self.provider()
+        self.world.module_info[1]["inputs"] *= 2
+        with self.assertRaisesRegex(rp.PackError, "raw/final input geometry"):
+            resolver.resolve_name(self.proxy)
+        resolver = self.provider()
+        self.world.module_info[1]["inputs"].append(rp.MapInput(".overlay_001", ".text",
+            rp.OVERLAY_VMA + 0x24, 4, "build/src/overlays/o001/other.c.o"))
+        with self.assertRaisesRegex(rp.PackError, "overlapping final input"):
+            resolver.resolve_name(self.proxy)
+
+    def test_absent_definition_remains_visibly_compatibility_after_cache_refresh(self):
+        resolver = self.provider()
+        self.assertEqual(resolver.resolve_name(self.proxy).route, "source-function-proxy")
+        self.definitions.clear()
+        self.world._guarded_data_objects = {}  # successful catalogue revalidation
+        target = resolver.resolve_name(self.proxy)
+        self.assertEqual(target.route, "generated-proxy")
+        self.assertEqual(resolver.target_base(target), ("ov", 99, 0x1234))
+
+
 class HeldDataCaptureTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

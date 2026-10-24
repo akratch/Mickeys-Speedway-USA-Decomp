@@ -159,6 +159,13 @@ identities and actual source-linked storage placement must also be closed.
 Existing exact matching proofs are unchanged, and no per-site audit ledger is
 published here.
 
+Generated function proxies with an exact, unique sized global raw function
+definition now derive their target from that definition and its verified linked
+input, rather than numeric name fields. An absent definition remains explicitly
+on the `generated-proxy` compatibility route. Present but invalid or ambiguous
+definitions refuse. This narrow authority closure does not turn the remaining
+compatibility records or retained storage into source-independent generation.
+
 Inputs are snapshotted before a fresh pack and checked again before publication.
 Files are staged first; publication invalidates the old completion marker,
 replaces payloads, rechecks inputs, and writes `manifest.json` last. A later

@@ -74,8 +74,10 @@ cleanup as the saved return address and initializes FP status. Context, thread,
 queue and stack lifetimes are coupled; a host pointer-sized `OSThread` overlay is
 not an established representation. The [exception/scheduler audit](exception-scheduler-contracts.md)
 proves the conditional `0x230` context extent and cleanup nonreturn path. It
-also identifies the short C-view/VI-backing gap, real negative-ID audio mode
-and optional hook continuations that still require reconciliation.
+also measures VI live stack words inside the conditional FP image. Actual
+FP-used save reachability, the real negative-ID audio mode and optional hook
+continuations still require reconciliation. Adjacency is not a storage or
+safety proof.
 
 **The two Rare interrupt wrappers are not SDK aliases.** The
 [symbol evidence](../symbol_addrs.us.txt#L397) says the SDK disable/

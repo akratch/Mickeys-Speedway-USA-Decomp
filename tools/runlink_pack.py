@@ -3569,6 +3569,321 @@ def cmd_region(args):
     return 0
 
 
+# Explicit edited complete-module route. Retail World/Resolver remain unchanged.
+# The caller must authenticate fresh compiler/link/source receipts and hold all
+# loaded inputs through edited publication; there is no arbitrary-object CLI.
+from runlink import codec as edited_codec, rules as edited_rules
+from runlink.elf import STT_OBJECT
+
+EDITED_SECTIONS = ('.text', '.data', '.rodata', '.bss')
+EDITED_ABI = {'.reginfo': (0x70000006, 24, 4), '.MIPS.abiflags': (0x7000002a, 24, 8)}
+
+def edited_require(condition, message):
+    if not condition:
+        raise PackError(message)
+
+def edited_sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+def edited_check_sections(elf, *, linked=False):
+    edited_require(struct.unpack_from('>HH', elf.data, 16) == (1, 8), 'not MIPS ET_REL')
+    seen = set()
+    for section in elf.sections:
+        if not section['flags'] & 2:
+            continue
+        name = section['name']
+        edited_require(name not in seen, 'duplicate allocated section: ' + name)
+        seen.add(name)
+        align = section['align']
+        edited_require(align > 0 and align & (align - 1) == 0 and align <= 16,
+                'unsupported allocation alignment: ' + name)
+        edited_require(section['addr'] == 0, 'nonzero module section base: ' + name)
+        if name in EDITED_ABI:
+            kind, size, alignment = EDITED_ABI[name]
+            edited_require((section['type'], section['size'], section['flags'], align)
+                    == (kind, size, 2, alignment), 'invalid EDITED_ABI metadata: ' + name)
+            continue
+        edited_require(name in EDITED_SECTIONS, 'unknown allocated program section: ' + name)
+        kind = 8 if name == '.bss' else 1
+        flags = 6 if name == '.text' else 2 if name == '.rodata' else 3
+        edited_require(section['type'] == kind and section['flags'] == flags,
+                'invalid program section type/flags: ' + name)
+        edited_require(not linked or not elf.rels(name), 'ordinary link left relocations')
+    return {'.text': 0, '.data': elf.size('.text'),
+            '.rodata': elf.size('.text') + elf.size('.data'),
+            '.bss': sum(elf.size(name) for name in EDITED_SECTIONS[:-1])}
+
+def edited_prepare_object(raw, linked):
+    edited_check_sections(raw)
+    bases = edited_check_sections(linked, linked=True)
+    for name in EDITED_SECTIONS[:-1]:
+        edited_require(raw.size(name) == linked.size(name), 'ordinary initialized size changed')
+    for name, base in bases.items():
+        section = linked.section(name)
+        if section:
+            edited_require(base % section['align'] == 0, 'runtime section alignment: ' + name)
+    obj = {'raw': raw, 'linked': linked, 'bases': bases}
+    for symbol in raw.symbols:
+        if symbol.shndx == SHN_COMMON:
+            edited_symbol_target(obj, symbol)
+    return obj
+
+def edited_symbol_target(obj, symbol):
+    raw, linked = obj['raw'], obj['linked']
+    if symbol.shndx == SHN_COMMON:
+        edited_require(symbol.bind == STB_GLOBAL and symbol.type == STT_OBJECT
+                and symbol.size > 0 and symbol.value > 0
+                and symbol.value & (symbol.value - 1) == 0, 'unsupported COMMON declaration')
+        matches = [s for s in linked.symbols if s.name == symbol.name
+                   and s.bind == STB_GLOBAL and s.shndx != SHN_UNDEF]
+        edited_require(len(matches) == 1, 'COMMON lacks one actual allocation: ' + symbol.name)
+        actual = matches[0]
+        edited_require(actual.section == '.bss' and actual.type == STT_OBJECT
+                and actual.size == symbol.size and actual.value >= 0
+                and actual.value % symbol.value == 0
+                and actual.value + actual.size <= linked.size('.bss'),
+                'COMMON allocation differs: ' + symbol.name)
+        return '.bss', actual.value, actual.size, STT_OBJECT
+    edited_require(symbol.shndx not in (SHN_UNDEF, SHN_ABS)
+            and symbol.section in EDITED_SECTIONS, 'target has no actual allocated definition')
+    edited_require(symbol.type in (STT_FUNC, STT_OBJECT) and symbol.size > 0,
+            'unsupported unsized/nonobject definition: ' + symbol.name)
+    edited_require(symbol.value >= 0 and symbol.value + symbol.size <= raw.size(symbol.section),
+            'source object extent escapes allocation: ' + symbol.name)
+    matches = [s for s in linked.symbols if s.name == symbol.name
+               and s.bind == symbol.bind and s.shndx != SHN_UNDEF]
+    edited_require(len(matches) == 1
+            and (matches[0].section, matches[0].value, matches[0].size, matches[0].type)
+            == (symbol.section, symbol.value, symbol.size, symbol.type), 'ordinary symbol changed: ' + symbol.name)
+    if symbol.type == STT_FUNC:
+        edited_require(symbol.section == '.text' and symbol.value % 4 == symbol.size % 4 == 0,
+                'invalid actual function extent')
+    return symbol.section, symbol.value, symbol.size, symbol.type
+
+def edited_global_target(obj, name):
+    choices = [s for s in obj['raw'].symbols if s.name == name and s.bind == STB_GLOBAL
+               and s.shndx != SHN_UNDEF]
+    edited_require(len(choices) == 1, 'export lacks one original global definition: ' + name)
+    return edited_symbol_target(obj, choices[0])
+
+def edited_object_operand(target, addend):
+    section, value, size, kind = target
+    # Address identity bound, not a proof of dynamic C accesses/lifetime.
+    edited_require(0 <= addend < size, 'one-past/out-of-object operand is unsupported')
+    if kind == STT_FUNC:
+        edited_require(addend == 0, 'interior function address is unsupported')
+    return section, value + addend
+
+def edited_section_operand(obj, rel, addend, section, rels):
+    raw = obj['raw']
+    offset = rel.sym.value + addend
+    if rel.sym.section == '.text':
+        choices = [s for s in raw.symbols if s.section == '.text' and s.type == STT_FUNC
+                   and s.size > 0 and s.value == offset]
+        edited_require(len(choices) == 1, 'section operand lacks actual function entry')
+        edited_symbol_target(obj, choices[0])
+        return '.text', offset, STT_FUNC, choices[0].size
+    # Closed current compiler f32-pool case: real four-byte LWC1 read object.
+    edited_require(rel.sym.section == '.rodata' and section == '.text'
+            and rel.type in (R_MIPS_HI16, R_MIPS_LO16)
+            and not raw.rels('.rodata'), 'section operand lacks source-object boundary proof')
+    index = rels.index(rel)
+    if rel.type == R_MIPS_HI16:
+        lows = [r for r in rels[index + 1:] if r.type == R_MIPS_LO16
+                and r.sym.index == rel.sym.index]
+        edited_require(bool(lows), 'pool high lacks low')
+        high, low = rel, lows[0]
+    else:
+        highs = [r for r in rels[:index] if r.type == R_MIPS_HI16
+                 and r.sym.index == rel.sym.index]
+        edited_require(bool(highs), 'pool low lacks high')
+        high, low = highs[-1], rel
+    text = raw.bytes_of('.text')
+    hiword, loword = u32(text, high.offset), u32(text, low.offset)
+    edited_require(hiword >> 26 == 15 and loword >> 26 == 49
+            and (hiword >> 16) & 31 == (loword >> 21) & 31,
+            'not an actual source compiler f32-pool load')
+    edited_require(offset % 4 == 0 and 0 <= offset and offset + 4 <= raw.size('.rodata'),
+            'f32-pool read escapes actual cell allocation')
+    return '.rodata', offset, STT_OBJECT, 4
+
+def edited_provider_context(root, elf_path, map_path):
+    elf = Elf(elf_path)
+    edited_require(struct.unpack_from('>HH', elf.data, 16) == (1, 8), 'provider must be ordinary ld-r')
+    map_data = Path(map_path).read_bytes()
+    mapping = parse_map(map_path, map_data)
+    edited_require(not any('overlay_' in m.outsec or '/overlays/' in m.file for m in mapping),
+            'provider map has module inputs')
+    holds = {Path(elf_path): hashlib.sha256(elf.data).hexdigest(),
+             Path(map_path): hashlib.sha256(map_data).hexdigest()}
+    return {'root': root, 'elf': elf, 'map': mapping, 'loaded': {}, 'holds': holds, 'witnesses': {}}
+
+def edited_resident_function(context, name):
+    elf, mapping = context['elf'], context['map']
+    finals = [s for s in elf.symbols if s.name == name and s.bind == STB_GLOBAL
+              and s.shndx != SHN_UNDEF]
+    edited_require(len(finals) == 1, 'resident target missing/ambiguous: ' + name)
+    final = finals[0]
+    output = elf.section(final.section)
+    edited_require(final.type == STT_FUNC and final.size > 0 and output
+            and output['type'] == 1 and output['flags'] & 6 == 6,
+            'resident target is not an allocated sized FUNCTION: ' + name)
+    choices = []
+    for item in mapping:
+        if (item.outsec not in ('.main', '.entry') or item.insec != '.text'
+                or not item.size or not item.file.endswith('.o')
+                or not item.file.startswith(('build/src/', 'build/asm/'))):
+            continue
+        path = context['root'] / item.file
+        if path not in context['loaded']:
+            context['loaded'][path] = Elf(path)
+            context['holds'][path] = hashlib.sha256(context['loaded'][path].data).hexdigest()
+        source = context['loaded'][path]
+        for symbol in source.symbols:
+            if (symbol.name == name and symbol.bind == STB_GLOBAL
+                    and symbol.shndx not in (SHN_UNDEF, SHN_ABS, SHN_COMMON)
+                    and symbol.section == '.text'):
+                choices.append((item, source, symbol))
+    edited_require(len(choices) == 1, 'resident target lacks unique source definition: ' + name)
+    item, source, symbol = choices[0]
+    text = source.section('.text')
+    address = output['addr'] + final.value
+    edited_require(symbol.type == STT_FUNC and symbol.size == final.size and symbol.size > 0
+            and symbol.value % 4 == symbol.size % 4 == item.addr % 4 == address % 4 == 0,
+            'resident function geometry/alignment differs')
+    edited_require(text['type'] == 1 and text['flags'] == 6 and text['addr'] == 0
+            and symbol.value + symbol.size <= min(text['size'], item.size)
+            and final.section == item.outsec and address == item.addr + symbol.value
+            and final.value + final.size <= output['size'], 'resident map/extent differs')
+    edited_require(not any(other is not item and other.outsec == item.outsec and other.size
+                    and other.addr < address + symbol.size and address < other.addr + other.size
+                    for other in mapping), 'resident function overlaps another input')
+    context['witnesses'][name] = {'input': item.file, 'size': symbol.size, 'address': address}
+    return ('res', address), ('.text', 0, symbol.size, STT_FUNC)
+
+def edited_declarations(exports, selected):
+    names, rows, identities = set(), set(), {}
+    for number, declaration in selected.items():
+        edited_require(type(number) is int and 0 < number < 0xffc, 'reserved/out-of-range module identity')
+        edited_require(set(declaration['entries']) == {'init', 'resume'}, 'incomplete entry declaration')
+        edited_require(set(declaration.get('kinds', {})) == set(declaration['exports'])
+                       and all(kind in ('function', 'object') for kind in declaration['kinds'].values()),
+                       'incomplete/unsupported export owner kinds')
+        for name in declaration['exports']:
+            edited_require(name not in names and name in exports.by_name, 'duplicate/undeclared export name')
+            row = exports.by_name[name]
+            edited_require(type(row) is int and 0 <= row < len(exports.rows) and row not in rows,
+                    'duplicate/out-of-range export row')
+            names.add(name)
+            rows.add(row)
+            identities[name] = number
+    return identities
+
+def edited_caller(obj, section, offset):
+    if section != '.text':
+        return section + ' input'
+    matches = [s for s in obj['raw'].symbols if s.type == STT_FUNC and s.size
+               and s.section == '.text' and s.value <= offset < s.value + s.size]
+    edited_require(len(matches) == 1, 'reference lacks one actual source edited_caller')
+    return matches[0].name
+
+def edited_module_records(number, objects, selected, exports, provider):
+    owners = edited_declarations(exports, selected)
+    obj, declaration = objects[number], selected[number]
+    bases = obj['bases']
+    derived, export_witnesses = {}, {}
+    for name in declaration['exports']:
+        target = edited_global_target(obj, name)
+        section, value, size, kind = target
+        edited_require(declaration['kinds'][name] == ('function' if kind == STT_FUNC else 'object'),
+                       'export owner kind differs: ' + name)
+        identity = ('ov', number, bases[section] + value)
+        edited_require(identity not in derived.values(), 'duplicate selected export identity')
+        edited_codec.OrtRow(number, identity[2]).encode()  # existing20-bit refusal
+        derived[exports.by_name[name]] = identity
+        export_witnesses[name] = {'identity': identity, 'section': section, 'size': size, 'type': kind}
+    entry_offsets = []
+    for role in ('init', 'resume'):
+        name = declaration['entries'][role]
+        if name is None:
+            entry_offsets.append(-1)
+            continue
+        section, value, size, kind = edited_global_target(obj, name)
+        edited_require(section == '.text' and kind == STT_FUNC, 'entry is not actual text function')
+        entry_offsets.append(value)
+    refs, joins, callers = [], [], {}
+    for section in ('.text', '.rodata', '.data'):
+        rels = obj['raw'].rels(section)
+        for rel in rels:
+            edited_require(rel.type in TYPE_NAMES and rel.offset >= 0 and rel.offset % 4 == 0
+                           and rel.offset + 4 <= obj['raw'].size(section),
+                           'selected raw relocation has unsupported type/full-word extent')
+        for rel, addend in zip(rels, in_place_addends(obj['raw'], section, rels)):
+            source_caller = edited_caller(obj, section, rel.offset)
+            label = f'module {number} {source_caller} {section}+{rel.offset:#x}'
+            edited_require(rel.type in TYPE_NAMES and rel.offset % 4 == 0
+                    and rel.offset + 4 <= obj['raw'].size(section), label + ': invalid relocation extent/type')
+            symbol, row = rel.sym, None
+            if symbol.shndx == SHN_UNDEF:
+                edited_require(symbol.name in exports.by_name, label + ': undeclared import ' + symbol.name)
+                row = exports.by_name[symbol.name]
+                owner = owners.get(symbol.name)
+                if owner is not None:
+                    edited_require(owner in objects, label + f': missing selected module {owner} target {symbol.name}')
+                    target = edited_global_target(objects[owner], symbol.name)
+                    kind, offset = edited_object_operand(target, addend)
+                    base = ('ov', owner, objects[owner]['bases'][target[0]] + target[1])
+                else:
+                    try:
+                        base, target = edited_resident_function(provider, symbol.name)
+                    except PackError as error:
+                        raise PackError(label + ': ' + str(error)) from error
+                    kind, offset = edited_object_operand(target, addend)
+            elif symbol.type == STT_SECTION:
+                kind, offset, typ, size = edited_section_operand(obj, rel, addend, section, rels)
+                target = (kind, offset, size, typ)
+                base = ('ov', number, bases[kind] + symbol.value)
+            else:
+                target = edited_symbol_target(obj, symbol)
+                kind, offset = edited_object_operand(target, addend)
+                base = ('ov', number, bases[target[0]] + target[1])
+                if symbol.bind == STB_GLOBAL and owners.get(symbol.name) == number:
+                    row = exports.by_name[symbol.name]
+            if rel.type == R_MIPS_26:
+                edited_require(target[3] == STT_FUNC and addend == 0 or
+                        symbol.type == STT_SECTION and target[3] == STT_FUNC,
+                        label + ': executable relocation lacks actual function entry')
+            full = edited_rules.ident_add(base, addend)
+            site = bases[section] + rel.offset
+            refs.append(edited_rules.Ref(section, site, rel.type, base=base, full=full, row=row,
+                                  target_section=kind, name=symbol.name, route='strict-actual-definition'))
+            callers[(number, site, rel.type)] = source_caller
+            joins.append({'raw_order': len(joins), 'section': section, 'offset': rel.offset,
+                          'type': rel.type, 'name': symbol.name, 'addend': addend,
+                          'base': base, 'full': full, 'row': row, 'edited_caller': source_caller,
+                          'target_witness': {'section': target[0], 'value': target[1],
+                                             'size': target[2], 'type': target[3]}})
+    header = edited_codec.Header(text=obj['linked'].size('.text'),
+                          data=obj['linked'].size('.data') + obj['linked'].size('.rodata'),
+                          bss=obj['linked'].size('.bss'), init=entry_offsets[0], resume=entry_offsets[1])
+    generated = edited_rules.build_module(number, refs, header,
+        b''.join(obj['linked'].bytes_of(name) for name in EDITED_SECTIONS[:-1]), bases['.rodata'])
+    edited_require(not generated.unresolved and not generated.notes, 'unresolved/malformed source records')
+    module = edited_codec.Module(number, header, generated.image,
+                          [g.rec for g in generated.table1], [g.rec for g in generated.table2])
+    module = edited_codec.layout_modules([module])[0]
+    edited_require(module.header.text + module.header.data + module.header.bss + module.header.rel1 < 1 << 31,
+            'allocation overflow including RT1')
+    edited_require(module.header.rel1 < 1 << 15 and module.header.rel2 < 1 << 16, 'runtime table size overflow')
+    module.header.encode()
+    for record in module.table1 + module.table2:
+        edited_require(record.site + 4 <= len(module.image), 'generated full relocation word escapes body')
+        edited_require(record.op != edited_codec.OP_SYMBOL or record.symidx < len(exports.rows), 'runtime export row escapes declaration')
+        record.encode()
+    return {'module': module, 'refs': refs, 'joins': joins, 'callers': callers,
+            'exports': derived, 'export_witnesses': export_witnesses}
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0],
                                  formatter_class=argparse.RawDescriptionHelpFormatter)

@@ -2671,3 +2671,59 @@ residual. The intermediate masked-zero result was not credited until canonical
 linking and runtime-table identity checks passed. The
 [function handoff](matching-triage-handoffs/overlay2ChooseBoundary.md) records
 measured draw differences, controls, semantic limits and promotion evidence.
+
+### Opt-in source-selected edited build
+
+`gmake edited-runlink` builds the current complete overlay75 through a separate
+`build/edited-runlink` graph. It freshly compiles its C, restores ordinary static
+symbol metadata, links the four module sections at independent zero bases, and
+derives runtime records from the original relocation order and stored addends.
+The final ordinary link consumes the actual module ELF sections and individual
+generated metadata wrappers. It does not consume a whole-module program blob.
+This path is explicitly nonmatching; the default retail producer still requires
+zero differences and exact bootstrap/final equality.
+
+The initial deliberate declaration is
+`tests/fixtures/editable_layout/manifest.json`: source/module identity, stable
+export names and rows, and entry names. The selected build admits only complete75
+and the controlled tail108. Its generated declaration also distinguishes actual
+function and object exports; offsets, section sizes, BSS capacity and relocation
+sites are derived from the fresh compiler and ordinary linker, never declared.
+`EDITED_VARIANT=peer` exercises genuine existing-function, data, BSS, export and
+peer growth using the existing C fixtures. `EDITED_VARIANT=unreferenced` removes an
+unreferenced108, prunes its declarations and freshly rebuilds the surviving source.
+Live references prevent removal and identify the actual caller. These variants
+are build diagnostics, not game execution or an editable native port.
+
+Resident/provider input production uses the existing ordinary Make recipes with
+an input-only Splat linker projection. That projection initializes only the
+resident configuration for its provider script, reads no target ROM or symbol/
+relocation files, and requires no full extraction stamp or bootstrap. The final
+outside script omits old selected configuration before segment initialization;
+a fresh selected linker fragment is generated separately. Source/CPP, recipes,
+tools, actual loaded object/map bytes and publication snapshots are held. A warm
+invocation accepts only a current validated receipt; missing or changed inputs
+rebuild in a new preserved run, and stale outputs cannot acquire fresh proof by
+being rehashed. `EDITED_OUT` selects a separate output directory below
+`build/edited-runlink`. `EDITED_OUTSIDE_ROM` can select an explicit outside
+compatibility image; omitted selected header/ORT cells and body/record ranges
+are not interpreted. Current source75 is reconstructed independently of them.
+
+This is selected-module input independence, not whole-image source independence.
+All unselected module payloads, headers, records and ORT identities remain named
+retained compatibility authority, as do resident homes and extracted resident
+ASM/assets. The receipt reports that complete outside record borrowing separately
+from the canonical packer's direct residual ledger. Generated metadata input
+counts describe the final link and do not erase this borrowing. Outside objects
+and extracted files must still be available; the input-only projection is not a
+new asset extractor. Source75 may grow in edited mode; a retail-exact control is
+an acceptance observation, not an allow-difference option on the retail target.
+
+The stronger selected identity route accepts allocated, uniquely qualified sized
+function/object definitions and authenticated ordinary allocations, including
+actual peer BSS. Resident imports are currently sized allocated functions only.
+ABS and encoded-coordinate spellings are not authority. Unsized objects, unknown
+allocated program sections, unsupported relocations, unproved section operands,
+one-past/end operands and resident DATA/BSS imports refuse. The narrow compiler
+float-pool case proves the actual full-width load. Broader module layouts, new
+resident geometry and final zero-borrowing completion remain separate work.

@@ -23,6 +23,12 @@ dataclasses below; nothing reads paths except :func:`read_rom`.
 
 from __future__ import annotations
 
+import hashlib
+from pathlib import Path
+
+# Bind source when this module is loaded, not on a later proof call.
+LOADED_SOURCE = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
 import struct
 from dataclasses import dataclass, field, replace
 
@@ -159,16 +165,23 @@ def _records(data, start, size, what):
     return [Record.decode(data, start + i) for i in range(0, size, RECORD_SIZE)]
 
 
-def decode(rom: bytes, cfg) -> Tables:
-    """Decode every table the config locates."""
+def decode(rom: bytes, cfg, *, exclude_modules=(), exclude_rows=()) -> Tables:
+    """Decode tables; an edited outside catalog may omit selected inputs.
+
+    Omitted header cells/ORT rows are never interpreted, and omitted module
+    image/table ranges are never sliced. Defaults retain the exact retail API.
+    """
     main_rom = cfg.main_table_rom
     count = struct.unpack_from(">I", rom, main_rom)[0]
     if 4 + count * RECORD_SIZE > cfg.main_table_block:
         raise FormatError(f"main table count {count} overflows its {cfg.main_table_block:#x}-byte block")
     main = _records(rom, main_rom + 4, count * RECORD_SIZE, "main table")
-    ort = [OrtRow.decode(rom, cfg.ort_rom + 4 * i) for i in range(cfg.ort_count)]
+    ort = [None if i in exclude_rows else OrtRow.decode(rom, cfg.ort_rom + 4 * i)
+           for i in range(cfg.ort_count)]
     modules = []
     for i in range(cfg.module_count):
+        if i + 1 in exclude_modules:
+            continue
         h = Header.decode(rom, cfg.headers_rom + HEADER_SIZE * i)
         start = cfg.modules_rom + h.rom
         image = rom[start:start + h.text + h.data]

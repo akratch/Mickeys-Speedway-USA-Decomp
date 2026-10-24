@@ -196,9 +196,10 @@ extern RcpTextureNode D_o058_5B40[];
 extern RcpTextureNode D_o058_5B60[];
 extern RcpTextureNode D_o058_5B80[];
 extern RcpTextureNode D_o058_5BA0[];
-extern u8 gOverlay58InlineResource[];
-extern void *gOverlay58OptionalResource;
-extern void overlay58ReleaseReloc(void *resource);
+/* Tier B: the actual result asset list and looping-sound handle have
+ * distinct existing C owners and distinct release providers. */
+extern s16 o58ResultAssetIds_o058Reloc[32];
+extern void *o58TransitionSound_o058Reloc;
 extern s16 D_B8[];
 extern s16 D_1A0[];
 extern u8 D_2A8[];

@@ -199,10 +199,10 @@ void func_overlay_058_F0000000_18AF1E8(void) {
 void overlay58ReleaseResources(void) {
     void *resource;
 
-    overlay58ReleaseReloc(gOverlay58InlineResource);
-    resource = gOverlay58OptionalResource;
+    freeFrontEndList(o58ResultAssetIds_o058Reloc);
+    resource = o58TransitionSound_o058Reloc;
     if (resource != NULL) {
-        overlay58ReleaseReloc(resource);
+        amSndStop(resource);
     }
 }
 

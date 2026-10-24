@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Restore compiler-recorded static function and BSS symbols in an IDO object.
+"""Restore compiler-recorded static function and storage symbols in an IDO object.
 
 IDO writes no ELF definition for a ``static`` function. Its only trace in the
 symbol table is a sized ``UND`` entry when the function was forward-declared,
@@ -17,8 +17,9 @@ For each static ``.text`` procedure the tool writes a ``STB_LOCAL``
 the same name. A size-0 local function asm-processor's static conversion
 already added (a TU with ``GLOBAL_ASM``) is given its size instead. Only the
 symbol table, the string table and the symbol indices in relocation records
-change: no section byte, relocation type, offset or addend. Compiler-recorded, unambiguous file-scope ``stStatic/scBss`` names also
-receive local ``STT_OBJECT`` anchors within the real NOBITS section. These
+change: no section byte, relocation type, offset or addend. Compiler-recorded, unambiguous file-scope ``stStatic/scBss`` and
+``stStatic/scData`` names also receive local ``STT_OBJECT`` anchors within
+the real NOBITS BSS or writable PROGBITS DATA section. These
 have size zero: the debug records establish addresses, not allocation extents.
 Nested static variables and unemitted storage classes are not restored.
 An object without missing static definitions is left byte-identical, and a
@@ -34,11 +35,11 @@ import re
 import struct
 import sys
 
-SHT_SYMTAB, SHT_RELA, SHT_REL, SHT_NOBITS = 2, 4, 9, 8
+SHT_PROGBITS, SHT_SYMTAB, SHT_RELA, SHT_REL, SHT_NOBITS = 1, 2, 4, 9, 8
 SHN_UNDEF = 0
 STB_LOCAL, STT_NOTYPE, STT_OBJECT, STT_FUNC = 0, 0, 1, 2
 ST_STATIC, ST_PROC, ST_BLOCK, ST_END, ST_FILE, ST_STATIC_PROC = 2, 6, 7, 8, 11, 14
-SC_TEXT, SC_BSS = 1, 3
+SC_TEXT, SC_DATA, SC_BSS = 1, 2, 3
 HDRR_MAGIC = 0x7009
 
 
@@ -111,35 +112,53 @@ def procedures(data: bytes, mdebug: list) -> dict[str, tuple[int, int, bool]]:
     return found
 
 
-def bss_anchors(data: bytes, mdebug: list) -> dict[str, int]:
-    """Unambiguous file-scope stStatic/scBss names and compiler offsets only."""
+def _storage_anchors(data: bytes, mdebug: list, storage_class: int,
+                     label: str) -> dict[str, int]:
+    """File-scope static names and compiler offsets, without inferred extents."""
     found: dict[str, int] = {}
     occurrences: dict[str, int] = {}
-    for rows in _debug_files(data, mdebug):
-        if not any(st == ST_STATIC and sc == SC_BSS for _, _, st, sc in rows):
+    files = list(_debug_files(data, mdebug))
+    if storage_class == SC_DATA:
+        for rows in files:
+            for name, _value, st, _sc in rows:
+                if st == ST_STATIC:
+                    occurrences[name] = occurrences.get(name, 0) + 1
+    for rows in files:
+        if not any(st == ST_STATIC and sc == storage_class for _, _, st, sc in rows):
             continue
         scopes = []
         for name, value, st, sc in rows:
-            if st == ST_STATIC and sc == SC_BSS:
+            if st == ST_STATIC and sc == storage_class and storage_class != SC_DATA:
                 occurrences[name] = occurrences.get(name, 0) + 1
+            if st == ST_STATIC and sc == storage_class:
                 if (len(scopes) == 1 and scopes[0][0] == ST_FILE
                         and re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*", name)):
                     if name in found:
-                        raise Failure(f"static BSS anchor {name} is recorded twice")
+                        raise Failure(f"static {label} anchor {name} is recorded twice")
                     found[name] = value
             if sc == SC_TEXT:
                 if st in (ST_FILE, ST_PROC, ST_STATIC_PROC, ST_BLOCK):
                     scopes.append((st, name))
                 elif st == ST_END:
                     if not scopes or scopes[-1][1] != name:
-                        raise Failure("ambiguous .mdebug scope for static BSS anchors")
+                        raise Failure(f"ambiguous .mdebug scope for static {label} anchors")
                     scopes.pop()
         if scopes:
-            raise Failure("unclosed .mdebug scope for static BSS anchors")
+            raise Failure(f"unclosed .mdebug scope for static {label} anchors")
     for name in found:
         if occurrences[name] != 1:
-            raise Failure(f"static BSS anchor {name} has ambiguous nested names")
+            raise Failure(f"static {label} anchor {name} has ambiguous nested names")
     return found
+
+
+def bss_anchors(data: bytes, mdebug: list) -> dict[str, int]:
+    """Unambiguous file-scope stStatic/scBss names and compiler offsets only."""
+    return _storage_anchors(data, mdebug, SC_BSS, "BSS")
+
+
+def data_anchors(data: bytes, mdebug: list) -> dict[str, int]:
+    """Unambiguous file-scope stStatic/scData names and compiler offsets only."""
+    return _storage_anchors(data, mdebug, SC_DATA, "DATA")
 
 
 def _symbols(data: bytes, symtab: list) -> list[list]:
@@ -148,30 +167,44 @@ def _symbols(data: bytes, symtab: list) -> list[list]:
 
 
 def add_static_symbols(data: bytes) -> tuple[bytes, list[str]]:
-    """Return (new object bytes, names given local definitions or unsized BSS anchors)."""
+    """Return (new object bytes, names given local definitions or unsized storage anchors)."""
     sections = _sections(data)
     by_name = {section[10]: index for index, section in enumerate(sections)}
     if ".mdebug" not in by_name or ".text" not in by_name:
         return data, []
     procs = procedures(data, sections[by_name[".mdebug"]])
     statics = {name: row for name, row in procs.items() if row[2]}
-    anchors = bss_anchors(data, sections[by_name[".mdebug"]])
+    storage = (("BSS", ".bss", SHT_NOBITS, bss_anchors(data, sections[by_name[".mdebug"]])),
+               ("DATA", ".data", SHT_PROGBITS, data_anchors(data, sections[by_name[".mdebug"]])))
+    anchors: dict[str, int] = {}
+    anchor_sections: dict[str, int] = {}
+    anchor_labels: dict[str, str] = {}
+    for label, section_name, section_type, found in storage:
+        if not found:
+            continue
+        if anchors.keys() & found.keys():
+            raise Failure("static BSS and DATA anchor names collide")
+        if struct.unpack_from(">H", data, 0x10)[0] != 1:
+            raise Failure(f"static {label} anchors require a relocatable object")
+        if sum(section[10] == section_name for section in sections) != 1:
+            raise Failure(f"static {label} anchors require one unambiguous {section_name} section")
+        section_index = by_name[section_name]
+        section = sections[section_index]
+        if section[1] != section_type or not section[2] & 2:
+            kind = "NOBITS" if label == "BSS" else "PROGBITS"
+            raise Failure(f"static {label} anchors require an allocated {kind} {section_name} section")
+        if label == "DATA" and (section[3] != 0 or section[2] & 7 != 3):
+            raise Failure("static DATA anchors require zero-based writable nonexec .data")
+        for name, offset in found.items():
+            if not 0 <= offset < section[5]:
+                raise Failure(f"static {label} anchor {name} lies outside {section_name}")
+            anchors[name] = offset
+            anchor_sections[name] = section_index
+            anchor_labels[name] = label
     if not statics and not anchors:
         return data, []
     if statics.keys() & anchors.keys():
-        raise Failure("static procedure and BSS anchor names collide")
-    bss_index = by_name.get(".bss")
-    if anchors:
-        if struct.unpack_from(">H", data, 0x10)[0] != 1:
-            raise Failure("static BSS anchors require a relocatable object")
-        if sum(section[10] == ".bss" for section in sections) != 1:
-            raise Failure("static BSS anchors require one unambiguous .bss section")
-        if (bss_index is None or sections[bss_index][1] != SHT_NOBITS
-                or not sections[bss_index][2] & 2):
-            raise Failure("static BSS anchors require an allocated NOBITS .bss section")
-        for name, offset in anchors.items():
-            if not 0 <= offset < sections[bss_index][5]:
-                raise Failure(f"static BSS anchor {name} lies outside .bss")
+        raise Failure("static procedure and storage anchor names collide")
     text_index = by_name[".text"]
     text_size = sections[text_index][5]
     symtab_index = next(i for i, s in enumerate(sections) if s[1] == SHT_SYMTAB)
@@ -182,7 +215,7 @@ def add_static_symbols(data: bytes) -> tuple[bytes, list[str]]:
     names = [_cstring(strings, row[0]) for row in symbols]
     for name in anchors:
         if names.count(name) > 1:
-            raise Failure(f"static BSS anchor {name} conflicts with duplicate symbols")
+            raise Failure(f"static {anchor_labels[name]} anchor {name} conflicts with duplicate symbols")
 
     extents = []
     for name, row in zip(names, symbols):
@@ -231,10 +264,10 @@ def add_static_symbols(data: bytes) -> tuple[bytes, list[str]]:
             else:
                 raise Failure(f"static {name} conflicts with an existing symbol")
         elif name in anchors:
-            if (row[5] != bss_index or row[3] != STT_OBJECT
+            if (row[5] != anchor_sections[name] or row[3] != STT_OBJECT
                     or row[1] != anchors[name]
-                    or row[1] + row[2] > sections[bss_index][5]):
-                raise Failure(f"static BSS anchor {name} conflicts with an existing symbol")
+                    or row[1] + row[2] > sections[anchor_sections[name]][5]):
+                raise Failure(f"static {anchor_labels[name]} anchor {name} conflicts with an existing symbol")
             pending_anchors.pop(name)
         (locals_ if index < first_global else globals_).append((index, row))
     placeholders = {name: row[0] for name, row in zip(names, symbols)
@@ -253,7 +286,7 @@ def add_static_symbols(data: bytes) -> tuple[bytes, list[str]]:
         name_offset = len(strings)
         strings += name.encode("latin1") + b"\0"
         locals_.append((None, [name_offset, anchors[name], 0,
-                              STB_LOCAL << 4 | STT_OBJECT, 0, bss_index]))
+                              STB_LOCAL << 4 | STT_OBJECT, 0, anchor_sections[name]]))
         added.append(name)
     if not added:
         return data, []

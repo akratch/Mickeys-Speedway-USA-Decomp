@@ -282,6 +282,8 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
         (0x20C0, 0x2110, "overlay8TuningTables", ".data"),
         (0x2378, 0x2418, "overlay8MotionConstants", ".data"),
     ],
+    9: [(0x2D0, 0x300, "overlay9ParameterState", ".data"),
+        (0x300, 0x390, "overlay9CameraTables", ".data")],
     24: [(0x0, 0x10, "overlay_024", ".rodata")],
     25: [
         (0x0, 0x20, "overlay_025", ".data"),
@@ -324,6 +326,8 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     82: [(0x0, 0xA0, "overlay_082", ".rodata")],
 }
 DATA_ONLY_FIXED_DATA_SOURCES = {
+    (9, "overlay9ParameterState", ".data"),
+    (9, "overlay9CameraTables", ".data"),
     (48, "overlay48CreditScript", ".data"),
     (48, "overlay48CreditText", ".data"),
     (59, "overlay59Frames", ".data"),

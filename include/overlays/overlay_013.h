@@ -3,7 +3,9 @@
 
 #include "PR/ultratypes.h"
 
-/* One falling, fading sprite record; the module keeps 32 of them. */
+/* Tier B: the active walks establish 32 records with a 128-byte stride.
+ * pad00 and vertices retain incomplete byte-layout views; this does not
+ * establish the original field declarations or complete graphics format. */
 typedef struct Overlay13Record {
     u8 pad00[4];
     s16 field04;
@@ -51,10 +53,11 @@ extern void *gOverlay13Resource0;
 extern void *gOverlay13Resource1;
 extern Overlay13Resource *gOverlay13Resource2;
 extern s32 gOverlay13Enabled;
-extern s32 gOverlay13Active;
+extern s32 gOverlay13Active_o013Reloc;
 extern s32 gOverlay13ActiveCount;
 extern f32 gOverlay13Gravity;
-extern Overlay13Record gOverlay13Records[];
+/* Actual backing pool; this import retains the loader operand. */
+extern Overlay13Record gOverlay13Records_o013Reloc[32];
 extern u8 gOverlay13Output[];
 
 extern void *D_20;

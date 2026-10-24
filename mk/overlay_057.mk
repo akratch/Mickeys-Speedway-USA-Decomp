@@ -82,7 +82,7 @@ $(O57_DETAIL_COLOURS) $(O57_UNLOCK_LABELS) $(O57_MODE_TABLES): private PLAIN_DAT
 # genuine source/CPP arrays. Its loader RO base is the actual readonly input.
 O57_RESULT_LABELS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57ResultLabels.c.o
 $(O57_RESULT_LABELS): $(TOOLS_DIR)/trim_elf_section.py $(TOOLS_DIR)/proof_provenance.py $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57MenuLabels.c.o
-$(O57_RESULT_LABELS): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x2C --literal-array-end src/overlays/o057/overlay57ResultLabels.c
+$(O57_RESULT_LABELS): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x2C --literal-array-end src/overlays/o057/overlay57ResultLabels.c
 $(O57_RESULT_LABELS): private PLAIN_DATA_PROOF = 1
 $(O57_RESULT_LABELS): private PLAIN_DATA_RUNTIME_ROLE = ro-member
 $(O57_RESULT_LABELS): private PLAIN_DATA_RO_ORIGIN_OBJECT = build/src/overlays/o057/overlay57MenuLabels.c.o

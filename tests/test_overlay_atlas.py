@@ -383,6 +383,26 @@ def trial_module(overlay=1):
     }
 
 
+class UnownedBssReserveProjectionTests(unittest.TestCase):
+    def test_reserve_starts_after_initialized_body_not_serialized_tables(self):
+        row = trial_module(33)
+        row["data_rodata_ownership"] = []
+        block = overlay_atlas.render_yaml_block({"modules": [row]})
+        self.assertIn("bss_size: 0x1DE0", block)
+        self.assertIn("- { type: bss, vram: 0xF00083E0, name: overlay_033_bss_reserve }", block)
+        self.assertLess(block.index("overlay_033_bss_reserve"), block.index("name: overlay_033_reloc1"))
+        self.assertEqual(row["data_rodata_ownership"], [])
+        other = trial_module(34)
+        other["data_rodata_ownership"] = []
+        self.assertNotIn("bss_reserve", overlay_atlas.render_yaml_block({"modules": [other]}))
+
+    def test_selected_reserve_requires_real_positive_loader_capacity(self):
+        row = trial_module(33)
+        row["bss_size"] = "0x0"
+        with self.assertRaisesRegex(ValueError, "unowned BSS reserve has no capacity"):
+            overlay_atlas.render_yaml_block({"modules": [row]})
+
+
 class CanonicalDataOnlyOwnershipTests(unittest.TestCase):
     @staticmethod
     def text_ownership():

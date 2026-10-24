@@ -1508,6 +1508,26 @@
       }
     },
     {
+      "name": "assets/overlays/o011/overlay_011_data_rodata_1e0.bin",
+      "target_path": "expected/build/assets/overlays/o011/overlay_011_data_rodata_1e0.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o011"
+        ]
+      }
+    },
+    {
+      "name": "assets/overlays/o011/overlay_011_data_rodata_210.bin",
+      "target_path": "expected/build/assets/overlays/o011/overlay_011_data_rodata_210.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o011"
+        ]
+      }
+    },
+    {
       "name": "assets/overlays/o011/overlay_011_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o011/overlay_011_reloc1.bin.o",
       "metadata": {

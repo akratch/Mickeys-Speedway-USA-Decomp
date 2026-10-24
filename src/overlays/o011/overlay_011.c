@@ -1248,3 +1248,13 @@ void overlay11ReleaseCurrentGroup(void) {
         }
     }
 }
+
+/* Tier B: the background initializes and updates all 13 by 17 signed
+ * halfword phases. Qualified readers identify the three following words:
+ * selected option/created-active state, handle mode and controller index.
+ * Tier D: bounded storage views, not recovered original declarations.
+ * Legacy data-vs-BSS aliases and reader/prototype debts remain unchanged. */
+s16 gOverlay11StoragePhases[13][17];
+s32 gOverlay11StorageOptionIndex;
+s32 gOverlay11StorageHandleMode;
+s32 gOverlay11StoragePadIndex;

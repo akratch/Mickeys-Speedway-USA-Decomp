@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 8125},
+  "totals": {"differences": 0, "borrowed_records": 8121},
   "differences": {
   },
   "borrowed": {
@@ -81,7 +81,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1708,
+      "count": 1705,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -252,11 +252,6 @@
         [2, "gOverlay2SelectedBoundary", 4],
         [2, "gOverlay2TemporaryMode", 4],
         [2, "gOverlay2TemporaryRange", 8],
-        [3, "gOverlay3Entries", 4],
-        [3, "gOverlay3ModeChance", 4],
-        [3, "gOverlay3Objects", 6],
-        [3, "gOverlay3SearchMaxDistance", 2],
-        [3, "gOverlay3TouchEntries", 2],
         [4, "gOverlay4Groups", 8],
         [4, "gOverlay4InitStatus", 2],
         [4, "gOverlay4SearchMaxDistance", 2],
@@ -548,6 +543,8 @@
         [14, "gOverlay14ValueF8Base", 2],
         [14, "gOverlay14ValueSlots28", 2],
         [14, "gOverlay14ValueSlotsEnd128", 2],
+        [14, "overlay14Dispatch", 2],
+        [14, "overlay14DrawPrimitive", 12],
         [14, "overlay14InitializeReloc", 2],
         [15, "gOverlay15InitBounds", 2],
         [15, "gOverlay15MovingStarCount", 6],

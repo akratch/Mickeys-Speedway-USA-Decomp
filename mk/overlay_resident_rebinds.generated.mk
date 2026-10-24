@@ -707,6 +707,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o051/overlay_051.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym overlay56ReleaseResource=overlay56ReleaseResource_o051Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay_052.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_8007C180=D_8007C180_o052Reloc \
+	--redefine-sym D_8007C1B0=D_8007C1B0_o052Reloc \
 	--redefine-sym D_800C947C=D_800C947C_o052Reloc \
 	--redefine-sym D_800D3140=D_800D3140_o052Reloc \
 	--redefine-sym D_800D3144=D_800D3144_o052Reloc \
@@ -755,6 +757,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay_052.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym viGetCurrentSize=viGetCurrentSize_o052Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay_053.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym D_8007C180=D_8007C180_o053Reloc \
 	--redefine-sym D_800C947C=D_800C947C_o053Reloc \
 	--redefine-sym D_800D3140=D_800D3140_o053Reloc \
 	--redefine-sym D_800D3144=D_800D3144_o053Reloc \
@@ -806,6 +809,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay_054.c.o: SURFACE_REBIND = $(OBJCOP
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay_055.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym D_8007BEF4=D_8007BEF4_o055Reloc \
+	--redefine-sym D_8007C180=D_8007C180_o055Reloc \
 	--redefine-sym D_800C947C=D_800C947C_o055Reloc \
 	--redefine-sym D_800D3140=D_800D3140_o055Reloc \
 	--redefine-sym D_800D3144=D_800D3144_o055Reloc \
@@ -847,6 +851,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym D_8007BEF4=D_8007BEF4_o056Reloc \
 	--redefine-sym D_8007BEF8=D_8007BEF8_o056Reloc \
 	--redefine-sym D_8007BF08=D_8007BF08_o056Reloc \
+	--redefine-sym D_8007C1B0=D_8007C1B0_o056Reloc \
 	--redefine-sym D_800C947C=D_800C947C_o056Reloc \
 	--redefine-sym D_800D31C8=D_800D31C8_o056Reloc \
 	--redefine-sym camCopyOrthoMatrix=camCopyOrthoMatrix_o056Reloc \

@@ -25,8 +25,8 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 49772,
-  "diagnostic_data_rodata_bytes": 416,
+  "owned_data_rodata_bytes": 49056,
+  "diagnostic_data_rodata_bytes": 508,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -3076,21 +3076,22 @@
    },
    "data_rodata_ownership": [
     {
+     "offset": "0x158",
+     "end_offset": "0x190",
+     "size": "0x38",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o014/overlay_014",
+     "trial_function": "overlay14LoadRelocatedValue",
+     "externalized": true
+    },
+    {
      "offset": "0x0",
      "end_offset": "0x120",
      "size": "0x120",
      "type": "c",
      "section": ".data",
      "source": "overlays/o014/overlay14InitialState",
-     "canonical": true
-    },
-    {
-     "offset": "0x120",
-     "end_offset": "0x190",
-     "size": "0x70",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o014/overlay_014",
      "canonical": true
     }
    ]
@@ -9345,6 +9346,15 @@
      "canonical": true
     },
     {
+     "offset": "0x36C",
+     "end_offset": "0x380",
+     "size": "0x14",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o057/overlay57CharacterOrder",
+     "canonical": true
+    },
+    {
      "offset": "0x390",
      "end_offset": "0x3A4",
      "size": "0x14",
@@ -10077,22 +10087,14 @@
    },
    "data_rodata_ownership": [
     {
-     "offset": "0x0",
-     "end_offset": "0xC0",
-     "size": "0xC0",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o061/overlay61InitialState",
-     "canonical": true
-    },
-    {
-     "offset": "0xF0",
-     "end_offset": "0x2A0",
-     "size": "0x1B0",
+     "offset": "0x278",
+     "end_offset": "0x29C",
+     "size": "0x24",
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o061/overlay_061",
-     "canonical": true
+     "trial_function": "func_overlay_061_F0000B84_18BFF4C",
+     "externalized": true
     }
    ]
   },

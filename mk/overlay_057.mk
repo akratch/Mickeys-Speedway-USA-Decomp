@@ -87,3 +87,11 @@ $(O57_RESULT_LABELS): private PLAIN_DATA_PROOF = 1
 $(O57_RESULT_LABELS): private PLAIN_DATA_RUNTIME_ROLE = ro-member
 $(O57_RESULT_LABELS): private PLAIN_DATA_RO_ORIGIN_OBJECT = build/src/overlays/o057/overlay57MenuLabels.c.o
 $(O57_RESULT_LABELS): private PLAIN_DATA_RO_ORIGIN_SECTION = .rodata
+
+# Genuine ten-entry character order. Only source-derived compiler end
+# alignment is removed; the original32-byte compiler object stays in proof.
+O57_CHARACTER_ORDER := $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57CharacterOrder.c.o
+$(O57_CHARACTER_ORDER): $(TOOLS_DIR)/trim_elf_section.py
+$(O57_CHARACTER_ORDER): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x14 --compiler-end-padding
+$(O57_CHARACTER_ORDER): private PLAIN_DATA_PROOF = 1
+$(O57_CHARACTER_ORDER): private PLAIN_DATA_RUNTIME_ROLE = data

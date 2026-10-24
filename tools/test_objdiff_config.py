@@ -173,6 +173,139 @@ class ObjdiffConfigTests(unittest.TestCase):
             self.assertNotIn("objdiff.json is stale", diagnostics.getvalue())
             self.assertEqual(oc.main(args + ["--orphans"]), 1)
 
+    def test_named_data_rodata_and_bss_are_c_sources_without_code_credit(self):
+        root, _, _, _, _ = self.build()
+        y = oc.load_yaml(root / "mickey.us.yaml")
+        y["segments"][0]["subsegments"] += [
+            [0x3100, ".data", "main/callbacks"],
+            {"type": ".rodata", "name": "main/labels", "start": 0x3200},
+            {"type": ".bss", "name": "main/buffers", "vram": 0x80001000}]
+        import yaml
+        (root / "mickey.us.yaml").write_text(yaml.safe_dump(y))
+        flags = dict(FLAGS)
+        for name in ("callbacks", "labels", "buffers"):
+            path = f"src/main/{name}.c"
+            (root / path).write_text("int value;\n")
+            flags[path] = "-O2 -mips2"
+        cfg, orphans, problems = oc.build_config(root, flags=flags)
+        self.assertEqual((orphans, problems), ([], []))
+        units = {u["name"]: u for u in cfg["units"]}
+        for name in ("callbacks", "labels", "buffers"):
+            path = f"src/main/{name}.c"
+            self.assertEqual(units[path]["base_path"], f"build/{path}.o")
+            self.assertEqual(units[path]["metadata"]["source_path"], path)
+            self.assertEqual(units[path]["scratch"]["c_flags"], "-O2 -mips2")
+            self.assertNotIn("complete", units[path]["metadata"])
+        self.assertTrue(units["src/main/game.c"]["metadata"]["complete"])
+
+    def test_dotted_sections_use_asm_companions_in_either_order(self):
+        for typ in ("asm", "hasm"):
+            for reverse in (False, True):
+                with self.subTest(typ=typ, reverse=reverse):
+                    root, _, _, _, _ = self.build()
+                    y = oc.load_yaml(root / "mickey.us.yaml")
+                    pair = [[0x3100, ".data", "main/hand"],
+                            [0x3200, typ, "main/hand"]]
+                    if reverse:
+                        pair = [[0x3100, typ, "main/hand"],
+                                [0x3200, ".data", "main/hand"]]
+                    y["segments"][0]["subsegments"] += pair
+                    y["segments"][0]["subsegments"] += [
+                        {"type": ".bss", "name": "main/hand", "vram": 0x80001000}]
+                    import yaml
+                    (root / "mickey.us.yaml").write_text(yaml.safe_dump(y))
+                    (root / "asm/main/hand.s").write_text("")
+                    cfg, orphans, problems = oc.build_config(root, flags=FLAGS)
+                    self.assertEqual((orphans, problems), ([], []))
+                    units = {u["name"]: u for u in cfg["units"]}
+                    self.assertIn("asm/main/hand.s", units)
+                    self.assertNotIn("src/main/hand.c", units)
+                    self.assertNotIn("base_path", units["asm/main/hand.s"])
+
+    def test_text_and_multiple_data_roles_deduplicate_with_completion(self):
+        root, cfg, _, _, _ = self.build()
+        y = oc.load_yaml(root / "mickey.us.yaml")
+        y["segments"][0]["subsegments"] += [
+            [0x3100, ".data", "main/game"], [0x3200, ".rodata", "main/game"],
+            {"type": ".bss", "name": "main/game", "vram": 0x80001000}]
+        import yaml
+        (root / "mickey.us.yaml").write_text(yaml.safe_dump(y))
+        again, orphans, problems = oc.build_config(root, flags=FLAGS)
+        self.assertEqual((orphans, problems), ([], []))
+        self.assertEqual(cfg, again)
+
+    def test_missing_implied_c_does_not_fall_back_to_extracted_asm(self):
+        root, _, _, _, _ = self.build()
+        y = oc.load_yaml(root / "mickey.us.yaml")
+        y["segments"][0]["subsegments"] += [[0x3100, ".data", "main/missing"]]
+        import yaml
+        (root / "mickey.us.yaml").write_text(yaml.safe_dump(y))
+        (root / "asm/data/main").mkdir()
+        (root / "asm/data/main/missing.data.s").write_text("")
+        with mock.patch.object(oc, "compile_flags", return_value=FLAGS), \
+                mock.patch("sys.stderr", new_callable=io.StringIO) as diagnostics:
+            self.assertEqual(oc.main(["--root", str(root)]), 1)
+        self.assertIn("missing source file src/main/missing.c", diagnostics.getvalue())
+
+    def test_atlas_includes_physical_data_but_not_trial_or_externalized(self):
+        root, _, _, _, _ = self.build()
+        atlas = json.loads((root / "config/overlays.us.json").read_text())
+        atlas["modules"][0]["data_rodata_ownership"] = [
+            {"type": "c", "source": "overlays/o001/ov1_a", "offset": "0x0",
+             "end_offset": "0x10"},
+            {"type": "c", "source": "overlays/o001/owned", "offset": "0x10",
+             "end_offset": "0x20", "section": ".rodata", "canonical": True},
+            {"type": "c", "source": "overlays/o001/trial", "offset": "0x20",
+             "end_offset": "0x30", "section": ".rodata", "trial_function": "trial"},
+            {"type": "c", "source": "overlays/o001/external", "offset": "0x30",
+             "end_offset": "0x40", "section": ".data", "externalized": True},
+            {"type": "asm", "source": "overlays/o001/blob", "offset": "0x40",
+             "end_offset": "0x50", "section": ".data", "canonical": True},
+            {"type": "c", "source": "overlays/o001/gap", "offset": "0x50",
+             "end_offset": "0x60"}]
+        paths = oc.atlas_paths(atlas)
+        self.assertEqual({p for p, t in paths.items() if t == "c"},
+                         {"src/overlays/o001/ov1_a.c", "src/overlays/o001/owned.c"})
+        (root / "config/overlays.us.json").write_text(json.dumps(atlas))
+        (root / "src/overlays/o001/owned.c").write_text("const int label = 1;\n")
+        y = oc.load_yaml(root / "mickey.us.yaml")
+        y["segments"][1]["subsegments"] += [[0x5300, ".rodata", "owned"]]
+        import yaml
+        (root / "mickey.us.yaml").write_text(yaml.safe_dump(y))
+        cfg, orphans, problems = oc.build_config(root, flags=FLAGS)
+        self.assertEqual((orphans, problems), ([], []))
+        unit = next(u for u in cfg["units"] if u["name"].endswith("/owned.c"))
+        self.assertNotIn("complete", unit["metadata"])
+        y["segments"][1]["subsegments"].pop()
+        _, _, _, problems = oc.collect(root, y, atlas)
+        self.assertTrue(any("owned.c" in p and "no such C source owner" in p
+                            for p in problems))
+
+    def test_data_role_cannot_hide_text_ownership_disagreement(self):
+        root, _, _, _, _ = self.build()
+        y = oc.load_yaml(root / "mickey.us.yaml")
+        atlas = json.loads((root / "config/overlays.us.json").read_text())
+        sub = y["segments"][1]["subsegments"][0]
+        self.assertEqual(sub[1], "c")
+        sub[1] = ".data"
+        _, _, _, problems = oc.collect(root, y, atlas)
+        self.assertTrue(any("ov1_a.c" in p and "no such c subsegment" in p
+                            for p in problems))
+        sub[1] = "c"
+        atlas["modules"][0]["text_ownership"] = []
+        atlas["modules"][0]["data_rodata_ownership"] = [
+            {"type": "c", "source": "overlays/o001/ov1_a", "offset": "0x0",
+             "end_offset": "0x10", "section": ".data", "canonical": True}]
+        _, _, _, problems = oc.collect(root, y, atlas)
+        self.assertTrue(any("ov1_a.c" in p and "does not own its text" in p
+                            for p in problems))
+
+    def test_undotted_asm_data_and_unlinked_data_do_not_imply_c(self):
+        y = {"segments": [{"dir": "main", "subsegments": [
+            [0x1000, "data", "table"], {"type": "bss", "name": "reserve"},
+            {"type": ".data", "name": "unlinked", "linker_entry": False}]}]}
+        self.assertEqual(oc.yaml_paths(y), {})
+
     def test_no_linker_script_means_no_orphan_claim(self):
         root, _, _, _, _ = self.build()
         self.assertEqual(oc.split_orphans(root), [])

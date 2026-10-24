@@ -2428,6 +2428,46 @@
       }
     },
     {
+      "name": "assets/overlays/o050/overlay_050_data_rodata_21c.bin",
+      "target_path": "expected/build/assets/overlays/o050/overlay_050_data_rodata_21c.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o050"
+        ]
+      }
+    },
+    {
+      "name": "assets/overlays/o050/overlay_050_data_rodata_2b0.bin",
+      "target_path": "expected/build/assets/overlays/o050/overlay_050_data_rodata_2b0.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o050"
+        ]
+      }
+    },
+    {
+      "name": "assets/overlays/o050/overlay_050_data_rodata_320.bin",
+      "target_path": "expected/build/assets/overlays/o050/overlay_050_data_rodata_320.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o050"
+        ]
+      }
+    },
+    {
+      "name": "assets/overlays/o050/overlay_050_data_rodata_338.bin",
+      "target_path": "expected/build/assets/overlays/o050/overlay_050_data_rodata_338.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o050"
+        ]
+      }
+    },
+    {
       "name": "assets/overlays/o050/overlay_050_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o050/overlay_050_reloc1.bin.o",
       "metadata": {

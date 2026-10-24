@@ -2703,13 +2703,21 @@ segments:
     vram: 0xF0000000
     bss_size: 0x100
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o058
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18AF1E8, c, overlay_058]
       - [0x18B4C08, bin, overlay_058_data_rodata]
+      - [0x18B4CD0, .data, overlay58Assets]
+      - [0x18B4D10, bin, overlay_058_data_rodata_108]
+      - [0x18B4D88, .data, overlay58BadgeSprites]
+      - [0x18B4DA8, bin, overlay_058_data_rodata_1a0]
+      - [0x18B4E50, .data, overlay58LayoutTables]
+      - [0x18B4E80, bin, overlay_058_data_rodata_278]
+      - {start: 0x18B4ED8, type: .rodata, name: overlay58TextLabels, linker_section_order: .data}
+      - [0x18B4F18, bin, overlay_058_data_rodata_310]
 
   - name: overlay_058_reloc1
     type: bin

@@ -1528,9 +1528,8 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x186F8D8, c, overlay_014]
-      - [0x1871518, bin, overlay_014_data_rodata]
-      - [0x18715D8, .data, overlay14ControlState]
-      - [0x1871638, bin, overlay_014_data_rodata_120]
+      - [0x1871518, .data, overlay14InitialState]
+      - [0x1871638, bin, overlay_014_data_rodata]
 
   - name: overlay_014_reloc1
     type: bin

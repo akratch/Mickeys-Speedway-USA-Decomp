@@ -170,7 +170,11 @@ separate source/resource work.
   words can be 64 bits; target float matrices are not host SIMD structs; graphics
   packed words/halfwords and serialized model/mesh records retain target byte
   order. Current callers rebasing integer fields or passing addresses in `s32`
-  do not establish host pointer layouts. Buffer ownership remains with the
+  do not establish host pointer layouts. Overlay 27's local
+  [physical-address macro](../src/overlays/o027/overlay_027.c#L4) still subtracts
+  the KSEG0 base through a character pointer. Its four command-address uses need
+  a defined target-address contract and an exact source correction before host
+  compilation. Buffer ownership remains with the
   allocator/cache/frame/OS object that supplied it unless an actual transfer is
   proved. Framebuffer and RCP-visible data may outlive the CPU call.
 

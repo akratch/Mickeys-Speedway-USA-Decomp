@@ -50,3 +50,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay_057.c.o: POSTPROCESS = \
 		0x4D74:6:.bss 0x4D9C:5:.bss 0x4DA8:6:.bss 0x4DB4:5:.bss \
 		0x4DBC:6:.bss 0x4DB8:5:.bss 0x4DC0:6:.bss 0x6478:5:.bss \
 		0x647C:6:.bss
+
+# Independently bounded mutable state objects. The unknown intervening word
+# remains retained data; only source-proved compiler end alignment is removed.
+O57_SELECTION_FLAG := $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57SelectionFlag.c.o
+O57_TRANSITION_STATE := $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57TransitionState.c.o
+$(O57_SELECTION_FLAG) $(O57_TRANSITION_STATE): $(TOOLS_DIR)/trim_elf_section.py
+$(O57_SELECTION_FLAG): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x4 --compiler-end-padding
+$(O57_TRANSITION_STATE): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x18 --compiler-end-padding
+$(O57_SELECTION_FLAG) $(O57_TRANSITION_STATE): private PLAIN_DATA_PROOF = 1
+$(O57_SELECTION_FLAG) $(O57_TRANSITION_STATE): private PLAIN_DATA_RUNTIME_ROLE = data

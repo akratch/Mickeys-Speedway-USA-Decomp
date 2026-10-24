@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 47664,
+  "owned_data_rodata_bytes": 47692,
   "diagnostic_data_rodata_bytes": 660,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -9335,6 +9335,24 @@
      "type": "c",
      "section": ".data",
      "source": "overlays/o057/overlay57AnimationState",
+     "canonical": true
+    },
+    {
+     "offset": "0x4F0",
+     "end_offset": "0x4F4",
+     "size": "0x4",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o057/overlay57SelectionFlag",
+     "canonical": true
+    },
+    {
+     "offset": "0x4F8",
+     "end_offset": "0x510",
+     "size": "0x18",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o057/overlay57TransitionState",
      "canonical": true
     },
     {

@@ -2717,7 +2717,10 @@ segments:
       - [0x18AAA70, .data, overlay57MenuTables]
       - [0x18AAB60, bin, overlay_057_data_rodata_4b8]
       - [0x18AAB78, .data, overlay57AnimationState]
-      - [0x18AAB98, bin, overlay_057_data_rodata_4f0]
+      - [0x18AAB98, .data, overlay57SelectionFlag]
+      - [0x18AAB9C, bin, overlay_057_data_rodata_4f4]
+      - [0x18AABA0, .data, overlay57TransitionState]
+      - [0x18AABB8, bin, overlay_057_data_rodata_510]
       - {start: 0x18AABE8, type: .rodata, name: overlay57MenuLabels, linker_section_order: .data}
       - [0x18AAC28, bin, overlay_057_data_rodata_580]
       - [0x18AACEC, .data, overlay57ResponseParameters]

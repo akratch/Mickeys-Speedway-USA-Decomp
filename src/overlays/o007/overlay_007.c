@@ -223,7 +223,7 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
             overlay7RuntimeTimerReloc -= elapsed;
             remaining = count - 1;
         } else {
-            if (overlay7RuntimeModeReloc == 1) {
+            if (B_overlay_001_F00083E4 == 1) {
                 remaining = count;
 
                 while (remaining--) {
@@ -243,7 +243,7 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
             }
 
             remaining = count - 1;
-            if (overlay7RuntimeModeReloc == 1 &&
+            if (B_overlay_001_F00083E4 == 1 &&
                 ((s32)D_8007BEF8 -
                      (s32)D_8007BEFC ==
                  1) &&
@@ -278,7 +278,7 @@ void func_overlay_007_F0000324_185C1AC(void *displayList, s32 elapsed) {
             } while (remaining--);
         }
 
-        if (overlay7RuntimeModeReloc == 0 && D_4 == 0) {
+        if (overlay7RuntimeHandleReloc == NULL && gOverlay7CommitArgument == NULL) {
             found = 0;
             if (gOverlay7Selected != NULL) {
                 if (gOverlay7Selected->nested != NULL) {

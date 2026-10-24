@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 8206},
+  "totals": {"differences": 0, "borrowed_records": 8202},
   "differences": {
   },
   "borrowed": {
@@ -82,7 +82,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1717,
+      "count": 1715,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -273,11 +273,10 @@
         [5, "overlay5AllocPlayerReloc", 1],
         [5, "overlay5AttachBankReloc", 1],
         [7, "D_2AA", 2],
-        [7, "D_4", 2],
         [7, "D_8", 10],
         [7, "D_844", 2],
         [7, "gOverlay7AlternateModes", 2],
-        [7, "gOverlay7CommitArgument", 2],
+        [7, "gOverlay7CommitArgument", 4],
         [7, "gOverlay7Current", 6],
         [7, "gOverlay7DispatchData", 4],
         [7, "gOverlay7DispatchMap", 2],
@@ -291,9 +290,8 @@
         [7, "overlay7Acquire", 2],
         [7, "overlay7RecordCheckReloc", 4],
         [7, "overlay7ReleaseRuntimeHandleReloc", 1],
-        [7, "overlay7RuntimeHandleReloc", 4],
+        [7, "overlay7RuntimeHandleReloc", 6],
         [7, "overlay7RuntimeLastObjectReloc", 4],
-        [7, "overlay7RuntimeModeReloc", 6],
         [7, "overlay7RuntimeTimerReloc", 6],
         [7, "overlay7RuntimeValuesReloc", 2],
         [7, "overlay7SetOwnerModeReloc", 5],

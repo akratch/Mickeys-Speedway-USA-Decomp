@@ -221,9 +221,9 @@ Overlay17Chain *overlay17CreateChain(
 void overlay17ReleaseChain(Overlay17Resource *resource) {
     if (resource != NULL) {
         if (resource->nested != NULL) {
-            overlay17ReleaseReloc(resource->nested);
+            texFreeTexture(resource->nested);
         }
-        overlay17ReleaseReloc(resource);
+        mmFree(resource);
     }
 }
 

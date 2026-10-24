@@ -904,10 +904,11 @@ mmFree_o016Reloc = 0xf0000000;
 /* overlay 17: overlay_017.c.o */
 gOverlay17TemplateReloc = 0x00000000;
 mmAlloc_o017Reloc = 0xf0000000;
-overlay17ReleaseReloc = 0xf0000000;
+mmFree_o017Reloc = 0xf0000000;
 pointListRPY_o017Reloc = 0xf0000000;
 sqrtf_o017Reloc = 0xf0000000;
 texDPTextureX_o017Reloc = 0xf0000000;
+texFreeTexture_o017Reloc = 0xf0000000;
 texLoadTexture_o017Reloc = 0xf0000000;
 
 /* overlay 18: overlay_018.c.o */

@@ -395,9 +395,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o016/overlay_016.c.o: SURFACE_REBIND = $(OBJCOP
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay_017.c.o: SURFACE_REBIND = $(OBJCOPY) \
 	--redefine-sym mmAlloc=mmAlloc_o017Reloc \
+	--redefine-sym mmFree=mmFree_o017Reloc \
 	--redefine-sym pointListRPY=pointListRPY_o017Reloc \
 	--redefine-sym sqrtf=sqrtf_o017Reloc \
 	--redefine-sym texDPTextureX=texDPTextureX_o017Reloc \
+	--redefine-sym texFreeTexture=texFreeTexture_o017Reloc \
 	--redefine-sym texLoadTexture=texLoadTexture_o017Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o018/overlay_018.c.o: SURFACE_REBIND = $(OBJCOPY) \

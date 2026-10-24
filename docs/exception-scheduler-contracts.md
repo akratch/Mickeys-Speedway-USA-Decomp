@@ -194,12 +194,25 @@ does not establish safety at an interrupt inside another active frame.
 
 [VI initialization](../src/libultra/vi.c#L22), mode changes, black/buffer
 updates and the other inspected context writers do not set state bit `0x4`.
-Initialization's swap also runs on the creator's stack before VI is started.
-A whole-lifetime exclusion through every alias, context-pointer escape and
-optional interrupt hook is still unproved. No particular FP-active save or
-changed stack value was observed; no game or emulator was executed. Conversely,
-a shared physical range, a first-use restore, or equal bits at one point does
-not prove a harmless lifetime alias.
+At source pin `8854964f5`, an allocated-input audit resolves every relocation
+from 752 actual input objects, plus all 18,542 overlay runtime records.
+References to the two context
+pointer cells stay within ten SDK translation units. The context getter has
+only two direct call sites, both read-only uses in `viMgrMain`; its ORT export has
+no overlay caller or address-taking record. The two initialized context
+pointers occur only in the VI owner's data.
+
+Within that authenticated writer/getter graph, initialization clears the bit,
+ordinary updates preserve or clear it, and swapping copies an existing context:
+`0x4` remains clear. This is a conditional typed-path invariant, not a whole
+lifetime or hardware exclusion. The census does not exhaust arbitrary computed
+or untyped writes. Initialization's swap also runs on the creator's stack before
+VI starts. Recognized thread-prefix writers clear FP-used in creation and set
+it in the coprocessor-unusable continuation; inspected active-queue consumers
+stop or read/dump threads rather than write that flag. These facts do not prove
+that no outside callback or untyped alias can make VI FP-active. No particular
+FP-active save or changed stack value was observed; no game or emulator was run.
+Equal bits or an unexecuted path do not allocate a larger thread object.
 
 There is therefore no authenticated disjoint full-context/stack partition at
 the existing addresses. Enlarging the shared type moves real allocations;
@@ -284,9 +297,15 @@ stack. Their initial pointer/stack cells are zero, but that does not prove
 runtime unreachability. The PI hook's nonzero return branches into an interior
 continuation of `__osEnqueueAndYield`, which subsequently consumes a thread
 pointer and optional queue in argument registers. A plain C return value is
-not a complete contract for that path. Registration writers, private live-ins
-and callback-stack capacity need a bounded audit before using it as a host
-interrupt interface.
+not a complete contract for that path. The pinned allocated graph finds only
+the exception handler's references to the two hook allocations, no registration
+writer or stored address escape, and
+no overlay runtime target in either range. Both allocations are zero-filled in
+the actual initialized input. A bounded literal-address census adds no writer;
+it is not a proof against arbitrary computed writes or runtime installation.
+No registration is evidenced by these inputs; runtime unreachability is not
+proved. Private live-ins and callback-stack capacity remain
+required before using either path as a host interrupt interface.
 
 Cleanup's actual call target is
 [osDestroyThread](../src/libultra/destroythread.c#L10), with a null argument.
@@ -302,8 +321,9 @@ longer running, queued, active or referenced by another subsystem.
 ## Next prerequisites
 
 1. Reconcile the full conditional context image with actual thread/backing and
-   stack ownership. VI now has a measured live-frame overlap; close its
-   state-bit/FP-used writer and escape paths before proposing a storage view.
+   stack ownership. VI has a measured conditional live-frame overlap and a
+   bounded typed-path state-bit exclusion. Close the remaining computed-write,
+   callback and FP-used lifetime assumptions before proposing a storage view.
    Keep the real FR-clearing audio caller separate. Prove an exact natural C
    view before changing shared declarations or BSS.
 2. Close the FR0 odd-transfer case with authoritative implementation evidence

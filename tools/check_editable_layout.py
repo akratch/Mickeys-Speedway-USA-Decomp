@@ -309,17 +309,43 @@ def resident_replay(root,directory,elf,mapping,commands,file,expected_hash,prefi
     require(len(inputs)==1,"ambiguous actual resident replay input")
     item=inputs[0]; raw=rp.Elf(root/item.file)
     require(hashlib.sha256(raw.data).hexdigest()==expected_hash,"loaded resident replay input changed")
+    sections=[]
+    for name in SECTIONS:
+        section=raw.section(name)
+        if not section or not section["size"]:
+            continue
+        require(section["flags"]&2 and section["type"] in (1,rp.SHT_NOBITS),
+                "unsupported resident runtime section")
+        homes=[i for i in mapping if i.file==file and i.insec==name and i.size]
+        require(len(homes)==1 and homes[0].size==section["size"],
+                "resident replay section lacks its unique complete mapped input")
+        home=homes[0]; output=elf.section(home.outsec)
+        require(output is not None and output["addr"]<=home.addr
+                and home.addr+home.size<=output["addr"]+output["size"],
+                "resident replay section escapes its actual output")
+        sections.append((name,home))
     bindings=[]
-    for name in sorted({r.sym.name for r in raw.rels(".text") if r.sym.shndx==rp.SHN_UNDEF}):
+    for name in sorted({r.sym.name for section,_home in sections
+                        for r in raw.rels(section) if r.sym.shndx==rp.SHN_UNDEF}):
         bindings.append(f"{name} = {real_symbol(elf,name).value:#x};")
     script=directory/(prefix+".ld")
-    script_bytes=("\n".join(bindings)+f'\nSECTIONS {{ .text {item.addr:#x} : {{ {item.file}(.text) }} /DISCARD/ : {{ *(*) }} }}\n').encode()
+    placements=[f'{name} {home.addr:#x}'+(' (NOLOAD)' if name==".bss" else '')
+                +f' : {{ {file}({name}) }}' for name,home in sections]
+    script_bytes=("\n".join(bindings)+'\nSECTIONS { '+" ".join(placements)
+                  +' /DISCARD/ : { *(*) } }\n').encode()
     script.write_bytes(script_bytes)
     output=directory/(prefix+".elf")
     log_hash=run(root,["tools/binutils/mips64-elf-ld","--no-check-sections","-e","0","-T",script.relative_to(root),"-o",output.relative_to(root)],directory/(prefix+".log"),commands)
-    actual=elf.bytes_of(".main"); section=elf.section(".main");offset=item.addr-section["addr"]
+    section=elf.section(".main");offset=item.addr-section["addr"]
     replay=rp.Elf(output)
-    require(replay.bytes_of(".text")==actual[offset:offset+item.size],"resident bytes not explained by ordinary link")
+    for name,home in sections:
+        source=elf.section(home.outsec); recovered=replay.section(name)
+        require(recovered is not None and recovered["addr"]==home.addr
+                and recovered["size"]==home.size and recovered["type"]==raw.section(name)["type"],
+                "resident replay section geometry changed")
+        start=home.addr-source["addr"]
+        require(replay.bytes_of(name)==elf.bytes_of(home.outsec)[start:start+home.size],
+                "resident bytes not explained by ordinary link")
     expected={prefix+".ld":hashlib.sha256(script_bytes).hexdigest(),
               prefix+".elf":hashlib.sha256(replay.data).hexdigest(),prefix+".log":log_hash}
     require(sha(root/item.file)==expected_hash and all(sha(directory/n)==value for n,value in expected.items()),

@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 39168,
+  "owned_data_rodata_bytes": 42560,
   "diagnostic_data_rodata_bytes": 840,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -2256,6 +2256,24 @@
      "type": "c",
      "section": ".data",
      "source": "overlays/o008/overlay8TuningTables",
+     "canonical": true
+    },
+    {
+     "offset": "0x2110",
+     "end_offset": "0x2280",
+     "size": "0x170",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o008/overlay8ParameterTables",
+     "canonical": true
+    },
+    {
+     "offset": "0x2280",
+     "end_offset": "0x2330",
+     "size": "0xB0",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o008/overlay8SurfaceNames",
      "canonical": true
     },
     {
@@ -7861,7 +7879,27 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 62
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x174",
+     "end_offset": "0x274",
+     "size": "0x100",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o048/overlay48CreditScript",
+     "canonical": true
+    },
+    {
+     "offset": "0x274",
+     "end_offset": "0x6F4",
+     "size": "0x480",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o048/overlay48CreditText",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 49,
@@ -9452,6 +9490,15 @@
      "source": "overlays/o059/overlay_059",
      "trial_function": "overlay59Advance",
      "externalized": true
+    },
+    {
+     "offset": "0x0",
+     "end_offset": "0x5A0",
+     "size": "0x5A0",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o059/overlay59Frames",
+     "canonical": true
     }
    ]
   },

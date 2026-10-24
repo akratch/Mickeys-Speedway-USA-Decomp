@@ -805,25 +805,17 @@ $(O11_OBJ): POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:080ab1959bdeaaf4e936cbc07ce11a09953f58f59f41c7a84e81a9552d2533af && \
 	$(OBJCOPY) --remove-section .rel.rodata $@
-# Overlay 14 is one translation unit at the overlay flag set; its placeholder,
-# resident and data
-# references are valued and rebound by the generated surface. What remains is
-# rodata ownership, kept until phase 3: the TU's .rodata (the loader's and the
-# draw's seven-entry switch tables) is the retained data at data_rodata
-# +0x158, and the shipped LOCAL records' rodata addends run from a base 0x38
-# bytes before it, so its four references are rebound to a base symbol at
-# +0x38 and the section is dropped by digest.
+# Overlay 14's complete compiler RO input contains its retained diagnostic,
+# three read-only labels and both switch tables. Preserve the source payload;
+# the absolute zero section anchor keeps runtime RO-relative text addends.
+# The original raw14 R32 records remain the runtime table authority, while
+# ordinary host linking must leave their stored text offsets untouched.
 O14_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay_014.c.o
 $(O14_OBJ): CFLAGS += -Wab,-r4300_mul
-$(O14_OBJ): $(TOOLS_DIR)/rebind_elf_relocations.py \
-	$(TOOLS_DIR)/externalize_elf_section.py
+$(O14_OBJ): $(TOOLS_DIR)/externalize_elf_section.py
 $(O14_OBJ): POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay14RodataBaseReloc=0x38,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0x914:.rodata:gOverlay14RodataBaseReloc 0x91c:.rodata:gOverlay14RodataBaseReloc \
-		0x1944:.rodata:gOverlay14RodataBaseReloc 0x194c:.rodata:gOverlay14RodataBaseReloc && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:a1d78d3f7fb36b44d65aae7a5aed14af5a74f46d965b1cb4408485477bbdb033 && \
+		sha256:6c4414afecd9bfe02700886925a7ca4885fe9b0803f9074c32825b425401db61 0 keep && \
 	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 16 is one translation unit at the overlay flag set; its .text
 # carries the module's trailing pad, so nothing is trimmed.

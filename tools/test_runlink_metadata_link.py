@@ -192,6 +192,53 @@ class EditedReceiptTests(unittest.TestCase):
                 with self.subTest(selected=selected), self.assertRaises(link.rp.PackError):
                     link.edited_catalog(root, path, exports, selected)
 
+    def test_new_tail_registry_preserves_original_abi_and_rejects_holes(self):
+        import copy
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / 'src/overlays/o108/tail.c'
+            source.parent.mkdir(parents=True); source.write_text('void init(void) {}\n')
+            original = link.rp.OrtNames(['resident', 'existing'], {})
+            item = {'module': 108, 'source': 'src/overlays/o108/tail.c',
+                    'build': 'complete-overlay', 'entries': {'init': 'init', 'resume': None},
+                    'exports': [{'name': 'init', 'row': 2, 'kind': 'function'},
+                                {'name': 'state', 'row': 3, 'kind': 'object'}]}
+            document = {'schema': 'mickey-edited-source-modules-v2',
+                        'default_selected': [108], 'modules': [item]}
+            path = root / 'tail.json'; path.write_text(json.dumps(document))
+            selected = link.edited_catalog(root, path, original)[0]
+            registry = link.edited_source_exports(selected, original, 107)
+            self.assertEqual(registry.rows, ['resident', 'existing', 'init', 'state'])
+            self.assertEqual(original.rows, ['resident', 'existing'])
+            for fault in ('hole', 'old_row', 'old_name', 'duplicate', 'profile'):
+                changed = copy.deepcopy(document)
+                export = changed['modules'][0]['exports'][0]
+                if fault == 'hole': export['row'] = 4
+                elif fault == 'old_row': export['row'] = 0
+                elif fault == 'old_name': export['name'] = 'resident'
+                elif fault == 'duplicate': changed['modules'][0]['exports'].append(dict(export))
+                else: changed['modules'][0]['build'] = 'arbitrary-flags'
+                path.write_text(json.dumps(changed))
+                with self.subTest(fault=fault), self.assertRaises(link.rp.PackError):
+                    link.edited_catalog(root, path, original)
+            selected[109] = selected.pop(108)
+            with self.assertRaisesRegex(link.rp.PackError, 'dense tail'):
+                link.edited_source_exports(selected, original, 107)
+            selected[108] = selected.pop(109); selected[108]['build'] = 'registered'
+            with self.assertRaisesRegex(link.rp.PackError, 'explicit complete-overlay'):
+                link.edited_source_exports(selected, original, 107)
+
+    def test_removed_target_refusal_names_actual_function_or_initializer(self):
+        symbol = SimpleNamespace(shndx=link.rp.SHN_UNDEF, name='tailState')
+        rel = SimpleNamespace(sym=symbol, offset=4)
+        function = SimpleNamespace(type=link.rp.STT_FUNC, size=16, section='.text', value=0, name='caller')
+        for section, caller in (('.text', 'caller'), ('.data', '.data input'), ('.rodata', '.rodata input')):
+            raw = SimpleNamespace(symbols=[function], rels=lambda name: [rel] if name == section else [])
+            with self.subTest(section=section), self.assertRaisesRegex(link.MetadataLinkError,
+                    'moduleX ' + caller.replace('.', r'\.') + ': undeclared/removed target tailState'):
+                link.edited_validate_imports(raw, link.rp.OrtNames([], {}), 'moduleX')
+            link.edited_validate_imports(raw, link.rp.OrtNames(['tailState'], {}), 'moduleX')
+
     def test_current_outside_program_closure_omits_metadata_and_fill(self):
         source = ('  build/src/overlays/o034/unit.c.o(.text);\n'
                   '  build/assets/overlays/o034/overlay_034_reloc1.bin.o(.data);\n'
@@ -205,8 +252,11 @@ class EditedReceiptTests(unittest.TestCase):
         source = 'src/overlays/o034/unit.c'; target = 'build/'+source+'.o'
         compile_line = f'wrapper tools/ido/cc -- as -- -c -o {target} {source}\n'
         complete = compile_line + f'python3 tools/link_overlay_module.py {target} --directory build/module\n'
-        with mock.patch.object(link.subprocess, 'check_output', return_value=complete):
+        with mock.patch.object(link.subprocess, 'check_output', return_value=complete) as make:
             self.assertEqual(link.edited_recipe(Path('.'), source)[0][-1], source)
+            self.assertNotIn('EDITED_COMPLETE_SOURCE=' + source, make.call_args.args[0])
+            self.assertEqual(link.edited_recipe(Path('.'), source, 'complete-overlay')[0][-1], source)
+            self.assertIn('EDITED_COMPLETE_SOURCE=' + source, make.call_args.args[0])
         for command in (compile_line, complete + complete):
             with mock.patch.object(link.subprocess, 'check_output', return_value=command):
                 with self.assertRaisesRegex(link.rp.PackError, 'complete-module'):

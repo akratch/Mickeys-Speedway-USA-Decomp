@@ -2700,6 +2700,31 @@ unique source ownership, actual linked definitions and complete recipes are
 checked; a declaration cannot authorize an arbitrary stripped object. New
 selected sources still need an accepted complete source/module proof.
 
+For an authored tail module, an alternate catalog may use
+`mickey-edited-source-modules-v2`. It adds `build` to every module declaration:
+`registered` uses its existing complete-module recipe; `complete-overlay` selects
+an explicit ordinary Make profile with the project overlay compiler flags,
+static-symbol step and module linker. No other module's flag list is reused.
+The default catalog and retail source set contain no synthetic tail module.
+
+Original symbolic row/name identities remain fixed. New explicit export rows
+must be a contiguous suffix of that registry, with genuine function/object
+owners; new module IDs must form a dense tail after the retained module range.
+The declaration supplies no addresses or extents. Real source can live at
+`src/overlays/oNNN/overlay_NNN.c` and is compiled through the production `control`
+path without diagnostic source substitutions. Init/resume names must resolve to
+actual functions in that same source module. Ordinary sections and raw references
+supply all image sizes, LOCAL bases, export offsets and runtime records.
+
+To remove an authored tail, remove its declaration and appended export suffix,
+and select only surviving sources. Any current raw call or initializer reference
+to an undeclared target refuses before linking and identifies the actual caller
+or data input. Retained outside records and selected export ownership are still
+validated. Interior module deletion and renumbering of compatibility exports are
+unsupported. Source-authored additions/growth/removal are nonmatching build
+experiments; declarations alone do not establish gameplay or whole-image source
+independence.
+
 The existing75/108 diagnostics remain available with `EDITED_MODULES=75` and
 `EDITED_VARIANT=peer` or `unreferenced`. The existing diagnostic driver owns their
 genuine function/data/BSS/export growth fixtures and controlled peer removal.

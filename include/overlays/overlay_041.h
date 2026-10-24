@@ -154,7 +154,7 @@ typedef struct Overlay41Item {
     u8 pad0[0xC];
     f32 x;
     f32 y;
-    s32 kind;
+    f32 z;
     u8 pad18[0x38];
     f32 *opacity;
 } Overlay41Item;
@@ -225,7 +225,7 @@ extern s32 mathRnd(s32 lower, s32 upper);
 extern void mathOneFloatPY(Overlay41ShortPair *input,
                            Overlay41FloatVector *output);
 extern void func_overlay_012_F00001B4_186D434(
-    f32 x, f32 y, s32 kind, f32 outX, f32 outY, f32 z, s32 opacity, s32 mode,
+    f32 x, f32 y, f32 z, f32 outX, f32 outY, f32 outZ, s32 opacity, s32 mode,
     f32 scale);
 extern void fontUseFont(s32 mode);
 extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);

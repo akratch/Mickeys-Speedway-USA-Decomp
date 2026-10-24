@@ -736,7 +736,7 @@ void overlay41SpawnItems(s32 rootIndex, s32 count, s32 mode, s32 centerX,
             (f32)(mathRnd(-radiusZ, radiusZ) + centerZ) * -0.01f;
         mathOneFloatPY(&input, &output);
         func_overlay_012_F00001B4_186D434(
-            item->x, item->y, item->kind, output.x, output.y, output.z, opacity,
+            item->x, item->y, item->z, output.x, output.y, output.z, opacity,
             mode, scale);
     }
 }

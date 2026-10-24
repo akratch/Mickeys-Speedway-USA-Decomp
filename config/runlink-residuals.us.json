@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 6363},
+  "totals": {"differences": 0, "borrowed_records": 6351},
   "differences": {
   },
   "borrowed": {
@@ -67,7 +67,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1472,
+      "count": 1466,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1065,12 +1065,6 @@
         [60, "gOverlay60Data1A4", 4],
         [60, "gOverlay60Data1B4", 8],
         [60, "gOverlay60Data1D0", 2],
-        [60, "gOverlay60Data1F0", 2],
-        [60, "gOverlay60Data1F8", 2],
-        [60, "gOverlay60Data200", 2],
-        [60, "gOverlay60Data20C", 2],
-        [60, "gOverlay60Data220", 2],
-        [60, "gOverlay60Data228", 2],
         [60, "gOverlay60Data260", 12],
         [60, "gOverlay60Data28", 2],
         [60, "gOverlay60Data288", 2],
@@ -1545,7 +1539,7 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 29,
+      "count": 28,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -1570,7 +1564,6 @@
         [55, "overlay_055", ".rodata", "0xD80", 2],
         [58, "overlay_058", ".rodata", "0x5DF4", 6],
         [59, "overlay_059", ".rodata", "0x1188", 4],
-        [60, "overlay_060", ".rodata", "0x3790", 4],
         [73, "overlay_073", ".rodata", "0xF8C", 30],
         [79, "overlay_079", ".rodata", "0x1504", 30],
         [86, "overlay_086", ".rodata", "0xF50", 6],
@@ -1580,7 +1573,7 @@
     },
     "rodata-base": {
       "about": "module rodata base the objects do not determine (module)",
-      "count": 28,
+      "count": 27,
       "entries": [
         [1],
         [2],
@@ -1597,7 +1590,6 @@
         [57],
         [58],
         [59],
-        [60],
         [62],
         [63],
         [70],

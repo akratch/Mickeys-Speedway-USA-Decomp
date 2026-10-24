@@ -2833,6 +2833,7 @@ segments:
       - [0x18BD3E8, bin, overlay_060_data_rodata]
       - [0x18BD3F8, .data, overlay60PreviewTables]
       - [0x18BD468, bin, overlay_060_data_rodata_130]
+      - [0x18BD518, .rodata, overlay_060]
 
   - name: overlay_060_reloc1
     type: bin

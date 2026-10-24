@@ -158,6 +158,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/overlay_005.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym osCreateMesgQueue=osCreateMesgQueue_o005Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007.c.o: SURFACE_REBIND = $(OBJCOPY) \
+	--redefine-sym B_overlay_001_F00083E4=B_overlay_001_F00083E4_o007Reloc \
 	--redefine-sym D_8007BEF8=D_8007BEF8_o007Reloc \
 	--redefine-sym D_8007BEFC=D_8007BEFC_o007Reloc \
 	--redefine-sym D_8007C1A0=D_8007C1A0_o007Reloc \

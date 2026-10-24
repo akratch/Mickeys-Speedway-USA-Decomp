@@ -406,6 +406,7 @@ overlay5AllocPlayerReloc = 0xf0000000;
 overlay5AttachBankReloc = 0xf00002e4;
 
 /* overlay 7: overlay_007.c.o */
+B_overlay_001_F00083E4_o007Reloc = 0x00000000;
 D_2AA = 0x000002aa;
 D_8007BEF8_o007Reloc = 0x00000000;
 D_8007BEFC_o007Reloc = 0x00000000;
@@ -445,7 +446,6 @@ overlay7RecordCheckReloc = 0xf0000000;
 overlay7ReleaseRuntimeHandleReloc = 0xf0000000;
 overlay7RuntimeHandleReloc = 0x00000000;
 overlay7RuntimeLastObjectReloc = 0x000002ac;
-overlay7RuntimeModeReloc = 0x00000000;
 overlay7RuntimeTimerReloc = 0x00000294;
 overlay7RuntimeValuesReloc = 0x00000000;
 overlay7SetOwnerModeReloc = 0xf0000000;

@@ -114,7 +114,7 @@ extern s32 D_8007C1A0;
 extern s32 D_8;
 /* Runtime SYMBOL ORT 1579 resolves this proxy to resident BSS D_800D3128. */
 extern u32 D_800D3128;
-extern u16 gOverlay7DispatchOverride[32];
+extern u16 gOverlay7DispatchOverride[10];
 extern u16 gOverlay7DispatchValues[][30];
 extern u8 gOverlay7DispatchTypes[];
 extern s8 gOverlay7DispatchMap[];
@@ -141,14 +141,15 @@ extern void overlay59AppendValue(s32 arg0, s32 index, s32 value,
 extern void amSndStopXYZ(void *object);
 extern void amSndPlay(u16 value, void **argument);
 
-extern s32 D_4;
 extern u16 D_2AA;
 extern Overlay7Pair D_844[];
 extern void *D_800C947C;
 extern void *overlay7RuntimeHandleReloc;
 extern s32 overlay7RuntimeTimerReloc;
 extern Overlay7RuntimeObject *overlay7RuntimeLastObjectReloc;
-extern s32 overlay7RuntimeModeReloc;
+/* Tier B: ORT 1476 names this word view at overlay 1 BSS plus four.
+ * Its backing remains the retained BSS reserve, not a C-owned allocation. */
+extern s32 B_overlay_001_F00083E4;
 extern u8 D_8007BEFC;
 extern u8 D_8007BEF8;
 extern u8 overlay7RuntimeValuesReloc[];

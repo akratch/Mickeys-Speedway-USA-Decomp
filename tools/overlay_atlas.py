@@ -152,7 +152,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
     # emit the owner's compiler data, so trial projection must be function-
     # scoped rather than merely source-file-scoped.
     1: [(0x274, 0x294, "overlay_001_tail", ".rodata", "overlay1DispatchMode", True)],
-    7: [(0x930, 0x950, "overlay_007", ".rodata", "overlay7DispatchModes")],
     8: [(0x27C, 0x2AC, "overlay_008", ".rodata", "func_overlay_008_F0004CF0_1862A48")],
     9: [(0x390, 0x3E0, "overlay_009", ".rodata", "func_overlay_009_F0000CE4_186735C", True)],
     14: [(0x158, 0x190, "overlay_014", ".rodata", "overlay14LoadRelocatedValue", True)],
@@ -285,8 +284,8 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
         (0x4D0, 0x4F0, "overlay57AnimationState", ".data"),
         (0x540, 0x580, "overlay57MenuLabels", ".rodata"),
     ],
-    7: [(0x2A4, 0x754, "overlay7ModeTables", ".data"),
-        (0x754, 0x924, "overlay7SoundVariants", ".data")],
+    7: [(0x4C, 0x92C, "overlay7DispatchTables", ".data"),
+        (0x930, 0x950, "overlay_007", ".rodata")],
     101: [(0x1D0, 0x230, "overlay101State", ".data"),
           (0x230, 0x340, "overlay101ClockData", ".data"),
           (0x340, 0x4E50, "overlay101EventStreams", ".data"),
@@ -374,8 +373,7 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
     (57, "overlay57AnimationState", ".data"),
     (57, "overlay57MenuTables", ".data"),
     (57, "overlay57MenuLabels", ".rodata"),
-    (7, "overlay7ModeTables", ".data"),
-    (7, "overlay7SoundVariants", ".data"),
+    (7, "overlay7DispatchTables", ".data"),
     (101, "overlay101Labels", ".data"),
     (101, "overlay101WindowLabels", ".data"),
     (101, "overlay101State", ".data"),

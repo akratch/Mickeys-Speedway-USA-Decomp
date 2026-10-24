@@ -161,12 +161,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o107/overlay_107.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 7 is one translation unit at the overlay flag set and owns its pad;
 # its resident calls go through the generated surface rebinds. What remains is
 # data ownership, kept until phase 3 (docs/OVERLAY_STRUCTURE_SPRINT.md):
-# - The TU's .rodata (the runtime update's decay literal, then the mode
-#   switch table and its pool) is the retained overlay data at data_rodata
-#   +0x930, whose shipped LOCAL records store rodata-relative addends. Assert
-#   it by digest and anchor it at zero; the table's .rel.rodata goes with it.
-# - The pool's BSS is defined here as statics (the final 0x10 stays
-#   atlas-owned), so every access is a section-relative record whose addend is
+# - The TU owns its .rodata at data_rodata +0x930: the runtime update's
+#   decay literal followed by the mode switch table. Keep the digest-checked
+#   payload and anchor its section reference at zero for the shipped LOCAL
+#   addends; the runtime table still owns the seven .rel.rodata records.
+# - The pool's full BSS allocation is defined here as statics, so each
+#   retained local access is a section-relative record whose addend is
 #   already the module-relative offset the shipped word carries, and overlay
 #   7's own runtime table owns them: the static link must not adjust them, so
 #   the 36 .bss records are dropped. The shared static-symbol step preserves
@@ -187,7 +187,7 @@ $(O7_OBJ): POSTPROCESS = \
 		0xf08:5:.bss 0xf10:6:.bss 0xf9c:5:.bss 0xfa0:6:.bss \
 		0xfa4:5:.bss 0xfa8:6:.bss 0xfac:5:.bss 0xfb4:6:.bss && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:f5087dde1cdcf2caa664eb528a658f0e0eafbaa8fdee0750b326b52a8aff5c53 && \
+		sha256:f5087dde1cdcf2caa664eb528a658f0e0eafbaa8fdee0750b326b52a8aff5c53 keep && \
 	$(OBJCOPY) --remove-section=.rel.rodata $@
 # Overlay 1 has three C islands separated by owned assembly.  Mixed
 # -Wo,-loopunroll,4 / -Wab,-r4300_mul flag groups require five further

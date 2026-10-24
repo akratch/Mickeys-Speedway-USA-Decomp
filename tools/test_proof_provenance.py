@@ -356,6 +356,16 @@ class ProducerCaptureLifecycleTests(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(provenance.MetadataProofError):
                 provenance.local_ro_provider_input("helper --local-ro-origin-object " + value, root)
 
+    def test_ordered_provider_group_uses_only_distinct_stable_real_input_paths(self):
+        root = pathlib.Path("/synthetic")
+        a, b = "build/src/overlays/o001/labels.c.o", "build/src/overlays/o001/tail.c.o"
+        self.assertEqual((a, b), provenance.local_ro_provider_inputs(
+            "helper --local-ro-provider-group " + a + " " + b, root))
+        for args in (a, a + " " + a, a + " /tmp/tail.o", a + " " + b + " --output x",
+                     a + " " + b + " --local-ro-origin-object " + a):
+            with self.subTest(args=args), self.assertRaises(provenance.MetadataProofError):
+                provenance.local_ro_provider_inputs("helper --local-ro-provider-group " + args, root)
+
     def test_capture_roles_are_explicit_and_promotion_keeps_the_strict_default(self):
         arguments = [pathlib.Path("root") / name for name in
                      (".", "source.c", "configured.o", "build/mickey.us.elf")]

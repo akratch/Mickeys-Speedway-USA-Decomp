@@ -1970,32 +1970,67 @@ def validate_data_local_prefix(world, ov, row, source, raw, start):
 def validate_cross_input_local(world, exports, ov, row, source, raw):
     """A complete pointer input names actual bases in one runtime RO origin."""
     import source_module_link_proof as proof
-    provider_source = raw.local_ro_provider.removeprefix("build/src/").removesuffix(".c.o")
+    grouped = getattr(raw, "local_ro_providers", None)
+    provider_sources = [name.removeprefix("build/src/").removesuffix(".c.o")
+                        for name in (grouped or (raw.local_ro_provider,))]
     configured, start = data_import_input(world, ov, row, source, raw, linked_local=True)
     rels = raw.rels(".data")
-    if (not rels or len(rels) * 4 != raw.size(".data")
-            or raw.bytes_of(".data") != bytes(raw.size(".data"))
+    if grouped:
+        owners = [s for s in raw.symbols if s.section == ".data" and s.bind == STB_GLOBAL
+                  and s.type == 1 and s.size]
+        final = world.by_name.get(owners[0].name, ()) if len(owners) == 1 else ()
+        if (len(owners) != 1 or owners[0].value != 0 or owners[0].size != raw.size(".data")
+                or len(final) != 1 or final[0].bind != STB_GLOBAL or final[0].type != 1
+                or final[0].section != f".overlay_{ov:03d}" or final[0].size != owners[0].size
+                or final[0].value != OVERLAY_VMA + start):
+            raise PackError("grouped LOCAL data lacks its complete raw/final aggregate")
+    if (not rels or (not grouped and (len(rels) * 4 != raw.size(".data")
+            or raw.bytes_of(".data") != bytes(raw.size(".data"))))
             or any(configured.rels(s) for s in (".text", ".data", ".rodata"))):
         raise PackError("LOCAL data is not a complete zero-addend pointer input")
     targets = {}
-    for index, rel in enumerate(rels):
-        if (rel.offset != index * 4 or rel.type != R_MIPS_32
-                or rel.sym.shndx != SHN_UNDEF or rel.sym.bind != STB_GLOBAL
-                or rel.sym.name in exports.by_name):
+    offsets = []
+    for index, (rel, addend) in enumerate(zip(rels, in_place_addends(raw, ".data", rels))):
+        if ((not grouped and rel.offset != index * 4) or rel.offset % 4
+                or not 0 <= rel.offset <= raw.size(".data") - 4 or addend != 0
+                or rel.type != R_MIPS_32 or rel.sym.shndx != SHN_UNDEF
+                or rel.sym.bind != STB_GLOBAL or rel.sym.name in exports.by_name):
             raise PackError("unsupported cross-input LOCAL data import")
+        offsets.append(rel.offset)
         target = data_import_definition(world, rel.sym.name, base_only=True,
-                                        provider_source=provider_source)
+                                        provider_source=None if grouped else provider_sources[0])
         if target[0] != ov:
             raise PackError("LOCAL data provider escapes its module")
         targets[rel.sym.name] = target
-    provider = world.data_import_providers[provider_source]
-    if any(provider.size(s) for s in (".text", ".rodata", ".bss")):
-        raise PackError("LOCAL data provider is not a complete data-only input")
-    inputs = [x for x in world.module_info[ov]["inputs"]
-              if x.file == f"build/src/{provider_source}.c.o" and x.insec == ".data" and x.size]
-    if len(inputs) != 1:
-        raise PackError("LOCAL data provider lacks its unique origin input")
-    origin = inputs[0].addr - OVERLAY_VMA
+    if offsets != sorted(set(offsets)):
+        raise PackError("unordered or duplicate grouped LOCAL sites")
+    origin = None
+    end = None
+    allowed = set()
+    for provider_source in provider_sources:
+        # Authenticate even a complete declared member not named by a relocation.
+        rows = [r for r in projected_data_rows(world.amods[ov]) if r["source"] == provider_source]
+        if len(rows) != 1:
+            raise PackError("LOCAL provider lacks one canonical input")
+        ordinary = Elf(world.paths["raw"] / "src" / (provider_source + ".c.o"))
+        _provider_configured, provider_start = data_import_input(world, ov, rows[0], provider_source, ordinary)
+        providers = getattr(world, "data_import_providers", {})
+        if provider_source not in providers:
+            providers[provider_source] = reproduce_data_provider(world, provider_source)
+        world.data_import_providers = providers
+        provider = providers[provider_source]
+        if any(provider.rels(n) for n in (".text", ".data", ".rodata")):
+            raise PackError("LOCAL provider has relocations")
+        if origin is None:
+            origin = provider_start
+        elif grouped and provider_start != end:
+            raise PackError("LOCAL provider group is not contiguous in declared order")
+        end = provider_start + provider.size(".data")
+        allowed.update((ov, provider_start + symbol.value) for symbol in provider.symbols
+                       if symbol.section == ".data" and symbol.bind == STB_GLOBAL and symbol.type == 1
+                       and 0 <= symbol.value < provider.size(".data"))
+    if any(target not in allowed for target in targets.values()):
+        raise PackError("LOCAL target is outside its declared provider group")
     identities = proof.source_identities(raw, configured, world.elf, exports, ov,
                                          local_data_identities=targets)
     expected = {k: v for k, v in world.expected_cache(ov).items()
@@ -2114,16 +2149,29 @@ def reproduce_data_import(world, source):
         raise PackError("fresh data-only source link differs from configured bytes or symbols")
     if receipt["inputs"] != context():
         raise PackError("data-only source/context changed during reproduction")
-    provider_input = provenance.local_ro_provider_input(receipt["inputs"]["module_link"], root)
+    provider_inputs = provenance.local_ro_provider_inputs(receipt["inputs"]["module_link"], root)
     declared = link.get("local_data_provider")
-    if provider_input:
+    group = link.get("local_data_group")
+    if len(provider_inputs) > 1:
+        expected_inputs = [{"input": str((root / name).resolve()),
+                            "input_sha256": provenance.sha256_file(root / name)}
+                           for name in provider_inputs]
+        if (declared or not group or group.get("inputs") != expected_inputs
+                or group.get("runtime_role") != ".rodata" or group.get("origin") != "first-input-start"
+                or group.get("linked_sha256") != provenance.sha256_file(directory / "providers.elf")
+                or group.get("script_sha256") != provenance.sha256_file(directory / "providers.ld")):
+            raise PackError("ordinary LOCAL group lacks its bound ordered providers")
+        fresh.local_ro_providers = provider_inputs
+        fresh.local_ro_provider = provider_inputs[0]
+    elif provider_inputs:
+        provider_input = provider_inputs[0]
         provider = root / provider_input
-        if (not declared or declared.get("input") != str(provider.resolve())
+        if (group or not declared or declared.get("input") != str(provider.resolve())
                 or declared.get("input_sha256") != provenance.sha256_file(provider)
                 or declared.get("runtime_role") != ".rodata" or declared.get("origin") != "input-start"):
             raise PackError("ordinary LOCAL data link lacks its bound provider declaration")
         fresh.local_ro_provider = provider_input
-    elif declared:
+    elif declared or group:
         raise PackError("undeclared LOCAL provider in ordinary module receipt")
     return fresh, receipt, context
 

@@ -125,6 +125,43 @@ class BindingTests(unittest.TestCase):
             self.assertTrue(any(s.name == tool.IMPORT_PREFIX + "second" and s.value == 4
                                 and s.bind == LOCAL for s in result.symbols))
 
+    @unittest.skipUnless(LD.is_file() and OBJCOPY.is_file(), "needs MIPS binutils")
+    def test_group_uses_actual_ordered_definitions_and_preserves_scalar_words(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            def writable(builder):
+                data = bytearray(builder.build())
+                section = rp.Elf("fixture", data).section(".data")
+                struct.pack_into(">I", data, struct.unpack_from(">I", data, 32)[0] + section["index"] * 40 + 8, 3)
+                return bytes(data)
+            first, second = root / "first.o", root / "second.o"
+            first.write_bytes(writable(ElfBuilder().section(".data", words(17, 19, 0, 0))
+                              .sym("a", 0, 0, GLOBAL, 1, ".data")))
+            second.write_bytes(writable(ElfBuilder().section(".data", words(23, 29, 0, 0))
+                               .sym("b", 4, 0, GLOBAL, 1, ".data")))
+            raw, output = root / "raw.o", root / "out.o"
+            raw.write_bytes(writable(ElfBuilder().section(".data", words(0, 0, 37, 41))
+                .sym("aggregate", 0, 16, GLOBAL, 1, ".data").sym("a").sym("b")
+                .rel(".data", 0, rp.R_MIPS_32, "a").rel(".data", 4, rp.R_MIPS_32, "b")))
+            receipt = tool.link(raw, output, rp.OrtNames([], {}), root / "module", ld=LD,
+                objcopy=OBJCOPY, rebind=ROOT / "tools/rebind_elf_relocations.py",
+                local_ro_group=[first, second])
+            self.assertEqual(words(0, 20, 37, 41), rp.Elf(output).bytes_of(".data"))
+            self.assertEqual({"a": 0, "b": 20}, receipt["local_data_group"]["bindings"])
+            self.assertEqual([str(first.resolve()), str(second.resolve())],
+                             [p["input"] for p in receipt["local_data_group"]["inputs"]])
+            with self.assertRaisesRegex(tool.LinkError, "complete sized aggregate"):
+                tool.grouped_local_bindings(rp.Elf("bad", local_fixture()),
+                    [rp.Elf(first), rp.Elf(second)], rp.OrtNames([], {}), root, LD, [])
+            with self.assertRaisesRegex(tool.LinkError, "distinct ordered"):
+                tool.grouped_local_bindings(rp.Elf(raw), [rp.Elf(first), rp.Elf(first)],
+                    rp.OrtNames([], {}), root, LD, [])
+            first.write_bytes(writable(ElfBuilder().section(".data", words(17, 19, 0, 0))
+                .sym("a", 0, 20, GLOBAL, 1, ".data")))
+            with self.assertRaisesRegex(tool.LinkError, "bounded original provider"):
+                tool.grouped_local_bindings(rp.Elf(raw), [rp.Elf(first), rp.Elf(second)],
+                    rp.OrtNames([], {}), root, LD, [])
+
     def test_local_provider_refuses_missing_zero_pointer_addend_and_function_base(self):
         exports = rp.OrtNames([], {})
         provider = rp.Elf("provider", local_fixture(provider=True))

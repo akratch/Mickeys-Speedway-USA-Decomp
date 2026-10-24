@@ -88,7 +88,11 @@ def canonical_bss_export(canonical, target, addend, rom, runtime_modules):
 
 def source_identities(raw, linked, canonical, exports, overlay, *, rom=None, runtime_modules=None,
                       local_data_identities=None):
-    """Resolve source operands without taking an identity from the shipped site."""
+    """Resolve source operands without taking an identity from the shipped site.
+
+    A data guard may supply individually authenticated actual provider bases;
+    this does not infer a LOCAL provider role or aggregate shape here.
+    """
     bases = {".text": 0, ".data": linked.size(".text"),
              ".rodata": linked.size(".text") + linked.size(".data"),
              ".bss": sum(linked.size(s) for s in (".text", ".data", ".rodata"))}

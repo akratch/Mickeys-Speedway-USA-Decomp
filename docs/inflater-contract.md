@@ -5,8 +5,9 @@ DEFLATE-family block stream. It uses shared state and trusts its input. Its
 completion flag is not an error result. These properties come from Mickey's
 [front end and Huffman builder](../src/main/gzip.c), the five `gzip_asm` entries
 in the [verified-assembly ledger](VERIFIED_ASSEMBLY.md), and a read-only audit
-of their ROM-exact linked output at
-`390eef6244b678d8ab94cbc8224fd440a51c9f47`.
+of their ROM-exact linked output. A further read-only input-fetch audit used
+the allocated objects and final link at
+`8854964f5e186f0ab64d20dd34b6784465a47b9d`.
 
 This is a consumer contract, not a claim of standards compliance or a native
 decoder implementation. [Asset loading](asset-loading.md) describes the PI and
@@ -75,17 +76,41 @@ reads express an established replacement contract.
 ## Read-ahead and staged overlap
 
 A table lookup refills to its root/subtable width before discovering how many
-bits the selected symbol consumes. It can therefore fetch beyond the logical
-end of a short final code. No universal tail allowance has been proved. The
-decoder does not rewind or return semantic input consumption.
+bits the selected symbol consumes. Each refill fetches one byte. For a completed
+normal wrapper traversal, a conditional bound is now established: after the
+final Huffman end-of-block, at most one whole byte has been fetched beyond the
+byte containing the last logically consumed bit. A positive-length final stored
+block fetches exactly its aligned header and payload, without that extra byte.
 
-Tail staging is safe only if output stores preserve bytes still needed by
-future input fetches. For monotonically advancing output-before-input staging,
-each store being below the next unread input byte is sufficient. Use the
-handler-local physical cursor for that reasoning: the global cursor can be
-stale, while already fetched bits survive in the reservoir. Initial separation
-or a record fitting its allocation does not prove the property throughout a
-decode. Output history must remain intact too.
+This bound requires the wrapper's zero reservoir initialization, usable tables
+constructed by the actual builder from supported code lengths/symbols, and
+in-bounds workspace/history with no state corruption. It excludes arbitrary
+internal-entry state, malformed/reserved paths, type 3 and stored LEN zero.
+It does not establish that every standards-valid stream or any audited asset
+record satisfies these preconditions. Fixed literal roots remain clamped to
+7–9 and distance roots to five despite the incoming-memory dependency; this
+finite bound does not define a faithful native replacement for that dependency.
+
+Let `S` be prefix+5, `P` the next physical input byte at final return, `L` the
+number of logically consumed stream bits and `K` the residual valid-bit count.
+The actual fetch/consume paths preserve `K = 8(P-S) - L`. Normal block/header
+and dynamic-table paths carry at most 15 residual bits into the next block;
+final Huffman `K <= 15` therefore gives
+`P-S-ceil(L/8) = floor(K/8) <= 1`. Transient refill counts up to 22 are distinct
+from that completed-symbol bound. The decoder does not rewind or return `L`.
+This is a tail-read bound, not an output-capacity or overlap proof.
+
+Tail staging is safe only if output stores preserve every byte needed by future
+input fetches. For monotonically advancing output-before-input staging, each
+store being below the actual next pending fetch is sufficient. In Huffman and
+scalar-copy states the handler-local input cursor identifies that frontier;
+the published global may be stale, while already fetched bits survive in the
+reservoir. The stored four-byte unroll is different: after loading byte `I`, it
+advances the cursor to `I+4` before the first output store, then still fetches
+`I+1`, `I+2` and `I+3` in order. Those pending addresses, rather than the advanced
+cursor, constrain the intervening stores. It is four byte loads, not one word
+load. Initial separation or a record fitting its allocation does not prove
+safety throughout a decode. Output history must remain intact too.
 
 Let `B` be the output/allocation base, `C` the record span and `A` its staged
 base. These are actual caller geometries, not universal safe margins:
@@ -113,7 +138,8 @@ level, method, version or a validation byte.
 
 Before choosing a native decoder, settle these bounded questions:
 
-- Derive lookup read-ahead bounds, including the fixed-handler memory dependency.
+- Resolve the fixed-handler incoming-memory dependency for a native replacement;
+  the conditional fetch bound does not determine its exact table geometry.
 - Privately measure true output length, consumed input, workspace peak and the
   minimum overlap frontier per record. Metadata checks alone establish none of
   these dynamic properties.

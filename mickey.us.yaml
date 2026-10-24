@@ -1311,9 +1311,9 @@ segments:
     subsegments:
       - [0x185BE88, c, overlay_007]
       - [0x185CE48, bin, overlay_007_data_rodata]
-      - [0x185D0EC, .data, overlay7ModeTables]
-      - [0x185D59C, .data, overlay7SoundVariants]
-      - [0x185D76C, bin, overlay_007_data_rodata_924]
+      - [0x185CE94, .data, overlay7DispatchTables]
+      - [0x185D774, bin, overlay_007_data_rodata_92c]
+      - [0x185D778, .rodata, overlay_007]
 
   - name: overlay_007_reloc1
     type: bin

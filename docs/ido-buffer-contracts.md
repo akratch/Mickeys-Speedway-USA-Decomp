@@ -61,3 +61,29 @@ source/relocation/ROM acceptance rules apply.
   moving fixed arguments into a variadic tail. Full-TU size alone is not a
   matching proof. A different compiler mode needs independent target evidence
   and the ordinary flag-impact review.
+
+### Pointer representation can preserve a physical-address operand shape
+
+- **Symptom:** replacing a cached-segment pointer adjustment with unsigned
+  integer arithmetic changes address materialization and register allocation,
+  even though the intended N64 address bits agree. Pointer arithmetic outside
+  the referenced object is not a sound way to preserve that compiler shape.
+- **Mechanism:** IDO distinguishes an address expression from an unsigned
+  integer expression. A union containing a pointer and a signed word can
+  expose the target representation without subtracting from the pointer.
+  Writing the pointer member, then reading the signed member and XORing its
+  sign bit preserved an exact static-geometry operand in a whole-module proof.
+  The unsigned-word union alternative did not preserve the same output.
+- **Lever:** use the pointer/signed-word union only for a real N64 address
+  conversion, with explicit sequencing and an assertion that both pointer and
+  signed word are 32 bits. Convert the resulting word to unsigned. Ordinary
+  unsigned pointer-to-integer conversion remains the simpler first choice.
+- **Limits:** this relies on the configured compiler's union representation
+  behavior and the N64 two's-complement ABI. It is not a host-portability
+  abstraction or permission to reinterpret unrelated storage. Keep command
+  cursor lvalue types unchanged unless their actual allocation and consumers
+  establish a shared type. Require whole-function and relocation proof; a
+  matching local expression does not establish a matching function.
+
+
+See also [storage width and callable return width](ido-learnings.md#storage-width-does-not-establish-callable-return-width).

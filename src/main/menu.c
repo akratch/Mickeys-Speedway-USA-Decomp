@@ -145,14 +145,6 @@ extern MenuCommand D_8007C2E8[];
     command->words.w1 = (b); \
 }
 
-typedef struct MenuRectangle {
-    s16 left;
-    s16 top;
-    s16 right;
-    s16 bottom;
-    u32 colour;
-} MenuRectangle;
-
 typedef struct MenuCurrentObject {
     s16 unk0;
     s16 unk2;

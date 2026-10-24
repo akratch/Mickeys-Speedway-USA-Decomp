@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/pi.h"
+#include "game/menu.h"
 
 /* A loaded value keyed by id; the module keeps 32 of them. */
 typedef struct Overlay14ValueSlot {
@@ -94,13 +95,7 @@ typedef struct Overlay14PackedRect {
     s8 intensity;
 } Overlay14PackedRect;
 
-typedef struct Overlay14RenderRect {
-    s16 x0;
-    s16 y0;
-    s16 x1;
-    s16 y1;
-    s32 intensity;
-} Overlay14RenderRect;
+typedef MenuRectangle Overlay14RenderRect;
 
 typedef struct Overlay14Entry {
     s16 count;
@@ -209,9 +204,9 @@ extern s32 gOverlay14FlagC4Base[];
 extern s32 gOverlay14FlagC8Base[];
 extern s32 gOverlay14ModeE4Base[];
 extern s32 gOverlay14EnabledF8Base[];
-extern s32 gOverlay14Args2C;
-extern s32 gOverlay14Args30;
-extern s32 gOverlay14Args34;
+extern char gOverlay14Args2C[];
+extern char gOverlay14Args30[];
+extern char gOverlay14Args34[];
 extern s32 gOverlay14DataBase;
 extern Overlay14Entry *gOverlay14Entries;
 extern Overlay14Owner *gOverlay14Owner;
@@ -225,9 +220,7 @@ extern s32 frontGetLanguage(void);
 extern u16 joyGetPressed(s32 player);
 extern s8 joyGetStickX(s32 player);
 extern s8 joyGetStickY(s32 player);
-/* The resident definition (main/font.c) returns u8; the module calls it as
- * returning int, as an undeclared call would. As u8 the zero-extension
- * becomes a second web copied out of v0 (one extra move, frame +8). */
+/* The height API returns its stored unsigned byte as a word (0..255). */
 extern s32 func_8004D5C0(s32 font);
 extern void fontSetButtonMode(s32 active);
 extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);
@@ -236,9 +229,9 @@ extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha,
 extern void fontUseFont(s32 font);
 extern u8 *func_8004D40C(s32 font, char *text, s32 maxWidth,
                          u8 **lineStart, s32 *outWidth);
-extern void fontPrintXY(void *displayList, s32 x, s32 y, char *text,
+extern void fontPrintXY(Gfx **displayList, s32 x, s32 y, char *text,
                         s32 alignmentFlags);
-extern void frontDrawRectangles(void *context, s32 count,
+extern void frontDrawRectangles(Gfx **context, s32 count,
                                 Overlay14RenderRect *rects, s32 flags);
 extern Overlay14Object *func_80005820(s32 index);
 extern void controlSetPlayerSetup(s16 x, s16 y, s16 z, s16 angle);
@@ -246,11 +239,6 @@ extern s32 mainGetNextCharacter(void);
 extern u8 frontGetMode(void);
 extern void mainChangeLevel(s32 nextLevel, s32 nextCharacter, s32 nextAnimGroup,
                             s32 nextCamera, s32 fadeOut, s32 flags);
-/* Unprototyped placeholders for SYMBOL calls whose callees the module's
- * relocation records name (offset-zero stored addend). */
-extern s32 overlay14Dispatch();
-extern void overlay14DrawPrimitive();
-
 /*
  * ResetMode's call to the exported overlay14ReleaseOwner is a SYMBOL
  * relocation record: the shipped word stores the 0xF0000000 addend, not the

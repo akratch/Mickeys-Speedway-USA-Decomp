@@ -242,3 +242,49 @@ static void overlay63UpdateSequence(s32 delta) {
         fontPrintXY(&D_800D3140, 0xA1, 0x3D, gO63ActiveState, 0xC);
     }
 }
+
+/* Tier D storage model from the actual writes and phase order, not a recovered
+ * original declaration. Initialization visits twenty slots; rendering visits
+ * nineteen and the final slot becomes five control words. Existing imported
+ * Config/Particle/control views remain legacy effective-type/lifetime debt.
+ * The compiler naturally places this400-byte envelope after three prefix
+ * globals with four alignment bytes; no reserved object supplies that gap. */
+struct Overlay45ResourceDescriptor;
+typedef struct Overlay63ParticleStorage {
+    void *resource;
+    s16 x;
+    s16 y;
+    s16 tilt;             /* current source calls this height; rendered as Z angle */
+    u16 phase;
+    s16 phaseStep;
+    s16 tiltStep;
+    s8 jitter;
+} Overlay63ParticleStorage;
+
+typedef struct Overlay63EffectControls {
+    s32 fade;
+    s32 fadeDirection;
+    s32 triggered;
+    s32 triggerTimer;
+    s32 fadeTimer;
+} Overlay63EffectControls;
+
+typedef union Overlay63EffectsStorage {
+    Overlay63ParticleStorage constructorSlots[20];
+    struct {
+        Overlay63ParticleStorage rendered[19];
+        Overlay63EffectControls controls;
+    } runtime;
+} Overlay63EffectsStorage;
+
+struct Overlay45ResourceDescriptor *overlay63DescriptorStorage;
+s32 overlay63OpacityStorage;
+f32 overlay63FrameStorage;
+Overlay63EffectsStorage overlay63EffectsStorage;
+
+#ifdef TARGET_N64
+typedef char O63StoragePointerWidth[(sizeof(void *) == 4) ? 1 : -1];
+typedef char O63ParticleStorageSize[(sizeof(Overlay63ParticleStorage) == 20) ? 1 : -1];
+typedef char O63EffectControlsSize[(sizeof(Overlay63EffectControls) == 20) ? 1 : -1];
+typedef char O63EffectsStorageSize[(sizeof(Overlay63EffectsStorage) == 400) ? 1 : -1];
+#endif

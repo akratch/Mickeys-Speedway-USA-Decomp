@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 51560,
+  "owned_data_rodata_bytes": 51640,
   "diagnostic_data_rodata_bytes": 304,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -10412,7 +10412,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 68
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x50",
+     "size": "0x50",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o063/overlay63HudPrefix",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 64,

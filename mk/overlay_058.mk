@@ -25,3 +25,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay_058.c.o: POSTPROCESS = \
 # Complete ordinary mutable transition input; compiler output is unmodified.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58TransitionState.c.o: private PLAIN_DATA_PROOF = 1
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58TransitionState.c.o: private PLAIN_DATA_RUNTIME_ROLE = data
+
+# ADR0026: one genuine mixed rank/glyph aggregate targets actual readonly
+# named bases; the complete provider input declares runtime RO origin.
+MODULE_LINKED_DATA_SOURCES += overlays/o058/overlay58RankTextLayout
+O58_RANK_LAYOUT := $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58RankTextLayout.c.o
+O58_RANK_LABELS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58TextLabels.c.o
+$(O58_RANK_LAYOUT): $(O58_RANK_LABELS)
+$(O58_RANK_LAYOUT): private LOCAL_RO_ORIGIN_OBJECT = $(O58_RANK_LABELS)
+$(O58_RANK_LAYOUT): private LOCAL_DATA_AGGREGATE = 1

@@ -3700,6 +3700,22 @@ See the [complete representation entry](ido-buffer-contracts.md#pointer-represen
   values or values outside the proved range. Preserve semantics, ABI, preconditions,
   flags and full raw/configured/ROM proof; add no carriers or guards.
 
+### Compiler debug records can retain missing static data identities
+
+- **Symptom:** an initialized static object occupies real compiler output,
+  but its local ELF definition disappears when assembly processing is removed.
+- **Mechanism:** ordinary IDO output can retain the file-scoped
+  `stStatic/scData` record and section offset in `.mdebug` while omitting the
+  ELF object symbol. This differs from an eliminated or unallocated object.
+- **Lever:** authenticate scope, unique name and real zero-based writable
+  allocated PROGBITS section before restoring a local object anchor. Prove
+  unchanged allocated bytes, old semantic symbols and ordered relocation
+  identities across every affected input; use the same pass in fresh proofs.
+- **Limits:** the debug offset does not establish allocation extent or the
+  original declaration. New anchors remain size zero; preserve independently
+  valid sizes already present. Do not infer size from names or neighbors,
+  restore nested/ambiguous names, or change compiler flags to obtain metadata.
+
 Additional measured notes: [buffer argument affinity and finite-float diagnostics](ido-buffer-contracts.md).
 See also [aggregate initialization, symbol extents and actual storage](ido-symbol-metadata.md).
 For address reuse across calls, see [real linker spans](ido-linker-spans.md).

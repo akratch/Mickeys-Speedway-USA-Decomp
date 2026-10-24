@@ -1665,14 +1665,64 @@ def data_import_definition(world, name):
     return ov, start + own.value
 
 
+def validate_data_local_prefix(world, ov, row, source, raw, start):
+    """A complete aggregate at runtime DATA zero may point inside itself.
+
+    The actual source definition and final map establish the target before any
+    retained record is consulted. This does not infer a runtime section role
+    from the compiler's section name, or admit arbitrary interior input groups.
+    """
+    size = raw.size(".data")
+    owners = [s for s in raw.symbols if s.section == ".data" and s.type == 1
+              and s.bind == STB_GLOBAL and s.size]
+    if (int(row["offset"], 16) != 0 or len(owners) != 1
+            or owners[0].value != 0 or owners[0].size != size):
+        raise PackError(f"data-only LOCAL prefix lacks one complete sized owner: {source}")
+    owner = owners[0]
+    definitions = [s for s in world.by_name.get(owner.name, ())
+                   if s.bind == STB_GLOBAL and s.shndx != SHN_UNDEF]
+    if (len(definitions) != 1 or definitions[0].section != f".overlay_{ov:03d}"
+            or definitions[0].type != 1 or definitions[0].size != size
+            or definitions[0].value != OVERLAY_VMA + start):
+        raise PackError(f"data-only LOCAL prefix lacks its unique final owner: {source}")
+    rels = raw.rels(".data")
+    identities = {}
+    offsets = []
+    for rel, addend in zip(rels, in_place_addends(raw, ".data", rels)):
+        if (rel.type != R_MIPS_32 or rel.sym.index != owner.index or rel.offset % 4
+                or not 0 <= rel.offset <= size - 4 or not 0 <= addend < size
+                or rel.offset in offsets):
+            raise PackError(f"unsupported data-only LOCAL prefix relocation: {source}")
+        offsets.append(rel.offset)
+        identities[(start + rel.offset, rel.type)] = ("ov", ov, start + owner.value + addend)
+    if offsets != sorted(offsets):
+        raise PackError(f"unordered data-only LOCAL prefix relocations: {source}")
+    expected = {key: value for key, value in world.expected_cache(ov).items()
+                if start <= key[0] < start + size}
+    if set(identities) != set(expected) or not identities:
+        raise PackError(f"data-only LOCAL prefix: missing or extra runtime records: {source}")
+    if list(identities) != sorted(expected, key=lambda key: expected[key]["position"]):
+        raise PackError(f"data-only LOCAL prefix runtime order differs: {source}")
+    for key, identity in identities.items():
+        record = expected[key]
+        if (record["op"] != OP_LOCAL or record["table"] != 2
+                or record["symbol_index"] != world.module_info[ov]["text_size"]
+                or record["full"] != identity):
+            raise PackError(f"data-only LOCAL source/runtime identity mismatch: {source}+{key[0]:#x}")
+    return len(rels)
+
+
 def validate_data_imports(world, exports, ov, row, source, raw):
-    """Only complete zero-addend ORT pointer inputs; LOCAL/group cases refuse."""
+    """Complete ORT pointer inputs or a bounded same-owner LOCAL data prefix."""
     import source_module_link_proof as proof
     configured, start = data_import_input(world, ov, row, source, raw)
     rels = raw.rels(".data")
+    if any(configured.rels(s) for s in (".text", ".data", ".rodata")):
+        raise PackError(f"configured data-only input retains relocations: {source}")
+    if any(rel.sym.shndx != SHN_UNDEF for rel in rels):
+        return validate_data_local_prefix(world, ov, row, source, raw, start)
     if (len(rels) * 4 != raw.size(".data")
-            or raw.bytes_of(".data") != bytes(raw.size(".data"))
-            or any(configured.rels(s) for s in (".text", ".data", ".rodata"))):
+            or raw.bytes_of(".data") != bytes(raw.size(".data"))):
         raise PackError(f"data-only module {source}: not a complete pure ORT pointer input")
     identities = proof.source_identities(raw, configured, world.elf, exports, ov)
     expected = {key: value for key, value in world.expected_cache(ov).items()
@@ -1812,7 +1862,7 @@ def guard_data_module_imports(world, exports):
             (root / receipt["directory"] / "proof.json").write_text(
                 json.dumps(receipt, sort_keys=True, indent=2))
         for raw, receipt in outputs:
-            receipt.update(data_only_runtime_imports=raw.size(".data") // 4,
+            receipt.update(data_only_runtime_imports=len(raw.rels(".data")),
                 provider_inputs={os.path.relpath(path, root): digest
                                  for path, digest in world.data_import_inputs.items()})
             (root / receipt["directory"] / "proof.json").write_text(

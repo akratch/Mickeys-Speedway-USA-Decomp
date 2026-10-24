@@ -400,6 +400,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: CFLAGS += -Wab,-r4300_mul
 O8_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o
 # Complete pure-ORT pointer input; separate artifacts and durable data guard.
 MODULE_LINKED_DATA_SOURCES += overlays/o008/overlay8TuningTables
+# Complete frame aggregate; same-input LOCAL pointers are checked independently.
+MODULE_LINKED_DATA_SOURCES += overlays/o059/overlay59Frames
 
 # Mickey's LOCAL records distinguish the rodata base from data/BSS. Restoring
 # the intervening scalar literals makes the compiler's complete 512-byte float

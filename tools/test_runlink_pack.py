@@ -869,9 +869,91 @@ class DataOnlyImportGuardTests(unittest.TestCase):
             rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, self.raw())
 
     def test_same_input_local_case_is_not_silently_accepted(self):
-        with self.assertRaisesRegex(rp.PackError, "unsupported LOCAL/group/import"):
+        with self.assertRaisesRegex(rp.PackError, "LOCAL prefix lacks one complete sized owner"):
             rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source,
                                      self.raw(local=True))
+
+    def local_prefix(self, *, missing_first=False, target_addend=16,
+                     owner_size=32, target_section=False):
+        self.world.data_import_inputs = {}  # each call constructs a fresh fixture
+        payload = words(1, 2, 3, 0, 4, 5, 6, target_addend)
+        self.row.update(size="0x20", end_offset="0x20")
+        builder = ObjBuilder().section(".data", payload).sym(
+            "frames", 0, owner_size, GLOBAL, OBJECT, ".data")
+        if not missing_first:
+            builder.rel(".data", 12, R32, ("section", ".data") if target_section else "frames")
+        builder.rel(".data", 28, R32, "frames")
+        raw = self.write(self.paths["raw"] / "src" / (self.source + ".c.o"), builder)
+        self.write(self.paths["build"] / "src" / (self.source + ".c.o"),
+                   ObjBuilder().section(".data", payload).sym(
+                       "frames", 0, owner_size, GLOBAL, OBJECT, ".data"))
+        linked = rp.Elf("linked", ObjBuilder().section(".overlay_001", bytes(16) + payload,
+            addr=rp.OVERLAY_VMA).sym("frames", rp.OVERLAY_VMA + 16, owner_size,
+                                    GLOBAL, OBJECT, ".overlay_001").build())
+        item = rp.MapInput(".overlay_001", ".data", rp.OVERLAY_VMA + 16, 32,
+                           "build/src/" + self.source + ".c.o")
+        self.world.elf = linked
+        self.world.by_name = {"frames": [s for s in linked.symbols if s.name == "frames"]}
+        self.world.map = self.world.module_info[1]["inputs"] = [item]
+        self.local_expected = {(16 + site, R32): dict(op=rp.OP_LOCAL, symbol_index=16,
+            full=("ov", 1, 16 + addend), table=2, position=i)
+            for i, (site, addend) in enumerate(((12, 0), (28, 16)))}
+        self.world.expected_cache = lambda _ov: self.local_expected
+        return raw
+
+    def test_local_prefix_uses_real_owner_and_runtime_data_base(self):
+        raw = self.local_prefix()
+        self.assertEqual(rp.validate_data_imports(
+            self.world, self.exports, 1, self.row, self.source, raw), 2)
+        self.provider_mock.assert_not_called()
+
+    def test_local_first_pointer_to_null_loses_identity_despite_identical_payload(self):
+        correct = self.local_prefix()
+        missing = self.local_prefix(missing_first=True)
+        self.assertEqual(correct.bytes_of(".data"), missing.bytes_of(".data"))
+        with self.assertRaisesRegex(rp.PackError, "missing or extra runtime records"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, missing)
+        with self.assertRaisesRegex(rp.PackError, "stale ordinary raw"):
+            rp.validate_fresh_data_input(correct, missing)
+
+    def test_local_target_cannot_escape_or_use_unproved_section_interior(self):
+        for arguments in ({"target_addend": 32}, {"target_section": True}):
+            with self.subTest(arguments=arguments):
+                raw = self.local_prefix(**arguments)
+                with self.assertRaisesRegex(rp.PackError, "unsupported data-only LOCAL"):
+                    rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+
+    def test_local_pointer_site_must_be_word_aligned(self):
+        raw = self.local_prefix()
+        rels = raw.rels(".data")
+        with mock.patch.object(raw, "rels", side_effect=lambda section:
+                [rp.Rel(13, R32, rels[0].sym), rels[1]] if section == ".data" else []):
+            with self.assertRaisesRegex(rp.PackError, "unsupported data-only LOCAL"):
+                rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+
+    def test_local_owner_must_cover_the_complete_input_and_be_unique_in_final(self):
+        raw = self.local_prefix(owner_size=16)
+        with self.assertRaisesRegex(rp.PackError, "one complete sized owner"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+        raw = self.local_prefix()
+        self.world.by_name["frames"] *= 2
+        with self.assertRaisesRegex(rp.PackError, "unique final owner"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+
+    def test_local_runtime_role_and_targets_are_independently_checked(self):
+        for change in ({"symbol_index": 32}, {"op": rp.OP_SYMBOL},
+                       {"table": 1}, {"full": ("ov", 1, 17)}):
+            with self.subTest(change=change):
+                raw = self.local_prefix()
+                self.local_expected[(28, R32)].update(change)
+                with self.assertRaisesRegex(rp.PackError, "LOCAL source/runtime identity mismatch"):
+                    rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+
+    def test_local_runtime_record_order_is_not_discarded(self):
+        raw = self.local_prefix()
+        self.local_expected[(28, R32)]["position"] = 2
+        with self.assertRaisesRegex(rp.PackError, "runtime order differs"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
 
 
 class HeldDataCaptureTests(unittest.TestCase):

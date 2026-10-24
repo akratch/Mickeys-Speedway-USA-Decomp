@@ -25,8 +25,8 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 47844,
-  "diagnostic_data_rodata_bytes": 508,
+  "owned_data_rodata_bytes": 47408,
+  "diagnostic_data_rodata_bytes": 760,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -9283,13 +9283,14 @@
    },
    "data_rodata_ownership": [
     {
-     "offset": "0x0",
-     "end_offset": "0x80",
-     "size": "0x80",
+     "offset": "0x5AC",
+     "end_offset": "0x644",
+     "size": "0x98",
      "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57GridTriangles",
-     "canonical": true
+     "section": ".rodata",
+     "source": "overlays/o057/overlay_057",
+     "trial_function": "func_overlay_057_F0000000_18A3BF8",
+     "externalized": true
     },
     {
      "offset": "0x1FC",
@@ -9328,48 +9329,12 @@
      "canonical": true
     },
     {
-     "offset": "0x4F0",
-     "end_offset": "0x4F4",
-     "size": "0x4",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57SelectionFlag",
-     "canonical": true
-    },
-    {
-     "offset": "0x4F8",
-     "end_offset": "0x510",
-     "size": "0x18",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57TransitionState",
-     "canonical": true
-    },
-    {
      "offset": "0x540",
      "end_offset": "0x580",
      "size": "0x40",
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o057/overlay57MenuLabels",
-     "canonical": true
-    },
-    {
-     "offset": "0x5AC",
-     "end_offset": "0x644",
-     "size": "0x98",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o057/overlay_057",
-     "canonical": true
-    },
-    {
-     "offset": "0x644",
-     "end_offset": "0x654",
-     "size": "0x10",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o057/overlay57ResponseParameters",
      "canonical": true
     }
    ]
@@ -9547,12 +9512,30 @@
      "canonical": true
     },
     {
+     "offset": "0x2B0",
+     "end_offset": "0x2D0",
+     "size": "0x20",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o058/overlay58TransitionState",
+     "canonical": true
+    },
+    {
      "offset": "0x2D0",
-     "end_offset": "0x310",
-     "size": "0x40",
+     "end_offset": "0x390",
+     "size": "0xC0",
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o058/overlay58TextLabels",
+     "canonical": true
+    },
+    {
+     "offset": "0x398",
+     "end_offset": "0x3B8",
+     "size": "0x20",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o058/overlay58SavedRecordFormats",
      "canonical": true
     }
    ]
@@ -15474,6 +15457,16 @@
    },
    "data_rodata_ownership": [
     {
+     "offset": "0x5CFC",
+     "end_offset": "0x5D60",
+     "size": "0x64",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o101/overlay_101",
+     "trial_function": "func_overlay_101_F000C6E8_18E7F08",
+     "externalized": true
+    },
+    {
      "offset": "0x0",
      "end_offset": "0x1D0",
      "size": "0x1D0",
@@ -15534,24 +15527,6 @@
      "type": "c",
      "section": ".data",
      "source": "overlays/o101/overlay101WindowLabels",
-     "canonical": true
-    },
-    {
-     "offset": "0x5C30",
-     "end_offset": "0x5C5C",
-     "size": "0x2C",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o101/overlay101TailConstants",
-     "canonical": true
-    },
-    {
-     "offset": "0x5C5C",
-     "end_offset": "0x5D60",
-     "size": "0x104",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o101/overlay_101",
      "canonical": true
     }
    ]

@@ -153,29 +153,29 @@ static s32 overlay14ApplyValues(s32 value, s32 mode) {
 
     result = 0;
     if (o14State_o014Reloc != 0) {
-        gOverlay14PendingValueD0Base.value = value;
-        gOverlay14PendingModeD4Base.value = mode;
+        o14PendingValue_o014Reloc = value;
+        o14PendingMode_o014Reloc = mode;
         return 0;
     }
 
-    gOverlay14PendingValueD0Base.value = -1;
-    gOverlay14PendingModeD4Base.value = -1;
+    o14PendingValue_o014Reloc = -1;
+    o14PendingMode_o014Reloc = -1;
     if (o14CommandCount_o014Reloc < 0x10) {
         if (mode == 2) {
-            gOverlay14Value108.value = value;
+            o14Next_o014Reloc = value;
             o14State_o014Reloc = 2;
         } else if (mode == 1) {
             gOverlay14ResultFCBase.value = overlay14CreateValue(value, 1);
             if (overlay14MoveCommandCursor(0) != 0) {
-                gOverlay14ModeE4.value = 1;
+                o14Mode_o014Reloc = 1;
                 result = gOverlay14ResultFCBase.value;
             }
         } else {
             o14ResultAddress_o014Reloc = overlay14CreateValue(value, 4);
-            gOverlay14TransitionD8Base.value = 0;
-            gOverlay14CursorDCBase.value = 0;
-            gOverlay14PointerE0Base.value = 0;
-            gOverlay14ModeE4.value = mode;
+            o14Transition_o014Reloc = 0;
+            o14Cursor_o014Reloc = 0;
+            o14TextHasMore_o014Reloc = 0;
+            o14Mode_o014Reloc = mode;
             result = o14ResultAddress_o014Reloc;
         }
 
@@ -213,17 +213,17 @@ static s32 overlay14ApplyValues(s32 value, s32 mode) {
  * 0x186FD70..0x186FE50 range has no padding or export and has five local inbound
  * JUMPs. */
 static void overlay14ResetMode(void) { Overlay14QueuedCommand *command; do {
-        if (D_EC <= 0) return;
-        D_EC--;
-        if (D_EC <= 0) return;
+        if (o14CommandCount_o014Reloc <= 0) return;
+        o14CommandCount_o014Reloc--;
+        if (o14CommandCount_o014Reloc <= 0) return;
         overlay14ReleaseOwner_o014Reloc();
-        command = &gOverlay14CommandQueue_o014Reloc[D_EC - 1];
-        D_E4 = command->mode;
+        command = &gOverlay14CommandQueue_o014Reloc[o14CommandCount_o014Reloc - 1];
+        o14Mode_o014Reloc = command->mode;
         if (command->mode != 1) {
             gOverlay14ValueF8 = command->result;
-            gOverlay14ValueD8 = 0;
-            gOverlay14ValueDC = 0;
-            gOverlay14ValueE0 = 0;
+            o14Transition_o014Reloc = 0;
+            o14Cursor_o014Reloc = 0;
+            o14TextHasMore_o014Reloc = 0;
             return;
         }
         D_FC = command->result;
@@ -351,7 +351,7 @@ static void *overlay14CreateValue(s32 key, s32 alternate) {
     }
     if (gOverlay14ValueSlots_o014Reloc[i].value != 0) {
         gOverlay14ValueSlots_o014Reloc[i].key = key;
-        gOverlay14SlotCountE8++;
+        o14ValueCount_o014Reloc++;
     }
     return gOverlay14ValueSlots_o014Reloc[i].value;
 }
@@ -469,23 +469,23 @@ static Overlay14Asset *func_overlay_014_F00009F4_18702CC(s32 index, s32 context)
 }
 
 void overlay14ResetFlags(void) {
-    gOverlay14FlagC4 = 0;
+    o14Active_o014Reloc = 0;
     o14ExitRequested_o014Reloc = 0;
 }
 
 s32 overlay14GetFlagC4(void) {
-    return gOverlay14FlagC4;
+    return o14Active_o014Reloc;
 }
 
 s32 overlay14GetFlagC8(void) {
-    return gOverlay14FlagC8;
+    return o14State_o014Reloc;
 }
 
 /* DKR v77/v80 and JFG checks found no exact donor for this cleanup wrapper. */
 void overlay14ReleaseCurrent(void) {
-    gOverlay14FlagC8 = 0;
-    if (gOverlay14ResourceD0 != -1) {
-        overlay14ApplyValues(gOverlay14ResourceD0, gOverlay14ValueD4);
+    o14State_o014Reloc = 0;
+    if (o14PendingValue_o014Reloc != -1) {
+        overlay14ApplyValues(o14PendingValue_o014Reloc, o14PendingMode_o014Reloc);
     }
 }
 
@@ -522,7 +522,7 @@ Overlay14QueuedCommand gOverlay14CommandQueue[16];
 static void overlay14Reset(void) {
     gOverlay14Timer1C_o014Reloc = 0;
     gOverlay14Timer20_o014Reloc = 0;
-    gOverlay14ResetCC = 0;
+    o14ExitRequested_o014Reloc = 0;
 }
 
 /* Tier A source reconstruction: update and retest each timer directly.
@@ -605,39 +605,39 @@ static void overlay14AdvanceCommand(s32 context) {
     s32 extra;
 
     divisor = func_8004D5C0(2);
-    if (gOverlay14Transition != 0) {
-        if (gOverlay14Transition < 0) {
-            gOverlay14Transition += 1;
-            gOverlay14Cursor -= 1;
+    if (o14Transition_o014Reloc != 0) {
+        if (o14Transition_o014Reloc < 0) {
+            o14Transition_o014Reloc += 1;
+            o14Cursor_o014Reloc -= 1;
         } else {
-            gOverlay14Transition -= 1;
-            gOverlay14Cursor += 1;
+            o14Transition_o014Reloc -= 1;
+            o14Cursor_o014Reloc += 1;
         }
-    } else if ((gOverlay14PointerE0Base.value != 0) && (gOverlay14InputFlag0_o014Reloc != 0)) {
-        gOverlay14TransitionD8Base.value = (0x58 / divisor) - 1;
+    } else if ((o14TextHasMore_o014Reloc != 0) && (gOverlay14InputFlag0_o014Reloc != 0)) {
+        o14Transition_o014Reloc = (0x58 / divisor) - 1;
     } else {
         limit = (0x58 / divisor) - 1;
-        if ((gOverlay14Cursor >= limit) && (gOverlay14InputFlag4_o014Reloc != 0)) {
-            gOverlay14TransitionD8Base.value = -limit;
+        if ((o14Cursor_o014Reloc >= limit) && (gOverlay14InputFlag4_o014Reloc != 0)) {
+            o14Transition_o014Reloc = -limit;
         }
     }
 
-    if ((gOverlay14PointerE0Base.value == 0) && (gOverlay14InputFlag0_o014Reloc != 0)) {
-        if ((gOverlay14ModeE4.value == 4) && (gOverlay14ValueEC.value >= 2)) {
+    if ((o14TextHasMore_o014Reloc == 0) && (gOverlay14InputFlag0_o014Reloc != 0)) {
+        if ((o14Mode_o014Reloc == 4) && (o14CommandCount_o014Reloc >= 2)) {
             overlay14ResetMode();
             return;
         }
-        if (gOverlay14ModeE4.value == 3) {
-            extra = gOverlay14Value114.value;
+        if (o14Mode_o014Reloc == 3) {
+            extra = o14RuleField114_o014Reloc;
             if (extra != 0) {
-                overlay14ApplyValues(gOverlay14Value110.value, extra);
+                overlay14ApplyValues(o14RuleField110_o014Reloc, extra);
                 return;
             }
         }
-        gOverlay14StateCC.value = 1;
+        o14ExitRequested_o014Reloc = 1;
         return;
     }
-    if ((gOverlay14InputFlag4_o014Reloc != 0) && (gOverlay14ValueEC.value >= 2)) {
+    if ((gOverlay14InputFlag4_o014Reloc != 0) && (o14CommandCount_o014Reloc >= 2)) {
         overlay14ResetMode();
     }
 }
@@ -699,14 +699,14 @@ static void overlay14DispatchCommand(void) {
                     overlay14ApplyValues(encoded & 0xFFF, 1);
                     break;
                 case 0x3000:
-                    gOverlay14ActiveHandle = encoded & 0xFFF;
-                    gOverlay14FlagC8 = 2;
+                    o14Next_o014Reloc = encoded & 0xFFF;
+                    o14State_o014Reloc = 2;
                     break;
                 case 0x4000:
                     overlay14ResetMode();
                     break;
                 default:
-                    gOverlay14FlagC4 = 0;
+                    o14Active_o014Reloc = 0;
                     break;
             }
             action = command->trailingAction;
@@ -726,37 +726,34 @@ static void overlay14CallUpdate(s32 unused) {
     overlay14ResetMode();
 }
 
-#define gOverlay14FlagC4 gOverlay14FlagC4Base[0x31]
-#define gOverlay14FlagC8 gOverlay14FlagC8Base[0x32]
-#define gOverlay14ModeE4 gOverlay14ModeE4Base[0x39]
 #define gOverlay14EnabledF8 gOverlay14EnabledF8Base[0x3E]
 #define gOverlay14CommandHeader gOverlay14CommandHeaderBase[0x3F]
 /* Pinned DKR v77/v80 and JFG scans found no exact donor for this body. */
 void overlay14UpdateTransition(void *context, s32 step) {
     overlay14PrepareInputState(step);
-    if ((gOverlay14FlagC4 != 0) && (gOverlay14FlagC8 == 0)) {
-        if ((gOverlay14ModeE4 != 1) && (gOverlay14EnabledF8 != 0)) {
+    if ((o14Active_o014Reloc != 0) && (o14State_o014Reloc == 0)) {
+        if ((o14Mode_o014Reloc != 1) && (gOverlay14EnabledF8 != 0)) {
             overlay14AdvanceCommand(step);
         } else if (gOverlay14CommandHeader != 0) {
             overlay14StepCommand(step);
         }
-        gOverlay14TransitionValue[0] += step * 0x10;
-        if (gOverlay14TransitionValue[0] >= 0x101) {
-            gOverlay14TransitionValue[0] = 0x100;
+        o14Opacity_o014Reloc += step * 0x10;
+        if (o14Opacity_o014Reloc >= 0x101) {
+            o14Opacity_o014Reloc = 0x100;
         }
-    } else if (gOverlay14TransitionValue[0] > 0) {
-        gOverlay14TransitionValue[0] -= step * 0x10;
-        if (gOverlay14TransitionValue[0] <= 0) {
-            if (gOverlay14FlagC8 == 0) {
+    } else if (o14Opacity_o014Reloc > 0) {
+        o14Opacity_o014Reloc -= step * 0x10;
+        if (o14Opacity_o014Reloc <= 0) {
+            if (o14State_o014Reloc == 0) {
                 overlay14InitializeReloc();
             } else {
-                gOverlay14TransitionValue[0] = 0;
+                o14Opacity_o014Reloc = 0;
             }
         }
     }
     fontSetButtonMode(1);
-    if (gOverlay14TransitionValue[0] != 0) {
-        if (gOverlay14ModeE4 != 1) {
+    if (o14Opacity_o014Reloc != 0) {
+        if (o14Mode_o014Reloc != 1) {
             func_overlay_014_F00013F4_1870CCC(context);
         } else {
             func_overlay_014_F0001540_1870E18(context);
@@ -764,9 +761,6 @@ void overlay14UpdateTransition(void *context, s32 step) {
     }
     fontSetButtonMode(0);
 }
-#undef gOverlay14FlagC4
-#undef gOverlay14FlagC8
-#undef gOverlay14ModeE4
 #undef gOverlay14EnabledF8
 #undef gOverlay14CommandHeader
 
@@ -814,20 +808,20 @@ static void func_overlay_014_F00013F4_1870CCC(Gfx **context) {
     s32 mode;
 
     overlay14BuildRects(context, o14WindowRects_o014Reloc, 0x5C, 0x14, 0xD0, 0x58,
-                        (gOverlay14ValueC0Base.value * 0xA0) >> 8);
-    gOverlay14HandleE0.value =
+                        (o14Opacity_o014Reloc * 0xA0) >> 8);
+    o14TextHasMore_o014Reloc =
         func_overlay_014_F0001830_1871108(context, (u8 *)gOverlay14ValueF8Base.value,
-                              gOverlay14ValueDCBase.value);
+                              o14Cursor_o014Reloc);
     fontBackground(0, 0, 0, 0);
     fontColour(0xFF, 0xC0, 0, 0xFF,
-                           (gOverlay14ValueC0Base.value * 0xFF) >> 8);
-    if (gOverlay14ValueDCBase.value != 0) {
+                           (o14Opacity_o014Reloc * 0xFF) >> 8);
+    if (o14Cursor_o014Reloc != 0) {
         fontPrintXY(context, 0xC4, 0x14, (char *)o14ScrollUpLabel_o014Reloc, 0xC);
     }
-    if ((gOverlay14HandleE0.value != 0) ||
-        ((mode = gOverlay14ModeE4.value, mode == 4) &&
-         (gOverlay14ValueEC.value >= 2)) ||
-        ((mode == 3) && (gOverlay14Value114.value != 0))) {
+    if ((o14TextHasMore_o014Reloc != 0) ||
+        ((mode = o14Mode_o014Reloc, mode == 4) &&
+         (o14CommandCount_o014Reloc >= 2)) ||
+        ((mode == 3) && (o14RuleField114_o014Reloc != 0))) {
         fontPrintXY(context, 0xC4, 0x6C, (char *)o14ScrollDownLabel_o014Reloc, 0xC);
     }
 }
@@ -857,14 +851,14 @@ static void func_overlay_014_F0001540_1870E18(Gfx **context) {
     s32 first;
 
     overlay14BuildRects(context, o14WindowRects_o014Reloc, 0x5C, 0x14, 0xD0, 0x58,
-                        (gOverlay14ValueC0 * 0xA0) >> 8);
+                        (o14Opacity_o014Reloc * 0xA0) >> 8);
     index = 0;
     cellWidth = func_8004D5C0(2);
     remaining = (0x58 / cellWidth) - 1;
     fontUseFont(2);
     fontBackground(0, 0, 0, 0);
     y = ((0x58 - (remaining * cellWidth)) >> 1) + 0x14;
-    opacity = (gOverlay14ValueC0 * 0xFF) >> 8;
+    opacity = (o14Opacity_o014Reloc * 0xFF) >> 8;
     while ((index < gOverlay14Entries->count) && (remaining > 0)) {
 
 
@@ -933,7 +927,7 @@ static s32 func_overlay_014_F0001830_1871108(Gfx **context, u8 *stream, s32 skip
     remaining = (0x58 / cellWidth) - 1;
     fontBackground(0, 0, 0, 0);
     fontColour(0xFF, 0xFF, 0xFF, 0xFF,
-               (gOverlay14ValueC0 * 0xFF) >> 8);
+               (o14Opacity_o014Reloc * 0xFF) >> 8);
     fontUseFont(2);
     y = ((0x58 - (remaining * cellWidth)) >> 1) + 0x14;
     do {
@@ -966,7 +960,7 @@ static s32 func_overlay_014_F0001830_1871108(Gfx **context, u8 *stream, s32 skip
             stream += 8;
             saved = stream[-2];
             fontColour(stream[-7], stream[-6], stream[-5], stream[-3],
-                       (saved * gOverlay14ValueC0) >> 8);
+                       (saved * o14Opacity_o014Reloc) >> 8);
             break;
         case7Draw:
             fontBackground(stream[-7], stream[-6], stream[-5], stream[-3]);
@@ -1021,15 +1015,15 @@ void overlay14ReleaseOwner(void) {
 void overlay14FinalizeActiveHandle(void) {
     Overlay14Object *object;
 
-    if (gOverlay14ActiveHandle != -1) {
+    if (o14Next_o014Reloc != -1) {
         object = func_80005820(0);
         if (object != 0) {
             controlSetPlayerSetup((s16)(s32)object->x,
                           (s16)(s32)(object->y + 2.0f),
                           (s16)(s32)object->z, object->id);
         }
-        mainChangeLevel(gOverlay14ActiveHandle, mainGetNextCharacter(), 0,
+        mainChangeLevel(o14Next_o014Reloc, mainGetNextCharacter(), 0,
                         frontGetMode(), 1, 0);
-        gOverlay14ActiveHandle = -1;
+        o14Next_o014Reloc = -1;
     }
 }

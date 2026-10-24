@@ -112,28 +112,13 @@ typedef struct Overlay14Object {
 } Overlay14Object;
 
 /*
- * Overlay-local words reached at an addend from a section base. Each reader
- * was matched with the word as `.value` of a pad struct at that offset; the
- * Ref types carry the offsets once.
+ * Legacy F8/FC address carriers retain their offset-bearing word views.
+ * Their pointer-domain/native-width contracts are outside scalar cleanup.
  */
 #define OVERLAY14_REF(name, offset) \
     typedef struct name { u8 pad00[offset]; s32 value; } name
-OVERLAY14_REF(O14ValueC0Ref, 0xC0);
-OVERLAY14_REF(O14StateCCRef, 0xCC);
-OVERLAY14_REF(O14PendingValueD0Ref, 0xD0);
-OVERLAY14_REF(O14PendingModeD4Ref, 0xD4);
-OVERLAY14_REF(O14TransitionD8Ref, 0xD8);
-OVERLAY14_REF(O14CursorDCRef, 0xDC);
-OVERLAY14_REF(O14ValueDCRef, 0xDC);
-OVERLAY14_REF(O14PointerE0Ref, 0xE0);
-OVERLAY14_REF(O14HandleE0Ref, 0xE0);
-OVERLAY14_REF(O14ModeE4Ref, 0xE4);
-OVERLAY14_REF(O14ValueECRef, 0xEC);
 OVERLAY14_REF(O14ValueF8Ref, 0xF8);
 OVERLAY14_REF(O14ResultFCRef, 0xFC);
-OVERLAY14_REF(O14Value108Ref, 0x108);
-OVERLAY14_REF(O14Value110Ref, 0x110);
-OVERLAY14_REF(O14Value114Ref, 0x114);
 #undef OVERLAY14_REF
 
 /* Real BSS definitions use typed private loader operand imports. */
@@ -153,58 +138,26 @@ extern Overlay14ValueSlot gOverlay14ValueSlots_o014Reloc[32];
 extern Overlay14ValueSlot gOverlay14ValueSlotsEnd128[];
 extern Overlay14QueuedCommand gOverlay14CommandQueue_o014Reloc[16];
 
-extern s32 gOverlay14SlotCountE8;
 extern s32 o14Opacity_o014Reloc, o14Active_o014Reloc, o14State_o014Reloc;
 extern s32 o14PendingValue_o014Reloc, o14PendingMode_o014Reloc;
 extern s32 o14Transition_o014Reloc, o14Cursor_o014Reloc, o14TextHasMore_o014Reloc;
 extern s32 o14ValueCount_o014Reloc, o14CommandCount_o014Reloc;
+extern s32 o14Mode_o014Reloc;
 extern Overlay14RuleGroup *o14RuleGroups_o014Reloc;
 extern u32 *o14Ranges_o014Reloc;
 extern s32 o14ResultAddress_o014Reloc, o14SelectionAddress_o014Reloc;
 extern s32 o14Current_o014Reloc, o14Next_o014Reloc, o14Context_o014Reloc;
 extern s32 o14RuleField110_o014Reloc, o14RuleField114_o014Reloc;
-extern O14PendingValueD0Ref gOverlay14PendingValueD0Base;
-extern O14PendingModeD4Ref gOverlay14PendingModeD4Base;
-extern O14TransitionD8Ref gOverlay14TransitionD8Base;
-extern O14CursorDCRef gOverlay14CursorDCBase;
-extern O14PointerE0Ref gOverlay14PointerE0Base;
-extern O14ModeE4Ref gOverlay14ModeE4;
 extern O14ResultFCRef gOverlay14ResultFCBase;
-extern O14Value108Ref gOverlay14Value108;
-extern O14StateCCRef gOverlay14StateCC;
-extern O14ValueECRef gOverlay14ValueEC;
-extern O14Value110Ref gOverlay14Value110;
-extern O14Value114Ref gOverlay14Value114;
-extern O14ValueC0Ref gOverlay14ValueC0Base;
-extern O14ValueDCRef gOverlay14ValueDCBase;
-extern O14HandleE0Ref gOverlay14HandleE0;
 extern O14ValueF8Ref gOverlay14ValueF8Base;
-extern s32 D_EC;
-extern s32 D_E4;
 extern s32 D_FC;
 extern char o14ReturnLabel_o014Reloc[];
 extern char o14ExitLabel_o014Reloc[];
 extern s32 gOverlay14ValueF8;
-extern s32 gOverlay14ValueD8;
-extern s32 gOverlay14ValueDC;
-extern s32 gOverlay14ValueE0;
-extern s32 gOverlay14ValueC0;
 extern Overlay14SelectionList *gOverlay14CommandHeader;
 extern Overlay14State gOverlay14State;
-extern s32 gOverlay14FlagC4;
-extern s32 gOverlay14FlagC8;
 extern s32 o14ExitRequested_o014Reloc;
-extern s32 gOverlay14ResourceD0;
-extern s32 gOverlay14ValueD4;
-extern s32 gOverlay14ResetCC;
-extern s32 gOverlay14Transition;
-extern s32 gOverlay14Cursor;
 extern Overlay14SelectionList *gOverlay14CommandHeaderBase[];
-extern s32 gOverlay14ActiveHandle;
-extern s32 gOverlay14TransitionValue[];
-extern s32 gOverlay14FlagC4Base[];
-extern s32 gOverlay14FlagC8Base[];
-extern s32 gOverlay14ModeE4Base[];
 extern s32 gOverlay14EnabledF8Base[];
 extern const char o14ScrollUpLabel_o014Reloc[];
 extern const char o14ScrollDownLabel_o014Reloc[];

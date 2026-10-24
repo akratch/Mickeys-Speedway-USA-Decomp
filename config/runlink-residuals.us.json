@@ -8788,7 +8788,7 @@
   },
   "placement": {
    "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-   "count": 32,
+   "count": 31,
    "entries": [
     [
      1,
@@ -8943,13 +8943,6 @@
      ".rodata",
      "0xD80",
      2
-    ],
-    [
-     57,
-     "overlay_057",
-     ".rodata",
-     "0x705C",
-     8
     ],
     [
      58,

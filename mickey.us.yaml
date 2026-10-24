@@ -2723,6 +2723,7 @@ segments:
       - [0x18AABB8, bin, overlay_057_data_rodata_510]
       - {start: 0x18AABE8, type: .rodata, name: overlay57MenuLabels, linker_section_order: .data}
       - [0x18AAC28, bin, overlay_057_data_rodata_580]
+      - {start: 0x18AAC54, type: .rodata, name: overlay_057, linker_section_order: .data}
       - [0x18AACEC, .data, overlay57ResponseParameters]
       - [0x18AACFC, bin, overlay_057_data_rodata_654]
 

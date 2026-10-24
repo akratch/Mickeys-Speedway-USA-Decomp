@@ -178,18 +178,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
-    57: [
-        # The module TU's .rodata: the initializer's mode switch table, then
-        # the dispatch's, rodata-relative +0x6C through +0x104.
-        (
-            0x5AC,
-            0x644,
-            "overlay_057",
-            ".rodata",
-            "func_overlay_057_F0000000_18A3BF8",
-            True,
-        )
-    ],
     59: [(0x76C, 0x78C, "overlay_059", ".rodata", "overlay59Advance", True)],
     # The 9-entry menu switch table, rodata-relative +0x188.
     61: [
@@ -275,6 +263,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
         (0x4F0, 0x4F4, "overlay57SelectionFlag", ".data"),
         (0x4F8, 0x510, "overlay57TransitionState", ".data"),
         (0x540, 0x580, "overlay57MenuLabels", ".rodata"),
+        (0x5AC, 0x644, "overlay_057", ".rodata"),
         (0x644, 0x654, "overlay57ResponseParameters", ".data"),
     ],
     7: [(0x4C, 0x92C, "overlay7DispatchTables", ".data"),

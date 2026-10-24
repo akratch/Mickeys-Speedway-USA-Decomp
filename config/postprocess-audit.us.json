@@ -821,7 +821,7 @@
       "size": 27312,
       "source": "src/overlays/o057/overlay_057.c",
       "tools": [
-        "rebind_elf_relocations.py",
+        "trim_elf_section.py",
         "externalize_elf_section.py",
         "filter_elf_relocations.py",
         "objcopy"

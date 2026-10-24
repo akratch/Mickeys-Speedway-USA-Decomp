@@ -1373,13 +1373,16 @@ segments:
     vram: 0xF0000000
     bss_size: 0x10
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o009
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1866678, c, overlay_009]
       - [0x1867B98, bin, overlay_009_data_rodata]
+      - [0x1867E68, .data, overlay9ParameterState]
+      - [0x1867E98, .data, overlay9CameraTables]
+      - [0x1867F28, bin, overlay_009_data_rodata_390]
 
   - name: overlay_009_reloc1
     type: bin

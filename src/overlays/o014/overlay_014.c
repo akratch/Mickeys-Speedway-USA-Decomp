@@ -438,11 +438,11 @@ static Overlay14Asset *func_overlay_014_F00009F4_18702CC(s32 index, s32 context)
         {
           if (entry->marker == 0x4000)
           {
-            entry->pointer = &D_A4;
+            entry->pointer = o14ReturnLabel_o014Reloc;
           }
           else
           {
-            entry->pointer = &D_B4;
+            entry->pointer = o14ExitLabel_o014Reloc;
           }
         }
         else
@@ -801,7 +801,7 @@ static void overlay14BuildRects(Gfx **context, const Overlay14PackedRect *packed
 static void func_overlay_014_F00013F4_1870CCC(Gfx **context) {
     s32 mode;
 
-    overlay14BuildRects(context, (const Overlay14PackedRect *)&gOverlay14DataBase, 0x5C, 0x14, 0xD0, 0x58,
+    overlay14BuildRects(context, o14WindowRects_o014Reloc, 0x5C, 0x14, 0xD0, 0x58,
                         (gOverlay14ValueC0Base.value * 0xA0) >> 8);
     gOverlay14HandleE0.value =
         func_overlay_014_F0001830_1871108(context, (u8 *)gOverlay14ValueF8Base.value,
@@ -844,7 +844,7 @@ static void func_overlay_014_F0001540_1870E18(Gfx **context) {
     u8 *drawArg;
     s32 first;
 
-    overlay14BuildRects(context, (const Overlay14PackedRect *)&gOverlay14DataBase, 0x5C, 0x14, 0xD0, 0x58,
+    overlay14BuildRects(context, o14WindowRects_o014Reloc, 0x5C, 0x14, 0xD0, 0x58,
                         (gOverlay14ValueC0 * 0xA0) >> 8);
     index = 0;
     cellWidth = func_8004D5C0(2);

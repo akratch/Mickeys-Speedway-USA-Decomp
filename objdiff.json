@@ -1616,16 +1616,6 @@
       }
     },
     {
-      "name": "assets/overlays/o014/overlay_014_data_rodata_120.bin",
-      "target_path": "expected/build/assets/overlays/o014/overlay_014_data_rodata_120.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o014"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o014/overlay_014_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o014/overlay_014_reloc1.bin.o",
       "metadata": {
@@ -8310,9 +8300,9 @@
       }
     },
     {
-      "name": "src/overlays/o014/overlay14ControlState.c",
-      "target_path": "expected/build/src/overlays/o014/overlay14ControlState.c.o",
-      "base_path": "build/src/overlays/o014/overlay14ControlState.c.o",
+      "name": "src/overlays/o014/overlay14InitialState.c",
+      "target_path": "expected/build/src/overlays/o014/overlay14InitialState.c.o",
+      "base_path": "build/src/overlays/o014/overlay14InitialState.c.o",
       "scratch": {
         "platform": "n64",
         "compiler": "ido5.3",
@@ -8323,7 +8313,7 @@
           "overlay",
           "overlay-o014"
         ],
-        "source_path": "src/overlays/o014/overlay14ControlState.c"
+        "source_path": "src/overlays/o014/overlay14InitialState.c"
       }
     },
     {

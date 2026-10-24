@@ -41,37 +41,83 @@ def run(argv, commands=None):
         raise LinkError(result.stdout.strip() or f"link command exited {result.returncode}")
 
 
-def local_data_bindings(elf, provider, exports):
-    """One complete pointer input names bases in one runtime-RO-origin input."""
-    for obj in (elf, provider):
-        if struct.unpack_from(">HH", obj.data, 16) != (1, 8):
-            raise LinkError("LOCAL data requires relocatable MIPS inputs")
-        sec = obj.section(".data")
-        if (not sec or not sec["size"] or sec["type"] != 1 or sec["addr"] != 0
-                or sec["flags"] & 3 != 3 or sec["flags"] & 4
-                or any(obj.size(name) for name in (".text", ".rodata", ".bss"))
-                or any(x["flags"] & 2 and x["size"]
-                       and x["name"] not in (".data", *ABI_METADATA) for x in obj.sections)
-                or any(x.shndx == rp.SHN_COMMON for x in obj.symbols)):
-            raise LinkError("LOCAL data requires complete writable data-only inputs")
+def local_provider_section(obj, *, readonly=False):
+    """Complete ordinary provider storage; readonly is an explicit profile."""
+    names = (".data", ".rodata") if readonly else (".data",)
+    present = [name for name in names if obj.size(name)]
+    if len(present) != 1:
+        raise LinkError("LOCAL data requires one complete provider storage section")
+    name = present[0]
+    sec = obj.section(name)
+    if (struct.unpack_from(">HH", obj.data, 16) != (1, 8)
+            or sec["type"] != 1 or sec["addr"] != 0
+            or sec["flags"] & 3 != (2 if name == ".rodata" else 3) or sec["flags"] & 4
+            or any(obj.size(n) for n in SECTIONS if n != name)
+            or any(x["flags"] & 2 and x["size"] and x["name"] not in (name, *ABI_METADATA)
+                   for x in obj.sections)
+            or any(x.shndx == rp.SHN_COMMON for x in obj.symbols)):
+        raise LinkError("LOCAL data requires complete writable data-only inputs or explicit readonly provider")
+    return name
+
+
+def local_aggregate_shape(elf):
+    """Actual root span and complete allocation stay distinct and unchanged."""
+    owners = [s for s in elf.symbols if s.section == ".data" and s.type == 1]
+    allocated = {s["name"] for s in elf.sections if s["flags"] & 2 and s["size"]}
+    if (len(owners) != 1 or owners[0].bind != rp.STB_GLOBAL or owners[0].value != 0
+            or not 0 < owners[0].size <= elf.size(".data")
+            or any(s.name and s.section in allocated and s.type not in (3,4)
+                   and s.index != owners[0].index for s in elf.symbols)):
+        raise LinkError("LOCAL aggregate lacks one actual complete source root")
+    root = owners[0]
+    for rel, addend in zip(elf.rels(".data"), rp.in_place_addends(elf, ".data", elf.rels(".data"))):
+        if (rel.type != rp.R_MIPS_32 or rel.offset % 4 or not 0 <= rel.offset <= root.size-4
+                or rel.sym.shndx != rp.SHN_UNDEF or rel.sym.bind != rp.STB_GLOBAL
+                or rel.sym.value or rel.sym.size or addend):
+            raise LinkError("LOCAL aggregate reference escapes its actual root span")
+    end = root.size
+    if end != elf.size(".data"):
+        import trim_elf_section as trim
+        try:
+            if elf.size(".data")-end != 1 or trim.sized_object_end(elf, ".data") != end:
+                raise ValueError("not the bounded single-byte symbol/allocation suffix")
+        except ValueError as error:
+            raise LinkError("LOCAL aggregate compiler end refused: " + str(error)) from error
+    return dict(root=root.name, root_symbol_extent=root.size, input_allocation=elf.size(".data"),
+                compiler_object_end=end, reviewed_logical_c_extent=elf.size(".data"))
+
+
+def local_data_bindings(elf, provider, exports, *, aggregate=False):
+    """Names bind to real bases; explicit mixed input preserves scalar bytes."""
+    if local_provider_section(elf) != ".data":
+        raise LinkError("LOCAL producer must retain writable DATA")
+    section = local_provider_section(provider, readonly=aggregate)
     if any(provider.rels(name) for name in SECTIONS):
         raise LinkError("LOCAL data provider contains relocations")
     rels = elf.rels(".data")
-    if len(rels) * 4 != elf.size(".data") or elf.bytes_of(".data") != bytes(elf.size(".data")):
+    if aggregate:
+        local_aggregate_shape(elf)
+    elif len(rels)*4 != elf.size(".data") or elf.bytes_of(".data") != bytes(elf.size(".data")):
         raise LinkError("LOCAL data requires a complete zero-addend pointer input")
     bindings = {}
+    offsets = []
     for index, rel in enumerate(rels):
         name = rel.sym.name
-        if (rel.offset != index * 4 or rel.type != rp.R_MIPS_32
+        if ((not aggregate and rel.offset != index*4) or rel.offset % 4
+                or not 0 <= rel.offset <= elf.size(".data")-4
+                or rp.u32(elf.bytes_of(".data"),rel.offset) != 0 or rel.type != rp.R_MIPS_32
                 or rel.sym.shndx != rp.SHN_UNDEF or rel.sym.bind != rp.STB_GLOBAL
                 or name in exports.by_name or not NAME.fullmatch(name)):
             raise LinkError("unsupported LOCAL data import or addend")
         choices = [x for x in provider.symbols if x.name == name
-                   and x.bind == rp.STB_GLOBAL and x.type == 1 and x.section == ".data"]
-        if (len(choices) != 1 or not 0 <= choices[0].value < provider.size(".data")
-                or choices[0].value + choices[0].size > provider.size(".data")):
+                   and x.bind == rp.STB_GLOBAL and x.type == 1 and x.section == section]
+        if (len(choices) != 1 or not 0 <= choices[0].value < provider.size(section)
+                or choices[0].value+choices[0].size > provider.size(section)):
             raise LinkError(f"LOCAL data lacks a unique bounded provider base: {name}")
         bindings[name] = choices[0].value
+        offsets.append(rel.offset)
+    if not offsets or offsets != sorted(set(offsets)):
+        raise LinkError("LOCAL data requires ordered unique original R32 references")
     return bindings
 
 
@@ -224,7 +270,7 @@ def relocatable_container(linked, output):
             raise LinkError("container conversion changed linked section payload")
 
 
-def link(raw, output, exports, directory, *, ld, objcopy, rebind, local_ro_origin=None, local_ro_group=None):
+def link(raw, output, exports, directory, *, ld, objcopy, rebind, local_ro_origin=None, local_ro_group=None, local_data_aggregate=False):
     raw, output, directory = Path(raw).resolve(), Path(output).resolve(), Path(directory).resolve()
     original = raw.read_bytes()
     directory.mkdir(parents=True, exist_ok=True)
@@ -232,11 +278,13 @@ def link(raw, output, exports, directory, *, ld, objcopy, rebind, local_ro_origi
     preserved.write_bytes(original)
     prepared = directory / "bindings.o"
     commands = []
+    if local_data_aggregate and (not local_ro_origin or local_ro_group):
+        raise LinkError("LOCAL aggregate requires exactly one explicit provider")
     if local_ro_origin and local_ro_group:
         raise LinkError("conflicting LOCAL provider profiles")
     providers = [rp.Elf(Path(p).resolve()) for p in (local_ro_group or [])]
     provider = rp.Elf(Path(local_ro_origin).resolve()) if local_ro_origin else None
-    local_bindings = local_data_bindings(rp.Elf(preserved), provider, exports) if provider else {}
+    local_bindings = local_data_bindings(rp.Elf(preserved), provider, exports, aggregate=local_data_aggregate) if provider else {}
     group = None
     if providers:
         local_bindings, group = grouped_local_bindings(rp.Elf(preserved), providers, exports,
@@ -307,6 +355,9 @@ SECTIONS {{
         receipt["local_data_provider"] = {
             "input": str(provider.path), "input_sha256": hashlib.sha256(provider.data).hexdigest(),
             "runtime_role": ".rodata", "origin": "input-start", "bindings": local_bindings}
+        if local_data_aggregate:
+            receipt["local_data_provider"]["input_section"] = local_provider_section(provider, readonly=True)
+            receipt["local_data_provider"]["aggregate"] = local_aggregate_shape(rp.Elf(preserved))
     if providers:
         receipt["local_data_group"] = {
             "inputs": [{"input": str(p.path), "input_sha256": hashlib.sha256(p.data).hexdigest()}
@@ -326,6 +377,7 @@ def main():
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--ld", type=Path, default=Path("tools/binutils/mips64-elf-ld"))
     parser.add_argument("--objcopy", type=Path, default=Path("tools/binutils/mips64-elf-objcopy"))
+    parser.add_argument("--local-data-aggregate", action="store_true")
     parser.add_argument("--local-ro-origin-object", type=Path)
     parser.add_argument("--local-ro-provider-group", nargs="+")
     args = parser.parse_args()
@@ -334,7 +386,8 @@ def main():
                        rp.OrtNames.load(args.ort), args.directory,
                        ld=args.ld, objcopy=args.objcopy,
                        rebind=Path(__file__).with_name("rebind_elf_relocations.py"),
-                       local_ro_origin=args.local_ro_origin_object, local_ro_group=args.local_ro_provider_group)
+                       local_ro_origin=args.local_ro_origin_object, local_ro_group=args.local_ro_provider_group,
+                       local_data_aggregate=args.local_data_aggregate)
     except (LinkError, rp.PackError, OSError, ValueError, struct.error) as error:
         parser.exit(1, f"module link refused: {error}\n")
     print(f"source module link: {sum(receipt['sections'][s]['size'] for s in SECTIONS[:-1])} initialized bytes, "

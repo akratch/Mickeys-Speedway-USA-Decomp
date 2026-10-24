@@ -240,6 +240,19 @@ class CompilerEndPaddingTests(unittest.TestCase):
         self.assertEqual(view.symbols,raw.symbols)
         self.assertEqual(view.compiler_original.data,raw.data)
 
+    def test_shared_sized_end_does_not_relax_default_data_relocation_rule(self):
+        import trim_elf_section as trim
+        import runlink_pack as rp
+        from test_link_overlay_module import aggregate_fixture
+        data=aggregate_fixture();elf=rp.Elf("actual",data)
+        self.assertEqual(trim.sized_object_end(elf,".data"),15)
+        self.assertEqual(elf.data,data)
+        self.assertEqual(len(elf.rels(".data")),2)
+        with self.assertRaisesRegex(ValueError,"DATA end"):
+            trim.compiler_end(elf,".data")
+        with self.assertRaises(ValueError):
+            trim.sized_object_end(rp.Elf("bad",aggregate_fixture(tail=1)),".data")
+
     def test_lost_relocation_wide_read_nonzero_and_executable_refuse(self):
         import trim_elf_section as trim
         for kwargs in ({"missing":True},{"width":True},{"nonzero":True}):

@@ -59,7 +59,52 @@ def local_fixture(*, provider=False, missing_first=False, addend=0, bad_type=Fal
     return bytes(data)
 
 
+def aggregate_fixture(*, missing=False, tail=0, root_size=15, extra=False):
+    obj = ElfBuilder().section(".data", words(0, 0, 37, tail))
+    obj.sym("aggregate",0,root_size,GLOBAL,1,".data").sym("first").sym("second")
+    if extra:obj.sym("extra",12,1,GLOBAL,1,".data")
+    if not missing:obj.rel(".data",0,rp.R_MIPS_32,"first")
+    obj.rel(".data",4,rp.R_MIPS_32,"second")
+    data=bytearray(obj.build());elf=rp.Elf("fixture",data)
+    struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+elf.section(".data")["index"]*40+8,3)
+    return bytes(data)
+
+
+def readonly_fixture():
+    obj=ElfBuilder().section(".rodata",b"one\0two\0")
+    obj.sym("first",0,0,GLOBAL,1,".rodata").sym("second",4,0,GLOBAL,1,".rodata")
+    data=bytearray(obj.build());elf=rp.Elf("provider",data)
+    struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+elf.section(".rodata")["index"]*40+8,2)
+    return bytes(data)
+
+
 class BindingTests(unittest.TestCase):
+    @unittest.skipUnless(LD.is_file() and OBJCOPY.is_file(), "needs MIPS binutils")
+    def test_explicit_readonly_provider_preserves_real_root_extent_and_scalar_payload(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);raw=root/"raw.o";provider=root/"provider.o";output=root/"out.o"
+            raw.write_bytes(aggregate_fixture());provider.write_bytes(readonly_fixture())
+            with self.assertRaises(tool.LinkError):
+                tool.local_data_bindings(rp.Elf(raw),rp.Elf(provider),rp.OrtNames([],{}))
+            receipt=tool.link(raw,output,rp.OrtNames([],{}),root/"module",ld=LD,objcopy=OBJCOPY,
+                rebind=ROOT/"tools/rebind_elf_relocations.py",local_ro_origin=provider,local_data_aggregate=True)
+            self.assertEqual(rp.Elf(output).bytes_of(".data"),words(0,4,37,0))
+            self.assertEqual(next(s.size for s in rp.Elf(output).symbols if s.name=="aggregate"),15)
+            self.assertEqual(receipt["local_data_provider"]["aggregate"]["input_allocation"],16)
+            self.assertEqual(receipt["local_data_provider"]["input_section"],".rodata")
+            self.assertEqual(raw.read_bytes(),aggregate_fixture())
+            self.assertEqual(provider.read_bytes(),readonly_fixture())
+
+    def test_mixed_profile_rejects_nonzero_multiple_tail_extra_definition_and_bad_flags(self):
+        for kwargs in ({"tail":1},{"root_size":14},{"extra":True}):
+            with self.subTest(kwargs=kwargs),self.assertRaises(tool.LinkError):
+                tool.local_data_bindings(rp.Elf("bad",aggregate_fixture(**kwargs)),
+                    rp.Elf("provider",readonly_fixture()),rp.OrtNames([],{}),aggregate=True)
+        data=bytearray(readonly_fixture());elf=rp.Elf("bad",data)
+        struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+elf.section(".rodata")["index"]*40+8,3)
+        with self.assertRaises(tool.LinkError):
+            tool.local_data_bindings(rp.Elf("raw",aggregate_fixture()),rp.Elf("bad",data),rp.OrtNames([],{}),aggregate=True)
+
     def test_unknown_external_is_refused_without_editing_input(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "raw.o"

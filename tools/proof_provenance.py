@@ -556,6 +556,18 @@ def local_ro_provider_input(command, root):
     return name
 
 
+def local_data_aggregate(command, root):
+    """An explicit one-provider mixed profile; defaults retain their old shape."""
+    import shlex
+    words = shlex.split(command)
+    flag = "--local-data-aggregate"
+    if flag not in words:
+        return False
+    if words.count(flag) != 1 or "--local-ro-provider-group" in words or not local_ro_provider_input(command, root):
+        raise MetadataProofError("mixed LOCAL aggregate needs one explicit provider")
+    return True
+
+
 def local_ro_provider_inputs(command, root):
     """Distinct explicit ordered ordinary paths; never a generated group C path."""
     import shlex

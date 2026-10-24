@@ -391,5 +391,17 @@ class ProducerCaptureLifecycleTests(unittest.TestCase):
             self.assertNotIn("module_link", capture.call_args.kwargs)
 
 
+
+class MixedLocalDeclarationTests(unittest.TestCase):
+    def test_explicit_one_provider_profile_is_required(self):
+        root=pathlib.Path(__file__).resolve().parent.parent
+        name="build/src/overlays/o058/labels.c.o"
+        self.assertFalse(provenance.local_data_aggregate("helper --local-ro-origin-object "+name,root))
+        self.assertTrue(provenance.local_data_aggregate("helper --local-data-aggregate --local-ro-origin-object "+name,root))
+        for command in ("helper --local-data-aggregate", "helper --local-data-aggregate --local-data-aggregate --local-ro-origin-object "+name,
+                        "helper --local-data-aggregate --local-ro-provider-group "+name):
+            with self.assertRaises(provenance.MetadataProofError):
+                provenance.local_data_aggregate(command,root)
+
 if __name__ == "__main__":
     unittest.main()

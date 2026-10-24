@@ -667,7 +667,13 @@ class World:
         return self._objects.get(ov, [])
 
     def _load_objects(self):
-        self._objects = {}
+        if getattr(self, "_guarded_data_objects", None) is None:
+            backend = (self.paths["build"].parent / "Makefile").is_file()
+            guard_data_module_imports(self, OrtNames.load(self.paths["ort"]) if backend else None)
+        admitted = self._guarded_data_objects
+        if admitted is None:
+            raise PackError("data-only producer inventory is incomplete")
+        objects = {}
         raw = self.paths["raw"]
         missing = []
         for ov, am in sorted(self.amods.items()):
@@ -684,10 +690,12 @@ class World:
                     continue
                 lst.append(ObjRef(ov, p, row["source"], int(row["offset"], 16),
                                   int(row["size"], 16), row["type"], Elf(p)))
-            self._objects[ov] = lst
+            lst.extend(admitted.get(ov, ()))
+            objects[ov] = lst
         if missing:
             raise PackError(f"{len(missing)} raw object(s) missing, first {missing[0]}; "
                             "run `gmake runlink-raw`")
+        self._objects = objects
 
     def defs(self):
         """Global symbols the raw overlay objects define: name -> [(obj, sym)]."""
@@ -732,6 +740,7 @@ class ObjRef:
     kind: str
     elf: Elf
     placement: dict = field(default_factory=dict)   # section -> (module offset, provenance)
+    data_imports: dict | None = None  # authenticated input only: name -> actual provider identity
 
     @property
     def label(self):
@@ -1021,6 +1030,11 @@ def collect_relocs(world, resolver, obj):
                            obj=obj, secname=s.section, value=s.value, named=s.bind != STB_LOCAL)
             elif s.shndx == SHN_COMMON:
                 t = Target("placeholder", s.name, "common")
+            elif obj.data_imports is not None:
+                if s.name not in obj.data_imports:
+                    raise PackError(f"admitted data input lacks its actual import identity: {obj.source}: {s.name}")
+                t = Target("ident", s.name, "data-source-export",
+                           ident=("ov", *obj.data_imports[s.name]), named=True)
             else:
                 t = resolver.resolve_name(s.name, obj.module)
             out.append(CReloc(obj, secname, r.offset, r.type, s, a, t))
@@ -1812,13 +1826,27 @@ def reproduce_data_import(world, source):
 
 
 def guard_data_module_imports(world, exports):
-    """Durably check selected data inputs without claiming packer production."""
+    """Revalidate atomically before publishing complete data-only producers."""
+    if getattr(world, "_data_guard_active", False):
+        raise PackError("recursive data-only producer discovery")
+    world._guarded_data_objects = None
+    world._objects = world._defs = None
+    world._data_guard_active = True
+    try:
+        admitted = _guard_data_module_imports(world, exports)
+    finally:
+        world._data_guard_active = False
+    world._guarded_data_objects = admitted
+
+
+def _guard_data_module_imports(world, exports):
+    """Existing fresh guard; build a private inventory until every hold passes."""
     import postprocess_audit as audit
     import proof_provenance as provenance
     import source_module_link_proof as proof
     root = world.paths["build"].parent
     if not (root / "Makefile").is_file():
-        return  # synthetic trees without a configured backend have no selected inputs
+        return {}  # synthetic trees without a configured backend have no selected inputs
     metadata_implementations()
     if (world.elf.data != world.paths["elf"].read_bytes()
             or world.map != parse_map(world.paths["map"])):
@@ -1841,6 +1869,7 @@ def guard_data_module_imports(world, exports):
                                     in batch._LOADED_IMPLEMENTATIONS.values()})
     dump = audit.run_make_database()
     outputs = []
+    admitted = collections.defaultdict(list)
     try:
         for ov, module in world.amods.items():
             text = {r["source"] for r in module["text_ownership"] if r["type"] == "c"}
@@ -1855,6 +1884,12 @@ def guard_data_module_imports(world, exports):
                 raw, receipt, context = reproduce_data_import(world, source)
                 hold_data_capture(world, source, receipt, context)
                 validate_data_imports(world, exports, ov, rows[0], source, raw)
+                targets = {rel.sym.name: data_import_definition(world, rel.sym.name)
+                           for rel in raw.rels(".data") if rel.sym.shndx == SHN_UNDEF}
+                start = world.module_info[ov]["text_size"] + int(rows[0]["offset"], 16)
+                path = world.paths["raw"] / "src" / (source + ".c.o")
+                admitted[ov].append(ObjRef(ov, path, source, 0, 0, "c", raw,
+                    {".data": (start, "link")}, targets))
                 outputs.append((raw, receipt))
         check_data_import_holds(world)
         for receipt in world.data_import_provider_receipts.values():
@@ -1869,6 +1904,7 @@ def guard_data_module_imports(world, exports):
                 json.dumps(receipt, sort_keys=True, indent=2))
     except (OSError, ValueError, provenance.MetadataProofError) as error:
         raise PackError(f"data-only module proof refused: {error}") from error
+    return dict(admitted)
 
 
 def pack_all(world, ort):

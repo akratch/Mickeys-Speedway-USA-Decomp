@@ -138,8 +138,12 @@ counts. `borrowing.json` reuses the existing residual-manifest format and
 preserves every actual named borrowing; its hash and category counts are in
 the manifest. The producer binds actual object/ELF/map/ROM/atlas/ORT/ledger
 inputs and resident trap sidecars. It does not independently authenticate their
-compilation from current C: the caller still owns the normal build and source
-proofs. This remains hybrid generation, with no source-only or relayout claim.
+compilation from current C in general: the caller still owns the normal build
+and source proofs. The explicitly selected complete data-only inputs additionally
+pass fresh compiler/helper/provider/map authentication before producer discovery
+(ADR 0021). Their original relocations produce their records directly; all
+other named borrowing remains explicit. This remains hybrid generation, with
+no source-only or relayout claim.
 
 Inputs are snapshotted before a fresh pack and checked again before publication.
 Files are staged first; publication invalidates the old completion marker,

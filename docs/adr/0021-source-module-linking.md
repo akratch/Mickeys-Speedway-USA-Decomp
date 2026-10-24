@@ -81,9 +81,9 @@ definitions. Keep the twenty original compiler R32 relocations explicit; the
 configured object has zero relocations after linking. Hash the actual recipe,
 helper, export names and tools when recording this proof. This does not relax
 the complete main-module promotion guard or authorize incomplete-body padding,
-section trimming or handwritten relocation-site bindings. Data-only inputs
-remain outside the packer's current producer discovery, so source-only metadata
-borrowing remains explicit until that separate producer capability is proved.
+section trimming or handwritten relocation-site bindings. Producer discovery
+admits only complete data-only inputs that pass the supported-case guard below;
+other initialized inputs and their metadata borrowing remain explicit.
 
 A complete data-only aggregate at the module's initialized-data prefix may
 also retain same-input LOCAL R32 references. Require one sized global object
@@ -95,13 +95,26 @@ relocation must fail even when replacing its zero-offset target with NULL
 leaves all configured bytes unchanged. Other section groups and cross-input
 LOCAL targets remain unsupported; fresh capture and ordinary helper replay
 still apply to the complete input.
-The packer's supported-case guard nevertheless freshly compiles and replays
+
+The packer's supported-case guard freshly compiles and replays
 selected pure ORT-pointer inputs and bounded same-owner LOCAL prefixes,
 authenticates their C definitions and unique map contributions, and refuses
 any source/runtime identity disagreement.
 Warm metadata dependencies include those raw/source/provider/header/tool inputs,
 so unchanged zero pointer operands cannot hide a changed source target. Other
 LOCAL, grouped and implicit-literal inputs remain unsupported by this guard.
+
+Publish authenticated data-only producer objects only after every source,
+provider, map and tool hold succeeds. Revalidation clears prior object and
+definition caches before rebuilding this inventory; failed or recursive
+discovery cannot expose a partial or previously accepted inventory. The
+ordinary raw paths remain dependencies while their complete surfaces are
+authenticated against fresh compiler output. Undefined imports on these
+inputs carry the actual proved provider identities into ordinary relocation
+packing, without interpreting symbol spellings as addresses. The initial
+producers are overlay 8's twenty ORT pointers and overlay 59's forty same-owner
+LOCAL pointers; their sixty records replace hybrid borrowing without changing
+the remaining borrowing or claiming complete source-only generation.
 
 Producer capture pins its actual bootstrap/final ELF-map pair and ordinary
 link command, source, headers, recipe and tools before and after reproduction.

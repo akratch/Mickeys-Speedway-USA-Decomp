@@ -995,6 +995,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay_058.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym fontColour=fontColour_o058Reloc \
 	--redefine-sym fontPrintXY=fontPrintXY_o058Reloc \
 	--redefine-sym fontUseFont=fontUseFont_o058Reloc \
+	--redefine-sym freeFrontEndList=freeFrontEndList_o058Reloc \
 	--redefine-sym func_80028F54=func_80028F54_o058Reloc \
 	--redefine-sym func_80029120=func_80029120_o058Reloc \
 	--redefine-sym func_8002917C=func_8002917C_o058Reloc \

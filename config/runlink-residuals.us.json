@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 6501},
+  "totals": {"differences": 0, "borrowed_records": 6499},
   "differences": {
   },
   "borrowed": {
@@ -68,7 +68,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1511,
+      "count": 1510,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -847,6 +847,7 @@
         [57, "gO57MiddleData31F4", 4],
         [57, "gO57MiddleData3208", 4],
         [57, "gO57MiddleData3214", 2],
+        [57, "gO57MiddleEmptyFormat", 2],
         [57, "gO57MiddleInfo", 2],
         [57, "gO57MiddleItems", 12],
         [57, "gO57MiddleLabels", 2],
@@ -855,6 +856,7 @@
         [57, "gO57MiddlePathId", 2],
         [57, "gO57MiddlePathIndices", 2],
         [57, "gO57MiddlePathList", 4],
+        [57, "gO57MiddleResultFormat", 2],
         [57, "gO57MiddleStopList", 4],
         [57, "gO57MiddleTransition", 20],
         [57, "gO57ModeChoice4F8", 4],
@@ -1033,9 +1035,7 @@
         [58, "D_o058_5DB8", 2],
         [58, "D_o058_5DC4", 2],
         [58, "gOverlay58CameraGateReloc", 2],
-        [58, "gOverlay58InlineResource", 2],
         [58, "gOverlay58LevelReloc", 4],
-        [58, "gOverlay58OptionalResource", 2],
         [58, "gOverlay58RankSetIdReloc", 2],
         [58, "gOverlay58ResourceId", 2],
         [58, "gOverlay58ResourceState", 6],
@@ -1044,7 +1044,6 @@
         [58, "gOverlay58TransitionModeReloc", 4],
         [58, "gOverlay58UnlockTableReloc", 2],
         [58, "gOverlay58VehicleReloc", 4],
-        [58, "overlay58ReleaseReloc", 2],
         [59, "gOverlay59DescriptorTables", 2],
         [59, "gOverlay59Entries", 16],
         [59, "gOverlay59EntriesEnd", 4],

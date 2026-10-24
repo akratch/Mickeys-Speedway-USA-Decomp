@@ -347,7 +347,7 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         }
         break;
     case 2:
-        result = packDirectory(0, 16, gOverlay61DirNames, gOverlay61DirExts,
+        result = packDirectory(0, 16, o61DirectoryNames_o061Reloc, o61DirectoryExtensions_o061Reloc,
                                o61DirectorySizes_o061Reloc, o61DirectoryTypes_o061Reloc);
         if (result) {
             o61State_o061Reloc = 0;
@@ -360,20 +360,20 @@ void func_overlay_061_F0000B84_18BFF4C(s32 updateRate) {
         type = o61DirectoryTypes_o061Reloc;
         for (i = 0; i < 16; i++) {
             if (*type == 0 && D_8007A1F4 != NULL) {
-                if (overlay61ReadCharacter(0, (s32)gOverlay61DirExts[i],
+                if (overlay61ReadCharacter(0, (s32)o61DirectoryExtensions_o061Reloc[i],
                                            &character, &course, &time) == 0) {
-                    overlay61AddEntry(4, i, (s32)gOverlay61DirNames[i],
-                                      (s32)gOverlay61DirExts[i],
+                    overlay61AddEntry(4, i, (s32)o61DirectoryNames_o061Reloc[i],
+                                      (s32)o61DirectoryExtensions_o061Reloc[i],
                                       o61DirectorySizes_o061Reloc[i], character,
                                       course, time);
                 } else {
-                    overlay61AddEntry(6, i, (s32)gOverlay61DirNames[i],
-                                      (s32)gOverlay61DirExts[i],
+                    overlay61AddEntry(6, i, (s32)o61DirectoryNames_o061Reloc[i],
+                                      (s32)o61DirectoryExtensions_o061Reloc[i],
                                       o61DirectorySizes_o061Reloc[i], 0, 0, 0);
                 }
             } else if (*type != 0xFF) {
-                overlay61AddEntry(6, i, (s32)gOverlay61DirNames[i],
-                                  (s32)gOverlay61DirExts[i],
+                overlay61AddEntry(6, i, (s32)o61DirectoryNames_o061Reloc[i],
+                                  (s32)o61DirectoryExtensions_o061Reloc[i],
                                   o61DirectorySizes_o061Reloc[i], 0, 0, 0);
             }
             type++;
@@ -671,9 +671,9 @@ static void overlay61ChooseFileExtension(char *output) {
 
     for (i = 0; i < 16; i++) {
         if (o61DirectoryTypes_o061Reloc[i] == 0) {
-            if ((gOverlay61FileNames[i][0] >= 'A') &&
-                (gOverlay61FileNames[i][0] <= 'Z')) {
-                used[gOverlay61FileNames[i][0] - 'A'] = 1;
+            if ((o61DirectoryExtensions_o061Reloc[i][0] >= 'A') &&
+                (o61DirectoryExtensions_o061Reloc[i][0] <= 'Z')) {
+                used[o61DirectoryExtensions_o061Reloc[i][0] - 'A'] = 1;
             }
         }
     }

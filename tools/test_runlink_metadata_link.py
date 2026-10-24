@@ -161,4 +161,93 @@ class MetadataLinkTests(unittest.TestCase):
             query.assert_not_called()
 
 
+class EditedReceiptTests(unittest.TestCase):
+    def test_edited_output_cannot_alias_source_or_another_directory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / 'build/edited-runlink').mkdir(parents=True)
+            (root / 'src').mkdir()
+            (root / 'build/edited-runlink/link').symlink_to(root / 'src', target_is_directory=True)
+            with self.assertRaises(link.rp.PackError):
+                link.edited_directory(root, 'src')
+            with self.assertRaisesRegex(link.rp.PackError, 'symlink'):
+                link.edited_directory(root, 'build/edited-runlink/link/output')
+
+    def test_eager_encoder_cannot_claim_a_later_first_proof_disk_hash(self):
+        from runlink import codec, rules
+        link.edited_loaded_identity()
+        original = link.digest
+        for module in (codec, rules):
+            def changed(path):
+                return 'replaced after import' if Path(path) == Path(module.__file__) else original(path)
+            with self.subTest(module=module.__name__), mock.patch.object(link, 'digest', side_effect=changed):
+                with self.assertRaisesRegex(link.rp.PackError, 'loaded edited'):
+                    link.edited_loaded_identity()
+
+    def test_selected_profile_rejects_wrong_duplicate_or_missing_owner_rows(self):
+        import copy
+        spec = json.loads((link.REPO / 'tests/fixtures/editable_layout/manifest.json').read_text())
+        exports = link.rp.OrtNames.load(link.REPO / 'config/runlink-ort.us.txt')
+        link.edited_declaration(spec, exports)
+        for kind in ('row', 'duplicate', 'missing', 'schema', 'source', 'function'):
+            changed = copy.deepcopy(spec)
+            if kind == 'row': changed['existing_exports'][0]['row'] += 1
+            elif kind == 'duplicate': changed['existing_exports'].append(changed['existing_exports'][0])
+            elif kind == 'missing': changed['existing_exports'].pop()
+            elif kind == 'schema': changed['schema'] = 'unknown'
+            elif kind == 'source': changed['source'] = 'src/other.c'
+            else: changed['mutated_function'] = 'other'
+            with self.subTest(kind=kind), self.assertRaises(link.rp.PackError):
+                link.edited_declaration(changed, exports)
+
+    def test_preloaded_linker_projection_code_cannot_acquire_a_first_call_pin(self):
+        import sys
+        with mock.patch.object(link, '_EDITED_PROJECT_PIN', None), \
+             mock.patch.dict(sys.modules, {'yaml': SimpleNamespace(__file__='preloaded.py')}):
+            with self.assertRaisesRegex(link.rp.PackError, 'preloaded'):
+                link.edited_projection_tools()
+
+    def test_current_receipt_refuses_missing_changed_or_mutating_provider(self):
+        import hashlib
+        import permute_batch as batch
+        import check_editable_layout as pilot
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            parent = root / 'build/edited-runlink'; directory = parent / 'control-one'
+            directory.mkdir(parents=True)
+            provider = root / 'provider.o'; provider.write_bytes(b'actual input')
+            output = directory / 'final.bin'; output.write_bytes(b'validated')
+            expected = pilot.artifact_hashes(directory)
+            request = {'outside_rom': 'first.z64'}
+            receipt = {'schema': 'mickey-edited-source-build-v1', 'variant': 'control', 'request': request,
+                       'artifacts': expected, 'inputs': {'provider.o': link.digest(provider)},
+                       'provider_holds': {}, 'toolchain': {}, 'projection_toolchain': {},
+                       'resident_source_context': {}, 'source_cpp': {}, 'arguments': []}
+            payload = link.json_bytes(receipt); (directory / 'receipt.json').write_bytes(payload)
+            (parent / 'control-current.json').write_bytes(link.json_bytes({'path': 'build/edited-runlink/control-one',
+                'receipt_sha256': hashlib.sha256(payload).hexdigest()}))
+            with mock.patch.object(batch, 'checked_tool_identity', return_value={}), \
+                 mock.patch.object(link, 'edited_projection_tools', return_value={}), \
+                 mock.patch.object(link, 'edited_source_context', return_value={}):
+                self.assertEqual(link.edited_current(root, parent, 'control', request), receipt)
+                (root / 'second.z64').write_bytes(b'different valid outside request')
+                self.assertIsNone(link.edited_current(root, parent, 'control', {'outside_rom': 'second.z64'}))
+                provider.write_bytes(b'changed')
+                self.assertIsNone(link.edited_current(root, parent, 'control', request))
+                provider.unlink()
+                self.assertIsNone(link.edited_current(root, parent, 'control', request))
+                provider.write_bytes(b'actual input')
+                output.unlink()
+                self.assertIsNone(link.edited_current(root, parent, 'control', request))
+                output.write_bytes(b'validated')
+                original = pilot.artifact_hashes
+                def replace_after_validation(path):
+                    result = original(path)
+                    if output.read_bytes() == b'validated':
+                        output.write_bytes(b'unvalidated replacement')
+                    return result
+                with mock.patch.object(pilot, 'artifact_hashes', side_effect=replace_after_validation):
+                    self.assertIsNone(link.edited_current(root, parent, 'control', request))
+
+
 if __name__=='__main__':unittest.main()

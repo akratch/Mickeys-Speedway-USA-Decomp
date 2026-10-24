@@ -255,11 +255,24 @@ EXPECTED_SHA1 := $(firstword $(shell cat $(BASENAME).$(VERSION).sha1))
 # an edited yaml re-splits before those steps run instead of silently
 # building against stale disassembly. See the .o pattern rules and
 # $(TARGET).elf below for how the ordering is wired up.
+EDITED_INPUTS_MODE := $(filter edited-runlink-inputs,$(MAKECMDGOALS))
 SPLAT_STAMP := $(BUILD_DIR)/.splat-stamp
 # The raw packer tree compiles against the normal tree's split, never its own.
 ifneq ($(RUNLINK_RAW),0)
 SPLAT_STAMP := build/.splat-stamp
 endif
+ifneq ($(EDITED_INPUTS_MODE),)
+# This subgoal produces only declared outside inputs. It emits linker selectors
+# without opening a ROM or initializing overlay symbols/extraction.
+SPLAT_STAMP := build/edited-runlink/setup/.input-stamp
+-include build/edited-runlink/setup/inputs.mk
+.PHONY: edited-runlink-inputs
+edited-runlink-inputs: $(EDITED_PROVIDER_INPUTS)
+endif
+
+# Only extraction changes C's generated assembly inputs; selector-only edited
+# projection is an ordering prerequisite, not a reason to recompile unchanged C.
+C_SPLAT_STAMP := $(if $(EDITED_INPUTS_MODE),,$(SPLAT_STAMP))
 
 # ---------------------------------------------------------------------------
 # Targets
@@ -774,7 +787,7 @@ $(BUILD_DIR)/%.bin.o: %.bin | $(ALL_DIRS) $(SPLAT_STAMP)
 # .c.o rebuilds after any re-split, not just the ones that reference a moved
 # name -- coarser than necessary, but a full rebuild is ~17s and correctness
 # beats precision here.
-$(BUILD_DIR)/%.c.o: %.c $(H_FILES) $(TOOLS_DIR)/normalize_elf_instructions.py $(TOOLS_DIR)/static_symbols.py $(SPLAT_STAMP) | $(ALL_DIRS)
+$(BUILD_DIR)/%.c.o: %.c $(H_FILES) $(TOOLS_DIR)/normalize_elf_instructions.py $(TOOLS_DIR)/static_symbols.py $(C_SPLAT_STAMP) | $(ALL_DIRS) $(SPLAT_STAMP)
 	$(ASM_PROCESSOR) $(CC) -- $(AS) $(ASM_PROC_ASFLAGS) -- \
 		-c $(CFLAGS) $(OPT_FLAGS) $(MIPSISET) -o $@ $<
 	$(STATIC_SYMBOLS)
@@ -805,25 +818,25 @@ $(filter $(BUILD_DIR)/$(SRC_DIR)/main/%,$(O_FILES)): $(TRAP_NAMES_LIST) \
 # The DKR-exact rmonprintf source has no GLOBAL_ASM. Sending it through
 # asm-processor changes IDO's line metadata and produces a seven-word schedule
 # residual; direct IDO compilation reproduces the whole source object.
-$(BUILD_DIR)/$(SRC_DIR)/libultra/rmonprintf.c.o: $(SRC_DIR)/libultra/rmonprintf.c $(H_FILES) $(SPLAT_STAMP) | $(ALL_DIRS)
+$(BUILD_DIR)/$(SRC_DIR)/libultra/rmonprintf.c.o: $(SRC_DIR)/libultra/rmonprintf.c $(H_FILES) $(C_SPLAT_STAMP) | $(ALL_DIRS) $(SPLAT_STAMP)
 	$(CC) -c $(CFLAGS) $(OPT_FLAGS) $(MIPSISET) -o $@ $<
 	$(RUN_POSTPROCESS)
 
 # __osEepStatus is the exact tail of DKR's SDK conteepwrite source. Like the
 # direct rmonprintf object above, it has no GLOBAL_ASM and retains the donor's
 # direct-IDO line schedule.
-$(BUILD_DIR)/$(SRC_DIR)/libultra/eepstatus.c.o: $(SRC_DIR)/libultra/eepstatus.c $(H_FILES) $(SPLAT_STAMP) | $(ALL_DIRS)
+$(BUILD_DIR)/$(SRC_DIR)/libultra/eepstatus.c.o: $(SRC_DIR)/libultra/eepstatus.c $(H_FILES) $(C_SPLAT_STAMP) | $(ALL_DIRS) $(SPLAT_STAMP)
 	$(CC) -c $(CFLAGS) $(OPT_FLAGS) $(MIPSISET) -o $@ $<
 	$(RUN_POSTPROCESS)
 
 # DKR's whole xprintf object is exact, including its anonymous static helper,
 # data and rodata. Compile the pragma-free donor directly at its SDK preset.
-$(BUILD_DIR)/$(SRC_DIR)/libultra/xprintf.c.o: $(SRC_DIR)/libultra/xprintf.c $(H_FILES) $(SPLAT_STAMP) | $(ALL_DIRS)
+$(BUILD_DIR)/$(SRC_DIR)/libultra/xprintf.c.o: $(SRC_DIR)/libultra/xprintf.c $(H_FILES) $(C_SPLAT_STAMP) | $(ALL_DIRS) $(SPLAT_STAMP)
 	$(CC) -c $(CFLAGS) $(OPT_FLAGS) $(MIPSISET) -o $@ $<
 	$(RUN_POSTPROCESS)
 
 # Same whole-object result for DKR's xldtob conversion source and constants.
-$(BUILD_DIR)/$(SRC_DIR)/libultra/xldtob.c.o: $(SRC_DIR)/libultra/xldtob.c $(H_FILES) $(SPLAT_STAMP) | $(ALL_DIRS)
+$(BUILD_DIR)/$(SRC_DIR)/libultra/xldtob.c.o: $(SRC_DIR)/libultra/xldtob.c $(H_FILES) $(C_SPLAT_STAMP) | $(ALL_DIRS) $(SPLAT_STAMP)
 	$(CC) -c $(CFLAGS) $(OPT_FLAGS) $(MIPSISET) -o $@ $<
 	$(RUN_POSTPROCESS)
 
@@ -1696,6 +1709,7 @@ endif
 #
 # Order-only prereq on $(PYTHON) so the split never runs against a nonexistent
 # venv; `setup` is what actually installs splat into it.
+ifeq ($(EDITED_INPUTS_MODE),)
 $(SPLAT_STAMP): $(BASENAME).$(VERSION).yaml symbol_addrs.$(VERSION).txt reloc_addrs.$(VERSION).txt \
                 config/overlays.$(VERSION).json $(TOOLS_DIR)/overlay_atlas.py \
                 $(TOOLS_DIR)/overlay_tables.py $(TOOLS_DIR)/executable_accounting.py \
@@ -1704,6 +1718,11 @@ $(SPLAT_STAMP): $(BASENAME).$(VERSION).yaml symbol_addrs.$(VERSION).txt reloc_ad
 	$(PYTHON) -m splat split $(BASENAME).$(VERSION).yaml
 	@$(MAKE) --no-print-directory prune-asm
 	@touch $@
+else
+build/edited-runlink/setup/inputs.mk $(SPLAT_STAMP) &: mickey.us.yaml tools/runlink_metadata_link.py $(PYTHON)
+	$(PYTHON) tools/runlink_metadata_link.py edited-project --out build/edited-runlink/setup
+	@touch build/edited-runlink/setup/inputs.mk $(SPLAT_STAMP)
+endif
 
 $(TARGET).bin: $(TARGET).elf
 	$(OBJCOPY) $(OBJCOPYFLAGS) $< $@
@@ -1745,3 +1764,11 @@ check-nonmatching-builds:
 .PHONY: check-editable-layout
 check-editable-layout: runlink-raw $(TARGET).elf $(CRC) tools/check_editable_layout.py $(wildcard tests/fixtures/editable_layout/*)
 	$(PYTHON) tools/check_editable_layout.py
+
+# Explicit source-selected edited build; canonical retail guards stay unchanged.
+EDITED_VARIANT ?= control
+EDITED_OUT ?= build/edited-runlink
+EDITED_OUTSIDE_ROM ?= baseroms/mickey.us.z64
+.PHONY: edited-runlink
+edited-runlink: $(PYTHON) $(CRC)
+	$(PYTHON) tools/runlink_metadata_link.py edited --variant $(EDITED_VARIANT) --out $(EDITED_OUT) --outside-rom $(EDITED_OUTSIDE_ROM)

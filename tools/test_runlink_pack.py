@@ -2335,5 +2335,68 @@ class LiteralEffectiveViewTests(unittest.TestCase):
             with self.assertRaisesRegex(rp.PackError,"stale literal"):
                 rp.effective_compiler_object(raw,configured,{".data":7},literal_proofs={".data":record},root=root)
 
+
+
+class EditedDefinitionRouteTests(unittest.TestCase):
+    """Only actual current allocated definitions can enter the selected route."""
+    def elf(self, builder):
+        return rp.Elf('synthetic', builder.build())
+
+    def function(self, duplicate=False):
+        builder = ObjBuilder().section('.text', bytes(16)).sym('entry', 0, 16, type=FUNC, section='.text')
+        if duplicate:
+            builder.sym('entry', 0, 16, type=FUNC, section='ABS')
+        return self.elf(builder)
+
+    def test_actual_zero_function_export_keeps_symbol_semantics(self):
+        raw = self.elf(ObjBuilder().section('.text', words(jal(), 0, 0, 0))
+            .sym('entry', 0, 16, type=FUNC, section='.text').rel('.text', 0, R26, 'entry'))
+        linked = self.elf(ObjBuilder().section('.text', words(jal(), 0, 0, 0))
+            .sym('entry', 0, 16, type=FUNC, section='.text'))
+        obj = rp.edited_prepare_object(raw, linked)
+        selected = {75: {'exports': ['entry'], 'entries': {'init': 'entry', 'resume': None},
+                         'kinds': {'entry': 'function'}}}
+        result = rp.edited_module_records(75, {75: obj}, selected, rp.OrtNames(['entry'], {}), {})
+        self.assertEqual(result['exports'], {0: ('ov', 75, 0)})
+        self.assertEqual(result['module'].header.init, 0)
+        self.assertEqual(result['module'].table2[0].op, rp.OP_SYMBOL)
+        self.assertEqual(result['module'].table2[0].symidx, 0)
+        selected[75]['kinds']['entry'] = 'object'
+        with self.assertRaisesRegex(rp.PackError, 'owner kind'):
+            rp.edited_module_records(75, {75: obj}, selected, rp.OrtNames(['entry'], {}), {})
+
+    def test_linked_abs_shadow_and_unknown_program_sections_refuse(self):
+        raw = self.function()
+        with self.assertRaisesRegex(rp.PackError, 'ordinary symbol'):
+            rp.edited_global_target(rp.edited_prepare_object(raw, self.function(True)), 'entry')
+        unknown = self.elf(ObjBuilder().section('.text', bytes(16)).section('.sdata', bytes(16)))
+        with self.assertRaisesRegex(rp.PackError, 'unknown allocated'):
+            rp.edited_prepare_object(unknown, unknown)
+        wrong = self.function()
+        wrong.section('.text')['addr'] = 4
+        with self.assertRaisesRegex(rp.PackError, 'nonzero'):
+            rp.edited_prepare_object(wrong, wrong)
+        wrong = self.function()
+        wrong.section('.text')['flags'] = 3
+        with self.assertRaisesRegex(rp.PackError, 'type/flags'):
+            rp.edited_prepare_object(wrong, wrong)
+
+    def test_every_common_requires_actual_sized_allocation_and_onepast_refuses(self):
+        raw = self.elf(ObjBuilder().section('.text', bytes(16))
+            .sym('state', 4, 8, type=OBJECT, section='COMMON'))
+        linked = self.elf(ObjBuilder().section('.text', bytes(16)).section('.bss', nobits=16)
+            .sym('state', 0, 8, type=OBJECT, section='.bss'))
+        obj = rp.edited_prepare_object(raw, linked)
+        target = rp.edited_global_target(obj, 'state')
+        self.assertEqual(target, ('.bss', 0, 8, OBJECT))
+        with self.assertRaisesRegex(rp.PackError, 'one-past'):
+            rp.edited_object_operand(target, 8)
+        bad = self.elf(ObjBuilder().section('.text', bytes(16)).section('.bss', nobits=16)
+            .sym('state', 0, 4, type=OBJECT, section='.bss'))
+        with self.assertRaisesRegex(rp.PackError, 'COMMON allocation'):
+            rp.edited_prepare_object(raw, bad)  # Unreferenced COMMON must also refuse.
+        with self.assertRaisesRegex(rp.PackError, 'actual allocation'):
+            rp.edited_prepare_object(raw, self.function())
+
 if __name__ == "__main__":
     unittest.main()

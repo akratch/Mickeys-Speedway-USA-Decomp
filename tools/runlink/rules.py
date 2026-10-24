@@ -34,6 +34,12 @@ confirmed against Jet Force Gemini's shipped tables (27,515 records):
 
 from __future__ import annotations
 
+import hashlib
+from pathlib import Path
+
+# Bind source when this module is loaded, not on a later proof call.
+LOADED_SOURCE = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
 import collections
 from dataclasses import dataclass, field
 

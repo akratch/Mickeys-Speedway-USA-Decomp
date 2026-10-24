@@ -122,6 +122,21 @@ class CodecTests(unittest.TestCase):
             p.write_bytes(img)
             self.assertEqual(codec.read_rom(p), self.rom)
 
+    def test_outside_catalog_never_decodes_omitted_header_or_ort_cells(self):
+        from unittest import mock
+        original = codec.Header.decode
+        poisoned = bytearray(self.rom)
+        poisoned[self.cfg.headers_rom:self.cfg.headers_rom + 32] = bytes([255]) * 32
+        poisoned[self.cfg.ort_rom + 4:self.cfg.ort_rom + 8] = bytes([255]) * 4
+        def checked(data, offset=0):
+            self.assertNotEqual(offset, self.cfg.headers_rom)
+            return original(data, offset)
+        with mock.patch.object(codec.Header, 'decode', side_effect=checked):
+            outside = codec.decode(poisoned, self.cfg, exclude_modules={1}, exclude_rows={1})
+        self.assertEqual([m.number for m in outside.modules], [2])
+        self.assertIsNone(outside.ort[1])
+        self.assertEqual(outside.ort[0], codec.decode(self.rom, self.cfg).ort[0])
+
     def test_limits(self):
         with self.assertRaises(codec.FormatError):
             codec.Record(0, 1 << 24, 4, 0).encode()

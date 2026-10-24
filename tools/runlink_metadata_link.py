@@ -339,13 +339,602 @@ def provenance_context(root):
     return {p.relative_to(root).as_posix(): sha for p, sha in sorted(snapshot.items())}
 
 
+
+_EDITED_RUN_STARTED = False
+_EDITED_PROJECT_PIN = None
+
+
+def edited_projection_tools():
+    """Pin the installed linker writer before first loading its code."""
+    import importlib.util
+    import sweep_receipts
+    global _EDITED_PROJECT_PIN
+    packages = ('splat', 'yaml', 'pylibyaml', 'spimdisasm', 'intervaltree', 'sortedcontainers', 'tqdm', 'colorama')
+    if _EDITED_PROJECT_PIN is None:
+        rp.edited_require(not any(name.split('.')[0] in packages for name in sys.modules),
+                          'edited linker projection package was preloaded without an identity')
+        paths = []
+        for name in packages:
+            found = importlib.util.find_spec(name)
+            rp.edited_require(found is not None and found.origin is not None,
+                              'missing installed linker projection dependency: ' + name)
+            path = Path(found.origin)
+            paths.append(path.parent if found.submodule_search_locations else path)
+        _EDITED_PROJECT_PIN = {path: (sweep_receipts.tree_digest(path) if path.is_dir() else digest(path)) for path in paths}
+    current = {path: (sweep_receipts.tree_digest(path) if path.is_dir() else digest(path)) for path in _EDITED_PROJECT_PIN}
+    rp.edited_require(current == _EDITED_PROJECT_PIN, 'loaded linker projection tool changed')
+    return {str(path): value for path, value in current.items()}
+
+
+def edited_source_context(root):
+    """Conservative real resident source/include/ASM dependency closure."""
+    import sweep_receipts
+    names = ('src/main', 'src/libultra', 'src/libgcc', 'include', 'tools/asm-processor', 'asm/main', 'asm/libultra',
+             'asm/data/main', 'asm/nonmatchings/main', 'asm/nonmatchings/libultra')
+    return {name: sweep_receipts.tree_digest(root / name) if (root / name).is_dir() else None for name in names}
+
+
+def edited_projection(root, directory):
+    """Emit input-only Splat scripts without opening ROM/symbol/reloc inputs."""
+    project_tools = edited_projection_tools()
+    import copy
+    import yaml
+    from splat.scripts import split
+    from splat.util import conf
+    source = (root / 'mickey.us.yaml').read_bytes()
+    original = yaml.safe_load(source)
+    selected = 75
+    segments = original['segments']
+    cut = next(i for i, s in enumerate(segments)
+               if isinstance(s, dict) and s.get('name') == 'assets')
+    require = rp.edited_require
+
+    def emit(label, items):
+        document = copy.deepcopy(original)
+        document['segments'] = items
+        options = document['options']
+        options.update(base_path=str(root), target_path='NOT-AN-EDITED-INPUT',
+                       symbol_addrs_path=[], reloc_addrs_path=[],
+                       ld_script_path=str(directory / (label + '.ld')),
+                       undefined_funcs_auto_path=str(directory / 'unused-functions.txt'),
+                       undefined_syms_auto_path=str(directory / 'unused-symbols.txt'))
+        path = directory / (label + '.yaml')
+        write_changed(path, yaml.safe_dump(document, sort_keys=False))
+        loaded = conf.load([path], modes=['ld'])
+        split.write_linker_script(split.initialize_segments(loaded['segments']))
+        return (directory / (label + '.ld')).read_text()
+
+    prefix = emit('providers', segments[:cut] + [[segments[cut]['start']]])
+    outside = [s for s in segments if not (isinstance(s, dict)
+               and re.fullmatch(r'overlay_075(?:_reloc[12])?', s.get('name', '')))]
+    template = emit('outside', outside)
+    fresh = [{'name': 'overlay_075', 'type': 'code', 'start': 0,
+              'vram': rp.OVERLAY_VMA, 'subalign': 4, 'align': 8,
+              'subsegments': [[0, 'c', 'overlays/o075/overlay_075']]}]
+    fresh.extend({'name': f'overlay_075_reloc{t}', 'type': 'bin', 'start': 0,
+                  'align': 8, 'subalign': 1, 'dir': 'overlays/o075'} for t in (1, 2))
+    fragment = emit('selected', fresh + [[0]])
+    fragment = fragment[fragment.index('    overlay_075_ROM_START'):fragment.index('    /DISCARD/')]
+    marker = '    overlay_076_ROM_START = __romPos;'
+    require(template.count(marker) == 1, 'outside module boundary is ambiguous')
+    template = template.replace(marker, fragment + marker, 1)
+    require((root / 'mickey.us.yaml').read_bytes() == source, 'loaded projection config changed')
+    write_changed(directory / 'template.ld', template)
+    selectors = sorted(set(re.findall(r'(?m)^\s*(build/[\w./-]+\.o)\([^)]*\);', prefix)))
+    write_changed(directory / 'inputs.mk', 'EDITED_PROVIDER_INPUTS := ' + ' '.join(selectors) + '\n')
+    rp.edited_require(edited_projection_tools() == project_tools, 'projection tool changed during emission')
+    return prefix, template
+
+
+def edited_declaration(spec, exports):
+    """The admitted initial source/API profile; no address is inferred here."""
+    require = rp.edited_require
+    require(spec.get('schema') == 'mickey-editable-layout-pilot-v1'
+            and spec.get('module') == 75 and spec.get('source') == 'src/overlays/o075/overlay_075.c'
+            and spec.get('mutated_function') == 'overlay75Init'
+            and spec.get('new_export') == 'layout75Step', 'unsupported edited source declaration profile')
+    # Complete deliberate original export ownership is part of this admitted
+    # source API, not an address/name-coordinate decoder in the generic adapter.
+    required = {'overlay75Init', 'overlay75UpdateMovingObject', 'overlay75MarkSlot'}
+    rows, names = set(), set()
+    for declaration in spec.get('existing_exports', ()):
+        require(set(declaration) == {'name', 'row'} and type(declaration['row']) is int,
+                'malformed selected export name/row declaration')
+        row, name = declaration['row'], declaration['name']
+        require(name not in names and row not in rows and exports.by_name.get(name) == row,
+                'duplicate or wrong selected export name/row')
+        rows.add(row)
+        names.add(name)
+    require(names == required, 'incomplete supported original75 export ownership')
+    peer = spec.get('peer', {})
+    require(peer.get('module') == 108 and peer.get('source') == 'tests/fixtures/editable_layout/peer.c'
+            and peer.get('exports') == ['layout108Init', 'layout108Resume', 'layout108Step', 'layout108State']
+            and peer.get('init') == 'layout108Init' and peer.get('resume') == 'layout108Resume',
+            'unsupported edited tail source/entry/export profile')
+
+
+def edited_compile(root, directory, label, text, exports, args, commands):
+    """Fresh current source/CPP/compiler/static-symbol/ordinary-link chain."""
+    import permute_batch as batch
+    import link_overlay_module as module_link
+    import check_editable_layout as pilot
+    rp.edited_require('GLOBAL_ASM' not in text and not re.search(r'\b(?:asm|__asm__)\b', text),
+                      'selected complete C input must not require assembly substitution')
+    source = directory / (label + '.c')
+    raw = directory / (label + '.o')
+    untouched = directory / (label + '.compiler.o')
+    write_changed(source, text)
+    source_hash = digest(source)
+    closure = batch.source_dependencies(source, tuple(args))
+    flags = list(args)
+    flags[flags.index('-o') + 1] = untouched.relative_to(root).as_posix()
+    flags[-1] = source.relative_to(root).as_posix()
+    pilot.run(root, ['tools/ido/cc', *flags], directory / (label + '-compile.log'), commands)
+    compiler = rp.Elf(untouched)
+    compiler_hash = hashlib.sha256(compiler.data).hexdigest()
+    write_changed(raw, compiler.data)
+    pilot.run(root, [sys.executable, 'tools/static_symbols.py', raw.relative_to(root)],
+              directory / (label + '-statics.log'), commands)
+    prepared = rp.Elf(raw)
+    for section in rp.EDITED_SECTIONS:
+        rp.edited_require(compiler.size(section) == prepared.size(section)
+                          and compiler.bytes_of(section) == prepared.bytes_of(section),
+                          'static-symbol step changed allocated compiler bytes')
+        old, new = compiler.rels(section), prepared.rels(section)
+        rp.edited_require([(r.offset, r.type) for r in old] == [(r.offset, r.type) for r in new]
+                          and rp.in_place_addends(compiler, section, old)
+                          == rp.in_place_addends(prepared, section, new), 'static-symbol step changed original records')
+    linked = directory / (label + '-linked.o')
+    receipt = module_link.link(raw, linked, exports, directory / (label + '-module'),
+        ld=root / 'tools/binutils/mips64-elf-ld', objcopy=root / 'tools/binutils/mips64-elf-objcopy',
+        rebind=root / 'tools/rebind_elf_relocations.py')
+    linked_elf = rp.Elf(linked)
+    rp.edited_require(digest(source) == source_hash
+        and batch.source_dependencies(source, tuple(args)) == closure
+        and digest(untouched) == compiler_hash
+        and hashlib.sha256(prepared.data).hexdigest() == receipt['compiler_sha256']
+        and hashlib.sha256(linked_elf.data).hexdigest() == receipt['configured_sha256'],
+        'fresh compiler/CPP/ordinary module receipt changed')
+    expected = {source.name: source_hash, untouched.name: compiler_hash,
+                raw.name: receipt['compiler_sha256'], linked.name: receipt['configured_sha256']}
+    for name, field in (('compiler.o', 'compiler_sha256'), ('bindings.o', 'prepared_sha256'),
+            ('module.ld', 'script_sha256'), ('module.elf', 'linked_sha256'),
+            ('localized.elf', 'localized_sha256'), ('module.o', 'configured_sha256'), ('body.bin', 'body_sha256')):
+        expected[label + '-module/' + name] = receipt[field]
+    expected[label + '-module/receipt.json'] = hashlib.sha256((json.dumps(receipt, indent=2) + '\n').encode()).hexdigest()
+    rp.edited_require(all(digest(directory / name) == value for name, value in expected.items()),
+                      'fresh module receipt products changed')
+    return (rp.edited_prepare_object(prepared, linked_elf), (raw, linked, receipt, expected), closure)
+
+
+def edited_loaded_identity():
+    """The eager encoder imports must retain their actual load-time identities."""
+    from runlink import codec, rules
+    rp.metadata_implementations()
+    rp.edited_require(digest(Path(__file__)) == _LOADED
+        and digest(Path(codec.__file__)) == codec.LOADED_SOURCE
+        and digest(Path(rules.__file__)) == rules.LOADED_SOURCE,
+        'loaded edited encoder/consumer implementation changed')
+
+
+def edited_directory(root, name):
+    relative = safe_relative(name)
+    rp.edited_require(relative.parts[:2] == ('build', 'edited-runlink'), 'edited output must be separate')
+    path = root
+    for part in relative.parts:
+        path = path / part
+        rp.edited_require(not path.is_symlink(), 'symlink edited output directory')
+    return path
+
+
+def edited_current(root, parent, variant, request):
+    """Return only a current validated edited receipt; never bless fresh hashes."""
+    edited_loaded_identity()
+    import permute_batch as batch
+    import check_editable_layout as pilot
+    marker = parent / (variant + '-current.json')
+    try:
+        marker_data = marker.read_bytes()
+        current = json.loads(marker_data)
+        directory = root / safe_relative(current['path'])
+        rp.edited_require(directory.resolve().is_relative_to(parent.resolve()), 'foreign edited marker')
+        payload = (directory / 'receipt.json').read_bytes()
+        receipt = json.loads(payload)
+        rp.edited_require(hashlib.sha256(payload).hexdigest() == current['receipt_sha256']
+            and receipt['schema'] == 'mickey-edited-source-build-v1'
+            and receipt['variant'] == variant and receipt.get('request') == request, 'invalid edited receipt/request')
+        expected = receipt['artifacts']
+        rp.edited_require(pilot.artifact_hashes(directory) == expected, 'edited artifacts changed')
+        rp.edited_require(all(digest(root / safe_relative(name)) == value
+            for name, value in {**receipt['inputs'], **receipt['provider_holds']}.items()), 'edited inputs changed')
+        rp.edited_require(batch.checked_tool_identity() == receipt['toolchain']
+            and edited_projection_tools() == receipt['projection_toolchain']
+            and edited_source_context(root) == receipt['resident_source_context'], 'edited toolchain/source changed')
+        for label, record in receipt['source_cpp'].items():
+            source = directory / record['source']
+            rp.edited_require(batch.source_dependencies(source, tuple(receipt['arguments'])) == record['closure'],
+                              'edited source CPP closure changed')
+        rp.edited_require(marker.read_bytes() == marker_data
+            and (directory / 'receipt.json').read_bytes() == payload
+            and pilot.artifact_hashes(directory) == expected
+            and all(digest(root / safe_relative(name)) == value
+                for name, value in {**receipt['inputs'], **receipt['provider_holds']}.items())
+            and batch.checked_tool_identity() == receipt['toolchain']
+            and edited_projection_tools() == receipt['projection_toolchain']
+            and edited_source_context(root) == receipt['resident_source_context'], 'edited receipt inputs changed during check')
+        return receipt
+    except (OSError, ValueError, KeyError, TypeError, rp.PackError):
+        return None  # Stale/missing products rebuild in a new preserved run.
+
+
+def edited_build(root, out, variant, outside_rom=None):
+    """Explicit nonmatching source-selected build; retail entry points stay strict."""
+    global _EDITED_RUN_STARTED
+    edited_loaded_identity()
+    if not _EDITED_RUN_STARTED:
+        rp.edited_require(not any(name in sys.modules for name in
+            ('check_editable_layout', 'runlink.compare', 'runlink.config')),
+            'unbound edited proof modules were preloaded; use the fresh edited CLI')
+        _EDITED_RUN_STARTED = True
+    from dataclasses import asdict
+    import tempfile
+    import permute_batch as batch
+    import check_editable_layout as pilot
+    from runlink import codec, config, rules, compare
+    require = rp.edited_require
+    require(variant in ('control', 'peer', 'unreferenced'), 'unsupported edited source variant')
+    parent = edited_directory(root, out)
+    parent.mkdir(parents=True, exist_ok=True)
+    early_paths = {root / 'Makefile', root / 'mickey.us.yaml', root / 'tools/runlink_metadata_link.py',
+                   root / 'tools/runlink_pack.py', root / 'tools/static_symbols.py', root / 'tools/runlink/configs/msu-us.toml',
+                   root / 'config/runlink-ort.us.txt', root / 'config/overlay_funcs_to_trap.us.txt',
+                   root / pilot.FIXTURE / 'manifest.json'}
+    early_paths.update((root / 'mk').glob('*.mk'))
+    early_paths.update((root / 'tools').glob('*.py'))
+    early_paths.update((root / 'tools').glob('*.sh'))
+    early = {str(path.relative_to(root)): digest(path) for path in early_paths}
+    tool = batch.checked_tool_identity()
+    project_tools = edited_projection_tools()
+    source_context = edited_source_context(root)
+    require(all(digest(path) == value for path, value in pilot.LOADED.items()), 'loaded edited implementation changed')
+    # Existing ordinary recipes rebuild missing/stale resident inputs against an
+    # input-only projection stamp, not the retail full extraction graph.
+    setup = subprocess.run(['gmake', '--no-print-directory', '-j' + str(__import__('os').cpu_count() or 1),
+                            'edited-runlink-inputs'], cwd=root, text=True,
+                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    write_changed(parent / 'input-production.log', setup.stdout)
+    require(setup.returncode == 0, 'ordinary outside input production failed; see input-production.log')
+    require(all(digest(root / name) == value for name, value in early.items())
+            and batch.checked_tool_identity() == tool
+            and edited_projection_tools() == project_tools
+            and edited_source_context(root) == source_context, 'input production recipe/tool/source changed')
+    request = {'outside_rom': safe_relative(outside_rom or 'baseroms/mickey.us.z64').as_posix(),
+               'config': 'tools/runlink/configs/msu-us.toml',
+               'declaration': pilot.FIXTURE + '/manifest.json',
+               'selected_modules': [75, 108] if variant == 'peer' else [75], 'variant': variant}
+    current = edited_current(root, parent, variant, request)
+    if current is not None:
+        print('edited source build current', variant, current['rom_sha1'], flush=True)
+        return current
+    directory = Path(tempfile.mkdtemp(prefix=variant + '-', dir=parent))
+    commands = []
+    cfg = config.load('msu-us', root=root)
+    if outside_rom is not None:
+        from dataclasses import replace
+        cfg = replace(cfg, rom=root / safe_relative(outside_rom))
+    spec_payload = (root / pilot.FIXTURE / 'manifest.json').read_bytes()
+    spec = json.loads(spec_payload)
+    require(spec['module'] == 75 and spec['peer']['module'] == 108, 'unsupported source selection')
+    # Read only the actual compile command. No ordinary extraction/build guard is
+    # executed by this dry-run inquiry when old selected inputs are unavailable.
+    target = 'build/' + spec['source'] + '.o'
+    expanded = subprocess.check_output(['gmake', '--no-print-directory', '-n',
+        '--assume-old=build/.splat-stamp', '-W', spec['source'], target], cwd=root, text=True)
+    lines = [s for s in expanded.replace('\\\n', ' ').splitlines() if 'tools/ido/cc' in s and target in s]
+    require(len(lines) == 1, 'ambiguous actual selected compiler recipe')
+    words = shlex.split(lines[0])
+    args = words[max(i for i, word in enumerate(words) if word == '--') + 1:]
+    exports0 = rp.OrtNames.load(root / 'config/runlink-ort.us.txt')
+    edited_declaration(spec, exports0)
+    rows = list(exports0.rows)
+    grow = variant != 'control'
+    peer = variant in ('peer', 'unreferenced')
+    use_peer = variant == 'peer'
+    if grow:
+        rows.append(spec['new_export'])
+    if peer:
+        rows.extend(spec['peer']['exports'])
+    exports = rp.OrtNames(rows, dict(exports0.entries))
+    selected = {75: {'exports': [r['name'] for r in spec['existing_exports']]
+                                + ([spec['new_export']] if grow else []),
+                     'entries': {role: exports0.entries.get((75, role)) for role in ('init', 'resume')}}}
+    if peer:
+        selected[108] = {'exports': spec['peer']['exports'],
+                         'entries': {'init': spec['peer']['init'], 'resume': spec['peer']['resume']}}
+        for role in ('init', 'resume'):
+            exports.entries[(108, role)] = spec['peer'][role]
+    for number, declaration in selected.items():
+        declaration['kinds'] = {name: ('object' if number == 108 and name == 'layout108State' else 'function')
+                                for name in declaration['exports']}
+    write_changed(directory / 'exports.txt', exports.render())
+    # Snapshot all implementation/recipe/source/declaration inputs BEFORE parsing.
+    inputs = {root / n for n in ('Makefile', 'mickey.us.yaml', 'config/runlink-ort.us.txt',
+        'tools/runlink_metadata_link.py', 'tools/runlink_pack.py', 'tools/check_editable_layout.py',
+        'tools/link_overlay_module.py', 'tools/static_symbols.py', 'tools/rebind_elf_relocations.py',
+        'tools/runlink/codec.py', 'tools/runlink/rules.py', 'tools/runlink/compare.py',
+        'tools/binutils/mips64-elf-ld', 'tools/binutils/mips64-elf-objcopy', 'tools/n64crc', spec['source'])}
+    inputs.update((root / 'mk').glob('*.mk'))
+    inputs.update((root / pilot.FIXTURE).glob('*'))
+    inputs.add(cfg.path)
+    initial = {str(p.relative_to(root)): digest(p) for p in inputs}
+    initial.update({name: digest(root / name) for name in early})
+    require(hashlib.sha256(spec_payload).hexdigest() == initial[pilot.FIXTURE + '/manifest.json']
+            and all(initial[name] == value for name, value in early.items()), 'loaded recipe/declaration differs from snapshot')
+    prefix, template = edited_projection(root, directory)
+    selectors = set(re.findall(r'(?m)^\s*(build/[\w./-]+\.o)\([^)]*\);', template))
+    outside_inputs = {root / n for n in selectors if not re.search(r'/o075/', n)
+                      and not (n.startswith('build/assets/') and (metadata_name(n[13:-2]) or n.endswith('/rom_fill.bin.o')))}
+    # Retained outside input objects are explicit compatibility prerequisites.
+    # No selected source/image/table/header input or full bootstrap is opened.
+    outside_hashes = {str(p.relative_to(root)): digest(p) for p in outside_inputs}
+    initial.update(outside_hashes)
+    provider_command = ['tools/binutils/mips64-elf-ld', '-r', '-T', (directory / 'providers.ld').relative_to(root),
+                        '-Map', (directory / 'providers.map').relative_to(root), '-o', (directory / 'providers.elf').relative_to(root)]
+    pilot.run(root, provider_command, directory / 'providers.log', commands)
+    provider = rp.edited_provider_context(root, directory / 'providers.elf', directory / 'providers.map')
+    text = (root / spec['source']).read_text()
+    if grow:
+        anchor = '\n' + spec['mutation_anchor'] + '\n'
+        require(text.count(anchor) == 1, 'source growth anchor changed')
+        decl = 's32 layout75Step(s32 value);\n' + ('s32 layout75UsePeer(s32 value);\n' if use_peer else '')
+        call = 'layout75Step((s32) state->slot)' + (' + layout75UsePeer((s32) state->slot)' if use_peer else '')
+        text = text.replace('#include "overlays/overlay_075.h"\n', '#include "overlays/overlay_075.h"\n' + decl, 1)
+        text = text.replace(anchor, anchor.rstrip('\n') + '\n    gOverlay75SlotFlags[state->slot] += ' + call + ';\n')
+        text += '\n' + (root / pilot.FIXTURE / 'growth.c').read_text()
+        if use_peer:
+            text += '\n' + (root / pilot.FIXTURE / 'peer-use.c').read_text()
+    objects, products, closures = {}, {}, {}
+    objects[75], products[75], closures[75] = edited_compile(root, directory, 'overlay75', text, exports, args, commands)
+    if peer:
+        objects[108], products[108], closures[108] = edited_compile(root, directory, 'overlay108',
+            (root / spec['peer']['source']).read_text(), exports, args, commands)
+    for number, obj in objects.items():
+        actual_registered = {symbol.name for symbol in obj['linked'].symbols
+            if symbol.bind == rp.STB_GLOBAL and symbol.section in rp.EDITED_SECTIONS
+            and symbol.shndx not in (rp.SHN_UNDEF, rp.SHN_ABS) and symbol.name in exports.by_name}
+        require(actual_registered <= set(selected[number]['exports']),
+                'selected allocated registry export lacks explicit owner declaration')
+    generated = {n: rp.edited_module_records(n, objects, selected, exports, provider) for n in objects}
+    peer_removal = None
+    if variant == 'unreferenced':
+        preliminary_ort = [None] * len(exports.rows)
+        for product in generated.values():
+            identities = dict(product['exports'])
+            identities.update({ref.row: ref.base for ref in product['refs'] if ref.row is not None})
+            for row, identity in identities.items():
+                preliminary_ort[row] = codec.OrtRow(*rules.identity_row(identity, cfg))
+        preliminary = codec.Tables([], preliminary_ort, [p['module'] for p in generated.values()])
+        pilot.removed_targets(preliminary, {108}, exports.rows,
+            {key: name for product in generated.values() for key, name in product['callers'].items()})
+        before = generated[75]['module']
+        exports = rp.OrtNames(exports.rows[:-len(spec['peer']['exports'])], dict(exports0.entries))
+        write_changed(directory / 'exports.txt', exports.render())
+        del selected[108], objects[108], products[108], closures[108]
+        objects[75], products[75], closures[75] = edited_compile(root, directory, 'overlay75-removed', text, exports, args, commands)
+        generated = {75: rp.edited_module_records(75, objects, selected, exports, provider)}
+        after = generated[75]['module']
+        require((before.image, before.table1, before.table2) == (after.image, after.table1, after.table2),
+                'unreferenced tail removal changed surviving ordinary source module')
+        peer = False
+        peer_removal = 'unreferenced108 removed; declarations pruned; fresh surviving compiler/link exact'
+    selected_rows = {exports0.by_name[name] for name in selected[75]['exports'] if name in exports0.by_name}
+    # Decode only OUTSIDE compatibility. Selected header cells, ORT target cells,
+    # payloads and runtime records are excluded before interpretation/slicing.
+    outside_bytes = cfg.rom.read_bytes()
+    outside_hash = hashlib.sha256(outside_bytes).hexdigest()
+    initial[cfg.rom.relative_to(root).as_posix()] = outside_hash
+    outside = codec.decode(outside_bytes, cfg, exclude_modules={75}, exclude_rows=selected_rows)
+    require(not any(row is not None and row.selector == 75 for row in outside.ort),
+            'outside catalog contains an undeclared selected-module ORT row')
+    ort = list(outside.ort) + [None] * (len(exports.rows) - len(outside.ort))
+    for product in generated.values():
+        for row, identity in product['exports'].items():
+            ort[row] = codec.OrtRow(*rules.identity_row(identity, cfg))
+    require(all(row is not None for row in ort), 'selected export declaration left an ORT hole')
+    # Every selected imported resident export is independently checked against its
+    # actual allocated provider identity, never accepted from its retained row.
+    for product in generated.values():
+        for ref in product['refs']:
+            if ref.row is not None:
+                require(tuple(rules.row_identity(ort[ref.row], cfg)) == ref.base,
+                        'declared ORT identity disagrees with actual provider')
+    tables, dynamic, header_end = pilot.checked_layout(outside.main, ort,
+        sorted(outside.modules + [p['module'] for p in generated.values()], key=lambda m: m.number), cfg)
+    callers = {key: name for p in generated.values() for key, name in p['callers'].items()}
+    outside_callers = {}
+    for record in outside.main:
+        if record.symidx not in selected_rows:
+            continue
+        require(record.type == rp.R_MIPS_26 and record.op == codec.OP_SYMBOL,
+                'selected external resident reference is outside supported call profile')
+        site = cfg.resident_text + record.site
+        homes = [item for item in provider['map'] if item.insec == '.text'
+                 and item.addr <= site and site + 4 <= item.addr + item.size]
+        require(len(homes) == 1, 'resident selected caller lacks unique actual input')
+        item = homes[0]
+        raw = rp.Elf(root / item.file)
+        sidecar_path = root / (item.file + '.trapsites')
+        payload = sidecar_path.read_bytes()
+        sidecar = json.loads(payload)
+        require(sidecar['text_sha256'] == hashlib.sha256(raw.bytes_of('.text')).hexdigest(),
+                'resident selected-call sidecar is stale')
+        offset = site - item.addr
+        named = [r for r in sidecar['sites'] if r['offset'] == offset]
+        rels = [r for r in raw.rels('.text') if r.offset == offset and r.type == record.type]
+        functions = [symbol for symbol in raw.symbols if symbol.type == rp.STT_FUNC
+                     and symbol.size and symbol.section == '.text'
+                     and symbol.value <= offset and offset + 4 <= symbol.value + symbol.size]
+        require(len(named) == len(rels) == len(functions) == 1
+                and named[0]['name'] == exports.rows[record.symidx]
+                and rels[0].sym.name == rp.TRAP, 'resident call/declared selected export differs')
+        callers[(0, record.site, record.type)] = functions[0].name
+        outside_callers[functions[0].name] = named[0]['name']
+        provider['holds'][root / item.file] = hashlib.sha256(raw.data).hexdigest()
+        provider['holds'][sidecar_path] = hashlib.sha256(payload).hexdigest()
+    try:
+        pilot.removed_targets(tables, {75}, exports.rows, callers)
+    except pilot.PilotError as error:
+        removal = str(error)
+    else:
+        raise MetadataLinkError('resident references to75 disappeared')
+    files = pilot.output_files(tables)
+    wrappers = pilot.wrappers(root, directory, files, commands)
+    mapped_names = {name for name in files if not name.startswith('overlays/o108/')}
+    script = pilot.script_for(template, mapped_names, wrappers.relative_to(root).as_posix(),
+        products[75][1].relative_to(root).as_posix(),
+        products[108][1].relative_to(root).as_posix() if peer else None)
+    write_changed(directory / 'final.ld', script)
+    command = ['tools/link_diagnose.sh', 'tools/binutils/mips64-elf-ld', '-T', (directory / 'final.ld').relative_to(root)]
+    for name in ('undefined_funcs_auto.us.txt', 'undefined_syms_auto.us.txt', 'libultra_undefined_syms.us.txt', 'overlay_undefined_syms.us.txt'):
+        inputs.add(root / name)
+        initial[name] = digest(root / name)
+        command += ['-T', name]
+    command += ['-Map', (directory / 'final.map').relative_to(root), '--no-check-sections', '-o', (directory / 'final.elf').relative_to(root)]
+    incoming = pilot.artifact_hashes(directory)
+    require(all(incoming[name] == value for product in products.values() for name, value in product[3].items()),
+            'loaded module products changed before final link')
+    pilot.run(root, command, directory / 'final-link.log', commands)
+    pilot.run(root, ['tools/binutils/mips64-elf-objcopy', '-O', 'binary', '--pad-to=0x2000000', '--gap-fill=0xFF',
+        (directory / 'final.elf').relative_to(root), (directory / 'final.z64').relative_to(root)], directory / 'image.log', commands)
+    pilot.run(root, ['tools/n64crc', (directory / 'final.z64').relative_to(root)], directory / 'crc.log', commands)
+    # Final proof consumes actual outputs, with loaded observations held throughout.
+    snapshot = pilot.artifact_hashes(directory)
+    require(all(snapshot.get(name) == value for name, value in incoming.items()), 'final link changed its input snapshot')
+    elf = rp.Elf(directory / 'final.elf')
+    map_data = (directory / 'final.map').read_bytes()
+    mapping = rp.parse_map(directory / 'final.map', map_data)
+    rom = (directory / 'final.z64').read_bytes()
+    loaded = {directory / 'final.elf': hashlib.sha256(elf.data).hexdigest(),
+              directory / 'final.map': hashlib.sha256(map_data).hexdigest(),
+              directory / 'final.z64': hashlib.sha256(rom).hexdigest()}
+    require(all(snapshot[p.name] == value for p, value in loaded.items()), 'loaded final image/map bytes differ from snapshot')
+    decoded = codec.decode(rom, dynamic)
+    require(codec.encode_region(decoded, dynamic, gap_fill=255) == codec.encode_region(tables, dynamic, gap_fill=255),
+            'actual final decoded metadata/body differs')
+    require(len(rom) == 0x2000000 and all(b == 255 for b in rom[dynamic.modules_end:]), 'final FF fill differs')
+    for number, product in generated.items():
+        module = decoded.module(number)
+        obj = objects[number]
+        require(elf.bytes_of(f'.overlay_{number:03d}') == module.image
+                == b''.join(obj['linked'].bytes_of(s) for s in rp.EDITED_SECTIONS[:-1]), 'selected ordinary payload differs')
+        bss = elf.section(f'.overlay_{number:03d}_bss')
+        require(bss and bss['type'] == rp.SHT_NOBITS and bss['size'] == obj['linked'].size('.bss')
+                and bss['addr'] == rp.OVERLAY_VMA + len(module.image), 'selected actual NOBITS differs')
+        identities = compare.shipped_identities(module, decoded, dynamic)
+        require({k: v['full'] for k, v in identities.items()}
+                == {(r.site, r.type): r.full for r in product['refs']}, 'raw→final full identities differ')
+        for name, witness in product['export_witnesses'].items():
+            final = pilot.real_symbol(elf, name)
+            require(final.value == rp.OVERLAY_VMA + witness['identity'][2] and final.size == witness['size'], 'final export differs')
+    for name, witness in provider['witnesses'].items():
+        actual = pilot.real_symbol(elf, name)
+        require(actual.type == rp.STT_FUNC and actual.size == witness['size']
+                and actual.value == witness['address'] and elf.section(actual.section)['flags'] & 6 == 6,
+                'final allocated resident provider differs: ' + name)
+    if variant == 'peer':
+        try:
+            pilot.removed_targets(decoded, {108}, exports.rows, callers)
+        except pilot.PilotError as error:
+            peer_removal = str(error)
+            require('layout75UsePeer' in peer_removal and 'layout108Init' in peer_removal, 'peer removal lacks actual caller')
+        else:
+            raise MetadataLinkError('referenced peer removal was accepted')
+    for module in outside.modules:
+        require(decoded.module(module.number).image == module.image
+                == elf.bytes_of(f'.overlay_{module.number:03d}'), 'unselected compatibility payload changed')
+    anchors = {'main_reloc_table_ROM_START': dynamic.main_table_rom,
+               'main_reloc_table_ROM_END': dynamic.ort_rom, 'overlay_rom_table_ROM_START': dynamic.ort_rom,
+               'overlay_rom_table_ROM_END': dynamic.headers_rom, 'overlay_header_table_ROM_START': dynamic.headers_rom,
+               'overlay_header_table_ROM_END': header_end, 'overlay_001_ROM_START': dynamic.modules_rom}
+    for name, value in anchors.items():
+        require(pilot.real_symbol(elf, name).value == value, 'actual loader boundary differs: ' + name)
+    _, _, replay = pilot.resident_replay(root, directory, elf, mapping, commands, 'build/src/main/runlink.c.o',
+                          initial['build/src/main/runlink.c.o'], 'loader-replay')
+    snapshot.update(replay)
+    allowed = [(16, 24)]  # Actual n64crc result, validated by a second no-op run.
+    for item in mapping:
+        if item.file == 'build/src/main/runlink.c.o' and item.insec in ('.text', '.data', '.rodata') and item.size:
+            allowed.append((item.addr - cfg.resident_rom_delta, item.addr - cfg.resident_rom_delta + item.size))
+    previous = 0
+    for begin, end in sorted(allowed):
+        require(previous <= begin <= end <= cfg.main_table_rom and outside_bytes[previous:begin] == rom[previous:begin],
+                'unselected resident/assets prefix changed')
+        previous = end
+    require(outside_bytes[previous:cfg.main_table_rom] == rom[previous:cfg.main_table_rom], 'unselected prefix tail changed')
+    checksum = hashlib.sha256(rom).hexdigest()
+    crc_log = directory / 'crc-recheck.log'
+    crc_hash = pilot.run(root, ['tools/n64crc', (directory / 'final.z64').relative_to(root)], crc_log, commands)
+    snapshot[crc_log.name] = crc_hash
+    require(digest(directory / 'final.z64') == checksum, 'edited checksum did not stabilize')
+    inventory = {item.file for item in mapping if item.size and '/generated/' in item.file}
+    require(inventory == {str((wrappers / (name + '.o')).relative_to(root)) for name in files}, 'generated wrapper inventory differs')
+    require(not any(item.size and item.file.startswith('build/assets/')
+        and (metadata_name(item.file[13:-2]) or item.file.endswith('/rom_fill.bin.o')) for item in mapping), 'retained metadata/fill final input')
+    for path, expected in provider['holds'].items():
+        require(digest(path) == expected, 'loaded provider changed before publication')
+    for path, expected in loaded.items():
+        require(digest(path) == expected, 'loaded final output changed before publication')
+    edited_loaded_identity()
+    require(all(digest(root / n) == expected for n, expected in initial.items())
+            and batch.checked_tool_identity() == tool
+            and edited_projection_tools() == project_tools
+            and edited_source_context(root) == source_context, 'edited source/tool/outside inputs changed')
+    require(pilot.artifact_hashes(directory) == snapshot, 'validated artifacts changed during final proof')
+    artifacts = snapshot
+    receipt = {'schema': 'mickey-edited-source-build-v1', 'nonmatching': True, 'source_only': False,
+        'general_relayout': False, 'variant': variant, 'request': request, 'inputs': initial, 'toolchain': tool,
+        'projection_toolchain': project_tools, 'resident_source_context': source_context,
+        'commands': commands, 'source_cpp': {str(n): {'source': products[n][0].name.removesuffix('.o') + '.c',
+            'closure': closures[n]} for n in products}, 'arguments': args, 'compiler_recipe': lines[0],
+        'selected_raw_records': {n: len(p['refs']) for n, p in generated.items()},
+        'selected_header': {n: asdict(p['module'].header) for n, p in generated.items()},
+        'selected_joins': {n: p['joins'] for n, p in generated.items()},
+        'outside_authority': 'retained unselected headers/payloads/records/ORT identities; resident fixed homes',
+        'outside_retained_records': len(outside.main) + sum(len(m.table1) + len(m.table2) for m in outside.modules),
+        'generated_metadata_inputs': len(inventory), 'retained_metadata_inputs': 0,
+        'retained_fill_inputs': 0, 'removing75_refuses': removal, 'peer_removal': peer_removal, 'actual_resident_callers': outside_callers,
+        'rom_sha1': hashlib.sha1(rom).hexdigest(), 'provider_holds': {str(p.relative_to(root)): h for p, h in provider['holds'].items()}}
+    pilot.publish_receipt(directory, receipt, artifacts)
+    require(all(digest(root / n) == expected for n, expected in initial.items())
+            and all(digest(path) == value for path, value in provider['holds'].items())
+            and batch.checked_tool_identity() == tool
+            and edited_projection_tools() == project_tools
+            and edited_source_context(root) == source_context
+            and all(digest(path) == value for path, value in pilot.LOADED.items()),
+            'edited inputs changed during receipt publication')
+    write_changed(parent / (variant + '-current.json'), json_bytes({'path': str(directory.relative_to(root)),
+        'receipt_sha256': digest(directory / 'receipt.json')}))
+    print('edited source build PASS', directory.relative_to(root), receipt['selected_raw_records'], receipt['rom_sha1'], flush=True)
+    return receipt
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("prepare", "prove"))
+    parser.add_argument("command", choices=("prepare", "prove", "edited", "edited-project"))
     parser.add_argument("--root", type=Path, default=REPO)
+    parser.add_argument("--out", default="build/edited-runlink")
+    parser.add_argument("--outside-rom")
+    parser.add_argument("--variant", choices=("control", "peer", "unreferenced"), default="control")
     args = parser.parse_args()
     try:
-        (prepare if args.command == "prepare" else prove)(args.root.resolve())
+        if args.command == "edited-project":
+            directory = edited_directory(args.root.resolve(), args.out)
+            directory.mkdir(parents=True, exist_ok=True)
+            edited_projection(args.root.resolve(), directory)
+        elif args.command == "edited":
+            edited_build(args.root.resolve(), args.out, args.variant, args.outside_rom)
+        else:
+            (prepare if args.command == "prepare" else prove)(args.root.resolve())
     except (MetadataLinkError, rp.PackError, OSError, ValueError, KeyError, TypeError) as error:
         parser.error(str(error))
 

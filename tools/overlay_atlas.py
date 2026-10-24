@@ -220,6 +220,7 @@ FIXED_DATA_RODATA_OWNERSHIP = {
 CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     12: [(0x0, 0x64, "overlay12TriangleData", ".data"),
          (0x130, 0x150, "overlay_012", ".rodata")],
+    54: [(0x2D0, 0x2E0, "overlay_054", ".rodata")],
     53: [(0x0, 0xE0, "overlay53HudTemplates", ".data"),
          (0xE4, 0x120, "overlay53HudControls", ".data")],
     71: [(0x0, 0x190, "overlay71EffectData", ".data"),

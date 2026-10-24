@@ -498,10 +498,9 @@ $(O53_HUD_CONTROLS): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_
 # emits the HUD height easing as the shipped rotated branch-likely loop); its
 # .text carries the trailing pad, so nothing is trimmed. The module owns its
 # .data (the atlas's data_rodata +0x0..+0x2D0) and .bss. Their shipped address
-# words are section-relative, so every
-# site is rebound to a zero-valued base. Its 0.66f pool duplicates the
-# retained rodata at +0x2D0 and is asserted by digest until phase 3 gives the
-# module its rodata too. No instruction is edited.
+# words are section-relative, so the existing zero-valued bindings remain.
+# The checked 0.66f compiler pool supplies the unique final rodata input;
+# physical ownership does not establish ordinary module/API closure.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay_054.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay_054.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
@@ -513,7 +512,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay_054.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay_054.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:d131bb7de7509c98fc3533790f960348a16e2e461e7d1f5ffff1cd58ae2243e0
+		sha256:d131bb7de7509c98fc3533790f960348a16e2e461e7d1f5ffff1cd58ae2243e0 keep
 
 # Overlay 29 is one TU under the overlay flag set: no trim, and its resident
 # calls take the generated rebinds. What remains is phase-3 scaffolding for

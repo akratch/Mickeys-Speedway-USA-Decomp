@@ -8,7 +8,7 @@
   "borrowed": {
     "bss-size": {
       "about": "header BSS size without a complete faithful linked source allocation, from the atlas (module)",
-      "count": 37,
+      "count": 36,
       "entries": [
         [1],
         [2],
@@ -30,7 +30,6 @@
         [50],
         [51],
         [53],
-        [54],
         [55],
         [56],
         [57],
@@ -1389,7 +1388,7 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 25,
+      "count": 24,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
@@ -1408,7 +1407,6 @@
         [50, "overlay_050", ".bss", "0x21F0", 100],
         [50, "overlay_050", ".data", "0x1E70", 130],
         [50, "overlay_050", ".rodata", "0x21E4", 2],
-        [54, "overlay_054", ".rodata", "0x21C0", 2],
         [55, "overlay_055", ".rodata", "0xD80", 2],
         [58, "overlay_058", ".rodata", "0x5DF4", 6],
         [73, "overlay_073", ".rodata", "0xF8C", 30],

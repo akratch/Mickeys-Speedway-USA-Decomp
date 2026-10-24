@@ -1,5 +1,6 @@
 #include "overlays/overlay_001.h"
 #include "game/overlay8_tuning.h"
+#include "game/overlay_physics_state.h"
 #include "game/math.h"
 
 /* ---- overlay1InitializeGaugeObjects ---- */
@@ -694,7 +695,6 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
 #define NULL 0
 
 typedef struct O1PhysicsObject O1PhysicsObject;
-typedef struct O1PhysicsState O1PhysicsState;
 
 /* Partial layouts established by Mickey's field accesses. */
 struct O1PhysicsObject {
@@ -718,108 +718,6 @@ struct O1PhysicsObject {
     O1PhysicsState * state;
     u8 pad068[0x18];
     s32 flags80;
-};
-struct O1PhysicsState {
-    u8 pad000[0x2];
-    u8 inSurface;
-    u8 surfaceKind;
-    f32 forwardVelocity;
-    f32 sideVelocity;
-    f32 speedLimit;
-    u8 pad010[0x4];
-    f32 field14;
-    u8 pad018[0x20];
-    f32 previousX;
-    f32 previousY;
-    f32 previousZ;
-    u8 pad044[0x18];
-    f32 slope;
-    f32 normalX;
-    f32 normalY;
-    f32 surfaceHeight;
-    f32 submergedHeight;
-    f32 outputScale;
-    f32 impulseX;
-    f32 impulseY;
-    f32 impulseZ;
-    f32 impulseInitial;
-    f32 impulseVelocity;
-    f32 impulseAcceleration;
-    u8 pad08C[0x8];
-    f32 actualVelocityX;
-    f32 actualVelocityY;
-    f32 actualVelocityZ;
-    u8 pad0A0[0x8];
-    void * soundA8;
-    void * soundAC;
-    u8 pad0B0[0x24];
-    O1PhysicsObject * linkedObject;
-    u8 pad0D8[0x18];
-    s16 heading;
-    u8 pad0F2[0xE];
-    s16 field100;
-    s16 spinTimer;
-    s16 spinAngle;
-    u8 pad106[0x2];
-    s16 steeringAngle;
-    u8 pad10A[0x4E];
-    s16 field158;
-    u8 pad15A[0xC];
-    s16 field166;
-    u8 pad168[0x2];
-    s16 field16A;
-    u8 field16C;
-    u8 pad16D[0x3];
-    u8 reset170;
-    u8 reverseTimer;
-    u8 pad172[0xF];
-    u8 impulseActive;
-    u8 pad182[0x1];
-    s8 field183;
-    u8 pad184[0x1];
-    u8 boostMode;
-    u8 pad186[0x1];
-    s8 field187;
-    f32 boostScale;
-    u8 pad18C[0x1];
-    s8 disabled18D;
-    u8 pad18E[0x4];
-    u8 level192;
-    u8 pad193[0x15];
-    u16 flags1A8;
-    u8 pad1AA[0x112];
-    s32 collisionMode;
-    u8 pad2C0[0x89];
-    u8 field349;
-    u8 pad34A[0x32];
-    s16 pathIndex;
-    u8 pad37E[0x3];
-    u8 pathMode;
-    u8 actionMode;
-    u8 pad383[0x15];
-    f32 progress398;
-    u8 pad39C[0x4];
-    f32 speedScale;
-    u8 pad3A4[0x18];
-    f32 targetX;
-    f32 targetZ;
-    u8 pad3C4[0x8];
-    s16 previousPathIndex;
-    s16 stuckTimer;
-    f32 pathStartX;
-    f32 pathStartZ;
-    f32 pathEndX;
-    f32 pathEndZ;
-    u8 pad3E0[0x1A];
-    s16 field3FA;
-    u8 pad3FC[0x20];
-    s32 controlKeys;
-    s32 controlDkeys;
-    u8 pad424[0x4];
-    s32 controlXjoy;
-    s32 controlYjoy;
-    u8 pad430[0x8];
-    s32 joypadDisabled;
 };
 
 typedef struct O1PhysicsSurface {
@@ -878,7 +776,7 @@ void func_8001D41C(void *object, void *state, s32 update);
 void func_overlay_008_F0003278_1860FD0Reloc(void *object, void *state, s32 update);
 void func_8001D960(void *object, void *state, s32 mode, s32 kind, s32 update);
 void func_overlay_008_F0002EC0_1860C18Reloc(void *object, void *state, s32 update);
-void func_overlay_008_F0003018_1860D70Reloc(void *object, void *state, f32 scale, s32 update);
+void overlay8UpdateChannels(void *object, O1PhysicsState *state, f32 scale, s32 update);
 void func_8003EDEC(void *object, s32 update);
 extern f32 D_4;
 extern s32 gOverlay1Mode;
@@ -1437,7 +1335,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
         func_overlay_008_F0003278_1860FD0Reloc(object, state, gOverlay1TimerStep);
         func_8001D960(object, state, 0, 3, gOverlay1TimerStep);
         func_overlay_008_F0002EC0_1860C18Reloc(object, state, gOverlay1TimerStep);
-        func_overlay_008_F0003018_1860D70Reloc(object, state, state->outputScale, gOverlay1TimerStep);
+        overlay8UpdateChannels(object, state, state->outputScale, gOverlay1TimerStep);
         func_8003EDEC(object, gOverlay1TimerStep);
         if ((state->field349 != 0) && (state->field16C == 1)) {
             state->field16C = 0U;

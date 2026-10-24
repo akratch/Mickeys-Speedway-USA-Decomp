@@ -3,6 +3,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/overlay8_tuning.h"
+#include "game/overlay_physics_state.h"
 #include "game/math.h"
 
 struct Overlay17Chain;
@@ -43,37 +44,7 @@ typedef struct O8Owner {
 } O8Owner;
 
 typedef struct O8State {
-    u8 pad00[2];
-    u8 condition2;
-    u8 pad03;
-    f32 lateral4;
-    u8 pad08[0x68];
-    void *value70;
-    f32 vector74, vector78, vector7C;
-    f32 value80, value84;
-    u8 pad88[0x30];
-    void *resourceB8;
-    u8 padBC[8];
-    void *resourceC4;
-    u8 padC8[0xc];
-    s32 conditionD4;
-    u8 padD8[0x2e];
-    s16 angle106;
-    u8 pad108[0x2c];
-    struct Overlay17Chain *resource134;
-    struct Overlay17Chain *resource138;
-    u8 pad13c[0x36];
-    s8 condition172;
-    u8 pad173[0xe];
-    u8 active181;
-    u8 pad182[0x1a0];
-    u8 selector322;
-    u8 selector323;
-    u8 pad324[0x26];
-    u8 mode34A;
-    u8 pad34B[0x68];
-    u8 timer3B3;
-    u8 pad3B4[0x88];
+    O1PhysicsState prefix;
     s16 angle43C;
 } O8State;
 
@@ -271,18 +242,7 @@ typedef struct Overlay8UpdateInput {
     f32 delta6C;
 } Overlay8UpdateInput;
 
-typedef struct Overlay8ChannelState {
-    u8 pad000[4];
-    f32 position;
-    u8 pad008[0x114];
-    f32 values[4];
-    u8 modes[4];
-    u8 phases[4];
-    u8 pad134[0x188];
-    s32 selectorMode;
-    u8 pad2C0[0x60];
-    u8 selectors[4];
-} Overlay8ChannelState;
+typedef O1PhysicsState Overlay8ChannelState;
 
 typedef struct Overlay8ColorSource {
     u8 pad00[0x38];
@@ -706,7 +666,7 @@ extern void ext_o0_2b90(s32, s32, s32, s32, s32, void **);
 
 extern void ext_o7_ccc(O8Owner *, s32);
 
-extern void ext_o8_3018(O8Owner *, O8State *, void *, s32);
+extern void overlay8UpdateChannels_o008Reloc(void *, Overlay8ChannelState *, f32, s32);
 
 extern void func_8003EDE0(f32);
 
@@ -786,7 +746,8 @@ extern const f32 gOverlay8PhaseScales[];
 
 extern const f32 gOverlay8SelectorScales[];
 
-extern f32 overlay8SampleChannel(f32 argument, void *sampleState);
+void overlay8UpdateChannels(void *unused, Overlay8ChannelState *state,
+                            f32 gate, s32 updateRate);
 
 extern void overlay8EmitChannel(Overlay8ChannelState *state, s32 kind,
                                 f32 scale);

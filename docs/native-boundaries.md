@@ -46,7 +46,7 @@ establish unreachability: data, ORT or assembly references may still enter it.
 | Cache range calls `void(void *, s32)`; cache-all `void(void)` | [os.h](../include/PR/os.h), cache-all declaration in [sched.c](../src/main/sched.c#L84), [PI provider](../src/main/pi.c), [runlink](../src/main/runlink.c) | CPU/RCP/PI visibility and executable-code publication. Ordering is observable; do not assume a no-op contract from coherent host memory. |
 | `void _bcopy(const void *, void *, int)`, `void _bzero(void *, int)`, `int _bcmp(const void *, const void *, int)` | [os_internal.h](../include/PR/os_internal.h#L116), ledger SDK identity | Shared source/destination/count shapes, no allocation transfer. The [block-memory audit](block-memory-contracts.md) establishes signed-count/zero/negative cases, overlap and access granularity. `_bcmp` returns boolean 0/1; its incoming scratch value cancels as common partial-load filler. Ordinary-RAM extent, address-view and synchronization preconditions remain explicit. |
 | `f32 Powerf(f32, s32)` | [charControl.c](../src/main/charControl.c#L259), [shadows.c](../src/main/shadows.c), [resolved arity note](NATURALNESS_LEDGER.md) | Integer exponent is authenticated by the existing correction; it must not become a floating exponent. Negative/overflow/FP-status semantics are not supplied by a mathematical name. |
-| `void mtxf_transform_point(MtxF, f32, f32, f32, f32 *, f32 *, f32 *)`; `void mtxf_to_mtx(MtxF, Mtx *)` | [camera.c declarations](../src/main/camera.c#L271), [MtxF](../include/game/math.h), [Mtx](../include/n_audio/gbi.h#L999) | Call-site shapes and storage layouts. `MtxF` is 64 bytes of target `f32`; SDK `Mtx` is target s15.16 with separate integer/fraction halves. Mathematical convention, rounding, aliasing and serialized byte order still need per-entry proof. |
+| `void mtxf_transform_point(MtxF, f32, f32, f32, f32 *, f32 *, f32 *)`; `void mtxf_to_mtx(MtxF, Mtx *)` | [camera.c declarations](../src/main/camera.c#L271), [MtxF](../include/game/math.h), [Mtx](../include/n_audio/gbi.h#L999) | Call-site shapes and storage layouts. `MtxF` is 64 bytes of target `f32`; SDK `Mtx` is target s15.16 with separate integer/fraction halves. The [conversion contract](matrix-contracts.md#fixed-point-conversion) establishes current-rounding dependence, packed byte order, disjoint backing and target fault behavior. Point-transform and caller-wide domain/lifetime claims remain separate. |
 
 The scalar `sqrtf(f32)->f32` call shape is used throughout the source and backed
 by the stored SDK identity, but its result/exception behavior depends on the FP
@@ -111,15 +111,17 @@ t-register inputs, the patcher's s0–s6 clobbers and the private return exit.
 The outer entry restores its saved registers; descriptor bounds, shared scratch
 serialization and matrix queue lifetime still need resource-level authority.
 
-**The two matrix boundaries have specific alias and preservation rules.** The
+**The audited matrix boundaries have specific alias and preservation rules.** The
 [matrix audit](matrix-contracts.md) identifies `mtxf_mul`'s incoming f2 read as
 save/restore state, not a hidden matrix operand. Destination-equals-left-input
 calls work with disjoint rhs; general destination-equals-rhs calls do not.
 `func_8002AA50` retains argument and FP registers across its trig calls and has
 no ordinary argument-home area. A replacement's ordinary ABI compatibility alone
-does not establish that narrower preservation/stack contract. Float/fixed caller
-views, actual stack-matrix ownership and graphics completion lifetime remain
-separate source/resource work.
+does not establish that narrower preservation/stack contract. `mtxf_to_mtx`
+uses ambient FP rounding, cannot generally convert in place, and writes two
+big-endian halfword planes. Its exceptional target path supplies no established
+host-cast sentinel. Remaining erased caller views and graphics completion
+lifetime are separate source/resource work.
 
 ## Data, numerical and lifetime assumptions by family
 
@@ -183,7 +185,7 @@ separate source/resource work.
 | Packet / initial owned anchor | Deliverable and stopping boundary |
 |---|---|
 | Angle and FP ABI: `Arctanf`, then its trig pair | Authenticate input/result widths, low-word/wrap rules and clobbers from Mickey; reconcile the conflicting caller declarations. Record FP-state dependencies. Stop before shared-header edits until that evidence supports one contract. |
-| Matrix follow-up | The [matrix contract](matrix-contracts.md) settles the nonargument read, lhs-only alias allowance and private trig preservation. Repair `func_8005B644`'s actual stack-matrix view, then overlay 56's float/fixed views. Bound conversion edge cases and graphics completion lifetime before replacement decisions. |
+| Matrix follow-up | The [matrix contract](matrix-contracts.md) settles multiplication aliasing, private trig preservation and the fixed converter's format/rounding/fault boundary. The local stack-matrix and overlay 56 repairs are integrated. Next prove caller-wide numeric ranges, overlay 98's typed float/fixed backing, complete thread/FP-context coverage and graphics completion lifetime. |
 | Inflater follow-up | Core dialect, continuation and shared-state lifetime are audited in the [contract](inflater-contract.md). Derive lookahead bounds, resolve fixed-handler incoming memory and measure per-record output/workspace/overlap limits privately. Establish byte-4 meaning from producer evidence; stop before decoder implementation. |
 | Animation outer/private cluster | Map live-in/out registers and writable record intervals at `func_800591B0`, including its private t/s-register helpers and exit. Keep the converter batch separate until its matrix mutation/format is proved. |
 | Render resource anchor: `rainFastDraw` plus its sole inspected overlay15 call family | Recover exact pixel/position/color formats, count/bounds/clipping and stack FP words. Then schedule snow/lighting/output independently rather than porting twelve labels as one renderer. |

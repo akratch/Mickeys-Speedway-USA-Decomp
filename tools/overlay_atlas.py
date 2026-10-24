@@ -258,7 +258,10 @@ FIXED_DATA_RODATA_OWNERSHIP = {
 # from executable text ownership and matching credit.
 CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     57: [
+        (0x1FC, 0x27C, "overlay57PanelSprites", ".data"),
+        (0x32C, 0x36C, "overlay57DetailSprites", ".data"),
         (0x3C8, 0x4B8, "overlay57MenuTables", ".data"),
+        (0x4D0, 0x4F0, "overlay57AnimationState", ".data"),
         (0x540, 0x580, "overlay57MenuLabels", ".rodata"),
     ],
     7: [(0x2A4, 0x754, "overlay7ModeTables", ".data")],
@@ -321,6 +324,9 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     82: [(0x0, 0xA0, "overlay_082", ".rodata")],
 }
 DATA_ONLY_FIXED_DATA_SOURCES = {
+    (57, "overlay57PanelSprites", ".data"),
+    (57, "overlay57DetailSprites", ".data"),
+    (57, "overlay57AnimationState", ".data"),
     (57, "overlay57MenuTables", ".data"),
     (57, "overlay57MenuLabels", ".rodata"),
     (7, "overlay7ModeTables", ".data"),

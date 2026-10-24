@@ -120,6 +120,10 @@ no ordinary argument-home area. A replacement's ordinary ABI compatibility alone
 does not establish that narrower preservation/stack contract. Float/fixed caller
 views, actual stack-matrix ownership and graphics completion lifetime remain
 separate source/resource work.
+The [sprite contract](sprite-render-contracts.md) distinguishes O60's 26 read
+bytes from 18 unknown bytes, its float frame/flag domains and synchronous CPU
+inputs from deferred graphics storage; it does not establish a complete schema
+or shared C prototype closure.
 
 ## Data, numerical and lifetime assumptions by family
 

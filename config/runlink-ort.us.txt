@@ -1916,7 +1916,7 @@
 1905 overlay68ReleasePrimary
 1906 overlay68FinishEntry
 1907 overlay68ClearNestedFlag
-1908 D_overlay_071_F0000B50_18CA670
+1908 o71ResourceSlot
 1909 overlay81SetMaskBit
 1910 D_overlay_082_F00004D0_18CF650
 1911 overlay83SubmitAll

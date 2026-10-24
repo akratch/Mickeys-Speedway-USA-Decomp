@@ -7,12 +7,12 @@ support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `5d5926aa3`; the combined borrowing
+The source measurements here are pinned to `e113b4a32`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
 
-Public release `076f239c2` passed a cold byte-identical rebuild, all six editable
+Public release `414d94b3f` passed a cold byte-identical rebuild, all six editable
 layout variants and 2,185 uncached promotion proofs with zero failures or
 uncovered targets before landing through `tools/land.sh`. The newer source pin
 above passed its combined ROM, structural gates and all 150 tooling test files;
@@ -22,10 +22,10 @@ it has not yet completed another release census or landed.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 48,036 of 61,312 bytes have canonical projected C owners | 13,276 bytes remain. Another 508 diagnostic/trial bytes earn no physical ownership credit. |
-| Initialized images | 37 of 87 data-bearing modules are fully projected to C; ten are partial and 40 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
+| Initialized storage | 48,992 of 61,312 bytes have canonical projected C owners | 12,320 bytes remain. Another 508 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized images | 37 of 87 data-bearing modules are fully projected to C; 11 are partial and 39 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 29 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 7,234 records still borrow authority: 7,120 placeholder references and 114 blob-owned data records. Layout borrowing remains explicit too. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 6,505 records still borrow authority: 6,397 placeholder references and 108 blob-owned data records. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 39 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
 
@@ -41,8 +41,8 @@ identities and bytes; they are distinct from fresh source-compilation acceptance
 The three compatibility records are the two overlay 20 guard calls and overlay
 7's value-reset call. The guard views still interpret the same runtime owner's
 resource word as an integer; their whole owner-family type contract remains open.
-A fresh source scan at `5d5926aa3` finds 25 per-input zero-addend call aliases
-used across 81 sites with different runtime providers. Those aliases need actual
+A fresh source scan at `e113b4a32` finds 23 per-input zero-addend call aliases
+used across 76 sites with different runtime providers. Those aliases need actual
 provider names and compatible contracts; matching output does not close that
 source-quality debt. The 51-entry natural-C cleanup queue remains open too. A current definition
 census resolves every queued name to one canonical C definition; it does not
@@ -77,6 +77,10 @@ metadata, and the obsolete `--force` steps are gone. Imported zero bindings have
 private names, preventing them from impersonating real function definitions.
 Compiler-recorded file-scope BSS anchors restore identities without inventing
 allocation sizes. Generated aliases and the overlay graph have freshness gates.
+The historical symbol-alias configuration has also been reconciled: its 39 former alias pairs
+belong to 30 retired per-function inputs, none in the current link. Its empty
+active configuration and existing renderer freshness gate are consistent. Live
+C call aliases and provider contracts remain a separate obligation.
 
 The compiler's own pools now agree with retail: overlay 1's missing literals,
 overlay 8's 21 read-only scalar loads, overlay 11's release cases and overlay
@@ -164,7 +168,7 @@ The shared physics/channel prefix, true integer Powerf update-rate parameter,
 six physics getter/setter/point/buffer calls and pointer-volatile command entry
 now have compatible actual-provider declarations with exact output. Original
 volatile qualification and other opaque owner views remain uncertain. Objdiff
-now includes all 42 declared data-only C inputs while retaining separate text
+now includes all declared data-only C inputs while retaining separate text
 ownership checks; these inputs receive no executable-complete flag or new
 executable matching credit.
 Overlay 48 is now a complete ordinary source-module link: its 93-entry caption
@@ -176,16 +180,27 @@ actual resident providers. Its resident byte export has an authenticated label
 within retained resident data; that label does not establish resident C ownership.
 This retires 122 borrowed records and its BSS-size/read-only-base fallbacks.
 
-Overlay 57 now owns 852 initialized bytes of typed option masks, shifts, spawn
-positions, mutable rectangles, bounded sprite lists, scalar controls and labels,
-eight genuine grid triangles, four float parameters, independently bounded
-selection/transition words and its complete 152-byte compiler pool. Bounds
-recognition permits actual non-clobbering stack saves around a switch guard;
-all 36 original pool records remain authenticated. The old eight-site RO rebind
-list is retired. Another 780 initialized bytes remain open.
-Overlay 9 has 192 bytes of parameter and camera storage. Overlay 58 has 400
+Overlay 57 now owns 1,472 of its 1,632 initialized bytes. Genuine typed node
+rows, unlock labels, signed mode tables and packed colours join its masks,
+geometry, state and complete 152-byte compiler pool. Its 47 private BSS objects
+supply 424 bytes plus 24 bytes of ordinary alignment, replacing a fake global
+padding witness while preserving the complete 448-byte allocation. Qualified
+DATA/BSS identities retire 518 borrowed records; a former shared name now
+distinguishes its float DATA object from its integer BSS object. Header authority,
+160 initialized bytes, legacy array/pointer views and runtime bounds remain open.
+
+Overlay 14 now supplies its complete 288-byte mutable initial-state input:
+packed rectangles, encoded default labels and controls. Its genuine 432-byte
+BSS allocation includes the actual value cache and command queue. The text
+overflow predicate has its correct role; 112 initialized read-only bytes, legacy
+views, address carriers and complete header authority remain open at this pin.
+Overlay 13 has genuine 4,112-byte BSS storage and separate typed sprite and
+texture load/free contracts. Three calls now name their actual distinct
+deallocators; the partial texture view and lifetime preconditions remain open.
+
+Overlay 9 has 192 bytes of parameter and camera storage. Overlay 58 has 448
 initialized bytes of result assets, badge nodes, labels/formats and transition
-controls; 672 remain. Its 31 genuine BSS objects supply 256 bytes including
+controls; 624 remain. Its 31 genuine BSS objects supply 256 bytes including
 eight ordinary alignment bytes. Qualified backing names and compatible word/byte
 and race-entry views retire 705 placeholder references without changing an
 instruction word. Header authority remains borrowed until the retained
@@ -235,12 +250,12 @@ the retail ID-67 boundary discrepancy documented in
    alias is not a substitute. A header-sized unowned reserve earns no C credit.
 3. **Recover initialized and BSS families.** Prioritize bounded tables, records,
    strings, geometry and callback families, not opaque copies of whole modules.
-   The largest canonical initialized deficits are overlay 8 (1,136 bytes),
-   overlay 57 (1,104), overlay 58 (864), overlay 9 (848), overlay 101 (768)
-   and overlay 1 (704). Overlay 101's 768-byte remainder includes its pointer table, remaining formats
-   and small control/compiler-pool tail, and overlay 8's mutable tables/pool
-   overlap, need separate owned packets. Unreferenced format strings are actual
-   objects, not alignment to be counted away. Asset payloads require an explicit generated binding/format strategy,
+   The largest canonical initialized deficits are overlay 9 (848 bytes),
+   overlay 8 (720), overlay 1 (704), overlay 61 (672), overlay 58 (624)
+   and overlay 60 (608). Overlay 65 retains 544 bytes and overlay 59 retains
+   496. Each requires authentic object schemas and complete source/relocation
+   evidence; repeated layouts alone do not establish a shared type.
+   Unreferenced format strings are actual objects, not alignment to be counted away. Asset payloads require an explicit generated binding/format strategy,
    not public extracted-byte arrays.
 4. **Remove borrowed identities.** Replace each placeholder and blob-owned
    pointer field with its actual source definition, compatible callback type or

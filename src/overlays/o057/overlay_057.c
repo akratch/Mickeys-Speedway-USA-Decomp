@@ -172,8 +172,8 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     overlay45SetMode(gO57Descriptor70PrepareReloc, 0xFF);
     overlay45SetMode(gO57Descriptor74PrepareReloc, 0xFF);
     overlay45SetMode(gO57Descriptor78PrepareReloc, 0xFF);
-    o57PrepareDescriptorListReloc(&gO57DescriptorList80Reloc);
-    o57PrepareDescriptorListReloc(&gO57DescriptorList130Reloc);
+    loadFrontEndList(gO57DescriptorList80Reloc);
+    setupFrontEndList(gO57DescriptorList130Reloc);
 
     gO57Value1FCReloc = ((O57SeedData *)D_800D31C8)->value0C;
     gO57Value21CReloc = ((O57SeedData *)D_800D31C8)->value10;
@@ -1736,7 +1736,7 @@ static void overlay57HandleModeInput(s32 updateRate) {
         gOverlay57State = 0;
         overlay84ActivateCurrent(2);
 
-        idPtr = (s32 *)gO57ModePrimaryIds;
+        idPtr = gO57ModePrimaryIds;
         while (*idPtr != -1) {
             animseqStartPath((u8) *idPtr);
             overlay57SetNodeValue(*idPtr, gO57ModePrimaryValues[*idPtr],
@@ -1744,7 +1744,7 @@ static void overlay57HandleModeInput(s32 updateRate) {
             idPtr++;
         }
 
-        idPtr = (s32 *)gO57ModeSecondaryIds;
+        idPtr = gO57ModeSecondaryIds;
         while (*idPtr != -1) {
             animseqStopPath((u8) *idPtr);
             idPtr++;
@@ -1796,7 +1796,7 @@ static void overlay57StartMode(s32 value) {
  * (the `or a3,a0` copy), and the unlock test is written bit-first. */
 static void func_overlay_057_F0004460_18A8058(s32 updateRate) {
     s8 activePlayers[10];
-    O57MenuLink *link;
+    s32 *link;
     s32 i;
     s32 current;
     s32 index;
@@ -1933,14 +1933,14 @@ static void func_overlay_057_F0004460_18A8058(s32 updateRate) {
         overlay84ActivateCurrent(3);
 
         link = gO57ModePrimaryIds;
-        while (link->index != -1) {
-            animseqStartPath(link->index);
-            overlay57SetNodeValue(link->index, gO57ModePrimaryValues[link->index], 0.007f);
+        while (*link != -1) {
+            animseqStartPath(*link);
+            overlay57SetNodeValue(*link, gO57ModePrimaryValues[*link], 0.007f);
             link++;
         }
         link = gO57ModeSecondaryIds;
-        while (link->index != -1) {
-            animseqStopPath(link->index);
+        while (*link != -1) {
+            animseqStopPath(*link);
             link++;
         }
         gOverlay57State = 0;
@@ -2464,7 +2464,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
 /* Overlay 57 text +0x60F8..+0x67DC, the four-way menu step and start. Matched
  * 2026-10-01 (lane d-o057) from 252 masked words on overlay 57's middle-panel
  * template (func_overlay_057_F0004E18_18A8A10): the start and stop id walks
- * are `while (link->index != -1)` with the link read at each use, the player
+ * are `while (*link != -1)` with the link read at each use, the player
  * setup is that function's countdown fill and choice walk reading the source
  * table and the controller map directly, the player count is one resident
  * word read at every use (it was split across three names), the entry value
@@ -2473,7 +2473,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
 static void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
     s32 count;
     s32 i;
-    Overlay57IndexLink *link;
+    s32 *link;
     s8 playerOrder[4];
     u8 activePlayers[10];
     s32 index;
@@ -2540,14 +2540,14 @@ static void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
         overlay84ActivateCurrent(1);
 
         link = gOverlay57StartLinks;
-        while (link->index != -1) {
-            animseqStartPath(link->index);
-            overlay57SetNodeValue(link->index, gOverlay57NodeArguments[link->index], 0.007f);
+        while (*link != -1) {
+            animseqStartPath(*link);
+            overlay57SetNodeValue(*link, gOverlay57NodeArguments[*link], 0.007f);
             link++;
         }
         link = gOverlay57StopLinks;
-        while (link->index != -1) {
-            animseqStopPath(link->index);
+        while (*link != -1) {
+            animseqStopPath(*link);
             link++;
         }
     }

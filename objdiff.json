@@ -469,6 +469,15 @@
       }
     },
     {
+      "name": "asm/data/7A0C0.data.s",
+      "target_path": "expected/build/asm/data/7A0C0.data.s.o",
+      "metadata": {
+        "progress_categories": [
+          "resident"
+        ]
+      }
+    },
+    {
       "name": "asm/data/7AB60.data.s",
       "target_path": "expected/build/asm/data/7AB60.data.s.o",
       "metadata": {

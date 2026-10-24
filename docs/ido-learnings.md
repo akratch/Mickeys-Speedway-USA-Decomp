@@ -31,41 +31,15 @@ bytes and disassembly never belong here.
 
 ### Const qualification does not select the initialized section
 
-- **Symptom:** a named floating constant has the right value but occupies
-  `.data`, while the runtime LOCAL records require a separate `.rodata` base.
-- **Mechanism:** in a measured IDO 5.3 TU at `-O2 -mips2 -32 -G0`, with
-  `-Xcpluscomm -non_shared -Wab,-r4300_mul`, both global `const f32` and
-  `static const f32` definitions were emitted into `.data`. Float literal
-  expressions emitted the separate compiler-owned `.rodata` pool. A `const`
-  qualifier constrains C accesses; it is not a section-placement directive.
-- **Lever:** distinguish a stored variable from a private literal value.
-  Where the references prove a private constant with no writes, exports or
-  address uses, a named float literal macro can recover the compiler pool
-  without inventing a storage object. Compare section bytes and relocation
-  bases as well as instruction bytes.
-- **Limits:** this was measured for scalar floats in a TU with an initialized
-  integer global, not for arrays, strings, other optimization modes or other
-  IDO versions. Substituting a literal for mutable or addressable storage is
-  not equivalent. An exact raw pool also does not prove that the configured
-  host link consumes it; its physical ownership and runtime base still need
-  a linked proof.
+See [scalar storage and private float pools](ido-data-layout.md#const-qualification-does-not-select-the-initialized-section).
 
 ### Static const aggregate arrays can split the initialized sections
 
-- **Symptom:** typed tables reproduce their values but the combined initialized
-  extent grows and the runtime section bases disagree.
-- **Mechanism:** with IDO 5.3 at `-O2 -mips2 -32 -G0 -Xcpluscomm
-  -non_shared`, static const arrays of triangle and RGB structs were placed in
-  `.rodata`; unqualified static or global arrays occupied `.data`. Splitting
-  them from mutable vectors and scalars added independent section alignment.
-- **Lever:** recover each table's actual fields and access behavior, then
-  compare `.data`, `.rodata`, their alignment and relocation bases separately.
-  Do not infer a target section solely from read-only uses or scalar-constant
-  behavior, and do not add padding objects to repair a section split.
-- **Limits:** this measured aggregate case does not establish global const
-  array placement, other optimization modes or other IDO versions. A typed
-  initialized/BSS layout proof alone does not establish exact function code
-  or configured ownership.
+See [aggregate sections and independent alignment](ido-data-layout.md#static-const-aggregate-arrays-can-split-the-initialized-sections).
+
+### Real read-only string context can recover a compiler-pool base
+
+See [actual string prefixes and compiler-owned tables](ido-data-layout.md#real-read-only-string-context-can-recover-a-compiler-pool-base).
 
 ### Direct operand kills can retain a result without retaining its carrier
 

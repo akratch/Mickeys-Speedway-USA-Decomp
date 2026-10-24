@@ -5,12 +5,6 @@
 #include "game/track.h"
 #include "game/math.h"
 
-typedef struct Overlay12Entry {
-    u8 pad00[0x4A];
-    u8 active;
-    u8 pad4B[9];
-} Overlay12Entry;
-
 typedef struct Overlay12Effect {
     f32 x0;
     f32 y0;
@@ -56,28 +50,7 @@ typedef struct Overlay12Particle {
     u8 pad17;
 } Overlay12Particle;
 
-extern void *gOverlay12ResourceF3;
-extern void *gOverlay12ResourceF2;
-extern void *gOverlay12ResourceF4;
-extern void *gOverlay12ResourceF5;
-extern void *gOverlay12ResourceF6;
-extern void *gOverlay12Resource39;
-extern void *gOverlay12Resource0;
-extern void *gOverlay12Resource1;
-extern void *gOverlay12Resource2;
-extern void *gOverlay12Resource3;
-extern void *gOverlay12Resource4;
-extern void *gOverlay12Resource5;
-extern Overlay12Entry gOverlay12Entries[];
-extern Overlay12Effect gOverlay12Effects[64];
-extern Overlay12Particle gOverlay12Particles[5];
-extern u8 gOverlay12Flag1536;
 extern s32 gOverlay12Ready;
-extern s32 gOverlay12Count;
-extern s32 gOverlay12Selection;
-extern s32 gOverlay12Value1598;
-extern s32 gOverlay12EffectCount;
-extern s32 gOverlay12ParticleCount;
 
 typedef struct Overlay12TrackHeight {
     u8 pad00[0x24];
@@ -99,6 +72,9 @@ typedef struct Overlay12Vertex {
     u8 a;
 } Overlay12Vertex;
 
+/* Legacy loader operand view: computed indices cross the two count words
+ * before reaching the six real resource cells. It is not a genuine source
+ * pointer-array allocation; direct C/native view closure remains open. */
 extern void *gOverlay12Resources[];
 extern s32 gOverlay12EffectColors[];
 extern s32 gOverlay12ParticleColors[];
@@ -108,6 +84,19 @@ extern u8 gOverlay12TrianglesB[];
 
 struct TextureHeader;
 struct Sprite;
+/* Actual BSS backing objects; typed imports retain loader operands. */
+extern s32 o12EffectCount_o012Reloc;
+extern s32 o12ParticleCount_o012Reloc;
+extern struct TextureHeader *o12TextureF3_o012Reloc;
+extern struct TextureHeader *o12TextureF2_o012Reloc;
+extern struct TextureHeader *o12TextureF4_o012Reloc;
+extern struct TextureHeader *o12TextureF5_o012Reloc;
+extern struct TextureHeader *o12TextureF6_o012Reloc;
+extern struct Sprite *o12Sprite39_o012Reloc;
+extern Overlay12Effect gOverlay12Effects_o012Reloc[64];
+extern Overlay12Particle gOverlay12Particles_o012Reloc[5];
+extern s32 o12UpdateParity_o012Reloc;
+
 extern struct TextureHeader *texLoadTexture(s32 textureId);
 extern struct Sprite *texLoadSprite(s32 spriteId, s32 flags);
 extern void texFreeTexture(struct TextureHeader *resource);

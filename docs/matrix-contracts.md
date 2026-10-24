@@ -4,6 +4,9 @@ This reference describes `mtxf_mul`, `func_8002AA50` and their immediate format
 and trig dependencies. The source references below were checked against
 `0d2c6336dea35316ec792e9c781991c1adab6195`; the audit used Mickey's own ROM-exact
 linked providers. No assembly was replaced and no new matching credit is claimed.
+The separate fixed-conversion audit below is pinned to
+`b740117da9e07f2ac8ea8cd6084924b9611b4ec7`; its retained provider is 156 bytes
+and all 39 instruction words agree with Mickey's ROM. No game code was executed.
 See the [boundary map](native-boundaries.md) for the wider native-start scope.
 
 ## Float multiplication and aliasing
@@ -94,14 +97,76 @@ This establishes the observed main-thread FR1 setting, not a complete OS audit
 or proof that every possible caller runs on that thread. Compiler pairing
 conventions must not be substituted for actual hardware register mode.
 
+## Fixed-point conversion
+
+`mtxf_to_mtx(src, dest)` reads sixteen target `f32` cells from `src[0,64)`
+and writes the entire packed matrix at `dest[0,64)`. Its retained
+[math-util provider](VERIFIED_ASSEMBLY.md) multiplies each cell by the exact
+single-precision value 65536, then uses `cvt.w.s`, which obeys ambient FCSR
+rounding. It neither saves nor changes FCSR. For a successfully converted signed
+word `q[i]`, the high 16 bits are stored at destination byte `2*i` and the low
+16 bits at `32 + 2*i`, in target big-endian halfword order. These are two planes,
+not sixteen consecutive host integers. The [SDK Mtx type](../include/n_audio/gbi.h)
+is a 64-byte s15.16 record with eight-byte alignment on the target; its `long`
+layout must not be assumed on LP64 hosts.
+
+| Effect | Established contract |
+|---|---|
+| Memory | Source words require four-byte alignment; output stores require two-byte hardware alignment, with the SDK type requiring eight. Both complete spans need valid backing. No null/capacity checks or pointer retention. |
+| Capture and aliasing | Four source cells are captured per iteration before that row's stores. Disjoint input/output works; `dest == src` overwrites unread later rows and is unsafe in general. Partial overlap is not a promised C API. |
+| Registers | a0 advances by 64, a1 by 32, t0 reaches zero; at/t1–t4 and f4/f6/f8/f10/f12 are scratch. No stack, calls, global scratch or scalar result is established. |
+| Failure | Output is not atomic: stores start before all sixteen conversions complete. A fault can leave an earlier portion written. |
+
+For finite normal inputs or signed zero in `[-32768, 32768)`, scaling by this
+power of two is exact and the scaled values fit signed word conversion. Under
+the initialized nearest mode, half-LSB inputs `+/- 2^-17` produce zero and
+`+/- 3*2^-17` produce `+/-2`; this is not truncation. Signed zero loses its sign.
+The largest target float below 32768 is 32767.998046875, yielding 2147483520;
+-32768 yields the minimum signed word. No range check or clamp is present.
+
+NEC's VR4300 manual, seventh edition (August 2000), defines nearest mode as
+ties-to-even. FS controls denormal results, not denormal-input acceptance.
+Denormal inputs and QNaN arithmetic raise non-disableable Unimplemented;
+SNaN raises Invalid, enabled by Mickey's initialization. The specific
+`cvt.w` restrictions also assign Unimplemented to integer overflow, infinity
+and NaN. Its general Invalid-result description therefore does not establish
+a conversion sentinel for this path
+([FCSR, pp. 211–215](https://datasheets.chipdb.org/NEC/Vr-Series/Vr43xx/U10504EJ7V0UMJ1.pdf#page=211),
+[exceptions, pp. 239–244](https://datasheets.chipdb.org/NEC/Vr-Series/Vr43xx/U10504EJ7V0UMJ1.pdf#page=239),
+[CVT.W, pp. 579–580](https://datasheets.chipdb.org/NEC/Vr-Series/Vr43xx/U10504EJ7V0UMJ1.pdf#page=579)).
+Tiny normal inputs scale upward and may round to integer zero; they are distinct
+from subnormal inputs. Host casts, flush modes or saturation are not established
+replacements.
+
+[osInitialize](../src/libultra/initialize.c#L56) and
+[osCreateThread](../src/libultra/createthread.c#L75) initialize FCSR to
+flush-results, Invalid-enabled, nearest, with Inexact/Underflow/Overflow disabled.
+The converter can update arithmetic exception state. The retail-text audit also
+found compiler-generated temporary FCSR changes: the inspected bounded
+conversion regions restore their saved FCSR on ordinary exits before calling
+out. None of the converter's immediate callers writes FCSR itself. This is
+stronger evidence than searching only named setter calls, but does not prove
+arbitrary context memory, optional hooks or every caller's thread reachability.
+
+The normal [exception path](exception-scheduler-contracts.md) routes FP faults
+to the stopped/faulted-thread event path and redispatches; it does not emulate
+this conversion or return a substitute word. The debug monitor stops ordinary
+application threads and enters its diagnostic loop. These are static control-flow
+facts, not a claim that every exceptional runtime state was exercised.
+
+At the audit pin, 15 resident direct calls and six overlay SYMBOL/R26 calls
+join the current source: camera, overlays 43/47/56, and overlay 98's reflection
+renderer. Main-thread creation and `mainThread -> mainChangeLevel -> camInit`
+establish one actual initialized-thread call path. Complete callback/thread
+reachability, caller-wide numeric ranges and scheduler FP backing remain open.
+Overlay 98 still exposes erased pointer/byte-matrix views; this audit does not
+repair its API or prove destination allocation, alignment and graphics lifetime.
+
 ## Formats, lifetime and remaining source work
 
-Both routines above produce floats. The separate `mtxf_to_mtx` boundary
-multiplies by 65536, converts using current FP rounding and writes upper
-halfwords into the first 32 bytes and lower halfwords into the next 32.
-The [SDK Mtx type](../include/n_audio/gbi.h) describes this packed s15.16 format
-and requires eight-byte alignment. Equal 64-byte extents do not make float and
-fixed matrices interchangeable. Nonfinite/out-of-range conversion remains open.
+The first two routines produce float matrices; conversion produces the distinct
+packed fixed record. Equal 64-byte extents do not make those domains
+interchangeable.
 
 Render callers convert CPU float scratch into separate fixed matrix storage,
 emit its address and advance the fixed cursor by one 64-byte record. The fixed

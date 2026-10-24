@@ -105,6 +105,34 @@ class BindingTests(unittest.TestCase):
         with self.assertRaises(tool.LinkError):
             tool.local_data_bindings(rp.Elf("raw",aggregate_fixture()),rp.Elf("bad",data),rp.OrtNames([],{}),aggregate=True)
 
+    @unittest.skipUnless(LD.is_file() and OBJCOPY.is_file(), "needs MIPS binutils")
+    def test_explicit_mixed_group_retains_root_and_resolves_actual_storage(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); raw=root/"raw.o"; a=root/"a.o"; b=root/"b.o"; output=root/"out.o"
+            raw.write_bytes(aggregate_fixture())
+            def storage(name, payload, symbol):
+                obj=ElfBuilder().section(name,payload).sym(symbol,0,0,GLOBAL,1,name)
+                data=bytearray(obj.build()); elf=rp.Elf("fixture",data)
+                struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+elf.section(name)["index"]*40+8,2 if name==".rodata" else 3)
+                return bytes(data)
+            a.write_bytes(storage(".rodata",b"one\0"+bytes(12),"first"))
+            b.write_bytes(storage(".data",b"two\0"+bytes(12),"second"))
+            receipt=tool.link(raw,output,rp.OrtNames([],{}),root/"module",ld=LD,objcopy=OBJCOPY,
+                rebind=ROOT/"tools/rebind_elf_relocations.py",local_ro_mixed_group=[a,b])
+            self.assertEqual(rp.Elf(output).bytes_of(".data"),words(0,16,37,0))
+            self.assertEqual(next(s.size for s in rp.Elf(output).symbols if s.name=="aggregate"),15)
+            group=receipt["local_data_group"]
+            self.assertEqual(group["profile"],"mixed-storage-v1")
+            self.assertEqual([x["input_section"] for x in group["inputs"]],[".rodata",".data"])
+            self.assertEqual(raw.read_bytes(),aggregate_fixture())
+            with self.assertRaises(tool.LinkError):
+                tool.link(raw,output,rp.OrtNames([],{}),root/"wrong",ld=LD,objcopy=OBJCOPY,
+                    rebind=ROOT/"tools/rebind_elf_relocations.py",local_ro_mixed_group=[b,a])
+            b.write_bytes(storage(".data",b"two\0yyyy","wrong"))
+            with self.assertRaisesRegex(tool.LinkError,"unique actual named base"):
+                tool.link(raw,output,rp.OrtNames([],{}),root/"missing",ld=LD,objcopy=OBJCOPY,
+                    rebind=ROOT/"tools/rebind_elf_relocations.py",local_ro_mixed_group=[a,b])
+
     def test_unknown_external_is_refused_without_editing_input(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "raw.o"

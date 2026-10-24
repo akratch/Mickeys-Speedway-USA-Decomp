@@ -2227,6 +2227,18 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
     aggregate = getattr(raw, "local_ro_aggregate", None)
     provider_sources = [name.removeprefix("build/src/").removesuffix(".c.o")
                         for name in (grouped or (raw.local_ro_provider,))]
+    mixed = getattr(raw, "local_ro_mixed_group", False)
+    if mixed:
+        if not grouped or len(grouped) != 2 or not aggregate:
+            raise PackError("mixed LOCAL group lacks its declared complete providers")
+        roles, origins, sections = getattr(world, "_plain_data_declarations", ({}, {}, {}))
+        member = grouped[1]
+        if (member not in getattr(world, "_literal_array_plans", {})
+                or roles.get(member) != "ro-member" or origins.get(member) != grouped[0]
+                or sections.get(member) != ".rodata"):
+            raise PackError("mixed LOCAL group lacks its source-proved literal RO member")
+        member_role = plain_data_role_context(world, {member: roles[member]},
+            {member: origins[member]}, {member: sections[member]})[member]
     configured, start = data_import_input(world, ov, row, source, raw, linked_local=True)
     rels = raw.rels(".data")
     if grouped or aggregate:
@@ -2268,7 +2280,7 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
     origin = None
     end = None
     allowed = set()
-    for provider_source in provider_sources:
+    for provider_index, provider_source in enumerate(provider_sources):
         # Authenticate even a complete declared member not named by a relocation.
         rows = [r for r in projected_data_rows(world.amods[ov]) if r["source"] == provider_source]
         if len(rows) != 1:
@@ -2295,6 +2307,16 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
         elif grouped and provider_start != end:
             raise PackError("LOCAL provider group is not contiguous in declared order")
         end = provider_start + provider.size(storage)
+        if mixed:
+            expected_storage = ".rodata" if provider_index == 0 else ".data"
+            definitions = [symbol for symbol in provider.symbols if symbol.section == storage
+                           and symbol.bind == STB_GLOBAL and symbol.type == 1]
+            if (storage != expected_storage or not definitions
+                    or (provider_index == 0 and min(symbol.value for symbol in definitions) != 0)
+                    or (provider_index == 1 and (member_role["origin"] != origin
+                        or member_role["input_start"] != provider_start
+                        or not getattr(provider, "literal_end_proofs", None)))):
+                raise PackError("mixed LOCAL group provider storage/runtime origin differs")
         allowed.update((ov, provider_start + symbol.value) for symbol in provider.symbols
                        if symbol.section == storage and symbol.bind == STB_GLOBAL and symbol.type == 1
                        and 0 <= symbol.value < provider.size(storage))
@@ -2367,6 +2389,17 @@ def validate_fresh_data_input(ordinary_raw, fresh):
         raise PackError("stale ordinary raw data-only source evidence")
 
 
+def load_mixed_group_provider(world, name, expected):
+    """Bind the one parsed provider observation to its captured input digest."""
+    path = world.paths["build"].parent / name
+    provider = Elf(path)
+    observed = hashlib.sha256(provider.data).hexdigest()
+    if observed != expected:
+        raise PackError("loaded mixed LOCAL provider differs from captured input")
+    hold_data_import_inputs(world, {path: observed})
+    return provider
+
+
 def reproduce_data_import(world, source):
     """Reuse fresh compiler/context capture; replay the unchanged ordinary helper."""
     import shlex
@@ -2422,9 +2455,32 @@ def reproduce_data_import(world, source):
     declared = link.get("local_data_provider")
     group = link.get("local_data_group")
     if len(provider_inputs) > 1:
+        mixed = provenance.local_ro_mixed_group(receipt["inputs"]["module_link"], root)
+        loaded_providers = ([load_mixed_group_provider(world, name,
+            receipt["inputs"]["module_link_inputs"].get(name)) for name in provider_inputs]
+            if mixed else [])
         expected_inputs = [{"input": str((root / name).resolve()),
-                            "input_sha256": provenance.sha256_file(root / name)}
-                           for name in provider_inputs]
+            "input_sha256": (hashlib.sha256(loaded_providers[index].data).hexdigest()
+                             if mixed else provenance.sha256_file(root / name))}
+            for index, name in enumerate(provider_inputs)]
+        if mixed:
+            import link_overlay_module as module_link
+            try:
+                shape = module_link.local_aggregate_shape(fresh)
+                sections = [module_link.local_provider_section(provider, readonly=True)
+                            for provider in loaded_providers]
+            except module_link.LinkError as error:
+                raise PackError("mixed LOCAL group storage refused: " + str(error)) from error
+            if sections != [".rodata", ".data"]:
+                raise PackError("mixed LOCAL group storage order differs")
+            for item, provider, section in zip(expected_inputs, loaded_providers, sections):
+                item.update(input_section=section, input_size=provider.size(section))
+            if group is None or group.get("profile") != "mixed-storage-v1" or group.get("aggregate") != shape:
+                raise PackError("mixed LOCAL group lacks its actual root/storage receipt")
+            fresh.local_ro_aggregate = shape
+            fresh.local_ro_mixed_group = True
+        elif group and ("profile" in group or "aggregate" in group):
+            raise PackError("undeclared mixed LOCAL group profile")
         if (declared or not group or group.get("inputs") != expected_inputs
                 or group.get("runtime_role") != ".rodata" or group.get("origin") != "first-input-start"
                 or group.get("linked_sha256") != provenance.sha256_file(directory / "providers.elf")
@@ -2619,9 +2675,13 @@ def guard_data_module_imports(world, exports):
         raise PackError("recursive data-only producer discovery")
     world._guarded_data_objects = None
     world._objects = world._defs = None
+    world._plain_data_declarations = ({}, {}, {})
     world._data_guard_active = True
     try:
         admitted = _guard_data_module_imports(world, exports)
+    except BaseException:
+        world._plain_data_declarations = ({}, {}, {})
+        raise
     finally:
         world._data_guard_active = False
     world._guarded_data_objects = admitted
@@ -2680,6 +2740,7 @@ def _guard_data_module_imports(world, exports):
     if (set(origin_sections) - set(member_origins)
             or any(plain_targets.get(target) != "ro-member" for target in origin_sections)):
         raise PackError("readonly origin section requires exactly one ro-member origin")
+    world._plain_data_declarations = (plain_targets, member_origins, origin_sections)
     role_context = {}
     remaining_plain = set(plain_targets)
     admitted = collections.defaultdict(list)

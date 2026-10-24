@@ -2546,6 +2546,16 @@
       }
     },
     {
+      "name": "assets/overlays/o053/overlay_053_data_rodata_120.bin",
+      "target_path": "expected/build/assets/overlays/o053/overlay_053_data_rodata_120.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o053"
+        ]
+      }
+    },
+    {
       "name": "assets/overlays/o053/overlay_053_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o053/overlay_053_reloc1.bin.o",
       "metadata": {
@@ -9101,6 +9111,40 @@
         ],
         "source_path": "src/overlays/o052/overlay_052.c",
         "complete": true
+      }
+    },
+    {
+      "name": "src/overlays/o053/overlay53HudControls.c",
+      "target_path": "expected/build/src/overlays/o053/overlay53HudControls.c.o",
+      "base_path": "build/src/overlays/o053/overlay53HudControls.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o053"
+        ],
+        "source_path": "src/overlays/o053/overlay53HudControls.c"
+      }
+    },
+    {
+      "name": "src/overlays/o053/overlay53HudTemplates.c",
+      "target_path": "expected/build/src/overlays/o053/overlay53HudTemplates.c.o",
+      "base_path": "build/src/overlays/o053/overlay53HudTemplates.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o053"
+        ],
+        "source_path": "src/overlays/o053/overlay53HudTemplates.c"
       }
     },
     {

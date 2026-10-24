@@ -47,9 +47,12 @@ typedef struct Overlay3Entry {
     s32 timer;
 } Overlay3Entry;
 
-extern Overlay3Entry gOverlay3Entries[][32];
-extern Overlay3Entry gOverlay3TouchEntries[][32];
-extern Overlay3Object *gOverlay3Objects[];
+extern Overlay3Object *gOverlay3Objects[10];
+extern Overlay3Entry gOverlay3Entries[10][32];
+/* Typed stored operands name those same genuine BSS definitions; Touch and
+ * the other entry users share one pool, not separate allocations. */
+extern Overlay3Object *gOverlay3Objects_o003Reloc[10];
+extern Overlay3Entry gOverlay3Entries_o003Reloc[10][32];
 /* Per-consumer stored operands; the actual C data definitions keep their
  * unsuffixed names and final module identities. */
 extern u8 gOverlay3ModeChance_o003Reloc[10];

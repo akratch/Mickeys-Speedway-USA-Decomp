@@ -6,6 +6,14 @@
  * exports.
  */
 
+/* Tier B: the updater visits ten groups of 32 pointer/timer entries;
+ * the per-group selected-object cache precedes that single entry pool.
+ * These are real module-lifetime BSS definitions. Typed operand imports
+ * retain the current loader representation; original declarations and every
+ * caller's group preconditions are not established by this storage view. */
+Overlay3Object *gOverlay3Objects[10];
+Overlay3Entry gOverlay3Entries[10][32];
+
 s32 overlay3ContainsValue(Overlay3Object *owner, Overlay3Object *object) {
     Overlay3Entry *entry;
     s32 group;
@@ -14,7 +22,7 @@ s32 overlay3ContainsValue(Overlay3Object *owner, Overlay3Object *object) {
 
     group = owner->state->group;
     remaining = 31;
-    entry = &gOverlay3Entries[group][31];
+    entry = &gOverlay3Entries_o003Reloc[group][31];
     do {
         if (object == entry->object) {
             return 1;
@@ -219,7 +227,7 @@ void overlay3SelectTarget(
         }
     }
 
-    if (selected == gOverlay3Objects[state->group]) {
+    if (selected == gOverlay3Objects_o003Reloc[state->group]) {
         state->sameObjectTimer += updateRate;
         if (state->sameObjectTimer > 300.0f) {
             overlay3TouchObject_o003Reloc(state->group);
@@ -230,7 +238,7 @@ void overlay3SelectTarget(
         state->sameObjectTimer = 0;
     }
 
-    gOverlay3Objects[state->group] = selected;
+    gOverlay3Objects_o003Reloc[state->group] = selected;
     if (selected != 0 && selected->kind != 1) {
         state->cachedIndex = 0x7F;
         state->timer = 0;
@@ -251,13 +259,13 @@ void overlay3TouchObject(s32 group, s32 remaining) {
     Overlay3Entry *entry;
 
     remaining = 31;
-    if (gOverlay3Objects[group] == 0) {
+    if (gOverlay3Objects_o003Reloc[group] == 0) {
         return;
     }
-    base = gOverlay3TouchEntries[group];
+    base = gOverlay3Entries_o003Reloc[group];
     entry = &base[remaining];
     do {
-        if (entry->object == gOverlay3Objects[group]) {
+        if (entry->object == gOverlay3Objects_o003Reloc[group]) {
             entry->timer = 300;
             return;
         }
@@ -269,7 +277,7 @@ void overlay3TouchObject(s32 group, s32 remaining) {
     entry = base;
     do {
         if (entry->object == 0) {
-            entry->object = gOverlay3Objects[group];
+            entry->object = gOverlay3Objects_o003Reloc[group];
             entry->timer = 300;
             return;
         }
@@ -285,7 +293,7 @@ void overlay3UpdateTimedEntries(s32 amount) {
     register s32 timer;
 
     timer = 0;
-    groupRemaining = 9; group = gOverlay3Entries[9];
+    groupRemaining = 9; group = gOverlay3Entries_o003Reloc[9];
     do {
         remaining = 31;
         entry = &group[31];

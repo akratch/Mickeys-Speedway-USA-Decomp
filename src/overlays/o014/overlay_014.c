@@ -21,10 +21,10 @@ static s32 overlay14ReturnOneCallbackA(s16 unused);
 static s32 overlay14ReturnOneCallbackB(s16 unused);
 static void overlay14DispatchCommand(void);
 static void overlay14CallUpdate(s32 unused);
-static void overlay14BuildRects(void *context, const Overlay14PackedRect *packed, s32 baseX, s32 baseY, s32 alternateX, s32 alternateY, s32 intensityScale);
-static void func_overlay_014_F00013F4_1870CCC(s32 context);
-static void func_overlay_014_F0001540_1870E18(s32 context);
-static s32 func_overlay_014_F0001830_1871108(s32 context, u8 *stream, s32 skip);
+static void overlay14BuildRects(Gfx **context, const Overlay14PackedRect *packed, s32 baseX, s32 baseY, s32 alternateX, s32 alternateY, s32 intensityScale);
+static void func_overlay_014_F00013F4_1870CCC(Gfx **context);
+static void func_overlay_014_F0001540_1870E18(Gfx **context);
+static s32 func_overlay_014_F0001830_1871108(Gfx **context, u8 *stream, s32 skip);
 
 /* The slot cursor's initializer shares the `do {` header line, and the loop
  * bound is spelled inline in the tail test rather than kept in a local. Both
@@ -735,9 +735,9 @@ void overlay14UpdateTransition(void *context, s32 step) {
     fontSetButtonMode(1);
     if (gOverlay14TransitionValue[0] != 0) {
         if (gOverlay14ModeE4 != 1) {
-            func_overlay_014_F00013F4_1870CCC((s32)context);
+            func_overlay_014_F00013F4_1870CCC(context);
         } else {
-            func_overlay_014_F0001540_1870E18((s32)context);
+            func_overlay_014_F0001540_1870E18(context);
         }
     }
     fontSetButtonMode(0);
@@ -749,7 +749,7 @@ void overlay14UpdateTransition(void *context, s32 step) {
 #undef gOverlay14CommandHeader
 
 /* Pinned DKR v77/v80 and JFG object scans found no exact donor. */
-static void overlay14BuildRects(void *context, const Overlay14PackedRect *packed,
+static void overlay14BuildRects(Gfx **context, const Overlay14PackedRect *packed,
                          s32 baseX, s32 baseY, s32 alternateX,
                          s32 alternateY, s32 intensityScale) {
     Overlay14RenderRect *rect;
@@ -759,27 +759,27 @@ static void overlay14BuildRects(void *context, const Overlay14PackedRect *packed
     rect = rects;
     count = 0;
     while ((packed->useAlternateX0 >= 0) && (count != 24)) {
-        rect->x0 = packed->x0 + baseX;
+        rect->left = packed->x0 + baseX;
         if (packed->useAlternateX0 != 0) {
-            rect->x0 += alternateX;
+            rect->left += alternateX;
         }
 
-        rect->y0 = packed->y0 + baseY;
+        rect->top = packed->y0 + baseY;
         if (packed->useAlternateY0 != 0) {
-            rect->y0 += alternateY;
+            rect->top += alternateY;
         }
 
-        rect->x1 = packed->x1 + baseX;
+        rect->right = packed->x1 + baseX;
         if (packed->useAlternateX1 != 0) {
-            rect->x1 += alternateX;
+            rect->right += alternateX;
         }
 
-        rect->y1 = packed->y1 + baseY;
+        rect->bottom = packed->y1 + baseY;
         if (packed->useAlternateY1 != 0) {
-            rect->y1 += alternateY;
+            rect->bottom += alternateY;
         }
 
-        rect->intensity = (packed->intensity * intensityScale) >> 7;
+        rect->colour = (packed->intensity * intensityScale) >> 7;
         count++;
         packed++;
         rect++;
@@ -788,25 +788,25 @@ static void overlay14BuildRects(void *context, const Overlay14PackedRect *packed
     frontDrawRectangles(context, count, rects, 0);
 }
 
-static void func_overlay_014_F00013F4_1870CCC(s32 context) {
+static void func_overlay_014_F00013F4_1870CCC(Gfx **context) {
     s32 mode;
 
-    overlay14BuildRects((void *)context, (const Overlay14PackedRect *)&gOverlay14DataBase, 0x5C, 0x14, 0xD0, 0x58,
+    overlay14BuildRects(context, (const Overlay14PackedRect *)&gOverlay14DataBase, 0x5C, 0x14, 0xD0, 0x58,
                         (gOverlay14ValueC0Base.value * 0xA0) >> 8);
     gOverlay14HandleE0.value =
         func_overlay_014_F0001830_1871108(context, (u8 *)gOverlay14ValueF8Base.value,
                               gOverlay14ValueDCBase.value);
-    overlay14DrawPrimitive(0, 0, 0, 0);
-    overlay14DrawPrimitive(0xFF, 0xC0, 0, 0xFF,
+    fontBackground(0, 0, 0, 0);
+    fontColour(0xFF, 0xC0, 0, 0xFF,
                            (gOverlay14ValueC0Base.value * 0xFF) >> 8);
     if (gOverlay14ValueDCBase.value != 0) {
-        overlay14DrawPrimitive(context, 0xC4, 0x14, &gOverlay14Args2C, 0xC);
+        fontPrintXY(context, 0xC4, 0x14, gOverlay14Args2C, 0xC);
     }
     if ((gOverlay14HandleE0.value != 0) ||
         ((mode = gOverlay14ModeE4.value, mode == 4) &&
          (gOverlay14ValueEC.value >= 2)) ||
         ((mode == 3) && (gOverlay14Value114.value != 0))) {
-        overlay14DrawPrimitive(context, 0xC4, 0x6C, &gOverlay14Args30, 0xC);
+        fontPrintXY(context, 0xC4, 0x6C, gOverlay14Args30, 0xC);
     }
 }
 
@@ -816,13 +816,13 @@ static void func_overlay_014_F00013F4_1870CCC(s32 context) {
  * in its blocks: the only v0 values there were the unused results of the two
  * dispatch calls before the loop head (a call's result is a v0 web that
  * occupies the call's block; docs/lastmile-region-boundary.md). The calls
- * whose results this body never reads are declared through the void
- * `overlay14DrawPrimitive` surface the sibling TU already uses for the same
- * shapes, and the two value-returning calls keep `overlay14Dispatch`; the
- * ROM cannot distinguish them, every one is the same runtime-table call.
+ * whose results this body never reads now use the genuine void font-state
+ * providers. Text draws and next-line queries use their actual cursor/text
+ * contracts; the spacing query uses the word-valued height API.
+ * Runtime targets are independently authenticated.
  * The outer while and the generated entry stride (no declared offset carrier)
  * are the previous lanes' work and stay load-bearing. */
-static void func_overlay_014_F0001540_1870E18(s32 context) {
+static void func_overlay_014_F0001540_1870E18(Gfx **context) {
     u8 saved;
     s32 index;
     s32 cellWidth;
@@ -831,16 +831,16 @@ static void func_overlay_014_F0001540_1870E18(s32 context) {
     s32 y;
     s32 opacity;
     u8 *cursor;
-    void *drawArg;
+    u8 *drawArg;
     s32 first;
 
-    overlay14BuildRects((void *)context, (const Overlay14PackedRect *)&gOverlay14DataBase, 0x5C, 0x14, 0xD0, 0x58,
+    overlay14BuildRects(context, (const Overlay14PackedRect *)&gOverlay14DataBase, 0x5C, 0x14, 0xD0, 0x58,
                         (gOverlay14ValueC0 * 0xA0) >> 8);
     index = 0;
-    cellWidth = overlay14Dispatch(2);
+    cellWidth = func_8004D5C0(2);
     remaining = (0x58 / cellWidth) - 1;
-    overlay14DrawPrimitive(2);
-    overlay14DrawPrimitive(0, 0, 0, 0);
+    fontUseFont(2);
+    fontBackground(0, 0, 0, 0);
     y = ((0x58 - (remaining * cellWidth)) >> 1) + 0x14;
     opacity = (gOverlay14ValueC0 * 0xFF) >> 8;
     while ((index < gOverlay14Entries->count) && (remaining > 0)) {
@@ -848,18 +848,18 @@ static void func_overlay_014_F0001540_1870E18(s32 context) {
 
         first = 1; x = 0x60;
         if (index == gOverlay14Entries->selected)
-            overlay14DrawPrimitive(0xFF, 0xFF, 0xFF, 0xFF, opacity);
+            fontColour(0xFF, 0xFF, 0xFF, 0xFF, opacity);
         else
-            overlay14DrawPrimitive(0, 0xC0, 0xC0, 0xFF, opacity);
+            fontColour(0, 0xC0, 0xC0, 0xFF, opacity);
         cursor = gOverlay14Entries[index].text;
         if (overlay14ReturnOneCallbackA(
                 gOverlay14Entries[index].kind) == 0) cursor = 0;
         if ((cursor != 0) && (remaining > 0)) {
             do {
-                cursor = (u8 *)overlay14Dispatch(2, cursor, 0xC8, &drawArg, 0);
+                cursor = func_8004D40C(2, (char *)cursor, 0xC8, &drawArg, 0);
                 if (cursor != 0) {
                     saved = *cursor; *cursor = 0;
-                    overlay14DrawPrimitive(context, x, y, drawArg, 0);
+                    fontPrintXY(context, x, y, (char *)drawArg, 0);
                     *cursor = saved; y += cellWidth;
                     if (first != 0) { x += 8; first = 0; }
                     remaining--;
@@ -870,18 +870,18 @@ static void func_overlay_014_F0001540_1870E18(s32 context) {
 
 
     }
-    overlay14DrawPrimitive(0, 0, 0, 0);
-    overlay14DrawPrimitive(0xFF, 0xC0, 0, 0xFF, opacity);
+    fontBackground(0, 0, 0, 0);
+    fontColour(0xFF, 0xC0, 0, 0xFF, opacity);
     if ((index < gOverlay14Entries->count) || (cursor != 0))
-        overlay14DrawPrimitive(context, 0xC4, 0x6C, &gOverlay14Args34, 0xC);
+        fontPrintXY(context, 0xC4, 0x6C, gOverlay14Args34, 0xC);
 }
 
 /* PROVENANCE: structure cross-checked against JFG
  * asm/nonmatchings/overlays/o7/overlay_7/func_overlay_7_007023D4_1EFD4FC.s;
  * body reconstructed from Mickey evidence. */
 /* Matched 2026-09-23 (lane A2-ov), 201/201 words at frame 0x90, unforced.
- * The int-returning declaration of func_8004D5C0 closed size and frame
- * (Track B, lane B-ovsmall). The last five words were case 7's schedule:
+ * The word-valued height getter matches the module's integer consumers.
+ * The last five words were case 7's schedule:
  * the ROM loads the four colour bytes at +1..+5 and puts the stream
  * increment in the call's delay slot. as1 breaks a tie between the
  * increment and the loads on source line number (L59), and the increment
@@ -891,7 +891,7 @@ static void func_overlay_014_F0001540_1870E18(s32 context) {
  * merges the two blocks with the increment keeping the later line. Temps
  * loaded before the increment reproduce the case too, but a third
  * temporary is globalcoloured to t0 and removes it from the ring (47). */
-static s32 func_overlay_014_F0001830_1871108(s32 context, u8 *stream, s32 skip) {
+static s32 func_overlay_014_F0001830_1871108(Gfx **context, u8 *stream, s32 skip) {
     s32 remaining;
     s32 y;
     s32 x;
@@ -901,7 +901,7 @@ static s32 func_overlay_014_F0001830_1871108(s32 context, u8 *stream, s32 skip) 
     s32 done;
     s32 result;
     u8 saved;
-    void *drawArgs[7];
+    u8 *drawArgs[7];
     s32 adjust;
     u8 *cursor;
 
@@ -960,13 +960,13 @@ static s32 func_overlay_014_F0001830_1871108(s32 context, u8 *stream, s32 skip) 
             do {
                 if (adjust != 0) { x += 8; width -= 8; }
                 cursor = func_8004D40C(2, (char *)cursor, width,
-                                       (u8 **)drawArgs, 0);
+                                       drawArgs, 0);
                 if (cursor != 0) {
                     if (skip == 0) {
                         remaining--;
                         if (remaining >= 0) {
                             saved = *cursor; *cursor = 0;
-                            fontPrintXY((void *)context, x, y,
+                            fontPrintXY(context, x, y,
                                           (char *)drawArgs[0], extra);
                             *cursor = saved; y += cellWidth;
                         }

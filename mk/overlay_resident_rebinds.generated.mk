@@ -955,6 +955,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay_057.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym overlay84IsUnitScale=overlay84IsUnitScale_o057Reloc \
 	--redefine-sym overlay84LoadCurrent=overlay84LoadCurrent_o057Reloc \
 	--redefine-sym overlay84Mark=overlay84Mark_o057Reloc \
+	--redefine-sym overlay84ResetCurrent=overlay84ResetCurrent_o057Reloc \
 	--redefine-sym overlay84SelectCurrent=overlay84SelectCurrent_o057Reloc \
 	--redefine-sym overlay84SetBit=overlay84SetBit_o057Reloc \
 	--redefine-sym overlay94SetValue=overlay94SetValue_o057Reloc \

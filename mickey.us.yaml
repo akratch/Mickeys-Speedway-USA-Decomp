@@ -2708,7 +2708,8 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18A3BF8, c, overlay_057]
-      - [0x18AA6A8, bin, overlay_057_data_rodata]
+      - [0x18AA6A8, .data, overlay57GridTriangles]
+      - [0x18AA728, bin, overlay_057_data_rodata]
       - [0x18AA8A4, .data, overlay57PanelSprites]
       - [0x18AA924, bin, overlay_057_data_rodata_27c]
       - [0x18AA9D4, .data, overlay57DetailSprites]
@@ -2719,6 +2720,8 @@ segments:
       - [0x18AAB98, bin, overlay_057_data_rodata_4f0]
       - {start: 0x18AABE8, type: .rodata, name: overlay57MenuLabels, linker_section_order: .data}
       - [0x18AAC28, bin, overlay_057_data_rodata_580]
+      - [0x18AACEC, .data, overlay57ResponseParameters]
+      - [0x18AACFC, bin, overlay_057_data_rodata_654]
 
   - name: overlay_057_reloc1
     type: bin

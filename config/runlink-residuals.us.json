@@ -4,7 +4,7 @@
  "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
  "totals": {
   "differences": 0,
-  "borrowed_records": 7949
+  "borrowed_records": 7947
  },
  "differences": {},
  "borrowed": {
@@ -297,7 +297,7 @@
   },
   "placeholder": {
    "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-   "count": 1697,
+   "count": 1696,
    "entries": [
     [
      1,
@@ -5463,11 +5463,6 @@
      57,
      "o57Ease28B4LookupSecondaryReloc",
      1
-    ],
-    [
-     57,
-     "o57PrepareDescriptorListReloc",
-     2
     ],
     [
      57,

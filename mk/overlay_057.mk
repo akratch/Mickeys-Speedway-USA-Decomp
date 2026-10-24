@@ -57,3 +57,11 @@ $(O57_SELECTION_FLAG): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_sectio
 $(O57_TRANSITION_STATE): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x18 --compiler-end-padding
 $(O57_SELECTION_FLAG) $(O57_TRANSITION_STATE): private PLAIN_DATA_PROOF = 1
 $(O57_SELECTION_FLAG) $(O57_TRANSITION_STATE): private PLAIN_DATA_RUNTIME_ROLE = data
+
+# Complete resource/ID family; actual sized objects end at 0xFC. Only its
+# independently proved four-byte compiler end alignment is excluded.
+O57_PATH_RESOURCES := $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57PathResources.c.o
+$(O57_PATH_RESOURCES): $(TOOLS_DIR)/trim_elf_section.py
+$(O57_PATH_RESOURCES): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0xFC --compiler-end-padding
+$(O57_PATH_RESOURCES): private PLAIN_DATA_PROOF = 1
+$(O57_PATH_RESOURCES): private PLAIN_DATA_RUNTIME_ROLE = data

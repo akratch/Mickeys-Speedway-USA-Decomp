@@ -339,10 +339,6 @@ typedef struct Overlay57MenuEntry {
     u8 pad0C[0x1C];
 } Overlay57MenuEntry;
 
-typedef struct O57MenuLink {
-    s32 index;
-} O57MenuLink;
-
 /* The resident option word block at D_800D3128 (bitfields, MSB first). */
 typedef struct O57MenuFlags {
     u32 pad0 : 13;
@@ -410,10 +406,6 @@ typedef struct O57MiddleRecord {
     O57MiddleRenderItem items[4];
 } O57MiddleRecord;
 
-typedef struct Overlay57IndexLink {
-    s32 index;
-} Overlay57IndexLink;
-
 typedef struct {
     u8 pad00[0x28];
     f32 parameter;
@@ -453,11 +445,11 @@ extern Overlay45ResourceDescriptor *gO57Descriptors30Reloc[9];
 extern Overlay45ResourceDescriptor *gO57Descriptors80Reloc[24];
 extern Overlay45ResourceDescriptor *gO57DescriptorsE0Reloc[6];
 extern Overlay45ResourceDescriptor *gO57Descriptors58Reloc[5];
-extern Overlay45ResourceDescriptor *gO57DescriptorList80Reloc;
+extern s16 gO57DescriptorList80Reloc[];
 extern s16 gO57DescriptorIndicesD8Reloc[9];
 extern s16 gO57DescriptorIndicesECReloc[9];
 extern s16 gO57DescriptorIndices130Reloc[6];
-extern s16 gO57DescriptorList130Reloc;
+extern s16 gO57DescriptorList130Reloc[];
 extern s32 gO57Value1FCReloc;
 extern s32 gO57Value21CReloc;
 extern s32 gO57Value23CReloc;
@@ -501,7 +493,8 @@ extern s32 gO57Value124Reloc;
 extern O57Pair gO57SpawnPairs3E8Reloc[4];
 extern O57Thing *gO57Spawned150Reloc[4];
 extern void *func_80028F54(void);
-extern void o57PrepareDescriptorListReloc(void *list);
+extern void loadFrontEndList(s16 *assetGroup);
+extern void setupFrontEndList(s16 *objectGroup);
 extern O57Thing *func_8000590C(void *packet, s32 mode);
 extern void initColourCycle(void *cycle, s32 count);
 extern void joyResetMap(void);
@@ -566,9 +559,9 @@ extern void func_8002109C(O57GridOwner *owner);
 extern void texDPTextureX(Gfx **displayList, void *resource, s32 mode, s32 flags);
 extern void *gOverlay57Range150Start[];
 extern void *gOverlay57Range150End[];
-extern u8 gOverlay57Object100[];
+extern s16 gOverlay57Object100[];
 extern void func_80006EA0(void *resource);
-extern void freeFrontEndList(void *object);
+extern void freeFrontEndList(s16 *assetGroup);
 extern s32 gOverlay57Selection100;
 extern s32 gOverlay57Selection108;
 extern s32 gOverlay57Mode10C;
@@ -746,8 +739,8 @@ extern s32 gOverlay57LayoutValue;
 extern s32 gOverlay57PreviousLayoutValue;
 extern s32 gOverlay57ObjectReady;
 extern Overlay45ResourceDescriptor *gOverlay57Layouts[];
-extern Overlay57IndexLink gOverlay57StartLinks[];
-extern Overlay57IndexLink gOverlay57StopLinks[];
+extern s32 gOverlay57StartLinks[];
+extern s32 gOverlay57StopLinks[];
 extern s32 gOverlay57NodeArguments[];
 extern s16 gOverlay57LevelBySelection[];
 extern s16 D_800D31BC;
@@ -795,8 +788,8 @@ extern void fontPrintXY(void *displayList, s32 x, s32 y, void *text, s32 align);
 extern O57MenuTransition gO57ModeSetup21C;
 extern u8 D_8007BF0C;
 extern u8 D_8007BF08;
-extern O57MenuLink gO57ModePrimaryIds[];
-extern O57MenuLink gO57ModeSecondaryIds[];
+extern s32 gO57ModePrimaryIds[];
+extern s32 gO57ModeSecondaryIds[];
 extern void joyCreateMap(const s8 *enabled);
 extern void mainSetMode(s32 mode);
 extern s16 D_800D31BE;

@@ -2709,9 +2709,10 @@ segments:
     subsegments:
       - [0x18A3BF8, c, overlay_057]
       - [0x18AA6A8, .data, overlay57GridTriangles]
-      - [0x18AA728, bin, overlay_057_data_rodata]
+      - [0x18AA728, .data, overlay57DisplayResources]
+      - [0x18AA7A8, .data, overlay57PathResources]
       - [0x18AA8A4, .data, overlay57PanelSprites]
-      - [0x18AA924, bin, overlay_057_data_rodata_27c]
+      - [0x18AA924, bin, overlay_057_data_rodata]
       - [0x18AA9D4, .data, overlay57DetailSprites]
       - [0x18AAA14, bin, overlay_057_data_rodata_36c]
       - [0x18AAA70, .data, overlay57MenuTables]

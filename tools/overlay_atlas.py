@@ -256,6 +256,8 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     59: [(0x0, 0x5A0, "overlay59Frames", ".data")],
     57: [
         (0x0, 0x80, "overlay57GridTriangles", ".data"),
+        (0x80, 0x100, "overlay57DisplayResources", ".data"),
+        (0x100, 0x1FC, "overlay57PathResources", ".data"),
         (0x1FC, 0x27C, "overlay57PanelSprites", ".data"),
         (0x32C, 0x36C, "overlay57DetailSprites", ".data"),
         (0x3C8, 0x4B8, "overlay57MenuTables", ".data"),
@@ -357,6 +359,8 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
     (50, "overlay50ControlTail", ".data"),
     (59, "overlay59Frames", ".data"),
     (57, "overlay57GridTriangles", ".data"),
+    (57, "overlay57DisplayResources", ".data"),
+    (57, "overlay57PathResources", ".data"),
     (57, "overlay57PanelSprites", ".data"),
     (57, "overlay57DetailSprites", ".data"),
     (57, "overlay57AnimationState", ".data"),

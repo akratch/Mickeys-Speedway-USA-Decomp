@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 47844,
+  "owned_data_rodata_bytes": 48224,
   "diagnostic_data_rodata_bytes": 508,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -9289,6 +9289,24 @@
      "type": "c",
      "section": ".data",
      "source": "overlays/o057/overlay57GridTriangles",
+     "canonical": true
+    },
+    {
+     "offset": "0x80",
+     "end_offset": "0x100",
+     "size": "0x80",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o057/overlay57DisplayResources",
+     "canonical": true
+    },
+    {
+     "offset": "0x100",
+     "end_offset": "0x1FC",
+     "size": "0xFC",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o057/overlay57PathResources",
      "canonical": true
     },
     {

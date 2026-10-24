@@ -787,6 +787,20 @@
       "class": "metadata",
       "matched_c": null,
       "nonmatching": null,
+      "object": "build/src/overlays/o057/overlay57PathResources.c.o",
+      "offset": null,
+      "overlay": 57,
+      "size": null,
+      "source": "src/overlays/o057/overlay57PathResources.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
       "object": "build/src/overlays/o057/overlay57SelectionFlag.c.o",
       "offset": null,
       "overlay": 57,
@@ -1106,9 +1120,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 73
+      "metadata": 74
     },
     "matched_c_bytes_with_postprocess": 323384,
-    "objects_with_postprocess": 73
+    "objects_with_postprocess": 74
   }
 }

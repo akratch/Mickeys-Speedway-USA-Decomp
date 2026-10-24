@@ -1978,7 +1978,7 @@ def reproduce_compiler_end(world, source):
     return view
 
 
-def effective_compiler_object(raw, configured, allowed=None):
+def effective_compiler_object(raw, configured, allowed=None, *, literal_proofs=None, root=None):
     """Explicit semantic view; original compiler bytes/records remain attached."""
     import trim_elf_section as trim
     data = bytearray(raw.data)
@@ -1987,8 +1987,12 @@ def effective_compiler_object(raw, configured, allowed=None):
         size = configured.size(section)
         if size and size < raw.size(section):
             try:
-                end = trim.compiler_end(raw, section)
-            except (ValueError, struct.error) as error:
+                if section in (literal_proofs or {}):
+                    import proof_provenance as provenance
+                    end = provenance.validate_literal_proof(raw, literal_proofs[section], root)
+                else:
+                    end = trim.compiler_end(raw, section)
+            except (ValueError, struct.error, RuntimeError) as error:
                 raise PackError("unproved compiler end: " + str(error)) from error
             if end != size or (allowed or {}).get(section) != end:
                 raise PackError("configured section lacks its declared proved compiler end")
@@ -2015,7 +2019,22 @@ def data_import_input(world, ov, row, source, raw, *, linked_local=False, storag
     ordinary_path = world.paths["raw"] / "src" / (source + ".c.o")
     if raw.path == ordinary_path:
         hold_data_import_inputs(world, {ordinary_path: hashlib.sha256(getattr(raw, "compiler_original", raw).data).hexdigest()})
-    raw = effective_compiler_object(raw, configured, getattr(world, "_end_padding_plans", {}).get(f"build/src/{source}.c.o"))
+    target = f"build/src/{source}.c.o"
+    literal = getattr(world, "_literal_array_plans", {}).get(target)
+    literal_proofs = None
+    if literal:
+        providers = getattr(world, "data_import_providers", {})
+        if source not in providers:
+            providers[source] = reproduce_data_provider(world, source)
+            world.data_import_providers = providers
+        fresh = providers[source]
+        validate_fresh_data_input(getattr(raw, "compiler_original", raw),
+                                  getattr(fresh, "compiler_original", fresh))
+        literal_proofs = getattr(fresh, "literal_end_proofs", None)
+        if not literal_proofs:
+            raise PackError("literal input lacks its fresh source proof")
+    raw = effective_compiler_object(raw, configured, getattr(world, "_end_padding_plans", {}).get(target),
+        literal_proofs=literal_proofs, root=world.paths["build"].parent)
     size = raw.size(storage)
     def require(test, why):
         if not test:
@@ -2069,10 +2088,19 @@ def reproduce_data_provider(world, source):
     if configured_digest != receipt["configured_sha256"] or configured_digest != receipt["inputs"]["configured"]:
         raise PackError("loaded ordinary provider differs from its configured receipt")
     hold_data_import_inputs(world, {configured: configured_digest})
-    fresh = effective_compiler_object(fresh, loaded_configured, dict(arguments for operation, arguments in plan if operation == "nonexec-end"))
+    allowed = {arguments[0]: arguments[1] for operation, arguments in plan
+               if operation in ("nonexec-end", "literal-end")}
+    literal_proofs = receipt.get("literal_arrays")
+    fresh = effective_compiler_object(fresh, loaded_configured, allowed,
+        literal_proofs=literal_proofs, root=root)
     if getattr(fresh, "effective_extents", None):
-        if plan != [("nonexec-end", (".data", fresh.size(".data")))]:
+        literal_section = next(iter(literal_proofs)) if literal_proofs else None
+        expected = ([("literal-end", (literal_section, fresh.size(literal_section), f"src/{source}.c"))]
+                    if literal_proofs else [("nonexec-end", (".data", fresh.size(".data")))])
+        if plan != expected:
             raise PackError("effective ordinary provider lacks its declared compiler-end recipe")
+        if literal_proofs:
+            fresh.literal_end_proofs = literal_proofs
         receipt["effective_sections"] = {"original_sha256": hashlib.sha256(original.data).hexdigest(),
                                          "extents": fresh.effective_extents}
     elif plan:
@@ -2498,8 +2526,12 @@ def validate_plain_data(world, ov, row, source):
     """Authenticate a complete ordinary C input, without a module-link surrogate."""
     import proof_provenance as provenance
     path = world.paths["raw"] / "src" / (source + ".c.o")
-    ordinary = effective_compiler_object(Elf(path), Elf(world.paths["build"] / "src" / (source + ".c.o")), getattr(world, "_end_padding_plans", {}).get(f"build/src/{source}.c.o"))
+    ordinary = Elf(path)
     configured, start = data_import_input(world, ov, row, source, ordinary)
+    provider = getattr(world, "data_import_providers", {}).get(source)
+    ordinary = effective_compiler_object(ordinary, configured,
+        getattr(world, "_end_padding_plans", {}).get(f"build/src/{source}.c.o"),
+        literal_proofs=getattr(provider, "literal_end_proofs", None), root=world.paths["build"].parent)
     text = (world.paths["build"].parent / "src" / (source + ".c")).read_text()
     if re.search(r"\b(?:asm|__asm|__asm__)\b", provenance._mask_c(text)):
         raise PackError(f"ordinary data input contains inline assembly: {source}")
@@ -2578,9 +2610,17 @@ def _guard_data_module_imports(world, exports):
                                     in batch._LOADED_IMPLEMENTATIONS.values()})
     dump = audit.run_make_database()
     world._address_targets = address_targets(dump)
-    world._end_padding_plans = {target: dict(arguments for operation, arguments in
-        provenance.metadata_filter_plan(command, target, root) if operation == "nonexec-end")
-        for target, command in audit.postprocess_commands(dump).items() if "--compiler-end-padding" in command}
+    end_plans = {target: provenance.metadata_filter_plan(command, target, root)
+                 for target, command in audit.postprocess_commands(dump).items()
+                 if "--compiler-end-padding" in command or "--literal-array-end" in command}
+    world._end_padding_plans = {target: {arguments[0]: arguments[1] for operation, arguments in plan
+                                      if operation in ("nonexec-end", "literal-end")}
+                               for target, plan in end_plans.items()}
+    world._literal_array_plans = {target: plan for target, plan in end_plans.items()
+                                 if any(operation == "literal-end" for operation, arguments in plan)}
+    if world._literal_array_plans:
+        hold_data_import_inputs(world, {root/name: digest for name, digest
+                                        in provenance.literal_profile_inputs(root).items()})
     outputs = []
     plain_targets = plain_data_targets(dump)
     member_origins = plain_data_origins(dump)

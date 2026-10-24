@@ -1433,6 +1433,23 @@ class DataOnlyProducerDiscoveryTests(unittest.TestCase):
             self.assertEqual(self.world._guarded_data_objects[1][0].runtime_role, "data")
             self.assertEqual(compiler.call_count, 2)
 
+    def test_literal_parser_inputs_are_held_before_initial_metadata_snapshot(self):
+        import postprocess_audit as audit
+        import proof_provenance as provenance
+        for name in ("tools/proof_provenance.py", "tools/source_module_link_proof.py",
+                     "tools/postprocess_audit.py", "tools/static_symbols.py", ".venv/bin/python"):
+            path=self.tree.root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text("fixture")
+        parser=self.tree.root/"literal_parser.py";parser.write_text("parser")
+        target="build/src/overlays/o001/strings.c.o"
+        marker=target+": POSTPROCESS = python3 tools/trim_elf_section.py "+target+" .data 7 --literal-array-end src/overlays/o001/strings.c\n"
+        with mock.patch.object(audit,"run_make_database",return_value=marker), \
+             mock.patch.object(provenance,"literal_profile_inputs",return_value={"literal_parser.py":hashlib.sha256(parser.read_bytes()).hexdigest()}):
+            rp.guard_data_module_imports(self.world,self.exports)
+        self.assertIn(parser.resolve(),rp.metadata_input_paths(self.paths,self.world))
+        parser.write_text("changed after snapshot")
+        with self.assertRaisesRegex(rp.PackError,"held.*changed"):
+            rp.check_data_import_holds(self.world)
+
     def test_objects_before_pack_discover_only_published_inputs_with_current_exports(self):
         with mock.patch.object(rp, "_guard_data_module_imports", return_value={1: [self.obj]}) as guard:
             objects = self.world.objects(1)
@@ -2022,6 +2039,33 @@ class SourceBssAddressTests(unittest.TestCase):
         world.map[0] = rp.MapInput(mi.outsec, mi.insec, mi.addr+4, mi.size, mi.file)
         with self.assertRaises(rp.PackError):
             rp.source_bss_identity(world, "external")
+
+
+class LiteralEffectiveViewTests(unittest.TestCase):
+    def test_fresh_source_view_preserves_original_unsized_input_and_refuses_warm_source_change(self):
+        import proof_provenance as provenance
+        from test_proof_provenance import LiteralArrayEndTests
+        root=Path(provenance.__file__).resolve().parent.parent
+        (root/"build").mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix="literal-test-",dir=root/"build") as directory:
+            directory=Path(directory);source=directory/"strings.c";source.write_bytes(LiteralArrayEndTests.SOURCE)
+            rawpath=directory/"raw.o";rawpath.write_bytes(LiteralArrayEndTests.raw().data);raw=rp.Elf(rawpath)
+            command="tools/ido/cc -c -nostdinc -o "+str(rawpath.relative_to(root))+" "+str(source.relative_to(root))
+            with mock.patch.object(provenance.subprocess,"run",return_value=SimpleNamespace(
+                    returncode=0,stdout=LiteralArrayEndTests.SOURCE,stderr=b"")):
+                record=provenance.prove_literal_arrays(raw,source,root,compiler_command=command)
+            data=bytearray(raw.data)
+            struct.pack_into(">I",data,struct.unpack_from(">I",data,32)[0]+raw.section(".data")["index"]*40+20,7)
+            configured=rp.Elf("configured",data)
+            with self.assertRaisesRegex(rp.PackError,"unproved compiler end"):
+                rp.effective_compiler_object(raw,configured,{".data":7})
+            view=rp.effective_compiler_object(raw,configured,{".data":7},literal_proofs={".data":record},root=root)
+            self.assertEqual((view.size(".data"),view.compiler_original.size(".data")),(7,16))
+            self.assertEqual(view.compiler_original.data,raw.data)
+            self.assertTrue(all(s.size==0 for s in view.symbols if s.type==OBJECT))
+            source.write_bytes(source.read_bytes()+b"/* same code, changed source */")
+            with self.assertRaisesRegex(rp.PackError,"stale literal"):
+                rp.effective_compiler_object(raw,configured,{".data":7},literal_proofs={".data":record},root=root)
 
 if __name__ == "__main__":
     unittest.main()

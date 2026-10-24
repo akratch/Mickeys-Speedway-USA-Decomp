@@ -168,16 +168,20 @@ def compiler_end(elf, section):
 
 
 def main():
-    if len(sys.argv) not in (4, 5):
+    if len(sys.argv) not in (4, 5, 6):
         raise SystemExit(
             "usage: trim_elf_section.py OBJECT SECTION NEW_SIZE "
-            "[EXPECTED_DISCARDED_HEX_OR_SHA256]"
+            "[EXPECTED_DISCARDED_HEX_OR_SHA256 | --literal-array-end SOURCE]"
         )
 
     path = pathlib.Path(sys.argv[1])
     section_name = sys.argv[2]
     new_size = int(sys.argv[3], 0)
     compiler_padding = len(sys.argv) == 5 and sys.argv[4] == "--compiler-end-padding"
+    literal_source = sys.argv[5] if len(sys.argv) == 6 and sys.argv[4] == "--literal-array-end" else None
+    if (len(sys.argv) == 6 and literal_source is None
+            or len(sys.argv) == 5 and sys.argv[4] == "--literal-array-end"):
+        raise SystemExit("unsupported end profile arguments")
     expected_discarded = None
     expected_digest = None
     if len(sys.argv) == 5 and not compiler_padding:
@@ -198,6 +202,21 @@ def main():
             guard.fail(str(error))
         if proved_end != new_size:
             guard.fail("requested size differs from source-derived compiler end")
+    literal = None
+    if literal_source is not None:
+        import proof_provenance as provenance
+        import runlink_pack as rp
+        root = pathlib.Path.cwd()
+        source = root / literal_source
+        if (pathlib.Path(literal_source).is_absolute() or ".." in source.relative_to(root).parts
+                or not literal_source.startswith("src/") or not literal_source.endswith(".c")):
+            guard.fail("literal end requires the actual configured project source")
+        try:
+            literal = provenance.prove_literal_arrays(rp.Elf(path, bytes(data)), source, root)
+            if literal["section"] != section_name or literal["end"] != new_size:
+                raise provenance.MetadataProofError("requested size differs from literal-derived end")
+        except (provenance.MetadataProofError, ValueError, rp.PackError, struct.error) as error:
+            guard.fail(str(error))
     if data[:6] != b"\x7fELF\x01\x02":
         raise SystemExit(f"{path}: expected a big-endian ELF32 object")
 
@@ -255,6 +274,13 @@ def main():
                 f"{path}: refusing to trim nonzero bytes from {name}",
                 kind=f"{name.lstrip('.')}-size-differs ({delta:+d} bytes)",
             )
+        if literal is not None:
+            if path.read_bytes() != bytes(data):
+                guard.fail("loaded literal raw input changed before metadata publication")
+            try:
+                provenance.validate_literal_proof(rp.Elf(path, bytes(data)), literal, root)
+            except (provenance.MetadataProofError, OSError, ValueError) as error:
+                guard.fail(str(error))
         struct.pack_into(">I", data, header_offset + 0x14, new_size)
         path.write_bytes(data)
         break

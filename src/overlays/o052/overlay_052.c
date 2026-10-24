@@ -1,13 +1,12 @@
 #include "overlays/overlay_052.h"
 
-/* Overlay 52's .data and .bss, in ROM order: this module is the byte owner
- * of the .data (the atlas's whole initialized range). The shipped code
- * shares high halves between data/bss sites the way as1 does only for
- * objects defined in the same TU (extern declarations of the same objects
- * measure 1,598 words off). The names are the section offsets; the 0x24C
- * table is split into the 2-entry arrays the HUD indexes. The initializer's
- * header state is the record pair at .bss +0x480 (it writes record 0's three
- * words and record 1's first). */
+/* Tier B: the complete TU owns these DATA/BSS objects. The HUD's player
+ * loop consumes two terminal opacity cells; whether the original declaration
+ * also allocated unused cells is Tier D. The natural two-cell source retains
+ * the complete compiler-aligned DATA input. The BSS+0x340 lists have two
+ * 160-byte player rows: ten physical node slots per row, not ten active nodes.
+ * The index patcher changes cache-slot words into CPU resource addresses;
+ * its legacy signed-integer/pointer alias view remains target-width debt. */
 static s16 o52_data_0[18] = {
     2, 38, 39, 41, 42, 20, 21, 22, 23, 24, 25, 26, 30, 31, 40, 80, 100, -1,
 };
@@ -78,7 +77,7 @@ static Overlay52Entry o52_data_2F4[2] = {
 static s32 o52_data_314 = 9;
 static s32 o52_data_318 = 0;
 static s8 o52_data_31C = 0;
-static s32 o52_data_320[4] = { 0 };
+static s32 o52_data_320[2] = { 0 };
 
 static Overlay52Entry o52_bss_0[2][3];
 static Overlay52Entry o52_bss_60[2][2];
@@ -141,7 +140,7 @@ void func_overlay_052_F0000000_189A670(void) {
     overlay56LoadResource();
     o52_bss_4A8[0] = -1;
     o52_bss_4A8[1] = -1;
-    ext_resident_result = levelGetNumber();
+    D_800D304E = levelGetNumber();
     for (i = 0; i < 9; i++) {
         o52_bss_160[i].x = o52_data_E0[i].x;
         o52_bss_160[i].y = o52_data_E0[i].y;
@@ -176,7 +175,7 @@ void func_overlay_052_F0000000_189A670(void) {
     o52_bss_480[0].value8 = 0;
     o52_bss_4B4[0] = o52_bss_4BC[0]; o52_bss_4B4[1] = o52_bss_4BC[1];
     o52_bss_4B8[0] = o52_bss_4C0[0]; o52_bss_4B8[1] = o52_bss_4C0[1];
-    o52_bss_480[0].resource = (RcpTextureInfo *)ext_resident_word_190;
+    o52_bss_480[0].resource = (RcpTextureInfo *)D_800D31C8[100];
     o52_bss_480[0].alternate = 0;
     o52_bss_480[1].resource = 0;
     if (*state == 3) {
@@ -218,11 +217,11 @@ static void overlay52CopyOffsetEntries(Overlay52Entry *source,
     }
 
     if (selection == 0) {
-        xOffset = gOverlay52Offsets[index];
-        yOffset = gOverlay52Offsets[index + 1];
+        xOffset = o52_data_27C[index];
+        yOffset = o52_data_27C[index + 1];
     } else {
-        xOffset = gOverlay52Offsets[index + 2];
-        yOffset = gOverlay52Offsets[index + 3];
+        xOffset = o52_data_27C[index + 2];
+        yOffset = o52_data_27C[index + 3];
     }
 
     while (source->resource != 0) {
@@ -314,8 +313,8 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
         }
     }
-    texAnimateSprite(D_800D31C8[2], &o52_data_314, 20, &D_800D3550[2].unk18, updateRate);
-    texAnimateSprite(D_800D31C8[40], &o52_data_314, 20, &D_800D3550[1].unk18, updateRate);
+    texAnimateSprite((u8 *)D_800D31C8[2], &o52_data_314, 20, &D_800D3550[2].unk18, updateRate);
+    texAnimateSprite((u8 *)D_800D31C8[40], &o52_data_314, 20, &D_800D3550[1].unk18, updateRate);
     hudOffset = (s32)o52_bss_4B0;
     level = levelGetLevel();
     o52_data_31C++;
@@ -490,7 +489,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             icon[0].value8 = 0;
             icon[0].alternate = NULL;
             icon[1].resource = NULL;
-            icon[0].resource = D_800D31C8[o52_bss_4A8[player]];
+            icon[0].resource = (RcpTextureInfo *)D_800D31C8[o52_bss_4A8[player]];
             func_8002F618(&D_800D3140, icon, 0, 0, 255, 255, 255, o52_data_320[player]);
             if (o52_bss_4A8[player] != 53 && racer->itemCount >= 2) {
                 iconX = icon[0].x;
@@ -569,15 +568,15 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 iconX = racer->timeDifference;
                 iconX = -iconX;
                 for (i = 0; i < 9; i++) {
-                    o52_bss_160[i].resource = D_800D31C8[20];
-                    o52_bss_160[i].alternate = D_800D31C8[21];
+                    o52_bss_160[i].resource = (RcpTextureInfo *)D_800D31C8[20];
+                    o52_bss_160[i].alternate = (RcpTextureInfo *)D_800D31C8[21];
                 }
             } else {
                 o52_bss_160[0].value8 = 13 << 16;
                 iconX = racer->timeDifference;
                 for (i = 0; i < 9; i++) {
-                    o52_bss_160[i].resource = D_800D31C8[80];
-                    o52_bss_160[i].alternate = D_800D31C8[21];
+                    o52_bss_160[i].resource = (RcpTextureInfo *)D_800D31C8[80];
+                    o52_bss_160[i].alternate = (RcpTextureInfo *)D_800D31C8[21];
                 }
             }
             overlay56SplitTime(iconX, &minutes, &seconds, &hundredths);
@@ -608,7 +607,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
         if (mainGetMode() == 0) {
             switch (*func_80028F54()) {
                 case 3:
-                    if (ext_o1_83e0 == 0) {
+                    if (B_overlay_001_F00083E0 == 0) {
                         bits = joyGetPressed(0) & 65535;
                         if (((joyGetPressed(1) | bits) & 0x9000) && o52_data_318 == 0) {
                             mainChangeCameras(1);
@@ -622,7 +621,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                     }
                     break;
                 case 4:
-                    if (ext_o1_83e0 == 0) {
+                    if (B_overlay_001_F00083E0 == 0) {
                         bits = joyGetPressed(0) & 65535;
                         if (((joyGetPressed(1) | bits) & 0x9000) && o52_data_318 == 0) {
                             mainChangeCameras(1);
@@ -649,12 +648,12 @@ void overlay52Cleanup(void) {
     s32 *slot;
     s32 *end;
 
-    freeFrontEndList(&gOverlay52Storage);
+    freeFrontEndList(o52_data_0);
     overlay56ReleaseResource();
-    if (gOverlay52Resource != NULL) {
-        overlay45ReleaseDescriptor(gOverlay52Resource);
+    if (o52_bss_4CC != NULL) {
+        overlay45ReleaseDescriptor(o52_bss_4CC);
     }
-    slot = gOverlay52Slots; end = &gOverlay52Slots[2];
+    slot = o52_bss_4A8; end = &o52_bss_4A8[2];
     while (slot != end) {
         if (*slot != -1) {
             freeFrontEndItem(*slot);

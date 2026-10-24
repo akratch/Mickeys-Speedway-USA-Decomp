@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 49076,
+  "owned_data_rodata_bytes": 49088,
   "diagnostic_data_rodata_bytes": 472,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -10025,8 +10025,8 @@
    "data_rodata_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0xB4",
-     "size": "0xB4",
+     "end_offset": "0xC0",
+     "size": "0xC0",
      "type": "c",
      "section": ".data",
      "source": "overlays/o061/overlay61InitialState",

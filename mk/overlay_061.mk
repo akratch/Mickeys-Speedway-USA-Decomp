@@ -9,7 +9,5 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay_061.c.o: POSTPROCESS = \
 	$(OBJCOPY) --remove-section=.rel.rodata $@
 
 O61_INITIAL_STATE := $(BUILD_DIR)/$(SRC_DIR)/overlays/o061/overlay61InitialState.c.o
-$(O61_INITIAL_STATE): $(TOOLS_DIR)/trim_elf_section.py
-$(O61_INITIAL_STATE): POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0xB4 --compiler-end-padding
 $(O61_INITIAL_STATE): private PLAIN_DATA_PROOF = 1
 $(O61_INITIAL_STATE): private PLAIN_DATA_RUNTIME_ROLE = data

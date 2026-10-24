@@ -52,3 +52,8 @@ s32 o61State = 0;
 s32 o61Error = 0;
 s32 o61ErrorNextState = 0;
 s32 o61ErrorBackState = 0;
+
+/* Tier C/D: this distinct stored identifier has a natural ten-byte bound.
+ * No active use or original qualification is established; preserve mutable
+ * storage. It is not an invented use, reserve or padding declaration. */
+char o61PakIdentifier[] = "MSU-GHOST";

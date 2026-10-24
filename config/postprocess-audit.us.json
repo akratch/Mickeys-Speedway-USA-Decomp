@@ -890,20 +890,6 @@
       ]
     },
     {
-      "c_owned": null,
-      "class": "metadata",
-      "matched_c": null,
-      "nonmatching": null,
-      "object": "build/src/overlays/o061/overlay61InitialState.c.o",
-      "offset": null,
-      "overlay": 61,
-      "size": null,
-      "source": "src/overlays/o061/overlay61InitialState.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
       "c_owned": true,
       "class": "metadata",
       "matched_c": true,
@@ -1133,9 +1119,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 75
+      "metadata": 74
     },
     "matched_c_bytes_with_postprocess": 323384,
-    "objects_with_postprocess": 75
+    "objects_with_postprocess": 74
   }
 }

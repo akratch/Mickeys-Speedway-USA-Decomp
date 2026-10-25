@@ -81,8 +81,8 @@ typedef struct Overlay17Resource {
     void *nested;
 } Overlay17Resource;
 
-/* YAML-owned initialized data and stock sizeof prove sixteen 16-byte records. */
-extern Overlay17Template gOverlay17TemplateReloc[16];
+/* The constructor copies sixteen complete texture-coordinate records. */
+extern Overlay17Template gOverlay17Templates[16];
 
 extern void pointListRPY(
     s32 mode, Overlay17Transform *transform, f32 *source, f32 *destination);

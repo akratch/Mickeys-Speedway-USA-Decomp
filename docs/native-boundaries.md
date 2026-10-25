@@ -151,6 +151,12 @@ four instruction words. The candidate was not adopted under the exact-output
 standard. The retained unprototyped declaration does not authenticate an
 extra-argument or variadic API.
 
+Overlay 101 now calls `fontUseFont` through its actual `void(s32)`
+contract. Removing two unused extra actuals from the element renderer
+preserves the untouched compiler output, all shared-header consumers,
+the complete overlay and the ROM. This closes that one interface; the
+sprite-loader disagreement and the other erased APIs remain open.
+
 ## Data, numerical and lifetime assumptions by family
 
 - **Numeric/angle utilities:** [math.h](../include/game/math.h) supplies the

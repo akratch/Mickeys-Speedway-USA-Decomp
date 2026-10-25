@@ -7,7 +7,7 @@ support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `a3cdf2b7d`; the combined borrowing
+The source measurements here are pinned to `e07ae9da0`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -26,7 +26,7 @@ validation and publication are separate acceptance steps.
 | Initialized storage | 54,152 of 61,312 bytes have canonical projected C owners | 7,160 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
 | Initialized images | 49 of 87 data-bearing modules are fully projected to C; 15 are partial and 23 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 31 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 5,325 records still borrow authority: 5,273 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 5,283 records still borrow authority: 5,231 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 31 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
 
@@ -34,6 +34,12 @@ Source independence also requires reviewing encoded-coordinate names,
 retained target storage and borrowed placements within object-produced records.
 There are also 21 borrowed placements and 24 borrowed read-only section origins.
 The direct borrowing counter alone does not measure those dependencies.
+
+Overlay 62 now supplies seven genuine BSS cells, with 28 object bytes and
+four compiler alignment bytes. Exactly 42 former placeholder references
+name those real cells. Its header size still borrows authority because
+the complete 64-byte initialized prefix remains outside C ownership.
+Resource types, remaining aliases and provider contracts remain open.
 
 Overlay 17 now supplies its complete 256-byte template through the existing
 16-record C type and constructor copy. All ten fields per record are consumed;

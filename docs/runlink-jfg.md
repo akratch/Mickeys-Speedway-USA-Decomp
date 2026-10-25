@@ -501,6 +501,72 @@ locally authored inputs, not additional files shipped by this kit.
    resident differences against actual boundary relocations and require
    checksum-header-only mutation after objcopy.
 
+### Executable current-module recipe
+
+The current kit includes an executable form of steps 3–6 above. Its input is
+the **locally authored, symbolically corrected module ELF from step 2**, plus
+explicit source-name/registry-row declarations. Extraction and identity recovery
+remain prerequisites: an uncorrected GLOBAL_ASM object is not equivalent input.
+Keep the ordinary matching JFG build at the full `efd5abb` pin available for
+resident providers, unselected objects, linker scripts and compatibility data.
+The original demonstration's `236df8b` kit pin predates this command; use the
+current kit for this recipe.
+
+Create this small `bindings.json` locally; it contains identities, no addresses,
+sizes, instruction words or selected layout:
+
+```json
+{
+  "schema": "jfg-current-module-example-v1",
+  "module": 79,
+  "imports": { "hitInitObjectHit": 168 },
+  "exports": { "buoyInit": 1359, "buoyControl": 1472 }
+}
+```
+
+Run from the kit checkout. The output directory must be fresh so a failed run
+cannot overwrite an earlier result. Supply the same actual binutils prefix
+used for the ordinary JFG build:
+
+```sh
+python3 tools/runlink --config jfg-us --root <jfg> module-recipe \
+    --elf <pilot>/baseline/module.elf --declarations <pilot>/bindings.json \
+    --out <pilot>/recipe-baseline --link --expect-retail \
+    --cross <binutils>/mips64-elf-
+python3 tools/runlink --config jfg-us --root <jfg> module-recipe \
+    --elf <pilot>/changed/module.elf --declarations <pilot>/bindings.json \
+    --out <pilot>/recipe-changed --link \
+    --cross <binutils>/mips64-elf-
+```
+
+Generation writes the current text/data, both runtime tables, all headers and
+the ORT. `--link` assembles wrappers around those untouched current bytes,
+substitutes their inputs into the pinned ordinary script, links, objcopies and
+runs the existing checksum tool. `receipt.json` and `link-receipt.json` record
+input hashes, commands and the verified scope. All generated assembly, ELF,
+binary products, receipts and ROMs are private build evidence, never files to
+add to this repository. Omitting `--link` produces metadata inputs only.
+
+The executable recipe reproduced both full archived ROM hashes above. It checks
+the final selected bytes, ordered runtime records and full target identities;
+the real sized exports; all 156 unselected images, records and header fields
+except regenerated ROM positions; unchanged resident records and name payloads;
+actual resident boundary LO16 updates; and checksum-header-only post-objcopy
+mutation. It derives the terminal zero-prefix extent from the existing padding
+object and rejects tail overflow. A baseline requires full ROM equality.
+
+Admission is deliberately bounded by the demonstrated ELF surface: zero-based
+aligned text/data, complete sized functions, named resident calls, an optional
+single four-byte local datum with ordinary alignment, and zero addends. BSS,
+rodata, data-site references, init/resume entries, internal calls and other
+object shapes require separate evidence and are refused here. Linker-defined
+absolute name-table boundaries are layout labels; they do not supply arbitrary
+absolute identities for source functions or objects. This recipe supports the
+documented existing-module edit, rather than module/export addition or a general
+JFG object adapter. Outside module ownership, registry names/rows and resident
+homes remain compatibility authority. No game execution or allocation/lifetime
+safety claim follows from this static link proof.
+
 The loader's current `runlinkDownloadCode`, `ProcessRelocationEntry` and
 `runlinkInitialise` support the represented data extent, paired LOCAL
 references, secondary-table placement and cumulative ROM offsets. No module

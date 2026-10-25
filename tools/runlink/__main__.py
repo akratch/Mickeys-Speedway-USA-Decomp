@@ -8,6 +8,7 @@ Commands
   names     print the ORT as `<row> <name>` (from the ROM's name table, or the tracked list)
   generate  regenerate the tables from the build and compare (see docs/runlink-toolkit.md)
   parity    MSU only: the kit and tools/runlink_pack.py must give identical results
+  module-recipe  executable bounded JFG current-module generation/final-link example
 
 Exit status: 0 success; 1 a check failed; 2 unusable inputs.
 """
@@ -138,6 +139,27 @@ def cmd_parity(args):
     return 0 if ok else 1
 
 
+def cmd_module_recipe(args):
+    import subprocess
+    from runlink.jfg_module_recipe import generate, link_rom
+    if args.expect_retail and not args.link:
+        raise config.ConfigError('--expect-retail requires --link')
+    cfg = config.load(args.config, root=args.root)
+    if args.rom:
+        from dataclasses import replace
+        cfg = replace(cfg, rom=cfg.resolve(args.rom))
+    try:
+        receipt = generate(cfg, cfg.resolve(args.elf), cfg.resolve(args.declarations), cfg.resolve(args.out))
+        if args.link:
+            linked = link_rom(cfg, cfg.resolve(args.out), receipt, args.cross, args.expect_retail)
+            print('ordinary final ROM link:', linked['rom_sha1'])
+    except (ValueError, subprocess.SubprocessError) as error:
+        raise config.ConfigError(str(error)) from error
+    print(f"generated current module {receipt['module']}: {len(receipt['relocations'])} references; "
+          "outside compatibility remains borrowed")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="runlink", description=__doc__.split("\n\n")[0],
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -165,11 +187,18 @@ def main(argv=None):
     p.add_argument("--out", help="write the generated region here")
     p.add_argument("--unpatched", help="OLD=NEW: rewrite the map's object-path prefix OLD to NEW to find the "
                                        "resident objects as compiled, before trap renaming")
+    p = sub.add_parser("module-recipe", help="JFG: executable bounded current-ELF example (see runlink-jfg.md)")
+    p.add_argument("--elf", required=True, help="locally authored ordinary module ET_REL ELF")
+    p.add_argument("--declarations", required=True, help="explicit module/import/export JSON")
+    p.add_argument("--out", required=True, help="fresh private output directory")
+    p.add_argument("--link", action="store_true", help="also ordinarily link the documented pinned JFG build")
+    p.add_argument("--cross", default="tools/binutils/mips64-elf-", help="binutils executable prefix")
+    p.add_argument("--expect-retail", action="store_true", help="require full original ROM equality after --link")
     args = ap.parse_args(argv)
     try:
         return {"check": cmd_check, "census": cmd_census, "decode": cmd_decode,
                 "names": cmd_names, "generate": cmd_generate,
-                "parity": cmd_parity}[args.cmd](args)
+                "parity": cmd_parity, "module-recipe": cmd_module_recipe}[args.cmd](args)
     except (config.ConfigError, codec.FormatError, OSError) as e:
         print(f"runlink: {e}", file=sys.stderr)
         return 2

@@ -637,6 +637,20 @@ def edited_compile(root, directory, label, text, exports, args, commands):
     obj = rp.edited_prepare_object(prepared, linked_elf)
     target_sections = {rel.sym.section for section in rp.EDITED_SECTIONS[:-1] for rel in prepared.rels(section)
                        if rel.sym.type == rp.STT_SECTION and rel.sym.section in ('.data', '.bss')}
+    word_operands = any(addend == 0x80000000
+        for section in rp.EDITED_SECTIONS[:-1]
+        for addend in rp.in_place_addends(prepared, section, prepared.rels(section)))
+    if target_sections or word_operands:
+        def source_current():
+            rp.edited_require(digest(root/'tools/proof_provenance.py') == pp._LOADED_METADATA_PROOF,
+                              'loaded effective source proof helper changed')
+            return ({name: digest(root/name) for name in static_inputs}, batch.checked_tool_identity())
+        rp.edited_require(source_current() == (static_inputs, static_tools), 'source context changed before CPP')
+        command = ['tools/ido/cc', *flags]
+        cpp_command = ['tools/ido/cc', '-E', *pp._literal_flags(shlex.join(command), flags[-1]), flags[-1]]
+        result = subprocess.run(cpp_command, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
+        rp.edited_require(result.returncode == 0, 'actual edited effective CPP failed')
+        cpp = result.stdout
     if target_sections:
         statics = pp.static_anchor_module(root)
         debug = [row for row in statics._sections(compiler.data) if row[-1] == '.mdebug']
@@ -645,16 +659,6 @@ def edited_compile(root, directory, label, text, exports, args, commands):
                    '.bss': statics.bss_anchors(compiler.data, debug[0])}
         names = {name for section in target_sections for name in anchors[section]}
         rp.edited_require(names, 'section operand lacks source-object boundary proof')
-        def static_current():
-            rp.edited_require(digest(root/'tools/proof_provenance.py') == pp._LOADED_METADATA_PROOF,
-                              'loaded static source proof helper changed')
-            return ({name: digest(root/name) for name in static_inputs}, batch.checked_tool_identity())
-        rp.edited_require(static_current() == (static_inputs, static_tools), 'static source context changed before CPP')
-        command = ['tools/ido/cc', *flags]
-        cpp_command = ['tools/ido/cc', '-E', *pp._literal_flags(shlex.join(command), flags[-1]), flags[-1]]
-        result = subprocess.run(cpp_command, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
-        rp.edited_require(result.returncode == 0, 'actual edited static CPP failed')
-        cpp = result.stdout
         try:
             facts = pp.static_source_facts(cpp, flags, root, names)
             witness = pp.static_source_witness(compiler, prepared, linked_elf, facts, source_hash,
@@ -662,7 +666,7 @@ def edited_compile(root, directory, label, text, exports, args, commands):
                                               hashlib.sha256(json_bytes(static_tools)).hexdigest())
         except pp.MetadataProofError as error:
             raise MetadataLinkError('static source proof: ' + str(error)) from error
-        rp.edited_require(static_current() == (static_inputs, static_tools)
+        rp.edited_require(source_current() == (static_inputs, static_tools)
             and digest(untouched) == witness.compiler_sha256 and digest(raw) == witness.raw_sha256
             and digest(linked) == witness.linked_sha256, 'static source/CPP/object context changed')
         cpp_path = directory/(label+'-effective.i')
@@ -678,12 +682,77 @@ def edited_compile(root, directory, label, text, exports, args, commands):
         write_changed(cpp_path, cpp);write_changed(audit_path, audit_bytes)
         expected[cpp_path.name] = witness.cpp_sha256
         expected[audit_path.name] = hashlib.sha256(audit_bytes).hexdigest()
-        rp.edited_require(static_current() == (static_inputs, static_tools)
+        rp.edited_require(source_current() == (static_inputs, static_tools)
             and digest(cpp_path) == witness.cpp_sha256 and digest(audit_path) == expected[audit_path.name],
             'static CPP/audit context changed before attachment')
         obj['static_source'] = witness
         obj['static_source_audit'] = audit
+    if word_operands:
+        try:
+            roles = pp.integer_word_facts(cpp, flags, root)
+            witness = pp.integer_word_witness(compiler, prepared, linked_elf, roles, exports.by_name,
+                source_hash, hashlib.sha256(cpp).hexdigest(), static_inputs.items(), root,
+                hashlib.sha256(json_bytes(static_tools)).hexdigest())
+        except pp.MetadataProofError as error:
+            raise MetadataLinkError('integer-word source proof: ' + str(error)) from error
+        rp.edited_require(source_current() == (static_inputs, static_tools)
+            and digest(untouched) == witness.compiler_sha256 and digest(raw) == witness.raw_sha256
+            and digest(linked) == witness.linked_sha256, 'integer-word source/object context changed')
+        cpp_path = directory/(label+'-effective.i')
+        audit_path = directory/(label+'-integer-word.json')
+        audit = {'schema': 'mickey-integer-word-encoding-v1', 'encoding': 'xor-signbit-word',
+            'compiler_command': command, 'effective_cpp_command': cpp_command,
+            'cpp_artifact': cpp_path.name, 'cpp_sha256': witness.cpp_sha256,
+            'source_sha256': source_hash, 'compiler_sha256': witness.compiler_sha256,
+            'prepared_sha256': witness.raw_sha256, 'linked_sha256': witness.linked_sha256,
+            'compiler_surface': witness.compiler_surface,
+            'prepared_surface': witness.raw_surface, 'linked_surface': witness.linked_surface,
+            'roles': [dataclasses.asdict(x) for x in witness.roles],
+            'pairs': [dataclasses.asdict(x) for x in witness.pairs],
+            'inputs': static_inputs, 'toolchain_sha256': witness.toolchain_sha256}
+        audit_bytes = json_bytes(audit)
+        write_changed(cpp_path, cpp);write_changed(audit_path, audit_bytes)
+        expected[cpp_path.name] = witness.cpp_sha256
+        expected[audit_path.name] = hashlib.sha256(audit_bytes).hexdigest()
+        rp.edited_require(source_current() == (static_inputs, static_tools)
+            and digest(cpp_path) == witness.cpp_sha256 and digest(audit_path) == expected[audit_path.name],
+            'integer-word CPP/audit changed before attachment')
+        obj['integer_word'] = witness
+        obj['integer_word_audit'] = audit
     return (obj, (raw, linked, receipt, expected), closure)
+
+
+def edited_word_readback(module, joins):
+    """Join decoded stored words to the separately authenticated real object base."""
+    from runlink import codec
+    encoded = {(row['offset'], row['type']): row for row in joins if row.get('word_encoding')}
+    seen = set()
+    for rows in (module.table1, module.table2):
+        for index, high in enumerate(rows):
+            key = (high.site, high.type)
+            if key not in encoded or high.type != codec.R_MIPS_HI16:
+                continue
+            require = rp.edited_require
+            require(index + 1 < len(rows), 'decoded integer-word high lacks low')
+            low = rows[index+1]
+            low_key = (low.site, low.type)
+            require(low.type == codec.R_MIPS_LO16 and low.op == high.op == codec.OP_LOCAL
+                    and high.symidx == low.symidx == module.header.text and low_key in encoded,
+                    'decoded integer-word pair/base differs')
+            first, second = encoded[key], encoded[low_key]
+            underlying = first['underlying_identity']
+            require(underlying == second['underlying_identity'] and underlying[:2] == ('ov',module.number)
+                    and first['word_encoding'] == second['word_encoding'], 'decoded integer-word target differs')
+            high_bits = rp.u32(module.image,high.site) & 0xffff
+            low_bits = rp.sext16(rp.u32(module.image,low.site))
+            stored = ((high_bits << 16) + low_bits) & 0xffffffff
+            # This equality proves the modulo-32 result for every runtime base,
+            # independently of CPU pointer bounds or a chosen runtime address.
+            require((high.symidx + stored) & 0xffffffff
+                    == (underlying[2] + 0x80000000) & 0xffffffff,
+                    'decoded integer-word modular encoding differs from real target')
+            seen.update((key,low_key))
+    rp.edited_require(seen == set(encoded), 'decoded integer-word operand coverage differs')
 
 
 def edited_program_selectors(template):
@@ -924,11 +993,12 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         text = overrides.get(number, (root / declaration['source']).read_text())
         objects[number], products[number], closures[number] = edited_compile(
             root, directory, 'overlay' + str(number), text, exports, arguments[number], commands)
-        if 'static_source_audit' in objects[number]:
-            held = objects[number]['static_source_audit']['inputs']
-            require(all(name not in initial or initial[name] == value for name,value in held.items()),
-                    'conflicting held static source input observation')
-            initial.update(held)
+        for audit_name in ('static_source_audit', 'integer_word_audit'):
+            if audit_name in objects[number]:
+                held = objects[number][audit_name]['inputs']
+                require(all(name not in initial or initial[name] == value for name,value in held.items()),
+                        'conflicting held effective source input observation')
+                initial.update(held)
     for number, obj in objects.items():
         actual_registered = {symbol.name for symbol in obj['linked'].symbols
             if symbol.bind == rp.STB_GLOBAL and symbol.section in rp.EDITED_SECTIONS
@@ -1065,6 +1135,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         identities = compare.shipped_identities(module, decoded, dynamic)
         require({k: v['full'] for k, v in identities.items()}
                 == {(r.site, r.type): r.full for r in product['refs']}, 'raw→final full identities differ')
+        edited_word_readback(module, product['joins'])
         for name, witness in product['export_witnesses'].items():
             final = pilot.real_symbol(elf, name)
             require(final.value == rp.OVERLAY_VMA + witness['identity'][2] and final.size == witness['size'], 'final export differs')
@@ -1134,6 +1205,8 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
             'closure': closures[n]} for n in products}, 'arguments': arguments, 'compiler_recipe': recipes,
         'source_static': {str(n): obj['static_source_audit'] for n, obj in objects.items()
                           if 'static_source_audit' in obj},
+        'source_integer_word': {str(n): obj['integer_word_audit'] for n, obj in objects.items()
+                                if 'integer_word_audit' in obj},
         'selected_raw_records': {n: len(p['refs']) for n, p in generated.items()},
         'selected_header': {n: asdict(p['module'].header) for n, p in generated.items()},
         'selected_joins': {n: p['joins'] for n, p in generated.items()},

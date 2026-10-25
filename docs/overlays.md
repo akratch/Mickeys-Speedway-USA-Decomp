@@ -2690,6 +2690,24 @@ actual initialized scalar export in97. For a joint control use
 use existing actual-definition, compiler-pool and bounded-operand rules. They do
 not authorize other modules' physical-address addends or unsized static state.
 
+Overlay37 additionally admits source-bound integer address words. Its genuine
+geometry array bases are independently authenticated as sized allocated GLOBAL
+DATA definitions. Actual configured CPP proves the closed local pointer/signed-word
+union, sign-bit XOR and unsigned32 result, with complete evaluated carrier/target
+use coverage by function and target. Current paired text HI16/LO16 records must
+have the corresponding sign-bit addend and actual LUI/ADDIU shape. The immutable
+witness preserves the underlying object identity separately from the encoded
+word; ordinary pointer bounds still apply at offset0. It does not authorize
+pointer interiors, one-past addresses, exported geometry, unknown transforms or
+native pointer/GPU lifetime claims. No command-sink or alias analyzer is involved.
+
+A joint control can select `EDITED_MODULES=34,37,75,76,77,80,81,97`. Source/hash,
+actual CPP/compiler-vector, original/prepared/linked metadata and publication
+holds remain mandatory; serialized audit JSON is never authority. The final
+decoder independently reconstructs the stored HI/LO words and checks their
+modulo32 relation to the actual object identity. The retail default and its
+zero-difference guard are unchanged.
+
 Each selected C input is freshly compiled with its actual per-source Make flags,
 standard static-symbol metadata is restored, and the existing ordinary module
 linker links its four sections at independent zero bases. Runtime records derive

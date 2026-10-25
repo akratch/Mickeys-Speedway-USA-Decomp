@@ -679,5 +679,124 @@ class StaticSourceExtentTests(unittest.TestCase):
         with self.assertRaises(provenance.MetadataProofError):
             provenance.static_source_witness(compiler,raw,linked,facts,'source','cpp',(),self.ROOT,'tool')
 
+
+class IntegerWordSourceTests(unittest.TestCase):
+    ROOT = pathlib.Path(provenance.__file__).resolve().parent.parent
+    CPP = b'''typedef long s32; typedef unsigned long u32;
+long vertices[4]={1,2,3,4};
+u32 pack(void) { union { const void *pointer; s32 bits; } address;
+return ((address.pointer=(const void *)vertices),(u32)(address.bits ^ (-2147483647-1))); }
+'''
+
+    def test_closed_expression_and_complete_carrier_target_coverage(self):
+        roles=provenance.integer_word_facts(self.CPP,['-32'],self.ROOT)
+        self.assertEqual([(r.function,r.target,r.carrier,r.occurrences) for r in roles],
+                         [('pack','vertices','address',1)])
+        # The role is an integer value, independently of a graphics sink.
+        changed=self.CPP.replace(b'return ((',b'u32 word=((').replace(b')); }',b')); return word; }')
+        self.assertEqual(provenance.integer_word_facts(changed,['-32'],self.ROOT),roles)
+        for old,new in [(b'^',b'|'),(b'2147483647',b'2147483646'),
+                        (b'(const void *)vertices',b'(const void *)(vertices+1)'),
+                        (b's32 bits',b'u32 bits'),(b'return ((',b'address.pointer=0; return (('),
+                        (b'return ((',b'long vertices[4]; return (('),
+                        (b'const void *pointer',b'void *pointer'),
+                        (b'(u32)(address.bits',b'(s32)(address.bits')]:
+            with self.subTest(change=(old,new)), self.assertRaises(provenance.MetadataProofError):
+                provenance.integer_word_facts(self.CPP.replace(old,new),['-32'],self.ROOT)
+        with self.assertRaises(provenance.MetadataProofError):
+            provenance.integer_word_facts(self.CPP,['-64'],self.ROOT)
+
+    def test_argument_list_is_not_a_comma_but_one_comma_argument_is(self):
+        positive=self.CPP.replace(b'long vertices[4]',b'u32 consume(u32); long vertices[4]')
+        positive=positive.replace(b'return ((',b'return consume(((').replace(b'))); }',b')))); }')
+        self.assertEqual(len(provenance.integer_word_facts(positive,['-32'],self.ROOT)),1)
+        negative=self.CPP.replace(b'long vertices[4]',b'u32 consume(const void *,u32); long vertices[4]')
+        negative=negative.replace(b'return ((address.pointer=',b'return consume(address.pointer=')
+        negative=negative.replace(b'(const void *)vertices),',b'(const void *)vertices,')
+        with self.assertRaisesRegex(provenance.MetadataProofError,'uncovered'):
+            provenance.integer_word_facts(negative,['-32'],self.ROOT)
+
+    def fixture(self):
+        import struct,runlink_pack as rp
+        from runlink.synth import ElfBuilder,words,GLOBAL,OBJECT,FUNC
+        def image(linked):
+            text=words(0x3c028000,0,0x24420010 if linked else 0x24420000,0)
+            builder=(ElfBuilder().section('.text',text).section('.data',bytes(48))
+                     .sym('pack',0,16,GLOBAL,FUNC,'.text').sym('vertices',16,16,GLOBAL,OBJECT,'.data'))
+            if not linked:builder.rel('.text',0,5,'vertices').rel('.text',8,6,'vertices')
+            data=bytearray(builder.build());shoff=struct.unpack_from('>I',data,32)[0]
+            struct.pack_into('>I',data,shoff+2*40+8,3)
+            return rp.Elf('linked' if linked else 'raw',bytes(data))
+        return image(False),image(True)
+
+    def test_pair_witness_holds_metadata_inputs_and_zero_object_operand(self):
+        import runlink_pack as rp
+        raw,linked=self.fixture();roles=provenance.integer_word_facts(self.CPP,['-32'],self.ROOT)
+        with tempfile.TemporaryDirectory(dir=self.ROOT/'build') as temporary:
+            source=pathlib.Path(temporary)/'source.c';source.write_bytes(self.CPP)
+            inputs=((source.relative_to(self.ROOT).as_posix(),provenance.sha256_file(source)),)
+            witness=provenance.integer_word_witness(raw,raw,linked,roles,(), 'source','cpp',inputs,self.ROOT,'tools')
+            high=raw.rels('.text')[0]
+            self.assertEqual(witness.operand(raw,linked,high,0x80000000,False).target_offset,16)
+            self.assertEqual(rp.edited_object_operand(rp.edited_global_target(rp.edited_prepare_object(raw,linked),'vertices'),0),('.data',16))
+            for addend,exported in ((0,False),(0x80000004,False),(0x80000000,True)):
+                with self.assertRaises(provenance.MetadataProofError):witness.operand(raw,linked,high,addend,exported)
+            symbol=next(s for s in linked.symbols if s.name=='vertices');original=symbol.size
+            object.__setattr__(symbol,'size',4)
+            with self.assertRaises(provenance.MetadataProofError):witness.operand(raw,linked,high,0x80000000,False)
+            object.__setattr__(symbol,'size',original)
+            source.write_bytes(self.CPP+b'\n')
+            with self.assertRaisesRegex(provenance.MetadataProofError,'stale'):
+                witness.operand(raw,linked,high,0x80000000,False)
+
+    def test_original_compiler_target_and_late_metadata_remain_bound(self):
+        import runlink_pack as rp
+        raw,linked=self.fixture();compiler=rp.Elf('compiler',raw.data)
+        roles=provenance.integer_word_facts(self.CPP,['-32'],self.ROOT)
+        witness=provenance.integer_word_witness(compiler,raw,linked,roles,(),'source','cpp',(),self.ROOT,'tools')
+        original=next(s for s in compiler.symbols if s.name=='vertices')
+        object.__setattr__(original,'value',20)
+        with self.assertRaisesRegex(provenance.MetadataProofError,'observations'):
+            witness.operand(raw,linked,raw.rels('.text')[0],0x80000000,False)
+        object.__setattr__(original,'value',16)
+        for image in (raw,linked):
+            object.__setattr__(next(s for s in image.symbols if s.name=='vertices'),'name','other')
+        wrong=provenance.integer_word_facts(self.CPP.replace(b'vertices',b'other'),['-32'],self.ROOT)
+        with self.assertRaisesRegex(provenance.MetadataProofError,'original compiler target'):
+            provenance.integer_word_witness(compiler,raw,linked,wrong,(),'source','cpp',(),self.ROOT,'tools')
+
+    def test_original_compiler_function_name_and_size_join(self):
+        import runlink_pack as rp
+        roles=provenance.integer_word_facts(self.CPP,['-32'],self.ROOT)
+        for field,value in (('name','other_function'),('size',12)):
+            raw,linked=self.fixture();compiler=rp.Elf('compiler',raw.data)
+            function=next(s for s in compiler.symbols if s.name=='pack')
+            object.__setattr__(function,field,value)
+            with self.subTest(field=field), self.assertRaises((rp.PackError,provenance.MetadataProofError)):
+                provenance.integer_word_witness(compiler,raw,linked,roles,(),'source','cpp',(),self.ROOT,'tools')
+
+    def test_missing_unauthorized_pair_section_type_and_export_refuse(self):
+        import runlink_pack as rp
+        roles=provenance.integer_word_facts(self.CPP,['-32'],self.ROOT)
+        for mutation in ('export','type','section','offset','register','low-type','wrong-name','extra-role'):
+            raw,linked=self.fixture();exports=()
+            target=next(s for s in raw.symbols if s.name=='vertices')
+            if mutation=='export':exports=('vertices',)
+            if mutation=='type':object.__setattr__(target,'type',rp.STT_FUNC)
+            if mutation=='section':object.__setattr__(target,'section','.text')
+            if mutation=='offset':object.__setattr__(target,'value',48)
+            if mutation=='wrong-name':object.__setattr__(target,'name','other')
+            if mutation in ('register','low-type'):
+                data=bytearray(raw.data)
+                import struct
+                if mutation=='register':struct.pack_into('>I',data,raw.section('.text')['offset']+8,0x24620000)
+                else:
+                    rel=raw.section('.rel.text');info=struct.unpack_from('>I',data,rel['offset']+12)[0]
+                    struct.pack_into('>I',data,rel['offset']+12,(info&~255)|2)
+                raw=rp.Elf('mutated',bytes(data))
+            use=roles+(provenance.IntegerWordRole('pack','unknown','address',1),) if mutation=='extra-role' else roles
+            with self.subTest(mutation=mutation), self.assertRaises((rp.PackError,provenance.MetadataProofError)):
+                provenance.integer_word_witness(raw,raw,linked,use,exports,'source','cpp',(),self.ROOT,'tools')
+
 if __name__ == "__main__":
     unittest.main()

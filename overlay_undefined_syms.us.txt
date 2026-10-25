@@ -570,7 +570,6 @@ sqrtf_o008Reloc = 0xf0000000;
 wakeUpdateRipple_o008Reloc = 0xf0000000;
 
 /* overlay 9: overlay_009.c.o */
-D_2D0 = 0x000002d0;
 D_300 = 0x00000300;
 D_340 = 0x00000340;
 D_380 = 0x00000380;
@@ -595,6 +594,7 @@ func_8002A8BC_o009Reloc = 0xf0000000;
 func_8002A8C0_o009Reloc = 0xf0000000;
 func_8005AF14_o009Reloc = 0xf0000000;
 gOverlay9PacketCursor = 0x00000000;
+gOverlay9ParameterState = 0x000002d0;
 lightObject_o009Reloc = 0xf0000000;
 mathDiffAngle_o009Reloc = 0xf0000000;
 mathOneFloatYPR_o009Reloc = 0xf0000000;

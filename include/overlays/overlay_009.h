@@ -4,16 +4,32 @@
 #include "PR/ultratypes.h"
 #include "game/math.h"
 
+/* Tier B: the shared parameter pointer's actual readers authenticate these
+ * field widths and offsets. Tier D: this is a bounded serialized storage
+ * view, not a recovered original declaration.
+ * unknown18 preserves four unread initialized bytes; their interpretation
+ * and semantics are unknown. They are neither a float claim nor padding. */
+typedef struct Overlay9ParameterState {
+    f32 inputX;
+    f32 inputY;
+    f32 throttle;
+    f32 position;
+    f32 acceleration;
+    f32 turnRate;
+    u8 unknown18[4];
+    f32 magnitude;
+    s16 angle20;
+    s16 angle22;
+    f32 velocity;
+    s16 angle28;
+    s16 angle2A;
+    f32 bobOffset;
+} Overlay9ParameterState;
+
 typedef struct O9Angle {
     u8 pad000[4];
     s16 angle;
 } O9Angle;
-
-typedef struct O9Motion {
-    u8 pad000[0x24];
-    f32 velocity;
-    s16 angle;
-} O9Motion;
 
 typedef struct O9OutputRecord {
     s16 pad0;
@@ -32,16 +48,6 @@ typedef struct O9OutputControl {
     void *handle;
 } O9OutputControl;
 
-typedef struct O9OutputState {
-    f32 x;
-    f32 y;
-    f32 throttle;
-    f32 scale;
-    f32 minimum;
-    u8 pad014[8];
-    f32 magnitude;
-} O9OutputState;
-
 typedef struct O9InputControl {
     u8 pad000[4];
     f32 lean;
@@ -55,15 +61,6 @@ typedef struct O9InputControl {
     s32 inputY;
     s32 inputX;
 } O9InputControl;
-
-typedef struct O9InputState {
-    f32 x;
-    f32 y;
-    f32 throttle;
-    f32 position;
-    f32 acceleration;
-    f32 turnRate;
-} O9InputState;
 
 typedef struct O9IntegrateOutput {
     u8 pad000[0xC];
@@ -105,11 +102,6 @@ typedef struct O9Point {
     f32 y;
     f32 z;
 } O9Point;
-
-typedef struct O9Height {
-    u8 pad000[0xC];
-    f32 height;
-} O9Height;
 
 typedef struct O9Hit {
     f32 height;
@@ -167,7 +159,7 @@ extern f32 D_58;
 extern f32 D_70;
 extern f32 D_78;
 extern f32 D_7C;
-extern f32 D_2D0;
+extern Overlay9ParameterState gOverlay9ParameterState;
 extern f32 D_300[];
 extern f32 D_340[];
 extern s16 D_380[];

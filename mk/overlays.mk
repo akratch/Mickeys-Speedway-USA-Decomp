@@ -449,25 +449,12 @@ $(O8_OBJ): POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:7624884a94483694a30029849c2e893068ed2d27134576687d72ef03019418f7 0xB0 keep
 
-# Overlay 9 is one translation unit at the overlay flag set and owns its pad.
-# Data externalization remains until the module's initialized data is C-owned
-# (docs/OVERLAY_STRUCTURE_SPRINT.md phase 3): func_overlay_009_F0000000_1866678
-# defines the parameter block in this object's .data at its recorded offset
-# (+0x2D0) only so as1 shares one high half between two stores; the retained
-# overlay image owns the bytes, so the copy is dropped and its 35 sites are
-# rebound to a zero-valued base. The TU owns its 84-byte compiler literal
-# pool; the remaining readonly scalars stay separate. Actual loads prove the
-# end before twelve bytes of compiler-only section alignment.
+# Overlay 9 keeps the genuine parameter definition with its consumers.
+# Explicit initialized ownership places its complete .data input before the
+# camera tables; the compiler literal pool keeps its existing bounded tail.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	$(TOOLS_DIR)/trim_elf_section.py \
-	config/normalizations/func_overlay_009_F0000000_1866678.rebind.spec
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: $(TOOLS_DIR)/trim_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay9DataBaseReloc=0x0,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/func_overlay_009_F0000000_1866678.rebind.spec && \
-	$(OBJCOPY) --remove-section=.data --remove-section=.gptab.data $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x54 --compiler-end-padding && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:11187ab836764385f6a30e2f0fb3b4647a356a77e4eda9a7ac1915167c22bffa 0 keep

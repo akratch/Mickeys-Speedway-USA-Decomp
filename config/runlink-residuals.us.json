@@ -2,13 +2,13 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 5535},
+  "totals": {"differences": 0, "borrowed_records": 5505},
   "differences": {
   },
   "borrowed": {
     "bss-size": {
       "about": "header BSS size without a complete faithful linked source allocation, from the atlas (module)",
-      "count": 33,
+      "count": 32,
       "entries": [
         [1],
         [2],
@@ -18,7 +18,6 @@
         [9],
         [11],
         [12],
-        [13],
         [15],
         [20],
         [29],
@@ -60,7 +59,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1281,
+      "count": 1273,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -405,15 +404,7 @@
         [12, "gOverlay12Resources", 4],
         [12, "gOverlay12TrianglesA", 2],
         [12, "gOverlay12TrianglesB", 2],
-        [13, "D_20", 4],
-        [13, "D_24", 2],
-        [13, "D_28", 2],
         [13, "D_80000000", 2],
-        [13, "gOverlay13ActiveCount", 2],
-        [13, "gOverlay13Enabled", 8],
-        [13, "gOverlay13Resource0", 4],
-        [13, "gOverlay13Resource1", 4],
-        [13, "gOverlay13Resource2", 4],
         [14, "D_FC", 2],
         [14, "gOverlay14CommandHeader", 4],
         [14, "gOverlay14CommandHeaderBase", 6],

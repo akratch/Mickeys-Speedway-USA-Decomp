@@ -66,9 +66,8 @@ typedef struct Overlay47TextureNode {
     s16 x, y;
 } Overlay47TextureNode;
 
-typedef struct Overlay47Command {
-    u32 w0, w1;
-} Overlay47Command;
+/* Command cursor type shared with the resident Gfx APIs. */
+typedef Gfx Overlay47Command;
 
 typedef struct Overlay47Vertex {
     s16 x, y, z;

@@ -76,12 +76,12 @@ typedef struct Overlay51MenuObject {
  * records (resident, overlay 56 +0xB8, overlay 59 +0x784/+0x84C). The
  * *_o051Reloc names are the generated relocation surface. */
 u8 *func_80028F54_o051Reloc(void);
-void camStandardOrtho_o051Reloc(void **, Mtx **);
+void camStandardOrtho_o051Reloc(Gfx **, Mtx **);
 void overlay56SplitTime_o051Reloc(s32, s32 *, s32 *, s32 *);
 Overlay51Level *levelGetLevel_o051Reloc(void);
 s32 func_800290A0_o051Reloc(void);
-void func_8002F618_o051Reloc(void **, void *, s32, s32, u8, u8, u8, u8);
-void texDPInit_o051Reloc(void **);
+void func_8002F618_o051Reloc(Gfx **, void *, s32, s32, u8, u8, u8, u8);
+void texDPInit_o051Reloc(Gfx **);
 void frontDrawObj_o051Reloc(s32);
 void freeFrontEndItem_o051Reloc(s32);
 void loadFrontEndItem_o051Reloc(s32);
@@ -94,7 +94,7 @@ void func_80037414_o051Reloc(s32, f32, f32, s32, s32, s32, s32);
 void mainChangeLevel_o051Reloc(s32, s32, s32, s32, s32, s32);
 void amTuneSetFade_o051Reloc(f32, u8);
 
-extern void *D_800D3140_o051Reloc;
+extern Gfx *D_800D3140_o051Reloc;
 extern Mtx *D_800D3144_o051Reloc;
 extern s32 D_800C947C_o051Reloc;
 extern s16 D_8007C180_o051Reloc[];

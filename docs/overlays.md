@@ -2730,6 +2730,14 @@ remain unsupported. This proves the pointer cell, not pointee capacity or GPU
 lifetime. The default selection remains75; a joint control adds66 to the above
 selection. Outside compatibility and the general/source-only limits still apply.
 
+Overlay26 and89 use the existing registered complete-module profile. Their
+cross-overlay function imports require selected37 and34 respectively; their
+resident imports remain allocated FUNCTIONs, with no new data-import class.
+A joint control selects
+`EDITED_MODULES=26,34,37,38,66,75,76,77,80,81,89,97`; the default stays75.
+These declarations add no storage or executable credit and do not expand the
+existing ABI, lifetime or native-port guarantees.
+
 Each selected C input is freshly compiled with its actual per-source Make flags,
 standard static-symbol metadata is restored, and the existing ordinary module
 linker links its four sections at independent zero bases. Runtime records derive

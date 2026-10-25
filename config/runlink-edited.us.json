@@ -5,6 +5,37 @@
   ],
   "modules": [
     {
+      "module": 26,
+      "source": "src/overlays/o026/overlay_026.c",
+      "exports": [
+        {
+          "name": "func_overlay_026_F0000000_187A3F8",
+          "row": 1223,
+          "kind": "function"
+        },
+        {
+          "name": "func_overlay_026_F00001A0_187A598",
+          "row": 1272,
+          "kind": "function"
+        },
+        {
+          "name": "func_overlay_026_F0001158_187B550",
+          "row": 1319,
+          "kind": "function"
+        },
+        {
+          "name": "func_overlay_026_F0000D24_187B11C",
+          "row": 1466,
+          "kind": "function"
+        }
+      ],
+      "entries": {
+        "init": null,
+        "resume": null
+      },
+      "build": "registered"
+    },
+    {
       "module": 34,
       "source": "src/overlays/o034/overlay_034.c",
       "exports": [
@@ -275,6 +306,27 @@
         {
           "name": "overlay81SetMaskBit",
           "row": 1909,
+          "kind": "function"
+        }
+      ],
+      "entries": {
+        "init": null,
+        "resume": null
+      },
+      "build": "registered"
+    },
+    {
+      "module": 89,
+      "source": "src/overlays/o089/overlay_089.c",
+      "exports": [
+        {
+          "name": "overlay89InitializeEffect",
+          "row": 1202,
+          "kind": "function"
+        },
+        {
+          "name": "overlay89UpdateStateAndParticles",
+          "row": 1257,
           "kind": "function"
         }
       ],

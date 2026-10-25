@@ -34,3 +34,11 @@ O58_RANK_LABELS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58TextLabels.c.o
 $(O58_RANK_LAYOUT): $(O58_RANK_LABELS)
 $(O58_RANK_LAYOUT): private LOCAL_RO_ORIGIN_OBJECT = $(O58_RANK_LABELS)
 $(O58_RANK_LAYOUT): private LOCAL_DATA_AGGREGATE = 1
+
+# The selection/path-node map ends at its genuine sentinel-backed object.
+# Preserve the compiler object; discard only its derived zero end alignment.
+O58_PATH_MAP := $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58PathMap.c.o
+$(O58_PATH_MAP): $(TOOLS_DIR)/trim_elf_section.py
+$(O58_PATH_MAP): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x54 --compiler-end-padding
+$(O58_PATH_MAP): private PLAIN_DATA_PROOF = 1
+$(O58_PATH_MAP): private PLAIN_DATA_RUNTIME_ROLE = data

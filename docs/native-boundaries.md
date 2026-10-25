@@ -122,10 +122,11 @@ uses ambient FP rounding, cannot generally convert in place, and writes two
 big-endian halfword planes. Its exceptional target path supplies no established
 host-cast sentinel. Remaining erased caller views and graphics completion
 lifetime are separate source/resource work.
-The [sprite contract](sprite-render-contracts.md) distinguishes O60's 26 read
-bytes from 18 unknown bytes, its float frame/flag domains and synchronous CPU
-inputs from deferred graphics storage; it does not establish a complete schema
-or shared C prototype closure.
+The [sprite contract](sprite-render-contracts.md) completes the bounded
+provider audit: O60 supplies 26 read bytes and 18 unknown bytes, with authenticated
+float frame/flag domains and synchronous CPU inputs. Remaining work is the full
+resource schema, compatible caller APIs and deferred graphics-storage lifetime;
+the unread bytes do not justify repeating the same provider inspection.
 
 ## Data, numerical and lifetime assumptions by family
 
@@ -214,13 +215,13 @@ or shared C prototype closure.
 | Packet / initial owned anchor | Deliverable and stopping boundary |
 |---|---|
 | Angle and FP ABI: `Arctanf`, then its trig pair | Normal return/clobber and conditional finite-table bounds are authenticated. Keep overlay29's genuine value/frame blocker separate from exceptional-input, FP-mode and fault behavior; no new cast/union sweep or host-libm replacement is justified. |
-| Matrix follow-up | The [matrix contract](matrix-contracts.md) settles multiplication aliasing, private trig preservation and the fixed converter's format/rounding/fault boundary. The local stack-matrix and overlay 56 repairs are integrated. Next prove caller-wide numeric ranges, overlay 98's typed float/fixed backing, complete thread/FP-context coverage and graphics completion lifetime. |
+| Matrix follow-up | The [matrix contract](matrix-contracts.md) establishes multiplication aliasing, private trig preservation and fixed conversion's format/rounding/fault boundary. Stack-matrix, overlay 56 and overlay 98 typed-view repairs are integrated. Remaining work is caller-wide numerical ranges, the shared resident matrix-cursor object and overlay 18 views, complete thread/FP-context coverage, and graphics completion lifetime. |
 | Inflater follow-up | Core dialect, continuation and shared-state lifetime are audited in the [contract](inflater-contract.md). A conditional normal-completion lookahead bound is established; resolve fixed-handler incoming memory and measure per-record output/workspace/overlap limits privately, accounting for pending loads in the stored-block unroll. Establish byte-4 meaning from producer evidence; stop before decoder implementation. |
-| Animation outer/private cluster | Map live-in/out registers and writable record intervals at `func_800591B0`, including its private t/s-register helpers and exit. Keep the converter batch separate until its matrix mutation/format is proved. |
+| Animation resources and render ordering | The [animation contract](animation-contracts.md) establishes outer/private live-ins, clobbers, writable intervals, patch tags and the matrix-batch conversion boundary. Next join these contracts to actual constructor/resource counts, selector/update/render ordering, optional patch ownership and conversion-queue lifetime. Do not repeat private-entry mapping. |
 | Render resource anchor: `rainFastDraw` plus its sole inspected overlay15 call family | Recover exact pixel/position/color formats, count/bounds/clipping and stack FP words. Then schedule snow/lighting/output independently rather than porting twelve labels as one renderer. |
 | Geometry anchor: `getXZCompareMask` | Resolve integer-coordinate conversion, box schema, mask bits, scratch writes and lifetimes against the existing float-expression callers; expand to other track/shadow helpers only with new evidence. |
 | OS state/context boundary | The [exception/scheduler contract](exception-scheduler-contracts.md) establishes entry roles, queue ordering, lazy FP and cleanup. Next reconcile full FP context/backing, the audio FR mode and optional hook continuations; mask-token/count/compare semantics remain separate. |
-| Small ABI closure: block-memory trio and Rare interrupt prefixes | Audit overlap/return/clobber effects and wrapper-only state. A familiar SDK name or matching tail is insufficient evidence for an interchangeable primitive. |
+| Rare interrupt wrapper prefixes | The [block-memory contract](block-memory-contracts.md) closes the trio's bounded provider questions, including signed counts, overlap, boolean comparison and cancelling incoming filler; its declaration correction is integrated. Audit the Rare interrupt wrappers' additional prefixes and tokens separately. Per-caller extents and ordinary-memory assumptions remain resource obligations. |
 | Overlay continuation | Audit the saved argument/result/stack set against typed exports and code load/unload lifetimes. Reuse committed ORT/ownership evidence, not donor scans or an untyped dispatcher design. |
 
 These are bounded evidence packets, not implementation assignments or portable

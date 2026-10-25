@@ -86,4 +86,24 @@ source/relocation/ROM acceptance rules apply.
   matching local expression does not establish a matching function.
 
 
+### Preserve the captured pointer when recovering its real pointee type
+
+- **Symptom:** replacing a command-word view with a genuine typed member
+  access can add a copy and shift later code, even when both forms read the
+  same value.
+- **Mechanism:** re-reading the containing object's pointer field changes the
+  expression relative to reading through the already captured cursor. In the
+  observed stock compile, one form materialized a temporary and copied it to
+  the cursor surviving a call. Keeping the original capture removed that copy.
+- **Lever:** authenticate the actual pointee and alignment, convert the
+  captured pointer value back to the real object type, and access its member.
+  Preserve the original capture and evaluation flow.
+- **Limits:** this does not justify casting a pointer object, inventing a
+  carrier or treating an arbitrary byte pointer as an authenticated object.
+  Object provenance and alignment need independent evidence. This is one
+  measured recovery, not a guarantee for other type changes. Reprove complete
+  allocated surfaces, geometry, ordered identities and linked bytes. No saved
+  compiler IR was available; the mechanism is a compiled-dataflow explanation.
+
+
 See also [storage width and callable return width](ido-learnings.md#storage-width-does-not-establish-callable-return-width).

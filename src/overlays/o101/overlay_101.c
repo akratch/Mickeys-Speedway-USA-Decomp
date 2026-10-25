@@ -1328,7 +1328,8 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
  * between `syncCommand` and `command` [L121]. `primColorCommand` and
  * `syncCommand` are those two carriers, named for their packets (the
  * permuter's `new_var` and `new_var2`; lane c-5, 2026-10-09).
- */void overlay101DrawTransformed(Overlay101Gfx **displayList, void *matrix,
+ */
+void overlay101DrawTransformed(Overlay101Gfx **displayList, void *matrix,
                                void *vertices, Overlay101DrawNode_DrawTransformed *node,
                                Overlay101TransformElement *element) {
     s32 bounds0;

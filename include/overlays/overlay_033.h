@@ -2,6 +2,7 @@
 #define OVERLAY_033_H
 
 #include "PR/ultratypes.h"
+#include "game/framebuffer_state.h"
 #include "overlays/overlay_033_gbi.inc"
 
 typedef struct Overlay33Locals {
@@ -33,7 +34,6 @@ extern s32 gOverlay33Handle;
 extern void *D_800D1C28[];
 extern void *gOverlay33ActiveBuffer;
 extern void *gOverlay33DisplayLists[];
-extern void *D_800D2FAC;
 /* Section-relative placeholders: the display-list arena (0xC00 bytes per
  * buffer) and its tail. */
 extern u8 D_8[];

@@ -2,6 +2,7 @@
 #define OVERLAY_042_H
 
 #include "PR/ultratypes.h"
+#include "game/framebuffer_state.h"
 
 #include "n_audio/mbi.h"
 
@@ -14,9 +15,6 @@ extern void *gOverlay42PublishedSource;
 
 extern s32 D_8007A20C;
 extern s32 D_8007A410;
-extern void *D_800D2FA4;
-extern void *D_800D2FAC;
-extern u16 *D_800D2FA0;
 
 void *mmAlloc(s32 size, s32 tag);
 void mmFree(void *allocation);

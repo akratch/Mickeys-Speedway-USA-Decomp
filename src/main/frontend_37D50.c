@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "game/framebuffer_state.h"
 #include "game/memory.h"
 #include "game/overlay_exports.h"
 #include "game/math.h"
@@ -14,7 +15,6 @@ extern s32 D_8007BE9C;
 extern s32 D_8007BEA0;
 extern s32 D_8007BEA4;
 extern s32 D_8007BEE0;
-extern s32 D_800D2FA8;
 typedef struct FrontendBufferPointers {
     void *unk0;
     void *unk4;
@@ -384,7 +384,6 @@ void func_80037BF4(void) {
     }
 }
 extern u8 D_7BE40[];
-extern s32 D_800D2FAC;
 extern void camStandardPersp(Gfx **, Mtx **);
 extern void texDPInit(Gfx **);
 extern u8 D_8007BEC0[];

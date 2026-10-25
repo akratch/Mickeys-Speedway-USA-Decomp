@@ -18,10 +18,18 @@
  */
 
 #include "game/gameVi.h"
+#include "game/framebuffer_state.h"
 #include "game/font.h"
 #include "game/memory.h"
 #include "PR/os_message.h"
 #include "PR/os_vi.h"
+
+/* Tier B: VI assigns these four mutable image-pointer cells;
+ * exact target object offsets require the ordinary compiler/link proof. */
+u16 *D_800D2FA0;
+u16 *D_800D2FA4;
+u16 *D_800D2FA8;
+u16 *D_800D2FAC;
 
 typedef struct ResolutionSettings {
     s32 width;
@@ -57,8 +65,6 @@ extern OSMesg D_800D2E50[8];
 extern OSMesgQueue D_800D2E70;
 extern u8 D_800D2F30[];
 extern s32 D_800D2F90;
-extern s32 *D_800D2FA8;
-extern s32 *D_800D2FAC;
 extern s8 D_800D2F94;
 extern s8 D_800D2F95;
 extern s8 D_800D2F96;
@@ -69,8 +75,6 @@ extern s8 D_800D2F9A;
 extern u8 D_800D2F9B;
 extern u8 D_800D2F9C;
 extern u8 D_800D2F9D;
-extern s32 *D_800D2FA0;
-extern s32 *D_800D2FA4;
 extern s32 D_800D2FBC;
 extern s32 D_800D2FC0;
 extern s32 D_800D2FB0;
@@ -222,7 +226,7 @@ void viReset(void) {
 void viAllocateZBuffer(s32 width, s32 height) {
     D_800D2F90 = (width * height * 2) + 0x30;
     D_8007A680[3] = (s32 *) mmAlloc(D_800D2F90, 0x92);
-    D_800D2FAC = (s32 *) (((s32) D_8007A680[3] + 0x3F) & ~0x3F);
+    D_800D2FAC = (u16 *) (((s32) D_8007A680[3] + 0x3F) & ~0x3F);
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/gameVi.c:viFreeZBuffer. */
 void viFreeZBuffer(s32 width, s32 height) {
@@ -387,7 +391,7 @@ void viNoClear(void) {
 
 /* PROVENANCE: adapted from JFG's public decomp, src/gameVi.c. */
 s32 viDisplayingScreen0(void) {
-    if (D_8007A690[0] == D_800D2FA8) {
+    if ((u16 *)D_8007A690[0] == D_800D2FA8) {
         return 1;
     }
     return 0;
@@ -445,23 +449,23 @@ OSViMode *viGetOsViMode(s32 videoMode) {
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/gameVi.c:fb_swap. */
 void fb_swap(void) {
-    D_800D2FA8 = D_8007A690[D_800D2F94];
+    D_800D2FA8 = (u16 *)D_8007A690[D_800D2F94];
     D_800D2F94++;
     if (D_800D2F95) {
         if (D_800D2F94 >= 3) {
             D_800D2F94 = 0;
         }
-        D_800D2FA4 = D_8007A690[D_800D2F94];
+        D_800D2FA4 = (u16 *)D_8007A690[D_800D2F94];
         if (D_800D2F94 < 2) {
-            D_800D2FA0 = D_8007A690[D_800D2F94 + 1];
+            D_800D2FA0 = (u16 *)D_8007A690[D_800D2F94 + 1];
         } else {
-            D_800D2FA0 = D_8007A690[0];
+            D_800D2FA0 = (u16 *)D_8007A690[0];
         }
     } else {
         if (D_800D2F94 >= 2) {
             D_800D2F94 = 0;
         }
-        D_800D2FA0 = D_8007A690[D_800D2F94];
+        D_800D2FA0 = (u16 *)D_8007A690[D_800D2F94];
         D_800D2FA4 = D_800D2FA0;
     }
 }

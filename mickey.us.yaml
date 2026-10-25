@@ -1053,6 +1053,9 @@ segments:
       # Scheduler-owned counters and the two halves of its yield timestamp.
       - { type: .bss, vram: 0x800D2D40, name: main/sched }
       - { type: bss, vram: 0x800D2D50, name: bss_gap_D800D2D50 }
+      # Four VI framebuffer pointer cells; no pointed-to storage is owned here.
+      - { type: .bss, vram: 0x800D2FA0, name: main/gameVi }
+      - { type: bss, vram: 0x800D2FB0, name: bss_gap_D800D2FB0 }
       # Menu controller state is emitted as individually named objects in target
       # address order; IDO's input section occupies 0x30 bytes through 0x31C8.
       - { type: .bss, vram: 0x800D3198, name: main/menu }

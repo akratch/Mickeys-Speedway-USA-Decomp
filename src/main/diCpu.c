@@ -9,6 +9,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/framebuffer_state.h"
 #include "PR/os_internal.h"
 #include "PR/os_message.h"
 #include "game/memory.h"
@@ -167,7 +168,6 @@ extern s32 D_800D5DF0[];
 extern s32 D_800D5E98[];
 extern s32 D_800D5F40[];
 extern s32 D_800D21B0;
-extern s16 *D_800D2FA8;
 extern s32 packWriteFile(s32 controllerIndex, s32 fileNumber, char *fileName,
                          char *fileExt, u8 *dataToWrite, s32 fileSize);
 
@@ -683,8 +683,8 @@ void render_epc_lock_up_display(MickeyEpcInfo *info) {
 /* Mickey-derived body; JFG's corresponding func_800680B0_68CB0 is
  * assembly-only and confirms the packed-glyph loop structure. */
 void func_80046AA8(s32 x, s32 y, u16 *glyph) {
-    s16 *destination;
-    s16 *pixel;
+    u16 *destination;
+    u16 *pixel;
     u16 *palette;
     u16 bits;
     s32 lines;
@@ -805,7 +805,7 @@ void func_80046E00(void) {
 
     viGetCurrentSize(&height, &width);
     screenSize = height * width;
-    screen = D_800D2FA8;
+    screen = (s16 *)D_800D2FA8;
     while (screenSize--) {
         *screen++ = 0;
     }

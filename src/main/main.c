@@ -1,4 +1,5 @@
 #include "ultra64.h"
+#include "game/framebuffer_state.h"
 #include "game/pi.h"
 #include "game/font.h"
 #include "game/gameVi.h"
@@ -218,9 +219,6 @@ extern s32 D_800C947C;
 extern s32 D_8007C854;
 extern s16 D_800D6C44;
 extern MainZBCheck D_800CF538[];
-extern u16 *D_800D2FAC;
-extern s32 *D_800D2FA0;
-extern s32 *D_800D2FA8;
 extern s32 osTvType;
 extern s32 levelNGetType(s32 level);
 extern void func_80028EFC(MainCharacterState *, s32, s32);
@@ -700,8 +698,8 @@ void func_80027628(s32 updateRate) {
 
     if (D_8007A120 != 0) {
         viGetCurrentSize(&width, &height);
-        source = D_800D2FA0;
-        destination = D_800D2FA8;
+        source = (s32 *)D_800D2FA0;
+        destination = (s32 *)D_800D2FA8;
         copyCount = ((u32) (width * height) >> 1) - 1;
         if (((u32) (width * height) >> 1) != 0) {
             do {
@@ -1242,7 +1240,7 @@ void func_80028564(s32 updateRate) {
                 s32 height;
 
                 viGetCurrentSize(&width, &height);
-                framebuffer = D_800D2FA0;
+                framebuffer = (s32 *)D_800D2FA0;
                 pixelCount = (u32) (width * height) >> 1;
                 fill = func_8004989C(4, framebuffer);
                 while (pixelCount--) {

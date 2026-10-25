@@ -201,7 +201,9 @@ extern RcpTextureNode D_o058_5BA0[];
 extern s16 o58ResultAssetIds_o058Reloc[32];
 extern void *o58TransitionSound_o058Reloc;
 extern s16 D_B8[];
-extern s16 D_1A0[];
+/* Flat selection/node pairs; the private operand retains loader encoding. */
+extern s16 gOverlay58PathMap[];
+extern s16 gOverlay58PathMap_o058Reloc[];
 extern u8 D_2A8[];
 extern s32 D_2B0;
 extern s32 D_2B4;

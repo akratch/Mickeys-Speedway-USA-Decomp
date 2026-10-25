@@ -238,7 +238,7 @@ void overlay58ReleaseResources(void) {
  *     offsets are one flat `s16` table indexed `player * 2` and
  *     `player * 2 + 1`.
  *   - The frame is a declaration count: 40 bytes of locals, status third.
- *     The mapping scan is an indexed `for` over `D_1A0` using `marker` as
+ *     The mapping scan is an indexed `for` over `gOverlay58PathMap_o058Reloc` using `marker` as
  *     its index (uopt creates the cursor), so there is no cursor local, and
  *     start/end are an `s16` pair.
  */
@@ -494,17 +494,17 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
         for (stage = 0; stage <= o58ActiveState_o058Reloc; stage++) {
             start = 0;
             end = 0;
-            for (marker = 0; D_1A0[marker] != -1; marker += 2) {
-                if (D_1A0[marker] ==
+            for (marker = 0; gOverlay58PathMap_o058Reloc[marker] != -1; marker += 2) {
+                if (gOverlay58PathMap_o058Reloc[marker] ==
                     gOverlay58SelectionTableReloc[status->player][stage]) {
-                    start = D_1A0[marker + 1];
+                    start = gOverlay58PathMap_o058Reloc[marker + 1];
                 }
                 if (stage == 3) {
                     end = 0x13;
-                } else if (D_1A0[marker] ==
+                } else if (gOverlay58PathMap_o058Reloc[marker] ==
                            gOverlay58SelectionTableReloc[status->player]
                                                         [stage + 1]) {
-                    end = D_1A0[marker + 1];
+                    end = gOverlay58PathMap_o058Reloc[marker + 1];
                 }
             }
 

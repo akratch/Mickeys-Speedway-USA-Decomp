@@ -1013,20 +1013,6 @@
       ]
     },
     {
-      "c_owned": null,
-      "class": "metadata",
-      "matched_c": null,
-      "nonmatching": null,
-      "object": "build/src/overlays/o063/overlay63ParticleSeeds.c.o",
-      "offset": null,
-      "overlay": 63,
-      "size": null,
-      "source": "src/overlays/o063/overlay63ParticleSeeds.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
       "c_owned": true,
       "class": "metadata",
       "matched_c": true,
@@ -1227,9 +1213,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 82
+      "metadata": 81
     },
     "matched_c_bytes_with_postprocess": 301144,
-    "objects_with_postprocess": 82
+    "objects_with_postprocess": 81
   }
 }

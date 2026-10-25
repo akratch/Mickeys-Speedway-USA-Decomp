@@ -1,6 +1,7 @@
-/* Mickey-only active seed rows, Tier D original declaration inference.
- * Each real constructor iteration consumes asset ID and signed XY.
- * The retained terminator/unread tail is deliberately not part of this owner.
+/* Mickey-only serialized seed grammar, Tier D original declaration inference.
+ * Twenty active rows consume signed asset/XY fields; the next row terminates
+ * on assetId -1. Its stored coordinates are never read on this traversal.
+ * This same-grammar terminal model is inferred, not original capacity proof.
  * Existing scalar/weak imported traversal and its C bounds debt are unchanged. */
 #include "PR/ultratypes.h"
 
@@ -31,8 +32,9 @@ Overlay63ParticleSeed overlay63ParticleSeeds[] = {
     { 118, 1, -15 },
     { 119, 34, -13 },
     { 120, 77, -30 },
+    { -1, 200, -80 },
 };
 #ifdef TARGET_N64
 typedef char O63SeedRowSize[(sizeof(Overlay63ParticleSeed) == 6) ? 1 : -1];
-typedef char O63SeedArraySize[(sizeof(overlay63ParticleSeeds) == 120) ? 1 : -1];
+typedef char O63SeedArraySize[(sizeof(overlay63ParticleSeeds) == 126) ? 1 : -1];
 #endif

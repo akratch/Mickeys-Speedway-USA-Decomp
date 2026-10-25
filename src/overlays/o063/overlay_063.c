@@ -288,3 +288,11 @@ typedef char O63ParticleStorageSize[(sizeof(Overlay63ParticleStorage) == 20) ? 1
 typedef char O63EffectControlsSize[(sizeof(Overlay63EffectControls) == 20) ? 1 : -1];
 typedef char O63EffectsStorageSize[(sizeof(Overlay63EffectsStorage) == 400) ? 1 : -1];
 #endif
+
+/* Tier B: the descriptor constructor copies the prompt through strlen/%s;
+ * font rendering converts the debug notice into separate resident scratch.
+ * Both actual input paths read these characters without changing them.
+ * Tier D: original names/const declarations remain inferred. Existing legacy
+ * imported byte/pointer views and module-lifetime contracts are not unified. */
+const char overlay63StartPrompt[] = "PRESS START";
+const char overlay63DebugNotice[] = "DEBUG TOGGLED";

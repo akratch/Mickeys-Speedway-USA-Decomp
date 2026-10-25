@@ -414,6 +414,7 @@ O8_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o
 MODULE_LINKED_DATA_SOURCES += overlays/o008/overlay8TuningTables
 # Complete frame aggregate; same-input LOCAL pointers are checked independently.
 MODULE_LINKED_DATA_SOURCES += overlays/o059/overlay59Frames
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay59Frames.c.o: private LOCAL_DATA_PREFIX_OBJECTS = 1
 # One complete pointer input targets actual bases in the writable name input;
 # its declared runtime RO origin is independent of the ELF section spelling.
 MODULE_LINKED_DATA_SOURCES += overlays/o008/overlay8SurfaceNameTable

@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 52808,
+  "owned_data_rodata_bytes": 53064,
   "diagnostic_data_rodata_bytes": 304,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -9917,8 +9917,8 @@
    "data_rodata_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x5A0",
-     "size": "0x5A0",
+     "end_offset": "0x6E0",
+     "size": "0x6E0",
      "type": "c",
      "section": ".data",
      "source": "overlays/o059/overlay59Frames",
@@ -14542,27 +14542,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 54
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x130",
-     "end_offset": "0x140",
-     "size": "0x10",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o094/overlay94ControlState",
-     "canonical": true
-    },
-    {
-     "offset": "0x140",
-     "end_offset": "0x170",
-     "size": "0x30",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o094/overlay94ResponseScalars",
-     "canonical": true
-    }
-   ]
+   }
   },
   {
    "overlay": 95,

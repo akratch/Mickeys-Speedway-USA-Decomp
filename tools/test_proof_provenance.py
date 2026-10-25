@@ -4,12 +4,127 @@
 from __future__ import annotations
 
 import pathlib
+import contextlib
 import tempfile
 import sys
 import unittest
 from unittest import mock
+from types import SimpleNamespace
 
 import proof_provenance as provenance
+
+
+class CaptureDeadlineTests(unittest.TestCase):
+    """Defined clock advances test budgets, not real compiler performance."""
+
+    def setUp(self):
+        import permute_batch as batch
+        self.batch = batch
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = pathlib.Path(temporary.name)
+        self.source = self.root / "src/overlays/o059/source.c"
+        self.header = self.source.with_name("dependency.h")
+        self.configured = self.root / "build/src/overlays/o059/source.c.o"
+        self.linked = self.root / "build/image.elf"
+        for name in ("Makefile", "mk/objects.mk", "baseroms/mickey.us.z64",
+                     "config/overlays.us.json", "overlay_undefined_syms.us.txt", "symbol_addrs.us.txt",
+                     "tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
+                     "tools/rebind_elf_relocations.py", "tools/externalize_elf_section.py",
+                     "tools/postprocess_guard.py", "tools/binutils/mips64-elf-objcopy",
+                     "config/runlink-ort.us.txt", "tools/link_overlay_module.py",
+                     "tools/runlink_pack.py", "tools/binutils/mips64-elf-ld",
+                     "include/fixture.h", "tools/asm-processor/build.py"):
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("fixture\n")
+        for path in (self.source, self.header, self.configured, self.linked):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("original fixture\n")
+        self.clock = 1000.0
+        self.operations = []
+        self.compile_delay = self.recipe_delay = 0
+        self.recipe_extra = ""
+        stack = contextlib.ExitStack()
+        self.addCleanup(stack.close)
+        stack.enter_context(mock.patch.object(batch, "ROOT", self.root))
+        stack.enter_context(mock.patch.object(batch, "checked_tool_identity"))
+        stack.enter_context(mock.patch.object(batch, "sweep_tool_identity", return_value={"compiler": "fixture"}))
+        stack.enter_context(mock.patch.object(batch, "bounded_capture", side_effect=self.command))
+        stack.enter_context(mock.patch.object(batch, "source_dependencies", side_effect=self.dependencies))
+        stack.enter_context(mock.patch.object(provenance, "producer_link_context", return_value={"inputs": {}}))
+        stack.enter_context(mock.patch.object(provenance.time, "monotonic", side_effect=lambda: self.clock))
+        stack.enter_context(mock.patch.dict(provenance.os.environ, {"PROMOTION_TRIAL": "0"}))
+
+    def command(self, arguments, deadline, **_keywords):
+        kind = "recipe" if arguments[0] == "gmake" else "compiler"
+        self.operations.append((kind, deadline))
+        self.batch.remaining_timeout(deadline)
+        if kind == "recipe":
+            target = self.configured.relative_to(self.root).as_posix()
+            source = self.source.relative_to(self.root).as_posix()
+            output = (f"tools/ido/cc -c -32 {self.recipe_extra} -o {target} {source}\n"
+                      f"python3 tools/link_overlay_module.py {target}\n")
+            self.clock += self.recipe_delay
+        else:
+            pathlib.Path(arguments[arguments.index("-o") + 1]).write_text("untouched compiler fixture\n")
+            output = ""
+            self.clock += self.compile_delay
+        return SimpleNamespace(stdout=output)
+
+    def dependencies(self, _source, _arguments, deadline):
+        self.operations.append(("dependencies", deadline))
+        self.batch.remaining_timeout(deadline)
+        return {self.header.relative_to(self.root).as_posix(): provenance.sha256_file(self.header)}
+
+    def capture(self):
+        return provenance.capture_data_module_producer_raw(
+            self.root, self.source, self.configured, self.linked, self.root / "build/image.map")
+
+    def test_completed_capture_age_does_not_expire_a_new_bounded_revalidation(self):
+        _raw, _plan, receipt, current = self.capture()
+        self.assertEqual({deadline for _kind, deadline in self.operations}, {1120.0})
+        self.assertEqual([kind for kind, _deadline in self.operations],
+                         ["recipe", "recipe", "dependencies", "compiler", "recipe",
+                          "dependencies", "recipe", "dependencies"])
+        self.clock = 1121.0
+        self.operations.clear()
+        self.assertEqual(receipt["inputs"], current())
+        self.assertEqual(self.operations, [("recipe", 1241.0), ("dependencies", 1241.0)])
+
+    def test_aged_context_still_refuses_changed_source_dependency_or_recipe(self):
+        import runlink_pack as rp
+        for changed in ("source", "dependency", "recipe"):
+            with self.subTest(changed=changed):
+                self.clock = 1000.0
+                self.recipe_extra = ""
+                self.source.write_text("original fixture\n")
+                self.header.write_text("original fixture\n")
+                _raw, _plan, receipt, current = self.capture()
+                self.clock = 1121.0
+                if changed == "source": self.source.write_text("changed source\n")
+                if changed == "dependency": self.header.write_text("changed dependency\n")
+                if changed == "recipe": self.recipe_extra = "-DCHANGED"
+                world = SimpleNamespace(data_import_contexts=[(receipt["inputs"], current)])
+                with self.assertRaises((rp.PackError, provenance.MetadataProofError)):
+                    rp.check_data_import_holds(world)
+                self.assertIsNone(world._guarded_data_objects)
+
+    def test_original_capture_never_renews_its_internal_budget(self):
+        self.compile_delay = 121
+        with self.assertRaisesRegex(TimeoutError, "whole-batch deadline"):
+            self.capture()
+        self.assertEqual({deadline for _kind, deadline in self.operations}, {1120.0})
+        self.assertGreater(self.clock, 1120)
+
+    def test_later_recipe_and_dependency_checks_share_one_new_budget(self):
+        _raw, _plan, _receipt, current = self.capture()
+        self.clock = 1121.0
+        self.recipe_delay = 121
+        self.operations.clear()
+        with self.assertRaisesRegex(TimeoutError, "whole-batch deadline"):
+            current()
+        self.assertEqual(self.operations, [("recipe", 1241.0), ("dependencies", 1241.0)])
 
 
 class SourceClassificationTests(unittest.TestCase):

@@ -2812,9 +2812,8 @@ segments:
     subsegments:
       - [0x18B8750, c, overlay_059]
       - [0x18B9170, .data, overlay59Frames]
-      - [0x18B9710, bin, overlay_059_data_rodata]
       - [0x18B9850, .data, overlay59SelectorValues]
-      - [0x18B9878, bin, overlay_059_data_rodata_708]
+      - [0x18B9878, bin, overlay_059_data_rodata]
       - [0x18B98C0, .rodata, overlay_059]
 
   - name: overlay_059_reloc1

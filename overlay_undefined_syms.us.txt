@@ -2226,7 +2226,7 @@ gOverlay59EntriesOneEnd = 0x00000044;
 gOverlay59Styles = 0x00000730;
 gOverlay59TableInfo = 0x000005a0;
 gOverlay59ValueTables = 0x00000708;
-overlay59ReleaseReloc = 0xf0000000;
+texFreeTexture_o059Reloc = 0xf0000000;
 texLoadTexture_o059Reloc = 0xf0000000;
 
 /* overlay 60: overlay_060.c.o */

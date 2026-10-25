@@ -1941,6 +1941,8 @@ extern void amSndPlay(s32 soundId, s32 arg1);
 
 extern s32 o101OrderCounter;
 extern s32 o101OrderCounter_o101Reloc;
+extern s32 o101Node20Counter_o101Reloc;
+extern s32 o101Node32Counter_o101Reloc;
 
 extern f32 gOverlay101TimedScale_o101Reloc;
 
@@ -2041,9 +2043,7 @@ extern O101RootGroup3A58 D_134;
 
 extern void *D_C64;
 
-extern s32 gOverlay101Resource20Count;
 
-extern s32 gOverlay101Resource32Count;
 
 extern s32 D_1D0;
 
@@ -2066,9 +2066,7 @@ extern void *D_1C0[];
 
 extern s32 D_1C4;
 
-extern s32 D_1C8;
 
-extern s32 D_1CC;
 
 extern Node20 D_200[];
 
@@ -2120,9 +2118,7 @@ extern s32 gO101PresAOrderCount;
 
 extern void *gO101PresAOrderSlots[];
 
-extern s32 gO101PresANode32Count;
 
-extern s32 gO101PresANode20Count;
 
 extern O101PresANode20 gO101PresANodes20[];
 
@@ -2138,9 +2134,7 @@ extern s32 gO101PresBOrderCount;
 
 extern void *gO101PresBOrderSlots[];
 
-extern s32 gO101PresBNode32Count;
 
-extern s32 gO101PresBNode20Count;
 
 extern O101PresBNode20 gO101PresBNodes20[];
 
@@ -2156,9 +2150,7 @@ extern s32 gO101PresCOrderCount;
 
 extern void *gO101PresCOrderSlots[];
 
-extern s32 gO101PresCNode32Count;
 
-extern s32 gO101PresCNode20Count;
 
 extern O101PresCNode20 gO101PresCNodes20[];
 
@@ -2174,9 +2166,7 @@ extern s32 gO101PresDOrderCount;
 
 extern void *gO101PresDOrderSlots[];
 
-extern s32 gO101PresDNode32Count;
 
-extern s32 gO101PresDNode20Count;
 
 extern O101PresDNode20 gO101PresDNodes20[];
 
@@ -2192,7 +2182,6 @@ extern s32 gO101TailOrderCount;
 
 extern void *gO101TailOrderSlots[];
 
-extern s32 gO101TailNode32Count;
 
 extern s32 gO101TailNode24Count;
 
@@ -2206,7 +2195,6 @@ extern s32 gO101TailAB4COrderCount;
 
 extern void *gO101TailAB4COrderSlots[];
 
-extern s32 gO101TailAB4CNode32Count;
 
 extern s32 gO101TailAB4CNode24Count;
 
@@ -2230,7 +2218,6 @@ extern s32 gO101TailBA34OrderCountCall2;
 
 extern void *gO101TailBA34OrderSlots[];
 
-extern s32 gO101TailBA34Node32Count;
 
 extern s32 gO101TailBA34Node24Count;
 
@@ -2244,7 +2231,6 @@ extern s32 gO101TailC144OrderCount;
 
 extern void *gO101TailC144OrderSlots[];
 
-extern s32 gO101TailC144Node32Count;
 
 extern s32 gO101TailC144Node24Count;
 
@@ -2264,9 +2250,7 @@ extern s32 gO101TailC6E8OrderCount;
 
 extern O101TailC6E8Root *gO101TailC6E8OrderSlots[];
 
-extern s32 gO101TailC6E8Node32Count;
 
-extern s32 gO101TailC6E8Node20Count;
 
 extern O101TailC6E8Node20 gO101TailC6E8Nodes20[];
 

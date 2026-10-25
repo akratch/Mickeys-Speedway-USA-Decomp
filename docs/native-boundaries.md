@@ -128,6 +128,18 @@ float frame/flag domains and synchronous CPU inputs. Remaining work is the full
 resource schema, compatible caller APIs and deferred graphics-storage lifetime;
 the unread bytes do not justify repeating the same provider inspection.
 
+Overlay 60 now declares the loader and direct free function with the actual
+opaque `struct Sprite *` type. Its erased renderer and deferred release views
+still need the resource-level authority described above. Overlay 101 still
+declares the [sprite loader](../src/main/textures_354C8.c) through an
+unprototyped `void *` return in its
+[caller header](../include/overlays/overlay_101.h). The provider returns
+`struct Sprite *` and takes two signed 32-bit arguments. Pointer-valued `NULL`
+flags and extra counter-address arguments remain source-interface debt;
+matching target register values does not establish compatible C function types.
+Genuine resource cells and counter owners do not close release-provider
+dispatch, cache reentry or graphics-completion lifetime.
+
 ## Data, numerical and lifetime assumptions by family
 
 - **Numeric/angle utilities:** [math.h](../include/game/math.h) supplies the

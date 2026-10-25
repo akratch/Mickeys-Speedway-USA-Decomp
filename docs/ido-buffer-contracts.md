@@ -32,12 +32,15 @@ source/relocation/ROM acceptance rules apply.
 - **Mechanism:** this diagnostic and the final target representation can
   disagree in the pinned IDO toolchain; the diagnostic alone does not prove
   that the object contains infinity.
-- **Lever:** inspect the untouched compiler pool and prove the owned linked
-  range. Use an ordinary finite decimal literal with the intended rounding;
-  retain the diagnostic honestly rather than changing shared warning flags.
-- **Limits:** this observation is specific to the configured compiler and
-  assembler. It does not excuse an actual overflow, permit pool patches or
-  establish identical behavior in another compiler.
+- **Lever:** check that the decimal literal is mathematically in range and
+  rounds to the intended finite value. Inspect the untouched compiler pool
+  and prove the owned linked range. Retain both front-end and assembler
+  diagnostics rather than changing shared warning flags.
+- **Limits:** the internal diagnostic cause is not established by the observed
+  output. This observation is specific to the configured compiler and
+  assembler. It does not excuse actual overflow, permit pool patches or word
+  arrays, establish another compiler's behavior, or prove general floating-point
+  input and exception contracts.
 
 ### An unused variadic tail can change the provider prologue
 

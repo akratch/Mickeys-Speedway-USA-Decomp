@@ -7,7 +7,7 @@ support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `efa1f7c0d`; the combined borrowing
+The source measurements here are pinned to `ebc47ded7`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -23,10 +23,10 @@ validation and publication are separate acceptance steps.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 53,880 of 61,312 bytes have canonical projected C owners | 7,432 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
-| Initialized images | 47 of 87 data-bearing modules are fully projected to C; 15 are partial and 25 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
+| Initialized storage | 53,896 of 61,312 bytes have canonical projected C owners | 7,416 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized images | 48 of 87 data-bearing modules are fully projected to C; 15 are partial and 24 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 31 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 5,453 records still borrow authority: 5,401 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 5,329 records still borrow authority: 5,277 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 32 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
 
@@ -260,8 +260,10 @@ sixty hybrid records; remaining inputs and their identity/layout borrowing stay 
 Overlay 101 now owns all 113 label targets and its complete initialized input,
 including the pointer-table prefix and the formerly unowned tail. The prefix
 now comprises one real byte-pointer array and three independent signed counters;
-50 order-counter references name their actual scalar. Original object boundaries
-remain inferred, and the remaining label and counter aliases stay open. Local block-clear declarations
+50 order-counter references name their actual scalar, and all 116 references
+to the two node counters now name their genuine scalar owners. Original object
+boundaries remain inferred; the 82 remaining order-counter references and other
+counter and label aliases stay open. Local block-clear declarations
 now use the canonical signed-int count type. Two rumble calls now use the
 provider's float third-argument type and actual 0.15f value; the separate
 four-argument caller's ABI debt remains explicit. The runtime loader uses seven real linker boundaries
@@ -299,6 +301,19 @@ target representation does not establish host pointer semantics. Overlay 13 owns
 Two genuine scalar coefficients now supply its complete 16-byte read-only pool: eight semantic bytes and eight ordinary compiler-alignment bytes. Four genuine handle/count cells now supply the remaining 16 DATA bytes. Their typed sprite/texture owners and signed DATA count remain distinct from the BSS active flag; cache balance, reentry and graphics lifetimes remain open. Overlay 58's path
 map now shares its flat signed-halfword type with its readers. The encoded
 polygon words and graphics lifetimes remain separate obligations.
+
+Overlay 92 now supplies its complete 16-byte read-only pool through four
+source float literals in its existing text TU. Untouched original, raw and
+configured objects, the unique source RO map, and the normal post-promotion
+route prove the fixed-layout contribution and all effective runtime identities.
+The standalone raw-static view remains incomplete for its section-derived
+references; it is not claimed as a source-only or general-relayout proof. The
+retained 336-byte BSS region and union self-copy cleanup remain open.
+
+Internal parsed-surface fingerprints now hash complete payload bytes directly,
+retaining allocation geometry, symbols, ordered relocations and parsed indices.
+Persisted literal-surface receipts keep their existing format; no validation
+capture, replay, hold or publication check is skipped.
 
 The shared PI declarations now distinguish RAM buffers from integer ROM offsets
 and indices. The physical directory view includes all copied words, preserving

@@ -48,10 +48,10 @@ void overlay94UpdateController(Overlay94Object *object, s32 updateRate) {
     state = object->state;
     command = &state->command;
 
-    if (gO94Value != 0 &&
+    if (o94ControllerValue_o094Reloc != 0 &&
         (func_800254FC(state->selector) & 0x2000) != 0) {
         state->active = 1;
-    } else if (gO94Value == 0) {
+    } else if (o94ControllerValue_o094Reloc == 0) {
         state->active = 0;
     }
 
@@ -73,7 +73,7 @@ void overlay94UpdateController(Overlay94Object *object, s32 updateRate) {
             *command++ = 4;
             *command++ = (s16)state->accumulator;
 
-            weight = func_8002A878(gO94Const0, updateRate);
+            weight = func_8002A878(o94MovingDecayBase_o094Reloc, updateRate);
             state->current =
                 ((1.0f - weight) * (0.0f - state->current)) + state->current;
         } else if ((func_800254FC(state->selector) & 0x2000) != 0) {
@@ -85,19 +85,19 @@ void overlay94UpdateController(Overlay94Object *object, s32 updateRate) {
             } else if (target < 0.0f) {
                 target = 0.0f;
             }
-            target *= gO94Const4;
-            weight = func_8002A878(gO94Const8, updateRate);
+            target *= o94InputTargetScale_o094Reloc;
+            weight = func_8002A878(o94InputDecayBase_o094Reloc, updateRate);
             state->current =
                 ((1.0f - weight) * (target - state->current)) + state->current;
         } else {
-            weight = func_8002A878(gO94ConstC, updateRate);
+            weight = func_8002A878(o94NeutralDecayBase_o094Reloc, updateRate);
             state->current =
                 ((1.0f - weight) * (0.0f - state->current)) + state->current;
         }
     } else {
-        weight = func_8002A878(gO94Const10, updateRate);
+        weight = func_8002A878(o94InactiveDecayBase_o094Reloc, updateRate);
         state->current =
-            ((1.0f - weight) * (gO94Const14 - state->current)) + state->current;
+            ((1.0f - weight) * (o94InactiveTarget_o094Reloc - state->current)) + state->current;
     }
 
     *command = 0x2000;
@@ -127,9 +127,9 @@ void overlay94UpdateController(Overlay94Object *object, s32 updateRate) {
         }
 
         weight = (f32)delta / rate;
-        if (weight < gO94Const18 || gO94Const1C < weight) {
+        if (weight < o94NegativeTurnThreshold_o094Reloc || o94PositiveTurnThreshold_o094Reloc < weight) {
             if (weight < 0.0f) {
-                state->velocity = (s16)(s32)(state->current * gO94Const20);
+                state->velocity = (s16)(s32)(state->current * o94NegativeTurnVelocityScale_o094Reloc);
                 if (state->velocity < 500) {
                     state->velocity = 500;
                 }
@@ -137,7 +137,7 @@ void overlay94UpdateController(Overlay94Object *object, s32 updateRate) {
                 s32 minimumVelocity;
 
                 state->velocity =
-                    (s16)-(s32)(s16)(state->current * gO94Const24);
+                    (s16)-(s32)(s16)(state->current * o94PositiveTurnVelocityScale_o094Reloc);
                 if (state->velocity >= -499) {
                     minimumVelocity = -500;
                     state->velocity = minimumVelocity;
@@ -150,5 +150,5 @@ void overlay94UpdateController(Overlay94Object *object, s32 updateRate) {
 }
 
 void overlay94SetValue(s32 value) {
-    gOverlay94Value = value;
+    o94ControllerValue_o094Reloc = value;
 }

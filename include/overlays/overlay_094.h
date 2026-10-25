@@ -50,18 +50,17 @@ typedef struct Overlay94SavedValue {
     s32 value;
 } Overlay94SavedValue;
 
-extern s32 gO94Value;
-extern s32 gOverlay94Value;
-extern f32 gO94Const0;
-extern f32 gO94Const4;
-extern f32 gO94Const8;
-extern f32 gO94ConstC;
-extern f32 gO94Const10;
-extern f32 gO94Const14;
-extern f32 gO94Const18;
-extern f32 gO94Const1C;
-extern f32 gO94Const20;
-extern f32 gO94Const24;
+extern s32 o94ControllerValue_o094Reloc;
+extern f32 o94MovingDecayBase_o094Reloc;
+extern f32 o94InputTargetScale_o094Reloc;
+extern f32 o94InputDecayBase_o094Reloc;
+extern f32 o94NeutralDecayBase_o094Reloc;
+extern f32 o94InactiveDecayBase_o094Reloc;
+extern f32 o94InactiveTarget_o094Reloc;
+extern f32 o94NegativeTurnThreshold_o094Reloc;
+extern f32 o94PositiveTurnThreshold_o094Reloc;
+extern f32 o94NegativeTurnVelocityScale_o094Reloc;
+extern f32 o94PositiveTurnVelocityScale_o094Reloc;
 
 extern u32 func_800254FC(s32 selector);
 extern s32 func_8002565C(s32 selector);

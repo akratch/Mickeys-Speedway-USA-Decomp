@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 5665},
+  "totals": {"differences": 0, "borrowed_records": 5639},
   "differences": {
   },
   "borrowed": {
@@ -61,7 +61,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1314,
+      "count": 1302,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1187,18 +1187,6 @@
         [92, "D_8", 2],
         [92, "D_C", 2],
         [92, "gOverlay92DistanceParameters", 4],
-        [94, "gO94Const0", 2],
-        [94, "gO94Const10", 2],
-        [94, "gO94Const14", 2],
-        [94, "gO94Const18", 2],
-        [94, "gO94Const1C", 2],
-        [94, "gO94Const20", 2],
-        [94, "gO94Const24", 2],
-        [94, "gO94Const4", 2],
-        [94, "gO94Const8", 2],
-        [94, "gO94ConstC", 2],
-        [94, "gO94Value", 4],
-        [94, "gOverlay94Value", 2],
         [96, "D_80000000", 2],
         [96, "gO96EntriesReloc", 10],
         [96, "gO96FaceDefinitionsReloc", 2],

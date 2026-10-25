@@ -297,6 +297,15 @@ def _prove(root, *, write):
         raise MetadataLinkError("loaded metadata link images changed during proof")
     if allocated(bootstrap) != allocated(linked) or symbols(bootstrap) != symbols(linked):
         raise MetadataLinkError("generated final link changed allocated bytes or program symbols")
+    import proof_provenance as provenance
+    try:
+        encoded_current = provenance.canonical_encoded_word_readback(root)
+    except BaseException as error:
+        if write:
+            (root / FINAL_PROOF).unlink(missing_ok=True)
+        if isinstance(error, provenance.MetadataProofError):
+            raise MetadataLinkError("encoded-address final readback: " + str(error)) from error
+        raise
     proof = {"schema": "mickey-generated-metadata-final-v1", "allocated_sections_exact": True,
              "whole_elf_exact": bootstrap.data == linked.data,
              "program_symbols_exact": True, "generated_metadata_inputs": len(found),
@@ -309,6 +318,15 @@ def _prove(root, *, write):
         after_paths.discard(root / FINAL_PROOF)
     if after_paths != paths or {path: digest(path) for path in paths} != before:
         raise MetadataLinkError("metadata link inputs changed during proof")
+    if encoded_current is not None:
+        try:
+            encoded_current()
+        except BaseException as error:
+            if write:
+                (root / FINAL_PROOF).unlink(missing_ok=True)
+            if isinstance(error, provenance.MetadataProofError):
+                raise MetadataLinkError("encoded-address prepublication hold: " + str(error)) from error
+            raise
     if write:
         write_changed(root / FINAL_PROOF, json_bytes(proof))
     return proof, before

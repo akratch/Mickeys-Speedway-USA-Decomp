@@ -935,6 +935,8 @@ class Resolver:
         return t
 
     def _resolve_name(self, name, from_ov):
+        if name == "o73TriangleCommandWord":
+            raise PackError("encoded-address marker requires its source-qualified pair")
         w = self.w
         if w.need_raw:
             defs = w.defs().get(name, [])
@@ -1202,7 +1204,19 @@ def collect_relocs(world, resolver, obj):
         adds = in_place_addends(obj.elf, secname, rels)
         for r, a in zip(rels, adds):
             s = r.sym
-            if s.type == STT_SECTION:
+            if s.name == "o73TriangleCommandWord":
+                import proof_provenance as provenance
+                witness = getattr(world, "_encoded_word", None)
+                try:
+                    if not isinstance(witness, provenance.EncodedAddressWordWitness):
+                        raise PackError("encoded-address marker lacks its held source proof")
+                    full = witness.operand(world, obj, secname, r, a)
+                except (provenance.MetadataProofError, PackError) as error:
+                    invalidate_data_import_inventory(world)
+                    raise PackError("encoded-address operand refused: " + str(error)) from error
+                t = Target("encoded-word", s.name, "source-encoded-address-word", ident=full,
+                           value=witness.origin_offset)
+            elif s.type == STT_SECTION:
                 t = Target("section", s.section, "section", obj=obj, secname=s.section, value=0)
             elif s.shndx != SHN_UNDEF and s.shndx < 0xFF00:
                 t = Target("section", s.name,
@@ -1507,7 +1521,13 @@ def pack_module(world, resolver, ov, relocs):
             continue
         t = c.target
         e = exp.get((site, c.type))
-        if t.kind == "placeholder":
+        if t.kind == "encoded-word":
+            witness = getattr(world, "_encoded_word", None)
+            if witness is None or ov != 73 or c.section != ".text" or c.addend:
+                raise PackError("encoded-address role escaped its held module pair")
+            rec = Record(2, OP_LOCAL, witness.origin_offset, site, c.type, t.ident,
+                         t.name, "object", t.route, c.obj.label)
+        elif t.kind == "placeholder":
             if e is None:
                 unresolved.append((c, "placeholder-without-record"))
                 continue
@@ -1945,6 +1965,8 @@ def invalidate_data_import_inventory(world):
     world.data_import_provider_receipts = {}
     world._end_proved_objects = {}
     world._compiler_end_receipts = {}
+    world._encoded_word = None
+    world._encoded_word_consumers = {}
 
 
 def check_data_import_holds(world):
@@ -2098,14 +2120,15 @@ def data_import_input(world, ov, row, source, raw, *, linked_local=False, storag
     return configured, start
 
 
-def reproduce_data_provider(world, source):
+def reproduce_data_provider(world, source, *, preserve_compiler=False):
     """Fresh ordinary-provider compile, sharing the producer capture machinery."""
     import proof_provenance as provenance
     root = world.paths["build"].parent
     configured = world.paths["build"] / "src" / (source + ".c.o")
     raw, plan, receipt, context = provenance.capture_data_provider_raw(
         root, root / "src" / (source + ".c"), configured,
-        world.paths["elf"], world.paths["map"])
+        world.paths["elf"], world.paths["map"],
+        **({"preserve_compiler": True} if preserve_compiler else {}))
     fresh = Elf(raw)
     if hashlib.sha256(fresh.data).hexdigest() != receipt["raw_sha256"]:
         raise PackError("loaded ordinary provider differs from its compiler receipt")
@@ -2812,6 +2835,8 @@ def _guard_data_module_imports(world, exports):
     hold_data_import_inputs(world, {path: digest for path, digest
                                     in batch._LOADED_IMPLEMENTATIONS.values()})
     dump = audit.run_make_database()
+    if provenance.encoded_word_selection(root, dump):
+        provenance.static_anchor_module(root)
     world._local_prefix_objects = local_prefix_objects_targets(dump)
     remaining_local_objects = set(world._local_prefix_objects)
     if world._local_prefix_objects:
@@ -2914,6 +2939,15 @@ def _guard_data_module_imports(world, exports):
             raise PackError("ordinary data proof selection lacks one canonical data input: "
                             + ", ".join(sorted(remaining_plain)))
         validate_plain_roles(admitted)
+        world._encoded_word = provenance.capture_encoded_word(world, dump)
+        if world._encoded_word is not None:
+            witness = world._encoded_word
+            def held_word():
+                try:
+                    return witness.current()
+                except provenance.MetadataProofError as error:
+                    raise PackError("encoded-address held source proof: " + str(error)) from error
+            world.data_import_contexts.append((True, held_word))
         if plain_targets:
             world.data_import_contexts.append((plain_data_role_context(world, plain_targets, member_origins, origin_sections),
                 lambda: refresh_plain_role_context(world)))
@@ -2946,6 +2980,14 @@ def pack_all(world, ort):
     for ov in sorted(world.amods):
         pm = pack_module(world, resolver, ov, relocs[ov])
         modules[ov] = pm
+        if ov == 73 and getattr(world, "_encoded_word", None) is not None:
+            import proof_provenance as provenance
+            try:
+                world._encoded_word.runtime(pm.image_prefix,
+                    [(r.site,r.type,r.op,r.symidx) for r in pm.table1+pm.table2])
+            except provenance.MetadataProofError as error:
+                invalidate_data_import_inventory(world)
+                raise PackError("encoded-address runtime readback: " + str(error)) from error
         for k, v in pm.borrowed.items():
             borrowed[k].extend(v)
     ph = collections.Counter()

@@ -107,6 +107,20 @@ class AggregatePinExemptionTests(unittest.TestCase):
         self.assertEqual(output.count("FAIL [aggregate-word-budget]"), 1)
 
 
+class RelocationProofSizeExemptionTests(unittest.TestCase):
+    def test_only_exact_path_size_is_exempt_other_detectors_remain(self):
+        text=b"# authored proof comment\n"*(D.SIZE_LIMIT//20)
+        with contextlib.redirect_stderr(io.StringIO()):
+            found,_=D.check_content("tools/reloc_surface.py",text)
+            other,_=D.check_content("other/reloc_surface.py",text)
+            payload=" ".join("0x"+hashlib.sha256(f"synthetic-{i}".encode()).hexdigest()[:8]
+                             for i in range(300)).encode()
+            words,_=D.check_content("tools/reloc_surface.py",payload)
+        self.assertNotIn("oversize",[name for name,_ in found])
+        self.assertIn("oversize",[name for name,_ in other])
+        self.assertIn("word-table",[name for name,_ in words])
+
+
 class DecoderExclusionTests(unittest.TestCase):
     def test_address_shaped_identifiers_are_not_numeric_tokens(self) -> None:
         text = "\n".join(

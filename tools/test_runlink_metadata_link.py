@@ -145,6 +145,26 @@ class MetadataLinkTests(unittest.TestCase):
                     with self.assertRaisesRegex(link.MetadataLinkError,'changed during proof'):
                         link.prove(self.root)
 
+    def test_encoded_role_final_refusal_precedes_proof_publication(self):
+        paths={self.root/n for n in (link.BOOT_ELF, 'build/mickey.us.elf',
+            'build/mickey.us.map', link.RECEIPT, link.BOOT_LOG, link.FINAL_LOG)}
+        for path in paths:
+            path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(b'same')
+        manifest={'files':{n:{'size':4} for n in self.names},
+                  'inputs':{link.BOOT_ELF:{'sha256':link.digest(self.root/link.BOOT_ELF)}}}
+        rows=[SimpleNamespace(file='build/runlink/generated/'+n+'.o',insec='.data',size=4)
+              for n in self.names]
+        with mock.patch.object(link,'provenance_paths',return_value=paths), \
+                mock.patch.object(link,'check_prepared',return_value=(manifest,{'borrowed_records':1})), \
+                mock.patch.object(link,'link_command',return_value=['ld']), \
+                mock.patch.object(link.rp,'parse_map',return_value=rows), \
+                mock.patch.object(link.rp,'Elf',return_value=SimpleNamespace(data=b'same',sections=[],symbols=[])), \
+                mock.patch.object(pp,'canonical_encoded_word_readback',side_effect=pp.MetadataProofError('owner/expression changed')) as check:
+            with self.assertRaisesRegex(link.MetadataLinkError,'encoded-address final readback'):
+                link.prove(self.root)
+            check.assert_called_once_with(self.root)
+            self.assertFalse((self.root/link.FINAL_PROOF).exists())
+
     def test_provenance_returns_the_validated_snapshot_without_rehashing(self):
         path=self.root/'input';path.write_bytes(b'changed after validation')
         with mock.patch.object(link,'enabled',return_value=True), \

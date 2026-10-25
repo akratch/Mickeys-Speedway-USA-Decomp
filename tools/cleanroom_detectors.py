@@ -306,6 +306,10 @@ BINARY_ALLOWLIST: "set[str]" = set()
 # each reason belong in the report.
 CONTENT_EXEMPTIONS: "dict[tuple[str, str], str]" = {
     (
+        "tools/reloc_surface.py",
+        "oversize",
+    ): "large authored relocation/source-identity proof code, not extracted data; all other content detectors remain active",
+    (
         "config/lane-reopen-authorizations.us.json",
         "aggregate-word-budget",
     ): "schema-validated source/ledger Git pins only; non-pin content still contributes normally",

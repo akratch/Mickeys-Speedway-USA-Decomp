@@ -377,8 +377,23 @@ def static_source_facts(cpp, flags, root, names):
 
 
 def _static_parsed_surface(elf):
-    # Include the existing allocated/symbol snapshot and parsed index authority.
-    return literal_surface(elf), tuple((s.index, s.shndx) for s in elf.symbols)
+    # Keep the compact audit shape without rendering whole ELF payloads as text.
+    # Ordered metadata and length-framed bytes bind the same parsed observation.
+    import source_module_link_proof as proof
+    allocated = proof.allocated(elf)
+    surface = (tuple((name, *row[:-1]) for name, row in allocated.items()),
+               proof.symbols(elf),
+               [(s["name"], r.offset, r.type, r.sym.name)
+                for s in elf.sections for r in elf.rels(s["name"])])
+    metadata = repr(surface).encode()
+    digest = hashlib.sha256(b"mickey-static-parsed-surface-v1\0")
+    digest.update(struct.pack(">Q", len(metadata)))
+    digest.update(metadata)
+    for row in allocated.values():
+        payload = row[-1]
+        digest.update(struct.pack(">Q", len(payload)))
+        digest.update(payload)
+    return digest.hexdigest(), tuple((s.index, s.shndx) for s in elf.symbols)
 
 
 _STATIC_SOURCE_SEAL = object()

@@ -17,6 +17,95 @@ from types import SimpleNamespace
 import proof_provenance as provenance
 
 
+class ParsedSurfaceTests(unittest.TestCase):
+    @staticmethod
+    def image():
+        import runlink_pack as rp
+        from runlink.synth import ElfBuilder
+        return rp.Elf('surface', ElfBuilder().section('.text', b'abcdefgh')
+            .section('.data', b'payload!').section('.bss', nobits=16)
+            .sym('owner', 0, 8, 1, 1, '.data')
+            .rel('.text', 0, 5, 'owner').rel('.text', 4, 6, 'owner').build())
+
+    def test_allocated_payload_and_every_geometry_field_remain_observed(self):
+        for field, value in (('name', '.changed'), ('type', 8), ('flags', 2),
+                             ('addr', 4), ('size', 4), ('align', 8)):
+            with self.subTest(field=field):
+                image = self.image()
+                before = provenance._static_parsed_surface(image)
+                image.section('.data')[field] = value
+                self.assertNotEqual(before, provenance._static_parsed_surface(image))
+                self.assertEqual(before, provenance._static_parsed_surface(self.image()))
+        image = self.image()
+        before = provenance._static_parsed_surface(image)
+        offset = image.section('.data')['offset']
+        image.data = image.data[:offset] + b'P' + image.data[offset + 1:]
+        self.assertNotEqual(before, provenance._static_parsed_surface(image))
+
+    def test_symbol_fields_indices_and_ordered_relocations_remain_observed(self):
+        for field, value in (('name', 'changed'), ('value', 4), ('size', 4),
+                             ('bind', 0), ('type', 2), ('section', '.bss'),
+                             ('index', 99), ('shndx', 3)):
+            with self.subTest(field=field):
+                image = self.image()
+                before = provenance._static_parsed_surface(image)
+                owner = next(s for s in image.symbols if s.name == 'owner')
+                image.symbols[owner.index] = dataclasses.replace(owner, **{field: value})
+                self.assertNotEqual(before, provenance._static_parsed_surface(image))
+        image = self.image()
+        before = provenance._static_parsed_surface(image)
+        image.symbols.reverse()
+        self.assertNotEqual(before, provenance._static_parsed_surface(image))
+        image = self.image()
+        before = provenance._static_parsed_surface(image)
+        records = image.rels('.text')
+        variants = (records[::-1], records + records[:1],
+                    [dataclasses.replace(records[0], offset=4), records[1]],
+                    [dataclasses.replace(records[0], type=2), records[1]],
+                    [dataclasses.replace(records[0], sym=dataclasses.replace(records[0].sym,
+                        name='another')), records[1]])
+        for rows in variants:
+            with self.subTest(rows=rows), mock.patch.object(image, 'rels',
+                    side_effect=lambda section: rows if section == '.text' else []):
+                self.assertNotEqual(before, provenance._static_parsed_surface(image))
+
+    def test_snapshot_is_detached_from_mutable_loaded_bytes_and_parsed_lists(self):
+        image = self.image()
+        image.data = bytearray(image.data)
+        before = provenance._static_parsed_surface(image)
+        image.data[image.section('.data')['offset']] ^= 1
+        self.assertNotEqual(before, provenance._static_parsed_surface(image))
+        image.symbols.clear()
+        image.sections.reverse()
+        unchanged = self.image()
+        unchanged.data = bytearray(unchanged.data)
+        self.assertEqual(before, provenance._static_parsed_surface(unchanged))
+
+    def test_payload_boundaries_and_allocation_order_are_distinct(self):
+        image = self.image()
+        snapshots = []
+        for text, data in ((b'ab', b'c'), (b'a', b'bc')):
+            with mock.patch.object(image, 'bytes_of', side_effect=lambda name:
+                    {'.text': text, '.data': data}.get(name, b'')):
+                snapshots.append(provenance._static_parsed_surface(image))
+        self.assertNotEqual(*snapshots)
+        before = provenance._static_parsed_surface(image)
+        image.sections[1:3] = reversed(image.sections[1:3])
+        self.assertNotEqual(before, provenance._static_parsed_surface(image))
+
+    def test_audit_json_shape_and_persisted_literal_digest_are_unchanged(self):
+        import json
+        import runlink_metadata_link as link
+        image = self.image()
+        surface = provenance._static_parsed_surface(image)
+        audit = json.loads(link.json_bytes({'prepared_surface': surface}))
+        digest, indices = audit['prepared_surface']
+        self.assertRegex(digest, r'^[0-9a-f]{64}$')
+        self.assertEqual(indices, [[s.index, s.shndx] for s in image.symbols])
+        self.assertEqual(provenance.literal_surface(image),
+            '51b656da18831707b0154e039d337f156cefc7a5c4794c5a4ca9064b74b64c2c')
+
+
 class PointerScalarSourceTests(unittest.TestCase):
     source = ('typedef unsigned char u8; typedef long s32; extern u8 first[]; extern u8 second[]; '
               'u8 *pointers[2]={first,second}; s32 one=0; s32 two=0; s32 three=0;')

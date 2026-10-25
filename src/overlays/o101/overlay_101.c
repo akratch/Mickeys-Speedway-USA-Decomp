@@ -1157,8 +1157,7 @@ void overlay101DrawElement(s32 displayList, Overlay101BoundsNode_DrawElement *no
             blue = (element->blue * node->opacity) / 255;
             alpha = (element->alpha * node->scale) / 255;
 
-            fontUseFont(element->kind, element->alpha,
-                                         pixels);
+            fontUseFont(element->kind);
             fontBackground(0, 0, 0, 0);
             fontColour(red, green, blue, 0xFF, alpha);
             overlay101GetBounds(node, &left, &top, &right, &bottom);

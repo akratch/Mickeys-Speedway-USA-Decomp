@@ -2361,7 +2361,7 @@ extern O101Elem_gOverlay101Order gOverlay101Order[16];
 extern O101Elem_gOverlay101Resources20 gOverlay101Resources20[16];
 extern void camStandardOrtho();
 extern void fontPrintXY();
-extern void fontUseFont();
+extern void fontUseFont(s32 font);
 extern void frontDrawRectangles();
 extern void * func_80036DD0();
 extern void overlay101SubmitLinkedPairReloc();

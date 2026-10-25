@@ -16,7 +16,7 @@
 #include "overlays/overlay_045.h"
 #include "overlays/overlay_056.h"
 
-typedef struct RcpTextureInfo RcpTextureInfo;
+#include "game/texture_header.h"
 
 /* Tier B: the renderer/copier consume 16-byte nodes terminated by a null
  * first word. Initial cache indices become CPU texture pointers; the legacy

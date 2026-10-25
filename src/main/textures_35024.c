@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "game/texture_header.h"
 #include "game/pi.h"
 #include "game/gzip.h"
 
@@ -16,12 +17,7 @@ typedef struct TextureCacheEntry {
     void *texture;
 } TextureCacheEntry;
 
-typedef struct TextureHeader {
-    u16 numberOfInstances;
-    u8 format;
-    u8 flags;
-    u8 pad04[0x1C];
-} TextureHeader;
+
 
 typedef union TextureCacheWord {
     s32 id;
@@ -48,7 +44,7 @@ extern void *mmAllocAtAddr(s32 size, u8 *address, u32 colourTag);
 extern void mmFree(void *ptr);
 extern s32 byteswap32(u8 *address);
 extern void *align16(void *address);
-extern void func_80035E88(TextureHeader *texture, void *displayList);
+extern void func_80035E88(TextureHeader *texture, Gfx *displayList);
 
 #define TEXTURE_CACHE_ID(index) (((index) << 1) + 0)
 #define TEXTURE_CACHE_PTR(index) (((index) << 1) + 1)
@@ -107,7 +103,7 @@ TextureHeader *texLoadTexture(s32 textureId) {
     D_8007A278 = textureId;
     piRomLoadSection(assetSection, D_800D301C, assetOffset, 0x28);
 
-    if (!(D_800D301C->header.flags & 1)) {
+    if (!(D_800D301C->header.storageFlags & 1)) {
         if (D_8007BDA4 != NULL) {
             texture = mmAllocAtAddr(assetSize + 0x90, D_8007BDA4,
                                     D_8007BD84);

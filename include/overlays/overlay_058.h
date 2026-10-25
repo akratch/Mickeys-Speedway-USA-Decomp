@@ -9,7 +9,7 @@
 
 /* Overlay 58: the race-results and ranking screens. */
 
-typedef struct RcpTextureInfo RcpTextureInfo;
+#include "game/texture_header.h"
 
 typedef struct RcpTextureNode {
     RcpTextureInfo *texture;

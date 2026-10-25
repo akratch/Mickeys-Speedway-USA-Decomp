@@ -6,7 +6,7 @@
 #include "game/math.h"
 /* Tier B: both resident texture renderers consume this exact 16-byte node
  * and stop at a null texture. Tags and fields match their resident contract. */
-typedef struct RcpTextureInfo RcpTextureInfo;
+#include "game/texture_header.h"
 typedef struct RcpTextureNode {
     RcpTextureInfo *texture;
     RcpTextureInfo *alternate;

@@ -5,7 +5,7 @@
  * texture is installed by the module initializer. Tier D: bounded storage
  * views and names, not recovered original declarations or closure of the
  * legacy caller prototypes and aliases. */
-typedef struct RcpTextureInfo RcpTextureInfo;
+#include "game/texture_header.h"
 typedef struct RcpTextureNode {
     RcpTextureInfo *texture;
     RcpTextureInfo *alternate;

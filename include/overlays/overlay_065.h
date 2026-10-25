@@ -4,8 +4,7 @@
 #include "PR/ultratypes.h"
 #include "n_audio/gbi.h"
 
-typedef struct TextureHeader TextureHeader;
-typedef struct TextureFrameHeader TextureFrameHeader;
+#include "game/texture_header.h"
 
 typedef struct Overlay65TrailRecord {
     f32 x[9];

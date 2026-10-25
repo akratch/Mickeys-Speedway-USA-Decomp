@@ -1,6 +1,6 @@
 #include "overlays/overlay_061.h"
 
-typedef struct RcpTextureInfo RcpTextureInfo;
+#include "game/texture_header.h"
 typedef struct RcpTextureNode {
     RcpTextureInfo *texture;
     RcpTextureInfo *alternate;

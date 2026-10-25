@@ -301,7 +301,7 @@ const char overlay63DebugNotice[] = "DEBUG TOGGLED";
  * DATA0..0x50: typed sentinel resource list, live animation flags and
  * texture-node grammar. Existing caller/import view debts are not changed. */
 
-typedef struct RcpTextureInfo RcpTextureInfo;
+#include "game/texture_header.h"
 typedef struct Overlay63TextureNode {
     RcpTextureInfo *texture;
     RcpTextureInfo *alternate;

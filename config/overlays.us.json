@@ -10416,30 +10416,10 @@
    "data_rodata_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x50",
-     "size": "0x50",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o063/overlay63HudPrefix",
-     "canonical": true
-    },
-    {
-     "offset": "0x50",
-     "end_offset": "0xD0",
-     "size": "0x80",
-     "type": "c",
-     "section": ".data",
-     "source": "overlays/o063/overlay63ParticleSeeds",
-     "canonical": true
-    },
-    {
-     "offset": "0xD0",
      "end_offset": "0x140",
-     "size": "0x70",
+     "size": "0x140",
      "type": "c",
-     "section": ".data",
-     "source": "overlays/o063/overlay63SequenceState",
-     "canonical": true
+     "source": "overlays/o063/overlay_063"
     },
     {
      "offset": "0x140",

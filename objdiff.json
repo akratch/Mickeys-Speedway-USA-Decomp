@@ -9801,57 +9801,6 @@
       }
     },
     {
-      "name": "src/overlays/o063/overlay63HudPrefix.c",
-      "target_path": "expected/build/src/overlays/o063/overlay63HudPrefix.c.o",
-      "base_path": "build/src/overlays/o063/overlay63HudPrefix.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o063"
-        ],
-        "source_path": "src/overlays/o063/overlay63HudPrefix.c"
-      }
-    },
-    {
-      "name": "src/overlays/o063/overlay63ParticleSeeds.c",
-      "target_path": "expected/build/src/overlays/o063/overlay63ParticleSeeds.c.o",
-      "base_path": "build/src/overlays/o063/overlay63ParticleSeeds.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o063"
-        ],
-        "source_path": "src/overlays/o063/overlay63ParticleSeeds.c"
-      }
-    },
-    {
-      "name": "src/overlays/o063/overlay63SequenceState.c",
-      "target_path": "expected/build/src/overlays/o063/overlay63SequenceState.c.o",
-      "base_path": "build/src/overlays/o063/overlay63SequenceState.c.o",
-      "scratch": {
-        "platform": "n64",
-        "compiler": "ido5.3",
-        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
-      },
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o063"
-        ],
-        "source_path": "src/overlays/o063/overlay63SequenceState.c"
-      }
-    },
-    {
       "name": "src/overlays/o063/overlay_063.c",
       "target_path": "expected/build/src/overlays/o063/overlay_063.c.o",
       "base_path": "build/src/overlays/o063/overlay_063.c.o",

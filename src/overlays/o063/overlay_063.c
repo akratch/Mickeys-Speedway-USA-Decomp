@@ -296,3 +296,100 @@ typedef char O63EffectsStorageSize[(sizeof(Overlay63EffectsStorage) == 400) ? 1 
  * imported byte/pointer views and module-lifetime contracts are not unified. */
 const char overlay63StartPrompt[] = "PRESS START";
 const char overlay63DebugNotice[] = "DEBUG TOGGLED";
+
+/* Mickey-only storage recovery. Original declarations remain inferred.
+ * DATA0..0x50: typed sentinel resource list, live animation flags and
+ * texture-node grammar. Existing caller/import view debts are not changed. */
+
+typedef struct RcpTextureInfo RcpTextureInfo;
+typedef struct Overlay63TextureNode {
+    RcpTextureInfo *texture;
+    RcpTextureInfo *alternate;
+    u32 packedOffset;
+    s16 x;
+    s16 y;
+} Overlay63TextureNode;
+
+s16 overlay63ResourceIds[] = {
+    6, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110,
+    111, 112, 113, 114, 115, 116, 117, 118, 119, 120, -1
+};
+s32 overlay63AnimationFlags = 13;
+Overlay63TextureNode overlay63TextureNodes[] = {
+    { 0, 0, 0, -16, -16 },
+    { 0, 0, 0, 0, 0 }
+};
+
+#ifdef TARGET_N64
+typedef char O63PointerWidth[(sizeof(void *) == 4) ? 1 : -1];
+typedef char O63TextureNodeSize[(sizeof(Overlay63TextureNode) == 16) ? 1 : -1];
+typedef char O63ResourceListSize[(sizeof(overlay63ResourceIds) == 44) ? 1 : -1];
+typedef char O63AnimationFlagsSize[(sizeof(overlay63AnimationFlags) == 4) ? 1 : -1];
+typedef char O63TextureNodePairSize[(sizeof(overlay63TextureNodes) == 32) ? 1 : -1];
+#endif
+
+/* Mickey-only serialized seed grammar, Tier D original declaration inference.
+ * Twenty active rows consume signed asset/XY fields; the next row terminates
+ * on assetId -1. Its stored coordinates are never read on this traversal.
+ * This same-grammar terminal model is inferred, not original capacity proof.
+ * Existing scalar/weak imported traversal and its C bounds debt are unchanged. */
+
+typedef struct Overlay63ParticleSeed {
+    s16 assetId;
+    s16 x;
+    s16 y;
+} Overlay63ParticleSeed;
+
+Overlay63ParticleSeed overlay63ParticleSeeds[] = {
+    { 101, -73, 77 },
+    { 102, -47, 77 },
+    { 103, -26, 77 },
+    { 104, -2, 77 },
+    { 105, 24, 77 },
+    { 106, 49, 77 },
+    { 107, 72, 96 },
+    { 108, 77, 75 },
+    { 109, -99, 32 },
+    { 110, -72, 29 },
+    { 111, -46, 30 },
+    { 112, -24, 30 },
+    { 113, 5, 31 },
+    { 114, 31, 33 },
+    { 115, 59, 32 },
+    { 116, 86, 35 },
+    { 117, -40, -19 },
+    { 118, 1, -15 },
+    { 119, 34, -13 },
+    { 120, 77, -30 },
+    { -1, 200, -80 },
+};
+#ifdef TARGET_N64
+typedef char O63SeedRowSize[(sizeof(Overlay63ParticleSeed) == 6) ? 1 : -1];
+typedef char O63SeedArraySize[(sizeof(overlay63ParticleSeeds) == 126) ? 1 : -1];
+#endif
+
+/* Actual word/character state, with conservative mutable definitions.
+ * Text correspondence is Tier C; original separate declarations remain Tier D.
+ * This is source storage, not closure of the old imported pointer views. */
+
+s32 overlay63TransitionEnabled = 0;
+s32 overlay63InputTimer = 0;
+char overlay63CopyrightNotice[] = "< 2000 Disney";
+char overlay63LicenseNotice[] = "Licensed to Nintendo";
+
+/* Actual joyGetPressed mask cells. Activation starts at index1 and does not
+ * validate the physical first cell. Preserve that behavior; no new guard. */
+u32 overlay63ButtonSequence[] = {
+    0x100, 0x800, 0x4000, 0x4000, 0x800, 0x200, 0x4000, 0x2000, 0
+};
+u32 *overlay63SequenceCursor = 0;
+s32 overlay63SequenceIndex = 0;
+char *overlay63PendingMessage = 0;
+s32 overlay63MessageTimer = 0;
+char *overlay63ActiveMessage = 0;
+
+#ifdef TARGET_N64
+typedef char O63StatePointerWidth[(sizeof(void *) == 4) ? 1 : -1];
+typedef char O63StateWordWidth[(sizeof(s32) == 4 && sizeof(u32) == 4) ? 1 : -1];
+typedef char O63SequenceSize[(sizeof(overlay63ButtonSequence) == 36) ? 1 : -1];
+#endif

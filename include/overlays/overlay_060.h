@@ -10,6 +10,8 @@
 #include "game/gameVi.h"
 #include "n_audio/mbi.h"
 
+struct Sprite;
+
 /* Overlay 60: the options and save-file menus. */
 
 typedef struct Overlay60SpawnDesc {
@@ -187,8 +189,8 @@ extern s32 func_8005ABA8(ControlActor *object, f32 scale, f32 ticks);
 extern void modSetTextureFrame(MenuSpawnInner *model, s32 index, s32 frame);
 extern void func_80009E78(Gfx **commands, Mtx **matrices,
                         void **vertices, ControlActor *object);
-extern void *texLoadSprite(s32 asset, s32 flags);
-extern void texFreeSprite(void *sprite);
+extern struct Sprite *texLoadSprite(s32 asset, s32 flags);
+extern void texFreeSprite(struct Sprite *sprite);
 extern void camDo2DSprite(Gfx **commands, Mtx **matrices,
                         void **vertices, void *transform, void *sprite,
                         s32 flags, s32 alpha);
@@ -235,7 +237,6 @@ extern s32 gOverlay60Data10C[];
 extern s32 gOverlay60Data11C[];
 extern s8 gOverlay60Data12B[];
 extern s8 gOverlay60Data12C[];
-struct Sprite;
 extern s32 o60PreviewMode_o060Reloc;
 extern void *o60PreviewSound_o060Reloc;
 extern u16 o60PreviewSoundIds_o060Reloc[10];

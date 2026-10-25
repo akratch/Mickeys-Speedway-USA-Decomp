@@ -802,6 +802,106 @@ long vertices[4]={1,2,3,4};
 u32 pack(void) { union { const void *pointer; s32 bits; } address;
 return ((address.pointer=(const void *)vertices),(u32)(address.bits ^ (-2147483647-1))); }
 '''
+    ISOLATED = b'''typedef long s32; typedef unsigned long u32;
+typedef struct Particle { float x; } Particle;
+long vertices[4]={1,2,3,4};
+u32 pack(Particle *pool) {
+union { Particle *particle; const void *pointer; s32 bits; } address;
+u32 word; address.particle=pool;
+if(address.particle->x) word=0;
+word=((address.pointer=(const void *)vertices),(u32)(address.bits ^ (-2147483647-1)));
+address.particle=pool; word+=(u32)address.particle->x; return word; }
+'''
+
+    def isolated(self, cpp):
+        return provenance.integer_word_facts(cpp, ['-32'], self.ROOT,
+                                             profile='isolated-full-expression')
+
+    def test_three_member_carrier_is_explicit_and_all_unrelated_uses_are_separate(self):
+        with self.assertRaises(provenance.MetadataProofError):
+            provenance.integer_word_facts(self.ISOLATED, ['-32'], self.ROOT)
+        roles = self.isolated(self.ISOLATED)
+        self.assertEqual([(r.function,r.target,r.carrier,r.occurrences) for r in roles],
+                         [('pack','vertices','address',1)])
+        for invalid in ('unknown', False, [], 1):
+            with self.subTest(profile=invalid), self.assertRaises(provenance.MetadataProofError):
+                provenance.integer_word_facts(self.ISOLATED,['-32'],self.ROOT,profile=invalid)
+
+    def test_isolated_conversion_full_expression_roots_include_noncompound_bodies(self):
+        head = self.ISOLATED.split(b'u32 pack')[0]
+        union = b'union { Particle *particle; const void *pointer; s32 bits; } address;'
+        expression = b'((address.pointer=(const void *)vertices),(u32)(address.bits ^ (-2147483647-1)))'
+        statements = (b'u32 word; word=E; return word;', b'u32 word=E; return word;', b'return E;',
+            b'if(E) return 1; return 0;', b'while(E) break; return 0;', b'do {} while(E); return 0;',
+            b'switch(E){case 0:break;default:break;} return 0;',
+            b'u32 word; for(word=E;0;) {} return 0;', b'for(;E;) break;return 0;',
+            b'u32 word=1;for(;word;word=E) break;return 0;',
+            b'u32 word;if(1) word=E;return 0;', b'u32 word;while(0) word=E;return 0;',
+            b'u32 word;for(;0;) word=E;return 0;', b'u32 word;do word=E;while(0);return 0;',
+            b'u32 word;label:word=E;return 0;',
+            b'u32 word;switch(0){case 0:word=E;break;default:break;}return 0;',
+            b'u32 word;switch(0){default:word=E;}return 0;')
+        for statement in statements:
+            with self.subTest(statement=statement):
+                self.assertEqual(len(self.isolated(head+b'u32 pack(void){'+union+
+                    statement.replace(b'E',expression)+b'}')),1)
+        unsupported = head+b'u32 pack(void){'+union+b'switch(0){case '+expression+b':break;} return 0;}'
+        with self.assertRaisesRegex(provenance.MetadataProofError,'full-expression'):
+            self.isolated(unsupported)
+
+    def test_full_expression_identity_sets_reject_other_arguments_and_second_conversions(self):
+        expression = b'((address.pointer=(const void *)vertices),(u32)(address.bits ^ (-2147483647-1)))'
+        for replacement in (b'combine('+expression+b', (u32)address.particle->x)',
+                            b'combine('+expression+b','+expression+b')',
+                            b'('+expression+b',address.pointer=0)',
+                            b'combine(address.pointer=(const void *)vertices,(u32)(address.bits ^ (-2147483647-1)))'):
+            changed = self.ISOLATED.replace(b'long vertices',b'u32 combine(u32,u32); long vertices')
+            changed = changed.replace(expression,replacement)
+            with self.subTest(replacement=replacement), self.assertRaises(provenance.MetadataProofError):
+                self.isolated(changed)
+        # The second carrier has different names, but its actual ID node still
+        # shares the first conversion's full expression and must be rejected.
+        changed=self.ISOLATED.replace(b'u32 word;',
+            b'union { Particle *particle; const void *pointer; s32 bits; } other; u32 word;other.particle=pool;')
+        changed=changed.replace(expression,b'combine('+expression+b',(u32)other.particle->x)')
+        with self.assertRaisesRegex(provenance.MetadataProofError,'not isolated'):
+            self.isolated(changed)
+
+    def test_isolated_extra_pointer_types_escapes_shadows_and_uncovered_uses_refuse(self):
+        changes = ((b'Particle *particle',b'void *particle'),
+            (b'Particle *particle',b'Particle * const particle'),
+            (b'Particle *particle',b'const Particle *particle'),
+            (b'} address;',b'} address = {0};'),
+            (b'} address;',b'} address; union { Particle *particle; const void *pointer; s32 bits; } address;'),
+            (b'u32 word;',b'long vertices[4]; u32 word;'),
+            (b'u32 word;',b'Particle **escape=&address.particle; u32 word;'),
+            (b'u32 word;',b'void *escape=&address; u32 word;'),
+            (b'u32 word;',b'u32 word; address.pointer=0;'),
+            (b'address.particle=pool; word+=',b'address.particle=address.particle; word+='),
+            (b'address.particle=pool; word+=',b'address.particle->x=0; word+='),
+            (b'^',b'|'),(b'(const void *)vertices',b'(const void *)(vertices+1)'))
+        for old,new in changes:
+            with self.subTest(change=(old,new)), self.assertRaises(provenance.MetadataProofError):
+                self.isolated(self.ISOLATED.replace(old,new))
+        incomplete=self.ISOLATED.replace(b'typedef struct Particle { float x; } Particle;',
+                                          b'typedef struct Particle Particle;')
+        with self.assertRaises(provenance.MetadataProofError):self.isolated(incomplete)
+        prototype_only = incomplete.replace(b'typedef struct Particle Particle;',
+            b'typedef struct Particle Particle; void declared(struct Particle { float x; } *arg);')
+        ca,parser,_pins,_lex = provenance._effective_parser(self.ROOT)
+        parser.CParser().parse(prototype_only.decode())  # This is valid parser grammar.
+        with self.assertRaisesRegex(provenance.MetadataProofError,'missing/ambiguous'):
+            self.isolated(prototype_only)
+
+    def test_extra_member_reads_cannot_hide_nested_aggregate_lvalues_or_addresses(self):
+        for field,statement in ((b'float array[2];',b'address.particle->array[0]=1;'),
+                                (b'float array[2];',b'float *escape=&address.particle->array[0];'),
+                                (b'struct Inner {float x;} nested;',b'address.particle->nested.x=1;'),
+                                (b'float *pointer;',b'*address.particle->pointer=1;')):
+            source=self.ISOLATED.replace(b'float x; } Particle;',b'float x; '+field+b' } Particle;')
+            source=source.replace(b'u32 word;',b'u32 word; address.particle=pool; '+statement)
+            with self.subTest(statement=statement), self.assertRaises(provenance.MetadataProofError):
+                self.isolated(source)
 
     def test_closed_expression_and_complete_carrier_target_coverage(self):
         roles=provenance.integer_word_facts(self.CPP,['-32'],self.ROOT)

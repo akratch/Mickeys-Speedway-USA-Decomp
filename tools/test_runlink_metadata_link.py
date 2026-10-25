@@ -177,6 +177,17 @@ class EditedReceiptTests(unittest.TestCase):
             path = root / 'catalog.json'; path.write_text(json.dumps(document))
             self.assertEqual(set(link.edited_catalog(root, path, exports, [34, 75])[0]), {34, 75})
             self.assertEqual(set(link.edited_catalog(root, path, exports)[0]), {75})
+            document['modules'][0]['integer_word_profile'] = 'isolated-full-expression'
+            path.write_text(json.dumps(document))
+            self.assertEqual(link.edited_catalog(root,path,exports,[34])[0][34]['integer_word_profile'],
+                             'isolated-full-expression')
+            for invalid in (None, False, 1, [], 'unknown'):
+                document['modules'][0]['integer_word_profile'] = invalid
+                path.write_text(json.dumps(document))
+                with self.subTest(profile=invalid), self.assertRaisesRegex(link.rp.PackError,'integer-word profile'):
+                    link.edited_catalog(root,path,exports,[34])
+            del document['modules'][0]['integer_word_profile']
+            path.write_text(json.dumps(document))
             for kind in ('row', 'duplicate', 'kind', 'source', 'field'):
                 changed = copy.deepcopy(document)
                 if kind == 'row': changed['modules'][0]['exports'][0]['row'] = 1
@@ -352,7 +363,8 @@ class EditedReceiptTests(unittest.TestCase):
             output = directory / 'final.bin'; output.write_bytes(b'validated')
             expected = pilot.artifact_hashes(directory)
             request = {'outside_rom': 'first.z64', 'selected_modules': [75], 'declaration_sha256': 'catalogA',
-                       'compiler_flags': {'75': ['-c','-DCOUNT=8','-32']}}
+                       'compiler_flags': {'75': ['-c','-DCOUNT=8','-32']},
+                       'integer_word_profiles': {'75': None}}
             receipt = {'schema': 'mickey-edited-source-build-v2', 'variant': 'control', 'request': request,
                        'artifacts': expected, 'inputs': {'provider.o': link.digest(provider)},
                        'provider_holds': {}, 'toolchain': {}, 'projection_toolchain': {},
@@ -369,6 +381,8 @@ class EditedReceiptTests(unittest.TestCase):
                 self.assertIsNone(link.edited_current(root, parent, 'control', {'outside_rom': 'second.z64'}))
                 self.assertIsNone(link.edited_current(root, parent, 'control', {**request, 'selected_modules': [34]}))
                 self.assertIsNone(link.edited_current(root, parent, 'control', {**request, 'declaration_sha256': 'catalogB'}))
+                self.assertIsNone(link.edited_current(root,parent,'control',
+                    {**request,'integer_word_profiles':{'75':'isolated-full-expression'}}))
                 self.assertIsNone(link.edited_current(root, parent, 'control',
                     {**request, 'compiler_flags': {'75': ['-c','-DCOUNT=7','-32']}}))
                 provider.write_bytes(b'changed')
@@ -469,6 +483,39 @@ class EditedStaticCppTests(unittest.TestCase):
 
 
 class EditedIntegerWordTests(unittest.TestCase):
+    def test_actual_three_member_cpp_requires_profile_and_keeps_sealed_pair_consumer(self):
+        import runlink_pack as rp
+        from test_proof_provenance import IntegerWordSourceTests
+        root=link.REPO
+        if not (root/'tools/ido/cc').is_file():self.skipTest('configured IDO unavailable')
+        text=IntegerWordSourceTests.ISOLATED.decode()
+        args=['-c','-non_shared','-G','0','-Xcpluscomm','-nostdinc','-O2','-mips2','-32','-o','unused.o','unused.c']
+        exports=rp.OrtNames(['pack'],{})
+        declarations={2:{'exports':['pack'],'kinds':{'pack':'function'},'entries':{'init':None,'resume':None}}}
+        with tempfile.TemporaryDirectory(dir=root/'build') as temporary:
+            directory=Path(temporary)
+            with self.assertRaisesRegex(link.MetadataLinkError,'integer-word source proof'):
+                link.edited_compile(root,directory,'default',text,exports,args,[])
+            def capture(label):
+                return link.edited_compile(root,directory,label,text,exports,args,[],
+                    integer_word_profile='isolated-full-expression')[0]
+            obj=capture('opted')
+            self.assertEqual(obj['integer_word_audit']['profile'],'isolated-full-expression')
+            result=rp.edited_module_records(2,{2:obj},declarations,exports,None)
+            link.edited_word_readback(result['module'],result['joins'])
+            forged=dict(obj);forged['integer_word']=obj['integer_word_audit']
+            with self.assertRaisesRegex(rp.PackError,'untrusted'):
+                rp.edited_module_records(2,{2:forged},declarations,exports,None)
+            original=link.write_changed
+            for suffix in ('-effective.i','-integer-word.json'):
+                def changed(path,payload):
+                    original(path,payload)
+                    if str(path).endswith(suffix):path.write_bytes(b'changed after validation')
+                with mock.patch.object(link,'write_changed',side_effect=changed):
+                    with self.assertRaisesRegex(rp.PackError,'CPP/audit'):
+                        capture('mutated'+str(len(suffix)))
+            self.assertEqual(len(capture('restored')['integer_word'].pairs),1)
+
     def test_fresh_actual_cpp_pair_consumer_forgery_and_recovery(self):
         import runlink_pack as rp
         from test_proof_provenance import IntegerWordSourceTests

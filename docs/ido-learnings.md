@@ -3716,6 +3716,22 @@ See the [complete representation entry](ido-buffer-contracts.md#pointer-represen
   valid sizes already present. Do not infer size from names or neighbors,
   restore nested/ambiguous names, or change compiler flags to obtain metadata.
 
+### Truthful stack byte parameters can preserve caller code
+
+- **Symptom:** correcting fullword parameter declarations to the provider's
+  actual unsigned-byte types can leave the caller byte-identical.
+- **Mechanism:** in the observed big-endian o32 call family, arguments five
+  through eight occupy stack words. The provider consumes each word's
+  right-justified unsigned byte; the compiler retained the same caller stores
+  after correcting the prototype.
+- **Lever:** authenticate the provider signature and actual incoming-byte
+  loads, use that signature, then prove allocated bytes, function boundaries,
+  symbols, ordered relocation identities and the linked ROM.
+- **Limits:** this establishes no caller value bounds and promises no unchanged
+  code for register arguments, variadic calls, other ABIs or other consumers.
+  Do not narrow a prototype merely to improve a match. Other storage and
+  pointer contracts require their own evidence.
+
 Additional measured notes: [buffer argument affinity and finite-float diagnostics](ido-buffer-contracts.md).
 See also [aggregate initialization, symbol extents and actual storage](ido-symbol-metadata.md).
 For address reuse across calls, see [real linker spans](ido-linker-spans.md).

@@ -121,7 +121,7 @@ extern u8 D_8007A588[];
 extern u8 D_8007A5C0[];
 extern u8 D_8007A600[];
 extern s32 texFrame(void *texture, s32 frame, ...);
-extern void func_80034910();
+extern void func_80034910(void);
 
 OSMesgQueue *osScGetInterruptQ(OSSched *scheduler);
 void osWritebackDCacheAll(void);
@@ -560,7 +560,7 @@ void func_8002F618(RcpCommand **dlistPtr, RcpTextureNode *nodes, s32 xPos,
         gDPPipeSync((Gfx *)dlist++);
         gDPSetPrimColor((Gfx *)dlist++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
         *dlistPtr = dlist;
-        func_80034910(lastCmd);
+        func_80034910();
     }
 }
 /*

@@ -361,3 +361,10 @@ void overlay56UnpackColor(s32 index, s32 *red, s32 *green, s32 *blue) {
     *green = (*color >> 16) & 0xFF;
     *blue = (*color >> 8) & 0xFF;
 }
+
+/* Tier B: the loader-relative state at BSS0 is one signed halfword,
+ * reset by overlay56LoadResource and read/written by the renderer.
+ * Tier D: original declaration/name and any terminal alignment semantics.
+ * This real backing object retains the legacy gOverlay56ResourceState
+ * operand view; direct C/native name binding remains unresolved. */
+s16 o56MinimapFadeState;

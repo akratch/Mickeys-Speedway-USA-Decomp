@@ -8,8 +8,8 @@ typedef struct Overlay56Context {
     s16 resourceId;
 } Overlay56Context;
 
-extern void *gOverlay56Resource;
-extern s16 gOverlay56ResourceState;
+extern void *o56MinimapResource_o056Reloc;
+extern s16 o56MinimapFadeState_o056Reloc;
 extern u8 gOverlay56Mode;
 extern u32 gOverlay56Colors[];
 

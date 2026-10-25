@@ -539,6 +539,13 @@ $(O29_OBJ): POSTPROCESS = \
 # loop and clock-hand multiply need -Wab,-r4300_mul); its .text carries the
 # trailing pad, so nothing is trimmed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o051/overlay_051.c.o: CFLAGS += -Wab,-r4300_mul
+# The two signed-halfword resource lists end at their actual sentinel-backed
+# object boundary. Preserve the compiler object; remove only its derived tail.
+O51_RESOURCE_GROUPS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o051/overlay51ResourceGroups.c.o
+$(O51_RESOURCE_GROUPS): $(TOOLS_DIR)/trim_elf_section.py
+$(O51_RESOURCE_GROUPS): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x1C --compiler-end-padding
+$(O51_RESOURCE_GROUPS): private PLAIN_DATA_PROOF = 1
+$(O51_RESOURCE_GROUPS): private PLAIN_DATA_RUNTIME_ROLE = data
 # Overlay 15 is one translation unit at the overlay flag set; its .text now
 # carries the module's trailing pad (no trim), and its resident calls go
 # through the generated surface rebinds. What remains is data and BSS

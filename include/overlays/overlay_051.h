@@ -15,8 +15,8 @@ typedef struct Overlay51Glyph {
 } Overlay51Glyph;
 
 extern void *D_800D31C8[];
-extern u8 gOverlay51Resource0[];
-extern u8 gOverlay51Resource18[];
+extern s16 gOverlay51Resource0_o051Reloc[12];
+extern s16 gOverlay51Resource18_o051Reloc[2];
 extern Overlay51Glyph gOverlay51TimeGlyphs[10];
 extern Overlay51Glyph gOverlay51ClockGlyphs[2];
 extern s8 gOverlay51BlinkCounter;

@@ -1508,6 +1508,7 @@ segments:
       - [0x186EB18, c, overlay_013]
       - [0x186F648, .data, overlay13QuadTriangles]
       - [0x186F668, bin, overlay_013_data_rodata]
+      - [0x186F678, .data, overlay13Coefficients]
 
   - name: overlay_013_reloc1
     type: bin

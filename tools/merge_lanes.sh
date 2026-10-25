@@ -52,6 +52,12 @@ for name in "$@"; do
     fi
   fi
   git rev-parse --verify MERGE_HEAD >/dev/null 2>&1 || { echo "== $branch produced no merge"; continue; }
+  # A clean JSON merge can retain one parent's stale counts or resurrect a
+  # sibling's retired records. Reconcile this one ledger before every commit,
+  # not only when Git reports a conflict. This is not source/runtime proof:
+  # the combined tree still needs its fresh whole-dictionary bootstrap check.
+  .venv/bin/python tools/resolve_lane_conflicts.py "$tip" --runlink-retirements-only \
+    || { echo "runlink retirement reconciliation failed; merge left in progress" >&2; exit 1; }
   if git grep -q '^<<<<<<< ' -- . ':!*.md'; then
     echo "conflict markers left by $branch" >&2; exit 1
   fi

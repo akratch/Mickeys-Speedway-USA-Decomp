@@ -5,6 +5,8 @@ Every case here is a resolution that left no conflict marker, so the tree
 looked clean and the failure landed several gates downstream.
 """
 import os
+import copy
+import json
 import subprocess
 import sys
 import tempfile
@@ -12,6 +14,93 @@ import unittest
 from pathlib import Path
 
 import resolve_lane_conflicts as rlc
+import runlink_pack as pack
+
+
+class RunlinkRetirementTests(unittest.TestCase):
+    def base(self):
+        return pack.manifest_from([], {
+            "placeholder": [[1, "first", 8], [2, "second", 6], [3, "keep", 2]],
+            "hybrid-data": [[4, "0x10"], [4, "0x18"], [5, "0x20"]],
+            "bss-size": [[1], [2]], "rodata-base": [[1]],
+            "placement": [[1, "table", ".rodata", "0x20", 4]],
+        })
+
+    def recounted(self, document):
+        for category, block in document["borrowed"].items():
+            block["count"] = (sum(map(len, block["modules"].values()))
+                              if category == "hybrid-data" else len(block["entries"]))
+        document["totals"]["borrowed_records"] = (
+            sum(row[2] for row in document["borrowed"].get("placeholder", {}).get("entries", []))
+            + document["borrowed"].get("hybrid-data", {}).get("count", 0))
+        return document
+
+    def merge(self, base, ours, theirs):
+        return rlc.merge_runlink_retirements(*(json.dumps(x) for x in (base, ours, theirs)))
+
+    def test_disjoint_and_shared_retirements_preserve_every_other_value(self):
+        base = self.base()
+        ours, theirs = copy.deepcopy(base), copy.deepcopy(base)
+        ours["borrowed"]["placeholder"]["entries"].pop(0)
+        theirs["borrowed"]["placeholder"]["entries"].pop(1)
+        for side in (ours, theirs):
+            side["borrowed"]["hybrid-data"]["modules"]["4"].remove("0x10")
+            self.recounted(side)
+        expected = copy.deepcopy(base)
+        expected["borrowed"]["placeholder"]["entries"] = [[3, "keep", 2]]
+        expected["borrowed"]["hybrid-data"]["modules"]["4"] = ["0x18"]
+        self.recounted(expected)
+        result = self.merge(base, ours, theirs)
+        self.assertEqual(json.loads(result), expected)
+        self.assertEqual(result, pack.render_manifest(json.loads(result)))
+        self.assertEqual(result, self.merge(base, theirs, ours))
+
+    def test_deleting_the_last_records_removes_empty_categories(self):
+        base = self.base()
+        empty = copy.deepcopy(base)
+        empty["borrowed"] = {}
+        self.recounted(empty)
+        self.assertEqual(json.loads(self.merge(base, base, empty)), empty)
+
+    def test_additions_and_value_edits_are_not_retirements(self):
+        for edit in (lambda d: d["borrowed"]["placeholder"]["entries"].append([4, "new", 1]),
+                     lambda d: d["borrowed"]["placeholder"]["entries"][0].__setitem__(2, 7),
+                     lambda d: d["borrowed"]["placement"]["entries"][0].__setitem__(3, "0x24")):
+            base = self.base()
+            changed = copy.deepcopy(base)
+            edit(changed)
+            self.recounted(changed)
+            with self.assertRaisesRegex(ValueError, "added or changed"):
+                self.merge(base, base, changed)
+
+    def test_metadata_changes_unknown_shapes_counts_and_duplicates_refuse(self):
+        mutations = {
+            "metadata": lambda d: d.__setitem__("about", "changed"),
+            "category metadata": lambda d: d["borrowed"]["placeholder"].__setitem__("about", "changed"),
+            "category": lambda d: d["borrowed"].__setitem__("unknown", {}),
+            "difference": lambda d: d.__setitem__("differences", {"image": {}}),
+            "count": lambda d: d["borrowed"]["placeholder"].__setitem__("count", 4),
+            "total": lambda d: d["totals"].__setitem__("borrowed_records", 99),
+            "boolean": lambda d: d["totals"].__setitem__("differences", False),
+            "record duplicate": lambda d: d["borrowed"]["placeholder"]["entries"].append([1, "first", 8]),
+            "site duplicate": lambda d: d["borrowed"]["hybrid-data"]["modules"]["4"].append("0x10"),
+            "record shape": lambda d: d["borrowed"]["placeholder"]["entries"][0].append("extra"),
+        }
+        for name, edit in mutations.items():
+            with self.subTest(name=name):
+                base = self.base()
+                changed = copy.deepcopy(base)
+                edit(changed)
+                with self.assertRaises(ValueError):
+                    self.merge(base, base, changed)
+                with self.assertRaises(ValueError):
+                    self.merge(changed, base, base)
+
+    def test_duplicate_json_keys_refuse_before_collapsing_them(self):
+        original = json.dumps(self.base())
+        duplicate = original.replace('"schema": 1', '"schema": 1, "schema": 1')
+        with self.assertRaisesRegex(ValueError, "duplicate JSON key"):
+            rlc.merge_runlink_retirements(original, original, duplicate)
 
 
 class ValidateResolved(unittest.TestCase):

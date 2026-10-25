@@ -78,6 +78,66 @@
         "init": null,
         "resume": null
       }
+    },
+    {
+      "module": 76,
+      "source": "src/overlays/o076/overlay_076.c",
+      "exports": [
+        {
+          "name": "overlay76Register",
+          "row": 1240,
+          "kind": "function"
+        },
+        {
+          "name": "overlay76Update",
+          "row": 1286,
+          "kind": "function"
+        },
+        {
+          "name": "overlay76TriggerRandom",
+          "row": 1332,
+          "kind": "function"
+        }
+      ],
+      "entries": {
+        "init": null,
+        "resume": null
+      }
+    },
+    {
+      "module": 81,
+      "source": "src/overlays/o081/overlay_081.c",
+      "exports": [
+        {
+          "name": "overlay81Init",
+          "row": 1245,
+          "kind": "function"
+        },
+        {
+          "name": "overlay81InitState",
+          "row": 1246,
+          "kind": "function"
+        },
+        {
+          "name": "overlay81Update",
+          "row": 1291,
+          "kind": "function"
+        },
+        {
+          "name": "overlay81CheckNearby",
+          "row": 1292,
+          "kind": "function"
+        },
+        {
+          "name": "overlay81SetMaskBit",
+          "row": 1909,
+          "kind": "function"
+        }
+      ],
+      "entries": {
+        "init": null,
+        "resume": null
+      }
     }
   ]
 }

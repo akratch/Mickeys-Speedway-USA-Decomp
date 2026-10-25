@@ -7,6 +7,7 @@ metadata selectors change in the final script; code/data inputs stay intact.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import hashlib
 import json
 from pathlib import Path
@@ -583,6 +584,7 @@ def edited_compile(root, directory, label, text, exports, args, commands):
     import permute_batch as batch
     import link_overlay_module as module_link
     import check_editable_layout as pilot
+    import proof_provenance as pp
     rp.edited_require('GLOBAL_ASM' not in text and not re.search(r'\b(?:asm|__asm__)\b', text),
                       'selected complete C input must not require assembly substitution')
     source = directory / (label + '.c')
@@ -591,6 +593,8 @@ def edited_compile(root, directory, label, text, exports, args, commands):
     write_changed(source, text)
     source_hash = digest(source)
     closure = batch.source_dependencies(source, tuple(args))
+    static_inputs = pp.literal_profile_inputs(root) | {'tools/static_symbols.py': digest(root/'tools/static_symbols.py')} | closure | {source.relative_to(root).as_posix(): source_hash}
+    static_tools = batch.checked_tool_identity()
     flags = list(args)
     flags[flags.index('-o') + 1] = untouched.relative_to(root).as_posix()
     flags[-1] = source.relative_to(root).as_posix()
@@ -630,7 +634,56 @@ def edited_compile(root, directory, label, text, exports, args, commands):
     expected[label + '-module/receipt.json'] = hashlib.sha256((json.dumps(receipt, indent=2) + '\n').encode()).hexdigest()
     rp.edited_require(all(digest(directory / name) == value for name, value in expected.items()),
                       'fresh module receipt products changed')
-    return (rp.edited_prepare_object(prepared, linked_elf), (raw, linked, receipt, expected), closure)
+    obj = rp.edited_prepare_object(prepared, linked_elf)
+    target_sections = {rel.sym.section for section in rp.EDITED_SECTIONS[:-1] for rel in prepared.rels(section)
+                       if rel.sym.type == rp.STT_SECTION and rel.sym.section in ('.data', '.bss')}
+    if target_sections:
+        statics = pp.static_anchor_module(root)
+        debug = [row for row in statics._sections(compiler.data) if row[-1] == '.mdebug']
+        rp.edited_require(len(debug) == 1, 'static source needs actual compiler mdebug')
+        anchors = {'.data': statics.data_anchors(compiler.data, debug[0]),
+                   '.bss': statics.bss_anchors(compiler.data, debug[0])}
+        names = {name for section in target_sections for name in anchors[section]}
+        rp.edited_require(names, 'section operand lacks source-object boundary proof')
+        def static_current():
+            rp.edited_require(digest(root/'tools/proof_provenance.py') == pp._LOADED_METADATA_PROOF,
+                              'loaded static source proof helper changed')
+            return ({name: digest(root/name) for name in static_inputs}, batch.checked_tool_identity())
+        rp.edited_require(static_current() == (static_inputs, static_tools), 'static source context changed before CPP')
+        command = ['tools/ido/cc', *flags]
+        cpp_command = ['tools/ido/cc', '-E', *pp._literal_flags(shlex.join(command), flags[-1]), flags[-1]]
+        result = subprocess.run(cpp_command, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
+        rp.edited_require(result.returncode == 0, 'actual edited static CPP failed')
+        cpp = result.stdout
+        try:
+            facts = pp.static_source_facts(cpp, flags, root, names)
+            witness = pp.static_source_witness(compiler, prepared, linked_elf, facts, source_hash,
+                                              hashlib.sha256(cpp).hexdigest(), static_inputs.items(), root,
+                                              hashlib.sha256(json_bytes(static_tools)).hexdigest())
+        except pp.MetadataProofError as error:
+            raise MetadataLinkError('static source proof: ' + str(error)) from error
+        rp.edited_require(static_current() == (static_inputs, static_tools)
+            and digest(untouched) == witness.compiler_sha256 and digest(raw) == witness.raw_sha256
+            and digest(linked) == witness.linked_sha256, 'static source/CPP/object context changed')
+        cpp_path = directory/(label+'-effective.i')
+        audit_path = directory/(label+'-static-source.json')
+        audit = {'schema': 'mickey-static-source-extent-v1', 'compiler_command': command,
+            'effective_cpp_command': cpp_command, 'cpp_artifact': cpp_path.name, 'cpp_sha256': witness.cpp_sha256,
+            'source_sha256': witness.source_sha256, 'compiler_sha256': witness.compiler_sha256,
+            'prepared_sha256': witness.raw_sha256, 'linked_sha256': witness.linked_sha256,
+            'prepared_surface': witness.raw_surface, 'linked_surface': witness.linked_surface,
+            'declarations': facts, 'extents': [dataclasses.asdict(x) for x in witness.extents],
+            'restored_elf_symbol_size': 0, 'inputs': static_inputs, 'toolchain_sha256': witness.toolchain_sha256}
+        audit_bytes = json_bytes(audit)
+        write_changed(cpp_path, cpp);write_changed(audit_path, audit_bytes)
+        expected[cpp_path.name] = witness.cpp_sha256
+        expected[audit_path.name] = hashlib.sha256(audit_bytes).hexdigest()
+        rp.edited_require(static_current() == (static_inputs, static_tools)
+            and digest(cpp_path) == witness.cpp_sha256 and digest(audit_path) == expected[audit_path.name],
+            'static CPP/audit context changed before attachment')
+        obj['static_source'] = witness
+        obj['static_source_audit'] = audit
+    return (obj, (raw, linked, receipt, expected), closure)
 
 
 def edited_program_selectors(template):
@@ -688,6 +741,24 @@ def edited_directory(root, name):
         path = path / part
         rp.edited_require(not path.is_symlink(), 'symlink edited output directory')
     return path
+
+
+def edited_source_closures_current(products, closures, arguments):
+    """Rewalk existing literal lookup results, including newly shadowing files."""
+    import permute_batch as batch
+    try:
+        return all(batch.source_dependencies(products[n][0].with_suffix('.c'), tuple(arguments[n])) == closure
+                   for n, closure in closures.items())
+    except (OSError, ValueError, RuntimeError):
+        return False
+
+
+def edited_compiler_flags(arguments):
+    """Stable ordered compiler identity, excluding output/source path plumbing."""
+    rp.edited_require(arguments.count('-o') == 1, 'invalid edited compiler output switches')
+    output = arguments.index('-o')
+    return [word for index, word in enumerate(arguments)
+            if index not in (output, output + 1, len(arguments) - 1)]
 
 
 def edited_current(root, parent, variant, request):
@@ -758,6 +829,8 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
                    root / 'config/runlink-ort.us.txt', root / 'config/overlay_funcs_to_trap.us.txt'}
     if variant != 'control':
         early_paths.update((root / pilot.FIXTURE).glob('*'))
+    import proof_provenance as pp
+    early_paths.update(root/name for name in pp.literal_profile_inputs(root))
     early_paths.update((root / 'mk').glob('*.mk'))
     early_paths.update((root / 'tools').glob('*.py'))
     early_paths.update((root / 'tools').glob('*.sh'))
@@ -769,6 +842,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
     exports0 = rp.OrtNames.load(root / 'config/runlink-ort.us.txt')
     selected, declaration_hash = edited_catalog(root, declaration_path, exports0, selection)
     require(declaration_hash == early[declaration_path.relative_to(root).as_posix()], 'loaded declaration differs from prehold')
+    early.update({declaration['source']: digest(root/declaration['source']) for declaration in selected.values()})
     # Derive the current request's outside closure EVERY invocation, before Make
     # and before warm lookup. The resident setup include is selection-independent.
     with tempfile.TemporaryDirectory(prefix='.outside-setup-', dir=parent) as temporary:
@@ -788,12 +862,20 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
             and edited_source_context(root) == source_context
             and edited_outside_context(root, outside_selectors) == outside_context,
             'input production recipe/tool/source/extracted inputs changed')
+    arguments, recipes = {}, {}
+    for number, declaration in selected.items():
+        arguments[number], recipes[number] = edited_recipe(root, declaration['source'], declaration['build'])
+    require(all(digest(root/name) == value for name,value in early.items())
+            and batch.checked_tool_identity() == tool, 'edited recipe/source changed before warm lookup')
     request = {'outside_rom': safe_relative(outside_rom or 'baseroms/mickey.us.z64').as_posix(),
                'config': 'tools/runlink/configs/msu-us.toml',
                'declaration': declaration_path.relative_to(root).as_posix(), 'declaration_sha256': declaration_hash,
-               'selected_modules': sorted(selected), 'variant': variant}
+               'selected_modules': sorted(selected), 'variant': variant,
+               'compiler_flags': {str(number): edited_compiler_flags(args) for number,args in arguments.items()}}
     current = edited_current(root, parent, variant, request)
     if current is not None:
+        require(all(digest(root/name) == value for name,value in early.items())
+                and batch.checked_tool_identity() == tool, 'edited source/recipe changed during warm lookup')
         print('edited source build current', variant, current['rom_sha1'], flush=True)
         return current
     directory = Path(tempfile.mkdtemp(prefix=variant + '-', dir=parent))
@@ -803,9 +885,6 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         from dataclasses import replace
         cfg = replace(cfg, rom=root / safe_relative(outside_rom))
     declared_exports = edited_source_exports(selected, exports0, cfg.module_count)
-    arguments, recipes = {}, {}
-    for number, declaration in selected.items():
-        arguments[number], recipes[number] = edited_recipe(root, declaration['source'], declaration['build'])
     selected, exports, overrides, diagnostic = pilot.edited_fixture_inputs(root, selected, declared_exports, variant)
     for number in selected:
         if number not in arguments:
@@ -845,6 +924,11 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         text = overrides.get(number, (root / declaration['source']).read_text())
         objects[number], products[number], closures[number] = edited_compile(
             root, directory, 'overlay' + str(number), text, exports, arguments[number], commands)
+        if 'static_source_audit' in objects[number]:
+            held = objects[number]['static_source_audit']['inputs']
+            require(all(name not in initial or initial[name] == value for name,value in held.items()),
+                    'conflicting held static source input observation')
+            initial.update(held)
     for number, obj in objects.items():
         actual_registered = {symbol.name for symbol in obj['linked'].symbols
             if symbol.bind == rp.STB_GLOBAL and symbol.section in rp.EDITED_SECTIONS
@@ -1037,6 +1121,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
             and batch.checked_tool_identity() == tool
             and edited_projection_tools() == project_tools
             and edited_source_context(root) == source_context
+            and edited_source_closures_current(products, closures, arguments)
             and edited_outside_context(root, outside_selectors) == outside_context, 'edited source/tool/outside inputs changed')
     require(pilot.artifact_hashes(directory) == snapshot, 'validated artifacts changed during final proof')
     artifacts = snapshot
@@ -1047,6 +1132,8 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         'input_production': {'command': setup_command, 'projection_sha256': projection_hash},
         'commands': commands, 'source_cpp': {str(n): {'source': products[n][0].name.removesuffix('.o') + '.c',
             'closure': closures[n]} for n in products}, 'arguments': arguments, 'compiler_recipe': recipes,
+        'source_static': {str(n): obj['static_source_audit'] for n, obj in objects.items()
+                          if 'static_source_audit' in obj},
         'selected_raw_records': {n: len(p['refs']) for n, p in generated.items()},
         'selected_header': {n: asdict(p['module'].header) for n, p in generated.items()},
         'selected_joins': {n: p['joins'] for n, p in generated.items()},
@@ -1061,6 +1148,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
             and batch.checked_tool_identity() == tool
             and edited_projection_tools() == project_tools
             and edited_source_context(root) == source_context
+            and edited_source_closures_current(products, closures, arguments)
             and edited_outside_context(root, outside_selectors) == outside_context
             and all(digest(path) == value for path, value in pilot.LOADED.items()),
             'edited inputs changed during receipt publication')

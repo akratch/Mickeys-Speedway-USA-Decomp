@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 53428,
+  "owned_data_rodata_bytes": 53460,
   "diagnostic_data_rodata_bytes": 304,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -2960,7 +2960,18 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 84
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x20",
+     "size": "0x20",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o013/overlay13QuadTriangles",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 14,

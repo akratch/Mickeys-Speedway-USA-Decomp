@@ -793,6 +793,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay_017.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o003/overlay_003.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 13 is one translation unit at the overlay flag set.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay_013.c.o: CFLAGS += -Wab,-r4300_mul
+# Complete mutable two-triangle input; no normalization or linker surrogate.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13QuadTriangles.c.o: private PLAIN_DATA_PROOF = 1
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13QuadTriangles.c.o: private PLAIN_DATA_RUNTIME_ROLE = data
 # Overlay 5 is one translation unit at the overlay flag set. The libaudio bank
 # patcher, six -O3 objects before the fold (DKR builds it at -O3), compiles to
 # the same bytes at -O2 as static functions: -O2 does not inline them.

@@ -277,13 +277,13 @@ extern s32 D_C;
 
 extern Overlay46DisplayCommand *D_800D3140;
 
-extern void *D_800D3144;
+extern Mtx *D_800D3144;
 
 extern void *D_800D3148;
 
 extern void texDPInit(void *commands);
 
-extern void camStandardOrtho(void *commands, void *matrices);
+extern void camStandardOrtho(void *commands, Mtx **matrices);
 
 
 extern void fontPrintXY(void *commands, s32 x, s32 y, void *text,
@@ -292,7 +292,7 @@ extern void fontPrintXY(void *commands, s32 x, s32 y, void *text,
 extern void func_8002F618(void *commands, void *data, s32 x, s32 y,
                           s32 red, s32 green, s32 blue, s32 alpha);
 
-extern void camDo2DSprite(void *commands, void *matrices, void *vertices,
+extern void camDo2DSprite(void *commands, Mtx **matrices, void *vertices,
                           Overlay46Particle_F0000874_188 *particle, void *resource,
                           s32 flags, s32 alpha);
 
@@ -311,13 +311,13 @@ extern void setupFrontEndList(s16 *objectGroup);
 
 extern u8 gOverlay46DisplayState[];
 
-extern u8 gOverlay46DisplayOutput[];
+extern Mtx *gOverlay46DisplayOutput;
 
 extern s32 gOverlay46FadeOutput;
 
-extern void camSetView(void *state, s32 mode);
+extern void camSetView(void *state, Mtx **matrices);
 
-extern void func_80022B94(void *state, void *output);
+extern void func_80022B94(void *state, Mtx **matrices);
 
 extern s32 overlay41IsUnitScale(s32 index);
 

@@ -483,7 +483,7 @@ void overlay46UpdateTransition(s32 updateRate) {
 
     finished = 0;
     camSetView(gOverlay46DisplayState, 0);
-    func_80022B94(gOverlay46DisplayState, gOverlay46DisplayOutput);
+    func_80022B94(gOverlay46DisplayState, &gOverlay46DisplayOutput);
 
     switch (gOverlay46Mode58) {
         case 1:

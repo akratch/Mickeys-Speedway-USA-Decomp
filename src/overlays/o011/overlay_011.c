@@ -95,7 +95,7 @@ void overlay11Initialize(s32 argument) {
  *   column packet's pointer step and first word.
  * The two 0.05f literals are spelled differently because the shipped pool
  * holds two entries (L103). */
-void func_overlay_011_F0000150_1868998(Overlay11Gfx **displayList, void **matrix,
+void func_overlay_011_F0000150_1868998(Overlay11Gfx **displayList, Mtx **matrix,
                                         Overlay11Vertex **vertices,
                                         s32 updateRate) {
     s32 row;

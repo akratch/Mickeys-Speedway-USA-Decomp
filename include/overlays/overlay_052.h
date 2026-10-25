@@ -82,7 +82,7 @@ typedef struct MenuCurrentObject {
 } MenuCurrentObject;
 
 extern MenuCommand *D_800D3140;
-extern void *D_800D3144;
+extern Mtx *D_800D3144;
 struct MenuFrontObject;
 extern struct MenuFrontObject *D_800D31C8[];
 extern MenuCurrentObject D_800D3550[];
@@ -91,7 +91,7 @@ extern s32 D_8007C1B0;
 extern s32 D_800C947C;
 extern s32 B_overlay_001_F00083E0;
 
-extern void camStandardOrtho(MenuCommand **, void **);
+extern void camStandardOrtho(MenuCommand **, Mtx **);
 extern Overlay52Object **func_80005750(s32 *);
 extern Overlay52Level *levelGetLevel(void);
 extern s32 texAnimateSprite(u8 *, s32 *, s32, f32 *, s32);

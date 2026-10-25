@@ -2,6 +2,7 @@
 #define OVERLAY_055_H
 
 #include "ultra64.h"
+#include "n_audio/mbi.h"
 #include "overlays/offset_records.h"
 #include "overlays/patch_indices.h"
 
@@ -93,7 +94,7 @@ extern u8 D_8007BEF4;
 extern s16 D_8007C180[];
 extern s32 D_800C947C;
 extern Overlay55DisplayCommand *D_800D3140;
-extern void *D_800D3144;
+extern Mtx *D_800D3144;
 extern void *D_800D31C8[];
 extern MenuCurrentObject D_800D3550[];
 extern s32 ext_o1_83e0;
@@ -107,7 +108,7 @@ extern void runlinkDownloadCode(s32 resource);
 extern s32 levelGetNumber(void);
 extern s32 frontGetScreenMode(void);
 extern u8 *func_80028F54(void);
-extern void camStandardOrtho(Overlay55DisplayCommand **, void **);
+extern void camStandardOrtho(Overlay55DisplayCommand **, Mtx **);
 extern Overlay55Object **func_80005750(s32 *);
 extern void viGetCurrentSize(s32 *, s32 *);
 extern void camSetNo(s32);

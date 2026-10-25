@@ -2,6 +2,7 @@
 #define OVERLAY_062_H
 
 #include "PR/ultratypes.h"
+#include "n_audio/mbi.h"
 
 /* Overlay 62. */
 
@@ -53,7 +54,7 @@ extern s32 D_800D3180;
 extern u8 gOverlay62State[];
 extern s32 gOverlay62Values[];
 extern Overlay62Gfx *D_800D3140;
-extern u8 D_800D3144[];
+extern Mtx *D_800D3144;
 extern u8 D_800D3148[];
 extern u8 gOverlay62FirstItemReloc[];
 extern u8 gOverlay62CommitContextReloc[];
@@ -61,9 +62,9 @@ extern void rcpSetScreenColour(s32 red, s32 green, s32 blue, s32 alpha);
 extern void mainChangeLevel(s32 type, s32 arg1, s32 arg2,
                                           s32 arg3, s32 arg4, s32 arg5);
 extern void camStandardOrtho(Overlay62Gfx **commands,
-                                         void *viewport);
+                                         Mtx **matrices);
 extern void sprSetTextureFilter(s32 layer);
-extern void camDo2DSprite(Overlay62Gfx **commands, void *resourceA,
+extern void camDo2DSprite(Overlay62Gfx **commands, Mtx **matrices,
                                      void *resourceB,
                                      Overlay62Transform *transform,
                                      void *handle, s32 arg5, s32 alpha);

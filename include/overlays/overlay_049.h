@@ -2,6 +2,7 @@
 #define OVERLAY_049_H
 
 #include "PR/ultratypes.h"
+#include "n_audio/mbi.h"
 
 typedef struct Overlay49Status {
     u8 pad00[2];
@@ -34,7 +35,7 @@ extern u16 D_800D3128[];
 extern u8 D_8007BF60;
 extern u8 D_8007BF0C;
 extern u8 D_800D3140[];
-extern u8 D_800D3144[];
+extern Mtx *D_800D3144;
 
 extern Overlay49Status *func_80028F54(void);
 extern void overlay65Initialize(void);
@@ -47,7 +48,7 @@ extern void func_8003A754(void);
 extern void overlay48Initialize(void);
 extern void func_80028374(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
                          s32 arg5);
-extern void overlay65UpdateParticles(void *arg0, void *arg1, s32 updateRate);
+extern void overlay65UpdateParticles(void *arg0, Mtx **arg1, s32 updateRate);
 extern void overlay65Release(void);
 
 #endif

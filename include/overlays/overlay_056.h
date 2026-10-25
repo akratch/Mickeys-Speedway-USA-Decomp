@@ -2,6 +2,7 @@
 #define OVERLAY_056_H
 
 #include "PR/ultratypes.h"
+#include "game/texture_header.h"
 
 typedef struct Overlay56Context {
     u8 pad0[0x12C];
@@ -15,8 +16,8 @@ extern u32 gOverlay56Colors[];
 
 void overlay56GetDimensionsReloc(u32 *width, u32 *height);
 Overlay56Context *overlay56GetContextReloc(void);
-void *overlay56LoadResourceReloc(s16 resourceId);
-void overlay56ReleaseResourceReloc(void *resource);
+TextureHeader *texLoadTexture_o056Reloc(s32 resourceId);
+void texFreeTexture_o056Reloc(TextureHeader *resource);
 
 void overlay56OffsetCoordinates(u32 *x, u32 *y);
 void overlay56CenterCoordinates(s32 *x, s32 *y);

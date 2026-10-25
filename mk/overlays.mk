@@ -1021,28 +1021,16 @@ $(O86_OBJ): POSTPROCESS = \
 O73_GEOMETRY := $(BUILD_DIR)/$(SRC_DIR)/overlays/o073/overlay73Geometry.c.o
 $(O73_GEOMETRY): private PLAIN_DATA_PROOF = 1
 $(O73_GEOMETRY): private PLAIN_DATA_RUNTIME_ROLE = data
-# Overlay 73 is one translation unit under the overlay flag set (the updater's
-# floating multiplies need the R4300 hazard schedule); its .text is the
-# module's 0xEB0 bytes, trailing pad included, so it needs no trim. Until the
-# module's data moves into C (docs/OVERLAY_STRUCTURE_SPRINT.md phase 3), the
-# compiler pool -- the updater's five-entry mode-switch table and float
-# literals, byte-identical to the retained overlay data at data_rodata +0xDC
-# (rodata-relative +0xC, which the shipped %hi/%lo pairs encode) -- is bound
-# to a pool symbol and the digest-checked duplicate discarded; no instruction
-# or compiler addend is edited. Resident callees go through the generated
-# surface entries.
+# Overlay 73 keeps its complete compiler RO pool: three constructor literals,
+# the updater's five-entry switch table, and its ordinary literal/end alignment.
+# The zero section anchor leaves loader-relative operands unchanged; it is not
+# a C storage definition or source identity. Original raw records remain separate.
 O73_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o073/overlay_073.c.o
 $(O73_OBJ): CFLAGS += -Wab,-r4300_mul
-$(O73_OBJ): \
-	$(TOOLS_DIR)/rebind_elf_relocations.py \
-	$(TOOLS_DIR)/externalize_elf_section.py \
-	config/normalizations/overlay_073.rebind.spec
+$(O73_OBJ): $(TOOLS_DIR)/externalize_elf_section.py
 $(O73_OBJ): POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay73UpdatePoolReloc=0xC,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		@config/normalizations/overlay_073.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:de0b301581ff894b38ba7352b7227b858eb5ef8b43ad3b7147ad849732053c8d && \
+		sha256:092a1bffb9d341f4e07a241f191b739a7112fe63174eb49007b99705a0d5cce3 0 keep && \
 	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 74 is one translation unit under the overlay flag set; its .text is
 # the module's 0x250 bytes, trailing pad included, so it needs no trim.

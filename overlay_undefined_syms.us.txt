@@ -2658,7 +2658,6 @@ func_800299E8_o073Reloc = 0xf0000000;
 func_8002A8BC_o073Reloc = 0xf0000000;
 func_8002A8C0_o073Reloc = 0xf0000000;
 func_8005776C_o073Reloc = 0xf0000000;
-gOverlay73UpdatePoolReloc = 0x0000000c;
 mathRnd_o073Reloc = 0xf0000000;
 sqrtf_o073Reloc = 0xf0000000;
 texDPTextureX_o073Reloc = 0xf0000000;

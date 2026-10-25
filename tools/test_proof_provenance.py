@@ -8,6 +8,9 @@ import contextlib
 import tempfile
 import sys
 import unittest
+import hashlib
+import struct
+import dataclasses
 from unittest import mock
 from types import SimpleNamespace
 
@@ -125,6 +128,124 @@ class CaptureDeadlineTests(unittest.TestCase):
         with self.assertRaisesRegex(TimeoutError, "whole-batch deadline"):
             current()
         self.assertEqual(self.operations, [("recipe", 1241.0), ("dependencies", 1241.0)])
+
+    def test_keep_capture_holds_original_replay_and_exact_recipe_through_late_checks(self):
+        original, prepared = KeepOnlyRecipeTests.objects()
+        self.configured.write_bytes(prepared.data)
+        target = self.configured.relative_to(self.root).as_posix()
+        metadata = KeepOnlyRecipeTests().command().replace("build/src/overlays/o073/source.c.o", target)
+        metadata = metadata.replace("a"*64, hashlib.sha256(original.bytes_of(".rodata")).hexdigest())
+        changed = {"suffix": "", "metadata": metadata}
+        old_command = self.command
+        compiled_output = {}
+        def command(arguments, deadline, **keywords):
+            result = old_command(arguments, deadline, **keywords)
+            if arguments[0] == "gmake":
+                result.stdout = result.stdout.splitlines()[0] + "\n" + changed["metadata"] + changed["suffix"] + "\n"
+            else:
+                output = pathlib.Path(arguments[arguments.index("-o")+1])
+                output.write_bytes(original.data)
+                compiled_output["path"] = output
+            return result
+        def replay(_raw, _command, _target, output, *_args, **_keywords):
+            output.write_bytes(prepared.data)
+            return output
+        with mock.patch.object(self.batch, "bounded_capture", side_effect=command), mock.patch.object(
+                provenance, "replay_metadata", side_effect=replay):
+            raw, _plan, receipt, current = provenance.capture_nonexec_producer_raw(
+                self.root, self.source, self.configured, self.linked, self.root/"build/image.map")
+            self.assertEqual(receipt["kept_rodata"]["original_ro_records"], 1)
+            self.assertEqual(receipt["raw_sha256"], receipt["kept_rodata"]["original"])
+            self.assertEqual(receipt["inputs"], current())
+            raw.write_bytes(b"stale")
+            with self.assertRaisesRegex(provenance.MetadataProofError, "observation changed"):
+                current()
+            raw.write_bytes(original.data)
+            replayed = self.root/receipt["kept_rodata"]["prepared_object"]
+            replayed.write_bytes(b"stale")
+            with self.assertRaisesRegex(provenance.MetadataProofError, "observation changed"):
+                current()
+            replayed.write_bytes(prepared.data)
+            for suffix, recipe in (("\nunknown "+target, metadata), ("\n"+metadata, metadata),
+                                   ("", metadata.replace("0 keep", "0")), ("", "")):
+                changed.update(suffix=suffix, metadata=recipe)
+                with self.subTest(suffix=suffix, recipe=recipe), self.assertRaises(provenance.MetadataProofError):
+                    current()
+            changed.update(suffix="", metadata=metadata)
+            self.assertEqual(receipt["inputs"], current())
+            compiled_output.clear()
+            def changed_after_compile(*args, **keywords):
+                result = self.dependencies(*args, **keywords)
+                if "path" in compiled_output:
+                    output = compiled_output["path"]
+                    output.write_bytes(output.read_bytes() + b"changed")
+                return result
+            with mock.patch.object(self.batch, "source_dependencies", side_effect=changed_after_compile):
+                with self.assertRaisesRegex(provenance.MetadataProofError, "compiler output changed"):
+                    provenance.capture_nonexec_producer_raw(
+                        self.root, self.source, self.configured, self.linked, self.root/"build/image.map")
+
+
+class KeepOnlyRecipeTests(unittest.TestCase):
+    def command(self):
+        target = "build/src/overlays/o073/source.c.o"
+        return ("python3 tools/externalize_elf_section.py " + target + " .rodata sha256:"
+                + "a"*64 + " 0 keep && tools/binutils/mips64-elf-objcopy --remove-section .rel.rodata " + target)
+
+    def test_closed_keep_command_requires_keep_zero_digest_and_exact_removal(self):
+        target = "build/src/overlays/o073/source.c.o"
+        command = self.command()
+        self.assertEqual(["externalize", "remove-section"],
+                         [op for op, _args in provenance._keep_rodata_plan(command, target, pathlib.Path("."))])
+        for changed in (command.replace("0 keep", "0"), command.replace("0 keep", "4 keep"),
+                        command.replace(".rel.rodata", ".rodata"), command.replace("sha256:", "sha257:"),
+                        command + " && unknown " + target, command + " && " + command):
+            with self.subTest(changed=changed), self.assertRaises(provenance.MetadataProofError):
+                provenance._keep_rodata_plan(changed, target, pathlib.Path("."))
+
+    @staticmethod
+    def objects():
+        import runlink_pack as rp
+        from test_runlink_pack import ObjBuilder, GLOBAL, FUNC
+        data = (ObjBuilder().section(".text", bytes(8)).section(".rodata", bytes(4))
+                .sym("function", 0, 8, GLOBAL, FUNC, ".text")
+                .rel(".text", 0, rp.R_MIPS_HI16, ("section", ".rodata"))
+                .rel(".text", 4, rp.R_MIPS_LO16, ("section", ".rodata"))
+                .rel(".rodata", 0, rp.R_MIPS_32, ("section", ".text")).build())
+        original = rp.Elf("original", data)
+        readonly = bytearray(data)
+        shoff = struct.unpack_from(">I", data, 32)[0]
+        struct.pack_into(">I", readonly, shoff+original.section(".rodata")["index"]*40+8, 2)
+        data = bytes(readonly)
+        original = rp.Elf("original", data)
+        prepared = bytearray(data)
+        symbols = next(x for x in original.sections if x["type"] == 2)
+        symbol = next(x for x in original.symbols if x.type == 3 and x.section == ".rodata")
+        offset = symbols["offset"] + symbol.index*16
+        struct.pack_into(">II", prepared, offset+4, 0, 0)
+        struct.pack_into(">H", prepared, offset+14, rp.SHN_ABS)
+        shoff = struct.unpack_from(">I", data, 32)[0]
+        struct.pack_into(">I", prepared, shoff+original.section(".rel.rodata")["index"]*40+20, 0)
+        return original, rp.Elf("prepared", bytes(prepared))
+
+    def test_original_pool_records_and_loaded_symbol_surface_are_required(self):
+        import runlink_pack as rp
+        original, prepared = self.objects()
+        provenance._validate_kept_rodata(original, prepared, rp.Elf("configured", prepared.data))
+        configured = rp.Elf("configured", prepared.data)
+        index = next(i for i,s in enumerate(configured.symbols) if s.name == "function")
+        configured.symbols[index] = dataclasses.replace(configured.symbols[index], size=4)
+        with self.assertRaisesRegex(provenance.MetadataProofError, "parsed metadata"):
+            provenance._validate_kept_rodata(original, prepared, configured)
+        data = bytearray(original.data)
+        shoff = struct.unpack_from(">I", data, 32)[0]
+        struct.pack_into(">I", data, shoff+original.section(".rel.rodata")["index"]*40+20, 0)
+        with self.assertRaisesRegex(provenance.MetadataProofError, "original allocated pool/records"):
+            provenance._validate_kept_rodata(rp.Elf("lost", bytes(data)), prepared, prepared)
+        data = bytearray(prepared.data)
+        struct.pack_into(">I", data, shoff+prepared.section(".rodata")["index"]*40+20, 0)
+        with self.assertRaisesRegex(provenance.MetadataProofError, "allocated bytes"):
+            provenance._validate_kept_rodata(original, rp.Elf("dropped", bytes(data)), prepared)
 
 
 class EditedPrefixCaptureTests(unittest.TestCase):

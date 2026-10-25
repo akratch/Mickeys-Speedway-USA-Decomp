@@ -91,9 +91,6 @@ typedef struct Overlay73Target {
 struct HitCopyState;
 
 extern s16 D_80[12][3];
-extern f32 D_0;
-extern f32 D_4;
-extern f32 D_8;
 extern u8 D_80000000[];
 
 extern s32 func_8005776C(f32 x, f32 y, f32 z, f32 radius, s32 mode,

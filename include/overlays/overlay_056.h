@@ -14,7 +14,7 @@ extern s16 o56MinimapFadeState_o056Reloc;
 extern u8 gOverlay56Mode;
 extern u32 gOverlay56Colors[];
 
-void overlay56GetDimensionsReloc(u32 *width, u32 *height);
+void viGetCurrentSize_o056Reloc(s32 *width, s32 *height);
 Overlay56Context *overlay56GetContextReloc(void);
 TextureHeader *texLoadTexture_o056Reloc(s32 resourceId);
 void texFreeTexture_o056Reloc(TextureHeader *resource);

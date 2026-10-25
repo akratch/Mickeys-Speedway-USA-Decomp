@@ -9,6 +9,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/texture_header.h"
 #include "PR/os_message.h"
 #include "game/gameVi.h"
 #include "game/sched_internal.h"
@@ -18,16 +19,7 @@
 /* The task/menu producers supply SDK Gfx command buffers and cursor cells. */
 typedef Gfx RcpCommand;
 
-typedef struct RcpTextureInfo {
-    u8 pad00[6];
-    u16 width;
-    u16 height;
-    u8 pad0A[4];
-    u16 tileRows;
-    u8 pad10[4];
-    u32 *data;
-    u16 count;
-} RcpTextureInfo;
+
 
 typedef struct RcpTextureNode {
     RcpTextureInfo *texture;
@@ -511,7 +503,7 @@ void func_8002F618(RcpCommand **dlistPtr, RcpTextureNode *nodes, s32 xPos,
                 if (alternate != NULL) {
                     gDPSetTextureImage(
                         (Gfx *)dlist++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1,
-                        ((((s32)nodes[i].packedOffset >> 16) * tex->tileRows) +
+                        ((((s32)nodes[i].packedOffset >> 16) * tex->textureSize) +
                          (s32)tex + 0x20));
                     gDPSetTile((Gfx *)dlist++, G_IM_FMT_RGBA, G_IM_SIZ_16b,
                                0, 0, G_TX_LOADTILE, 0, G_TX_NOMIRROR | G_TX_WRAP,
@@ -531,7 +523,7 @@ void func_8002F618(RcpCommand **dlistPtr, RcpTextureNode *nodes, s32 xPos,
                     gDPSetTextureImage(
                         (Gfx *)dlist++, G_IM_FMT_I, G_IM_SIZ_16b, 1,
                         ((((s32)nodes[i].packedOffset >> 16) *
-                          alternate->tileRows) + (s32)alternate + 0x20));
+                          alternate->textureSize) + (s32)alternate + 0x20));
                     gDPSetTile((Gfx *)dlist++, G_IM_FMT_I, G_IM_SIZ_16b, 0,
                                0x100, G_TX_LOADTILE, 0,
                                G_TX_NOMIRROR | G_TX_WRAP, 8, G_TX_NOLOD,
@@ -550,11 +542,11 @@ void func_8002F618(RcpCommand **dlistPtr, RcpTextureNode *nodes, s32 xPos,
                                    (alternate->width - 1) << 2,
                                    (alternate->height - 1) << 2);
                 } else {
-                    dlist->words.w0 = *tex->data;
+                    dlist->words.w0 = tex->cmd->words.w0;
                     dlist->words.w1 = (u32)(texFrame(
                         tex, nodes[i].packedOffset) + 0x80000000U);
                     dlist++;
-                    blockCmd = dlist++; loadCount = tex->count - 1; blockCmd->words.w0 = (((loadCount & 0xFF) << 16) | 0x07000000U | ((loadCount * 8) & 0xFFFF)); blockCmd->words.w1 = (u32)tex->data + 0x80000008U;
+                    blockCmd = dlist++; loadCount = tex->numberOfCommands - 1; blockCmd->words.w0 = (((loadCount & 0xFF) << 16) | 0x07000000U | ((loadCount * 8) & 0xFFFF)); blockCmd->words.w1 = (u32)tex->cmd + 0x80000008U;
                 }
 
                 rectCmd = dlist++; rectCmd->words.w0 = (_SHIFTL(G_TEXRECT, 24, 8) | _SHIFTL(lrx, 12, 12) | _SHIFTL(lry, 0, 12)); rectCmd->words.w1 = (_SHIFTL(G_TX_RENDERTILE, 24, 3) | _SHIFTL(ulx, 12, 12) | _SHIFTL(uly, 0, 12));
@@ -685,12 +677,12 @@ void func_8002FB34(RcpCommand **dlistPtr, RcpTextureNode *nodes, f32 xPos, f32 y
                         t += (-uly * dtdy) >> 7;
                         uly = 0;
                     }
-                    dmaDlist = (u8 *) tex->data;
-                    dlist->words.w0 = *(u32 *) dmaDlist;
+                    dmaDlist = (u8 *) tex->cmd;
+                    dlist->words.w0 = ((Gfx *)dmaDlist)->words.w0;
                     dlist->words.w1 = texFrame(tex, nodes[i].packedOffset, halfCmd) + 0x80000000U;
                     dlist++;
                     dmaDlist += 8;
-                    blockCmd = dlist++; count = tex->count - 1; blockCmd->words.w0 = ((count & 0xFF) << 16) | 0x07000000 | ((count * 8) & 0xFFFF); blockCmd->words.w1 = (u32) dmaDlist + 0x80000000U;
+                    blockCmd = dlist++; count = tex->numberOfCommands - 1; blockCmd->words.w0 = ((count & 0xFF) << 16) | 0x07000000 | ((count * 8) & 0xFFFF); blockCmd->words.w1 = (u32) dmaDlist + 0x80000000U;
                     rectCmd = dlist++; rectCmd->words.w0 = (_SHIFTL(G_TEXRECT, 24, 8) | _SHIFTL(lrx, 12, 12) | _SHIFTL(lry, 0, 12)); rectCmd->words.w1 = (_SHIFTL(G_TX_RENDERTILE, 24, 3) | _SHIFTL(ulx, 12, 12) | _SHIFTL(uly, 0, 12));
                     halfCmd = dlist++; halfCmd->words.w0 = _SHIFTL(G_RDPHALF_1, 24, 8); halfCmd->words.w1 = (_SHIFTL(s, 16, 16) | _SHIFTL(t, 0, 16));
                     lastCmd = dlist++; lastCmd->words.w0 = _SHIFTL(G_RDPHALF_2, 24, 8); lastCmd->words.w1 = (_SHIFTL(dsdx, 16, 16) | _SHIFTL(dtdy, 0, 16));

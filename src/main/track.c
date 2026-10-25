@@ -14,6 +14,7 @@
  */
 
 #include "game/track.h"
+#include "game/texture_header.h"
 #include "game/charControl.h"
 #include "game/math.h"
 #include "n_audio/mbi.h"
@@ -98,18 +99,7 @@ typedef struct TrackLightAllocation {
     void *data;
 } TrackLightAllocation;
 
-typedef struct TrackTextureHeader {
-    u8 pad00[4];
-    u16 flags;
-    u16 width;
-    u16 height;
-    u8 pad0A[6];
-    u16 numOfTextures;
-    u16 frameAdvanceDelay;
-    Gfx *displayList;
-    u8 pad18[3];
-    u8 unk1B;
-} TrackTextureHeader;
+typedef TextureHeader TrackTextureHeader;
 
 typedef struct TrackTextureEntry {
     TrackTextureHeader *texture;
@@ -1690,7 +1680,7 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                         vertex = (u8 *) segment->lightData + (batch->u0 * 0xA);
                         triangle = (u8 *) segment->vertexData + (batch->v0 * 0x10);
                         textureS = batch->frame << 8;
-                        if (texture != NULL && ((s16) texture->flags & 0x40) &&
+                        if (texture != NULL && ((s16) texture->renderFlags & 0x40) &&
                             (mode & 0x30) != 0x20) {
                             value = (textureS >> 8) & 0xFF;
                             gDPSetEnvColor(D_800C9520++, value, value, value, value);
@@ -2151,7 +2141,7 @@ void func_8000F198(s32 arg0, s32 arg1, s32 arg2) {
                 vertex = (u8 *) segment->lightData + (batch->u0 * 0xA);
                 triangle = (u8 *) segment->vertexData + (batch->v0 * 0x10);
                 textureS = batch->frame << 8;
-                if (texture != NULL && ((s16) texture->flags & 0x40) &&
+                if (texture != NULL && ((s16) texture->renderFlags & 0x40) &&
                     (flags & 0x30) != 0x20) {
                     value = (textureS >> 8) & 0xFF;
                     gDPSetEnvColor(D_800C9520++, value, value, value, value);
@@ -5199,11 +5189,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
     s32 shiftT;
 
     locals.textureAddress = texFrame(texture, frame);
-    if (texture->unk1B >= 2) {
-        D_800C9520->words.w0 = texture->displayList->words.w0;
+    if (texture->mipLevels >= 2) {
+        D_800C9520->words.w0 = texture->cmd->words.w0;
         D_800C9520->words.w1 = (u32) locals.textureAddress;
         D_800C9520++;
-        gSPDisplayList(D_800C9520++, texture->displayList + 1);
+        gSPDisplayList(D_800C9520++, texture->cmd + 1);
         gSPDisplayList(D_800C9520++, D_800793D8);
         return;
     }

@@ -39,7 +39,7 @@ typedef struct Overlay60Object {
     Overlay60Inner **inner;
 } Overlay60Object;
 
-typedef struct RcpTextureInfo RcpTextureInfo;
+#include "game/texture_header.h"
 
 typedef struct RcpTextureNode {
     RcpTextureInfo *texture;

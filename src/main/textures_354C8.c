@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "game/texture_header.h"
 #include "game/pi.h"
 #include "n_audio/mbi.h"
 
@@ -38,29 +39,7 @@ extern u8 D_800D303D;
 extern s32 D_8007BD9C;
 extern void fxCpuTextureRequired();
 
-typedef struct TextureFrameHeader {
-    u8 pad00[2];
-    u8 format;
-    u8 spriteFlags;
-    s16 flags;
-    u16 width;
-    u16 height;
-    u8 pad0A;
-    u8 posX;
-    u8 pad0C;
-    u8 posY;
-    u16 textureSize;
-    u16 numOfTextures;
-    u16 frameAdvanceDelay;
-    Gfx *cmd;
-    u16 numberOfCommands;
-    u8 pad1A;
-    u8 unk1B;
-    u8 unk1C;
-    u8 isCompressed;
-    u8 unk1E;
-    u8 unk1F;
-} TextureFrameHeader;
+
 
 typedef struct Sprite {
     u8 numberOfFrames;
@@ -236,10 +215,10 @@ void texDPTextureX(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
             (D_8007BD94 == 0)) {
             currentTexture = ((u8 *)tex) + (frameIndex * tex->textureSize) +
                              sizeof(TextureFrameHeader);
-            if ((tex->flags & 0x40) && (tex->unk1B < 2)) {
+            if ((tex->renderFlags & 0x40) && (tex->mipLevels < 2)) {
                 frameIndex++;
                 if (frameIndex >= numTextures) {
-                    if (tex->spriteFlags & 2) {
+                    if (tex->storageFlags & 2) {
                         frameIndex = 0;
                     } else {
                         frameIndex = numTextures - 1;
@@ -256,7 +235,7 @@ void texDPTextureX(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
             nextTexture = currentTexture;
         }
 
-        flags |= tex->flags;
+        flags |= tex->renderFlags;
         hasTexture = 1;
         table = D_8007B680;
         if ((currentTexture != D_800D3024) ||
@@ -268,11 +247,11 @@ void texDPTextureX(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
             dl->words.w1 = (u32)currentTexture;
             dl++;
             textureCommands++;
-            if (tex->unk1B >= 2) {
+            if (tex->mipLevels >= 2) {
                 gSPDisplayList(dl++, textureCommands);
             } else {
                 gDkrDmaDisplayList(dl++, (u32)textureCommands + 0x80000000, 6);
-                if ((tex->flags & 0x40) && (tex->unk1B < 2)) {
+                if ((tex->renderFlags & 0x40) && (tex->mipLevels < 2)) {
                     dl->words.w0 = textureCommands[6].words.w0;
                     dl->words.w1 = (u32)nextTexture;
                     dl++;
@@ -292,7 +271,7 @@ void texDPTextureX(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     flags &= ~D_8007BD90;
     settingsIndex = (flags & 0x70) >> 4;
     if (hasTexture != 0) {
-        if (tex->unk1B >= 2) {
+        if (tex->mipLevels >= 2) {
             settingsIndex += 0x20;
             if (flags & 0x80) {
                 settingsIndex += 8;
@@ -488,8 +467,8 @@ void sprDPset(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) {
     D_800D3024 = 0;
     D_800D3028 = 0;
     texture = sprite->textures[0];
-    if (texture->pad1A) {
-        fxCpuTextureRequired(texture->pad1A, texture);
+    if (texture->cpuTextureKey) {
+        fxCpuTextureRequired(texture->cpuTextureKey, texture);
     }
     if (sprite->drawFlags & 0x40) {
         texturesPerFrame = sprite->numberOfTextures / sprite->numberOfFrames;
@@ -756,8 +735,8 @@ void func_80035ADC(SpriteAsset *spriteAsset, Sprite *sprite, s32 frameId) {
 
     if (frameId == 0 || tileIndex < tileEnd) {
         tex = sprite->textures[tileIndex];
-        ((u8 *)sprite)[1] = tex->spriteFlags & 2;
-        sprite->drawFlags = tex->flags & 0xC07B;
+        ((u8 *)sprite)[1] = tex->storageFlags & 2;
+        sprite->drawFlags = tex->renderFlags & 0xC07B;
     }
 
     curVertIndex = 0;
@@ -877,7 +856,7 @@ void func_80035E88(TextureFrameHeader *tex, Gfx *displayList) {
     }
     tex->cmd = dlist;
     func_80035F48((u8 **)&dlist, tex, 0, 0);
-    if (tex->unk1B < 2 && (tex->flags & 0x40)) {
+    if (tex->mipLevels < 2 && (tex->renderFlags & 0x40)) {
         if (!(tex->format & 0xF)) {
             func_80035F48((u8 **)&dlist, tex, 1,
                           (0x1000 - tex->textureSize) >> 3);
@@ -959,14 +938,14 @@ void func_80035F48(u8 **dlist, TextureFrameHeader *tex, s32 rtile,
     case 1:
         imgFmt = G_IM_FMT_RGBA;
         if ((texFlags == 0) || (texFlags == 2)) {
-            tex->flags |= 4;
+            tex->renderFlags |= 4;
         }
         break;
     case 4:
     case 5:
     case 6:
         imgFmt = G_IM_FMT_IA;
-        tex->flags |= 4;
+        tex->renderFlags |= 4;
         break;
     default:
         imgFmt = G_IM_FMT_I;
@@ -977,10 +956,10 @@ void func_80035F48(u8 **dlist, TextureFrameHeader *tex, s32 rtile,
     } else {
         line = texWidth * imgSizTileBytes;
     }
-    if (tex->unk1B >= 2) {
+    if (tex->mipLevels >= 2) {
         i = 0;
         size = 0;
-        for (; i < tex->unk1B; i++) {
+        for (; i < tex->mipLevels; i++) {
             size += (texWidth >> i) * (texHeight >> i);
         }
         gDPSetTextureImage(dl++, imgFmt, imgSiz, 1, OS_PHYSICAL_TO_K0(tex + 1));
@@ -988,9 +967,9 @@ void func_80035F48(u8 **dlist, TextureFrameHeader *tex, s32 rtile,
         gDPLoadSync(dl++);
         gDPLoadBlock(dl++, G_TX_LOADTILE, 0, 0, ((size + imgSizIncr) >> imgSizShift) - 1, 0);
         gDPPipeSync(dl++);
-        for (i = 0; i < tex->unk1B; i++) {
-            gDPSetTile(dl++, imgFmt, tileImgSiz, (line + 7) >> 3, tmem, rtile, 0, tex->unk1E,
-                       tex->unk1F - i, i, tex->unk1C, tex->isCompressed - i, i);
+        for (i = 0; i < tex->mipLevels; i++) {
+            gDPSetTile(dl++, imgFmt, tileImgSiz, (line + 7) >> 3, tmem, rtile, 0, tex->tileModeT,
+                       tex->maskT - i, i, tex->tileModeS, tex->maskS - i, i);
             gDPSetTileSize(dl++, rtile, 0, 0, (texWidth - 1) << G_TEXTURE_IMAGE_FRAC,
                            (texHeight - 1) << G_TEXTURE_IMAGE_FRAC);
             tmem += ((line + 7) >> 3) * texHeight;
@@ -999,18 +978,18 @@ void func_80035F48(u8 **dlist, TextureFrameHeader *tex, s32 rtile,
             texHeight >>= 1;
             line >>= 1;
         }
-        gSPTexture(dl++, 0, 0, tex->unk1B - 1, 0, 1);
+        gSPTexture(dl++, 0, 0, tex->mipLevels - 1, 0, 1);
         gSPEndDisplayList(dl++);
     } else {
         gDPSetTextureImage(dl++, imgFmt, imgSiz, 1, OS_PHYSICAL_TO_K0(tex + 1));
-        gDPSetTile(dl++, imgFmt, imgSiz, 0, tmem, G_TX_LOADTILE, 0, tex->unk1E, tex->unk1F, 0,
-                   tex->unk1C, tex->isCompressed, 0);
+        gDPSetTile(dl++, imgFmt, imgSiz, 0, tmem, G_TX_LOADTILE, 0, tex->tileModeT, tex->maskT, 0,
+                   tex->tileModeS, tex->maskS, 0);
         gDPLoadSync(dl++);
         gDPLoadBlock(dl++, G_TX_LOADTILE, 0, 0,
                      ((texWidth * texHeight + imgSizIncr) >> imgSizShift) - 1, 0);
         gDPPipeSync(dl++);
-        gDPSetTile(dl++, imgFmt, tileImgSiz, (line + 7) >> 3, tmem, rtile, 0, tex->unk1E,
-                   tex->unk1F, 0, tex->unk1C, tex->isCompressed, 0);
+        gDPSetTile(dl++, imgFmt, tileImgSiz, (line + 7) >> 3, tmem, rtile, 0, tex->tileModeT,
+                   tex->maskT, 0, tex->tileModeS, tex->maskS, 0);
         gDPSetTileSize(dl++, rtile, 0, 0, (texWidth - 1) << G_TEXTURE_IMAGE_FRAC,
                        (texHeight - 1) << G_TEXTURE_IMAGE_FRAC);
     }
@@ -1046,7 +1025,7 @@ s32 texAnimateSprite(Sprite *sprite, s32 *flags, s32 speed, f32 *frame, s32 upda
     finished = 0;
     curFrame = *frame;
     tex = sprite->textures[0];
-    if (!(tex->flags & 0x40)) {
+    if (!(tex->renderFlags & 0x40)) {
         if (pingPong) {
             maxFrame = (f32)(u32)sprite->numberOfFrames - 0.5f;
             if (loop) {
@@ -1060,7 +1039,7 @@ s32 texAnimateSprite(Sprite *sprite, s32 *flags, s32 speed, f32 *frame, s32 upda
         }
     } else {
         minFrame = 0.0f;
-        if (pingPong || !loop || !(tex->spriteFlags & 2)) {
+        if (pingPong || !loop || !(tex->storageFlags & 2)) {
             maxFrame = (f32)(u32)sprite->numberOfFrames - 1.0f;
         } else {
             maxFrame = (f32)(u32)sprite->numberOfFrames;

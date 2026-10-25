@@ -90,7 +90,7 @@ typedef struct O57Pair {
 
 /* Tier B: actual texture renderer node fields; Tier D: this recovered
  * ten-node writable view does not establish an eleventh sentinel. */
-typedef struct RcpTextureInfo RcpTextureInfo;
+#include "game/texture_header.h"
 typedef struct RcpTextureNode {
     RcpTextureInfo *texture;
     RcpTextureInfo *alternate;

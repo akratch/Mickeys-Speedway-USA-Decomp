@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 53428,
+  "owned_data_rodata_bytes": 53636,
   "diagnostic_data_rodata_bytes": 304,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -11903,6 +11903,15 @@
      "source": "overlays/o073/overlay_073",
      "trial_function": "func_overlay_073_F0000190_18CAC50",
      "externalized": true
+    },
+    {
+     "offset": "0x0",
+     "end_offset": "0xD0",
+     "size": "0xD0",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o073/overlay73Geometry",
+     "canonical": true
     }
    ]
   },

@@ -1013,6 +1013,11 @@ $(O86_OBJ): POSTPROCESS = \
 	$(OBJCOPY) --remove-section .rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		0x94:5:gOverlay86Vectors 0xa0:6:gOverlay86Vectors
+# Eight real triangles and twelve XYZ seeds naturally emit DATA208:
+# 200 object bytes and eight compiler end-alignment bytes.
+O73_GEOMETRY := $(BUILD_DIR)/$(SRC_DIR)/overlays/o073/overlay73Geometry.c.o
+$(O73_GEOMETRY): private PLAIN_DATA_PROOF = 1
+$(O73_GEOMETRY): private PLAIN_DATA_RUNTIME_ROLE = data
 # Overlay 73 is one translation unit under the overlay flag set (the updater's
 # floating multiplies need the R4300 hazard schedule); its .text is the
 # module's 0xEB0 bytes, trailing pad included, so it needs no trim. Until the

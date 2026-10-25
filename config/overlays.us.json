@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 468592,
   "nonmatching_overlay_c_bytes": 0,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 52116,
+  "owned_data_rodata_bytes": 52196,
   "diagnostic_data_rodata_bytes": 304,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
@@ -9198,7 +9198,27 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 22
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x30",
+     "size": "0x30",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o056/overlay56MarkerData",
+     "canonical": true
+    },
+    {
+     "offset": "0x30",
+     "end_offset": "0x50",
+     "size": "0x20",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o056/overlay56MarkerTriangles",
+     "canonical": true
+    }
+   ]
   },
   {
    "overlay": 57,

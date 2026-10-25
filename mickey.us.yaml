@@ -2683,13 +2683,15 @@ segments:
     vram: 0xF0000000
     bss_size: 0x10
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o056
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18A2D78, c, overlay_056]
-      - [0x18A3878, bin, overlay_056_data_rodata]
+      - [0x18A3878, .data, overlay56MarkerData]
+      - [0x18A38A8, .data, overlay56MarkerTriangles]
+      - [0x18A38C8, bin, overlay_056_data_rodata]
 
   - name: overlay_056_reloc1
     type: bin

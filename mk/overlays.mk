@@ -69,6 +69,12 @@ include mk/overlay_061.mk
 # IDO's 16-byte .text alignment emits the trailing pad, so no trim; resident
 # calls are renamed by the generated surface rebinds.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: CFLAGS += -Wab,-r4300_mul
+# Actual texture cell/marker vertices and two marker triangles; complete
+# natural writable inputs, including only their compiler end alignment.
+O56_MARKER_DATA := $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay56MarkerData.c.o
+O56_MARKER_TRIANGLES := $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay56MarkerTriangles.c.o
+$(O56_MARKER_DATA) $(O56_MARKER_TRIANGLES): private PLAIN_DATA_PROOF = 1
+$(O56_MARKER_DATA) $(O56_MARKER_TRIANGLES): private PLAIN_DATA_RUNTIME_ROLE = data
 # Overlay 67: one module TU under the overlay flag set; IDO's 16-byte .text
 # alignment emits the module's trailing pad itself, so no trim.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o067/overlay_067.c.o: CFLAGS += -Wab,-r4300_mul

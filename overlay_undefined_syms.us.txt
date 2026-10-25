@@ -1436,6 +1436,7 @@ D_800D3140_o051Reloc = 0x00000000;
 D_800D3144_o051Reloc = 0x00000000;
 D_800D31C8_o051Reloc = 0x00000000;
 D_800D3550_o051Reloc = 0x00000000;
+amTunePlay_o051Reloc = 0xf0000000;
 amTuneSetFade_o051Reloc = 0xf0000000;
 camStandardOrtho_o051Reloc = 0xf0000000;
 ext_o1_83e0_o051Reloc = 0x00000000;
@@ -1459,14 +1460,18 @@ gOverlay51Resource18_o051Reloc = 0x00000018;
 gOverlay51TimeGlyphs = 0x0000001c;
 gOverlay51TransitionDone = 0x000000f0;
 levelGetLevel_o051Reloc = 0xf0000000;
+levelGetNumber_o051Reloc = 0xf0000000;
 loadFrontEndItem_o051Reloc = 0xf0000000;
+loadFrontEndList_o051Reloc = 0xf0000000;
 mainChangeLevel_o051Reloc = 0xf0000000;
 mainGetMode_o051Reloc = 0xf0000000;
-overlay51CreateReloc = 0xf0000000;
+overlay56LoadResource_o051Reloc = 0xf0000000;
 overlay56ReleaseResource_o051Reloc = 0xf0000000;
 overlay56SplitTime_o051Reloc = 0xf0000000;
 overlay59BuildList_o051Reloc = 0xf0000000;
 overlay59Interpolate_o051Reloc = 0xf0000000;
+runlinkDownloadCode_o051Reloc = 0xf0000000;
+setupFrontEndList_o051Reloc = 0xf0000000;
 texDPInit_o051Reloc = 0xf0000000;
 
 /* overlay 53: overlay_053.c.o */

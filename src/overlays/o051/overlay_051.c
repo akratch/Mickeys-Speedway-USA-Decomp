@@ -14,16 +14,16 @@
 static void overlay51PatchIndices();
 
 void overlay51Initialize(void) {
-    overlay51CreateReloc(gOverlay51Resource0_o051Reloc);
-    overlay51CreateReloc(gOverlay51Resource18_o051Reloc);
-    overlay51CreateReloc(4);
-    overlay51CreateReloc(11);
+    loadFrontEndList_o051Reloc(gOverlay51Resource0_o051Reloc);
+    setupFrontEndList_o051Reloc(gOverlay51Resource18_o051Reloc);
+    amTunePlay_o051Reloc(4);
+    runlinkDownloadCode_o051Reloc(11);
     overlay51PatchIndices(gOverlay51ClockGlyphs);
     overlay51PatchIndices(gOverlay51TimeGlyphs);
     gOverlay51HudHeight = -80.0f;
-    overlay51CreateReloc();
+    overlay56LoadResource_o051Reloc();
     gOverlay51Item = -1;
-    gOverlay51Handle = overlay51CreateReloc();
+    gOverlay51Handle = levelGetNumber_o051Reloc();
 }
 
 static void overlay51PatchIndices(OverlayPatchIndexEntry *entry) {

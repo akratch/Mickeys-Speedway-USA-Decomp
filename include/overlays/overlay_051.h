@@ -26,7 +26,12 @@ extern s32 gOverlay51TransitionDone;
 extern f32 gOverlay51HudHeight;
 extern s16 gOverlay51Handle;
 
-s32 overlay51CreateReloc();
+void loadFrontEndList_o051Reloc(s16 *assetGroup);
+void setupFrontEndList_o051Reloc(s16 *objectGroup);
+void amTunePlay_o051Reloc(u8 sequenceId);
+s32 runlinkDownloadCode_o051Reloc(s32 overlayIndex);
+void overlay56LoadResource_o051Reloc(void);
+s32 levelGetNumber_o051Reloc(void);
 void freeFrontEndList(void *resource);
 void overlay56ReleaseResource(void);
 void freeFrontEndItem(s32 index);

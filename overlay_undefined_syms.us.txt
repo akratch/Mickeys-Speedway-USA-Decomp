@@ -2840,7 +2840,6 @@ func_8000FAE0_o092Reloc = 0xf0000000;
 func_8002A8BC_o092Reloc = 0xf0000000;
 func_8002A8C0_o092Reloc = 0xf0000000;
 func_overlay_008_F00042A8_o092Reloc = 0xf0000000;
-gOverlay92DistanceParameters = 0x00000000;
 levelGetNumber_o092Reloc = 0xf0000000;
 mathDiffAngle_o092Reloc = 0xf0000000;
 mathRnd_o092Reloc = 0xf0000000;

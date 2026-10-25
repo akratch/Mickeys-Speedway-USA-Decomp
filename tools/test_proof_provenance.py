@@ -484,8 +484,9 @@ class LiteralArrayEndTests(unittest.TestCase):
     def test_preloaded_parser_or_lexical_then_first_call_disk_mutation_refuses(self):
         import shutil,subprocess,json
         canonical=pathlib.Path(provenance.__file__).resolve().parent.parent
-        for module in ("parser","lexical"):
-            with self.subTest(module=module),tempfile.TemporaryDirectory() as directory:
+        for profile in ("literal", "static"):
+          for module in ("parser","lexical"):
+            with self.subTest(module=module, profile=profile),tempfile.TemporaryDirectory() as directory:
                 root=pathlib.Path(directory);tools=root/"tools";tools.mkdir()
                 for name in ("proof_provenance.py","trim_elf_section.py","candidate_context.py"):
                     shutil.copy2(canonical/"tools"/name,tools/name)
@@ -502,7 +503,7 @@ class LiteralArrayEndTests(unittest.TestCase):
                     "path=root/"+repr("tools/permuter/perm_pycparser/c_parser.py" if module=="parser" else "tools/candidate_context.py"),
                     "before=path.read_bytes(); path.write_bytes(before+b'\\n# changed after loading\\n')",
                     "assert path.read_bytes()!=before",
-                    "try: proof.literal_array_facts(b'char label[]=\"x\";',b'char label[]=\"x\";',root)",
+                    ("try: proof.literal_array_facts(b'char label[]=\"x\";',b'char label[]=\"x\";',root)" if profile=="literal" else "try: proof.static_source_facts(b'static long x=0;',['-32'],root,{'x'})"),
                     "except proof.MetadataProofError as error: print(error)",
                     "else: raise SystemExit('accepted changed preloaded code')",
                 ])
@@ -573,6 +574,110 @@ class LiteralArrayEndTests(unittest.TestCase):
                     with self.assertRaises(provenance.MetadataProofError):
                         provenance.prove_literal_arrays(raw,source,root,
                           compiler_command="tools/ido/cc -c -nostdinc -o raw.o src/strings.c")
+
+
+class StaticSourceExtentTests(unittest.TestCase):
+    ROOT = pathlib.Path(provenance.__file__).resolve().parent.parent
+    CPP = b'typedef long Base; typedef Base Counter; static Counter index=0; static Counter states[8];'
+
+    def test_typedef_resolved_extent_is_independent_of_allocation(self):
+        facts = provenance.static_source_facts(self.CPP, ['-32'], self.ROOT, {'index','states'})
+        self.assertEqual([(r['name'],r['size']) for r in facts], [('index',4),('states',32)])
+        short = provenance.static_source_facts(self.CPP.replace(b'[8]',b'[7]'), ['-32'], self.ROOT, {'states'})
+        self.assertEqual(short[0]['size'],28)
+        self.assertEqual(short[0]['count'],7)
+
+    def test_missing_duplicate_nested_and_unsupported_types_fail_closed(self):
+        cases = [b'typedef int Counter; static Counter index=0;',
+                 b'typedef unsigned long Counter; static Counter index=0;',
+                 b'static long *index=0;',b'static const long index=0;',
+                 b'#pragma unknown_extent\nstatic long index=0;',
+                 b'struct S { long x; }; static struct S index={0};',
+                 b'static long index;',b'static long index=1;',
+                 b'static long index[0];',b'static long index[];',
+                 b'static long index[8][2];',b'static long index[8]={0};',
+                 b'static long index[4+4];',b'static long index[99999999999];',
+                 b'static long index=0; static long index=0;',
+                 b'static long index=0; void f(void) { long index; }',
+                 b'typedef long Counter; typedef long Counter; static Counter index=0;',
+                 b'static long other=0;']
+        for cpp in cases:
+            with self.subTest(cpp=cpp), self.assertRaises(provenance.MetadataProofError):
+                provenance.static_source_facts(cpp,['-32'],self.ROOT,{'index'})
+        with self.assertRaises(provenance.MetadataProofError):
+            provenance.static_source_facts(self.CPP,['-64'],self.ROOT,{'index'})
+
+    def test_anchor_reader_preload_and_after_load_mutation_refuse(self):
+        import shutil,subprocess
+        for preload in (True,False):
+            with self.subTest(preload=preload), tempfile.TemporaryDirectory() as directory:
+                root=pathlib.Path(directory);(root/'tools').mkdir()
+                path=root/'tools/static_symbols.py';shutil.copy2(self.ROOT/'tools/static_symbols.py',path)
+                script='\n'.join([
+                    'import sys,pathlib',
+                    'sys.path.insert(0,'+repr(str(self.ROOT/'tools'))+')',
+                    'import proof_provenance as pp',
+                    'root=pathlib.Path('+repr(str(root))+')',
+                    'sys.path.insert(0,str(root/"tools"))',
+                    'import static_symbols' if preload else 'pp.static_anchor_module(root)',
+                    'path=root/"tools/static_symbols.py"; path.write_bytes(path.read_bytes()+b"\\n# changed\\n")',
+                    'try: pp.static_anchor_module(root)',
+                    'except pp.MetadataProofError as error: print(error)',
+                    'else: raise SystemExit("accepted changed anchor code")'])
+                result=subprocess.run([sys.executable,'-c',script],capture_output=True,text=True)
+                self.assertEqual(result.returncode,0,result.stderr+result.stdout)
+                self.assertIn('preloaded' if preload else 'changed',result.stdout)
+
+    def fixture(self, **options):
+        import runlink_pack as rp
+        ss = provenance.static_anchor_module(self.ROOT)
+        from test_static_symbols import build_object
+        settings=dict(statics=(),placeholder=False,bss=(('states',0),),bss_flags=3,bss_size=32,
+                      data_anchors=(('index',0),),data_size=16)
+        settings.update(options)
+        compiler=rp.Elf('compiler',build_object(**settings))
+        raw=rp.Elf('prepared',ss.add_static_symbols(compiler.data)[0])
+        return compiler,raw
+
+    def test_exact_anchor_only_preserves_zero_sizes_and_refuses_stale_observations(self):
+        import runlink_pack as rp
+        compiler,raw=self.fixture()
+        facts=provenance.static_source_facts(self.CPP,['-32'],self.ROOT,{'index','states'})
+        with tempfile.TemporaryDirectory(dir=self.ROOT/'build') as directory:
+            source=pathlib.Path(directory)/'input.c';source.write_bytes(self.CPP)
+            inputs=((source.relative_to(self.ROOT).as_posix(),provenance.sha256_file(source)),)
+            witness=provenance.static_source_witness(compiler,raw,raw,facts,'source','cpp',inputs,self.ROOT,'tool')
+            self.assertEqual(witness.exact_anchor(raw,raw,'.data',0).semantic_size,4)
+            self.assertEqual(witness.exact_anchor(raw,raw,'.data',0).allocation,16)
+            for offset in (4,8,12,15,16,28,32):
+                with self.subTest(offset=offset), self.assertRaises(provenance.MetadataProofError):
+                    witness.exact_anchor(raw,raw,'.data',offset)
+            with self.assertRaises(provenance.MetadataProofError):
+                witness.exact_anchor(rp.Elf('same-bytes-new-observation',raw.data),raw,'.data',0)
+            for symbol in raw.symbols:
+                if symbol.name in ('index','states'):self.assertEqual(symbol.size,0)
+            source.write_bytes(self.CPP.replace(b'[8]',b'[7]'))
+            with self.assertRaisesRegex(provenance.MetadataProofError,'stale'):
+                witness.exact_anchor(raw,raw,'.data',0)
+            shorter=provenance.static_source_facts(source.read_bytes(),['-32'],self.ROOT,{'index','states'})
+            fresh_inputs=((source.relative_to(self.ROOT).as_posix(),provenance.sha256_file(source)),)
+            fresh=provenance.static_source_witness(compiler,raw,raw,shorter,'source7','cpp7',fresh_inputs,self.ROOT,'tool')
+            self.assertEqual((fresh.exact_anchor(raw,raw,'.bss',0).semantic_size,raw.size('.bss')),(28,32))
+
+    def test_missing_competing_or_changed_linked_anchor_refuses(self):
+        import runlink_pack as rp
+        facts=provenance.static_source_facts(self.CPP,['-32'],self.ROOT,{'index','states'})
+        for options in ({'data_anchors':()}, {'data_anchors':(('index',0),('extra',4))}, {'data_anchors':(('index',0),('extra',0))},
+                        {'data_anchors':(('index',0),),'existing_data':(('other',4,0,'local'),)}):
+            with self.subTest(options=options):
+                compiler,raw=self.fixture(**options)
+                with self.assertRaises(provenance.MetadataProofError):
+                    provenance.static_source_witness(compiler,raw,raw,facts,'source','cpp',(),self.ROOT,'tool')
+        compiler,raw=self.fixture()
+        linked=rp.Elf('linked-changed',raw.data)
+        linked.symbols[next(i for i,symbol in enumerate(linked.symbols) if symbol.name=='index')].__dict__['size']=4
+        with self.assertRaises(provenance.MetadataProofError):
+            provenance.static_source_witness(compiler,raw,linked,facts,'source','cpp',(),self.ROOT,'tool')
 
 if __name__ == "__main__":
     unittest.main()

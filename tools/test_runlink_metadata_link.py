@@ -248,6 +248,26 @@ class EditedReceiptTests(unittest.TestCase):
         self.assertEqual(link.edited_program_selectors(source),
                          ['build/assets/opaque.bin.o', 'build/src/overlays/o034/unit.c.o'])
 
+    def test_publication_rewalk_refuses_new_same_bytes_shadow_header(self):
+        import permute_batch as batch
+        root=link.REPO;(root/'build').mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix='static-shadow-',dir=root/'build') as directory:
+            folder=Path(directory);source=folder/'source.c';source.write_text('#include <types.h>\n')
+            first,second=folder/'first',folder/'second';first.mkdir();second.mkdir()
+            lower=second/'types.h';lower.write_text('typedef long Counter;\n')
+            args=['-nostdinc','-I',first.relative_to(root).as_posix(),'-I',second.relative_to(root).as_posix()]
+            closures={1:batch.source_dependencies(source,tuple(args))};products={1:(source.with_suffix('.o'),)}
+            self.assertTrue(link.edited_source_closures_current(products,closures,{1:args}))
+            (first/'types.h').write_bytes(lower.read_bytes())
+            self.assertFalse(link.edited_source_closures_current(products,closures,{1:args}))
+
+    def test_compiler_identity_keeps_define_include_order_without_private_paths(self):
+        first=['-c','-DCOUNT=8','-DCOUNT=7','-I','include','-32','-o','build/private/a.o','source.c']
+        other=first[:-3]+['-o','build/different/b.o','other.c']
+        self.assertEqual(link.edited_compiler_flags(first),link.edited_compiler_flags(other))
+        changed=list(first);changed[1:3]=reversed(changed[1:3])
+        self.assertNotEqual(link.edited_compiler_flags(first),link.edited_compiler_flags(changed))
+
     def test_complete_source_recipe_is_required(self):
         source = 'src/overlays/o034/unit.c'; target = 'build/'+source+'.o'
         compile_line = f'wrapper tools/ido/cc -- as -- -c -o {target} {source}\n'
@@ -331,7 +351,8 @@ class EditedReceiptTests(unittest.TestCase):
             provider = root / 'provider.o'; provider.write_bytes(b'actual input')
             output = directory / 'final.bin'; output.write_bytes(b'validated')
             expected = pilot.artifact_hashes(directory)
-            request = {'outside_rom': 'first.z64', 'selected_modules': [75], 'declaration_sha256': 'catalogA'}
+            request = {'outside_rom': 'first.z64', 'selected_modules': [75], 'declaration_sha256': 'catalogA',
+                       'compiler_flags': {'75': ['-c','-DCOUNT=8','-32']}}
             receipt = {'schema': 'mickey-edited-source-build-v2', 'variant': 'control', 'request': request,
                        'artifacts': expected, 'inputs': {'provider.o': link.digest(provider)},
                        'provider_holds': {}, 'toolchain': {}, 'projection_toolchain': {},
@@ -348,6 +369,8 @@ class EditedReceiptTests(unittest.TestCase):
                 self.assertIsNone(link.edited_current(root, parent, 'control', {'outside_rom': 'second.z64'}))
                 self.assertIsNone(link.edited_current(root, parent, 'control', {**request, 'selected_modules': [34]}))
                 self.assertIsNone(link.edited_current(root, parent, 'control', {**request, 'declaration_sha256': 'catalogB'}))
+                self.assertIsNone(link.edited_current(root, parent, 'control',
+                    {**request, 'compiler_flags': {'75': ['-c','-DCOUNT=7','-32']}}))
                 provider.write_bytes(b'changed')
                 self.assertIsNone(link.edited_current(root, parent, 'control', request))
                 provider.unlink()
@@ -365,5 +388,83 @@ class EditedReceiptTests(unittest.TestCase):
                 with mock.patch.object(pilot, 'artifact_hashes', side_effect=replace_after_validation):
                     self.assertIsNone(link.edited_current(root, parent, 'control', request))
 
+
+class EditedStaticCppTests(unittest.TestCase):
+    def test_actual_cpp_typedef_conditional_and_loaded_artifact_holds(self):
+        root=link.REPO
+        if not (root/'tools/ido/cc').is_file():self.skipTest('configured IDO unavailable')
+        (root/'build').mkdir(exist_ok=True)
+        import runlink_pack as rp
+        with tempfile.TemporaryDirectory(prefix='static-cpp-',dir=root/'build') as temporary:
+            directory=Path(temporary);header=directory/'types.h'
+            normal=b'#if SHORT\n#define COUNT 7\n#else\n#define COUNT 8\n#endif\ntypedef long Counter;\n'
+            header.write_bytes(normal)
+            text='#include "types.h"\nstatic Counter index=0; static Counter states[COUNT];\nvoid step(void) { index=(index+1)&3; states[index]=index; }\n'
+            base=['-c','-non_shared','-G','0','-Xcpluscomm','-nostdinc','-O2','-mips2','-32']
+            def capture(label,short=0):
+                args=base+['-DSHORT='+str(short),'-o','unused.o','unused.c']
+                return link.edited_compile(root,directory,label,text,rp.OrtNames([],{}),args,[])[0]
+            # Existing dependency reader must fail before compiling unknown inputs.
+            bad='#define HEADER "types.h"\n#include HEADER\nstatic long index=0;'
+            with self.assertRaisesRegex(RuntimeError,'macro include'):
+                link.edited_compile(root,directory,'computed',bad,rp.OrtNames([],{}),
+                                    base+['-o','unused.o','unused.c'],[])
+            with tempfile.TemporaryDirectory() as outside:
+                external=Path(outside)/'external-types.h';external.write_bytes(normal)
+                with self.assertRaises((ValueError,RuntimeError)):
+                    link.edited_compile(root,directory,'external',
+                        '#include <external-types.h>\nstatic Counter index=0;',rp.OrtNames([],{}),
+                        base+['-I',outside,'-o','unused.o','unused.c'],[])
+            first=capture('full')
+            second=capture('short',1)
+            witness=first['static_source'];short=second['static_source']
+            self.assertEqual([(e.semantic_size,e.allocation) for e in witness.extents],[(4,16),(32,32)])
+            self.assertEqual([(e.semantic_size,e.allocation) for e in short.extents],[(4,16),(28,32)])
+            self.assertNotEqual(witness.cpp_sha256,short.cpp_sha256)
+            for obj in (first,second):
+                for section in ('.data','.bss'):
+                    rels=obj['raw'].rels('.text')
+                    rel=next(r for r in rels if r.sym.section==section)
+                    target=rp.edited_section_operand(obj,rel,0,'.text',rels)
+                    self.assertEqual(target[0],section)
+                    for addend in (4,15,16,28,32):
+                        with self.assertRaises(rp.PackError):
+                            rp.edited_section_operand(obj,rel,addend,'.text',rels)
+            with self.assertRaises(pp.MetadataProofError):
+                witness.exact_anchor(second['raw'],second['linked'],'.bss',0)
+            for obj in (first,second):
+                for image in (obj['raw'],obj['linked']):
+                    self.assertTrue(all(s.size==0 for s in image.symbols if s.name in ('index','states')))
+            header.write_bytes(normal.replace(b'typedef long Counter',b'typedef unsigned long Counter'))
+            with self.assertRaisesRegex(pp.MetadataProofError,'stale'):
+                witness.exact_anchor(first['raw'],first['linked'],'.data',0)
+            with self.assertRaisesRegex(link.MetadataLinkError,'element type'):
+                capture('wrong-type')
+            header.write_bytes(normal)
+            original=link.write_changed
+            def replace_cpp(path,payload):
+                original(path,payload)
+                if str(path).endswith('-effective.i'):path.write_bytes(b'changed after parsing')
+            with mock.patch.object(link,'write_changed',side_effect=replace_cpp):
+                with self.assertRaisesRegex(rp.PackError,'CPP/audit'):
+                    capture('changed-cpp')
+            fresh=capture('recover')
+            self.assertEqual(fresh['static_source'].exact_anchor(fresh['raw'],fresh['linked'],'.bss',0).semantic_size,32)
+            corrupt=dict(fresh);corrupt['static_source']=fresh['static_source_audit']
+            rels=fresh['raw'].rels('.text');rel=next(r for r in rels if r.sym.section=='.data')
+            with self.assertRaisesRegex(rp.PackError,'untrusted'):
+                rp.edited_section_operand(corrupt,rel,0,'.text',rels)
+            linked_symbol=next(s for s in fresh['linked'].symbols if s.name=='index')
+            linked_bytes=fresh['linked'].data
+            object.__setattr__(linked_symbol,'size',4)
+            self.assertEqual(fresh['linked'].data,linked_bytes)
+            with self.assertRaisesRegex(rp.PackError,'surface'):
+                rp.edited_section_operand(fresh,rel,0,'.text',rels)
+            object.__setattr__(linked_symbol,'size',0)
+            original_flags=fresh['raw'].section('.data')['flags']
+            fresh['raw'].section('.data')['flags']=original_flags|4
+            with self.assertRaisesRegex(rp.PackError,'surface'):
+                rp.edited_section_operand(fresh,rel,0,'.text',rels)
+            fresh['raw'].section('.data')['flags']=original_flags
 
 if __name__=='__main__':unittest.main()

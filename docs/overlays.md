@@ -2738,6 +2738,28 @@ Production current-source selection has no fixed75 path replacement or known-row
 address binding. Live references prevent removal and identify actual callers.
 These are build diagnostics, not game execution or native-port implementations.
 
+Current sources76 and81 also admit exact DATA/BSS static-object anchors. This
+closed source witness captures actual IDO `-E` output for the same generated C
+input and ordered compiler options used by the untouched compile. The existing
+pinned parser resolves effective typedefs to signed long under explicit o32;
+only unique file-scope static zero scalars and uninitialized one-dimensional
+arrays with positive unsuffixed decimal bounds are supported. Their actual
+unambiguous compiler anchors and restored LOCAL objects must agree with ordinary
+linked symbols. Original compiler objects and restored/linked symbol sizes stay
+unchanged; semantic extent is separate from allocation and alignment padding.
+
+For example, a four-byte scalar may occupy a sixteen-byte DATA input. A seven-
+element signed-long array has semantic extent28 even if BSS is rounded to32.
+The witness admits only zero-addend HI16/LO16 text operands at the unique exact
+anchor. It does not admit interiors, one-past values, padding, physical-address
+word conversions or competing storage, and it proves no dynamic array-access
+safety. Actual effective CPP/artifact hashes and these facts are recorded under
+`source_static`; the older `source_cpp` field remains a lexical dependency/hash
+closure. Internal immutable witnesses are never loaded from audit JSON. Source,
+header, parser, tool and object observations remain held through publication;
+warm identity also includes ordered current compiler options, excluding private
+output/source path plumbing. The default selected module remains75.
+
 Resident/provider input production uses ordinary Make recipes with an input-only
 Splat linker projection, reading no ROM/symbol/relocation inputs or full extraction
 stamp/bootstrap. The production dependency list is derived from the current

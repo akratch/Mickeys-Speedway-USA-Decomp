@@ -3683,6 +3683,17 @@ def edited_section_operand(obj, rel, addend, section, rels):
         edited_require(len(choices) == 1, 'section operand lacks actual function entry')
         edited_symbol_target(obj, choices[0])
         return '.text', offset, STT_FUNC, choices[0].size
+    if rel.sym.section in ('.data', '.bss') and 'static_source' in obj:
+        import proof_provenance as pp
+        witness = obj['static_source']
+        edited_require(isinstance(witness, pp.StaticSourceWitness), 'untrusted static source witness')
+        edited_require(section == '.text' and rel.type in (R_MIPS_HI16, R_MIPS_LO16)
+                       and addend == 0, 'static source supports zero-addend text HI/LO anchors only')
+        try:
+            extent = witness.exact_anchor(raw, obj['linked'], rel.sym.section, offset)
+        except pp.MetadataProofError as error:
+            raise PackError(str(error)) from error
+        return extent.section, extent.offset, STT_OBJECT, extent.semantic_size
     # Closed current compiler f32-pool case: real four-byte LWC1 read object.
     edited_require(rel.sym.section == '.rodata' and section == '.text'
             and rel.type in (R_MIPS_HI16, R_MIPS_LO16)

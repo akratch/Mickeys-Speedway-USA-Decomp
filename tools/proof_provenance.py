@@ -84,8 +84,8 @@ def _literal_declarations(source):
     return rows
 
 
-def literal_array_facts(source, cpp, root):
-    """Closed source syntax, corroborated by the existing effective-C parser."""
+def _effective_parser(root):
+    """Reuse the bound vendored effective-C parser, never an unbound preload."""
     global _LITERAL_PARSER_PIN
     import candidate_context as lexical
     before = literal_profile_inputs(root)
@@ -111,6 +111,13 @@ def literal_array_facts(source, cpp, root):
         raise MetadataProofError("literal parser changed during loading")
     if _LITERAL_PARSER_PIN is None:
         _LITERAL_PARSER_PIN = before
+    return c_ast, c_parser, before, lexical_identity
+
+
+def literal_array_facts(source, cpp, root):
+    """Closed source syntax, corroborated by the existing effective-C parser."""
+    import candidate_context as lexical
+    c_ast, c_parser, before, lexical_identity = _effective_parser(root)
     if len(cpp) > lexical.MAX_SOURCE_BYTES:
         raise MetadataProofError("literal CPP exceeds the source proof bound")
     rows = _literal_declarations(source)
@@ -142,6 +149,205 @@ def literal_array_facts(source, cpp, root):
         raise MetadataProofError("loaded literal lexical helper changed during parsing") from error
     return rows
 
+
+
+_STATIC_ANCHOR_PIN = None
+
+
+def static_anchor_module(root):
+    """Bind existing metadata reader code on first loading, never a stale preload."""
+    global _STATIC_ANCHOR_PIN
+    path = pathlib.Path(root)/'tools/static_symbols.py'
+    before = sha256_file(path)
+    if _STATIC_ANCHOR_PIN is None:
+        if 'static_symbols' in sys.modules:
+            raise MetadataProofError('preloaded static anchor reader lacks a bound identity')
+        import static_symbols
+        if pathlib.Path(static_symbols.__file__).resolve() != path.resolve() or sha256_file(path) != before:
+            raise MetadataProofError('static anchor reader changed during loading')
+        _STATIC_ANCHOR_PIN = (static_symbols, before)
+    module, identity = _STATIC_ANCHOR_PIN
+    if pathlib.Path(module.__file__).resolve() != path.resolve() or before != identity:
+        raise MetadataProofError('loaded static anchor reader changed')
+    return module
+
+
+def static_source_facts(cpp, flags, root, names):
+    """Closed effective o32 declarations; no allocation-derived sizeof."""
+    import candidate_context as lexical
+    if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF:
+        raise MetadataProofError("loaded static source helper changed")
+    if "-32" not in flags or any(x in flags for x in ("-64", "-n32", "-n64")):
+        raise MetadataProofError("static source extent requires the actual o32 compiler flags")
+    c_ast, c_parser, before, lexical_identity = _effective_parser(root)
+    if len(cpp) > lexical.MAX_SOURCE_BYTES:
+        raise MetadataProofError("static effective C exceeds source proof bound")
+    try:
+        ast = c_parser.CParser().parse(cpp.decode("utf-8"))
+    except Exception as error:
+        raise MetadataProofError("effective static C cannot be parsed") from error
+    aliases = collections.defaultdict(list)
+    declarations = collections.defaultdict(list)
+    for node in ast.ext:
+        if isinstance(node, c_ast.Typedef):
+            aliases[node.name].append(node.type)
+    class Declarations(c_ast.NodeVisitor):
+        def visit_Pragma(self, node):
+            raise MetadataProofError("static source extent does not support pragmas")
+        def visit_Decl(self, node):
+            if node.name in names:
+                declarations[node.name].append(node)
+            self.generic_visit(node)
+    Declarations().visit(ast)
+    def signed_long(node, seen=()):
+        if (not isinstance(node, c_ast.TypeDecl) or node.quals or getattr(node, 'align', None)
+                or not isinstance(node.type, c_ast.IdentifierType)):
+            return False
+        words = node.type.names
+        if sorted(words) in (["long"], ["long", "signed"], ["int", "long"], ["int", "long", "signed"]):
+            return True
+        if len(words) != 1 or words[0] in seen or len(aliases[words[0]]) != 1:
+            return False
+        return signed_long(aliases[words[0]][0], seen + (words[0],))
+    facts = []
+    for name in sorted(names):
+        matches = declarations[name]
+        if len(matches) != 1 or matches[0] not in ast.ext:
+            raise MetadataProofError("static declaration missing/duplicate/nested: " + name)
+        node = matches[0]
+        if node.storage != ["static"] or node.quals or getattr(node, "align", None) or node.funcspec or node.bitsize:
+            raise MetadataProofError("unsupported static storage declaration: " + name)
+        element, count, section = node.type, 1, ".data"
+        if isinstance(element, c_ast.ArrayDecl):
+            if (element.dim_quals or node.init is not None
+                    or not isinstance(element.dim, c_ast.Constant) or element.dim.type != "int"
+                    or not re.fullmatch(r"[1-9][0-9]{0,8}", element.dim.value)):
+                raise MetadataProofError("static array requires a positive literal bound and no initializer")
+            count = int(element.dim.value)
+            element, section = element.type, ".bss"
+        elif not (isinstance(node.init, c_ast.Constant) and node.init.type == "int" and node.init.value == "0"):
+            raise MetadataProofError("static scalar requires integer-zero initialization")
+        if not signed_long(element) or not 0 < count <= ((1 << 31)-1)//4:
+            raise MetadataProofError("unsupported static element type or extent")
+        facts.append(dict(name=name, section=section, element="signed-long-o32", count=count, size=4*count))
+    if (before != literal_profile_inputs(root) or lexical.identity() != lexical_identity):
+        raise MetadataProofError("loaded static source parser/helper changed")
+    return facts
+
+
+def _static_parsed_surface(elf):
+    # Include the existing allocated/symbol snapshot and parsed index authority.
+    return literal_surface(elf), tuple((s.index, s.shndx) for s in elf.symbols)
+
+
+_STATIC_SOURCE_SEAL = object()
+
+
+@dataclasses.dataclass(frozen=True)
+class StaticSourceExtent:
+    name: str
+    section: str
+    offset: int
+    semantic_size: int
+    count: int
+    allocation: int
+    compiler_symbol_size: int | None
+    restored_symbol_size: int
+
+
+@dataclasses.dataclass(frozen=True)
+class StaticSourceWitness:
+    """Internal immutable source fact; audit JSON is never loadable authority."""
+    compiler_sha256: str
+    raw_sha256: str
+    linked_sha256: str
+    raw_surface: tuple
+    linked_surface: tuple
+    source_sha256: str
+    cpp_sha256: str
+    extents: tuple[StaticSourceExtent, ...]
+    inputs: tuple[tuple[str, str], ...]
+    root: pathlib.Path
+    toolchain_sha256: str
+    raw_observation: object = dataclasses.field(repr=False)
+    linked_observation: object = dataclasses.field(repr=False)
+    seal: object = dataclasses.field(repr=False)
+
+    def exact_anchor(self, raw, linked, section, offset):
+        if (self.seal is not _STATIC_SOURCE_SEAL or raw is not self.raw_observation
+                or linked is not self.linked_observation
+                or hashlib.sha256(raw.data).hexdigest() != self.raw_sha256
+                or hashlib.sha256(linked.data).hexdigest() != self.linked_sha256):
+            raise MetadataProofError("static source witness belongs to different object observations")
+        if (_static_parsed_surface(raw) != self.raw_surface
+                or _static_parsed_surface(linked) != self.linked_surface):
+            raise MetadataProofError('static parsed object surface changed after witnessing')
+        if any(sha256_file(self.root/name) != value for name,value in self.inputs):
+            raise MetadataProofError('stale static source/header/parser inputs')
+        static_anchor_module(self.root)
+        choices = [x for x in self.extents if x.section == section]
+        if len(choices) != 1 or offset != choices[0].offset:
+            raise MetadataProofError("static source operand must equal its unique exact object anchor")
+        return choices[0]
+
+
+def static_source_witness(compiler, raw, linked, facts, source_sha256, cpp_sha256, inputs, root, toolchain_sha256):
+    """Join actual compiler anchors/unsized symbols to held semantic extents."""
+    raw_surface, linked_surface = _static_parsed_surface(raw), _static_parsed_surface(linked)
+    statics = static_anchor_module(root)
+    import runlink_pack as rp
+    sections = statics._sections(compiler.data)
+    debug = [x for x in sections if x[-1] == ".mdebug"]
+    if len(debug) != 1:
+        raise MetadataProofError("static source requires one actual compiler mdebug")
+    anchors = {".data": statics.data_anchors(compiler.data, debug[0]),
+               ".bss": statics.bss_anchors(compiler.data, debug[0])}
+    extents = []
+    if len({row['name'] for row in facts}) != len(facts):
+        raise MetadataProofError("duplicate static source facts")
+    for row in facts:
+        if (set(row) != {'name','section','element','count','size'}
+                or row['element'] != 'signed-long-o32' or type(row['count']) is not int
+                or not 0 < row['count'] <= ((1 << 31)-1)//4 or row['size'] != 4*row['count']
+                or row['section'] not in ('.data','.bss')
+                or row['section'] == '.data' and row['count'] != 1):
+            raise MetadataProofError('malformed static source fact')
+    for section in ('.data', '.bss'):
+        if not any(row['section'] == section for row in facts):
+            continue
+        rows = [row for row in facts if row['section'] == section]
+        if len(rows) != 1 or set(anchors[section]) != {rows[0]['name']}:
+            raise MetadataProofError("static target section requires one authentic source storage owner")
+        row = rows[0]; name = row['name']; offset = anchors[section][name]
+        if offset % 4:
+            raise MetadataProofError('static signed-long anchor is not word aligned')
+        if not compiler.size(section) == raw.size(section) == linked.size(section):
+            raise MetadataProofError('static allocation changed across ordinary objects')
+        for image in (compiler, raw, linked):
+            sec = image.section(section)
+            if (not sec or sec['addr'] or sec['flags'] != 3
+                    or sec['type'] != (8 if section == '.bss' else 1)
+                    or not 0 <= offset < offset + row['size'] <= sec['size']):
+                raise MetadataProofError("static semantic extent escapes actual ordinary allocation")
+            if section == '.data' and any(image.bytes_of(section)):
+                raise MetadataProofError("static zero scalar allocation has unexplained nonzero bytes")
+        for image in (raw, linked):
+            definitions = [s for s in image.symbols if s.section == section and s.type not in (3,4)]
+            named = [s for s in image.symbols if s.name == name and s.shndx != rp.SHN_UNDEF]
+            if (len(definitions) != 1 or len(named) != 1 or definitions[0].name != name
+                    or (definitions[0].bind, definitions[0].type, definitions[0].value, definitions[0].size)
+                       != (rp.STB_LOCAL, rp.STT_OBJECT, offset, 0)):
+                raise MetadataProofError("static anchor/ordinary unsized LOCAL definition differs or overlaps")
+        originals = [s for s in compiler.symbols if s.name == name and s.shndx != rp.SHN_UNDEF]
+        if len(originals) > 1 or any((s.section,s.bind,s.type,s.value,s.size) != (section,rp.STB_LOCAL,rp.STT_OBJECT,offset,0) for s in originals):
+            raise MetadataProofError("original static symbol differs from its address-only anchor")
+        extents.append(StaticSourceExtent(name,section,offset,row['size'],row['count'],raw.size(section),
+                                          originals[0].size if originals else None,0))
+    if _static_parsed_surface(raw) != raw_surface or _static_parsed_surface(linked) != linked_surface:
+        raise MetadataProofError('static parsed object metadata changed during validation')
+    return StaticSourceWitness(hashlib.sha256(compiler.data).hexdigest(),hashlib.sha256(raw.data).hexdigest(),
+        hashlib.sha256(linked.data).hexdigest(),raw_surface,linked_surface,source_sha256,cpp_sha256,tuple(extents),tuple(sorted(inputs)),
+        pathlib.Path(root),toolchain_sha256,raw,linked,_STATIC_SOURCE_SEAL)
 
 def literal_raw_end(elf, rows):
     """Actual unsized definitions bind exact C bytes, including every NUL."""

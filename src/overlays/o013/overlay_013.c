@@ -63,12 +63,12 @@ static void overlay13Initialize(void) {
     if (resource != 0) {
         width = (resource->width - 1) << 5;
         height = (resource->height - 1) << 5;
-        *(s16 *)(gOverlay13Output + 0x08) = width;
-        *(s16 *)(gOverlay13Output + 0x0C) = width;
-        *(s16 *)(gOverlay13Output + 0x0E) = height;
-        *(s16 *)(gOverlay13Output + 0x18) = width;
-        *(s16 *)(gOverlay13Output + 0x1A) = height;
-        *(s16 *)(gOverlay13Output + 0x1E) = height;
+        gOverlay13QuadTriangles_o013Reloc[0].uv1U = width;
+        gOverlay13QuadTriangles_o013Reloc[0].uv2U = width;
+        gOverlay13QuadTriangles_o013Reloc[0].uv2V = height;
+        gOverlay13QuadTriangles_o013Reloc[1].uv1U = width;
+        gOverlay13QuadTriangles_o013Reloc[1].uv1V = height;
+        gOverlay13QuadTriangles_o013Reloc[1].uv2V = height;
     }
     gOverlay13Active_o013Reloc = 1;
 }

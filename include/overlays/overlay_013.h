@@ -3,6 +3,19 @@
 
 #include "PR/ultratypes.h"
 
+typedef struct Overlay13QuadTriangle {
+    u8 flags;
+    u8 vi0;
+    u8 vi1;
+    u8 vi2;
+    s16 uv0U;
+    s16 uv0V;
+    s16 uv1U;
+    s16 uv1V;
+    s16 uv2U;
+    s16 uv2V;
+} Overlay13QuadTriangle;
+
 /* Tier B: the active walks establish 32 records with a 128-byte stride.
  * pad00 and vertices retain incomplete byte-layout views; this does not
  * establish the original field declarations or complete graphics format. */
@@ -59,7 +72,8 @@ extern s32 gOverlay13ActiveCount;
 extern f32 gOverlay13Gravity;
 /* Actual backing pool; this import retains the loader operand. */
 extern Overlay13Record gOverlay13Records_o013Reloc[32];
-extern u8 gOverlay13Output[];
+extern Overlay13QuadTriangle gOverlay13QuadTriangles[2];
+extern Overlay13QuadTriangle gOverlay13QuadTriangles_o013Reloc[2];
 
 extern void *D_20;
 extern u8 *D_24;

@@ -7,7 +7,7 @@ support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `ebc47ded7`; the combined borrowing
+The source measurements here are pinned to `a3cdf2b7d`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -23,10 +23,10 @@ validation and publication are separate acceptance steps.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 53,896 of 61,312 bytes have canonical projected C owners | 7,416 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
-| Initialized images | 48 of 87 data-bearing modules are fully projected to C; 15 are partial and 24 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
+| Initialized storage | 54,152 of 61,312 bytes have canonical projected C owners | 7,160 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized images | 49 of 87 data-bearing modules are fully projected to C; 15 are partial and 23 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 31 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 5,329 records still borrow authority: 5,277 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 5,325 records still borrow authority: 5,273 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 31 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
 
@@ -34,6 +34,20 @@ Source independence also requires reviewing encoded-coordinate names,
 retained target storage and borrowed placements within object-produced records.
 There are also 21 borrowed placements and 24 borrowed read-only section origins.
 The direct borrowing counter alone does not measure those dependencies.
+
+Overlay 17 now supplies its complete 256-byte template through the existing
+16-record C type and constructor copy. All ten fields per record are consumed;
+untouched text, function boundaries and ordered relocation sites remain exact.
+Four former placeholder references now name the genuine global DATA object.
+The sized raw definition and actual source map prove ownership; the final
+stored-addend ABS anchor is not runtime-address authority.
+
+Overlay 65 now supplies its full 10,640-byte BSS extent through nine real
+objects: 10,630 object bytes and ten bytes of compiler alignment. Its header
+size is derived from this complete linked allocation. Existing import aliases,
+subobject and pointer views, and resource lifetime contracts remain open.
+Neither physical owner establishes general source-only relayout or native
+readiness.
 
 An explicit current-source selection of overlays 26, 34, 37, 38, 66, 75, 76,
 77, 80, 81, 89 and 97 jointly reproduces all 426 selected raw references and the retail

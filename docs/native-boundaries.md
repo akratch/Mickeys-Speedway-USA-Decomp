@@ -140,6 +140,17 @@ matching target register values does not establish compatible C function types.
 Genuine resource cells and counter owners do not close release-provider
 dispatch, cache reentry or graphics-completion lifetime.
 
+The third actuals were inherited from reconstructed creator placeholders; no
+third-parameter contract has been authenticated. Their allocation effect does
+not establish that the incompatible calls are defined, inert C.
+
+One complete compatible declaration/call correction was measured in untouched
+compiler output. It preserved every function boundary and ordered relocation but
+changed one genuine counter-base register allocation in a builder, affecting
+four instruction words. The candidate was not adopted under the exact-output
+standard. The retained unprototyped declaration does not authenticate an
+extra-argument or variadic API.
+
 ## Data, numerical and lifetime assumptions by family
 
 - **Numeric/angle utilities:** [math.h](../include/game/math.h) supplies the

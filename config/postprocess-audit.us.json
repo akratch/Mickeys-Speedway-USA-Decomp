@@ -566,6 +566,20 @@
       ]
     },
     {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
+      "object": "build/src/overlays/o012/overlay12TriangleData.c.o",
+      "offset": null,
+      "overlay": 12,
+      "size": null,
+      "source": "src/overlays/o012/overlay12TriangleData.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
       "c_owned": true,
       "class": "metadata",
       "matched_c": true,
@@ -735,6 +749,20 @@
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
         "objcopy"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
+      "object": "build/src/overlays/o053/overlay53HudControls.c.o",
+      "offset": null,
+      "overlay": 53,
+      "size": null,
+      "source": "src/overlays/o053/overlay53HudControls.c",
+      "tools": [
+        "trim_elf_section.py"
       ]
     },
     {
@@ -1199,9 +1227,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 80
+      "metadata": 82
     },
     "matched_c_bytes_with_postprocess": 301144,
-    "objects_with_postprocess": 80
+    "objects_with_postprocess": 82
   }
 }

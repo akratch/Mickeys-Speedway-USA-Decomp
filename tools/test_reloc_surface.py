@@ -179,7 +179,8 @@ class ResidentRebindSafetyTests(unittest.TestCase):
                 {"fontColour": "fontColour_o014Reloc"}}
         atlas = {"modules": [{"overlay": 14, "text_ownership": [],
                               "rom": {"start": "0x0"}}]}
-        with mock.patch.object(rs.ot, "read_rom_table", return_value=[]), \
+        with mock.patch("proof_provenance.encoded_word_selection", return_value=False), \
+                mock.patch.object(rs.ot, "read_rom_table", return_value=[]), \
                 mock.patch.object(rs.ot, "read_headers", return_value=[]), \
                 mock.patch.object(rs.ot, "build_modules", return_value=[None] * 14), \
                 mock.patch.object(rs.ot, "read_module_relocations", return_value=[]), \
@@ -3663,6 +3664,7 @@ class ForeignTextValueTests(unittest.TestCase):
 
         with contextlib.ExitStack() as stack:
             patch = stack.enter_context
+            patch(mock.patch("proof_provenance.encoded_word_selection", return_value=False))
             patch(mock.patch.object(rs.ot, "read_rom_table", return_value=[]))
             patch(mock.patch.object(rs.ot, "read_headers", return_value=[]))
             patch(mock.patch.object(rs.ot, "build_modules", return_value=[None] * 65))
@@ -4192,6 +4194,34 @@ class ReservedWitnessFidelityTests(unittest.TestCase):
                 with self.assertRaisesRegex(rs.SurfaceComparisonError, "require an overlay candidate"):
                     rs.function_surface_comparison("resident", Path("candidate"), Path("linked"),
                         atlas_path=atlas, reserved_storage_witnesses={"schema_version": 1, "bindings": []})
+
+
+class EncodedAddressAliasTests(unittest.TestCase):
+    def test_closed_marker_never_reads_retail_addends_or_falls_back(self):
+        elf = FakeElf([("",0,0,0,0),("o73TriangleCommandWord",0,0,0x11,rs.SHN_UNDEF)],
+                      [(".text",0,rs.R_MIPS_HI16,1),(".text",4,rs.R_MIPS_LO16,1)])
+        elf.section_bytes=lambda name: bytes(8)
+        elf.section=lambda name:(1,None)
+        with mock.patch.object(rs,"Elf",return_value=elf), \
+                mock.patch.object(rs,"tu_base",return_value=(0,8)), \
+                mock.patch.object(rs.ot,"read_headers",return_value=[]), \
+                mock.patch.object(rs.ot,"build_modules",return_value=[{"text_size":8}]*73), \
+                mock.patch.object(rs.ot,"module_section_ranges",return_value={"text":(0,8)}), \
+                mock.patch.object(rs,"stored_field",side_effect=AssertionError("retail operand read")):
+            with self.assertRaises(rs.SurfaceComparisonError):
+                rs.synthesize(Path("owner.o"),73,b"",[],[])
+            sites,values,conflicts,_=rs.synthesize(Path("owner.o"),73,b"",[],[],encoded_word=True)
+            self.assertEqual((sites,values,conflicts),([],{ },[]))
+            with self.assertRaises(rs.SurfaceComparisonError):
+                rs.synthesize(Path("owner.o"),1,b"",[],[],encoded_word=True)
+
+    def test_abs_marker_cannot_inherit_a_resident_address_identity(self):
+        elf=FakeElf([("o73TriangleCommandWord",0x80000450,0,0x11,rs.SHN_ABS)],[])
+        elf.section=lambda name:(1,None)
+        with tempfile.TemporaryDirectory() as td:
+            identities,_=rs._stable_symbol_identities(Path(td)/"absent",elf,73,0,elf)
+        self.assertNotIn("o73TriangleCommandWord",identities)
+
 
 if __name__ == "__main__":
     unittest.main()

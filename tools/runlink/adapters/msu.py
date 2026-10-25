@@ -78,6 +78,23 @@ def refs_for_module(rp, world, resolver, ov, relocs, expected, rodata_base):
                                   problem="unplaced-site"))
             refs[-1].site = c.offset   # section-relative, for the report
             continue
+        if t.kind == "encoded-word":
+            import proof_provenance as provenance
+            witness = getattr(world, "_encoded_word", None)
+            try:
+                if not isinstance(witness, provenance.EncodedAddressWordWitness) or ov != 73:
+                    raise provenance.MetadataProofError("kit encoded-address role lacks its sealed module")
+                full = witness.operand(world, c.obj, sec, c, c.addend)
+                if (t.name != provenance.ENCODED_WORD_MARKER or t.ident != full
+                        or t.value != witness.origin_offset):
+                    raise provenance.MetadataProofError("kit encoded-address target/origin differs")
+            except (OSError, ValueError, provenance.MetadataProofError, rp.PackError) as error:
+                rp.invalidate_data_import_inventory(world)
+                raise rp.PackError("kit encoded-address operand refused: " + str(error)) from error
+            refs.append(rules.Ref(sec, site, c.type, base=full, full=full, row=None,
+                                  name=t.name, obj=c.obj.label, route=t.route,
+                                  runtime_local_base=witness.origin_offset))
+            continue
         if t.kind == "placeholder":
             e = expected.get((site, c.type))
             if e is None:
@@ -210,6 +227,14 @@ def generate(cfg, rom, shipped):
         refs, extra = refs_for_module(rp, world, resolver, ov, relocs[ov], expected, rodata)
         hdr = header_for(world, resolver, ov, sm)
         gm = rules.build_module(ov, refs, hdr, world.module_image_prefix(ov), rodata, extra)
+        if ov == 73 and getattr(world, "_encoded_word", None) is not None:
+            import proof_provenance as provenance
+            try:
+                world._encoded_word.runtime(gm.image,
+                    [(g.site, g.rec.type, g.rec.op, g.rec.symidx) for g in gm.gens()])
+            except (OSError, ValueError, provenance.MetadataProofError, rp.PackError) as error:
+                rp.invalidate_data_import_inventory(world)
+                raise rp.PackError("kit encoded-address runtime readback: " + str(error)) from error
         mods.append(gm)
         residuals += compare.compare_module(gm, expected, resolver.name_of)
         residuals += compare.compare_header(gm, sm)
@@ -222,6 +247,7 @@ def generate(cfg, rom, shipped):
     main = rules.build_main(main_refs(rp, world, resolver, cfg, shipped), cfg)
     residuals += compare.compare_main(main, shipped.main, lambda i: ort.rows[i] if 0 <= i < len(ort.rows) else str(i))
     gt = compare.gen_tables(mods, main, ort_rows, shipped)
+    rp.check_data_import_holds(world)
     return rp, world, ort, mods, main, residuals, gt
 
 

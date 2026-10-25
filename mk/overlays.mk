@@ -1033,6 +1033,7 @@ $(O73_GEOMETRY): private PLAIN_DATA_RUNTIME_ROLE = data
 # The zero section anchor leaves loader-relative operands unchanged; it is not
 # a C storage definition or source identity. Original raw records remain separate.
 O73_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o073/overlay_073.c.o
+$(O73_OBJ): private ENCODED_ADDRESS_WORD = o73TriangleCommandWord:o73Triangles:overlay_073_DATA_START:func_overlay_073_F0000D70_18CB830:Overlay73Command.w1
 $(O73_OBJ): CFLAGS += -Wab,-r4300_mul
 $(O73_OBJ): $(TOOLS_DIR)/externalize_elf_section.py
 $(O73_OBJ): POSTPROCESS = \

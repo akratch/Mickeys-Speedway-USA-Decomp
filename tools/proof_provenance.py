@@ -1838,14 +1838,16 @@ def capture_edited_provider_raw(root, source, configured, prefix):
         ordinary_provider=True, edited_prefix=prefix)
 
 
-def capture_data_provider_raw(root, source, configured, linked, map_path):
+def capture_data_provider_raw(root, source, configured, linked, map_path, *, preserve_compiler=False):
     """Fresh ordinary-provider C using the same bound producer capture lifecycle."""
     return _capture_configured_raw(root, source, configured, linked, "", producer_map=map_path,
-                                   ordinary_provider=True)
+                                   ordinary_provider=True,
+                                   **({"preserve_compiler": True} if preserve_compiler else {}))
 
 
 def _capture_configured_raw(root, source, configured, linked, postprocess, *,
-                            module_link=False, producer_map=None, ordinary_provider=False, edited_prefix=None):
+                            module_link=False, producer_map=None, ordinary_provider=False, edited_prefix=None,
+                            preserve_compiler=False):
     """Fresh reproduction only: never authenticate an externally supplied raw object."""
     import permute_batch as batch
     import sweep_receipts as receipts
@@ -2005,6 +2007,11 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
         (directory / "compile.log").write_text(str(getattr(failure, "output", "")) + "\n" + repr(failure))
         raise
     (directory / "compile.log").write_text(result.stdout)
+    original_compiler = None
+    if preserve_compiler:
+        original_compiler = directory / "compiler-original.o"
+        original_compiler.write_bytes(raw.read_bytes())
+        keep_observations[original_compiler] = sha256_file(original_compiler)
     if static_lines:
         import static_symbols as statics
         try:
@@ -2096,7 +2103,723 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
         receipt["kept_rodata"] = kept
     if pointer_source:
         receipt["pointer_scalar_source"] = pointer_source
+    if original_compiler is not None:
+        receipt["compiler_original"] = original_compiler.relative_to(root).as_posix()
+        receipt["compiler_original_sha256"] = keep_observations[original_compiler]
     return raw, plan, receipt, context
+
+
+# ADR0030 is a target linker-value role, not an object or an integer-word alias.
+ENCODED_WORD_MARKER = 'o73TriangleCommandWord'
+ENCODED_WORD_OWNER = 'o73Triangles'
+ENCODED_WORD_ORIGIN = 'overlay_073_DATA_START'
+ENCODED_WORD_FUNCTION = 'func_overlay_073_F0000D70_18CB830'
+ENCODED_WORD_SOURCE = 'src/overlays/o073/overlay_073.c'
+ENCODED_WORD_PROVIDER = 'src/overlays/o073/overlay73Geometry.c'
+ENCODED_WORD_TARGET = 'build/' + ENCODED_WORD_SOURCE + '.o'
+ENCODED_WORD_ASSOCIATION = ':'.join((ENCODED_WORD_MARKER, ENCODED_WORD_OWNER,
+    ENCODED_WORD_ORIGIN, ENCODED_WORD_FUNCTION, 'Overlay73Command.w1'))
+_ENCODED_WORD_SEAL = object()
+
+
+def encoded_word_selection(root, dump=None):
+    """A closed program declaration, never evidence for its own semantics."""
+    root = pathlib.Path(root)
+    if not (root/'Makefile').is_file():
+        return False
+    if dump is None:
+        import postprocess_audit as audit
+        dump = audit.run_make_database()
+    # Recursive Make databases may repeat the same complete target assignment.
+    rows = set()
+    for line in dump.splitlines():
+        if line.lstrip().startswith('#') or not re.search(r'\bENCODED_ADDRESS_WORD\b', line):
+            continue
+        row = re.fullmatch(r'(\S+): ENCODED_ADDRESS_WORD = (.*)', line)
+        if row is None:
+            raise MetadataProofError('malformed encoded-address program association')
+        rows.add(row.groups())
+    if rows and rows != {(ENCODED_WORD_TARGET, ENCODED_WORD_ASSOCIATION)}:
+        raise MetadataProofError('unsupported encoded-address program association')
+    present = any(ENCODED_WORD_MARKER in (root/name).read_text()
+                  for name in (ENCODED_WORD_SOURCE, 'include/overlays/overlay_073.h')
+                  if (root/name).is_file())
+    if bool(rows) != present:
+        raise MetadataProofError('encoded-address carrier/held opt-in disagree')
+    return bool(rows)
+
+
+def encoded_word_expression():
+    return (ENCODED_WORD_MARKER + ' = ABSOLUTE((' + ENCODED_WORD_OWNER + ' - '
+            + ENCODED_WORD_ORIGIN + ' + 0x80000000) & 0xffffffff);')
+
+
+
+def encoded_word_generation_inputs(root, objects):
+    """Bind real input roles before rendering; fresh admission still follows linking."""
+    import runlink_pack as rp
+    root = pathlib.Path(root)
+    wanted = {ENCODED_WORD_TARGET, 'build/'+ENCODED_WORD_PROVIDER+'.o'}
+    images = {}; observed = {}
+    for number, path in objects:
+        path = pathlib.Path(path)
+        image = rp.Elf(path)
+        observed[path] = hashlib.sha256(image.data).hexdigest()
+        relative = path.relative_to(root).as_posix()
+        if relative in wanted:
+            if number != 73 or relative in images:
+                raise MetadataProofError('encoded-address input source identity is ambiguous')
+            images[relative] = image
+        for symbol in image.symbols:
+            if symbol.name == ENCODED_WORD_MARKER and (relative != ENCODED_WORD_TARGET
+                    or symbol.shndx != rp.SHN_UNDEF):
+                raise MetadataProofError('encoded-address marker has another input home')
+    if set(images) != wanted:
+        raise MetadataProofError('encoded-address link lacks actual consumer/owner inputs')
+    consumer = images[ENCODED_WORD_TARGET]
+    encoded_word_pair(consumer, consumer)
+    owner = images['build/'+ENCODED_WORD_PROVIDER+'.o']
+    definitions = [symbol for symbol in owner.symbols if symbol.name == ENCODED_WORD_OWNER]
+    section = owner.section('.data')
+    if (len(definitions) != 1 or definitions[0].section != '.data' or definitions[0].bind != rp.STB_GLOBAL
+            or definitions[0].type != rp.STT_OBJECT or definitions[0].size <= 0
+            or not section or section['type'] != 1 or section['flags'] != 3
+            or definitions[0].value < 0 or definitions[0].value + definitions[0].size > section['size']):
+        raise MetadataProofError('encoded-address generation lacks its real sized DATA owner')
+    for name in (ENCODED_WORD_SOURCE, ENCODED_WORD_PROVIDER, 'include/overlays/overlay_073.h',
+                 'Makefile', *[str(p.relative_to(root)) for p in sorted((root/'mk').glob('**/*.mk'))]):
+        path = root/name
+        observed[path] = sha256_file(path)
+    def current():
+        if (not encoded_word_selection(root) or any(sha256_file(path) != digest for path,digest in observed.items())):
+            raise MetadataProofError('encoded-address generation input/selection changed')
+    current()
+    return current
+
+
+def encoded_word_scripts(scripts):
+    """Close the expression and its definitions, not merely its numeric result."""
+    clean = {name: re.sub(r'/\*.*?\*/|//[^\n]*|#[^\n]*', '', text, flags=re.S)
+             for name, text in scripts.items()}
+    if any(re.search(r'\b(?:INCLUDE|INPUT|GROUP|AS_NEEDED|SEARCH_DIR|EXTERN)\b', text) for text in clean.values()):
+        raise MetadataProofError('encoded-address nested linker script is unsupported')
+    carrying = [(name, text) for name, text in clean.items()
+                if re.search(r'\b' + ENCODED_WORD_MARKER + r'\b', text)]
+    if len(carrying) != 1:
+        raise MetadataProofError('encoded-address expression is missing or ambiguous')
+    name, text = carrying[0]
+    line = encoded_word_expression()
+    if (text.count(line) != 1 or len(re.findall(r'\b' + ENCODED_WORD_MARKER + r'\b', text)) != 1
+            or any(re.search(r'\b' + ENCODED_WORD_OWNER + r'\s*(?:<<|>>|[+*/%&|^-])?=', value) for value in clean.values())):
+        raise MetadataProofError('encoded-address expression is not the fixed owner dependency')
+    # The canonical origin is an actual location-counter assignment, once.
+    origins = [(m.group(1), m.group(2).strip()) for text in clean.values()
+               for m in re.finditer(r'\b' + ENCODED_WORD_ORIGIN + r'\s*((?:<<|>>|[+*/%&|^-])?=)\s*([^;]+);', text)]
+    if origins != [('=', '.')]:
+        raise MetadataProofError('encoded-address origin is not the actual DATA boundary')
+    return name
+
+
+def encoded_word_link_inputs(scripts):
+    """Closed current ordinary-script grammar: every input selector is explicit.
+
+    Quoted/non-build paths, archives, bare inputs, includes and other clauses
+    are deliberately unsupported, including zero-sized symbol-only inputs.
+    """
+    inputs = set()
+    atom = r'(?:[A-Za-z_][A-Za-z_0-9]*|0x[0-9A-Fa-f]+|[0-9]+)'
+    calls = {'ABSOLUTE','ADDR','ALIGN','SIZEOF','LOADADDR','HIDDEN','FILL'}
+    for text in scripts.values():
+        clean = re.sub(r'/\*.*?\*/|//[^\n]*|#[^\n]*', '', text, flags=re.S)
+        for line in clean.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            match = re.fullmatch(r'(build/[A-Za-z0-9_./-]+\.o)\((\.[A-Za-z0-9_]+)\);', line)
+            if match:
+                name = match[1]
+                if '..' in pathlib.PurePosixPath(name).parts or pathlib.PurePosixPath(name).as_posix() != name:
+                    raise MetadataProofError('encoded-address input path is not canonical')
+                inputs.add(name)
+                continue
+            if line in ('SECTIONS','{','}','/DISCARD/ :','*(*);'):
+                continue
+            if re.fullmatch(r'\.[A-Za-z0-9_]+(?: '+atom+r'| \(NOLOAD\))? : (?:AT\('+atom+r'\) )?SUBALIGN\([0-9]+\)',line):
+                continue
+            assignment = re.fullmatch(r'[A-Za-z_.][A-Za-z_0-9.]*\s*(?:\+?=)\s*[^;]+;',line)
+            intrinsic = re.fullmatch(r'(?:HIDDEN|FILL)\([^;]+\);',line)
+            if ((assignment or intrinsic) and re.fullmatch(r'[A-Za-z_0-9. \t()+*/%&|^<>=!~,-]+;',line)
+                    and set(re.findall(r'([A-Za-z_][A-Za-z_0-9.]*)\s*\(',line)) <= calls):
+                continue
+            raise MetadataProofError('encoded-address unsupported linker input/clause: '+line)
+    if not inputs:
+        raise MetadataProofError('encoded-address link has no explicit input closure')
+    return frozenset(inputs)
+
+
+def replay_encoded_word_link(root, linked, map_path, scripts, link_context):
+    """Replay the actual bound ld invocation; only private output paths differ."""
+    import runlink_pack as rp
+    import permute_batch as batch
+    encoded_word_scripts(scripts)
+    names = encoded_word_link_inputs(scripts)
+    command = list(link_context['command'])
+    if set(scripts) != {command[i+1] for i,value in enumerate(command) if value == '-T'}:
+        raise MetadataProofError('encoded-address replay script/command closure differs')
+    if command.count('-Map') != 1 or command.count('-o') != 1:
+        raise MetadataProofError('encoded-address replay lacks unique actual outputs')
+    if (root/command[command.index('-Map')+1] != map_path
+            or root/command[command.index('-o')+1] != linked):
+        raise MetadataProofError('encoded-address replay output/source context differs')
+    held = {root/name:sha256_file(root/name) for name in names}
+    for name,text in scripts.items():
+        path = root/name
+        held[path] = hashlib.sha256(text.encode()).hexdigest()
+    for name in names:
+        path = root/name; image = rp.Elf(path)
+        if hashlib.sha256(image.data).hexdigest() != held[path]:
+            raise MetadataProofError('encoded-address loaded direct input changed')
+        for symbol in image.symbols:
+            if symbol.name == ENCODED_WORD_MARKER and name != ENCODED_WORD_TARGET:
+                raise MetadataProofError('encoded-address marker has another input home')
+            if symbol.shndx == rp.SHN_UNDEF:
+                continue
+            if symbol.name in (ENCODED_WORD_MARKER, ENCODED_WORD_ORIGIN):
+                raise MetadataProofError('encoded-address zero-storage value/boundary has an input definition')
+            if symbol.name == ENCODED_WORD_OWNER and (name != 'build/'+ENCODED_WORD_PROVIDER+'.o'
+                    or symbol.bind != rp.STB_GLOBAL or symbol.type != rp.STT_OBJECT
+                    or symbol.section != '.data' or symbol.size <= 0):
+                raise MetadataProofError('encoded-address owner has a competing input definition')
+    canonical_map_data = map_path.read_bytes()
+    if hashlib.sha256(canonical_map_data).hexdigest() != link_context['inputs'][map_path.relative_to(root).as_posix()]:
+        raise MetadataProofError('encoded-address loaded canonical map differs from bound context')
+    mapping = tuple(rp.parse_map(map_path,canonical_map_data))
+    if any(row.file not in names for row in mapping):
+        raise MetadataProofError('encoded-address map input is outside the complete script closure')
+    def current():
+        if ({path:sha256_file(path) for path in held} != held
+                or producer_link_context(root,linked,map_path) != link_context):
+            raise MetadataProofError('encoded-address replay input/command closure changed')
+        return True
+    current()
+    parent = root/'build/encoded-word-link-proof';parent.mkdir(parents=True,exist_ok=True)
+    directory = pathlib.Path(tempfile.mkdtemp(prefix='capture-',dir=parent))
+    output, output_map = directory/'linked.elf', directory/'linked.map'
+    replay = command.copy()
+    replay[replay.index('-Map')+1] = str(output_map)
+    replay[replay.index('-o')+1] = str(output)
+    (directory/'inputs.json').write_text(json.dumps({
+        'command':command,'replay':replay,'inputs':{str(p.relative_to(root)):h for p,h in held.items()}},indent=2)+'\n')
+    try:
+        result = batch.bounded_capture(replay,time.monotonic()+120,check=True,cwd=root)
+    except BaseException as error:
+        (directory/'link.log').write_text(str(getattr(error,'output',''))+'\n'+repr(error))
+        raise
+    (directory/'link.log').write_text(result.stdout)
+    current()
+    image, original = rp.Elf(output), rp.Elf(linked)
+    if hashlib.sha256(original.data).hexdigest() != link_context['inputs'][linked.relative_to(root).as_posix()]:
+        raise MetadataProofError('encoded-address loaded canonical ELF differs from bound context')
+    map_data = output_map.read_bytes()
+    reproduced = tuple(rp.parse_map(output_map,map_data))
+    if (metadata_link.allocated(image) != metadata_link.allocated(original)
+            or metadata_link.symbols(image) != metadata_link.symbols(original)
+            or reproduced != mapping):
+        raise MetadataProofError('encoded-address actual ordinary link replay differs from existing ELF/map')
+    held.update({path:sha256_file(path) for path in directory.iterdir() if path.is_file()})
+    held[output] = hashlib.sha256(image.data).hexdigest()
+    held[output_map] = hashlib.sha256(map_data).hexdigest()
+    current()
+    return image, output_map, reproduced, held, current
+
+
+def _encoded_ast(cpp, flags, root):
+    import candidate_context as lexical
+    if '-32' not in flags or any(x in flags for x in ('-64', '-n32', '-n64')):
+        raise MetadataProofError('encoded-address requires the actual o32 compiler ABI')
+    ca, parser, pin, identity = _effective_parser(root)
+    if len(cpp) > lexical.MAX_SOURCE_BYTES:
+        raise MetadataProofError('encoded-address CPP exceeds the existing source bound')
+    try:
+        tree = parser.CParser().parse(cpp.decode())
+    except Exception as error:
+        raise MetadataProofError('encoded-address effective C cannot be parsed') from error
+    def nodes(node):
+        yield node
+        for _, child in node.children():
+            yield from nodes(child)
+    all_nodes = list(nodes(tree))
+    if any(isinstance(node, ca.Pragma) for node in all_nodes):
+        raise MetadataProofError('encoded-address source contains unsupported pragmas')
+    aliases = collections.defaultdict(list)
+    for node in all_nodes:
+        if isinstance(node, ca.Typedef):
+            if node not in tree.ext:
+                raise MetadataProofError('encoded-address local typedef is unsupported')
+            aliases[node.name].append(node.type)
+    def resolve(node, seen=()):
+        if isinstance(node, ca.TypeDecl):
+            if node.quals or getattr(node, 'align', None):
+                raise MetadataProofError('encoded-address qualified type is unsupported')
+            return resolve(node.type, seen)
+        if isinstance(node, ca.IdentifierType) and len(node.names) == 1 and node.names[0] in aliases:
+            name = node.names[0]
+            if name in seen or len(aliases[name]) != 1:
+                raise MetadataProofError('encoded-address ambiguous typedef')
+            return resolve(aliases[name][0], seen + (name,))
+        return node
+    def words(node):
+        node = resolve(node)
+        return tuple(sorted(node.names)) if isinstance(node, ca.IdentifierType) else None
+    if pin != literal_profile_inputs(root) or lexical.identity() != identity:
+        raise MetadataProofError('encoded-address parser changed')
+    return ca, tree, all_nodes, resolve, words
+
+
+def encoded_word_consumer_facts(cpp, flags, root, *, function=ENCODED_WORD_FUNCTION,
+                                marker=ENCODED_WORD_MARKER):
+    """Close one actual unsigned32 cast/store; no general pointer-flow inference."""
+    ca, tree, nodes, resolve, words = _encoded_ast(cpp, flags, root)
+    declarations = [n for n in nodes if isinstance(n, ca.Decl) and n.name == marker]
+    if len(declarations) != 1:
+        raise MetadataProofError('encoded-address marker is missing/defined/shadowed')
+    declaration = declarations[0]
+    if (declaration not in tree.ext or declaration.storage != ['extern'] or declaration.init is not None
+            or declaration.quals or declaration.funcspec or declaration.bitsize
+            or not isinstance(declaration.type, ca.ArrayDecl) or declaration.type.dim is not None
+            or declaration.type.dim_quals or words(declaration.type.type) != ('char','unsigned')):
+        raise MetadataProofError('encoded-address needs one incomplete unsigned-char extern')
+    functions = [n for n in tree.ext if isinstance(n, ca.FuncDef) and n.decl.name == function]
+    if len(functions) != 1 or functions[0].decl.storage:
+        raise MetadataProofError('encoded-address needs its GLOBAL source function')
+    parents = {id(child): node for node in nodes for _, child in node.children()}
+    if any(isinstance(n, ca.ID) and n.name == 'D_80000000' for n in nodes):
+        raise MetadataProofError('encoded-address consumer retains old numeric carrier use')
+    uses = [n for n in nodes if isinstance(n, ca.ID) and n.name == marker]
+    if len(uses) != 1:
+        raise MetadataProofError('encoded-address requires exactly one evaluated carrier use')
+    use = uses[0]; cast = parents.get(id(use)); assignment = parents.get(id(cast))
+    unsigned32 = {('int','unsigned'), ('unsigned',), ('long','unsigned'), ('int','long','unsigned')}
+    if (not isinstance(cast, ca.Cast) or cast.expr is not use or words(cast.to_type.type) not in unsigned32
+            or not isinstance(assignment, ca.Assignment) or assignment.op != '=' or assignment.rvalue is not cast
+            or not isinstance(assignment.lvalue, ca.StructRef) or assignment.lvalue.type != '->'
+            or not isinstance(assignment.lvalue.name, ca.ID) or not isinstance(assignment.lvalue.field, ca.ID)
+            or assignment.lvalue.field.name != 'w1'):
+        raise MetadataProofError('encoded-address use is not a direct unsigned32 field store')
+    block = parents.get(id(assignment))
+    if not isinstance(block, ca.Compound) or assignment not in block.block_items:
+        raise MetadataProofError('encoded-address store needs its actual macro block')
+    receiver = assignment.lvalue.name.name
+    locals_ = [n for n in block.block_items if isinstance(n, ca.Decl) and n.name == receiver]
+    if len(locals_) != 1:
+        raise MetadataProofError('encoded-address receiver declaration is ambiguous')
+    local = locals_[0]
+    items = block.block_items
+    first = items[1] if len(items) == 3 else None
+    if (items[0] is not local or items[-1] is not assignment
+            or not isinstance(first, ca.Assignment) or first.op != '='
+            or not isinstance(first.lvalue, ca.StructRef) or first.lvalue.type != '->'
+            or not isinstance(first.lvalue.name, ca.ID) or first.lvalue.name.name != receiver
+            or not isinstance(first.lvalue.field, ca.ID) or first.lvalue.field.name != 'w0'):
+        raise MetadataProofError('encoded-address macro is not its complete two-word store')
+    if (local.storage or local.quals or not isinstance(local.type, ca.PtrDecl) or local.type.quals
+            or block.block_items.index(local) >= block.block_items.index(assignment)
+            or not isinstance(local.init, ca.Cast) or not isinstance(local.init.to_type.type, ca.PtrDecl)
+            or local.init.to_type.type.quals):
+        raise MetadataProofError('encoded-address receiver is not its initialized command pointer')
+    record = resolve(local.type.type)
+    if (not isinstance(record, ca.Struct) or record.name != 'Overlay73Command'
+            or record is not resolve(local.init.to_type.type.type.type)
+            or not record.decls or [n.name for n in record.decls] != ['w0','w1']
+            or any(n.bitsize or n.storage or n.quals or words(n.type) not in unsigned32 for n in record.decls)):
+        raise MetadataProofError('encoded-address actual command field is not unsigned32')
+    ancestor = block
+    while ancestor is not None and not isinstance(ancestor, ca.FuncDef):
+        ancestor = parents.get(id(ancestor))
+    if ancestor is not functions[0]:
+        raise MetadataProofError('encoded-address store belongs to another source function')
+    # Every same-name receiver occurrence in this macro block must be a field base.
+    for n in nodes:
+        if isinstance(n, ca.Decl) and n.name == receiver and n is not local:
+            p = n
+            while p is not None and p is not block:
+                p = parents.get(id(p))
+            if p is block:
+                raise MetadataProofError('encoded-address receiver is shadowed')
+        if isinstance(n, ca.ID) and n.name == receiver:
+            p = n
+            while p is not None and p is not block:
+                p = parents.get(id(p))
+            if p is block:
+                owner = parents.get(id(n))
+                if not isinstance(owner, ca.StructRef) or owner.name is not n:
+                    raise MetadataProofError('encoded-address receiver escapes its macro block')
+    return ('unsigned32-store-o32', function, marker, words(cast.to_type.type), words(record.decls[1].type))
+
+
+def encoded_word_owner_facts(cpp, flags, root):
+    ca, tree, nodes, resolve, words = _encoded_ast(cpp, flags, root)
+    definitions = [n for n in nodes if isinstance(n, ca.Decl) and n.name == ENCODED_WORD_OWNER]
+    if len(definitions) != 1:
+        raise MetadataProofError('encoded-address owner source is missing/shadowed')
+    node = definitions[0]
+    if (node not in tree.ext or node.storage or node.quals or node.init is None
+            or not isinstance(node.type, ca.ArrayDecl) or node.type.dim_quals
+            or not isinstance(node.type.dim, ca.Constant) or node.type.dim.value != '8'):
+        raise MetadataProofError('encoded-address owner is not the actual initialized triangle array')
+    record = resolve(node.type.type)
+    names = ['flags','vertex0','vertex1','vertex2','s0','t0','s1','t1','s2','t2']
+    if (not isinstance(record, ca.Struct) or record.name != 'Overlay73Triangle' or not record.decls
+            or [n.name for n in record.decls] != names
+            or any(n.storage or n.bitsize or n.quals for n in record.decls)
+            or any(words(n.type) != ('char','unsigned') for n in record.decls[:4])
+            or any(words(n.type) not in {('short',),('short','signed'),('int','short'),('int','short','signed')}
+                   for n in record.decls[4:])):
+        raise MetadataProofError('encoded-address owner record widths differ from actual source')
+    return 8 * (4 + 6*2)  # Target primitive widths, corroborated by original OBJECT size.
+
+
+def encoded_word_pair(compiler, prepared, *, function=ENCODED_WORD_FUNCTION, marker=ENCODED_WORD_MARKER):
+    import runlink_pack as rp
+    if compiler.data != prepared.data:
+        statics = static_anchor_module(pathlib.Path(__file__).resolve().parents[1])
+        if statics.add_static_symbols(compiler.data)[0] != prepared.data:
+            raise MetadataProofError('encoded-address prepared input is not the original static-symbol pass')
+    for section in rp.EDITED_SECTIONS:
+        if compiler.bytes_of(section) != prepared.bytes_of(section):
+            raise MetadataProofError('encoded-address original allocated bytes changed')
+        a,b = compiler.rels(section),prepared.rels(section)
+        if ([(r.offset,r.type,r.sym.name,r.sym.bind,r.sym.type) for r in a] !=
+                [(r.offset,r.type,r.sym.name,r.sym.bind,r.sym.type) for r in b]
+                or rp.in_place_addends(compiler,section,a) != rp.in_place_addends(prepared,section,b)):
+            raise MetadataProofError('encoded-address original compiler indices/records changed')
+    symbols = [s for s in compiler.symbols if s.name == marker]
+    funcs = [s for s in compiler.symbols if s.name == function]
+    if (len(symbols) != 1 or symbols[0].shndx != rp.SHN_UNDEF or symbols[0].bind != rp.STB_GLOBAL
+            or symbols[0].type != rp.STT_OBJECT or symbols[0].size != 0 or symbols[0].value != 0
+            or len(funcs) != 1 or funcs[0].section != '.text' or funcs[0].bind != rp.STB_GLOBAL
+            or funcs[0].type != rp.STT_FUNC or funcs[0].size <= 0):
+        raise MetadataProofError('encoded-address original marker/function roles differ')
+    refs = [(section,r,a) for section in rp.EDITED_SECTIONS[:-1]
+            for r,a in zip(compiler.rels(section),rp.in_place_addends(compiler,section,compiler.rels(section)))
+            if r.sym.index == symbols[0].index]
+    if (len(refs) != 2 or [x[0] for x in refs] != ['.text','.text']
+            or [x[1].type for x in refs] != [rp.R_MIPS_HI16,rp.R_MIPS_LO16] or any(x[2] for x in refs)):
+        raise MetadataProofError('encoded-address requires its complete zero-addend text pair')
+    high,low = [x[1] for x in refs]; owner = funcs[0]
+    if (high.offset >= low.offset or any(r.offset%4 or not owner.value <= r.offset
+            or r.offset+4 > owner.value+owner.size or r.offset+4 > compiler.size('.text') for r in (high,low))):
+        raise MetadataProofError('encoded-address pair escapes original function')
+    h,l = [rp.u32(compiler.bytes_of('.text'),r.offset) for r in (high,low)]
+    if h>>26 != 15 or l>>26 != 9 or (h>>16)&31 != (l>>21)&31 or (h>>16)&31 != (l>>16)&31:
+        raise MetadataProofError('encoded-address pair is not the complete LUI/ADDIU carrier')
+    return (symbols[0].index,high.offset,low.offset,owner.value,owner.size)
+
+
+@dataclasses.dataclass(frozen=True)
+class EncodedAddressWordWitness:
+    root: pathlib.Path
+    pair: tuple
+    owner_offset: int
+    origin_offset: int
+    owner_size: int
+    compiler: object = dataclasses.field(repr=False)
+    raw: object = dataclasses.field(repr=False)
+    configured: object = dataclasses.field(repr=False)
+    provider: object = dataclasses.field(repr=False)
+    linked: object = dataclasses.field(repr=False)
+    replay: object = dataclasses.field(repr=False)
+    replay_mapping: tuple = dataclasses.field(repr=False)
+    replay_map_path: pathlib.Path = dataclasses.field(repr=False)
+    observations: tuple = dataclasses.field(repr=False)
+    contexts: tuple = dataclasses.field(repr=False)
+    holds: tuple = dataclasses.field(repr=False)
+    mapping: tuple = dataclasses.field(repr=False)
+    map_path: pathlib.Path = dataclasses.field(repr=False)
+    seal: object = dataclasses.field(repr=False)
+
+    def current(self):
+        import runlink_pack as rp
+        if self.seal is not _ENCODED_WORD_SEAL:
+            raise MetadataProofError('untrusted encoded-address witness')
+        if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF:
+            raise MetadataProofError('loaded encoded-address proof changed')
+        if not encoded_word_selection(self.root):
+            raise MetadataProofError('encoded-address opt-in was removed')
+        if any(expected != context() for expected,context in self.contexts):
+            raise MetadataProofError('encoded-address fresh capture context changed')
+        for obj, digest, surface in self.observations:
+            if (hashlib.sha256(obj.data).hexdigest() != digest or sha256_file(obj.path) != digest
+                    or _static_parsed_surface(obj) != surface):
+                raise MetadataProofError('encoded-address loaded object/parsed observation changed')
+        # The production CLI and imported helper have distinct MapInput classes.
+        # Compare every semantic field, retaining row order and multiplicity.
+        def map_rows(rows):
+            return tuple((r.outsec,r.insec,r.addr,r.size,r.file) for r in rows)
+        if (map_rows(rp.parse_map(self.map_path)) != map_rows(self.mapping)
+                or map_rows(rp.parse_map(self.replay_map_path)) != map_rows(self.replay_mapping)):
+            raise MetadataProofError('encoded-address loaded map changed')
+        if any(sha256_file(path) != digest for path,digest in self.holds):
+            raise MetadataProofError('encoded-address held source/expression/input changed')
+        return True
+
+    def operand(self, world, obj, section, rel, addend):
+        import runlink_pack as rp
+        self.current()
+        rp.validate_fresh_data_input(obj.elf, self.raw)
+        if (obj.module != 73 or obj.source != ENCODED_WORD_SOURCE[4:-2] or section != '.text'
+                or rel.sym.name != ENCODED_WORD_MARKER or rel.sym.shndx != rp.SHN_UNDEF
+                or addend or (rel.offset,rel.type) not in ((self.pair[1],rp.R_MIPS_HI16),(self.pair[2],rp.R_MIPS_LO16))):
+            raise MetadataProofError('encoded-address operand is outside its complete source pair')
+        # Bind the caller's loaded parse and original-index mapping as well.
+        actual = [r for r in self.raw.rels(section) if (r.offset,r.type)==(rel.offset,rel.type)]
+        def symbol_row(s):
+            return (s.index,s.name,s.value,s.size,s.bind,s.type,s.shndx,s.section)
+        if len(actual)!=1 or symbol_row(rel.sym) != symbol_row(actual[0].sym):
+            raise MetadataProofError('encoded-address caller raw index/symbol differs')
+        observed = getattr(world, '_encoded_word_consumers', {})
+        if id(obj.elf) not in observed:
+            digest = hashlib.sha256(obj.elf.data).hexdigest()
+            if sha256_file(obj.path) != digest:
+                raise MetadataProofError('encoded-address loaded caller differs from its file')
+            surface = _static_parsed_surface(obj.elf)
+            def current():
+                return (hashlib.sha256(obj.elf.data).hexdigest(), sha256_file(obj.path),
+                        _static_parsed_surface(obj.elf))
+            world.data_import_contexts.append(((digest,digest,surface),current))
+            rp.hold_data_import_inputs(world,{obj.path:digest})
+            observed[id(obj.elf)] = (obj.elf,digest,surface)
+            world._encoded_word_consumers = observed
+        return ('ov',73,(self.owner_offset + 0x80000000)&0xffffffff)
+
+    def runtime(self, image, records):
+        import runlink_pack as rp
+        self.current()
+        keys = [(self.pair[1],rp.R_MIPS_HI16),(self.pair[2],rp.R_MIPS_LO16)]
+        selected = [(i,row) for i,row in enumerate(records) if row[:2] in keys]
+        if (len(selected)!=2 or [r[:2] for _,r in selected]!=keys or selected[1][0]!=selected[0][0]+1
+                or any(r[2:] != (rp.OP_LOCAL,self.origin_offset) for _,r in selected)):
+            raise MetadataProofError('encoded-address actual runtime pair/base differs')
+        stored = ((rp.u32(image,self.pair[1])&0xffff)<<16) + rp.sext16(rp.u32(image,self.pair[2]))
+        if (self.origin_offset+stored)&0xffffffff != (self.owner_offset+0x80000000)&0xffffffff:
+            raise MetadataProofError('encoded-address decoded runtime scalar differs from real owner')
+        return True
+
+
+def encoded_word_readback(compiler, provider, linked, mapping, owner_size):
+    """Independent loaded ELF/map roles, word decode and untouched instruction bits."""
+    import runlink_pack as rp
+    pair = encoded_word_pair(compiler,compiler)
+    def unique(image,name):
+        rows=[s for s in image.symbols if s.name==name]
+        if len(rows)!=1:
+            raise MetadataProofError('encoded-address symbol is missing/ambiguous: '+name)
+        return rows[0]
+    owner=unique(provider,ENCODED_WORD_OWNER); actual=unique(linked,ENCODED_WORD_OWNER)
+    marker=unique(linked,ENCODED_WORD_MARKER); origin=unique(linked,ENCODED_WORD_ORIGIN)
+    text=linked.section('.overlay_073'); data=provider.section('.data')
+    if (not data or data['type']!=1 or data['flags']!=3 or data['addr']!=0
+            or owner.bind!=rp.STB_GLOBAL or owner.type!=rp.STT_OBJECT or owner.section!='.data'
+            or owner.size!=owner_size or owner.size<=0 or owner.value<0 or owner.value+owner.size>data['size']
+            or provider.rels('.data') or any(provider.size(s) for s in ('.text','.rodata','.bss'))):
+        raise MetadataProofError('encoded-address owner is not the real bounded writable C DATA')
+    objects=sorted((s.value,s.value+s.size) for s in provider.symbols
+                   if s.section=='.data' and s.type==rp.STT_OBJECT)
+    if any(a[1]>b[0] for a,b in zip(objects,objects[1:])):
+        raise MetadataProofError('encoded-address owner objects overlap')
+    homes=[m for m in mapping if m.file=='build/'+ENCODED_WORD_PROVIDER+'.o' and m.insec=='.data' and m.size]
+    texts=[m for m in mapping if m.outsec=='.overlay_073' and m.insec=='.text' and m.size]
+    if (len(homes)!=1 or len(texts)!=1 or texts[0].file!=ENCODED_WORD_TARGET
+            or not text or text['type']!=1 or text['flags']&2!=2
+            or texts[0].addr!=text['addr'] or texts[0].size!=compiler.size('.text')
+            or homes[0].outsec!='.overlay_073' or homes[0].size!=data['size']
+            or origin.section!='.overlay_073' or origin.value!=texts[0].addr+texts[0].size
+            or homes[0].addr<origin.value
+            or actual.bind!=rp.STB_GLOBAL or actual.type!=rp.STT_OBJECT or actual.size!=owner.size
+            or actual.section!='.overlay_073' or actual.value!=homes[0].addr+owner.value):
+        raise MetadataProofError('encoded-address real owner/DATA-origin physical map differs')
+    home=homes[0]
+    if any(m is not home and m.size and m.outsec==home.outsec and m.addr<home.addr+home.size
+           and home.addr<m.addr+m.size for m in mapping):
+        raise MetadataProofError('encoded-address physical owner overlaps another input')
+    if (marker.shndx!=rp.SHN_ABS or marker.bind!=rp.STB_GLOBAL or marker.type!=rp.STT_OBJECT or marker.size!=0
+            or marker.value!=(actual.value-origin.value+0x80000000)&0xffffffff):
+        raise MetadataProofError('encoded-address final marker role/value differs')
+    image=linked.bytes_of('.overlay_073'); begin=home.addr-text['addr']
+    if image[begin:begin+home.size]!=provider.bytes_of('.data'):
+        raise MetadataProofError('encoded-address full original owner allocation changed')
+    function=unique(compiler,ENCODED_WORD_FUNCTION); final_function=unique(linked,ENCODED_WORD_FUNCTION)
+    if (final_function.bind!=rp.STB_GLOBAL or final_function.type!=rp.STT_FUNC
+            or final_function.section!='.overlay_073' or final_function.size!=function.size
+            or final_function.value!=text['addr']+function.value):
+        raise MetadataProofError('encoded-address original GLOBAL function geometry changed')
+    masks={}
+    for r in compiler.rels('.text'):
+        if r.offset%4 or r.offset<0 or r.offset+4>compiler.size('.text') or r.offset in masks:
+            raise MetadataProofError('encoded-address original relocation word is invalid')
+        if r.type not in (rp.R_MIPS_HI16,rp.R_MIPS_LO16,rp.R_MIPS_26,rp.R_MIPS_32):
+            raise MetadataProofError('encoded-address unsupported original relocation type')
+        masks[r.offset]={rp.R_MIPS_HI16:0xffff,rp.R_MIPS_LO16:0xffff,rp.R_MIPS_26:0x3ffffff,rp.R_MIPS_32:0xffffffff}[r.type]
+    original=compiler.bytes_of('.text')
+    if len(image)<len(original) or any((rp.u32(original,o)^rp.u32(image,o))&(~masks.get(o,0)&0xffffffff)
+                                      for o in range(0,len(original),4)):
+        raise MetadataProofError('encoded-address final nonrelocation instruction bits changed')
+    stored=((rp.u32(image,pair[1])&0xffff)<<16)+rp.sext16(rp.u32(image,pair[2]))
+    if stored&0xffffffff != marker.value:
+        raise MetadataProofError('encoded-address final signed-low pair does not encode marker')
+    return pair,actual.value-text['addr'],origin.value-text['addr']
+
+
+def capture_encoded_word(world, dump=None):
+    """One canonical role using the existing producer capture and held inventory."""
+    import runlink_pack as rp
+    import permute_batch as batch
+    import postprocess_audit as audit
+    root=world.paths['build'].parent
+    dump=audit.run_make_database() if dump is None else dump
+    if not encoded_word_selection(root,dump):
+        return None
+    context_start = len(world.data_import_contexts)
+    statics = static_anchor_module(root)
+    if rp.plain_data_targets(dump).get('build/'+ENCODED_WORD_PROVIDER+'.o')!='data':
+        raise MetadataProofError('encoded-address lacks its existing ordinary DATA owner declaration')
+    if ENCODED_WORD_MARKER in rp.OrtNames.load(world.paths['ort']).by_name:
+        raise MetadataProofError('encoded-address marker must not be an ORT export')
+    script_names=['mickey.us.ld','undefined_funcs_auto.us.txt','undefined_syms_auto.us.txt',
+                  'libultra_undefined_syms.us.txt','overlay_undefined_syms.us.txt']
+    link_context=producer_link_context(root,world.paths['elf'],world.paths['map'])
+    if link_context['command'][3]!= 'mickey.us.ld':
+        script_names[0]=metadata_link.FINAL_SCRIPT
+    scripts={n:(root/n).read_text() for n in script_names}
+    encoded_word_scripts(scripts)
+    raw_path,plan,receipt,context=_capture_configured_raw(root,root/ENCODED_WORD_SOURCE,
+        root/ENCODED_WORD_TARGET,world.paths['elf'],'',producer_map=world.paths['map'],preserve_compiler=True)
+    if 'kept_rodata' not in receipt or receipt['inputs']['assembly']:
+        raise MetadataProofError('encoded-address consumer lacks its current keep-only C capture')
+    compiler=rp.Elf(root/receipt['compiler_original']); raw=rp.Elf(raw_path)
+    configured=rp.Elf(root/ENCODED_WORD_TARGET)
+    if (hashlib.sha256(compiler.data).hexdigest()!=receipt['compiler_original_sha256']
+            or hashlib.sha256(raw.data).hexdigest()!=receipt['raw_sha256']
+            or hashlib.sha256(configured.data).hexdigest()!=receipt['configured_sha256']):
+        raise MetadataProofError('encoded-address loaded capture differs from receipts')
+    pair=encoded_word_pair(compiler,raw)
+    rp.validate_fresh_data_input(rp.Elf(world.paths['raw']/(ENCODED_WORD_SOURCE+'.o')),raw)
+    provider_source=ENCODED_WORD_PROVIDER[4:-2]
+    provider=rp.reproduce_data_provider(world,provider_source,preserve_compiler=True)
+    provider_receipt=world.data_import_provider_receipts[provider_source]
+    prepared_provider=provider
+    provider=rp.Elf(root/provider_receipt['compiler_original'])
+    if (hashlib.sha256(provider.data).hexdigest()!=provider_receipt['compiler_original_sha256']
+            or hashlib.sha256(prepared_provider.data).hexdigest()!=provider_receipt['raw_sha256']
+            or provider_receipt['inputs']['assembly'] or provider_receipt.get('effective_sections')
+            or statics.add_static_symbols(provider.data)[0]!=prepared_provider.data):
+        raise MetadataProofError('encoded-address original owner/receipt/prepared join differs')
+    rp.hold_data_capture(world,ENCODED_WORD_SOURCE[4:-2],receipt,context)
+    cpp_holds={}; private_artifacts=set(); facts=[]
+    for source,cap in ((ENCODED_WORD_SOURCE,receipt),(ENCODED_WORD_PROVIDER,provider_receipt)):
+        command=cap['inputs']['command']
+        flags=_literal_flags(command,source)
+        result=batch.bounded_capture(['tools/ido/cc','-E',*flags,source],time.monotonic()+120,check=True)
+        cpp=result.stdout.encode(); path=root/cap['directory']/'encoded-effective.i';path.write_bytes(cpp)
+        cpp_holds[path]=hashlib.sha256(cpp).hexdigest()
+        private_artifacts.add(path)
+        facts.append(encoded_word_consumer_facts(cpp,flags,root) if source==ENCODED_WORD_SOURCE
+                     else encoded_word_owner_facts(cpp,flags,root))
+    checked,owner_offset,origin_offset=encoded_word_readback(compiler,provider,world.elf,world.map,facts[1])
+    if checked!=pair:
+        raise MetadataProofError('encoded-address original pair changed during readback')
+    replay,replay_map,replay_mapping,replay_holds,replay_current = replay_encoded_word_link(
+        root,world.paths['elf'],world.paths['map'],scripts,link_context)
+    if encoded_word_readback(compiler,provider,replay,replay_mapping,facts[1]) != (pair,owner_offset,origin_offset):
+        raise MetadataProofError('encoded-address replayed owner/word/function roles differ')
+    cpp_holds.update(replay_holds)
+    private_artifacts.update(set(replay_holds) & {replay.path,replay_map,
+        replay.path.parent/'inputs.json',replay.path.parent/'link.log'})
+    world.data_import_contexts.append((True,replay_current))
+    cpp_holds.update({root/n:hashlib.sha256(t.encode()).hexdigest() for n,t in scripts.items()})
+    cpp_holds.update({root/n:d for n,d in literal_profile_inputs(root).items()})
+    cpp_holds[world.paths['map']]=hashlib.sha256(world.map_data).hexdigest()
+    # Fresh proof artifacts stay live-held, but are not deterministic producer inputs.
+    # These exact paths came from this capture, never a prefix-based exclusion.
+    private_holds={path:cpp_holds[path] for path in private_artifacts}
+    def private_current():
+        if any(sha256_file(path)!=digest for path,digest in private_holds.items()):
+            raise MetadataProofError('encoded-address private proof artifact changed')
+        return True
+    private_current()
+    world.data_import_contexts.append((True,private_current))
+    rp.hold_data_import_inputs(world,{path:digest for path,digest in cpp_holds.items()
+                                      if path not in private_artifacts})
+    observations=tuple((o,hashlib.sha256(o.data).hexdigest(),_static_parsed_surface(o))
+                       for o in (compiler,raw,configured,provider,prepared_provider,world.elf,replay))
+    result=EncodedAddressWordWitness(root,pair,owner_offset,origin_offset,facts[1],compiler,raw,
+        configured,provider,world.elf,replay,replay_mapping,replay_map,observations,
+        tuple(world.data_import_contexts[context_start:]),
+        tuple((dict(world.data_import_inputs)|private_holds).items()),tuple(world.map),world.paths['map'],_ENCODED_WORD_SEAL)
+    result.current()
+    return result
+
+
+def canonical_encoded_word_capture(root):
+    """Producer-only context avoids recursively asking for generated-final proof."""
+    from types import SimpleNamespace
+    import runlink_pack as rp
+    if not encoded_word_selection(root):
+        raise MetadataProofError('encoded-address canonical role is not selected')
+    world=rp.World(rp.resolve_paths(SimpleNamespace(root=str(root))),need_raw=False)
+    world.data_import_inputs={}; world.data_import_contexts=[]; world.data_import_provider_receipts={}
+    return capture_encoded_word(world)
+
+
+def encoded_word_surface(root, overlay, candidate_symbol, target_symbol, row, candidate_object, target_path):
+    """Strict comparison uses the same fresh canonical role, before numeric aliases."""
+    import runlink_pack as rp
+    if (overlay != 73 or candidate_symbol != ENCODED_WORD_FUNCTION or target_symbol != ENCODED_WORD_FUNCTION
+            or row.get("source") != ENCODED_WORD_SOURCE[4:-2]
+            or pathlib.Path(target_path).resolve() != (root/"build/mickey.us.elf").resolve()):
+        raise MetadataProofError("encoded-address strict proof has a different source home")
+    witness = canonical_encoded_word_capture(root)
+    candidate = rp.Elf(candidate_object)
+    try:
+        try:
+            rp.validate_fresh_data_input(candidate, witness.configured)
+        except rp.PackError:
+            rp.validate_fresh_data_input(candidate, witness.raw)
+    except rp.PackError as error:
+        raise MetadataProofError("encoded-address compared input differs from fresh capture") from error
+    digest = hashlib.sha256(candidate.data).hexdigest()
+    observation = (digest, digest, _static_parsed_surface(candidate))
+    def current():
+        witness.current()
+        if (sha256_file(pathlib.Path(candidate_object)), hashlib.sha256(candidate.data).hexdigest(),
+                _static_parsed_surface(candidate)) != observation:
+            raise MetadataProofError("encoded-address compared candidate changed before report")
+    identity = (73, (witness.owner_offset+0x80000000)&0xffffffff)
+    return {"identity":identity, "current":current,
+        "evidence":{"underlying_owner":[73,witness.owner_offset], "owner_size":witness.owner_size,
+                    "marker_allocated_bytes":0},
+        "report":{"role":"source-encoded-address-word", "marker":ENCODED_WORD_MARKER,
+            "function":ENCODED_WORD_FUNCTION, "owner":ENCODED_WORD_OWNER,
+            "underlying_identity":[73,witness.owner_offset], "encoded_identity":list(identity),
+            "owner_size":witness.owner_size, "marker_allocated_bytes":0,
+            "pair":list(witness.pair[1:3]), "fresh_held_source_and_final_roles":True}}
+
+
+def canonical_encoded_word_readback(root):
+    """Final-link role proof cannot inherit a numeric alias or serialized receipt."""
+    if not encoded_word_selection(root):
+        return
+    witness=canonical_encoded_word_capture(root)
+    records=[]
+    for table in (1,2):
+        data=witness.linked.bytes_of(f'.overlay_073_reloc{table}')
+        if len(data)%8:
+            raise MetadataProofError('encoded-address final runtime table is truncated')
+        for offset in range(0,len(data),8):
+            index,bits=struct.unpack_from('>II',data,offset)
+            records.append((bits>>8,(bits>>4)&15,bits&15,index))
+    witness.runtime(witness.linked.bytes_of('.overlay_073'),records)
+    return witness.current
 
 
 def _mask_c(text: str) -> str:

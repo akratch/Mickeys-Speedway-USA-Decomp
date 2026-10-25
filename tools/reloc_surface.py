@@ -432,13 +432,11 @@ def align_sites(sites, records, base, end):
     return summary
 
 def synthesize(obj_path: Path, overlay: int, rom: bytes, atlas_rows, records,
-               local_text=frozenset()):
+               local_text=frozenset(), encoded_word=False):
     """Return (sites, {symbol: required link value}, conflicts, alignment).
 
-    The required value is always `shipped_target - addend_already_in_the_object`.
-    Subtracting the object's own addend is what lets one base symbol serve many
-    struct-field references: IDO puts the field offset in the instruction, and
-    only the base belongs in the linker script.
+    Ordinary values are shipped_target minus the object's existing addend,
+    preserving field offsets. Encoded-word roles bypass numeric synthesis.
     """
     elf = Elf(obj_path)
     syms = elf.symbols()
@@ -459,6 +457,10 @@ def synthesize(obj_path: Path, overlay: int, rom: bytes, atlas_rows, records,
         if symidx >= len(syms):
             continue
         name, _v, _s, _i, shndx = syms[symidx]
+        if name == "o73TriangleCommandWord":
+            if not encoded_word or overlay != 73:
+                raise SurfaceComparisonError("encoded-address marker lacks its closed program declaration")
+            continue  # No shipped operand is read for this source-derived value.
         if not name or name in local_text:
             continue
         if shndx != SHN_UNDEF and shndx == text_idx:
@@ -830,14 +832,13 @@ def plan_resident_rebinds(objects, rom, rows, mods, rom_table,
 
 def generate(rom, atlas, objects=None, quiet=False, rebind_resident=True,
              declared_rebinds=None):
-    """Return the whole linker-script block as text, plus a diagnostics dict.
+    """Render aliases and diagnostics without changing objects.
 
-    Never modifies an object.  The resident-call plan is returned as
-    `diag["rebinds"]` and `diag["rebinds_text"]` (the generated .mk), and every
-    value is emitted under the name the object carries *after* its planned
-    rename, so the block is right whether or not the object has been rebuilt
-    with the rule yet.  `declared_rebinds` defaults to the tracked file.
+    Values use planned post-rename names; diag rebinds/rebinds_text carry that
+    plan. declared_rebinds defaults to the tracked declaration.
     """
+    import proof_provenance as provenance
+    encoded_word = provenance.encoded_word_selection(REPO)
     rows = {m["overlay"]: m["text_ownership"] for m in atlas["modules"]}
     rom_starts = {m["overlay"]: int(m["rom"]["start"], 16) for m in atlas["modules"]}
     rom_table = ot.read_rom_table(rom)
@@ -845,6 +846,7 @@ def generate(rom, atlas, objects=None, quiet=False, rebind_resident=True,
 
     if objects is None:
         objects = linked_overlay_objects()
+    encoded_current = provenance.encoded_word_generation_inputs(REPO, objects) if encoded_word else None
 
     values = {}          # name -> (value, first object that asked for it)
     conflicts = []       # (object, name, why)
@@ -874,17 +876,13 @@ def generate(rom, atlas, objects=None, quiet=False, rebind_resident=True,
         recs = records[ov]
         renamed = rebinds.get(object_key(obj), {})
         _sites, vals, unresolved, aligned = synthesize(
-            obj, ov, rom, rows.get(ov, []), recs, local[ov] - set(renamed))
+            obj, ov, rom, rows.get(ov, []), recs, local[ov] - set(renamed),
+            **({"encoded_word": True} if encoded_word else {}))
         conflicts += [(obj.name, n, why) for n, why in unresolved]
         if aligned["attempted"]:
             alignment[obj.name] = aligned
-        # A refused resident call must not fall back to a value line under its
-        # *global* name.  `synthesize()` still reads an addend for it from the
-        # corroborated sites, but assigning `func_8002A8C0` in the linker
-        # script moves the resident function for `shadows.c`, `camera.c` and
-        # every other resident caller -- 30-odd `relocation truncated to fit`
-        # errors, from a line meant to help one overlay.  Refused means
-        # refused: no value, and the reason is already reported.
+        # A numeric assignment to a refused resident global would move the
+        # function for every caller. Keep the refusal; emit no fallback value.
         vals = {renamed.get(k, k): v for k, v in vals.items()
                 if k not in refused_resident}
         mine = []
@@ -914,17 +912,9 @@ def generate(rom, atlas, objects=None, quiet=False, rebind_resident=True,
         if mine_aliases:
             alias_order.append((ov, obj, mine_aliases))
 
-    # A value line is a linker-script assignment, and an assignment overrides
-    # the definition for *every* module. Valuing a name another module
-    # defines in its own .text therefore moves that module's function to the
-    # stored addend: its linked symbol becomes *ABS*, and every canonical
-    # ownership proof over that module refuses it. Overlay 49 and overlay 11
-    # called overlay65Initialize and overlay66Select by their own names;
-    # both sit at module offset 0, so the addend 0xF0000000 happened to equal
-    # their real address and the ROM still matched. A cross-module call must
-    # spell a *Reloc placeholder (an objcopy --redefine-sym in the caller's
-    # POSTPROCESS rule), exactly as a resident call does. Refused means
-    # refused: no value line, and the reason is reported.
+    # Assignments override definitions across modules, even if the ROM still
+    # matches by coincidence. Cross-module calls need their own *Reloc spelling;
+    # never value another module's .text definition under its real name.
     for ov in {ov for ov, _obj in objects}:
         if ov not in local:
             local[ov] = module_text_defs(objects, ov, rows.get(ov, []))
@@ -940,11 +930,8 @@ def generate(rom, atlas, objects=None, quiet=False, rebind_resident=True,
                        for ov, obj, names in value_order]
         value_order = [row for row in value_order if row[2]]
 
-    # A generated identity that is aliased to a friendly name is *defined* by
-    # the alias, so a value line for the same name would be a shadowed
-    # assignment -- exactly the duplicate the hand-maintained file carried, and
-    # ld silently took the last one.  The alias is the definition that must
-    # win, so drop the shadowed value lines outright.
+    # The friendly alias defines this identity. Drop competing numeric
+    # assignments: GNU ld otherwise silently lets the last definition win.
     shadowed = set(values) & set(alias_pairs)
     if shadowed:
         values = {k: v for k, v in values.items() if k not in shadowed}
@@ -953,6 +940,9 @@ def generate(rom, atlas, objects=None, quiet=False, rebind_resident=True,
         value_order = [row for row in value_order if row[2]]
 
     lines = [GENERATED_HEADER, ""]
+    if encoded_word:
+        lines += ["/* ADR0030: source-derived scalar; owns no storage. */",
+                  provenance.encoded_word_expression(), ""]
     lines.append("/* Stored relocation addends, per translation unit. */")
     for ov, obj, names in value_order:
         lines.append("")
@@ -976,6 +966,8 @@ def generate(rom, atlas, objects=None, quiet=False, rebind_resident=True,
             "resident_notes": resident_notes, "shadowed": sorted(shadowed)}
     diag["rebinds"] = rebinds
     diag["rebinds_text"] = rr.render(rebinds) if rebind_resident else None
+    if encoded_current is not None:
+        encoded_current()
     return text, diag
 
 
@@ -1994,7 +1986,7 @@ def _stable_symbol_identities(path, candidate_elf, overlay, tu_base_offset,
     proposed = collections.defaultdict(set)
 
     def propose(name, identity, route):
-        if name:
+        if name and name != "o73TriangleCommandWord":
             if reserved_bss_proof and route in ("resident-elf-address", "resident-address-name"):
                 from storage_identity import scoped_resident_identity
                 scoped = scoped_resident_identity(sys.modules[__name__], name, identity, reserved_bss_proof)
@@ -3604,6 +3596,8 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
                 explicit_storage_registry_sha256)
 
     for name in sorted(valid):
+        if name == "o73TriangleCommandWord":
+            continue  # A zero-storage scalar cannot inherit an object/numeric witness.
         if name in explicit_foreign_names:
             # A fixed imported identity excludes guesses from its numeric
             # placeholder and target-site correlations, but it must not hide
@@ -4995,6 +4989,19 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
     if binary_imported:
         _merge_explicit_storage_identities(binary_imported, identities, ambiguous_identities, evidence)
         ambiguous_overlay_data.difference_update(binary_imported)
+    encoded = None
+    if "o73TriangleCommandWord" in boundary_proof_names:
+        import proof_provenance as provenance
+        try:
+            encoded = provenance.encoded_word_surface(REPO, overlay, candidate_symbol,
+                target_symbol, row, candidate_object, target_elf_path)
+        except provenance.MetadataProofError as error:
+            raise SurfaceComparisonError(str(error)) from error
+        name = provenance.ENCODED_WORD_MARKER
+        identities[name] = encoded["identity"]
+        ambiguous_identities.discard(name)
+        _identity_witness(evidence, name, "source-encoded-address-word", identities[name],
+                          **encoded["evidence"])
     numeric_values = _numeric_assignments(values_path)
     candidate_records = _candidate_surface_records(
         candidate_elf, candidate_start, candidate_size, target_records,
@@ -5048,6 +5055,12 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
             "rechecked_keys": ["impact_gate", "color_gate", "gravity"],
             "matching_credit": 0,
         }
+    if encoded is not None:
+        try:
+            encoded["current"]()
+        except provenance.MetadataProofError as error:
+            raise SurfaceComparisonError(str(error)) from error
+        result["encoded_address_word"] = encoded["report"]
     return result
 
 

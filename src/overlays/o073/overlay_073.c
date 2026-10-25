@@ -1,5 +1,7 @@
 #include "overlays/overlay_073.h"
 
+extern unsigned char o73TriangleCommandWord[];
+
 /* DKR v77/v80 and JFG contain no exact donor for this initializer. */
 /* Fresh configured full-TU and isolated canonical V0 objects are text-identical
  * at 90/100 raw and 92/100 runtime-relocation-normalized words, with exact
@@ -435,7 +437,7 @@ void func_overlay_073_F0000D70_18CB830(Overlay73Command **commands,
         O73_SET_PRIM_COLOR((*commands)++, 0, 0, 255, 255, 255, object->alpha);
         texDPTextureX(commands, state->resource, 0xE, 0);
         O73_VERTEX((*commands)++, O73_PHYSICAL_TO_K0(vertices), 6, 0);
-        O73_POLYGON((*commands)++, D_80000000, 8, 1);
+        O73_POLYGON((*commands)++, o73TriangleCommandWord, 8, 1);
         O73_SET_PRIM_COLOR((*commands)++, 0, 0, 255, 255, 255, object->alpha);
         camPopModelMtx(commands);
     }

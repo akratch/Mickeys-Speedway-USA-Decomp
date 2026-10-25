@@ -44,6 +44,130 @@ def module_refs():
     ]
 
 
+class EncodedWordAdapterTests(unittest.TestCase):
+    def setUp(self):
+        import proof_provenance as provenance
+        from test_proof_provenance import EncodedAddressCaptureTests
+        self.fixture = EncodedAddressCaptureTests(methodName="runTest")
+        self.fixture.setUp()
+        self.addCleanup(self.fixture.doCleanups)
+        self.provenance = provenance
+        self.rp = self.fixture.rp
+        self.world = self.fixture.world
+        self.witness = self.fixture.capture()
+        self.source_bytes = self.fixture.source.read_bytes()
+        self.obj = SimpleNamespace(module=73, source=provenance.ENCODED_WORD_SOURCE[4:-2],
+            elf=self.witness.raw, path=self.witness.raw.path, label="consumer", text_offset=0,
+            placement={".text": (0, "link")})
+        self.full = ("ov", 73, (self.witness.owner_offset + 0x80000000) & 0xffffffff)
+        self.relocs = [self.rp.CReloc(self.obj, ".text", r.offset, r.type, r.sym, 0,
+            self.rp.Target("encoded-word", provenance.ENCODED_WORD_MARKER,
+                           "source-encoded-address-word", ident=self.full, value=self.witness.origin_offset))
+            for r in self.witness.raw.rels(".text")]
+        self.world.module_info = {73: {"text_size": 16, "data_size": 208}}
+        self.world.objects = lambda ov: [self.obj]
+        self.world.amods = {73: {}}
+        self.world.shipped = SimpleNamespace(rodata_base=lambda ov: 16)
+        self.world.module_image_prefix = lambda ov: self.world.elf.bytes_of(".overlay_073")
+        self.resolver = SimpleNamespace(target_base=mock.Mock(side_effect=AssertionError("numeric fallback")),
+                                        name_of=str)
+        self.header = Header(0, 0, 16, 208, 0, 0, 0, -1, -1)
+
+    def refs(self, ov=73):
+        return msu.refs_for_module(self.rp, self.world, self.resolver, ov, self.relocs, {}, 16)[0]
+
+    def generate(self, mutate=None, late=None):
+        import contextlib
+        original = rules.build_module
+        def build(*args, **kwargs):
+            result = original(*args, **kwargs)
+            if mutate:
+                mutate(result)
+            return result
+        shipped = SimpleNamespace(module=lambda ov: SimpleNamespace(), ort=[], main=[])
+        with contextlib.ExitStack() as stack:
+            for patch in (
+                mock.patch.object(msu, "world_for", return_value=(self.rp, self.world, SimpleNamespace(rows=[]))),
+                mock.patch.object(self.rp, "Resolver", return_value=self.resolver),
+                mock.patch.object(self.rp, "collect_relocs", return_value=self.relocs),
+                mock.patch.object(self.rp, "place_sections", return_value={}),
+                mock.patch.object(msu, "header_for", return_value=self.header),
+                mock.patch.object(msu, "main_refs", return_value=[]),
+                mock.patch.object(rules, "build_module", side_effect=build),
+                mock.patch.object(compare, "shipped_identities", return_value={}),
+                mock.patch.object(compare, "compare_module", return_value=[]),
+                mock.patch.object(compare, "compare_header", return_value=[]),
+                mock.patch.object(compare, "compare_ort", return_value=[]),
+                mock.patch.object(compare, "compare_main", return_value=[]),
+                mock.patch.object(compare, "gen_tables", side_effect=late, return_value="tables")):
+                stack.enter_context(patch)
+            return msu.generate(CFG, b"", shipped)
+
+    def test_sealed_scalar_uses_independent_ordinary_local_encoding(self):
+        refs = self.refs()
+        self.assertTrue(all(r.verbatim is None and r.row is None and r.base == self.full for r in refs))
+        result = self.generate()
+        module = result[3][0]
+        self.assertEqual([(g.site, g.rec.type, g.rec.op, g.rec.symidx) for g in module.gens()],
+                         [(0, R_MIPS_HI16, OP_LOCAL, 16), (4, R_MIPS_LO16, OP_LOCAL, 16)])
+        self.assertEqual([g.full for g in module.gens()], [self.full] * 2)
+        self.resolver.target_base.assert_not_called()
+
+    def test_unsealed_stale_and_wrong_operand_roles_refuse_and_invalidate(self):
+        import dataclasses
+        for case in ("missing", "unsealed", "stale", "module", "section", "pair", "addend", "target", "origin"):
+            with self.subTest(case=case):
+                self.world._encoded_word = self.witness
+                self.world._guarded_data_objects = {}
+                row = self.relocs[0]
+                original = dataclasses.replace(row)
+                if case == "missing": self.world._encoded_word = None
+                elif case == "unsealed": self.world._encoded_word = dataclasses.replace(self.witness, seal=object())
+                elif case == "stale": self.fixture.source.write_bytes(b"changed")
+                elif case == "module": self.obj.module = 74
+                elif case == "section": row.section = ".data"; self.obj.placement[".data"] = (0, "link")
+                elif case == "pair": row.offset = 8
+                elif case == "addend": row.addend = 1
+                elif case == "target": row.target = dataclasses.replace(row.target, ident=("ov", 73, 0))
+                elif case == "origin": row.target = dataclasses.replace(row.target, value=0)
+                try:
+                    with self.assertRaises(self.rp.PackError): self.refs()
+                    self.assertIsNone(self.world._guarded_data_objects)
+                finally:
+                    self.relocs[0] = original
+                    self.obj.module = 73
+                    self.obj.placement.pop(".data", None)
+                    self.fixture.source.write_bytes(self.source_bytes)
+
+    def test_kit_generated_word_and_record_mutations_refuse(self):
+        import dataclasses
+        for case in ("word", "record"):
+            self.world._encoded_word = self.witness
+            self.world._guarded_data_objects = {}
+            def mutate(result):
+                if case == "word": result.image = result.image[:7] + bytes([result.image[7] ^ 1]) + result.image[8:]
+                else: result.table2[0].rec = dataclasses.replace(result.table2[0].rec, symidx=0)
+            with self.subTest(case=case), self.assertRaises(self.rp.PackError): self.generate(mutate)
+            self.assertIsNone(self.world._guarded_data_objects)
+
+    def test_late_private_and_global_holds_refuse_before_return(self):
+        private = self.witness.replay.path
+        original = private.read_bytes()
+        for case in ("private", "global"):
+            self.world._encoded_word = self.witness
+            self.world._guarded_data_objects = {}
+            held = list(self.world.data_import_contexts)
+            def late(*args):
+                if case == "private": private.write_bytes(original + b"late")
+                else: self.world.data_import_contexts.append((True, lambda: False))
+                return "tables"
+            with self.subTest(case=case), self.assertRaises((self.rp.PackError, self.provenance.MetadataProofError)):
+                self.generate(late=late)
+            self.assertIsNone(self.world._guarded_data_objects)
+            private.write_bytes(original)
+            self.world.data_import_contexts[:] = held
+
+
 class RulesTests(unittest.TestCase):
     def build(self, refs=None):
         hdr = Header(0, 0, TEXT, DATA, 0x10, 0, 0, -1, -1)

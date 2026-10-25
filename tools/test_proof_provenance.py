@@ -193,11 +193,18 @@ class CaptureDeadlineTests(unittest.TestCase):
             return output
         with mock.patch.object(self.batch, "bounded_capture", side_effect=command), mock.patch.object(
                 provenance, "replay_metadata", side_effect=replay):
-            raw, _plan, receipt, current = provenance.capture_nonexec_producer_raw(
-                self.root, self.source, self.configured, self.linked, self.root/"build/image.map")
+            raw, _plan, receipt, current = provenance._capture_configured_raw(
+                self.root, self.source, self.configured, self.linked, "",
+                producer_map=self.root/"build/image.map", preserve_compiler=True)
             self.assertEqual(receipt["kept_rodata"]["original_ro_records"], 1)
             self.assertEqual(receipt["raw_sha256"], receipt["kept_rodata"]["original"])
             self.assertEqual(receipt["inputs"], current())
+            untouched = self.root/receipt["compiler_original"]
+            self.assertEqual(untouched.read_bytes(), original.data)
+            untouched.write_bytes(b"stale original compiler")
+            with self.assertRaisesRegex(provenance.MetadataProofError, "observation changed"):
+                current()
+            untouched.write_bytes(original.data)
             raw.write_bytes(b"stale")
             with self.assertRaisesRegex(provenance.MetadataProofError, "observation changed"):
                 current()
@@ -1251,6 +1258,737 @@ class ResidentPointerCellSourceTests(unittest.TestCase):
         with self.assertRaises(provenance.MetadataProofError):
             self.facts('unsigned short *cell;',False)
 
+
+
+class EncodedAddressSourceTests(unittest.TestCase):
+    ROOT = pathlib.Path(__file__).resolve().parents[1]
+    SOURCE = b'''typedef unsigned long u32;
+typedef struct Overlay73Command { u32 w0; u32 w1; } Overlay73Command;
+extern unsigned char o73TriangleCommandWord[];
+void func_overlay_073_F0000D70_18CB830(Overlay73Command **commands) {
+ { Overlay73Command *_g=(Overlay73Command *)((*commands)++);
+   _g->w0=1; _g->w1=(unsigned int)o73TriangleCommandWord; }
+}'''
+    OWNER = b'''typedef unsigned char u8; typedef short s16;
+typedef struct Overlay73Triangle {u8 flags,vertex0,vertex1,vertex2; s16 s0,t0,s1,t1,s2,t2;} Overlay73Triangle;
+Overlay73Triangle o73Triangles[8]={{0}};'''
+
+    def facts(self, source=None, flags=None):
+        return provenance.encoded_word_consumer_facts(source or self.SOURCE, flags or ['-32'], self.ROOT)
+
+    def test_actual_distinct_unsigned_types_and_owner_schema(self):
+        facts=self.facts()
+        self.assertEqual(facts[-2:],(('int','unsigned'),('long','unsigned')))
+        self.assertEqual(provenance.encoded_word_owner_facts(self.OWNER,['-32'],self.ROOT),128)
+        self.assertEqual(self.facts(self.SOURCE.replace(b'(unsigned int)',b'(u32)'))[-2],('long','unsigned'))
+
+    def test_complete_carrier_and_receiver_use_closure(self):
+        variants=[
+            self.SOURCE.replace(b'extern unsigned char',b'unsigned char').replace(b'[];',b'[4];'),
+            self.SOURCE.replace(b'[];',b'[4];'),
+            self.SOURCE.replace(b'unsigned char',b'char'),
+            self.SOURCE.replace(b'(unsigned int)o73TriangleCommandWord',b'(unsigned int)&o73TriangleCommandWord'),
+            self.SOURCE.replace(b'(unsigned int)o73TriangleCommandWord',b'(unsigned int)o73TriangleCommandWord[0]'),
+            self.SOURCE.replace(b'(unsigned int)o73TriangleCommandWord',b'(unsigned int)(o73TriangleCommandWord+1)'),
+            self.SOURCE.replace(b'(unsigned int)o73TriangleCommandWord',b'(unsigned int)(void *)o73TriangleCommandWord'),
+            self.SOURCE.replace(b'(unsigned int)o73TriangleCommandWord',b'(unsigned int)sizeof(o73TriangleCommandWord)'),
+            self.SOURCE.replace(b'(unsigned int)o73TriangleCommandWord',b'(unsigned int)o73TriangleCommandWord + 1'),
+            self.SOURCE.replace(b'_g->w1=',b'_g->w0='),
+            self.SOURCE.replace(b'u32 w1',b'long w1'),
+            self.SOURCE.replace(b'(unsigned int)',b'(unsigned short)'),
+            self.SOURCE.replace(b'void func_',b'static void func_'),
+            self.SOURCE.replace(b'_g->w0=1;',b'unsigned char o73TriangleCommandWord[1]; _g->w0=1;'),
+            self.SOURCE.replace(b'_g->w0=1;',b'_g->w0=(unsigned int)o73TriangleCommandWord;'),
+            self.SOURCE.replace(b'_g->w0=1;',b'escape(_g); _g->w0=1;'),
+            self.SOURCE.replace(b'_g->w0=1;',b'{ Overlay73Command *_g; } _g->w0=1;'),
+            self.SOURCE.replace(b'_g->w1=(unsigned int)o73TriangleCommandWord;',b'call(_g->w1=(unsigned int)o73TriangleCommandWord,1);'),
+            self.SOURCE.replace(b'_g->w0=1;',b'_g->w0=1; _g->w1=0;'),
+            self.SOURCE.replace(b'_g->w0=1;',b'_g->w0+=1;'),
+            self.SOURCE.replace(b'_g->w0=1;',b'_g->w0=1; unrelated();'),
+        ]
+        for source in variants:
+            with self.subTest(source=source),self.assertRaises(provenance.MetadataProofError): self.facts(source)
+        for flags in (['-64'],['-32','-n32']):
+            with self.assertRaises(provenance.MetadataProofError): self.facts(flags=flags)
+
+    def test_owner_source_is_the_initialized_writable_record_array(self):
+        for source in (self.OWNER.replace(b'[8]',b'[9]'), self.OWNER.replace(b'={{0}}',b''),
+                       self.OWNER.replace(b'Overlay73Triangle o73Triangles',b'const Overlay73Triangle o73Triangles'),
+                       self.OWNER.replace(b'typedef short s16',b'typedef int s16'),
+                       self.OWNER.replace(b'u8 flags',b'u8 other'),
+                       self.OWNER.replace(b'Overlay73Triangle o73Triangles',b'static Overlay73Triangle o73Triangles')):
+            with self.subTest(source=source),self.assertRaises(provenance.MetadataProofError):
+                provenance.encoded_word_owner_facts(source,['-32'],self.ROOT)
+
+    def test_expression_rejects_baseline_numeric_coincidence_and_overrides(self):
+        good={'aliases':provenance.encoded_word_expression(),'main':'overlay_073_DATA_START = .;'}
+        self.assertEqual(provenance.encoded_word_scripts(good),'aliases')
+        for scripts in ({'aliases':'o73TriangleCommandWord = 0x80000000;','main':good['main']},
+            dict(good,late=good['aliases']), dict(good,late='o73Triangles = 0;'),
+            dict(good,late='o73Triangles <<= 0;'), dict(good,late='overlay_073_DATA_START += 0;'),
+            dict(good,main='overlay_073_DATA_START = 0;'),dict(good,main=good['main']+' INCLUDE extra'),
+            dict(good,aliases=good['aliases'].replace('0x80000000','0x40000000')),
+            dict(good,aliases=good['aliases'].replace('o73Triangles -','o73VertexSeeds -')),
+            dict(good,aliases=good['aliases']+' o73TriangleCommandWord = 0;')):
+            with self.subTest(scripts=scripts),self.assertRaises(provenance.MetadataProofError):
+                provenance.encoded_word_scripts(scripts)
+
+    def test_optin_is_closed_and_missing_optin_does_not_hide_the_carrier(self):
+        with tempfile.TemporaryDirectory() as td:
+            root=pathlib.Path(td); (root/'Makefile').touch()
+            source=root/provenance.ENCODED_WORD_SOURCE; source.parent.mkdir(parents=True);source.write_bytes(self.SOURCE)
+            good=provenance.ENCODED_WORD_TARGET+': ENCODED_ADDRESS_WORD = '+provenance.ENCODED_WORD_ASSOCIATION+'\n'
+            self.assertTrue(provenance.encoded_word_selection(root,good))
+            self.assertTrue(provenance.encoded_word_selection(root,good*3))
+            for dump in ('',good.replace('o73Triangles:','other:'),good.replace('o073/','o013/'),
+                         good+good.replace('o73Triangles:','other:'),good+good.replace('o073/','o013/'),
+                         good+good.replace(' = ', ' := '),good+'ENCODED_ADDRESS_WORD = unknown\n',
+                         good+good.replace(': ENCODED_ADDRESS_WORD', ': private ENCODED_ADDRESS_WORD')):
+                with self.subTest(dump=dump),self.assertRaises(provenance.MetadataProofError):
+                    provenance.encoded_word_selection(root,dump)
+            source.write_text('void unrelated(void) {}')
+            with self.assertRaises(provenance.MetadataProofError): provenance.encoded_word_selection(root,good)
+            self.assertFalse(provenance.encoded_word_selection(root,''))
+
+
+class EncodedAddressObjectTests(unittest.TestCase):
+    @staticmethod
+    def objects(origin=16, owner_delta=0):
+        import runlink_pack as rp
+        from test_runlink_pack import ObjBuilder, GLOBAL, OBJECT, FUNC
+        marker=provenance.ENCODED_WORD_MARKER; owner=provenance.ENCODED_WORD_OWNER; function=provenance.ENCODED_WORD_FUNCTION
+        words=struct.pack('>IIII',15<<26|8<<16,9<<26|8<<21|8<<16,0,0)
+        raw=rp.Elf(pathlib.Path('raw.o'),ObjBuilder().section('.text',words)
+            .sym(function,0,16,GLOBAL,FUNC,'.text').sym(marker,0,0,GLOBAL,OBJECT,'UND')
+            .rel('.text',0,rp.R_MIPS_HI16,marker).rel('.text',4,rp.R_MIPS_LO16,marker).build())
+        data=ObjBuilder().section('.data',bytes(208)).sym(owner,0,128,GLOBAL,OBJECT,'.data')
+        data.sym('o73VertexSeeds',128,72,GLOBAL,OBJECT,'.data')
+        blob=bytearray(data.build()); shoff=struct.unpack_from('>I',blob,32)[0];struct.pack_into('>I',blob,shoff+40+8,3)
+        provider=rp.Elf(pathlib.Path('owner.o'),bytes(blob))
+        # Independent origin movement changes the text allocation, not an invented marker object.
+        if origin!=16:
+            larger=words+bytes(origin-16)
+            raw=rp.Elf(pathlib.Path('raw.o'),ObjBuilder().section('.text',larger)
+                .sym(function,0,16,GLOBAL,FUNC,'.text').sym(marker,0,0,GLOBAL,OBJECT,'UND')
+                .rel('.text',0,rp.R_MIPS_HI16,marker).rel('.text',4,rp.R_MIPS_LO16,marker).build())
+        value=(owner_delta+0x80000000)&0xffffffff
+        linked_words=bytearray(raw.bytes_of('.text'))
+        struct.pack_into('>I',linked_words,0,(15<<26|8<<16)|((value+0x8000)>>16)&0xffff)
+        struct.pack_into('>I',linked_words,4,(9<<26|8<<21|8<<16)|(value&0xffff))
+        image=bytes(linked_words)+bytes(owner_delta)+provider.bytes_of('.data')
+        final=rp.Elf(pathlib.Path('final.elf'),ObjBuilder().section('.overlay_073',image,addr=0xF0000000)
+            .sym(function,0xF0000000,16,GLOBAL,FUNC,'.overlay_073')
+            .sym(owner,0xF0000000+origin+owner_delta,128,GLOBAL,OBJECT,'.overlay_073')
+            .sym(provenance.ENCODED_WORD_ORIGIN,0xF0000000+origin,0,GLOBAL,0,'.overlay_073')
+            .sym(marker,value,0,GLOBAL,OBJECT,'ABS').build())
+        mapping=[rp.MapInput('.overlay_073','.text',0xF0000000,origin,provenance.ENCODED_WORD_TARGET),
+                 rp.MapInput('.overlay_073','.data',0xF0000000+origin+owner_delta,208,'build/'+provenance.ENCODED_WORD_PROVIDER+'.o')]
+        return raw,provider,final,mapping
+
+    def test_original_pair_and_independent_origin_owner_carry_readback(self):
+        for origin,delta in ((16,0),(32,0),(32,32),(48,0x8000)):
+            with self.subTest(origin=origin,delta=delta):
+                raw,provider,final,mapping=self.objects(origin,delta)
+                pair,owner,start=provenance.encoded_word_readback(raw,provider,final,mapping,128)
+                self.assertEqual((owner,start),(origin+delta,origin))
+                self.assertEqual(pair[1:3],(0,4))
+
+    def test_actual_final_roles_and_original_pair_mutations_refuse(self):
+        import runlink_pack as rp
+        cases=[('provider',provenance.ENCODED_WORD_OWNER,{'size':0}),
+               ('provider',provenance.ENCODED_WORD_OWNER,{'bind':rp.STB_LOCAL}),
+               ('provider',provenance.ENCODED_WORD_OWNER,{'shndx':rp.SHN_COMMON,'section':'COMMON'}),
+               ('final',provenance.ENCODED_WORD_OWNER,{'shndx':rp.SHN_ABS,'section':'ABS'}),
+               ('final',provenance.ENCODED_WORD_MARKER,{'size':4}),
+               ('final',provenance.ENCODED_WORD_MARKER,{'type':rp.STT_FUNC}),
+               ('final',provenance.ENCODED_WORD_MARKER,{'value':0}),
+               ('final',provenance.ENCODED_WORD_ORIGIN,{'value':0}),
+               ('raw',provenance.ENCODED_WORD_MARKER,{'size':4}),
+               ('raw',provenance.ENCODED_WORD_FUNCTION,{'bind':rp.STB_LOCAL})]
+        for which,name,change in cases:
+            raw,provider,final,mapping=self.objects();obj={'raw':raw,'provider':provider,'final':final}[which]
+            i=next(i for i,s in enumerate(obj.symbols) if s.name==name)
+            obj.symbols[i]=dataclasses.replace(obj.symbols[i],**change)
+            with self.subTest(which=which,change=change),self.assertRaises(provenance.MetadataProofError):
+                provenance.encoded_word_readback(raw,provider,final,mapping,128)
+        raw,provider,final,mapping=self.objects();mapping.append(mapping[-1])
+        with self.assertRaises(provenance.MetadataProofError): provenance.encoded_word_readback(raw,provider,final,mapping,128)
+        raw,provider,final,mapping=self.objects(); i=next(i for i,s in enumerate(provider.symbols) if s.name=='o73VertexSeeds')
+        provider.symbols[i]=dataclasses.replace(provider.symbols[i],value=64)
+        with self.assertRaises(provenance.MetadataProofError): provenance.encoded_word_readback(raw,provider,final,mapping,128)
+
+
+class EncodedAddressOrdinaryReplayTests(unittest.TestCase):
+    def setUp(self):
+        import runlink_pack as rp
+        import permute_batch as batch
+        import runlink_metadata_link as link
+        import shlex
+        from test_runlink_pack import ObjBuilder, GLOBAL, OBJECT
+        self.rp,self.batch,self.link=rp,batch,link
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
+        self.root=pathlib.Path(self.temp.name)
+        (self.root/'tools').symlink_to(EncodedAddressSourceTests.ROOT/'tools',target_is_directory=True)
+        if not (self.root/'tools/binutils/mips64-elf-ld').is_file():self.skipTest('configured GNU ld absent')
+        self.raw,self.provider,_unused,_mapping=EncodedAddressObjectTests.objects()
+        def write(name,data):
+            path=self.root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data);return path
+        self.write=write
+        write(provenance.ENCODED_WORD_TARGET,self.raw.data)
+        write('build/'+provenance.ENCODED_WORD_PROVIDER+'.o',self.provider.data)
+        self.extra=write('build/other.o',ObjBuilder().section('.data',bytes(4))
+            .sym('other',0,4,GLOBAL,OBJECT,'.data').build())
+        self.main='SECTIONS\n{\n .overlay_073 0xF0000000 : AT(0) SUBALIGN(4)\n {\n  build/src/overlays/o073/overlay_073.c.o(.text);\n  overlay_073_DATA_START = .;\n  build/src/overlays/o073/overlay73Geometry.c.o(.data);\n }\n .extra 0xF0010000 : AT(4096) SUBALIGN(4)\n {\n  build/other.o(.data);\n }\n /DISCARD/ :\n {\n  *(*);\n }\n}\n'
+        self.script_names=['mickey.us.ld','undefined_funcs_auto.us.txt','undefined_syms_auto.us.txt',
+                           'libultra_undefined_syms.us.txt','overlay_undefined_syms.us.txt']
+        for name in self.script_names:write(name,b'')
+        (self.root/'mickey.us.ld').write_text(self.main)
+        (self.root/'overlay_undefined_syms.us.txt').write_text(provenance.encoded_word_expression()+'\n')
+        self.linked=self.root/link.BOOT_ELF;self.map_path=self.root/link.BOOT_MAP
+        self.linked.parent.mkdir(parents=True,exist_ok=True)
+        self.command=['tools/link_diagnose.sh','tools/binutils/mips64-elf-ld']
+        for name in self.script_names:self.command+=['-T',name]
+        self.command+=['-Map',link.BOOT_MAP,'--no-check-sections','-o',link.BOOT_ELF]
+        (self.root/link.BOOT_LOG).write_text('command: '+shlex.join(self.command)+'\n')
+        self.baseline()
+
+    def baseline(self):
+        self.batch.bounded_capture(self.command,provenance.time.monotonic()+20,check=True,cwd=self.root)
+
+    def replay(self):
+        scripts={name:(self.root/name).read_text() for name in self.script_names}
+        context=provenance.producer_link_context(self.root,self.linked,self.map_path)
+        return provenance.replay_encoded_word_link(self.root,self.linked,self.map_path,scripts,context)
+
+    def test_actual_bound_ld_replay_runs_preserves_canonical_outputs_and_holds_private(self):
+        before={p:p.read_bytes() for p in (self.linked,self.map_path)}
+        run=self.batch.bounded_capture
+        with mock.patch.object(self.batch,'bounded_capture',wraps=run) as invoked:
+            image,mapping,rows,held,current=self.replay()
+        self.assertEqual(invoked.call_count,1)
+        actual=invoked.call_args.args[0];expected=self.command.copy()
+        expected[expected.index('-Map')+1]=str(mapping)
+        expected[expected.index('-o')+1]=str(image.path)
+        self.assertEqual(actual,expected)
+        self.assertEqual(invoked.call_args.kwargs['cwd'],self.root)
+        self.assertNotEqual(image.path,self.linked)
+        self.assertEqual(before,{p:p.read_bytes() for p in before})
+        self.assertEqual(tuple(self.rp.parse_map(self.map_path)),rows);self.assertTrue(current())
+        image.path.write_bytes(image.path.read_bytes()+b'changed')
+        with self.assertRaises(provenance.MetadataProofError):current()
+
+    def test_actual_final_command_uses_its_bound_script_and_private_outputs(self):
+        import shlex
+        self.script_names[0]=self.link.FINAL_SCRIPT
+        self.write(self.link.FINAL_SCRIPT,self.main.encode())
+        self.linked=self.root/'build/mickey.us.elf';self.map_path=self.root/'build/mickey.us.map'
+        self.command[3]=self.link.FINAL_SCRIPT
+        self.command[self.command.index('-Map')+1]='build/mickey.us.map'
+        self.command[self.command.index('-o')+1]='build/mickey.us.elf'
+        (self.root/self.link.FINAL_LOG).write_text('command: '+shlex.join(self.command)+'\n')
+        self.baseline()
+        run=self.batch.bounded_capture
+        with mock.patch.object(self.batch,'bounded_capture',wraps=run) as invoked:
+            image,mapping,_rows,_held,current=self.replay()
+        self.assertEqual(invoked.call_count,1)
+        self.assertEqual(invoked.call_args.args[0][3],self.link.FINAL_SCRIPT)
+        self.assertNotEqual(image.path,self.linked);self.assertNotEqual(mapping,self.map_path)
+        self.assertTrue(current())
+
+    def test_zero_allocation_direct_input_remains_held_during_and_after_replay(self):
+        from test_runlink_pack import ObjBuilder
+        hidden=self.write('build/empty.o',ObjBuilder().section('.text',b'').build())
+        (self.root/'mickey.us.ld').write_text(self.main.replace('  build/other.o(.data);',
+            '  build/other.o(.data);\n  build/empty.o(.text);'))
+        self.baseline()
+        original=hidden.read_bytes()
+        _image,_mapping,_rows,held,current=self.replay()
+        self.assertIn(hidden,held)
+        hidden.write_bytes(original+b'changed')
+        with self.assertRaises(provenance.MetadataProofError):current()
+        hidden.write_bytes(original)
+        run=self.batch.bounded_capture
+        def changed(*args,**kwargs):
+            result=run(*args,**kwargs);hidden.write_bytes(original+b'changed during link');return result
+        with mock.patch.object(self.batch,'bounded_capture',side_effect=changed):
+            with self.assertRaisesRegex(provenance.MetadataProofError,'closure changed'):self.replay()
+
+    def test_numeric_baseline_then_correct_script_still_requires_actual_reproduction(self):
+        alias=self.root/'overlay_undefined_syms.us.txt'
+        alias.write_text('o73TriangleCommandWord = 0x80000000;\n');self.baseline()
+        alias.write_text(provenance.encoded_word_expression()+'\n')
+        # All old local role/readback checks still pass; only an unrelated real
+        # direct input changed since that numerically coincident old link.
+        provenance.encoded_word_readback(self.raw,self.provider,self.rp.Elf(self.linked),
+                                        self.rp.parse_map(self.map_path),128)
+        obj=self.rp.Elf(self.extra);blob=bytearray(obj.data)
+        blob[obj.section('.data')['offset']]=1;self.extra.write_bytes(blob)
+        run=self.batch.bounded_capture
+        with mock.patch.object(self.batch,'bounded_capture',wraps=run) as invoked:
+            with self.assertRaisesRegex(provenance.MetadataProofError,'replay differs'):self.replay()
+        self.assertEqual(invoked.call_count,1)
+
+    def test_substituted_canonical_elf_cannot_hide_mismatching_reproduction(self):
+        obj=self.rp.Elf(self.extra);data=bytearray(obj.data)
+        data[obj.section('.data')['offset']]=1;self.extra.write_bytes(data)
+        context=provenance.producer_link_context(self.root,self.linked,self.map_path)
+        actual_elf=self.rp.Elf;seen=[]
+        def substitute(path,*args,**kwargs):
+            if pathlib.Path(path)==self.linked:
+                outputs=list((self.root/'build/encoded-word-link-proof').glob('capture-*/linked.elf'))
+                self.assertEqual(len(outputs),1);seen.append(path)
+                return actual_elf(path,outputs[0].read_bytes())
+            return actual_elf(path,*args,**kwargs)
+        run=self.batch.bounded_capture
+        with mock.patch.object(self.rp,'Elf',side_effect=substitute), \
+                mock.patch.object(self.batch,'bounded_capture',wraps=run) as invoked:
+            with self.assertRaisesRegex(provenance.MetadataProofError,'loaded canonical ELF'):
+                self.replay()
+        self.assertEqual(len(seen),1);self.assertEqual(invoked.call_count,1)
+        self.assertEqual(context,provenance.producer_link_context(self.root,self.linked,self.map_path))
+
+    def test_substituted_canonical_map_bytes_cannot_hide_wrong_physical_input(self):
+        good=self.map_path.read_bytes()
+        bad=good.replace(b'build/other.o',b'build/unlisted.o')
+        self.assertNotEqual(good,bad);self.map_path.write_bytes(bad)
+        context=provenance.producer_link_context(self.root,self.linked,self.map_path)
+        read=pathlib.Path.read_bytes;seen=[]
+        def substitute(path):
+            if path==self.map_path:seen.append(path);return good
+            return read(path)
+        with mock.patch.object(pathlib.Path,'read_bytes',substitute), \
+                mock.patch.object(self.batch,'bounded_capture') as invoked:
+            with self.assertRaisesRegex(provenance.MetadataProofError,'loaded canonical map'):
+                self.replay()
+            invoked.assert_not_called()
+        self.assertEqual(len(seen),1);self.assertEqual(self.map_path.read_bytes(),bad)
+        self.assertEqual(context,provenance.producer_link_context(self.root,self.linked,self.map_path))
+
+    def test_loaded_replay_bytes_are_held_from_the_observations_not_later_file_hashes(self):
+        actual_elf=self.rp.Elf;read=pathlib.Path.read_bytes
+        for case in ('elf','map'):
+            seen=[]
+            def substitute_elf(path,*args,**kwargs):
+                value=actual_elf(path,*args,**kwargs)
+                if case=='elf' and pathlib.Path(path).parent.parent.name=='encoded-word-link-proof':
+                    value.data+=b' substituted loaded trailing bytes';seen.append(path)
+                return value
+            def substitute_map(path):
+                value=read(path)
+                if case=='map' and path.name=='linked.map' and path.parent.parent.name=='encoded-word-link-proof':
+                    seen.append(path);return value+b'\n# substituted loaded map bytes\n'
+                return value
+            with self.subTest(case=case),mock.patch.object(self.rp,'Elf',side_effect=substitute_elf), \
+                    mock.patch.object(pathlib.Path,'read_bytes',substitute_map):
+                with self.assertRaisesRegex(provenance.MetadataProofError,'closure changed'):self.replay()
+            self.assertEqual(len(seen),1)
+
+    def test_zero_sized_collision_inputs_and_unsupported_spellings_refuse(self):
+        from test_runlink_pack import ObjBuilder, GLOBAL, OBJECT
+        for name in (provenance.ENCODED_WORD_MARKER,provenance.ENCODED_WORD_ORIGIN,provenance.ENCODED_WORD_OWNER):
+            self.write('build/hidden.o',ObjBuilder().section('.text',b'').sym(name,0,0,GLOBAL,OBJECT,'ABS').build())
+            (self.root/'mickey.us.ld').write_text(self.main.replace('  build/other.o(.data);','  build/other.o(.data);\n  build/hidden.o(.text);'))
+            with self.subTest(name=name),mock.patch.object(self.batch,'bounded_capture') as invoked:
+                with self.assertRaises(provenance.MetadataProofError):self.replay()
+                invoked.assert_not_called()
+        for spelling in ('"build/hidden.o"(.text);','extra/alias.o(.text);','./build/hidden.o(.text);',
+                         'build/hidden.o','INPUT(build/hidden.o)','STARTUP(build/hidden.o)',
+                         'build/hidden.a(.text);','unknown(build/hidden.o)'):
+            (self.root/'mickey.us.ld').write_text(self.main.replace('  build/other.o(.data);','  build/other.o(.data);\n  '+spelling))
+            with self.subTest(spelling=spelling),mock.patch.object(self.batch,'bounded_capture') as invoked:
+                with self.assertRaises(provenance.MetadataProofError):self.replay()
+                invoked.assert_not_called()
+
+    def test_current_canonical_scripts_have_a_complete_explicit_grammar(self):
+        root=EncodedAddressSourceTests.ROOT
+        scripts={name:(root/name).read_text() for name in self.script_names}
+        names=provenance.encoded_word_link_inputs(scripts)
+        self.assertIn(provenance.ENCODED_WORD_TARGET,names)
+        self.assertIn('build/'+provenance.ENCODED_WORD_PROVIDER+'.o',names)
+
+
+class EncodedAddressCaptureTests(unittest.TestCase):
+    def setUp(self):
+        provenance._effective_parser(EncodedAddressSourceTests.ROOT)
+        provenance.static_anchor_module(EncodedAddressSourceTests.ROOT)
+        import runlink_pack as rp
+        import postprocess_audit as audit
+        import permute_batch as batch
+        self.rp=rp
+        self.actual_replay=False
+        self.real_replay=provenance.replay_encoded_word_link
+        self.real_link_context=provenance.producer_link_context
+        self.real_bounded_capture=batch.bounded_capture
+        self.real_ort_load=rp.OrtNames.load
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
+        self.root=pathlib.Path(self.temp.name)
+        (self.root/'tools').symlink_to(EncodedAddressSourceTests.ROOT/'tools',target_is_directory=True)
+        raw,provider,final,mapping=EncodedAddressObjectTests.objects()
+        def write(name,data):
+            p=self.root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data);return p
+        write('Makefile',b'fixture')
+        self.source=write(provenance.ENCODED_WORD_SOURCE,EncodedAddressSourceTests.SOURCE)
+        self.owner_source=write(provenance.ENCODED_WORD_PROVIDER,EncodedAddressSourceTests.OWNER)
+        self.original=write('build/capture/compiler-original.o',raw.data)
+        self.raw=write('build/capture/raw.o',raw.data)
+        configured=write(provenance.ENCODED_WORD_TARGET,raw.data)
+        self.ordinary=write('build/raw/'+provenance.ENCODED_WORD_SOURCE+'.o',raw.data)
+        provider_path=write('build/'+provenance.ENCODED_WORD_PROVIDER+'.o',provider.data)
+        final_path=write('build/mickey.us.elf',final.data)
+        map_text='Linker script and memory map\n.overlay_073 0xf0000000 0xe0\n'+''.join(
+            f' {m.insec} {m.addr:#x} {m.size:#x} {m.file}\n' for m in mapping)
+        self.map_path=write('build/mickey.us.map',map_text.encode())
+        scripts=['mickey.us.ld','undefined_funcs_auto.us.txt','undefined_syms_auto.us.txt',
+                 'libultra_undefined_syms.us.txt','overlay_undefined_syms.us.txt']
+        for name in scripts:write(name,b'')
+        (self.root/'mickey.us.ld').write_text('overlay_073_DATA_START = .;')
+        self.script=self.root/'overlay_undefined_syms.us.txt';self.script.write_text(provenance.encoded_word_expression())
+        self.dump=(provenance.ENCODED_WORD_TARGET+': ENCODED_ADDRESS_WORD = '+provenance.ENCODED_WORD_ASSOCIATION+'\n'
+            +'build/'+provenance.ENCODED_WORD_PROVIDER+'.o: PLAIN_DATA_PROOF = 1\n'
+            +'build/'+provenance.ENCODED_WORD_PROVIDER+'.o: PLAIN_DATA_RUNTIME_ROLE = data\n')
+        self.world=SimpleNamespace(paths={'build':self.root/'build','raw':self.root/'build/raw','elf':final_path,
+              'map':self.map_path,'ort':self.root/'ort'},elf=rp.Elf(final_path),map=mapping,map_data=map_text.encode(),
+              data_import_inputs={},data_import_contexts=[],data_import_provider_receipts={},need_raw=False,
+              layout=None,_guarded_data_objects={})
+        def inputs(source,target):
+            return {'source':provenance.sha256_file(source),'configured':provenance.sha256_file(target),
+                'assembly':{},'command':'tools/ido/cc -32 -c -o '+str(target.relative_to(self.root))+' '+str(source.relative_to(self.root)),
+                'dependencies':{},'makefiles':{},'module_link_inputs':{},'metadata_tools':{},
+                'generated_metadata':{'inputs':{}}}
+        self.consumer_inputs=lambda:inputs(self.source,configured)
+        self.provider_inputs=lambda:inputs(self.owner_source,provider_path)
+        self.receipt={'inputs':self.consumer_inputs(),'raw_sha256':provenance.sha256_file(self.raw),
+            'configured_sha256':provenance.sha256_file(configured),'compiler_original':'build/capture/compiler-original.o',
+            'compiler_original_sha256':provenance.sha256_file(self.original),'kept_rodata':{'fixture':True},'directory':'build/capture'}
+        self.provider_receipt={'inputs':self.provider_inputs(),'directory':'build/provider',
+            'compiler_original':str(provider_path.relative_to(self.root)),
+            'compiler_original_sha256':provenance.sha256_file(provider_path),
+            'raw_sha256':provenance.sha256_file(provider_path),'configured_sha256':provenance.sha256_file(provider_path)}
+        (self.root/'build/provider').mkdir()
+        def provider_capture(world,source,**options):
+            world.data_import_provider_receipts[source]=self.provider_receipt
+            rp.hold_data_capture(world,source,self.provider_receipt,self.provider_inputs)
+            return rp.Elf(provider_path)
+        def replay(root,linked,map_path,scripts,context):
+            if self.actual_replay:
+                return self.real_replay(root,linked,map_path,scripts,context)
+            image_path=write('build/replay/linked.elf',linked.read_bytes())
+            replay_map=write('build/replay/linked.map',map_path.read_bytes())
+            image=rp.Elf(image_path); rows=tuple(rp.parse_map(replay_map))
+            held={p:provenance.sha256_file(p) for p in (image_path,replay_map)}
+            def current():
+                if any(provenance.sha256_file(p)!=h for p,h in held.items()):
+                    raise provenance.MetadataProofError('fixture replay changed')
+                return True
+            return image,replay_map,rows,held,current
+        def cpp(command,*args,**kwargs):
+            if command[0]!='tools/ido/cc':
+                return self.real_bounded_capture(command,*args,**kwargs)
+            return SimpleNamespace(stdout=(self.source if command[-1]==provenance.ENCODED_WORD_SOURCE else self.owner_source).read_text())
+        self.stack=contextlib.ExitStack();self.addCleanup(self.stack.close)
+        for patch in (mock.patch.object(audit,'run_make_database',side_effect=lambda:self.dump),
+            mock.patch.object(provenance,'producer_link_context',side_effect=lambda *args:
+                self.real_link_context(*args) if self.actual_replay else {'command':['wrapper','ld','-T','mickey.us.ld']}),
+            mock.patch.object(provenance,'_capture_configured_raw',return_value=(self.raw,[],self.receipt,self.consumer_inputs)),
+            mock.patch.object(provenance,'replay_encoded_word_link',side_effect=replay),
+            mock.patch.object(rp,'reproduce_data_provider',side_effect=provider_capture),
+            mock.patch.object(rp.OrtNames,'load',return_value=rp.OrtNames([],{})),
+            mock.patch.object(batch,'bounded_capture',side_effect=cpp)):
+            self.stack.enter_context(patch)
+
+    def capture(self):
+        witness=provenance.capture_encoded_word(self.world,self.dump)
+        self.world._encoded_word=witness
+        self.world.data_import_contexts.append((True,witness.current))
+        return witness
+
+    def test_sealed_factory_uses_actual_final_ld_replay_and_holds_its_parse(self):
+        import shlex
+        import runlink_metadata_link as link
+        import permute_batch as batch
+        self.actual_replay=True
+        text='\n'.join(['SECTIONS','{',' .overlay_073 0xF0000000 : AT(0) SUBALIGN(4)',' {',
+            '  '+provenance.ENCODED_WORD_TARGET+'(.text);','  overlay_073_DATA_START = .;',
+            '  build/'+provenance.ENCODED_WORD_PROVIDER+'.o(.data);',' }',' /DISCARD/ :',' {','  *(*);',' }','}'])+'\n'
+        (self.root/'mickey.us.ld').write_text(text)
+        final_script=self.root/link.FINAL_SCRIPT;final_script.parent.mkdir(parents=True,exist_ok=True);final_script.write_text(text)
+        scripts=[link.FINAL_SCRIPT,'undefined_funcs_auto.us.txt','undefined_syms_auto.us.txt',
+                 'libultra_undefined_syms.us.txt','overlay_undefined_syms.us.txt']
+        command=['tools/link_diagnose.sh','tools/binutils/mips64-elf-ld']
+        for name in scripts:command+=['-T',name]
+        command+=['-Map','build/mickey.us.map','--no-check-sections','-o','build/mickey.us.elf']
+        (self.root/link.FINAL_LOG).write_text('command: '+shlex.join(command)+'\n')
+        self.real_bounded_capture(command,provenance.time.monotonic()+20,check=True,cwd=self.root)
+        self.world.elf=self.rp.Elf(self.world.paths['elf']);self.world.map=self.rp.parse_map(self.map_path)
+        self.world.map_data=self.map_path.read_bytes()
+        with mock.patch.object(batch,'bounded_capture',wraps=batch.bounded_capture) as observed:
+            witness=self.capture()
+        links=[call for call in observed.call_args_list if call.args[0][0]=='tools/link_diagnose.sh']
+        self.assertEqual(len(links),1)
+        self.assertNotEqual(witness.replay.path,self.world.paths['elf']);self.assertTrue(witness.current())
+        witness.replay.symbols=[]
+        with self.assertRaisesRegex(provenance.MetadataProofError,'parsed'):witness.current()
+
+    def test_word_context_excludes_unrelated_callback_but_global_hold_keeps_it(self):
+        calls=[];valid=[True]
+        def unrelated():
+            calls.append(True);return valid[0]
+        self.world.data_import_contexts.append((True,unrelated))
+        witness=self.capture();self.assertTrue(witness.current());self.assertEqual(calls,[])
+        resolver=self.rp.Resolver(self.world,self.rp.OrtNames([],{}));resolver.rows_by_ident()
+        self.rp.check_data_import_holds(self.world);self.assertEqual(len(calls),1)
+        valid[0]=False
+        self.assertTrue(witness.current());self.assertEqual(len(calls),1)
+        with self.assertRaises(self.rp.PackError):self.rp.check_data_import_holds(self.world)
+        self.assertEqual(len(calls),2);self.assertIsNone(self.world._guarded_data_objects)
+        with self.assertRaises(self.rp.PackError):resolver.rows_by_ident()
+
+    def test_preserved_owner_cache_still_requires_fresh_capture_and_keeps_failure(self):
+        source=provenance.ENCODED_WORD_PROVIDER[4:-2]
+        self.world.data_import_providers={source:self.rp.Elf(self.root/self.provider_receipt['compiler_original'])}
+        self.world.data_import_provider_receipts[source]=self.provider_receipt
+        self.rp.reproduce_data_provider.reset_mock()
+        self.capture()
+        self.rp.reproduce_data_provider.assert_called_once_with(self.world,source,preserve_compiler=True)
+        with mock.patch.object(self.rp,'reproduce_data_provider',
+                side_effect=provenance.MetadataProofError('fresh owner capture failed')) as fresh:
+            with self.assertRaisesRegex(provenance.MetadataProofError,'fresh owner capture failed'):
+                self.capture()
+        fresh.assert_called_once_with(self.world,source,preserve_compiler=True)
+
+    def test_probe_fresh_private_artifacts_do_not_change_deterministic_inputs(self):
+        self.world.amods={}
+        for name in ('atlas','residuals','rom'):
+            self.world.paths[name]=self.root/name
+        probe=self.capture()
+        before=self.rp.metadata_input_paths(self.world.paths,self.world)
+        private_before={path for path,digest in probe.holds if path.name=='encoded-effective.i'}
+        self.world.data_import_contexts=[];self.world.data_import_inputs={}
+        self.world.data_import_provider_receipts={}
+        self.receipt['directory']='build/capture-fresh';(self.root/self.receipt['directory']).mkdir()
+        self.provider_receipt['directory']='build/provider-fresh';(self.root/self.provider_receipt['directory']).mkdir()
+        fresh=self.capture()
+        after=self.rp.metadata_input_paths(self.world.paths,self.world)
+        private_after={path for path,digest in fresh.holds if path.name=='encoded-effective.i'}
+        self.assertEqual(before,after)
+        self.assertEqual(len(private_before),2);self.assertEqual(len(private_after),2)
+        self.assertTrue(private_before.isdisjoint(private_after))
+        for witness,private in ((probe,private_before),(fresh,private_after)):
+            self.assertTrue(private.isdisjoint(after))
+            self.assertNotIn(witness.replay.path,after);self.assertNotIn(witness.replay_map_path,after)
+            self.assertTrue(witness.current())
+        private=next(iter(private_after));original=private.read_bytes()
+        private.write_bytes(original+b' late private CPP')
+        with self.assertRaises(provenance.MetadataProofError):self.rp.check_data_import_holds(self.world)
+        self.assertIsNone(self.world._guarded_data_objects)
+
+    def test_cli_map_row_class_identity_is_not_authority_but_all_fields_are(self):
+        alternate=dataclasses.make_dataclass('MapInput',
+            [(f.name,f.type) for f in dataclasses.fields(self.rp.MapInput)],
+            namespace={'__module__':'__main__'},frozen=True)
+        self.world.map=[alternate(*dataclasses.astuple(row)) for row in self.world.map]
+        witness=self.capture();self.assertTrue(witness.current())
+        self.assertNotEqual(witness.mapping[0],self.rp.parse_map(self.map_path)[0])
+        for field in ('outsec','insec','addr','size','file'):
+            value=getattr(witness.mapping[0],field)
+            changed=dataclasses.replace(witness.mapping[0],**{field:value+4 if isinstance(value,int) else value+'-changed'})
+            with self.subTest(field=field),self.assertRaisesRegex(provenance.MetadataProofError,'loaded map'):
+                dataclasses.replace(witness,mapping=(changed,*witness.mapping[1:])).current()
+        for rows in (witness.mapping[::-1],witness.mapping+witness.mapping[:1]):
+            with self.assertRaisesRegex(provenance.MetadataProofError,'loaded map'):
+                dataclasses.replace(witness,mapping=rows).current()
+
+    def test_sealed_capture_loaded_parses_and_runtime_pair(self):
+        w=self.capture();self.assertTrue(w.current())
+        records=[(0,self.rp.R_MIPS_HI16,self.rp.OP_LOCAL,16),(4,self.rp.R_MIPS_LO16,self.rp.OP_LOCAL,16)]
+        self.assertTrue(w.runtime(w.linked.bytes_of('.overlay_073'),records))
+        for changed in (records[::-1],records[:1],records+records,[(*r[:3],0) for r in records]):
+            with self.assertRaises(provenance.MetadataProofError):w.runtime(w.linked.bytes_of('.overlay_073'),changed)
+        with self.assertRaises(provenance.MetadataProofError):dataclasses.replace(w,seal=object()).current()
+        index=next(i for i,s in enumerate(w.provider.symbols) if s.name==provenance.ENCODED_WORD_OWNER)
+        original=w.provider.symbols[index];w.provider.symbols[index]=dataclasses.replace(original,size=4)
+        with self.assertRaisesRegex(provenance.MetadataProofError,'parsed'):w.current()
+        w.provider.symbols[index]=original;self.assertTrue(w.current())
+
+    def test_raw_receipt_original_compiler_and_wrong_owner_authority_refuse(self):
+        for field in ('raw_sha256','configured_sha256','compiler_original_sha256'):
+            original=self.receipt[field];self.receipt[field]='bad'
+            with self.subTest(field=field),self.assertRaises(provenance.MetadataProofError):self.capture()
+            self.receipt[field]=original
+        for field in ('raw_sha256','compiler_original_sha256'):
+            original=self.provider_receipt[field];self.provider_receipt[field]='bad'
+            with self.subTest(provider_field=field),self.assertRaises(provenance.MetadataProofError):self.capture()
+            self.provider_receipt[field]=original
+        self.receipt.pop('kept_rodata')
+        with self.assertRaisesRegex(provenance.MetadataProofError,'keep-only'):self.capture()
+
+    def test_late_source_script_original_or_optin_loss_clears_old_resolver_and_recovers(self):
+        for case in ('source','script','original','optin'):
+            self.world.data_import_contexts=[];self.world.data_import_inputs={};self.world._guarded_data_objects={}
+            w=self.capture();resolver=self.rp.Resolver(self.world,self.rp.OrtNames([],{}));resolver.rows_by_ident()
+            path={'source':self.source,'script':self.script,'original':self.original}.get(case)
+            old=path.read_bytes() if path else self.dump
+            if path:path.write_bytes(old+b' changed')
+            else:self.dump=''
+            with self.subTest(case=case),self.assertRaises((self.rp.PackError,provenance.MetadataProofError)):
+                self.rp.check_data_import_holds(self.world)
+            self.assertIsNone(self.world._guarded_data_objects);self.assertIsNone(self.world._encoded_word)
+            if path:path.write_bytes(old)
+            else:self.dump=old
+            with self.assertRaisesRegex(self.rp.PackError,'unavailable'):resolver.rows_by_ident()
+            self.world.data_import_contexts=[];self.world.data_import_inputs={}
+            fresh=self.capture();self.world._guarded_data_objects={}
+            self.assertTrue(fresh.current());self.assertEqual(resolver.rows_by_ident(),{})
+
+    def test_generator_requires_actual_input_roles_and_holds_them(self):
+        header=self.root/'include/overlays/overlay_073.h';header.parent.mkdir(parents=True);header.write_text('')
+        inputs=[(73,self.root/provenance.ENCODED_WORD_TARGET),
+                (73,self.root/('build/'+provenance.ENCODED_WORD_PROVIDER+'.o'))]
+        current=provenance.encoded_word_generation_inputs(self.root,inputs)
+        current()
+        with self.assertRaises(provenance.MetadataProofError):
+            provenance.encoded_word_generation_inputs(self.root,inputs[:1])
+        with self.assertRaises(provenance.MetadataProofError):
+            provenance.encoded_word_generation_inputs(self.root,inputs+inputs)
+        self.owner_source.write_bytes(self.owner_source.read_bytes()+b' changed')
+        with self.assertRaises(provenance.MetadataProofError):current()
+
+    def test_sealed_marker_late_change_withholds_manifest_and_retry_recaptures(self):
+        from test_runlink_pack import MetadataEmitterTests
+        harness=MetadataEmitterTests();self.addCleanup(harness.doCleanups)
+        with mock.patch.object(self.rp.OrtNames,'load',side_effect=self.real_ort_load):
+            harness.setUp()
+        load=self.rp.load_and_pack;replace=self.rp.os.replace
+        for case in ('expression','optin','parsed','private-cpp'):
+            self.world.data_import_contexts=[];self.world.data_import_inputs={}
+            witness=self.capture()
+            old_script=self.script.read_bytes();old_dump=self.dump
+            old_symbols=list(witness.provider.symbols)
+            private_cpp=self.root/self.receipt['directory']/'encoded-effective.i';old_cpp=private_cpp.read_bytes()
+            def loaded(args):
+                paths,world,packed=load(args)
+                world._encoded_word=witness
+                def held():
+                    try:return witness.current()
+                    except provenance.MetadataProofError as error:raise self.rp.PackError(str(error)) from error
+                world.data_import_contexts=getattr(world,'data_import_contexts',[])+[(True,held)]
+                return paths,world,packed
+            def changed(source,target):
+                replace(source,target)
+                if pathlib.Path(target).name=='main_reloc_table.bin':
+                    if case=='expression':self.script.write_bytes(old_script+b' o73Triangles = 0;')
+                    elif case=='optin':self.dump=''
+                    elif case=='private-cpp':private_cpp.write_bytes(old_cpp+b' late private CPP')
+                    else:witness.provider.symbols=[]
+            with self.subTest(case=case),mock.patch.object(self.rp.OrtNames,'load',side_effect=self.real_ort_load), \
+                    mock.patch.object(self.rp,'load_and_pack',side_effect=loaded), \
+                    mock.patch.object(self.rp.os,'replace',side_effect=changed):
+                status,log=harness.emit()
+            self.assertEqual(status,2,log)
+            self.assertFalse((harness.out/'manifest.json').exists())
+            self.script.write_bytes(old_script);self.dump=old_dump;witness.provider.symbols[:]=old_symbols
+            private_cpp.write_bytes(old_cpp)
+            self.world.data_import_contexts=[];self.world.data_import_inputs={}
+            witness=self.capture()
+            with mock.patch.object(self.rp.OrtNames,'load',side_effect=self.real_ort_load), \
+                    mock.patch.object(self.rp,'load_and_pack',side_effect=loaded):
+                status,log=harness.emit()
+            self.assertEqual(status,0,log)
+
+    def test_final_prepublication_retains_private_capture_and_loaded_replay_holds(self):
+        import json
+        import runlink_metadata_link as link
+        boot=self.root/link.BOOT_ELF;boot.parent.mkdir(parents=True,exist_ok=True)
+        boot.write_bytes(self.world.paths['elf'].read_bytes())
+        for name in (link.RECEIPT,link.BOOT_LOG,link.FINAL_LOG):
+            path=self.root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('fixture')
+        paths={self.root/n for n in (link.BOOT_ELF,'build/mickey.us.elf','build/mickey.us.map',
+                                    link.RECEIPT,link.BOOT_LOG,link.FINAL_LOG)}
+        manifest={'files':{},'inputs':{link.BOOT_ELF:{'sha256':provenance.sha256_file(boot)}}}
+        marker=self.root/link.FINAL_PROOF
+        for case in ('private-original','loaded-replay','private-missing','private-cpp'):
+            self.world.data_import_contexts=[];self.world.data_import_inputs={}
+            witness=self.capture();original=self.original.read_bytes();symbols=list(witness.replay.symbols)
+            private_cpp=self.root/self.receipt['directory']/'encoded-effective.i';old_cpp=private_cpp.read_bytes()
+            def readback(root):
+                witness.current()
+                return witness.current
+            calls=[]
+            def outer_paths(root):
+                calls.append(True)
+                if len(calls)==2:
+                    if case=='private-original':self.original.write_bytes(original+b'late private capture')
+                    elif case=='private-missing':self.original.unlink()
+                    elif case=='private-cpp':private_cpp.write_bytes(old_cpp+b' late private CPP')
+                    else:witness.replay.symbols=[]
+                return paths
+            marker.write_text('old completion proof')
+            with self.subTest(case=case),mock.patch.object(link,'provenance_paths',side_effect=outer_paths), \
+                    mock.patch.object(link,'check_prepared',return_value=(manifest,{'borrowed_records':1})), \
+                    mock.patch.object(link,'link_command',return_value=['ld']), \
+                    mock.patch.object(provenance,'canonical_encoded_word_readback',side_effect=readback):
+                with self.assertRaises(OSError if case=='private-missing' else link.MetadataLinkError):
+                    link.prove(self.root)
+            self.assertEqual(len(calls),2);self.assertFalse(marker.exists())
+            self.original.write_bytes(original);witness.replay.symbols[:]=symbols
+            private_cpp.write_bytes(old_cpp)
+            self.world.data_import_contexts=[];self.world.data_import_inputs={}
+            witness=self.capture()
+            with mock.patch.object(link,'provenance_paths',return_value=paths), \
+                    mock.patch.object(link,'check_prepared',return_value=(manifest,{'borrowed_records':1})), \
+                    mock.patch.object(link,'link_command',return_value=['ld']), \
+                    mock.patch.object(provenance,'canonical_encoded_word_readback',side_effect=readback):
+                proof=link.prove(self.root)
+            self.assertTrue(marker.is_file())
+            self.assertNotIn('capture',json.dumps(proof));self.assertNotIn('replay',json.dumps(proof))
+
+    def test_strict_surface_uses_fresh_role_and_holds_actual_compared_image(self):
+        witness=self.capture()
+        args=(self.root,73,provenance.ENCODED_WORD_FUNCTION,provenance.ENCODED_WORD_FUNCTION,
+              {'source':provenance.ENCODED_WORD_SOURCE[4:-2]},self.ordinary,self.world.paths['elf'])
+        with mock.patch.object(provenance,'canonical_encoded_word_capture',return_value=witness):
+            proof=provenance.encoded_word_surface(*args)
+            self.assertEqual(proof['identity'],(73,0x80000010));proof['current']()
+            for index,value in ((1,13),(2,'different'),(3,'different'),(4,{'source':'other'}),
+                                (6,self.root/'other.elf')):
+                changed=list(args);changed[index]=value
+                with self.assertRaises(provenance.MetadataProofError):provenance.encoded_word_surface(*changed)
+            original=self.ordinary.read_bytes();self.ordinary.write_bytes(original+b' late')
+            with self.assertRaises(provenance.MetadataProofError):proof['current']()
+            self.ordinary.write_bytes(original)
+            candidate=self.rp.Elf(self.ordinary)
+            with mock.patch.object(self.rp,'Elf',return_value=candidate):
+                proof=provenance.encoded_word_surface(*args)
+            candidate.data+=b' late loaded mutation'
+            with self.assertRaises(provenance.MetadataProofError):proof['current']()
+
+    def test_cli_symbol_class_identity_preserves_every_original_symbol_field(self):
+        witness=self.capture()
+        alternate=dataclasses.make_dataclass('Symbol',
+            [(f.name,f.type) for f in dataclasses.fields(self.rp.Symbol)],
+            namespace={'__module__':'__main__'},frozen=True)
+        image=self.rp.Elf(self.ordinary)
+        image.symbols=[alternate(*dataclasses.astuple(s)) for s in image.symbols]
+        obj=SimpleNamespace(module=73,source=provenance.ENCODED_WORD_SOURCE[4:-2],path=self.ordinary,elf=image)
+        rel=image.rels('.text')[0]
+        self.assertNotEqual(rel.sym,witness.raw.rels('.text')[0].sym)
+        self.assertEqual(witness.operand(self.world,obj,'.text',rel,0),('ov',73,0x80000010))
+        for field in ('index','name','value','size','bind','type','shndx','section'):
+            value=getattr(rel.sym,field)
+            symbol=dataclasses.replace(rel.sym,**{field:value+1 if isinstance(value,int) else value+'-changed'})
+            with self.subTest(field=field),self.assertRaises(provenance.MetadataProofError):
+                witness.operand(self.world,obj,'.text',dataclasses.replace(rel,sym=symbol),0)
+        self.assertTrue(witness.current())
+
+    def test_loaded_caller_retained_through_late_hold(self):
+        w=self.capture()
+        obj=SimpleNamespace(module=73,source=provenance.ENCODED_WORD_SOURCE[4:-2],path=self.ordinary,elf=self.rp.Elf(self.ordinary))
+        rel=obj.elf.rels('.text')[0]
+        self.assertEqual(w.operand(self.world,obj,'.text',rel,0),('ov',73,0x80000010))
+        index=next(i for i,s in enumerate(obj.elf.symbols) if s.name==provenance.ENCODED_WORD_MARKER)
+        obj.elf.symbols[index]=dataclasses.replace(obj.elf.symbols[index],size=4)
+        with self.assertRaises(self.rp.PackError):self.rp.check_data_import_holds(self.world)
+        self.assertIsNone(self.world._encoded_word)
 
 if __name__ == "__main__":
     unittest.main()

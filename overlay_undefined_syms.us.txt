@@ -9,6 +9,9 @@
  * addends keeps the linked overlay text byte-identical.
  */
 
+/* ADR0030: source-derived scalar; owns no storage. */
+o73TriangleCommandWord = ABSOLUTE((o73Triangles - overlay_073_DATA_START + 0x80000000) & 0xffffffff);
+
 /* Stored relocation addends, per translation unit. */
 
 /* overlay 1: overlay_001.c.o */

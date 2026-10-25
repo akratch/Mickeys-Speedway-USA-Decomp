@@ -2626,16 +2626,6 @@
       }
     },
     {
-      "name": "assets/overlays/o056/overlay_056_data_rodata.bin",
-      "target_path": "expected/build/assets/overlays/o056/overlay_056_data_rodata.bin.o",
-      "metadata": {
-        "progress_categories": [
-          "overlay",
-          "overlay-o056"
-        ]
-      }
-    },
-    {
       "name": "assets/overlays/o056/overlay_056_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o056/overlay_056_reloc1.bin.o",
       "metadata": {
@@ -9213,6 +9203,23 @@
         ],
         "source_path": "src/overlays/o055/overlay_055.c",
         "complete": true
+      }
+    },
+    {
+      "name": "src/overlays/o056/overlay56MapStyle.c",
+      "target_path": "expected/build/src/overlays/o056/overlay56MapStyle.c.o",
+      "base_path": "build/src/overlays/o056/overlay56MapStyle.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o056"
+        ],
+        "source_path": "src/overlays/o056/overlay56MapStyle.c"
       }
     },
     {

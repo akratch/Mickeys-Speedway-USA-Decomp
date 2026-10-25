@@ -2693,7 +2693,7 @@ segments:
       - [0x18A2D78, c, overlay_056]
       - [0x18A3878, .data, overlay56MarkerData]
       - [0x18A38A8, .data, overlay56MarkerTriangles]
-      - [0x18A38C8, bin, overlay_056_data_rodata]
+      - [0x18A38C8, .data, overlay56MapStyle]
 
   - name: overlay_056_reloc1
     type: bin

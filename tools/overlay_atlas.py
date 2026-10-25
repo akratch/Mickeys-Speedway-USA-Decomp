@@ -222,8 +222,8 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     12: [(0x0, 0x64, "overlay12TriangleData", ".data"),
          (0x130, 0x150, "overlay_012", ".rodata")],
     56: [(0x0, 0x30, "overlay56MarkerData", ".data"),
-         (0x30, 0x50, "overlay56MarkerTriangles", ".data")],
-
+         (0x30, 0x50, "overlay56MarkerTriangles", ".data"),
+         (0x50, 0x90, "overlay56MapStyle", ".data")],
     55: [(0x0, 0xF0, "overlay55HudTemplates", ".data"),
          (0x110, 0x120, "overlay_055", ".rodata")],
 
@@ -366,6 +366,7 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
     (55, "overlay55HudTemplates", ".data"),
     (56, "overlay56MarkerData", ".data"),
     (56, "overlay56MarkerTriangles", ".data"),
+    (56, "overlay56MapStyle", ".data"),
     (53, "overlay53HudControls", ".data"),
     (71, "overlay71EffectData", ".data"),
     (71, "overlay71Scales", ".data"),

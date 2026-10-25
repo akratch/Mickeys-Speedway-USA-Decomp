@@ -17,6 +17,47 @@ from types import SimpleNamespace
 import proof_provenance as provenance
 
 
+class PointerScalarSourceTests(unittest.TestCase):
+    source = ('typedef unsigned char u8; typedef long s32; extern u8 first[]; extern u8 second[]; '
+              'u8 *pointers[2]={first,second}; s32 one=0; s32 two=0; s32 three=0;')
+
+    def test_closed_source_types_extern_targets_and_profile(self):
+        root=pathlib.Path(__file__).resolve().parent.parent
+        facts=provenance.pointer_scalar_facts(self.source.encode(),['-32'],root)
+        self.assertEqual(facts['count'],2)
+        mutations=[self.source.replace('s32 one','float one'),self.source.replace('s32 one','unsigned long one'),
+                   self.source.replace('first[]','*first'),self.source.replace('extern u8 first[]','extern const u8 first[]'),
+                   self.source.replace('{first,second}','{0,second}'),self.source.replace('[2]','[3]'),
+                   self.source+' s32 extra=0;',self.source.replace('extern u8 first[]','extern u8 first[]; extern u8 first[]')]
+        for source in mutations:
+            with self.subTest(source=source),self.assertRaises(provenance.MetadataProofError):
+                provenance.pointer_scalar_facts(source.encode(),['-32'],root)
+        group=' --local-ro-provider-group build/src/overlays/o001/a.c.o build/src/overlays/o001/b.c.o'
+        command='helper --local-ro-owner-profile pointer-array-three-s32-v1'+group
+        self.assertEqual(provenance.local_ro_owner_profile(command,root),'pointer-array-three-s32-v1')
+        self.assertIsNone(provenance.local_ro_owner_profile('helper'+group,root))
+        for bad in [command.replace('three-s32-v1','unknown'),command+' --local-data-objects']:
+            with self.assertRaises(provenance.MetadataProofError):provenance.local_ro_owner_profile(bad,root)
+
+    def test_witness_rejects_late_parsed_metadata_and_cpp_mutation(self):
+        import runlink_pack as rp
+        from test_link_overlay_module import pointer_scalars_fixture
+        root=pathlib.Path(__file__).resolve().parent.parent
+        with tempfile.TemporaryDirectory(dir=root/'build') as directory:
+            cpp=pathlib.Path(directory)/'source.i';cpp.write_text(self.source)
+            raw=rp.Elf('synthetic',pointer_scalars_fixture())
+            record=provenance.PointerScalarCapture(cpp.read_bytes(),('-32',),cpp,
+                hashlib.sha256(raw.data).hexdigest(),provenance._POINTER_SCALAR_SEAL)
+            witness=provenance.pointer_scalar_witness(raw,record,root);self.assertTrue(witness.current(raw))
+            with self.assertRaises(provenance.MetadataProofError):
+                provenance.pointer_scalar_witness(raw,{'cpp':str(cpp),'flags':['-32']},root)
+            raw.symbols[2]=dataclasses.replace(raw.symbols[2],size=12)
+            with self.assertRaises(provenance.MetadataProofError):witness.current(raw)
+            cpp.write_text(self.source.replace('first,second','second,first'))
+            with self.assertRaises(provenance.MetadataProofError):
+                provenance.pointer_scalar_witness(rp.Elf('fresh',pointer_scalars_fixture()),record,root)
+
+
 class CaptureDeadlineTests(unittest.TestCase):
     """Defined clock advances test budgets, not real compiler performance."""
 

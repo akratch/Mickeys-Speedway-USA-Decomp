@@ -30,6 +30,66 @@ LOCAL, GLOBAL = 0, 1
 NOTYPE, OBJECT, FUNC = 0, 1, 2
 
 
+class PointerScalarCanonicalTests(unittest.TestCase):
+    def test_new_source_witness_late_failure_invalidates_old_resolver(self):
+        import proof_provenance as pp
+        import link_overlay_module as link
+        from test_link_overlay_module import pointer_scalars_fixture
+        root=Path(__file__).resolve().parent.parent
+        with tempfile.TemporaryDirectory(dir=root/'build') as directory:
+            cpp=Path(directory)/'source.i'
+            source=('typedef unsigned char u8; typedef long s32; extern u8 first[]; extern u8 second[]; '
+                'u8 *pointers[2]={first,second}; s32 one=0; s32 two=0; s32 three=0;')
+            cpp.write_text(source);raw=rp.Elf('source',pointer_scalars_fixture())
+            capture=pp.PointerScalarCapture(cpp.read_bytes(),('-32',),cpp,
+                hashlib.sha256(raw.data).hexdigest(),pp._POINTER_SCALAR_SEAL)
+            witness=pp.pointer_scalar_witness(raw,capture,root)
+            inventory={}
+            world=SimpleNamespace(_guarded_data_objects=inventory,_objects={},_defs={},need_raw=False,
+                by_name={},layout=rp.ResidentLayout(0,0,0,0),data_import_inputs={},
+                data_import_contexts=[(True,lambda:witness.current(raw))])
+            resolver=rp.Resolver(world,rp.OrtNames([],{}));resolver._ort_inventory=inventory
+            resolver._name_cache[('cached',101)]=rp.Target('ident','cached','old',ident=('ov',101,4))
+            self.assertEqual(resolver.resolve_name('cached',101).kind,'ident')
+            cpp.write_text(source.replace('first,second','second,first'))
+            with self.assertRaises(pp.MetadataProofError):rp.check_data_import_holds(world)
+            self.assertIsNone(world._objects);self.assertIsNone(world._defs)
+            with self.assertRaises(rp.PackError):resolver.resolve_name('cached',101)
+            cpp.write_text(source);world._guarded_data_objects={}
+            self.assertEqual(resolver.resolve_name('cached',101).kind,'placeholder')
+
+    def test_canonical_owner_join_and_unsealed_witness_refuse(self):
+        import dataclasses
+        import proof_provenance as pp
+        import link_overlay_module as link
+        from test_link_overlay_module import pointer_scalars_fixture
+        root=Path(__file__).resolve().parent.parent
+        with tempfile.TemporaryDirectory(dir=root/'build') as directory:
+            cpp=Path(directory)/'source.i'
+            cpp.write_text('typedef unsigned char u8; typedef long s32; extern u8 first[]; extern u8 second[]; '
+                'u8 *pointers[2]={first,second}; s32 one=0; s32 two=0; s32 three=0;')
+            raw=rp.Elf('source',pointer_scalars_fixture())
+            capture=pp.PointerScalarCapture(cpp.read_bytes(),('-32',),cpp,
+                hashlib.sha256(raw.data).hexdigest(),pp._POINTER_SCALAR_SEAL)
+            raw.pointer_scalar_witness=pp.pointer_scalar_witness(raw,capture,root)
+            raw.local_ro_pointer_scalars=link.pointer_scalar_shape(raw)
+            raw.local_ro_provider='build/src/overlays/o101/provider.c.o'
+            raw.local_ro_providers=(raw.local_ro_provider,'build/src/overlays/o101/tail.c.o')
+            start=64
+            finals={s.name:[dataclasses.replace(s,value=rp.OVERLAY_VMA+start+s.value,
+                section='.overlay_101',shndx=1)] for s in raw.symbols if s.section=='.data' and s.type==1}
+            world=SimpleNamespace(by_name=finals)
+            configured=SimpleNamespace(rels=lambda section:[])
+            with mock.patch.object(rp,'data_import_input',return_value=(configured,start)):
+                saved=finals['one'][0];finals['one']=[dataclasses.replace(saved,size=8)]
+                with self.assertRaisesRegex(rp.PackError,'unique actual final'):
+                    rp.validate_cross_input_local(world,rp.OrtNames([],{}),101,{},'source',raw)
+                finals['one']=[saved]
+                raw.pointer_scalar_witness=SimpleNamespace(current=lambda observed:True)
+                with self.assertRaisesRegex(rp.PackError,'exclusive current witness'):
+                    rp.validate_cross_input_local(world,rp.OrtNames([],{}),101,{},'source',raw)
+
+
 class ObjBuilder:
     """A minimal big-endian ELF32 file: sections, symbols, REL relocations."""
 

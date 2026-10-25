@@ -2266,6 +2266,7 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
     grouped = getattr(raw, "local_ro_providers", None)
     aggregate = getattr(raw, "local_ro_aggregate", None)
     objects = getattr(raw, "local_ro_objects", None)
+    pointer_scalars = getattr(raw, "local_ro_pointer_scalars", None)
     provider_sources = [name.removeprefix("build/src/").removesuffix(".c.o")
                         for name in (grouped or (raw.local_ro_provider,))]
     mixed = getattr(raw, "local_ro_mixed_group", False)
@@ -2282,7 +2283,22 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
             {member: origins[member]}, {member: sections[member]})[member]
     configured, start = data_import_input(world, ov, row, source, raw, linked_local=True)
     rels = raw.rels(".data")
-    if objects:
+    if pointer_scalars:
+        import link_overlay_module as module_link
+        import proof_provenance as provenance
+        witness = getattr(raw, 'pointer_scalar_witness', None)
+        if (not isinstance(witness, provenance.PointerScalarWitness)
+                or not witness.current(raw) or mixed or objects or aggregate):
+            raise PackError('pointer/scalar source lacks its exclusive current witness')
+        if module_link.pointer_scalar_shape(raw) != pointer_scalars:
+            raise PackError('pointer/scalar compiler shape differs from receipt')
+        for owner in pointer_scalars['objects']:
+            final = world.by_name.get(owner['name'], ())
+            if (len(final)!=1 or final[0].bind!=STB_GLOBAL or final[0].type!=1
+                    or final[0].section!=f'.overlay_{ov:03d}' or final[0].size!=owner['size']
+                    or final[0].value!=OVERLAY_VMA+start+owner['offset']):
+                raise PackError('pointer/scalar owner lacks its unique actual final definition')
+    elif objects:
         import link_overlay_module as module_link
         try:
             if module_link.local_objects_shape(raw) != objects:
@@ -2535,12 +2551,13 @@ def reproduce_data_import(world, source):
     group = link.get("local_data_group")
     if len(provider_inputs) > 1:
         mixed = provenance.local_ro_mixed_group(receipt["inputs"]["module_link"], root)
+        owner_profile = provenance.local_ro_owner_profile(receipt["inputs"]["module_link"], root)
         loaded_providers = ([load_mixed_group_provider(world, name,
             receipt["inputs"]["module_link_inputs"].get(name)) for name in provider_inputs]
-            if mixed else [])
+            if mixed or owner_profile else [])
         expected_inputs = [{"input": str((root / name).resolve()),
             "input_sha256": (hashlib.sha256(loaded_providers[index].data).hexdigest()
-                             if mixed else provenance.sha256_file(root / name))}
+                             if mixed or owner_profile else provenance.sha256_file(root / name))}
             for index, name in enumerate(provider_inputs)]
         if mixed:
             import link_overlay_module as module_link
@@ -2565,7 +2582,23 @@ def reproduce_data_import(world, source):
             else:
                 fresh.local_ro_aggregate = shape
             fresh.local_ro_mixed_group = True
-        elif group and ("profile" in group or "aggregate" in group or "objects" in group):
+        elif owner_profile:
+            import link_overlay_module as module_link
+            shape = module_link.pointer_scalar_shape(fresh)
+            if (not group or group.get('profile')!=owner_profile
+                    or group.get('pointer_scalars')!=shape
+                    or any(module_link.local_provider_section(provider)!='.data' for provider in loaded_providers)):
+                raise PackError('pointer/scalar ordinary group receipt differs')
+            source_record = receipt.get('pointer_scalar_source')
+            if not source_record or source_record.get('profile')!=owner_profile:
+                raise PackError('pointer/scalar source capture is absent')
+            witness = provenance.pointer_scalar_witness(fresh,
+                getattr(context, 'pointer_scalar_capture', None), root)
+            witness.current(fresh)
+            fresh.pointer_scalar_witness = witness
+            fresh.local_ro_pointer_scalars = shape
+            world.data_import_contexts.append((True, lambda: witness.current(fresh)))
+        elif group and ("profile" in group or "aggregate" in group or "objects" in group or "pointer_scalars" in group):
             raise PackError("undeclared mixed LOCAL group profile")
         if (declared or not group or group.get("inputs") != expected_inputs
                 or group.get("runtime_role") != ".rodata" or group.get("origin") != "first-input-start"

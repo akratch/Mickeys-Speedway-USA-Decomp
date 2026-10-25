@@ -38,7 +38,7 @@ s32 func_overlay_092_F0000068_18D5F88(O92Racer *racer, f32 *outX,
 
     vehicle = racer->vehicle;
     objects = func_8000572C(&start, &end);
-    nearestDistance = gOverlay92DistanceParameters[0];
+    nearestDistance = 3.402823466e+38f;
     nearest = 0;
 
     for (i = start; i < end; i++) {
@@ -74,7 +74,7 @@ s32 func_overlay_092_F0000068_18D5F88(O92Racer *racer, f32 *outX,
         dz = nearest->z - racer->z;
         course = nearest->course;
         distance = sqrtf((dx * dx) + (dy * dy) + (dz * dz));
-        nearestDistance = gOverlay92DistanceParameters[1];
+        nearestDistance = 0.87f;
         scale = 60.0f / distance;
         dx *= scale;
         dy *= scale;
@@ -140,7 +140,7 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
                 blend = 0.0f;
             }
             blend = 1.0f - (blend / 150.0f);
-            wave = (func_8002A8C0((s32)((blend * D_8) + 16384.0f)) *
+            wave = (func_8002A8C0((s32)((blend * 32767.0f) + 16384.0f)) *
                     -0.5f) +
                    0.5f;
             if (state->timer == 0) {
@@ -158,7 +158,7 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
              * Retains the stack-backed float lifetime; see cleanup queue. */
             x.bits = x.bits;
             x.value = ((pathX - x.value) * wave) + x.value;
-            y = ((((func_8002A8BC((s32)(wave * D_C)) * -0.5f) +
+            y = ((((func_8002A8BC((s32)(wave * 65535.0f)) * -0.5f) +
                     0.5f) *
                    30.0f) +
                  (y + ((pathY - y) * wave)));

@@ -699,6 +699,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay_044.c.o: CFLAGS += -Wab,-r4300_mul
 # ends exactly at the module's text size, so no trim is needed, and its
 # resident and cross-module callees go through the generated surface renames.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay_092.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay_092.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:9461cbd0af6b26cd9c381dee94eb45aa8af47144e840b4291f334e19bf3f7008 keep
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o093/overlay_093.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o095/overlay_095.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 97 directly owns its transform context and scale literal pool.

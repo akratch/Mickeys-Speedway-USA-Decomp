@@ -44,7 +44,6 @@ typedef struct O92Racer {
     u8 pad18[0x4C];
     O92VehicleState *vehicle;
 } O92Racer;
-extern f32 gOverlay92DistanceParameters[2];
 extern O92Object **func_8000572C(s32 *start, s32 *end);
 extern f32 sqrtf(f32 value);
 
@@ -92,9 +91,6 @@ typedef struct Overlay92UpdateConfig {
 } Overlay92UpdateConfig;
 extern Overlay92CameraRecord D_0[];
 
-/* Typed views of the retained module-local literal pool. */
-extern f32 D_8;
-extern f32 D_C;
 extern s32 D_800C947C;
 extern s32 mathDiffAngle(s16 current, s16 target);
 extern s32 mathRnd(s32 minimum, s32 maximum);

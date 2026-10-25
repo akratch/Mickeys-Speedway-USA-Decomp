@@ -144,20 +144,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay_062.c.o: CFLAGS += -Wab,-r4300_mul
 # second read of the chain head goes through the weak alias gO63ChainReload,
 # which the generated surface values with the chain's own stored address.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay_063.c.o: CFLAGS += -Wab,-r4300_mul
-# The sentinel resource IDs, mutable animation flags and two texture nodes
-# naturally provide the complete initialized prefix; main views remain legacy.
-O63_HUD_PREFIX := $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63HudPrefix.c.o
-$(O63_HUD_PREFIX): private PLAIN_DATA_PROOF = 1
-$(O63_HUD_PREFIX): private PLAIN_DATA_RUNTIME_ROLE = data
-# Twenty active rows and their same-grammar terminator; natural end alignment.
-O63_PARTICLE_SEEDS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63ParticleSeeds.c.o
-$(O63_PARTICLE_SEEDS): private PLAIN_DATA_PROOF = 1
-$(O63_PARTICLE_SEEDS): private PLAIN_DATA_RUNTIME_ROLE = data
-# Complete word/character state, including ordinary compiler alignment.
-O63_SEQUENCE_STATE := $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63SequenceState.c.o
-$(O63_SEQUENCE_STATE): private PLAIN_DATA_PROOF = 1
-$(O63_SEQUENCE_STATE): private PLAIN_DATA_RUNTIME_ROLE = data
-
 # Overlay 59's six genuine font labels supply the complete readonly context
 # before its 0.15f literal and six-case table. Retain the whole natural RO
 # input at its zero-origin runtime role; the old synthetic pool alias is gone.

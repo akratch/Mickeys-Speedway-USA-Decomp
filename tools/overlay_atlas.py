@@ -113,6 +113,7 @@ EXACT_DONOR_OVERLAYS = {
 # deliberately explicit so the manifest, splat YAML, and progress metric share
 # one collision-free `(overlay, offset)` source of truth.
 DATA_RODATA_OWNERSHIP = {
+    63: [(0x0, 0x140, "overlay_063")],
     48: [(0x0, 0x280, "overlay_048")],
     89: [(0x0, 0x10, "overlay_089")],
     16: [(0x0, 0x10, "overlay_016")],
@@ -232,10 +233,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     71: [(0x0, 0x190, "overlay71EffectData", ".data"),
          (0x190, 0x1A0, "overlay71Scales", ".data")],
     65: [(0x0, 0x220, "overlay65EffectData", ".data")],
-    63: [(0x0, 0x50, "overlay63HudPrefix", ".data"),
-         (0x50, 0xD0, "overlay63ParticleSeeds", ".data"),
-         (0xD0, 0x140, "overlay63SequenceState", ".data"),
-         (0x140, 0x160, "overlay_063", ".rodata")],
+    63: [(0x140, 0x160, "overlay_063", ".rodata")],
     60: [(0x0, 0xB0, "overlay60MenuResources", ".data"),
          (0xC0, 0x130, "overlay60PreviewTables", ".data"),
          (0x130, 0x178, "overlay60ControlState", ".data"),
@@ -372,9 +370,6 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
     (71, "overlay71EffectData", ".data"),
     (71, "overlay71Scales", ".data"),
     (65, "overlay65EffectData", ".data"),
-    (63, "overlay63HudPrefix", ".data"),
-    (63, "overlay63ParticleSeeds", ".data"),
-    (63, "overlay63SequenceState", ".data"),
     (60, "overlay60MenuResources", ".data"),
     (60, "overlay60PreviewTables", ".data"),
     (60, "overlay60ControlState", ".data"),

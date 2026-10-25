@@ -2935,9 +2935,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18C2B88, c, overlay_063]
-      - [0x18C34B8, .data, overlay63HudPrefix]
-      - [0x18C3508, .data, overlay63ParticleSeeds]
-      - [0x18C3588, .data, overlay63SequenceState]
       - [0x18C35F8, .rodata, overlay_063]
 
   - name: overlay_063_reloc1

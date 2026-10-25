@@ -44,17 +44,17 @@ void overlay56LoadResource(void) {
 
     context = overlay56GetContextReloc();
     if (context->resourceId != -1) {
-        gOverlay56Resource = overlay56LoadResourceReloc(context->resourceId);
+        o56MinimapResource_o056Reloc = overlay56LoadResourceReloc(context->resourceId);
     } else {
-        gOverlay56Resource = 0;
+        o56MinimapResource_o056Reloc = 0;
     }
-    gOverlay56ResourceState = 0;
+    o56MinimapFadeState_o056Reloc = 0;
 }
 
 void overlay56ReleaseResource(void) {
-    if (gOverlay56Resource != 0) {
-        overlay56ReleaseResourceReloc(gOverlay56Resource);
-        gOverlay56Resource = 0;
+    if (o56MinimapResource_o056Reloc != 0) {
+        overlay56ReleaseResourceReloc(o56MinimapResource_o056Reloc);
+        o56MinimapResource_o056Reloc = 0;
     }
 }
 
@@ -67,7 +67,7 @@ void overlay56ReleaseResource(void) {
  * - two packet cursors, _g (pipe sync, matrix, prim colour) and _g2 (scissor, vertex,
  *   polygon): one shared cursor is 24, six distinct are 17, this split 13;
  * - the first angle result is held in a function-scope float c (cos f22, sin f24) rather
- *   than a block local, whose extra frame cell moved the D_84 spill (13 -> 9);
+ *   than a block local, whose extra frame cell moved the o56LayoutYOffsets_o056Reloc spill (13 -> 9);
  * - mapX is the rotated x itself and is negated in place, mapY = z * cosA + x * sinA
  *   (9 -> 2); the ghost loop reads its racer before setting the sprite (2 -> 0).
  * unusedF is the frame cell of the old rotX local. */
@@ -155,8 +155,8 @@ extern u8 D_8007BF08;
 extern O56Ghost *D_8007A1F4;
 extern O56Ghost *D_8007A1F8;
 extern O56Sprite *D_800D31C8[];
-extern s16 D_78[];
-extern s16 D_84[];
+extern s16 o56LayoutXOffsets_o056Reloc[];
+extern s16 o56LayoutYOffsets_o056Reloc[];
 extern u8 D_80000004[];
 extern u8 D_80000030[];
 
@@ -222,14 +222,14 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, Mtx **matrixCursor,
 
     gameState = func_80028F54();
     if (D_800C947C == 0) {
-        gOverlay56ResourceState += updateRate << ((D_8007BEF8 == 3) ? 2 : 1);
-        if (D_8007BEF8 != 3 && gOverlay56ResourceState > 160) {
-            gOverlay56ResourceState = 160;
-        } else if (gOverlay56ResourceState > 255) {
-            gOverlay56ResourceState = 255;
+        o56MinimapFadeState_o056Reloc += updateRate << ((D_8007BEF8 == 3) ? 2 : 1);
+        if (D_8007BEF8 != 3 && o56MinimapFadeState_o056Reloc > 160) {
+            o56MinimapFadeState_o056Reloc = 160;
+        } else if (o56MinimapFadeState_o056Reloc > 255) {
+            o56MinimapFadeState_o056Reloc = 255;
         }
     }
-    if (gOverlay56Resource == NULL) {
+    if (o56MinimapResource_o056Reloc == NULL) {
         return;
     }
     if (D_8007C1B0 != 0 && (*gameState == 0 || *gameState == 2 || *gameState == 1 ||
@@ -245,28 +245,28 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, Mtx **matrixCursor,
     racers = func_80005750(&count);
     level = levelGetLevel();
     marker.unk4 = 0;
-    marker.sprite = gOverlay56Resource;
+    marker.sprite = o56MinimapResource_o056Reloc;
     if (D_8007BEF4 == 2 && frontGet2PlayerSplit() != 0) {
         slot = 4;
     } else {
         slot = D_8007BEF4 - 1;
     }
-    marker.y = D_84[slot] - (((O56Sprite *)gOverlay56Resource)->height >> 1) + 180;
+    marker.y = o56LayoutYOffsets_o056Reloc[slot] - (((O56Sprite *)o56MinimapResource_o056Reloc)->height >> 1) + 180;
     marker.unk10 = 0;
     if (D_8007BF08 != 0) {
-        marker.x = -D_78[slot] - (((O56Sprite *)gOverlay56Resource)->width >> 1) + 60;
+        marker.x = -o56LayoutXOffsets_o056Reloc[slot] - (((O56Sprite *)o56MinimapResource_o056Reloc)->width >> 1) + 60;
         func_8002FB34(&dl, &marker, 320.0f, 0.0f, 1.0f, 1.0f,
-                      gOverlay56ResourceState | ~0xFF, 0x1002);
+                      o56MinimapFadeState_o056Reloc | ~0xFF, 0x1002);
     } else {
-        marker.x = D_78[slot] - (((O56Sprite *)gOverlay56Resource)->width >> 1) + 260;
-        func_8002F618(&dl, &marker, 0, 0, 255, 255, 255, gOverlay56ResourceState);
+        marker.x = o56LayoutXOffsets_o056Reloc[slot] - (((O56Sprite *)o56MinimapResource_o056Reloc)->width >> 1) + 260;
+        func_8002F618(&dl, &marker, 0, 0, 255, 255, 255, o56MinimapFadeState_o056Reloc);
     }
     viGetCurrentSize(&screenWidth, &screenHeight);
     dot = D_800D31C8[22];
     c = func_8002A8BC(level->angle);
     sinA = func_8002A8C0(level->angle);
     cosA = c;
-    alpha = gOverlay56ResourceState * 2;
+    alpha = o56MinimapFadeState_o056Reloc * 2;
     alpha = (alpha > 255) ? 255 : alpha;
     marker.unk4 = 0;
     marker.unk10 = 0;
@@ -285,11 +285,11 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, Mtx **matrixCursor,
             texDPTextureX(&dl, NULL, 5, 0);
             func_8002A82C(mtxA);
             if (D_8007BF08 != 0) {
-                mapX += (f32)(D_78[slot] - level->offsetX + 520);
+                mapX += (f32)(o56LayoutXOffsets_o056Reloc[slot] - level->offsetX + 520);
             } else {
-                mapX += (f32)(level->offsetX + D_78[slot]);
+                mapX += (f32)(level->offsetX + o56LayoutXOffsets_o056Reloc[slot]);
             }
-            mapY += (f32)(level->offsetY + D_84[slot]);
+            mapY += (f32)(level->offsetY + o56LayoutYOffsets_o056Reloc[slot]);
             matrixTranslate(mapX - (f32)(screenWidth >> 1),
                             (f32)(screenHeight >> 1) - mapY,
                             0.0f, mtxA);
@@ -317,11 +317,11 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, Mtx **matrixCursor,
             green = (gOverlay56Data.colors[racer->colour] >> 16) & 0xFF;
             blue = (gOverlay56Data.colors[racer->colour] >> 8) & 0xFF;
             if (D_8007BF08 != 0) {
-                posX = D_78[slot] - level->offsetX + 520;
+                posX = o56LayoutXOffsets_o056Reloc[slot] - level->offsetX + 520;
             } else {
-                posX = D_78[slot] + level->offsetX;
+                posX = o56LayoutXOffsets_o056Reloc[slot] + level->offsetX;
             }
-            func_8002F618(&dl, &marker, posX, D_84[slot] + level->offsetY, red, green,
+            func_8002F618(&dl, &marker, posX, o56LayoutYOffsets_o056Reloc[slot] + level->offsetY, red, green,
                           blue, (racer->alpha * alpha) >> 8);
         }
     }
@@ -345,8 +345,8 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, Mtx **matrixCursor,
                 red = green = blue = ghostAlpha;
                 marker.x = (x * cosA - z * sinA) - (f32)(dot->width >> 1);
                 marker.y = (z * cosA + x * sinA) - (f32)(dot->height >> 1);
-                func_8002F618(&dl, &marker, D_78[slot] + level->offsetX,
-                              D_84[slot] + level->offsetY, red, green, blue,
+                func_8002F618(&dl, &marker, o56LayoutXOffsets_o056Reloc[slot] + level->offsetX,
+                              o56LayoutYOffsets_o056Reloc[slot] + level->offsetY, red, green, blue,
                               (ghostRacer->ghostAlpha * alpha) >> 7);
             }
         }
@@ -365,6 +365,6 @@ void overlay56UnpackColor(s32 index, s32 *red, s32 *green, s32 *blue) {
 /* Tier B: the loader-relative state at BSS0 is one signed halfword,
  * reset by overlay56LoadResource and read/written by the renderer.
  * Tier D: original declaration/name and any terminal alignment semantics.
- * This real backing object retains the legacy gOverlay56ResourceState
- * operand view; direct C/native name binding remains unresolved. */
+ * The consumer uses its compatible private loader operand name;
+ * direct C/native name binding remains unresolved. */
 s16 o56MinimapFadeState;

@@ -55,6 +55,41 @@
       }
     },
     {
+      "module": 37,
+      "source": "src/overlays/o037/overlay_037.c",
+      "exports": [
+        {
+          "name": "overlay37RenderEffect",
+          "row": 1190,
+          "kind": "function"
+        },
+        {
+          "name": "overlay37Init",
+          "row": 1252,
+          "kind": "function"
+        },
+        {
+          "name": "overlay37Update",
+          "row": 1299,
+          "kind": "function"
+        },
+        {
+          "name": "overlay37RecordActive",
+          "row": 1343,
+          "kind": "function"
+        },
+        {
+          "name": "overlay37RecordMinimum",
+          "row": 1697,
+          "kind": "function"
+        }
+      ],
+      "entries": {
+        "init": null,
+        "resume": null
+      }
+    },
+    {
       "module": 75,
       "source": "src/overlays/o075/overlay_075.c",
       "exports": [

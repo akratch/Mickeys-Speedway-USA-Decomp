@@ -467,4 +467,63 @@ class EditedStaticCppTests(unittest.TestCase):
                 rp.edited_section_operand(fresh,rel,0,'.text',rels)
             fresh['raw'].section('.data')['flags']=original_flags
 
+
+class EditedIntegerWordTests(unittest.TestCase):
+    def test_fresh_actual_cpp_pair_consumer_forgery_and_recovery(self):
+        import runlink_pack as rp
+        from test_proof_provenance import IntegerWordSourceTests
+        root=link.REPO
+        if not (root/'tools/ido/cc').is_file():self.skipTest('configured IDO unavailable')
+        text=IntegerWordSourceTests.CPP.decode()
+        args=['-c','-non_shared','-G','0','-Xcpluscomm','-nostdinc','-O2','-mips2','-32','-o','unused.o','unused.c']
+        exports=rp.OrtNames(['pack'],{})
+        declarations={2:{'exports':['pack'],'kinds':{'pack':'function'},'entries':{'init':None,'resume':None}}}
+        with tempfile.TemporaryDirectory(dir=root/'build') as temporary:
+            directory=Path(temporary)
+            def capture(label,source=text):
+                return link.edited_compile(root,directory,label,source,exports,args,[])[0]
+            obj=capture('good')
+            product=rp.edited_module_records(2,{2:obj},declarations,exports,None)
+            link.edited_word_readback(product['module'],product['joins'])
+            encoded=[j for j in product['joins'] if j['word_encoding']]
+            self.assertEqual(len(encoded),2)
+            self.assertTrue(all(j['underlying_identity']==('ov',2,obj['bases']['.data']) for j in encoded))
+            forged=dict(obj);forged['integer_word']=obj['integer_word_audit']
+            with self.assertRaisesRegex(rp.PackError,'untrusted'):
+                rp.edited_module_records(2,{2:forged},declarations,exports,None)
+            old=obj['integer_word'];(directory/'good.c').write_text(text+'\n')
+            with self.assertRaisesRegex(pp.MetadataProofError,'stale'):
+                old.operand(obj['raw'],obj['linked'],obj['raw'].rels('.text')[0],0x80000000,False)
+            original=link.write_changed
+            def replace_cpp(path,payload):
+                original(path,payload)
+                if str(path).endswith('-effective.i'):path.write_bytes(b'changed after parsing')
+            with mock.patch.object(link,'write_changed',side_effect=replace_cpp):
+                with self.assertRaisesRegex(rp.PackError,'CPP/audit'):
+                    capture('changed-cpp')
+            fresh=capture('recovery')
+            self.assertEqual(len(fresh['integer_word'].pairs),1)
+
+    def test_decoded_signed_low_carry_wrap_and_underlying_identity(self):
+        import struct,runlink_pack as rp
+        from runlink import codec
+        for target in (0,0x7fff,0x8000,0xffff,0x10000,0xfffffff0):
+            text=16
+            encoded=(target+0x80000000)&0xffffffff
+            low=encoded&0xffff;high=((encoded+0x8000)>>16)&0xffff
+            image=struct.pack('>4I',0x3c020000|high,0,0x24420000|low,0)
+            rows=[codec.Record(text,0,5,codec.OP_LOCAL),codec.Record(text,8,6,codec.OP_LOCAL)]
+            module=codec.Module(2,codec.Header(text=text,data=0,bss=0),image,[],rows)
+            joins=[{'offset':site,'type':kind,'word_encoding':{'kind':'xor-signbit-word'},
+                    'underlying_identity':('ov',2,(text+target)&0xffffffff)} for site,kind in ((0,5),(8,6))]
+            with self.subTest(target=target):
+                link.edited_word_readback(module,joins)
+                for runtime_base in (0x80000000,0x80007ff0,0xfffffff0):
+                    stored=((high<<16)+rp.sext16(low))&0xffffffff
+                    self.assertEqual((runtime_base+text+stored)&0xffffffff,
+                                     ((runtime_base+text+target)&0xffffffff)^0x80000000)
+                bad=[dict(j,underlying_identity=('ov',2,joins[0]['underlying_identity'][2]+4)) for j in joins]
+                with self.assertRaisesRegex(rp.PackError,'modular'):
+                    link.edited_word_readback(module,bad)
+
 if __name__=='__main__':unittest.main()

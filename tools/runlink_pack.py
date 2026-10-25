@@ -3834,7 +3834,7 @@ def edited_module_records(number, objects, selected, exports, provider):
             label = f'module {number} {source_caller} {section}+{rel.offset:#x}'
             edited_require(rel.type in TYPE_NAMES and rel.offset % 4 == 0
                     and rel.offset + 4 <= obj['raw'].size(section), label + ': invalid relocation extent/type')
-            symbol, row = rel.sym, None
+            symbol, row, encoding = rel.sym, None, None
             if symbol.shndx == SHN_UNDEF:
                 edited_require(symbol.name in exports.by_name, label + ': undeclared import ' + symbol.name)
                 row = exports.by_name[symbol.name]
@@ -3856,7 +3856,20 @@ def edited_module_records(number, objects, selected, exports, provider):
                 base = ('ov', number, bases[kind] + symbol.value)
             else:
                 target = edited_symbol_target(obj, symbol)
-                kind, offset = edited_object_operand(target, addend)
+                if addend == 0x80000000 and 'integer_word' in obj:
+                    import proof_provenance as pp
+                    witness = obj['integer_word']
+                    edited_require(isinstance(witness, pp.IntegerWordWitness), 'untrusted integer-word witness')
+                    edited_require(section == '.text', 'integer-word encoding requires text HI/LO')
+                    kind, offset = edited_object_operand(target, 0)
+                    try:
+                        pair = witness.operand(obj['raw'], obj['linked'], rel, addend, symbol.name in exports.by_name)
+                    except pp.MetadataProofError as error:
+                        raise PackError(str(error)) from error
+                    encoding = {'kind': 'xor-signbit-word', 'object_offset': pair.target_offset,
+                                'object_size': pair.target_size}
+                else:
+                    kind, offset = edited_object_operand(target, addend)
                 base = ('ov', number, bases[target[0]] + target[1])
                 if symbol.bind == STB_GLOBAL and owners.get(symbol.name) == number:
                     row = exports.by_name[symbol.name]
@@ -3873,7 +3886,8 @@ def edited_module_records(number, objects, selected, exports, provider):
                           'type': rel.type, 'name': symbol.name, 'addend': addend,
                           'base': base, 'full': full, 'row': row, 'edited_caller': source_caller,
                           'target_witness': {'section': target[0], 'value': target[1],
-                                             'size': target[2], 'type': target[3]}})
+                                             'size': target[2], 'type': target[3]},
+                          'word_encoding': encoding, 'underlying_identity': base if encoding else None})
     header = edited_codec.Header(text=obj['linked'].size('.text'),
                           data=obj['linked'].size('.data') + obj['linked'].size('.rodata'),
                           bss=obj['linked'].size('.bss'), init=entry_offsets[0], resume=entry_offsets[1])

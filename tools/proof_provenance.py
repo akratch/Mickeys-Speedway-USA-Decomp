@@ -349,6 +349,270 @@ def static_source_witness(compiler, raw, linked, facts, source_sha256, cpp_sha25
         hashlib.sha256(linked.data).hexdigest(),raw_surface,linked_surface,source_sha256,cpp_sha256,tuple(extents),tuple(sorted(inputs)),
         pathlib.Path(root),toolchain_sha256,raw,linked,_STATIC_SOURCE_SEAL)
 
+@dataclasses.dataclass(frozen=True)
+class IntegerWordRole:
+    function: str
+    target: str
+    carrier: str
+    occurrences: int
+
+
+def integer_word_facts(cpp, flags, root):
+    """Closed o32 sign-bit word expressions; no pointer-access/sink analysis."""
+    import candidate_context as lexical
+    if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF:
+        raise MetadataProofError('loaded integer-word proof changed')
+    if '-32' not in flags or any(x in flags for x in ('-64', '-n32', '-n64')):
+        raise MetadataProofError('integer-word encoding requires actual o32 flags')
+    ca, parser, before, lexical_identity = _effective_parser(root)
+    if len(cpp) > lexical.MAX_SOURCE_BYTES:
+        raise MetadataProofError('integer-word effective C exceeds proof bound')
+    try:
+        ast = parser.CParser().parse(cpp.decode('utf-8'))
+    except Exception as error:
+        raise MetadataProofError('integer-word effective C cannot be parsed') from error
+    def nodes(node):
+        yield node
+        for _, child in node.children():
+            yield from nodes(child)
+    aliases, definitions = collections.defaultdict(list), collections.defaultdict(list)
+    for node in nodes(ast):
+        if isinstance(node, ca.Pragma) or isinstance(node, ca.Typedef) and node not in ast.ext:
+            raise MetadataProofError('integer-word source has unsupported pragma/local typedef')
+    for node in ast.ext:
+        if isinstance(node, ca.Typedef):
+            aliases[node.name].append(node.type)
+        if isinstance(node, ca.Decl) and node.init is not None:
+            definitions[node.name].append(node)
+    def words(node, seen=()):
+        if not isinstance(node, ca.TypeDecl) or not isinstance(node.type, ca.IdentifierType):
+            return None
+        names = node.type.names
+        if node.quals and not (names == ['void'] and node.quals == ['const']):
+            return None
+        if getattr(node, 'align', None):
+            return None
+        if len(names) == 1 and names[0] in aliases:
+            if names[0] in seen or len(aliases[names[0]]) != 1:
+                raise MetadataProofError('ambiguous integer-word typedef')
+            return words(aliases[names[0]][0], seen + (names[0],))
+        return sorted(names)
+    def scalar(node, signed):
+        return (isinstance(node, ca.TypeDecl) and not node.quals and not getattr(node, 'align', None)
+                and words(node) in ((['long'], ['long','signed'], ['int','long'], ['int','long','signed'])
+                                   if signed else (['long','unsigned'], ['int','long','unsigned'])))
+    def pointer(node):
+        return (isinstance(node, ca.PtrDecl) and not node.quals
+                and isinstance(node.type, ca.TypeDecl) and node.type.quals == ['const']
+                and not getattr(node.type, 'align', None) and words(node.type) == ['void'])
+    def field(node):
+        if (isinstance(node, ca.StructRef) and node.type == '.'
+                and isinstance(node.name, ca.ID) and isinstance(node.field, ca.ID)):
+            return node.name.name, node.field.name
+        return None
+    def signbit(node):
+        return (isinstance(node, ca.BinaryOp) and node.op == '-'
+                and isinstance(node.left, ca.UnaryOp) and node.left.op == '-'
+                and isinstance(node.left.expr, ca.Constant) and node.left.expr.type == 'int'
+                and node.left.expr.value == '2147483647'
+                and isinstance(node.right, ca.Constant) and node.right.type == 'int' and node.right.value == '1')
+    parents = {id(child): node for node in nodes(ast) for _,child in node.children()}
+    roles = []
+    for function in (n for n in ast.ext if isinstance(n, ca.FuncDef)):
+        local = collections.defaultdict(list)
+        for node in nodes(function):
+            if isinstance(node, ca.Decl):
+                local[node.name].append(node)
+        carriers = {}
+        for name, declarations in local.items():
+            for declaration in declarations:
+                kind = declaration.type
+                if not isinstance(kind, ca.TypeDecl) or not isinstance(kind.type, ca.Union):
+                    continue
+                members = kind.type.decls or []
+                if len(members) != 2 or not pointer(members[0].type) or not scalar(members[1].type, True):
+                    continue
+                if (len(declarations) != 1 or declaration.init is not None or declaration.storage
+                        or declaration.quals or getattr(declaration, 'align', None)
+                        or any(m.storage or m.bitsize for m in members)):
+                    raise MetadataProofError('unsupported/shadowed integer-word carrier')
+                carriers[name] = members[0].name, members[1].name
+        covered, occurrences = set(), collections.Counter()
+        for expression in nodes(function.body):
+            if not isinstance(expression, ca.ExprList) or len(expression.exprs) != 2:
+                continue
+            parent = parents.get(id(expression))
+            if isinstance(parent, ca.FuncCall) and parent.args is expression:
+                continue  # Argument separators are not a sequenced comma expression.
+            assignment, cast = expression.exprs
+            if not isinstance(assignment, ca.Assignment) or field(assignment.lvalue) is None:
+                continue
+            carrier, member = field(assignment.lvalue)
+            if carrier not in carriers:
+                continue
+            valid = (assignment.op == '=' and member == carriers[carrier][0]
+                     and isinstance(assignment.rvalue, ca.Cast) and pointer(assignment.rvalue.to_type.type)
+                     and isinstance(assignment.rvalue.expr, ca.ID) and isinstance(cast, ca.Cast)
+                     and scalar(cast.to_type.type, False) and isinstance(cast.expr, ca.BinaryOp)
+                     and cast.expr.op == '^' and signbit(cast.expr.right)
+                     and field(cast.expr.left) == (carrier, carriers[carrier][1]))
+            if not valid:
+                raise MetadataProofError('unsupported integer-word transform/direct base')
+            target = assignment.rvalue.expr.name
+            choices = definitions[target]
+            if (local[target] or len(choices) != 1 or choices[0].storage or choices[0].quals
+                    or not isinstance(choices[0].type, ca.ArrayDecl)
+                    or not isinstance(choices[0].type.dim, ca.Constant)
+                    or choices[0].type.dim.type != 'int'
+                    or not re.fullmatch(r'[1-9][0-9]*', choices[0].type.dim.value)):
+                raise MetadataProofError('integer-word target requires an unshadowed initialized global array')
+            occurrences[(target, carrier)] += 1
+            covered.update(id(node) for node in nodes(expression))
+        for name in set(carriers) | {target for target, carrier in occurrences}:
+            uses = [node for node in nodes(function.body) if isinstance(node, ca.ID) and node.name == name]
+            if any(id(node) not in covered for node in uses):
+                raise MetadataProofError('uncovered integer-word target/carrier use')
+        roles.extend(IntegerWordRole(function.decl.name, target, carrier, count)
+                     for (target, carrier), count in sorted(occurrences.items()))
+    if not roles or len({(r.function,r.target) for r in roles}) != len(roles):
+        raise MetadataProofError('missing/ambiguous integer-word source roles')
+    if before != literal_profile_inputs(root) or lexical.identity() != lexical_identity:
+        raise MetadataProofError('integer-word parser/helper changed')
+    return tuple(roles)
+
+
+_INTEGER_WORD_SEAL = object()
+
+
+@dataclasses.dataclass(frozen=True)
+class IntegerWordPair:
+    function: str
+    target: str
+    high: int
+    low: int
+    target_offset: int
+    target_size: int
+
+
+@dataclasses.dataclass(frozen=True)
+class IntegerWordWitness:
+    compiler_sha256: str
+    raw_sha256: str
+    linked_sha256: str
+    compiler_surface: tuple
+    raw_surface: tuple
+    linked_surface: tuple
+    source_sha256: str
+    cpp_sha256: str
+    roles: tuple[IntegerWordRole, ...]
+    pairs: tuple[IntegerWordPair, ...]
+    inputs: tuple[tuple[str, str], ...]
+    root: pathlib.Path
+    toolchain_sha256: str
+    compiler_observation: object = dataclasses.field(repr=False)
+    raw_observation: object = dataclasses.field(repr=False)
+    linked_observation: object = dataclasses.field(repr=False)
+    seal: object = dataclasses.field(repr=False)
+
+    def operand(self, raw, linked, rel, addend, exported):
+        if (self.seal is not _INTEGER_WORD_SEAL or raw is not self.raw_observation
+                or linked is not self.linked_observation
+                or hashlib.sha256(self.compiler_observation.data).hexdigest() != self.compiler_sha256
+                or _static_parsed_surface(self.compiler_observation) != self.compiler_surface
+                or hashlib.sha256(raw.data).hexdigest() != self.raw_sha256
+                or hashlib.sha256(linked.data).hexdigest() != self.linked_sha256
+                or _static_parsed_surface(raw) != self.raw_surface
+                or _static_parsed_surface(linked) != self.linked_surface):
+            raise MetadataProofError('integer-word object observations changed')
+        if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF or any(
+                sha256_file(self.root/name) != value for name,value in self.inputs):
+            raise MetadataProofError('stale integer-word source/header/parser inputs')
+        _effective_parser(self.root)
+        actual = [(r.offset,r.type,r.sym.index) for r in raw.rels('.text')]
+        if (rel.offset,rel.type,rel.sym.index) not in actual or rel.sym is not raw.symbols[rel.sym.index]:
+            raise MetadataProofError('integer-word operand is not an actual raw relocation')
+        choices = [p for p in self.pairs if p.target == rel.sym.name and rel.offset in (p.high,p.low)]
+        if (exported or addend != 0x80000000 or len(choices) != 1
+                or rel.type != (5 if rel.offset == choices[0].high else 6)):
+            raise MetadataProofError('not an authenticated unexported integer-word HI/LO operand')
+        return choices[0]
+
+
+def integer_word_witness(compiler, raw, linked, roles, exports, source_sha256, cpp_sha256,
+                         inputs, root, toolchain_sha256):
+    """Bind complete closed source roles to actual allocated targets/raw pairs."""
+    import runlink_pack as rp
+    surfaces = tuple(_static_parsed_surface(image) for image in (compiler,raw,linked))
+    if (not roles or any(not isinstance(r, IntegerWordRole) or r.occurrences < 1 for r in roles)
+            or len({(r.function,r.target) for r in roles}) != len(roles)):
+        raise MetadataProofError('untrusted/ambiguous integer-word source roles')
+    for section in rp.EDITED_SECTIONS:
+        old, new = compiler.rels(section), raw.rels(section)
+        if (compiler.bytes_of(section) != raw.bytes_of(section) or compiler.size(section) != raw.size(section)
+                or [(r.offset,r.type) for r in old] != [(r.offset,r.type) for r in new]
+                or rp.in_place_addends(compiler,section,old) != rp.in_place_addends(raw,section,new)):
+            raise MetadataProofError('integer-word raw compiler records changed')
+    obj = rp.edited_prepare_object(raw, linked)
+    source_roles = {(r.function,r.target) for r in roles}
+    pairs = []
+    for section in rp.EDITED_SECTIONS[:-1]:
+        rels = raw.rels(section)
+        adds = rp.in_place_addends(raw,section,rels)
+        for index, (high, addend) in enumerate(zip(rels,adds)):
+            if addend != 0x80000000 or high.type == rp.R_MIPS_LO16:
+                continue
+            if section != '.text' or high.type != rp.R_MIPS_HI16 or index + 1 >= len(rels):
+                raise MetadataProofError('integer-word encoding requires a text HI/LO pair')
+            low = rels[index+1]
+            if (low.type != rp.R_MIPS_LO16 or high.sym.index != low.sym.index
+                    or adds[index+1] != addend or high.sym.bind != rp.STB_GLOBAL
+                    or high.sym.name in exports):
+                raise MetadataProofError('integer-word pair/target/export differs')
+            original = [(r.offset,r.type,r.sym.name,r.sym.bind,r.sym.type) for r in compiler.rels(section)]
+            if any((r.offset,r.type,r.sym.name,r.sym.bind,r.sym.type) not in original for r in (high,low)):
+                raise MetadataProofError('integer-word original compiler target identity changed')
+            target = rp.edited_global_target(obj, high.sym.name)
+            original_target = rp.edited_global_target({'raw':compiler,'linked':linked,'bases':obj['bases']},high.sym.name)
+            if original_target != target:
+                raise MetadataProofError('integer-word original compiler definition changed')
+            if target[0] != '.data' or target[3] != rp.STT_OBJECT:
+                raise MetadataProofError('integer-word target is not allocated GLOBAL DATA')
+            rp.edited_object_operand(target,0)
+            function = rp.edited_caller(obj,section,high.offset)
+            if (function != rp.edited_caller(obj,section,low.offset)
+                    or (function,high.sym.name) not in source_roles):
+                raise MetadataProofError('integer-word pair lacks its qualified source role')
+            owner = rp.edited_global_target(obj,function)
+            original_obj = {'raw':compiler,'linked':linked,'bases':obj['bases']}
+            if (rp.edited_caller(original_obj,section,high.offset) != function
+                    or rp.edited_caller(original_obj,section,low.offset) != function):
+                raise MetadataProofError('integer-word original compiler function ownership changed')
+            original_owner = rp.edited_global_target(original_obj,function)
+            if owner[0] != '.text' or owner[3] != rp.STT_FUNC or original_owner != owner:
+                raise MetadataProofError('integer-word original GLOBAL FUNCTION geometry differs')
+            if (high.offset % 4 or low.offset % 4 or min(high.offset,low.offset) < 0
+                    or max(high.offset,low.offset)+4 > raw.size(section)):
+                raise MetadataProofError('integer-word relocation word escapes text')
+            hiword, loword = rp.u32(raw.bytes_of(section),high.offset), rp.u32(raw.bytes_of(section),low.offset)
+            if (hiword >> 26 != 15 or loword >> 26 != 9
+                    or (hiword >> 16)&31 != (loword >> 21)&31
+                    or (hiword >> 16)&31 != (loword >> 16)&31):
+                raise MetadataProofError('integer-word pair is not same-register LUI/ADDIU')
+            pairs.append(IntegerWordPair(function,high.sym.name,high.offset,low.offset,target[1],target[2]))
+    if {(p.function,p.target) for p in pairs} != source_roles:
+        raise MetadataProofError('integer-word source/raw role set differs')
+    covered = {offset for p in pairs for offset in (p.high,p.low)}
+    if any(a == 0x80000000 and (s != '.text' or r.offset not in covered)
+           for s in rp.EDITED_SECTIONS[:-1]
+           for r,a in zip(raw.rels(s),rp.in_place_addends(raw,s,raw.rels(s)))):
+        raise MetadataProofError('uncovered integer-word raw operand')
+    if tuple(_static_parsed_surface(image) for image in (compiler,raw,linked)) != surfaces:
+        raise MetadataProofError('integer-word parsed metadata changed during witnessing')
+    return IntegerWordWitness(hashlib.sha256(compiler.data).hexdigest(),hashlib.sha256(raw.data).hexdigest(),
+        hashlib.sha256(linked.data).hexdigest(),*surfaces,source_sha256,cpp_sha256,tuple(roles),tuple(pairs),
+        tuple(sorted(inputs)),pathlib.Path(root),toolchain_sha256,compiler,raw,linked,_INTEGER_WORD_SEAL)
+
+
 def literal_raw_end(elf, rows):
     """Actual unsized definitions bind exact C bytes, including every NUL."""
     import runlink_pack as rp

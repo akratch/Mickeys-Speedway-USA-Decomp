@@ -70,6 +70,9 @@ extern s32 gOverlay13Enabled;
 extern s32 gOverlay13Active_o013Reloc;
 extern s32 gOverlay13ActiveCount;
 extern f32 gOverlay13Gravity;
+extern f32 gOverlay13SecondaryScale;
+extern f32 gOverlay13Gravity_o013Reloc;
+extern f32 gOverlay13SecondaryScale_o013Reloc;
 /* Actual backing pool; this import retains the loader operand. */
 extern Overlay13Record gOverlay13Records_o013Reloc[32];
 extern Overlay13QuadTriangle gOverlay13QuadTriangles[2];
@@ -78,7 +81,6 @@ extern Overlay13QuadTriangle gOverlay13QuadTriangles_o013Reloc[2];
 extern void *D_20;
 extern u8 *D_24;
 extern void *D_28;
-extern f32 D_4;
 extern u8 D_80000000[];
 
 struct Sprite;

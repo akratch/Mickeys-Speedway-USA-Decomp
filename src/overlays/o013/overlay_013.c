@@ -173,7 +173,7 @@ void overlay13UpdateRecord(Overlay13Record *record, s32 ticks) {
         velocityX = record->z;
         velocityY = record->velocityY;
         if (ticks--) {
-            gravity = gOverlay13Gravity;
+            gravity = gOverlay13Gravity_o013Reloc;
             velocityX = record->velocityX;
             do {
                 velocityZ = record->velocityZ;
@@ -282,7 +282,7 @@ static void overlay13DrawRecord(
             O13_GFX(0x05110020, (u32)&D_80000000);
 
             if (D_24 != 0 && record->phase < (f32)(u32)*D_24) {
-                record->scale = savedScale * D_4;
+                record->scale = savedScale * gOverlay13SecondaryScale_o013Reloc;
                 O13_GFX(0xFA000000, ((render->r & 0xFF) << 24) |
                                         ((render->g & 0xFF) << 16) |
                                         ((render->b & 0xFF) << 8) | 0xA0);

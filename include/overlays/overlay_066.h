@@ -6,15 +6,14 @@
 
 /* Overlay 66: the full-screen smoothing filter. */
 
-/* Module data, still owned by the raw image (phase 3 of
- * docs/OVERLAY_STRUCTURE_SPRINT.md). */
+/* Mutable module command templates and filter state. */
 extern s32 gOverlay66Timer;
 extern s32 gOverlay66Current;
 extern s32 gOverlay66Flag;
 extern s32 gOverlay66BssControl;
-extern Gfx D_0[];
-extern Gfx D_50[];
-extern Gfx D_88[];
+extern Gfx o66SetupCommands[];
+extern Gfx o66NtscTextureTemplate[];
+extern Gfx o66WideTextureTemplates[];
 
 /* Resident data and functions. */
 extern u16 *D_800D2FA0;

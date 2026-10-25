@@ -2,13 +2,13 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 5595},
+  "totals": {"differences": 0, "borrowed_records": 5565},
   "differences": {
   },
   "borrowed": {
     "bss-size": {
       "about": "header BSS size without a complete faithful linked source allocation, from the atlas (module)",
-      "count": 34,
+      "count": 33,
       "entries": [
         [1],
         [2],
@@ -37,7 +37,6 @@
         [60],
         [62],
         [65],
-        [66],
         [87],
         [92],
         [96],
@@ -61,7 +60,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1299,
+      "count": 1292,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1118,13 +1117,6 @@
         [65, "gOverlay65RecordsEnd", 2],
         [65, "gOverlay65Resource208", 2],
         [65, "gOverlay65Resource2980", 2],
-        [66, "D_0", 4],
-        [66, "D_50", 2],
-        [66, "D_88", 4],
-        [66, "gOverlay66BssControl", 4],
-        [66, "gOverlay66Current", 4],
-        [66, "gOverlay66Flag", 6],
-        [66, "gOverlay66Timer", 6],
         [67, "gOverlay67PointSets", 2],
         [68, "gOverlay68Entry", 6],
         [68, "gOverlay68KindMap", 4],

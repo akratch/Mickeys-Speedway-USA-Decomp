@@ -9,6 +9,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/framebuffer_state.h"
 #include "game/texture_header.h"
 #include "PR/os_message.h"
 #include "game/gameVi.h"
@@ -102,7 +103,6 @@ extern OSMesgQueue D_800D2CD0;
 extern OSMesg D_800D2CE8[];
 extern OSMesgQueue D_800D2D08;
 extern OSMesg D_800D2D20[];
-extern u16 *D_800D2FAC;
 extern OSScTask D_800D2910[];
 extern OSScTask D_800D29F0[];
 extern OSScTask D_800D2AD0[];

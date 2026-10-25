@@ -9,6 +9,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/framebuffer_state.h"
 #include "PR/os.h"
 #include "PR/os_internal.h"
 #include "PR/os_vi.h"
@@ -70,9 +71,6 @@ extern u8 D_800CF5A8;
 s32 D_800D2D40;
 s32 D_800D2D44;
 u64 D_800D2D48;
-extern u8 *D_800D2FA0;
-extern u8 *D_800D2FA8;
-extern u8 *D_800D2FAC;
 extern OSViMode D_80080490;
 extern OSViMode D_800804E0;
 extern OSViMode D_80080530;
@@ -565,7 +563,7 @@ void __scHandleRetrace(OSSched *sc) {
         rsp_segment(&dlist, 0, 0);
         rsp_segment(&dlist, 1, D_800D2FA8);
         rsp_segment(&dlist, 2, D_800D2FAC);
-        rsp_segment(&dlist, 4, D_800D2FA0 - 0x500);
+        rsp_segment(&dlist, 4, (u8 *)D_800D2FA0 - 0x500);
         if (spGfx != NULL) {
             diPrintfSetXY(30, 30);
             diPrintf(D_80082354, spGfx);

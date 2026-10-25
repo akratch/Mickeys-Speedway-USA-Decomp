@@ -757,6 +757,15 @@
       }
     },
     {
+      "name": "asm/data/bss_gap_D800D2FB0.bss.s",
+      "target_path": "expected/build/asm/data/bss_gap_D800D2FB0.bss.s.o",
+      "metadata": {
+        "progress_categories": [
+          "resident"
+        ]
+      }
+    },
+    {
       "name": "asm/data/bss_gap_D800D31C8.bss.s",
       "target_path": "expected/build/asm/data/bss_gap_D800D31C8.bss.s.o",
       "metadata": {

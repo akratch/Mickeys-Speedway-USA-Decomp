@@ -107,3 +107,19 @@ source/relocation/ROM acceptance rules apply.
 
 
 See also [storage width and callable return width](ido-learnings.md#storage-width-does-not-establish-callable-return-width).
+
+## Inspect BSS definition placement before trusting aggregate size
+
+- **Symptom:** a stock o32 build emits the expected total BSS size, but the
+  genuine objects occupy the wrong individual offsets.
+- **Mechanism:** in one measured IDO case, a contiguous group of uninitialized
+  definitions placed after function uses was emitted in use order. Moving the
+  same group before those uses restored its definition order without changing
+  executable bytes.
+- **Lever:** put real file-scope definitions before their consumers, preserving
+  their types, order and actual extents; inspect every symbol offset and the
+  complete raw/configured allocation and relocation surfaces.
+- **Limits:** this is empirical o32 behavior, not an ordering guarantee or proof
+  of an original declaration. Aggregate size alone is insufficient. Do not add
+  fake storage, padding, attributes or unrelated source changes to force layout;
+  retain independent linked-address and byte-identity proof.

@@ -2,6 +2,7 @@
 #define GAME_FX_H
 
 #include "PR/ultratypes.h"
+#include "game/framebuffer_state.h"
 #include "game/math.h"
 #include "game/fx_texture_image.h"
 
@@ -185,6 +186,5 @@ extern u8 D_8007D364[12];
 extern FxGfx D_8007D380[10];
 extern FxGfx D_8007D3D0[7];
 extern FxGfx D_8007D408[14];
-extern s32 *D_800D2FA0;
 
 #endif /* GAME_FX_H */

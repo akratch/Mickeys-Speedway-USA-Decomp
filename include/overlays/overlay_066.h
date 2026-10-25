@@ -2,6 +2,7 @@
 #define OVERLAY_066_H
 
 #include "PR/ultratypes.h"
+#include "game/framebuffer_state.h"
 #include "n_audio/mbi.h"
 
 /* Overlay 66: the full-screen smoothing filter. */
@@ -16,9 +17,6 @@ extern Gfx o66NtscTextureTemplate[];
 extern Gfx o66WideTextureTemplates[];
 
 /* Resident data and functions. */
-extern u16 *D_800D2FA0;
-extern u16 *D_800D2FAC;
-extern u16 *D_800D2FA8;
 extern void osInvalDCache(void *vaddr, s32 nbytes);
 extern void osWritebackDCacheAll(void);
 extern s32 viGetVideoMode(void);

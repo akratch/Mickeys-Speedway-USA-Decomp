@@ -1792,7 +1792,7 @@ void func_8004A380(s32 x, s32 y, s32 value, s32 minimumWidth, s32 arg4) {
                     glyph = D_8007D364[character - '0'];
                 }
             }
-            func_8004A10C(D_800D2FA0, glyph, x, y, arg4);
+            func_8004A10C((s32 *)D_800D2FA0, glyph, x, y, arg4);
             x += 10;
         } while (text[index] != '\0');
     }

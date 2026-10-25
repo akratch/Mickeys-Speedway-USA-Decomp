@@ -2,6 +2,7 @@
 #define OVERLAY_099_H
 
 #include "PR/ultratypes.h"
+#include "game/framebuffer_state.h"
 #include "game/math.h"
 #include "ultra64.h"
 #include "n_audio/gbi.h"
@@ -245,7 +246,6 @@ extern void *D_8007BE80;
 
 extern Overlay99Vertex *D_8007BE88[];
 
-extern u16 *D_800D2FAC;
 
 extern u8 gO99TrianglesReloc[];
 

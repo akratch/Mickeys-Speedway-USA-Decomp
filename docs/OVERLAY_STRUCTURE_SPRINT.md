@@ -27,7 +27,7 @@ validation and publication are separate acceptance steps.
 | Initialized images | 47 of 87 data-bearing modules are fully projected to C; 15 are partial and 25 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 31 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
 | Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 5,453 records still borrow authority: 5,401 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
-| BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 32 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
+| BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 31 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
 
 Source independence also requires reviewing encoded-coordinate names,

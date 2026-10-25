@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from runlink import codec, compare, config, generate  # noqa: E402
+from runlink import codec, compare, config, generate, jfg_module_recipe  # noqa: E402
 from runlink.synth import (FUNC, GLOBAL, LOCAL, OBJECT, ElfBuilder, header, map_text,  # noqa: E402
                            ort_row, record, words)
 
@@ -215,6 +215,84 @@ class GenerateTests(unittest.TestCase):
         self.assertEqual(sorted((r.category, r.offset) for r in out[4]), [("callee", 0x10), ("jump-index", 0x14)])
         rom, cfg, tables, out = self.run_gen(o.build(), "oracle")
         self.assertEqual(out[4], [])
+
+
+class CurrentModuleRecipeTests(unittest.TestCase):
+    """Independent synthetic format checks; no private source/ROM fixture."""
+
+    def setUp(self):
+        import hashlib
+        import json
+        from runlink.elf import Elf
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        root = self.root = Path(self.temp.name)
+        rom = bytearray(0x200)
+        rom[:4] = bytes.fromhex('80371240')
+        rom[0x60:0x68] = ort_row(0, 0) + ort_row(1, 0)
+        # A poisoned selected header must never supply an extent or position.
+        rom[0x80:0xA0] = bytes([0xFF]) * 32
+        rom[0x120:0x128] = struct.pack('>II', 0, 9)
+        rom[0x128:0x13A] = b'resident\0selected\0'
+        (root / 'rom.z64').write_bytes(rom)
+        (root / 'config.json').write_text('{}\n')
+        cfg = SimpleNamespace(name='jfg-us', rom=root/'rom.z64', path=root/'config.json',
+            rom_sha1=hashlib.sha1(rom).hexdigest(), main_table_rom=0x40, main_table_block=0x20,
+            ort_rom=0x60, ort_count=2, headers_rom=0x80, module_count=1, modules_rom=0xC0,
+            names_rom=0x128, names_end=0x13A, name_offsets_rom=0x120,
+            resident_text=0x80000450, resident_data=0x80001000, resident_bss=0x80002000,
+            data_selectors=(0xFFD, 0xFFE), bss_selector=0xFFF,
+            reserved_selectors=(0xFFC, 0xFFD, 0xFFE, 0xFFF), absolute_selector=0xFFC,
+            absolute_base=0x80000000, build={'elf':'resident.elf'}, resolve=lambda p: root / p)
+        self.cfg = cfg
+        resident = ElfBuilder().section('.main', bytes(16), addr=cfg.resident_text)
+        resident.sym('resident', cfg.resident_text, 16, GLOBAL, FUNC, '.main')
+        (root / 'resident.elf').write_bytes(resident.build())
+        self.spec = root / 'bindings.json'
+        self.spec.write_text(json.dumps({'schema':'jfg-current-module-example-v1', 'module':1,
+            'imports':{'resident':0}, 'exports':{'selected':1}}))
+        self.elf = root / 'module.elf'
+        self.out = root / 'out'
+
+    def source(self, *, instruction=3 << 26, size=16, callee='resident'):
+        from runlink.elf import Elf
+        builder = ElfBuilder().section('.text', words(instruction, 0, 0, 0)).section('.data')
+        builder.sym('selected', 0, size, GLOBAL, FUNC, '.text').sym(callee)
+        builder.rel('.text', 0, R26, callee)
+        raw = bytearray(builder.build())
+        # Explicit fixture section flags, independent of the recipe's parser.
+        section = Elf('fixture', data=raw).section('.data')
+        shoff = struct.unpack_from('>I', raw, 0x20)[0]
+        struct.pack_into('>I', raw, shoff + section['index'] * 40 + 8, 3)
+        self.elf.write_bytes(raw)
+
+    def test_current_elf_generates_independent_format_despite_poisoned_old_header(self):
+        self.source()
+        receipt = jfg_module_recipe.generate(self.cfg, self.elf, self.spec, self.out)
+        self.assertEqual((self.out/'text.bin').read_bytes(), words(3 << 26, 0, 0, 0))
+        self.assertEqual((self.out/'headers.bin').read_bytes(), header(0, 16, 0, 0, 8, 0))
+        self.assertEqual((self.out/'rt1.bin').read_bytes(), record(0, 0, R26, SYMBOL))
+        self.assertEqual((self.out/'rt2.bin').read_bytes(), b'')
+        self.assertEqual((self.out/'ort.bin').read_bytes(), ort_row(0, 0) + ort_row(1, 0))
+        self.assertFalse(receipt['source_only'])
+        self.assertFalse(receipt['general_adapter'])
+
+    def test_refuses_unowned_text_bad_call_or_addend_before_output(self):
+        for options, message in (({'size':12}, 'unowned text'),
+                                 ({'instruction':0}, 'JAL encoding'),
+                                 ({'instruction':(3 << 26) | 1}, 'nonzero-addend'),
+                                 ({'callee':'missing'}, 'undeclared resident call')):
+            self.source(**options)
+            with self.subTest(options=options), self.assertRaisesRegex(ValueError, message):
+                jfg_module_recipe.generate(self.cfg, self.elf, self.spec, self.out)
+            self.assertFalse(self.out.exists())
+
+    def test_preserves_existing_evidence_directory(self):
+        self.out.mkdir()
+        (self.out/'best').write_text('preserve')
+        with self.assertRaisesRegex(ValueError, 'output already exists'):
+            jfg_module_recipe.generate(self.cfg, self.elf, self.spec, self.out)
+        self.assertEqual((self.out/'best').read_text(), 'preserve')
 
 
 if __name__ == "__main__":

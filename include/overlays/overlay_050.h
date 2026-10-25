@@ -2,6 +2,7 @@
 #define OVERLAY_050_H
 
 #include "PR/ultratypes.h"
+#include "n_audio/mbi.h"
 #include "overlays/patch_indices.h"
 
 typedef struct O50Glyph {
@@ -104,7 +105,7 @@ typedef struct O50Level {
  * Signatures follow Mickey callees and the O32 argument surface; the
  * *_o050Reloc names are the generated relocation surface. */
 
-void camStandardOrtho_o050Reloc(void **, void **); /* 0:+0x22600 */
+void camStandardOrtho_o050Reloc(Gfx **, Mtx **); /* 0:+0x22600 */
 
 struct Overlay45ResourceDescriptor;
 void overlay45ReleaseDescriptor_o050Reloc(
@@ -118,9 +119,11 @@ s32 func_800290A0_o050Reloc(void); /* 0:+0x28C50 */
 
 s32 func_8003A7D0_o050Reloc(void *); /* 0:+0x3A380 */
 
-void func_8002F618_o050Reloc(void **, void *, s32, s32, s32, s32, s32, s32); /* 0:+0x2F1C8 */
+/* Tier B: the cursor and colour widths match the resident renderer. The
+ * node argument still uses the legacy glyph/resource-patching view. */
+void func_8002F618_o050Reloc(Gfx **, void *, s32, s32, u8, u8, u8, u8); /* 0:+0x2F1C8 */
 
-void texDPInit_o050Reloc(void **); /* 0:+0x344D0 */
+void texDPInit_o050Reloc(Gfx **); /* 0:+0x344D0 */
 
 void frontDrawObj_o050Reloc(s32); /* 0:+0x399E4 */
 
@@ -132,7 +135,7 @@ s32 overlay59Interpolate_o050Reloc(s32, s32, s32, s32, s32, s32 *, s32 *, s32); 
 
 void overlay59BuildList_o050Reloc(s32, void *); /* 59:+0x84C */
 
-void overlay59DrawFrame_o050Reloc(void **, s32, s32, s32); /* 59:+0x8EC */
+void overlay59DrawFrame_o050Reloc(Gfx **, s32, s32, s32); /* 59:+0x8EC */
 
 s32 texAnimateSprite_o050Reloc(void *, s32 *, s32, f32 *, s32); /* 0:+0x360F4 */
 
@@ -146,7 +149,7 @@ void fontBackground_o050Reloc(s32, s32, s32, s32); /* 0:+0x4AC8C */
 
 void fontColour_o050Reloc(s32, s32, s32, s32, s32); /* 0:+0x4AC68 */
 
-void fontPrintXY_o050Reloc(void **, s32, s32, char *, s32); /* 0:+0x4ACA8 */
+void fontPrintXY_o050Reloc(Gfx **, s32, s32, char *, s32); /* 0:+0x4ACA8 */
 
 s32 mainGetMode_o050Reloc(void); /* 0:+0x288C8 */
 
@@ -172,9 +175,9 @@ extern f32 o50ForwardScale;
 
 /* Tier B: runtime export identities, kept distinct from stored addends. */
 
-extern void *D_800D3140_o050Reloc;
+extern Gfx *D_800D3140_o050Reloc;
 
-extern void *D_800D3144_o050Reloc;
+extern Mtx *D_800D3144_o050Reloc;
 
 extern s32 D_800C947C_o050Reloc;
 

@@ -25,7 +25,7 @@ static void overlay59Release(Overlay59State *state) {
     if (state->owner != NULL) {
         do {
             if (cursor->handle != NULL) {
-                overlay59ReleaseReloc(cursor->handle);
+                texFreeTexture(cursor->handle);
                 cursor->handle = NULL;
             }
             offset += 4;
@@ -482,8 +482,8 @@ void overlay59BuildList(s32 index, Overlay59Output *output) {
  * DKR v77/v80 and JFG contain generic white primitive-color and menu-frame
  * rendering, but no matching three-pass frame routine or exact object donor.
  */
-void overlay59DrawFrame(s32 displayList, s32 index, s32 x, s32 y) {
-    s32 style;
+void overlay59DrawFrame(Gfx **displayList, s32 index, s32 x, s32 y) {
+    const u8 *style;
     void *owner;
     Overlay59Entry *entry;
 
@@ -494,14 +494,15 @@ void overlay59DrawFrame(s32 displayList, s32 index, s32 x, s32 y) {
         if (owner != 0) {
             y += 12;
             style = gOverlay59Styles[entry->values[0].second];
+            /* The legacy char* font API copies the readonly label to scratch. */
             fontUseFont(0);
             fontBackground(0, 0, 0, 0);
             fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-            fontPrintXY(displayList, x - 1, y - 1, style, 0);
+            fontPrintXY(displayList, x - 1, y - 1, (char *) style, 0);
             fontColour(0, 0, 0, 0xFF, 0xFF);
-            fontPrintXY(displayList, x + 1, y + 1, style, 0);
+            fontPrintXY(displayList, x + 1, y + 1, (char *) style, 0);
             fontColour(0xFF, 0, 0, 0xFF, 0xFF);
-            fontPrintXY(displayList, x, y, style, 0);
+            fontPrintXY(displayList, x, y, (char *) style, 0);
         }
     }
 }

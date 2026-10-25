@@ -2,6 +2,7 @@
 #define OVERLAY_059_H
 
 #include "PR/ultratypes.h"
+#include "n_audio/mbi.h"
 
 /* Overlay 59: four animated value lists with per-entry textures. */
 
@@ -81,16 +82,18 @@ extern Overlay59Entry gOverlay59EntriesEnd[];
 extern Overlay59DescriptorGroup gOverlay59DescriptorTables[];
 extern u8 *gOverlay59ValueTables[11];
 extern Overlay59TableInfo gOverlay59TableInfo[];
-extern s32 gOverlay59Styles[];
+/* Tier B/C: six readonly label pointers. The signed selector domain and
+ * loaded-module lifetime remain caller preconditions. */
+extern const u8 *gOverlay59Styles[];
 
-/* Resident functions. overlay59ReleaseReloc is the resident texture release
- * (ORT row 140). */
-extern void overlay59ReleaseReloc(void *handle);
+/* Tier B: actual resident texture provider (ORT row 140). */
+struct TextureHeader;
+extern void texFreeTexture(struct TextureHeader *texture);
 extern void *texLoadTexture(s32 textureId);
 extern void fontUseFont(s32);
 extern void fontBackground(s32, s32, s32, s32);
 extern void fontColour(s32, s32, s32, s32, s32);
-extern void fontPrintXY(s32, s32, s32, s32, s32);
+extern void fontPrintXY(Gfx **, s32, s32, char *, s32);
 
 /* This module's exports (ORT rows). */
 void overlay59ResetEntries(void);
@@ -101,6 +104,6 @@ void overlay59Advance(s32 steps);
 s32 overlay59Interpolate(s32 index, s32 x, s32 y, s32 targetX, s32 targetY,
                          s32 *outX, s32 *outY, s32 useFirstScale);
 void overlay59BuildList(s32 index, Overlay59Output *output);
-void overlay59DrawFrame(s32 displayList, s32 index, s32 x, s32 y);
+void overlay59DrawFrame(Gfx **displayList, s32 index, s32 x, s32 y);
 
 #endif

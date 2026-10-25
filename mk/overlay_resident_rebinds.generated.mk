@@ -988,6 +988,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o059/overlay_059.c.o: SURFACE_REBIND = $(OBJCOP
 	--redefine-sym fontColour=fontColour_o059Reloc \
 	--redefine-sym fontPrintXY=fontPrintXY_o059Reloc \
 	--redefine-sym fontUseFont=fontUseFont_o059Reloc \
+	--redefine-sym texFreeTexture=texFreeTexture_o059Reloc \
 	--redefine-sym texLoadTexture=texLoadTexture_o059Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay_060.c.o: SURFACE_REBIND = $(OBJCOPY) \

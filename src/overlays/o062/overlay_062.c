@@ -1,29 +1,31 @@
 #include "overlays/overlay_062.h"
 
+/* Tier B: separate frame/flags, fade state and resource handle cells.
+ * Original declarations and names remain Tier D; no native/API closure. */
+f32 o62AnimationFrame;
+s32 o62AnimationFlags;
+s32 o62FadeInTicks;
+s32 o62FadeOutTicks;
+s32 o62TransitionState;
+void *o62Descriptor;
+void *o62Sprite;
+
 /* DKR v77/v80 and JFG have no exact donor for this resource initializer. */
 void overlay62Initialize(void) {
     loadFrontEndList(&gOverlay62Float0);
     gOverlay62Value4Initial = (s32)gOverlay62Handle18;
-    gOverlay62Float0 = 0.0f;
-    gOverlay62Value4 = 13;
+    o62AnimationFrame_o062Reloc = 0.0f;
+    o62AnimationFlags_o062Reloc = 13;
     fontUseFont(3);
     fontColour(0xFF, 0xFF, 0xFF, 0, 0xFF);
-    gOverlay62Handle14 = overlay45CreateDescriptor(
+    o62Descriptor_o062Reloc = overlay45CreateDescriptor(
         D_8007C0B8->primary, 0x28, 0x28, 0);
-    gOverlay62Handle18 = texLoadSprite(0x93, 0);
-    gOverlay62Value8 = 0x20;
-    gOverlay62ValueC = 0;
-    gOverlay62Value10 = 0;
-    overlay45SetMode(gOverlay62Handle14, 0);
+    o62Sprite_o062Reloc = texLoadSprite(0x93, 0);
+    o62FadeInTicks_o062Reloc = 0x20;
+    o62FadeOutTicks_o062Reloc = 0;
+    o62TransitionState_o062Reloc = 0;
+    overlay45SetMode(o62Descriptor_o062Reloc, 0);
 }
-
-#define gOverlay62Value4 gOverlay62Values[0]
-
-#define gOverlay62Value10 (*(s32 *)(gOverlay62State + 0x10))
-
-#define gOverlay62Handle14 (*(void **)(gOverlay62State + 0x14))
-
-#define gOverlay62Handle18 (*(void **)(gOverlay62State + 0x18))
 
 #define OVERLAY62_EMIT(commands_, op_, value_) do { \
     Overlay62Gfx *packet_ = *(commands_); \
@@ -62,36 +64,36 @@ void overlay62Update(s32 updateRate) {
     s32 blue;
     Overlay62Transform transform;
 
-    if (gOverlay62Value8 > 0) {
-        gOverlay62Value8 -= updateRate;
-        if (gOverlay62Value8 < 0) {
-            gOverlay62Value8 = 0;
+    if (o62FadeInTicks_o062Reloc > 0) {
+        o62FadeInTicks_o062Reloc -= updateRate;
+        if (o62FadeInTicks_o062Reloc < 0) {
+            o62FadeInTicks_o062Reloc = 0;
         }
 
-        alpha = 0xFF - gOverlay62Value8 * 8;
+        alpha = 0xFF - o62FadeInTicks_o062Reloc * 8;
         screenBase = 0xF8;
-        intensity = 0x78 + ((gOverlay62Value8 * 0xDC) >> 5);
-        red = 0x40 + ((gOverlay62Value8 * -0x40) >> 5);
-        green = 0x40 + ((gOverlay62Value8 * -0x40) >> 5);
-        blue = 0x80 + ((gOverlay62Value8 * -0x80) >> 5);
+        intensity = 0x78 + ((o62FadeInTicks_o062Reloc * 0xDC) >> 5);
+        red = 0x40 + ((o62FadeInTicks_o062Reloc * -0x40) >> 5);
+        green = 0x40 + ((o62FadeInTicks_o062Reloc * -0x40) >> 5);
+        blue = 0x80 + ((o62FadeInTicks_o062Reloc * -0x80) >> 5);
 
-        overlay45SetMode(gOverlay62Handle14, alpha);
+        overlay45SetMode(o62Descriptor_o062Reloc, alpha);
         rcpSetScreenColour(red & 0xFF, green & 0xFF, blue & 0xFF,
                                  green);
-    } else if ((gOverlay62ValueC != 0) || (gOverlay62Value10 != 0)) {
-        gOverlay62ValueC -= updateRate;
-        if (gOverlay62ValueC <= 0) {
-            gOverlay62ValueC = 0;
+    } else if ((o62FadeOutTicks_o062Reloc != 0) || (o62TransitionState_o062Reloc != 0)) {
+        o62FadeOutTicks_o062Reloc -= updateRate;
+        if (o62FadeOutTicks_o062Reloc <= 0) {
+            o62FadeOutTicks_o062Reloc = 0;
             mainChangeLevel(0xC, 0, 0, 4, 1, 0);
-            gOverlay62Value10 = 1;
+            o62TransitionState_o062Reloc = 1;
         }
 
-        alpha = gOverlay62ValueC * 8;
+        alpha = o62FadeOutTicks_o062Reloc * 8;
         screenBase = 0xF8;
-        intensity = 0x154 + ((gOverlay62ValueC * -0xDC) >> 5);
-        red = (gOverlay62ValueC << 6) >> 5;
-        green = (gOverlay62ValueC << 6) >> 5;
-        blue = (gOverlay62ValueC << 7) >> 5;
+        intensity = 0x154 + ((o62FadeOutTicks_o062Reloc * -0xDC) >> 5);
+        red = (o62FadeOutTicks_o062Reloc << 6) >> 5;
+        green = (o62FadeOutTicks_o062Reloc << 6) >> 5;
+        blue = (o62FadeOutTicks_o062Reloc << 7) >> 5;
     } else {
         alpha = 0xFF;
         screenBase = 0xF8;
@@ -101,12 +103,12 @@ void overlay62Update(s32 updateRate) {
         blue = 0x80;
 
         if ((D_800D3180 & 0x9000) != 0) {
-            gOverlay62ValueC = 0x20;
+            o62FadeOutTicks_o062Reloc = 0x20;
         }
     }
 
     rcpSetScreenColour(red & 0xFF, green & 0xFF, blue & 0xFF, green);
-    overlay45SetMode(gOverlay62Handle14, alpha);
+    overlay45SetMode(o62Descriptor_o062Reloc, alpha);
     camStandardOrtho(&D_800D3140,
                                  &D_800D3144);
 
@@ -127,7 +129,7 @@ void overlay62Update(s32 updateRate) {
     camDo2DSprite(&D_800D3140,
                              &D_800D3144,
                              D_800D3148, &transform,
-                             gOverlay62Handle18, 0, 0xFF);
+                             o62Sprite_o062Reloc, 0, 0xFF);
     sprSetTextureFilter(1);
     fontUseFont(2);
     fontBackground(0, 0, 0, 0);
@@ -149,9 +151,9 @@ void overlay62Update(s32 updateRate) {
                            D_8007C0B8->items[5], 4);
 
     texAnimateTexSprite(*(s32 *)(gOverlay62State + 4),
-                              gOverlay62Values, 2,
-                              gOverlay62CommitContextReloc, updateRate);
-    gOverlay62Values[2] = (s32)(gOverlay62PulseReloc * 65536.0f);
+                              &o62AnimationFlags_o062Reloc, 2,
+                              &o62AnimationFrame_o062Reloc, updateRate);
+    gOverlay62Values[2] = (s32)(o62AnimationFrame_o062Reloc * 65536.0f);
     func_8002F618(&D_800D3140,
                             gOverlay62Values, 0x74, 0xCC,
                             0xFF, 0xFF, 0xFF, alpha);
@@ -159,8 +161,8 @@ void overlay62Update(s32 updateRate) {
 
 /* DKR v77/v80 and JFG checks found only generic resource cleanup. */
 void overlay62ReleaseAll(void) {
-    overlay62ReleaseReloc(gOverlay62Resource18);
-    overlay62ReleaseReloc(gOverlay62Resource14);
+    overlay62ReleaseReloc(o62Sprite_o062Reloc);
+    overlay62ReleaseReloc(o62Descriptor_o062Reloc);
     overlay62ReleaseReloc(gOverlay62InlineResource);
     func_8002C5F4();
 }

@@ -901,7 +901,7 @@ mmAlloc_o016Reloc = 0xf0000000;
 mmFree_o016Reloc = 0xf0000000;
 
 /* overlay 17: overlay_017.c.o */
-gOverlay17TemplateReloc = 0x00000000;
+gOverlay17Templates = 0x00000000;
 mmAlloc_o017Reloc = 0xf0000000;
 mmFree_o017Reloc = 0xf0000000;
 pointListRPY_o017Reloc = 0xf0000000;

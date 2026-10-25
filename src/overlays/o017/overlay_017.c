@@ -1,5 +1,24 @@
 #include "overlays/overlay_017.h"
 
+Overlay17Template gOverlay17Templates[16] = {
+    { 64, 0, 1, 2, 0, 0, 32, 0, 0, 4 },
+    { 64, 1, 2, 3, 32, 0, 0, 4, 32, 4 },
+    { 64, 2, 3, 4, 0, 4, 32, 4, 0, 8 },
+    { 64, 3, 4, 5, 32, 4, 0, 8, 32, 8 },
+    { 64, 4, 5, 6, 0, 8, 32, 8, 0, 12 },
+    { 64, 5, 6, 7, 32, 8, 0, 12, 32, 12 },
+    { 64, 6, 7, 8, 0, 12, 32, 12, 0, 16 },
+    { 64, 7, 8, 9, 32, 12, 0, 16, 32, 16 },
+    { 64, 8, 9, 10, 0, 16, 32, 16, 0, 20 },
+    { 64, 9, 10, 11, 32, 16, 0, 20, 32, 20 },
+    { 64, 10, 11, 12, 0, 20, 32, 20, 0, 24 },
+    { 64, 11, 12, 13, 32, 20, 0, 24, 32, 24 },
+    { 64, 12, 13, 14, 0, 24, 32, 24, 0, 28 },
+    { 64, 13, 14, 15, 32, 24, 0, 28, 32, 28 },
+    { 64, 14, 15, 16, 0, 28, 32, 28, 0, 32 },
+    { 64, 15, 16, 17, 32, 28, 0, 32, 32, 32 },
+};
+
 /*
  * Overlay 17: a textured ribbon trailing its owner. One translation unit;
  * overlay17CalculateEndpoints is unexported and static, the other four are
@@ -150,7 +169,7 @@ Overlay17Chain *overlay17CreateChain(
     if (chain->material != 0) {
         s32 widthScale;
         s32 heightScale;
-        source = gOverlay17TemplateReloc;
+        source = gOverlay17Templates;
         destination = (Overlay17Template *)((u8 *)chain + 0x40);
         chain->template = destination;
         widthScale = chain->material->width - 1;
@@ -171,7 +190,7 @@ Overlay17Chain *overlay17CreateChain(
             source++;
         } while (index--);
     } else {
-        chain->template = gOverlay17TemplateReloc;
+        chain->template = gOverlay17Templates;
     }
 
     chain->count = count;

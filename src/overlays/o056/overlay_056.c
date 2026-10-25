@@ -44,7 +44,7 @@ void overlay56LoadResource(void) {
 
     context = overlay56GetContextReloc();
     if (context->resourceId != -1) {
-        o56MinimapResource_o056Reloc = overlay56LoadResourceReloc(context->resourceId);
+        o56MinimapResource_o056Reloc = texLoadTexture_o056Reloc(context->resourceId);
     } else {
         o56MinimapResource_o056Reloc = 0;
     }
@@ -53,7 +53,7 @@ void overlay56LoadResource(void) {
 
 void overlay56ReleaseResource(void) {
     if (o56MinimapResource_o056Reloc != 0) {
-        overlay56ReleaseResourceReloc(o56MinimapResource_o056Reloc);
+        texFreeTexture_o056Reloc(o56MinimapResource_o056Reloc);
         o56MinimapResource_o056Reloc = 0;
     }
 }

@@ -1685,9 +1685,9 @@ o56MinimapFadeState_o056Reloc = 0x00000000;
 o56MinimapResource_o056Reloc = 0x00000000;
 overlay56GetContextReloc = 0xf0000000;
 overlay56GetDimensionsReloc = 0xf0000000;
-overlay56LoadResourceReloc = 0xf0000000;
-overlay56ReleaseResourceReloc = 0xf0000000;
 texDPTextureX_o056Reloc = 0xf0000000;
+texFreeTexture_o056Reloc = 0xf0000000;
+texLoadTexture_o056Reloc = 0xf0000000;
 viGetCurrentSize_o056Reloc = 0xf0000000;
 
 /* overlay 57: overlay_057.c.o */

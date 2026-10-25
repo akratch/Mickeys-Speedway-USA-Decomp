@@ -140,10 +140,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay_063.c.o: CFLAGS += -Wab,-r4300_mul
 O63_HUD_PREFIX := $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63HudPrefix.c.o
 $(O63_HUD_PREFIX): private PLAIN_DATA_PROOF = 1
 $(O63_HUD_PREFIX): private PLAIN_DATA_RUNTIME_ROLE = data
-# Twenty active constructor rows; the terminator and unread tail stay retained.
+# Twenty active rows and their same-grammar terminator; natural end alignment.
 O63_PARTICLE_SEEDS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o063/overlay63ParticleSeeds.c.o
-$(O63_PARTICLE_SEEDS): $(TOOLS_DIR)/trim_elf_section.py
-$(O63_PARTICLE_SEEDS): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x78 --compiler-end-padding
 $(O63_PARTICLE_SEEDS): private PLAIN_DATA_PROOF = 1
 $(O63_PARTICLE_SEEDS): private PLAIN_DATA_RUNTIME_ROLE = data
 # Complete word/character state, including ordinary compiler alignment.

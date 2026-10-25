@@ -2684,6 +2684,12 @@ in their proper module directory with an actual registered ordinary complete-mod
 Make recipe are admitted. Missing, duplicate, wrong-kind or undeclared actual
 export definitions fail; selected old metadata cannot supply them.
 
+The catalog also admits current complete sources77,80 and97, including the
+actual initialized scalar export in97. For a joint control use
+`EDITED_MODULES=34,75,77,80,97`; the default selection stays75. These admissions
+use existing actual-definition, compiler-pool and bounded-operand rules. They do
+not authorize other modules' physical-address addends or unsized static state.
+
 Each selected C input is freshly compiled with its actual per-source Make flags,
 standard static-symbol metadata is restored, and the existing ordinary module
 linker links its four sections at independent zero bases. Runtime records derive

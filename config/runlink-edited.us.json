@@ -78,6 +78,126 @@
         "init": null,
         "resume": null
       }
+    },
+    {
+      "module": 77,
+      "source": "src/overlays/o077/overlay_077.c",
+      "exports": [
+        {
+          "name": "overlay77RunCallback",
+          "row": 1172,
+          "kind": "function"
+        },
+        {
+          "name": "overlay77Init",
+          "row": 1241,
+          "kind": "function"
+        },
+        {
+          "name": "overlay77Update",
+          "row": 1287,
+          "kind": "function"
+        },
+        {
+          "name": "overlay77EnsureSelection",
+          "row": 1333,
+          "kind": "function"
+        }
+      ],
+      "entries": {
+        "init": null,
+        "resume": null
+      }
+    },
+    {
+      "module": 80,
+      "source": "src/overlays/o080/overlay_080.c",
+      "exports": [
+        {
+          "name": "overlay80InitializeContact",
+          "row": 1244,
+          "kind": "function"
+        },
+        {
+          "name": "overlay80UpdateContact",
+          "row": 1290,
+          "kind": "function"
+        }
+      ],
+      "entries": {
+        "init": null,
+        "resume": null
+      }
+    },
+    {
+      "module": 97,
+      "source": "src/overlays/o097/overlay_097.c",
+      "exports": [
+        {
+          "name": "overlay97InitScale",
+          "row": 1194,
+          "kind": "function"
+        },
+        {
+          "name": "overlay97InitSelection",
+          "row": 1195,
+          "kind": "function"
+        },
+        {
+          "name": "overlay97InitDirection",
+          "row": 1196,
+          "kind": "function"
+        },
+        {
+          "name": "overlay97InitTransform",
+          "row": 1197,
+          "kind": "function"
+        },
+        {
+          "name": "overlay97CopyAngles",
+          "row": 1198,
+          "kind": "function"
+        },
+        {
+          "name": "overlay97InitBounds",
+          "row": 1200,
+          "kind": "function"
+        },
+        {
+          "name": "overlay97AssignState",
+          "row": 1201,
+          "kind": "function"
+        },
+        {
+          "name": "overlay97CreateDescriptor",
+          "row": 1204,
+          "kind": "function"
+        },
+        {
+          "name": "overlay97InitRadius",
+          "row": 1207,
+          "kind": "function"
+        },
+        {
+          "name": "overlay97InitPlane",
+          "row": 1208,
+          "kind": "function"
+        },
+        {
+          "name": "overlay97InitResource",
+          "row": 1216,
+          "kind": "function"
+        },
+        {
+          "name": "gOverlay97TransformContext",
+          "row": 1921,
+          "kind": "object"
+        }
+      ],
+      "entries": {
+        "init": null,
+        "resume": null
+      }
     }
   ]
 }

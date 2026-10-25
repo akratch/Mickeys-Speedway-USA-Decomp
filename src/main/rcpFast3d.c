@@ -15,10 +15,8 @@
 #include "n_audio/mbi.h"
 #include "game/overlay_exports.h"
 
-typedef struct RcpCommand {
-    u32 w0;
-    u32 w1;
-} RcpCommand;
+/* The task/menu producers supply SDK Gfx command buffers and cursor cells. */
+typedef Gfx RcpCommand;
 
 typedef struct RcpTextureInfo {
     u8 pad00[6];
@@ -49,36 +47,36 @@ typedef struct RcpGradientColour {
 #define RCP_DISPLAY_LIST(command, list) \
     { \
         RcpCommand *cmd = (command); \
-        cmd->w0 = 0x06000000; \
-        cmd->w1 = (u32) (list); \
+        cmd->words.w0 = 0x06000000; \
+        cmd->words.w1 = (u32) (list); \
     }
 
 #define RCP_PIPE_SYNC(command) \
     { \
         RcpCommand *cmd = (command); \
-        cmd->w0 = 0xE7000000; \
-        cmd->w1 = 0; \
+        cmd->words.w0 = 0xE7000000; \
+        cmd->words.w1 = 0; \
     }
 
 #define RCP_SET_COLOR_IMAGE(command, width, address) \
     { \
         RcpCommand *cmd = (command); \
-        cmd->w0 = 0xFF100000 | (((width) - 1) & 0xFFF); \
-        cmd->w1 = (address); \
+        cmd->words.w0 = 0xFF100000 | (((width) - 1) & 0xFFF); \
+        cmd->words.w1 = (address); \
     }
 
 #define RCP_SET_DEPTH_IMAGE(command, address) \
     { \
         RcpCommand *cmd = (command); \
-        cmd->w0 = 0xFE000000; \
-        cmd->w1 = (address); \
+        cmd->words.w0 = 0xFE000000; \
+        cmd->words.w1 = (address); \
     }
 
 #define RCP_SET_FILL_CYCLE(command) \
     { \
         RcpCommand *cycleCmd = (command); \
-        cycleCmd->w0 = 0xEF30000F; \
-        cycleCmd->w1 = 0; \
+        cycleCmd->words.w0 = 0xEF30000F; \
+        cycleCmd->words.w1 = 0; \
     }
 
 extern u8 D_8007A3A0;
@@ -552,16 +550,16 @@ void func_8002F618(RcpCommand **dlistPtr, RcpTextureNode *nodes, s32 xPos,
                                    (alternate->width - 1) << 2,
                                    (alternate->height - 1) << 2);
                 } else {
-                    dlist->w0 = *tex->data;
-                    dlist->w1 = (u32)(texFrame(
+                    dlist->words.w0 = *tex->data;
+                    dlist->words.w1 = (u32)(texFrame(
                         tex, nodes[i].packedOffset) + 0x80000000U);
                     dlist++;
-                    blockCmd = dlist++; loadCount = tex->count - 1; blockCmd->w0 = (((loadCount & 0xFF) << 16) | 0x07000000U | ((loadCount * 8) & 0xFFFF)); blockCmd->w1 = (u32)tex->data + 0x80000008U;
+                    blockCmd = dlist++; loadCount = tex->count - 1; blockCmd->words.w0 = (((loadCount & 0xFF) << 16) | 0x07000000U | ((loadCount * 8) & 0xFFFF)); blockCmd->words.w1 = (u32)tex->data + 0x80000008U;
                 }
 
-                rectCmd = dlist++; rectCmd->w0 = (_SHIFTL(G_TEXRECT, 24, 8) | _SHIFTL(lrx, 12, 12) | _SHIFTL(lry, 0, 12)); rectCmd->w1 = (_SHIFTL(G_TX_RENDERTILE, 24, 3) | _SHIFTL(ulx, 12, 12) | _SHIFTL(uly, 0, 12));
-                halfCmd = dlist++; halfCmd->w0 = _SHIFTL(G_RDPHALF_1, 24, 8); halfCmd->w1 = (_SHIFTL(s, 16, 16) | _SHIFTL(t, 0, 16));
-                lastCmd = dlist++; lastCmd->w0 = _SHIFTL(G_RDPHALF_2, 24, 8); lastCmd->w1 = (_SHIFTL(1024, 16, 16) | _SHIFTL(1024, 0, 16));
+                rectCmd = dlist++; rectCmd->words.w0 = (_SHIFTL(G_TEXRECT, 24, 8) | _SHIFTL(lrx, 12, 12) | _SHIFTL(lry, 0, 12)); rectCmd->words.w1 = (_SHIFTL(G_TX_RENDERTILE, 24, 3) | _SHIFTL(ulx, 12, 12) | _SHIFTL(uly, 0, 12));
+                halfCmd = dlist++; halfCmd->words.w0 = _SHIFTL(G_RDPHALF_1, 24, 8); halfCmd->words.w1 = (_SHIFTL(s, 16, 16) | _SHIFTL(t, 0, 16));
+                lastCmd = dlist++; lastCmd->words.w0 = _SHIFTL(G_RDPHALF_2, 24, 8); lastCmd->words.w1 = (_SHIFTL(1024, 16, 16) | _SHIFTL(1024, 0, 16));
             }
             i++;
             tex = nodes[i].texture;
@@ -633,9 +631,9 @@ void func_8002FB34(RcpCommand **dlistPtr, RcpTextureNode *nodes, f32 xPos, f32 y
     }
     xScale *= 4.0f;
     yScale *= 4.0f;
-    lastCmd = dlist++; lastCmd->w0 = 0x06000000; lastCmd->w1 = (u32) (D_8007A588);
-    { RcpCommand *_g = dlist++; _g->w0 = 0x07020010; _g->w1 = (u32) dmaDlist + 0x80000000U; }
-    { RcpCommand *_g = dlist++; _g->w0 = 0xFA000000; _g->w1 = colour; }
+    lastCmd = dlist++; lastCmd->words.w0 = 0x06000000; lastCmd->words.w1 = (u32) (D_8007A588);
+    { RcpCommand *_g = dlist++; _g->words.w0 = 0x07020010; _g->words.w1 = (u32) dmaDlist + 0x80000000U; }
+    { RcpCommand *_g = dlist++; _g->words.w0 = 0xFA000000; _g->words.w1 = colour; }
     tex = nodes->texture;
     halfCmd = NULL;
     if (tex != NULL) {
@@ -688,14 +686,14 @@ void func_8002FB34(RcpCommand **dlistPtr, RcpTextureNode *nodes, f32 xPos, f32 y
                         uly = 0;
                     }
                     dmaDlist = (u8 *) tex->data;
-                    dlist->w0 = *(u32 *) dmaDlist;
-                    dlist->w1 = texFrame(tex, nodes[i].packedOffset, halfCmd) + 0x80000000U;
+                    dlist->words.w0 = *(u32 *) dmaDlist;
+                    dlist->words.w1 = texFrame(tex, nodes[i].packedOffset, halfCmd) + 0x80000000U;
                     dlist++;
                     dmaDlist += 8;
-                    blockCmd = dlist++; count = tex->count - 1; blockCmd->w0 = ((count & 0xFF) << 16) | 0x07000000 | ((count * 8) & 0xFFFF); blockCmd->w1 = (u32) dmaDlist + 0x80000000U;
-                    rectCmd = dlist++; rectCmd->w0 = (_SHIFTL(G_TEXRECT, 24, 8) | _SHIFTL(lrx, 12, 12) | _SHIFTL(lry, 0, 12)); rectCmd->w1 = (_SHIFTL(G_TX_RENDERTILE, 24, 3) | _SHIFTL(ulx, 12, 12) | _SHIFTL(uly, 0, 12));
-                    halfCmd = dlist++; halfCmd->w0 = _SHIFTL(G_RDPHALF_1, 24, 8); halfCmd->w1 = (_SHIFTL(s, 16, 16) | _SHIFTL(t, 0, 16));
-                    lastCmd = dlist++; lastCmd->w0 = _SHIFTL(G_RDPHALF_2, 24, 8); lastCmd->w1 = (_SHIFTL(dsdx, 16, 16) | _SHIFTL(dtdy, 0, 16));
+                    blockCmd = dlist++; count = tex->count - 1; blockCmd->words.w0 = ((count & 0xFF) << 16) | 0x07000000 | ((count * 8) & 0xFFFF); blockCmd->words.w1 = (u32) dmaDlist + 0x80000000U;
+                    rectCmd = dlist++; rectCmd->words.w0 = (_SHIFTL(G_TEXRECT, 24, 8) | _SHIFTL(lrx, 12, 12) | _SHIFTL(lry, 0, 12)); rectCmd->words.w1 = (_SHIFTL(G_TX_RENDERTILE, 24, 3) | _SHIFTL(ulx, 12, 12) | _SHIFTL(uly, 0, 12));
+                    halfCmd = dlist++; halfCmd->words.w0 = _SHIFTL(G_RDPHALF_1, 24, 8); halfCmd->words.w1 = (_SHIFTL(s, 16, 16) | _SHIFTL(t, 0, 16));
+                    lastCmd = dlist++; lastCmd->words.w0 = _SHIFTL(G_RDPHALF_2, 24, 8); lastCmd->words.w1 = (_SHIFTL(dsdx, 16, 16) | _SHIFTL(dtdy, 0, 16));
                 }
             }
             tex = nodes[i + 1].texture;
@@ -703,7 +701,7 @@ void func_8002FB34(RcpCommand **dlistPtr, RcpTextureNode *nodes, f32 xPos, f32 y
         } while (tex != NULL);
     }
     gDPPipeSync((Gfx *) dlist++);
-    { RcpCommand *_g = dlist++; _g->w0 = 0xFA000000; _g->w1 = 0xFFFFFFFF; }
+    { RcpCommand *_g = dlist++; _g->words.w0 = 0xFA000000; _g->words.w1 = 0xFFFFFFFF; }
     *dlistPtr = dlist;
     func_80034910();
 }

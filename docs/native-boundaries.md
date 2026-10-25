@@ -189,14 +189,15 @@ or shared C prototype closure.
   unchecked edge paths. These are not five independent APIs. Producer byte-4
   meaning, a fixed-handler incoming-memory dependency, read-ahead bounds and
   per-record output/overlap limits remain open.
-- **Shared matrix cursor:** [frontUpdate](../src/main/menu.c) receives a
-  `Mtx **`, stores its value in `D_800D3144`, and copies it back. The resident
-  menu still declares that cell as `void *`, while overlay 50's imported view
-  and the actual camera interface use `Mtx *` and `Mtx **`. This supports the
-  matrix value domain, not compatible declarations of one shared host pointer
-  object. Reconcile the resident cell and its erased consumer declarations;
-  a conversion between pointer values does not make `void **` and `Mtx **`
-  interchangeable.
+- **Shared matrix cursor:** [frontUpdate](../src/main/menu.c) and overlay 11
+  capture a caller's `Mtx *` in retained `D_800D3144` and copy it back. The
+  resident menu and audited views in 15 overlays now use `Mtx *`; former byte
+  array aliases pass the cell address to actual `Mtx **` parameters. Storage
+  remains a retained BSS gap without a C definition or new ownership claim.
+  Overlay 11's opaque export signature and overlay 101's pointer-to-`s32`
+  transport remain unresolved. Full function-type compatibility, capacity,
+  reset/free and asynchronous graphics lifetime, related overlay 18 views,
+  other command/vertex contracts and native readiness remain open.
 - **Width/endian resources:** o32 pointers/longs are 32 bits; saved OS context
   words can be 64 bits; target float matrices are not host SIMD structs; graphics
   packed words/halfwords and serialized model/mesh records retain target byte

@@ -233,7 +233,7 @@ extern s16 *D_8007C1B8;
 extern s16 D_8007C1BC;
 extern s16 D_8007C1C0;
 extern MenuCommand *D_800D3140;
-extern void *D_800D3144;
+extern Mtx *D_800D3144;
 extern void *D_800D3148;
 extern MenuFrontObject *D_800D31C8[];
 extern MenuCurrentObject D_8007C1C4[];
@@ -247,12 +247,12 @@ extern void fontUseFont(s32 font);
 extern void fontBackground(s32 red, s32 green, s32 blue, s32 alpha);
 extern void fontPrintXY(MenuCommand **displayList, s32 x, s32 y,
                           char *text, s32 alignmentFlags);
-extern void func_80009E78(MenuCommand **commands, void **matrices,
+extern void func_80009E78(MenuCommand **commands, Mtx **matrices,
                           void **vertices, void *object);
-extern void camDo2DSprite(MenuCommand **commands, void **matrices,
+extern void camDo2DSprite(MenuCommand **commands, Mtx **matrices,
                           void **vertices, void *transform, void *object,
                           s32 arg5, s32 arg6);
-extern void camPushModelMtx(MenuCommand **commands, void **matrices,
+extern void camPushModelMtx(MenuCommand **commands, Mtx **matrices,
                           void *transform, f32 scale, f32 extra);
 extern void camPopModelMtx(MenuCommand **commands);
 

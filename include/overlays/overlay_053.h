@@ -96,7 +96,7 @@ typedef struct MenuCurrentObject {
 
 extern MenuCommand *D_800D3140;
 
-extern void *D_800D3144;
+extern Mtx *D_800D3144;
 
 extern MenuCurrentObject D_800D3550[];
 
@@ -106,7 +106,7 @@ extern s32 D_800C947C;
 
 extern s32 ext_o1_83e0;
 
-extern void camStandardOrtho(MenuCommand **, void **);
+extern void camStandardOrtho(MenuCommand **, Mtx **);
 
 extern Overlay53Object **func_80005750(s32 *);
 

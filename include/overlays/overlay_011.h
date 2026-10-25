@@ -2,6 +2,7 @@
 #define OVERLAY_011_H
 
 #include "PR/ultratypes.h"
+#include "n_audio/mbi.h"
 
 typedef struct Overlay11Gfx {
     u32 w0;
@@ -139,7 +140,7 @@ extern s32 D_lastMode;
 /* Resident objects, reached through runtime relocation records. */
 extern Overlay11Resources *D_8007C0B8;
 extern Overlay11Gfx *D_800D3140;
-extern void *D_800D3144;
+extern Mtx *D_800D3144;
 extern Overlay11Vertex *D_800D3148;
 extern s32 D_8007C1A0;
 extern s8 D_800D3190[];
@@ -205,7 +206,7 @@ extern s32 levelGetNumber(void);
 extern s32 func_800290A0_o011Reloc(void);
 extern s32 mathRnd_o011Reloc(s32 minimum, s32 maximum);
 extern void viGetCurrentSize_o011Reloc(u32 *width, u32 *height);
-extern void camStandardOrtho_o011Reloc(Overlay11Gfx **displayList, void **matrix);
+extern void camStandardOrtho_o011Reloc(Overlay11Gfx **displayList, Mtx **matrix);
 extern void texDPTextureX_o011Reloc(Overlay11Gfx **displayList, void *texture,
                                     s32 flags, s16 parameter);
 extern f32 func_8002A8C0_o011Reloc(s32 angle);

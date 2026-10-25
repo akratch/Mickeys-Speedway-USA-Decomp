@@ -108,7 +108,7 @@ void overlay62Update(s32 updateRate) {
     rcpSetScreenColour(red & 0xFF, green & 0xFF, blue & 0xFF, green);
     overlay45SetMode(gOverlay62Handle14, alpha);
     camStandardOrtho(&D_800D3140,
-                                 D_800D3144);
+                                 &D_800D3144);
 
     OVERLAY62_EMIT(&D_800D3140, 0xE7000000, 0);
     OVERLAY62_EMIT(&D_800D3140, 0xFA000000, 0xFFFFFFFF);
@@ -125,7 +125,7 @@ void overlay62Update(s32 updateRate) {
 
     sprSetTextureFilter(0);
     camDo2DSprite(&D_800D3140,
-                             D_800D3144,
+                             &D_800D3144,
                              D_800D3148, &transform,
                              gOverlay62Handle18, 0, 0xFF);
     sprSetTextureFilter(1);

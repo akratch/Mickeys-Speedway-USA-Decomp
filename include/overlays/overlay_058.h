@@ -230,7 +230,7 @@ extern s32 D_8007C1A0;
 extern u8 gOverlay58CameraGateReloc;
 extern s32 D_800D31B8;
 extern Overlay58Gfx *D_800D3140;
-extern void *D_800D3144;
+extern Mtx *D_800D3144;
 /* Called with two and with three arguments. */
 extern void amSndPlay();
 extern s32 overlay41IsUnitScale(s32 index);
@@ -240,7 +240,7 @@ extern void joyCreateMap(s8 *activePlayers);
 extern void mainChangeLevel(s32 level, s32 track, s32 vehicle, s32 mode,
                             s32 arg4, s32 arg5);
 extern void mainChangeCameras(s32 mode);
-extern void camSetView(Overlay58Gfx **displayList, void **matrix);
+extern void camSetView(Overlay58Gfx **displayList, Mtx **matrix);
 extern void func_8005AD64(Overlay58Target *target, s32 argument,
                                         s32 mode, f32 parameter);
 extern void updateColourCycle(void *cycle, s32 updateRate);

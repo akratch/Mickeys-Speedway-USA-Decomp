@@ -1,4 +1,5 @@
 #include "overlays/overlay_051.h"
+#include "n_audio/mbi.h"
 
 /*
  * Overlay 51, ADR 0006 consolidation: one translation unit in ROM order.
@@ -75,7 +76,7 @@ typedef struct Overlay51MenuObject {
  * records (resident, overlay 56 +0xB8, overlay 59 +0x784/+0x84C). The
  * *_o051Reloc names are the generated relocation surface. */
 u8 *func_80028F54_o051Reloc(void);
-void camStandardOrtho_o051Reloc(void **, void **);
+void camStandardOrtho_o051Reloc(void **, Mtx **);
 void overlay56SplitTime_o051Reloc(s32, s32 *, s32 *, s32 *);
 Overlay51Level *levelGetLevel_o051Reloc(void);
 s32 func_800290A0_o051Reloc(void);
@@ -94,7 +95,7 @@ void mainChangeLevel_o051Reloc(s32, s32, s32, s32, s32, s32);
 void amTuneSetFade_o051Reloc(f32, u8);
 
 extern void *D_800D3140_o051Reloc;
-extern void *D_800D3144_o051Reloc;
+extern Mtx *D_800D3144_o051Reloc;
 extern s32 D_800C947C_o051Reloc;
 extern s16 D_8007C180_o051Reloc[];
 extern Overlay51MenuObject D_800D3550_o051Reloc[];

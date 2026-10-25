@@ -98,7 +98,7 @@ void overlay49Update(s32 updateRate) {
             gOverlay49Finished = 1;
         }
     }
-    overlay65UpdateParticles(D_800D3140, D_800D3144, updateRate);
+    overlay65UpdateParticles(D_800D3140, &D_800D3144, updateRate);
 }
 
 /*

@@ -1935,13 +1935,29 @@ def hold_data_capture(world, source, receipt, context):
                                     in expected["generated_metadata"]["inputs"].items()})
 
 
+def invalidate_data_import_inventory(world):
+    """No published definitions or derived providers survive a failed hold."""
+    world._guarded_data_objects = None
+    world._objects = world._defs = None
+    world._plain_data_declarations = ({}, {}, {})
+    world._local_prefix_objects = set()
+    world.data_import_providers = {}
+    world.data_import_provider_receipts = {}
+    world._end_proved_objects = {}
+    world._compiler_end_receipts = {}
+
+
 def check_data_import_holds(world):
-    for expected, context in getattr(world, "data_import_contexts", []):
-        if expected != context():
-            raise PackError("held data-only capture context changed after validation")
-    for path, digest in getattr(world, "data_import_inputs", {}).items():
-        if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
-            raise PackError(f"held data-only input changed after validation: {path}")
+    try:
+        for expected, context in getattr(world, "data_import_contexts", []):
+            if expected != context():
+                raise PackError("held data-only capture context changed after validation")
+        for path, digest in getattr(world, "data_import_inputs", {}).items():
+            if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+                raise PackError(f"held data-only input changed after validation: {path}")
+    except BaseException:
+        invalidate_data_import_inventory(world)
+        raise
 
 
 def reproduce_compiler_end(world, source):
@@ -2183,26 +2199,50 @@ def validate_data_local_prefix(world, ov, row, source, raw, start):
     size = raw.size(".data")
     owners = [s for s in raw.symbols if s.section == ".data" and s.type == 1
               and s.bind == STB_GLOBAL and s.size]
-    if (int(row["offset"], 16) != 0 or len(owners) != 1
-            or owners[0].value != 0 or owners[0].size != size):
+    multiple = f"build/src/{source}.c.o" in getattr(world, "_local_prefix_objects", set())
+    if multiple:
+        owners.sort(key=lambda symbol: symbol.value)
+        allocated = {section["name"] for section in raw.sections if section["flags"] & 2}
+        if (int(row["offset"], 16) != 0 or len(owners) != 2
+                or not all(owner.name and owner.value % 4 == 0 and owner.size % 4 == 0 for owner in owners)
+                or len({owner.name for owner in owners}) != 2 or owners[0].value != 0
+                or owners[0].size != owners[1].value or owners[1].value + owners[1].size != size
+                or any(symbol.section in allocated and symbol.type not in (STT_SECTION, STT_FILE)
+                       and symbol.index not in {owner.index for owner in owners} for symbol in raw.symbols)):
+            raise PackError(f"data-only LOCAL objects lack two complete adjacent owners: {source}")
+    elif (int(row["offset"], 16) != 0 or len(owners) != 1
+          or owners[0].value != 0 or owners[0].size != size):
         raise PackError(f"data-only LOCAL prefix lacks one complete sized owner: {source}")
     owner = owners[0]
-    definitions = [s for s in world.by_name.get(owner.name, ())
-                   if s.bind == STB_GLOBAL and s.shndx != SHN_UNDEF]
-    if (len(definitions) != 1 or definitions[0].section != f".overlay_{ov:03d}"
-            or definitions[0].type != 1 or definitions[0].size != size
-            or definitions[0].value != OVERLAY_VMA + start):
-        raise PackError(f"data-only LOCAL prefix lacks its unique final owner: {source}")
+    for actual in owners:
+        definitions = [s for s in world.by_name.get(actual.name, ())
+                       if s.shndx != SHN_UNDEF and (multiple or s.bind == STB_GLOBAL)]
+        if (len(definitions) != 1 or definitions[0].bind != STB_GLOBAL
+                or definitions[0].section != f".overlay_{ov:03d}"
+                or definitions[0].type != 1 or definitions[0].size != actual.size
+                or definitions[0].value != OVERLAY_VMA + start + actual.value
+                or (multiple and not world.elf.section(definitions[0].section)["flags"] & 2)):
+            raise PackError(f"data-only LOCAL prefix lacks its unique final owner: {source}")
     rels = raw.rels(".data")
     identities = {}
     offsets = []
+    contributing = set()
     for rel, addend in zip(rels, in_place_addends(raw, ".data", rels)):
         if (rel.type != R_MIPS_32 or rel.sym.index != owner.index or rel.offset % 4
                 or not 0 <= rel.offset <= size - 4 or not 0 <= addend < size
                 or rel.offset in offsets):
             raise PackError(f"unsupported data-only LOCAL prefix relocation: {source}")
+        if multiple:
+            sites = [actual.index for actual in owners
+                     if actual.value <= rel.offset <= actual.value + actual.size - 4]
+            if (len(sites) != 1 or rel.sym != owner or addend % 4
+                    or not 0 <= addend <= owner.size - 4):
+                raise PackError(f"unsupported data-only LOCAL objects operand: {source}")
+            contributing.update(sites)
         offsets.append(rel.offset)
         identities[(start + rel.offset, rel.type)] = ("ov", ov, start + owner.value + addend)
+    if multiple and contributing != {actual.index for actual in owners}:
+        raise PackError(f"data-only LOCAL objects lack original records in both owners: {source}")
     if offsets != sorted(offsets):
         raise PackError(f"unordered data-only LOCAL prefix relocations: {source}")
     expected = {key: value for key, value in world.expected_cache(ov).items()
@@ -2359,13 +2399,16 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
 def validate_data_imports(world, exports, ov, row, source, raw):
     """Complete ORT pointer inputs or a bounded same-owner LOCAL data prefix."""
     import source_module_link_proof as proof
+    multiple = f"build/src/{source}.c.o" in getattr(world, "_local_prefix_objects", set())
+    if multiple and getattr(raw, "local_ro_provider", None):
+        raise PackError("two-object LOCAL prefix cannot select a cross-input provider")
     if getattr(raw, "local_ro_provider", None):
         return validate_cross_input_local(world, exports, ov, row, source, raw)
     configured, start = data_import_input(world, ov, row, source, raw)
     rels = raw.rels(".data")
     if any(configured.rels(s) for s in (".text", ".data", ".rodata")):
         raise PackError(f"configured data-only input retains relocations: {source}")
-    if any(rel.sym.shndx != SHN_UNDEF for rel in rels):
+    if multiple or any(rel.sym.shndx != SHN_UNDEF for rel in rels):
         return validate_data_local_prefix(world, ov, row, source, raw, start)
     if (len(rels) * 4 != raw.size(".data")
             or raw.bytes_of(".data") != bytes(raw.size(".data"))):
@@ -2414,6 +2457,27 @@ def load_mixed_group_provider(world, name, expected):
     return provider
 
 
+def hold_loaded_data_import(world, receipt, link, ordinary, fresh, configured, replayed):
+    """Bind parsed observations, rather than blessing a subsequent file hash."""
+    raw_digest = hashlib.sha256(fresh.data).hexdigest()
+    configured_digest = hashlib.sha256(configured.data).hexdigest()
+    replayed_digest = hashlib.sha256(replayed.data).hexdigest()
+    if (raw_digest != receipt["raw_sha256"] or raw_digest != link["compiler_sha256"]
+            or configured_digest != receipt["configured_sha256"]
+            or configured_digest != receipt["inputs"]["configured"]
+            or replayed_digest != link["configured_sha256"]):
+        raise PackError("loaded data-only object differs from its capture or helper receipt")
+    hold_data_import_inputs(world, {
+        ordinary.path: hashlib.sha256(ordinary.data).hexdigest(),
+        configured.path: configured_digest})
+    # Fresh artifact paths are held observations, not volatile Make dependencies.
+    observed = {fresh.path: raw_digest, replayed.path: replayed_digest}
+    contexts = getattr(world, "data_import_contexts", [])
+    contexts.append((observed, lambda: {path: hashlib.sha256(path.read_bytes()).hexdigest()
+                                       for path in observed}))
+    world.data_import_contexts = contexts
+
+
 def reproduce_data_import(world, source):
     """Reuse fresh compiler/context capture; replay the unchanged ordinary helper."""
     import shlex
@@ -2459,6 +2523,7 @@ def reproduce_data_import(world, source):
     actual, reproduced = Elf(configured), Elf(replayed)
     ordinary_raw = Elf(world.paths["raw"] / "src" / (source + ".c.o"))
     fresh = Elf(raw)
+    hold_loaded_data_import(world, receipt, link, ordinary_raw, fresh, actual, reproduced)
     validate_fresh_data_input(ordinary_raw, fresh)
     if (proof.allocated(actual) != proof.allocated(reproduced)
             or proof.symbols(actual) != proof.symbols(reproduced)):
@@ -2533,6 +2598,16 @@ def reproduce_data_import(world, source):
         raise PackError("undeclared LOCAL provider in ordinary module receipt")
     return fresh, receipt, context
 
+
+
+def local_prefix_objects_targets(make_dump):
+    """Explicit admission of two actual same-input DATA prefix objects."""
+    targets = set()
+    for target, value in re.findall(r"^(\S+): LOCAL_DATA_PREFIX_OBJECTS = (.*)$", make_dump, re.M):
+        if value.strip() != "1" or not re.fullmatch(r"build/src/overlays/o[0-9]{3}/[^/]+\.c\.o", target):
+            raise PackError("invalid two-object LOCAL prefix selection")
+        targets.add(target)
+    return targets
 
 
 def plain_data_targets(make_dump):
@@ -2694,14 +2769,12 @@ def guard_data_module_imports(world, exports):
     """Revalidate atomically before publishing complete data-only producers."""
     if getattr(world, "_data_guard_active", False):
         raise PackError("recursive data-only producer discovery")
-    world._guarded_data_objects = None
-    world._objects = world._defs = None
-    world._plain_data_declarations = ({}, {}, {})
+    invalidate_data_import_inventory(world)
     world._data_guard_active = True
     try:
         admitted = _guard_data_module_imports(world, exports)
     except BaseException:
-        world._plain_data_declarations = ({}, {}, {})
+        invalidate_data_import_inventory(world)
         raise
     finally:
         world._data_guard_active = False
@@ -2739,6 +2812,11 @@ def _guard_data_module_imports(world, exports):
     hold_data_import_inputs(world, {path: digest for path, digest
                                     in batch._LOADED_IMPLEMENTATIONS.values()})
     dump = audit.run_make_database()
+    world._local_prefix_objects = local_prefix_objects_targets(dump)
+    remaining_local_objects = set(world._local_prefix_objects)
+    if world._local_prefix_objects:
+        world.data_import_contexts.append((set(world._local_prefix_objects),
+            lambda: local_prefix_objects_targets(audit.run_make_database())))
     world._address_targets = address_targets(dump)
     end_plans = {target: provenance.metadata_filter_plan(command, target, root)
                  for target, command in audit.postprocess_commands(dump).items()
@@ -2815,6 +2893,7 @@ def _guard_data_module_imports(world, exports):
                 raw, receipt, context = reproduce_data_import(world, source)
                 hold_data_capture(world, source, receipt, context)
                 validate_data_imports(world, exports, ov, rows[0], source, raw)
+                remaining_local_objects.discard(target)
                 targets = getattr(raw, "data_local_identities", None)
                 if targets is None:
                     targets = {rel.sym.name: data_import_definition(world, rel.sym.name)
@@ -2829,6 +2908,8 @@ def _guard_data_module_imports(world, exports):
                 source = row["source"]
                 if row["type"] == "c" and f"build/src/{source}.c.o" in world._end_padding_plans:
                     world._end_proved_objects[source] = reproduce_compiler_end(world, source)
+        if remaining_local_objects:
+            raise PackError("two-object LOCAL prefix selection lacks one canonical producer")
         if remaining_plain:
             raise PackError("ordinary data proof selection lacks one canonical data input: "
                             + ", ".join(sorted(remaining_plain)))
@@ -3427,6 +3508,7 @@ def emit_metadata(args):
     _paths, world, packed = load_and_pack(args)
 
     def unchanged():
+        check_data_import_holds(world)
         if (metadata_input_paths(paths, world) != inputs
                 or metadata_digests(inputs, root) != before
                 or metadata_implementations() != implementation):

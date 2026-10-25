@@ -93,8 +93,36 @@ base derived from current module geometry. Independently compare every source
 site, type, order and target with the LOCAL runtime records. Missing a pointer
 relocation must fail even when replacing its zero-offset target with NULL
 leaves all configured bytes unchanged. Other section groups and cross-input
-LOCAL targets remain unsupported; fresh capture and ordinary helper replay
-still apply to the complete input.
+LOCAL targets remain unsupported by that case; fresh capture and ordinary
+helper replay still apply to the complete input.
+
+An explicit held Make `LOCAL_DATA_PREFIX_OBJECTS = 1` additionally admits two
+genuine adjacent positive-sized GLOBAL OBJECTs covering one complete DATA-only
+prefix, initially the reviewed frame and count/list arrays in overlay 59.
+Preserve both actual compiler definitions and original symbol indices; reject
+extra allocated definitions, gaps and suffixes. Both owners must contribute
+original ordered aligned R32 records. Every complete four-byte site must belong
+to one owner, and every target must name the first actual compiler object with
+an aligned full four-byte target span inside it. Join both definitions to their
+unique final allocated GLOBAL definitions and the same whole-input map before
+deriving identities from current geometry and raw addends. Only then compare
+the complete runtime set; missing records never backfill, even for unchanged
+zero pointer bytes. The default single-owner rule remains unchanged.
+
+Hold the explicit selection through warm revalidation and final publication;
+failed validation, including a late end-of-pack or publication hold, clears
+derived selection and producer/definition inventory. Existing Resolver epochs
+refuse their cached names, ORT identities and row groups until revalidation.
+Recheck private capture holds immediately before the completion marker. Bind parsed
+fresh/configured/replayed ELF bytes to the capture/helper receipt digests, and
+hold the loaded ordinary raw observation through end-of-pack checks. Fresh
+artifact holds do not become volatile build dependencies. Genuine C field and
+initializer review uses the current configured recipe and dependency/include
+context; this case does not claim a separately sealed compiler-CPP/type proof.
+The original capture and all its internal checks share their unchanged bounded
+operation deadline. Later hold revalidation gets its own bounded operation,
+with one shared deadline for recipe and dependency traversal. Capture age is
+not a proof expiry; this does not renew a running capture or skip changed inputs.
 
 The packer's supported-case guard freshly compiles and replays
 selected pure ORT-pointer inputs and bounded same-owner LOCAL prefixes,

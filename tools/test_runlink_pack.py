@@ -431,6 +431,39 @@ class MetadataEmitterTests(unittest.TestCase):
         self.assertFalse((self.out / "manifest.json").exists())
         self.assertEqual(self.emit()[0], 0)
 
+    def test_late_private_capture_or_optin_change_cannot_publish_a_manifest(self):
+        load = rp.load_and_pack
+        replace = rp.os.replace
+        for case in ("fresh", "replayed", "optin"):
+            with self.subTest(case=case):
+                self.assertEqual(self.emit()[0], 0)
+                private = self.tree.root / "build" / (case + ".private")
+                private.write_bytes(b"captured observation")
+                selected = {"two-object-input"}
+                def loaded(args):
+                    paths, world, packed = load(args)
+                    world.data_import_contexts = getattr(world, "data_import_contexts", [])
+                    if case == "optin":
+                        world._local_prefix_objects = set(selected)
+                        world.data_import_contexts.append((set(selected), lambda: set(selected)))
+                    else:
+                        expected = hashlib.sha256(private.read_bytes()).hexdigest()
+                        world.data_import_contexts.append((expected,
+                            lambda: hashlib.sha256(private.read_bytes()).hexdigest()))
+                    return paths, world, packed
+                def changed(source, target):
+                    replace(source, target)
+                    if Path(target).name == "main_reloc_table.bin":
+                        if case == "optin": selected.clear()
+                        else: private.write_bytes(b"changed before marker publication")
+                with mock.patch.object(rp, "load_and_pack", side_effect=loaded), \
+                        mock.patch.object(rp.os, "replace", side_effect=changed):
+                    status, log = self.emit()
+                self.assertEqual(status, 2, log)
+                self.assertIn("held data-only capture context changed", log)
+                self.assertFalse((self.out / "manifest.json").exists())
+                self.assertEqual(self.emit()[0], 0)
+
     def test_unrelated_output_is_preserved(self):
         self.out.mkdir(parents=True)
         path = self.out / "keep.txt"
@@ -457,6 +490,47 @@ class SyntheticTreeTests(unittest.TestCase):
         world = rp.World(paths)
         ort = rp.OrtNames.load(paths["ort"])
         return world, rp.pack_all(world, ort)
+
+    def test_late_pack_hold_failure_invalidates_warm_names_until_fresh_validation(self):
+        for case in ("raw", "optin"):
+            with self.subTest(case=case):
+                world, initial = self.pack()
+                ort = rp.OrtNames.load(world.paths["ort"])
+                held = self.tree.root / "build/runlink_raw/src/overlays/o001/a.c.o"
+                original = held.read_bytes()
+                selected = {"two-object-input"}
+                pack_main = rp.pack_main
+                resolvers = []
+                def changed_after_main(current, resolver):
+                    result = pack_main(current, resolver)
+                    resolver.resolve_name(ort.rows[0]); resolver.ort_identity(0); resolver.rows_by_ident()
+                    resolvers.append(resolver)
+                    if case == "raw":
+                        rp.hold_data_import_inputs(current, {held: hashlib.sha256(original).hexdigest()})
+                        held.write_bytes(original + b"changed after source reads")
+                    else:
+                        current._local_prefix_objects = set(selected)
+                        current.data_import_contexts = getattr(current, "data_import_contexts", [])
+                        current.data_import_contexts.append((set(selected), lambda: set(selected)))
+                        selected.clear()
+                    return result
+                with mock.patch.object(rp, "pack_main", side_effect=changed_after_main):
+                    with self.assertRaisesRegex(rp.PackError, "held data-only"):
+                        rp.pack_all(world, ort)
+                for attribute in ("_guarded_data_objects", "_objects", "_defs"):
+                    self.assertIsNone(getattr(world, attribute))
+                self.assertFalse(world._local_prefix_objects)
+                self.assertFalse(world.data_import_providers)
+                old_resolver = resolvers[0]
+                for lookup in (lambda: old_resolver.resolve_name(ort.rows[0]),
+                               lambda: old_resolver.ort_identity(0), old_resolver.rows_by_ident):
+                    with self.assertRaisesRegex(rp.PackError, "inventory is unavailable"):
+                        lookup()
+                held.write_bytes(original)
+                selected.add("two-object-input")
+                restored = rp.pack_all(world, ort)
+                self.assertEqual(rp.compare_all(restored, world), [])
+                self.assertEqual(old_resolver.ort_identity(0), restored.resolver.ort_identity(0))
 
     def test_plain_writable_data_runtime_role_uses_actual_source_origin(self):
         world, _packed = self.pack()
@@ -1014,6 +1088,20 @@ class DataOnlyImportGuardTests(unittest.TestCase):
             self.world, self.exports, 1, self.row, self.source, raw), 2)
         self.provider_mock.assert_not_called()
 
+    def test_single_owner_still_ignores_unrelated_local_names_but_two_owner_does_not(self):
+        import dataclasses
+        raw = self.local_prefix()
+        actual = self.world.by_name["frames"][0]
+        self.world.by_name["frames"].append(dataclasses.replace(actual, bind=LOCAL,
+            section=".overlay_002", value=rp.OVERLAY_VMA + 100))
+        self.assertEqual(rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw), 2)
+        raw = self.local_prefix_objects()
+        actual = self.world.by_name["frames"][0]
+        self.world.by_name["frames"].append(dataclasses.replace(actual, bind=LOCAL,
+            section=".overlay_002", value=rp.OVERLAY_VMA + 100))
+        with self.assertRaisesRegex(rp.PackError, "unique final owner"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+
     def test_local_first_pointer_to_null_loses_identity_despite_identical_payload(self):
         correct = self.local_prefix()
         missing = self.local_prefix(missing_first=True)
@@ -1060,6 +1148,115 @@ class DataOnlyImportGuardTests(unittest.TestCase):
         raw = self.local_prefix()
         self.local_expected[(28, R32)]["position"] = 2
         with self.assertRaisesRegex(rp.PackError, "runtime order differs"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+
+    def local_prefix_objects(self, *, missing=(), target="frames", extras=(),
+                             frame_size=1440, group_start=1440, group_size=320):
+        """Two real synthetic arrays; original record order is retained."""
+        payload = b"".join(words(i + 1, 0, 0, 0, 0, 0, 0, 0, 36*i) for i in range(40))
+        payload += b"".join(words(1, 32 + 36*i) for i in range(40))
+        builder = (ObjBuilder().section(".data", payload)
+            .sym("frames", 0, frame_size, GLOBAL, OBJECT, ".data")
+            .sym("groups", group_start, group_size, GLOBAL, OBJECT, ".data"))
+        if target == "foreign":
+            builder.sym("foreign", type=OBJECT)
+        for name, value, size, bind in extras:
+            builder.sym(name, value, size, bind, OBJECT, ".data")
+        pairs = [(32 + 36*i, 36*i) for i in range(40)]
+        pairs += [(1444 + 8*i, 32 + 36*i) for i in range(40)]
+        for site, _addend in pairs:
+            if site not in missing:
+                builder.rel(".data", site, R32, ("section", ".data") if target == "section" else target)
+        raw = self.write(self.paths["raw"] / "src" / (self.source + ".c.o"), builder)
+        configured = (ObjBuilder().section(".data", payload)
+            .sym("frames", 0, frame_size, GLOBAL, OBJECT, ".data")
+            .sym("groups", group_start, group_size, GLOBAL, OBJECT, ".data"))
+        self.write(self.paths["build"] / "src" / (self.source + ".c.o"), configured)
+        self.row.update(size=hex(len(payload)), end_offset=hex(len(payload)))
+        final = (ObjBuilder().section(".overlay_001", bytes(16) + payload, rp.OVERLAY_VMA)
+            .sym("frames", rp.OVERLAY_VMA + 16, frame_size, GLOBAL, OBJECT, ".overlay_001")
+            .sym("groups", rp.OVERLAY_VMA + 16 + group_start, group_size, GLOBAL, OBJECT, ".overlay_001"))
+        self.world.elf = rp.Elf("linked", final.build())
+        self.world.by_name = {s.name: [s] for s in self.world.elf.symbols if s.name}
+        item = rp.MapInput(".overlay_001", ".data", rp.OVERLAY_VMA + 16, len(payload),
+                           "build/src/" + self.source + ".c.o")
+        self.world.map = self.world.module_info[1]["inputs"] = [item]
+        self.world.data_import_inputs = {}
+        self.world._local_prefix_objects = {"build/src/" + self.source + ".c.o"}
+        self.local_expected = {(16 + site, R32): dict(op=rp.OP_LOCAL, symbol_index=16,
+            full=("ov", 1, 16 + addend), table=2, position=index)
+            for index, (site, addend) in enumerate(pairs)}
+        self.world.expected_cache = lambda _ov: self.local_expected
+        return raw
+
+    def test_two_prefix_objects_keep_all_eighty_original_source_identities(self):
+        raw = self.local_prefix_objects()
+        self.assertEqual(rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw), 80)
+        self.world._local_prefix_objects.clear()
+        with self.assertRaisesRegex(rp.PackError, "one complete sized owner"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+        self.world._local_prefix_objects.add("build/src/" + self.source + ".c.o")
+        self.assertEqual(rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw), 80)
+
+    def test_two_prefix_objects_missing_old_zero_or_group_pointer_never_backfills(self):
+        correct = self.local_prefix_objects()
+        for site in (32, 1444):
+            with self.subTest(site=site):
+                raw = self.local_prefix_objects(missing=(site,))
+                self.assertEqual(raw.bytes_of(".data"), correct.bytes_of(".data"))
+                with self.assertRaisesRegex(rp.PackError, "missing or extra runtime records"):
+                    rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+        raw = self.local_prefix_objects(missing=tuple(range(1444, 1760, 8)))
+        with self.assertRaisesRegex(rp.PackError, "both owners"):
+            rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+
+    def test_two_prefix_objects_refuse_nonoriginal_targets_and_owner_competitors(self):
+        cases = ({"target": "groups"}, {"target": "section"}, {"target": "foreign"},
+                 {"frame_size": 1436}, {"group_start": 1436}, {"group_size": 316},
+                 {"extras": (("extra", 0, 0, LOCAL),)}, {"extras": (("", 0, 0, LOCAL),)},
+                 {"extras": (("frames", 0, 1440, GLOBAL),)})
+        for arguments in cases:
+            with self.subTest(arguments=arguments):
+                raw = self.local_prefix_objects(**arguments)
+                with self.assertRaises(rp.PackError):
+                    rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+
+    def test_two_prefix_objects_refuse_bad_site_target_extent_type_and_order(self):
+        import dataclasses
+        for case in ("boundary-site", "boundary-target", "owner-end", "wrong-type", "duplicate", "order"):
+            with self.subTest(case=case):
+                raw = self.local_prefix_objects()
+                original = raw.rels
+                rels = original(".data")
+                if case == "boundary-site": rels[0] = dataclasses.replace(rels[0], offset=1438)
+                if case == "wrong-type": rels[0] = dataclasses.replace(rels[0], type=R26)
+                if case == "duplicate": rels[1] = rels[0]
+                if case == "order": rels[0], rels[1] = rels[1], rels[0]
+                if case in ("boundary-target", "owner-end"):
+                    payload = bytearray(raw.data)
+                    struct.pack_into(">I", payload, raw.section(".data")["offset"] + 32,
+                                     1438 if case == "boundary-target" else 1440)
+                    raw = rp.Elf(raw.path, bytes(payload))
+                else:
+                    raw.rels = lambda section: rels if section == ".data" else original(section)
+                with self.assertRaises(rp.PackError):
+                    rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+
+    def test_two_prefix_objects_join_each_final_definition_and_whole_map(self):
+        import dataclasses
+        for name in ("frames", "groups"):
+            for field, value in (("type", FUNC), ("size", 4), ("value", rp.OVERLAY_VMA),
+                                 ("section", "ABS"), ("bind", LOCAL), ("duplicate", None)):
+                with self.subTest(name=name, field=field):
+                    raw = self.local_prefix_objects()
+                    symbol = self.world.by_name[name][0]
+                    self.world.by_name[name] = ([symbol, symbol] if field == "duplicate" else
+                        [dataclasses.replace(symbol, **{field: value})])
+                    with self.assertRaisesRegex(rp.PackError, "unique final owner"):
+                        rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
+        raw = self.local_prefix_objects()
+        self.world.map.append(self.world.map[0])
+        with self.assertRaisesRegex(rp.PackError, "duplicate final source input"):
             rp.validate_data_imports(self.world, self.exports, 1, self.row, self.source, raw)
 
 
@@ -2092,8 +2289,58 @@ class HeldDataCaptureTests(unittest.TestCase):
         with self.assertRaisesRegex(rp.PackError, "held data-only capture context changed"):
             rp.check_data_import_holds(self.world)
 
+    def loaded_objects(self):
+        objects = []
+        for name in ("ordinary", "fresh", "configured", "replayed"):
+            path = self.root / (name + ".o")
+            path.write_bytes(ObjBuilder().section(".data", words(0)).build())
+            objects.append(rp.Elf(path))
+        ordinary, fresh, configured, replayed = objects
+        digest = hashlib.sha256(configured.data).hexdigest()
+        receipt = {"raw_sha256": hashlib.sha256(fresh.data).hexdigest(),
+                   "configured_sha256": digest, "inputs": {"configured": digest}}
+        link = {"configured_sha256": hashlib.sha256(replayed.data).hexdigest(),
+                "compiler_sha256": hashlib.sha256(fresh.data).hexdigest()}
+        return receipt, link, objects
+
+    def test_loaded_capture_objects_must_match_each_original_receipt_digest(self):
+        for field in ("raw", "helper-compiler", "configured", "configured-input", "replayed"):
+            with self.subTest(field=field):
+                receipt, link, objects = self.loaded_objects()
+                if field == "raw": receipt["raw_sha256"] = "different"
+                if field == "helper-compiler": link["compiler_sha256"] = "different"
+                if field == "configured": receipt["configured_sha256"] = "different"
+                if field == "configured-input": receipt["inputs"]["configured"] = "different"
+                if field == "replayed": link["configured_sha256"] = "different"
+                with self.assertRaisesRegex(rp.PackError, "loaded data-only object"):
+                    rp.hold_loaded_data_import(self.world, receipt, link, *objects)
+
+    def test_loaded_observations_are_not_replaced_by_newer_capture_path_hashes(self):
+        for index in range(4):
+            with self.subTest(object=index):
+                self.world.data_import_inputs = {}
+                self.world.data_import_contexts = []
+                receipt, link, objects = self.loaded_objects()
+                objects[index].path.write_bytes(objects[index].data + b"changed after parsing")
+                rp.hold_loaded_data_import(self.world, receipt, link, *objects)
+                with self.assertRaisesRegex(rp.PackError, "held data-only"):
+                    rp.check_data_import_holds(self.world)
+                objects[index].path.write_bytes(objects[index].data)
+                rp.check_data_import_holds(self.world)
+                self.assertEqual(set(self.world.data_import_inputs), {objects[0].path, objects[2].path})
+
 
 class UnitTests(unittest.TestCase):
+    def test_two_object_prefix_make_optin_is_explicit_and_fail_closed(self):
+        target = "build/src/overlays/o059/frames.c.o"
+        marker = target + ": LOCAL_DATA_PREFIX_OBJECTS = 1\n"
+        self.assertEqual(rp.local_prefix_objects_targets(marker * 2), {target})
+        self.assertEqual(rp.local_prefix_objects_targets(""), set())
+        for invalid in (marker.replace(" = 1", " = 2"), marker.replace(" = 1", " = yes"),
+                        marker.replace("build/src/", "build/asm/")):
+            with self.assertRaises(rp.PackError):
+                rp.local_prefix_objects_targets(invalid)
+
     def test_plain_selection_requires_one_explicit_compatible_role(self):
         target = "build/src/overlays/o001/values.c.o"
         selected = target + ": PLAIN_DATA_PROOF = 1\n"

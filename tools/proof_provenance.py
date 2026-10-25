@@ -1435,10 +1435,10 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
     target = configured.relative_to(root).as_posix()
     deadline = time.monotonic() + 120
     static_lines = []
-    def recipe():
+    def recipe(operation_deadline):
         output = batch.bounded_capture(
             ["gmake", "--no-print-directory", "-n", "-W", source.relative_to(root).as_posix(), target],
-            deadline, check=True).stdout.replace("\\\n", " ").splitlines()
+            operation_deadline, check=True).stdout.replace("\\\n", " ").splitlines()
         compilers = [line.strip() for line in output if target in line and "tools/ido/cc" in line]
         helper = ("tools/link_overlay_module.py" if module_link else
                   "tools/trim_elf_section.py" if ordinary_provider or producer_map is not None
@@ -1468,7 +1468,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                 raise MetadataProofError("ordinary provider has an unsupported metadata recipe")
             return compilers[0], (metadata[0] if metadata else ""), ""
         return compilers[0], metadata[0], (rebinds[0] if rebinds else "")
-    command, expanded_postprocess, surface_rebind = recipe()
+    command, expanded_postprocess, surface_rebind = recipe(deadline)
     args = batch.compiler_arguments(command, source.relative_to(root).as_posix(), target)
     words = shlex.split(command)
     wrapped = len(words) > 1 and words[1] == "tools/asm-processor/build.py"
@@ -1481,16 +1481,18 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
         plan = plan + metadata_filter_plan(surface_rebind, target, root)
     literal_prepared = (prepare_literal_input(source, root, command)
                         if any(operation == "literal-end" for operation, arguments in plan) else None)
-    def context():
+    def context(*, operation_deadline=None):
+        if operation_deadline is None:
+            operation_deadline = time.monotonic() + 120
         batch.checked_tool_identity()
         if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF:
             raise MetadataProofError("loaded metadata proof implementation changed")
-        if recipe() != (command, expanded_postprocess, surface_rebind):
+        if recipe(operation_deadline) != (command, expanded_postprocess, surface_rebind):
             raise MetadataProofError("configured compiler recipe changed during raw proof")
         inputs = {"source": sha256_file(source), "configured": sha256_file(configured),
                   "linked": sha256_file(linked), "command": command, "postprocess": expanded_postprocess, "surface_rebind": surface_rebind,
                   "dependencies": (dict(literal_prepared["dependencies"]) if literal_prepared else
-                                   batch.source_dependencies(source, dependency_args, deadline)),
+                                   batch.source_dependencies(source, dependency_args, operation_deadline)),
                   "wrapper_source_directory": receipts.tree_digest(source.parent) if wrapped else None,
                   "include_tree": receipts.tree_digest(root / "include"),
                   "tools": batch.sweep_tool_identity(),
@@ -1535,7 +1537,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             assembly[pragma.path] = sha256_file(path)
         inputs["assembly"] = assembly
         return inputs
-    before = context()
+    before = context(operation_deadline=deadline)
     parent = root / ("build/data-provider-proof" if ordinary_provider else
                      "build/data-module-producer-proof" if producer_map is not None else
                      "build/source-module-link-proof" if module_link else "build/metadata-filter-proof")
@@ -1556,7 +1558,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             raw.write_bytes(statics.add_static_symbols(raw.read_bytes())[0])
         except statics.Failure as error:
             raise MetadataProofError(f"static-symbol pass failed: {error}") from error
-    if before != context():
+    if before != context(operation_deadline=deadline):
         raise MetadataProofError("source, input, recipe, object or tool changed during raw proof")
     literal_arrays = {}
     for operation, arguments in plan:
@@ -1569,7 +1571,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             if literal["section"] != section or literal["end"] != size:
                 raise MetadataProofError("literal recipe differs from source-derived end")
             literal_arrays[section] = literal
-    if before != context():
+    if before != context(operation_deadline=deadline):
         raise MetadataProofError("literal capture context changed during source proof")
     receipt = {"schema": ("mickey-data-provider-capture-v1" if ordinary_provider
                           else "mickey-data-module-producer-capture-v1" if producer_map is not None

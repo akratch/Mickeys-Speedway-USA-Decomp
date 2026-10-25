@@ -609,6 +609,13 @@ include config/normalizations/overlay22Epoch12.mk
 # Overlay 94 is one translation unit under the overlay flag set. Its .text
 # includes the trailing pad; resident callees use the generated surface renames.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay_094.c.o: CFLAGS += -Wab,-r4300_mul
+# Real controller word and ten float response scalars; compiler DATA and
+# runtime RO origin are distinct, with the latter derived from its actual input.
+O94_CONTROL_STATE := $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay94ControlState.c.o
+O94_RESPONSE_SCALARS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay94ResponseScalars.c.o
+$(O94_CONTROL_STATE) $(O94_RESPONSE_SCALARS): private PLAIN_DATA_PROOF = 1
+$(O94_CONTROL_STATE): private PLAIN_DATA_RUNTIME_ROLE = data
+$(O94_RESPONSE_SCALARS): private PLAIN_DATA_RUNTIME_ROLE = ro-origin
 # Overlay101 retains all ordinary source instructions and its three compiler
 # switch tables. Only source-proved zero end alignment is removed. Runtime
 # section bindings and exported calls remain metadata-only operations.

@@ -2645,5 +2645,82 @@ class EditedDefinitionRouteTests(unittest.TestCase):
         with self.assertRaisesRegex(rp.PackError, 'actual allocation'):
             rp.edited_prepare_object(raw, self.function())
 
+class EditedResidentCellTests(unittest.TestCase):
+    def fixture(self):
+        import dataclasses
+        original=rp.Elf('original',ObjBuilder().section('.bss',nobits=16)
+            .sym('cell',8,4,GLOBAL,OBJECT,'.bss').build())
+        configured=rp.Elf('configured',original.data)
+        prefix=rp.Elf('prefix',ObjBuilder().section('.main_bss',nobits=64,addr=0x80001000)
+            .sym('cell',8,4,GLOBAL,OBJECT,'.main_bss').build())
+        item=rp.MapInput('.main_bss','.bss',0x80001000,16,'build/src/main/provider.c.o')
+        context={'elf':prefix,'map':[item],'holds':{},'prefix_capture':SimpleNamespace(current=lambda:{})}
+        return context,original,configured,item
+
+    def test_actual_sized_cell_and_unrelated_local_name(self):
+        import dataclasses
+        context,original,configured,item=self.fixture()
+        self.assertEqual(rp.edited_cell_geometry(context,'cell',original,configured,item),0x80001008)
+        symbol=next(s for s in context['elf'].symbols if s.name=='cell')
+        context['elf'].symbols.append(dataclasses.replace(symbol,bind=LOCAL,value=48))
+        self.assertEqual(rp.edited_cell_geometry(context,'cell',original,configured,item),0x80001008)
+        with self.assertRaisesRegex(rp.PackError,'FUNCTION'):
+            rp.edited_resident_function(context,'cell')
+
+    def test_wrong_allocation_role_index_and_overlap_refuse(self):
+        import dataclasses
+        changes=('size','type','common','abs','local','raw-flags','prefix-flags','prefix-type',
+                 'short-map','shift-map','asm-map','index','overlap','duplicate','source-overlap')
+        for change in changes:
+            context,original,configured,item=self.fixture()
+            row=next(s for s in original.symbols if s.name=='cell')
+            if change in ('size','type','common','abs','local','index'):
+                fields={'size':{'size':0},'type':{'type':FUNC},'common':{'shndx':rp.SHN_COMMON},
+                        'abs':{'shndx':rp.SHN_ABS},'local':{'bind':LOCAL},'index':{'index':row.index+1}}[change]
+                original.symbols[original.symbols.index(row)]=dataclasses.replace(row,**fields)
+            elif change=='raw-flags':original.section('.bss')['flags']=2
+            elif change=='prefix-flags':context['elf'].section('.main_bss')['flags']=7
+            elif change=='prefix-type':context['elf'].section('.main_bss')['type']=1
+            elif change in ('short-map','shift-map','asm-map'):
+                fields={'short-map':{'size':8},'shift-map':{'addr':item.addr+4},
+                        'asm-map':{'file':'build/asm/data/proxy.bss.s.o'}}[change]
+                item=dataclasses.replace(item,**fields);context['map']=[item]
+            elif change=='overlap':context['map'].append(dataclasses.replace(item,file='build/src/main/other.c.o'))
+            elif change=='duplicate':context['elf'].symbols.append(next(s for s in context['elf'].symbols if s.name=='cell'))
+            else:original.symbols.append(dataclasses.replace(row,name='alias',value=8))
+            with self.subTest(change=change), self.assertRaises(rp.PackError):
+                rp.edited_cell_geometry(context,'cell',original,configured,item)
+
+    def test_fullword_zero_addend_text_hilo_profile_is_closed(self):
+        symbol=rp.Symbol(1,'cell',0,4,GLOBAL,OBJECT,0,'UND')
+        for section,kind,addend in (('.data',HI16,0),('.text',R32,0),('.text',R26,0),
+                                   ('.text',LO16,1),('.text',HI16,-1),('.text',LO16,4)):
+            with self.subTest(section=section,kind=kind,addend=addend), self.assertRaisesRegex(rp.PackError,'only zero-addend'):
+                rp.edited_resident_cell({},'cell',{},section,rp.Rel(0,kind,symbol),addend)
+
+    def test_sealed_parsed_observations_and_context_are_live(self):
+        import dataclasses
+        import proof_provenance as pp
+        context,original,configured,item=self.fixture()
+        observations=tuple((e,hashlib.sha256(e.data).hexdigest(),pp._static_parsed_surface(e))
+                           for e in (original,configured,context['elf']))
+        state={'epoch':1}
+        witness=rp.EditedResidentCell('cell',0x80001008,original,configured,context,item,
+            observations,(),lambda:dict(state),dict(state),rp._EDITED_CELL_SEAL)
+        self.assertEqual(witness.current()[0],('res',0x80001008))
+        with self.assertRaisesRegex(rp.PackError,'untrusted'):
+            dataclasses.replace(witness,seal=object()).current()
+        with self.assertRaisesRegex(rp.PackError,'address changed'):
+            dataclasses.replace(witness,address=0x8000100C).current()
+        row=next(s for s in original.symbols if s.name=='cell');at=original.symbols.index(row)
+        original.symbols[at]=dataclasses.replace(row,index=row.index+1)
+        with self.assertRaisesRegex(rp.PackError,'parsed observation'):
+            witness.current()
+        original.symbols[at]=row;self.assertEqual(witness.current()[0],('res',0x80001008))
+        state['epoch']=2
+        with self.assertRaisesRegex(rp.PackError,'capture context'):
+            witness.current()
+
+
 if __name__ == "__main__":
     unittest.main()

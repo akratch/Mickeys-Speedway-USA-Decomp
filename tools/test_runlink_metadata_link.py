@@ -403,6 +403,62 @@ class EditedReceiptTests(unittest.TestCase):
                     self.assertIsNone(link.edited_current(root, parent, 'control', request))
 
 
+class EditedCellLifecycleTests(unittest.TestCase):
+    def test_final_readback_requires_real_nobits_object_and_exact_map(self):
+        import dataclasses, hashlib
+        from test_runlink_pack import EditedResidentCellTests
+        rp=link.rp
+        context,original,configured,item=EditedResidentCellTests().fixture()
+        witness=rp.EditedResidentCell('cell',0x80001008,original,configured,context,item,
+            (),(),lambda:{},{},rp._EDITED_CELL_SEAL)
+        context['cells']={'cell':witness}
+        final=rp.Elf('final',context['elf'].data)
+        row=next(s for s in final.symbols if s.name=='cell');at=final.symbols.index(row)
+        actual=dataclasses.replace(row,value=0x80001008);final.symbols[at]=actual
+        link.edited_cell_readback(final,[item],context)
+        for fields in ({'size':0},{'type':rp.STT_FUNC},{'shndx':rp.SHN_ABS},
+                       {'shndx':rp.SHN_COMMON},{'value':0x8000100C}):
+            final.symbols[at]=dataclasses.replace(actual,**fields)
+            with self.subTest(fields=fields),self.assertRaises((rp.PackError,RuntimeError)):
+                link.edited_cell_readback(final,[item],context)
+        final.symbols[at]=actual
+        with self.assertRaisesRegex(rp.PackError,'final allocated'):
+            link.edited_cell_readback(final,[dataclasses.replace(item,addr=item.addr+4)],context)
+        final.section('.main_bss')['type']=1
+        with self.assertRaisesRegex(rp.PackError,'final allocated'):
+            link.edited_cell_readback(final,[item],context)
+        final.section('.main_bss')['type']=rp.SHT_NOBITS
+        context['cells']['cell']={'address':witness.address}
+        with self.assertRaisesRegex(rp.PackError,'untrusted'):
+            link.edited_cell_readback(final,[item],context)
+
+    def test_warm_provider_cpp_lookup_is_checked_twice_and_recovers(self):
+        import hashlib, permute_batch as batch, check_editable_layout as pilot
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);parent=root/'build/edited-runlink';directory=parent/'control-one'
+            directory.mkdir(parents=True);(directory/'payload').write_bytes(b'validated')
+            receipt={'schema':'mickey-edited-source-build-v2','variant':'control','request':{},
+                'artifacts':pilot.artifact_hashes(directory),'inputs':{},'provider_holds':{},
+                'toolchain':{},'projection_toolchain':{},'resident_source_context':{},
+                'outside_selectors':[],'outside_input_context':{'files':{},'assembly':{}},
+                'source_cpp':{},'arguments':{},'provider_cell_cpp':{'provider':{
+                    'source':'src/main/provider.c','arguments':['-32'],'closure':{'header.h':'held'}}}}
+            payload=link.json_bytes(receipt);(directory/'receipt.json').write_bytes(payload)
+            (parent/'control-current.json').write_bytes(link.json_bytes({
+                'path':'build/edited-runlink/control-one','receipt_sha256':hashlib.sha256(payload).hexdigest()}))
+            with mock.patch.object(batch,'checked_tool_identity',return_value={}), \
+                 mock.patch.object(link,'edited_projection_tools',return_value={}), \
+                 mock.patch.object(link,'edited_source_context',return_value={}):
+                for observed in (({'header.h':'held'},{'header.h':'held'}),
+                                 ({'header.h':'changed'},),
+                                 ({'header.h':'held'},{'new-shadow.h':'changed'})):
+                    with mock.patch.object(batch,'source_dependencies',side_effect=observed) as lookup:
+                        result=link.edited_current(root,parent,'control',{})
+                    self.assertEqual(result is not None,len(observed)==2 and observed[0]==observed[1])
+                with mock.patch.object(batch,'source_dependencies',return_value={'header.h':'held'}):
+                    self.assertEqual(link.edited_current(root,parent,'control',{}),receipt)
+
+
 class EditedStaticCppTests(unittest.TestCase):
     def test_actual_cpp_typedef_conditional_and_loaded_artifact_holds(self):
         root=link.REPO

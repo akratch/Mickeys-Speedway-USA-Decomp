@@ -77,7 +77,7 @@ import struct
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -3854,6 +3854,187 @@ def edited_resident_function(context, name):
     context['witnesses'][name] = {'input': item.file, 'size': symbol.size, 'address': address}
     return ('res', address), ('.text', 0, symbol.size, STT_FUNC)
 
+_EDITED_CELL_SEAL = object()
+
+
+@dataclass(frozen=True)
+class EditedResidentCell:
+    name: str
+    address: int
+    original: object = field(repr=False)
+    configured: object = field(repr=False)
+    provider: object = field(repr=False)
+    item: object
+    observations: tuple = field(repr=False)
+    inputs: tuple
+    context: object = field(repr=False)
+    expected_context: object = field(repr=False)
+    seal: object = field(repr=False)
+
+    def current(self):
+        import proof_provenance as pp
+        edited_require(self.seal is _EDITED_CELL_SEAL, 'untrusted resident cell witness')
+        self.provider['prefix_capture'].current()
+        edited_require(self.context() == self.expected_context, 'resident cell capture context changed')
+        for elf, digest, surface in self.observations:
+            edited_require(hashlib.sha256(elf.data).hexdigest() == digest
+                and pp._static_parsed_surface(elf) == surface, 'resident cell parsed observation changed')
+        edited_require(all(pp.sha256_file(path) == digest for path,digest in self.inputs),
+                       'resident cell held input changed')
+        edited_require(edited_cell_geometry(self.provider, self.name, self.original,
+            self.configured, self.item) == self.address, 'resident cell witnessed address changed')
+        return ('res', self.address), ('.bss', 0, 4, STT_OBJECT)
+
+
+def edited_cell_geometry(context, name, original, configured, item):
+    """Actual C input -> ET_REL prefix allocation; no stored operand authority."""
+    elf = context['elf']
+    finals = [s for s in elf.symbols if s.name == name and s.bind == STB_GLOBAL and s.shndx != SHN_UNDEF]
+    edited_require(len(finals) == 1, 'resident cell definition missing/ambiguous')
+    final = finals[0]; output = elf.section(final.section)
+    edited_require(final.type == STT_OBJECT and final.size == 4 and final.section == '.main_bss'
+        and final.shndx not in (SHN_UNDEF, SHN_ABS, SHN_COMMON) and output
+        and output['type'] == SHT_NOBITS and output['flags'] == 3,
+        'resident cell is not an allocated NOBITS OBJECT4')
+    address = output['addr'] + final.value
+    edited_require(item in context['map'] and item.outsec == '.main_bss' and item.insec == '.bss'
+        and re.fullmatch(r'build/src/main/[A-Za-z0-9_/-]+\.c\.o', item.file),
+        'resident cell lacks a resident C input')
+    rows = []
+    for image in (original, configured):
+        matches = [s for s in image.symbols if s.name == name and s.bind == STB_GLOBAL and s.shndx != SHN_UNDEF]
+        edited_require(len(matches) == 1, 'resident cell source definition missing/ambiguous')
+        row = matches[0]; section = image.section('.bss')
+        edited_require(row.section == '.bss' and row.shndx not in (SHN_UNDEF, SHN_ABS, SHN_COMMON)
+            and row.type == STT_OBJECT and row.size == 4 and section and section['type'] == SHT_NOBITS
+            and section['flags'] == 3 and section['addr'] == 0 and section['align'] >= 4
+            and section['align'] & (section['align']-1) == 0 and row.value >= 0
+            and row.value % 4 == 0 and row.value + 4 <= section['size'] == item.size
+            and not image.rels('.bss'), 'resident cell source extent/section differs')
+        edited_require(not any(other is not row and other.section == '.bss' and other.type == STT_OBJECT
+            and other.size and other.value < row.value+4 and row.value < other.value+other.size
+            for other in image.symbols), 'resident cell overlaps another source object')
+        rows.append(row)
+    edited_require(rows[0] == rows[1], 'original resident cell compiler index/definition changed')
+    edited_require(address % 4 == item.addr % 4 == 0 and final.value >= 0
+        and final.value + 4 <= output['size'] and address == item.addr + rows[0].value,
+        'resident cell prefix map/extent differs')
+    edited_require(not any(other is not item and other.outsec == item.outsec and other.size
+        and other.addr < address+4 and address < other.addr+other.size for other in context['map']),
+        'resident cell overlaps another input')
+    return address
+
+
+def edited_check_provider_holds(provider):
+    for path, expected in provider['holds'].items():
+        edited_require(edited_sha(path) == expected, 'loaded provider changed before publication')
+    for witness in provider.get('cells', {}).values():
+        edited_require(isinstance(witness, EditedResidentCell), 'untrusted resident cell witness')
+        witness.current()
+
+
+def edited_resident_cell(context, name, obj, section, rel, addend):
+    import proof_provenance as pp
+    import permute_batch as batch
+    import time
+    edited_require(section == '.text' and rel.type in (R_MIPS_HI16,R_MIPS_LO16) and addend == 0
+        and rel.sym.shndx == SHN_UNDEF and rel.sym.bind == STB_GLOBAL
+        and rel.sym.type == STT_OBJECT and rel.sym.size == 4,
+        'resident cell supports only zero-addend text HI/LO OBJECT4 imports')
+    compiler = obj.get('compiler')
+    edited_require(isinstance(compiler, Elf), 'resident cell lacks original selected compiler')
+    originals = [r for r in compiler.rels(section) if (r.offset,r.type)==(rel.offset,rel.type)]
+    edited_require(len(originals)==1 and originals[0].sym.name == name
+        and originals[0].sym.shndx == SHN_UNDEF and originals[0].sym.type == STT_OBJECT
+        and originals[0].sym.size == 4 and originals[0].sym.bind == STB_GLOBAL
+        and compiler.symbols[originals[0].sym.index] is originals[0].sym,
+        'resident cell original import index/identity differs')
+    if 'cell_cpp' not in obj:
+        source, flags = obj['source_path'], obj['compiler_flags']
+        edited_require(edited_sha(source) == obj['source_sha256']
+            and batch.source_dependencies(source, tuple(flags)) == obj['source_closure'],
+            'resident cell consumer source changed before CPP')
+        command = ['tools/ido/cc','-E',*pp._literal_flags(shlex_command(flags), str(source.relative_to(context['root']))),
+                   str(source.relative_to(context['root']))]
+        result = __import__('subprocess').run(command, cwd=context['root'], capture_output=True, timeout=120)
+        edited_require(result.returncode == 0, 'resident cell consumer CPP failed')
+        cpp = source.with_suffix('.cell.i'); cpp.write_bytes(result.stdout)
+        obj['cell_cpp'] = (result.stdout, cpp)
+    cpp, cpp_path = obj['cell_cpp']
+    pp.resident_cell_declarations(cpp, obj['compiler_flags'], context['root'], {name}, definition=False)
+    edited_require(edited_sha(obj['source_path']) == obj['source_sha256']
+        and batch.source_dependencies(obj['source_path'], tuple(obj['compiler_flags'])) == obj['source_closure'],
+        'resident cell consumer source/closure changed')
+    context['holds'][cpp_path] = hashlib.sha256(cpp).hexdigest()
+    cells = context.setdefault('cells', {})
+    if name not in cells:
+        prefix = context.get('prefix_capture')
+        edited_require(isinstance(prefix, pp.EditedPrefixCapture), 'resident cell needs authenticated prefix capture')
+        prefix.current()
+        finals = [s for s in context['elf'].symbols if s.name == name and s.bind == STB_GLOBAL and s.shndx != SHN_UNDEF]
+        edited_require(len(finals)==1, 'resident cell missing/ambiguous')
+        final = finals[0]; output = context['elf'].section(final.section)
+        edited_require(output is not None, 'resident cell has no allocated output')
+        address = output['addr']+final.value
+        items = [m for m in context['map'] if m.outsec == '.main_bss' and m.insec == '.bss'
+            and m.addr <= address and address+4 <= m.addr+m.size
+            and re.fullmatch(r'build/src/main/[A-Za-z0-9_/-]+\.c\.o',m.file)]
+        edited_require(len(items)==1, 'resident cell lacks unique actual C contributor')
+        item=items[0]; root=context['root']; path=root/item.file; source=root/item.file[6:-2]
+        edited_require(source.is_file() and not any(p.is_symlink() for p in (source,path)),
+                       'resident cell source/object missing or symlinked')
+        edited_require(not pp._all_pragmas(source.read_text())
+            and not re.search(r'\b(?:asm|__asm__)\b', source.read_text()), 'resident cell provider has assembly fallback')
+        captures=context.setdefault('cell_captures',{})
+        if item.file not in captures:
+            raw_path, plan, receipt, current = pp.capture_edited_provider_raw(root,source,path,prefix)
+            original=Elf(raw_path)
+            edited_require(hashlib.sha256(original.data).hexdigest()==receipt['raw_sha256'], 'loaded original cell compiler differs')
+            configured=context['loaded'].setdefault(path,Elf(path))
+            edited_require(hashlib.sha256(configured.data).hexdigest()==receipt['configured_sha256'], 'loaded cell provider differs')
+            replay=raw_path.with_name('trap-replayed.o')
+            pp.replay_metadata(raw_path, receipt['inputs']['postprocess'],item.file,replay,root,
+                               skip_filters=False,deadline=time.monotonic()+120,plan=plan)
+            edited_require(replay.read_bytes()==original.data, 'resident trap rename is not byte-inert')
+            validate_fresh_data_input(configured,original)
+            args=batch.compiler_arguments(receipt['inputs']['command'],source.relative_to(root).as_posix(),item.file)
+            command=['tools/ido/cc','-E',*pp._literal_flags(receipt['inputs']['command'],source.relative_to(root).as_posix()),source.relative_to(root).as_posix()]
+            result=__import__('subprocess').run(command,cwd=root,capture_output=True,timeout=120)
+            edited_require(result.returncode==0 and current()==receipt['inputs'], 'resident provider CPP/context differs')
+            provider_cpp=raw_path.with_suffix('.i');provider_cpp.write_bytes(result.stdout)
+            holds={raw_path:hashlib.sha256(original.data).hexdigest(),path:hashlib.sha256(configured.data).hexdigest(),
+                   replay:edited_sha(replay),provider_cpp:hashlib.sha256(result.stdout).hexdigest(),source:receipt['inputs']['source']}
+            holds.update({root/n:h for n,h in receipt['inputs']['dependencies'].items() if h is not None})
+            context['holds'].update(holds)
+            dependency_args=args+(('-I',str(source.parent)) if 'tools/asm-processor/build.py' in receipt['inputs']['command'] else ())
+            context.setdefault('cell_source_cpp',{})[item.file]={'source':source.relative_to(root).as_posix(),
+                'arguments':dependency_args,'closure':receipt['inputs']['dependencies']}
+            captures[item.file]=(original,configured,result.stdout,args,current,receipt,holds)
+        original,configured,provider_cpp,args,current,receipt,holds=captures[item.file]
+        pp.resident_cell_declarations(provider_cpp,args,root,{name},definition=True)
+        address=edited_cell_geometry(context,name,original,configured,item)
+        observations=tuple((image,hashlib.sha256(image.data).hexdigest(),pp._static_parsed_surface(image))
+                           for image in (original,configured,context['elf'],compiler,obj['raw'],obj['linked']))
+        witness=EditedResidentCell(name,address,original,configured,context,item,observations,
+            tuple(holds.items())+((cpp_path,hashlib.sha256(cpp).hexdigest()),),current,receipt['inputs'],_EDITED_CELL_SEAL)
+        witness.current();cells[name]=witness
+    # A shared provider can serve several selected consumers. Hold each loaded
+    # compiler/prepared/link observation, not only the first caller's copy.
+    witness = cells[name]
+    observations = list(witness.observations)
+    for image in (compiler, obj['raw'], obj['linked']):
+        if not any(held is image for held, _digest, _surface in observations):
+            observations.append((image, hashlib.sha256(image.data).hexdigest(),
+                                 pp._static_parsed_surface(image)))
+    cells[name] = replace(witness, observations=tuple(observations))
+    return cells[name].current()
+
+
+def shlex_command(flags):
+    import shlex
+    return shlex.join(['tools/ido/cc',*flags])
+
+
 def edited_declarations(exports, selected):
     names, rows, identities = set(), set(), {}
     for number, declaration in selected.items():
@@ -3928,7 +4109,12 @@ def edited_module_records(number, objects, selected, exports, provider):
                     base = ('ov', owner, objects[owner]['bases'][target[0]] + target[1])
                 else:
                     try:
-                        base, target = edited_resident_function(provider, symbol.name)
+                        candidates = [s for s in provider['elf'].symbols if s.name == symbol.name
+                            and s.bind == STB_GLOBAL and s.shndx != SHN_UNDEF]
+                        if rel.type != R_MIPS_26 and len(candidates) == 1 and candidates[0].type == STT_OBJECT:
+                            base, target = edited_resident_cell(provider, symbol.name, obj, section, rel, addend)
+                        else:
+                            base, target = edited_resident_function(provider, symbol.name)
                     except PackError as error:
                         raise PackError(label + ': ' + str(error)) from error
                     kind, offset = edited_object_operand(target, addend)

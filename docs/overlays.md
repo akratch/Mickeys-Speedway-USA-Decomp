@@ -2680,7 +2680,7 @@ without an override the selection comes from `default_selected` in
 `config/runlink-edited.us.json`. The declaration catalog names each module's
 current C source, export names/rows/kinds and init/resume names or null. It carries
 no target offsets, section sizes, ROM homes or BSS capacity claims. Only sources
-in their proper module directory with an actual registered ordinary complete-module
+in their proper module directory with an actual ordinary complete-module
 Make recipe are admitted. Missing, duplicate, wrong-kind or undeclared actual
 export definitions fail; selected old metadata cannot supply them.
 
@@ -2714,6 +2714,21 @@ holds remain mandatory; serialized audit JSON is never authority. The final
 decoder independently reconstructs the stored HI/LO words and checks their
 modulo32 relation to the actual object identity. The retail default and its
 zero-difference guard are unchanged.
+
+Overlay66 additionally admits zero-addend text HI16/LO16 imports of genuine
+resident C pointer cells. The closed case requires unsigned-short pointers under
+o32, fresh original compiler GLOBAL OBJECT4 definitions in allocated NOBITS,
+the current configured object, and unique ordinary resident input/map ownership.
+The actual edited provider link command, script and input closure are sealed;
+the canonical bootstrap/final link is not a substitute. The only supported
+resident postprocess is the exact current trap rename, replayed and required to
+be byte-inert. Independent final allocation/map readback and warm/publication
+holds cover source/CPP, original indices, loaded metadata and provider inputs.
+R26 imports retain the existing FUNCTION-only rule. Unsized/ABS/COMMON/proxy
+definitions, initialized storage, interior addends and other pointer-cell types
+remain unsupported. This proves the pointer cell, not pointee capacity or GPU
+lifetime. The default selection remains75; a joint control adds66 to the above
+selection. Outside compatibility and the general/source-only limits still apply.
 
 Each selected C input is freshly compiled with its actual per-source Make flags,
 standard static-symbol metadata is restored, and the existing ordinary module

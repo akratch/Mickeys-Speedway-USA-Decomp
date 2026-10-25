@@ -10148,6 +10148,23 @@
       }
     },
     {
+      "name": "src/overlays/o073/overlay73Geometry.c",
+      "target_path": "expected/build/src/overlays/o073/overlay73Geometry.c.o",
+      "base_path": "build/src/overlays/o073/overlay73Geometry.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o073"
+        ],
+        "source_path": "src/overlays/o073/overlay73Geometry.c"
+      }
+    },
+    {
       "name": "src/overlays/o073/overlay_073.c",
       "target_path": "expected/build/src/overlays/o073/overlay_073.c.o",
       "base_path": "build/src/overlays/o073/overlay_073.c.o",

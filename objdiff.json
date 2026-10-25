@@ -10537,6 +10537,40 @@
       }
     },
     {
+      "name": "src/overlays/o094/overlay94ControlState.c",
+      "target_path": "expected/build/src/overlays/o094/overlay94ControlState.c.o",
+      "base_path": "build/src/overlays/o094/overlay94ControlState.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o094"
+        ],
+        "source_path": "src/overlays/o094/overlay94ControlState.c"
+      }
+    },
+    {
+      "name": "src/overlays/o094/overlay94ResponseScalars.c",
+      "target_path": "expected/build/src/overlays/o094/overlay94ResponseScalars.c.o",
+      "base_path": "build/src/overlays/o094/overlay94ResponseScalars.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o094"
+        ],
+        "source_path": "src/overlays/o094/overlay94ResponseScalars.c"
+      }
+    },
+    {
       "name": "src/overlays/o094/overlay_094.c",
       "target_path": "expected/build/src/overlays/o094/overlay_094.c.o",
       "base_path": "build/src/overlays/o094/overlay_094.c.o",

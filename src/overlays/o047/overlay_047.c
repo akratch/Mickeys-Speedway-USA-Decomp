@@ -77,30 +77,30 @@ static Overlay47Triangle ov47Data_268[4] = {
     { 64, 3, 5, 4, 0, 0, 0, 0, 0, 0 },
 };
 static Overlay47Command ov47Data_2A8[11] = {
-    { 0xe7000000, 0x0 },
-    { 0xba001402, 0x0 },
-    { 0xba001001, 0x0 },
-    { 0xba000e02, 0x0 },
-    { 0xba001102, 0x0 },
-    { 0xba001301, 0x0 },
-    { 0xba000c02, 0x2000 },
-    { 0xba000903, 0xc00 },
-    { 0xb9000002, 0x0 },
-    { 0xb900031d, 0x442048 },
-    { 0xb8000000, 0x0 },
+    {{ 0xe7000000, 0x0 }},
+    {{ 0xba001402, 0x0 }},
+    {{ 0xba001001, 0x0 }},
+    {{ 0xba000e02, 0x0 }},
+    {{ 0xba001102, 0x0 }},
+    {{ 0xba001301, 0x0 }},
+    {{ 0xba000c02, 0x2000 }},
+    {{ 0xba000903, 0xc00 }},
+    {{ 0xb9000002, 0x0 }},
+    {{ 0xb900031d, 0x442048 }},
+    {{ 0xb8000000, 0x0 }},
 };
 static Overlay47Command ov47Data_300[11] = {
-    { 0xe7000000, 0x0 },
-    { 0xba001402, 0x0 },
-    { 0xba001001, 0x0 },
-    { 0xba000e02, 0x0 },
-    { 0xba001102, 0x0 },
-    { 0xba001301, 0x0 },
-    { 0xba000c02, 0x2000 },
-    { 0xba000903, 0xc00 },
-    { 0xb9000002, 0x0 },
-    { 0xb900031d, 0x5041c8 },
-    { 0xb8000000, 0x0 },
+    {{ 0xe7000000, 0x0 }},
+    {{ 0xba001402, 0x0 }},
+    {{ 0xba001001, 0x0 }},
+    {{ 0xba000e02, 0x0 }},
+    {{ 0xba001102, 0x0 }},
+    {{ 0xba001301, 0x0 }},
+    {{ 0xba000c02, 0x2000 }},
+    {{ 0xba000903, 0xc00 }},
+    {{ 0xb9000002, 0x0 }},
+    {{ 0xb900031d, 0x5041c8 }},
+    {{ 0xb8000000, 0x0 }},
 };
 static s16 D_358[12] = {
     3, 4, 5, 11, 124, 12, 13, 14, 15, 16, -1, 0
@@ -206,8 +206,8 @@ static void func_overlay_047_F0002D10_1893B28(Overlay47Player *player);
 
 #define O47_COMMAND(a, b) { \
     Overlay47Command *command = D_800D3140++; \
-    command->w0 = (u32)(a); \
-    command->w1 = (u32)(b); \
+    command->words.w0 = (u32)(a); \
+    command->words.w1 = (u32)(b); \
 }
 /* N64 ABI representation contract: pointer and signed word are 32 bits.
  * The sign-bit XOR is modulo-32 physical encoding, without signed overflow.

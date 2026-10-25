@@ -2934,7 +2934,10 @@ segments:
     subsegments:
       - [0x18C2B88, c, overlay_063]
       - [0x18C34B8, .data, overlay63HudPrefix]
-      - [0x18C3508, bin, overlay_063_data_rodata]
+      - [0x18C3508, .data, overlay63ParticleSeeds]
+      - [0x18C3580, bin, overlay_063_data_rodata]
+      - [0x18C3588, .data, overlay63SequenceState]
+      - [0x18C35F8, bin, overlay_063_data_rodata_140]
 
   - name: overlay_063_reloc1
     type: bin

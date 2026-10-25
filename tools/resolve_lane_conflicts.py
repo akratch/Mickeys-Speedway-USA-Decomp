@@ -2,6 +2,7 @@
 """Resolve the conflicts merge_lane.sh leaves behind when integrating a lane.
 
 Usage: resolve_lane_conflicts.py <lane-branch> [--own-prefix PREFIX ...]
+       resolve_lane_conflicts.py <lane-commit> --runlink-retirements-only
 
 Rules (all hunk-level or three-way; NEVER whole-file --ours/--theirs on a
 shared file):
@@ -9,6 +10,8 @@ shared file):
                                       block differs and finish_merge rebuilds
                                       that, so the lane's copy can only revert
                                       the integration branch's prose
+  config/runlink-residuals.us.json -> validated whole-record retirements from
+                                      both parents; never one parent's copy
   *.json and generated tables      -> theirs; a keep-both hunk cannot
                                       produce valid JSON, and the result is
                                       parse-checked before it is staged
@@ -37,17 +40,162 @@ shared file):
 Exits nonzero if any conflict marker survives.
 """
 import ast
+import copy
 import difflib
 import json
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 MARK = re.compile(r"<<<<<<< [^\n]*\n(.*?)=======\n(.*?)>>>>>>> [^\n]*\n", re.S)
 
 
 def git(*a, **k):
     return subprocess.run(["git", *a], capture_output=True, text=True, **k)
+
+
+RUNLINK_RESIDUALS = "config/runlink-residuals.us.json"
+RETIREMENT_CATEGORIES = {"bss-size", "hybrid-data", "placeholder", "placement", "rodata-base"}
+
+
+def merge_runlink_retirements(base_text, ours_text, theirs_text):
+    """Combine only complete record deletions, not evidence or new allowances.
+
+    This deliberately supports the current zero-difference manifest only.
+    A fresh whole-dictionary bootstrap comparison is still required before
+    accepting the merged source; this function proves no source identity.
+    """
+    import runlink_pack as pack
+
+    def require(condition, message):
+        if not condition:
+            raise ValueError("runlink retirement merge: " + message)
+
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            require(key not in result, "duplicate JSON key")
+            result[key] = value
+        return result
+
+    def integer(value, minimum=0):
+        return type(value) is int and value >= minimum
+
+    def module(value):
+        return integer(value, 1) and value < 0xFFC
+
+    def offset(value):
+        return isinstance(value, str) and re.fullmatch(r"0x(?:0|[1-9A-F][0-9A-F]*)", value)
+
+    def parse(text):
+        document = json.loads(text, object_pairs_hook=unique)
+        require(isinstance(document, dict) and set(document) ==
+                {"schema", "generated_by", "about", "totals", "differences", "borrowed"},
+                "unsupported manifest fields")
+        require(type(document["schema"]) is int and document["schema"] == 1
+                and document["generated_by"] == "tools/runlink_pack.py compare --write-residuals"
+                and isinstance(document["about"], str), "unsupported manifest metadata")
+        require(document["differences"] == {} and isinstance(document["differences"], dict),
+                "nonempty or malformed differences")
+        blocks, records = document["borrowed"], {}
+        require(isinstance(blocks, dict) and set(blocks) <= RETIREMENT_CATEGORIES,
+                "unsupported borrowing categories")
+        for category, block in blocks.items():
+            payload = "modules" if category == "hybrid-data" else "entries"
+            require(isinstance(block, dict) and set(block) == {"about", "count", payload}
+                    and isinstance(block["about"], str), "unsupported category fields")
+            rows = []
+            if payload == "modules":
+                require(isinstance(block[payload], dict), "malformed hybrid modules")
+                for number, sites in block[payload].items():
+                    require(re.fullmatch(r"[1-9][0-9]*", number) and module(int(number))
+                            and isinstance(sites, list) and sites, "malformed hybrid module")
+                    require(all(offset(site) for site in sites), "malformed hybrid site")
+                    rows.extend((int(number), site) for site in sites)
+            else:
+                require(isinstance(block[payload], list), "malformed borrowing entries")
+                for row in block[payload]:
+                    require(isinstance(row, list) and row and module(row[0]), "malformed borrowing record")
+                    if category in ("bss-size", "rodata-base"):
+                        valid = len(row) == 1
+                    elif category == "placeholder":
+                        valid = (len(row) == 3 and isinstance(row[1], str) and bool(row[1])
+                                 and integer(row[2], 1))
+                    else:
+                        valid = (len(row) == 5 and isinstance(row[1], str) and bool(row[1])
+                                 and row[2] in (".text", ".data", ".rodata", ".bss")
+                                 and offset(row[3]) and integer(row[4], 1))
+                    require(valid, "unsupported borrowing record shape")
+                    rows.append(tuple(row))
+            require(len(set(rows)) == len(rows), "duplicate borrowing record")
+            require(integer(block["count"]) and block["count"] == len(rows), "malformed category count")
+            records[category] = set(rows)
+        total = sum(row[2] for row in records.get("placeholder", ())) + len(records.get("hybrid-data", ()))
+        totals = document["totals"]
+        require(isinstance(totals, dict) and set(totals) == {"differences", "borrowed_records"}
+                and integer(totals["differences"]) and totals["differences"] == 0
+                and integer(totals["borrowed_records"]) and totals["borrowed_records"] == total,
+                "malformed total counts")
+        return document, records
+
+    base, before = parse(base_text)
+    ours, left = parse(ours_text)
+    theirs, right = parse(theirs_text)
+    for side, records in ((ours, left), (theirs, right)):
+        require(all(side[key] == base[key] for key in ("schema", "generated_by", "about", "differences")),
+                "manifest metadata changed")
+        require(set(records) <= set(before), "borrowing category added")
+        for category, rows in records.items():
+            require(side["borrowed"][category]["about"] == base["borrowed"][category]["about"],
+                    "category metadata changed")
+            require(rows <= before[category], "borrowing record added or changed")
+    merged = copy.deepcopy(base)
+    merged["borrowed"] = {}
+    for category in sorted(before):
+        rows = sorted(left.get(category, set()) & right.get(category, set()), key=pack.entry_sort_key)
+        if not rows:
+            continue
+        block = {"about": base["borrowed"][category]["about"], "count": len(rows)}
+        if category == "hybrid-data":
+            block["modules"] = {}
+            for number, site in rows:
+                block["modules"].setdefault(str(number), []).append(site)
+        else:
+            block["entries"] = [list(row) for row in rows]
+        merged["borrowed"][category] = block
+    merged["totals"]["borrowed_records"] = (
+        sum(row[2] for row in merged["borrowed"].get("placeholder", {}).get("entries", []))
+        + merged["borrowed"].get("hybrid-data", {}).get("count", 0))
+    return pack.render_manifest(merged)
+
+
+def reconcile_runlink_retirements(branch):
+    """Reconcile committed parents during a merge, including a clean auto-merge."""
+    def checked(*args):
+        result = git(*args)
+        if result.returncode:
+            raise ValueError("runlink retirement merge: git " + " ".join(args) + " failed")
+        return result.stdout.strip()
+
+    ours = checked("rev-parse", "HEAD^{commit}")
+    theirs = checked("rev-parse", branch + "^{commit}")
+    bases = checked("merge-base", "--all", ours, theirs).splitlines()
+    if len(bases) != 1:
+        raise ValueError("runlink retirement merge: ambiguous merge base")
+    contents = [git("show", f"{revision}:{RUNLINK_RESIDUALS}") for revision in (bases[0], ours, theirs)]
+    if all(result.returncode for result in contents):
+        return  # Repositories predating this manifest have nothing to retire.
+    if any(result.returncode for result in contents):
+        raise ValueError("runlink retirement merge: manifest added or removed")
+    merged = merge_runlink_retirements(*(result.stdout for result in contents))
+    if checked("rev-parse", "HEAD^{commit}") != ours or checked("rev-parse", "MERGE_HEAD") != theirs:
+        raise ValueError("runlink retirement merge: active merge parents changed")
+    path = Path(RUNLINK_RESIDUALS)
+    if path.is_symlink():
+        raise ValueError("runlink retirement merge: symlink output")
+    path.write_text(merged)
+    checked("add", "--", RUNLINK_RESIDUALS)
 
 
 DIFF3 = re.compile(
@@ -213,6 +361,13 @@ def main():
         print(__doc__)
         return 2
     branch = args[0]
+    if args[1:] == ["--runlink-retirements-only"]:
+        try:
+            reconcile_runlink_retirements(branch)
+        except (OSError, ValueError) as error:
+            print(error, file=sys.stderr)
+            return 1
+        return 0
     own = []
     i = 1
     while i < len(args):
@@ -225,7 +380,15 @@ def main():
     status = git("status", "--porcelain").stdout.splitlines()
     conflicted = [(l[:2], l[3:]) for l in status if l[:2] in ("UU", "AA", "AU", "UA", "DU", "UD")]
     for code, path in conflicted:
-        if path == "README.md":
+        if path == RUNLINK_RESIDUALS:
+            try:
+                reconcile_runlink_retirements(branch)
+            except (OSError, ValueError) as error:
+                print(error, file=sys.stderr)
+                return 1
+            print(f"resolved {path}: whole-record retirements from both parents")
+            continue
+        elif path == "README.md":
             # OURS, not theirs. The only part of this file a lane legitimately
             # changes is the generated scoreboard block, and finish_merge
             # regenerates that from the merged tree anyway -- so the lane's

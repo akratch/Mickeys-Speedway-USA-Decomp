@@ -253,6 +253,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     58: [
         (0xC8, 0x108, "overlay58Assets", ".data"),
         (0x180, 0x1A0, "overlay58BadgeSprites", ".data"),
+        (0x1A0, 0x1F4, "overlay58PathMap", ".data"),
         (0x248, 0x278, "overlay58LayoutTables", ".data"),
         (0x278, 0x2A8, "overlay58RankTextLayout", ".data"),
         (0x2B0, 0x2D0, "overlay58TransitionState", ".data"),
@@ -393,6 +394,7 @@ DATA_ONLY_FIXED_DATA_SOURCES = {
     (9, "overlay9CameraTables", ".data"),
     (58, "overlay58Assets", ".data"),
     (58, "overlay58BadgeSprites", ".data"),
+    (58, "overlay58PathMap", ".data"),
     (58, "overlay58LayoutTables", ".data"),
     (58, "overlay58RankTextLayout", ".data"),
     (58, "overlay58TextLabels", ".rodata"),

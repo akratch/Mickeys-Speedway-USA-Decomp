@@ -457,9 +457,12 @@ def edited_catalog(root, path, exports, selection=None):
     profiles, names, rows = {}, set(), set()
     require(isinstance(document['modules'], list), 'module declarations must be a list')
     for item in document['modules']:
-        require(isinstance(item, dict) and set(item) == ({'module', 'source', 'exports', 'entries', 'build'}
-                if extended else {'module', 'source', 'exports', 'entries'}),
+        fields = {'module', 'source', 'exports', 'entries'} | ({'build'} if extended else set())
+        require(isinstance(item, dict) and set(item) in (fields, fields | {'integer_word_profile'}),
                 'unknown/incomplete module declaration')
+        word_profile = item.get('integer_word_profile')
+        require('integer_word_profile' not in item or isinstance(word_profile, str)
+                and word_profile == 'isolated-full-expression', 'unsupported integer-word profile')
         number, source = item['module'], item['source']
         build = item.get('build', 'registered')
         require(build in ('registered', 'complete-overlay'), 'unsupported edited compiler profile')
@@ -489,7 +492,8 @@ def edited_catalog(root, path, exports, selection=None):
             require(kind in ('function', 'object'), 'unsupported export kind')
             names.add(name); rows.add(row); declared.append(name); kinds[name] = kind; declared_rows[name] = row
         profiles[number] = {'source': source, 'exports': declared, 'kinds': kinds,
-                            'rows': declared_rows, 'entries': item['entries'], 'build': build}
+                            'rows': declared_rows, 'entries': item['entries'], 'build': build,
+                            'integer_word_profile': word_profile}
     ids = document['default_selected'] if selection is None else selection
     require(isinstance(ids, list) and ids and all(type(number) is int and number in profiles for number in ids)
             and len(set(ids)) == len(ids), 'invalid/undeclared selected module identities')
@@ -579,12 +583,14 @@ def edited_script(root, source, names, generated, selected, products):
     return result
 
 
-def edited_compile(root, directory, label, text, exports, args, commands):
+def edited_compile(root, directory, label, text, exports, args, commands, *, integer_word_profile=None):
     """Fresh current source/CPP/compiler/static-symbol/ordinary-link chain."""
     import permute_batch as batch
     import link_overlay_module as module_link
     import check_editable_layout as pilot
     import proof_provenance as pp
+    rp.edited_require(integer_word_profile in (None, 'isolated-full-expression'),
+                      'unsupported integer-word source profile')
     rp.edited_require('GLOBAL_ASM' not in text and not re.search(r'\b(?:asm|__asm__)\b', text),
                       'selected complete C input must not require assembly substitution')
     source = directory / (label + '.c')
@@ -640,6 +646,8 @@ def edited_compile(root, directory, label, text, exports, args, commands):
     word_operands = any(addend == 0x80000000
         for section in rp.EDITED_SECTIONS[:-1]
         for addend in rp.in_place_addends(prepared, section, prepared.rels(section)))
+    rp.edited_require(integer_word_profile is None or word_operands,
+                      'declared integer-word profile lacks actual word operands')
     if target_sections or word_operands:
         def source_current():
             rp.edited_require(digest(root/'tools/proof_provenance.py') == pp._LOADED_METADATA_PROOF,
@@ -689,7 +697,7 @@ def edited_compile(root, directory, label, text, exports, args, commands):
         obj['static_source_audit'] = audit
     if word_operands:
         try:
-            roles = pp.integer_word_facts(cpp, flags, root)
+            roles = pp.integer_word_facts(cpp, flags, root, profile=integer_word_profile)
             witness = pp.integer_word_witness(compiler, prepared, linked_elf, roles, exports.by_name,
                 source_hash, hashlib.sha256(cpp).hexdigest(), static_inputs.items(), root,
                 hashlib.sha256(json_bytes(static_tools)).hexdigest())
@@ -701,6 +709,7 @@ def edited_compile(root, directory, label, text, exports, args, commands):
         cpp_path = directory/(label+'-effective.i')
         audit_path = directory/(label+'-integer-word.json')
         audit = {'schema': 'mickey-integer-word-encoding-v1', 'encoding': 'xor-signbit-word',
+            'profile': integer_word_profile,
             'compiler_command': command, 'effective_cpp_command': cpp_command,
             'cpp_artifact': cpp_path.name, 'cpp_sha256': witness.cpp_sha256,
             'source_sha256': source_hash, 'compiler_sha256': witness.compiler_sha256,
@@ -940,6 +949,8 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
                'config': 'tools/runlink/configs/msu-us.toml',
                'declaration': declaration_path.relative_to(root).as_posix(), 'declaration_sha256': declaration_hash,
                'selected_modules': sorted(selected), 'variant': variant,
+               'integer_word_profiles': {str(number): declaration['integer_word_profile']
+                                         for number, declaration in selected.items()},
                'compiler_flags': {str(number): edited_compiler_flags(args) for number,args in arguments.items()}}
     current = edited_current(root, parent, variant, request)
     if current is not None:
@@ -992,7 +1003,8 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
     for number, declaration in selected.items():
         text = overrides.get(number, (root / declaration['source']).read_text())
         objects[number], products[number], closures[number] = edited_compile(
-            root, directory, 'overlay' + str(number), text, exports, arguments[number], commands)
+            root, directory, 'overlay' + str(number), text, exports, arguments[number], commands,
+            integer_word_profile=declaration.get('integer_word_profile'))
         for audit_name in ('static_source_audit', 'integer_word_audit'):
             if audit_name in objects[number]:
                 held = objects[number][audit_name]['inputs']
@@ -1023,7 +1035,8 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         write_changed(directory / 'exports.txt', exports.render())
         del selected[peer_number], objects[peer_number], products[peer_number], closures[peer_number], arguments[peer_number]
         objects[source_number], products[source_number], closures[source_number] = edited_compile(root, directory,
-            'overlay-removed', overrides[source_number], exports, arguments[source_number], commands)
+            'overlay-removed', overrides[source_number], exports, arguments[source_number], commands,
+            integer_word_profile=selected[source_number].get('integer_word_profile'))
         generated = {source_number: rp.edited_module_records(source_number, objects, selected, exports, provider)}
         after = generated[source_number]['module']
         require((before.image, before.table1, before.table2) == (after.image, after.table1, after.table2),

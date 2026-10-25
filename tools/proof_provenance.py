@@ -357,9 +357,12 @@ class IntegerWordRole:
     occurrences: int
 
 
-def integer_word_facts(cpp, flags, root):
+def integer_word_facts(cpp, flags, root, *, profile=None):
     """Closed o32 sign-bit word expressions; no pointer-access/sink analysis."""
     import candidate_context as lexical
+    if profile not in (None, 'isolated-full-expression'):
+        raise MetadataProofError('unsupported integer-word source profile')
+    isolated = profile == 'isolated-full-expression'
     if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF:
         raise MetadataProofError('loaded integer-word proof changed')
     if '-32' not in flags or any(x in flags for x in ('-64', '-n32', '-n64')):
@@ -417,26 +420,112 @@ def integer_word_facts(cpp, flags, root):
                 and node.left.expr.value == '2147483647'
                 and isinstance(node.right, ca.Constant) and node.right.type == 'int' and node.right.value == '1')
     parents = {id(child): node for node in nodes(ast) for _,child in node.children()}
+    expressions = (ca.Assignment, ca.BinaryOp, ca.Cast, ca.Constant, ca.ExprList,
+                   ca.FuncCall, ca.ID, ca.StructRef, ca.UnaryOp, ca.ArrayRef, ca.TernaryOp)
+    def full_expression(node):
+        """Find a C evaluation boundary, never its containing control statement."""
+        while id(node) in parents:
+            parent = parents[id(node)]
+            boundary = (isinstance(parent, ca.Compound)
+                or isinstance(parent, ca.Decl) and parent.init is node
+                or isinstance(parent, ca.Return) and parent.expr is node
+                or isinstance(parent, (ca.If, ca.While, ca.DoWhile, ca.Switch)) and parent.cond is node
+                or isinstance(parent, ca.For) and any(value is node for value in (parent.init, parent.cond, parent.next))
+                or isinstance(parent, ca.If) and any(value is node for value in (parent.iftrue, parent.iffalse))
+                or isinstance(parent, (ca.For, ca.While, ca.DoWhile, ca.Label)) and parent.stmt is node
+                or isinstance(parent, (ca.Case, ca.Default)) and any(value is node for value in parent.stmts or []))
+            if boundary:
+                if isinstance(node, expressions):
+                    return node
+                raise MetadataProofError('unsupported integer-word full-expression boundary')
+            if not isinstance(parent, expressions):
+                raise MetadataProofError('unsupported integer-word full-expression context')
+            # FuncCall.args is an argument list, not a comma or evaluation boundary.
+            node = parent
+        raise MetadataProofError('missing integer-word full-expression boundary')
+    structures = collections.defaultdict(list)
+    for declaration in ast.ext:
+        if isinstance(declaration, (ca.Decl, ca.Typedef)):
+            kind = declaration.type
+            while isinstance(kind, (ca.TypeDecl, ca.PtrDecl, ca.ArrayDecl)):
+                kind = kind.type
+            # Function-prototype parameters and initializer expressions do not
+            # complete a tag in the enclosing file scope.
+            if isinstance(kind, ca.Struct) and kind.name and kind.decls is not None:
+                structures[kind.name].append(kind)
+    def object_struct(node, seen=()):
+        if not isinstance(node, ca.TypeDecl) or node.quals or getattr(node, 'align', None):
+            return None
+        kind = node.type
+        if isinstance(kind, ca.IdentifierType) and len(kind.names) == 1:
+            name = kind.names[0]
+            choices = aliases.get(name, ())
+            if name in seen or len(choices) != 1:
+                return None
+            return object_struct(choices[0], seen + (name,))
+        if isinstance(kind, ca.Struct):
+            if kind.name:
+                choices = structures.get(kind.name, ())
+                return choices[0] if len(choices) == 1 and choices[0].decls else None
+            return kind if kind.decls else None
+        return None  # Other complete C types require a separate reviewed case.
+    def extra_pointer(node):
+        return isinstance(node, ca.PtrDecl) and not node.quals and object_struct(node.type) is not None
+    def scalar_read(member, use, structure):
+        fields = [declaration for declaration in structure.decls if declaration.name == use.field.name]
+        if len(fields) != 1 or fields[0].bitsize:
+            return False
+        kind = words(fields[0].type)
+        if not kind or any(word not in ('char','short','int','long','signed','unsigned','float','double') for word in kind):
+            return False  # No pointer, array or aggregate field can hide a nested lvalue.
+        outer = parents[id(use)]
+        if isinstance(outer, ca.Assignment):
+            return outer.rvalue is use
+        if isinstance(outer, ca.UnaryOp):
+            return outer.op in ('+','-','!','~')
+        if isinstance(outer, ca.Cast):
+            cast = words(outer.to_type.type)
+            return bool(cast) and all(word in ('char','short','int','long','signed','unsigned','float','double') for word in cast)
+        return (isinstance(outer, (ca.BinaryOp, ca.Return))
+                or isinstance(outer, ca.Decl) and outer.init is use
+                or isinstance(outer, (ca.If,ca.While,ca.DoWhile,ca.Switch)) and outer.cond is use
+                or isinstance(outer, ca.For) and outer.cond is use)
     roles = []
     for function in (n for n in ast.ext if isinstance(n, ca.FuncDef)):
         local = collections.defaultdict(list)
         for node in nodes(function):
             if isinstance(node, ca.Decl):
                 local[node.name].append(node)
-        carriers = {}
+        carriers, extras, extra_types = {}, {}, {}
+        if isolated and any(isinstance(node, ca.Struct) and node.decls is not None
+                            for node in nodes(function.body)):
+            raise MetadataProofError('unsupported local integer-word object type/shadow')
         for name, declarations in local.items():
             for declaration in declarations:
                 kind = declaration.type
                 if not isinstance(kind, ca.TypeDecl) or not isinstance(kind.type, ca.Union):
                     continue
                 members = kind.type.decls or []
-                if len(members) != 2 or not pointer(members[0].type) or not scalar(members[1].type, True):
+                if len(members) == 2 and pointer(members[0].type) and scalar(members[1].type, True):
+                    conversion = members[0].name, members[1].name
+                elif isolated and len(members) == 3:
+                    pointers = [m for m in members if pointer(m.type)]
+                    scalars = [m for m in members if scalar(m.type, True)]
+                    ordinary = [m for m in members if extra_pointer(m.type)]
+                    if len(pointers) != 1 or len(scalars) != 1 or len(ordinary) != 1:
+                        continue
+                    if any(not m.name for m in members) or len({m.name for m in members}) != 3:
+                        raise MetadataProofError('ambiguous integer-word carrier members')
+                    conversion = pointers[0].name, scalars[0].name
+                    extras[name] = ordinary[0].name
+                    extra_types[name] = object_struct(ordinary[0].type.type)
+                else:
                     continue
                 if (len(declarations) != 1 or declaration.init is not None or declaration.storage
                         or declaration.quals or getattr(declaration, 'align', None)
                         or any(m.storage or m.bitsize for m in members)):
                     raise MetadataProofError('unsupported/shadowed integer-word carrier')
-                carriers[name] = members[0].name, members[1].name
+                carriers[name] = conversion
         covered, occurrences = set(), collections.Counter()
         for expression in nodes(function.body):
             if not isinstance(expression, ca.ExprList) or len(expression.exprs) != 2:
@@ -458,6 +547,14 @@ def integer_word_facts(cpp, flags, root):
                      and field(cast.expr.left) == (carrier, carriers[carrier][1]))
             if not valid:
                 raise MetadataProofError('unsupported integer-word transform/direct base')
+            if isolated:
+                boundary = full_expression(expression)
+                own_ids = {id(node) for node in nodes(expression)
+                           if isinstance(node, ca.ID) and node.name in carriers}
+                boundary_ids = {id(node) for node in nodes(boundary)
+                                if isinstance(node, ca.ID) and node.name in carriers}
+                if len(own_ids) != 2 or boundary_ids != own_ids:
+                    raise MetadataProofError('integer-word conversion is not isolated in its full expression')
             target = assignment.rvalue.expr.name
             choices = definitions[target]
             if (local[target] or len(choices) != 1 or choices[0].storage or choices[0].quals
@@ -470,7 +567,23 @@ def integer_word_facts(cpp, flags, root):
             covered.update(id(node) for node in nodes(expression))
         for name in set(carriers) | {target for target, carrier in occurrences}:
             uses = [node for node in nodes(function.body) if isinstance(node, ca.ID) and node.name == name]
-            if any(id(node) not in covered for node in uses):
+            for node in uses:
+                if id(node) in covered:
+                    continue
+                if isolated and name in extras:
+                    member = parents[id(node)]
+                    if field(member) != (name, extras[name]):
+                        raise MetadataProofError('uncovered integer-word target/carrier use')
+                    full_expression(node)
+                    use = parents[id(member)]
+                    if isinstance(use, ca.Assignment) and use.op == '=' and use.lvalue is member:
+                        if any(isinstance(n, ca.ID) and n.name in carriers for n in nodes(use.rvalue)):
+                            raise MetadataProofError('integer-word carrier/member alias or copy')
+                        continue
+                    if isinstance(use, ca.StructRef) and use.type == '->' and use.name is member:
+                        if scalar_read(member, use, extra_types[name]):
+                            continue
+                    raise MetadataProofError('unsupported integer-word extra-pointer use or escape')
                 raise MetadataProofError('uncovered integer-word target/carrier use')
         roles.extend(IntegerWordRole(function.decl.name, target, carrier, count)
                      for (target, carrier), count in sorted(occurrences.items()))

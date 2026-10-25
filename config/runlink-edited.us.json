@@ -90,6 +90,32 @@
       }
     },
     {
+      "module": 38,
+      "source": "src/overlays/o038/overlay_038.c",
+      "integer_word_profile": "isolated-full-expression",
+      "exports": [
+        {
+          "name": "func_overlay_038_F0000000_1885D10",
+          "row": 1254,
+          "kind": "function"
+        },
+        {
+          "name": "func_overlay_038_F0000154_1885E64",
+          "row": 1301,
+          "kind": "function"
+        },
+        {
+          "name": "func_overlay_038_F000047C_188618C",
+          "row": 1184,
+          "kind": "function"
+        }
+      ],
+      "entries": {
+        "init": null,
+        "resume": null
+      }
+    },
+    {
       "module": 75,
       "source": "src/overlays/o075/overlay_075.c",
       "exports": [

@@ -2701,7 +2701,14 @@ word; ordinary pointer bounds still apply at offset0. It does not authorize
 pointer interiors, one-past addresses, exported geometry, unknown transforms or
 native pointer/GPU lifetime claims. No command-sink or alias analyzer is involved.
 
-A joint control can select `EDITED_MODULES=34,37,75,76,77,80,81,97`. Source/hash,
+Overlay38 explicitly selects `integer_word_profile: isolated-full-expression`.
+Its additional typed struct-pointer union member is admitted only in separate
+complete expressions with closed direct scalar reads or pointer assignments.
+Each conversion expression contains exactly the two carrier uses of one sequenced
+comma; function-call argument lists, nested writes, aggregate views and address
+escapes are excluded. The omitted profile retains the two-member rule.
+
+A joint control can select `EDITED_MODULES=34,37,38,75,76,77,80,81,97`. Source/hash,
 actual CPP/compiler-vector, original/prepared/linked metadata and publication
 holds remain mandatory; serialized audit JSON is never authority. The final
 decoder independently reconstructs the stored HI/LO words and checks their

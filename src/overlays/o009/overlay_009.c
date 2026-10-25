@@ -14,13 +14,13 @@
  */
 
 /* Unexported, so static (their calls are JUMP records). */
-static void func_overlay_009_F0000540_1866BB8(O9Angle *, void *, O9Motion *, s32);
+static void func_overlay_009_F0000540_1866BB8(O9Angle *, void *, Overlay9ParameterState *, s32);
 static void func_overlay_009_F0000744_1866DBC(O9OutputRecord *, O9OutputControl *,
-                                              O9OutputState *, s32);
-static void func_overlay_009_F00009BC_1867034(s16 *, O9InputControl *, O9InputState *);
+                                              Overlay9ParameterState *, s32);
+static void func_overlay_009_F00009BC_1867034(s16 *, O9InputControl *, Overlay9ParameterState *);
 static void func_overlay_009_F0000CE4_186735C(O9IntegrateOutput *,
                                               O9IntegrateControl *, void *, f32);
-static void func_overlay_009_F0000F6C_18675E4(O9Point *, O9Height *, s32);
+static void func_overlay_009_F0000F6C_18675E4(O9Point *, Overlay9ParameterState *, s32);
 static void overlay9Ignore(void *object, void *state, f32 steps);
 
 /* Tier D: field widths and offsets from this caller's loads and stores. */
@@ -37,28 +37,11 @@ typedef struct O9Model {
     s8 flags[1];
 } O9Model;
 
-typedef struct O9Params {
-    f32 unk00;
-    f32 unk04;
-    f32 unk08;
-    u8 pad0C[0x10];
-    f32 unk1C;
-    s16 angle20;
-    s16 angle22;
-    u8 pad24[6];
-    s16 angle2A;
-    f32 unk2C;
-} O9Params;
-
-/* The parameter block at .data +0x2D0 is one object whose address the four
- * helpers receive. as1 shares one high half between the stores to angle22
- * and angle2A only for a symbol the TU defines, so the TU lays the block
- * out at its recorded offset. The bytes belong to the retained overlay
- * image: these zero initializers only fix the layout, and the object's
- * .data is dropped at POSTPROCESS with this function's records rebound to a
- * zero-valued base (mk/overlays.mk). The other functions keep the D_ names. */
-static u8 sOverlay9Data000[0x2D0] = { 0 };
-static O9Params sOverlay9Params = { 0 };
+Overlay9ParameterState gOverlay9ParameterState = {
+    0.0f, 0.0f, 1.0f, 40.0f, 0.0f, 0.0f,
+    { 63, 128, 0, 0 },
+    0.0f, 0, 0, 0.0f, 0, 0, 0.0f,
+};
 
 /* PROVENANCE: Mickey-derived from the assigned overlay assembly range; no donor body was imported.
  *
@@ -72,7 +55,7 @@ static O9Params sOverlay9Params = { 0 };
  * item are array subscripts, and the locals are declared in home order. */
 void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
     void *state;
-    O9Params *params = &sOverlay9Params;
+    Overlay9ParameterState *params = &gOverlay9ParameterState;
     f32 vector[3];
     s16 angles[3];
     void *handle;
@@ -140,11 +123,11 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
     func_overlay_009_F0000540_1866BB8(object, state, params, steps);
 
     params->angle20 = (s16)(params->angle20 +
-        (((s32)(3072.0f * params->unk1C) + 0x400) * steps));
+        (((s32)(3072.0f * params->magnitude) + 0x400) * steps));
     *gOverlay9PacketCursor++ = 0x22;
     *gOverlay9PacketCursor++ = params->angle20;
     params->angle22 = (s16)(params->angle22 +
-        (((s32)(3072.0f * (params->unk08 - 1.0f)) + 0x400) * steps));
+        (((s32)(3072.0f * (params->throttle - 1.0f)) + 0x400) * steps));
     *gOverlay9PacketCursor++ = 0x24;
     *gOverlay9PacketCursor++ = params->angle22;
     params->angle2A = (s16)(params->angle2A + (steps << 8));
@@ -168,14 +151,14 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
         }
         remaining = steps - 1;
         if (steps != 0) {
-            current = params->unk2C;
+            current = params->bobOffset;
             do {
                 current += (target - current) * rate;
             } while (remaining--);
-            params->unk2C = current;
+            params->bobOffset = current;
         }
         M2C_FIELD(object, f32 *, 0x10) +=
-            params->unk2C * func_8002A8C0(params->angle2A);
+            params->bobOffset * func_8002A8C0(params->angle2A);
         func_8005AF14(savedEntry, entryData, object);
         lightObject(object, savedEntry, M2C_FIELD(object, void **, 0x50),
                       ((O9Entry *)savedEntry)->items[((O9Entry *)savedEntry)->index]);
@@ -219,18 +202,18 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
  * saved-FPR order the load-versus-literal closures called unreachable. The
  * loop is the plain `while (steps--)`. */
 static void func_overlay_009_F0000540_1866BB8(O9Angle *angle, void *unused,
-                                       O9Motion *motion, s32 steps) {
+                                       Overlay9ParameterState *motion, s32 steps) {
     s32 delta;
 
     while (steps--) {
-        delta = mathDiffAngle(motion->angle, -angle->angle);
+        delta = mathDiffAngle(motion->angle28, -angle->angle);
         if ((delta >= -0x3F) && (delta < 0x40) &&
             (motion->velocity > -16.0f) && (motion->velocity < 16.0f)) {
             motion->velocity = 0.0f;
-            motion->angle = -angle->angle;
+            motion->angle28 = -angle->angle;
         } else {
             motion->velocity += 20.0f * func_8002A8C0(delta);
-            motion->angle += (s32) motion->velocity;
+            motion->angle28 += (s32) motion->velocity;
         }
         motion->velocity *= 0.995f;
         if ((motion->velocity > -0.1f) &&
@@ -239,17 +222,17 @@ static void func_overlay_009_F0000540_1866BB8(O9Angle *angle, void *unused,
         }
     }
 
-    delta = motion->angle;
+    delta = motion->angle28;
     if (delta < -0x4000) delta = -0x8000 - delta;
     if (delta >= 0x4001) delta = 0x8000 - delta;
     *D_0++ = 0xB;
-    *D_0++ = motion->angle;
+    *D_0++ = motion->angle28;
     *D_0++ = 0xA;
     *D_0++ = -delta;
 }
 
 static void func_overlay_009_F0000744_1866DBC(O9OutputRecord *output, O9OutputControl *control,
-                                       O9OutputState *state, s32 updateCount) {
+                                       Overlay9ParameterState *state, s32 updateCount) {
     f32 level;
     f32 amount;
     s32 i;
@@ -261,13 +244,13 @@ static void func_overlay_009_F0000744_1866DBC(O9OutputRecord *output, O9OutputCo
         } while (i--);
     }
 
-    level = state->scale * 0.0125f;
+    level = state->position * 0.0125f;
     if (level > 1.0f) {
         level = 1.0f;
     }
 
-    output->pitch = -(s32)(state->x * 8192.0f * level);
-    output->yaw = (s32)(state->throttle * state->y *
+    output->pitch = -(s32)(state->inputX * 8192.0f * level);
+    output->yaw = (s32)(state->throttle * state->inputY *
                         6000.0f * level);
 
     state->magnitude = control->lean / 20.0f;
@@ -275,7 +258,7 @@ static void func_overlay_009_F0000744_1866DBC(O9OutputRecord *output, O9OutputCo
         state->magnitude = -state->magnitude;
     }
 
-    amount = state->minimum / 3.0f;
+    amount = state->acceleration / 3.0f;
     if (amount < 0.0f) {
         amount = 0.0f;
     }
@@ -297,7 +280,7 @@ static void func_overlay_009_F0000744_1866DBC(O9OutputRecord *output, O9OutputCo
 }
 
 static void func_overlay_009_F00009BC_1867034(s16 *angleOut, O9InputControl *control,
-                                       O9InputState *state) {
+                                       Overlay9ParameterState *state) {
     f32 target;
     f32 one = 1.0f;
     s32 input;
@@ -310,11 +293,11 @@ static void func_overlay_009_F00009BC_1867034(s16 *angleOut, O9InputControl *con
     } else {
         target = (f32)input / 60.0f;
     }
-    state->x += (target - state->x) * 0.02f;
-    if (state->x > 0.0f) {
-        control->lean = -state->x * 20.0f;
+    state->inputX += (target - state->inputX) * 0.02f;
+    if (state->inputX > 0.0f) {
+        control->lean = -state->inputX * 20.0f;
     } else {
-        control->lean = -state->x * 10.0f;
+        control->lean = -state->inputX * 10.0f;
     }
 
     input = control->inputY;
@@ -325,7 +308,7 @@ static void func_overlay_009_F00009BC_1867034(s16 *angleOut, O9InputControl *con
     } else {
         target = (f32)input / 60.0f;
     }
-    state->y += (-target - state->y) * 0.075f;
+    state->inputY += (-target - state->inputY) * 0.075f;
 
     if (control->flags & 0x10) {
         state->throttle += (2.0f - state->throttle) * 0.025f;
@@ -334,7 +317,7 @@ static void func_overlay_009_F00009BC_1867034(s16 *angleOut, O9InputControl *con
     }
 
     state->turnRate +=
-        ((state->throttle * state->y * 365.0f) - state->turnRate) * 0.1f;
+        ((state->throttle * state->inputY * 365.0f) - state->turnRate) * 0.1f;
     control->angleStep = (s16)(s32)state->turnRate;
     control->angle += control->angleStep;
     *angleOut = control->angle;
@@ -440,7 +423,7 @@ static void func_overlay_009_F0000CE4_186735C(O9IntegrateOutput *out, O9Integrat
     func_8001DD70(out, control, step);
 }
 
-static void func_overlay_009_F0000F6C_18675E4(O9Point *point, O9Height *offset,
+static void func_overlay_009_F0000F6C_18675E4(O9Point *point, Overlay9ParameterState *offset,
                                        s32 steps) {
     f32 current, result, distance, candidate;
     s32 count;
@@ -458,7 +441,7 @@ static void func_overlay_009_F0000F6C_18675E4(O9Point *point, O9Height *offset,
             if (candidate < 0.0f) candidate = 0.0f;
             if (candidate < distance) {
                 distance = candidate;
-                result = hits[i]->height + offset->height;
+                result = hits[i]->height + offset->position;
             }
         } while (i--);
     }
@@ -466,7 +449,7 @@ static void func_overlay_009_F0000F6C_18675E4(O9Point *point, O9Height *offset,
     while (steps--) {
         candidate += (result - candidate) * D_54;
     }
-    result += 40.0f - offset->height;
+    result += 40.0f - offset->position;
     if (candidate < result) candidate = result;
     func_80008128(point, 0.0f, candidate - current, 0.0f);
 }
@@ -568,7 +551,7 @@ void func_overlay_009_F00010B4_186772C(O9MotionResult *out, O9MotionOwner *owner
     if (state->flags & 8) D_388[mode]++;
     D_388[mode] &= 3;
     tableIndex = (((camGetMode() & 3) * 4) + D_388[mode]) * 4;
-    targetX = *(f32 *)((u8 *)D_300 + tableIndex) + (D_2D0 * 75.0f);
+    targetX = *(f32 *)((u8 *)D_300 + tableIndex) + (gOverlay9ParameterState.inputX * 75.0f);
     targetY = *(f32 *)((u8 *)D_340 + tableIndex);
     targetAngle = D_380[mode];
     i = steps - 1;

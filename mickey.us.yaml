@@ -1392,7 +1392,7 @@ segments:
     subsegments:
       - [0x1866678, c, overlay_009]
       - [0x1867B98, bin, overlay_009_data_rodata]
-      - [0x1867E68, .data, overlay9ParameterState]
+      - [0x1867E68, .data, overlay_009]
       - [0x1867E98, .data, overlay9CameraTables]
       - {start: 0x1867F28, type: .rodata, name: overlay_009, linker_section_order: .data}
       - [0x1867F7C, bin, overlay_009_data_rodata_3e4]

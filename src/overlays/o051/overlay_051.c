@@ -14,8 +14,8 @@
 static void overlay51PatchIndices();
 
 void overlay51Initialize(void) {
-    overlay51CreateReloc(gOverlay51Resource0);
-    overlay51CreateReloc(gOverlay51Resource18);
+    overlay51CreateReloc(gOverlay51Resource0_o051Reloc);
+    overlay51CreateReloc(gOverlay51Resource18_o051Reloc);
     overlay51CreateReloc(4);
     overlay51CreateReloc(11);
     overlay51PatchIndices(gOverlay51ClockGlyphs);
@@ -229,7 +229,7 @@ void func_overlay_051_F00000D0_18999D0(Overlay51Object *object, s32 updateRate) 
 void overlay51ReleaseState(void) {
     s32 index;
 
-    freeFrontEndList(gOverlay51Resource0);
+    freeFrontEndList(gOverlay51Resource0_o051Reloc);
     overlay56ReleaseResource();
     index = gOverlay51Item;
     if (index != -1) {

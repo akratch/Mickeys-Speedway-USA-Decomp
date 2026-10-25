@@ -1,4 +1,5 @@
 #include "overlays/overlay_013.h"
+#include "game/texture_header.h"
 
 /* Tier B: actual module-lifetime storage. Initialization, creation and
  * active walks independently visit 32 records of the existing 128-byte
@@ -18,15 +19,15 @@ s32 gOverlay13Active;
 static void overlay13Initialize(void) {
     u8 *record;
     u8 *entry;
-    Overlay13Resource *resource;
+    TextureHeader *resource;
     s32 recordIndex;
     s32 entryIndex;
     s32 width;
     s32 height;
 
-    gOverlay13Resource0 = texLoadSprite(0x2C, 0);
-    gOverlay13Resource1 = texLoadSprite(0x2D, 0);
-    gOverlay13Resource2 = texLoadTexture(0x6A);
+    gOverlay13Resource0_o013Reloc = texLoadSprite(0x2C, 0);
+    gOverlay13Resource1_o013Reloc = texLoadSprite(0x2D, 0);
+    gOverlay13Resource2_o013Reloc = texLoadTexture(0x6A);
 
     record = (u8 *)gOverlay13Records_o013Reloc;
     recordIndex = 0;
@@ -58,8 +59,8 @@ static void overlay13Initialize(void) {
         record += 0x80;
     } while (recordIndex != 0x20);
 
-    gOverlay13Enabled = 0;
-    resource = gOverlay13Resource2;
+    gOverlay13ActiveCount_o013Reloc = 0;
+    resource = gOverlay13Resource2_o013Reloc;
     if (resource != 0) {
         width = (resource->width - 1) << 5;
         height = (resource->height - 1) << 5;
@@ -77,15 +78,15 @@ static void overlay13Initialize(void) {
 void overlay13Release(void) {
     void *resource;
 
-    resource = gOverlay13Resource0;
+    resource = gOverlay13Resource0_o013Reloc;
     if (resource != NULL) {
         texFreeSprite(resource);
     }
-    resource = gOverlay13Resource1;
+    resource = gOverlay13Resource1_o013Reloc;
     if (resource != NULL) {
         texFreeSprite(resource);
     }
-    resource = gOverlay13Resource2;
+    resource = gOverlay13Resource2_o013Reloc;
     if (resource != NULL) {
         texFreeTexture(resource);
     }
@@ -105,7 +106,7 @@ Overlay13Record *overlay13CreateRecord(
 
     record = gOverlay13Records_o013Reloc;
     i = 0;
-    if (gOverlay13Enabled >= 0x20) {
+    if (gOverlay13ActiveCount_o013Reloc >= 0x20) {
         return 0;
     }
 
@@ -129,7 +130,7 @@ Overlay13Record *overlay13CreateRecord(
         record->velocityY = value24;
         record->phase = 0.0f;
         record->vertexIndex = 1;
-        gOverlay13Enabled++;
+        gOverlay13ActiveCount_o013Reloc++;
     }
 
     return record;
@@ -200,7 +201,7 @@ fall_done:;
                 record->phase += 0.5f;
                 if (timer == 0) {
                     record->state = 0;
-                    gOverlay13ActiveCount--;
+                    gOverlay13ActiveCount_o013Reloc--;
                     goto fade_done;
                 }
             } while (ticks--);
@@ -236,7 +237,7 @@ void overlay13ProcessActive(s32 arg) {
     s32 i;
     Overlay13Record *record;
 
-    if (gOverlay13Enabled != 0) {
+    if (gOverlay13ActiveCount_o013Reloc != 0) {
         record = gOverlay13Records_o013Reloc;
         for (i = 0; i < 32; i++, record++) {
             if (record->state != 0) {
@@ -261,16 +262,16 @@ static void overlay13DrawRecord(
     f32 savedScale;
     Overlay13RenderState *render;
 
-    if (((record->state == 1) && (D_20 != 0)) || record->state == 2) {
+    if (((record->state == 1) && (gOverlay13Resource0_o013Reloc != 0)) || record->state == 2) {
         render = levelGetLevel();
         savedScale = record->scale;
         if (record->state != 2) {
             sprSetIA2ColOverride(0xFF, 0xFF, 0xFF, render->r, render->g, render->b);
             record->scale = savedScale;
-            camDoSprite(commands, mtx, vertices, record, D_20, 6, 0xFF);
+            camDoSprite(commands, mtx, vertices, record, (u8 *)gOverlay13Resource0_o013Reloc, 6, 0xFF);
             sprClearIA2ColOverride();
         } else {
-            texDPTextureX(commands, D_28, 0xE, 0);
+            texDPTextureX(commands, gOverlay13Resource2_o013Reloc, 0xE, 0);
             if (record->timer < 0x20) {
                 O13_GFX(0xFA000000, ((record->timer * 8) & 0xFF) | 0xFFFFFF00);
             }
@@ -281,13 +282,13 @@ static void overlay13DrawRecord(
                     (u32)record + record->vertexIndex * 0x28 + 0x80000030U);
             O13_GFX(0x05110020, (u32)&D_80000000);
 
-            if (D_24 != 0 && record->phase < (f32)(u32)*D_24) {
+            if (gOverlay13Resource1_o013Reloc != 0 && record->phase < (f32)(u32)*(u8 *)gOverlay13Resource1_o013Reloc) {
                 record->scale = savedScale * gOverlay13SecondaryScale_o013Reloc;
                 O13_GFX(0xFA000000, ((render->r & 0xFF) << 24) |
                                         ((render->g & 0xFF) << 16) |
                                         ((render->b & 0xFF) << 8) | 0xA0);
                 O13_GFX(0xFB000000, 0xFFFFFF00);
-                camDoSprite(commands, mtx, vertices, record, D_24, 0xE, 0);
+                camDoSprite(commands, mtx, vertices, record, (u8 *)gOverlay13Resource1_o013Reloc, 0xE, 0);
             }
         }
 
@@ -320,7 +321,7 @@ void overlay13DrawActive(void *commands, void *mtx, void *vertices) {
     Overlay13Record *record;
 
     temporaryDistance = 0.0f;
-    if (gOverlay13Active_o013Reloc != 0 && gOverlay13Enabled != 0) {
+    if (gOverlay13Active_o013Reloc != 0 && gOverlay13ActiveCount_o013Reloc != 0) {
         view = camGetPtr();
         if (1) {
             record = gOverlay13Records_o013Reloc;

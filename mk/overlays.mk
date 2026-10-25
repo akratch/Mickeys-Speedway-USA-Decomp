@@ -797,6 +797,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay_013.c.o: CFLAGS += -Wab,-r4300_mul
 # Complete mutable two-triangle input; no normalization or linker surrogate.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13QuadTriangles.c.o: private PLAIN_DATA_PROOF = 1
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13QuadTriangles.c.o: private PLAIN_DATA_RUNTIME_ROLE = data
+# Four authentic initialized handle/count cells; ordinary complete DATA input.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13ResourceState.c.o: private PLAIN_DATA_PROOF = 1
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13ResourceState.c.o: private PLAIN_DATA_RUNTIME_ROLE = data
 # Two genuine scalar coefficients and ordinary object alignment at runtime RO.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13Coefficients.c.o: private PLAIN_DATA_PROOF = 1
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13Coefficients.c.o: private PLAIN_DATA_RUNTIME_ROLE = ro-origin

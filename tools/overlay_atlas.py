@@ -258,6 +258,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
          (0x328, 0x338, "overlay50ItemState", ".data"),
          (0x33C, 0x36C, "overlay50ControlTail", ".data")],
     13: [(0x0, 0x20, "overlay13QuadTriangles", ".data"),
+         (0x20, 0x30, "overlay13ResourceState", ".data"),
          (0x30, 0x40, "overlay13Coefficients", ".data")],
     51: [(0x0, 0x1C, "overlay51ResourceGroups", ".data")],
     48: [(0x280, 0x700, "overlay_048", ".rodata")],
@@ -359,6 +360,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
 DATA_ONLY_FIXED_DATA_SOURCES = {
     (73, "overlay73Geometry", ".data"),
     (13, "overlay13QuadTriangles", ".data"),
+    (13, "overlay13ResourceState", ".data"),
     (13, "overlay13Coefficients", ".data"),
     (51, "overlay51ResourceGroups", ".data"),
     (12, "overlay12TriangleData", ".data"),

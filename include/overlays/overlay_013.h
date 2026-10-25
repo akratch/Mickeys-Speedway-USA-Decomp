@@ -56,19 +56,21 @@ typedef struct Overlay13View {
     f32 y;
 } Overlay13View;
 
-typedef struct Overlay13Resource {
-    u8 pad00[6];
-    u16 width;
-    u16 height;
-} Overlay13Resource;
+struct Sprite;
+struct TextureHeader;
 
-extern void *gOverlay13Resource0;
-extern void *gOverlay13Resource1;
-/* Loaded texture handle; Overlay13Resource retains a partial dimension view. */
-extern void *gOverlay13Resource2;
-extern s32 gOverlay13Enabled;
-extern s32 gOverlay13Active_o013Reloc;
+extern struct Sprite *gOverlay13Resource0;
+extern struct Sprite *gOverlay13Resource1;
+extern struct TextureHeader *gOverlay13Resource2;
 extern s32 gOverlay13ActiveCount;
+/* Actual handle cells and signed DATA count, distinct from the BSS active flag.
+ * Private imports retain loader operands. Release does not clear the handles
+ * or count; cache balance, reentry and graphics lifetime remain caller duties. */
+extern struct Sprite *gOverlay13Resource0_o013Reloc;
+extern struct Sprite *gOverlay13Resource1_o013Reloc;
+extern struct TextureHeader *gOverlay13Resource2_o013Reloc;
+extern s32 gOverlay13ActiveCount_o013Reloc;
+extern s32 gOverlay13Active_o013Reloc;
 extern f32 gOverlay13Gravity;
 extern f32 gOverlay13SecondaryScale;
 extern f32 gOverlay13Gravity_o013Reloc;
@@ -78,13 +80,8 @@ extern Overlay13Record gOverlay13Records_o013Reloc[32];
 extern Overlay13QuadTriangle gOverlay13QuadTriangles[2];
 extern Overlay13QuadTriangle gOverlay13QuadTriangles_o013Reloc[2];
 
-extern void *D_20;
-extern u8 *D_24;
-extern void *D_28;
 extern u8 D_80000000[];
 
-struct Sprite;
-struct TextureHeader;
 extern struct Sprite *texLoadSprite(s32 assetId, s32 arg1);
 extern struct TextureHeader *texLoadTexture(s32 resourceId);
 extern void texFreeSprite(struct Sprite *resource);
@@ -92,9 +89,9 @@ extern void texFreeTexture(struct TextureHeader *resource);
 extern void SetLinkSlot(s32, u16, u16);
 extern Overlay13RenderState *levelGetLevel(void);
 extern void sprSetIA2ColOverride(u8, u8, u8, u8, u8, u8);
-extern void camDoSprite(Overlay13Command **, void *, void *, Overlay13Record *, void *, s32, s32);
+extern void camDoSprite(Overlay13Command **, void *, void *, Overlay13Record *, u8 *, s32, s32);
 extern void sprClearIA2ColOverride(void);
-extern void texDPTextureX(Overlay13Command **, void *, s32, s32);
+extern void texDPTextureX(Overlay13Command **, struct TextureHeader *, s32, s32);
 extern Overlay13View *camGetPtr(void);
 
 /*

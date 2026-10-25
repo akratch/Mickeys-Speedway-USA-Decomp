@@ -1532,6 +1532,122 @@ def capture_nonexec_producer_raw(root, source, configured, linked, map_path):
     return _capture_configured_raw(root, source, configured, linked, "", producer_map=map_path)
 
 
+_EDITED_PREFIX_SEAL = object()
+
+
+@dataclasses.dataclass(frozen=True)
+class EditedPrefixCapture:
+    root: pathlib.Path
+    provider: object
+    command: tuple
+    inputs: tuple
+    surface: object
+    mapping: tuple
+    projection_tools: object
+    seal: object = dataclasses.field(repr=False)
+
+    def current(self):
+        if (self.seal is not _EDITED_PREFIX_SEAL
+                or _static_parsed_surface(self.provider['elf']) != self.surface
+                or tuple(self.provider['map']) != self.mapping
+                or metadata_link.edited_projection_tools() != self.projection_tools
+                or any(sha256_file(self.root/name) != value for name,value in self.inputs)):
+            raise MetadataProofError('edited provider prefix changed')
+        return {'role': 'edited-provider-prefix', 'command': list(self.command),
+                'inputs': dict(self.inputs)}
+
+
+def bind_edited_prefix(root, provider, directory, command, prefix, commands, input_hashes):
+    """Bind the existing freshly produced projection, never an arbitrary ELF path."""
+    import runlink_pack as rp
+    root, directory = pathlib.Path(root), pathlib.Path(directory)
+    expected = ['tools/binutils/mips64-elf-ld', '-r', '-T',
+                str((directory/'providers.ld').relative_to(root)), '-Map',
+                str((directory/'providers.map').relative_to(root)), '-o',
+                str((directory/'providers.elf').relative_to(root))]
+    if list(map(str,command)) != expected or not commands or commands[-1] != expected:
+        raise MetadataProofError('edited prefix lacks its actual ordinary link command')
+    if provider['elf'].path != directory/'providers.elf':
+        raise MetadataProofError('edited prefix loaded object differs')
+    with tempfile.TemporaryDirectory(prefix='prefix-bind-', dir=root/'build') as temporary:
+        actual, _ = metadata_link.edited_projection(root, pathlib.Path(temporary))
+    if actual != prefix or (directory/'providers.ld').read_text() != prefix:
+        raise MetadataProofError('edited prefix differs from current source projection')
+    selectors = metadata_link.edited_program_selectors(prefix)
+    if not selectors or any('/overlays/' in name for name in selectors):
+        raise MetadataProofError('edited provider projection has selected inputs')
+    held = {name: input_hashes[name] for name in selectors}
+    held.update({str(path.relative_to(root)): value for path,value in provider['holds'].items()})
+    held[str((directory/'providers.ld').relative_to(root))] = hashlib.sha256(prefix.encode()).hexdigest()
+    for name in ('mickey.us.yaml','tools/binutils/mips64-elf-ld',
+                 'tools/proof_provenance.py','tools/runlink_metadata_link.py','tools/runlink_pack.py'):
+        held[name] = sha256_file(root/name)
+    result = EditedPrefixCapture(root, provider, tuple(expected), tuple(sorted(held.items())),
+        _static_parsed_surface(provider['elf']), tuple(provider['map']),
+        metadata_link.edited_projection_tools(), _EDITED_PREFIX_SEAL)
+    result.current()
+    return result
+
+
+def resident_cell_declarations(cpp, flags, root, names, *, definition):
+    """Closed o32 unsigned-short pointer cells, not a general C layout engine."""
+    import candidate_context as lexical
+    if '-32' not in flags or any(flag in flags for flag in ('-64','-n32','-n64')):
+        raise MetadataProofError('resident cell requires actual o32 flags')
+    ca, parser, before, lexical_identity = _effective_parser(root)
+    if len(cpp) > lexical.MAX_SOURCE_BYTES:
+        raise MetadataProofError('resident cell CPP exceeds bound')
+    try:
+        ast = parser.CParser().parse(cpp.decode('utf-8'))
+    except Exception as error:
+        raise MetadataProofError('resident cell effective C cannot be parsed') from error
+    aliases, declarations = collections.defaultdict(list), collections.defaultdict(list)
+    for node in ast.ext:
+        if isinstance(node, ca.Typedef):
+            aliases[node.name].append(node.type)
+    class Visitor(ca.NodeVisitor):
+        def visit_Pragma(self, node):
+            raise MetadataProofError('resident cell source has a pragma')
+        def visit_Decl(self, node):
+            if node.name in names:
+                declarations[node.name].append(node)
+            self.generic_visit(node)
+    Visitor().visit(ast)
+    def unsigned_short(node, seen=()):
+        if not isinstance(node, ca.TypeDecl) or node.quals or getattr(node,'align',None):
+            return False
+        if not isinstance(node.type, ca.IdentifierType):
+            return False
+        words = node.type.names
+        if sorted(words) in (['short','unsigned'], ['int','short','unsigned']):
+            return True
+        return (len(words) == 1 and words[0] not in seen and len(aliases[words[0]]) == 1
+                and unsigned_short(aliases[words[0]][0], seen+(words[0],)))
+    for name in names:
+        rows = declarations[name]
+        if not rows or any(node not in ast.ext or node.quals or node.funcspec or node.bitsize
+                or getattr(node,'align',None) or node.init is not None
+                or node.storage not in ([], ['extern']) or not isinstance(node.type,ca.PtrDecl)
+                or node.type.quals or not unsigned_short(node.type.type) for node in rows):
+            raise MetadataProofError('unsupported resident pointer-cell declaration: '+name)
+        if sum(not node.storage for node in rows) != int(definition):
+            raise MetadataProofError('resident pointer-cell definition count differs: '+name)
+        if not definition and any(node.storage != ['extern'] for node in rows):
+            raise MetadataProofError('resident cell consumer is not external')
+    if before != literal_profile_inputs(root) or lexical.identity() != lexical_identity:
+        raise MetadataProofError('resident cell parser changed')
+    return tuple(sorted(names))
+
+
+def capture_edited_provider_raw(root, source, configured, prefix):
+    if not isinstance(prefix, EditedPrefixCapture):
+        raise MetadataProofError('resident cell lacks an authenticated edited prefix')
+    prefix.current()
+    return _capture_configured_raw(root, source, configured, prefix.provider['elf'].path, '',
+        producer_map=next(path for path in prefix.provider['holds'] if path.suffix == '.map'),
+        ordinary_provider=True, edited_prefix=prefix)
+
+
 def capture_data_provider_raw(root, source, configured, linked, map_path):
     """Fresh ordinary-provider C using the same bound producer capture lifecycle."""
     return _capture_configured_raw(root, source, configured, linked, "", producer_map=map_path,
@@ -1539,12 +1655,16 @@ def capture_data_provider_raw(root, source, configured, linked, map_path):
 
 
 def _capture_configured_raw(root, source, configured, linked, postprocess, *,
-                            module_link=False, producer_map=None, ordinary_provider=False):
+                            module_link=False, producer_map=None, ordinary_provider=False, edited_prefix=None):
     """Fresh reproduction only: never authenticate an externally supplied raw object."""
     import permute_batch as batch
     import sweep_receipts as receipts
     if root.resolve() != batch.ROOT.resolve() or os.environ.get("PROMOTION_TRIAL", "") not in ("", "0"):
         raise MetadataProofError("unsupported raw-proof root or relaxed trial environment")
+    if edited_prefix is not None:
+        if not isinstance(edited_prefix, EditedPrefixCapture) or edited_prefix.root != root:
+            raise MetadataProofError("foreign edited provider capture")
+        edited_prefix.current()
     target = configured.relative_to(root).as_posix()
     deadline = time.monotonic() + 120
     static_lines = []
@@ -1571,6 +1691,14 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                            if target in line and "tools/static_symbols.py" in line]
         if len(static_lines) > 1:
             raise MetadataProofError("ambiguous static-symbol recipe")
+        if edited_prefix is not None:
+            trap = [line.strip() for line in output if target in line and 'tools/trap_names.py' in line]
+            expected_trap = ['python3','tools/trap_names.py','rename',target,'config/overlay_funcs_to_trap.us.txt']
+            if (metadata or rebinds or static_lines or len(trap) != 1
+                    or shlex.split(trap[0]) != expected_trap
+                    or any(target in line and line.strip() not in set(compilers+trap) for line in output)):
+                raise MetadataProofError('unsupported edited resident provider recipe')
+            return compilers[0], trap[0], ''
         if ordinary_provider:
             if metadata:
                 provider_plan = metadata_filter_plan(metadata[0], target, root)
@@ -1588,7 +1716,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
     dependency_args = args + (("-I", str(source.parent)) if wrapped else ())
     if words.count("-o") != 1:
         raise MetadataProofError("ambiguous configured output argument")
-    plan = ([] if module_link or not expanded_postprocess else
+    plan = ([] if module_link or edited_prefix is not None or not expanded_postprocess else
             metadata_filter_plan(expanded_postprocess, target, root))
     if surface_rebind:
         plan = plan + metadata_filter_plan(surface_rebind, target, root)
@@ -1613,12 +1741,15 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                   "makefiles": {p.relative_to(root).as_posix(): sha256_file(p)
                                 for p in [root / "Makefile", *sorted((root / "mk").glob("**/*.mk"))]},
                   "proof": _LOADED_METADATA_PROOF,
-                  "target_inputs": {name: sha256_file(root / name) for name in
+                  "target_inputs": ({"config/overlay_funcs_to_trap.us.txt": sha256_file(root/"config/overlay_funcs_to_trap.us.txt"),
+                                     "tools/trap_names.py": sha256_file(root/"tools/trap_names.py")} if edited_prefix is not None else
+                    {name: sha256_file(root / name) for name in
                     ("baseroms/mickey.us.z64", "config/overlays.us.json",
-                     "overlay_undefined_syms.us.txt", "symbol_addrs.us.txt")},
-                  "generated_metadata": (generated_metadata_context(root) if producer_map is None
+                     "overlay_undefined_syms.us.txt", "symbol_addrs.us.txt")}),
+                  "generated_metadata": (edited_prefix.current() if edited_prefix is not None else
+                                         generated_metadata_context(root) if producer_map is None
                                          else producer_link_context(root, linked, producer_map)),
-                  "filter_specs": filter_spec_files(expanded_postprocess, root),
+                  "filter_specs": ({} if edited_prefix is not None else filter_spec_files(expanded_postprocess, root)),
                   "metadata_tools": {name: sha256_file(root / name) for name in
                     ("tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
                      "tools/rebind_elf_relocations.py", "tools/externalize_elf_section.py",

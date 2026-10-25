@@ -1,5 +1,5 @@
 {
-  "schema": "mickey-edited-source-modules-v1",
+  "schema": "mickey-edited-source-modules-v2",
   "default_selected": [
     75
   ],
@@ -52,7 +52,8 @@
       "entries": {
         "init": null,
         "resume": null
-      }
+      },
+      "build": "registered"
     },
     {
       "module": 37,
@@ -87,7 +88,8 @@
       "entries": {
         "init": null,
         "resume": null
-      }
+      },
+      "build": "registered"
     },
     {
       "module": 38,
@@ -113,7 +115,34 @@
       "entries": {
         "init": null,
         "resume": null
-      }
+      },
+      "build": "registered"
+    },
+    {
+      "module": 66,
+      "source": "src/overlays/o066/overlay_066.c",
+      "exports": [
+        {
+          "name": "overlay66GetCurrent",
+          "row": 1305,
+          "kind": "function"
+        },
+        {
+          "name": "func_overlay_066_F0000040_18C64A8",
+          "row": 1306,
+          "kind": "function"
+        },
+        {
+          "name": "overlay66Select",
+          "row": 1626,
+          "kind": "function"
+        }
+      ],
+      "entries": {
+        "init": null,
+        "resume": null
+      },
+      "build": "complete-overlay"
     },
     {
       "module": 75,
@@ -138,7 +167,8 @@
       "entries": {
         "init": null,
         "resume": null
-      }
+      },
+      "build": "registered"
     },
     {
       "module": 76,
@@ -163,7 +193,8 @@
       "entries": {
         "init": null,
         "resume": null
-      }
+      },
+      "build": "registered"
     },
     {
       "module": 77,
@@ -193,7 +224,8 @@
       "entries": {
         "init": null,
         "resume": null
-      }
+      },
+      "build": "registered"
     },
     {
       "module": 80,
@@ -213,7 +245,8 @@
       "entries": {
         "init": null,
         "resume": null
-      }
+      },
+      "build": "registered"
     },
     {
       "module": 81,
@@ -248,7 +281,8 @@
       "entries": {
         "init": null,
         "resume": null
-      }
+      },
+      "build": "registered"
     },
     {
       "module": 97,
@@ -318,7 +352,8 @@
       "entries": {
         "init": null,
         "resume": null
-      }
+      },
+      "build": "registered"
     }
   ]
 }

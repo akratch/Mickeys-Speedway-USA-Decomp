@@ -16,6 +16,11 @@ import shlex
 import subprocess
 import sys
 
+# The capture helper imports this module by name. Keep its loaded-code seals and
+# projection pin identical when this file is the CLI entry point.
+if __name__ == '__main__':
+    sys.modules.setdefault('runlink_metadata_link', sys.modules[__name__])
+
 import runlink_pack as rp
 
 REPO = Path(__file__).resolve().parent.parent
@@ -641,6 +646,8 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
     rp.edited_require(all(digest(directory / name) == value for name, value in expected.items()),
                       'fresh module receipt products changed')
     obj = rp.edited_prepare_object(prepared, linked_elf)
+    obj.update(compiler=compiler, source_path=source, compiler_flags=flags,
+               source_closure=closure, source_sha256=source_hash)
     target_sections = {rel.sym.section for section in rp.EDITED_SECTIONS[:-1] for rel in prepared.rels(section)
                        if rel.sym.type == rp.STT_SECTION and rel.sym.section in ('.data', '.bss')}
     word_operands = any(addend == 0x80000000
@@ -729,6 +736,24 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
         obj['integer_word'] = witness
         obj['integer_word_audit'] = audit
     return (obj, (raw, linked, receipt, expected), closure)
+
+
+def edited_cell_readback(elf, mapping, provider):
+    """Independent final-link allocation and map role checks for C cells."""
+    import check_editable_layout as pilot
+    require = rp.edited_require
+    for name, witness in provider.get('cells', {}).items():
+        require(isinstance(witness, rp.EditedResidentCell), 'untrusted final resident cell witness')
+        witness.current()
+        actual = pilot.real_symbol(elf, name)
+        section = elf.section(actual.section)
+        homes = [item for item in mapping if item.file == witness.item.file and item.insec == '.bss']
+        require(actual.type == rp.STT_OBJECT and actual.size == 4 and actual.section == '.main_bss'
+            and actual.shndx not in (rp.SHN_UNDEF, rp.SHN_ABS, rp.SHN_COMMON)
+            and section and section['type'] == rp.SHT_NOBITS and section['flags'] == 3
+            and actual.value == witness.address and section['addr'] <= actual.value
+            and actual.value+4 <= section['addr']+section['size']
+            and homes == [witness.item], 'final allocated resident BSS cell differs: '+name)
 
 
 def edited_word_readback(module, joins):
@@ -868,6 +893,9 @@ def edited_current(root, parent, variant, request):
             source = directory / record['source']
             rp.edited_require(batch.source_dependencies(source, tuple(receipt['arguments'][label])) == record['closure'],
                               'edited source CPP closure changed')
+        for record in receipt.get('provider_cell_cpp', {}).values():
+            rp.edited_require(batch.source_dependencies(root / safe_relative(record['source']),
+                tuple(record['arguments'])) == record['closure'], 'resident provider CPP closure changed')
         rp.edited_require(marker.read_bytes() == marker_data
             and (directory / 'receipt.json').read_bytes() == payload
             and pilot.artifact_hashes(directory) == expected
@@ -878,6 +906,9 @@ def edited_current(root, parent, variant, request):
             and edited_source_context(root) == receipt['resident_source_context']
             and edited_outside_context(root, receipt['outside_selectors']) == receipt['outside_input_context'],
             'edited receipt inputs changed during check')
+        for record in receipt.get('provider_cell_cpp', {}).values():
+            rp.edited_require(batch.source_dependencies(root / safe_relative(record['source']),
+                tuple(record['arguments'])) == record['closure'], 'resident provider CPP closure changed during check')
         return receipt
     except (OSError, ValueError, KeyError, TypeError, rp.PackError):
         return None  # Stale/missing products rebuild in a new preserved run.
@@ -999,6 +1030,8 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
                         '-Map', (directory / 'providers.map').relative_to(root), '-o', (directory / 'providers.elf').relative_to(root)]
     pilot.run(root, provider_command, directory / 'providers.log', commands)
     provider = rp.edited_provider_context(root, directory / 'providers.elf', directory / 'providers.map')
+    provider['prefix_capture'] = pp.bind_edited_prefix(root, provider, directory,
+        provider_command, prefix, commands, outside_hashes)
     objects, products, closures = {}, {}, {}
     for number, declaration in selected.items():
         text = overrides.get(number, (root / declaration['source']).read_text())
@@ -1157,6 +1190,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         require(actual.type == rp.STT_FUNC and actual.size == witness['size']
                 and actual.value == witness['address'] and elf.section(actual.section)['flags'] & 6 == 6,
                 'final allocated resident provider differs: ' + name)
+    edited_cell_readback(elf, mapping, provider)
     if variant == 'peer':
         try:
             pilot.removed_targets(decoded, {diagnostic['peer']}, exports.rows, callers)
@@ -1196,8 +1230,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
     require(inventory == {str((wrappers / (name + '.o')).relative_to(root)) for name in files}, 'generated wrapper inventory differs')
     require(not any(item.size and item.file.startswith('build/assets/')
         and (metadata_name(item.file[13:-2]) or item.file.endswith('/rom_fill.bin.o')) for item in mapping), 'retained metadata/fill final input')
-    for path, expected in provider['holds'].items():
-        require(digest(path) == expected, 'loaded provider changed before publication')
+    rp.edited_check_provider_holds(provider)
     for path, expected in loaded.items():
         require(digest(path) == expected, 'loaded final output changed before publication')
     edited_loaded_identity()
@@ -1227,8 +1260,12 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         'outside_retained_records': len(outside.main) + sum(len(m.table1) + len(m.table2) for m in outside.modules),
         'generated_metadata_inputs': len(inventory), 'retained_metadata_inputs': 0,
         'retained_fill_inputs': 0, 'selected_removal_refusals': removal, 'peer_removal': peer_removal, 'actual_resident_callers': outside_callers,
+        'provider_cell_cpp': provider.get('cell_source_cpp', {}),
+        'provider_cells': {name: {'address': witness.address, 'size': 4, 'input': witness.item.file}
+                           for name,witness in provider.get('cells', {}).items()},
         'rom_sha1': hashlib.sha1(rom).hexdigest(), 'provider_holds': {str(p.relative_to(root)): h for p, h in provider['holds'].items()}}
     pilot.publish_receipt(directory, receipt, artifacts)
+    rp.edited_check_provider_holds(provider)
     require(all(digest(root / n) == expected for n, expected in initial.items())
             and all(digest(path) == value for path, value in provider['holds'].items())
             and batch.checked_tool_identity() == tool

@@ -127,6 +127,57 @@ class CaptureDeadlineTests(unittest.TestCase):
         self.assertEqual(self.operations, [("recipe", 1241.0), ("dependencies", 1241.0)])
 
 
+class EditedPrefixCaptureTests(unittest.TestCase):
+    def test_actual_projection_command_and_loaded_holds_are_required(self):
+        import dataclasses, hashlib
+        import runlink_pack as rp
+        from test_runlink_pack import ObjBuilder, GLOBAL, OBJECT
+        link=provenance.metadata_link
+        with tempfile.TemporaryDirectory() as temporary:
+            root=pathlib.Path(temporary);directory=root/'build/edited-runlink/control-one'
+            directory.mkdir(parents=True)
+            source='build/src/main/provider.c.o'
+            script='SECTIONS { .main_bss : { '+source+'(.bss); } }'
+            for name in (source,'mickey.us.yaml','tools/binutils/mips64-elf-ld',
+                         'tools/proof_provenance.py','tools/runlink_metadata_link.py','tools/runlink_pack.py'):
+                path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('held')
+            (directory/'providers.ld').write_text(script)
+            path=directory/'providers.elf';path.write_bytes(ObjBuilder().section('.main_bss',nobits=16)
+                .sym('cell',0,4,GLOBAL,OBJECT,'.main_bss').build())
+            map_path=directory/'providers.map';map_path.write_text('held map')
+            image=rp.Elf(path);item=rp.MapInput('.main_bss','.bss',0,16,source)
+            context={'elf':image,'map':[item],'holds':{path:provenance.sha256_file(path),map_path:provenance.sha256_file(map_path)}}
+            command=['tools/binutils/mips64-elf-ld','-r','-T',str((directory/'providers.ld').relative_to(root)),
+                '-Map',str(map_path.relative_to(root)),'-o',str(path.relative_to(root))]
+            inputs={source:provenance.sha256_file(root/source)}
+            with mock.patch.object(link,'edited_projection',return_value=(script,'')), \
+                 mock.patch.object(link,'edited_program_selectors',return_value=[source]), \
+                 mock.patch.object(link,'edited_projection_tools',return_value={}):
+                capture=provenance.bind_edited_prefix(root,context,directory,command,script,[command],inputs)
+                self.assertEqual(capture.current()['role'],'edited-provider-prefix')
+                with self.assertRaises(provenance.MetadataProofError):
+                    provenance.bind_edited_prefix(root,context,directory,command+['extra'],script,[command],inputs)
+                with self.assertRaises(provenance.MetadataProofError):
+                    provenance.bind_edited_prefix(root,context,directory,command,script+'changed',[command],inputs)
+                for held in (root/source,map_path,directory/'providers.ld'):
+                    old=held.read_bytes();held.write_bytes(b'changed')
+                    with self.assertRaisesRegex(provenance.MetadataProofError,'prefix changed'):capture.current()
+                    held.write_bytes(old);capture.current()
+                row=next(s for s in image.symbols if s.name=='cell');index=image.symbols.index(row)
+                image.symbols[index]=dataclasses.replace(row,size=8)
+                with self.assertRaisesRegex(provenance.MetadataProofError,'prefix changed'):capture.current()
+                image.symbols[index]=row;capture.current()
+                context['map']=[dataclasses.replace(item,addr=4)]
+                with self.assertRaisesRegex(provenance.MetadataProofError,'prefix changed'):capture.current()
+                context['map']=[item]
+                with mock.patch.object(provenance,'_capture_configured_raw',return_value='fresh') as raw:
+                    self.assertEqual(provenance.capture_edited_provider_raw(root,root/'source.c',root/source,capture),'fresh')
+                    self.assertIs(raw.call_args.kwargs['edited_prefix'],capture)
+                    self.assertTrue(raw.call_args.kwargs['ordinary_provider'])
+                with self.assertRaises(provenance.MetadataProofError):
+                    provenance.capture_edited_provider_raw(root,root/'source.c',root/source,{'hash':'forged'})
+
+
 class SourceClassificationTests(unittest.TestCase):
     def classify(self, text: str, *, defines: tuple[str, ...] = ()) -> tuple[str, str]:
         return provenance.classify_source_selection(
@@ -1012,6 +1063,32 @@ address.particle=pool; word+=(u32)address.particle->x; return word; }
             use=roles+(provenance.IntegerWordRole('pack','unknown','address',1),) if mutation=='extra-role' else roles
             with self.subTest(mutation=mutation), self.assertRaises((rp.PackError,provenance.MetadataProofError)):
                 provenance.integer_word_witness(raw,raw,linked,use,exports,'source','cpp',(),self.ROOT,'tools')
+
+class ResidentPointerCellSourceTests(unittest.TestCase):
+    ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+    def facts(self, text, definition=True, flags=('-32',)):
+        return provenance.resident_cell_declarations(text.encode(), flags, self.ROOT, {'cell'}, definition=definition)
+
+    def test_actual_pointer_type_with_header_extern_and_tentative_definition(self):
+        text='typedef unsigned short u16; extern u16 *cell; u16 *cell;'
+        self.assertEqual(self.facts(text), ('cell',))
+        self.assertEqual(self.facts('typedef unsigned short u16; extern u16 *cell;',False), ('cell',))
+
+    def test_source_size_or_a_name_does_not_supply_object_authority(self):
+        for text in ('unsigned short cell[2];','unsigned long cell;','void *cell;',
+                     'unsigned short *cell=0;','static unsigned short *cell;',
+                     'unsigned short *cell; unsigned short *cell;',
+                     'extern unsigned short *cell;', 'const unsigned short *cell;',
+                     'unsigned short *cell; void f(void){unsigned short *cell;}',
+                     '#pragma GLOBAL_ASM("proxy.s")\nunsigned short *cell;'):
+            with self.subTest(text=text), self.assertRaises(provenance.MetadataProofError):
+                self.facts(text)
+        with self.assertRaises(provenance.MetadataProofError):
+            self.facts('unsigned short *cell;',flags=('-n32',))
+        with self.assertRaises(provenance.MetadataProofError):
+            self.facts('unsigned short *cell;',False)
+
 
 if __name__ == "__main__":
     unittest.main()

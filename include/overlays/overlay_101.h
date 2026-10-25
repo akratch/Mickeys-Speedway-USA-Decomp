@@ -1939,7 +1939,8 @@ extern s32 gOverlay101EntryCount;
 
 extern void amSndPlay(s32 soundId, s32 arg1);
 
-extern s32 gOverlay101OrderCount;
+extern s32 o101OrderCounter;
+extern s32 o101OrderCounter_o101Reloc;
 
 extern f32 gOverlay101TimedScale_o101Reloc;
 

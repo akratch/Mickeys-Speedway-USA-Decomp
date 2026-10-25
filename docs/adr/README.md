@@ -74,3 +74,4 @@ the ordinary way (a commit, a campaign entry), not by leaving the ADR
 | [0028](0028-mixed-storage-local-provider-group.md) | One mixed-storage whole-provider LOCAL group |
 | [0029](0029-two-object-local-data.md) | Two genuine DATA objects with a mixed LOCAL provider group |
 | [0030](0030-source-backed-encoded-address-values.md) | Source-backed encoded-address linker values |
+| [0031](0031-pointer-array-scalar-local-group.md) | A pointer array and three scalar DATA owners |

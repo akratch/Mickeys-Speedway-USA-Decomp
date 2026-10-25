@@ -172,6 +172,147 @@ def static_anchor_module(root):
     return module
 
 
+def local_ro_owner_profile(command, root):
+    """Explicit ordinary DATA-group selection is not source/type authority."""
+    words = shlex.split(command)
+    flag = '--local-ro-owner-profile'
+    if flag not in words:
+        return None
+    if (words.count(flag) != 1 or words.index(flag)+1 >= len(words)
+            or words[words.index(flag)+1] != 'pointer-array-three-s32-v1'
+            or '--local-ro-provider-group' not in words
+            or any(x in words for x in ('--local-ro-origin-object', '--local-ro-mixed-provider-group',
+                                        '--local-data-aggregate', '--local-data-objects'))):
+        raise MetadataProofError('unsupported or conflicting LOCAL owner profile')
+    local_ro_provider_inputs(command, root)
+    return words[words.index(flag)+1]
+
+
+def pointer_scalar_facts(cpp, flags, root):
+    """Closed effective declarations, independent of ELF allocation and names."""
+    import candidate_context as lexical
+    if '-32' not in flags or any(x in flags for x in ('-64', '-n32', '-n64')):
+        raise MetadataProofError('pointer/scalar source requires actual o32 flags')
+    astmod, parser, before, lexical_identity = _effective_parser(root)
+    if len(cpp) > lexical.MAX_SOURCE_BYTES:
+        raise MetadataProofError('pointer/scalar effective source is too large')
+    try:
+        tree = parser.CParser().parse(cpp.decode('utf-8'))
+    except Exception as error:
+        raise MetadataProofError('pointer/scalar effective source cannot be parsed') from error
+    aliases = collections.defaultdict(list)
+    declarations = collections.defaultdict(list)
+    for node in tree.ext:
+        if isinstance(node, astmod.Typedef):
+            aliases[node.name].append(node.type)
+        elif isinstance(node, astmod.Decl):
+            declarations[node.name].append(node)
+        else:
+            raise MetadataProofError('unsupported pointer/scalar top-level source')
+    def primitive(node, kind, seen=()):
+        if (not isinstance(node, astmod.TypeDecl) or node.quals
+                or getattr(node, 'align', None) or not isinstance(node.type, astmod.IdentifierType)):
+            return False
+        names = node.type.names
+        choices = ([['unsigned','char']] if kind == 'byte' else
+                   [['long'], ['signed','long'], ['long','int'], ['signed','long','int']])
+        if any(sorted(names) == sorted(x) for x in choices):
+            return True
+        return (len(names)==1 and names[0] not in seen and len(aliases[names[0]])==1
+                and primitive(aliases[names[0]][0], kind, seen+(names[0],)))
+    def plain(node):
+        return not (node.quals or node.funcspec or node.bitsize or getattr(node,'align',None))
+    definitions = [node for nodes in declarations.values() for node in nodes if node.storage != ['extern']]
+    if len(definitions)!=4 or any(len(nodes)!=1 for nodes in declarations.values()):
+        raise MetadataProofError('pointer/scalar definitions are missing or ambiguous')
+    array, *scalars = definitions
+    t = array.type
+    if (array.storage or not plain(array) or not isinstance(t, astmod.ArrayDecl)
+            or t.dim_quals or not isinstance(t.dim,astmod.Constant) or t.dim.type!='int'
+            or not re.fullmatch(r'[1-9][0-9]{0,8}',t.dim.value)
+            or not isinstance(t.type,astmod.PtrDecl) or t.type.quals
+            or not primitive(t.type.type,'byte') or not isinstance(array.init,astmod.InitList)):
+        raise MetadataProofError('pointer/scalar source lacks its mutable byte-pointer array')
+    count = int(t.dim.value)
+    initializers = array.init.exprs
+    if (not 0<count<=((1<<31)-13)//4 or len(initializers)!=count
+            or any(not isinstance(x,astmod.ID) for x in initializers)):
+        raise MetadataProofError('pointer array lacks its complete named-base initializer set')
+    targets = [x.name for x in initializers]
+    for name in targets:
+        nodes = declarations.get(name,())
+        if len(nodes)!=1:
+            raise MetadataProofError('pointer initializer has no unique extern array')
+        node = nodes[0]
+        if (node.storage!=['extern'] or not plain(node) or node.init is not None
+                or not isinstance(node.type,astmod.ArrayDecl) or node.type.dim is not None
+                or node.type.dim_quals or not primitive(node.type.type,'byte')):
+            raise MetadataProofError('pointer initializer is not a compatible mutable byte array')
+    for node in scalars:
+        if (node.storage or not plain(node) or not primitive(node.type,'long')
+                or not isinstance(node.init,astmod.Constant) or node.init.type!='int' or node.init.value!='0'):
+            raise MetadataProofError('pointer/scalar source requires three signed-long zero objects')
+    if set(declarations) != {array.name, *(s.name for s in scalars), *targets}:
+        raise MetadataProofError('pointer/scalar source contains an extra declaration')
+    if before != literal_profile_inputs(root) or lexical.identity()!=lexical_identity:
+        raise MetadataProofError('pointer/scalar parser or lexical implementation changed')
+    return dict(array=array.name, count=count, targets=targets, scalars=[s.name for s in scalars])
+
+
+_POINTER_SCALAR_SEAL = object()
+
+
+@dataclasses.dataclass(frozen=True)
+class PointerScalarCapture:
+    cpp: bytes = dataclasses.field(repr=False)
+    flags: tuple
+    path: pathlib.Path
+    compiler_digest: str
+    seal: object = dataclasses.field(repr=False)
+
+    def current(self):
+        if (self.seal is not _POINTER_SCALAR_SEAL
+                or hashlib.sha256(self.path.read_bytes()).digest()!=hashlib.sha256(self.cpp).digest()):
+            raise MetadataProofError('pointer/scalar internal CPP observation changed')
+        return True
+
+
+@dataclasses.dataclass(frozen=True)
+class PointerScalarWitness:
+    observation: object = dataclasses.field(repr=False)
+    digest: str
+    surface: tuple
+    facts_json: str
+    capture: PointerScalarCapture = dataclasses.field(repr=False)
+    seal: object = dataclasses.field(repr=False)
+
+    def current(self, raw):
+        self.capture.current()
+        if (self.seal is not _POINTER_SCALAR_SEAL or raw is not self.observation
+                or hashlib.sha256(raw.data).hexdigest()!=self.digest
+                or _static_parsed_surface(raw)!=self.surface):
+            raise MetadataProofError('pointer/scalar loaded metadata changed after witnessing')
+        return True
+
+
+def pointer_scalar_witness(raw, capture, root):
+    """Only the internal captured CPP observation can authorize source roles."""
+    import link_overlay_module as module
+    if not isinstance(capture,PointerScalarCapture) or not capture.current():
+        raise MetadataProofError('pointer/scalar source lacks an internal capture')
+    if hashlib.sha256(raw.data).hexdigest()!=capture.compiler_digest:
+        raise MetadataProofError('pointer/scalar compiler observation differs from source capture')
+    facts = pointer_scalar_facts(capture.cpp, capture.flags, root)
+    shape = module.pointer_scalar_shape(raw)
+    objects = shape['objects']
+    if ([o['name'] for o in objects] != [facts['array'], *facts['scalars']]
+            or objects[0]['size'] != facts['count']*4
+            or [r.sym.name for r in raw.rels('.data')] != facts['targets']):
+        raise MetadataProofError('pointer/scalar source and original compiler objects differ')
+    return PointerScalarWitness(raw, hashlib.sha256(raw.data).hexdigest(),
+        _static_parsed_surface(raw), json.dumps(facts,sort_keys=True), capture, _POINTER_SCALAR_SEAL)
+
+
 def static_source_facts(cpp, flags, root, names):
     """Closed effective o32 declarations; no allocation-derived sizeof."""
     import candidate_context as lexical
@@ -1783,6 +1924,10 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
         plan = plan + metadata_filter_plan(surface_rebind, target, root)
     literal_prepared = (prepare_literal_input(source, root, command)
                         if any(operation == "literal-end" for operation, arguments in plan) else None)
+    pointer_profile = local_ro_owner_profile(expanded_postprocess, root) if module_link else None
+    pointer_parser_inputs = literal_profile_inputs(root) if pointer_profile else {}
+    if pointer_profile:
+        _effective_parser(root)
     def context(*, operation_deadline=None):
         if operation_deadline is None:
             operation_deadline = time.monotonic() + 120
@@ -1817,6 +1962,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                     ("tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
                      "tools/rebind_elf_relocations.py", "tools/externalize_elf_section.py",
                      "tools/postprocess_guard.py", "tools/binutils/mips64-elf-objcopy")}}
+        inputs['metadata_tools'].update(pointer_parser_inputs)
         if literal_prepared:
             _literal_preparation_current(literal_prepared, root)
             inputs["metadata_tools"].update(literal_profile_inputs(root))
@@ -1866,6 +2012,34 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
         except statics.Failure as error:
             raise MetadataProofError(f"static-symbol pass failed: {error}") from error
     compiled_digest = sha256_file(raw)
+    pointer_source = None
+    if pointer_profile:
+        keep_observations[raw] = compiled_digest
+        options = [x for x in args if x in {'-g3','-g','-O0','-O1','-O2','-framepointer','-KPIC'}]
+        if '-mips2' not in args:
+            options.append('-mips1')
+        if wrapped:
+            frontend = ['.venv/bin/python','tools/asm-processor/asm_processor.py',*options,
+                        source.relative_to(root).as_posix()]
+            transformed = batch.bounded_capture(frontend, deadline, check=True).stdout.encode('utf-8')
+            cpp_input = directory/'compiler-input.c'
+            cpp_input.write_bytes(transformed)
+            cpp_flags = list(args)+['-I',str(source.parent)]
+        else:
+            cpp_input, cpp_flags = source, list(args)
+        cpp_command = ['tools/ido/cc','-E',*cpp_flags,str(cpp_input)]
+        cpp = batch.bounded_capture(cpp_command, deadline, check=True).stdout.encode('utf-8')
+        cpp_path = directory/'actual-cpp.c'
+        cpp_path.write_bytes(cpp)
+        facts = pointer_scalar_facts(cpp, cpp_flags, root)
+        keep_observations[cpp_path] = hashlib.sha256(cpp).hexdigest()
+        if wrapped:
+            keep_observations[cpp_input] = hashlib.sha256(transformed).hexdigest()
+        context.pointer_scalar_capture = PointerScalarCapture(cpp, tuple(cpp_flags), cpp_path,
+            compiled_digest, _POINTER_SCALAR_SEAL)
+        pointer_source = dict(cpp=cpp_path.relative_to(root).as_posix(),
+            cpp_sha256=hashlib.sha256(cpp).hexdigest(), flags=cpp_flags, facts=facts,
+            command=cpp_command, profile=pointer_profile)
     if before != context(operation_deadline=deadline):
         raise MetadataProofError("source, input, recipe, object or tool changed during raw proof")
     kept = None
@@ -1920,6 +2094,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
         receipt["literal_arrays"] = literal_arrays
     if kept:
         receipt["kept_rodata"] = kept
+    if pointer_source:
+        receipt["pointer_scalar_source"] = pointer_source
     return raw, plan, receipt, context
 
 

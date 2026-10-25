@@ -237,7 +237,7 @@ void overlay101PromoteSlot(s32 index) {
     i = 1;
     previous = gOverlay101Order[0].m0;
     gOverlay101Order[0].m0 = target;
-    count = gOverlay101OrderCount;
+    count = o101OrderCounter_o101Reloc;
     while (i < count && previous != target) {
             current = gOverlay101Order[i].m0;
             gOverlay101Order[i].m0 = previous;
@@ -1860,7 +1860,7 @@ void overlay101UpdateChains(s32 step) {
 
     gOverlay101Time214 += step;
     gOverlay101Time338 += step;
-    count = gOverlay101OrderCount;
+    count = o101OrderCounter_o101Reloc;
     if (count--) {
         order = &gOverlay101Order[count];
         do {
@@ -1900,7 +1900,7 @@ void overlay101DrawSlots(void *context, s32 x, s32 y) {
     s32 first;
     O101Elem_gOverlay101Order *slot;
 
-    count = gOverlay101OrderCount;
+    count = o101OrderCounter_o101Reloc;
     first = 1;
     if (count--) {
         slot = &gOverlay101Order[count];
@@ -1944,8 +1944,8 @@ void func_overlay_101_F0003A58_18DF278(void) {
     D_0.el[1 + group].m15.childType = 0; \
     D_0.el[1 + group].m15.child = 0; \
     D_0.el[1 + group].m15.data18 = D_INPUT.input; \
-    gOverlay101Order[gOverlay101OrderCount].m2 = &(owner); \
-    gOverlay101OrderCount = gOverlay101OrderCount + 1
+    gOverlay101Order[o101OrderCounter_o101Reloc].m2 = &(owner); \
+    o101OrderCounter_o101Reloc = o101OrderCounter_o101Reloc + 1
 
 #define ADD_NODE32(group, nodeX, nodeY, nodeScale, nodeValue, nodeColor, imageId) \
     D_340[gOverlay101Resource32Count].m0.x = (nodeX); \
@@ -2008,8 +2008,8 @@ void func_overlay_101_F0003A58_18DF278(void) {
     D_0.el[1 + 0].m15.height = 0; \
     D_0.el[1 + 0].m15.childType = 0; \
     D_0.el[1 + 0].m15.child = 0; \
-    gOverlay101Order[gOverlay101OrderCount].m2 = &D_1C; \
-    gOverlay101OrderCount = gOverlay101OrderCount + 1
+    gOverlay101Order[o101OrderCounter_o101Reloc].m2 = &D_1C; \
+    o101OrderCounter_o101Reloc = o101OrderCounter_o101Reloc + 1
 
     INIT_GROUP0();
     ADD_NODE32(0, 242, 334, 1.0f, 0, 0xFF, 145);
@@ -2717,8 +2717,8 @@ void func_overlay_101_F00069E8_18E2208(void) {
     D_0.el[1 + group].m16.childType = 0; \
     D_0.el[1 + group].m16.child = 0; \
     D_0.el[1 + group].m16.data18 = D_INPUT.input; \
-    gOverlay101Order[gOverlay101OrderCount].m2 = &(owner); \
-    gOverlay101OrderCount = gOverlay101OrderCount + 1
+    gOverlay101Order[o101OrderCounter_o101Reloc].m2 = &(owner); \
+    o101OrderCounter_o101Reloc = o101OrderCounter_o101Reloc + 1
 
 #define ADD_NODE32(group, nodeX, nodeY, nodeScale, nodeValue, nodeColor, imageId) \
     D_340[gOverlay101Resource32Count].m2.x = (nodeX); \
@@ -2781,8 +2781,8 @@ void func_overlay_101_F00069E8_18E2208(void) {
     D_0.el[1 + 0].m16.height = 0; \
     D_0.el[1 + 0].m16.childType = 0; \
     D_0.el[1 + 0].m16.child = 0; \
-    gOverlay101Order[gOverlay101OrderCount].m2 = &D_1C; \
-    gOverlay101OrderCount = gOverlay101OrderCount + 1
+    gOverlay101Order[o101OrderCounter_o101Reloc].m2 = &D_1C; \
+    o101OrderCounter_o101Reloc = o101OrderCounter_o101Reloc + 1
 
     INIT_GROUP0();
     ADD_NODE32(0, 0xF2, 0x14E, 1.0f, 0, 0xFF, 0x91);
@@ -3897,7 +3897,7 @@ void overlay101Cleanup(void) {
     }
     gOverlay101Resource32Count = 0;
 
-    count = gOverlay101OrderCount;
+    count = o101OrderCounter_o101Reloc;
     order = &D_0.el[0];
     if (count--) {
         do {
@@ -3906,11 +3906,11 @@ void overlay101Cleanup(void) {
             order++;
         } while (count--);
     }
-    gOverlay101OrderCount = 0;
+    o101OrderCounter_o101Reloc = 0;
 
     if (gOverlay101Handle33C != NULL) {
         overlay101ReleaseReloc(gOverlay101Handle33C,
-                               &gOverlay101OrderCount);
+                               &o101OrderCounter_o101Reloc);
         gOverlay101Handle33C = NULL;
     }
 }

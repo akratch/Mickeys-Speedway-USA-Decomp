@@ -429,6 +429,7 @@ O101_PREFIX := $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101Prefix.c.o
 O101_PREFIX_PROVIDERS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101Labels.c.o $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101LabelTail.c.o
 $(O101_PREFIX): $(O101_PREFIX_PROVIDERS)
 $(O101_PREFIX): private LOCAL_RO_PROVIDER_GROUP = $(O101_PREFIX_PROVIDERS)
+$(O101_PREFIX): private LOCAL_RO_OWNER_PROFILE = pointer-array-three-s32-v1
 
 # Mickey's LOCAL records distinguish the rodata base from data/BSS. Restoring
 # the intervening scalar literals makes the compiler's complete 512-byte float
@@ -1133,6 +1134,7 @@ $(MODULE_LINK_DATA_OBJECTS): private MODULE_LINK = $(HOST_PYTHON) $(TOOLS_DIR)/l
 	--directory $(BUILD_DIR)/modules/$(notdir $(patsubst %/,%,$(dir $@)))/$(patsubst %.c.o,%,$(notdir $@)) \
 	--ort config/runlink-ort.$(VERSION).txt --ld $(LD) --objcopy $(OBJCOPY) \
 	$(if $(LOCAL_RO_ORIGIN_OBJECT),--local-ro-origin-object $(LOCAL_RO_ORIGIN_OBJECT)) \
+	$(if $(LOCAL_RO_OWNER_PROFILE),--local-ro-owner-profile $(LOCAL_RO_OWNER_PROFILE)) \
 	$(if $(LOCAL_RO_PROVIDER_GROUP),--local-ro-provider-group $(LOCAL_RO_PROVIDER_GROUP)) \
 	$(if $(LOCAL_DATA_AGGREGATE),--local-data-aggregate) \
 	$(if $(LOCAL_DATA_OBJECTS),--local-data-objects) \

@@ -90,7 +90,38 @@ def readonly_fixture():
     return bytes(data)
 
 
+def pointer_scalars_fixture(*, missing=False, extra=False, overlap=False, suffix=0, reorder=False, scalar_rel=False):
+    obj = ElfBuilder().section('.data', bytes(20+suffix))
+    obj.sym('pointers',0,8,GLOBAL,1,'.data')
+    for index,name in enumerate(('one','two','three')):
+        obj.sym(name,7 if overlap and index==0 else 8+index*4,4,GLOBAL,1,'.data')
+    obj.sym('first',type=1).sym('second',type=1)
+    sites = [(4,'second'),(0,'first')] if reorder else [(0,'first'),(4,'second')]
+    for offset,name in sites:
+        if not (missing and offset==0):obj.rel('.data',offset,rp.R_MIPS_32,name)
+    if scalar_rel:obj.rel('.data',8,rp.R_MIPS_32,'first')
+    if extra:obj.sym('',4,0,LOCAL,1,'.data')
+    data=bytearray(obj.build());elf=rp.Elf('fixture',data)
+    struct.pack_into('>I',data,struct.unpack_from('>I',data,32)[0]+elf.section('.data')['index']*40+8,3)
+    return bytes(data)
+
+
 class BindingTests(unittest.TestCase):
+    def test_pointer_scalar_shape_is_complete_and_defaults_refuse(self):
+        shape=tool.pointer_scalar_shape(rp.Elf('good',pointer_scalars_fixture()))
+        self.assertEqual([x['size'] for x in shape['objects']],[8,4,4,4])
+        for kwargs in ({'missing':True},{'extra':True},{'overlap':True},{'suffix':4},
+                       {'reorder':True},{'scalar_rel':True}):
+            with self.subTest(kwargs=kwargs),self.assertRaises(tool.LinkError):
+                tool.pointer_scalar_shape(rp.Elf('bad',pointer_scalars_fixture(**kwargs)))
+        with tempfile.TemporaryDirectory() as directory:
+            raw=rp.Elf('good',pointer_scalars_fixture())
+            providers=[rp.Elf('a',local_fixture()),rp.Elf('b',local_fixture())]
+            with self.assertRaisesRegex(tool.LinkError,'complete sized aggregate'):
+                tool.grouped_local_bindings(raw,providers,rp.OrtNames([],{}),Path(directory),LD,[])
+            with self.assertRaises(tool.LinkError):
+                tool.grouped_local_bindings(raw,providers,rp.OrtNames([],{}),Path(directory),LD,[],mixed=True,owner_profile=tool.POINTER_SCALAR_PROFILE)
+
     @unittest.skipUnless(LD.is_file() and OBJCOPY.is_file(), "needs MIPS binutils")
     def test_explicit_readonly_provider_preserves_real_root_extent_and_scalar_payload(self):
         with tempfile.TemporaryDirectory() as directory:

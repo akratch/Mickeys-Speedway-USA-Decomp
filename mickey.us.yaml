@@ -3019,7 +3019,6 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18C6468, c, overlay_066]
-      - [0x18C6C78, bin, overlay_066_data_rodata]
 
   - name: overlay_066_reloc1
     type: bin

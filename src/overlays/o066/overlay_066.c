@@ -1,5 +1,47 @@
 #include "overlays/overlay_066.h"
 
+/* Set both RDP other-mode fields. The SDK labels the blendmask field
+ * unsupported; preserve its value without assigning it a behavior. */
+#define O66_RDP_MODES(high, low) \
+    {{ _SHIFTL(G_RDPSETOTHERMODE, 24, 8) | _SHIFTL((high), 0, 24), (low) }}
+#define O66_MODE_HIGH (G_PM_NPRIMITIVE | G_CYC_1CYCLE | G_TP_NONE | \
+    G_TD_CLAMP | G_TL_TILE | G_TT_NONE | G_TF_POINT | G_TC_FILT | \
+    G_CK_NONE | G_CD_MAGICSQ | G_AD_PATTERN | (15 << G_MDSFT_BLENDMASK))
+
+Gfx o66SetupCommands[] = {
+    gsDPPipeSync(),
+    gsSPClearGeometryMode(G_ZBUFFER | G_FOG),
+    gsDPSetCombineLERP(TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, 1,
+                       TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, 1),
+    O66_RDP_MODES(O66_MODE_HIGH,
+        G_AC_NONE | G_ZS_PIXEL | G_RM_OPA_SURF | G_RM_OPA_SURF2),
+    gsSPEndDisplayList(),
+    gsDPPipeSync(),
+    gsSPClearGeometryMode(G_ZBUFFER | G_FOG),
+    gsDPSetCombineLERP(TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, 1,
+                       TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, 1),
+    O66_RDP_MODES(O66_MODE_HIGH,
+        G_AC_NONE | G_ZS_PIXEL | G_RM_XLU_SURF | G_RM_XLU_SURF2),
+    gsSPEndDisplayList(),
+};
+Gfx o66NtscTextureTemplate[] = {
+    gsDPLoadTextureBlock(0, G_IM_FMT_RGBA, G_IM_SIZ_16b, 320, 4,
+        0, G_TX_CLAMP, G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK,
+        G_TX_NOLOD, G_TX_NOLOD),
+};
+Gfx o66WideTextureTemplates[] = {
+    gsDPLoadTextureBlock(0, G_IM_FMT_RGBA, G_IM_SIZ_16b, 448, 4,
+        0, G_TX_CLAMP, G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK,
+        G_TX_NOLOD, G_TX_NOLOD),
+    gsDPLoadTextureBlock(0, G_IM_FMT_RGBA, G_IM_SIZ_16b, 512, 4,
+        0, G_TX_CLAMP, G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK,
+        G_TX_NOLOD, G_TX_NOLOD),
+};
+s32 gOverlay66Timer = 0;
+s32 gOverlay66Current = 0;
+s32 gOverlay66Flag = 0;
+s32 gOverlay66BssControl;
+
 /* Module-private functions: no ORT row, so their callers use JUMP
  * records. */
 static void func_overlay_066_F00004E0_18C6948(Gfx **displayList, u16 *framebuffer, void *segmentBase);
@@ -125,12 +167,12 @@ static void func_overlay_066_F00004E0_18C6948(Gfx **displayList, u16 *framebuffe
     videoMode = viGetVideoMode();
     if (videoMode != 2) {
         if (videoMode != 3) {
-            textureCommands = D_50;
+            textureCommands = o66NtscTextureTemplate;
         } else {
-            textureCommands = D_88;
+            textureCommands = o66WideTextureTemplates;
         }
     } else {
-        textureCommands = D_88;
+        textureCommands = o66WideTextureTemplates;
     }
 
     gDPPipeSync((*displayList)++);
@@ -144,7 +186,7 @@ static void func_overlay_066_F00004E0_18C6948(Gfx **displayList, u16 *framebuffe
     viGetCurrentSize(&width, &height);
     gDPSetScissor((*displayList)++, G_SC_NON_INTERLACE, 0, 0,
                   width - 1, height - 1);
-    gSPDisplayList((*displayList)++, D_0);
+    gSPDisplayList((*displayList)++, o66SetupCommands);
     gDPSetPrimColor((*displayList)++, 0, 0, 255, 255, 255, 255);
 
     x0 = 0;
@@ -177,7 +219,7 @@ static void func_overlay_066_F00004E0_18C6948(Gfx **displayList, u16 *framebuffe
 
     gDPPipeSync((*displayList)++);
     texDPInit(displayList);
-    rsp_segment(displayList, 1, (void *)D_0->words.w0);
+    rsp_segment(displayList, 1, D_800D2FA8);
     gDPSetPrimColor((*displayList)++, 0, 0, 255, 255, 255, 255);
     gDPSetEnvColor((*displayList)++, 255, 255, 255, 255);
 }

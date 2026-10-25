@@ -12,7 +12,7 @@ void overlay56OffsetCoordinates(u32 *x, u32 *y) {
     u32 width;
     u32 height;
 
-    overlay56GetDimensionsReloc(&width, &height);
+    viGetCurrentSize_o056Reloc((s32 *) &width, (s32 *) &height);
     *x += width >> 1;
     *y = (height >> 1) - *y;
 }
@@ -21,7 +21,7 @@ void overlay56CenterCoordinates(s32 *x, s32 *y) {
     u32 width;
     u32 height;
 
-    overlay56GetDimensionsReloc(&width, &height);
+    viGetCurrentSize_o056Reloc((s32 *) &width, (s32 *) &height);
     *x -= width >> 1;
     *y = (height >> 1) - *y;
 }
@@ -130,7 +130,7 @@ typedef struct Overlay56Data {
 
 extern Overlay56Data gOverlay56Data;
 extern u8 *func_80028F54(void);
-extern void viGetCurrentSize(u32 *width, u32 *height);
+extern void viGetCurrentSize(s32 *width, s32 *height);
 extern void camStandardOrtho(O56Gfx **displayList, Mtx **matrix);
 extern O56Object **func_80005750(s32 *count);
 extern O56Level *levelGetLevel(void);
@@ -238,7 +238,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, Mtx **matrixCursor,
     }
     dl = *displayList;
     mtx = *matrixCursor;
-    viGetCurrentSize(&width, &height);
+    viGetCurrentSize((s32 *) &width, (s32 *) &height);
     O56_PIPESYNC(_g, dl++);
     O56_SCISSOR(_g2, dl++, 0, 0, 0, width, height);
     camStandardOrtho(&dl, &mtx);
@@ -261,7 +261,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, Mtx **matrixCursor,
         marker.x = o56LayoutXOffsets_o056Reloc[slot] - (((O56Sprite *)o56MinimapResource_o056Reloc)->width >> 1) + 260;
         func_8002F618(&dl, &marker, 0, 0, 255, 255, 255, o56MinimapFadeState_o056Reloc);
     }
-    viGetCurrentSize(&screenWidth, &screenHeight);
+    viGetCurrentSize((s32 *) &screenWidth, (s32 *) &screenHeight);
     dot = D_800D31C8[22];
     c = func_8002A8BC(level->angle);
     sinA = func_8002A8C0(level->angle);

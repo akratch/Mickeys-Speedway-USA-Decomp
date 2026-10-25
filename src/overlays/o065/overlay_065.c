@@ -4,6 +4,22 @@
 #include "PR/ultratypes.h"
 #include "game/math.h"
 
+/* Tier B: the reset, spawn and update walks bound 50 trail records and
+ * 150 particles. The initializer stores two halves of one vertex allocation;
+ * the update paths retain four camera values and a vertex write cursor.
+ * These are the module's actual backing objects. IDO supplies alignment;
+ * no source reserve is present. Existing imports preserve loader operands,
+ * while their subobject, pointer-view and lifetime contracts remain open. */
+Overlay65TrailRecord o65TrailRecords[50];
+s16 o65TrailSpawnCountdown;
+O65Particle o65Particles[150];
+f32 o65PreviousCameraX;
+f32 o65PreviousCameraZ;
+f32 o65CameraDeltaX;
+f32 o65CameraDeltaZ;
+O65Vertex *o65VertexBuffers[2];
+O65Vertex *o65VertexCursor;
+
 
 
 extern O65Particle D_1908[150];

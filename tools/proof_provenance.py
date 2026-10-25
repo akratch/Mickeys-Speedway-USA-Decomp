@@ -1532,6 +1532,55 @@ def capture_nonexec_producer_raw(root, source, configured, linked, map_path):
     return _capture_configured_raw(root, source, configured, linked, "", producer_map=map_path)
 
 
+def _keep_rodata_plan(command, target, root):
+    """The closed whole-pool recipe, not a generic missing-marker fallback."""
+    plan = metadata_filter_plan(command, target, root)
+    parts = [shlex.split(part) for part in command.split("&&")]
+    if (len(parts) != 2 or len(parts[0]) != 7
+            or not pathlib.Path(parts[0][0]).name.startswith("python")
+            or parts[0][1:4] != ["tools/externalize_elf_section.py", target, ".rodata"]
+            or not re.fullmatch(r"sha256:[0-9a-f]{64}", parts[0][4])
+            or parts[0][5:] != ["0", "keep"]
+            or parts[1] != ["tools/binutils/mips64-elf-objcopy", "--remove-section", ".rel.rodata", target]
+            or plan != [("externalize", (".rodata", parts[0][4], 0)),
+                        ("remove-section", [".rel.rodata"]) ]):
+        raise MetadataProofError("unsupported keep-only RO recipe")
+    return plan
+
+
+def _validate_kept_rodata(original, replayed, configured):
+    """Keep the actual allocated pool and its original outgoing source records."""
+    import runlink_pack as rp
+    import source_module_link_proof as proof
+    for elf in (original, replayed, configured):
+        fresh = rp.Elf(elf.path, elf.data)
+        if (_static_parsed_surface(elf) != _static_parsed_surface(fresh)
+                or elf.section(".rodata") != fresh.section(".rodata")):
+            raise MetadataProofError("keep-only parsed metadata changed")
+    section = original.section(".rodata")
+    if (not section or not section["size"] or section["type"] != 1
+            or section["flags"] != 2 or section["addr"] != 0
+            or not original.rels(".rodata")):
+        raise MetadataProofError("keep-only RO lacks its original allocated pool/records")
+    if proof.allocated(original) != proof.allocated(replayed):
+        raise MetadataProofError("keep-only RO replay changed allocated bytes or geometry")
+    if len(original.rels(".text")) != len(replayed.rels(".text")) or replayed.rels(".rodata"):
+        raise MetadataProofError("keep-only RO replay changed the wrong relocation surface")
+    for rel, addend in zip(original.rels(".rodata"),
+                           rp.in_place_addends(original, ".rodata", original.rels(".rodata"))):
+        target = rel.sym.value + addend
+        functions = [s for s in original.symbols if s.section == ".text"
+                     and s.type == rp.STT_FUNC and s.size and s.value <= target < s.value+s.size]
+        if (rel.type != rp.R_MIPS_32 or rel.offset % 4
+                or not 0 <= rel.offset <= section["size"]-4
+                or rel.sym.section != ".text" or target % 4 or len(functions) != 1):
+            raise MetadataProofError("keep-only RO has an unsupported original R32 target")
+    try:
+        rp.validate_fresh_data_input(replayed, configured)
+    except rp.PackError as error:
+        raise MetadataProofError("keep-only configured replay differs: " + str(error)) from error
+
+
 _EDITED_PREFIX_SEAL = object()
 
 
@@ -1668,6 +1717,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
     target = configured.relative_to(root).as_posix()
     deadline = time.monotonic() + 120
     static_lines = []
+    keep_observations = {}
     def recipe(operation_deadline):
         output = batch.bounded_capture(
             ["gmake", "--no-print-directory", "-n", "-W", source.relative_to(root).as_posix(), target],
@@ -1677,6 +1727,14 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                   "tools/trim_elf_section.py" if ordinary_provider or producer_map is not None
                   else "tools/filter_elf_relocations.py")
         metadata = [line.strip() for line in output if target in line and helper in line]
+        keep_only = False
+        if not metadata and not module_link and not ordinary_provider:
+            candidates = [line.strip() for line in output
+                          if target in line and "tools/externalize_elf_section.py" in line]
+            if len(candidates) == 1:
+                _keep_rodata_plan(candidates[0], target, root)
+                metadata = candidates
+                keep_only = True
         # The generated resident-call renames (mk/overlay_resident_rebinds.generated.mk)
         # run as their own recipe line after POSTPROCESS; replay them too, in that order.
         rebinds = [line.strip() for line in output if target in line and "--redefine-sym" in line
@@ -1691,6 +1749,9 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                            if target in line and "tools/static_symbols.py" in line]
         if len(static_lines) > 1:
             raise MetadataProofError("ambiguous static-symbol recipe")
+        if keep_only and any(target in line and line.strip() not in
+                             set(compilers + metadata + static_lines + rebinds) for line in output):
+            raise MetadataProofError("unknown keep-only recipe line")
         if edited_prefix is not None:
             trap = [line.strip() for line in output if target in line and 'tools/trap_names.py' in line]
             expected_trap = ['python3','tools/trap_names.py','rename',target,'config/overlay_funcs_to_trap.us.txt']
@@ -1725,6 +1786,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
     def context(*, operation_deadline=None):
         if operation_deadline is None:
             operation_deadline = time.monotonic() + 120
+        if any(sha256_file(path) != digest for path, digest in keep_observations.items()):
+            raise MetadataProofError("kept RO loaded observation changed")
         batch.checked_tool_identity()
         if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF:
             raise MetadataProofError("loaded metadata proof implementation changed")
@@ -1802,8 +1865,37 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             raw.write_bytes(statics.add_static_symbols(raw.read_bytes())[0])
         except statics.Failure as error:
             raise MetadataProofError(f"static-symbol pass failed: {error}") from error
+    compiled_digest = sha256_file(raw)
     if before != context(operation_deadline=deadline):
         raise MetadataProofError("source, input, recipe, object or tool changed during raw proof")
+    kept = None
+    if any(operation == "externalize" for operation, _arguments in plan) and not any(
+            operation in ("filter", "rebind", "nonexec-end", "literal-end") for operation, _arguments in plan):
+        _keep_rodata_plan(expanded_postprocess, target, root)
+        import runlink_pack as rp
+        original = rp.Elf(raw)
+        keep_observations[raw] = hashlib.sha256(original.data).hexdigest()
+        if keep_observations[raw] != compiled_digest:
+            raise MetadataProofError("loaded kept RO compiler output changed")
+        if "sha256:" + hashlib.sha256(original.bytes_of(".rodata")).hexdigest() != plan[0][1][1]:
+            raise MetadataProofError("loaded kept RO differs from its declared payload")
+        replay = raw.with_name("kept-replay.o")
+        replay_command = expanded_postprocess + (" && " + surface_rebind if surface_rebind else "")
+        replay_metadata(raw, replay_command, target, replay, root, skip_filters=False,
+                        deadline=deadline, plan=plan)
+        prepared_digest = sha256_file(replay)
+        prepared, loaded_configured = rp.Elf(replay), rp.Elf(configured)
+        if hashlib.sha256(prepared.data).hexdigest() != prepared_digest:
+            raise MetadataProofError("loaded kept RO replay output changed")
+        configured_digest = hashlib.sha256(loaded_configured.data).hexdigest()
+        if configured_digest != before["configured"]:
+            raise MetadataProofError("loaded kept RO configured object changed")
+        _validate_kept_rodata(original, prepared, loaded_configured)
+        keep_observations[replay] = hashlib.sha256(prepared.data).hexdigest()
+        kept = {"original": keep_observations[raw], "prepared": keep_observations[replay],
+                "configured": configured_digest, "original_ro_records": len(original.rels(".rodata")),
+                "original_text_records": len(original.rels(".text")), "size": original.size(".rodata"),
+                "prepared_object": replay.relative_to(root).as_posix()}
     literal_arrays = {}
     for operation, arguments in plan:
         if operation == "literal-end":
@@ -1826,6 +1918,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                "linked_sha256": sha256_file(linked), "directory": directory.relative_to(root).as_posix()}
     if literal_arrays:
         receipt["literal_arrays"] = literal_arrays
+    if kept:
+        receipt["kept_rodata"] = kept
     return raw, plan, receipt, context
 
 

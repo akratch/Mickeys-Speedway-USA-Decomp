@@ -69,11 +69,11 @@ void func_overlay_073_F0000000_18CAAC0(Overlay73Object *object, Overlay73Header 
   state->y = header->y;
   state->z = header->z;
   state->radius = header->scale;
-  object->scale = ((f32) header->outputScale) * D_0;
+  object->scale = ((f32) header->outputScale) * 0.01f;
   if (object->output != ((void *) 0))
   {
-    object->output[0] = object->scale * D_4;
-    object->output[1] = object->scale * D_8;
+    object->output[0] = object->scale * 6.4f;
+    object->output[1] = object->scale * 3.2f;
   }
 }
 

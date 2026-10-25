@@ -3213,7 +3213,7 @@ segments:
     subsegments:
       - [0x18CAAC0, c, overlay_073]
       - [0x18CB970, .data, overlay73Geometry]
-      - [0x18CBA40, bin, overlay_073_data_rodata]
+      - [0x18CBA40, .rodata, overlay_073]
 
   - name: overlay_073_reloc1
     type: bin

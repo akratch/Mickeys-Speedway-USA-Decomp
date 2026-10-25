@@ -178,19 +178,6 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
-    # The updater's five-entry mode-switch table and float literals,
-    # rodata-relative +0xC (data_rodata +0xDC), which the shipped %hi/%lo
-    # pairs encode.
-    73: [
-        (
-            0xDC,
-            0x12C,
-            "overlay_073",
-            ".rodata",
-            "func_overlay_073_F0000190_18CAC50",
-            True,
-        )
-    ],
     86: [
         (
             0x80,
@@ -220,7 +207,8 @@ FIXED_DATA_RODATA_OWNERSHIP = {
 # The exact data-only source allowlist keeps physical ownership independent
 # from executable text ownership and matching credit.
 CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
-    73: [(0x0, 0xD0, "overlay73Geometry", ".data")],
+    73: [(0x0, 0xD0, "overlay73Geometry", ".data"),
+         (0xD0, 0x130, "overlay_073", ".rodata")],
     12: [(0x0, 0x64, "overlay12TriangleData", ".data"),
          (0x130, 0x150, "overlay_012", ".rodata")],
     56: [(0x0, 0x30, "overlay56MarkerData", ".data"),

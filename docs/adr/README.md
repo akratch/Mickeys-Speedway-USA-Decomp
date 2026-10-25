@@ -73,3 +73,4 @@ the ordinary way (a commit, a campaign entry), not by leaving the ADR
 | [0027](0027-source-literal-array-bounds.md) | Source-authenticated bounds for complete literal-array inputs |
 | [0028](0028-mixed-storage-local-provider-group.md) | One mixed-storage whole-provider LOCAL group |
 | [0029](0029-two-object-local-data.md) | Two genuine DATA objects with a mixed LOCAL provider group |
+| [0030](0030-source-backed-encoded-address-values.md) | Source-backed encoded-address linker values |

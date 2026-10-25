@@ -188,8 +188,9 @@ the unread bytes do not justify repeating the same provider inspection.
   [inflater contract](inflater-contract.md) now establishes the raw
   DEFLATE-family block dialect, continuation flag, workspace lifetime and
   unchecked edge paths. These are not five independent APIs. Producer byte-4
-  meaning, a fixed-handler incoming-memory dependency, read-ahead bounds and
-  per-record output/overlap limits remain open.
+  meaning, a fixed-handler incoming-memory dependency and per-record output/overlap
+  limits remain open. The contract establishes a conditional normal-completion
+  lookahead bound; it does not prove those preconditions for every asset.
 - **Shared matrix cursor:** [frontUpdate](../src/main/menu.c) and overlay 11
   capture a caller's `Mtx *` in retained `D_800D3144` and copy it back. The
   resident menu and audited views in 15 overlays now use `Mtx *`; former byte

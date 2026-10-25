@@ -28,8 +28,12 @@ DATA owner `o73Triangles`. **This contract does not admit production. Existing
 guards must continue to refuse the new role until every required control below
 is implemented and passes.** A mechanism-positive diagnostic is insufficient.
 
-Use an address-only `extern unsigned char marker[]` carrier and direct target
-u32 conversion. This is an explicit target linker-symbol convention, not a C
+Use an address-only `extern unsigned char marker[]` carrier and a direct unsigned
+32-bit conversion followed by its value-preserving unsigned 32-bit field store.
+The actual O73 macro casts to `unsigned int`; its `u32` field is `unsigned long`.
+These distinct C types are both 32-bit under the authenticated IDO/o32 flags. Do
+not change the macro or assume typedef identity to satisfy a proof predicate.
+This is an explicit target linker-symbol convention, not a C
 array definition or storage claim. Permit no value load, dereference, subscript,
 pointer arithmetic/escape/round trip, callable use, R26/R32 or extra field addend.
 The marker owns zero bytes and supplies no capacity or object bounds. Observe

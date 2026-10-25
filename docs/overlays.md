@@ -2844,10 +2844,11 @@ extractor. Retail exactness is an observed control for the edited path and remai
 a mandatory guard on the default retail target.
 
 The selected identity route accepts uniquely qualified allocated sized function/
-object definitions and authenticated ordinary allocations. Resident imports are
-currently sized allocated functions only. ABS and encoded-coordinate spellings
-are not authority. Unsized objects, unknown allocated program sections, unsupported
-relocations, unproved section operands, one-past/end operands and resident DATA/BSS
-imports refuse. The narrow compiler float-pool case proves the actual complete
+object definitions and authenticated ordinary allocations. Resident imports admit
+sized allocated functions and the separately proved four-byte C `u16 *` BSS
+cells described above. ABS and encoded-coordinate spellings are not storage
+authority. Other unsized objects, unknown allocated program sections, unsupported
+relocations, unproved section operands, one-past/end operands and unproved resident
+DATA/BSS imports refuse. The narrow compiler float-pool case proves the actual complete
 load. Broader layouts/resident growth and whole-image zero-borrowing/native/API
 completion remain separate work.

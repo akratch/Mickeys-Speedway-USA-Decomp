@@ -7,7 +7,7 @@ support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `30fb03dea`; the combined borrowing
+The source measurements here are pinned to `540c57c84`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -23,20 +23,20 @@ validation and publication are separate acceptance steps.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 53,752 of 61,312 bytes have canonical projected C owners | 7,560 bytes remain. Another 304 diagnostic/trial bytes earn no physical ownership credit. |
-| Initialized images | 45 of 87 data-bearing modules are fully projected to C; 17 are partial and 25 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
+| Initialized storage | 53,848 of 61,312 bytes have canonical projected C owners | 7,464 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized images | 46 of 87 data-bearing modules are fully projected to C; 16 are partial and 25 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 31 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 5,545 records still borrow authority: 5,493 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 5,539 records still borrow authority: 5,487 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 33 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
 
 Source independence also requires reviewing encoded-coordinate names,
 retained target storage and borrowed placements within object-produced records.
-There are also 22 borrowed placements and 25 borrowed read-only section origins.
+There are also 21 borrowed placements and 24 borrowed read-only section origins.
 The direct borrowing counter alone does not measure those dependencies.
 
-An explicit current-source selection of overlays 34, 37, 38, 66, 75, 76, 77,
-80, 81 and 97 jointly reproduces all 323 selected raw references and the retail
+An explicit current-source selection of overlays 26, 34, 37, 38, 66, 75, 76,
+77, 80, 81, 89 and 97 jointly reproduces all 426 selected raw references and the retail
 image. Warm reuse is separately validated. The default selection remains
 only overlay 75; outside-module compatibility inputs remain explicit. This
 bounded route does not establish general source-only relayout.
@@ -285,7 +285,11 @@ at this checkpoint.
 
 Overlay 73 owns its writable geometry input: eight triangles and twelve XYZ
 seeds supply 200 semantic bytes plus eight ordinary compiler-alignment bytes.
-Its 96-byte read-only input remains unowned. Overlay 13 owns a mutable
+Its complete 96-byte read-only pool now comes from the original compiler output:
+88 meaningful bytes and eight ordinary alignment bytes. Three restored source
+literals retire the old imported coefficients and the pool rebind specification;
+the actual C inputs determine its placement and origin. The encoded triangle
+word and seed import view remain separate obligations. Overlay 13 owns a mutable
 32-byte two-triangle template; its UV writes now share the actual owner type.
 Another 16 DATA bytes and 16 read-only bytes remain unowned. Overlay 58's path
 map now shares its flat signed-halfword type with its readers. The encoded

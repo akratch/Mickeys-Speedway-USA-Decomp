@@ -1420,11 +1420,11 @@ typedef struct Overlay1CallbackEntry {
 } Overlay1CallbackEntry;
 
 /* Fresh pinned DKR v77/v80 and JFG scans found no Overlay 1 donor.
- * Retained genuine C measures 36/56 words with all 13 runtime-backed records.
- * Lane 704a9f31 reached an apparent exact result only by adding an empty
- * pointer condition after the callback; that invented guard is rejected and
- * must not be promoted. Reproduce the natural baseline before a source-faithful
- * allocator/lifetime attempt. */
+ * The pre-promotion natural baseline and rejected diagnostic are historical.
+ * The canonical permuter promotion subsequently proved 56 words and all 13
+ * relocation identities, including the empty post-callback mode-mask test.
+ * That exact but non-natural reread remains cleanup work; see
+ * docs/cleanup-queue.md. Do not repeat the eliminated lifetime spellings. */
 extern s32 overlay1ActivateObject(void *object);
 extern s32 gOverlay1TimerStep;
 extern f32 gOverlay1CallbackStepFloat;

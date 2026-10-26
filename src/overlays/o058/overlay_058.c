@@ -139,7 +139,7 @@ void func_overlay_058_F0000000_18AF1E8(void) {
     if (((gOverlay58PrimaryOrderIndex_o058Reloc < 4) || (D_8007BF0C_o058Reloc != 0)) && (state->mode != 1)) {
         for (i = 0; i < D_8007BEF8_o058Reloc; i++) {
             o58TimeOrder_o058Reloc[i]->counters[o58TimeTies_o058Reloc[i]]++;
-            o58TimeOrder_o058Reloc[i]->rank += D_o058_5B28[o58TimeTies_o058Reloc[i]];
+            o58TimeOrder_o058Reloc[i]->rank += overlay58RankAwards_o058Reloc[o58TimeTies_o058Reloc[i]];
             if (o58TimeOrder_o058Reloc[i]->rank > 9999) {
                 o58TimeOrder_o058Reloc[i]->rank = 9999;
             }
@@ -762,7 +762,7 @@ static void func_overlay_058_F000138C_18B0574(s32 ticks) {
              * own case; savedPosition and erase cost width. */
             letter1 = 0;
             do {
-                o58ScoreDeltas_o058Reloc[letter1] = D_o058_5B28[o58TimeTies_o058Reloc[letter1]];
+                o58ScoreDeltas_o058Reloc[letter1] = overlay58RankAwards_o058Reloc[o58TimeTies_o058Reloc[letter1]];
                 letter1++;
             } while (letter1 < D_8007BEF8_o058Reloc);
         }

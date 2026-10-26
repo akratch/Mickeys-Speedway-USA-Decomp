@@ -42,3 +42,11 @@ $(O58_PATH_MAP): $(TOOLS_DIR)/trim_elf_section.py
 $(O58_PATH_MAP): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x54 --compiler-end-padding
 $(O58_PATH_MAP): private PLAIN_DATA_PROOF = 1
 $(O58_PATH_MAP): private PLAIN_DATA_RUNTIME_ROLE = data
+
+# Six actual tie-placement awards; keep the original compiler object and
+# remove only the independently derived zero end alignment.
+O58_RANK_AWARDS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58RankAwards.c.o
+$(O58_RANK_AWARDS): $(TOOLS_DIR)/trim_elf_section.py
+$(O58_RANK_AWARDS): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x18 --compiler-end-padding
+$(O58_RANK_AWARDS): private PLAIN_DATA_PROOF = 1
+$(O58_RANK_AWARDS): private PLAIN_DATA_RUNTIME_ROLE = data

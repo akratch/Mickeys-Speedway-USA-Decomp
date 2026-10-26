@@ -464,7 +464,7 @@ extern s32 gO57Ids134Reloc[];
 extern s32 gO57Value148Reloc;
 extern s32 gO57Value14CReloc;
 
-extern s32 gO57Value50CReloc;
+
 extern s32 gO57NodeValues17CReloc[];
 extern s16 gO57ColourCycle1A8Reloc;
 
@@ -552,7 +552,7 @@ extern O57Ease28B4Point gO57Ease28B4Record23C;
 
 extern s32 gO57Ease28B4State180;
 extern u8 gO57Ease28B4Id183;
-extern s32 gO57Ease28B4Latch50C;
+
 extern u32 D_800D31B8;
 extern O57Ease28B4Secondary *o57Ease28B4LookupSecondaryReloc(s32 id);
 extern void mainTitlePageInit(s32 argument);
@@ -562,13 +562,13 @@ extern O57Tail2C28Position *gO57Tail2C28Reference14C;
 extern f32 gO57Tail2C28DistanceLimit104;
 extern s32 gO57Tail2C28QueryWord180;
 
-extern s32 gO57Tail2C28Completion50C;
+
 extern void camSetNo(s32 value);
 extern void *overlay41IsUnitScale(s32 value);
 extern void overlay84Mark(void);
 extern f32 gOverlay57DistanceLimit;
 extern Overlay57Position *gOverlay57Reference;
-extern s32 gOverlay57DistanceState;
+
 extern s32 gOverlay57Delay;
 extern Overlay57Transition gOverlay57Transition;
 extern void modSetTextureFrame(void *item, s32 value, s32 scaled);
@@ -598,7 +598,7 @@ extern s32 gO57SelectionValues17CReloc[];
 extern s32 gO57SelectionPrimary4E8Reloc;
 extern s32 gO57SelectionSecondary4ECReloc;
 extern s32 gO57SelectionChanging4F0Reloc;
-extern s32 gO57SelectionDistance50CReloc;
+
 extern s16 gOverlay57Threshold38D8Reloc;
 extern s16 gOverlay57Threshold3970Reloc;
 extern s32 gOverlay57PublishedIndex3A28Reloc;
@@ -616,7 +616,7 @@ extern s32 gO57ModeState160BaseReloc[];
 extern s32 gO57ModeState164BaseReloc[];
 extern s32 gO57ModeState184BaseReloc[];
 extern s32 gO57ModeChoice4F8;
-extern s32 gO57ModeGate50C;
+
 extern s32 gO57ModePrimaryIds134[];
 extern s32 gO57ModeSecondaryIds1A0[];
 extern void overlay84ResetCurrent(void);
@@ -662,7 +662,9 @@ extern void *gO57MiddleItems[];
 extern O57MiddleInfo gO57MiddleInfo;
 extern s32 gO57MiddleStopList[], gO57MiddlePathIndices[], gO57MiddlePathList[];
 extern O57MiddleOutput *gO57MiddleOutput;
-extern s32 gO57MiddlePanelPosition, gO57MiddleTransition, gO57MiddleCanLeave;
+/* Tier B: all seven former transition views name this existing DATA owner. */
+extern s32 o57TransitionComplete_o057Reloc;
+extern s32 gO57MiddlePanelPosition, gO57MiddleCanLeave;
 extern const char *o57ResultLabelPointers_o057Reloc[6];
 extern s16 o57ResultColumns_o057Reloc[11];
 extern char o57EmptyTimeFormat_o057Reloc[], o57SplitTimeFormat_o057Reloc[];

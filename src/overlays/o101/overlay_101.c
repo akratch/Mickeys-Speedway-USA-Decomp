@@ -1047,16 +1047,16 @@ void overlay101SetScissor(Overlay101Gfx **displayList, register s32 left, s32 to
     {
         Overlay101Gfx *command;
         command = (*displayList)++;
-        command->w0 = 0xE7000000;
-        command->w1 = 0;
+        command->words.w0 = 0xE7000000;
+        command->words.w1 = 0;
     }
     {
         Overlay101Gfx *command;
         command = (*displayList)++;
-        command->w0 = 0xED000000 |
+        command->words.w0 = 0xED000000 |
                       (((s32)((f32)left * 4.0f) & 0xFFF) << 12) |
                       ((s32)((f32)top * 4.0f) & 0xFFF);
-        command->w1 = (((s32)((f32)right * 4.0f) & 0xFFF) << 12) |
+        command->words.w1 = (((s32)((f32)right * 4.0f) & 0xFFF) << 12) |
                       ((s32)((f32)bottom * 4.0f) & 0xFFF);
     }
 }
@@ -1360,14 +1360,14 @@ void overlay101DrawTransformed(Overlay101Gfx **displayList, void *matrix,
         transform.z = 0.0f;
         transform.depth = element->depth;
         command = (*displayList)++;
-        command->w1 = 0;
-        command->w0 = 0xE7000000;
+        command->words.w1 = 0;
+        command->words.w0 = 0xE7000000;
         command = (primColorCommand = (*displayList)++);
-        command->w0 = 0xFA000000;
-        command->w1 = (element->color & 0xFF) | 0xFFFFFF00;
+        command->words.w0 = 0xFA000000;
+        command->words.w1 = (element->color & 0xFF) | 0xFFFFFF00;
         command = (*displayList)++;
-        command->w1 = 0xFFFFFF00;
-        command->w0 = 0xFB000000;
+        command->words.w1 = 0xFFFFFF00;
+        command->words.w0 = 0xFB000000;
         if (element->rotation != 0)
             rotated = 1;
         else
@@ -1383,10 +1383,10 @@ void overlay101DrawTransformed(Overlay101Gfx **displayList, void *matrix,
         if (element->scale == 1.0f)
             sprSetTextureFilter(1);
         command = (syncCommand = (*displayList)++);
-        command->w1 = 0;
-        command->w0 = 0xE7000000;
+        command->words.w1 = 0;
+        command->words.w0 = 0xE7000000;
         command = (*displayList)++;
-        command->w0 = 0xFA000000; command->w1 = 0xFFFFFFFF;
+        command->words.w0 = 0xFA000000; command->words.w1 = 0xFFFFFFFF;
         overlay101SetScissor(displayList, 0, 0, 1000, 1000);
         (void)right;
         (void)bottom;
@@ -1678,32 +1678,32 @@ void overlay101DrawPanel(Overlay101Gfx **displayList, Overlay101Panel *panel) {
 #define O101_PRIM(packet, color)                                            \
     {                                                                       \
         Overlay101Gfx *macroCommand = (Overlay101Gfx *)(packet);            \
-        macroCommand->w0 = 0xFA000000;                                      \
-        macroCommand->w1 = (color);                                         \
+        macroCommand->words.w0 = 0xFA000000;                                      \
+        macroCommand->words.w1 = (color);                                         \
     }
 
 #define O101_VERTICES(packet, address)                                      \
     {                                                                       \
         Overlay101Gfx *macroCommand = (Overlay101Gfx *)(packet);            \
         void *macroAddress = (void *)(address);                             \
-        macroCommand->w0 =                                                  \
+        macroCommand->words.w0 =                                                  \
             ((((((u32)macroAddress & 6U) | 0x60U) & 0xFFU) << 16) |        \
              0x04000000U) | 0x80U;                                         \
-        macroCommand->w1 = (u32)macroAddress;                               \
+        macroCommand->words.w1 = (u32)macroAddress;                               \
     }
 
 #define O101_DRAW(packet, address)                                          \
     {                                                                       \
         Overlay101Gfx *macroCommand = (Overlay101Gfx *)(packet);            \
-        macroCommand->w0 = 0x05510060;                                      \
-        macroCommand->w1 = (u32)(address);                                  \
+        macroCommand->words.w0 = 0x05510060;                                      \
+        macroCommand->words.w1 = (u32)(address);                                  \
     }
 
 #define O101_SYNC(packet)                                                   \
     {                                                                       \
         Overlay101Gfx *macroCommand = (Overlay101Gfx *)(packet);            \
-        macroCommand->w0 = 0xE7000000;                                      \
-        macroCommand->w1 = 0;                                               \
+        macroCommand->words.w0 = 0xE7000000;                                      \
+        macroCommand->words.w1 = 0;                                               \
     }
 
 /* Exact C: all 238 instruction words, the -152 frame, relocations, and linked
@@ -1716,7 +1716,7 @@ void overlay101DrawPanel(Overlay101Gfx **displayList, Overlay101Panel *panel) {
  * share the line of the `do`. as1 breaks the tie between the hoisted alpha
  * 255 and the item 2 by source line, and on its own earlier line the 2 is
  * loaded first (2 words). */
-void overlay101DrawClock(Overlay101Gfx **displayList, Overlay101Panel *panel, Overlay101Vertex **vertexCursor, s32 originX, s32 originY)
+void overlay101DrawClock(Overlay101Gfx **displayList, Mtx **matrices, Overlay101Vertex **vertexCursor, s32 originX, s32 originY)
 {
   Overlay101ClockPoint *source;
   Overlay101Vertex *vertex;
@@ -1740,7 +1740,7 @@ void overlay101DrawClock(Overlay101Gfx **displayList, Overlay101Panel *panel, Ov
   baseX = originX;
   baseY = originY;
   func_80022A44(0.1f);
-  camStandardOrtho(displayList, panel);
+  camStandardOrtho(displayList, matrices);
   func_80022A44(1.0f);
   timeValue = D_338;
   major = ((f32) timeValue) / 216000.0f;
@@ -1807,13 +1807,13 @@ void overlay101DrawClock(Overlay101Gfx **displayList, Overlay101Panel *panel, Ov
 #undef O101_DRAW
 #undef O101_SYNC
 
-void overlay101DrawChain(void *context, void *mtx, s32 *vertices,
+void overlay101DrawChain(Gfx **context, Mtx **mtx, s32 *vertices,
                          Overlay101DrawChain *chain) {
     register Overlay101DrawNode_DrawChain *node;
     s32 type;
 
     if (chain->enabled != 0) {
-        camStandardOrtho();
+        camStandardOrtho(context, mtx);
         if (chain->mode != 4) {
             overlay101DrawPanel(context, chain);
         }
@@ -1895,7 +1895,7 @@ void overlay101UpdateChains(s32 step) {
     }
 }
 
-void overlay101DrawSlots(void *context, s32 x, s32 y) {
+void overlay101DrawSlots(Gfx **context, Mtx **matrices, s32 y) {
     s32 count;
     s32 first;
     O101Elem_gOverlay101Order *slot;
@@ -1905,9 +1905,9 @@ void overlay101DrawSlots(void *context, s32 x, s32 y) {
     if (count--) {
         slot = &gOverlay101Order[count];
         do {
-            overlay101DrawChain(context, x, y, slot->m2);
+            overlay101DrawChain(context, matrices, y, slot->m2);
             if (first != 0) {
-                overlay101DrawClock(context, x, y, 0x6E, 0x4D);
+                overlay101DrawClock(context, matrices, y, 0x6E, 0x4D);
                 first = 0;
             }
             slot--;

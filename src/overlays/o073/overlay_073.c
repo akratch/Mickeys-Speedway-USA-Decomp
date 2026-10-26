@@ -3,7 +3,7 @@
 extern unsigned char o73TriangleCommandWord[];
 
 /* DKR v77/v80 and JFG contain no exact donor for this initializer. */
-/* Fresh configured full-TU and isolated canonical V0 objects are text-identical
+/* Historical pre-promotion checkpoint, not the current match verdict: V0
  * at 90/100 raw and 92/100 runtime-relocation-normalized words, with exact
  * 100-word extent and frame 0x8. The first mismatch is +0x40; all eight
  * codegen residual words are one reciprocal a2/a3 allocation swap at
@@ -16,17 +16,17 @@ extern unsigned char o73TriangleCommandWord[];
  * initializing the shared index before the preserve-state branch regressed to
  * 55/100 raw and normalized words and shifted the first LOCAL pair, so no
  * strict gain authorized a scoped form or batch. The 122-stock-build cap is
- * exhausted. Runtime table 2 resolves
- * D_80 through LOCAL base
+ * exhausted. Runtime table 2 resolves D_80 through LOCAL base
  * +0xEB0/addend +0x80 (module +0xF30), while D_0/D_4/D_8 use LOCAL base
  * +0xF80 and addends 0/+4/+8. The 16 zero-immediate calls labelled with this
  * module-zero symbol in overlay_073.s are outgoing SYMBOL relocations, not
  * callers. ORT 1248 exports +0; resident relocation 90 at
  * func_8000AA38+0x42C is the sole inbound. Fresh relocation-surface comparison
  * reports target/candidate 8/8, offset/type 8/8, identity 8/8, and all eight
- * resolved. Owned +0x0..+0x190 / ROM 0x18CAAC0..0x18CAC50 has no target
- * padding; the next assembly owner starts at +0x190. Ordinary full-TU/link
- * equality remains fallback-only and no linked C proof exists. */
+ * resolved. Owned +0x0..+0x190 has no target padding; the next owner starts
+ * at +0x190. Ordinary full-TU/link
+ * equality was fallback-only at that checkpoint. Canonical C is now matched;
+ * the multiply-by-zero state store remains in docs/cleanup-queue.md. */
 void func_overlay_073_F0000000_18CAAC0(Overlay73Object *object, Overlay73Header *header, s32 preserveState)
 {
   s32 i;

@@ -2320,7 +2320,8 @@ segments:
       - [0x1889FD0, c, overlay_043]
       - [0x188B400, bin, overlay_043_data_rodata]
       - [0x188B438, .data, overlay_043]
-      - [0x188B4B8, bin, overlay_043_data_rodata_b8]
+      - [0x188B4B8, .data, overlay43Viewport]
+      - [0x188B4C8, bin, overlay_043_data_rodata_c8]
 
   - name: overlay_043_reloc1
     type: bin

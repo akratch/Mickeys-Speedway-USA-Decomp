@@ -58,23 +58,136 @@ not a correctness gap.
 | `overlay68CheckKind` | overlay 68 probe check | `currentKind ^ 0` comparison | The algebraically inert xor keeps the copy-propagated sentinel first on the map-loop back-edge (L67). Seek a direct comparison retaining 80 words, frame `0x48`, and nine relocation identities. |
 | `overlay31CreatePool` | overlay 31 pool allocator | inner-loop `zero |= 0` on a last-declared s32 | The algebraically inert OR-zero is an L109 probe that creates a phantom a0 web (save 100.5) so the record cursor is forbidden c3 and takes a1, and the outer index takes a2. Declaration order is load-bearing (`s32 i; s32 j;` first, `zero` last). Seek a natural occupant of a0 retaining 50 words, frame `0x38`, and four relocation identities. |
 | `func_overlay_022_F0000D30_1878E38` | overlay 22 object removal | empty `if (i)` after the compact plus a loop-local `node` carrier | The empty test is an L100 occurrence that drops the search index save below the compact cursor so the index takes v1 and occupies v1 through compact; the node local makes ugen reuse v0 for the search load. Seek a natural live-range and load spelling retaining 91 words, frame `0x28`, and 12 relocation identities. |
-
 | `overlay62Update` | overlay 62 fade update | `volatile` on the local `screenBase` | The qualifier is semantically inert -- the value is the same constant on all three paths -- but without it IDO folds the local away and the function loses six words. Seek a natural spelling retaining 294 words, the `0x88` frame, and all 71 relocation records. |
-
 | `mmFreeTick` | memory delayed-free tick | empty `D_800D21B0 < 0xC000` guard inside the low-memory branch | JFG's `mmFreeTick` re-reads FreeRAM there and calls a module Mickey never links, so the block is empty; the second reference is what makes IDO materialize the global's address into a callee-saved register instead of folding the `%lo` into the load, and without it the function is one instruction short. Seek a natural spelling retaining 63 words, frame `0x30`, and all 12 relocation records. |
-
 | `overlay99BuildHeightGrid` | overlay 99 height grid | empty `unused != 0` test on the second parameter | IDO homes an unreferenced named parameter to its incoming argument slot, which is one instruction the target does not have; the empty test removes the store and its position after the grid null check is load-bearing. Seek a natural use or signature with the same 114 words, frame `0x28`, and 29 relocation records. |
-
 | `overlay17DrawStrip` | overlay 17 strip renderer | unsigned OR-zero reassignment of the initialized strip-packet cursor | Preserves all 32 pointer bits and every store and increment. It lowers the cursor save from 30 to 25 with no emitted instruction. Seek a natural spelling retaining 119 words, frame `0x38`, one relocation, and linked ROM identity. |
 | `func_overlay_058_F000138C_18B0574` | overlay 58 results renderer | `i &= 0` after case 12's first call; `(0xFF - (i = 0))` resets in the last colour argument of cases 1, 12 and 13; an empty `!= 0` test on `columnStep` (the `columnCount` tests and the `i * 0` increment were removed byte-identically by lane c-1, 2026-10-08); unused `cursor` and `portraitX` declarations; a dead index local at two slot lookups | Each is zero instructions and load-bearing for one allocator or pass-order fact named at its point of use and in `docs/WHALE.md`. Seek natural spellings retaining 3614 words, frame `0x138` and 1253 relocation identities; try the probes first and the self-read with the guard reset last. |
 | `overlay3SelectScoredObject` | overlay 3 scored-object search | unused `Overlay3Object **cursor` declaration | Holds the `0x80` frame: with one pointer-typed declaration fewer than the body declares the frame is `0x78` and 7 words differ; an unused `f32` is eliminated and does not hold it. Seek a natural used pointer local retaining 118 words, frame `0x80` and 5 relocation identities. |
 | `func_overlay_035_F00001E0_1881EC0` | overlay 35 level-model loader | unused `void *unusedPad` declaration | Holds `mdl`'s home at `sp+0x38` (L99): without it 2 words differ. Seek a natural used local retaining 356 words, frame `0x40` and 63 relocation identities. |
 | `func_overlay_041_F0001464_188879C` | overlay 41 process-entry | unused `Overlay41Input *pad` declared first | Occupies +0x44 so the address-taken `mode` and `child` homes sit at +0x40 and +0x38 (L99). Without it both homes are 4 bytes high and 7 immediate-only words remain. Seek a natural used pointer retaining 123 words, frame `0x48`, and 5 relocation identities. |
-
-Add rows as ugly-but-verified matches land. When revisiting: reproduce the match
-with idiomatic C, `gmake verify`, then delete the row + the in-source comment.
 | `overlay89UpdateStateAndParticles` | overlay 89 state/particle update | two empty `do { } while (0)` statements | They add four blocks and no code so the particle-address web's split cost reaches its save under L56 and the web leaves `s1`. Seek a real statement (a conditional, a loop guard) that supplies the blocks, retaining 136 words, frame `0x88` and 14 relocations. Not reproduced (C3-natural, 2026-09-23; `do{}while(0)` removed in each): one empty region (+3 words); `count` assigned in the particle test; `while (count--)`; pre-decrement guard and loop; count read before the test; `(timer -= rate) <= 0`; `goto done` on frozen, on timer > 0, and both (+3 each); frozen early return with the tail duplicated (+8). `goto done` plus one empty region is byte-identical but still inert. Not reproduced (w4-o089, 2026-09-24): `while (0)`, `for (; 0;)`, `do { break; } while (1)` (including wrapped around the maintain tail), four fallthrough gotos, empty `u8 >= 0` tests, empty elses on the frozen and `timer <= 0` tests, and empty `timer == 0` / `active == 0` tests after those stores are byte-identical but still inert; `&&` of frozen with timer, `switch (frozen)`, a counted decrement loop, and proved-true ifs with the next real statement inside are not. |
 | `func_80006B04` | objects slot scan | empty `do { } while (0)` before the `slots` read-back | The boundary keeps a coloured-but-never-emitted `slots` web on `t1` so the loop count takes `t2` as in the target. Seek a natural placement of that read, retaining 79 words, frameless, 0 relocations. Not reproduced (C3-natural, 2026-09-23; region removed in each): block scope, `slots` read inside the count test, `slots` declared at use, `output->unk74` read directly into the cursor, read after `var_v1`, read before `temp_t0`, unkA stored first, chained `temp_t0 = output->unkA = temp_a3`, `if (1)` for the count test; the `unk74` store hoisted above the `temp_a3 > 0` guard differs by schedule only (and stores when the count is 0). An empty `if (temp_a3 != 0) {}` is byte-identical but still inert. Reading `slots` as the first statement of the `temp_t0 > 0` body, with the empty region removed, kept 79 words but not the same bytes (2026-09-24). |
 | `func_80037414` | frontend trap caller | `var_a1 \| 0` as the `TrapDanglingJump` argument | An operand of an operator is not copy-propagated, so the identity keeps `var_a1` itself in `a1`. Lane C3-natural found `TrapDanglingJump(arg0)` byte-identical only because the trampoline forwards a1/a2 as left by the preceding computation; rejected because the C would no longer state the arguments. Sixteen three-argument spellings did not reproduce the bytes. Seek a three-argument spelling retaining 145 words, frame `0x30` and 42 relocations. Not reproduced (w4-front): bare `(arg0, var_a1, var_a2)` including parenthesized, `register`, and initializer forms; call-site `(s32)(arg1 * 60.0f)` and `(s32)(arg2 * 60.0f)`; delay `sp28`; `D_8007BE94 = var_a1`; implicit conversion; a `frames` or `f32 dur` local; in-place `arg1 *= 60.0f`; an unsigned local; and a duration copied or recomputed after `func_800371BC` (13 words, or a larger size). |
-
 | `func_8001B798` | character-plane collision | unreachable floating expression seed, initialized comparison carriers, empty guarded condition, distance clears, dead radius read and single-execution region | Independently reviewed under ADR 0017. The seed is guarded by an unused parameter assigned zero; added floating comparisons are dominated by the negative-distance test, excluding NaN operands without assuming disabled exceptions. Every retained declaration has a defined read. Seek natural expression ownership retaining 175 stock words, frame `0xE0`, all nine effective relocation identities and linked ROM bytes. |
+
+Add rows as ugly-but-verified matches land. When revisiting: reproduce the match
+with idiomatic C, `gmake verify`, then delete the row + the in-source comment.
+
+## Additional bounded reconciliation
+
+The table above retains all **51 required entries**. A committed-source check at
+`3272f4ebb` also revisited the named findings in the historical
+[naturalness ledger](NATURALNESS_LEDGER.md). It identified **44 additional
+source-review candidates**, grouped below. This is a bounded reconciliation,
+not an exhaustive current census and not a claim that 95 functions are fake.
+No entry was removed and no source form was proved naturally resolved by this
+check. The additional findings remain work; absence from the original table
+never waives source-quality acceptance.
+
+### Further unresolved inert-aid findings
+
+These 29 functions retain the historical ledger's recorded form. Their prior
+negative measurements remain useful; adding the disclosure does not authorize
+another spelling sweep or certify every historical semantic explanation anew.
+Cleanup still needs natural, exact C, or a specifically justified owner review
+of the actual form. A name/type change is not presumed codegen-neutral.
+
+| Function | Current TU | Form still present |
+|---|---|---|
+| `animseqFreeGroup` | `src/main/anim.c` | zero-XOR loop test and multiply-by-zero store |
+| `func_80023598` | `src/main/camera.c` | single-execution region at the display-list join |
+| `func_8001D2A0` | `src/main/charControl.c` | nonvolatile global self-assignment after the overlay call |
+| `func_800580F0` | `src/main/flash_58C10.c` | three single-call do/while-zero wrappers |
+| `func_8004C690` | `src/main/font.c` | OR-zero copy-loop increment |
+| `func_80036DD0` | `src/main/frontend_37680.c` | all-ones mask on a compressed address |
+| `frontSetScreenMode` | `src/main/menu.c` | zero-XOR store and address-taken local carrier |
+| `func_8003A754` | `src/main/menu_3B1A0.c` | empty record/base inequality test |
+| `func_8000BB84` | `src/main/objects.c` | empty constant-true region before reflection scaling |
+| `effectboxControl` | `src/main/spranim.c` | one-statement region around the owner-pointer store |
+| `func_8005830C` | `src/main/vehicle_sounds.c` | empty camera-pointer test |
+| `overlay1StartTimerCallbacks` | `src/overlays/o001/overlay_001_tail.c` | empty post-callback mode-mask reread |
+| `overlay1ConsumeNearbyPending` | `src/overlays/o001/overlay_001_tail.c` | empty object-pointer test before the state read |
+| `func_overlay_008_F0001000_185ED58` | `src/overlays/o008/overlay_008.c` | empty unused-parameter test that avoids an argument home |
+| `overlay59PrepareEntry` | `src/overlays/o059/overlay_059.c` | all-ones masks on the texture-load value |
+| `overlay63Initialize` | `src/overlays/o063/overlay_063.c` | zero-XOR sentinel comparison |
+| `func_overlay_073_F0000000_18CAAC0` | `src/overlays/o073/overlay_073.c` | multiply-by-zero state store |
+| `func_overlay_079_F0001290_18CE230` | `src/overlays/o079/overlay_079.c` | retained constant-true region; earlier empty position test is resolved |
+| `overlay101BuildBorder` | `src/overlays/o101/overlay_101.c` | two constant-true regions and colour lifetime constraints |
+| `overlay68UpdateAnimation` | `src/overlays/o068/overlay_068.c` | narrowed index self-assignment before interpolation |
+| `texDPTextureX` | `src/main/textures_354C8.c` | dead settings-word read |
+| `func_80010654` | `src/main/track.c` | redundant unsigned-halfword mask |
+| `func_80049B14` | `src/main/fx.c` | redundant carry clear in the case-two else arm |
+| `func_80011CDC` | `src/main/track.c` | one-statement record-address region |
+| `func_overlay_066_F00004E0_18C6948` | `src/overlays/o066/overlay_066.c` | two multiply-by-zero width expressions |
+| `func_80038190` | `src/main/frontend_37D50.c` | cursor and loop-index OR-zero probes |
+| `sprDPset` | `src/main/textures_354C8.c` | empty frame-index and settings-flag tests |
+| `overlay1UpdateObjectPhysics` | `src/overlays/o001/overlay_001_tail.c` | two empty call-result tests; forced field reread is separately recorded |
+| `func_overlay_008_F0001294_185EFEC` | `src/overlays/o008/overlay_008.c` | single-execution regions and dead update-parameter store |
+
+### Inherited conditions requiring source review
+
+The following two functions disclose an empty condition inherited from a
+permitted donor. That is lineage evidence, not proof of an original debug body,
+not a new correctness bug, and not automatic naturalness closure. Preserve
+Mickey's behavior and the recorded failed removals while reviewing them.
+
+| Function | Current TU | Form |
+|---|---|---|
+| `func_800180B4` | `src/main/shadows.c` | empty face-mask test; disclosed inherited form |
+| `func_80035E88` | `src/main/textures_354C8.c` | empty texture-pointer test; disclosed inherited form |
+
+### Resolved patterns with other work remaining
+
+Resolving a historical pattern did not necessarily make the complete function
+natural. These two findings are distinct from the resolved ones.
+
+| Function | Current TU | Remaining form |
+|---|---|---|
+| `func_80037AEC` | `src/main/frontend_37D50.c` | Dead `row = 0` declaration initializer before the later loop initializer; the ledger records its allocation-numbering role. The old mask chain is gone. |
+| `overlay82Update` | `src/overlays/o082/overlay_082.c` | Unused `currentValues++` and the documented packed store line remain; the old empty test and cursor-based smoothing loop are resolved. |
+
+### Explicit region and frame-home families
+
+These eleven functions were classified B in the historical ledger. They are
+additional review work, not eleven newly established semantic defects.
+Do not replace an unused home with a dummy object, invent a live use, or change
+an ABI to preserve output.
+
+| Function | Current TU | Form |
+|---|---|---|
+| `overlay13DrawActive` | `src/overlays/o013/overlay_013.c` | Constant-true region with a documented propagation/allocation role. |
+| `overlay33InitializeBuffers` | `src/overlays/o033/overlay_033.c` | Constant-true region with a documented propagation/allocation role. |
+| `func_overlay_038_F0000000_1885D10` | `src/overlays/o038/overlay_038.c` | Constant-true region with a documented propagation/allocation role. |
+| `overlay101ScheduleLinkedPair` | `src/overlays/o101/overlay_101.c` | Unused `volatile s16 reservation` declaration. |
+| `overlay101ScheduleLinkedPair2` | `src/overlays/o101/overlay_101.c` | Unused `volatile s16 reservation` declaration. |
+| `overlay101ScheduleLinkedFloat` | `src/overlays/o101/overlay_101.c` | Unused `volatile s16 reservation` declaration. |
+| `overlay101ScheduleLinkedScaled` | `src/overlays/o101/overlay_101.c` | Unused `volatile s16 reservation` declaration. |
+| `overlay101ScheduleLinkedByte` | `src/overlays/o101/overlay_101.c` | Unused `volatile s16 reservation` declaration. |
+| `overlay101ScheduleLinkedPair3` | `src/overlays/o101/overlay_101.c` | Unused `volatile s16 reservation` declaration. |
+| `overlay101ScheduleLinkedColor` | `src/overlays/o101/overlay_101.c` | Unused `volatile s16 reservation` declaration. |
+| `overlay101ScheduleFrames` | `src/overlays/o101/overlay_101.c` | Unused `volatile s16 reservation` declaration. |
+
+### Reconciliation limits and useful next evidence
+
+The historical A-name set has 75 functions: 23 overlap the original table,
+21 have their previously identified A construct resolved, and 31 still have
+that construct outside the table. The two residual forms and eleven B-family
+functions above are separate; this gives a 95-name bounded review union.
+Historical site totals and the wider B/C findings have not been regenerated.
+
+The current Action owner now shares its actual test/update/mask type with
+the physics, timer and mask readers. This repairs their incompatible callback
+views and removes the numeric field access while preserving function geometry
+and the exact linked output. The ordinary qualified import remains; physics and mask identity
+proofs still include runtime-table and linked-ROM evidence. No new independent
+static callback-import receipt is claimed. The post-callback empty test remains
+cleanup work. Dynamic index bounds, callback lifetime, original capacity and TU
+spelling remain qualified; these repairs remove no entry from this queue.
+
+Group future causal work by the measured compiler mechanism: region boundaries
+and propagation, induction/operand materialization, frame homes/parameter uses,
+and FP representation/reload lifetimes. Do not repeat previously eliminated
+bare-block, direct-comparison, literal-zero, signature or statement-order
+sweeps without new source or compiler evidence. SDK idioms, real debug-only
+code, `goto`, address encoding and pads are not automatically inert aids.

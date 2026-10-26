@@ -274,10 +274,55 @@ class AuthoredRegistryTests(unittest.TestCase):
         args = SimpleNamespace(root=str(self.root), write=True)
         with mock.patch.object(link.rp, 'World', side_effect=AssertionError('old World')):
             self.assertEqual(link.rp.cmd_ort(args), 0)
-            path = self.root/'config/runlink-ort.us.txt'; before = path.stat().st_mtime_ns
-            self.assertEqual(link.rp.cmd_ort(args), 0); self.assertEqual(before, path.stat().st_mtime_ns)
+            path = self.root/'config/runlink-ort.us.txt'; payload = path.read_bytes()
+            # A real producer may be newer even when the derived bytes agree.
+            import os
+            os.utime(path, ns=(1, 1))
+            self.assertEqual(link.rp.cmd_ort(args), 0)
+            self.assertGreater(path.stat().st_mtime_ns, 1)
+            self.assertEqual(path.read_bytes(), payload)
+            before = path.stat().st_mtime_ns
             args.write = False; self.assertEqual(link.rp.cmd_ort(args), 0)
+            self.assertEqual(before, path.stat().st_mtime_ns)
             path.write_text('poisoned'); self.assertEqual(link.rp.cmd_ort(args), 1)
+    def test_cli_writer_refuses_registry_change_before_publication_and_recovers(self):
+        args = SimpleNamespace(root=str(self.root), write=True)
+        path = self.root/'config/runlink-ort.us.txt'; path.write_text('old projection')
+        text, current = link.registry_projection(self.root)
+        write = Path.write_bytes
+        def changed(temporary, payload):
+            result = write(temporary, payload)
+            if temporary.name == path.name:
+                self.path.write_text(self.path.read_text()+' ')
+            return result
+        with mock.patch.object(Path, 'write_bytes', changed):
+            with self.assertRaisesRegex(link.rp.PackError, 'changed'):
+                link.rp.cmd_ort(args)
+        self.assertEqual(path.read_text(), 'old projection')
+        self.assertFalse(list(path.parent.glob('.ort-*')))
+        self.write(self.document)
+        self.assertEqual(link.rp.cmd_ort(args), 0)
+        self.assertEqual(path.read_text(), text)
+
+    def test_cli_writer_failed_replace_and_late_output_change_refuse(self):
+        args = SimpleNamespace(root=str(self.root), write=True)
+        path = self.root/'config/runlink-ort.us.txt'; path.write_text('old projection')
+        with mock.patch.object(Path, 'replace', side_effect=OSError('publication refused')):
+            with self.assertRaisesRegex(OSError, 'publication refused'):
+                link.rp.cmd_ort(args)
+        self.assertEqual(path.read_text(), 'old projection')
+        self.assertFalse(list(path.parent.glob('.ort-*')))
+        replace = Path.replace
+        def changed(temporary, output):
+            result = replace(temporary, output)
+            output.write_text('replaced after publication')
+            return result
+        with mock.patch.object(Path, 'replace', changed):
+            with self.assertRaisesRegex(link.rp.PackError, 'published projection changed'):
+                link.rp.cmd_ort(args)
+        self.assertEqual(link.rp.cmd_ort(args), 0)
+        self.assertEqual(path.read_text(), link.registry_projection(self.root)[0])
+
     def test_canonical_loaded_registry_hold_refuses_late_changes(self):
         text, current = link.registry_projection(self.root)
         (self.root/'config/runlink-ort.us.txt').write_text(text)

@@ -1,4 +1,5 @@
 #include "overlays/overlay_001.h"
+#include "overlays/overlay1_action_modes.h"
 #include "game/overlay8_tuning.h"
 #include "game/overlay_physics_state.h"
 #include "game/math.h"
@@ -733,15 +734,8 @@ typedef struct O1PhysicsPathMode {
     u16 unused;
 } O1PhysicsPathMode;
 
-typedef struct O1PhysicsActionMode {
-    s32 (*test)(void);
-    void (*update)(void);
-    u16 mask;
-    u16 unused;
-} O1PhysicsActionMode;
-
 extern O1PhysicsPathMode gO1PhysicsPaths[4];
-extern O1PhysicsActionMode gO1PhysicsActions[6];
+extern O1ActionModeData o1ActionModes_o001Reloc[O1_ACTION_MODE_COUNT];
 
 /* Call identities come from the shipped overlay relocation table. Friendly
  * imports use generated per-input rebinds; cross-overlay stored addends stay
@@ -841,7 +835,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
     s32 pad5C;
     s32 collision;
     O1PhysicsPathMode *path;
-    O1PhysicsActionMode *action;
+    O1ActionModeData *action;
     s16 resolvedX;
     s16 resolvedZ;
     f32 extraScale;
@@ -1322,7 +1316,7 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
         state->outputScale = func_overlay_008_F00034A0_18611F8Reloc(object, state, limit, D_4);
         overlay8WriteCommand(state);
         func_8001D41C(object, state, gOverlay1TimerStep);
-        for (index = 2, action = &gO1PhysicsActions[2]; index != 6; index++, action++) {
+        for (index = 2, action = &o1ActionModes_o001Reloc[2]; index != 6; index++, action++) {
             if (index != state->actionMode) {
                 predicate = action->test;
                 if ((predicate != NULL) && (action->mask & (1 << state->actionMode))) {
@@ -1331,8 +1325,8 @@ void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
                 }
             }
         }
-        if (gO1PhysicsActions[state->actionMode].update != NULL) {
-            gO1PhysicsActions[state->actionMode].update();
+        if (o1ActionModes_o001Reloc[state->actionMode].update != NULL) {
+            o1ActionModes_o001Reloc[state->actionMode].update();
         }
         func_overlay_008_F0003278_1860FD0Reloc(object, state, gOverlay1TimerStep);
         func_8001D960(object, state, 0, 3, gOverlay1TimerStep);
@@ -1400,8 +1394,6 @@ void overlay1ConsumeTimer(void) {
 /* ---- overlay1StartTimerCallbacks ---- */
 
 
-typedef void (*Overlay1Callback)(void);
-
 typedef struct Overlay1CallbackState {
     u8 pad000[0x382];
     u8 mode;
@@ -1412,50 +1404,42 @@ typedef struct Overlay1CallbackObject {
     Overlay1CallbackState *state;
 } Overlay1CallbackObject;
 
-typedef struct Overlay1CallbackEntry {
-    Overlay1Callback callback;
-    s32 pad4;
-    u16 modeMask;
-    u16 padA;
-} Overlay1CallbackEntry;
-
 /* Fresh pinned DKR v77/v80 and JFG scans found no Overlay 1 donor.
- * Retained genuine C measures 36/56 words with all 13 runtime-backed records.
- * Lane 704a9f31 reached an apparent exact result only by adding an empty
- * pointer condition after the callback; that invented guard is rejected and
- * must not be promoted. Reproduce the natural baseline before a source-faithful
- * allocator/lifetime attempt. */
+ * The pre-promotion natural baseline and rejected diagnostic are historical.
+ * The canonical permuter promotion subsequently proved 56 words and all 13
+ * relocation identities, including the empty post-callback mode-mask test.
+ * That exact but non-natural reread remains cleanup work; see
+ * docs/cleanup-queue.md. Do not repeat the eliminated lifetime spellings. */
 extern s32 overlay1ActivateObject(void *object);
 extern s32 gOverlay1TimerStep;
 extern f32 gOverlay1CallbackStepFloat;
-extern Overlay1CallbackEntry gOverlay1CallbackDescriptor[];
-extern Overlay1CallbackEntry gOverlay1ModeCallbacks[];
 
 void overlay1StartTimerCallbacks(Overlay1CallbackObject *object, s32 amount)
 {
-  Overlay1CallbackEntry *entry;
-  Overlay1Callback callback;
-  Overlay1Callback loadedCallback;
+  O1ActionModeData *entry;
+  s32 (*testCallback)(void);
+  s32 (*loadedTestCallback)(void);
+  void (*updateCallback)(void);
   s32 index;
   u8 mode;
   if (overlay1ActivateObject(object) != 0)
   {
     gOverlay1TimerStep = amount;
     gOverlay1CallbackStepFloat = amount;
-    entry = gOverlay1CallbackDescriptor;
+    entry = o1ActionModes_o001Reloc;
     for (index = 5; index != 6; index++, entry++)
     {
       mode = ((Overlay1CallbackState *) gOverlay1TimerState)->mode;
       if (index != mode)
       {
-        loadedCallback = entry->callback;
-        callback = loadedCallback;
-        if (callback != 0)
+        loadedTestCallback = entry->test;
+        testCallback = loadedTestCallback;
+        if (testCallback != 0)
         {
-          if ((entry->modeMask & (1 << mode)) != 0)
+          if ((entry->mask & (1 << mode)) != 0)
           {
-            callback();
-            if (entry->modeMask)
+            testCallback();
+            if (entry->mask)
             {
             }
           }
@@ -1464,10 +1448,10 @@ void overlay1StartTimerCallbacks(Overlay1CallbackObject *object, s32 amount)
     }
 
     mode = ((Overlay1CallbackState *) gOverlay1TimerState)->mode;
-    callback = gOverlay1ModeCallbacks[mode].callback;
-    if (callback != 0)
+    updateCallback = o1ActionModes_o001Reloc[mode].update;
+    if (updateCallback != 0)
     {
-      callback();
+      updateCallback();
     }
   }
 }
@@ -2322,7 +2306,6 @@ typedef struct Overlay1MaskedObject {
     Overlay1MaskedState *state;
 } Overlay1MaskedObject;
 
-extern u8 gOverlay1ModeMasks[];
 extern void _bzero(void *, int);
 
 /* DKR v77/v80 and JFG contain no exact donor for this table-mask selector. */
@@ -2330,7 +2313,7 @@ s32 overlay1SelectMaskedMode(Overlay1MaskedObject *object, s32 index) {
     Overlay1MaskedState *state;
 
     state = object->state;
-    if (*(u16 *)(gOverlay1ModeMasks + index * 12 + 0xC4) &
+    if (o1ActionModes_o001Reloc[index].mask &
         (1 << state->bitIndex)) {
         state->bitIndex = index;
         _bzero(&state->timer, 8);

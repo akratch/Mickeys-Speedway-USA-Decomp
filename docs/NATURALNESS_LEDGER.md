@@ -14,6 +14,16 @@ does not establish that their recorded forms were removed or that the wider
 findings here are still present. Recheck each current owner and actual source
 form before assigning cleanup or reporting closure.
 
+A later bounded reconciliation at `3272f4ebb` is recorded in
+[the cleanup queue](cleanup-queue.md#additional-bounded-reconciliation).
+It preserves the 51 required entries and identifies 44 additional named
+review candidates, separating unresolved aids, inherited conditions and
+other frame/region forms. It does not regenerate the historical site totals
+below or establish that every candidate is artificial. The 21 functions whose
+old A construct was resolved are not 21 wholly natural functions: two retain
+other disclosed forms. All remaining findings still need exact natural C or a
+specifically justified source review; no blanket exception is introduced.
+
 Severity: **A**, a reviewer would call it a fake match (semantically inert code
 whose only job is to steer codegen). **B**, unnatural but defensible (carriers,
 `goto`, `volatile`, pads beyond one, offsets cast through `u8 *`). **C**,
@@ -95,8 +105,10 @@ locals or role reuse, which only the read-through found.
 4. **"Where are the structs?"** Whole functions read fields as
    `*(T *)((u8 *)obj + 0xNN)` or through per-function `SG_`/`E920_` offset
    macros (`shadowGenerate`, `func_80016890`, `func_80007118`, `func_8000E920`).
-   This is not fake. A type change does not reach codegen. But it reads as
-   unfinished, and it is the cheapest category to fix.
+   This is not by itself an inert match aid. A type or declaration change can
+   affect ABI, conversions, alias facts, allocation and scheduling; it needs
+   source-contract review and exact object/relocation/linked comparisons.
+   Typed views may improve the source, but byte preservation is not assumed.
 5. **"Pads, `volatile` locals and role-swapped carriers everywhere."** One
    `s32 pad` is accepted practice. Six (`overlay100DrawMotion`), nine
    (`overlay99RenderSortedEntries`) or a `volatile s16 reservation` in eight

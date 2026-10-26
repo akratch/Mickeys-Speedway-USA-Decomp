@@ -951,6 +951,20 @@
       ]
     },
     {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
+      "object": "build/src/overlays/o058/overlay58RankAwards.c.o",
+      "offset": null,
+      "overlay": 58,
+      "size": null,
+      "source": "src/overlays/o058/overlay58RankAwards.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
       "c_owned": true,
       "class": "metadata",
       "matched_c": true,
@@ -1252,9 +1266,9 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 84
+      "metadata": 85
     },
     "matched_c_bytes_with_postprocess": 303752,
-    "objects_with_postprocess": 84
+    "objects_with_postprocess": 85
   }
 }

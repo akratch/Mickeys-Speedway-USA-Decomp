@@ -191,7 +191,7 @@ extern s32 D_8007C1B4_o058Reloc;
 extern Overlay58PlayerSlot D_800D3058_o058Reloc[];
 extern RcpTextureInfo *D_800D31C8_o058Reloc[];
 extern s16 D_o058_5AE8[];
-extern s32 D_o058_5B28[6];
+extern s32 overlay58RankAwards_o058Reloc[6];
 extern RcpTextureNode D_o058_5B40[];
 extern RcpTextureNode D_o058_5B60[];
 extern RcpTextureNode D_o058_5B80[];

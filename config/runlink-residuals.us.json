@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 4958},
+  "totals": {"differences": 0, "borrowed_records": 4948},
   "differences": {
   },
   "borrowed": {
@@ -57,7 +57,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1195,
+      "count": 1191,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -113,14 +113,12 @@
         [1, "G_o1_83e4", 8],
         [1, "LOCAL_BSS_1D78", 2],
         [1, "gO1Finishers", 8],
-        [1, "gO1PhysicsActions", 4],
         [1, "gO1PhysicsPaths", 6],
         [1, "gO1RankOrder", 12],
         [1, "gO1RankTime", 2],
         [1, "gO1RankWeights", 10],
         [1, "gOverlay1BuildGate", 4],
         [1, "gOverlay1BuildStateReloc", 2],
-        [1, "gOverlay1CallbackDescriptor", 2],
         [1, "gOverlay1CallbackStepFloat", 2],
         [1, "gOverlay1CountdownAmount", 2],
         [1, "gOverlay1CountdownObject", 2],
@@ -133,8 +131,6 @@
         [1, "gOverlay1Entries", 4],
         [1, "gOverlay1EntryCount", 8],
         [1, "gOverlay1Mode", 14],
-        [1, "gOverlay1ModeCallbacks", 2],
-        [1, "gOverlay1ModeMasks", 2],
         [1, "gOverlay1ModeObject", 6],
         [1, "gOverlay1ModeResource", 4],
         [1, "gOverlay1ModeSource", 4],

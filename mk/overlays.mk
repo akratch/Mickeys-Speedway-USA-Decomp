@@ -138,9 +138,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o071/overlay_071.c.o: \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o071/overlay_071.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay71InitializeObject.calls.spec
-# Overlay 62: one module TU under the overlay flag set; its .text is the
-# module's whole 0x5B0 bytes, so no trim, and resident calls are renamed by
-# the generated surface rebinds.
+# Overlay 62 owns its resource group, texture-node sentinel, marker pool
+# and module state; ordinary linking supplies all four section-relative bases.
+MODULE_LINKED_OVERLAYS += 062
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o062/overlay_062.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 63: one module TU under the overlay flag set; its .text is the
 # module's full 0x930 bytes, trailing pad included, so no trim, and resident

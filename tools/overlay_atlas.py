@@ -208,6 +208,8 @@ FIXED_DATA_RODATA_OWNERSHIP = {
 # The exact data-only source allowlist keeps physical ownership independent
 # from executable text ownership and matching credit.
 CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
+    62: [(0x0, 0x30, "overlay_062", ".data"),
+         (0x30, 0x40, "overlay_062", ".rodata")],
     73: [(0x0, 0xD0, "overlay73Geometry", ".data"),
          (0xD0, 0x130, "overlay_073", ".rodata")],
     12: [(0x0, 0x64, "overlay12TriangleData", ".data"),

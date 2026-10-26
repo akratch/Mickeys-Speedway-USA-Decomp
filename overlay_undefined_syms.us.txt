@@ -2396,44 +2396,6 @@ viChangeMode_o060Reloc = 0xf0000000;
 viDisplayingScreen0_o060Reloc = 0xf0000000;
 viNoClear_o060Reloc = 0xf0000000;
 
-/* overlay 62: overlay_062.c.o */
-D_8007C0B8_o062Reloc = 0x00000000;
-D_800D3140_o062Reloc = 0x00000000;
-D_800D3144_o062Reloc = 0x00000000;
-D_800D3148_o062Reloc = 0x00000000;
-D_800D3180_o062Reloc = 0x00000000;
-camDo2DSprite_o062Reloc = 0xf0000000;
-camStandardOrtho_o062Reloc = 0xf0000000;
-fontBackground_o062Reloc = 0xf0000000;
-fontColour_o062Reloc = 0xf0000000;
-fontPrintXY_o062Reloc = 0xf0000000;
-fontUseFont_o062Reloc = 0xf0000000;
-func_8002C5F4_o062Reloc = 0xf0000000;
-func_8002F618_o062Reloc = 0xf0000000;
-gOverlay62FirstItemReloc = 0x00000000;
-gOverlay62Float0 = 0x00000000;
-gOverlay62Handle18 = 0x00000018;
-gOverlay62InlineResource = 0x00000000;
-gOverlay62State = 0x00000000;
-gOverlay62Value4Initial = 0x00000004;
-gOverlay62Values = 0x00000004;
-loadFrontEndList_o062Reloc = 0xf0000000;
-mainChangeLevel_o062Reloc = 0xf0000000;
-o62AnimationFlags_o062Reloc = 0x00000004;
-o62AnimationFrame_o062Reloc = 0x00000000;
-o62Descriptor_o062Reloc = 0x00000014;
-o62FadeInTicks_o062Reloc = 0x00000008;
-o62FadeOutTicks_o062Reloc = 0x0000000c;
-o62Sprite_o062Reloc = 0x00000018;
-o62TransitionState_o062Reloc = 0x00000010;
-overlay45CreateDescriptor_o062Reloc = 0xf0000000;
-overlay45SetMode_o062Reloc = 0xf0000000;
-overlay62ReleaseReloc = 0xf0000000;
-rcpSetScreenColour_o062Reloc = 0xf0000000;
-sprSetTextureFilter_o062Reloc = 0xf0000000;
-texAnimateTexSprite_o062Reloc = 0xf0000000;
-texLoadSprite_o062Reloc = 0xf0000000;
-
 /* overlay 63: overlay_063.c.o */
 D_8007A1E0_o063Reloc = 0x00000000;
 D_8007BF44_o063Reloc = 0x00000000;
@@ -3568,9 +3530,9 @@ func_overlay_061_F0000968_18BFD30 = overlay61InitResources;
 func_overlay_061_F0001578_18C0940 = overlay61ReleaseResources;
 
 /* overlay 62: overlay_062.c.o */
-func_overlay_062_F0000000_18C2220 = overlay62Initialize;
 func_overlay_062_F00000D4_18C22F4 = overlay62Update;
 func_overlay_062_F000056C_18C278C = overlay62ReleaseAll;
+func_overlay_062_F0000000_18C2220 = overlay62Initialize;
 
 /* overlay 63: overlay_063.c.o */
 func_overlay_063_F0000000_18C2B88 = overlay63Initialize;

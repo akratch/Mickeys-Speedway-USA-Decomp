@@ -2,6 +2,7 @@
 #define OVERLAY_033_H
 
 #include "PR/ultratypes.h"
+#include "game/rcp_task.h"
 #include "game/framebuffer_state.h"
 #include "overlays/overlay_033_gbi.inc"
 
@@ -60,7 +61,5 @@ extern void trackGetFog(void *value, s16 *low, s16 *high,
                                    s16 *unused, u8 *red, u8 *green,
                                    u8 *blue, u8 *alpha);
 extern void sprSetTextureFilter(s32 value);
-extern s32 rcpFast3d(u64 *dataStart, u64 *dataEnd, s32 taskType,
-                     void *framebuffer);
 
 #endif

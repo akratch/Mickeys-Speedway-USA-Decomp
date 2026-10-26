@@ -102,7 +102,7 @@ void func_overlay_043_F0000194_188A164(void) {
             previous = NULL;
         }
         if (entry->pending != 0) {
-            func_8002E800(entry->arg28, entry->arg30, 3, entry->arg20);
+            rcpFast3d(entry->arg28, entry->arg30, 3, entry->arg20);
             entry->pending = 0;
             if (previous != NULL) {
                 overlay43FilterImage(previous);

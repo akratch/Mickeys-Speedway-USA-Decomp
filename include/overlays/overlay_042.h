@@ -2,6 +2,7 @@
 #define OVERLAY_042_H
 
 #include "PR/ultratypes.h"
+#include "game/rcp_task.h"
 #include "game/framebuffer_state.h"
 
 #include "n_audio/mbi.h"
@@ -18,7 +19,6 @@ extern s32 D_8007A410;
 
 void *mmAlloc(s32 size, s32 tag);
 void mmFree(void *allocation);
-s32 rcpFast3d(u64 *dataStart, u64 *dataEnd, s32 taskType, void *framebuffer);
 s32 viGetTrippleBuffer();
 s32 viGetCurrentSize();
 s32 rsp_segment();

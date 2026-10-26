@@ -197,7 +197,7 @@ void overlay42DrawCapturedBuffer(void *callbackArgument) {
 void overlay42Present(void) {
     if (gOverlay42PublishedStart != 0) {
         rcpFast3d(
-            (u64 *)gOverlay42PublishedStart, (u64 *)gOverlay42PublishedEnd, 5, gOverlay42PublishedSource);
+            gOverlay42PublishedStart, gOverlay42PublishedEnd, 5, gOverlay42PublishedSource);
         D_8007A410 = 1;
         gOverlay42BufferIndex ^= 1;
     }

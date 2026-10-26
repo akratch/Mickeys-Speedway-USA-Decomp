@@ -9,6 +9,7 @@
  */
 
 #include "PR/ultratypes.h"
+#include "game/rcp_task.h"
 #include "game/framebuffer_state.h"
 #include "game/texture_header.h"
 #include "PR/os_message.h"
@@ -137,7 +138,7 @@ void rcpClearZBuffer(RcpCommand **dlist, u32 width, u32 height, s32 x1,
 /* Mickey-derived task construction. JFG supplies the function name and the
  * OSScTask field correspondence, while its public C file retains assembly;
  * JFG's SDK ucode header supplies the official rspbootTextEnd symbol name. */
-s32 rcpFast3d(u64 *dataStart, u64 *dataEnd, s32 taskType,
+s32 rcpFast3d(void *dataStart, void *dataEnd, s32 taskType,
               void *framebuffer) {
     OSScTask *task;
     s32 taskFlags;
@@ -190,7 +191,7 @@ s32 rcpFast3d(u64 *dataStart, u64 *dataEnd, s32 taskType,
     task->list.t.yield_data_size = 0xA00;
     task->flags = taskFlags;
     task->list.t.data_ptr = dataStart;
-    task->list.t.data_size = dataEnd - dataStart;
+    task->list.t.data_size = ((u8 *)dataEnd - (u8 *)dataStart) >> 3;
     task->list.t.ucode_boot = D_80077950;
     task->list.t.type = 1;
     task->list.t.flags = 2;

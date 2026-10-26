@@ -576,23 +576,21 @@ endif
 runlink-ort:
 	$(RUNLINK_PACK) ort --write
 
-check-runlink-tables: runlink-raw
+# The game-agnostic runlink kit (tools/runlink/, docs/runlink-toolkit.md) must
+# reproduce this packer exactly: the same residuals, the same region bytes and
+# the same region proof. Needs what check-runlink-tables needs.
+# Both legacy gates share one request only when requested in one Make invocation.
+# Standalone Python commands retain their independent fresh producer behavior.
+.PHONY: check-runlink-build
+check-runlink-tables check-runlink-kit: check-runlink-build
+check-runlink-build: runlink-raw
 	@$(QUIET_ELF_BUILD)
 	$(RUNLINK_PACK) ort --check
-	$(RUNLINK_PACK) compare --check
-	$(RUNLINK_PACK) region
+	$(HOST_PYTHON) $(TOOLS_DIR)/runlink check-build
 
 runlink-residuals: runlink-raw
 	@$(QUIET_ELF_BUILD)
 	$(RUNLINK_PACK) compare --write-residuals
-
-# The game-agnostic runlink kit (tools/runlink/, docs/runlink-toolkit.md) must
-# reproduce this packer exactly: the same residuals, the same region bytes and
-# the same region proof. Needs what check-runlink-tables needs.
-check-runlink-kit: runlink-raw
-	@$(QUIET_ELF_BUILD)
-	$(HOST_PYTHON) $(TOOLS_DIR)/runlink check
-	$(HOST_PYTHON) $(TOOLS_DIR)/runlink parity
 
 # The structural JFG comparison uses compiled function boundaries, the ROM
 # relocation metadata and the local JFG reference build. Like runlink checks,

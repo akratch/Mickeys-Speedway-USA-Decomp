@@ -2079,5 +2079,90 @@ class EncodedAddressCaptureTests(unittest.TestCase):
         with self.assertRaises(self.rp.PackError):self.rp.check_data_import_holds(self.world)
         self.assertIsNone(self.world._encoded_word)
 
+class CallbackSourceTests(unittest.TestCase):
+    source = ('typedef long s32; typedef unsigned short u16; '
+              'typedef struct Row { s32 (*test)(void); void (*update)(void); u16 mask; } Row; '
+              'extern s32 test(void); extern void update(void); '
+              'Row rows[2]={{test,update,(1u<<0)|(1u<<5)},{0,0,1}};')
+
+    def test_real_typed_fields_and_closed_unsigned_masks(self):
+        root=pathlib.Path(__file__).resolve().parent.parent
+        facts=provenance.callback_data_facts(self.source.encode(),['-32'],root)
+        self.assertEqual(facts['logical_extent'],24)
+        self.assertEqual(facts['declared_field_bytes'],20)
+        self.assertEqual(facts['internal_padding_bytes'],4)
+        self.assertEqual(facts['masks'],[33,1])
+        self.assertEqual([f['offset'] for f in facts['callbacks']],[0,4])
+        mutants=[self.source.replace('s32 test(void)','void test(void)'),
+            self.source.replace('(*test)(void)','(*test)()'),
+            self.source.replace('u16 mask','u16 mask; u16 filler'),
+            self.source.replace('(1u<<0)|(1u<<5)','1u<<32'),
+            self.source.replace('(1u<<0)|(1u<<5)','65536u'),
+            self.source.replace('{test,update,','{&test,update,'),
+            self.source.replace('Row rows[2]','const Row rows[2]'),
+            self.source.replace('[2]','[3]'),self.source+' s32 extra=0;',
+            '#pragma pack(1)\n'+self.source]
+        for source in mutants:
+            with self.subTest(source=source), self.assertRaises(provenance.MetadataProofError):
+                provenance.callback_data_facts(source.encode(),['-32'],root)
+
+    def test_definition_abi_not_just_the_import_prototype(self):
+        root=pathlib.Path(__file__).resolve().parent.parent
+        good=b'typedef long s32; s32 test(void){return 1;} void update(void){}'
+        self.assertEqual(provenance.callback_function_facts(good,['-32'],root,['test','update']),
+                         {'test':'s32(void)','update':'void(void)'})
+        for source in (good.replace(b'test(void)',b'test(int x)'),
+                       good.replace(b's32 test',b'float test'),good+b' void update(void){}'):
+            with self.assertRaises(provenance.MetadataProofError):
+                provenance.callback_function_facts(source,['-32'],root,['test','update'])
+
+    def test_explicit_profile_graph_is_not_a_numeric_or_mixed_binding(self):
+        root=pathlib.Path(__file__).resolve().parent.parent
+        cmd=('helper --callback-data-profile typed-callback-records-v1 '
+             '--callback-source src/overlays/o001/actions.c --callback-text-inputs '
+             'build/src/overlays/o001/main.c.o build/src/overlays/o001/tail.c.o')
+        self.assertEqual(provenance.callback_selection(cmd,root)[0],'src/overlays/o001/actions.c')
+        self.assertIsNone(provenance.callback_selection('helper',root))
+        for bad in (cmd.replace('-v1','-v2'),cmd+' --local-data-objects',
+                    cmd.replace('o001/tail','o002/tail'),cmd+' build/src/overlays/o001/main.c.o'):
+            with self.assertRaises(provenance.MetadataProofError):
+                provenance.callback_selection(bad,root)
+
+    def test_loaded_original_and_layout_artifacts_cannot_change_after_capture(self):
+        import runlink_pack as rp
+        from test_link_overlay_module import callback_fixture
+        root=pathlib.Path(__file__).resolve().parent.parent
+        raw=rp.Elf('original',callback_fixture())
+        cap=provenance.CallbackCapture(raw,hashlib.sha256(raw.data).hexdigest(),
+            provenance._static_parsed_surface(raw),'{}',root,(),lambda:True,provenance._CALLBACK_SEAL)
+        self.assertTrue(cap.current(raw))
+        raw.symbols[2]=dataclasses.replace(raw.symbols[2],size=24)
+        with self.assertRaises(provenance.MetadataProofError):cap.current(raw)
+        with self.assertRaises(provenance.MetadataProofError):
+            dataclasses.replace(cap,seal=object()).current(raw)
+
+
+class CallbackFrontendFreshnessTests(unittest.TestCase):
+    @unittest.skipUnless((pathlib.Path(__file__).resolve().parent.parent/'tools/ido/cc').is_file(),'requires pinned compiler')
+    def test_actual_wrapper_cpp_uses_held_search_and_new_shadow_refuses(self):
+        root=pathlib.Path(__file__).resolve().parent.parent
+        with tempfile.TemporaryDirectory(dir=root/'build') as temporary:
+            base=pathlib.Path(temporary);source_dir=base/'source';first=base/'first';second=base/'second';output=base/'proof'
+            for path in (source_dir,first,second,output):path.mkdir()
+            source=source_dir/'unit.c';source.write_text('#include \"callback_types.h\"\nlong object=VALUE;\n')
+            (second/'callback_types.h').write_text('#define VALUE 17\n')
+            flags=('-c','-nostdinc','-32','-mips2','-O2','-I',str(first),'-I',str(second))
+            command='.venv/bin/python tools/asm-processor/build.py tools/ido/cc -- tools/binutils/mips64-elf-as -- '+ ' '.join(flags)+' -o target.o '+str(source)
+            with mock.patch.object(provenance,'_callback_recipe',return_value=(command,flags,('held recipe',))):
+                cpp,_flags,_frontend,_held,current,_recipe=provenance._callback_frontend(root,source,output,
+                                                                                       provenance.time.monotonic()+120)
+                self.assertIn(b'object=17',cpp.replace(b' ',b''))
+                self.assertTrue(current())
+                (first/'callback_types.h').write_text('#define VALUE 29\n')
+                with self.assertRaises(provenance.MetadataProofError):current()
+                (first/'callback_types.h').unlink()
+                self.assertTrue(current())
+
+
 if __name__ == "__main__":
     unittest.main()

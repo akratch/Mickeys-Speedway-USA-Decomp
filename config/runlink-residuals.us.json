@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 4970},
+  "totals": {"differences": 0, "borrowed_records": 4962},
   "differences": {
   },
   "borrowed": {
@@ -44,9 +44,9 @@
     },
     "hybrid-data": {
       "about": "data-site record in blob-owned data, taken from the shipped table (module, site)",
-      "count": 52,
+      "count": 44,
       "modules": {
-        "1": ["0x81AC", "0x81B0", "0x81B4", "0x81BC", "0x81C0", "0x81C4", "0x81CC", "0x81D0", "0x81D4", "0x81EC", "0x81F4", "0x81F8", "0x8200", "0x8204", "0x8210", "0x8218", "0x821C"],
+        "1": ["0x81AC", "0x81B0", "0x81B4", "0x81BC", "0x81C0", "0x81C4", "0x81CC", "0x81D0", "0x81D4"],
         "46": ["0x1AE0"],
         "58": ["0x5C5C", "0x5C60", "0x5C64"],
         "59": ["0x1128", "0x112C", "0x1130", "0x1134", "0x1138", "0x113C", "0x1140", "0x1144", "0x1148", "0x114C", "0x1150", "0x1154", "0x1158", "0x115C", "0x1160", "0x1164"],

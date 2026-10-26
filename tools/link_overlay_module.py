@@ -25,6 +25,8 @@ SECTIONS = (".text", ".data", ".rodata", ".bss")
 ABI_METADATA = (".reginfo", ".MIPS.abiflags")
 NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_.$]*\Z")
 IMPORT_PREFIX = "__runlink_import_"
+_LOADED_MODULE_PATH = Path(__file__).resolve()
+_LOADED_MODULE = hashlib.sha256(_LOADED_MODULE_PATH.read_bytes()).hexdigest()
 
 
 class LinkError(RuntimeError):
@@ -248,6 +250,147 @@ def grouped_local_bindings(elf, providers, exports, directory, ld, commands, *, 
     return bindings, group
 
 
+CALLBACK_PROFILE = "typed-callback-records-v1"
+
+
+def callback_implementation_current():
+    if (_LOADED_MODULE_PATH != (rp.REPO/"tools/link_overlay_module.py").resolve()
+            or Path(__file__).resolve() != _LOADED_MODULE_PATH
+            or hashlib.sha256(_LOADED_MODULE_PATH.read_bytes()).hexdigest() != _LOADED_MODULE):
+        raise LinkError("loaded callback linker implementation changed")
+    return True
+
+
+def callback_data_shape(elf, facts):
+    """Semantic C extent is distinct from unchanged ELF symbol/allocation."""
+    callback_implementation_current()
+    local_provider_section(elf)
+    data = elf.section(".data")
+    end = facts["logical_extent"]
+    owners = [s for s in elf.symbols if s.shndx != rp.SHN_UNDEF and s.type not in (3, 4)]
+    if (len(owners) != 1 or owners[0].name != facts["owner"]
+            or owners[0].section != ".data" or owners[0].bind != rp.STB_GLOBAL
+            or owners[0].type != 1 or owners[0].value != 0 or not 0 < owners[0].size <= end
+            or data["align"] != 16 or not end <= data["size"] < end+16
+            or data["size"] % 16 or any(elf.rels(s) for s in (".text", ".rodata"))):
+        raise LinkError("callback DATA lacks its unique actual source owner/allocation")
+    payload = bytearray(elf.size(".data"))
+    for row, mask in enumerate(facts["masks"]):
+        struct.pack_into(">H", payload, row*12+8, mask)
+    if bytes(payload) != elf.bytes_of(".data"):
+        raise LinkError("callback original scalar/NULL/padding bytes differ from source")
+    rels = elf.rels(".data")
+    expected = facts["callbacks"]
+    if len(rels) != len(expected) or not rels:
+        raise LinkError("callback DATA lacks its complete source pointer set")
+    for rel, addend, field in zip(rels, rp.in_place_addends(elf, ".data", rels), expected):
+        if (rel.offset != field["offset"] or rel.offset % 4 or rel.offset+4 > end
+                or rel.type != rp.R_MIPS_32 or addend or rel.sym.name != field["name"]
+                or rel.sym.shndx != rp.SHN_UNDEF or rel.sym.bind != rp.STB_GLOBAL
+                or rel.sym.type != rp.STT_FUNC or rel.sym.value or rel.sym.size):
+            raise LinkError("callback source field/original R32 identity differs")
+    return dict(owner=owners[0].name, owner_index=owners[0].index,
+                reported_symbol_extent=owners[0].size, logical_c_extent=end,
+                input_allocation=elf.size(".data"), source_fields=facts)
+
+
+def callback_effective_input(elf, capture, output):
+    callback_implementation_current()
+    import proof_provenance as provenance
+    if not isinstance(capture, provenance.CallbackCapture) or not capture.current(elf):
+        raise LinkError("callback input lacks its internal compiler/layout capture")
+    facts = json.loads(capture.facts_json)
+    shape = callback_data_shape(elf, facts)
+    data = bytearray(elf.data)
+    section = elf.section(".data")
+    shoff = struct.unpack_from(">I", data, 32)[0]
+    struct.pack_into(">I", data, shoff+section["index"]*40+20, shape["logical_c_extent"])
+    Path(output).write_bytes(data)
+    view = rp.Elf(output)
+    if [vars(s) for s in view.symbols] != [vars(s) for s in elf.symbols]:
+        raise LinkError("callback effective view changed original symbol metadata")
+    view.compiler_original = elf
+    view.callback_capture = capture
+    view.callback_shape = shape
+    sealed_shape = json.dumps(shape,sort_keys=True)
+    sealed_surface = provenance._static_parsed_surface(view)
+    sealed_bytes = bytes(view.data)
+    path = Path(output)
+    def current():
+        capture.current(elf)
+        if (view.compiler_original is not elf or view.callback_capture is not capture
+                or bytes(view.data) != sealed_bytes or path.read_bytes() != sealed_bytes
+                or provenance._static_parsed_surface(view) != sealed_surface
+                or json.dumps(view.callback_shape,sort_keys=True) != sealed_shape):
+            raise LinkError("callback prepared view changed after source witnessing")
+        return True
+    view.callback_view_current = current
+    current()
+    return view
+
+
+def callback_text_group(providers, directory, ld, commands):
+    """Real FUNCTION-bearing C prefix; no fabricated padding/zero bindings."""
+    callback_implementation_current()
+    if not providers or len({p.path for p in providers}) != len(providers):
+        raise LinkError("callback TEXT prefix needs distinct ordinary source inputs")
+    root = Path.cwd().resolve()
+    names = []
+    for obj in providers:
+        try:
+            name = obj.path.resolve().relative_to(root).as_posix()
+        except ValueError as error:
+            raise LinkError("callback input is outside its ordinary source graph") from error
+        if not re.fullmatch(r"build/src/overlays/o[0-9]{3}/[A-Za-z_0-9]+\.c\.o", name):
+            raise LinkError("callback provider is not an ordinary overlay C input")
+        names.append(name)
+        section = obj.section(".text")
+        debug = obj.section(".mdebug")
+        if (struct.unpack_from(">HH", obj.data, 16) != (1, 8)
+                or not section or section["type"] != 1 or section["flags"] & 6 != 6
+                or section["addr"] or not section["size"] or section["size"] % 4
+                or (debug and debug["flags"] & 2)
+                or any(s["flags"] & 2 and s["size"] and s["name"] not in SECTIONS+ABI_METADATA for s in obj.sections)):
+            raise LinkError("callback provider has unsupported TEXT/allocated sections")
+    if len({Path(n).parent for n in names}) != 1:
+        raise LinkError("callback TEXT prefix crosses module source namespaces")
+    script = directory/"callback-providers.ld"
+    script.write_text("SECTIONS { .text 0 : SUBALIGN(4) { "+" ".join(
+        json.dumps(str(p.path.resolve()))+"(.text)" for p in providers)
+        +" } .data : { *(.data) } .rodata : { *(.rodata) } .bss : { *(.bss) *(COMMON) }"
+        +" /DISCARD/ : { *(.mdebug) } }\n")
+    output = directory/"callback-providers.elf"
+    run([ld, "-r", "-T", script, "-Map", directory/"callback-providers.map",
+         "-o", output, *[p.path.resolve() for p in providers]], commands)
+    group = rp.Elf(output)
+    if group.bytes_of(".text") != b"".join(p.bytes_of(".text") for p in providers):
+        raise LinkError("ordinary callback TEXT projection changed input payload")
+    base = 0
+    original_rows = []
+    for obj in providers:
+        for symbol in obj.symbols:
+            if symbol.section != ".text" or symbol.type != rp.STT_FUNC or not symbol.size:
+                continue
+            choices = [s for s in group.symbols if s.name == symbol.name and s.bind == symbol.bind
+                       and s.type == symbol.type and s.section == ".text"
+                       and s.size == symbol.size and s.value == base+symbol.value]
+            if (len(choices) != 1 or symbol.value % 4 or symbol.size % 4
+                    or not 0 <= symbol.value < symbol.value+symbol.size <= obj.size(".text")):
+                raise LinkError("callback FUNCTION definition changed in ordinary projection")
+        original_rows.extend((base+r.offset,r.type,r.sym.name,r.sym.type,r.sym.bind,addend)
+            for r,addend in zip(obj.rels(".text"),rp.in_place_addends(obj,".text",obj.rels(".text"))))
+        base += obj.size(".text")
+    projected_rows = [(r.offset,r.type,r.sym.name,r.sym.type,r.sym.bind,addend)
+        for r,addend in zip(group.rels(".text"),rp.in_place_addends(group,".text",group.rels(".text")))]
+    if projected_rows != original_rows:
+        raise LinkError("callback projection changed original ordered TEXT operands")
+    group.callback_artifacts = (
+        (script, script.read_bytes()),
+        (directory/"callback-providers.map", (directory/"callback-providers.map").read_bytes()),
+        (output, bytes(group.data)))
+    return group
+
+
 def binding_plan(elf, exports, local_bindings=None):
     """Resolve relocation names to explicit ORT rows, never to guessed addresses."""
     local_bindings = local_bindings or {}
@@ -336,7 +479,7 @@ def relocatable_container(linked, output):
             raise LinkError("container conversion changed linked section payload")
 
 
-def link(raw, output, exports, directory, *, ld, objcopy, rebind, local_ro_origin=None, local_ro_group=None, local_data_aggregate=False, local_ro_mixed_group=None, local_data_objects=False, local_ro_owner_profile=None):
+def link(raw, output, exports, directory, *, ld, objcopy, rebind, local_ro_origin=None, local_ro_group=None, local_data_aggregate=False, local_ro_mixed_group=None, local_data_objects=False, local_ro_owner_profile=None, callback_data_profile=None, callback_source=None, callback_text_inputs=None):
     raw, output, directory = Path(raw).resolve(), Path(output).resolve(), Path(directory).resolve()
     original = raw.read_bytes()
     directory.mkdir(parents=True, exist_ok=True)
@@ -363,7 +506,36 @@ def link(raw, output, exports, directory, *, ld, objcopy, rebind, local_ro_origi
     if providers:
         local_bindings, group = grouped_local_bindings(rp.Elf(preserved), providers, exports,
                                                        directory, ld, commands, mixed=bool(local_ro_mixed_group), objects=local_data_objects, owner_profile=local_ro_owner_profile)
-    external, retarget = prepare(preserved, prepared, exports, objcopy, rebind, commands,
+    callback = None
+    source_input = preserved
+    if callback_data_profile is not None or callback_source is not None or callback_text_inputs:
+        import proof_provenance as provenance
+        if (callback_data_profile != CALLBACK_PROFILE or callback_source is None or not callback_text_inputs
+                or local_ro_origin or local_ro_group or local_ro_mixed_group or local_data_objects
+                or local_data_aggregate or local_ro_owner_profile):
+            raise LinkError("conflicting or incomplete callback DATA profile")
+        if hashlib.sha256(Path(__file__).read_bytes()).hexdigest() != _LOADED_MODULE:
+            raise LinkError("loaded callback linker implementation changed")
+        rp.metadata_implementations()
+        compiler = rp.Elf(preserved)
+        capture = provenance.capture_callback_data(compiler, Path(callback_source), Path.cwd())
+        effective = callback_effective_input(compiler, capture, directory/"callback-effective.o")
+        callback_providers = [rp.Elf(Path(p).resolve()) for p in callback_text_inputs]
+        callback_group = callback_text_group(callback_providers, directory, ld, commands)
+        callback_bindings = {}
+        for field in effective.callback_shape["source_fields"]["callbacks"]:
+            choices = [s for s in callback_group.symbols if s.name == field["name"]
+                       and s.bind == rp.STB_GLOBAL and s.type == rp.STT_FUNC and s.section == ".text"
+                       and s.size > 0 and s.value % 4 == 0 and s.size % 4 == 0
+                       and 0 <= s.value < s.value+s.size <= callback_group.size(".text")]
+            if len(choices) != 1:
+                raise LinkError("callback lacks a unique real projected FUNCTION")
+            if field["name"] not in exports.by_name:
+                callback_bindings[field["name"]] = choices[0].value
+        local_bindings.update(callback_bindings)
+        source_input = effective.path
+        callback = (capture, compiler, effective, callback_group, callback_providers)
+    external, retarget = prepare(source_input, prepared, exports, objcopy, rebind, commands,
                                  local_bindings)
     imports = set(external) | set(local_bindings)
     script = directory / "module.ld"
@@ -401,6 +573,12 @@ SECTIONS {{
         raise LinkError("LOCAL group provider changed during module linking")
     if provider and provider.path.read_bytes() != provider.data:
         raise LinkError("LOCAL provider changed during module linking")
+    if callback:
+        capture, compiler, effective, callback_group, callback_providers = callback
+        effective.callback_view_current()
+        if (any(path.read_bytes() != observed for path,observed in callback_group.callback_artifacts)
+                or any(p.path.read_bytes() != p.data for p in callback_providers)):
+            raise LinkError("callback provider changed during linking")
     shutil.copyfile(container, output)
     result = rp.Elf(output)
     body = b"".join(result.bytes_of(section) for section in SECTIONS[:-1])
@@ -425,6 +603,16 @@ SECTIONS {{
                                name=value[0], row=value[2])
                           for key, value in sorted(retarget.items())],
     }
+    if callback:
+        receipt["callback_data"] = dict(profile=CALLBACK_PROFILE, source=str(callback_source),
+            shape=effective.callback_shape, capture=str(capture.directory),
+            effective_sha256=hashlib.sha256(effective.data).hexdigest(),
+            inputs=[dict(input=str(p.path), sha256=hashlib.sha256(p.data).hexdigest(),
+                         text_size=p.size(".text")) for p in callback_providers],
+            prefix_sha256=hashlib.sha256(callback_group.data).hexdigest(),
+            script_sha256=hashlib.sha256(callback_group.callback_artifacts[0][1]).hexdigest(),
+            map_sha256=hashlib.sha256(callback_group.callback_artifacts[1][1]).hexdigest(),
+            private_bindings=callback_bindings)
     if provider:
         receipt["local_data_provider"] = {
             "input": str(provider.path), "input_sha256": hashlib.sha256(provider.data).hexdigest(),
@@ -470,6 +658,9 @@ def main():
     parser.add_argument("--local-ro-origin-object", type=Path)
     parser.add_argument("--local-ro-provider-group", nargs="+")
     parser.add_argument("--local-ro-mixed-provider-group", nargs="+")
+    parser.add_argument("--callback-data-profile", choices=[CALLBACK_PROFILE])
+    parser.add_argument("--callback-source", type=Path)
+    parser.add_argument("--callback-text-inputs", nargs="+")
     args = parser.parse_args()
     try:
         receipt = link(args.object, args.output or args.object,
@@ -477,7 +668,9 @@ def main():
                        ld=args.ld, objcopy=args.objcopy,
                        rebind=Path(__file__).with_name("rebind_elf_relocations.py"),
                        local_ro_origin=args.local_ro_origin_object, local_ro_group=args.local_ro_provider_group, local_ro_owner_profile=args.local_ro_owner_profile,
-                       local_data_aggregate=args.local_data_aggregate, local_ro_mixed_group=args.local_ro_mixed_provider_group, local_data_objects=args.local_data_objects)
+                       local_data_aggregate=args.local_data_aggregate, local_ro_mixed_group=args.local_ro_mixed_provider_group, local_data_objects=args.local_data_objects,
+                       callback_data_profile=args.callback_data_profile, callback_source=args.callback_source,
+                       callback_text_inputs=args.callback_text_inputs)
     except (LinkError, rp.PackError, OSError, ValueError, struct.error) as error:
         parser.exit(1, f"module link refused: {error}\n")
     print(f"source module link: {sum(receipt['sections'][s]['size'] for s in SECTIONS[:-1])} initialized bytes, "

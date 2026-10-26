@@ -876,6 +876,12 @@ class Resolver:
                                 and name in local and obj.data_imports is not None
                                 and obj.data_imports.get(name) == local[name]):
                             continue  # This proven LOCAL identity belongs only to its input.
+                        import proof_provenance as provenance
+                        if (isinstance(getattr(obj.elf, "callback_capture", None), provenance.CallbackCapture)
+                                and obj.data_imports is not None
+                                and getattr(obj.elf, "callback_private_identities", {}).get(name) == obj.data_imports.get(name)
+                                and name in getattr(obj.elf, "callback_private_identities", {})):
+                            continue
                         raise PackError(f"ORT lacks its held provider identity: {name}")
                     if obj.data_imports is None or name not in obj.data_imports:
                         raise PackError(f"ORT lacks its held provider identity: {name}")
@@ -2435,8 +2441,133 @@ def validate_cross_input_local(world, exports, ov, row, source, raw):
     return len(rels)
 
 
+def validate_callback_data(world, exports, ov, row, source, raw):
+    """Authenticate source/function identities before any retail-set comparison."""
+    import proof_provenance as provenance
+    import link_overlay_module as module
+    original = getattr(raw, "compiler_original", None)
+    capture = getattr(raw, "callback_capture", None)
+    if not isinstance(capture, provenance.CallbackCapture) or original is None:
+        raise PackError("callback DATA lacks its held original compiler/layout witness")
+    capture.current(original)
+    raw.callback_view_current()
+    facts = json.loads(capture.facts_json)
+    if module.callback_data_shape(original, facts) != raw.callback_shape:
+        raise PackError("callback DATA source shape changed")
+    configured, start = data_import_input(world, ov, row, source, raw, linked_local=True)
+    providers = raw.callback_providers
+    root = world.paths["build"].parent
+    declared = [p.path.resolve().relative_to(root.resolve()).as_posix() for p in providers]
+    inputs = sorted((mi for mi in world.module_info[ov]["inputs"] if mi.insec == ".text" and mi.size),
+                    key=lambda mi: mi.addr)
+    c_inputs = [mi for mi in inputs if mi.file.startswith("build/src/")]
+    if [mi.file for mi in c_inputs] != declared or not c_inputs:
+        raise PackError("callback prefix omits/reorders a current source TEXT input")
+    wanted = {field["name"]: field["signature"] for field in facts["callbacks"]}
+    identities = {}
+    base = 0
+    for provider, item in zip(providers, c_inputs):
+        if item.outsec != f".overlay_{ov:03d}" or item.addr != OVERLAY_VMA+base or item.size != provider.size(".text"):
+            raise PackError("callback source TEXT graph/final map geometry differs")
+        names = [s.name for s in provider.symbols if s.name in wanted and s.section == ".text"]
+        source_path = root/item.file.removeprefix("build/").removesuffix(".o")
+        proof = provenance.capture_callback_functions(provider, source_path, root, names)
+        signatures = json.loads(proof.signatures_json)
+        world.data_import_contexts.append((True, proof.current))
+        # Captured original/private paths stay held contexts, not volatile dependencies.
+        stable = {path: digest for path,digest in proof.held if not path.is_relative_to(root/"build/callback-function-proof")}
+        hold_data_import_inputs(world, stable)
+        for symbol in provider.symbols:
+            if symbol.section != ".text" or symbol.type != STT_FUNC or symbol.bind != STB_GLOBAL:
+                continue
+            final = [s for s in world.by_name.get(symbol.name, ())
+                     if s.shndx != SHN_UNDEF and s.bind == STB_GLOBAL]
+            if (len(final) != 1 or final[0].type != STT_FUNC
+                    or final[0].section != item.outsec or final[0].value != item.addr+symbol.value
+                    or final[0].size != symbol.size):
+                raise PackError("callback source FUNCTION lacks a unique final definition")
+            if symbol.name in wanted:
+                if symbol.name in identities or signatures.get(symbol.name) != wanted[symbol.name]:
+                    raise PackError("callback actual source definition/signature is ambiguous")
+                identities[symbol.name] = (ov, base+symbol.value)
+        base += provider.size(".text")
+    # Explicit outside-C-prefix ASM is retained compatibility, including its
+    # assembler-generated FUNC labels. It never supplies callback authority.
+    outside = []
+    cursor = base
+    for item in inputs:
+        if item in c_inputs:
+            continue
+        if not item.file.startswith("build/asm/") or item.addr != OVERLAY_VMA+cursor:
+            raise PackError("callback graph has an omitted/interior TEXT contributor")
+        compatible = Elf(root/item.file)
+        section = compatible.section(".text")
+        if (not section or section["type"] != 1 or section["flags"]&6 != 6
+                or section["addr"] or compatible.size(".text") != item.size):
+            raise PackError("callback outside TEXT has no ordinary compatible input")
+        source_path = root/item.file.removeprefix("build/").removesuffix(".o")
+        hold_data_import_inputs(world, {compatible.path:hashlib.sha256(compatible.data).hexdigest(),
+                                       source_path:hashlib.sha256(source_path.read_bytes()).hexdigest()})
+        observed = provenance._static_parsed_surface(compatible)
+        def current_outside(obj=compatible, expected=observed):
+            if provenance._static_parsed_surface(obj) != expected:
+                raise PackError("callback outside compatible TEXT observation changed")
+            return True
+        world.data_import_contexts.append((True,current_outside))
+        outside.append(dict(input=item.file,offset=cursor,size=item.size,
+            authority="retained-outside-C-prefix",symbols=[vars(s) for s in compatible.symbols],
+            relocations=[(r.offset,r.type,vars(r.sym)) for r in compatible.rels(".text")]))
+        cursor += item.size
+    if set(identities) != set(wanted):
+        raise PackError("callback target lacks an actual current source FUNCTION")
+    raw.callback_prefix_extent = base
+    raw.callback_outside_text = outside
+    owners = [s for s in world.by_name.get(facts["owner"], ()) if s.shndx != SHN_UNDEF]
+    owner = next(s for s in original.symbols if s.index == raw.callback_shape["owner_index"])
+    if (len(owners) != 1 or owners[0].bind != STB_GLOBAL or owners[0].type != STT_OBJECT
+            or owners[0].section != f".overlay_{ov:03d}" or owners[0].value != OVERLAY_VMA+start
+            or owners[0].size != owner.size):
+        raise PackError("callback actual owner/final definition differs")
+    if any(configured.rels(s) for s in (".text", ".data", ".rodata")):
+        raise PackError("configured callback DATA retains unresolved references")
+    expected = [(key,record) for key,record in world.expected_cache(ov).items()
+                if start <= key[0] < start+raw.size(".data")]
+    rels = raw.rels(".data")
+    if [key for key,_ in expected] != [(start+r.offset,r.type) for r in rels]:
+        raise PackError("callback complete runtime set differs from original source fields")
+    private = {}
+    for rel, (_key, record) in zip(rels, expected):
+        identity = identities[rel.sym.name]
+        export = exports.by_name.get(rel.sym.name)
+        operand = identity[1] if export is None else 0
+        if (record["full"] != ("ov", *identity) or record["table"] != 2
+                or record["op"] != (OP_LOCAL if export is None else OP_SYMBOL)
+                or record["symbol_index"] != (0 if export is None else export)
+                or u32(configured.bytes_of(".data"), rel.offset) != operand):
+            raise PackError("callback source FUNCTION/runtime encoding differs")
+        if export is None:
+            private[rel.sym.name] = identity
+    raw.data_local_identities = identities
+    raw.callback_private_identities = private
+    sealed_identities = tuple(sorted(identities.items()))
+    sealed_private = tuple(sorted(private.items()))
+    def current_namespace():
+        raw.callback_view_current()
+        if (tuple(sorted(raw.data_local_identities.items())) != sealed_identities
+                or tuple(sorted(raw.callback_private_identities.items())) != sealed_private):
+            raise PackError("callback derived namespace changed after validation")
+        return True
+    world.data_import_contexts.append((True, current_namespace))
+    for path,digest in capture.held:
+        if not path.is_relative_to(root/"build/callback-source-proof"):
+            hold_data_import_inputs(world, {path:digest})
+    return len(rels)
+
+
 def validate_data_imports(world, exports, ov, row, source, raw):
     """Complete ORT pointer inputs or a bounded same-owner LOCAL data prefix."""
+    if getattr(raw, "callback_capture", None) is not None:
+        return validate_callback_data(world, exports, ov, row, source, raw)
     import source_module_link_proof as proof
     multiple = f"build/src/{source}.c.o" in getattr(world, "_local_prefix_objects", set())
     if multiple and getattr(raw, "local_ro_provider", None):
@@ -2569,6 +2700,47 @@ def reproduce_data_import(world, source):
         raise PackError("fresh data-only source link differs from configured bytes or symbols")
     if receipt["inputs"] != context():
         raise PackError("data-only source/context changed during reproduction")
+    callback = provenance.callback_selection(receipt["inputs"]["module_link"], root)
+    if callback:
+        import link_overlay_module as module
+        source_name, names = callback
+        if source_name != "src/"+source+".c":
+            raise PackError("callback declared source differs from canonical input")
+        capture = provenance.capture_callback_data(fresh, root/source_name, root)
+        effective = module.callback_effective_input(fresh, capture, directory/"guard-effective.o")
+        declared_callback = link.get("callback_data")
+        providers = [load_mixed_group_provider(world, name,
+            receipt["inputs"]["module_link_inputs"].get(name)) for name in names]
+        if (not declared_callback or declared_callback.get("profile") != provenance.CALLBACK_PROFILE
+                or declared_callback.get("shape") != effective.callback_shape
+                or declared_callback.get("inputs") != [
+                    dict(input=str(p.path.resolve()),sha256=hashlib.sha256(p.data).hexdigest(),
+                         text_size=p.size(".text")) for p in providers]
+                or declared_callback.get("prefix_sha256") != provenance.sha256_file(directory/"callback-providers.elf")
+                or declared_callback.get("script_sha256") != provenance.sha256_file(directory/"callback-providers.ld")):
+            raise PackError("callback ordinary source/provider receipt differs")
+        prefix_path = directory/"callback-providers.elf"
+        prefix = Elf(prefix_path)
+        script_path, map_path = directory/"callback-providers.ld", directory/"callback-providers.map"
+        script_bytes, map_bytes = script_path.read_bytes(), map_path.read_bytes()
+        observed_prefix = {prefix_path:hashlib.sha256(prefix.data).hexdigest(),
+            script_path:hashlib.sha256(script_bytes).hexdigest(),map_path:hashlib.sha256(map_bytes).hexdigest()}
+        if (observed_prefix[prefix_path] != declared_callback["prefix_sha256"]
+                or observed_prefix[script_path] != declared_callback["script_sha256"]
+                or observed_prefix[map_path] != declared_callback.get("map_sha256")):
+            raise PackError("loaded callback prefix/script/map differs from helper receipt")
+        surface = provenance._static_parsed_surface(prefix)
+        def current_prefix():
+            if (provenance._static_parsed_surface(prefix) != surface
+                    or any(hashlib.sha256(path.read_bytes()).hexdigest()!=digest
+                           for path,digest in observed_prefix.items())):
+                raise PackError("callback ordinary prefix artifacts changed after validation")
+            return True
+        world.data_import_contexts.append((True,current_prefix))
+        effective.callback_providers = providers
+        fresh = effective
+    elif link.get("callback_data") is not None:
+        raise PackError("undeclared callback DATA profile")
     provider_inputs = provenance.local_ro_provider_inputs(receipt["inputs"]["module_link"], root)
     declared = link.get("local_data_provider")
     group = link.get("local_data_group")
@@ -2958,8 +3130,17 @@ def _guard_data_module_imports(world, exports):
                                for rel in raw.rels(".data") if rel.sym.shndx == SHN_UNDEF}
                 start = world.module_info[ov]["text_size"] + int(rows[0]["offset"], 16)
                 path = world.paths["raw"] / "src" / (source + ".c.o")
-                admitted[ov].append(ObjRef(ov, path, source, 0, 0, "c", raw,
-                    {".data": (start, "link")}, targets))
+                admitted_object = ObjRef(ov, path, source, 0, 0, "c", raw,
+                    {".data": (start, "link")}, targets)
+                admitted[ov].append(admitted_object)
+                if getattr(raw, "callback_capture", None) is not None:
+                    sealed_targets = tuple(sorted(targets.items()))
+                    def current_callback_object(obj=admitted_object, original=raw, expected=sealed_targets):
+                        if (obj.elf is not original or obj.data_imports is None
+                                or tuple(sorted(obj.data_imports.items())) != expected):
+                            raise PackError("callback published import identities changed")
+                        return True
+                    world.data_import_contexts.append((True, current_callback_object))
                 outputs.append((raw, receipt))
         for ov, module in world.amods.items():
             for row in module["text_ownership"]:
@@ -2990,6 +3171,11 @@ def _guard_data_module_imports(world, exports):
             (root / receipt["directory"] / "proof.json").write_text(
                 json.dumps(receipt, sort_keys=True, indent=2))
         for raw, receipt in outputs:
+            if getattr(raw,"callback_capture",None) is not None:
+                receipt["callback_runtime_proof"] = dict(
+                    source_fields=json.loads(raw.callback_capture.facts_json),
+                    function_prefix_extent=raw.callback_prefix_extent,
+                    outside_text=raw.callback_outside_text)
             receipt.update(data_only_runtime_imports=len(raw.rels(".data")),
                 provider_inputs={os.path.relpath(path, root): digest
                                  for path, digest in world.data_import_inputs.items()})

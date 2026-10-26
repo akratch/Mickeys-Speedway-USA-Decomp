@@ -2224,6 +2224,16 @@
       }
     },
     {
+      "name": "assets/overlays/o043/overlay_043_data_rodata_b8.bin",
+      "target_path": "expected/build/assets/overlays/o043/overlay_043_data_rodata_b8.bin.o",
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o043"
+        ]
+      }
+    },
+    {
       "name": "assets/overlays/o043/overlay_043_reloc1.bin",
       "target_path": "expected/build/assets/overlays/o043/overlay_043_reloc1.bin.o",
       "metadata": {

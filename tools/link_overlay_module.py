@@ -391,6 +391,135 @@ def callback_text_group(providers, directory, ld, commands):
     return group
 
 
+def own_ro_prefix_plan(raw, capture, source, atlas):
+    """Join a complete source RO prefix to real compiler roots before projection."""
+    import proof_provenance as pp
+    import source_module_link_proof as proof
+    if hashlib.sha256(Path(__file__).read_bytes()).hexdigest()!=_LOADED_MODULE:
+        raise LinkError('loaded own RO normalizer changed')
+    if not isinstance(capture, pp.OwnRoCapture):
+        raise LinkError('own RO prefix requires its fresh source capture')
+    capture.current()
+    facts = json.loads(capture.facts_json)
+    original = capture.original
+    if proof.allocated(raw) != proof.allocated(original):
+        raise LinkError('own RO original/prepared allocation differs')
+    replay = rp.Elf(capture.directory/'raw.o')
+    def symbol_rows(obj):
+        return [(s.index,s.shndx,s.name,s.value,s.size,s.bind,s.type,s.section)
+                for s in obj.symbols if s.type!=rp.STT_FILE]
+    def rels(obj):
+        return [(sec,r.offset,r.type,r.sym.index,a)
+            for sec in SECTIONS[:-1] for r,a in zip(obj.rels(sec),rp.in_place_addends(obj,sec,obj.rels(sec)))]
+    if (proof.allocated(raw)!=proof.allocated(replay) or symbol_rows(raw)!=symbol_rows(replay)
+            or rels(raw)!=rels(replay)):
+        raise LinkError('own RO configured input differs from fresh ordinary RAW replay')
+    sec = raw.section('.rodata')
+    if (struct.unpack_from('>HH',raw.data,16)!=(1,8) or raw.size('.data') or raw.size('.bss')
+            or not sec or not raw.size('.text') or sec['type']!=1 or sec['addr'] or sec['flags']!=2
+            or any(raw.rels(s) for s in ('.data','.rodata'))
+            or any(s.shndx==rp.SHN_COMMON for s in raw.symbols)
+            or any(s['flags']&2 and s['size'] and s['name'] not in ('.text','.rodata',*ABI_METADATA) for s in raw.sections)):
+        raise LinkError('own RO requires complete readonly prefix and no DATA/BSS')
+    objects = [s for s in raw.symbols if s.section=='.rodata' and s.type!=rp.STT_SECTION]
+    if len(objects)!=len(facts) or any(s.bind!=rp.STB_GLOBAL or s.type!=rp.STT_OBJECT for s in objects):
+        raise LinkError('own RO has extra or non-global object definitions')
+    cursor=0; owners=[]
+    for row in facts:
+        choices=[s for s in objects if s.name==row['name']]
+        if len(choices)!=1:
+            raise LinkError('own RO source root is missing or ambiguous')
+        symbol=choices[0]; size=row['count']*4
+        payload=b''.join(struct.pack('>i',x) for x in row['values'])
+        if symbol.value!=cursor or symbol.size!=size or raw.bytes_of('.rodata')[cursor:cursor+size]!=payload:
+            raise LinkError('own RO source payload/extent differs from actual compiler object')
+        owners.append((symbol.index,symbol.name,symbol.value,symbol.size));cursor+=size
+    if cursor!=sec['size']:
+        raise LinkError('own RO source roots do not cover the complete section')
+    source=Path(source).as_posix()
+    key=source.removeprefix('src/').removesuffix('.c')
+    modules=[m for m in atlas['modules'] if any(r.get('source')==key for r in m['text_ownership'])]
+    if len(modules)!=1:
+        raise LinkError('own RO source graph is missing or ambiguous')
+    module=modules[0]; text=module['text_ownership']; storage=module.get('data_rodata_ownership',[])
+    if (len(text)!=1 or text[0].get('source')!=key or text[0].get('type')!='c'
+            or int(text[0]['offset'],16)!=0 or int(text[0]['size'],16)!=raw.size('.text')
+            or int(text[0]['end_offset'],16)!=raw.size('.text')):
+        raise LinkError('own RO source graph is not one complete text input')
+    own=[r for r in storage if r.get('source')==key]
+    if (len(own)!=1 or own[0].get('type')!='c' or own[0].get('section')!='.rodata'
+            or own[0].get('externalized') or int(own[0]['offset'],16)!=0
+            or int(own[0]['size'],16)!=cursor or int(own[0]['end_offset'],16)!=cursor
+            or any(r is not own[0] and int(r['offset'],16)<cursor for r in storage)):
+        raise LinkError('own RO graph has an unowned prefix or overlapping owner')
+    indices={x[0] for x in owners}; sites=[]
+    for section in SECTIONS[:-1]:
+        for rel,addend in zip(raw.rels(section),rp.in_place_addends(raw,section,raw.rels(section))):
+            if rel.sym.section=='.rodata':
+                if section!='.text' or rel.type not in (rp.R_MIPS_HI16,rp.R_MIPS_LO16) or rel.sym.index not in indices:
+                    raise LinkError('own RO reference has an unsupported source role')
+                if not 0<=addend<rel.sym.size:
+                    raise LinkError('own RO reference addend escapes its source object')
+                sites.append((section,rel.offset,rel.type,rel.sym.index,rel.sym.name,addend))
+    if {s[3] for s in sites}!=indices:
+        raise LinkError('own RO source root has no complete reference cohort')
+    return dict(module=module['overlay'],source=source,origin=raw.size('.text'),extent=cursor,
+                owners=owners,sites=sites)
+
+
+def project_own_ro_prefix(raw, output, capture, source, atlas, directory, *, objcopy, rebind):
+    """Change only reference metadata; ordinary final ld supplies stored operands."""
+    import proof_provenance as pp
+    import source_module_link_proof as proof
+    raw=rp.Elf(raw); directory=Path(directory);directory.mkdir(parents=True,exist_ok=True)
+    plan=own_ro_prefix_plan(raw,capture,source,atlas)
+    observed=pp._static_parsed_surface(raw)
+    plan_snapshot=json.dumps(plan,sort_keys=True)
+    aliases={idx:f'__runlink_own_ro_{idx}' for idx,_name,_value,_size in plan['owners']}
+    if set(aliases.values()) & {s.name for s in raw.symbols}:
+        raise LinkError('own RO generated binding collides with an original symbol')
+    prepared=directory/'bindings.o';commands=[];args=[objcopy]
+    for index,name,value,size in plan['owners']:
+        args += ['--add-symbol',f'{aliases[index]}={value},local']
+    run(args+[raw.path,prepared],commands)
+    for section in SECTIONS[:-1]:
+        rows=[x for x in plan['sites'] if x[0]==section]
+        if rows:
+            run([sys.executable,rebind,prepared,section,*[f'{off:#x}:{name}:{aliases[index]}' for _,off,_kind,index,name,_addend in rows]],commands)
+    projected=rp.Elf(prepared)
+    if proof.allocated(raw)!=proof.allocated(projected):
+        raise LinkError('own RO projection changed original allocated payload')
+    expected={(section,off,kind):(index,name) for section,off,kind,index,name,_ in plan['sites']}
+    for section in SECTIONS[:-1]:
+        old,new=raw.rels(section),projected.rels(section)
+        if len(old)!=len(new):
+            raise LinkError('own RO projection changed relocation count')
+        for a,b in zip(old,new):
+            if (a.offset,a.type)!=(b.offset,b.type):
+                raise LinkError('own RO projection changed ordered relocation sites')
+            hit=expected.get((section,a.offset,a.type))
+            if hit:
+                if (b.sym.name,b.sym.value,b.sym.bind,b.sym.shndx)!=(aliases[hit[0]],a.sym.value,rp.STB_LOCAL,rp.SHN_ABS):
+                    raise LinkError('own RO projected reference disagrees with source definition')
+            elif (a.sym.name,a.sym.value,a.sym.size,a.sym.bind,a.sym.type,a.sym.section) != (b.sym.name,b.sym.value,b.sym.size,b.sym.bind,b.sym.type,b.sym.section):
+                raise LinkError('own RO projection changed an unrelated relocation identity')
+    for symbol in raw.symbols:
+        if symbol.type!=rp.STT_FILE:
+            choices=[s for s in projected.symbols if (s.name,s.value,s.size,s.bind,s.type,s.section)==(symbol.name,symbol.value,symbol.size,symbol.bind,symbol.type,symbol.section)]
+            if len(choices)!=1:
+                raise LinkError('own RO projection lost an original symbol identity')
+    capture.current()
+    if (pp._static_parsed_surface(raw)!=observed or raw.path.read_bytes()!=raw.data
+            or json.dumps(plan,sort_keys=True)!=plan_snapshot
+            or prepared.read_bytes()!=projected.data):
+        raise LinkError('own RO projection observation changed')
+    Path(output).write_bytes(projected.data)
+    if Path(output).read_bytes()!=projected.data:
+        raise LinkError('own RO copied projection differs from its loaded observation')
+    return dict(plan=plan,commands=commands,raw_sha256=hashlib.sha256(raw.data).hexdigest(),
+                configured_sha256=hashlib.sha256(projected.data).hexdigest())
+
+
 def binding_plan(elf, exports, local_bindings=None):
     """Resolve relocation names to explicit ORT rows, never to guessed addresses."""
     local_bindings = local_bindings or {}
@@ -644,10 +773,56 @@ SECTIONS {{
     return receipt
 
 
+def own_ro_prefix(raw, output, source, directory):
+    """Explicit source-bound normalization; never an arbitrary value/JSON recipe."""
+    import proof_provenance as pp
+    root = Path.cwd().resolve()
+    raw, source, directory = Path(raw).resolve(), Path(source).resolve(), Path(directory).resolve()
+    relative = source.relative_to(root)
+    if (relative.parts[0] != 'src' or source.suffix != '.c'
+            or raw != root/'build'/(relative.as_posix()+'.o')
+            or Path(output).resolve() != raw
+            or hashlib.sha256(Path(__file__).read_bytes()).hexdigest()!=_LOADED_MODULE):
+        raise LinkError('own RO input is not its configured source object')
+    rp.metadata_implementations()
+    graph_path=root/'config/overlays.us.json'; graph_bytes=graph_path.read_bytes()
+    graph=json.loads(graph_bytes)
+    directory.mkdir(parents=True,exist_ok=True)
+    original=raw.read_bytes(); preserved=directory/'compiler.o';preserved.write_bytes(original)
+    capture=pp.capture_own_ro_prefix(source,root)
+    result=project_own_ro_prefix(preserved,directory/'projected.o',capture,relative,graph,directory,
+        objcopy=root/'tools/binutils/mips64-elf-objcopy',rebind=root/'tools/rebind_elf_relocations.py')
+    projected_path=directory/'projected.o'
+    expected_projected=result['configured_sha256']
+    projected_bytes=projected_path.read_bytes()
+    if hashlib.sha256(projected_bytes).hexdigest()!=expected_projected:
+        raise LinkError('own RO wrapper projection differs from validated loaded bytes')
+    capture.current()
+    if (graph_path.read_bytes()!=graph_bytes or raw.read_bytes()!=original
+            or hashlib.sha256(Path(__file__).read_bytes()).hexdigest()!=_LOADED_MODULE):
+        raise LinkError('own RO inputs changed before publication')
+    result['capture']=str(capture.directory)
+    result['graph_sha256']=hashlib.sha256(graph_bytes).hexdigest()
+    result['source']=relative.as_posix()
+    (directory/'receipt.json').write_text(json.dumps(result,indent=2)+'\n')
+    temporary=raw.with_suffix(raw.suffix+'.own-ro-tmp')
+    temporary.write_bytes(projected_bytes)
+    capture.current()
+    if (projected_path.read_bytes()!=projected_bytes or temporary.read_bytes()!=projected_bytes
+            or raw.read_bytes()!=original or graph_path.read_bytes()!=graph_bytes
+            or hashlib.sha256(Path(__file__).read_bytes()).hexdigest()!=_LOADED_MODULE):
+        raise LinkError('own RO wrapper publication observation changed')
+    temporary.replace(raw)
+    if raw.read_bytes()!=projected_bytes:
+        raise LinkError('own RO published output differs from validated loaded bytes')
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("object", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--own-ro-prefix-source", type=Path)
     parser.add_argument("--ort", type=Path, default=Path("config/runlink-ort.us.txt"))
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--ld", type=Path, default=Path("tools/binutils/mips64-elf-ld"))
@@ -663,6 +838,14 @@ def main():
     parser.add_argument("--callback-text-inputs", nargs="+")
     args = parser.parse_args()
     try:
+        if args.own_ro_prefix_source is not None:
+            if (args.output or args.local_data_aggregate or args.local_data_objects or args.local_ro_owner_profile
+                    or args.local_ro_origin_object or args.local_ro_provider_group or args.local_ro_mixed_provider_group
+                    or args.callback_data_profile or args.callback_source or args.callback_text_inputs):
+                raise LinkError('own RO prefix conflicts with a module/provider mode')
+            receipt=own_ro_prefix(args.object,args.object,args.own_ro_prefix_source,args.directory)
+            print(f"own RO prefix: {receipt['plan']['extent']} source bytes, {len(receipt['plan']['sites'])} references")
+            return
         receipt = link(args.object, args.output or args.object,
                        rp.OrtNames.load(args.ort), args.directory,
                        ld=args.ld, objcopy=args.objcopy,

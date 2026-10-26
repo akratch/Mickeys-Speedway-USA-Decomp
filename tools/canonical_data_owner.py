@@ -181,3 +181,51 @@ def collect(rs, module, candidate, name, linked, rom, *, root=None, aliases=None
             "owner": str(source), "size": symbol[2],
             "capture_sha256": hashlib.sha256(json.dumps(receipt, sort_keys=True).encode()).hexdigest(),
             "recheck": recheck}
+
+
+def collect_same_input_ro(rs, module, candidate, linked, *, root=None):
+    """Separate source-qualified RO roots; the external DATA carrier guard is unchanged."""
+    import proof_provenance as pp
+    import runlink_pack as rp
+    root=Path(root or rs.REPO)
+    if (Path(__file__).resolve()!=root/'tools/canonical_data_owner.py'
+            or hashlib.sha256(Path(__file__).read_bytes()).hexdigest()!=LOADED_SHA256):
+        raise rs.SurfaceComparisonError('loaded own RO identity helper changed')
+    selected=pp.own_ro_prefix_sources(root)
+    sources=[r['source'] for r in module.get('text_ownership',[]) if r.get('type')=='c'
+             and 'build/src/'+r['source']+'.c.o' in selected]
+    if not sources:
+        return None
+    if len(sources)!=1:
+        raise rs.SurfaceComparisonError('own RO has ambiguous source selection')
+    source='src/'+sources[0]+'.c'
+    try:
+        witness=pp.prove_own_ro_definition_join(root,root/source,Path(linked.path),Path(linked.path).with_suffix('.map'))
+        actual=rp.Elf(candidate.path,candidate.data)
+        permitted=(witness['raw'],witness['configured'],witness['capture'].original)
+        if (pp._static_parsed_surface(actual) not in [pp._static_parsed_surface(x) for x in permitted]
+                or linked.data!=witness['linked'].data
+                or json.loads((root/'config/overlays.us.json').read_bytes())['modules'][module['overlay']-1]!=module):
+            raise pp.MetadataProofError('own RO candidate/linked graph differs from its actual source proof')
+        def surface(elf):
+            return (hashlib.sha256(elf.data).hexdigest(),tuple(elf.sh),tuple(elf.names))
+        initial=[(obj,surface(obj)) for obj in (candidate,linked)]
+        for obj,_ in initial:
+            fresh=rs.Elf(Path(obj.path))
+            if surface(obj)!=surface(fresh):
+                raise pp.MetadataProofError('own RO loaded comparator observation differs from its file')
+        identities=dict(witness['identities']); expected=tuple(sorted(identities.items()))
+        result={}; witness_recheck=witness['recheck']
+        def recheck():
+            witness_recheck()
+            if (set(result)!={'identities','recheck'} or result.get('identities') is not identities
+                    or result.get('recheck') is not recheck
+                    or hashlib.sha256(Path(__file__).read_bytes()).hexdigest()!=LOADED_SHA256
+                    or tuple(sorted(identities.items()))!=expected
+                    or any(surface(obj)!=old or obj.data!=Path(obj.path).read_bytes() for obj,old in initial)):
+                raise rs.SurfaceComparisonError('own RO consumed comparator identity changed')
+        result.update(identities=identities,recheck=recheck)
+        recheck()
+        return result
+    except (pp.MetadataProofError,rp.PackError,OSError,ValueError) as error:
+        raise rs.SurfaceComparisonError('own RO source definition refused: '+str(error)) from error

@@ -2164,5 +2164,45 @@ class CallbackFrontendFreshnessTests(unittest.TestCase):
                 self.assertTrue(current())
 
 
+
+class OwnRoSourceTests(unittest.TestCase):
+    def test_complete_const_signed_arrays_and_no_guessed_extent(self):
+        root = pathlib.Path(__file__).resolve().parent.parent
+        source = b'typedef signed long scalar; const scalar first[]={1,-2,3}; const scalar second[1]={7};'
+        facts = provenance.own_ro_prefix_facts(source, ['-32'], root)
+        self.assertEqual([(r['name'], r['count'], r['values']) for r in facts],
+                         [('first', 3, [1, -2, 3]), ('second', 1, [7])])
+        for changed in (source.replace(b'const scalar', b'scalar'),
+                        source.replace(b'signed long', b'unsigned long'),
+                        source.replace(b'[1]', b'[2]'),
+                        source.replace(b'{7}', b'{2147483648}'),
+                        source + b' long unrelated=0;'):
+            with self.subTest(source=changed), self.assertRaises(provenance.MetadataProofError):
+                provenance.own_ro_prefix_facts(changed, ['-32'], root)
+
+    def test_capture_keeps_parsed_metadata_private_files_and_global_failure_hold(self):
+        import runlink_pack as rp
+        from test_link_overlay_module import OwnRoProjectionTests
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            raw, capture, _ = OwnRoProjectionTests.fixture(root)
+            self.assertTrue(capture.current())
+            symbol = next(s for s in raw.symbols if s.name == 'first')
+            raw.symbols[symbol.index] = dataclasses.replace(symbol, size=8)
+            world = SimpleNamespace(data_import_contexts=[(True, capture.current)],
+                                    data_import_inputs={}, _objects={'held': []}, _defs={'held': []})
+            with self.assertRaises(provenance.MetadataProofError):
+                rp.check_data_import_holds(world)
+            self.assertIsNone(world._objects)
+            self.assertIsNone(world._defs)
+            raw.symbols[symbol.index] = symbol
+            self.assertTrue(capture.current())
+            (root/'raw.o').write_bytes(raw.data+b'changed')
+            with self.assertRaises(provenance.MetadataProofError):
+                capture.current()
+            with self.assertRaises(provenance.MetadataProofError):
+                dataclasses.replace(capture, seal=object()).current()
+
+
 if __name__ == "__main__":
     unittest.main()

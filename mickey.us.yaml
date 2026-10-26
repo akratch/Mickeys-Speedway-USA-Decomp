@@ -1645,13 +1645,14 @@ segments:
     vram: 0xF0000000
     bss_size: 0x0
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o018
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x18745B8, c, overlay_018]
-      - [0x1874C08, bin, overlay_018_data_rodata]
+      - {start: 0x1874C08, type: .rodata, name: overlay_018, linker_section_order: .data}
+      - [0x1874C88, bin, overlay_018_data_rodata]
 
   - name: overlay_018_reloc1
     type: bin

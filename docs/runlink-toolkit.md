@@ -33,6 +33,7 @@ and 2 when inputs are unusable.
 | `names` | Prints the ORT as `<row> <name>`: from the ROM's name table where there is one (JFG), else from the configured list (MSU). | Nothing. JFG's names are ROM-derived, so keep the output local. |
 | `generate [--mode M] [-v] [--json F] [--out F] [--unpatched OLD=NEW]` | Regenerates every table from the build and compares the result with the ROM. | See the modes below. With `--out`, it also writes the generated region. |
 | `parity` | MSU only. Runs `tools/runlink_pack.py` and the kit on the same tree. | The kit reproduces MSU's packer: the same residuals (category, module, offset, expected, got), byte-identical generated regions and the same region proof. |
+| `check-build` | MSU only. Runs core compare, region, kit table check and independent kit parity in one held request. | One fresh source inventory; all four checks and their current-input holds still run. |
 
 `generate` has three modes, which differ only in where each relocation's
 **identity** comes from. Identity means the address the relocation refers to,
@@ -222,15 +223,21 @@ query real object/bootstrap dependencies. Non-matching/raw diagnostic rules
 retain their existing paths. This does not relax the exact retail raw-region
 requirement, remove the retained bootstrap, or permit general source growth.
 
-`gmake check-runlink-kit` runs `check` and `parity`. Like
-`check-runlink-tables`, it needs the baserom, a linked ELF and the raw
-overlay objects. On the tree where the kit was written it reported 153
-differences on both sides (pool-layout 124, table-entry 26, extra 1,
-missing 1, unplaced 1), identical residual tuples, byte-identical generated
-regions (693,360 bytes), and the same region proof: 8 bytes differ raw, and
-none once the residuals are replaced. The gate itself stays
-`check-runlink-tables`. The kit reimplements the rules, the encoding and the
-comparison; it does not replace MSU's packer.
+`gmake check-runlink-tables check-runlink-kit` requests both legacy gates in
+one Make invocation. Their shared prerequisite runs `check-build` once. Either
+target alone also runs all four checks; separate Make invocations each create
+a fresh inventory. Standalone Python commands keep their independent producer
+behavior.
+
+The combined request shares held compiler/provider observations, not generated
+tables: the kit still constructs fresh resolver, relocation and rule results
+independently from the core packer. Source, tools, recipes, loaded and parsed
+objects, namespace and placement state, current files and generated products
+remain checked between logical operations and before reporting success. A
+change invalidates the request; no persisted success receipt replaces current
+source admission. This changes no retained-bootstrap, raw-region, source-only
+or general-layout requirement.
+
 
 ### Bounded editable-layout diagnostic
 

@@ -3741,6 +3741,6 @@ See the [complete representation entry](ido-buffer-contracts.md#pointer-represen
 - **Limits:** a numeric match is insufficient. Closed proofs remain required;
   no storage, native or production-admission claim.
 
-Additional measured notes: [buffer argument affinity and finite-float diagnostics](ido-buffer-contracts.md).
+Additional measured notes: [buffer contracts and complete-word counts](ido-buffer-contracts.md).
 See also [aggregate initialization, symbol extents and actual storage](ido-symbol-metadata.md).
 For address reuse across calls, see [real linker spans](ido-linker-spans.md).

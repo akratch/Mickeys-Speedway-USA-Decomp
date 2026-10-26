@@ -126,3 +126,20 @@ See also [storage width and callable return width](ido-learnings.md#storage-widt
   of an original declaration. Aggregate size alone is insufficient. Do not add
   fake storage, padding, attributes or unrelated source changes to force layout;
   retain independent linked-address and byte-identity proof.
+
+### Complete-word counts from a bounded byte span
+
+- **Symptom:** an explicit signed byte-distance division by eight adds code
+  compared with scaled pointer subtraction.
+- **Mechanism:** the compiler corrects negative dividends to implement signed
+  division's truncation toward zero. A scaled pointer difference already has
+  the element-size divisibility property.
+- **Lever:** when an independently justified interface requires a nonnegative,
+  representable distance in complete eight-byte words, a direct right shift
+  expresses that unit conversion without the negative-dividend correction.
+  Prove the provider and every caller with their real types and linked output.
+- **Limits:** this is no negative-shift equivalence or general pointer rewrite.
+  Character-pointer conversion does not make unrelated backing objects
+  subtractable or prove alignment, bounds, lifetime or host representation.
+  Add no guard, carrier, formal, flag or new precondition merely for a match.
+

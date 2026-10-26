@@ -121,11 +121,19 @@ and the current non-reentrant frame sequence.
 
 [rcpFast3d](../src/main/rcpFast3d.c) prepares a task, binds the submitted command
 range, writes back the data cache and enqueues work using the main completion
-queue. Enqueue success is not graphics completion. The actual provider uses
-`u64 *` parameters and returns `s32`; main currently declares `Gfx *` parameters
-and a void result. The target representation agrees at these calls, but the
-cross-TU C API remains incompatible. Its existing length convention must not
-silently become a host byte count.
+queue. Enqueue success is not graphics completion. The shared
+[task interface](../include/game/rcp_task.h) returns `s32` and accepts mutable
+`void *` command boundaries in main and overlays 33, 42 and 43. The exclusive
+end must belong to the same live backing representation range as the start;
+both are eight-byte aligned and their nonnegative byte distance must be
+representable and divisible by eight. The provider converts that distance to
+a count of complete eight-byte words. This preserves the graphics task's
+existing convention; it does not reinterpret every SDK task length as words.
+
+The task descriptor retains its SDK `u64 *` address field. Passing the address
+does not establish a common `u64` array or make the distinct command unions
+compatible. These conditional interface repairs add no capacity check, backing
+allocation proof, authenticated completion, or resource lifetime guarantee.
 
 [The scheduler](../src/main/sched.c) tracks SP and DP completion separately.
 The normal completion routine notifies only after both state bits clear; the

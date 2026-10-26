@@ -3707,8 +3707,18 @@ def cmd_ort(args):
     entries = sum(line.startswith('entry ') for line in text.splitlines())
     current()
     if args.write:
-        metadata.write_changed(paths["ort"], text)
-        current()
+        # Explicit production must advance Make freshness even for equal bytes.
+        output = paths["ort"]
+        payload = text.encode()
+        output.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix=".ort-", dir=output.parent) as directory:
+            temporary = Path(directory) / output.name
+            temporary.write_bytes(payload)
+            edited_require(temporary.read_bytes() == payload, 'ORT temporary publication changed')
+            current()
+            temporary.replace(output)
+            current()
+            edited_require(output.read_bytes() == payload, 'ORT published projection changed')
         print(f"wrote {paths['ort'].relative_to(REPO) if paths['ort'].is_relative_to(REPO) else paths['ort']}"
               f" ({rows} rows, {entries} entry points)")
         return 0

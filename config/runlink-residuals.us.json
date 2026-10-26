@@ -2,13 +2,13 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 5283},
+  "totals": {"differences": 0, "borrowed_records": 5266},
   "differences": {
   },
   "borrowed": {
     "bss-size": {
       "about": "header BSS size without a complete faithful linked source allocation, from the atlas (module)",
-      "count": 31,
+      "count": 30,
       "entries": [
         [1],
         [2],
@@ -34,7 +34,6 @@
         [58],
         [59],
         [60],
-        [62],
         [87],
         [92],
         [96],
@@ -58,7 +57,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1240,
+      "count": 1232,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -1013,14 +1012,6 @@
         [60, "gOverlay60Resources", 2],
         [60, "gOverlay60ResourcesEnd", 2],
         [60, "overlay60ReleaseReloc", 3],
-        [62, "gOverlay62FirstItemReloc", 2],
-        [62, "gOverlay62Float0", 2],
-        [62, "gOverlay62Handle18", 2],
-        [62, "gOverlay62InlineResource", 2],
-        [62, "gOverlay62State", 2],
-        [62, "gOverlay62Value4Initial", 2],
-        [62, "gOverlay62Values", 2],
-        [62, "overlay62ReleaseReloc", 3],
         [63, "gO63ActiveState", 6],
         [63, "gO63Chain", 2],
         [63, "gO63ChainReload", 2],
@@ -1331,7 +1322,7 @@
     },
     "rodata-base": {
       "about": "module rodata base the objects do not determine (module)",
-      "count": 24,
+      "count": 23,
       "entries": [
         [1],
         [2],
@@ -1347,7 +1338,6 @@
         [50],
         [57],
         [58],
-        [62],
         [70],
         [71],
         [79],

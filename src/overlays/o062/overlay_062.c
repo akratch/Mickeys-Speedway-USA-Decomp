@@ -10,28 +10,34 @@ s32 o62TransitionState;
 void *o62Descriptor;
 void *o62Sprite;
 
+s16 o62AssetGroup[2] = {6, -1};
+RcpTextureNode o62TextureNodes[2] = {
+    {0, 0, 0, -16, -16},
+    {0, 0, 0, 0, 0}
+};
+
 /* DKR v77/v80 and JFG have no exact donor for this resource initializer. */
 void overlay62Initialize(void) {
-    loadFrontEndList(&gOverlay62Float0);
-    gOverlay62Value4Initial = (s32)gOverlay62Handle18;
-    o62AnimationFrame_o062Reloc = 0.0f;
-    o62AnimationFlags_o062Reloc = 13;
+    loadFrontEndList(o62AssetGroup);
+    o62TextureNodes[0].texture = D_800D31C8[6];
+    o62AnimationFrame = 0.0f;
+    o62AnimationFlags = 13;
     fontUseFont(3);
     fontColour(0xFF, 0xFF, 0xFF, 0, 0xFF);
-    o62Descriptor_o062Reloc = overlay45CreateDescriptor(
+    o62Descriptor = overlay45CreateDescriptor(
         D_8007C0B8->primary, 0x28, 0x28, 0);
-    o62Sprite_o062Reloc = texLoadSprite(0x93, 0);
-    o62FadeInTicks_o062Reloc = 0x20;
-    o62FadeOutTicks_o062Reloc = 0;
-    o62TransitionState_o062Reloc = 0;
-    overlay45SetMode(o62Descriptor_o062Reloc, 0);
+    o62Sprite = texLoadSprite(0x93, 0);
+    o62FadeInTicks = 0x20;
+    o62FadeOutTicks = 0;
+    o62TransitionState = 0;
+    overlay45SetMode(o62Descriptor, 0);
 }
 
 #define OVERLAY62_EMIT(commands_, op_, value_) do { \
     Overlay62Gfx *packet_ = *(commands_); \
     *(commands_) = packet_ + 1; \
-    packet_->word0 = (op_); \
-    packet_->word1 = (value_); \
+    packet_->words.w0 = (op_); \
+    packet_->words.w1 = (value_); \
 } while (0)
 
 /* Exact C: 294 words, the 0x88 frame, and all 71 relocation records.
@@ -64,36 +70,36 @@ void overlay62Update(s32 updateRate) {
     s32 blue;
     Overlay62Transform transform;
 
-    if (o62FadeInTicks_o062Reloc > 0) {
-        o62FadeInTicks_o062Reloc -= updateRate;
-        if (o62FadeInTicks_o062Reloc < 0) {
-            o62FadeInTicks_o062Reloc = 0;
+    if (o62FadeInTicks > 0) {
+        o62FadeInTicks -= updateRate;
+        if (o62FadeInTicks < 0) {
+            o62FadeInTicks = 0;
         }
 
-        alpha = 0xFF - o62FadeInTicks_o062Reloc * 8;
+        alpha = 0xFF - o62FadeInTicks * 8;
         screenBase = 0xF8;
-        intensity = 0x78 + ((o62FadeInTicks_o062Reloc * 0xDC) >> 5);
-        red = 0x40 + ((o62FadeInTicks_o062Reloc * -0x40) >> 5);
-        green = 0x40 + ((o62FadeInTicks_o062Reloc * -0x40) >> 5);
-        blue = 0x80 + ((o62FadeInTicks_o062Reloc * -0x80) >> 5);
+        intensity = 0x78 + ((o62FadeInTicks * 0xDC) >> 5);
+        red = 0x40 + ((o62FadeInTicks * -0x40) >> 5);
+        green = 0x40 + ((o62FadeInTicks * -0x40) >> 5);
+        blue = 0x80 + ((o62FadeInTicks * -0x80) >> 5);
 
-        overlay45SetMode(o62Descriptor_o062Reloc, alpha);
+        overlay45SetMode(o62Descriptor, alpha);
         rcpSetScreenColour(red & 0xFF, green & 0xFF, blue & 0xFF,
                                  green);
-    } else if ((o62FadeOutTicks_o062Reloc != 0) || (o62TransitionState_o062Reloc != 0)) {
-        o62FadeOutTicks_o062Reloc -= updateRate;
-        if (o62FadeOutTicks_o062Reloc <= 0) {
-            o62FadeOutTicks_o062Reloc = 0;
+    } else if ((o62FadeOutTicks != 0) || (o62TransitionState != 0)) {
+        o62FadeOutTicks -= updateRate;
+        if (o62FadeOutTicks <= 0) {
+            o62FadeOutTicks = 0;
             mainChangeLevel(0xC, 0, 0, 4, 1, 0);
-            o62TransitionState_o062Reloc = 1;
+            o62TransitionState = 1;
         }
 
-        alpha = o62FadeOutTicks_o062Reloc * 8;
+        alpha = o62FadeOutTicks * 8;
         screenBase = 0xF8;
-        intensity = 0x154 + ((o62FadeOutTicks_o062Reloc * -0xDC) >> 5);
-        red = (o62FadeOutTicks_o062Reloc << 6) >> 5;
-        green = (o62FadeOutTicks_o062Reloc << 6) >> 5;
-        blue = (o62FadeOutTicks_o062Reloc << 7) >> 5;
+        intensity = 0x154 + ((o62FadeOutTicks * -0xDC) >> 5);
+        red = (o62FadeOutTicks << 6) >> 5;
+        green = (o62FadeOutTicks << 6) >> 5;
+        blue = (o62FadeOutTicks << 7) >> 5;
     } else {
         alpha = 0xFF;
         screenBase = 0xF8;
@@ -103,12 +109,12 @@ void overlay62Update(s32 updateRate) {
         blue = 0x80;
 
         if ((D_800D3180 & 0x9000) != 0) {
-            o62FadeOutTicks_o062Reloc = 0x20;
+            o62FadeOutTicks = 0x20;
         }
     }
 
     rcpSetScreenColour(red & 0xFF, green & 0xFF, blue & 0xFF, green);
-    overlay45SetMode(o62Descriptor_o062Reloc, alpha);
+    overlay45SetMode(o62Descriptor, alpha);
     camStandardOrtho(&D_800D3140,
                                  &D_800D3144);
 
@@ -129,14 +135,14 @@ void overlay62Update(s32 updateRate) {
     camDo2DSprite(&D_800D3140,
                              &D_800D3144,
                              D_800D3148, &transform,
-                             o62Sprite_o062Reloc, 0, 0xFF);
+                             o62Sprite, 0, 0xFF);
     sprSetTextureFilter(1);
     fontUseFont(2);
     fontBackground(0, 0, 0, 0);
     fontColour(0xFF, 0xFF, 0, 0xFF, alpha);
 
     fontPrintXY(&D_800D3140, 0xC4, 0x28,
-                           gOverlay62FirstItemReloc, 4);
+                           ">", 4);
     fontPrintXY(&D_800D3140, 0x74, 0x50,
                            D_8007C0B8->items[0], 4);
     fontPrintXY(&D_800D3140, 0x74, 0x5A,
@@ -150,19 +156,19 @@ void overlay62Update(s32 updateRate) {
     fontPrintXY(&D_800D3140, 0x74, 0xB4,
                            D_8007C0B8->items[5], 4);
 
-    texAnimateTexSprite(*(s32 *)(gOverlay62State + 4),
-                              &o62AnimationFlags_o062Reloc, 2,
-                              &o62AnimationFrame_o062Reloc, updateRate);
-    gOverlay62Values[2] = (s32)(o62AnimationFrame_o062Reloc * 65536.0f);
+    texAnimateTexSprite((u8 *)o62TextureNodes[0].texture,
+                              &o62AnimationFlags, 2,
+                              &o62AnimationFrame, updateRate);
+    o62TextureNodes[0].packedOffset = (s32)(o62AnimationFrame * 65536.0f);
     func_8002F618(&D_800D3140,
-                            gOverlay62Values, 0x74, 0xCC,
+                            o62TextureNodes, 0x74, 0xCC,
                             0xFF, 0xFF, 0xFF, alpha);
 }
 
 /* DKR v77/v80 and JFG checks found only generic resource cleanup. */
 void overlay62ReleaseAll(void) {
-    overlay62ReleaseReloc(o62Sprite_o062Reloc);
-    overlay62ReleaseReloc(o62Descriptor_o062Reloc);
-    overlay62ReleaseReloc(gOverlay62InlineResource);
+    texFreeSprite(o62Sprite);
+    overlay45ReleaseDescriptor(o62Descriptor);
+    freeFrontEndList(o62AssetGroup);
     func_8002C5F4();
 }

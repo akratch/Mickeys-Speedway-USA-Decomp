@@ -240,7 +240,7 @@ sprite-loader disagreement and other erased APIs remain open.
   arenas from menu cells, the two partition orders, actual geometry records,
   post-write checks and the conditional normal-completion reuse sequence.
 - **Shared matrix cursor:** [frontUpdate](../src/main/menu.c) and overlay 11
-  capture a caller's `Mtx *` in retained `D_800D3144` and copy it back. The
+  capture a caller's `Mtx *` in the genuine C menu cell `D_800D3144` and copy it back. The
   resident menu and audited views in 15 overlays now use `Mtx *`; former byte
   array aliases pass the cell address to actual `Mtx **` parameters. Storage
   remains a retained BSS gap without a C definition or new ownership claim.

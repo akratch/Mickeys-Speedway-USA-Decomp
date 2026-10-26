@@ -7,7 +7,7 @@ support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `9e7a682a4`; the combined borrowing
+The source measurements here are pinned to `9cf42ae10`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -23,10 +23,10 @@ validation and publication are separate acceptance steps.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 54,368 of 61,312 bytes have canonical projected C owners | 6,944 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
-| Initialized images | 50 of 87 data-bearing modules are fully projected to C; 16 are partial and 21 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
+| Initialized storage | 54,440 of 61,312 bytes have canonical projected C owners | 6,872 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized images | 50 of 87 data-bearing modules are fully projected to C; 17 are partial and 20 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 32 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 4,966 records still borrow authority: 4,914 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 4,958 records still borrow authority: 4,914 placeholder references and 44 blob-owned data records. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 30 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
 
@@ -382,6 +382,17 @@ source-tail add/grow, dangling-call and initializer removal refusals, successful
 removal, and the twelve-module omitted/poisoned control are proved. Unselected
 compatibility, full source ownership and general relayout remain open.
 
+Overlay 1 now supplies its six action records through the source-authenticated
+mixed callback producer. The 72-byte physical input contains 60 declared
+field bytes and 12 bytes of natural record padding; the separate eight-byte
+compiler suffix is excluded. The untouched ELF reports object size 66, while
+held compiler-evaluated layout proves the C extent is 72. Neither the symbol
+size nor an instruction is patched. All eight callbacks join real C function
+definitions before runtime comparison, retiring exactly eight hybrid records.
+The 12-byte following data gap and terminal ASM remain retained compatibility.
+Legacy reader views and aliases, original capacity and TU, Path64 ABI debt
+and general/native source independence remain open.
+
 ## Remaining campaign, in dependency order
 
 1. **Keep proof and ownership truthful.** Rebuild raw objects after integrations,
@@ -396,7 +407,7 @@ compatibility, full source ownership and general relayout remain open.
 3. **Recover initialized and BSS families.** Prioritize bounded tables, records,
    strings, geometry and callback families, not opaque copies of whole modules.
    The largest canonical initialized deficits are overlay 9 (764 bytes),
-   overlay 8 (720), overlay 1 (704), overlay 58 (516), overlay 94 (304),
+   overlay 8 (720), overlay 1 (632), overlay 58 (516), overlay 94 (304),
    and overlays 21 and 83 (272 each). Overlays 61 and 65
    already own their complete initialized inputs. Each requires authentic object schemas and complete source/relocation
    evidence; repeated layouts alone do not establish a shared type.

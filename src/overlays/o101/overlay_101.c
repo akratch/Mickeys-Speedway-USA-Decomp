@@ -1116,7 +1116,7 @@ s32 overlay101GetBounds(Overlay101BoundsNode_GetBounds *node, s32 *leftOut,
 
 /* DKR v77/v80 and JFG contain related sprite/HUD draw pipelines but no exact
  * object donor for this element renderer. */
-void overlay101DrawElement(s32 displayList, Overlay101BoundsNode_DrawElement *node,
+void overlay101DrawElement(Gfx **displayList, Overlay101BoundsNode_DrawElement *node,
                            Overlay101Element *element) {
     s32 x;
     s32 y;
@@ -1162,7 +1162,7 @@ void overlay101DrawElement(s32 displayList, Overlay101BoundsNode_DrawElement *no
             fontColour(red, green, blue, 0xFF, alpha);
             overlay101GetBounds(node, &left, &top, &right, &bottom);
             overlay101SetScissor(displayList, left, top, right, bottom);
-            fontPrintXY(displayList, x, y, pixels,
+            fontPrintXY(displayList, x, y, (char *)pixels,
                                        element->flags);
             overlay101SetScissor(displayList, 0, 0, 1000, 1000);
 

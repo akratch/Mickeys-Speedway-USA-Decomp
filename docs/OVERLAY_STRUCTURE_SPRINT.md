@@ -7,7 +7,7 @@ support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `2fadd9ddb`; the combined borrowing
+The source measurements here are pinned to `b5bf20fdb`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -23,10 +23,10 @@ validation and publication are separate acceptance steps.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 54,216 of 61,312 bytes have canonical projected C owners | 7,096 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
-| Initialized images | 50 of 87 data-bearing modules are fully projected to C; 15 are partial and 22 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
+| Initialized storage | 54,368 of 61,312 bytes have canonical projected C owners | 6,944 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized images | 50 of 87 data-bearing modules are fully projected to C; 16 are partial and 21 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 32 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 4,970 records still borrow authority: 4,918 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 4,966 records still borrow authority: 4,914 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 30 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
 
@@ -350,6 +350,29 @@ and indices. The physical directory view includes all copied words, preserving
 the retail ID-67 boundary discrepancy documented in
 [asset loading](asset-loading.md).
 
+The reviewed source-identity batch consolidates 29 aliases in overlays 11, 46,
+63 and 65 onto existing sized C scalar owners, retiring 224 borrowed
+references without changing executable code or storage. Overlay 101 uses
+the resident rectangle renderer's complete four-argument contract and shared
+rectangle type. Four resident graphics cursor cells now have genuine C BSS
+definitions totaling 16 bytes. This proves their current allocation and
+call transport; backing capacity, resource lifetime, remaining erased APIs
+and general edited-layout eligibility remain separate open work.
+
+Overlay 43 now supplies two genuine mutable 64-byte float matrices from
+its module TU. The compiler input owns exactly DATA offsets 56 through 183;
+the surrounding 56-byte and 72-byte retained inputs remain explicit. All
+existing matrix call operands, executable bytes and runtime records are
+unchanged. This adds 128 initialized source bytes, not a new API or lifetime
+contract.
+
+Overlay 58 now supplies six signed rank-award words through a genuine
+24-byte C object. The supported six-racer paths justify both zero-valued
+fifth and sixth awards. Exactly four reader references now name the real
+source owner. Eight zero bytes at the end of the compiler object are derived
+compiler alignment and are excluded from the 24-byte ownership. This minimum
+read view does not establish wider capacity or safety for arbitrary indices.
+
 ## Remaining campaign, in dependency order
 
 1. **Keep proof and ownership truthful.** Rebuild raw objects after integrations,
@@ -364,7 +387,7 @@ the retail ID-67 boundary discrepancy documented in
 3. **Recover initialized and BSS families.** Prioritize bounded tables, records,
    strings, geometry and callback families, not opaque copies of whole modules.
    The largest canonical initialized deficits are overlay 9 (764 bytes),
-   overlay 8 (720), overlay 1 (704), overlay 58 (540), overlay 94 (304),
+   overlay 8 (720), overlay 1 (704), overlay 58 (516), overlay 94 (304),
    and overlays 21 and 83 (272 each). Overlays 61 and 65
    already own their complete initialized inputs. Each requires authentic object schemas and complete source/relocation
    evidence; repeated layouts alone do not establish a shared type.
@@ -551,12 +574,3 @@ use the pinned current measurements above for scheduling and reporting.
   (77,680 bytes) has no C owner.
 - **The ORT** has 2,004 rows and no names in MSU's ROM; 844 rows are
   referenced by no relocation.
-
-The reviewed source-identity batch consolidates 29 aliases in overlays 11, 46,
-63 and 65 onto existing sized C scalar owners, retiring 224 borrowed
-references without changing executable code or storage. Overlay 101 uses
-the resident rectangle renderer's complete four-argument contract and shared
-rectangle type. Four resident graphics cursor cells now have genuine C BSS
-definitions totaling 16 bytes. This proves their current allocation and
-call transport; backing capacity, resource lifetime, remaining erased APIs
-and general edited-layout eligibility remain separate open work.

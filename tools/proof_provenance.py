@@ -259,6 +259,419 @@ def pointer_scalar_facts(cpp, flags, root):
     return dict(array=array.name, count=count, targets=targets, scalars=[s.name for s in scalars])
 
 
+def callback_data_facts(cpp, flags, root):
+    """Closed o32 callback-record syntax; not a general C layout evaluator."""
+    import candidate_context as lexical
+    if '-32' not in flags or any(x in flags for x in ('-64', '-n32', '-n64')):
+        raise MetadataProofError('callback DATA requires actual o32 flags')
+    ca, parser, before, lexical_identity = _effective_parser(root)
+    if len(cpp) > lexical.MAX_SOURCE_BYTES:
+        raise MetadataProofError('callback CPP exceeds the source bound')
+    try:
+        tree = parser.CParser().parse(cpp.decode('utf-8'))
+    except Exception as error:
+        raise MetadataProofError('callback CPP cannot be parsed') from error
+    aliases, declarations = collections.defaultdict(list), collections.defaultdict(list)
+    for node in tree.ext:
+        if isinstance(node, ca.Typedef):
+            aliases[node.name].append(node.type)
+        elif isinstance(node, ca.Decl):
+            declarations[node.name].append(node)
+        else:
+            raise MetadataProofError('callback producer contains unsupported top-level source')
+    def resolve(node, seen=()):
+        if isinstance(node, ca.TypeDecl) and isinstance(node.type, ca.IdentifierType):
+            names = node.type.names
+            if len(names) == 1 and names[0] in aliases:
+                if node.quals or names[0] in seen or len(aliases[names[0]]) != 1:
+                    raise MetadataProofError('callback typedef is qualified or ambiguous')
+                return resolve(aliases[names[0]][0], seen+(names[0],))
+        return node
+    def primitive(node, kind):
+        node = resolve(node)
+        if (not isinstance(node, ca.TypeDecl) or node.quals
+                or getattr(node, 'align', None) or not isinstance(node.type, ca.IdentifierType)):
+            return False
+        words = sorted(node.type.names)
+        choices = {'long': [['long'], ['long','signed'], ['int','long'], ['int','long','signed']],
+                   'short': [['short','unsigned'], ['int','short','unsigned']],
+                   'void': [['void']]}
+        return words in choices[kind]
+    def plain(node):
+        return not (node.quals or node.funcspec or node.bitsize or getattr(node,'align',None))
+    def signature(node):
+        node = resolve(node)
+        if (not isinstance(node, ca.FuncDecl) or node.args is None or len(node.args.params)!=1
+                or not isinstance(node.args.params[0], ca.Typename)
+                or not primitive(node.args.params[0].type, 'void')):
+            raise MetadataProofError('callback needs one explicit void parameter list')
+        if primitive(node.type, 'long'):
+            return 's32(void)'
+        if primitive(node.type, 'void'):
+            return 'void(void)'
+        raise MetadataProofError('unsupported callback return type')
+    definitions = [node for rows in declarations.values() for node in rows if node.storage != ['extern']]
+    if len(definitions)!=1 or any(len(rows)!=1 for rows in declarations.values()):
+        raise MetadataProofError('callback DATA requires one unique complete array definition')
+    owner = definitions[0]; array = owner.type
+    if (owner.storage or not plain(owner) or not isinstance(array, ca.ArrayDecl)
+            or array.dim_quals or not isinstance(array.dim, ca.Constant)
+            or array.dim.type!='int' or not re.fullmatch(r'[1-9][0-9]{0,8}',array.dim.value)
+            or not isinstance(owner.init,ca.InitList)):
+        raise MetadataProofError('callback DATA needs a positive literal-bound record array')
+    record = resolve(array.type)
+    if not isinstance(record,ca.TypeDecl) or record.quals or not isinstance(record.type,ca.Struct):
+        raise MetadataProofError('callback array element is not its unique complete struct')
+    fields=record.type.decls
+    if fields is None or len(fields)!=3 or len({field.name for field in fields})!=3:
+        raise MetadataProofError('callback record has unsupported fields')
+    kinds=[]
+    for field in fields[:2]:
+        if not plain(field) or field.storage or not isinstance(field.type,ca.PtrDecl) or field.type.quals:
+            raise MetadataProofError('callback field is not an unqualified function pointer')
+        kinds.append(signature(field.type.type))
+    if kinds!=['s32(void)','void(void)'] or not plain(fields[2]) or not primitive(fields[2].type,'short'):
+        raise MetadataProofError('callback record must contain test/update/unsigned-short mask')
+    count=int(array.dim.value)
+    if not 0<count<=(2**31-1)//12 or len(owner.init.exprs)!=count:
+        raise MetadataProofError('callback array has incomplete initializer rows')
+    def integer(node):
+        if isinstance(node,ca.Constant) and re.fullmatch(r'(?:0[xX][0-9a-fA-F]+|0|[1-9][0-9]*)[uU]?',node.value):
+            value=int(node.value.rstrip('uU'),0)
+        elif isinstance(node,ca.BinaryOp) and node.op in ('|','<<'):
+            left,right=integer(node.left),integer(node.right)
+            if node.op=='<<' and not 0<=right<=15:
+                raise MetadataProofError('callback mask shift exceeds its scalar type')
+            value=left|right if node.op=='|' else left<<right
+        else:
+            raise MetadataProofError('callback mask is not a closed unsigned integer constant')
+        if not 0<=value<=65535:
+            raise MetadataProofError('callback mask exceeds its actual unsigned-short type')
+        return value
+    def null(node):
+        if isinstance(node,ca.Constant):
+            return node.type=='int' and node.value=='0'
+        return (isinstance(node,ca.Cast) and isinstance(node.to_type,ca.Typename)
+                and isinstance(node.to_type.type,ca.PtrDecl) and not node.to_type.type.quals
+                and primitive(node.to_type.type.type,'void')
+                and isinstance(node.expr,ca.Constant) and node.expr.type=='int' and node.expr.value=='0')
+    callbacks=[]; masks=[]
+    for index,row in enumerate(owner.init.exprs):
+        if not isinstance(row,ca.InitList) or len(row.exprs)!=3:
+            raise MetadataProofError('callback row has missing or extra initialized fields')
+        for column,node in enumerate(row.exprs[:2]):
+            if null(node):continue
+            if not isinstance(node,ca.ID):
+                raise MetadataProofError('callback pointer is not a direct named function base')
+            choices=declarations.get(node.name,())
+            if len(choices)!=1 or choices[0].storage!=['extern'] or not plain(choices[0]) or choices[0].init is not None:
+                raise MetadataProofError('callback target lacks one compatible extern prototype')
+            if signature(choices[0].type)!=kinds[column]:
+                raise MetadataProofError('callback initializer function signature disagrees')
+            callbacks.append(dict(offset=index*12+column*4,name=node.name,signature=kinds[column]))
+        masks.append(integer(row.exprs[2]))
+    if set(declarations)!={owner.name,*(item['name'] for item in callbacks)}:
+        raise MetadataProofError('callback source has extra declarations')
+    if before!=literal_profile_inputs(root) or lexical.identity()!=lexical_identity:
+        raise MetadataProofError('callback loaded parser or lexical code changed')
+    return dict(owner=owner.name,count=count,record_stride=12,logical_extent=count*12,
+                declared_field_bytes=count*10,internal_padding_bytes=count*2,callbacks=callbacks,masks=masks)
+
+
+CALLBACK_PROFILE = 'typed-callback-records-v1'
+_CALLBACK_SEAL = object()
+
+
+def callback_selection(command, root):
+    """Explicit source/input graph, never numeric function bindings."""
+    words = shlex.split(command)
+    flags = ('--callback-data-profile', '--callback-source', '--callback-text-inputs')
+    if not any(flag in words for flag in flags):
+        return None
+    if (any(words.count(flag) != 1 for flag in flags)
+            or any(flag in words for flag in ('--local-ro-origin-object', '--local-ro-provider-group',
+                '--local-ro-mixed-provider-group', '--local-data-aggregate', '--local-data-objects',
+                '--local-ro-owner-profile'))):
+        raise MetadataProofError('conflicting callback DATA selection')
+    def argument(flag):
+        index = words.index(flag)+1
+        if index >= len(words):
+            raise MetadataProofError('missing callback DATA argument')
+        return words[index]
+    source = argument('--callback-source')
+    inputs = words[words.index('--callback-text-inputs')+1:]
+    if (argument('--callback-data-profile') != CALLBACK_PROFILE
+            or not re.fullmatch(r'(?:src|build)/[A-Za-z_0-9/.-]+\.c', source)
+            or '..' in pathlib.PurePosixPath(source).parts
+            or not inputs or len(set(inputs)) != len(inputs)
+            or any(not re.fullmatch(r'build/src/overlays/o[0-9]{3}/[A-Za-z_0-9]+\.c\.o', n) for n in inputs)
+            or len({pathlib.PurePosixPath(n).parent for n in inputs}) != 1):
+        raise MetadataProofError('invalid callback source or ordered TEXT input graph')
+    return source, tuple(inputs)
+
+
+def callback_function_facts(cpp, flags, root, wanted):
+    """Actual effective definitions, not the producer's prototypes."""
+    import candidate_context as lexical
+    if '-32' not in flags or any(x in flags for x in ('-64', '-n32', '-n64')):
+        raise MetadataProofError('callback FUNCTION requires actual o32 flags')
+    ca, parser, before, lexical_identity = _effective_parser(root)
+    if len(cpp) > lexical.MAX_SOURCE_BYTES:
+        raise MetadataProofError('callback FUNCTION CPP exceeds bound')
+    try:
+        tree = parser.CParser().parse(cpp.decode('utf-8'))
+    except Exception as error:
+        raise MetadataProofError('callback FUNCTION CPP cannot be parsed') from error
+    aliases = collections.defaultdict(list)
+    for node in tree.ext:
+        if isinstance(node, ca.Typedef):
+            aliases[node.name].append(node.type)
+    def primitive(node, seen=()):
+        if (not isinstance(node, ca.TypeDecl) or node.quals or getattr(node, 'align', None)
+                or not isinstance(node.type, ca.IdentifierType)):
+            raise MetadataProofError('unsupported callback FUNCTION type')
+        words = sorted(node.type.names)
+        if words == ['void']:
+            return 'void'
+        if words in (['long'], ['long', 'signed'], ['int', 'long'], ['int', 'long', 'signed']):
+            return 's32'
+        if len(words) == 1 and words[0] not in seen and len(aliases[words[0]]) == 1:
+            return primitive(aliases[words[0]][0], seen+(words[0],))
+        raise MetadataProofError('unsupported callback FUNCTION primitive')
+    result = {}
+    for name in wanted:
+        rows = [node for node in tree.ext if isinstance(node, ca.FuncDef) and node.decl.name == name]
+        if len(rows) != 1:
+            raise MetadataProofError('callback lacks one actual source function: '+name)
+        decl = rows[0].decl
+        function = decl.type
+        if (decl.storage or decl.quals or decl.funcspec or decl.bitsize or getattr(decl, 'align', None)
+                or not isinstance(function, ca.FuncDecl) or function.args is None
+                or len(function.args.params) != 1
+                or not isinstance(function.args.params[0], ca.Typename)
+                or primitive(function.args.params[0].type) != 'void' or rows[0].param_decls):
+            raise MetadataProofError('callback function has unsupported linkage/parameters: '+name)
+        result[name] = primitive(function.type)+'(void)'
+    if before != literal_profile_inputs(root) or lexical.identity() != lexical_identity:
+        raise MetadataProofError('callback FUNCTION loaded parser changed')
+    return result
+
+
+def _callback_recipe(root, source, deadline):
+    import permute_batch as batch
+    relative = source.relative_to(root).as_posix()
+    target = 'build/'+relative+'.o'
+    output = batch.bounded_capture(['gmake', '--no-print-directory', '-n', '-W', relative, target],
+                                   deadline, check=True).stdout.replace('\\\n', ' ').splitlines()
+    rows = [line.strip() for line in output if target in line and 'tools/ido/cc' in line]
+    if len(rows) != 1:
+        raise MetadataProofError('callback source lacks one actual compiler vector')
+    command = rows[0]
+    return command, batch.compiler_arguments(command, relative, target), tuple(output)
+
+
+def _callback_frontend(root, source, directory, deadline):
+    """Same configured wrapper frontend/include ordering, held before parsing."""
+    import permute_batch as batch
+    import sweep_receipts as receipts
+    root, source = pathlib.Path(root).resolve(), pathlib.Path(source).resolve()
+    command, flags, expanded = _callback_recipe(root, source, deadline)
+    held = {root/name: digest for name, digest in literal_profile_inputs(root).items()}
+    held.update({root/name: digest for name, digest in literal_frontend_inputs(root, command).items()})
+    held.update({path: sha256_file(path) for path in (source, root/'Makefile', *sorted((root/'mk').rglob('*.mk')),
+                    root/'tools/ido/cc')})
+    include_tree = receipts.tree_digest(root/'include')
+    source_tree = receipts.tree_digest(source.parent)
+    tool_identity = batch.checked_tool_identity()
+    if _all_pragmas(source.read_text()):
+        raise MetadataProofError('callback source contains an assembly fallback')
+    words = shlex.split(command)
+    wrapped = len(words)>1 and words[1]=='tools/asm-processor/build.py'
+    actual_flags = list(flags)
+    if wrapped:
+        options = [x for x in flags if x in {'-g3','-g','-O0','-O1','-O2','-framepointer','-KPIC'}]
+        if '-mips2' not in flags:
+            options.append('-mips1')
+        transformed = batch.bounded_capture(['.venv/bin/python','tools/asm-processor/asm_processor.py',
+            *options,source.relative_to(root).as_posix()], deadline, check=True).stdout.encode()
+        actual_flags += ['-I', str(source.parent)]
+    else:
+        raise MetadataProofError('callback source requires its configured wrapper frontend')
+    frontend = directory/'compiler-input.c'
+    frontend.write_bytes(transformed)
+    held[frontend] = hashlib.sha256(transformed).hexdigest()
+    dependencies = batch.source_dependencies(frontend, tuple(actual_flags), deadline)
+    if any(name.startswith('missing:') for name in dependencies):
+        raise MetadataProofError('callback source dependency is missing')
+    held.update({root/name: digest for name, digest in dependencies.items()})
+    import candidate_context as lexical
+    lexical.identity()
+    for path in (source, *(root/name for name in dependencies)):
+        text = lexical._strip_comments(path.read_text()).replace('\\\n','')
+        if re.search(r'^\s*#\s*(?:define|undef)\s+sizeof\b',text,re.M):
+            raise MetadataProofError('callback layout operator is redefined')
+    if any(re.match(r'-[DU]sizeof(?:=|$|\()',flag) for flag in actual_flags):
+        raise MetadataProofError('callback compiler redefines the layout operator')
+    held.update({root/name: sha256_file(root/name) for name in
+                 ('tools/link_overlay_module.py','tools/runlink_pack.py')})
+    cpp_command = ['tools/ido/cc','-E',*actual_flags,str(frontend)]
+    cpp = batch.bounded_capture(cpp_command, deadline, check=True).stdout.encode()
+    cpp_path = directory/'actual-cpp.c'
+    cpp_path.write_bytes(cpp)
+    held[cpp_path] = hashlib.sha256(cpp).hexdigest()
+    def current(*, operation_deadline=None):
+        if operation_deadline is None:
+            operation_deadline = time.monotonic()+120
+        if (sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF
+                or batch.checked_tool_identity() != tool_identity
+                or batch.source_dependencies(frontend, tuple(actual_flags), operation_deadline) != dependencies
+                or _callback_recipe(root, source, operation_deadline) != (command, flags, expanded)
+                or receipts.tree_digest(root/'include') != include_tree
+                or receipts.tree_digest(source.parent) != source_tree
+                or any(sha256_file(path) != digest for path,digest in held.items())):
+            raise MetadataProofError('callback source/frontend/tool context changed')
+        return True
+    current(operation_deadline=deadline)
+    return cpp, tuple(actual_flags), frontend, held, current, command
+
+
+@dataclasses.dataclass(frozen=True)
+class CallbackCapture:
+    raw: object = dataclasses.field(repr=False)
+    digest: str
+    surface: tuple
+    facts_json: str
+    directory: pathlib.Path
+    held: tuple
+    context: object = dataclasses.field(repr=False)
+    seal: object = dataclasses.field(repr=False)
+
+    def current(self, raw, *, operation_deadline=None):
+        self.context(**({"operation_deadline":operation_deadline} if operation_deadline is not None else {}))
+        if (self.seal is not _CALLBACK_SEAL or raw is not self.raw
+                or hashlib.sha256(raw.data).hexdigest() != self.digest
+                or _static_parsed_surface(raw) != self.surface
+                or any(sha256_file(path) != digest for path,digest in self.held)):
+            raise MetadataProofError('callback compiler/layout observation changed')
+        return True
+
+
+def capture_callback_data(raw, source, root):
+    """Compiler-evaluated layout; original storage/symbols remain unchanged."""
+    import permute_batch as batch
+    import runlink_pack as rp
+    import source_module_link_proof as proof
+    root = pathlib.Path(root).resolve()
+    deadline = time.monotonic()+120
+    parent = root/'build/callback-source-proof'
+    parent.mkdir(parents=True, exist_ok=True)
+    directory = pathlib.Path(tempfile.mkdtemp(prefix='capture-', dir=parent))
+    digest, surface = hashlib.sha256(raw.data).hexdigest(), _static_parsed_surface(raw)
+    cpp, flags, frontend, held, context, recipe = _callback_frontend(root, pathlib.Path(source), directory, deadline)
+    facts = callback_data_facts(cpp, flags, root)
+    owner = facts['owner']
+    prefix = '__mickey_callback_'+uuid.uuid4().hex
+    assertions = ''.join('typedef struct { unsigned check : (('+expression+')?1:-1); } '+prefix+str(index)+';\n'
+        for index,expression in enumerate((f'sizeof({owner})=={facts["logical_extent"]}',
+            f'sizeof({owner}[0])==12', 'sizeof(void (*)(void))==4', 'sizeof(unsigned short)==2')))
+    checked_source = directory/'layout-input.c'
+    checked_source.write_bytes(frontend.read_bytes()+b'\n'+assertions.encode())
+    checked_output = directory/'layout-checked.o'
+    command = ['tools/ido/cc',*flags,'-o',str(checked_output),str(checked_source)]
+    result = batch.bounded_capture(command, deadline, check=True)
+    (directory/'layout.log').write_text(result.stdout)
+    checked = rp.Elf(checked_output)
+    def rows(elf):
+        return [(section,r.offset,r.type,r.sym.index,a) for section in ('.text','.data','.rodata')
+                for r,a in zip(elf.rels(section),rp.in_place_addends(elf,section,elf.rels(section)))]
+    if (proof.allocated(raw) != proof.allocated(checked) or proof.symbols(raw) != proof.symbols(checked)
+            or [(s.index,s.shndx) for s in raw.symbols] != [(s.index,s.shndx) for s in checked.symbols]
+            or rows(raw) != rows(checked)):
+        raise MetadataProofError('callback layout compile changed original compiler output')
+    held.update({checked_source: sha256_file(checked_source), checked_output: hashlib.sha256(checked.data).hexdigest()})
+    context(operation_deadline=deadline)
+    capture = CallbackCapture(raw,digest,surface,json.dumps(facts,sort_keys=True),directory,
+                              tuple(held.items()),context,_CALLBACK_SEAL)
+    capture.current(raw, operation_deadline=deadline)
+    (directory/'proof.json').write_text(json.dumps({'facts':facts,'original_sha256':digest,
+        'compiler_recipe':recipe,'layout_command':command,'layout_sha256':hashlib.sha256(checked.data).hexdigest(),
+        'original_symbol_sizes_unchanged':True},indent=2))
+    return capture
+
+
+@dataclasses.dataclass(frozen=True)
+class CallbackFunctionCapture:
+    configured: object = dataclasses.field(repr=False)
+    original: object = dataclasses.field(repr=False)
+    configured_surface: tuple
+    original_surface: tuple
+    signatures_json: str
+    held: tuple
+    context: object = dataclasses.field(repr=False)
+    seal: object = dataclasses.field(repr=False)
+
+    def current(self, *, operation_deadline=None):
+        self.context(**({"operation_deadline":operation_deadline} if operation_deadline is not None else {}))
+        if (self.seal is not _CALLBACK_SEAL
+                or _static_parsed_surface(self.configured) != self.configured_surface
+                or _static_parsed_surface(self.original) != self.original_surface
+                or any(sha256_file(path) != digest for path,digest in self.held)):
+            raise MetadataProofError('callback FUNCTION loaded proof changed')
+        return True
+
+
+def capture_callback_functions(configured, source, root, wanted):
+    """Only FUNCTION/TEXT evidence; unrelated configured RO is compatibility."""
+    import permute_batch as batch
+    import runlink_pack as rp
+    root = pathlib.Path(root).resolve()
+    deadline = time.monotonic()+120
+    parent = root/'build/callback-function-proof'
+    parent.mkdir(parents=True, exist_ok=True)
+    directory = pathlib.Path(tempfile.mkdtemp(prefix='capture-',dir=parent))
+    loaded_digest = hashlib.sha256(configured.data).hexdigest()
+    if sha256_file(configured.path) != loaded_digest:
+        raise MetadataProofError('callback FUNCTION input changed before capture')
+    cpp, flags, frontend, held, context, command = _callback_frontend(root,pathlib.Path(source),directory,deadline)
+    held[configured.path] = loaded_digest
+    original_path = directory/'compiler-original.o'
+    words = shlex.split(command)
+    if words.count('-o') != 1:
+        raise MetadataProofError('callback FUNCTION compiler output is ambiguous')
+    words[words.index('-o')+1] = str(original_path)
+    result = batch.bounded_capture(words,deadline,check=True)
+    (directory/'compile.log').write_text(result.stdout)
+    original = rp.Elf(original_path)
+    held[original_path] = hashlib.sha256(original.data).hexdigest()
+    signatures = callback_function_facts(cpp,flags,root,wanted) if wanted else {}
+    a,b = original.section('.text'),configured.section('.text')
+    if (not a or not b or a['type']!=1 or b['type']!=1 or a['flags']&6!=6 or b['flags']&6!=6
+            or a['addr'] or b['addr'] or not 0 <= a['size']-b['size'] < 16
+            or original.bytes_of('.text')[:b['size']] != configured.bytes_of('.text')
+            or any(original.bytes_of('.text')[b['size']:])
+            or original.bytes_of('.reginfo') != configured.bytes_of('.reginfo')):
+        raise MetadataProofError('callback original/configured TEXT differs')
+    for symbol in configured.symbols:
+        if symbol.section!='.text' or symbol.type!=rp.STT_FUNC or symbol.bind!=rp.STB_GLOBAL:
+            continue
+        choices = [s for s in original.symbols if s.name==symbol.name and s.section=='.text'
+                   and s.type==rp.STT_FUNC and s.bind==rp.STB_GLOBAL]
+        if (len(choices)!=1 or choices[0].value!=symbol.value or choices[0].size!=symbol.size
+                or not symbol.size or symbol.value%4 or symbol.size%4
+                or not 0 <= symbol.value < symbol.value+symbol.size <= b['size']):
+            raise MetadataProofError('callback FUNCTION original/configured tuple differs')
+    context(operation_deadline=deadline)
+    proof = CallbackFunctionCapture(configured,original,_static_parsed_surface(configured),
+        _static_parsed_surface(original),json.dumps(signatures,sort_keys=True),tuple(held.items()),
+        context,_CALLBACK_SEAL)
+    proof.current(operation_deadline=deadline)
+    (directory/'proof.json').write_text(json.dumps({'signatures':signatures,
+        'scope':'FUNCTION/TEXT only; configured nontext normalization not reproduced',
+        'compiler_command':words,'original_sha256':held[original_path],
+        'configured_sha256':loaded_digest},indent=2))
+    return proof
+
+
 _POINTER_SCALAR_SEAL = object()
 
 
@@ -1942,6 +2355,8 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
     literal_prepared = (prepare_literal_input(source, root, command)
                         if any(operation == "literal-end" for operation, arguments in plan) else None)
     pointer_profile = local_ro_owner_profile(expanded_postprocess, root) if module_link else None
+    if module_link and callback_selection(expanded_postprocess, root):
+        preserve_compiler = True
     pointer_parser_inputs = literal_profile_inputs(root) if pointer_profile else {}
     if pointer_profile:
         _effective_parser(root)
@@ -1986,11 +2401,12 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
             inputs["metadata_tools"].update(literal_frontend_inputs(root, command))
         if module_link:
             local_data_objects(expanded_postprocess, root)
+            callback = callback_selection(expanded_postprocess, root)
             inputs["module_link"] = expanded_postprocess
             inputs["module_link_inputs"] = {name: sha256_file(root / name) for name in (
                 "config/runlink-ort.us.txt", "tools/link_overlay_module.py", "tools/runlink_pack.py",
                 "tools/rebind_elf_relocations.py", "tools/binutils/mips64-elf-ld")}
-            for provider in local_ro_provider_inputs(expanded_postprocess, root):
+            for provider in (*local_ro_provider_inputs(expanded_postprocess, root), *(callback[1] if callback else ())):
                 inputs["module_link_inputs"][provider] = sha256_file(root / provider)
         if static_lines:
             inputs["static_symbols"] = {"command": static_lines[0], "tool": sha256_file(

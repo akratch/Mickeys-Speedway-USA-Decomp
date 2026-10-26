@@ -2796,5 +2796,94 @@ class EditedResidentCellTests(unittest.TestCase):
             witness.current()
 
 
+class CallbackWorldTests(unittest.TestCase):
+    def test_real_guard_entry_routes_with_held_exports_before_raw_byte_equality(self):
+        from types import SimpleNamespace
+        from unittest import mock
+        world,exports,raw,p1,p2=self.fixture()
+        with mock.patch.object(rp,'validate_callback_data',return_value=2) as callback, p1:
+            self.assertEqual(rp.validate_data_imports(world,exports,1,{},'actions',raw),2)
+            callback.assert_called_once_with(world,exports,1,{},'actions',raw)
+            rp.data_import_input.assert_not_called()
+
+    def fixture(self):
+        import proof_provenance as pp,link_overlay_module as lm
+        from test_link_overlay_module import callback_fixture
+        from test_proof_provenance import CallbackSourceTests
+        from runlink.synth import ElfBuilder
+        from unittest import mock
+        from types import SimpleNamespace
+        root=Path(__file__).resolve().parent.parent
+        raw=rp.Elf(root/'build/original.o',callback_fixture())
+        facts=pp.callback_data_facts(CallbackSourceTests.source.encode(),['-32'],root)
+        cap=pp.CallbackCapture(raw,hashlib.sha256(raw.data).hexdigest(),pp._static_parsed_surface(raw),
+            json.dumps(facts),root,(),lambda:True,pp._CALLBACK_SEAL)
+        view=lm.callback_effective_input(raw,cap,root/'build/callback-test-effective.o')
+        self.addCleanup((root/'build/callback-test-effective.o').unlink,missing_ok=True)
+        provider=rp.Elf(root/'build/src/overlays/o001/provider.c.o',
+            ElfBuilder().section('.text',bytes(8)).sym('test',0,4,1,2,'.text')
+            .sym('update',4,4,1,2,'.text').build())
+        view.callback_providers=[provider]
+        body=bytearray(view.bytes_of('.data'));struct.pack_into('>I',body,4,0)
+        cfg=rp.Elf('configured',ElfBuilder().section('.data',body).sym('rows',0,18,1,1,'.data').build())
+        final=rp.Elf('final',ElfBuilder().section('.overlay_001',bytes(8)+body,addr=rp.OVERLAY_VMA)
+            .sym('test',rp.OVERLAY_VMA,4,1,2,'.overlay_001')
+            .sym('update',rp.OVERLAY_VMA+4,4,1,2,'.overlay_001')
+            .sym('rows',rp.OVERLAY_VMA+8,18,1,1,'.overlay_001').build())
+        item=rp.MapInput('.overlay_001','.text',rp.OVERLAY_VMA,8,'build/src/overlays/o001/provider.c.o')
+        records={(8,2):{'full':('ov',1,0),'table':2,'op':rp.OP_LOCAL,'symbol_index':0},
+                 (12,2):{'full':('ov',1,4),'table':2,'op':rp.OP_SYMBOL,'symbol_index':7}}
+        by_name={}
+        for s in final.symbols:by_name.setdefault(s.name,[]).append(s)
+        world=SimpleNamespace(paths={'build':root/'build'},module_info={1:{'inputs':[item]}},
+            elf=final,by_name=by_name,expected_cache=lambda ov:records,
+            data_import_contexts=[],data_import_inputs={})
+        definition=SimpleNamespace(signatures_json=json.dumps({'test':'s32(void)','update':'void(void)'}),
+            current=lambda:True,held=())
+        patches=mock.patch.multiple(rp,data_import_input=mock.Mock(return_value=(cfg,8)))
+        providers=mock.patch.object(pp,'capture_callback_functions',return_value=definition)
+        return world,SimpleNamespace(by_name={'update':7}),view,patches,providers
+
+    def test_paired_late_identity_map_mutation_invalidates_inventory_and_restores_fresh(self):
+        world,exports,raw,p1,p2=self.fixture()
+        with p1,p2:
+            self.assertEqual(rp.validate_callback_data(world,exports,1,{},'actions',raw),2)
+            world._guarded_data_objects={1:[]}
+            world._objects={'old':True};world._defs={'old':True}
+            raw.data_local_identities['test']=(1,4)
+            raw.callback_private_identities['test']=(1,4)
+            with self.assertRaisesRegex(rp.PackError,'namespace changed'):
+                rp.check_data_import_holds(world)
+            self.assertIsNone(world._guarded_data_objects)
+            self.assertIsNone(world._objects);self.assertIsNone(world._defs)
+            raw.data_local_identities['test']=(1,0)
+            raw.callback_private_identities['test']=(1,0)
+            self.assertEqual(rp.validate_callback_data(world,exports,1,{},'actions',raw),2)
+
+    def test_source_first_both_runtime_roles_and_missing_full_set_refusal(self):
+        world,exports,raw,p1,p2=self.fixture()
+        with p1,p2:
+            self.assertEqual(rp.validate_callback_data(world,exports,1,{},'actions',raw),2)
+            self.assertEqual(raw.callback_private_identities,{'test':(1,0)})
+            # This removes the offset-zero pointer despite identical configured bytes.
+            records=world.expected_cache(1);del records[(8,2)]
+            with self.assertRaisesRegex(rp.PackError,'complete runtime set'):
+                rp.validate_callback_data(world,exports,1,{},'actions',raw)
+
+    def test_actual_final_type_value_size_and_map_are_required(self):
+        import dataclasses
+        for field,value in (('type',1),('value',rp.OVERLAY_VMA+4),('size',8)):
+            with self.subTest(field=field):
+                world,exports,raw,p1,p2=self.fixture()
+                target=world.by_name['test'][0]
+                world.by_name['test']=[dataclasses.replace(target,**{field:value})]
+                with p1,p2,self.assertRaisesRegex(rp.PackError,'final definition'):
+                    rp.validate_callback_data(world,exports,1,{},'actions',raw)
+        world,exports,raw,p1,p2=self.fixture()
+        world.module_info[1]['inputs'][0]=dataclasses.replace(world.module_info[1]['inputs'][0],addr=rp.OVERLAY_VMA+4)
+        with p1,p2,self.assertRaisesRegex(rp.PackError,'geometry'):
+            rp.validate_callback_data(world,exports,1,{},'actions',raw)
+
+
 if __name__ == "__main__":
     unittest.main()

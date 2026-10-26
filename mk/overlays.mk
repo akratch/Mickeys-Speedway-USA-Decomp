@@ -411,6 +411,18 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay_019.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: CFLAGS += -Wab,-r4300_mul
 O8_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o
 # Complete pure-ORT pointer input; separate artifacts and durable data guard.
+MODULE_LINKED_DATA_SOURCES += overlays/o001/overlay1ActionModes
+O1_ACTION_TEXT_SOURCES := overlay_001 overlay_001_build overlay_001_head \
+    func_overlay_001_F0001D78_184E158 overlay_001_middle \
+    func_overlay_001_F0002B4C_184EF2C func_overlay_001_F0003258_184F638 \
+    overlay_001_tail overlay_001_create overlay_001_end overlay_001_scaled
+O1_ACTION_TEXT_OBJECTS := $(addprefix $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/,$(addsuffix .c.o,$(O1_ACTION_TEXT_SOURCES)))
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay1ActionModes.c.o: $(O1_ACTION_TEXT_OBJECTS)
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay1ActionModes.c.o: $(TOOLS_DIR)/proof_provenance.py $(TOOLS_DIR)/candidate_context.py $(wildcard $(TOOLS_DIR)/permuter/perm_pycparser/*.py $(TOOLS_DIR)/permuter/perm_pycparser/ply/*.py)
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay1ActionModes.c.o: private CALLBACK_DATA_PROFILE = typed-callback-records-v1
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay1ActionModes.c.o: private CALLBACK_SOURCE = src/overlays/o001/overlay1ActionModes.c
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay1ActionModes.c.o: private CALLBACK_TEXT_INPUTS = $(O1_ACTION_TEXT_OBJECTS)
+
 MODULE_LINKED_DATA_SOURCES += overlays/o008/overlay8TuningTables
 # Complete frame aggregate; same-input LOCAL pointers are checked independently.
 MODULE_LINKED_DATA_SOURCES += overlays/o059/overlay59Frames
@@ -1145,7 +1157,8 @@ $(MODULE_LINK_DATA_OBJECTS): private MODULE_LINK = $(HOST_PYTHON) $(TOOLS_DIR)/l
 	$(if $(LOCAL_RO_PROVIDER_GROUP),--local-ro-provider-group $(LOCAL_RO_PROVIDER_GROUP)) \
 	$(if $(LOCAL_DATA_AGGREGATE),--local-data-aggregate) \
 	$(if $(LOCAL_DATA_OBJECTS),--local-data-objects) \
-	$(if $(LOCAL_RO_MIXED_PROVIDER_GROUP),--local-ro-mixed-provider-group $(LOCAL_RO_MIXED_PROVIDER_GROUP))
+	$(if $(LOCAL_RO_MIXED_PROVIDER_GROUP),--local-ro-mixed-provider-group $(LOCAL_RO_MIXED_PROVIDER_GROUP)) \
+	$(if $(CALLBACK_DATA_PROFILE),--callback-data-profile $(CALLBACK_DATA_PROFILE) --callback-source $(CALLBACK_SOURCE) --callback-text-inputs $(CALLBACK_TEXT_INPUTS))
 $(MODULE_LINK_DATA_OBJECTS): private RUN_POSTPROCESS = @:
 $(MODULE_LINK_DATA_OBJECTS): private RUN_SURFACE_REBIND = @:
 

@@ -362,5 +362,70 @@ class BindingTests(unittest.TestCase):
             self.assertEqual(original, raw.read_bytes())
 
 
+def callback_fixture(*, missing=False, displaced=False, addend=0, extra=False, wrong_type=False, reorder=False):
+    payload=bytearray(32)
+    struct.pack_into('>H',payload,8,33);struct.pack_into('>H',payload,20,1)
+    struct.pack_into('>I',payload,0,addend)
+    obj=ElfBuilder().section('.data',payload).sym('rows',0,18,GLOBAL,1,'.data')
+    obj.sym('test',type=1 if wrong_type else FUNC).sym('update',type=FUNC)
+    if extra:obj.sym('',12,0,LOCAL,1,'.data')
+    sites=[(4,'update'),(0,'test')] if reorder else [(0,'test'),(4,'update')]
+    for offset,name in sites:
+        if not (missing and offset==0):obj.rel('.data',8 if displaced and offset==0 else offset,rp.R_MIPS_32,name)
+    data=bytearray(obj.build());elf=rp.Elf('fixture',data)
+    struct.pack_into('>I',data,struct.unpack_from('>I',data,32)[0]+elf.section('.data')['index']*40+8,3)
+    return bytes(data)
+
+
+class CallbackDataShapeTests(unittest.TestCase):
+    def facts(self):
+        import proof_provenance as p
+        from test_proof_provenance import CallbackSourceTests
+        return p.callback_data_facts(CallbackSourceTests.source.encode(),['-32'],ROOT)
+
+    def test_original_symbol_underreport_is_not_patched_and_missing_zero_pointer_refuses(self):
+        raw=rp.Elf('raw',callback_fixture());facts=self.facts()
+        shape=tool.callback_data_shape(raw,facts)
+        self.assertEqual((shape['reported_symbol_extent'],shape['logical_c_extent'],shape['input_allocation']),(18,24,32))
+        self.assertEqual(raw.symbols[2].size,18)
+        for options in ({'missing':True},{'displaced':True},{'addend':1},{'extra':True},
+                        {'wrong_type':True},{'reorder':True}):
+            with self.subTest(options=options),self.assertRaises(tool.LinkError):
+                tool.callback_data_shape(rp.Elf('bad',callback_fixture(**options)),facts)
+        # NULL drops a real offset-zero reference while all original bytes stay equal.
+        self.assertEqual(raw.bytes_of('.data'),rp.Elf('null',callback_fixture(missing=True)).bytes_of('.data'))
+
+    def test_loaded_helper_identity_checked_on_inprocess_shape_entry(self):
+        raw=rp.Elf('raw',callback_fixture())
+        with mock.patch.object(tool,'_LOADED_MODULE','0'*64),self.assertRaisesRegex(tool.LinkError,'loaded callback'):
+            tool.callback_data_shape(raw,self.facts())
+
+    def test_only_internal_layout_capture_can_produce_header_only_view(self):
+        import proof_provenance as p
+        import json,hashlib
+        raw=rp.Elf('raw',callback_fixture());facts=self.facts()
+        cap=p.CallbackCapture(raw,hashlib.sha256(raw.data).hexdigest(),p._static_parsed_surface(raw),
+            json.dumps(facts),ROOT,(),lambda:True,p._CALLBACK_SEAL)
+        with tempfile.TemporaryDirectory() as directory:
+            output=Path(directory)/'effective.o'
+            view=tool.callback_effective_input(raw,cap,output)
+            self.assertEqual(view.size('.data'),24)
+            self.assertEqual(view.symbols,raw.symbols)
+            self.assertEqual(view.bytes_of('.data'),raw.bytes_of('.data')[:24])
+            before=bytearray(raw.data);shoff=struct.unpack_from('>I',before,32)[0]
+            struct.pack_into('>I',before,shoff+raw.section('.data')['index']*40+20,24)
+            self.assertEqual(view.data,bytes(before))
+            # The production CLI and imported helper have distinct dataclass namespaces.
+            import dataclasses
+            Other = dataclasses.make_dataclass('CliSymbol',list(vars(raw.symbols[0])))
+            raw.symbols = [Other(**vars(s)) for s in raw.symbols]
+            same = tool.callback_effective_input(raw,cap,output)
+            self.assertEqual([vars(s) for s in same.symbols],[vars(s) for s in raw.symbols])
+            with self.assertRaises(tool.LinkError):tool.callback_effective_input(raw,{},output)
+            import dataclasses
+            view.symbols[2]=dataclasses.replace(view.symbols[2],size=24)
+            with self.assertRaises(tool.LinkError):view.callback_view_current()
+
+
 if __name__ == "__main__":
     unittest.main()

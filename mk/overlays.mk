@@ -1136,10 +1136,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay_047.c.o: CFLAGS += -Wab,-r4300_mul
 ifeq ($(NON_MATCHING)$(RUNLINK_RAW),00)
 # A reviewed data-only registry expands to independent per-source module links.
 MODULE_LINK_DATA_OBJECTS = $(addprefix $(BUILD_DIR)/$(SRC_DIR)/,$(addsuffix .c.o,$(MODULE_LINKED_DATA_SOURCES)))
-$(MODULE_LINK_DATA_OBJECTS): $(TOOLS_DIR)/trim_elf_section.py $(TOOLS_DIR)/link_overlay_module.py $(TOOLS_DIR)/runlink_pack.py $(TOOLS_DIR)/rebind_elf_relocations.py config/runlink-ort.$(VERSION).txt Makefile mk/overlays.mk $(LD) $(OBJCOPY)
+$(MODULE_LINK_DATA_OBJECTS): $(TOOLS_DIR)/trim_elf_section.py $(TOOLS_DIR)/link_overlay_module.py $(TOOLS_DIR)/runlink_pack.py $(TOOLS_DIR)/rebind_elf_relocations.py $(RUNLINK_ORT_NAMES) Makefile mk/overlays.mk $(LD) $(OBJCOPY)
 $(MODULE_LINK_DATA_OBJECTS): private MODULE_LINK = $(HOST_PYTHON) $(TOOLS_DIR)/link_overlay_module.py $@ \
 	--directory $(BUILD_DIR)/modules/$(notdir $(patsubst %/,%,$(dir $@)))/$(patsubst %.c.o,%,$(notdir $@)) \
-	--ort config/runlink-ort.$(VERSION).txt --ld $(LD) --objcopy $(OBJCOPY) \
+	--ort $(RUNLINK_ORT_NAMES) --ld $(LD) --objcopy $(OBJCOPY) \
 	$(if $(LOCAL_RO_ORIGIN_OBJECT),--local-ro-origin-object $(LOCAL_RO_ORIGIN_OBJECT)) \
 	$(if $(LOCAL_RO_OWNER_PROFILE),--local-ro-owner-profile $(LOCAL_RO_OWNER_PROFILE)) \
 	$(if $(LOCAL_RO_PROVIDER_GROUP),--local-ro-provider-group $(LOCAL_RO_PROVIDER_GROUP)) \

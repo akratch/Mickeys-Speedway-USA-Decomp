@@ -181,6 +181,112 @@ class MetadataLinkTests(unittest.TestCase):
             query.assert_not_called()
 
 
+class AuthoredRegistryTests(unittest.TestCase):
+    def setUp(self):
+        import copy
+        self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        source = self.root/'src/overlays/o075/unit.c'; source.parent.mkdir(parents=True)
+        source.write_text('void entry(void) {}\n')
+        self.document = {'schema': 'mickey-source-module-abi-v1', 'default_selected': [75],
+            'compatibility': {'exports': [{'row': 0, 'name': 'resident'}],
+                              'entries': [{'module': 3, 'role': 'resume', 'name': 'compatResume'}]},
+            'modules': [{'module': 75, 'source': 'src/overlays/o075/unit.c', 'build': 'registered',
+                         'exports': [{'row': 1, 'name': 'entry', 'kind': 'function'}],
+                         'entries': {'init': 'entry', 'resume': None}}]}
+        self.path = self.root/'config/runlink-edited.us.json'; self.path.parent.mkdir()
+        self.write(self.document)
+    def write(self, document):
+        self.path.write_text(json.dumps(document))
+    def test_authored_vector_does_not_open_old_symbolic_lookup(self):
+        with mock.patch.object(link.rp.OrtNames, 'load', side_effect=AssertionError('old lookup')):
+            for old in (None, 'poisoned old authority'):
+                if old is not None:
+                    (self.root/'config/runlink-ort.us.txt').write_text(old)
+                profiles, exports, default, observed, current = link.source_registry(self.root, self.path)
+                self.assertEqual(exports.rows, ['resident', 'entry'])
+                self.assertEqual(exports.entries, {(3, 'resume'): 'compatResume', (75, 'init'): 'entry'})
+                self.assertEqual(default, [75]); current()
+    def test_complete_canonical_registry_projects_current_logical_abi(self):
+        profiles, exports, default, observed, current = link.source_registry(
+            link.REPO, link.REPO/'config/runlink-edited.us.json')
+        self.assertEqual(len(profiles), 12); self.assertEqual(default, [75])
+        old = link.rp.OrtNames.load(link.REPO/'config/runlink-ort.us.txt')
+        self.assertEqual((exports.rows, exports.entries), (old.rows, old.entries))
+        self.assertEqual((len(exports.rows), len(exports.entries)), (2004, 7)); current()
+    def test_malformed_and_conflicting_registry_rows_refuse(self):
+        import copy
+        for fault in ('duplicate_row', 'duplicate_name', 'hole', 'bool_row', 'unknown',
+                      'entry_overlap', 'entry_duplicate', 'module_bool', 'source', 'kind', 'coordinate'):
+            document = copy.deepcopy(self.document)
+            owner = document['modules'][0]; export = owner['exports'][0]
+            if fault == 'duplicate_row': export['row'] = 0
+            elif fault == 'duplicate_name': export['name'] = 'resident'
+            elif fault == 'hole': export['row'] = 2
+            elif fault == 'bool_row': export['row'] = True
+            elif fault == 'unknown': document['compatibility']['offset'] = 0
+            elif fault == 'entry_overlap': document['compatibility']['entries'][0]['module'] = 75
+            elif fault == 'entry_duplicate': document['compatibility']['entries'] *= 2
+            elif fault == 'module_bool': owner['module'] = True
+            elif fault == 'source': owner['source'] = 'src/overlays/o034/unit.c'
+            elif fault == 'kind': export['kind'] = 'address'
+            else: export['target_offset'] = 0
+            self.write(document)
+            with self.subTest(fault=fault), self.assertRaises(link.rp.PackError):
+                link.source_registry(self.root, self.path)
+        self.write(self.document)
+        text = self.path.read_text(); self.path.write_text(text.replace('"default_selected": [75]',
+            '"default_selected": [75], "default_selected": [75]'))
+        with self.assertRaisesRegex(link.rp.PackError, 'duplicate registry'):
+            link.source_registry(self.root, self.path)
+    def test_loaded_observation_joins_prehold_before_json_parse(self):
+        expected = link.digest(self.path); self.path.write_text(self.path.read_text()+' ')
+        with mock.patch.object(link.json, 'loads') as parse:
+            with self.assertRaisesRegex(link.rp.PackError, 'prehold'):
+                link.source_registry(self.root, self.path, expected)
+            parse.assert_not_called()
+    def test_loaded_vector_profile_default_and_file_mutations_refuse(self):
+        import copy
+        for kind in ('vector', 'lookup', 'profile', 'entry', 'default', 'file'):
+            self.write(self.document)
+            profiles, exports, default, observed, current = link.source_registry(self.root, self.path)
+            if kind == 'vector': exports.rows[0] = 'forged'
+            elif kind == 'lookup': exports.by_name['resident'] = 1
+            elif kind == 'profile': profiles[75]['source'] = 'src/overlays/o075/forged.c'
+            elif kind == 'entry': exports.entries[75, 'init'] = 'forged'
+            elif kind == 'default': default.append(75)
+            else: self.path.write_text(self.path.read_text()+' ')
+            with self.subTest(kind=kind), self.assertRaisesRegex(link.rp.PackError, 'changed'):
+                current()
+        self.write(self.document); link.source_registry(self.root, self.path)[-1]()
+    def test_derived_projection_poison_and_symlink_refuse(self):
+        text, current = link.registry_projection(self.root)
+        path = self.root/'derived/names.txt'
+        link.held_registry_projection(path, text); before = path.stat().st_mtime_ns
+        link.held_registry_projection(path, text); self.assertEqual(before, path.stat().st_mtime_ns)
+        path.write_text('forged')
+        with self.assertRaisesRegex(link.rp.PackError, 'changed derived'):
+            link.held_registry_projection(path, text)
+        path.unlink(); path.symlink_to(self.path)
+        with self.assertRaisesRegex(link.rp.PackError, 'symlink'):
+            link.held_registry_projection(path, text)
+    def test_cli_writer_and_checker_have_no_world_or_rom_authority(self):
+        args = SimpleNamespace(root=str(self.root), write=True)
+        with mock.patch.object(link.rp, 'World', side_effect=AssertionError('old World')):
+            self.assertEqual(link.rp.cmd_ort(args), 0)
+            path = self.root/'config/runlink-ort.us.txt'; before = path.stat().st_mtime_ns
+            self.assertEqual(link.rp.cmd_ort(args), 0); self.assertEqual(before, path.stat().st_mtime_ns)
+            args.write = False; self.assertEqual(link.rp.cmd_ort(args), 0)
+            path.write_text('poisoned'); self.assertEqual(link.rp.cmd_ort(args), 1)
+    def test_canonical_loaded_registry_hold_refuses_late_changes(self):
+        text, current = link.registry_projection(self.root)
+        (self.root/'config/runlink-ort.us.txt').write_text(text)
+        held = link.canonical_registry_current(self.root)
+        self.path.write_text(self.path.read_text()+' ')
+        with self.assertRaisesRegex(link.rp.PackError, 'changed'):
+            held()
+
+
 class EditedReceiptTests(unittest.TestCase):
     def test_explicit_catalog_validates_owner_rows_source_kind_and_selection(self):
         import copy
@@ -190,22 +296,23 @@ class EditedReceiptTests(unittest.TestCase):
                 source = root / f'src/overlays/o{number:03d}/unit.c'
                 source.parent.mkdir(parents=True); source.write_text('void entry(void) {}\n')
             exports = link.rp.OrtNames(['entry34', 'entry75'], {})
-            document = {'schema': 'mickey-edited-source-modules-v1', 'default_selected': [75],
+            document = {'schema': 'mickey-source-module-abi-v1', 'default_selected': [75],
+                'compatibility': {'exports': [], 'entries': []},
                 'modules': [{'module': n, 'source': f'src/overlays/o{n:03d}/unit.c',
                              'exports': [{'name': 'entry'+str(n), 'row': i, 'kind': 'function'}],
-                             'entries': {'init': None, 'resume': None}} for i, n in enumerate((34, 75))]}
+                             'entries': {'init': None, 'resume': None}, 'build': 'registered'} for i, n in enumerate((34, 75))]}
             path = root / 'catalog.json'; path.write_text(json.dumps(document))
-            self.assertEqual(set(link.edited_catalog(root, path, exports, [34, 75])[0]), {34, 75})
-            self.assertEqual(set(link.edited_catalog(root, path, exports)[0]), {75})
+            self.assertEqual(set(link.edited_catalog(root, path, [34, 75])[0]), {34, 75})
+            self.assertEqual(set(link.edited_catalog(root, path)[0]), {75})
             document['modules'][0]['integer_word_profile'] = 'isolated-full-expression'
             path.write_text(json.dumps(document))
-            self.assertEqual(link.edited_catalog(root,path,exports,[34])[0][34]['integer_word_profile'],
+            self.assertEqual(link.edited_catalog(root,path,[34])[0][34]['integer_word_profile'],
                              'isolated-full-expression')
             for invalid in (None, False, 1, [], 'unknown'):
                 document['modules'][0]['integer_word_profile'] = invalid
                 path.write_text(json.dumps(document))
                 with self.subTest(profile=invalid), self.assertRaisesRegex(link.rp.PackError,'integer-word profile'):
-                    link.edited_catalog(root,path,exports,[34])
+                    link.edited_catalog(root,path,[34])
             del document['modules'][0]['integer_word_profile']
             path.write_text(json.dumps(document))
             for kind in ('row', 'duplicate', 'kind', 'source', 'field'):
@@ -217,11 +324,11 @@ class EditedReceiptTests(unittest.TestCase):
                 else: changed['modules'][0]['bss_size'] = 0
                 path.write_text(json.dumps(changed))
                 with self.subTest(kind=kind), self.assertRaises(link.rp.PackError):
-                    link.edited_catalog(root, path, exports, [34])
+                    link.edited_catalog(root, path, [34])
             path.write_text(json.dumps(document))
             for selected in ([34, 34], [108], []):
                 with self.subTest(selected=selected), self.assertRaises(link.rp.PackError):
-                    link.edited_catalog(root, path, exports, selected)
+                    link.edited_catalog(root, path, selected)
 
     def test_new_tail_registry_preserves_original_abi_and_rejects_holes(self):
         import copy
@@ -234,10 +341,12 @@ class EditedReceiptTests(unittest.TestCase):
                     'build': 'complete-overlay', 'entries': {'init': 'init', 'resume': None},
                     'exports': [{'name': 'init', 'row': 2, 'kind': 'function'},
                                 {'name': 'state', 'row': 3, 'kind': 'object'}]}
-            document = {'schema': 'mickey-edited-source-modules-v2',
+            document = {'schema': 'mickey-source-module-abi-v1',
+                        'compatibility': {'exports': [{'row': 0, 'name': 'resident'},
+                                                       {'row': 1, 'name': 'existing'}], 'entries': []},
                         'default_selected': [108], 'modules': [item]}
             path = root / 'tail.json'; path.write_text(json.dumps(document))
-            selected = link.edited_catalog(root, path, original)[0]
+            selected = link.edited_catalog(root, path)[0]
             registry = link.edited_source_exports(selected, original, 107)
             self.assertEqual(registry.rows, ['resident', 'existing', 'init', 'state'])
             self.assertEqual(original.rows, ['resident', 'existing'])
@@ -251,7 +360,7 @@ class EditedReceiptTests(unittest.TestCase):
                 else: changed['modules'][0]['build'] = 'arbitrary-flags'
                 path.write_text(json.dumps(changed))
                 with self.subTest(fault=fault), self.assertRaises(link.rp.PackError):
-                    link.edited_catalog(root, path, original)
+                    link.edited_catalog(root, path)
             selected[109] = selected.pop(108)
             with self.assertRaisesRegex(link.rp.PackError, 'dense tail'):
                 link.edited_source_exports(selected, original, 107)

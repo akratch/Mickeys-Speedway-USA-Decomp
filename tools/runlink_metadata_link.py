@@ -177,6 +177,7 @@ def wrapper(root, name):
 def context_paths(root):
     return [BOOT_ELF, BOOT_MAP, BOOT_LOG, "mickey.us.ld", "Makefile", MANIFEST,
             "tools/runlink_metadata_link.py", "tools/runlink_pack.py", "tools/overlay_tables.py", "tools/trap_names.py",
+            "config/runlink-edited.us.json", "config/runlink-ort.us.txt",
             "tools/link_diagnose.sh", "tools/run_logged.py",
             "tools/binutils/mips64-elf-ld", "tools/binutils/mips64-elf-objcopy",
             *[p.name for p in (root / "undefined_funcs_auto.us.txt", root / "undefined_syms_auto.us.txt",
@@ -184,6 +185,7 @@ def context_paths(root):
 
 
 def prepare(root):
+    abi_current = canonical_registry_current(root)
     try:
         previous = json.loads((root / RECEIPT).read_text())
     except (OSError, ValueError):
@@ -218,7 +220,9 @@ def prepare(root):
     receipt = {"schema": SCHEMA, "inputs": inputs, "script": digest(root / FINAL_SCRIPT),
                "wrappers": wrappers, "producer": manifest["implementation"],
                "borrowed_records": manifest["borrowing"]["borrowed_records"]}
+    abi_current()
     write_changed(root / RECEIPT, json_bytes(receipt))
+    abi_current()
 
 
 def allocated(elf):
@@ -232,6 +236,7 @@ def symbols(elf):
 
 
 def check_prepared(root):
+    abi_current = canonical_registry_current(root)
     manifest = validate_manifest(root)
     receipt = json.loads((root / RECEIPT).read_text())
     if not isinstance(receipt, dict):
@@ -245,6 +250,7 @@ def check_prepared(root):
     for name, sha in receipt["wrappers"].items():
         if digest(root / safe_relative(name)) != sha:
             raise MetadataLinkError(f"changed final metadata wrapper: {name}")
+    abi_current()
     return manifest, receipt
 
 
@@ -462,70 +468,162 @@ def edited_projection(root, directory, selected=None, generated=None):
     return prefix, template
 
 
-def edited_catalog(root, path, exports, selection=None):
-    """Read explicit source/ABI ownership, without selected numeric layout data."""
+def registry_surface(profiles, exports):
+    """Primitive observation seal; object identity is not parsed authority."""
+    return json_bytes({'modules': profiles, 'rows': exports.rows, 'by_name': exports.by_name,
+                       'entries': sorted((number, role, name)
+                                         for (number, role), name in exports.entries.items())})
+
+
+def source_registry(root, path, expected=None):
+    """One authored ABI; compatibility has names/rows, never inferred homes."""
     require = rp.edited_require
     def unique(items):
         result = {}
         for name, value in items:
-            require(name not in result, 'duplicate edited declaration key')
+            require(name not in result, 'duplicate registry declaration key')
             result[name] = value
         return result
+    def declaration_path_current():
+        lookup = root
+        for part in path.relative_to(root).parts:
+            lookup = lookup / part
+            require(not lookup.is_symlink(), 'symlink registry declaration')
+    declaration_path_current()
     payload = path.read_bytes()
+    observed = hashlib.sha256(payload).hexdigest()
+    require(expected is None or observed == expected, 'loaded registry differs from prehold')
     document = json.loads(payload, object_pairs_hook=unique)
-    require(isinstance(document, dict) and set(document) == {'schema', 'default_selected', 'modules'}
-            and document['schema'] in ('mickey-edited-source-modules-v1', 'mickey-edited-source-modules-v2'),
-            'unsupported edited declaration schema')
-    extended = document['schema'].endswith('-v2')
-    profiles, names, rows = {}, set(), set()
-    require(isinstance(document['modules'], list), 'module declarations must be a list')
-    for item in document['modules']:
-        fields = {'module', 'source', 'exports', 'entries'} | ({'build'} if extended else set())
-        require(isinstance(item, dict) and set(item) in (fields, fields | {'integer_word_profile'}),
-                'unknown/incomplete module declaration')
-        word_profile = item.get('integer_word_profile')
-        require('integer_word_profile' not in item or isinstance(word_profile, str)
-                and word_profile == 'isolated-full-expression', 'unsupported integer-word profile')
-        number, source = item['module'], item['source']
-        build = item.get('build', 'registered')
-        require(build in ('registered', 'complete-overlay'), 'unsupported edited compiler profile')
-        require(type(number) is int and 0 < number < 0xffc and number not in profiles, 'duplicate/reserved module identity')
+    require(isinstance(document, dict)
+            and set(document) == {'schema', 'default_selected', 'compatibility', 'modules'}
+            and document['schema'] == 'mickey-source-module-abi-v1', 'unsupported source ABI registry')
+    compatibility = document['compatibility']
+    require(isinstance(compatibility, dict) and set(compatibility) == {'exports', 'entries'}
+            and isinstance(compatibility['exports'], list)
+            and isinstance(compatibility['entries'], list), 'invalid compatibility ABI declarations')
+    profiles, names, rows, entries = {}, set(), {}, {}
+    identifier = lambda value: isinstance(value, str) and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', value)
+    def export(owner, *, typed):
+        require(isinstance(owner, dict) and set(owner) == ({'name', 'row', 'kind'} if typed else {'name', 'row'}),
+                'invalid export declaration fields')
+        name, row = owner['name'], owner['row']
+        require(identifier(name) and type(row) is int and row >= 0
+                and name not in names and row not in rows, 'duplicate/invalid ABI name or row')
+        if typed:
+            require(owner['kind'] in ('function', 'object'), 'unsupported export kind')
+        names.add(name); rows[row] = name
+    for owner in compatibility['exports']:
+        export(owner, typed=False)
+    require([owner['row'] for owner in compatibility['exports']] == sorted(rows),
+            'compatibility rows are not ordered')
+    for entry in compatibility['entries']:
+        require(isinstance(entry, dict) and set(entry) == {'module', 'role', 'name'},
+                'invalid compatibility entry fields')
+        number, role, name = entry['module'], entry['role'], entry['name']
+        require(type(number) is int and 0 < number < 0xffc and role in ('init', 'resume')
+                and identifier(name) and (number, role) not in entries, 'duplicate/invalid compatibility entry')
+        entries[number, role] = name
+    def source_path(number, source):
         require(isinstance(source, str), 'invalid source declaration')
         relative = safe_relative(source)
         lookup = root
         for part in relative.parts:
             lookup = lookup / part
             require(not lookup.is_symlink(), 'symlink source ownership')
-        require(relative.parts[:3] == ('src', 'overlays', f'o{number:03d}') and relative.suffix == '.c'
-                and (root / relative).is_file() and not (root / relative).is_symlink(), 'source/module ownership mismatch')
+        require(relative.parts[:3] == ('src', 'overlays', f'o{number:03d}')
+                and relative.suffix == '.c' and lookup.is_file(), 'source/module ownership mismatch')
+    require(isinstance(document['modules'], list), 'module declarations must be a list')
+    for item in document['modules']:
+        fields = {'module', 'source', 'exports', 'entries', 'build'}
+        require(isinstance(item, dict) and set(item) in (fields, fields | {'integer_word_profile'}),
+                'unknown/incomplete module declaration')
+        word_profile = item.get('integer_word_profile')
+        require('integer_word_profile' not in item or isinstance(word_profile, str)
+                and word_profile == 'isolated-full-expression', 'unsupported integer-word profile')
+        number, source, build = item['module'], item['source'], item['build']
+        require(build in ('registered', 'complete-overlay'), 'unsupported edited compiler profile')
+        require(type(number) is int and 0 < number < 0xffc and number not in profiles,
+                'duplicate/reserved module identity')
+        source_path(number, source)
         require(isinstance(item['entries'], dict) and set(item['entries']) == {'init', 'resume'}
-                and all(value is None or isinstance(value, str) and re.fullmatch(r'[A-Za-z_]\w*', value)
-                        for value in item['entries'].values()), 'invalid entry declarations')
+                and all(value is None or identifier(value) for value in item['entries'].values()),
+                'invalid entry declarations')
+        require(not any(owner == number for owner, role in entries),
+                'compatibility entry overlaps source ownership')
+        for role, name in item['entries'].items():
+            if name is not None:
+                entries[number, role] = name
         require(isinstance(item['exports'], list), 'invalid exports declaration')
         declared, kinds, declared_rows = [], {}, {}
         for owner in item['exports']:
-            require(isinstance(owner, dict) and set(owner) == {'name', 'row', 'kind'}, 'invalid export declaration fields')
-            name, row, kind = owner['name'], owner['row'], owner['kind']
-            require(isinstance(name, str) and re.fullmatch(r'[A-Za-z_]\w*', name)
-                    and type(row) is int and row >= 0
-                    and (exports.by_name.get(name) == row if row < len(exports.rows)
-                         else extended and name not in exports.by_name)
-                    and name not in names and row not in rows,
-                    'duplicate/wrong symbolic export name/row')
-            require(kind in ('function', 'object'), 'unsupported export kind')
-            names.add(name); rows.add(row); declared.append(name); kinds[name] = kind; declared_rows[name] = row
+            export(owner, typed=True)
+            name = owner['name']
+            declared.append(name); kinds[name] = owner['kind']; declared_rows[name] = owner['row']
         profiles[number] = {'source': source, 'exports': declared, 'kinds': kinds,
                             'rows': declared_rows, 'entries': item['entries'], 'build': build,
                             'integer_word_profile': word_profile}
-    ids = document['default_selected'] if selection is None else selection
-    require(isinstance(ids, list) and ids and all(type(number) is int and number in profiles for number in ids)
-            and len(set(ids)) == len(ids), 'invalid/undeclared selected module identities')
-    appended = sorted(row for number in ids for row in profiles[number]['rows'].values()
-                      if row >= len(exports.rows))
-    require(appended == list(range(len(exports.rows), len(exports.rows) + len(appended))),
-            'new export declarations must be a contiguous row suffix')
-    require(path.read_bytes() == payload, 'declaration changed while parsing')
-    return {number: profiles[number] for number in sorted(ids)}, hashlib.sha256(payload).hexdigest()
+    require(sorted(rows) == list(range(len(rows))), 'authored ABI rows must be dense')
+    default = document['default_selected']
+    registry_selection(profiles, default)
+    exports = rp.OrtNames([rows[i] for i in range(len(rows))], entries)
+    seal = registry_surface(profiles, exports)
+    default_seal = tuple(default)
+    def current():
+        declaration_path_current()
+        require(path.read_bytes() == payload and registry_surface(profiles, exports) == seal
+                and tuple(default) == default_seal, 'source ABI declaration/vector changed')
+        for number, profile in profiles.items():
+            source_path(number, profile['source'])
+    current()
+    return profiles, exports, default, observed, current
+
+
+def registry_selection(profiles, selection):
+    import copy
+    rp.edited_require(isinstance(selection, list) and selection
+        and all(type(number) is int and number in profiles for number in selection)
+        and len(set(selection)) == len(selection), 'invalid/undeclared selected module identities')
+    return {number: copy.deepcopy(profiles[number]) for number in sorted(selection)}
+
+
+def edited_catalog(root, path, selection=None):
+    profiles, exports, default, observed, current = source_registry(root, path)
+    selected = registry_selection(profiles, default if selection is None else selection)
+    current()
+    return selected, observed
+
+
+def registry_projection(root, path=None):
+    profiles, exports, default, observed, current = source_registry(
+        root, path or root / 'config/runlink-edited.us.json')
+    text = exports.render()
+    current()
+    return text, current
+
+
+def canonical_registry_current(root):
+    text, declaration_current = registry_projection(root)
+    path = root / 'config/runlink-ort.us.txt'
+    payload = text.encode()
+    def current():
+        declaration_current()
+        rp.edited_require(not path.is_symlink() and path.read_bytes() == payload,
+                          'canonical symbolic ABI differs from authored registry')
+    current()
+    return current
+
+
+def held_registry_projection(path, text):
+    """Derived input, never a fallback or a cache authority."""
+    rp.edited_require(not path.parent.is_symlink() and not path.is_symlink(), 'symlink ABI projection')
+    payload = text.encode()
+    if path.exists():
+        rp.edited_require(path.is_file() and path.read_bytes() == payload, 'changed derived ABI projection')
+    else:
+        write_changed(path, payload)
+    observed = hashlib.sha256(payload).hexdigest()
+    rp.edited_require(digest(path) == observed, 'loaded ABI projection differs')
+    return observed
 
 
 def edited_source_exports(selected, original, module_count):
@@ -953,7 +1051,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
     declaration_path = root / safe_relative(declarations)
     early_paths = {declaration_path, root / 'Makefile', root / 'mickey.us.yaml', root / 'tools/runlink_metadata_link.py',
                    root / 'tools/runlink_pack.py', root / 'tools/static_symbols.py', root / 'tools/runlink/configs/msu-us.toml',
-                   root / 'config/runlink-ort.us.txt', root / 'config/overlay_funcs_to_trap.us.txt'}
+                   root / 'config/overlay_funcs_to_trap.us.txt'}
     if variant != 'control':
         early_paths.update((root / pilot.FIXTURE).glob('*'))
     import proof_provenance as pp
@@ -966,8 +1064,19 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
     project_tools = edited_projection_tools()
     source_context = edited_source_context(root)
     require(all(digest(path) == value for path, value in pilot.LOADED.items()), 'loaded edited implementation changed')
-    exports0 = rp.OrtNames.load(root / 'config/runlink-ort.us.txt')
-    selected, declaration_hash = edited_catalog(root, declaration_path, exports0, selection)
+    profiles, registry, default, declaration_hash, registry_current = source_registry(
+        root, declaration_path, early[declaration_path.relative_to(root).as_posix()])
+    selected = registry_selection(profiles, default if selection is None else selection)
+    projection_text = registry.render()
+    projection = parent / 'abi' / (hashlib.sha256(projection_text.encode()).hexdigest() + '.txt')
+    projection_hash = held_registry_projection(projection, projection_text)
+    early[projection.relative_to(root).as_posix()] = projection_hash
+    declaration_current = registry_current
+    def registry_current():
+        declaration_current()
+        require(not projection.parent.is_symlink() and not projection.is_symlink()
+                and projection.read_bytes() == projection_text.encode(), 'held ABI projection changed')
+    registry_current()
     require(declaration_hash == early[declaration_path.relative_to(root).as_posix()], 'loaded declaration differs from prehold')
     early.update({declaration['source']: digest(root/declaration['source']) for declaration in selected.values()})
     # Derive the current request's outside closure EVERY invocation, before Make
@@ -978,7 +1087,8 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         projection_hash = hashlib.sha256(outside_script.encode()).hexdigest()
     outside_context = edited_outside_context(root, outside_selectors)
     setup_command = ['gmake', '--no-print-directory', '-j' + str(__import__('os').cpu_count() or 1),
-                     'edited-runlink-inputs', 'EDITED_PROVIDER_INPUTS=' + ' '.join(outside_selectors)]
+                     'edited-runlink-inputs', 'EDITED_PROVIDER_INPUTS=' + ' '.join(outside_selectors),
+                     'RUNLINK_ORT_NAMES=' + projection.relative_to(root).as_posix()]
     setup = subprocess.run(setup_command, cwd=root, text=True,
                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     write_changed(parent / 'input-production.log', setup.stdout)
@@ -1001,10 +1111,12 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
                'integer_word_profiles': {str(number): declaration['integer_word_profile']
                                          for number, declaration in selected.items()},
                'compiler_flags': {str(number): edited_compiler_flags(args) for number,args in arguments.items()}}
+    registry_current()
     current = edited_current(root, parent, variant, request)
     if current is not None:
         require(all(digest(root/name) == value for name,value in early.items())
                 and batch.checked_tool_identity() == tool, 'edited source/recipe changed during warm lookup')
+        registry_current()
         print('edited source build current', variant, current['rom_sha1'], flush=True)
         return current
     directory = Path(tempfile.mkdtemp(prefix=variant + '-', dir=parent))
@@ -1013,15 +1125,26 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
     if outside_rom is not None:
         from dataclasses import replace
         cfg = replace(cfg, rom=root / safe_relative(outside_rom))
+    require(len(registry.rows) >= cfg.ort_count, 'authored ABI removed a compatibility row')
+    exports0 = rp.OrtNames(registry.rows[:cfg.ort_count],
+        {key: value for key, value in registry.entries.items() if key[0] <= cfg.module_count})
     declared_exports = edited_source_exports(selected, exports0, cfg.module_count)
+    require(declared_exports.rows == registry.rows, 'new ABI suffix lacks selected source ownership')
+    require(all(number <= cfg.module_count or number in selected for number, role in registry.entries),
+            'new entry lacks selected source ownership')
     selected, exports, overrides, diagnostic = pilot.edited_fixture_inputs(root, selected, declared_exports, variant)
+    plan_seal = registry_surface(selected, exports)
+    def plan_current():
+        registry_current()
+        require(registry_surface(selected, exports) == plan_seal, 'loaded source ABI build plan changed')
+    plan_current()
     for number in selected:
         if number not in arguments:
             arguments[number] = arguments[diagnostic['module']]
             recipes[number] = 'approved existing diagnostic peer uses its source module compiler flags'
     write_changed(directory / 'exports.txt', exports.render())
     # Snapshot all implementation/recipe/source/declaration inputs BEFORE parsing.
-    inputs = {root / n for n in ('Makefile', 'mickey.us.yaml', 'config/runlink-ort.us.txt',
+    inputs = {root / n for n in ('Makefile', 'mickey.us.yaml',
         'tools/runlink_metadata_link.py', 'tools/runlink_pack.py', 'tools/check_editable_layout.py',
         'tools/link_overlay_module.py', 'tools/static_symbols.py', 'tools/rebind_elf_relocations.py',
         'tools/runlink/codec.py', 'tools/runlink/rules.py', 'tools/runlink/compare.py',
@@ -1080,6 +1203,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         preliminary = codec.Tables([], preliminary_ort, [p['module'] for p in generated.values()])
         pilot.removed_targets(preliminary, {diagnostic['peer']}, exports.rows,
             {key: name for product in generated.values() for key, name in product['callers'].items()})
+        plan_current()
         source_number, peer_number = diagnostic['module'], diagnostic['peer']
         before = generated[source_number]['module']
         exports = rp.OrtNames(exports.rows[:-diagnostic['peer_export_count']], dict(exports0.entries))
@@ -1088,11 +1212,14 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         objects[source_number], products[source_number], closures[source_number] = edited_compile(root, directory,
             'overlay-removed', overrides[source_number], exports, arguments[source_number], commands,
             integer_word_profile=selected[source_number].get('integer_word_profile'))
+        plan_seal = registry_surface(selected, exports)
+        plan_current()
         generated = {source_number: rp.edited_module_records(source_number, objects, selected, exports, provider)}
         after = generated[source_number]['module']
         require((before.image, before.table1, before.table2) == (after.image, after.table1, after.table2),
                 'unreferenced tail removal changed surviving ordinary source module')
         peer_removal = 'unreferenced tail removed; declarations pruned; fresh surviving compiler/link exact'
+    plan_current()
     selected_rows = {exports0.by_name[name] for declaration in selected.values()
                      for name in declaration['exports'] if name in exports0.by_name}
     # Decode only OUTSIDE compatibility. Selected header cells, ORT target cells,
@@ -1282,6 +1409,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         'provider_cells': {name: {'address': witness.address, 'size': 4, 'input': witness.item.file}
                            for name,witness in provider.get('cells', {}).items()},
         'rom_sha1': hashlib.sha1(rom).hexdigest(), 'provider_holds': {str(p.relative_to(root)): h for p, h in provider['holds'].items()}}
+    plan_current()
     pilot.publish_receipt(directory, receipt, artifacts)
     rp.edited_check_provider_holds(provider)
     require(all(digest(root / n) == expected for n, expected in initial.items())
@@ -1293,6 +1421,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
             and edited_outside_context(root, outside_selectors) == outside_context
             and all(digest(path) == value for path, value in pilot.LOADED.items()),
             'edited inputs changed during receipt publication')
+    plan_current()
     write_changed(parent / (variant + '-current.json'), json_bytes({'path': str(directory.relative_to(root)),
         'receipt_sha256': digest(directory / 'receipt.json')}))
     print('edited source build PASS', directory.relative_to(root), receipt['selected_raw_records'], receipt['rom_sha1'], flush=True)

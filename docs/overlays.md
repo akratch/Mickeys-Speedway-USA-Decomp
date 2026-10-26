@@ -2746,20 +2746,31 @@ actual module ELF sections and individual generated metadata wrappers. This
 separate edited path is explicitly nonmatching; default retail production still
 requires zero differences and exact bootstrap/final equality.
 
-`EDITED_DECLARATIONS` can name another safe repository-relative declaration file
-using schema `mickey-edited-source-modules-v1`: `default_selected`, plus `modules`
-with `module`, `source`, `exports:[{name,row,kind}]` and
-`entries:{init,resume}`. Kinds are function/object. Registry row/name agreement,
-unique source ownership, actual linked definitions and complete recipes are
-checked; a declaration cannot authorize an arbitrary stripped object. New
-selected sources still need an accepted complete source/module proof.
+`config/runlink-edited.us.json` is the single authored source/module/export ABI
+registry, using schema `mickey-source-module-abi-v1`. Each module declares its
+source, build profile, exports as `{name,row,kind}`, and init/resume names or null.
+The explicit `compatibility` block holds the remaining `{row,name}` exports and
+`{module,role,name}` entry declarations. Each ABI identity appears once; no
+address, target offset, section size or BSS home belongs in this declaration.
+Compatibility names do not establish source ownership or a new provider class.
 
-For an authored tail module, an alternate catalog may use
-`mickey-edited-source-modules-v2`. It adds `build` to every module declaration:
-`registered` uses its existing complete-module recipe; `complete-overlay` selects
-an explicit ordinary Make profile with the project overlay compiler flags,
-static-symbol step and module linker. No other module's flag list is reused.
-The default catalog and retail source set contain no synthetic tail module.
+`gmake runlink-ort` and the direct packer `ort --write`/`--check` commands derive
+or check the legacy symbolic text projection from this registry. They do not
+infer its ABI from a ROM, linked ELF or Atlas. Existing byte/identity/table/ROM
+checks still prove the retail result. The edited producer uses the authored
+vector directly and passes a held derived projection to ordinary outside-input
+Make recipes; the old symbolic lookup file is not an edited input or fallback.
+Declaration bytes and the parsed vector/build plan remain held through warm
+validation and final publication, alongside the existing compiler/provider proofs.
+
+`EDITED_DECLARATIONS` can select another safe repository-relative registry with
+the same schema. Source ownership, unique rows/names, actual linked definitions,
+entry roles and complete recipes are checked. A declaration cannot authorize an
+arbitrary stripped object. The `registered` build profile uses an existing
+complete-module recipe; `complete-overlay` selects the ordinary overlay compiler
+flags, static-symbol step and module linker for an authored source tail. No other
+module's flags are copied. The default selection remains75 and the default
+source set contains no diagnostic tail module.
 
 Original symbolic row/name identities remain fixed. New explicit export rows
 must be a contiguous suffix of that registry, with genuine function/object

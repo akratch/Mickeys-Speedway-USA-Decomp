@@ -3538,7 +3538,7 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
                                     explicit_storage_registry_path=None,
                                     explicit_storage_registry_sha256=None,
                                     explicit_storage_cache=None,
-                                    direct_storage_receipts=None):
+                                    direct_storage_receipts=None, own_ro_identities=None):
     """Resolve candidate-side same-overlay LOCAL/data identities fail closed.
 
     ``own_range`` excludes the function under proof from the sibling
@@ -3595,7 +3595,14 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
                 explicit_storage_registry_path,
                 explicit_storage_registry_sha256)
 
+    own_ro_identities = own_ro_identities or {}
+    explicit_foreign_names = set(explicit_foreign_names) | set(own_ro_identities)
     for name in sorted(valid):
+        if name in own_ro_identities:
+            proposed[name].add(own_ro_identities[name])
+            explicit_identities[name] = own_ro_identities[name]
+            _identity_witness(evidence, name, "same-input-source-RO", own_ro_identities[name], independent=True)
+            continue
         if name == "o73TriangleCommandWord":
             continue  # A zero-storage scalar cannot inherit an object/numeric witness.
         if name in explicit_foreign_names:
@@ -4941,7 +4948,13 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
         binary_imported, binary_receipts = binary_storage_witness.collect(
             sys.modules[__name__], binary_storage_witnesses, candidate_elf,
             candidate_start, candidate_size, module_row, target_elf, rom, values_path, evidence=evidence)
+    own_ro_receipt = None
+    if overlay is not None:
+        import canonical_data_owner
+        own_ro_receipt = canonical_data_owner.collect_same_input_ro(
+            sys.modules[__name__], module_row, candidate_elf, target_elf, root=REPO)
     direct_storage_receipts = [] if explicit_overlay_storage_bindings else None
+    own_ro_recheck = own_ro_receipt['recheck'] if own_ro_receipt is not None else None
     if overlay is not None:
         overlay_data_identities, ambiguous_overlay_data = (
             _stable_overlay_data_identities(
@@ -4957,7 +4970,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                 explicit_storage_registry_path=explicit_storage_registry_path,
                 explicit_storage_registry_sha256=explicit_storage_registry_sha256,
                 explicit_storage_cache=explicit_storage_cache,
-                direct_storage_receipts=direct_storage_receipts)
+                direct_storage_receipts=direct_storage_receipts,
+                own_ro_identities=own_ro_receipt["identities"] if own_ro_receipt else None)
         )
         for name, identity in overlay_data_identities.items():
             existing = identities.get(name)
@@ -5042,6 +5056,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
         "target_offset": "0x%X" % target_start,
         "target_size": "0x%X" % target_size,
     })
+    if own_ro_recheck is not None:
+        own_ro_recheck()
     for direct in direct_storage_receipts or ():
         direct["recheck"]()
     if bss_proof:

@@ -556,6 +556,279 @@ class CallbackCapture:
         return True
 
 
+def own_ro_prefix_facts(cpp, flags, root):
+    """Complete literal signed-o32 arrays in a mixed C input, not an ELF extent guess."""
+    import candidate_context as lexical
+    if '-32' not in flags or any(x in flags for x in ('-64', '-n32', '-n64')):
+        raise MetadataProofError('own RO prefix requires actual o32 flags')
+    ca, parser, before, identity = _effective_parser(root)
+    if len(cpp) > lexical.MAX_SOURCE_BYTES:
+        raise MetadataProofError('own RO CPP exceeds its bound')
+    try:
+        tree = parser.CParser().parse(cpp.decode('utf-8'))
+    except Exception as error:
+        raise MetadataProofError('own RO CPP cannot be parsed') from error
+    aliases = collections.defaultdict(list)
+    for node in tree.ext:
+        if isinstance(node, ca.Typedef):
+            aliases[node.name].append(node.type)
+    def element(node, seen=(), quals=()):
+        if (not isinstance(node, ca.TypeDecl) or getattr(node, 'align', None)
+                or not isinstance(node.type, ca.IdentifierType)):
+            raise MetadataProofError('own RO element is not a scalar typedef')
+        quals = (*quals, *node.quals)
+        names = node.type.names
+        if len(names) == 1 and names[0] in aliases:
+            name = names[0]
+            if name in seen or len(aliases[name]) != 1:
+                raise MetadataProofError('own RO typedef is ambiguous')
+            return element(aliases[name][0], (*seen, name), quals)
+        if sorted(names) not in (['long'], ['long','signed'], ['int','long'], ['int','long','signed']) or quals != ('const',):
+            raise MetadataProofError('own RO element is not const signed o32 long')
+    def integer(node):
+        sign = 1
+        if isinstance(node, ca.UnaryOp) and node.op == '-':
+            sign, node = -1, node.expr
+        if (not isinstance(node, ca.Constant) or node.type != 'int'
+                or not re.fullmatch(r'(?:0[xX][0-9a-fA-F]+|0|[1-9][0-9]*)', node.value)):
+            raise MetadataProofError('own RO initializer is not a signed integer literal')
+        value = sign * int(node.value, 0)
+        if not -(1 << 31) <= value < 1 << 31:
+            raise MetadataProofError('own RO initializer exceeds s32')
+        return value
+    rows = []
+    for node in tree.ext:
+        if not isinstance(node, ca.Decl) or node.init is None:
+            continue
+        array = node.type
+        if (node.storage or node.funcspec or node.bitsize or getattr(node, 'align', None)
+                or getattr(node, 'gcc_attributes', None) or getattr(node, 'asmlabel', None)
+                or node.quals != ['const'] or not isinstance(array, ca.ArrayDecl)
+                or array.dim_quals or not isinstance(node.init, ca.InitList)):
+            raise MetadataProofError('own RO has an unsupported initialized definition')
+        element(array.type)
+        values = [integer(x) for x in node.init.exprs]
+        if not values or len(values) > lexical.MAX_SOURCE_BYTES // 4:
+            raise MetadataProofError('own RO array extent is empty or excessive')
+        if array.dim is not None and integer(array.dim) != len(values):
+            raise MetadataProofError('own RO array is not completely initialized')
+        if len([x for x in tree.ext if isinstance(x, ca.Decl) and x.name == node.name]) != 1:
+            raise MetadataProofError('own RO declaration is ambiguous')
+        rows.append(dict(name=node.name, count=len(values), values=values))
+    if not rows or len({x['name'] for x in rows}) != len(rows):
+        raise MetadataProofError('own RO lacks unique initialized arrays')
+    if before != literal_profile_inputs(root) or lexical.identity() != identity:
+        raise MetadataProofError('own RO loaded parser changed')
+    return rows
+
+
+@dataclasses.dataclass(frozen=True)
+class OwnRoCapture:
+    original: object = dataclasses.field(repr=False)
+    surface: tuple
+    facts_json: str
+    held: tuple
+    context: object = dataclasses.field(repr=False)
+    directory: pathlib.Path
+    seal: object = dataclasses.field(repr=False)
+
+    def current(self):
+        self.context()
+        if (self.seal is not _OWN_RO_SEAL or _static_parsed_surface(self.original) != self.surface
+                or any(sha256_file(path) != digest for path, digest in self.held)):
+            raise MetadataProofError('own RO source/compiler observation changed')
+        return True
+
+
+_OWN_RO_SEAL = object()
+
+
+def capture_own_ro_prefix(source, root):
+    """Fresh unchanged compiler observation plus zero-storage compiler size checks."""
+    import permute_batch as batch
+    import runlink_pack as rp
+    import source_module_link_proof as proof
+    root, source = pathlib.Path(root).resolve(), pathlib.Path(source).resolve()
+    parent = root/'build/own-ro-source-proof'; parent.mkdir(parents=True, exist_ok=True)
+    directory = pathlib.Path(tempfile.mkdtemp(prefix='capture-', dir=parent))
+    deadline = time.monotonic()+120
+    cpp, flags, frontend, held, context, recipe = _callback_frontend(root, source, directory, deadline)
+    facts = own_ro_prefix_facts(cpp, flags, root)
+    original_path = directory/'original.o'
+    command = ['tools/ido/cc', *flags, '-o', str(original_path), str(frontend)]
+    result = batch.bounded_capture(command, deadline, check=True)
+    (directory/'compile.log').write_text(result.stdout)
+    original = rp.Elf(original_path)
+    held[original_path] = hashlib.sha256(original.data).hexdigest()
+    checks = ['sizeof(long)==4']
+    for row in facts:
+        checks += [f'sizeof({row["name"]})=={row["count"]*4}', f'sizeof({row["name"]}[0])==4']
+    tag = '__mickey_own_ro_'+uuid.uuid4().hex
+    assertions = ''.join(f'typedef struct {{ unsigned check : (({x})?1:-1); }} {tag}{i};\n' for i,x in enumerate(checks))
+    checked_source, checked_path = directory/'layout-input.c', directory/'layout.o'
+    checked_source.write_bytes(frontend.read_bytes()+b'\n'+assertions.encode())
+    result = batch.bounded_capture(['tools/ido/cc',*flags,'-o',str(checked_path),str(checked_source)],deadline,check=True)
+    (directory/'layout.log').write_text(result.stdout)
+    checked = rp.Elf(checked_path)
+    if (proof.allocated(original) != proof.allocated(checked) or proof.symbols(original) != proof.symbols(checked)
+            or [(s.index,s.shndx) for s in original.symbols] != [(s.index,s.shndx) for s in checked.symbols]
+            or [(s,r.offset,r.type,r.sym.index,a) for s in ('.text','.data','.rodata') for r,a in zip(original.rels(s),rp.in_place_addends(original,s,original.rels(s)))]
+               != [(s,r.offset,r.type,r.sym.index,a) for s in ('.text','.data','.rodata') for r,a in zip(checked.rels(s),rp.in_place_addends(checked,s,checked.rels(s)))]):
+        raise MetadataProofError('own RO layout check changed original compiler surface')
+    held.update({checked_source:sha256_file(checked_source),checked_path:hashlib.sha256(checked.data).hexdigest()})
+    static_tool = root/'tools/static_symbols.py'
+    held[static_tool] = sha256_file(static_tool)
+    static_path = directory/'raw.o'
+    static_path.write_bytes(original.data)
+    result = batch.bounded_capture(['.venv/bin/python',str(static_tool),str(static_path)],deadline,check=True)
+    (directory/'static.log').write_text(result.stdout)
+    held[static_path] = sha256_file(static_path)
+    context(operation_deadline=deadline)
+    result = OwnRoCapture(original,_static_parsed_surface(original),json.dumps(facts,sort_keys=True),tuple(held.items()),context,directory,_OWN_RO_SEAL)
+    result.current()
+    (directory/'source-proof.json').write_text(json.dumps(dict(facts=facts,recipe=recipe,command=command,checks=checks),indent=2)+'\n')
+    return result
+
+
+def own_ro_prefix_sources(root, dump=None):
+    """Exact configured source selection; no caller-supplied numeric bindings."""
+    import postprocess_audit as audit
+    root=pathlib.Path(root)
+    dump=audit.run_make_database() if dump is None else dump
+    selected={}
+    for target,command in audit.postprocess_commands(dump).items():
+        if '--own-ro-prefix-source' not in command:
+            continue
+        for a,b in {'$(HOST_PYTHON)':'python3','$(TOOLS_DIR)':'tools','$(BUILD_DIR)':'build','$@':target}.items():
+            command=command.replace(a,b)
+        words=shlex.split(command)
+        if (len(words)!=7 or not pathlib.Path(words[0]).name.startswith('python')
+                or words[1:4]!=['tools/link_overlay_module.py',target,'--own-ro-prefix-source']
+                or words[5]!='--directory' or not re.fullmatch(r'build/[A-Za-z0-9_./-]+',words[6])
+                or '..' in pathlib.PurePosixPath(words[6]).parts
+                or not re.fullmatch(r'src/[A-Za-z0-9_/]+\.c',words[4])
+                or target!='build/'+words[4]+'.o'):
+            raise MetadataProofError('own RO selection is not one exact source normalization')
+        selected[target]=words[4]
+    return selected
+
+
+def prove_own_ro_definition_join(root, source, linked_path, map_path):
+    """Fresh same-input owner proof, independent of ROM operands or export rows."""
+    import link_overlay_module as lm
+    import runlink_pack as rp
+    import source_module_link_proof as proof
+    import permute_batch as batch
+    root, source = pathlib.Path(root).resolve(), pathlib.Path(source).resolve()
+    relative=source.relative_to(root).as_posix(); target='build/'+relative+'.o'
+    graph_path=root/'config/overlays.us.json'
+    loaded={graph_path:graph_path.read_bytes(),root/target:(root/target).read_bytes(),
+            pathlib.Path(linked_path):pathlib.Path(linked_path).read_bytes(),
+            pathlib.Path(map_path):pathlib.Path(map_path).read_bytes()}
+    graph=json.loads(loaded[graph_path]); configured=rp.Elf(root/target,loaded[root/target])
+    linked=rp.Elf(linked_path,loaded[pathlib.Path(linked_path)])
+    mapping=rp.parse_map(map_path,loaded[pathlib.Path(map_path)])
+    capture=capture_own_ro_prefix(source,root)
+    original=rp.Elf(capture.directory/'raw.o')
+    plan=lm.own_ro_prefix_plan(original,capture,relative,graph)
+    replay_dir=capture.directory/'projection'; replay_dir.mkdir()
+    replay_path=replay_dir/'ordinary.o'
+    receipt=lm.project_own_ro_prefix(original.path,replay_path,capture,relative,graph,replay_dir,
+        objcopy=root/'tools/binutils/mips64-elf-objcopy',rebind=root/'tools/rebind_elf_relocations.py')
+    deadline=time.monotonic()+120
+    _command,_flags,lines=_callback_recipe(root,source,deadline)
+    own=[]; surfaces=[]
+    for line in lines:
+        words=shlex.split(line)
+        if len(words)>2 and words[1]=='tools/link_overlay_module.py' and words[2]==target:
+            own.append(words)
+        if words and words[0]=='tools/binutils/mips64-elf-objcopy' and words[-1]==target:
+            operations=metadata_filter_plan(line,target,root)
+            if any(kind!='rename' for kind,_ in operations):
+                raise MetadataProofError('own RO permits only ordinary downstream symbol renames')
+            surfaces.append(words)
+    if (len(own)!=1 or len(own[0])!=7 or own[0][3]!='--own-ro-prefix-source'
+            or own[0][4]!=relative or own[0][5]!='--directory' or len(surfaces)>1):
+        raise MetadataProofError('own RO lacks its exact selected normalization recipe')
+    for words in surfaces:
+        result=batch.bounded_capture([str(replay_path) if x==target else x for x in words],deadline,check=True)
+        (replay_dir/'surface.log').write_text(result.stdout)
+    replay=rp.Elf(replay_path)
+    if _static_parsed_surface(configured)!=_static_parsed_surface(replay):
+        raise MetadataProofError('own RO configured object differs from actual source normalization replay')
+    own_section=f'.overlay_{plan["module"]:03d}'
+    inputs=[m for m in mapping if m.file==target and m.size]
+    initialized=[m for m in inputs if m.insec in ('.text','.data','.rodata')]
+    expected=[('.text',rp.OVERLAY_VMA,original.size('.text')),('.rodata',rp.OVERLAY_VMA+plan['origin'],plan['extent'])]
+    if ([(m.insec,m.addr,m.size) for m in initialized]!=expected
+            or any(m.outsec!=own_section for m in initialized)):
+        raise MetadataProofError('own RO actual map disagrees with complete source prefix')
+    body=linked.section(own_section)
+    if not body or body['addr']!=rp.OVERLAY_VMA or body['type']!=1 or not body['flags']&2:
+        raise MetadataProofError('own RO linked allocation is missing')
+    image=linked.bytes_of(own_section)
+    if image[plan['origin']:plan['origin']+plan['extent']]!=original.bytes_of('.rodata'):
+        raise MetadataProofError('own RO linked source payload differs')
+    identities={}
+    for index,name,value,size in plan['owners']:
+        definitions=[s for s in linked.symbols if s.name==name and s.shndx!=rp.SHN_UNDEF]
+        if (len(definitions)!=1 or (definitions[0].bind,definitions[0].type,definitions[0].section,
+                definitions[0].value,definitions[0].size)!=(rp.STB_GLOBAL,rp.STT_OBJECT,own_section,
+                    rp.OVERLAY_VMA+plan['origin']+value,size)):
+            raise MetadataProofError('own RO lacks its unique allocated GLOBAL definition')
+        identities[name]=(plan['module'],plan['origin']+value)
+        identities[f'__runlink_own_ro_{index}']=identities[name]
+    pending={}; expected_sites={(x[1],x[2]):x for x in plan['sites']}
+    for rel in original.rels('.text'):
+        key=(rel.offset,rel.type)
+        if key not in expected_sites:
+            continue
+        _,offset,kind,index,name,addend=expected_sites[key]
+        immediate=int.from_bytes(image[offset:offset+4],'big')&65535
+        if kind==rp.R_MIPS_HI16:
+            pending.setdefault(index,[]).append((immediate,addend))
+        else:
+            high=pending.pop(index,[])
+            if not high or any(((h<<16)+(immediate-65536 if immediate&32768 else immediate))&0xffffffff
+                    != (rel.sym.value+a)&0xffffffff for h,a in high):
+                raise MetadataProofError('own RO linked stored operand differs from its source-relative binding')
+    if pending:
+        raise MetadataProofError('own RO linked operand pair is incomplete')
+    # Keep primitive identities distinct from the live observations they bind.
+    expected_identities=tuple(sorted(identities.items())); expected_plan=json.dumps(plan,sort_keys=True)
+    observed=[(obj,_static_parsed_surface(obj)) for obj in (original,configured,replay,linked)]
+    file_holds={path:hashlib.sha256(data).hexdigest() for path,data in loaded.items()}
+    file_holds.update({p:hashlib.sha256(p.read_bytes()).hexdigest() for p in replay_dir.iterdir() if p.is_file()})
+    # Bind the parsed replay observation, not a later observation of its pathname.
+    file_holds[replay_path]=hashlib.sha256(replay.data).hexdigest()
+    file_holds[replay_dir/'bindings.o']=receipt['configured_sha256']
+    expected_mapping=tuple(tuple(vars(m).items()) for m in mapping)
+    stable_held={path:hashlib.sha256(data).hexdigest() for path,data in loaded.items()}
+    result={}
+    members=dict(identities=identities,plan=plan,raw=original,configured=configured,linked=linked,
+                 mapping=mapping,capture=capture,receipt=receipt,held=file_holds,stable_held=stable_held)
+    expected_holds=(tuple(sorted(file_holds.items())),tuple(sorted(stable_held.items())))
+    expected_receipt=json.dumps(receipt,sort_keys=True)
+    def current():
+        if (set(result)!=set(members)|{'recheck'} or result.get('recheck') is not current
+                or any(result.get(key) is not value for key,value in members.items())
+                or (tuple(sorted(file_holds.items())),tuple(sorted(stable_held.items())))!=expected_holds
+                or json.dumps(receipt,sort_keys=True)!=expected_receipt):
+            raise MetadataProofError('own RO returned witness container changed')
+        capture.current()
+        if (any(sha256_file(path)!=digest for path,digest in file_holds.items())
+                or any(_static_parsed_surface(obj)!=surface for obj,surface in observed)
+                or tuple(tuple(vars(m).items()) for m in mapping)!=expected_mapping
+                or tuple(sorted(identities.items()))!=expected_identities
+                or json.dumps(plan,sort_keys=True)!=expected_plan
+                or json.loads(graph_path.read_bytes())!=graph):
+            raise MetadataProofError('own RO loaded definition/graph/identity observation changed')
+        return True
+    result.update(members,recheck=current)
+    current()
+    return result
+
+
 def capture_callback_data(raw, source, root):
     """Compiler-evaluated layout; original storage/symbols remain unchanged."""
     import permute_batch as batch

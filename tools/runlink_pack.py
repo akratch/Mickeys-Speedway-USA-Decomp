@@ -2993,6 +2993,52 @@ def validate_plain_data(world, ov, row, source, *, storage=".data"):
     return providers[source], start
 
 
+def guard_own_ro_prefixes(world, dump):
+    """Prove selected mixed-TU RO definitions before ordinary placement can fall back."""
+    import proof_provenance as pp
+    root=world.paths['build'].parent
+    selected=pp.own_ro_prefix_sources(root,dump)
+    if not selected:
+        return
+    world.data_import_contexts.append((tuple(sorted(selected.items())),
+        lambda:tuple(sorted(pp.own_ro_prefix_sources(root).items()))))
+    for target,source in selected.items():
+        witness=pp.prove_own_ro_definition_join(root,root/source,world.paths['elf'],world.paths['map'])
+        ov=witness['plan']['module']; key=source.removeprefix('src/').removesuffix('.c')
+        raw_path=world.paths['raw']/ (source+'.o')
+        raw=Elf(raw_path)
+        expected=pp._static_parsed_surface(witness['raw'])
+        if (pp._static_parsed_surface(raw)!=expected
+                or pp._static_parsed_surface(world.elf)!=pp._static_parsed_surface(witness['linked'])
+                or [vars(x) for x in world.map]!=[vars(x) for x in witness['mapping']]):
+            raise PackError('own RO World differs from its source/compiler/link proof')
+        graph=json.loads((root/'config/overlays.us.json').read_bytes())
+        module=[m for m in graph['modules'] if m['overlay']==ov]
+        if module!=[world.amods[ov]]:
+            raise PackError('own RO World graph differs from its current source declaration')
+        module_snapshot=json.dumps(world.amods[ov],sort_keys=True)
+        loaded_surface=pp._static_parsed_surface(world.elf)
+        mapped=tuple(tuple(vars(x).items()) for x in world.map)
+        def current(w=witness,path=raw_path,raw_surface=expected,source_key=key,module_id=ov,
+                    graph_snapshot=module_snapshot,elf_surface=loaded_surface,map_snapshot=mapped,
+                    expected_origin=int(witness['plan']['origin']),recheck=witness['recheck']):
+            recheck()
+            if (pp._static_parsed_surface(world.elf)!=elf_surface
+                    or tuple(tuple(vars(x).items()) for x in world.map)!=map_snapshot
+                    or json.dumps(world.amods[module_id],sort_keys=True)!=graph_snapshot):
+                raise PackError('own RO consumed World observation changed')
+            if world._objects is not None:
+                choices=[o for o in world._objects.get(module_id,[]) if o.source==source_key and o.kind=='c']
+                if len(choices)!=1 or pp._static_parsed_surface(choices[0].elf)!=raw_surface:
+                    raise PackError('own RO consumed RAW object changed')
+                placement=choices[0].placement.get('.rodata')
+                if placement is not None and placement!=(expected_origin,'link'):
+                    raise PackError('own RO placement is not its actual source input')
+            return True
+        hold_data_import_inputs(world,{raw_path:hashlib.sha256(raw.data).hexdigest(),**witness['stable_held']})
+        world.data_import_contexts.append((True,current))
+
+
 def guard_data_module_imports(world, exports):
     """Revalidate atomically before publishing complete data-only producers."""
     if getattr(world, "_data_guard_active", False):
@@ -3040,6 +3086,7 @@ def _guard_data_module_imports(world, exports):
     hold_data_import_inputs(world, {path: digest for path, digest
                                     in batch._LOADED_IMPLEMENTATIONS.values()})
     dump = audit.run_make_database()
+    guard_own_ro_prefixes(world, dump)
     if provenance.encoded_word_selection(root, dump):
         provenance.static_anchor_module(root)
     world._local_prefix_objects = local_prefix_objects_targets(dump)

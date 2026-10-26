@@ -60,6 +60,21 @@ supports only `hybrid`; requesting `objects` or `oracle` fails explicitly.
 An MSU hybrid pass can still borrow named identities from the shipped tables
 and is not evidence of source-only generation.
 
+The MSU build can explicitly select `link_overlay_module.py
+--own-ro-prefix-source` for one complete C text input with no DATA or BSS and
+an entirely source-owned read-only prefix. This route accepts complete const
+signed o32 integer arrays only after fresh source, actual CPP, compiler layout,
+object definitions and current source-graph checks. It preserves allocated
+GLOBAL definitions and instruction bytes; private reference bindings encode the
+section-relative operands consumed by the existing runtime linker. Original
+relocation sites, normal metadata replay, linked definitions and all loaded
+inputs remain held through publication. A retained suffix or unresolved imports
+remain compatibility inputs. Zero-valued bindings can become symbol-zero
+references during ordinary metadata normalization, so a configured static
+comparison alone is not a complete identity proof: the unchanged promotion
+checks must also prove the linked bytes and runtime table. This route does not
+establish general edited-source support or source-only generation.
+
 `--unpatched OLD=NEW` rewrites the map's object-path prefix `OLD` to `NEW`.
 It is for builds that rename resident trap callees inside the objects after
 compiling, as JFG's `tools/patch_symbols.py` does. The kit then reads each

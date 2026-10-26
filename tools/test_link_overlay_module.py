@@ -427,5 +427,117 @@ class CallbackDataShapeTests(unittest.TestCase):
             with self.assertRaises(tool.LinkError):view.callback_view_current()
 
 
+
+class OwnRoProjectionTests(unittest.TestCase):
+    @staticmethod
+    def fixture(root, *, addend=0):
+        import hashlib
+        import json
+        import proof_provenance as pp
+        image = ElfBuilder().section('.text', words(0x3c010000, 0x24210000 | addend,
+                                                     0x3c020000, 0x24420000))
+        image.section('.rodata', words(1, 7))
+        image.sym('first', 0, 4, GLOBAL, rp.STT_OBJECT, '.rodata')
+        image.sym('second', 4, 4, GLOBAL, rp.STT_OBJECT, '.rodata')
+        for offset, name in ((0, 'first'), (8, 'second')):
+            image.rel('.text', offset, rp.R_MIPS_HI16, name)
+            image.rel('.text', offset+4, rp.R_MIPS_LO16, name)
+        data = bytearray(image.build()); raw = rp.Elf('fixture', data)
+        struct.pack_into('>I', data, struct.unpack_from('>I', data, 32)[0]
+                         + raw.section('.rodata')['index']*40+8, 2)
+        path = root/'raw.o'; path.write_bytes(data); raw = rp.Elf(path)
+        facts = [dict(name='first', count=1, values=[1]), dict(name='second', count=1, values=[7])]
+        capture = pp.OwnRoCapture(raw, pp._static_parsed_surface(raw), json.dumps(facts),
+            ((path, hashlib.sha256(raw.data).hexdigest()),), lambda: True, root, pp._OWN_RO_SEAL)
+        graph = {'modules': [dict(overlay=7, text_ownership=[dict(type='c', source='sample',
+            offset='0x0', size='0x10', end_offset='0x10')], data_rodata_ownership=[dict(
+            type='c', source='sample', section='.rodata', offset='0x0', size='0x8', end_offset='0x8')])]}
+        return raw, capture, graph
+
+    def test_source_capture_and_complete_graph_are_required(self):
+        import copy
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); raw, capture, graph = self.fixture(root)
+            plan = tool.own_ro_prefix_plan(raw, capture, 'src/sample.c', graph)
+            self.assertEqual((plan['origin'], plan['extent'], len(plan['sites'])), (16, 8, 4))
+            with self.assertRaises(tool.LinkError):
+                tool.own_ro_prefix_plan(raw, {'extent': 8}, 'src/sample.c', graph)
+            changed = copy.deepcopy(graph)
+            changed['modules'][0]['data_rodata_ownership'][0]['offset'] = '0x4'
+            with self.assertRaises(tool.LinkError):
+                tool.own_ro_prefix_plan(raw, capture, 'src/sample.c', changed)
+            raw, capture, graph = self.fixture(root, addend=4)
+            with self.assertRaisesRegex(tool.LinkError, 'addend escapes'):
+                tool.own_ro_prefix_plan(raw, capture, 'src/sample.c', graph)
+
+    @unittest.skipUnless(OBJCOPY.is_file(), 'requires the ordinary object metadata tool')
+    def test_projection_retains_real_allocated_roots_and_rejects_changed_loaded_file(self):
+        import proof_provenance as pp
+        import source_module_link_proof as proof
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); raw, capture, graph = self.fixture(root)
+            # The minimal builder omits section-symbol names; use the ordinary
+            # metadata tool's canonical synthetic baseline before observing it.
+            import dataclasses
+            import hashlib
+            canonical = root/'canonical.o'
+            tool.run([OBJCOPY, raw.path, canonical])
+            raw.path.write_bytes(canonical.read_bytes()); raw = rp.Elf(raw.path)
+            capture = dataclasses.replace(capture, original=raw,
+                surface=pp._static_parsed_surface(raw),
+                held=((raw.path, hashlib.sha256(raw.data).hexdigest()),))
+            output = root/'output.o'
+            tool.project_own_ro_prefix(raw.path, output, capture, 'src/sample.c', graph, root/'projection',
+                objcopy=OBJCOPY, rebind=ROOT/'tools/rebind_elf_relocations.py')
+            projected = rp.Elf(output)
+            self.assertEqual(proof.allocated(raw), proof.allocated(projected))
+            for name in ('first', 'second'):
+                definitions = [s for s in projected.symbols if s.name == name]
+                self.assertEqual([(s.bind, s.type, s.section, s.size) for s in definitions],
+                                 [(GLOBAL, rp.STT_OBJECT, '.rodata', 4)])
+            output.unlink(); original_loader = rp.Elf
+            class ChangedAfterLoad(original_loader):
+                def __init__(self, path, *args, **kwargs):
+                    super().__init__(path, *args, **kwargs)
+                    if Path(path).name == 'bindings.o':
+                        Path(path).write_bytes(self.data+b'changed observation')
+            with mock.patch.object(rp, 'Elf', ChangedAfterLoad), self.assertRaises(tool.LinkError):
+                tool.project_own_ro_prefix(raw.path, output, capture, 'src/sample.c', graph,
+                    root/'changed-projection', objcopy=OBJCOPY, rebind=ROOT/'tools/rebind_elf_relocations.py')
+            self.assertFalse(output.exists())
+
+    def test_wrapper_publishes_only_validated_buffer_and_recovers(self):
+        import hashlib
+        import json
+        from types import SimpleNamespace
+        import proof_provenance as pp
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); source = root/'src/sample.c'; source.parent.mkdir()
+            source.write_text('const long values[]={1};')
+            raw = root/'build/src/sample.c.o'; raw.parent.mkdir(parents=True)
+            raw.write_bytes(b'original'); (root/'config').mkdir()
+            (root/'config/overlays.us.json').write_text('{}')
+            projected = b'synthetic validated projection'
+            def project(*args, **kwargs):
+                Path(args[1]).write_bytes(projected)
+                return dict(configured_sha256=hashlib.sha256(projected).hexdigest())
+            def changed(*args, **kwargs):
+                receipt = project(*args, **kwargs)
+                Path(args[1]).write_bytes(b'substituted after projection')
+                return receipt
+            capture = SimpleNamespace(current=lambda: True, directory=root/'capture')
+            with mock.patch.object(Path, 'cwd', return_value=root), \
+                 mock.patch.object(rp, 'metadata_implementations'), \
+                 mock.patch.object(pp, 'capture_own_ro_prefix', return_value=capture):
+                with mock.patch.object(tool, 'project_own_ro_prefix', side_effect=changed), \
+                     self.assertRaisesRegex(tool.LinkError, 'wrapper projection'):
+                    tool.own_ro_prefix(raw, raw, source, root/'negative')
+                self.assertEqual(raw.read_bytes(), b'original')
+                self.assertFalse((root/'negative/receipt.json').exists())
+                with mock.patch.object(tool, 'project_own_ro_prefix', side_effect=project):
+                    tool.own_ro_prefix(raw, raw, source, root/'recovery')
+                self.assertEqual(raw.read_bytes(), projected)
+
+
 if __name__ == "__main__":
     unittest.main()

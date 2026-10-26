@@ -1,5 +1,12 @@
 #include "overlays/overlay_018.h"
 
+/* Reconstructed mode counts; original capacity and TU remain Tier D. */
+const s32 overlay18ModeScale8[] = { 5248, 7168, 10240, 11264, 5760, 6144, 6656, 7168 };
+const s32 overlay18ModeScale10[] = { 768, 1024, 1280, 1280, 1024, 1024, 1024, 1024 };
+const s32 overlay18ModeScale64[] = { 272, 384, 512, 512, 272, 300, 300, 300 };
+const s32 overlay18ModeScale16[] = { 20, 30, 40, 50, 20, 20, 20, 20 };
+
+
 /*
  * Overlay 18: boot-time initialization and the display-list heap. One
  * translation unit; overlay18Load and overlay18Reconfigure are the module's
@@ -109,10 +116,10 @@ void overlay18Reconfigure(s32 mode) {
         token = mmGetDelay(mode);
         mmSetDelay(0);
 
-        size = (gOverlay18ModeScale8[index] * 8) +
-               (gOverlay18ModeScale64[index] * 64) +
-               (gOverlay18ModeScale10[index] * 10) +
-               (gOverlay18ModeScale16[index] * 16);
+        size = (overlay18ModeScale8[index] * 8) +
+               (overlay18ModeScale64[index] * 64) +
+               (overlay18ModeScale10[index] * 10) +
+               (overlay18ModeScale16[index] * 16);
 
         mmFree(gOverlay18Buffers[0]);
         mmFree(gOverlay18Buffers[1]);
@@ -135,22 +142,22 @@ void overlay18Reconfigure(s32 mode) {
         }
 
         gOverlay18Region8Slot0 = gOverlay18Buffers[0] +
-                                (gOverlay18ModeScale8[index] * 8);
+                                (overlay18ModeScale8[index] * 8);
         gOverlay18Region64Slot0 = gOverlay18Region8[0] +
-                                 (gOverlay18ModeScale64[index] * 64);
+                                 (overlay18ModeScale64[index] * 64);
         gOverlay18Region16Slot0 = gOverlay18Region64[0] +
-                                 (gOverlay18ModeScale16[index] * 16);
+                                 (overlay18ModeScale16[index] * 16);
         D_800CF528[1] = gOverlay18Buffers[1] +
-                                    (gOverlay18ModeScale8[index] * 8);
+                                    (overlay18ModeScale8[index] * 8);
         D_800CF598[1] = gOverlay18Region8[1] +
-                                     (gOverlay18ModeScale64[index] * 64);
+                                     (overlay18ModeScale64[index] * 64);
         D_800CF580[1] = gOverlay18Region64[1] +
-                                     (gOverlay18ModeScale16[index] * 16);
+                                     (overlay18ModeScale16[index] * 16);
 
-        D_800CF51C = gOverlay18ModeScale8[index];
-        D_800CF534 = gOverlay18ModeScale64[index];
-        D_800CF5A4 = gOverlay18ModeScale16[index];
-        D_800CF58C = gOverlay18ModeScale10[index];
+        D_800CF51C = overlay18ModeScale8[index];
+        D_800CF534 = overlay18ModeScale64[index];
+        D_800CF5A4 = overlay18ModeScale16[index];
+        D_800CF58C = overlay18ModeScale10[index];
         overlay18FinishReconfigureReloc(token);
     }
 
@@ -184,28 +191,28 @@ static void overlay18InitializeBuffers(void) {
 
     mode = 3;
     gOverlay18Mode = mode;
-    size = (gOverlay18ModeScale8[mode] * 8) +
-           (gOverlay18ModeScale64[mode] * 64) +
-           (gOverlay18ModeScale10[mode] * 10) +
-           (gOverlay18ModeScale16[mode] * 16);
+    size = (overlay18ModeScale8[mode] * 8) +
+           (overlay18ModeScale64[mode] * 64) +
+           (overlay18ModeScale10[mode] * 10) +
+           (overlay18ModeScale16[mode] * 16);
     D_800CF510[0] = mmAlloc(size, 0x87);
     D_800CF528[0] = D_800CF510[0] +
-                           (gOverlay18ModeScale8[mode] * 8);
+                           (overlay18ModeScale8[mode] * 8);
     D_800CF580[0] = D_800CF528[0] +
-                           (gOverlay18ModeScale64[mode] * 64);
+                           (overlay18ModeScale64[mode] * 64);
     D_800CF598[0] = D_800CF580[0] +
-                           (gOverlay18ModeScale10[mode] * 10);
+                           (overlay18ModeScale10[mode] * 10);
 
     D_800CF510[1] = mmAlloc(size, 0x87);
     D_800CF528[1] = D_800CF510[1] +
-                           (gOverlay18ModeScale8[mode] * 8);
+                           (overlay18ModeScale8[mode] * 8);
     D_800CF580[1] = D_800CF528[1] +
-                           (gOverlay18ModeScale64[mode] * 64);
+                           (overlay18ModeScale64[mode] * 64);
     D_800CF598[1] = D_800CF580[1] +
-                           (gOverlay18ModeScale10[mode] * 10);
+                           (overlay18ModeScale10[mode] * 10);
 
-    D_800CF51C = gOverlay18ModeScale8[mode];
-    D_800CF534 = gOverlay18ModeScale64[mode];
-    D_800CF5A4 = gOverlay18ModeScale16[mode];
-    D_800CF58C = gOverlay18ModeScale10[mode];
+    D_800CF51C = overlay18ModeScale8[mode];
+    D_800CF534 = overlay18ModeScale64[mode];
+    D_800CF5A4 = overlay18ModeScale16[mode];
+    D_800CF58C = overlay18ModeScale10[mode];
 }

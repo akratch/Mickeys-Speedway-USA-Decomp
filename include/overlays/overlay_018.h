@@ -56,10 +56,6 @@ extern void *D_800D18E0;
 extern u32 D_8007A1CC;
 
 /* Display-list heap: per-mode region sizes and the two frame buffers. */
-extern const s32 gOverlay18ModeScale8[];
-extern const s32 gOverlay18ModeScale10[];
-extern const s32 gOverlay18ModeScale64[];
-extern const s32 gOverlay18ModeScale16[];
 extern s32 gOverlay18Mode;
 extern u8 *gOverlay18Buffers[2];
 extern u8 *gOverlay18Region8[2];

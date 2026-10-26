@@ -803,6 +803,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o006/overlay_006.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o010/overlay_010.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 18 is one translation unit at the overlay flag set.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o018/overlay_018.c.o: CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o018/overlay_018.c.o: $(TOOLS_DIR)/link_overlay_module.py $(TOOLS_DIR)/proof_provenance.py config/overlays.$(VERSION).json
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o018/overlay_018.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/link_overlay_module.py $@ \
+		--own-ro-prefix-source src/overlays/o018/overlay_018.c \
+		--directory $(BUILD_DIR)/own-ro-prefix/ordinary
 # Overlay 17 is one translation unit at the overlay flag set.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay_017.c.o: CFLAGS += -Wab,-r4300_mul
 # Overlay 3 is one translation unit at the overlay flag set.

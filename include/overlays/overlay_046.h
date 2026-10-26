@@ -24,11 +24,11 @@ typedef struct Overlay46Descriptor {
 
 extern s16 gOverlay46Ids[];
 
-extern s32 gOverlay46Value0;
+extern s32 gOverlay46StorageValue0;
 
-extern s32 gOverlay46Value4;
+extern s32 gOverlay46StorageValue4;
 
-extern s32 gOverlay46Value8;
+extern s32 gOverlay46StorageValue8;
 
 extern void *gOverlay46Value2C;
 
@@ -221,13 +221,13 @@ typedef struct Overlay46ParticleConfig {
 
 extern void *D_800D31C8[];
 
-extern s32 gOverlay46StateC;
+extern s32 gOverlay46StorageStateC;
 
-extern s32 gOverlay46Value10;
+extern s32 gOverlay46StorageValue10;
 
-extern s32 gOverlay46Value14;
+extern s32 gOverlay46StorageValue14;
 
-extern s32 gOverlay46Value18;
+extern s32 gOverlay46StorageValue18;
 
 extern Overlay46Particle gOverlay46Particles20[];
 
@@ -258,11 +258,8 @@ typedef struct Overlay46Particle_F0000874_188 {
     void *resource38;
 } Overlay46Particle_F0000874_188;
 
-extern s32 D_10;
 
-extern s32 D_14;
 
-extern s32 D_18;
 
 extern Overlay46Particle_F0000874_188 D_20[];
 
@@ -270,7 +267,6 @@ extern u8 D_2C[];
 
 extern s32 D_5C;
 
-extern s32 D_C;
 
 /* Resident display-list, matrix and vertex cursors, reached through runtime
  * relocation records and passed by address. */

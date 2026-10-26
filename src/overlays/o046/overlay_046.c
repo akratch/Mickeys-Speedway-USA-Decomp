@@ -20,9 +20,9 @@ void overlay46InitializeState(void) {
     gOverlay46Group54 = overlay44CreateAnimationState(0, 0x7C, 0x41, 0, 0);
     gOverlay46Mode58 = 1;
     gOverlay46Timer5C = 100;
-    gOverlay46Value0 = 0xFF;
-    gOverlay46Value4 = 0;
-    gOverlay46Value8 = 0;
+    gOverlay46StorageValue0 = 0xFF;
+    gOverlay46StorageValue4 = 0;
+    gOverlay46StorageValue8 = 0;
     func_80037414(1, 2.5f, 0.0f, 0, 0, 0, 0);
 
     descriptor.type = 0x101;
@@ -63,10 +63,10 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
     case 1:
         if (gOverlay46Timer5C == 0) {
             if (func_80037664() != 1) {
-                gOverlay46Value0 = 0;
+                gOverlay46StorageValue0 = 0;
                 gOverlay46Mode58 = 2;
                 gOverlay46Timer5C = 100;
-                gOverlay46Value4 = 255;
+                gOverlay46StorageValue4 = 255;
                 func_80037414(1, 2.5f, 0.0f, 0, 0, 0, 0);
             }
         } else if (func_80037664() != 1) {
@@ -82,7 +82,7 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
         if (gOverlay46Timer5C == 0) {
             if (func_80037664() != 1) {
                 func_80037658();
-                gOverlay46Value4 = 0;
+                gOverlay46StorageValue4 = 0;
                 gOverlay46Mode58 = 3;
                 gOverlay46Timer5C = 0;
             }
@@ -99,9 +99,9 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
         overlay44UpdateFrameCache(gOverlay46Group54Update, amount);
         counter = gOverlay46Group54Update;
         if (counter->value < 0x200) {
-            gOverlay46Value8 = counter->value >> 1;
+            gOverlay46StorageValue8 = counter->value >> 1;
         } else {
-            gOverlay46Value8 = 255;
+            gOverlay46StorageValue8 = 255;
         }
         if (counter->value >= 0x1E01) {
             if (gOverlay46Timer5C == 0) {
@@ -109,7 +109,7 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
                 func_80000F94(mathRnd(0x203, 0x204) & 0xFFFF, 0);
                 gOverlay46Timer5C = 1;
             } else if (func_80037664() != 1) {
-                gOverlay46Value8 = 0;
+                gOverlay46StorageValue8 = 0;
                 gOverlay46Mode58 = 4;
                 func_overlay_046_F000069C_188EA94();
             }
@@ -152,26 +152,26 @@ void func_overlay_046_F0000120_188E518(s32 amount) {
         break;
     }
 
-    if (gOverlay46Value4 != 0) {
-        O46_PRIM(gDisplayListHead++, gOverlay46Value4, gOverlay46Value4,
-                 gOverlay46Value4, 0xFF);
+    if (gOverlay46StorageValue4 != 0) {
+        O46_PRIM(gDisplayListHead++, gOverlay46StorageValue4, gOverlay46StorageValue4,
+                 gOverlay46StorageValue4, 0xFF);
         func_80036F08(&gDisplayListHead, gOverlay46Resource50, 0);
     }
 
-    if (gOverlay46Value0 != 0) {
-        O46_PRIM(gDisplayListHeadB++, gOverlay46Value0, gOverlay46Value0,
-                 gOverlay46Value0, 0xFF);
+    if (gOverlay46StorageValue0 != 0) {
+        O46_PRIM(gDisplayListHeadB++, gOverlay46StorageValue0, gOverlay46StorageValue0,
+                 gOverlay46StorageValue0, 0xFF);
         func_80036F08(&gDisplayListHeadB, gOverlay46Resource4C, 0);
     }
 
-    value = gOverlay46Value8;
+    value = gOverlay46StorageValue8;
     if (value != 0) {
         gOverlay46Group54Render->alpha = value;
         func_overlay_044_F0000580_188BDE0(gOverlay46Group54Render,
                                           gOverlay46MotionTarget, 1.0f);
         fontUseFont(2);
         fontBackground(0, 0, 0, 0);
-        func_8004B0B8(255, 255, 255, 255, gOverlay46Value8);
+        func_8004B0B8(255, 255, 255, 255, gOverlay46StorageValue8);
     }
 }
 
@@ -249,10 +249,10 @@ void overlay46InitializeParticles(void) {
         config++;
     } while (index--);
 
-    gOverlay46StateC = 1;
-    gOverlay46Value10 = 0;
-    gOverlay46Value14 = 0;
-    gOverlay46Value18 = 0;
+    gOverlay46StorageStateC = 1;
+    gOverlay46StorageValue10 = 0;
+    gOverlay46StorageValue14 = 0;
+    gOverlay46StorageValue18 = 0;
     gOverlay46Timer5C = 0x3C;
 }
 
@@ -286,7 +286,7 @@ static s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
         particlesByVariant[count] = NULL;
     } while (count--);
 
-    switch (D_C) {
+    switch (gOverlay46StorageStateC) {
     case 1: {
         particle = D_20;
         finished = 1;
@@ -312,7 +312,7 @@ static s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
         } while (count--);
 
         if (finished != 0) {
-            D_C = 2;
+            gOverlay46StorageStateC = 2;
             particle = D_20;
             count = 0x12;
             do {
@@ -363,25 +363,25 @@ static s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
         } while (count--);
 
         if (finished != 0) {
-            if (D_10 < 0xFF) {
-                D_10 += updateRate * 4;
-                if (D_10 >= 0x100) {
-                    D_10 = 0xFF;
+            if (gOverlay46StorageValue10 < 0xFF) {
+                gOverlay46StorageValue10 += updateRate * 4;
+                if (gOverlay46StorageValue10 >= 0x100) {
+                    gOverlay46StorageValue10 = 0xFF;
                 }
-            } else if (D_14 < 0xFF) {
-                D_14 += updateRate * 4;
-                if (D_14 >= 0x100) {
-                    D_14 = 0xFF;
+            } else if (gOverlay46StorageValue14 < 0xFF) {
+                gOverlay46StorageValue14 += updateRate * 4;
+                if (gOverlay46StorageValue14 >= 0x100) {
+                    gOverlay46StorageValue14 = 0xFF;
                 }
-            } else if (D_18 < 0xFE) {
-                D_18 += updateRate * 4;
-                if (D_18 >= 0xFF) {
-                    D_18 = 0xFE;
+            } else if (gOverlay46StorageValue18 < 0xFE) {
+                gOverlay46StorageValue18 += updateRate * 4;
+                if (gOverlay46StorageValue18 >= 0xFF) {
+                    gOverlay46StorageValue18 = 0xFE;
                 }
             } else {
                 D_5C -= updateRate;
                 if (D_5C <= 0) {
-                    D_C = 4;
+                    gOverlay46StorageStateC = 4;
                 }
             }
         }
@@ -414,17 +414,17 @@ static s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
             particle++;
         } while (count--);
 
-        D_10 -= updateRate * 8;
-        if (D_10 < 0) {
-            D_10 = 0;
+        gOverlay46StorageValue10 -= updateRate * 8;
+        if (gOverlay46StorageValue10 < 0) {
+            gOverlay46StorageValue10 = 0;
         }
-        D_14 -= updateRate * 8;
-        if (D_14 < 0) {
-            D_14 = 0;
+        gOverlay46StorageValue14 -= updateRate * 8;
+        if (gOverlay46StorageValue14 < 0) {
+            gOverlay46StorageValue14 = 0;
         }
-        D_18 -= updateRate * 8;
-        if (D_18 < 0) {
-            D_18 = 0;
+        gOverlay46StorageValue18 -= updateRate * 8;
+        if (gOverlay46StorageValue18 < 0) {
+            gOverlay46StorageValue18 = 0;
         }
         if (finished != 0) {
             result = 0;
@@ -435,19 +435,19 @@ static s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
 
     fontUseFont(2);
     fontBackground(0, 0, 0, 0);
-    if (D_10 != 0) {
-        func_8004B0B8(0xFF, 0xFF, 0xFF, 0xFF, D_10);
+    if (gOverlay46StorageValue10 != 0) {
+        func_8004B0B8(0xFF, 0xFF, 0xFF, 0xFF, gOverlay46StorageValue10);
         fontPrintXY(&D_800D3140, 0xA0, 0xAC, "< 2000 Disney",
                                 0xC);
     }
-    if (D_14 != 0) {
-        func_8004B0B8(0xFF, 0xFF, 0xFF, 0xFF, D_14);
+    if (gOverlay46StorageValue14 != 0) {
+        func_8004B0B8(0xFF, 0xFF, 0xFF, 0xFF, gOverlay46StorageValue14);
         fontPrintXY(&D_800D3140, 0xA0, 0xB6, "Licensed to Nintendo",
                                 0xC);
     }
-    if (D_18 != 0) {
+    if (gOverlay46StorageValue18 != 0) {
         func_8002F618(&D_800D3140, D_2C, 0xA0, 0xCC,
-                                  0xFF, 0xFF, 0xFF, D_18);
+                                  0xFF, 0xFF, 0xFF, gOverlay46StorageValue18);
     }
 
     texDPInit(&D_800D3140);

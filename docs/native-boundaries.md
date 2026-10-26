@@ -230,11 +230,15 @@ sprite-loader disagreement and other erased APIs remain open.
   meaning, a fixed-handler incoming-memory dependency and per-record output/overlap
   limits remain open. The contract establishes a conditional normal-completion
   lookahead bound; it does not prove those preconditions for every asset.
-- **Command cursor views:** overlays 47 and 51 now use the resident SDK `Gfx`
-  pointer type for their shared cursor and audited provider first formals.
+- **Command cursor views:** overlays 18, 47 and 51 now use the resident SDK `Gfx`
+  pointer type for their shared cursor; the audited provider first formals in
+  overlays 47 and 51 use it too.
   Overlay 47 also uses that actual type for both existing command arrays; their
   payload and layout remain exact. Other formals, vertex/triangle domains,
   genuine backing definitions and graphics completion lifetime remain open.
+  The [graphics arena contract](graphics-arena-contracts.md) distinguishes frame
+  arenas from menu cells, the two partition orders, actual geometry records,
+  post-write checks and the conditional normal-completion reuse sequence.
 - **Shared matrix cursor:** [frontUpdate](../src/main/menu.c) and overlay 11
   capture a caller's `Mtx *` in retained `D_800D3144` and copy it back. The
   resident menu and audited views in 15 overlays now use `Mtx *`; former byte

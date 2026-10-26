@@ -2,12 +2,10 @@
 #define OVERLAY_018_H
 
 #include "PR/os_internal.h"
+#include "n_audio/mbi.h"
 
-/* One display-list command: two words. */
-typedef struct Overlay18Gfx {
-    u32 w0;
-    u32 w1;
-} Overlay18Gfx;
+/* SDK command view; arena capacity and completion lifetime are separate. */
+typedef Gfx Overlay18Gfx;
 
 /* Resident boot steps overlay18Load runs in order. */
 extern void mainPreNMI(void);

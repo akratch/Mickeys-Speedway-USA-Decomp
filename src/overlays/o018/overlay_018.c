@@ -67,12 +67,12 @@ void overlay18Load(void) {
         (Overlay18Gfx *)D_800CF510[D_8007A1B8];
     newDisplay = D_800CF518++;
     display = newDisplay;
-    display->w0 = 0xE9000000;
-    display->w1 = 0;
+    display->words.w0 = 0xE9000000;
+    display->words.w1 = 0;
     display = D_800CF518;
     D_800CF518 = display + 1;
-    display->w1 = 0;
-    display->w0 = 0xB8000000;
+    display->words.w1 = 0;
+    display->words.w0 = 0xB8000000;
 
     osSetTime(0);
     func_80029970(0xD43E);
@@ -164,15 +164,15 @@ void overlay18Reconfigure(s32 mode) {
         Overlay18Gfx *command;
 
         command = D_800CF518++;
-        command->w1 = 0;
-        command->w0 = 0xE9000000;
+        command->words.w1 = 0;
+        command->words.w0 = 0xE9000000;
     }
     {
         Overlay18Gfx *command;
 
         command = D_800CF518++;
-        command->w1 = 0;
-        command->w0 = 0xB8000000;
+        command->words.w1 = 0;
+        command->words.w0 = 0xB8000000;
     }
 }
 

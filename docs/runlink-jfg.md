@@ -10,6 +10,10 @@ snapshot measurements, not claims about current upstream JFG. Each number is mar
 **inferred** (an interpretation of verified numbers). Kit commands are in
 section 5; the selected-module reproduction procedure is in section 7.
 
+Start with the [handover checklist and implementation roadmap](runlink-handover.md)
+for prerequisites, the manual producer steps and the boundary between the
+bounded starter and a general builder.
+
 ## Inputs
 
 - The JFG US ROM, SHA1 `493ced9008dbe932d6e91179b68e8630cf23a023`.
@@ -444,6 +448,10 @@ bytes only after objcopy. The intentionally edited ROM has SHA1
 `ca357d4e64635c025dcefdf546ec1f9d8777b9c2`.
 
 ### Reproduction procedure and inputs
+
+Steps 1–2 below are manual private symbolic-producer prerequisites. The kit
+does not ship their extracted function bodies or reconstruct the C. The
+executable recipe supplies steps 3–6 after that producer exists.
 
 Use an independent private checkout at
 `efd5abb1c79636e297b831f7c2d5bf47eac39c0c`, the legally local ROM and unchanged

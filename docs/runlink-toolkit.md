@@ -32,6 +32,7 @@ and 2 when inputs are unusable.
 | `decode [--out F]` | Dumps the decoded tables as JSON. | Nothing. The output is ROM-derived, so keep it out of git. |
 | `names` | Prints the ORT as `<row> <name>`: from the ROM's name table where there is one (JFG), else from the configured list (MSU). | Nothing. JFG's names are ROM-derived, so keep the output local. |
 | `generate [--mode M] [-v] [--json F] [--out F] [--unpatched OLD=NEW]` | Regenerates every table from the build and compares the result with the ROM. | See the modes below. With `--out`, it also writes the generated region. |
+| `module-recipe` | JFG only: consume a locally authored corrected module ELF and declarations, generate metadata and optionally run the ordinary final link. | The bounded selected-module result described in the [handover](runlink-handover.md); manual producer prerequisites and outside compatibility remain. |
 | `parity` | MSU only. Runs `tools/runlink_pack.py` and the kit on the same tree. | The kit reproduces MSU's packer: the same residuals (category, module, offset, expected, got), byte-identical generated regions and the same region proof. |
 | `check-build` | MSU only. Runs core compare, region, kit table check and independent kit parity in one held request. | One fresh source inventory; all four checks and their current-input holds still run. |
 

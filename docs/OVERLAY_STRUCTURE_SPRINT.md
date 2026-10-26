@@ -7,7 +7,7 @@ support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `e068b193d`; the combined borrowing
+The source measurements here are pinned to `2fadd9ddb`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -26,7 +26,7 @@ validation and publication are separate acceptance steps.
 | Initialized storage | 54,216 of 61,312 bytes have canonical projected C owners | 7,096 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
 | Initialized images | 50 of 87 data-bearing modules are fully projected to C; 15 are partial and 22 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 32 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 5,194 records still borrow authority: 5,142 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 4,970 records still borrow authority: 4,918 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 30 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
 
@@ -551,3 +551,12 @@ use the pinned current measurements above for scheduling and reporting.
   (77,680 bytes) has no C owner.
 - **The ORT** has 2,004 rows and no names in MSU's ROM; 844 rows are
   referenced by no relocation.
+
+The reviewed source-identity batch consolidates 29 aliases in overlays 11, 46,
+63 and 65 onto existing sized C scalar owners, retiring 224 borrowed
+references without changing executable code or storage. Overlay 101 uses
+the resident rectangle renderer's complete four-argument contract and shared
+rectangle type. Four resident graphics cursor cells now have genuine C BSS
+definitions totaling 16 bytes. This proves their current allocation and
+call transport; backing capacity, resource lifetime, remaining erased APIs
+and general edited-layout eligibility remain separate open work.

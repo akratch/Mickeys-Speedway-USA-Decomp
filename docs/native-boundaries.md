@@ -273,3 +273,12 @@ sprite-loader disagreement and other erased APIs remain open.
 These are bounded evidence packets, not implementation assignments or portable
 replacement recommendations. They can be scheduled by disjoint entry/resource
 ownership after the coordinator reviews this map.
+
+Overlay 101 now uses the actual four-argument rectangle renderer contract
+with the shared rectangle type; existing counts and capacities are unchanged.
+The resident graphics cursors have four genuine four-byte C cells. Their
+physical allocation and current address transport are proved; this does not
+establish backing storage, GPU lifetime or all consumer views. The scalar
+identity consolidation in overlays 11, 46, 63 and 65 preserves existing C
+types, allocation and algorithms. Other ABI and resource contracts remain
+open.

@@ -157,6 +157,16 @@ preserves the untouched compiler output, all shared-header consumers,
 the complete overlay and the ROM. This closes that one interface; the
 sprite-loader disagreement and the other erased APIs remain open.
 
+Overlay 101 now uses the actual `void(Gfx **, Mtx **)` camera contract
+and transports both incoming cursor addresses to the camera calls. Its
+command view is the SDK `Gfx` type. The font-printing contract now carries
+the actual five arguments and a `Gfx **` cursor; its mutable byte text
+uses a character view at that API boundary. Untouched compiler output,
+all shared-header consumers, real providers, complete runtime tables and
+the ROM remain exact. These repairs close the camera and font interfaces;
+heterogeneous record views, vertex transport, bounds/lifetimes, the
+sprite-loader disagreement and other erased APIs remain open.
+
 ## Data, numerical and lifetime assumptions by family
 
 - **Numeric/angle utilities:** [math.h](../include/game/math.h) supplies the

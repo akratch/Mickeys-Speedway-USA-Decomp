@@ -1,13 +1,13 @@
 # Overlay structure sprint: source ownership and final build inputs
 
-Status: active, reviewed 2026-10-25. The US executable reconstruction is
+Status: active, reviewed 2026-10-26. The US executable reconstruction is
 complete under the project's matching standard. The remaining campaign makes
 its storage, identities and build structure faithful enough to maintain and to
 support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `e07ae9da0`; the combined borrowing
+The source measurements here are pinned to `e068b193d`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -23,23 +23,33 @@ validation and publication are separate acceptance steps.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 54,152 of 61,312 bytes have canonical projected C owners | 7,160 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
-| Initialized images | 49 of 87 data-bearing modules are fully projected to C; 15 are partial and 23 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
-| Source-module linking | 31 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 5,283 records still borrow authority: 5,231 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
-| BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 31 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
+| Initialized storage | 54,216 of 61,312 bytes have canonical projected C owners | 7,096 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized images | 50 of 87 data-bearing modules are fully projected to C; 15 are partial and 22 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
+| Source-module linking | 32 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 5,194 records still borrow authority: 5,142 placeholder references and 52 blob-owned data records. Layout borrowing remains explicit too. |
+| BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 30 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
 
 Source independence also requires reviewing encoded-coordinate names,
 retained target storage and borrowed placements within object-produced records.
-There are also 21 borrowed placements and 24 borrowed read-only section origins.
+There are also 21 borrowed placements and 23 borrowed read-only section origins.
 The direct borrowing counter alone does not measure those dependencies.
 
-Overlay 62 now supplies seven genuine BSS cells, with 28 object bytes and
-four compiler alignment bytes. Exactly 42 former placeholder references
-name those real cells. Its header size still borrows authority because
-the complete 64-byte initialized prefix remains outside C ownership.
-Resource types, remaining aliases and provider contracts remain open.
+Overlay 62 now owns its complete initialized prefix and seven BSS cells in
+the module TU. The 64 initialized bytes contain 38 object/literal bytes and
+26 bytes of ordinary compiler alignment; the 32-byte BSS input contains
+28 object bytes and four alignment bytes. Ordinary section-relative linking
+derives its header and read-only origin from those source inputs. The real
+resource group, node sentinel, marker literal and release providers retire
+another 17 placeholder references, after the earlier 42 BSS references.
+Resource views, provider contracts and general edited-layout eligibility
+remain open. Physical ownership does not establish those contracts.
+
+Overlay 57 now names one existing C-owned transition-completion scalar
+through its qualified import. All 72 references formerly spread across
+seven placeholder names join that same real object; untouched compiler
+code, all module inputs and runtime relocation identities remain exact.
+This identity cleanup earns no new executable or storage credit.
 
 Overlay 17 now supplies its complete 256-byte template through the existing
 16-record C type and constructor copy. All ten fields per record are consumed;

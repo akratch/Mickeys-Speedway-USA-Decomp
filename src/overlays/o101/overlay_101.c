@@ -1394,35 +1394,35 @@ void overlay101DrawTransformed(Overlay101Gfx **displayList, void *matrix,
 }
 
 /* DKR v77/v80 and JFG have no exact donor for this four-rectangle builder. */
-void overlay101BuildFrame(s32 kind, s32 x, s32 y, s32 width, s32 height,
+void overlay101BuildFrame(Gfx **displayList, s32 x, s32 y, s32 width, s32 height,
                           s32 color) {
-    Overlay101FrameRect *rect;
-    Overlay101FrameRect batch[4];
+    MenuRectangle *rect;
+    MenuRectangle batch[4];
 
     rect = batch;
-    rect[0].x0 = x;
-    rect[0].y0 = y;
-    rect[0].x1 = x + 1;
-    rect[0].y1 = y + height;
-    rect[0].color = color;
-    rect[1].x0 = x;
-    rect[1].y0 = y + height - 1;
-    rect[1].x1 = x + width;
-    rect[1].y1 = y + height;
-    rect[1].color = color;
-    rect[2].x0 = x + width - 1;
-    rect[2].y0 = y + 1;
-    rect[2].x1 = x + width;
-    rect[2].y1 = y + height - 1;
-    rect[2].color = color;
+    rect[0].left = x;
+    rect[0].top = y;
+    rect[0].right = x + 1;
+    rect[0].bottom = y + height;
+    rect[0].colour = color;
+    rect[1].left = x;
+    rect[1].top = y + height - 1;
+    rect[1].right = x + width;
+    rect[1].bottom = y + height;
+    rect[1].colour = color;
+    rect[2].left = x + width - 1;
+    rect[2].top = y + 1;
+    rect[2].right = x + width;
+    rect[2].bottom = y + height - 1;
+    rect[2].colour = color;
     rect += 3;
-    rect->x0 = x + 1;
-    rect->y0 = y;
-    rect->x1 = x + width;
-    rect->y1 = y + 1;
-    rect->color = color;
+    rect->left = x + 1;
+    rect->top = y;
+    rect->right = x + width;
+    rect->bottom = y + 1;
+    rect->colour = color;
 
-    frontDrawRectangles(kind, 4, batch, 0);
+    frontDrawRectangles(displayList, 4, batch, 0);
 }
 
 /* ---- overlay101BuildIntensityColors (+0x2CE4) ---- */
@@ -1475,8 +1475,8 @@ void overlay101BuildBorder(Overlay101Gfx **displayList, s32 x, s32 y,
     u32 trailingColor;
     volatile u32 leadingColor;
     volatile u32 interiorColor;
-    Overlay101BorderRect *rect;
-    Overlay101BorderRect rects[5];
+    MenuRectangle *rect;
+    MenuRectangle rects[5];
 
     if (swapColors != 0) {
         overlay101BuildIntensityColors(
@@ -1489,37 +1489,37 @@ void overlay101BuildBorder(Overlay101Gfx **displayList, s32 x, s32 y,
     }
 
     rect = rects;
-    rect[0].x0 = x;
-    rect[0].y0 = y;
-    rect[0].x1 = x + 1;
-    rect[0].y1 = y + height - 1;
-    rect[1].x0 = x;
-    rects[0].color = leadingColor;
-    rect[1].y0 = y + height - 1;
-    rect[1].x1 = x + width;
+    rect[0].left = x;
+    rect[0].top = y;
+    rect[0].right = x + 1;
+    rect[0].bottom = y + height - 1;
+    rect[1].left = x;
+    rects[0].colour = leadingColor;
+    rect[1].top = y + height - 1;
+    rect[1].right = x + width;
     if (1) {
-        rect[1].y1 = y + height;
-        rects[1].color = leadingColor;
-        rect[2].x0 = x + width - 1;
-        rect[2].y0 = y + 1;
+        rect[1].bottom = y + height;
+        rects[1].colour = leadingColor;
+        rect[2].left = x + width - 1;
+        rect[2].top = y + 1;
     }
-    rect[2].x1 = x + width;
-    rect[2].y1 = y + height - 1;
-    rects[2].color = trailingColor;
-    rect[3].x0 = x + 1;
+    rect[2].right = x + width;
+    rect[2].bottom = y + height - 1;
+    rects[2].colour = trailingColor;
+    rect[3].left = x + 1;
     if (1) {
     }
-    rect[3].y0 = y;
-    rect[3].x1 = x + width;
-    rect[3].y1 = y + 1;
-    rects[3].color = trailingColor;
+    rect[3].top = y;
+    rect[3].right = x + width;
+    rect[3].bottom = y + 1;
+    rects[3].colour = trailingColor;
 
     rect += 4;
-    rect->x0 = x + 1;
-    rect->y0 = y + 1;
-    rect->x1 = x + width - 1;
-    rect->y1 = y + height - 1;
-    rect->color = interiorColor;
+    rect->left = x + 1;
+    rect->top = y + 1;
+    rect->right = x + width - 1;
+    rect->bottom = y + height - 1;
+    rect->colour = interiorColor;
 
     frontDrawRectangles(displayList, 5, rects, 0);
 }
@@ -1554,8 +1554,8 @@ void overlay101DrawPanel(Overlay101Gfx **displayList, Overlay101Panel *panel) {
     u32 dimmer;
     u32 dim;
     u32 darkest;
-    Overlay101PanelRect *out;
-    Overlay101PanelRect records[20];
+    MenuRectangle *out;
+    MenuRectangle records[20];
 
     overlay101SetScissor(displayList, 0, 0, 1000, 1000);
 
@@ -1577,74 +1577,74 @@ void overlay101DrawPanel(Overlay101Gfx **displayList, Overlay101Panel *panel) {
         overlay101BuildIntensityColors(panel->intensity + 1, panel->alpha,
                                             &full, &dim, &dimmer, &darkest);
 
-        out->x0 = x + 1;
-        out->y0 = y + 12;
-        out->x1 = x + 3;
-        out->y1 = y + height - 1;
-        out->color = dimmer;
+        out->left = x + 1;
+        out->top = y + 12;
+        out->right = x + 3;
+        out->bottom = y + height - 1;
+        out->colour = dimmer;
         out++;
 
-        out->x0 = x + 1;
-        out->y0 = y + height - 3;
-        out->x1 = x + width - 1;
-        out->y1 = y + height - 1;
-        out->color = dimmer;
+        out->left = x + 1;
+        out->top = y + height - 3;
+        out->right = x + width - 1;
+        out->bottom = y + height - 1;
+        out->colour = dimmer;
         out++;
 
-        out->x0 = x + width - 3;
-        out->y0 = y + 12;
-        out->x1 = x + width - 1;
-        out->y1 = y + height - 1;
-        out->color = dimmer;
+        out->left = x + width - 3;
+        out->top = y + 12;
+        out->right = x + width - 1;
+        out->bottom = y + height - 1;
+        out->colour = dimmer;
         out++;
 
-        out->x0 = x;
-        out->y0 = y + 12;
-        out->x1 = x + 1;
-        out->y1 = y + height;
-        out->color = dim;
+        out->left = x;
+        out->top = y + 12;
+        out->right = x + 1;
+        out->bottom = y + height;
+        out->colour = dim;
         out++;
 
-        out->x0 = x + 1;
-        out->y0 = y + height - 1;
-        out->x1 = x + width;
-        out->y1 = y + height;
-        out->color = dim;
+        out->left = x + 1;
+        out->top = y + height - 1;
+        out->right = x + width;
+        out->bottom = y + height;
+        out->colour = dim;
         out++;
 
-        out->x0 = x + width - 4;
-        out->y0 = y + 12;
-        out->x1 = x + width - 3;
-        out->y1 = y + height - 3;
-        out->color = dim;
+        out->left = x + width - 4;
+        out->top = y + 12;
+        out->right = x + width - 3;
+        out->bottom = y + height - 3;
+        out->colour = dim;
         out++;
 
-        out->x0 = x + 3;
-        out->y0 = y + 12;
-        out->x1 = x + 4;
-        out->y1 = y + height - 3;
-        out->color = full;
+        out->left = x + 3;
+        out->top = y + 12;
+        out->right = x + 4;
+        out->bottom = y + height - 3;
+        out->colour = full;
         out++;
 
-        out->x0 = x + 4;
-        out->y0 = y + height - 4;
-        out->x1 = x + width - 3;
-        out->y1 = y + height - 3;
-        out->color = full;
+        out->left = x + 4;
+        out->top = y + height - 4;
+        out->right = x + width - 3;
+        out->bottom = y + height - 3;
+        out->colour = full;
         out++;
 
-        out->x0 = x + width - 1;
-        out->y0 = y + 12;
-        out->x1 = x + width;
-        out->y1 = y + height;
-        out->color = full;
+        out->left = x + width - 1;
+        out->top = y + 12;
+        out->right = x + width;
+        out->bottom = y + height;
+        out->colour = full;
         out++;
 
-        out->x0 = x + 4;
-        out->y0 = y + 12;
-        out->x1 = x + width - 4;
-        out->y1 = y + height - 4;
-        out->color = darkest;
+        out->left = x + 4;
+        out->top = y + 12;
+        out->right = x + width - 4;
+        out->bottom = y + height - 4;
+        out->colour = darkest;
         out++;
 
         frontDrawRectangles(displayList, 10, records, 0);

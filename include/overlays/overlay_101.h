@@ -4,6 +4,7 @@
 #include "PR/ultratypes.h"
 #include "n_audio/gbi.h"
 #include "game/math.h"
+#include "game/menu.h"
 /* Tier B: both resident texture renderers consume this exact 16-byte node
  * and stop at a null texture. Tags and fields match their resident contract. */
 #include "game/texture_header.h"
@@ -562,30 +563,6 @@ typedef struct Overlay101Transform {
     u8 pad18[0x10];
     f32 depth;
 } Overlay101Transform;
-
-typedef struct Overlay101FrameRect {
-    s16 x0;
-    s16 y0;
-    s16 x1;
-    s16 y1;
-    s32 color;
-} Overlay101FrameRect;
-
-typedef struct Overlay101BorderRect {
-    s16 x0;
-    s16 y0;
-    s16 x1;
-    s16 y1;
-    u32 color;
-} Overlay101BorderRect;
-
-typedef struct Overlay101PanelRect {
-    s16 x0;
-    s16 y0;
-    s16 x1;
-    s16 y1;
-    u32 color;
-} Overlay101PanelRect;
 
 typedef struct Overlay101Panel {
     u8 pad00[8];
@@ -2359,7 +2336,7 @@ extern O101Elem_gOverlay101Resources20 gOverlay101Resources20[16];
 extern void camStandardOrtho(Gfx **displayList, Mtx **matrices);
 extern void fontPrintXY(Gfx **displayList, s32 xpos, s32 ypos, char *text, s32 alignmentFlags);
 extern void fontUseFont(s32 font);
-extern void frontDrawRectangles();
+extern void frontDrawRectangles(Gfx **displayList, s32 count, MenuRectangle *rectangles, s32 translucent);
 extern void * func_80036DD0();
 extern void overlay101SubmitLinkedPairReloc();
 extern void * texLoadSprite();
@@ -2404,7 +2381,7 @@ s32 overlay101GetBounds(Overlay101BoundsNode_GetBounds *node, s32 *leftOut, s32 
 void overlay101DrawElement(Gfx **displayList, Overlay101BoundsNode_DrawElement *node, Overlay101Element *element);
 void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node, Overlay101TextureElement *element);
 void overlay101DrawTransformed(Overlay101Gfx **displayList, void *matrix, void *vertices, Overlay101DrawNode_DrawTransformed *node, Overlay101TransformElement *element);
-void overlay101BuildFrame(s32 kind, s32 x, s32 y, s32 width, s32 height, s32 color);
+void overlay101BuildFrame(Gfx **displayList, s32 x, s32 y, s32 width, s32 height, s32 color);
 void overlay101BuildIntensityColors(s32 intensity, s32 alpha, u32 *full, u32 *dim, u32 *dimmer, u32 *darkest);
 void overlay101BuildBorder(Overlay101Gfx **displayList, s32 x, s32 y, s32 width, s32 height, s32 intensity, s32 alpha, s32 swapColors);
 void overlay101DrawPanel(Overlay101Gfx **displayList, Overlay101Panel *panel);

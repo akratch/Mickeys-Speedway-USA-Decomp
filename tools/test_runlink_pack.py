@@ -2986,6 +2986,109 @@ class EditedDefinitionRouteTests(unittest.TestCase):
         with self.assertRaisesRegex(rp.PackError, 'actual allocation'):
             rp.edited_prepare_object(raw, self.function())
 
+class EditedInputGroupTests(unittest.TestCase):
+    def elf(self, name, data):
+        image=rp.Elf(name,data); payload=bytearray(data); offset=rp.u32(data,0x20)
+        for section in image.sections:
+            if section['name'] in ('.text','.data'):
+                struct.pack_into('>I',payload,offset+40*section['index']+8,
+                                 6 if section['name']=='.text' else 3)
+                struct.pack_into('>I',payload,offset+40*section['index']+32,4)
+        return rp.Elf(name,bytes(payload))
+    def fixture(self):
+        first=self.elf('first.o',ObjBuilder().section('.text',words(0)).section('.data',words(97))
+            .sym('first',0,4,type=FUNC,section='.text').sym('context',0,4,type=OBJECT,section='.data').build())
+        second=self.elf('second.o',ObjBuilder().section('.text',words(lui(1),addiu(0)))
+            .sym('caller',0,8,type=FUNC,section='.text').sym('context')
+            .rel('.text',0,HI16,'context').rel('.text',4,LO16,'context').build())
+        aggregate=self.elf('group.o',ObjBuilder().section('.text',words(0,lui(1),addiu(0))).section('.data',words(97))
+            .sym('first',0,4,type=FUNC,section='.text').sym('caller',4,8,type=FUNC,section='.text')
+            .sym('context',0,4,type=OBJECT,section='.data')
+            .rel('.text',4,HI16,'context').rel('.text',8,LO16,'context').build())
+        mapping=[rp.MapInput('.text','.text',0,4,'first.o'),rp.MapInput('.data','.data',0,4,'first.o'),
+                 rp.MapInput('.text','.text',4,8,'second.o')]
+        return [first,second],aggregate,mapping,['first.o','second.o']
+
+    def test_actual_nonzero_origin_keeps_original_symbol_and_data_edge(self):
+        inputs,aggregate,mapping,names=self.fixture()
+        origins,joins=rp.edited_group_origins(inputs,aggregate,mapping,names)
+        self.assertEqual(origins[1]['.text'],4)
+        self.assertEqual([(j['input'],j['ordinal'],j['offset'],j['aggregate_offset']) for j in joins],
+                         [(1,0,0,4),(1,1,4,8)])
+        self.assertEqual([j['symbol_index'] for j in joins],[inputs[1].rels('.text')[0].sym.index]*2)
+        with self.assertRaisesRegex(rp.PackError,'out-of-object'):
+            rp.edited_object_operand(('.data',0,4,OBJECT),4)
+
+    def test_missing_shifted_foreign_duplicate_and_changed_bits_refuse(self):
+        import dataclasses
+        for kind in ('missing','shift','foreign','foreign-zero','unknown-alloc','duplicate','opcode','provider'):
+            inputs,aggregate,mapping,names=self.fixture()
+            if kind=='missing':mapping.pop()
+            elif kind=='shift':mapping[-1]=dataclasses.replace(mapping[-1],addr=8)
+            elif kind=='foreign':mapping[-1]=dataclasses.replace(mapping[-1],file='foreign.o')
+            elif kind=='foreign-zero':mapping.append(rp.MapInput('.data','.data',4,0,'foreign.o'))
+            elif kind=='unknown-alloc':inputs[0].sections.append(dict(inputs[0].section('.data'),name='.other'))
+            elif kind=='duplicate':names[1]=names[0]
+            elif kind=='opcode':
+                data=bytearray(aggregate.data);data[aggregate.section('.text')['offset']+4]^=0x40;aggregate.data=bytes(data)
+            else:
+                at=next(i for i,x in enumerate(aggregate.symbols) if x.name=='context')
+                aggregate.symbols[at]=dataclasses.replace(aggregate.symbols[at],size=8)
+            with self.subTest(kind=kind),self.assertRaises(rp.PackError):
+                rp.edited_group_origins(inputs,aggregate,mapping,names)
+
+    def test_original_abi_and_map_retained_masks_have_distinct_authority(self):
+        def image(name,mask,gp=0x7ff0,flags=0x10000000):
+            data=ObjBuilder().section('.reginfo',words(mask,0,0,0,0,gp)).build()
+            elf=rp.Elf(name,data);payload=bytearray(data)
+            struct.pack_into('>I',payload,36,flags)
+            section=elf.section('.reginfo');at=rp.u32(data,32)+40*section['index']
+            for offset,value in ((4,0x70000006),(8,2),(32,4)):struct.pack_into('>I',payload,at+offset,value)
+            return rp.Elf(name,bytes(payload))
+        first=image('a.o',1);second=image('b.o',2,flags=0x10000001)
+        aggregate=image('group.o',1,0x7fef,0x10000001)
+        mapping=[rp.MapInput('.reginfo','.reginfo',0,24,'a.o')]
+        result=rp.edited_group_abi([first,second],aggregate,mapping,['a.o','b.o'])
+        self.assertEqual(result['retained_inputs'],[0]);self.assertEqual(result['originals'][1]['reginfo'][0],2)
+        for fault in ('nonfirst-gp','nonfirst-flags','gp-symbol','gp-section','gp-relocation','foreign-zero','wrong-map','wrong-mask'):
+            inputs=[first,second];rows=list(mapping);output=aggregate
+            if fault=='nonfirst-gp':inputs[1]=image('b.o',1<<28)
+            elif fault=='nonfirst-flags':inputs[1]=image('b.o',2,flags=0x10000004)
+            elif fault=='gp-symbol':
+                inputs[1]=image('b.o',2);inputs[1].symbols.append(rp.Symbol(9,'_gp',0,0,GLOBAL,OBJECT,0,'UND'))
+            elif fault=='gp-section':
+                inputs[1]=image('b.o',2);inputs[1].section('.reginfo')['flags'] |= 0x10000000
+            elif fault=='gp-relocation':
+                inputs[1]=image('b.o',2);inputs[1].rels=lambda name:[rp.Rel(0,7,first.symbols[0])]
+            elif fault=='foreign-zero':rows.append(rp.MapInput('.reginfo','.reginfo',0,0,'foreign.o'))
+            elif fault=='wrong-map':rows=[rp.MapInput('.reginfo','.reginfo',0,24,'b.o')]
+            else:output=image('group.o',3,0x7fef,0x10000001)
+            with self.subTest(fault=fault),self.assertRaises(rp.PackError):
+                rp.edited_group_abi(inputs,output,rows,['a.o','b.o'])
+
+    def test_original_input_order_survives_linker_relocation_regrouping(self):
+        first=self.elf('a.o',ObjBuilder().section('.text',words(jal()))
+            .sym('first',0,4,type=FUNC,section='.text').rel('.text',0,R26,'first').build())
+        second=self.elf('b.o',ObjBuilder().section('.text',words(jal()))
+            .sym('caller',0,4,type=FUNC,section='.text').sym('first').rel('.text',0,R26,'first').build())
+        def group(relocations):
+            b=ObjBuilder().section('.text',words(jal(),jal())).sym('first',0,4,type=FUNC,section='.text')
+            b.sym('caller',4,4,type=FUNC,section='.text')
+            for offset in relocations:b.rel('.text',offset,R26,'first')
+            return self.elf('group',b.build())
+        raw,linked=group([4,0]),group([])
+        origins,joins=rp.edited_group_origins([first,second],raw,
+            [rp.MapInput('.text','.text',0,4,'a.o'),rp.MapInput('.text','.text',4,4,'b.o')],['a.o','b.o'])
+        obj=rp.edited_prepare_object(raw,linked)
+        obj['source_inputs']=tuple(dict(raw=e,linked=linked,input_origins=o,input_path=n)
+            for e,o,n in zip([first,second],origins,['a.c','b.c']))
+        selected={75:dict(exports=['first','caller'],entries=dict(init=None,resume=None),
+                          kinds=dict(first='function',caller='function'))}
+        result=rp.edited_module_records(75,{75:obj},selected,rp.OrtNames(['first','caller'],{}),{})
+        self.assertEqual([j['offset'] for j in result['joins']],[0,4])
+        self.assertEqual([j['input'] for j in result['joins']],[0,1])
+
+
 class EditedResidentCellTests(unittest.TestCase):
     def fixture(self):
         import dataclasses

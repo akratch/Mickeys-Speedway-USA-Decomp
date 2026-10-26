@@ -28,10 +28,10 @@ extern O65Vec3f D_1D8[4];
 extern void *D_208;
 extern s32 D_20C;
 extern s32 D_210;
-extern f32 D_2970;
-extern f32 D_2974;
-extern f32 D_2978;
-extern f32 D_297C;
+extern f32 o65PreviousCameraX_o065Reloc;
+extern f32 o65PreviousCameraZ_o065Reloc;
+extern f32 o65CameraDeltaX_o065Reloc;
+extern f32 o65CameraDeltaZ_o065Reloc;
 extern O65Vertex *D_2980[];
 extern O65Vertex *D_2988;
 extern O65Triangle D_80000000[12];
@@ -59,10 +59,10 @@ extern void func_overlay_065_F0000C38_18C4EA0(Gfx **, Mtx **, s32);
 
 #define O65_MODE D_20C
 #define O65_INPUT D_208
-#define O65_CAMERA_X D_2970
-#define O65_CAMERA_Z D_2974
-#define O65_DELTA_X D_2978
-#define O65_DELTA_Z D_297C
+#define O65_CAMERA_X o65PreviousCameraX_o065Reloc
+#define O65_CAMERA_Z o65PreviousCameraZ_o065Reloc
+#define O65_DELTA_X o65CameraDeltaX_o065Reloc
+#define O65_DELTA_Z o65CameraDeltaZ_o065Reloc
 #define O65_BUFFER_TABLE D_2980
 
 /*
@@ -246,8 +246,6 @@ void overlay65ResetSlots(void) {
 
 
 extern f32 D_214;
-extern f32 D_2978;
-extern f32 D_297C;
 extern O65Vertex *D_2988;
 extern O65Triangle D_800000C0[16];
 
@@ -256,7 +254,7 @@ extern O65Triangle D_800000C0[16];
  * active-camera setter, view setup, random range, sine, cosine and render-state
  * calls below; their zero-offset assembly carrier is not a shared callee.
  * The spawn call is a same-overlay JUMP to the adjacent record initializer.
- * LOCAL records bind D_1900, D_2978, D_297C and D_2988 to BSS, D_214 and
+ * LOCAL records bind D_1900, o65CameraDeltaX_o065Reloc, o65CameraDeltaZ_o065Reloc and D_2988 to BSS, D_214 and
  * the triangle command address to data. The record pool starts at BSS zero.
  */
 
@@ -336,8 +334,8 @@ void func_overlay_065_F0000C38_18C4EA0(Gfx **commandPtr,
                         0.25f;
                 }
                 for (pointIndex = 0; pointIndex < 9; pointIndex++) {
-                    record->x[pointIndex] += D_2978;
-                    record->z[pointIndex] += D_297C;
+                    record->x[pointIndex] += o65CameraDeltaX_o065Reloc;
+                    record->z[pointIndex] += o65CameraDeltaZ_o065Reloc;
                 }
                 record->velocityY -= D_214;
                 if (record->y[0] < record->floorY) {

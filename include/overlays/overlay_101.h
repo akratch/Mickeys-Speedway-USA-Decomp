@@ -464,10 +464,7 @@ typedef struct Overlay101Event {
     Overlay101EventValue value18;
 } Overlay101Event;
 
-typedef struct Overlay101Gfx {
-    u32 w0;
-    u32 w1;
-} Overlay101Gfx;
+typedef Gfx Overlay101Gfx;
 
 typedef struct Overlay101BoundsNode_GetBounds {
     u8 pad00[8];
@@ -2359,8 +2356,8 @@ extern O101View_D_INPUT D_INPUT;
 extern O101Elem_gOverlay101Entries gOverlay101Entries[40];
 extern O101Elem_gOverlay101Order gOverlay101Order[16];
 extern O101Elem_gOverlay101Resources20 gOverlay101Resources20[16];
-extern void camStandardOrtho();
-extern void fontPrintXY();
+extern void camStandardOrtho(Gfx **displayList, Mtx **matrices);
+extern void fontPrintXY(Gfx **displayList, s32 xpos, s32 ypos, char *text, s32 alignmentFlags);
 extern void fontUseFont(s32 font);
 extern void frontDrawRectangles();
 extern void * func_80036DD0();
@@ -2404,17 +2401,17 @@ void overlay101Reset(void *value);
 void overlay101DispatchEvents(s32 step);
 void overlay101SetScissor(Overlay101Gfx **displayList, register s32 left, s32 top, s32 right, s32 bottom);
 s32 overlay101GetBounds(Overlay101BoundsNode_GetBounds *node, s32 *leftOut, s32 *topOut, s32 *rightOut, s32 *bottomOut);
-void overlay101DrawElement(s32 displayList, Overlay101BoundsNode_DrawElement *node, Overlay101Element *element);
+void overlay101DrawElement(Gfx **displayList, Overlay101BoundsNode_DrawElement *node, Overlay101Element *element);
 void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node, Overlay101TextureElement *element);
 void overlay101DrawTransformed(Overlay101Gfx **displayList, void *matrix, void *vertices, Overlay101DrawNode_DrawTransformed *node, Overlay101TransformElement *element);
 void overlay101BuildFrame(s32 kind, s32 x, s32 y, s32 width, s32 height, s32 color);
 void overlay101BuildIntensityColors(s32 intensity, s32 alpha, u32 *full, u32 *dim, u32 *dimmer, u32 *darkest);
 void overlay101BuildBorder(Overlay101Gfx **displayList, s32 x, s32 y, s32 width, s32 height, s32 intensity, s32 alpha, s32 swapColors);
 void overlay101DrawPanel(Overlay101Gfx **displayList, Overlay101Panel *panel);
-void overlay101DrawClock(Overlay101Gfx **displayList, Overlay101Panel *panel, Overlay101Vertex **vertexCursor, s32 originX, s32 originY);
-void overlay101DrawChain(void *context, void *mtx, s32 *vertices, Overlay101DrawChain *chain);
+void overlay101DrawClock(Overlay101Gfx **displayList, Mtx **matrices, Overlay101Vertex **vertexCursor, s32 originX, s32 originY);
+void overlay101DrawChain(Gfx **context, Mtx **mtx, s32 *vertices, Overlay101DrawChain *chain);
 void overlay101UpdateChains(s32 step);
-void overlay101DrawSlots(void *context, s32 x, s32 y);
+void overlay101DrawSlots(Gfx **context, Mtx **matrices, s32 y);
 void func_overlay_101_F0003A58_18DF278(void);
 void func_overlay_101_F000512C_18E094C(void);
 void func_overlay_101_F000571C_18E0F3C(void);

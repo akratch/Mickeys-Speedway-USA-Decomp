@@ -682,6 +682,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o042/overlay_042.c.o: CFLAGS += -Wab,-r4300_mul
 # compiler's two-float pool duplicates the retained rodata at +0x20: its
 # pairs are bound to that base and the copy dropped after its digest agrees.
 # No instruction is edited.
+# Complete mutable SDK viewport; ordinary data-only C producer.
+O43_VIEWPORT := $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43Viewport.c.o
+$(O43_VIEWPORT): private PLAIN_DATA_PROOF = 1
+$(O43_VIEWPORT): private PLAIN_DATA_RUNTIME_ROLE = data
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay_043.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay_043.c.o: \
 	$(TOOLS_DIR)/filter_elf_relocations.py \

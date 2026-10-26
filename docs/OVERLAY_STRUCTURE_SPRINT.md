@@ -7,7 +7,7 @@ support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here are pinned to `b5bf20fdb`; the combined borrowing
+The source measurements here are pinned to `9e7a682a4`; the combined borrowing
 ledger was freshly recomputed from its bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -372,6 +372,15 @@ fifth and sixth awards. Exactly four reader references now name the real
 source owner. Eight zero bytes at the end of the compiler object are derived
 compiler alignment and are excluded from the 24-byte ownership. This minimum
 read view does not establish wider capacity or safety for arbitrary indices.
+
+The authored source/module/export ABI registry now supplies the single
+name/row and entry declaration. Its 54 source-owned exports and 1,950
+explicit compatibility rows preserve the existing 2,004-row, seven-entry ABI.
+The legacy names file is a derived projection; selected-source construction
+no longer reads that old lookup input or selected retained metadata. Actual
+source-tail add/grow, dangling-call and initializer removal refusals, successful
+removal, and the twelve-module omitted/poisoned control are proved. Unselected
+compatibility, full source ownership and general relayout remain open.
 
 ## Remaining campaign, in dependency order
 

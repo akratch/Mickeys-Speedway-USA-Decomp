@@ -28,8 +28,8 @@ void overlay63Initialize(void)
   fontUseFont(3);
   fontColour(0xFF, 0xFF, 0xFF, 0, 0xFF);
   gO63LocalResource = overlay45CreateDescriptor(gO63CreateResource, 0xA0, 0xC0, 0x204);
-  gO63LocalWord = 0;
-  gO63LocalFloat = 0.0f;
+  overlay63OpacityStorage_o063Reloc = 0;
+  overlay63FrameStorage_o063Reloc = 0.0f;
   overlay45SetMode(gO63LocalResource, 0);
   chain = &gO63Chain;
   config = gO63Configs;
@@ -94,7 +94,7 @@ void overlay63UpdateEffects(s32 updateRate) {
     s32 pad0; /* frame 0xF8: the target keeps 8 more bytes of locals */
 
     if (gO63Triggered == 0) {
-        if ((D_800D3180 & 0x9000) && (gO63ExternalTimerReloc <= 0)) {
+        if ((D_800D3180 & 0x9000) && (overlay63InputTimer_o063Reloc <= 0)) {
             if (func_80037664() == 1) {
                 func_80037414(0, 0x3FC00000, 0x3F800000, 0, 0, 0, 1);
             }
@@ -122,12 +122,12 @@ void overlay63UpdateEffects(s32 updateRate) {
             gO63FadeTimer = 0;
         }
         if (gO63Fade == 0xFF) {
-            if (gO63ExternalTimerReloc > 0) {
-                gO63ExternalTimerReloc -= updateRate;
+            if (overlay63InputTimer_o063Reloc > 0) {
+                overlay63InputTimer_o063Reloc -= updateRate;
             } else {
-                gO63Opacity += updateRate * 4;
-                if (gO63Opacity >= 0x100) {
-                    gO63Opacity = 0xFF;
+                overlay63OpacityStorage_o063Reloc += updateRate * 4;
+                if (overlay63OpacityStorage_o063Reloc >= 0x100) {
+                    overlay63OpacityStorage_o063Reloc = 0xFF;
                 }
             }
         }
@@ -151,12 +151,12 @@ void overlay63UpdateEffects(s32 updateRate) {
         }
     }
 
-    if ((gO63Opacity != 0) && (func_800291E4() == 0)) {
-        func_8002F618(&D_800D3140, &gO63Local30, 0x40, 0xCC, 0xFF, 0xFF, 0xFF, gO63Opacity);
-        func_8002F618(&D_800D3140, &gO63Local30, 0x100, 0xCC, 0xFF, 0xFF, 0xFF, gO63Opacity);
-        overlay45SetMode(gO63OpacityContextReloc, gO63Opacity);
-        texAnimateTexSprite(gO63Local30.word0, &gO63Local2C, 2, &gO63ObjectFloat, updateRate);
-        gO63Local30.fixed8 = (s32)(gO63ObjectFloat * 65536.0f);
+    if ((overlay63OpacityStorage_o063Reloc != 0) && (func_800291E4() == 0)) {
+        func_8002F618(&D_800D3140, &gO63Local30, 0x40, 0xCC, 0xFF, 0xFF, 0xFF, overlay63OpacityStorage_o063Reloc);
+        func_8002F618(&D_800D3140, &gO63Local30, 0x100, 0xCC, 0xFF, 0xFF, 0xFF, overlay63OpacityStorage_o063Reloc);
+        overlay45SetMode(gO63OpacityContextReloc, overlay63OpacityStorage_o063Reloc);
+        texAnimateTexSprite(gO63Local30.word0, &gO63Local2C, 2, &overlay63FrameStorage_o063Reloc, updateRate);
+        gO63Local30.fixed8 = (s32)(overlay63FrameStorage_o063Reloc * 65536.0f);
     }
 
     texDPInit(&D_800D3140);
@@ -216,13 +216,13 @@ static void overlay63UpdateSequence(s32 delta) {
         if (gO63Sequence == 0) {
             gO63PendingState = gO63PendingStart;
             gO63Sequence = gO63SequenceStart;
-            gO63SequenceIndex = 1;
-        } else if (pressedButtons == gO63Sequence[gO63SequenceIndex]) {
-            gO63SequenceIndex++;
-            if (gO63Sequence[gO63SequenceIndex] == 0) {
+            overlay63SequenceIndex_o063Reloc = 1;
+        } else if (pressedButtons == gO63Sequence[overlay63SequenceIndex_o063Reloc]) {
+            overlay63SequenceIndex_o063Reloc++;
+            if (gO63Sequence[overlay63SequenceIndex_o063Reloc] == 0) {
                 D_8007A1E0 = (D_8007A1E0 ^ 1) & 1;
                 gO63Sequence = 0;
-                gO63Timer = 0xB4;
+                overlay63MessageTimer_o063Reloc = 0xB4;
                 gO63ActiveState = gO63PendingState;
             }
         } else {
@@ -230,9 +230,9 @@ static void overlay63UpdateSequence(s32 delta) {
         }
     }
 
-    if (gO63Timer > 0) {
-        gO63Timer -= delta;
-        if (gO63Timer <= 0 && gO63TransitionEnabled != 0) {
+    if (overlay63MessageTimer_o063Reloc > 0) {
+        overlay63MessageTimer_o063Reloc -= delta;
+        if (overlay63MessageTimer_o063Reloc <= 0 && overlay63TransitionEnabled_o063Reloc != 0) {
             overlay48Initialize();
         }
         fontUseFont(2);

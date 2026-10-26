@@ -554,9 +554,13 @@ check-overlay-syms:
 #                                listed residual that no longer differs
 #   gmake runlink-residuals      rewrite that manifest from the current tree
 #
-# All of them need the baserom and a linked build/mickey.us.elf, so like
-# `verify` they cannot run in CI.
+# Table comparisons need the baserom and a linked build/mickey.us.elf.
+# The symbolic ABI projection alone derives from its authored registry.
 RUNLINK_PACK = $(HOST_PYTHON) $(TOOLS_DIR)/runlink_pack.py
+RUNLINK_ORT_NAMES ?= config/runlink-ort.$(VERSION).txt
+
+config/runlink-ort.$(VERSION).txt: config/runlink-edited.$(VERSION).json $(TOOLS_DIR)/runlink_metadata_link.py $(TOOLS_DIR)/runlink_pack.py
+	$(RUNLINK_PACK) ort --write
 
 runlink-raw:
 	@$(MAKE) --no-print-directory $(SPLAT_STAMP)
@@ -1637,10 +1641,10 @@ include mk/overlays.mk
 # The original compiler object and ordinary linker result stay under build/modules.
 ifeq ($(NON_MATCHING)$(RUNLINK_RAW),00)
 MODULE_LINK_OBJECTS = $(foreach ov,$(MODULE_LINKED_OVERLAYS),$(BUILD_DIR)/$(SRC_DIR)/overlays/o$(ov)/overlay_$(ov).c.o)
-$(MODULE_LINK_OBJECTS): $(TOOLS_DIR)/link_overlay_module.py $(TOOLS_DIR)/runlink_pack.py $(TOOLS_DIR)/rebind_elf_relocations.py config/runlink-ort.$(VERSION).txt
+$(MODULE_LINK_OBJECTS): $(TOOLS_DIR)/link_overlay_module.py $(TOOLS_DIR)/runlink_pack.py $(TOOLS_DIR)/rebind_elf_relocations.py $(RUNLINK_ORT_NAMES)
 $(MODULE_LINK_OBJECTS): MODULE_LINK = $(HOST_PYTHON) $(TOOLS_DIR)/link_overlay_module.py $@ \
 	--directory $(BUILD_DIR)/modules/$(notdir $(patsubst %/,%,$(dir $@))) \
-	--ort config/runlink-ort.$(VERSION).txt --ld $(LD) --objcopy $(OBJCOPY)
+	--ort $(RUNLINK_ORT_NAMES) --ld $(LD) --objcopy $(OBJCOPY)
 $(MODULE_LINK_OBJECTS): RUN_POSTPROCESS = @:
 $(MODULE_LINK_OBJECTS): RUN_SURFACE_REBIND = @:
 endif
@@ -1653,7 +1657,7 @@ EDITED_COMPLETE_OBJECT := $(BUILD_DIR)/$(EDITED_COMPLETE_SOURCE).o
 $(EDITED_COMPLETE_OBJECT): CFLAGS += -Wab,-r4300_mul
 $(EDITED_COMPLETE_OBJECT): MODULE_LINK = $(HOST_PYTHON) $(TOOLS_DIR)/link_overlay_module.py $@ \
 	--directory $(BUILD_DIR)/modules/$(notdir $(patsubst %/,%,$(dir $@))) \
-	--ort config/runlink-ort.$(VERSION).txt --ld $(LD) --objcopy $(OBJCOPY)
+	--ort $(RUNLINK_ORT_NAMES) --ld $(LD) --objcopy $(OBJCOPY)
 $(EDITED_COMPLETE_OBJECT): RUN_POSTPROCESS = @:
 $(EDITED_COMPLETE_OBJECT): RUN_SURFACE_REBIND = @:
 endif

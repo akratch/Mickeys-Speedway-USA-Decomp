@@ -1,8 +1,7849 @@
 {
-  "schema": "mickey-edited-source-modules-v2",
+  "schema": "mickey-source-module-abi-v1",
   "default_selected": [
     75
   ],
+  "compatibility": {
+    "exports": [
+      {
+        "row": 0,
+        "name": "amSetMuteMode"
+      },
+      {
+        "row": 1,
+        "name": "gsSndpSetMasterVolume"
+      },
+      {
+        "row": 2,
+        "name": "n_alCSPSetVol"
+      },
+      {
+        "row": 3,
+        "name": "gsSndpGetGlobalVolume"
+      },
+      {
+        "row": 4,
+        "name": "amTunePlay"
+      },
+      {
+        "row": 5,
+        "name": "amTuneStop"
+      },
+      {
+        "row": 6,
+        "name": "amTuneVoiceLimit"
+      },
+      {
+        "row": 7,
+        "name": "n_alCSPVoiceLimit"
+      },
+      {
+        "row": 8,
+        "name": "amTuneSetFade"
+      },
+      {
+        "row": 9,
+        "name": "amTuneSetVolume"
+      },
+      {
+        "row": 10,
+        "name": "amTuneSetFadeScaled"
+      },
+      {
+        "row": 11,
+        "name": "amTuneResetFade"
+      },
+      {
+        "row": 12,
+        "name": "amAmbientSetFade"
+      },
+      {
+        "row": 13,
+        "name": "amAmbientResetFade"
+      },
+      {
+        "row": 14,
+        "name": "amAudioTick"
+      },
+      {
+        "row": 15,
+        "name": "osRecvMesg"
+      },
+      {
+        "row": 16,
+        "name": "amAmbientSetVolume"
+      },
+      {
+        "row": 17,
+        "name": "amSndPlay"
+      },
+      {
+        "row": 18,
+        "name": "amWaitForMidiSync"
+      },
+      {
+        "row": 19,
+        "name": "mainPreNMI"
+      },
+      {
+        "row": 20,
+        "name": "amResetMidiSync"
+      },
+      {
+        "row": 21,
+        "name": "amTuneSetChlMask"
+      },
+      {
+        "row": 22,
+        "name": "amTuneUnmuteChl"
+      },
+      {
+        "row": 23,
+        "name": "amTuneMuteChl"
+      },
+      {
+        "row": 24,
+        "name": "amTuneSetChlVolume"
+      },
+      {
+        "row": 25,
+        "name": "n_alCSPSetChlVol"
+      },
+      {
+        "row": 26,
+        "name": "amTuneResetChls"
+      },
+      {
+        "row": 27,
+        "name": "amAmbientPlay"
+      },
+      {
+        "row": 28,
+        "name": "amDittyPlaying"
+      },
+      {
+        "row": 29,
+        "name": "amAmbientStop"
+      },
+      {
+        "row": 30,
+        "name": "amTuneGetSeqNo"
+      },
+      {
+        "row": 31,
+        "name": "amAmbientGetSeqNo"
+      },
+      {
+        "row": 32,
+        "name": "amTuneSetGlobalVolume"
+      },
+      {
+        "row": 33,
+        "name": "amTuneGetVolume"
+      },
+      {
+        "row": 34,
+        "name": "amDittyPlay"
+      },
+      {
+        "row": 35,
+        "name": "amSndStop"
+      },
+      {
+        "row": 36,
+        "name": "gsSndpStop"
+      },
+      {
+        "row": 37,
+        "name": "ad_sndp_play"
+      },
+      {
+        "row": 38,
+        "name": "scalevol"
+      },
+      {
+        "row": 39,
+        "name": "amSndPlayDirect"
+      },
+      {
+        "row": 40,
+        "name": "amGetSfxCount"
+      },
+      {
+        "row": 41,
+        "name": "amSndSetVol"
+      },
+      {
+        "row": 42,
+        "name": "gsSndpSetParam"
+      },
+      {
+        "row": 43,
+        "name": "amSndSetPan"
+      },
+      {
+        "row": 44,
+        "name": "amSndSetPitchDirect"
+      },
+      {
+        "row": 45,
+        "name": "amGetSfxSettings"
+      },
+      {
+        "row": 46,
+        "name": "amSoundIsLooped"
+      },
+      {
+        "row": 47,
+        "name": "n_alCSPGetState"
+      },
+      {
+        "row": 48,
+        "name": "piRomGetSectionPtr"
+      },
+      {
+        "row": 49,
+        "name": "piRomLoadSection"
+      },
+      {
+        "row": 50,
+        "name": "n_alCSeqNew"
+      },
+      {
+        "row": 51,
+        "name": "n_alCSPSetSeq"
+      },
+      {
+        "row": 52,
+        "name": "n_alCSPPlay"
+      },
+      {
+        "row": 53,
+        "name": "amTuneSetReverbOnOff"
+      },
+      {
+        "row": 54,
+        "name": "n_alCSPStop"
+      },
+      {
+        "row": 55,
+        "name": "func_800015F8"
+      },
+      {
+        "row": 56,
+        "name": "func_80001608"
+      },
+      {
+        "row": 57,
+        "name": "func_80001614"
+      },
+      {
+        "row": 58,
+        "name": "func_80001620"
+      },
+      {
+        "row": 59,
+        "name": "func_80001668"
+      },
+      {
+        "row": 60,
+        "name": "forcelink"
+      },
+      {
+        "row": 61,
+        "name": "n_alCSPNew"
+      },
+      {
+        "row": 62,
+        "name": "n_alCSPSetMessageQ"
+      },
+      {
+        "row": 63,
+        "name": "func_800016EC"
+      },
+      {
+        "row": 64,
+        "name": "func_80001708"
+      },
+      {
+        "row": 65,
+        "name": "func_80001740"
+      },
+      {
+        "row": 66,
+        "name": "osAiSetFrequency"
+      },
+      {
+        "row": 67,
+        "name": "n_alInit"
+      },
+      {
+        "row": 68,
+        "name": "alHeapDBAlloc"
+      },
+      {
+        "row": 69,
+        "name": "alLink"
+      },
+      {
+        "row": 70,
+        "name": "osCreateMesgQueue"
+      },
+      {
+        "row": 71,
+        "name": "osCreateThread"
+      },
+      {
+        "row": 72,
+        "name": "osScAddClient"
+      },
+      {
+        "row": 73,
+        "name": "n_alClose"
+      },
+      {
+        "row": 74,
+        "name": "func_80001BA0"
+      },
+      {
+        "row": 75,
+        "name": "osStartThread"
+      },
+      {
+        "row": 76,
+        "name": "func_80001BC4"
+      },
+      {
+        "row": 77,
+        "name": "osStopThread"
+      },
+      {
+        "row": 78,
+        "name": "func_80001BE8"
+      },
+      {
+        "row": 79,
+        "name": "osAiSetNextBuffer"
+      },
+      {
+        "row": 80,
+        "name": "mmFree"
+      },
+      {
+        "row": 81,
+        "name": "alUnlink"
+      },
+      {
+        "row": 82,
+        "name": "mmAlloc"
+      },
+      {
+        "row": 83,
+        "name": "osVirtualToPhysical"
+      },
+      {
+        "row": 84,
+        "name": "n_alAudioFrame"
+      },
+      {
+        "row": 85,
+        "name": "osSendMesg"
+      },
+      {
+        "row": 86,
+        "name": "osScGetCmdQ"
+      },
+      {
+        "row": 87,
+        "name": "osAiGetLength"
+      },
+      {
+        "row": 88,
+        "name": "osPiStartDma"
+      },
+      {
+        "row": 89,
+        "name": "amAudioMgrSetScheduleMode"
+      },
+      {
+        "row": 90,
+        "name": "func_800024E0"
+      },
+      {
+        "row": 91,
+        "name": "func_800024EC"
+      },
+      {
+        "row": 92,
+        "name": "func_80002500"
+      },
+      {
+        "row": 93,
+        "name": "amResetAudioMap"
+      },
+      {
+        "row": 94,
+        "name": "audspat_jingle_off"
+      },
+      {
+        "row": 95,
+        "name": "amAmbientRestart"
+      },
+      {
+        "row": 96,
+        "name": "runlinkIsModuleLoaded"
+      },
+      {
+        "row": 97,
+        "name": "amPlayAudioMap"
+      },
+      {
+        "row": 98,
+        "name": "mainGetNumberOfCameras"
+      },
+      {
+        "row": 99,
+        "name": "camGetPlayerProjMtx"
+      },
+      {
+        "row": 100,
+        "name": "camGetListPtr"
+      },
+      {
+        "row": 101,
+        "name": "sqrtf"
+      },
+      {
+        "row": 102,
+        "name": "amCalcSfxStereo"
+      },
+      {
+        "row": 103,
+        "name": "amSndSetEcho"
+      },
+      {
+        "row": 104,
+        "name": "gsSndpSetPriority"
+      },
+      {
+        "row": 105,
+        "name": "mtxf_transform_point"
+      },
+      {
+        "row": 106,
+        "name": "Arctanf"
+      },
+      {
+        "row": 107,
+        "name": "amSndPlayXYZ"
+      },
+      {
+        "row": 108,
+        "name": "amCreateAudioPoint"
+      },
+      {
+        "row": 109,
+        "name": "amSndSetVolXYZ"
+      },
+      {
+        "row": 110,
+        "name": "amSndSetPitchXYZ"
+      },
+      {
+        "row": 111,
+        "name": "amSndPlayDirectXYZ"
+      },
+      {
+        "row": 112,
+        "name": "amSndSetXYZ"
+      },
+      {
+        "row": 113,
+        "name": "amSndStopXYZ"
+      },
+      {
+        "row": 114,
+        "name": "amSndUnlinkHandleXYZ"
+      },
+      {
+        "row": 115,
+        "name": "func_8001398C"
+      },
+      {
+        "row": 116,
+        "name": "amSndGetXYZVolume"
+      },
+      {
+        "row": 117,
+        "name": "amVibratoInit"
+      },
+      {
+        "row": 118,
+        "name": "amInitOsc"
+      },
+      {
+        "row": 119,
+        "name": "_depth2Cents"
+      },
+      {
+        "row": 120,
+        "name": "alCents2Ratio"
+      },
+      {
+        "row": 121,
+        "name": "amUpdateOsc"
+      },
+      {
+        "row": 122,
+        "name": "__sinf"
+      },
+      {
+        "row": 123,
+        "name": "amStopOsc"
+      },
+      {
+        "row": 124,
+        "name": "func_80004340"
+      },
+      {
+        "row": 125,
+        "name": "func_8000439C"
+      },
+      {
+        "row": 126,
+        "name": "func_80006FA0"
+      },
+      {
+        "row": 127,
+        "name": "func_80004454"
+      },
+      {
+        "row": 128,
+        "name": "func_8000572C"
+      },
+      {
+        "row": 129,
+        "name": "func_8000BD0C"
+      },
+      {
+        "row": 130,
+        "name": "func_80004590"
+      },
+      {
+        "row": 131,
+        "name": "func_8000471C"
+      },
+      {
+        "row": 132,
+        "name": "func_8000485C"
+      },
+      {
+        "row": 133,
+        "name": "func_8000486C"
+      },
+      {
+        "row": 134,
+        "name": "mmAllocR"
+      },
+      {
+        "row": 135,
+        "name": "texLoadTexture"
+      },
+      {
+        "row": 136,
+        "name": "texLoadSprite"
+      },
+      {
+        "row": 137,
+        "name": "modLoadModel"
+      },
+      {
+        "row": 138,
+        "name": "func_80028F54"
+      },
+      {
+        "row": 139,
+        "name": "func_80004B04"
+      },
+      {
+        "row": 140,
+        "name": "texFreeTexture"
+      },
+      {
+        "row": 141,
+        "name": "texFreeSprite"
+      },
+      {
+        "row": 142,
+        "name": "modFreeModel"
+      },
+      {
+        "row": 143,
+        "name": "func_80004C28"
+      },
+      {
+        "row": 144,
+        "name": "piRomLoad"
+      },
+      {
+        "row": 145,
+        "name": "runlinkDownloadCode"
+      },
+      {
+        "row": 146,
+        "name": "func_8000590C"
+      },
+      {
+        "row": 147,
+        "name": "func_80004FE0"
+      },
+      {
+        "row": 148,
+        "name": "levelGetLevel"
+      },
+      {
+        "row": 149,
+        "name": "func_800291FC"
+      },
+      {
+        "row": 150,
+        "name": "controlGetPlayerSetup"
+      },
+      {
+        "row": 151,
+        "name": "levelGetNumber"
+      },
+      {
+        "row": 152,
+        "name": "func_80058250"
+      },
+      {
+        "row": 153,
+        "name": "func_80005548"
+      },
+      {
+        "row": 154,
+        "name": "func_800056A4"
+      },
+      {
+        "row": 155,
+        "name": "func_800056F0"
+      },
+      {
+        "row": 156,
+        "name": "func_80005750"
+      },
+      {
+        "row": 157,
+        "name": "func_80005768"
+      },
+      {
+        "row": 158,
+        "name": "func_80005808"
+      },
+      {
+        "row": 159,
+        "name": "func_80005820"
+      },
+      {
+        "row": 160,
+        "name": "func_80005868"
+      },
+      {
+        "row": 161,
+        "name": "func_800058C0"
+      },
+      {
+        "row": 162,
+        "name": "func_8000FAE0"
+      },
+      {
+        "row": 163,
+        "name": "modelSetModelFlags"
+      },
+      {
+        "row": 164,
+        "name": "lightInitObjectLighting"
+      },
+      {
+        "row": 165,
+        "name": "wakeSetupRipple"
+      },
+      {
+        "row": 166,
+        "name": "align4"
+      },
+      {
+        "row": 167,
+        "name": "lightSetupLightSources"
+      },
+      {
+        "row": 168,
+        "name": "lightSetupFlareSources"
+      },
+      {
+        "row": 169,
+        "name": "func_8000AA38"
+      },
+      {
+        "row": 170,
+        "name": "func_80053550"
+      },
+      {
+        "row": 171,
+        "name": "mathRnd"
+      },
+      {
+        "row": 172,
+        "name": "partInitTrigger"
+      },
+      {
+        "row": 173,
+        "name": "partInitTriggerSPPos"
+      },
+      {
+        "row": 174,
+        "name": "partInitTriggerPos"
+      },
+      {
+        "row": 175,
+        "name": "mmAlloc2"
+      },
+      {
+        "row": 176,
+        "name": "func_80006EA0"
+      },
+      {
+        "row": 177,
+        "name": "partObjFreeTriggers"
+      },
+      {
+        "row": 178,
+        "name": "killLight"
+      },
+      {
+        "row": 179,
+        "name": "camlightDelete"
+      },
+      {
+        "row": 180,
+        "name": "func_8001C088"
+      },
+      {
+        "row": 181,
+        "name": "trackLightDelete"
+      },
+      {
+        "row": 182,
+        "name": "lightKillGlowingLight"
+      },
+      {
+        "row": 183,
+        "name": "fxFreeCone"
+      },
+      {
+        "row": 184,
+        "name": "wakeFreeRipple"
+      },
+      {
+        "row": 185,
+        "name": "partNullifyCircularParticleParents"
+      },
+      {
+        "row": 186,
+        "name": "func_80007844"
+      },
+      {
+        "row": 187,
+        "name": "func_8000784C"
+      },
+      {
+        "row": 188,
+        "name": "func_80007E40"
+      },
+      {
+        "row": 189,
+        "name": "wakeUpdateRipple"
+      },
+      {
+        "row": 190,
+        "name": "texAnimateSprite"
+      },
+      {
+        "row": 191,
+        "name": "func_8001CB84"
+      },
+      {
+        "row": 192,
+        "name": "func_80053868"
+      },
+      {
+        "row": 193,
+        "name": "func_8001D2A0"
+      },
+      {
+        "row": 194,
+        "name": "lightUpdateLights"
+      },
+      {
+        "row": 195,
+        "name": "lightUpdateObjects"
+      },
+      {
+        "row": 196,
+        "name": "func_80007C68"
+      },
+      {
+        "row": 197,
+        "name": "func_800290A0"
+      },
+      {
+        "row": 198,
+        "name": "texAnimateTexture"
+      },
+      {
+        "row": 199,
+        "name": "func_80008028"
+      },
+      {
+        "row": 200,
+        "name": "func_80008118"
+      },
+      {
+        "row": 201,
+        "name": "func_80008128"
+      },
+      {
+        "row": 202,
+        "name": "trackGetTrack"
+      },
+      {
+        "row": 203,
+        "name": "func_8000FEEC"
+      },
+      {
+        "row": 204,
+        "name": "func_8000831C"
+      },
+      {
+        "row": 205,
+        "name": "camPushModelMtx"
+      },
+      {
+        "row": 206,
+        "name": "texDPTextureX"
+      },
+      {
+        "row": 207,
+        "name": "camPopModelMtx"
+      },
+      {
+        "row": 208,
+        "name": "func_800084C4"
+      },
+      {
+        "row": 209,
+        "name": "camGetRotationMtx"
+      },
+      {
+        "row": 210,
+        "name": "camProjectPoint"
+      },
+      {
+        "row": 211,
+        "name": "camGetProjOrgMtx"
+      },
+      {
+        "row": 212,
+        "name": "func_80008A8C"
+      },
+      {
+        "row": 213,
+        "name": "camGetNo"
+      },
+      {
+        "row": 214,
+        "name": "sprSetIA2ColOverride"
+      },
+      {
+        "row": 215,
+        "name": "levelGetColourCycling"
+      },
+      {
+        "row": 216,
+        "name": "camGetProjZ"
+      },
+      {
+        "row": 217,
+        "name": "func_80023598"
+      },
+      {
+        "row": 218,
+        "name": "camDoSprite"
+      },
+      {
+        "row": 219,
+        "name": "sprClearIA2ColOverride"
+      },
+      {
+        "row": 220,
+        "name": "func_80009220"
+      },
+      {
+        "row": 221,
+        "name": "mathOneFloatPY"
+      },
+      {
+        "row": 222,
+        "name": "func_80009414"
+      },
+      {
+        "row": 223,
+        "name": "func_80022E80"
+      },
+      {
+        "row": 224,
+        "name": "func_80009F08"
+      },
+      {
+        "row": 225,
+        "name": "fxDrawCone"
+      },
+      {
+        "row": 226,
+        "name": "func_80022FD4"
+      },
+      {
+        "row": 227,
+        "name": "func_80009AA8"
+      },
+      {
+        "row": 228,
+        "name": "func_8005AF14"
+      },
+      {
+        "row": 229,
+        "name": "lightObject"
+      },
+      {
+        "row": 230,
+        "name": "camRestoreModelMtx"
+      },
+      {
+        "row": 231,
+        "name": "texDPInit"
+      },
+      {
+        "row": 232,
+        "name": "func_80009E78"
+      },
+      {
+        "row": 233,
+        "name": "camGetPtr"
+      },
+      {
+        "row": 234,
+        "name": "func_8000A244"
+      },
+      {
+        "row": 235,
+        "name": "func_8000A39C"
+      },
+      {
+        "row": 236,
+        "name": "func_8000A62C"
+      },
+      {
+        "row": 237,
+        "name": "func_8000A6DC"
+      },
+      {
+        "row": 238,
+        "name": "func_8001C4C0"
+      },
+      {
+        "row": 239,
+        "name": "spranimInit"
+      },
+      {
+        "row": 240,
+        "name": "sprasjiInit"
+      },
+      {
+        "row": 241,
+        "name": "lightAdjustGlowingLight"
+      },
+      {
+        "row": 242,
+        "name": "func_8001BAE4"
+      },
+      {
+        "row": 243,
+        "name": "func_8001BAF8"
+      },
+      {
+        "row": 244,
+        "name": "spranimOnceControl"
+      },
+      {
+        "row": 245,
+        "name": "spranimControl"
+      },
+      {
+        "row": 246,
+        "name": "texscrollControl"
+      },
+      {
+        "row": 247,
+        "name": "effectboxControl"
+      },
+      {
+        "row": 248,
+        "name": "trackChangeFog"
+      },
+      {
+        "row": 249,
+        "name": "func_8001B798"
+      },
+      {
+        "row": 250,
+        "name": "func_8001BB04"
+      },
+      {
+        "row": 251,
+        "name": "func_8001BB10"
+      },
+      {
+        "row": 252,
+        "name": "rangetriggerControl"
+      },
+      {
+        "row": 253,
+        "name": "trackMakePolylist"
+      },
+      {
+        "row": 254,
+        "name": "func_80010900"
+      },
+      {
+        "row": 255,
+        "name": "func_8001357C"
+      },
+      {
+        "row": 256,
+        "name": "partUpdateTriggers"
+      },
+      {
+        "row": 257,
+        "name": "GetRomlistInfo"
+      },
+      {
+        "row": 258,
+        "name": "func_8000BCB0"
+      },
+      {
+        "row": 259,
+        "name": "func_8000BD50"
+      },
+      {
+        "row": 260,
+        "name": "func_8000BDB4"
+      },
+      {
+        "row": 261,
+        "name": "camSetNo"
+      },
+      {
+        "row": 262,
+        "name": "diRcpTrace"
+      },
+      {
+        "row": 263,
+        "name": "shadowGenerate"
+      },
+      {
+        "row": 264,
+        "name": "levelUpdateColourCycling"
+      },
+      {
+        "row": 265,
+        "name": "updateMixCycle"
+      },
+      {
+        "row": 266,
+        "name": "levelInitRegionFlags"
+      },
+      {
+        "row": 267,
+        "name": "rainSetFog"
+      },
+      {
+        "row": 268,
+        "name": "camEnableUserView"
+      },
+      {
+        "row": 269,
+        "name": "camUserViewTick"
+      },
+      {
+        "row": 270,
+        "name": "camSetView"
+      },
+      {
+        "row": 271,
+        "name": "weather_clip_planes"
+      },
+      {
+        "row": 272,
+        "name": "doWeather"
+      },
+      {
+        "row": 273,
+        "name": "func_800534EC"
+      },
+      {
+        "row": 274,
+        "name": "camResetView"
+      },
+      {
+        "row": 275,
+        "name": "camDisableUserView"
+      },
+      {
+        "row": 276,
+        "name": "shadowChangeBuffer"
+      },
+      {
+        "row": 277,
+        "name": "func_8000C540"
+      },
+      {
+        "row": 278,
+        "name": "trackSkySet"
+      },
+      {
+        "row": 279,
+        "name": "func_8002A8C0"
+      },
+      {
+        "row": 280,
+        "name": "func_8002A8BC"
+      },
+      {
+        "row": 281,
+        "name": "camStandardOrtho"
+      },
+      {
+        "row": 282,
+        "name": "viGetCurrentSize"
+      },
+      {
+        "row": 283,
+        "name": "camGetWindowLimits"
+      },
+      {
+        "row": 284,
+        "name": "camGetMode"
+      },
+      {
+        "row": 285,
+        "name": "trackGetSky"
+      },
+      {
+        "row": 286,
+        "name": "trackAddTextureScroll"
+      },
+      {
+        "row": 287,
+        "name": "trackUpdateTextureScroll"
+      },
+      {
+        "row": 288,
+        "name": "trackLightAllocate"
+      },
+      {
+        "row": 289,
+        "name": "trackLightFreeMem"
+      },
+      {
+        "row": 290,
+        "name": "trackLightAdd"
+      },
+      {
+        "row": 291,
+        "name": "trackLightColour"
+      },
+      {
+        "row": 292,
+        "name": "trackLightMove"
+      },
+      {
+        "row": 293,
+        "name": "trackUpdateLighting"
+      },
+      {
+        "row": 294,
+        "name": "trackLightAsm"
+      },
+      {
+        "row": 295,
+        "name": "texDisableModes"
+      },
+      {
+        "row": 296,
+        "name": "texEnableModes"
+      },
+      {
+        "row": 297,
+        "name": "wakeDrawRipple"
+      },
+      {
+        "row": 298,
+        "name": "partDraw"
+      },
+      {
+        "row": 299,
+        "name": "func_8000FBD8"
+      },
+      {
+        "row": 300,
+        "name": "func_8000FCA4"
+      },
+      {
+        "row": 301,
+        "name": "func_8000FD68"
+      },
+      {
+        "row": 302,
+        "name": "func_8000FEB4"
+      },
+      {
+        "row": 303,
+        "name": "camGetInvProjMtx"
+      },
+      {
+        "row": 304,
+        "name": "camDistance"
+      },
+      {
+        "row": 305,
+        "name": "func_80010654"
+      },
+      {
+        "row": 306,
+        "name": "func_80010B4C"
+      },
+      {
+        "row": 307,
+        "name": "func_80012234"
+      },
+      {
+        "row": 308,
+        "name": "func_80012574"
+      },
+      {
+        "row": 309,
+        "name": "func_80012658"
+      },
+      {
+        "row": 310,
+        "name": "func_8001291C"
+      },
+      {
+        "row": 311,
+        "name": "func_800131AC"
+      },
+      {
+        "row": 312,
+        "name": "getXZCompareMask"
+      },
+      {
+        "row": 313,
+        "name": "getYCompareMask"
+      },
+      {
+        "row": 314,
+        "name": "func_800133FC"
+      },
+      {
+        "row": 315,
+        "name": "mathXZInTri"
+      },
+      {
+        "row": 316,
+        "name": "func_80013EC0"
+      },
+      {
+        "row": 317,
+        "name": "func_8001F364"
+      },
+      {
+        "row": 318,
+        "name": "shadowFreeBuffers"
+      },
+      {
+        "row": 319,
+        "name": "animseqFreeLevelData"
+      },
+      {
+        "row": 320,
+        "name": "shadowGetBuffers"
+      },
+      {
+        "row": 321,
+        "name": "trackSetFog"
+      },
+      {
+        "row": 322,
+        "name": "trackGetFog"
+      },
+      {
+        "row": 323,
+        "name": "trackSetFogOff"
+      },
+      {
+        "row": 324,
+        "name": "trackFadeFog"
+      },
+      {
+        "row": 325,
+        "name": "func_8002AB78"
+      },
+      {
+        "row": 326,
+        "name": "texFrame"
+      },
+      {
+        "row": 327,
+        "name": "shadowInitBuffers"
+      },
+      {
+        "row": 328,
+        "name": "Powerf"
+      },
+      {
+        "row": 329,
+        "name": "shadowBoundingBox"
+      },
+      {
+        "row": 330,
+        "name": "func_80018654"
+      },
+      {
+        "row": 331,
+        "name": "shadowBoxPolyOverlap"
+      },
+      {
+        "row": 332,
+        "name": "func_80018544"
+      },
+      {
+        "row": 333,
+        "name": "freeLights"
+      },
+      {
+        "row": 334,
+        "name": "setupLights"
+      },
+      {
+        "row": 335,
+        "name": "lightCreateLightTable"
+      },
+      {
+        "row": 336,
+        "name": "addRomdefLight"
+      },
+      {
+        "row": 337,
+        "name": "initColourCycle"
+      },
+      {
+        "row": 338,
+        "name": "addObjectLight"
+      },
+      {
+        "row": 339,
+        "name": "turnLightOff"
+      },
+      {
+        "row": 340,
+        "name": "turnLightOn"
+      },
+      {
+        "row": 341,
+        "name": "toggleLight"
+      },
+      {
+        "row": 342,
+        "name": "changeLightColour"
+      },
+      {
+        "row": 343,
+        "name": "changeLightColourCycle"
+      },
+      {
+        "row": 344,
+        "name": "changeLightIntensity"
+      },
+      {
+        "row": 345,
+        "name": "pointListRPY"
+      },
+      {
+        "row": 346,
+        "name": "updateColourCycle"
+      },
+      {
+        "row": 347,
+        "name": "lightGetLights"
+      },
+      {
+        "row": 348,
+        "name": "lightGetStrongestEffect"
+      },
+      {
+        "row": 349,
+        "name": "func_80019934"
+      },
+      {
+        "row": 350,
+        "name": "lightDirectionCalc"
+      },
+      {
+        "row": 351,
+        "name": "func_8002AA50"
+      },
+      {
+        "row": 352,
+        "name": "lightMakeJointPositions"
+      },
+      {
+        "row": 353,
+        "name": "lightSingleLight"
+      },
+      {
+        "row": 354,
+        "name": "lightTwoLights"
+      },
+      {
+        "row": 355,
+        "name": "lightMultiLight"
+      },
+      {
+        "row": 356,
+        "name": "lightEnviroMap"
+      },
+      {
+        "row": 357,
+        "name": "lightDefaultObjectLight"
+      },
+      {
+        "row": 358,
+        "name": "lightSetObjectLight"
+      },
+      {
+        "row": 359,
+        "name": "mathOneFloatRPY"
+      },
+      {
+        "row": 360,
+        "name": "camlightAdd"
+      },
+      {
+        "row": 361,
+        "name": "starfieldFastMove"
+      },
+      {
+        "row": 362,
+        "name": "cpuLine"
+      },
+      {
+        "row": 363,
+        "name": "rainFastDraw"
+      },
+      {
+        "row": 364,
+        "name": "camlightInit"
+      },
+      {
+        "row": 365,
+        "name": "camlightFlush"
+      },
+      {
+        "row": 366,
+        "name": "camlightUpdateAll"
+      },
+      {
+        "row": 367,
+        "name": "camlightUpdate"
+      },
+      {
+        "row": 368,
+        "name": "camlightVisibilityCheck"
+      },
+      {
+        "row": 369,
+        "name": "camlightDraw"
+      },
+      {
+        "row": 370,
+        "name": "func_8002905C"
+      },
+      {
+        "row": 371,
+        "name": "func_8005776C"
+      },
+      {
+        "row": 372,
+        "name": "animseqResetGroup"
+      },
+      {
+        "row": 373,
+        "name": "animseqPlay"
+      },
+      {
+        "row": 374,
+        "name": "modSetTextureFrame"
+      },
+      {
+        "row": 375,
+        "name": "func_8001BB90"
+      },
+      {
+        "row": 376,
+        "name": "func_80053420"
+      },
+      {
+        "row": 377,
+        "name": "func_8003A550"
+      },
+      {
+        "row": 378,
+        "name": "func_80024ED8"
+      },
+      {
+        "row": 379,
+        "name": "func_8001C054"
+      },
+      {
+        "row": 380,
+        "name": "controlPlayerReInit"
+      },
+      {
+        "row": 381,
+        "name": "func_8005AD64"
+      },
+      {
+        "row": 382,
+        "name": "levelGetType"
+      },
+      {
+        "row": 383,
+        "name": "fxAllocateCone"
+      },
+      {
+        "row": 384,
+        "name": "func_8001CB0C"
+      },
+      {
+        "row": 385,
+        "name": "mainChangeLevel"
+      },
+      {
+        "row": 386,
+        "name": "mainGetNextCharacter"
+      },
+      {
+        "row": 387,
+        "name": "frontGetMode"
+      },
+      {
+        "row": 388,
+        "name": "mainSetAnimGroup"
+      },
+      {
+        "row": 389,
+        "name": "func_800214AC"
+      },
+      {
+        "row": 390,
+        "name": "dAngle"
+      },
+      {
+        "row": 391,
+        "name": "controlDisableJoypad"
+      },
+      {
+        "row": 392,
+        "name": "func_8001D41C"
+      },
+      {
+        "row": 393,
+        "name": "func_800299E8"
+      },
+      {
+        "row": 394,
+        "name": "controlFrozen"
+      },
+      {
+        "row": 395,
+        "name": "func_800291D8"
+      },
+      {
+        "row": 396,
+        "name": "joyGetPressed"
+      },
+      {
+        "row": 397,
+        "name": "func_8001D690"
+      },
+      {
+        "row": 398,
+        "name": "func_800282C8"
+      },
+      {
+        "row": 399,
+        "name": "func_8001D880"
+      },
+      {
+        "row": 400,
+        "name": "controlFSUvels"
+      },
+      {
+        "row": 401,
+        "name": "func_8001D960"
+      },
+      {
+        "row": 402,
+        "name": "func_8002A204"
+      },
+      {
+        "row": 403,
+        "name": "fxMakeConeTextureCoords"
+      },
+      {
+        "row": 404,
+        "name": "fxMakeConeLength"
+      },
+      {
+        "row": 405,
+        "name": "func_8001DCD0"
+      },
+      {
+        "row": 406,
+        "name": "func_8001DD70"
+      },
+      {
+        "row": 407,
+        "name": "func_8001E5C4"
+      },
+      {
+        "row": 408,
+        "name": "func_8001F14C"
+      },
+      {
+        "row": 409,
+        "name": "controlReadJoypad"
+      },
+      {
+        "row": 410,
+        "name": "joyGetStickX"
+      },
+      {
+        "row": 411,
+        "name": "joyGetAbsX"
+      },
+      {
+        "row": 412,
+        "name": "joyGetStickY"
+      },
+      {
+        "row": 413,
+        "name": "joyGetAbsY"
+      },
+      {
+        "row": 414,
+        "name": "joyGetButtons"
+      },
+      {
+        "row": 415,
+        "name": "joyGetReleased"
+      },
+      {
+        "row": 416,
+        "name": "controlSetRumble"
+      },
+      {
+        "row": 417,
+        "name": "rumbleStart"
+      },
+      {
+        "row": 418,
+        "name": "controlSetPlayerSetup"
+      },
+      {
+        "row": 419,
+        "name": "controlClearPlayerSetup"
+      },
+      {
+        "row": 420,
+        "name": "modInitModels"
+      },
+      {
+        "row": 421,
+        "name": "func_8004D7A8"
+      },
+      {
+        "row": 422,
+        "name": "func_8004D7E0"
+      },
+      {
+        "row": 423,
+        "name": "func_8005A7A0"
+      },
+      {
+        "row": 424,
+        "name": "makeModelGfx"
+      },
+      {
+        "row": 425,
+        "name": "func_8005AAC0"
+      },
+      {
+        "row": 426,
+        "name": "func_800203E0"
+      },
+      {
+        "row": 427,
+        "name": "func_800204B8"
+      },
+      {
+        "row": 428,
+        "name": "modelGetModelFlags"
+      },
+      {
+        "row": 429,
+        "name": "texModelTextureLoad"
+      },
+      {
+        "row": 430,
+        "name": "modSuspendModelTextures"
+      },
+      {
+        "row": 431,
+        "name": "texGetTextureNum"
+      },
+      {
+        "row": 432,
+        "name": "modResumeModelTextures"
+      },
+      {
+        "row": 433,
+        "name": "texLoadTextureAddr"
+      },
+      {
+        "row": 434,
+        "name": "func_8002109C"
+      },
+      {
+        "row": 435,
+        "name": "mainproc"
+      },
+      {
+        "row": 436,
+        "name": "osInitialize"
+      },
+      {
+        "row": 437,
+        "name": "diCpuTraceInit"
+      },
+      {
+        "row": 438,
+        "name": "mainThread"
+      },
+      {
+        "row": 439,
+        "name": "osSetThreadPri"
+      },
+      {
+        "row": 440,
+        "name": "bootCheckStack"
+      },
+      {
+        "row": 441,
+        "name": "camInit"
+      },
+      {
+        "row": 442,
+        "name": "_bzero"
+      },
+      {
+        "row": 443,
+        "name": "camStopShakes"
+      },
+      {
+        "row": 444,
+        "name": "func_8004FAD0"
+      },
+      {
+        "row": 445,
+        "name": "mtxf_to_mtx"
+      },
+      {
+        "row": 446,
+        "name": "func_80021444"
+      },
+      {
+        "row": 447,
+        "name": "camUseShake"
+      },
+      {
+        "row": 448,
+        "name": "camIgnoreShake"
+      },
+      {
+        "row": 449,
+        "name": "camGetFOV"
+      },
+      {
+        "row": 450,
+        "name": "camOverrideProjScales"
+      },
+      {
+        "row": 451,
+        "name": "camSetFOV"
+      },
+      {
+        "row": 452,
+        "name": "viGetVideoMode"
+      },
+      {
+        "row": 453,
+        "name": "func_80021718"
+      },
+      {
+        "row": 454,
+        "name": "func_800217AC"
+      },
+      {
+        "row": 455,
+        "name": "camSetMode"
+      },
+      {
+        "row": 456,
+        "name": "func_80021970"
+      },
+      {
+        "row": 457,
+        "name": "camGetWaterLine"
+      },
+      {
+        "row": 458,
+        "name": "camSetWaterLine"
+      },
+      {
+        "row": 459,
+        "name": "camIsUserView"
+      },
+      {
+        "row": 460,
+        "name": "camSetUserView"
+      },
+      {
+        "row": 461,
+        "name": "camSetUserViewSpecial"
+      },
+      {
+        "row": 462,
+        "name": "camGetVisibleUserView"
+      },
+      {
+        "row": 463,
+        "name": "camGetUserView"
+      },
+      {
+        "row": 464,
+        "name": "frontGet2PlayerSplit"
+      },
+      {
+        "row": 465,
+        "name": "camSetViewport"
+      },
+      {
+        "row": 466,
+        "name": "camSetProjMtx"
+      },
+      {
+        "row": 467,
+        "name": "func_80022604"
+      },
+      {
+        "row": 468,
+        "name": "camSetScissor"
+      },
+      {
+        "row": 469,
+        "name": "mtxf_mul"
+      },
+      {
+        "row": 470,
+        "name": "func_8002AE10"
+      },
+      {
+        "row": 471,
+        "name": "camOrthoYAspect"
+      },
+      {
+        "row": 472,
+        "name": "func_80022A44"
+      },
+      {
+        "row": 473,
+        "name": "camCopyOrthoMatrix"
+      },
+      {
+        "row": 474,
+        "name": "camStandardPersp"
+      },
+      {
+        "row": 475,
+        "name": "func_80029AB8"
+      },
+      {
+        "row": 476,
+        "name": "sprDPset"
+      },
+      {
+        "row": 477,
+        "name": "func_80034434"
+      },
+      {
+        "row": 478,
+        "name": "camDoSpriteDirect"
+      },
+      {
+        "row": 479,
+        "name": "mathRSMtx"
+      },
+      {
+        "row": 480,
+        "name": "camDo2DSprite"
+      },
+      {
+        "row": 481,
+        "name": "mathScaleMtx"
+      },
+      {
+        "row": 482,
+        "name": "camPushFloatModelMtx"
+      },
+      {
+        "row": 483,
+        "name": "camPushMuzzleMtx"
+      },
+      {
+        "row": 484,
+        "name": "camScaleModelMtx"
+      },
+      {
+        "row": 485,
+        "name": "matrixScale"
+      },
+      {
+        "row": 486,
+        "name": "mtxf_translate_y"
+      },
+      {
+        "row": 487,
+        "name": "func_8002468C"
+      },
+      {
+        "row": 488,
+        "name": "camGetProjectionMtx"
+      },
+      {
+        "row": 489,
+        "name": "camReversePoint"
+      },
+      {
+        "row": 490,
+        "name": "camStartShake"
+      },
+      {
+        "row": 491,
+        "name": "camScreenShake"
+      },
+      {
+        "row": 492,
+        "name": "camSetZoom"
+      },
+      {
+        "row": 493,
+        "name": "camTick"
+      },
+      {
+        "row": 494,
+        "name": "joyMessageQ"
+      },
+      {
+        "row": 495,
+        "name": "joyInit"
+      },
+      {
+        "row": 496,
+        "name": "osSetEventMesg"
+      },
+      {
+        "row": 497,
+        "name": "osContInit"
+      },
+      {
+        "row": 498,
+        "name": "osContStartReadData"
+      },
+      {
+        "row": 499,
+        "name": "joyResetMap"
+      },
+      {
+        "row": 500,
+        "name": "joyRead"
+      },
+      {
+        "row": 501,
+        "name": "osContGetReadData"
+      },
+      {
+        "row": 502,
+        "name": "func_8002CD6C"
+      },
+      {
+        "row": 503,
+        "name": "func_8002CB18"
+      },
+      {
+        "row": 504,
+        "name": "func_8002C94C"
+      },
+      {
+        "row": 505,
+        "name": "func_8002CF6C"
+      },
+      {
+        "row": 506,
+        "name": "func_8002CE54"
+      },
+      {
+        "row": 507,
+        "name": "func_8002CF0C"
+      },
+      {
+        "row": 508,
+        "name": "func_8005807C"
+      },
+      {
+        "row": 509,
+        "name": "func_800580F0"
+      },
+      {
+        "row": 510,
+        "name": "rumbleTick"
+      },
+      {
+        "row": 511,
+        "name": "joyDisable"
+      },
+      {
+        "row": 512,
+        "name": "joyEnable"
+      },
+      {
+        "row": 513,
+        "name": "joyCreateMap"
+      },
+      {
+        "row": 514,
+        "name": "joyGetController"
+      },
+      {
+        "row": 515,
+        "name": "joySetSecurity"
+      },
+      {
+        "row": 516,
+        "name": "arithmeticFunction"
+      },
+      {
+        "row": 517,
+        "name": "joyCharVal"
+      },
+      {
+        "row": 518,
+        "name": "levelGetCounts"
+      },
+      {
+        "row": 519,
+        "name": "levelNGetType"
+      },
+      {
+        "row": 520,
+        "name": "levelGetTune"
+      },
+      {
+        "row": 521,
+        "name": "levelGetWorld"
+      },
+      {
+        "row": 522,
+        "name": "levelGetRegionNo"
+      },
+      {
+        "row": 523,
+        "name": "levelGetScreenMode"
+      },
+      {
+        "row": 524,
+        "name": "levelGetBlurEffect"
+      },
+      {
+        "row": 525,
+        "name": "levelGetGfxIndex"
+      },
+      {
+        "row": 526,
+        "name": "levelInit"
+      },
+      {
+        "row": 527,
+        "name": "rumbleKill"
+      },
+      {
+        "row": 528,
+        "name": "gsSndpLimitVoices"
+      },
+      {
+        "row": 529,
+        "name": "animseqSetupGroup"
+      },
+      {
+        "row": 530,
+        "name": "setupWeather"
+      },
+      {
+        "row": 531,
+        "name": "func_8002EBD4"
+      },
+      {
+        "row": 532,
+        "name": "resetMixCycle"
+      },
+      {
+        "row": 533,
+        "name": "rcpSetScreenColour"
+      },
+      {
+        "row": 534,
+        "name": "viFrameRateReset"
+      },
+      {
+        "row": 535,
+        "name": "levelTunePlay"
+      },
+      {
+        "row": 536,
+        "name": "func_8003C770"
+      },
+      {
+        "row": 537,
+        "name": "runlinkFreeCode"
+      },
+      {
+        "row": 538,
+        "name": "levelGetCamera"
+      },
+      {
+        "row": 539,
+        "name": "levelGetName"
+      },
+      {
+        "row": 540,
+        "name": "levelFreeAll"
+      },
+      {
+        "row": 541,
+        "name": "func_800582A8"
+      },
+      {
+        "row": 542,
+        "name": "freeWeather"
+      },
+      {
+        "row": 543,
+        "name": "runlinkFlushModules"
+      },
+      {
+        "row": 544,
+        "name": "fxCpuTextureFlush"
+      },
+      {
+        "row": 545,
+        "name": "levelGetNextOfWorld"
+      },
+      {
+        "row": 546,
+        "name": "levelGetPrevOfWorld"
+      },
+      {
+        "row": 547,
+        "name": "mmAllocAtAddr"
+      },
+      {
+        "row": 548,
+        "name": "RevealReturnAddresses"
+      },
+      {
+        "row": 549,
+        "name": "osWritebackDCache"
+      },
+      {
+        "row": 550,
+        "name": "osInvalICache"
+      },
+      {
+        "row": 551,
+        "name": "mainResetPressed"
+      },
+      {
+        "row": 552,
+        "name": "osSetTime"
+      },
+      {
+        "row": 553,
+        "name": "osGetTime"
+      },
+      {
+        "row": 554,
+        "name": "__osSpSetStatus"
+      },
+      {
+        "row": 555,
+        "name": "osDpSetStatus"
+      },
+      {
+        "row": 556,
+        "name": "viReset"
+      },
+      {
+        "row": 557,
+        "name": "osCreateScheduler"
+      },
+      {
+        "row": 558,
+        "name": "mmInit"
+      },
+      {
+        "row": 559,
+        "name": "func_8004D750"
+      },
+      {
+        "row": 560,
+        "name": "viInit"
+      },
+      {
+        "row": 561,
+        "name": "piInit"
+      },
+      {
+        "row": 562,
+        "name": "rcpInit"
+      },
+      {
+        "row": 563,
+        "name": "runlinkInit"
+      },
+      {
+        "row": 564,
+        "name": "rsp_segment"
+      },
+      {
+        "row": 565,
+        "name": "rcpFast3d"
+      },
+      {
+        "row": 566,
+        "name": "diRcpTraceReset"
+      },
+      {
+        "row": 567,
+        "name": "rcpInitSp"
+      },
+      {
+        "row": 568,
+        "name": "rcpInitDp"
+      },
+      {
+        "row": 569,
+        "name": "bgdraw_fillcolour"
+      },
+      {
+        "row": 570,
+        "name": "rcpClearScreen"
+      },
+      {
+        "row": 571,
+        "name": "diCpuTraceGetFault"
+      },
+      {
+        "row": 572,
+        "name": "diCpuTraceTick"
+      },
+      {
+        "row": 573,
+        "name": "fxUnQueueScreenEffect"
+      },
+      {
+        "row": 574,
+        "name": "func_80049B14"
+      },
+      {
+        "row": 575,
+        "name": "frontUpdate"
+      },
+      {
+        "row": 576,
+        "name": "func_80049E4C"
+      },
+      {
+        "row": 577,
+        "name": "diPrintfAll"
+      },
+      {
+        "row": 578,
+        "name": "fontWindowsDraw"
+      },
+      {
+        "row": 579,
+        "name": "fontWindowDisable"
+      },
+      {
+        "row": 580,
+        "name": "fontWindowFlushStrings"
+      },
+      {
+        "row": 581,
+        "name": "func_800291E4"
+      },
+      {
+        "row": 582,
+        "name": "frontDemoMessage"
+      },
+      {
+        "row": 583,
+        "name": "func_800376CC"
+      },
+      {
+        "row": 584,
+        "name": "func_80038190"
+      },
+      {
+        "row": 585,
+        "name": "func_80049864"
+      },
+      {
+        "row": 586,
+        "name": "func_8005A770"
+      },
+      {
+        "row": 587,
+        "name": "func_8003C80C"
+      },
+      {
+        "row": 588,
+        "name": "func_8004D32C"
+      },
+      {
+        "row": 589,
+        "name": "rcpWaitDP"
+      },
+      {
+        "row": 590,
+        "name": "mainUpdateZBCheck"
+      },
+      {
+        "row": 591,
+        "name": "mainCPUeffects"
+      },
+      {
+        "row": 592,
+        "name": "runlinkTick"
+      },
+      {
+        "row": 593,
+        "name": "mmFreeTick"
+      },
+      {
+        "row": 594,
+        "name": "viFrameSync"
+      },
+      {
+        "row": 595,
+        "name": "mainAddZBCheck"
+      },
+      {
+        "row": 596,
+        "name": "mainGetZBCheck"
+      },
+      {
+        "row": 597,
+        "name": "rainDensity"
+      },
+      {
+        "row": 598,
+        "name": "fxGenerateTextures"
+      },
+      {
+        "row": 599,
+        "name": "func_8004A51C"
+      },
+      {
+        "row": 600,
+        "name": "func_8004A0F0"
+      },
+      {
+        "row": 601,
+        "name": "mainSetGameWindow"
+      },
+      {
+        "row": 602,
+        "name": "mainGameWindowChanging"
+      },
+      {
+        "row": 603,
+        "name": "mainGameWindowSize"
+      },
+      {
+        "row": 604,
+        "name": "frontSetLanguage"
+      },
+      {
+        "row": 605,
+        "name": "frontGetLanguage"
+      },
+      {
+        "row": 606,
+        "name": "frontSetScreenMode"
+      },
+      {
+        "row": 607,
+        "name": "frontGetScreenMode"
+      },
+      {
+        "row": 608,
+        "name": "frontSetWideAdjust"
+      },
+      {
+        "row": 609,
+        "name": "frontGetWideAdjust"
+      },
+      {
+        "row": 610,
+        "name": "frontSetStereoMode"
+      },
+      {
+        "row": 611,
+        "name": "frontGetStereoMode"
+      },
+      {
+        "row": 612,
+        "name": "frontSetSfxVolume"
+      },
+      {
+        "row": 613,
+        "name": "frontGetSfxVolume"
+      },
+      {
+        "row": 614,
+        "name": "frontSetBgmVolume"
+      },
+      {
+        "row": 615,
+        "name": "frontGetBgmVolume"
+      },
+      {
+        "row": 616,
+        "name": "frontStoreScreenMode"
+      },
+      {
+        "row": 617,
+        "name": "mainFrontInit"
+      },
+      {
+        "row": 618,
+        "name": "func_80051364"
+      },
+      {
+        "row": 619,
+        "name": "partUpdateParticles"
+      },
+      {
+        "row": 620,
+        "name": "func_8004EDA8"
+      },
+      {
+        "row": 621,
+        "name": "screenDraw"
+      },
+      {
+        "row": 622,
+        "name": "func_800498FC"
+      },
+      {
+        "row": 623,
+        "name": "func_8004978C"
+      },
+      {
+        "row": 624,
+        "name": "func_80037664"
+      },
+      {
+        "row": 625,
+        "name": "rumbleRumbles"
+      },
+      {
+        "row": 626,
+        "name": "mainGetAnimGroup"
+      },
+      {
+        "row": 627,
+        "name": "mainChangeCameras"
+      },
+      {
+        "row": 628,
+        "name": "mainGetNextLevel"
+      },
+      {
+        "row": 629,
+        "name": "viDisplayingScreen0"
+      },
+      {
+        "row": 630,
+        "name": "mmFlushFreeStack"
+      },
+      {
+        "row": 631,
+        "name": "mmSetDelay"
+      },
+      {
+        "row": 632,
+        "name": "frontFreeMode"
+      },
+      {
+        "row": 633,
+        "name": "func_80037150"
+      },
+      {
+        "row": 634,
+        "name": "reset_particles"
+      },
+      {
+        "row": 635,
+        "name": "func_8004E99C"
+      },
+      {
+        "row": 636,
+        "name": "frontGetLevelScreenMode"
+      },
+      {
+        "row": 637,
+        "name": "viSetTrippleBuffer"
+      },
+      {
+        "row": 638,
+        "name": "viChangeBuffers"
+      },
+      {
+        "row": 639,
+        "name": "viChangeMode"
+      },
+      {
+        "row": 640,
+        "name": "func_8004989C"
+      },
+      {
+        "row": 641,
+        "name": "func_8005A764"
+      },
+      {
+        "row": 642,
+        "name": "func_8004E8E0"
+      },
+      {
+        "row": 643,
+        "name": "func_80049A8C"
+      },
+      {
+        "row": 644,
+        "name": "func_80037414"
+      },
+      {
+        "row": 645,
+        "name": "frontSetMode"
+      },
+      {
+        "row": 646,
+        "name": "rumbleUpdate"
+      },
+      {
+        "row": 647,
+        "name": "mainSyncNextLevel"
+      },
+      {
+        "row": 648,
+        "name": "mainGetMode"
+      },
+      {
+        "row": 649,
+        "name": "mainSetMode"
+      },
+      {
+        "row": 650,
+        "name": "mainTitlePageInit"
+      },
+      {
+        "row": 651,
+        "name": "func_8003A544"
+      },
+      {
+        "row": 652,
+        "name": "func_80028DE4"
+      },
+      {
+        "row": 653,
+        "name": "mainStartGame"
+      },
+      {
+        "row": 654,
+        "name": "func_80028EA0"
+      },
+      {
+        "row": 655,
+        "name": "func_80028EFC"
+      },
+      {
+        "row": 656,
+        "name": "func_80028F3C"
+      },
+      {
+        "row": 657,
+        "name": "func_80028F44"
+      },
+      {
+        "row": 658,
+        "name": "func_80028F4C"
+      },
+      {
+        "row": 659,
+        "name": "func_80028F60"
+      },
+      {
+        "row": 660,
+        "name": "func_80028F98"
+      },
+      {
+        "row": 661,
+        "name": "func_80028FA8"
+      },
+      {
+        "row": 662,
+        "name": "func_80028FB8"
+      },
+      {
+        "row": 663,
+        "name": "func_80028FCC"
+      },
+      {
+        "row": 664,
+        "name": "func_80029038"
+      },
+      {
+        "row": 665,
+        "name": "func_8002904C"
+      },
+      {
+        "row": 666,
+        "name": "func_80029084"
+      },
+      {
+        "row": 667,
+        "name": "func_80029090"
+      },
+      {
+        "row": 668,
+        "name": "func_800290AC"
+      },
+      {
+        "row": 669,
+        "name": "func_800290EC"
+      },
+      {
+        "row": 670,
+        "name": "func_800290F8"
+      },
+      {
+        "row": 671,
+        "name": "func_80029104"
+      },
+      {
+        "row": 672,
+        "name": "func_80029120"
+      },
+      {
+        "row": 673,
+        "name": "func_80029144"
+      },
+      {
+        "row": 674,
+        "name": "func_80029160"
+      },
+      {
+        "row": 675,
+        "name": "func_8002917C"
+      },
+      {
+        "row": 676,
+        "name": "func_80029198"
+      },
+      {
+        "row": 677,
+        "name": "func_800291B4"
+      },
+      {
+        "row": 678,
+        "name": "func_800291C4"
+      },
+      {
+        "row": 679,
+        "name": "func_80029240"
+      },
+      {
+        "row": 680,
+        "name": "func_80029274"
+      },
+      {
+        "row": 681,
+        "name": "fontUseFont"
+      },
+      {
+        "row": 682,
+        "name": "fontColour"
+      },
+      {
+        "row": 683,
+        "name": "fontBackground"
+      },
+      {
+        "row": 684,
+        "name": "frontDrawRectangle"
+      },
+      {
+        "row": 685,
+        "name": "sprintf"
+      },
+      {
+        "row": 686,
+        "name": "fontPrintXY"
+      },
+      {
+        "row": 687,
+        "name": "interrupts_disable"
+      },
+      {
+        "row": 688,
+        "name": "interrupts_enable"
+      },
+      {
+        "row": 689,
+        "name": "func_800296A4"
+      },
+      {
+        "row": 690,
+        "name": "func_8002A244"
+      },
+      {
+        "row": 691,
+        "name": "func_80029970"
+      },
+      {
+        "row": 692,
+        "name": "vec3s_reflect"
+      },
+      {
+        "row": 693,
+        "name": "mathOneFloatYPR"
+      },
+      {
+        "row": 694,
+        "name": "func_8002A1A4"
+      },
+      {
+        "row": 695,
+        "name": "coss_2"
+      },
+      {
+        "row": 696,
+        "name": "coss_s16"
+      },
+      {
+        "row": 697,
+        "name": "mathTranslateMtx"
+      },
+      {
+        "row": 698,
+        "name": "mtxf_transform_dir"
+      },
+      {
+        "row": 699,
+        "name": "mtxf_from_inverse_transform"
+      },
+      {
+        "row": 700,
+        "name": "func_8002A414"
+      },
+      {
+        "row": 701,
+        "name": "matrixTranslate"
+      },
+      {
+        "row": 702,
+        "name": "func_8002A604"
+      },
+      {
+        "row": 703,
+        "name": "func_8002A6BC"
+      },
+      {
+        "row": 704,
+        "name": "matrixYaw"
+      },
+      {
+        "row": 705,
+        "name": "func_8002A82C"
+      },
+      {
+        "row": 706,
+        "name": "splinePos"
+      },
+      {
+        "row": 707,
+        "name": "mathDiffAngle"
+      },
+      {
+        "row": 708,
+        "name": "func_8002AC84"
+      },
+      {
+        "row": 709,
+        "name": "func_8002AF6C"
+      },
+      {
+        "row": 710,
+        "name": "func_8002B040"
+      },
+      {
+        "row": 711,
+        "name": "mmExtended"
+      },
+      {
+        "row": 712,
+        "name": "mmAllocRegion"
+      },
+      {
+        "row": 713,
+        "name": "runlinkGetAddressInfo"
+      },
+      {
+        "row": 714,
+        "name": "ReleaseUnusedLinkSlots"
+      },
+      {
+        "row": 715,
+        "name": "mmGetSlotPtr"
+      },
+      {
+        "row": 716,
+        "name": "mmGetDelay"
+      },
+      {
+        "row": 717,
+        "name": "align16"
+      },
+      {
+        "row": 718,
+        "name": "align8"
+      },
+      {
+        "row": 719,
+        "name": "rumbleProcessing"
+      },
+      {
+        "row": 720,
+        "name": "rumbleStop"
+      },
+      {
+        "row": 721,
+        "name": "osMotorInit"
+      },
+      {
+        "row": 722,
+        "name": "osPfsIsPlug"
+      },
+      {
+        "row": 723,
+        "name": "osMotorStart"
+      },
+      {
+        "row": 724,
+        "name": "osMotorStop"
+      },
+      {
+        "row": 725,
+        "name": "func_8002C5F4"
+      },
+      {
+        "row": 726,
+        "name": "func_8002C60C"
+      },
+      {
+        "row": 727,
+        "name": "func_8002C69C"
+      },
+      {
+        "row": 728,
+        "name": "func_8002C70C"
+      },
+      {
+        "row": 729,
+        "name": "func_8002C788"
+      },
+      {
+        "row": 730,
+        "name": "func_8002C790"
+      },
+      {
+        "row": 731,
+        "name": "func_8002C79C"
+      },
+      {
+        "row": 732,
+        "name": "func_8006FEF0"
+      },
+      {
+        "row": 733,
+        "name": "func_80070030"
+      },
+      {
+        "row": 734,
+        "name": "func_80070170"
+      },
+      {
+        "row": 735,
+        "name": "packOpen"
+      },
+      {
+        "row": 736,
+        "name": "osPfsFreeBlocks"
+      },
+      {
+        "row": 737,
+        "name": "osPfsInit"
+      },
+      {
+        "row": 738,
+        "name": "packClose"
+      },
+      {
+        "row": 739,
+        "name": "packInit"
+      },
+      {
+        "row": 740,
+        "name": "func_80058010"
+      },
+      {
+        "row": 741,
+        "name": "func_800581BC"
+      },
+      {
+        "row": 742,
+        "name": "packIsPresent"
+      },
+      {
+        "row": 743,
+        "name": "packDirectory"
+      },
+      {
+        "row": 744,
+        "name": "osPfsNumFiles"
+      },
+      {
+        "row": 745,
+        "name": "osPfsFileState"
+      },
+      {
+        "row": 746,
+        "name": "packDirectoryFree"
+      },
+      {
+        "row": 747,
+        "name": "packFreeSpace"
+      },
+      {
+        "row": 748,
+        "name": "packDeleteFile"
+      },
+      {
+        "row": 749,
+        "name": "osPfsDeleteFile"
+      },
+      {
+        "row": 750,
+        "name": "packOpenFile"
+      },
+      {
+        "row": 751,
+        "name": "osPfsFindFile"
+      },
+      {
+        "row": 752,
+        "name": "packReadFile"
+      },
+      {
+        "row": 753,
+        "name": "osPfsReadWriteFile"
+      },
+      {
+        "row": 754,
+        "name": "packWriteFile"
+      },
+      {
+        "row": 755,
+        "name": "osPfsAllocateFile"
+      },
+      {
+        "row": 756,
+        "name": "packFileSize"
+      },
+      {
+        "row": 757,
+        "name": "func_8004D5E0"
+      },
+      {
+        "row": 758,
+        "name": "romCopy"
+      },
+      {
+        "row": 759,
+        "name": "piRomLoadCompressed"
+      },
+      {
+        "row": 760,
+        "name": "byteswap32"
+      },
+      {
+        "row": 761,
+        "name": "piRomGetFileSize"
+      },
+      {
+        "row": 762,
+        "name": "osInvalDCache"
+      },
+      {
+        "row": 763,
+        "name": "osWritebackDCacheAll"
+      },
+      {
+        "row": 764,
+        "name": "func_8002EBE0"
+      },
+      {
+        "row": 765,
+        "name": "rcpClearZBuffer"
+      },
+      {
+        "row": 766,
+        "name": "rcpInitDpNoSize"
+      },
+      {
+        "row": 767,
+        "name": "osScGetInterruptQ"
+      },
+      {
+        "row": 768,
+        "name": "func_8002F618"
+      },
+      {
+        "row": 769,
+        "name": "func_80034910"
+      },
+      {
+        "row": 770,
+        "name": "func_8002FB34"
+      },
+      {
+        "row": 771,
+        "name": "osCreateViManager"
+      },
+      {
+        "row": 772,
+        "name": "osViSetMode"
+      },
+      {
+        "row": 773,
+        "name": "osViBlack"
+      },
+      {
+        "row": 774,
+        "name": "osViSetEvent"
+      },
+      {
+        "row": 775,
+        "name": "osSetIntMask"
+      },
+      {
+        "row": 776,
+        "name": "osScRemoveClient"
+      },
+      {
+        "row": 777,
+        "name": "osScGetAudioSPStats"
+      },
+      {
+        "row": 778,
+        "name": "osSpTaskLoad"
+      },
+      {
+        "row": 779,
+        "name": "osSpTaskStartGo"
+      },
+      {
+        "row": 780,
+        "name": "diRcpPrintDL"
+      },
+      {
+        "row": 781,
+        "name": "diRcpTraceGetInfo"
+      },
+      {
+        "row": 782,
+        "name": "diPrintfSetXY"
+      },
+      {
+        "row": 783,
+        "name": "diPrintf"
+      },
+      {
+        "row": 784,
+        "name": "osSpTaskYielded"
+      },
+      {
+        "row": 785,
+        "name": "__scTaskReady"
+      },
+      {
+        "row": 786,
+        "name": "osViGetCurrentFramebuffer"
+      },
+      {
+        "row": 787,
+        "name": "osViGetNextFramebuffer"
+      },
+      {
+        "row": 788,
+        "name": "osDpSetNextBuffer"
+      },
+      {
+        "row": 789,
+        "name": "osSpTaskYield"
+      },
+      {
+        "row": 790,
+        "name": "GetSymbolName"
+      },
+      {
+        "row": 791,
+        "name": "TrapDanglingJump"
+      },
+      {
+        "row": 792,
+        "name": "runlinkEnsureJumpIsValid"
+      },
+      {
+        "row": 793,
+        "name": "runlinkResumeCode"
+      },
+      {
+        "row": 794,
+        "name": "runlinkSuspendCode"
+      },
+      {
+        "row": 795,
+        "name": "runlinkResumeAll"
+      },
+      {
+        "row": 796,
+        "name": "SetLinkSlot"
+      },
+      {
+        "row": 797,
+        "name": "osViSwapBuffer"
+      },
+      {
+        "row": 798,
+        "name": "fontSetWindow0"
+      },
+      {
+        "row": 799,
+        "name": "viFreeZBuffer"
+      },
+      {
+        "row": 800,
+        "name": "viAllocateZBuffer"
+      },
+      {
+        "row": 801,
+        "name": "viSetTiming"
+      },
+      {
+        "row": 802,
+        "name": "osViSetSpecialFeatures"
+      },
+      {
+        "row": 803,
+        "name": "viConvertXY"
+      },
+      {
+        "row": 804,
+        "name": "viGetScaleXY"
+      },
+      {
+        "row": 805,
+        "name": "viGetWideAdjust"
+      },
+      {
+        "row": 806,
+        "name": "viSetWideAdjust"
+      },
+      {
+        "row": 807,
+        "name": "viGetTrippleBuffer"
+      },
+      {
+        "row": 808,
+        "name": "viNoClear"
+      },
+      {
+        "row": 809,
+        "name": "texInitTextures"
+      },
+      {
+        "row": 810,
+        "name": "setTexMemColour"
+      },
+      {
+        "row": 811,
+        "name": "sprSetTextureFilter"
+      },
+      {
+        "row": 812,
+        "name": "fxCpuTextureRequired"
+      },
+      {
+        "row": 813,
+        "name": "texAnimateTexSprite"
+      },
+      {
+        "row": 814,
+        "name": "resetColourCycle"
+      },
+      {
+        "row": 815,
+        "name": "func_80036DD0"
+      },
+      {
+        "row": 816,
+        "name": "func_80036F08"
+      },
+      {
+        "row": 817,
+        "name": "func_800371BC"
+      },
+      {
+        "row": 818,
+        "name": "func_80037658"
+      },
+      {
+        "row": 819,
+        "name": "setLanguage"
+      },
+      {
+        "row": 820,
+        "name": "initFront"
+      },
+      {
+        "row": 821,
+        "name": "frontInitMode"
+      },
+      {
+        "row": 822,
+        "name": "frontDrawRectangles"
+      },
+      {
+        "row": 823,
+        "name": "frontPlayerScreenLimits"
+      },
+      {
+        "row": 824,
+        "name": "freeFrontEndList"
+      },
+      {
+        "row": 825,
+        "name": "freeFrontEndItem"
+      },
+      {
+        "row": 826,
+        "name": "loadFrontEndList"
+      },
+      {
+        "row": 827,
+        "name": "loadFrontEndItem"
+      },
+      {
+        "row": 828,
+        "name": "setupFrontEndList"
+      },
+      {
+        "row": 829,
+        "name": "setupFrontEndObject"
+      },
+      {
+        "row": 830,
+        "name": "frontDrawObj"
+      },
+      {
+        "row": 831,
+        "name": "frontRecallScreenMode"
+      },
+      {
+        "row": 832,
+        "name": "alSurround_OutputType"
+      },
+      {
+        "row": 833,
+        "name": "gsSndpSetGlobalVolume"
+      },
+      {
+        "row": 834,
+        "name": "frontSet2PlayerSplit"
+      },
+      {
+        "row": 835,
+        "name": "func_8003A55C"
+      },
+      {
+        "row": 836,
+        "name": "func_8003A590"
+      },
+      {
+        "row": 837,
+        "name": "func_8003A5A0"
+      },
+      {
+        "row": 838,
+        "name": "func_8003A680"
+      },
+      {
+        "row": 839,
+        "name": "func_8003A6B0"
+      },
+      {
+        "row": 840,
+        "name": "func_8003A700"
+      },
+      {
+        "row": 841,
+        "name": "func_8003A754"
+      },
+      {
+        "row": 842,
+        "name": "func_8003A7D0"
+      },
+      {
+        "row": 843,
+        "name": "initWeather"
+      },
+      {
+        "row": 844,
+        "name": "changeWeather"
+      },
+      {
+        "row": 845,
+        "name": "snow_update"
+      },
+      {
+        "row": 846,
+        "name": "snow_vertices"
+      },
+      {
+        "row": 847,
+        "name": "partAdjustScaling"
+      },
+      {
+        "row": 848,
+        "name": "func_8003EDD4"
+      },
+      {
+        "row": 849,
+        "name": "func_8003EDE0"
+      },
+      {
+        "row": 850,
+        "name": "partModelObjEmitModelPart"
+      },
+      {
+        "row": 851,
+        "name": "strcpy"
+      },
+      {
+        "row": 852,
+        "name": "memset"
+      },
+      {
+        "row": 853,
+        "name": "_itoa"
+      },
+      {
+        "row": 854,
+        "name": "__ull_rem"
+      },
+      {
+        "row": 855,
+        "name": "__ull_div"
+      },
+      {
+        "row": 856,
+        "name": "sprintfSetSpacingCodes"
+      },
+      {
+        "row": 857,
+        "name": "vsprintf"
+      },
+      {
+        "row": 858,
+        "name": "strlen"
+      },
+      {
+        "row": 859,
+        "name": "diPrintfInit"
+      },
+      {
+        "row": 860,
+        "name": "diPrintfSetCol"
+      },
+      {
+        "row": 861,
+        "name": "diPrintfSetBG"
+      },
+      {
+        "row": 862,
+        "name": "debug_text_width"
+      },
+      {
+        "row": 863,
+        "name": "diRcpTraceInit"
+      },
+      {
+        "row": 864,
+        "name": "__osGetActiveQueue"
+      },
+      {
+        "row": 865,
+        "name": "_bcopy"
+      },
+      {
+        "row": 866,
+        "name": "cpuXYPrintf"
+      },
+      {
+        "row": 867,
+        "name": "diCpuReportWatchpoint"
+      },
+      {
+        "row": 868,
+        "name": "stack_pointer"
+      },
+      {
+        "row": 869,
+        "name": "func_8004707C"
+      },
+      {
+        "row": 870,
+        "name": "fxInit"
+      },
+      {
+        "row": 871,
+        "name": "func_80049828"
+      },
+      {
+        "row": 872,
+        "name": "func_8004A4B0"
+      },
+      {
+        "row": 873,
+        "name": "fxSPDPRipple"
+      },
+      {
+        "row": 874,
+        "name": "fxQueueScreenEffect"
+      },
+      {
+        "row": 875,
+        "name": "fxScreenEffect"
+      },
+      {
+        "row": 876,
+        "name": "fontSetButtonMode"
+      },
+      {
+        "row": 877,
+        "name": "fontSetWindowNoise"
+      },
+      {
+        "row": 878,
+        "name": "fontPrintWindowXY"
+      },
+      {
+        "row": 879,
+        "name": "func_8004D39C"
+      },
+      {
+        "row": 880,
+        "name": "fontStringWidth"
+      },
+      {
+        "row": 881,
+        "name": "func_8004C690"
+      },
+      {
+        "row": 882,
+        "name": "fontWindowSize"
+      },
+      {
+        "row": 883,
+        "name": "fontWindowUseFont"
+      },
+      {
+        "row": 884,
+        "name": "fontWindowColour"
+      },
+      {
+        "row": 885,
+        "name": "fontWindowFontColour"
+      },
+      {
+        "row": 886,
+        "name": "fontWindowFontBackground"
+      },
+      {
+        "row": 887,
+        "name": "fontWindowAddStringXY"
+      },
+      {
+        "row": 888,
+        "name": "fontWindowEnable"
+      },
+      {
+        "row": 889,
+        "name": "fontStringAddNumber"
+      },
+      {
+        "row": 890,
+        "name": "fontWindowDraw"
+      },
+      {
+        "row": 891,
+        "name": "fontCreateDisplayList"
+      },
+      {
+        "row": 892,
+        "name": "func_8004D40C"
+      },
+      {
+        "row": 893,
+        "name": "func_8004D5C0"
+      },
+      {
+        "row": 894,
+        "name": "__osPiCreateAccessQueue"
+      },
+      {
+        "row": 895,
+        "name": "osGetThreadPri"
+      },
+      {
+        "row": 896,
+        "name": "__osDisableInt"
+      },
+      {
+        "row": 897,
+        "name": "__osPiRawStartDma"
+      },
+      {
+        "row": 898,
+        "name": "__osEPiRawStartDma"
+      },
+      {
+        "row": 899,
+        "name": "__osDevMgrMain"
+      },
+      {
+        "row": 900,
+        "name": "__osRestoreInt"
+      },
+      {
+        "row": 901,
+        "name": "gzip_inflate_block"
+      },
+      {
+        "row": 902,
+        "name": "func_8004D840"
+      },
+      {
+        "row": 903,
+        "name": "gzip_inflate_codes"
+      },
+      {
+        "row": 904,
+        "name": "gzip_inflate_dynamic"
+      },
+      {
+        "row": 905,
+        "name": "gzip_inflate_fixed"
+      },
+      {
+        "row": 906,
+        "name": "gzip_inflate_stored"
+      },
+      {
+        "row": 907,
+        "name": "func_8004E9EC"
+      },
+      {
+        "row": 908,
+        "name": "func_8004EED0"
+      },
+      {
+        "row": 909,
+        "name": "func_8004F020"
+      },
+      {
+        "row": 910,
+        "name": "__osExceptionPreamble"
+      },
+      {
+        "row": 911,
+        "name": "__osException"
+      },
+      {
+        "row": 912,
+        "name": "handle_CpU"
+      },
+      {
+        "row": 913,
+        "name": "send_mesg"
+      },
+      {
+        "row": 914,
+        "name": "__osEnqueueThread"
+      },
+      {
+        "row": 915,
+        "name": "__osDispatchThread"
+      },
+      {
+        "row": 916,
+        "name": "__osPopThread"
+      },
+      {
+        "row": 917,
+        "name": "__osEnqueueAndYield"
+      },
+      {
+        "row": 918,
+        "name": "__osCleanupThread"
+      },
+      {
+        "row": 919,
+        "name": "osDestroyThread"
+      },
+      {
+        "row": 920,
+        "name": "refractOutputAssembler"
+      },
+      {
+        "row": 921,
+        "name": "func_80050348"
+      },
+      {
+        "row": 922,
+        "name": "func_8005055C"
+      },
+      {
+        "row": 923,
+        "name": "animseqStartPath"
+      },
+      {
+        "row": 924,
+        "name": "animseqStopPath"
+      },
+      {
+        "row": 925,
+        "name": "func_8005077C"
+      },
+      {
+        "row": 926,
+        "name": "animseqHoldPath"
+      },
+      {
+        "row": 927,
+        "name": "animseqLockPath"
+      },
+      {
+        "row": 928,
+        "name": "animseqUnLockPath"
+      },
+      {
+        "row": 929,
+        "name": "func_800508B4"
+      },
+      {
+        "row": 930,
+        "name": "animseqLinkNodes"
+      },
+      {
+        "row": 931,
+        "name": "animseqInit"
+      },
+      {
+        "row": 932,
+        "name": "func_800534C0"
+      },
+      {
+        "row": 933,
+        "name": "animseqFreeGroup"
+      },
+      {
+        "row": 934,
+        "name": "animseqLoadLevelData"
+      },
+      {
+        "row": 935,
+        "name": "animseqInitGroup"
+      },
+      {
+        "row": 936,
+        "name": "func_800517E0"
+      },
+      {
+        "row": 937,
+        "name": "fmvInit"
+      },
+      {
+        "row": 938,
+        "name": "osFlashReInit"
+      },
+      {
+        "row": 939,
+        "name": "osFlashInit"
+      },
+      {
+        "row": 940,
+        "name": "osEPiLinkHandle"
+      },
+      {
+        "row": 941,
+        "name": "osFlashReadId"
+      },
+      {
+        "row": 942,
+        "name": "osFlashReadStatus"
+      },
+      {
+        "row": 943,
+        "name": "osEPiWriteIo"
+      },
+      {
+        "row": 944,
+        "name": "osEPiReadIo"
+      },
+      {
+        "row": 945,
+        "name": "osEPiStartDma"
+      },
+      {
+        "row": 946,
+        "name": "osFlashClearStatus"
+      },
+      {
+        "row": 947,
+        "name": "osFlashAllErase"
+      },
+      {
+        "row": 948,
+        "name": "osFlashSectorErase"
+      },
+      {
+        "row": 949,
+        "name": "osFlashWriteBuffer"
+      },
+      {
+        "row": 950,
+        "name": "osFlashWriteArray"
+      },
+      {
+        "row": 951,
+        "name": "osFlashReadArray"
+      },
+      {
+        "row": 952,
+        "name": "func_8006A5A0"
+      },
+      {
+        "row": 953,
+        "name": "osGbpakCheckConnector"
+      },
+      {
+        "row": 954,
+        "name": "func_8006AC60"
+      },
+      {
+        "row": 955,
+        "name": "osGbpakReadId"
+      },
+      {
+        "row": 956,
+        "name": "func_8006B020"
+      },
+      {
+        "row": 957,
+        "name": "osGbpakGetStatus"
+      },
+      {
+        "row": 958,
+        "name": "func_800581D8"
+      },
+      {
+        "row": 959,
+        "name": "func_8005820C"
+      },
+      {
+        "row": 960,
+        "name": "func_80058240"
+      },
+      {
+        "row": 961,
+        "name": "func_8005830C"
+      },
+      {
+        "row": 962,
+        "name": "osBootRamTest1_6105"
+      },
+      {
+        "row": 963,
+        "name": "osBootRamTest2_6105"
+      },
+      {
+        "row": 964,
+        "name": "func_80058FF0"
+      },
+      {
+        "row": 965,
+        "name": "func_800591B0"
+      },
+      {
+        "row": 966,
+        "name": "func_8005A700"
+      },
+      {
+        "row": 967,
+        "name": "func_8005ABA8"
+      },
+      {
+        "row": 968,
+        "name": "gsSndpNew"
+      },
+      {
+        "row": 969,
+        "name": "n_alEvtqNew"
+      },
+      {
+        "row": 970,
+        "name": "n_alSynAddSndPlayer"
+      },
+      {
+        "row": 971,
+        "name": "n_alEvtqPostEvent"
+      },
+      {
+        "row": 972,
+        "name": "n_alEvtqNextEvent"
+      },
+      {
+        "row": 973,
+        "name": "getSoundStateCounts"
+      },
+      {
+        "row": 974,
+        "name": "rmonPrintf"
+      },
+      {
+        "row": 975,
+        "name": "n_alSynAllocVoice"
+      },
+      {
+        "row": 976,
+        "name": "n_alSynSetVol"
+      },
+      {
+        "row": 977,
+        "name": "n_alSynStartVoiceParams"
+      },
+      {
+        "row": 978,
+        "name": "n_alSynSetPan"
+      },
+      {
+        "row": 979,
+        "name": "n_alSynSetPitch"
+      },
+      {
+        "row": 980,
+        "name": "n_alSynSetFXMix"
+      },
+      {
+        "row": 981,
+        "name": "n_alSynStopVoice"
+      },
+      {
+        "row": 982,
+        "name": "n_alSynFreeVoice"
+      },
+      {
+        "row": 983,
+        "name": "gsSndpGetState"
+      },
+      {
+        "row": 984,
+        "name": "gsSndpStopAll"
+      },
+      {
+        "row": 985,
+        "name": "gsSndpStopAllRetrigger"
+      },
+      {
+        "row": 986,
+        "name": "gsSndpStopAllLooped"
+      },
+      {
+        "row": 987,
+        "name": "gsSndpGetMasterVolume"
+      },
+      {
+        "row": 988,
+        "name": "n_alCSPAllChanOn"
+      },
+      {
+        "row": 989,
+        "name": "__n_initChanState"
+      },
+      {
+        "row": 990,
+        "name": "n_alSynAddSeqPlayer"
+      },
+      {
+        "row": 991,
+        "name": "__n_seqpStopOsc"
+      },
+      {
+        "row": 992,
+        "name": "__n_unmapVoice"
+      },
+      {
+        "row": 993,
+        "name": "__n_vsVol"
+      },
+      {
+        "row": 994,
+        "name": "__n_vsDelta"
+      },
+      {
+        "row": 995,
+        "name": "n_alSynSetLpf_freq"
+      },
+      {
+        "row": 996,
+        "name": "alSemitones2Ratio"
+      },
+      {
+        "row": 997,
+        "name": "__n_vsMix"
+      },
+      {
+        "row": 998,
+        "name": "n_alSynGetFXRef"
+      },
+      {
+        "row": 999,
+        "name": "n_alSynSetFXParam"
+      },
+      {
+        "row": 1000,
+        "name": "n_alSynGetOutputLPRef"
+      },
+      {
+        "row": 1001,
+        "name": "n_alSynSetOutputLPParam"
+      },
+      {
+        "row": 1002,
+        "name": "__n_CSPPostNextSeqEvent"
+      },
+      {
+        "row": 1003,
+        "name": "n_alEvtqFlushType"
+      },
+      {
+        "row": 1004,
+        "name": "__n_voiceNeedsNoteKill"
+      },
+      {
+        "row": 1005,
+        "name": "__n_seqpReleaseVoice"
+      },
+      {
+        "row": 1006,
+        "name": "__n_initFromBank"
+      },
+      {
+        "row": 1007,
+        "name": "n_alCSeqNextEvent"
+      },
+      {
+        "row": 1008,
+        "name": "n_alSynSetLpf_gain"
+      },
+      {
+        "row": 1009,
+        "name": "__n_lookupSoundQuick"
+      },
+      {
+        "row": 1010,
+        "name": "__n_mapVoice"
+      },
+      {
+        "row": 1011,
+        "name": "__n_vsPan"
+      },
+      {
+        "row": 1012,
+        "name": "__n_lookupVoice"
+      },
+      {
+        "row": 1013,
+        "name": "n_alSynSetDistort"
+      },
+      {
+        "row": 1014,
+        "name": "__n_setInstChanState"
+      },
+      {
+        "row": 1015,
+        "name": "__alCSeqNextDelta"
+      },
+      {
+        "row": 1016,
+        "name": "n_alCSeqGetTicks"
+      },
+      {
+        "row": 1017,
+        "name": "n_alCSPSetMessage"
+      },
+      {
+        "row": 1018,
+        "name": "n_alCSPSetChanMessage"
+      },
+      {
+        "row": 1019,
+        "name": "n_alSynNew"
+      },
+      {
+        "row": 1020,
+        "name": "n_alSynDelete"
+      },
+      {
+        "row": 1021,
+        "name": "alHeapInit"
+      },
+      {
+        "row": 1022,
+        "name": "n_alSynAllocFX"
+      },
+      {
+        "row": 1023,
+        "name": "n_alFxPull"
+      },
+      {
+        "row": 1024,
+        "name": "alN_PVoiceNew"
+      },
+      {
+        "row": 1025,
+        "name": "n_alSavePull"
+      },
+      {
+        "row": 1026,
+        "name": "_n_collectPVoices"
+      },
+      {
+        "row": 1027,
+        "name": "__n_allocParam"
+      },
+      {
+        "row": 1028,
+        "name": "_n_freeParam"
+      },
+      {
+        "row": 1029,
+        "name": "_n_freePVoice"
+      },
+      {
+        "row": 1030,
+        "name": "_n_timeToSamples"
+      },
+      {
+        "row": 1031,
+        "name": "alSurround_ReverbSetup"
+      },
+      {
+        "row": 1032,
+        "name": "n_alEvtqPostExternEvent"
+      },
+      {
+        "row": 1033,
+        "name": "n_alSynAddPlayer"
+      },
+      {
+        "row": 1034,
+        "name": "n_alEnvmixerParam"
+      },
+      {
+        "row": 1035,
+        "name": "n_alCSPChanOff"
+      },
+      {
+        "row": 1036,
+        "name": "n_alCSPSendMidi"
+      },
+      {
+        "row": 1037,
+        "name": "n_alCSPChanOn"
+      },
+      {
+        "row": 1038,
+        "name": "n_alCSPChanFade"
+      },
+      {
+        "row": 1039,
+        "name": "n_alCSPChanSurround"
+      },
+      {
+        "row": 1040,
+        "name": "n_alCSPChanFadeForce"
+      },
+      {
+        "row": 1041,
+        "name": "n_alSynSetPriority"
+      },
+      {
+        "row": 1042,
+        "name": "__n_resetPerfChanState"
+      },
+      {
+        "row": 1043,
+        "name": "atan2f"
+      },
+      {
+        "row": 1044,
+        "name": "n_alFxInitlpfilter"
+      },
+      {
+        "row": 1045,
+        "name": "n_alFxInitlpfilter_mono"
+      },
+      {
+        "row": 1046,
+        "name": "n_alFxNew"
+      },
+      {
+        "row": 1047,
+        "name": "n_alFxParamHdl"
+      },
+      {
+        "row": 1048,
+        "name": "n_alAuxBusPull"
+      },
+      {
+        "row": 1049,
+        "name": "_n_saveBuffer"
+      },
+      {
+        "row": 1050,
+        "name": "_n_loadBuffer"
+      },
+      {
+        "row": 1051,
+        "name": "_n_loadOutputBuffer"
+      },
+      {
+        "row": 1052,
+        "name": "_n_filterBuffer"
+      },
+      {
+        "row": 1053,
+        "name": "_doModFunc"
+      },
+      {
+        "row": 1054,
+        "name": "n_alMainBusPull"
+      },
+      {
+        "row": 1055,
+        "name": "n_alEnvmixerPull"
+      },
+      {
+        "row": 1056,
+        "name": "n_alLoadParam"
+      },
+      {
+        "row": 1057,
+        "name": "n_alLPFilterParam"
+      },
+      {
+        "row": 1058,
+        "name": "n_alLPFilterPull"
+      },
+      {
+        "row": 1059,
+        "name": "acosf"
+      },
+      {
+        "row": 1060,
+        "name": "n_alAdpcmPull"
+      },
+      {
+        "row": 1061,
+        "name": "n_alResamplePull"
+      },
+      {
+        "row": 1062,
+        "name": "acoss"
+      },
+      {
+        "row": 1063,
+        "name": "n_alResampleParam"
+      },
+      {
+        "row": 1064,
+        "name": "tableval"
+      },
+      {
+        "row": 1065,
+        "name": "asins"
+      },
+      {
+        "row": 1066,
+        "name": "__osContRamWrite"
+      },
+      {
+        "row": 1067,
+        "name": "__osContRamRead"
+      },
+      {
+        "row": 1068,
+        "name": "__osPfsGetStatus"
+      },
+      {
+        "row": 1069,
+        "name": "osSetTimer"
+      },
+      {
+        "row": 1070,
+        "name": "_bcmp"
+      },
+      {
+        "row": 1071,
+        "name": "__osGbpakSelectBank"
+      },
+      {
+        "row": 1072,
+        "name": "__osMotorAccess"
+      },
+      {
+        "row": 1073,
+        "name": "__osSiGetAccess"
+      },
+      {
+        "row": 1074,
+        "name": "__osSiRawStartDma"
+      },
+      {
+        "row": 1075,
+        "name": "__osSiRelAccess"
+      },
+      {
+        "row": 1076,
+        "name": "__osContAddressCrc"
+      },
+      {
+        "row": 1077,
+        "name": "__osPfsSelectBank"
+      },
+      {
+        "row": 1078,
+        "name": "__osPfsRequestData"
+      },
+      {
+        "row": 1079,
+        "name": "__osPfsGetInitData"
+      },
+      {
+        "row": 1080,
+        "name": "__osCheckId"
+      },
+      {
+        "row": 1081,
+        "name": "__osPfsRWInode"
+      },
+      {
+        "row": 1082,
+        "name": "__osGetId"
+      },
+      {
+        "row": 1083,
+        "name": "osPfsChecker"
+      },
+      {
+        "row": 1084,
+        "name": "__osPfsDeclearPage"
+      },
+      {
+        "row": 1085,
+        "name": "__osContDataCrc"
+      },
+      {
+        "row": 1086,
+        "name": "__osPfsRequestOneChannel"
+      },
+      {
+        "row": 1087,
+        "name": "__osPfsGetOneChannelData"
+      },
+      {
+        "row": 1088,
+        "name": "__osSumcalc"
+      },
+      {
+        "row": 1089,
+        "name": "__osIdCheckSum"
+      },
+      {
+        "row": 1090,
+        "name": "__osRepairPackId"
+      },
+      {
+        "row": 1091,
+        "name": "osGetCount"
+      },
+      {
+        "row": 1092,
+        "name": "__osCheckPackId"
+      },
+      {
+        "row": 1093,
+        "name": "corrupted_init"
+      },
+      {
+        "row": 1094,
+        "name": "corrupted"
+      },
+      {
+        "row": 1095,
+        "name": "__osDequeueThread"
+      },
+      {
+        "row": 1096,
+        "name": "__osAiDeviceBusy"
+      },
+      {
+        "row": 1097,
+        "name": "__osProbeTLB"
+      },
+      {
+        "row": 1098,
+        "name": "osJamMesg"
+      },
+      {
+        "row": 1099,
+        "name": "osPiGetCmdQueue"
+      },
+      {
+        "row": 1100,
+        "name": "fsin"
+      },
+      {
+        "row": 1101,
+        "name": "sinf"
+      },
+      {
+        "row": 1102,
+        "name": "__osSetSR"
+      },
+      {
+        "row": 1103,
+        "name": "__osGetSR"
+      },
+      {
+        "row": 1104,
+        "name": "__osSetFpcCsr"
+      },
+      {
+        "row": 1105,
+        "name": "__osSiRawReadIo"
+      },
+      {
+        "row": 1106,
+        "name": "__osSiRawWriteIo"
+      },
+      {
+        "row": 1107,
+        "name": "osUnmapTLBAll"
+      },
+      {
+        "row": 1108,
+        "name": "osMapTLBRdb"
+      },
+      {
+        "row": 1109,
+        "name": "__ll_mul"
+      },
+      {
+        "row": 1110,
+        "name": "__osGetCause"
+      },
+      {
+        "row": 1111,
+        "name": "func_8006F5E0"
+      },
+      {
+        "row": 1112,
+        "name": "func_8006F5E0_ort1112"
+      },
+      {
+        "row": 1113,
+        "name": "func_8006F5E0_ort1113"
+      },
+      {
+        "row": 1114,
+        "name": "__osPackRequestData"
+      },
+      {
+        "row": 1115,
+        "name": "__osContGetInitData"
+      },
+      {
+        "row": 1116,
+        "name": "__osSiCreateAccessQueue"
+      },
+      {
+        "row": 1117,
+        "name": "func_80073490"
+      },
+      {
+        "row": 1118,
+        "name": "func_800737A0"
+      },
+      {
+        "row": 1119,
+        "name": "__osEepStatus"
+      },
+      {
+        "row": 1120,
+        "name": "__osPfsReleasePages"
+      },
+      {
+        "row": 1121,
+        "name": "__osBlockSum"
+      },
+      {
+        "row": 1122,
+        "name": "__osTimerServicesInit"
+      },
+      {
+        "row": 1123,
+        "name": "__osViInit"
+      },
+      {
+        "row": 1124,
+        "name": "__osViGetCurrentContext"
+      },
+      {
+        "row": 1125,
+        "name": "__osViSwapContext"
+      },
+      {
+        "row": 1126,
+        "name": "__osTimerInterrupt"
+      },
+      {
+        "row": 1127,
+        "name": "__osSpSetPc"
+      },
+      {
+        "row": 1128,
+        "name": "__osSpRawStartDma"
+      },
+      {
+        "row": 1129,
+        "name": "__osSpDeviceBusy"
+      },
+      {
+        "row": 1130,
+        "name": "__osSpGetStatus"
+      },
+      {
+        "row": 1131,
+        "name": "__osDpDeviceBusy"
+      },
+      {
+        "row": 1132,
+        "name": "__ull_rshift"
+      },
+      {
+        "row": 1133,
+        "name": "__ll_lshift"
+      },
+      {
+        "row": 1134,
+        "name": "__ll_rem"
+      },
+      {
+        "row": 1135,
+        "name": "__ll_div"
+      },
+      {
+        "row": 1136,
+        "name": "__ull_divremi"
+      },
+      {
+        "row": 1137,
+        "name": "__ll_mod"
+      },
+      {
+        "row": 1138,
+        "name": "__ll_rshift"
+      },
+      {
+        "row": 1139,
+        "name": "strchr"
+      },
+      {
+        "row": 1140,
+        "name": "memcpy"
+      },
+      {
+        "row": 1141,
+        "name": "func_80071820"
+      },
+      {
+        "row": 1142,
+        "name": "__osPiGetAccess"
+      },
+      {
+        "row": 1143,
+        "name": "__osPiRelAccess"
+      },
+      {
+        "row": 1144,
+        "name": "__osResetGlobalIntMask"
+      },
+      {
+        "row": 1145,
+        "name": "__osEPiRawWriteIo"
+      },
+      {
+        "row": 1146,
+        "name": "__osEPiRawReadIo"
+      },
+      {
+        "row": 1147,
+        "name": "__osSetGlobalIntMask"
+      },
+      {
+        "row": 1148,
+        "name": "osYieldThread"
+      },
+      {
+        "row": 1149,
+        "name": "_Printf"
+      },
+      {
+        "row": 1150,
+        "name": "__osInsertTimer"
+      },
+      {
+        "row": 1151,
+        "name": "__osSetTimerIntr"
+      },
+      {
+        "row": 1152,
+        "name": "func_80072720"
+      },
+      {
+        "row": 1153,
+        "name": "__osSiDeviceBusy"
+      },
+      {
+        "row": 1154,
+        "name": "__osSetCompare"
+      },
+      {
+        "row": 1155,
+        "name": "_Litob"
+      },
+      {
+        "row": 1156,
+        "name": "_Ldtob"
+      },
+      {
+        "row": 1157,
+        "name": "lldiv"
+      },
+      {
+        "row": 1158,
+        "name": "ldiv"
+      },
+      {
+        "row": 1159,
+        "name": "overlay6Empty"
+      },
+      {
+        "row": 1160,
+        "name": "overlay6Noop"
+      },
+      {
+        "row": 1161,
+        "name": "overlay1LoadBuildRecords"
+      },
+      {
+        "row": 1162,
+        "name": "overlay68CreatePayload"
+      },
+      {
+        "row": 1163,
+        "name": "overlay68RebuildSecondaryEntry"
+      },
+      {
+        "row": 1164,
+        "name": "overlay68CheckKind"
+      },
+      {
+        "row": 1165,
+        "name": "overlay68CreateSecondary"
+      },
+      {
+        "row": 1166,
+        "name": "overlay68AttachObject"
+      },
+      {
+        "row": 1167,
+        "name": "overlay1BuildObjectMappings"
+      },
+      {
+        "row": 1168,
+        "name": "overlay19Dispatch"
+      },
+      {
+        "row": 1169,
+        "name": "func_overlay_043_F0000000_1889FD0"
+      },
+      {
+        "row": 1170,
+        "name": "overlay96Unregister"
+      },
+      {
+        "row": 1171,
+        "name": "overlay87ReleaseCurrent"
+      },
+      {
+        "row": 1173,
+        "name": "overlay20ReleaseHandle"
+      },
+      {
+        "row": 1174,
+        "name": "overlay20RemoveEntry"
+      },
+      {
+        "row": 1175,
+        "name": "overlay17ReleaseChain"
+      },
+      {
+        "row": 1176,
+        "name": "func_overlay_043_F0000280_188A250"
+      },
+      {
+        "row": 1177,
+        "name": "overlay20AdvanceEntries"
+      },
+      {
+        "row": 1178,
+        "name": "overlay68UpdateTrail"
+      },
+      {
+        "row": 1179,
+        "name": "overlay20ReleaseEntry"
+      },
+      {
+        "row": 1180,
+        "name": "overlay20DrawResource"
+      },
+      {
+        "row": 1181,
+        "name": "func_overlay_071_F0000870_18CA390"
+      },
+      {
+        "row": 1182,
+        "name": "overlay23RenderEffect"
+      },
+      {
+        "row": 1183,
+        "name": "func_overlay_073_F0000D70_18CB830"
+      },
+      {
+        "row": 1185,
+        "name": "overlay24RenderState"
+      },
+      {
+        "row": 1186,
+        "name": "overlay56UnpackColor"
+      },
+      {
+        "row": 1187,
+        "name": "overlay17DrawStrip"
+      },
+      {
+        "row": 1188,
+        "name": "func_overlay_028_F00004D8_187CDA8"
+      },
+      {
+        "row": 1189,
+        "name": "func_overlay_027_F0000624_187BFFC"
+      },
+      {
+        "row": 1191,
+        "name": "overlay69Init"
+      },
+      {
+        "row": 1192,
+        "name": "overlay88Init"
+      },
+      {
+        "row": 1193,
+        "name": "overlay85Configure"
+      },
+      {
+        "row": 1199,
+        "name": "overlay92Init"
+      },
+      {
+        "row": 1203,
+        "name": "func_overlay_071_F0000000_18C9B20"
+      },
+      {
+        "row": 1205,
+        "name": "overlay83BuildBatch"
+      },
+      {
+        "row": 1206,
+        "name": "overlay93Init"
+      },
+      {
+        "row": 1209,
+        "name": "overlay36InitObject"
+      },
+      {
+        "row": 1210,
+        "name": "overlay1CopyBytes"
+      },
+      {
+        "row": 1211,
+        "name": "overlay1InitMotion"
+      },
+      {
+        "row": 1212,
+        "name": "overlay1InitRange"
+      },
+      {
+        "row": 1213,
+        "name": "overlay4InitializeObjectMotion"
+      },
+      {
+        "row": 1214,
+        "name": "overlay84InitState"
+      },
+      {
+        "row": 1215,
+        "name": "overlay84CopyPair"
+      },
+      {
+        "row": 1217,
+        "name": "func_overlay_002_F0001DF8_1858BF0"
+      },
+      {
+        "row": 1218,
+        "name": "overlay2CopyColor"
+      },
+      {
+        "row": 1219,
+        "name": "overlay1AssignRecordIndex"
+      },
+      {
+        "row": 1220,
+        "name": "overlay72Init"
+      },
+      {
+        "row": 1221,
+        "name": "overlay90Initialize"
+      },
+      {
+        "row": 1222,
+        "name": "overlay86Init"
+      },
+      {
+        "row": 1224,
+        "name": "func_overlay_029_F000042C_187D6DC"
+      },
+      {
+        "row": 1225,
+        "name": "overlay25InitializeEffect"
+      },
+      {
+        "row": 1226,
+        "name": "overlay20UpdateObjectResource"
+      },
+      {
+        "row": 1227,
+        "name": "overlay20CreateEntry"
+      },
+      {
+        "row": 1228,
+        "name": "overlay68InitializeObject"
+      },
+      {
+        "row": 1229,
+        "name": "func_overlay_022_F0000000_1878108"
+      },
+      {
+        "row": 1230,
+        "name": "overlay23Init"
+      },
+      {
+        "row": 1231,
+        "name": "overlay28InitializeWork"
+      },
+      {
+        "row": 1233,
+        "name": "overlay27Init"
+      },
+      {
+        "row": 1234,
+        "name": "overlay24Init"
+      },
+      {
+        "row": 1235,
+        "name": "overlay21RegisterPlane"
+      },
+      {
+        "row": 1236,
+        "name": "overlay91Init"
+      },
+      {
+        "row": 1237,
+        "name": "overlay87InitializeObject"
+      },
+      {
+        "row": 1238,
+        "name": "overlay74Init"
+      },
+      {
+        "row": 1239,
+        "name": "func_overlay_070_F0000000_18C91C8"
+      },
+      {
+        "row": 1242,
+        "name": "overlay78Init"
+      },
+      {
+        "row": 1243,
+        "name": "func_overlay_079_F0000000_18CCFA0"
+      },
+      {
+        "row": 1247,
+        "name": "overlay82Init"
+      },
+      {
+        "row": 1248,
+        "name": "func_overlay_073_F0000000_18CAAC0"
+      },
+      {
+        "row": 1249,
+        "name": "overlay94InitializeController"
+      },
+      {
+        "row": 1250,
+        "name": "overlay79SetLink"
+      },
+      {
+        "row": 1251,
+        "name": "overlay79InitState"
+      },
+      {
+        "row": 1253,
+        "name": "overlay95NoOp"
+      },
+      {
+        "row": 1255,
+        "name": "overlay96BuildVolume"
+      },
+      {
+        "row": 1256,
+        "name": "overlay85Update"
+      },
+      {
+        "row": 1258,
+        "name": "func_overlay_071_F0000278_18C9D98"
+      },
+      {
+        "row": 1259,
+        "name": "overlay83DrawEntries"
+      },
+      {
+        "row": 1260,
+        "name": "overlay93Update"
+      },
+      {
+        "row": 1261,
+        "name": "overlay69UpdateAnchor"
+      },
+      {
+        "row": 1262,
+        "name": "overlay88UpdateAnchor"
+      },
+      {
+        "row": 1263,
+        "name": "overlay36UpdateInteractiveEntity"
+      },
+      {
+        "row": 1264,
+        "name": "overlay1UpdateRangeFlags"
+      },
+      {
+        "row": 1265,
+        "name": "overlay1ConsumeNearbyPending"
+      },
+      {
+        "row": 1266,
+        "name": "overlay1SearchNearby"
+      },
+      {
+        "row": 1267,
+        "name": "overlay4UpdateObjectMotion"
+      },
+      {
+        "row": 1268,
+        "name": "overlay84InitializeAndUpdate"
+      },
+      {
+        "row": 1269,
+        "name": "overlay72Update"
+      },
+      {
+        "row": 1270,
+        "name": "func_overlay_090_F00000FC_18D4BF4"
+      },
+      {
+        "row": 1271,
+        "name": "func_overlay_086_F0000474_18D22AC"
+      },
+      {
+        "row": 1273,
+        "name": "func_overlay_029_F00005C4_187D874"
+      },
+      {
+        "row": 1274,
+        "name": "overlay25UpdateEffect"
+      },
+      {
+        "row": 1275,
+        "name": "overlay20MarkNested"
+      },
+      {
+        "row": 1276,
+        "name": "overlay68UpdateAnimation"
+      },
+      {
+        "row": 1277,
+        "name": "func_overlay_022_F00002B0_18783B8"
+      },
+      {
+        "row": 1278,
+        "name": "overlay23Update"
+      },
+      {
+        "row": 1279,
+        "name": "overlay28UpdateWork"
+      },
+      {
+        "row": 1281,
+        "name": "func_overlay_027_F0000064_187BA3C"
+      },
+      {
+        "row": 1282,
+        "name": "overlay24Update"
+      },
+      {
+        "row": 1283,
+        "name": "overlay91UpdateTimeline"
+      },
+      {
+        "row": 1284,
+        "name": "func_overlay_087_F0000128_18D3090"
+      },
+      {
+        "row": 1285,
+        "name": "overlay74Update"
+      },
+      {
+        "row": 1288,
+        "name": "overlay78Update"
+      },
+      {
+        "row": 1289,
+        "name": "func_overlay_079_F0000134_18CD0D4"
+      },
+      {
+        "row": 1293,
+        "name": "func_overlay_070_F00000D8_18C92A0"
+      },
+      {
+        "row": 1294,
+        "name": "overlay82Update"
+      },
+      {
+        "row": 1295,
+        "name": "func_overlay_073_F0000190_18CAC50"
+      },
+      {
+        "row": 1296,
+        "name": "overlay94UpdateController"
+      },
+      {
+        "row": 1297,
+        "name": "func_overlay_079_F0001290_18CE230"
+      },
+      {
+        "row": 1298,
+        "name": "overlay79UpdateTimers"
+      },
+      {
+        "row": 1300,
+        "name": "overlay95Update"
+      },
+      {
+        "row": 1302,
+        "name": "overlay13ProcessActive"
+      },
+      {
+        "row": 1303,
+        "name": "func_overlay_012_F00003A8_186D628"
+      },
+      {
+        "row": 1307,
+        "name": "overlay71UpdateCoordinates"
+      },
+      {
+        "row": 1308,
+        "name": "overlay100ApplyValue"
+      },
+      {
+        "row": 1309,
+        "name": "overlay100ApplyToValue"
+      },
+      {
+        "row": 1310,
+        "name": "overlay40DrawEntries"
+      },
+      {
+        "row": 1311,
+        "name": "overlay40DrawTintRectangle"
+      },
+      {
+        "row": 1312,
+        "name": "overlay96FindVolume"
+      },
+      {
+        "row": 1313,
+        "name": "overlay16ApplyGradient"
+      },
+      {
+        "row": 1314,
+        "name": "overlay40FadeRecords"
+      },
+      {
+        "row": 1315,
+        "name": "overlay21ApplyPriorities"
+      },
+      {
+        "row": 1316,
+        "name": "overlay69DrawSortedGeometry"
+      },
+      {
+        "row": 1317,
+        "name": "overlay88DrawSortedGeometry"
+      },
+      {
+        "row": 1318,
+        "name": "overlay68DrawSortedEntries"
+      },
+      {
+        "row": 1320,
+        "name": "overlay29DrawGroups"
+      },
+      {
+        "row": 1322,
+        "name": "overlay98CollectAccepted"
+      },
+      {
+        "row": 1323,
+        "name": "func_overlay_012_F0000910_186DB90"
+      },
+      {
+        "row": 1324,
+        "name": "overlay98RenderReflections"
+      },
+      {
+        "row": 1325,
+        "name": "overlay13DrawActive"
+      },
+      {
+        "row": 1326,
+        "name": "overlay96TestBit"
+      },
+      {
+        "row": 1327,
+        "name": "overlay100ReleaseAll"
+      },
+      {
+        "row": 1328,
+        "name": "overlay20ReleaseTree"
+      },
+      {
+        "row": 1329,
+        "name": "overlay105CheckWord"
+      },
+      {
+        "row": 1330,
+        "name": "func_overlay_043_F0000324_188A2F4"
+      },
+      {
+        "row": 1334,
+        "name": "func_overlay_092_F0000308_18D6228"
+      },
+      {
+        "row": 1335,
+        "name": "func_overlay_009_F00010B4_186772C"
+      },
+      {
+        "row": 1336,
+        "name": "func_overlay_008_F00042A8_1862000"
+      },
+      {
+        "row": 1337,
+        "name": "overlay17CreateChain"
+      },
+      {
+        "row": 1338,
+        "name": "func_overlay_009_F0000000_1866678"
+      },
+      {
+        "row": 1339,
+        "name": "overlay1StartTimerCallbacks"
+      },
+      {
+        "row": 1340,
+        "name": "overlay1TransitionState"
+      },
+      {
+        "row": 1341,
+        "name": "overlay1UpdateObjectPhysics"
+      },
+      {
+        "row": 1342,
+        "name": "func_overlay_008_F0000058_185DDB0"
+      },
+      {
+        "row": 1344,
+        "name": "func_overlay_008_F0000894_185E5EC"
+      },
+      {
+        "row": 1345,
+        "name": "overlay7CommitSelection"
+      },
+      {
+        "row": 1346,
+        "name": "overlay27CanUse"
+      },
+      {
+        "row": 1347,
+        "name": "overlay39Write"
+      },
+      {
+        "row": 1348,
+        "name": "overlay39Reset"
+      },
+      {
+        "row": 1349,
+        "name": "overlay39Read"
+      },
+      {
+        "row": 1350,
+        "name": "func_overlay_035_F0000000_1881CE0"
+      },
+      {
+        "row": 1351,
+        "name": "overlay7InitPool"
+      },
+      {
+        "row": 1353,
+        "name": "overlay33InitializeBuffers"
+      },
+      {
+        "row": 1354,
+        "name": "overlay42Init"
+      },
+      {
+        "row": 1355,
+        "name": "overlay16InitializeBuffer"
+      },
+      {
+        "row": 1356,
+        "name": "overlay103CheckSignature"
+      },
+      {
+        "row": 1357,
+        "name": "overlay68CreatePrimary"
+      },
+      {
+        "row": 1358,
+        "name": "overlay18Load"
+      },
+      {
+        "row": 1359,
+        "name": "overlay42DrawCapturedBuffer"
+      },
+      {
+        "row": 1360,
+        "name": "overlay42Present"
+      },
+      {
+        "row": 1361,
+        "name": "func_overlay_056_F00001A0_18A2F18"
+      },
+      {
+        "row": 1362,
+        "name": "func_overlay_011_F0000150_1868998"
+      },
+      {
+        "row": 1363,
+        "name": "func_overlay_045_F0000764_188CBBC"
+      },
+      {
+        "row": 1364,
+        "name": "overlay33PresentAndSwap"
+      },
+      {
+        "row": 1365,
+        "name": "overlay40Interpolate"
+      },
+      {
+        "row": 1366,
+        "name": "overlay27UpdateCoordinates"
+      },
+      {
+        "row": 1367,
+        "name": "overlay15GetResource10"
+      },
+      {
+        "row": 1368,
+        "name": "overlay15DrawRain"
+      },
+      {
+        "row": 1369,
+        "name": "overlay33CallB"
+      },
+      {
+        "row": 1370,
+        "name": "func_overlay_001_F0002B4C_184EF2C"
+      },
+      {
+        "row": 1371,
+        "name": "overlay11Initialize"
+      },
+      {
+        "row": 1372,
+        "name": "overlay36FlushQueue"
+      },
+      {
+        "row": 1373,
+        "name": "overlay14UpdateTransition"
+      },
+      {
+        "row": 1374,
+        "name": "func_overlay_007_F0000324_185C1AC"
+      },
+      {
+        "row": 1375,
+        "name": "overlay91Render"
+      },
+      {
+        "row": 1376,
+        "name": "overlay68PromoteSecondary"
+      },
+      {
+        "row": 1377,
+        "name": "overlay68ReleaseSecondary"
+      },
+      {
+        "row": 1378,
+        "name": "overlay68ReleaseTertiary"
+      },
+      {
+        "row": 1380,
+        "name": "func_overlay_012_F00000C4_186D344"
+      },
+      {
+        "row": 1381,
+        "name": "func_overlay_014_F0000000_186F8D8"
+      },
+      {
+        "row": 1382,
+        "name": "overlay11ReleaseCurrentGroup"
+      },
+      {
+        "row": 1383,
+        "name": "overlay1InitializeGaugeObjects"
+      },
+      {
+        "row": 1384,
+        "name": "func_overlay_001_F0003258_184F638"
+      },
+      {
+        "row": 1385,
+        "name": "overlay18Reconfigure"
+      },
+      {
+        "row": 1386,
+        "name": "overlay31InitializeBuffers"
+      },
+      {
+        "row": 1387,
+        "name": "func_overlay_043_F0000194_188A164"
+      },
+      {
+        "row": 1388,
+        "name": "overlay99ReleaseEntries"
+      },
+      {
+        "row": 1389,
+        "name": "overlay99BuildHeightGrid"
+      },
+      {
+        "row": 1390,
+        "name": "func_overlay_099_F0000DDC_18DA38C"
+      },
+      {
+        "row": 1391,
+        "name": "overlay46ReleaseState"
+      },
+      {
+        "row": 1392,
+        "name": "overlay46Submit"
+      },
+      {
+        "row": 1393,
+        "name": "overlay63Release"
+      },
+      {
+        "row": 1394,
+        "name": "overlay57ReleaseAll"
+      },
+      {
+        "row": 1395,
+        "name": "func_overlay_047_F00009D0_18917E8"
+      },
+      {
+        "row": 1396,
+        "name": "overlay58ReleaseResources"
+      },
+      {
+        "row": 1397,
+        "name": "refractOutput"
+      },
+      {
+        "row": 1398,
+        "name": "overlay51ReleaseState"
+      },
+      {
+        "row": 1399,
+        "name": "overlay53ReleaseResources"
+      },
+      {
+        "row": 1400,
+        "name": "overlay55ReleaseAll"
+      },
+      {
+        "row": 1401,
+        "name": "overlay50Cleanup"
+      },
+      {
+        "row": 1402,
+        "name": "overlay52Cleanup"
+      },
+      {
+        "row": 1403,
+        "name": "overlay54ReleaseResources"
+      },
+      {
+        "row": 1404,
+        "name": "overlay59ReleaseAll"
+      },
+      {
+        "row": 1405,
+        "name": "overlay48ReleaseAll"
+      },
+      {
+        "row": 1406,
+        "name": "overlay60ReleaseResources"
+      },
+      {
+        "row": 1407,
+        "name": "overlay101Cleanup"
+      },
+      {
+        "row": 1408,
+        "name": "overlay62ReleaseAll"
+      },
+      {
+        "row": 1409,
+        "name": "overlay46InitializeState"
+      },
+      {
+        "row": 1410,
+        "name": "overlay46InitState"
+      },
+      {
+        "row": 1411,
+        "name": "overlay63Initialize"
+      },
+      {
+        "row": 1412,
+        "name": "func_overlay_057_F0000000_18A3BF8"
+      },
+      {
+        "row": 1413,
+        "name": "func_overlay_047_F0000000_1890E18"
+      },
+      {
+        "row": 1414,
+        "name": "func_overlay_058_F0000000_18AF1E8"
+      },
+      {
+        "row": 1415,
+        "name": "overlay49Initialize"
+      },
+      {
+        "row": 1416,
+        "name": "overlay51Initialize"
+      },
+      {
+        "row": 1417,
+        "name": "overlay53Initialize"
+      },
+      {
+        "row": 1418,
+        "name": "overlay55Initialize"
+      },
+      {
+        "row": 1419,
+        "name": "func_overlay_050_F0000000_1896970"
+      },
+      {
+        "row": 1420,
+        "name": "func_overlay_052_F0000000_189A670"
+      },
+      {
+        "row": 1421,
+        "name": "func_overlay_054_F0000000_189ECA0"
+      },
+      {
+        "row": 1422,
+        "name": "overlay59ResetEntries"
+      },
+      {
+        "row": 1423,
+        "name": "overlay48InitializeState"
+      },
+      {
+        "row": 1424,
+        "name": "func_overlay_060_F0000000_18B9DD8"
+      },
+      {
+        "row": 1425,
+        "name": "func_overlay_101_F000C6E8_18E7F08"
+      },
+      {
+        "row": 1426,
+        "name": "overlay62Initialize"
+      },
+      {
+        "row": 1427,
+        "name": "func_overlay_046_F0000120_188E518"
+      },
+      {
+        "row": 1428,
+        "name": "overlay46UpdateTransition"
+      },
+      {
+        "row": 1429,
+        "name": "overlay63UpdateEffects"
+      },
+      {
+        "row": 1430,
+        "name": "func_overlay_057_F0000954_18A454C"
+      },
+      {
+        "row": 1431,
+        "name": "func_overlay_047_F0000B30_1891948"
+      },
+      {
+        "row": 1432,
+        "name": "func_overlay_058_F00005FC_18AF7E4"
+      },
+      {
+        "row": 1433,
+        "name": "overlay49Update"
+      },
+      {
+        "row": 1434,
+        "name": "func_overlay_051_F00000D0_18999D0"
+      },
+      {
+        "row": 1435,
+        "name": "overlay59Advance"
+      },
+      {
+        "row": 1436,
+        "name": "func_overlay_053_F0000240_189DBE8"
+      },
+      {
+        "row": 1437,
+        "name": "func_overlay_055_F000031C_18A1E34"
+      },
+      {
+        "row": 1438,
+        "name": "func_overlay_050_F0000334_1896CA4"
+      },
+      {
+        "row": 1439,
+        "name": "func_overlay_052_F000063C_189ACAC"
+      },
+      {
+        "row": 1440,
+        "name": "func_overlay_054_F00005AC_189F24C"
+      },
+      {
+        "row": 1441,
+        "name": "overlay48UpdateState"
+      },
+      {
+        "row": 1442,
+        "name": "func_overlay_060_F0000334_18BA10C"
+      },
+      {
+        "row": 1443,
+        "name": "overlay101UpdatePresentation"
+      },
+      {
+        "row": 1444,
+        "name": "overlay62Update"
+      },
+      {
+        "row": 1445,
+        "name": "overlay15InitStars"
+      },
+      {
+        "row": 1446,
+        "name": "overlay15ReleaseResource10"
+      },
+      {
+        "row": 1447,
+        "name": "overlay15UpdateMovingStars"
+      },
+      {
+        "row": 1448,
+        "name": "B_overlay_033_F0003EC8"
+      },
+      {
+        "row": 1449,
+        "name": "func_overlay_041_F0000854_1887B8C"
+      },
+      {
+        "row": 1450,
+        "name": "overlay104CheckWord"
+      },
+      {
+        "row": 1451,
+        "name": "overlay40UpdateEntries"
+      },
+      {
+        "row": 1452,
+        "name": "func_overlay_041_F0000000_1887338"
+      },
+      {
+        "row": 1453,
+        "name": "func_overlay_041_F0000124_188745C"
+      },
+      {
+        "row": 1454,
+        "name": "overlay41TickTransitions"
+      },
+      {
+        "row": 1455,
+        "name": "overlay40SetValues"
+      },
+      {
+        "row": 1456,
+        "name": "overlay100InitializeMotion"
+      },
+      {
+        "row": 1457,
+        "name": "overlay40AddEntry"
+      },
+      {
+        "row": 1458,
+        "name": "overlay40RemoveEntry"
+      },
+      {
+        "row": 1459,
+        "name": "overlay41SpawnItems"
+      },
+      {
+        "row": 1460,
+        "name": "func_overlay_041_F000195C_1888C94"
+      },
+      {
+        "row": 1461,
+        "name": "func_overlay_041_F0001650_1888988"
+      },
+      {
+        "row": 1462,
+        "name": "overlay41Ignore"
+      },
+      {
+        "row": 1463,
+        "name": "overlay56SetMode"
+      },
+      {
+        "row": 1464,
+        "name": "overlay41DrawItem"
+      },
+      {
+        "row": 1465,
+        "name": "func_overlay_022_F0000D30_1878E38"
+      },
+      {
+        "row": 1467,
+        "name": "func_overlay_029_F00010C4_187E374"
+      },
+      {
+        "row": 1468,
+        "name": "overlay8GetIndexed"
+      },
+      {
+        "row": 1469,
+        "name": "func_overlay_008_F0000E88_185EBE0"
+      },
+      {
+        "row": 1470,
+        "name": "func_overlay_070_F0000384_18C954C"
+      },
+      {
+        "row": 1471,
+        "name": "overlay7DispatchModes"
+      },
+      {
+        "row": 1472,
+        "name": "overlay23SpawnAttachments"
+      },
+      {
+        "row": 1473,
+        "name": "func_overlay_064_F0000000_18C3B28"
+      },
+      {
+        "row": 1474,
+        "name": "D_overlay_001_F0008120_1854500"
+      },
+      {
+        "row": 1475,
+        "name": "B_overlay_001_F00083E0"
+      },
+      {
+        "row": 1476,
+        "name": "B_overlay_001_F00083E4"
+      },
+      {
+        "row": 1477,
+        "name": "overlay1PreviousPointer"
+      },
+      {
+        "row": 1478,
+        "name": "overlay1NextPointer"
+      },
+      {
+        "row": 1479,
+        "name": "overlay1GetEntry"
+      },
+      {
+        "row": 1480,
+        "name": "overlay1GetEntryIndex"
+      },
+      {
+        "row": 1481,
+        "name": "overlay1PreviousIndex"
+      },
+      {
+        "row": 1482,
+        "name": "overlay1NextIndex"
+      },
+      {
+        "row": 1483,
+        "name": "overlay1GetLinkedActive"
+      },
+      {
+        "row": 1484,
+        "name": "overlay1GetRecord"
+      },
+      {
+        "row": 1485,
+        "name": "overlay1FindType5ByKey"
+      },
+      {
+        "row": 1486,
+        "name": "overlay1FindPreviousUsable"
+      },
+      {
+        "row": 1487,
+        "name": "overlay1FindClosestSample"
+      },
+      {
+        "row": 1488,
+        "name": "overlay1TestDirection"
+      },
+      {
+        "row": 1489,
+        "name": "overlay1BuildPointRecord"
+      },
+      {
+        "row": 1490,
+        "name": "overlay1ResolveMotionPoint"
+      },
+      {
+        "row": 1491,
+        "name": "D_800D1C3C"
+      },
+      {
+        "row": 1492,
+        "name": "D_8007BEF8"
+      },
+      {
+        "row": 1493,
+        "name": "D_8007BEFC"
+      },
+      {
+        "row": 1494,
+        "name": "D_8007BF04"
+      },
+      {
+        "row": 1495,
+        "name": "D_800D1C40"
+      },
+      {
+        "row": 1496,
+        "name": "overlay2Enable"
+      },
+      {
+        "row": 1497,
+        "name": "overlay1ReleaseRecords"
+      },
+      {
+        "row": 1498,
+        "name": "overlay1CallReset"
+      },
+      {
+        "row": 1499,
+        "name": "overlay7UpdateOwnerMode"
+      },
+      {
+        "row": 1500,
+        "name": "D_8007BF0C"
+      },
+      {
+        "row": 1501,
+        "name": "overlay68StartTimer"
+      },
+      {
+        "row": 1502,
+        "name": "D_800C9484"
+      },
+      {
+        "row": 1503,
+        "name": "D_800D1C48"
+      },
+      {
+        "row": 1504,
+        "name": "overlay1FindNextAngle"
+      },
+      {
+        "row": 1505,
+        "name": "overlay1FindPreviousAngle"
+      },
+      {
+        "row": 1506,
+        "name": "overlay4GroupCount"
+      },
+      {
+        "row": 1507,
+        "name": "overlay4UpdateGroupSpacing"
+      },
+      {
+        "row": 1508,
+        "name": "overlay3UpdateTimedEntries"
+      },
+      {
+        "row": 1509,
+        "name": "D_800C947C"
+      },
+      {
+        "row": 1510,
+        "name": "overlay7DispatchSelection"
+      },
+      {
+        "row": 1511,
+        "name": "overlay36CallModeZero"
+      },
+      {
+        "row": 1512,
+        "name": "overlay4FindSearchPosition"
+      },
+      {
+        "row": 1513,
+        "name": "overlay3SelectTarget"
+      },
+      {
+        "row": 1514,
+        "name": "D_800CB304"
+      },
+      {
+        "row": 1515,
+        "name": "overlay8SetValue"
+      },
+      {
+        "row": 1516,
+        "name": "overlay2ContainsPoint"
+      },
+      {
+        "row": 1517,
+        "name": "overlay7FillValues"
+      },
+      {
+        "row": 1518,
+        "name": "func_overlay_008_F0001000_185ED58"
+      },
+      {
+        "row": 1519,
+        "name": "overlay8SetBuffer"
+      },
+      {
+        "row": 1520,
+        "name": "func_overlay_008_F00034A0_18611F8"
+      },
+      {
+        "row": 1521,
+        "name": "overlay8WriteCommand"
+      },
+      {
+        "row": 1522,
+        "name": "func_overlay_008_F0003278_1860FD0"
+      },
+      {
+        "row": 1523,
+        "name": "func_overlay_008_F0002EC0_1860C18"
+      },
+      {
+        "row": 1524,
+        "name": "overlay8UpdateChannels"
+      },
+      {
+        "row": 1525,
+        "name": "overlay1InitTimedState"
+      },
+      {
+        "row": 1526,
+        "name": "overlay1FindDirectionalObject"
+      },
+      {
+        "row": 1527,
+        "name": "func_overlay_008_F0000F1C_185EC74"
+      },
+      {
+        "row": 1528,
+        "name": "overlay36SpawnDirectional"
+      },
+      {
+        "row": 1529,
+        "name": "overlay36SpawnLinked7F"
+      },
+      {
+        "row": 1530,
+        "name": "overlay36SpawnOffsetA9"
+      },
+      {
+        "row": 1531,
+        "name": "overlay36TickState"
+      },
+      {
+        "row": 1532,
+        "name": "overlay36UpdatePeers"
+      },
+      {
+        "row": 1533,
+        "name": "overlay36SpawnFinalEffect"
+      },
+      {
+        "row": 1534,
+        "name": "overlay3RunCachedModeAction"
+      },
+      {
+        "row": 1535,
+        "name": "overlay1UpdateCountdown"
+      },
+      {
+        "row": 1536,
+        "name": "overlay1ReadSelection"
+      },
+      {
+        "row": 1537,
+        "name": "overlay1SolveAngleCandidates"
+      },
+      {
+        "row": 1538,
+        "name": "overlay1UpdateModeSound"
+      },
+      {
+        "row": 1539,
+        "name": "overlay4RemoveObject"
+      },
+      {
+        "row": 1540,
+        "name": "overlay1SelectMaskedMode"
+      },
+      {
+        "row": 1541,
+        "name": "overlay1UpdateAimedTransient"
+      },
+      {
+        "row": 1542,
+        "name": "overlay36SpawnTransient"
+      },
+      {
+        "row": 1543,
+        "name": "overlay1UpdateTransient"
+      },
+      {
+        "row": 1544,
+        "name": "func_overlay_002_F0001A94_185888C"
+      },
+      {
+        "row": 1545,
+        "name": "overlay3TouchObject"
+      },
+      {
+        "row": 1546,
+        "name": "overlay1ModeIsOne"
+      },
+      {
+        "row": 1547,
+        "name": "overlay1ModeIsTwo"
+      },
+      {
+        "row": 1548,
+        "name": "overlay1ModeIsThree"
+      },
+      {
+        "row": 1549,
+        "name": "overlay1DistanceFromCurrent"
+      },
+      {
+        "row": 1550,
+        "name": "overlay1DistanceFromSelected"
+      },
+      {
+        "row": 1551,
+        "name": "overlay1ScaledDistance"
+      },
+      {
+        "row": 1552,
+        "name": "func_overlay_002_F0000C90_1857A88"
+      },
+      {
+        "row": 1553,
+        "name": "func_overlay_002_F0001364_185815C"
+      },
+      {
+        "row": 1554,
+        "name": "overlay3ContainsValue"
+      },
+      {
+        "row": 1555,
+        "name": "overlay3ResetObjects"
+      },
+      {
+        "row": 1556,
+        "name": "overlay36InitVectorState"
+      },
+      {
+        "row": 1557,
+        "name": "overlay4AttachObject"
+      },
+      {
+        "row": 1558,
+        "name": "overlay5InitializeAudio"
+      },
+      {
+        "row": 1559,
+        "name": "D_800BF808"
+      },
+      {
+        "row": 1560,
+        "name": "D_800BF900"
+      },
+      {
+        "row": 1561,
+        "name": "D_800BF780"
+      },
+      {
+        "row": 1562,
+        "name": "D_8008EA40"
+      },
+      {
+        "row": 1563,
+        "name": "D_800BF7B0"
+      },
+      {
+        "row": 1564,
+        "name": "D_800BF7A0"
+      },
+      {
+        "row": 1565,
+        "name": "D_800BF7A8"
+      },
+      {
+        "row": 1566,
+        "name": "D_800BF7B4"
+      },
+      {
+        "row": 1567,
+        "name": "D_800BF7A4"
+      },
+      {
+        "row": 1568,
+        "name": "D_800BF7AC"
+      },
+      {
+        "row": 1569,
+        "name": "D_800BF79C"
+      },
+      {
+        "row": 1570,
+        "name": "D_800BF790"
+      },
+      {
+        "row": 1571,
+        "name": "D_800BF798"
+      },
+      {
+        "row": 1572,
+        "name": "D_80078D60"
+      },
+      {
+        "row": 1573,
+        "name": "D_80078D64"
+      },
+      {
+        "row": 1574,
+        "name": "D_800BFA10"
+      },
+      {
+        "row": 1575,
+        "name": "D_800BFA0C"
+      },
+      {
+        "row": 1576,
+        "name": "overlay6Init"
+      },
+      {
+        "row": 1577,
+        "name": "overlay7AcquireEntry"
+      },
+      {
+        "row": 1578,
+        "name": "D_8007C1A0"
+      },
+      {
+        "row": 1579,
+        "name": "D_800D3128"
+      },
+      {
+        "row": 1580,
+        "name": "overlay59AppendValue"
+      },
+      {
+        "row": 1581,
+        "name": "D_overlay_008_F0005710_1863468"
+      },
+      {
+        "row": 1582,
+        "name": "D_overlay_008_F0005868_18635C0"
+      },
+      {
+        "row": 1583,
+        "name": "D_overlay_008_F00059C0_1863718"
+      },
+      {
+        "row": 1584,
+        "name": "D_overlay_008_F0005B18_1863870"
+      },
+      {
+        "row": 1585,
+        "name": "D_overlay_008_F0005C70_18639C8"
+      },
+      {
+        "row": 1586,
+        "name": "D_overlay_008_F0005DC8_1863B20"
+      },
+      {
+        "row": 1587,
+        "name": "D_overlay_008_F0005F20_1863C78"
+      },
+      {
+        "row": 1588,
+        "name": "D_overlay_008_F0006078_1863DD0"
+      },
+      {
+        "row": 1589,
+        "name": "D_overlay_008_F00061D0_1863F28"
+      },
+      {
+        "row": 1590,
+        "name": "D_overlay_008_F0006328_1864080"
+      },
+      {
+        "row": 1591,
+        "name": "D_overlay_008_F0006480_18641D8"
+      },
+      {
+        "row": 1592,
+        "name": "D_overlay_008_F00065D8_1864330"
+      },
+      {
+        "row": 1593,
+        "name": "D_overlay_008_F0006730_1864488"
+      },
+      {
+        "row": 1594,
+        "name": "D_overlay_008_F0006888_18645E0"
+      },
+      {
+        "row": 1595,
+        "name": "D_overlay_008_F00069E0_1864738"
+      },
+      {
+        "row": 1596,
+        "name": "D_overlay_008_F0006B38_1864890"
+      },
+      {
+        "row": 1597,
+        "name": "D_overlay_008_F0006C90_18649E8"
+      },
+      {
+        "row": 1598,
+        "name": "D_overlay_008_F0006DE8_1864B40"
+      },
+      {
+        "row": 1599,
+        "name": "D_overlay_008_F0006F40_1864C98"
+      },
+      {
+        "row": 1600,
+        "name": "D_overlay_008_F0007098_1864DF0"
+      },
+      {
+        "row": 1601,
+        "name": "D_overlay_008_F00071F0_1864F48"
+      },
+      {
+        "row": 1602,
+        "name": "D_overlay_008_F0007218_1864F70"
+      },
+      {
+        "row": 1603,
+        "name": "overlay8Ignore"
+      },
+      {
+        "row": 1604,
+        "name": "D_8007BF08"
+      },
+      {
+        "row": 1605,
+        "name": "D_800C9480"
+      },
+      {
+        "row": 1606,
+        "name": "overlay8ScaleOutputs"
+      },
+      {
+        "row": 1607,
+        "name": "overlay17AdvanceChain"
+      },
+      {
+        "row": 1608,
+        "name": "D_80078F80"
+      },
+      {
+        "row": 1610,
+        "name": "D_80079A70"
+      },
+      {
+        "row": 1611,
+        "name": "func_overlay_020_F0001148_1877720"
+      },
+      {
+        "row": 1612,
+        "name": "overlay10Initialize"
+      },
+      {
+        "row": 1613,
+        "name": "D_800D64E8"
+      },
+      {
+        "row": 1614,
+        "name": "D_800D60E8"
+      },
+      {
+        "row": 1615,
+        "name": "D_800D6638"
+      },
+      {
+        "row": 1616,
+        "name": "D_800D663C"
+      },
+      {
+        "row": 1617,
+        "name": "D_800D60E4"
+      },
+      {
+        "row": 1618,
+        "name": "D_800D6640"
+      },
+      {
+        "row": 1619,
+        "name": "D_800D6644"
+      },
+      {
+        "row": 1620,
+        "name": "D_800D6648"
+      },
+      {
+        "row": 1621,
+        "name": "D_800D6628"
+      },
+      {
+        "row": 1622,
+        "name": "D_800D60E0"
+      },
+      {
+        "row": 1623,
+        "name": "D_800D664C"
+      },
+      {
+        "row": 1624,
+        "name": "D_800D664D"
+      },
+      {
+        "row": 1625,
+        "name": "overlay45ResetState"
+      },
+      {
+        "row": 1627,
+        "name": "D_800D3140"
+      },
+      {
+        "row": 1628,
+        "name": "D_800D3144"
+      },
+      {
+        "row": 1629,
+        "name": "D_800D3148"
+      },
+      {
+        "row": 1630,
+        "name": "overlay45CreateDescriptor"
+      },
+      {
+        "row": 1631,
+        "name": "D_8007C0B8"
+      },
+      {
+        "row": 1632,
+        "name": "overlay45SetMode"
+      },
+      {
+        "row": 1633,
+        "name": "D_8007BF1C"
+      },
+      {
+        "row": 1634,
+        "name": "overlay45SetField22"
+      },
+      {
+        "row": 1635,
+        "name": "D_800D3190"
+      },
+      {
+        "row": 1636,
+        "name": "D_800D3194"
+      },
+      {
+        "row": 1637,
+        "name": "D_8007BF44"
+      },
+      {
+        "row": 1638,
+        "name": "D_8007C0C0"
+      },
+      {
+        "row": 1639,
+        "name": "D_8007BF48"
+      },
+      {
+        "row": 1640,
+        "name": "D_8007BF4C"
+      },
+      {
+        "row": 1641,
+        "name": "D_8007BF50"
+      },
+      {
+        "row": 1642,
+        "name": "D_8007BF54"
+      },
+      {
+        "row": 1643,
+        "name": "D_800D3048"
+      },
+      {
+        "row": 1644,
+        "name": "D_8007BF74"
+      },
+      {
+        "row": 1645,
+        "name": "overlay45ReleaseDescriptor"
+      },
+      {
+        "row": 1646,
+        "name": "func_overlay_012_F00001B4_186D434"
+      },
+      {
+        "row": 1647,
+        "name": "func_overlay_012_F00002E4_186D564"
+      },
+      {
+        "row": 1648,
+        "name": "overlay13Release"
+      },
+      {
+        "row": 1649,
+        "name": "overlay13CreateRecord"
+      },
+      {
+        "row": 1650,
+        "name": "overlay13UpdateRecord"
+      },
+      {
+        "row": 1651,
+        "name": "overlay13Call"
+      },
+      {
+        "row": 1652,
+        "name": "overlay14ReleaseOwner"
+      },
+      {
+        "row": 1653,
+        "name": "func_overlay_014_F000013C_186FA14"
+      },
+      {
+        "row": 1654,
+        "name": "overlay14ResetFlags"
+      },
+      {
+        "row": 1655,
+        "name": "overlay14GetFlagC4"
+      },
+      {
+        "row": 1656,
+        "name": "overlay14GetFlagC8"
+      },
+      {
+        "row": 1657,
+        "name": "overlay14ReleaseCurrent"
+      },
+      {
+        "row": 1658,
+        "name": "overlay14GetFlagCC"
+      },
+      {
+        "row": 1659,
+        "name": "overlay14FinalizeActiveHandle"
+      },
+      {
+        "row": 1660,
+        "name": "overlay15GetResource4"
+      },
+      {
+        "row": 1661,
+        "name": "overlay15ReleaseResource"
+      },
+      {
+        "row": 1662,
+        "name": "overlay15InitStarsAndPalette"
+      },
+      {
+        "row": 1663,
+        "name": "overlay15MoveStars"
+      },
+      {
+        "row": 1664,
+        "name": "overlay15DrawScreenStars"
+      },
+      {
+        "row": 1665,
+        "name": "overlay15SetValueC"
+      },
+      {
+        "row": 1666,
+        "name": "overlay15ClearValue7C"
+      },
+      {
+        "row": 1667,
+        "name": "overlay16ReleaseBuffer"
+      },
+      {
+        "row": 1668,
+        "name": "D_800CF5B8"
+      },
+      {
+        "row": 1669,
+        "name": "D_8007A1D4"
+      },
+      {
+        "row": 1670,
+        "name": "overlay30Initialize"
+      },
+      {
+        "row": 1671,
+        "name": "D_800D1918"
+      },
+      {
+        "row": 1672,
+        "name": "func_overlay_031_F00002E8_187F808"
+      },
+      {
+        "row": 1673,
+        "name": "D_8007A1B8"
+      },
+      {
+        "row": 1674,
+        "name": "D_800CF510"
+      },
+      {
+        "row": 1675,
+        "name": "D_800CF518"
+      },
+      {
+        "row": 1676,
+        "name": "D_800CF5B0"
+      },
+      {
+        "row": 1677,
+        "name": "D_800D18E0"
+      },
+      {
+        "row": 1678,
+        "name": "D_8007A1CC"
+      },
+      {
+        "row": 1679,
+        "name": "D_8007A1C8"
+      },
+      {
+        "row": 1680,
+        "name": "D_800CF528"
+      },
+      {
+        "row": 1681,
+        "name": "D_800CF598"
+      },
+      {
+        "row": 1682,
+        "name": "D_800CF580"
+      },
+      {
+        "row": 1683,
+        "name": "D_800CF51C"
+      },
+      {
+        "row": 1684,
+        "name": "D_800CF534"
+      },
+      {
+        "row": 1685,
+        "name": "D_800CF5A4"
+      },
+      {
+        "row": 1686,
+        "name": "D_800CF58C"
+      },
+      {
+        "row": 1687,
+        "name": "D_800CF530"
+      },
+      {
+        "row": 1688,
+        "name": "D_800CF5A0"
+      },
+      {
+        "row": 1689,
+        "name": "D_800CF588"
+      },
+      {
+        "row": 1690,
+        "name": "overlay20ConfigureResource"
+      },
+      {
+        "row": 1691,
+        "name": "func_overlay_020_F000038C_1876964"
+      },
+      {
+        "row": 1692,
+        "name": "overlay20BuildTileCommands"
+      },
+      {
+        "row": 1693,
+        "name": "overlay20UpdateGrid"
+      },
+      {
+        "row": 1694,
+        "name": "overlay20ConfigureEntry"
+      },
+      {
+        "row": 1695,
+        "name": "D_8007C854"
+      },
+      {
+        "row": 1696,
+        "name": "D_8007C85C"
+      },
+      {
+        "row": 1698,
+        "name": "D_8007A1E4"
+      },
+      {
+        "row": 1699,
+        "name": "overlay27Activate"
+      },
+      {
+        "row": 1700,
+        "name": "overlay28ResetBuffer"
+      },
+      {
+        "row": 1701,
+        "name": "overlay28UpdateVertices"
+      },
+      {
+        "row": 1702,
+        "name": "D_800C94A0"
+      },
+      {
+        "row": 1703,
+        "name": "D_800C94EC"
+      },
+      {
+        "row": 1704,
+        "name": "D_800C94F4"
+      },
+      {
+        "row": 1705,
+        "name": "D_800C9500"
+      },
+      {
+        "row": 1706,
+        "name": "D_800C94E0"
+      },
+      {
+        "row": 1707,
+        "name": "D_800C94E4"
+      },
+      {
+        "row": 1708,
+        "name": "D_800C9454"
+      },
+      {
+        "row": 1709,
+        "name": "D_800C9450"
+      },
+      {
+        "row": 1710,
+        "name": "D_800C9458"
+      },
+      {
+        "row": 1711,
+        "name": "D_800C945C"
+      },
+      {
+        "row": 1712,
+        "name": "D_800C9488"
+      },
+      {
+        "row": 1713,
+        "name": "D_800C948C"
+      },
+      {
+        "row": 1714,
+        "name": "D_800C9460"
+      },
+      {
+        "row": 1715,
+        "name": "D_800C9464"
+      },
+      {
+        "row": 1716,
+        "name": "D_800C9468"
+      },
+      {
+        "row": 1717,
+        "name": "D_800C9494"
+      },
+      {
+        "row": 1718,
+        "name": "D_800C94A4"
+      },
+      {
+        "row": 1719,
+        "name": "D_800C946C"
+      },
+      {
+        "row": 1720,
+        "name": "D_8007CA60"
+      },
+      {
+        "row": 1721,
+        "name": "D_8007CA98"
+      },
+      {
+        "row": 1722,
+        "name": "D_800D4120"
+      },
+      {
+        "row": 1723,
+        "name": "D_8007C8AC"
+      },
+      {
+        "row": 1724,
+        "name": "D_8007C8A4"
+      },
+      {
+        "row": 1725,
+        "name": "D_8007C8A8"
+      },
+      {
+        "row": 1726,
+        "name": "overlay31BuildPalettes"
+      },
+      {
+        "row": 1727,
+        "name": "D_8007C8B8"
+      },
+      {
+        "row": 1728,
+        "name": "D_8007C8B0"
+      },
+      {
+        "row": 1729,
+        "name": "D_8007C8B4"
+      },
+      {
+        "row": 1730,
+        "name": "D_8007C88C"
+      },
+      {
+        "row": 1731,
+        "name": "D_8007C890"
+      },
+      {
+        "row": 1732,
+        "name": "D_8007C89C"
+      },
+      {
+        "row": 1733,
+        "name": "D_8007CAB4"
+      },
+      {
+        "row": 1734,
+        "name": "D_8007CAC0"
+      },
+      {
+        "row": 1735,
+        "name": "D_8007CC40"
+      },
+      {
+        "row": 1736,
+        "name": "D_8007CC50"
+      },
+      {
+        "row": 1737,
+        "name": "D_8007C898"
+      },
+      {
+        "row": 1738,
+        "name": "D_8007C894"
+      },
+      {
+        "row": 1739,
+        "name": "D_8007C884"
+      },
+      {
+        "row": 1740,
+        "name": "D_8007C888"
+      },
+      {
+        "row": 1741,
+        "name": "D_8007C8BC"
+      },
+      {
+        "row": 1742,
+        "name": "D_8007C8C0"
+      },
+      {
+        "row": 1743,
+        "name": "D_8007A3EC"
+      },
+      {
+        "row": 1744,
+        "name": "D_800D1C38"
+      },
+      {
+        "row": 1745,
+        "name": "D_800D1C34"
+      },
+      {
+        "row": 1746,
+        "name": "D_800D1C28"
+      },
+      {
+        "row": 1747,
+        "name": "D_800D1C30"
+      },
+      {
+        "row": 1748,
+        "name": "D_800D2CD0"
+      },
+      {
+        "row": 1749,
+        "name": "overlay33ReleaseGlobal"
+      },
+      {
+        "row": 1750,
+        "name": "overlay33CallA"
+      },
+      {
+        "row": 1751,
+        "name": "overlay33BuildDisplayList"
+      },
+      {
+        "row": 1752,
+        "name": "D_800D2FAC"
+      },
+      {
+        "row": 1756,
+        "name": "D_800C9548"
+      },
+      {
+        "row": 1757,
+        "name": "D_800792EC"
+      },
+      {
+        "row": 1758,
+        "name": "D_800C99BC"
+      },
+      {
+        "row": 1759,
+        "name": "D_800C9544"
+      },
+      {
+        "row": 1760,
+        "name": "D_800792E8"
+      },
+      {
+        "row": 1761,
+        "name": "D_800C9560"
+      },
+      {
+        "row": 1762,
+        "name": "D_800C9568"
+      },
+      {
+        "row": 1763,
+        "name": "D_800792F0"
+      },
+      {
+        "row": 1764,
+        "name": "D_800792F4"
+      },
+      {
+        "row": 1765,
+        "name": "D_80079274"
+      },
+      {
+        "row": 1766,
+        "name": "overlay98CollectUniqueY"
+      },
+      {
+        "row": 1767,
+        "name": "D_800C9D38"
+      },
+      {
+        "row": 1768,
+        "name": "D_800C9D2C"
+      },
+      {
+        "row": 1769,
+        "name": "D_800C9D30"
+      },
+      {
+        "row": 1770,
+        "name": "D_800C9D34"
+      },
+      {
+        "row": 1771,
+        "name": "D_800C9D20"
+      },
+      {
+        "row": 1772,
+        "name": "D_800C9D3C"
+      },
+      {
+        "row": 1773,
+        "name": "D_800C95A8"
+      },
+      {
+        "row": 1774,
+        "name": "D_80079314"
+      },
+      {
+        "row": 1775,
+        "name": "D_8007BF18"
+      },
+      {
+        "row": 1776,
+        "name": "D_80078F20"
+      },
+      {
+        "row": 1777,
+        "name": "overlay36PrepareAndTick"
+      },
+      {
+        "row": 1778,
+        "name": "overlay36CallModeOne"
+      },
+      {
+        "row": 1779,
+        "name": "D_8007A204"
+      },
+      {
+        "row": 1780,
+        "name": "__osContLastCmd"
+      },
+      {
+        "row": 1781,
+        "name": "D_8007D6B0"
+      },
+      {
+        "row": 1782,
+        "name": "D_800D6BF8"
+      },
+      {
+        "row": 1783,
+        "name": "D_800D6B00"
+      },
+      {
+        "row": 1784,
+        "name": "D_800D6C38"
+      },
+      {
+        "row": 1785,
+        "name": "D_800D6C3A"
+      },
+      {
+        "row": 1786,
+        "name": "D_800D6C3C"
+      },
+      {
+        "row": 1787,
+        "name": "D_800D6C3E"
+      },
+      {
+        "row": 1788,
+        "name": "D_800D6C40"
+      },
+      {
+        "row": 1789,
+        "name": "D_800D6C42"
+      },
+      {
+        "row": 1790,
+        "name": "D_800D6C46"
+      },
+      {
+        "row": 1791,
+        "name": "D_800D6C44"
+      },
+      {
+        "row": 1792,
+        "name": "D_800D6C52"
+      },
+      {
+        "row": 1793,
+        "name": "D_800D6C4C"
+      },
+      {
+        "row": 1794,
+        "name": "D_800D6C50"
+      },
+      {
+        "row": 1795,
+        "name": "D_800D6C4E"
+      },
+      {
+        "row": 1796,
+        "name": "D_800D6C54"
+      },
+      {
+        "row": 1797,
+        "name": "D_800D6B58"
+      },
+      {
+        "row": 1798,
+        "name": "D_800D6C58"
+      },
+      {
+        "row": 1799,
+        "name": "func_overlay_041_F00002AC_18875E4"
+      },
+      {
+        "row": 1800,
+        "name": "D_8007D6A4"
+      },
+      {
+        "row": 1801,
+        "name": "overlay41IsUnitScale"
+      },
+      {
+        "row": 1802,
+        "name": "D_800D6B08"
+      },
+      {
+        "row": 1803,
+        "name": "D_800D6D18"
+      },
+      {
+        "row": 1804,
+        "name": "overlay67BuildVertices"
+      },
+      {
+        "row": 1805,
+        "name": "overlay42Release"
+      },
+      {
+        "row": 1806,
+        "name": "D_8007A20C"
+      },
+      {
+        "row": 1807,
+        "name": "D_8007A410"
+      },
+      {
+        "row": 1808,
+        "name": "overlay42Resume"
+      },
+      {
+        "row": 1809,
+        "name": "D_800D2FA4"
+      },
+      {
+        "row": 1810,
+        "name": "D_800D2FA0"
+      },
+      {
+        "row": 1811,
+        "name": "D_800D2C98"
+      },
+      {
+        "row": 1812,
+        "name": "D_8007A3C8"
+      },
+      {
+        "row": 1813,
+        "name": "D_80078F28"
+      },
+      {
+        "row": 1814,
+        "name": "overlay44CreateAnimationState"
+      },
+      {
+        "row": 1815,
+        "name": "D_800D76D8"
+      },
+      {
+        "row": 1816,
+        "name": "D_800D76D0"
+      },
+      {
+        "row": 1817,
+        "name": "overlay44ReleaseHandles"
+      },
+      {
+        "row": 1818,
+        "name": "overlay44UpdateFrameCache"
+      },
+      {
+        "row": 1819,
+        "name": "func_overlay_044_F0000580_188BDE0"
+      },
+      {
+        "row": 1820,
+        "name": "overlay45ConfigureLayout"
+      },
+      {
+        "row": 1821,
+        "name": "overlay45ReadPair"
+      },
+      {
+        "row": 1822,
+        "name": "func_overlay_045_F000067C_188CAD4"
+      },
+      {
+        "row": 1823,
+        "name": "overlay45SetField20"
+      },
+      {
+        "row": 1824,
+        "name": "D_800D31C8"
+      },
+      {
+        "row": 1825,
+        "name": "overlay99InitializeEntries"
+      },
+      {
+        "row": 1826,
+        "name": "D_8007C0BC"
+      },
+      {
+        "row": 1827,
+        "name": "D_800D3058"
+      },
+      {
+        "row": 1828,
+        "name": "D_8007BF68"
+      },
+      {
+        "row": 1829,
+        "name": "D_800D31B0"
+      },
+      {
+        "row": 1830,
+        "name": "overlay48Initialize"
+      },
+      {
+        "row": 1831,
+        "name": "D_8007BF60"
+      },
+      {
+        "row": 1832,
+        "name": "overlay65Initialize"
+      },
+      {
+        "row": 1833,
+        "name": "overlay65UpdateParticles"
+      },
+      {
+        "row": 1834,
+        "name": "overlay65Release"
+      },
+      {
+        "row": 1835,
+        "name": "D_800D3550"
+      },
+      {
+        "row": 1836,
+        "name": "overlay56LoadResource"
+      },
+      {
+        "row": 1837,
+        "name": "D_800D304E"
+      },
+      {
+        "row": 1838,
+        "name": "overlay56SplitTime"
+      },
+      {
+        "row": 1839,
+        "name": "D_8007C180"
+      },
+      {
+        "row": 1840,
+        "name": "overlay59Interpolate"
+      },
+      {
+        "row": 1841,
+        "name": "overlay59BuildList"
+      },
+      {
+        "row": 1842,
+        "name": "overlay59DrawFrame"
+      },
+      {
+        "row": 1843,
+        "name": "D_8007C1B0"
+      },
+      {
+        "row": 1844,
+        "name": "overlay56ReleaseResource"
+      },
+      {
+        "row": 1845,
+        "name": "D_8007BEF4"
+      },
+      {
+        "row": 1846,
+        "name": "overlay56OffsetCoordinates"
+      },
+      {
+        "row": 1847,
+        "name": "overlay56CenterCoordinates"
+      },
+      {
+        "row": 1848,
+        "name": "D_800D304C"
+      },
+      {
+        "row": 1849,
+        "name": "D_8007A1F4"
+      },
+      {
+        "row": 1850,
+        "name": "D_8007A1F8"
+      },
+      {
+        "row": 1851,
+        "name": "D_8007C11C"
+      },
+      {
+        "row": 1852,
+        "name": "D_8007C14C"
+      },
+      {
+        "row": 1853,
+        "name": "D_8007BF64"
+      },
+      {
+        "row": 1854,
+        "name": "D_8007BF78"
+      },
+      {
+        "row": 1855,
+        "name": "overlay84SelectCurrent"
+      },
+      {
+        "row": 1856,
+        "name": "overlay84ActivateCurrent"
+      },
+      {
+        "row": 1857,
+        "name": "overlay84InitializeCurrent"
+      },
+      {
+        "row": 1858,
+        "name": "overlay84ClearActive"
+      },
+      {
+        "row": 1859,
+        "name": "overlay84SetBit"
+      },
+      {
+        "row": 1860,
+        "name": "D_8007BF00"
+      },
+      {
+        "row": 1861,
+        "name": "D_800D31B8"
+      },
+      {
+        "row": 1862,
+        "name": "overlay84Mark"
+      },
+      {
+        "row": 1863,
+        "name": "overlay84GetActive"
+      },
+      {
+        "row": 1864,
+        "name": "overlay84GetCurrent"
+      },
+      {
+        "row": 1865,
+        "name": "overlay84IsUnitScale"
+      },
+      {
+        "row": 1866,
+        "name": "overlay84GetValues"
+      },
+      {
+        "row": 1867,
+        "name": "overlay84GetEnabledCurrent"
+      },
+      {
+        "row": 1868,
+        "name": "overlay84LoadCurrent"
+      },
+      {
+        "row": 1869,
+        "name": "D_800D31C0"
+      },
+      {
+        "row": 1870,
+        "name": "D_8007BF2C"
+      },
+      {
+        "row": 1871,
+        "name": "overlay84ResetCurrent"
+      },
+      {
+        "row": 1872,
+        "name": "overlay94SetValue"
+      },
+      {
+        "row": 1873,
+        "name": "overlay84ClearMode"
+      },
+      {
+        "row": 1874,
+        "name": "D_800D31BE"
+      },
+      {
+        "row": 1875,
+        "name": "D_8007BF14"
+      },
+      {
+        "row": 1876,
+        "name": "D_8007C158"
+      },
+      {
+        "row": 1877,
+        "name": "D_800D31BC"
+      },
+      {
+        "row": 1878,
+        "name": "D_8007C0E8"
+      },
+      {
+        "row": 1879,
+        "name": "D_8007C114"
+      },
+      {
+        "row": 1880,
+        "name": "D_8007C1B4"
+      },
+      {
+        "row": 1881,
+        "name": "D_8007BF6C"
+      },
+      {
+        "row": 1882,
+        "name": "D_8007BF20"
+      },
+      {
+        "row": 1883,
+        "name": "D_8007BF24"
+      },
+      {
+        "row": 1884,
+        "name": "D_8007BF28"
+      },
+      {
+        "row": 1885,
+        "name": "D_800D31C4"
+      },
+      {
+        "row": 1886,
+        "name": "D_8007A1FC"
+      },
+      {
+        "row": 1887,
+        "name": "overlay59Update"
+      },
+      {
+        "row": 1888,
+        "name": "overlay82GetSelection"
+      },
+      {
+        "row": 1889,
+        "name": "overlay82IsActive"
+      },
+      {
+        "row": 1890,
+        "name": "overlay82Disable"
+      },
+      {
+        "row": 1891,
+        "name": "D_800D2FC0"
+      },
+      {
+        "row": 1892,
+        "name": "overlay82Enable"
+      },
+      {
+        "row": 1893,
+        "name": "D_800D31B4"
+      },
+      {
+        "row": 1894,
+        "name": "overlay61InitResources"
+      },
+      {
+        "row": 1895,
+        "name": "func_overlay_061_F0000B84_18BFF4C"
+      },
+      {
+        "row": 1896,
+        "name": "overlay61ReleaseResources"
+      },
+      {
+        "row": 1897,
+        "name": "overlay68PayloadLimit"
+      },
+      {
+        "row": 1898,
+        "name": "D_800D3180"
+      },
+      {
+        "row": 1899,
+        "name": "D_8007BF58"
+      },
+      {
+        "row": 1900,
+        "name": "D_8007A1E0"
+      },
+      {
+        "row": 1901,
+        "name": "D_800D60B0"
+      },
+      {
+        "row": 1902,
+        "name": "D_800D60C0"
+      },
+      {
+        "row": 1903,
+        "name": "D_800D2FA8"
+      },
+      {
+        "row": 1904,
+        "name": "D_8007A1F0"
+      },
+      {
+        "row": 1905,
+        "name": "overlay68ReleasePrimary"
+      },
+      {
+        "row": 1906,
+        "name": "overlay68FinishEntry"
+      },
+      {
+        "row": 1907,
+        "name": "overlay68ClearNestedFlag"
+      },
+      {
+        "row": 1908,
+        "name": "o71ResourceSlot"
+      },
+      {
+        "row": 1910,
+        "name": "D_overlay_082_F00004D0_18CF650"
+      },
+      {
+        "row": 1911,
+        "name": "overlay83SubmitAll"
+      },
+      {
+        "row": 1912,
+        "name": "overlay84AdvanceCurrent"
+      },
+      {
+        "row": 1913,
+        "name": "overlay84SetAngle"
+      },
+      {
+        "row": 1914,
+        "name": "overlay86ProcessCurrent"
+      },
+      {
+        "row": 1915,
+        "name": "overlay86ScaledVectorPosition"
+      },
+      {
+        "row": 1916,
+        "name": "overlay86BuildTransform"
+      },
+      {
+        "row": 1917,
+        "name": "overlay86SelectPosition"
+      },
+      {
+        "row": 1918,
+        "name": "overlay96Register"
+      },
+      {
+        "row": 1919,
+        "name": "D_80078F84"
+      },
+      {
+        "row": 1920,
+        "name": "overlay96DrawObject"
+      },
+      {
+        "row": 1922,
+        "name": "overlay99GetEntries"
+      },
+      {
+        "row": 1923,
+        "name": "D_8007BE88"
+      },
+      {
+        "row": 1924,
+        "name": "D_8007BE84"
+      },
+      {
+        "row": 1925,
+        "name": "overlay99RenderSegments"
+      },
+      {
+        "row": 1926,
+        "name": "D_8007BE80"
+      },
+      {
+        "row": 1927,
+        "name": "D_8007BE40"
+      },
+      {
+        "row": 1928,
+        "name": "D_80079278"
+      },
+      {
+        "row": 1929,
+        "name": "overlay100RemoveEntry"
+      },
+      {
+        "row": 1930,
+        "name": "overlay100UpdateMotion"
+      },
+      {
+        "row": 1931,
+        "name": "overlay100DrawMotion"
+      },
+      {
+        "row": 1932,
+        "name": "overlay101AllocateEntry"
+      },
+      {
+        "row": 1933,
+        "name": "overlay101FindEntry"
+      },
+      {
+        "row": 1934,
+        "name": "overlay101UpdateEntry"
+      },
+      {
+        "row": 1935,
+        "name": "overlay101SchedulePair"
+      },
+      {
+        "row": 1936,
+        "name": "overlay101UpdateEntry12"
+      },
+      {
+        "row": 1937,
+        "name": "overlay101SchedulePair12"
+      },
+      {
+        "row": 1938,
+        "name": "overlay101ActivateSlot"
+      },
+      {
+        "row": 1939,
+        "name": "overlay101AdvanceSlot"
+      },
+      {
+        "row": 1940,
+        "name": "overlay101PromoteSlot"
+      },
+      {
+        "row": 1941,
+        "name": "overlay101UpdateByte17"
+      },
+      {
+        "row": 1942,
+        "name": "overlay101ScheduleByte17"
+      },
+      {
+        "row": 1943,
+        "name": "overlay101UpdateByte16"
+      },
+      {
+        "row": 1944,
+        "name": "overlay101ScheduleByte16"
+      },
+      {
+        "row": 1945,
+        "name": "overlay101UpdateEntry8"
+      },
+      {
+        "row": 1946,
+        "name": "overlay101ScheduleLinkedPair"
+      },
+      {
+        "row": 1947,
+        "name": "overlay101UpdateEntry8B"
+      },
+      {
+        "row": 1948,
+        "name": "overlay101ScheduleLinkedPair2"
+      },
+      {
+        "row": 1949,
+        "name": "overlay101UpdateFloat12"
+      },
+      {
+        "row": 1950,
+        "name": "overlay101ScheduleLinkedFloat"
+      },
+      {
+        "row": 1951,
+        "name": "overlay101UpdateDelta16"
+      },
+      {
+        "row": 1952,
+        "name": "overlay101ScheduleLinkedScaled"
+      },
+      {
+        "row": 1953,
+        "name": "overlay101UpdateByte18"
+      },
+      {
+        "row": 1954,
+        "name": "overlay101ScheduleLinkedByte"
+      },
+      {
+        "row": 1955,
+        "name": "overlay101UpdateEntry8C"
+      },
+      {
+        "row": 1956,
+        "name": "overlay101ScheduleLinkedPair3"
+      },
+      {
+        "row": 1957,
+        "name": "overlay101UpdateColor"
+      },
+      {
+        "row": 1958,
+        "name": "overlay101ScheduleLinkedColor"
+      },
+      {
+        "row": 1959,
+        "name": "overlay101UpdateFrames"
+      },
+      {
+        "row": 1960,
+        "name": "overlay101ScheduleFrames"
+      },
+      {
+        "row": 1961,
+        "name": "overlay101UpdateGlobalPair"
+      },
+      {
+        "row": 1962,
+        "name": "overlay101ScheduleGlobalPair"
+      },
+      {
+        "row": 1963,
+        "name": "overlay101DispatchActive"
+      },
+      {
+        "row": 1964,
+        "name": "overlay101Reset"
+      },
+      {
+        "row": 1965,
+        "name": "overlay101DispatchEvents"
+      },
+      {
+        "row": 1966,
+        "name": "overlay101SetScissor"
+      },
+      {
+        "row": 1967,
+        "name": "overlay101GetBounds"
+      },
+      {
+        "row": 1968,
+        "name": "overlay101DrawElement"
+      },
+      {
+        "row": 1969,
+        "name": "func_overlay_101_F0002510_18DDD30"
+      },
+      {
+        "row": 1970,
+        "name": "overlay101DrawTransformed"
+      },
+      {
+        "row": 1971,
+        "name": "overlay101BuildFrame"
+      },
+      {
+        "row": 1972,
+        "name": "overlay101BuildIntensityColors"
+      },
+      {
+        "row": 1973,
+        "name": "overlay101BuildBorder"
+      },
+      {
+        "row": 1974,
+        "name": "overlay101DrawPanel"
+      },
+      {
+        "row": 1975,
+        "name": "overlay101DrawClock"
+      },
+      {
+        "row": 1976,
+        "name": "overlay101DrawChain"
+      },
+      {
+        "row": 1977,
+        "name": "overlay101UpdateChains"
+      },
+      {
+        "row": 1978,
+        "name": "overlay101DrawSlots"
+      },
+      {
+        "row": 1979,
+        "name": "func_overlay_101_F0003A58_18DF278"
+      },
+      {
+        "row": 1980,
+        "name": "func_overlay_101_F000512C_18E094C"
+      },
+      {
+        "row": 1981,
+        "name": "func_overlay_101_F000571C_18E0F3C"
+      },
+      {
+        "row": 1982,
+        "name": "func_overlay_101_F0005E08_18E1628"
+      },
+      {
+        "row": 1983,
+        "name": "func_overlay_101_F00063F8_18E1C18"
+      },
+      {
+        "row": 1984,
+        "name": "func_overlay_101_F00069E8_18E2208"
+      },
+      {
+        "row": 1985,
+        "name": "func_overlay_101_F00078F4_18E3114"
+      },
+      {
+        "row": 1986,
+        "name": "func_overlay_101_F0008128_18E3948"
+      },
+      {
+        "row": 1987,
+        "name": "func_overlay_101_F000895C_18E417C"
+      },
+      {
+        "row": 1988,
+        "name": "func_overlay_101_F0009190_18E49B0"
+      },
+      {
+        "row": 1989,
+        "name": "overlay101BuildPresentationA"
+      },
+      {
+        "row": 1990,
+        "name": "overlay101BuildPresentationB"
+      },
+      {
+        "row": 1991,
+        "name": "overlay101BuildPresentationC"
+      },
+      {
+        "row": 1992,
+        "name": "overlay101BuildPresentationD"
+      },
+      {
+        "row": 1993,
+        "name": "overlay101TailA6BC"
+      },
+      {
+        "row": 1994,
+        "name": "func_overlay_101_F000AB4C_18E636C"
+      },
+      {
+        "row": 1995,
+        "name": "func_overlay_101_F000B544_18E6D64"
+      },
+      {
+        "row": 1996,
+        "name": "func_overlay_101_F000BA34_18E7254"
+      },
+      {
+        "row": 1997,
+        "name": "func_overlay_101_F000C144_18E7964"
+      },
+      {
+        "row": 1998,
+        "name": "D_8007BF3C"
+      },
+      {
+        "row": 1999,
+        "name": "overlay102CheckSignature"
+      },
+      {
+        "row": 2000,
+        "name": "osRamTest3_6105"
+      },
+      {
+        "row": 2001,
+        "name": "osRamTest4_6105"
+      },
+      {
+        "row": 2002,
+        "name": "func_80000450"
+      },
+      {
+        "row": 2003,
+        "name": "func_80000450_ort2003"
+      }
+    ],
+    "entries": [
+      {
+        "module": 1,
+        "role": "resume",
+        "name": "overlay1CallReset"
+      },
+      {
+        "module": 3,
+        "role": "init",
+        "name": "overlay3ResetObjects"
+      },
+      {
+        "module": 6,
+        "role": "init",
+        "name": "overlay6Init"
+      },
+      {
+        "module": 13,
+        "role": "resume",
+        "name": "overlay13Call"
+      },
+      {
+        "module": 16,
+        "role": "resume",
+        "name": "overlay16ReleaseBuffer"
+      },
+      {
+        "module": 33,
+        "role": "resume",
+        "name": "overlay33CallA"
+      },
+      {
+        "module": 42,
+        "role": "resume",
+        "name": "overlay42Resume"
+      }
+    ]
+  },
   "modules": [
     {
       "module": 26,

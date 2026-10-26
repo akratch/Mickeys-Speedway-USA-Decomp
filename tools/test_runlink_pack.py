@@ -233,6 +233,7 @@ class Tree:
         self.write_atlas()
         self.write_rom()
         self.write_linked()
+        self.write_registry()
 
     def p(self, rel):
         path = self.root / rel
@@ -374,6 +375,19 @@ class Tree:
                  " .data          0xf0000070       0x40 build/assets/overlays/o001/overlay_001_reloc2.bin.o",
                  ""]
         self.p("build/mickey.us.map").write_text("\n".join(lines) + "\n")
+
+    def write_registry(self):
+        # Authored synthetic ABI, independent of the synthetic ROM/ELF decoder.
+        names = ['resFunc', 'resData', 'b_exported', 'resFunc2', 'resFirst', 'func_80000450']
+        names += [f'func_80000450_ort{i}' for i in range(6, ot.ROM_TABLE_COUNT)]
+        self.p('src/overlays/o001/b.c').write_text('void b_exported(void) {}\nvoid b_static(void) {}\n')
+        document = {'schema': 'mickey-source-module-abi-v1', 'default_selected': [1],
+            'compatibility': {'exports': [{'row': i, 'name': name} for i, name in enumerate(names) if i != 2],
+                              'entries': []},
+            'modules': [{'module': 1, 'source': 'src/overlays/o001/b.c', 'build': 'registered',
+                         'exports': [{'row': 2, 'name': 'b_exported', 'kind': 'function'}],
+                         'entries': {'init': None, 'resume': 'b_static'}}]}
+        self.p('config/runlink-edited.us.json').write_text(json.dumps(document))
 
     def args(self, *extra):
         return ["--root", str(self.root)] + list(extra)
@@ -620,7 +634,7 @@ class SyntheticTreeTests(unittest.TestCase):
         with self.assertRaisesRegex(rp.PackError, "DATA conflicts"):
             rp.validate_plain_roles({1: [provider, other]})
 
-    def test_ort_names_follow_symbols_and_number_duplicates(self):
+    def test_ort_names_preserve_authored_rows_and_duplicate_identity_names(self):
         world, packed = self.pack()
         rows = rp.OrtNames.load(self.tree.root / "config/runlink-ort.us.txt").rows
         self.assertEqual(rows[:5], ["resFunc", "resData", "b_exported", "resFunc2", "resFirst"])

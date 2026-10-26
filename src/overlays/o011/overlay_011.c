@@ -181,7 +181,7 @@ void func_overlay_011_F0000150_1868998(Overlay11Gfx **displayList, Mtx **matrix,
 
     if ((gOverlay11InputDelay == 0) && (gOverlay11OptionDone == 0)) {
         if ((gOverlay11StorageDataMode_o011Reloc == 0) && (gOverlay11OptionAction == 0) &&
-            (joyGetPressed_o011Reloc(gOverlay11PadIndex) & 0x5000)) {
+            (joyGetPressed_o011Reloc(gOverlay11StoragePadIndex_o011Reloc) & 0x5000)) {
             overlay66Select(0);
             func_800290AC_o011Reloc(0);
             func_800291D8_o011Reloc(0x1E);
@@ -292,7 +292,7 @@ static void overlay11InitializeFour(void) {
         gOverlay11Created[3] = overlay45CreateDescriptor(
             D_8007C0B8->resource50, 160, 170, 4);
     }
-    gOverlay11CreatedActive = 1;
+    gOverlay11StorageOptionIndex_o011Reloc = 1;
 }
 
 /* DKR v77/v80 and JFG have only generic fixed-resource creation idioms. */
@@ -303,7 +303,7 @@ static void overlay11InitializeSixB(void) {
     gOverlay11Created[3] = overlay45CreateDescriptor(D_8007C0B8->resource94, 160, 140, 4);
     gOverlay11Created[4] = overlay45CreateDescriptor(D_8007C0B8->resource98, 160, 170, 4);
     gOverlay11Created[5] = overlay45CreateDescriptor(D_8007C0B8->resource50, 160, 200, 4);
-    gOverlay11CreatedActive = 1;
+    gOverlay11StorageOptionIndex_o011Reloc = 1;
 }
 
 /* DKR v77/v80 and JFG have only generic fixed-resource creation idioms. */
@@ -311,7 +311,7 @@ static void overlay11InitializeThreeA(void) {
     gOverlay11Created0 = overlay45CreateDescriptor(D_8007C0B8->resource1AC, 160, 40, 4);
     gOverlay11Created1 = overlay45CreateDescriptor(D_8007C0B8->resource19C, 160, 110, 4);
     gOverlay11Created2 = overlay45CreateDescriptor(D_8007C0B8->resource50, 160, 140, 4);
-    gOverlay11CreatedActive = 1;
+    gOverlay11StorageOptionIndex_o011Reloc = 1;
 }
 
 /* DKR v77/v80 and JFG have only generic fixed-resource creation idioms. */
@@ -328,7 +328,7 @@ static void overlay11InitializeSixA(void) {
         D_8007C0B8->resource98, 160, 170, 4);
     gOverlay11Created[5] = overlay45CreateDescriptor(
         D_8007C0B8->resource50, 160, 200, 4);
-    gOverlay11CreatedActive = 1;
+    gOverlay11StorageOptionIndex_o011Reloc = 1;
 }
 
 /* DKR v77/v80 and JFG have only generic fixed-resource creation idioms. */
@@ -339,7 +339,7 @@ static void overlay11InitializeSixC(void) {
     gOverlay11Created[3] = overlay45CreateDescriptor(D_8007C0B8->resource94, 160, 140, 4);
     gOverlay11Created[4] = overlay45CreateDescriptor(D_8007C0B8->resource98, 160, 170, 4);
     gOverlay11Created[5] = overlay45CreateDescriptor(D_8007C0B8->resource50, 160, 200, 4);
-    gOverlay11CreatedActive = 1;
+    gOverlay11StorageOptionIndex_o011Reloc = 1;
 }
 
 /* DKR v77/v80 and JFG have only generic fixed-resource creation idioms. */
@@ -347,7 +347,7 @@ static void overlay11InitializeThreeB(void) {
     gOverlay11Created0 = overlay45CreateDescriptor(D_8007C0B8->resource1C4, 160, 40, 4);
     gOverlay11Created1 = overlay45CreateDescriptor(D_8007C0B8->resource19C, 160, 110, 4);
     gOverlay11Created2 = overlay45CreateDescriptor(D_8007C0B8->resource50, 160, 140, 4);
-    gOverlay11CreatedActive = 1;
+    gOverlay11StorageOptionIndex_o011Reloc = 1;
 }
 
 /* DKR v77/v80 contain only generic fixed-handle update loops. */
@@ -363,7 +363,7 @@ static void overlay11EnableHandles(s32 count) {
     overlay45SetField22(gOverlay11Handles[1], 0);
     overlay45SetField22(gOverlay11Handles[3], 0);
     overlay45SetField22(gOverlay11Handles[2], 0);
-    gOverlay11ModeFinish = 3;
+    gOverlay11StorageHandleMode_o011Reloc = 3;
     for (i = 0; i < count; i++) {
         overlay45SetMode(gOverlay11Created[i], 0);
     }
@@ -486,21 +486,21 @@ static void overlay11UpdateMenu(s32 updateRate) {
     s32 finish;
 
     status = func_80028F54();
-    direction = D_800D3194[D_1C4];
+    direction = D_800D3194[gOverlay11StoragePadIndex_o011Reloc];
     if (direction < -32) {
-        if (((status->value3 >= 2) && (D_1BC < 3)) ||
-            ((status->value3 == 1) && (D_1BC < 2))) {
-            D_1BC++;
+        if (((status->value3 >= 2) && (gOverlay11StorageOptionIndex_o011Reloc < 3)) ||
+            ((status->value3 == 1) && (gOverlay11StorageOptionIndex_o011Reloc < 2))) {
+            gOverlay11StorageOptionIndex_o011Reloc++;
             func_80000F94(0x32C, 0);
-            direction = D_800D3194[D_1C4];
+            direction = D_800D3194[gOverlay11StoragePadIndex_o011Reloc];
         } else {
             func_80000F94(0x32D, 0);
-            direction = D_800D3194[D_1C4];
+            direction = D_800D3194[gOverlay11StoragePadIndex_o011Reloc];
         }
     }
     if (direction >= 33) {
-        if (D_1BC >= 2) {
-            D_1BC--;
+        if (gOverlay11StorageOptionIndex_o011Reloc >= 2) {
+            gOverlay11StorageOptionIndex_o011Reloc--;
             func_80000F94(0x32C, 0);
         } else {
             func_80000F94(0x32D, 0);
@@ -510,13 +510,13 @@ static void overlay11UpdateMenu(s32 updateRate) {
     handle = D_1CC - 1;
     for (index = 1; index != 4; index++) {
         func_overlay_045_F0001BF4_188E04C_o011Reloc(handle[index],
-                                          (index == D_1BC) ? D_1B8 : 0);
+                                          (index == gOverlay11StorageOptionIndex_o011Reloc) ? D_1B8 : 0);
     }
 
     menuInput = (s32 *)(D_menuBase + 0x1C4);
-    if ((func_8002554C(D_1C4) & 0x8000) || *menuInput != 0) {
+    if ((func_8002554C(gOverlay11StoragePadIndex_o011Reloc) & 0x8000) || *menuInput != 0) {
         finish = 0;
-        index = D_1BC;
+        index = gOverlay11StorageOptionIndex_o011Reloc;
         switch (index) {
         case 1:
             overlay66Select(0);
@@ -536,7 +536,7 @@ static void overlay11UpdateMenu(s32 updateRate) {
                 D_8007BEF8.s = 6;
                 D_8007BEFC.s = 5;
                 D_8007BF0C = 0;
-                sub = func_80005820(D_1C4)->sub64;
+                sub = func_80005820(gOverlay11StoragePadIndex_o011Reloc)->sub64;
                 if ((status->value1 != 0) && !(D_8007BF1C & 0x100)) {
                     status->value3--;
                 }
@@ -576,7 +576,7 @@ static void overlay11UpdateMenu(s32 updateRate) {
 
         if (finish != 0) {
             if (D_8007BF44 > 0) {
-                sub = func_80005820(D_1C4)->sub64;
+                sub = func_80005820(gOverlay11StoragePadIndex_o011Reloc)->sub64;
                 D_paramA = 0xC;
                 D_paramB = sub->value1;
                 D_paramC = 0xC;
@@ -600,8 +600,8 @@ static void overlay11UpdateTwoOptionMenu(s32 updateRate) {
 
     direction = D_0[OVERLAY11_ARGUMENT];
     if (direction < -32) {
-        if (D_1BC < 2) {
-            D_1BC++;
+        if (gOverlay11StorageOptionIndex_o011Reloc < 2) {
+            gOverlay11StorageOptionIndex_o011Reloc++;
             func_80000F94(0x32C, 0);
             direction = D_0_reload_success[OVERLAY11_ARGUMENT];
         } else {
@@ -610,8 +610,8 @@ static void overlay11UpdateTwoOptionMenu(s32 updateRate) {
         }
     }
     if (direction >= 33) {
-        if (D_1BC >= 2) {
-            D_1BC--;
+        if (gOverlay11StorageOptionIndex_o011Reloc >= 2) {
+            gOverlay11StorageOptionIndex_o011Reloc--;
             func_80000F94(0x32C, 0);
         } else {
             func_80000F94(0x32D, 0);
@@ -621,7 +621,7 @@ static void overlay11UpdateTwoOptionMenu(s32 updateRate) {
     handle = D_1CC;
     index = 1;
     do {
-        value = (index == D_1BC) ? OVERLAY11_SELECTION : 0;
+        value = (index == gOverlay11StorageOptionIndex_o011Reloc) ? OVERLAY11_SELECTION : 0;
         func_overlay_045_F0001BF4_188E04C_o011Reloc(*handle, value);
         handle++;
         index++;
@@ -629,7 +629,7 @@ static void overlay11UpdateTwoOptionMenu(s32 updateRate) {
 
     if ((func_8002554C(OVERLAY11_ARGUMENT) & 0x8000) ||
         OVERLAY11_MENU_INPUT != 0) {
-        switch (D_1BC) {
+        switch (gOverlay11StorageOptionIndex_o011Reloc) {
         case 1:
             func_overlay_066_F0000000(0);
             func_800290AC(0);
@@ -669,20 +669,20 @@ static void overlay11UpdateFiveOptionMenu(s32 updateRate) {
     s32 transition;
     void * volatile *menuInput;
 
-    direction = D_0[D_1C4];
+    direction = D_0[gOverlay11StoragePadIndex_o011Reloc];
     if (direction < -32) {
-        if (D_1BC < 5) {
-            D_1BC++;
+        if (gOverlay11StorageOptionIndex_o011Reloc < 5) {
+            gOverlay11StorageOptionIndex_o011Reloc++;
             func_80000F94(0x32C, 0);
-            direction = D_0_reload_success[D_1C4];
+            direction = D_0_reload_success[gOverlay11StoragePadIndex_o011Reloc];
         } else {
             func_80000F94(0x32D, 0);
-            direction = D_0_reload_failure[D_1C4];
+            direction = D_0_reload_failure[gOverlay11StoragePadIndex_o011Reloc];
         }
     }
     if (direction >= 33) {
-        if (D_1BC >= 2) {
-            D_1BC--;
+        if (gOverlay11StorageOptionIndex_o011Reloc >= 2) {
+            gOverlay11StorageOptionIndex_o011Reloc--;
             func_80000F94(0x32C, 0);
         } else {
             func_80000F94(0x32D, 0);
@@ -692,15 +692,15 @@ static void overlay11UpdateFiveOptionMenu(s32 updateRate) {
     handle = D_1CC;
     index = 1;
     do {
-        value = (index == D_1BC) ? D_1B8 : 0;
+        value = (index == gOverlay11StorageOptionIndex_o011Reloc) ? D_1B8 : 0;
         func_overlay_045_F0001BF4_188E04C_o011Reloc(*handle, value);
         handle++;
         index++;
     } while (index != 6);
 
     menuInput = (void * volatile *)(D_menuBase + 0x1C4);
-    if ((func_8002554C(D_1C4) & 0x8000) || *menuInput != 0) {
-        switch (D_1BC) {
+    if ((func_8002554C(gOverlay11StoragePadIndex_o011Reloc) & 0x8000) || *menuInput != 0) {
+        switch (gOverlay11StorageOptionIndex_o011Reloc) {
         case 1:
             func_overlay_066_F0000000(0);
             func_800290AC(0);
@@ -723,7 +723,7 @@ static void overlay11UpdateFiveOptionMenu(s32 updateRate) {
                 D_8007BEF8.s = 1;
                 D_8007BEFC.s = 0;
                 D_8007BF0C = 0;
-                object = func_80005820(D_1C4);
+                object = func_80005820(gOverlay11StoragePadIndex_o011Reloc);
                 sub = object->sub64;
                 transition = func_8002675C();
                 func_80028374(transition, sub->value1, 0, 5, 1, 0);
@@ -800,20 +800,20 @@ static void func_overlay_011_F0001E4C_186A694(s32 updateRate) {
     Overlay11Status *status;
 
     status = func_80028F54();
-    direction = D_800D3194[gOverlay11PadIndex];
+    direction = D_800D3194[gOverlay11StoragePadIndex_o011Reloc];
     if (direction < -32) {
-        if (gOverlay11OptionIndex < 5) {
-            gOverlay11OptionIndex++;
+        if (gOverlay11StorageOptionIndex_o011Reloc < 5) {
+            gOverlay11StorageOptionIndex_o011Reloc++;
             amSndPlay(0x32C, 0);
-            direction = D_800D3194[gOverlay11PadIndex];
+            direction = D_800D3194[gOverlay11StoragePadIndex_o011Reloc];
         } else {
             amSndPlay(0x32D, 0);
-            direction = D_800D3194[gOverlay11PadIndex];
+            direction = D_800D3194[gOverlay11StoragePadIndex_o011Reloc];
         }
     }
     if (direction >= 33) {
-        if (gOverlay11OptionIndex >= 2) {
-            gOverlay11OptionIndex--;
+        if (gOverlay11StorageOptionIndex_o011Reloc >= 2) {
+            gOverlay11StorageOptionIndex_o011Reloc--;
             amSndPlay(0x32C, 0);
         } else {
             amSndPlay(0x32D, 0);
@@ -821,12 +821,12 @@ static void func_overlay_011_F0001E4C_186A694(s32 updateRate) {
     }
 
     for (index = 1; index < 6; index++) {
-        value = (index == gOverlay11OptionIndex) ? gOverlay11OptionHighlight : 0;
+        value = (index == gOverlay11StorageOptionIndex_o011Reloc) ? gOverlay11OptionHighlight : 0;
         overlay45SetField22(gOverlay11OptionHandles[index], value);
     }
 
-    if ((joyGetPressed(gOverlay11PadIndex) & 0x8000) || (gOverlay11OptionAction != 0)) {
-        switch (gOverlay11OptionIndex) {
+    if ((joyGetPressed(gOverlay11StoragePadIndex_o011Reloc) & 0x8000) || (gOverlay11OptionAction != 0)) {
+        switch (gOverlay11StorageOptionIndex_o011Reloc) {
         case 1:
             overlay66Select(0);
             func_800290AC(0);
@@ -852,7 +852,7 @@ static void func_overlay_011_F0001E4C_186A694(s32 updateRate) {
                     D_8007BEFC.u = 0;
                     D_8007BEF8.u = D_8007C1A0;
                 }
-                sub = func_80005820(gOverlay11PadIndex)->sub64;
+                sub = func_80005820(gOverlay11StoragePadIndex_o011Reloc)->sub64;
                 gOverlay11OptionDone = 1;
                 if ((status->mode == 5) || (status->mode == 6)) {
                     for (index = 0; index < 6; index++) {
@@ -932,20 +932,20 @@ static void func_overlay_011_F00022E8_186AB30(s32 updateRate) {
     Overlay11Status *status;
 
     status = func_80028F54();
-    direction = D_800D3194[gOverlay11PadIndex];
+    direction = D_800D3194[gOverlay11StoragePadIndex_o011Reloc];
     if (direction < -32) {
-        if (gOverlay11OptionIndex < 5) {
-            gOverlay11OptionIndex++;
+        if (gOverlay11StorageOptionIndex_o011Reloc < 5) {
+            gOverlay11StorageOptionIndex_o011Reloc++;
             amSndPlay(0x32C, 0);
-            direction = D_800D3194[gOverlay11PadIndex];
+            direction = D_800D3194[gOverlay11StoragePadIndex_o011Reloc];
         } else {
             amSndPlay(0x32D, 0);
-            direction = D_800D3194[gOverlay11PadIndex];
+            direction = D_800D3194[gOverlay11StoragePadIndex_o011Reloc];
         }
     }
     if (direction >= 33) {
-        if (gOverlay11OptionIndex >= 2) {
-            gOverlay11OptionIndex--;
+        if (gOverlay11StorageOptionIndex_o011Reloc >= 2) {
+            gOverlay11StorageOptionIndex_o011Reloc--;
             amSndPlay(0x32C, 0);
         } else {
             amSndPlay(0x32D, 0);
@@ -953,12 +953,12 @@ static void func_overlay_011_F00022E8_186AB30(s32 updateRate) {
     }
 
     for (index = 1; index < 6; index++) {
-        value = (index == gOverlay11OptionIndex) ? gOverlay11OptionHighlight : 0;
+        value = (index == gOverlay11StorageOptionIndex_o011Reloc) ? gOverlay11OptionHighlight : 0;
         overlay45SetField22(gOverlay11OptionHandles[index], value);
     }
 
-    if ((joyGetPressed(gOverlay11PadIndex) & 0x8000) || (gOverlay11OptionAction != 0)) {
-        switch (gOverlay11OptionIndex) {
+    if ((joyGetPressed(gOverlay11StoragePadIndex_o011Reloc) & 0x8000) || (gOverlay11OptionAction != 0)) {
+        switch (gOverlay11StorageOptionIndex_o011Reloc) {
         case 1:
             overlay66Select(0);
             func_800290AC(0);
@@ -979,7 +979,7 @@ static void func_overlay_011_F00022E8_186AB30(s32 updateRate) {
             if (gOverlay11OptionAction == 1) {
                 D_8007BEFC.u = 3;
                 D_8007BEF8.u = 4;
-                sub = func_80005820(gOverlay11PadIndex)->sub64;
+                sub = func_80005820(gOverlay11StoragePadIndex_o011Reloc)->sub64;
                 gOverlay11OptionDone = 1;
                 for (index = 0; index < 6; index++) {
                     status[index].field8 = 0;
@@ -1046,8 +1046,8 @@ static void overlay11UpdateModeSix(s32 updateRate) {
 
     direction = D_0[OVERLAY11_ARGUMENT];
     if (direction < -32) {
-        if (D_1BC < 2) {
-            D_1BC++;
+        if (gOverlay11StorageOptionIndex_o011Reloc < 2) {
+            gOverlay11StorageOptionIndex_o011Reloc++;
             func_80000F94(0x32C, 0);
             direction = D_0_reload_success[OVERLAY11_ARGUMENT];
         } else {
@@ -1056,8 +1056,8 @@ static void overlay11UpdateModeSix(s32 updateRate) {
         }
     }
     if (direction >= 33) {
-        if (D_1BC >= 2) {
-            D_1BC--;
+        if (gOverlay11StorageOptionIndex_o011Reloc >= 2) {
+            gOverlay11StorageOptionIndex_o011Reloc--;
             func_80000F94(0x32C, 0);
         } else {
             func_80000F94(0x32D, 0);
@@ -1067,7 +1067,7 @@ static void overlay11UpdateModeSix(s32 updateRate) {
     handle = D_1CC;
     index = 1;
     do {
-        value = (index == D_1BC) ? OVERLAY11_SELECTION : 0;
+        value = (index == gOverlay11StorageOptionIndex_o011Reloc) ? OVERLAY11_SELECTION : 0;
         func_overlay_045_F0001BF4_188E04C_o011Reloc(*handle, value);
         handle++;
         index++;
@@ -1075,7 +1075,7 @@ static void overlay11UpdateModeSix(s32 updateRate) {
 
     if ((func_8002554C(OVERLAY11_ARGUMENT) & 0x8000) ||
         OVERLAY11_MENU_INPUT != 0) {
-        switch (D_1BC) {
+        switch (gOverlay11StorageOptionIndex_o011Reloc) {
         case 1:
             func_overlay_066_F0000000(0);
             func_800290AC(0);

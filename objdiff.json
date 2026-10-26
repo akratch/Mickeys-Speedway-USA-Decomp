@@ -766,6 +766,15 @@
       }
     },
     {
+      "name": "asm/data/bss_gap_D800D3150.bss.s",
+      "target_path": "expected/build/asm/data/bss_gap_D800D3150.bss.s.o",
+      "metadata": {
+        "progress_categories": [
+          "resident"
+        ]
+      }
+    },
+    {
       "name": "asm/data/bss_gap_D800D31C8.bss.s",
       "target_path": "expected/build/asm/data/bss_gap_D800D31C8.bss.s.o",
       "metadata": {
@@ -7072,6 +7081,22 @@
         ],
         "source_path": "src/main/menu_3B1A0.c",
         "complete": true
+      }
+    },
+    {
+      "name": "src/main/menu_cursors.c",
+      "target_path": "expected/build/src/main/menu_cursors.c.o",
+      "base_path": "build/src/main/menu_cursors.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "resident"
+        ],
+        "source_path": "src/main/menu_cursors.c"
       }
     },
     {

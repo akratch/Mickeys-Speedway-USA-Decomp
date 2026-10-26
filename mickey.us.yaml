@@ -1056,6 +1056,9 @@ segments:
       # Four VI framebuffer pointer cells; no pointed-to storage is owned here.
       - { type: .bss, vram: 0x800D2FA0, name: main/gameVi }
       - { type: bss, vram: 0x800D2FB0, name: bss_gap_D800D2FB0 }
+      # Four front-end cursor pointer cells; no pointed-to storage is owned.
+      - { type: .bss, vram: 0x800D3140, name: main/menu_cursors }
+      - { type: bss, vram: 0x800D3150, name: bss_gap_D800D3150 }
       # Menu controller state is emitted as individually named objects in target
       # address order; IDO's input section occupies 0x30 bytes through 0x31C8.
       - { type: .bss, vram: 0x800D3198, name: main/menu }

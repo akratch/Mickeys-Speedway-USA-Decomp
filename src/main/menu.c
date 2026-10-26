@@ -15,6 +15,7 @@
 #include "game/font.h"
 #include "game/gameVi.h"
 #include "game/menu.h"
+#include "game/menu_cursors.h"
 #include "game/pi.h"
 #include "n_audio/mbi.h"
 #include "game/overlay_exports.h"
@@ -39,7 +40,6 @@ extern s32 D_8007C1A4;
 extern s32 D_8007C1AC;
 extern u8 D_8007C308[];
 extern s32 D_800C947C;
-extern void *D_800D314C;
 extern s32 D_800D3150[];
 extern s32 D_800D3168[];
 extern u8 D_800826C0[];
@@ -232,9 +232,6 @@ extern u8 D_8007C07C;
 extern s16 *D_8007C1B8;
 extern s16 D_8007C1BC;
 extern s16 D_8007C1C0;
-extern MenuCommand *D_800D3140;
-extern Mtx *D_800D3144;
-extern void *D_800D3148;
 extern MenuFrontObject *D_800D31C8[];
 extern MenuCurrentObject D_8007C1C4[];
 extern MenuCurrentObject D_800D3550[];

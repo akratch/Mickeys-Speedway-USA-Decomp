@@ -1,5 +1,22 @@
 #include "overlays/overlay_043.h"
 
+/* Tier B: clone submission reads these two complete float matrices through
+ * mtxf_mul. Their backing is distinct from the following viewport record;
+ * existing loader operands and the renderer's resource contracts are retained. */
+MtxF o43CloneMatrixA = {
+    {0.03125f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.03125f, 0.0f, 0.0f},
+    {0.0f, 0.0f, -1.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 1.0f},
+};
+
+MtxF o43CloneMatrixB = {
+    {1.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 1.0f, 0.0f},
+    {0.0f, -1.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 1.0f},
+};
+
 /* Module-private helpers (no ORT row): static, so their calls are JUMP
  * records. Unprototyped here: each caller passes its own view of the clone
  * state, and no argument is a float. */

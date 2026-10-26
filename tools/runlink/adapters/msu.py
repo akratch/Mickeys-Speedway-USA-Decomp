@@ -20,9 +20,11 @@ import json
 import sys
 from pathlib import Path
 
-from .. import codec, compare, rules
+from .. import codec, compare, config, rules
 
 REPO = Path(__file__).resolve().parents[3]
+_LOADED_FRONTENDS = {Path(m.__file__): Path(m.__file__).read_bytes() for m in (codec, compare, config, rules)}
+_LOADED_FRONTENDS[Path(__file__)] = Path(__file__).read_bytes()
 
 
 def _rp():
@@ -214,6 +216,11 @@ def main_refs(rp, world, resolver, cfg, shipped):
 def generate(cfg, rom, shipped):
     """(rp, world, packed-by-runlink_pack-inputs, kit results) for MSU."""
     rp, world, ort = world_for(cfg)
+    return _generate_world(cfg, rom, shipped, rp, world, ort)
+
+
+def _generate_world(cfg, rom, shipped, rp, world, ort):
+    # Fresh kit Resolver/CRelocs/Refs/Gens; never use the core generated records.
     resolver = rp.Resolver(world, ort)
     relocs = {ov: [c for o in world.objects(ov) for c in rp.collect_relocs(world, resolver, o)]
               for ov in sorted(world.amods)}
@@ -255,6 +262,10 @@ def parity(cfg, rom, shipped, verbose=False):
     """Run tools/runlink_pack.py and the kit on the same tree; require identical results."""
     rp, world, ort, mods, main, residuals, gt = generate(cfg, rom, shipped)
     packed = rp.pack_all(world, ort)
+    return _parity_results(cfg, rom, shipped, rp, world, packed, residuals, gt)
+
+
+def _parity_results(cfg, rom, shipped, rp, world, packed, residuals, gt):
     theirs = rp.compare_all(packed, world)
     a = {(r.category, r.module, r.offset, r.expected, r.got) for r in theirs}
     b = {(r.category, r.module, r.offset, r.expected, r.got) for r in residuals}
@@ -290,3 +301,163 @@ def parity(cfg, rom, shipped, verbose=False):
           f"(runlink_pack.py {'identical' if theirs_proof['patched_equal'] else 'differs'})")
     ok &= same
     return ok, residuals, proof
+
+
+def _compound_checks(cfg, rom, shipped, check_tables, cli_current, verbose=False):
+    """One fresh request-owned inventory; no caller-supplied World or receipt."""
+    import copy
+    from types import SimpleNamespace
+    import proof_provenance as provenance
+    import runlink_metadata_link as metadata
+    rp, world, ort = world_for(cfg)
+    paths = world.paths
+    declaration_current = metadata.canonical_registry_current(cfg.root)
+    top = {paths[name]: paths[name].read_bytes() for name in ('atlas', 'ort', 'residuals')}
+    top.update({paths['elf']: world.elf.data, paths['map']: world.map_data, paths['rom']: world.shipped.rom})
+    config_bytes = cfg.path.read_bytes()
+    cfg_state = copy.deepcopy(cfg)
+    from dataclasses import replace
+    if replace(config.load(cfg.path, root=cfg.root), rom=cfg.rom) != cfg:
+        raise rp.PackError('compound loaded configuration differs from its source')
+    parsed_ort = (tuple(ort.rows), dict(ort.by_name), dict(ort.entries))
+    implementation = rp.metadata_implementations()
+    frontend_bytes = dict(_LOADED_FRONTENDS)
+    def top_parsed():
+        return (world.amods, world.module_info, vars(world.layout), world.by_name,
+                provenance._static_parsed_surface(world.elf))
+    parsed_top = copy.deepcopy(top_parsed())
+    # Bind the parsed ELF as well as the immutable buffer used to construct it.
+    if provenance._static_parsed_surface(rp.Elf(paths['elf'], top[paths['elf']])) != parsed_top[-1]:
+        raise rp.PackError('compound parsed ELF differs from loaded bytes')
+    def top_current():
+        declaration_current()
+        cli_current()
+        if (rp.metadata_implementations() != implementation
+                or any(p.read_bytes() != value for p, value in frontend_bytes.items())
+                or any(hashlib.sha256(Path(m.__file__).read_bytes()).hexdigest() != m.LOADED_SOURCE
+                       for m in (codec, rules))):
+            raise rp.PackError('compound loaded frontend changed')
+        if (cfg != cfg_state or cfg.path.read_bytes() != config_bytes
+                or any(path.read_bytes() != value for path, value in top.items())
+                or world.elf.data != top[paths['elf']]
+                or world.map_data != top[paths['map']]
+                or world.map != rp.parse_map(paths['map'], top[paths['map']])
+                or world.atlas != json.loads(top[paths['atlas']])
+                or world.shipped.rom != top[paths['rom']] or rom != world.shipped.rom
+                or codec.decode(rom, cfg) != shipped
+                or top_parsed() != parsed_top
+                or (tuple(ort.rows), dict(ort.by_name), dict(ort.entries)) != parsed_ort
+                or ort.render() != rp.OrtNames.load(paths['ort']).render()):
+            raise rp.PackError('compound check loaded top inputs changed')
+    try:
+        top_current()
+        # pack_all retains its unconditional, atomic, fresh producer admission.
+        packed = rp.pack_all(world, ort)
+        rp.metadata_input_paths(paths, world)  # Finish existing lazy input discovery.
+        # Comparisons reuse only this core Resolver's name/row maps. Complete
+        # their ordinary lazy discovery before freezing that diagnostic state.
+        rp.compare_all(packed, world)
+        core_resolver = packed.resolver
+        inventory = world._guarded_data_objects
+        if inventory is None:
+            raise rp.PackError('compound producer inventory is unavailable')
+        objects = tuple(o for number in sorted(world.amods) for o in world.objects(number))
+        observations = tuple((o, o.elf, getattr(o.elf, 'compiler_original', o.elf), bytes(o.elf.data))
+                             for o in objects)
+        observed_elfs = tuple({id(e): e for _, view, original, _ in observations
+                              for e in (view, original)}.values())
+        def parsed_state():
+            # Metadata only: no repr of ELF payloads and no copied whole ELF buffers.
+            return (world._expected,
+                    {k: v for k, v in vars(world.shipped).items() if k != 'rom'},
+                    {k: tuple(id(o) for o in v) for k, v in inventory.items()},
+                    {k: tuple(id(o) for o in v) for k, v in world._objects.items()},
+                    tuple((name, {k: id(v) for k, v in getattr(world, name, {}).items()})
+                          for name in ('data_import_providers', '_end_proved_objects')),
+                    id(getattr(world, '_encoded_word', None)),
+                    {k: id(v) for k, v in getattr(world, '_encoded_word_consumers', {}).items()},
+                    tuple((name, getattr(world, name, None)) for name in
+                          ('_plain_data_declarations', '_local_prefix_objects', '_address_targets',
+                           '_end_padding_plans', '_literal_array_plans')),
+                    {k: tuple((id(o), s) for o, s in v) for k, v in world.defs().items()},
+                    tuple((id(o), o.module, o.path, o.source, o.text_offset, o.text_size,
+                           o.kind, o.placement, o.data_imports, o.runtime_role, o.runtime_origin)
+                          for o in objects),
+                    tuple(provenance._static_parsed_surface(e) for e in observed_elfs))
+        state = copy.deepcopy(parsed_state())
+        contexts = [(copy.deepcopy(expected), callback)
+                    for expected, callback in getattr(world, 'data_import_contexts', [])]
+        held_inputs = dict(getattr(world, 'data_import_inputs', {}))
+        inputs = rp.metadata_input_paths(paths, world)
+        input_bytes = rp.metadata_digests(inputs, cfg.root)
+        def core_product():
+            return packed.modules, packed.main, packed.ort_words, packed.borrowed, packed.problems
+        # Unresolved CRelocs may point at ObjRefs. Those objects are held above;
+        # copying their ELF/witness graphs would retain unnecessary whole inputs.
+        core_snapshot = copy.deepcopy(core_product(), {id(o): o for o in objects})
+        def resolver_state():
+            return (id(packed.resolver), id(core_resolver.w), id(core_resolver.ort),
+                    id(core_resolver.layout), id(core_resolver._ort_inventory),
+                    tuple((name, getattr(core_resolver, name, None)) for name in
+                          ('_ort_ident', '_held_ort_targets', '_name_cache', '_rbi', '_sym_index')))
+        resolver_snapshot = copy.deepcopy(resolver_state(), {id(o): o for o in objects})
+        def membership_current():
+            if (world._guarded_data_objects is not inventory
+                    or tuple(id(o) for n in sorted(world.amods) for o in world.objects(n)) != tuple(map(id, objects))
+                    or getattr(world, 'data_import_contexts', []) != contexts
+                    or getattr(world, 'data_import_inputs', {}) != held_inputs):
+                raise rp.PackError('compound parsed producer inventory changed')
+        def inventory_current():
+            membership_current()
+            if parsed_state() != state:
+                raise rp.PackError('compound parsed producer inventory changed')
+            if core_product() != core_snapshot:
+                raise rp.PackError('compound core product changed')
+            if resolver_state() != resolver_snapshot:
+                raise rp.PackError('compound core comparison namespace changed')
+            for obj, view, original, loaded_view in observations:
+                if (obj.elf is not view or view.data != loaded_view
+                        or original.path.read_bytes() != original.data):
+                    raise rp.PackError('compound loaded raw observation changed')
+        def current():
+            top_current()
+            membership_current()
+            rp.check_data_import_holds(world)
+            # A callback/discovery pass cannot replace the inventory and cause
+            # World.objects to silently admit a fresh one during this request.
+            membership_current()
+            if (rp.metadata_input_paths(paths, world) != inputs
+                    or rp.metadata_digests(inputs, cfg.root) != input_bytes):
+                raise rp.PackError('compound current inputs changed')
+            top_current()
+            inventory_current()
+        args = SimpleNamespace(check=True, verbose=verbose, json=None, write_residuals=False)
+        checks = []
+        current()
+        def checked(label, call):
+            # Previous post-check is also this check's pre-check; no work intervenes.
+            result = call()
+            current()
+            checks.append((label, result))
+            if result != 0:
+                raise rp.PackError('compound ' + label + ' failed')
+        checked('compare', lambda: rp._compare_loaded(args, paths, world, packed))
+        checked('region', lambda: rp._region_loaded(world, packed))
+        checked('kit-check', lambda: check_tables(cfg, rom, shipped))
+        def kit_parity():
+            _rp0, _world0, _ort0, mods, main, residuals, gt = _generate_world(
+                cfg, rom, shipped, rp, world, ort)
+            kit_snapshot = copy.deepcopy((mods, main, residuals, gt))
+            current()
+            ok, _residuals, _proof = _parity_results(cfg, rom, shipped, rp, world, packed, residuals, gt)
+            if (mods, main, residuals, gt) != kit_snapshot:
+                raise rp.PackError('parity mutated the independent kit product')
+            return 0 if ok else 1
+        checked('kit-parity', kit_parity)
+        # The last post-check seals the complete request immediately before reporting.
+        for label, result in checks:
+            print(('PASS ' if result == 0 else 'FAIL ') + 'compound ' + label)
+        return 0 if all(result == 0 for _, result in checks) else 1
+    except BaseException:
+        rp.invalidate_data_import_inventory(world)
+        raise

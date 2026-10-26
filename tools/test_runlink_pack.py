@@ -549,6 +549,273 @@ class MetadataEmitterTests(unittest.TestCase):
         self.assertFalse((self.out / "manifest.json").exists())
 
 
+class CompoundFrontendTests(unittest.TestCase):
+    def setUp(self):
+        from runlink import codec, config
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.tree = Tree(Path(self.tmp.name))
+        self.assertEqual(run(self.tree.args('ort', '--write'))[0], 0)
+        self.assertEqual(run(self.tree.args('compare', '--write-residuals'))[0], 0)
+        document = {'name': 'compound-synthetic', 'rom': 'baseroms/mickey.us.z64',
+            'tables': {'main_table': ot.RELOC_TABLE_BASE,
+                       'main_table_block': ot.ROM_TABLE_BASE - ot.RELOC_TABLE_BASE,
+                       'ort': ot.ROM_TABLE_BASE, 'ort_count': ot.ROM_TABLE_COUNT,
+                       'headers': ot.HEADER_TABLE_BASE, 'module_count': ot.HEADER_COUNT,
+                       'modules': ot.MODULES_BASE},
+            'resident': {'text': TB, 'data': DB, 'bss': BB, 'end': BE,
+                         'trap_address': RES['TrapDanglingJump']},
+            'names': {'list': 'config/runlink-ort.us.txt'}, 'build': {'adapter': 'msu'}}
+        path = self.tree.p('config/compound-test.json')
+        path.write_text(json.dumps(document))
+        self.cfg = config.load(path, root=self.tree.root)
+        self.rom = self.tree.rom
+        self.shipped = codec.decode(self.rom, self.cfg)
+
+    def compound(self, check=None):
+        from runlink.adapters import msu
+        from runlink.__main__ import _check_tables
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            result = msu._compound_checks(self.cfg, self.rom, self.shipped,
+                                          check or _check_tables, lambda: None)
+        return result, output.getvalue()
+
+    def test_same_checks_one_guard_and_independent_kit_records(self):
+        from runlink import codec
+        from runlink.adapters import msu
+        from runlink.__main__ import _check_tables
+        generate = msu._generate_world
+        products = []
+        def observe(*args):
+            result = generate(*args)
+            products.append(result)
+            return result
+        with mock.patch.object(rp, 'guard_data_module_imports', wraps=rp.guard_data_module_imports) as guard:
+            with mock.patch.object(msu, '_generate_world', side_effect=observe):
+                status, output = self.compound()
+            self.assertEqual(guard.call_count, 1)
+        self.assertEqual(status, 0, output)
+        self.assertEqual(output.count('PASS compound '), 4)
+        self.assertEqual(len(products), 1)
+        self.assertIn('regions are byte-identical', output)
+        with mock.patch.object(rp, 'guard_data_module_imports', wraps=rp.guard_data_module_imports) as guard:
+            self.assertEqual(run(self.tree.args('compare', '--check'))[0], 0)
+            self.assertEqual(run(self.tree.args('region'))[0], 0)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(_check_tables(self.cfg, self.rom, self.shipped), 0)
+                with mock.patch.object(msu, '_generate_world', side_effect=observe):
+                    self.assertTrue(msu.parity(self.cfg, self.rom, self.shipped)[0])
+            self.assertEqual(guard.call_count, 4)
+        self.assertEqual(codec.encode_region(products[0][-1], self.cfg),
+                         codec.encode_region(products[1][-1], self.cfg))
+        self.assertEqual(products[0][-2], products[1][-2])
+        self.assertIsNot(products[0][3], products[1][3])
+        self.assertIsNot(products[0][3][0].table1[0], products[1][3][0].table1[0])
+
+    def test_late_input_parsed_inventory_and_product_mutations_fail_closed(self):
+        import dataclasses
+        from runlink.adapters import msu
+        compare = rp._compare_loaded
+        cases = ('raw-file', 'map-file', 'registry-file', 'symbol-index', 'map-row',
+                 'placement', 'ort-map', 'context-membership', 'core-record', 'resolver-cache')
+        for case in cases:
+            with self.subTest(case=case):
+                saved = []
+                captured = []
+                def change(args, paths, world, packed):
+                    result = compare(args, paths, world, packed)
+                    captured.append((world, packed.resolver))
+                    obj = world.objects(1)[0]
+                    if case.endswith('-file'):
+                        path = {'raw-file': obj.path, 'map-file': paths['map'],
+                                'registry-file': self.tree.root/'config/runlink-edited.us.json'}[case]
+                        saved.append((path, path.read_bytes()))
+                        path.write_bytes(path.read_bytes() + b'changed')
+                    elif case == 'symbol-index':
+                        obj.elf.symbols[1] = dataclasses.replace(obj.elf.symbols[1], index=999)
+                    elif case == 'map-row':
+                        world.map[0] = dataclasses.replace(world.map[0], size=4)
+                    elif case == 'placement':
+                        obj.placement['.rodata'] = (123, 'borrowed')
+                    elif case == 'ort-map':
+                        packed.resolver.ort.by_name['resFunc'] = 1
+                    elif case == 'context-membership':
+                        world.data_import_contexts = [(True, lambda: True)]
+                    elif case == 'core-record':
+                        packed.modules[1].table1[0].symidx = 1
+                    elif case == 'resolver-cache':
+                        packed.resolver._name_cache[('res', TB)] = 'changed diagnostic identity'
+                    return result
+                try:
+                    with mock.patch.object(rp, '_compare_loaded', side_effect=change):
+                        with self.assertRaises((rp.PackError, ValueError)):
+                            self.compound()
+                    world, resolver = captured[0]
+                    self.assertIsNone(world._guarded_data_objects)
+                    with self.assertRaises(rp.PackError):
+                        resolver.ort_identity(0)
+                finally:
+                    for path, data in saved:
+                        path.write_bytes(data)
+                self.assertEqual(self.compound()[0], 0)
+
+    def test_private_witness_and_detached_context_value_changes_refuse(self):
+        pack = rp.pack_all
+        compare = rp._compare_loaded
+        for case in ('private-witness', 'paired-context-change'):
+            with self.subTest(case=case):
+                path = self.tree.p('build/private-source.i')
+                path.write_text('original source')
+                original = hashlib.sha256(path.read_bytes()).hexdigest()
+                selected = {'source-profile'}
+                captured = []
+                def with_context(world, ort):
+                    packed = pack(world, ort)
+                    world.data_import_contexts = ([(original, lambda: hashlib.sha256(path.read_bytes()).hexdigest())]
+                        if case == 'private-witness' else [(set(selected), lambda: set(selected))])
+                    captured.append(world)
+                    return packed
+                def changed(*args):
+                    result = compare(*args)
+                    if case == 'private-witness':
+                        path.write_text('changed private source')
+                    else:
+                        selected.clear()
+                        captured[0].data_import_contexts[0][0].clear()
+                    return result
+                with mock.patch.object(rp, 'pack_all', side_effect=with_context), \
+                     mock.patch.object(rp, '_compare_loaded', side_effect=changed):
+                    with self.assertRaises(rp.PackError):
+                        self.compound()
+                self.assertIsNone(captured[0]._guarded_data_objects)
+
+    def test_check_failure_stops_before_later_checks_and_fresh_retry_recovers(self):
+        from runlink.adapters import msu
+        captured = []
+        compare = rp._compare_loaded
+        def fail(args, paths, world, packed):
+            captured.append(world)
+            self.assertEqual(compare(args, paths, world, packed), 0)
+            return 1
+        with mock.patch.object(rp, '_compare_loaded', side_effect=fail), \
+             mock.patch.object(msu, '_generate_world') as later:
+            with self.assertRaisesRegex(rp.PackError, 'compound compare failed'):
+                self.compound()
+            later.assert_not_called()
+        self.assertIsNone(captured[0]._guarded_data_objects)
+        self.assertEqual(self.compound()[0], 0)
+
+    def test_kit_encoder_disagreement_cannot_change_or_seed_core(self):
+        import dataclasses
+        from runlink.adapters import msu
+        build = msu.rules.build_module
+        def wrong(*args):
+            module = build(*args)
+            if module.table1:
+                generated = module.table1[0]
+                generated.rec = dataclasses.replace(generated.rec, symidx=generated.rec.symidx + 1)
+            return module
+        with mock.patch.object(msu.rules, 'build_module', side_effect=wrong):
+            with self.assertRaisesRegex(rp.PackError, 'compound kit-parity failed'):
+                self.compound()
+        self.assertEqual(self.compound()[0], 0)
+
+    def test_repeated_independent_kit_generation_is_order_stable(self):
+        from runlink import codec
+        from runlink.adapters import msu
+        with contextlib.redirect_stdout(io.StringIO()):
+            _, first_world, first_ort, _, _, residuals, kit_first = msu.generate(
+                self.cfg, self.rom, self.shipped)
+            core_second = rp.pack_all(first_world, first_ort)
+            _, world, ort = msu.world_for(self.cfg)
+            core_first = rp.pack_all(world, ort)
+            a = msu._generate_world(self.cfg, self.rom, self.shipped, rp, world, ort)
+            b = msu._generate_world(self.cfg, self.rom, self.shipped, rp, world, ort)
+        self.assertEqual(rp.metadata_artifacts(core_first, world),
+                         rp.metadata_artifacts(core_second, first_world))
+        self.assertEqual(core_first.borrowed, core_second.borrowed)
+        self.assertEqual(codec.encode_region(kit_first, self.cfg), codec.encode_region(a[-1], self.cfg))
+        self.assertEqual(codec.encode_region(a[-1], self.cfg), codec.encode_region(b[-1], self.cfg))
+        self.assertEqual(residuals, a[-2])
+        self.assertEqual(a[-2], b[-2])
+        self.assertIsNot(a[3], b[3])
+        self.assertIsNot(a[3][0].table1[0], b[3][0].table1[0])
+
+    def test_effective_view_buffer_and_late_kit_product_mutations_refuse(self):
+        from runlink.adapters import msu
+        pack = rp.pack_all
+        compare = rp._compare_loaded
+        def prepared(world, ort):
+            result = pack(world, ort)
+            obj = world.objects(1)[0]
+            original = obj.elf
+            obj.elf = rp.Elf(original.path, original.data)
+            obj.elf.compiler_original = original
+            return result
+        def mutate(args, paths, world, packed):
+            result = compare(args, paths, world, packed)
+            obj = world.objects(1)[0]
+            # A nonallocated header byte leaves the parsed ALLOC surface equal.
+            changed = bytearray(obj.elf.data)
+            changed[9] ^= 1
+            obj.elf.data = bytes(changed)
+            return result
+        with mock.patch.object(rp, 'pack_all', side_effect=prepared), \
+             mock.patch.object(rp, '_compare_loaded', side_effect=mutate):
+            with self.assertRaisesRegex(rp.PackError, 'loaded raw observation'):
+                self.compound()
+        parity = msu._parity_results
+        def changed_kit(*args):
+            result = parity(*args)
+            args[-1].modules[0].table1.clear()
+            return result
+        with mock.patch.object(msu, '_parity_results', side_effect=changed_kit):
+            with self.assertRaisesRegex(rp.PackError, 'kit product'):
+                self.compound()
+
+    def test_mutation_during_late_context_check_cannot_revalidate_inventory(self):
+        pack = rp.pack_all
+        armed = []
+        captured = []
+        def with_context(world, ort):
+            result = pack(world, ort)
+            def witness():
+                if armed:
+                    world.objects(1)[0].placement['.rodata'] = (123, 'borrowed')
+                return True
+            world.data_import_contexts = [(True, witness)]
+            captured.append(world)
+            return result
+        def check(*args):
+            from runlink.__main__ import _check_tables
+            result = _check_tables(*args)
+            armed.append(True)
+            return result
+        with mock.patch.object(rp, 'pack_all', side_effect=with_context), \
+             mock.patch.object(rp, 'guard_data_module_imports', wraps=rp.guard_data_module_imports) as guard:
+            with self.assertRaisesRegex(rp.PackError, 'producer inventory changed'):
+                self.compound(check)
+            self.assertEqual(guard.call_count, 1)
+        self.assertIsNone(captured[0]._guarded_data_objects)
+
+    def test_both_legacy_make_targets_execute_one_compound_prerequisite(self):
+        import subprocess
+        source = (Path(__file__).resolve().parent.parent/'Makefile').read_text()
+        # Execute the real target graph with harmless recipe drivers, without
+        # compiling a game or reproducing Make's scheduling in Python.
+        fragment = source.split('.PHONY: check-runlink-build\n', 1)[1].split('\nrunlink-residuals:', 1)[0]
+        path = self.tree.p('checks.mk')
+        path.write_text('RUNLINK_PACK = echo ORT\nHOST_PYTHON = echo KIT\nTOOLS_DIR = tools\n'
+                        'QUIET_ELF_BUILD = :\n.PHONY: check-runlink-build runlink-raw\n'
+                        + fragment + '\nrunlink-raw:\n\t@:\n')
+        result = subprocess.run(['gmake', '--no-print-directory', '-s', '-f', str(path),
+                                 'check-runlink-tables', 'check-runlink-kit'],
+                                text=True, capture_output=True, check=True)
+        self.assertEqual(result.stdout.splitlines().count('KIT tools/runlink check-build'), 1)
+        self.assertEqual(result.stdout.splitlines().count('ORT ort --check'), 1)
+
+
 class SyntheticTreeTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

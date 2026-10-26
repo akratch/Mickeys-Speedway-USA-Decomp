@@ -3855,6 +3855,10 @@ def cmd_emit_metadata(args):
 
 def cmd_compare(args):
     paths, world, packed = load_and_pack(args)
+    return _compare_loaded(args, paths, world, packed)
+
+
+def _compare_loaded(args, paths, world, packed):
     residuals = compare_all(packed, world)
     man = manifest_from(residuals, packed.borrowed)
     for line in summarize(residuals, packed.borrowed, packed):
@@ -3900,6 +3904,10 @@ def cmd_compare(args):
 
 def cmd_region(args):
     paths, world, packed = load_and_pack(args)
+    return _region_loaded(world, packed)
+
+
+def _region_loaded(world, packed):
     residuals = compare_all(packed, world)
     proof = region_proof(packed, world, residuals)
     print(f"overlay region {hexs(proof['region'][0])}-{hexs(proof['region'][1])}")

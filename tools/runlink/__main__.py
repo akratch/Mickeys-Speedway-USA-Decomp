@@ -8,6 +8,7 @@ Commands
   names     print the ORT as `<row> <name>` (from the ROM's name table, or the tracked list)
   generate  regenerate the tables from the build and compare (see docs/runlink-toolkit.md)
   parity    MSU only: the kit and tools/runlink_pack.py must give identical results
+  check-build  MSU only: held compare, region, kit check and independent parity
   module-recipe  executable bounded JFG current-module generation/final-link example
 
 Exit status: 0 success; 1 a check failed; 2 unusable inputs.
@@ -21,12 +22,17 @@ import json
 import sys
 from pathlib import Path
 
+_LOADED_CLI = Path(__file__).read_bytes()
+
 if __package__ in (None, ""):
     # Run as `python3 tools/runlink`: make the package importable as `runlink`.
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     __package__ = "runlink"
 
 from runlink import census, codec, config, names  # noqa: E402
+
+_LOADED_CLI_INPUTS = {Path(m.__file__): Path(m.__file__).read_bytes()
+                      for m in (census, codec, config, names)}
 
 
 def load(args):
@@ -44,6 +50,10 @@ def load(args):
 
 def cmd_check(args):
     cfg, rom, tables = load(args)
+    return _check_tables(cfg, rom, tables)
+
+
+def _check_tables(cfg, rom, tables):
     lo, hi = codec.region_bounds(tables, cfg)
     ok = True
     again = codec.encode_region(tables, cfg)
@@ -139,6 +149,21 @@ def cmd_parity(args):
     return 0 if ok else 1
 
 
+def cmd_check_build(args):
+    cfg, rom, tables = load(args)
+    if cfg.build.get('adapter') != 'msu':
+        raise config.ConfigError('check-build requires the MSU adapter')
+    from runlink.adapters import msu
+    def cli_current():
+        if (Path(__file__).read_bytes() != _LOADED_CLI
+                or any(path.read_bytes() != data for path, data in _LOADED_CLI_INPUTS.items())):
+            raise config.ConfigError('loaded compound CLI changed')
+    try:
+        return msu._compound_checks(cfg, rom, tables, _check_tables, cli_current, args.verbose)
+    except msu._rp().PackError as error:
+        raise config.ConfigError(str(error)) from error
+
+
 def cmd_module_recipe(args):
     import subprocess
     from runlink.jfg_module_recipe import generate, link_rom
@@ -175,6 +200,8 @@ def main(argv=None):
     p = sub.add_parser("decode")
     p.add_argument("--out")
     sub.add_parser("names")
+    p = sub.add_parser("check-build", help="MSU: held compare, region, kit check and parity")
+    p.add_argument("-v", "--verbose", action="store_true")
     p = sub.add_parser("parity", help="MSU: the kit and tools/runlink_pack.py must agree exactly")
     p.add_argument("-v", "--verbose", action="store_true")
     p = sub.add_parser("generate")
@@ -196,7 +223,7 @@ def main(argv=None):
     p.add_argument("--expect-retail", action="store_true", help="require full original ROM equality after --link")
     args = ap.parse_args(argv)
     try:
-        return {"check": cmd_check, "census": cmd_census, "decode": cmd_decode,
+        return {"check": cmd_check, "check-build": cmd_check_build, "census": cmd_census, "decode": cmd_decode,
                 "names": cmd_names, "generate": cmd_generate,
                 "parity": cmd_parity, "module-recipe": cmd_module_recipe}[args.cmd](args)
     except (config.ConfigError, codec.FormatError, OSError) as e:

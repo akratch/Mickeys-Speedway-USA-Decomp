@@ -2,6 +2,7 @@
 #define OVERLAY_043_H
 
 #include "PR/ultratypes.h"
+#include "game/rcp_task.h"
 #include "game/math.h"
 
 /* Called with a matrix by the projection builder and with the motion output
@@ -84,11 +85,11 @@ extern u8 D_0[];
 /* ---- overlay43FlushPending ---- */
 typedef struct Overlay43PendingEntry {
     u8 pad00[0x20];
-    s32 arg20;
+    void *arg20;
     u8 pad24[0x04];
-    s32 arg28;
+    void *arg28;
     u8 pad2C[0x04];
-    s32 arg30;
+    void *arg30;
     u8 pad34[0x85];
     u8 pending;
 } Overlay43PendingEntry;
@@ -101,7 +102,6 @@ typedef struct Overlay43PendingState {
 extern Overlay43PendingState D_C8;
 extern Overlay43PendingEntry *D_120[];
 extern u8 ext_4d258[];
-extern void func_8002E800(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 extern void osRecvMesg(void *queue, s32 *message, s32 flags);
 
 /* ---- overlay43ReleaseResources ---- */

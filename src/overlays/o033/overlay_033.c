@@ -231,8 +231,8 @@ void overlay33PresentAndSwap(void) {
 
     overlay33BuildDisplayList_o033Reloc();
     index = D_800D1C38;
-    rcpFast3d((u64 *)&((u8 (*)[0xC00])D_8)[index][0],
-              (u64 *)gOverlay33DisplayLists[index], 4,
+    rcpFast3d(&((u8 (*)[0xC00])D_8)[index][0],
+              gOverlay33DisplayLists[index], 4,
               D_800D1C28[index]);
     D_800D1C38 ^= 1;
     gOverlay33ActiveBuffer = D_800D1C28[D_800D1C38];

@@ -1,5 +1,6 @@
 #include "ultra64.h"
 #include "game/framebuffer_state.h"
+#include "game/rcp_task.h"
 #include "game/pi.h"
 #include "game/font.h"
 #include "game/gameVi.h"
@@ -308,7 +309,6 @@ extern void func_8000BDB4(Gfx **, Mtx **, MainVertex **, MainTriangle **, s32);
 extern void func_8004EDA8(s32);
 extern void screenDraw(Gfx **);
 extern void rsp_segment(Gfx **, s32, void *);
-extern void rcpFast3d(Gfx *, Gfx *, s32, void *);
 extern void rcpInitSp(Gfx **);
 extern void rcpInitDp(Gfx **);
 extern void rcpClearScreen(Gfx **, Mtx **, s32);

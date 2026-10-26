@@ -187,7 +187,7 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     gO57Value14CReloc = 0;
     o57SelectedEntry_o057Reloc = 0;
     o57PreviousEntry_o057Reloc = 0;
-    gO57Value50CReloc = 0;
+    o57TransitionComplete_o057Reloc = 0;
     gO57Value148Reloc = 0;
     gOverlay57SetupStatus_o057Reloc = 0;
 
@@ -1022,7 +1022,7 @@ static void overlay57EaseAndLatch(s32 updateRate) {
     }
 
     flags = D_800D31B8;
-    if (((flags & 0x9000) != 0) && (gO57Ease28B4Latch50C == 0)) {
+    if (((flags & 0x9000) != 0) && (o57TransitionComplete_o057Reloc == 0)) {
         primary = func_800508B4(gO57Ease28B4Id183);
         if (primary == NULL) {
             return;
@@ -1043,15 +1043,15 @@ static void overlay57EaseAndLatch(s32 updateRate) {
             gO57Ease28B4State180 = 0x29;
             secondary->flags |= 2;
         }
-        gO57Ease28B4Latch50C = 1;
+        o57TransitionComplete_o057Reloc = 1;
         gOverlay57Timer_o057Reloc = 14;
         return;
     }
 
-    if (((flags & 0x4000) != 0) && (gO57Ease28B4Latch50C == 0)) {
+    if (((flags & 0x4000) != 0) && (o57TransitionComplete_o057Reloc == 0)) {
         amSndPlay(0xD, 0);
         mainTitlePageInit(1);
-        gO57Ease28B4Latch50C = 1;
+        o57TransitionComplete_o057Reloc = 1;
     }
 }
 
@@ -1103,7 +1103,7 @@ static void overlay57SmoothAndCheckDistance(s32 smoothingSteps) {
     if (overlay41IsUnitScale(gO57Tail2C28QueryWord180) != NULL) {
         gOverlay57Timer_o057Reloc = 0x11;
         mainChangeLevel(0x1D, 0, 0, 9, 1, 0);
-        gO57Tail2C28Completion50C = 1;
+        o57TransitionComplete_o057Reloc = 1;
         overlay84Mark();
     }
 }
@@ -1131,7 +1131,7 @@ static void overlay57CheckDistance(Overlay57ModeValue value) {
     if (overlay84GetActive() == 0) {
         gOverlay57Timer = 0x11;
         mainChangeLevel(0x1D, 0, 0, 0xB, 1, 0);
-        gOverlay57DistanceState = 1;
+        o57TransitionComplete_o057Reloc = 1;
         overlay84Mark();
     }
 }
@@ -1348,7 +1348,7 @@ static void overlay57UpdateSelection(s32 updateRate) {
         o57SelectionCountdown_o057Reloc = 10;
         return;
     }
-    if ((D_800D31B8 & 0x4000) && (gO57SelectionDistance50CReloc == 0)) {
+    if ((D_800D31B8 & 0x4000) && (o57TransitionComplete_o057Reloc == 0)) {
         amSndPlay(0xD, 0);
         overlay84LoadCurrent(0);
         gOverlay57Timer_o057Reloc = 5;
@@ -1360,14 +1360,14 @@ static void overlay57UpdateSelection(s32 updateRate) {
         return;
     }
     if (D_8007C1A0 == 1) {
-        if ((gOverlay57Threshold38D8Reloc < -16) && (gO57SelectionDistance50CReloc == 0)) {
+        if ((gOverlay57Threshold38D8Reloc < -16) && (o57TransitionComplete_o057Reloc == 0)) {
             overlay45ConfigureLayout(((void **)gO57SelectionList8Reloc)[entry], -0xA0, 0xBE, 4);
         } else {
             overlay45ConfigureLayout(((void **)gO57SelectionList8Reloc)[entry], 0x1E0, 0xBE, 4);
         }
         overlay45ConfigureLayout(((void **)gO57SelectionList8Reloc)[gO57SelectionCurrent100Reloc[0]], 0xA0, 0x104, 0x104);
     } else {
-        if ((gOverlay57Threshold3970Reloc < -16) && (gO57SelectionDistance50CReloc == 0)) {
+        if ((gOverlay57Threshold3970Reloc < -16) && (o57TransitionComplete_o057Reloc == 0)) {
             overlay45ConfigureLayout(((void **)gO57SelectionList30Reloc)[entry], -0xA0, 0xBE, 4);
         } else {
             overlay45ConfigureLayout(((void **)gO57SelectionList30Reloc)[entry], 0x1E0, 0xBE, 4);
@@ -1399,7 +1399,7 @@ static void overlay57UpdateSelection(s32 updateRate) {
 
 #define D_0x4F8 gO57ModeChoice4F8
 
-#define D_0x50C gO57ModeGate50C
+#define D_0x50C o57TransitionComplete_o057Reloc
 
 #define O57_JOIN_RAW(left, right) left##right
 
@@ -1495,7 +1495,7 @@ static void overlay57UpdateModeState(s32 updateRate) {
 
     eligible = (D_800D31B8 & 0xD000) != 0;
     if (eligible != 0) {
-        eligible = gO57ModeGate50C == 0;
+        eligible = o57TransitionComplete_o057Reloc == 0;
     }
     savedEligible = eligible;
     if (gOverlay57Countdown_o057Reloc > 0) {
@@ -1507,7 +1507,7 @@ static void overlay57UpdateModeState(s32 updateRate) {
     if (D_8007C1A0 == 1) {
         if (overlay57Call3BC4Reloc() == 8) {
             mainChangeLevel(0x2A, 0, 0, 0xE, 1, 0);
-            gO57ModeGate50C = 1;
+            o57TransitionComplete_o057Reloc = 1;
             overlay84Mark();
         } else if (overlay57Call3C08Reloc() == 5) {
             O57_S32(0x118) = 9;
@@ -1570,7 +1570,7 @@ static void overlay57UpdateModeState(s32 updateRate) {
     } else {
         if (overlay57Call3DD4Reloc() == 8) {
             mainChangeLevel(0x2A, 0, 0, 0xE, 1, 0);
-            gO57ModeGate50C = 1;
+            o57TransitionComplete_o057Reloc = 1;
             overlay84Mark();
         } else if (overlay57Call3E18Reloc() == 5) {
             O57_S32(0x118) = 9;
@@ -1688,7 +1688,7 @@ static void overlay57HandleModeInput(s32 updateRate) {
     o57State_o057Reloc = 3;
 
     if (((D_800D31B8 & 0x9000) != 0) &&
-        (gOverlay57DistanceState == 0)) {
+        (o57TransitionComplete_o057Reloc == 0)) {
         amSndPlay(12, 0);
 
         gO57ModeOutputs[0].value =
@@ -1719,10 +1719,10 @@ static void overlay57HandleModeInput(s32 updateRate) {
                                o57CharacterOrder_o057Reloc[
                                    gO57ModeChoices[0].tableIndex],
                                0, 5, 1, 0);
-        gOverlay57DistanceState = 1;
+        o57TransitionComplete_o057Reloc = 1;
         overlay84Mark();
     } else if (((D_800D31B8 & 0x4000) != 0) &&
-               (gOverlay57DistanceState == 0)) {
+               (o57TransitionComplete_o057Reloc == 0)) {
         amSndPlay(13, 0);
         overlay84ClearMode();
         animseqStopPath(gO57ModeExternalByte);
@@ -1802,12 +1802,12 @@ static void func_overlay_057_F0004460_18A8058(s32 updateRate) {
         gO57ModeSetup21C.vertical += (0xBE - gO57ModeSetup21C.vertical) >> 3;
     }
 
-    if (D_800D31BE < -16 && gOverlay57DistanceState == 0) {
+    if (D_800D31BE < -16 && o57TransitionComplete_o057Reloc == 0) {
         if (gOverlay57TableIndex < o57SelectionCount_o057Reloc) {
             gOverlay57TableIndex++;
             o57LayoutMoving_o057Reloc = 1;
         }
-    } else if (D_800D31BE >= 17 && gOverlay57DistanceState == 0) {
+    } else if (D_800D31BE >= 17 && o57TransitionComplete_o057Reloc == 0) {
         if (gOverlay57TableIndex > 0) {
             gOverlay57TableIndex--;
             o57LayoutMoving_o057Reloc = 1;
@@ -1815,7 +1815,7 @@ static void func_overlay_057_F0004460_18A8058(s32 updateRate) {
     }
 
     overlay57ApplyTable();
-    if ((D_800D31B8 & 0x9000) && gOverlay57DistanceState == 0) {
+    if ((D_800D31B8 & 0x9000) && o57TransitionComplete_o057Reloc == 0) {
         amSndPlay(12, 0);
         current = overlay84GetEnabledCurrent();
         mainChangeCameras(D_8007C1A0);
@@ -1916,9 +1916,9 @@ static void func_overlay_057_F0004460_18A8058(s32 updateRate) {
             mainChangeLevel(gO57CourseTable[gOverlay57MenuEntries[0].mode][gOverlay57MenuEntries[0].variant],
                             o57CharacterOrder_o057Reloc[gOverlay57MenuSources[0].index], 0, 5, 1, 0);
         }
-        gOverlay57DistanceState = 1;
+        o57TransitionComplete_o057Reloc = 1;
         overlay84Mark();
-    } else if ((D_800D31B8 & 0x4000) && gOverlay57DistanceState == 0) {
+    } else if ((D_800D31B8 & 0x4000) && o57TransitionComplete_o057Reloc == 0) {
         amSndPlay(13, 0);
         overlay84ClearMode();
         animseqStopPath(gOverlay57ObjectId);
@@ -2128,7 +2128,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
 
         if (gOverlay57ObjectStatus_o057Reloc == 0) {
             page = o57SelectedEntry_o057Reloc / 6;
-            if ((D_800D31BC < -16) && (o57SelectedEntry_o057Reloc > 0) && (gO57MiddleTransition == 0)) {
+            if ((D_800D31BC < -16) && (o57SelectedEntry_o057Reloc > 0) && (o57TransitionComplete_o057Reloc == 0)) {
                 o57LayoutMoving_o057Reloc = 1;
                 overlay45ConfigureLayout(
                     gO57MiddleItems[o57SelectedEntry_o057Reloc], 0xA0, 0x104, 0x104);
@@ -2145,7 +2145,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                         0x2F, (o57SelectedEntry_o057Reloc / 6) + 5, 0.012f);
                 }
             } else if ((D_800D31BC >= 17) && (o57SelectedEntry_o057Reloc < limit) &&
-                       (gO57MiddleTransition == 0)) {
+                       (o57TransitionComplete_o057Reloc == 0)) {
                 o57LayoutMoving_o057Reloc = 1;
                 overlay45ConfigureLayout(
                     gO57MiddleItems[o57SelectedEntry_o057Reloc], 0xA0, 0x104, 0x104);
@@ -2162,7 +2162,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                         0x2F, o57SelectedEntry_o057Reloc / 6, 0.012f);
                 }
             } else if ((D_800D31BE < -16) && (o57SelectedEntry_o057Reloc < (limit - 2)) &&
-                       (gO57MiddleTransition == 0)) {
+                       (o57TransitionComplete_o057Reloc == 0)) {
                 o57LayoutMoving_o057Reloc = 1;
                 overlay45ConfigureLayout(
                     gO57MiddleItems[o57SelectedEntry_o057Reloc], 0xA0, 0x104, 0x104);
@@ -2181,7 +2181,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                         0x2F, currentGroup, 0.012f);
                 }
             } else if ((D_800D31BE >= 17) && (o57SelectedEntry_o057Reloc >= 3) &&
-                    (gO57MiddleTransition == 0)) {
+                    (o57TransitionComplete_o057Reloc == 0)) {
                     o57LayoutMoving_o057Reloc = 1;
                     overlay45ConfigureLayout(
                         gO57MiddleItems[o57SelectedEntry_o057Reloc], 0xA0, 0x104, 0x104);
@@ -2200,7 +2200,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                             0x2F, currentGroup + 5, 0.012f);
                     }
                 } else if ((D_800D31B8 & 0x2020) && (o57SelectedEntry_o057Reloc >= 6) &&
-                           (gO57MiddleTransition == 0)) {
+                           (o57TransitionComplete_o057Reloc == 0)) {
                 o57LayoutMoving_o057Reloc = 1;
                 overlay45ConfigureLayout(
                     gO57MiddleItems[o57SelectedEntry_o057Reloc], 0xA0, 0x104, 0x104);
@@ -2215,7 +2215,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                 overlay57SetNodeValue(
                     0x2F, (o57SelectedEntry_o057Reloc / 6) + 5, 0.012f);
                 } else if ((D_800D31B8 & 0x10) && (page < state) &&
-                           (gO57MiddleTransition == 0)) {
+                           (o57TransitionComplete_o057Reloc == 0)) {
                 o57LayoutMoving_o057Reloc = 1;
                 overlay45ConfigureLayout(
                     gO57MiddleItems[o57SelectedEntry_o057Reloc], 0xA0, 0x104, 0x104);
@@ -2234,7 +2234,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                 }
                 }
 
-            if ((D_800D31B8 & 0x4000) && (gO57MiddleTransition == 0) &&
+            if ((D_800D31B8 & 0x4000) && (o57TransitionComplete_o057Reloc == 0) &&
                 (gO57MiddleCanLeave != 0)) {
                 func_80000F94(0xD, 0);
                 overlay84ClearMode();
@@ -2269,7 +2269,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     gO57MiddlePanelPosition += (-gO57MiddlePanelPosition) >> 2;
                 }
             }
-            if ((D_800D31B8 & 0x4000) && (gO57MiddleTransition == 0)) {
+            if ((D_800D31B8 & 0x4000) && (o57TransitionComplete_o057Reloc == 0)) {
                 func_80000F94(0xD, 0);
                 gOverlay57ObjectStatus_o057Reloc = 0;
                 o57State_o057Reloc = 2;
@@ -2372,7 +2372,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
             }
         }
 
-        if ((D_800D31B8 & 0x9000) && (gO57MiddleTransition == 0)) {
+        if ((D_800D31B8 & 0x9000) && (o57TransitionComplete_o057Reloc == 0)) {
             func_80000F94(0xC, 0);
             if (D_8007C1A0 >= 2 || gOverlay57ObjectStatus_o057Reloc == 1) {
                 outputIndex = 10;
@@ -2438,7 +2438,7 @@ static void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                         o57CharacterOrder_o057Reloc[gO57MiddleChoices[0].tableIndex],
                         0, 5, 1, 0);
                 }
-                gO57MiddleTransition = 1;
+                o57TransitionComplete_o057Reloc = 1;
                 overlay84Mark();
                 if ((D_8007BF0C == 0) ||
                     ((D_8007BF0C != 0) && (gO57MiddleData3208 != 0))) {
@@ -2482,7 +2482,7 @@ static void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
 
     o57State_o057Reloc = 6;
     if (D_800D31BC < -16 && o57SelectedEntry_o057Reloc > 0 &&
-        gOverlay57DistanceState == 0) {
+        o57TransitionComplete_o057Reloc == 0) {
         o57LayoutMoving_o057Reloc = 1;
         overlay45ConfigureLayout(gOverlay57Layouts[o57SelectedEntry_o057Reloc], 0xA0, 0x104,
                                  0x104);
@@ -2493,7 +2493,7 @@ static void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
         o57PreviousLayoutValue_o057Reloc = o57LayoutValue_o057Reloc;
         o57LayoutValue_o057Reloc = 0xFF;
     } else if (D_800D31BC >= 17 && o57SelectedEntry_o057Reloc < 3 &&
-               gOverlay57DistanceState == 0) {
+               o57TransitionComplete_o057Reloc == 0) {
         o57LayoutMoving_o057Reloc = 1;
         overlay45ConfigureLayout(gOverlay57Layouts[o57SelectedEntry_o057Reloc], 0xA0, 0x104,
                                  0x104);
@@ -2504,7 +2504,7 @@ static void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
         o57PreviousLayoutValue_o057Reloc = o57LayoutValue_o057Reloc;
         o57LayoutValue_o057Reloc = 0xFF;
     } else if (D_800D31BE < -16 && o57SelectedEntry_o057Reloc < 2 &&
-               gOverlay57DistanceState == 0) {
+               o57TransitionComplete_o057Reloc == 0) {
         o57LayoutMoving_o057Reloc = 1;
         overlay45ConfigureLayout(gOverlay57Layouts[o57SelectedEntry_o057Reloc], 0xA0, 0x104,
                                  0x104);
@@ -2515,7 +2515,7 @@ static void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
         o57PreviousLayoutValue_o057Reloc = o57LayoutValue_o057Reloc;
         o57LayoutValue_o057Reloc = 0xFF;
     } else if (D_800D31BE >= 17 && o57SelectedEntry_o057Reloc >= 2 &&
-               gOverlay57DistanceState == 0) {
+               o57TransitionComplete_o057Reloc == 0) {
         o57LayoutMoving_o057Reloc = 1;
         overlay45ConfigureLayout(gOverlay57Layouts[o57SelectedEntry_o057Reloc], 0xA0, 0x104,
                                  0x104);
@@ -2527,7 +2527,7 @@ static void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
         o57LayoutValue_o057Reloc = 0xFF;
     }
 
-    if ((D_800D31B8 & 0x4000) && gOverlay57DistanceState == 0 &&
+    if ((D_800D31B8 & 0x4000) && o57TransitionComplete_o057Reloc == 0 &&
         gOverlay57ObjectReady != 0) {
         amSndPlay(13, 0);
         overlay84ClearMode();
@@ -2550,7 +2550,7 @@ static void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
     }
 
     func_overlay_057_F0001020_18A4C18(updateRate);
-    if ((D_800D31B8 & 0x9000) && gOverlay57DistanceState == 0) {
+    if ((D_800D31B8 & 0x9000) && o57TransitionComplete_o057Reloc == 0) {
         amSndPlay(12, 0);
         count = 10;
         while (count--) {
@@ -2598,7 +2598,7 @@ static void func_overlay_057_F00060F8_18A9CF0(s32 updateRate) {
         mainChangeLevel(gOverlay57LevelBySelection[o57SelectedEntry_o057Reloc],
                         o57CharacterOrder_o057Reloc[gOverlay57MenuSources[0].index],
                         0, 5, 1, 0);
-        gOverlay57DistanceState = 1;
+        o57TransitionComplete_o057Reloc = 1;
         overlay84Mark();
     }
 }

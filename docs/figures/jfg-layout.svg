@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 550" role="img" aria-labelledby="jfg-layout-title jfg-layout-desc">
+<title id="jfg-layout-title">Module growth changes ROM positions and boundary references</title>
+<desc id="jfg-layout-desc">The documented module-79 edit grows its packed payload from 152 to 176 bytes. Later modules and name boundaries move by 24 bytes. Earlier modules remain in place. Terminal fill shrinks by 24 bytes. BSS consumes RAM but no initialized ROM payload.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#192c39}.h{font-size:22px;font-weight:700}.label{font-size:18px;font-weight:700}.small{font-size:16px}.tiny{font-size:14px}</style>
+<rect width="1120" height="550" rx="18" fill="#fff"/>
+<text x="32" y="40" class="h">Pack current outputs, then derive every dependent boundary</text>
+<text x="32" y="72" class="small">Documented module-79 edit · schematic widths · cartridge size stays 32 MiB</text>
+<text x="32" y="116" class="label">BASELINE</text>
+<rect x="32" y="132" width="220" height="82" fill="#edf0f4" stroke="#9aa9b7"/><text x="48" y="167" class="label">Earlier modules</text><text x="48" y="192" class="small">Same positions</text>
+<rect x="252" y="132" width="190" height="82" fill="#d9ede7" stroke="#448b7d"/><text x="268" y="167" class="label">Module 79</text><text x="268" y="192" class="small">152 packed bytes</text>
+<rect x="442" y="132" width="250" height="82" fill="#eaf0fb" stroke="#6389b3"/><text x="458" y="167" class="label">Later modules</text><text x="458" y="192" class="small">Then name payloads</text>
+<rect x="692" y="132" width="396" height="82" fill="#fff4dc" stroke="#c19c4b"/><text x="708" y="167" class="label">Boundary gap + terminal fill</text><text x="708" y="192" class="small">Computed from final linked symbols</text>
+<text x="32" y="260" class="label">LIVE EDIT</text>
+<rect x="32" y="276" width="220" height="82" fill="#edf0f4" stroke="#9aa9b7"/><text x="48" y="310" class="label">Earlier modules</text><text x="48" y="336" class="small">Unchanged</text>
+<rect x="252" y="276" width="230" height="82" fill="#d9ede7" stroke="#448b7d"/><text x="268" y="310" class="label">Module 79 · +24</text><text x="268" y="336" class="small">176 packed bytes</text>
+<rect x="482" y="276" width="250" height="82" fill="#eaf0fb" stroke="#6389b3"/><text x="498" y="310" class="label">Later modules</text><text x="498" y="336" class="small">Positions move by 24</text>
+<rect x="732" y="276" width="356" height="82" fill="#fff4dc" stroke="#c19c4b"/><text x="748" y="310" class="label">Terminal fill · −24 bytes</text><text x="748" y="336" class="small">Checksum header recomputed</text>
+<text x="32" y="404" class="small">Recompute headers, name boundaries, and their real resident linker references.</text>
+<text x="32" y="432" class="small">Keep every unselected payload and record exact.</text>
+<rect x="32" y="462" width="1056" height="60" rx="8" fill="#f2f5f7"/>
+<text x="48" y="488" class="label">BSS is a separate RAM allocation.</text><text x="48" y="511" class="small">Its size changes allocation and runtime bases; it adds no initialized ROM payload bytes.</text>
+</svg>

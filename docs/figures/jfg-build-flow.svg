@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 590" role="img" aria-labelledby="jfg-build-flow-title jfg-build-flow-desc">
+<title id="jfg-build-flow-title">Recovery hints and current-build metadata have different roles</title>
+<desc id="jfg-build-flow-desc">Original ROM sites pass through relocation hints and Splat during recovery. Current C, assembly, and resources produce ELF files. Authenticated definitions and declarations supply runtime metadata. A packer and ordinary linker compute the final ROM. The bounded recipe still retains outside compatibility inputs.</desc>
+<defs><marker id="jfg-build-flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#35736b"/></marker></defs>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#192c39} .label{font-size:19px;font-weight:700}.small{font-size:16px}.tag{font-size:14px;font-weight:700;letter-spacing:1.3px}.box{fill:#edf7f4;stroke:#448b7d;stroke-width:1.5}.old{fill:#f0f2f5;stroke:#a6b0ba;stroke-width:1.5}.line{fill:none;stroke:#35736b;stroke-width:2;marker-end:url(#jfg-build-flow-arrow)}</style>
+<rect width="1120" height="590" rx="18" fill="#fff"/>
+<text x="32" y="36" class="tag">RECOVERY · ORIGINAL ROM SITES</text>
+<rect x="32" y="60" width="230" height="92" rx="10" class="old"/><text x="50" y="94" class="label">Original ROM</text><text x="50" y="122" class="small">Site and target evidence</text>
+<path d="M264 106H302" class="line"/>
+<rect x="306" y="60" width="230" height="92" rx="10" class="old"/><text x="324" y="94" class="label">reloc_addrs</text><text x="324" y="122" class="small">Explicit extraction hints</text>
+<path d="M538 106H576" class="line"/>
+<rect x="580" y="60" width="230" height="92" rx="10" class="old"/><text x="598" y="94" class="label">Splat / spimdisasm</text><text x="598" y="122" class="small">Symbolic extraction</text>
+<path d="M812 106H850" class="line"/>
+<rect x="854" y="60" width="234" height="92" rx="10" class="old"/><text x="872" y="94" class="label">Recovery inputs</text><text x="872" y="122" class="small">Definitions still need proof</text>
+<path d="M32 190H1088" stroke="#c9d2d8" stroke-dasharray="6 5"/>
+<text x="32" y="226" class="tag">CURRENT BUILD · CURRENT DEFINITIONS AND REFERENCES</text>
+<rect x="32" y="252" width="230" height="112" rx="10" class="box"/><text x="50" y="286" class="label">C / ASM / resources</text><text x="50" y="314" class="small">Ordered real producers</text><text x="50" y="340" class="small">Flags and dependencies</text>
+<path d="M264 308H302" class="line"/>
+<rect x="306" y="252" width="230" height="112" rx="10" class="box"/><text x="324" y="286" class="label">ELF + declarations</text><text x="324" y="314" class="small">Symbols and relocations</text><text x="324" y="340" class="small">ABI registry and owners</text>
+<path d="M538 308H576" class="line"/>
+<rect x="580" y="252" width="230" height="112" rx="10" class="box"/><text x="598" y="286" class="label">Resolve providers</text><text x="598" y="314" class="small">Site, type, base, addend</text><text x="598" y="340" class="small">Reject unknown identities</text>
+<path d="M812 308H850" class="line"/>
+<rect x="854" y="252" width="234" height="112" rx="10" class="box"/><text x="872" y="286" class="label">Runtime metadata</text><text x="872" y="314" class="small">Tables, exports, names</text><text x="872" y="340" class="small">Sizes and entry offsets</text>
+<path d="M970 366V408" class="line"/>
+<rect x="580" y="414" width="508" height="88" rx="10" class="box"/><text x="600" y="448" class="label">Computed packing + ordinary final link</text><text x="600" y="477" class="small">Current positions, boundaries, fill, and checksums</text>
+<rect x="32" y="414" width="448" height="88" rx="10" class="old"/><text x="50" y="448" class="label">Bounded recipe: outside compatibility</text><text x="50" y="477" class="small">156 modules, registry, resident homes, layout</text>
+<path d="M482 458H574" class="line" stroke-dasharray="5 4"/>
+<text x="32" y="553" class="small">General-builder exit: replace every retained authority within the claimed source-only scope.</text>
+</svg>

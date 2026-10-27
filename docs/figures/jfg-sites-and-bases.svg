@@ -1,21 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 540" role="img" aria-labelledby="jfg-sites-and-bases-title jfg-sites-and-bases-desc">
-<title id="jfg-sites-and-bases-title">A patch site and its target are different locations</title>
-<desc id="jfg-sites-and-bases-desc">Invented example: module 7 has 256 bytes of TEXT. A reference at TEXT offset 48 targets DATA offset 32, which is module offset 288. Module 8 also begins at synthetic address zero, so an address alone cannot identify the target.</desc>
-<defs><marker id="jfg-sites-and-bases-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#35736b"/></marker></defs>
-<style>text{font-family:Arial,Helvetica,sans-serif;fill:#192c39}.h{font-size:22px;font-weight:700}.label{font-size:19px;font-weight:700}.small{font-size:17px}.tiny{font-size:15px}</style>
-<rect width="1120" height="540" rx="18" fill="#fff"/>
-<text x="32" y="40" class="h">Site ≠ target</text><text x="32" y="70" class="small">Invented values. No ROM instruction bytes appear in this diagram.</text>
-<text x="32" y="122" class="label">Module 7 · synthetic base 0</text>
-<rect x="32" y="144" width="600" height="100" rx="8" fill="#eaf0fb" stroke="#6389b3"/><rect x="632" y="144" width="456" height="100" rx="8" fill="#edf7f4" stroke="#448b7d"/>
-<text x="54" y="175" class="label">TEXT · 256 bytes</text><text x="654" y="175" class="label">DATA</text>
-<rect x="120" y="193" width="200" height="34" rx="5" fill="#d2dff2"/><text x="132" y="216" class="small">Patch site: TEXT + 48</text>
-<rect x="756" y="193" width="280" height="34" rx="5" fill="#cce7df"/><text x="768" y="216" class="small">Target: DATA + 32</text>
-<path d="M322 210C400 90 700 90 896 190" fill="none" stroke="#35736b" stroke-width="2" marker-end="url(#jfg-sites-and-bases-arrow)"/>
-<text x="32" y="286" class="label">Target identity</text><text x="256" y="286" class="small">(module 7, DATA, 32)</text>
-<text x="32" y="322" class="label">Module-relative target</text><text x="314" y="322" class="small">TEXT size + DATA offset = 256 + 32 = 288</text>
-<text x="32" y="358" class="label">Loaded target address</text><text x="314" y="358" class="small">Actual RAM base + 288</text>
-<rect x="32" y="400" width="1056" height="102" rx="10" fill="#fff8e9" stroke="#c19c4b"/>
-<text x="52" y="435" class="label">Module 8 can also have a synthetic base of 0.</text>
-<text x="52" y="465" class="small">A shared virtual address supplies no cross-module identity.</text>
-<text x="52" y="489" class="tiny">The generator also needs the relocation type, stored addend, target provider, and runtime section base.</text>
+<svg xmlns="http://www.w3.org/2000/svg" id="jfg-sites" viewBox="0 0 960 560" role="img" aria-labelledby="jfg-sites-title jfg-sites-desc">
+<title id="jfg-sites-title">A patch site and its target have different locations</title>
+<desc id="jfg-sites-desc">Invented example: module 7 has 256 bytes of TEXT. A reference at TEXT offset 48 targets DATA offset 32, which is loaded module offset 288. ELF sections can each start at zero. A definition needs its module, section, and offset.</desc>
+<defs><marker id="jfg-sites-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#35736b"/></marker></defs>
+<style>#jfg-sites text{font-family:Arial,Helvetica,sans-serif;fill:#192c39}#jfg-sites .h{font-size:26px;font-weight:700}#jfg-sites .label{font-size:22px;font-weight:700}#jfg-sites .small{font-size:20px}</style>
+<rect width="960" height="560" rx="18" fill="#fff"/>
+<text x="30" y="40" class="h">Site and target</text><text x="30" y="75" class="small">Invented values. The loader places DATA after TEXT.</text>
+<text x="30" y="124" class="label">Module 7: offsets from its loaded TEXT base</text>
+<rect x="30" y="158" width="490" height="105" rx="8" fill="#eaf0fb" stroke="#6389b3"/><rect x="520" y="158" width="410" height="105" rx="8" fill="#edf7f4" stroke="#448b7d"/>
+<text x="50" y="192" class="label">TEXT: 256 bytes</text><text x="540" y="192" class="label">DATA</text>
+<rect x="110" y="218" width="240" height="32" rx="5" fill="#d2dff2"/><text x="122" y="241" class="small">Patch site: TEXT + 48</text>
+<rect x="650" y="218" width="260" height="32" rx="5" fill="#cce7df"/><text x="662" y="241" class="small">Target: DATA + 32</text>
+<path d="M352 231C440 140 680 140 780 212" fill="none" stroke="#35736b" stroke-width="2" marker-end="url(#jfg-sites-arrow)"/>
+<text x="30" y="309" class="label">Target identity</text><text x="340" y="309" class="small">(module 7, DATA, 32)</text>
+<text x="30" y="350" class="label">Module-relative target</text><text x="340" y="350" class="small">256 + 32 = 288</text>
+<text x="30" y="391" class="label">Loaded target address</text><text x="340" y="391" class="small">Actual RAM base + 288</text>
+<rect x="30" y="431" width="900" height="99" rx="10" fill="#fff8e9" stroke="#c19c4b"/>
+<text x="50" y="468" class="label">ELF sections can each start at address 0.</text>
+<text x="50" y="503" class="small">Identify a definition by its module, section, and section offset.</text>
 </svg>

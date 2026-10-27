@@ -1,29 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 590" role="img" aria-labelledby="jfg-build-flow-title jfg-build-flow-desc">
-<title id="jfg-build-flow-title">Recovery hints and current-build metadata have different roles</title>
-<desc id="jfg-build-flow-desc">Original ROM sites pass through relocation hints and Splat during recovery. Current C, assembly, and resources produce ELF files. Authenticated definitions and declarations supply runtime metadata. A packer and ordinary linker compute the final ROM. The bounded recipe still retains outside compatibility inputs.</desc>
-<defs><marker id="jfg-build-flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#35736b"/></marker></defs>
-<style>text{font-family:Arial,Helvetica,sans-serif;fill:#192c39} .label{font-size:19px;font-weight:700}.small{font-size:16px}.tag{font-size:14px;font-weight:700;letter-spacing:1.3px}.box{fill:#edf7f4;stroke:#448b7d;stroke-width:1.5}.old{fill:#f0f2f5;stroke:#a6b0ba;stroke-width:1.5}.line{fill:none;stroke:#35736b;stroke-width:2;marker-end:url(#jfg-build-flow-arrow)}</style>
-<rect width="1120" height="590" rx="18" fill="#fff"/>
-<text x="32" y="36" class="tag">RECOVERY · ORIGINAL ROM SITES</text>
-<rect x="32" y="60" width="230" height="92" rx="10" class="old"/><text x="50" y="94" class="label">Original ROM</text><text x="50" y="122" class="small">Site and target evidence</text>
-<path d="M264 106H302" class="line"/>
-<rect x="306" y="60" width="230" height="92" rx="10" class="old"/><text x="324" y="94" class="label">reloc_addrs</text><text x="324" y="122" class="small">Explicit extraction hints</text>
-<path d="M538 106H576" class="line"/>
-<rect x="580" y="60" width="230" height="92" rx="10" class="old"/><text x="598" y="94" class="label">Splat / spimdisasm</text><text x="598" y="122" class="small">Symbolic extraction</text>
-<path d="M812 106H850" class="line"/>
-<rect x="854" y="60" width="234" height="92" rx="10" class="old"/><text x="872" y="94" class="label">Recovery inputs</text><text x="872" y="122" class="small">Definitions still need proof</text>
-<path d="M32 190H1088" stroke="#c9d2d8" stroke-dasharray="6 5"/>
-<text x="32" y="226" class="tag">CURRENT BUILD · CURRENT DEFINITIONS AND REFERENCES</text>
-<rect x="32" y="252" width="230" height="112" rx="10" class="box"/><text x="50" y="286" class="label">C / ASM / resources</text><text x="50" y="314" class="small">Ordered real producers</text><text x="50" y="340" class="small">Flags and dependencies</text>
-<path d="M264 308H302" class="line"/>
-<rect x="306" y="252" width="230" height="112" rx="10" class="box"/><text x="324" y="286" class="label">ELF + declarations</text><text x="324" y="314" class="small">Symbols and relocations</text><text x="324" y="340" class="small">ABI registry and owners</text>
-<path d="M538 308H576" class="line"/>
-<rect x="580" y="252" width="230" height="112" rx="10" class="box"/><text x="598" y="286" class="label">Resolve providers</text><text x="598" y="314" class="small">Site, type, base, addend</text><text x="598" y="340" class="small">Reject unknown identities</text>
-<path d="M812 308H850" class="line"/>
-<rect x="854" y="252" width="234" height="112" rx="10" class="box"/><text x="872" y="286" class="label">Runtime metadata</text><text x="872" y="314" class="small">Tables, exports, names</text><text x="872" y="340" class="small">Sizes and entry offsets</text>
-<path d="M970 366V408" class="line"/>
-<rect x="580" y="414" width="508" height="88" rx="10" class="box"/><text x="600" y="448" class="label">Computed packing + ordinary final link</text><text x="600" y="477" class="small">Current positions, boundaries, fill, and checksums</text>
-<rect x="32" y="414" width="448" height="88" rx="10" class="old"/><text x="50" y="448" class="label">Bounded recipe: outside compatibility</text><text x="50" y="477" class="small">156 modules, registry, resident homes, layout</text>
-<path d="M482 458H574" class="line" stroke-dasharray="5 4"/>
-<text x="32" y="553" class="small">General-builder exit: replace every retained authority within the claimed source-only scope.</text>
+<svg xmlns="http://www.w3.org/2000/svg" id="jfg-flow" viewBox="0 0 960 860" role="img" aria-labelledby="jfg-flow-title jfg-flow-desc">
+<title id="jfg-flow-title">Recovery inputs and the current build supply different information</title>
+<desc id="jfg-flow-desc">Original ROM sites pass through relocation hints and Splat during recovery. Current producers emit ELF files. Provider checks and ABI declarations supply runtime metadata. The ordinary final link receives both current section bytes and generated metadata. The bounded recipe retains outside compatibility inputs.</desc>
+<defs><marker id="jfg-flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#35736b"/></marker></defs>
+<style>#jfg-flow text{font-family:Arial,Helvetica,sans-serif;fill:#192c39}#jfg-flow .label{font-size:22px;font-weight:700}#jfg-flow .small{font-size:20px}#jfg-flow .tag{font-size:20px;font-weight:700}#jfg-flow .box{fill:#edf7f4;stroke:#448b7d;stroke-width:1.5}#jfg-flow .old{fill:#f0f2f5;stroke:#a6b0ba;stroke-width:1.5}#jfg-flow .line{fill:none;stroke:#35736b;stroke-width:2;marker-end:url(#jfg-flow-arrow)}</style>
+<rect width="960" height="860" rx="18" fill="#fff"/>
+<text x="30" y="38" class="tag">RECOVERY: ORIGINAL ROM SITES</text>
+<rect x="30" y="62" width="200" height="110" rx="10" class="old"/><text x="45" y="100" class="label">Original ROM</text><text x="45" y="135" class="small">Sites and targets</text>
+<path d="M232 117H258" class="line"/>
+<rect x="263" y="62" width="200" height="110" rx="10" class="old"/><text x="278" y="100" class="label">reloc_addrs</text><text x="278" y="135" class="small">Named hints</text>
+<path d="M465 117H491" class="line"/>
+<rect x="496" y="62" width="200" height="110" rx="10" class="old"/><text x="511" y="100" class="label">Splat</text><text x="511" y="135" class="small">Symbolic extraction</text>
+<path d="M698 117H724" class="line"/>
+<rect x="729" y="62" width="201" height="110" rx="10" class="old"/><text x="744" y="100" class="label">Recovery inputs</text><text x="744" y="135" class="small">Check providers</text>
+<path d="M30 208H930" stroke="#c9d2d8" stroke-dasharray="6 5"/>
+<text x="30" y="250" class="tag">CURRENT BUILD: DEFINITIONS AND REFERENCES</text>
+<rect x="30" y="278" width="416" height="116" rx="10" class="box"/><text x="50" y="314" class="label">1. Real C / ASM / resource inputs</text><text x="50" y="346" class="small">Declared order, flags, and dependencies</text><text x="50" y="376" class="small">Run the declared build recipes</text>
+<path d="M448 336H508" class="line"/>
+<rect x="514" y="278" width="416" height="116" rx="10" class="box"/><text x="534" y="314" class="label">2. Current ELF + declarations</text><text x="534" y="346" class="small">Section bytes, symbols, and relocations</text><text x="534" y="376" class="small">ABI registry and export owners</text>
+<path d="M722 396V426" class="line"/>
+<rect x="514" y="432" width="416" height="110" rx="10" class="box"/><text x="534" y="470" class="label">3. Check the target providers</text><text x="534" y="502" class="small">Site, MIPS type, runtime base, addend</text><text x="534" y="530" class="small">Reject unresolved identities</text>
+<path d="M512 487H452" class="line"/>
+<rect x="30" y="432" width="416" height="110" rx="10" class="box"/><text x="50" y="470" class="label">4. Generate runtime metadata</text><text x="50" y="502" class="small">Tables, exports, names, header fields</text><text x="50" y="530" class="small">Current sizes and entry offsets</text>
+<path d="M238 544V655" class="line"/>
+<text x="260" y="609" class="small">Metadata</text>
+<path d="M932 336H946V602H722V655" class="line"/>
+<rect x="602" y="577" width="279" height="40" fill="#fff"/><text x="614" y="603" class="small">Current TEXT and DATA</text>
+<rect x="30" y="661" width="900" height="85" rx="10" class="box"/><text x="50" y="696" class="label">5. Compute packing and run the ordinary final link</text><text x="50" y="726" class="small">Current section bytes + metadata + declared outside inputs</text>
+<rect x="30" y="780" width="900" height="55" rx="9" class="old"/><text x="48" y="814" class="small">Bounded recipe: 156 modules, registry, resident homes, and layout remain borrowed.</text>
+<path d="M480 778V750" class="line" stroke-dasharray="5 4"/>
 </svg>

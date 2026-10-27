@@ -6,10 +6,18 @@ The original read-only memory (ROM) image remains a comparison target during rec
 The finished generator must obtain its layout and identities from the current build.
 
 Mickey's Speedway USA (MSU) supplies the reference tools described here.
-This document explains their use, the remaining gaps, and the next tests.
-It covers the United States (US) version of JFG.
-It includes the prerequisites for the demonstrated module recipe.
-It can be read without the earlier conversation.
+The module-79 recipe reproduced the original ROM and repacked a live DATA edit.
+It still uses 156 unchanged modules and existing registry, resident, and layout inputs.
+This handover covers the United States (US) version of JFG.
+
+Start with the path that fits your next task:
+
+- To run the tools, follow [the baseline setup in section 5](#5-run-the-public-recovery-kit).
+- To test generated tables, follow [the module-79 example in section 6](#6-reproduce-the-complete-module-79-example).
+- To design the general builder, use [the implementation stages in section 9](#9-complete-the-general-builder).
+
+Sections 2 through 4 explain the format and the measured recovery gaps.
+The procedures include their prerequisites; the earlier conversation is not required.
 
 ## 1. Scope, source pins, and evidence
 
@@ -72,7 +80,8 @@ An undefined symbol does not supply a storage allocation.
 
 ![Patch site, target identity, and runtime section bases](figures/jfg-sites-and-bases.svg)
 
-Several overlays can have a synthetic ELF address of zero.
+Several modules can start at ELF address zero.
+Sections within one relocatable ELF file can also start at zero.
 Use `(module, section, offset)` to identify their definitions.
 A shared address or an offset-zero placeholder name cannot identify a function across overlays.
 
@@ -170,6 +179,10 @@ MSU's stricter primary-table policy cannot be copied into JFG without review.
 | Secondary table | Local and self-reference records; discarded after initial loading |
 | Name offsets and name bytes | Debug lookup by export row; separate from export addresses |
 
+A SYMBOL record selects an export row.
+That row supplies the target module or resident region and its offset.
+For ordinary rows, the loader adds the selected region's RAM base.
+
 A module's ROM payload contains TEXT, DATA, the primary table, and the secondary table, in that order.
 Its BSS allocation adds no initialized bytes to that payload.
 A relocation site is measured from the module's TEXT base, including sites inside DATA.
@@ -177,8 +190,16 @@ The header's ROM position is relative to the configured module-image base.
 The loader updates the header's runtime address after allocation.
 
 The packed record's second word is `site << 8 | type << 4 | operation`.
-The operation is SYMBOL 0, LOCAL 1, JUMP 2, or DATA 3.
-The first word's meaning depends on that operation.
+The kit and JFG's C use different field names:
+
+| Bits in the second word | Kit name | JFG C field | Meaning |
+|---|---|---|---|
+| 31 through 8 | `site` | `targetOffset` | Offset of the location to patch |
+| 7 through 4 | `type` | `patchOperation` | ELF MIPS relocation number |
+| 3 through 0 | `operation` | `relocType` | SYMBOL 0, LOCAL 1, JUMP 2, or DATA 3 |
+
+Use the bit positions when comparing the kit with the loader.
+The record's first word depends on the operation:
 
 | Operation | First-word meaning |
 |---|---|
@@ -257,8 +278,8 @@ They are relocation diagnostics, not percentages of decompiled code.
 | Modules | 157; 155 nonempty | Modules 21 and 56 are empty |
 | Module runtime records | 27,515 | 11,076 primary; 16,439 secondary |
 | Runtime sites covered by object relocations | 21,302 / 27,515 | 77.4% site coverage; identity still needs proof |
-| Missing object relocation sites | 6,213 | 2,275 HI16; 2,280 LO16; 1,658 DATA |
-| Extra object relocations | 3,832 | 3,819 DATA; 13 TEXT HI16/LO16 |
+| Missing object relocation sites | 6,213 | 2,275 HI16; 2,280 LO16; 1,658 DATA-site `R_MIPS_32` |
+| Extra object relocations | 3,832 | 3,819 DATA-site `R_MIPS_32`; 13 TEXT HI16/LO16 |
 | Covered sites with wrong target identity | 19,104 | An ELF relocation can exist and still name the wrong function |
 | Covered sites with correct target identity | 2,198 | Site coverage alone overstates usable identity coverage |
 | Modules with a hidden readonly base | 80 | The flat extracted DATA section loses this runtime distinction |
@@ -697,7 +718,7 @@ A useful follow-up report contains these fields:
 | JFG / MSU | Jet Force Gemini / Mickey's Speedway USA |
 | ABI | Application binary interface; the contract for calls, data, and exported identities |
 | Addend | Stored displacement combined with a relocation's target base |
-| BSS | Zero-initialized RAM allocation without corresponding initialized ROM payload |
+| BSS | Zero-initialized RAM storage without corresponding initialized ROM payload |
 | Compatibility input | An existing image, table, identity, or layout retained during migration |
 | ELF | Executable and Linkable Format; the object and linked-file format |
 | Export / import | A definition offered to other modules / a reference requiring an external provider |
@@ -709,7 +730,8 @@ A useful follow-up report contains these fields:
 | Receipt | A private record of inputs, implementation hashes, outputs, and acceptance checks |
 | Runtime role | The section base and allocation meaning that the loader uses |
 | Selector | The encoded module or resident-region identifier in an export row |
-| Source-driven / source-only | Output derived from current declared inputs within the stated scope |
+| Source-driven | Metadata recomputed from current declared producers and ABI declarations |
+| Source-only | Within the stated scope, generation needs no retained original images, tables, or recovered layout inputs |
 | TEXT / DATA | Executable section / initialized stored data section |
 
 Technical verbs include assemble, compile, decode, encode, extract, link, patch, and relocate.

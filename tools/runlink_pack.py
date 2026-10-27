@@ -4118,6 +4118,36 @@ def edited_group_providers(inputs, exports, declared):
     return tuple((name, *where) for name, where in sorted(found.items()))
 
 
+def edited_original_record(member, section, ordinal, prepared):
+    """Keep compiler indices authoritative while consuming prepared semantics."""
+    compiler = member['compiler']; raw = member['raw']
+    original = compiler.rels(section)[ordinal]
+    mapping = dict(member['symbol_correspondence'][0])
+    edited_require((original.offset, original.type, mapping.get(original.sym.index))
+        == (prepared.offset, prepared.type, prepared.sym.index)
+        and raw.rels(section)[ordinal] == prepared,
+        'prepared record lacks original compiler correspondence')
+    return original
+
+
+def edited_static_function_joins(members, image, origins):
+    """Actual recovered local functions at their scoped input-map origins."""
+    rows = []
+    for index, member in enumerate(members):
+        for prepared_index, name, value, size, source in member['symbol_correspondence'][2]:
+            original = member['raw'].symbols[prepared_index]
+            wanted = (name, origins[index]['.text'] + value, size, STB_LOCAL, STT_FUNC)
+            matches = [symbol for symbol in image.symbols if symbol.name == name
+                and symbol.bind == STB_LOCAL and symbol.section == '.text']
+            edited_require(len(matches) == 1
+                and (original.name, original.value, original.size, original.bind, original.type)
+                    == (name,value,size,STB_LOCAL,STT_FUNC)
+                and (matches[0].name,matches[0].value,matches[0].size,matches[0].bind,matches[0].type) == wanted,
+                'recovered static FUNCTION lacks unique scoped map/extent join')
+            rows.append((index,prepared_index,*wanted,source))
+    return tuple(rows)
+
+
 def edited_group_origins(inputs, aggregate, mapping, names):
     """Join original per-input sites to an actual ordinary relocatable group."""
     edited_require(len(inputs) == len(names) and len(set(names)) == len(names), 'duplicate vector input')
@@ -4414,9 +4444,12 @@ class EditedResidentCell:
     context: object = field(repr=False)
     expected_context: object = field(repr=False)
     seal: object = field(repr=False)
+    consumer_holds: tuple = field(default=(), repr=False)
 
     def current(self):
         import proof_provenance as pp
+        for _member, held in self.consumer_holds:
+            held()
         edited_require(self.seal is _EDITED_CELL_SEAL, 'untrusted resident cell witness')
         self.provider['prefix_capture'].current()
         edited_require(self.context() == self.expected_context, 'resident cell capture context changed')
@@ -4493,7 +4526,32 @@ def edited_resident_cell(context, name, obj, section, rel, addend):
         and originals[0].sym.size == 4 and originals[0].sym.bind == STB_GLOBAL
         and compiler.symbols[originals[0].sym.index] is originals[0].sym,
         'resident cell original import index/identity differs')
-    if 'cell_cpp' not in obj:
+    vector = 'input_origins' in obj
+    consumer_hold = None
+    if vector:
+        rels = obj['raw'].rels(section)
+        ordinals = [i for i, item in enumerate(rels) if item == rel]
+        edited_require(len(ordinals) == 1, 'resident cell lacks actual prepared record')
+        original = edited_original_record(obj, section, ordinals[0], rel)
+        edited_require(original == originals[0], 'resident cell original correspondence differs')
+        effective_cpp = obj.get('effective_cpp')
+        held = obj.get('capture_current')
+        edited_require(type(effective_cpp) is tuple and len(effective_cpp) == 2
+            and type(effective_cpp[0]) is bytes and callable(held),
+            'vector resident cell lacks held effective CPP capture')
+        held()
+        cpp, cpp_path = effective_cpp
+        origin = obj['input_origins']; offsets = tuple(origin.items())
+        raw, linked, bases = obj['raw'], obj['linked'], dict(obj['bases'])
+        def consumer_hold():
+            edited_require(obj.get('effective_cpp') is effective_cpp
+                and obj.get('capture_current') is held and obj['compiler'] is compiler
+                and obj['raw'] is raw and obj['linked'] is linked
+                and obj['input_origins'] is origin and tuple(origin.items()) == offsets
+                and obj['bases'] == bases, 'vector resident cell consumer/member/origin changed')
+            held()
+        consumer_hold()
+    elif 'cell_cpp' not in obj:
         source, flags = obj['source_path'], obj['compiler_flags']
         edited_require(edited_sha(source) == obj['source_sha256']
             and batch.source_dependencies(source, tuple(flags)) == obj['source_closure'],
@@ -4504,7 +4562,8 @@ def edited_resident_cell(context, name, obj, section, rel, addend):
         edited_require(result.returncode == 0, 'resident cell consumer CPP failed')
         cpp = source.with_suffix('.cell.i'); cpp.write_bytes(result.stdout)
         obj['cell_cpp'] = (result.stdout, cpp)
-    cpp, cpp_path = obj['cell_cpp']
+    if not vector:
+        cpp, cpp_path = obj['cell_cpp']
     pp.resident_cell_declarations(cpp, obj['compiler_flags'], context['root'], {name}, definition=False)
     edited_require(edited_sha(obj['source_path']) == obj['source_sha256']
         and batch.source_dependencies(obj['source_path'], tuple(obj['compiler_flags'])) == obj['source_closure'],
@@ -4570,7 +4629,11 @@ def edited_resident_cell(context, name, obj, section, rel, addend):
         if not any(held is image for held, _digest, _surface in observations):
             observations.append((image, hashlib.sha256(image.data).hexdigest(),
                                  pp._static_parsed_surface(image)))
-    cells[name] = replace(witness, observations=tuple(observations))
+    consumer_holds = witness.consumer_holds
+    if consumer_hold is not None and not any(member is obj for member, _held in consumer_holds):
+        consumer_holds += ((obj, consumer_hold),)
+    cells[name] = replace(witness, observations=tuple(observations), consumer_holds=consumer_holds,
+                          inputs=tuple(dict(witness.inputs + ((cpp_path, hashlib.sha256(cpp).hexdigest()),)).items()))
     return cells[name].current()
 
 
@@ -4671,7 +4734,6 @@ def edited_module_records(number, objects, selected, exports, provider):
                         candidates = [s for s in provider['elf'].symbols if s.name == symbol.name
                             and s.bind == STB_GLOBAL and s.shndx != SHN_UNDEF]
                         if rel.type != R_MIPS_26 and len(candidates) == 1 and candidates[0].type == STT_OBJECT:
-                            edited_require('input_origins' not in member, 'vector resident-cell witness is unsupported')
                             base, target = edited_resident_cell(provider, symbol.name, member, section, rel, addend)
                         else:
                             base, target = edited_resident_function(provider, symbol.name)
@@ -4718,8 +4780,11 @@ def edited_module_records(number, objects, selected, exports, provider):
                                              'size': target[2], 'type': target[3]},
                           'word_encoding': encoding, 'underlying_identity': base if encoding else None})
             if 'source_inputs' in obj:
-                joins[-1].update(input=input_index, original_offset=rel.offset, original_ordinal=ordinal,
-                                 original_symbol_index=symbol.index, input_path=member['input_path'])
+                original = edited_original_record(member, section, ordinal, rel)
+                joins[-1].update(input=input_index, original_offset=original.offset, original_ordinal=ordinal,
+                                 original_symbol_index=original.sym.index, prepared_symbol_index=symbol.index,
+                                 original_symbol=vars(original.sym).copy(), prepared_symbol=vars(symbol).copy(),
+                                 input_path=member['input_path'])
     if 'source_inputs' in obj:
         edited_require(len({ref.site for ref in refs}) == len(refs), 'duplicate translated module site')
     header = edited_codec.Header(text=obj['linked'].size('.text'),

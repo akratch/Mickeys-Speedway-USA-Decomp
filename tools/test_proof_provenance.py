@@ -17,6 +17,65 @@ from types import SimpleNamespace
 import proof_provenance as provenance
 
 
+class StaticFunctionCorrespondenceTests(unittest.TestCase):
+    def fixture(self, **kwargs):
+        import runlink_pack as rp
+        import test_static_symbols as fixture
+        original = fixture.build_object(**kwargs)
+        prepared = fixture.ss.add_static_symbols(original)[0]
+        return rp.Elf('original', original), rp.Elf('prepared', prepared), fixture.ss
+
+    def prove(self, original, prepared, statics, cpp=None):
+        cpp = cpp or b'void entry(void) {} static void helper(void); static void helper(void) {} static void tail(void) {}'
+        # Synthetic ELF/debug fixture; production separately binds the real normalizer.
+        with mock.patch.object(provenance, 'static_anchor_module', return_value=statics):
+            return provenance.static_function_correspondence(original, prepared, cpp, ['-32'],
+                pathlib.Path(__file__).resolve().parents[1])
+
+    def test_removed_placeholder_is_not_the_new_function_or_a_relocation_target(self):
+        original, prepared, statics = self.fixture()
+        pairs, removed, added = self.prove(original, prepared, statics)
+        placeholder = next(s for s in original.symbols if s.name == 'helper')
+        self.assertNotIn(placeholder.index, dict(pairs))
+        self.assertEqual(removed, ((placeholder.index, 'helper', 16),))
+        self.assertEqual({row[1] for row in added}, {'helper', 'tail'})
+        self.assertNotEqual(original.rels('.text')[0].sym.index, prepared.rels('.text')[0].sym.index)
+        self.assertEqual(dict(pairs)[original.rels('.text')[0].sym.index], prepared.rels('.text')[0].sym.index)
+
+    def test_nonstatic_missing_source_and_storage_recovery_refuse(self):
+        original, prepared, statics = self.fixture()
+        for cpp in (b'void entry(void) {} void helper(void) {} static void tail(void) {}',
+                    b'void entry(void) {} static void tail(void) {}',
+                    b'void entry(void) {} static void helper(int x); static void helper(void) {} static void tail(void) {}'):
+            with self.subTest(cpp=cpp), self.assertRaises(provenance.MetadataProofError):
+                self.prove(original, prepared, statics, cpp)
+        original, prepared, statics = self.fixture(bss=(('storage',0),))
+        with self.assertRaisesRegex(provenance.MetadataProofError, 'storage recovery'):
+            self.prove(original, prepared, statics)
+
+    def test_prepared_other_bits_and_parsed_pair_reindex_refuse(self):
+        import runlink_pack as rp
+        original, prepared, statics = self.fixture()
+        payload = bytearray(prepared.data)
+        payload[prepared.section('.symtab')['offset'] + 16 + 13] = 2
+        with self.assertRaisesRegex(provenance.MetadataProofError, 'exact normalizer'):
+            self.prove(original, rp.Elf('wrong-other', bytes(payload)), statics)
+        for image in (original, prepared):
+            image.symbols.reverse()
+        with self.assertRaisesRegex(provenance.MetadataProofError, 'parsed symbol'):
+            self.prove(original, prepared, statics)
+
+    def test_referenced_undefined_placeholder_refuses(self):
+        import runlink_pack as rp
+        original, prepared, statics = self.fixture()
+        placeholder = next(s for s in original.symbols if s.name == 'helper')
+        payload = bytearray(original.data); rel = original.section('.rel.text')
+        info = struct.unpack_from('>I', payload, rel['offset']+4)[0]
+        struct.pack_into('>I', payload, rel['offset']+4, placeholder.index << 8 | info & 255)
+        with self.assertRaisesRegex(provenance.MetadataProofError, 'compiler metadata refused'):
+            self.prove(rp.Elf('referenced', bytes(payload)), prepared, statics)
+
+
 class ParsedSurfaceTests(unittest.TestCase):
     @staticmethod
     def image():

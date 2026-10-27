@@ -3060,7 +3060,7 @@ class EditedInputGroupTests(unittest.TestCase):
         self.assertIn(('state',1,next(s for s in inputs[1].symbols if s.name=='state').index),providers)
         origins,joins=rp.edited_group_origins(inputs,aggregate,mapping,names)
         obj=rp.edited_prepare_object(aggregate,linked)
-        obj['source_inputs']=tuple(dict(raw=e,linked=linked,input_origins=o,input_path=n) for e,o,n in zip(inputs,origins,names))
+        obj['source_inputs']=tuple(dict(raw=e,compiler=e,symbol_correspondence=(tuple((s.index,s.index) for s in e.symbols),(),()),linked=linked,input_origins=o,input_path=n) for e,o,n in zip(inputs,origins,names))
         selected={75:dict(exports=['caller'],entries=dict(init=None,resume=None),kinds=dict(caller='function'))}
         result=rp.edited_module_records(75,{75:obj},selected,exports,{})
         self.assertEqual(result['module'].header.bss,32)
@@ -3092,6 +3092,23 @@ class EditedInputGroupTests(unittest.TestCase):
             with self.subTest(fault=fault),self.assertRaises(rp.PackError):
                 rp.edited_group_origins(inputs,aggregate,mapping,names)
 
+    def test_original_correspondence_and_scoped_static_extent_cannot_be_forged(self):
+        inputs,aggregate,linked,mapping,names=self.bss_fixture()
+        raw=inputs[0]
+        member=dict(raw=raw,compiler=raw,symbol_correspondence=(tuple((s.index,s.index) for s in raw.symbols),(),()))
+        rel=raw.rels('.text')[0]
+        self.assertEqual(rp.edited_original_record(member,'.text',0,rel),rel)
+        member['symbol_correspondence']=(((rel.sym.index,0),),(),())
+        with self.assertRaisesRegex(rp.PackError,'original compiler'):
+            rp.edited_original_record(member,'.text',0,rel)
+        image=self.elf('static',ObjBuilder().section('.text',bytes(16))
+            .sym('helper',0,16,bind=LOCAL,type=FUNC,section='.text').build())
+        symbol=next(s for s in image.symbols if s.name=='helper')
+        member=dict(raw=image,symbol_correspondence=((),(),((symbol.index,'helper',0,16,'source'),)))
+        self.assertEqual(len(rp.edited_static_function_joins([member],image,[{'.text':0}])),1)
+        with self.assertRaisesRegex(rp.PackError,'scoped map'):
+            rp.edited_static_function_joins([member],image,[{'.text':16}])
+
     def test_duplicate_and_external_abi_shadow_providers_refuse(self):
         inputs,aggregate,linked,mapping,names=self.bss_fixture()
         with self.assertRaisesRegex(rp.PackError,'duplicate internal'):
@@ -3103,7 +3120,7 @@ class EditedInputGroupTests(unittest.TestCase):
         inputs,aggregate,linked,mapping,names=self.bss_fixture(addend=20)
         origins,_=rp.edited_group_origins(inputs,aggregate,mapping,names)
         obj=rp.edited_prepare_object(aggregate,linked)
-        obj['source_inputs']=tuple(dict(raw=e,linked=linked,input_origins=o,input_path=n) for e,o,n in zip(inputs,origins,names))
+        obj['source_inputs']=tuple(dict(raw=e,compiler=e,symbol_correspondence=(tuple((s.index,s.index) for s in e.symbols),(),()),linked=linked,input_origins=o,input_path=n) for e,o,n in zip(inputs,origins,names))
         selected={75:dict(exports=['caller'],entries=dict(init=None,resume=None),kinds=dict(caller='function'))}
         with self.assertRaisesRegex(rp.PackError,'out-of-object'):
             rp.edited_module_records(75,{75:obj},selected,rp.OrtNames(['caller'],{}),{})
@@ -3151,7 +3168,7 @@ class EditedInputGroupTests(unittest.TestCase):
         origins,joins=rp.edited_group_origins([first,second],raw,
             [rp.MapInput('.text','.text',0,4,'a.o'),rp.MapInput('.text','.text',4,4,'b.o')],['a.o','b.o'])
         obj=rp.edited_prepare_object(raw,linked)
-        obj['source_inputs']=tuple(dict(raw=e,linked=linked,input_origins=o,input_path=n)
+        obj['source_inputs']=tuple(dict(raw=e,compiler=e,symbol_correspondence=(tuple((s.index,s.index) for s in e.symbols),(),()),linked=linked,input_origins=o,input_path=n)
             for e,o,n in zip([first,second],origins,['a.c','b.c']))
         selected={75:dict(exports=['first','caller'],entries=dict(init=None,resume=None),
                           kinds=dict(first='function',caller='function'))}
@@ -3171,6 +3188,83 @@ class EditedResidentCellTests(unittest.TestCase):
         item=rp.MapInput('.main_bss','.bss',0x80001000,16,'build/src/main/provider.c.o')
         context={'elf':prefix,'map':[item],'holds':{},'prefix_capture':SimpleNamespace(current=lambda:{})}
         return context,original,configured,item
+
+    def test_vector_cached_cell_keeps_each_consumer_origin_cpp_and_original_index(self):
+        import proof_provenance as pp
+        import permute_batch as batch
+        import dataclasses
+        context, original, configured, item = self.fixture()
+        context['root'] = Path.cwd()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            first = rp.Elf('first.o', ObjBuilder().section('.text', words(0))
+                .sym('first', 0, 4, type=FUNC, section='.text').build())
+            def caller(name):
+                return rp.Elf(name+'.o', ObjBuilder().section('.text', words(lui(0), addiu(0)))
+                    .sym(name, 0, 8, type=FUNC, section='.text').sym('cell', size=4, type=OBJECT)
+                    .rel('.text', 0, HI16, 'cell').rel('.text', 4, LO16, 'cell').build())
+            inputs = [first, caller('second'), caller('third')]
+            def combined(rels):
+                b = ObjBuilder().section('.text', words(0,lui(0),addiu(0),lui(0),addiu(0)))
+                for name, value, size in [('first',0,4),('second',4,8),('third',12,8)]:
+                    b.sym(name,value,size,type=FUNC,section='.text')
+                b.sym('cell',size=4,type=OBJECT)
+                if rels:
+                    for offset,kind in [(4,HI16),(8,LO16),(12,HI16),(16,LO16)]: b.rel('.text',offset,kind,'cell')
+                return rp.Elf('combined',b.build())
+            raw, linked = combined(True), combined(False)
+            mapping = [rp.MapInput('.text','.text',offset,image.size('.text'),str(image.path))
+                       for offset,image in zip((0,4,12),inputs)]
+            for image in (*inputs,raw,linked):
+                image.section('.text')['align']=4
+            origins,_ = rp.edited_group_origins(inputs,raw,mapping,[str(e.path) for e in inputs])
+            bad = list(mapping); bad[1] = dataclasses.replace(bad[1],addr=8)
+            with self.assertRaises(rp.PackError):
+                rp.edited_group_origins(inputs,raw,bad,[str(e.path) for e in inputs])
+            obj = rp.edited_prepare_object(raw,linked)
+            members = []
+            for i,(image,origin) in enumerate(zip(inputs,origins)):
+                source=path/(str(i)+'.c'); source.write_text('extern unsigned short *cell;')
+                cpp=source.with_suffix('.i'); cpp.write_bytes(source.read_bytes())
+                member=dict(raw=image,compiler=image,linked=linked,bases=obj['bases'],input_origins=origin,
+                    input_path=str(source),source_path=source,source_sha256=rp.edited_sha(source),
+                    source_closure={},compiler_flags=['-32'],effective_cpp=(cpp.read_bytes(),cpp),
+                    symbol_correspondence=(tuple((s.index,s.index) for s in image.symbols),(),()))
+                def held(member=member, cpp=cpp, data=cpp.read_bytes()):
+                    rp.edited_require(cpp.read_bytes()==data,'fixture CPP changed')
+                member['capture_current']=held; members.append(member)
+            obj['source_inputs']=tuple(members)
+            observations=tuple((e,hashlib.sha256(e.data).hexdigest(),pp._static_parsed_surface(e))
+                               for e in (original,configured,context['elf']))
+            witness=rp.EditedResidentCell('cell',0x80001008,original,configured,context,item,
+                observations,(),lambda:{},{},rp._EDITED_CELL_SEAL)
+            context['cells']={'cell':witness}
+            selected={66:dict(exports=['first','second','third'],entries=dict(init=None,resume=None),
+                            kinds={name:'function' for name in ('first','second','third')})}
+            exports=rp.OrtNames(['first','second','third','cell'],{})
+            with mock.patch.object(pp,'resident_cell_declarations'), mock.patch.object(batch,'source_dependencies',return_value={}):
+                result=rp.edited_module_records(66,{66:obj},selected,exports,context)
+                self.assertEqual([j['offset'] for j in result['joins']],[4,8,12,16])
+                self.assertEqual([j['full'] for j in result['joins']],[('res',0x80001008)]*4)
+                self.assertEqual([j['original_offset'] for j in result['joins']],[0,4,0,4])
+                self.assertEqual(len(context['cells']['cell'].consumer_holds),2)
+                hold=context['cells']['cell'].current
+                hold()
+                second=members[2]; cpp=second['effective_cpp'][1]; saved=cpp.read_bytes()
+                cpp.write_bytes(saved+b' ')
+                with self.assertRaises(rp.PackError):hold()
+                cpp.write_bytes(saved); hold()
+                origin=second['input_origins']; origin['.text']+=4
+                with self.assertRaises(rp.PackError):hold()
+                origin['.text']-=4; hold()
+                original_hold=second['capture_current'];second['capture_current']=lambda:None
+                with self.assertRaises(rp.PackError):hold()
+                second['capture_current']=original_hold;hold()
+                correspondence=second['symbol_correspondence'];second['symbol_correspondence']=((),(),())
+                with self.assertRaises(rp.PackError):rp.edited_module_records(66,{66:obj},selected,exports,context)
+                second['symbol_correspondence']=correspondence
+                context['cells']['cell']=dataclasses.replace(context['cells']['cell'],address=0x8000100c)
+                with self.assertRaises(rp.PackError):rp.edited_module_records(66,{66:obj},selected,exports,context)
 
     def test_actual_sized_cell_and_unrelated_local_name(self):
         import dataclasses

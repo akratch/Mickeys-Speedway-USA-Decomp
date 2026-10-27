@@ -284,9 +284,15 @@ gmake edited-runlink EDITED_MODULES=97 \
 
 Each input is compiled separately. The builder retains the untouched compiler
 object, effective preprocessor output, dependency closure, flags and ordered
-relocations. It requires static-symbol preparation to preserve the admitted
-original symbol-index and relocation surface. An ordinary relocatable link then
-combines the inputs in declared order before the existing module-link step.
+relocations. Unchanged static-symbol preparation retains the exact-index path.
+A separate FUNCTION-only path authenticates the existing metadata transformation
+against the same original compiler debug records, actual effective C definition
+and exact normalizer replay. It retains both original and prepared indices:
+an unreferenced undefined placeholder is a tombstone, not the newly recovered
+LOCAL function. Complete symbol coverage, function extents and ordered original
+records remain checked through the aggregate and final maps. An ordinary
+relocatable link combines the inputs in declared order before the existing
+module-link step.
 The aggregate is a linker product, not an untouched compiler object. Actual map
 contributions translate original sites and targets; numeric section origins are
 not authored in the registry. Each declared export must have exactly one real
@@ -296,7 +302,8 @@ no new ABI export; an existing declared export retains its ABI row. Names
 outside the graph still require declared ABI ownership and provider proof.
 
 The admitted vector class is MIPS II/o32 with an authentic `-G0` recipe and no
-GP use, COMMON, integer-word witness or resident-cell witness. The admitted BSS
+GP use, COMMON or integer-word witnesses. Static DATA/BSS recovery and other
+unsupported static-symbol transformations remain excluded. The admitted BSS
 shape contains contiguous sized GLOBAL objects followed only by genuine
 compiler section alignment. Actual NOBITS type, flags, zero base, alignment,
 ordered map contributions and extent must agree; padding is not a target object.
@@ -308,6 +315,24 @@ than union all register masks, and its aggregate GP value is not the original
 compiler value. The audit checks the actual retained contributors and the
 restricted no-GP contract; it does not manufacture an all-input REGINFO union.
 
+Zero-addend text HI/LO imports of mutable resident `u16 *` cells can reuse the
+existing typed provider proof. The same captured effective C and original
+compiler record authenticate each consumer, including additional consumers of
+a cached provider. Fresh provider C/CPP, sized allocated NOBITS definitions,
+ordinary maps and final readback establish the four-byte cell. Input origins
+translate caller sites; resident targets remain absolute. This establishes no
+framebuffer capacity, pointee ownership or resource lifetime.
+
+The final linker uses private copies of its compatibility scripts. It removes
+only plain numeric assignments shadowing independently authenticated original
+strong GLOBAL definitions in selected C inputs. All other bytes stay unchanged;
+duplicate or unsupported definitions and dependencies on actually removed names
+refuse. Redirects to names whose definitions were not removed remain unchanged
+compatibility inputs. No numeric replacement or canonical alias edit supplies
+source authority. Original/projected scripts, provider inventories, consumed
+maps and every consumer capture remain held through receipt publication. The
+final kind, size, allocated home and map must agree with the real provider.
+
 The reviewed overlay97 exercise split its first function and existing context
 datum from the remainder, including a live consumer in the second input. The
 one-to-two-to-one sequence preserved the retail image and all 21 runtime records;
@@ -316,7 +341,15 @@ existing five-element slot array into a separate source input: 20 object bytes
 within the same 32-byte NOBITS allocation. All 31 runtime records remained
 exact, including six LOCAL references to that private provider, with no ABI row
 added. Provider omission refused with the consumer functions retained; recovery,
-warm reuse and merge-back passed. These exercises prove the stated bounded
+warm reuse and merge-back passed. Overlay66 then separated its existing
+four-byte BSS scalar into a second input, retaining its 16-byte NOBITS allocation.
+Its static helper, 14 resident-cell references and all 55 runtime records stayed
+exact, including the real final GLOBAL BSS definition. Provider omission,
+recovery and unchanged-context warm reuse passed. Merge-back uses the legacy
+scalar route and retains its prior alias behavior; it is not a new vector
+allocation proof. Nonzero
+resident-cell site origins are covered by synthetic routing controls; this real
+consumer's text origin is zero. These exercises prove the stated bounded
 classes. They add no source-ownership credit and do not establish arbitrary
 module/data/BSS growth, a source-only build or a general JFG builder. This vector
 interface belongs to the MSU edited frontend; the portable kit's JFG

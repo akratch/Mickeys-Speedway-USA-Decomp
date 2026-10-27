@@ -251,6 +251,83 @@ class AuthoredRegistryTests(unittest.TestCase):
                     capture,product,closure=link.edited_compile(self.root,directory,'capture','void entry(void) {}\n',
                         link.rp.OrtNames([],{}),args,[],capture_only=True)
                     capture['capture_current']()
+                    held = capture['capture_current']; original_map = capture['symbol_correspondence']
+                    cpp = capture['effective_cpp']
+                    capture['effective_cpp'] = (cpp[0] + b' ', cpp[1])
+                    with self.assertRaises(link.rp.PackError): held()
+                    capture['effective_cpp'] = cpp
+                    held()
+                    capture['symbol_correspondence'] = ((), (), ())
+                    with self.assertRaisesRegex(link.rp.PackError, 'observation changed'):held()
+                    capture['symbol_correspondence'] = original_map
+                    capture['capture_current'] = lambda: None
+                    with self.assertRaisesRegex(link.rp.PackError, 'observation changed'):held()
+                    capture['capture_current'] = held; held()
+
+    def test_private_alias_projection_spans_dependencies_and_loaded_holds(self):
+        inventory=(('owned',(66,1,2,2,'.bss',0,4,1)),)
+        payload=b'/* owned = 3; */\nowned = 0x00; // comment owned\nforeign = 7;\n'
+        projected,audit=link.edited_alias_buffers((('a',payload),),inventory)
+        self.assertEqual(projected[0][1],b'/* owned = 3; */\n // comment owned\nforeign = 7;\n')
+        self.assertEqual(link.edited_alias_buffers((('a',b'foreign = 7;\n'),),inventory)[0][0][1],b'foreign = 7;\n')
+        for bad in (b'owned = 1;\nowned = 2;', b'PROVIDE(owned = 0);', b'owned += 1;',
+                    b'owned = other;',b'owned = 0;\nforeign = owned + 4;',b'"owned" = 0;',
+                    b'"// owned" = 0;',b'owned = 0;\nASSERT(owned == 0, "x");'):
+            with self.subTest(bad=bad),self.assertRaises(link.rp.PackError):
+                link.edited_alias_buffers((('a',bad),),inventory)
+        with self.assertRaises(link.rp.PackError):
+            link.edited_alias_buffers((('a',b'owned = 0;'),('b',b'owned = 1;')),inventory)
+        redirect=b'compatibility = owned;\n'
+        self.assertEqual(link.edited_alias_buffers((('a',redirect),),inventory)[0][0][1],redirect)
+        for buffers in ((('a',redirect),('b',b'owned = 0;')), (('a',b'owned = 0;'),('b',redirect))):
+            with self.assertRaises(link.rp.PackError):link.edited_alias_buffers(buffers,inventory)
+
+        names=('undefined_funcs_auto.us.txt','undefined_syms_auto.us.txt',
+               'libultra_undefined_syms.us.txt','overlay_undefined_syms.us.txt')
+        for name in names:(self.root/name).write_bytes(payload if name==names[-1] else b'/* unchanged */')
+        directory=self.root/'projection';directory.mkdir()
+        with mock.patch.object(link,'edited_original_provider_inventory',return_value=inventory) as derive:
+            paths,_,held=link.edited_alias_projection(self.root,directory,{},lambda:None)
+            held(); old=paths[-1].read_bytes(); paths[-1].write_bytes(b'owned = 0;')
+            with self.assertRaises(link.rp.PackError):held()
+            paths[-1].write_bytes(old);held()
+            source=self.root/names[-1];source.write_bytes(payload+b' ')
+            with self.assertRaises(link.rp.PackError):held()
+            source.write_bytes(payload);held()
+            derive.return_value=()
+            with self.assertRaises(link.rp.PackError):held()
+            derive.return_value=inventory;held()
+
+    def test_alias_inventory_requires_original_strong_allocated_definition_and_full_join(self):
+        from test_runlink_pack import ObjBuilder,GLOBAL,OBJECT
+        import dataclasses
+        image=link.rp.Elf('owner',ObjBuilder().section('.bss',nobits=16)
+                          .sym('owned',0,4,GLOBAL,OBJECT,'.bss').build())
+        symbol=next(s for s in image.symbols if s.name=='owned')
+        member=dict(compiler=image,raw=image,input_origins={'.bss':0},capture_current=lambda:None,
+                    symbol_correspondence=(tuple((s.index,s.index) for s in image.symbols),(),()))
+        obj=dict(source_inputs=(member,),raw=image,linked=image)
+        objects={66:obj};expected=link.edited_original_provider_inventory(objects)
+        self.assertEqual(expected[0][0],'owned')
+        for fault in ('prepared','origin','weak','ABS','UND','COMMON','nonalloc','zero'):
+            original=link.rp.Elf('original',image.data);member['compiler']=original
+            row=original.symbols[symbol.index]
+            if fault=='prepared':member['symbol_correspondence']=((),(),())
+            elif fault=='origin':member['input_origins']['.bss']=4
+            elif fault=='nonalloc':original.section('.bss')['flags']=0
+            else:
+                fields={'weak':{'bind':2},'ABS':{'shndx':link.rp.SHN_ABS},'UND':{'shndx':0},
+                        'COMMON':{'shndx':link.rp.SHN_COMMON},'zero':{'size':0}}[fault]
+                original.symbols[symbol.index]=dataclasses.replace(row,**fields)
+            with self.subTest(fault=fault):
+                if fault in ('weak','ABS','UND','COMMON'):
+                    self.assertEqual(link.edited_original_provider_inventory(objects),())
+                else:
+                    with self.assertRaises(link.rp.PackError):link.edited_original_provider_inventory(objects)
+            member['compiler']=image;member['input_origins']['.bss']=0
+            member['symbol_correspondence']=(tuple((s.index,s.index) for s in image.symbols),(),())
+        with self.assertRaises(link.rp.PackError):link.edited_original_provider_inventory({66:obj,67:obj})
+        self.assertEqual(link.edited_original_provider_inventory(objects),expected)
 
     def test_authored_vector_does_not_open_old_symbolic_lookup(self):
         with mock.patch.object(link.rp.OrtNames, 'load', side_effect=AssertionError('old lookup')):

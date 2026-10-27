@@ -32,7 +32,7 @@ void amTunePlay_o051Reloc(u8 sequenceId);
 s32 runlinkDownloadCode_o051Reloc(s32 overlayIndex);
 void overlay56LoadResource_o051Reloc(void);
 s32 levelGetNumber_o051Reloc(void);
-void freeFrontEndList(void *resource);
+void freeFrontEndList(s16 *resource);
 void overlay56ReleaseResource(void);
 void freeFrontEndItem(s32 index);
 

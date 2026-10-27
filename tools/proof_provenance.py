@@ -1062,6 +1062,128 @@ def static_source_facts(cpp, flags, root, names):
     return facts
 
 
+def static_function_correspondence(compiler, prepared, cpp, flags, root):
+    """Closed FUNCTION-only preparation; removed placeholders are not targets."""
+    import candidate_context as lexical
+    import runlink_pack as rp
+    if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF:
+        raise MetadataProofError('loaded static FUNCTION proof changed')
+    statics = static_anchor_module(root)
+    try:
+        replayed = statics.add_static_symbols(compiler.data)[0]
+    except statics.Failure as error:
+        raise MetadataProofError('static FUNCTION compiler metadata refused') from error
+    if replayed != prepared.data:
+        raise MetadataProofError('static FUNCTION preparation is not the exact normalizer output')
+    sections = statics._sections(compiler.data)
+    debug = [section for section in sections if section[10] == '.mdebug']
+    if len(debug) != 1:
+        raise MetadataProofError('static FUNCTION lacks unique compiler debug metadata')
+    if statics.bss_anchors(compiler.data, debug[0]) or statics.data_anchors(compiler.data, debug[0]):
+        raise MetadataProofError('static storage recovery is not a FUNCTION correspondence')
+    procedures = statics.procedures(compiler.data, debug[0])
+    wanted = {name: row for name, row in procedures.items() if row[2]}
+    if not wanted or '-32' not in flags or any(x in flags for x in ('-64', '-n32', '-n64')):
+        raise MetadataProofError('static FUNCTION requires compiler procedures and actual o32 flags')
+    ca, parser, before, lexical_identity = _effective_parser(root)
+    if len(cpp) > lexical.MAX_SOURCE_BYTES:
+        raise MetadataProofError('static FUNCTION CPP exceeds bound')
+    try:
+        tree = parser.CParser().parse(cpp.decode('utf-8'))
+    except Exception as error:
+        raise MetadataProofError('static FUNCTION effective C cannot be parsed') from error
+    def shape(node):
+        if node is None:
+            return None
+        attrs = tuple((key, tuple(value) if isinstance(value, list) else value)
+            for key in node.attr_names
+            if not (isinstance(node, (ca.Decl, ca.TypeDecl)) and key in ('name', 'declname'))
+            for value in (getattr(node, key),))
+        return (type(node).__name__, attrs, tuple((key, shape(child)) for key, child in node.children()))
+    class NoPragmas(ca.NodeVisitor):
+        def visit_Pragma(self, node):
+            raise MetadataProofError('static FUNCTION pragmas are unsupported')
+    NoPragmas().visit(tree)
+    definitions = {}
+    for name in wanted:
+        rows = [node for node in tree.ext if isinstance(node, ca.FuncDef) and node.decl.name == name]
+        if len(rows) != 1:
+            raise MetadataProofError('static FUNCTION lacks one effective definition: '+name)
+        node = rows[0]; decl = node.decl; function = decl.type
+        if (decl.storage != ['static'] or decl.quals or decl.funcspec or decl.bitsize
+                or getattr(decl, 'align', None) or node.param_decls
+                or not isinstance(function, ca.FuncDecl) or function.args is None
+                or any(not isinstance(arg, (ca.Decl, ca.Typename)) for arg in function.args.params)):
+            raise MetadataProofError('unsupported static FUNCTION declaration: '+name)
+        prototypes = [row for row in tree.ext if isinstance(row, ca.Decl) and row.name == name]
+        if len(prototypes) > 1 or any(shape(row) != shape(decl) for row in prototypes):
+            raise MetadataProofError('static FUNCTION prototype differs: '+name)
+        definitions[name] = hashlib.sha256(repr(shape(decl)).encode()).hexdigest()
+    debug_rows = [row for rows in statics._debug_files(compiler.data, debug[0]) for row in rows]
+    for name, (start, size, _) in wanted.items():
+        if (sum(row == (name, start, statics.ST_STATIC_PROC, statics.SC_TEXT) for row in debug_rows) != 1
+                or sum(row[0] == name and row[2] == statics.ST_END for row in debug_rows) != 1):
+            raise MetadataProofError('ambiguous static FUNCTION compiler records')
+    for symbol in compiler.symbols:
+        if symbol.bind == 1 and symbol.type == 2 and symbol.section == '.text':
+            if procedures.get(symbol.name) != (symbol.value, symbol.size, False):
+                raise MetadataProofError('GLOBAL FUNCTION lacks matching compiler debug extent')
+    allocated = lambda image: tuple((row['name'], tuple(row[k] for k in
+        ('index','type','flags','addr','size','align','link','info')), image.bytes_of(row['name']))
+        for row in image.sections if row['flags'] & 2)
+    if allocated(compiler) != allocated(prepared):
+        raise MetadataProofError('static FUNCTION changed allocated observation')
+    def symbol_rows(image):
+        tables = [row for row in statics._sections(image.data) if row[1] == statics.SHT_SYMTAB]
+        if len(tables) != 1:
+            raise MetadataProofError('static FUNCTION needs one symbol table')
+        return statics._symbols(image.data, tables[0])
+    original_rows, prepared_rows = symbol_rows(compiler), symbol_rows(prepared)
+    for image, rows in ((compiler, original_rows), (prepared, prepared_rows)):
+        table = next(section for section in image.sections if section['type'] == 2)
+        strings = image.sections[table['link']]['offset']
+        if len(rows) != len(image.symbols) or any(symbol.index != index
+                or (symbol.name,symbol.value,symbol.size,symbol.bind,symbol.type,symbol.shndx,symbol.section)
+                != (statics._cstring(image.data,strings+row[0]),row[1],row[2],row[3]>>4,row[3]&15,row[5],image.secname(row[5]))
+                for index,(symbol,row) in enumerate(zip(image.symbols,rows))):
+            raise MetadataProofError('static FUNCTION parsed symbol observation differs from loaded bytes')
+    key = lambda symbol, rows: (tuple((k,v) for k,v in vars(symbol).items() if k != 'index'),
+                               tuple(rows[symbol.index]))
+    referenced = {rel.sym.index for section in compiler.sections for rel in compiler.rels(section['name'])}
+    pairs, removed, used = [], [], set()
+    for symbol in compiler.symbols:
+        matches = [row for row in prepared.symbols if key(row, prepared_rows) == key(symbol, original_rows)]
+        if len(matches) == 1 and matches[0].index not in used:
+            pairs.append((symbol.index, matches[0].index)); used.add(matches[0].index)
+        elif (not matches and symbol.name in wanted and symbol.shndx == 0
+                and symbol.bind == 1 and symbol.type == 0 and original_rows[symbol.index][4] == 0 and symbol.value == 0
+                and symbol.size == wanted[symbol.name][1] and symbol.index not in referenced):
+            removed.append((symbol.index, symbol.name, symbol.size))
+        else:
+            raise MetadataProofError('static FUNCTION original row has no unique correspondence')
+    added = []
+    for symbol in prepared.symbols:
+        if symbol.index in used:
+            continue
+        if (symbol.name not in wanted or symbol.bind != 0 or symbol.type != 2 or prepared_rows[symbol.index][4] != 0
+                or symbol.section != '.text' or (symbol.value, symbol.size, True) != wanted[symbol.name]):
+            raise MetadataProofError('unproved added static FUNCTION row')
+        added.append((symbol.index, symbol.name, symbol.value, symbol.size, definitions[symbol.name]))
+    if len(added) != len(wanted) or len({row[1] for row in added}) != len(wanted):
+        raise MetadataProofError('static FUNCTION additions are incomplete or ambiguous')
+    mapping = dict(pairs)
+    for section in compiler.sections:
+        name = section['name']; old = compiler.rels(name); new = prepared.rels(name)
+        if (len(old) != len(new) or any((a.offset,a.type,mapping.get(a.sym.index))
+                != (b.offset,b.type,b.sym.index) for a,b in zip(old,new))
+                or rp.in_place_addends(compiler,name,old) != rp.in_place_addends(prepared,name,new)):
+            raise MetadataProofError('static FUNCTION changed ordered original relocation identity')
+    if before != literal_profile_inputs(root) or lexical.identity() != lexical_identity:
+        raise MetadataProofError('static FUNCTION loaded parser changed')
+    static_anchor_module(root)
+    return tuple(pairs), tuple(removed), tuple(added)
+
+
 def _static_parsed_surface(elf):
     # Keep the compact audit shape without rendering whole ELF payloads as text.
     # Ordered metadata and length-framed bytes bind the same parsed observation.

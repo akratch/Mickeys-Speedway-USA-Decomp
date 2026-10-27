@@ -807,27 +807,40 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
                     and compiler.bytes_of(name) == prepared.bytes_of(name)
                     for name in (*rp.EDITED_ABI, '.options')),
             'vector static preparation changed original ABI header/options')
-        rp.edited_require(pp._static_parsed_surface(compiler) == pp._static_parsed_surface(prepared)
+        same_indices = (pp._static_parsed_surface(compiler) == pp._static_parsed_surface(prepared)
             and [vars(symbol) for symbol in compiler.symbols] == [vars(symbol) for symbol in prepared.symbols]
             and all([(rel.offset,rel.type,vars(rel.sym)) for rel in compiler.rels(section['name'])]
                 == [(rel.offset,rel.type,vars(rel.sym)) for rel in prepared.rels(section['name'])]
-                for section in compiler.sections),
-            'vector static preparation changed original symbol-index/relocation surface')
+                for section in compiler.sections))
         rp.edited_check_sections(compiler); rp.edited_check_sections(prepared)
         rp.edited_require(integer_word_profile is None, 'vector integer-word witness is unsupported')
         rp.edited_bss_allocation(prepared)
         command = ['tools/ido/cc', '-E', *pp._literal_flags(shlex.join(['tools/ido/cc', *flags]), flags[-1]), flags[-1]]
         result = capture_run(command, 'cpp', cpp=True)
         cpp_path = directory/(label+'-effective.i'); write_changed(cpp_path, result.stdout)
+        if same_indices:
+            correspondence = (tuple((row.index,row.index) for row in compiler.symbols), (), ())
+        else:
+            try:
+                correspondence = pp.static_function_correspondence(compiler, prepared, result.stdout, flags, root)
+            except (pp.MetadataProofError, OSError) as error:
+                raise rp.PackError('vector static preparation changed original symbol-index/relocation surface: '+str(error)) from error
         expected = {source.name: source_hash, untouched.name: compiler_hash,
                     raw.name: hashlib.sha256(prepared.data).hexdigest(),
                     cpp_path.name: hashlib.sha256(result.stdout).hexdigest(), **command_records}
         observed = tuple((image, hashlib.sha256(image.data).hexdigest(), pp._static_parsed_surface(image))
                          for image in (compiler, prepared))
+        effective_cpp = (result.stdout, cpp_path)
         expected_seal, args_seal, flags_seal = tuple(sorted(expected.items())), tuple(args), tuple(flags)
         closure_seal = json_bytes(closure)
         def current():
-            rp.edited_require(tuple(sorted(expected.items())) == expected_seal
+            rp.edited_require(capture['effective_cpp'] is effective_cpp
+                and capture['symbol_correspondence'] is correspondence
+                and capture['raw'] is prepared and capture['compiler'] is compiler
+                and capture['capture_current'] is current and capture['source_closure'] is closure
+                and capture['compiler_flags'] is flags and capture['source_path'] == source
+                and capture['source_sha256'] == source_hash
+                and tuple(sorted(expected.items())) == expected_seal
                 and tuple(args) == args_seal and tuple(flags) == flags_seal
                 and all(digest(directory/name) == value for name,value in expected_seal)
                 and all(hashlib.sha256(image.data).hexdigest() == value
@@ -836,9 +849,10 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
                 and {name:digest(root/name) for name in static_inputs} == static_inputs
                 and batch.source_dependencies(source, tuple(args)) == closure
                 and batch.checked_tool_identity() == static_tools, 'vector compiler/CPP observation changed')
-        current()
         capture = dict(raw=prepared, compiler=compiler, source_path=source, compiler_flags=flags,
-                       source_closure=closure, source_sha256=source_hash, capture_current=current)
+                       source_closure=closure, source_sha256=source_hash, capture_current=current,
+                       symbol_correspondence=correspondence, effective_cpp=effective_cpp)
+        current()
         return capture, (raw, None, None, expected), closure
     linked = directory / (label + '-linked.o')
     receipt = module_link.link(raw, linked, exports, directory / (label + '-module'),
@@ -953,6 +967,107 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
     return (obj, (raw, linked, receipt, expected), closure)
 
 
+def edited_original_provider_inventory(objects):
+    """Only held original strong definitions can displace compatibility assignments."""
+    found = {}
+    for number, obj in objects.items():
+        if 'source_inputs' not in obj:
+            continue
+        for input_index, member in enumerate(obj['source_inputs']):
+            member['capture_current']()
+            original, prepared = member['compiler'], member['raw']
+            pairs = dict(member['symbol_correspondence'][0])
+            for symbol in original.symbols:
+                if symbol.bind != rp.STB_GLOBAL or symbol.shndx in (rp.SHN_UNDEF, rp.SHN_ABS, rp.SHN_COMMON):
+                    continue
+                section = original.section(symbol.section)
+                rp.edited_require(section and section['flags'] & 2 and symbol.section in rp.EDITED_SECTIONS
+                    and symbol.type in (rp.STT_FUNC, rp.STT_OBJECT) and symbol.size > 0
+                    and 0 <= symbol.value < symbol.value + symbol.size <= section['size'],
+                    'alias projection original provider is not sized allocated C')
+                index = pairs.get(symbol.index)
+                rp.edited_require(type(index) is int and 0 <= index < len(prepared.symbols),
+                                  'alias projection lacks original/prepared provider')
+                row = prepared.symbols[index]
+                fields = lambda x: (x.name,x.value,x.size,x.bind,x.type,x.section)
+                rp.edited_require(fields(row) == fields(symbol), 'alias projection prepared provider differs')
+                offset = member['input_origins'][symbol.section] + symbol.value
+                for image in (obj['raw'], obj['linked']):
+                    matches = [r for r in image.symbols if r.name == symbol.name and r.bind == rp.STB_GLOBAL
+                               and r.shndx not in (rp.SHN_UNDEF,rp.SHN_ABS,rp.SHN_COMMON)]
+                    rp.edited_require(len(matches) == 1 and fields(matches[0]) ==
+                        (symbol.name,offset,symbol.size,symbol.bind,symbol.type,symbol.section),
+                        'alias projection lacks aggregate/module provider join')
+                rp.edited_require(symbol.name not in found, 'alias projection duplicate selected provider')
+                found[symbol.name] = (number,input_index,symbol.index,index,symbol.section,offset,symbol.size,symbol.type)
+    return tuple(sorted(found.items()))
+
+
+def edited_alias_buffers(buffers, inventory):
+    """Remove exact plain numeric assignments; any retained name use refuses."""
+    names = {name for name, _facts in inventory}
+    rp.edited_require(len(names) == len(inventory), 'duplicate alias projection inventory')
+    counts = {name:0 for name in names}
+    projected, audit, scanned = [], [], []
+    for label, payload in buffers:
+        text = payload.decode('ascii')
+        # Mask comments without changing offsets. Strings are deliberately not
+        # masked: a selected name in unsupported quoted syntax must refuse.
+        pattern = r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|/\*.*?\*/|//[^\n]*|\#[^\n]*'
+        lexical = re.sub(pattern, lambda m: m[0] if m[0][0] in ('"', "'") else
+            ''.join('\n' if c == '\n' else ' ' for c in m[0]), text, flags=re.S)
+        spans = []
+        assignment = r'(?m)^[ \t]*([A-Za-z_$][A-Za-z0-9_.$]*)[ \t]*=[ \t]*(?:0[xX][0-9a-fA-F]+|[0-9]+)[ \t]*;'
+        for match in re.finditer(assignment, lexical):
+            name = match[1]
+            if name in names:
+                start, end = match.start(1), match.end()
+                spans.append((start,end,name)); counts[name] += 1
+                rp.edited_require(counts[name] == 1, 'duplicate selected compatibility definition: '+name)
+        scanned.append((label,payload,lexical,tuple(spans)))
+    removed = {name for name,count in counts.items() if count}
+    for label,payload,lexical,spans in scanned:
+        remaining = list(lexical)
+        for start,end,_name in spans: remaining[start:end] = ' '*(end-start)
+        # A plain retained redirect to a name with no removed definition is
+        # unchanged compatibility input, not a dependency on this projection.
+        redirects = r'(?m)^[ \t]*([A-Za-z_$][A-Za-z0-9_.$]*)[ \t]*=[ \t]*([A-Za-z_$][A-Za-z0-9_.$]*)[ \t]*;'
+        for match in re.finditer(redirects, lexical):
+            if match[1] not in names and match[2] in names - removed:
+                remaining[match.start(2):match.end(2)] = ' '*(match.end(2)-match.start(2))
+        tokens = set(re.findall(r'[A-Za-z_$][A-Za-z0-9_.$]*', ''.join(remaining)))
+        rp.edited_require(not names.intersection(tokens),
+            'unsupported selected definition or retained alias dependency: '+','.join(sorted(names.intersection(tokens))))
+        cursor = 0; pieces = []; restored = []
+        for start,end,name in spans:
+            pieces.append(payload[cursor:start]); restored.extend((payload[cursor:start],payload[start:end]));cursor=end
+        pieces.append(payload[cursor:]); restored.append(payload[cursor:])
+        rp.edited_require(b''.join(restored) == payload, 'alias span reinsertion differs')
+        projected.append((label,b''.join(pieces)))
+        audit.append((label,tuple(spans),hashlib.sha256(payload).hexdigest(),hashlib.sha256(projected[-1][1]).hexdigest()))
+    return tuple(projected),tuple(audit)
+
+
+def edited_alias_projection(root, directory, objects, current):
+    current()
+    inventory = edited_original_provider_inventory(objects)
+    names = ('undefined_funcs_auto.us.txt','undefined_syms_auto.us.txt',
+             'libultra_undefined_syms.us.txt','overlay_undefined_syms.us.txt')
+    buffers = tuple((name,(root/name).read_bytes()) for name in names)
+    outputs,audit = edited_alias_buffers(buffers,inventory)
+    paths = tuple(directory/('compatibility-'+name) for name,_data in outputs)
+    for path,(_name,data) in zip(paths,outputs): write_changed(path,data)
+    def held():
+        current()
+        rp.edited_require(edited_original_provider_inventory(objects) == inventory,
+                          'selected alias provider inventory changed')
+        rp.edited_require(all((root/name).read_bytes() == data for name,data in buffers)
+            and all(path.read_bytes() == data for path,(_name,data) in zip(paths,outputs)),
+            'loaded compatibility alias projection changed')
+    held()
+    return paths, (inventory,audit), held
+
+
 def edited_compile_group(root, directory, label, declaration, exports, arguments, commands, initial):
     """Original C captures -> one ordinary ld-r group -> one operand preparation."""
     import link_overlay_module as module_link
@@ -1018,6 +1133,15 @@ def edited_compile_group(root, directory, label, declaration, exports, arguments
             'vector ABI requires authentic explicit -G0 recipe')
     abi_audit = rp.edited_group_abi([capture['raw'] for capture in captures], aggregate, mapping, names)
     origins, joins = rp.edited_group_origins([capture['raw'] for capture in captures], aggregate, mapping, names)
+    for row in joins:
+        member = captures[row['input']]
+        prepared_rel = member['raw'].rels(row['section'])[row['ordinal']]
+        original = rp.edited_original_record(member, row['section'], row['ordinal'], prepared_rel)
+        row['prepared_symbol_index'] = row['symbol_index']
+        row['symbol_index'] = original.sym.index
+        row['original_symbol'] = vars(original.sym).copy()
+        row['prepared_symbol'] = vars(prepared_rel.sym).copy()
+    local_functions = rp.edited_static_function_joins(captures, aggregate, origins)
     # Owned declarations cannot turn into external zero bindings when a provider is removed.
     for name in declaration['exports']:
         choices = [symbol for capture in captures for symbol in capture['raw'].symbols
@@ -1034,6 +1158,8 @@ def edited_compile_group(root, directory, label, declaration, exports, arguments
         ld=root/'tools/binutils/mips64-elf-ld', objcopy=root/'tools/binutils/mips64-elf-objcopy',
         rebind=root/'tools/rebind_elf_relocations.py')
     linked = rp.Elf(linked_path)
+    require(rp.edited_static_function_joins(captures, linked, origins) == local_functions,
+            'linked static FUNCTION identity differs from aggregate')
     require(receipt['compiler_sha256'] == expected[aggregate_path.name]
             and receipt['configured_sha256'] == hashlib.sha256(linked.data).hexdigest(),
             'ordinary aggregate module receipt differs from loaded inputs')
@@ -1059,7 +1185,9 @@ def edited_compile_group(root, directory, label, declaration, exports, arguments
                        for i,member in enumerate(members)], 'original_records':joins,
              'aggregate_sha256':expected[aggregate_path.name], 'map_sha256':expected[map_path.name],
              'aggregate_stage_module_receipt':receipt, 'abi':abi_audit, 'providers':providers,
-             'bss_objects':[rp.edited_bss_allocation(capture['raw']) for capture in captures]}
+             'bss_objects':[rp.edited_bss_allocation(capture['raw']) for capture in captures],
+             'symbol_correspondences':[capture['symbol_correspondence'] for capture in captures],
+             'static_functions':local_functions}
     closures = tuple(closures)
     obj.update(source_inputs=members, graph_audit=audit, source_closures=closures)
     expected_seal = tuple(sorted(expected.items()))
@@ -1553,10 +1681,12 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
     script = edited_script(root, template, files, wrappers.relative_to(root).as_posix(), selected, products)
     write_changed(directory / 'final.ld', script)
     command = ['tools/link_diagnose.sh', 'tools/binutils/mips64-elf-ld', '-T', (directory / 'final.ld').relative_to(root)]
-    for name in ('undefined_funcs_auto.us.txt', 'undefined_syms_auto.us.txt', 'libultra_undefined_syms.us.txt', 'overlay_undefined_syms.us.txt'):
+    alias_paths, alias_audit, alias_current = edited_alias_projection(root, directory, objects, graphs_current)
+    for path, (name, _spans, original_hash, _projected_hash) in zip(alias_paths, alias_audit[1]):
         inputs.add(root / name)
-        initial[name] = digest(root / name)
-        command += ['-T', name]
+        initial[name] = original_hash
+        command += ['-T', path.relative_to(root)]
+    alias_current()
     command += ['-Map', (directory / 'final.map').relative_to(root), '--no-check-sections', '-o', (directory / 'final.elf').relative_to(root)]
     graphs_current()
     incoming = pilot.artifact_hashes(directory)
@@ -1589,6 +1719,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
                 and hashlib.sha256(elf.data).hexdigest() == dict(final_files)[directory/'final.elf']
                 and all(digest(path) == expected for path,expected in final_files),
                 'consumed final graph ELF/map observation changed')
+    alias_current()
     decoded = codec.decode(rom, dynamic)
     require(codec.encode_region(decoded, dynamic, gap_fill=255) == codec.encode_region(tables, dynamic, gap_fill=255),
             'actual final decoded metadata/body differs')
@@ -1607,6 +1738,20 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
                 == {(r.site, r.type): r.full for r in product['refs']}, 'raw→final full identities differ')
         edited_word_readback(module, product['joins'])
         if 'source_inputs' in obj:
+            origins = tuple(member['input_origins'] for member in obj['source_inputs'])
+            statics = rp.edited_static_function_joins(obj['source_inputs'], obj['raw'], origins)
+            require(statics == obj['graph_audit']['static_functions'], 'consumed static FUNCTION inventory changed')
+            for _input, _prepared, name, offset, size, bind, kind, _source in statics:
+                outsec = f'.overlay_{number:03d}'
+                expected = rp.OVERLAY_VMA + obj['bases']['.text'] + offset
+                actual = [symbol for symbol in elf.symbols if symbol.name == name
+                          and symbol.bind == bind and symbol.section == outsec and symbol.value == expected]
+                contributions = [row for row in mapping if row.file == products[number][1].relative_to(root).as_posix()
+                                 and row.outsec == outsec and row.insec == '.text']
+                require(len(actual) == len(contributions) == 1 and actual[0].size == size and actual[0].type == kind
+                    and contributions[0].addr + offset == expected
+                    and 0 <= offset < offset + size <= contributions[0].size,
+                    'final scoped static FUNCTION allocation/map differs: ' + name)
             graph_providers = rp.edited_group_providers([m['raw'] for m in obj['source_inputs']], exports, selected[number]['exports'])
             require(graph_providers == obj['graph_audit']['providers'], 'consumed internal provider inventory changed')
             for name, _input, _symbol in graph_providers:
@@ -1615,7 +1760,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
                 outsec = f'.overlay_{number:03d}_bss' if section == '.bss' else f'.overlay_{number:03d}'
                 contributions = [m for m in mapping if m.file == products[number][1].relative_to(root).as_posix()
                                  and m.outsec == outsec and m.insec == section]
-                require(len(contributions) == 1 and final.section == outsec and final.type == kind
+                require(len(contributions) == 1 and final.bind == rp.STB_GLOBAL and final.section == outsec and final.type == kind
                     and final.size == size and final.value == rp.OVERLAY_VMA + obj['bases'][section] + offset
                     and contributions[0].addr + offset == final.value
                     and 0 <= offset < offset + size <= contributions[0].size,
@@ -1680,6 +1825,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
             and edited_outside_context(root, outside_selectors) == outside_context, 'edited source/tool/outside inputs changed')
     require(pilot.artifact_hashes(directory) == snapshot, 'validated artifacts changed during final proof')
     graphs_current()
+    alias_current()
     artifacts = snapshot
     cpp_records, receipt_arguments = {}, {}
     for n in products:
@@ -1698,6 +1844,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         'outside_selectors': outside_selectors, 'outside_input_context': outside_context,
         'input_production': {'command': setup_command, 'projection_sha256': projection_hash},
         'commands': commands, 'source_cpp': cpp_records, 'arguments': receipt_arguments, 'compiler_recipe': recipes,
+        'compatibility_alias_projection': alias_audit,
         'source_graphs': {str(n): obj['graph_audit'] for n,obj in objects.items() if 'graph_audit' in obj},
         'source_static': {str(n): obj['static_source_audit'] for n, obj in objects.items()
                           if 'static_source_audit' in obj},
@@ -1736,6 +1883,8 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
             'edited inputs changed during receipt publication')
     plan_current()
     final_graph_current()
+    alias_current()
+    require(receipt['compatibility_alias_projection'] is alias_audit, 'alias projection receipt replaced')
     if graph_holds:
         require(digest(directory / 'receipt.json') == published_receipt_hash,
                 'published vector receipt file changed after validation')

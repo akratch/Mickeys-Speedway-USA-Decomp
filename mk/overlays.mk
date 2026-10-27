@@ -849,31 +849,15 @@ $(O12_TRIANGLE_DATA): private PLAIN_DATA_PROOF = 1
 $(O12_TRIANGLE_DATA): private PLAIN_DATA_RUNTIME_ROLE = data
 # Overlay 2 is one translation unit at the overlay flag set.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/overlay_002.c.o: CFLAGS += -Wab,-r4300_mul
-# Overlay 11 is one translation unit at the overlay flag set and owns its pad.
-# Resident and cross-overlay calls use the generated surface rebinds. Rodata
-# ownership remains until phase 3: the TU's merged .rodata (six switch
-# tables and the background's two 0.05f literals) is the retained data at
-# data_rodata +0x218, and the shipped LOCAL records' rodata addends run from a
-# base eight bytes before it, so its 16 references are rebound to a base
-# symbol at +0x8 and the section is dropped by digest. All six tables and
-# both literals now match; retained storage remains until complete ownership.
+# Overlay 11 retains the complete compiler RO input: two strings, six switch
+# tables and two float literals. The zero anchor preserves the runtime-local
+# addends; original RAW R32 records remain the runtime table authority.
 O11_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay_011.c.o
 $(O11_OBJ): CFLAGS += -Wab,-r4300_mul
-$(O11_OBJ): $(TOOLS_DIR)/rebind_elf_relocations.py \
-	$(TOOLS_DIR)/externalize_elf_section.py
+$(O11_OBJ): $(TOOLS_DIR)/externalize_elf_section.py
 $(O11_OBJ): POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay11RodataBaseReloc=0x8,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0xa8:.rodata:gOverlay11RodataBaseReloc 0xb0:.rodata:gOverlay11RodataBaseReloc \
-		0x224:.rodata:gOverlay11RodataBaseReloc 0x228:.rodata:gOverlay11RodataBaseReloc \
-		0x258:.rodata:gOverlay11RodataBaseReloc 0x25c:.rodata:gOverlay11RodataBaseReloc \
-		0x91c:.rodata:gOverlay11RodataBaseReloc 0x924:.rodata:gOverlay11RodataBaseReloc \
-		0x1be0:.rodata:gOverlay11RodataBaseReloc 0x1be8:.rodata:gOverlay11RodataBaseReloc \
-		0x1fbc:.rodata:gOverlay11RodataBaseReloc 0x1fc4:.rodata:gOverlay11RodataBaseReloc \
-		0x2458:.rodata:gOverlay11RodataBaseReloc 0x2460:.rodata:gOverlay11RodataBaseReloc \
-		0x2c24:.rodata:gOverlay11RodataBaseReloc 0x2c2c:.rodata:gOverlay11RodataBaseReloc && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:080ab1959bdeaaf4e936cbc07ce11a09953f58f59f41c7a84e81a9552d2533af && \
+		sha256:351811f3342a3f18b776fc55c71af229a53209c3ed731df2475875d54528a6a9 0 keep && \
 	$(OBJCOPY) --remove-section .rel.rodata $@
 # Overlay 14's complete compiler RO input contains its retained diagnostic,
 # three read-only labels and both switch tables. Preserve the source payload;

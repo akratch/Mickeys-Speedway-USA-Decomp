@@ -244,7 +244,8 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
         (0x10, 0x20, "overlay3SearchData", ".data")],
     11: [(0x30, 0x1B0, "overlay11BackgroundTriangles", ".data"),
          (0x1B0, 0x1E0, "overlay11MenuControls", ".data"),
-         (0x1F0, 0x210, "overlay11BaseHandles", ".data")],
+         (0x1F0, 0x210, "overlay11BaseHandles", ".data"),
+         (0x210, 0x2B0, "overlay_011", ".rodata")],
     58: [
         (0xC8, 0x108, "overlay58Assets", ".data"),
         (0x108, 0x120, "overlay58RankAwards", ".data"),

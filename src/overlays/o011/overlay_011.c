@@ -244,7 +244,7 @@ void func_overlay_011_F0000150_1868998(Overlay11Gfx **displayList, Mtx **matrix,
 static void overlay11CreateHandles(void) {
     gOverlay11Handles[0] = overlay45CreateDescriptor(D_8007C0B8->resource2D0,
                                                 160, 40, 4);
-    gOverlay11Handles[1] = overlay45CreateDescriptor(gOverlay11DirectResource,
+    gOverlay11Handles[1] = overlay45CreateDescriptor("/",
                                                 160, 120, 4);
     gOverlay11Handles[2] = overlay45CreateDescriptor(D_8007C0B8->resource58,
                                                 120, 120, 4);
@@ -264,7 +264,7 @@ static void overlay11InitializeFour(void) {
 
     status = func_80028F54();
     if (status->value3 == 2) {
-        sprintf(buffer, gOverlay11Format, D_8007C0B8->value190);
+        sprintf(buffer, "%s", D_8007C0B8->value190);
     } else {
         sprintf(buffer, D_8007C0B8->format194, status->value3 - 1);
     }

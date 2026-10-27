@@ -558,7 +558,6 @@
       "size": 11444,
       "source": "src/overlays/o011/overlay_011.c",
       "tools": [
-        "rebind_elf_relocations.py",
         "externalize_elf_section.py",
         "objcopy"
       ]
@@ -621,6 +620,20 @@
         "externalize_elf_section.py",
         "filter_elf_relocations.py",
         "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "review-required",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o018/overlay_018.c.o",
+      "offset": 0,
+      "overlay": 18,
+      "size": 1616,
+      "source": "src/overlays/o018/overlay_018.c",
+      "tools": [
+        "link_overlay_module.py"
       ]
     },
     {
@@ -1266,9 +1279,10 @@
   "summary": {
     "altered_bytes": 0,
     "by_class": {
-      "metadata": 85
+      "metadata": 85,
+      "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 303752,
-    "objects_with_postprocess": 85
+    "matched_c_bytes_with_postprocess": 305368,
+    "objects_with_postprocess": 86
   }
 }

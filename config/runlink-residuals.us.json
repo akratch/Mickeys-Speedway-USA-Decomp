@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 4918},
+  "totals": {"differences": 0, "borrowed_records": 4914},
   "differences": {
   },
   "borrowed": {
@@ -57,7 +57,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1187,
+      "count": 1185,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -359,10 +359,8 @@
         [11, "gOverlay11Created0", 4],
         [11, "gOverlay11Created1", 4],
         [11, "gOverlay11Created2", 4],
-        [11, "gOverlay11DirectResource", 2],
         [11, "gOverlay11Fade", 13],
         [11, "gOverlay11Flag", 2],
-        [11, "gOverlay11Format", 2],
         [11, "gOverlay11GameStateFlagReloc", 2],
         [11, "gOverlay11GridPhases", 6],
         [11, "gOverlay11GridTriangles", 2],
@@ -1250,14 +1248,13 @@
     },
     "placement": {
       "about": "object data section placed from the shipped references (module, object, section, offset, evidence)",
-      "count": 21,
+      "count": 20,
       "entries": [
         [1, "func_overlay_001_F0001D78_184E158", ".rodata", "0x8308", 2],
         [1, "func_overlay_001_F0003258_184F638", ".rodata", "0x8314", 2],
         [1, "overlay_001", ".rodata", "0x82DC", 4],
         [1, "overlay_001_head", ".rodata", "0x82EC", 14],
         [1, "overlay_001_tail", ".rodata", "0x8318", 66],
-        [11, "overlay_011", ".rodata", "0x2ED8", 16],
         [15, "overlay_015", ".rodata", "0xCB0", 2],
         [22, "overlay_022", ".rodata", "0xEE4", 6],
         [29, "overlay_029", ".rodata", "0x16D0", 10],
@@ -1277,13 +1274,12 @@
     },
     "rodata-base": {
       "about": "module rodata base the objects do not determine (module)",
-      "count": 23,
+      "count": 22,
       "entries": [
         [1],
         [2],
         [3],
         [8],
-        [11],
         [13],
         [20],
         [22],

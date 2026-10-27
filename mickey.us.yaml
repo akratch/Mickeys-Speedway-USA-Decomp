@@ -1453,7 +1453,7 @@ segments:
       - [0x186B6B8, .data, overlay11MenuControls]
       - [0x186B6E8, bin, overlay_011_data_rodata_1e0]
       - [0x186B6F8, .data, overlay11BaseHandles]
-      - [0x186B718, bin, overlay_011_data_rodata_210]
+      - [0x186B718, .rodata, overlay_011]
 
   - name: overlay_011_reloc1
     type: bin

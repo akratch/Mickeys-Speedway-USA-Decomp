@@ -8,7 +8,7 @@ support future native work. Implementing a native port is outside this sprint.
 ## Current evidence
 
 The source measurements here describe the validated composition of
-`dbd3b82a9` with `d98098143`, `27380f34d`, `36456b315`. The combined borrowing
+`46ab34369` with `b98302fa3`. The combined borrowing
 ledger is recomputed from the actual bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -24,10 +24,10 @@ validation and publication are separate acceptance steps.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 54,840 of 61,312 bytes have canonical projected C owners | 6,472 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized storage | 55,000 of 61,312 bytes have canonical projected C owners | 6,312 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
 | Initialized images | 50 of 87 data-bearing modules are fully projected to C; 19 are partial and 18 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 32 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 4,918 records still borrow authority: 4,874 placeholder references and 44 blob-owned data records. Layout borrowing remains explicit too. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 4,914 records still borrow authority: 4,870 placeholder references and 44 blob-owned data records. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 30 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
 
@@ -40,6 +40,14 @@ normalization; full linked-byte and runtime-table proofs complete their identity
 evidence. The separate 16-byte opaque protocol input remains retained. Original
 capacity and TU spelling remain inferred; general source-only relayout and the
 module's external interface contracts are still open.
+
+Overlay11 now restores its genuine slash and format-string literals in the
+main TU. Its complete compiler read-only region supplies 160 initialized bytes:
+145 string/pool bytes and 15 bytes of compiler alignment. All 857 runtime records
+and the 12,144-byte module body remain exact. Four string imports, one placement
+and one read-only-origin dependency are retired; no hybrid, executable or BSS
+credit is added. Another 64 initialized bytes remain unowned. This source and
+layout repair does not close original-capacity, API or resource-lifetime debt.
 
 Overlay83 now supplies sixteen genuine strip-triangle records through one
 256-byte typed DATA producer. Its remaining 16-byte tail and encoded consumer
@@ -64,7 +72,7 @@ source-only generation and native index/lifetime safety remain open.
 
 Source independence also requires reviewing encoded-coordinate names,
 retained target storage and borrowed placements within object-produced records.
-There are also 21 borrowed placements and 23 borrowed read-only section origins.
+There are also 20 borrowed placements and 22 borrowed read-only section origins.
 The direct borrowing counter alone does not measure those dependencies.
 
 Overlay 62 now owns its complete initialized prefix and seven BSS cells in
@@ -440,7 +448,7 @@ and general/native source independence remain open.
    strings, geometry and callback families, not opaque copies of whole modules.
    The largest canonical initialized deficits are overlay 9 (764 bytes),
    overlay 8 (720), overlay 1 (632), overlay 58 (516), overlay 94 (304),
-   and overlays 21 and 83 (272 each). Overlays 61 and 65
+   overlay 21 (272), and overlay 46 (256). Overlays 61 and 65
    already own their complete initialized inputs. Each requires authentic object schemas and complete source/relocation
    evidence; repeated layouts alone do not establish a shared type.
    Unreferenced format strings are actual objects, not alignment to be counted away. Asset payloads require an explicit generated binding/format strategy,

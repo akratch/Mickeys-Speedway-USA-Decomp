@@ -255,6 +255,62 @@ source admission. This changes no retained-bootstrap, raw-region, source-only
 or general-layout requirement.
 
 
+### Ordered C inputs in the MSU edited builder
+
+The MSU-specific `tools/runlink_metadata_link.py edited` frontend accepts an
+ordered source vector in a module declaration. In a private copy of
+`config/runlink-edited.us.json`, replace that module's `source` and `build`
+fields with `inputs`; keep its existing exports and entries. For example,
+after creating the two actual source files:
+
+```json
+"inputs": [
+  {"source": "src/overlays/o097/direction.c", "build": "complete-overlay"},
+  {"source": "src/overlays/o097/remainder.c", "build": "complete-overlay"}
+]
+```
+
+This is a fragment of the existing module declaration, not a complete registry.
+The legacy single-source form remains supported; the two forms cannot be mixed.
+`complete-overlay` uses the existing complete-source compiler recipe;
+`registered` requires an existing registered recipe. Run the edited builder with
+the private registry and a separate output directory:
+
+```sh
+gmake edited-runlink EDITED_MODULES=97 \
+  EDITED_DECLARATIONS=build/ordered-example/registry.json \
+  EDITED_OUT=build/ordered-example/result
+```
+
+Each input is compiled separately. The builder retains the untouched compiler
+object, effective preprocessor output, dependency closure, flags and ordered
+relocations. It requires static-symbol preparation to preserve the admitted
+original symbol-index and relocation surface. An ordinary relocatable link then
+combines the inputs in declared order before the existing module-link step.
+The aggregate is a linker product, not an untouched compiler object. Actual map
+contributions translate original sites and targets; numeric section origins are
+not authored in the registry. Each declared export must have exactly one real
+provider. Cross-input undefined names must still be declared ABI exports;
+arbitrary private cross-input references are not supported.
+
+The admitted vector class is MIPS II/o32 with an authentic `-G0` recipe and no
+GP use, BSS, COMMON, integer-word witness or resident-cell witness. Unsupported
+sections, ABI combinations and relocation roles refuse. Original per-input ABI
+records remain authoritative: GNU ld can retain only one input's REGINFO rather
+than union all register masks, and its aggregate GP value is not the original
+compiler value. The audit checks the actual retained contributors and the
+restricted no-GP contract; it does not manufacture an all-input REGINFO union.
+
+The reviewed overlay97 exercise split its first function and existing context
+datum from the remainder, including a live consumer in the second input. The
+one-to-two-to-one sequence preserved the retail image and all 21 runtime records;
+removing only the context provider refused. This proves that bounded graph
+class. It adds no source-ownership credit and does not establish arbitrary
+module/data/BSS growth, a source-only build or a general JFG builder. This vector
+interface belongs to the MSU edited frontend; the portable kit's JFG
+`module-recipe` still takes one already corrected producer ELF as described in
+the [handover](runlink-handover.md).
+
 ### Bounded editable-layout diagnostic
 
 `gmake check-editable-layout` compiles copies of the complete overlay75 source

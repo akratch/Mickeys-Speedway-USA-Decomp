@@ -449,7 +449,7 @@ def edited_projection(root, directory, selected=None, generated=None):
                 label = f'overlay_{number:03d}'
                 fresh = [{'name': label, 'type': 'code', 'start': 0,
                           'vram': rp.OVERLAY_VMA, 'subalign': 4, 'align': 8,
-                          'subsegments': [[0, 'c', declaration['source'].removesuffix('.c')]]}]
+                          'subsegments': [[0, 'c', edited_input_declarations(declaration)[0]['source'].removesuffix('.c')]]}]
                 for table in (1, 2):
                     if getattr(generated[number]['module'], f'table{table}'):
                         fresh.append({'name': label + f'_reloc{table}', 'type': 'bin', 'start': 0,
@@ -473,6 +473,13 @@ def registry_surface(profiles, exports):
     return json_bytes({'modules': profiles, 'rows': exports.rows, 'by_name': exports.by_name,
                        'entries': sorted((number, role, name)
                                          for (number, role), name in exports.entries.items())})
+
+
+def edited_input_declarations(declaration):
+    """Authored order, never object locations or numeric section origins."""
+    if 'inputs' in declaration:
+        return declaration['inputs']
+    return ({'source': declaration['source'], 'build': declaration['build']},)
 
 
 def source_registry(root, path, expected=None):
@@ -535,16 +542,26 @@ def source_registry(root, path, expected=None):
     require(isinstance(document['modules'], list), 'module declarations must be a list')
     for item in document['modules']:
         fields = {'module', 'source', 'exports', 'entries', 'build'}
-        require(isinstance(item, dict) and set(item) in (fields, fields | {'integer_word_profile'}),
+        require(isinstance(item, dict) and set(item) in (fields, fields | {'integer_word_profile'},
+                                                        {'module', 'inputs', 'exports', 'entries'}),
                 'unknown/incomplete module declaration')
         word_profile = item.get('integer_word_profile')
         require('integer_word_profile' not in item or isinstance(word_profile, str)
                 and word_profile == 'isolated-full-expression', 'unsupported integer-word profile')
-        number, source, build = item['module'], item['source'], item['build']
-        require(build in ('registered', 'complete-overlay'), 'unsupported edited compiler profile')
+        number = item['module']
+        members = item.get('inputs', ({'source': item.get('source'), 'build': item.get('build')},))
+        require(isinstance(members, (list, tuple)) and bool(members), 'empty/invalid source input vector')
+        require(all(isinstance(member, dict) and set(member) == {'source', 'build'}
+                    and member['build'] in ('registered', 'complete-overlay') for member in members),
+                'unsupported edited input recipe')
         require(type(number) is int and 0 < number < 0xffc and number not in profiles,
                 'duplicate/reserved module identity')
-        source_path(number, source)
+        for member in members:
+            source_path(number, member['source'])
+        require(len({member['source'] for member in members}) == len(members), 'duplicate source input')
+        if 'inputs' in item:
+            require(all(member['source'] == safe_relative(member['source']).as_posix() for member in members),
+                    'noncanonical source input path')
         require(isinstance(item['entries'], dict) and set(item['entries']) == {'init', 'resume'}
                 and all(value is None or identifier(value) for value in item['entries'].values()),
                 'invalid entry declarations')
@@ -559,9 +576,12 @@ def source_registry(root, path, expected=None):
             export(owner, typed=True)
             name = owner['name']
             declared.append(name); kinds[name] = owner['kind']; declared_rows[name] = owner['row']
-        profiles[number] = {'source': source, 'exports': declared, 'kinds': kinds,
-                            'rows': declared_rows, 'entries': item['entries'], 'build': build,
-                            'integer_word_profile': word_profile}
+        profiles[number] = {'exports': declared, 'kinds': kinds, 'rows': declared_rows,
+                            'entries': item['entries'], 'integer_word_profile': word_profile}
+        if 'inputs' in item:
+            profiles[number]['inputs'] = tuple(dict(member) for member in members)
+        else:
+            profiles[number].update(source=item['source'], build=item['build'])
     require(sorted(rows) == list(range(len(rows))), 'authored ABI rows must be dense')
     default = document['default_selected']
     registry_selection(profiles, default)
@@ -573,7 +593,8 @@ def source_registry(root, path, expected=None):
         require(path.read_bytes() == payload and registry_surface(profiles, exports) == seal
                 and tuple(default) == default_seal, 'source ABI declaration/vector changed')
         for number, profile in profiles.items():
-            source_path(number, profile['source'])
+            for member in edited_input_declarations(profile):
+                source_path(number, member['source'])
     current()
     return profiles, exports, default, observed, current
 
@@ -632,7 +653,8 @@ def edited_source_exports(selected, original, module_count):
     tail_ids = sorted(number for number in selected if number > module_count)
     require(tail_ids == list(range(module_count + 1, module_count + 1 + len(tail_ids))),
             'new modules must form a dense tail after compatibility modules')
-    require(all(selected[number]['build'] == 'complete-overlay' for number in tail_ids),
+    require(all(member['build'] == 'complete-overlay' for number in tail_ids
+                for member in edited_input_declarations(selected[number])),
             'new tail module requires explicit complete-overlay compiler profile')
     rows = list(original.rows)
     appended = sorted((row, name) for declaration in selected.values()
@@ -681,7 +703,8 @@ def edited_script(root, source, names, generated, selected, products):
         require(result.count(old) == 1, 'ambiguous generated selector')
         result = result.replace(old, new); substitutions.append((new, old))
     for number, declaration in selected.items():
-        old = 'build/' + declaration['source'] + '.o'
+        # The final selector is replaced by the one held aggregate product.
+        old = 'build/' + edited_input_declarations(declaration)[0]['source'] + '.o'
         new = products[number][1].relative_to(root).as_posix()
         require(result.count(old) == 4, 'selected source must have four ordinary section selectors')
         result = result.replace(old, new); substitutions.append((new, old))
@@ -704,7 +727,7 @@ def edited_script(root, source, names, generated, selected, products):
     return result
 
 
-def edited_compile(root, directory, label, text, exports, args, commands, *, integer_word_profile=None):
+def edited_compile(root, directory, label, text, exports, args, commands, *, integer_word_profile=None, capture_only=False):
     """Fresh current source/CPP/compiler/static-symbol/ordinary-link chain."""
     import permute_batch as batch
     import link_overlay_module as module_link
@@ -719,18 +742,52 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
     untouched = directory / (label + '.compiler.o')
     write_changed(source, text)
     source_hash = digest(source)
+    if capture_only:
+        rp.edited_require(source_hash == hashlib.sha256(text.encode()).hexdigest(), 'vector source copy differs from input text')
     closure = batch.source_dependencies(source, tuple(args))
     static_inputs = pp.literal_profile_inputs(root) | {'tools/static_symbols.py': digest(root/'tools/static_symbols.py')} | closure | {source.relative_to(root).as_posix(): source_hash}
     static_tools = batch.checked_tool_identity()
     flags = list(args)
     flags[flags.index('-o') + 1] = untouched.relative_to(root).as_posix()
     flags[-1] = source.relative_to(root).as_posix()
-    pilot.run(root, ['tools/ido/cc', *flags], directory / (label + '-compile.log'), commands)
+    command_records = {}
+    def capture_run(command, action, *, cpp=False):
+        command = [str(word) for word in command]
+        path = directory/(label+'-'+action+'-command.json')
+        record = {'command':command, 'events':['planned','started']}
+        payload = json_bytes(record); write_changed(path,payload)
+        rp.edited_require(path.read_bytes() == payload, 'vector command record changed before start')
+        try:
+            result = subprocess.run(command,cwd=root,stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE if cpp else subprocess.STDOUT,timeout=120)
+        except (OSError,subprocess.TimeoutExpired) as error:
+            record.update(events=record['events']+['failed'],exit=None,error=str(error))
+            write_changed(path,json_bytes(record)); raise
+        log = directory/(label+'-'+action+'.log')
+        logged = result.stderr if cpp else result.stdout
+        write_changed(log,logged)
+        rp.edited_require(log.read_bytes() == logged, 'vector command log changed')
+        record.update(events=record['events']+['completed'],exit=result.returncode,
+            stdout_sha256=hashlib.sha256(result.stdout).hexdigest(),log_sha256=hashlib.sha256(logged).hexdigest())
+        payload=json_bytes(record);write_changed(path,payload)
+        rp.edited_require(path.read_bytes() == payload, 'vector completed command record changed')
+        command_records[path.name]=hashlib.sha256(payload).hexdigest()
+        command_records[log.name]=hashlib.sha256(logged).hexdigest()
+        commands.append(command)
+        rp.edited_require(result.returncode == 0, 'vector command failed; see '+str(log.relative_to(root)))
+        return result
+    if capture_only:
+        capture_run(['tools/ido/cc', *flags], 'compile')
+    else:
+        pilot.run(root, ['tools/ido/cc', *flags], directory / (label + '-compile.log'), commands)
     compiler = rp.Elf(untouched)
     compiler_hash = hashlib.sha256(compiler.data).hexdigest()
     write_changed(raw, compiler.data)
-    pilot.run(root, [sys.executable, 'tools/static_symbols.py', raw.relative_to(root)],
-              directory / (label + '-statics.log'), commands)
+    if capture_only:
+        capture_run([sys.executable, 'tools/static_symbols.py', raw.relative_to(root)], 'statics')
+    else:
+        pilot.run(root, [sys.executable, 'tools/static_symbols.py', raw.relative_to(root)],
+                  directory / (label + '-statics.log'), commands)
     prepared = rp.Elf(raw)
     for section in rp.EDITED_SECTIONS:
         rp.edited_require(compiler.size(section) == prepared.size(section)
@@ -741,6 +798,48 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
                           and rp.in_place_addends(compiler, section, old)
                           == rp.in_place_addends(prepared, section, new), 'static-symbol step changed original records')
     edited_validate_imports(prepared, exports, label)
+    if capture_only:
+        rp.edited_require(compiler.data[:24] == prepared.data[:24]
+            and compiler.data[36:40] == prepared.data[36:40]
+            and all({k:v for k,v in (compiler.section(name) or {}).items() if k != 'offset'}
+                    == {k:v for k,v in (prepared.section(name) or {}).items() if k != 'offset'}
+                    and compiler.bytes_of(name) == prepared.bytes_of(name)
+                    for name in (*rp.EDITED_ABI, '.options')),
+            'vector static preparation changed original ABI header/options')
+        rp.edited_require(pp._static_parsed_surface(compiler) == pp._static_parsed_surface(prepared)
+            and [vars(symbol) for symbol in compiler.symbols] == [vars(symbol) for symbol in prepared.symbols]
+            and all([(rel.offset,rel.type,vars(rel.sym)) for rel in compiler.rels(section['name'])]
+                == [(rel.offset,rel.type,vars(rel.sym)) for rel in prepared.rels(section['name'])]
+                for section in compiler.sections),
+            'vector static preparation changed original symbol-index/relocation surface')
+        rp.edited_check_sections(compiler); rp.edited_check_sections(prepared)
+        rp.edited_require(integer_word_profile is None and not prepared.size('.bss')
+            and not any(symbol.shndx == rp.SHN_COMMON for symbol in prepared.symbols),
+            'vector source profile does not admit BSS/COMMON or integer-word witnesses')
+        command = ['tools/ido/cc', '-E', *pp._literal_flags(shlex.join(['tools/ido/cc', *flags]), flags[-1]), flags[-1]]
+        result = capture_run(command, 'cpp', cpp=True)
+        cpp_path = directory/(label+'-effective.i'); write_changed(cpp_path, result.stdout)
+        expected = {source.name: source_hash, untouched.name: compiler_hash,
+                    raw.name: hashlib.sha256(prepared.data).hexdigest(),
+                    cpp_path.name: hashlib.sha256(result.stdout).hexdigest(), **command_records}
+        observed = tuple((image, hashlib.sha256(image.data).hexdigest(), pp._static_parsed_surface(image))
+                         for image in (compiler, prepared))
+        expected_seal, args_seal, flags_seal = tuple(sorted(expected.items())), tuple(args), tuple(flags)
+        closure_seal = json_bytes(closure)
+        def current():
+            rp.edited_require(tuple(sorted(expected.items())) == expected_seal
+                and tuple(args) == args_seal and tuple(flags) == flags_seal
+                and all(digest(directory/name) == value for name,value in expected_seal)
+                and all(hashlib.sha256(image.data).hexdigest() == value
+                        and pp._static_parsed_surface(image) == surface for image,value,surface in observed)
+                and json_bytes(closure) == closure_seal
+                and {name:digest(root/name) for name in static_inputs} == static_inputs
+                and batch.source_dependencies(source, tuple(args)) == closure
+                and batch.checked_tool_identity() == static_tools, 'vector compiler/CPP observation changed')
+        current()
+        capture = dict(raw=prepared, compiler=compiler, source_path=source, compiler_flags=flags,
+                       source_closure=closure, source_sha256=source_hash, capture_current=current)
+        return capture, (raw, None, None, expected), closure
     linked = directory / (label + '-linked.o')
     receipt = module_link.link(raw, linked, exports, directory / (label + '-module'),
         ld=root / 'tools/binutils/mips64-elf-ld', objcopy=root / 'tools/binutils/mips64-elf-objcopy',
@@ -852,6 +951,138 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
         obj['integer_word'] = witness
         obj['integer_word_audit'] = audit
     return (obj, (raw, linked, receipt, expected), closure)
+
+
+def edited_compile_group(root, directory, label, declaration, exports, arguments, commands, initial):
+    """Original C captures -> one ordinary ld-r group -> one operand preparation."""
+    import link_overlay_module as module_link
+    import proof_provenance as pp
+    import check_editable_layout as pilot
+    require = rp.edited_require
+    captures, closures, expected, capture_holds = [], [], {}, []
+    require(len(arguments) == len(declaration['inputs']), 'input recipe vector changed')
+    for index, (member, args) in enumerate(zip(declaration['inputs'], arguments)):
+        payload = (root/member['source']).read_bytes()
+        require(hashlib.sha256(payload).hexdigest() == initial[member['source']], 'loaded vector source differs from prehold')
+        capture, product, closure = edited_compile(root, directory, label+f'-input{index}',
+            payload.decode(), exports, args, commands, capture_only=True)
+        captures.append(capture); closures.append(closure); expected.update(product[3])
+        capture_holds.append(capture['capture_current'])
+    names = [capture['raw'].path.relative_to(root).as_posix() for capture in captures]
+    aggregate_path = directory/(label+'.o'); map_path = directory/(label+'-aggregate.map')
+    script_path = directory/(label+'-aggregate.ld')
+    # Same explicit runtime-section treatment as the ordinary module linker.
+    # Keep original ABI observations and check the linker's register-mask merge.
+    lines = ['SECTIONS {']
+    for section in (*rp.EDITED_SECTIONS, *rp.EDITED_ABI):
+        suffix = ' (NOLOAD)' if section == '.bss' else ''
+        selectors = ' '.join(json.dumps(name)+'('+section+')' for name in names)
+        lines.append(f'    {section} 0{suffix} : {{ {selectors} }}')
+    lines += ['    /DISCARD/ : { *(*) }', '}']
+    script_data = ('\n'.join(lines)+'\n').encode(); write_changed(script_path,script_data)
+    expected[script_path.name] = hashlib.sha256(script_data).hexdigest()
+    command = ['tools/binutils/mips64-elf-ld', '-r', '-T', script_path.relative_to(root),
+               '-Map', map_path.relative_to(root), '-o', aggregate_path.relative_to(root), *names]
+    command_path = directory/(label+'-aggregate-command.json')
+    write_changed(command_path,json_bytes({'command':[str(x) for x in command],'events':['planned','started']}))
+    for capture,held in zip(captures,capture_holds):
+        held(); rp.edited_check_sections(capture['raw'])
+    require(digest(script_path) == expected[script_path.name], 'aggregate script changed before link')
+    try:
+        result = subprocess.run(command,cwd=root,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=120)
+    except (OSError,subprocess.TimeoutExpired) as error:
+        write_changed(command_path,json_bytes({'command':[str(x) for x in command],
+            'events':['planned','started','failed'],'exit':None,'error':str(error)}))
+        raise
+    log_path=directory/(label+'-aggregate.log'); write_changed(log_path,result.stdout)
+    command_data=json_bytes({'command':[str(x) for x in command],
+        'events':['planned','started','completed'],'exit':result.returncode,
+        'log_sha256':hashlib.sha256(result.stdout).hexdigest()})
+    write_changed(command_path,command_data)
+    expected[command_path.name]=hashlib.sha256(command_data).hexdigest()
+    expected[log_path.name]=hashlib.sha256(result.stdout).hexdigest()
+    commands.append([str(x) for x in command])
+    require(result.returncode == 0, 'ordinary aggregate link failed; see '+str(log_path.relative_to(root)))
+    aggregate = rp.Elf(aggregate_path); map_data = map_path.read_bytes()
+    expected[aggregate_path.name] = hashlib.sha256(aggregate.data).hexdigest()
+    expected[map_path.name] = hashlib.sha256(map_data).hexdigest()
+    mapping = rp.parse_map(map_path, map_data)
+    for capture in captures:
+        flags=capture['compiler_flags']
+        require(('-G0' in flags and '-G' not in flags) or
+            (flags.count('-G') == 1 and flags[flags.index('-G')+1] == '0' and '-G0' not in flags),
+            'vector ABI requires authentic explicit -G0 recipe')
+    abi_audit = rp.edited_group_abi([capture['raw'] for capture in captures], aggregate, mapping, names)
+    origins, joins = rp.edited_group_origins([capture['raw'] for capture in captures], aggregate, mapping, names)
+    # Owned declarations cannot turn into external zero bindings when a provider is removed.
+    for name in declaration['exports']:
+        choices = [symbol for capture in captures for symbol in capture['raw'].symbols
+                   if symbol.name == name and symbol.bind == rp.STB_GLOBAL
+                   and symbol.shndx not in (rp.SHN_UNDEF, rp.SHN_ABS, rp.SHN_COMMON)]
+        require(len(choices) == 1 and declaration['kinds'][name]
+            == ('function' if choices[0].type == rp.STT_FUNC else 'object'),
+            'declared vector export lacks one actual provider: '+name)
+    for held in capture_holds: held()
+    require(digest(aggregate_path) == expected[aggregate_path.name]
+            and digest(map_path) == expected[map_path.name], 'loaded group changed before preparation')
+    linked_path = directory/(label+'-linked.o')
+    receipt = module_link.link(aggregate_path, linked_path, exports, directory/(label+'-module'),
+        ld=root/'tools/binutils/mips64-elf-ld', objcopy=root/'tools/binutils/mips64-elf-objcopy',
+        rebind=root/'tools/rebind_elf_relocations.py')
+    linked = rp.Elf(linked_path)
+    require(receipt['compiler_sha256'] == expected[aggregate_path.name]
+            and receipt['configured_sha256'] == hashlib.sha256(linked.data).hexdigest(),
+            'ordinary aggregate module receipt differs from loaded inputs')
+    expected[linked_path.name] = hashlib.sha256(linked.data).hexdigest()
+    for name, field in (('compiler.o','compiler_sha256'), ('bindings.o','prepared_sha256'),
+            ('module.ld','script_sha256'), ('module.elf','linked_sha256'),
+            ('localized.elf','localized_sha256'), ('module.o','configured_sha256'), ('body.bin','body_sha256')):
+        expected[label+'-module/'+name] = receipt[field]
+    expected[label+'-module/receipt.json'] = hashlib.sha256((json.dumps(receipt,indent=2)+'\n').encode()).hexdigest()
+    obj = rp.edited_prepare_object(aggregate, linked)
+    members = tuple(captures)
+    for index, member in enumerate(members):
+        member.update(linked=linked, bases=obj['bases'], input_origins=origins[index],
+                      input_path=declaration['inputs'][index]['source'])
+    audit = {'authority':'original compiler inputs; aggregate is ordinary linker output',
+             'inputs':[dict(source=member['input_path'], compiler_sha256=hashlib.sha256(member['compiler'].data).hexdigest(),
+                            prepared_sha256=hashlib.sha256(member['raw'].data).hexdigest(), origins=origins[i])
+                       for i,member in enumerate(members)], 'original_records':joins,
+             'aggregate_sha256':expected[aggregate_path.name], 'map_sha256':expected[map_path.name],
+             'aggregate_stage_module_receipt':receipt, 'abi':abi_audit}
+    closures = tuple(closures)
+    obj.update(source_inputs=members, graph_audit=audit, source_closures=closures)
+    expected_seal = tuple(sorted(expected.items()))
+    argument_members = tuple(arguments)
+    map_seal = tuple(tuple(vars(row).items()) for row in mapping)
+    primitive = json_bytes(audit)
+    bases = dict(obj['bases'])
+    observations = tuple((image, hashlib.sha256(image.data).hexdigest(), pp._static_parsed_surface(image))
+                         for image in (aggregate, linked))
+    member_seals = tuple((member, member['raw'], member['compiler'], member['input_origins'],
+                         tuple(member['input_origins'].items()), member['input_path'], member['capture_current'], member['source_closure'])
+                        for member in members)
+    def current():
+        require(obj['raw'] is aggregate and obj['linked'] is linked and obj['source_inputs'] is members
+            and obj['graph_audit'] is audit and obj['source_closures'] is closures and obj['bases'] == bases and json_bytes(audit) == primitive
+            and tuple(sorted(expected.items())) == expected_seal
+            and len(arguments) == len(argument_members)
+            and all(args is original for args,original in zip(arguments,argument_members))
+            and tuple(tuple(vars(row).items()) for row in mapping) == map_seal,
+            'consumed vector graph/origin/map changed')
+        require(all(digest(directory/name) == value for name,value in expected_seal)
+            and all(hashlib.sha256(image.data).hexdigest() == value and pp._static_parsed_surface(image) == surface
+                    for image,value,surface in observations), 'loaded vector group/output changed')
+        for index,(member, raw, compiler, origin, offset_seal, source, held, closure) in enumerate(member_seals):
+            require(members[index] is member and member['raw'] is raw and member['compiler'] is compiler
+                and member['linked'] is linked and member['input_origins'] is origin
+                and tuple(origin.items()) == offset_seal and member['input_path'] == source
+                and member['capture_current'] is held and member['bases'] == bases
+                and member['source_closure'] is closure and closures[index] is closure,
+                'consumed original vector member changed')
+            held()
+    current()
+    return obj, (aggregate_path,linked_path,receipt,expected), closures, current
 
 
 def edited_cell_readback(elf, mapping, provider):
@@ -966,8 +1197,13 @@ def edited_source_closures_current(products, closures, arguments):
     """Rewalk existing literal lookup results, including newly shadowing files."""
     import permute_batch as batch
     try:
-        return all(batch.source_dependencies(products[n][0].with_suffix('.c'), tuple(arguments[n])) == closure
-                   for n, closure in closures.items())
+        for n, closure in closures.items():
+            if arguments[n] and isinstance(arguments[n][0], list):
+                if not all(batch.source_dependencies(products[n][0].with_name(products[n][0].stem+f'-input{i}.c'),
+                    tuple(args)) == item for i,(args,item) in enumerate(zip(arguments[n],closure))): return False
+            elif batch.source_dependencies(products[n][0].with_suffix('.c'), tuple(arguments[n])) != closure:
+                return False
+        return True
     except (OSError, ValueError, RuntimeError):
         return False
 
@@ -1078,7 +1314,8 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
                 and projection.read_bytes() == projection_text.encode(), 'held ABI projection changed')
     registry_current()
     require(declaration_hash == early[declaration_path.relative_to(root).as_posix()], 'loaded declaration differs from prehold')
-    early.update({declaration['source']: digest(root/declaration['source']) for declaration in selected.values()})
+    require(variant == 'control' or not any('inputs' in d for d in selected.values()), 'vector graph requires production control route')
+    early.update({member['source']: digest(root/member['source']) for d in selected.values() for member in edited_input_declarations(d)})
     # Derive the current request's outside closure EVERY invocation, before Make
     # and before warm lookup. The resident setup include is selection-independent.
     with tempfile.TemporaryDirectory(prefix='.outside-setup-', dir=parent) as temporary:
@@ -1101,7 +1338,11 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
             'input production recipe/tool/source/extracted inputs changed')
     arguments, recipes = {}, {}
     for number, declaration in selected.items():
-        arguments[number], recipes[number] = edited_recipe(root, declaration['source'], declaration['build'])
+        pairs = [edited_recipe(root, member['source'], member['build']) for member in edited_input_declarations(declaration)]
+        if 'inputs' in declaration:
+            arguments[number], recipes[number] = [pair[0] for pair in pairs], [pair[1] for pair in pairs]
+        else:
+            arguments[number], recipes[number] = pairs[0]
     require(all(digest(root/name) == value for name,value in early.items())
             and batch.checked_tool_identity() == tool, 'edited recipe/source changed before warm lookup')
     request = {'outside_rom': safe_relative(outside_rom or 'baseroms/mickey.us.z64').as_posix(),
@@ -1110,7 +1351,8 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
                'selected_modules': sorted(selected), 'variant': variant,
                'integer_word_profiles': {str(number): declaration['integer_word_profile']
                                          for number, declaration in selected.items()},
-               'compiler_flags': {str(number): edited_compiler_flags(args) for number,args in arguments.items()}}
+               'compiler_flags': {str(number): ([edited_compiler_flags(a) for a in args] if args and isinstance(args[0], list)
+                                              else edited_compiler_flags(args)) for number,args in arguments.items()}}
     registry_current()
     current = edited_current(root, parent, variant, request)
     if current is not None:
@@ -1150,7 +1392,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         'tools/runlink/codec.py', 'tools/runlink/rules.py', 'tools/runlink/compare.py',
         'tools/binutils/mips64-elf-ld', 'tools/binutils/mips64-elf-objcopy', 'tools/n64crc')}
     inputs.add(declaration_path)
-    inputs.update(root / declaration['source'] for declaration in selected.values())
+    inputs.update(root / member['source'] for declaration in selected.values() for member in edited_input_declarations(declaration))
     inputs.update((root / 'mk').glob('*.mk'))
     if variant != 'control':
         inputs.update((root / pilot.FIXTURE).glob('*'))
@@ -1173,18 +1415,31 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
     provider = rp.edited_provider_context(root, directory / 'providers.elf', directory / 'providers.map')
     provider['prefix_capture'] = pp.bind_edited_prefix(root, provider, directory,
         provider_command, prefix, commands, outside_hashes)
-    objects, products, closures = {}, {}, {}
+    objects, products, closures, graph_holds = {}, {}, {}, []
     for number, declaration in selected.items():
-        text = overrides.get(number, (root / declaration['source']).read_text())
-        objects[number], products[number], closures[number] = edited_compile(
-            root, directory, 'overlay' + str(number), text, exports, arguments[number], commands,
-            integer_word_profile=declaration.get('integer_word_profile'))
+        if 'inputs' in declaration:
+            objects[number], products[number], closures[number], held = edited_compile_group(
+                root, directory, 'overlay'+str(number), declaration, exports, arguments[number], commands, initial)
+            graph_holds.append((number, objects[number], products[number], arguments[number], closures[number], held))
+        else:
+            text = overrides.get(number, (root / declaration['source']).read_text())
+            objects[number], products[number], closures[number] = edited_compile(
+                root, directory, 'overlay' + str(number), text, exports, arguments[number], commands,
+                integer_word_profile=declaration.get('integer_word_profile'))
         for audit_name in ('static_source_audit', 'integer_word_audit'):
             if audit_name in objects[number]:
                 held = objects[number][audit_name]['inputs']
                 require(all(name not in initial or initial[name] == value for name,value in held.items()),
                         'conflicting held effective source input observation')
                 initial.update(held)
+    def graphs_current():
+        for number, original, product, args, closure, held in graph_holds:
+            require(objects.get(number) is original and products.get(number) is product
+                    and arguments.get(number) is args and closures.get(number) is closure
+                    and closure is original['source_closures'] and len(closure) == len(args),
+                    'consumed vector module/closure replaced')
+            held()
+    graphs_current()
     for number, obj in objects.items():
         actual_registered = {symbol.name for symbol in obj['linked'].symbols
             if symbol.bind == rp.STB_GLOBAL and symbol.section in rp.EDITED_SECTIONS
@@ -1192,6 +1447,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         require(actual_registered <= set(selected[number]['exports']),
                 'selected allocated registry export lacks explicit owner declaration')
     generated = {n: rp.edited_module_records(n, objects, selected, exports, provider) for n in objects}
+    graphs_current()
     peer_removal = None
     if variant == 'unreferenced':
         preliminary_ort = [None] * len(exports.rows)
@@ -1292,6 +1548,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         initial[name] = digest(root / name)
         command += ['-T', name]
     command += ['-Map', (directory / 'final.map').relative_to(root), '--no-check-sections', '-o', (directory / 'final.elf').relative_to(root)]
+    graphs_current()
     incoming = pilot.artifact_hashes(directory)
     require(all(incoming[name] == value for product in products.values() for name, value in product[3].items()),
             'loaded module products changed before final link')
@@ -1386,14 +1643,26 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
             and edited_source_closures_current(products, closures, arguments)
             and edited_outside_context(root, outside_selectors) == outside_context, 'edited source/tool/outside inputs changed')
     require(pilot.artifact_hashes(directory) == snapshot, 'validated artifacts changed during final proof')
+    graphs_current()
     artifacts = snapshot
+    cpp_records, receipt_arguments = {}, {}
+    for n in products:
+        if arguments[n] and isinstance(arguments[n][0], list):
+            for i, closure in enumerate(objects[n]['source_closures']):
+                args = arguments[n][i]
+                key = f'{n}:{i}'
+                cpp_records[key] = {'source': products[n][0].stem+f'-input{i}.c', 'closure': closure}
+                receipt_arguments[key] = args
+        else:
+            cpp_records[str(n)] = {'source': products[n][0].with_suffix('.c').name, 'closure': closures[n]}
+            receipt_arguments[str(n)] = arguments[n]
     receipt = {'schema': 'mickey-edited-source-build-v2', 'nonmatching': True, 'source_only': False,
         'general_relayout': False, 'variant': variant, 'request': request, 'inputs': initial, 'toolchain': tool,
         'projection_toolchain': project_tools, 'resident_source_context': source_context,
         'outside_selectors': outside_selectors, 'outside_input_context': outside_context,
         'input_production': {'command': setup_command, 'projection_sha256': projection_hash},
-        'commands': commands, 'source_cpp': {str(n): {'source': products[n][0].name.removesuffix('.o') + '.c',
-            'closure': closures[n]} for n in products}, 'arguments': arguments, 'compiler_recipe': recipes,
+        'commands': commands, 'source_cpp': cpp_records, 'arguments': receipt_arguments, 'compiler_recipe': recipes,
+        'source_graphs': {str(n): obj['graph_audit'] for n,obj in objects.items() if 'graph_audit' in obj},
         'source_static': {str(n): obj['static_source_audit'] for n, obj in objects.items()
                           if 'static_source_audit' in obj},
         'source_integer_word': {str(n): obj['integer_word_audit'] for n, obj in objects.items()
@@ -1410,7 +1679,13 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
                            for name,witness in provider.get('cells', {}).items()},
         'rom_sha1': hashlib.sha1(rom).hexdigest(), 'provider_holds': {str(p.relative_to(root)): h for p, h in provider['holds'].items()}}
     plan_current()
-    pilot.publish_receipt(directory, receipt, artifacts)
+    cpp_receipt_seal = json_bytes((cpp_records, receipt_arguments)) if graph_holds else None
+    published_receipt_hash = pilot.publish_receipt(directory, receipt, artifacts)
+    graphs_current()
+    if graph_holds:
+        require(receipt['source_cpp'] is cpp_records and receipt['arguments'] is receipt_arguments
+            and json_bytes((cpp_records, receipt_arguments)) == cpp_receipt_seal,
+            'published vector CPP receipt members changed')
     rp.edited_check_provider_holds(provider)
     require(all(digest(root / n) == expected for n, expected in initial.items())
             and all(digest(path) == value for path, value in provider['holds'].items())
@@ -1422,8 +1697,11 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
             and all(digest(path) == value for path, value in pilot.LOADED.items()),
             'edited inputs changed during receipt publication')
     plan_current()
+    if graph_holds:
+        require(digest(directory / 'receipt.json') == published_receipt_hash,
+                'published vector receipt file changed after validation')
     write_changed(parent / (variant + '-current.json'), json_bytes({'path': str(directory.relative_to(root)),
-        'receipt_sha256': digest(directory / 'receipt.json')}))
+        'receipt_sha256': published_receipt_hash if graph_holds else digest(directory / 'receipt.json')}))
     print('edited source build PASS', directory.relative_to(root), receipt['selected_raw_records'], receipt['rom_sha1'], flush=True)
     return receipt
 

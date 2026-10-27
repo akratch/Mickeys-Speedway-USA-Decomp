@@ -4026,6 +4026,143 @@ def edited_check_sections(elf, *, linked=False):
             '.rodata': elf.size('.text') + elf.size('.data'),
             '.bss': sum(elf.size(name) for name in EDITED_SECTIONS[:-1])}
 
+def edited_group_abi(inputs, aggregate, mapping, names):
+    """Qualified no-GP link ABI, distinct from authoritative original inputs."""
+    edited_require(len(inputs) == len(names) and len(set(names)) == len(names)
+        and all(row.file in names for row in mapping), 'foreign/duplicate aggregate ABI input')
+    originals = []
+    for image in inputs:
+        edited_check_sections(image)
+        flags = u32(image.data,36)
+        edited_require(flags & ~1 == 0x10000000 and not image.size('.MIPS.abiflags'),
+                       'unsupported vector ABI/e_flags (requires MIPS II o32)')
+        edited_require(not any(section['flags'] & 0x10000000 for section in image.sections)
+            and not any(symbol.name == '_gp' for symbol in image.symbols)
+            and not any(rel.type not in TYPE_NAMES for section in image.sections for rel in image.rels(section['name'])),
+            'vector GP/unknown section, symbol or relocation role')
+        data = image.bytes_of('.reginfo')
+        edited_require(len(data) == 24 and not u32(data,0) & (1 << 28),
+                       'vector REGINFO missing or uses GP register')
+        options = image.bytes_of('.options')
+        edited_require(not options or (options[:8] == bytes((1,32,0,0,0,0,0,0)) and options[8:] == data),
+                       'unsupported or conflicting original MIPS options')
+        originals.append(dict(e_flags=flags, reginfo=list(struct.unpack('>6I',data)),
+                              options_sha256=hashlib.sha256(options).hexdigest()))
+    edited_check_sections(aggregate)
+    edited_require(u32(aggregate.data,36) == (0x10000000 | int(any(row['e_flags'] & 1 for row in originals)))
+        and not aggregate.size('.MIPS.abiflags') and not aggregate.size('.options')
+        and not any(symbol.name == '_gp' for symbol in aggregate.symbols)
+        and not any(section['flags'] & 0x10000000 for section in aggregate.sections),
+        'aggregate ABI/GP role differs')
+    retained = [row for row in mapping if row.insec == '.reginfo']
+    edited_require(retained and len({row.file for row in retained}) == len(retained)
+        and all(row.outsec == '.reginfo' and row.addr == 0 and row.size == 24 for row in retained),
+        'invalid retained REGINFO map contributors')
+    masks = [0]*5
+    for row in retained:
+        for index,value in enumerate(originals[names.index(row.file)]['reginfo'][:5]): masks[index] |= value
+    # GNU relocatable no-_gp/no-GPREL synthesis: MINUS_ONE + ELF_MIPS_GP_OFFSET.
+    synthesized_gp = ((1 << 32)-1 + 0x7ff0) & 0xffffffff
+    edited_require(aggregate.bytes_of('.reginfo') == struct.pack('>6I',*masks,synthesized_gp),
+                   'ordinary map-retained REGINFO masks/GP differ')
+    return dict(originals=originals, retained_inputs=[names.index(row.file) for row in retained],
+                aggregate_reginfo=masks+[synthesized_gp],
+                qualification='original ABI retained; aggregate masks describe map-retained inputs only')
+
+
+def edited_group_origins(inputs, aggregate, mapping, names):
+    """Join original per-input sites to an actual ordinary relocatable group."""
+    edited_require(len(inputs) == len(names) and len(set(names)) == len(names), 'duplicate vector input')
+    edited_check_sections(aggregate)
+    edited_require(all(item.file in names for item in mapping), 'foreign aggregate input')
+    origins = []
+    definitions = {}
+    for index, raw in enumerate(inputs):
+        edited_check_sections(raw)
+        edited_require(not raw.size('.bss') and not any(s.shndx == SHN_COMMON for s in raw.symbols),
+                       'vector BSS/COMMON requires a separate source allocation contract')
+        offsets = {}
+        for section in EDITED_SECTIONS:
+            rows = [item for item in mapping if item.file == names[index] and item.insec == section]
+            if raw.size(section):
+                edited_require(len(rows) == 1 and rows[0].outsec == section
+                    and rows[0].size == raw.size(section), 'missing/ambiguous aggregate input section')
+                offset = rows[0].addr
+                edited_require(offset >= 0 and offset % raw.section(section)['align'] == 0
+                    and offset + raw.size(section) <= aggregate.size(section), 'aggregate input origin/extent')
+            else:
+                edited_require(not rows or all(row.size == 0 and row.outsec == section for row in rows),
+                               'empty input gained allocation')
+                offset = rows[0].addr if rows else 0
+            offsets[section] = offset
+        origins.append(offsets)
+        for symbol in raw.symbols:
+            if symbol.bind != STB_GLOBAL or symbol.shndx in (SHN_UNDEF, SHN_ABS, SHN_COMMON):
+                continue
+            edited_require(symbol.section in EDITED_SECTIONS and symbol.type in (STT_FUNC, STT_OBJECT)
+                and symbol.size > 0 and symbol.value >= 0
+                and symbol.value+symbol.size <= raw.size(symbol.section), 'unsupported vector definition')
+            edited_require(symbol.name not in definitions, 'duplicate vector provider: '+symbol.name)
+            definitions[symbol.name] = (index, symbol)
+            actual = [x for x in aggregate.symbols if x.name == symbol.name and x.bind == STB_GLOBAL
+                      and x.shndx not in (SHN_UNDEF, SHN_ABS, SHN_COMMON)]
+            edited_require(len(actual) == 1 and (actual[0].section, actual[0].value, actual[0].size, actual[0].type)
+                == (symbol.section, offsets[symbol.section]+symbol.value, symbol.size, symbol.type),
+                'aggregate provider definition changed: '+symbol.name)
+    joins = []
+    for section in EDITED_SECTIONS[:-1]:
+        spans = sorted((origins[i][section], origins[i][section]+raw.size(section))
+                       for i,raw in enumerate(inputs) if raw.size(section))
+        previous = 0
+        for begin,end in spans:
+            edited_require(previous <= begin and not any(aggregate.bytes_of(section)[previous:begin]),
+                           'overlapping/unaccounted aggregate allocation')
+            previous = end
+        edited_require(not any(aggregate.bytes_of(section)[previous:]), 'unaccounted aggregate tail')
+        rows = aggregate.rels(section)
+        observed = {(rel.offset,rel.type):(rel,addend) for rel,addend in
+                    zip(rows,in_place_addends(aggregate,section,rows))}
+        edited_require(len(observed) == len(rows), 'duplicate aggregate relocation site/type')
+        expected = set()
+        for index,raw in enumerate(inputs):
+            original = raw.rels(section)
+            masks = {}
+            for ordinal,(rel,addend) in enumerate(zip(original,in_place_addends(raw,section,original))):
+                edited_require(rel.type in TYPE_NAMES and rel.offset % 4 == 0
+                    and rel.offset >= 0 and rel.offset+4 <= raw.size(section), 'invalid original vector relocation')
+                edited_require(rel.offset not in masks, 'duplicate original vector site')
+                masks[rel.offset] = 0xffffffff if rel.type == R_MIPS_32 else 0x03ffffff if rel.type == R_MIPS_26 else 0xffff
+                site = origins[index][section]+rel.offset; key = (site,rel.type)
+                edited_require(key in observed and key not in expected, 'missing/duplicate translated relocation')
+                expected.add(key); actual, actual_addend = observed[key]; symbol = rel.sym
+                if symbol.shndx == SHN_UNDEF and symbol.name not in definitions:
+                    edited_require(actual.sym.shndx == SHN_UNDEF and actual.sym.name == symbol.name
+                        and actual_addend == addend, 'aggregate changed outside import')
+                else:
+                    if symbol.shndx == SHN_UNDEF:
+                        owner, target = definitions[symbol.name]
+                    else:
+                        owner, target = index, symbol
+                    edited_require(target.section in EDITED_SECTIONS and actual.sym.section == target.section
+                        and actual.sym.shndx not in (SHN_UNDEF,SHN_ABS,SHN_COMMON)
+                        and actual.sym.value+actual_addend == origins[owner][target.section]+target.value+addend,
+                        'aggregate changed original target/addend')
+                    if symbol.type != STT_SECTION:
+                        edited_require(actual.sym.name == symbol.name, 'aggregate changed named provider identity')
+                joins.append(dict(input=index, input_path=names[index], section=section,
+                    ordinal=ordinal, symbol_index=symbol.index, offset=rel.offset, type=rel.type,
+                    addend=addend, aggregate_offset=site, aggregate_symbol_index=actual.sym.index))
+            before=raw.bytes_of(section);after=aggregate.bytes_of(section)[origins[index][section]:origins[index][section]+len(before)]
+            for offset in range(0,len(before)):
+                word=offset & ~3
+                mask=masks.get(word,0)
+                byte_mask=(mask >> ((3-(offset&3))*8)) & 255
+                edited_require((before[offset]^after[offset]) & (~byte_mask & 255) == 0,
+                               'ordinary aggregation changed nonrelocation bits')
+        edited_require(expected == set(observed), 'aggregate gained or lost original records')
+    return tuple(origins), tuple(joins)
+
+
 def edited_prepare_object(raw, linked):
     edited_check_sections(raw)
     bases = edited_check_sections(linked, linked=True)
@@ -4043,6 +4180,7 @@ def edited_prepare_object(raw, linked):
 
 def edited_symbol_target(obj, symbol):
     raw, linked = obj['raw'], obj['linked']
+    origin = obj.get('input_origins', {}).get(symbol.section, 0)
     if symbol.shndx == SHN_COMMON:
         edited_require(symbol.bind == STB_GLOBAL and symbol.type == STT_OBJECT
                 and symbol.size > 0 and symbol.value > 0
@@ -4067,13 +4205,18 @@ def edited_symbol_target(obj, symbol):
                and s.bind == symbol.bind and s.shndx != SHN_UNDEF]
     edited_require(len(matches) == 1
             and (matches[0].section, matches[0].value, matches[0].size, matches[0].type)
-            == (symbol.section, symbol.value, symbol.size, symbol.type), 'ordinary symbol changed: ' + symbol.name)
+            == (symbol.section, origin + symbol.value, symbol.size, symbol.type), 'ordinary symbol changed: ' + symbol.name)
     if symbol.type == STT_FUNC:
         edited_require(symbol.section == '.text' and symbol.value % 4 == symbol.size % 4 == 0,
                 'invalid actual function extent')
-    return symbol.section, symbol.value, symbol.size, symbol.type
+    return symbol.section, origin + symbol.value, symbol.size, symbol.type
 
 def edited_global_target(obj, name):
+    if 'source_inputs' in obj:
+        choices = [(member,s) for member in obj['source_inputs'] for s in member['raw'].symbols
+                   if s.name == name and s.bind == STB_GLOBAL and s.shndx not in (SHN_UNDEF,SHN_ABS,SHN_COMMON)]
+        edited_require(len(choices) == 1, 'export lacks one original vector provider: '+name)
+        return edited_symbol_target(*choices[0])
     choices = [s for s in obj['raw'].symbols if s.name == name and s.bind == STB_GLOBAL
                and s.shndx != SHN_UNDEF]
     edited_require(len(choices) == 1, 'export lacks one original global definition: ' + name)
@@ -4418,16 +4561,21 @@ def edited_module_records(number, objects, selected, exports, provider):
         entry_offsets.append(value)
     refs, joins, callers = [], [], {}
     for section in ('.text', '.rodata', '.data'):
-        rels = obj['raw'].rels(section)
-        for rel in rels:
-            edited_require(rel.type in TYPE_NAMES and rel.offset >= 0 and rel.offset % 4 == 0
-                           and rel.offset + 4 <= obj['raw'].size(section),
-                           'selected raw relocation has unsupported type/full-word extent')
-        for rel, addend in zip(rels, in_place_addends(obj['raw'], section, rels)):
-            source_caller = edited_caller(obj, section, rel.offset)
+        records = []
+        for input_index, member in enumerate(obj.get('source_inputs', (obj,))):
+            rels = member['raw'].rels(section)
+            for rel in rels:
+                edited_require(rel.type in TYPE_NAMES and rel.offset >= 0 and rel.offset % 4 == 0
+                    and rel.offset + 4 <= member['raw'].size(section),
+                    'selected raw relocation has unsupported type/full-word extent')
+            records.extend((input_index, member, ordinal, rel, addend, rels) for ordinal,(rel,addend)
+                           in enumerate(zip(rels,in_place_addends(member['raw'],section,rels))))
+        for input_index, member, ordinal, rel, addend, rels in records:
+            origin = member.get('input_origins', {})
+            source_caller = edited_caller(member, section, rel.offset)
             label = f'module {number} {source_caller} {section}+{rel.offset:#x}'
             edited_require(rel.type in TYPE_NAMES and rel.offset % 4 == 0
-                    and rel.offset + 4 <= obj['raw'].size(section), label + ': invalid relocation extent/type')
+                    and rel.offset + 4 <= member['raw'].size(section), label + ': invalid relocation extent/type')
             symbol, row, encoding = rel.sym, None, None
             if symbol.shndx == SHN_UNDEF:
                 edited_require(symbol.name in exports.by_name, label + ': undeclared import ' + symbol.name)
@@ -4443,18 +4591,20 @@ def edited_module_records(number, objects, selected, exports, provider):
                         candidates = [s for s in provider['elf'].symbols if s.name == symbol.name
                             and s.bind == STB_GLOBAL and s.shndx != SHN_UNDEF]
                         if rel.type != R_MIPS_26 and len(candidates) == 1 and candidates[0].type == STT_OBJECT:
-                            base, target = edited_resident_cell(provider, symbol.name, obj, section, rel, addend)
+                            edited_require('input_origins' not in member, 'vector resident-cell witness is unsupported')
+                            base, target = edited_resident_cell(provider, symbol.name, member, section, rel, addend)
                         else:
                             base, target = edited_resident_function(provider, symbol.name)
                     except PackError as error:
                         raise PackError(label + ': ' + str(error)) from error
                     kind, offset = edited_object_operand(target, addend)
             elif symbol.type == STT_SECTION:
-                kind, offset, typ, size = edited_section_operand(obj, rel, addend, section, rels)
+                kind, offset, typ, size = edited_section_operand(member, rel, addend, section, rels)
+                offset += origin.get(kind, 0)
                 target = (kind, offset, size, typ)
-                base = ('ov', number, bases[kind] + symbol.value)
+                base = ('ov', number, bases[kind] + origin.get(kind, 0) + symbol.value)
             else:
-                target = edited_symbol_target(obj, symbol)
+                target = edited_symbol_target(member, symbol)
                 if addend == 0x80000000 and 'integer_word' in obj:
                     import proof_provenance as pp
                     witness = obj['integer_word']
@@ -4477,16 +4627,21 @@ def edited_module_records(number, objects, selected, exports, provider):
                         symbol.type == STT_SECTION and target[3] == STT_FUNC,
                         label + ': executable relocation lacks actual function entry')
             full = edited_rules.ident_add(base, addend)
-            site = bases[section] + rel.offset
+            site = bases[section] + origin.get(section, 0) + rel.offset
             refs.append(edited_rules.Ref(section, site, rel.type, base=base, full=full, row=row,
                                   target_section=kind, name=symbol.name, route='strict-actual-definition'))
             callers[(number, site, rel.type)] = source_caller
-            joins.append({'raw_order': len(joins), 'section': section, 'offset': rel.offset,
+            joins.append({'raw_order': len(joins), 'section': section, 'offset': origin.get(section, 0) + rel.offset,
                           'type': rel.type, 'name': symbol.name, 'addend': addend,
                           'base': base, 'full': full, 'row': row, 'edited_caller': source_caller,
                           'target_witness': {'section': target[0], 'value': target[1],
                                              'size': target[2], 'type': target[3]},
                           'word_encoding': encoding, 'underlying_identity': base if encoding else None})
+            if 'source_inputs' in obj:
+                joins[-1].update(input=input_index, original_offset=rel.offset, original_ordinal=ordinal,
+                                 original_symbol_index=symbol.index, input_path=member['input_path'])
+    if 'source_inputs' in obj:
+        edited_require(len({ref.site for ref in refs}) == len(refs), 'duplicate translated module site')
     header = edited_codec.Header(text=obj['linked'].size('.text'),
                           data=obj['linked'].size('.data') + obj['linked'].size('.rodata'),
                           bss=obj['linked'].size('.bss'), init=entry_offsets[0], resume=entry_offsets[1])

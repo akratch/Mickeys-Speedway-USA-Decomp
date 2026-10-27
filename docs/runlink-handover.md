@@ -152,6 +152,8 @@ Current JFG admission requires correctly flagged zero-based aligned text/data, c
 
 MSU already provides useful mechanisms in `tools/runlink_metadata_link.py`, `tools/link_overlay_module.py`, `tools/proof_provenance.py` and `tools/runlink_pack.py`. They are project-specific reference code, not a ready JFG adapter. Keep its retail strict route separate from edited outputs; do not add an allow-difference switch to matching acceptance. Choose real source/provider capabilities by proof class, not repeated program-specific admission exceptions.
 
+The MSU edited frontend now accepts an [ordered C-input vector](runlink-toolkit.md#ordered-c-inputs-in-the-msu-edited-builder) in its existing ABI registry. The reviewed overlay97 split and merge-back preserve original per-input relocation identities through an ordinary aggregate link, with a live cross-input data consumer and a missing-provider refusal. This supplies a bounded graph mechanism for step 1. Its restricted no-GP/no-BSS profile and declared-export requirements remain explicit; it does not extend the portable JFG `module-recipe` interface or complete steps 2–3.
+
 ## Handover timing and completion claims
 
 This roadmap and bounded starter can be handed over now, with the manual prerequisites above. A polished public package is one focused documentation/review batch. Its publication depends on that review and the ordinary gates; this is not an ETA for the general builder, the remaining linked Mickey requirements.

@@ -198,6 +198,60 @@ class AuthoredRegistryTests(unittest.TestCase):
         self.write(self.document)
     def write(self, document):
         self.path.write_text(json.dumps(document))
+    def test_vector_source_copy_and_cpp_stdout_are_observations_not_late_hashes(self):
+        import contextlib
+        import permute_batch as batch
+        from test_runlink_pack import EditedInputGroupTests
+        original=EditedInputGroupTests().fixture()[0][0].data
+        write=link.write_changed
+        directory=self.root/'capture';directory.mkdir()
+        args=['-G','0','-o','unused.o','src/overlays/o075/unit.c']
+        def command(argv,**kwargs):
+            if '-E' in argv:return SimpleNamespace(returncode=0,stdout=b'void entry(void) {}\n',stderr=b'')
+            if '-o' in argv:
+                payload=bytearray(original)
+                if fault=='original-flags':payload[39]^=4
+                if fault=='original-options':
+                    # Rename the same-size nonALLOC string table as an unsupported
+                    # options observation; the mocked static step then strips it.
+                    image=link.rp.Elf('fixture',bytes(payload));section=image.section('.shstrtab')
+                    names=image.section('.shstrtab');at=names['offset']+link.rp.u32(payload,link.rp.u32(payload,32)+40*section['index'])
+                    payload[at:at+9]=b'.options\0'
+                (self.root/argv[argv.index('-o')+1]).write_bytes(payload)
+            if 'tools/static_symbols.py' in argv and fault in ('original-flags','original-options'):
+                (self.root/argv[-1]).write_bytes(original)
+            if 'tools/static_symbols.py' in argv and fault=='reindex':
+                path=self.root/argv[-1];image=link.rp.Elf(path);payload=bytearray(image.data)
+                indices=[symbol.index for symbol in image.symbols if symbol.bind==1 and symbol.size]
+                a,b=(image.section('.symtab')['offset']+16*index for index in indices[:2])
+                payload[a:a+16],payload[b:b+16]=payload[b:b+16],payload[a:a+16]
+                path.write_bytes(payload)
+            return SimpleNamespace(returncode=0,stdout=b'',stderr=b'')
+        for fault in ('source','cpp','reindex','original-flags','original-options',None):
+            def observed_write(path,payload):
+                result=write(path,payload)
+                if (fault=='source' and path.suffix=='.c') or (fault=='cpp' and path.suffix=='.i'):
+                    path.write_bytes(path.read_bytes()+b' ')
+                return result
+            with self.subTest(fault=fault),contextlib.ExitStack() as stack:
+                stack.enter_context(mock.patch.object(link,'write_changed',side_effect=observed_write))
+                run=stack.enter_context(mock.patch.object(link.subprocess,'run',side_effect=command))
+                stack.enter_context(mock.patch.object(batch,'source_dependencies',return_value={}))
+                stack.enter_context(mock.patch.object(batch,'checked_tool_identity',return_value={}))
+                stack.enter_context(mock.patch.object(pp,'literal_profile_inputs',return_value={}))
+                stack.enter_context(mock.patch.object(link,'digest',side_effect=lambda path:
+                    'tool' if str(path).endswith('tools/static_symbols.py') else __import__('hashlib').sha256(Path(path).read_bytes()).hexdigest()))
+                stack.enter_context(mock.patch.object(pp,'_literal_flags',return_value=[]))
+                if fault:
+                    with self.assertRaisesRegex(link.rp.PackError,'copy differs|observation changed|original symbol-index|original ABI'):
+                        link.edited_compile(self.root,directory,'capture','void entry(void) {}\n',
+                            link.rp.OrtNames([],{}),args,[],capture_only=True)
+                    if fault=='source':run.assert_not_called()
+                else:
+                    capture,product,closure=link.edited_compile(self.root,directory,'capture','void entry(void) {}\n',
+                        link.rp.OrtNames([],{}),args,[],capture_only=True)
+                    capture['capture_current']()
+
     def test_authored_vector_does_not_open_old_symbolic_lookup(self):
         with mock.patch.object(link.rp.OrtNames, 'load', side_effect=AssertionError('old lookup')):
             for old in (None, 'poisoned old authority'):
@@ -322,6 +376,31 @@ class AuthoredRegistryTests(unittest.TestCase):
                 link.rp.cmd_ort(args)
         self.assertEqual(link.rp.cmd_ort(args), 0)
         self.assertEqual(path.read_text(), link.registry_projection(self.root)[0])
+
+    def test_ordered_vector_uses_closed_members_and_holds_order(self):
+        import copy
+        second = 'src/overlays/o075/second.c'; (self.root/second).write_text('void second(void) {}\n')
+        doc = copy.deepcopy(self.document); module = doc['modules'][0]
+        module['inputs'] = [dict(source=module.pop('source'),build=module.pop('build')),
+                            dict(source=second,build='complete-overlay')]
+        self.write(doc)
+        profiles, exports, default, observed, current = link.source_registry(self.root,self.path)
+        self.assertEqual([m['source'] for m in link.edited_input_declarations(profiles[75])],
+                         ['src/overlays/o075/unit.c',second])
+        current(); profiles[75]['inputs'] = tuple(reversed(profiles[75]['inputs']))
+        with self.assertRaisesRegex(link.rp.PackError,'changed'):current()
+        for kind in ('empty','duplicate','mixed','foreign','profile','integer-word'):
+            bad=copy.deepcopy(doc);row=bad['modules'][0]
+            if kind=='empty':row['inputs']=[]
+            elif kind=='duplicate':row['inputs'][1]=dict(row['inputs'][0])
+            elif kind=='mixed':row.update(source='src/overlays/o075/unit.c',build='registered')
+            elif kind=='foreign':row['inputs'][1]['source']='src/overlays/o076/second.c'
+            elif kind=='profile':row['inputs'][1]['build']='unchecked'
+            else:row['integer_word_profile']='isolated-full-expression'
+            self.write(bad)
+            with self.subTest(kind=kind),self.assertRaises(link.rp.PackError):
+                link.source_registry(self.root,self.path)
+        self.write(doc);link.source_registry(self.root,self.path)[-1]()
 
     def test_canonical_loaded_registry_hold_refuses_late_changes(self):
         text, current = link.registry_projection(self.root)

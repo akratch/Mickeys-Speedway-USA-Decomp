@@ -3,6 +3,7 @@
 
 #include "PR/os_internal.h"
 #include "n_audio/mbi.h"
+#include "game/joy.h"
 
 /* SDK command view; arena capacity and completion lifetime are separate. */
 typedef Gfx Overlay18Gfx;
@@ -12,12 +13,10 @@ extern void mainPreNMI(void);
 extern void overlay5InitializeAudio(void *value);
 extern void runlinkFreeCode(s32 phase);
 extern void func_80002500(void);
-extern void *joyInit(void);
 extern void texInitTextures(void);
 extern void modInitModels(void);
 extern void func_8005A700(void);
 extern void overlay30Initialize(void);
-extern void arithmeticFunction(void *localData, void *externalData);
 extern void diPrintfInit(void);
 extern void func_overlay_031_F00002E8_187F808(void);
 extern void initWeather(void);
@@ -47,9 +46,9 @@ extern void *mmAllocAtAddr(s32 size, void *oldBuffer, s32 tag);
 extern void overlay18FinishReconfigureReloc(void *token);
 
 extern void *D_800CF5B8;
-extern void *D_8007A1D4;
 extern u8 gOverlay18LocalData80[];
-extern u8 gOverlay18ExternalData;
+/* Byte destination; this declaration does not establish its capacity. */
+extern u8 gOverlay18ExternalData[];
 extern s32 D_8007A1B8;
 extern void *D_800CF5B0;
 extern void *D_800D18E0;

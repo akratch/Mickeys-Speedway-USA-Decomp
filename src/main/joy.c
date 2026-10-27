@@ -1,4 +1,5 @@
 #include "ultra64.h"
+#include "game/joy.h"
 #include "game/saves.h"
 #include "game/overlay_exports.h"
 

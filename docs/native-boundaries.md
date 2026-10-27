@@ -248,6 +248,13 @@ sprite-loader disagreement and other erased APIs remain open.
   transport remain unresolved. Full function-type compatibility, capacity,
   reset/free and asynchronous graphics lifetime, related overlay 18 views,
   other command/vertex contracts and native readiness remain open.
+- **Controller challenge exchange:** the [bounded source contract](controller-exchange-contract.md)
+  records the shared byte-pointer/queue API, the 16-byte input/output loops,
+  the separate 64-byte scratch requests and exact receive/start/copy ordering.
+  The declaration repair preserves target output; the response remains an
+  incomplete external array with borrowed backing identity. Actual capacity,
+  aliasing, SI/DMA/cache and message semantics, scratch lifetime and opaque-input
+  representation remain resource obligations.
 - **Width/endian resources:** o32 pointers/longs are 32 bits; saved OS context
   words can be 64 bits; target float matrices are not host SIMD structs; graphics
   packed words/halfwords and serialized model/mesh records retain target byte

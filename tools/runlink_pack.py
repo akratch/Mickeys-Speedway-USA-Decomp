@@ -4070,6 +4070,54 @@ def edited_group_abi(inputs, aggregate, mapping, names):
                 qualification='original ABI retained; aggregate masks describe map-retained inputs only')
 
 
+def edited_bss_allocation(elf):
+    """Actual sized contiguous C objects, distinct from the compiler's tail."""
+    edited_require(not any(s.shndx == SHN_COMMON for s in elf.symbols),
+                   'vector COMMON requires a separate source allocation contract')
+    if not elf.size('.bss'):
+        return ()
+    edited_check_sections(elf)
+    section = elf.section('.bss')
+    alignment = section['align']
+    edited_require(section['type'] == SHT_NOBITS and section['flags'] == 3
+        and section['addr'] == 0 and 0 < alignment <= 16
+        and alignment & (alignment - 1) == 0, 'invalid observed NOBITS section')
+    edited_require(section['size'] % 4 == 0, 'NOBITS zero-init extent is not whole loader words')
+    edited_require(not elf.rels('.bss'), 'NOBITS contains relocation sites')
+    objects = sorted((s for s in elf.symbols if s.section == '.bss'
+                      and s.type != STT_SECTION), key=lambda s: (s.value, s.index))
+    end = 0
+    rows = []
+    for symbol in objects:
+        edited_require(symbol.bind == STB_GLOBAL and symbol.type == STT_OBJECT
+            and symbol.size > 0 and symbol.value == end,
+            'NOBITS lacks contiguous unique sized GLOBAL objects')
+        end += symbol.size
+        rows.append((symbol.index, symbol.name, symbol.value, symbol.size))
+    alignment = section['align']
+    edited_require(bool(rows) and (end + alignment - 1) // alignment * alignment == section['size'],
+                   'NOBITS has unaccounted allocation beyond compiler alignment')
+    return tuple(rows)
+
+
+def edited_group_providers(inputs, exports, declared):
+    """Unique actual graph definitions; never an authored name/address table."""
+    found = {}
+    for index, image in enumerate(inputs):
+        for symbol in image.symbols:
+            if symbol.shndx in (SHN_UNDEF, SHN_ABS, SHN_COMMON) or symbol.bind == STB_LOCAL:
+                continue
+            edited_require(symbol.bind == STB_GLOBAL and symbol.type in (STT_FUNC, STT_OBJECT)
+                and symbol.section in EDITED_SECTIONS and symbol.size > 0
+                and 0 <= symbol.value < symbol.value + symbol.size <= image.size(symbol.section),
+                'unsupported actual graph provider: ' + symbol.name)
+            edited_require(symbol.name not in found, 'duplicate internal graph provider: ' + symbol.name)
+            edited_require(symbol.name not in exports.by_name or symbol.name in declared,
+                           'internal graph provider conflicts with external ABI: ' + symbol.name)
+            found[symbol.name] = (index, symbol.index)
+    return tuple((name, *where) for name, where in sorted(found.items()))
+
+
 def edited_group_origins(inputs, aggregate, mapping, names):
     """Join original per-input sites to an actual ordinary relocatable group."""
     edited_require(len(inputs) == len(names) and len(set(names)) == len(names), 'duplicate vector input')
@@ -4079,8 +4127,7 @@ def edited_group_origins(inputs, aggregate, mapping, names):
     definitions = {}
     for index, raw in enumerate(inputs):
         edited_check_sections(raw)
-        edited_require(not raw.size('.bss') and not any(s.shndx == SHN_COMMON for s in raw.symbols),
-                       'vector BSS/COMMON requires a separate source allocation contract')
+        edited_bss_allocation(raw)
         offsets = {}
         for section in EDITED_SECTIONS:
             rows = [item for item in mapping if item.file == names[index] and item.insec == section]
@@ -4109,6 +4156,29 @@ def edited_group_origins(inputs, aggregate, mapping, names):
             edited_require(len(actual) == 1 and (actual[0].section, actual[0].value, actual[0].size, actual[0].type)
                 == (symbol.section, offsets[symbol.section]+symbol.value, symbol.size, symbol.type),
                 'aggregate provider definition changed: '+symbol.name)
+    # NOBITS has no payload whose zeros could prove coverage. Join every
+    # actual contribution and ordinary alignment from the held linker map.
+    end = 0
+    for index, raw in enumerate(inputs):
+        if not raw.size('.bss'):
+            continue
+        alignment = raw.section('.bss')['align']
+        wanted = (end + alignment - 1) // alignment * alignment
+        edited_require(origins[index]['.bss'] == wanted, 'unaccounted/overlapping aggregate NOBITS origin')
+        end = wanted + raw.size('.bss')
+    if end:
+        alignment = aggregate.section('.bss')['align']
+        edited_require(alignment == max(raw.section('.bss')['align'] for raw in inputs if raw.section('.bss')),
+                       'aggregate NOBITS alignment differs from actual inputs')
+        edited_require(aggregate.size('.bss') == (end + alignment - 1) // alignment * alignment
+            and not aggregate.rels('.bss'), 'aggregate NOBITS extent/relocations differ')
+    else:
+        edited_require(not aggregate.size('.bss'), 'aggregate gained NOBITS')
+    expected_bss = sorted((name, origins[index]['.bss'] + symbol.value, symbol.size, symbol.bind, symbol.type)
+                          for name, (index, symbol) in definitions.items() if symbol.section == '.bss')
+    actual_bss = sorted((symbol.name, symbol.value, symbol.size, symbol.bind, symbol.type) for symbol in aggregate.symbols
+                        if symbol.section == '.bss' and symbol.type != STT_SECTION)
+    edited_require(expected_bss == actual_bss, 'aggregate NOBITS gained/removed objects')
     joins = []
     for section in EDITED_SECTIONS[:-1]:
         spans = sorted((origins[i][section], origins[i][section]+raw.size(section))
@@ -4539,6 +4609,10 @@ def edited_module_records(number, objects, selected, exports, provider):
     owners = edited_declarations(exports, selected)
     obj, declaration = objects[number], selected[number]
     bases = obj['bases']
+    internal = {}
+    if 'source_inputs' in obj:
+        providers = edited_group_providers([m['raw'] for m in obj['source_inputs']], exports, declaration['exports'])
+        internal = {name: edited_global_target(obj, name) for name, _input, _symbol in providers}
     derived, export_witnesses = {}, {}
     for name in declaration['exports']:
         target = edited_global_target(obj, name)
@@ -4577,7 +4651,13 @@ def edited_module_records(number, objects, selected, exports, provider):
             edited_require(rel.type in TYPE_NAMES and rel.offset % 4 == 0
                     and rel.offset + 4 <= member['raw'].size(section), label + ': invalid relocation extent/type')
             symbol, row, encoding = rel.sym, None, None
-            if symbol.shndx == SHN_UNDEF:
+            if symbol.shndx == SHN_UNDEF and symbol.name in internal:
+                target = internal[symbol.name]
+                kind, offset = edited_object_operand(target, addend)
+                base = ('ov', number, bases[target[0]] + target[1])
+                if symbol.name in declaration['exports']:
+                    row = exports.by_name[symbol.name]
+            elif symbol.shndx == SHN_UNDEF:
                 edited_require(symbol.name in exports.by_name, label + ': undeclared import ' + symbol.name)
                 row = exports.by_name[symbol.name]
                 owner = owners.get(symbol.name)

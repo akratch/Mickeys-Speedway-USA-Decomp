@@ -306,6 +306,10 @@ BINARY_ALLOWLIST: "set[str]" = set()
 # each reason belong in the report.
 CONTENT_EXEMPTIONS: "dict[tuple[str, str], str]" = {
     (
+        "src/overlays/o083/overlay83StripTriangles.c",
+        "hexdump",
+    ): "Tier B Mickey strip geometry: flags, vertex indices and signed UV pairs consumed as sixteen triangle records; decimal coordinates trigger the line-shape heuristic, not a byte or word dump; all other content detectors remain active",
+    (
         "tools/reloc_surface.py",
         "oversize",
     ): "large authored relocation/source-identity proof code, not extracted data; all other content detectors remain active",

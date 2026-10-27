@@ -1,6 +1,6 @@
 # Overlay structure sprint: source ownership and final build inputs
 
-Status: active, reviewed 2026-10-26. The US executable reconstruction is
+Status: active, reviewed 2026-10-27. The US executable reconstruction is
 complete under the project's matching standard. The remaining campaign makes
 its storage, identities and build structure faithful enough to maintain and to
 support future native work. Implementing a native port is outside this sprint.
@@ -8,7 +8,7 @@ support future native work. Implementing a native port is outside this sprint.
 ## Current evidence
 
 The source measurements here describe the validated composition of
-`4089d8c4c` with `09022c7d5`, `d17033b0a`, `89c425b15`. The combined borrowing
+`dbd3b82a9` with `d98098143`, `27380f34d`, `36456b315`. The combined borrowing
 ledger is recomputed from the actual bootstrap link and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
@@ -24,8 +24,8 @@ validation and publication are separate acceptance steps.
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 54,584 of 61,312 bytes have canonical projected C owners | 6,728 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
-| Initialized images | 50 of 87 data-bearing modules are fully projected to C; 18 are partial and 19 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
+| Initialized storage | 54,840 of 61,312 bytes have canonical projected C owners | 6,472 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized images | 50 of 87 data-bearing modules are fully projected to C; 19 are partial and 18 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 32 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
 | Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 4,918 records still borrow authority: 4,874 placeholder references and 44 blob-owned data records. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 30 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
@@ -40,6 +40,27 @@ normalization; full linked-byte and runtime-table proofs complete their identity
 evidence. The separate 16-byte opaque protocol input remains retained. Original
 capacity and TU spelling remain inferred; general source-only relayout and the
 module's external interface contracts are still open.
+
+Overlay83 now supplies sixteen genuine strip-triangle records through one
+256-byte typed DATA producer. Its remaining 16-byte tail and encoded consumer
+stay retained. The final module gains only the natural section alignment from
+1 to 4; its payload, VMA, size and runtime records remain exact. Original name,
+qualifier, capacity and TU boundaries remain inferred; no reference retirement
+or native resource contract is claimed.
+
+The controller exchange now shares compatible declarations across its callers
+and providers. Its response is an incomplete external byte array, not a new
+storage definition. The [bounded contract](controller-exchange-contract.md)
+records the 16-byte input/output loops, separate 64-byte scratch and receive/
+DMA-start/copy ordering, with backing and lifetime obligations left explicit.
+
+The edited builder also resolves a genuine private BSS provider across ordered
+C inputs without adding an ABI export. Overlay75's existing 20-byte array stays
+within its actual 32-byte NOBITS allocation, including compiler alignment. All
+31 runtime records and ABI rows remain exact; provider removal refuses. This
+factorization earns no new BSS credit. COMMON, GP use, static-symbol index
+transformations and other unsupported vector roles still refuse; general
+source-only generation and native index/lifetime safety remain open.
 
 Source independence also requires reviewing encoded-coordinate names,
 retained target storage and borrowed placements within object-produced records.

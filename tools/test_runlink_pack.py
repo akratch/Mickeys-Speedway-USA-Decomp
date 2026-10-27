@@ -3037,6 +3037,77 @@ class EditedInputGroupTests(unittest.TestCase):
             with self.subTest(kind=kind),self.assertRaises(rp.PackError):
                 rp.edited_group_origins(inputs,aggregate,mapping,names)
 
+    def bss_fixture(self, addend=0):
+        caller=self.elf('caller.o',ObjBuilder().section('.text',words(lui(0),addiu(addend),0,0))
+            .sym('caller',0,16,type=FUNC,section='.text').sym('state',type=OBJECT)
+            .rel('.text',0,HI16,'state').rel('.text',4,LO16,'state').build())
+        def state(name, with_text=False, relocations=False):
+            builder=ObjBuilder()
+            if with_text:builder.section('.text',words(lui(0),addiu(addend),0,0)).sym('caller',0,16,type=FUNC,section='.text')
+            builder.section('.bss',nobits=32).sym('state',0,20,type=OBJECT,section='.bss')
+            if relocations:builder.rel('.text',0,HI16,'state').rel('.text',4,LO16,'state')
+            image=self.elf(name,builder.build());data=bytearray(image.data);row=image.section('.bss')
+            at=rp.u32(data,32)+40*row['index'];struct.pack_into('>I',data,at+8,3);struct.pack_into('>I',data,at+32,16)
+            return rp.Elf(name,bytes(data))
+        provider=state('provider.o');aggregate=state('aggregate.o',True,True);linked=state('linked.o',True)
+        mapping=[rp.MapInput('.text','.text',0,16,'caller.o'),rp.MapInput('.bss','.bss',0,32,'provider.o')]
+        return [caller,provider],aggregate,linked,mapping,['caller.o','provider.o']
+
+    def test_internal_nobits_provider_keeps_local_runtime_identity_and_original_indices(self):
+        inputs,aggregate,linked,mapping,names=self.bss_fixture()
+        exports=rp.OrtNames(['caller'],{})
+        providers=rp.edited_group_providers(inputs,exports,['caller'])
+        self.assertIn(('state',1,next(s for s in inputs[1].symbols if s.name=='state').index),providers)
+        origins,joins=rp.edited_group_origins(inputs,aggregate,mapping,names)
+        obj=rp.edited_prepare_object(aggregate,linked)
+        obj['source_inputs']=tuple(dict(raw=e,linked=linked,input_origins=o,input_path=n) for e,o,n in zip(inputs,origins,names))
+        selected={75:dict(exports=['caller'],entries=dict(init=None,resume=None),kinds=dict(caller='function'))}
+        result=rp.edited_module_records(75,{75:obj},selected,exports,{})
+        self.assertEqual(result['module'].header.bss,32)
+        self.assertEqual([j['row'] for j in result['joins']],[None,None])
+        self.assertEqual([j['full'] for j in result['joins']],[('ov',75,16)]*2)
+        self.assertEqual([j['original_symbol_index'] for j in result['joins']],[inputs[0].rels('.text')[0].sym.index]*2)
+        self.assertEqual(exports.rows,['caller'])
+
+    def test_nobits_allocation_map_padding_and_common_refuse(self):
+        import dataclasses
+        for fault in ('nonalloc','wrongkind','nonzerobase','invalidalign','tail-reserve','overlap','unknown-owner','foreign-zero','map-origin','aggregate-tail','aggregate-alignment','aggregate-alias','partial-zero-word','COMMON'):
+            inputs,aggregate,linked,mapping,names=self.bss_fixture()
+            if fault=='nonalloc':inputs[1].section('.bss')['flags']=0
+            elif fault=='wrongkind':inputs[1].section('.bss')['type']=1
+            elif fault=='nonzerobase':inputs[1].section('.bss')['addr']=4
+            elif fault=='invalidalign':inputs[1].section('.bss')['align']=3
+            elif fault=='partial-zero-word':inputs[1].section('.bss')['size']=31
+            elif fault=='tail-reserve':inputs[1].section('.bss')['size']=48
+            elif fault=='overlap':
+                inputs[1].symbols.append(dataclasses.replace(next(s for s in inputs[1].symbols if s.name=='state'),name='alias'))
+            elif fault=='unknown-owner':
+                at=next(s for s in inputs[1].symbols if s.name=='state').index;inputs[1].symbols[at]=dataclasses.replace(inputs[1].symbols[at],size=0)
+            elif fault=='foreign-zero':mapping.append(rp.MapInput('.bss','.bss',32,0,'foreign.o'))
+            elif fault=='map-origin':mapping[-1]=dataclasses.replace(mapping[-1],addr=16)
+            elif fault=='aggregate-tail':aggregate.section('.bss')['size']=48
+            elif fault=='aggregate-alignment':aggregate.section('.bss')['align']=4
+            elif fault=='aggregate-alias':aggregate.symbols.append(dataclasses.replace(next(s for s in aggregate.symbols if s.name=='state'),bind=LOCAL))
+            else:inputs[1].symbols.append(rp.Symbol(99,'common',4,4,GLOBAL,OBJECT,rp.SHN_COMMON,'COMMON'))
+            with self.subTest(fault=fault),self.assertRaises(rp.PackError):
+                rp.edited_group_origins(inputs,aggregate,mapping,names)
+
+    def test_duplicate_and_external_abi_shadow_providers_refuse(self):
+        inputs,aggregate,linked,mapping,names=self.bss_fixture()
+        with self.assertRaisesRegex(rp.PackError,'duplicate internal'):
+            rp.edited_group_providers(inputs+[inputs[1]],rp.OrtNames(['caller'],{}),['caller'])
+        with self.assertRaisesRegex(rp.PackError,'conflicts with external ABI'):
+            rp.edited_group_providers(inputs,rp.OrtNames(['caller','state'],{}),['caller'])
+
+    def test_internal_reference_cannot_target_compiler_bss_padding(self):
+        inputs,aggregate,linked,mapping,names=self.bss_fixture(addend=20)
+        origins,_=rp.edited_group_origins(inputs,aggregate,mapping,names)
+        obj=rp.edited_prepare_object(aggregate,linked)
+        obj['source_inputs']=tuple(dict(raw=e,linked=linked,input_origins=o,input_path=n) for e,o,n in zip(inputs,origins,names))
+        selected={75:dict(exports=['caller'],entries=dict(init=None,resume=None),kinds=dict(caller='function'))}
+        with self.assertRaisesRegex(rp.PackError,'out-of-object'):
+            rp.edited_module_records(75,{75:obj},selected,rp.OrtNames(['caller'],{}),{})
+
     def test_original_abi_and_map_retained_masks_have_distinct_authority(self):
         def image(name,mask,gp=0x7ff0,flags=0x10000000):
             data=ObjBuilder().section('.reginfo',words(mask,0,0,0,0,gp)).build()

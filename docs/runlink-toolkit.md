@@ -290,12 +290,19 @@ combines the inputs in declared order before the existing module-link step.
 The aggregate is a linker product, not an untouched compiler object. Actual map
 contributions translate original sites and targets; numeric section origins are
 not authored in the registry. Each declared export must have exactly one real
-provider. Cross-input undefined names must still be declared ABI exports;
-arbitrary private cross-input references are not supported.
+provider. A same-graph undefined name can resolve through its unique actual
+strong GLOBAL definition and mapped input origin. A private provider requires
+no new ABI export; an existing declared export retains its ABI row. Names
+outside the graph still require declared ABI ownership and provider proof.
 
 The admitted vector class is MIPS II/o32 with an authentic `-G0` recipe and no
-GP use, BSS, COMMON, integer-word witness or resident-cell witness. Unsupported
-sections, ABI combinations and relocation roles refuse. Original per-input ABI
+GP use, COMMON, integer-word witness or resident-cell witness. The admitted BSS
+shape contains contiguous sized GLOBAL objects followed only by genuine
+compiler section alignment. Actual NOBITS type, flags, zero base, alignment,
+ordered map contributions and extent must agree; padding is not a target object.
+The runtime zero-init base and extent must contain whole loader words. This
+allocation proof does not establish dynamic indices or storage lifetime.
+Unsupported sections, ABI combinations and relocation roles refuse. Original per-input ABI
 records remain authoritative: GNU ld can retain only one input's REGINFO rather
 than union all register masks, and its aggregate GP value is not the original
 compiler value. The audit checks the actual retained contributors and the
@@ -304,8 +311,13 @@ restricted no-GP contract; it does not manufacture an all-input REGINFO union.
 The reviewed overlay97 exercise split its first function and existing context
 datum from the remainder, including a live consumer in the second input. The
 one-to-two-to-one sequence preserved the retail image and all 21 runtime records;
-removing only the context provider refused. This proves that bounded graph
-class. It adds no source-ownership credit and does not establish arbitrary
+removing only the context provider refused. Overlay75 additionally moved its
+existing five-element slot array into a separate source input: 20 object bytes
+within the same 32-byte NOBITS allocation. All 31 runtime records remained
+exact, including six LOCAL references to that private provider, with no ABI row
+added. Provider omission refused with the consumer functions retained; recovery,
+warm reuse and merge-back passed. These exercises prove the stated bounded
+classes. They add no source-ownership credit and do not establish arbitrary
 module/data/BSS growth, a source-only build or a general JFG builder. This vector
 interface belongs to the MSU edited frontend; the portable kit's JFG
 `module-recipe` still takes one already corrected producer ELF as described in

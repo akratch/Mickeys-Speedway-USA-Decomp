@@ -412,6 +412,18 @@ class AuthoredRegistryTests(unittest.TestCase):
 
 
 class EditedReceiptTests(unittest.TestCase):
+    def test_vector_imports_require_actual_group_provider_or_external_abi(self):
+        from test_runlink_pack import EditedInputGroupTests
+        inputs,aggregate,linked,mapping,names=EditedInputGroupTests().bss_fixture()
+        exports=link.rp.OrtNames(['caller'],{})
+        with self.assertRaisesRegex(link.MetadataLinkError,'caller.*state'):
+            link.edited_validate_imports(inputs[0],exports,'input0')
+        providers=link.rp.edited_group_providers(inputs,exports,['caller'])
+        link.edited_validate_imports(inputs[0],exports,'input0',{row[0] for row in providers})
+        providers=link.rp.edited_group_providers(inputs[:1],exports,['caller'])
+        with self.assertRaisesRegex(link.MetadataLinkError,'caller.*state'):
+            link.edited_validate_imports(inputs[0],exports,'input0',{row[0] for row in providers})
+
     def test_explicit_catalog_validates_owner_rows_source_kind_and_selection(self):
         import copy
         with tempfile.TemporaryDirectory() as temporary:

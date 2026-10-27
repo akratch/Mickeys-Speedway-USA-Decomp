@@ -1124,6 +1124,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o085/overlay_085.c.o: CFLAGS += -Wab,-r4300_mul
 # the module's 0xB60 bytes, so it needs no trim. Its six unexported functions
 # are static (JUMP records).
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay_083.c.o: CFLAGS += -Wab,-r4300_mul
+# Sixteen actual strip triangles; the scale and following zeros stay retained.
+O83_STRIP_TRIANGLES := $(BUILD_DIR)/$(SRC_DIR)/overlays/o083/overlay83StripTriangles.c.o
+$(O83_STRIP_TRIANGLES): private PLAIN_DATA_PROOF = 1
+$(O83_STRIP_TRIANGLES): private PLAIN_DATA_RUNTIME_ROLE = data
 # Both functions are exact C. The state machine's nop between its paired
 # owner->x products is the VR4300 multiply workaround. Its compiler pool --
 # six float constants, the seven-entry state-switch table and 0.003f --

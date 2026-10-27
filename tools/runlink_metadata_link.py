@@ -665,11 +665,11 @@ def edited_source_exports(selected, original, module_count):
     return rp.OrtNames(rows, dict(original.entries))
 
 
-def edited_validate_imports(raw, exports, label):
+def edited_validate_imports(raw, exports, label, internal=()):
     """Name a genuine current caller when a declared target was removed."""
     for section in ('.text', '.data', '.rodata'):
         for rel in raw.rels(section):
-            if rel.sym.shndx == rp.SHN_UNDEF and rel.sym.name not in exports.by_name:
+            if rel.sym.shndx == rp.SHN_UNDEF and rel.sym.name not in exports.by_name and rel.sym.name not in internal:
                 caller = rp.edited_caller({'raw': raw}, section, rel.offset)
                 raise MetadataLinkError(label + ' ' + caller + ': undeclared/removed target ' + rel.sym.name)
 
@@ -797,7 +797,8 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
         rp.edited_require([(r.offset, r.type) for r in old] == [(r.offset, r.type) for r in new]
                           and rp.in_place_addends(compiler, section, old)
                           == rp.in_place_addends(prepared, section, new), 'static-symbol step changed original records')
-    edited_validate_imports(prepared, exports, label)
+    if not capture_only:
+        edited_validate_imports(prepared, exports, label)
     if capture_only:
         rp.edited_require(compiler.data[:24] == prepared.data[:24]
             and compiler.data[36:40] == prepared.data[36:40]
@@ -813,9 +814,8 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
                 for section in compiler.sections),
             'vector static preparation changed original symbol-index/relocation surface')
         rp.edited_check_sections(compiler); rp.edited_check_sections(prepared)
-        rp.edited_require(integer_word_profile is None and not prepared.size('.bss')
-            and not any(symbol.shndx == rp.SHN_COMMON for symbol in prepared.symbols),
-            'vector source profile does not admit BSS/COMMON or integer-word witnesses')
+        rp.edited_require(integer_word_profile is None, 'vector integer-word witness is unsupported')
+        rp.edited_bss_allocation(prepared)
         command = ['tools/ido/cc', '-E', *pp._literal_flags(shlex.join(['tools/ido/cc', *flags]), flags[-1]), flags[-1]]
         result = capture_run(command, 'cpp', cpp=True)
         cpp_path = directory/(label+'-effective.i'); write_changed(cpp_path, result.stdout)
@@ -968,6 +968,10 @@ def edited_compile_group(root, directory, label, declaration, exports, arguments
             payload.decode(), exports, args, commands, capture_only=True)
         captures.append(capture); closures.append(closure); expected.update(product[3])
         capture_holds.append(capture['capture_current'])
+    providers = rp.edited_group_providers([capture['raw'] for capture in captures], exports, declaration['exports'])
+    internal_names = frozenset(name for name, _input, _symbol in providers)
+    for index, capture in enumerate(captures):
+        edited_validate_imports(capture['raw'], exports, label+f'-input{index}', internal_names)
     names = [capture['raw'].path.relative_to(root).as_posix() for capture in captures]
     aggregate_path = directory/(label+'.o'); map_path = directory/(label+'-aggregate.map')
     script_path = directory/(label+'-aggregate.ld')
@@ -1040,6 +1044,11 @@ def edited_compile_group(root, directory, label, declaration, exports, arguments
         expected[label+'-module/'+name] = receipt[field]
     expected[label+'-module/receipt.json'] = hashlib.sha256((json.dumps(receipt,indent=2)+'\n').encode()).hexdigest()
     obj = rp.edited_prepare_object(aggregate, linked)
+    require(all((aggregate.section('.bss') or {}).get(key) == (linked.section('.bss') or {}).get(key)
+                for key in ('type', 'flags', 'addr', 'size', 'align')),
+            'ordinary module link changed proved NOBITS allocation')
+    require(not linked.size('.bss') or obj['bases']['.bss'] % 4 == 0,
+            'NOBITS zero-init base is not loader-word aligned')
     members = tuple(captures)
     for index, member in enumerate(members):
         member.update(linked=linked, bases=obj['bases'], input_origins=origins[index],
@@ -1049,7 +1058,8 @@ def edited_compile_group(root, directory, label, declaration, exports, arguments
                             prepared_sha256=hashlib.sha256(member['raw'].data).hexdigest(), origins=origins[i])
                        for i,member in enumerate(members)], 'original_records':joins,
              'aggregate_sha256':expected[aggregate_path.name], 'map_sha256':expected[map_path.name],
-             'aggregate_stage_module_receipt':receipt, 'abi':abi_audit}
+             'aggregate_stage_module_receipt':receipt, 'abi':abi_audit, 'providers':providers,
+             'bss_objects':[rp.edited_bss_allocation(capture['raw']) for capture in captures]}
     closures = tuple(closures)
     obj.update(source_inputs=members, graph_audit=audit, source_closures=closures)
     expected_seal = tuple(sorted(expected.items()))
@@ -1567,6 +1577,18 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
               directory / 'final.map': hashlib.sha256(map_data).hexdigest(),
               directory / 'final.z64': hashlib.sha256(rom).hexdigest()}
     require(all(snapshot[p.name] == value for p, value in loaded.items()), 'loaded final image/map bytes differ from snapshot')
+    held_final_elf, held_final_map = elf, mapping
+    final_surface = pp._static_parsed_surface(elf) if graph_holds else None
+    final_map_seal = tuple(tuple(vars(row).items()) for row in mapping) if graph_holds else None
+    final_files = tuple(loaded.items())
+    def final_graph_current():
+        if graph_holds:
+            require(elf is held_final_elf and mapping is held_final_map
+                and pp._static_parsed_surface(elf) == final_surface
+                and tuple(tuple(vars(row).items()) for row in mapping) == final_map_seal
+                and hashlib.sha256(elf.data).hexdigest() == dict(final_files)[directory/'final.elf']
+                and all(digest(path) == expected for path,expected in final_files),
+                'consumed final graph ELF/map observation changed')
     decoded = codec.decode(rom, dynamic)
     require(codec.encode_region(decoded, dynamic, gap_fill=255) == codec.encode_region(tables, dynamic, gap_fill=255),
             'actual final decoded metadata/body differs')
@@ -1584,6 +1606,20 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         require({k: v['full'] for k, v in identities.items()}
                 == {(r.site, r.type): r.full for r in product['refs']}, 'raw→final full identities differ')
         edited_word_readback(module, product['joins'])
+        if 'source_inputs' in obj:
+            graph_providers = rp.edited_group_providers([m['raw'] for m in obj['source_inputs']], exports, selected[number]['exports'])
+            require(graph_providers == obj['graph_audit']['providers'], 'consumed internal provider inventory changed')
+            for name, _input, _symbol in graph_providers:
+                section, offset, size, kind = rp.edited_global_target(obj, name)
+                final = pilot.real_symbol(elf, name)
+                outsec = f'.overlay_{number:03d}_bss' if section == '.bss' else f'.overlay_{number:03d}'
+                contributions = [m for m in mapping if m.file == products[number][1].relative_to(root).as_posix()
+                                 and m.outsec == outsec and m.insec == section]
+                require(len(contributions) == 1 and final.section == outsec and final.type == kind
+                    and final.size == size and final.value == rp.OVERLAY_VMA + obj['bases'][section] + offset
+                    and contributions[0].addr + offset == final.value
+                    and 0 <= offset < offset + size <= contributions[0].size,
+                    'final internal provider allocation/map differs: ' + name)
         for name, witness in product['export_witnesses'].items():
             final = pilot.real_symbol(elf, name)
             require(final.value == rp.OVERLAY_VMA + witness['identity'][2] and final.size == witness['size'], 'final export differs')
@@ -1680,7 +1716,9 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
         'rom_sha1': hashlib.sha1(rom).hexdigest(), 'provider_holds': {str(p.relative_to(root)): h for p, h in provider['holds'].items()}}
     plan_current()
     cpp_receipt_seal = json_bytes((cpp_records, receipt_arguments)) if graph_holds else None
+    final_graph_current()
     published_receipt_hash = pilot.publish_receipt(directory, receipt, artifacts)
+    final_graph_current()
     graphs_current()
     if graph_holds:
         require(receipt['source_cpp'] is cpp_records and receipt['arguments'] is receipt_arguments
@@ -1697,6 +1735,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
             and all(digest(path) == value for path, value in pilot.LOADED.items()),
             'edited inputs changed during receipt publication')
     plan_current()
+    final_graph_current()
     if graph_holds:
         require(digest(directory / 'receipt.json') == published_receipt_hash,
                 'published vector receipt file changed after validation')

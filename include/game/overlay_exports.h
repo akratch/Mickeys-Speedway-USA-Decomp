@@ -38,6 +38,7 @@
 
 #include "PR/ultratypes.h"
 #include "game/overlay8_tuning.h"
+#include "game/joy.h"
 
 /* overlay 1 */
 void overlay1LoadBuildRecords(void);
@@ -237,9 +238,7 @@ void func_overlay_038_F0000154_1885E64(void *object, s32 ticks);
 void func_overlay_038_F000047C_188618C(void *dList, void *context, void *object);
 
 /* overlay 39 */
-void overlay39Write(u8 *source, void *mq);
-void overlay39Reset(void *mq);
-void overlay39Read(u8 *destination);
+/* The controller/PIF exchange declarations are shared in game/joy.h. */
 
 /* overlay 40 */
 void overlay40AddEntry(s32 id, s32 red, s32 green, s32 blue, s32 unused);

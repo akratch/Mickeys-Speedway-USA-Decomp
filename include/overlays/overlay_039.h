@@ -2,6 +2,7 @@
 #define OVERLAY_039_H
 
 #include "PR/ultratypes.h"
+#include "game/joy.h"
 #include "PR/os.h"
 #include "PRinternal/siint.h"
 
@@ -15,9 +16,6 @@ extern u8 __osContLastCmd;
  * queue to both; neither reads it. JFG's arithmeticFunction makes the same
  * three calls as osCic6105SendData(challenge, mq), osCic6105StartGetData(mq)
  * and osCic6105GetReadData(response) (tier B, argument roles only). */
-struct OSMesgQueue_s;
-void overlay39Write(u8 *source, struct OSMesgQueue_s *mq);
-void overlay39Reset(struct OSMesgQueue_s *mq);
-void overlay39Read(u8 *destination);
+/* Shared declarations: game/joy.h. */
 
 #endif

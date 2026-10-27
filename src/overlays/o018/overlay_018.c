@@ -39,7 +39,7 @@ void overlay18Load(void) {
     mainPreNMI();
     overlay30Initialize();
     runlinkFreeCode(30);
-    arithmeticFunction(gOverlay18LocalData80, &gOverlay18ExternalData);
+    arithmeticFunction(gOverlay18LocalData80, gOverlay18ExternalData);
     runlinkFreeCode(39);
     diPrintfInit();
     mainPreNMI();

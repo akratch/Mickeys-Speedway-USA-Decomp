@@ -10,6 +10,7 @@
 #include "game/sched_internal.h"
 #include "n_audio/mbi.h"
 #include "game/overlay_exports.h"
+#include "game/joy.h"
 
 /*
  * Resident main state and frame control, ROM 0x27760-0x2A250.
@@ -63,7 +64,6 @@ extern void *D_80078F7C;
 extern s32 D_8007C1A0;
 extern u8 D_8007A1A0;
 extern u32 D_8007A1CC;
-extern s32 D_8007A1D4;
 extern s32 D_8007A1EC;
 extern s32 D_8007A1B4;
 extern s32 D_8007A1D8;

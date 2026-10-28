@@ -2522,7 +2522,8 @@ segments:
     symbol_name_format: $SEG_$VRAM_$ROM
     subsegments:
       - [0x1896970, c, overlay_050]
-      - [0x18987E0, bin, overlay_050_data_rodata]
+      - [0x18987E0, .data, overlay50ResourceGroups]
+      - [0x1898834, bin, overlay_050_data_rodata]
       - [0x189884C, .data, overlay50GlyphLists]
       - [0x18989FC, bin, overlay_050_data_rodata_21c]
       - [0x1898A00, .data, overlay50LapTemplate]

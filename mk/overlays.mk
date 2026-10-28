@@ -892,11 +892,18 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay_099.c.o: POSTPROCESS = \
 		sha256:15fbd0fd7f255861ebff752dc2b8e418edd9110dfe29426ed775e3dc124c3f17
 # Overlay 50 is one translation unit at the overlay flag set; its .text carries
 # the trailing pad, so nothing is trimmed. The module
-# defines its .data and .bss at their recorded offsets, but the retained
-# overlay image owns the bytes until phase 3: the copies are dropped and every
-# site is rebound to a base placeholder (data and bss at 0, the 0.7f pool at
-# rodata +0x4), and the duplicate pool is asserted by digest. Only relocation
-# symbol indices and section ownership change; no instruction is edited.
+# defines its remaining local .data and .bss views at their recorded offsets.
+# Their copies are dropped; source leaves and retained partitions supply the
+# actual storage. Remaining local sites use base placeholders (data and bss
+# at 0, the 0.7f pool at rodata +0x4), and the duplicate pool is asserted by
+# digest. Only relocation metadata and ownership change; no instruction is edited.
+# The resource lists supply complete sentinel-backed objects. Normalize only
+# the zero compiler suffix beyond their independently derived object ends.
+O50_RESOURCE_GROUPS := $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50ResourceGroups.c.o
+$(O50_RESOURCE_GROUPS): $(TOOLS_DIR)/trim_elf_section.py
+$(O50_RESOURCE_GROUPS): private POSTPROCESS = $(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x54 --compiler-end-padding
+$(O50_RESOURCE_GROUPS): private PLAIN_DATA_PROOF = 1
+$(O50_RESOURCE_GROUPS): private PLAIN_DATA_RUNTIME_ROLE = data
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay_050.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay_050.c.o: \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \

@@ -1,14 +1,10 @@
 # Overlay 50 defines its .data and .bss at the offsets its runtime records
 # address, and its 0.7f literal is a one-constant pool duplicating the
-# retained overlay rodata at +0x4. Until the module's data is C-owned (sprint
-# phase 3), every section-relative site is bound to a base placeholder (data
-# and bss at 0, the scale pool at 0x4) so the shipped words stay
+# retained overlay rodata at +0x4. Remaining section-relative sites are bound
+# to base placeholders (data and bss at 0, the scale pool at 0x4) while the
+# genuine resource lists use their own named imports. Stored words stay
 # section-relative. Each row asserts offset, old symbol and new symbol; only
 # relocation symbol indices change. Generated from the one-TU object.
-0x10:.data:gOverlay50DataBaseReloc
-0x1c:.data:gOverlay50DataBaseReloc
-0x20:.data:gOverlay50DataBaseReloc
-0x28:.data:gOverlay50DataBaseReloc
 0x38:.bss:gOverlay50BssBaseReloc
 0x3c:.bss:gOverlay50BssBaseReloc
 0x48:.data:gOverlay50DataBaseReloc

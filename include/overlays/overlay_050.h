@@ -2,6 +2,7 @@
 #define OVERLAY_050_H
 
 #include "PR/ultratypes.h"
+#include "game/menu.h"
 #include "n_audio/mbi.h"
 #include "overlays/patch_indices.h"
 
@@ -38,9 +39,9 @@ extern s16 D_800D304E_o050Reloc;
 
 u8 *func_80028F54_o050Reloc(void); /* 0:+0x28B04 */
 
-void loadFrontEndList_o050Reloc(void *list); /* 0:+0x39738 */
+void loadFrontEndList_o050Reloc(s16 *list); /* 0:+0x39738 */
 
-void setupFrontEndList_o050Reloc(void *list); /* 0:+0x39900 */
+void setupFrontEndList_o050Reloc(s16 *list); /* 0:+0x39900 */
 
 void amTunePlay_o050Reloc(s32); /* 0:+0xC0 */
 
@@ -195,15 +196,16 @@ extern void *gOverlay50ResourceA;
 
 extern void *gOverlay50ResourceB;
 
-extern u8 gOverlay50Storage;
+/* Tier B: the load/free and setup consumers address the two complete
+ * signed-halfword lists supplied by overlay50ResourceGroups.c. */
+extern s16 o50LoadResourceIds_o050Reloc[];
+extern s16 o50SetupObjectIds_o050Reloc[];
 
 extern s8 gOverlay50Slot;
 
 /* Tier B: the cleanup's first call is the resident sound-handle stop,
  * while its second releases an overlay45 descriptor. */
 void amSndStop_o050Reloc(void *sound);
-
-extern void freeFrontEndList(void *storage);
 
 extern void overlay56ReleaseResource(void);
 

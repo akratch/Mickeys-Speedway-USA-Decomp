@@ -1,13 +1,13 @@
 #include "overlays/overlay_050.h"
 
-/* The module's runtime records address its .data and .bss through LOCAL
- * (section-relative) records, and as1 shares one high half across the stores
- * to adjacent fields of record 0 only for a TU-local symbol. So the module
- * defines its data at the offsets the records address (.data 0x370 and .bss
- * 0xD0). The bytes belong to the retained overlay image until phase 3: these
- * zero initializers only fix the layout, and the object's .data and .bss are
- * dropped at POSTPROCESS with their records rebound to zero-valued bases
- * (mk/overlays.mk). The D_ names keep their section offsets. */
+/* These remaining local views preserve the offsets used by section-relative
+ * runtime records. The configured object drops this TU's .data and .bss;
+ * source leaves and retained partitions supply the actual storage. The
+ * declarations below earn no storage ownership. In particular, the unused
+ * leading proxy preserves the later local offsets; the load/free and setup
+ * calls use the real lists in overlay50ResourceGroups.c instead. as1 shares
+ * one high half across adjacent fields of glyph record 0 only for a local
+ * symbol, so those views remain until their consumer identities are closed. */
 
 static s32 sOverlay50Data000[27] = { 0 };
 
@@ -94,8 +94,8 @@ void func_overlay_050_F0000000_1896970(void) {
     s32 i;
 
     saved = func_80028F54_o050Reloc();
-    loadFrontEndList_o050Reloc(sOverlay50Data000);
-    setupFrontEndList_o050Reloc(&sOverlay50Data000[18]);
+    loadFrontEndList_o050Reloc(o50LoadResourceIds_o050Reloc);
+    setupFrontEndList_o050Reloc(o50SetupObjectIds_o050Reloc);
     amTunePlay_o050Reloc(4);
     sOverlay50BssA0 = 0x104;
     runlinkDownloadCode_o050Reloc(0xB);
@@ -495,7 +495,7 @@ void overlay50Cleanup(void) {
     if (gOverlay50ResourceA != NULL) {
         amSndStop_o050Reloc(gOverlay50ResourceA);
     }
-    freeFrontEndList(&gOverlay50Storage);
+    freeFrontEndList(o50LoadResourceIds_o050Reloc);
     overlay56ReleaseResource();
     if (gOverlay50ResourceB != NULL) {
         overlay45ReleaseDescriptor_o050Reloc(gOverlay50ResourceB);

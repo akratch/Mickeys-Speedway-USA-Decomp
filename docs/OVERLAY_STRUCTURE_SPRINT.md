@@ -1,35 +1,45 @@
 # Overlay structure sprint: source ownership and final build inputs
 
-Status: active, reviewed 2026-10-27. The US executable reconstruction is
+Status: active, reviewed 2026-10-28. The US executable reconstruction is
 complete under the project's matching standard. The remaining campaign makes
 its storage, identities and build structure faithful enough to maintain and to
 support future native work. Implementing a native port is outside this sprint.
 
 ## Current evidence
 
-The source measurements here describe the validated composition of
-`46ab34369` with `b98302fa3`. The combined borrowing
-ledger is recomputed from the actual bootstrap link and raw objects.
+The source measurements here describe the current initialized ownership
+projection and borrowing ledger, recomputed from the actual bootstrap link
+and raw objects.
 They describe the integrated source and a freshly rebuilt raw-object inventory,
 not a promise that all overlay data or interfaces are finished.
 
 Public release `22de4d6c2` passed a cold byte-identical rebuild, all six editable
 layout variants and 2,185 uncached promotion proofs with zero failures or
-uncovered targets before landing through `tools/land.sh`. The source pin above
-passed its combined ROM, structural gates, kit parity and all 150 tooling test
-files. This checkpoint records combined source validation; cold release
-validation and publication are separate acceptance steps.
+uncovered targets before landing through `tools/land.sh`. The current source
+composition must pass its combined ROM, structural gates, kit parity and all
+discovered tooling test files before publication. Cold release validation
+remains a separate acceptance step.
 
 | Area | Proven state | Remaining work |
 |---|---|---|
 | Executable reconstruction | 943,640 resolved bytes: 445,308 resident C, 29,740 verified original assembly, 468,592 overlay C | Preserve exact compiler output and the accepted assembly contracts during maintenance. |
 | Translation units | 104 of 106 nonempty overlays have one text-C owner | Overlay 1 has 11; overlay 65 has two. Finish their source/type/flag work or establish independently justified original boundaries. |
-| Initialized storage | 55,000 of 61,312 bytes have canonical projected C owners | 6,312 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
+| Initialized storage | 55,084 of 61,312 bytes have canonical projected C owners | 6,228 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
 | Initialized images | 50 of 87 data-bearing modules are fully projected to C; 19 are partial and 18 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 32 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 4,914 records still borrow authority: 4,870 placeholder references and 44 blob-owned data records. Layout borrowing remains explicit too. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 4,912 records still borrow authority: 4,868 placeholder references and 44 blob-owned data records. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 30 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
+
+Overlay 50 now supplies its complete load/free and object-setup lists as
+signed-halfword C arrays: 72 and 12 bytes, including their terminators.
+The untouched compiler allocates 96 bytes; the existing compiler-end rule
+derives the 84-byte object end and removes only twelve zero alignment bytes.
+The following 24-byte retained partition remains unowned. All three callers
+now use the real list types, retiring the cleanup's two placeholder references
+and four uses of the main DATA placement assumption. Other main DATA/BSS
+views and scoped address transport remain scaffolding; 76 initialized bytes,
+original capacities, resource lifetime and ordinary module linking remain open.
 
 Overlay 18 now supplies its four complete read-only mode-count arrays through
 the ordinary compiler: 128 initialized bytes and 30 formerly placeholder
@@ -455,8 +465,8 @@ and general/native source independence remain open.
    not public extracted-byte arrays.
 4. **Remove borrowed identities.** Replace each placeholder and blob-owned
    pointer field with its actual source definition, compatible callback type or
-   authenticated export. Resolve the four remaining resident sentinel HI16/LO16
-   records in verified assembly as well.
+   authenticated export. Preserve the four resident HI16/LO16 records' existing
+   named-source paired proof; their O33 workspace extent remains unresolved.
    Delete filters, rebinds, aliases and retained pools only after their genuine
    producer supplies the exact identities and bytes.
 5. **Make generation independent of the retained layout.** The final build now

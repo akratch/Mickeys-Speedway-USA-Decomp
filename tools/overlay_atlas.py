@@ -261,7 +261,8 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
          (0x60, 0x180, "overlay46EntryTables", ".data"),
          (0x184, 0x194, "overlay46InitialTransform", ".data"),
          (0x230, 0x330, "overlay46TrailTriangles", ".data")],
-    50: [(0x6C, 0x21C, "overlay50GlyphLists", ".data"),
+    50: [(0x0, 0x54, "overlay50ResourceGroups", ".data"),
+         (0x6C, 0x21C, "overlay50GlyphLists", ".data"),
          (0x220, 0x2B0, "overlay50LapTemplate", ".data"),
          (0x2C0, 0x320, "overlay50HudSprites", ".data"),
          (0x328, 0x338, "overlay50ItemState", ".data"),
@@ -369,6 +370,7 @@ CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
     82: [(0x0, 0xA0, "overlay_082", ".rodata")],
 }
 DATA_ONLY_FIXED_DATA_SOURCES = {
+    (50, "overlay50ResourceGroups", ".data"),
     (43, "overlay43Viewport", ".data"),
     (1, "overlay1ActionModes", ".data"),
     (73, "overlay73Geometry", ".data"),

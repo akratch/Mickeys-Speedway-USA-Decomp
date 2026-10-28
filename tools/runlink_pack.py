@@ -4350,6 +4350,16 @@ def edited_section_operand(obj, rel, addend, section, rels):
         except pp.MetadataProofError as error:
             raise PackError(str(error)) from error
         return extent.section, extent.offset, STT_OBJECT, extent.semantic_size
+    if rel.sym.section == '.rodata' and 'ascii_literal' in obj:
+        import proof_provenance as pp
+        witness = obj['ascii_literal']
+        edited_require(isinstance(witness, pp.AsciiLiteralWitness)
+            and 'input_origins' not in obj and 'source_inputs' not in obj,
+            'untrusted or unsupported vector ASCII literal witness')
+        try:
+            return witness.operand(raw, obj['linked'], rel, addend, section, rels)
+        except pp.MetadataProofError as error:
+            raise PackError(str(error)) from error
     # Closed current compiler f32-pool case: real four-byte LWC1 read object.
     edited_require(rel.sym.section == '.rodata' and section == '.text'
             and rel.type in (R_MIPS_HI16, R_MIPS_LO16)

@@ -356,6 +356,32 @@ interface belongs to the MSU edited frontend; the portable kit's JFG
 `module-recipe` still takes one already corrected producer ELF as described in
 the [handover](runlink-handover.md).
 
+### Scalar ASCII literal ownership in edited inputs
+
+The scalar edited frontend can authenticate one anonymous ASCII string passed
+as a direct, evaluated call argument. It binds fresh effective C, a complete
+o32 word/pointer prototype, the untouched compiler object and its exact indexed
+SECTION HI16/LO16 pair. The pair must construct the actual argument register
+for the named direct call. The use check rejects extra pointer accesses and
+control-transfer delay-slot address setup. A factory instance guard and the
+original consumed-object hold remain active at both operand calls.
+The publication guard also pins the scalar product, arguments, and dependency
+closure that supply its receipt.
+
+The semantic object includes its NUL terminator. Physical compiler alignment
+is separate; matching pool bytes alone do not establish ownership. Multiple or
+escaped string tokens, ambiguous pool references, vector origins and unsupported
+compiler-index transformations refuse.
+
+A fresh unchanged overlay62 capture proves the two-byte literal within its
+16-byte readonly allocation and both original operand paths. The ordinary
+1,520-byte module still equals retail with all 111 original records unchanged.
+Actual mutation-and-recovery controls exercise the production operands, not
+only a separate freshness callback. This establishes scalar literal ownership
+and attachment; it does not establish full edited-overlay62 admission, callee
+access bounds, an authored literal edit, or actual final publication of an
+ASCII-bearing graph. Other cache, provider and consumer roles remain open.
+
 ### Bounded editable-layout diagnostic
 
 `gmake check-editable-layout` compiles copies of the complete overlay75 source

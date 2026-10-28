@@ -727,6 +727,34 @@ def edited_script(root, source, names, generated, selected, products):
     return result
 
 
+def edited_attach_ascii_literal(obj, compiler, cpp, flags, inputs, root, context_current, cpp_path):
+    """Attach a sealed scalar observation; vector origin composition is not admitted."""
+    import proof_provenance as pp
+    rp.edited_require('input_origins' not in obj and 'source_inputs' not in obj, 'vector ASCII literal is unsupported')
+    raw, linked = obj['raw'], obj['linked']
+    derived_bases = {'.text':0, '.data':linked.size('.text'),
+        '.rodata':linked.size('.text')+linked.size('.data'),
+        '.bss':sum(linked.size(name) for name in rp.EDITED_SECTIONS[:-1])}
+    rp.edited_require(obj['bases']==derived_bases, 'ASCII layout is not derived from actual sections')
+    bases = tuple(obj['bases'].items())
+    attached = False
+    def captured_current():
+        context_current()
+        if attached:
+            rp.edited_require(obj.get('ascii_literal') is witness and obj.get('ascii_literal_current') is current
+                    and obj.get('raw') is raw and obj.get('linked') is linked
+                    and tuple(obj['bases'].items()) == bases
+                    and 'input_origins' not in obj and 'source_inputs' not in obj,
+                    'consumed ASCII literal member/witness changed')
+    witness = pp.ascii_literal_witness(compiler,raw,linked,cpp,flags,inputs,root,captured_current,cpp_path)
+    def current():
+        witness.current()
+    obj['ascii_literal'],obj['ascii_literal_current'] = witness,current
+    attached = True
+    current()
+    return current
+
+
 def edited_compile(root, directory, label, text, exports, args, commands, *, integer_word_profile=None, capture_only=False):
     """Fresh current source/CPP/compiler/static-symbol/ordinary-link chain."""
     import permute_batch as batch
@@ -884,7 +912,10 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
         for addend in rp.in_place_addends(prepared, section, prepared.rels(section)))
     rp.edited_require(integer_word_profile is None or word_operands,
                       'declared integer-word profile lacks actual word operands')
-    if target_sections or word_operands:
+    ascii_operands = any(rel.sym.section == '.rodata' and rel.sym.type == rp.STT_SECTION
+        and rel.type == rp.R_MIPS_LO16 and rp.u32(prepared.bytes_of('.text'),rel.offset) >> 26 == 9
+        for rel in prepared.rels('.text'))
+    if target_sections or word_operands or ascii_operands:
         def source_current():
             rp.edited_require(digest(root/'tools/proof_provenance.py') == pp._LOADED_METADATA_PROOF,
                               'loaded effective source proof helper changed')
@@ -964,6 +995,43 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
             'integer-word CPP/audit changed before attachment')
         obj['integer_word'] = witness
         obj['integer_word_audit'] = audit
+    if ascii_operands:
+        cpp_path = directory/(label+'-effective.i')
+        write_changed(cpp_path,cpp)
+        cpp_hash = hashlib.sha256(cpp).hexdigest()
+        expected[cpp_path.name] = cpp_hash
+        map_path = directory/(label+'-module/module.map')
+        map_bytes = map_path.read_bytes()
+        module_map = rp.parse_map(map_path,map_bytes)
+        map_seal = tuple(tuple(vars(row).items()) for row in module_map)
+        expected[map_path.relative_to(directory).as_posix()] = hashlib.sha256(map_bytes).hexdigest()
+        binding_path = directory/(label+'-module/bindings.o')
+        for section in rp.EDITED_SECTIONS:
+            rows = [row for row in module_map if row.outsec==section]
+            rp.edited_require(len(rows)==1 and rows[0].insec==section
+                and Path(rows[0].file)==binding_path and rows[0].addr==0
+                and rows[0].size==linked_elf.size(section), 'ASCII ordinary map origin/allocation differs')
+        rp.edited_require(all(row.outsec in rp.EDITED_SECTIONS for row in module_map),
+                          'ASCII ordinary map has foreign allocation')
+        source_inputs = static_inputs | {(directory/name).relative_to(root).as_posix():value
+                                        for name,value in expected.items()}
+        flags_seal, args_seal = tuple(flags), tuple(args)
+        inputs_seal, tools_seal, closure_seal = tuple(sorted(static_inputs.items())), json_bytes(static_tools), json_bytes(closure)
+        expected_seal = tuple(sorted(expected.items()))
+        def ascii_context_current():
+            rp.edited_require(tuple(flags)==flags_seal and tuple(args)==args_seal
+                and tuple(sorted(static_inputs.items()))==inputs_seal
+                and json_bytes(static_tools)==tools_seal and json_bytes(closure)==closure_seal
+                and source_current()==(static_inputs,static_tools)
+                and batch.source_dependencies(source,tuple(args))==closure
+                and tuple(sorted(expected.items()))==expected_seal
+                and tuple(tuple(vars(row).items()) for row in module_map)==map_seal
+                and all(digest(directory/name)==value for name,value in expected_seal),
+                'ASCII compiler/CPP/module capture changed')
+        try:
+            edited_attach_ascii_literal(obj,compiler,cpp,flags,source_inputs.items(),root,ascii_context_current,cpp_path)
+        except pp.MetadataProofError as error:
+            raise MetadataLinkError('ASCII source proof: '+str(error)) from error
     return (obj, (raw, linked, receipt, expected), closure)
 
 
@@ -1554,6 +1622,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
     provider['prefix_capture'] = pp.bind_edited_prefix(root, provider, directory,
         provider_command, prefix, commands, outside_hashes)
     objects, products, closures, graph_holds = {}, {}, {}, []
+    literal_holds = []
     for number, declaration in selected.items():
         if 'inputs' in declaration:
             objects[number], products[number], closures[number], held = edited_compile_group(
@@ -1564,6 +1633,9 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
             objects[number], products[number], closures[number] = edited_compile(
                 root, directory, 'overlay' + str(number), text, exports, arguments[number], commands,
                 integer_word_profile=declaration.get('integer_word_profile'))
+        if 'ascii_literal_current' in objects[number]:
+            literal_holds.append((number,objects[number],products[number],arguments[number],
+                                  closures[number],objects[number]['ascii_literal_current']))
         for audit_name in ('static_source_audit', 'integer_word_audit'):
             if audit_name in objects[number]:
                 held = objects[number][audit_name]['inputs']
@@ -1571,6 +1643,11 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
                         'conflicting held effective source input observation')
                 initial.update(held)
     def graphs_current():
+        for number,obj,product,args,closure,held in literal_holds:
+            require(objects.get(number) is obj and products.get(number) is product
+                    and arguments.get(number) is args and closures.get(number) is closure,
+                    'consumed scalar ASCII object/recipe/closure replaced')
+            held()
         for number, original, product, args, closure, held in graph_holds:
             require(objects.get(number) is original and products.get(number) is product
                     and arguments.get(number) is args and closures.get(number) is closure
@@ -1708,11 +1785,11 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
               directory / 'final.z64': hashlib.sha256(rom).hexdigest()}
     require(all(snapshot[p.name] == value for p, value in loaded.items()), 'loaded final image/map bytes differ from snapshot')
     held_final_elf, held_final_map = elf, mapping
-    final_surface = pp._static_parsed_surface(elf) if graph_holds else None
-    final_map_seal = tuple(tuple(vars(row).items()) for row in mapping) if graph_holds else None
+    final_surface = pp._static_parsed_surface(elf) if graph_holds or literal_holds else None
+    final_map_seal = tuple(tuple(vars(row).items()) for row in mapping) if graph_holds or literal_holds else None
     final_files = tuple(loaded.items())
     def final_graph_current():
-        if graph_holds:
+        if graph_holds or literal_holds:
             require(elf is held_final_elf and mapping is held_final_map
                 and pp._static_parsed_surface(elf) == final_surface
                 and tuple(tuple(vars(row).items()) for row in mapping) == final_map_seal
@@ -1862,12 +1939,12 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
                            for name,witness in provider.get('cells', {}).items()},
         'rom_sha1': hashlib.sha1(rom).hexdigest(), 'provider_holds': {str(p.relative_to(root)): h for p, h in provider['holds'].items()}}
     plan_current()
-    cpp_receipt_seal = json_bytes((cpp_records, receipt_arguments)) if graph_holds else None
+    cpp_receipt_seal = json_bytes((cpp_records, receipt_arguments)) if graph_holds or literal_holds else None
     final_graph_current()
     published_receipt_hash = pilot.publish_receipt(directory, receipt, artifacts)
     final_graph_current()
     graphs_current()
-    if graph_holds:
+    if graph_holds or literal_holds:
         require(receipt['source_cpp'] is cpp_records and receipt['arguments'] is receipt_arguments
             and json_bytes((cpp_records, receipt_arguments)) == cpp_receipt_seal,
             'published vector CPP receipt members changed')
@@ -1884,12 +1961,13 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
     plan_current()
     final_graph_current()
     alias_current()
+    graphs_current()
     require(receipt['compatibility_alias_projection'] is alias_audit, 'alias projection receipt replaced')
-    if graph_holds:
+    if graph_holds or literal_holds:
         require(digest(directory / 'receipt.json') == published_receipt_hash,
                 'published vector receipt file changed after validation')
     write_changed(parent / (variant + '-current.json'), json_bytes({'path': str(directory.relative_to(root)),
-        'receipt_sha256': published_receipt_hash if graph_holds else digest(directory / 'receipt.json')}))
+        'receipt_sha256': published_receipt_hash if graph_holds or literal_holds else digest(directory / 'receipt.json')}))
     print('edited source build PASS', directory.relative_to(root), receipt['selected_raw_records'], receipt['rom_sha1'], flush=True)
     return receipt
 

@@ -1204,6 +1204,248 @@ def _static_parsed_surface(elf):
     return digest.hexdigest(), tuple((s.index, s.shndx) for s in elf.symbols)
 
 
+_ASCII_LITERAL_SEAL = object()
+
+
+def ascii_literal_source(cpp, flags, root):
+    """One evaluated, unconditionally sequenced ASCII call argument; no pool guessing."""
+    import candidate_context as lexical
+    def require(ok, message):
+        if not ok:
+            raise MetadataProofError('ASCII literal: ' + message)
+    require('-32' in flags and not any(x in flags for x in ('-64','-n32','-n64')),
+            'requires actual o32 flags')
+    require(sha256_file(pathlib.Path(__file__)) == _LOADED_METADATA_PROOF, 'loaded helper changed')
+    ca, parser, before, identity = _effective_parser(root)
+    require(len(cpp) <= lexical.MAX_SOURCE_BYTES, 'CPP exceeds source bound')
+    try:
+        tree = parser.CParser().parse(cpp.decode('utf-8'))
+    except Exception as error:
+        raise MetadataProofError('ASCII literal: invalid effective C') from error
+    strings, calls, aliases = [], [], collections.defaultdict(list)
+    def walk(node, parents=()):
+        if isinstance(node, ca.Constant) and node.type == 'string':
+            strings.append((node,parents))
+        if isinstance(node, ca.FuncCall):
+            calls.append((node,parents))
+        for _, child in node.children():
+            walk(child,parents+(node,))
+    walk(tree)
+    require(len(strings) == 1, 'requires one unique string expression')
+    literal, parents = strings[0]
+    require(re.fullmatch(r'"[\x20-\x21\x23-\x5B\x5D-\x7E]+"',literal.value),
+            'requires one plain nonempty ASCII token')
+    # The effective parser folds adjacent string tokens. Independently close the
+    # token count before using its expression node as source authority.
+    tokens = lexical._strip_comments(cpp.decode('utf-8'))
+    tokens = re.sub(r'^\s*#.*$', '', tokens, flags=re.M)
+    require(re.findall(r'"(?:\\.|[^"\\])*"',tokens) == [literal.value],
+            'concatenated/ambiguous literal tokens')
+    require(len(parents) == 5 and isinstance(parents[0],ca.FileAST)
+            and isinstance(parents[1],ca.FuncDef) and isinstance(parents[2],ca.Compound)
+            and isinstance(parents[3],ca.FuncCall) and isinstance(parents[4],ca.ExprList),
+            'literal is not a direct evaluated function-body call argument')
+    function, call = parents[1], parents[3]
+    require(function.param_decls is None and isinstance(function.decl.type,ca.FuncDecl)
+            and function.decl.type.args is not None
+            and all(isinstance(x,(ca.Decl,ca.Typename)) for x in function.decl.type.args.params)
+            and sum(isinstance(x,ca.FuncDef) and x.decl.name==function.decl.name for x in tree.ext)==1,
+            'containing function lacks one complete typed definition')
+    require(isinstance(call.name,ca.ID), 'indirect callee')
+    slot = call.args.exprs.index(literal)
+    require(slot < 4, 'literal argument is outside integer argument registers')
+    for node in tree.ext:
+        if isinstance(node,ca.Typedef): aliases[node.name].append(node.type)
+    def shape(node, seen=()):
+        if isinstance(node,ca.PtrDecl):
+            inner = node.type
+            return 'char-pointer' if (isinstance(inner,ca.TypeDecl)
+                and isinstance(inner.type,ca.IdentifierType) and inner.type.names == ['char']
+                and set(inner.quals) <= {'const'}) else 'pointer'
+        if isinstance(node,ca.TypeDecl) and isinstance(node.type,ca.IdentifierType):
+            names=node.type.names
+            if len(names)==1 and names[0] in aliases:
+                require(names[0] not in seen and len(aliases[names[0]])==1, 'ambiguous typedef')
+                return shape(aliases[names[0]][0],seen+(names[0],))
+            if names and set(names) <= {'signed','unsigned','char','short','int','long'} and names.count('long')<=1:
+                return 'word'
+            if names==['void']: return 'void'
+        return 'unsupported'
+    declarations=[]
+    for node in tree.ext:
+        decl=node.decl if isinstance(node,ca.FuncDef) else node
+        if isinstance(decl,ca.Decl) and decl.name==call.name.name:
+            declarations.append(decl)
+    require(declarations, 'callee has no complete source prototype')
+    signatures=[]
+    for decl in declarations:
+        typ=decl.type
+        require(isinstance(typ,ca.FuncDecl) and typ.args is not None
+                and all(isinstance(x,(ca.Decl,ca.Typename)) for x in typ.args.params),
+                'callee is unprototyped/variadic')
+        signature=tuple(shape(x.type) for x in typ.args.params)
+        require(len(signature)==len(call.args.exprs) and signature[slot]=='char-pointer'
+                and all(x in ('word','pointer','char-pointer') for x in signature),
+                'callee does not have the closed o32 word/pointer argument ABI')
+        require(shape(typ.type) in ('void','word','pointer','char-pointer'), 'unsupported return ABI')
+        signatures.append((shape(typ.type),signature))
+    require(len(set(signatures))==1, 'conflicting callee declarations')
+    # A local shadow could change the meaning of a name despite the file prototype.
+    def shadow(node):
+        if isinstance(node,ca.Decl) and node.name==call.name.name:
+            raise MetadataProofError('ASCII literal: locally shadowed callee')
+        for _,child in node.children(): shadow(child)
+    shadow(function.body)
+    require(before==literal_profile_inputs(root) and lexical.identity()==identity, 'parser changed')
+    return (function.decl.name,call.name.name,slot,literal.value[1:-1].encode('ascii')+b'\0')
+
+
+def _ascii_literal_pair(compiler, raw, linked, fact):
+    """Closed instruction-use proof, preserving complete original indexed records."""
+    import runlink_pack as rp
+    def require(ok,message):
+        if not ok: raise MetadataProofError('ASCII literal: '+message)
+    require(compiler.data[:24]==raw.data[:24] and compiler.data[36:40]==raw.data[36:40]
+            and _static_parsed_surface(compiler)==_static_parsed_surface(raw)
+            and [vars(s) for s in compiler.symbols]==[vars(s) for s in raw.symbols]
+            and all(compiler.bytes_of(name)==raw.bytes_of(name)
+                and {k:v for k,v in (compiler.section(name) or {}).items() if k!='offset'}
+                    == {k:v for k,v in (raw.section(name) or {}).items() if k!='offset'}
+                for name in (*rp.EDITED_ABI,'.options')),
+            'original/prepared correspondence is unsupported')
+    function,callee,slot,payload=fact
+    sec=compiler.section('.rodata')
+    require(sec and (sec['type'],sec['flags'],sec['addr'])==(1,2,0)
+            and sec['align'] in (1,2,4,8,16) and sec['size']==((len(payload)+sec['align']-1)//sec['align'])*sec['align'],
+            'unsupported compiler pool allocation')
+    expected=payload+bytes(sec['size']-len(payload))
+    for image in (compiler,raw,linked):
+        row=image.section('.rodata')
+        require(row and all(row[k]==sec[k] for k in ('type','flags','addr','align','size'))
+                and image.bytes_of('.rodata')==expected and not image.rels('.rodata'), 'pool bytes/layout differ')
+        require(not any(s.section=='.rodata' and s.type not in (rp.STT_SECTION,4)
+                        for s in image.symbols), 'named/overlapping pool owner')
+    require(expected.count(payload)==1, 'ambiguous pool bytes')
+    rels=compiler.rels('.text'); additions=rp.in_place_addends(compiler,'.text',rels)
+    incoming=[(i,r,a) for section in compiler.sections for i,(r,a) in enumerate(zip(
+        compiler.rels(section['name']),rp.in_place_addends(compiler,section['name'],compiler.rels(section['name']))))
+        if r.sym.section=='.rodata']
+    require(len(incoming)==2 and all(r in rels for _,r,_ in incoming), 'uncovered pool reference')
+    (hi_i,hi,ha),(lo_i,lo,la)=incoming
+    require((hi.type,lo.type)==(rp.R_MIPS_HI16,rp.R_MIPS_LO16) and ha==la==0
+            and hi.sym.type==lo.sym.type==rp.STT_SECTION and hi.sym.index==lo.sym.index
+            and hi.sym.value==lo.sym.value==0 and 0<=hi.offset<lo.offset,
+            'not one exact-base original SECTION pair')
+    funcs=[s for s in compiler.symbols if s.name==function and s.section=='.text' and s.type==rp.STT_FUNC and s.size>0]
+    require(len(funcs)==1,'source function lacks one compiler definition')
+    fn=funcs[0];text=compiler.bytes_of('.text');reg=4+slot
+    require(fn.value<=hi.offset<lo.offset<fn.value+fn.size and hi.offset%4==lo.offset%4==0,'pair outside source function')
+    # Address construction must begin outside a control transfer's delay slot,
+    # including when the symbol boundary itself starts at the HI instruction.
+    if hi.offset >= 4:
+        predecessor=rp.u32(text,hi.offset-4)
+        op=predecessor>>26;rs=(predecessor>>21)&31;function_code=predecessor&63
+        transfer=(op in (1,2,3,4,5,6,7,20,21,22,23)
+                  or op==0 and function_code in (8,9)
+                  or op in (16,17,18,19) and rs==8)
+        require(not transfer,'address setup begins in a control-transfer delay slot')
+    high,low=rp.u32(text,hi.offset),rp.u32(text,lo.offset)
+    require(high==(15<<26)|(reg<<16) and low==(9<<26)|(reg<<21)|(reg<<16), 'not the exact address instruction pair')
+    calls=[r for r in rels if r.type==rp.R_MIPS_26 and lo.offset<r.offset<fn.value+fn.size]
+    require(calls,'missing following direct call'); call=calls[0]
+    require(additions[rels.index(call)]==0 and call.sym.name==callee and call.sym.shndx==rp.SHN_UNDEF and call.offset+8<=fn.value+fn.size
+            and rp.u32(text,call.offset)>>26==3,'source/actual call disagreement')
+    require(call.offset-hi.offset<=128,'address-use window exceeds closed bound')
+    for off in range(hi.offset+4,call.offset+8,4):
+        if off==lo.offset or off==call.offset: continue
+        word=rp.u32(text,off);op=word>>26;rs=(word>>21)&31;rt=(word>>16)&31;rd=(word>>11)&31
+        if op==0 and (word&63) in (0,2,3,33,35,36,37,38,39,42,43):
+            reads={rt} if (word&63) in (0,2,3) else {rs,rt};writes={rd}
+        elif op in (9,12,13,14): reads={rs};writes={rt}
+        elif op==15: reads=set();writes={rt}
+        elif op in (32,33,35,36,37): reads={rs};writes={rt}
+        elif op in (40,41,43): reads={rs,rt};writes=set()
+        else: raise MetadataProofError('ASCII literal: unsupported instruction in address-use window')
+        require(reg not in reads|writes,'extra pointer read/write before call completion')
+        require(not any(r.offset==off for r in rels),'unexplained relocated instruction in use window')
+    for off in range(fn.value,fn.value+fn.size,4):
+        word=rp.u32(text,off);op=word>>26
+        if op in (1,4,5,6,7,20,21,22,23) or op==17 and (word>>21)&31==8:
+            imm=word&65535;imm=imm-65536 if imm&32768 else imm;target=off+4+imm*4
+            require(not hi.offset<target<call.offset+8,'branch enters address-use window')
+        elif op==2 or op==0 and (word&63)==9:
+            raise MetadataProofError('ASCII literal: unproved indirect/direct jump in source function')
+        elif op==0 and (word&63)==8:
+            require((word>>21)&31==31,'unproved indirect branch in source function')
+    return (hi_i,lo_i,hi.offset,lo.offset,hi.sym.index,call.offset,len(payload))
+
+
+@dataclasses.dataclass(frozen=True)
+class AsciiLiteralWitness:
+    """Private source/use observation; never reconstructed from an audit receipt."""
+    fact: tuple
+    pair: tuple
+    observations: tuple = dataclasses.field(repr=False)
+    inputs: tuple
+    root: pathlib.Path
+    capture_current: object = dataclasses.field(repr=False)
+    seal: object = dataclasses.field(repr=False)
+    _instance_guard: object = dataclasses.field(default=None, init=False, repr=False, compare=False)
+
+    def current(self):
+        if not callable(self._instance_guard):
+            raise MetadataProofError('ASCII literal: witness lacks its factory instance guard')
+        self._instance_guard(self)
+        if self.seal is not _ASCII_LITERAL_SEAL or sha256_file(pathlib.Path(__file__))!=_LOADED_METADATA_PROOF:
+            raise MetadataProofError('ASCII literal: untrusted/changed witness helper')
+        self.capture_current()
+        if any(sha256_file(self.root/name)!=value for name,value in self.inputs):
+            raise MetadataProofError('ASCII literal: stale source/CPP/helper inputs')
+        for image,path,digest,surface in self.observations:
+            if (image.path!=path or hashlib.sha256(image.data).hexdigest()!=digest
+                    or _static_parsed_surface(image)!=surface):
+                raise MetadataProofError('ASCII literal: loaded object observation changed')
+
+    def operand(self,raw,linked,rel,addend,section,rels):
+        self.current()
+        hi,lo,high,low,index,call,size=self.pair
+        if (raw is not self.observations[1][0] or linked is not self.observations[2][0]
+                or section!='.text' or addend!=0 or rels!=raw.rels('.text')
+                or not any(rel is rels[i] for i in (hi,lo)) or rel.sym.index!=index):
+            raise MetadataProofError('ASCII literal: operand differs from held original pair')
+        return '.rodata',0,1,size
+
+
+def ascii_literal_witness(compiler,raw,linked,cpp,flags,inputs,root,capture_current,cpp_path):
+    """Authenticate fresh CPP and original compiler pair before granting an operand."""
+    capture_current()
+    files=tuple(sorted(inputs))
+    if (any(sha256_file(pathlib.Path(root)/name)!=value for name,value in files)
+            or any(dict(files).get(name)!=value for name,value in literal_profile_inputs(root).items())):
+        raise MetadataProofError('ASCII literal: stale or incomplete constructor inputs')
+    cpp_name=pathlib.Path(cpp_path).relative_to(root).as_posix()
+    if dict(files).get(cpp_name)!=hashlib.sha256(cpp).hexdigest():
+        raise MetadataProofError('ASCII literal: loaded CPP is not held')
+    import runlink_pack as rp
+    observations=tuple((image,image.path,hashlib.sha256(image.data).hexdigest(),
+        _static_parsed_surface(image)) for image in (compiler,raw,linked))
+    for image,path,digest,surface in observations:
+        name=(path if path.is_absolute() else pathlib.Path(root)/path).relative_to(root).as_posix()
+        if dict(files).get(name)!=digest or _static_parsed_surface(rp.Elf(path,image.data))!=surface:
+            raise MetadataProofError('ASCII literal: parsed object is not the held loaded bytes')
+    fact=ascii_literal_source(cpp,flags,root)
+    pair=_ascii_literal_pair(compiler,raw,linked,fact)
+    witness=AsciiLiteralWitness(fact,pair,observations,files,pathlib.Path(root),capture_current,_ASCII_LITERAL_SEAL)
+    def instance_guard(observed):
+        if observed is not witness:
+            raise MetadataProofError('ASCII literal: witness is not the original factory instance')
+    # init=False leaves dataclasses.replace unsealed; a shallow copy also fails
+    # the original-instance check. Audit data cannot reconstruct this guard.
+    object.__setattr__(witness,'_instance_guard',instance_guard)
+    witness.current()
+    return witness
+
+
 _STATIC_SOURCE_SEAL = object()
 
 

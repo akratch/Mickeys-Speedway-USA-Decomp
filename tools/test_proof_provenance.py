@@ -11,10 +11,189 @@ import unittest
 import hashlib
 import struct
 import dataclasses
+import copy
+import ast
+import inspect
 from unittest import mock
 from types import SimpleNamespace
 
 import proof_provenance as provenance
+
+
+class AsciiLiteralTests(unittest.TestCase):
+    ROOT = pathlib.Path(__file__).resolve().parents[1]
+    CPP = b'void sink(void*,int,int,char*,int); void caller(void *p) { sink(p,2,3,"x",4); }'
+
+    def fixture(self, changes=None, pool=None, *, prefix=(), previous_call=False, entry=0):
+        import runlink_pack as rp
+        from runlink.synth import ElfBuilder, words
+        # Synthetic instruction semantics, no ROM contents. The delay slot writes a2.
+        code=[(15<<26)|(7<<16), (9<<26)|(7<<21)|(7<<16), 0, 3<<26, (9<<26)|(6<<16)|3]
+        code=list(prefix)+code
+        for index,word in (changes or {}).items(): code[index]=word
+        shift=4*len(prefix)
+        builder=(ElfBuilder().section('.text',words(*code)).section('.rodata',pool or b'x\0'+bytes(14))
+            .sym('caller',entry,len(code)*4-entry,section='.text').sym('sink')
+            .rel('.text',shift,5,('section','.rodata')).rel('.text',shift+4,6,('section','.rodata'))
+            .rel('.text',shift+12,4,'sink'))
+        if previous_call:
+            builder.sym('previous').rel('.text',0,4,'previous')
+        blob=bytearray(builder.build())
+        shoff=struct.unpack_from('>I',blob,32)[0]
+        struct.pack_into('>I',blob,shoff+2*40+8,2) # synthetic readonly RO allocation
+        return rp.Elf('synthetic',bytes(blob))
+
+    def prove(self, image, cpp=None, current=lambda:None, inputs=()):
+        with tempfile.TemporaryDirectory(dir=self.ROOT/'build') as temporary:
+            path=pathlib.Path(temporary)/'source.i';path.write_bytes(cpp or self.CPP)
+            image.path=path.with_suffix('.o');image.path.write_bytes(image.data)
+            files=tuple(provenance.literal_profile_inputs(self.ROOT).items())+tuple(inputs)+((path.relative_to(self.ROOT).as_posix(),hashlib.sha256(path.read_bytes()).hexdigest()),
+                (image.path.relative_to(self.ROOT).as_posix(),hashlib.sha256(image.data).hexdigest()))
+            witness=provenance.ascii_literal_witness(image,image,image,path.read_bytes(),['-32'],files,self.ROOT,current,path)
+            witness.current()
+            return witness
+
+    def test_direct_source_and_complete_o32_abi(self):
+        self.assertEqual(provenance.ascii_literal_source(self.CPP,['-32'],self.ROOT),('caller','sink',3,b'x\0'))
+        cases=[self.CPP.replace(b'"x"',b'"x" "y"'),self.CPP.replace(b'"x"',b'L"x"'),
+            self.CPP.replace(b'"x"',b'"x\\0"'),self.CPP.replace(b'int,int,char*',b'long long,int,char*'),
+            self.CPP.replace(b'int,int,char*',b'double,int,char*'),self.CPP.replace(b'char*,int',b'char*,...'),
+            self.CPP.replace(b'{ sink',b'{ if(0) sink'),self.CPP.replace(b'{ sink(p,2,3,"x",4); }',b'{ sizeof(sink(p,2,3,"x",4)); }'),
+            self.CPP.replace(b'char*,int',b'void*,int'),self.CPP.replace(b'void sink(',b'struct X sink(')]
+        for cpp in cases:
+            with self.subTest(cpp=cpp),self.assertRaises(provenance.MetadataProofError):
+                provenance.ascii_literal_source(cpp,['-32'],self.ROOT)
+
+    def test_actual_instruction_argument_use_and_delay_slot(self):
+        image=self.fixture();fact=provenance.ascii_literal_source(self.CPP,['-32'],self.ROOT)
+        self.assertEqual(provenance._ascii_literal_pair(image,image,image,fact)[-1],2)
+        # Read-only copy/store uses are forbidden as well as pre-call/delay writes.
+        for changes in ({2:(7<<21)|(8<<11)|37},{2:(43<<26)|(29<<21)|(7<<16)},
+                        {2:(9<<26)|(7<<16)|1},{4:(9<<26)|(7<<16)|1},
+                        {4:(7<<21)|(8<<11)|37},{2:0x10000000},{1:(49<<26)|(7<<21)},
+                        {1:(9<<26)|(7<<21)|(7<<16)|1},{3:(3<<26)|1}):
+            bad=self.fixture(changes)
+            with self.subTest(changes=changes),self.assertRaises(provenance.MetadataProofError):
+                provenance._ascii_literal_pair(bad,bad,bad,fact)
+        for bad_fact in (('missing',*fact[1:]),(fact[0],'other',*fact[2:]),(fact[0],fact[1],2,fact[3])):
+            with self.assertRaises(provenance.MetadataProofError):
+                provenance._ascii_literal_pair(image,image,image,bad_fact)
+        for pool in (b'x\0x\0'+bytes(12),b'x\0'+bytes(13)+b'!'):
+            bad=self.fixture(pool=pool)
+            with self.assertRaises(provenance.MetadataProofError):provenance._ascii_literal_pair(bad,bad,bad,fact)
+
+    def test_high_address_setup_cannot_be_a_control_delay_slot(self):
+        fact=provenance.ascii_literal_source(self.CPP,['-32'],self.ROOT)
+        normal=self.fixture(prefix=(0,))
+        self.assertEqual(provenance._ascii_literal_pair(normal,normal,normal,fact)[-1],2)
+        # Invented control transfers: a previous callee can clobber a3; BEQL can annul HI.
+        previous_jal=3<<26
+        previous_beql=(20<<26)|(4<<21)|(5<<16)|6
+        for predecessor,call in [(previous_jal,True),(previous_beql,False)]:
+            for entry in (0,4):
+                image=self.fixture(prefix=(predecessor,),previous_call=call,entry=entry)
+                with self.subTest(predecessor=predecessor,entry=entry),self.assertRaises(provenance.MetadataProofError):
+                    provenance._ascii_literal_pair(image,image,image,fact)
+
+    def test_production_operands_hold_owner_callback_and_witness(self):
+        import runlink_pack as rp
+        import runlink_metadata_link as ml
+        image=self.fixture()
+        with tempfile.TemporaryDirectory(dir=self.ROOT/'build') as temporary:
+            path=pathlib.Path(temporary)/'source.i';path.write_bytes(self.CPP)
+            image.path=path.with_suffix('.o');image.path.write_bytes(image.data)
+            inputs=tuple(provenance.literal_profile_inputs(self.ROOT).items())+(
+                (path.relative_to(self.ROOT).as_posix(),hashlib.sha256(self.CPP).hexdigest()),
+                (image.path.relative_to(self.ROOT).as_posix(),hashlib.sha256(image.data).hexdigest()))
+            obj={'raw':image,'linked':image,'bases':{'.text':0,'.data':20,'.rodata':20,'.bss':36}}
+            held=ml.edited_attach_ascii_literal(obj,image,self.CPP,['-32'],inputs,self.ROOT,lambda:None,path)
+            witness=obj['ascii_literal'];rels=image.rels('.text')
+            mutations=[('bases',{**obj['bases'],'.rodata':24}),
+                ('ascii_literal_current',lambda:None),
+                ('ascii_literal',dataclasses.replace(witness,pair=(*witness.pair[:-1],16))),
+                ('ascii_literal',copy.copy(witness))]
+            for rel in rels[:2]:
+                for key,value in mutations:
+                    original=obj[key];obj[key]=value
+                    try:
+                        # Exercise dispatch before any separate held() assertion.
+                        with self.subTest(type=rel.type,mutation=key,value=type(value).__name__):
+                            with self.assertRaises((rp.PackError,provenance.MetadataProofError)):
+                                rp.edited_section_operand(obj,rel,0,'.text',rels)
+                    finally:
+                        obj[key]=original
+                    self.assertEqual(rp.edited_section_operand(obj,rel,0,'.text',rels),('.rodata',0,1,2))
+            held()
+
+    def test_scalar_publication_guard_pins_outer_recipe_collections(self):
+        import runlink_pack as rp
+        import runlink_metadata_link as ml
+        # Execute the production capture and guard with scalar-only state.
+        # This isolates receipt-input replacement without inventing a full game build.
+        tree=ast.parse(inspect.getsource(ml.edited_build))
+        function=tree.body[0]
+        guards=[n for n in function.body if isinstance(n,ast.FunctionDef) and n.name=='graphs_current']
+        captures=[n for n in ast.walk(function) if isinstance(n,ast.Expr)
+            and isinstance(n.value,ast.Call) and isinstance(n.value.func,ast.Attribute)
+            and isinstance(n.value.func.value,ast.Name)
+            and n.value.func.value.id=='literal_holds' and n.value.func.attr=='append']
+        self.assertEqual((len(guards),len(captures)),(1,1))
+        observed=[]
+        held=lambda:observed.append('held')
+        obj={'ascii_literal_current':held}
+        products={62:(pathlib.Path('source.o'),pathlib.Path('linked.o'),{}, {})}
+        arguments={62:['-32','-O2']};closures={62:{'header.h':'held'}};objects={62:obj}
+        scope={'number':62,'objects':objects,'products':products,'arguments':arguments,
+            'closures':closures,'literal_holds':[],'graph_holds':[],'require':rp.edited_require}
+        module=ast.fix_missing_locations(ast.Module(body=[copy.deepcopy(captures[0]),copy.deepcopy(guards[0])],type_ignores=[]))
+        exec(compile(module,ml.__file__,'exec'),scope)
+        guard=scope['graphs_current'];guard();self.assertEqual(observed,['held'])
+        for label,collection,replacement in [('arguments',arguments,['-32','-O1']),
+                ('products',products,tuple([*products[62]])),
+                ('closures',closures,{'other.h':'changed'}),
+                ('objects',objects,dict(obj))]:
+            old=collection[62];collection[62]=replacement
+            try:
+                with self.subTest(collection=label),self.assertRaises(rp.PackError):
+                    guard()
+            finally:
+                collection[62]=old
+            before=len(observed);guard();self.assertEqual(len(observed),before+1)
+
+    def test_loaded_and_consumed_observations_remain_held(self):
+        import runlink_pack as rp
+        import runlink_metadata_link as ml
+        image=self.fixture()
+        with tempfile.TemporaryDirectory(dir=self.ROOT/'build') as temporary:
+            path=pathlib.Path(temporary)/'source.i';path.write_bytes(self.CPP)
+            image.path=path.with_suffix('.o');image.path.write_bytes(image.data)
+            inputs=tuple(provenance.literal_profile_inputs(self.ROOT).items())+((path.relative_to(self.ROOT).as_posix(),hashlib.sha256(self.CPP).hexdigest()),
+                (image.path.relative_to(self.ROOT).as_posix(),hashlib.sha256(image.data).hexdigest()))
+            obj={'raw':image,'linked':image,'bases':{'.text':0,'.data':20,'.rodata':20,'.bss':36}}
+            held=ml.edited_attach_ascii_literal(obj,image,self.CPP,['-32'],inputs,self.ROOT,lambda:None,path)
+            rels=image.rels('.text')
+            for rel in rels[:2]:self.assertEqual(rp.edited_section_operand(obj,rel,0,'.text',rels),('.rodata',0,1,2))
+            witness=obj['ascii_literal']
+            for key,value in (('ascii_literal',{}),('ascii_literal_current',lambda:None),('raw',self.fixture())):
+                old=obj[key];obj[key]=value
+                with self.assertRaises(rp.PackError):held()
+                obj[key]=old;held()
+            obj['input_origins']={'.text':0}
+            with self.assertRaises(rp.PackError):rp.edited_section_operand(obj,rels[0],0,'.text',rels)
+            del obj['input_origins']
+            path.write_bytes(self.CPP+b' ')
+            with self.assertRaises(provenance.MetadataProofError):held()
+            path.write_bytes(self.CPP);held()
+            sym=image.symbols[-1];old=sym.name;object.__setattr__(sym,'name','other')
+            with self.assertRaises(provenance.MetadataProofError):held()
+            object.__setattr__(sym,'name',old);held()
+            object.__setattr__(sym,'name','forged-before-construction')
+            with self.assertRaises(provenance.MetadataProofError):
+                provenance.ascii_literal_witness(image,image,image,self.CPP,['-32'],inputs,self.ROOT,lambda:None,path)
+            object.__setattr__(sym,'name',old);held()
+            with self.assertRaises(provenance.MetadataProofError):witness.operand(image,image,rels[0],1,'.text',rels)
+            with self.assertRaises(provenance.MetadataProofError):
+                provenance.ascii_literal_witness(image,image,image,self.CPP+b' ',['-32'],inputs,self.ROOT,lambda:None,path)
 
 
 class StaticFunctionCorrespondenceTests(unittest.TestCase):

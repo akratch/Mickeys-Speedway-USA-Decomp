@@ -5,6 +5,7 @@
 #include "n_audio/mbi.h"
 #include "overlays/offset_records.h"
 #include "overlays/patch_indices.h"
+#include "game/menu.h"
 
 /* Overlay 55: the four-player race HUD (lap clock and item icons). */
 
@@ -66,10 +67,10 @@ typedef struct Overlay55DisplayCommand {
 
 /* Module data. The initialized image is still a raw blob (phase 3 of
  * docs/OVERLAY_STRUCTURE_SPRINT.md), so these are declarations only. */
-extern u8 gOverlay55SetupBase[];
+extern s16 gOverlay55SetupBase[];
 extern u8 gOverlay55SourceBase[];
-extern u8 gOverlay55ExternalSetupTarget[];
-extern u8 gOverlay55SetupSecondary[];
+extern s16 gOverlay55ExternalSetupTarget[];
+extern s16 gOverlay55SetupSecondary[];
 extern OverlayOffsetRecord gOverlay55RecordsA[];
 extern OverlayOffsetRecord gOverlay55RecordsB[];
 extern u8 gOverlay55SourceB[];
@@ -86,8 +87,8 @@ extern s8 gOverlay55BlinkCounter;
 extern s32 gOverlay55IconAlpha[];
 extern s8 gOverlay55Items[];
 extern f32 gOverlay55HudHeight;
-extern u8 gOverlay55ResourceA[];
-extern u8 gOverlay55ResourceB[];
+extern s16 gOverlay55ResourceA[];
+extern s16 gOverlay55ResourceB[];
 
 /* Resident data. */
 extern u8 D_8007BEF4;
@@ -100,9 +101,6 @@ extern MenuCurrentObject D_800D3550[];
 extern s32 ext_o1_83e0;
 
 /* Resident functions. */
-extern void loadFrontEndList(void *target);
-extern void setupFrontEndList(void *target);
-extern void freeFrontEndList(void *resource);
 extern void amTunePlay(s32 mode);
 extern void runlinkDownloadCode(s32 resource);
 extern s32 levelGetNumber(void);

@@ -2,6 +2,7 @@
 #define OVERLAY_062_H
 
 #include "PR/ultratypes.h"
+#include "game/menu_resources.h"
 #include "n_audio/mbi.h"
 #include "game/texture_header.h"
 
@@ -44,9 +45,8 @@ typedef struct Overlay62Transform {
 
 /* Resident data and functions. */
 extern Overlay62Root *D_8007C0B8;
-/* Existing polymorphic resident resource-cache view. No C storage/extent
- * ownership is claimed; entry6 is loaded as a TextureHeader by the asset path. */
-extern void *D_800D31C8[];
+/* The shared polymorphic cache supplies entry 6 through the asset path.
+ * Resource bounds and lifetime remain separate from cache storage. */
 extern void loadFrontEndList(s16 *assetGroup);
 extern void freeFrontEndList(s16 *assetGroup);
 extern void fontUseFont(s32);

@@ -2,6 +2,7 @@
 #define OVERLAY_063_H
 
 #include "PR/ultratypes.h"
+#include "game/menu_resources.h"
 #include "n_audio/mbi.h"
 #include "game/math.h"
 
@@ -61,7 +62,6 @@ extern s16 mathRnd(s32 lower, s32 upper);
 extern void joyEnable(s32 slot);
 extern u8 gO63InitResource[];
 extern u8 gO63CreateResource[];
-extern void *D_800D31C8[];
 extern s32 D_8007BF44;
 extern u8 gO63ExternalByteReloc;
 extern void *gO63LocalResource;

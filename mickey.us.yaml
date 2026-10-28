@@ -1062,7 +1062,9 @@ segments:
       # Menu controller state is emitted as individually named objects in target
       # address order; IDO's input section occupies 0x30 bytes through 0x31C8.
       - { type: .bss, vram: 0x800D3198, name: main/menu }
-      - { type: bss, vram: 0x800D31C8, name: bss_gap_D800D31C8 }
+      # The front-end clears 180 polymorphic pointer slots.
+      - { type: .bss, vram: 0x800D31C8, name: main/menu_resources }
+      - { type: bss, vram: 0x800D3498, name: bss_gap_D800D3498 }
       # Diprint's text-position/state block is one 0x30-byte IDO BSS input
       # section; the raw gap resumes after its measured section padding.
       - { type: .bss, vram: 0x800D4A60, name: main/diprint }

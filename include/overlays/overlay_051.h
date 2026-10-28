@@ -2,6 +2,7 @@
 #define OVERLAY_051_H
 
 #include "PR/ultratypes.h"
+#include "game/menu_resources.h"
 #include "overlays/patch_indices.h"
 
 /* One 0x10-byte HUD glyph row entry; the texture and alternate fields hold
@@ -14,7 +15,6 @@ typedef struct Overlay51Glyph {
     s16 y;
 } Overlay51Glyph;
 
-extern void *D_800D31C8[];
 extern s16 gOverlay51Resource0_o051Reloc[12];
 extern s16 gOverlay51Resource18_o051Reloc[2];
 extern Overlay51Glyph gOverlay51TimeGlyphs[10];

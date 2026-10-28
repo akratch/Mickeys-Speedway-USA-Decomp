@@ -2,6 +2,7 @@
 #define OVERLAY_058_H
 
 #include "PR/ultratypes.h"
+#include "game/menu_resources.h"
 #include "game/anim.h"
 #include "game/menu.h"
 #include "game/font.h"
@@ -189,7 +190,7 @@ extern s32 D_8007BF6C_o058Reloc;
 extern Overlay58LanguageText *D_8007C0B8_o058Reloc;
 extern s32 D_8007C1B4_o058Reloc;
 extern Overlay58PlayerSlot D_800D3058_o058Reloc[];
-extern RcpTextureInfo *D_800D31C8_o058Reloc[];
+extern void *D_800D31C8_o058Reloc[];
 extern s16 D_o058_5AE8[];
 extern s32 overlay58RankAwards_o058Reloc[6];
 extern RcpTextureNode D_o058_5B40[];
@@ -316,7 +317,6 @@ extern Overlay58Vertex *D_800D3148;
 extern u8 D_80000058[];
 extern f32 sqrtf(f32 value);
 extern void texDPTextureX(void *displayList, void *texture, s32 flags, s32 arg3);
-extern void *D_800D31C8[];
 extern u8 D_80000078[];
 extern u8 D_80000098[];
 extern s16 gOverlay58RankSetIdReloc;

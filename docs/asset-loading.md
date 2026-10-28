@@ -31,6 +31,22 @@ The target's scalar and pointer widths come from the o32 ABI, including 32-bit
 serialized words, ROM offsets and RAM addresses must not be treated as one domain
 merely because they occupy the same width in this build.
 
+## Front-end cache extent and valid resource IDs
+
+`initFront` clears 180 pointer entries in the resident front-end cache. Its C
+producer in [menu_resources.c](../src/main/menu_resources.c) supplies that
+720-byte NOBITS span; the separate loaded-flag storage follows it. Entries
+hold textures, sprites, models or objects according to the directory flags.
+The shared [declaration](../include/game/menu_resources.h) describes pointer
+storage, rather than integer or byte-array aliases.
+
+The US file `0x1A` loaded by `piRomLoad` occupies 256 bytes. The first signed
+halfword `-1` follows 126 resource entries. Thus valid directory IDs are
+0 through 125, even though the constructor clears 180 cache slots. The
+load/free helpers do not independently validate arbitrary IDs. Original
+source capacity, dynamic caller bounds and resource lifetime remain separate
+obligations; the cache extent alone does not establish them.
+
 ## Top-level directory: layout and the boundary discrepancy
 
 [piInit](../src/main/pi.c#L42) copies `[D_86640, D_86760)` into allocator-owned RAM

@@ -2,6 +2,7 @@
 #define OVERLAY_046_H
 
 #include "PR/ultratypes.h"
+#include "game/menu_resources.h"
 #include "n_audio/mbi.h"
 #include "game/math.h"
 
@@ -44,7 +45,6 @@ extern s32 gOverlay46Timer5C;
 
 extern Overlay46Resource *gOverlay46Resource184;
 
-extern void *gOverlay46Value1E4;
 
 extern void loadFrontEndList(s16 *assetGroup);
 
@@ -219,7 +219,6 @@ typedef struct Overlay46ParticleConfig {
     s8 y;
 } Overlay46ParticleConfig;
 
-extern void *D_800D31C8[];
 
 extern s32 gOverlay46StorageStateC;
 

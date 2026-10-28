@@ -2,6 +2,7 @@
 #define OVERLAY_053_H
 
 #include "PR/ultratypes.h"
+#include "game/menu_resources.h"
 #include "overlays/patch_indices.h"
 #include "game/menu.h"
 #include "game/gameVi.h"
@@ -43,7 +44,6 @@ extern s32 levelGetNumber(void);
 
 
 
-extern void *D_800D31C8[];
 
 /* The 0x10-byte front-end display entry the offset copier and the HUD share. */
 typedef struct Overlay53Entry {

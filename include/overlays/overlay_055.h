@@ -2,6 +2,7 @@
 #define OVERLAY_055_H
 
 #include "ultra64.h"
+#include "game/menu_resources.h"
 #include "n_audio/mbi.h"
 #include "overlays/offset_records.h"
 #include "overlays/patch_indices.h"
@@ -96,7 +97,6 @@ extern s16 D_8007C180[];
 extern s32 D_800C947C;
 extern Overlay55DisplayCommand *D_800D3140;
 extern Mtx *D_800D3144;
-extern void *D_800D31C8[];
 extern MenuCurrentObject D_800D3550[];
 extern s32 ext_o1_83e0;
 

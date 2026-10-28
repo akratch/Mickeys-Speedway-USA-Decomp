@@ -1,4 +1,5 @@
 #include "overlays/overlay_056.h"
+#include "game/menu_resources.h"
 #include "game/math.h"
 #include "n_audio/mbi.h"
 
@@ -154,7 +155,6 @@ extern u8 D_8007BEF4;
 extern u8 D_8007BF08;
 extern O56Ghost *D_8007A1F4;
 extern O56Ghost *D_8007A1F8;
-extern O56Sprite *D_800D31C8[];
 extern s16 o56LayoutXOffsets_o056Reloc[];
 extern s16 o56LayoutYOffsets_o056Reloc[];
 extern u8 D_80000004[];

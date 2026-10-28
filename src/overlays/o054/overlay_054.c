@@ -124,7 +124,7 @@ void func_overlay_054_F0000000_189ECA0(void) {
     *(s16 *)(D_800D3550 + 0x26) = 0x28;
     *(f32 *)(D_800D3550 + 0x28) = 1.0f;
     sOverlay54State[0].metadata = 0;
-    sOverlay54State[0].link = gOverlay54ExternalWord;
+    sOverlay54State[0].link = (s32) D_800D31C8[100];
     sOverlay54State[0].value = 0;
     sOverlay54State[1].link = 0;
 

@@ -2,6 +2,7 @@
 #define OVERLAY_047_H
 
 #include "PR/ultratypes.h"
+#include "game/menu_resources.h"
 #include "n_audio/mbi.h"
 #include "game/math.h"
 #include "game/models.h"
@@ -130,7 +131,6 @@ extern char **D_8007C0B8;
 extern Overlay47Command *D_800D3140;
 extern Mtx *D_800D3144;
 extern void *D_800D3148;
-extern void *D_800D31C8[];
 extern u16 joyGetPressed(s32 player);
 extern void amSndPlay(u16 soundId, void **handle);
 extern void amSndStop(void *handle);

@@ -27,9 +27,22 @@ remains a separate acceptance step.
 | Initialized storage | 55,084 of 61,312 bytes have canonical projected C owners | 6,228 bytes remain. Another 224 diagnostic/trial bytes earn no physical ownership credit. |
 | Initialized images | 50 of 87 data-bearing modules are fully projected to C; 19 are partial and 18 have no canonical C owner | Projected ownership and a complete source-module proof are distinct milestones. |
 | Source-module linking | 32 modules use ordinary section-relative GNU linking | Retire the remaining per-object scaffolding as actual source owners become available. |
-| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 4,912 records still borrow authority: 4,868 placeholder references and 44 blob-owned data records. Layout borrowing remains explicit too. |
+| Relocation comparison | Zero pool-layout or table-entry discrepancies; both packers emit the same region | 4,904 records still borrow authority: 4,860 placeholder references and 44 blob-owned data records. Layout borrowing remains explicit too. |
 | BSS headers | Complete faithful source storage drives the header; an actual compiled 32-to-48-byte growth follows source despite a stale atlas value | 30 header sizes remain borrowed. Unknown reserves and partial allocations are not complete C ownership. |
 | Final build inputs | All 198 generated metadata objects feed the final ordinary link; its ELF equals the retained-input bootstrap ELF, and the ROM is exact | The bootstrap still consumes retained metadata. Source-only identities and general relayout remain open; fixed-layout equality does not prove them. |
+
+The resident front-end resource cache now has a real 720-byte NOBITS C
+producer: 180 pointer slots cleared by `initFront`, ending before the separate
+loaded-flag storage. The current resource directory contains 126 entries;
+physical capacity does not enlarge that valid ID domain. Shared declarations
+use polymorphic pointer elements. Overlay 57's fitted integer-record view and
+overlay 60's byte-offset word reads now use actual cache elements; four other
+standalone aliases become element reads, retiring eight placeholder records.
+The 134 overlay relocation references span fifteen modules. Original capacity,
+dynamic ID checks, resource lifetimes and general edited-array admission remain
+open. `freeFrontEndItem` reads and clears pointer objects through their proper
+type; its independently reviewed o32 value conversions remain disclosed in the
+[cleanup queue](cleanup-queue.md), with no natural/native closure claimed.
 
 Overlay 50 now supplies its complete load/free and object-setup lists as
 signed-halfword C arrays: 72 and 12 bytes, including their terminators.

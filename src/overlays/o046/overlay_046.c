@@ -14,7 +14,7 @@ void overlay46InitializeState(void) {
     Overlay46Resource *resource;
 
     loadFrontEndList(gOverlay46Ids);
-    gOverlay46Value2C = gOverlay46Value1E4;
+    gOverlay46Value2C = D_800D31C8[121];
     gOverlay46Resource4C = func_80036DD0(2);
     gOverlay46Resource50 = func_80036DD0(0);
     gOverlay46Group54 = overlay44CreateAnimationState(0, 0x7C, 0x41, 0, 0);

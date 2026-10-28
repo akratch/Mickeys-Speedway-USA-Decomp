@@ -8,6 +8,7 @@
  * found no exact donor for this cluster.
  */
 #include "game/charControl.h"
+#include "game/menu_resources.h"
 #include "game/menu.h"
 #include "n_audio/mbi.h"
 #include "overlays/offset_records.h"
@@ -99,10 +100,8 @@ extern s32 o54CreateObject(void);
 extern s32 func_8003A5A0(s32 object);
 
 
-extern void *D_800D31C8[];
 extern u8 gOverlay54ExternalResource[];
 extern u8 D_800D3550[];
-extern s32 gOverlay54ExternalWord;
 extern s16 gOverlay54Offsets[];
 extern s32 frontGetScreenMode(void);
 extern void overlay54ReleaseReloc();

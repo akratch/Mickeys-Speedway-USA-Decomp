@@ -522,8 +522,8 @@ static void overlay50SubmitTimeGlyphs(s32 leadingGlyph, s32 x, s32 y,
         x += gOverlay50GlyphOffsets[i];
         records[i].x = x;
         records[i].y = y;
-        records[i].sharedWord0 = gOverlay50GlyphWord0;
-        records[i].sharedWord1 = gOverlay50GlyphWord1;
+        records[i].sharedWord0 = (s32) D_800D31C8[20];
+        records[i].sharedWord1 = (s32) D_800D31C8[21];
     }
 
     records[9].sharedWord0 = 0;

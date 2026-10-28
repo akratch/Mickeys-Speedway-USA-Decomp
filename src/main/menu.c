@@ -16,6 +16,7 @@
 #include "game/gameVi.h"
 #include "game/menu.h"
 #include "game/menu_cursors.h"
+#include "game/menu_resources.h"
 #include "game/pi.h"
 #include "n_audio/mbi.h"
 #include "game/overlay_exports.h"
@@ -66,8 +67,11 @@ extern void func_80006EA0(void *object);
 extern void func_80006FA0(void);
 extern void *func_80005820(s32 playerIndex);
 extern u8 *func_80028F54(void);
-extern void texFreeTexture(void *texture);
-extern void texFreeSprite(void *sprite);
+struct TextureHeader;
+struct Sprite;
+struct ModelInstance;
+extern void texFreeTexture(struct TextureHeader *texture);
+extern void texFreeSprite(struct Sprite *sprite);
 extern void texDPInit(MenuCommand **displayList);
 extern void freeFrontEndItem(s32 assetId);
 extern void loadFrontEndItem(s32 assetId);
@@ -79,7 +83,7 @@ extern u32 joyGetPressed(s32 controller);
 extern s8 joyGetStickX(s32 controller);
 extern s8 joyGetStickY(s32 controller);
 extern void mainTitlePageInit(s32 mode);
-extern void modFreeModel(void *model);
+extern void modFreeModel(struct ModelInstance *model);
 extern void *mmAlloc(s32 size, s32 tag);
 
 extern u32 D_800D3170[4];
@@ -202,8 +206,8 @@ typedef struct MenuSpawnedObject {
     /* 0x68 */ MenuSpawnInner **inner;
 } MenuSpawnedObject;
 
-extern void *texLoadTexture(s32 assetId);
-extern void *texLoadSprite(s32 assetId, s32 arg1);
+extern struct TextureHeader *texLoadTexture(s32 assetId);
+extern struct Sprite *texLoadSprite(s32 assetId, s32 arg1);
 extern MenuSpawnedObject *func_8000590C(MenuSpawnPacket *packet, s32 mode);
 extern void *modLoadModel(s32 assetId, s32 arg1);
 
@@ -232,7 +236,6 @@ extern u8 D_8007C07C;
 extern s16 *D_8007C1B8;
 extern s16 D_8007C1BC;
 extern s16 D_8007C1C0;
-extern MenuFrontObject *D_800D31C8[];
 extern MenuCurrentObject D_8007C1C4[];
 extern MenuCurrentObject D_800D3550[];
 typedef struct MenuLanguageText {
@@ -908,21 +911,24 @@ void freeFrontEndList(s16 *assetGroup) {
 /* PROVENANCE: name and ordered role compared with JFG's public decomp,
  * src/menu.c::freeFrontEndItem; the body is derived from Mickey. */
 #pragma weak func_80039A9C = freeFrontEndItem
+/* ADR 0017: keep these target-o32 value conversions for late call-argument
+ * allocation. Cache objects are read and cleared as pointers, without an
+ * integer-lvalue alias. The compatibility casts remain in the cleanup queue. */
 void freeFrontEndItem(s32 assetId) {
     if (D_800D3498[assetId] != 0) {
-        if (((s32 *) D_800D31C8)[assetId] != 0) {
+        if ((s32) D_800D31C8[assetId] != 0) {
             if (((D_8007C1B8[assetId] & 0xC000) == 0xC000) &&
-                (((s32 *) D_800D31C8)[assetId] != 0)) {
-                texFreeTexture((void *) ((s32 *) D_800D31C8)[assetId]);
+                ((s32) D_800D31C8[assetId] != 0)) {
+                texFreeTexture((void *) (s32) D_800D31C8[assetId]);
             } else if (D_8007C1B8[assetId] & 0x8000) {
-                texFreeSprite((void *) ((s32 *) D_800D31C8)[assetId]);
+                texFreeSprite((void *) (s32) D_800D31C8[assetId]);
             } else if (D_8007C1B8[assetId] & 0x4000) {
-                func_80006EA0((void *) ((s32 *) D_800D31C8)[assetId]);
+                func_80006EA0((void *) (s32) D_800D31C8[assetId]);
             } else {
-                modFreeModel((void *) ((s32 *) D_800D31C8)[assetId]);
+                modFreeModel((void *) (s32) D_800D31C8[assetId]);
             }
         }
-        ((s32 *) D_800D31C8)[assetId] = 0;
+        D_800D31C8[assetId] = 0;
         D_800D3498[assetId] = 0;
         D_8007C1C0--;
         func_80006FA0();

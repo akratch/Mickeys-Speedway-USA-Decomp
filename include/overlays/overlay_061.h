@@ -2,6 +2,7 @@
 #define OVERLAY_061_H
 
 #include "ultra64.h"
+#include "game/menu_resources.h"
 #include "overlays/overlay_045.h"
 #include "overlays/o045/resource_descriptor.h"
 
@@ -96,9 +97,8 @@ extern void *levelGetName(s8);
 /* Called with one and with two arguments. */
 extern void fontUseFont();
 extern void fontBackground(s32, s32, s32, s32);
-/* Real resident pointer-bank footprint; resident storage/native ownership remains open. */
-struct MenuFrontObject;
-extern struct MenuFrontObject *D_800D31C8[];
+/* Cache storage comes from the shared declaration; resource bounds and
+ * native lifetimes remain separate obligations. */
 extern void loadFrontEndList(s16 *data);
 /* Called with one and with two arguments. */
 extern void rumbleProcessing();

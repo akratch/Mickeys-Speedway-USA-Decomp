@@ -10,6 +10,7 @@
  */
 
 #include "overlays/patch_indices.h"
+#include "game/menu_resources.h"
 #include "PR/ultratypes.h"
 #include "game/menu.h"
 #include "game/gameVi.h"
@@ -84,7 +85,6 @@ typedef struct MenuCurrentObject {
 extern MenuCommand *D_800D3140;
 extern Mtx *D_800D3144;
 struct MenuFrontObject;
-extern struct MenuFrontObject *D_800D31C8[];
 extern MenuCurrentObject D_800D3550[];
 extern s16 D_8007C180[];
 extern s32 D_8007C1B0;

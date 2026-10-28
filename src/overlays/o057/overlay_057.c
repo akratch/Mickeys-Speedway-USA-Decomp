@@ -169,12 +169,12 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     loadFrontEndList(gO57DescriptorList80Reloc);
     setupFrontEndList(gO57DescriptorList130Reloc);
 
-    gO57Value1FCReloc = ((O57SeedData *)D_800D31C8)->value0C;
-    gO57Value21CReloc = ((O57SeedData *)D_800D31C8)->value10;
-    gO57Value23CReloc = ((O57SeedData *)D_800D31C8)->value14;
-    gO57Value25CReloc = ((O57SeedData *)D_800D31C8)->value10;
-    gO57Value32CReloc = ((O57SeedData *)D_800D31C8)->value1EC;
-    gO57Value34CReloc = ((O57SeedData *)D_800D31C8)->value1F4;
+    gO57Value1FCReloc = (s32) D_800D31C8[3];
+    gO57Value21CReloc = (s32) D_800D31C8[4];
+    gO57Value23CReloc = (s32) D_800D31C8[5];
+    gO57Value25CReloc = (s32) D_800D31C8[4];
+    gO57Value32CReloc = (s32) D_800D31C8[123];
+    gO57Value34CReloc = (s32) D_800D31C8[125];
     for (i = 0; i < 10; i++) {
         gO57Rows27CReloc[i].texture = D_800D31C8[7];
     }

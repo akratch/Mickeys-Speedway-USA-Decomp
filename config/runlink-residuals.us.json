@@ -2,7 +2,7 @@
   "schema": 1,
   "generated_by": "tools/runlink_pack.py compare --write-residuals",
   "about": "Residuals of the runlink packer against the shipped tables. `gmake check-runlink-tables` fails on any difference or borrowing not listed here and on any listed entry that no longer occurs; regenerate with `gmake runlink-residuals` only to record progress.",
-  "totals": {"differences": 0, "borrowed_records": 4912},
+  "totals": {"differences": 0, "borrowed_records": 4904},
   "differences": {
   },
   "borrowed": {
@@ -57,7 +57,7 @@
     },
     "placeholder": {
       "about": "identity of a symbol the source names only by placeholder (module, symbol, sites)",
-      "count": 1184,
+      "count": 1180,
       "entries": [
         [1, "D_0", 8],
         [1, "D_0208", 4],
@@ -552,7 +552,6 @@
         [46, "gOverlay46SubmitBlock", 2],
         [46, "gOverlay46Timer5C", 26],
         [46, "gOverlay46Value", 2],
-        [46, "gOverlay46Value1E4", 2],
         [46, "gOverlay46Value2C", 2],
         [49, "gOverlay49Finished", 4],
         [49, "gOverlay49InputEnabled", 6],
@@ -562,8 +561,6 @@
         [49, "gOverlay49Shifts", 2],
         [49, "gOverlay49Timer", 4],
         [50, "gOverlay50GlyphOffsets", 2],
-        [50, "gOverlay50GlyphWord0", 2],
-        [50, "gOverlay50GlyphWord1", 2],
         [50, "gOverlay50ResourceA", 2],
         [50, "gOverlay50ResourceB", 2],
         [50, "gOverlay50Slot", 4],
@@ -611,7 +608,6 @@
         [54, "gOverlay54Current", 2],
         [54, "gOverlay54Data00", 2],
         [54, "gOverlay54ExternalResource", 2],
-        [54, "gOverlay54ExternalWord", 2],
         [54, "gOverlay54Offsets", 8],
         [54, "gOverlay54ResourceA", 2],
         [54, "gOverlay54ResourceB", 2],

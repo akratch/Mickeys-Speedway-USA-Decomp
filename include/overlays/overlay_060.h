@@ -2,6 +2,7 @@
 #define OVERLAY_060_H
 
 #include "PR/ultratypes.h"
+#include "game/menu_resources.h"
 #include "game/menu.h"
 #include "game/font.h"
 #include "game/charControl.h"
@@ -124,7 +125,6 @@ extern s32 o60ActivePanel_o060Reloc;
 extern s32 o60PanelSelection_o060Reloc;
 extern s32 o60PanelScroll_o060Reloc;
 extern s32 o60MenuPathIndex_o060Reloc;
-extern u8 D_800D31C8[];
 extern u8 gOverlay60Bss00[];
 extern u32 gOverlay60Bss20;
 extern u32 gOverlay60Bss40;
@@ -219,7 +219,7 @@ extern s32 D_800D31B4_o060Reloc;
 extern s32 D_800D31B8_o060Reloc;
 extern s16 D_800D31BC_o060Reloc;
 extern s16 D_800D31BE_o060Reloc;
-extern RcpTextureInfo *D_800D31C8_o060Reloc[];
+extern void *D_800D31C8_o060Reloc[];
 extern RcpTextureNode gOverlay60Data020;
 extern RcpTextureNode gOverlay60Data040;
 extern RcpTextureNode gOverlay60Data060;

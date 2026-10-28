@@ -2,6 +2,7 @@
 #define OVERLAY_050_H
 
 #include "PR/ultratypes.h"
+#include "game/menu_resources.h"
 #include "game/menu.h"
 #include "n_audio/mbi.h"
 #include "overlays/patch_indices.h"
@@ -60,7 +61,6 @@ void *overlay45CreateDescriptor_o050Reloc(void *, s32, s32, s32); /* 45:+0xC */
 void overlay45SetMode_o050Reloc(void *, s32); /* 45:+0x1BE0 */
 
 
-extern void *D_800D31C8[];
 
 /* Tier D: field widths and offsets from this caller's loads and stores. */
 
@@ -221,9 +221,7 @@ typedef struct Overlay50GlyphRecord {
 
 extern s32 gOverlay50GlyphOffsets[9];
 
-extern s32 gOverlay50GlyphWord0;
 
-extern s32 gOverlay50GlyphWord1;
 
 extern u8 D_800D3140[];
 

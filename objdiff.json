@@ -775,8 +775,8 @@
       }
     },
     {
-      "name": "asm/data/bss_gap_D800D31C8.bss.s",
-      "target_path": "expected/build/asm/data/bss_gap_D800D31C8.bss.s.o",
+      "name": "asm/data/bss_gap_D800D3498.bss.s",
+      "target_path": "expected/build/asm/data/bss_gap_D800D3498.bss.s.o",
       "metadata": {
         "progress_categories": [
           "resident"
@@ -7110,6 +7110,22 @@
       }
     },
     {
+      "name": "src/main/menu_resources.c",
+      "target_path": "expected/build/src/main/menu_resources.c.o",
+      "base_path": "build/src/main/menu_resources.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "resident"
+        ],
+        "source_path": "src/main/menu_resources.c"
+      }
+    },
+    {
       "name": "src/main/models.c",
       "target_path": "expected/build/src/main/models.c.o",
       "base_path": "build/src/main/models.c.o",
@@ -9086,6 +9102,23 @@
           "overlay-o050"
         ],
         "source_path": "src/overlays/o050/overlay50LapTemplate.c"
+      }
+    },
+    {
+      "name": "src/overlays/o050/overlay50ResourceGroups.c",
+      "target_path": "expected/build/src/overlays/o050/overlay50ResourceGroups.c.o",
+      "base_path": "build/src/overlays/o050/overlay50ResourceGroups.c.o",
+      "scratch": {
+        "platform": "n64",
+        "compiler": "ido5.3",
+        "c_flags": "-non_shared -G 0 -Xcpluscomm -fullwarn -woff 649,838 -O2 -mips2 -32"
+      },
+      "metadata": {
+        "progress_categories": [
+          "overlay",
+          "overlay-o050"
+        ],
+        "source_path": "src/overlays/o050/overlay50ResourceGroups.c"
       }
     },
     {

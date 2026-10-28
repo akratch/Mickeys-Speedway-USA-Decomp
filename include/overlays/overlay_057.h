@@ -2,6 +2,7 @@
 #define OVERLAY_057_H
 
 #include "PR/ultratypes.h"
+#include "game/menu_resources.h"
 #include "n_audio/mbi.h"
 #include "overlays/overlay_045.h"
 
@@ -10,19 +11,6 @@
 typedef struct O57ResourceTable {
     void *entries[0x70];
 } O57ResourceTable;
-
-typedef struct O57SeedData {
-    u8 pad00[0xC];
-    s32 value0C;
-    s32 value10;
-    s32 value14;
-    u8 pad18[4];
-    s32 value1C;
-    u8 pad20[0x1CC];
-    s32 value1EC;
-    s32 value1F0;
-    s32 value1F4;
-} O57SeedData;
 
 typedef struct O57AnimObject {
     s16 angle;
@@ -713,7 +701,6 @@ extern void *func_8005077C(s32 id);
 extern char **D_8007C0B8;
 extern s16 D_8007C0E8[];
 extern s16 D_8007C11C[24];
-extern void *D_800D31C8[];
 extern s32 D_8007C1A0;
 extern void fontUseFont(s32 font);
 extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha, s32 opacity);

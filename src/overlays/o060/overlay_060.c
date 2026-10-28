@@ -134,10 +134,10 @@ void func_overlay_060_F0000000_18B9DD8(void) {
     }
 
     loadFrontEndList((s16 *)gOverlay60Bss00);
-    gOverlay60Bss20 = *(u32 *)(D_800D31C8 + 0x1E4);
-    gOverlay60Bss40 = *(u32 *)(D_800D31C8 + 0x0C);
-    gOverlay60Bss60 = *(u32 *)(D_800D31C8 + 0x144);
-    gOverlay60Bss80 = *(u32 *)(D_800D31C8 + 0x1EC);
+    gOverlay60Bss20 = (u32) D_800D31C8[121];
+    gOverlay60Bss40 = (u32) D_800D31C8[3];
+    gOverlay60Bss60 = (u32) D_800D31C8[81];
+    gOverlay60Bss80 = (u32) D_800D31C8[123];
 
     i = frontGetScreenMode();
     if (i == 1) {

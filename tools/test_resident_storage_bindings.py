@@ -1,4 +1,5 @@
 import inspect
+import json
 import hashlib
 import os
 import tempfile
@@ -10,7 +11,33 @@ from unittest import mock
 import resident_storage_bindings as bindings
 
 
+def install_synthetic_authority(test):
+    """Validator fixture only; never evidence for the canonical R8 binding."""
+    temporary = tempfile.TemporaryDirectory()
+    test.addCleanup(temporary.cleanup)
+    path = Path(temporary.name)/'synthetic-authority.json'
+    rows = [
+        ('gO8P1294ImpactGateReloc','D_8007BF04',(0xFFD,0x31A4),'u8',1),
+        ('gO8P1294ColorGateReloc','D_8007BF0C',(0xFFD,0x31AC),'u8',1),
+        ('gO8P1294MotionScalarReloc','D_800CB304',(0xFFF,0x458C4),'f32',4),
+    ]
+    document = {'candidate_scope':{'function':'func_overlay_008_F0001294_185EFEC',
+                    'overlay':8,'source':'overlays/o008/overlay_008'},
+        'entries':[{'carrier':carrier,'owner_symbol':owner,'expected_namespace_identity':identity,
+                    'physical_extent':4,'route':'explicit-resident-synthetic-test-fixture',
+                    'view_type':ctype,'view_extent':extent}
+                   for carrier,owner,identity,ctype,extent in rows]}
+    path.write_text(json.dumps(document))
+    for name,value in (('AUTHORITY',path),('AUTHORITY_SHA256',hashlib.sha256(path.read_bytes()).hexdigest())):
+        patch = mock.patch.object(bindings,name,value)
+        patch.start();test.addCleanup(patch.stop)
+
+
+
 class ResidentStorageBindingTests(unittest.TestCase):
+    def setUp(self):
+        install_synthetic_authority(self)
+
     def test_registry_is_fixed_and_public_api_has_no_overrides(self):
         self.assertEqual(set(bindings.BINDINGS), {'impact_gate','color_gate','gravity'})
         self.assertEqual(tuple(inspect.signature(bindings.collect).parameters), ('key',))
@@ -21,7 +48,7 @@ class ResidentStorageBindingTests(unittest.TestCase):
         with self.assertRaisesRegex(bindings.BindingError,'invalid opaque'):
             bindings.recheck('/tmp/anything')
 
-    def test_identity_authority_is_hashed_and_matches_all_three_fixed_rows(self):
+    def test_fixture_authority_is_hashed_and_matches_all_three_fixed_rows(self):
         bindings._verify_loaded()
         expected={
             'impact_gate':('gO8P1294ImpactGateReloc','D_8007BF04',(0xFFD,0x31A4),'u8',1),
@@ -31,6 +58,14 @@ class ResidentStorageBindingTests(unittest.TestCase):
         for key,row in expected.items():
             spec=bindings.BINDINGS[key]
             self.assertEqual((spec['carrier'],spec['owner'],spec['identity'],spec['ctype'],spec['size']),row)
+
+    def test_missing_or_tampered_authority_refuses_before_binding(self):
+        bindings.AUTHORITY.unlink()
+        with self.assertRaisesRegex(bindings.BindingError,'authority is missing or changed'):
+            bindings._verify_loaded()
+        bindings.AUTHORITY.write_text('{"changed":true}')
+        with self.assertRaisesRegex(bindings.BindingError,'authority is missing or changed'):
+            bindings._verify_loaded()
 
     def test_alias_swap_and_semantic_type_or_extent_mutation_fail_authority(self):
         original=bindings.BINDINGS['impact_gate']
@@ -251,6 +286,15 @@ class ResidentStorageBindingTests(unittest.TestCase):
         with self.assertRaisesRegex(bindings.BindingError,'invalid opaque'):
             bindings.recheck('0'*63)
         self.assertNotIn('path',inspect.signature(bindings.recheck).parameters)
+
+
+class CanonicalAuthorityAvailabilityTests(unittest.TestCase):
+    def test_checkout_authority_is_current_or_refuses(self):
+        if bindings.AUTHORITY.is_file():
+            bindings._verify_loaded()
+        else:
+            with self.assertRaisesRegex(bindings.BindingError,'authority is missing or changed'):
+                bindings._verify_loaded()
 
 
 if __name__=='__main__':

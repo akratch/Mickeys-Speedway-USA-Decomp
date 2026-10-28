@@ -300,7 +300,7 @@ class CaptureTests(unittest.TestCase):
                                     "cancel": KeyboardInterrupt}[mutation]
                         with self.assertRaises(expected):
                             pp.capture_configured_raw(root, paths["source"], paths["configured"], paths["linked"], postprocess)
-                        self.assertIn("compile", next((root / "build/metadata-filter-proof").glob("*/compile.log")).read_text())
+                        self.assertEqual(list((root / "build/metadata-filter-proof").glob("capture-*")), [])
                     else:
                         with self.assertRaises(pp.MetadataProofError):
                             pp.capture_configured_raw(root, paths["source"], paths["configured"], paths["linked"], postprocess)

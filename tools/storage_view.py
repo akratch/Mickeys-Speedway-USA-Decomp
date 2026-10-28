@@ -485,4 +485,5 @@ def main():
 
 
 if __name__ == '__main__':
-    raise SystemExit(main())
+    from proof_artifacts import run_cli
+    raise SystemExit(run_cli(main))

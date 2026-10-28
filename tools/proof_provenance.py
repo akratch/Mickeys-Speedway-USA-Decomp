@@ -13,6 +13,8 @@ build provenance, can mention ROM-derived artifacts, and must never be tracked.
 
 from __future__ import annotations
 
+from proof_artifacts import run_owned
+
 import argparse
 import bisect
 import collections
@@ -32,6 +34,7 @@ import uuid
 from typing import Iterable, Sequence
 
 import runlink_metadata_link as metadata_link
+from proof_artifacts import capture_artifacts
 
 
 class MetadataProofError(RuntimeError):
@@ -41,7 +44,7 @@ class MetadataProofError(RuntimeError):
 def literal_profile_inputs(root):
     """Stable existing parser/helper sources, declared before proof snapshots."""
     root = pathlib.Path(root)
-    names = ["tools/proof_provenance.py", "tools/trim_elf_section.py", "tools/candidate_context.py"]
+    names = ["tools/proof_provenance.py", "tools/proof_artifacts.py", "tools/trim_elf_section.py", "tools/candidate_context.py"]
     package = root / "tools/permuter/perm_pycparser"
     files = sorted(package.rglob("*.py"))
     if not files or not (package / "c_parser.py").is_file():
@@ -643,16 +646,18 @@ class OwnRoCapture:
 _OWN_RO_SEAL = object()
 
 
-def capture_own_ro_prefix(source, root):
+@capture_artifacts
+def capture_own_ro_prefix(source, root, *, _artifacts):
     """Fresh unchanged compiler observation plus zero-storage compiler size checks."""
     import permute_batch as batch
     import runlink_pack as rp
     import source_module_link_proof as proof
     root, source = pathlib.Path(root).resolve(), pathlib.Path(source).resolve()
     parent = root/'build/own-ro-source-proof'; parent.mkdir(parents=True, exist_ok=True)
-    directory = pathlib.Path(tempfile.mkdtemp(prefix='capture-', dir=parent))
+    directory = _artifacts.directory(parent)
     deadline = time.monotonic()+120
     cpp, flags, frontend, held, context, recipe = _callback_frontend(root, source, directory, deadline)
+    context = _artifacts.hold(context)
     facts = own_ro_prefix_facts(cpp, flags, root)
     original_path = directory/'original.o'
     command = ['tools/ido/cc', *flags, '-o', str(original_path), str(frontend)]
@@ -829,7 +834,8 @@ def prove_own_ro_definition_join(root, source, linked_path, map_path):
     return result
 
 
-def capture_callback_data(raw, source, root):
+@capture_artifacts
+def capture_callback_data(raw, source, root, *, _artifacts):
     """Compiler-evaluated layout; original storage/symbols remain unchanged."""
     import permute_batch as batch
     import runlink_pack as rp
@@ -838,9 +844,10 @@ def capture_callback_data(raw, source, root):
     deadline = time.monotonic()+120
     parent = root/'build/callback-source-proof'
     parent.mkdir(parents=True, exist_ok=True)
-    directory = pathlib.Path(tempfile.mkdtemp(prefix='capture-', dir=parent))
+    directory = _artifacts.directory(parent)
     digest, surface = hashlib.sha256(raw.data).hexdigest(), _static_parsed_surface(raw)
     cpp, flags, frontend, held, context, recipe = _callback_frontend(root, pathlib.Path(source), directory, deadline)
+    context = _artifacts.hold(context)
     facts = callback_data_facts(cpp, flags, root)
     owner = facts['owner']
     prefix = '__mickey_callback_'+uuid.uuid4().hex
@@ -893,7 +900,8 @@ class CallbackFunctionCapture:
         return True
 
 
-def capture_callback_functions(configured, source, root, wanted):
+@capture_artifacts
+def capture_callback_functions(configured, source, root, wanted, *, _artifacts):
     """Only FUNCTION/TEXT evidence; unrelated configured RO is compatibility."""
     import permute_batch as batch
     import runlink_pack as rp
@@ -901,11 +909,12 @@ def capture_callback_functions(configured, source, root, wanted):
     deadline = time.monotonic()+120
     parent = root/'build/callback-function-proof'
     parent.mkdir(parents=True, exist_ok=True)
-    directory = pathlib.Path(tempfile.mkdtemp(prefix='capture-',dir=parent))
+    directory = _artifacts.directory(parent)
     loaded_digest = hashlib.sha256(configured.data).hexdigest()
     if sha256_file(configured.path) != loaded_digest:
         raise MetadataProofError('callback FUNCTION input changed before capture')
     cpp, flags, frontend, held, context, command = _callback_frontend(root,pathlib.Path(source),directory,deadline)
+    context = _artifacts.hold(context)
     held[configured.path] = loaded_digest
     original_path = directory/'compiler-original.o'
     words = shlex.split(command)
@@ -2045,7 +2054,7 @@ def prepare_literal_input(source, root, command):
         if "-mips2" not in flags:
             options.append("-mips1")
         frontend = [".venv/bin/python", "tools/asm-processor/asm_processor.py", *options, relative]
-        result = subprocess.run(frontend, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        result = run_owned(frontend, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 timeout=120, check=False)
         if result.returncode:
             raise MetadataProofError("literal wrapper frontend failed")
@@ -2105,7 +2114,7 @@ def prove_literal_arrays(elf, source, root, *, compiler_command=None, prepared=N
         else:
             argument = relative
         cpp_command = ["tools/ido/cc", "-E", *prepared["flags"], argument]
-        result = subprocess.run(cpp_command, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        result = run_owned(cpp_command, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 timeout=120, check=False)
     if result.returncode:
         raise MetadataProofError("literal configured CPP failed")
@@ -2441,7 +2450,7 @@ def replay_metadata(raw: pathlib.Path, command: str, target: str, output: pathli
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             raise MetadataProofError("metadata replay exceeded its deadline")
-        result = subprocess.run(argv, cwd=root, env=environment, text=True,
+        result = run_owned(argv, cwd=root, env=environment, text=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 timeout=remaining, check=False)
         if result.returncode:
@@ -2910,9 +2919,10 @@ def capture_data_provider_raw(root, source, configured, linked, map_path, *, pre
                                    **({"preserve_compiler": True} if preserve_compiler else {}))
 
 
+@capture_artifacts
 def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                             module_link=False, producer_map=None, ordinary_provider=False, edited_prefix=None,
-                            preserve_compiler=False):
+                            preserve_compiler=False, _artifacts):
     """Fresh reproduction only: never authenticate an externally supplied raw object."""
     import permute_batch as batch
     import sweep_receipts as receipts
@@ -2998,6 +3008,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
     if pointer_profile:
         _effective_parser(root)
     def context(*, operation_deadline=None):
+        _artifacts.require_open()
         if operation_deadline is None:
             operation_deadline = time.monotonic() + 120
         if any(sha256_file(path) != digest for path, digest in keep_observations.items()):
@@ -3065,7 +3076,7 @@ def _capture_configured_raw(root, source, configured, linked, postprocess, *,
                      "build/data-module-producer-proof" if producer_map is not None else
                      "build/source-module-link-proof" if module_link else "build/metadata-filter-proof")
     parent.mkdir(parents=True, exist_ok=True)
-    directory = pathlib.Path(tempfile.mkdtemp(prefix="capture-", dir=parent))
+    directory = _artifacts.directory(parent)
     raw = directory / "raw.o"
     words[words.index("-o") + 1] = str(raw)
     (directory / "inputs.json").write_text(json.dumps(before, sort_keys=True, indent=2))
@@ -3325,7 +3336,8 @@ def encoded_word_link_inputs(scripts):
     return frozenset(inputs)
 
 
-def replay_encoded_word_link(root, linked, map_path, scripts, link_context):
+@capture_artifacts
+def replay_encoded_word_link(root, linked, map_path, scripts, link_context, *, _artifacts):
     """Replay the actual bound ld invocation; only private output paths differ."""
     import runlink_pack as rp
     import permute_batch as batch
@@ -3365,13 +3377,14 @@ def replay_encoded_word_link(root, linked, map_path, scripts, link_context):
     if any(row.file not in names for row in mapping):
         raise MetadataProofError('encoded-address map input is outside the complete script closure')
     def current():
+        _artifacts.require_open()
         if ({path:sha256_file(path) for path in held} != held
                 or producer_link_context(root,linked,map_path) != link_context):
             raise MetadataProofError('encoded-address replay input/command closure changed')
         return True
     current()
     parent = root/'build/encoded-word-link-proof';parent.mkdir(parents=True,exist_ok=True)
-    directory = pathlib.Path(tempfile.mkdtemp(prefix='capture-',dir=parent))
+    directory = _artifacts.directory(parent)
     output, output_map = directory/'linked.elf', directory/'linked.map'
     replay = command.copy()
     replay[replay.index('-Map')+1] = str(output_map)
@@ -4150,7 +4163,7 @@ def preprocessed_text(source: pathlib.Path, root: pathlib.Path, *,
     words = shlex.split(command)
     if "tools/ido/cc" not in words:
         raise MetadataProofError("configured compile command is not IDO")
-    result = subprocess.run(
+    result = run_owned(
         ["tools/ido/cc", "-E", *flags, _relative(source, root)], cwd=root, text=True,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120, check=False)
     if result.returncode:
@@ -4365,7 +4378,7 @@ def _discover_compile_command(
         command.append("NON_MATCHING=1")
     command.append(target)
     try:
-        result = subprocess.run(
+        result = run_owned(
             command,
             cwd=root,
             text=True,
@@ -4412,7 +4425,7 @@ def _discover_compile_command(
 def _object_symbols(path: pathlib.Path, objdump: pathlib.Path) -> tuple[set[str], str | None]:
     if not path.is_file():
         return set(), "object does not exist"
-    result = subprocess.run(
+    result = run_owned(
         [str(objdump), "-t", str(path)],
         text=True,
         stdout=subprocess.PIPE,
@@ -4623,4 +4636,5 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    from proof_artifacts import run_cli
+    raise SystemExit(run_cli(main))

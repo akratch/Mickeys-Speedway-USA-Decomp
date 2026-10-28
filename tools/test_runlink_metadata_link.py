@@ -235,7 +235,7 @@ class AuthoredRegistryTests(unittest.TestCase):
                 return result
             with self.subTest(fault=fault),contextlib.ExitStack() as stack:
                 stack.enter_context(mock.patch.object(link,'write_changed',side_effect=observed_write))
-                run=stack.enter_context(mock.patch.object(link.subprocess,'run',side_effect=command))
+                run=stack.enter_context(mock.patch.object(link,'run_owned',side_effect=command))
                 stack.enter_context(mock.patch.object(batch,'source_dependencies',return_value={}))
                 stack.enter_context(mock.patch.object(batch,'checked_tool_identity',return_value={}))
                 stack.enter_context(mock.patch.object(pp,'literal_profile_inputs',return_value={}))

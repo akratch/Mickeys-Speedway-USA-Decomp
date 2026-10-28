@@ -2675,8 +2675,9 @@ def reproduce_data_import(world, source):
     words[words.index(target)] = str(raw)
     replayed = raw.with_name("module-replayed.o")
     words += ["--output", str(replayed)]
-    result = subprocess.run(words, cwd=root, text=True, stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT, timeout=120)
+    from proof_artifacts import run_owned
+    result = run_owned(words, cwd=root, text=True, stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT, timeout=120)
     if result.returncode:
         raise PackError("data-only ordinary module link failed: " + result.stdout.strip())
     link = json.loads((directory / "receipt.json").read_text())
@@ -4848,4 +4849,5 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    from proof_artifacts import run_cli
+    sys.exit(run_cli(main))

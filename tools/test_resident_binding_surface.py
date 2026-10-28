@@ -11,6 +11,7 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import reloc_surface as rs
 import resident_binding_surface as surface
+from test_resident_storage_bindings import install_synthetic_authority
 
 
 class FakeElf:
@@ -54,6 +55,9 @@ class FakeElf:
 
 
 class ResidentBindingSurfaceTests(unittest.TestCase):
+    def setUp(self):
+        install_synthetic_authority(self)
+
     def _candidate(self, **elf_args):
         td = tempfile.TemporaryDirectory(dir=surface.adapter.ROOT)
         self.addCleanup(td.cleanup)

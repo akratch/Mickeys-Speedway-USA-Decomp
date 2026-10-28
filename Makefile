@@ -1690,10 +1690,10 @@ RUNLINK_SYMBOL_INPUTS := undefined_funcs_auto.$(VERSION).txt undefined_syms_auto
 ifeq ($(findstring q,$(firstword $(MAKEFLAGS))),)
 RUNLINK_VALIDATE_PREREQUISITE := runlink-raw
 RUNLINK_FINAL_PREREQUISITE := runlink-final-force
-RUNLINK_PREPARE_INPUTS := $(RUNLINK_BOOTSTRAP_ELF) $(RUNLINK_BOOTSTRAP_MAP) $(RUNLINK_BOOTSTRAP_LOG) $(RUNLINK_VALIDATE_PREREQUISITE) $(TOOLS_DIR)/runlink_metadata_link.py $(TOOLS_DIR)/runlink_pack.py $(TOOLS_DIR)/overlay_tables.py $(OBJCOPY)
+RUNLINK_PREPARE_INPUTS := $(RUNLINK_BOOTSTRAP_ELF) $(RUNLINK_BOOTSTRAP_MAP) $(RUNLINK_BOOTSTRAP_LOG) $(RUNLINK_VALIDATE_PREREQUISITE) $(TOOLS_DIR)/runlink_metadata_link.py $(TOOLS_DIR)/runlink_pack.py $(TOOLS_DIR)/overlay_tables.py $(TOOLS_DIR)/proof_artifacts.py $(OBJCOPY)
 endif
 
-$(RUNLINK_BOOTSTRAP_ELF) $(RUNLINK_BOOTSTRAP_MAP) $(RUNLINK_BOOTSTRAP_LOG) &: $(O_FILES) $(LD_SCRIPT) $(RUNLINK_SYMBOL_INPUTS) Makefile $(LD) $(TOOLS_DIR)/run_logged.py $(TOOLS_DIR)/link_diagnose.sh | $(ALL_DIRS) $(SPLAT_STAMP)
+$(RUNLINK_BOOTSTRAP_ELF) $(RUNLINK_BOOTSTRAP_MAP) $(RUNLINK_BOOTSTRAP_LOG) &: $(O_FILES) $(LD_SCRIPT) $(RUNLINK_SYMBOL_INPUTS) Makefile $(LD) $(TOOLS_DIR)/run_logged.py $(TOOLS_DIR)/proof_artifacts.py $(TOOLS_DIR)/link_diagnose.sh | $(ALL_DIRS) $(SPLAT_STAMP)
 	@mkdir -p build/runlink
 	@$(HOST_PYTHON) $(TOOLS_DIR)/run_logged.py --repo . --log $(RUNLINK_BOOTSTRAP_LOG) --label "retained metadata bootstrap link" -- $(TOOLS_DIR)/link_diagnose.sh $(LD) $(subst -Map $(BUILD_DIR)/$(BASENAME).$(VERSION).map,-Map $(RUNLINK_BOOTSTRAP_MAP),$(LDFLAGS)) -o $(RUNLINK_BOOTSTRAP_ELF)
 

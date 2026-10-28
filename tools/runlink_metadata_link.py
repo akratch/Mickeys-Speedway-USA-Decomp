@@ -6,6 +6,8 @@ metadata selectors change in the final script; code/data inputs stay intact.
 """
 from __future__ import annotations
 
+from proof_artifacts import run_owned
+
 import argparse
 import dataclasses
 import hashlib
@@ -152,7 +154,7 @@ def validate_manifest(root):
 
 
 def run(argv, root):
-    result = subprocess.run([str(x) for x in argv], cwd=root, text=True,
+    result = run_owned([str(x) for x in argv], cwd=root, text=True,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if result.returncode:
         raise MetadataLinkError(result.stdout.strip())
@@ -177,6 +179,7 @@ def wrapper(root, name):
 def context_paths(root):
     return [BOOT_ELF, BOOT_MAP, BOOT_LOG, "mickey.us.ld", "Makefile", MANIFEST,
             "tools/runlink_metadata_link.py", "tools/runlink_pack.py", "tools/overlay_tables.py", "tools/trap_names.py",
+            "tools/proof_artifacts.py",
             "config/runlink-edited.us.json", "config/runlink-ort.us.txt",
             "tools/link_diagnose.sh", "tools/run_logged.py",
             "tools/binutils/mips64-elf-ld", "tools/binutils/mips64-elf-objcopy",
@@ -786,7 +789,7 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
         payload = json_bytes(record); write_changed(path,payload)
         rp.edited_require(path.read_bytes() == payload, 'vector command record changed before start')
         try:
-            result = subprocess.run(command,cwd=root,stdout=subprocess.PIPE,
+            result = run_owned(command,cwd=root,stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE if cpp else subprocess.STDOUT,timeout=120)
         except (OSError,subprocess.TimeoutExpired) as error:
             record.update(events=record['events']+['failed'],exit=None,error=str(error))
@@ -923,7 +926,7 @@ def edited_compile(root, directory, label, text, exports, args, commands, *, int
         rp.edited_require(source_current() == (static_inputs, static_tools), 'source context changed before CPP')
         command = ['tools/ido/cc', *flags]
         cpp_command = ['tools/ido/cc', '-E', *pp._literal_flags(shlex.join(command), flags[-1]), flags[-1]]
-        result = subprocess.run(cpp_command, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
+        result = run_owned(cpp_command, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120)
         rp.edited_require(result.returncode == 0, 'actual edited effective CPP failed')
         cpp = result.stdout
     if target_sections:
@@ -1176,7 +1179,7 @@ def edited_compile_group(root, directory, label, declaration, exports, arguments
         held(); rp.edited_check_sections(capture['raw'])
     require(digest(script_path) == expected[script_path.name], 'aggregate script changed before link')
     try:
-        result = subprocess.run(command,cwd=root,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=120)
+        result = run_owned(command,cwd=root,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=120)
     except (OSError,subprocess.TimeoutExpired) as error:
         write_changed(command_path,json_bytes({'command':[str(x) for x in command],
             'events':['planned','started','failed'],'exit':None,'error':str(error)}))
@@ -1532,7 +1535,7 @@ def edited_build(root, out, variant, outside_rom=None, declarations='config/runl
     setup_command = ['gmake', '--no-print-directory', '-j' + str(__import__('os').cpu_count() or 1),
                      'edited-runlink-inputs', 'EDITED_PROVIDER_INPUTS=' + ' '.join(outside_selectors),
                      'RUNLINK_ORT_NAMES=' + projection.relative_to(root).as_posix()]
-    setup = subprocess.run(setup_command, cwd=root, text=True,
+    setup = run_owned(setup_command, cwd=root, text=True,
                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     write_changed(parent / 'input-production.log', setup.stdout)
     require(setup.returncode == 0, 'ordinary outside input production failed; see input-production.log')
@@ -1997,4 +2000,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    from proof_artifacts import run_cli
+    run_cli(main)

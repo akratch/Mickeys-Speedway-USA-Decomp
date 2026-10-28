@@ -4,13 +4,13 @@
 from __future__ import annotations
 
 import argparse
-import os
 from pathlib import Path
 import shlex
-import signal
 import subprocess
 import sys
 import time
+
+from proof_artifacts import run_owned
 
 
 class LoggedRunError(ValueError):
@@ -37,19 +37,6 @@ def tail_lines(path: Path, count: int) -> list[str]:
     return lines[-count:]
 
 
-def terminate(proc: subprocess.Popen[bytes]) -> None:
-    try:
-        os.killpg(proc.pid, signal.SIGTERM)
-        proc.wait(timeout=5)
-    except ProcessLookupError:
-        return
-    except subprocess.TimeoutExpired:
-        try:
-            os.killpg(proc.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-
-
 def run_logged(
     repo: Path,
     log_path: Path,
@@ -71,22 +58,14 @@ def run_logged(
         log.write(f"command: {rendered}\n".encode())
         log.flush()
         try:
-            proc = subprocess.Popen(
-                command,
-                cwd=repo,
-                stdout=log,
-                stderr=subprocess.STDOUT,
-                start_new_session=True,
+            result = run_owned(
+                command, cwd=repo, stdout=log, stderr=subprocess.STDOUT,
             )
         except OSError as exc:
             log.write(f"launch failed: {exc}\n".encode())
             print(f"{label} FAIL 0.0s log={log_path}", file=sys.stderr)
             return 127
-        try:
-            return_code = proc.wait()
-        except KeyboardInterrupt:
-            terminate(proc)
-            raise
+        return_code = result.returncode
     elapsed = time.monotonic() - started
     status = "PASS" if return_code == 0 else "FAIL"
     stream = sys.stdout if return_code == 0 else sys.stderr
@@ -124,4 +103,5 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    from proof_artifacts import run_cli
+    raise SystemExit(run_cli(main))

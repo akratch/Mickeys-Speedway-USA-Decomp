@@ -454,4 +454,6 @@ def main():
     except (EvidenceError,fp.PreflightError,pp.MetadataProofError,rs.SurfaceComparisonError,OSError,RuntimeError,subprocess.SubprocessError) as e:
         print(f'resident_storage_view: {e}',file=sys.stderr); return 1
 
-if __name__=='__main__': raise SystemExit(main())
+if __name__=='__main__':
+    from proof_artifacts import run_cli
+    raise SystemExit(run_cli(main))

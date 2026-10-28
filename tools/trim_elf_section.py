@@ -290,4 +290,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    from proof_artifacts import run_cli
+    run_cli(main)

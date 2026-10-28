@@ -9,6 +9,8 @@ The original compiler object and ordinary linker result remain separate artifact
 """
 from __future__ import annotations
 
+from proof_artifacts import run_owned
+
 import argparse
 import hashlib
 import json
@@ -37,7 +39,7 @@ def run(argv, commands=None):
     argv = [str(x) for x in argv]
     if commands is not None:
         commands.append(argv)
-    result = subprocess.run(argv, text=True,
+    result = run_owned(argv, text=True,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if result.returncode:
         raise LinkError(result.stdout.strip() or f"link command exited {result.returncode}")
@@ -862,4 +864,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    from proof_artifacts import run_cli
+    run_cli(main)

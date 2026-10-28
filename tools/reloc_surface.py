@@ -5267,4 +5267,5 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    from proof_artifacts import run_cli
+    sys.exit(run_cli(main, sys.argv[1:]))

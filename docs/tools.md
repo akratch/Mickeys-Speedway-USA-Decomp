@@ -358,6 +358,27 @@ relocation counts, offsets/types, and effective runtime identities. The output
 is a compact receipt containing only those proof totals and modes. Use
 `--no-build` to require already-fresh preflight artifacts.
 
+Fresh proof captures are temporary evidence. The command keeps their original
+objects, linker replays and input holds alive through the final freshness check
+and receipt publication, then removes its own capture directories. Failed
+factories release their files after the subprocess runner has stopped. Ordinary
+build outputs and saved source attempts are outside this cleanup scope.
+
+Library callers that run several proofs in one process should put the complete
+operation, including its final checks and publication, inside
+`proof_artifacts.operation()`. A returned checker also retains its files while
+it is live; the explicit operation scope releases cyclic World/witness graphs
+without waiting for garbage collection. Using a checker after that scope exits
+fails closed. Capture paths in receipts describe the proof that ran; they are
+not retained evidence or an authority for a later proof.
+
+Proof CLI cancellation forwards TERM to owned subprocess groups, waits for their
+cleanup, and refuses queued launches. A child that does not stop receives KILL
+after the cleanup grace period. Direct SIGKILL, an interpreter crash or machine
+shutdown can leave private files behind. Such files grant no proof authority;
+confirm that their writers have stopped before removing them. No automatic
+age-based or PID-based directory deletion is used.
+
 For a canonical integration proof, append `--canonical` (or set
 `PROMOTION_PROOF_ARGS=--canonical` on the Make target). After the function
 receipt passes, this runs `gmake verify` and `gmake check-overlay-syms` as two

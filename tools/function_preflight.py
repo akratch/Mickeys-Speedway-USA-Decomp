@@ -15,6 +15,8 @@ Usage:
 
 from __future__ import annotations
 
+from proof_artifacts import run_owned
+
 import argparse
 import copy
 import dataclasses
@@ -731,7 +733,7 @@ def resolve(
 
 
 def _run(argv: list[str], *, capture: bool = False) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
+    return run_owned(
         argv,
         cwd=REPO,
         check=False,
@@ -3468,4 +3470,5 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    from proof_artifacts import run_cli
+    raise SystemExit(run_cli(main, sys.argv[1:]))

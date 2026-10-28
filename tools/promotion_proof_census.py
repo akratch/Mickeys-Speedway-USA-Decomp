@@ -53,6 +53,8 @@ function is uncovered), 0 otherwise.
 
 from __future__ import annotations
 
+from proof_artifacts import run_owned
+
 import argparse
 import collections
 import concurrent.futures
@@ -86,7 +88,7 @@ SYNTHETIC_VMA = 0xF0000000
 TOOL_SOURCES = (
     "tools/promotion_proof.py", "tools/function_preflight.py",
     "tools/reloc_surface.py", "tools/reloc_identity.py", "tools/overlay_call_context.py",
-    "tools/proof_provenance.py", "tools/overlay_tables.py",
+    "tools/proof_provenance.py", "tools/proof_artifacts.py", "tools/overlay_tables.py",
     "tools/postprocess_audit.py", "tools/function_history.py",
     "tools/wb_compare.sh", "tools/promotion_proof_census.py",
     "tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
@@ -385,7 +387,7 @@ def error_class(message: str, symbol: str) -> str:
 Runner = Callable[..., subprocess.CompletedProcess]
 
 
-def prove(entry: Entry, runner: Runner = subprocess.run) -> Outcome:
+def prove(entry: Entry, runner: Runner = run_owned) -> Outcome:
     outcome = _prove(entry, runner)
     outcome.static = entry.static
     return outcome
@@ -437,7 +439,7 @@ def save_cache(path: Path, rows: dict[str, dict]) -> None:
 def census(entries: Iterable[Entry], *, jobs: int = 1, cache_path: Path | None = CACHE,
            elf_digest: str = "", environment: str = "",
            object_digest: Callable[[str], str] | None = None,
-           runner: Runner = subprocess.run,
+           runner: Runner = run_owned,
            progress: Callable[[int, int], None] | None = None,
            validate_inputs: Callable[[], None] | None = None) -> list[Outcome]:
     entries = [entry for entry in entries if entry.covered]
@@ -532,14 +534,14 @@ def refresh_build() -> None:
             raise fp.PreflightError("linked objects predate a build recipe input")
         fp._build_linked_boundary()
     except fp.PreflightError:
-        subprocess.run(["gmake", "--no-print-directory", jobs, "--always-make",
+        run_owned(["gmake", "--no-print-directory", jobs, "--always-make",
                         "--assume-old=%s" % fp.VENV_PYTHON_TARGET,
                         ELF_PATH.relative_to(REPO).as_posix()],
                        cwd=REPO, check=False, stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL)
         for command in (["gmake", "--no-print-directory", "overlay-syms"],
                         ["gmake", "--no-print-directory", jobs]):
-            subprocess.run(command, cwd=REPO, check=False, stdout=subprocess.DEVNULL)
+            run_owned(command, cwd=REPO, check=False, stdout=subprocess.DEVNULL)
     try:
         fp._require_fresh_linked_boundary()
     except fp.PreflightError as error:
@@ -547,7 +549,7 @@ def refresh_build() -> None:
     # The ROM must be strictly newer than the ELF for a --no-build ROM oracle.
     # -W regenerates only ELF -> BIN -> ROM; nothing recompiles or relinks.
     if not (ROM_OUT.is_file() and ROM_OUT.stat().st_mtime_ns > ELF_PATH.stat().st_mtime_ns):
-        subprocess.run(["gmake", "--no-print-directory", "-W",
+        run_owned(["gmake", "--no-print-directory", "-W",
                         ELF_PATH.relative_to(REPO).as_posix(),
                         ROM_OUT.relative_to(REPO).as_posix()],
                        cwd=REPO, check=True, stdout=subprocess.DEVNULL)
@@ -674,4 +676,5 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    from proof_artifacts import run_cli
+    raise SystemExit(run_cli(main, sys.argv[1:]))

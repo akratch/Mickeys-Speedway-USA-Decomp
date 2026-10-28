@@ -1,6 +1,8 @@
 """Fresh compiler/linker reproduction for selected section-relative modules."""
 from __future__ import annotations
 
+from proof_artifacts import run_owned
+
 import hashlib
 import json
 from pathlib import Path
@@ -183,7 +185,7 @@ def prove(root, resolution, context, records, target_elf, linked_name, input_sna
     words[words.index(target)] = str(raw_path)
     replayed = raw_path.with_name("module-replayed.o")
     words += ["--output", str(replayed)]
-    result = subprocess.run(words, cwd=root, text=True, stdout=subprocess.PIPE,
+    result = run_owned(words, cwd=root, text=True, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, timeout=120)
     if result.returncode:
         raise pp.MetadataProofError("ordinary module link failed: " + result.stdout.strip())

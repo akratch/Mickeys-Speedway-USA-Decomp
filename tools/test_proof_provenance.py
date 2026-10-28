@@ -1150,7 +1150,7 @@ class LiteralArrayEndTests(unittest.TestCase):
           for module in ("parser","lexical"):
             with self.subTest(module=module, profile=profile),tempfile.TemporaryDirectory() as directory:
                 root=pathlib.Path(directory);tools=root/"tools";tools.mkdir()
-                for name in ("proof_provenance.py","trim_elf_section.py","candidate_context.py"):
+                for name in ("proof_provenance.py","proof_artifacts.py","trim_elf_section.py","candidate_context.py"):
                     shutil.copy2(canonical/"tools"/name,tools/name)
                 shutil.copytree(canonical/"tools/permuter/perm_pycparser",tools/"permuter/perm_pycparser",
                                 ignore=shutil.ignore_patterns("__pycache__","*.pyc"))
@@ -1232,7 +1232,7 @@ class LiteralArrayEndTests(unittest.TestCase):
                 with mock.patch.object(provenance,"literal_profile_inputs",side_effect=tool_inputs), \
                      mock.patch.object(provenance,"literal_array_facts",return_value=rows), \
                      mock.patch("permute_batch.source_dependencies",return_value={}), \
-                     mock.patch.object(provenance.subprocess,"run",side_effect=cpp):
+                     mock.patch.object(provenance,"run_owned",side_effect=cpp):
                     with self.assertRaises(provenance.MetadataProofError):
                         provenance.prove_literal_arrays(raw,source,root,
                           compiler_command="tools/ido/cc -c -nostdinc -o raw.o src/strings.c")
@@ -1803,6 +1803,43 @@ class EncodedAddressOrdinaryReplayTests(unittest.TestCase):
         self.assertEqual(tuple(self.rp.parse_map(self.map_path)),rows);self.assertTrue(current())
         image.path.write_bytes(image.path.read_bytes()+b'changed')
         with self.assertRaises(provenance.MetadataProofError):current()
+
+    def test_repeated_actual_replays_release_only_after_final_check(self):
+        import proof_artifacts
+        parent = self.root/'build/encoded-word-link-proof'
+        for _ in range(12):
+            with proof_artifacts.operation():
+                image, mapping, rows, held, current = self.replay()
+                cycle = {'check':current}
+                cycle['self'] = cycle
+                self.assertTrue(current())
+                self.assertTrue(image.path.exists() and mapping.exists())
+                self.assertEqual(len(list(parent.glob('capture-*'))),1)
+            self.assertEqual(list(parent.iterdir()),[])
+            with self.assertRaisesRegex(RuntimeError,'released'):
+                cycle['check']()
+
+    def test_link_failure_and_readback_refusal_clean_captures_with_traceback_held(self):
+        run = self.batch.bounded_capture
+        def failed(*args,**kwargs):
+            run(*args,**kwargs)
+            raise RuntimeError('injected link failure')
+        with mock.patch.object(self.batch,'bounded_capture',side_effect=failed):
+            try:
+                self.replay()
+            except RuntimeError as error:
+                saved = error
+        self.assertIsNotNone(saved.__traceback__)
+        parent = self.root/'build/encoded-word-link-proof'
+        self.assertEqual(list(parent.iterdir()),[])
+        obj=self.rp.Elf(self.extra);data=bytearray(obj.data)
+        data[obj.section('.data')['offset']]=1;self.extra.write_bytes(data)
+        try:
+            self.replay()
+        except provenance.MetadataProofError as error:
+            saved = error
+        self.assertIn('replay differs',str(saved))
+        self.assertEqual(list(parent.iterdir()),[])
 
     def test_actual_final_command_uses_its_bound_script_and_private_outputs(self):
         import shlex

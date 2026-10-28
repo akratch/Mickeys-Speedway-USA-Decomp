@@ -9,6 +9,8 @@ report satisfies the stricter post-promotion contract.
 
 from __future__ import annotations
 
+from proof_artifacts import run_owned
+
 import argparse
 import json
 import re
@@ -41,7 +43,7 @@ def run_preflight(
     symbol: str,
     *,
     no_build: bool = False,
-    runner: Runner = subprocess.run,
+    runner: Runner = run_owned,
 ) -> dict[str, object]:
     command = [sys.executable, str(PREFLIGHT), symbol, "--json"]
     if no_build:
@@ -323,7 +325,7 @@ def canonical_commands() -> tuple[tuple[str, list[str]], ...]:
 
 
 def run_canonical_proofs(
-    *, json_mode: bool = False, runner: Runner = subprocess.run
+    *, json_mode: bool = False, runner: Runner = run_owned
 ) -> list[str]:
     commands = canonical_commands()
     completed: list[str] = []
@@ -391,4 +393,5 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    from proof_artifacts import run_cli
+    raise SystemExit(run_cli(main, sys.argv[1:]))

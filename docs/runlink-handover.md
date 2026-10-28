@@ -1,27 +1,54 @@
 # JFG overlay handover
 
-Gentarkin's goal for Jet Force Gemini (JFG) is a build that derives overlay tables from its current inputs.
-Adding or removing an overlay should update its references, tables, and ROM positions through one declared build graph.
-The original read-only memory (ROM) image remains a comparison target during recovery.
-The finished generator must obtain its layout and identities from the current build.
+Gentarkin's goal for Jet Force Gemini (JFG) is to add or remove an overlay
+through the build declarations. Lookup tables and positions in read-only memory
+(ROM) should follow the current build inputs.
+This guide explains the loader and the parts of a generator we have proved.
+The general JFG build that meets that goal is still unfinished.
 
-Mickey's Speedway USA (MSU) supplies the reference tools described here.
-The module-79 recipe reproduced the original ROM and repacked a live DATA edit.
-It still uses 156 unchanged modules and existing registry, resident, and layout inputs.
-This handover covers the United States (US) version of JFG.
+JFG already calculates its overlay count from the header table's size and uses
+linker boundary symbols in
+[`runlinkInitialise`](https://github.com/Ryan-Myers/Jet-Force-Gemini/blob/efd5abb1c79636e297b831f7c2d5bf47eac39c0c/src/runLink.c#L723-L778).
+The next work is to supply that loader with tables and positions derived from
+the current build. It needs declared module and export IDs, real definitions
+for the referenced functions and data, and a build graph that owns the layout.
+Module and export IDs can remain stable ABI identifiers; ROM positions must
+be computed from current output sizes.
 
-Start with the path that fits your next task:
+The suggested `reloc_addrs` rows help recover those symbolic references during
+Splat extraction. They do not define the referenced storage or generate the
+loader's tables. After an edit, relocations from the current compiler and assembler outputs
+must drive the new runtime records. Section 2 explains the
+three stages and how the six example rows fit them.
 
-- To run the tools, follow [the baseline setup in section 5](#5-run-the-public-recovery-kit).
-- To test generated tables, follow [the module-79 example in section 6](#6-reproduce-the-complete-module-79-example).
-- To design the general builder, use [the implementation stages in section 9](#9-complete-the-general-builder).
+The module-79 example is the working part to try first. It reproduced the retail
+baseline and repacked a live DATA edit that moved later ROM positions. It still
+uses 156 unchanged modules, existing export IDs and names, resident identities,
+and outside layout inputs. It refuses new or removed modules and exports, BSS
+and readonly allocations, and DATA-site relocations. It demonstrates one
+migration step; those remaining cases need implementation and proof.
 
-Sections 2 through 4 explain the format and the measured recovery gaps.
-The procedures include their prerequisites; the earlier conversation is not required.
+A useful next experiment is one real zero-initialized allocation (BSS),
+referenced by a symbolic HI16/LO16 pair. Prove its actual owner and runtime base, then grow it: RAM
+allocation should grow while ROM payload size stays unchanged. Require the
+correct ordered records and final addresses, and reject a missing or wrong
+provider. This extends the section contract rather than adding a special case
+for another module. Adding and removing overlays comes after the registry and
+caller/load-ID rules are explicit.
+
+Start here:
+
+- **Understand the loader and references:** [section 2](#2-the-three-kinds-of-relocation-information) and [section 3](#3-jfgs-current-build-and-loader).
+- **Reproduce the bounded example:** [setup](#5-run-the-public-recovery-kit), then [module 79](#6-reproduce-the-complete-module-79-example).
+- **Build the missing general path:** [stages and acceptance tests](#9-complete-the-general-builder).
+
+The procedures include their prerequisites. This handover covers JFG US;
+Mickey's Speedway USA (MSU) supplies the reference tools. A matching baseline
+alone does not establish that the generator is independent of the old layout.
 
 ## 1. Scope, source pins, and evidence
 
-The audit checked source files and remote refs on **2026-10-27**.
+The audit checked source files and remote refs on **2026-10-28**.
 JFG's current `master` still points to the snapshot used for the earlier build investigation.
 A later source change requires a new check.
 
@@ -34,7 +61,7 @@ A later source change requires a new check.
 
 The evidence has four levels:
 
-- **Source audit:** inspected public files and current remote refs on 2026-10-27.
+- **Source audit:** inspected public files and current remote refs on 2026-10-28.
 - **Build proof:** extracted and rebuilt JFG at the stated pin on 2026-10-23.
 - **Recipe replay:** ran the current MSU kit against saved JFG inputs from the proved build on 2026-10-27.
 - **Proposed work:** a required capability with no accepted general implementation yet.
